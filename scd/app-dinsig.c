@@ -415,7 +415,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       && indatalen != (15+20) && indatalen != (19+32))
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* Check that the provided ID is vaid.  This is not really needed
+  /* Check that the provided ID is valid.  This is not really needed
      but we do it to enforce correct usage by the caller. */
   if (strncmp (keyidstr, "DINSIG.", 7) )
     return gpg_error (GPG_ERR_INV_ID);

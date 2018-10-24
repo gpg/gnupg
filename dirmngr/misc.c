@@ -637,7 +637,7 @@ armor_data (char **r_string, const void *data, size_t datalen)
 }
 
 
-/* Copy all data from IN to OUT.  OUT may be NULL to use this fucntion
+/* Copy all data from IN to OUT.  OUT may be NULL to use this function
  * as a dummy reader.  */
 gpg_error_t
 copy_stream (estream_t in, estream_t out)

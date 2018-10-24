@@ -1832,7 +1832,7 @@ static void dns_p_free(struct dns_packet *P) {
 } /* dns_p_free() */
 
 
-/* convience routine to free any existing packet before storing new packet */
+/* convenience routine to free any existing packet before storing new packet */
 static struct dns_packet *dns_p_setptr(struct dns_packet **dst, struct dns_packet *src) {
 	dns_p_free(*dst);
 
@@ -7634,7 +7634,7 @@ retry:
 			goto udp_connect_retry;
 		} else if (error == ECONNREFUSED)
 			/* Error for previous socket operation may
-			   be reserverd asynchronously. */
+			   be reserverd(?) asynchronously. */
 			goto udp_connect_retry;
 
 		if (error)

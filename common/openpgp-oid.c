@@ -184,7 +184,7 @@ openpgp_oid_from_str (const char *string, gcry_mpi_t *r_mpi)
 }
 
 
-/* Return a malloced string represenation of the OID in the opaque MPI
+/* Return a malloced string representation of the OID in the opaque MPI
    A.  In case of an error NULL is returned and ERRNO is set.  */
 char *
 openpgp_oid_to_str (gcry_mpi_t a)
@@ -221,7 +221,7 @@ openpgp_oid_to_str (gcry_mpi_t a)
 
   /* To calculate the length of the string we can safely assume an
      upper limit of 3 decimal characters per byte.  Two extra bytes
-     account for the special first octect */
+     account for the special first octet */
   string = p = xtrymalloc (length*(1+3)+2+1);
   if (!string)
     return NULL;

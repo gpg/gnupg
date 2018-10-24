@@ -1937,7 +1937,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
    is the sequence number used to send the request and EXPECTED_TYPE
    the type of message we expect. Does checks on the ccid
    header. TIMEOUT is the timeout value in ms. NO_DEBUG may be set to
-   avoid debug messages in case of no error; this can be overriden
+   avoid debug messages in case of no error; this can be overridden
    with a glibal debug level of at least 3. Returns 0 on success. */
 static int
 bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
@@ -2956,7 +2956,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
    bit 3     unused
    bit 2..0  Source Node Address (SAD)
 
-   If node adresses are not used, SAD and DAD should be set to 0 on
+   If node addresses are not used, SAD and DAD should be set to 0 on
    the first block sent to the card.  If they are used they should
    have different values (0 for one is okay); that first block sets up
    the addresses of the nodes.
@@ -3298,7 +3298,7 @@ ccid_transceive (ccid_driver_t handle,
               /* Wait time extension request. */
               unsigned char bwi = tpdu[3];
 
-              /* Check if it's unsual value which can't be expressed in ATR.  */
+              /* Check if it's unusual value which can't be expressed in ATR.  */
               if (bwi > 15)
                 wait_more = 1;
 

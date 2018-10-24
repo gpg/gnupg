@@ -338,7 +338,7 @@ static int active_connections;
  * thread to run background network tasks.  */
 static int network_activity_seen;
 
-/* A list of filenames registred with --hkp-cacert.  */
+/* A list of filenames registered with --hkp-cacert.  */
 static strlist_t hkp_cacert_filenames;
 
 
@@ -411,7 +411,7 @@ my_strusage( int level )
 
 /* Callback from libksba to hash a provided buffer.  Our current
    implementation does only allow SHA-1 for hashing. This may be
-   extended by mapping the name, testing for algorithm availibility
+   extended by mapping the name, testing for algorithm availability
    and adjust the length checks accordingly. */
 static gpg_error_t
 my_ksba_hash_buffer (void *arg, const char *oid,
@@ -520,7 +520,7 @@ set_tor_mode (void)
 {
   if (dirmngr_use_tor ())
     {
-      /* Enable Tor mode and when called again force a new curcuit
+      /* Enable Tor mode and when called again force a new circuit
        * (e.g. on SIGHUP).  */
       enable_dns_tormode (1);
       if (assuan_sock_set_flag (ASSUAN_INVALID_FD, "tor-mode", 1))
@@ -752,7 +752,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 }
 
 
-/* This fucntion is called after option parsing to adjust some values
+/* This function is called after option parsing to adjust some values
  * and call option setup functions.  */
 static void
 post_option_parsing (void)

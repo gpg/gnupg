@@ -669,7 +669,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
             log_debug ("  found via authid and sn+issuer\n");
 
           /* In case of an error, try to get the certificate from the
-             dirmngr.  That is done by trying to put that certifcate
+             dirmngr.  That is done by trying to put that certificate
              into the ephemeral DB and let the code below do the
              actual retrieve.  Thus there is no error checking.
              Skipped in find_next mode as usual. */
@@ -908,7 +908,7 @@ is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
     {
       if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         return 1; /* Yes. Without a authorityKeyIdentifier this needs
-                     to be the Root certifcate (our trust anchor).  */
+                     to be the Root certificate (our trust anchor).  */
       log_error ("error getting authorityKeyIdentifier: %s\n",
                  gpg_strerror (err));
       return 0; /* Well, it is broken anyway.  Return No. */
@@ -1103,7 +1103,7 @@ check_validity_period (ksba_isotime_t current_time,
 }
 
 /* This is a variant of check_validity_period used with the chain
-   model.  The dextra contraint here is that notBefore and notAfter
+   model.  The extra constraint here is that notBefore and notAfter
    must exists and if the additional argument CHECK_TIME is given this
    time is used to check the validity period of SUBJECT_CERT.  */
 static gpg_error_t
@@ -1553,7 +1553,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           if (rc)
             goto leave;
 
-          break;  /* Okay: a self-signed certicate is an end-point. */
+          break;  /* Okay: a self-signed certificate is an end-point. */
         } /* End is_root.  */
 
 

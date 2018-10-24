@@ -88,7 +88,7 @@ ks_action_help (ctrl_t ctrl, const char *url)
         return err;
     }
 
-  /* Call all engines to give them a chance to print a help sting.  */
+  /* Call all engines to give them a chance to print a help string.  */
   err = ks_hkp_help (ctrl, parsed_uri);
   if (!err)
     err = ks_http_help (ctrl, parsed_uri);

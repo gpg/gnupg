@@ -1109,7 +1109,7 @@ agent_unprotect (ctrl_t ctrl,
   if (!protect_info[infidx].algo)
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
 
-  /* See wether we have a protected-at timestamp.  */
+  /* See whether we have a protected-at timestamp.  */
   protect_list = s;  /* Save for later.  */
   if (protected_at)
     {

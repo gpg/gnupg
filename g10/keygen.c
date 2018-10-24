@@ -450,7 +450,7 @@ keygen_set_std_prefs (const char *string,int personal)
               }
 
             /* In case we have no compress algo at all, declare that
-               we prefer no compresssion.  */
+               we prefer no compression.  */
             if (!any_compress)
               strcat(dummy_string,"Z0 ");
 

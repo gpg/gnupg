@@ -53,7 +53,7 @@ static int recipient_digest_algo=0;
 
 
 /*
- * Create notations and other stuff.  It is assumed that the stings in
+ * Create notations and other stuff.  It is assumed that the strings in
  * STRLIST are already checked to contain only printable data and have
  * a valid NAME=VALUE format.
  */

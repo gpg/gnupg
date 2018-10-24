@@ -1381,7 +1381,7 @@ handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
   int retry = 0;
 
   /* Fixme: Should we disable all hosts of a protocol family if a
-   * request for an address of that familiy returned ENETDOWN?  */
+   * request for an address of that family returned ENETDOWN?  */
 
   switch (gpg_err_code (err))
     {

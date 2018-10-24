@@ -2751,7 +2751,7 @@ data_hash (unsigned char *data, size_t data_n,
    allow the use of signature algorithms that implement the hashing
    internally (e.g. Ed25519).  On success the created signature is
    stored in ssh format at R_SIG and it's size at R_SIGLEN; the caller
-   must use es_free to releaase this memory.  */
+   must use es_free to release this memory.  */
 static gpg_error_t
 data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
            const void *hash, size_t hashlen,

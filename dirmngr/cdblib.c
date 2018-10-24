@@ -19,7 +19,7 @@
    length, meaning that corresponding hash table is empty.
 
    Right after toc section, data section follows without any
-   alingment.  It consists of series of records, each is a key length,
+   alignment.  It consists of series of records, each is a key length,
    value (data) length, key and value.  Again, key and value length
    are 4-byte unsigned integers.  Each next record follows previous
    without any special alignment.
@@ -52,7 +52,7 @@
    beginning of a table).  When hash value in question is found in
    hash table, look to key of corresponding record, comparing it with
    key in question.  If them of the same length and equals to each
-   other, then record is found, overwise, repeat with next hash table
+   other, then record is found, otherwise, repeat with next hash table
    slot.  Note that there may be several records with the same key.
 */
 
@@ -245,7 +245,7 @@ cdb_find(struct cdb *cdbp, const void *key, cdbi_t klen)
   pos = cdb_unpack(htp);	/* htab position */
   if (n > (cdbp->cdb_fsize >> 3) /* overflow of httodo ? */
       || pos > cdbp->cdb_fsize /* htab start within file ? */
-      || httodo > cdbp->cdb_fsize - pos) /* entrie htab within file ? */
+      || httodo > cdbp->cdb_fsize - pos) /* htab entry within file ? */
   {
     gpg_err_set_errno (EPROTO);
     return -1;

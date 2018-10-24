@@ -1812,7 +1812,7 @@ import_one (ctrl_t ctrl,
 	  }
     }
 
-  /* Delete invalid parts and without the drop otions bail out if
+  /* Delete invalid parts and without the drop option bail out if
    * there are no user ids.  */
   if (!delete_inv_parts (ctrl, keyblock, keyid, options)
       && !(options & IMPORT_DROP_UIDS) )

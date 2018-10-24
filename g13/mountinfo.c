@@ -117,7 +117,7 @@ mountinfo_del_mount (const char *container, const char *mountpoint,
   size_t idx;
   mtab_t m;
 
-  /* If a container or mountpint is givem search the RID via the
+  /* If a container or mountpint is given search the RID via the
      standard find function.  */
   if (container || mountpoint)
     {

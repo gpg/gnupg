@@ -114,7 +114,7 @@ gcry_free (void *a)
 
 
 /* We need this dummy because exechelp.c uses gcry_control to
-   terminate the secure memeory.  */
+   terminate the secure memory.  */
 gcry_error_t
 gcry_control (enum gcry_ctl_cmds cmd, ...)
 {

@@ -42,7 +42,7 @@
    failure.
 
    Note that we also escape the quote character to work around a bug
-   in the mingw32 runtime which does not correcty handle command line
+   in the mingw32 runtime which does not correctly handle command line
    quoting.  We correctly double the quote mark when calling a program
    (i.e. gpg-protect-tool), but the pre-main code does not notice the
    double quote as an escaped quote.  We do this also on POSIX systems

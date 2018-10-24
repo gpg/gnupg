@@ -187,7 +187,7 @@ write_status_text (int no, const char *text)
 }
 
 
-/* Write a status line with code NO followed by the outout of the
+/* Write a status line with code NO followed by the output of the
  * printf style FORMAT.  The caller needs to make sure that LFs and
  * CRs are not printed.  */
 void

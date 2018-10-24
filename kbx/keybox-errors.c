@@ -8,7 +8,7 @@
  * keybox_strerror:
  * @err:  Error code
  *
- * This function returns a textual representaion of the given
+ * This function returns a textual representation of the given
  * errorcode. If this is an unknown value, a string with the value
  * is returned (Beware: it is hold in a static buffer).
  *

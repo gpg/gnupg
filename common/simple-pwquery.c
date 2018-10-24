@@ -75,7 +75,7 @@
 
 
 /* Name of the socket to be used.  This is a kludge to keep on using
-   the existsing code despite that we only support a standard socket.  */
+   the existing code despite that we only support a standard socket.  */
 static char *default_gpg_agent_info;
 
 

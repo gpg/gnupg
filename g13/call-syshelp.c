@@ -174,7 +174,7 @@ call_syshelp_release (ctrl_t ctrl)
 
 
 
-/* Staus callback for call_syshelp_find_device.  */
+/* Status callback for call_syshelp_find_device.  */
 static gpg_error_t
 finddevice_status_cb (void *opaque, const char *line)
 {

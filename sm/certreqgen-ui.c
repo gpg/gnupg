@@ -86,7 +86,7 @@ store_mb_lines (membuf_t *mb, membuf_t *lines)
 }
 
 
-/* Chech whether we have a key for the key with HEXGRIP.  Returns NULL
+/* Check whether we have a key for the key with HEXGRIP.  Returns NULL
    if not or a string describing the type of the key (RSA, ELG, DSA,
    etc..).  */
 static const char *

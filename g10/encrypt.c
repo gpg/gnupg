@@ -732,7 +732,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
 
       /* In case 3DES has been selected, print a warning if any key
          does not have a preference for AES.  This should help to
-         indentify why encrypting to several recipients falls back to
+         identify why encrypting to several recipients falls back to
          3DES. */
       if (opt.verbose && cfx.dek->algo == CIPHER_ALGO_3DES)
         warn_missing_aes_from_pklist (pk_list);
@@ -1003,7 +1003,7 @@ encrypt_filter (void *opaque, int control,
 
               /* In case 3DES has been selected, print a warning if
                  any key does not have a preference for AES.  This
-                 should help to indentify why encrypting to several
+                 should help to identify why encrypting to several
                  recipients falls back to 3DES. */
               if (opt.verbose
                   && efx->cfx.dek->algo == CIPHER_ALGO_3DES)

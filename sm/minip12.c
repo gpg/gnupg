@@ -853,7 +853,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   if (ti.class == ASNCONTEXT && ti.tag == 0 && ti.is_constructed && ti.ndef)
     {
       /* Mozilla exported certs now come with single byte chunks of
-         octect strings.  (Mozilla Firefox 1.0.4).  Arghh. */
+         octet strings.  (Mozilla Firefox 1.0.4).  Arghh. */
       where = "cram-rc2or3des-ciphertext";
       cram_buffer = cram_octet_string ( p, &n, &consumed);
       if (!cram_buffer)
@@ -1210,7 +1210,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   if (ti.is_constructed && ti.ndef)
     {
       /* Mozilla exported certs now come with single byte chunks of
-         octect strings.  (Mozilla Firefox 1.0.4).  Arghh. */
+         octet strings.  (Mozilla Firefox 1.0.4).  Arghh. */
       where = "cram-data.outersegs";
       cram_buffer = cram_octet_string ( p, &n, &consumed);
       if (!cram_buffer)
@@ -1550,7 +1550,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   if (ti.is_constructed && ti.ndef)
     {
       /* Mozilla exported certs now come with single byte chunks of
-         octect strings.  (Mozilla Firefox 1.0.4).  Arghh. */
+         octet strings.  (Mozilla Firefox 1.0.4).  Arghh. */
       where = "cram-bags";
       cram_buffer = cram_octet_string ( p, &n, NULL);
       if (!cram_buffer)

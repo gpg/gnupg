@@ -648,7 +648,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
                 info.fpr3len? info.fpr3 : NULL);
       thefprlen = (info.fpr1len? info.fpr1len : info.fpr2len? info.fpr2len :
                    info.fpr3len? info.fpr3len : 0);
-      /* If the fingerprint is all 0xff, the key has no asssociated
+      /* If the fingerprint is all 0xff, the key has no associated
          OpenPGP certificate.  */
       if ( thefpr && !fpr_is_ff (thefpr, thefprlen)
            && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen))

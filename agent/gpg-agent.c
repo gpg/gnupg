@@ -851,7 +851,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oLogFile:
       if (!reread)
-        return 0; /* not handeld */
+        return 0; /* not handled */
       if (!current_logfile || !pargs->r.ret_str
           || strcmp (current_logfile, pargs->r.ret_str))
         {
@@ -1768,7 +1768,7 @@ main (int argc, char **argv )
 
           /* Unless we are running with a program given on the command
            * line we can assume that the inotify things works and thus
-           * we can avoid tye regular stat calls.  */
+           * we can avoid the regular stat calls.  */
           if (!argc)
             reliable_homedir_inotify = 1;
         }
@@ -2108,7 +2108,7 @@ get_agent_scd_notify_event (void)
                                  GetCurrentProcess(), &h2,
                                  EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
         {
-          log_error ("setting syncronize for scd notify event failed: %s\n",
+          log_error ("setting synchronize for scd notify event failed: %s\n",
                      w32_strerror (-1) );
           CloseHandle (h);
         }

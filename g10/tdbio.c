@@ -106,7 +106,7 @@ struct cmp_xdir_struct
 static char *db_name;
 
 /* The handle for locking the trustdb file and a counter to record how
- * often this lock has been taken.  That counter is required becuase
+ * often this lock has been taken.  That counter is required because
  * dotlock does not implemen recursive locks.  */
 static dotlock_t lockhandle;
 static unsigned int is_locked;
@@ -589,7 +589,7 @@ tdbio_update_version_record (ctrl_t ctrl)
 
 /*
  * Create and write the trustdb version record.
- * This is called with the writelock activ.
+ * This is called with the writelock active.
  * Returns: 0 on success or an error code.
  */
 static int
@@ -1139,7 +1139,7 @@ upd_hashtable (ctrl_t ctrl, ulong table, byte *key, int keylen, ulong newrecnum)
 
               if (rec.r.hlst.next)
                 {
-                  /* read the next reord of the list.  */
+                  /* read the next record of the list.  */
                   rc = tdbio_read_record (rec.r.hlst.next, &rec, RECTYPE_HLST);
                   if (rc)
                     {

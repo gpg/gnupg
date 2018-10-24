@@ -1571,7 +1571,7 @@ main ( int argc, char **argv)
 
   set_debug ();
 
-  /* Although we always use gpgsm_exit, we better install a regualr
+  /* Although we always use gpgsm_exit, we better install a regular
      exit handler so that at least the secure memory gets wiped
      out. */
   if (atexit (emergency_cleanup))

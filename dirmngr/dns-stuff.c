@@ -151,7 +151,7 @@ static char tor_socks_password[20];
 
 
 #ifdef USE_LIBDNS
-/* Libdns gobal data.  */
+/* Libdns global data.  */
 struct libdns_s
 {
   struct dns_resolv_conf *resolv_conf;

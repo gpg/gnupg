@@ -3891,7 +3891,7 @@ main (int argc, char **argv)
        keygen_set_std_prefs(pers_compress_list,PREFTYPE_ZIP))
       log_error(_("invalid personal compress preferences\n"));
 
-    /* Check chunk size.  Please fix also the man page if you chnage
+    /* Check chunk size.  Please fix also the man page if you change
      * the default.  The limits are given by the specs.  */
     if (!opt.chunk_size)
       opt.chunk_size = 27; /* Default to the suggested max of 128 MiB.  */
@@ -4875,9 +4875,9 @@ main (int argc, char **argv)
 
 	    while( endless || count ) {
 		byte *p;
-                /* Wee need a multiple of 3, so that in case of
+                /* We need a multiple of 3, so that in case of
                    armored output we get a correct string.  No
-                   linefolding is done, as it is best to levae this to
+                   linefolding is done, as it is best to leave this to
                    other tools */
 		size_t n = !endless && count < 99? count : 99;
 

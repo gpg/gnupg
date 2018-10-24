@@ -303,7 +303,7 @@ make_simple_sexp_from_hexstr (const char *line, size_t *nscanned)
   for (; n > 1; n -=2, s += 2)
     *p++ = xtoi_2 (s);
   *p++ = ')';
-  *p = 0; /* (Not really neaded.) */
+  *p = 0; /* (Not really needed.) */
 
   return buf;
 }
