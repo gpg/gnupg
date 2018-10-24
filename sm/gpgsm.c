@@ -1666,7 +1666,7 @@ main ( int argc, char **argv)
                                      || cmd == aClearsign,
                                      opt.extra_digest_algo))
     log_error (_("digest algorithm '%s' may not be used in %s mode\n"),
-               forced_digest_algo,
+               extra_digest_algo,
                gnupg_compliance_option_string (opt.compliance));
 
   if (log_get_errorcount(0))
