@@ -983,7 +983,7 @@ do_open (char *line)
                  name, mode, strerror (errno));
       return;
     }
-  fd = fileno (fp);
+  fd = dup (fileno (fp));
   if (fd >= 0 && fd < DIM (open_fd_table))
     {
       open_fd_table[fd].inuse = 1;
@@ -1030,8 +1030,10 @@ do_open (char *line)
   else
     {
       log_error ("can't put fd %d into table\n", fd);
-      close (fd);
+      if (fd != -1)
+        close (fd); /* Table was full.  */
     }
+  fclose (fp);
 }
 
 
