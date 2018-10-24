@@ -246,6 +246,7 @@ agent_open (assuan_context_t *ctx)
 #ifdef SPWQ_USE_LOGGING
       log_error (_("no gpg-agent running in this session\n"));
 #endif
+      *ctx = NULL;
       return SPWQ_NO_AGENT;
     }
 
