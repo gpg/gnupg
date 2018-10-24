@@ -55,7 +55,7 @@
       .B whateever you want
       @end ifset
 
-    alternativly a special comment may be used:
+    alternatively a special comment may be used:
 
       @c man:.B whatever you want
 
@@ -704,7 +704,7 @@ write_th (FILE *fp)
 
 
 /* Process the texinfo command COMMAND (without the leading @) and
-   write output if needed to FP. REST is the remainer of the line
+   write output if needed to FP. REST is the remainder of the line
    which should either point to an opening brace or to a white space.
    The function returns the number of characters already processed
    from REST.  LEN is the usable length of REST.  TABLE_LEVEL is used to
@@ -1197,7 +1197,7 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
           if (*p == '@' && !strncmp (p+1, "item", 4))
             item_indent = p - line;  /* Set a new indent level.  */
           else if (p - line < item_indent)
-            item_indent = 0;         /* Switch off indention.  */
+            item_indent = 0;         /* Switch off indentation.  */
 
           if (item_indent)
             {
