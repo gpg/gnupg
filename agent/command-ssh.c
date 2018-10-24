@@ -3244,9 +3244,10 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   while (1)
     {
       err = stream_read_byte (request, &b);
-      if (gpg_err_code (err) == GPG_ERR_EOF)
-	{
-	  err = 0;
+      if (err)
+        {
+          if (gpg_err_code (err) == GPG_ERR_EOF)
+            err = 0;
 	  break;
 	}
 
