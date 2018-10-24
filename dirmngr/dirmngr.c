@@ -1629,7 +1629,11 @@ parse_ldapserver_file (const char* filename)
   fp = es_fopen (filename, "r");
   if (!fp)
     {
-      log_error (_("error opening '%s': %s\n"), filename, strerror (errno));
+      if (errno == ENOENT)
+        log_info ("No ldapserver file at: '%s'\n", filename);
+      else
+        log_error (_("error opening '%s': %s\n"), filename,
+                   strerror (errno));
       return NULL;
     }
 
