@@ -860,7 +860,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   int no_protection;
-  unsigned char *value;
+  unsigned char *value = NULL;
   size_t valuelen;
   unsigned char *newpasswd = NULL;
   membuf_t outbuf;
