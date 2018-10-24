@@ -1250,13 +1250,15 @@ crl_cache_deinit (void)
 }
 
 
-/* Delete the cache from disk. Return 0 on success.*/
+/* Delete the cache from disk and memory. Return 0 on success.*/
 int
 crl_cache_flush (void)
 {
   int rc;
 
+  crl_cache_deinit ();
   rc = cleanup_cache_dir (0)? -1 : 0;
+  crl_cache_init ();
 
   return rc;
 }

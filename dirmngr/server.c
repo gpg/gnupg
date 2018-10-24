@@ -2689,6 +2689,20 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_flushcrls[] =
+  "FLUSHCRLS\n"
+  "\n"
+  "Remove all cached CRLs from memory and\n"
+  "the file system.";
+static gpg_error_t
+cmd_flushcrls (assuan_context_t ctx, char *line)
+{
+  (void)line;
+
+  return leave_cmd (ctx, crl_cache_flush () ? GPG_ERR_GENERAL : 0);
+}
+
+
 
 /* Tell the assuan library about our commands. */
 static int
@@ -2719,6 +2733,7 @@ register_commands (assuan_context_t ctx)
     { "LOADSWDB",   cmd_loadswdb,   hlp_loadswdb },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
     { "RELOADDIRMNGR",cmd_reloaddirmngr,hlp_reloaddirmngr },
+    { "FLUSHCRLS",  cmd_flushcrls,  hlp_flushcrls },
     { NULL, NULL }
   };
   int i, j, rc;
