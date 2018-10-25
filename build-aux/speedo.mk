@@ -157,8 +157,9 @@ INST_NAME=gnupg-w32
 # Use this to override the installaion directory for native builds.
 INSTALL_PREFIX=none
 
-# The Authenticode key used to sign the Windows installer
+# The Authenticode key and cert chain used to sign the Windows installer
 AUTHENTICODE_KEY=${HOME}/.gnupg/g10code-authenticode-key.p12
+AUTHENTICODE_CERTS=${HOME}/.gnupg/g10code-authenticode-certs.pem
 
 
 # Directory names.
@@ -1266,8 +1267,11 @@ sign-installer:
 	 echo "speedo:  * Signing installer" ;\
 	 echo "speedo:  * Key: $(AUTHENTICODE_KEY)";\
 	 echo "speedo:  */" ;\
-	 osslsigncode sign -pkcs12 $(AUTHENTICODE_KEY) -askpass \
-            -h sha256 -in "PLAY/inst/$$exefile" -out "../../$$exefile" ;\
+	 osslsigncode sign -certs $(AUTHENTICODE_CERTS)\
+            -pkcs12 $(AUTHENTICODE_KEY) -askpass \
+            -ts "http://timestamp.globalsign.com/scripts/timstamp.dll" \
+            -h sha256 -n GnuPG -i https://gnupg.org \
+	    -in "PLAY/inst/$$exefile" -out "../../$$exefile" ;\
 	 exefile="../../$$exefile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
 	 echo "speedo: /*" ;\
