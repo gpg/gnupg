@@ -609,6 +609,8 @@ learn_status_cb (void *opaque, const char *line)
                     parm->extcap.ki = abool;
                   else if (!strcmp (p, "aac"))
                     parm->extcap.aac = abool;
+                  else if (!strcmp (p, "bt"))
+                    parm->extcap.bt = abool;
                   else if (!strcmp (p, "kdf"))
                     parm->extcap.kdf = abool;
                   else if (!strcmp (p, "si"))

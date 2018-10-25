@@ -2468,9 +2468,9 @@ do_setattr (app_t app, const char *name,
     { "SM-KEY-MAC",   0x00D2, 3, 0, 1 },
     { "KEY-ATTR",     0,      0, 3, 1 },
     { "AESKEY",       0x00D5, 3, 0, 1 },
-    { "UIF-1",        0x00D6, 3, 0, 1 },
-    { "UIF-2",        0x00D7, 3, 0, 1 },
-    { "UIF-3",        0x00D8, 3, 0, 1 },
+    { "UIF-1",        0x00D6, 3, 5, 1 },
+    { "UIF-2",        0x00D7, 3, 5, 1 },
+    { "UIF-3",        0x00D8, 3, 5, 1 },
     { "KDF",          0x00F9, 3, 4, 1 },
     { NULL, 0 }
   };
@@ -2482,6 +2482,9 @@ do_setattr (app_t app, const char *name,
     return gpg_error (GPG_ERR_INV_NAME);
   if (table[idx].need_v2 && !app->app_local->extcap.is_v2)
     return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Not yet supported.  */
+
+  if (table[idx].special == 5 && app->app_local->extcap.has_button == 0)
+    return gpg_error (GPG_ERR_INV_OBJ);
 
   if (table[idx].special == 3)
     return change_keyattr_from_string (app, pincb, pincb_arg, value, valuelen);

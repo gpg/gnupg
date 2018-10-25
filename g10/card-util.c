@@ -2114,9 +2114,30 @@ kdf_setup (const char *args)
 static void
 uif (int arg_number, const char *arg_rest)
 {
+  struct agent_card_info_s info;
+  int feature_available;
   gpg_error_t err;
   char name[100];
   unsigned char data[2];
+
+  memset (&info, 0, sizeof info);
+
+  err = agent_scd_getattr ("EXTCAP", &info);
+  if (err)
+    {
+      log_error (_("error getting card info: %s\n"), gpg_strerror (err));
+      return;
+    }
+
+  feature_available = info.extcap.bt;
+  agent_release_card_info (&info);
+
+  if (!feature_available)
+    {
+      log_error (_("This command is not supported by this card\n"));
+      tty_printf ("\n");
+      return;
+    }
 
   snprintf (name, sizeof name, "UIF-%d", arg_number);
   if ( !strcmp (arg_rest, "off") )

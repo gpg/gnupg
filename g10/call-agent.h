@@ -69,6 +69,7 @@ struct agent_card_info_s
     unsigned int ki:1;     /* Key import available.  */
     unsigned int aac:1;    /* Algorithm attributes are changeable.  */
     unsigned int kdf:1;    /* KDF object to support PIN hashing available.  */
+    unsigned int bt:1;     /* Button for confirmation available.  */
   } extcap;
   unsigned int status_indicator;
 };
