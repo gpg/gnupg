@@ -88,7 +88,7 @@ typedef enum
   } typeflag_t;
 
 
-/* The internal represenation of a TAR header.  */
+/* The internal representation of a TAR header.  */
 struct tar_header_s;
 typedef struct tar_header_s *tar_header_t;
 struct tar_header_s
