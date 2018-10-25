@@ -26,7 +26,7 @@ cat <<EOF
  * gnupg_error_token:
  * @err:  Error code
  *
- * This function returns a textual representaion of the given
+ * This function returns a textual representation of the given
  * errorcode. If this is an unknown value, a static string is returned.
  * This function differs from gnupg_strerror that it yields the string
  * representation of the macro which is never subject to i18n.

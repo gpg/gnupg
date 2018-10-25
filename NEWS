@@ -98,7 +98,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * dirmngr: Fallback to CRL if no default OCSP responder is configured.
 
   * dirmngr: Implement CRL fetching via https.  Here a redirection to
-    http is explictly allowed.
+    http is explicitly allowed.
 
   * dirmngr: Make LDAP searching and CRL fetching work under Windows.
     This stopped working with 2.1.  [#3937]
@@ -959,7 +959,7 @@ Noteworthy changes in version 2.1.11 (2016-01-26)
 
  * gpg: Emit PROGRESS status lines during key generation.
 
- * gpg: Don't check for ambigious or non-matching key specification in
+ * gpg: Don't check for ambiguous or non-matching key specification in
    the config file or given to --encrypt-to.  This feature will return
    in 2.3.x.
 
@@ -986,7 +986,7 @@ Noteworthy changes in version 2.1.11 (2016-01-26)
  * dirmmgr: All configured keyservers are now searched.
 
  * dirmngr: Install CA certificate for hkps.pool.sks-keyservers.net.
-   Use this certiticate even if --hkp-cacert is not used.
+   Use this certificate even if --hkp-cacert is not used.
 
  * gpgtar: Add actual encryption code.  gpgtar does now fully replace
    gpg-zip.
@@ -1020,7 +1020,7 @@ Noteworthy changes in version 2.1.10 (2015-12-04)
  * gpg: New option --only-sign-text-ids to exclude photo IDs from key
    signing.
 
- * gpg: Check for ambigious or non-matching key specification in the
+ * gpg: Check for ambiguous or non-matching key specification in the
    config file or given to --encrypt-to.
 
  * gpg: Show the used card reader with --card-status.
@@ -1310,7 +1310,7 @@ Noteworthy changes in version 2.1.1 (2014-12-16)
 
  * gpg: Fixed regression in --refresh-keys.
 
- * gpg: Fixed regresion in %g and %p codes for --sig-notation.
+ * gpg: Fixed regression in %g and %p codes for --sig-notation.
 
  * gpg: Fixed best matching hash algo detection for ECDSA and EdDSA.
 
@@ -1390,7 +1390,7 @@ Noteworthy changes in version 2.1.0 (2014-11-06)
 
  * gpg: Default keyring is now created with a .kbx suffix.
 
- * gpg: Add a shortcut to the key capabilies menu (e.g. "=e" sets the
+ * gpg: Add a shortcut to the key capabilities menu (e.g. "=e" sets the
    encryption capabilities).
 
  * gpg: Fixed obsolete options parsing.
@@ -1582,7 +1582,7 @@ Noteworthy changes in version 2.1.0 (2014-11-06)
  * scdaemon: Does not anymore block after changing a card (regression
    fix).
 
- * tools: gpg-connect-agent does now proberly display the help output
+ * tools: gpg-connect-agent does now properly display the help output
    for "SCD HELP" commands.
 
 
@@ -1707,7 +1707,7 @@ Noteworthy changes in version 2.0.13 (2009-09-04)
  * Add hack to the internal CCID driver to allow the use of some
    Omnikey based card readers with 2048 bit keys.
 
- * GPG now repeatly asks the user to insert the requested OpenPGP
+ * GPG now repeatedly asks the user to insert the requested OpenPGP
    card.  This can be disabled with --limit-card-insert-tries=1.
 
  * Minor bug fixes.
@@ -1833,7 +1833,7 @@ Noteworthy changes in version 2.0.9 (2008-03-26)
 
  * Extended the PKITS framework.
 
- * Fixed a bug in the ambigious name detection.
+ * Fixed a bug in the ambiguous name detection.
 
  * Fixed possible memory corruption while importing OpenPGP keys (bug
    introduced with 2.0.8). [CVE-2008-1530]
@@ -2383,7 +2383,7 @@ Noteworthy changes in version 1.9.2 (2003-11-17)
    command but from the menu provided by the new --card-edit command.
 
  * PINs are now properly cached and there are only 2 PINs visible.
-   The 3rd PIN (CHV2) is internally syncronized with the regular PIN.
+   The 3rd PIN (CHV2) is internally synchronized with the regular PIN.
 
  * All kind of other internal stuff.
 
@@ -3087,7 +3087,7 @@ Noteworthy changes in version 1.0.1 (1999-12-16)
     * Fixed some minor bugs and the problem with conventional encrypted
       packets which did use the gpg v3 partial length headers.
 
-    * Add Indonesian and Portugese translations.
+    * Add Indonesian and Portuguese translations.
 
     * Fixed a bug with symmetric-only encryption using the non-default 3DES.
       The option --emulate-3des-s2k-bug may be used to decrypt documents
@@ -3190,7 +3190,7 @@ Noteworthy changes in version 0.9.8 (1999-06-26)
 
     * New option --with-key-data to list the public key parameters.
       New option -N to insert notations and a --set-policy-url.
-      A couple of other options to allow reseting of options.
+      A couple of other options to allow resetting of options.
 
     * Better support for HPUX.
 
@@ -3669,7 +3669,7 @@ Noteworthy changes in version 0.2.19 (1998-05-29)
 Noteworthy changes in version 0.2.18 (1998-05-15)
 ------------------------------------
 
-    * Splitted cipher/random.c, add new option "--disable-dev-random"
+    * Split cipher/random.c, add new option "--disable-dev-random"
       to configure to support the development of a random source for
       other systems. Prepared sourcefiles rand-unix.c, rand-w32.c
       and rand-dummy.c (which is used to allow compilation on systems

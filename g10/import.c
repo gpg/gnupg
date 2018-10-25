@@ -3073,7 +3073,7 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
   kbnode_t bsnode = NULL;  /* Subkey binding signature node.  */
   u32 bsdate = 0;          /* Timestamp of that node.   */
   kbnode_t rsnode = NULL;  /* Subkey recocation signature node.  */
-  u32 rsdate = 0;          /* Timestamp of tha node.  */
+  u32 rsdate = 0;          /* Timestamp of that node.  */
   PKT_signature *sig;
   int rc;
   kbnode_t n;

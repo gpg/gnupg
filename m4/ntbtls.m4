@@ -14,7 +14,7 @@ dnl AM_PATH_NTBTLS([MINIMUM-VERSION,
 dnl                   [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl
 dnl Test for NTBTLS and define NTBTLS_CFLAGS and NTBTLS_LIBS.
-dnl MINIMUM-VERSION is a string with the version number optionalliy prefixed
+dnl MINIMUM-VERSION is a string with the version number optionally prefixed
 dnl with the API version to also check the API compatibility. Example:
 dnl a MINIMUM-VERSION of 1:1.2.5 won't pass the test unless the installed
 dnl version of ntbtls is at least 1.2.5 *and* the API number is 1.  Using

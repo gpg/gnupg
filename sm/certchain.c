@@ -1171,7 +1171,7 @@ check_validity_period_cm (ksba_isotime_t current_time,
           || strcmp (check_time, not_after) > 0))
     {
       /* Note that we don't need a case for the root certificate
-         because its own consitency has already been checked.  */
+         because its own consistency has already been checked.  */
       do_list(opt.ignore_expiration?0:1, listmode, listfp,
               depth == 0 ?
               _("signature not created during lifetime of certificate") :
