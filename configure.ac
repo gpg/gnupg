@@ -129,7 +129,10 @@ GNUPG_BUILD_PROGRAM(symcryptrun, no)
 # We use gpgtar to unpack test data, hence we always build it.  If the
 # user opts out, we simply don't install it.
 GNUPG_BUILD_PROGRAM(gpgtar, yes)
-GNUPG_BUILD_PROGRAM(wks-tools, no)
+# We also install the gpg-wks-server tool by default but disable it
+# later for platforms where it can't be build.
+GNUPG_BUILD_PROGRAM(wks-tools, yes)
+
 
 AC_SUBST(PACKAGE)
 AC_SUBST(PACKAGE_GT)
@@ -681,6 +684,7 @@ case "${host}" in
         try_gettext="no"
 	use_simple_gettext=yes
 	mmap_needed=no
+        build_wks_tools=no
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -688,6 +692,7 @@ case "${host}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         have_dosish_system=yes
         try_gettext="no"
+        build_wks_tools=no
         ;;
 
     i?86-*-msdosdjgpp*)
@@ -696,6 +701,7 @@ case "${host}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         have_dosish_system=yes
         try_gettext="no"
+        build_wks_tools=no
         ;;
 
     *-*-hpux*)
@@ -726,6 +732,7 @@ case "${host}" in
         # Android is fully utf-8 and we do not want to use iconv to
         # keeps things simple
         require_iconv=no
+        build_wks_tools=no
         ;;
     *-apple-darwin*)
         AC_DEFINE(_DARWIN_C_SOURCE, 900000L,
