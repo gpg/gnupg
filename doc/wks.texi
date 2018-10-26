@@ -215,9 +215,9 @@ Further it creates missing directories for the configuration and
 prints warnings pertaining to problems in the configuration.
 
 The command @option{--check-key} (or just @option{--check}) checks
-whether a key with the given user-id is installed.  The process return
-success in this case; to also print a diagnostic, use option
-@option{-v}.  If the key is not installed a diagnostics is printed and
+whether a key with the given user-id is installed.  The process returns
+success in this case; to also print a diagnostic use the option
+@option{-v}.  If the key is not installed a diagnostic is printed and
 the process returns failure; to suppress the diagnostic, use option
 @option{-q}.  More than one user-id can be given; see also option
 @option{with-file}.
@@ -243,6 +243,12 @@ The command @option{--revoke-key} is not yet functional.
 
 @table @gnupgtabopt
 
+@item -C @var{dir}
+@itemx --directory @var{dir}
+@opindex directory
+Use @var{dir} as top level directory for domains.  The default is
+@file{/var/lib/gnupg/wks}.
+
 @item --from @var{mailaddr}
 @opindex from
 Use @var{mailaddr} as the default sender address.
@@ -256,21 +262,22 @@ Add the mail header "@var{name}: @var{value}" to all outgoing mails.
 Directly send created mails using the @command{sendmail} command.
 Requires installation of that command.
 
-@item --output @var{file}
-@itemx -o
+@item -o @var{file}
+@itemx --output @var{file}
 @opindex output
 Write the created mail also to @var{file}. Note that the value
 @code{-} for @var{file} would write it to stdout.
 
 @item --with-dir
 @opindex with-dir
-Also print the directory name for each domain listed by command
-@option{--list-domains}.
+When used with the command @option{--list-domains} print for each
+installed domain the domain name and its directory name.
 
 @item --with-file
 @opindex with-file
-With command @option{--check-key} print for each user-id, the address,
-'i' for installed key or 'n' for not installed key, and the filename.
+When used with the command @option{--check-key} print for each user-id,
+the address, 'i' for installed key or 'n' for not installed key, and
+the filename.
 
 @item --verbose
 @opindex verbose
@@ -316,7 +323,7 @@ Finally run
   $ gpg-wks-server --list-domains
 @end example
 
-to create the required sub-directories with the permission set
+to create the required sub-directories with the permissions set
 correctly.  For each domain a submission address needs to be
 configured.  All service mails are directed to that address.  It can
 be the same address for all configured domains, for example:
@@ -326,7 +333,7 @@ be the same address for all configured domains, for example:
   $ echo key-submission@@example.net >submission-address
 @end example
 
-The protocol requires that the key to be published is sent with an
+The protocol requires that the key to be published is send with an
 encrypted mail to the service.  Thus you need to create a key for
 the submission address:
 

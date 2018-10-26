@@ -58,6 +58,7 @@ enum cmd_and_opt_values
     oQuiet      = 'q',
     oVerbose	= 'v',
     oOutput     = 'o',
+    oDirectory  = 'C',
 
     oDebug      = 500,
 
@@ -108,6 +109,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
   ARGPARSE_s_n (oSend, "send", "send the mail using sendmail"),
   ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
+  ARGPARSE_s_s (oDirectory, "directory", "|DIR|use DIR as top directory"),
   ARGPARSE_s_s (oFrom, "from", "|ADDR|use ADDR as the default sender"),
   ARGPARSE_s_s (oHeader, "header" ,
                 "|NAME=VALUE|add \"NAME: VALUE\" as header to all mails"),
@@ -224,6 +226,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 
         case oGpgProgram:
           opt.gpg_program = pargs->r.ret_str;
+          break;
+        case oDirectory:
+          opt.directory = pargs->r.ret_str;
           break;
         case oFrom:
           opt.default_from = pargs->r.ret_str;
@@ -350,6 +355,7 @@ main (int argc, char **argv)
       {
         log_error ("directory '%s' has too relaxed permissions\n",
                    opt.directory);
+        log_info ("Fix by running: chmod o-rw '%s'\n", opt.directory);
         exit (2);
       }
   }
@@ -1667,7 +1673,7 @@ command_receive_cb (void *opaque, const char *mediatype,
 
 
 
-/* Return a list of all configured domains.  ECh list element is the
+/* Return a list of all configured domains.  Each list element is the
  * top directory for the domain.  To figure out the actual domain
  * name strrchr(name, '/') can be used.  */
 static gpg_error_t
@@ -1946,7 +1952,17 @@ command_list_domains (void)
       if (!fp)
         {
           err = gpg_error_from_syserror ();
-          if (gpg_err_code (err) != GPG_ERR_ENOENT)
+          if (gpg_err_code (err) == GPG_ERR_ENOENT)
+            {
+              fp = es_fopen (fname, "w");
+              if (!fp)
+                log_error ("domain %s: can't create policy file: %s\n",
+                           domain, gpg_strerror (err));
+              else
+                es_fclose (fp);
+              fp = NULL;
+            }
+          else
             log_error ("domain %s: error in policy file: %s\n",
                        domain, gpg_strerror (err));
         }
@@ -1955,17 +1971,8 @@ command_list_domains (void)
           struct policy_flags_s policy;
           err = wks_parse_policy (&policy, fp, 0);
           es_fclose (fp);
-          if (!err)
-            {
-              struct policy_flags_s empty_policy;
-              memset (&empty_policy, 0, sizeof empty_policy);
-              if (!memcmp (&empty_policy, &policy, sizeof policy))
-                log_error ("domain %s: empty policy file\n", domain);
-            }
           wks_free_policy (&policy);
         }
-
-
     }
   err = 0;
 
