@@ -69,7 +69,7 @@ struct keydb_search_desc
   int snlen;  /* -1 := sn is a hex string */
   union {
     const char *name;
-    unsigned char fpr[24];
+    unsigned char fpr[32];
     u32 kid[2]; /* Note that this is in native endianness.  */
     unsigned char grip[20];
   } u;
