@@ -46,6 +46,7 @@ AC_DEFUN([AM_PATH_KSBA],
   if test x"$KSBA_CONFIG" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG ksba --exists; then
       KSBA_CONFIG="$GPGRT_CONFIG ksba"
+      AC_MSG_NOTICE([Use gpgrt-config as ksba-config])
       use_gpgrt_config=yes
     fi
   fi

@@ -30,6 +30,7 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
   if test x"${LIBASSUAN_CONFIG}" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG libassuan --exists; then
       LIBASSUAN_CONFIG="$GPGRT_CONFIG libassuan"
+      AC_MSG_NOTICE([Use gpgrt-config as libassuan-config])
       use_gpgrt_config=yes
     fi
   fi

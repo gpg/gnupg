@@ -22,6 +22,7 @@ AC_DEFUN([_AM_PATH_NPTH_CONFIG],
   if test x"$NPTH_CONFIG" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG npth --exists; then
       NPTH_CONFIG="$GPGRT_CONFIG npth"
+      AC_MSG_NOTICE([Use gpgrt-config as npth-config])
       use_gpgrt_config=yes
     fi
   fi

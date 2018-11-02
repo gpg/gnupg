@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2018-10-29
+# Last-changed: 2018-11-02
 
 
 dnl AM_PATH_LIBGCRYPT([MINIMUM-VERSION,
@@ -56,6 +56,7 @@ AC_DEFUN([AM_PATH_LIBGCRYPT],
   if test x"${LIBGCRYPT_CONFIG}" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG libgcrypt --exists; then
       LIBGCRYPT_CONFIG="$GPGRT_CONFIG libgcrypt"
+      AC_MSG_NOTICE([Use gpgrt-config as libgcrypt-config])
       use_gpgrt_config=yes
     fi
   fi
