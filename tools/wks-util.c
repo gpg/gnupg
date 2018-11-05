@@ -556,7 +556,7 @@ wks_send_mime (mime_maker_t mime)
 
 
 /* Parse the policy flags by reading them from STREAM and storing them
- * into FLAGS.  If IGNORE_UNKNOWN is iset unknown keywords are
+ * into FLAGS.  If IGNORE_UNKNOWN is set unknown keywords are
  * ignored.  */
 gpg_error_t
 wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)

@@ -36,6 +36,7 @@ struct
   unsigned int debug;
   int quiet;
   int use_sendmail;
+  int with_colons;
   const char *output;
   const char *gpg_program;
   const char *directory;
