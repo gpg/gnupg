@@ -1,0 +1,36 @@
+#! /bin/sh
+patch -p1 -l -f $* < $0
+exit $?
+
+  From 4faa0ccf58c7a0f64f51dcbc8466add660080414 Mon Sep 17 00:00:00 2001
+  From: Werner Koch <wk@gnupg.org>
+  Date: Fri, 2 Nov 2018 11:26:19 +0100
+  Subject: [PATCH] w32: Don't use CloseHandle on an arbitrary integer.
+
+  * src/assuan-support.c (my_waitpid): Do not close the PID = it is not
+  a handle.
+  --
+
+  At some time in the distant past we might have used the process object
+  as pid which obviously required a close.  However this was changed and
+  so what we did here was to close an arbitrary handle (one which
+  matches the pid).
+
+  GnuPG-bug-id: 4237
+  Signed-off-by: Werner Koch <wk@gnupg.org>
+
+diff --git a/src/assuan-support.c b/src/assuan-support.c
+index 7fbd48a8..705088e4 100644
+--- a/src/assuan-support.c
++++ b/src/assuan-support.c
+@@ -219,7 +219,7 @@ my_waitpid (assuan_context_t ctx, pid_t pid,
+   (void)nowait;
+   (void)status;
+   (void)options;
+-  CloseHandle ((HANDLE) pid);
++  (void)pid;  /* Just a number without a kernel object.  */
+ #else
+   /* We can't just release the PID, a waitpid is mandatory.  But
+      NOWAIT in POSIX systems just means the caller already did the
+--
+2.11.0

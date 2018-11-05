@@ -58,6 +58,7 @@ EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc \
              build-aux/speedo/patches/atk-1.32.0.patch	    \
              build-aux/speedo/patches/libiconv-1.14.patch   \
              build-aux/speedo/patches/pango-1.29.4.patch    \
+             build-aux/speedo/patches/gpgme-1.12.0.patch    \
              build-aux/speedo/patches/sqlite.patch
 
 
