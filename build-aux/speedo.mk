@@ -521,12 +521,12 @@ endif
 # The LDFLAGS is needed for -lintl for glib.
 ifeq ($(WITH_GUI),1)
 speedo_pkg_gpgme_configure = \
-	--enable-static --enable-w32-glib --disable-w32-qt \
+	--enable-static --enable-w32-glib  \
 	--with-gpg-error-prefix=$(idir) \
 	LDFLAGS=-L$(idir)/lib
 else
 speedo_pkg_gpgme_configure = \
-	--disable-static --disable-w32-glib --disable-w32-qt \
+	--disable-static --disable-w32-glib \
 	--with-gpg-error-prefix=$(idir) \
 	LDFLAGS=-L$(idir)/lib
 endif
