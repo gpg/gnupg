@@ -515,7 +515,7 @@ host_and_port_from_url (const char *url, int *port)
   if ((p = strchr (buf, '/')))
     *p++ = 0;
   strlwr (buf);
-  if ((p = strchr (p, ':')))
+  if ((p = strchr (buf, ':')))
     {
       *p++ = 0;
       *port = atoi (p);
