@@ -274,7 +274,7 @@ print_keygrip (estream_t fp, const unsigned char *grp)
     {
       tty_fprintf (fp, "      keygrip ....: ");
       for (i=0; i < 20 ; i++, grp++)
-        es_fprintf (fp, "%02X", *grp);
+        tty_fprintf (fp, "%02X", *grp);
       tty_fprintf (fp, "\n");
     }
 }
