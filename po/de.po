@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-08-30 09:44+0200\n"
+"PO-Revision-Date: 2018-11-06 10:59+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -851,15 +851,13 @@ msgstr "WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat keine Wirkung.\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "Unbekanntes Debug Flag '%s' wird ignoriert\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for the agent to come up ... (%ds)\n"
+#, c-format
 msgid "waiting for the %s to come up ... (%ds)\n"
-msgstr "Warte bis der gpg-agent bereit ist ... (%ds)\n"
+msgstr "Warte bis der %s bereit ist ... (%ds)\n"
 
-#, fuzzy, c-format
-#| msgid "connection to agent established\n"
+#, c-format
 msgid "connection to %s established\n"
-msgstr "Verbindung zum gpg-agent aufgebaut\n"
+msgstr "Verbindung zum %s aufgebaut\n"
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -4817,10 +4815,9 @@ msgstr ""
 "WARNUNG: Möglicherweise unsicherer symmetrisch verschlüsselter "
 "Sitzungsschlüssel\n"
 
-#, fuzzy, c-format
-#| msgid "Critical signature notation: "
+#, c-format
 msgid "Unknown critical signature notation: "
-msgstr "Entscheidender Beglaubigungs-\"Notation\": "
+msgstr "Unbekannte Entscheidende Beglaubigungs-\"Notation\": "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
