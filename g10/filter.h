@@ -69,8 +69,6 @@ typedef struct {
     int pending_lf;	    /* used together with faked */
 } armor_filter_context_t;
 
-struct unarmor_pump_s;
-typedef struct unarmor_pump_s *UnarmorPump;
 
 
 struct compress_filter_context_s {
@@ -172,9 +170,6 @@ armor_filter_context_t *new_armor_context (void);
 void release_armor_context (armor_filter_context_t *afx);
 int push_armor_filter (armor_filter_context_t *afx, iobuf_t iobuf);
 int use_armor_filter( iobuf_t a );
-UnarmorPump unarmor_pump_new (void);
-void        unarmor_pump_release (UnarmorPump x);
-int         unarmor_pump (UnarmorPump x, int c);
 
 /*-- compress.c --*/
 gpg_error_t push_compress_filter (iobuf_t out, compress_filter_context_t *zfx,
