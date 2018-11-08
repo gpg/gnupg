@@ -551,31 +551,42 @@ fill_buffer (decode_filter_ctx_t dfx, iobuf_t stream,
              byte *buffer, size_t nbytes, size_t offset)
 {
   size_t nread = offset;
-  int c;
+  size_t curr;
+  int ret;
 
   if (dfx->partial)
     {
-      for (; nread < nbytes; nread++ )
+      while (nread < nbytes)
         {
-          if ((c = iobuf_get (stream)) == -1)
+          curr = nbytes - nread;
+
+          ret = iobuf_read (stream, &buffer[nread], curr);
+          if (ret == -1)
             {
               dfx->eof_seen = 1; /* Normal EOF. */
               break;
             }
-          buffer[nread] = c;
+
+          nread += ret;
         }
     }
   else
     {
-      for (; nread < nbytes && dfx->length; nread++, dfx->length--)
+      while (nread < nbytes && dfx->length)
         {
-          c = iobuf_get (stream);
-          if (c == -1)
+          curr = nbytes - nread;
+          if (curr > dfx->length)
+            curr = dfx->length;
+
+          ret = iobuf_read (stream, &buffer[nread], curr);
+          if (ret == -1)
             {
               dfx->eof_seen = 3; /* Premature EOF. */
               break;
             }
-          buffer[nread] = c;
+
+          nread += ret;
+          dfx->length -= ret;
         }
       if (!dfx->length)
         dfx->eof_seen = 1; /* Normal EOF.  */
