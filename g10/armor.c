@@ -37,9 +37,9 @@
 
 #define MAX_LINELEN 20000
 
-static byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			 "abcdefghijklmnopqrstuvwxyz"
-			 "0123456789+/";
+static const byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                               "abcdefghijklmnopqrstuvwxyz"
+                               "0123456789+/";
 static byte asctobin[256]; /* runtime initialized */
 static int is_initialized;
 
@@ -169,7 +169,8 @@ static void
 initialize(void)
 {
     u32 i;
-    byte *s;
+    const byte *s;
+
     /* build the helptable for radix64 to bin conversion */
     for(i=0; i < 256; i++ )
 	asctobin[i] = 255; /* used to detect invalid characters */
@@ -1003,6 +1004,121 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     return rc;
 }
 
+static void
+armor_output_buf_as_radix64 (armor_filter_context_t *afx, IOBUF a,
+			     byte *buf, size_t size)
+{
+  byte radbuf[sizeof (afx->radbuf)];
+  byte outbuf[64 + sizeof (afx->eol)];
+  unsigned int eollen = strlen (afx->eol);
+  u32 in, in2;
+  int idx, idx2;
+  int i;
+
+  idx = afx->idx;
+  idx2 = afx->idx2;
+  memcpy (radbuf, afx->radbuf, sizeof (afx->radbuf));
+
+  if (size && (idx || idx2))
+    {
+      /* preload eol to outbuf buffer */
+      memcpy (outbuf + 4, afx->eol, sizeof (afx->eol));
+
+      for (; size && (idx || idx2); buf++, size--)
+	{
+	  radbuf[idx++] = *buf;
+	  if (idx > 2)
+	    {
+	      idx = 0;
+	      in = (u32)radbuf[0] << (2 * 8);
+	      in |= (u32)radbuf[1] << (1 * 8);
+	      in |= (u32)radbuf[2] << (0 * 8);
+	      outbuf[0] = bintoasc[(in >> 18) & 077];
+	      outbuf[1] = bintoasc[(in >> 12) & 077];
+	      outbuf[2] = bintoasc[(in >> 6) & 077];
+	      outbuf[3] = bintoasc[(in >> 0) & 077];
+	      if (++idx2 >= (64/4))
+		{ /* pgp doesn't like 72 here */
+		  idx2=0;
+		  iobuf_write (a, outbuf, 4 + eollen);
+		}
+	      else
+		{
+		  iobuf_write (a, outbuf, 4);
+		}
+	    }
+	}
+    }
+
+  if (size >= (64/4)*3)
+    {
+      /* preload eol to outbuf buffer */
+      memcpy (outbuf + 64, afx->eol, sizeof(afx->eol));
+
+      do
+	{
+	  /* idx and idx2 == 0 */
+
+	  for (i = 0; i < (64/8); i++)
+	    {
+	      in = (u32)buf[0] << (2 * 8);
+	      in |= (u32)buf[1] << (1 * 8);
+	      in |= (u32)buf[2] << (0 * 8);
+	      in2 = (u32)buf[3] << (2 * 8);
+	      in2 |= (u32)buf[4] << (1 * 8);
+	      in2 |= (u32)buf[5] << (0 * 8);
+	      outbuf[i*8+0] = bintoasc[(in >> 18) & 077];
+	      outbuf[i*8+1] = bintoasc[(in >> 12) & 077];
+	      outbuf[i*8+2] = bintoasc[(in >> 6) & 077];
+	      outbuf[i*8+3] = bintoasc[(in >> 0) & 077];
+	      outbuf[i*8+4] = bintoasc[(in2 >> 18) & 077];
+	      outbuf[i*8+5] = bintoasc[(in2 >> 12) & 077];
+	      outbuf[i*8+6] = bintoasc[(in2 >> 6) & 077];
+	      outbuf[i*8+7] = bintoasc[(in2 >> 0) & 077];
+	      buf+=6;
+	      size-=6;
+	    }
+
+	  /* pgp doesn't like 72 here */
+	  iobuf_write (a, outbuf, 64 + eollen);
+	}
+      while (size >= (64/4)*3);
+
+      /* restore eol for tail handling */
+      if (size)
+	memcpy (outbuf + 4, afx->eol, sizeof (afx->eol));
+    }
+
+  for (; size; buf++, size--)
+    {
+      radbuf[idx++] = *buf;
+      if (idx > 2)
+	{
+	  idx = 0;
+	  in = (u32)radbuf[0] << (2 * 8);
+	  in |= (u32)radbuf[1] << (1 * 8);
+	  in |= (u32)radbuf[2] << (0 * 8);
+	  outbuf[0] = bintoasc[(in >> 18) & 077];
+	  outbuf[1] = bintoasc[(in >> 12) & 077];
+	  outbuf[2] = bintoasc[(in >> 6) & 077];
+	  outbuf[3] = bintoasc[(in >> 0) & 077];
+	  if (++idx2 >= (64/4))
+	    { /* pgp doesn't like 72 here */
+	      idx2=0;
+	      iobuf_write (a, outbuf, 4 + eollen);
+	    }
+	  else
+	    {
+	      iobuf_write (a, outbuf, 4);
+	    }
+	}
+    }
+
+  memcpy (afx->radbuf, radbuf, sizeof (afx->radbuf));
+  afx->idx = idx;
+  afx->idx2 = idx2;
+}
+
 /****************
  * This filter is used to handle the armor stuff
  */
@@ -1012,7 +1128,7 @@ armor_filter( void *opaque, int control,
 {
     size_t size = *ret_len;
     armor_filter_context_t *afx = opaque;
-    int rc=0, i, c;
+    int rc=0, c;
     byte radbuf[3];
     int  idx, idx2;
     size_t n=0;
@@ -1196,37 +1312,11 @@ armor_filter( void *opaque, int control,
 	    afx->idx2 = 0;
 	    gcry_md_reset (afx->crc_md);
 	}
-	idx = afx->idx;
-	idx2 = afx->idx2;
-	for(i=0; i < idx; i++ )
-	    radbuf[i] = afx->radbuf[i];
 
-	if( size )
-	  gcry_md_write (afx->crc_md, buf, size);
-
-	for( ; size; buf++, size-- ) {
-	    radbuf[idx++] = *buf;
-	    if( idx > 2 ) {
-		idx = 0;
-		c = bintoasc[(*radbuf >> 2) & 077];
-		iobuf_put(a, c);
-		c = bintoasc[(((*radbuf<<4)&060)|((radbuf[1] >> 4)&017))&077];
-		iobuf_put(a, c);
-		c = bintoasc[(((radbuf[1]<<2)&074)|((radbuf[2]>>6)&03))&077];
-		iobuf_put(a, c);
-		c = bintoasc[radbuf[2]&077];
-		iobuf_put(a, c);
-		if( ++idx2 >= (64/4) )
-		  { /* pgp doesn't like 72 here */
-		    iobuf_writestr(a,afx->eol);
-		    idx2=0;
-		  }
-	    }
-	}
-	for(i=0; i < idx; i++ )
-	    afx->radbuf[i] = radbuf[i];
-	afx->idx = idx;
-	afx->idx2 = idx2;
+	if( size ) {
+	    gcry_md_write (afx->crc_md, buf, size);
+	    armor_output_buf_as_radix64 (afx, a, buf, size);
+        }
     }
     else if( control == IOBUFCTRL_INIT )
       {
