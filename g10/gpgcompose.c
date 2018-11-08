@@ -2281,16 +2281,27 @@ sk_esk (const char *option, int argc, char *argv[], void *cookie)
     /* Encrypt the session key using the s2k specifier.  */
     {
       DEK *sesdekp = &sesdek;
+      void *enckey;
+      size_t enckeylen;
 
       /* Now encrypt the session key (or rather, the algorithm used to
-         encrypt the SKESK plus the session key) using ENCKEY.  */
-      err = encrypt_seskey (&s2kdek, 0, &sesdekp,
-                            (void**)&ske->seskey, (size_t *)&ske->seskeylen);
+         encrypt the SKESK plus the session key) using S2KDEK.  */
+      err = encrypt_seskey (&s2kdek, 0, &sesdekp, &enckey, &enckeylen);
+
       if (err)
         log_fatal ("encrypt_seskey failed: %s\n", gpg_strerror (err));
 
+      if (enckeylen - 1 > sesdek.keylen)
+        log_fatal ("key size is too big: %z\n", enckeylen);
+      else
+        {
+          ske->seskeylen = (byte)enckeylen;
+          memcpy (ske->seskey, enckey, enckeylen);
+        }
+
       /* Save the session key for later.  */
       session_key = sesdek;
+      xfree (enckey);
     }
 
   pkt.pkttype = PKT_SYMKEY_ENC;
