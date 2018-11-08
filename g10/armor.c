@@ -37,13 +37,6 @@
 
 #define MAX_LINELEN 20000
 
-#define CRCINIT 0xB704CE
-#define CRCPOLY 0X864CFB
-#define CRCUPDATE(a,c) do {						    \
-			a = ((a) << 8) ^ crc_table[((a)&0xff >> 16) ^ (c)]; \
-			a &= 0x00ffffff;				    \
-		    } while(0)
-static u32 crc_table[256];
 static byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 			 "abcdefghijklmnopqrstuvwxyz"
 			 "0123456789+/";
@@ -121,9 +114,22 @@ armor_filter_context_t *
 new_armor_context (void)
 {
   armor_filter_context_t *afx;
+  gpg_error_t err;
 
   afx = xcalloc (1, sizeof *afx);
-  afx->refcount = 1;
+  if (afx)
+    {
+      err = gcry_md_open (&afx->crc_md, GCRY_MD_CRC24_RFC2440, 0);
+      if (err != 0)
+	{
+	  log_error ("gcry_md_open failed for GCRY_MD_CRC24_RFC2440: %s",
+		    gpg_strerror (err));
+	  xfree (afx);
+	  return NULL;
+	}
+
+      afx->refcount = 1;
+    }
 
   return afx;
 }
@@ -138,6 +144,7 @@ release_armor_context (armor_filter_context_t *afx)
   log_assert (afx->refcount);
   if ( --afx->refcount )
     return;
+  gcry_md_close (afx->crc_md);
   xfree (afx);
 }
 
@@ -161,25 +168,8 @@ push_armor_filter (armor_filter_context_t *afx, iobuf_t iobuf)
 static void
 initialize(void)
 {
-    int i, j;
-    u32 t;
+    u32 i;
     byte *s;
-
-    /* init the crc lookup table */
-    crc_table[0] = 0;
-    for(i=j=0; j < 128; j++ ) {
-	t = crc_table[j];
-	if( t & 0x00800000 ) {
-	    t <<= 1;
-	    crc_table[i++] = t ^ CRCPOLY;
-	    crc_table[i++] = t;
-	}
-	else {
-	    t <<= 1;
-	    crc_table[i++] = t;
-	    crc_table[i++] = t ^ CRCPOLY;
-	}
-    }
     /* build the helptable for radix64 to bin conversion */
     for(i=0; i < 256; i++ )
 	asctobin[i] = 255; /* used to detect invalid characters */
@@ -187,6 +177,24 @@ initialize(void)
 	asctobin[*s] = i;
 
     is_initialized=1;
+}
+
+
+static inline u32
+get_afx_crc (armor_filter_context_t *afx)
+{
+  const byte *crc_buf;
+  u32 crc;
+
+  crc_buf = gcry_md_read (afx->crc_md, GCRY_MD_CRC24_RFC2440);
+
+  crc = crc_buf[0];
+  crc <<= 8;
+  crc |= crc_buf[1];
+  crc <<= 8;
+  crc |= crc_buf[2];
+
+  return crc;
 }
 
 
@@ -592,7 +600,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	afx->faked = 1;
     else {
 	afx->inp_checked = 1;
-	afx->crc = CRCINIT;
+	gcry_md_reset (afx->crc_md);
 	afx->idx = 0;
 	afx->radbuf[0] = 0;
     }
@@ -768,7 +776,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    }
 	}
 	afx->inp_checked = 1;
-	afx->crc = CRCINIT;
+	gcry_md_reset (afx->crc_md);
 	afx->idx = 0;
 	afx->radbuf[0] = 0;
     }
@@ -797,10 +805,8 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     int checkcrc=0;
     int rc = 0;
     size_t n = 0;
-    int  idx, i, onlypad=0;
-    u32 crc;
+    int  idx, onlypad=0;
 
-    crc = afx->crc;
     idx = afx->idx;
     val = afx->radbuf[0];
     for( n=0; n < size; ) {
@@ -881,14 +887,14 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	idx = (idx+1) % 4;
     }
 
-    for(i=0; i < n; i++ )
-	crc = (crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ buf[i]];
-    crc &= 0x00ffffff;
-    afx->crc = crc;
     afx->idx = idx;
     afx->radbuf[0] = val;
 
+    if( n )
+      gcry_md_write (afx->crc_md, buf, n);
+
     if( checkcrc ) {
+	gcry_md_final (afx->crc_md);
 	afx->any_data = 1;
 	afx->inp_checked=0;
 	afx->faked = 0;
@@ -957,10 +963,10 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		log_info(_("malformed CRC\n"));
 		rc = invalid_crc();
 	    }
-	    else if( mycrc != afx->crc ) {
-                log_info (_("CRC error; %06lX - %06lX\n"),
-				    (ulong)afx->crc, (ulong)mycrc);
-                rc = invalid_crc();
+	    else if( mycrc != get_afx_crc (afx) ) {
+		log_info (_("CRC error; %06lX - %06lX\n"),
+				    (ulong)get_afx_crc (afx), (ulong)mycrc);
+		rc = invalid_crc();
 	    }
 	    else {
 		rc = 0;
@@ -1188,18 +1194,15 @@ armor_filter( void *opaque, int control,
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;
-	    afx->crc = CRCINIT;
-
+	    gcry_md_reset (afx->crc_md);
 	}
-	crc = afx->crc;
 	idx = afx->idx;
 	idx2 = afx->idx2;
 	for(i=0; i < idx; i++ )
 	    radbuf[i] = afx->radbuf[i];
 
-	for(i=0; i < size; i++ )
-	    crc = (crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ buf[i]];
-	crc &= 0x00ffffff;
+	if( size )
+	  gcry_md_write (afx->crc_md, buf, size);
 
 	for( ; size; buf++, size-- ) {
 	    radbuf[idx++] = *buf;
@@ -1224,7 +1227,6 @@ armor_filter( void *opaque, int control,
 	    afx->radbuf[i] = radbuf[i];
 	afx->idx = idx;
 	afx->idx2 = idx2;
-	afx->crc  = crc;
     }
     else if( control == IOBUFCTRL_INIT )
       {
@@ -1250,7 +1252,8 @@ armor_filter( void *opaque, int control,
 	if( afx->cancel )
 	    ;
 	else if( afx->status ) { /* pad, write cecksum, and bottom line */
-	    crc = afx->crc;
+	    gcry_md_final (afx->crc_md);
+	    crc = get_afx_crc (afx);
 	    idx = afx->idx;
 	    idx2 = afx->idx2;
 	    if( idx ) {

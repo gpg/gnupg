@@ -61,7 +61,7 @@ typedef struct {
 
     byte radbuf[4];
     int idx, idx2;
-    u32 crc;
+    gcry_md_hd_t crc_md;
 
     int status; 	    /* an internal state flag */
     int cancel;
