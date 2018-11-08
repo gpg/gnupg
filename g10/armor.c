@@ -40,7 +40,7 @@
 static const byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                "abcdefghijklmnopqrstuvwxyz"
                                "0123456789+/";
-static byte asctobin[256]; /* runtime initialized */
+static u32 asctobin[4][256]; /* runtime initialized */
 static int is_initialized;
 
 
@@ -171,11 +171,16 @@ initialize(void)
     u32 i;
     const byte *s;
 
-    /* build the helptable for radix64 to bin conversion */
-    for(i=0; i < 256; i++ )
-	asctobin[i] = 255; /* used to detect invalid characters */
+    /* Build the helptable for radix64 to bin conversion.  Value 0xffffffff is
+       used to detect invalid characters.  */
+    memset (asctobin, 0xff, sizeof(asctobin));
     for(s=bintoasc,i=0; *s; s++,i++ )
-	asctobin[*s] = i;
+      {
+	asctobin[0][*s] = i << (0 * 6);
+	asctobin[1][*s] = i << (1 * 6);
+	asctobin[2][*s] = i << (2 * 6);
+	asctobin[3][*s] = i << (3 * 6);
+      }
 
     is_initialized=1;
 }
@@ -802,11 +807,13 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	      byte *buf, size_t size )
 {
     byte val;
-    int c, c2;
+    int c;
+    u32 binc;
     int checkcrc=0;
     int rc = 0;
     size_t n = 0;
-    int  idx, onlypad=0;
+    int idx, onlypad=0;
+    int skip_fast = 0;
 
     idx = afx->idx;
     val = afx->radbuf[0];
@@ -827,6 +834,122 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	}
 
       again:
+	binc = asctobin[0][c];
+
+	if( binc != 0xffffffffUL )
+	  {
+	    if( idx == 0 && skip_fast == 0
+		&& afx->buffer_pos + (16 - 1) < afx->buffer_len
+		&& n + 12 < size)
+	      {
+		/* Fast path for radix64 to binary conversion.  */
+		u32 b0,b1,b2,b3;
+
+		/* Speculatively load 15 more input bytes.  */
+		b0 = binc << (3 * 6);
+		b0 |= asctobin[2][afx->buffer[afx->buffer_pos + 0]];
+		b0 |= asctobin[1][afx->buffer[afx->buffer_pos + 1]];
+		b0 |= asctobin[0][afx->buffer[afx->buffer_pos + 2]];
+		b1  = asctobin[3][afx->buffer[afx->buffer_pos + 3]];
+		b1 |= asctobin[2][afx->buffer[afx->buffer_pos + 4]];
+		b1 |= asctobin[1][afx->buffer[afx->buffer_pos + 5]];
+		b1 |= asctobin[0][afx->buffer[afx->buffer_pos + 6]];
+		b2  = asctobin[3][afx->buffer[afx->buffer_pos + 7]];
+		b2 |= asctobin[2][afx->buffer[afx->buffer_pos + 8]];
+		b2 |= asctobin[1][afx->buffer[afx->buffer_pos + 9]];
+		b2 |= asctobin[0][afx->buffer[afx->buffer_pos + 10]];
+		b3  = asctobin[3][afx->buffer[afx->buffer_pos + 11]];
+		b3 |= asctobin[2][afx->buffer[afx->buffer_pos + 12]];
+		b3 |= asctobin[1][afx->buffer[afx->buffer_pos + 13]];
+		b3 |= asctobin[0][afx->buffer[afx->buffer_pos + 14]];
+
+		/* Check if any of the input bytes were invalid. */
+		if( (b0 | b1 | b2 | b3) != 0xffffffffUL )
+		  {
+		    /* All 16 bytes are valid. */
+		    buf[n + 0] = b0 >> (2 * 8);
+		    buf[n + 1] = b0 >> (1 * 8);
+		    buf[n + 2] = b0 >> (0 * 8);
+		    buf[n + 3] = b1 >> (2 * 8);
+		    buf[n + 4] = b1 >> (1 * 8);
+		    buf[n + 5] = b1 >> (0 * 8);
+		    buf[n + 6] = b2 >> (2 * 8);
+		    buf[n + 7] = b2 >> (1 * 8);
+		    buf[n + 8] = b2 >> (0 * 8);
+		    buf[n + 9] = b3 >> (2 * 8);
+		    buf[n + 10] = b3 >> (1 * 8);
+		    buf[n + 11] = b3 >> (0 * 8);
+		    afx->buffer_pos += 16 - 1;
+		    n += 12;
+		    continue;
+		  }
+		else if( b0 == 0xffffffffUL )
+		  {
+		    /* byte[1..3] have invalid character(s).  Switch to slow
+		       path.  */
+		    skip_fast = 1;
+		  }
+		else if( b1 == 0xffffffffUL )
+		  {
+		    /* byte[4..7] have invalid character(s), first 4 bytes are
+		       valid.  */
+		    buf[n + 0] = b0 >> (2 * 8);
+		    buf[n + 1] = b0 >> (1 * 8);
+		    buf[n + 2] = b0 >> (0 * 8);
+		    afx->buffer_pos += 4 - 1;
+		    n += 3;
+		    skip_fast = 1;
+		    continue;
+		  }
+		else if( b2 == 0xffffffffUL )
+		  {
+		    /* byte[8..11] have invalid character(s), first 8 bytes are
+		       valid.  */
+		    buf[n + 0] = b0 >> (2 * 8);
+		    buf[n + 1] = b0 >> (1 * 8);
+		    buf[n + 2] = b0 >> (0 * 8);
+		    buf[n + 3] = b1 >> (2 * 8);
+		    buf[n + 4] = b1 >> (1 * 8);
+		    buf[n + 5] = b1 >> (0 * 8);
+		    afx->buffer_pos += 8 - 1;
+		    n += 6;
+		    skip_fast = 1;
+		    continue;
+		  }
+		else /*if( b3 == 0xffffffffUL )*/
+		  {
+		    /* byte[12..15] have invalid character(s), first 12 bytes
+		       are valid.  */
+		    buf[n + 0] = b0 >> (2 * 8);
+		    buf[n + 1] = b0 >> (1 * 8);
+		    buf[n + 2] = b0 >> (0 * 8);
+		    buf[n + 3] = b1 >> (2 * 8);
+		    buf[n + 4] = b1 >> (1 * 8);
+		    buf[n + 5] = b1 >> (0 * 8);
+		    buf[n + 6] = b2 >> (2 * 8);
+		    buf[n + 7] = b2 >> (1 * 8);
+		    buf[n + 8] = b2 >> (0 * 8);
+		    afx->buffer_pos += 12 - 1;
+		    n += 9;
+		    skip_fast = 1;
+		    continue;
+		  }
+	      }
+
+	    switch(idx)
+	      {
+		case 0: val =  binc << 2; break;
+		case 1: val |= (binc>>4)&3; buf[n++]=val;val=(binc<<4)&0xf0;break;
+		case 2: val |= (binc>>2)&15; buf[n++]=val;val=(binc<<6)&0xc0;break;
+		case 3: val |= binc&0x3f; buf[n++] = val; break;
+	      }
+	    idx = (idx+1) % 4;
+
+	    continue;
+	  }
+
+	skip_fast = 0;
+
 	if( c == '\n' || c == ' ' || c == '\r' || c == '\t' )
 	    continue;
 	else if( c == '=' ) { /* pad character: stop */
@@ -857,10 +980,10 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
             if (afx->buffer_pos + 6 < afx->buffer_len
                 && afx->buffer[afx->buffer_pos + 0] == '3'
                 && afx->buffer[afx->buffer_pos + 1] == 'D'
-                && asctobin[afx->buffer[afx->buffer_pos + 2]] != 255
-                && asctobin[afx->buffer[afx->buffer_pos + 3]] != 255
-                && asctobin[afx->buffer[afx->buffer_pos + 4]] != 255
-                && asctobin[afx->buffer[afx->buffer_pos + 5]] != 255
+                && asctobin[0][afx->buffer[afx->buffer_pos + 2]] != 0xffffffffUL
+                && asctobin[0][afx->buffer[afx->buffer_pos + 3]] != 0xffffffffUL
+                && asctobin[0][afx->buffer[afx->buffer_pos + 4]] != 0xffffffffUL
+                && asctobin[0][afx->buffer[afx->buffer_pos + 5]] != 0xffffffffUL
                 && afx->buffer[afx->buffer_pos + 6] == '\n')
               {
                 afx->buffer_pos += 2;
@@ -875,17 +998,10 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    checkcrc++;
 	    break;
 	}
-	else if( (c = asctobin[(c2=c)]) == 255 ) {
-	    log_error(_("invalid radix64 character %02X skipped\n"), c2);
+	else {
+	    log_error(_("invalid radix64 character %02X skipped\n"), c);
 	    continue;
 	}
-	switch(idx) {
-	  case 0: val =  c << 2; break;
-	  case 1: val |= (c>>4)&3; buf[n++]=val;val=(c<<4)&0xf0;break;
-	  case 2: val |= (c>>2)&15; buf[n++]=val;val=(c<<6)&0xc0;break;
-	  case 3: val |= c&0x3f; buf[n++] = val; break;
-	}
-	idx = (idx+1) % 4;
     }
 
     afx->idx = idx;
@@ -924,13 +1040,13 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    u32 mycrc = 0;
 	    idx = 0;
 	    do {
-		if( (c = asctobin[c]) == 255 )
+		if( (binc = asctobin[0][c]) == 0xffffffffUL )
 		    break;
 		switch(idx) {
-		  case 0: val =  c << 2; break;
-		  case 1: val |= (c>>4)&3; mycrc |= val << 16;val=(c<<4)&0xf0;break;
-		  case 2: val |= (c>>2)&15; mycrc |= val << 8;val=(c<<6)&0xc0;break;
-		  case 3: val |= c&0x3f; mycrc |= val; break;
+		  case 0: val =  binc << 2; break;
+		  case 1: val |= (binc>>4)&3; mycrc |= val << 16;val=(binc<<4)&0xf0;break;
+		  case 2: val |= (binc>>2)&15; mycrc |= val << 8;val=(binc<<6)&0xc0;break;
+		  case 3: val |= binc&0x3f; mycrc |= val; break;
 		}
 		for(;;) {
 		    if( afx->buffer_pos < afx->buffer_len )
