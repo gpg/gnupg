@@ -793,7 +793,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	      byte *buf, size_t size )
 {
     byte val;
-    int c=0, c2; /*init c because gcc is not clever enough for the continue*/
+    int c, c2;
     int checkcrc=0;
     int rc = 0;
     size_t n = 0;
@@ -911,7 +911,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		continue;
 	    break;
 	}
-	if( c == -1 )
+	if( !afx->buffer_len )
 	    log_error(_("premature eof (no CRC)\n"));
 	else {
 	    u32 mycrc = 0;
@@ -945,7 +945,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		if( !afx->buffer_len )
 		    break; /* eof */
 	    } while( ++idx < 4 );
-	    if( c == -1 ) {
+	    if( !afx->buffer_len ) {
 		log_info(_("premature eof (in CRC)\n"));
 		rc = invalid_crc();
 	    }
