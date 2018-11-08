@@ -278,7 +278,7 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
           if (DBG_FILTER)
             log_debug ("chunksize %ju reached;"
                        " cur buflen=%zu using %zu of %zu\n",
-                       (uintmax_t)cfx->chunksize, (uintmax_t)cfx->buflen,
+                       cfx->chunksize, cfx->buflen,
                        n1, n);
           n = n1;
         }
