@@ -2610,12 +2610,50 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
     }
 
   p = buffer;
-  while ((c = iobuf_get (a)) != -1)
+  while (1)
     {
-      *p++ = c;
-      nbytes++;
-      if (c == '\n')
-	break;
+      if (!a->nofast && a->d.start < a->d.len && nbytes < length - 1)
+	/* Fast path for finding '\n' by using standard C library's optimized
+	   memchr.  */
+	{
+	  unsigned size = a->d.len - a->d.start;
+	  byte *newline_pos;
+
+	  if (size > length - 1 - nbytes)
+	    size = length - 1 - nbytes;
+
+	  newline_pos = memchr (a->d.buf + a->d.start, '\n', size);
+	  if (newline_pos)
+	    {
+	      /* Found newline, copy buffer and return. */
+	      size = (newline_pos - (a->d.buf + a->d.start)) + 1;
+	      memcpy (p, a->d.buf + a->d.start, size);
+	      p += size;
+	      nbytes += size;
+	      a->d.start += size;
+	      a->nbytes += size;
+	      break;
+	    }
+	  else
+	    {
+	      /* No newline, copy buffer and continue. */
+	      memcpy (p, a->d.buf + a->d.start, size);
+	      p += size;
+	      nbytes += size;
+	      a->d.start += size;
+	      a->nbytes += size;
+	    }
+	}
+      else
+	{
+	  c = iobuf_readbyte (a);
+	  if (c == -1)
+	    break;
+	  *p++ = c;
+	  nbytes++;
+	  if (c == '\n')
+	    break;
+	}
 
       if (nbytes == length - 1)
 	/* We don't have enough space to add a \n and a \0.  Increase
