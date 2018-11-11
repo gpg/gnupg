@@ -2292,7 +2292,7 @@ sk_esk (const char *option, int argc, char *argv[], void *cookie)
         log_fatal ("encrypt_seskey failed: %s\n", gpg_strerror (err));
 
       if (enckeylen - 1 > sesdek.keylen)
-        log_fatal ("key size is too big: %z\n", enckeylen);
+        log_fatal ("key size is too big: %zu\n", enckeylen);
       else
         {
           ske->seskeylen = (byte)enckeylen;
