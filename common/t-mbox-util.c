@@ -25,11 +25,18 @@
 #include "util.h"
 #include "mbox-util.h"
 
+#define PGM "t-mbox-util"
+
+
 #define pass()  do { ; } while(0)
 #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\
                                __FILE__,__LINE__, (a));          \
                        exit (1);                                 \
                     } while(0)
+
+
+static int verbose;
+static int debug;
 
 
 static void
@@ -143,14 +150,97 @@ run_dns_test (void)
 }
 
 
+static void
+run_filter (void)
+{
+  char buf[4096];
+  int c;
+  char *p, *mbox;
+  unsigned int count1 = 0;
+  unsigned int count2 = 0;
+
+  while (fgets (buf, sizeof buf, stdin))
+    {
+      p = strchr (buf, '\n');
+      if (p)
+        *p = 0;
+      else
+        {
+          /* Skip to the end of the line.  */
+          while ((c = getc (stdin)) != EOF && c != '\n')
+            ;
+        }
+      count1++;
+      trim_spaces (buf);
+      mbox = mailbox_from_userid (buf);
+      if (mbox)
+        {
+          printf ("%s\n", mbox);
+          xfree (mbox);
+          count2++;
+        }
+    }
+  if (verbose)
+    fprintf (stderr, PGM ": lines=%u mboxes=%u\n", count1, count2);
+}
+
+
 int
 main (int argc, char **argv)
 {
-  (void)argc;
-  (void)argv;
+  int last_argc = -1;
+  int opt_filter = 0;
 
-  run_mbox_test ();
-  run_dns_test ();
+  if (argc)
+    { argc--; argv++; }
+  while (argc && last_argc != argc )
+    {
+      last_argc = argc;
+      if (!strcmp (*argv, "--"))
+        {
+          argc--; argv++;
+          break;
+        }
+      else if (!strcmp (*argv, "--help"))
+        {
+          fputs ("usage: " PGM " [FILE]\n"
+                 "Options:\n"
+                 "  --verbose         Print timings etc.\n"
+                 "  --debug           Flyswatter\n"
+                 "  --filter          Filter mboxes from input lines\n"
+                 , stdout);
+          exit (0);
+        }
+      else if (!strcmp (*argv, "--verbose"))
+        {
+          verbose++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--debug"))
+        {
+          verbose += 2;
+          debug++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--filter"))
+        {
+          opt_filter = 1;
+          argc--; argv++;
+        }
+      else if (!strncmp (*argv, "--", 2))
+        {
+          fprintf (stderr, PGM ": unknown option '%s'\n", *argv);
+          exit (1);
+        }
+    }
+
+  if (opt_filter)
+    run_filter ();
+  else
+    {
+      run_mbox_test ();
+      run_dns_test ();
+    }
 
   return 0;
 }
