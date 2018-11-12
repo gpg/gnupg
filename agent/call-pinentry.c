@@ -501,14 +501,16 @@ start_pinentry (ctrl_t ctrl)
 
   {
     /* Provide a few default strings for use by the pinentries.  This
-       may help a pinentry to avoid implementing localization code.  */
+     * may help a pinentry to avoid implementing localization code.
+     * Note that gpg-agent has been set to utf-8 so that the strings
+     * are in the expected encoding.  */
     static const struct { const char *key, *value; int what; } tbl[] = {
-      /* TRANSLATORS: These are labels for buttons etc used in
-         Pinentries.  An underscore indicates that the next letter
-         should be used as an accelerator.  Double the underscore for
-         a literal one.  The actual to be translated text starts after
-         the second vertical bar.  Note that gpg-agent has been set to
-         utf-8 so that the strings are in the expected encoding.  */
+      /* TRANSLATORS: These are labels for buttons etc as used in
+       * Pinentries.  In your translation copy the text before the
+       * second vertical bar verbatim; translate only the following
+       * text.  An underscore indicates that the next letter should be
+       * used as an accelerator.  Double the underscore to have
+       * pinentry display a literal underscore.   */
       { "ok",     N_("|pinentry-label|_OK") },
       { "cancel", N_("|pinentry-label|_Cancel") },
       { "yes",    N_("|pinentry-label|_Yes") },
