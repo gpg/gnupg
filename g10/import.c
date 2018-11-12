@@ -1264,7 +1264,7 @@ impex_filter_getval (void *cookie, const char *propname)
         {
           if (!uid->mbox)
             {
-              uid->mbox = mailbox_from_userid (uid->name);
+              uid->mbox = mailbox_from_userid (uid->name, 0);
             }
           result = uid->mbox;
         }

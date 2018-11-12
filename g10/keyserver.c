@@ -2053,7 +2053,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
 
   /* We want to work on the mbox.  That is what dirmngr will do anyway
    * and we need the mbox for the import filter anyway.  */
-  mbox = mailbox_from_userid (name);
+  mbox = mailbox_from_userid (name, 0);
   if (!mbox)
     {
       err = gpg_error_from_syserror ();

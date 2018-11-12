@@ -3130,7 +3130,7 @@ main (int argc, char **argv)
 	    break;
 	  case oSender:
             {
-              char *mbox = mailbox_from_userid (pargs.r.ret_str);
+              char *mbox = mailbox_from_userid (pargs.r.ret_str, 0);
               if (!mbox)
                 log_error (_("\"%s\" is not a proper mail address\n"),
                            pargs.r.ret_str);

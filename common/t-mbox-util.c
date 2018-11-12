@@ -83,7 +83,86 @@ run_mbox_test (void)
 
   for (idx=0; testtbl[idx].userid; idx++)
     {
-      char *mbox = mailbox_from_userid (testtbl[idx].userid);
+      char *mbox = mailbox_from_userid (testtbl[idx].userid, 0);
+
+      if (!testtbl[idx].mbox)
+        {
+          if (mbox)
+            fail (idx);
+        }
+      else if (!mbox)
+        fail (idx);
+      else if (strcmp (mbox, testtbl[idx].mbox))
+        fail (idx);
+
+      xfree (mbox);
+    }
+}
+
+
+static void
+run_mbox_no_sub_test (void)
+{
+  static struct
+  {
+    const char *userid;
+    const char *mbox;
+  } testtbl[] =
+    {
+      { "foo+bar@example.org", "foo@example.org" },
+      { "Werner Koch <wk@gnupg.org>", "wk@gnupg.org" },
+      { "<wk@gnupg.org>", "wk@gnupg.org" },
+      { "wk@gnupg.org", "wk@gnupg.org" },
+      { "wk@gnupg.org ", NULL },
+      { " wk@gnupg.org", NULL },
+      { "Werner Koch (test) <wk@gnupg.org>", "wk@gnupg.org" },
+      { "Werner Koch <wk@gnupg.org> (test)", "wk@gnupg.org" },
+      { "Werner Koch <wk@gnupg.org (test)", NULL },
+      { "Werner Koch <wk@gnupg.org >", NULL },
+      { "Werner Koch <wk@gnupg.org", NULL },
+      { "", NULL },
+      { "@", NULL },
+      { "bar <>", NULL },
+      { "<foo@example.org>", "foo@example.org" },
+      { "<foo.@example.org>", "foo.@example.org" },
+      { "<.foo.@example.org>", ".foo.@example.org" },
+      { "<foo..@example.org>", "foo..@example.org" },
+      { "<foo..bar@example.org>", "foo..bar@example.org" },
+      { "<foo@example.org.>", NULL },
+      { "<foo@example..org>", NULL },
+      { "<foo@.>", NULL },
+      { "<@example.org>", NULL },
+      { "<foo@@example.org>", NULL },
+      { "<@foo@example.org>", NULL },
+      { "<foo@example.org> ()", "foo@example.org" },
+      { "<fo()o@example.org> ()", "fo()o@example.org" },
+      { "<fo()o@example.org> ()", "fo()o@example.org" },
+      { "fo()o@example.org", NULL},
+      { "Mr. Foo <foo@example.org><bar@example.net>", "foo@example.org"},
+      { "foo+bar@example.org", "foo@example.org" },
+      { "foo++bar@example.org", "foo++bar@example.org" },
+      { "foo++@example.org", "foo++@example.org" },
+      { "foo+@example.org", "foo+@example.org" },
+      { "+foo@example.org", "+foo@example.org" },
+      { "++foo@example.org", "++foo@example.org" },
+      { "+foo+@example.org", "+foo+@example.org" },
+      { "+@example.org", "+@example.org" },
+      { "++@example.org", "++@example.org" },
+      { "foo+b@example.org", "foo@example.org" },
+      { "foo+ba@example.org", "foo@example.org" },
+      { "foo+bar@example.org", "foo@example.org" },
+      { "foo+barb@example.org", "foo@example.org" },
+      { "foo+barba@example.org", "foo@example.org" },
+      { "f+b@example.org", "f@example.org" },
+      { "fo+b@example.org", "fo@example.org" },
+
+      { NULL, NULL }
+    };
+  int idx;
+
+  for (idx=0; testtbl[idx].userid; idx++)
+    {
+      char *mbox = mailbox_from_userid (testtbl[idx].userid, 1);
 
       if (!testtbl[idx].mbox)
         {
@@ -151,7 +230,7 @@ run_dns_test (void)
 
 
 static void
-run_filter (void)
+run_filter (int no_sub)
 {
   char buf[4096];
   int c;
@@ -172,7 +251,7 @@ run_filter (void)
         }
       count1++;
       trim_spaces (buf);
-      mbox = mailbox_from_userid (buf);
+      mbox = mailbox_from_userid (buf, no_sub);
       if (mbox)
         {
           printf ("%s\n", mbox);
@@ -190,6 +269,7 @@ main (int argc, char **argv)
 {
   int last_argc = -1;
   int opt_filter = 0;
+  int opt_no_sub = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -208,6 +288,7 @@ main (int argc, char **argv)
                  "  --verbose         Print timings etc.\n"
                  "  --debug           Flyswatter\n"
                  "  --filter          Filter mboxes from input lines\n"
+                 "  --no-sub          Ignore '+'-sub-addresses\n"
                  , stdout);
           exit (0);
         }
@@ -227,6 +308,11 @@ main (int argc, char **argv)
           opt_filter = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--no-sub"))
+        {
+          opt_no_sub = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         {
           fprintf (stderr, PGM ": unknown option '%s'\n", *argv);
@@ -235,10 +321,11 @@ main (int argc, char **argv)
     }
 
   if (opt_filter)
-    run_filter ();
+    run_filter (opt_no_sub);
   else
     {
       run_mbox_test ();
+      run_mbox_no_sub_test ();
       run_dns_test ();
     }
 

@@ -104,7 +104,7 @@ append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
 
   strcpy (sl->uid, uid);
   sl->created = created;
-  sl->mbox = mailbox_from_userid (uid);
+  sl->mbox = mailbox_from_userid (uid, 0);
   sl->next = NULL;
   if (!*list)
     *list = sl;

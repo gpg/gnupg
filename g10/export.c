@@ -1469,7 +1469,7 @@ print_pka_or_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
         continue;
 
       xfree (mbox);
-      mbox = mailbox_from_userid (uid->name);
+      mbox = mailbox_from_userid (uid->name, 0);
       if (!mbox)
         continue;
 

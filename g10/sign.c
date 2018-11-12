@@ -153,7 +153,8 @@ mk_notation_policy_etc (PKT_signature *sig,
       char *mbox;
 
       /* For now we use the uid which was used to locate the key.  */
-      if (pksk->user_id && (mbox = mailbox_from_userid (pksk->user_id->name)))
+      if (pksk->user_id
+          && (mbox = mailbox_from_userid (pksk->user_id->name, 0)))
         {
           if (DBG_LOOKUP)
             log_debug ("setting Signer's UID to '%s'\n", mbox);

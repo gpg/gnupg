@@ -1131,7 +1131,7 @@ tdb_get_validity_core (ctrl_t ctrl,
           if (sig && sig->signers_uid)
             /* Make sure the UID matches.  */
             {
-              char *email = mailbox_from_userid (user_id->name);
+              char *email = mailbox_from_userid (user_id->name, 0);
               if (!email || !*email || strcmp (sig->signers_uid, email) != 0)
                 {
                   if (DBG_TRUST)

@@ -2020,7 +2020,7 @@ command_install_key (const char *fname, const char *userid)
   char *huname = NULL;
   int any;
 
-  addrspec = mailbox_from_userid (userid);
+  addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
       log_error ("\"%s\" is not a proper mail address\n", userid);
@@ -2153,7 +2153,7 @@ fname_from_userid (const char *userid, char **r_fname, char **r_addrspec)
   if (r_addrspec)
     *r_addrspec = NULL;
 
-  addrspec = mailbox_from_userid (userid);
+  addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
       if (opt.verbose)

@@ -1373,7 +1373,7 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
        n; n = find_next_kbnode (n, PKT_USER_ID))
     {
       PKT_user_id *uid = n->pkt->pkt.user_id;
-      char *mbox = mailbox_from_userid (uid->name);
+      char *mbox = mailbox_from_userid (uid->name, 0);
       int match = mbox ? strcasecmp (name, mbox) == 0 : 0;
 
       xfree (mbox);

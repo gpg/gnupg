@@ -1020,7 +1020,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
               char *mbox, *hash, *p;
               char hashbuf[32];
 
-              mbox = mailbox_from_userid (uid->name);
+              mbox = mailbox_from_userid (uid->name, 0);
               if (mbox && (p = strchr (mbox, '@')))
                 {
                   *p++ = 0;

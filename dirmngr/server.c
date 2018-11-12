@@ -731,7 +731,7 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
       /* We lowercase ascii characters but the DANE I-D does not allow
          this.  FIXME: Check after the release of the RFC whether to
          change this.  */
-      mbox = mailbox_from_userid (line);
+      mbox = mailbox_from_userid (line, 0);
       if (!mbox || !(domain = strchr (mbox, '@')))
         {
           err = set_error (GPG_ERR_INV_USER_ID, "no mailbox in user id");
@@ -855,7 +855,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   line = skip_options (line);
   is_wkd_query = !(opt_policy_flags || opt_submission_addr);
 
-  mbox = mailbox_from_userid (line);
+  mbox = mailbox_from_userid (line, 0);
   if (!mbox || !(domain = strchr (mbox, '@')))
     {
       err = set_error (GPG_ERR_INV_USER_ID, "no mailbox in user id");

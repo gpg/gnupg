@@ -22,7 +22,7 @@
 int has_invalid_email_chars (const void *buffer, size_t length);
 int is_valid_mailbox (const char *name);
 int is_valid_mailbox_mem (const void *buffer, size_t length);
-char *mailbox_from_userid (const char *userid);
+char *mailbox_from_userid (const char *userid, int subaddress);
 int is_valid_user_id (const char *uid);
 int is_valid_domain_name (const char *string);
 

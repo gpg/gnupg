@@ -627,11 +627,11 @@ command_supported (char *userid)
   if (!strchr (userid, '@'))
     {
       char *tmp = xstrconcat ("foo@", userid, NULL);
-      addrspec = mailbox_from_userid (tmp);
+      addrspec = mailbox_from_userid (tmp, 0);
       xfree (tmp);
     }
   else
-    addrspec = mailbox_from_userid (userid);
+    addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
       log_error (_("\"%s\" is not a proper mail address\n"), userid);
@@ -694,7 +694,7 @@ command_check (char *userid)
   uidinfo_list_t sl;
   int found = 0;
 
-  addrspec = mailbox_from_userid (userid);
+  addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
       log_error (_("\"%s\" is not a proper mail address\n"), userid);
@@ -805,7 +805,7 @@ command_send (const char *fingerprint, const char *userid)
       goto leave;
     }
 
-  addrspec = mailbox_from_userid (userid);
+  addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
       log_error (_("\"%s\" is not a proper mail address\n"), userid);
