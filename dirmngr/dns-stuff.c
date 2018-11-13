@@ -1056,16 +1056,17 @@ resolve_name_standard (ctrl_t ctrl, const char *name, unsigned short port,
 
 
 /* This a wrapper around getaddrinfo with slightly different semantics.
-   NAME is the name to resolve.
-   PORT is the requested port or 0.
-   WANT_FAMILY is either 0 (AF_UNSPEC), AF_INET6, or AF_INET4.
-   WANT_SOCKETTYPE is either SOCK_STREAM or SOCK_DGRAM.
-
-   On success the result is stored in a linked list with the head
-   stored at the address R_AI; the caller must call gpg_addrinfo_free
-   on this.  If R_CANONNAME is not NULL the official name of the host
-   is stored there as a malloced string; if that name is not available
-   NULL is stored.  */
+ * NAME is the name to resolve.
+ * PORT is the requested port or 0.
+ * WANT_FAMILY is either 0 (AF_UNSPEC), AF_INET6, or AF_INET4.
+ * WANT_SOCKETTYPE is either 0 for any socket type
+ *                 or SOCK_STREAM or SOCK_DGRAM.
+ *
+ * On success the result is stored in a linked list with the head
+ * stored at the address R_AI; the caller must call free_dns_addrinfo
+ * on this.  If R_CANONNAME is not NULL the official name of the host
+ * is stored there as a malloced string; if that name is not available
+ * NULL is stored.  */
 gpg_error_t
 resolve_dns_name (ctrl_t ctrl, const char *name, unsigned short port,
                   int want_family, int want_socktype,
