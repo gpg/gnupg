@@ -8,6 +8,8 @@ dnl
 dnl This file is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+dnl
+dnl Last-changed: 2018-11-13
 
 
 dnl AM_PATH_NTBTLS([MINIMUM-VERSION,
@@ -30,19 +32,6 @@ AC_DEFUN([AM_PATH_NTBTLS],
   if test x"${NTBTLS_CONFIG}" = x ; then
      if test x"${ntbtls_config_prefix}" != x ; then
         NTBTLS_CONFIG="${ntbtls_config_prefix}/bin/ntbtls-config"
-     else
-       case "${SYSROOT}" in
-         /*)
-           if test -x "${SYSROOT}/bin/ntbtls-config" ; then
-             NTBTLS_CONFIG="${SYSROOT}/bin/ntbtls-config"
-           fi
-           ;;
-         '')
-           ;;
-          *)
-           AC_MSG_WARN([Ignoring \$SYSROOT as it is not an absolute path.])
-           ;;
-       esac
      fi
   fi
 
@@ -55,6 +44,20 @@ AC_DEFUN([AM_PATH_NTBTLS],
     fi
   fi
   if test -z "$use_gpgrt_config"; then
+    if test x"${NTBTLS_CONFIG}" = x ; then
+      case "${SYSROOT}" in
+        /*)
+          if test -x "${SYSROOT}/bin/ntbtls-config" ; then
+            NTBTLS_CONFIG="${SYSROOT}/bin/ntbtls-config"
+          fi
+          ;;
+        '')
+          ;;
+         *)
+          AC_MSG_WARN([Ignoring \$SYSROOT as it is not an absolute path.])
+          ;;
+      esac
+    fi
     AC_PATH_PROG(NTBTLS_CONFIG, ntbtls-config, no)
   fi
 
