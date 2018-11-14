@@ -625,7 +625,6 @@ AC_ARG_VAR(YAT2M, [tool to convert texi to man pages])
 AM_CONDITIONAL(HAVE_YAT2M, test -n "$ac_cv_path_YAT2M")
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
-GNUPG_CHECK_USTAR
 
 
 # We need to compile and run a program on the build machine.  A
@@ -2050,7 +2049,6 @@ agent/Makefile
 scd/Makefile
 g13/Makefile
 dirmngr/Makefile
-tools/gpg-zip
 tools/Makefile
 doc/Makefile
 tests/Makefile

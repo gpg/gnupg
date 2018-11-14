@@ -34,11 +34,6 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 sbin_SCRIPTS = addgnupghome applygnupgdefaults
 
-if HAVE_USTAR
-# bin_SCRIPTS += gpg-zip
-noinst_SCRIPTS = gpg-zip
-endif
-
 if BUILD_SYMCRYPTRUN
   symcryptrun = symcryptrun
 else
