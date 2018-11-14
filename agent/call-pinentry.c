@@ -1543,14 +1543,6 @@ agent_popup_message_stop (ctrl_t ctrl)
       TerminateProcess (process, 1);
     }
 #else
-  else if (pid && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
-    { /* The daemon already died.  No need to send a kill.  However
-         because we already waited for the process, we need to tell
-         assuan that it should not wait again (done by
-         unlock_pinentry). */
-      if (rc == pid)
-        assuan_set_flag (entry_ctx, ASSUAN_NO_WAITPID, 1);
-    }
   else if (pid > 0)
     kill (pid, SIGINT);
 #endif
