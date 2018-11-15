@@ -72,7 +72,8 @@ struct agent_card_info_s
     unsigned int bt:1;     /* Button for confirmation available.  */
   } extcap;
   unsigned int status_indicator;
-  int kdf_do_enabled;      /* Card has a KDF object */
+  int kdf_do_enabled;      /* True if card has a KDF object.  */
+  int uif[3];              /* True if User Interaction Flag is on.  */
 };
 
 

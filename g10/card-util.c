@@ -516,6 +516,11 @@ current_card_status (ctrl_t ctrl, estream_t fp,
         {
           es_fprintf (fp, "kdf:%s:\n", info.kdf_do_enabled ? "on" : "off");
         }
+      if (info.extcap.bt)
+        {
+          es_fprintf (fp, "uif:%d:%d:%d:\n",
+                      info.uif[0], info.uif[1], info.uif[2]);
+        }
 
       for (i=0; i < 4; i++)
         {
@@ -626,6 +631,12 @@ current_card_status (ctrl_t ctrl, estream_t fp,
         {
           tty_fprintf (fp, "KDF setting ......: %s\n",
                        info.kdf_do_enabled ? "on" : "off");
+        }
+      if (info.extcap.bt)
+        {
+          tty_fprintf (fp, "UIF setting ......: Sign=%s Decrypt=%s Auth=%s\n",
+                       info.uif[0] ? "on" : "off", info.uif[1] ? "on" : "off",
+                       info.uif[2] ? "on" : "off");
         }
       tty_fprintf (fp, "Signature key ....:");
       print_shax_fpr (fp, info.fpr1len? info.fpr1:NULL, info.fpr1len);

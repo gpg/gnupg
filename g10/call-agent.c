@@ -711,6 +711,17 @@ learn_status_cb (void *opaque, const char *line)
     {
       parm->kdf_do_enabled = 1;
     }
+  else if (keywordlen == 5 && !memcmp (keyword, "UIF-", 4)
+           && strchr("123", keyword[4]))
+    {
+      unsigned char *data;
+      int no = keyword[4] - '1';
+
+      log_assert (no >= 0 && no <= 2);
+      data = unescape_status_string (line);
+      parm->uif[no] = (data[0] != 0xff);
+      xfree (data);
+    }
 
   return 0;
 }
