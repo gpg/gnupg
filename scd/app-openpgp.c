@@ -1827,6 +1827,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   do_getattr (app, ctrl, "CA-FPR");
   do_getattr (app, ctrl, "CHV-STATUS");
   do_getattr (app, ctrl, "SIG-COUNTER");
+  if (app->app_local->extcap.kdf_do)
+    do_getattr (app, ctrl, "KDF");
   if (app->app_local->extcap.private_dos)
     {
       do_getattr (app, ctrl, "PRIVATE-DO-1");
