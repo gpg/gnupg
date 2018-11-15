@@ -71,6 +71,7 @@ struct agent_card_info_s
     unsigned int kdf:1;    /* KDF object to support PIN hashing available.  */
   } extcap;
   unsigned int status_indicator;
+  int kdf_do_enabled;      /* Card has a KDF object */
 };
 
 
@@ -192,14 +193,14 @@ gpg_error_t agent_keywrap_key (ctrl_t ctrl, int forexport,
 gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
                               char **cache_nonce_addr, const void *key,
                               size_t keylen, int unattended, int force,
-			      u32 *keyid, u32 *mainkeyid, int pubkey_algo);
+                              u32 *keyid, u32 *mainkeyid, int pubkey_algo);
 
 /* Receive a key from the agent.  */
 gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,
                               const char *desc, int openpgp_protected,
                               char **cache_nonce_addr,
                               unsigned char **r_result, size_t *r_resultlen,
-			      u32 *keyid, u32 *mainkeyid, int pubkey_algo);
+                              u32 *keyid, u32 *mainkeyid, int pubkey_algo);
 
 /* Delete a key from the agent.  */
 gpg_error_t agent_delete_key (ctrl_t ctrl, const char *hexkeygrip,

@@ -704,6 +704,10 @@ learn_status_cb (void *opaque, const char *line)
       xfree (parm->private_do[no]);
       parm->private_do[no] = unescape_status_string (line);
     }
+  else if (keywordlen == 3 && !memcmp (keyword, "KDF", 3))
+    {
+      parm->kdf_do_enabled = 1;
+    }
 
   return 0;
 }
