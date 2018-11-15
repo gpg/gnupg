@@ -618,6 +618,11 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       tty_fprintf (fp,    "PIN retry counter : %d %d %d\n",
                    info.chvretry[0], info.chvretry[1], info.chvretry[2]);
       tty_fprintf (fp,    "Signature counter : %lu\n", info.sig_counter);
+      if (info.extcap.kdf)
+        {
+          tty_fprintf (fp, "KDF setting ......: %s\n",
+                       info.kdf_do_enabled ? "on" : "off");
+        }
       tty_fprintf (fp, "Signature key ....:");
       print_shax_fpr (fp, info.fpr1len? info.fpr1:NULL, info.fpr1len);
       if (info.fpr1len && info.fpr1time)
