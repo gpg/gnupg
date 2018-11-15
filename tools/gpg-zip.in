@@ -34,6 +34,9 @@ Usage: gpg-zip [--help] [--version] [--encrypt] [--decrypt] [--symmetric]
 
 Encrypt or sign files into an archive."
 
+
+echo "gpg-zip: This script is deprecated - please use gpgtar instead." >&2
+
 tar_verbose_opt="v"
 
 while test $# -gt 0 ; do
