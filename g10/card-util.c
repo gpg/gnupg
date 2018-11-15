@@ -512,6 +512,10 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       es_fprintf (fp, "pinretry:%d:%d:%d:\n",
                   info.chvretry[0], info.chvretry[1], info.chvretry[2]);
       es_fprintf (fp, "sigcount:%lu:::\n", info.sig_counter);
+      if (info.extcap.kdf)
+        {
+          es_fprintf (fp, "kdf:%s:\n", info.kdf_do_enabled ? "on" : "off");
+        }
 
       for (i=0; i < 4; i++)
         {
