@@ -1,6 +1,66 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.2.11:
+
+  * gpgsm: Fix CRL loading when intermediate certicates are not yet
+    trusted.
+
+  * gpgsm: Fix an error message about the digest algo.  [#4219]
+
+  * gpg: Fix a wrong warning due to new sign usage check introduced
+    with 2.2.9.  [#4014]
+
+  * gpg: Print the "data source" even for an unsuccessful keyserver
+    query.
+
+  * gpg: Do not store the TOFU trust model in the trustdb.  This
+    allows to enable or disable a TOFO model without triggering a
+    trustdb rebuild.  [#4134]
+
+  * scd: Fix cases of "Bad PIN" after using "forcesig".  [#4177]
+
+  * agent: Fix possible hang in the ssh handler.  [#4221]
+
+  * dirmngr: Tack the unmodified mail address to a WKD request.  See
+    commit a2bd4a64e5b057f291a60a9499f881dd47745e2f for details.
+
+  * dirmngr: Tweak diagnostic about missing LDAP server file.
+
+  * dirmngr: In verbose mode print the OCSP responder id.
+
+  * dirmngr: Fix parsing of the LDAP port.  [#4230]
+
+  * wks: Add option --directory/-C to the server.  Always build the
+    server on Unix systems.
+
+  * wks: Add option --with-colons to the client.  Support sites which
+    use the policy file instead of the submission-address file.
+
+  * Fix EBADF when gpg et al. are called by broken CGI scripts.
+
+  * Fix some minor memory leaks and bugs.
+
+  Release-info: https://dev.gnupg.org/T4233
+  See-also: gnupg-announce/2018q4/000432.html
+
+  Changes also found in 2.2.10:
+
+  * gpg: Refresh expired keys originating from the WKD.  [#2917]
+
+  * gpg: Use a 256 KiB limit for a WKD imported key.
+
+  * gpg: New option --known-notation.  [#4060]
+
+  * scd: Add support for the Trustica Cryptoucan reader.
+
+  * agent: Speed up starting during on-demand launching.  [#3490]
+
+  * dirmngr: Validate SRV records in WKD queries.
+
+  Release-info: https://dev.gnupg.org/T4112
+  See-also: gnupg-announce/2018q3/000428.html
+
   Changes also found in 2.2.9:
 
   * dirmngr: Fix recursive resolver mode and other bugs in the libdns
@@ -317,15 +377,17 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   Release dates of 2.2.x versions:
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Version 2.2.1 (2017-09-19)
-  Version 2.2.2 (2017-11-07)
-  Version 2.2.3 (2017-11-20)
-  Version 2.2.4 (2017-12-20)
-  Version 2.2.5 (2018-02-22)
-  Version 2.2.6 (2018-04-09)
-  Version 2.2.7 (2018-05-02)
-  Version 2.2.8 (2018-06-08)
-  Version 2.2.9 (2018-07-12)
+  Version 2.2.1  (2017-09-19)
+  Version 2.2.2  (2017-11-07)
+  Version 2.2.3  (2017-11-20)
+  Version 2.2.4  (2017-12-20)
+  Version 2.2.5  (2018-02-22)
+  Version 2.2.6  (2018-04-09)
+  Version 2.2.7  (2018-05-02)
+  Version 2.2.8  (2018-06-08)
+  Version 2.2.9  (2018-07-12)
+  Version 2.2.10 (2018-08-30)
+  Version 2.2.11 (2018-11-06)
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
