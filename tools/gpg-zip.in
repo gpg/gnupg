@@ -23,7 +23,7 @@
 # the GNU or POSIX variant of USTAR.
 
 VERSION=@VERSION@
-TAR=@TAR@
+TAR=tar
 GPG=gpg
 
 usage="\
