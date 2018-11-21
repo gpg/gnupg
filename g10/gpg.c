@@ -3487,7 +3487,7 @@ main (int argc, char **argv)
 	  case oAutoKeyLocate:
             if (default_akl)
               {
-                /* This is the first time --aito-key-locate is seen.
+                /* This is the first time --auto-key-locate is seen.
                  * We need to reset the default akl.  */
                 default_akl = 0;
                 release_akl();

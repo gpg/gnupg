@@ -1783,7 +1783,9 @@ list.  The default is "local,wkd".
 
   @item clear
   Clear all defined mechanisms.  This is useful to override
-  mechanisms given in a config file.
+  mechanisms given in a config file.  Note that a @code{nodefault} in
+  @var{mechanisms} will also be cleared unless it is given after the
+  @code{clear}.
 
 @end table
 
