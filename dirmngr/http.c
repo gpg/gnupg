@@ -1350,6 +1350,8 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
   uri->v6lit = 0;
   uri->onion = 0;
   uri->explicit_port = 0;
+  uri->off_host = 0;
+  uri->off_path = 0;
 
   /* A quick validity check. */
   if (strspn (p, VALID_URI_CHARS) != n)
@@ -1393,7 +1395,19 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
 	{
           p += 2;
 	  if ((p2 = strchr (p, '/')))
-	    *p2++ = 0;
+            {
+              if (p2 - uri->buffer > 10000)
+                return GPG_ERR_BAD_URI;
+              uri->off_path = p2 - uri->buffer;
+              *p2++ = 0;
+            }
+          else
+            {
+              n = (p - uri->buffer) + strlen (p);
+              if (n > 10000)
+                return GPG_ERR_BAD_URI;
+              uri->off_path = n;
+            }
 
           /* Check for username/password encoding */
           if ((p3 = strchr (p, '@')))
@@ -1412,11 +1426,19 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
 	      *p3++ = '\0';
 	      /* worst case, uri->host should have length 0, points to \0 */
 	      uri->host = p + 1;
+              if (p - uri->buffer > 10000)
+                return GPG_ERR_BAD_URI;
+              uri->off_host = (p + 1) - uri->buffer;
               uri->v6lit = 1;
 	      p = p3;
 	    }
 	  else
-	    uri->host = p;
+            {
+              uri->host = p;
+              if (p - uri->buffer > 10000)
+                return GPG_ERR_BAD_URI;
+              uri->off_host = p - uri->buffer;
+            }
 
 	  if ((p3 = strchr (p, ':')))
 	    {
@@ -3495,4 +3517,149 @@ uri_query_lookup (parsed_uri_t uri, const char *key)
       return t;
 
   return NULL;
+}
+
+
+/* Return true if both URI point to the same host.  */
+static int
+same_host_p (parsed_uri_t a, parsed_uri_t b)
+{
+  return a->host && b->host && !ascii_strcasecmp (a->host, b->host);
+}
+
+
+/* Prepare a new URL for a HTTP redirect.  INFO has flags controlling
+ * the operaion, STATUS_CODE is used for diagnostics, LOCATION is the
+ * value of the "Location" header, and R_URL reveives the new URL on
+ * success or NULL or error.  Note that INFO->ORIG_URL is
+ * required.  */
+gpg_error_t
+http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
+                       const char *location, char **r_url)
+{
+  gpg_error_t err;
+  parsed_uri_t locuri;
+  parsed_uri_t origuri;
+  char *newurl;
+  char *p;
+
+  *r_url = NULL;
+
+  if (!info || !info->orig_url)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!info->silent)
+    log_info (_("URL '%s' redirected to '%s' (%u)\n"),
+              info->orig_url, location? location:"[none]", status_code);
+
+  if (!info->redirects_left)
+    {
+      if (!info->silent)
+        log_error (_("too many redirections\n"));
+      return gpg_error (GPG_ERR_NO_DATA);
+    }
+  info->redirects_left--;
+
+  if (!location || !*location)
+    return gpg_error (GPG_ERR_NO_DATA);
+
+  err = http_parse_uri (&locuri, location, 0);
+  if (err)
+    return err;
+
+  /* Make sure that an onion address only redirects to another
+   * onion address, or that a https address only redirects to a
+   * https address. */
+  if (info->orig_onion && !locuri->onion)
+    {
+      http_release_parsed_uri (locuri);
+      return gpg_error (GPG_ERR_FORBIDDEN);
+    }
+  if (!info->allow_downgrade && info->orig_https && !locuri->use_tls)
+    {
+      http_release_parsed_uri (locuri);
+      return gpg_error (GPG_ERR_FORBIDDEN);
+    }
+
+  if (info->trust_location)
+    {
+      /* We trust the Location - return it verbatim.  */
+      http_release_parsed_uri (locuri);
+      newurl = xtrystrdup (location);
+      if (!newurl)
+        {
+          err = gpg_error_from_syserror ();
+          http_release_parsed_uri (locuri);
+          return err;
+        }
+    }
+  else if ((err = http_parse_uri (&origuri, info->orig_url, 0)))
+    {
+      http_release_parsed_uri (locuri);
+      return err;
+    }
+  else if (same_host_p (origuri, locuri))
+    {
+      /* The host is the same and thus we can take the location
+       * verbatim.  */
+      http_release_parsed_uri (origuri);
+      http_release_parsed_uri (locuri);
+      newurl = xtrystrdup (location);
+      if (!newurl)
+        {
+          err = gpg_error_from_syserror ();
+          http_release_parsed_uri (locuri);
+          return err;
+        }
+    }
+  else
+    {
+      /* We take only the host and port from the URL given in the
+       * Location.  This limits the effects of redirection attacks by
+       * rogue hosts returning an URL to servers in the client's own
+       * network.  We don't even include the userinfo because they
+       * should be considered similar to the path and query parts.
+       */
+      if (!(locuri->off_path - locuri->off_host))
+        {
+          http_release_parsed_uri (origuri);
+          http_release_parsed_uri (locuri);
+          return gpg_error (GPG_ERR_BAD_URI);
+        }
+      if (!(origuri->off_path - origuri->off_host))
+        {
+          http_release_parsed_uri (origuri);
+          http_release_parsed_uri (locuri);
+          return gpg_error (GPG_ERR_BAD_URI);
+        }
+
+      newurl = xtrymalloc (strlen (origuri->original)
+                           + (locuri->off_path - locuri->off_host) + 1);
+      if (!newurl)
+        {
+          err = gpg_error_from_syserror ();
+          http_release_parsed_uri (origuri);
+          http_release_parsed_uri (locuri);
+          return err;
+        }
+      /* Build new URL from
+       *   uriguri:  scheme userinfo ---- ---- path rest
+       *   locuri:   ------ -------- host port ---- ----
+       */
+      p = newurl;
+      memcpy (p, origuri->original, origuri->off_host);
+      p += origuri->off_host;
+      memcpy (p, locuri->original + locuri->off_host,
+              (locuri->off_path - locuri->off_host));
+      p += locuri->off_path - locuri->off_host;
+      strcpy (p, origuri->original + origuri->off_path);
+
+      http_release_parsed_uri (origuri);
+      http_release_parsed_uri (locuri);
+      if (!info->silent)
+        log_info (_("redirection changed to '%s'\n"), newurl);
+    }
+
+  *r_url = newurl;
+  return 0;
 }

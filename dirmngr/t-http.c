@@ -394,9 +394,9 @@ main (int argc, char **argv)
   else
     {
       printf ("Auth  : %s\n", uri->auth? uri->auth:"[none]");
-      printf ("Host  : %s\n", uri->host);
+      printf ("Host  : %s (off=%hu)\n", uri->host, uri->off_host);
       printf ("Port  : %u\n", uri->port);
-      printf ("Path  : %s\n", uri->path);
+      printf ("Path  : %s (off=%hu)\n", uri->path, uri->off_path);
       for (r = uri->params; r; r = r->next)
         {
           printf ("Params: %s", r->name);

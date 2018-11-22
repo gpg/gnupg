@@ -1201,18 +1201,21 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   gpg_error_t err;
   http_session_t session = NULL;
   http_t http = NULL;
-  int redirects_left = MAX_REDIRECTS;
+  http_redir_info_t redirinfo = { MAX_REDIRECTS };
   estream_t fp = NULL;
   char *request_buffer = NULL;
   parsed_uri_t uri = NULL;
-  int is_onion;
 
   *r_fp = NULL;
 
   err = http_parse_uri (&uri, request, 0);
   if (err)
     goto leave;
-  is_onion = uri->onion;
+  redirinfo.orig_url   = request;
+  redirinfo.orig_onion = uri->onion;
+  redirinfo.allow_downgrade = 1;
+  /* FIXME: I am not sure whey we allow a downgrade for hkp requests.
+   * Needs at least an explanation here..  */
 
   err = http_session_new (&session, httphost,
                           ((ctrl->http_no_crl? HTTP_FLAG_NO_CRL : 0)
@@ -1293,45 +1296,18 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
     case 302:
     case 307:
       {
-        const char *s = http_get_header (http, "Location");
+        xfree (request_buffer);
+        err = http_prepare_redirect (&redirinfo, http_get_status_code (http),
+                                     http_get_header (http, "Location"),
+                                     &request_buffer);
+        if (err)
+          goto leave;
 
-        log_info (_("URL '%s' redirected to '%s' (%u)\n"),
-                  request, s?s:"[none]", http_get_status_code (http));
-        if (s && *s && redirects_left-- )
-          {
-            if (is_onion)
-              {
-                /* Make sure that an onion address only redirects to
-                 * another onion address.  */
-                http_release_parsed_uri (uri);
-                uri = NULL;
-                err = http_parse_uri (&uri, s, 0);
-                if (err)
-                  goto leave;
-
-                if (! uri->onion)
-                  {
-                    err = gpg_error (GPG_ERR_FORBIDDEN);
-                    goto leave;
-                  }
-              }
-
-            xfree (request_buffer);
-            request_buffer = xtrystrdup (s);
-            if (request_buffer)
-              {
-                request = request_buffer;
-                http_close (http, 0);
-                http = NULL;
-                goto once_more;
-              }
-            err = gpg_error_from_syserror ();
-          }
-        else
-          err = gpg_error (GPG_ERR_NO_DATA);
-        log_error (_("too many redirections\n"));
+        request = request_buffer;
+        http_close (http, 0);
+        http = NULL;
       }
-      goto leave;
+      goto once_more;
 
     case 501:
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
