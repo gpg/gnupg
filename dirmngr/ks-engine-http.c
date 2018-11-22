@@ -74,17 +74,18 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
   http_session_t session = NULL;
   unsigned int session_flags;
   http_t http = NULL;
-  int redirects_left = MAX_REDIRECTS;
+  http_redir_info_t redirinfo = { MAX_REDIRECTS };
   estream_t fp = NULL;
   char *request_buffer = NULL;
   parsed_uri_t uri = NULL;
-  int is_onion, is_https;
 
   err = http_parse_uri (&uri, url, 0);
   if (err)
     goto leave;
-  is_onion = uri->onion;
-  is_https = uri->use_tls;
+  redirinfo.orig_url   = url;
+  redirinfo.orig_onion = uri->onion;
+  redirinfo.orig_https = uri->use_tls;
+  redirinfo.allow_downgrade = !!(flags & KS_HTTP_FETCH_ALLOW_DOWNGRADE);
 
   /* By default we only use the system provided certificates with this
    * fetch command.  */
@@ -158,53 +159,20 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
     case 302:
     case 307:
       {
-        const char *s = http_get_header (http, "Location");
+        xfree (request_buffer);
+        err = http_prepare_redirect (&redirinfo, http_get_status_code (http),
+                                     http_get_header (http, "Location"),
+                                     &request_buffer);
+        if (err)
+          goto leave;
 
-        log_info (_("URL '%s' redirected to '%s' (%u)\n"),
-                  url, s?s:"[none]", http_get_status_code (http));
-        if (s && *s && redirects_left-- )
-          {
-            if (is_onion || is_https)
-              {
-                /* Make sure that an onion address only redirects to
-                 * another onion address, or that a https address
-                 * only redirects to a https address. */
-                http_release_parsed_uri (uri);
-                uri = NULL;
-                err = http_parse_uri (&uri, s, 0);
-                if (err)
-                  goto leave;
-
-                if (is_onion && !uri->onion)
-                  {
-                    err = gpg_error (GPG_ERR_FORBIDDEN);
-                    goto leave;
-                  }
-                if (!(flags & KS_HTTP_FETCH_ALLOW_DOWNGRADE)
-                    && is_https && !uri->use_tls)
-                  {
-                    err = gpg_error (GPG_ERR_FORBIDDEN);
-                    goto leave;
-                  }
-              }
-
-            xfree (request_buffer);
-            request_buffer = xtrystrdup (s);
-            if (request_buffer)
-              {
-                url = request_buffer;
-                http_close (http, 0);
-                http = NULL;
-                http_session_release (session);
-                goto once_more;
-              }
-            err = gpg_error_from_syserror ();
-          }
-        else
-          err = gpg_error (GPG_ERR_NO_DATA);
-        log_error (_("too many redirections\n"));
+        url = request_buffer;
+        http_close (http, 0);
+        http = NULL;
+        http_session_release (session);
+        session = NULL;
       }
-      goto leave;
+      goto once_more;
 
     default:
       log_error (_("error accessing '%s': http status %u\n"),

@@ -120,7 +120,7 @@ t_common_ldadd = $(libcommon) $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
                  $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
                  $(DNSLIBS) $(LIBINTL) $(LIBICONV)
 
-module_tests =
+module_tests = t-http-basic
 
 if USE_LDAP
 module_tests += t-ldap-parse-uri
@@ -150,6 +150,15 @@ t_http_CFLAGS  = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
                  $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(KSBA_CFLAGS)
 t_http_LDADD   = $(t_common_ldadd) \
 	         $(NTBTLS_LIBS) $(KSBA_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
+
+t_http_basic_SOURCES = $(t_common_src) t-http-basic.c http.c \
+	               dns-stuff.c http-common.c
+t_http_basic_CFLAGS  = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
+	         $(LIBGCRYPT_CFLAGS) $(NTBTLS_CFLAGS) $(LIBGNUTLS_CFLAGS) \
+                 $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(KSBA_CFLAGS)
+t_http_basic_LDADD   = $(t_common_ldadd) \
+	         $(NTBTLS_LIBS) $(KSBA_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
+
 
 t_ldap_parse_uri_SOURCES = \
 	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
