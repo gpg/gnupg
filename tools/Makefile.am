@@ -174,7 +174,7 @@ gpg_pair_tool_SOURCES = \
 gpg_pair_tool_CFLAGS = $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_pair_tool_LDADD =  $(libcommon) \
 		       $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-		       $(LIBINTL) $(LIBICONV)
+		       $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 
 
 # Make sure that all libs are build before we use them.  This is
