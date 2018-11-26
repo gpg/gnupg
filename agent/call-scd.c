@@ -207,6 +207,85 @@ atfork_cb (void *opaque, int where)
 }
 
 
+static void *
+wait_child_thread (void *arg)
+{
+  int err;
+  struct scd_local_s *sl;
+
+#ifdef HAVE_W32_SYSTEM
+  HANDLE pid = (HANDLE)arg;
+
+  npth_unprotect ();
+  WaitForSingleObject ((HANDLE)pid, INFINITE);
+  npth_protect ();
+#else
+  int wstatus;
+  pid_t pid = (pid_t)(uintptr_t)arg;
+
+ again:
+  npth_unprotect ();
+  err = waitpid (pid, &wstatus, 0);
+  npth_protect ();
+
+  if (err < 0)
+    {
+      if (errno == EINTR)
+        goto again;
+      log_error ("waitpid failed: %s\n", strerror (errno));
+      return NULL;
+    }
+  else
+    {
+      if (WIFEXITED (wstatus))
+        log_info ("scdaemon finished (status %d)\n", WEXITSTATUS (wstatus));
+      else if (WIFSIGNALED (wstatus))
+        log_info ("scdaemon killed by signal %d\n", WTERMSIG (wstatus));
+      else
+        {
+          if (WIFSTOPPED (wstatus))
+            log_info ("scdaemon stopped by signal %d\n", WSTOPSIG (wstatus));
+          goto again;
+        }
+    }
+#endif
+
+  err = npth_mutex_lock (&start_scd_lock);
+  if (err)
+    {
+      log_error ("failed to acquire the start_scd lock: %s\n",
+                 strerror (err));
+    }
+  else
+    {
+      assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
+
+      for (sl = scd_local_list; sl; sl = sl->next_local)
+        {
+          sl->invalid = 1;
+          if (!sl->in_use && sl->ctx)
+            {
+              assuan_release (sl->ctx);
+              sl->ctx = NULL;
+            }
+        }
+
+      primary_scd_ctx = NULL;
+      primary_scd_ctx_reusable = 0;
+
+      xfree (socket_name);
+      socket_name = NULL;
+
+      err = npth_mutex_unlock (&start_scd_lock);
+      if (err)
+        log_error ("failed to release the start_scd lock while"
+                   " doing the aliveness check: %s\n", strerror (err));
+    }
+
+  return NULL;
+}
+
+
 /* Fork off the SCdaemon if this has not already been done.  Lock the
    daemon and make sure that a proper context has been setup in CTRL.
    This function might also lock the daemon, which means that the
@@ -427,6 +506,24 @@ start_scd (ctrl_t ctrl)
   primary_scd_ctx = ctx;
   primary_scd_ctx_reusable = 0;
 
+  {
+    npth_t thread;
+    npth_attr_t tattr;
+    pid_t pid;
+
+    pid = assuan_get_pid (primary_scd_ctx);
+    err = npth_attr_init (&tattr);
+    if (!err)
+      {
+        npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
+        err = npth_create (&thread, &tattr, wait_child_thread,
+                           (void *)(uintptr_t)pid);
+        if (err)
+          log_error ("error spawning wait_child_thread: %s\n", strerror (err));
+        npth_attr_destroy (&tattr);
+      }
+  }
+
  leave:
   xfree (abs_homedir);
   if (err)
@@ -454,91 +551,6 @@ agent_scd_check_running (void)
 {
   return !!primary_scd_ctx;
 }
-
-
-/* Check whether the Scdaemon is still alive and clean it up if not. */
-void
-agent_scd_check_aliveness (void)
-{
-  pid_t pid;
-#ifdef HAVE_W32_SYSTEM
-  DWORD rc;
-#else
-  int rc;
-#endif
-  struct timespec abstime;
-  int err;
-
-  if (!primary_scd_ctx)
-    return; /* No scdaemon running. */
-
-  /* This is not a critical function so we use a short timeout while
-     acquiring the lock.  */
-  npth_clock_gettime (&abstime);
-  abstime.tv_sec += 1;
-  err = npth_mutex_timedlock (&start_scd_lock, &abstime);
-  if (err)
-    {
-      if (err == ETIMEDOUT)
-        {
-          if (opt.verbose > 1)
-            log_info ("failed to acquire the start_scd lock while"
-                      " doing an aliveness check: %s\n", strerror (err));
-        }
-      else
-        log_error ("failed to acquire the start_scd lock while"
-                   " doing an aliveness check: %s\n", strerror (err));
-      return;
-    }
-
-  if (primary_scd_ctx)
-    {
-      pid = assuan_get_pid (primary_scd_ctx);
-#ifdef HAVE_W32_SYSTEM
-      /* If we have a PID we disconnect if either GetExitProcessCode
-         fails or if ir returns the exit code of the scdaemon.  259 is
-         the error code for STILL_ALIVE.  */
-      if (pid != (pid_t)(void*)(-1) && pid
-          && (!GetExitCodeProcess ((HANDLE)pid, &rc) || rc != 259))
-#else
-      if (pid != (pid_t)(-1) && pid
-          && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
-#endif
-        {
-          /* Okay, scdaemon died.  Disconnect the primary connection
-             now but take care that it won't do another wait. Also
-             cleanup all other connections and release their
-             resources.  The next use will start a new daemon then.
-             Due to the use of the START_SCD_LOCK we are sure that
-             none of these context are actually in use. */
-          struct scd_local_s *sl;
-
-          assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
-
-          for (sl=scd_local_list; sl; sl = sl->next_local)
-            {
-              sl->invalid = 1;
-              if (!sl->in_use && sl->ctx)
-                {
-                  assuan_release (sl->ctx);
-                  sl->ctx = NULL;
-                }
-            }
-
-          primary_scd_ctx = NULL;
-          primary_scd_ctx_reusable = 0;
-
-          xfree (socket_name);
-          socket_name = NULL;
-        }
-    }
-
-  err = npth_mutex_unlock (&start_scd_lock);
-  if (err)
-    log_error ("failed to release the start_scd lock while"
-               " doing the aliveness check: %s\n", strerror (err));
-}
-
 
 
 /* Reset the SCD if it has been used.  Actually it is not a reset but

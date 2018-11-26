@@ -2370,9 +2370,6 @@ handle_tick (void)
   if (!last_minute)
     last_minute = time (NULL);
 
-  /* Check whether the scdaemon has died and cleanup in this case. */
-  agent_scd_check_aliveness ();
-
   /* If we are running as a child of another process, check whether
      the parent is still alive and shutdown if not. */
 #ifndef HAVE_W32_SYSTEM
