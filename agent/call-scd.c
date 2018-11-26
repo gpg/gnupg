@@ -54,12 +54,6 @@ struct scd_local_s
      SCD_LOCAL_LIST (see below). */
   struct scd_local_s *next_local;
 
-  /* We need to get back to the ctrl object actually referencing this
-     structure.  This is really an awkward way of enumerating the local
-     contexts.  A much cleaner way would be to keep a global list of
-     ctrl objects to enumerate them.  */
-  ctrl_t ctrl_backlink;
-
   assuan_context_t ctx; /* NULL or session context for the SCdaemon
                            used with this connection. */
   int locked;           /* This flag is used to assert proper use of
@@ -218,7 +212,6 @@ start_scd (ctrl_t ctrl)
       ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
       if (!ctrl->scd_local)
         return gpg_error_from_syserror ();
-      ctrl->scd_local->ctrl_backlink = ctrl;
       ctrl->scd_local->next_local = scd_local_list;
       scd_local_list = ctrl->scd_local;
     }
@@ -497,7 +490,7 @@ agent_scd_check_aliveness (void)
              now but take care that it won't do another wait. Also
              cleanup all other connections and release their
              resources.  The next use will start a new daemon then.
-             Due to the use of the START_SCD_LOCAL we are sure that
+             Due to the use of the START_SCD_LOCK we are sure that
              none of these context are actually in use. */
           struct scd_local_s *sl;
 
