@@ -54,11 +54,10 @@ struct scd_local_s
      SCD_LOCAL_LIST (see below). */
   struct scd_local_s *next_local;
 
-  assuan_context_t ctx; /* NULL or session context for the SCdaemon
-                           used with this connection. */
-  int locked;           /* This flag is used to assert proper use of
-                           start_scd and unlock_scd. */
-
+  assuan_context_t ctx;   /* NULL or session context for the SCdaemon
+                             used with this connection. */
+  unsigned int in_use: 1; /* CTX is in use.  */
+  unsigned int invalid:1; /* CTX is invalid, should be released.  */
 };
 
 
@@ -132,7 +131,7 @@ initialize_module_call_scd (void)
     {
       err = npth_mutex_init (&start_scd_lock, NULL);
       if (err)
-	log_fatal ("error initializing mutex: %s\n", strerror (err));
+        log_fatal ("error initializing mutex: %s\n", strerror (err));
       initialized = 1;
     }
 }
@@ -162,14 +161,37 @@ agent_scd_dump_state (void)
 static int
 unlock_scd (ctrl_t ctrl, int rc)
 {
-  if (ctrl->scd_local->locked != 1)
+  int err;
+
+  if (ctrl->scd_local->in_use == 0)
     {
-      log_error ("unlock_scd: invalid lock count (%d)\n",
-                 ctrl->scd_local->locked);
+      log_error ("unlock_scd: CTX is not in use\n");
       if (!rc)
         rc = gpg_error (GPG_ERR_INTERNAL);
     }
-  ctrl->scd_local->locked = 0;
+  ctrl->scd_local->in_use = 0;
+  if (ctrl->scd_local->invalid)
+    {
+      err = npth_mutex_lock (&start_scd_lock);
+      if (err)
+        {
+          log_error ("failed to acquire the start_scd lock: %s\n",
+                     strerror (err));
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+
+      assuan_release (ctrl->scd_local->ctx);
+      ctrl->scd_local->ctx = NULL;
+
+      err = npth_mutex_unlock (&start_scd_lock);
+      if (err)
+        {
+          log_error ("failed to release the start_scd lock: %s\n",
+                     strerror (err));
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+    }
+  ctrl->scd_local->invalid = 0;
   return rc;
 }
 
@@ -216,15 +238,12 @@ start_scd (ctrl_t ctrl)
       scd_local_list = ctrl->scd_local;
     }
 
-
-  /* Assert that the lock count is as expected. */
-  if (ctrl->scd_local->locked)
+  if (ctrl->scd_local->in_use)
     {
-      log_error ("start_scd: invalid lock count (%d)\n",
-                 ctrl->scd_local->locked);
+      log_error ("start_scd: CTX is in use\n");
       return gpg_error (GPG_ERR_INTERNAL);
     }
-  ctrl->scd_local->locked++;
+  ctrl->scd_local->in_use = 1;
 
   if (ctrl->scd_local->ctx)
     return 0; /* Okay, the context is fine.  We used to test for an
@@ -344,7 +363,7 @@ start_scd (ctrl_t ctrl)
      detached flag so that under Windows SCDAEMON does not show up a
      new window.  */
   rc = assuan_pipe_connect (ctx, opt.scdaemon_program, argv,
-			    no_close_list, atfork_cb, NULL,
+                            no_close_list, atfork_cb, NULL,
                             ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
@@ -414,7 +433,7 @@ start_scd (ctrl_t ctrl)
     {
       unlock_scd (ctrl, err);
       if (ctx)
-	assuan_release (ctx);
+        assuan_release (ctx);
     }
   else
     {
@@ -495,14 +514,13 @@ agent_scd_check_aliveness (void)
           struct scd_local_s *sl;
 
           assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
-          assuan_release (primary_scd_ctx);
 
           for (sl=scd_local_list; sl; sl = sl->next_local)
             {
-              if (sl->ctx)
+              sl->invalid = 1;
+              if (!sl->in_use && sl->ctx)
                 {
-                  if (sl->ctx != primary_scd_ctx)
-                    assuan_release (sl->ctx);
+                  assuan_release (sl->ctx);
                   sl->ctx = NULL;
                 }
             }
