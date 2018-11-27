@@ -169,29 +169,25 @@ unlock_scd (ctrl_t ctrl, int rc)
       if (!rc)
         rc = gpg_error (GPG_ERR_INTERNAL);
     }
+  err = npth_mutex_lock (&start_scd_lock);
+  if (err)
+    {
+      log_error ("failed to acquire the start_scd lock: %s\n", strerror (err));
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
   ctrl->scd_local->in_use = 0;
   if (ctrl->scd_local->invalid)
     {
-      err = npth_mutex_lock (&start_scd_lock);
-      if (err)
-        {
-          log_error ("failed to acquire the start_scd lock: %s\n",
-                     strerror (err));
-          return gpg_error (GPG_ERR_INTERNAL);
-        }
-
       assuan_release (ctrl->scd_local->ctx);
       ctrl->scd_local->ctx = NULL;
-
-      err = npth_mutex_unlock (&start_scd_lock);
-      if (err)
-        {
-          log_error ("failed to release the start_scd lock: %s\n",
-                     strerror (err));
-          return gpg_error (GPG_ERR_INTERNAL);
-        }
+      ctrl->scd_local->invalid = 0;
     }
-  ctrl->scd_local->invalid = 0;
+  err = npth_mutex_unlock (&start_scd_lock);
+  if (err)
+    {
+      log_error ("failed to release the start_scd lock: %s\n", strerror (err));
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
   return rc;
 }
 
@@ -219,6 +215,7 @@ wait_child_thread (void *arg)
   npth_unprotect ();
   WaitForSingleObject ((HANDLE)pid, INFINITE);
   npth_protect ();
+  log_info ("scdaemon finished\n");
 #else
   int wstatus;
   pid_t pid = (pid_t)(uintptr_t)arg;
@@ -278,8 +275,8 @@ wait_child_thread (void *arg)
 
       err = npth_mutex_unlock (&start_scd_lock);
       if (err)
-        log_error ("failed to release the start_scd lock while"
-                   " doing the aliveness check: %s\n", strerror (err));
+        log_error ("failed to release the start_scd lock after waitpid",
+                   strerror (err));
     }
 
   return NULL;
