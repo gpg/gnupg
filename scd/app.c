@@ -299,11 +299,8 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
     }
 
   app->periodical_check_needed = periodical_check_needed;
-
-  npth_mutex_lock (&app_list_lock);
   app->next = app_top;
   app_top = app;
-  npth_mutex_unlock (&app_list_lock);
   unlock_app (app);
   return 0;
 }
@@ -322,6 +319,8 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
 
   *r_app = NULL;
 
+  npth_mutex_lock (&app_list_lock);
+
   if (scan || !app_top)
     {
       struct dev_list *l;
@@ -330,7 +329,10 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
       /* Scan the devices to find new device(s).  */
       err = apdu_dev_list_start (opt.reader_port, &l);
       if (err)
-        return err;
+        {
+          npth_mutex_unlock (&app_list_lock);
+          return err;
+        }
 
       while (1)
         {
@@ -365,7 +367,6 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
         scd_kick_the_loop ();
     }
 
-  npth_mutex_lock (&app_list_lock);
   for (a = app_top; a; a = a->next)
     {
       lock_app (a, ctrl);
