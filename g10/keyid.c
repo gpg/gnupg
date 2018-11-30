@@ -941,7 +941,12 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
 
   if (!gcry_pk_get_keygrip (s_pkey, array))
     {
-      log_info ("error computing keygrip\n");
+      char *hexfpr;
+
+      hexfpr = hexfingerprint (pk, NULL, 0);
+      log_info ("error computing keygrip (fpr=%s)\n", hexfpr);
+      xfree (hexfpr);
+
       memset (array, 0, 20);
       err = gpg_error (GPG_ERR_GENERAL);
     }
