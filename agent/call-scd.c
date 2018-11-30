@@ -275,7 +275,7 @@ wait_child_thread (void *arg)
 
       err = npth_mutex_unlock (&start_scd_lock);
       if (err)
-        log_error ("failed to release the start_scd lock after waitpid",
+        log_error ("failed to release the start_scd lock after waitpid: %s\n",
                    strerror (err));
     }
 
