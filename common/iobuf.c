@@ -2262,6 +2262,7 @@ iobuf_copy (iobuf_t dest, iobuf_t source)
 
   size_t nread;
   size_t nwrote = 0;
+  size_t max_read = 0;
   int err;
 
   assert (source->use == IOBUF_INPUT || source->use == IOBUF_INPUT_TEMP);
@@ -2278,6 +2279,9 @@ iobuf_copy (iobuf_t dest, iobuf_t source)
         /* EOF.  */
         break;
 
+      if (nread > max_read)
+        max_read = nread;
+
       err = iobuf_write (dest, temp, nread);
       if (err)
         break;
@@ -2285,7 +2289,8 @@ iobuf_copy (iobuf_t dest, iobuf_t source)
     }
 
   /* Burn the buffer.  */
-  wipememory (temp, sizeof (temp));
+  if (max_read)
+    wipememory (temp, max_read);
   xfree (temp);
 
   return nwrote;
