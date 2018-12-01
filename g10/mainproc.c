@@ -799,7 +799,10 @@ proc_plaintext( CTX c, PACKET *pkt )
           /* The onepass signature case. */
           if (n->pkt->pkt.onepass_sig->digest_algo)
             {
-              gcry_md_enable (c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo);
+              if (!opt.skip_verify)
+                gcry_md_enable (c->mfx.md,
+                                n->pkt->pkt.onepass_sig->digest_algo);
+
               any = 1;
             }
         }
@@ -817,7 +820,8 @@ proc_plaintext( CTX c, PACKET *pkt )
            * documents.  */
           clearsig = (*data == 0x01);
           for (data++, datalen--; datalen; datalen--, data++)
-            gcry_md_enable (c->mfx.md, *data);
+            if (!opt.skip_verify)
+              gcry_md_enable (c->mfx.md, *data);
           any = 1;
           break;  /* Stop here as one-pass signature packets are not
                      expected.  */
@@ -825,7 +829,8 @@ proc_plaintext( CTX c, PACKET *pkt )
       else if (n->pkt->pkttype == PKT_SIGNATURE)
         {
           /* The SIG+LITERAL case that PGP used to use.  */
-          gcry_md_enable ( c->mfx.md, n->pkt->pkt.signature->digest_algo );
+          if (!opt.skip_verify)
+            gcry_md_enable (c->mfx.md, n->pkt->pkt.signature->digest_algo);
           any = 1;
         }
     }
