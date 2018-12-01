@@ -47,15 +47,9 @@ time_t timegm (struct tm *tm);
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
 
-/* To avoid that a compiler optimizes certain memset calls away, these
-   macros may be used instead. */
-#define wipememory2(_ptr,_set,_len) do { \
-              volatile char *_vptr=(volatile char *)(_ptr); \
-              size_t _vlen=(_len); \
-              while(_vlen) { *_vptr=(_set); _vptr++; _vlen--; } \
-                  } while(0)
-#define wipememory(_ptr,_len) wipememory2(_ptr,0,_len)
-
+/* To avoid that a compiler optimizes certain memset calls away,
+   wipememory function may be used instead.  */
+void wipememory(void *ptr, size_t len);
 
 /* Include hacks which are mainly required for Slowaris.  */
 #ifdef GNUPG_COMMON_NEED_AFLOCAL
