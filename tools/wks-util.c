@@ -192,7 +192,7 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
   es_fputs ("Content-Type: application/pgp-keys\n"
             "\n", key);
 
-  filterexp = es_bsprintf ("keep-uid=%s=%s", exact? "uid":"mbox", addrspec);
+  filterexp = es_bsprintf ("keep-uid=%s= %s", exact? "uid":"mbox", addrspec);
   if (!filterexp)
     {
       err = gpg_error_from_syserror ();
@@ -466,7 +466,7 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
     es_fputs ("Content-Type: application/pgp-keys\n"
               "\n", newkey);
 
-  filterexp = es_bsprintf ("keep-uid=uid=%s", uid);
+  filterexp = es_bsprintf ("keep-uid=uid= %s", uid);
   if (!filterexp)
     {
       err = gpg_error_from_syserror ();
@@ -864,6 +864,7 @@ install_key_from_spec_file (const char *fname)
   estream_t fp;
   char *line = NULL;
   size_t linelen = 0;
+  size_t maxlen = 2048;
   char *fields[2];
   unsigned int lnr = 0;
 
@@ -878,11 +879,16 @@ install_key_from_spec_file (const char *fname)
       goto leave;
     }
 
-  while (es_getline (&line, &linelen, fp) >= 0)
+  while (es_read_line (fp, &line, &linelen, &maxlen) > 0)
     {
+      if (!maxlen)
+        {
+          err = gpg_error (GPG_ERR_LINE_TOO_LONG);
+          log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+          goto leave;
+        }
       lnr++;
       trim_spaces (line);
-      log_debug ("got line='%s'\n", line);
       if (!*line ||  *line == '#')
         continue;
       if (split_fields (line, fields, DIM(fields)) < 2)
