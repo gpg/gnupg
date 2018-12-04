@@ -95,8 +95,11 @@ local directory (see option @option{-C}) reflecting the structure of a
 WKD.  The arguments are a file with the keyblock and the user-id to
 install.  If the first argument resembles a fingerprint the key is
 taken from the current keyring; to force the use of a file, prefix the
-first argument with "./".  The command @option{--remove-key} removes a
-key from that directory, its only argument is a user-id.
+first argument with "./".  If no arguments are given the parameters
+are read from stdin; the expected format are lines with the
+fingerprint and the mailbox separated by a space.  The command
+@option{--remove-key} removes a key from that directory, its only
+argument is a user-id.
 
 @command{gpg-wks-client} is not commonly invoked directly and thus it
 is not installed in the bin directory.  Here is an example how it can
@@ -280,7 +283,9 @@ The command @option{--install-key} manually installs a key into the
 WKD.  The arguments are a file with the keyblock and the user-id to
 install.  If the first argument resembles a fingerprint the key is
 taken from the current keyring; to force the use of a file, prefix the
-first argument with "./".
+first argument with "./".  If no arguments are given the parameters
+are read from stdin; the expected format are lines with the
+fingerprint and the mailbox separated by a space.
 
 The command @option{--remove-key} uninstalls a key from the WKD.  The
 process returns success in this case; to also print a diagnostic, use

@@ -363,9 +363,12 @@ main (int argc, char **argv)
       break;
 
     case aInstallKey:
-      if (argc != 2)
-        wrong_args ("--install-key FILE|FINGERPRINT USER-ID");
-      err = wks_cmd_install_key (*argv, argv[1]);
+      if (!argc)
+        err = wks_cmd_install_key (NULL, NULL);
+      else if (argc == 2)
+        err = wks_cmd_install_key (*argv, argv[1]);
+      else
+        wrong_args ("--install-key [FILE|FINGERPRINT USER-ID]");
       break;
 
     case aRemoveKey:

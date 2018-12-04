@@ -855,8 +855,65 @@ wks_compute_hu_fname (char **r_fname, const char *addrspec)
 }
 
 
+
+/* Helper form wks_cmd_install_key.  */
+static gpg_error_t
+install_key_from_spec_file (const char *fname)
+{
+  gpg_error_t err;
+  estream_t fp;
+  char *line = NULL;
+  size_t linelen = 0;
+  char *fields[2];
+  unsigned int lnr = 0;
+
+  if (!fname || !strcmp (fname, ""))
+    fp = es_stdin;
+  else
+    fp = es_fopen (fname, "rb");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  while (es_getline (&line, &linelen, fp) >= 0)
+    {
+      lnr++;
+      trim_spaces (line);
+      log_debug ("got line='%s'\n", line);
+      if (!*line ||  *line == '#')
+        continue;
+      if (split_fields (line, fields, DIM(fields)) < 2)
+        {
+          log_error ("error reading '%s': syntax error at line %u\n",
+                     fname, lnr);
+          continue;
+        }
+      err = wks_cmd_install_key (fields[0], fields[1]);
+      if (err)
+        goto leave;
+    }
+  if (es_ferror (fp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  if (fp != es_stdin)
+    es_fclose (fp);
+  es_free (line);
+  return err;
+}
+
+
 /* Install a single key into the WKD by reading FNAME and extracting
- * USERID.  */
+ * USERID.  If USERID is NULL FNAME is expected to be a list of fpr
+ * mbox lines and for each line the respective key will be
+ * installed.  */
 gpg_error_t
 wks_cmd_install_key (const char *fname, const char *userid)
 {
@@ -870,6 +927,9 @@ wks_cmd_install_key (const char *fname, const char *userid)
   time_t thistime;
   char *huname = NULL;
   int any;
+
+  if (!userid)
+    return install_key_from_spec_file (fname);
 
   addrspec = mailbox_from_userid (userid);
   if (!addrspec)
