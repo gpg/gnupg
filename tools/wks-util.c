@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "../common/util.h"
 #include "../common/status.h"
@@ -811,6 +813,8 @@ wks_compute_hu_fname (char **r_fname, const char *addrspec)
   char *hash;
   const char *domain;
   char sha1buf[20];
+  char *fname;
+  struct stat sb;
 
   *r_fname = NULL;
 
@@ -824,12 +828,28 @@ wks_compute_hu_fname (char **r_fname, const char *addrspec)
   if (!hash)
     return gpg_error_from_syserror ();
 
-  *r_fname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
-  if (!*r_fname)
-    err = gpg_error_from_syserror ();
-  else
-    err = 0;
+  /* Try to create missing directories below opt.directory.  */
+  fname = make_filename_try (opt.directory, domain, NULL);
+  if (fname && stat (fname, &sb)
+      && gpg_err_code_from_syserror () == GPG_ERR_ENOENT)
+    if (!gnupg_mkdir (fname, "-rwxr--r--") && opt.verbose)
+      log_info ("directory '%s' created\n", fname);
+  xfree (fname);
+  fname = make_filename_try (opt.directory, domain, "hu", NULL);
+  if (fname && stat (fname, &sb)
+      && gpg_err_code_from_syserror () == GPG_ERR_ENOENT)
+    if (!gnupg_mkdir (fname, "-rwxr--r--") && opt.verbose)
+      log_info ("directory '%s' created\n", fname);
+  xfree (fname);
 
+  /* Create the filename.  */
+  fname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
+  err = fname? 0 : gpg_error_from_syserror ();
+
+  if (err)
+    xfree (fname);
+  else
+    *r_fname = fname; /* Okay.  */
   xfree (hash);
   return err;
 }
