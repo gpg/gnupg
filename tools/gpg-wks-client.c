@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "../common/util.h"
 #include "../common/status.h"
@@ -48,6 +50,7 @@ enum cmd_and_opt_values
     oQuiet      = 'q',
     oVerbose	= 'v',
     oOutput     = 'o',
+    oDirectory  = 'C',
 
     oDebug      = 500,
 
@@ -56,6 +59,8 @@ enum cmd_and_opt_values
     aCreate,
     aReceive,
     aRead,
+    aInstallKey,
+    aRemoveKey,
 
     oGpgProgram,
     oSend,
@@ -81,6 +86,10 @@ static ARGPARSE_OPTS opts[] = {
               ("receive a MIME confirmation request")),
   ARGPARSE_c (aRead,      "read",
               ("receive a plain text confirmation request")),
+  ARGPARSE_c (aInstallKey, "install-key",
+              "install a key into a directory"),
+  ARGPARSE_c (aRemoveKey, "remove-key",
+              "remove a key from a directory"),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -92,6 +101,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
   ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
+  ARGPARSE_s_s (oDirectory, "directory", "@"),
 
   ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
 
@@ -194,6 +204,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oGpgProgram:
           opt.gpg_program = pargs->r.ret_str;
           break;
+        case oDirectory:
+          opt.directory = pargs->r.ret_str;
+          break;
         case oSend:
           opt.use_sendmail = 1;
           break;
@@ -215,6 +228,8 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 	case aReceive:
 	case aRead:
         case aCheck:
+        case aInstallKey:
+        case aRemoveKey:
           cmd = pargs->r_opt;
           break;
 
@@ -269,8 +284,33 @@ main (int argc, char **argv)
   if (!opt.gpg_program)
     opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
 
+  if (!opt.directory)
+    opt.directory = "openpgpkey";
+
   /* Tell call-dirmngr what options we want.  */
   set_dirmngr_options (opt.verbose, (opt.debug & DBG_IPC_VALUE), 1);
+
+
+  /* Check that the top directory exists.  */
+  if (cmd == aInstallKey || cmd == aRemoveKey)
+    {
+      struct stat sb;
+
+      if (stat (opt.directory, &sb))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error accessing directory '%s': %s\n",
+                     opt.directory, gpg_strerror (err));
+          goto leave;
+        }
+      if (!S_ISDIR(sb.st_mode))
+        {
+          log_error ("error accessing directory '%s': %s\n",
+                     opt.directory, "not a directory");
+          err = gpg_error (GPG_ERR_ENOENT);
+          goto leave;
+        }
+    }
 
   /* Run the selected command.  */
   switch (cmd)
@@ -322,12 +362,25 @@ main (int argc, char **argv)
       err = command_check (argv[0]);
       break;
 
+    case aInstallKey:
+      if (argc != 2)
+        wrong_args ("--install-key FILE|FINGERPRINT USER-ID");
+      err = wks_cmd_install_key (*argv, argv[1]);
+      break;
+
+    case aRemoveKey:
+      if (argc != 1)
+        wrong_args ("--remove-key USER-ID");
+      err = wks_cmd_remove_key (*argv);
+      break;
+
     default:
       usage (1);
       err = 0;
       break;
     }
 
+ leave:
   if (err)
     wks_write_status (STATUS_FAILURE, "- %u", err);
   else if (log_get_errorcount (0))
