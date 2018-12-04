@@ -3524,7 +3524,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 
 		    algo = gcry_pk_algo_name (pk->revkey[i].algid);
 		    keyid_from_fingerprint (ctrl, pk->revkey[i].fpr,
-					    MAX_FINGERPRINT_LEN, r_keyid);
+					    pk->revkey[i].fprlen, r_keyid);
 
 		    user = get_user_id_string_native (ctrl, r_keyid);
 		    tty_fprintf (fp,
@@ -4309,13 +4309,14 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
       xfree (answer);
 
       fingerprint_from_pk (revoker_pk, revkey.fpr, &fprlen);
-      if (fprlen != 20)
+      if (fprlen != 20 && fprlen != 32)
 	{
 	  log_error (_("cannot appoint a PGP 2.x style key as a "
 		       "designated revoker\n"));
 	  continue;
 	}
 
+      revkey.fprlen = fprlen;
       revkey.class = 0x80;
       if (sensitive)
 	revkey.class |= 0x40;

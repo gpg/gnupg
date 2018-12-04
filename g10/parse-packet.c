@@ -1905,21 +1905,23 @@ parse_revkeys (PKT_signature * sig)
   while ((revkey = enum_sig_subpkt (sig->hashed, SIGSUBPKT_REV_KEY,
 				    &len, &seq, NULL)))
     {
-      if (/* The only valid length is 22 bytes.  See RFC 4880
-	     5.2.3.15.  */
-	  len == 22
-	  /* 0x80 bit must be set on the class.  */
+      /* Consider only valid packets.  They must have a length of
+       * either 2+20 or 2+32 octets and bit 7 of the class octet must
+       * be set.  */
+      if ((len == 22 || len == 34)
           && (revkey[0] & 0x80))
 	{
 	  sig->revkey = xrealloc (sig->revkey,
 				  sizeof (struct revocation_key) *
 				  (sig->numrevkeys + 1));
 
-	  /* Copy the individual fields.  */
 	  sig->revkey[sig->numrevkeys].class = revkey[0];
 	  sig->revkey[sig->numrevkeys].algid = revkey[1];
-	  memcpy (sig->revkey[sig->numrevkeys].fpr, &revkey[2], 20);
-
+          len -= 2;
+	  sig->revkey[sig->numrevkeys].fprlen = len;
+	  memcpy (sig->revkey[sig->numrevkeys].fpr, revkey+2, len);
+	  memset (sig->revkey[sig->numrevkeys].fpr+len, 0,
+                  sizeof (sig->revkey[sig->numrevkeys].fpr) - len);
 	  sig->numrevkeys++;
 	}
     }

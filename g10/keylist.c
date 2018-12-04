@@ -1321,7 +1321,7 @@ print_revokers (estream_t fp, PKT_public_key * pk)
 
 	  es_fprintf (fp, "rvk:::%d::::::", pk->revkey[i].algid);
 	  p = pk->revkey[i].fpr;
-	  for (j = 0; j < 20; j++, p++)
+	  for (j = 0; j < pk->revkey[i].fprlen; j++, p++)
 	    es_fprintf (fp, "%02X", *p);
 	  es_fprintf (fp, ":%02x%s:\n",
                       pk->revkey[i].class,

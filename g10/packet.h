@@ -180,6 +180,8 @@ struct revocation_key {
   byte class;
   /* The public-key algorithm ID.  */
   byte algid;
+  /* The length of the fingerprint.  */
+  byte fprlen;
   /* The fingerprint of the authorized key.  */
   byte fpr[MAX_FINGERPRINT_LEN];
 };

@@ -2577,10 +2577,22 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 			xrealloc (pk->revkey, sizeof (struct revocation_key) *
 				  (pk->numrevkeys + sig->numrevkeys));
 
-		      for (i = 0; i < sig->numrevkeys; i++)
-			memcpy (&pk->revkey[pk->numrevkeys++],
-				&sig->revkey[i],
-				sizeof (struct revocation_key));
+		      for (i = 0; i < sig->numrevkeys; i++, pk->numrevkeys++)
+                        {
+                          pk->revkey[pk->numrevkeys].class
+                            = sig->revkey[i].class;
+                          pk->revkey[pk->numrevkeys].algid
+                            = sig->revkey[i].algid;
+                          pk->revkey[pk->numrevkeys].fprlen
+                            = sig->revkey[i].fprlen;
+                          memcpy (pk->revkey[pk->numrevkeys].fpr,
+                                  sig->revkey[i].fpr, sig->revkey[i].fprlen);
+                          memset (pk->revkey[pk->numrevkeys].fpr
+                                  + sig->revkey[i].fprlen,
+                                  0,
+                                  sizeof (sig->revkey[i].fpr)
+                                  - sig->revkey[i].fprlen);
+                        }
 		    }
 
 		  if (sig->timestamp >= sigdate)

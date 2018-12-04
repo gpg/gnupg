@@ -943,11 +943,13 @@ keygen_add_revkey (PKT_signature *sig, void *opaque)
   struct revocation_key *revkey = opaque;
   byte buf[2+MAX_FINGERPRINT_LEN];
 
+  log_assert (revkey->fprlen <= MAX_FINGERPRINT_LEN);
   buf[0] = revkey->class;
   buf[1] = revkey->algid;
-  memcpy (&buf[2], revkey->fpr, MAX_FINGERPRINT_LEN);
+  memcpy (buf + 2, revkey->fpr, revkey->fprlen);
+  memset (buf + 2 + revkey->fprlen, 0, sizeof (revkey->fpr) - revkey->fprlen);
 
-  build_sig_subpkt (sig, SIGSUBPKT_REV_KEY, buf, 2+MAX_FINGERPRINT_LEN);
+  build_sig_subpkt (sig, SIGSUBPKT_REV_KEY, buf, 2+revkey->fprlen);
 
   /* All sigs with revocation keys set are nonrevocable.  */
   sig->flags.revocable = 0;
@@ -3526,6 +3528,8 @@ parse_revocation_key (const char *fname,
 
       revkey.fpr[i]=c;
     }
+  if (i != 20 && i != 32)
+    goto fail;
 
   /* skip to the tag */
   while(*pn && *pn!='s' && *pn!='S')
@@ -3538,7 +3542,7 @@ parse_revocation_key (const char *fname,
 
   return 0;
 
-  fail:
+ fail:
   log_error("%s:%d: invalid revocation key\n", fname, r->lnr );
   return -1; /* error */
 }

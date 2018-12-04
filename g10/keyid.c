@@ -534,8 +534,9 @@ keyid_from_pk (PKT_public_key *pk, u32 *keyid)
 
 
 /*
- * Get the keyid from the fingerprint.	This function is simple for most
- * keys, but has to do a keylookup for old stayle keys.
+ * Get the keyid from the fingerprint.  This function is simple for
+ * most keys, but has to do a key lookup for old v3 keys where the
+ * keyid is not part of the fingerprint.
  */
 u32
 keyid_from_fingerprint (ctrl_t ctrl, const byte *fprint,
@@ -546,7 +547,7 @@ keyid_from_fingerprint (ctrl_t ctrl, const byte *fprint,
   if( !keyid )
     keyid = dummy_keyid;
 
-  if (fprint_len != 20)
+  if (fprint_len != 20 && fprint_len != 32)
     {
       /* This is special as we have to lookup the key first.  */
       PKT_public_key pk;
@@ -556,7 +557,8 @@ keyid_from_fingerprint (ctrl_t ctrl, const byte *fprint,
       rc = get_pubkey_byfprint (ctrl, &pk, NULL, fprint, fprint_len);
       if( rc )
         {
-          log_error("Oops: keyid_from_fingerprint: no pubkey\n");
+          log_printhex (fprint, fprint_len,
+                        "Oops: keyid_from_fingerprint: no pubkey; fpr:");
           keyid[0] = 0;
           keyid[1] = 0;
         }
