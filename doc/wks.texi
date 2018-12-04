@@ -90,6 +90,14 @@ decrypted MIME message.  The result of these commands are another mail
 which can be send in the same way as the mail created with
 @option{--create}.
 
+The command @option{--install-key} manually installs a key into a
+local directory (see option @option{-C}) reflecting the structure of a
+WKD.  The arguments are a file with the keyblock and the user-id to
+install.  If the first argument resembles a fingerprint the key is
+taken from the current keyring; to force the use of a file, prefix the
+first argument with "./".  The command @option{--remove-key} removes a
+key from that directory, its only argument is a user-id.
+
 @command{gpg-wks-client} is not commonly invoked directly and thus it
 is not installed in the bin directory.  Here is an example how it can
 be invoked manually to check for a Web Key Directory entry for
@@ -160,6 +168,13 @@ Write special status strings to the file descriptor @var{n}.
 This program returns only the status messages SUCCESS or FAILURE which
 are helpful when the caller uses a double fork approach and can't
 easily get the return code of the process.
+
+@item -C @var{dir}
+@itemx --directory @var{dir}
+@opindex directory
+Use @var{dir} as top level directory for the commands
+@option{--install-key} and @option{--remove-key}.  The default is
+@file{openpgpkey}.
 
 @item --verbose
 @opindex verbose
