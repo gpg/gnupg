@@ -1328,6 +1328,10 @@ give the opposite meaning.  The options are:
   meaningful when using @option{--with-colons} along with
   @option{--check-signatures}.
 
+  @item show-only-fpr-mbox
+  @opindex list-options:show-only-fpr-mbox
+  For each valid user-id which also has a valid mail address print
+  only the fingerprint and the mail address.
 @end table
 
 @item --verify-options @var{parameters}

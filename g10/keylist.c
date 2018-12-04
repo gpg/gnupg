@@ -541,7 +541,7 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
         ; /* Secret key listing requested but this isn't one.  */
       else
         {
-          if (!opt.with_colons)
+          if (!opt.with_colons && !(opt.list_options & LIST_SHOW_ONLY_FPR_MBOX))
             {
               resname = keydb_get_resource_name (hd);
               if (lastresname != resname)
@@ -1254,6 +1254,57 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
   xfree (hexgrip);
 }
 
+
+/* Do a simple key listing printing only the fingerprint and the mail
+ * address of valid keys.  */
+static void
+list_keyblock_simple (ctrl_t ctrl, kbnode_t keyblock)
+{
+  gpg_err_code_t ec;
+  kbnode_t kbctx;
+  kbnode_t node;
+  char hexfpr[2*MAX_FINGERPRINT_LEN+1];
+  char *mbox;
+
+  (void)ctrl;
+
+  node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
+  if (!node)
+    {
+      log_error ("Oops; key lost!\n");
+      dump_kbnode (keyblock);
+      return;
+    }
+  hexfingerprint (node->pkt->pkt.public_key, hexfpr, sizeof hexfpr);
+
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+	{
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+
+	  if (uid->attrib_data)
+	    continue;
+
+	  if (uid->flags.expired || uid->flags.revoked)
+            continue;
+
+          mbox = mailbox_from_userid (uid->name, 0);
+          if (!mbox)
+            {
+              ec = gpg_err_code_from_syserror ();
+              if (ec != GPG_ERR_EINVAL)
+                log_error ("error getting mailbox from user-id: %s\n",
+                           gpg_strerror (ec));
+              continue;
+            }
+          es_fprintf (es_stdout, "%s %s\n", hexfpr, mbox);
+          xfree (mbox);
+	}
+    }
+}
+
+
 void
 print_revokers (estream_t fp, PKT_public_key * pk)
 {
@@ -1807,6 +1858,12 @@ list_keyblock (ctrl_t ctrl,
 
   if (opt.with_colons)
     list_keyblock_colon (ctrl, keyblock, secret, has_secret);
+  else if ((opt.list_options & LIST_SHOW_ONLY_FPR_MBOX))
+    {
+      if (!listctx->no_validity)
+        check_trustdb_stale (ctrl);
+      list_keyblock_simple (ctrl, keyblock);
+    }
   else
     list_keyblock_print (ctrl, keyblock, secret, fpr, listctx);
 

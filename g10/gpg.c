@@ -2009,6 +2009,8 @@ parse_list_options(char *str)
        N_("show expiration dates during signature listings")},
       {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL,
        NULL},
+      {"show-only-fpr-mbox",LIST_SHOW_ONLY_FPR_MBOX, NULL,
+       NULL},
       {NULL,0,NULL,NULL}
     };
 
