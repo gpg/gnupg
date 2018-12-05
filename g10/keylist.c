@@ -211,7 +211,7 @@ print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk)
   else
     p = get_user_id_native (ctrl, keyid);
 
-  if (fp)
+  if (!fp)
     tty_printf ("\n");
   tty_fprintf (fp, "%s  %s/%s %s %s\n",
                pk->flags.primary? "pub":"sub",
