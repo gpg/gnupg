@@ -197,5 +197,7 @@ gpg_error_t http_prepare_redirect (http_redir_info_t *info,
                                    unsigned int status_code,
                                    const char *location, char **r_url);
 
+const char *http_status2string (unsigned int status);
+
 
 #endif /*GNUPG_COMMON_HTTP_H*/
