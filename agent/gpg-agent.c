@@ -135,6 +135,7 @@ enum cmd_and_opt_values
   oDisableScdaemon,
   oDisableCheckOwnSocket,
   oS2KCount,
+  oS2KCalibration,
   oAutoExpandSecmem,
   oListenBacklog,
 
@@ -253,6 +254,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oEnableExtendedKeyFormat, "enable-extended-key-format", "@"),
 
   ARGPARSE_s_u (oS2KCount, "s2k-count", "@"),
+  ARGPARSE_s_u (oS2KCalibration, "s2k-calibration", "@"),
 
   ARGPARSE_op_u (oAutoExpandSecmem, "auto-expand-secmem", "@"),
 
@@ -834,6 +836,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       /* Note: When changing the next line, change also gpgconf_list.  */
       opt.ssh_fingerprint_digest = GCRY_MD_MD5;
       opt.s2k_count = 0;
+      set_s2k_calibration_time (0);  /* Set to default.  */
       return 1;
     }
 
@@ -927,6 +930,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oS2KCount:
       opt.s2k_count = pargs->r.ret_ulong;
+      break;
+
+    case oS2KCalibration:
+      set_s2k_calibration_time (pargs->r.ret_ulong);
       break;
 
     default:

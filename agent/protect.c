@@ -71,6 +71,13 @@ static const struct {
 };
 
 
+/* The number of milliseconds we use in the S2K function and the
+ * calibrated count value.  A count value of zero indicates that the
+ * calibration has not yet been done or needs to be done again.  */
+static unsigned int s2k_calibration_time = AGENT_S2K_CALIBRATION;
+static unsigned long s2k_calibrated_count;
+
+
 /* A helper object for time measurement.  */
 struct calibrate_time_s
 {
@@ -175,11 +182,11 @@ calibrate_s2k_count (void)
       ms = calibrate_s2k_count_one (count);
       if (opt.verbose > 1)
         log_info ("S2K calibration: %lu -> %lums\n", count, ms);
-      if (ms > AGENT_S2K_CALIBRATION)
+      if (ms > s2k_calibration_time)
         break;
     }
 
-  count = (unsigned long)(((double)count / ms) * AGENT_S2K_CALIBRATION);
+  count = (unsigned long)(((double)count / ms) * s2k_calibration_time);
   count /= 1024;
   count *= 1024;
   if (count < 65536)
@@ -195,18 +202,30 @@ calibrate_s2k_count (void)
 }
 
 
+/* Set the calibration time.  This may be called early at startup or
+ * at any time.  Thus it should one set variables.  */
+void
+set_s2k_calibration_time (unsigned int milliseconds)
+{
+  if (!milliseconds)
+    milliseconds = AGENT_S2K_CALIBRATION;
+  else if (milliseconds > 60 * 1000)
+    milliseconds = 60 * 1000;  /* Cap at 60 seconds.  */
+  s2k_calibration_time = milliseconds;
+  s2k_calibrated_count = 0;  /* Force re-calibration.  */
+}
+
+
 /* Return the calibrated S2K count.  This is only public for the use
  * of the Assuan getinfo s2k_count_cal command.  */
 unsigned long
 get_calibrated_s2k_count (void)
 {
-  static unsigned long count;
-
-  if (!count)
-    count = calibrate_s2k_count ();
+  if (!s2k_calibrated_count)
+    s2k_calibrated_count = calibrate_s2k_count ();
 
   /* Enforce a lower limit.  */
-  return count < 65536 ? 65536 : count;
+  return s2k_calibrated_count < 65536 ? 65536 : s2k_calibrated_count;
 }
 
 

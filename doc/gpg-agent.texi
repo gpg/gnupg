@@ -669,12 +669,19 @@ For an heavy loaded gpg-agent with many concurrent connection this
 option avoids sign or decrypt errors due to out of secure memory error
 returns.
 
+@item --s2k-calibration @var{milliseconds}
+@opindex s2k-calibration
+Change the default calibration time to @var{milliseconds}.  The given
+value is capped at 60 seconds; a value of 0 resets to the compiled-in
+default.  This option is re-read on a SIGHUP (or @code{gpgconf
+--reload gpg-agent}) and the S2K count is then re-calibrated.
+
 @item --s2k-count @var{n}
 @opindex s2k-count
 Specify the iteration count used to protect the passphrase.  This
 option can be used to override the auto-calibration done by default.
-The auto-calibration computes a count which requires 100ms to mangle
-a given passphrase.
+The auto-calibration computes a count which requires by default 100ms
+to mangle a given passphrase.  See also @option{--s2k-calibration}.
 
 To view the actually used iteration count and the milliseconds
 required for an S2K operation use:
