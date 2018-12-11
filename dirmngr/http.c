@@ -3663,3 +3663,27 @@ http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
   *r_url = newurl;
   return 0;
 }
+
+
+/* Return string describing the http STATUS.  Returns an empty string
+ * for an unknown status.  */
+const char *
+http_status2string (unsigned int status)
+{
+  switch (status)
+    {
+    case 500: return "Internal Server Error";
+    case 501: return "Not Implemented";
+    case 502: return "Bad Gateway";
+    case 503: return "Service Unavailable";
+    case 504: return "Gateway Timeout";
+    case 505: return "HTTP version Not Supported";
+    case 506: return "Variant Also Negation";
+    case 507: return "Insufficient Storage";
+    case 508: return "Loop Detected";
+    case 510: return "Not Extended";
+    case 511: return "Network Authentication Required";
+    }
+
+  return "";
+}
