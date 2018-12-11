@@ -1310,7 +1310,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
    down to zero. */
 static int
 handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
-                           unsigned int *tries_left)
+                           unsigned int http_status, unsigned int *tries_left)
 {
   int retry = 0;
 
@@ -1353,6 +1353,27 @@ handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
         }
       break;
 
+    case GPG_ERR_NO_DATA:
+      {
+        switch (http_status)
+          {
+          case 502: /* Bad Gateway  */
+            log_info ("marking host dead due to a %u (%s)\n",
+                      http_status, http_status2string (http_status));
+            if (mark_host_dead (request) && *tries_left)
+              retry = 1;
+            break;
+
+          case 503: /* Service Unavailable */
+          case 504: /* Gateway Timeout    */
+            log_info ("selecting a different host due to a %u (%s)",
+                      http_status, http_status2string (http_status));
+            retry = 1;
+            break;
+          }
+      }
+      break;
+
     default:
       break;
     }
@@ -1381,6 +1402,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   int reselect;
   unsigned int httpflags;
   char *httphost = NULL;
+  unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
@@ -1462,12 +1484,14 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
-                      NULL, NULL, &fp, r_http_status);
-  if (handle_send_request_error (ctrl, err, request, &tries))
+                      NULL, NULL, &fp, &http_status);
+  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
     {
       reselect = 1;
       goto again;
     }
+  if (r_http_status)
+    *r_http_status = http_status;
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -1529,6 +1553,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   int reselect;
   char *httphost = NULL;
   unsigned int httpflags;
+  unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
@@ -1601,8 +1626,8 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
-                      NULL, NULL, &fp, NULL);
-  if (handle_send_request_error (ctrl, err, request, &tries))
+                      NULL, NULL, &fp, &http_status);
+  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
     {
       reselect = 1;
       goto again;
@@ -1676,6 +1701,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   int reselect;
   char *httphost = NULL;
   unsigned int httpflags;
+  unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   parm.datastring = NULL;
@@ -1714,8 +1740,8 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, 0,
-                      put_post_cb, &parm, &fp, NULL);
-  if (handle_send_request_error (ctrl, err, request, &tries))
+                      put_post_cb, &parm, &fp, &http_status);
+  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
     {
       reselect = 1;
       goto again;
