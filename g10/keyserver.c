@@ -1528,7 +1528,7 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
 
   err = gpg_dirmngr_ks_search (ctrl, searchstr, search_line_handler, &parm);
 
-  if (parm.not_found)
+  if (parm.not_found || gpg_err_code (err) == GPG_ERR_NO_DATA)
     {
       if (parm.searchstr_disp)
         log_info (_("key \"%s\" not found on keyserver\n"),
@@ -1539,6 +1539,8 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
 
   if (gpg_err_code (err) == GPG_ERR_NO_KEYSERVER)
     log_error (_("no keyserver known (use option --keyserver)\n"));
+  else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
   else if (err)
     log_error ("error searching keyserver: %s\n", gpg_strerror (err));
 
