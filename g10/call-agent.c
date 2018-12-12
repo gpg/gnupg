@@ -1218,7 +1218,7 @@ agent_scd_cardlist (strlist_t *result)
 
   memset (&parm, 0, sizeof parm);
   *result = NULL;
-  err = start_agent (NULL, 1);
+  err = start_agent (NULL, 1 | FLAG_FOR_CARD_SUPPRESS_ERRORS);
   if (err)
     return err;
 
