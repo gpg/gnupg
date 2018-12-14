@@ -24,10 +24,9 @@
   can be freely used, modified and distributed under the terms of the
   GNU General Public License.
 
-  Note that the 2.0 series of GnuPG will reach end-of-life on
-  2017-12-31.  It is not possible to install a 2.2.x version along
-  with any 2.0.x version.
-
+  Note that the 2.0 series of GnuPG reached end-of-life on 2017-12-31.
+  It is not possible to install a 2.2.x version along with any 2.0.x
+  version.
 
 * BUILD INSTRUCTIONS
 
@@ -120,7 +119,6 @@
 
   Add other options as needed.
 
-
 * MIGRATION from 1.4 or 2.0 to 2.2
 
   The major change in 2.2 is gpg-agent taking care of the OpenPGP
@@ -168,7 +166,6 @@
               fi
             done )
 
-
 * DOCUMENTATION
 
   The complete documentation is in the texinfo manual named
@@ -181,7 +178,6 @@
   version of the manual pertaining to the current development snapshot
   is at [[https://gnupg.org/documentation/manuals/gnupg-devel/]] .
 
-
 * Installing GnuPG 2.2. and GnuPG 1.4
 
   GnuPG 2.2 is a current version of GnuPG with state of the art
@@ -191,7 +187,6 @@
   1.4 branch will likely do this by default.  In case this is not
   possible, the 2.2 version can be installed under the name "gpg2"
   using the configure option --enable-gpg-is-gpg2.
-
 
 * HOW TO GET MORE INFORMATION
 

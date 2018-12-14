@@ -1,5 +1,39 @@
-Noteworthy changes in version 2.2.12 (unreleased)
+Noteworthy changes in version 2.2.12 (2018-12-14)
 -------------------------------------------------
+
+  * tools: New commands --install-key and --remove-key for
+    gpg-wks-client.  This allows to prepare a Web Key Directory on a
+    local file system for later upload to a web server.
+
+  * gpg: New --list-option "show-only-fpr-mbox".  This makes the use
+    of the new gpg-wks-client --install-key command easier on Windows.
+
+  * gpg: Improve processing speed when --skip-verify is used.
+
+  * gpg: Fix a bug where a LF was accidentally written to the console.
+
+  * gpg: --card-status now shwos whether a card has the new KDF
+    feature enabled.
+
+  * agent: New runtime option --s2k-calibration=MSEC.  New configure
+    option --with-agent-s2k-calibration=MSEC.  [#3399]
+
+  * dirmngr: Try another keyserver from the pool on receiving a 502,
+    503, or 504 error.  [#4175]
+
+  * dirmngr: Avoid possible CSRF attacks via http redirects.  A HTTP
+    query will not anymore follow a 3xx redirect unless the Location
+    header gives the same host.  If the host is different only the
+    host and port is taken from the Location header and the original
+    path and query parts are kept.
+
+  * dirmngr: New command FLUSHCRL to flush all CRLS from disk and
+    memory.  [#3967]
+
+  * New simplified Chinese translation (zh_CN).
+
+  Release-info: https://dev.gnupg.org/T4289
+  See-also: gnupg-announce/2018q4/000433.html
 
 
 Noteworthy changes in version 2.2.11 (2018-11-06)
