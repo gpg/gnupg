@@ -8650,6 +8650,19 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "error en la lectura de «%s»: %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "too many redirections\n"
+msgstr "hi ha massa preferències «%c»\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "s'està escrivint en «%s»\n"
+
 #, fuzzy, c-format
 msgid "error allocating memory: %s\n"
 msgstr "error en crear l'anell «%s»: %s\n"
@@ -8751,14 +8764,6 @@ msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "error en la lectura de «%s»: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "too many redirections\n"
-msgstr "hi ha massa preferències «%c»\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

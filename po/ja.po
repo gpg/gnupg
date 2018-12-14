@@ -7943,6 +7943,19 @@ msgid "error accessing '%s': http status %u\n"
 msgstr "'%s'へアクセスのエラー: httpステイタス %u\n"
 
 #, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL'%s' は '%s' (%u) へリダイレクトされました\n"
+
+#, c-format
+msgid "too many redirections\n"
+msgstr "リダイレクトが多すぎます\n"
+
+#, fuzzy, c-format
+#| msgid "writing to '%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "'%s'への書き込み\n"
+
+#, c-format
 msgid "error allocating memory: %s\n"
 msgstr "メモリの確保のエラー: %s\n"
 
@@ -8041,14 +8054,6 @@ msgstr "'%s'の接続エラー: %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "'%s'のHTTP応答の読み込みエラー: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL'%s' は '%s' (%u) へリダイレクトされました\n"
-
-#, c-format
-msgid "too many redirections\n"
-msgstr "リダイレクトが多すぎます\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

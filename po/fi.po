@@ -8461,6 +8461,19 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "too many redirections\n"
+msgstr "liian monta \"%c\" valintaa\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "kirjoitetaan kohteeseen \"%s\"\n"
+
 #, fuzzy, c-format
 msgid "error allocating memory: %s\n"
 msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
@@ -8562,14 +8575,6 @@ msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "too many redirections\n"
-msgstr "liian monta \"%c\" valintaa\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

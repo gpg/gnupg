@@ -8085,6 +8085,19 @@ msgid "error accessing '%s': http status %u\n"
 msgstr "存取 '%s' 時出錯: http 狀態 %u\n"
 
 #, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "網址 '%s' 重新轉向至 '%s' (%u)\n"
+
+#, c-format
+msgid "too many redirections\n"
+msgstr "太多重新導向\n"
+
+#, fuzzy, c-format
+#| msgid "writing to '%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "正在寫入 '%s'\n"
+
+#, c-format
 msgid "error allocating memory: %s\n"
 msgstr "配置記憶體時出錯: %s\n"
 
@@ -8184,14 +8197,6 @@ msgstr "連線至 '%s' 時出錯: %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "讀取 '%s' HTTP 回應時出錯: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "網址 '%s' 重新轉向至 '%s' (%u)\n"
-
-#, c-format
-msgid "too many redirections\n"
-msgstr "太多重新導向\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

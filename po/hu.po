@@ -8429,6 +8429,19 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "too many redirections\n"
+msgstr "Túl sok \"%c\" preferencia.\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "Írok a \"%s\" állományba.\n"
+
 #, fuzzy, c-format
 msgid "error allocating memory: %s\n"
 msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
@@ -8530,14 +8543,6 @@ msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "too many redirections\n"
-msgstr "Túl sok \"%c\" preferencia.\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

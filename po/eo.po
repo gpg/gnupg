@@ -8399,6 +8399,19 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "too many redirections\n"
+msgstr "tro da '%c'-preferoj\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "skribas al '%s'\n"
+
 #, fuzzy, c-format
 msgid "error allocating memory: %s\n"
 msgstr "eraro dum kreado de ŝlosilaro '%s': %s\n"
@@ -8500,14 +8513,6 @@ msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "too many redirections\n"
-msgstr "tro da '%c'-preferoj\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

@@ -8533,6 +8533,20 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "eroare la citire `%s': %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "too many cipher preferences\n"
+msgid "too many redirections\n"
+msgstr "prea multe preferinţe de cifrare\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "scriu în `%s'\n"
+
 #, fuzzy, c-format
 msgid "error allocating memory: %s\n"
 msgstr "eroare la crearea inelului de chei `%s': %s\n"
@@ -8636,15 +8650,6 @@ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "eroare la citire `%s': %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "too many cipher preferences\n"
-msgid "too many redirections\n"
-msgstr "prea multe preferinţe de cifrare\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

@@ -8528,6 +8528,19 @@ msgid "error accessing '%s': http status %u\n"
 msgstr "erreur d'accès à « %s » : état HTTP %u\n"
 
 #, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL « %s » redirigée vers « %s » (%u)\n"
+
+#, c-format
+msgid "too many redirections\n"
+msgstr "trop de redirections\n"
+
+#, fuzzy, c-format
+#| msgid "writing to '%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "écriture de « %s »\n"
+
+#, c-format
 msgid "error allocating memory: %s\n"
 msgstr "erreur d'allocation de mémoire : %s\n"
 
@@ -8627,14 +8640,6 @@ msgstr "erreur de connexion à « %s » : %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "erreur de lecture de réponse HTTP pour « %s » : %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL « %s » redirigée vers « %s » (%u)\n"
-
-#, c-format
-msgid "too many redirections\n"
-msgstr "trop de redirections\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

@@ -8422,6 +8422,19 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "too many redirections\n"
+msgstr "terlalu banyak preferensi `%c'\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "menulis ke `%s'\n"
+
 #, fuzzy, c-format
 msgid "error allocating memory: %s\n"
 msgstr "kesalahan menulis keyring `%s': %s\n"
@@ -8523,14 +8536,6 @@ msgstr "kesalahan menulis keyring `%s': %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "too many redirections\n"
-msgstr "terlalu banyak preferensi `%c'\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

@@ -8750,6 +8750,20 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "too many cipher preferences\n"
+msgid "too many redirections\n"
+msgstr "çok fazla şifreleme tercihi\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "\"%s\"e yazıyor\n"
+
 #, fuzzy, c-format
 #| msgid "error allocating enough memory: %s\n"
 msgid "error allocating memory: %s\n"
@@ -8865,15 +8879,6 @@ msgstr "`%s' yazılırken hata: %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "%s okunurken hata: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "too many cipher preferences\n"
-msgid "too many redirections\n"
-msgstr "çok fazla şifreleme tercihi\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"

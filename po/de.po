@@ -8367,6 +8367,19 @@ msgid "error accessing '%s': http status %u\n"
 msgstr "Fehler beim Zugreifen auf `%s': HTTP Status %u\n"
 
 #, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL `%s' nach `%s' umgeleitet (%u)\n"
+
+#, c-format
+msgid "too many redirections\n"
+msgstr "zu viele verschachtelte Umleitungen\n"
+
+#, fuzzy, c-format
+#| msgid "writing to '%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "Schreiben nach '%s'\n"
+
+#, c-format
 msgid "error allocating memory: %s\n"
 msgstr "Fehler beim Allozieren von Speicher: %s\n"
 
@@ -8465,14 +8478,6 @@ msgstr "Fehler beim Verbinden mit '%s': %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "Fehler beim Lesen der HTTP Antwort von `%s': %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL `%s' nach `%s' umgeleitet (%u)\n"
-
-#, c-format
-msgid "too many redirections\n"
-msgstr "zu viele verschachtelte Umleitungen\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

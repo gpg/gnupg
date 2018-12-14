@@ -8463,6 +8463,19 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "errore leggendo `%s': %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "too many redirections\n"
+msgstr "ci sono troppe preferenze `%c'\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "scrittura in `%s'\n"
+
 #, fuzzy, c-format
 msgid "error allocating memory: %s\n"
 msgstr "errore creando il portachiavi `%s': %s\n"
@@ -8564,14 +8577,6 @@ msgstr "errore scrivendo il portachiavi `%s': %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "errore leggendo `%s': %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "too many redirections\n"
-msgstr "ci sono troppe preferenze `%c'\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

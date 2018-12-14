@@ -8453,6 +8453,19 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "chyba pri čítaní `%s': %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "too many redirections\n"
+msgstr "príliš veľa `%c' predvolieb\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "zapisujem do '%s'\n"
+
 #, fuzzy, c-format
 msgid "error allocating memory: %s\n"
 msgstr "chyba pri vytváraní súboru kľúčov (keyring)`%s': %s\n"
@@ -8554,14 +8567,6 @@ msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "chyba pri čítaní `%s': %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "too many redirections\n"
-msgstr "príliš veľa `%c' predvolieb\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

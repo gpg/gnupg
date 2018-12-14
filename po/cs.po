@@ -8179,6 +8179,20 @@ msgid "error accessing '%s': http status %u\n"
 msgstr "chyba přístupu k „%s“: status HTTP %u\n"
 
 #, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL „%s“ přesměrováno na „%s“ (%u)\n"
+
+#, c-format
+msgid "too many redirections\n"
+msgstr "příliš mnoho přesměrování\n"
+
+# g10/import.c:766 g10/openfile.c:261#, c-format
+#, fuzzy, c-format
+#| msgid "writing to '%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "zapisuje se do „%s“\n"
+
+#, c-format
 msgid "error allocating memory: %s\n"
 msgstr "chyba při alokování paměti: %s\n"
 
@@ -8277,14 +8291,6 @@ msgstr "chyba při připojování na „%s“: %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "chyba při čtení HTTP odpovědi od „%s“: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL „%s“ přesměrováno na „%s“ (%u)\n"
-
-#, c-format
-msgid "too many redirections\n"
-msgstr "příliš mnoho přesměrování\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

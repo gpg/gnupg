@@ -8326,6 +8326,19 @@ msgid "error accessing '%s': http status %u\n"
 msgstr "помилка під час спроби доступу до «%s»: стан http %u\n"
 
 #, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "Адресу «%s» переспрямовано до «%s» (%u)\n"
+
+#, c-format
+msgid "too many redirections\n"
+msgstr "занадто багато переспрямувань\n"
+
+#, fuzzy, c-format
+#| msgid "writing to '%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "записуємо до «%s»\n"
+
+#, c-format
 msgid "error allocating memory: %s\n"
 msgstr "помилка під час спроби отримання області пам’яті: %s\n"
 
@@ -8424,14 +8437,6 @@ msgstr "помилка під час спроби встановлення з’
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "помилка під час спроби читання відповіді за HTTP для «%s»: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "Адресу «%s» переспрямовано до «%s» (%u)\n"
-
-#, c-format
-msgid "too many redirections\n"
-msgstr "занадто багато переспрямувань\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"

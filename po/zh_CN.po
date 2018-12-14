@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.3.0-beta485\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2018-12-07 20:59+0800\n"
 "Last-Translator: Chuhao Li <lchopn@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-SourceCharset: iso-8859-1\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -197,10 +197,9 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "重置代码"
 
-msgid "Push ACK button on card/token."
-msgstr "按下 card/token 上的 ACK 按钮。"
-
-msgid "Use the reader's pinpad for input."
+#, fuzzy, c-format
+#| msgid "Use the reader's pinpad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "使用读卡器的小键盘输入。"
 
 msgid "Repeat this Reset Code"
@@ -808,32 +807,28 @@ msgstr "警告： “%s%s” 是一个废弃的选项 - 此选项不会产生作
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "未知的调试选项 ‘%s’ 已被忽略\n"
 
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "等待 dirmngr 启动 ... (%ds)\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
 msgstr "等待代理人程序启动 ... (%ds)\n"
 
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "与 dirmngr 的连接已建立\n"
-
-#, c-format
-msgid "connection to the agent established\n"
+#, fuzzy, c-format
+#| msgid "connection to the agent established\n"
+msgid "connection to %s established\n"
 msgstr "到代理人程序的连接已建立\n"
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "没有正在运行的 gpg-agent 实例 - 正在启动 ‘%s’\n"
 
-#, c-format
-msgid "connection to the agent is in restricted mode\n"
+#, fuzzy, c-format
+#| msgid "connection to the agent is in restricted mode\n"
+msgid "connection to agent is in restricted mode\n"
 msgstr "与代理人程序的连接处于限制模式\n"
 
-#, c-format
-msgid "no running dirmngr - starting '%s'\n"
+#, fuzzy, c-format
+#| msgid "no running dirmngr - starting '%s'\n"
+msgid "no running Dirmngr - starting '%s'\n"
 msgstr "没有正在运行的 dirmngr 实例 - 正在启动‘%s’\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -1250,11 +1245,16 @@ msgstr "您的选择是？ "
 msgid "[not set]"
 msgstr "[未设定]"
 
-msgid "Mr."
-msgstr "先生"
+msgid "male"
+msgstr ""
 
-msgid "Mrs."
-msgstr "女士"
+msgid "female"
+msgstr ""
+
+#, fuzzy
+#| msgid "No reason specified"
+msgid "unspecified"
+msgstr "未指定原因"
 
 msgid "not forced"
 msgstr "非强制"
@@ -1307,8 +1307,8 @@ msgstr "错误：偏好字符串长度无效。\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "错误：偏好字符串中存在无效字符。\n"
 
-msgid "Salutation (M = Mr., F = Mrs., or space): "
-msgstr "称呼（M = 先生，F = 女士，或者留空)： "
+msgid "Sex ((M)ale, (F)emale or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "错误：无效的响应。\n"
@@ -1333,11 +1333,16 @@ msgstr "取得当前密钥信息时出错：%s\n"
 msgid "Replace existing key? (y/N) "
 msgstr "替换现存的密钥？(y/N) "
 
+#, fuzzy
+#| msgid ""
+#| "Note: There is no guarantee that the card supports the requested\n"
+#| "      key type or size.  If the key generation does not succeed,\n"
+#| "      please check the documentation of your card to see which\n"
+#| "      key types and sizes are supported.\n"
 msgid ""
-"Note: There is no guarantee that the card supports the requested\n"
-"      key type or size.  If the key generation does not succeed,\n"
-"      please check the documentation of your card to see which\n"
-"      key types and sizes are supported.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
+"      If the key generation does not succeed, please check the\n"
+"      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
 "注意：此处并不保证此卡片支持所请求的\n"
 "     密钥类型或者长度。如果密钥没有成功生成，\n"
@@ -1455,10 +1460,6 @@ msgstr "真的要执行恢复出厂设置吗？ (输入“yes”) "
 msgid "error for setup KDF: %s\n"
 msgstr "设置 KDF 时出现错误： %s\n"
 
-#, c-format
-msgid "error for setup UIF: %s\n"
-msgstr "设置 KDF 时出现错误： %s\n"
-
 msgid "quit this menu"
 msgstr "退出此菜单"
 
@@ -1486,8 +1487,10 @@ msgstr "更改登录名"
 msgid "change the language preferences"
 msgstr "更改语言偏好"
 
-msgid "change card holder's salutation"
-msgstr "变更卡片持有人的称呼"
+#, fuzzy
+#| msgid "change card holder's name"
+msgid "change card holder's sex"
+msgstr "更改卡持有人的姓名"
 
 msgid "change a CA fingerprint"
 msgstr "更改一个 CA 指纹"
@@ -1515,9 +1518,6 @@ msgstr "针对 PIN 身份验证设置 KDF"
 
 msgid "change the key attribute"
 msgstr "更改密钥属性"
-
-msgid "change the User Interaction Flag"
-msgstr "变更用户交互选项"
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -1602,8 +1602,9 @@ msgstr "创建密码时出现错误：%s\n"
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "由于在 S2K 模式，不能使用一个对称的 ESK 封包\n"
 
-#, c-format
-msgid "using cipher %s.%s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s.%s\n"
+msgid "using cipher %s\n"
 msgstr "使用密文 %s.%s\n"
 
 #, c-format
@@ -1641,16 +1642,18 @@ msgstr "警告： 强制压缩算法 %s (%d) 与接收者的偏好设置冲突\n
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "强行对称密文算法 %s (%d) 与接收者的偏好设置冲突\n"
 
-#, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s.%s 已加密给 \"%s\"\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "选项 ‘%s’ 可能不能用于 %s 模式\n"
 
-#, c-format
-msgid "%s.%s encrypted data\n"
+#, fuzzy, c-format
+#| msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s.%s 已加密的数据\n"
 
 #, c-format
@@ -1725,9 +1728,6 @@ msgstr "导出时移除密钥中未使用的部分"
 
 msgid "remove as much as possible from key during export"
 msgstr "导出时尽可能移除密钥中的可选部分"
-
-msgid "Do not export user id or attribute packets"
-msgstr "不要导出用户标识或者属性包"
 
 msgid "use the GnuPG key backup format"
 msgstr "使用 GnuPG 密钥备份格式"
@@ -2273,10 +2273,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "所选的密文算法无效\n"
 
 #, c-format
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "所选择的 AEAD 算法无效\n"
-
-#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "所选的压缩算法无效\n"
 
@@ -2321,10 +2317,6 @@ msgid "invalid personal cipher preferences\n"
 msgstr "无效的个人密文偏好设置\n"
 
 #, c-format
-msgid "invalid personal AEAD preferences\n"
-msgstr "无效的个人 AEAD 偏好设置\n"
-
-#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "无效的个人摘要算法偏好设置\n"
 
@@ -2333,16 +2325,8 @@ msgid "invalid personal compress preferences\n"
 msgstr "无效的个人压缩算法首选项\n"
 
 #, c-format
-msgid "chunk size invalid - using %d\n"
-msgstr "块大小无效 - 使用 %d\n"
-
-#, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s 尚不能和 %s 并用\n"
-
-#, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "AEAD 算法‘%s’不能在 %s 模式下使用\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -2497,9 +2481,6 @@ msgstr "导入后移除密钥中无用的部分"
 msgid "remove as much as possible from key after import"
 msgstr "导入后尽可能多地移除密钥中的可选部分"
 
-msgid "Do not import user id or attribute packets"
-msgstr "不要导入用户标识或者属性包"
-
 msgid "run import filters and export key immediately"
 msgstr "运行导入过滤器并立即导出密钥"
 
@@ -2592,10 +2573,6 @@ msgstr ""
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr "         “%s”：密文算法 %s 的首选项\n"
-
-#, c-format
-msgid "         \"%s\": preference for AEAD algorithm %s\n"
-msgstr "         \"%s\"：关于 AEAD 算法 %s 的偏好设置\n"
 
 #, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
@@ -3384,9 +3361,6 @@ msgstr "“%s” 不是一个正确的指纹\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "子密钥 “%s” 未找到\n"
 
-msgid "AEAD: "
-msgstr "AEAD： "
-
 msgid "Digest: "
 msgstr "摘要： "
 
@@ -3726,10 +3700,6 @@ msgstr "过多的散列算法偏好设置\n"
 #, c-format
 msgid "too many compression preferences\n"
 msgstr "过多的压缩算法偏好设置\n"
-
-#, c-format
-msgid "too many AEAD preferences\n"
-msgstr "过多的 AEAD 偏好设置\n"
 
 #, c-format
 msgid "invalid item '%s' in preference string\n"
@@ -4331,13 +4301,10 @@ msgstr "警告：无法获取 URI %s：%s\n"
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "奇怪的加密会话密钥长度（%d）\n"
 
-#, c-format
-msgid "%s.%s encrypted session key\n"
+#, fuzzy, c-format
+#| msgid "%s.%s encrypted session key\n"
+msgid "%s encrypted session key\n"
 msgstr "%s.%s 已加密的会话密钥\n"
-
-#, c-format
-msgid "encrypted with unknown algorithm %d.%s\n"
-msgstr "以下列未知算法加密 %d.%s\n"
 
 #, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
@@ -4346,6 +4313,10 @@ msgstr "密码由未知的散列算法 %d 生成\n"
 #, c-format
 msgid "public key is %s\n"
 msgstr "公钥是 %s\n"
+
+#, c-format
+msgid "public key encrypted data: good DEK\n"
+msgstr "公钥加密数据：完好的数据加密密钥（DEK）\n"
 
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
@@ -4360,6 +4331,10 @@ msgid "encrypted with %s key, ID %s\n"
 msgstr "由 %s 密钥加密、密钥号为 %s\n"
 
 #, c-format
+msgid "public key decryption failed: %s\n"
+msgstr "公钥解密失败：%s\n"
+
+#, c-format
 msgid "WARNING: multiple plaintexts seen\n"
 msgstr "警告： 检测到多重纯文本\n"
 
@@ -4370,14 +4345,6 @@ msgstr "以 %lu 个密码加密\n"
 #, c-format
 msgid "encrypted with 1 passphrase\n"
 msgstr "以 1 个密码加密\n"
-
-#, c-format
-msgid "public key decryption failed: %s\n"
-msgstr "公钥解密失败：%s\n"
-
-#, c-format
-msgid "public key encrypted data: good DEK\n"
-msgstr "公钥加密数据：完好的数据加密密钥（DEK）\n"
 
 #, c-format
 msgid "assuming %s encrypted data\n"
@@ -5301,8 +5268,9 @@ msgstr "警告：强制摘要算法 %s (%d) 与接收者的偏好设置冲突\n"
 msgid "signing:"
 msgstr "正在签名："
 
-#, c-format
-msgid "%s.%s encryption will be used\n"
+#, fuzzy, c-format
+#| msgid "%s.%s encryption will be used\n"
+msgid "%s encryption will be used\n"
 msgstr "%s.%s 加密将被使用\n"
 
 #, c-format
@@ -5940,14 +5908,6 @@ msgstr "输入行 %u 太长或者行末的 LF 缺失\n"
 #, c-format
 msgid "can't open fd %d: %s\n"
 msgstr "无法打开 fd %d：%s\n"
-
-#, c-format
-msgid "WARNING: encrypting without integrity protection is dangerous\n"
-msgstr "警告：无完整性保护的加密是危险的\n"
-
-#, c-format
-msgid "Hint: Do not use option %s\n"
-msgstr "提示：不要使用选项 %s\n"
 
 msgid "set debugging flags"
 msgstr "设置调试选项"
@@ -7926,6 +7886,19 @@ msgid "error accessing '%s': http status %u\n"
 msgstr "访问‘%s’时出现错误：http 状态码 %u\n"
 
 #, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL '%s' 重定向到 '%s' (%u)\n"
+
+#, c-format
+msgid "too many redirections\n"
+msgstr "过多重定向\n"
+
+#, fuzzy, c-format
+#| msgid "writing to '%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "正在写入‘%s’\n"
+
+#, c-format
 msgid "error allocating memory: %s\n"
 msgstr "分配内存时出现错误：%s\n"
 
@@ -8024,14 +7997,6 @@ msgstr "连接到‘%s’时出现错误：%s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "读取‘%s’的 HTTP 响应时出现错误：%s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL '%s' 重定向到 '%s' (%u)\n"
-
-#, c-format
-msgid "too many redirections\n"
-msgstr "过多重定向\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8643,3 +8608,66 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#~ msgid "Push ACK button on card/token."
+#~ msgstr "按下 card/token 上的 ACK 按钮。"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "等待 dirmngr 启动 ... (%ds)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "与 dirmngr 的连接已建立\n"
+
+#~ msgid "Mr."
+#~ msgstr "先生"
+
+#~ msgid "Mrs."
+#~ msgstr "女士"
+
+#~ msgid "Salutation (M = Mr., F = Mrs., or space): "
+#~ msgstr "称呼（M = 先生，F = 女士，或者留空)： "
+
+#~ msgid "error for setup UIF: %s\n"
+#~ msgstr "设置 KDF 时出现错误： %s\n"
+
+#~ msgid "change card holder's salutation"
+#~ msgstr "变更卡片持有人的称呼"
+
+#~ msgid "change the User Interaction Flag"
+#~ msgstr "变更用户交互选项"
+
+#~ msgid "Do not export user id or attribute packets"
+#~ msgstr "不要导出用户标识或者属性包"
+
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "所选择的 AEAD 算法无效\n"
+
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "无效的个人 AEAD 偏好设置\n"
+
+#~ msgid "chunk size invalid - using %d\n"
+#~ msgstr "块大小无效 - 使用 %d\n"
+
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "AEAD 算法‘%s’不能在 %s 模式下使用\n"
+
+#~ msgid "Do not import user id or attribute packets"
+#~ msgstr "不要导入用户标识或者属性包"
+
+#~ msgid "         \"%s\": preference for AEAD algorithm %s\n"
+#~ msgstr "         \"%s\"：关于 AEAD 算法 %s 的偏好设置\n"
+
+#~ msgid "AEAD: "
+#~ msgstr "AEAD： "
+
+#~ msgid "too many AEAD preferences\n"
+#~ msgstr "过多的 AEAD 偏好设置\n"
+
+#~ msgid "encrypted with unknown algorithm %d.%s\n"
+#~ msgstr "以下列未知算法加密 %d.%s\n"
+
+#~ msgid "WARNING: encrypting without integrity protection is dangerous\n"
+#~ msgstr "警告：无完整性保护的加密是危险的\n"
+
+#~ msgid "Hint: Do not use option %s\n"
+#~ msgstr "提示：不要使用选项 %s\n"

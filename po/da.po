@@ -8709,6 +8709,20 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "too many cipher preferences\n"
+msgid "too many redirections\n"
+msgstr "for mange chifferpræferencer\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "skriver til »%s«\n"
+
 #, fuzzy, c-format
 #| msgid "error allocating enough memory: %s\n"
 msgid "error allocating memory: %s\n"
@@ -8824,15 +8838,6 @@ msgstr "fejl ved skrivning til »%s«: %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "fejl ved læsning fra %s: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "too many cipher preferences\n"
-msgid "too many redirections\n"
-msgstr "for mange chifferpræferencer\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"
