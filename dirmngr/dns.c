@@ -77,6 +77,7 @@ typedef int socket_fd_t;
 #include <netdb.h>		/* struct addrinfo */
 #endif
 
+#include "gpgrt.h"   /* For GGPRT_GCC_VERSION */
 #include "dns.h"
 
 
@@ -7521,9 +7522,13 @@ static unsigned char *dns_so_tcp_recv_buffer(struct dns_socket *so) {
 }
 
 
-#if defined __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warray-bounds"
+
+#if GPGRT_GCC_VERSION >= 80000
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Warray-bounds"
+#elif defined __clang__
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Warray-bounds"
 #endif
 
 static int dns_so_tcp_send(struct dns_socket *so) {
@@ -7589,8 +7594,10 @@ static int dns_so_tcp_recv(struct dns_socket *so) {
 	return 0;
 } /* dns_so_tcp_recv() */
 
-#if __clang__
-#pragma clang diagnostic pop
+#if GPGRT_GCC_VERSION >= 80000
+# pragma GCC diagnostic pop
+#elif __clang__
+# pragma clang diagnostic pop
 #endif
 
 

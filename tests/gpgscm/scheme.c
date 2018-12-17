@@ -44,6 +44,8 @@
 # endif
 #endif
 
+#include "gpgrt.h"   /* For GGPRT_GCC_VERSION */
+
 /* Used for documentation purposes, to signal functions in 'interface' */
 #define INTERFACE
 
@@ -3438,6 +3440,11 @@ int list_length(scheme *sc, pointer a) {
 
 
 
+#if GPGRT_GCC_VERSION >= 80000
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
+
 #define s_retbool(tf)    s_return(sc,(tf) ? sc->T : sc->F)
 
 /* kernel of this interpreter */
@@ -5322,6 +5329,11 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
      }
   }
 }
+
+#if GPGRT_GCC_VERSION >= 80000
+# pragma GCC diagnostic pop
+#endif
+
 
 typedef int (*test_predicate)(pointer);
 
