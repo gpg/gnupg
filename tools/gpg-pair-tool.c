@@ -1885,8 +1885,8 @@ command_respond (void)
 {
   gpg_error_t err;
   unsigned char *msg;
-  size_t msglen;
-  int msgtype;
+  size_t msglen = 0; /* In case that read_message returns an error.  */
+  int msgtype = 0;   /* ditto.  */
   nvc_t state;
   const char *rolestr;
   const char *statestr;
