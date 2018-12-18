@@ -1151,6 +1151,7 @@ encrypt_response (estream_t *r_output, estream_t input, const char *addrspec,
   ccparray_put (&ccp, "--status-fd=2");
   ccparray_put (&ccp, "--always-trust");
   ccparray_put (&ccp, "--armor");
+  ccparray_put (&ccp, "-z0");  /* No compression for improved robustness.  */
   if (fake_submission_addr)
     ccparray_put (&ccp, "--auto-key-locate=clear,local");
   else

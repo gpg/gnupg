@@ -586,6 +586,7 @@ encrypt_stream (estream_t *r_output, estream_t input, const char *keyfile)
   ccparray_put (&ccp, "--always-trust");
   ccparray_put (&ccp, "--no-keyring");
   ccparray_put (&ccp, "--armor");
+  ccparray_put (&ccp, "-z0");  /* No compression for improved robustness.  */
   ccparray_put (&ccp, "--recipient-file");
   ccparray_put (&ccp, keyfile);
   ccparray_put (&ccp, "--encrypt");
