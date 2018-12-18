@@ -7950,10 +7950,9 @@ msgstr "URL'%s' は '%s' (%u) へリダイレクトされました\n"
 msgid "too many redirections\n"
 msgstr "リダイレクトが多すぎます\n"
 
-#, fuzzy, c-format
-#| msgid "writing to '%s'\n"
+#, c-format
 msgid "redirection changed to '%s'\n"
-msgstr "'%s'への書き込み\n"
+msgstr "リダイレクトが'%s'に変更されました\n"
 
 #, c-format
 msgid "error allocating memory: %s\n"
