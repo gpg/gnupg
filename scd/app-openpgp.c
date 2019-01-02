@@ -2538,10 +2538,10 @@ do_setattr (app_t app, const char *name,
 }
 
 
-/* Handle the WRITECERT command for OpenPGP.  This rites the standard
-   certifciate to the card; CERTID needs to be set to "OPENPGP.3".
-   PINCB and PINCB_ARG are the usual arguments for the pinentry
-   callback.  */
+/* Handle the WRITECERT command for OpenPGP.  This writes the standard
+ * certificate to the card; CERTID needs to be set to "OPENPGP.3".
+ * PINCB and PINCB_ARG are the usual arguments for the pinentry
+ * callback.  */
 static gpg_error_t
 do_writecert (app_t app, ctrl_t ctrl,
               const char *certidstr,
