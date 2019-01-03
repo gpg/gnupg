@@ -465,7 +465,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 static const char hlp_readcert[] =
-  "READCERT <hexified_certid>|<keyid>\n"
+  "READCERT <hexified_certid>|<keyid>|<oid>\n"
   "\n"
   "Note, that this function may even be used on a locked card.";
 static gpg_error_t
@@ -498,7 +498,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_readkey[] =
-  "READKEY [--advanced] <keyid>\n"
+  "READKEY [--advanced] <keyid>|<oid>\n"
   "\n"
   "Return the public key for the given cert or key ID as a standard\n"
   "S-expression.\n"
@@ -514,7 +514,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   unsigned char *cert = NULL;
   size_t ncert, n;
   ksba_cert_t kc = NULL;
-  ksba_sexp_t p;
+  ksba_sexp_t p = NULL;
   unsigned char *pk;
   size_t pklen;
 
@@ -570,13 +570,36 @@ cmd_readkey (assuan_context_t ctx, char *line)
       rc = gpg_error (GPG_ERR_NO_PUBKEY);
       goto leave;
     }
-
   n = gcry_sexp_canon_len (p, 0, NULL, NULL);
-  rc = assuan_send_data (ctx, p, n);
-  xfree (p);
 
+  if (advanced)
+    {
+      gcry_sexp_t s_key;
+
+      rc = gcry_sexp_new (&s_key, (void*)p, n, 0);
+      if (rc)
+        goto leave;
+
+      pklen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, NULL, 0);
+      pk = xtrymalloc (pklen);
+      if (!pk)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+      log_assert (pklen);
+
+      gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, pk, pklen);
+      gcry_sexp_release (s_key);
+      /* (One less to adjust for the trailing '\0') */
+      rc = assuan_send_data (ctx, pk, pklen-1);
+      xfree (pk);
+    }
+  else
+    rc = assuan_send_data (ctx, p, n);
 
  leave:
+  xfree (p);
   ksba_cert_release (kc);
   xfree (cert);
   return rc;
