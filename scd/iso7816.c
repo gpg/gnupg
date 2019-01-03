@@ -138,6 +138,21 @@ iso7816_select_application (int slot, const char *aid, size_t aidlen,
 }
 
 
+/* This is the same as iso7816_select_application but may return data
+ * at RESULT,RESULTLEN).  */
+gpg_error_t
+iso7816_select_application_ext (int slot, const char *aid, size_t aidlen,
+                                unsigned int flags,
+                                unsigned char **result, size_t *resultlen)
+{
+  int sw;
+  sw = apdu_send (slot, 0, 0x00, CMD_SELECT_FILE, 4,
+                  (flags&1)? 0:0x0c, aidlen, aid,
+                  result, resultlen);
+  return map_sw (sw);
+}
+
+
 gpg_error_t
 iso7816_select_file (int slot, int tag, int is_dir)
 {
@@ -382,6 +397,70 @@ iso7816_get_data (int slot, int extended_mode, int tag,
 
   sw = apdu_send_le (slot, extended_mode, 0x00, CMD_GET_DATA,
                      ((tag >> 8) & 0xff), (tag & 0xff), -1, NULL, le,
+                     result, resultlen);
+  if (sw != SW_SUCCESS)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+      return map_sw (sw);
+    }
+
+  return 0;
+}
+
+
+/* Perform a GET DATA command requesting TAG and storing the result in
+ * a newly allocated buffer at the address passed by RESULT.  Return
+ * the length of this data at the address of RESULTLEN.  This variant
+ * is needed for long (3 octet) tags. */
+gpg_error_t
+iso7816_get_data_odd (int slot, int extended_mode, unsigned int tag,
+                      unsigned char **result, size_t *resultlen)
+{
+  int sw;
+  int le;
+  int datalen;
+  unsigned char data[5];
+
+  if (!result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  if (extended_mode > 0 && extended_mode < 256)
+    le = 65534; /* Not 65535 in case it is used as some special flag.  */
+  else if (extended_mode > 0)
+    le = extended_mode;
+  else
+    le = 256;
+
+  data[0] = 0x5c;
+  if (tag <= 0xff)
+    {
+      data[1] = 1;
+      data[2] = tag;
+      datalen = 3;
+    }
+  else if (tag <= 0xffff)
+    {
+      data[1] = 2;
+      data[2] = (tag >> 8);
+      data[3] = tag;
+      datalen = 4;
+    }
+  else
+    {
+      data[1] = 3;
+      data[2] = (tag >> 16);
+      data[3] = (tag >> 8);
+      data[4] = tag;
+      datalen = 5;
+    }
+
+  sw = apdu_send_le (slot, extended_mode, 0x00, CMD_GET_DATA + 1,
+                     0x3f, 0xff, datalen, data, le,
                      result, resultlen);
   if (sw != SW_SUCCESS)
     {
