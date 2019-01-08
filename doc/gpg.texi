@@ -1895,32 +1895,12 @@ are available for all keyserver types, some common options are:
   retrieving keys by subkey id.
 
   @item timeout
-  Tell the keyserver helper program how long (in seconds) to try and
-  perform a keyserver action before giving up. Note that performing
-  multiple actions at the same time uses this timeout value per action.
-  For example, when retrieving multiple keys via @option{--receive-keys}, the
-  timeout applies separately to each key retrieval, and not to the
-  @option{--receive-keys} command as a whole. Defaults to 30 seconds.
-
-  @item http-proxy=@var{value}
-  This option is deprecated.
-  Set the proxy to use for HTTP and HKP keyservers.
-  This overrides any proxy defined in @file{dirmngr.conf}.
-
-  @item verbose
-  This option has no more function since GnuPG 2.1.  Use the
-  @code{dirmngr} configuration options instead.
-
-  @item debug
-  This option has no more function since GnuPG 2.1.  Use the
-  @code{dirmngr} configuration options instead.
-
-  @item check-cert
-  This option has no more function since GnuPG 2.1.  Use the
-  @code{dirmngr} configuration options instead.
-
+  @itemx http-proxy=@var{value}
+  @itemx verbose
+  @itemx debug
+  @itemx check-cert
   @item ca-cert-file
-  This option has no more function since GnuPG 2.1.  Use the
+  These options have no more function since GnuPG 2.1.  Use the
   @code{dirmngr} configuration options instead.
 
 @end table
