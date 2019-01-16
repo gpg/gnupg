@@ -481,6 +481,7 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
       x->keyid[0] = enc->keyid[0];
       x->keyid[1] = enc->keyid[1];
       x->pubkey_algo = enc->pubkey_algo;
+      x->result = -1;
       x->data[0] = x->data[1] = NULL;
       if (enc->data[0])
         {
@@ -577,22 +578,21 @@ proc_encrypted (CTX c, PACKET *pkt)
     {
       c->dek = xmalloc_secure_clear (sizeof *c->dek);
       result = get_session_key (c->ctrl, c->pkenc_list, c->dek);
-      if (result  == GPG_ERR_NO_SECKEY)
+      if (is_status_enabled ())
         {
-          if (is_status_enabled ())
-            {
-              struct pubkey_enc_list *list;
+          struct pubkey_enc_list *list;
 
-              for (list = c->pkenc_list; list; list = list->next)
-                {
-                  char buf[20];
-                  snprintf (buf, sizeof buf, "%08lX%08lX",
-                            (ulong)list->keyid[0], (ulong)list->keyid[1]);
-                  write_status_text (STATUS_NO_SECKEY, buf);
-                }
-            }
+          for (list = c->pkenc_list; list; list = list->next)
+            if (list->result == GPG_ERR_NO_SECKEY)
+              {
+                char buf[20];
+                snprintf (buf, sizeof buf, "%08lX%08lX",
+                          (ulong)list->keyid[0], (ulong)list->keyid[1]);
+                write_status_text (STATUS_NO_SECKEY, buf);
+              }
         }
-      else if (result)
+
+      if (result)
         {
           log_info (_("public key decryption failed: %s\n"),
                     gpg_strerror (result));

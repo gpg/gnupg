@@ -132,6 +132,8 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           if (openpgp_pk_test_algo2 (k->pubkey_algo, PUBKEY_USAGE_ENC))
             continue;
 
+          k->result = GPG_ERR_NO_SECKEY;
+
           if (sk->pubkey_algo != k->pubkey_algo)
             continue;
 
@@ -155,6 +157,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           rc = get_it (ctrl, k, dek, sk, keyid);
           if (!rc)
             {
+              k->result = 0;
               if (!opt.quiet && !k->keyid[0] && !k->keyid[1])
                 log_info (_("okay, we are the anonymous recipient.\n"));
               search_for_secret_keys = 0;

@@ -137,6 +137,7 @@ struct pubkey_enc_list
   struct pubkey_enc_list *next;
   u32 keyid[2];
   int pubkey_algo;
+  int result;
   gcry_mpi_t data[PUBKEY_MAX_NENC];
 };
 
