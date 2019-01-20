@@ -273,7 +273,7 @@ get_chv_status (app_t app, int sigg, int pwid)
   command[3] = pwid;
 
   if (apdu_send_direct (app->slot, 0, (unsigned char *)command,
-                        4, 0, &result, &resultlen))
+                        4, 0, NULL, &result, &resultlen))
     rc = -1; /* Error. */
   else if (resultlen < 2)
     rc = -1; /* Error. */
@@ -1300,7 +1300,7 @@ get_nks_version (int slot)
   int type;
 
   if (iso7816_apdu_direct (slot, "\x80\xaa\x06\x00\x00", 5, 0,
-                           &result, &resultlen))
+                           NULL, &result, &resultlen))
     return 2; /* NKS 2 does not support this command.  */
 
   /* Example value:    04 11 19 22 21 6A 20 80 03 03 01 01 01 00 00 00

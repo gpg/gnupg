@@ -333,7 +333,7 @@ static const char hlp_learn[] =
   "or a \"CANCEL\" to force the function to terminate with a Cancel\n"
   "error message.\n"
   "\n"
-  "With the option --keypairinfo only KEYPARIINFO lstatus lines are\n"
+  "With the option --keypairinfo only KEYPARIINFO status lines are\n"
   "returned.\n"
   "\n"
   "The response of this command is a list of status lines formatted as\n"
@@ -346,6 +346,7 @@ static const char hlp_learn[] =
   "    P15     = PKCS-15 structure used\n"
   "    DINSIG  = DIN SIG\n"
   "    OPENPGP = OpenPGP card\n"
+  "    PIV     = PIV card\n"
   "    NKS     = NetKey card\n"
   "\n"
   "are implemented.  These strings are aliases for the AID\n"
@@ -1663,7 +1664,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
 
       rc = apdu_send_direct (app->slot, exlen,
                              apdu, apdulen, handle_more,
-                             &result, &resultlen);
+                             NULL, &result, &resultlen);
       if (rc)
         log_error ("apdu_send_direct failed: %s\n", gpg_strerror (rc));
       else
