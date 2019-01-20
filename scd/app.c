@@ -211,6 +211,60 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
   if (!want_undefined)
     {
       err = iso7816_select_file (slot, 0x3F00, 1);
+      if (gpg_err_code (err) == GPG_ERR_CARD)
+        {
+          /* Might be SW==0x7D00.  Let's test whether it is a Yubikey
+           * by selecting its manager application and then reading the
+           * config.  */
+          static char const yk_aid[] =
+            { 0xA0, 0x00, 0x00, 0x05, 0x27, 0x47, 0x11, 0x17 }; /*MGR*/
+          unsigned char *buf;
+          size_t buflen;
+          const unsigned char *s0, *s1;
+          size_t n;
+
+          if (!iso7816_select_application (slot, yk_aid, sizeof yk_aid,
+                                           0x0001)
+              && !iso7816_apdu_direct (slot, "\x00\x1d\x00\x00\x00", 5, 0,
+                                       NULL, &buf, &buflen))
+            {
+              if (opt.verbose)
+                {
+                  log_info ("Yubico: config=");
+                  log_printhex (buf, buflen, "");
+                }
+
+              /* We skip the first byte which seems to be the total
+               * length of the config data.  */
+              if (buflen > 1)
+                {
+                  s0 = find_tlv (buf+1, buflen-1, 0x04, &n);  /* Form factor */
+                  if (s0 && n == 1)
+                    {
+                      s1 = find_tlv (buf+1, buflen-1, 0x02, &n);  /* Serial */
+                      if (s1 && n >= 4)
+                        {
+                          app->serialno = xtrymalloc (3 + 1 + n);
+                          if (app->serialno)
+                            {
+                              app->serialnolen = 3 + 1 + n;
+                              app->serialno[0] = 0xff;
+                              app->serialno[1] = 0x02;
+                              app->serialno[2] = 0x0;
+                              app->serialno[3] = *s0;
+                              memcpy (app->serialno + 4, s1, n);
+                              /* Note that we do not clear the error
+                               * so that no further serial number
+                               * testing is done.  After all we just
+                               * set the serial number.  */
+                            }
+                        }
+                    }
+                }
+              xfree (buf);
+            }
+        }
+
       if (!err)
         err = iso7816_select_file (slot, 0x2F02, 0);
       if (!err)
@@ -270,6 +324,8 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
   if (err && is_app_allowed ("openpgp")
           && (!name || !strcmp (name, "openpgp")))
     err = app_select_openpgp (app);
+  if (err && is_app_allowed ("piv") && (!name || !strcmp (name, "piv")))
+    err = app_select_piv (app);
   if (err && is_app_allowed ("nks") && (!name || !strcmp (name, "nks")))
     err = app_select_nks (app);
   if (err && is_app_allowed ("p15") && (!name || !strcmp (name, "p15")))
@@ -409,6 +465,7 @@ get_supported_applications (void)
 {
   const char *list[] = {
     "openpgp",
+    "piv",
     "nks",
     "p15",
     "geldkarte",
@@ -509,6 +566,7 @@ release_application (app_t app, int locked_already)
      FF 00 00 = For serial numbers starting with an FF
      FF 01 00 = Some german p15 cards return an empty serial number so the
                 serial number from the EF(TokenInfo) is used instead.
+     FF 02 00 = Serial number from Yubikey config
      FF 7F 00 = No serialno.
 
      All other serial number not starting with FF are used as they are.

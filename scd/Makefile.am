@@ -33,7 +33,8 @@ AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) \
 	     $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
 
 
-card_apps = app-openpgp.c app-nks.c app-dinsig.c app-p15.c app-geldkarte.c app-sc-hsm.c
+card_apps = app-openpgp.c app-piv.c app-nks.c app-dinsig.c app-p15.c \
+	    app-geldkarte.c app-sc-hsm.c
 
 scdaemon_SOURCES = \
 	scdaemon.c scdaemon.h \

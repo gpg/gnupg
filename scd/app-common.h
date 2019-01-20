@@ -206,5 +206,8 @@ gpg_error_t app_select_geldkarte (app_t app);
 /*-- app-sc-hsm.c --*/
 gpg_error_t app_select_sc_hsm (app_t app);
 
+/*-- app-piv.c --*/
+gpg_error_t app_select_piv (app_t app);
+
 
 #endif /*GNUPG_SCD_APP_COMMON_H*/
