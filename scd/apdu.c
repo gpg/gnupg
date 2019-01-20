@@ -3062,19 +3062,25 @@ apdu_send_simple (int slot, int extended_mode,
 
 
 /* This is a more generic version of the apdu sending routine.  It
-   takes an already formatted APDU in APDUDATA or length APDUDATALEN
-   and returns with an APDU including the status word.  With
-   HANDLE_MORE set to true this function will handle the MORE DATA
-   status and return all APDUs concatenated with one status word at
-   the end.  If EXTENDED_LENGTH is != 0 extended lengths are allowed
-   with a max. result data length of EXTENDED_LENGTH bytes.  The
-   function does not return a regular status word but 0 on success.
-   If the slot is locked, the function returns immediately with an
-   error.  */
+ * takes an already formatted APDU in APDUDATA or length APDUDATALEN
+ * and returns with an APDU including the status word.  With
+ * HANDLE_MORE set to true this function will handle the MORE DATA
+ * status and return all APDUs concatenated with one status word at
+ * the end.  If EXTENDED_LENGTH is != 0 extended lengths are allowed
+ * with a max. result data length of EXTENDED_LENGTH bytes.  The
+ * function does not return a regular status word but 0 on success.
+ * If the slot is locked, the function returns immediately with an
+ * error.
+ *
+ * Out of historical reasons the function returns 0 on success and
+ * outs the status word at the end of the result to be able to get the
+ * status word in the case of a not provided RETBUF, R_SW can be used
+ * to store the SW.  But note that R_SW qill only be set if the
+ * function returns 0. */
 int
 apdu_send_direct (int slot, size_t extended_length,
                   const unsigned char *apdudata, size_t apdudatalen,
-                  int handle_more,
+                  int handle_more, unsigned int *r_sw,
                   unsigned char **retbuf, size_t *retbuflen)
 {
 #define SHORT_RESULT_BUFFER_SIZE 258
@@ -3281,8 +3287,12 @@ apdu_send_direct (int slot, size_t extended_length,
       (*retbuf)[(*retbuflen)++] = sw;
     }
 
+  if (r_sw)
+    *r_sw = sw;
+
   if (DBG_CARD_IO && retbuf)
     log_printhex ("      dump: ", *retbuf, *retbuflen);
+
 
   return 0;
 }

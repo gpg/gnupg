@@ -50,6 +50,7 @@
 #define CMD_PUT_DATA    0xDA
 #define CMD_MSE         0x22
 #define CMD_PSO         0x2A
+#define CMD_GENERAL_AUTHENTICATE  0x87
 #define CMD_INTERNAL_AUTHENTICATE 0x88
 #define CMD_GENERATE_KEYPAIR      0x47
 #define CMD_GET_CHALLENGE         0x84
@@ -209,24 +210,28 @@ iso7816_list_directory (int slot, int list_dirs,
    internally.  The return value is a gpg error code (i.e. a mapped
    status word).  This is basically the same as apdu_send_direct but
    it maps the status word and does not return it in the result
-   buffer.  */
+   buffer.  However, it R_SW is not NULL the status word is stored
+   R_SW for closer inspection. */
 gpg_error_t
 iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen,
-                     int handle_more,
+                     int handle_more, unsigned int *r_sw,
                      unsigned char **result, size_t *resultlen)
 {
-  int sw;
+  int sw, sw2;
 
-  if (!result || !resultlen)
-    return gpg_error (GPG_ERR_INV_VALUE);
-  *result = NULL;
-  *resultlen = 0;
+  if (result)
+    {
+      *result = NULL;
+      *resultlen = 0;
+    }
 
   sw = apdu_send_direct (slot, 0, apdudata, apdudatalen, handle_more,
-                         result, resultlen);
+                         &sw2, result, resultlen);
   if (!sw)
     {
-      if (*resultlen < 2)
+      if (!result)
+        sw = sw2;
+      else if (*resultlen < 2)
         sw = SW_HOST_GENERAL_ERROR;
       else
         {
@@ -235,13 +240,15 @@ iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen,
           (*resultlen)--;
         }
     }
-  if (sw != SW_SUCCESS)
+  if (sw != SW_SUCCESS && result)
     {
       /* Make sure that pending buffers are released. */
       xfree (*result);
       *result = NULL;
       *resultlen = 0;
     }
+  if (r_sw)
+    *r_sw = sw;
   return map_sw (sw);
 }
 
@@ -541,7 +548,7 @@ iso7816_decipher (int slot, int extended_mode,
 }
 
 
-/*  For LE see do_generate_keypair.  */
+/* For LE see do_generate_keypair.  */
 gpg_error_t
 iso7816_internal_authenticate (int slot, int extended_mode,
                                const unsigned char *data, size_t datalen,
@@ -562,6 +569,44 @@ iso7816_internal_authenticate (int slot, int extended_mode,
 
   sw = apdu_send_le (slot, extended_mode,
                      0x00, CMD_INTERNAL_AUTHENTICATE, 0, 0,
+                     datalen, (const char*)data,
+                     le,
+                     result, resultlen);
+  if (sw != SW_SUCCESS)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+      return map_sw (sw);
+    }
+
+  return 0;
+}
+
+
+/* For LE see do_generate_keypair.  */
+gpg_error_t
+iso7816_general_authenticate (int slot, int extended_mode,
+                              int algoref, int keyref,
+                              const unsigned char *data, size_t datalen,
+                              int le,
+                              unsigned char **result, size_t *resultlen)
+{
+  int sw;
+
+  if (!data || !datalen || !result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  if (!extended_mode)
+    le = 256;  /* Ignore provided Le and use what apdu_send uses. */
+  else if (le >= 0 && le < 256)
+    le = 256;
+
+  sw = apdu_send_le (slot, extended_mode,
+                     0x00, CMD_GENERAL_AUTHENTICATE, algoref, keyref,
                      datalen, (const char*)data,
                      le,
                      result, resultlen);

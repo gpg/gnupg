@@ -58,7 +58,7 @@ gpg_error_t iso7816_list_directory (int slot, int list_dirs,
                                     unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_apdu_direct (int slot,
                                  const void *apdudata, size_t apdudatalen,
-                                 int handle_more,
+                                 int handle_more, unsigned int *r_sw,
                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_check_pinpad (int slot, int command,
                                   pininfo_t *pininfo);
@@ -97,6 +97,13 @@ gpg_error_t iso7816_internal_authenticate (int slot, int extended_mode,
                                    const unsigned char *data, size_t datalen,
                                    int le,
                                    unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_general_authenticate (int slot, int extended_mode,
+                                          int algoref, int keyref,
+                                          const unsigned char *data,
+                                          size_t datalen,
+                                          int le,
+                                          unsigned char **result,
+                                          size_t *resultlen);
 gpg_error_t iso7816_generate_keypair (int slot, int extended_mode,
                                     const char *data, size_t datalen,
                                     int le,
