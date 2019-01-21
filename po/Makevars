@@ -62,6 +62,7 @@ XGETTEXT_OPTIONS = \
 	--flag=print_further_info:1:c-format     \
 	--flag=write_status_printf:2:c-format    \
 	--flag=gpgconf_write_status:2:c-format   \
+        --flag=send_status_printf:3:c-format     \
 	--flag=wks_write_status:2:c-format
 
 # This is the copyright holder that gets inserted into the header of the

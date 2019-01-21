@@ -2584,9 +2584,13 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   int pinlen = 0;
 
   (void)ctrl;
+
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.fixedlen = -1;
   pininfo.minlen = minlen;
+
+  if ((flags & APP_CHANGE_FLAG_CLEAR))
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   if (reset_mode && chvno == 3)
     {

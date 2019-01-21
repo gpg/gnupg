@@ -1192,12 +1192,13 @@ cmd_random (assuan_context_t ctx, char *line)
 
 
 static const char hlp_passwd[] =
-  "PASSWD [--reset] [--nullpin] <chvno>\n"
+  "PASSWD [--reset] [--nullpin] [--clear] <chvno>\n"
   "\n"
   "Change the PIN or, if --reset is given, reset the retry counter of\n"
   "the card holder verification vector CHVNO.  The option --nullpin is\n"
-  "used for TCOS cards to set the initial PIN.  The format of CHVNO\n"
-  "depends on the card application.";
+  "used for TCOS cards to set the initial PIN.  The option --clear clears\n"
+  "the security status associated with the PIN so that the PIN needs to\n"
+  "be presented again. The format of CHVNO depends on the card application.";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
@@ -1210,6 +1211,8 @@ cmd_passwd (assuan_context_t ctx, char *line)
     flags |= APP_CHANGE_FLAG_RESET;
   if (has_option (line, "--nullpin"))
     flags |= APP_CHANGE_FLAG_NULLPIN;
+  if (has_option (line, "--clear"))
+    flags |= APP_CHANGE_FLAG_CLEAR;
 
   line = skip_options (line);
 
@@ -1219,6 +1222,11 @@ cmd_passwd (assuan_context_t ctx, char *line)
   while (*line && !spacep (line))
     line++;
   *line = 0;
+
+  /* Do not allow other flags aside of --clear. */
+  if ((flags & APP_CHANGE_FLAG_CLEAR) && (flags & ~APP_CHANGE_FLAG_CLEAR))
+    return set_error (GPG_ERR_UNSUPPORTED_OPERATION,
+                      "--clear used with other options");
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -1896,6 +1904,26 @@ send_status_direct (ctrl_t ctrl, const char *keyword, const char *args)
     log_error ("error: LF detected in status line - not sending\n");
   else
     assuan_write_status (ctx, keyword, args);
+}
+
+
+/* This status functions expects a printf style format string.  No
+ * filtering of the data is done instead the orintf formatted data is
+ * send using assuan_send_status. */
+gpg_error_t
+send_status_printf (ctrl_t ctrl, const char *keyword, const char *format, ...)
+{
+  gpg_error_t err;
+  va_list arg_ptr;
+  assuan_context_t ctx;
+
+  if (!ctrl || !ctrl->server_local || !(ctx = ctrl->server_local->assuan_ctx))
+    return 0;
+
+  va_start (arg_ptr, format);
+  err = vprint_assuan_status (ctx, keyword, format, arg_ptr);
+  va_end (arg_ptr);
+  return err;
 }
 
 

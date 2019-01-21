@@ -26,8 +26,9 @@
 #include <ksba.h>
 
 
-#define APP_CHANGE_FLAG_RESET    1
-#define APP_CHANGE_FLAG_NULLPIN  2
+#define APP_CHANGE_FLAG_RESET    1  /* PIN Reset mode.  */
+#define APP_CHANGE_FLAG_NULLPIN  2  /* NULL PIN mode.  */
+#define APP_CHANGE_FLAG_CLEAR    4  /* Clear the given PIN.  */
 
 /* Bit flags set by the decipher function into R_INFO.  */
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
