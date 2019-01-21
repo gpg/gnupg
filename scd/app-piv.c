@@ -364,6 +364,25 @@ dump_all_do (int slot)
 }
 
 
+/* Parse the key reference KEYREFSTR which is expected to hold a key
+ * reference for a PIN object.  Return the one octet keyref or -1 for
+ * an invalid reference.  */
+static int
+parse_pin_keyref (const char *keyrefstr)
+{
+  if (!keyrefstr)
+    return -1;
+  else if (!ascii_strcasecmp (keyrefstr, "PIV.00"))
+    return 0x00;
+  else if (!ascii_strcasecmp (keyrefstr, "PIV.80"))
+    return 0x80;
+  else if (!ascii_strcasecmp (keyrefstr, "PIV.81"))
+    return 0x81;
+  else
+    return -1;
+}
+
+
 /* Return an allocated string with the serial number in a format to be
  * show to the user.  With FAILMODE is true return NULL if such an
  * abbreviated S/N is not available, else return the full serial
@@ -396,6 +415,47 @@ get_dispserialno (app_t app, int failmode)
 }
 
 
+/* The verify command can be used to retrieve the security status of
+ * the card.  Given the PIN name (e.g. "PIV.80" for thge application
+ * pin, a status is returned:
+ *
+ *        -1 = Error retrieving the data,
+ *        -2 = No such PIN,
+ *        -3 = PIN blocked,
+ *        -5 = Verify still valid,
+ *    n >= 0 = Number of verification attempts left.
+ */
+static int
+get_chv_status (app_t app, const char *keyrefstr)
+{
+  unsigned char apdu[4];
+  unsigned int sw;
+  int result;
+  int keyref;
+
+  keyref = parse_pin_keyref (keyrefstr);
+  if (!keyrefstr)
+    return -1;
+
+  apdu[0] = 0x00;
+  apdu[1] = ISO7816_VERIFY;
+  apdu[2] = 0x00;
+  apdu[3] = keyref;
+  if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
+    result = -5; /* No need to verification.  */
+  else if (sw == 0x6a88)
+    result = -2; /* No such PIN.  */
+  else if (sw == 0x6983)
+    result = -3; /* PIN is blocked.  */
+  else if ((sw & 0xfff0) == 0x63C0)
+    result = (sw & 0x000f);
+  else
+    result = -1; /* Error.  */
+
+  return result;
+}
+
+
 /* Implementation of the GETATTR command.  This is similar to the
  * LEARN command but returns only one value via status lines.  */
 static gpg_error_t
@@ -408,7 +468,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   } table[] = {
     { "SERIALNO",     0x0000, -1 },
     { "$AUTHKEYID",   0x0000, -2 }, /* Default key for ssh.  */
-    { "$DISPSERIALNO",0x0000, -3 }
+    { "$DISPSERIALNO",0x0000, -3 },
+    { "CHV-STATUS",   0x0000, -4 }
   };
   gpg_error_t err = 0;
   int idx;
@@ -449,6 +510,16 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
         }
       else
         err = gpg_error (GPG_ERR_INV_NAME);  /* No Abbreviated S/N.  */
+    }
+  else if (table[idx].special == -4) /* CHV-STATUS */
+    {
+      int tmp[3];
+
+      tmp[0] = get_chv_status (app, "PIV.00");
+      tmp[1] = get_chv_status (app, "PIV.80");
+      tmp[2] = get_chv_status (app, "PIV.81");
+      err = send_status_printf (ctrl, table[idx].name, "%d %d %d",
+                                tmp[0], tmp[1], tmp[2]);
     }
   else
     {
@@ -849,27 +920,28 @@ make_prompt (app_t app, int remaining, const char *firstline)
 }
 
 
-
-/* Verify the Application PIN for use with data object DOBJ.  */
+/* Verify the Application PIN KEYREF.  */
 static gpg_error_t
-verify_pin (app_t app, data_object_t dobj,
+verify_pin (app_t app, int keyref,
             gpg_error_t (*pincb)(void*,const char *,char **), void *pincb_arg)
 {
   gpg_error_t err;
   unsigned char apdu[4];
   unsigned int sw;
   int remaining;
+  const char *label;
   char *prompt;
   char *pinvalue = NULL;
   unsigned int pinlen;
   char pinbuffer[8];
+  int minlen, maxlen, padding, onlydigits;
 
   /* First check whether a verify is at all needed.  This is done with
    * P1 being 0 and no Lc and command data send.  */
   apdu[0] = 0x00;
   apdu[1] = ISO7816_VERIFY;
   apdu[2] = 0x00;
-  apdu[3] = 0x80;
+  apdu[3] = keyref;
   if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
     {
       /* No need to verification.  */
@@ -881,11 +953,46 @@ verify_pin (app_t app, data_object_t dobj,
     remaining = -1;
 
   if (remaining != -1)
-    log_debug ("piv: PIN for %s has %d attempts left\n",
-               dobj->keyref, remaining);
+    log_debug ("piv: PIN %2X has %d attempts left\n", keyref, remaining);
+
+  switch (keyref)
+    {
+    case 0x00:
+      minlen = 6;
+      maxlen = 8;
+      padding = 1;
+      onlydigits = 1;
+      label = _("||Please enter the Global-PIN of your PIV card");
+      break;
+    case 0x80:
+      minlen = 6;
+      maxlen = 8;
+      padding = 1;
+      onlydigits = 1;
+      label = _("||Please enter the PIN of your PIV card");
+      break;
+    case 0x81:
+      minlen = 8;
+      maxlen = 8;
+      padding = 0;
+      onlydigits = 0;
+      label = _("||Please enter the Unblocking Key of your PIV card");
+      break;
+
+    case 0x96:
+    case 0x97:
+    case 0x98:
+    case 0x9B:
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+    default:
+      return gpg_error (GPG_ERR_INV_ID);
+    }
+  log_assert (sizeof pinbuffer >= maxlen);
+
 
   /* Ask for the PIN.  */
-  prompt = make_prompt (app, remaining, _("||Please enter your PIV PIN"));
+  prompt = make_prompt (app, remaining, label);
   err = pincb (pincb_arg, prompt, &pinvalue);
   xfree (prompt);
   prompt = NULL;
@@ -896,24 +1003,22 @@ verify_pin (app_t app, data_object_t dobj,
     }
 
   pinlen = pinvalue? strlen (pinvalue) : 0;
-  if (pinlen < 6)
+  if (pinlen < minlen)
     {
-      log_error (_("PIN for is too short;"
-                   " minimum length is %d\n"), 6);
+      log_error (_("PIN for is too short; minimum length is %d\n"), minlen);
       if (pinvalue)
         wipememory (pinvalue, pinlen);
       xfree (pinvalue);
       return gpg_error (GPG_ERR_BAD_PIN);
     }
-  if (pinlen > sizeof pinbuffer)
+  if (pinlen > maxlen)
     {
-      log_error (_("PIN for is too long;"
-                   " maximum length is %d\n"), (int)sizeof pinbuffer);
+      log_error (_("PIN for is too long; maximum length is %d\n"), maxlen);
       wipememory (pinvalue, pinlen);
       xfree (pinvalue);
       return gpg_error (GPG_ERR_BAD_PIN);
     }
-  if (strspn (pinvalue, "0123456789") != pinlen)
+  if (onlydigits && strspn (pinvalue, "0123456789") != pinlen)
     {
       log_error (_("PIN has invalid characters; only digits are allowed\n"));
       wipememory (pinvalue, pinlen);
@@ -921,17 +1026,99 @@ verify_pin (app_t app, data_object_t dobj,
       return gpg_error (GPG_ERR_BAD_PIN);
     }
   memcpy (pinbuffer, pinvalue, pinlen);
-  memset (pinbuffer + pinlen, 0xff, sizeof(pinbuffer) - pinlen);
-  wipememory (pinvalue, pinlen);
+  if (padding)
+    {
+      memset (pinbuffer + pinlen, 0xff, maxlen - pinlen);
+      wipememory (pinvalue, pinlen);
+      pinlen = maxlen;
+    }
+  else
+    wipememory (pinvalue, pinlen);
   xfree (pinvalue);
 
-  err = iso7816_verify (app->slot, 0x80,
-                        pinbuffer, sizeof pinbuffer);
-  wipememory (pinbuffer, sizeof pinbuffer);
+  err = iso7816_verify (app->slot, keyref, pinbuffer, pinlen);
+  wipememory (pinbuffer, pinlen);
   if (err)
-    log_error ("PIN verification failed: %s\n", gpg_strerror (err));
+    log_error ("PIN %02X verification failed: %s\n", keyref,gpg_strerror (err));
 
   return err;
+}
+
+
+/* Handle the PASSWD command.  Valid values for PWIDSTR are
+ * key references related to PINs; in particular:
+ *   PIV.00 - The Global PIN
+ *   PIV.80 - The Application PIN
+ *   PIV.81 - The PIN Unblocking key
+ * The supported flags are:
+ *   APP_CHANGE_FLAG_CLEAR   Clear the PIN verification state.
+ */
+static gpg_error_t
+do_change_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
+               unsigned int flags,
+               gpg_error_t (*pincb)(void*, const char *, char **),
+               void *pincb_arg)
+{
+  gpg_error_t err;
+  int keyref;
+  unsigned char apdu[4];
+
+  char *newpin = NULL;
+  char *oldpin = NULL;
+  size_t newpinlen;
+  size_t oldpinlen;
+  const char *newdesc;
+  int pwid;
+  pininfo_t pininfo;
+
+  (void)ctrl;
+
+  /* The minimum and maximum lengths are enforced by PIV.  */
+  memset (&pininfo, 0, sizeof pininfo);
+  pininfo.minlen = 6;
+  pininfo.maxlen = 8;
+
+  keyref = parse_pin_keyref (pwidstr);
+  if (keyref == -1)
+    return gpg_error (GPG_ERR_INV_ID);
+
+  if ((flags & ~APP_CHANGE_FLAG_CLEAR))
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  /* First see whether the special --clear mode has been requested.  */
+  if ((flags & APP_CHANGE_FLAG_CLEAR))
+    {
+      apdu[0] = 0x00;
+      apdu[1] = ISO7816_VERIFY;
+      apdu[2] = 0xff;
+      apdu[3] = keyref;
+      err = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
+      goto leave;
+    }
+
+  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+ leave:
+  xfree (oldpin);
+  xfree (newpin);
+  return err;
+}
+
+
+/* Perform a simple verify operation for the PIN specified by PWIDSTR.
+ * For valid values see do_change_pin.  */
+static gpg_error_t
+do_check_pin (app_t app, const char *pwidstr,
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg)
+{
+  int keyref;
+
+  keyref = parse_pin_keyref (pwidstr);
+  if (keyref == -1)
+    return gpg_error (GPG_ERR_INV_ID);
+
+  return verify_pin (app, keyref, pincb, pincb_arg);
 }
 
 
@@ -1045,8 +1232,8 @@ do_auth (app_t app, const char *keyidstr,
       goto leave;
     }
 
-  /* Now verify the PIN.  */
-  err = verify_pin (app, dobj, pincb, pincb_arg);
+  /* Now verify the Application PIN.  */
+  err = verify_pin (app, 0x80, pincb, pincb_arg);
   if (err)
     return err;
 
@@ -1226,8 +1413,8 @@ app_select_piv (app_t app)
   /* app->fnc.sign = do_sign; */
   app->fnc.auth = do_auth;
   /* app->fnc.decipher = do_decipher; */
-  /* app->fnc.change_pin = do_change_pin; */
-  /* app->fnc.check_pin = do_check_pin; */
+  app->fnc.change_pin = do_change_pin;
+  app->fnc.check_pin = do_check_pin;
 
 
 leave:
