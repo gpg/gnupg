@@ -1169,6 +1169,9 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   if (!newdesc)
     return gpg_error (GPG_ERR_INV_ID);
 
+  if ((flags & APP_CHANGE_FLAG_CLEAR))
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
   err = switch_application (app, is_sigg);
   if (err)
     return err;

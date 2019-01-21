@@ -997,7 +997,7 @@ app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
 }
 
 
-/* Perform a VERIFY operation without doing anything lese.  This may
+/* Perform a VERIFY operation without doing anything else.  This may
    be used to initialize a the PIN cache for long lasting other
    operations.  Its use is highly application dependent. */
 gpg_error_t
