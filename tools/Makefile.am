@@ -20,14 +20,17 @@ EXTRA_DIST = \
 	Manifest watchgnupg.c no-libgcrypt.c \
 	addgnupghome applygnupgdefaults \
 	lspgpot mail-signed-keys convert-from-106 sockprox.c \
-	ccidmon.c ChangeLog-2011 gpg-connect-agent-w32info.rc
-
+	ccidmon.c ChangeLog-2011 \
+	gpg-connect-agent-w32info.rc \
+	gpg-card-tool-w32info.rc
 
 AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
-resource_objs += gpg-connect-agent-w32info.o
+gpg_connect_agent_rc_objs = gpg-connect-agent-w32info.o
+gpg_card_tool_rc_objs     = gpg-card-tool-w32info.o
+resource_objs += $(gpg_connect_agent_rc_objs) $(gpg_card_tool_rc_objs)
 endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
@@ -48,7 +51,7 @@ endif
 
 libexec_PROGRAMS = gpg-wks-client gpg-pair-tool
 
-bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
+bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card-tool ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server}
 endif
@@ -118,7 +121,14 @@ gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
 	                  $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
                           $(GPG_ERROR_LIBS) \
                           $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
-                          $(resource_objs)
+                          $(gpg_connect_agent_rc_objs)
+
+gpg_card_tool_SOURCES   = gpg-card-tool.c
+gpg_card_tool_LDADD     = ../common/libgpgrl.a $(common_libs) \
+	                  $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
+			  $(GPG_ERROR_LIBS) \
+                          $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
+                          $(gpg_card_tool_rc_objs)
 
 
 if !DISABLE_REGEX
