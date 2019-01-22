@@ -723,6 +723,13 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
   if (!ga)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
+  /* Elgamal in OpenPGP used to support signing and Libgcrypt still
+   * does.  However, we removed the signing capability from gpg ages
+   * ago.  This function should reflect this so that errors are thrown
+   * early and not only when we try to sign using Elgamal.  */
+  if (ga == GCRY_PK_ELG && (use & (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG)))
+    return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+
   /* Now check whether Libgcrypt has support for the algorithm.  */
   return gcry_pk_algo_info (ga, GCRYCTL_TEST_ALGO, NULL, &use_buf);
 }
