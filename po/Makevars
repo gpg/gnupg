@@ -61,6 +61,7 @@ XGETTEXT_OPTIONS = \
 	--flag=ks_printf_help:2:c-format         \
 	--flag=print_further_info:1:c-format     \
 	--flag=write_status_printf:2:c-format    \
+	--flag=gnupg_printf_status:2:c-format    \
 	--flag=kbxd_print_status:3:c-format      \
 	--flag=gpgconf_write_status:2:c-format   \
         --flag=send_status_printf:3:c-format     \

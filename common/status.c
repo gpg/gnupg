@@ -34,6 +34,10 @@
 #include "status.h"
 #include "status-codes.h"
 
+/* The stream to output the status information.  Output is disabled if
+ * this is NULL.  */
+static estream_t statusfp;
+
 
 /* Return the status string for code NO. */
 const char *
@@ -44,6 +48,60 @@ get_status_string ( int no )
     return "?";
   else
     return statusstr_msgstr + statusstr_msgidx[idx];
+}
+
+
+/* Set a global status FD.  */
+void
+gnupg_set_status_fd (int fd)
+{
+  static int last_fd = -1;
+
+  if (fd != -1 && last_fd == fd)
+    return;
+
+  if (statusfp && statusfp != es_stdout && statusfp != es_stderr)
+    es_fclose (statusfp);
+  statusfp = NULL;
+  if (fd == -1)
+    return;
+
+  if (fd == 1)
+    statusfp = es_stdout;
+  else if (fd == 2)
+    statusfp = es_stderr;
+  else
+    statusfp = es_fdopen (fd, "w");
+  if (!statusfp)
+    {
+      log_fatal ("can't open fd %d for status output: %s\n",
+                 fd, gpg_strerror (gpg_error_from_syserror ()));
+    }
+  last_fd = fd;
+}
+
+
+/* Write a status line with code NO followed by the output of the
+ * printf style FORMAT.  The caller needs to make sure that LFs and
+ * CRs are not printed.  */
+void
+gnupg_status_printf (int no, const char *format, ...)
+{
+  va_list arg_ptr;
+
+  if (!statusfp)
+    return;  /* Not enabled.  */
+
+  es_fputs ("[GNUPG:] ", statusfp);
+  es_fputs (get_status_string (no), statusfp);
+  if (format)
+    {
+      es_putc (' ', statusfp);
+      va_start (arg_ptr, format);
+      es_vfprintf (statusfp, format, arg_ptr);
+      va_end (arg_ptr);
+    }
+  es_putc ('\n', statusfp);
 }
 
 
