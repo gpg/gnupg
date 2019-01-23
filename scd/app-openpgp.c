@@ -2608,7 +2608,38 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   pininfo.minlen = minlen;
 
   if ((flags & APP_CHANGE_FLAG_CLEAR))
-    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+    {
+      unsigned char apdu[4];
+
+      if (!app->app_local->extcap.is_v2)
+        return GPG_ERR_UNSUPPORTED_OPERATION;
+
+      apdu[0] = 0x00;
+      apdu[1] = ISO7816_VERIFY;
+      apdu[2] = 0xff;
+      apdu[3] = 0x80+chvno;
+
+      rc = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
+      if (rc)
+        {
+          if (rc == GPG_ERR_INV_VALUE)
+            rc = GPG_ERR_UNSUPPORTED_OPERATION;
+          return rc;
+        }
+
+      if (chvno == 1)
+        {
+          apdu[3]++;
+          rc = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
+          app->did_chv1 = app->did_chv2 = 0;
+        }
+      else if (chvno == 2)
+        app->did_chv2 = 0;
+      else if (chvno == 3)
+        app->did_chv3 = 0;
+
+      return rc;
+    }
 
   if (reset_mode && chvno == 3)
     {
