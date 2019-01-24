@@ -103,6 +103,142 @@ static void
 test_percent_data_escape (void)
 {
   static struct {
+    const char *prefix;
+    const char *data;
+    size_t datalen;
+    const char *expect;
+  } tbl[] = {
+    {
+      NULL,
+      "", 0,
+      ""
+    }, {
+      NULL,
+      "a", 1,
+      "a",
+    }, {
+      NULL,
+      "%22", 3,
+      "%2522"
+    }, {
+      NULL,
+      "%%", 3,
+      "%25%25%00"
+    }, {
+      NULL,
+      "\n \0BC\t", 6,
+      "\n %00BC\t"
+    }, {
+      "",
+      "", 0,
+      ""
+    }, {
+      "",
+      "a", 1,
+      "a",
+    }, {
+      "",
+      "%22", 3,
+      "%2522"
+    }, {
+      "",
+      "%%", 3,
+      "%25%25%00"
+    }, {
+      "",
+      "\n \0BC\t", 6,
+      "\n %00BC\t"
+    }, {
+      "a",
+      "", 0,
+      "a"
+    }, {
+      "a",
+      "a", 1,
+      "aa",
+    }, {
+      "a",
+      "%22", 3,
+      "a%2522"
+    }, {
+      "a",
+      "%%", 3,
+      "a%25%25%00"
+    }, {
+      "a",
+      "\n \0BC\t", 6,
+      "a\n %00BC\t"
+    }, {
+      " ",
+      "%%", 3,
+      " %25%25%00"
+    }, {
+      "+",
+      "%%", 3,
+      "+%25%25%00"
+    }, {
+      "%",
+      "%%", 3,
+      "%25%25%25%00"
+    }, {
+      "a b",
+      "%%", 3,
+      "a b%25%25%00"
+    }, {
+      "a%2Bb",
+      "%%", 3,
+      "a%252Bb%25%25%00"
+    }, {
+      "\n",
+      "%%", 3,
+      "%0A%25%25%00"
+    }, {
+      NULL,
+      NULL, 0,
+      NULL }
+  };
+  char *buf;
+  int i;
+  size_t len, prefixlen;
+
+  for (i=0; tbl[i].data; i++)
+    {
+      buf = percent_data_escape (0, tbl[i].prefix, tbl[i].data, tbl[i].datalen);
+      if (!buf)
+        {
+          fprintf (stderr, "out of core: %s\n", strerror (errno));
+          exit (2);
+        }
+      if (strcmp (buf, tbl[i].expect))
+        {
+          fail (i);
+        }
+      len = percent_plus_unescape_inplace (buf, 0);
+      prefixlen = tbl[i].prefix? strlen (tbl[i].prefix) : 0;
+      if (len != tbl[i].datalen + prefixlen)
+        fail (i);
+      else if (tbl[i].prefix && memcmp (buf, tbl[i].prefix, prefixlen)
+               && !(prefixlen == 1 && *tbl[i].prefix == '+' && *buf == ' '))
+        {
+          /* Note extra condition above handles the one test case
+           * which reverts a plus to a space due to the use of the
+           * plus-unescape fucntion also for the prefix part.  */
+          fail (i);
+        }
+      else if (memcmp (buf+prefixlen, tbl[i].data, tbl[i].datalen))
+        {
+          fail (i);
+        }
+      xfree (buf);
+    }
+}
+
+
+
+static void
+test_percent_data_escape_plus (void)
+{
+  static struct {
     const char *data;
     size_t datalen;
     const char *expect;
@@ -121,7 +257,28 @@ test_percent_data_escape (void)
       "%25%25%00"
     }, {
       "\n \0BC\t", 6,
-      "\n %00BC\t"
+      "%0A+%00BC%09"
+    }, {
+      " ", 1,
+      "+"
+    }, {
+      "  ", 2,
+      "++"
+    }, {
+      "+ +", 3,
+      "%2B+%2B"
+    }, {
+      "\" \"", 3,  /* Note: This function does not escape quotes.  */
+      "\"+\""
+    }, {
+      "%22", 3,
+      "%2522"
+    }, {
+      "%% ", 3,
+      "%25%25+"
+    }, {
+      "\n ABC\t", 6,
+      "%0A+ABC%09"
     }, { NULL, 0, NULL }
   };
   char *buf;
@@ -130,14 +287,16 @@ test_percent_data_escape (void)
 
   for (i=0; tbl[i].data; i++)
     {
-      buf = percent_data_escape (tbl[i].data, tbl[i].datalen);
+      buf = percent_data_escape (1, NULL, tbl[i].data, tbl[i].datalen);
       if (!buf)
         {
           fprintf (stderr, "out of core: %s\n", strerror (errno));
           exit (2);
         }
       if (strcmp (buf, tbl[i].expect))
-        fail (i);
+        {
+          fail (i);
+        }
       len = percent_plus_unescape_inplace (buf, 0);
       if (len != tbl[i].datalen)
         fail (i);
@@ -148,16 +307,15 @@ test_percent_data_escape (void)
 }
 
 
-
 int
 main (int argc, char **argv)
 {
   (void)argc;
   (void)argv;
 
-  /* FIXME: We escape_unescape is not tested - only
-     percent_plus_unescape.  */
+  /* FIXME: escape_unescape is not tested - only percent_plus_unescape.  */
   test_percent_plus_escape ();
   test_percent_data_escape ();
+  test_percent_data_escape_plus ();
   return 0;
 }

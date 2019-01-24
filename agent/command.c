@@ -2751,7 +2751,7 @@ cmd_put_secret (assuan_context_t ctx, char *line)
    * into a string.  Instead of resorting to base64 encoding we use a
    * special percent escaping which only quoted the Nul and the
    * percent character. */
-  string = percent_data_escape (value? value : valstr, valuelen);
+  string = percent_data_escape (0, NULL, value? value : valstr, valuelen);
   if (!string)
     {
       err = gpg_error_from_syserror ();
