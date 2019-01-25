@@ -2451,32 +2451,33 @@ do_setattr (app_t app, const char *name,
   static struct {
     const char *name;
     int tag;
+    int flush_tag;  /* The tag which needs to be flushed or 0. */
     int need_chv;
     int special;
     unsigned int need_v2:1;
   } table[] = {
-    { "DISP-NAME",    0x005B, 3 },
-    { "LOGIN-DATA",   0x005E, 3, 2 },
-    { "DISP-LANG",    0x5F2D, 3 },
-    { "DISP-SEX",     0x5F35, 3 },
-    { "PUBKEY-URL",   0x5F50, 3 },
-    { "CHV-STATUS-1", 0x00C4, 3, 1 },
-    { "CA-FPR-1",     0x00CA, 3 },
-    { "CA-FPR-2",     0x00CB, 3 },
-    { "CA-FPR-3",     0x00CC, 3 },
-    { "PRIVATE-DO-1", 0x0101, 2 },
-    { "PRIVATE-DO-2", 0x0102, 3 },
-    { "PRIVATE-DO-3", 0x0103, 2 },
-    { "PRIVATE-DO-4", 0x0104, 3 },
-    { "CERT-3",       0x7F21, 3, 0, 1 },
-    { "SM-KEY-ENC",   0x00D1, 3, 0, 1 },
-    { "SM-KEY-MAC",   0x00D2, 3, 0, 1 },
-    { "KEY-ATTR",     0,      0, 3, 1 },
-    { "AESKEY",       0x00D5, 3, 0, 1 },
-    { "UIF-1",        0x00D6, 3, 5, 1 },
-    { "UIF-2",        0x00D7, 3, 5, 1 },
-    { "UIF-3",        0x00D8, 3, 5, 1 },
-    { "KDF",          0x00F9, 3, 4, 1 },
+    { "DISP-NAME",    0x005B, 0,      3 },
+    { "LOGIN-DATA",   0x005E, 0,      3, 2 },
+    { "DISP-LANG",    0x5F2D, 0,      3 },
+    { "DISP-SEX",     0x5F35, 0,      3 },
+    { "PUBKEY-URL",   0x5F50, 0,      3 },
+    { "CHV-STATUS-1", 0x00C4, 0,      3, 1 },
+    { "CA-FPR-1",     0x00CA, 0x00C6, 3 },
+    { "CA-FPR-2",     0x00CB, 0x00C6, 3 },
+    { "CA-FPR-3",     0x00CC, 0x00C6, 3 },
+    { "PRIVATE-DO-1", 0x0101, 0,      2 },
+    { "PRIVATE-DO-2", 0x0102, 0,      3 },
+    { "PRIVATE-DO-3", 0x0103, 0,      2 },
+    { "PRIVATE-DO-4", 0x0104, 0,      3 },
+    { "CERT-3",       0x7F21, 0,      3, 0, 1 },
+    { "SM-KEY-ENC",   0x00D1, 0,      3, 0, 1 },
+    { "SM-KEY-MAC",   0x00D2, 0,      3, 0, 1 },
+    { "KEY-ATTR",     0,      0,      0, 3, 1 },
+    { "AESKEY",       0x00D5, 0,      3, 0, 1 },
+    { "UIF-1",        0x00D6, 0,      3, 5, 1 },
+    { "UIF-2",        0x00D7, 0,      3, 5, 1 },
+    { "UIF-3",        0x00D8, 0,      3, 5, 1 },
+    { "KDF",          0x00F9, 0,      3, 4, 1 },
     { NULL, 0 }
   };
   int exmode;
@@ -2511,7 +2512,8 @@ do_setattr (app_t app, const char *name,
   /* Flush the cache before writing it, so that the next get operation
      will reread the data from the card and thus get synced in case of
      errors (e.g. data truncated by the card). */
-  flush_cache_item (app, table[idx].tag);
+  flush_cache_item (app, table[idx].flush_tag? table[idx].flush_tag
+                    /* */                    : table[idx].tag);
 
   if (app->app_local->cardcap.ext_lc_le && valuelen > 254)
     exmode = 1;    /* Use extended length w/o a limit.  */
