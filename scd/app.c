@@ -305,21 +305,27 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
         }
     }
 
-  /* For certain error codes, there is no need to try more.  */
-  if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT
-      || gpg_err_code (err) == GPG_ERR_ENODEV)
-    goto leave;
-
   /* Figure out the application to use.  */
   if (want_undefined)
     {
       /* We switch to the "undefined" application only if explicitly
          requested.  */
       app->apptype = "UNDEFINED";
+      /* Clear the error so that we don't run through the application
+       * selection chain.  */
       err = 0;
     }
   else
-    err = gpg_error (GPG_ERR_NOT_FOUND);
+    {
+      /* For certain error codes, there is no need to try more.  */
+      if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT
+          || gpg_err_code (err) == GPG_ERR_ENODEV)
+        goto leave;
+
+      /* Set a default error so that we run through the application
+       * selecion chain.  */
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+    }
 
   if (err && is_app_allowed ("openpgp")
           && (!name || !strcmp (name, "openpgp")))
