@@ -1595,19 +1595,24 @@ static const char hlp_clear_passphrase[] =
   "may be used to invalidate the cache entry for a passphrase.  The\n"
   "function returns with OK even when there is no cached passphrase.\n"
   "The --mode=normal option is used to clear an entry for a cacheid\n"
-  "added by the agent.\n";
+  "added by the agent.  The --mode=ssh option is used for a cacheid\n"
+  "added for ssh.\n";
 static gpg_error_t
 cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   char *cacheid = NULL;
   char *p;
-  int opt_normal;
+  cache_mode_t cache_mode = CACHE_MODE_USER;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  opt_normal = has_option (line, "--mode=normal");
+  if (has_option (line, "--mode=normal"))
+    cache_mode = CACHE_MODE_NORMAL;
+  else if (has_option (line, "--mode=ssh"))
+    cache_mode = CACHE_MODE_SSH;
+
   line = skip_options (line);
 
   /* parse the stuff */
@@ -1620,12 +1625,9 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
   if (!*cacheid || strlen (cacheid) > 50)
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
 
-  agent_put_cache (ctrl, cacheid,
-                   opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER,
-                   NULL, 0);
+  agent_put_cache (ctrl, cacheid, cache_mode, NULL, 0);
 
-  agent_clear_passphrase (ctrl, cacheid,
-			  opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER);
+  agent_clear_passphrase (ctrl, cacheid, cache_mode);
 
   return 0;
 }
