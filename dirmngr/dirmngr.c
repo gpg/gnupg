@@ -802,6 +802,7 @@ static void
 thread_init (void)
 {
   npth_init ();
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
   /* Now with NPth running we can set the logging callback.  Our
@@ -877,7 +878,6 @@ main (int argc, char **argv)
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   assuan_sock_init ();
   setup_libassuan_logging (&opt.debug, dirmngr_assuan_log_monitor);
 
