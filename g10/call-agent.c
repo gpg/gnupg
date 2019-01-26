@@ -1502,10 +1502,10 @@ agent_get_s2k_count (void)
         log_error (_("problem with the agent: %s\n"), gpg_strerror (err));
 
       /* Default to 65536 which was used up to 2.0.13.  */
-      return 65536;
+      count = 65536;
     }
 
-  return err;
+  return count;
 }
 
 
