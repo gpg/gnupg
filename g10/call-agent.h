@@ -146,7 +146,7 @@ gpg_error_t agent_clear_passphrase (const char *cache_id);
 gpg_error_t gpg_agent_get_confirmation (const char *desc);
 
 /* Return the S2K iteration count as computed by gpg-agent.  */
-gpg_error_t agent_get_s2k_count (unsigned long *r_count);
+unsigned long agent_get_s2k_count (void);
 
 /* Check whether a secret key for public key PK is available.  Returns
    0 if the secret key is available. */

@@ -507,8 +507,6 @@ gpg_error_t  card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock);
 int  card_store_subkey (KBNODE node, int use);
 #endif
 
-#define S2K_DECODE_COUNT(_val) ((16ul + ((_val) & 15)) << (((_val) >> 4) + 6))
-
 /*-- migrate.c --*/
 void migrate_secring (ctrl_t ctrl);
 

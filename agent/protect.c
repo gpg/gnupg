@@ -41,6 +41,7 @@
 
 #include "cvt-openpgp.h"
 #include "../common/sexp-parse.h"
+#include "../common/openpgpdefs.h"  /* For s2k functions.  */
 
 
 /* The protection mode for encryption.  The supported modes for
@@ -48,9 +49,6 @@
 #define PROT_CIPHER        GCRY_CIPHER_AES128
 #define PROT_CIPHER_STRING "aes"
 #define PROT_CIPHER_KEYLEN (128/8)
-
-/* Decode an rfc4880 encoded S2K count.  */
-#define S2K_DECODE_COUNT(_val) ((16ul + ((_val) & 15)) << (((_val) >> 4) + 6))
 
 
 /* A table containing the information needed to create a protected

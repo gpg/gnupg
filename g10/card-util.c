@@ -2039,7 +2039,7 @@ gen_kdf_data (unsigned char *data, int single_salt)
 
   p = data;
 
-  s2k_char = encode_s2k_iterations (0);
+  s2k_char = encode_s2k_iterations (agent_get_s2k_count ());
   iterations = S2K_DECODE_COUNT (s2k_char);
   count_4byte[0] = (iterations >> 24) & 0xff;
   count_4byte[1] = (iterations >> 16) & 0xff;

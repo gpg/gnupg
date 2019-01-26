@@ -564,6 +564,8 @@ do_get( const char *prompt, int hidden )
 }
 
 
+
+/* Note: This function never returns NULL. */
 char *
 tty_get( const char *prompt )
 {

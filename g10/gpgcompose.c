@@ -25,6 +25,7 @@
 #include "keydb.h"
 #include "main.h"
 #include "options.h"
+#include "call-agent.h"
 
 static int do_debug;
 #define debug(fmt, ...) \
@@ -2248,9 +2249,12 @@ sk_esk (const char *option, int argc, char *argv[], void *cookie)
   log_assert (sizeof (si.salt) == sizeof (ske->s2k.salt));
   memcpy (ske->s2k.salt, si.salt, sizeof (ske->s2k.salt));
   if (! si.s2k_is_session_key)
-    /* 0 means get the default.  */
-    ske->s2k.count = encode_s2k_iterations (si.iterations);
-
+    {
+      if (!si.iterations)
+        ske->s2k.count = encode_s2k_iterations (agent_get_s2k_count ());
+      else
+        ske->s2k.count = encode_s2k_iterations (si.iterations);
+    }
 
   /* Derive the symmetric key that is either the session key or the
      key used to encrypt the session key.  */
