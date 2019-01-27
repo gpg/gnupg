@@ -127,4 +127,5 @@ tools/gpgconf.c
 tools/no-libgcrypt.c
 tools/symcryptrun.c
 tools/gpg-check-pattern.c
-
+tools/gpg-card-tool.c
+tools/card-call-scd.c

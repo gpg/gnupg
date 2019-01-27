@@ -1,5 +1,5 @@
 /* gpg-card-tool.c - An interactive tool to work with cards.
- * Copyright (C) 2019 g10 Code GmbH Werner Koch
+ * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://gnu.org/licenses/>.
- * SPDX-License-Identifier: GPL-3.0+
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -37,6 +37,11 @@
 #include "../common/ccparray.h"
 #include "../common/exectool.h"
 #include "../common/ttyio.h"
+#include "../common/server-help.h"
+#include "../common/openpgpdefs.h"
+
+#include "card-tool.h"
+
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -54,6 +59,15 @@ enum cmd_and_opt_values
     oGpgsmProgram,
     oStatusFD,
     oWithColons,
+    oNoAutostart,
+    oAgentProgram,
+
+    oDisplay,
+    oTTYname,
+    oTTYtype,
+    oXauthority,
+    oLCctype,
+    oLCmessages,
 
     oDummy
   };
@@ -72,14 +86,17 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oGpgsmProgram, "gpgsm", "@"),
   ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
+  ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
+  ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+  ARGPARSE_s_s (oDisplay,    "display",    "@"),
+  ARGPARSE_s_s (oTTYname,    "ttyname",    "@"),
+  ARGPARSE_s_s (oTTYtype,    "ttytype",    "@"),
+  ARGPARSE_s_s (oXauthority, "xauthority", "@"),
+  ARGPARSE_s_s (oLCctype,    "lc-ctype",   "@"),
+  ARGPARSE_s_s (oLCmessages, "lc-messages","@"),
 
   ARGPARSE_end ()
 };
-
-/* Debug values and macros.  */
-#define DBG_IPC_VALUE      1024 /* Debug assuan communication.  */
-#define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
-
 
 /* The list of supported debug flags.  */
 static struct debug_flags_s debug_flags [] =
@@ -90,19 +107,19 @@ static struct debug_flags_s debug_flags [] =
   };
 
 
+/* Limit of size of data we read from a file for certain commands.  */
+#define MAX_GET_DATA_FROM_FILE 16384
 
-/* We keep all global options in the structure OPT.  */
-struct
-{
-  int verbose;
-  unsigned int debug;
-  int quiet;
-  int with_colons;
-  const char *gpg_program;
-  const char *gpgsm_program;
-} opt;
+/* Constats for OpenPGP cards.  */
+#define OPENPGP_USER_PIN_DEFAULT  "123456"
+#define OPENPGP_ADMIN_PIN_DEFAULT "12345678"
+#define OPENPGP_KDF_DATA_LENGTH_MIN  90
+#define OPENPGP_KDF_DATA_LENGTH_MAX 110
 
 
+
+
+/* Local prototypes.  */
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
 static void interactive_loop (void);
 #ifdef HAVE_LIBREADLINE
@@ -148,6 +165,18 @@ wrong_args (const char *text)
 }
 
 
+static void
+set_opt_session_env (const char *name, const char *value)
+{
+  gpg_error_t err;
+
+  err = session_env_setenv (opt.session_env, name, value);
+  if (err)
+    log_fatal ("error setting session environment: %s\n",
+               gpg_strerror (err));
+}
+
+
 
 /* Command line parsing.  */
 static enum cmd_and_opt_values
@@ -170,18 +199,24 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
             }
           break;
 
-        case oGpgProgram:
-          opt.gpg_program = pargs->r.ret_str;
-          break;
-        case oGpgsmProgram:
-          opt.gpgsm_program = pargs->r.ret_str;
-          break;
+        case oGpgProgram:   opt.gpg_program = pargs->r.ret_str; break;
+        case oGpgsmProgram: opt.gpgsm_program = pargs->r.ret_str; break;
+        case oAgentProgram: opt.agent_program = pargs->r.ret_str; break;
+
         case oStatusFD:
           gnupg_set_status_fd (translate_sys2libc_fd_int (pargs->r.ret_int, 1));
           break;
-        case oWithColons:
-          opt.with_colons = 1;
-          break;
+
+        case oWithColons:  opt.with_colons = 1; break;
+        case oNoAutostart: opt.autostart = 0; break;
+
+        case oDisplay: set_opt_session_env ("DISPLAY", pargs->r.ret_str); break;
+        case oTTYname: set_opt_session_env ("GPG_TTY", pargs->r.ret_str); break;
+        case oTTYtype: set_opt_session_env ("TERM", pargs->r.ret_str); break;
+        case oXauthority: set_opt_session_env ("XAUTHORITY",
+                                               pargs->r.ret_str); break;
+        case oLCctype:     opt.lc_ctype = pargs->r.ret_str; break;
+        case oLCmessages:  opt.lc_messages = pargs->r.ret_str; break;
 
         default: pargs->err = 2; break;
 	}
@@ -211,6 +246,14 @@ main (int argc, char **argv)
 
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   setup_libassuan_logging (&opt.debug, NULL);
+
+  /* Setup default options.  */
+  opt.autostart = 1;
+  opt.session_env = session_env_new ();
+  if (!opt.session_env)
+    log_fatal ("error allocating session environment block: %s\n",
+               gpg_strerror (gpg_error_from_syserror ()));
+
 
   /* Parse the command line. */
   pargs.argc  = &argc;
@@ -256,370 +299,2067 @@ main (int argc, char **argv)
 }
 
 
+/* Read data from file FNAME up to MAX_GET_DATA_FROM_FILE characters.
+ * On error return an error code and stores NULL at R_BUFFER; on
+ * success returns 0, stpres the number of bytes read at R_BUFLEN and
+ * the address of a newly allocated buffer at R_BUFFER. */
+static gpg_error_t
+get_data_from_file (const char *fname, char **r_buffer, size_t *r_buflen)
+{
+  gpg_error_t err;
+  estream_t fp;
+  char *data;
+  int n;
+
+  *r_buffer = NULL;
+  *r_buflen = 0;
+
+  fp = es_fopen (fname, "rb");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
+      return err;
+    }
+
+  data = xtrymalloc (MAX_GET_DATA_FROM_FILE);
+  if (!data)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error allocating enough memory: %s\n"), gpg_strerror (err));
+      es_fclose (fp);
+      return err;
+    }
+
+  n = es_fread (data, 1, MAX_GET_DATA_FROM_FILE, fp);
+  es_fclose (fp);
+  if (n < 0)
+    {
+      err = gpg_error_from_syserror ();
+      tty_printf (_("error reading '%s': %s\n"), fname, gpg_strerror (err));
+      xfree (data);
+      return err;
+    }
+  *r_buffer = data;
+  *r_buflen = n;
+  return 0;
+}
+
+
+/* Write LENGTH bytes from BUFFER to file FNAME.  Return 0 on
+ * success.  */
+static gpg_error_t
+put_data_to_file (const char *fname, const void *buffer, size_t length)
+{
+  gpg_error_t err;
+  estream_t fp;
+
+  fp = es_fopen (fname, "wb");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("can't create '%s': %s\n"), fname, gpg_strerror (err));
+      return err;
+    }
+
+  if (length && es_fwrite (buffer, length, 1, fp) != 1)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error writing '%s': %s\n"), fname, gpg_strerror (err));
+      es_fclose (fp);
+      return err;
+    }
+  if (es_fclose (fp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error writing '%s': %s\n"), fname, gpg_strerror (err));
+      return err;
+    }
+  return 0;
+}
+
+
+
+/* Simply prints TEXT to the output.  Returns 0 as a convenience.
+ * This is a separate fucntion so that it can be extended to run
+ * less(1) or so.  The extra arguments are int values terminated by a
+ * 0 to indicate card application types supported with this command.
+ * If none are given (just teh final 0), this is a general
+ * command.  */
+static gpg_error_t
+print_help (const char *text, ...)
+{
+  va_list arg_ptr;
+  int value;
+  int any = 0;
+
+  tty_fprintf (NULL, "%s\n", text);
+
+  va_start (arg_ptr, text);
+  while ((value = va_arg (arg_ptr, int)))
+    {
+      if (!any)
+        tty_fprintf (NULL, "[Supported by: ");
+      tty_fprintf (NULL, "%s%s", any?", ":"", app_type_string (value));
+      any = 1;
+    }
+  if (any)
+    tty_fprintf (NULL, "]\n");
+
+  va_end (arg_ptr);
+  return 0;
+}
+
+
+/* Return the OpenPGP card manufacturer name.  */
+static const char *
+get_manufacturer (unsigned int no)
+{
+  /* Note:  Make sure that there is no colon or linefeed in the string. */
+  switch (no)
+    {
+    case 0x0001: return "PPC Card Systems";
+    case 0x0002: return "Prism";
+    case 0x0003: return "OpenFortress";
+    case 0x0004: return "Wewid";
+    case 0x0005: return "ZeitControl";
+    case 0x0006: return "Yubico";
+    case 0x0007: return "OpenKMS";
+    case 0x0008: return "LogoEmail";
+    case 0x0009: return "Fidesmo";
+    case 0x000A: return "Dangerous Things";
+
+    case 0x002A: return "Magrathea";
+    case 0x0042: return "GnuPG e.V.";
+
+    case 0x1337: return "Warsaw Hackerspace";
+    case 0x2342: return "warpzone"; /* hackerspace Muenster.  */
+    case 0x4354: return "Confidential Technologies";   /* cotech.de */
+    case 0x63AF: return "Trustica";
+    case 0xBD0E: return "Paranoidlabs";
+    case 0xF517: return "FSIJ";
+
+      /* 0x0000 and 0xFFFF are defined as test cards per spec,
+       * 0xFF00 to 0xFFFE are assigned for use with randomly created
+       * serial numbers.  */
+    case 0x0000:
+    case 0xffff: return "test card";
+    default: return (no & 0xff00) == 0xff00? "unmanaged S/N range":"unknown";
+    }
+}
+
+/* Print an (OpenPGP) fingerprint.  */
+static void
+print_shax_fpr (estream_t fp, const unsigned char *fpr, unsigned int fprlen)
+{
+  int i;
+
+  if (fpr)
+    {
+      /* FIXME: Fix formatting for FPRLEN != 20 */
+      for (i=0; i < fprlen ; i+=2, fpr += 2 )
+        {
+          if (i == 10 )
+            tty_fprintf (fp, " ");
+          tty_fprintf (fp, " %02X%02X", *fpr, fpr[1]);
+        }
+    }
+  else
+    tty_fprintf (fp, " [none]");
+  tty_fprintf (fp, "\n");
+}
+
+/* Print the keygrip GRP.  */
+static void
+print_keygrip (estream_t fp, const unsigned char *grp)
+{
+  int i;
+
+  for (i=0; i < 20 ; i++, grp++)
+    tty_fprintf (fp, "%02X", *grp);
+  tty_fprintf (fp, "\n");
+}
+
+
+/* Print a string but avoid printing control characters.  */
+static void
+print_string (estream_t fp, const char *text, const char *name)
+{
+  tty_fprintf (fp, "%s", text);
+
+  /* FIXME: tty_printf_utf8_string2 eats everything after and
+     including an @ - e.g. when printing an url. */
+  if (name && *name)
+    {
+      if (fp)
+        print_utf8_buffer2 (fp, name, strlen (name), '\n');
+      else
+        tty_print_utf8_string2 (NULL, name, strlen (name), 0);
+    }
+  else
+    tty_fprintf (fp, _("[not set]"));
+  tty_fprintf (fp, "\n");
+}
+
+
+/* Print an ISO formatted name or "[not set]".  */
+static void
+print_isoname (estream_t fp, const char *name)
+{
+  if (name && *name)
+    {
+      char *p, *given, *buf;
+
+      buf = xstrdup (name);
+      given = strstr (buf, "<<");
+      for (p=buf; *p; p++)
+        if (*p == '<')
+          *p = ' ';
+      if (given && given[2])
+        {
+          *given = 0;
+          given += 2;
+          if (fp)
+            print_utf8_buffer2 (fp, given, strlen (given), '\n');
+          else
+            tty_print_utf8_string2 (NULL, given, strlen (given), 0);
+
+          if (*buf)
+            tty_fprintf (fp, " ");
+        }
+
+      if (fp)
+        print_utf8_buffer2 (fp, buf, strlen (buf), '\n');
+      else
+        tty_print_utf8_string2 (NULL, buf, strlen (buf), 0);
+
+      xfree (buf);
+    }
+  else
+    {
+      tty_fprintf (fp, _("[not set]"));
+    }
+
+  tty_fprintf (fp, "\n");
+}
+
+
+/* Return true if the SHA1 fingerprint FPR consists only of zeroes. */
+static int
+fpr_is_zero (const char *fpr, unsigned int fprlen)
+{
+  int i;
+
+  for (i=0; i < fprlen && !fpr[i]; i++)
+    ;
+  return (i == fprlen);
+}
+
+
+/* Return true if the fingerprint FPR consists only of 0xFF. */
+static int
+fpr_is_ff (const char *fpr, unsigned int fprlen)
+{
+  int i;
+
+  for (i=0; i < fprlen && fpr[i] == '\xff'; i++)
+    ;
+  return (i == fprlen);
+}
+
+
+
+/* List OpenPGP card specific data.  */
+static void
+list_openpgp (card_info_t info, estream_t fp)
+{
+  int i;
+
+  if (!info->serialno
+      || strncmp (info->serialno, "D27600012401", 12)
+      || strlen (info->serialno) != 32 )
+    {
+      tty_fprintf (fp, "invalid OpenPGP card\n");
+      return;
+    }
+
+  tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
+               info->serialno[12] == '0'?"":info->serialno+12,
+               info->serialno[13],
+               info->serialno[14] == '0'?"":info->serialno+14,
+               info->serialno[15]);
+  tty_fprintf (fp, "Manufacturer .....: %s\n",
+               get_manufacturer (xtoi_2(info->serialno+16)*256
+                                 + xtoi_2 (info->serialno+18)));
+  tty_fprintf (fp, "Name of cardholder: ");
+  print_isoname (fp, info->disp_name);
+
+  print_string (fp, "Language prefs ...: ", info->disp_lang);
+  tty_fprintf (fp, "Salutation .......: %s\n",
+               info->disp_sex == 1? _("Mr."):
+               info->disp_sex == 2? _("Mrs.") : "");
+  print_string (fp, "URL of public key : ", info->pubkey_url);
+  print_string (fp, "Login data .......: ", info->login_data);
+  if (info->private_do[0])
+    print_string (fp, "Private DO 1 .....: ", info->private_do[0]);
+  if (info->private_do[1])
+    print_string (fp, "Private DO 2 .....: ", info->private_do[1]);
+  if (info->private_do[2])
+    print_string (fp, "Private DO 3 .....: ", info->private_do[2]);
+  if (info->private_do[3])
+    print_string (fp, "Private DO 4 .....: ", info->private_do[3]);
+  if (info->cafpr1len)
+    {
+      tty_fprintf (fp, "CA fingerprint %d .:", 1);
+      print_shax_fpr (fp, info->cafpr1, info->cafpr1len);
+    }
+  if (info->cafpr2len)
+    {
+      tty_fprintf (fp, "CA fingerprint %d .:", 2);
+      print_shax_fpr (fp, info->cafpr2, info->cafpr2len);
+    }
+  if (info->cafpr3len)
+    {
+      tty_fprintf (fp, "CA fingerprint %d .:", 3);
+      print_shax_fpr (fp, info->cafpr3, info->cafpr3len);
+    }
+  tty_fprintf (fp, "Signature PIN ....: %s\n",
+               info->chv1_cached? _("not forced"): _("forced"));
+  if (info->key_attr[0].algo)
+    {
+      tty_fprintf (fp,    "Key attributes ...:");
+      for (i=0; i < DIM (info->key_attr); i++)
+        if (info->key_attr[i].algo == PUBKEY_ALGO_RSA)
+          tty_fprintf (fp, " rsa%u", info->key_attr[i].nbits);
+        else if (info->key_attr[i].algo == PUBKEY_ALGO_ECDH
+                 || info->key_attr[i].algo == PUBKEY_ALGO_ECDSA
+                 || info->key_attr[i].algo == PUBKEY_ALGO_EDDSA)
+          {
+            const char *curve_for_print = "?";
+            const char *oid;
+
+            if (info->key_attr[i].curve
+                && (oid = openpgp_curve_to_oid (info->key_attr[i].curve, NULL)))
+              curve_for_print = openpgp_oid_to_curve (oid, 0);
+            tty_fprintf (fp, " %s", curve_for_print);
+          }
+      tty_fprintf (fp, "\n");
+    }
+  tty_fprintf (fp, "Max. PIN lengths .: %d %d %d\n",
+               info->chvmaxlen[0], info->chvmaxlen[1], info->chvmaxlen[2]);
+  tty_fprintf (fp, "PIN retry counter : %d %d %d\n",
+               info->chvretry[0], info->chvretry[1], info->chvretry[2]);
+  tty_fprintf (fp, "Signature counter : %lu\n", info->sig_counter);
+  if (info->extcap.kdf)
+    {
+      tty_fprintf (fp, "KDF setting ......: %s\n",
+                   info->kdf_do_enabled ? "on" : "off");
+    }
+  if (info->extcap.bt)
+    {
+      tty_fprintf (fp, "UIF setting ......: Sign=%s Decrypt=%s Auth=%s\n",
+                   info->uif[0] ? "on" : "off", info->uif[1] ? "on" : "off",
+                   info->uif[2] ? "on" : "off");
+    }
+  tty_fprintf (fp, "Signature key ....:");
+  print_shax_fpr (fp, info->fpr1len? info->fpr1:NULL, info->fpr1len);
+  if (info->fpr1len && info->fpr1time)
+    {
+      tty_fprintf (fp, "      created ....: %s\n",
+                   isotimestamp (info->fpr1time));
+      tty_fprintf (fp, "      keygrip ....: ");
+      print_keygrip (fp, info->grp1);
+    }
+  tty_fprintf (fp, "Encryption key....:");
+  print_shax_fpr (fp, info->fpr2len? info->fpr2:NULL, info->fpr2len);
+  if (info->fpr2len && info->fpr2time)
+    {
+      tty_fprintf (fp, "      created ....: %s\n",
+                   isotimestamp (info->fpr2time));
+      tty_fprintf (fp, "      keygrip ....: ");
+      print_keygrip (fp, info->grp2);
+    }
+  tty_fprintf (fp, "Authentication key:");
+  print_shax_fpr (fp, info->fpr3len? info->fpr3:NULL, info->fpr3len);
+  if (info->fpr3len && info->fpr3time)
+    {
+      tty_fprintf (fp, "      created ....: %s\n",
+                   isotimestamp (info->fpr3time));
+      tty_fprintf (fp, "      keygrip ....: ");
+      print_keygrip (fp, info->grp3);
+    }
+
+  /* tty_fprintf (fp, "General key info->.: "); */
+  /* thefpr = (info->fpr1len? info->fpr1 : info->fpr2len? info->fpr2 : */
+  /*           info->fpr3len? info->fpr3 : NULL); */
+  /* thefprlen = (info->fpr1len? info->fpr1len : info->fpr2len? info->fpr2len : */
+  /*              info->fpr3len? info->fpr3len : 0); */
+  /* If the fingerprint is all 0xff, the key has no associated
+     OpenPGP certificate.  */
+  /* if ( thefpr && !fpr_is_ff (thefpr, thefprlen) */
+  /*      && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen)) */
+  /*   { */
+      /* print_pubkey_info (ctrl, fp, pk); */
+      /* if (keyblock) */
+      /*   print_card_key_info (fp, keyblock); */
+  /*   } */
+  /* else */
+  /*   tty_fprintf (fp, "[none]\n"); */
+}
+
 
 /* Print all available information about the current card. */
 static void
-print_card_status (char *serialno, size_t serialnobuflen)
+list_card (card_info_t info)
 {
-  /* struct agent_card_info_s info; */
-  /* PKT_public_key *pk = xcalloc (1, sizeof *pk); */
-  /* kbnode_t keyblock = NULL; */
-  /* int rc; */
-  /* unsigned int uval; */
-  /* const unsigned char *thefpr; */
-  /* unsigned int thefprlen; */
-  /* int i; */
+  estream_t fp = NULL;
 
-  /* if (serialno && serialnobuflen) */
-  /*   *serialno = 0; */
+  tty_fprintf (fp, "Reader ...........: %s\n",
+               info->reader? info->reader : "[none]");
+  tty_fprintf (fp, "Serial number ....: %s\n",
+               info->serialno? info->serialno : "[none]");
+  tty_fprintf (fp, "Application Type .: %s%s%s%s\n",
+               app_type_string (info->apptype),
+               info->apptype == APP_TYPE_UNKNOWN && info->apptypestr? "(":"",
+               info->apptype == APP_TYPE_UNKNOWN && info->apptypestr
+               ? info->apptypestr:"",
+               info->apptype == APP_TYPE_UNKNOWN && info->apptypestr? ")":"");
+  if (info->serialno && info->dispserialno
+      && strcmp (info->serialno, info->dispserialno))
+    tty_fprintf (fp, "Displayed S/N ....: %s\n", info->dispserialno);
 
-  /* rc = agent_scd_learn (&info, 0); */
-  /* if (rc) */
-  /*   { */
-  /*     if (opt.with_colons) */
-  /*       es_fputs ("AID:::\n", fp); */
-  /*     log_error (_("OpenPGP card not available: %s\n"), gpg_strerror (rc)); */
-  /*     xfree (pk); */
-  /*     return; */
-  /*   } */
-
-  /* if (opt.with_colons) */
-  /*   es_fprintf (fp, "Reader:%s:", info.reader? info.reader : ""); */
-  /* else */
-  /*   tty_fprintf (fp, "Reader ...........: %s\n", */
-  /*                info.reader? info.reader : "[none]"); */
-  /* if (opt.with_colons) */
-  /*   es_fprintf (fp, "AID:%s:", info.serialno? info.serialno : ""); */
-  /* else */
-  /*   tty_fprintf (fp, "Application ID ...: %s\n", */
-  /*                info.serialno? info.serialno : "[none]"); */
-  /* if (!info.serialno || strncmp (info.serialno, "D27600012401", 12) */
-  /*     || strlen (info.serialno) != 32 ) */
-  /*   { */
-  /*     if (info.apptype && !strcmp (info.apptype, "NKS")) */
-  /*       { */
-  /*         if (opt.with_colons) */
-  /*           es_fputs ("netkey-card:\n", fp); */
-  /*         log_info ("this is a NetKey card\n"); */
-  /*       } */
-  /*     else if (info.apptype && !strcmp (info.apptype, "DINSIG")) */
-  /*       { */
-  /*         if (opt.with_colons) */
-  /*           es_fputs ("dinsig-card:\n", fp); */
-  /*         log_info ("this is a DINSIG compliant card\n"); */
-  /*       } */
-  /*     else if (info.apptype && !strcmp (info.apptype, "P15")) */
-  /*       { */
-  /*         if (opt.with_colons) */
-  /*           es_fputs ("pkcs15-card:\n", fp); */
-  /*         log_info ("this is a PKCS#15 compliant card\n"); */
-  /*       } */
-  /*     else if (info.apptype && !strcmp (info.apptype, "GELDKARTE")) */
-  /*       { */
-  /*         if (opt.with_colons) */
-  /*           es_fputs ("geldkarte-card:\n", fp); */
-  /*         log_info ("this is a Geldkarte compliant card\n"); */
-  /*       } */
-  /*     else */
-  /*       { */
-  /*         if (opt.with_colons) */
-  /*           es_fputs ("unknown:\n", fp); */
-  /*       } */
-  /*     log_info ("not an OpenPGP card\n"); */
-  /*     agent_release_card_info (&info); */
-  /*     xfree (pk); */
-  /*     return; */
-  /*   } */
-
-  /* if (!serialno) */
-  /*   ; */
-  /* else if (strlen (info.serialno)+1 > serialnobuflen) */
-  /*   log_error ("serial number longer than expected\n"); */
-  /* else */
-  /*   strcpy (serialno, info.serialno); */
-
-  /* if (opt.with_colons) */
-  /*   es_fputs ("openpgp-card:\n", fp); */
+  switch (info->apptype)
+    {
+    case APP_TYPE_OPENPGP: list_openpgp (info, fp); break;
+    default: break;
+    }
+}
 
 
-  /*     tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n", */
-  /*                  info.serialno[12] == '0'?"":info.serialno+12, */
-  /*                  info.serialno[13], */
-  /*                  info.serialno[14] == '0'?"":info.serialno+14, */
-  /*                  info.serialno[15]); */
-  /*     tty_fprintf (fp, "Manufacturer .....: %s\n", */
-  /*                  get_manufacturer (xtoi_2(info.serialno+16)*256 */
-  /*                                    + xtoi_2 (info.serialno+18))); */
-  /*     tty_fprintf (fp, "Serial number ....: %.8s\n", info.serialno+20); */
+
+/* The VERIFY command.  */
+static gpg_error_t
+cmd_verify (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
 
-  /*     print_isoname (fp, "Name of cardholder: ", "name", info.disp_name); */
-  /*     print_name (fp, "Language prefs ...: ", info.disp_lang); */
-  /*     tty_fprintf (fp, "Salutation .......: %s\n", */
-  /*                  info.disp_sex == 1? _("Mr."): */
-  /*                  info.disp_sex == 2? _("Mrs.") : ""); */
-  /*     print_name (fp, "URL of public key : ", info.pubkey_url); */
-  /*     print_name (fp, "Login data .......: ", info.login_data); */
-  /*     if (info.private_do[0]) */
-  /*       print_name (fp, "Private DO 1 .....: ", info.private_do[0]); */
-  /*     if (info.private_do[1]) */
-  /*       print_name (fp, "Private DO 2 .....: ", info.private_do[1]); */
-  /*     if (info.private_do[2]) */
-  /*       print_name (fp, "Private DO 3 .....: ", info.private_do[2]); */
-  /*     if (info.private_do[3]) */
-  /*       print_name (fp, "Private DO 4 .....: ", info.private_do[3]); */
-  /*     if (info.cafpr1len) */
-  /*       { */
-  /*         tty_fprintf (fp, "CA fingerprint %d .:", 1); */
-  /*         print_shax_fpr (fp, info.cafpr1, info.cafpr1len); */
-  /*       } */
-  /*     if (info.cafpr2len) */
-  /*       { */
-  /*         tty_fprintf (fp, "CA fingerprint %d .:", 2); */
-  /*         print_shax_fpr (fp, info.cafpr2, info.cafpr2len); */
-  /*       } */
-  /*     if (info.cafpr3len) */
-  /*       { */
-  /*         tty_fprintf (fp, "CA fingerprint %d .:", 3); */
-  /*         print_shax_fpr (fp, info.cafpr3, info.cafpr3len); */
-  /*       } */
-  /*     tty_fprintf (fp,    "Signature PIN ....: %s\n", */
-  /*                  info.chv1_cached? _("not forced"): _("forced")); */
-  /*     if (info.key_attr[0].algo) */
-  /*       { */
-  /*         tty_fprintf (fp,    "Key attributes ...:"); */
-  /*         for (i=0; i < DIM (info.key_attr); i++) */
-  /*           if (info.key_attr[i].algo == PUBKEY_ALGO_RSA) */
-  /*             tty_fprintf (fp, " rsa%u", info.key_attr[i].nbits); */
-  /*           else if (info.key_attr[i].algo == PUBKEY_ALGO_ECDH */
-  /*                    || info.key_attr[i].algo == PUBKEY_ALGO_ECDSA */
-  /*                    || info.key_attr[i].algo == PUBKEY_ALGO_EDDSA) */
-  /*             { */
-  /*               const char *curve_for_print = "?"; */
+  if (!info)
+    return print_help ("verify [chvid]", 0);
 
-  /*               if (info.key_attr[i].curve) */
-  /*                 { */
-  /*                   const char *oid; */
-  /*                   oid = openpgp_curve_to_oid (info.key_attr[i].curve, NULL); */
-  /*                   if (oid) */
-  /*                     curve_for_print = openpgp_oid_to_curve (oid, 0); */
-  /*                 } */
-  /*               tty_fprintf (fp, " %s", curve_for_print); */
-  /*             } */
-  /*         tty_fprintf (fp, "\n"); */
-  /*       } */
-  /*     tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n", */
-  /*                  info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]); */
-  /*     tty_fprintf (fp,    "PIN retry counter : %d %d %d\n", */
-  /*                  info.chvretry[0], info.chvretry[1], info.chvretry[2]); */
-  /*     tty_fprintf (fp,    "Signature counter : %lu\n", info.sig_counter); */
-  /*     if (info.extcap.kdf) */
-  /*       { */
-  /*         tty_fprintf (fp, "KDF setting ......: %s\n", */
-  /*                      info.kdf_do_enabled ? "on" : "off"); */
-  /*       } */
-  /*     if (info.extcap.bt) */
-  /*       { */
-  /*         tty_fprintf (fp, "UIF setting ......: Sign=%s Decrypt=%s Auth=%s\n", */
-  /*                      info.uif[0] ? "on" : "off", info.uif[1] ? "on" : "off", */
-  /*                      info.uif[2] ? "on" : "off"); */
-  /*       } */
-  /*     tty_fprintf (fp, "Signature key ....:"); */
-  /*     print_shax_fpr (fp, info.fpr1len? info.fpr1:NULL, info.fpr1len); */
-  /*     if (info.fpr1len && info.fpr1time) */
-  /*       { */
-  /*         tty_fprintf (fp, "      created ....: %s\n", */
-  /*                      isotimestamp (info.fpr1time)); */
-  /*         print_keygrip (fp, info.grp1); */
-  /*       } */
-  /*     tty_fprintf (fp, "Encryption key....:"); */
-  /*     print_shax_fpr (fp, info.fpr2len? info.fpr2:NULL, info.fpr2len); */
-  /*     if (info.fpr2len && info.fpr2time) */
-  /*       { */
-  /*         tty_fprintf (fp, "      created ....: %s\n", */
-  /*                      isotimestamp (info.fpr2time)); */
-  /*         print_keygrip (fp, info.grp2); */
-  /*       } */
-  /*     tty_fprintf (fp, "Authentication key:"); */
-  /*     print_shax_fpr (fp, info.fpr3len? info.fpr3:NULL, info.fpr3len); */
-  /*     if (info.fpr3len && info.fpr3time) */
-  /*       { */
-  /*         tty_fprintf (fp, "      created ....: %s\n", */
-  /*                      isotimestamp (info.fpr3time)); */
-  /*         print_keygrip (fp, info.grp3); */
-  /*       } */
-  /*     tty_fprintf (fp, "General key info..: "); */
+  if (info->apptype == APP_TYPE_OPENPGP)
+    err = scd_checkpin (info->serialno);
+  else
+    err = scd_checkpin (argstr);
 
-  /*     thefpr = (info.fpr1len? info.fpr1 : info.fpr2len? info.fpr2 : */
-  /*               info.fpr3len? info.fpr3 : NULL); */
-  /*     thefprlen = (info.fpr1len? info.fpr1len : info.fpr2len? info.fpr2len : */
-  /*                  info.fpr3len? info.fpr3len : 0); */
-  /*     /\* If the fingerprint is all 0xff, the key has no associated */
-  /*        OpenPGP certificate.  *\/ */
-  /*     if ( thefpr && !fpr_is_ff (thefpr, thefprlen) */
-  /*          && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen)) */
-  /*       { */
-  /*         print_pubkey_info (ctrl, fp, pk); */
-  /*         if (keyblock) */
-  /*           print_card_key_info (fp, keyblock); */
-  /*       } */
-  /*     else */
-  /*       tty_fprintf (fp, "[none]\n"); */
+  if (err)
+    log_error ("verify failed: %s <%s>\n",
+               gpg_strerror (err), gpg_strsource (err));
+  return err;
+}
 
-  /* release_kbnode (keyblock); */
-  /* free_public_key (pk); */
-  /* agent_release_card_info (&info); */
+
+/* Helper for cmd_name to qyery a part of name.  */
+static char *
+ask_one_name (const char *prompt)
+{
+  char *name;
+  int i;
+
+  for (;;)
+    {
+      name = tty_get (prompt);
+      trim_spaces (name);
+      tty_kill_prompt ();
+      if (!*name || *name == CONTROL_D)
+        {
+          if (*name == CONTROL_D)
+            tty_fprintf (NULL, "\n");
+          xfree (name);
+          return NULL;
+        }
+      for (i=0; name[i] && name[i] >= ' ' && name[i] <= 126; i++)
+        ;
+
+      /* The name must be in Latin-1 and not UTF-8 - lacking the code
+       * to ensure this we restrict it to ASCII. */
+      if (name[i])
+        tty_printf (_("Error: Only plain ASCII is currently allowed.\n"));
+      else if (strchr (name, '<'))
+        tty_printf (_("Error: The \"<\" character may not be used.\n"));
+      else if (strstr (name, "  "))
+        tty_printf (_("Error: Double spaces are not allowed.\n"));
+      else
+        return name;
+      xfree (name);
+    }
+}
+
+
+/* The NAME command.  */
+static gpg_error_t
+cmd_name (card_info_t info, const char *argstr)
+{
+  gpg_error_t err;
+  char *surname, *givenname;
+  char *isoname, *p;
+
+  if (!info)
+    return print_help
+      ("name [--clear]\n\n"
+       "Set the name field of an OpenPGP card.  With --clear the stored\n"
+       "name is cleared off the card.", APP_TYPE_OPENPGP, APP_TYPE_NKS, 0);
+
+  if (info->apptype != APP_TYPE_OPENPGP)
+    {
+      log_info ("Note: This is an OpenPGP only command.\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+ again:
+  if (!strcmp (argstr, "--clear"))
+    isoname = xstrdup (" "); /* No real way to clear; set to space instead. */
+  else
+    {
+      surname = ask_one_name (_("Cardholder's surname: "));
+      givenname = ask_one_name (_("Cardholder's given name: "));
+      if (!surname || !givenname || (!*surname && !*givenname))
+        {
+          xfree (surname);
+          xfree (givenname);
+          return gpg_error (GPG_ERR_CANCELED);
+        }
+
+      isoname = xstrconcat (surname, "<<", givenname, NULL);
+      xfree (surname);
+      xfree (givenname);
+      for (p=isoname; *p; p++)
+        if (*p == ' ')
+          *p = '<';
+
+      if (strlen (isoname) > 39 )
+        {
+          log_info (_("Error: Combined name too long "
+                      "(limit is %d characters).\n"), 39);
+          xfree (isoname);
+          goto again;
+        }
+    }
+
+  err = scd_setattr ("DISP-NAME", isoname, strlen (isoname));
+
+  xfree (isoname);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_url (card_info_t info, const char *argstr)
+{
+  gpg_error_t err;
+  char *url;
+
+  if (!info)
+    return print_help
+      ("URL [--clear]\n\n"
+       "Set the URL data object.  That data object can be used by\n"
+       "the FETCH command to retrieve the full public key.  The\n"
+       "option --clear deletes the content of that data object.",
+       APP_TYPE_OPENPGP, 0);
+
+  if (info->apptype != APP_TYPE_OPENPGP)
+    {
+      log_info ("Note: This is an OpenPGP only command.\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+  if (!strcmp (argstr, "--clear"))
+    url = xstrdup (" "); /* No real way to clear; set to space instead. */
+  else
+    {
+      url = tty_get (_("URL to retrieve public key: "));
+      trim_spaces (url);
+      tty_kill_prompt ();
+      if (!*url || *url == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+    }
+
+  err = scd_setattr ("PUBKEY-URL", url, strlen (url));
+
+ leave:
+  xfree (url);
+  return err;
+}
+
+
+/* Fetch the key from the URL given on the card or try to get it from
+ * the default keyserver.  */
+static gpg_error_t
+cmd_fetch (card_info_t info)
+{
+  gpg_error_t err;
+
+  if (!info)
+    return print_help
+      ("FETCH\n\n"
+       "Retrieve a key using the URL data object or if that is missing\n"
+       "using the fingerprint.", APP_TYPE_OPENPGP, 0);
+
+  if (info->pubkey_url && *info->pubkey_url)
+    {
+      /* strlist_t sl = NULL; */
+
+      /* add_to_strlist (&sl, info.pubkey_url); */
+      /* err = keyserver_fetch (ctrl, sl, KEYORG_URL); */
+      /* free_strlist (sl); */
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
+    }
+  else if (info->fpr1len)
+    {
+      /* rc = keyserver_import_fprint (ctrl, info.fpr1, info.fpr1len, */
+      /*                               opt.keyserver, 0); */
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
+    }
+  else
+    err = gpg_error (GPG_ERR_NO_DATA);
+
+  return err;
+}
+
+
+static gpg_error_t
+cmd_login (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  char *data;
+  size_t datalen;
+
+  if (!info)
+    return print_help
+      ("LOGIN [--clear] [< FILE]\n\n"
+       "Set the login data object.  If FILE is given the data is\n"
+       "is read from that file.  This allows for binary data.\n"
+       "The option --clear deletes the login data.",
+       APP_TYPE_OPENPGP, 0);
+
+  if (!strcmp (argstr, "--clear"))
+    {
+      data = xstrdup (" "); /* kludge.  */
+      datalen = 1;
+    }
+  else if (*argstr == '<')  /* Read it from a file */
+    {
+      for (argstr++; spacep (argstr); argstr++)
+        ;
+      err = get_data_from_file (argstr, &data, &datalen);
+      if (err)
+        goto leave;
+    }
+  else
+    {
+      data = tty_get (_("Login data (account name): "));
+      trim_spaces (data);
+      tty_kill_prompt ();
+      if (!*data || *data == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+      datalen = strlen (data);
+    }
+
+  err = scd_setattr ("LOGIN-DATA", data, datalen);
+
+ leave:
+  xfree (data);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_lang (card_info_t info, const char *argstr)
+{
+  gpg_error_t err;
+  char *data, *p;
+
+  if (!info)
+    return print_help
+      ("LANG [--clear]\n\n"
+       "Change the language info for the card.  This info can be used\n"
+       "by applications for a personalized greeting.  Up to 4 two-digit\n"
+       "language identifiers can be entered as a preference.  The option\n"
+       "--clear removes all identifiers.  GnuPG does not use this info.",
+       APP_TYPE_OPENPGP, 0);
+
+  if (!strcmp (argstr, "--clear"))
+    data = xstrdup ("  "); /* Note that we need two spaces here.  */
+  else
+    {
+    again:
+      data = tty_get (_("Language preferences: "));
+      trim_spaces (data);
+      tty_kill_prompt ();
+      if (!*data || *data == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+
+      if (strlen (data) > 8 || (strlen (data) & 1))
+        {
+          log_info (_("Error: invalid length of preference string.\n"));
+          xfree (data);
+          goto again;
+        }
+
+      for (p=data; *p && *p >= 'a' && *p <= 'z'; p++)
+        ;
+      if (*p)
+        {
+          log_info (_("Error: invalid characters in preference string.\n"));
+          xfree (data);
+          goto again;
+        }
+    }
+
+  err = scd_setattr ("DISP-LANG", data, strlen (data));
+
+ leave:
+  xfree (data);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_salut (card_info_t info, const char *argstr)
+{
+  gpg_error_t err;
+  char *data = NULL;
+  const char *str;
+
+  if (!info)
+    return print_help
+      ("SALUT [--clear]\n\n"
+       "Change the salutation info for the card.  This info can be used\n"
+       "by applications for a personalized greeting.  The option --clear\n"
+       "removes this data object.  GnuPG does not use this info.",
+       APP_TYPE_OPENPGP, 0);
+
+ again:
+  if (!strcmp (argstr, "--clear"))
+    str = "9";
+  else
+    {
+      data = tty_get (_("Salutation (M = Mr., F = Mrs., or space): "));
+      trim_spaces (data);
+      tty_kill_prompt ();
+      if (*data == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+
+      if (!*data)
+        str = "9";
+      else if ((*data == 'M' || *data == 'm') && !data[1])
+        str = "1";
+      else if ((*data == 'F' || *data == 'f') && !data[1])
+        str = "2";
+      else
+        {
+          tty_printf (_("Error: invalid response.\n"));
+          xfree (data);
+          goto again;
+        }
+    }
+
+  err = scd_setattr ("DISP-SEX", str, 1);
+ leave:
+  xfree (data);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_cafpr (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  char *data = NULL;
+  const char *s;
+  int i, c;
+  unsigned char fpr[32];
+  int fprlen;
+  int fprno;
+  int opt_clear = 0;
+
+  if (!info)
+    return print_help
+      ("CAFPR [--clear] N\n\n"
+       "Change the CA fingerprint number N.  N must be in the\n"
+       "range 1 to 3.  The option --clear clears the specified\n"
+       "CA fingerprint N or all of them if N is 0 or not given.",
+       APP_TYPE_OPENPGP, 0);
+
+
+  opt_clear = has_leading_option (argstr, "--clear");
+  argstr = skip_options (argstr);
+
+  if (digitp (argstr))
+    {
+      fprno = atoi (argstr);
+      while (digitp (argstr))
+        argstr++;
+      while (spacep (argstr))
+        argstr++;
+    }
+  else
+    fprno = 0;
+
+  if (opt_clear && !fprno)
+    ; /* Okay: clear all fprs.  */
+  else if (fprno < 1 || fprno > 3)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+ again:
+  if (opt_clear)
+    {
+      memset (fpr, 0, 20);
+      fprlen = 20;
+    }
+  else
+    {
+      xfree (data);
+      data = tty_get (_("CA fingerprint: "));
+      trim_spaces (data);
+      tty_kill_prompt ();
+      if (!*data || *data == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+
+      for (i=0, s=data; i < sizeof fpr && *s; )
+        {
+          while (spacep(s))
+            s++;
+          if (*s == ':')
+            s++;
+          while (spacep(s))
+            s++;
+          c = hextobyte (s);
+          if (c == -1)
+            break;
+          fpr[i++] = c;
+          s += 2;
+        }
+      fprlen = i;
+      if ((fprlen != 20 && fprlen != 32) || *s)
+        {
+          log_error (_("Error: invalid formatted fingerprint.\n"));
+          goto again;
+        }
+    }
+
+  if (!fprno)
+    {
+      log_assert (opt_clear);
+      err = scd_setattr ("CA-FPR-1", fpr, fprlen);
+      if (!err)
+        err = scd_setattr ("CA-FPR-2", fpr, fprlen);
+      if (!err)
+        err = scd_setattr ("CA-FPR-3", fpr, fprlen);
+    }
+  else
+    err = scd_setattr (fprno==1?"CA-FPR-1":
+                       fprno==2?"CA-FPR-2":
+                       fprno==3?"CA-FPR-3":"x", fpr, fprlen);
+
+ leave:
+  xfree (data);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_privatedo (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  int opt_clear;
+  char *do_name = NULL;
+  char *data = NULL;
+  size_t datalen;
+  int do_no;
+
+  if (!info)
+    return print_help
+      ("PRIVATEDO [--clear] N [< FILE]\n\n"
+       "Change the private data object N.  N must be in the\n"
+       "range 1 to 4.  If FILE is given the data is is read\n"
+       "from that file.  The option --clear clears the data.",
+       APP_TYPE_OPENPGP, 0);
+
+  opt_clear = has_leading_option (argstr, "--clear");
+  argstr = skip_options (argstr);
+
+  if (digitp (argstr))
+    {
+      do_no = atoi (argstr);
+      while (digitp (argstr))
+        argstr++;
+      while (spacep (argstr))
+        argstr++;
+    }
+  else
+    do_no = 0;
+
+  if (do_no < 1 || do_no > 4)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+  do_name = xasprintf ("PRIVATE-DO-%d", do_no);
+
+  if (opt_clear)
+    {
+      data = xstrdup (" ");
+      datalen = 1;
+    }
+  else if (*argstr == '<')  /* Read it from a file */
+    {
+      for (argstr++; spacep (argstr); argstr++)
+        ;
+      err = get_data_from_file (argstr, &data, &datalen);
+      if (err)
+        goto leave;
+    }
+  else if (*argstr)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+  else
+    {
+      data = tty_get (_("Private DO data: "));
+      trim_spaces (data);
+      tty_kill_prompt ();
+      datalen = strlen (data);
+      if (!*data || *data == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+    }
+
+  err = scd_setattr (do_name, data, datalen);
+
+ leave:
+  xfree (do_name);
+  xfree (data);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_writecert (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  int opt_clear;
+  int do_no;
+  char *data = NULL;
+  size_t datalen;
+
+  if (!info)
+    return print_help
+      ("WRITECERT [--clear] 3 < FILE\n\n"
+       "Write a certificate for key 3.  Unless --clear is given\n"
+       "the file argement is mandatory.  The option --clear removes\n"
+       "the certificate from the card.",
+       APP_TYPE_OPENPGP, 0);
+
+  opt_clear = has_leading_option (argstr, "--clear");
+  argstr = skip_options (argstr);
+
+  if (digitp (argstr))
+    {
+      do_no = atoi (argstr);
+      while (digitp (argstr))
+        argstr++;
+      while (spacep (argstr))
+        argstr++;
+    }
+  else
+    do_no = 0;
+
+  if (do_no != 3)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  if (opt_clear)
+    {
+      data = xstrdup (" ");
+      datalen = 1;
+    }
+  else if (*argstr == '<')  /* Read it from a file */
+    {
+      for (argstr++; spacep (argstr); argstr++)
+        ;
+      err = get_data_from_file (argstr, &data, &datalen);
+      if (err)
+        goto leave;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  err = scd_writecert ("OPENPGP.3", data, datalen);
+
+ leave:
+  xfree (data);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_readcert (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  int do_no;
+  void *data = NULL;
+  size_t datalen;
+  const char *fname;
+
+  if (!info)
+    return print_help
+      ("READCERT 3 > FILE\n\n"
+       "Read the certificate for key 3 and store it in FILE.",
+       APP_TYPE_OPENPGP, 0);
+
+  argstr = skip_options (argstr);
+
+  if (digitp (argstr))
+    {
+      do_no = atoi (argstr);
+      while (digitp (argstr))
+        argstr++;
+      while (spacep (argstr))
+        argstr++;
+    }
+  else
+    do_no = 0;
+
+  if (do_no != 3)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  if (*argstr == '>')  /* Read it from a file */
+    {
+      for (argstr++; spacep (argstr); argstr++)
+        ;
+      fname = argstr;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  err = scd_readcert ("OPENPGP.3", &data, &datalen);
+  if (err)
+    goto leave;
+
+  err = put_data_to_file (fname, data, datalen);
+
+ leave:
+  xfree (data);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_forcesig (card_info_t info)
+{
+  gpg_error_t err;
+  int newstate;
+
+  if (!info)
+    return print_help
+      ("FORCESIG\n\n"
+       "Toggle the forcesig flag of an OpenPGP card.",
+       APP_TYPE_OPENPGP, 0);
+
+  if (info->apptype != APP_TYPE_OPENPGP)
+    {
+      log_info ("Note: This is an OpenPGP only command.\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+  newstate = !info->chv1_cached;
+
+  err = scd_setattr ("CHV-STATUS-1", newstate? "\x01":"", 1);
+  if (err)
+    goto leave;
+
+  /* Read it back to be sure we have the right toggle state the next
+   * time.  */
+  err = scd_getattr ("CHV-STATUS", info);
+
+ leave:
+  return err;
+}
+
+
+/* Helper for cmd_generate.  Noe that either 0 or 1 is stored at
+ * FORCED_CHV1. */
+static gpg_error_t
+check_pin_for_key_operation (card_info_t info, int *forced_chv1)
+{
+  gpg_error_t err = 0;
+
+  *forced_chv1 = !info->chv1_cached;
+  if (*forced_chv1)
+    { /* Switch off the forced mode so that during key generation we
+       * don't get bothered with PIN queries for each self-signature. */
+      err = scd_setattr ("CHV-STATUS-1", "\x01", 1);
+      if (err)
+        {
+          log_error ("error clearing forced signature PIN flag: %s\n",
+                     gpg_strerror (err));
+          *forced_chv1 = -1;  /* Not changed.  */
+          goto leave;
+        }
+    }
+
+  /* Check the PIN now, so that we won't get asked later for each
+   * binding signature.  */
+  err = scd_checkpin (info->serialno);
+  if (err)
+    log_error ("error checking the PIN: %s\n", gpg_strerror (err));
+
+ leave:
+  return err;
+}
+
+
+/* Helper for cmd_generate.  */
+static void
+restore_forced_chv1 (int *forced_chv1)
+{
+  gpg_error_t err;
+
+  /* Note the possible values stored at FORCED_CHV1:
+   *   0 - forcesig was not enabled.
+   *   1 - forcesig was enabled - enable it again.
+   *  -1 - We have not changed anything.  */
+  if (*forced_chv1 == 1)
+    { /* Switch back to forced state. */
+      err = scd_setattr ("CHV-STATUS-1", "", 1);
+      if (err)
+        log_error ("error setting forced signature PIN flag: %s\n",
+                   gpg_strerror (err));
+      *forced_chv1 = 0;
+    }
+}
+
+
+static gpg_error_t
+cmd_generate (card_info_t info)
+{
+  gpg_error_t err;
+  int forced_chv1 = -1;
+  int want_backup;
+  char *answer = NULL;
+
+  if (!info)
+    return print_help
+      ("GENERATE\n\n"
+       "Menu to generate a new keys.",
+       APP_TYPE_OPENPGP, 0);
+
+  if (info->apptype != APP_TYPE_OPENPGP)
+    {
+      log_info ("Note: This is an OpenPGP only command.\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+  if (info->extcap.ki)
+    {
+      xfree (answer);
+      answer = tty_get (_("Make off-card backup of encryption key? (Y/n) "));
+      want_backup = answer_is_yes_no_default (answer, 1/*(default to Yes)*/);
+      tty_kill_prompt ();
+      if (*answer == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+    }
+  else
+    want_backup = 0;
+
+  if ( (info->fpr1len && !fpr_is_zero (info->fpr1, info->fpr1len))
+       || (info->fpr2len && !fpr_is_zero (info->fpr2, info->fpr2len))
+       || (info->fpr3len && !fpr_is_zero (info->fpr3, info->fpr3len)))
+    {
+      tty_printf ("\n");
+      log_info (_("Note: keys are already stored on the card!\n"));
+      tty_printf ("\n");
+      answer = tty_get (_("Replace existing keys? (y/N) "));
+      tty_kill_prompt ();
+      if (*answer == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+
+      if (!answer_is_yes_no_default (answer, 0/*(default to No)*/))
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+    }
+
+  /* If no displayed name has been set, we assume that this is a fresh
+   * card and print a hint about the default PINs.  */
+  if (!info->disp_name || !*info->disp_name)
+    {
+      tty_printf ("\n");
+      tty_printf (_("Please note that the factory settings of the PINs are\n"
+                    "   PIN = '%s'     Admin PIN = '%s'\n"
+                    "You should change them using the command --change-pin\n"),
+                  OPENPGP_USER_PIN_DEFAULT, OPENPGP_ADMIN_PIN_DEFAULT);
+      tty_printf ("\n");
+    }
+
+  err = check_pin_for_key_operation (info, &forced_chv1);
+  if (err)
+    goto leave;
+
+  /* FIXME: We need to divert to a function which spwans gpg which
+   * will then create the key.  This also requires new features in
+   * gpg.  We might also first create the keys on the card and then
+   * tell gpg to use them to create the OpenPGP keyblock. */
+  /* generate_keypair (ctrl, 1, NULL, info.serialno, want_backup); */
+  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+ leave:
+  restore_forced_chv1 (&forced_chv1);
+  xfree (answer);
+  return err;
+}
+
+
+/* Sub-menu to change a PIN.  The presented options may depend on the
+ * the ALLOW_ADMIN flag.  */
+static gpg_error_t
+cmd_passwd (card_info_t info, int allow_admin)
+{
+  gpg_error_t err;
+  char *answer = NULL;
+
+  if (!info)
+    return print_help
+      ("PASSWD\n\n"
+       "Menu to change or unblock the PINs.  Note that the\n"
+       "presented menu options depend on the type of card\n"
+       "and whether the admin mode is enabled.",
+       0);
+
+  /* Convenience message because we did this in gpg --card-edit too.  */
+  if (info->apptype == APP_TYPE_OPENPGP)
+    log_info (_("OpenPGP card no. %s detected\n"),
+              info->dispserialno? info->dispserialno : info->serialno);
+
+  if (!allow_admin)
+    {
+      err = scd_change_pin (1);
+      if (err)
+        goto leave;
+      log_info ("PIN changed.\n");
+    }
+  else if (info->apptype == APP_TYPE_OPENPGP)
+    {
+      for (;;)
+        {
+          tty_printf ("\n");
+          tty_printf ("1 - change PIN\n"
+                      "2 - unblock and set new PIN\n"
+                      "3 - change Admin PIN\n"
+                      "4 - set the Reset Code\n"
+                      "Q - quit\n");
+          tty_printf ("\n");
+
+          err = 0;
+          xfree (answer);
+          answer = tty_get (_("Your selection? "));
+          tty_kill_prompt ();
+          if (*answer == CONTROL_D)
+            break;  /* Quit.  */
+          if (strlen (answer) != 1)
+            continue;
+          if (*answer == 'q' || *answer == 'Q')
+            break;  /* Quit.  */
+
+          if (*answer == '1')
+            {
+              /* Change PIN (same as the direct thing in non-admin mode).  */
+              err = scd_change_pin (1);
+              if (err)
+                log_error ("Error changing the PIN: %s\n", gpg_strerror (err));
+              else
+                log_info ("PIN changed.\n");
+            }
+          else if (*answer == '2')
+            {
+              /* Unblock PIN by setting a new PIN.  */
+              err = scd_change_pin (101);
+              if (err)
+                log_error ("Error unblocking the PIN: %s\n", gpg_strerror(err));
+              else
+                log_info ("PIN unblocked and new PIN set.\n");
+            }
+          else if (*answer == '3')
+            {
+              /* Change Admin PIN.  */
+              err = scd_change_pin (3);
+              if (err)
+                log_error ("Error changing the PIN: %s\n", gpg_strerror (err));
+              else
+                log_info ("PIN changed.\n");
+	  }
+          else if (*answer == '4')
+            {
+              /* Set a new Reset Code.  */
+              err = scd_change_pin (102);
+              if (err)
+                log_error ("Error setting the Reset Code: %s\n",
+                           gpg_strerror (err));
+              else
+                log_info ("Reset Code set.\n");
+            }
+
+        } /*end for loop*/
+    }
+  else
+    {
+      log_info ("Admin related passwd options not yet supported for '%s'\n",
+                app_type_string (info->apptype));
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+ leave:
+  xfree (answer);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_unblock (card_info_t info)
+{
+  gpg_error_t err = 0;
+
+  if (!info)
+    return print_help
+      ("UNBLOCK\n\n"
+       "Unblock a PIN using a PUK or Reset Code.  Note that OpenPGP\n"
+       "cards prior to version 2 can't use this; instead the PASSWD\n"
+       "command can be used to set a new PIN.",
+       0);
+
+  if (info->apptype == APP_TYPE_OPENPGP)
+    log_info (_("OpenPGP card no. %s detected\n"),
+              info->dispserialno? info->dispserialno : info->serialno);
+
+  if (info->apptype == APP_TYPE_OPENPGP && !info->is_v2)
+    log_error (_("This command is only available for version 2 cards\n"));
+  else if (info->apptype == APP_TYPE_OPENPGP && !info->chvretry[1])
+    log_error (_("Reset Code not or not anymore available\n"));
+  else if (info->apptype == APP_TYPE_OPENPGP)
+    {
+      err = scd_change_pin (2);
+      if (!err)
+        log_info ("PIN changed.\n");
+    }
+  else
+    log_info ("Unblocking not yet supported for '%s'\n",
+              app_type_string (info->apptype));
+
+  return err;
+}
+
+
+/* Direct sending of an hex encoded APDU with error printing.  */
+static gpg_error_t
+send_apdu (const char *hexapdu, const char *desc, unsigned int ignore)
+{
+  gpg_error_t err;
+  unsigned int sw;
+
+  err = scd_apdu (hexapdu, &sw);
+  if (err)
+    log_error ("sending card command %s failed: %s\n", desc,
+               gpg_strerror (err));
+  else if (!hexapdu || !strcmp (hexapdu, "undefined"))
+    ;
+  else if (ignore == 0xffff)
+    ; /* Ignore all status words.  */
+  else if (sw != 0x9000)
+    {
+      switch (sw)
+        {
+        case 0x6285: err = gpg_error (GPG_ERR_OBJ_TERM_STATE); break;
+        case 0x6982: err = gpg_error (GPG_ERR_BAD_PIN); break;
+        case 0x6985: err = gpg_error (GPG_ERR_USE_CONDITIONS); break;
+        default: err = gpg_error (GPG_ERR_CARD);
+        }
+      if (!(ignore && ignore == sw))
+        log_error ("card command %s failed: %s (0x%04x)\n", desc,
+                   gpg_strerror (err),  sw);
+    }
+  return err;
+}
+
+
+/* Note: On successful execution a redisplay should be scheduled.  If
+ * this function fails the card may be in an unknown state. */
+static gpg_error_t
+cmd_factoryreset (card_info_t info)
+{
+  gpg_error_t err;
+  char *answer = NULL;
+  int termstate = 0;
+  int any_apdu = 0;
+  int i;
+
+
+  if (!info)
+    return print_help
+      ("FACTORY-RESET\n\n"
+       "Do a complete reset of an OpenPGP card.  This deletes all\n"
+       "data and keys and resets the PINs to their default.  This\n"
+       "mainly used by developers with scratch cards.  Don't worry,\n"
+       "you need to confirm before the command proceeds.",
+       APP_TYPE_OPENPGP, 0);
+
+  if (info->apptype != APP_TYPE_OPENPGP)
+    {
+      log_info ("Note: This is an OpenPGP only command.\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+  /* The code below basically does the same what this
+   * gpg-connect-agent script does:
+   *
+   *   scd reset
+   *   scd serialno undefined
+   *   scd apdu 00 A4 04 00 06 D2 76 00 01 24 01
+   *   scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+   *   scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+   *   scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+   *   scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+   *   scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+   *   scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+   *   scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+   *   scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+   *   scd apdu 00 e6 00 00
+   *   scd apdu 00 44 00 00
+   *   scd reset
+   *   /echo Card has been reset to factory defaults
+   *
+   * but tries to find out something about the card first.
+   */
+
+  err = scd_learn (info);
+  if (gpg_err_code (err) == GPG_ERR_OBJ_TERM_STATE
+      && gpg_err_source (err) == GPG_ERR_SOURCE_SCD)
+    termstate = 1;
+  else if (err)
+    {
+      log_error (_("OpenPGP card not available: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+
+  if (!termstate)
+    {
+      log_info (_("OpenPGP card no. %s detected\n"),
+                info->dispserialno? info->dispserialno : info->serialno);
+      if (!(info->status_indicator == 3 || info->status_indicator == 5))
+        {
+          /* Note: We won't see status-indicator 3 here because it is not
+           * possible to select a card application in termination state.  */
+          log_error (_("This command is not supported by this card\n"));
+          err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+          goto leave;
+        }
+
+      tty_printf ("\n");
+      log_info
+        (_("Note: This command destroys all keys stored on the card!\n"));
+      tty_printf ("\n");
+      xfree (answer);
+      answer = tty_get (_("Continue? (y/N) "));
+      tty_kill_prompt ();
+      trim_spaces (answer);
+      if (*answer == CONTROL_D
+          || !answer_is_yes_no_default (answer, 0/*(default to no)*/))
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+
+      xfree (answer);
+      answer = tty_get (_("Really do a factory reset? (enter \"yes\") "));
+      tty_kill_prompt ();
+      trim_spaces (answer);
+      if (strcmp (answer, "yes") && strcmp (answer,_("yes")))
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+
+      any_apdu = 1;
+      /* We need to select a card application before we can send APDUs
+       * to the card without scdaemon doing anything on its own.  */
+      err = send_apdu (NULL, "RESET", 0);
+      if (err)
+        goto leave;
+      err = send_apdu ("undefined", "dummy select ", 0);
+      if (err)
+        goto leave;
+
+      /* Select the OpenPGP application.  */
+      err = send_apdu ("00A4040006D27600012401", "SELECT AID", 0);
+      if (err)
+        goto leave;
+
+      /* Do some dummy verifies with wrong PINs to set the retry
+       * counter to zero.  We can't easily use the card version 2.1
+       * feature of presenting the admin PIN to allow the terminate
+       * command because there is no machinery in scdaemon to catch
+       * the verify command and ask for the PIN when the "APDU"
+       * command is used.
+       * Here, the length of dummy wrong PIN is 32-byte, also
+       * supporting authentication with KDF DO.  */
+      for (i=0; i < 4; i++)
+        send_apdu ("0020008120"
+                   "40404040404040404040404040404040"
+                   "40404040404040404040404040404040", "VERIFY", 0xffff);
+      for (i=0; i < 4; i++)
+        send_apdu ("0020008320"
+                   "40404040404040404040404040404040"
+                   "40404040404040404040404040404040", "VERIFY", 0xffff);
+
+      /* Send terminate datafile command.  */
+      err = send_apdu ("00e60000", "TERMINATE DF", 0x6985);
+      if (err)
+        goto leave;
+    }
+
+  any_apdu = 1;
+  /* Send activate datafile command.  This is used without
+   * confirmation if the card is already in termination state.  */
+  err = send_apdu ("00440000", "ACTIVATE DF", 0);
+  if (err)
+    goto leave;
+
+  /* Finally we reset the card reader once more.  */
+  err = send_apdu (NULL, "RESET", 0);
+  if (err)
+    goto leave;
+
+  /* Then, connect the card again (answer used as a dummy).  */
+  xfree (answer); answer = NULL;
+  err = scd_serialno (&answer, NULL);
+
+ leave:
+  if (err && any_apdu)
+    {
+      log_info ("Due to an error the card might be in an inconsistent state\n"
+                "You should run the LIST command to check this.\n");
+      /* FIXME: We need a better solution in the case that the card is
+       * in a termination state, i.e. the card was removed before the
+       * activate was sent.  The best solution I found with v2.1
+       * Zeitcontrol card was to kill scdaemon and the issue this
+       * sequence with gpg-connect-agent:
+       *   scd reset
+       *   scd serialno undefined
+       *   scd apdu 00A4040006D27600012401 (returns error)
+       *   scd apdu 00440000
+       * Then kill scdaemon again and issue:
+       *   scd reset
+       *   scd serialno openpgp
+       */
+    }
+  xfree (answer);
+  return err;
+}
+
+
+/* Generate KDF data.  This is a helper for cmd_kdfsetup.  */
+static gpg_error_t
+gen_kdf_data (unsigned char *data, int single_salt)
+{
+  gpg_error_t err;
+  const unsigned char h0[] = { 0x81, 0x01, 0x03,
+                               0x82, 0x01, 0x08,
+                               0x83, 0x04 };
+  const unsigned char h1[] = { 0x84, 0x08 };
+  const unsigned char h2[] = { 0x85, 0x08 };
+  const unsigned char h3[] = { 0x86, 0x08 };
+  const unsigned char h4[] = { 0x87, 0x20 };
+  const unsigned char h5[] = { 0x88, 0x20 };
+  unsigned char *p, *salt_user, *salt_admin;
+  unsigned char s2k_char;
+  unsigned int iterations;
+  unsigned char count_4byte[4];
+
+  p = data;
+
+  s2k_char = encode_s2k_iterations (agent_get_s2k_count ());
+  iterations = S2K_DECODE_COUNT (s2k_char);
+  count_4byte[0] = (iterations >> 24) & 0xff;
+  count_4byte[1] = (iterations >> 16) & 0xff;
+  count_4byte[2] = (iterations >>  8) & 0xff;
+  count_4byte[3] = (iterations & 0xff);
+
+  memcpy (p, h0, sizeof h0);
+  p += sizeof h0;
+  memcpy (p, count_4byte, sizeof count_4byte);
+  p += sizeof count_4byte;
+  memcpy (p, h1, sizeof h1);
+  salt_user = (p += sizeof h1);
+  gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
+  p += 8;
+
+  if (single_salt)
+    salt_admin = salt_user;
+  else
+    {
+      memcpy (p, h2, sizeof h2);
+      p += sizeof h2;
+      gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
+      p += 8;
+      memcpy (p, h3, sizeof h3);
+      salt_admin = (p += sizeof h3);
+      gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
+      p += 8;
+    }
+
+  memcpy (p, h4, sizeof h4);
+  p += sizeof h4;
+  err = gcry_kdf_derive (OPENPGP_USER_PIN_DEFAULT,
+                         strlen (OPENPGP_USER_PIN_DEFAULT),
+                         GCRY_KDF_ITERSALTED_S2K, GCRY_MD_SHA256,
+                         salt_user, 8, iterations, 32, p);
+  p += 32;
+  if (!err)
+    {
+      memcpy (p, h5, sizeof h5);
+      p += sizeof h5;
+      err = gcry_kdf_derive (OPENPGP_ADMIN_PIN_DEFAULT,
+                             strlen (OPENPGP_ADMIN_PIN_DEFAULT),
+                             GCRY_KDF_ITERSALTED_S2K, GCRY_MD_SHA256,
+                             salt_admin, 8, iterations, 32, p);
+    }
+
+  return err;
+}
+
+
+static gpg_error_t
+cmd_kdfsetup (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  unsigned char kdf_data[OPENPGP_KDF_DATA_LENGTH_MAX];
+  int single = (*argstr != 0);
+
+  if (!info)
+    return print_help
+      ("KDF-SETUP\n\n"
+       "Prepare the OpenPGP card KDF feature for this card.",
+       APP_TYPE_OPENPGP, 0);
+
+  if (info->apptype != APP_TYPE_OPENPGP)
+    {
+      log_info ("Note: This is an OpenPGP only command.\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+  if (!info->extcap.kdf)
+    {
+      log_error (_("This command is not supported by this card\n"));
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+    }
+
+  err = gen_kdf_data (kdf_data, single);
+  if (err)
+    goto leave;
+
+  err = scd_setattr ("KDF", kdf_data,
+                     single ? OPENPGP_KDF_DATA_LENGTH_MIN
+                     /* */  : OPENPGP_KDF_DATA_LENGTH_MAX);
+  if (err)
+    goto leave;
+
+  err = scd_getattr ("KDF", info);
+
+ leave:
+  return err;
 }
 
 
 
 static void
-cmd_verify (void)
+show_keysize_warning (void)
 {
-  /* agent_scd_checkpin (serialnobuf); */
+  static int shown;
+
+  if (shown)
+    return;
+  shown = 1;
+  tty_printf
+    (_("Note: There is no guarantee that the card supports the requested\n"
+       "      key type or size.  If the key generation does not succeed,\n"
+       "      please check the documentation of your card to see which\n"
+       "      key types and sizes are supported.\n")
+     );
 }
 
 
-static void
-cmd_name (void)
+/* Ask for the size of a card key.  NBITS is the current size
+ * configured for the card.  Returns 0 on success and stored the
+ * chosen key size at R_KEYSIZE; 0 is stored to indicate that the
+ * default size shall be used.  */
+static gpg_error_t
+ask_card_rsa_keysize (unsigned int nbits, unsigned int *r_keysize)
 {
-  /* change_name (); */
+  unsigned int min_nbits = 1024;
+  unsigned int max_nbits = 4096;
+  char*answer;
+  unsigned int req_nbits;
+
+  for (;;)
+    {
+      answer = tty_getf (_("What keysize do you want? (%u) "), nbits);
+      trim_spaces (answer);
+      tty_kill_prompt ();
+      if (*answer == CONTROL_D)
+        {
+          xfree (answer);
+          return gpg_error (GPG_ERR_CANCELED);
+        }
+      req_nbits = *answer? atoi (answer): nbits;
+      xfree (answer);
+
+      if (req_nbits != nbits && (req_nbits % 32) )
+        {
+          req_nbits = ((req_nbits + 31) / 32) * 32;
+          tty_printf (_("rounded up to %u bits\n"), req_nbits);
+        }
+
+      if (req_nbits == nbits)
+        {
+          /* Use default.  */
+          *r_keysize = 0;
+          return 0;
+        }
+
+      if (req_nbits < min_nbits || req_nbits > max_nbits)
+        {
+          tty_printf (_("%s keysizes must be in the range %u-%u\n"),
+                      "RSA", min_nbits, max_nbits);
+        }
+      else
+        {
+          *r_keysize = req_nbits;
+          return 0;
+        }
+    }
 }
 
 
-static void
-cmd_url (void)
+/* Ask for the key attribute of a card key.  CURRENT is the current
+ * attribute configured for the card.  KEYNO is the number of the key
+ * used to select the prompt.  Stores NULL at result to use the
+ * default attribute or stores the selected attribute structure at
+ * RESULT.  On error an error code is returned.  */
+static gpg_error_t
+ask_card_keyattr (int keyno, const struct key_attr *current,
+                  struct key_attr **result)
 {
-  /* change_url (); */
+  gpg_error_t err;
+  struct key_attr *key_attr = NULL;
+  char *answer = NULL;
+  int selection;
+
+  *result = NULL;
+
+  key_attr = xcalloc (1, sizeof *key_attr);
+
+  tty_printf (_("Changing card key attribute for: "));
+  if (keyno == 0)
+    tty_printf (_("Signature key\n"));
+  else if (keyno == 1)
+    tty_printf (_("Encryption key\n"));
+  else
+    tty_printf (_("Authentication key\n"));
+
+  tty_printf (_("Please select what kind of key you want:\n"));
+  tty_printf (_("   (%d) RSA\n"), 1 );
+  tty_printf (_("   (%d) ECC\n"), 2 );
+
+  for (;;)
+    {
+      xfree (answer);
+      answer = tty_get (_("Your selection? "));
+      trim_spaces (answer);
+      tty_kill_prompt ();
+      if (!*answer || *answer == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+      selection = *answer? atoi (answer) : 0;
+
+      if (selection == 1 || selection == 2)
+        break;
+      else
+        tty_printf (_("Invalid selection.\n"));
+    }
+
+
+  if (selection == 1)
+    {
+      unsigned int nbits, result_nbits;
+
+      if (current->algo == PUBKEY_ALGO_RSA)
+        nbits = current->nbits;
+      else
+        nbits = 2048;
+
+      err = ask_card_rsa_keysize (nbits, &result_nbits);
+      if (err)
+        goto leave;
+      if (result_nbits == 0)
+        {
+          if (current->algo == PUBKEY_ALGO_RSA)
+            {
+              xfree (key_attr);
+              key_attr = NULL;
+            }
+          else
+            result_nbits = nbits;
+        }
+
+      if (key_attr)
+        {
+          key_attr->algo = PUBKEY_ALGO_RSA;
+          key_attr->nbits = result_nbits;
+        }
+    }
+  else if (selection == 2)
+    {
+      const char *curve;
+      /* const char *oid_str; */
+      int algo;
+
+      if (current->algo == PUBKEY_ALGO_RSA)
+        {
+          if (keyno == 1) /* Encryption key */
+            algo = PUBKEY_ALGO_ECDH;
+          else /* Signature key or Authentication key */
+            algo = PUBKEY_ALGO_ECDSA;
+          curve = NULL;
+        }
+      else
+        {
+          algo = current->algo;
+          curve = current->curve;
+        }
+
+      err = GPG_ERR_NOT_IMPLEMENTED;
+      goto leave;
+      /* FIXME: We need to mve the ask_cure code out to common or
+       * provide another sultion.  */
+      /* curve = ask_curve (&algo, NULL, curve); */
+      /* if (curve) */
+      /*   { */
+      /*     key_attr->algo = algo; */
+      /*     oid_str = openpgp_curve_to_oid (curve, NULL); */
+      /*     key_attr->curve = openpgp_oid_to_curve (oid_str, 0); */
+      /*   } */
+      /* else */
+      /*   { */
+      /*     xfree (key_attr); */
+      /*     key_attr = NULL; */
+      /*   } */
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_BUG);
+      goto leave;
+    }
+
+  /* Tell the user what we are going to do.  */
+  if (key_attr->algo == PUBKEY_ALGO_RSA)
+    {
+      tty_printf (_("The card will now be re-configured"
+                    " to generate a key of %u bits\n"), key_attr->nbits);
+    }
+  else if (key_attr->algo == PUBKEY_ALGO_ECDH
+           || key_attr->algo == PUBKEY_ALGO_ECDSA
+           || key_attr->algo == PUBKEY_ALGO_EDDSA)
+    {
+      tty_printf (_("The card will now be re-configured"
+                    " to generate a key of type: %s\n"), key_attr->curve);
+    }
+  show_keysize_warning ();
+
+  *result = key_attr;
+  key_attr = NULL;
+
+ leave:
+  xfree (key_attr);
+  xfree (answer);
+  return err;
 }
 
 
-static void
-cmd_fetch (void)
+/* Change the key attribute of key KEYNO (0..2) and show an error
+ * message if that fails.  */
+static gpg_error_t
+do_change_keyattr (int keyno, const struct key_attr *key_attr)
 {
-  /* fetch_url (); */
+  gpg_error_t err = 0;
+  char args[100];
+
+  if (key_attr->algo == PUBKEY_ALGO_RSA)
+    snprintf (args, sizeof args, "--force %d 1 rsa%u", keyno+1,
+              key_attr->nbits);
+  else if (key_attr->algo == PUBKEY_ALGO_ECDH
+           || key_attr->algo == PUBKEY_ALGO_ECDSA
+           || key_attr->algo == PUBKEY_ALGO_EDDSA)
+    snprintf (args, sizeof args, "--force %d %d %s",
+              keyno+1, key_attr->algo, key_attr->curve);
+  else
+    {
+      /* FIXME: Above we use opnepgp algo names but in the error
+       * message we use the gcrypt names.  We should settle for a
+       * consistent solution. */
+      log_error (_("public key algorithm %d (%s) is not supported\n"),
+                 key_attr->algo, gcry_pk_algo_name (key_attr->algo));
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      goto leave;
+    }
+
+  err = scd_setattr ("KEY-ATTR", args, strlen (args));
+  if (err)
+    log_error (_("error changing key attribute for key %d: %s\n"),
+               keyno+1, gpg_strerror (err));
+ leave:
+  return err;
 }
 
 
-static void
-cmd_login (char *arg_string)
+static gpg_error_t
+cmd_keyattr (card_info_t info, char *argstr)
 {
-  /* change_login (arg_string); */
+  gpg_error_t err = 0;
+  int keyno;
+  struct key_attr *key_attr = NULL;
+
+  (void)argstr;
+
+  if (!info)
+    return print_help
+      ("KEY-ATTR\n\n"
+       "Menu to change the key attributes of an OpenPGP card.",
+       APP_TYPE_OPENPGP, 0);
+
+  if (info->apptype != APP_TYPE_OPENPGP)
+    {
+      log_info ("Note: This is an OpenPGP only command.\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+  if (!(info->is_v2 && info->extcap.aac))
+    {
+      log_error (_("This command is not supported by this card\n"));
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+    }
+
+  for (keyno = 0; keyno < DIM (info->key_attr); keyno++)
+    {
+      xfree (key_attr);
+      key_attr = NULL;
+      err = ask_card_keyattr (keyno, &info->key_attr[keyno], &key_attr);
+      if (err)
+        goto leave;
+
+      err = do_change_keyattr (keyno, key_attr);
+      if (err)
+        {
+          /* Error: Better read the default key attribute again.  */
+          log_debug ("FIXME\n");
+          /* Ask again for this key. */
+          keyno--;
+        }
+    }
+
+ leave:
+  xfree (key_attr);
+  return err;
 }
 
 
-static void
-cmd_lang (void)
+static gpg_error_t
+cmd_uif (card_info_t info, char *argstr)
 {
-  /* change_lang (); */
-}
+  gpg_error_t err;
+  int keyno;
+
+  if (!info)
+    return print_help
+      ("UIF N [on|off|permanent]\n\n"
+       "Change the User Interaction Flag.  N must in the range 1 to 3.",
+       APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
+
+  argstr = skip_options (argstr);
+
+  if (digitp (argstr))
+    {
+      keyno = atoi (argstr);
+      while (digitp (argstr))
+        argstr++;
+      while (spacep (argstr))
+        argstr++;
+    }
+  else
+    keyno = 0;
+
+  if (keyno < 1 || keyno > 3)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
 
 
-static void
-cmd_salut (void)
-{
-  /* change_salut (); */
-}
+  err = GPG_ERR_NOT_IMPLEMENTED;
 
-
-static void
-cmd_cafpr (int arg_number)
-{
-  if ( arg_number < 1 || arg_number > 3 )
-    tty_printf ("usage: cafpr N\n"
-                "       1 <= N <= 3\n");
-  /* else */
-  /*   change_cafpr (arg_number); */
-}
-
-
-static void
-cmd_privatedo (int arg_number, char *arg_string)
-{
-  if ( arg_number < 1 || arg_number > 4 )
-    tty_printf ("usage: privatedo N\n"
-                "       1 <= N <= 4\n");
-  /* else */
-  /*   change_private_do (arg_string, arg_number); */
-}
-
-
-static void
-cmd_writecert (int arg_number, char *arg_rest)
-{
-  if ( arg_number != 3 )
-    tty_printf ("usage: writecert 3 < FILE\n");
-  /* else */
-  /*   change_cert (arg_rest); */
-}
-
-
-static void
-cmd_readcert (int arg_number, char *arg_rest)
-{
-  if ( arg_number != 3 )
-    tty_printf ("usage: readcert 3 > FILE\n");
-  /* else */
-  /*   read_cert (arg_rest); */
-}
-
-
-static void
-cmd_forcesig (void)
-{
-  /* toggle_forcesig (); */
-}
-
-
-static void
-cmd_generate (void)
-{
-  /* generate_card_keys (); */
-}
-
-
-static void
-cmd_passwd (int allow_admin)
-{
-  /* change_pin (0, allow_admin); */
-}
-
-
-static void
-cmd_unblock (int allow_admin)
-{
-  /* change_pin (1, allow_admin); */
-}
-
-
-static void
-cmd_factoryreset (void)
-{
-  /* factory_reset (); */
-}
-
-
-static void
-cmd_kdfsetup (char *argstring)
-{
-  /* kdf_setup (arg_string); */
-}
-
-
-static void
-cmd_keyattr (void)
-{
-  /* key_attr (); */
-}
-
-
-static void
-cmd_uif (int arg_number, char *arg_rest)
-{
-  if ( arg_number < 1 || arg_number > 3 )
-    tty_printf ("usage: uif N [on|off|permanent]\n"
-                "       1 <= N <= 3\n");
-  /* else */
-  /*   uif (arg_number, arg_rest); */
+ leave:
+  return err;
 }
 
 
@@ -629,7 +2369,7 @@ cmd_uif (int arg_number, char *arg_rest)
 enum cmdids
   {
     cmdNOP = 0,
-    cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG, cmdVERIFY,
+    cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdRESET, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
@@ -651,13 +2391,13 @@ static struct
   { "?"       , cmdHELP  , 0, NULL },
   { "list"    , cmdLIST  , 0, N_("list all available data")},
   { "l"       , cmdLIST  , 0, NULL },
-  { "debug"   , cmdDEBUG , 0, NULL },
   { "name"    , cmdNAME  , 1, N_("change card holder's name")},
   { "url"     , cmdURL   , 1, N_("change URL to retrieve key")},
   { "fetch"   , cmdFETCH , 0, N_("fetch the key specified in the card URL")},
   { "login"   , cmdLOGIN , 1, N_("change the login name")},
   { "lang"    , cmdLANG  , 1, N_("change the language preferences")},
   { "salutation",cmdSALUT, 1, N_("change card holder's salutation")},
+  { "salut"   , cmdSALUT,  1, NULL },
   { "cafpr"   , cmdCAFPR , 1, N_("change a CA fingerprint")},
   { "forcesig", cmdFORCESIG, 1, N_("toggle the signature force PIN flag")},
   { "generate", cmdGENERATE, 1, N_("generate new keys")},
@@ -669,9 +2409,9 @@ static struct
   { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
   { "uif", cmdUIF, 1, N_("change the User Interaction Flag")},
   /* Note, that we do not announce these command yet. */
-  { "privatedo", cmdPRIVATEDO, 0, NULL },
-  { "readcert", cmdREADCERT, 0, NULL },
-  { "writecert", cmdWRITECERT, 1, NULL },
+  { "privatedo", cmdPRIVATEDO, 0, N_("change a private data object")},
+  { "readcert",  cmdREADCERT,  0, N_("read a certificate from a data object")},
+  { "writecert", cmdWRITECERT, 1, N_("store a certificate to a data object")},
   { NULL, cmdINVCMD, 0, NULL }
 };
 
@@ -680,41 +2420,75 @@ static struct
 static void
 interactive_loop (void)
 {
+  gpg_error_t err;
   char *answer = NULL;         /* The input line.  */
   enum cmdids cmd = cmdNOP;    /* The command.  */
   int cmd_admin_only;          /* The command is an admin only command.  */
-  int arg_number;              /* The first argument as a number.  */
-  char *arg_string = "";       /* The first argument as a string.  */
-  char *arg_rest = "";         /* The remaining arguments.  */
+  char *argstr;                /* The argument as a string.  */
   int redisplay = 1;           /* Whether to redisplay the main info.  */
   int allow_admin = 0;         /* Whether admin commands are allowed.  */
-  char serialnobuf[50];
+  char *help_arg = NULL;       /* Argument of the HELP command.         */
+  struct card_info_s info_buffer;
+  card_info_t info = &info_buffer;
   char *p;
   int i;
 
+  /* In the interactive mode we do not want to print the program prefix.  */
+  log_set_prefix (NULL, 0);
+
   for (;;)
     {
-
-      tty_printf ("\n");
-      if (redisplay)
+      if (help_arg)
         {
-          print_card_status (serialnobuf, DIM (serialnobuf));
-          tty_printf("\n");
+          /* Clear info to indicate helpmode */
+          info = NULL;
+        }
+      else if (!info)
+        {
+          /* Get out of help.  */
+          info = &info_buffer;
+          help_arg = NULL;
           redisplay = 0;
-	}
-
-      do
+        }
+      else if (redisplay)
         {
-          xfree (answer);
-          tty_enable_completion (command_completion);
-          answer = tty_get (_("gpg/card> "));
-          tty_kill_prompt();
-          tty_disable_completion ();
-          trim_spaces(answer);
+          err = scd_learn (info);
+          if (err)
+            {
+              log_error ("Error reading card: %s\n", gpg_strerror (err));
+            }
+          else
+            {
+              list_card (info);
+              tty_printf("\n");
+              redisplay = 0;
+            }
 	}
-      while ( *answer == '#' );
 
-      arg_number = 0;
+      if (!info)
+        {
+          /* Copy the pending help arg into our answer.  Noe that
+           * help_arg points into answer.  */
+          p = xstrdup (help_arg);
+          help_arg = NULL;
+          xfree (answer);
+          answer = p;
+        }
+      else
+        {
+          do
+            {
+              xfree (answer);
+              tty_enable_completion (command_completion);
+              answer = tty_get (_("gpg/card> "));
+              tty_kill_prompt();
+              tty_disable_completion ();
+              trim_spaces(answer);
+            }
+          while ( *answer == '#' );
+        }
+
+      argstr = NULL;
       cmd_admin_only = 0;
       if (!*answer)
         cmd = cmdLIST; /* We default to the list command */
@@ -722,18 +2496,11 @@ interactive_loop (void)
         cmd = cmdQUIT;
       else
         {
-          if ((p=strchr (answer,' ')))
+          if ((argstr = strchr (answer,' ')))
             {
-              *p++ = 0;
+              *argstr++ = 0;
               trim_spaces (answer);
-              trim_spaces (p);
-              arg_number = atoi (p);
-              arg_string = p;
-              arg_rest = p;
-              while (digitp (arg_rest))
-                arg_rest++;
-              while (spacep (arg_rest))
-                arg_rest++;
+              trim_spaces (argstr);
             }
 
           for (i=0; cmds[i].name; i++ )
@@ -744,34 +2511,104 @@ interactive_loop (void)
           cmd_admin_only = cmds[i].admin_only;
         }
 
-      if (!allow_admin && cmd_admin_only)
-	{
-          tty_printf ("\n");
-          tty_printf (_("Admin-only command\n"));
-          continue;
+      /* Make sure we have valid strings for the args.  They are
+       * allowed to be modifed and must thus point to a buffer.  */
+      if (!argstr)
+        argstr = answer + strlen (answer);
+
+      if (!(cmd == cmdNOP || cmd == cmdQUIT || cmd == cmdHELP))
+        {
+          /* If redisplay is set we know that there was an error reading
+           * the card.  In this case we force a LIST command to retry.  */
+          if (!info)
+            ; /* In help mode.  */
+          else if (redisplay)
+            {
+              cmd = cmdLIST;
+              cmd_admin_only = 0;
+            }
+          else if (!info->serialno)
+            {
+              /* Without a serial number most commands won't work.
+               * Catch it here.  */
+              tty_printf ("\n");
+              tty_printf ("Serial number missing\n");
+              continue;
+            }
+          else if (!allow_admin && cmd_admin_only)
+            {
+              tty_printf ("\n");
+              tty_printf (_("Admin-only command\n"));
+              continue;
+            }
         }
 
+      err = 0;
       switch (cmd)
         {
         case cmdNOP:
+          if (!info)
+            print_help ("NOP\n\n"
+                        "Dummy command.", 0);
           break;
 
         case cmdQUIT:
-          goto leave;
+          if (!info)
+            print_help ("QUIT\n\n"
+                        "Leave this tool.", 0);
+          else
+            {
+              tty_printf ("\n");
+              goto leave;
+            }
+          break;
 
         case cmdHELP:
-          for (i=0; cmds[i].name; i++ )
-            if(cmds[i].desc
-	       && (!cmds[i].admin_only || (cmds[i].admin_only && allow_admin)))
-              tty_printf("%-14s %s\n", cmds[i].name, _(cmds[i].desc) );
+          if (!info)
+            print_help ("HELP [command]\n\n"
+                        "Show all commands.  With an argument show help\n"
+                        "for that command.", 0);
+          else if (*argstr)
+            help_arg = argstr; /* Trigger help for a command.  */
+          else
+            {
+              tty_printf
+                ("List of commands (\"help <command>\" for details):\n");
+              for (i=0; cmds[i].name; i++ )
+                if(cmds[i].desc
+                   && (!cmds[i].admin_only
+                       || (cmds[i].admin_only && allow_admin)))
+                  tty_printf("%-14s %s\n", cmds[i].name, _(cmds[i].desc) );
+            }
+          break;
+
+        case cmdLIST:
+          if (!info)
+            print_help ("LIST\n\n"
+                        "Show content of the card.", 0);
+          else
+            {
+              /* Actual work is done by the redisplay code block.  */
+              redisplay = 1;
+            }
+          break;
+
+        case cmdRESET:
+          if (!info)
+            print_help ("RESET\n\n"
+                        "Send a RESET to the card daemon.", 0);
+          else
+            {
+              err = scd_apdu (NULL, NULL);
+            }
           break;
 
 	case cmdADMIN:
-          if ( !strcmp (arg_string, "on") )
+          if ( !strcmp (argstr, "on") )
             allow_admin = 1;
-          else if ( !strcmp (arg_string, "off") )
+          else if ( !strcmp (argstr, "off") )
             allow_admin = 0;
-          else if ( !strcmp (arg_string, "verify") )
+          else if ( !strcmp (argstr, "verify") )
             {
               /* Force verification of the Admin Command.  However,
                  this is only done if the retry counter is at initial
@@ -790,26 +2627,33 @@ interactive_loop (void)
 	    tty_printf(_("Admin commands are not allowed\n"));
 	  break;
 
-        case cmdVERIFY:    cmd_verify (); redisplay = 1; break;
-        case cmdLIST:                     redisplay = 1; break;
-        case cmdNAME:      cmd_name ();   break;
-        case cmdURL:       cmd_url ();    break;
-	case cmdFETCH:     cmd_fetch ();  break;
-        case cmdLOGIN:     cmd_login (arg_string); break;
-        case cmdLANG:      cmd_lang ();   break;
-        case cmdSALUT:     cmd_salut ();  break;
-        case cmdCAFPR:     cmd_cafpr (arg_number); break;
-        case cmdPRIVATEDO: cmd_privatedo (arg_number, arg_string); break;
-        case cmdWRITECERT: cmd_writecert (arg_number, arg_rest); break;
-        case cmdREADCERT:  cmd_readcert (arg_number, arg_rest); break;
-        case cmdFORCESIG:  cmd_forcesig (); break;
-        case cmdGENERATE:  cmd_generate (); break;
-        case cmdPASSWD:    cmd_passwd (allow_admin); break;
-        case cmdUNBLOCK:   cmd_unblock (allow_admin); break;
-        case cmdFACTORYRESET: cmd_factoryreset (); break;
-        case cmdKDFSETUP:  cmd_kdfsetup (arg_string); break;
-        case cmdKEYATTR:   cmd_keyattr (); break;
-        case cmdUIF:       cmd_uif (arg_number, arg_rest); break;
+        case cmdVERIFY:
+          err = cmd_verify (info, argstr);
+          if (!err)
+            redisplay = 1;
+          break;
+        case cmdNAME:      err = cmd_name (info, argstr); break;
+        case cmdURL:       err = cmd_url (info, argstr);  break;
+	case cmdFETCH:     err = cmd_fetch (info);  break;
+        case cmdLOGIN:     err = cmd_login (info, argstr); break;
+        case cmdLANG:      err = cmd_lang (info, argstr); break;
+        case cmdSALUT:     err = cmd_salut (info, argstr); break;
+        case cmdCAFPR:     err = cmd_cafpr (info, argstr); break;
+        case cmdPRIVATEDO: err = cmd_privatedo (info, argstr); break;
+        case cmdWRITECERT: err = cmd_writecert (info, argstr); break;
+        case cmdREADCERT:  err = cmd_readcert (info, argstr); break;
+        case cmdFORCESIG:  err = cmd_forcesig (info); break;
+        case cmdGENERATE:  err = cmd_generate (info); break;
+        case cmdPASSWD:    err = cmd_passwd (info, allow_admin); break;
+        case cmdUNBLOCK:   err = cmd_unblock (info); break;
+        case cmdFACTORYRESET:
+          err = cmd_factoryreset (info);
+          if (!err)
+            redisplay = 1;
+          break;
+        case cmdKDFSETUP:  err = cmd_kdfsetup (info, argstr); break;
+        case cmdKEYATTR:   err = cmd_keyattr (info, argstr); break;
+        case cmdUIF:       err = cmd_uif (info, argstr); break;
 
         case cmdINVCMD:
         default:
@@ -817,9 +2661,25 @@ interactive_loop (void)
           tty_printf (_("Invalid command  (try \"help\")\n"));
           break;
         } /* End command switch. */
+
+      if (gpg_err_code (err) == GPG_ERR_CANCELED)
+        tty_fprintf (NULL, "\n");
+      else if (err)
+        {
+          const char *s = "?";
+          for (i=0; cmds[i].name; i++ )
+            if (cmd == cmds[i].id)
+              {
+                s = cmds[i].name;
+                break;
+              }
+          log_error ("Command '%s' failed: %s\n", s, gpg_strerror (err));
+        }
+
     } /* End of main menu loop. */
 
  leave:
+  release_card_info (info);
   xfree (answer);
 }
 
