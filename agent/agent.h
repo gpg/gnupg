@@ -266,6 +266,14 @@ struct server_control_s
 };
 
 
+/* Status of pinentry.  */
+enum
+  {
+    PINENTRY_STATUS_CLOSE_BUTTON = 1 << 0,
+    PINENTRY_STATUS_PIN_REPEATED = 1 << 8,
+    PINENTRY_STATUS_PASSWORD_FROM_CACHE = 1 << 9
+  };
+
 /* Information pertaining to pinentry requests.  */
 struct pin_entry_info_s
 {
@@ -275,7 +283,8 @@ struct pin_entry_info_s
   int failed_tries; /* Number of tries so far failed.  */
   int with_qualitybar; /* Set if the quality bar should be displayed.  */
   int with_repeat;  /* Request repetition of the passphrase.  */
-  int repeat_okay;  /* Repetition worked. */
+  int repeat_okay;  /* Repetition worked.  */
+  unsigned int status; /* Status.  */
   gpg_error_t (*check_cb)(struct pin_entry_info_s *); /* CB used to check
                                                          the PIN */
   void *check_cb_arg;  /* optional argument which might be of use in the CB */
