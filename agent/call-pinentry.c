@@ -891,13 +891,6 @@ setup_qualitybar (ctrl_t ctrl)
   return 0;
 }
 
-enum
-  {
-    PINENTRY_STATUS_CLOSE_BUTTON = 1 << 0,
-    PINENTRY_STATUS_PIN_REPEATED = 1 << 8,
-    PINENTRY_STATUS_PASSWORD_FROM_CACHE = 1 << 9
-  };
-
 /* Check the button_info line for a close action.  Also check for the
    PIN_REPEATED flag.  */
 static gpg_error_t
@@ -962,7 +955,6 @@ agent_askpin (ctrl_t ctrl,
   const char *errtext = NULL;
   int is_pin = 0;
   int saveflag;
-  unsigned int pinentry_status;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -1073,6 +1065,7 @@ agent_askpin (ctrl_t ctrl,
         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
     }
   pininfo->repeat_okay = 0;
+  pininfo->status = 0;
 
   for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
     {
@@ -1106,10 +1099,9 @@ agent_askpin (ctrl_t ctrl,
 
       saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
       assuan_begin_confidential (entry_ctx);
-      pinentry_status = 0;
       rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
                             inq_quality, entry_ctx,
-                            pinentry_status_cb, &pinentry_status);
+                            pinentry_status_cb, &pininfo->status);
       assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
       /* Most pinentries out in the wild return the old Assuan error code
          for canceled which gets translated to an assuan Cancel error and
@@ -1121,7 +1113,7 @@ agent_askpin (ctrl_t ctrl,
 
       /* Change error code in case the window close button was clicked
          to cancel the operation.  */
-      if ((pinentry_status & PINENTRY_STATUS_CLOSE_BUTTON)
+      if ((pininfo->status & PINENTRY_STATUS_CLOSE_BUTTON)
 	  && gpg_err_code (rc) == GPG_ERR_CANCELED)
         rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
 
@@ -1148,12 +1140,19 @@ agent_askpin (ctrl_t ctrl,
           /* More checks by utilizing the optional callback. */
           pininfo->cb_errtext = NULL;
           rc = pininfo->check_cb (pininfo);
-          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
-              && pininfo->cb_errtext)
-            errtext = pininfo->cb_errtext;
-          else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
-                   || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-            errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
+          /* When pinentry cache causes an error, return now.  */
+          if (rc
+              && (pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+            return unlock_pinentry (ctrl, rc);
+
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE)
+            {
+              if (pininfo->cb_errtext)
+                errtext = pininfo->cb_errtext;
+              else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+                       || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+                errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
+            }
           else if (rc)
             return unlock_pinentry (ctrl, rc);
         }
@@ -1161,12 +1160,12 @@ agent_askpin (ctrl_t ctrl,
       if (!errtext)
         {
           if (pininfo->with_repeat
-	      && (pinentry_status & PINENTRY_STATUS_PIN_REPEATED))
+              && (pininfo->status & PINENTRY_STATUS_PIN_REPEATED))
             pininfo->repeat_okay = 1;
           return unlock_pinentry (ctrl, 0); /* okay, got a PIN or passphrase */
         }
 
-      if ((pinentry_status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+      if ((pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
 	/* The password was read from the cache.  Don't count this
 	   against the retry count.  */
 	pininfo->failed_tries --;

@@ -632,7 +632,17 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   pi->check_cb_arg = &arg;
 
   rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi, hexgrip, cache_mode);
-  if (!rc)
+  if (rc)
+    {
+      if ((pi->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+        {
+          log_error ("Clearing pinentry cache which caused error %s\n",
+                     gpg_strerror (rc));
+
+          agent_clear_passphrase (ctrl, hexgrip, cache_mode);
+        }
+    }
+  else
     {
       assert (arg.unprotected_key);
       if (arg.change_required)
