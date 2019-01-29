@@ -497,6 +497,58 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
 }
 
 
+/* Return true if the key in BLOB matches the 20 bytes keygrip GRIP.
+ * We don't have the keygrips as meta data, thus we need to parse the
+ * certificate. Fixme: We might want to return proper error codes
+ * instead of failing a search for invalid certificates etc.  */
+static int
+blob_openpgp_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
+{
+  int rc = 0;
+  const unsigned char *buffer;
+  size_t length;
+  size_t cert_off, cert_len;
+  struct _keybox_openpgp_info info;
+  struct _keybox_openpgp_key_info *k;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 40)
+    return 0; /* Too short. */
+  cert_off = get32 (buffer+8);
+  cert_len = get32 (buffer+12);
+  if ((uint64_t)cert_off+(uint64_t)cert_len > (uint64_t)length)
+    return 0; /* Too short.  */
+
+  if (_keybox_parse_openpgp (buffer + cert_off, cert_len, NULL, &info))
+    return 0; /* Parse error.  */
+
+  if (!memcmp (info.primary.grip, grip, 20))
+    {
+      rc = 1;
+      goto leave;
+    }
+
+  if (info.nsubkeys)
+    {
+      k = &info.subkeys;
+      do
+        {
+          if (!memcmp (k->grip, grip, 20))
+            {
+              rc = 1;
+              goto leave;
+            }
+          k = k->next;
+        }
+      while (k);
+    }
+
+ leave:
+  _keybox_destroy_openpgp_info (&info);
+  return rc;
+}
+
+
 #ifdef KEYBOX_WITH_X509
 /* Return true if the key in BLOB matches the 20 bytes keygrip GRIP.
    We don't have the keygrips as meta data, thus we need to parse the
@@ -606,12 +658,11 @@ has_fingerprint (KEYBOXBLOB blob, const unsigned char *fpr)
 static inline int
 has_keygrip (KEYBOXBLOB blob, const unsigned char *grip)
 {
+  if (blob_get_type (blob) == KEYBOX_BLOBTYPE_PGP)
+    return blob_openpgp_has_grip (blob, grip);
 #ifdef KEYBOX_WITH_X509
   if (blob_get_type (blob) == KEYBOX_BLOBTYPE_X509)
     return blob_x509_has_grip (blob, grip);
-#else
-  (void)blob;
-  (void)grip;
 #endif
   return 0;
 }

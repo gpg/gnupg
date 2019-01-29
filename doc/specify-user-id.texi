@@ -135,7 +135,7 @@ RFC-2253 encoded DN of the issuer. See note above.
 @item By keygrip.
 This is indicated by an ampersand followed by the 40 hex digits of a
 keygrip.  @command{gpgsm} prints the keygrip when using the command
-@option{--dump-cert}.  It does not yet work for OpenPGP keys.
+@option{--dump-cert}.
 
 @cartouche
 @example
@@ -171,6 +171,3 @@ Using the RFC-2253 format of DNs has the drawback that it is not
 possible to map them back to the original encoding, however we don't
 have to do this because our key database stores this encoding as meta
 data.
-
-
-
