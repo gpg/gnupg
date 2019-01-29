@@ -34,11 +34,11 @@
 #define DEBUG_PARSE_PACKET 1
 
 
-/* Constants to allocate static MPI arrays. */
-#define PUBKEY_MAX_NPKEY  5
-#define PUBKEY_MAX_NSKEY  7
-#define PUBKEY_MAX_NSIG   2
-#define PUBKEY_MAX_NENC   2
+/* Constants to allocate static MPI arrays.  */
+#define PUBKEY_MAX_NPKEY  OPENPGP_MAX_NPKEY
+#define PUBKEY_MAX_NSKEY  OPENPGP_MAX_NSKEY
+#define PUBKEY_MAX_NSIG   OPENPGP_MAX_NSIG
+#define PUBKEY_MAX_NENC   OPENPGP_MAX_NENC
 
 /* Usage flags */
 #define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN  /* Good for signatures. */

@@ -196,7 +196,11 @@ typedef enum
   }
 compress_algo_t;
 
-
+/* Limits to be used for static arrays.  */
+#define OPENPGP_MAX_NPKEY  5  /* Maximum number of public key parameters. */
+#define OPENPGP_MAX_NSKEY  7  /* Maximum number of secret key parameters. */
+#define OPENPGP_MAX_NSIG   2  /* Maximum number of signature parameters.  */
+#define OPENPGP_MAX_NENC   2  /* Maximum number of encryption parameters. */
 
 
 /* Decode an rfc4880 encoded S2K count.  */
