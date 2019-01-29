@@ -76,6 +76,26 @@ struct key_attr
   };
 };
 
+/* An object to store information pertaining to a key pair.  This is
+ * commonly used as a linked list with all keys known for the current
+ * card.  */
+struct key_info_s
+{
+  struct key_info_s *next;
+
+  unsigned char grip[20];/* The keygrip.  */
+
+  unsigned char xflag;   /* Temporary flag to help processing a list. */
+
+  /* The three next items are mostly useful for OpenPGP cards.  */
+  unsigned char fprlen;  /* Use length of the next item.  */
+  unsigned char fpr[32]; /* The binary fingerprint of length FPRLEN.  */
+  u32 created;           /* The time the key was created.  */
+
+  char keyref[1];        /* String with the keyref (e.g. OPENPGP.1).  */
+};
+typedef struct key_info_s *key_info_t;
+
 
 /*
  * The object used to store information about a card.
@@ -100,18 +120,7 @@ struct card_info_s
   char cafpr1[20];
   char cafpr2[20];
   char cafpr3[20];
-  unsigned char fpr1len; /* Length of the fingerprint or 0 if invalid.  */
-  unsigned char fpr2len;
-  unsigned char fpr3len;
-  char fpr1[20];
-  char fpr2[20];
-  char fpr3[20];
-  u32  fpr1time;
-  u32  fpr2time;
-  u32  fpr3time;
-  char grp1[20];     /* The keygrip for OPENPGP.1 */
-  char grp2[20];     /* The keygrip for OPENPGP.2 */
-  char grp3[20];     /* The keygrip for OPENPGP.3 */
+  key_info_t kinfo;  /* Linked list with all keypair related data.  */
   unsigned long sig_counter;
   int chv1_cached;   /* True if a PIN is not required for each
                         signing.  Note that the gpg-agent might cache
@@ -131,6 +140,10 @@ struct card_info_s
   int uif[3];              /* True if User Interaction Flag is on.  */
 };
 typedef struct card_info_s *card_info_t;
+
+
+/*-- card-tool-misc.c --*/
+key_info_t find_kinfo (card_info_t info, const char *keyref);
 
 
 /*-- card-call-scd.c --*/

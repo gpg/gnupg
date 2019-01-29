@@ -132,6 +132,7 @@ release_card_info (card_info_t info)
 {
   int i;
 
+
   if (!info)
     return;
 
@@ -145,12 +146,18 @@ release_card_info (card_info_t info)
   xfree (info->pubkey_url); info->pubkey_url = NULL;
   xfree (info->login_data); info->login_data = NULL;
   info->cafpr1len = info->cafpr2len = info->cafpr3len = 0;
-  info->fpr1len = info->fpr2len = info->fpr3len = 0;
   for (i=0; i < DIM(info->private_do); i++)
     {
       xfree (info->private_do[i]);
       info->private_do[i] = NULL;
     }
+  while (info->kinfo)
+    {
+      key_info_t kinfo = info->kinfo->next;
+      xfree (info->kinfo);
+      info->kinfo = kinfo;
+    }
+
 }
 
 
@@ -534,6 +541,48 @@ get_serialno_cb (void *opaque, const char *line)
 }
 
 
+
+/* For historical reasons OpenPGP cards simply use the numbers 1 to 3
+ * for the <keyref>.  Other cards and future versions of
+ * scd/app-openpgp.c may print the full keyref; i.e. "OpenPGP.1"
+ * instead of "1".  This is a helper to cope with that. */
+static const char *
+parse_keyref_helper (const char *string)
+{
+  if (*string == '1' && spacep (string+1))
+    return "OPENPGP.1";
+  else if (*string == '2' && spacep (string+1))
+    return "OPENPGP.2";
+  else if (*string == '3' && spacep (string+1))
+    return "OPENPGP.3";
+  else
+    return string;
+}
+
+
+/* Create a new key info object with KEYREF.  All fields but the
+ * keyref are zeroed out.  Never returns NULL.  The created object is
+ * appended to the list at INFO. */
+static key_info_t
+create_kinfo (card_info_t info, const char *keyref)
+{
+  key_info_t kinfo, ki;
+
+  kinfo = xcalloc (1, sizeof *kinfo + strlen (keyref));
+  strcpy (kinfo->keyref, keyref);
+
+  if (!info->kinfo)
+    info->kinfo = kinfo;
+  else
+    {
+      for (ki=info->kinfo; ki->next; ki = ki->next)
+        ;
+      ki->next = kinfo;
+    }
+  return kinfo;
+}
+
+
 /* The status callback to handle the LEARN and GETATTR commands.  */
 static gpg_error_t
 learn_status_cb (void *opaque, const char *line)
@@ -541,6 +590,10 @@ learn_status_cb (void *opaque, const char *line)
   struct card_info_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
+  char *line_buffer = NULL; /* In case we need a copy.  */
+  char *pline;
+  key_info_t kinfo;
+  const char *keyref;
   int i;
 
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
@@ -635,18 +688,31 @@ learn_status_cb (void *opaque, const char *line)
         }
       else if (!memcmp (keyword, "KEY-FPR", keywordlen))
         {
-          int no = atoi (line);
+          /* The format of such a line is:
+           *   KEY-FPR <keyref> <fingerprintinhex>
+           */
+          const char *fpr;
 
-          while (*line && !spacep (line))
-            line++;
-          while (spacep (line))
-            line++;
-          if (no == 1)
-            parm->fpr1len = unhexify_fpr (line, parm->fpr1, sizeof parm->fpr1);
-          else if (no == 2)
-            parm->fpr2len = unhexify_fpr (line, parm->fpr2, sizeof parm->fpr2);
-          else if (no == 3)
-            parm->fpr3len = unhexify_fpr (line, parm->fpr3, sizeof parm->fpr3);
+          line_buffer = pline = xstrdup (line);
+
+          keyref = parse_keyref_helper (pline);
+          while (*pline && !spacep (pline))
+            pline++;
+          if (*pline)
+            *pline++ = 0; /* Terminate keyref.  */
+          while (spacep (pline)) /* Skip to the fingerprint.  */
+            pline++;
+          fpr = pline;
+
+          /* Check whether we already have an item for the keyref.  */
+          kinfo = find_kinfo (parm, keyref);
+          if (!kinfo)  /* No: new entry.  */
+            kinfo = create_kinfo (parm, keyref);
+          else /* Existing entry - clear the fpr.  */
+            memset (kinfo->fpr, 0, sizeof kinfo->fpr);
+
+          /* Set or update or the fingerprint.  */
+          kinfo->fprlen = unhexify_fpr (fpr, kinfo->fpr, sizeof kinfo->fpr);
         }
       break;
 
@@ -664,17 +730,28 @@ learn_status_cb (void *opaque, const char *line)
         }
       else if (!memcmp (keyword, "KEY-TIME", keywordlen))
         {
-          int no = atoi (line);
-          while (* line && !spacep (line))
-            line++;
-          while (spacep (line))
-            line++;
-          if (no == 1)
-            parm->fpr1time = strtoul (line, NULL, 10);
-          else if (no == 2)
-            parm->fpr2time = strtoul (line, NULL, 10);
-          else if (no == 3)
-            parm->fpr3time = strtoul (line, NULL, 10);
+          /* The format of such a line is:
+           *   KEY-TIME <keyref> <timestamp>
+           */
+          const char *timestamp;
+
+          line_buffer = pline = xstrdup (line);
+
+          keyref = parse_keyref_helper (pline);
+          while (*pline && !spacep (pline))
+            pline++;
+          if (*pline)
+            *pline++ = 0; /* Terminate keyref.  */
+          while (spacep (pline)) /* Skip to the timestamp.  */
+            pline++;
+          timestamp = pline;
+
+          /* Check whether we already have an item for the keyref.  */
+          kinfo = find_kinfo (parm, keyref);
+          if (!kinfo)  /* No: new entry.  */
+            kinfo = create_kinfo (parm, keyref);
+
+          kinfo->created = strtoul (timestamp, NULL, 10);
         }
       else if (!memcmp (keyword, "KEY-ATTR", keywordlen))
         {
@@ -767,21 +844,29 @@ learn_status_cb (void *opaque, const char *line)
         }
       else if (!memcmp (keyword, "KEYPAIRINFO", keywordlen))
         {
+          /* The format of such a line is:
+           *   KEYPARINFO <hexgrip> <keyref>
+           */
           const char *hexgrp = line;
-          int no;
 
           while (*line && !spacep (line))
             line++;
           while (spacep (line))
             line++;
-          if (strncmp (line, "OPENPGP.", 8))
-            ;
-          else if ((no = atoi (line+8)) == 1)
-            unhexify_fpr (hexgrp, parm->grp1, sizeof parm->grp1);
-          else if (no == 2)
-            unhexify_fpr (hexgrp, parm->grp2, sizeof parm->grp2);
-          else if (no == 3)
-            unhexify_fpr (hexgrp, parm->grp3, sizeof parm->grp3);
+
+          keyref = line;
+
+          /* Check whether we already have an item for the keyref.  */
+          kinfo = find_kinfo (parm, keyref);
+          if (!kinfo)  /* New entry.  */
+            kinfo = create_kinfo (parm, keyref);
+          else /* Existing entry - clear the grip.  */
+            memset (kinfo->grip, 0, sizeof kinfo->grip);
+
+          /* Set or update the grip.  Note that due to the
+           * calloc/memset an erroneous too short grip will be nul
+           * padded on the right. */
+          unhexify_fpr (hexgrp, kinfo->grip, sizeof kinfo->grip);
         }
       break;
 
@@ -809,6 +894,7 @@ learn_status_cb (void *opaque, const char *line)
       break;
     }
 
+  xfree (line_buffer);
   return 0;
 }
 

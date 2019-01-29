@@ -107,10 +107,19 @@ static struct debug_flags_s debug_flags [] =
   };
 
 
+/* An object to create lists of labels and keyrefs.  */
+struct keyinfolabel_s
+{
+  const char *label;
+  const char *keyref;
+};
+typedef struct keyinfolabel_s *keyinfolabel_t;
+
+
 /* Limit of size of data we read from a file for certain commands.  */
 #define MAX_GET_DATA_FROM_FILE 16384
 
-/* Constats for OpenPGP cards.  */
+/* Constants for OpenPGP cards.  */
 #define OPENPGP_USER_PIN_DEFAULT  "123456"
 #define OPENPGP_ADMIN_PIN_DEFAULT "12345678"
 #define OPENPGP_KDF_DATA_LENGTH_MIN  90
@@ -544,35 +553,101 @@ print_isoname (estream_t fp, const char *name)
 }
 
 
-/* Return true if the SHA1 fingerprint FPR consists only of zeroes. */
+/* Return true if the buffer MEM of length memlen consists only of zeroes. */
 static int
-fpr_is_zero (const char *fpr, unsigned int fprlen)
+mem_is_zero (const char *mem, unsigned int memlen)
 {
   int i;
 
-  for (i=0; i < fprlen && !fpr[i]; i++)
+  for (i=0; i < memlen && !mem[i]; i++)
     ;
-  return (i == fprlen);
+  return (i == memlen);
 }
 
 
-/* Return true if the fingerprint FPR consists only of 0xFF. */
+/* Return true if the buffer MEM or length MEMLEN consists only of 0xFF. */
 static int
-fpr_is_ff (const char *fpr, unsigned int fprlen)
+mem_is_ff (const char *mem, unsigned int memlen)
 {
   int i;
 
-  for (i=0; i < fprlen && fpr[i] == '\xff'; i++)
+  for (i=0; i < memlen && mem[i] == '\xff'; i++)
     ;
-  return (i == fprlen);
+  return (i == memlen);
 }
 
 
 
+/* Helper to list a single keyref.  */
+static void
+list_one_kinfo (key_info_t kinfo, estream_t fp)
+{
+  if (kinfo)
+    {
+      tty_fprintf (fp, " ");
+      if (mem_is_zero (kinfo->grip, sizeof kinfo->grip))
+        tty_fprintf (fp, "[none]\n");
+      else
+        print_keygrip (fp, kinfo->grip);
+
+      if (kinfo->fprlen && kinfo->created)
+        {
+          tty_fprintf (fp, "      fingerprint :");
+          print_shax_fpr (fp, kinfo->fpr, kinfo->fprlen);
+          tty_fprintf (fp, "      created ....: %s\n",
+                       isotimestamp (kinfo->created));
+        }
+    }
+  else
+    tty_fprintf (fp, " [none]\n");
+}
+
+
+/* List all keyinfo in INFO using the list of LABELS.  */
+static void
+list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp)
+{
+  key_info_t kinfo;
+  int idx, i;
+
+  /* Print the keyinfo.  We first print those we known and then all
+   * remaining item.  */
+  for (kinfo = info->kinfo; kinfo; kinfo = kinfo->next)
+    kinfo->xflag = 0;
+  if (labels)
+    {
+      for (idx=0; labels[idx].label; idx++)
+        {
+          tty_fprintf (fp, "%s", labels[idx].label);
+          kinfo = find_kinfo (info, labels[idx].keyref);
+          list_one_kinfo (kinfo, fp);
+          if (kinfo)
+            kinfo->xflag = 1;
+        }
+    }
+  for (kinfo = info->kinfo; kinfo; kinfo = kinfo->next)
+    {
+      if (kinfo->xflag)
+        continue;
+      tty_fprintf (fp, "Key %s ", kinfo->keyref);
+      for (i=5+strlen (kinfo->keyref); i < 18; i++)
+        tty_fprintf (fp, ".");
+      tty_fprintf (fp, ":");
+      list_one_kinfo (kinfo, fp);
+    }
+}
+
+
 /* List OpenPGP card specific data.  */
 static void
 list_openpgp (card_info_t info, estream_t fp)
 {
+  static struct keyinfolabel_s keyinfolabels[] = {
+    { "Signature key ....:", "OPENPGP.1" },
+    { "Encryption key....:", "OPENPGP.2" },
+    { "Authentication key:", "OPENPGP.3" },
+    { NULL, NULL }
+  };
   int i;
 
   if (!info->serialno
@@ -661,33 +736,8 @@ list_openpgp (card_info_t info, estream_t fp)
                    info->uif[0] ? "on" : "off", info->uif[1] ? "on" : "off",
                    info->uif[2] ? "on" : "off");
     }
-  tty_fprintf (fp, "Signature key ....:");
-  print_shax_fpr (fp, info->fpr1len? info->fpr1:NULL, info->fpr1len);
-  if (info->fpr1len && info->fpr1time)
-    {
-      tty_fprintf (fp, "      created ....: %s\n",
-                   isotimestamp (info->fpr1time));
-      tty_fprintf (fp, "      keygrip ....: ");
-      print_keygrip (fp, info->grp1);
-    }
-  tty_fprintf (fp, "Encryption key....:");
-  print_shax_fpr (fp, info->fpr2len? info->fpr2:NULL, info->fpr2len);
-  if (info->fpr2len && info->fpr2time)
-    {
-      tty_fprintf (fp, "      created ....: %s\n",
-                   isotimestamp (info->fpr2time));
-      tty_fprintf (fp, "      keygrip ....: ");
-      print_keygrip (fp, info->grp2);
-    }
-  tty_fprintf (fp, "Authentication key:");
-  print_shax_fpr (fp, info->fpr3len? info->fpr3:NULL, info->fpr3len);
-  if (info->fpr3len && info->fpr3time)
-    {
-      tty_fprintf (fp, "      created ....: %s\n",
-                   isotimestamp (info->fpr3time));
-      tty_fprintf (fp, "      keygrip ....: ");
-      print_keygrip (fp, info->grp3);
-    }
+
+  list_all_kinfo (info, keyinfolabels, fp);
 
   /* tty_fprintf (fp, "General key info->.: "); */
   /* thefpr = (info->fpr1len? info->fpr1 : info->fpr2len? info->fpr2 : */
@@ -696,7 +746,7 @@ list_openpgp (card_info_t info, estream_t fp)
   /*              info->fpr3len? info->fpr3len : 0); */
   /* If the fingerprint is all 0xff, the key has no associated
      OpenPGP certificate.  */
-  /* if ( thefpr && !fpr_is_ff (thefpr, thefprlen) */
+  /* if ( thefpr && !mem_is_ff (thefpr, thefprlen) */
   /*      && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen)) */
   /*   { */
       /* print_pubkey_info (ctrl, fp, pk); */
@@ -900,6 +950,7 @@ static gpg_error_t
 cmd_fetch (card_info_t info)
 {
   gpg_error_t err;
+  key_info_t kinfo;
 
   if (!info)
     return print_help
@@ -916,7 +967,7 @@ cmd_fetch (card_info_t info)
       /* free_strlist (sl); */
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
     }
-  else if (info->fpr1len)
+  else if ((kinfo = find_kinfo (info, "OPENPGP.1")) && kinfo->fprlen)
     {
       /* rc = keyserver_import_fprint (ctrl, info.fpr1, info.fpr1len, */
       /*                               opt.keyserver, 0); */
@@ -1479,6 +1530,7 @@ cmd_generate (card_info_t info)
   int forced_chv1 = -1;
   int want_backup;
   char *answer = NULL;
+  key_info_t kinfo1, kinfo2, kinfo3;
 
   if (!info)
     return print_help
@@ -1507,9 +1559,15 @@ cmd_generate (card_info_t info)
   else
     want_backup = 0;
 
-  if ( (info->fpr1len && !fpr_is_zero (info->fpr1, info->fpr1len))
-       || (info->fpr2len && !fpr_is_zero (info->fpr2, info->fpr2len))
-       || (info->fpr3len && !fpr_is_zero (info->fpr3, info->fpr3len)))
+
+  kinfo1 = find_kinfo (info, "OPENPGP.1");
+  kinfo2 = find_kinfo (info, "OPENPGP.2");
+  kinfo3 = find_kinfo (info, "OPENPGP.3");
+
+  if ((kinfo1 && kinfo1->fprlen && !mem_is_zero (kinfo1->fpr,kinfo1->fprlen))
+      || (kinfo2 && kinfo2->fprlen && !mem_is_zero (kinfo2->fpr,kinfo2->fprlen))
+      || (kinfo3 && kinfo3->fprlen && !mem_is_zero (kinfo3->fpr,kinfo3->fprlen))
+      )
     {
       tty_printf ("\n");
       log_info (_("Note: keys are already stored on the card!\n"));

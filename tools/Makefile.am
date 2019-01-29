@@ -123,7 +123,13 @@ gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
                           $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
                           $(gpg_connect_agent_rc_objs)
 
-gpg_card_tool_SOURCES   = gpg-card-tool.c card-tool.h card-call-scd.c
+
+gpg_card_tool_SOURCES   = \
+	gpg-card-tool.c \
+	card-tool.h     \
+	card-call-scd.c \
+	card-tool-misc.c
+
 gpg_card_tool_LDADD     = ../common/libgpgrl.a $(common_libs) \
 	                  $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
 			  $(GPG_ERROR_LIBS) \
