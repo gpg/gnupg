@@ -142,7 +142,15 @@ test_openpgp_oid_to_str (void)
         fail (idx, 0);
       xfree (string);
       gcry_mpi_release (a);
-    }
+
+      /* Again using the buffer variant. */
+      string = openpgp_oidbuf_to_str (samples[idx].der, samples[idx].der[0]+1);
+      if (!string)
+        fail (idx, gpg_error_from_syserror ());
+      if (strcmp (string, samples[idx].string))
+        fail (idx, 0);
+      xfree (string);
+}
 
 }
 
