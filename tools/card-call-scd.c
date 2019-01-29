@@ -808,9 +808,13 @@ learn_status_cb (void *opaque, const char *line)
 
           buf = p = unescape_status_string (line);
           if (buf)
+            while (spacep (p))
+              p++;
+
+          if (!buf)
+            ;
+          else if (parm->apptype == APP_TYPE_OPENPGP)
             {
-              while (spacep (p))
-                p++;
               parm->chv1_cached = atoi (p);
               while (*p && !spacep (p))
                 p++;
@@ -826,14 +830,26 @@ learn_status_cb (void *opaque, const char *line)
                 }
               for (i=0; *p && i < 3; i++)
                 {
-                  parm->chvretry[i] = atoi (p);
+                  parm->chvinfo[i] = atoi (p);
                   while (*p && !spacep (p))
                     p++;
                   while (spacep (p))
                     p++;
                 }
-              xfree (buf);
             }
+          else if (parm->apptype == APP_TYPE_PIV)
+            {
+              for (i=0; *p && DIM (parm->chvinfo); i++)
+                {
+                  parm->chvinfo[i] = atoi (p);
+                  while (*p && !spacep (p))
+                    p++;
+                  while (spacep (p))
+                    p++;
+                }
+            }
+
+          xfree (buf);
         }
       break;
 

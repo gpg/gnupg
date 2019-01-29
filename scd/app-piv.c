@@ -569,7 +569,7 @@ send_keypair_and_cert_info (app_t app, ctrl_t ctrl, data_object_t dobj,
 }
 
 
-/* Handle the LEARN command for OpenPGP.  */
+/* Handle the LEARN command.  */
 static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
@@ -577,9 +577,12 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   (void)flags;
 
+  do_getattr (app, ctrl, "CHV-STATUS");
+
   for (i=0; data_objects[i].tag; i++)
     if (data_objects[i].keypair)
       send_keypair_and_cert_info (app, ctrl, data_objects + i, !!(flags & 1));
+
 
   return 0;
 }

@@ -723,7 +723,7 @@ list_openpgp (card_info_t info, estream_t fp)
   tty_fprintf (fp, "Max. PIN lengths .: %d %d %d\n",
                info->chvmaxlen[0], info->chvmaxlen[1], info->chvmaxlen[2]);
   tty_fprintf (fp, "PIN retry counter : %d %d %d\n",
-               info->chvretry[0], info->chvretry[1], info->chvretry[2]);
+               info->chvinfo[0], info->chvinfo[1], info->chvinfo[2]);
   tty_fprintf (fp, "Signature counter : %lu\n", info->sig_counter);
   if (info->extcap.kdf)
     {
@@ -758,6 +758,44 @@ list_openpgp (card_info_t info, estream_t fp)
 }
 
 
+/* List PIV card specific data.  */
+static void
+list_piv (card_info_t info, estream_t fp)
+{
+  static struct keyinfolabel_s keyinfolabels[] = {
+    { "PIV Authentication:", "PIV.9A" },
+    { "Card Authenticat. :", "PIV.9E" },
+    { "Digital Signature :", "PIV.9C" },
+    { "Key Management ...:", "PIV.9D" },
+    { NULL, NULL }
+  };
+  const char *s;
+  int i;
+
+  tty_fprintf (fp, "PIN retry counter :");
+  for (i=0; i < DIM (info->chvinfo); i++)
+    {
+      if (info->chvinfo[i] > 0)
+        tty_fprintf (fp, " %d", info->chvinfo[i]);
+      else
+        {
+          switch (info->chvinfo[i])
+            {
+            case -1: s = "[error]"; break;
+            case -2: s = "-"; break;  /* No such PIN */
+            case -3: s = "[blocked]"; break;
+            case -5: s = "[verified]"; break;
+            default: s = "[?]"; break;
+            }
+          tty_fprintf (fp, " %s", s);
+        }
+    }
+  tty_fprintf (fp, "\n", s);
+  list_all_kinfo (info, keyinfolabels, fp);
+
+}
+
+
 /* Print all available information about the current card. */
 static void
 list_card (card_info_t info)
@@ -781,6 +819,7 @@ list_card (card_info_t info)
   switch (info->apptype)
     {
     case APP_TYPE_OPENPGP: list_openpgp (info, fp); break;
+    case APP_TYPE_PIV:     list_piv (info, fp); break;
     default: break;
     }
 }
@@ -1740,7 +1779,7 @@ cmd_unblock (card_info_t info)
 
   if (info->apptype == APP_TYPE_OPENPGP && !info->is_v2)
     log_error (_("This command is only available for version 2 cards\n"));
-  else if (info->apptype == APP_TYPE_OPENPGP && !info->chvretry[1])
+  else if (info->apptype == APP_TYPE_OPENPGP && !info->chvinfo[1])
     log_error (_("Reset Code not or not anymore available\n"));
   else if (info->apptype == APP_TYPE_OPENPGP)
     {

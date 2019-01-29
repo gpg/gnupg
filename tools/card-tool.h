@@ -122,12 +122,12 @@ struct card_info_s
   char cafpr3[20];
   key_info_t kinfo;  /* Linked list with all keypair related data.  */
   unsigned long sig_counter;
-  int chv1_cached;   /* True if a PIN is not required for each
-                        signing.  Note that the gpg-agent might cache
-                        it anyway. */
-  int is_v2;         /* True if this is a v2 card.  */
+  int chv1_cached;   /* For openpgp this is true if a PIN is not
+                        required for each signing.  Note that the
+                        gpg-agent might cache it anyway. */
+  int is_v2;         /* True if this is a v2 openpgp card.  */
   int chvmaxlen[3];  /* Maximum allowed length of a CHV. */
-  int chvretry[3];   /* Allowed retries for the CHV; 0 = blocked. */
+  int chvinfo[3];    /* Allowed retries for the CHV; 0 = blocked. */
   struct key_attr key_attr[3]; /* OpenPGP card key attributes.  */
   struct {
     unsigned int ki:1;     /* Key import available.  */
