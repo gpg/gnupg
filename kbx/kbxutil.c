@@ -330,6 +330,18 @@ dump_fpr (const unsigned char *buffer, size_t len)
 
 
 static void
+dump_grip (const unsigned char *buffer, size_t len)
+{
+  int i;
+
+  for (i=0; i < len; i++, buffer++)
+    {
+      printf ("%02X", buffer[0]);
+    }
+}
+
+
+static void
 dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
 {
   printf ("pub %2d %02X%02X%02X%02X",
@@ -337,6 +349,9 @@ dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
           info->primary.keyid[4], info->primary.keyid[5],
           info->primary.keyid[6], info->primary.keyid[7] );
   dump_fpr (info->primary.fpr, info->primary.fprlen);
+  putchar ('\n');
+  fputs ("grp             ", stdout);
+  dump_grip (info->primary.grip, 20);
   putchar ('\n');
   if (info->nsubkeys)
     {
@@ -350,6 +365,9 @@ dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
                   k->keyid[4], k->keyid[5],
                   k->keyid[6], k->keyid[7] );
           dump_fpr (k->fpr, k->fprlen);
+          putchar ('\n');
+          fputs ("grp             ", stdout);
+          dump_grip (k->grip, 20);
           putchar ('\n');
           k = k->next;
         }
