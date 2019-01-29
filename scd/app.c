@@ -228,6 +228,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
               && !iso7816_apdu_direct (slot, "\x00\x1d\x00\x00\x00", 5, 0,
                                        NULL, &buf, &buflen))
             {
+              app->cardtype = "yubikey";
               if (opt.verbose)
                 {
                   log_info ("Yubico: config=");
@@ -640,9 +641,12 @@ app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   if (!app->fnc.learn_status)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
-  /* We do not send APPTYPE if only keypairinfo is requested.  */
+  /* We do not send CARD and APPTYPE if only keypairinfo is requested.  */
+  if (app->cardtype && !(flags & 1))
+    send_status_direct (ctrl, "CARDTYPE", app->cardtype);
   if (app->apptype && !(flags & 1))
     send_status_direct (ctrl, "APPTYPE", app->apptype);
+
   err = lock_app (app, ctrl);
   if (err)
     return err;
@@ -721,6 +725,11 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
   if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
 
+  if (app->cardtype && name && !strcmp (name, "CARDTYPE"))
+    {
+      send_status_direct (ctrl, "CARDTYPE", app->cardtype);
+      return 0;
+    }
   if (app->apptype && name && !strcmp (name, "APPTYPE"))
     {
       send_status_direct (ctrl, "APPTYPE", app->apptype);
@@ -744,7 +753,7 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err =  app->fnc.getattr (app, ctrl, name);
+  err = app->fnc.getattr (app, ctrl, name);
   unlock_app (app);
   return err;
 }

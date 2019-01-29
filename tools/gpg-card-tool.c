@@ -763,14 +763,36 @@ static void
 list_piv (card_info_t info, estream_t fp)
 {
   static struct keyinfolabel_s keyinfolabels[] = {
-    { "PIV Authentication:", "PIV.9A" },
-    { "Card Authenticat. :", "PIV.9E" },
-    { "Digital Signature :", "PIV.9C" },
-    { "Key Management ...:", "PIV.9D" },
+    { "PIV authentication:", "PIV.9A" },
+    { "Card authenticat. :", "PIV.9E" },
+    { "Digital signature :", "PIV.9C" },
+    { "Key management ...:", "PIV.9D" },
     { NULL, NULL }
   };
   const char *s;
   int i;
+
+  if (info->chvusage[0] || info->chvusage[1])
+    {
+      tty_fprintf (fp, "PIN usage policy .:");
+      if ((info->chvusage[0] & 0x40))
+          tty_fprintf (fp, " app-pin");
+      if ((info->chvusage[0] & 0x20))
+        tty_fprintf (fp, " global-pin");
+      if ((info->chvusage[0] & 0x10))
+        tty_fprintf (fp, " occ");
+      if ((info->chvusage[0] & 0x08))
+        tty_fprintf (fp, " vci");
+      if ((info->chvusage[0] & 0x08) && !(info->chvusage[0] & 0x04))
+        tty_fprintf (fp, " pairing");
+
+      if (info->chvusage[1] == 0x10)
+        tty_fprintf (fp, " primary:card");
+      else if (info->chvusage[1] == 0x20)
+        tty_fprintf (fp, " primary:global");
+
+      tty_fprintf (fp, "\n");
+    }
 
   tty_fprintf (fp, "PIN retry counter :");
   for (i=0; i < DIM (info->chvinfo); i++)
@@ -790,7 +812,7 @@ list_piv (card_info_t info, estream_t fp)
           tty_fprintf (fp, " %s", s);
         }
     }
-  tty_fprintf (fp, "\n", s);
+  tty_fprintf (fp, "\n");
   list_all_kinfo (info, keyinfolabels, fp);
 
 }
@@ -804,9 +826,11 @@ list_card (card_info_t info)
 
   tty_fprintf (fp, "Reader ...........: %s\n",
                info->reader? info->reader : "[none]");
+  if (info->cardtype)
+    tty_fprintf (fp, "Card type ........: %s\n", info->cardtype);
   tty_fprintf (fp, "Serial number ....: %s\n",
                info->serialno? info->serialno : "[none]");
-  tty_fprintf (fp, "Application Type .: %s%s%s%s\n",
+  tty_fprintf (fp, "Application type .: %s%s%s%s\n",
                app_type_string (info->apptype),
                info->apptype == APP_TYPE_UNKNOWN && info->apptypestr? "(":"",
                info->apptype == APP_TYPE_UNKNOWN && info->apptypestr
@@ -1836,26 +1860,32 @@ cmd_factoryreset (card_info_t info)
   char *answer = NULL;
   int termstate = 0;
   int any_apdu = 0;
+  int is_yubikey = 0;
   int i;
 
 
   if (!info)
     return print_help
       ("FACTORY-RESET\n\n"
-       "Do a complete reset of an OpenPGP card.  This deletes all\n"
-       "data and keys and resets the PINs to their default.  This\n"
-       "mainly used by developers with scratch cards.  Don't worry,\n"
-       "you need to confirm before the command proceeds.",
-       APP_TYPE_OPENPGP, 0);
+       "Do a complete reset of some OpenPGP and PIV cards.  This\n"
+       "deletes all data and keys and resets the PINs to their default.\n"
+       "This is mainly used by developers with scratch cards.  Don't\n"
+       "worry, you need to confirm before the command proceeds.",
+       APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
-  if (info->apptype != APP_TYPE_OPENPGP)
-    {
-      log_info ("Note: This is an OpenPGP only command.\n");
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
+  /* We support the factory reset for most OpenPGP cards and Yubikeys
+   * with the PIV application.  */
+  if (info->apptype == APP_TYPE_OPENPGP)
+    ;
+  else if (info->apptype == APP_TYPE_PIV
+           && info->cardtype && !strcmp (info->cardtype, "yubikey"))
+    is_yubikey = 1;
+  else
 
-  /* The code below basically does the same what this
-   * gpg-connect-agent script does:
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  /* For an OpenPGP card the code below basically does the same what
+   * this gpg-connect-agent script does:
    *
    *   scd reset
    *   scd serialno undefined
@@ -1873,7 +1903,8 @@ cmd_factoryreset (card_info_t info)
    *   scd reset
    *   /echo Card has been reset to factory defaults
    *
-   * but tries to find out something about the card first.
+   * For a PIV application on a Yubikey it merely issues the Yubikey
+   * specific resset command.
    */
 
   err = scd_learn (info);
@@ -1886,17 +1917,24 @@ cmd_factoryreset (card_info_t info)
       goto leave;
     }
 
-  if (!termstate)
+  if (!termstate || is_yubikey)
     {
-      log_info (_("OpenPGP card no. %s detected\n"),
-                info->dispserialno? info->dispserialno : info->serialno);
-      if (!(info->status_indicator == 3 || info->status_indicator == 5))
+      if (is_yubikey)
+        log_info (_("Yubikey no. %s with PIV application detected\n"),
+                  info->dispserialno? info->dispserialno : info->serialno);
+      else
         {
-          /* Note: We won't see status-indicator 3 here because it is not
-           * possible to select a card application in termination state.  */
-          log_error (_("This command is not supported by this card\n"));
-          err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-          goto leave;
+          log_info (_("OpenPGP card no. %s detected\n"),
+                    info->dispserialno? info->dispserialno : info->serialno);
+          if (!(info->status_indicator == 3 || info->status_indicator == 5))
+            {
+              /* Note: We won't see status-indicator 3 here because it
+               * is not possible to select a card application in
+               * termination state.  */
+              log_error (_("This command is not supported by this card\n"));
+              err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+              goto leave;
+            }
         }
 
       tty_printf ("\n");
@@ -1924,50 +1962,72 @@ cmd_factoryreset (card_info_t info)
           goto leave;
         }
 
+
+      if (is_yubikey)
+        {
+          /* The PIV application si already selected, we only need to
+           * send the special reset APDU after having blocked PIN and
+           * PUK.  Note that blocking the PUK is done using the
+           * unblock PIN command.  */
+          any_apdu = 1;
+          for (i=0; i < 5; i++)
+            send_apdu ("0020008008FFFFFFFFFFFFFFFF", "VERIFY", 0xffff);
+          for (i=0; i < 5; i++)
+            send_apdu ("002C008010FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+                       "RESET RETRY COUNTER", 0xffff);
+          err = send_apdu ("00FB000001FF", "YUBIKEY RESET", 0);
+          if (err)
+            goto leave;
+        }
+      else /* OpenPGP card.  */
+        {
+          any_apdu = 1;
+          /* We need to select a card application before we can send APDUs
+           * to the card without scdaemon doing anything on its own.  */
+          err = send_apdu (NULL, "RESET", 0);
+          if (err)
+            goto leave;
+          err = send_apdu ("undefined", "dummy select ", 0);
+          if (err)
+            goto leave;
+          /* Select the OpenPGP application.  */
+          err = send_apdu ("00A4040006D27600012401", "SELECT AID", 0);
+          if (err)
+            goto leave;
+
+          /* Do some dummy verifies with wrong PINs to set the retry
+           * counter to zero.  We can't easily use the card version 2.1
+           * feature of presenting the admin PIN to allow the terminate
+           * command because there is no machinery in scdaemon to catch
+           * the verify command and ask for the PIN when the "APDU"
+           * command is used.
+           * Here, the length of dummy wrong PIN is 32-byte, also
+           * supporting authentication with KDF DO.  */
+          for (i=0; i < 4; i++)
+            send_apdu ("0020008120"
+                       "40404040404040404040404040404040"
+                       "40404040404040404040404040404040", "VERIFY", 0xffff);
+          for (i=0; i < 4; i++)
+            send_apdu ("0020008320"
+                       "40404040404040404040404040404040"
+                       "40404040404040404040404040404040", "VERIFY", 0xffff);
+
+          /* Send terminate datafile command.  */
+          err = send_apdu ("00e60000", "TERMINATE DF", 0x6985);
+          if (err)
+            goto leave;
+        }
+    }
+
+  if (!is_yubikey)
+    {
       any_apdu = 1;
-      /* We need to select a card application before we can send APDUs
-       * to the card without scdaemon doing anything on its own.  */
-      err = send_apdu (NULL, "RESET", 0);
-      if (err)
-        goto leave;
-      err = send_apdu ("undefined", "dummy select ", 0);
-      if (err)
-        goto leave;
-
-      /* Select the OpenPGP application.  */
-      err = send_apdu ("00A4040006D27600012401", "SELECT AID", 0);
-      if (err)
-        goto leave;
-
-      /* Do some dummy verifies with wrong PINs to set the retry
-       * counter to zero.  We can't easily use the card version 2.1
-       * feature of presenting the admin PIN to allow the terminate
-       * command because there is no machinery in scdaemon to catch
-       * the verify command and ask for the PIN when the "APDU"
-       * command is used.
-       * Here, the length of dummy wrong PIN is 32-byte, also
-       * supporting authentication with KDF DO.  */
-      for (i=0; i < 4; i++)
-        send_apdu ("0020008120"
-                   "40404040404040404040404040404040"
-                   "40404040404040404040404040404040", "VERIFY", 0xffff);
-      for (i=0; i < 4; i++)
-        send_apdu ("0020008320"
-                   "40404040404040404040404040404040"
-                   "40404040404040404040404040404040", "VERIFY", 0xffff);
-
-      /* Send terminate datafile command.  */
-      err = send_apdu ("00e60000", "TERMINATE DF", 0x6985);
+      /* Send activate datafile command.  This is used without
+       * confirmation if the card is already in termination state.  */
+      err = send_apdu ("00440000", "ACTIVATE DF", 0);
       if (err)
         goto leave;
     }
-
-  any_apdu = 1;
-  /* Send activate datafile command.  This is used without
-   * confirmation if the card is already in termination state.  */
-  err = send_apdu ("00440000", "ACTIVATE DF", 0);
-  if (err)
-    goto leave;
 
   /* Finally we reset the card reader once more.  */
   err = send_apdu (NULL, "RESET", 0);
@@ -1979,7 +2039,7 @@ cmd_factoryreset (card_info_t info)
   err = scd_serialno (&answer, NULL);
 
  leave:
-  if (err && any_apdu)
+  if (err && any_apdu && !is_yubikey)
     {
       log_info ("Due to an error the card might be in an inconsistent state\n"
                 "You should run the LIST command to check this.\n");

@@ -52,6 +52,7 @@ struct app_ctx_s {
 
   unsigned char *serialno; /* Serialnumber in raw form, allocated. */
   size_t serialnolen;      /* Length in octets of serialnumber. */
+  const char *cardtype;    /* NULL or string with the token's type.  */
   const char *apptype;
   unsigned int card_version;
   unsigned int card_status;

@@ -137,6 +137,7 @@ release_card_info (card_info_t info)
     return;
 
   xfree (info->reader); info->reader = NULL;
+  xfree (info->cardtype); info->cardtype = NULL;
   xfree (info->serialno); info->serialno = NULL;
   xfree (info->dispserialno); info->dispserialno = NULL;
   xfree (info->apptypestr); info->apptypestr = NULL;
@@ -157,7 +158,7 @@ release_card_info (card_info_t info)
       xfree (info->kinfo);
       info->kinfo = kinfo;
     }
-
+  info->chvusage[0] = info->chvusage[1] = 0;
 }
 
 
@@ -724,6 +725,11 @@ learn_status_cb (void *opaque, const char *line)
           parm->is_v2 = (strlen (parm->serialno) >= 16
                          && xtoi_2 (parm->serialno+12) >= 2 );
         }
+      else if (!memcmp (keyword, "CARDTYPE", keywordlen))
+        {
+          xfree (parm->cardtype);
+          parm->cardtype = unescape_status_string (line);
+        }
       else if (!memcmp (keyword, "DISP-SEX", keywordlen))
         {
           parm->disp_sex = *line == '1'? 1 : *line == '2' ? 2: 0;
@@ -779,17 +785,26 @@ learn_status_cb (void *opaque, const char *line)
       break;
 
     case 9:
-        if (!memcmp (keyword, "DISP-NAME", keywordlen))
-          {
-            xfree (parm->disp_name);
-            parm->disp_name = unescape_status_string (line);
-          }
-        else if (!memcmp (keyword, "DISP-LANG", keywordlen))
-          {
-            xfree (parm->disp_lang);
-            parm->disp_lang = unescape_status_string (line);
-          }
-      break;
+      if (!memcmp (keyword, "DISP-NAME", keywordlen))
+        {
+          xfree (parm->disp_name);
+          parm->disp_name = unescape_status_string (line);
+        }
+      else if (!memcmp (keyword, "DISP-LANG", keywordlen))
+        {
+          xfree (parm->disp_lang);
+          parm->disp_lang = unescape_status_string (line);
+        }
+      else if (!memcmp (keyword, "CHV-USAGE", keywordlen))
+        {
+          unsigned int byte1, byte2;
+
+          byte1 = byte2 = 0;
+          sscanf (line, "%x %x", &byte1, &byte2);
+          parm->chvusage[0] = byte1;
+          parm->chvusage[1] = byte2;
+        }
+        break;
 
     case 10:
       if (!memcmp (keyword, "PUBKEY-URL", keywordlen))
@@ -839,7 +854,7 @@ learn_status_cb (void *opaque, const char *line)
             }
           else if (parm->apptype == APP_TYPE_PIV)
             {
-              for (i=0; *p && DIM (parm->chvinfo); i++)
+              for (i=0; *p && i < DIM (parm->chvinfo); i++)
                 {
                   parm->chvinfo[i] = atoi (p);
                   while (*p && !spacep (p))

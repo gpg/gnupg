@@ -104,6 +104,7 @@ struct card_info_s
 {
   int error;         /* private. */
   char *reader;      /* Reader information.  */
+  char *cardtype;    /* NULL or type of the card.  */
   char *apptypestr;  /* Malloced application type string.  */
   app_type_t apptype;/* Translated from APPTYPESTR.  */
   char *serialno;    /* malloced hex string. */
@@ -128,6 +129,7 @@ struct card_info_s
   int is_v2;         /* True if this is a v2 openpgp card.  */
   int chvmaxlen[3];  /* Maximum allowed length of a CHV. */
   int chvinfo[3];    /* Allowed retries for the CHV; 0 = blocked. */
+  unsigned char chvusage[2]; /* Data object 5F2F */
   struct key_attr key_attr[3]; /* OpenPGP card key attributes.  */
   struct {
     unsigned int ki:1;     /* Key import available.  */

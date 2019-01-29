@@ -469,13 +469,16 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "SERIALNO",     0x0000, -1 },
     { "$AUTHKEYID",   0x0000, -2 }, /* Default key for ssh.  */
     { "$DISPSERIALNO",0x0000, -3 },
-    { "CHV-STATUS",   0x0000, -4 }
+    { "CHV-STATUS",   0x0000, -4 },
+    { "CHV-USAGE",    0x007E, -5 }
   };
   gpg_error_t err = 0;
   int idx;
   void *relptr;
   unsigned char *value;
   size_t valuelen;
+  const unsigned char *s;
+  size_t n;
 
   for (idx=0; (idx < DIM (table)
                && ascii_strcasecmp (table[idx].name, name)); idx++)
@@ -520,6 +523,20 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       tmp[2] = get_chv_status (app, "PIV.81");
       err = send_status_printf (ctrl, table[idx].name, "%d %d %d",
                                 tmp[0], tmp[1], tmp[2]);
+    }
+  else if (table[idx].special == -5) /* CHV-USAGE (aka PIN Usage Policy) */
+    {
+      /* We return 2 hex bytes or nothing in case the discovery object
+       * is not supported.  */
+      relptr = get_one_do (app, table[idx].tag, &value, &valuelen, &err);
+      if (relptr)
+        {
+          s = find_tlv (value, valuelen, 0x7E, &n);
+          if (s && n && (s = find_tlv (s, n, 0x5F2F, &n)) && n >=2 )
+            err = send_status_printf (ctrl, table[idx].name, "%02X %02X",
+                                      s[0], s[1]);
+          xfree (relptr);
+        }
     }
   else
     {
@@ -577,6 +594,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   (void)flags;
 
+  do_getattr (app, ctrl, "CHV-USAGE");
   do_getattr (app, ctrl, "CHV-STATUS");
 
   for (i=0; data_objects[i].tag; i++)
