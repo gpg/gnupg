@@ -3310,7 +3310,7 @@ command has the same effect as using @option{--list-keys} with
 @option{--with-sig-list}.  Note that in contrast to
 @option{--check-signatures} the key signatures are not verified.  This
 command can be used to create a list of signing keys missing in the
-lcoal keyring; for example:
+local keyring; for example:
 
 @example
       gpg --list-sigs --with-colons USERID | \
