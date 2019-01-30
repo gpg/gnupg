@@ -69,6 +69,9 @@ enum cmd_and_opt_values
     oLCctype,
     oLCmessages,
 
+    aTest,
+
+
     oDummy
   };
 
@@ -76,6 +79,7 @@ enum cmd_and_opt_values
 /* The list of commands and options. */
 static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (300, ("@Commands:\n ")),
+  ARGPARSE_c (aTest, "test", "test command"),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -227,6 +231,10 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oLCctype:     opt.lc_ctype = pargs->r.ret_str; break;
         case oLCmessages:  opt.lc_messages = pargs->r.ret_str; break;
 
+        case aTest:
+          cmd = pargs->r_opt;
+          break;
+
         default: pargs->err = 2; break;
 	}
     }
@@ -292,6 +300,12 @@ main (int argc, char **argv)
   /* Run the selected command.  */
   switch (cmd)
     {
+    case aTest:
+      if (!argc)
+        wrong_args ("--test KEYGRIP");
+      err = test_get_matching_keys (*argv);
+      break;
+
     default:
       interactive_loop ();
       err = 0;
@@ -580,15 +594,25 @@ mem_is_ff (const char *mem, unsigned int memlen)
 
 /* Helper to list a single keyref.  */
 static void
-list_one_kinfo (key_info_t kinfo, estream_t fp)
+list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
 {
-  if (kinfo)
+  gpg_error_t err;
+  keyblock_t keyblock = NULL;
+  keyblock_t kb;
+  pubkey_t pubkey;
+  userid_t uid;
+  key_info_t ki;
+  const char *s;
+
+  if (firstkinfo && kinfo)
     {
       tty_fprintf (fp, " ");
       if (mem_is_zero (kinfo->grip, sizeof kinfo->grip))
-        tty_fprintf (fp, "[none]\n");
-      else
-        print_keygrip (fp, kinfo->grip);
+        {
+          tty_fprintf (fp, "[none]\n");
+          goto leave;
+        }
+      print_keygrip (fp, kinfo->grip);
 
       if (kinfo->fprlen && kinfo->created)
         {
@@ -597,9 +621,63 @@ list_one_kinfo (key_info_t kinfo, estream_t fp)
           tty_fprintf (fp, "      created ....: %s\n",
                        isotimestamp (kinfo->created));
         }
+      err = get_matching_keys (kinfo->grip,
+                               (GNUPG_PROTOCOL_OPENPGP | GNUPG_PROTOCOL_CMS),
+                               &keyblock);
+      if (err)
+        {
+          if (gpg_err_code (err) != GPG_ERR_NO_PUBKEY)
+            tty_fprintf (fp, "      error ......: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      for (kb = keyblock; kb; kb = kb->next)
+        {
+          tty_fprintf (fp, "      used for ...: %s\n",
+                       kb->protocol == GNUPG_PROTOCOL_OPENPGP? "OpenPGP" :
+                       kb->protocol == GNUPG_PROTOCOL_CMS? "X.509" : "?");
+          pubkey = kb->keys;
+          /* If this is not the primary key print the primary key's
+           * fingerprint or a reference to it.  */
+          if (kb->protocol == GNUPG_PROTOCOL_OPENPGP)
+            {
+              tty_fprintf (fp, "        main key .:");
+              for (ki=firstkinfo; ki; ki = ki->next)
+                if (pubkey->grip_valid
+                    && !memcmp (ki->grip, pubkey->grip, KEYGRIP_LEN))
+                  break;
+              if (ki)
+                {
+                  /* Fixme: Replace mapping by a table lookup.  */
+                  if (!memcmp (kinfo->grip, pubkey->grip, KEYGRIP_LEN))
+                    s = "this";
+                  else if (!strcmp (ki->keyref, "OPENPGP.1"))
+                    s = "Signature key";
+                  else if (!strcmp (ki->keyref, "OPENPGP.2"))
+                    s = "Encryption key";
+                  else if (!strcmp (ki->keyref, "OPENPGP.3"))
+                    s = "Authentication key";
+                  else
+                    s = NULL;
+                  if (s)
+                    tty_fprintf (fp, " <%s>\n", s);
+                  else
+                    tty_fprintf (fp, " <Key %s>\n", ki->keyref);
+                }
+              else
+                print_shax_fpr (fp, pubkey->fpr, pubkey->fprlen);
+            }
+          for (uid = kb->uids; uid; uid = uid->next)
+            {
+              print_string (fp, "        user id ..: ", uid->value);
+            }
+
+        }
     }
   else
     tty_fprintf (fp, " [none]\n");
+
+ leave:
+  release_keyblock (keyblock);
 }
 
 
@@ -620,7 +698,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp)
         {
           tty_fprintf (fp, "%s", labels[idx].label);
           kinfo = find_kinfo (info, labels[idx].keyref);
-          list_one_kinfo (kinfo, fp);
+          list_one_kinfo (info->kinfo, kinfo, fp);
           if (kinfo)
             kinfo->xflag = 1;
         }
@@ -633,7 +711,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp)
       for (i=5+strlen (kinfo->keyref); i < 18; i++)
         tty_fprintf (fp, ".");
       tty_fprintf (fp, ":");
-      list_one_kinfo (kinfo, fp);
+      list_one_kinfo (info->kinfo, kinfo, fp);
     }
 }
 

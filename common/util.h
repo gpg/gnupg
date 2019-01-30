@@ -262,6 +262,13 @@ void gnupg_module_name_flush_some (void);
 void gnupg_set_builddir (const char *newdir);
 
 
+/* A list of constants to identify protocols.  This is used by tools
+ * which need to distinguish between the different protocols
+ * implemented by GnuPG.  May be used as bit flags.  */
+#define GNUPG_PROTOCOL_OPENPGP    1   /* The one and only (gpg).      */
+#define GNUPG_PROTOCOL_CMS        2   /* The core of S/MIME (gpgsm)   */
+#define GNUPG_PROTOCOL_SSH_AGENT  4   /* Out ssh-agent implementation */
+
 
 /*-- gpgrlhelp.c --*/
 void gnupg_rl_initialize (void);

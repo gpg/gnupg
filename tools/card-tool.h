@@ -50,6 +50,41 @@ struct
 #define DBG_IPC       (opt.debug & DBG_IPC_VALUE)
 #define DBG_EXTPROG   (opt.debug & DBG_EXTPROG_VALUE)
 
+/* The maximum length of a binary fingerprint.  */
+#define MAX_FINGERPRINT_LEN  32
+
+
+/*
+ * Data structures to store keyblocks (aka certificates).
+ */
+struct pubkey_s
+{
+  struct pubkey_s *next;   /* The next key.  */
+  unsigned char grip[KEYGRIP_LEN];
+  unsigned char fpr[MAX_FINGERPRINT_LEN];
+  unsigned char fprlen;     /* The used length of a FPR.  */
+  unsigned int grip_valid:1;/* The grip is valid.  */
+  unsigned int requested: 1;/* This is the requested grip.  */
+};
+typedef struct pubkey_s *pubkey_t;
+
+struct userid_s
+{
+  struct userid_s *next;
+  char *value;   /* Malloced.  */
+};
+typedef struct userid_s *userid_t;
+
+struct keyblock_s
+{
+  struct keyblock_s *next;  /* Allow to link several keyblocks.  */
+  int protocol;      /* GPGME_PROTOCOL_OPENPGP or _CMS. */
+  pubkey_t keys;     /* The key.  For OpenPGP primary + list of subkeys.  */
+  userid_t uids;     /* The list of user ids.  */
+};
+typedef struct keyblock_s *keyblock_t;
+
+
 
 /* Enumeration of the known card application types. */
 typedef enum
@@ -76,9 +111,9 @@ struct key_attr
   };
 };
 
-/* An object to store information pertaining to a key pair.  This is
- * commonly used as a linked list with all keys known for the current
- * card.  */
+/* An object to store information pertaining to a key pair as stored
+ * on a card.  This is commonly used as a linked list with all keys
+ * known for the current card.  */
 struct key_info_s
 {
   struct key_info_s *next;
@@ -142,6 +177,13 @@ struct card_info_s
   int uif[3];              /* True if User Interaction Flag is on.  */
 };
 typedef struct card_info_s *card_info_t;
+
+
+/*-- card-tool-keys.c --*/
+void release_keyblock (keyblock_t keyblock);
+gpg_error_t get_matching_keys (const unsigned char *keygrip, int protocol,
+                               keyblock_t *r_keyblock);
+gpg_error_t test_get_matching_keys (const char *hexgrip);
 
 
 /*-- card-tool-misc.c --*/
