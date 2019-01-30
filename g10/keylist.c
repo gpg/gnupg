@@ -610,6 +610,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
     {
       log_error ("error reading key: %s\n", gpg_strerror (rc));
       getkey_end (ctrl, ctx);
+      write_status_error ("keylist.getkey", rc);
       return;
     }
 
