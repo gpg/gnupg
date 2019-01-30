@@ -181,6 +181,7 @@ typedef struct card_info_s *card_info_t;
 
 /*-- card-tool-keys.c --*/
 void release_keyblock (keyblock_t keyblock);
+void flush_keyblock_cache (void);
 gpg_error_t get_matching_keys (const unsigned char *keygrip, int protocol,
                                keyblock_t *r_keyblock);
 gpg_error_t test_get_matching_keys (const char *hexgrip);

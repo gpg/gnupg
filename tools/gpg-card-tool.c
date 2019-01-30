@@ -312,6 +312,8 @@ main (int argc, char **argv)
       break;
     }
 
+  flush_keyblock_cache ();
+
   if (err)
     gnupg_status_printf (STATUS_FAILURE, "- %u", err);
   else if (log_get_errorcount (0))
@@ -2639,6 +2641,7 @@ static struct
   { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
   { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
   { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code")},
+  { "reset"   , cmdRESET,  0, N_("send a reset to the card daemon")},
   { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
   { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
   { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
@@ -2834,6 +2837,7 @@ interactive_loop (void)
                         "Send a RESET to the card daemon.", 0);
           else
             {
+              flush_keyblock_cache ();
               err = scd_apdu (NULL, NULL);
             }
           break;

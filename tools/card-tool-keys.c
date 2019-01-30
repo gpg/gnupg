@@ -30,9 +30,22 @@
 #include "../common/openpgpdefs.h"
 #include "card-tool.h"
 
-/* Release a keyblocm object.  */
-void
-release_keyblock (keyblock_t keyblock)
+
+/* It is quite common that all keys of an OpenPGP card belong to the
+ * the same OpenPGP keyblock.  To avoid running several queries
+ * despite that we already got the information with the previous
+ * keyblock, we keep a small cache of of previous done queries.  */
+static struct
+{
+  unsigned int lru;
+  keyblock_t keyblock;
+} keyblock_cache[5];
+
+
+
+/* Helper for release_keyblock.  */
+static void
+do_release_keyblock (keyblock_t keyblock)
 {
   pubkey_t pubkey;
   userid_t uid;
@@ -57,6 +70,62 @@ release_keyblock (keyblock_t keyblock)
         }
       xfree (keyblock);
       keyblock = keyblocknext;
+    }
+}
+
+
+/* Release a keyblock object.  */
+void
+release_keyblock (keyblock_t keyblock)
+{
+  static unsigned int lru_counter;
+  unsigned int lru;
+  int i, lru_idx;
+
+  if (!keyblock)
+    return;
+
+  lru = (unsigned int)(-1);
+  lru_idx = 0;
+  for (i=0; i < DIM (keyblock_cache); i++)
+    {
+      if (!keyblock_cache[i].keyblock)
+        {
+          keyblock_cache[i].keyblock = keyblock;
+          keyblock_cache[i].lru = ++lru_counter;
+          goto leave;
+        }
+      if (keyblock_cache[i].lru < lru)
+        {
+          lru = keyblock_cache[i].lru;
+          lru_idx = i;
+        }
+    }
+
+  /* No free slot.  Replace one. */
+  do_release_keyblock (keyblock_cache[lru_idx].keyblock);
+  keyblock_cache[lru_idx].keyblock = keyblock;
+  keyblock_cache[lru_idx].lru = ++lru_counter;
+
+ leave:
+  if (!lru_counter)
+    {
+      /* Wrapped around.  We simply clear the entire cache. */
+      flush_keyblock_cache ();
+    }
+}
+
+
+/* Flush the enire keyblock cache.  */
+void
+flush_keyblock_cache (void)
+{
+  int i;
+
+  for (i=0; i < DIM (keyblock_cache); i++)
+    {
+      do_release_keyblock (keyblock_cache[i].keyblock);
+      keyblock_cache[i].keyblock = NULL;
     }
 }
 
@@ -127,6 +196,7 @@ get_matching_keys (const unsigned char *keygrip, int protocol,
   char **fields = NULL;
   int nfields;
   int first_seen;
+  int i;
   keyblock_t keyblock_head, *keyblock_tail, kb;
   pubkey_t pubkey, pk;
   size_t n;
@@ -167,6 +237,18 @@ get_matching_keys (const unsigned char *keygrip, int protocol,
   /* Check that we have only one protocol.  */
   if (protocol != GNUPG_PROTOCOL_OPENPGP && protocol != GNUPG_PROTOCOL_CMS)
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+
+  /* Try to get it from our cache. */
+  for (i=0; i < DIM (keyblock_cache); i++)
+    for (kb = keyblock_cache[i].keyblock; kb; kb = kb->next)
+      if (kb->protocol == protocol)
+        for (pk = kb->keys; pk; pk = pk->next)
+          if (pk->grip_valid && !memcmp (pk->grip, keygrip, KEYGRIP_LEN))
+            {
+              *r_keyblock = keyblock_cache[i].keyblock;
+              keyblock_cache[i].keyblock = NULL;
+              return 0;
+            }
 
   /* Open a memory stream.  */
   listing = es_fopenmem (0, "w+b");
