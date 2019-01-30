@@ -328,6 +328,82 @@ make_printable_string (const void *p, size_t n, int delim )
 }
 
 
+/* Decode the C formatted string SRC and return the result in a newly
+ * allocated buffer.  In error returns NULL and sets ERRNO. */
+char *
+decode_c_string (const char *src)
+{
+  char *buffer, *dst;
+  int val;
+
+  /* The converted string will never be larger than the original
+     string.  */
+  buffer = dst = xtrymalloc (strlen (src) + 1);
+  if (!buffer)
+    return NULL;
+
+  while (*src)
+    {
+      if (*src != '\\')
+	{
+	  *dst++ = *src++;
+	  continue;
+	}
+
+#define DECODE_ONE(_m,_r) case _m: src += 2; *dst++ = _r; break;
+
+      switch (src[1])
+	{
+	  DECODE_ONE ('n', '\n');
+	  DECODE_ONE ('r', '\r');
+	  DECODE_ONE ('f', '\f');
+	  DECODE_ONE ('v', '\v');
+	  DECODE_ONE ('b', '\b');
+	  DECODE_ONE ('t', '\t');
+	  DECODE_ONE ('\\', '\\');
+	  DECODE_ONE ('\'', '\'');
+	  DECODE_ONE ('\"', '\"');
+
+	case 'x':
+          val = hextobyte (src+2);
+          if (val == -1)  /* Bad coding, keep as is. */
+            {
+              *dst++ = *src++;
+              *dst++ = *src++;
+              if (*src)
+                *dst++ = *src++;
+              if (*src)
+                *dst++ = *src++;
+            }
+          else if (!val)
+            {
+              /* A binary zero is not representable in a C string thus
+               * we keep the C-escaping.  Note that this will also
+               * never be larger than the source string.  */
+              *dst++ = '\\';
+              *dst++ = '0';
+              src += 4;
+            }
+          else
+            {
+              *(unsigned char *)dst++ = val;
+              src += 4;
+            }
+	  break;
+
+	default: /* Bad coding; keep as is..  */
+          *dst++ = *src++;
+          *dst++ = *src++;
+          break;
+        }
+#undef DECODE_ONE
+    }
+  *dst++ = 0;
+
+  return buffer;
+}
+
+
 /* Check whether (BUF,LEN) is valid header for an OpenPGP compressed
  * packet.  LEN should be at least 6.  */
 static int

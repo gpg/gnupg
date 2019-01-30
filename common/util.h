@@ -303,6 +303,7 @@ void print_hexstring (FILE *fp, const void *buffer, size_t length,
                       int reserved);
 char *try_make_printable_string (const void *p, size_t n, int delim);
 char *make_printable_string (const void *p, size_t n, int delim);
+char *decode_c_string (const char *src);
 
 int is_file_compressed (const char *s, int *ret_rc);
 
