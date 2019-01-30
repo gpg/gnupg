@@ -53,6 +53,7 @@ typedef struct
   exec_tool_status_cb_t status_cb;
   void *status_cb_value;
   int cont;
+  int quiet;
   size_t used;
   size_t buffer_size;
   char *buffer;
@@ -110,6 +111,8 @@ read_and_log_stderr (read_and_log_buffer_t *state, es_poll_t *fderr)
               state->status_cb (state->status_cb_value,
                                 state->buffer + 9, rest);
             }
+          else if (state->quiet)
+            ;
           else if (!state->cont
               && !strncmp (state->buffer, pname, len)
               && strlen (state->buffer) > strlen (pname)
@@ -331,9 +334,15 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   int count;
   read_and_log_buffer_t fderrstate;
   struct copy_buffer *cpbuf_in = NULL, *cpbuf_out = NULL, *cpbuf_extra = NULL;
+  int quiet = 0;
+  int dummy_exitcode;
 
   memset (fds, 0, sizeof fds);
   memset (&fderrstate, 0, sizeof fderrstate);
+
+  /* If the first argument to the program is "--quiet" avoid all extra
+   * diagnostics.  */
+  quiet = (argv && argv[0] && !strcmp (argv[0], "--quiet"));
 
   cpbuf_in = xtrymalloc (sizeof *cpbuf_in);
   if (cpbuf_in == NULL)
@@ -360,6 +369,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   copy_buffer_init (cpbuf_extra);
 
   fderrstate.pgmname = pgmname;
+  fderrstate.quiet = quiet;
   fderrstate.status_cb = status_cb;
   fderrstate.status_cb_value = status_cb_value;
   fderrstate.buffer_size = 256;
@@ -375,7 +385,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
       err = gnupg_create_outbound_pipe (extrapipe, &extrafp, 1);
       if (err)
         {
-          log_error ("error running outbound pipe for extra fp: %s\n",
+          log_error ("error creating outbound pipe for extra fp: %s\n",
                      gpg_strerror (err));
           goto leave;
         }
@@ -411,7 +421,8 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
     argv[argsaveidx] = argsave;
   if (err)
     {
-      log_error ("error running '%s': %s\n", pgmname, gpg_strerror (err));
+      if (!quiet)
+        log_error ("error running '%s': %s\n", pgmname, gpg_strerror (err));
       goto leave;
     }
 
@@ -535,7 +546,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   es_fclose (outfp); outfp = NULL;
   es_fclose (errfp); errfp = NULL;
 
-  err = gnupg_wait_process (pgmname, pid, 1, NULL);
+  err = gnupg_wait_process (pgmname, pid, 1, quiet? &dummy_exitcode : NULL);
   pid = (pid_t)(-1);
 
  leave:
@@ -547,7 +558,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   es_fclose (outfp);
   es_fclose (errfp);
   if (pid != (pid_t)(-1))
-    gnupg_wait_process (pgmname, pid, 1, NULL);
+    gnupg_wait_process (pgmname, pid, 1,  quiet? &dummy_exitcode : NULL);
   gnupg_release_process (pid);
 
   copy_buffer_shred (cpbuf_in);
