@@ -27,6 +27,7 @@
 /* We keep all global options in the structure OPT.  */
 struct
 {
+  int interactive;
   int verbose;
   unsigned int debug;
   int quiet;
@@ -137,6 +138,7 @@ typedef struct key_info_s *key_info_t;
  */
 struct card_info_s
 {
+  int initialized;   /* True if a learn command was successful. */
   int error;         /* private. */
   char *reader;      /* Reader information.  */
   char *cardtype;    /* NULL or type of the card.  */

@@ -46,7 +46,7 @@
 #define CONTROL_D ('D' - 'A' + 1)
 
 /* Constants to identify the commands and options. */
-enum cmd_and_opt_values
+enum opt_values
   {
     aNull = 0,
 
@@ -69,18 +69,12 @@ enum cmd_and_opt_values
     oLCctype,
     oLCmessages,
 
-    aTest,
-
-
     oDummy
   };
 
 
 /* The list of commands and options. */
 static ARGPARSE_OPTS opts[] = {
-  ARGPARSE_group (300, ("@Commands:\n ")),
-  ARGPARSE_c (aTest, "test", "test command"),
-
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
   ARGPARSE_s_n (oVerbose, "verbose", ("verbose")),
@@ -133,7 +127,7 @@ typedef struct keyinfolabel_s *keyinfolabel_t;
 
 
 /* Local prototypes.  */
-static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
+static gpg_error_t dispatch_command (card_info_t info, const char *command);
 static void interactive_loop (void);
 #ifdef HAVE_LIBREADLINE
 static char **command_completion (const char *text, int start, int end);
@@ -157,24 +151,19 @@ my_strusage( int level )
 
     case 1:
     case 40:
-      p = ("Usage: gpg-card-tool [command] [options] [args] (-h for help)");
+      p = ("Usage: gpg-card-tool"
+           " [options] [{[--] command [args]}]  (-h for help)");
       break;
     case 41:
-      p = ("Syntax: gpg-card-tool [command] [options] [args]\n"
-           "Tool to configure cards and tokens\n");
+      p = ("Syntax: gpg-card-tool"
+           " [options] [command [args] {-- command [args]}]\n\n"
+           "Tool to manage cards and tokens.  With a command an interactive\n"
+           "mode is used.  Use command \"help\" to list all commands.");
       break;
 
     default: p = NULL; break;
     }
   return p;
-}
-
-
-static void
-wrong_args (const char *text)
-{
-  es_fprintf (es_stderr, _("usage: %s [options] %s\n"), strusage (11), text);
-  exit (2);
 }
 
 
@@ -192,13 +181,10 @@ set_opt_session_env (const char *name, const char *value)
 
 
 /* Command line parsing.  */
-static enum cmd_and_opt_values
+static void
 parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 {
-  enum cmd_and_opt_values cmd = 0;
-  int no_more_options = 0;
-
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, popts))
+  while (optfile_parse (NULL, NULL, NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -231,15 +217,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oLCctype:     opt.lc_ctype = pargs->r.ret_str; break;
         case oLCmessages:  opt.lc_messages = pargs->r.ret_str; break;
 
-        case aTest:
-          cmd = pargs->r_opt;
-          break;
-
         default: pargs->err = 2; break;
 	}
     }
-
-  return cmd;
 }
 
 
@@ -250,7 +230,9 @@ main (int argc, char **argv)
 {
   gpg_error_t err;
   ARGPARSE_ARGS pargs;
-  enum cmd_and_opt_values cmd;
+  char **command_list = NULL;
+  int cmdidx;
+  char *command;
 
   gnupg_reopen_std ("gpg-card-tool");
   set_strusage (my_strusage);
@@ -276,20 +258,10 @@ main (int argc, char **argv)
   pargs.argc  = &argc;
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
-  cmd = parse_arguments (&pargs, opts);
+  parse_arguments (&pargs, opts);
 
   if (log_get_errorcount (0))
     exit (2);
-
-  /* Print a warning if an argument looks like an option.  */
-  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
-    {
-      int i;
-
-      for (i=0; i < argc; i++)
-        if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (("NOTE: '%s' is not considered an option\n"), argv[i]);
-    }
 
   /* Set defaults for non given options.  */
   if (!opt.gpg_program)
@@ -297,23 +269,69 @@ main (int argc, char **argv)
   if (!opt.gpgsm_program)
     opt.gpgsm_program = gnupg_module_name (GNUPG_MODULE_NAME_GPGSM);
 
-  /* Run the selected command.  */
-  switch (cmd)
+  /* Now build the list of commands.  We guess the size of the array
+   * by assuming each item is a complete command.  Obviously this will
+   * be rarely the case, but it is less code to allocate a possible
+   * too large array.  */
+  command_list = xcalloc (argc+1, sizeof *command_list);
+  cmdidx = 0;
+  command = NULL;
+  while (argc)
     {
-    case aTest:
-      if (!argc)
-        wrong_args ("--test KEYGRIP");
-      err = test_get_matching_keys (*argv);
-      break;
+      for ( ; argc && strcmp (*argv, "--"); argc--, argv++)
+        {
+          if (!command)
+            command = xstrdup (*argv);
+          else
+            {
+              char *tmp = xstrconcat (command, " ", *argv, NULL);
+              xfree (command);
+              command = tmp;
+            }
+        }
+      if (argc)
+        { /* Skip the double dash.  */
+          argc--;
+          argv++;
+        }
+      if (command)
+        {
+          command_list[cmdidx++] = command;
+          command = NULL;
+        }
+    }
+  opt.interactive = !cmdidx;
 
-    default:
+  if (opt.interactive)
+    {
       interactive_loop ();
       err = 0;
-      break;
+    }
+  else
+    {
+      struct card_info_s info_buffer;
+      card_info_t info = &info_buffer;
+
+      err = 0;
+      for (cmdidx=0; (command = command_list[cmdidx]); cmdidx++)
+        {
+          err = dispatch_command (info, command);
+          if (err)
+            break;
+        }
+      if (gpg_err_code (err) == GPG_ERR_EOF)
+        err = 0; /* This was a "quit".  */
+      else if (command && !opt.quiet)
+        log_info ("stopped at command '%s'\n", command);
     }
 
   flush_keyblock_cache ();
-
+  if (command_list)
+    {
+      for (cmdidx=0; command_list[cmdidx]; cmdidx++)
+        xfree (command_list[cmdidx]);
+      xfree (command_list);
+    }
   if (err)
     gnupg_status_printf (STATUS_FAILURE, "- %u", err);
   else if (log_get_errorcount (0))
@@ -421,22 +439,24 @@ put_data_to_file (const char *fname, const void *buffer, size_t length)
 static gpg_error_t
 print_help (const char *text, ...)
 {
+  estream_t fp;
   va_list arg_ptr;
   int value;
   int any = 0;
 
-  tty_fprintf (NULL, "%s\n", text);
+  fp = opt.interactive? NULL : es_stdout;
+  tty_fprintf (fp, "%s\n", text);
 
   va_start (arg_ptr, text);
   while ((value = va_arg (arg_ptr, int)))
     {
       if (!any)
-        tty_fprintf (NULL, "[Supported by: ");
-      tty_fprintf (NULL, "%s%s", any?", ":"", app_type_string (value));
+        tty_fprintf (fp, "[Supported by: ");
+      tty_fprintf (fp, "%s%s", any?", ":"", app_type_string (value));
       any = 1;
     }
   if (any)
-    tty_fprintf (NULL, "]\n");
+    tty_fprintf (fp, "]\n");
 
   va_end (arg_ptr);
   return 0;
@@ -583,18 +603,6 @@ mem_is_zero (const char *mem, unsigned int memlen)
   int i;
 
   for (i=0; i < memlen && !mem[i]; i++)
-    ;
-  return (i == memlen);
-}
-
-
-/* Return true if the buffer MEM or length MEMLEN consists only of 0xFF. */
-static int
-mem_is_ff (const char *mem, unsigned int memlen)
-{
-  int i;
-
-  for (i=0; i < memlen && mem[i] == '\xff'; i++)
     ;
   return (i == memlen);
 }
@@ -909,7 +917,7 @@ list_piv (card_info_t info, estream_t fp)
 static void
 list_card (card_info_t info)
 {
-  estream_t fp = NULL;
+  estream_t fp = opt.interactive? NULL : es_stdout;
 
   tty_fprintf (fp, "Reader ...........: %s\n",
                info->reader? info->reader : "[none]");
@@ -2716,6 +2724,7 @@ static struct
   { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
   { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code")},
   { "authenticate",cmdAUTHENTICATE, 0,N_("authenticate to the card")},
+  { "auth"    , cmdAUTHENTICATE, 0, NULL },
   { "reset"   , cmdRESET,  0, N_("send a reset to the card daemon")},
   { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
   { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
@@ -2729,7 +2738,169 @@ static struct
 };
 
 
-/* The main loop.  */
+/* The command line command dispatcher.  */
+static gpg_error_t
+dispatch_command (card_info_t info, const char *orig_command)
+{
+  gpg_error_t err = 0;
+  enum cmdids cmd;             /* The command.  */
+  char *command;               /* A malloced copy of ORIG_COMMAND.  */
+  char *argstr;                /* The argument as a string.  */
+  int i;
+  int ignore_error;
+
+  if ((ignore_error = *orig_command == '-'))
+    orig_command++;
+  command = xstrdup (orig_command);
+  argstr = NULL;
+  if ((argstr = strchr (command, ' ')))
+    {
+      *argstr++ = 0;
+      trim_spaces (command);
+      trim_spaces (argstr);
+    }
+
+  for (i=0; cmds[i].name; i++ )
+    if (!ascii_strcasecmp (command, cmds[i].name ))
+      break;
+  cmd = cmds[i].id; /* (If not found this will be cmdINVCMD). */
+
+  /* Make sure we have valid strings for the args.  They are allowed
+   * to be modified and must thus point to a buffer.  */
+  if (!argstr)
+    argstr = command + strlen (command);
+
+  /* For most commands we need to make sure that we have a card.  */
+  if (!info)
+    ;  /* Help mode */
+  else if (!(cmd == cmdNOP || cmd == cmdQUIT || cmd == cmdHELP
+             || cmd == cmdINVCMD)
+           && !info->initialized)
+    {
+      err = scd_learn (info);
+      if (err)
+        {
+          log_error ("Error reading card: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+  switch (cmd)
+    {
+    case cmdNOP:
+      if (!info)
+        print_help ("NOP\n\n"
+                    "Dummy command.", 0);
+      break;
+
+    case cmdQUIT:
+      if (!info)
+        print_help ("QUIT\n\n"
+                    "Stop processing.", 0);
+      else
+        {
+          err = gpg_error (GPG_ERR_EOF);
+          goto leave;
+        }
+      break;
+
+    case cmdHELP:
+      if (!info)
+        print_help ("HELP [command]\n\n"
+                    "Show all commands.  With an argument show help\n"
+                    "for that command.", 0);
+      else if (*argstr)
+        dispatch_command (NULL, argstr);
+      else
+        {
+          es_printf
+            ("List of commands (\"help <command>\" for details):\n");
+          for (i=0; cmds[i].name; i++ )
+            if(cmds[i].desc)
+              es_printf("%-14s %s\n", cmds[i].name, _(cmds[i].desc) );
+          es_printf ("Prefix a command with a dash to ignore its error.\n");
+        }
+      break;
+
+    case cmdLIST:
+      if (!info)
+        print_help ("LIST\n\n"
+                    "Show content of the card.", 0);
+      else
+        {
+          err = scd_learn (info);
+          if (err)
+            log_error ("Error reading card: %s\n", gpg_strerror (err));
+          else
+            list_card (info);
+        }
+      break;
+
+    case cmdRESET:
+      if (!info)
+        print_help ("RESET\n\n"
+                    "Send a RESET to the card daemon.", 0);
+      else
+        {
+          flush_keyblock_cache ();
+          err = scd_apdu (NULL, NULL);
+        }
+      break;
+
+    case cmdADMIN:
+      /* This is a NOP in non-interactive mode.  */
+      break;
+
+    case cmdVERIFY:       err = cmd_verify (info, argstr); break;
+    case cmdAUTHENTICATE: err = cmd_authenticate (info, argstr); break;
+    case cmdNAME:         err = cmd_name (info, argstr); break;
+    case cmdURL:          err = cmd_url (info, argstr);  break;
+    case cmdFETCH:        err = cmd_fetch (info);  break;
+    case cmdLOGIN:        err = cmd_login (info, argstr); break;
+    case cmdLANG:         err = cmd_lang (info, argstr); break;
+    case cmdSALUT:        err = cmd_salut (info, argstr); break;
+    case cmdCAFPR:        err = cmd_cafpr (info, argstr); break;
+    case cmdPRIVATEDO:    err = cmd_privatedo (info, argstr); break;
+    case cmdWRITECERT:    err = cmd_writecert (info, argstr); break;
+    case cmdREADCERT:     err = cmd_readcert (info, argstr); break;
+    case cmdFORCESIG:     err = cmd_forcesig (info); break;
+    case cmdGENERATE:     err = cmd_generate (info); break;
+    case cmdPASSWD:       err = cmd_passwd (info, 1); break;
+    case cmdUNBLOCK:      err = cmd_unblock (info); break;
+    case cmdFACTORYRESET: err = cmd_factoryreset (info); break;
+    case cmdKDFSETUP:     err = cmd_kdfsetup (info, argstr); break;
+    case cmdKEYATTR:      err = cmd_keyattr (info, argstr); break;
+    case cmdUIF:          err = cmd_uif (info, argstr); break;
+
+    case cmdINVCMD:
+    default:
+      log_error (_("Invalid command  (try \"help\")\n"));
+      break;
+    } /* End command switch. */
+
+
+ leave:
+  /* Return GPG_ERR_EOF only if its origin was "quit".  */
+  es_fflush (es_stdout);
+  if (gpg_err_code (err) == GPG_ERR_EOF && cmd != cmdQUIT)
+    err = gpg_error (GPG_ERR_GENERAL);
+  if (err && gpg_err_code (err) != GPG_ERR_EOF)
+    {
+      if (ignore_error)
+        {
+          log_info ("Command '%s' failed: %s\n", command, gpg_strerror (err));
+          err = 0;
+        }
+      else
+        log_error ("Command '%s' failed: %s\n", command, gpg_strerror (err));
+    }
+  xfree (command);
+
+  return err;
+}
+
+
+/* The interactive main loop.  */
 static void
 interactive_loop (void)
 {
@@ -2825,11 +2996,12 @@ interactive_loop (void)
         }
 
       /* Make sure we have valid strings for the args.  They are
-       * allowed to be modifed and must thus point to a buffer.  */
+       * allowed to be modified and must thus point to a buffer.  */
       if (!argstr)
         argstr = answer + strlen (answer);
 
-      if (!(cmd == cmdNOP || cmd == cmdQUIT || cmd == cmdHELP))
+      if (!(cmd == cmdNOP || cmd == cmdQUIT || cmd == cmdHELP
+            || cmd == cmdINVCMD))
         {
           /* If redisplay is set we know that there was an error reading
            * the card.  In this case we force a LIST command to retry.  */

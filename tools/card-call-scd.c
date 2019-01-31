@@ -956,6 +956,8 @@ scd_learn (card_info_t info)
   /* Also try to get some other key attributes.  */
   if (!err)
     {
+      info->initialized = 1;
+
       err = scd_getattr ("KEY-ATTR", info);
       if (gpg_err_code (err) == GPG_ERR_INV_NAME
           || gpg_err_code (err) == GPG_ERR_UNSUPPORTED_OPERATION)
@@ -964,7 +966,6 @@ scd_learn (card_info_t info)
       if (gpg_err_code (err) == GPG_ERR_INV_NAME
           || gpg_err_code (err) == GPG_ERR_UNSUPPORTED_OPERATION)
         err = 0; /* Not implemented or GETATTR not supported.  */
-
     }
 
   if (info == &dummyinfo)
