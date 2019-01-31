@@ -326,8 +326,11 @@ main (int argc, char **argv)
 
 /* Read data from file FNAME up to MAX_GET_DATA_FROM_FILE characters.
  * On error return an error code and stores NULL at R_BUFFER; on
- * success returns 0, stpres the number of bytes read at R_BUFLEN and
- * the address of a newly allocated buffer at R_BUFFER. */
+ * success returns 0 and stores the number of bytes read at R_BUFLEN
+ * and the address of a newly allocated buffer at R_BUFFER.  A
+ * complementary nul byte is always appended to the data but not
+ * counted; this allows to pass NULL for R-BUFFER and consider the
+ * returned data as a string. */
 static gpg_error_t
 get_data_from_file (const char *fname, char **r_buffer, size_t *r_buflen)
 {
@@ -337,7 +340,8 @@ get_data_from_file (const char *fname, char **r_buffer, size_t *r_buflen)
   int n;
 
   *r_buffer = NULL;
-  *r_buflen = 0;
+  if (r_buflen)
+    *r_buflen = 0;
 
   fp = es_fopen (fname, "rb");
   if (!fp)
@@ -356,7 +360,7 @@ get_data_from_file (const char *fname, char **r_buffer, size_t *r_buflen)
       return err;
     }
 
-  n = es_fread (data, 1, MAX_GET_DATA_FROM_FILE, fp);
+  n = es_fread (data, 1, MAX_GET_DATA_FROM_FILE - 1, fp);
   es_fclose (fp);
   if (n < 0)
     {
@@ -365,8 +369,11 @@ get_data_from_file (const char *fname, char **r_buffer, size_t *r_buflen)
       xfree (data);
       return err;
     }
+  data[n] = 0;
+
   *r_buffer = data;
-  *r_buflen = n;
+  if (r_buflen)
+    *r_buflen = n;
   return 0;
 }
 
@@ -947,6 +954,73 @@ cmd_verify (card_info_t info, char *argstr)
   if (err)
     log_error ("verify failed: %s <%s>\n",
                gpg_strerror (err), gpg_strsource (err));
+  return err;
+}
+
+
+static gpg_error_t
+cmd_authenticate (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  int opt_setkey;
+  int opt_raw;
+  char *string = NULL;
+  char *key = NULL;
+  size_t keylen;
+
+  if (!info)
+    return print_help
+      ("AUTHENTICATE [--setkey] [--raw] [< FILE]|KEY\n\n"
+       "Perform a mutual autentication either by reading the key\n"
+       "from FILE or by taking it from the command line.  Without\n"
+       "the option --raw the key is expected to be hex encoded.\n"
+       "To install a new administration key --setkey is used; this\n"
+       "requires a prior authentication with the old key.",
+       APP_TYPE_PIV, 0);
+
+  if (info->apptype != APP_TYPE_PIV)
+    {
+      log_info ("Note: This is a PIV only command.\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+  opt_setkey = has_leading_option (argstr, "--setkey");
+  opt_raw = has_leading_option (argstr, "--raw");
+  argstr = skip_options (argstr);
+
+  if (*argstr == '<')  /* Read key from a file. */
+    {
+      for (argstr++; spacep (argstr); argstr++)
+        ;
+      err = get_data_from_file (argstr, &string, NULL);
+      if (err)
+        goto leave;
+    }
+
+  if (opt_raw)
+    {
+      key = string? string : xstrdup (argstr);
+      string = NULL;
+      keylen = strlen (key);
+    }
+  else
+    {
+      key = hex_to_buffer (string? string: argstr, &keylen);
+      if (!key)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+  err = scd_setattr (opt_setkey? "SET-ADM-KEY":"AUTH-ADM-KEY", key, keylen);
+
+ leave:
+  if (key)
+    {
+      wipememory (key, keylen);
+      xfree (key);
+    }
+  xfree (string);
   return err;
 }
 
@@ -2610,7 +2684,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
-    cmdKEYATTR, cmdUIF,
+    cmdKEYATTR, cmdUIF, cmdAUTHENTICATE,
     cmdINVCMD
   };
 
@@ -2641,6 +2715,7 @@ static struct
   { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
   { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
   { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code")},
+  { "authenticate",cmdAUTHENTICATE, 0,N_("authenticate to the card")},
   { "reset"   , cmdRESET,  0, N_("send a reset to the card daemon")},
   { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
   { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
@@ -2871,6 +2946,7 @@ interactive_loop (void)
           if (!err)
             redisplay = 1;
           break;
+        case cmdAUTHENTICATE: err = cmd_authenticate (info, argstr); break;
         case cmdNAME:      err = cmd_name (info, argstr); break;
         case cmdURL:       err = cmd_url (info, argstr);  break;
 	case cmdFETCH:     err = cmd_fetch (info);  break;
