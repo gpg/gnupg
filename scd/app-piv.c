@@ -112,7 +112,7 @@ static struct data_object_s data_objects[] = {
   { 0x5FC122, 0, 0,0, 1, 0,0, 0, "",   "2.16.23", "SM Cert Signer" },
   { 0x5FC123, 0, 3,3, 1, 0,0, 0, "",   "2.16.24", "Pairing Code Ref Data" },
   { 0 }
-  /* Other key reference values without a tag:
+  /* Other key reference values without a data object:
    * "00" Global PIN (not cleared by application switching)
    * "04" PIV Secure Messaging Key
    * "80" PIV Application PIN
@@ -142,7 +142,7 @@ struct app_local_s {
   /* Various flags.  */
   struct
   {
-    unsigned int dummy:1;
+    unsigned int yubikey:1;  /* This is on a Yubikey.  */
   } flags;
 
 };
@@ -263,6 +263,30 @@ get_cached_data (app_t app, int tag,
     }
 
   return 0;
+}
+
+
+/* Remove data object described by TAG from the cache.  */
+static void
+flush_cached_data (app_t app, int tag)
+{
+  struct cache_s *c, *cprev;
+
+  for (c=app->app_local->cache, cprev=NULL; c; cprev=c, c = c->next)
+    if (c->tag == tag)
+      {
+        if (cprev)
+          cprev->next = c->next;
+        else
+          app->app_local->cache = c->next;
+        xfree (c);
+
+        for (c=app->app_local->cache; c ; c = c->next)
+          {
+            log_assert (c->tag != tag); /* Oops: duplicated entry. */
+          }
+        return;
+      }
 }
 
 
@@ -546,6 +570,218 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
           xfree (relptr);
         }
+    }
+
+  return err;
+}
+
+
+/* Authenticate the card using the Card Application Administration
+ * Key.  (VALUE,VALUELEN) has that 24 byte key.  */
+static gpg_error_t
+auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
+{
+  gpg_error_t err;
+  unsigned char tmpl[4+24];
+  size_t tmpllen;
+  unsigned char *outdata = NULL;
+  size_t outdatalen;
+  const unsigned char *s;
+  char witness[8];
+  size_t n;
+  gcry_cipher_hd_t cipher = NULL;
+
+  /* Prepare decryption.  */
+  err = gcry_cipher_open (&cipher, GCRY_CIPHER_3DES, GCRY_CIPHER_MODE_ECB, 0);
+  if (err)
+    goto leave;
+  err = gcry_cipher_setkey (cipher, value, valuelen);
+  if (err)
+    goto leave;
+
+  /* Request a witness.  */
+  tmpl[0] = 0x7c;
+  tmpl[1] = 0x02;
+  tmpl[2] = 0x80;
+  tmpl[3] = 0;    /* (Empty witness requests a witness.)  */
+  tmpllen = 4;
+  err = iso7816_general_authenticate (app->slot, 0,
+                                      PIV_ALGORITHM_3DES_ECB_0, 0x9B,
+                                      tmpl, tmpllen, 0,
+                                      &outdata, &outdatalen);
+  if (err)
+    goto leave;
+  if (!(outdatalen && *outdata == 0x7c
+        && (s = find_tlv (outdata, outdatalen, 0x80, &n))
+        && n == 8))
+    {
+      err = gpg_error (GPG_ERR_CARD);
+      log_error ("piv: improper witness received\n");
+      goto leave;
+    }
+  err = gcry_cipher_decrypt (cipher, witness, 8, s, 8);
+  if (err)
+    goto leave;
+
+  /* Return decrypted witness and send our challenge.  */
+  tmpl[0] = 0x7c;
+  tmpl[1] = 22;
+  tmpl[2] = 0x80;
+  tmpl[3] = 8;
+  memcpy (tmpl+4, witness, 8);
+  tmpl[12] = 0x81;
+  tmpl[13] = 8;
+  gcry_create_nonce (tmpl+14, 8);
+  tmpl[22] = 0x80;
+  tmpl[23] = 0;
+  tmpllen = 24;
+  xfree (outdata);
+  err = iso7816_general_authenticate (app->slot, 0,
+                                      PIV_ALGORITHM_3DES_ECB_0, 0x9B,
+                                      tmpl, tmpllen, 0,
+                                      &outdata, &outdatalen);
+  if (err)
+    goto leave;
+  if (!(outdatalen && *outdata == 0x7c
+        && (s = find_tlv (outdata, outdatalen, 0x82, &n))
+        && n == 8))
+    {
+      err = gpg_error (GPG_ERR_CARD);
+      log_error ("piv: improper challenge received\n");
+      goto leave;
+    }
+  /* (We reuse the witness buffer.) */
+  err = gcry_cipher_decrypt (cipher, witness, 8, s, 8);
+  if (err)
+    goto leave;
+  if (memcmp (witness, tmpl+14, 8))
+    {
+      err = gpg_error (GPG_ERR_BAD_SIGNATURE);
+      goto leave;
+    }
+
+ leave:
+   xfree (outdata);
+   gcry_cipher_close (cipher);
+   return err;
+}
+
+
+/* Set a new admin key.  */
+static gpg_error_t
+set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
+{
+  gpg_error_t err;
+  unsigned char apdu[8+24];
+  unsigned int sw;
+
+  /* Check whether it is a weak key and that it is of proper length.  */
+  {
+    gcry_cipher_hd_t cipher;
+
+    err = gcry_cipher_open (&cipher, GCRY_CIPHER_3DES, GCRY_CIPHER_MODE_ECB, 0);
+    if (!err)
+      {
+        err = gcry_cipher_setkey (cipher, value, valuelen);
+        gcry_cipher_close (cipher);
+      }
+    if (err)
+      goto leave;
+  }
+
+  if (app->app_local->flags.yubikey)
+    {
+      /* This is a Yubikey.  */
+      if (valuelen != 24)
+        {
+          err = gpg_error (GPG_ERR_INV_LENGTH);
+          goto leave;
+        }
+
+      /* We use a proprietary Yubikey command.  */
+      apdu[0] = 0;
+      apdu[1] = 0xff;
+      apdu[2] = 0xff;
+      apdu[3] = 0xff;  /* touch policy: 0xff=never, 0xfe = always.  */
+      apdu[4] = 3 + 24;
+      apdu[5] = PIV_ALGORITHM_3DES_ECB;
+      apdu[6] = 0x9b;
+      apdu[7] = 24;
+      memcpy (apdu+8, value, 24);
+      err = iso7816_apdu_direct (app->slot, apdu, 8+24, 0, &sw, NULL, NULL);
+      wipememory (apdu+8, 24);
+      if (err)
+        log_error ("piv: setting admin key failed; sw=%04x\n", sw);
+    }
+  else
+    err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+
+ leave:
+   return err;
+}
+
+
+/* Handle the SETATTR operation. All arguments are already basically
+ * checked. */
+static gpg_error_t
+do_setattr (app_t app, const char *name,
+            gpg_error_t (*pincb)(void*, const char *, char **),
+            void *pincb_arg,
+            const unsigned char *value, size_t valuelen)
+{
+  gpg_error_t err;
+  static struct {
+    const char *name;
+    unsigned short tag;
+    unsigned short flush_tag;  /* The tag which needs to be flushed or 0. */
+    int special;               /* Special mode to use for thus NAME.  */
+  } table[] = {
+    /* Authenticate using the PIV Card Application Administration Key
+     * (0x0B).  Note that Yubico calls this key the "management key"
+     * which we don't do because that term is too similar to "Cert
+     * Management Key" (0x9D).  */
+    { "AUTH-ADM-KEY", 0x0000, 0x0000, 1 },
+    { "SET-ADM-KEY",  0x0000, 0x0000, 2 }
+  };
+  int idx;
+
+  (void)pincb;
+  (void)pincb_arg;
+
+  for (idx=0; (idx < DIM (table)
+               && ascii_strcasecmp (table[idx].name, name)); idx++)
+    ;
+  if (!(idx < DIM (table)))
+    return gpg_error (GPG_ERR_INV_NAME);
+
+  /* Flush the cache before writing it, so that the next get operation
+   * will reread the data from the card and thus get synced in case of
+   * errors (e.g. data truncated by the card). */
+  if (table[idx].tag)
+    flush_cached_data (app, table[idx].flush_tag? table[idx].flush_tag
+                       /* */                    : table[idx].tag);
+
+  switch (table[idx].special)
+    {
+    case 0:
+      err = iso7816_put_data (app->slot, 0, table[idx].tag, value, valuelen);
+      if (err)
+        log_error ("failed to set '%s': %s\n",
+                   table[idx].name, gpg_strerror (err));
+      break;
+
+    case 1:
+      err = auth_adm_key (app, value, valuelen);
+      break;
+
+    case 2:
+      err = set_adm_key (app, value, valuelen);
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_BUG);
+      break;
     }
 
   return err;
@@ -1086,13 +1322,15 @@ do_change_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
 
   char *newpin = NULL;
   char *oldpin = NULL;
-  size_t newpinlen;
-  size_t oldpinlen;
-  const char *newdesc;
-  int pwid;
+  /* size_t newpinlen; */
+  /* size_t oldpinlen; */
+  /* const char *newdesc; */
+  /* int pwid; */
   pininfo_t pininfo;
 
   (void)ctrl;
+  (void)pincb;
+  (void)pincb_arg;
 
   /* The minimum and maximum lengths are enforced by PIV.  */
   memset (&pininfo, 0, sizeof pininfo);
@@ -1416,6 +1654,9 @@ app_select_piv (app_t app)
       goto leave;
     }
 
+  if (app->cardtype && !strcmp (app->cardtype, "yubikey"))
+    app->app_local->flags.yubikey = 1;
+
 
   /* FIXME: Parse the optional and conditional DOs in the APT.  */
 
@@ -1427,7 +1668,7 @@ app_select_piv (app_t app)
   app->fnc.readcert = do_readcert;
   app->fnc.readkey = NULL;
   app->fnc.getattr = do_getattr;
-  /* app->fnc.setattr = do_setattr; */
+  app->fnc.setattr = do_setattr;
   /* app->fnc.writecert = do_writecert; */
   /* app->fnc.writekey = do_writekey; */
   /* app->fnc.genkey = do_genkey; */

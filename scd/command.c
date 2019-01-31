@@ -55,6 +55,9 @@
 /* Maximum allowed size of certificate data as used in inquiries. */
 #define MAXLEN_CERTDATA 16384
 
+/* Maximum allowed size for "SETATTR --inquire". */
+#define MAXLEN_SETATTRDATA 16384
+
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
@@ -926,7 +929,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
 
 
 static const char hlp_setattr[] =
-  "SETATTR <name> <value> \n"
+  "SETATTR [--inquire] <name> <value> \n"
   "\n"
   "This command is used to store data on a smartcard.  The allowed\n"
   "names and values are depend on the currently selected smartcard\n"
@@ -935,6 +938,10 @@ static const char hlp_setattr[] =
   "However, the current implementation assumes that NAME is not\n"
   "escaped; this works as long as no one uses arbitrary escaping.\n"
   "\n"
+  "If the option --inquire is used, VALUE shall not be given; instead\n"
+  "an inquiry using the keyword \"VALUE\" is used to retrieve it.  The\n"
+  "value is in this case considered to be confidential and not logged.\n"
+  "\n"
   "A PIN will be requested for most NAMEs.  See the corresponding\n"
   "setattr function of the actually used application (app-*.c) for\n"
   "details.";
@@ -942,14 +949,18 @@ static gpg_error_t
 cmd_setattr (assuan_context_t ctx, char *orig_line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int rc;
+  gpg_error_t err;
   char *keyword;
   int keywordlen;
   size_t nbytes;
   char *line, *linebuf;
+  int opt_inquire;
 
-  if ((rc = open_card (ctrl)))
-    return rc;
+  opt_inquire = has_option (orig_line, "--inquire");
+  orig_line = skip_options (orig_line);
+
+  if ((err = open_card (ctrl)))
+    return err;
 
   /* We need to use a copy of LINE, because PIN_CB uses the same
      context and thus reuses the Assuan provided LINE. */
@@ -964,20 +975,38 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
       *line++ = 0;
   while (spacep (line))
     line++;
-  nbytes = percent_plus_unescape_inplace (line, 0);
+  if (opt_inquire)
+    {
+      unsigned char *value;
 
-  rc = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
-                    (const unsigned char*)line, nbytes);
+      assuan_begin_confidential (ctx);
+      err = assuan_inquire (ctx, "VALUE", &value, &nbytes, MAXLEN_SETATTRDATA);
+      assuan_end_confidential (ctx);
+      if (!err)
+        {
+          err = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
+                             value, nbytes);
+          wipememory (value, nbytes);
+          xfree (value);
+        }
+
+   }
+  else
+    {
+      nbytes = percent_plus_unescape_inplace (line, 0);
+      err = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
+                         (const unsigned char*)line, nbytes);
+    }
+
   xfree (linebuf);
-
-  return rc;
+  return err;
 }
 
 
 static const char hlp_writecert[] =
   "WRITECERT <hexified_certid>\n"
   "\n"
-  "This command is used to store a certifciate on a smartcard.  The\n"
+  "This command is used to store a certificate on a smartcard.  The\n"
   "allowed certids depend on the currently selected smartcard\n"
   "application. The actual certifciate is requested using the inquiry\n"
   "\"CERTDATA\" and needs to be provided in its raw (e.g. DER) form.\n"
