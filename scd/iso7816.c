@@ -330,6 +330,7 @@ iso7816_change_reference_data (int slot, int chvno,
 
   sw = apdu_send_simple (slot, 0, 0x00, CMD_CHANGE_REFERENCE_DATA,
                          oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
+  wipememory (buf, oldchvlen+newchvlen);
   xfree (buf);
   return map_sw (sw);
 

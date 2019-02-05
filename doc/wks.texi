@@ -124,7 +124,7 @@ Requires installation of that command.
 @item --with-colons
 @opindex with-colons
 This option has currently only an effect on the @option{--supported}
-command.  If it is used all arguimenst on the command line are taken
+command.  If it is used all arguments on the command line are taken
 as domain names and tested for WKD support.  The output format is one
 line per domain with colon delimited fields.  The currently specified
 fields are (future versions may specify additional fields):

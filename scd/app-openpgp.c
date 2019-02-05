@@ -2563,6 +2563,8 @@ do_writecert (app_t app, ctrl_t ctrl,
      -       2   1      Verify CHV2 and set a new CHV1 and CHV2.
      -       2   2      Verify Reset Code and set a new PW1.
      -       3   any    Verify CHV3/PW3 and set a new CHV3/PW3.
+
+   The CHVNO can be prefixed with "OPENPGP.".
  */
 static gpg_error_t
 do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
@@ -2571,7 +2573,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
                void *pincb_arg)
 {
   int rc = 0;
-  int chvno = atoi (chvnostr);
+  int chvno;
   char *resetcode = NULL;
   char *oldpinvalue = NULL;
   char *pinvalue = NULL;
@@ -2584,6 +2586,17 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   int pinlen = 0;
 
   (void)ctrl;
+
+  if (digitp (chvnostr))
+    chvno = atoi (chvnostr);
+  else if (!ascii_strcasecmp (chvnostr, "OPENPGP.1"))
+    chvno = 1;
+  else if (!ascii_strcasecmp (chvnostr, "OPENPGP.2"))
+    chvno = 2;
+  else if (!ascii_strcasecmp (chvnostr, "OPENPGP.3"))
+    chvno = 3;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
 
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.fixedlen = -1;
