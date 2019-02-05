@@ -2850,6 +2850,17 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   else
     return gpg_error (GPG_ERR_INV_ID);
 
+  if (digitp (chvnostr))
+    chvno = atoi (chvnostr);
+  else if (!ascii_strcasecmp (chvnostr, "OPENPGP.1"))
+    chvno = 1;
+  else if (!ascii_strcasecmp (chvnostr, "OPENPGP.2"))
+    chvno = 2;
+  else if (!ascii_strcasecmp (chvnostr, "OPENPGP.3"))
+    chvno = 3;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.fixedlen = -1;
   pininfo.minlen = minlen;
