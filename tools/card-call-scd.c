@@ -1368,28 +1368,23 @@ scd_cardlist (strlist_t *result)
  *     101: Set a new PIN and reset the retry counter
  *     102: For v1 cars: Same as 101.
  *          For v2 cards: Set a new Reset Code.
- * SERIALNO is not used.
  */
 gpg_error_t
-scd_change_pin (int chvno)
+scd_change_pin (const char *pinref, int reset_mode)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
-  const char *reset = "";
   struct default_inq_parm_s dfltparm;
 
   memset (&dfltparm, 0, sizeof dfltparm);
-
-  if (chvno >= 100)
-    reset = "--reset";
-  chvno %= 100;
 
   err = start_agent (0);
   if (err)
     return err;
   dfltparm.ctx = agent_ctx;
 
-  snprintf (line, sizeof line, "SCD PASSWD %s %d", reset, chvno);
+  snprintf (line, sizeof line, "SCD PASSWD%s %s",
+            reset_mode? " --reset":"", pinref);
   err = assuan_transact (agent_ctx, line,
                          NULL, NULL,
                          default_inq_cb, &dfltparm,

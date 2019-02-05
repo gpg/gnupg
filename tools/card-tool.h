@@ -212,7 +212,7 @@ gpg_error_t scd_serialno (char **r_serialno, const char *demand);
 gpg_error_t scd_readcert (const char *certidstr,
                           void **r_buf, size_t *r_buflen);
 gpg_error_t scd_cardlist (strlist_t *result);
-gpg_error_t scd_change_pin (int chvno);
+gpg_error_t scd_change_pin (const char *pinref, int reset_mode);
 gpg_error_t scd_checkpin (const char *serialno);
 
 unsigned long agent_get_s2k_count (void);

@@ -1865,7 +1865,7 @@ cmd_passwd (card_info_t info, int allow_admin)
 
   if (!allow_admin)
     {
-      err = scd_change_pin (1);
+      err = scd_change_pin ("OPENPGP.1", 0);
       if (err)
         goto leave;
       log_info ("PIN changed.\n");
@@ -1896,7 +1896,7 @@ cmd_passwd (card_info_t info, int allow_admin)
           if (*answer == '1')
             {
               /* Change PIN (same as the direct thing in non-admin mode).  */
-              err = scd_change_pin (1);
+              err = scd_change_pin ("OPENPGP.1", 0);
               if (err)
                 log_error ("Error changing the PIN: %s\n", gpg_strerror (err));
               else
@@ -1905,7 +1905,7 @@ cmd_passwd (card_info_t info, int allow_admin)
           else if (*answer == '2')
             {
               /* Unblock PIN by setting a new PIN.  */
-              err = scd_change_pin (101);
+              err = scd_change_pin ("OPENPGP.1", 1);
               if (err)
                 log_error ("Error unblocking the PIN: %s\n", gpg_strerror(err));
               else
@@ -1914,7 +1914,7 @@ cmd_passwd (card_info_t info, int allow_admin)
           else if (*answer == '3')
             {
               /* Change Admin PIN.  */
-              err = scd_change_pin (3);
+              err = scd_change_pin ("OPENPGP.3", 0);
               if (err)
                 log_error ("Error changing the PIN: %s\n", gpg_strerror (err));
               else
@@ -1923,7 +1923,7 @@ cmd_passwd (card_info_t info, int allow_admin)
           else if (*answer == '4')
             {
               /* Set a new Reset Code.  */
-              err = scd_change_pin (102);
+              err = scd_change_pin ("OPENPGP.2", 1);
               if (err)
                 log_error ("Error setting the Reset Code: %s\n",
                            gpg_strerror (err));
@@ -1969,7 +1969,7 @@ cmd_unblock (card_info_t info)
     log_error (_("Reset Code not or not anymore available\n"));
   else if (info->apptype == APP_TYPE_OPENPGP)
     {
-      err = scd_change_pin (2);
+      err = scd_change_pin ("OPENPGP.2", 0);
       if (!err)
         log_info ("PIN changed.\n");
     }
