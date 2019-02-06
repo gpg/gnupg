@@ -38,6 +38,7 @@
  *   | Unblock PIN  |     |     | yes | New PIN required             |
  *   |---------------------------------------------------------------|
  *   (9B indicates the 24 byte PIV Card Application Administration Key)
+ *
  */
 
 #include <config.h>
@@ -152,10 +153,21 @@ struct cache_s {
 };
 
 
+/* A cache item used by genkey.  */
+struct genkey_result_s {
+  struct genkey_result_s *next;
+  int keyref;
+  gcry_sexp_t s_pkey;
+};
+
+
 /* Object with application specific data.  */
 struct app_local_s {
   /* A linked list with cached DOs.  */
   struct cache_s *cache;
+
+  /* A list with results from recent genkey operations.  */
+  struct genkey_result_s *genkey_results;
 
   /* Various flags.  */
   struct
@@ -181,11 +193,18 @@ do_deinit (app_t app)
   if (app && app->app_local)
     {
       struct cache_s *c, *c2;
+      struct genkey_result_s *gr, *gr2;
 
       for (c = app->app_local->cache; c; c = c2)
         {
           c2 = c->next;
           xfree (c);
+        }
+      for (gr = app->app_local->genkey_results; gr; gr = gr2)
+        {
+          gr2 = gr->next;
+          gcry_sexp_release (gr->s_pkey);
+          xfree (gr);
         }
 
       xfree (app->app_local);
@@ -284,14 +303,15 @@ get_cached_data (app_t app, int tag,
 }
 
 
-/* Remove data object described by TAG from the cache.  */
+/* Remove data object described by TAG from the cache.  If TAG is 0
+ * all cache iterms are flushed.  */
 static void
 flush_cached_data (app_t app, int tag)
 {
   struct cache_s *c, *cprev;
 
   for (c=app->app_local->cache, cprev=NULL; c; cprev=c, c = c->next)
-    if (c->tag == tag)
+    if (c->tag == tag || !tag)
       {
         if (cprev)
           cprev->next = c->next;
@@ -860,7 +880,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 }
 
 
-/* Core of do-readcert which fetches the certificate based on the
+/* Core of do_readcert which fetches the certificate based on the
  * given tag and returns it in a freshly allocated buffer stored at
  * R_CERT and the length of the certificate stored at R_CERTLEN.  */
 static gpg_error_t
@@ -1010,6 +1030,17 @@ find_dobj_by_keyref (app_t app, const char *keyref)
 }
 
 
+/* Return the keyref from DOBJ as an integer.  If it does not exist,
+ * return -1.  */
+static int
+keyref_from_dobj (data_object_t dobj)
+{
+  if (!dobj || !hexdigitp (dobj->keyref) || !hexdigitp (dobj->keyref+1))
+    return -1;
+  return xtoi_2 (dobj->keyref);
+}
+
+
 /* Read a certificate from the card and returned in a freshly
  * allocated buffer stored at R_CERT and the length of the certificate
  * stored at R_CERTLEN.  CERTID is either the OID of the cert's
@@ -1028,6 +1059,70 @@ do_readcert (app_t app, const char *certid,
     return gpg_error (GPG_ERR_INV_ID);
 
   return readcert_by_tag (app, dobj->tag, r_cert, r_certlen);
+}
+
+
+/* Return a public key in a freshly allocated buffer.  This will only
+ * work for a freshly generated key as long as no reset of the
+ * application has been performed.  This is because we return a cached
+ * result from key generation.  If no cached result is available, the
+ * error GPG_ERR_UNSUPPORTED_OPERATION is returned so that the higher
+ * layer can then to get the key by reading the matching certificate.
+ * On success a canonical encoded S-expression with the public key is
+ * stored at (R_PK,R_PKLEN); the caller must release that buffer.  On
+ * error R_PK and R_PKLEN are not changed and an error code is
+ * returned.
+ */
+static gpg_error_t
+do_readkey (app_t app, int advanced, const char *keyrefstr,
+            unsigned char **r_pk, size_t *r_pklen)
+{
+  gpg_error_t err;
+  data_object_t dobj;
+  int keyref;
+  struct genkey_result_s *gres;
+  unsigned char *pk = NULL;
+  size_t pklen;
+
+  dobj = find_dobj_by_keyref (app, keyrefstr);
+  if ((keyref = keyref_from_dobj (dobj)) == -1)
+    {
+      err = gpg_error (GPG_ERR_INV_ID);
+      goto leave;
+    }
+  for (gres = app->app_local->genkey_results; gres; gres = gres->next)
+    if (gres->keyref == keyref)
+      break;
+  if (!gres || !gres->s_pkey)
+    {
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      goto leave;
+    }
+
+  err = make_canon_sexp (gres->s_pkey, &pk, &pklen);
+  if (err)
+    goto leave;
+  if (advanced)
+    {
+      /* FIXME: How ugly - we should move that to command.c */
+      char *p = canon_sexp_to_string (pk, pklen);
+      if (!p)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      xfree (pk);
+      pk = p;
+      pklen = strlen (pk);
+    }
+
+  *r_pk = pk;
+  pk = NULL;
+  *r_pklen = pklen;
+
+ leave:
+  xfree (pk);
+  return err;
 }
 
 
@@ -1553,12 +1648,11 @@ do_auth (app_t app, const char *keyidstr,
    * make sense for X.509 certs?  */
 
   dobj = find_dobj_by_keyref (app, keyidstr);
-  if (!dobj)
+  if ((keyref = keyref_from_dobj (dobj)) == -1)
     {
       err = gpg_error (GPG_ERR_INV_ID);
       goto leave;
     }
-  keyref = xtoi_2 (dobj->keyref);
 
   err = get_key_algorithm_by_dobj (app, dobj, &algo);
   if (err)
@@ -1714,6 +1808,260 @@ do_auth (app_t app, const char *keyidstr,
 }
 
 
+/* Check whether a key for DOBJ already exists.  We detect this by
+ * reading the certificate described by DOBJ.  If FORCE is TRUE a
+ * diagnositic will be printed but no error returned if the key
+ * already exists.  The flag GENERATING is used to select a
+ * diagnositic. */
+static gpg_error_t
+does_key_exist (app_t app, data_object_t dobj, int generating, int force)
+{
+  void *relptr;
+  unsigned char *buffer;
+  size_t buflen;
+  int found;
+
+  relptr = get_one_do (app, dobj->tag, &buffer, &buflen, NULL);
+  found = (relptr && buflen);
+  xfree (relptr);
+
+  if (found && !force)
+    {
+      log_error ("piv: %s", _("key already exists\n"));
+      return gpg_error (GPG_ERR_EEXIST);
+    }
+
+  if (found)
+    log_info ("piv: %s", _("existing key will be replaced\n"));
+  else if (generating)
+    log_info ("piv: %s", _("generating new key\n"));
+  else
+    log_info ("piv: %s", _("writing new key\n"));
+  return 0;
+}
+
+
+/* Parse an RSA response object, consisting of the content of tag
+ * 0x7f49, into a gcrypt s-expresstion object and store that R_SEXP.
+ * On error NULL is stored at R_SEXP. */
+static gpg_error_t
+genkey_parse_rsa (const unsigned char *data, size_t datalen,
+                  gcry_sexp_t *r_sexp)
+{
+  gpg_error_t err;
+  const unsigned char *m, *e;
+  unsigned char *mbuf = NULL;
+  unsigned char *ebuf = NULL;
+  size_t mlen, elen;
+
+  *r_sexp = NULL;
+
+  m = find_tlv (data, datalen, 0x0081, &mlen);
+  if (!m)
+    {
+      log_error (_("response does not contain the RSA modulus\n"));
+      err = gpg_error (GPG_ERR_CARD);
+      goto leave;
+    }
+
+  e = find_tlv (data, datalen, 0x0082, &elen);
+  if (!e)
+    {
+      log_error (_("response does not contain the RSA public exponent\n"));
+      err = gpg_error (GPG_ERR_CARD);
+      goto leave;
+    }
+
+  for (; mlen && !*m; mlen--, m++) /* Strip leading zeroes */
+    ;
+  for (; elen && !*e; elen--, e++) /* Strip leading zeroes */
+    ;
+
+  mbuf = xtrymalloc (mlen + 1);
+  if (!mbuf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  /* Prepend numbers with a 0 if needed.  */
+  if (mlen && (*m & 0x80))
+    {
+      *mbuf = 0;
+      memcpy (mbuf+1, m, mlen);
+      mlen++;
+    }
+  else
+    memcpy (mbuf, m, mlen);
+
+  ebuf = xtrymalloc (elen + 1);
+  if (!ebuf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  /* Prepend numbers with a 0 if needed.  */
+  if (elen && (*e & 0x80))
+    {
+      *ebuf = 0;
+      memcpy (ebuf+1, e, elen);
+      elen++;
+    }
+  else
+    memcpy (ebuf, e, elen);
+
+  err = gcry_sexp_build (r_sexp, NULL, "(public-key(rsa(n%b)(e%b)))",
+                         (int)mlen, mbuf, (int)elen, ebuf);
+
+ leave:
+  xfree (mbuf);
+  xfree (ebuf);
+  return err;
+}
+
+
+/* Create a new keypair for KEYREF.  If KEYTYPE is NULL a default
+ * keytype is selected, else it may be one of the strings:
+ *  "rsa2048", "nistp256, or "nistp384".
+ *
+ * Supported FLAGS are:
+ *   APP_GENKEY_FLAG_FORCE   Overwrite existing key.
+ *
+ * Note that CREATETIME is not used for PIV cards.
+ *
+ * Because there seems to be no way to read the public key we need to
+ * retrieve it from a certificate.  The GnuPG system however requires
+ * the use of app_readkey to fetch the public key from the card to
+ * create the certificate; to support this we temporary store the
+ * generated public key in the local context for use by app_readkey.
+ */
+static gpg_error_t
+do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
+           unsigned int flags, time_t createtime,
+           gpg_error_t (*pincb)(void*, const char *, char **),
+           void *pincb_arg)
+{
+  gpg_error_t err;
+  data_object_t dobj;
+  unsigned char *buffer = NULL;
+  size_t buflen;
+  int force = !!(flags & APP_GENKEY_FLAG_FORCE);
+  int mechanism;
+  time_t start_at;
+  int keyref;
+  unsigned char tmpl[5];
+  size_t tmpllen;
+  const unsigned char *keydata;
+  size_t keydatalen;
+  gcry_sexp_t s_pkey = NULL;
+  struct genkey_result_s *gres;
+
+  (void)ctrl;
+  (void)createtime;
+  (void)pincb;
+  (void)pincb_arg;
+
+  if (!keytype)
+    keytype = "rsa2048";
+
+  if (!strcmp (keytype, "rsa2048"))
+    mechanism = PIV_ALGORITHM_RSA;
+  else if (!strcmp (keytype, "nistp256"))
+    mechanism = PIV_ALGORITHM_ECC_P256;
+  else if (!strcmp (keytype, "nistp384"))
+    mechanism = PIV_ALGORITHM_ECC_P384;
+  else
+    return gpg_error (GPG_ERR_UNKNOWN_CURVE);
+
+  /* We flush the cache to increase the I/O traffic before a key
+   * generation.  This _might_ help the card to gather more entropy
+   * and is anyway a prerequisite for does_key_exist. */
+  flush_cached_data (app, 0);
+
+  /* Check whether a key already exists.  */
+  dobj = find_dobj_by_keyref (app, keyrefstr);
+  if ((keyref = keyref_from_dobj (dobj)) == -1)
+    {
+      err = gpg_error (GPG_ERR_INV_ID);
+      goto leave;
+    }
+  err = does_key_exist (app, dobj, 1, force);
+  if (err)
+    goto leave;
+
+
+  /* FIXME: Check that the authentication has already been done.  */
+
+
+
+  /* Create the key. */
+  log_info (_("please wait while key is being generated ...\n"));
+  start_at = time (NULL);
+  tmpl[0] = 0xac;
+  tmpl[1] = 3;
+  tmpl[2] = 0x80;
+  tmpl[3] = 1;
+  tmpl[4] = mechanism;
+  tmpllen = 5;
+  err = iso7816_generate_keypair (app->slot, 0, 0, keyref,
+                                  tmpl, tmpllen, 0, &buffer, &buflen);
+  if (err)
+    {
+      log_error (_("generating key failed\n"));
+      return gpg_error (GPG_ERR_CARD);
+    }
+
+  {
+    int nsecs = (int)(time (NULL) - start_at);
+    log_info (ngettext("key generation completed (%d second)\n",
+                       "key generation completed (%d seconds)\n",
+                       nsecs), nsecs);
+  }
+
+  /* Parse the result and store it as an s-expression in a dedicated
+   * cache for later retrieval by app_readkey.  */
+  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
+  if (!keydata || !keydatalen)
+    {
+      err = gpg_error (GPG_ERR_CARD);
+      log_error (_("response does not contain the public key data\n"));
+      goto leave;
+    }
+
+  if (mechanism == PIV_ALGORITHM_RSA)
+    err = genkey_parse_rsa (keydata, keydatalen, &s_pkey);
+  else
+    err = gpg_error (GPG_ERR_BUG);
+  if (err)
+    goto leave;
+
+  for (gres = app->app_local->genkey_results; gres; gres = gres->next)
+    if (gres->keyref == keyref)
+      break;
+  if (!gres)
+    {
+      gres = xtrycalloc (1, sizeof *gres);
+      if (!gres)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      gres->keyref = keyref;
+      gres->next = app->app_local->genkey_results;
+      app->app_local->genkey_results = gres;
+    }
+  else
+    gcry_sexp_release (gres->s_pkey);
+  gres->s_pkey = s_pkey;
+  s_pkey = NULL;
+
+
+ leave:
+  gcry_sexp_release (s_pkey);
+  xfree (buffer);
+  return err;
+}
+
+
 /* Select the PIV application on the card in SLOT.  This function must
  * be used before any other PIV application functions. */
 gpg_error_t
@@ -1801,12 +2149,12 @@ app_select_piv (app_t app)
   app->fnc.deinit = do_deinit;
   app->fnc.learn_status = do_learn_status;
   app->fnc.readcert = do_readcert;
-  app->fnc.readkey = NULL;
+  app->fnc.readkey = do_readkey;
   app->fnc.getattr = do_getattr;
   app->fnc.setattr = do_setattr;
   /* app->fnc.writecert = do_writecert; */
   /* app->fnc.writekey = do_writekey; */
-  /* app->fnc.genkey = do_genkey; */
+  app->fnc.genkey = do_genkey;
   /* app->fnc.sign = do_sign; */
   app->fnc.auth = do_auth;
   /* app->fnc.decipher = do_decipher; */
