@@ -709,7 +709,7 @@ iso7816_general_authenticate (int slot, int extended_mode,
    returned.  In that case a value of -1 uses a large default
    (e.g. 4096 bytes), a value larger 256 used that value.  */
 static gpg_error_t
-do_generate_keypair (int slot, int extended_mode, int read_only,
+do_generate_keypair (int slot, int extended_mode, int p1, int p2,
                      const char *data, size_t datalen, int le,
                      unsigned char **result, size_t *resultlen)
 {
@@ -721,7 +721,7 @@ do_generate_keypair (int slot, int extended_mode, int read_only,
   *resultlen = 0;
 
   sw = apdu_send_le (slot, extended_mode,
-                     0x00, CMD_GENERATE_KEYPAIR, read_only? 0x81:0x80, 0,
+                     0x00, CMD_GENERATE_KEYPAIR, p1, p2,
                      datalen, data,
                      le >= 0 && le < 256? 256:le,
                      result, resultlen);
@@ -739,12 +739,12 @@ do_generate_keypair (int slot, int extended_mode, int read_only,
 
 
 gpg_error_t
-iso7816_generate_keypair (int slot, int extended_mode,
+iso7816_generate_keypair (int slot, int extended_mode, int p1, int p2,
                           const char *data, size_t datalen,
                           int le,
                           unsigned char **result, size_t *resultlen)
 {
-  return do_generate_keypair (slot, extended_mode, 0,
+  return do_generate_keypair (slot, extended_mode, p1, p2,
                               data, datalen, le, result, resultlen);
 }
 
@@ -755,7 +755,7 @@ iso7816_read_public_key (int slot, int extended_mode,
                          int le,
                          unsigned char **result, size_t *resultlen)
 {
-  return do_generate_keypair (slot, extended_mode, 1,
+  return do_generate_keypair (slot, extended_mode, 0x81, 0,
                               data, datalen, le, result, resultlen);
 }
 

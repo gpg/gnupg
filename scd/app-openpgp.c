@@ -4086,8 +4086,8 @@ do_writekey (app_t app, ctrl_t ctrl,
 
 /* Handle the GENKEY command. */
 static gpg_error_t
-do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
-           time_t createtime,
+do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, const char *keytype,
+           unsigned int flags, time_t createtime,
            gpg_error_t (*pincb)(void*, const char *, char **),
            void *pincb_arg)
 {
@@ -4102,6 +4102,8 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   time_t start_at;
   int exmode = 0;
   int le_value = 256; /* Use legacy value. */
+
+  (void)keytype;  /* Ignored for OpenPGP cards.  */
 
   if (keyno < 0 || keyno > 2)
     return gpg_error (GPG_ERR_INV_ID);
@@ -4151,7 +4153,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
 
   log_info (_("please wait while key is being generated ...\n"));
   start_at = time (NULL);
-  err = iso7816_generate_keypair (app->slot, exmode,
+  err = iso7816_generate_keypair (app->slot, exmode, 0x80, 0,
                                   (keyno == 0? "\xB6" :
                                    keyno == 1? "\xB8" : "\xA4"),
                                   2, le_value, &buffer, &buflen);
