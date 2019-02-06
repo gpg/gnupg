@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.9\n"
+"Project-Id-Version: gnupg 2.2.13\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-09-18 09:58+0900\n"
+"PO-Revision-Date: 2019-02-06 17:14+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -203,9 +203,11 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "リセット・コード"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
-msgstr "%s%%0A%%0Aリーダーのピンパッドを入力に使ってください。"
+msgid "Push ACK button on card/token."
+msgstr "カード/トークンのACKボタンを押してください。"
+
+msgid "Use the reader's pinpad for input."
+msgstr "リーダーのピンパッドを入力に使ってください。"
 
 msgid "Repeat this Reset Code"
 msgstr "このリセット・コードをもう一度入力してください"
