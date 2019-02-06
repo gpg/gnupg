@@ -20,6 +20,24 @@
 /* Some notes:
  * - Specs for PIV are at http://dx.doi.org/10.6028/NIST.SP.800-73-4
  *
+ * - Access control matrix:
+ *   | Action       | 9B  | PIN | PUK |                              |
+ *   |--------------+-----+-----+-----+------------------------------|
+ *   | Generate key | yes |     |     |                              |
+ *   | Change 9B    | yes |     |     |                              |
+ *   | Change retry | yes | yes |     | Yubikey only                 |
+ *   | Import key   | yes |     |     |                              |
+ *   | Import cert  | yes |     |     |                              |
+ *   | Change CHUID | yes |     |     |                              |
+ *   | Reset card   |     |     |     | PIN and PUK in blocked state |
+ *   | Verify PIN   |     | yes |     |                              |
+ *   | Sign data    |     | yes |     |                              |
+ *   | Decrypt data |     | yes |     |                              |
+ *   | Change PIN   |     | yes |     |                              |
+ *   | Change PUK   |     |     | yes |                              |
+ *   | Unblock PIN  |     |     | yes | New PIN required             |
+ *   |---------------------------------------------------------------|
+ *   (9B indicates the 24 byte PIV Card Application Administration Key)
  */
 
 #include <config.h>
@@ -389,10 +407,10 @@ dump_all_do (int slot)
 
 
 /* Parse the key reference KEYREFSTR which is expected to hold a key
- * reference for a PIN object.  Return the one octet keyref or -1 for
+ * reference for a CHV object.  Return the one octet keyref or -1 for
  * an invalid reference.  */
 static int
-parse_pin_keyref (const char *keyrefstr)
+parse_chv_keyref (const char *keyrefstr)
 {
   if (!keyrefstr)
     return -1;
@@ -457,7 +475,7 @@ get_chv_status (app_t app, const char *keyrefstr)
   int result;
   int keyref;
 
-  keyref = parse_pin_keyref (keyrefstr);
+  keyref = parse_chv_keyref (keyrefstr);
   if (!keyrefstr)
     return -1;
 
@@ -467,7 +485,7 @@ get_chv_status (app_t app, const char *keyrefstr)
   apdu[3] = keyref;
   if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
     result = -5; /* No need to verification.  */
-  else if (sw == 0x6a88)
+  else if (sw == 0x6a88 || sw == 0x6a80)
     result = -2; /* No such PIN.  */
   else if (sw == 0x6983)
     result = -3; /* PIN is blocked.  */
@@ -540,7 +558,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   else if (table[idx].special == -4) /* CHV-STATUS */
     {
-      int tmp[3];
+      int tmp[4];
 
       tmp[0] = get_chv_status (app, "PIV.00");
       tmp[1] = get_chv_status (app, "PIV.80");
@@ -1177,40 +1195,29 @@ make_prompt (app_t app, int remaining, const char *firstline)
 }
 
 
-/* Verify the Application PIN KEYREF.  */
+/* Helper for verify_chv to ask for the PIN and to prepare/pad it.  On
+ * success the result is stored at (R_PIN,R_PINLEN).  */
 static gpg_error_t
-verify_pin (app_t app, int keyref,
-            gpg_error_t (*pincb)(void*,const char *,char **), void *pincb_arg)
+ask_and_prepare_chv (app_t app, int keyref, int ask_new, int remaining,
+                     gpg_error_t (*pincb)(void*,const char *,char **),
+                     void *pincb_arg, char **r_pin, unsigned int *r_pinlen)
 {
   gpg_error_t err;
-  unsigned char apdu[4];
-  unsigned int sw;
-  int remaining;
   const char *label;
   char *prompt;
   char *pinvalue = NULL;
   unsigned int pinlen;
-  char pinbuffer[8];
+  char *pinbuffer = NULL;
   int minlen, maxlen, padding, onlydigits;
 
-  /* First check whether a verify is at all needed.  This is done with
-   * P1 being 0 and no Lc and command data send.  */
-  apdu[0] = 0x00;
-  apdu[1] = ISO7816_VERIFY;
-  apdu[2] = 0x00;
-  apdu[3] = keyref;
-  if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
-    {
-      /* No need to verification.  */
-      return 0;  /* All fine.  */
-    }
-  if ((sw & 0xfff0) == 0x63C0)
-    remaining = (sw & 0x000f); /* PIN has REMAINING tries left.  */
-  else
+  *r_pin = NULL;
+  *r_pinlen = 0;
+
+  if (ask_new)
     remaining = -1;
 
   if (remaining != -1)
-    log_debug ("piv: PIN %2X has %d attempts left\n", keyref, remaining);
+    log_debug ("piv: CHV %02X has %d attempts left\n", keyref, remaining);
 
   switch (keyref)
     {
@@ -1219,21 +1226,24 @@ verify_pin (app_t app, int keyref,
       maxlen = 8;
       padding = 1;
       onlydigits = 1;
-      label = _("||Please enter the Global-PIN of your PIV card");
+      label = (ask_new? _("|N|Please enter the new Global-PIN")
+               /**/   : _("||Please enter the Global-PIN of your PIV card"));
       break;
     case 0x80:
       minlen = 6;
       maxlen = 8;
       padding = 1;
       onlydigits = 1;
-      label = _("||Please enter the PIN of your PIV card");
+      label = (ask_new? _("|N|Please enter the new PIN")
+               /**/   : _("||Please enter the PIN of your PIV card"));
       break;
     case 0x81:
       minlen = 8;
       maxlen = 8;
       padding = 0;
       onlydigits = 0;
-      label = _("||Please enter the Unblocking Key of your PIV card");
+      label = (ask_new? _("|N|Please enter the new Unblocking Key")
+               /**/   :_("||Please enter the Unblocking Key of your PIV card"));
       break;
 
     case 0x96:
@@ -1245,8 +1255,6 @@ verify_pin (app_t app, int keyref,
     default:
       return gpg_error (GPG_ERR_INV_ID);
     }
-  log_assert (sizeof pinbuffer >= maxlen);
-
 
   /* Ask for the PIN.  */
   prompt = make_prompt (app, remaining, label);
@@ -1282,21 +1290,72 @@ verify_pin (app_t app, int keyref,
       xfree (pinvalue);
       return gpg_error (GPG_ERR_BAD_PIN);
     }
+
+  pinbuffer = xtrymalloc_secure (maxlen);
+  if (!pinbuffer)
+    {
+      err = gpg_error_from_syserror ();
+      wipememory (pinvalue, pinlen);
+      xfree (pinvalue);
+      return err;
+    }
+
   memcpy (pinbuffer, pinvalue, pinlen);
+  wipememory (pinvalue, pinlen);
+  xfree (pinvalue);
   if (padding)
     {
       memset (pinbuffer + pinlen, 0xff, maxlen - pinlen);
-      wipememory (pinvalue, pinlen);
       pinlen = maxlen;
     }
-  else
-    wipememory (pinvalue, pinlen);
-  xfree (pinvalue);
 
-  err = iso7816_verify (app->slot, keyref, pinbuffer, pinlen);
-  wipememory (pinbuffer, pinlen);
+  *r_pin = pinbuffer;
+  *r_pinlen = pinlen;
+
+  return 0;
+}
+
+
+/* Verify the card holder verification identified by KEYREF.  This is
+ * either the Appication PIN or the Global PIN. */
+static gpg_error_t
+verify_chv (app_t app, int keyref,
+            gpg_error_t (*pincb)(void*,const char *,char **), void *pincb_arg)
+{
+  gpg_error_t err;
+  unsigned char apdu[4];
+  unsigned int sw;
+  int remaining;
+  char *pin = NULL;
+  unsigned int pinlen;
+
+  /* First check whether a verify is at all needed.  This is done with
+   * P1 being 0 and no Lc and command data send.  */
+  apdu[0] = 0x00;
+  apdu[1] = ISO7816_VERIFY;
+  apdu[2] = 0x00;
+  apdu[3] = keyref;
+  if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
+    {
+      /* No need to verification.  */
+      return 0;  /* All fine.  */
+    }
+  if ((sw & 0xfff0) == 0x63C0)
+    remaining = (sw & 0x000f); /* PIN has REMAINING tries left.  */
+  else
+    remaining = -1;
+
+  err = ask_and_prepare_chv (app, keyref, 0, remaining, pincb, pincb_arg,
+                             &pin, &pinlen);
   if (err)
-    log_error ("PIN %02X verification failed: %s\n", keyref,gpg_strerror (err));
+    return err;
+
+  err = iso7816_verify (app->slot, keyref, pin, pinlen);
+  wipememory (pin, pinlen);
+  xfree (pin);
+  if (err)
+    log_error ("CHV %02X verification failed: %s\n",
+               keyref, gpg_strerror (err));
 
   return err;
 }
@@ -1309,40 +1368,41 @@ verify_pin (app_t app, int keyref,
  *   PIV.81 - The PIN Unblocking key
  * The supported flags are:
  *   APP_CHANGE_FLAG_CLEAR   Clear the PIN verification state.
+ *   APP_CHANGE_FLAG_RESET   Reset a PIN using the PUK.  Only
+ *                           allowed with PIV.80.
  */
 static gpg_error_t
-do_change_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
+do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
                unsigned int flags,
                gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
 {
   gpg_error_t err;
-  int keyref;
+  int keyref, targetkeyref;
   unsigned char apdu[4];
-
-  char *newpin = NULL;
+  unsigned int sw;
+  int remaining;
   char *oldpin = NULL;
-  /* size_t newpinlen; */
-  /* size_t oldpinlen; */
-  /* const char *newdesc; */
-  /* int pwid; */
-  pininfo_t pininfo;
+  unsigned int oldpinlen;
+  char *newpin = NULL;
+  unsigned int newpinlen;
 
   (void)ctrl;
-  (void)pincb;
-  (void)pincb_arg;
 
-  /* The minimum and maximum lengths are enforced by PIV.  */
-  memset (&pininfo, 0, sizeof pininfo);
-  pininfo.minlen = 6;
-  pininfo.maxlen = 8;
+  /* Check for unknown flags.  */
+  if ((flags & ~(APP_CHANGE_FLAG_CLEAR|APP_CHANGE_FLAG_RESET)))
+    {
+      err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+      goto leave;
+    }
 
-  keyref = parse_pin_keyref (pwidstr);
+  /* Parse the keyref.  */
+  targetkeyref = keyref = parse_chv_keyref (pwidstr);
   if (keyref == -1)
-    return gpg_error (GPG_ERR_INV_ID);
-
-  if ((flags & ~APP_CHANGE_FLAG_CLEAR))
-    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+    {
+      err = gpg_error (GPG_ERR_INV_ID);
+      goto leave;
+    }
 
   /* First see whether the special --clear mode has been requested.  */
   if ((flags & APP_CHANGE_FLAG_CLEAR))
@@ -1355,7 +1415,82 @@ do_change_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
       goto leave;
     }
 
-  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  /* Prepare reset mode.  */
+  if ((flags & APP_CHANGE_FLAG_RESET))
+    {
+      if (keyref == 0x81)
+        {
+          err = gpg_error (GPG_ERR_INV_ID); /* Can't reset the PUK.  */
+          goto leave;
+        }
+      /* Set the keyref to the PUK and keep the TARGETKEYREF.  */
+      keyref = 0x81;
+    }
+
+  /* Get the remaining tries count.  This is done by using the check
+   * for verified state feature.  */
+  apdu[0] = 0x00;
+  apdu[1] = ISO7816_VERIFY;
+  apdu[2] = 0x00;
+  apdu[3] = keyref;
+  if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
+    remaining = -1; /* Already verified, thus full number of tries.  */
+  else if ((sw & 0xfff0) == 0x63C0)
+    remaining = (sw & 0x000f); /* PIN has REMAINING tries left.  */
+  else
+    remaining = -1;
+
+  /* Ask for the old pin or puk.  */
+  err = ask_and_prepare_chv (app, keyref, 0, remaining, pincb, pincb_arg,
+                             &oldpin, &oldpinlen);
+  if (err)
+    return err;
+
+  /* Verify the old pin so that we don't prompt for the new pin if the
+   * old is wrong.  This is not possible for the PUK, though. */
+  if (keyref != 0x81)
+    {
+      err = iso7816_verify (app->slot, keyref, oldpin, oldpinlen);
+      if (err)
+        {
+          log_error ("CHV %02X verification failed: %s\n",
+                     keyref, gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+  /* Ask for the new pin.  */
+  err = ask_and_prepare_chv (app, targetkeyref, 1, -1, pincb, pincb_arg,
+                             &newpin, &newpinlen);
+  if (err)
+    return err;
+
+  if ((flags & APP_CHANGE_FLAG_RESET))
+    {
+      char *buf = xtrymalloc_secure (oldpinlen + newpinlen);
+      if (!buf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      memcpy (buf, oldpin, oldpinlen);
+      memcpy (buf+oldpinlen, newpin, newpinlen);
+      err = iso7816_reset_retry_counter_with_rc (app->slot, targetkeyref,
+                                                 buf, oldpinlen+newpinlen);
+      xfree (buf);
+      if (err)
+        log_error ("resetting CHV %02X using CHV %02X failed: %s\n",
+                   targetkeyref, keyref, gpg_strerror (err));
+    }
+  else
+    {
+      err = iso7816_change_reference_data (app->slot, keyref,
+                                           oldpin, oldpinlen,
+                                           newpin, newpinlen);
+      if (err)
+        log_error ("CHV %02X changing PIN failed: %s\n",
+                   keyref, gpg_strerror (err));
+    }
 
  leave:
   xfree (oldpin);
@@ -1365,19 +1500,19 @@ do_change_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
 
 
 /* Perform a simple verify operation for the PIN specified by PWIDSTR.
- * For valid values see do_change_pin.  */
+ * For valid values see do_change_chv.  */
 static gpg_error_t
-do_check_pin (app_t app, const char *pwidstr,
+do_check_chv (app_t app, const char *pwidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
   int keyref;
 
-  keyref = parse_pin_keyref (pwidstr);
+  keyref = parse_chv_keyref (pwidstr);
   if (keyref == -1)
     return gpg_error (GPG_ERR_INV_ID);
 
-  return verify_pin (app, keyref, pincb, pincb_arg);
+  return verify_chv (app, keyref, pincb, pincb_arg);
 }
 
 
@@ -1492,7 +1627,7 @@ do_auth (app_t app, const char *keyidstr,
     }
 
   /* Now verify the Application PIN.  */
-  err = verify_pin (app, 0x80, pincb, pincb_arg);
+  err = verify_chv (app, 0x80, pincb, pincb_arg);
   if (err)
     return err;
 
@@ -1675,8 +1810,8 @@ app_select_piv (app_t app)
   /* app->fnc.sign = do_sign; */
   app->fnc.auth = do_auth;
   /* app->fnc.decipher = do_decipher; */
-  app->fnc.change_pin = do_change_pin;
-  app->fnc.check_pin = do_check_pin;
+  app->fnc.change_pin = do_change_chv;
+  app->fnc.check_pin = do_check_chv;
 
 
 leave:

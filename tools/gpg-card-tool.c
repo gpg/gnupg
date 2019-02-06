@@ -899,7 +899,7 @@ list_piv (card_info_t info, estream_t fp)
           switch (info->chvinfo[i])
             {
             case -1: s = "[error]"; break;
-            case -2: s = "-"; break;  /* No such PIN */
+            case -2: s = "-"; break;  /* No such PIN or info not available. */
             case -3: s = "[blocked]"; break;
             case -5: s = "[verified]"; break;
             default: s = "[?]"; break;
@@ -950,15 +950,21 @@ static gpg_error_t
 cmd_verify (card_info_t info, char *argstr)
 {
   gpg_error_t err;
+  const char *pinref;
 
   if (!info)
     return print_help ("verify [chvid]", 0);
 
-  if (info->apptype == APP_TYPE_OPENPGP)
-    err = scd_checkpin (info->serialno);
+  if (*argstr)
+    pinref = argstr;
+  else if (info->apptype == APP_TYPE_OPENPGP)
+    pinref = info->serialno;
+  else if (info->apptype == APP_TYPE_PIV)
+    pinref = "PIV.80";
   else
-    err = scd_checkpin (argstr);
+    return gpg_error (GPG_ERR_MISSING_VALUE);
 
+  err = scd_checkpin (pinref);
   if (err)
     log_error ("verify failed: %s <%s>\n",
                gpg_strerror (err), gpg_strsource (err));
@@ -1845,30 +1851,48 @@ cmd_generate (card_info_t info)
 /* Sub-menu to change a PIN.  The presented options may depend on the
  * the ALLOW_ADMIN flag.  */
 static gpg_error_t
-cmd_passwd (card_info_t info, int allow_admin)
+cmd_passwd (card_info_t info, int allow_admin, char *argstr)
 {
   gpg_error_t err;
   char *answer = NULL;
+  const char *pinref;
 
   if (!info)
     return print_help
-      ("PASSWD\n\n"
+      ("PASSWD [PINREF]\n\n"
        "Menu to change or unblock the PINs.  Note that the\n"
        "presented menu options depend on the type of card\n"
-       "and whether the admin mode is enabled.",
+       "and whether the admin mode is enabled.  For OpenPGP\n"
+       "and PIV cards defaults for PINREF are available.",
        0);
 
-  /* Convenience message because we did this in gpg --card-edit too.  */
-  if (info->apptype == APP_TYPE_OPENPGP)
-    log_info (_("OpenPGP card no. %s detected\n"),
+  if (opt.interactive || opt.verbose)
+    log_info (_("%s card no. %s detected\n"),
+              app_type_string (info->apptype),
               info->dispserialno? info->dispserialno : info->serialno);
 
-  if (!allow_admin)
+  if (!allow_admin || info->apptype != APP_TYPE_OPENPGP)
     {
-      err = scd_change_pin ("OPENPGP.1", 0);
+      if (*argstr)
+        pinref = argstr;
+      else if (info->apptype == APP_TYPE_OPENPGP)
+        pinref = "OPENPGP.1";
+      else if (info->apptype == APP_TYPE_PIV)
+        pinref = "PIV.80";
+      else
+        {
+          err = gpg_error (GPG_ERR_MISSING_VALUE);
+          goto leave;
+        }
+      err = scd_change_pin (pinref, 0);
       if (err)
         goto leave;
-      log_info ("PIN changed.\n");
+
+      if (info->apptype == APP_TYPE_PIV
+          && !ascii_strcasecmp (pinref, "PIV.81"))
+        log_info ("PUK changed.\n");
+      else
+        log_info ("PIN changed.\n");
     }
   else if (info->apptype == APP_TYPE_OPENPGP)
     {
@@ -1959,23 +1983,43 @@ cmd_unblock (card_info_t info)
        "command can be used to set a new PIN.",
        0);
 
-  if (info->apptype == APP_TYPE_OPENPGP)
-    log_info (_("OpenPGP card no. %s detected\n"),
+  if (opt.interactive || opt.verbose)
+    log_info (_("%s card no. %s detected\n"),
+              app_type_string (info->apptype),
               info->dispserialno? info->dispserialno : info->serialno);
 
-  if (info->apptype == APP_TYPE_OPENPGP && !info->is_v2)
-    log_error (_("This command is only available for version 2 cards\n"));
-  else if (info->apptype == APP_TYPE_OPENPGP && !info->chvinfo[1])
-    log_error (_("Reset Code not or not anymore available\n"));
-  else if (info->apptype == APP_TYPE_OPENPGP)
+  if (info->apptype == APP_TYPE_OPENPGP)
     {
-      err = scd_change_pin ("OPENPGP.2", 0);
+      if (!info->is_v2)
+        {
+          log_error (_("This command is only available for version 2 cards\n"));
+          err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+        }
+      else if (!info->chvinfo[1])
+        {
+          log_error (_("Reset Code not or not anymore available\n"));
+          err = gpg_error (GPG_ERR_PIN_BLOCKED);
+        }
+      else
+        {
+          err = scd_change_pin ("OPENPGP.2", 0);
+          if (!err)
+            log_info ("PIN changed.\n");
+        }
+    }
+  else if (info->apptype == APP_TYPE_PIV)
+    {
+      /* Unblock the Application PIN.  */
+      err = scd_change_pin ("PIV.80", 1);
       if (!err)
-        log_info ("PIN changed.\n");
+        log_info ("PIN unblocked and changed.\n");
     }
   else
-    log_info ("Unblocking not yet supported for '%s'\n",
-              app_type_string (info->apptype));
+    {
+      log_info ("Unblocking not yet supported for '%s'\n",
+                app_type_string (info->apptype));
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
 
   return err;
 }
@@ -2079,15 +2123,15 @@ cmd_factoryreset (card_info_t info)
       goto leave;
     }
 
+  if (opt.interactive || opt.verbose)
+    log_info (_("%s card no. %s detected\n"),
+              app_type_string (info->apptype),
+              info->dispserialno? info->dispserialno : info->serialno);
+
   if (!termstate || is_yubikey)
     {
-      if (is_yubikey)
-        log_info (_("Yubikey no. %s with PIV application detected\n"),
-                  info->dispserialno? info->dispserialno : info->serialno);
-      else
+      if (!is_yubikey)
         {
-          log_info (_("OpenPGP card no. %s detected\n"),
-                    info->dispserialno? info->dispserialno : info->serialno);
           if (!(info->status_indicator == 3 || info->status_indicator == 5))
             {
               /* Note: We won't see status-indicator 3 here because it
@@ -2865,7 +2909,7 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdREADCERT:     err = cmd_readcert (info, argstr); break;
     case cmdFORCESIG:     err = cmd_forcesig (info); break;
     case cmdGENERATE:     err = cmd_generate (info); break;
-    case cmdPASSWD:       err = cmd_passwd (info, 1); break;
+    case cmdPASSWD:       err = cmd_passwd (info, 1, argstr); break;
     case cmdUNBLOCK:      err = cmd_unblock (info); break;
     case cmdFACTORYRESET: err = cmd_factoryreset (info); break;
     case cmdKDFSETUP:     err = cmd_kdfsetup (info, argstr); break;
@@ -3131,7 +3175,7 @@ interactive_loop (void)
         case cmdREADCERT:  err = cmd_readcert (info, argstr); break;
         case cmdFORCESIG:  err = cmd_forcesig (info); break;
         case cmdGENERATE:  err = cmd_generate (info); break;
-        case cmdPASSWD:    err = cmd_passwd (info, allow_admin); break;
+        case cmdPASSWD:    err = cmd_passwd (info, allow_admin, argstr); break;
         case cmdUNBLOCK:   err = cmd_unblock (info); break;
         case cmdFACTORYRESET:
           err = cmd_factoryreset (info);
