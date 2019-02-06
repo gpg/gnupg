@@ -25,10 +25,13 @@
 #include <npth.h>
 #include <ksba.h>
 
-
+/* Flags used with app_change_pin.  */
 #define APP_CHANGE_FLAG_RESET    1  /* PIN Reset mode.  */
 #define APP_CHANGE_FLAG_NULLPIN  2  /* NULL PIN mode.  */
 #define APP_CHANGE_FLAG_CLEAR    4  /* Clear the given PIN.  */
+
+/* Flags used with app_genkey.  */
+#define APP_GENKEY_FLAG_FORCE    1  /* Force overwriting existing key.  */
 
 /* Bit flags set by the decipher function into R_INFO.  */
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
@@ -181,9 +184,9 @@ gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
 gpg_error_t app_get_challenge (app_t app, ctrl_t ctrl, size_t nbytes,
                                unsigned char *buffer);
 gpg_error_t app_change_pin (app_t app, ctrl_t ctrl,
-                    const char *chvnostr, int reset_mode,
-                    gpg_error_t (*pincb)(void*, const char *, char **),
-                    void *pincb_arg);
+                            const char *chvnostr, unsigned int flags,
+                            gpg_error_t (*pincb)(void*, const char *, char **),
+                            void *pincb_arg);
 gpg_error_t app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
                    gpg_error_t (*pincb)(void*, const char *, char **),
                    void *pincb_arg);

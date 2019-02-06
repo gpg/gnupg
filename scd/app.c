@@ -914,7 +914,8 @@ app_get_challenge (app_t app, ctrl_t ctrl, size_t nbytes, unsigned char *buffer)
 
 /* Perform a CHANGE REFERENCE DATA or RESET RETRY COUNTER operation.  */
 gpg_error_t
-app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
+app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr,
+                unsigned int flags,
                 gpg_error_t (*pincb)(void*, const char *, char **),
                 void *pincb_arg)
 {
@@ -929,8 +930,7 @@ app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err = app->fnc.change_pin (app, ctrl, chvnostr, reset_mode,
-                             pincb, pincb_arg);
+  err = app->fnc.change_pin (app, ctrl, chvnostr, flags, pincb, pincb_arg);
   unlock_app (app);
   if (opt.verbose)
     log_info ("operation change_pin result: %s\n", gpg_strerror (err));
