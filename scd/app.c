@@ -865,8 +865,8 @@ app_writekey (app_t app, ctrl_t ctrl,
 
 /* Perform a SETATTR operation.  */
 gpg_error_t
-app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
-            time_t createtime,
+app_genkey (app_t app, ctrl_t ctrl, const char *keynostr,
+            const char *keytype, unsigned int flags, time_t createtime,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
@@ -881,7 +881,7 @@ app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err = app->fnc.genkey (app, ctrl, keynostr, flags,
+  err = app->fnc.genkey (app, ctrl, keynostr, keytype, flags,
                          createtime, pincb, pincb_arg);
   unlock_app (app);
   if (opt.verbose)

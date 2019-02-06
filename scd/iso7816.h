@@ -105,9 +105,11 @@ gpg_error_t iso7816_general_authenticate (int slot, int extended_mode,
                                           unsigned char **result,
                                           size_t *resultlen);
 gpg_error_t iso7816_generate_keypair (int slot, int extended_mode,
-                                    const char *data, size_t datalen,
-                                    int le,
-                                    unsigned char **result, size_t *resultlen);
+                                      int p1, int p2,
+                                      const char *data, size_t datalen,
+                                      int le,
+                                      unsigned char **result,
+                                      size_t *resultlen);
 gpg_error_t iso7816_read_public_key (int slot, int extended_mode,
                                     const char *data, size_t datalen,
                                     int le,

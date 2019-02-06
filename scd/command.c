@@ -1138,7 +1138,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   keyno = xtrystrdup (keyno);
   if (!keyno)
     return out_of_core ();
-  rc = app_genkey (ctrl->app_ctx, ctrl, keyno, force? 1:0,
+  rc = app_genkey (ctrl->app_ctx, ctrl, keyno, NULL,
+                   force? APP_GENKEY_FLAG_FORCE : 0,
                    timestamp, pin_cb, ctx);
   xfree (keyno);
 

@@ -105,8 +105,8 @@ struct app_ctx_s {
                              void *pincb_arg,
                              const unsigned char *pk, size_t pklen);
     gpg_error_t (*genkey) (app_t app, ctrl_t ctrl,
-                           const char *keynostr, unsigned int flags,
-                           time_t createtime,
+                           const char *keyref, const char *keytype,
+                           unsigned int flags, time_t createtime,
                            gpg_error_t (*pincb)(void*, const char *, char **),
                            void *pincb_arg);
     gpg_error_t (*change_pin) (app_t app, ctrl_t ctrl,
@@ -177,8 +177,8 @@ gpg_error_t app_writekey (app_t app, ctrl_t ctrl,
                           void *pincb_arg,
                           const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
-                        const char *keynostr, unsigned int flags,
-                        time_t createtime,
+                        const char *keynostr, const char *keytype,
+                        unsigned int flags, time_t createtime,
                         gpg_error_t (*pincb)(void*, const char *, char **),
                         void *pincb_arg);
 gpg_error_t app_get_challenge (app_t app, ctrl_t ctrl, size_t nbytes,
