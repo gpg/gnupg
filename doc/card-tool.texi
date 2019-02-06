@@ -1,0 +1,126 @@
+@c card-tool.texi - man page for gpg-card-tool
+@c Copyright (C) 2019 g10 Code GmbH
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file GnuPG.texi.
+
+@include defs.inc
+
+@node Smart Card Tool
+@chapter Smart Card Tool
+
+GnuPG comes with tool to administrate smart cards and USB tokens.  This
+tool is an extension of the @option{--edit-key} command available with
+@command{gpg}.
+
+@menu
+* gpg-card-tool::         Administrate smart cards.
+@end menu
+
+@c
+@c  GPG-CARD-TOOL
+@c
+@manpage gpg-card-tool.1
+@node gpg-card-tool
+@section Administrate smart cards.
+@ifset manverb
+.B gpg-card-tool
+\- Administrate Smart Cards
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B gpg-card-tool
+.RI [ options ]
+.br
+.B gpg-card-tool
+.RI [ options ]
+.I command
+.RI {
+.B --
+.I command
+.RI }
+@end ifset
+
+@mansect description
+The @command{gpg-card-tool} is used to administrate smart cards and USB
+tokens.  It provides a superset of features from @command{gpg
+--card-edit} an can be considered a frontend to @command{scdaemon}
+which is a daemon started by @command{gpg-agent} to handle smart
+cards.
+
+If @command{gpg-card-tool} is invoked without commands an interactive
+mode is used.
+
+If @command{gpg-card-tool} is invoked with one or more commands the
+same commands as available in the interactive mode are run from the
+command line.  These commands need to be delimited with a double-dash.
+If a double-dash or a shell specific character is required as part of
+a command the entire command needs to be put in quotes.  If one of
+those commands returns an error the remaining commands are mot anymore
+run unless the command was prefixed with a single dash.
+
+A list of commands is available by using the command @code{help} and a
+detailed description of each command is printed by using @code{help
+COMMAND}.
+
+
+@mansect options
+@noindent
+@command{gpg-card-tool} understands these options:
+
+@table @gnupgtabopt
+
+@item --with-colons
+@opindex with-colons
+This option has currently no effect.
+
+@item --status-fd @var{n}
+@opindex status-fd
+Write special status strings to the file descriptor @var{n}.  This
+program returns only the status messages SUCCESS or FAILURE which are
+helpful when the caller uses a double fork approach and can't easily
+get the return code of the process.
+
+@item --verbose
+@opindex verbose
+Enable extra informational output.
+
+@item --quiet
+@opindex quiet
+Disable almost all informational output.
+
+@item --version
+@opindex version
+Print version of the program and exit.
+
+@item --help
+@opindex help
+Display a brief help page and exit.
+
+@item --no-autostart
+@opindex no-autostart
+Do not start the gpg-agent if it has not yet been started and its
+service is required.  This option is mostly useful on machines where
+the connection to gpg-agent has been redirected to another machines.
+
+@item --agent-program @var{file}
+@opindex agent-program
+Specify the agent program to be started if none is running.  The
+default value is determined by running @command{gpgconf} with the
+option @option{--list-dirs}.
+
+@item --gpg-program @var{file}
+@opindex gpg-program
+Specify a non-default gpg binary to be used by certain commands.
+
+@item --gpgsm-program @var{file}
+@opindex gpgsm-program
+Specify a non-default gpgsm binary to be used by certain commands.
+
+@end table
+
+
+@mansect see also
+@ifset isman
+@command{scdaemon}(1)
+@end ifset
