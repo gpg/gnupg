@@ -1551,36 +1551,41 @@ cmd_writecert (card_info_t info, char *argstr)
 {
   gpg_error_t err;
   int opt_clear;
-  int do_no;
+  char *certref_buffer = NULL;
+  char *certref;
   char *data = NULL;
   size_t datalen;
 
   if (!info)
     return print_help
-      ("WRITECERT [--clear] 3 < FILE\n\n"
+      ("WRITECERT [--clear] CERTREF < FILE\n\n"
        "Write a certificate for key 3.  Unless --clear is given\n"
-       "the file argement is mandatory.  The option --clear removes\n"
+       "the file argument is mandatory.  The option --clear removes\n"
        "the certificate from the card.",
-       APP_TYPE_OPENPGP, 0);
+       APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
   opt_clear = has_leading_option (argstr, "--clear");
   argstr = skip_options (argstr);
 
-  if (digitp (argstr))
+  certref = argstr;
+  if ((argstr = strchr (certref, ' ')))
     {
-      do_no = atoi (argstr);
-      while (digitp (argstr))
-        argstr++;
-      while (spacep (argstr))
-        argstr++;
+      *argstr++ = 0;
+      trim_spaces (certref);
+      trim_spaces (argstr);
     }
-  else
-    do_no = 0;
+  else /* Let argstr point to an empty string.  */
+    argstr = certref + strlen (certref);
 
-  if (do_no != 3)
+  if (info->apptype == APP_TYPE_OPENPGP)
     {
-      err = gpg_error (GPG_ERR_INV_ARG);
-      goto leave;
+      if (ascii_strcasecmp (certref, "OPENPGP.3") && strcmp (certref, "3"))
+        {
+          err = gpg_error (GPG_ERR_INV_ID);
+          log_error ("Error: CERTREF must be \"3\" or \"OPENPGP.3\"\n");
+          goto leave;
+        }
+      certref = certref_buffer = xstrdup ("OPENPGP.3");
     }
 
   if (opt_clear)
@@ -1602,10 +1607,11 @@ cmd_writecert (card_info_t info, char *argstr)
       goto leave;
     }
 
-  err = scd_writecert ("OPENPGP.3", data, datalen);
+  err = scd_writecert (certref, data, datalen);
 
  leave:
   xfree (data);
+  xfree (certref_buffer);
   return err;
 }
 
@@ -1614,37 +1620,42 @@ static gpg_error_t
 cmd_readcert (card_info_t info, char *argstr)
 {
   gpg_error_t err;
-  int do_no;
+  char *certref_buffer = NULL;
+  char *certref;
   void *data = NULL;
   size_t datalen;
   const char *fname;
 
   if (!info)
     return print_help
-      ("READCERT 3 > FILE\n\n"
+      ("READCERT CERTREF > FILE\n\n"
        "Read the certificate for key 3 and store it in FILE.",
-       APP_TYPE_OPENPGP, 0);
+       APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
   argstr = skip_options (argstr);
 
-  if (digitp (argstr))
+  certref = argstr;
+  if ((argstr = strchr (certref, ' ')))
     {
-      do_no = atoi (argstr);
-      while (digitp (argstr))
-        argstr++;
-      while (spacep (argstr))
-        argstr++;
+      *argstr++ = 0;
+      trim_spaces (certref);
+      trim_spaces (argstr);
     }
-  else
-    do_no = 0;
+  else /* Let argstr point to an empty string.  */
+    argstr = certref + strlen (certref);
 
-  if (do_no != 3)
+  if (info->apptype == APP_TYPE_OPENPGP)
     {
-      err = gpg_error (GPG_ERR_INV_ARG);
-      goto leave;
+      if (ascii_strcasecmp (certref, "OPENPGP.3") && strcmp (certref, "3"))
+        {
+          err = gpg_error (GPG_ERR_INV_ID);
+          log_error ("Error: CERTREF must be \"3\" or \"OPENPGP.3\"\n");
+          goto leave;
+        }
+      certref = certref_buffer = xstrdup ("OPENPGP.3");
     }
 
-  if (*argstr == '>')  /* Read it from a file */
+  if (*argstr == '>')  /* Write it to a file */
     {
       for (argstr++; spacep (argstr); argstr++)
         ;
@@ -1656,7 +1667,7 @@ cmd_readcert (card_info_t info, char *argstr)
       goto leave;
     }
 
-  err = scd_readcert ("OPENPGP.3", &data, &datalen);
+  err = scd_readcert (certref, &data, &datalen);
   if (err)
     goto leave;
 
@@ -1664,6 +1675,7 @@ cmd_readcert (card_info_t info, char *argstr)
 
  leave:
   xfree (data);
+  xfree (certref_buffer);
   return err;
 }
 

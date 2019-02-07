@@ -426,6 +426,157 @@ dump_all_do (int slot)
 }
 
 
+/* Create a TLV tag and value and store it at BUFFER.  Return the
+ * length of tag and length.  A LENGTH greater than 65535 is
+ * truncated.  TAG must be less or equal to 2^16.  If BUFFER is NULL,
+ * only the required length is computed.  */
+static size_t
+add_tlv (unsigned char *buffer, unsigned int tag, size_t length)
+{
+  if (length > 0xffff)
+    length = 0xffff;
+
+  if (buffer)
+    {
+      unsigned char *p = buffer;
+
+      if (tag > 0xff)
+        *p++ = tag >> 8;
+      *p++ = tag;
+      if (length < 128)
+        *p++ = length;
+      else if (length < 256)
+        {
+          *p++ = 0x81;
+          *p++ = length;
+        }
+      else
+        {
+          *p++ = 0x82;
+          *p++ = length >> 8;
+          *p++ = length;
+        }
+
+      return p - buffer;
+    }
+  else
+    {
+      size_t n = 0;
+
+      if (tag > 0xff)
+        n++;
+      n++;
+      if (length < 128)
+        n++;
+      else if (length < 256)
+        n += 2;
+      else
+        n += 3;
+      return n;
+    }
+}
+
+
+/* Wrapper around iso7816_put_data_odd which also sets the tag into
+ * the '5C' data object.  The varargs are tuples of (int,size_t,void)
+ * with the tag, the length and the actual data.  A (0,0,NULL) tuple
+ * terminates the list.  Up to 10 tuples are supported.  */
+static gpg_error_t
+put_data (int slot, unsigned int tag, ...)
+{
+  gpg_error_t err;
+  va_list arg_ptr;
+  struct {
+    int tag;
+    size_t len;
+    const void *data;
+  } argv[10];
+  int i, argc;
+  unsigned char data5c[5];
+  size_t data5clen;
+  unsigned char *data = NULL;
+  size_t datalen;
+  unsigned char *p;
+  size_t n;
+
+  /* Collect all args.  Check that length is <= 2^16 to match the
+   * behaviour of add_tlv.  */
+  va_start (arg_ptr, tag);
+  argc = 0;
+  while (((argv[argc].tag = va_arg (arg_ptr, int))))
+    {
+      argv[argc].len = va_arg (arg_ptr, size_t);
+      argv[argc].data = va_arg (arg_ptr, const void *);
+      if (argc >= DIM (argv)-1 || argv[argc].len > 0xffff)
+        {
+          va_end (arg_ptr);
+          return GPG_ERR_EINVAL;
+        }
+      argc++;
+    }
+  va_end (arg_ptr);
+
+  /* Build the TLV with the tag to be updated.  */
+  data5c[0] = 0x5c; /* Tag list */
+  if (tag <= 0xff)
+    {
+      data5c[1] = 1;
+      data5c[2] = tag;
+      data5clen = 3;
+    }
+  else if (tag <= 0xffff)
+    {
+      data5c[1] = 2;
+      data5c[2] = (tag >> 8);
+      data5c[3] = tag;
+      data5clen = 4;
+    }
+  else
+    {
+      data5c[1] = 3;
+      data5c[2] = (tag >> 16);
+      data5c[3] = (tag >> 8);
+      data5c[4] = tag;
+      data5clen = 5;
+    }
+
+  /* Compute the required buffer length and allocate the buffer.  */
+  n = 0;
+  for (i=0; i < argc; i++)
+    {
+      n += add_tlv (NULL, argv[i].tag, argv[i].len);
+      n += argv[i].len;
+    }
+  datalen = data5clen + add_tlv (NULL, 0x53, n) + n;
+  data = xtrymalloc (datalen);
+  if (!data)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Copy that data to the buffer.  */
+  p = data;
+  memcpy (p, data5c, data5clen);
+  p += data5clen;
+  p += add_tlv (p, 0x53, n);
+  for (i=0; i < argc; i++)
+    {
+      p += add_tlv (p, argv[i].tag, argv[i].len);
+      memcpy (p, argv[i].data, argv[i].len);
+      p += argv[i].len;
+    }
+  log_assert ( data + datalen == p );
+  log_printhex (data, datalen, "Put data");
+  err = iso7816_put_data_odd (slot, -1 /* use command chaining */,
+                              0x3fff, data, datalen);
+
+ leave:
+  xfree (data);
+  return err;
+}
+
+
 /* Parse the key reference KEYREFSTR which is expected to hold a key
  * reference for a CHV object.  Return the one octet keyref or -1 for
  * an invalid reference.  */
@@ -802,13 +953,6 @@ do_setattr (app_t app, const char *name,
 
   switch (table[idx].special)
     {
-    case 0:
-      err = iso7816_put_data (app->slot, 0, table[idx].tag, value, valuelen);
-      if (err)
-        log_error ("failed to set '%s': %s\n",
-                   table[idx].name, gpg_strerror (err));
-      break;
-
     case 1:
       err = auth_adm_key (app, value, valuelen);
       break;
@@ -2062,6 +2206,45 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
 }
 
 
+/* Write the certificate (CERT,CERTLEN) to the card at CERTREFSTR.
+ * CERTREFSTR is either the OID of the certificate's container data
+ * object or of the form "PIV.<two_hexdigit_keyref>". */
+static gpg_error_t
+do_writecert (app_t app, ctrl_t ctrl,
+              const char *certrefstr,
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg,
+              const unsigned char *cert, size_t certlen)
+{
+  gpg_error_t err;
+  data_object_t dobj;
+
+  (void)ctrl;
+  (void)pincb;     /* Not used; instead authentication is needed.  */
+  (void)pincb_arg;
+
+  dobj = find_dobj_by_keyref (app, certrefstr);
+  if (!dobj || !*dobj->keyref)
+    return gpg_error (GPG_ERR_INV_ID);
+
+  /* FIXME: Check that the authentication has already been done.  */
+
+  flush_cached_data (app, dobj->tag);
+
+  err = put_data (app->slot, dobj->tag,
+                  (int)0x70, (size_t)certlen, cert,/* Certificate */
+                  (int)0x71, (size_t)1,       "",  /* No compress */
+                  (int)0xfe, (size_t)0,       "",  /* Empty LRC. */
+                  (int)0,    (size_t)0,       NULL);
+  if (err)
+    log_error ("piv: failed to write cert to %s: %s\n",
+               dobj->keyref, gpg_strerror (err));
+
+
+  return err;
+}
+
+
 /* Select the PIV application on the card in SLOT.  This function must
  * be used before any other PIV application functions. */
 gpg_error_t
@@ -2152,7 +2335,7 @@ app_select_piv (app_t app)
   app->fnc.readkey = do_readkey;
   app->fnc.getattr = do_getattr;
   app->fnc.setattr = do_setattr;
-  /* app->fnc.writecert = do_writecert; */
+  app->fnc.writecert = do_writecert;
   /* app->fnc.writekey = do_writekey; */
   app->fnc.genkey = do_genkey;
   /* app->fnc.sign = do_sign; */
