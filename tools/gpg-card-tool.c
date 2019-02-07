@@ -3249,8 +3249,11 @@ command_completion (const char *text, int start, int end)
   (void)end;
 
   /* If we are at the start of a line, we try and command-complete.
-   * If not, just do nothing for now. */
+   * If not, just do nothing for now.  The support for help completion
+   * needs to be more smarter. */
   if (!start)
+    return rl_completion_matches (text, command_generator);
+  else if (start == 5 && !ascii_strncasecmp (rl_line_buffer, "help ", 5))
     return rl_completion_matches (text, command_generator);
 
   rl_attempted_completion_over = 1;
