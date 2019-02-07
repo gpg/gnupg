@@ -77,3 +77,61 @@ hex_to_buffer (const char *string, size_t *r_length)
   *r_length = n;
   return buffer;
 }
+
+
+
+/* Given the public key S_PKEY, return a new buffer with a descriptive
+ * string for its algorithm.  This function always returns a string. */
+char *
+pubkey_algo_string (gcry_sexp_t s_pkey)
+{
+  const char *prefix;
+  gcry_sexp_t l1;
+  char *algoname;
+  int algo;
+  char *result;
+
+  l1 = gcry_sexp_find_token (s_pkey, "public-key", 0);
+  if (!l1)
+    return xstrdup ("E_no_key");
+  {
+    gcry_sexp_t l_tmp = gcry_sexp_cadr (l1);
+    gcry_sexp_release (l1);
+    l1 = l_tmp;
+  }
+  algoname = gcry_sexp_nth_string (l1, 0);
+  gcry_sexp_release (l1);
+  if (!algoname)
+    return xstrdup ("E_no_algo");
+
+  algo = gcry_pk_map_name (algoname);
+  switch (algo)
+    {
+    case GCRY_PK_RSA: prefix = "rsa"; break;
+    case GCRY_PK_ELG: prefix = "elg"; break;
+    case GCRY_PK_DSA: prefix = "dsa"; break;
+    case GCRY_PK_ECC: prefix = "";  break;
+    default:          prefix = NULL; break;
+    }
+
+  if (prefix && *prefix)
+    result = xasprintf ("%s%u", prefix, gcry_pk_get_nbits (s_pkey));
+  else if (prefix)
+    {
+      const char *curve = gcry_pk_get_curve (s_pkey, 0, NULL);
+      const char *name = openpgp_oid_to_curve
+        (openpgp_curve_to_oid (curve, NULL), 0);
+
+      if (name)
+        result = xstrdup (name);
+      else if (curve)
+        result = xasprintf ("X_%s", curve);
+      else
+        result = xstrdup ("E_unknown");
+    }
+  else
+    result = xasprintf ("X_algo_%d", algo);
+
+  xfree (algoname);
+  return result;
+}

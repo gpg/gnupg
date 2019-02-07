@@ -192,6 +192,7 @@ gpg_error_t test_get_matching_keys (const char *hexgrip);
 /*-- card-tool-misc.c --*/
 key_info_t find_kinfo (card_info_t info, const char *keyref);
 void *hex_to_buffer (const char *string, size_t *r_length);
+char *pubkey_algo_string (gcry_sexp_t s_pkey);
 
 
 /*-- card-call-scd.c --*/
@@ -211,6 +212,7 @@ gpg_error_t scd_genkey (int keyno, int force, u32 *createtime);
 gpg_error_t scd_serialno (char **r_serialno, const char *demand);
 gpg_error_t scd_readcert (const char *certidstr,
                           void **r_buf, size_t *r_buflen);
+gpg_error_t scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result);
 gpg_error_t scd_cardlist (strlist_t *result);
 gpg_error_t scd_change_pin (const char *pinref, int reset_mode);
 gpg_error_t scd_checkpin (const char *serialno);

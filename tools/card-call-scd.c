@@ -1299,6 +1299,45 @@ scd_readcert (const char *certidstr, void **r_buf, size_t *r_buflen)
 
 
 
+/* Send a READKEY command to the SCdaemon.  On success a new
+ * s-expression is stored at R_RESULT.  */
+gpg_error_t
+scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  unsigned char *buf;
+  size_t len, buflen;
+
+  *r_result = NULL;
+  err = start_agent (0);
+  if (err)
+    return err;
+
+  init_membuf (&data, 1024);
+  snprintf (line, DIM(line), "SCD READKEY %s", keyrefstr);
+  err = assuan_transact (agent_ctx, line,
+                         put_membuf_cb, &data,
+                         NULL, NULL,
+                         NULL, NULL);
+  if (err)
+    {
+      xfree (get_membuf (&data, &len));
+      return err;
+    }
+  buf = get_membuf (&data, &buflen);
+  if (!buf)
+    return gpg_error_from_syserror ();
+
+  err = gcry_sexp_new (r_result, buf, buflen, 0);
+  xfree (buf);
+
+  return err;
+}
+
+
+
 /* Callback function for card_cardlist.  */
 static gpg_error_t
 card_cardlist_cb (void *opaque, const char *line)

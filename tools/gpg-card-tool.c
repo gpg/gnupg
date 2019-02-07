@@ -620,6 +620,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
   userid_t uid;
   key_info_t ki;
   const char *s;
+  gcry_sexp_t s_pkey;
 
   if (firstkinfo && kinfo)
     {
@@ -630,6 +631,14 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
           goto leave;
         }
       print_keygrip (fp, kinfo->grip);
+      if (!scd_readkey (kinfo->keyref, &s_pkey))
+        {
+          char *tmp = pubkey_algo_string (s_pkey);
+          tty_fprintf (fp, "      algorithm ..: %s\n", tmp);
+          xfree (tmp);
+          gcry_sexp_release (s_pkey);
+          s_pkey = NULL;
+        }
 
       if (kinfo->fprlen && kinfo->created)
         {
