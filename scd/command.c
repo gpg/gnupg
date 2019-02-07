@@ -544,7 +544,8 @@ cmd_readkey (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  if (gpg_err_code (rc) != GPG_ERR_UNSUPPORTED_OPERATION)
+  if (gpg_err_code (rc) != GPG_ERR_UNSUPPORTED_OPERATION
+      && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
   else
     {

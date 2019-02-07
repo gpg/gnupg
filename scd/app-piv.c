@@ -39,6 +39,12 @@
  *   |---------------------------------------------------------------|
  *   (9B indicates the 24 byte PIV Card Application Administration Key)
  *
+ * - When generating a key we store the created public key in the
+ *   corresponding data object, so that gpg and gpgsm are able to get
+ *   the public key, create a certificate and store that then in that
+ *   data object.  That is not standard compliant but due to the use
+ *   of other tags, it should not harm.  See do_genkey for the actual
+ *   used tag structure.
  */
 
 #include <config.h>
@@ -153,21 +159,10 @@ struct cache_s {
 };
 
 
-/* A cache item used by genkey.  */
-struct genkey_result_s {
-  struct genkey_result_s *next;
-  int keyref;
-  gcry_sexp_t s_pkey;
-};
-
-
 /* Object with application specific data.  */
 struct app_local_s {
   /* A linked list with cached DOs.  */
   struct cache_s *cache;
-
-  /* A list with results from recent genkey operations.  */
-  struct genkey_result_s *genkey_results;
 
   /* Various flags.  */
   struct
@@ -180,7 +175,9 @@ struct app_local_s {
 
 /***** Local prototypes  *****/
 static gpg_error_t get_keygrip_by_tag (app_t app, unsigned int tag,
-                                       char **r_keygripstr);
+                                       char **r_keygripstr, int *got_cert);
+static gpg_error_t genkey_parse_rsa (const unsigned char *data, size_t datalen,
+                                     gcry_sexp_t *r_sexp);
 
 
 
@@ -193,18 +190,11 @@ do_deinit (app_t app)
   if (app && app->app_local)
     {
       struct cache_s *c, *c2;
-      struct genkey_result_s *gr, *gr2;
 
       for (c = app->app_local->cache; c; c = c2)
         {
           c2 = c->next;
           xfree (c);
-        }
-      for (gr = app->app_local->genkey_results; gr; gr = gr2)
-        {
-          gr2 = gr->next;
-          gcry_sexp_release (gr->s_pkey);
-          xfree (gr);
         }
 
       xfree (app->app_local);
@@ -567,7 +557,6 @@ put_data (int slot, unsigned int tag, ...)
       p += argv[i].len;
     }
   log_assert ( data + datalen == p );
-  log_printhex (data, datalen, "Put data");
   err = iso7816_put_data_odd (slot, -1 /* use command chaining */,
                               0x3fff, data, datalen);
 
@@ -978,9 +967,10 @@ send_keypair_and_cert_info (app_t app, ctrl_t ctrl, data_object_t dobj,
 {
   gpg_error_t err = 0;
   char *keygripstr = NULL;
+  int got_cert;
   char idbuf[50];
 
-  err = get_keygrip_by_tag (app, dobj->tag, &keygripstr);
+  err = get_keygrip_by_tag (app, dobj->tag, &keygripstr, &got_cert);
   if (err)
     goto leave;
 
@@ -989,7 +979,7 @@ send_keypair_and_cert_info (app_t app, ctrl_t ctrl, data_object_t dobj,
                     keygripstr, strlen (keygripstr),
                     idbuf, strlen (idbuf),
                     NULL, (size_t)0);
-  if (!only_keypair)
+  if (!only_keypair && got_cert)
     {
       /* All certificates are of type 100 (Regular X.509 Cert).  */
       send_status_info (ctrl, "CERTINFO",
@@ -1026,20 +1016,24 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
 /* Core of do_readcert which fetches the certificate based on the
  * given tag and returns it in a freshly allocated buffer stored at
- * R_CERT and the length of the certificate stored at R_CERTLEN.  */
+ * R_CERT and the length of the certificate stored at R_CERTLEN.  If
+ * on success a non-zero value is stored at R_MECHANISM, the returned
+ * data is not certificate but a public key (in the format used by the
+ * container '7f49'.  */
 static gpg_error_t
 readcert_by_tag (app_t app, unsigned int tag,
-                 unsigned char **r_cert, size_t *r_certlen)
+                 unsigned char **r_cert, size_t *r_certlen, int *r_mechanism)
 {
   gpg_error_t err;
   unsigned char *buffer;
   size_t buflen;
   void *relptr;
-  const unsigned char *s;
-  size_t n;
+  const unsigned char *s, *s2;
+  size_t n, n2;
 
   *r_cert = NULL;
   *r_certlen = 0;
+  *r_mechanism = 0;
 
   relptr = get_one_do (app, tag, &buffer, &buflen, NULL);
   if (!relptr || !buflen)
@@ -1049,36 +1043,61 @@ readcert_by_tag (app_t app, unsigned int tag,
     }
 
   s = find_tlv (buffer, buflen, 0x71, &n);
-  if (!s || n != 1)
+  if (!s)
     {
-      log_error ("piv: no or invalid CertInfo in 0x%X\n", tag);
-      err = gpg_error (GPG_ERR_INV_CERT_OBJ);
-      goto leave;
+      /* No certificate; check whether a public key has been stored
+       * using our own scheme.  */
+      s = find_tlv (buffer, buflen, 0x7f49, &n);
+      if (!s || !n)
+        {
+          log_error ("piv: No public key in 0x%X\n", tag);
+          err = gpg_error (GPG_ERR_NO_PUBKEY);
+          goto leave;
+        }
+      s2 = find_tlv (buffer, buflen, 0x80, &n2);
+      if (!s2 || n2 != 1 || !*s2)
+        {
+          log_error ("piv: No mechanism for public key in 0x%X\n", tag);
+          err = gpg_error (GPG_ERR_NO_PUBKEY);
+          goto leave;
+        }
+      *r_mechanism = *s2;
     }
-  if (*s == 0x01)
+  else
     {
-      log_error ("piv: gzip compression not yet supported (tag 0x%X)\n", tag);
-      err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
-      goto leave;
-    }
-  if (*s)
-    {
-      log_error ("piv: invalid CertInfo 0x%02x in 0x%X\n", *s, tag);
-      err = gpg_error (GPG_ERR_INV_CERT_OBJ);
-      goto leave;
+      if (n != 1)
+        {
+          log_error ("piv: invalid CertInfo in 0x%X\n", tag);
+          err = gpg_error (GPG_ERR_INV_CERT_OBJ);
+          goto leave;
+        }
+      if (*s == 0x01)
+        {
+          log_error ("piv: gzip compression not yet supported (tag 0x%X)\n",
+                     tag);
+          err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
+          goto leave;
+        }
+      if (*s)
+        {
+          log_error ("piv: invalid CertInfo 0x%02x in 0x%X\n", *s, tag);
+          err = gpg_error (GPG_ERR_INV_CERT_OBJ);
+          goto leave;
+        }
+
+      /* Note: We don't check that the LRC octet has a length of zero
+       * as required by the specs.  */
+
+      /* Get the cert from the container.  */
+      s = find_tlv (buffer, buflen, 0x70, &n);
+      if (!s || !n)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
     }
 
-  /* Note: We don't check that the LRC octet has a length of zero as
-   * required by the specs.  */
-
-  /* Get the cert from the container.  */
-  s = find_tlv (buffer, buflen, 0x70, &n);
-  if (!s || !n)
-    {
-      err = gpg_error (GPG_ERR_NOT_FOUND);
-      goto leave;
-    }
-
+  /* The next is common for certificate and public key.  */
   if (!(*r_cert = xtrymalloc (n)))
     {
       err = gpg_error_from_syserror ();
@@ -1095,17 +1114,22 @@ readcert_by_tag (app_t app, unsigned int tag,
 }
 
 
-/* Get the keygrip of a key from the certificate stored at TAG.
- * Caller must free the string at R_KEYGRIPSTR. */
+/* Get the keygrip in hex format of a key from the certificate stored
+ * at TAG.  Caller must free the string at R_KEYGRIPSTR. */
 static gpg_error_t
-get_keygrip_by_tag (app_t app, unsigned int tag, char **r_keygripstr)
+get_keygrip_by_tag (app_t app, unsigned int tag,
+                    char **r_keygripstr, int *r_got_cert)
 {
   gpg_error_t err;
   unsigned char *certbuf = NULL;
   size_t certbuflen;
+  int mechanism;
+  gcry_sexp_t s_pkey = NULL;
   ksba_cert_t cert = NULL;
+  unsigned char grip[KEYGRIP_LEN];
 
-  *r_keygripstr = xtrymalloc (40+1);
+  *r_got_cert = 0;
+  *r_keygripstr = xtrymalloc (2*KEYGRIP_LEN+1);
   if (!r_keygripstr)
     {
       err = gpg_error_from_syserror ();
@@ -1113,21 +1137,41 @@ get_keygrip_by_tag (app_t app, unsigned int tag, char **r_keygripstr)
     }
 
   /* We need to get the public key from the certificate.  */
-  err = readcert_by_tag (app, tag, &certbuf, &certbuflen);
+  err = readcert_by_tag (app, tag, &certbuf, &certbuflen, &mechanism);
   if (err)
     goto leave;
+  if (mechanism) /* Compute keygrip from public key.  */
+    {
+      if (mechanism == PIV_ALGORITHM_RSA)
+        err = genkey_parse_rsa (certbuf, certbuflen, &s_pkey);
+      else
+        err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      if (err)
+        goto leave;
 
-  /* Compute the keygrip.  */
-  err = ksba_cert_new (&cert);
-  if (err)
-    goto leave;
-  err = ksba_cert_init_from_mem (cert, certbuf, certbuflen);
-  if (err)
-    goto leave;
-  err = app_help_get_keygrip_string (cert, *r_keygripstr);
+      if (!gcry_pk_get_keygrip (s_pkey, grip))
+        {
+          log_error ("piv: error computing keygrip\n");
+          err = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
+        }
 
+      bin2hex (grip, sizeof grip, *r_keygripstr);
+    }
+  else /* Compute keygrip from certificate.  */
+    {
+      *r_got_cert = 0;
+      err = ksba_cert_new (&cert);
+      if (err)
+        goto leave;
+      err = ksba_cert_init_from_mem (cert, certbuf, certbuflen);
+      if (err)
+        goto leave;
+      err = app_help_get_keygrip_string (cert, *r_keygripstr);
+    }
 
  leave:
+  gcry_sexp_release (s_pkey);
   ksba_cert_release (cert);
   xfree (certbuf);
   if (err)
@@ -1193,7 +1237,9 @@ static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **r_cert, size_t *r_certlen)
 {
+  gpg_error_t err;
   data_object_t dobj;
+  int mechanism;
 
   *r_cert = NULL;
   *r_certlen = 0;
@@ -1202,7 +1248,16 @@ do_readcert (app_t app, const char *certid,
   if (!dobj)
     return gpg_error (GPG_ERR_INV_ID);
 
-  return readcert_by_tag (app, dobj->tag, r_cert, r_certlen);
+  err = readcert_by_tag (app, dobj->tag, r_cert, r_certlen, &mechanism);
+  if (!err && mechanism)
+    {
+      /* Well, no certificate but a public key - we don't want it.  */
+      xfree (*r_cert);
+      *r_cert = NULL;
+      *r_certlen = 0;
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+    }
+  return err;
 }
 
 
@@ -1212,7 +1267,7 @@ do_readcert (app_t app, const char *certid,
  * result from key generation.  If no cached result is available, the
  * error GPG_ERR_UNSUPPORTED_OPERATION is returned so that the higher
  * layer can then to get the key by reading the matching certificate.
- * On success a canonical encoded S-expression with the public key is
+ * On success a canonical encoded s-expression with the public key is
  * stored at (R_PK,R_PKLEN); the caller must release that buffer.  On
  * error R_PK and R_PKLEN are not changed and an error code is
  * returned.
@@ -1224,7 +1279,10 @@ do_readkey (app_t app, int advanced, const char *keyrefstr,
   gpg_error_t err;
   data_object_t dobj;
   int keyref;
-  struct genkey_result_s *gres;
+  unsigned char *cert = NULL;
+  size_t certlen;
+  int mechanism;
+  gcry_sexp_t s_pkey = NULL;
   unsigned char *pk = NULL;
   size_t pklen;
 
@@ -1234,16 +1292,28 @@ do_readkey (app_t app, int advanced, const char *keyrefstr,
       err = gpg_error (GPG_ERR_INV_ID);
       goto leave;
     }
-  for (gres = app->app_local->genkey_results; gres; gres = gres->next)
-    if (gres->keyref == keyref)
-      break;
-  if (!gres || !gres->s_pkey)
+
+  err = readcert_by_tag (app, dobj->tag, &cert, &certlen, &mechanism);
+  if (err)
+    goto leave;
+  if (!mechanism)
     {
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      /* We got a certificate.  Let the upper layer handle the
+       * extraction of the key.  FIXME: It would be better to have a
+       * shared fucntion to dothis here.  */
+      err = gpg_error (GPG_ERR_NOT_FOUND);
       goto leave;
     }
 
-  err = make_canon_sexp (gres->s_pkey, &pk, &pklen);
+  /* Convert the public key into the expected s-expression.  */
+  if (mechanism == PIV_ALGORITHM_RSA)
+    err = genkey_parse_rsa (cert, certlen, &s_pkey);
+  else
+    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+  if (err)
+    goto leave;
+
+  err = make_canon_sexp (s_pkey, &pk, &pklen);
   if (err)
     goto leave;
   if (advanced)
@@ -1265,7 +1335,9 @@ do_readkey (app_t app, int advanced, const char *keyrefstr,
   *r_pklen = pklen;
 
  leave:
+  gcry_sexp_release (s_pkey);
   xfree (pk);
+  xfree (cert);
   return err;
 }
 
@@ -1279,6 +1351,7 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_algo)
   gpg_error_t err;
   unsigned char *certbuf = NULL;
   size_t certbuflen;
+  int mechanism;
   ksba_cert_t cert = NULL;
   ksba_sexp_t k_pkey = NULL;
   gcry_sexp_t s_pkey = NULL;
@@ -1290,9 +1363,28 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_algo)
 
   *r_algo = 0;
 
-  err = readcert_by_tag (app, dobj->tag, &certbuf, &certbuflen);
+  err = readcert_by_tag (app, dobj->tag, &certbuf, &certbuflen, &mechanism);
   if (err)
     goto leave;
+  if (mechanism)
+    {
+      /* A public key was found.  That makes it easy.  */
+      switch (mechanism)
+        {
+        case PIV_ALGORITHM_RSA:
+        case PIV_ALGORITHM_ECC_P256:
+        case PIV_ALGORITHM_ECC_P384:
+          *r_algo = mechanism;
+          break;
+
+        default:
+          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+          log_error ("piv: unknown mechanism %d in public key at %s\n",
+                     mechanism, dobj->keyref);
+          break;
+        }
+      goto leave;
+    }
 
   err = ksba_cert_new (&cert);
   if (err)
@@ -1971,22 +2063,22 @@ does_key_exist (app_t app, data_object_t dobj, int generating, int force)
 
   if (found && !force)
     {
-      log_error ("piv: %s", _("key already exists\n"));
+      log_error (_("key already exists\n"));
       return gpg_error (GPG_ERR_EEXIST);
     }
 
   if (found)
-    log_info ("piv: %s", _("existing key will be replaced\n"));
+    log_info (_("existing key will be replaced\n"));
   else if (generating)
-    log_info ("piv: %s", _("generating new key\n"));
+    log_info (_("generating new key\n"));
   else
-    log_info ("piv: %s", _("writing new key\n"));
+    log_info (_("writing new key\n"));
   return 0;
 }
 
 
 /* Parse an RSA response object, consisting of the content of tag
- * 0x7f49, into a gcrypt s-expresstion object and store that R_SEXP.
+ * 0x7f49, into a gcrypt s-expression object and store that R_SEXP.
  * On error NULL is stored at R_SEXP. */
 static gpg_error_t
 genkey_parse_rsa (const unsigned char *data, size_t datalen,
@@ -2096,8 +2188,6 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
   size_t tmpllen;
   const unsigned char *keydata;
   size_t keydatalen;
-  gcry_sexp_t s_pkey = NULL;
-  struct genkey_result_s *gres;
 
   (void)ctrl;
   (void)createtime;
@@ -2151,7 +2241,7 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
   if (err)
     {
       log_error (_("generating key failed\n"));
-      return gpg_error (GPG_ERR_CARD);
+      return err;
     }
 
   {
@@ -2171,36 +2261,20 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
       goto leave;
     }
 
-  if (mechanism == PIV_ALGORITHM_RSA)
-    err = genkey_parse_rsa (keydata, keydatalen, &s_pkey);
-  else
-    err = gpg_error (GPG_ERR_BUG);
+  tmpl[0] = mechanism;
+  flush_cached_data (app, dobj->tag);
+  err = put_data (app->slot, dobj->tag,
+                  (int)0x80,   (size_t)1,          tmpl,
+                  (int)0x7f49, (size_t)keydatalen, keydata,
+                  (int)0,      (size_t)0,          NULL);
   if (err)
-    goto leave;
-
-  for (gres = app->app_local->genkey_results; gres; gres = gres->next)
-    if (gres->keyref == keyref)
-      break;
-  if (!gres)
     {
-      gres = xtrycalloc (1, sizeof *gres);
-      if (!gres)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      gres->keyref = keyref;
-      gres->next = app->app_local->genkey_results;
-      app->app_local->genkey_results = gres;
+      log_error ("piv: failed to write key to the cert DO %s: %s\n",
+                 dobj->keyref, gpg_strerror (err));
+      goto leave;
     }
-  else
-    gcry_sexp_release (gres->s_pkey);
-  gres->s_pkey = s_pkey;
-  s_pkey = NULL;
-
 
  leave:
-  gcry_sexp_release (s_pkey);
   xfree (buffer);
   return err;
 }
@@ -2230,7 +2304,6 @@ do_writecert (app_t app, ctrl_t ctrl,
   /* FIXME: Check that the authentication has already been done.  */
 
   flush_cached_data (app, dobj->tag);
-
   err = put_data (app->slot, dobj->tag,
                   (int)0x70, (size_t)certlen, cert,/* Certificate */
                   (int)0x71, (size_t)1,       "",  /* No compress */
