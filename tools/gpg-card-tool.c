@@ -309,7 +309,7 @@ main (int argc, char **argv)
     }
   else
     {
-      struct card_info_s info_buffer;
+      struct card_info_s info_buffer = { 0 };
       card_info_t info = &info_buffer;
 
       err = 0;
@@ -2968,7 +2968,7 @@ interactive_loop (void)
   int redisplay = 1;           /* Whether to redisplay the main info.  */
   int allow_admin = 0;         /* Whether admin commands are allowed.  */
   char *help_arg = NULL;       /* Argument of the HELP command.         */
-  struct card_info_s info_buffer;
+  struct card_info_s info_buffer = { 0 };
   card_info_t info = &info_buffer;
   char *p;
   int i;

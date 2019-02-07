@@ -214,9 +214,12 @@ get_matching_keys (const unsigned char *keygrip, int protocol,
       err = get_matching_keys (keygrip, GNUPG_PROTOCOL_OPENPGP, &kb);
       if (!err || gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
         {
-          *keyblock_tail = kb;
-          keyblock_tail = &kb->next;
-          kb = NULL;
+          if (!err)
+            {
+              *keyblock_tail = kb;
+              keyblock_tail = &kb->next;
+              kb = NULL;
+            }
           err = get_matching_keys (keygrip, GNUPG_PROTOCOL_CMS, &kb);
           if (!err)
             {
