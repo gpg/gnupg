@@ -30,8 +30,22 @@
 #include <config.h>
 #include <string.h>
 
-#include "server-help.h"
 #include "util.h"
+#include "server-help.h"
+
+
+static GPGRT_INLINE gpg_error_t
+my_error (int e)
+{
+  return gpg_err_make (default_errsource, (e));
+}
+
+static GPGRT_INLINE gpg_error_t
+my_error_from_syserror (void)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+}
+
 
 /* Skip over options in LINE.
 
@@ -111,6 +125,40 @@ has_option_name (const char *line, const char *name)
   s = strstr (line, name);
   return (s && (s == line || spacep (s-1))
           && (!s[n] || spacep (s+n) || s[n] == '=')) ? (s+n) : NULL;
+}
+
+
+/* Parse an option with the format "--NAME=VALUE" which must occur in
+ * LINE before a double-dash.  LINE is written to but not modified by
+ * this function.  If the option is found and has a value the value is
+ * stored as a malloced string at R_VALUE.  If the option was not
+ * found or an error occurred NULL is stored there.  Note that
+ * currently the value must be a string without any space; we may
+ * eventually update this function to allow for a quoted value.  */
+gpg_error_t
+get_option_value (char *line, const char *name, char **r_value)
+{
+  char *p, *pend;
+  int c;
+
+  *r_value = NULL;
+
+  p = (char*)has_option_name (line, name);
+  if (!p || p >= skip_options (line))
+    return 0;
+
+  if (*p != '=' || !p[1] || spacep (p+1))
+    return my_error (GPG_ERR_INV_ARG);
+  p++;
+  for (pend = p; *pend && !spacep (pend); pend++)
+    ;
+  c = *pend;
+  *pend = 0;
+  *r_value = xtrystrdup (p);
+  *pend = c;
+  if (!p)
+    return my_error_from_syserror ();
+  return 0;
 }
 
 
