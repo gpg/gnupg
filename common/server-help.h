@@ -55,6 +55,14 @@ int has_leading_option (const char *line, const char *name);
    or a space.  */
 const char *has_option_name (const char *line, const char *name);
 
+/* Same as has_option_name but ignores all options after a "--" and
+ * does not return a const char ptr.  */
+char *has_leading_option_name (char *line, const char *name);
+
+/* Parse an option with the format "--NAME=VALUE" and return the value
+ * as a malloced string.  */
+gpg_error_t get_option_value (char *line, const char *name, char **r_value);
+
 /* Return a pointer to the argument of the option with NAME.  If such
    an option is not given, NULL is returned. */
 char *option_value (const char *line, const char *name);

@@ -810,6 +810,19 @@ ascii_strlwr (char *s)
   return s;
 }
 
+/* Upcase all ASCII characters in S.  */
+char *
+ascii_strupr (char *s)
+{
+  char *p = s;
+
+  for (p=s; *p; p++ )
+    if (isascii (*p) && *p >= 'a' && *p <= 'z')
+      *p &= ~0x20;
+
+  return s;
+}
+
 int
 ascii_strcasecmp( const char *a, const char *b )
 {
