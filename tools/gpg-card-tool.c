@@ -1722,7 +1722,8 @@ cmd_forcesig (card_info_t info)
 }
 
 
-/* Helper for cmd_generate.  Noe that either 0 or 1 is stored at
+
+/* Helper for cmd_generate_openpgp.  Noe that either 0 or 1 is stored at
  * FORCED_CHV1. */
 static gpg_error_t
 check_pin_for_key_operation (card_info_t info, int *forced_chv1)
@@ -1754,7 +1755,7 @@ check_pin_for_key_operation (card_info_t info, int *forced_chv1)
 }
 
 
-/* Helper for cmd_generate.  */
+/* Helper for cmd_generate_openpgp.  */
 static void
 restore_forced_chv1 (int *forced_chv1)
 {
@@ -1775,26 +1776,15 @@ restore_forced_chv1 (int *forced_chv1)
 }
 
 
+/* Implementation of cmd_generate for OpenPGP cards.  */
 static gpg_error_t
-cmd_generate (card_info_t info)
+generate_openpgp (card_info_t info)
 {
   gpg_error_t err;
   int forced_chv1 = -1;
   int want_backup;
   char *answer = NULL;
   key_info_t kinfo1, kinfo2, kinfo3;
-
-  if (!info)
-    return print_help
-      ("GENERATE\n\n"
-       "Menu to generate a new keys.",
-       APP_TYPE_OPENPGP, 0);
-
-  if (info->apptype != APP_TYPE_OPENPGP)
-    {
-      log_info ("Note: This is an OpenPGP only command.\n");
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
 
   if (info->extcap.ki)
     {
@@ -1810,7 +1800,6 @@ cmd_generate (card_info_t info)
     }
   else
     want_backup = 0;
-
 
   kinfo1 = find_kinfo (info, "OPENPGP.1");
   kinfo2 = find_kinfo (info, "OPENPGP.2");
@@ -1860,6 +1849,7 @@ cmd_generate (card_info_t info)
    * gpg.  We might also first create the keys on the card and then
    * tell gpg to use them to create the OpenPGP keyblock. */
   /* generate_keypair (ctrl, 1, NULL, info.serialno, want_backup); */
+  (void)want_backup;
   err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
  leave:
@@ -1869,6 +1859,126 @@ cmd_generate (card_info_t info)
 }
 
 
+/* Generic implementation of cmd_generate.  */
+static gpg_error_t
+generate_generic (card_info_t info, const char *keyref, int force,
+                  const char *algo)
+{
+  gpg_error_t err;
+
+  (void)info;
+
+  err = scd_genkey (keyref, force, algo, NULL);
+
+  return err;
+}
+
+
+static gpg_error_t
+cmd_generate (card_info_t info, char *argstr)
+{
+  static char * const valid_algos[] =
+    { "rsa2048", "rsa3072", "rsa4096",
+      "nistp256", "nistp384", "nistp521",
+      "ed25519", "cv25519",
+      NULL
+    };
+  gpg_error_t err;
+  int opt_force;
+  char *opt_algo = NULL; /* Malloced.  */
+  char *keyref_buffer = NULL;  /* Malloced.  */
+  char *keyref;          /* Points into argstr or keyref_buffer.  */
+  int i;
+
+  if (!info)
+    return print_help
+      ("GENERATE [--force] [--algo=ALGO] KEYREF\n\n"
+       "Create a new key on a card.  For OpenPGP cards are menu is used\n"
+       "and KEYREF is ignored.  Use --force to overwrite an existing key.",
+       APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
+
+  if (opt.interactive || opt.verbose)
+    log_info (_("%s card no. %s detected\n"),
+              app_type_string (info->apptype),
+              info->dispserialno? info->dispserialno : info->serialno);
+
+  opt_force = has_leading_option (argstr, "--force");
+  err = get_option_value (argstr, "--algo", &opt_algo);
+  if (err)
+    goto leave;
+  argstr = skip_options (argstr);
+
+  keyref = argstr;
+  if ((argstr = strchr (keyref, ' ')))
+    {
+      *argstr++ = 0;
+      trim_spaces (keyref);
+      trim_spaces (argstr);
+    }
+  else /* Let argstr point to an empty string.  */
+    argstr = keyref + strlen (keyref);
+
+  if (!*keyref)
+    keyref = NULL;
+
+  if (*argstr)
+    {
+      /* Extra arguments found.  */
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  if (opt_algo)
+    {
+      for (i=0; valid_algos[i]; i++)
+        if (!strcmp (valid_algos[i], opt_algo))
+          break;
+      if (!valid_algos[i])
+        {
+          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+          log_info ("Invalid algorithm '%s' given.  Use one:\n", opt_algo);
+          for (i=0; valid_algos[i]; i++)
+            if (!(i%5))
+              log_info ("  %s%s", valid_algos[i], valid_algos[i+1]?",":".");
+            else
+              log_printf (" %s%s", valid_algos[i], valid_algos[i+1]?",":".");
+          log_info ("Note that the card may not support all of them.\n");
+          goto leave;
+        }
+    }
+
+  /* Upcase the keyref; if it misses the cardtype, prepend it.  */
+  if (keyref)
+    {
+      if (!strchr (keyref, '.'))
+        keyref_buffer = xstrconcat (app_type_string (info->apptype), ".",
+                                    keyref, NULL);
+      else
+        keyref_buffer = xstrdup (keyref);
+      ascii_strupr (keyref_buffer);
+      keyref = keyref_buffer;
+    }
+
+  /* Divert to dedicated functions.  */
+  if (info->apptype == APP_TYPE_OPENPGP)
+    {
+      if (opt_force || opt_algo || keyref)
+        log_info ("Note: Options are ignored for OpenPGP cards.\n");
+      err = generate_openpgp (info);
+    }
+  else if (!keyref)
+    err = gpg_error (GPG_ERR_INV_ID);
+  else
+    err = generate_generic (info, keyref, opt_force, opt_algo);
+
+ leave:
+  xfree (opt_algo);
+  xfree (keyref_buffer);
+  return err;
+}
+
+
+
 /* Sub-menu to change a PIN.  The presented options may depend on the
  * the ALLOW_ADMIN flag.  */
 static gpg_error_t
@@ -2572,6 +2682,8 @@ ask_card_keyattr (int keyno, const struct key_attr *current,
           curve = current->curve;
         }
 
+      (void)curve;
+      (void)algo;
       err = GPG_ERR_NOT_IMPLEMENTED;
       goto leave;
       /* FIXME: We need to mve the ask_cure code out to common or
@@ -2929,7 +3041,7 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdWRITECERT:    err = cmd_writecert (info, argstr); break;
     case cmdREADCERT:     err = cmd_readcert (info, argstr); break;
     case cmdFORCESIG:     err = cmd_forcesig (info); break;
-    case cmdGENERATE:     err = cmd_generate (info); break;
+    case cmdGENERATE:     err = cmd_generate (info, argstr); break;
     case cmdPASSWD:       err = cmd_passwd (info, 1, argstr); break;
     case cmdUNBLOCK:      err = cmd_unblock (info); break;
     case cmdFACTORYRESET: err = cmd_factoryreset (info); break;
@@ -3195,7 +3307,7 @@ interactive_loop (void)
         case cmdWRITECERT: err = cmd_writecert (info, argstr); break;
         case cmdREADCERT:  err = cmd_readcert (info, argstr); break;
         case cmdFORCESIG:  err = cmd_forcesig (info); break;
-        case cmdGENERATE:  err = cmd_generate (info); break;
+        case cmdGENERATE:  err = cmd_generate (info, argstr); break;
         case cmdPASSWD:    err = cmd_passwd (info, allow_admin, argstr); break;
         case cmdUNBLOCK:   err = cmd_unblock (info); break;
         case cmdFACTORYRESET:

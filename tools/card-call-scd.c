@@ -202,7 +202,7 @@ app_type_string (app_type_t app_type)
     case APP_TYPE_OPENPGP:   result = "OpenPGP"; break;
     case APP_TYPE_NKS:       result = "NetKey"; break;
     case APP_TYPE_DINSIG:    result = "DINSIG"; break;
-    case APP_TYPE_P15:       result = "PKCS#15"; break;
+    case APP_TYPE_P15:       result = "P15"; break;
     case APP_TYPE_GELDKARTE: result = "Geldkarte"; break;
     case APP_TYPE_SC_HSM:    result = "SC-HSM"; break;
     case APP_TYPE_PIV:       result = "PIV"; break;
@@ -1174,7 +1174,8 @@ scd_genkey_cb (void *opaque, const char *line)
 
  if (keywordlen == 14 && !memcmp (keyword,"KEY-CREATED-AT", keywordlen))
     {
-      *createtime = (u32)strtoul (line, NULL, 10);
+      if (createtime)
+        *createtime = (u32)strtoul (line, NULL, 10);
     }
   else if (keywordlen == 8 && !memcmp (keyword, "PROGRESS", keywordlen))
     {
@@ -1190,7 +1191,7 @@ scd_genkey_cb (void *opaque, const char *line)
  * SCDEAMON.  On success, creation time is stored back to
  * CREATETIME.  */
 gpg_error_t
-scd_genkey (int keyno, int force, u32 *createtime)
+scd_genkey (const char *keyref, int force, const char *algo, u32 *createtime)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
@@ -1203,15 +1204,17 @@ scd_genkey (int keyno, int force, u32 *createtime)
   if (err)
     return err;
 
-  if (*createtime)
+  if (createtime && *createtime)
     epoch2isotime (tbuf, *createtime);
   else
     *tbuf = 0;
 
-  snprintf (line, sizeof line, "SCD GENKEY %s%s %s %d",
+  snprintf (line, sizeof line, "SCD GENKEY %s%s %s %s%s -- %s",
             *tbuf? "--timestamp=":"", tbuf,
             force? "--force":"",
-            keyno);
+            algo? "--algo=":"",
+            algo? algo:"",
+            keyref);
 
   dfltparm.ctx = agent_ctx;
   err = assuan_transact (agent_ctx, line,
