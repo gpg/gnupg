@@ -1126,10 +1126,10 @@ cmd_writekey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] =
-  "GENKEY [--force] [--timestamp=<isodate>] <no>\n"
+  "GENKEY [--force] [--timestamp=<isodate>] <keyref>\n"
   "\n"
-  "Generate a key on-card identified by NO, which is application\n"
-  "specific.  Return values are application specific.  For OpenPGP\n"
+  "Generate a key on-card identified by <keyref>, which is application\n"
+  "specific.  Return values are also application specific.  For OpenPGP\n"
   "cards 3 status lines are returned:\n"
   "\n"
   "  S KEY-FPR  <hexstring>\n"
@@ -1154,10 +1154,12 @@ static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int rc;
-  char *keyno;
+  gpg_error_t err;
+  char *keyref_buffer = NULL;
+  char *keyref;
   int force;
   const char *s;
+  char *opt_algo = NULL;
   time_t timestamp;
 
   force = has_option (line, "--force");
@@ -1173,30 +1175,38 @@ cmd_genkey (assuan_context_t ctx, char *line)
   else
     timestamp = 0;
 
+  err = get_option_value (line, "--algo", &opt_algo);
+  if (err)
+    goto leave;
 
   line = skip_options (line);
   if (!*line)
     return set_error (GPG_ERR_ASS_PARAMETER, "no key number given");
-  keyno = line;
+  keyref = line;
   while (*line && !spacep (line))
     line++;
   *line = 0;
 
-  if ((rc = open_card (ctrl)))
-    return rc;
+  if ((err = open_card (ctrl)))
+    goto leave;
 
   if (!ctrl->app_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
-  keyno = xtrystrdup (keyno);
-  if (!keyno)
-    return out_of_core ();
-  rc = app_genkey (ctrl->app_ctx, ctrl, keyno, NULL,
-                   force? APP_GENKEY_FLAG_FORCE : 0,
-                   timestamp, pin_cb, ctx);
-  xfree (keyno);
+  keyref = keyref_buffer = xtrystrdup (keyref);
+  if (!keyref)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = app_genkey (ctrl->app_ctx, ctrl, keyref, opt_algo,
+                    force? APP_GENKEY_FLAG_FORCE : 0,
+                    timestamp, pin_cb, ctx);
 
-  return rc;
+ leave:
+  xfree (keyref_buffer);
+  xfree (opt_algo);
+  return err;
 }
 
 

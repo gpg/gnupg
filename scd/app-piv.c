@@ -178,6 +178,8 @@ static gpg_error_t get_keygrip_by_tag (app_t app, unsigned int tag,
                                        char **r_keygripstr, int *got_cert);
 static gpg_error_t genkey_parse_rsa (const unsigned char *data, size_t datalen,
                                      gcry_sexp_t *r_sexp);
+static gpg_error_t genkey_parse_ecc (const unsigned char *data, size_t datalen,
+                                     int mechanism, gcry_sexp_t *r_sexp);
 
 
 
@@ -1144,6 +1146,9 @@ get_keygrip_by_tag (app_t app, unsigned int tag,
     {
       if (mechanism == PIV_ALGORITHM_RSA)
         err = genkey_parse_rsa (certbuf, certbuflen, &s_pkey);
+      else if (mechanism == PIV_ALGORITHM_ECC_P256
+               || mechanism == PIV_ALGORITHM_ECC_P384)
+        err = genkey_parse_ecc (certbuf, certbuflen, mechanism, &s_pkey);
       else
         err = gpg_error (GPG_ERR_PUBKEY_ALGO);
       if (err)
@@ -1308,6 +1313,9 @@ do_readkey (app_t app, int advanced, const char *keyrefstr,
   /* Convert the public key into the expected s-expression.  */
   if (mechanism == PIV_ALGORITHM_RSA)
     err = genkey_parse_rsa (cert, certlen, &s_pkey);
+  else if (mechanism == PIV_ALGORITHM_ECC_P256
+           || mechanism == PIV_ALGORITHM_ECC_P384)
+    err = genkey_parse_ecc (cert, certlen, mechanism, &s_pkey);
   else
     err = gpg_error (GPG_ERR_PUBKEY_ALGO);
   if (err)
@@ -2155,6 +2163,48 @@ genkey_parse_rsa (const unsigned char *data, size_t datalen,
 }
 
 
+/* Parse an ECC response object, consisting of the content of tag
+ * 0x7f49, into a gcrypt s-expression object and store that R_SEXP.
+ * On error NULL is stored at R_SEXP.  MECHANISM specifies the
+ * curve.  */
+static gpg_error_t
+genkey_parse_ecc (const unsigned char *data, size_t datalen, int mechanism,
+                  gcry_sexp_t *r_sexp)
+{
+  gpg_error_t err;
+  const unsigned char *ecc_q;
+  size_t ecc_qlen;
+  const char *curve;
+
+  *r_sexp = NULL;
+
+  ecc_q = find_tlv (data, datalen, 0x0086, &ecc_qlen);
+  if (!ecc_q)
+    {
+      log_error (_("response does not contain the EC public key\n"));
+      err = gpg_error (GPG_ERR_CARD);
+      goto leave;
+    }
+
+  if (mechanism == PIV_ALGORITHM_ECC_P256)
+    curve = "nistp256";
+  else if (mechanism == PIV_ALGORITHM_ECC_P384)
+    curve = "nistp384";
+  else
+    {
+      err = gpg_error (GPG_ERR_BUG); /* Call with wrong parameters.  */
+      goto leave;
+    }
+
+
+  err = gcry_sexp_build (r_sexp, NULL, "(public-key(ecc(curve%s)(q%b)))",
+                         curve, (int)ecc_qlen, ecc_q);
+
+ leave:
+  return err;
+}
+
+
 /* Create a new keypair for KEYREF.  If KEYTYPE is NULL a default
  * keytype is selected, else it may be one of the strings:
  *  "rsa2048", "nistp256, or "nistp384".
@@ -2302,6 +2352,9 @@ do_writecert (app_t app, ctrl_t ctrl,
     return gpg_error (GPG_ERR_INV_ID);
 
   /* FIXME: Check that the authentication has already been done.  */
+
+  /* FIXME: Check that the public key parameters from the certificate
+   * match an already stored key.  */
 
   flush_cached_data (app, dobj->tag);
   err = put_data (app->slot, dobj->tag,
