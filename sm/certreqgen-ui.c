@@ -244,7 +244,27 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
         {
           tty_printf (_("Available keys:\n"));
           for (count=1,sl=keypairlist; sl; sl = sl->next, count++)
-            tty_printf ("   (%d) %s\n", count, sl->d);
+            {
+              ksba_sexp_t pkey;
+              gcry_sexp_t s_pkey;
+              char *algostr = NULL;
+              const char *keyref;
+
+              keyref = strchr (sl->d, ' ');
+              if (keyref)
+                {
+                  keyref++;
+                  if (!gpgsm_agent_readkey (ctrl, 1, keyref, &pkey))
+                    {
+                      if (!gcry_sexp_new (&s_pkey, pkey, 0, 0))
+                        algostr = pubkey_algo_string (s_pkey);
+                      gcry_sexp_release (s_pkey);
+                    }
+                  xfree (pkey);
+                }
+              tty_printf ("   (%d) %s %s\n", count, sl->d, algostr);
+              xfree (algostr);
+            }
           xfree (answer);
           answer = tty_get (_("Your selection? "));
           tty_kill_prompt ();
