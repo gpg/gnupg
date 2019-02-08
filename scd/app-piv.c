@@ -469,6 +469,107 @@ add_tlv (unsigned char *buffer, unsigned int tag, size_t length)
 }
 
 
+/* Function to build a list of TLV and return the result in a mallcoed
+ * buffer.  The varargs are tuples of (int,size_t,void) each with the
+ * tag, the length and the actual data.  A (0,0,NULL) tuple terminates
+ * the list.  Up to 10 tuples are supported.  */
+static gpg_error_t
+concat_tlv_list (unsigned char **r_result, size_t *r_resultlen, ...)
+{
+  gpg_error_t err;
+  va_list arg_ptr;
+  struct {
+    int tag;
+    unsigned int len;
+    unsigned int contlen;
+    const void *data;
+  } argv[10];
+  int i, j, argc;
+  unsigned char *data = NULL;
+  size_t datalen;
+  unsigned char *p;
+  size_t n;
+
+  *r_result = NULL;
+  *r_resultlen = 0;
+
+  /* Collect all args.  Check that length is <= 2^16 to match the
+   * behaviour of add_tlv.  */
+  va_start (arg_ptr, r_resultlen);
+  argc = 0;
+  while (((argv[argc].tag = va_arg (arg_ptr, int))))
+    {
+      argv[argc].len = va_arg (arg_ptr, size_t);
+      argv[argc].contlen = 0;
+      argv[argc].data = va_arg (arg_ptr, const void *);
+      if (argc >= DIM (argv)-1 || argv[argc].len > 0xffff)
+        {
+          va_end (arg_ptr);
+          err = gpg_error (GPG_ERR_EINVAL);
+          goto leave;
+        }
+      argc++;
+    }
+  va_end (arg_ptr);
+
+  /* Compute the required buffer length and allocate the buffer.  */
+  datalen = 0;
+  for (i=0; i < argc; i++)
+    {
+      if (!argv[i].len && !argv[i].data)
+        {
+          /* Constructed tag.  Compute its length.  Note that we
+           * currently allow only one constructed tag in the list.  */
+          for (n=0, j = i + 1; j < argc; j++)
+            {
+              log_assert (!(!argv[j].len && !argv[j].data));
+              n += add_tlv (NULL, argv[j].tag, argv[j].len);
+              n += argv[j].len;
+            }
+          argv[i].contlen = n;
+          datalen += add_tlv (NULL, argv[i].tag, n);
+        }
+      else
+        {
+          datalen += add_tlv (NULL, argv[i].tag, argv[i].len);
+          datalen += argv[i].len;
+        }
+    }
+  data = xtrymalloc (datalen);
+  if (!data)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Copy that data to the buffer.  */
+  p = data;
+  for (i=0; i < argc; i++)
+    {
+      if (!argv[i].len && !argv[i].data)
+        {
+          /* Constructed tag.  */
+          p += add_tlv (p, argv[i].tag, argv[i].contlen);
+        }
+      else
+        {
+          p += add_tlv (p, argv[i].tag, argv[i].len);
+          memcpy (p, argv[i].data, argv[i].len);
+          p += argv[i].len;
+        }
+    }
+  log_assert ( data + datalen == p );
+  *r_result = data;
+  data = NULL;
+  *r_resultlen = datalen;
+  err = 0;
+
+ leave:
+  xfree (data);
+  return err;
+}
+
+
 /* Wrapper around iso7816_put_data_odd which also sets the tag into
  * the '5C' data object.  The varargs are tuples of (int,size_t,void)
  * with the tag, the length and the actual data.  A (0,0,NULL) tuple
@@ -1354,7 +1455,7 @@ do_readkey (app_t app, int advanced, const char *keyrefstr,
  * store it at R_ALGO.  The algorithm is taken from the corresponding
  * certificate or from a cache.  */
 static gpg_error_t
-get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_algo)
+get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_mechanism)
 {
   gpg_error_t err;
   unsigned char *certbuf = NULL;
@@ -1369,7 +1470,7 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_algo)
   size_t n;
   const char *curve_name;
 
-  *r_algo = 0;
+  *r_mechanism = 0;
 
   err = readcert_by_tag (app, dobj->tag, &certbuf, &certbuflen, &mechanism);
   if (err)
@@ -1382,7 +1483,7 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_algo)
         case PIV_ALGORITHM_RSA:
         case PIV_ALGORITHM_ECC_P256:
         case PIV_ALGORITHM_ECC_P384:
-          *r_algo = mechanism;
+          *r_mechanism = mechanism;
           break;
 
         default:
@@ -1468,7 +1569,7 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_algo)
                  dobj->keyref, algoname, gpg_strerror (err));
       goto leave;
     }
-  *r_algo = algo;
+  *r_mechanism = algo;
 
  leave:
   gcry_free (algoname);
@@ -1862,10 +1963,11 @@ do_check_chv (app_t app, const char *pwidstr,
  * stored there and an error code returned.  For ECDSA the result is
  * the simple concatenation of R and S without any DER encoding.  R
  * and S are left extended with zeroes to make sure they have an equal
- * length.
+ * length.  If HASHALGO is not zero, the function prepends the hash's
+ * OID to the indata or checks that it is consistent.
  */
 static gpg_error_t
-do_auth (app_t app, const char *keyidstr,
+do_sign (app_t app, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata_arg, size_t indatalen,
@@ -1874,22 +1976,22 @@ do_auth (app_t app, const char *keyidstr,
   const unsigned char *indata = indata_arg;
   gpg_error_t err;
   data_object_t dobj;
-  unsigned char tmpl[2+2+2+128];
-  size_t tmpllen;
+  unsigned char oidbuf[64];
+  size_t oidbuflen;
   unsigned char *outdata = NULL;
   size_t outdatalen;
   const unsigned char *s;
   size_t n;
-  int keyref, algo;
+  int keyref, mechanism;
+  unsigned char *indata_buffer = NULL; /* Malloced helper.  */
+  unsigned char *apdudata = NULL;
+  size_t apdudatalen;
 
   if (!keyidstr || !*keyidstr)
     {
       err = gpg_error (GPG_ERR_INV_VALUE);
       goto leave;
     }
-
-  /* Fixme: Shall we support the KEYID/FINGERPRINT syntax?  Does it
-   * make sense for X.509 certs?  */
 
   dobj = find_dobj_by_keyref (app, keyidstr);
   if ((keyref = keyref_from_dobj (dobj)) == -1)
@@ -1898,69 +2000,141 @@ do_auth (app_t app, const char *keyidstr,
       goto leave;
     }
 
-  err = get_key_algorithm_by_dobj (app, dobj, &algo);
+  err = get_key_algorithm_by_dobj (app, dobj, &mechanism);
   if (err)
     goto leave;
 
-  /* We need to remove the ASN.1 prefix from INDATA.  We use TEMPL as
-   * a temporary buffer for the OID.  */
-  if (algo == PIV_ALGORITHM_ECC_P256)
+   /* For ECC we need to remove the ASN.1 prefix from INDATA.  For RSA
+    * we need to add the padding and possible also the ASN.1 prefix.  */
+  if (mechanism == PIV_ALGORITHM_ECC_P256
+      || mechanism == PIV_ALGORITHM_ECC_P384)
     {
-      tmpllen = sizeof tmpl;
-      err = gcry_md_get_asnoid (GCRY_MD_SHA256, &tmpl, &tmpllen);
-      if (err)
+      int need_algo, need_digestlen;
+
+      if (mechanism == PIV_ALGORITHM_ECC_P256)
         {
-          err = gpg_error (GPG_ERR_INTERNAL);
-          log_debug ("piv: no OID for hash algo %d\n", GCRY_MD_SHA256);
+          need_algo = GCRY_MD_SHA256;
+          need_digestlen = 32;
+        }
+      else
+        {
+          need_algo = GCRY_MD_SHA384;
+          need_digestlen = 48;
+        }
+
+      if (hashalgo && hashalgo != need_algo)
+        {
+          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+          log_error ("piv: hash algo %d does not match mechanism %d\n",
+                     need_algo, mechanism);
           goto leave;
         }
-      if (indatalen != tmpllen + 32 || memcmp (indata, tmpl, tmpllen))
+
+      if (indatalen > need_digestlen)
         {
-          err = GPG_ERR_INV_VALUE;
-          log_error ("piv: bad formatted input for ECC-P256 auth\n");
-          goto leave;
+          oidbuflen = sizeof oidbuf;
+          err = gcry_md_get_asnoid (need_algo, &oidbuf, &oidbuflen);
+          if (err)
+            {
+              err = gpg_error (GPG_ERR_INTERNAL);
+              log_debug ("piv: no OID for hash algo %d\n", need_algo);
+              goto leave;
+            }
+          if (indatalen != oidbuflen + need_digestlen
+              || memcmp (indata, oidbuf, oidbuflen))
+            {
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              log_error ("piv: bad input for signing with mechanism %d\n",
+                         mechanism);
+              goto leave;
+            }
+          indata += oidbuflen;
+          indatalen -= oidbuflen;
         }
-      indata +=tmpllen;
-      indatalen -= tmpllen;
     }
-  else if (algo == PIV_ALGORITHM_ECC_P384)
+  else if (mechanism == PIV_ALGORITHM_RSA)
     {
-      tmpllen = sizeof tmpl;
-      err = gcry_md_get_asnoid (GCRY_MD_SHA384, &tmpl, &tmpllen);
-      if (err)
+      /* PIV requires 2048 bit RSA.  */
+      unsigned int framelen = 2048 / 8;
+      unsigned char *frame;
+      int i;
+
+      oidbuflen = sizeof oidbuf;
+      if (!hashalgo)
         {
-          err = gpg_error (GPG_ERR_INTERNAL);
-          log_debug ("piv: no OID for hash algo %d\n", GCRY_MD_SHA384);
+          /* We assume that indata already has the required
+           * digestinfo; thus merely prepend the padding below.  */
+        }
+      else if ((err = gcry_md_get_asnoid (hashalgo, &oidbuf, &oidbuflen)))
+        {
+          log_debug ("piv: no OID for hash algo %d\n", hashalgo);
           goto leave;
         }
-      if (indatalen != tmpllen + 48 || memcmp (indata, tmpl, tmpllen))
+      else
         {
-          err = GPG_ERR_INV_VALUE;
-          log_error ("piv: bad formatted input for ECC-P384 auth\n");
+          unsigned int digestlen = gcry_md_get_algo_dlen (hashalgo);
+
+          if (indatalen == digestlen)
+            {
+              /* Plain hash in INDATA; prepend the digestinfo.  */
+              indata_buffer = xtrymalloc (oidbuflen + indatalen);
+              if (!indata_buffer)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              memcpy (indata_buffer, oidbuf, oidbuflen);
+              memcpy (indata_buffer+oidbuflen, indata, indatalen);
+              indata = indata_buffer;
+              indatalen = oidbuflen + indatalen;
+            }
+          else if (indatalen == oidbuflen + digestlen
+                   && !memcmp (indata, oidbuf, oidbuflen))
+            ; /* Correct prefix.  */
+          else
+            {
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              log_error ("piv: bad input for signing with RSA and hash %d\n",
+                         hashalgo);
+              goto leave;
+            }
+        }
+      /* Now prepend the pkcs#v1.5 padding.  We require at least 8
+       * byte of padding and 3 extra bytes for the prefix and the
+       * delimiting nul.  */
+      if (!indatalen || indatalen + 8 + 4 > framelen)
+        {
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          log_error ("piv: input does not fit into a %u bit PKCS#v1.5 frame\n",
+                     8*framelen);
           goto leave;
         }
-      indata += tmpllen;
-      indatalen -= tmpllen;
-    }
-  else if (algo == PIV_ALGORITHM_RSA)
-    {
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-      log_error ("piv: FIXME: implement RSA authentication\n");
-      goto leave;
+      frame = xtrymalloc (framelen);
+      if (!frame)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      n = 0;
+      frame[n++] = 0;
+      frame[n++] = 1; /* Block type. */
+      i = framelen - indatalen - 3 ;
+      memset (frame+n, 0xff, i);
+      n += i;
+      frame[n++] = 0; /* Delimiter.  */
+      memcpy (frame+n, indata, indatalen);
+      n += indatalen;
+      log_assert (n == framelen);
+      /* And now put it into the indata_buffer.  */
+      xfree (indata_buffer);
+      indata_buffer = frame;
+      indata = indata_buffer;
+      indatalen = framelen;
     }
   else
     {
       err = gpg_error (GPG_ERR_INTERNAL);
-      log_debug ("piv: unknown PIV  algo %d from helper function\n", algo);
-      goto leave;
-    }
-
-  /* Because we don't have a dynamic template builder we make sure
-   * that we can encode all lengths in one octet.  FIXME: Use add_tls
-   * from app-openpgp as a base for an strconcat like function. */
-  if (indatalen >= 100)
-    {
-      err = gpg_error (GPG_ERR_TOO_LARGE);
+      log_debug ("piv: unknown PIV mechanism %d while signing\n", mechanism);
       goto leave;
     }
 
@@ -1970,19 +2144,18 @@ do_auth (app_t app, const char *keyidstr,
     return err;
 
   /* Build the Dynamic Authentication Template.  */
-  tmpl[0] = 0x7c;
-  tmpl[1] = indatalen + 4;
-  tmpl[2] = 0x82; /* Response. */
-  tmpl[3] = 0;    /* Must be 0 to get the tag in the answer.  */
-  tmpl[4] = 0x81; /* Challenge. */
-  tmpl[5] = indatalen;
-  memcpy (tmpl+6, indata, indatalen);
-  tmpllen = indatalen + 6;
+  err = concat_tlv_list (&apdudata, &apdudatalen,
+                         (int)0x7c, (size_t)0, NULL, /* Constructed. */
+                         (int)0x82, (size_t)0, "",
+                         (int)0x81, (size_t)indatalen, indata,
+                         (int)0, (size_t)0, NULL);
+  if (err)
+    goto leave;
 
   /* Note: the -1 requests command chaining.  */
   err = iso7816_general_authenticate (app->slot, -1,
-                                      algo, keyref,
-                                      tmpl, (int)tmpllen, 0,
+                                      mechanism, keyref,
+                                      apdudata, (int)apdudatalen, 0,
                                       &outdata, &outdatalen);
   if (err)
     goto leave;
@@ -1991,42 +2164,50 @@ do_auth (app_t app, const char *keyidstr,
   if (outdatalen && *outdata == 0x7c
       && (s = find_tlv (outdata, outdatalen, 0x82, &n)))
     {
-      const unsigned char *rval, *sval;
-      size_t rlen, rlenx, slen, slenx, resultlen;
-      char *result;
-      /* The result of an ECDSA signature is
-       *   SEQUENCE { r INTEGER, s INTEGER }
-       * We re-pack that by concatenating R and S and making sure that
-       * both have the same length.  We simplify parsing by using
-       * find_tlv and not a proper DER parser.  */
-      s = find_tlv (s, n, 0x30, &n);
-      if (!s)
-        goto bad_der;
-      rval = find_tlv (s, n, 0x02, &rlen);
-      if (!rval)
-        goto bad_der;
-      log_assert (n >= (rval-s)+rlen);
-      sval = find_tlv (rval+rlen, n-((rval-s)+rlen), 0x02, &slen);
-      if (!rval)
-        goto bad_der;
-      rlenx = slenx = 0;
-      if (rlen > slen)
-        slenx = rlen - slen;
-      else if (slen > rlen)
-        rlenx = slen - rlen;
-
-      resultlen = rlen + rlenx + slen + slenx;
-      result = xtrycalloc (1, resultlen);
-      if (!result)
+      if (mechanism == PIV_ALGORITHM_RSA)
         {
-          err = gpg_error_from_syserror ();
-          goto leave;
+          memmove (outdata, outdata + (s - outdata), n);
+          outdatalen = n;
         }
-      memcpy (result + rlenx, rval, rlen);
-      memcpy (result + rlenx + rlen + slenx, sval, slen);
-      xfree (outdata);
-      outdata = result;
-      outdatalen = resultlen;
+      else /* ECC */
+        {
+          const unsigned char *rval, *sval;
+          size_t rlen, rlenx, slen, slenx, resultlen;
+          char *result;
+          /* The result of an ECDSA signature is
+           *   SEQUENCE { r INTEGER, s INTEGER }
+           * We re-pack that by concatenating R and S and making sure
+           * that both have the same length.  We simplify parsing by
+           * using find_tlv and not a proper DER parser.  */
+          s = find_tlv (s, n, 0x30, &n);
+          if (!s)
+            goto bad_der;
+          rval = find_tlv (s, n, 0x02, &rlen);
+          if (!rval)
+            goto bad_der;
+          log_assert (n >= (rval-s)+rlen);
+          sval = find_tlv (rval+rlen, n-((rval-s)+rlen), 0x02, &slen);
+          if (!rval)
+            goto bad_der;
+          rlenx = slenx = 0;
+          if (rlen > slen)
+            slenx = rlen - slen;
+          else if (slen > rlen)
+            rlenx = slen - rlen;
+
+          resultlen = rlen + rlenx + slen + slenx;
+          result = xtrycalloc (1, resultlen);
+          if (!result)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (result + rlenx, rval, rlen);
+          memcpy (result + rlenx + rlen + slenx, sval, slen);
+          xfree (outdata);
+          outdata = result;
+          outdatalen = resultlen;
+        }
     }
   else
     {
@@ -2048,7 +2229,26 @@ do_auth (app_t app, const char *keyidstr,
       *r_outdata = outdata;
       *r_outdatalen = outdatalen;
     }
+  xfree (apdudata);
+  xfree (indata_buffer);
   return err;
+}
+
+
+/* AUTH for PIV cards is actually the same as SIGN.  The difference
+ * between AUTH and SIGN is that AUTH expects that pkcs#1.5 padding
+ * for RSA has already been done (digestInfo part w/o the padding)
+ * whereas SIGN may accept a plain digest and does the padding if
+ * needed.  This is also the reason why SIGN takes a hashalgo. */
+static gpg_error_t
+do_auth (app_t app, const char *keyidstr,
+         gpg_error_t (*pincb)(void*, const char *, char **),
+         void *pincb_arg,
+         const void *indata, size_t indatalen,
+         unsigned char **r_outdata, size_t *r_outdatalen)
+{
+  return do_sign (app, keyidstr, 0, pincb, pincb_arg, indata, indatalen,
+                  r_outdata, r_outdatalen);
 }
 
 
@@ -2464,7 +2664,7 @@ app_select_piv (app_t app)
   app->fnc.writecert = do_writecert;
   /* app->fnc.writekey = do_writekey; */
   app->fnc.genkey = do_genkey;
-  /* app->fnc.sign = do_sign; */
+  app->fnc.sign = do_sign;
   app->fnc.auth = do_auth;
   /* app->fnc.decipher = do_decipher; */
   app->fnc.change_pin = do_change_chv;
