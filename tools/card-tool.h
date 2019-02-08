@@ -192,8 +192,6 @@ gpg_error_t test_get_matching_keys (const char *hexgrip);
 /*-- card-tool-misc.c --*/
 key_info_t find_kinfo (card_info_t info, const char *keyref);
 void *hex_to_buffer (const char *string, size_t *r_length);
-char *pubkey_algo_string (gcry_sexp_t s_pkey);
-
 
 /*-- card-call-scd.c --*/
 void release_card_info (card_info_t info);
