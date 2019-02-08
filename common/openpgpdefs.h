@@ -226,5 +226,8 @@ gpg_error_t compute_openpgp_fpr_ecc (int keyversion,
                                      unsigned char *result,
                                      unsigned int *r_resultlen);
 
+/*-- openpgp-oid.c --*/
+enum gcry_pk_algos map_openpgp_pk_to_gcry (pubkey_algo_t algo);
+
 
 #endif /*GNUPG_COMMON_OPENPGPDEFS_H*/
