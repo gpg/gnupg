@@ -2259,6 +2259,151 @@ do_auth (app_t app, const char *keyidstr,
 }
 
 
+/* Decrypt the data in (INDATA,INDATALEN) and on success store the
+ * mallocated result at (R_OUTDATA,R_OUTDATALEN).  */
+static gpg_error_t
+do_decipher (app_t app, const char *keyidstr,
+             gpg_error_t (*pincb)(void*, const char *, char **),
+             void *pincb_arg,
+             const void *indata_arg, size_t indatalen,
+             unsigned char **r_outdata, size_t *r_outdatalen,
+             unsigned int *r_info)
+{
+  const unsigned char *indata = indata_arg;
+  gpg_error_t err;
+  data_object_t dobj;
+  unsigned char *outdata = NULL;
+  size_t outdatalen;
+  const unsigned char *s;
+  size_t n;
+  int keyref, mechanism;
+  unsigned int framelen;
+  unsigned char *indata_buffer = NULL; /* Malloced helper.  */
+  unsigned char *apdudata = NULL;
+  size_t apdudatalen;
+
+  if (!keyidstr || !*keyidstr)
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+
+  dobj = find_dobj_by_keyref (app, keyidstr);
+  if ((keyref = keyref_from_dobj (dobj)) == -1)
+    {
+      err = gpg_error (GPG_ERR_INV_ID);
+      goto leave;
+    }
+  if (keyref == 0x9A || keyref == 0x9C || keyref == 0x9E)
+    {
+      /* Signing only reference.  We only allow '9D' and the retired
+       * cert key management DOs.  */
+      err = gpg_error (GPG_ERR_INV_ID);
+      goto leave;
+    }
+
+  err = get_key_algorithm_by_dobj (app, dobj, &mechanism);
+  if (err)
+    goto leave;
+
+  switch (mechanism)
+    {
+    case PIV_ALGORITHM_ECC_P256:
+      framelen = 1+32+32;
+      break;
+    case PIV_ALGORITHM_ECC_P384:
+      framelen = 1+48+48;
+      break;
+    case PIV_ALGORITHM_RSA:
+      framelen = 2048 / 8;
+      break;
+    default:
+      err = gpg_error (GPG_ERR_INTERNAL);
+      log_debug ("piv: unknown PIV mechanism %d while decrypting\n", mechanism);
+      goto leave;
+    }
+
+  /* Check that the ciphertext has the right length; due to internal
+   * convey mechanism using MPIs leading zero bytes might have been
+   * lost.  Adjust for this.  Note that for ECC this actually
+   * superfluous because the first octet is always '04' to indicate an
+   * uncompressed point.  */
+  if (indatalen > framelen)
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      log_error ("piv: input of %zu octets too large for mechanism %d\n",
+                 indatalen, mechanism);
+      goto leave;
+    }
+  if (indatalen < framelen)
+    {
+      indata_buffer = xtrycalloc (1, framelen);
+      if (!indata_buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      memcpy (indata_buffer+(framelen-indatalen), indata, indatalen);
+      indata = indata_buffer;
+      indatalen = framelen;
+    }
+
+  /* Now verify the Application PIN.  */
+  err = verify_chv (app, 0x80, pincb, pincb_arg);
+  if (err)
+    return err;
+
+  /* Build the Dynamic Authentication Template.  */
+  err = concat_tlv_list (&apdudata, &apdudatalen,
+                         (int)0x7c, (size_t)0, NULL, /* Constructed. */
+                         (int)0x82, (size_t)0, "",
+                         mechanism == PIV_ALGORITHM_RSA?
+                         (int)0x81 : (int)0x85, (size_t)indatalen, indata,
+                         (int)0, (size_t)0, NULL);
+  if (err)
+    goto leave;
+
+  /* Note: the -1 requests command chaining.  */
+  err = iso7816_general_authenticate (app->slot, -1,
+                                      mechanism, keyref,
+                                      apdudata, (int)apdudatalen, 0,
+                                      &outdata, &outdatalen);
+  if (err)
+    goto leave;
+
+  /* Parse the response.  */
+  if (outdatalen && *outdata == 0x7c
+      && (s = find_tlv (outdata, outdatalen, 0x82, &n)))
+    {
+      memmove (outdata, outdata + (s - outdata), n);
+      outdatalen = n;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_CARD);
+      log_error ("piv: response does not contain a proper result\n");
+      goto leave;
+    }
+
+ leave:
+  if (err)
+    {
+      xfree (outdata);
+      *r_outdata = NULL;
+      *r_outdatalen = 0;
+    }
+  else
+    {
+      *r_outdata = outdata;
+      *r_outdatalen = outdatalen;
+    }
+  *r_info = 0;
+  xfree (apdudata);
+  xfree (indata_buffer);
+  return err;
+}
+
+
 /* Check whether a key for DOBJ already exists.  We detect this by
  * reading the certificate described by DOBJ.  If FORCE is TRUE a
  * diagnositic will be printed but no error returned if the key
@@ -2679,7 +2824,7 @@ app_select_piv (app_t app)
   app->fnc.genkey = do_genkey;
   app->fnc.sign = do_sign;
   app->fnc.auth = do_auth;
-  /* app->fnc.decipher = do_decipher; */
+  app->fnc.decipher = do_decipher;
   app->fnc.change_pin = do_change_chv;
   app->fnc.check_pin = do_check_chv;
 
