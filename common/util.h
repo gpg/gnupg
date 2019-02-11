@@ -39,7 +39,10 @@
  * libgpg-error version.  Define them here.
  * Example: (#if GPG_ERROR_VERSION_NUMBER < 0x011500 // 1.21)
  */
-
+#if GPG_ERROR_VERSION_NUMBER < 0x012400 /* 1.36 */
+#define GPG_ERR_NO_AUTH   314
+#define GPG_ERR_BAD_AUTH  315
+#endif /*GPG_ERROR_VERSION_NUMBER*/
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)

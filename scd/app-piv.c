@@ -890,6 +890,8 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
                                       PIV_ALGORITHM_3DES_ECB_0, 0x9B,
                                       tmpl, tmpllen, 0,
                                       &outdata, &outdatalen);
+  if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
+    err = gpg_error (GPG_ERR_BAD_AUTH);
   if (err)
     goto leave;
   if (!(outdatalen && *outdata == 0x7c
@@ -921,6 +923,8 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
                                       PIV_ALGORITHM_3DES_ECB_0, 0x9B,
                                       tmpl, tmpllen, 0,
                                       &outdata, &outdatalen);
+  if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
+    err = gpg_error (GPG_ERR_BAD_AUTH);
   if (err)
     goto leave;
   if (!(outdatalen && *outdata == 0x7c
@@ -937,7 +941,7 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
     goto leave;
   if (memcmp (witness, tmpl+14, 8))
     {
-      err = gpg_error (GPG_ERR_BAD_SIGNATURE);
+      err = gpg_error (GPG_ERR_BAD_AUTH);
       goto leave;
     }
 
@@ -993,6 +997,9 @@ set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
       wipememory (apdu+8, 24);
       if (err)
         log_error ("piv: setting admin key failed; sw=%04x\n", sw);
+      /* A PIN is not required, thus use a better error code.  */
+      if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
+        err = gpg_error (GPG_ERR_NO_AUTH);
     }
   else
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
@@ -2490,6 +2497,9 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
                                   tmpl, tmpllen, 0, &buffer, &buflen);
   if (err)
     {
+      /* A PIN is not required, thus use a better error code.  */
+      if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
+        err = gpg_error (GPG_ERR_NO_AUTH);
       log_error (_("generating key failed\n"));
       return err;
     }
@@ -2562,6 +2572,9 @@ do_writecert (app_t app, ctrl_t ctrl,
                   (int)0x71, (size_t)1,       "",  /* No compress */
                   (int)0xfe, (size_t)0,       "",  /* Empty LRC. */
                   (int)0,    (size_t)0,       NULL);
+  /* A PIN is not required, thus use a better error code.  */
+  if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
+    err = gpg_error (GPG_ERR_NO_AUTH);
   if (err)
     log_error ("piv: failed to write cert to %s: %s\n",
                dobj->keyref, gpg_strerror (err));
