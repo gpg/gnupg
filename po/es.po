@@ -222,8 +222,12 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Código de Reinicio"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Push ACK button on card/token."
+msgstr ""
+
+#, fuzzy
+#| msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Use the reader's pinpad for input."
 msgstr "%s%%0A%%0A Use el teclado del lector como entrada."
 
 msgid "Repeat this Reset Code"

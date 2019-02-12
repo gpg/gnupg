@@ -236,9 +236,12 @@ msgstr "PUK-kod"
 msgid "Reset Code"
 msgstr "Nollställ kod"
 
-#, fuzzy, c-format
+msgid "Push ACK button on card/token."
+msgstr ""
+
+#, fuzzy
 #| msgid "%s%%0A%%0AUse the reader's keypad for input."
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Use the reader's pinpad for input."
 msgstr "%s%%0A%%0AAnvänd läsarens knappsats för inmatning."
 
 msgid "Repeat this Reset Code"

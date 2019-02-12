@@ -230,8 +230,12 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Resetační kód"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Push ACK button on card/token."
+msgstr ""
+
+#, fuzzy
+#| msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Use the reader's pinpad for input."
 msgstr "%s%%0A%%0APro vstup použijte klávesnici čtečky."
 
 msgid "Repeat this Reset Code"

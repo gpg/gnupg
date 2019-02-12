@@ -208,8 +208,10 @@ msgstr ""
 msgid "Reset Code"
 msgstr ""
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Push ACK button on card/token."
+msgstr ""
+
+msgid "Use the reader's pinpad for input."
 msgstr ""
 
 #, fuzzy

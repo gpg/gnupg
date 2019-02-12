@@ -197,9 +197,12 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "重置代码"
 
-#, fuzzy, c-format
+msgid "Push ACK button on card/token."
+msgstr "按下 card/token 上的 ACK 按钮。"
+
+#, fuzzy
 #| msgid "Use the reader's pinpad for input."
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Use the reader's pinpad for input."
 msgstr "使用读卡器的小键盘输入。"
 
 msgid "Repeat this Reset Code"
@@ -8608,9 +8611,6 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
-
-#~ msgid "Push ACK button on card/token."
-#~ msgstr "按下 card/token 上的 ACK 按钮。"
 
 #~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
 #~ msgstr "等待 dirmngr 启动 ... (%ds)\n"

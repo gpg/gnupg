@@ -207,9 +207,13 @@ msgstr ""
 msgid "Reset Code"
 msgstr "Sıfırlama Kodu"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Push ACK button on card/token."
 msgstr ""
+
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "Use the reader's pinpad for input."
+msgstr "bir okuyucu tuştakımı kullanılmaz"
 
 msgid "Repeat this Reset Code"
 msgstr "Bu Sıfırlama Kodu tekrarlansın"

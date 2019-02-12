@@ -215,8 +215,12 @@ msgstr "CDP"
 msgid "Reset Code"
 msgstr "Code de réinitialisation"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Push ACK button on card/token."
+msgstr ""
+
+#, fuzzy
+#| msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Use the reader's pinpad for input."
 msgstr "%s%%0A%%0AUtilisez le pavé numérique du lecteur en entrée."
 
 msgid "Repeat this Reset Code"
