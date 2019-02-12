@@ -1,5 +1,28 @@
-Noteworthy changes in version 2.2.13 (unreleased)
+Noteworthy changes in version 2.2.13 (2019-02-12)
 -------------------------------------------------
+
+  * gpg: Implement key lookup via keygrip (using the & prefix).
+
+  * gpg: Allow generating Ed25519 key from existing key.
+
+  * gpg: Emit an ERROR status line if no key was found with -k.
+
+  * gpg: Stop early when trying to create a primary Elgamal key.  [#4329]
+
+  * gpgsm: Print the card's key algorithms along with their keygrips
+    in interactive key generation.
+
+  * agent: Clear bogus pinentry cache in the error case.  [#4348]
+
+  * scd: Support "acknowledge button" feature.
+
+  * scd: Fix for USB INTERRUPT transfer.  [#4308]
+
+  * wks: Do no use compression for the the encrypted challenge and
+    response.
+
+  Release-info: https://dev.gnupg.org/T4290
+  See-also: gnupg-announce/2019q1/000434.html
 
 
 Noteworthy changes in version 2.2.12 (2018-12-14)
