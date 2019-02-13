@@ -445,11 +445,19 @@ store_serialno (const char *line)
 /* Send an APDU to the current card.  On success the status word is
  * stored at R_SW inless R_SW is NULL.  With HEXAPDU being NULL only a
  * RESET command is send to scd.  With HEXAPDU being the string
- * "undefined" the command "SERIALNO undefined" is send to scd. */
+ * "undefined" the command "SERIALNO undefined" is send to scd.  If
+ * R_DATA is not NULL the data is without the status code is stored
+ * there.  Caller must release it.  */
 gpg_error_t
-scd_apdu (const char *hexapdu, unsigned int *r_sw)
+scd_apdu (const char *hexapdu, unsigned int *r_sw,
+          unsigned char **r_data, size_t *r_datalen)
 {
   gpg_error_t err;
+
+  if (r_data)
+    *r_data = NULL;
+  if (r_datalen)
+    *r_datalen = 0;
 
   err = start_agent (START_AGENT_NO_STARTUP_CMDS);
   if (err)
@@ -489,6 +497,12 @@ scd_apdu (const char *hexapdu, unsigned int *r_sw)
             {
               if (r_sw)
                 *r_sw = buf16_to_uint (data+datalen-2);
+              if (r_data && r_datalen)
+                {
+                  *r_data = data;
+                  *r_datalen = datalen - 2;
+                  data = NULL;
+                }
             }
           xfree (data);
         }

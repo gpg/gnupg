@@ -192,12 +192,16 @@ gpg_error_t test_get_matching_keys (const char *hexgrip);
 /*-- card-tool-misc.c --*/
 key_info_t find_kinfo (card_info_t info, const char *keyref);
 void *hex_to_buffer (const char *string, size_t *r_length);
+gpg_error_t send_apdu (const char *hexapdu, const char *desc,
+                       unsigned int ignore,
+                       unsigned char **r_data, size_t *r_datalen);
 
 /*-- card-call-scd.c --*/
 void release_card_info (card_info_t info);
 const char *app_type_string (app_type_t app_type);
 
-gpg_error_t scd_apdu (const char *hexapdu, unsigned int *r_sw);
+gpg_error_t scd_apdu (const char *hexapdu, unsigned int *r_sw,
+                      unsigned char **r_data, size_t *r_datalen);
 gpg_error_t scd_learn (card_info_t info);
 gpg_error_t scd_getattr (const char *name, struct card_info_s *info);
 gpg_error_t scd_setattr (const char *name,
@@ -218,6 +222,8 @@ gpg_error_t scd_checkpin (const char *serialno);
 
 unsigned long agent_get_s2k_count (void);
 
+/*-- card-tool-yubikey.c --*/
+gpg_error_t yubikey_commands (estream_t fp, int argc, char *argv[]);
 
 
 #endif /*GNUPG_CARD_TOOL_H*/

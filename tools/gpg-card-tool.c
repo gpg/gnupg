@@ -1596,6 +1596,16 @@ cmd_writecert (card_info_t info, char *argstr)
         }
       certref = certref_buffer = xstrdup ("OPENPGP.3");
     }
+  else /* Upcase the certref; prepend cardtype if needed.  */
+    {
+      if (!strchr (certref, '.'))
+        certref_buffer = xstrconcat (app_type_string (info->apptype), ".",
+                                     certref, NULL);
+      else
+        certref_buffer = xstrdup (certref);
+      ascii_strupr (certref_buffer);
+      certref = certref_buffer;
+    }
 
   if (opt_clear)
     {
@@ -2156,38 +2166,6 @@ cmd_unblock (card_info_t info)
 }
 
 
-/* Direct sending of an hex encoded APDU with error printing.  */
-static gpg_error_t
-send_apdu (const char *hexapdu, const char *desc, unsigned int ignore)
-{
-  gpg_error_t err;
-  unsigned int sw;
-
-  err = scd_apdu (hexapdu, &sw);
-  if (err)
-    log_error ("sending card command %s failed: %s\n", desc,
-               gpg_strerror (err));
-  else if (!hexapdu || !strcmp (hexapdu, "undefined"))
-    ;
-  else if (ignore == 0xffff)
-    ; /* Ignore all status words.  */
-  else if (sw != 0x9000)
-    {
-      switch (sw)
-        {
-        case 0x6285: err = gpg_error (GPG_ERR_OBJ_TERM_STATE); break;
-        case 0x6982: err = gpg_error (GPG_ERR_BAD_PIN); break;
-        case 0x6985: err = gpg_error (GPG_ERR_USE_CONDITIONS); break;
-        default: err = gpg_error (GPG_ERR_CARD);
-        }
-      if (!(ignore && ignore == sw))
-        log_error ("card command %s failed: %s (0x%04x)\n", desc,
-                   gpg_strerror (err),  sw);
-    }
-  return err;
-}
-
-
 /* Note: On successful execution a redisplay should be scheduled.  If
  * this function fails the card may be in an unknown state. */
 static gpg_error_t
@@ -2308,11 +2286,12 @@ cmd_factoryreset (card_info_t info)
            * unblock PIN command.  */
           any_apdu = 1;
           for (i=0; i < 5; i++)
-            send_apdu ("0020008008FFFFFFFFFFFFFFFF", "VERIFY", 0xffff);
+            send_apdu ("0020008008FFFFFFFFFFFFFFFF", "VERIFY", 0xffff,
+                       NULL, NULL);
           for (i=0; i < 5; i++)
             send_apdu ("002C008010FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
-                       "RESET RETRY COUNTER", 0xffff);
-          err = send_apdu ("00FB000001FF", "YUBIKEY RESET", 0);
+                       "RESET RETRY COUNTER", 0xffff, NULL, NULL);
+          err = send_apdu ("00FB000001FF", "YUBIKEY RESET", 0, NULL, NULL);
           if (err)
             goto leave;
         }
@@ -2321,14 +2300,15 @@ cmd_factoryreset (card_info_t info)
           any_apdu = 1;
           /* We need to select a card application before we can send APDUs
            * to the card without scdaemon doing anything on its own.  */
-          err = send_apdu (NULL, "RESET", 0);
+          err = send_apdu (NULL, "RESET", 0, NULL, NULL);
           if (err)
             goto leave;
-          err = send_apdu ("undefined", "dummy select ", 0);
+          err = send_apdu ("undefined", "dummy select ", 0, NULL, NULL);
           if (err)
             goto leave;
           /* Select the OpenPGP application.  */
-          err = send_apdu ("00A4040006D27600012401", "SELECT AID", 0);
+          err = send_apdu ("00A4040006D27600012401", "SELECT AID", 0,
+                           NULL, NULL);
           if (err)
             goto leave;
 
@@ -2343,14 +2323,16 @@ cmd_factoryreset (card_info_t info)
           for (i=0; i < 4; i++)
             send_apdu ("0020008120"
                        "40404040404040404040404040404040"
-                       "40404040404040404040404040404040", "VERIFY", 0xffff);
+                       "40404040404040404040404040404040", "VERIFY", 0xffff,
+                       NULL, NULL);
           for (i=0; i < 4; i++)
             send_apdu ("0020008320"
                        "40404040404040404040404040404040"
-                       "40404040404040404040404040404040", "VERIFY", 0xffff);
+                       "40404040404040404040404040404040", "VERIFY", 0xffff,
+                       NULL, NULL);
 
           /* Send terminate datafile command.  */
-          err = send_apdu ("00e60000", "TERMINATE DF", 0x6985);
+          err = send_apdu ("00e60000", "TERMINATE DF", 0x6985, NULL, NULL);
           if (err)
             goto leave;
         }
@@ -2361,13 +2343,13 @@ cmd_factoryreset (card_info_t info)
       any_apdu = 1;
       /* Send activate datafile command.  This is used without
        * confirmation if the card is already in termination state.  */
-      err = send_apdu ("00440000", "ACTIVATE DF", 0);
+      err = send_apdu ("00440000", "ACTIVATE DF", 0, NULL, NULL);
       if (err)
         goto leave;
     }
 
   /* Finally we reset the card reader once more.  */
-  err = send_apdu (NULL, "RESET", 0);
+  err = send_apdu (NULL, "RESET", 0, NULL, NULL);
   if (err)
     goto leave;
 
@@ -2859,7 +2841,60 @@ cmd_uif (card_info_t info, char *argstr)
 }
 
 
+static gpg_error_t
+cmd_yubikey (card_info_t info, char *argstr)
+{
+  gpg_error_t err, err2;
+  estream_t fp = opt.interactive? NULL : es_stdout;
+  char *words[20];
+  int nwords;
+
+  if (!info)
+    return print_help
+      ("YUBIKEY <cmd> args\n\n"
+       "Various commands pertaining to Yubikey tokens with <cmd> being:\n"
+       "\n"
+       "  LIST \n"
+       "\n"
+       "List supported and enabled applications.\n"
+       "\n"
+       "  ENABLE  usb|nfc|all [otp|u2f|opgp|piv|oath|fido2|all]\n"
+       "  DISABLE usb|nfc|all [otp|u2f|opgp|piv|oath|fido2|all]\n"
+       "\n"
+       "Enable or disable the specified or all applications on the\n"
+       "given interface.",
+       0);
+
+  argstr = skip_options (argstr);
+
+  if (!info->cardtype || strcmp (info->cardtype, "yubikey"))
+    {
+      log_info ("This command can only be used with Yubikeys.\n");
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+    }
+
+  nwords = split_fields (argstr, words, DIM (words));
+  if (nwords < 1)
+    {
+      err = gpg_error (GPG_ERR_SYNTAX);
+      goto leave;
+    }
+
+
+  /* Note that we always do a learn to get a chance to the card back
+   * into a usable state.  */
+  err = yubikey_commands (fp, nwords, words);
+  err2 = scd_learn (info);
+  if (err2)
+    log_error ("Error re-reading card: %s\n", gpg_strerror (err));
+
+ leave:
+  return err;
+}
+
 
+
 /* Data used by the command parser.  This needs to be outside of the
  * function scope to allow readline based command completion.  */
 enum cmdids
@@ -2869,7 +2904,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
-    cmdKEYATTR, cmdUIF, cmdAUTHENTICATE,
+    cmdKEYATTR, cmdUIF, cmdAUTHENTICATE, cmdYUBIKEY,
     cmdINVCMD
   };
 
@@ -2907,10 +2942,10 @@ static struct
   { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
   { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
   { "uif", cmdUIF, 1, N_("change the User Interaction Flag")},
-  /* Note, that we do not announce these command yet. */
   { "privatedo", cmdPRIVATEDO, 0, N_("change a private data object")},
   { "readcert",  cmdREADCERT,  0, N_("read a certificate from a data object")},
   { "writecert", cmdWRITECERT, 1, N_("store a certificate to a data object")},
+  { "yubikey",   cmdYUBIKEY,   0, N_("Yubikey management commands")},
   { NULL, cmdINVCMD, 0, NULL }
 };
 
@@ -3020,7 +3055,7 @@ dispatch_command (card_info_t info, const char *orig_command)
       else
         {
           flush_keyblock_cache ();
-          err = scd_apdu (NULL, NULL);
+          err = scd_apdu (NULL, NULL, NULL, NULL);
         }
       break;
 
@@ -3048,6 +3083,7 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdKDFSETUP:     err = cmd_kdfsetup (info, argstr); break;
     case cmdKEYATTR:      err = cmd_keyattr (info, argstr); break;
     case cmdUIF:          err = cmd_uif (info, argstr); break;
+    case cmdYUBIKEY:      err = cmd_yubikey (info, argstr); break;
 
     case cmdINVCMD:
     default:
@@ -3262,7 +3298,7 @@ interactive_loop (void)
           else
             {
               flush_keyblock_cache ();
-              err = scd_apdu (NULL, NULL);
+              err = scd_apdu (NULL, NULL, NULL, NULL);
             }
           break;
 
@@ -3318,6 +3354,7 @@ interactive_loop (void)
         case cmdKDFSETUP:  err = cmd_kdfsetup (info, argstr); break;
         case cmdKEYATTR:   err = cmd_keyattr (info, argstr); break;
         case cmdUIF:       err = cmd_uif (info, argstr); break;
+        case cmdYUBIKEY:   err = cmd_yubikey (info, argstr); break;
 
         case cmdINVCMD:
         default:

@@ -129,6 +129,7 @@ gpg_card_tool_SOURCES   = \
 	card-tool.h     \
 	card-call-scd.c \
 	card-tool-keys.c \
+	card-tool-yubikey.c \
 	card-tool-misc.c
 
 gpg_card_tool_LDADD     = ../common/libgpgrl.a $(common_libs) \
