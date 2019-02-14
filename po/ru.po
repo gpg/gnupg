@@ -4,14 +4,14 @@
 #              !-- no such user (2011-01-11)
 # Thanks Pawel I. Shajdo <pshajdo@gmail.com>.
 # Thanks Cmecb for the inspiration.
-# Ineiev <ineiev@gnu.org>, 2014, 2015, 2016, 2017, 2018
+# Ineiev <ineiev@gnu.org>, 2014, 2015, 2016, 2017, 2018, 2019
 #
 # Designated-Translator: none
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-07-14 17:41+0100\n"
+"PO-Revision-Date: 2019-02-14 17:41+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -205,12 +205,10 @@ msgid "Reset Code"
 msgstr "Код сброса"
 
 msgid "Push ACK button on card/token."
-msgstr ""
+msgstr "Нажмите кнопку подтверждения на карте."
 
-#, fuzzy
-#| msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgid "Use the reader's pinpad for input."
-msgstr "%s%%0A%%0AВводите на клавиатуре считывателя."
+msgstr "Вводите на клавиатуре считывателя."
 
 msgid "Repeat this Reset Code"
 msgstr "Повторите код сброса"
@@ -8208,10 +8206,9 @@ msgstr "URL '%s' перенаправлен на '%s' (%u)\n"
 msgid "too many redirections\n"
 msgstr "слишком много перенаправлений\n"
 
-#, fuzzy, c-format
-#| msgid "writing to '%s'\n"
+#, c-format
 msgid "redirection changed to '%s'\n"
-msgstr "сохраняю в '%s'\n"
+msgstr "перенаправление изменилось на '%s'\n"
 
 #, c-format
 msgid "error allocating memory: %s\n"
