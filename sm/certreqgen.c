@@ -807,8 +807,10 @@ create_request (ctrl_t ctrl,
   if (err)
     return err;
 
-  string = get_parameter_value (para, pHASHALGO, 0);
-  if (string)
+  len = gcry_sexp_canon_len (public, 0, NULL, NULL);
+  if (get_pk_algo_from_canon_sexp (public, len) == GCRY_PK_EDDSA)
+    mdalgo = GCRY_MD_SHA512;
+  else if ((string = get_parameter_value (para, pHASHALGO, 0)))
     mdalgo = gcry_md_map_name (string);
   else
     mdalgo = GCRY_MD_SHA256;

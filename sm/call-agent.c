@@ -354,6 +354,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
     case GCRY_MD_RMD160:hashopt = "--hash=rmd160"; break;
     case GCRY_MD_MD5:   hashopt = "--hash=md5"; break;
     case GCRY_MD_SHA256:hashopt = "--hash=sha256"; break;
+    case GCRY_MD_SHA512:hashopt = "--hash=sha512"; break;
     default:
       return gpg_error (GPG_ERR_DIGEST_ALGO);
     }
@@ -413,6 +414,12 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
 
     case GCRY_PK_ECC:
       rc = gcry_sexp_build (&sig, NULL, "(sig-val(ecdsa(r%b)(s%b)))",
+                            sigbuflen/2, sigbuf,
+                            sigbuflen/2, sigbuf + sigbuflen/2);
+      break;
+
+    case GCRY_PK_EDDSA:
+      rc = gcry_sexp_build (&sig, NULL, "(sig-val(eddsa(r%b)(s%b)))",
                             sigbuflen/2, sigbuf,
                             sigbuflen/2, sigbuf + sigbuflen/2);
       break;

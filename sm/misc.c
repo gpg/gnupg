@@ -146,6 +146,8 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
     pkalgo = GCRY_PK_RSA;
   else if (toklen == 5 && !memcmp ("ecdsa", tok, 5))
     pkalgo = GCRY_PK_ECC;
+  else if (toklen == 5 && !memcmp ("eddsa", tok, 5))
+    pkalgo = GCRY_PK_EDDSA;
   else
     return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
 
@@ -170,7 +172,7 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
                   mpi = &rsa_s;
                   mpi_len = &rsa_s_len;
                 }
-              else if (pkalgo == GCRY_PK_ECC)
+              else if (pkalgo == GCRY_PK_ECC || pkalgo == GCRY_PK_EDDSA)
                 {
                   mpi = &ecc_s;
                   mpi_len = &ecc_s_len;
@@ -236,6 +238,10 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
       oid = "1.2.840.10045.4.3.4"; /* ecdsa-with-sha512 */
       break;
 
+    case GCRY_MD_SHA512 | (GCRY_PK_EDDSA << 8):
+      oid = "1.3.101.112"; /* ed25519 */
+      break;
+
     default:
       return gpg_error (GPG_ERR_DIGEST_ALGO);
     }
@@ -245,7 +251,7 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
   else if (pkalgo == GCRY_PK_RSA)
     err = gcry_sexp_build (&sexp, NULL, "(sig-val(%s(s%b)))", oid,
                            (int)rsa_s_len, rsa_s);
-  else if (pkalgo == GCRY_PK_ECC)
+  else if (pkalgo == GCRY_PK_ECC || pkalgo == GCRY_PK_EDDSA)
     err = gcry_sexp_build (&sexp, NULL, "(sig-val(%s(r%b)(s%b)))", oid,
                            (int)ecc_r_len, ecc_r, (int)ecc_s_len, ecc_s);
   if (err)
