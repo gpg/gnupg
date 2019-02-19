@@ -729,7 +729,7 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 {
   int rc = 0;
   int n;
-  strlist_t r;
+  strlist_t r, namelist_expanded = NULL, link = NULL;
   GETKEY_CTX ctx;
   KBNODE help_kb = NULL;
   KBNODE found_key = NULL;
@@ -758,6 +758,19 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
     }
   else
     {
+      namelist_expanded = expand_group (namelist);
+
+      /* Chain namelist and namelist_expanded */
+      for (r = namelist; r; r = r->next)
+        {
+	  if (!r->next)
+	    {
+	      r->next = namelist_expanded;
+	      link = r;
+	      break;
+	    }
+	 }
+
       /* Build the search context.  */
       for (n = 0, r = namelist; r; r = r->next)
 	n++;
@@ -779,7 +792,8 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 	  if (err)
 	    {
 	      xfree (ctx);
-	      return gpg_err_code (err); /* FIXME: remove gpg_err_code.  */
+	      rc = gpg_err_code (err); /* FIXME: remove gpg_err_code.  */
+	      goto leave;
 	    }
 	  if (!include_unusable
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_SHORT_KID
@@ -798,7 +812,7 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
     {
       rc = gpg_error_from_syserror ();
       getkey_end (ctrl, ctx);
-      return rc;
+      goto leave;
     }
 
   if (!ret_kb)
@@ -829,6 +843,12 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
       getkey_end (ctrl, ctx);
     }
 
+leave:
+  if (namelist_expanded)
+    free_strlist(namelist_expanded);
+  /* Un-chain namelist and namelist_expanded */
+  if (link)
+    link->next = NULL;
   return rc;
 }
 

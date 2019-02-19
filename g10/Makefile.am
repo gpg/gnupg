@@ -99,6 +99,7 @@ common_source =  \
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
+	      expand-group.c	\
 	      keydb.c keydb.h    \
 	      keyring.c keyring.h \
 	      seskey.c		\

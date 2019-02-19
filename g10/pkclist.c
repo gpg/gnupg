@@ -759,55 +759,6 @@ default_recipient (ctrl_t ctrl)
 }
 
 
-static int
-expand_id(const char *id,strlist_t *into,unsigned int flags)
-{
-  struct groupitem *groups;
-  int count=0;
-
-  for(groups=opt.grouplist;groups;groups=groups->next)
-    {
-      /* need strcasecmp() here, as this should be localized */
-      if(strcasecmp(groups->name,id)==0)
-	{
-	  strlist_t each,sl;
-
-	  /* this maintains the current utf8-ness */
-	  for(each=groups->values;each;each=each->next)
-	    {
-	      sl=add_to_strlist(into,each->d);
-	      sl->flags=flags;
-	      count++;
-	    }
-
-	  break;
-	}
-    }
-
-  return count;
-}
-
-/* For simplicity, and to avoid potential loops, we only expand once -
- * you can't make an alias that points to an alias.  */
-static strlist_t
-expand_group (strlist_t input)
-{
-  strlist_t output = NULL;
-  strlist_t sl, rover;
-
-  for (rover = input; rover; rover = rover->next)
-    if (!(rover->flags & PK_LIST_FROM_FILE)
-        && !expand_id(rover->d,&output,rover->flags))
-      {
-	/* Didn't find any groups, so use the existing string */
-	sl=add_to_strlist(&output,rover->d);
-	sl->flags=rover->flags;
-      }
-
-  return output;
-}
-
-
 /* Helper for build_pk_list to find and check one key.  This helper is
  * also used directly in server mode by the RECIPIENTS command.  On
  * success the new key is added to PK_LIST_ADDR.  NAME is the user id
