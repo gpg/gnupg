@@ -942,16 +942,88 @@ build_cmd_setdesc (char *line, size_t linelen, const char *desc)
 
 
 
-/* Ask pinentry to get a pin by "GETPIN" command.
- * FIXME: Support EOF detection of the socket: ctrl->thread_startup.fd
+/* Watch the socket's EOF condition, while checking finish of
+   foreground thread.  When EOF condition is detected, terminate
+   the pinentry process behind the assuan pipe.
+ */
+static void *
+watch_sock (void *arg)
+{
+  gnupg_fd_t *p = (gnupg_fd_t *)arg;
+  pid_t pid = assuan_get_pid (entry_ctx);
+
+  while (1)
+    {
+      int err;
+      gnupg_fd_t sock = *p;
+      fd_set fdset;
+      struct timeval timeout = { 0, 500000 };
+
+      if (sock == GNUPG_INVALID_FD)
+        return NULL;
+
+      FD_ZERO (&fdset);
+      FD_SET (FD2INT (sock), &fdset);
+      err = npth_select (FD2INT (sock)+1, &fdset, NULL, NULL, &timeout);
+
+      if (err < 0)
+        {
+          if (errno == EINTR)
+            continue;
+          else
+            return NULL;
+        }
+
+      /* Possibly, it's EOF.  */
+      if (err > 0)
+        break;
+    }
+
+  if (pid == (pid_t)(-1))
+    ; /* No pid available can't send a kill. */
+#ifdef HAVE_W32_SYSTEM
+  /* Older versions of assuan set PID to 0 on Windows to indicate an
+     invalid value.  */
+  else if (pid != (pid_t) INVALID_HANDLE_VALUE && pid != 0)
+    TerminateProcess ((HANDLE)pid, 1);
+#else
+  else if (pid > 0)
+    kill (pid, SIGINT);
+#endif
+
+  return NULL;
+}
+
+
+/* Ask pinentry to get a pin by "GETPIN" command, spawning a thread
+   detecting the socket's EOF.
  */
 static gpg_error_t
 do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
 {
-  int rc;
+  npth_attr_t tattr;
+  gpg_error_t rc;
+  int err;
+  npth_t thread;
   int saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
+  gnupg_fd_t sock_watched = ctrl->thread_startup.fd;
 
-  (void)ctrl;
+  err = npth_attr_init (&tattr);
+  if (err)
+    {
+      log_error ("do_getpin: error npth_attr_init: %s\n", strerror (err));
+      return gpg_error_from_errno (err);
+    }
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
+
+  err = npth_create (&thread, &tattr, watch_sock, (void *)&sock_watched);
+  npth_attr_destroy (&tattr);
+  if (err)
+    {
+      log_error ("do_getpin: error spawning thread: %s\n", strerror (err));
+      return gpg_error_from_errno (err);
+    }
+
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, parm,
                         inq_quality, entry_ctx,
@@ -967,6 +1039,11 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
   if ((parm->status & PINENTRY_STATUS_CLOSE_BUTTON)
       && gpg_err_code (rc) == GPG_ERR_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
+
+  sock_watched = GNUPG_INVALID_FD;
+  err = npth_join (thread, NULL);
+  if (err)
+    log_error ("do_getpin: error joining thread: %s\n", strerror (err));
 
   return rc;
 }
