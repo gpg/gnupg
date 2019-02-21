@@ -204,41 +204,44 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
     return err;
 
   /* Map the hash algorithm to an OID.  */
-  switch (mdalgo | (pkalgo << 8))
+  if (mdalgo < 0 || mdalgo > (1<<15) || pkalgo < 0 || pkalgo > (1<<15))
+    return gpg_error (GPG_ERR_DIGEST_ALGO);
+
+  switch (mdalgo | (pkalgo << 16))
     {
-    case GCRY_MD_SHA1 | (GCRY_PK_RSA << 8):
+    case GCRY_MD_SHA1 | (GCRY_PK_RSA << 16):
       oid = "1.2.840.113549.1.1.5";  /* sha1WithRSAEncryption */
       break;
 
-    case GCRY_MD_SHA256 | (GCRY_PK_RSA << 8):
+    case GCRY_MD_SHA256 | (GCRY_PK_RSA << 16):
       oid = "1.2.840.113549.1.1.11"; /* sha256WithRSAEncryption */
       break;
 
-    case GCRY_MD_SHA384 | (GCRY_PK_RSA << 8):
+    case GCRY_MD_SHA384 | (GCRY_PK_RSA << 16):
       oid = "1.2.840.113549.1.1.12"; /* sha384WithRSAEncryption */
       break;
 
-    case GCRY_MD_SHA512 | (GCRY_PK_RSA << 8):
+    case GCRY_MD_SHA512 | (GCRY_PK_RSA << 16):
       oid = "1.2.840.113549.1.1.13"; /* sha512WithRSAEncryption */
       break;
 
-    case GCRY_MD_SHA224 | (GCRY_PK_ECC << 8):
+    case GCRY_MD_SHA224 | (GCRY_PK_ECC << 16):
       oid = "1.2.840.10045.4.3.1"; /* ecdsa-with-sha224 */
       break;
 
-    case GCRY_MD_SHA256 | (GCRY_PK_ECC << 8):
+    case GCRY_MD_SHA256 | (GCRY_PK_ECC << 16):
       oid = "1.2.840.10045.4.3.2"; /* ecdsa-with-sha256 */
       break;
 
-    case GCRY_MD_SHA384 | (GCRY_PK_ECC << 8):
+    case GCRY_MD_SHA384 | (GCRY_PK_ECC << 16):
       oid = "1.2.840.10045.4.3.3"; /* ecdsa-with-sha384 */
       break;
 
-    case GCRY_MD_SHA512 | (GCRY_PK_ECC << 8):
+    case GCRY_MD_SHA512 | (GCRY_PK_ECC << 16):
       oid = "1.2.840.10045.4.3.4"; /* ecdsa-with-sha512 */
       break;
 
-    case GCRY_MD_SHA512 | (GCRY_PK_EDDSA << 8):
+    case GCRY_MD_SHA512 | (GCRY_PK_EDDSA << 16):
       oid = "1.3.101.112"; /* ed25519 */
       break;
 
