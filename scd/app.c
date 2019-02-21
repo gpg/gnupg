@@ -121,6 +121,9 @@ check_conflict (app_t app, const char *name)
   if (!app || !name || (app->apptype && !ascii_strcasecmp (app->apptype, name)))
     return 0;
 
+  if (app->apptype && !strcmp (app->apptype, "UNDEFINED"))
+    return 0;
+
   log_info ("application '%s' in use - can't switch\n",
             app->apptype? app->apptype : "<null>");
 
