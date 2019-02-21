@@ -85,6 +85,7 @@ EOF
 cat > gpg-agent.conf <<EOF
 no-grab
 pinentry-program /home/wk/work/pinentry/gtk/pinentry-gtk
+disable-scdaemon
 EOF
 
 cat > trustlist.txt <<EOF
