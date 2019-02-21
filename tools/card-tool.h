@@ -127,7 +127,7 @@ struct key_info_s
   unsigned char fprlen;  /* Use length of the next item.  */
   unsigned char fpr[32]; /* The binary fingerprint of length FPRLEN.  */
   u32 created;           /* The time the key was created.  */
-
+  unsigned int usage;    /* Usage flags.  (GCRY_PK_USAGE_*) */
   char keyref[1];        /* String with the keyref (e.g. OPENPGP.1).  */
 };
 typedef struct key_info_s *key_info_t;

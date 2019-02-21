@@ -890,28 +890,59 @@ learn_status_cb (void *opaque, const char *line)
       else if (!memcmp (keyword, "KEYPAIRINFO", keywordlen))
         {
           /* The format of such a line is:
-           *   KEYPARINFO <hexgrip> <keyref>
+           *   KEYPAIRINFO <hexgrip> <keyref> [usage]
            */
-          const char *hexgrp = line;
+          char *hexgrp, *usage;
 
-          while (*line && !spacep (line))
-            line++;
-          while (spacep (line))
-            line++;
+          line_buffer = pline = xstrdup (line);
 
-          keyref = line;
+          hexgrp = pline;
+          while (*pline && !spacep (pline))
+            pline++;
+          while (spacep (pline))
+            pline++;
+
+          keyref = pline;
+          while (*pline && !spacep (pline))
+            pline++;
+          if (*pline)
+            {
+              *pline++ = 0;
+              while (spacep (pline))
+                pline++;
+              usage = pline;
+              while (*pline && !spacep (pline))
+                pline++;
+              *pline = 0;
+            }
+          else
+            usage = "";
 
           /* Check whether we already have an item for the keyref.  */
           kinfo = find_kinfo (parm, keyref);
           if (!kinfo)  /* New entry.  */
             kinfo = create_kinfo (parm, keyref);
-          else /* Existing entry - clear the grip.  */
-            memset (kinfo->grip, 0, sizeof kinfo->grip);
+          else /* Existing entry - clear grip and usage  */
+            {
+              memset (kinfo->grip, 0, sizeof kinfo->grip);
+              kinfo->usage = 0;
+            }
 
           /* Set or update the grip.  Note that due to the
            * calloc/memset an erroneous too short grip will be nul
            * padded on the right. */
           unhexify_fpr (hexgrp, kinfo->grip, sizeof kinfo->grip);
+          /* Parse and set the usage.  */
+          for (; *usage; usage++)
+            {
+              switch (*usage)
+                {
+                case 's': kinfo->usage |= GCRY_PK_USAGE_SIGN; break;
+                case 'c': kinfo->usage |= GCRY_PK_USAGE_CERT; break;
+                case 'a': kinfo->usage |= GCRY_PK_USAGE_AUTH; break;
+                case 'e': kinfo->usage |= GCRY_PK_USAGE_ENCR; break;
+                }
+            }
         }
       break;
 

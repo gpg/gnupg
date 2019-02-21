@@ -621,6 +621,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
   key_info_t ki;
   const char *s;
   gcry_sexp_t s_pkey;
+  int any;
 
   if (firstkinfo && kinfo)
     {
@@ -630,8 +631,25 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
           tty_fprintf (fp, "[none]\n");
           goto leave;
         }
+
       print_keygrip (fp, kinfo->grip);
-      tty_fprintf (fp, "      keyref .....: %s\n", kinfo->keyref);
+      tty_fprintf (fp, "      keyref .....: %s", kinfo->keyref);
+      if (kinfo->usage)
+        {
+          any = 0;
+          tty_fprintf (fp, "  (");
+          if ((kinfo->usage & GCRY_PK_USAGE_SIGN))
+            { tty_fprintf (fp, "sign"); any=1; }
+          if ((kinfo->usage & GCRY_PK_USAGE_CERT))
+            { tty_fprintf (fp, "%scert", any?",":""); any=1; }
+          if ((kinfo->usage & GCRY_PK_USAGE_AUTH))
+            { tty_fprintf (fp, "%sauth", any?",":""); any=1; }
+          if ((kinfo->usage & GCRY_PK_USAGE_ENCR))
+            { tty_fprintf (fp, "%sencr", any?",":""); any=1; }
+          tty_fprintf (fp, ")");
+        }
+      tty_fprintf (fp, "\n");
+
       if (!scd_readkey (kinfo->keyref, &s_pkey))
         {
           char *tmp = pubkey_algo_string (s_pkey);
