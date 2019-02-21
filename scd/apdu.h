@@ -31,6 +31,7 @@ enum {
   SW_EOF_REACHED    = 0x6282,
   SW_TERM_STATE     = 0x6285, /* Selected file is in termination state.  */
   SW_EEPROM_FAILURE = 0x6581,
+  SW_ACK_TIMEOUT    = 0x6600, /* OpenPGPcard: Ack timeout.  */
   SW_WRONG_LENGTH   = 0x6700,
   SW_SM_NOT_SUP     = 0x6882, /* Secure Messaging is not supported.  */
   SW_CC_NOT_SUP     = 0x6884, /* Command Chaining is not supported.  */
