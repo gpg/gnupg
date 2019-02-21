@@ -1312,7 +1312,7 @@ create_request (ctrl_t ctrl,
           log_info ("about to sign the %s for key: &%s\n",
                     certmode? "certificate":"CSR", hexgrip);
 
-          if (carddirect)
+          if (carddirect && !certmode)
             rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
                                    gcry_md_read (md, mdalgo),
                                    gcry_md_get_algo_dlen (mdalgo),
