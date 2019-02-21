@@ -355,10 +355,7 @@
 	       (if (flag "--extended-key-format" *args*)
 		   "enable-extended-key-format" "#enable-extended-key-format")
 	       (string-append "pinentry-program " (tool 'pinentry))
-	       (if (assoc "scdaemon" gpg-components)
-		   (string-append "scdaemon-program " (tool 'scdaemon))
-		   "# No scdaemon available")
-	       ))
+	       "disable-scdaemon"))
 
 ;; Initialize the test environment, install appropriate configuration
 ;; and start the agent, without any keys.

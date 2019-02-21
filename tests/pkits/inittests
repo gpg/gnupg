@@ -94,6 +94,7 @@ EOF
 # Fixme: we need to write a dummy pinentry program
 cat > gpg-agent.conf <<EOF
 no-grab
+disable-scdaemon
 EOF
 
 # Mark the root CA trusted
