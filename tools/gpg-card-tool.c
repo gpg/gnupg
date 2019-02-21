@@ -631,6 +631,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
           goto leave;
         }
       print_keygrip (fp, kinfo->grip);
+      tty_fprintf (fp, "      keyref .....: %s\n", kinfo->keyref);
       if (!scd_readkey (kinfo->keyref, &s_pkey))
         {
           char *tmp = pubkey_algo_string (s_pkey);

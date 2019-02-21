@@ -169,7 +169,7 @@ set_ul_config_value (struct ykapps_s *yk,
    * application and thus its transport again.  */
   if (bitflag == YKAPP_USB_ENABLED && !(ul & (0x08|0x10|0x20)))
     {
-      log_info ("Enabling PIV so that at least one CCI transport is enabled\n");
+      log_info ("Enabling PIV to have at least one CCID transport\n");
       ul |= 0x10;
     }
 
