@@ -90,52 +90,88 @@ struct data_object_s
   unsigned int acr_contact:2;     /* 0=always, 1=VCI, 2=PIN, 3=PINorOCC */
   unsigned int acr_contactless:2; /* 0=always, 1=VCI, 2=VCIandPIN,
                                                       3=VCIand(PINorOCC) */
-  unsigned int binary:1;          /* Data is not human readable.  */
   unsigned int dont_cache:1;      /* Data item will not be cached.  */
   unsigned int flush_on_error:1;  /* Flush cached item on error.  */
   unsigned int keypair:1;         /* Has a public key for a keypair.  */
-  char keyref[3];                 /* The key reference.  */
-  char *oidsuffix; /* Suffix of the OID, prefix is "2.16.840.1.101.3.7." */
-  char *desc;                     /* Description of the DO.  */
+  const char keyref[3];           /* The key reference.  */
+  const char *oidsuffix;          /* Suffix of the OID. */
+  const char *usage;              /* Usage string for a keypair or NULL.  */
+  const char *desc;               /* Description of the DO.  */
 };
 typedef struct data_object_s *data_object_t;
 static struct data_object_s data_objects[] = {
-  { 0x5FC107, 1, 0,1, 1, 0,0, 0, "",   "1.219.0", "Card Capability Container"},
-  { 0x5FC102, 1, 0,0, 1, 0,0, 0, "",   "2.48.0",  "Cardholder Unique Id" },
-  { 0x5FC105, 1, 0,1, 1, 0,0, 1, "9A", "2.1.1",   "Cert PIV Authentication" },
-  { 0x5FC103, 1, 2,2, 1, 0,0, 0, "",   "2.96.16", "Cardholder Fingerprints" },
-  { 0x5FC106, 1, 0,1, 1, 0,0, 0, "",   "2.144.0", "Security Object" },
-  { 0x5FC108, 1, 2,2, 1, 0,0, 0, "",   "2.96.48", "Cardholder Facial Image" },
-  { 0x5FC101, 1, 0,0, 1, 0,0, 1, "9E", "2.5.0",   "Cert Card Authentication"},
-  { 0x5FC10A, 0, 0,1, 1, 0,0, 1, "9C", "2.1.0",   "Cert Digital Signature" },
-  { 0x5FC10B, 0, 0,1, 1, 0,0, 1, "9D", "2.1.2",   "Cert Key Management" },
-  { 0x5FC109, 0, 3,3, 0, 0,0, 0, "",   "2.48.1",  "Printed Information" },
-  { 0x7E,     0, 0,0, 1, 0,0, 0, "",   "2.96.80", "Discovery Object" },
-  { 0x5FC10C, 0, 0,1, 1, 0,0, 0, "",   "2.96.96", "Key History Object" },
-  { 0x5FC10D, 0, 0,1, 1, 0,0, 0, "82", "2.16.1",  "Retired Cert Key Mgm 1" },
-  { 0x5FC10E, 0, 0,1, 1, 0,0, 0, "83", "2.16.2",  "Retired Cert Key Mgm 2" },
-  { 0x5FC10F, 0, 0,1, 1, 0,0, 0, "84", "2.16.3",  "Retired Cert Key Mgm 3" },
-  { 0x5FC110, 0, 0,1, 1, 0,0, 0, "85", "2.16.4",  "Retired Cert Key Mgm 4" },
-  { 0x5FC111, 0, 0,1, 1, 0,0, 0, "86", "2.16.5",  "Retired Cert Key Mgm 5" },
-  { 0x5FC112, 0, 0,1, 1, 0,0, 0, "87", "2.16.6",  "Retired Cert Key Mgm 6" },
-  { 0x5FC113, 0, 0,1, 1, 0,0, 0, "88", "2.16.7",  "Retired Cert Key Mgm 7" },
-  { 0x5FC114, 0, 0,1, 1, 0,0, 0, "89", "2.16.8",  "Retired Cert Key Mgm 8" },
-  { 0x5FC115, 0, 0,1, 1, 0,0, 0, "8A", "2.16.9",  "Retired Cert Key Mgm 9" },
-  { 0x5FC116, 0, 0,1, 1, 0,0, 0, "8B", "2.16.10", "Retired Cert Key Mgm 10" },
-  { 0x5FC117, 0, 0,1, 1, 0,0, 0, "8C", "2.16.11", "Retired Cert Key Mgm 11" },
-  { 0x5FC118, 0, 0,1, 1, 0,0, 0, "8D", "2.16.12", "Retired Cert Key Mgm 12" },
-  { 0x5FC119, 0, 0,1, 1, 0,0, 0, "8E", "2.16.13", "Retired Cert Key Mgm 13" },
-  { 0x5FC11A, 0, 0,1, 1, 0,0, 0, "8F", "2.16.14", "Retired Cert Key Mgm 14" },
-  { 0x5FC11B, 0, 0,1, 1, 0,0, 0, "90", "2.16.15", "Retired Cert Key Mgm 15" },
-  { 0x5FC11C, 0, 0,1, 1, 0,0, 0, "91", "2.16.16", "Retired Cert Key Mgm 16" },
-  { 0x5FC11D, 0, 0,1, 1, 0,0, 0, "92", "2.16.17", "Retired Cert Key Mgm 17" },
-  { 0x5FC11E, 0, 0,1, 1, 0,0, 0, "93", "2.16.18", "Retired Cert Key Mgm 18" },
-  { 0x5FC11F, 0, 0,1, 1, 0,0, 0, "94", "2.16.19", "Retired Cert Key Mgm 19" },
-  { 0x5FC120, 0, 0,1, 1, 0,0, 0, "95", "2.16.20", "Retired Cert Key Mgm 20" },
-  { 0x5FC121, 0, 2,2, 1, 0,0, 0, "",   "2.16.21", "Cardholder Iris Images" },
-  { 0x7F61,   0, 0,0, 1, 0,0, 0, "",   "2.16.22", "BIT Group Template" },
-  { 0x5FC122, 0, 0,0, 1, 0,0, 0, "",   "2.16.23", "SM Cert Signer" },
-  { 0x5FC123, 0, 3,3, 1, 0,0, 0, "",   "2.16.24", "Pairing Code Ref Data" },
+  { 0x5FC107, 1, 0,1, 0,0, 0, "",   "1.219.0", NULL,
+    "Card Capability Container"},
+  { 0x5FC102, 1, 0,0, 0,0, 0, "",   "2.48.0",  NULL,
+    "Cardholder Unique Id" },
+  { 0x5FC105, 1, 0,1, 0,0, 1, "9A", "2.1.1",   "a",
+    "Cert PIV Authentication" },
+  { 0x5FC103, 1, 2,2, 0,0, 0, "",   "2.96.16", NULL,
+    "Cardholder Fingerprints" },
+  { 0x5FC106, 1, 0,1, 0,0, 0, "",   "2.144.0", NULL,
+    "Security Object" },
+  { 0x5FC108, 1, 2,2, 0,0, 0, "",   "2.96.48", NULL,
+    "Cardholder Facial Image" },
+  { 0x5FC101, 1, 0,0, 0,0, 1, "9E", "2.5.0",   "a",
+    "Cert Card Authentication"},
+  { 0x5FC10A, 0, 0,1, 0,0, 1, "9C", "2.1.0",   "sc",
+    "Cert Digital Signature" },
+  { 0x5FC10B, 0, 0,1, 0,0, 1, "9D", "2.1.2",   "e",
+    "Cert Key Management" },
+  { 0x5FC109, 0, 3,3, 0,0, 0, "",   "2.48.1",  NULL,
+    "Printed Information" },
+  { 0x7E,     0, 0,0, 0,0, 0, "",   "2.96.80", NULL,
+    "Discovery Object" },
+  { 0x5FC10C, 0, 0,1, 0,0, 0, "",   "2.96.96", NULL,
+    "Key History Object" },
+  { 0x5FC10D, 0, 0,1, 0,0, 0, "82", "2.16.1",  "e",
+    "Retired Cert Key Mgm 1" },
+  { 0x5FC10E, 0, 0,1, 0,0, 0, "83", "2.16.2",  "e",
+    "Retired Cert Key Mgm 2" },
+  { 0x5FC10F, 0, 0,1, 0,0, 0, "84", "2.16.3",  "e",
+    "Retired Cert Key Mgm 3" },
+  { 0x5FC110, 0, 0,1, 0,0, 0, "85", "2.16.4",  "e",
+    "Retired Cert Key Mgm 4" },
+  { 0x5FC111, 0, 0,1, 0,0, 0, "86", "2.16.5",  "e",
+    "Retired Cert Key Mgm 5" },
+  { 0x5FC112, 0, 0,1, 0,0, 0, "87", "2.16.6",  "e",
+    "Retired Cert Key Mgm 6" },
+  { 0x5FC113, 0, 0,1, 0,0, 0, "88", "2.16.7",  "e",
+    "Retired Cert Key Mgm 7" },
+  { 0x5FC114, 0, 0,1, 0,0, 0, "89", "2.16.8",  "e",
+    "Retired Cert Key Mgm 8" },
+  { 0x5FC115, 0, 0,1, 0,0, 0, "8A", "2.16.9",  "e",
+    "Retired Cert Key Mgm 9" },
+  { 0x5FC116, 0, 0,1, 0,0, 0, "8B", "2.16.10", "e",
+    "Retired Cert Key Mgm 10" },
+  { 0x5FC117, 0, 0,1, 0,0, 0, "8C", "2.16.11", "e",
+    "Retired Cert Key Mgm 11" },
+  { 0x5FC118, 0, 0,1, 0,0, 0, "8D", "2.16.12", "e",
+    "Retired Cert Key Mgm 12" },
+  { 0x5FC119, 0, 0,1, 0,0, 0, "8E", "2.16.13", "e",
+    "Retired Cert Key Mgm 13" },
+  { 0x5FC11A, 0, 0,1, 0,0, 0, "8F", "2.16.14", "e",
+    "Retired Cert Key Mgm 14" },
+  { 0x5FC11B, 0, 0,1, 0,0, 0, "90", "2.16.15", "e",
+    "Retired Cert Key Mgm 15" },
+  { 0x5FC11C, 0, 0,1, 0,0, 0, "91", "2.16.16", "e",
+    "Retired Cert Key Mgm 16" },
+  { 0x5FC11D, 0, 0,1, 0,0, 0, "92", "2.16.17", "e",
+    "Retired Cert Key Mgm 17" },
+  { 0x5FC11E, 0, 0,1, 0,0, 0, "93", "2.16.18", "e",
+    "Retired Cert Key Mgm 18" },
+  { 0x5FC11F, 0, 0,1, 0,0, 0, "94", "2.16.19", "e",
+    "Retired Cert Key Mgm 19" },
+  { 0x5FC120, 0, 0,1, 0,0, 0, "95", "2.16.20", "e",
+    "Retired Cert Key Mgm 20" },
+  { 0x5FC121, 0, 2,2, 0,0, 0, "",   "2.16.21", NULL,
+    "Cardholder Iris Images" },
+  { 0x7F61,   0, 0,0, 0,0, 0, "",   "2.16.22", NULL,
+    "BIT Group Template" },
+  { 0x5FC122, 0, 0,0, 0,0, 0, "",   "2.16.23", NULL,
+    "SM Cert Signer" },
+  { 0x5FC123, 0, 3,3, 0,0, 0, "",   "2.16.24", NULL,
+    "Pairing Code Ref Data" },
   { 0 }
   /* Other key reference values without a data object:
    * "00" Global PIN (not cleared by application switching)
@@ -396,7 +432,10 @@ dump_all_do (int slot)
         }
       else
         {
-          if (data_objects[i].binary)
+          if (data_objects[i].tag == 0x5FC109)
+            log_info ("DO '%s': '%.*s'\n", data_objects[i].desc,
+                      (int)buflen, buffer);
+          else
             {
               log_info ("DO '%s': ", data_objects[i].desc);
               if (buflen > 16 && opt.verbose < 2)
@@ -407,10 +446,6 @@ dump_all_do (int slot)
               else
                 log_printhex (buffer, buflen, "");
             }
-          else
-            log_info ("DO '%s': '%.*s'\n",
-                      data_objects[i].desc,
-                      (int)buflen, buffer);
 
         }
       xfree (buffer); buffer = NULL;
@@ -1079,15 +1114,19 @@ send_keypair_and_cert_info (app_t app, ctrl_t ctrl, data_object_t dobj,
   char *keygripstr = NULL;
   int got_cert;
   char idbuf[50];
+  const char *usage;
 
   err = get_keygrip_by_tag (app, dobj->tag, &keygripstr, &got_cert);
   if (err)
     goto leave;
 
+  usage = dobj->usage? dobj->usage : "";
+
   snprintf (idbuf, sizeof idbuf, "PIV.%s", dobj->keyref);
   send_status_info (ctrl, "KEYPAIRINFO",
                     keygripstr, strlen (keygripstr),
                     idbuf, strlen (idbuf),
+                    usage, strlen (usage),
                     NULL, (size_t)0);
   if (!only_keypair && got_cert)
     {

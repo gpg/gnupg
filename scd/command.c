@@ -354,7 +354,7 @@ static const char hlp_learn[] =
   "\n"
   "are implemented.  These strings are aliases for the AID\n"
   "\n"
-  "  S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id>\n"
+  "  S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id> [<usage>]\n"
   "\n"
   "If there is no certificate yet stored on the card a single 'X' is\n"
   "returned as the keygrip.  In addition to the keypair info, information\n"
