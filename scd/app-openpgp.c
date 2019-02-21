@@ -2568,6 +2568,42 @@ do_writecert (app_t app, ctrl_t ctrl,
 }
 
 
+static gpg_error_t
+clear_chv_status (app_t app, int chvno)
+{
+  unsigned char apdu[4];
+  gpg_error_t err;
+
+  if (!app->app_local->extcap.is_v2)
+    return GPG_ERR_UNSUPPORTED_OPERATION;
+
+  apdu[0] = 0x00;
+  apdu[1] = ISO7816_VERIFY;
+  apdu[2] = 0xff;
+  apdu[3] = 0x80+chvno;
+
+  err = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
+  if (err)
+    {
+      if (gpg_err_code (err) == GPG_ERR_INV_VALUE)
+        err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+      return err;
+    }
+
+  if (chvno == 1)
+    {
+      apdu[3]++;
+      err = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
+      app->did_chv1 = app->did_chv2 = 0;
+    }
+  else if (chvno == 2)
+    app->did_chv2 = 0;
+  else if (chvno == 3)
+    app->did_chv3 = 0;
+
+  return err;
+}
+
 
 /* Handle the PASSWD command.  The following combinations are
    possible:
@@ -2623,38 +2659,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   pininfo.minlen = minlen;
 
   if ((flags & APP_CHANGE_FLAG_CLEAR))
-    {
-      unsigned char apdu[4];
-
-      if (!app->app_local->extcap.is_v2)
-        return GPG_ERR_UNSUPPORTED_OPERATION;
-
-      apdu[0] = 0x00;
-      apdu[1] = ISO7816_VERIFY;
-      apdu[2] = 0xff;
-      apdu[3] = 0x80+chvno;
-
-      rc = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
-      if (rc)
-        {
-          if (rc == GPG_ERR_INV_VALUE)
-            rc = GPG_ERR_UNSUPPORTED_OPERATION;
-          return rc;
-        }
-
-      if (chvno == 1)
-        {
-          apdu[3]++;
-          rc = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
-          app->did_chv1 = app->did_chv2 = 0;
-        }
-      else if (chvno == 2)
-        app->did_chv2 = 0;
-      else if (chvno == 3)
-        app->did_chv3 = 0;
-
-      return rc;
-    }
+    return clear_chv_status (app, chvno);
 
   if (reset_mode && chvno == 3)
     {
@@ -4501,7 +4506,9 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
   rc = iso7816_compute_ds (app->slot, exmode, data, datalen, le_value,
                            outdata, outdatalen);
-  if (!rc && app->force_chv1)
+  if (gpg_err_code (rc) == GPG_ERR_TIMEOUT)
+    clear_chv_status (app, 1);
+  else if (!rc && app->force_chv1)
     app->did_chv1 = 0;
 
   return rc;
@@ -4610,6 +4617,8 @@ do_auth (app_t app, const char *keyidstr,
       rc = iso7816_internal_authenticate (app->slot, exmode,
                                           indata, indatalen, le_value,
                                           outdata, outdatalen);
+      if (gpg_err_code (rc) == GPG_ERR_TIMEOUT)
+        clear_chv_status (app, 1);
     }
   return rc;
 }
@@ -4833,7 +4842,7 @@ do_decipher (app_t app, const char *keyidstr,
                          indata, indatalen, le_value, padind,
                          outdata, outdatalen);
   xfree (fixbuf);
-  if (app->app_local->keyattr[1].key_type == KEY_TYPE_ECC)
+  if (!rc && app->app_local->keyattr[1].key_type == KEY_TYPE_ECC)
     {
       unsigned char prefix = 0;
 
@@ -4857,6 +4866,8 @@ do_decipher (app_t app, const char *keyidstr,
           *outdatalen = *outdatalen + 1;
         }
     }
+  if (gpg_err_code (rc) == GPG_ERR_TIMEOUT)
+    clear_chv_status (app, 1);
 
   if (gpg_err_code (rc) == GPG_ERR_CARD /* actual SW is 0x640a */
       && app->app_local->manufacturer == 5
