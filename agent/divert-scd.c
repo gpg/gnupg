@@ -498,6 +498,7 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   char *kid;
   const unsigned char *s;
   size_t n;
+  int depth;
   const unsigned char *ciphertext;
   size_t ciphertextlen;
   char *plaintext;
@@ -506,7 +507,6 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   (void)desc_text;
 
   *r_padding = -1;
-
   s = cipher;
   if (*s != '(')
     return gpg_error (GPG_ERR_INV_SEXP);
@@ -522,6 +522,21 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
+
+  /* First check whether we have a flags parameter and skip it.  */
+  if (smatch (&s, n, "flags"))
+    {
+      depth = 1;
+      if (sskip (&s, &depth) || depth)
+        return gpg_error (GPG_ERR_INV_SEXP);
+      if (*s != '(')
+        return gpg_error (GPG_ERR_INV_SEXP);
+      s++;
+      n = snext (&s);
+      if (!n)
+        return gpg_error (GPG_ERR_INV_SEXP);
+    }
+
   if (smatch (&s, n, "rsa"))
     {
       if (*s != '(')
