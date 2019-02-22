@@ -1653,15 +1653,13 @@ ccid_open_usb_reader (const char *spec_reader_name,
       goto leave;
     }
 
-  if (set_no != 0)
+  /* Submit SET_INTERFACE control transfer which can reset the device.  */
+  rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
+  if (rc)
     {
-      rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
-      if (rc)
-        {
-          DEBUGOUT_1 ("usb_set_interface_alt_setting failed: %d\n", rc);
-          rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
-          goto leave;
-        }
+      DEBUGOUT_1 ("usb_set_interface_alt_setting failed: %d\n", rc);
+      rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
+      goto leave;
     }
 
   rc = ccid_vendor_specific_init (*handle);
