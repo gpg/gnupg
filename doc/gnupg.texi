@@ -187,7 +187,7 @@ the administration and the architecture.
 @cindex trust values
 @include trust-values.texi
 
-@include card-tool.texi
+@include gpg-card.texi
 @include tools.texi
 @include wks.texi
 

@@ -13,26 +13,26 @@ tool is an extension of the @option{--edit-key} command available with
 @command{gpg}.
 
 @menu
-* gpg-card-tool::         Administrate smart cards.
+* gpg-card::             Administrate smart cards.
 @end menu
 
 @c
 @c  GPG-CARD-TOOL
 @c
-@manpage gpg-card-tool.1
-@node gpg-card-tool
+@manpage gpg-card.1
+@node gpg-card
 @section Administrate smart cards.
 @ifset manverb
-.B gpg-card-tool
+.B gpg-card
 \- Administrate Smart Cards
 @end ifset
 
 @mansect synopsis
 @ifset manverb
-.B gpg-card-tool
+.B gpg-card
 .RI [ options ]
 .br
-.B gpg-card-tool
+.B gpg-card
 .RI [ options ]
 .I command
 .RI {
@@ -42,16 +42,16 @@ tool is an extension of the @option{--edit-key} command available with
 @end ifset
 
 @mansect description
-The @command{gpg-card-tool} is used to administrate smart cards and USB
+The @command{gpg-card} is used to administrate smart cards and USB
 tokens.  It provides a superset of features from @command{gpg
 --card-edit} an can be considered a frontend to @command{scdaemon}
 which is a daemon started by @command{gpg-agent} to handle smart
 cards.
 
-If @command{gpg-card-tool} is invoked without commands an interactive
+If @command{gpg-card} is invoked without commands an interactive
 mode is used.
 
-If @command{gpg-card-tool} is invoked with one or more commands the
+If @command{gpg-card} is invoked with one or more commands the
 same commands as available in the interactive mode are run from the
 command line.  These commands need to be delimited with a double-dash.
 If a double-dash or a shell specific character is required as part of
@@ -66,7 +66,7 @@ COMMAND}.
 
 @mansect options
 @noindent
-@command{gpg-card-tool} understands these options:
+@command{gpg-card} understands these options:
 
 @table @gnupgtabopt
 

@@ -1,4 +1,4 @@
-/* card-tool-keys.c - OpenPGP and CMS related functions for gpg-card-tool
+/* card-keys.c - OpenPGP and CMS related functions for gpg-card
  * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -28,7 +28,7 @@
 #include "../common/ccparray.h"
 #include "../common/exectool.h"
 #include "../common/openpgpdefs.h"
-#include "card-tool.h"
+#include "gpg-card.h"
 
 
 /* It is quite common that all keys of an OpenPGP card belong to the
@@ -167,6 +167,9 @@ static gpg_error_t
 parse_key_record (char **fields, int nfields, pubkey_t *r_pubkey)
 {
   pubkey_t pubkey;
+
+  (void)fields; /* Not yet used.  */
+  (void)nfields;
 
   pubkey = xtrycalloc (1, sizeof *pubkey);
   if (!pubkey)

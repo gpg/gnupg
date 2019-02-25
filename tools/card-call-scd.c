@@ -39,7 +39,7 @@
 #include "../common/status.h"
 #include "../common/host2net.h"
 #include "../common/openpgpdefs.h"
-#include "card-tool.h"
+#include "gpg-card.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
 

@@ -1,4 +1,4 @@
-/* card-tool-misc.c - Helper functions for gpg-card-tool
+/* card-misc.c - Helper functions for gpg-card
  * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -28,7 +28,7 @@
 #include "../common/util.h"
 #include "../common/i18n.h"
 #include "../common/openpgpdefs.h"
-#include "card-tool.h"
+#include "gpg-card.h"
 
 /* Return the key info object for the key KEYREF.  If it is not found
  * NULL is returned.  */

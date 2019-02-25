@@ -22,14 +22,14 @@ EXTRA_DIST = \
 	lspgpot mail-signed-keys convert-from-106 sockprox.c \
 	ccidmon.c ChangeLog-2011 \
 	gpg-connect-agent-w32info.rc \
-	gpg-card-tool-w32info.rc
+	gpg-card-w32info.rc
 
 AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
 gpg_connect_agent_rc_objs = gpg-connect-agent-w32info.o
-gpg_card_tool_rc_objs     = gpg-card-tool-w32info.o
+gpg_card_tool_rc_objs     = gpg-card-w32info.o
 resource_objs += $(gpg_connect_agent_rc_objs) $(gpg_card_tool_rc_objs)
 endif
 
@@ -51,7 +51,7 @@ endif
 
 libexec_PROGRAMS = gpg-wks-client gpg-pair-tool
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card-tool ${symcryptrun}
+bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server}
 endif
@@ -124,19 +124,20 @@ gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
                           $(gpg_connect_agent_rc_objs)
 
 
-gpg_card_tool_SOURCES   = \
-	gpg-card-tool.c \
-	card-tool.h     \
+gpg_card_SOURCES   = \
+	gpg-card.c \
+	gpg-card.h     \
 	card-call-scd.c \
-	card-tool-keys.c \
-	card-tool-yubikey.c \
-	card-tool-misc.c
+	card-keys.c \
+	card-yubikey.c \
+	card-misc.c
 
-gpg_card_tool_LDADD     = ../common/libgpgrl.a $(common_libs) \
-	                  $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
-			  $(GPG_ERROR_LIBS) \
-                          $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
-                          $(gpg_card_tool_rc_objs)
+gpg_card_LDADD = \
+	../common/libgpgrl.a $(common_libs) \
+	$(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
+	$(GPG_ERROR_LIBS) \
+        $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
+        $(gpg_card_tool_rc_objs)
 
 
 if !DISABLE_REGEX

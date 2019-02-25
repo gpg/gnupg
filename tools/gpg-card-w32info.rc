@@ -1,4 +1,4 @@
-/* gpg-card-toolt-w32info.rc                                         -*- c -*-
+/* gpg-card-w32info.rc                                         -*- c -*-
  * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is free software; as a special exception the author gives
@@ -34,8 +34,8 @@
         BEGIN
             VALUE "FileDescription", L"GnuPG\x2019s card tool \
 to the agent\0"
-            VALUE "InternalName", "gpg-card-tool\0"
-            VALUE "OriginalFilename", "gpg-card-tool.exe\0"
+            VALUE "InternalName", "gpg-card\0"
+            VALUE "OriginalFilename", "gpg-card.exe\0"
             VALUE "ProductName",    W32INFO_PRODUCTNAME
             VALUE "ProductVersion", W32INFO_PRODUCTVERSION
             VALUE "CompanyName", W32INFO_COMPANYNAME

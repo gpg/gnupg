@@ -1,4 +1,4 @@
-/* card-tool.h - Common definitions for the gpg-card-tool
+/* gpg-card.h - Common definitions for the gpg-card-tool
  * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#ifndef GNUPG_CARD_TOOL_H
-#define GNUPG_CARD_TOOL_H
+#ifndef GNUPG_GPG_CARD_H
+#define GNUPG_GPG_CARD_H
 
 #include "../common/session-env.h"
 
@@ -181,7 +181,7 @@ struct card_info_s
 typedef struct card_info_s *card_info_t;
 
 
-/*-- card-tool-keys.c --*/
+/*-- card-keys.c --*/
 void release_keyblock (keyblock_t keyblock);
 void flush_keyblock_cache (void);
 gpg_error_t get_matching_keys (const unsigned char *keygrip, int protocol,
@@ -189,7 +189,7 @@ gpg_error_t get_matching_keys (const unsigned char *keygrip, int protocol,
 gpg_error_t test_get_matching_keys (const char *hexgrip);
 
 
-/*-- card-tool-misc.c --*/
+/*-- card-misc.c --*/
 key_info_t find_kinfo (card_info_t info, const char *keyref);
 void *hex_to_buffer (const char *string, size_t *r_length);
 gpg_error_t send_apdu (const char *hexapdu, const char *desc,
@@ -222,8 +222,8 @@ gpg_error_t scd_checkpin (const char *serialno);
 
 unsigned long agent_get_s2k_count (void);
 
-/*-- card-tool-yubikey.c --*/
+/*-- card-yubikey.c --*/
 gpg_error_t yubikey_commands (estream_t fp, int argc, char *argv[]);
 
 
-#endif /*GNUPG_CARD_TOOL_H*/
+#endif /*GNUPG_GPG_CARD_H*/

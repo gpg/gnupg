@@ -1,4 +1,4 @@
-/* card-tool-yubikey.c - Yubikey specific functions.
+/* card-yubikey.c - Yubikey specific functions.
  * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -29,7 +29,7 @@
 #include "../common/i18n.h"
 #include "../common/tlv.h"
 #include "../common/ttyio.h"
-#include "card-tool.h"
+#include "gpg-card.h"
 
 
 /* Object to describe requested interface options.  */

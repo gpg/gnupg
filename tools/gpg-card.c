@@ -1,4 +1,4 @@
-/* gpg-card-tool.c - An interactive tool to work with cards.
+/* gpg-card.c - An interactive tool to work with cards.
  * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -40,7 +40,7 @@
 #include "../common/server-help.h"
 #include "../common/openpgpdefs.h"
 
-#include "card-tool.h"
+#include "gpg-card.h"
 
 
 #define CONTROL_D ('D' - 'A' + 1)
@@ -143,7 +143,7 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "gpg-card-tool"; break;
+    case 11: p = "gpg-card"; break;
     case 12: p = "@GNUPG@"; break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
@@ -151,11 +151,11 @@ my_strusage( int level )
 
     case 1:
     case 40:
-      p = ("Usage: gpg-card-tool"
+      p = ("Usage: gpg-card"
            " [options] [{[--] command [args]}]  (-h for help)");
       break;
     case 41:
-      p = ("Syntax: gpg-card-tool"
+      p = ("Syntax: gpg-card"
            " [options] [command [args] {-- command [args]}]\n\n"
            "Tool to manage cards and tokens.  With a command an interactive\n"
            "mode is used.  Use command \"help\" to list all commands.");
@@ -224,7 +224,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 
 
 
-/* gpg-card-tool main. */
+/* gpg-card main. */
 int
 main (int argc, char **argv)
 {
@@ -234,10 +234,10 @@ main (int argc, char **argv)
   int cmdidx;
   char *command;
 
-  gnupg_reopen_std ("gpg-card-tool");
+  gnupg_reopen_std ("gpg-card");
   set_strusage (my_strusage);
   gnupg_rl_initialize ();
-  log_set_prefix ("gpg-card-tool", GPGRT_LOG_WITH_PREFIX);
+  log_set_prefix ("gpg-card", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();
