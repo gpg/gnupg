@@ -1066,34 +1066,6 @@ static gc_option_t gc_options_pinentry[] =
 
 
 
-/* Component system.  Each component is a set of options that can be
-   configured at the same time.  If you change this, don't forget to
-   update GC_COMPONENT below.  */
-typedef enum
-  {
-    /* The classic GPG for OpenPGP.  */
-    GC_COMPONENT_GPG,
-
-    /* The GPG Agent.  */
-    GC_COMPONENT_GPG_AGENT,
-
-    /* The Smardcard Daemon.  */
-    GC_COMPONENT_SCDAEMON,
-
-    /* GPG for S/MIME.  */
-    GC_COMPONENT_GPGSM,
-
-    /* The LDAP Directory Manager for CRLs.  */
-    GC_COMPONENT_DIRMNGR,
-
-    /* The external Pinentry.  */
-    GC_COMPONENT_PINENTRY,
-
-    /* The number of components.  */
-    GC_COMPONENT_NR
-  } gc_component_t;
-
-
 /* The information associated with each component.  */
 static const struct
 {
