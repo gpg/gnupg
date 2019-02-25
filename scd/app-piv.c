@@ -1803,9 +1803,10 @@ ask_and_prepare_chv (app_t app, int keyref, int ask_new, int remaining,
 
 
 /* Verify the card holder verification identified by KEYREF.  This is
- * either the Appication PIN or the Global PIN. */
+ * either the Appication PIN or the Global PIN.  If FORCE is true a
+ * verification is always done.  */
 static gpg_error_t
-verify_chv (app_t app, int keyref,
+verify_chv (app_t app, int keyref, int force,
             gpg_error_t (*pincb)(void*,const char *,char **), void *pincb_arg)
 {
   gpg_error_t err;
@@ -1823,10 +1824,11 @@ verify_chv (app_t app, int keyref,
   apdu[3] = keyref;
   if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
     {
-      /* No need to verification.  */
-      return 0;  /* All fine.  */
+      if (!force) /* No need to verification.  */
+        return 0;  /* All fine.  */
+      remaining = -1;
     }
-  if ((sw & 0xfff0) == 0x63C0)
+  else if ((sw & 0xfff0) == 0x63C0)
     remaining = (sw & 0x000f); /* PIN has REMAINING tries left.  */
   else
     remaining = -1;
@@ -1998,7 +2000,7 @@ do_check_chv (app_t app, const char *pwidstr,
   if (keyref == -1)
     return gpg_error (GPG_ERR_INV_ID);
 
-  return verify_chv (app, keyref, pincb, pincb_arg);
+  return verify_chv (app, keyref, 0, pincb, pincb_arg);
 }
 
 
@@ -2032,6 +2034,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   unsigned char *indata_buffer = NULL; /* Malloced helper.  */
   unsigned char *apdudata = NULL;
   size_t apdudatalen;
+  int force_verify;
 
   if (!keyidstr || !*keyidstr)
     {
@@ -2045,6 +2048,15 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       err = gpg_error (GPG_ERR_INV_ID);
       goto leave;
     }
+
+  /* According to table 4b of SP800-73-4 the signing key always
+   * requires a verify.  */
+  switch (keyref)
+    {
+    case 0x9c: force_verify = 1; break;
+    default: force_verify = 0; break;
+    }
+
 
   err = get_key_algorithm_by_dobj (app, dobj, &mechanism);
   if (err)
@@ -2185,7 +2197,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
 
   /* Now verify the Application PIN.  */
-  err = verify_chv (app, 0x80, pincb, pincb_arg);
+  err = verify_chv (app, 0x80, force_verify, pincb, pincb_arg);
   if (err)
     return err;
 
@@ -2388,7 +2400,7 @@ do_decipher (app_t app, const char *keyidstr,
     }
 
   /* Now verify the Application PIN.  */
-  err = verify_chv (app, 0x80, pincb, pincb_arg);
+  err = verify_chv (app, 0x80, 0, pincb, pincb_arg);
   if (err)
     return err;
 
