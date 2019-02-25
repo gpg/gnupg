@@ -872,7 +872,7 @@ gc_reservation_failure(struct scheme *sc)
 {
 #ifdef NDEBUG
   fprintf(stderr,
-	  "insufficient reservation\n")
+	  "insufficient reservation\n");
 #else
   fprintf(stderr,
 	  "insufficient %s reservation in line %d\n",
@@ -5614,7 +5614,9 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->fcells = 0;
   sc->inhibit_gc = GC_ENABLED;
   sc->reserved_cells = 0;
+#ifndef NDEBUG
   sc->reserved_lineno = 0;
+#endif
   sc->no_memory=0;
   sc->inport=sc->NIL;
   sc->outport=sc->NIL;
