@@ -1156,7 +1156,7 @@ resolve_addr_libdns (const struct sockaddr_storage *addr, int addrlen,
       struct dns_rr_i rri;
 
       memset (&rri, 0, sizeof rri);
-      dns_rr_i_init (&rri, ans);
+      dns_rr_i_init (&rri);
       rri.section = DNS_S_ALL & ~DNS_S_QD;
       rri.name    = host;
       rri.type    = DNS_T_PTR;
@@ -1446,7 +1446,7 @@ get_dns_cert_libdns (const char *name, int want_certtype,
     goto leave;
 
   memset (&rri, 0, sizeof rri);
-  dns_rr_i_init (&rri, ans);
+  dns_rr_i_init (&rri);
   rri.section = DNS_S_ALL & ~DNS_S_QD;
   rri.name    = host;
   rri.type    = qtype;
@@ -1875,7 +1875,7 @@ getsrv_libdns (const char *name, struct srventry **list, unsigned int *r_count)
     goto leave;
 
   memset (&rri, 0, sizeof rri);
-  dns_rr_i_init (&rri, ans);
+  dns_rr_i_init (&rri);
   rri.section = DNS_S_ALL & ~DNS_S_QD;
   rri.name	  = host;
   rri.type	  = DNS_T_SRV;
