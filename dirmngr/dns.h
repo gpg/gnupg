@@ -291,25 +291,15 @@ enum dns_rcode {
  */
 #define DNS_STRMAXLEN 47 /* "QUESTION|ANSWER|AUTHORITY|ADDITIONAL" */
 
-DNS_PUBLIC const char *dns_strsection(enum dns_section, void *, size_t);
-#define dns_strsection3(a, b, c) \
-				dns_strsection((a), (b), (c))
-#define dns_strsection1(a)	dns_strsection((a), (char [DNS_STRMAXLEN + 1]){ 0 }, DNS_STRMAXLEN + 1)
-#define dns_strsection(...)	DNS_PP_CALL(DNS_PP_XPASTE(dns_strsection, DNS_PP_NARG(__VA_ARGS__)), __VA_ARGS__)
+DNS_PUBLIC const char *dns_strsection(enum dns_section);
 
 DNS_PUBLIC enum dns_section dns_isection(const char *);
 
-DNS_PUBLIC const char *dns_strclass(enum dns_class, void *, size_t);
-#define dns_strclass3(a, b, c)	dns_strclass((a), (b), (c))
-#define dns_strclass1(a)	dns_strclass((a), (char [DNS_STRMAXLEN + 1]){ 0 }, DNS_STRMAXLEN + 1)
-#define dns_strclass(...)	DNS_PP_CALL(DNS_PP_XPASTE(dns_strclass, DNS_PP_NARG(__VA_ARGS__)), __VA_ARGS__)
+DNS_PUBLIC const char *dns_strclass(enum dns_class);
 
 DNS_PUBLIC enum dns_class dns_iclass(const char *);
 
-DNS_PUBLIC const char *dns_strtype(enum dns_type, void *, size_t);
-#define dns_strtype3(a, b, c)	dns_strtype((a), (b), (c))
-#define dns_strtype1(a)		dns_strtype((a), (char [DNS_STRMAXLEN + 1]){ 0 }, DNS_STRMAXLEN + 1)
-#define dns_strtype(...)	DNS_PP_CALL(DNS_PP_XPASTE(dns_strtype, DNS_PP_NARG(__VA_ARGS__)), __VA_ARGS__)
+DNS_PUBLIC const char *dns_strtype(enum dns_type);
 
 DNS_PUBLIC enum dns_type dns_itype(const char *);
 
