@@ -3266,7 +3266,8 @@ unsigned dns_rr_grep(struct dns_rr *rr, unsigned lim, struct dns_rr_i *i, struct
 
 	return count;
 error:
-	*error_	= error;
+	if (error_)
+		*error_	= error;
 
 	return count;
 } /* dns_rr_grep() */
