@@ -503,9 +503,6 @@ DNS_PUBLIC int dns_rr_cmp(struct dns_rr *, struct dns_packet *, struct dns_rr *,
 DNS_PUBLIC size_t dns_rr_print(void *, size_t, struct dns_rr *, struct dns_packet *, int *);
 
 
-#define dns_rr_i_new(P, ...) \
-	dns_rr_i_init(&dns_quietinit((struct dns_rr_i){ 0, __VA_ARGS__ }), (P))
-
 struct dns_rr_i {
 	enum dns_section section;
 	const void *name;
@@ -533,7 +530,7 @@ DNS_PUBLIC int dns_rr_i_order(struct dns_rr *, struct dns_rr *, struct dns_rr_i 
 
 DNS_PUBLIC int dns_rr_i_shuffle(struct dns_rr *, struct dns_rr *, struct dns_rr_i *, struct dns_packet *);
 
-DNS_PUBLIC struct dns_rr_i *dns_rr_i_init(struct dns_rr_i *, struct dns_packet *);
+DNS_PUBLIC void dns_rr_i_init(struct dns_rr_i *);
 
 #define dns_rr_i_save(i)	((i)->saved = (i)->state)
 #define dns_rr_i_rewind(i)	((i)->state = (i)->saved)

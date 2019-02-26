@@ -1168,7 +1168,7 @@ resolve_addr_libdns (ctrl_t ctrl,
       struct dns_rr_i rri;
 
       memset (&rri, 0, sizeof rri);
-      dns_rr_i_init (&rri, ans);
+      dns_rr_i_init (&rri);
       rri.section = DNS_S_ALL & ~DNS_S_QD;
       rri.name    = host;
       rri.type    = DNS_T_PTR;
@@ -1459,7 +1459,7 @@ get_dns_cert_libdns (ctrl_t ctrl, const char *name, int want_certtype,
     goto leave;
 
   memset (&rri, 0, sizeof rri);
-  dns_rr_i_init (&rri, ans);
+  dns_rr_i_init (&rri);
   rri.section = DNS_S_ALL & ~DNS_S_QD;
   rri.name    = host;
   rri.type    = qtype;
@@ -1889,7 +1889,7 @@ getsrv_libdns (ctrl_t ctrl,
     goto leave;
 
   memset (&rri, 0, sizeof rri);
-  dns_rr_i_init (&rri, ans);
+  dns_rr_i_init (&rri);
   rri.section = DNS_S_ALL & ~DNS_S_QD;
   rri.name	  = host;
   rri.type	  = DNS_T_SRV;
