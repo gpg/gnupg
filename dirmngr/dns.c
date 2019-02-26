@@ -944,10 +944,11 @@ static int dns_sa_cmp(void *a, void *b) {
 #if _WIN32
 static int dns_inet_pton(int af, const void *src, void *dst) {
 	union { struct sockaddr_in sin; struct sockaddr_in6 sin6; } u;
+	int size_of_u = (int)sizeof u;
 
 	u.sin.sin_family	= af;
 
-	if (0 != WSAStringToAddressA((void *)src, af, (void *)0, (struct sockaddr *)&u, &(int){ sizeof u }))
+	if (0 != WSAStringToAddressA((void *)src, af, (void *)0, (struct sockaddr *)&u, &size_of_u))
 		return -1;
 
 	switch (af) {
@@ -1125,6 +1126,7 @@ static inline _Bool dns_isgraph(unsigned char c) {
 
 static int dns_poll(int fd, short events, int timeout) {
 	fd_set rset, wset;
+	struct timeval tv = { timeout, 0 };
 
 	if (!events)
 		return 0;
@@ -1141,7 +1143,7 @@ static int dns_poll(int fd, short events, int timeout) {
 	if (events & DNS_POLLOUT)
 		FD_SET(fd, &wset);
 
-	select(fd + 1, &rset, &wset, 0, (timeout >= 0)? &(struct timeval){ timeout, 0 } : NULL);
+	select(fd + 1, &rset, &wset, 0, (timeout >= 0)? &tv : NULL);
 
 	return 0;
 } /* dns_poll() */
@@ -1215,9 +1217,10 @@ static size_t dns_send_nopipe(int fd, const void *src, size_t len, int flags, dn
 
 	if (!sigismember(&pending, SIGPIPE)) {
 		int saved = error;
+		const struct timespec ts = { 0, 0 };
 
 		if (!count && error == EPIPE) {
-			while (-1 == sigtimedwait(&piped, NULL, &(struct timespec){ 0, 0 }) && errno == EINTR)
+			while (-1 == sigtimedwait(&piped, NULL, &ts) && errno == EINTR)
 				;;
 		}
 
@@ -7111,7 +7114,8 @@ static int dns_socket(struct sockaddr *local, int type, int *error_) {
 
 #if defined SO_NOSIGPIPE
 	if (type != SOCK_DGRAM) {
-		if (0 != setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &(int){ 1 }, sizeof (int)))
+		const int v = 1;
+		if (0 != setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &v, sizeof (int)))
 			goto soerr;
 	}
 #endif
@@ -7487,11 +7491,12 @@ error:
 
 static _Bool dns_so_tcp_keep(struct dns_socket *so) {
 	struct sockaddr_storage remote;
+	socklen_t l = sizeof remote;
 
 	if (so->tcp == -1)
 		return 0;
 
-	if (0 != getpeername(so->tcp, (struct sockaddr *)&remote, &(socklen_t){ sizeof remote }))
+	if (0 != getpeername(so->tcp, (struct sockaddr *)&remote, &l))
 		return 0;
 
 	return 0 == dns_sa_cmp(&remote, &so->remote);
