@@ -691,6 +691,11 @@ libdns_res_open (struct dns_resolver **r_res)
   gpg_error_t err;
   struct dns_resolver *res;
   int derr;
+  struct dns_options opts = { 0 };
+
+  opts.socks_host     = &libdns.socks_host;
+  opts.socks_user     = tor_socks_user;
+  opts.socks_password = tor_socks_password;
 
   *r_res = NULL;
 
@@ -716,10 +721,7 @@ libdns_res_open (struct dns_resolver **r_res)
     set_dns_timeout (0);
 
   res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (.socks_host     = &libdns.socks_host,
-                                .socks_user     = tor_socks_user,
-                                .socks_password = tor_socks_password ),
-                      &derr);
+                      &opts, &derr);
   if (!res)
     return libdns_error_to_gpg_error (derr);
 
