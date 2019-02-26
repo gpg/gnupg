@@ -451,11 +451,6 @@ DNS_PUBLIC int dns_p_study(struct dns_packet *);
 #define DNS_D_CLEAVE	2	/* cleave sub-domain */
 #define DNS_D_TRIM	4	/* remove superfluous dots */
 
-#define dns_d_new3(a, b, f)	dns_d_init(&(char[DNS_D_MAXNAME + 1]){ 0 }, DNS_D_MAXNAME + 1, (a), (b), (f))
-#define dns_d_new2(a, f)	dns_d_new3((a), strlen((a)), (f))
-#define dns_d_new1(a)		dns_d_new3((a), strlen((a)), DNS_D_ANCHOR)
-#define dns_d_new(...)		DNS_PP_CALL(DNS_PP_XPASTE(dns_d_new, DNS_PP_NARG(__VA_ARGS__)), __VA_ARGS__)
-
 DNS_PUBLIC char *dns_d_init(void *, size_t, const void *, size_t, int);
 
 DNS_PUBLIC size_t dns_d_anchor(void *, size_t, const void *, size_t);
