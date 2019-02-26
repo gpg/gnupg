@@ -1418,14 +1418,14 @@ do_readcert (app_t app, const char *certid,
  * application has been performed.  This is because we return a cached
  * result from key generation.  If no cached result is available, the
  * error GPG_ERR_UNSUPPORTED_OPERATION is returned so that the higher
- * layer can then to get the key by reading the matching certificate.
+ * layer can then get the key by reading the matching certificate.
  * On success a canonical encoded s-expression with the public key is
  * stored at (R_PK,R_PKLEN); the caller must release that buffer.  On
  * error R_PK and R_PKLEN are not changed and an error code is
  * returned.
  */
 static gpg_error_t
-do_readkey (app_t app, int advanced, const char *keyrefstr,
+do_readkey (app_t app, const char *keyrefstr,
             unsigned char **r_pk, size_t *r_pklen)
 {
   gpg_error_t err;
@@ -1471,19 +1471,6 @@ do_readkey (app_t app, int advanced, const char *keyrefstr,
   err = make_canon_sexp (s_pkey, &pk, &pklen);
   if (err)
     goto leave;
-  if (advanced)
-    {
-      /* FIXME: How ugly - we should move that to command.c */
-      char *p = canon_sexp_to_string (pk, pklen);
-      if (!p)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      xfree (pk);
-      pk = p;
-      pklen = strlen (pk);
-    }
 
   *r_pk = pk;
   pk = NULL;

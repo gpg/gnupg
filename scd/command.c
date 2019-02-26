@@ -516,11 +516,8 @@ cmd_readkey (assuan_context_t ctx, char *line)
   int rc;
   int advanced = 0;
   unsigned char *cert = NULL;
-  size_t ncert, n;
-  ksba_cert_t kc = NULL;
-  ksba_sexp_t p = NULL;
-  unsigned char *pk;
-  size_t pklen;
+  unsigned char *pk = NULL;
+  size_t ncert, pklen;
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -529,83 +526,68 @@ cmd_readkey (assuan_context_t ctx, char *line)
     advanced = 1;
 
   line = skip_options (line);
-
   line = xstrdup (line); /* Need a copy of the line. */
+
   /* If the application supports the READKEY function we use that.
      Otherwise we use the old way by extracting it from the
      certificate.  */
-  rc = app_readkey (ctrl->app_ctx, ctrl, advanced, line, &pk, &pklen);
+  rc = app_readkey (ctrl->app_ctx, ctrl, line, &pk, &pklen);
   if (!rc)
-    { /* Yeah, got that key - send it back.  */
-      rc = assuan_send_data (ctx, pk, pklen);
-      xfree (pk);
-      xfree (line);
-      line = NULL;
-      goto leave;
-    }
-
-  if (gpg_err_code (rc) != GPG_ERR_UNSUPPORTED_OPERATION
-      && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
-    log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
-  else
+    ; /* Okay, got that key.  */
+  else if (gpg_err_code (rc) == GPG_ERR_UNSUPPORTED_OPERATION
+           || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
+      /* Fall back to certificate reading.  */
       rc = app_readcert (ctrl->app_ctx, ctrl, line, &cert, &ncert);
       if (rc)
-        log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
+        {
+          log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+      rc = app_help_pubkey_from_cert (cert, ncert, &pk, &pklen);
+      if (rc)
+        {
+          log_error ("failed to parse the certificate: %s\n",
+                     gpg_strerror (rc));
+          goto leave;
+        }
     }
-  xfree (line);
-  line = NULL;
-  if (rc)
-    goto leave;
-
-  rc = ksba_cert_new (&kc);
-  if (rc)
-    goto leave;
-
-  rc = ksba_cert_init_from_mem (kc, cert, ncert);
-  if (rc)
+  else
     {
-      log_error ("failed to parse the certificate: %s\n", gpg_strerror (rc));
+      log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
-
-  p = ksba_cert_get_public_key (kc);
-  if (!p)
-    {
-      rc = gpg_error (GPG_ERR_NO_PUBKEY);
-      goto leave;
-    }
-  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
 
   if (advanced)
     {
       gcry_sexp_t s_key;
+      unsigned char *pkadv;
+      size_t pkadvlen;
 
-      rc = gcry_sexp_new (&s_key, (void*)p, n, 0);
+      rc = gcry_sexp_new (&s_key, pk, pklen, 0);
       if (rc)
         goto leave;
 
-      pklen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, NULL, 0);
-      pk = xtrymalloc (pklen);
-      if (!pk)
+      pkadvlen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, NULL, 0);
+      pkadv = xtrymalloc (pkadvlen);
+      if (!pkadv)
         {
           rc = gpg_error_from_syserror ();
           goto leave;
         }
-      log_assert (pklen);
+      log_assert (pkadvlen);
 
-      gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, pk, pklen);
+      gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, pkadv, pkadvlen);
       gcry_sexp_release (s_key);
       /* (One less to adjust for the trailing '\0') */
-      rc = assuan_send_data (ctx, pk, pklen-1);
-      xfree (pk);
+      rc = assuan_send_data (ctx, pkadv, pkadvlen-1);
+      xfree (pkadv);
     }
   else
-    rc = assuan_send_data (ctx, p, n);
+    rc = assuan_send_data (ctx, pk, pklen);
 
  leave:
-  xfree (p);
-  ksba_cert_release (kc);
+  xfree (pk);
   xfree (cert);
   return rc;
 }

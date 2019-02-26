@@ -1875,10 +1875,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
    buffer. On error PK and PKLEN are not changed and an error code is
    returned.  */
 static gpg_error_t
-do_readkey (app_t app, int advanced, const char *keyid,
-            unsigned char **pk, size_t *pklen)
+do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 {
-#if GNUPG_MAJOR_VERSION > 1
   gpg_error_t err;
   int keyno;
   unsigned char *buf;
@@ -1900,45 +1898,17 @@ do_readkey (app_t app, int advanced, const char *keyid,
   if (!buf)
     return gpg_error (GPG_ERR_NO_PUBKEY);
 
-  if (advanced)
+  *pklen = app->app_local->pk[keyno].keylen;
+  *pk = xtrymalloc (*pklen);
+  if (!*pk)
     {
-      gcry_sexp_t s_key;
-
-      err = gcry_sexp_new (&s_key, buf, app->app_local->pk[keyno].keylen, 0);
-      if (err)
-        return err;
-
-      *pklen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, NULL, 0);
-      *pk = xtrymalloc (*pklen);
-      if (!*pk)
-        {
-          err = gpg_error_from_syserror ();
-          *pklen = 0;
-          return err;
-        }
-
-      gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, *pk, *pklen);
-      gcry_sexp_release (s_key);
-      /* Decrement for trailing '\0' */
-      *pklen = *pklen - 1;
+      err = gpg_error_from_syserror ();
+      *pklen = 0;
+      return err;
     }
-  else
-    {
-      *pklen = app->app_local->pk[keyno].keylen;
-      *pk = xtrymalloc (*pklen);
-      if (!*pk)
-        {
-          err = gpg_error_from_syserror ();
-          *pklen = 0;
-          return err;
-        }
-      memcpy (*pk, buf, *pklen);
-    }
+  memcpy (*pk, buf, *pklen);
 
   return 0;
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 /* Read the standard certificate of an OpenPGP v2 card.  It is

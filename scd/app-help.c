@@ -29,9 +29,9 @@
 #include "../common/tlv.h"
 
 
-/* Count the number of bits, assuming the A represents an unsigned big
-   integer of length LEN bytes.  If A is NULL a length of 0 is
-   returned. */
+/* Count the number of bits, assuming that A represents an unsigned
+ * big integer of length LEN bytes.  If A is NULL a length of 0 is
+ * returned. */
 unsigned int
 app_help_count_bits (const unsigned char *a, size_t len)
 {
@@ -87,6 +87,45 @@ app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip)
 }
 
 
+gpg_error_t
+app_help_pubkey_from_cert (const void *cert, size_t certlen,
+                           unsigned char **r_pk, size_t *r_pklen)
+{
+  gpg_error_t err;
+  ksba_cert_t kc;
+  unsigned char *pk;
+  size_t pklen;
+
+  *r_pk = NULL;
+  *r_pklen = 0;
+
+  err = ksba_cert_new (&kc);
+  if (err)
+    return err;
+
+  err = ksba_cert_init_from_mem (kc, cert, certlen);
+  if (err)
+    goto leave;
+
+  pk = ksba_cert_get_public_key (kc);
+  if (!pk)
+    {
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+  pklen = gcry_sexp_canon_len (pk, 0, NULL, &err);
+
+ leave:
+  if (!err)
+    {
+      *r_pk = pk;
+      *r_pklen = pklen;
+    }
+  else
+    ksba_free (pk);
+  ksba_cert_release (kc);
+  return err;
+}
 
 /* Given the SLOT and the File ID FID, return the length of the
    certificate contained in that file. Returns 0 if the file does not

@@ -618,16 +618,12 @@ do_readcert (app_t app, const char *certid,
    certificate parsing code in commands.c:cmd_readkey.  For internal
    use PK and PKLEN may be NULL to just check for an existing key.  */
 static gpg_error_t
-do_readkey (app_t app, int advanced, const char *keyid,
-            unsigned char **pk, size_t *pklen)
+do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
   unsigned char *buffer[2];
   size_t buflen[2];
   unsigned short path[1] = { 0x4500 };
-
-  if (advanced)
-    return GPG_ERR_NOT_SUPPORTED;
 
   /* We use a generic name to retrieve PK.AUT.IFD-SPK.  */
   if (!strcmp (keyid, "$IFDAUTHKEY") && app->app_local->nks_version >= 3)
@@ -702,7 +698,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   else
     return gpg_error (GPG_ERR_INV_ID);
 
-  if (!force && !do_readkey (app, 0, keyid, NULL, NULL))
+  if (!force && !do_readkey (app, keyid, NULL, NULL))
     return gpg_error (GPG_ERR_EEXIST);
 
   /* Parse the S-expression.  */
