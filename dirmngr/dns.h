@@ -412,9 +412,6 @@ struct dns_packet {
 
 #define dns_p_sizeof(P)		dns_p_calcsize((P)->end)
 
-/** takes size of maximum desired payload */
-#define dns_p_new(n)		(dns_p_init((struct dns_packet *)&(union { unsigned char b[dns_p_calcsize((n))]; struct dns_packet p; }){ { 0 } }, dns_p_calcsize((n))))
-
 /** takes size of entire packet structure as allocated */
 DNS_PUBLIC struct dns_packet *dns_p_init(struct dns_packet *, size_t);
 
