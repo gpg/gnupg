@@ -10086,8 +10086,9 @@ static const struct {
 	{ "AR",         DNS_S_ADDITIONAL },
 };
 
-const char *(dns_strsection)(enum dns_section section, void *_dst, size_t lim) {
-	struct dns_buf dst = DNS_B_INTO(_dst, lim);
+const char *(dns_strsection)(enum dns_section section) {
+	char _dst[DNS_STRMAXLEN + 1] = { 0 };
+	struct dns_buf dst = DNS_B_INTO(_dst, sizeof _dst);
 	unsigned i;
 
 	for (i = 0; i < lengthof(dns_sections); i++) {
@@ -10135,8 +10136,9 @@ static const struct {
 	{ "IN", DNS_C_IN },
 };
 
-const char *(dns_strclass)(enum dns_class type, void *_dst, size_t lim) {
-	struct dns_buf dst = DNS_B_INTO(_dst, lim);
+const char *(dns_strclass)(enum dns_class type) {
+	char _dst[DNS_STRMAXLEN + 1] = { 0 };
+	struct dns_buf dst = DNS_B_INTO(_dst, sizeof _dst);
 	unsigned i;
 
 	for (i = 0; i < lengthof(dns_classes); i++) {
@@ -10171,8 +10173,9 @@ enum dns_class dns_iclass(const char *name) {
 } /* dns_iclass() */
 
 
-const char *(dns_strtype)(enum dns_type type, void *_dst, size_t lim) {
-	struct dns_buf dst = DNS_B_INTO(_dst, lim);
+const char *(dns_strtype)(enum dns_type type) {
+	char _dst[DNS_STRMAXLEN + 1] = { 0 };
+	struct dns_buf dst = DNS_B_INTO(_dst, sizeof _dst);
 	unsigned i;
 
 	for (i = 0; i < lengthof(dns_rrtypes); i++) {
