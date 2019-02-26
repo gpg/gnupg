@@ -10632,8 +10632,11 @@ static int parse_packet(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 #if 0
 	dns_rr_foreach(&rr, Q, .name = "ns8.yahoo.com.") {
 #else
+	char _p[DNS_D_MAXNAME + 1] = { 0 };
+	const char *dn = "ns8.yahoo.com";
+	char *_name = dns_d_init(_p, sizeof _p, dn, strlen (dn), DNS_D_ANCHOR);
 	struct dns_rr rrset[32];
-	struct dns_rr_i *rri	= dns_rr_i_new(Q, .name = dns_d_new("ns8.yahoo.com", DNS_D_ANCHOR), .sort = MAIN.sort);
+	struct dns_rr_i *rri	= dns_rr_i_new(Q, .name = _name, .sort = MAIN.sort);
 	unsigned rrcount	= dns_rr_grep(rrset, lengthof(rrset), rri, Q, &error);
 
 	for (unsigned i = 0; i < rrcount; i++) {
@@ -10661,13 +10664,14 @@ static int parse_packet(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 
 
 static int parse_domain(int argc, char *argv[]) {
+	char _p[DNS_D_MAXNAME + 1] = { 0 };
 	char *dn;
 
 	dn	= (argc > 1)? argv[1] : "f.l.google.com";
 
 	printf("[%s]\n", dn);
 
-	dn	= dns_d_new(dn);
+	dn	= dns_d_init(_p, sizeof _p, dn, strlen (dn), DNS_D_ANCHOR);
 
 	do {
 		puts(dn);
