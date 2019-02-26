@@ -10943,6 +10943,7 @@ static int send_query(int argc, char *argv[]) {
 	struct sockaddr_storage ss;
 	struct dns_socket *so;
 	int error, type;
+	struct dns_options opts = { 0 };
 
 	memset(&ss, 0, sizeof ss);
 	if (argc > 1) {
@@ -10977,7 +10978,7 @@ static int send_query(int argc, char *argv[]) {
 
 	fprintf(stderr, "querying %s for %s IN %s\n", host, MAIN.qname, dns_strtype(MAIN.qtype));
 
-	if (!(so = dns_so_open((struct sockaddr *)&resconf()->iface, type, dns_opts(), &error)))
+	if (!(so = dns_so_open((struct sockaddr *)&resconf()->iface, type, &opts, &error)))
 		panic("dns_so_open: %s", dns_strerror(error));
 
 	while (!(A = dns_so_query(so, Q, (struct sockaddr *)&ss, &error))) {
@@ -11061,6 +11062,11 @@ static int resolve_query(int argc DNS_NOTUSED, char *argv[]) {
 	struct dns_packet *ans;
 	const struct dns_stat *st;
 	int error;
+	struct dns_options opts = { 0 };
+
+	opts.socks_host = &MAIN.socks_host;
+	opts.socks_user = MAIN.socks_user;
+	opts.socks_password = MAIN.socks_password;
 
 	if (!MAIN.qname)
 		MAIN.qname = "www.google.com";
@@ -11070,9 +11076,7 @@ static int resolve_query(int argc DNS_NOTUSED, char *argv[]) {
 	resconf()->options.recurse = recurse;
 
 	if (!(R = dns_res_open(resconf(), hosts(), dns_hints_mortal(hints(resconf(), &error)), cache(),
-			       dns_opts(.socks_host=&MAIN.socks_host,
-					.socks_user=MAIN.socks_user,
-					.socks_password=MAIN.socks_password), &error)))
+			       &opts, &error)))
 		panic("%s: %s", MAIN.qname, dns_strerror(error));
 
 	dns_res_settrace(R, trace("w+b"));
@@ -11116,6 +11120,7 @@ static int resolve_addrinfo(int argc DNS_NOTUSED, char *argv[]) {
 	struct addrinfo *ent;
 	char pretty[512];
 	int error;
+	struct dns_options opts = { 0 };
 
 	if (!MAIN.qname)
 		MAIN.qname = "www.google.com";
@@ -11123,7 +11128,7 @@ static int resolve_addrinfo(int argc DNS_NOTUSED, char *argv[]) {
 
 	resconf()->options.recurse = recurse;
 
-	if (!(res = dns_res_open(resconf(), hosts(), dns_hints_mortal(hints(resconf(), &error)), cache(), dns_opts(), &error)))
+	if (!(res = dns_res_open(resconf(), hosts(), dns_hints_mortal(hints(resconf(), &error)), cache(), &opts, &error)))
 		panic("%s: %s", MAIN.qname, dns_strerror(error));
 
 	if (!(ai = dns_ai_open(MAIN.qname, "80", MAIN.qtype, &ai_hints, res, &error)))
