@@ -384,16 +384,21 @@ static void
 print_compliance_flags (ksba_cert_t cert, int algo, unsigned int nbits,
                         estream_t fp)
 {
-  int any = 0;
+  int indent = 0;
+  int hashalgo;
 
   if (gnupg_pk_is_compliant (CO_DE_VS, algo, NULL, nbits, NULL))
     {
-      es_fputs (gnupg_status_compliance_flag (CO_DE_VS), fp);
-      any++;
+      hashalgo = gcry_md_map_name (ksba_cert_get_digest_algo (cert));
+      if (gnupg_digest_is_compliant (CO_DE_VS, hashalgo))
+        {
+          es_fputs (gnupg_status_compliance_flag (CO_DE_VS), fp);
+          indent = 1;
+        }
     }
 
   if (opt.with_key_screening)
-    print_pk_screening (cert, 1+any, fp);
+    print_pk_screening (cert, 1+indent, fp);
 }
 
 
