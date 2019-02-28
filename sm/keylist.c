@@ -348,10 +348,19 @@ email_kludge (const char *name)
 /* Print the compliance flags to field 18.  ALGO is the gcrypt algo
  * number.  NBITS is the length of the key in bits.  */
 static void
-print_compliance_flags (int algo, unsigned int nbits, estream_t fp)
+print_compliance_flags (ksba_cert_t cert, int algo, unsigned int nbits,
+                        estream_t fp)
 {
+  int hashalgo;
+
   if (gnupg_pk_is_compliant (CO_DE_VS, algo, NULL, nbits, NULL))
-    es_fputs (gnupg_status_compliance_flag (CO_DE_VS), fp);
+    {
+      hashalgo = gcry_md_map_name (ksba_cert_get_digest_algo (cert));
+      if (gnupg_digest_is_compliant (CO_DE_VS, hashalgo))
+        {
+          es_fputs (gnupg_status_compliance_flag (CO_DE_VS), fp);
+        }
+    }
 }
 
 
@@ -526,7 +535,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   es_putc (':', fp);  /* End of field 15. */
   es_putc (':', fp);  /* End of field 16. */
   es_putc (':', fp);  /* End of field 17. */
-  print_compliance_flags (algo, nbits, fp);
+  print_compliance_flags (cert, algo, nbits, fp);
   es_putc (':', fp);  /* End of field 18. */
   es_putc ('\n', fp);
 
