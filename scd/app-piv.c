@@ -1450,27 +1450,32 @@ do_readkey (app_t app, const char *keyrefstr,
     goto leave;
   if (!mechanism)
     {
-      /* We got a certificate.  Let the upper layer handle the
-       * extraction of the key.  FIXME: It would be better to have a
-       * shared fucntion to dothis here.  */
-      err = gpg_error (GPG_ERR_NOT_FOUND);
-      goto leave;
+      /* We got a certificate.  Extract the pubkey from it.  */
+      err = app_help_pubkey_from_cert (cert, certlen, &pk, &pklen);
+      if (err)
+        {
+          log_error ("failed to parse the certificate: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
     }
-
-  /* Convert the public key into the expected s-expression.  */
-  if (mechanism == PIV_ALGORITHM_RSA)
-    err = genkey_parse_rsa (cert, certlen, &s_pkey);
-  else if (mechanism == PIV_ALGORITHM_ECC_P256
-           || mechanism == PIV_ALGORITHM_ECC_P384)
-    err = genkey_parse_ecc (cert, certlen, mechanism, &s_pkey);
   else
-    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-  if (err)
-    goto leave;
+    {
+      /* Convert the public key into the expected s-expression.  */
+      if (mechanism == PIV_ALGORITHM_RSA)
+        err = genkey_parse_rsa (cert, certlen, &s_pkey);
+      else if (mechanism == PIV_ALGORITHM_ECC_P256
+               || mechanism == PIV_ALGORITHM_ECC_P384)
+        err = genkey_parse_ecc (cert, certlen, mechanism, &s_pkey);
+      else
+        err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      if (err)
+        goto leave;
 
-  err = make_canon_sexp (s_pkey, &pk, &pklen);
-  if (err)
-    goto leave;
+      err = make_canon_sexp (s_pkey, &pk, &pklen);
+      if (err)
+        goto leave;
+    }
 
   *r_pk = pk;
   pk = NULL;
@@ -2735,6 +2740,9 @@ do_writecert (app_t app, ctrl_t ctrl,
 {
   gpg_error_t err;
   data_object_t dobj;
+  unsigned char *pk = NULL;
+  unsigned char *orig_pk = NULL;
+  size_t pklen, orig_pklen;
 
   (void)ctrl;
   (void)pincb;     /* Not used; instead authentication is needed.  */
@@ -2746,10 +2754,33 @@ do_writecert (app_t app, ctrl_t ctrl,
 
   /* FIXME: Check that the authentication has already been done.  */
 
-  /* FIXME: Check that the public key parameters from the certificate
-   * match an already stored key.  */
-
   flush_cached_data (app, dobj->tag);
+
+  /* Check that the public key parameters from the certificate match
+   * an already stored key.  Note that we do not allow writing a
+   * certificate if no key has yet been created (GPG_ERR_NOT_FOUND) or
+   * if there is a problem reading the public key from the certificate
+   * GPG_ERR_NO_PUBKEY).  We enforce this because otherwise the only
+   * way to detect whether a key exists is by trying to use that
+   * key. */
+  err = do_readkey (app, certrefstr, &orig_pk, &orig_pklen);
+  if (err)
+    {
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        err = gpg_error (GPG_ERR_NO_SECKEY); /* Use a better error code.  */
+      goto leave;
+    }
+  /* Compare pubkeys.  */
+  err = app_help_pubkey_from_cert (cert, certlen, &pk, &pklen);
+  if (err)
+    goto leave;  /* No public key in new certificate. */
+  if (orig_pklen != pklen || memcmp (orig_pk, pk, pklen))
+    {
+      err = gpg_error (GPG_ERR_CONFLICT);
+      goto leave;
+    }
+
+
   err = put_data (app->slot, dobj->tag,
                   (int)0x70, (size_t)certlen, cert,/* Certificate */
                   (int)0x71, (size_t)1,       "",  /* No compress */
@@ -2762,7 +2793,9 @@ do_writecert (app_t app, ctrl_t ctrl,
     log_error ("piv: failed to write cert to %s: %s\n",
                dobj->keyref, gpg_strerror (err));
 
-
+ leave:
+  xfree (pk);
+  xfree (orig_pk);
   return err;
 }
 
