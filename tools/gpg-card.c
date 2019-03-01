@@ -2008,10 +2008,9 @@ cmd_generate (card_info_t info, char *argstr)
 
 
 
-/* Sub-menu to change a PIN.  The presented options may depend on the
- * the ALLOW_ADMIN flag.  */
+/* Sub-menu to change a PIN.  */
 static gpg_error_t
-cmd_passwd (card_info_t info, int allow_admin, char *argstr)
+cmd_passwd (card_info_t info, char *argstr)
 {
   gpg_error_t err;
   char *answer = NULL;
@@ -2031,31 +2030,10 @@ cmd_passwd (card_info_t info, int allow_admin, char *argstr)
               app_type_string (info->apptype),
               info->dispserialno? info->dispserialno : info->serialno);
 
-  if (!allow_admin || info->apptype != APP_TYPE_OPENPGP)
+  if (!*argstr && info->apptype == APP_TYPE_OPENPGP)
     {
-      if (*argstr)
-        pinref = argstr;
-      else if (info->apptype == APP_TYPE_OPENPGP)
-        pinref = "OPENPGP.1";
-      else if (info->apptype == APP_TYPE_PIV)
-        pinref = "PIV.80";
-      else
-        {
-          err = gpg_error (GPG_ERR_MISSING_VALUE);
-          goto leave;
-        }
-      err = scd_change_pin (pinref, 0);
-      if (err)
-        goto leave;
-
-      if (info->apptype == APP_TYPE_PIV
-          && !ascii_strcasecmp (pinref, "PIV.81"))
-        log_info ("PUK changed.\n");
-      else
-        log_info ("PIN changed.\n");
-    }
-  else if (info->apptype == APP_TYPE_OPENPGP)
-    {
+      /* For an OpenPGP card we present the well known menu if no
+       * argument is given.  */
       for (;;)
         {
           tty_printf ("\n");
@@ -2119,9 +2097,27 @@ cmd_passwd (card_info_t info, int allow_admin, char *argstr)
     }
   else
     {
-      log_info ("Admin related passwd options not yet supported for '%s'\n",
-                app_type_string (info->apptype));
-      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      if (*argstr)
+        pinref = argstr;
+      else if (info->apptype == APP_TYPE_PIV)
+        pinref = "PIV.80";
+      else
+        {
+          /* Note that we do not have a default value for OpenPGP
+           * because we want to be mostly compatible to "gpg
+           * --card-edit" and show a menu in that case (above).  */
+          err = gpg_error (GPG_ERR_MISSING_VALUE);
+          goto leave;
+        }
+      err = scd_change_pin (pinref, 0);
+      if (err)
+        goto leave;
+
+      if (info->apptype == APP_TYPE_PIV
+          && !ascii_strcasecmp (pinref, "PIV.81"))
+        log_info ("PUK changed.\n");
+      else
+        log_info ("PIN changed.\n");
     }
 
  leave:
@@ -2919,11 +2915,11 @@ cmd_yubikey (card_info_t info, char *argstr)
 enum cmdids
   {
     cmdNOP = 0,
-    cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdRESET, cmdVERIFY,
+    cmdQUIT, cmdHELP, cmdLIST, cmdRESET, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
-    cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
-    cmdKEYATTR, cmdUIF, cmdAUTHENTICATE, cmdYUBIKEY,
+    cmdREADCERT, cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
+    cmdKEYATTR, cmdUIF, cmdAUTH, cmdYUBIKEY,
     cmdINVCMD
   };
 
@@ -2931,41 +2927,39 @@ static struct
 {
   const char *name;
   enum cmdids id;
-  int admin_only;
   const char *desc;
 } cmds[] = {
-  { "quit"    , cmdQUIT  , 0, N_("quit this menu")},
-  { "q"       , cmdQUIT  , 0, NULL },
-  { "admin"   , cmdADMIN , 0, N_("show admin commands")},
-  { "help"    , cmdHELP  , 0, N_("show this help")},
-  { "?"       , cmdHELP  , 0, NULL },
-  { "list"    , cmdLIST  , 0, N_("list all available data")},
-  { "l"       , cmdLIST  , 0, NULL },
-  { "name"    , cmdNAME  , 1, N_("change card holder's name")},
-  { "url"     , cmdURL   , 1, N_("change URL to retrieve key")},
-  { "fetch"   , cmdFETCH , 0, N_("fetch the key specified in the card URL")},
-  { "login"   , cmdLOGIN , 1, N_("change the login name")},
-  { "lang"    , cmdLANG  , 1, N_("change the language preferences")},
-  { "salutation",cmdSALUT, 1, N_("change card holder's salutation")},
-  { "salut"   , cmdSALUT,  1, NULL },
-  { "cafpr"   , cmdCAFPR , 1, N_("change a CA fingerprint")},
-  { "forcesig", cmdFORCESIG, 1, N_("toggle the signature force PIN flag")},
-  { "generate", cmdGENERATE, 1, N_("generate new keys")},
-  { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
-  { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
-  { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code")},
-  { "authenticate",cmdAUTHENTICATE, 0,N_("authenticate to the card")},
-  { "auth"    , cmdAUTHENTICATE, 0, NULL },
-  { "reset"   , cmdRESET,  0, N_("send a reset to the card daemon")},
-  { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
-  { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
-  { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
-  { "uif", cmdUIF, 1, N_("change the User Interaction Flag")},
-  { "privatedo", cmdPRIVATEDO, 0, N_("change a private data object")},
-  { "readcert",  cmdREADCERT,  0, N_("read a certificate from a data object")},
-  { "writecert", cmdWRITECERT, 1, N_("store a certificate to a data object")},
-  { "yubikey",   cmdYUBIKEY,   0, N_("Yubikey management commands")},
-  { NULL, cmdINVCMD, 0, NULL }
+  { "quit"    ,  cmdQUIT,       N_("quit this menu")},
+  { "q"       ,  cmdQUIT,       NULL },
+  { "help"    ,  cmdHELP,       N_("show this help")},
+  { "?"       ,  cmdHELP,       NULL },
+  { "list"    ,  cmdLIST,       N_("list all available data")},
+  { "l"       ,  cmdLIST,       NULL },
+  { "name"    ,  cmdNAME,       N_("change card holder's name")},
+  { "url"     ,  cmdURL,        N_("change URL to retrieve key")},
+  { "fetch"   ,  cmdFETCH,      N_("fetch the key specified in the card URL")},
+  { "login"   ,  cmdLOGIN,      N_("change the login name")},
+  { "lang"    ,  cmdLANG,       N_("change the language preferences")},
+  { "salutation",cmdSALUT,      N_("change card holder's salutation")},
+  { "salut"   ,  cmdSALUT,      NULL },
+  { "cafpr"   ,  cmdCAFPR ,     N_("change a CA fingerprint")},
+  { "forcesig",  cmdFORCESIG,   N_("toggle the signature force PIN flag")},
+  { "generate",  cmdGENERATE,   N_("generate new keys")},
+  { "passwd"  ,  cmdPASSWD,     N_("menu to change or unblock the PIN")},
+  { "verify"  ,  cmdVERIFY,     N_("verify the PIN and list all data")},
+  { "unblock" ,  cmdUNBLOCK,    N_("unblock the PIN using a Reset Code")},
+  { "authenticate",cmdAUTH,     N_("authenticate to the card")},
+  { "auth"    ,  cmdAUTH,       NULL },
+  { "reset"   ,  cmdRESET,      N_("send a reset to the card daemon")},
+  { "factory-reset",cmdFACTRST, N_("destroy all keys and data")},
+  { "kdf-setup", cmdKDFSETUP,   N_("setup KDF for PIN authentication")},
+  { "key-attr",  cmdKEYATTR,    N_("change the key attribute")},
+  { "uif",       cmdUIF,        N_("change the User Interaction Flag")},
+  { "privatedo", cmdPRIVATEDO,  N_("change a private data object")},
+  { "readcert",  cmdREADCERT,   N_("read a certificate from a data object")},
+  { "writecert", cmdWRITECERT,  N_("store a certificate to a data object")},
+  { "yubikey",   cmdYUBIKEY,    N_("Yubikey management commands")},
+  { NULL, cmdINVCMD, NULL }
 };
 
 
@@ -3078,12 +3072,8 @@ dispatch_command (card_info_t info, const char *orig_command)
         }
       break;
 
-    case cmdADMIN:
-      /* This is a NOP in non-interactive mode.  */
-      break;
-
     case cmdVERIFY:       err = cmd_verify (info, argstr); break;
-    case cmdAUTHENTICATE: err = cmd_authenticate (info, argstr); break;
+    case cmdAUTH:         err = cmd_authenticate (info, argstr); break;
     case cmdNAME:         err = cmd_name (info, argstr); break;
     case cmdURL:          err = cmd_url (info, argstr);  break;
     case cmdFETCH:        err = cmd_fetch (info);  break;
@@ -3096,9 +3086,9 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdREADCERT:     err = cmd_readcert (info, argstr); break;
     case cmdFORCESIG:     err = cmd_forcesig (info); break;
     case cmdGENERATE:     err = cmd_generate (info, argstr); break;
-    case cmdPASSWD:       err = cmd_passwd (info, 1, argstr); break;
+    case cmdPASSWD:       err = cmd_passwd (info, argstr); break;
     case cmdUNBLOCK:      err = cmd_unblock (info); break;
-    case cmdFACTORYRESET: err = cmd_factoryreset (info); break;
+    case cmdFACTRST:      err = cmd_factoryreset (info); break;
     case cmdKDFSETUP:     err = cmd_kdfsetup (info, argstr); break;
     case cmdKEYATTR:      err = cmd_keyattr (info, argstr); break;
     case cmdUIF:          err = cmd_uif (info, argstr); break;
@@ -3139,10 +3129,8 @@ interactive_loop (void)
   gpg_error_t err;
   char *answer = NULL;         /* The input line.  */
   enum cmdids cmd = cmdNOP;    /* The command.  */
-  int cmd_admin_only;          /* The command is an admin only command.  */
   char *argstr;                /* The argument as a string.  */
   int redisplay = 1;           /* Whether to redisplay the main info.  */
-  int allow_admin = 0;         /* Whether admin commands are allowed.  */
   char *help_arg = NULL;       /* Argument of the HELP command.         */
   struct card_info_s info_buffer = { 0 };
   card_info_t info = &info_buffer;
@@ -3205,7 +3193,6 @@ interactive_loop (void)
         }
 
       argstr = NULL;
-      cmd_admin_only = 0;
       if (!*answer)
         cmd = cmdLIST; /* We default to the list command */
       else if (*answer == CONTROL_D)
@@ -3224,7 +3211,6 @@ interactive_loop (void)
               break;
 
           cmd = cmds[i].id;
-          cmd_admin_only = cmds[i].admin_only;
         }
 
       /* Make sure we have valid strings for the args.  They are
@@ -3242,7 +3228,6 @@ interactive_loop (void)
           else if (redisplay)
             {
               cmd = cmdLIST;
-              cmd_admin_only = 0;
             }
           else if (!info->serialno)
             {
@@ -3250,12 +3235,6 @@ interactive_loop (void)
                * Catch it here.  */
               tty_printf ("\n");
               tty_printf ("Serial number missing\n");
-              continue;
-            }
-          else if (!allow_admin && cmd_admin_only)
-            {
-              tty_printf ("\n");
-              tty_printf (_("Admin-only command\n"));
               continue;
             }
         }
@@ -3292,9 +3271,7 @@ interactive_loop (void)
               tty_printf
                 ("List of commands (\"help <command>\" for details):\n");
               for (i=0; cmds[i].name; i++ )
-                if(cmds[i].desc
-                   && (!cmds[i].admin_only
-                       || (cmds[i].admin_only && allow_admin)))
+                if(cmds[i].desc)
                   tty_printf("%-14s %s\n", cmds[i].name, _(cmds[i].desc) );
             }
           break;
@@ -3321,36 +3298,12 @@ interactive_loop (void)
             }
           break;
 
-	case cmdADMIN:
-          if ( !strcmp (argstr, "on") )
-            allow_admin = 1;
-          else if ( !strcmp (argstr, "off") )
-            allow_admin = 0;
-          else if ( !strcmp (argstr, "verify") )
-            {
-              /* Force verification of the Admin Command.  However,
-                 this is only done if the retry counter is at initial
-                 state.  */
-              /* FIXME: Must depend on the type of the card.  */
-              /* char *tmp = xmalloc (strlen (serialnobuf) + 6 + 1); */
-              /* strcpy (stpcpy (tmp, serialnobuf), "[CHV3]"); */
-              /* allow_admin = !agent_scd_checkpin (tmp); */
-              /* xfree (tmp); */
-            }
-          else /* Toggle. */
-            allow_admin=!allow_admin;
-	  if(allow_admin)
-	    tty_printf(_("Admin commands are allowed\n"));
-	  else
-	    tty_printf(_("Admin commands are not allowed\n"));
-	  break;
-
         case cmdVERIFY:
           err = cmd_verify (info, argstr);
           if (!err)
             redisplay = 1;
           break;
-        case cmdAUTHENTICATE: err = cmd_authenticate (info, argstr); break;
+        case cmdAUTH:      err = cmd_authenticate (info, argstr); break;
         case cmdNAME:      err = cmd_name (info, argstr); break;
         case cmdURL:       err = cmd_url (info, argstr);  break;
 	case cmdFETCH:     err = cmd_fetch (info);  break;
@@ -3363,9 +3316,9 @@ interactive_loop (void)
         case cmdREADCERT:  err = cmd_readcert (info, argstr); break;
         case cmdFORCESIG:  err = cmd_forcesig (info); break;
         case cmdGENERATE:  err = cmd_generate (info, argstr); break;
-        case cmdPASSWD:    err = cmd_passwd (info, allow_admin, argstr); break;
+        case cmdPASSWD:    err = cmd_passwd (info, argstr); break;
         case cmdUNBLOCK:   err = cmd_unblock (info); break;
-        case cmdFACTORYRESET:
+        case cmdFACTRST:
           err = cmd_factoryreset (info);
           if (!err)
             redisplay = 1;
