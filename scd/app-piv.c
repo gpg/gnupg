@@ -182,6 +182,9 @@ static struct data_object_s data_objects[] = {
    * "97" Secondary Finger OCC
    * "98" Pairing Code
    * "9B" PIV Card Application Administration Key
+   *
+   * Yubikey specific data objects:
+   * "F9" Attestation key (preloaded can be replaced)
    */
 };
 
@@ -1044,7 +1047,6 @@ set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
    return err;
 }
 
-
 /* Handle the SETATTR operation. All arguments are already basically
  * checked. */
 static gpg_error_t
@@ -1167,7 +1169,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
  * given tag and returns it in a freshly allocated buffer stored at
  * R_CERT and the length of the certificate stored at R_CERTLEN.  If
  * on success a non-zero value is stored at R_MECHANISM, the returned
- * data is not certificate but a public key (in the format used by the
+ * data is not a certificate but a public key (in the format used by the
  * container '7f49'.  */
 static gpg_error_t
 readcert_by_tag (app_t app, unsigned int tag,
@@ -1395,6 +1397,30 @@ do_readcert (app_t app, const char *certid,
 
   *r_cert = NULL;
   *r_certlen = 0;
+
+  /* Hack to read a Yubikey attestation certificate.  */
+  if (app->app_local->flags.yubikey
+      && strlen (certid) == 11
+      && !ascii_strncasecmp (certid, "PIV.ATST.", 9)
+      && hexdigitp (certid+9) && hexdigitp (certid+10))
+    {
+      unsigned char apdu[4];
+      unsigned char *result;
+      size_t resultlen;
+
+      apdu[0] = 0;
+      apdu[1] = 0xf9;  /* Yubikey: Get attestation cert.  */
+      apdu[2] = xtoi_2 (certid+9);
+      apdu[3] = 0;
+      err = iso7816_apdu_direct (app->slot, apdu, 4, 1,
+                                 NULL, &result, &resultlen);
+      if (!err)
+        {
+          *r_cert = result;
+          *r_certlen = resultlen;
+        }
+      return err;
+    }
 
   dobj = find_dobj_by_keyref (app, certid);
   if (!dobj)
