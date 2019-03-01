@@ -85,6 +85,8 @@ struct
 #define OID_FLAG_SKIP 1
 /* The extension is a simple UTF8String and should be printed.  */
 #define OID_FLAG_UTF8 2
+/* The extension can be trnted as a hex string.  */
+#define OID_FLAG_HEX  4
 
 /* A table mapping OIDs to a descriptive string. */
 static struct
@@ -193,6 +195,12 @@ static struct
 
   /* Extensions used by the Bundesnetzagentur.  */
   { "1.3.6.1.4.1.8301.3.5", "validityModel" },
+
+  /* Yubikey extensions for attestation certificates.  */
+  { "1.3.6.1.4.1.41482.3.3", "yubikey-firmware-version", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.3.7", "yubikey-serial-number", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.3.8", "yubikey-pin-touch-policy", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.3.9", "yubikey-formfactor", OID_FLAG_HEX },
 
   { NULL }
 };
@@ -723,6 +731,21 @@ print_utf8_extn (estream_t fp, int indent,
 }
 
 
+/* Print the extension described by (DER,DERLEN) in hex.  */
+static void
+print_hex_extn (estream_t fp, int indent,
+                const unsigned char *der, size_t derlen)
+{
+  if (indent < 0)
+    indent = - indent;
+
+  es_fprintf (fp, "%*s(", indent, "");
+  for (; derlen; der++, derlen--)
+    es_fprintf (fp, "%02X%s", *der, derlen > 1? " ":"");
+  es_fprintf (fp, ")\n");
+}
+
+
 /* List one certificate in raw mode useful to have a closer look at
    the certificate.  This one does no beautification and only minimal
    output sanitation.  It is mainly useful for debugging. */
@@ -1060,16 +1083,27 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
       if ((flag & OID_FLAG_SKIP))
         continue;
 
-      es_fprintf (fp, "     %s: %s%s%s%s  [%d octets]\n",
+      es_fprintf (fp, "     %s: %s%s%s%s",
                   i? "critExtn":"    extn",
-                  oid, s?" (":"", s?s:"", s?")":"", (int)len);
+                  oid, s?" (":"", s?s:"", s?")":"");
       if ((flag & OID_FLAG_UTF8))
         {
           if (!cert_der)
             cert_der = ksba_cert_get_image (cert, NULL);
-          assert (cert_der);
+          log_assert (cert_der);
+          es_fprintf (fp, "\n");
           print_utf8_extn_raw (fp, -15, cert_der+off, len);
         }
+      else if ((flag & OID_FLAG_HEX))
+        {
+          if (!cert_der)
+            cert_der = ksba_cert_get_image (cert, NULL);
+          log_assert (cert_der);
+          es_fprintf (fp, "\n");
+          print_hex_extn (fp, -15, cert_der+off, len);
+        }
+      else
+        es_fprintf (fp, "  [%d octets]\n", (int)len);
     }
 
 
