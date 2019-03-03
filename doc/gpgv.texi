@@ -59,13 +59,14 @@ no configuration files and only a few options are implemented.
 That does also mean that it does not check for expired or revoked
 keys.
 
-By default a keyring named @file{trustedkeys.kbx} is used; if that
-does not exist a keyring named @file{trustedkeys.gpg} is used.  The
-default keyring is assumed to be in the home directory of GnuPG,
-either the default home directory or the one set by an option or an
-environment variable.  The option @code{--keyring} may be used to
-specify a different keyring or even multiple keyrings.
-
+If no @code{--keyring} option is given, @code{gpgv} looks for a
+``default'' keyring named @file{trustedkeys.kbx} (preferred) or
+@file{trustedkeys.gpg} in the home directory of GnuPG, either the
+default home directory or the one set by the @code{--homedir} option
+or the @code{GNUPGHOME} environment variable.  If any @code{--keyring}
+option is used, @code{gpgv} will not look for the default keyring. The
+@code{--keyring} option may be used multiple times and all specified
+keyrings will be used together.
 
 @noindent
 @mansect options
