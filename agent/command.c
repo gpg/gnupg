@@ -2484,19 +2484,23 @@ cmd_delete_key (assuan_context_t ctx, char *line)
 #endif
 
 static const char hlp_keytocard[] =
-  "KEYTOCARD [--force] <hexstring_with_keygrip> <serialno> <id> <timestamp>\n"
-  "\n";
+  "KEYTOCARD [--force] <hexgrip> <serialno> <keyref> [<timestamp>]\n"
+  "\n"
+  "TIMESTAMP is required for OpenPGP and defaults to the Epoch."
+  ;
 static gpg_error_t
 cmd_keytocard (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int force;
   gpg_error_t err = 0;
+  char *argv[5];
+  int argc;
   unsigned char grip[20];
+  const char *serialno, *timestamp_str, *keyref;
   gcry_sexp_t s_skey = NULL;
   unsigned char *keydata;
   size_t keydatalen;
-  const char *serialno, *timestamp_str, *id;
   unsigned char *shadow_info = NULL;
   time_t timestamp;
 
@@ -2506,7 +2510,14 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   force = has_option (line, "--force");
   line = skip_options (line);
 
-  err = parse_keygrip (ctx, line, grip);
+  argc = split_fields (line, argv, DIM (argv));
+  if (argc < 3)
+    {
+      err = gpg_error (GPG_ERR_MISSING_VALUE);
+      goto leave;
+    }
+
+  err = parse_keygrip (ctx, argv[0], grip);
   if (err)
     goto leave;
 
@@ -2516,39 +2527,9 @@ cmd_keytocard (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  /* Fixme: Replace the parsing code by split_fields().  */
-  line += 40;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  serialno = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (!*line)
-    {
-      err = gpg_error (GPG_ERR_MISSING_VALUE);
-      goto leave;
-    }
-  *line = '\0';
-  line++;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  id = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (!*line)
-    {
-      err = gpg_error (GPG_ERR_MISSING_VALUE);
-      goto leave;
-    }
-  *line = '\0';
-  line++;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  timestamp_str = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (*line)
-    *line = '\0';
+  serialno = argv[1];
+  keyref = argv[2];
+  timestamp_str = argc > 3? argv[3] : "19700101T000000";
 
   if ((timestamp = isotime2epoch (timestamp_str)) == (time_t)(-1))
     {
@@ -2560,38 +2541,37 @@ cmd_keytocard (assuan_context_t ctx, char *line)
                              &shadow_info, CACHE_MODE_IGNORE, NULL,
                              &s_skey, NULL);
   if (err)
-    {
-      xfree (shadow_info);
-      goto leave;
-    }
+    goto leave;
   if (shadow_info)
     {
-      /* Key is on a smartcard already.  */
-      xfree (shadow_info);
-      gcry_sexp_release (s_skey);
+      /* Key is already on a smartcard - we can't extract it. */
       err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       goto leave;
     }
 
-  keydatalen =  gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
+  /* Note: We can't use make_canon_sexp because we need to allocate a
+   * few extra bytes for our hack below.  */
+  keydatalen = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
   keydata = xtrymalloc_secure (keydatalen + 30);
   if (keydata == NULL)
     {
       err = gpg_error_from_syserror ();
-      gcry_sexp_release (s_skey);
       goto leave;
     }
-
   gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
   gcry_sexp_release (s_skey);
+  s_skey = NULL;
   keydatalen--;			/* Decrement for last '\0'.  */
-  /* Add timestamp "created-at" in the private key */
+  /* Hack to insert the timestamp "created-at" into the private key.  */
   snprintf (keydata+keydatalen-1, 30, KEYTOCARD_TIMESTAMP_FORMAT, timestamp);
   keydatalen += 10 + 19 - 1;
-  err = divert_writekey (ctrl, force, serialno, id, keydata, keydatalen);
+
+  err = divert_writekey (ctrl, force, serialno, keyref, keydata, keydatalen);
   xfree (keydata);
 
  leave:
+  gcry_sexp_release (s_skey);
+  xfree (shadow_info);
   return leave_cmd (ctx, err);
 }
 

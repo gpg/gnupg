@@ -548,8 +548,9 @@ int divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                       char **r_buf, size_t *r_len, int *r_padding);
 int divert_generic_cmd (ctrl_t ctrl,
                         const char *cmdline, void *assuan_context);
-int divert_writekey (ctrl_t ctrl, int force, const char *serialno,
-                     const char *id, const char *keydata, size_t keydatalen);
+gpg_error_t divert_writekey (ctrl_t ctrl, int force, const char *serialno,
+                             const char *keyref,
+                             const char *keydata, size_t keydatalen);
 
 
 /*-- call-scd.c --*/
@@ -586,12 +587,12 @@ int agent_card_pkdecrypt (ctrl_t ctrl,
 int agent_card_readcert (ctrl_t ctrl,
                          const char *id, char **r_buf, size_t *r_buflen);
 int agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf);
-int agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
-                         const char *id, const char *keydata,
-                         size_t keydatalen,
-                         int (*getpin_cb)(void *, const char *,
-                                          const char *, char*, size_t),
-                         void *getpin_cb_arg);
+gpg_error_t agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
+                                 const char *keyref,
+                                 const char *keydata, size_t keydatalen,
+                                 int (*getpin_cb)(void *, const char *,
+                                                  const char *, char*, size_t),
+                                 void *getpin_cb_arg);
 gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result);
 gpg_error_t agent_card_cardlist (ctrl_t ctrl, strlist_t *result);
 int agent_card_scd (ctrl_t ctrl, const char *cmdline,

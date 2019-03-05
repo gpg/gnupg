@@ -1075,23 +1075,26 @@ inq_writekey_parms (void *opaque, const char *line)
 }
 
 
-int
+/* Call scd to write a key to a card under the id KEYREF.  */
+gpg_error_t
 agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
-                     const char *id, const char *keydata, size_t keydatalen,
+                     const char *keyref,
+                     const char *keydata, size_t keydatalen,
                      int (*getpin_cb)(void *, const char *,
                                       const char *, char*, size_t),
                      void *getpin_cb_arg)
 {
-  int rc;
+  gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
   struct inq_needpin_parm_s parms;
 
   (void)serialno;
-  rc = start_scd (ctrl);
-  if (rc)
-    return rc;
 
-  snprintf (line, DIM(line), "WRITEKEY %s%s", force ? "--force " : "", id);
+  err = start_scd (ctrl);
+  if (err)
+    return err;
+
+  snprintf (line, DIM(line), "WRITEKEY %s%s", force ? "--force " : "", keyref);
   parms.ctx = ctrl->scd_local->ctx;
   parms.getpin_cb = getpin_cb;
   parms.getpin_cb_arg = getpin_cb_arg;
@@ -1100,9 +1103,9 @@ agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
   parms.keydata = keydata;
   parms.keydatalen = keydatalen;
 
-  rc = assuan_transact (ctrl->scd_local->ctx, line, NULL, NULL,
-                        inq_writekey_parms, &parms, NULL, NULL);
-  return unlock_scd (ctrl, rc);
+  err = assuan_transact (ctrl->scd_local->ctx, line, NULL, NULL,
+                         inq_writekey_parms, &parms, NULL, NULL);
+  return unlock_scd (ctrl, err);
 }
 
 
