@@ -3292,7 +3292,7 @@ app_select_piv (app_t app)
       err = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
-  app->card_version = ((s[4] << 8) | s[5]);
+  app->appversion = ((s[4] << 8) | s[5]);
 
   s = find_tlv (apt, aptlen, 0x79, &n);
   if (!s || n < 7)

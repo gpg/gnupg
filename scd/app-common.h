@@ -60,7 +60,8 @@ struct app_ctx_s {
   size_t serialnolen;      /* Length in octets of serialnumber. */
   const char *cardtype;    /* NULL or string with the token's type.  */
   const char *apptype;
-  unsigned int card_version;
+  unsigned int cardversion;/* Firmware version of the token or 0.  */
+  unsigned int appversion; /* Version of the application or 0.     */
   unsigned int card_status;
   unsigned int reset_requested:1;
   unsigned int periodical_check_needed:1;
