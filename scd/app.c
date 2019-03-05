@@ -263,6 +263,9 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                                * set the serial number.  */
                             }
                         }
+                      s1 = find_tlv (buf+1, buflen-1, 0x05, &n);  /* version */
+                      if (s1 && n == 3)
+                        app->cardversion = ((s1[0]<<16)|(s1[1]<<8)|s1[2]);
                     }
                 }
               xfree (buf);
@@ -632,7 +635,7 @@ app_get_serialno (app_t app)
 }
 
 
-/* Write out the application specifig status lines for the LEARN
+/* Write out the application specific status lines for the LEARN
    command. */
 gpg_error_t
 app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
@@ -645,10 +648,17 @@ app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   /* We do not send CARD and APPTYPE if only keypairinfo is requested.  */
-  if (app->cardtype && !(flags & 1))
-    send_status_direct (ctrl, "CARDTYPE", app->cardtype);
-  if (app->apptype && !(flags & 1))
-    send_status_direct (ctrl, "APPTYPE", app->apptype);
+  if (!(flags &1))
+    {
+      if (app->cardtype)
+        send_status_direct (ctrl, "CARDTYPE", app->cardtype);
+      if (app->cardversion)
+        send_status_printf (ctrl, "CARDVERSION", "%X", app->cardversion);
+      if (app->apptype)
+        send_status_direct (ctrl, "APPTYPE", app->apptype);
+      if (app->appversion)
+        send_status_printf (ctrl, "APPVERSION", "%X", app->appversion);
+    }
 
   err = lock_app (app, ctrl);
   if (err)

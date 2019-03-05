@@ -818,7 +818,7 @@ learn_status_cb (void *opaque, const char *line)
           parm->chvusage[0] = byte1;
           parm->chvusage[1] = byte2;
         }
-        break;
+      break;
 
     case 10:
       if (!memcmp (keyword, "PUBKEY-URL", keywordlen))
@@ -879,6 +879,13 @@ learn_status_cb (void *opaque, const char *line)
             }
 
           xfree (buf);
+        }
+      else if (!memcmp (keyword, "APPVERSION", keywordlen))
+        {
+          unsigned int val = 0;
+
+          sscanf (line, "%x", &val);
+          parm->appversion = val;
         }
       break;
 
@@ -943,6 +950,13 @@ learn_status_cb (void *opaque, const char *line)
                 case 'e': kinfo->usage |= GCRY_PK_USAGE_ENCR; break;
                 }
             }
+        }
+      else if (!memcmp (keyword, "CARDVERSION", keywordlen))
+        {
+          unsigned int val = 0;
+
+          sscanf (line, "%x", &val);
+          parm->cardversion = val;
         }
       break;
 

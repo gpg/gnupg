@@ -781,11 +781,6 @@ list_openpgp (card_info_t info, estream_t fp)
       return;
     }
 
-  tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
-               info->serialno[12] == '0'?"":info->serialno+12,
-               info->serialno[13],
-               info->serialno[14] == '0'?"":info->serialno+14,
-               info->serialno[15]);
   tty_fprintf (fp, "Manufacturer .....: %s\n",
                get_manufacturer (xtoi_2(info->serialno+16)*256
                                  + xtoi_2 (info->serialno+18)));
@@ -941,6 +936,25 @@ list_piv (card_info_t info, estream_t fp)
 }
 
 
+
+static void
+print_a_version (estream_t fp, const char *prefix, unsigned int value)
+{
+  unsigned int a, b, c, d;
+  a = ((value >> 24) & 0xff);
+  b = ((value >> 16) & 0xff);
+  c = ((value >>  8) & 0xff);
+  d = ((value      ) & 0xff);
+
+  if (a)
+    tty_fprintf (fp, "%s %u.%u.%u.%u\n", prefix, a, b, c, d);
+  else if (b)
+    tty_fprintf (fp, "%s %u.%u.%u\n", prefix, b, c, d);
+  else
+    tty_fprintf (fp, "%s %u.%u\n", prefix, c, d);
+}
+
+
 /* Print all available information about the current card. */
 static void
 list_card (card_info_t info)
@@ -951,6 +965,8 @@ list_card (card_info_t info)
                info->reader? info->reader : "[none]");
   if (info->cardtype)
     tty_fprintf (fp, "Card type ........: %s\n", info->cardtype);
+  if (info->cardversion)
+    print_a_version (fp, "Card firmware ....:", info->cardversion);
   tty_fprintf (fp, "Serial number ....: %s\n",
                info->serialno? info->serialno : "[none]");
   tty_fprintf (fp, "Application type .: %s%s%s%s\n",
@@ -959,9 +975,11 @@ list_card (card_info_t info)
                info->apptype == APP_TYPE_UNKNOWN && info->apptypestr
                ? info->apptypestr:"",
                info->apptype == APP_TYPE_UNKNOWN && info->apptypestr? ")":"");
+  if (info->appversion)
+    print_a_version (fp, "Version ..........:", info->appversion);
   if (info->serialno && info->dispserialno
       && strcmp (info->serialno, info->dispserialno))
-    tty_fprintf (fp, "Displayed S/N ....: %s\n", info->dispserialno);
+    tty_fprintf (fp, "Displayed s/n ....: %s\n", info->dispserialno);
 
   switch (info->apptype)
     {
@@ -2042,6 +2060,16 @@ cmd_generate (card_info_t info, char *argstr)
         keyref_buffer = xstrdup (keyref);
       ascii_strupr (keyref_buffer);
       keyref = keyref_buffer;
+    }
+
+  /* Special checks.  */
+  if ((info->cardtype && !strcmp (info->cardtype, "yubikey"))
+      && info->cardversion >= 0x040200 && info->cardversion < 0x040305)
+    {
+      log_error ("On-chip key generation on this YubiKey has been blocked.\n");
+      log_info ("Please see <https://yubi.co/ysa201701> for details\n");
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
     }
 
   /* Divert to dedicated functions.  */

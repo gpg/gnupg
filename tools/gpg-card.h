@@ -142,8 +142,10 @@ struct card_info_s
   int error;         /* private. */
   char *reader;      /* Reader information.  */
   char *cardtype;    /* NULL or type of the card.  */
+  unsigned int cardversion; /* Firmware version of the card.  */
   char *apptypestr;  /* Malloced application type string.  */
   app_type_t apptype;/* Translated from APPTYPESTR.  */
+  unsigned int appversion; /* Version of the application.  */
   char *serialno;    /* malloced hex string. */
   char *dispserialno;/* malloced string. */
   char *disp_name;   /* malloced. */

@@ -1120,7 +1120,7 @@ static const char hlp_genkey[] =
   "\n"
   "  'p' and 'n' are the names of the RSA parameters; '-' is used to\n"
   "  indicate that HEXDATA is the first chunk of a parameter given\n"
-  "  by the next KEY-DATA.\n"
+  "  by the next KEY-DATA.  Only used by GnuPG version < 2.1.\n"
   "\n"
   "--force is required to overwrite an already existing key.  The\n"
   "KEY-CREATED-AT is required for further processing because it is\n"
