@@ -33,6 +33,9 @@
 /* Flags used with app_genkey.  */
 #define APP_GENKEY_FLAG_FORCE    1  /* Force overwriting existing key.  */
 
+/* Flags used with app_writekey.  */
+#define APP_WRITEKEY_FLAG_FORCE  1  /* Force overwriting existing key.  */
+
 /* Bit flags set by the decipher function into R_INFO.  */
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
 

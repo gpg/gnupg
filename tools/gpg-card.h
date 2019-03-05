@@ -208,8 +208,7 @@ gpg_error_t scd_setattr (const char *name,
                          const unsigned char *value, size_t valuelen);
 gpg_error_t scd_writecert (const char *certidstr,
                            const unsigned char *certdata, size_t certdatalen);
-gpg_error_t scd_writekey (int keyno,
-                          const unsigned char *keydata, size_t keydatalen);
+gpg_error_t scd_writekey (const char *keyref, int force, const char *keygrip);
 gpg_error_t scd_genkey (const char *keyref, int force, const char *algo,
                         u32 *createtime);
 gpg_error_t scd_serialno (char **r_serialno, const char *demand);

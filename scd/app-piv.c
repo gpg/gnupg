@@ -510,9 +510,10 @@ add_tlv (unsigned char *buffer, unsigned int tag, size_t length)
 /* Function to build a list of TLV and return the result in a mallcoed
  * buffer.  The varargs are tuples of (int,size_t,void) each with the
  * tag, the length and the actual data.  A (0,0,NULL) tuple terminates
- * the list.  Up to 10 tuples are supported.  */
+ * the list.  Up to 10 tuples are supported.  If SECMEM is true the
+ * returned buffer is allocated in secure memory.  */
 static gpg_error_t
-concat_tlv_list (unsigned char **r_result, size_t *r_resultlen, ...)
+concat_tlv_list (int secure, unsigned char **r_result, size_t *r_resultlen, ...)
 {
   gpg_error_t err;
   va_list arg_ptr;
@@ -573,7 +574,7 @@ concat_tlv_list (unsigned char **r_result, size_t *r_resultlen, ...)
           datalen += argv[i].len;
         }
     }
-  data = xtrymalloc (datalen);
+  data = secure? xtrymalloc_secure (datalen) : xtrymalloc (datalen);
   if (!data)
     {
       err = gpg_error_from_syserror ();
@@ -2220,7 +2221,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     return err;
 
   /* Build the Dynamic Authentication Template.  */
-  err = concat_tlv_list (&apdudata, &apdudatalen,
+  err = concat_tlv_list (0, &apdudata, &apdudatalen,
                          (int)0x7c, (size_t)0, NULL, /* Constructed. */
                          (int)0x82, (size_t)0, "",
                          (int)0x81, (size_t)indatalen, indata,
@@ -2423,7 +2424,7 @@ do_decipher (app_t app, const char *keyidstr,
     return err;
 
   /* Build the Dynamic Authentication Template.  */
-  err = concat_tlv_list (&apdudata, &apdudatalen,
+  err = concat_tlv_list (0, &apdudata, &apdudatalen,
                          (int)0x7c, (size_t)0, NULL, /* Constructed. */
                          (int)0x82, (size_t)0, "",
                          mechanism == PIV_ALGORITHM_RSA?
@@ -2503,6 +2504,424 @@ does_key_exist (app_t app, data_object_t dobj, int generating, int force)
   else
     log_info (_("writing new key\n"));
   return 0;
+}
+
+
+/* Helper for do_writekey; here the RSA part.  BUF, BUFLEN, and DEPTH
+ * are the current parser state of the S-expression with the key. */
+static gpg_error_t
+writekey_rsa (app_t app, data_object_t dobj, int keyref,
+              const unsigned char *buf, size_t buflen, int depth)
+{
+  gpg_error_t err;
+  const unsigned char *tok;
+  size_t toklen;
+  int last_depth1, last_depth2;
+  const unsigned char *rsa_n = NULL;
+  const unsigned char *rsa_e = NULL;
+  const unsigned char *rsa_p = NULL;
+  const unsigned char *rsa_q = NULL;
+  unsigned char *rsa_dpm1 = NULL;
+  unsigned char *rsa_dqm1 = NULL;
+  unsigned char *rsa_qinv = NULL;
+  size_t rsa_n_len, rsa_e_len, rsa_p_len, rsa_q_len;
+  size_t rsa_dpm1_len, rsa_dqm1_len, rsa_qinv_len;
+  unsigned char *apdudata = NULL;
+  size_t apdudatalen;
+  unsigned char tmpl[1];
+
+  last_depth1 = depth;
+  while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+         && depth && depth >= last_depth1)
+    {
+      if (tok)
+        {
+          err = gpg_error (GPG_ERR_UNKNOWN_SEXP);
+          goto leave;
+        }
+      if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+        goto leave;
+
+      if (tok && toklen == 1)
+        {
+          const unsigned char **mpi;
+          size_t *mpi_len;
+
+          switch (*tok)
+            {
+            case 'n': mpi = &rsa_n; mpi_len = &rsa_n_len; break;
+            case 'e': mpi = &rsa_e; mpi_len = &rsa_e_len; break;
+            case 'p': mpi = &rsa_p; mpi_len = &rsa_p_len; break;
+            case 'q': mpi = &rsa_q; mpi_len = &rsa_q_len; break;
+            default: mpi = NULL;  mpi_len = NULL; break;
+            }
+          if (mpi && *mpi)
+            {
+              err = gpg_error (GPG_ERR_DUP_VALUE);
+              goto leave;
+            }
+
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            goto leave;
+          if (tok && mpi)
+            {
+              /* Strip off leading zero bytes and save. */
+              for (;toklen && !*tok; toklen--, tok++)
+                ;
+              *mpi = tok;
+              *mpi_len = toklen;
+            }
+        }
+      /* Skip until end of list. */
+      last_depth2 = depth;
+      while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+             && depth && depth >= last_depth2)
+        ;
+      if (err)
+        goto leave;
+    }
+
+  /* Check that we have all parameters.  */
+  if (!rsa_n || !rsa_e || !rsa_p || !rsa_q)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  /* Fixme: Shall we check whether  n == pq ? */
+
+  if (opt.verbose)
+    log_info ("RSA private key size is %u bytes\n", (unsigned int)rsa_n_len);
+
+  /* Compute the dp, dq and u components.  */
+  {
+    gcry_mpi_t mpi_e, mpi_p, mpi_q;
+    gcry_mpi_t mpi_dpm1 = gcry_mpi_snew (0);
+    gcry_mpi_t mpi_dqm1 = gcry_mpi_snew (0);
+    gcry_mpi_t mpi_qinv = gcry_mpi_snew (0);
+    gcry_mpi_t mpi_tmp  = gcry_mpi_snew (0);
+
+    gcry_mpi_scan (&mpi_e, GCRYMPI_FMT_USG, rsa_e, rsa_e_len, NULL);
+    gcry_mpi_scan (&mpi_p, GCRYMPI_FMT_USG, rsa_p, rsa_p_len, NULL);
+    gcry_mpi_scan (&mpi_q, GCRYMPI_FMT_USG, rsa_q, rsa_q_len, NULL);
+
+    gcry_mpi_sub_ui (mpi_tmp, mpi_p, 1);
+    gcry_mpi_invm (mpi_dpm1, mpi_e, mpi_tmp);
+
+    gcry_mpi_sub_ui (mpi_tmp, mpi_q, 1);
+    gcry_mpi_invm (mpi_dqm1, mpi_e, mpi_tmp);
+
+    gcry_mpi_invm (mpi_qinv, mpi_q, mpi_p);
+
+    gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_dpm1, &rsa_dpm1_len, mpi_dpm1);
+    gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_dqm1, &rsa_dqm1_len, mpi_dqm1);
+    gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_qinv, &rsa_qinv_len, mpi_qinv);
+
+    gcry_mpi_release (mpi_e);
+    gcry_mpi_release (mpi_p);
+    gcry_mpi_release (mpi_q);
+    gcry_mpi_release (mpi_dpm1);
+    gcry_mpi_release (mpi_dqm1);
+    gcry_mpi_release (mpi_qinv);
+    gcry_mpi_release (mpi_tmp);
+  }
+
+  err = concat_tlv_list (1, &apdudata, &apdudatalen,
+                         (int)0x01, (size_t)rsa_p_len, rsa_p,
+                         (int)0x02, (size_t)rsa_q_len, rsa_q,
+                         (int)0x03, (size_t)rsa_dpm1_len, rsa_dpm1,
+                         (int)0x04, (size_t)rsa_dqm1_len, rsa_dqm1,
+                         (int)0x05, (size_t)rsa_qinv_len, rsa_qinv,
+                         (int)0, (size_t)0, NULL);
+  if (err)
+    goto leave;
+
+  err = iso7816_send_apdu (app->slot,
+                           -1,         /* Use command chaining.  */
+                           0,          /* Class */
+                           0xfe,       /* Ins: Yubikey Import Asym. Key.  */
+                           PIV_ALGORITHM_RSA, /* P1 */
+                           keyref,     /* P2 */
+                           apdudatalen,/* Lc */
+                           apdudata,   /* data */
+                           NULL, NULL, NULL);
+  if (err)
+    goto leave;
+
+  /* Write the public key to the cert object.  */
+  xfree (apdudata);
+  err = concat_tlv_list (0, &apdudata, &apdudatalen,
+                         (int)0x81, (size_t)rsa_n_len, rsa_n,
+                         (int)0x82, (size_t)rsa_e_len, rsa_e,
+                         (int)0, (size_t)0, NULL);
+
+  if (err)
+    goto leave;
+  tmpl[0] = PIV_ALGORITHM_RSA;
+  err = put_data (app->slot, dobj->tag,
+                  (int)0x80,   (size_t)1, tmpl,
+                  (int)0x7f49, (size_t)apdudatalen, apdudata,
+                  (int)0,      (size_t)0, NULL);
+
+ leave:
+  xfree (rsa_dpm1);
+  xfree (rsa_dqm1);
+  xfree (rsa_qinv);
+  xfree (apdudata);
+  return err;
+}
+
+
+/* Helper for do_writekey; here the ECC part.  BUF, BUFLEN, and DEPTH
+ * are the current parser state of the S-expression with the key. */
+static gpg_error_t
+writekey_ecc (app_t app, data_object_t dobj, int keyref,
+              const unsigned char *buf, size_t buflen, int depth)
+{
+  gpg_error_t err;
+  const unsigned char *tok;
+  size_t toklen;
+  int last_depth1, last_depth2;
+  int mechanism = 0;
+  const unsigned char *ecc_q = NULL;
+  const unsigned char *ecc_d = NULL;
+  size_t ecc_q_len, ecc_d_len;
+  unsigned char *apdudata = NULL;
+  size_t apdudatalen;
+  unsigned char tmpl[1];
+
+  last_depth1 = depth;
+  while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+         && depth && depth >= last_depth1)
+    {
+      if (tok)
+        {
+          err = gpg_error (GPG_ERR_UNKNOWN_SEXP);
+          goto leave;
+        }
+      if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+        goto leave;
+
+      if (tok && toklen == 5 && !memcmp (tok, "curve", 5))
+        {
+          char *name;
+          const char *xname;
+
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            goto leave;
+
+          name = xtrymalloc (toklen+1);
+          if (!name)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (name, tok, toklen);
+          name[toklen] = 0;
+          /* Canonicalize the curve name.  We use the openpgp
+           * functions here because Libgcrypt has no generic curve
+           * alias lookup feature and the PIV suppotred curves alre
+           * also supported by OpenPGP.  */
+          xname = openpgp_oid_to_curve (openpgp_curve_to_oid (name, NULL), 0);
+          xfree (name);
+
+          if (xname && !strcmp (xname, "nistp256"))
+            mechanism = PIV_ALGORITHM_ECC_P256;
+          else if (xname && !strcmp (xname, "nistp384"))
+            mechanism = PIV_ALGORITHM_ECC_P384;
+          else
+            {
+              err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+              goto leave;
+            }
+        }
+      else if (tok && toklen == 1)
+        {
+          const unsigned char **mpi;
+          size_t *mpi_len;
+
+          switch (*tok)
+            {
+            case 'q': mpi = &ecc_q; mpi_len = &ecc_q_len; break;
+            case 'd': mpi = &ecc_d; mpi_len = &ecc_d_len; break;
+            default:  mpi = NULL;  mpi_len = NULL; break;
+            }
+          if (mpi && *mpi)
+            {
+              err = gpg_error (GPG_ERR_DUP_VALUE);
+              goto leave;
+            }
+
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            goto leave;
+          if (tok && mpi)
+            {
+              /* Strip off leading zero bytes and save. */
+              for (;toklen && !*tok; toklen--, tok++)
+                ;
+              *mpi = tok;
+              *mpi_len = toklen;
+            }
+        }
+      /* Skip until end of list. */
+      last_depth2 = depth;
+      while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+             && depth && depth >= last_depth2)
+        ;
+      if (err)
+        goto leave;
+    }
+
+  /* Check that we have all parameters.  */
+  if (!mechanism || !ecc_q || !ecc_d)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+
+  if (opt.verbose)
+    log_info ("ECC private key size is %u bytes\n", (unsigned int)ecc_d_len);
+
+  err = concat_tlv_list (1, &apdudata, &apdudatalen,
+                         (int)0x06, (size_t)ecc_d_len, ecc_d,
+                         (int)0, (size_t)0, NULL);
+  if (err)
+    goto leave;
+
+  err = iso7816_send_apdu (app->slot,
+                           -1,         /* Use command chaining.  */
+                           0,          /* Class */
+                           0xfe,       /* Ins: Yubikey Import Asym. Key.  */
+                           mechanism,  /* P1 */
+                           keyref,     /* P2 */
+                           apdudatalen,/* Lc */
+                           apdudata,   /* data */
+                           NULL, NULL, NULL);
+  if (err)
+    goto leave;
+
+  /* Write the public key to the cert object.  */
+  xfree (apdudata);
+  err = concat_tlv_list (0, &apdudata, &apdudatalen,
+                         (int)0x86, (size_t)ecc_q_len, ecc_q,
+                         (int)0, (size_t)0, NULL);
+
+  if (err)
+    goto leave;
+  tmpl[0] = mechanism;
+  err = put_data (app->slot, dobj->tag,
+                  (int)0x80,   (size_t)1, tmpl,
+                  (int)0x7f49, (size_t)apdudatalen, apdudata,
+                  (int)0,      (size_t)0, NULL);
+
+
+ leave:
+  xfree (apdudata);
+  return err;
+}
+
+
+/* Write a key to a slot.  This command requires proprietary
+ * extensions of the PIV specification and is thus only implemnted for
+ * supported card types.  The input is a canonical encoded
+ * S-expression with the secret key in KEYDATA and its length (for
+ * assertion) in KEYDATALEN.  KEYREFSTR needs to be the usual 2
+ * hexdigit slot number prefixed with "PIV."  PINCB and PINCB_ARG are
+ * not used for PIV cards.
+ *
+ * Supported FLAGS are:
+ *   APP_WRITEKEY_FLAG_FORCE   Overwrite existing key.
+ */
+static gpg_error_t
+do_writekey (app_t app, ctrl_t ctrl,
+             const char *keyrefstr, unsigned int flags,
+             gpg_error_t (*pincb)(void*, const char *, char **),
+             void *pincb_arg,
+             const unsigned char *keydata, size_t keydatalen)
+{
+  gpg_error_t err;
+  int force = !!(flags & APP_WRITEKEY_FLAG_FORCE);
+  data_object_t dobj;
+  int keyref;
+  const unsigned char *buf, *tok;
+  size_t buflen, toklen;
+  int depth;
+
+  (void)ctrl;
+  (void)pincb;
+  (void)pincb_arg;
+
+  if (!app->app_local->flags.yubikey)
+    {
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+    }
+
+  /* Check keyref and test whether a key already exists.  */
+  dobj = find_dobj_by_keyref (app, keyrefstr);
+  if ((keyref = keyref_from_dobj (dobj)) == -1)
+    {
+      err = gpg_error (GPG_ERR_INV_ID);
+      goto leave;
+    }
+  err = does_key_exist (app, dobj, 0, force);
+  if (err)
+    goto leave;
+
+  /* Parse the S-expression with the key. */
+  buf = keydata;
+  buflen = keydatalen;
+  depth = 0;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    goto leave;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    goto leave;
+  if (!tok || toklen != 11 || memcmp ("private-key", tok, toklen))
+    {
+      if (!tok)
+        ;
+      else if (toklen == 21 && !memcmp ("protected-private-key", tok, toklen))
+        log_info ("protected-private-key passed to writekey\n");
+      else if (toklen == 20 && !memcmp ("shadowed-private-key", tok, toklen))
+        log_info ("shadowed-private-key passed to writekey\n");
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    goto leave;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    goto leave;
+
+  /* First clear an existing key.  We do this by writing an empty 7f49
+   * tag.  This will return GPG_ERR_NO_PUBKEY on a later read.  */
+  flush_cached_data (app, dobj->tag);
+  err = put_data (app->slot, dobj->tag,
+                  (int)0x7f49, (size_t)0, "",
+                  (int)0,      (size_t)0, NULL);
+  if (err)
+    {
+      log_error ("piv: failed to clear the cert DO %s: %s\n",
+                 dobj->keyref, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Divert to the algo specific implementation.  */
+  if (tok && toklen == 3 && memcmp ("rsa", tok, toklen) == 0)
+    err = writekey_rsa (app, dobj, keyref, buf, buflen, depth);
+  else if (tok && toklen == 3 && memcmp ("ecc", tok, toklen) == 0)
+    err = writekey_ecc (app, dobj, keyref, buf, buflen, depth);
+  else
+    err = gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+
+  if (err)
+    {
+      /* A PIN is not required, thus use a better error code.  */
+      if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
+        err = gpg_error (GPG_ERR_NO_AUTH);
+      log_error (_("failed to store the key: %s\n"), gpg_strerror (err));
+    }
+
+ leave:
+  return err;
 }
 
 
@@ -2694,10 +3113,6 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
     goto leave;
 
 
-  /* FIXME: Check that the authentication has already been done.  */
-
-
-
   /* Create the key. */
   log_info (_("please wait while key is being generated ...\n"));
   start_at = time (NULL);
@@ -2774,11 +3189,12 @@ do_writecert (app_t app, ctrl_t ctrl,
   (void)pincb;     /* Not used; instead authentication is needed.  */
   (void)pincb_arg;
 
+  if (!certlen)
+    return gpg_error (GPG_ERR_INV_CERT_OBJ);
+
   dobj = find_dobj_by_keyref (app, certrefstr);
   if (!dobj || !*dobj->keyref)
     return gpg_error (GPG_ERR_INV_ID);
-
-  /* FIXME: Check that the authentication has already been done.  */
 
   flush_cached_data (app, dobj->tag);
 
@@ -2796,6 +3212,7 @@ do_writecert (app_t app, ctrl_t ctrl,
         err = gpg_error (GPG_ERR_NO_SECKEY); /* Use a better error code.  */
       goto leave;
     }
+
   /* Compare pubkeys.  */
   err = app_help_pubkey_from_cert (cert, certlen, &pk, &pklen);
   if (err)
@@ -2805,7 +3222,6 @@ do_writecert (app_t app, ctrl_t ctrl,
       err = gpg_error (GPG_ERR_CONFLICT);
       goto leave;
     }
-
 
   err = put_data (app->slot, dobj->tag,
                   (int)0x70, (size_t)certlen, cert,/* Certificate */
@@ -2917,7 +3333,7 @@ app_select_piv (app_t app)
   app->fnc.getattr = do_getattr;
   app->fnc.setattr = do_setattr;
   app->fnc.writecert = do_writecert;
-  /* app->fnc.writekey = do_writekey; */
+  app->fnc.writekey = do_writekey;
   app->fnc.genkey = do_genkey;
   app->fnc.sign = do_sign;
   app->fnc.auth = do_auth;

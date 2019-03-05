@@ -2486,8 +2486,8 @@ cmd_delete_key (assuan_context_t ctx, char *line)
 static const char hlp_keytocard[] =
   "KEYTOCARD [--force] <hexgrip> <serialno> <keyref> [<timestamp>]\n"
   "\n"
-  "TIMESTAMP is required for OpenPGP and defaults to the Epoch."
-  ;
+  "TIMESTAMP is required for OpenPGP and defaults to the Epoch.  The\n"
+  "SERIALNO is used for checking; use \"-\" to disable the check.";
 static gpg_error_t
 cmd_keytocard (assuan_context_t ctx, char *line)
 {
@@ -2527,8 +2527,18 @@ cmd_keytocard (assuan_context_t ctx, char *line)
       goto leave;
     }
 
+  /* Note that checking of the s/n is currently not implemented but we
+   * want to provide a clean interface if we ever implement it.  */
   serialno = argv[1];
+  if (!strcmp (serialno, "-"))
+    serialno = NULL;
+
   keyref = argv[2];
+
+  /* FIXME: Default to the creation time as stored in the private
+   * key.  The parameter is here so that gpg can make sure that the
+   * timestamp as used for key creation (and thus the openPGP
+   * fingerprint) is used.  */
   timestamp_str = argc > 3? argv[3] : "19700101T000000";
 
   if ((timestamp = isotime2epoch (timestamp_str)) == (time_t)(-1))

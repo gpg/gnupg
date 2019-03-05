@@ -1088,7 +1088,8 @@ agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
   char line[ASSUAN_LINELENGTH];
   struct inq_needpin_parm_s parms;
 
-  (void)serialno;
+  (void)serialno; /* NULL or a number to check for the correct card.
+                   * But is is not implemented.  */
 
   err = start_scd (ctrl);
   if (err)

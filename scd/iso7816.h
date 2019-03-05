@@ -61,6 +61,11 @@ gpg_error_t iso7816_select_path (int slot,
                                  const unsigned short *path, size_t pathlen);
 gpg_error_t iso7816_list_directory (int slot, int list_dirs,
                                     unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_send_apdu (int slot, int extended_mode,
+                               int class, int ins, int p0, int p1,
+                               int lc, const void *data,
+                               unsigned int *r_sw,
+                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_apdu_direct (int slot,
                                  const void *apdudata, size_t apdudatalen,
                                  int handle_more, unsigned int *r_sw,

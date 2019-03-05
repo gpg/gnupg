@@ -1667,7 +1667,7 @@ cmd_readcert (card_info_t info, char *argstr)
   if (!info)
     return print_help
       ("READCERT CERTREF > FILE\n\n"
-       "Read the certificate for key 3 and store it in FILE.",
+       "Read the certificate for key CERTREF and store it in FILE.",
        APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
   argstr = skip_options (argstr);
@@ -1714,6 +1714,62 @@ cmd_readcert (card_info_t info, char *argstr)
  leave:
   xfree (data);
   xfree (certref_buffer);
+  return err;
+}
+
+
+static gpg_error_t
+cmd_writekey (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  int opt_force;
+  char *argv[2];
+  int argc;
+  char *keyref_buffer = NULL;
+  char *keyref;
+  char *keygrip;
+
+  if (!info)
+    return print_help
+      ("WRITEKEY [--force] KEYREF KEYGRIP\n\n"
+       "Write a private key object identified by KEYGRIP to slot KEYREF.\n"
+       "Use --force to overwrite an existing key.",
+       APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
+
+  opt_force = has_leading_option (argstr, "--force");
+  argstr = skip_options (argstr);
+
+  argc = split_fields (argstr, argv, DIM (argv));
+  if (argc < 2)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  /* Upcase the keyref; prepend cardtype if needed.  */
+  keyref = argv[0];
+  if (!strchr (keyref, '.'))
+    keyref_buffer = xstrconcat (app_type_string (info->apptype), ".",
+                                keyref, NULL);
+  else
+    keyref_buffer = xstrdup (keyref);
+  ascii_strupr (keyref_buffer);
+  keyref = keyref_buffer;
+
+  /* Get the keygrip.  */
+  keygrip = argv[1];
+  if (strlen (keygrip) != 40
+      && !(keygrip[0] == '&' && strlen (keygrip+1) == 40))
+    {
+      log_error (_("Not a valid keygrip (expecting 40 hex digits)\n"));
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  err = scd_writekey (keyref, opt_force, keygrip);
+
+ leave:
+  xfree (keyref_buffer);
   return err;
 }
 
@@ -2683,7 +2739,7 @@ ask_card_keyattr (int keyno, const struct key_attr *current,
       (void)algo;
       err = GPG_ERR_NOT_IMPLEMENTED;
       goto leave;
-      /* FIXME: We need to mve the ask_cure code out to common or
+      /* FIXME: We need to move the ask_cure code out to common or
        * provide another sultion.  */
       /* curve = ask_curve (&algo, NULL, curve); */
       /* if (curve) */
@@ -2747,7 +2803,7 @@ do_change_keyattr (int keyno, const struct key_attr *key_attr)
               keyno+1, key_attr->algo, key_attr->curve);
   else
     {
-      /* FIXME: Above we use opnepgp algo names but in the error
+      /* FIXME: Above we use openpgp algo names but in the error
        * message we use the gcrypt names.  We should settle for a
        * consistent solution. */
       log_error (_("public key algorithm %d (%s) is not supported\n"),
@@ -2918,7 +2974,7 @@ enum cmdids
     cmdQUIT, cmdHELP, cmdLIST, cmdRESET, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
-    cmdREADCERT, cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
+    cmdREADCERT, cmdWRITEKEY,  cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
     cmdKEYATTR, cmdUIF, cmdAUTH, cmdYUBIKEY,
     cmdINVCMD
   };
@@ -2958,6 +3014,7 @@ static struct
   { "privatedo", cmdPRIVATEDO,  N_("change a private data object")},
   { "readcert",  cmdREADCERT,   N_("read a certificate from a data object")},
   { "writecert", cmdWRITECERT,  N_("store a certificate to a data object")},
+  { "writekey",  cmdWRITEKEY,   N_("store a private key to a data object")},
   { "yubikey",   cmdYUBIKEY,    N_("Yubikey management commands")},
   { NULL, cmdINVCMD, NULL }
 };
@@ -3084,6 +3141,7 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdPRIVATEDO:    err = cmd_privatedo (info, argstr); break;
     case cmdWRITECERT:    err = cmd_writecert (info, argstr); break;
     case cmdREADCERT:     err = cmd_readcert (info, argstr); break;
+    case cmdWRITEKEY:     err = cmd_writekey (info, argstr); break;
     case cmdFORCESIG:     err = cmd_forcesig (info); break;
     case cmdGENERATE:     err = cmd_generate (info, argstr); break;
     case cmdPASSWD:       err = cmd_passwd (info, argstr); break;
@@ -3314,6 +3372,7 @@ interactive_loop (void)
         case cmdPRIVATEDO: err = cmd_privatedo (info, argstr); break;
         case cmdWRITECERT: err = cmd_writecert (info, argstr); break;
         case cmdREADCERT:  err = cmd_readcert (info, argstr); break;
+        case cmdWRITEKEY:  err = cmd_writekey (info, argstr); break;
         case cmdFORCESIG:  err = cmd_forcesig (info); break;
         case cmdGENERATE:  err = cmd_generate (info, argstr); break;
         case cmdPASSWD:    err = cmd_passwd (info, argstr); break;

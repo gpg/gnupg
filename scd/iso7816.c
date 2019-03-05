@@ -222,6 +222,39 @@ iso7816_list_directory (int slot, int list_dirs,
 }
 
 
+/* Wrapper around apdu_send. RESULT can be NULL if no result is
+ * expected.  In addition to an gpg-error return code the actual
+ * status word is stored at R_SW unless that is NULL.  */
+gpg_error_t
+iso7816_send_apdu (int slot, int extended_mode,
+                   int class, int ins, int p0, int p1,
+                   int lc, const void *data,
+                   unsigned int *r_sw,
+                   unsigned char **result, size_t *resultlen)
+{
+  int sw;
+
+  if (result)
+    {
+      *result = NULL;
+      *resultlen = 0;
+    }
+
+  sw = apdu_send (slot, extended_mode, class, ins, p0, p1, lc, data,
+                  result, resultlen);
+  if (sw != SW_SUCCESS && result)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+    }
+  if (r_sw)
+    *r_sw = sw;
+  return map_sw (sw);
+}
+
+
 /* This function sends an already formatted APDU to the card.  With
    HANDLE_MORE set to true a MORE DATA status will be handled
    internally.  The return value is a gpg error code (i.e. a mapped

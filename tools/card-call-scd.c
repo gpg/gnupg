@@ -1155,49 +1155,30 @@ scd_writecert (const char *certidstr,
 
 
 
-/* Handle a KEYDATA inquiry.  Note, we only send the data,
-   assuan_transact takes care of flushing and writing the end */
-static gpg_error_t
-inq_writekey_parms (void *opaque, const char *line)
-{
-  gpg_error_t err;
-  struct writekey_parm_s *parm = opaque;
-
-  if (has_leading_keyword (line, "KEYDATA"))
-    {
-      err = assuan_send_data (parm->dflt->ctx, parm->keydata, parm->keydatalen);
-    }
-  else
-    err = default_inq_cb (parm->dflt, line);
-
-  return err;
-}
-
-
-/* Send a WRITEKEY command to the SCdaemon. */
+/* Send a WRITEKEY command to the agent (so that the agent can fetch
+ * the key to write).  KEYGRIP is the hexified keygrip of the source
+ * key which will be written to tye slot KEYREF.  FORCE must be true
+ * to overwrite an existing key.  */
 gpg_error_t
-scd_writekey (int keyno, const unsigned char *keydata, size_t keydatalen)
+scd_writekey (const char *keyref, int force, const char *keygrip)
 {
   gpg_error_t err;
+  struct default_inq_parm_s parm;
   char line[ASSUAN_LINELENGTH];
-  struct writekey_parm_s parms;
-  struct default_inq_parm_s dfltparm;
 
-  memset (&parms, 0, sizeof parms);
-  memset (&dfltparm, 0, sizeof dfltparm);
+  memset (&parm, 0, sizeof parm);
 
   err = start_agent (0);
   if (err)
     return err;
 
-  snprintf (line, sizeof line, "SCD WRITEKEY --force OPENPGP.%d", keyno);
-  dfltparm.ctx = agent_ctx;
-  parms.dflt = &dfltparm;
-  parms.keydata = keydata;
-  parms.keydatalen = keydatalen;
-
+  /* Note: We don't send the s/n but "-" because gpg-agent has
+   * currently no use for it. */
+  /* FIXME: For OpenPGP we should provide the creation time.  */
+  snprintf (line, sizeof line, "KEYTOCARD%s %s - %s",
+            force? " --force":"", keygrip, keyref);
   err = assuan_transact (agent_ctx, line, NULL, NULL,
-                         inq_writekey_parms, &parms, NULL, NULL);
+                         default_inq_cb, &parm, NULL, NULL);
 
   return status_sc_op_failure (err);
 }
