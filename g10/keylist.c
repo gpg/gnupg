@@ -2059,10 +2059,18 @@ print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret)
     tty_fprintf (fp, "/%s", keystr_from_pk (pk));
   tty_fprintf (fp, " %s", datestr_from_pk (pk));
 
-  if ((opt.list_options & LIST_SHOW_USAGE))
+  if (pk->flags.primary
+      && !(openpgp_pk_algo_usage (pk->pubkey_algo)
+           & (PUBKEY_USAGE_CERT| PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH)))
+    {
+      /* A primary key which is really not capable to sign.  */
+      tty_fprintf (fp, " [INVALID_ALGO]");
+    }
+  else if ((opt.list_options & LIST_SHOW_USAGE))
     {
       tty_fprintf (fp, " [%s]", usagestr_from_pk (pk, 0));
     }
+
   if (pk->flags.revoked)
     {
       tty_fprintf (fp, " [");
