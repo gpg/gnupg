@@ -77,12 +77,15 @@ parse_xoctal (const void *data, size_t length, const char *filename)
 
 
 static tar_header_t
-parse_header (const void *record, const char *filename)
+parse_header (const void *record, const char *filename, tarinfo_t info)
 {
   const struct ustar_raw_header *raw = record;
   size_t n, namelen, prefixlen;
   tar_header_t header;
   int use_prefix;
+  int anyerror = 0;
+
+  info->headerblock = info->nblocks - 1;
 
   use_prefix = (!memcmp (raw->magic, "ustar", 5)
                 && (raw->magic[5] == ' ' || !raw->magic[5]));
@@ -91,14 +94,17 @@ parse_header (const void *record, const char *filename)
   for (namelen=0; namelen < sizeof raw->name && raw->name[namelen]; namelen++)
     ;
   if (namelen == sizeof raw->name)
-    log_info ("%s: warning: name not terminated by a nul byte\n", filename);
+    {
+      log_info ("%s: warning: name not terminated by a nul\n", filename);
+      anyerror = 1;
+    }
   for (n=namelen+1; n < sizeof raw->name; n++)
     if (raw->name[n])
       {
         log_info ("%s: warning: garbage after name\n", filename);
+        anyerror = 1;
         break;
       }
-
 
   if (use_prefix && raw->prefix[0])
     {
@@ -106,12 +112,13 @@ parse_header (const void *record, const char *filename)
                          && raw->prefix[prefixlen]); prefixlen++)
         ;
       if (prefixlen == sizeof raw->prefix)
-        log_info ("%s: warning: prefix not terminated by a nul byte\n",
-                  filename);
+        log_info ("%s: warning: prefix not terminated by a nul (block %llu)\n",
+                  filename, info->headerblock);
       for (n=prefixlen+1; n < sizeof raw->prefix; n++)
         if (raw->prefix[n])
           {
             log_info ("%s: warning: garbage after prefix\n", filename);
+            anyerror = 1;
             break;
           }
     }
@@ -156,25 +163,32 @@ parse_header (const void *record, const char *filename)
     default:  header->typeflag = TF_UNKNOWN; break;
     }
 
-
   /* Compute the number of data records following this header.  */
   if (header->typeflag == TF_REGULAR || header->typeflag == TF_UNKNOWN)
     header->nrecords = (header->size + RECORDSIZE-1)/RECORDSIZE;
   else
     header->nrecords = 0;
 
+  if (anyerror)
+    {
+      log_info ("%s: header block %llu is corrupt"
+                " (size=%llu type=%d nrec=%llu)\n",
+                filename, info->headerblock,
+                header->size, header->typeflag, header->nrecords);
+      /* log_printhex (record, RECORDSIZE, " "); */
+    }
 
   return header;
 }
 
 
 
-/* Read the next block, assming it is a tar header.  Returns a header
+/* Read the next block, assuming it is a tar header.  Returns a header
    object on success in R_HEADER, or an error.  If the stream is
    consumed, R_HEADER is set to NULL.  In case of an error an error
    message has been printed.  */
 static gpg_error_t
-read_header (estream_t stream, tar_header_t *r_header)
+read_header (estream_t stream, tarinfo_t info, tar_header_t *r_header)
 {
   gpg_error_t err;
   char record[RECORDSIZE];
@@ -183,6 +197,7 @@ read_header (estream_t stream, tar_header_t *r_header)
   err = read_record (stream, record);
   if (err)
     return err;
+  info->nblocks++;
 
   for (i=0; i < RECORDSIZE && !record[i]; i++)
     ;
@@ -193,6 +208,7 @@ read_header (estream_t stream, tar_header_t *r_header)
       err = read_record (stream, record);
       if (err)
         return err;
+      info->nblocks++;
 
       for (i=0; i < RECORDSIZE && !record[i]; i++)
         ;
@@ -207,7 +223,7 @@ read_header (estream_t stream, tar_header_t *r_header)
         }
     }
 
-  *r_header = parse_header (record, es_fname_get (stream));
+  *r_header = parse_header (record, es_fname_get (stream), info);
   return *r_header ? 0 : gpg_error_from_syserror ();
 }
 
@@ -215,7 +231,7 @@ read_header (estream_t stream, tar_header_t *r_header)
 /* Skip the data records according to HEADER.  Prints an error message
    on error and return -1. */
 static int
-skip_data (estream_t stream, tar_header_t header)
+skip_data (estream_t stream, tarinfo_t info, tar_header_t header)
 {
   char record[RECORDSIZE];
   unsigned long long n;
@@ -224,6 +240,7 @@ skip_data (estream_t stream, tar_header_t header)
     {
       if (read_record (stream, record))
         return -1;
+      info->nblocks++;
     }
 
   return 0;
@@ -278,6 +295,10 @@ gpgtar_list (const char *filename, int decrypt)
   estream_t stream;
   estream_t cipher_stream = NULL;
   tar_header_t header = NULL;
+  struct tarinfo_s tarinfo_buffer;
+  tarinfo_t tarinfo = &tarinfo_buffer;
+
+  memset (&tarinfo_buffer, 0, sizeof tarinfo_buffer);
 
   if (filename)
     {
@@ -339,13 +360,13 @@ gpgtar_list (const char *filename, int decrypt)
 
   for (;;)
     {
-      err = read_header (stream, &header);
+      err = read_header (stream, tarinfo, &header);
       if (err || header == NULL)
         goto leave;
 
       print_header (header, es_stdout);
 
-      if (skip_data (stream, header))
+      if (skip_data (stream, tarinfo, header))
         goto leave;
       xfree (header);
       header = NULL;
@@ -362,9 +383,9 @@ gpgtar_list (const char *filename, int decrypt)
 }
 
 gpg_error_t
-gpgtar_read_header (estream_t stream, tar_header_t *r_header)
+gpgtar_read_header (estream_t stream, tarinfo_t info, tar_header_t *r_header)
 {
-  return read_header (stream, r_header);
+  return read_header (stream, info, r_header);
 }
 
 void

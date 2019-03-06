@@ -36,7 +36,7 @@
 
 static gpg_error_t
 extract_regular (estream_t stream, const char *dirname,
-                 tar_header_t hdr)
+                 tarinfo_t info, tar_header_t hdr)
 {
   gpg_error_t err;
   char record[RECORDSIZE];
@@ -70,6 +70,7 @@ extract_regular (estream_t stream, const char *dirname,
       err = read_record (stream, record);
       if (err)
         goto leave;
+      info->nblocks++;
       n++;
       if (n < hdr->nrecords || (hdr->size && !(hdr->size % RECORDSIZE)))
         nbytes = RECORDSIZE;
@@ -163,7 +164,8 @@ extract_directory (const char *dirname, tar_header_t hdr)
 
 
 static gpg_error_t
-extract (estream_t stream, const char *dirname, tar_header_t hdr)
+extract (estream_t stream, const char *dirname, tarinfo_t info,
+         tar_header_t hdr)
 {
   gpg_error_t err;
   size_t n;
@@ -190,7 +192,7 @@ extract (estream_t stream, const char *dirname, tar_header_t hdr)
     }
 
   if (hdr->typeflag == TF_REGULAR || hdr->typeflag == TF_UNKNOWN)
-    err = extract_regular (stream, dirname, hdr);
+    err = extract_regular (stream, dirname, info, hdr);
   else if (hdr->typeflag == TF_DIRECTORY)
     err = extract_directory (dirname, hdr);
   else
@@ -200,7 +202,11 @@ extract (estream_t stream, const char *dirname, tar_header_t hdr)
       log_info ("unsupported file type %d for '%s' - skipped\n",
                 (int)hdr->typeflag, hdr->name);
       for (err = 0, n=0; !err && n < hdr->nrecords; n++)
-        err = read_record (stream, record);
+        {
+          err = read_record (stream, record);
+          if (!err)
+            info->nblocks++;
+        }
     }
   return err;
 }
@@ -282,6 +288,10 @@ gpgtar_extract (const char *filename, int decrypt)
   tar_header_t header = NULL;
   const char *dirprefix = NULL;
   char *dirname = NULL;
+  struct tarinfo_s tarinfo_buffer;
+  tarinfo_t tarinfo = &tarinfo_buffer;
+
+  memset (&tarinfo_buffer, 0, sizeof tarinfo_buffer);
 
   if (filename)
     {
@@ -378,11 +388,11 @@ gpgtar_extract (const char *filename, int decrypt)
 
   for (;;)
     {
-      err = gpgtar_read_header (stream, &header);
+      err = gpgtar_read_header (stream, tarinfo, &header);
       if (err || header == NULL)
         goto leave;
 
-      err = extract (stream, dirname, header);
+      err = extract (stream, dirname, tarinfo, header);
       if (err)
         goto leave;
       xfree (header);
