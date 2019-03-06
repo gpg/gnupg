@@ -1647,6 +1647,20 @@ cmd_writecert (card_info_t info, char *argstr)
       err = get_data_from_file (argstr, &data, &datalen);
       if (err)
         goto leave;
+      if (ascii_memistr (data, datalen, "-----BEGIN CERTIFICATE-----")
+          && ascii_memistr (data, datalen, "-----END CERTIFICATE-----")
+          && !memchr (data, 0, datalen) && !memchr (data, 1, datalen))
+        {
+          struct b64state b64;
+
+          err = b64dec_start (&b64, "");
+          if (!err)
+            err = b64dec_proc (&b64, data, datalen, &datalen);
+          if (!err)
+            err = b64dec_finish (&b64);
+          if (err)
+            goto leave;
+        }
     }
   else
     {
