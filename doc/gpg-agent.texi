@@ -585,16 +585,16 @@ local gpg-agent and use its private keys.  This enables decrypting or
 signing data on a remote machine without exposing the private keys to the
 remote machine.
 
-@anchor{option --enable-extended-key-format}
-@item --enable-extended-key-format
-@opindex enable-extended-key-format
-This option creates keys in the extended private key format.  Changing
-the passphrase of a key will also convert the key to that new format.
-Using this option makes the private keys unreadable for gpg-agent
-versions before 2.1.12.  The advantage of the extended private key
-format is that it is text based and can carry additional meta data.
-Note that this option also changes the key protection format to use
-OCB mode.
+@item --disable-extended-key-format
+@opindex disable-extended-key-format
+Since version 2.3 keys are created in the extended private key format.
+Changing the passphrase of a key will also convert the key to that new
+format.  This new key format is supported since GnuPG version 2.1.12
+and thus there should be no need to disable it.  However, this options
+allows to revert to the old behaviour for new keys; be aware that keys
+are never migrated back to the old format.  The advantage of the
+extended private key format is that it is text based and can carry
+additional meta data.
 
 @anchor{option --enable-ssh-support}
 @item --enable-ssh-support
