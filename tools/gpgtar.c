@@ -136,6 +136,14 @@ static ARGPARSE_OPTS tar_opts[] = {
 };
 
 
+/* Global flags.  */
+enum cmd_and_opt_values cmd = 0;
+int skip_crypto = 0;
+const char *files_from = NULL;
+int null_names = 0;
+
+
+
 
 /* Print usage information and provide strings for help. */
 static const char *
@@ -169,23 +177,25 @@ my_strusage( int level )
 static void
 set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
 {
-  enum cmd_and_opt_values cmd = *ret_cmd;
+  enum cmd_and_opt_values c = *ret_cmd;
 
-  if (!cmd || cmd == new_cmd)
-    cmd = new_cmd;
-  else if (cmd == aSign && new_cmd == aEncrypt)
-    cmd = aSignEncrypt;
-  else if (cmd == aEncrypt && new_cmd == aSign)
-    cmd = aSignEncrypt;
+  if (!c || c == new_cmd)
+    c = new_cmd;
+  else if (c == aSign && new_cmd == aEncrypt)
+    c = aSignEncrypt;
+  else if (c == aEncrypt && new_cmd == aSign)
+    c = aSignEncrypt;
   else
     {
       log_error (_("conflicting commands\n"));
       exit (2);
     }
 
-  *ret_cmd = cmd;
+  *ret_cmd = c;
 }
+
 
+
 /* Shell-like argument splitting.
 
    For compatibility with gpg-zip we accept arguments for GnuPG and
@@ -287,14 +297,9 @@ shell_parse_argv (const char *s, int *r_argc, char ***r_argv)
   gpgrt_annotate_leaked_object (*r_argv);
   return 0;
 }
+
+
 
-/* Global flags.  */
-enum cmd_and_opt_values cmd = 0;
-int skip_crypto = 0;
-const char *files_from = NULL;
-int null_names = 0;
-
-
 /* Command line parsing.  */
 static void
 parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
