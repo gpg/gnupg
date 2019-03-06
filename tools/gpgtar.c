@@ -112,7 +112,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (302, N_("@\nTar options:\n ")),
 
   ARGPARSE_s_s (oDirectory, "directory",
-                N_("|DIRECTORY|extract files into DIRECTORY")),
+                N_("|DIRECTORY|change to DIRECTORY first")),
   ARGPARSE_s_s (oFilesFrom, "files-from",
                 N_("|FILE|get names to create from FILE")),
   ARGPARSE_s_n (oNull, "null", N_("-T reads null-terminated names")),

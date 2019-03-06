@@ -2014,10 +2014,11 @@ Do not actually output the extracted files.
 @item --directory @var{dir}
 @itemx -C @var{dir}
 @opindex directory
-Extract the files into the directory @var{dir}.  The
-default is to take the directory name from
-the input filename.  If no input filename is known a directory named
-@file{GPGARCH} is used.
+Extract the files into the directory @var{dir}.  The default is to
+take the directory name from the input filename.  If no input filename
+is known a directory named @file{GPGARCH} is used.  For tarball
+creation, switch to directory @var{dir} before performing any
+operations.
 
 @item --files-from @var{file}
 @itemx -T @var{file}
