@@ -609,9 +609,11 @@ mem_is_zero (const char *mem, unsigned int memlen)
 
 
 
-/* Helper to list a single keyref.  */
+/* Helper to list a single keyref.  LABEL_KEYREF is a fallback key
+ * reference if no info is available; it may be NULL.  */
 static void
-list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
+list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
+                const char *label_keyref, estream_t fp)
 {
   gpg_error_t err;
   keyblock_t keyblock = NULL;
@@ -629,6 +631,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
       if (mem_is_zero (kinfo->grip, sizeof kinfo->grip))
         {
           tty_fprintf (fp, "[none]\n");
+          tty_fprintf (fp, "      keyref .....: %s\n", kinfo->keyref);
           goto leave;
         }
 
@@ -719,7 +722,11 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo, estream_t fp)
         }
     }
   else
-    tty_fprintf (fp, " [none]\n");
+    {
+      tty_fprintf (fp, " [none]\n");
+      if (label_keyref)
+        tty_fprintf (fp, "      keyref .....: %s\n", label_keyref);
+    }
 
  leave:
   release_keyblock (keyblock);
@@ -743,7 +750,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp)
         {
           tty_fprintf (fp, "%s", labels[idx].label);
           kinfo = find_kinfo (info, labels[idx].keyref);
-          list_one_kinfo (info->kinfo, kinfo, fp);
+          list_one_kinfo (info->kinfo, kinfo, labels[idx].keyref, fp);
           if (kinfo)
             kinfo->xflag = 1;
         }
@@ -756,7 +763,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp)
       for (i=5+strlen (kinfo->keyref); i < 18; i++)
         tty_fprintf (fp, ".");
       tty_fprintf (fp, ":");
-      list_one_kinfo (info->kinfo, kinfo, fp);
+      list_one_kinfo (info->kinfo, kinfo, NULL, fp);
     }
 }
 
@@ -857,22 +864,6 @@ list_openpgp (card_info_t info, estream_t fp)
 
   list_all_kinfo (info, keyinfolabels, fp);
 
-  /* tty_fprintf (fp, "General key info->.: "); */
-  /* thefpr = (info->fpr1len? info->fpr1 : info->fpr2len? info->fpr2 : */
-  /*           info->fpr3len? info->fpr3 : NULL); */
-  /* thefprlen = (info->fpr1len? info->fpr1len : info->fpr2len? info->fpr2len : */
-  /*              info->fpr3len? info->fpr3len : 0); */
-  /* If the fingerprint is all 0xff, the key has no associated
-     OpenPGP certificate.  */
-  /* if ( thefpr && !mem_is_ff (thefpr, thefprlen) */
-  /*      && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen)) */
-  /*   { */
-      /* print_pubkey_info (ctrl, fp, pk); */
-      /* if (keyblock) */
-      /*   print_card_key_info (fp, keyblock); */
-  /*   } */
-  /* else */
-  /*   tty_fprintf (fp, "[none]\n"); */
 }
 
 
