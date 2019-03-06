@@ -762,6 +762,14 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
   memset (scanctrl, 0, sizeof *scanctrl);
   scanctrl->flist_tail = &scanctrl->flist;
 
+  if (opt.directory && gnupg_chdir (opt.directory))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("chdir to '%s' failed: %s\n",
+                 opt.directory, gpg_strerror (err));
+      return err;
+    }
+
   while (!eof_seen)
     {
       char *pat, *p;
