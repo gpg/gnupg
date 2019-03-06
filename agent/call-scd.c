@@ -303,33 +303,19 @@ start_scd (ctrl_t ctrl)
   if (opt.disable_scdaemon)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
-  /* If this is the first call for this session, setup the local data
-     structure. */
-  if (!ctrl->scd_local)
+  if (ctrl->scd_local && ctrl->scd_local->ctx)
     {
-      ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
-      if (!ctrl->scd_local)
-        return gpg_error_from_syserror ();
-      ctrl->scd_local->next_local = scd_local_list;
-      scd_local_list = ctrl->scd_local;
+      ctrl->scd_local->in_use = 1;
+      return 0; /* Okay, the context is fine.  */
     }
 
-  if (ctrl->scd_local->in_use)
+  if (ctrl->scd_local && ctrl->scd_local->in_use)
     {
       log_error ("start_scd: CTX is in use\n");
       return gpg_error (GPG_ERR_INTERNAL);
     }
-  ctrl->scd_local->in_use = 1;
 
-  if (ctrl->scd_local->ctx)
-    return 0; /* Okay, the context is fine.  We used to test for an
-                 alive context here and do an disconnect.  Now that we
-                 have a ticker function to check for it, it is easier
-                 not to check here but to let the connection run on an
-                 error instead. */
-
-
-  /* We need to protect the following code. */
+  /* We need to serialize the access to scd_local_list and primary_scd_ctx. */
   rc = npth_mutex_lock (&start_scd_lock);
   if (rc)
     {
@@ -337,6 +323,25 @@ start_scd (ctrl_t ctrl)
                  strerror (rc));
       return gpg_error (GPG_ERR_INTERNAL);
     }
+
+  /* If this is the first call for this session, setup the local data
+     structure. */
+  if (!ctrl->scd_local)
+    {
+      ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
+      if (!ctrl->scd_local)
+	{
+	  err = gpg_error_from_syserror ();
+	  rc = npth_mutex_unlock (&start_scd_lock);
+	  if (rc)
+	    log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
+	  return err;
+	}
+      ctrl->scd_local->next_local = scd_local_list;
+      scd_local_list = ctrl->scd_local;
+    }
+
+  ctrl->scd_local->in_use = 1;
 
   /* Check whether the pipe server has already been started and in
      this case either reuse a lingering pipe connection or establish a
@@ -522,6 +527,10 @@ start_scd (ctrl_t ctrl)
   }
 
  leave:
+  rc = npth_mutex_unlock (&start_scd_lock);
+  if (rc)
+    log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
+
   xfree (abs_homedir);
   if (err)
     {
@@ -531,11 +540,9 @@ start_scd (ctrl_t ctrl)
     }
   else
     {
+      ctrl->scd_local->invalid = 0;
       ctrl->scd_local->ctx = ctx;
     }
-  rc = npth_mutex_unlock (&start_scd_lock);
-  if (rc)
-    log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
   return err;
 }
 
@@ -555,53 +562,64 @@ agent_scd_check_running (void)
 int
 agent_reset_scd (ctrl_t ctrl)
 {
-  if (ctrl->scd_local)
+  int err = npth_mutex_lock (&start_scd_lock);
+
+  if (err)
     {
-      if (ctrl->scd_local->ctx)
+      log_error ("failed to acquire the start_scd lock: %s\n",
+                 strerror (err));
+    }
+  else
+    {
+      if (ctrl->scd_local)
         {
-          /* We can't disconnect the primary context because libassuan
-             does a waitpid on it and thus the system would hang.
-             Instead we send a reset and keep that connection for
-             reuse. */
-          if (ctrl->scd_local->ctx == primary_scd_ctx)
+          if (ctrl->scd_local->ctx)
             {
-              /* Send a RESTART to the SCD.  This is required for the
-                 primary connection as a kind of virtual EOF; we don't
-                 have another way to tell it that the next command
-                 should be viewed as if a new connection has been
-                 made.  For the non-primary connections this is not
-                 needed as we simply close the socket.  We don't check
-                 for an error here because the RESTART may fail for
-                 example if the scdaemon has already been terminated.
-                 Anyway, we need to set the reusable flag to make sure
-                 that the aliveness check can clean it up. */
-              assuan_transact (primary_scd_ctx, "RESTART",
-                               NULL, NULL, NULL, NULL, NULL, NULL);
-              primary_scd_ctx_reusable = 1;
+              /* We send a reset and keep that connection for reuse. */
+              if (ctrl->scd_local->ctx == primary_scd_ctx)
+                {
+                  /* Send a RESTART to the SCD.  This is required for the
+                     primary connection as a kind of virtual EOF; we don't
+                     have another way to tell it that the next command
+                     should be viewed as if a new connection has been
+                     made.  For the non-primary connections this is not
+                     needed as we simply close the socket.  We don't check
+                     for an error here because the RESTART may fail for
+                     example if the scdaemon has already been terminated.
+                     Anyway, we need to set the reusable flag to make sure
+                     that the aliveness check can clean it up. */
+                  assuan_transact (primary_scd_ctx, "RESTART",
+                                   NULL, NULL, NULL, NULL, NULL, NULL);
+                  primary_scd_ctx_reusable = 1;
+                }
+              else
+                assuan_release (ctrl->scd_local->ctx);
+              ctrl->scd_local->ctx = NULL;
             }
-          else
-            assuan_release (ctrl->scd_local->ctx);
-          ctrl->scd_local->ctx = NULL;
-        }
 
-      /* Remove the local context from our list and release it. */
-      if (!scd_local_list)
-        BUG ();
-      else if (scd_local_list == ctrl->scd_local)
-        scd_local_list = ctrl->scd_local->next_local;
-      else
-        {
-          struct scd_local_s *sl;
-
-          for (sl=scd_local_list; sl->next_local; sl = sl->next_local)
-            if (sl->next_local == ctrl->scd_local)
-              break;
-          if (!sl->next_local)
+          /* Remove the local context from our list and release it. */
+          if (!scd_local_list)
             BUG ();
-          sl->next_local = ctrl->scd_local->next_local;
+          else if (scd_local_list == ctrl->scd_local)
+            scd_local_list = ctrl->scd_local->next_local;
+          else
+            {
+              struct scd_local_s *sl;
+
+              for (sl=scd_local_list; sl->next_local; sl = sl->next_local)
+                if (sl->next_local == ctrl->scd_local)
+                  break;
+              if (!sl->next_local)
+                BUG ();
+              sl->next_local = ctrl->scd_local->next_local;
+            }
+          xfree (ctrl->scd_local);
+          ctrl->scd_local = NULL;
         }
-      xfree (ctrl->scd_local);
-      ctrl->scd_local = NULL;
+
+      err = npth_mutex_unlock (&start_scd_lock);
+      if (err)
+        log_error ("failed to release the start_scd lock: %s\n", strerror (err));
     }
 
   return 0;
