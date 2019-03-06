@@ -113,6 +113,7 @@ enum cmd_and_opt_values
   oMaxPassphraseDays,
   oEnablePassphraseHistory,
   oDisableExtendedKeyFormat,
+  oEnableExtendedKeyFormat,
   oUseStandardSocket,
   oNoUseStandardSocket,
   oExtraSocket,
@@ -254,6 +255,7 @@ static ARGPARSE_OPTS opts[] = {
 #endif
                 ),
   ARGPARSE_s_n (oDisableExtendedKeyFormat, "disable-extended-key-format", "@"),
+  ARGPARSE_s_n (oEnableExtendedKeyFormat, "enable-extended-key-format", "@"),
 
   ARGPARSE_s_u (oS2KCount, "s2k-count", "@"),
   ARGPARSE_s_u (oS2KCalibration, "s2k-calibration", "@"),
@@ -268,7 +270,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoUseStandardSocket, "no-use-standard-socket", "@"),
 
   /* Dummy options.  */
-  ARGPARSE_s_n (oNoop, "enable-extended-key-format", "@"),
 
 
   ARGPARSE_end () /* End of list */
@@ -906,7 +907,13 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.enable_passphrase_history = 1;
       break;
 
-    case oDisableExtendedKeyFormat: opt.enable_extended_key_format = 0; break;
+    case oEnableExtendedKeyFormat:
+      opt.enable_extended_key_format = 2;
+      break;
+    case oDisableExtendedKeyFormat:
+      if (opt.enable_extended_key_format != 2)
+        opt.enable_extended_key_format = 0;
+      break;
 
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
 

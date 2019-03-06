@@ -508,6 +508,9 @@ static gc_option_t gc_options_gpg_agent[] =
    { "enable-putty-support", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", "enable putty support",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+   { "enable-extended-key-format", GC_OPT_FLAG_RUNTIME, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,

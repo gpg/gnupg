@@ -124,7 +124,11 @@ struct
      passphrase change.  */
   int enable_passphrase_history;
 
-  /* If set the extended key format is used for new keys.  */
+  /* If set the extended key format is used for new keys.  Note that
+   * this may vave the value 2 in which case
+   * --disable-extended-key-format won't have any effect and thus
+   * effectivley locking it.  This is required to support existing
+   * profiles which lock the use of --enable-extended-key-format. */
   int enable_extended_key_format;
 
   int running_detached; /* We are running detached from the tty. */
