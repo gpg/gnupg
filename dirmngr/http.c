@@ -3514,16 +3514,51 @@ uri_query_lookup (parsed_uri_t uri, const char *key)
 }
 
 
-/* Return true if both URI point to the same host.  */
+/* Return true if both URI point to the same host for the purpose of
+ * redirection check.  A is the original host and B the host given in
+ * the Location header.  As a temporary workaround a fixed list of
+ * exceptions is also consulted.  */
 static int
 same_host_p (parsed_uri_t a, parsed_uri_t b)
 {
-  return a->host && b->host && !ascii_strcasecmp (a->host, b->host);
+  static struct
+  {
+    const char *from;  /* NULL uses the last entry from the table.  */
+    const char *to;
+  } allow[] =
+  {
+    { "protonmail.com", "api.protonmail.com" },
+    { NULL,             "api.protonmail.ch"  },
+    { "protonmail.ch",  "api.protonmail.com" },
+    { NULL,             "api.protonmail.ch"  }
+  };
+  int i;
+  const char *from;
+
+  if (!a->host || !b->host)
+    return 0;
+
+  if (!ascii_strcasecmp (a->host, b->host))
+    return 1;
+
+  from = NULL;
+  for (i=0; i < DIM (allow); i++)
+    {
+      if (allow[i].from)
+        from = allow[i].from;
+      if (!from)
+        continue;
+      if (!ascii_strcasecmp (from, a->host)
+          && !ascii_strcasecmp (allow[i].to, b->host))
+        return 1;
+    }
+
+  return 0;
 }
 
 
 /* Prepare a new URL for a HTTP redirect.  INFO has flags controlling
- * the operaion, STATUS_CODE is used for diagnostics, LOCATION is the
+ * the operation, STATUS_CODE is used for diagnostics, LOCATION is the
  * value of the "Location" header, and R_URL reveives the new URL on
  * success or NULL or error.  Note that INFO->ORIG_URL is
  * required.  */
@@ -3594,8 +3629,8 @@ http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
     }
   else if (same_host_p (origuri, locuri))
     {
-      /* The host is the same and thus we can take the location
-       * verbatim.  */
+      /* The host is the same or on an exception list and thus we can
+       * take the location verbatim.  */
       http_release_parsed_uri (origuri);
       http_release_parsed_uri (locuri);
       newurl = xtrystrdup (location);
