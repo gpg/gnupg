@@ -404,163 +404,187 @@ tty_print_utf8_string( const byte *p, size_t n )
 static char *
 do_get( const char *prompt, int hidden )
 {
-    char *buf;
+  char *buf;
 #ifndef __riscos__
-    byte cbuf[1];
+  byte cbuf[1];
 #endif
-    int c, n, i;
+  int c, n, i;
 
-    if( batchmode ) {
-	log_error("Sorry, we are in batchmode - can't get input\n");
-	exit(2);
+  if (batchmode)
+    {
+      log_error ("Sorry, we are in batchmode - can't get input\n");
+      exit (2);
     }
 
-    if (no_terminal) {
-	log_error("Sorry, no terminal at all requested - can't get input\n");
-	exit(2);
+  if (no_terminal)
+    {
+      log_error ("Sorry, no terminal at all requested - can't get input\n");
+      exit (2);
     }
 
-    if( !initialized )
-	init_ttyfp();
+  if (!initialized)
+    init_ttyfp ();
 
-    last_prompt_len = 0;
-    tty_printf( "%s", prompt );
-    buf = xmalloc((n=50));
-    i = 0;
+  last_prompt_len = 0;
+  tty_printf ("%s", prompt);
+  buf = xmalloc ((n=50));
+  i = 0;
 
 #ifdef USE_W32_CONSOLE
-    if( hidden )
-	SetConsoleMode(con.in, HID_INPMODE );
+  if (hidden)
+    SetConsoleMode(con.in, HID_INPMODE );
 
-    for(;;) {
-	DWORD nread;
+  for (;;)
+    {
+      DWORD nread;
 
-	if( !ReadConsoleA( con.in, cbuf, 1, &nread, NULL ) )
-	    log_fatal("ReadConsole failed: rc=%d", (int)GetLastError() );
-	if( !nread )
-	    continue;
-	if( *cbuf == '\n' )
-	    break;
+      if (!ReadConsoleA( con.in, cbuf, 1, &nread, NULL))
+        log_fatal ("ReadConsole failed: rc=%d", (int)GetLastError ());
+      if (!nread)
+        continue;
+      if (*cbuf == '\n')
+        break;
 
-	if( !hidden )
-	    last_prompt_len++;
-	c = *cbuf;
-	if( c == '\t' )
-	    c = ' ';
-	else if( c > 0xa0 )
-	    ; /* we don't allow 0xa0, as this is a protected blank which may
-	       * confuse the user */
-	else if( iscntrl(c) )
-	    continue;
-	if( !(i < n-1) ) {
-	    n += 50;
-	    buf = xrealloc (buf, n);
-	}
-	buf[i++] = c;
+      if (!hidden)
+        last_prompt_len++;
+      c = *cbuf;
+      if (c == '\t')
+        c = ' ';
+      else if ( (c >= 0 && c <= 0x1f) || c == 0x7f)
+        continue;
+      if (!(i < n-1))
+        {
+          n += 50;
+          buf = xrealloc (buf, n);
+        }
+      buf[i++] = c;
     }
 
-    if( hidden )
-	SetConsoleMode(con.in, DEF_INPMODE );
+  if (hidden)
+    SetConsoleMode(con.in, DEF_INPMODE );
 
 #elif defined(__riscos__) || defined(HAVE_W32CE_SYSTEM)
-    do {
+  do
+    {
 #ifdef HAVE_W32CE_SYSTEM
       /* Using getchar is not a correct solution but for now it
          doesn't matter because we have no real console at all.  We
          should rework this as soon as we have switched this entire
          module to estream.  */
-        c = getchar();
+      c = getchar();
 #else
-        c = riscos_getchar();
+      c = riscos_getchar();
 #endif
-        if (c == 0xa || c == 0xd) { /* Return || Enter */
-            c = (int) '\n';
-        } else if (c == 0x8 || c == 0x7f) { /* Backspace || Delete */
-            if (i>0) {
-                i--;
-                if (!hidden) {
-                    last_prompt_len--;
-                    fputc(8, ttyfp);
-                    fputc(32, ttyfp);
-                    fputc(8, ttyfp);
-                    fflush(ttyfp);
+      if (c == 0xa || c == 0xd)  /* Return || Enter */
+        {
+          c = (int) '\n';
+        }
+      else if (c == 0x8 || c == 0x7f) /* Backspace || Delete */
+        {
+          if (i>0)
+            {
+              i--;
+              if (!hidden)
+                {
+                  last_prompt_len--;
+                  fputc(8, ttyfp);
+                  fputc(32, ttyfp);
+                  fputc(8, ttyfp);
+                  fflush(ttyfp);
                 }
-            } else {
-                fputc(7, ttyfp);
-                fflush(ttyfp);
             }
-            continue;
-        } else if (c == (int) '\t') { /* Tab */
-            c = ' ';
-        } else if (c > 0xa0) {
-            ; /* we don't allow 0xa0, as this is a protected blank which may
-               * confuse the user */
-        } else if (iscntrl(c)) {
-            continue;
+          else
+            {
+              fputc(7, ttyfp);
+              fflush(ttyfp);
+            }
+          continue;
         }
-        if(!(i < n-1)) {
-            n += 50;
-            buf = xrealloc (buf, n);
+      else if (c == (int) '\t')  /* Tab */
+        {
+          c = ' ';
         }
-        buf[i++] = c;
-        if (!hidden) {
-	    last_prompt_len++;
-            fputc(c, ttyfp);
-            fflush(ttyfp);
+      else if (c > 0xa0)
+        {
+          ; /* we don't allow 0xa0, as this is a protected blank which may
+             * confuse the user */
         }
-    } while (c != '\n');
-    i = (i>0) ? i-1 : 0;
-#else /* Other systems. */
-    if( hidden ) {
-#ifdef HAVE_TCGETATTR
-	struct termios term;
+      else if (iscntrl(c))
+        {
+          continue;
+        }
+      if (!(i < n-1))
+        {
+          n += 50;
+          buf = xrealloc (buf, n);
+        }
+      buf[i++] = c;
+      if (!hidden)
+        {
+          last_prompt_len++;
+          fputc(c, ttyfp);
+          fflush(ttyfp);
+        }
+    }
+  while (c != '\n');
+  i = (i>0) ? i-1 : 0;
 
-	if( tcgetattr(fileno(ttyfp), &termsave) )
-	    log_fatal("tcgetattr() failed: %s\n", strerror(errno) );
-	restore_termios = 1;
-	term = termsave;
-	term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
-	if( tcsetattr( fileno(ttyfp), TCSAFLUSH, &term ) )
-	    log_fatal("tcsetattr() failed: %s\n", strerror(errno) );
+#else /* Other systems. */
+
+  if (hidden)
+    {
+#ifdef HAVE_TCGETATTR
+      struct termios term;
+
+      if (tcgetattr(fileno(ttyfp), &termsave))
+        log_fatal("tcgetattr() failed: %s\n", strerror(errno));
+      restore_termios = 1;
+      term = termsave;
+      term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+      if (tcsetattr( fileno(ttyfp), TCSAFLUSH, &term ) )
+        log_fatal("tcsetattr() failed: %s\n", strerror(errno));
 #endif
     }
 
-    /* fixme: How can we avoid that the \n is echoed w/o disabling
-     * canonical mode - w/o this kill_prompt can't work */
-    while( read(fileno(ttyfp), cbuf, 1) == 1 && *cbuf != '\n' ) {
-	if( !hidden )
-	    last_prompt_len++;
-	c = *cbuf;
-	if( c == CONTROL_D )
-	    log_info("control d found\n");
-	if( c == '\t' )
-	    c = ' ';
-	else if( c > 0xa0 )
-	    ; /* we don't allow 0xa0, as this is a protected blank which may
-	       * confuse the user */
-	else if( iscntrl(c) )
-	    continue;
-	if( !(i < n-1) ) {
-	    n += 50;
-	    buf = xrealloc (buf, n );
-	}
-	buf[i++] = c;
+  /* fixme: How can we avoid that the \n is echoed w/o disabling
+   * canonical mode - w/o this kill_prompt can't work */
+  while (read(fileno(ttyfp), cbuf, 1) == 1 && *cbuf != '\n')
+    {
+      if (!hidden)
+        last_prompt_len++;
+      c = *cbuf;
+      if (c == CONTROL_D)
+        log_info ("Control-D detected\n");
+
+      if (c == '\t') /* Map tab to a space.  */
+        c = ' ';
+      else if ( (c >= 0 && c <= 0x1f) || c == 0x7f)
+        continue; /* Skip all other ASCII control characters.  */
+      if (!(i < n-1))
+        {
+          n += 50;
+          buf = xrealloc (buf, n);
+        }
+      buf[i++] = c;
     }
-    if( *cbuf != '\n' ) {
-	buf[0] = CONTROL_D;
-	i = 1;
+  if (*cbuf != '\n')
+    {
+      buf[0] = CONTROL_D;
+      i = 1;
     }
 
-    if( hidden ) {
+  if (hidden)
+    {
 #ifdef HAVE_TCGETATTR
-	if( tcsetattr(fileno(ttyfp), TCSAFLUSH, &termsave) )
-	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
-	restore_termios = 0;
+      if (tcsetattr(fileno(ttyfp), TCSAFLUSH, &termsave))
+        log_error ("tcsetattr() failed: %s\n", strerror(errno));
+      restore_termios = 0;
 #endif
     }
 #endif /* end unix version */
-    buf[i] = 0;
-    return buf;
+
+  buf[i] = 0;
+  return buf;
 }
 
 
