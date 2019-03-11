@@ -763,7 +763,6 @@ post_option_parsing (void)
     opt.connect_quick_timeout = opt.connect_timeout;
 
   set_debug ();
-  set_tor_mode ();
 }
 
 
@@ -1090,7 +1089,12 @@ main (int argc, char **argv)
       log_printf ("\n");
     }
 
+  /* Note that we do not run set_tor_mode in --gpgconf-list mode
+   * because it will attempt to connect to the tor client and that can
+   * be time consuming.  */
   post_option_parsing ();
+  if (cmd != aGPGConfTest && cmd != aGPGConfList)
+    set_tor_mode ();
 
   /* Get LDAP server list from file. */
 #if USE_LDAP
@@ -1864,6 +1868,7 @@ dirmngr_sighup_action (void)
   log_info (_("SIGHUP received - "
               "re-reading configuration and flushing caches\n"));
   reread_configuration ();
+  set_tor_mode ();
   cert_cache_deinit (0);
   crl_cache_deinit ();
   cert_cache_init (hkp_cacert_filenames);
