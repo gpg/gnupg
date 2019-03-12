@@ -49,7 +49,19 @@
 #define LF "\n"
 #endif
 
-static int recipient_digest_algo=0;
+/* A type for the extra data we hash into v5 signature packets.  */
+struct pt_extra_hash_data_s
+{
+  unsigned char mode;
+  u32 timestamp;
+  unsigned char namelen;
+  char name[1];
+};
+typedef struct pt_extra_hash_data_s *pt_extra_hash_data_t;
+
+
+/* Hack */
+static int recipient_digest_algo;
 
 
 /*
@@ -216,10 +228,13 @@ hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
 
 
 /*
- * Helper to hash some parts from the signature
+ * Helper to hash some parts from the signature.  EXTRAHASH gives the
+ * extra data to be hashed into v5 signatures; it may by NULL for
+ * detached signatures.
  */
 static void
-hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
+hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig,
+                          pt_extra_hash_data_t extrahash)
 {
   byte buf[10];
   int i;
@@ -243,12 +258,39 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
       gcry_md_putc (md, 0);
       n = 6;
     }
+  /* Hash data from the literal data packet.  */
+  if (sig->version >= 5 && (sig->sig_class == 0x00 || sig->sig_class == 0x01))
+    {
+      /* - One octet content format
+       * - File name (one octet length followed by the name)
+       * - Four octet timestamp */
+      if (extrahash)
+        {
+          buf[0] = extrahash->mode;
+          buf[1] = extrahash->namelen;
+          gcry_md_write (md, buf, 2);
+          if (extrahash->namelen)
+            gcry_md_write (md, extrahash->name, extrahash->namelen);
+          buf[0] = extrahash->timestamp >> 24;
+          buf[1] = extrahash->timestamp >> 16;
+          buf[2] = extrahash->timestamp >>  8;
+          buf[3] = extrahash->timestamp;
+          gcry_md_write (md, buf, 4);
+        }
+      else /* Detached signatures */
+        {
+          memset (buf, 0, 6);
+          gcry_md_write (md, buf, 6);
+        }
+    }
   /* Add some magic.  */
   i = 0;
   buf[i++] = sig->version;
   buf[i++] = 0xff;
   if (sig->version >= 5)
     {
+      /* Note: We don't hashed any data larger than 2^32 and thus we
+       * can always use 0 here.  See also note below.  */
       buf[i++] = 0;
       buf[i++] = 0;
       buf[i++] = 0;
@@ -633,10 +675,14 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
 
 
 /*
- * Helper to write the plaintext (literal data) packet
+ * Helper to write the plaintext (literal data) packet.  At
+ * R_EXTRAHASH a malloced object with the with the extra data hashed
+ * into v5 signatures is stored.
  */
 static int
-write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
+write_plaintext_packet (iobuf_t out, iobuf_t inp,
+                        const char *fname, int ptmode,
+                        pt_extra_hash_data_t *r_extrahash)
 {
   PKT_plaintext *pt = NULL;
   u32 filesize;
@@ -691,6 +737,19 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
       if ((rc = build_packet (out, &pkt)))
         log_error ("build_packet(PLAINTEXT) failed: %s\n",
                    gpg_strerror (rc) );
+
+      *r_extrahash = xtrymalloc (sizeof **r_extrahash + pt->namelen);
+      if (!*r_extrahash)
+        rc = gpg_error_from_syserror ();
+      else
+        {
+          (*r_extrahash)->mode = pt->mode;
+          (*r_extrahash)->timestamp = pt->timestamp;
+          (*r_extrahash)->namelen = pt->namelen;
+          /* Note that the last byte or NAME won't be initialized
+           * becuase we don't need it.  */
+          memcpy ((*r_extrahash)->name, pt->name, pt->namelen);
+        }
       pt->buf = NULL;
       free_packet (&pkt, NULL);
     }
@@ -698,6 +757,18 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     {
       byte copy_buffer[4096];
       int  bytes_copied;
+
+      *r_extrahash = xtrymalloc (sizeof **r_extrahash);
+      if (!*r_extrahash)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+      /* FIXME: We need to parse INP to get the to be hashed data from
+       * it.  */
+      (*r_extrahash)->mode = 0;
+      (*r_extrahash)->timestamp = 0;
+      (*r_extrahash)->namelen = 0;
 
       while ((bytes_copied = iobuf_read (inp, copy_buffer, 4096)) != -1)
         if ((rc = iobuf_write (out, copy_buffer, bytes_copied)))
@@ -708,19 +779,21 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
           }
       wipememory (copy_buffer, 4096); /* burn buffer */
     }
-  /* fixme: it seems that we never freed pt/pkt */
 
+ leave:
   return rc;
 }
 
 
 /*
- * Write the signatures from the SK_LIST to OUT. HASH must be a non-finalized
- * hash which will not be changes here.
+ * Write the signatures from the SK_LIST to OUT. HASH must be a
+ * non-finalized hash which will not be changes here.  EXTRAHASH is
+ * either NULL or the extra data tro be hashed into v5 signatures.
  */
 static int
 write_signature_packets (ctrl_t ctrl,
                          SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
+                         pt_extra_hash_data_t extrahash,
                          int sigclass, u32 timestamp, u32 duration,
 			 int status_letter, const char *cache_nonce)
 {
@@ -744,7 +817,7 @@ write_signature_packets (ctrl_t ctrl,
       if (pk->version >= 5)
         sig->version = 5;  /* Required for v5 keys.  */
       else
-        sig->version = 4;  /*Required.  */
+        sig->version = 4;  /* Required.  */
 
       keyid_from_pk (pk, sig->keyid);
       sig->digest_algo = hash_for (pk);
@@ -762,7 +835,7 @@ write_signature_packets (ctrl_t ctrl,
 
       build_sig_subpkt_from_sig (sig, pk);
       mk_notation_policy_etc (sig, NULL, pk);
-      hash_sigversion_to_magic (md, sig);
+      hash_sigversion_to_magic (md, sig, extrahash);
       gcry_md_final (md);
 
       rc = do_sign (ctrl, pk, sig, md, hash_for (pk), cache_nonce);
@@ -826,6 +899,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
   SK_LIST sk_rover = NULL;
   int multifile = 0;
   u32 duration=0;
+  pt_extra_hash_data_t extrahash = NULL;
 
   pfx = new_progress_context ();
   afx = new_armor_context ();
@@ -1125,7 +1199,8 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
     {
       rc = write_plaintext_packet (out, inp, fname,
                                    (opt.textmode && !outfile) ?
-                                   (opt.mimemode? 'm' : 't') : 'b');
+                                   (opt.mimemode? 'm' : 't') : 'b',
+                                   &extrahash);
     }
 
   /* Catch errors from above. */
@@ -1133,7 +1208,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
     goto leave;
 
   /* Write the signatures. */
-  rc = write_signature_packets (ctrl, sk_list, out, mfx.md,
+  rc = write_signature_packets (ctrl, sk_list, out, mfx.md, extrahash,
                                 opt.textmode && !outfile? 0x01 : 0x00,
                                 0, duration, detached ? 'D':'S', NULL);
   if (rc)
@@ -1156,6 +1231,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
   recipient_digest_algo = 0;
   release_progress_context (pfx);
   release_armor_context (afx);
+  xfree (extrahash);
   return rc;
 }
 
@@ -1286,7 +1362,7 @@ clearsign_file (ctrl_t ctrl,
   push_armor_filter (afx, out);
 
   /* Write the signatures.  */
-  rc = write_signature_packets (ctrl, sk_list, out, textmd, 0x01, 0,
+  rc = write_signature_packets (ctrl, sk_list, out, textmd, NULL, 0x01, 0,
                                 duration, 'C', NULL);
   if (rc)
     goto leave;
@@ -1328,6 +1404,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
   int algo;
   u32 duration = 0;
   int canceled;
+  pt_extra_hash_data_t extrahash = NULL;
 
   pfx = new_progress_context ();
   afx = new_armor_context ();
@@ -1452,13 +1529,14 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
   /* Pipe data through all filters; i.e. write the signed stuff.  */
   /* (current filters: zip - encrypt - armor) */
   rc = write_plaintext_packet (out, inp, fname,
-                               opt.textmode ? (opt.mimemode?'m':'t'):'b');
+                               opt.textmode ? (opt.mimemode?'m':'t'):'b',
+                               &extrahash);
   if (rc)
     goto leave;
 
   /* Write the signatures.  */
   /* (current filters: zip - encrypt - armor) */
-  rc = write_signature_packets (ctrl, sk_list, out, mfx.md,
+  rc = write_signature_packets (ctrl, sk_list, out, mfx.md, extrahash,
                                 opt.textmode? 0x01 : 0x00,
                                 0, duration, 'S', NULL);
   if (rc)
@@ -1480,6 +1558,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
   xfree (s2k);
   release_progress_context (pfx);
   release_armor_context (afx);
+  xfree (extrahash);
   return rc;
 }
 
@@ -1599,7 +1678,7 @@ make_keysig_packet (ctrl_t ctrl,
 
   if (!rc)
     {
-      hash_sigversion_to_magic (md, sig);
+      hash_sigversion_to_magic (md, sig, NULL);
       gcry_md_final (md);
       rc = complete_sig (ctrl, sig, pksk, md, cache_nonce);
     }
@@ -1699,7 +1778,7 @@ update_keysig_packet (ctrl_t ctrl,
 
   if (!rc)
     {
-      hash_sigversion_to_magic (md, sig);
+      hash_sigversion_to_magic (md, sig, NULL);
       gcry_md_final (md);
       rc = complete_sig (ctrl, sig, pksk, md, NULL);
     }

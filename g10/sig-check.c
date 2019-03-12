@@ -513,6 +513,7 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
       byte buf[10];
       int i;
       size_t n;
+
       gcry_md_putc (digest, sig->pubkey_algo);
       gcry_md_putc (digest, sig->digest_algo);
       if (sig->hashed)
@@ -531,22 +532,39 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
 	  gcry_md_putc (digest, 0);
 	  n = 6;
 	}
-	/* add some magic per Section 5.2.4 of RFC 4880.  */
-        i = 0;
-	buf[i++] = sig->version;
-	buf[i++] = 0xff;
-        if (sig->version >= 5)
-          {
-            buf[i++] = 0;
-            buf[i++] = 0;
-            buf[i++] = 0;
-            buf[i++] = 0;
-          }
-	buf[i++] = n >> 24;
-	buf[i++] = n >> 16;
-	buf[i++] = n >>  8;
-	buf[i++] = n;
-	gcry_md_write (digest, buf, i);
+      /* Hash data from the literal data packet.  */
+      if (sig->version >= 5
+          && (sig->sig_class == 0x00 || sig->sig_class == 0x01))
+        {
+          /* - One octet content format
+           * - File name (one octet length followed by the name)
+           * - Four octet timestamp */
+          memset (buf, 0, 6);
+          gcry_md_write (digest, buf, 6);
+        }
+      /* Add some magic per Section 5.2.4 of RFC 4880.  */
+      i = 0;
+      buf[i++] = sig->version;
+      buf[i++] = 0xff;
+      if (sig->version >= 5)
+        {
+#if SIZEOF_SIZE_T > 4
+          buf[i++] = n >> 56;
+          buf[i++] = n >> 48;
+          buf[i++] = n >> 40;
+          buf[i++] = n >> 32;
+#else
+          buf[i++] = 0;
+          buf[i++] = 0;
+          buf[i++] = 0;
+          buf[i++] = 0;
+#endif
+        }
+      buf[i++] = n >> 24;
+      buf[i++] = n >> 16;
+      buf[i++] = n >>  8;
+      buf[i++] = n;
+      gcry_md_write (digest, buf, i);
     }
     gcry_md_final( digest );
 

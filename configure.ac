@@ -1367,6 +1367,7 @@ AC_CHECK_SIZEOF(unsigned short)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
+AC_CHECK_SIZEOF(size_t)
 AC_HEADER_TIME
 AC_CHECK_SIZEOF(time_t,,[[
 #include <stdio.h>
