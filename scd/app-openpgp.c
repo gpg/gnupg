@@ -1448,13 +1448,13 @@ ecdh_params (const char *curve)
   /* See RFC-6637 for those constants.
          0x03: Number of bytes
          0x01: Version for this parameter format
-         KDF hash algo
-         KEK symmetric cipher algo
+         KEK digest algorithm
+         KEK cipher algorithm
   */
   if (nbits <= 256)
     return (const unsigned char*)"\x03\x01\x08\x07";
   else if (nbits <= 384)
-    return (const unsigned char*)"\x03\x01\x09\x08";
+    return (const unsigned char*)"\x03\x01\x09\x09";
   else
     return (const unsigned char*)"\x03\x01\x0a\x09";
 }
