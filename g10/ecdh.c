@@ -39,7 +39,7 @@ static const struct
   /* Note: Must be sorted by ascending values for QBITS.  */
   {
     { 256, DIGEST_ALGO_SHA256, CIPHER_ALGO_AES    },
-    { 384, DIGEST_ALGO_SHA384, CIPHER_ALGO_AES256 },
+    { 384, DIGEST_ALGO_SHA384, CIPHER_ALGO_AES192 },
 
     /* Note: 528 is 521 rounded to the 8 bit boundary */
     { 528, DIGEST_ALGO_SHA512, CIPHER_ALGO_AES256 }
