@@ -2148,6 +2148,8 @@ static struct gnupg_compliance_option compliance_options[] =
 static void
 set_compliance_option (enum cmd_and_opt_values option)
 {
+  opt.flags.rfc4880bis = 0;  /* Clear becuase it is initially set.  */
+
   switch (option)
     {
     case oRFC4880bis:
@@ -2194,7 +2196,10 @@ set_compliance_option (enum cmd_and_opt_values option)
       break;
     case oPGP7:  opt.compliance = CO_PGP7;  break;
     case oPGP8:  opt.compliance = CO_PGP8;  break;
-    case oGnuPG: opt.compliance = CO_GNUPG; break;
+    case oGnuPG:
+      opt.compliance = CO_GNUPG;
+      opt.flags.rfc4880bis = 1;
+      break;
 
     case oDE_VS:
       set_compliance_option (oOpenPGP);
@@ -2441,6 +2446,8 @@ main (int argc, char **argv)
     opt.passphrase_repeat = 1;
     opt.emit_version = 0;
     opt.weak_digests = NULL;
+    opt.compliance = CO_GNUPG;
+    opt.flags.rfc4880bis = 1;
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
@@ -3730,7 +3737,7 @@ main (int argc, char **argv)
 	log_info(_("WARNING: program may create a core file!\n"));
 
     if (opt.flags.rfc4880bis)
-	log_info ("WARNING: using experimental features from RFC4880bis!\n");
+	log_info ("Note: RFC4880bis features are enabled.\n");
     else
       {
         opt.mimemode = 0; /* This will use text mode instead.  */
