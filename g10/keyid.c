@@ -136,19 +136,21 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
 }
 
 
-/* Hash a public key.  This function is useful for v4 fingerprints and
-   for v3 or v4 key signing. */
+/* Hash a public key.  This function is useful for v4 and v5
+ * fingerprints and for v3 or v4 key signing. */
 void
 hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
 {
-  unsigned int n = 6;
+  unsigned int n;
   unsigned int nn[PUBKEY_MAX_NPKEY];
   byte *pp[PUBKEY_MAX_NPKEY];
   int i;
   unsigned int nbits;
   size_t nbytes;
   int npkey = pubkey_get_npkey (pk->pubkey_algo);
+  int is_v5 = pk->version == 5;
 
+  n = is_v5? 10 : 6;
   /* FIXME: We can avoid the extra malloc by calling only the first
      mpi_print here which computes the required length and calling the
      real mpi_print only at the end.  The speed advantage would only be
@@ -201,18 +203,37 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
         }
     }
 
-  gcry_md_putc ( md, 0x99 );     /* ctb */
-  /* What does it mean if n is greater than 0xFFFF ? */
-  gcry_md_putc ( md, n >> 8 );   /* 2 byte length header */
-  gcry_md_putc ( md, n );
-  gcry_md_putc ( md, pk->version );
-
+  if (is_v5)
+    {
+      gcry_md_putc ( md, 0x9a );     /* ctb */
+      gcry_md_putc ( md, n >> 24 );  /* 4 byte length header */
+      gcry_md_putc ( md, n >> 16 );
+      gcry_md_putc ( md, n >>  8 );
+      gcry_md_putc ( md, n       );
+      gcry_md_putc ( md, pk->version );
+    }
+  else
+    {
+      gcry_md_putc ( md, 0x99 );     /* ctb */
+      gcry_md_putc ( md, n >> 8 );   /* 2 byte length header */
+      gcry_md_putc ( md, n );
+      gcry_md_putc ( md, pk->version );
+    }
   gcry_md_putc ( md, pk->timestamp >> 24 );
   gcry_md_putc ( md, pk->timestamp >> 16 );
   gcry_md_putc ( md, pk->timestamp >>  8 );
   gcry_md_putc ( md, pk->timestamp       );
 
   gcry_md_putc ( md, pk->pubkey_algo );
+
+  if (is_v5)
+    {
+      n -= 10;
+      gcry_md_putc ( md, n >> 24 );
+      gcry_md_putc ( md, n >> 16 );
+      gcry_md_putc ( md, n >>  8 );
+      gcry_md_putc ( md, n       );
+    }
 
   if(npkey==0 && pk->pkey[0]
      && gcry_mpi_get_flag (pk->pkey[0], GCRYMPI_FLAG_OPAQUE))
@@ -237,10 +258,10 @@ do_fingerprint_md( PKT_public_key *pk )
 {
   gcry_md_hd_t md;
 
-  if (gcry_md_open (&md, DIGEST_ALGO_SHA1, 0))
+  if (gcry_md_open (&md, pk->version == 5 ? GCRY_MD_SHA256 : GCRY_MD_SHA1, 0))
     BUG ();
-  hash_public_key(md,pk);
-  gcry_md_final( md );
+  hash_public_key (md,pk);
+  gcry_md_final (md);
 
   return md;
 }
@@ -517,13 +538,12 @@ keystr_from_desc(KEYDB_SEARCH_DESC *desc)
 
 
 /*
- * Get the keyid from the public key and put it into keyid
- * if this is not NULL. Return the 32 low bits of the keyid.
+ * Get the keyid from the public key PK and store it at KEYID unless
+ * this is NULL.  Returns the 32 bit short keyid.
  */
 u32
 keyid_from_pk (PKT_public_key *pk, u32 *keyid)
 {
-  u32 lowbits;
   u32 dummy_keyid[2];
 
   if (!keyid)
@@ -533,7 +553,6 @@ keyid_from_pk (PKT_public_key *pk, u32 *keyid)
     {
       keyid[0] = pk->keyid[0];
       keyid[1] = pk->keyid[1];
-      lowbits = keyid[1];
     }
   else
     {
@@ -544,18 +563,25 @@ keyid_from_pk (PKT_public_key *pk, u32 *keyid)
       if(md)
 	{
 	  dp = gcry_md_read ( md, 0 );
-	  keyid[0] = buf32_to_u32 (dp+12);
-	  keyid[1] = buf32_to_u32 (dp+16);
-	  lowbits = keyid[1];
+          if (pk->version == 5)
+            {
+              keyid[0] = buf32_to_u32 (dp);
+              keyid[1] = buf32_to_u32 (dp+4);
+            }
+          else
+            {
+              keyid[0] = buf32_to_u32 (dp+12);
+              keyid[1] = buf32_to_u32 (dp+16);
+            }
 	  gcry_md_close (md);
 	  pk->keyid[0] = keyid[0];
 	  pk->keyid[1] = keyid[1];
 	}
       else
-	pk->keyid[0]=pk->keyid[1]=keyid[0]=keyid[1]=lowbits=0xFFFFFFFF;
+	pk->keyid[0] = pk->keyid[1] = keyid[0]= keyid[1] = 0xFFFFFFFF;
     }
 
-  return lowbits;
+  return keyid[1]; /*FIXME:shortkeyid ist different for v5*/
 }
 
 
@@ -594,8 +620,16 @@ keyid_from_fingerprint (ctrl_t ctrl, const byte *fprint,
   else
     {
       const byte *dp = fprint;
-      keyid[0] = buf32_to_u32 (dp+12);
-      keyid[1] = buf32_to_u32 (dp+16);
+      if (fprint_len == 20)  /* v4 key */
+        {
+          keyid[0] = buf32_to_u32 (dp+12);
+          keyid[1] = buf32_to_u32 (dp+16);
+        }
+      else  /* v5 key */
+        {
+          keyid[0] = buf32_to_u32 (dp);
+          keyid[1] = buf32_to_u32 (dp+4);
+        }
     }
 
   return keyid[1];
@@ -610,7 +644,7 @@ keyid_from_sig (PKT_signature *sig, u32 *keyid)
       keyid[0] = sig->keyid[0];
       keyid[1] = sig->keyid[1];
     }
-  return sig->keyid[1];
+  return sig->keyid[1];  /*FIXME:shortkeyid*/
 }
 
 
@@ -800,15 +834,23 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
   size_t len;
   gcry_md_hd_t md;
 
-  md = do_fingerprint_md(pk);
-  dp = gcry_md_read( md, 0 );
+  md = do_fingerprint_md (pk);
+  dp = gcry_md_read (md, 0);
   len = gcry_md_get_algo_dlen (gcry_md_get_algo (md));
-  log_assert( len <= MAX_FINGERPRINT_LEN );
+  log_assert (len <= MAX_FINGERPRINT_LEN);
   if (!array)
     array = xmalloc ( len );
   memcpy (array, dp, len );
-  pk->keyid[0] = buf32_to_u32 (dp+12);
-  pk->keyid[1] = buf32_to_u32 (dp+16);
+  if (pk->version == 5)
+    {
+      pk->keyid[0] = buf32_to_u32 (dp);
+      pk->keyid[1] = buf32_to_u32 (dp+4);
+    }
+  else
+    {
+      pk->keyid[0] = buf32_to_u32 (dp+12);
+      pk->keyid[1] = buf32_to_u32 (dp+16);
+    }
   gcry_md_close( md);
 
   if (ret_len)

@@ -829,6 +829,8 @@ proc_plaintext( CTX c, PACKET *pkt )
   PKT_plaintext *pt = pkt->pkt.plaintext;
   int any, clearsig, rc;
   kbnode_t n;
+  unsigned char *extrahash;
+  size_t extrahashlen;
 
   /* This is a literal data packet.  Bump a counter for later checks.  */
   literals_seen++;
@@ -948,8 +950,33 @@ proc_plaintext( CTX c, PACKET *pkt )
   c->last_was_session_key = 0;
 
   /* We add a marker control packet instead of the plaintext packet.
-   * This is so that we can later detect invalid packet sequences.  */
-  n = new_kbnode (create_gpg_control (CTRLPKT_PLAINTEXT_MARK, NULL, 0));
+   * This is so that we can later detect invalid packet sequences.
+   * The apcket is further used to convey extra data from the
+   * plaintext packet to the signature verification. */
+  extrahash = xtrymalloc (6 + pt->namelen);
+  if (!extrahash)
+    {
+      /* No way to return an error.  */
+      rc = gpg_error_from_syserror ();
+      log_error ("malloc failed in %s: %s\n", __func__, gpg_strerror (rc));
+      extrahashlen = 0;
+    }
+  else
+    {
+      extrahash[0] = pt->mode;
+      extrahash[1] = pt->namelen;
+      if (pt->namelen)
+        memcpy (extrahash+2, pt->name, pt->namelen);
+      extrahashlen = 2 + pt->namelen;
+      extrahash[extrahashlen++] = pt->timestamp >> 24;
+      extrahash[extrahashlen++] = pt->timestamp >> 16;
+      extrahash[extrahashlen++] = pt->timestamp >>  8;
+      extrahash[extrahashlen++] = pt->timestamp      ;
+    }
+
+  n = new_kbnode (create_gpg_control (CTRLPKT_PLAINTEXT_MARK,
+                                      extrahash, extrahashlen));
+  xfree (extrahash);
   if (c->list)
     add_kbnode (c->list, n);
   else
@@ -1019,7 +1046,8 @@ proc_compressed (CTX c, PACKET *pkt)
  * found.  Returns: 0 = valid signature or an error code
  */
 static int
-do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
+do_check_sig (CTX c, kbnode_t node, const void *extrahash, size_t extrahashlen,
+              int *is_selfsig,
 	      int *is_expkey, int *is_revkey, PKT_public_key **r_pk)
 {
   PKT_signature *sig;
@@ -1105,14 +1133,16 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
 
   /* We only get here if we are checking the signature of a binary
      (0x00) or text document (0x01).  */
-  rc = check_signature2 (c->ctrl, sig, md, NULL, is_expkey, is_revkey, r_pk);
+  rc = check_signature2 (c->ctrl, sig, md, extrahash, extrahashlen,
+                         NULL, is_expkey, is_revkey, r_pk);
   if (! rc)
     md_good = md;
   else if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2)
     {
       PKT_public_key *pk2;
 
-      rc = check_signature2 (c->ctrl, sig, md2, NULL, is_expkey, is_revkey,
+      rc = check_signature2 (c->ctrl, sig, md2, extrahash, extrahashlen,
+                             NULL, is_expkey, is_revkey,
                              r_pk? &pk2 : NULL);
       if (!rc)
         {
@@ -1275,7 +1305,7 @@ list_node (CTX c, kbnode_t node)
       if (opt.check_sigs)
         {
           fflush (stdout);
-          rc2 = do_check_sig (c, node, &is_selfsig, NULL, NULL, NULL);
+          rc2 = do_check_sig (c, node, NULL, 0, &is_selfsig, NULL, NULL, NULL);
           switch (gpg_err_code (rc2))
             {
             case 0:		          sigrc = '!'; break;
@@ -1738,7 +1768,7 @@ akl_has_wkd_method (void)
 }
 
 
-/* Return the ISSUER fingerprint buffer and its lenbgth at R_LEN.
+/* Return the ISSUER fingerprint buffer and its length at R_LEN.
  * Returns NULL if not available.  The returned buffer is valid as
  * long as SIG is not modified.  */
 const byte *
@@ -1748,7 +1778,7 @@ issuer_fpr_raw (PKT_signature *sig, size_t *r_len)
   size_t n;
 
   p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &n);
-  if (p && n == 21 && p[0] == 4)
+  if (p && ((n == 21 && p[0] == 4) || (n == 33 && p[0] == 5)))
     {
       *r_len = n - 1;
       return p+1;
@@ -1811,6 +1841,8 @@ check_sig_and_print (CTX c, kbnode_t node)
   char *issuer_fpr = NULL;
   PKT_public_key *pk = NULL;  /* The public key for the signature or NULL. */
   int tried_ks_by_fpr;
+  const void *extrahash = NULL;
+  size_t extrahashlen = 0;
 
   if (opt.skip_verify)
     {
@@ -1868,6 +1900,8 @@ check_sig_and_print (CTX c, kbnode_t node)
           {
             if (n->next)
               goto ambiguous;  /* We only allow one P packet. */
+            extrahash = n->pkt->pkt.gpg_control->data;
+            extrahashlen = n->pkt->pkt.gpg_control->datalen;
           }
         else
           goto ambiguous;
@@ -1882,6 +1916,9 @@ check_sig_and_print (CTX c, kbnode_t node)
                     && (n->pkt->pkt.gpg_control->control
                         == CTRLPKT_PLAINTEXT_MARK)))
           goto ambiguous;
+        extrahash = n->pkt->pkt.gpg_control->data;
+        extrahashlen = n->pkt->pkt.gpg_control->datalen;
+
         for (n_sig=0, n = n->next;
              n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
           n_sig++;
@@ -1912,6 +1949,8 @@ check_sig_and_print (CTX c, kbnode_t node)
                     && (n->pkt->pkt.gpg_control->control
                         == CTRLPKT_PLAINTEXT_MARK)))
           goto ambiguous;
+        extrahash = n->pkt->pkt.gpg_control->data;
+        extrahashlen = n->pkt->pkt.gpg_control->datalen;
         for (n_sig=0, n = n->next;
              n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
           n_sig++;
@@ -1957,7 +1996,8 @@ check_sig_and_print (CTX c, kbnode_t node)
   if (sig->signers_uid)
     log_info (_("               issuer \"%s\"\n"), sig->signers_uid);
 
-  rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
+  rc = do_check_sig (c, node, extrahash, extrahashlen,
+                     NULL, &is_expkey, &is_revkey, &pk);
 
   /* If the key isn't found, check for a preferred keyserver.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY && sig->flags.pref_ks)
@@ -1992,8 +2032,8 @@ check_sig_and_print (CTX c, kbnode_t node)
                   res = keyserver_import_keyid (c->ctrl, sig->keyid,spec, 1);
                   glo_ctrl.in_auto_key_retrieve--;
                   if (!res)
-                    rc = do_check_sig (c, node, NULL,
-                                       &is_expkey, &is_revkey, &pk);
+                    rc = do_check_sig (c, node, extrahash, extrahashlen,
+                                       NULL, &is_expkey, &is_revkey, &pk);
                   free_keyserver_spec (spec);
 
                   if (!rc)
@@ -2028,7 +2068,8 @@ check_sig_and_print (CTX c, kbnode_t node)
               glo_ctrl.in_auto_key_retrieve--;
               free_keyserver_spec (spec);
               if (!res)
-                rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
+                rc = do_check_sig (c, node, extrahash, extrahashlen,
+                                   NULL, &is_expkey, &is_revkey, &pk);
             }
         }
     }
@@ -2050,7 +2091,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       p = issuer_fpr_raw (sig, &n);
       if (p)
         {
-          /* v4 packet with a SHA-1 fingerprint.  */
+          /* v4 or v5 packet with a SHA-1/256 fingerprint.  */
           free_public_key (pk);
           pk = NULL;
           glo_ctrl.in_auto_key_retrieve++;
@@ -2058,7 +2099,8 @@ check_sig_and_print (CTX c, kbnode_t node)
           tried_ks_by_fpr = 1;
           glo_ctrl.in_auto_key_retrieve--;
           if (!res)
-            rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
+            rc = do_check_sig (c, node, extrahash, extrahashlen,
+                               NULL, &is_expkey, &is_revkey, &pk);
         }
     }
 
@@ -2080,7 +2122,8 @@ check_sig_and_print (CTX c, kbnode_t node)
       /* Fixme: If the fingerprint is embedded in the signature,
        * compare it to the fingerprint of the returned key.  */
       if (!res)
-        rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
+        rc = do_check_sig (c, node, extrahash, extrahashlen,
+                           NULL, &is_expkey, &is_revkey, &pk);
     }
 
   /* If the above methods did't work, our next try is to use a
@@ -2098,7 +2141,8 @@ check_sig_and_print (CTX c, kbnode_t node)
       res = keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver, 1);
       glo_ctrl.in_auto_key_retrieve--;
       if (!res)
-        rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
+        rc = do_check_sig (c, node, extrahash, extrahashlen,
+                           NULL, &is_expkey, &is_revkey, &pk);
     }
 
   if (!rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE)

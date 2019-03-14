@@ -49,6 +49,10 @@
 #define LF "\n"
 #endif
 
+/* Hack */
+static int recipient_digest_algo;
+
+
 /* A type for the extra data we hash into v5 signature packets.  */
 struct pt_extra_hash_data_s
 {
@@ -58,10 +62,6 @@ struct pt_extra_hash_data_s
   char name[1];
 };
 typedef struct pt_extra_hash_data_s *pt_extra_hash_data_t;
-
-
-/* Hack */
-static int recipient_digest_algo;
 
 
 /*
@@ -746,8 +746,8 @@ write_plaintext_packet (iobuf_t out, iobuf_t inp,
           (*r_extrahash)->mode = pt->mode;
           (*r_extrahash)->timestamp = pt->timestamp;
           (*r_extrahash)->namelen = pt->namelen;
-          /* Note that the last byte or NAME won't be initialized
-           * becuase we don't need it.  */
+          /* Note that the last byte of NAME won't be initialized
+           * because we don't need it.  */
           memcpy ((*r_extrahash)->name, pt->name, pt->namelen);
         }
       pt->buf = NULL;

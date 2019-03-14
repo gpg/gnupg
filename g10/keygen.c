@@ -1,6 +1,6 @@
 /* keygen.c - Generate a key pair
  * Copyright (C) 1998-2007, 2009-2011  Free Software Foundation, Inc.
- * Copyright (C) 2014, 2015, 2016  Werner Koch
+ * Copyright (C) 2014, 2015, 2016, 2017, 2018  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -59,6 +59,7 @@ const char *default_expiration_interval = "2y";
 /* Flag bits used during key generation.  */
 #define KEYGEN_FLAG_NO_PROTECTION 1
 #define KEYGEN_FLAG_TRANSIENT_KEY 2
+#define KEYGEN_FLAG_CREATE_V5_KEY 4
 
 /* Maximum number of supported algorithm preferences.  */
 #define MAX_PREFS 30
@@ -90,7 +91,9 @@ enum para_name {
   pHANDLE,
   pKEYSERVER,
   pKEYGRIP,
-  pSUBKEYGRIP
+  pSUBKEYGRIP,
+  pVERSION,     /* Desired version of the key packet.  */
+  pSUBVERSION,  /* Ditto for the subpacket.  */
 };
 
 struct para_data_s {
@@ -148,13 +151,13 @@ static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                                      const char *expirestr,
                                      int *r_algo, unsigned int *r_usage,
                                      u32 *r_expire, unsigned int *r_nbits,
-                                     const char **r_curve);
+                                     const char **r_curve, int *r_version);
 static void do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                                  struct output_control_s *outctrl, int card );
 static int write_keyblock (iobuf_t out, kbnode_t node);
 static gpg_error_t gen_card_key (int keyno, int algo, int is_primary,
                                  kbnode_t pub_root, u32 *timestamp,
-                                 u32 expireval);
+                                 u32 expireval, int keygen_flags);
 static unsigned int get_keysize_range (int algo,
                                        unsigned int *min, unsigned int *max);
 
@@ -761,6 +764,48 @@ add_feature_aead (PKT_signature *sig, int enabled)
 
 
 static void
+add_feature_v5 (PKT_signature *sig, int enabled)
+{
+  const byte *s;
+  size_t n;
+  int i;
+  char *buf;
+
+  s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
+  if (s && n && ((enabled && (s[0] & 0x04)) || (!enabled && !(s[0] & 0x04))))
+    return; /* Already set or cleared */
+
+  if (!s || !n)
+    { /* Create a new one */
+      n = 1;
+      buf = xmalloc_clear (n);
+    }
+  else
+    {
+      buf = xmalloc (n);
+      memcpy (buf, s, n);
+    }
+
+  if (enabled)
+    buf[0] |= 0x04; /* v5 key supported */
+  else
+    buf[0] &= ~0x04;
+
+  /* Are there any bits set? */
+  for (i=0; i < n; i++)
+    if (buf[i])
+      break;
+
+  if (i == n)
+    delete_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES);
+  else
+    build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n);
+
+  xfree (buf);
+}
+
+
+static void
 add_keyserver_modify (PKT_signature *sig,int enabled)
 {
   const byte *s;
@@ -848,6 +893,7 @@ keygen_upd_std_prefs (PKT_signature *sig, void *opaque)
   /* Make sure that the MDC feature flag is set if needed.  */
   add_feature_mdc (sig,mdc_available);
   add_feature_aead (sig, aead_available);
+  add_feature_v5 (sig, opt.flags.rfc4880bis);
   add_keyserver_modify (sig,ks_modify);
   keygen_add_keyserver_url(sig,NULL);
 
@@ -1370,7 +1416,7 @@ key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
 static int
 do_create_from_keygrip (ctrl_t ctrl, int algo, const char *hexkeygrip,
                         kbnode_t pub_root, u32 timestamp, u32 expireval,
-                        int is_subkey)
+                        int is_subkey, int keygen_flags)
 {
   int err;
   PACKET *pkt;
@@ -1417,7 +1463,7 @@ do_create_from_keygrip (ctrl_t ctrl, int algo, const char *hexkeygrip,
     }
 
   pk->timestamp = timestamp;
-  pk->version = 4;
+  pk->version = (keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
   if (expireval)
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
@@ -1484,7 +1530,7 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
     }
 
   pk->timestamp = timestamp;
-  pk->version = 4;
+  pk->version = (keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
   if (expireval)
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
@@ -2928,7 +2974,7 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 /* Basic key generation.  Here we divert to the actual generation
    routines based on the requested algorithm.  */
 static int
-do_create (int algo, unsigned int nbits, const char *curve, KBNODE pub_root,
+do_create (int algo, unsigned int nbits, const char *curve, kbnode_t pub_root,
            u32 timestamp, u32 expiredate, int is_subkey,
            int keygen_flags, const char *passphrase,
            char **cache_nonce_addr, char **passwd_nonce_addr)
@@ -3007,12 +3053,14 @@ generate_user_id (KBNODE keyblock, const char *uidstr)
  * for any parameter.  FOR_SUBKEY shall be true if this is used as a
  * subkey.  If CLEAR_CERT is set a default CERT usage will be cleared;
  * this is useful if for example the default algorithm is used for a
- * subkey.  */
+ * subkey.  If R_KEYVERSION is not NULL it will receive the version of
+ * the key; this is currently 4 but can be changed with the flag "v5"
+ * to create a v5 key. */
 static gpg_error_t
 parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
                           int *r_algo, unsigned int *r_size,
                           unsigned int *r_keyuse,
-                          char const **r_curve)
+                          char const **r_curve, int *r_keyversion)
 {
   char *flags;
   int algo;
@@ -3021,6 +3069,7 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
   int ecdh_or_ecdsa = 0;
   unsigned int size;
   int keyuse;
+  int keyversion = 4;
   int i;
   const char *s;
 
@@ -3119,6 +3168,13 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
                   return gpg_error (GPG_ERR_INV_FLAG);
                 }
             }
+          else if (!ascii_strcasecmp (s, "v5"))
+            {
+              if (opt.flags.rfc4880bis)
+                keyversion = 5;
+            }
+          else if (!ascii_strcasecmp (s, "v4"))
+            keyversion = 4;
           else
             {
               xfree (tokens);
@@ -3194,9 +3250,12 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
     *r_keyuse = keyuse;
   if (r_curve)
     *r_curve = curve;
+  if (r_keyversion)
+    *r_keyversion = keyversion;
 
   return 0;
 }
+
 
 /* Parse and return the standard key generation parameter.
  * The string is expected to be in this format:
@@ -3228,6 +3287,7 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
  *   ecdsa := Use algorithm ECDSA.
  *   eddsa := Use algorithm EdDSA.
  *   ecdh  := Use algorithm ECDH.
+ *   v5    := Create version 5 key (requires option --rfc4880bis)
  *
  * There are several defaults and fallbacks depending on the
  * algorithm.  PART can be used to select which part of STRING is
@@ -3246,9 +3306,11 @@ parse_key_parameter_string (const char *string, int part,
                             int *r_algo, unsigned int *r_size,
                             unsigned int *r_keyuse,
                             char const **r_curve,
+                            int *r_version,
                             int *r_subalgo, unsigned int *r_subsize,
-                            unsigned *r_subkeyuse,
-                            char const **r_subcurve)
+                            unsigned int *r_subkeyuse,
+                            char const **r_subcurve,
+                            int *r_subversion)
 {
   gpg_error_t err = 0;
   char *primary, *secondary;
@@ -3261,6 +3323,8 @@ parse_key_parameter_string (const char *string, int part,
     *r_keyuse = 0;
   if (r_curve)
     *r_curve = NULL;
+  if (r_version)
+    *r_version = 4;
   if (r_subalgo)
     *r_subalgo = 0;
   if (r_subsize)
@@ -3269,6 +3333,8 @@ parse_key_parameter_string (const char *string, int part,
     *r_subkeyuse = 0;
   if (r_subcurve)
     *r_subcurve = NULL;
+  if (r_subversion)
+    *r_subversion = 4;
 
   if (!string || !*string
       || !ascii_strcasecmp (string, "default") || !strcmp (string, "-"))
@@ -3283,11 +3349,11 @@ parse_key_parameter_string (const char *string, int part,
     *secondary++ = 0;
   if (part == -1 || part == 0)
     {
-      err = parse_key_parameter_part (primary, 0, 0, r_algo, r_size,
-                                      r_keyuse, r_curve);
+        err = parse_key_parameter_part (primary, 0, 0, r_algo, r_size,
+                                        r_keyuse, r_curve, r_version);
       if (!err && part == -1)
         err = parse_key_parameter_part (secondary, 1, 0, r_subalgo, r_subsize,
-                                        r_subkeyuse, r_subcurve);
+                                        r_subkeyuse, r_subcurve, r_subversion);
     }
   else if (part == 1)
     {
@@ -3300,14 +3366,17 @@ parse_key_parameter_string (const char *string, int part,
       if (secondary)
         {
           err = parse_key_parameter_part (secondary, 1, 0,
-                                          r_algo, r_size, r_keyuse, r_curve);
+                                          r_algo, r_size, r_keyuse, r_curve,
+                                          r_version);
           if (!err && suggested_use && r_keyuse && !(suggested_use & *r_keyuse))
             err = parse_key_parameter_part (primary, 1, 1 /*(clear cert)*/,
-                                            r_algo, r_size, r_keyuse, r_curve);
+                                            r_algo, r_size, r_keyuse, r_curve,
+                                            r_version);
         }
       else
         err = parse_key_parameter_part (primary, 1, 0,
-                                        r_algo, r_size, r_keyuse, r_curve);
+                                        r_algo, r_size, r_keyuse, r_curve,
+                                        r_version);
     }
 
   xfree (primary);
@@ -3395,9 +3464,8 @@ get_parameter_algo( struct para_data_s *para, enum para_name key,
        * compatibility with the batch key generation.  It would be
        * better to make full use of parse_key_parameter_string.  */
       parse_key_parameter_string (NULL, 0, 0,
-                                  &i, NULL, NULL, NULL,
-                                  NULL, NULL, NULL, NULL);
-
+                                  &i, NULL, NULL, NULL, NULL,
+                                  NULL, NULL, NULL, NULL, NULL);
       if (r_default)
         *r_default = 1;
     }
@@ -3810,6 +3878,8 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
         { "Keygrip",        pKEYGRIP },
         { "Key-Grip",       pKEYGRIP },
         { "Subkey-grip",    pSUBKEYGRIP },
+        { "Key-Version",    pVERSION },
+        { "Subkey-Version", pSUBVERSION },
         { NULL, 0 }
     };
     IOBUF fp;
@@ -3954,12 +4024,19 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 		break;
 	    }
 	}
-	r = xmalloc_clear( sizeof *r + strlen( value ) );
-	r->lnr = lnr;
-	r->key = keywords[i].key;
-	strcpy( r->u.value, value );
-	r->next = para;
-	para = r;
+
+        if (!opt.flags.rfc4880bis && (keywords[i].key == pVERSION
+                                      || keywords[i].key == pSUBVERSION))
+          ; /* Ignore version unless --rfc4880bis is active.  */
+        else
+          {
+            r = xmalloc_clear( sizeof *r + strlen( value ) );
+            r->lnr = lnr;
+            r->key = keywords[i].key;
+            strcpy( r->u.value, value );
+            r->next = para;
+            para = r;
+          }
     }
     if( err )
 	log_error("%s:%d: %s\n", fname, lnr, err );
@@ -3994,7 +4071,8 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 /* Helper for quick_generate_keypair.  */
 static struct para_data_s *
 quickgen_set_para (struct para_data_s *para, int for_subkey,
-                   int algo, int nbits, const char *curve, unsigned int use)
+                   int algo, int nbits, const char *curve, unsigned int use,
+                   int version)
 {
   struct para_data_s *r;
 
@@ -4029,6 +4107,15 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
       r = xmalloc_clear (sizeof *r + 20);
       r->key = for_subkey? pSUBKEYLENGTH : pKEYLENGTH;
       sprintf (r->u.value, "%u", nbits);
+      r->next = para;
+      para = r;
+    }
+
+  if (opt.flags.rfc4880bis)
+    {
+      r = xmalloc_clear (sizeof *r + 20);
+      r->key = for_subkey? pSUBVERSION : pVERSION;
+      snprintf (r->u.value, 20, "%d", version);
       r->next = para;
       para = r;
     }
@@ -4125,25 +4212,26 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
           || !strcmp (usagestr, "-")))
     {
       /* Use default key parameters.  */
-      int algo, subalgo;
+      int algo, subalgo, version, subversion;
       unsigned int size, subsize;
       unsigned int keyuse, subkeyuse;
       const char *curve, *subcurve;
 
       err = parse_key_parameter_string (algostr, -1, 0,
-                                        &algo, &size, &keyuse, &curve,
+                                        &algo, &size, &keyuse, &curve, &version,
                                         &subalgo, &subsize, &subkeyuse,
-                                        &subcurve);
+                                        &subcurve, &subversion);
       if (err)
         {
           log_error (_("Key generation failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
 
-      para = quickgen_set_para (para, 0, algo, size, curve, keyuse);
+      para = quickgen_set_para (para, 0, algo, size, curve, keyuse, version);
       if (subalgo)
         para = quickgen_set_para (para, 1,
-                                  subalgo, subsize, subcurve, subkeyuse);
+                                  subalgo, subsize, subcurve, subkeyuse,
+                                  subversion);
 
       if (*expirestr)
         {
@@ -4166,21 +4254,22 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
   else
     {
       /* Extended unattended mode.  Creates only the primary key. */
-      int algo;
+      int algo, version;
       unsigned int use;
       u32 expire;
       unsigned int nbits;
       const char *curve;
 
       err = parse_algo_usage_expire (ctrl, 0, algostr, usagestr, expirestr,
-                                     &algo, &use, &expire, &nbits, &curve);
+                                     &algo, &use, &expire, &nbits, &curve,
+                                     &version);
       if (err)
         {
           log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
           goto leave;
         }
 
-      para = quickgen_set_para (para, 0, algo, nbits, curve, use);
+      para = quickgen_set_para (para, 0, algo, nbits, curve, use, version);
       r = xmalloc_clear (sizeof *r + 20);
       r->key = pKEYEXPIRE;
       r->u.expire = expire;
@@ -4494,7 +4583,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
     }
   else /* Default key generation.  */
     {
-      int subalgo;
+      int subalgo, version, subversion;
       unsigned int size, subsize;
       unsigned int keyuse, subkeyuse;
       const char *curve, *subcurve;
@@ -4509,18 +4598,19 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                    , "--full-generate-key" );
 
       err = parse_key_parameter_string (NULL, -1, 0,
-                                        &algo, &size, &keyuse, &curve,
+                                        &algo, &size, &keyuse, &curve, &version,
                                         &subalgo, &subsize,
-                                        &subkeyuse, &subcurve);
+                                        &subkeyuse, &subcurve, &subversion);
       if (err)
         {
           log_error (_("Key generation failed: %s\n"), gpg_strerror (err));
           return;
         }
-      para = quickgen_set_para (para, 0, algo, size, curve, keyuse);
+      para = quickgen_set_para (para, 0, algo, size, curve, keyuse, version);
       if (subalgo)
         para = quickgen_set_para (para, 1,
-                                  subalgo, subsize, subcurve, subkeyuse);
+                                  subalgo, subsize, subcurve, subkeyuse,
+                                  subversion);
 
 
     }
@@ -4740,6 +4830,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   int algo;
   u32 expire;
   const char *key_from_hexgrip = NULL;
+  unsigned int keygen_flags;
 
   if (outctrl->dryrun)
     {
@@ -4808,9 +4899,14 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   algo = get_parameter_algo( para, pKEYTYPE, NULL );
   expire = get_parameter_u32( para, pKEYEXPIRE );
   key_from_hexgrip = get_parameter_value (para, pKEYGRIP);
+
+  keygen_flags = outctrl->keygen_flags;
+  if (get_parameter_uint (para, pVERSION) == 5)
+    keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
+
   if (key_from_hexgrip)
     err = do_create_from_keygrip (ctrl, algo, key_from_hexgrip,
-                                  pub_root, timestamp, expire, 0);
+                                  pub_root, timestamp, expire, 0, keygen_flags);
   else if (!card)
     err = do_create (algo,
                      get_parameter_uint( para, pKEYLENGTH ),
@@ -4818,13 +4914,13 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                      pub_root,
                      timestamp,
                      expire, 0,
-                     outctrl->keygen_flags,
+                     keygen_flags,
                      get_parameter_passphrase (para),
                      &cache_nonce, NULL);
   else
     err = gen_card_key (1, algo,
                         1, pub_root, &timestamp,
-                        expire);
+                        expire, keygen_flags);
 
   /* Get the pointer to the generated public key packet.  */
   if (!err)
@@ -4863,7 +4959,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   if (!err && card && get_parameter (para, pAUTHKEYTYPE))
     {
       err = gen_card_key (3, get_parameter_algo( para, pAUTHKEYTYPE, NULL ),
-                          0, pub_root, &timestamp, expire);
+                          0, pub_root, &timestamp, expire, keygen_flags);
       if (!err)
         err = write_keybinding (ctrl, pub_root, pri_psk, NULL,
                                 PUBKEY_USAGE_AUTH, timestamp, cache_nonce);
@@ -4875,11 +4971,16 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
       s = NULL;
       key_from_hexgrip = get_parameter_value (para, pSUBKEYGRIP);
+
+      keygen_flags = outctrl->keygen_flags;
+      if (get_parameter_uint (para, pSUBVERSION) == 5)
+        keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
+
       if (key_from_hexgrip)
         err = do_create_from_keygrip (ctrl, subkey_algo, key_from_hexgrip,
                                       pub_root, timestamp,
                                       get_parameter_u32 (para, pSUBKEYEXPIRE),
-                                      1);
+                                      1, keygen_flags);
       else if (!card || (s = get_parameter_value (para, pCARDBACKUPKEY)))
         {
           err = do_create (subkey_algo,
@@ -4888,7 +4989,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                            pub_root,
                            timestamp,
                            get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
-                           s ? KEYGEN_FLAG_NO_PROTECTION : outctrl->keygen_flags,
+                           s? KEYGEN_FLAG_NO_PROTECTION : keygen_flags,
                            get_parameter_passphrase (para),
                            &cache_nonce, NULL);
           /* Get the pointer to the generated public subkey packet.  */
@@ -4908,7 +5009,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
         }
       else
         {
-          err = gen_card_key (2, subkey_algo, 0, pub_root, &timestamp, expire);
+          err = gen_card_key (2, subkey_algo, 0, pub_root, &timestamp, expire,
+                              keygen_flags);
         }
 
       if (!err)
@@ -5032,13 +5134,15 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                          const char *algostr, const char *usagestr,
                          const char *expirestr,
                          int *r_algo, unsigned int *r_usage, u32 *r_expire,
-                         unsigned int *r_nbits, const char **r_curve)
+                         unsigned int *r_nbits, const char **r_curve,
+                         int *r_version)
 {
   gpg_error_t err;
   int algo;
   unsigned int use, nbits;
   u32 expire;
   int wantuse;
+  int version = 4;
   const char *curve = NULL;
 
   *r_curve = NULL;
@@ -5056,8 +5160,8 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
 
   err = parse_key_parameter_string (algostr, for_subkey? 1 : 0,
                                     usagestr? parse_usagestr (usagestr):0,
-                                    &algo, &nbits, &use, &curve,
-                                    NULL, NULL, NULL, NULL);
+                                    &algo, &nbits, &use, &curve, &version,
+                                    NULL, NULL, NULL, NULL, NULL);
   if (err)
     return err;
 
@@ -5095,6 +5199,7 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
   *r_usage = use;
   *r_expire = expire;
   *r_nbits = nbits;
+  *r_version = version;
   return 0;
 }
 
@@ -5122,6 +5227,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   char *serialno = NULL;
   char *cache_nonce = NULL;
   char *passwd_nonce = NULL;
+  int keygen_flags = 0;
 
   interactive = (!algostr || !usagestr || !expirestr);
 
@@ -5203,10 +5309,16 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
     }
   else /* Unattended mode.  */
     {
+      int version;
+
       err = parse_algo_usage_expire (ctrl, 1, algostr, usagestr, expirestr,
-                                     &algo, &use, &expire, &nbits, &curve);
+                                     &algo, &use, &expire, &nbits, &curve,
+                                     &version);
       if (err)
         goto leave;
+
+      if (version == 5)
+        keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
     }
 
   /* Verify the passphrase now so that we get a cache item for the
@@ -5229,7 +5341,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   if (key_from_hexgrip)
     {
       err = do_create_from_keygrip (ctrl, algo, key_from_hexgrip,
-                                    keyblock, cur_time, expire, 1);
+                                    keyblock, cur_time, expire, 1,
+                                    keygen_flags);
     }
   else
     {
@@ -5245,7 +5358,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
         passwd = NULL;
 
       err = do_create (algo, nbits, curve,
-                       keyblock, cur_time, expire, 1, 0,
+                       keyblock, cur_time, expire, 1, keygen_flags,
                        passwd, &cache_nonce, &passwd_nonce);
     }
   if (err)
@@ -5293,6 +5406,7 @@ generate_card_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock,
   PKT_public_key *sub_pk = NULL;
   int algo;
   struct agent_card_info_s info;
+  int keygen_flags = 0;  /* FIXME!!! */
 
   log_assert (keyno >= 1 && keyno <= 3);
 
@@ -5363,7 +5477,8 @@ generate_card_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock,
 
   /* Note, that depending on the backend, the card key generation may
      update CUR_TIME.  */
-  err = gen_card_key (keyno, algo, 0, pub_keyblock, &cur_time, expire);
+  err = gen_card_key (keyno, algo, 0, pub_keyblock, &cur_time, expire,
+                      keygen_flags);
   /* Get the pointer to the generated public subkey packet.  */
   if (!err)
     {
@@ -5409,10 +5524,11 @@ write_keyblock( IOBUF out, KBNODE node )
 }
 
 
-/* Note that timestamp is an in/out arg. */
+/* Note that timestamp is an in/out arg.
+ * FIXME: Does not yet support v5 keys.   */
 static gpg_error_t
 gen_card_key (int keyno, int algo, int is_primary, kbnode_t pub_root,
-              u32 *timestamp, u32 expireval)
+              u32 *timestamp, u32 expireval, int keygen_flags)
 {
 #ifdef ENABLE_CARD_SUPPORT
   gpg_error_t err;
@@ -5486,7 +5602,7 @@ gen_card_key (int keyno, int algo, int is_primary, kbnode_t pub_root,
     }
 
   pk->timestamp = *timestamp;
-  pk->version = 4;
+  pk->version = (keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
   if (expireval)
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;

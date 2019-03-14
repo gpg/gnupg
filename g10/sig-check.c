@@ -37,11 +37,14 @@
 
 static int check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 				gcry_md_hd_t digest,
+                                const void *extrahash, size_t extrahashlen,
 				int *r_expired, int *r_revoked,
 				PKT_public_key *ret_pk);
 
 static int check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
-                                       gcry_md_hd_t digest);
+                                       gcry_md_hd_t digest,
+                                       const void *extrahash,
+                                       size_t extrahashlen);
 
 
 /* Statistics for signature verification.  */
@@ -69,7 +72,7 @@ sig_check_dump_stats (void)
 int
 check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
 {
-  return check_signature2 (ctrl, sig, digest, NULL, NULL, NULL, NULL);
+  return check_signature2 (ctrl, sig, digest, NULL, 0, NULL, NULL, NULL, NULL);
 }
 
 
@@ -95,6 +98,9 @@ check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
  * signature data from the version number through the hashed subpacket
  * data (inclusive) is hashed.")
  *
+ * EXTRAHASH and EXTRAHASHLEN is additional data which is hashed with
+ * v5 signatures.  They may be NULL to use the default.
+ *
  * If R_EXPIREDATE is not NULL, R_EXPIREDATE is set to the key's
  * expiry.
  *
@@ -112,7 +118,9 @@ check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
  * Returns 0 on success.  An error code otherwise.  */
 gpg_error_t
 check_signature2 (ctrl_t ctrl,
-                  PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
+                  PKT_signature *sig, gcry_md_hd_t digest,
+                  const void *extrahash, size_t extrahashlen,
+                  u32 *r_expiredate,
 		  int *r_expired, int *r_revoked, PKT_public_key **r_pk)
 {
   int rc=0;
@@ -179,7 +187,8 @@ check_signature2 (ctrl_t ctrl,
       if (r_expiredate)
         *r_expiredate = pk->expiredate;
 
-      rc = check_signature_end (pk, sig, digest, r_expired, r_revoked, NULL);
+      rc = check_signature_end (pk, sig, digest, extrahash, extrahashlen,
+                                r_expired, r_revoked, NULL);
 
       /* Check the backsig.  This is a back signature (0x19) from
        * the subkey on the primary key.  The idea here is that it
@@ -424,6 +433,7 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
 static int
 check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 		     gcry_md_hd_t digest,
+                     const void *extrahash, size_t extrahashlen,
 		     int *r_expired, int *r_revoked, PKT_public_key *ret_pk)
 {
   int rc = 0;
@@ -432,7 +442,8 @@ check_signature_end (PKT_public_key *pk, PKT_signature *sig,
                                                r_expired, r_revoked)))
     return rc;
 
-  if ((rc = check_signature_end_simple (pk, sig, digest)))
+  if ((rc = check_signature_end_simple (pk, sig, digest,
+                                        extrahash, extrahashlen)))
     return rc;
 
   if (!rc && ret_pk)
@@ -447,7 +458,8 @@ check_signature_end (PKT_public_key *pk, PKT_signature *sig,
  * expiration, revocation, etc.  */
 static int
 check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
-                            gcry_md_hd_t digest)
+                            gcry_md_hd_t digest,
+                            const void *extrahash, size_t extrahashlen)
 {
   gcry_mpi_t result = NULL;
   int rc = 0;
@@ -539,8 +551,13 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
           /* - One octet content format
            * - File name (one octet length followed by the name)
            * - Four octet timestamp */
-          memset (buf, 0, 6);
-          gcry_md_write (digest, buf, 6);
+          if (extrahash && extrahashlen)
+            gcry_md_write (digest, extrahash, extrahashlen);
+          else /* Detached signature. */
+            {
+              memset (buf, 0, 6);
+              gcry_md_write (digest, buf, 6);
+            }
         }
       /* Add some magic per Section 5.2.4 of RFC 4880.  */
       i = 0;
@@ -790,7 +807,7 @@ check_backsig (PKT_public_key *main_pk,PKT_public_key *sub_pk,
     {
       hash_public_key(md,main_pk);
       hash_public_key(md,sub_pk);
-      rc = check_signature_end (sub_pk, backsig, md, NULL, NULL, NULL);
+      rc = check_signature_end (sub_pk, backsig, md, NULL, 0, NULL, NULL, NULL);
       cache_sig_result(backsig,rc);
       gcry_md_close(md);
     }
@@ -977,28 +994,28 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
     {
       log_assert (packet->pkttype == PKT_PUBLIC_KEY);
       hash_public_key (md, packet->pkt.public_key);
-      rc = check_signature_end_simple (signer, sig, md);
+      rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_BACK_SIG (sig))
     {
       log_assert (packet->pkttype == PKT_PUBLIC_KEY);
       hash_public_key (md, packet->pkt.public_key);
       hash_public_key (md, signer);
-      rc = check_signature_end_simple (signer, sig, md);
+      rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_SUBKEY_SIG (sig) || IS_SUBKEY_REV (sig))
     {
       log_assert (packet->pkttype == PKT_PUBLIC_SUBKEY);
       hash_public_key (md, pripk);
       hash_public_key (md, packet->pkt.public_key);
-      rc = check_signature_end_simple (signer, sig, md);
+      rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_UID_SIG (sig) || IS_UID_REV (sig))
     {
       log_assert (packet->pkttype == PKT_USER_ID);
       hash_public_key (md, pripk);
       hash_uid_packet (packet->pkt.user_id, md, sig);
-      rc = check_signature_end_simple (signer, sig, md);
+      rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else
     {

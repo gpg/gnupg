@@ -853,7 +853,7 @@ PACKET *create_gpg_control ( ctrlpkttype_t type,
 /*-- build-packet.c --*/
 int build_packet (iobuf_t out, PACKET *pkt);
 gpg_error_t build_packet_and_meta (iobuf_t out, PACKET *pkt);
-gpg_error_t gpg_mpi_write (iobuf_t out, gcry_mpi_t a);
+gpg_error_t gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *t_nwritten);
 gpg_error_t gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a);
 u32 calc_packet_length( PACKET *pkt );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
@@ -900,6 +900,7 @@ int check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest);
  * it and verifying the signature.  */
 gpg_error_t check_signature2 (ctrl_t ctrl,
                               PKT_signature *sig, gcry_md_hd_t digest,
+                              const void *extrahash, size_t extrahashlen,
                               u32 *r_expiredate, int *r_expired, int *r_revoked,
                               PKT_public_key **r_pk);
 
