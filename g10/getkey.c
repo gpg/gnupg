@@ -899,6 +899,7 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_LONG_KID
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR16
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR20
+	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR32
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR)
             {
               ctx->items[n].skipfnc = skip_unusable;
@@ -1654,7 +1655,7 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
   if (r_keyblock)
     *r_keyblock = NULL;
 
-  if (fprint_len == 20 || fprint_len == 16)
+  if (fprint_len == 32 || fprint_len == 20 || fprint_len == 16)
     {
       struct getkey_ctx_s ctx;
       KBNODE kb = NULL;
@@ -1670,9 +1671,9 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
         return gpg_error_from_syserror ();
 
       ctx.nitems = 1;
-      ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
-	: KEYDB_SEARCH_MODE_FPR20;
+      ctx.items[0].mode = KEYDB_SEARCH_MODE_FPR;
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
+      ctx.items[0].fprlen = fprint_len;
       if (pk)
         ctx.req_usage = pk->req_usage;
       rc = lookup (ctrl, &ctx, 0, &kb, &found_key);
@@ -1745,8 +1746,6 @@ get_keyblock_byfprint_fast (kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
 
   for (i = 0; i < MAX_FINGERPRINT_LEN && i < fprint_len; i++)
     fprbuf[i] = fprint[i];
-  while (i < MAX_FINGERPRINT_LEN)
-    fprbuf[i++] = 0;
 
   hd = keydb_new ();
   if (!hd)
@@ -1770,7 +1769,7 @@ get_keyblock_byfprint_fast (kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
   if (r_hd)
     *r_hd = hd;
 
-  err = keydb_search_fpr (hd, fprbuf);
+  err = keydb_search_fpr (hd, fprbuf, fprint_len);
   if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     {
       if (!r_hd)

@@ -265,14 +265,17 @@ parse_key (const unsigned char *data, size_t datalen,
   unsigned char hashbuffer[768];
   gcry_md_hd_t md;
   int is_ecc = 0;
+  int is_v5;
+  /* unsigned int pkbytes;  for v5: # of octets of the public key params.  */
   struct keyparm_s keyparm[OPENPGP_MAX_NPKEY];
   unsigned char *helpmpibuf[OPENPGP_MAX_NPKEY] = { NULL };
 
   if (datalen < 5)
     return gpg_error (GPG_ERR_INV_PACKET);
   version = *data++; datalen--;
-  if (version < 2 || version > 4 )
+  if (version < 2 || version > 5 )
     return gpg_error (GPG_ERR_INV_PACKET); /* Invalid version. */
+  is_v5 = version == 5;
 
   /*timestamp = ((data[0]<<24)|(data[1]<<16)|(data[2]<<8)|(data[3]));*/
   data +=4; datalen -=4;
@@ -287,6 +290,15 @@ parse_key (const unsigned char *data, size_t datalen,
   if (!datalen)
     return gpg_error (GPG_ERR_INV_PACKET);
   algorithm = *data++; datalen--;
+
+  if (is_v5)
+    {
+      if (datalen < 4)
+        return gpg_error (GPG_ERR_INV_PACKET);
+      /* pkbytes = buf32_to_uint (data); */
+      data += 4;
+      datalen -= 4;
+    }
 
   switch (algorithm)
     {
@@ -315,6 +327,7 @@ parse_key (const unsigned char *data, size_t datalen,
       return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
     }
 
+  ki->version = version;
   ki->algo = algorithm;
 
   for (i=0; i < npkey; i++ )
@@ -411,29 +424,63 @@ parse_key (const unsigned char *data, size_t datalen,
          have a scatter-gather enabled hash function. What we do here
          is to use a static buffer if this one is large enough and
          only use the regular hash functions if this buffer is not
-         large enough. */
-      if ( 3 + n < sizeof hashbuffer )
+         large enough.
+         FIXME: Factor this out to a shared fingerprint function.
+       */
+      if (version == 5)
         {
-          hashbuffer[0] = 0x99;     /* CTB */
-          hashbuffer[1] = (n >> 8); /* 2 byte length header. */
-          hashbuffer[2] = n;
-          memcpy (hashbuffer + 3, data_start, n);
-          gcry_md_hash_buffer (GCRY_MD_SHA1, ki->fpr, hashbuffer, 3 + n);
+          if ( 5 + n < sizeof hashbuffer )
+            {
+              hashbuffer[0] = 0x9a;     /* CTB */
+              hashbuffer[1] = (n >> 24);/* 4 byte length header. */
+              hashbuffer[2] = (n >> 16);
+              hashbuffer[3] = (n >>  8);
+              hashbuffer[4] = (n      );
+              memcpy (hashbuffer + 5, data_start, n);
+              gcry_md_hash_buffer (GCRY_MD_SHA256, ki->fpr, hashbuffer, 5 + n);
+            }
+          else
+            {
+              err = gcry_md_open (&md, GCRY_MD_SHA256, 0);
+              if (err)
+                return err; /* Oops */
+              gcry_md_putc (md, 0x9a );     /* CTB */
+              gcry_md_putc (md, (n >> 24)); /* 4 byte length header. */
+              gcry_md_putc (md, (n >> 16));
+              gcry_md_putc (md, (n >>  8));
+              gcry_md_putc (md, (n      ));
+              gcry_md_write (md, data_start, n);
+              memcpy (ki->fpr, gcry_md_read (md, 0), 32);
+              gcry_md_close (md);
+            }
+          ki->fprlen = 32;
+          memcpy (ki->keyid, ki->fpr, 8);
         }
       else
         {
-          err = gcry_md_open (&md, GCRY_MD_SHA1, 0);
-          if (err)
-            return err; /* Oops */
-          gcry_md_putc (md, 0x99 );     /* CTB */
-          gcry_md_putc (md, (n >> 8) ); /* 2 byte length header. */
-          gcry_md_putc (md, n );
-          gcry_md_write (md, data_start, n);
-          memcpy (ki->fpr, gcry_md_read (md, 0), 20);
-          gcry_md_close (md);
+          if ( 3 + n < sizeof hashbuffer )
+            {
+              hashbuffer[0] = 0x99;     /* CTB */
+              hashbuffer[1] = (n >> 8); /* 2 byte length header. */
+              hashbuffer[2] = (n     );
+              memcpy (hashbuffer + 3, data_start, n);
+              gcry_md_hash_buffer (GCRY_MD_SHA1, ki->fpr, hashbuffer, 3 + n);
+            }
+          else
+            {
+              err = gcry_md_open (&md, GCRY_MD_SHA1, 0);
+              if (err)
+                return err; /* Oops */
+              gcry_md_putc (md, 0x99 );     /* CTB */
+              gcry_md_putc (md, (n >> 8));  /* 2 byte length header. */
+              gcry_md_putc (md, (n     ));
+              gcry_md_write (md, data_start, n);
+              memcpy (ki->fpr, gcry_md_read (md, 0), 20);
+              gcry_md_close (md);
+            }
+          ki->fprlen = 20;
+          memcpy (ki->keyid, ki->fpr+12, 8);
         }
-      ki->fprlen = 20;
-      memcpy (ki->keyid, ki->fpr+12, 8);
     }
 
  leave:

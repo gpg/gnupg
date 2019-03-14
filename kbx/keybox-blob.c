@@ -62,7 +62,8 @@
            2 = OpenPGP
            3 = X509
    - byte Version number of this blob type
-           1 = The only defined value
+           1 = Blob with 20 byte fingerprints
+           2 = Blob with 32 byte fingerprints and no keyids.
    - u16  Blob flags
           bit 0 = contains secret key material (not used)
           bit 1 = ephemeral blob (e.g. used while querying external resources)
@@ -70,19 +71,36 @@
           certificate
    - u32  The length of the keyblock or certificate
    - u16  [NKEYS] Number of keys (at least 1!) [X509: always 1]
-   - u16  Size of the key information structure (at least 28).
+   - u16  Size of the key information structure (at least 28 or 56).
    - NKEYS times:
+     Version 1 blob:
       - b20  The fingerprint of the key.
              Fingerprints are always 20 bytes, MD5 left padded with zeroes.
       - u32  Offset to the n-th key's keyID (a keyID is always 8 byte)
              or 0 if not known which is the case only for X.509.
+             Note that this separate keyid is not anymore used by
+             gnupg since the support for v3 keys has been removed.
+             We create this field anyway for backward compatibility with
+             old EOL-ed versions.  Eventually we will completely move
+             to the version 2 blob format.
       - u16  Key flags
              bit 0 = qualified signature (not yet implemented}
       - u16  RFU
       - bN   Optional filler up to the specified length of this
              structure.
+     Version 2 blob:
+      - b32  The fingerprint of the key.  This fingerprint is
+             either 20 or 32 bytes.  A 20 byte fingerprint is
+             right filled with zeroes.
+      - u16  Key flags
+             bit 0 = qualified signature (not yet implemented}
+             bit 7 = 32 byte fingerprint in use.
+      - u16  RFU
+      - b20  keygrip
+      - bN   Optional filler up to the specified length of this
+             structure.
    - u16  Size of the serial number (may be zero)
-      -  bN  The serial number. N as giiven above.
+      -  bN  The serial number. N as given above.
    - u16  Number of user IDs
    - u16  [NUIDS] Size of user ID information structure
    - NUIDS times:
@@ -172,15 +190,12 @@ struct membuf {
 };
 
 
-/*  #if MAX_FINGERPRINT_LEN < 20 */
-/*    #error fingerprints are 20 bytes */
-/*  #endif */
-
 struct keyboxblob_key {
-  char   fpr[20];
+  char   fpr[32];
   u32    off_kid;
   ulong  off_kid_addr;
   u16    flags;
+  u16    fprlen;  /* Either 20 or 32 */
 };
 struct keyboxblob_uid {
   u32    off;
@@ -380,10 +395,9 @@ pgp_create_key_part_single (KEYBOXBLOB blob, int n,
   int off;
 
   fprlen = kinfo->fprlen;
-  if (fprlen > 20)
-    fprlen = 20;
   memcpy (blob->keys[n].fpr, kinfo->fpr, fprlen);
-  if (fprlen != 20) /* v3 fpr - shift right and fill with zeroes. */
+  blob->keys[n].fprlen = fprlen;
+  if (fprlen < 20) /* v3 fpr - shift right and fill with zeroes. */
     {
       memmove (blob->keys[n].fpr + 20 - fprlen, blob->keys[n].fpr, fprlen);
       memset (blob->keys[n].fpr, 0, 20 - fprlen);
@@ -533,30 +547,51 @@ release_kid_list (struct keyid_list *kl)
 }
 
 
-
+/* Create a new blob header.  If WANT_FPR32 is set a version 2 blob is
+ * created.  */
 static int
-create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral)
+create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral,
+                    int want_fpr32)
 {
   struct membuf *a = blob->buf;
   int i;
 
   put32 ( a, 0 ); /* blob length, needs fixup */
   put8 ( a, blobtype);
-  put8 ( a, 1 );  /* blob type version */
+  put8 ( a, want_fpr32? 2:1 );  /* blob type version */
   put16 ( a, as_ephemeral? 2:0 ); /* blob flags */
 
   put32 ( a, 0 ); /* offset to the raw data, needs fixup */
   put32 ( a, 0 ); /* length of the raw data, needs fixup */
 
   put16 ( a, blob->nkeys );
-  put16 ( a, 20 + 4 + 2 + 2 );  /* size of key info */
+  if (want_fpr32)
+    put16 ( a, 32 + 2 + 2 + 20);  /* size of key info */
+  else
+    put16 ( a, 20 + 4 + 2 + 2 );  /* size of key info */
   for ( i=0; i < blob->nkeys; i++ )
     {
-      put_membuf (a, blob->keys[i].fpr, 20);
-      blob->keys[i].off_kid_addr = a->len;
-      put32 ( a, 0 ); /* offset to keyid, fixed up later */
-      put16 ( a, blob->keys[i].flags );
-      put16 ( a, 0 ); /* reserved */
+      if (want_fpr32)
+        {
+          put_membuf (a, blob->keys[i].fpr, blob->keys[i].fprlen);
+          blob->keys[i].off_kid_addr = a->len;
+          if (blob->keys[i].fprlen == 32)
+            put16 ( a, (blob->keys[i].flags | 0x80));
+          else
+            put16 ( a, blob->keys[i].flags);
+          put16 ( a, 0 ); /* reserved */
+          /* FIXME: Put the real grip here instead of the filler.  */
+          put_membuf (a, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20);
+        }
+      else
+        {
+          log_assert (blob->keys[i].fprlen <= 20);
+          put_membuf (a, blob->keys[i].fpr, 20);
+          blob->keys[i].off_kid_addr = a->len;
+          put32 ( a, 0 ); /* offset to keyid, fixed up later */
+          put16 ( a, blob->keys[i].flags );
+          put16 ( a, 0 ); /* reserved */
+        }
     }
 
   put16 (a, blob->seriallen); /*fixme: check that it fits into 16 bits*/
@@ -593,11 +628,14 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral)
 
   /* space where we write keyIDs and other stuff so that the
      pointers can actually point to somewhere */
-  if (blobtype == KEYBOX_BLOBTYPE_PGP)
+  if (blobtype == KEYBOX_BLOBTYPE_PGP && !want_fpr32)
     {
-      /* We need to store the keyids for all pgp v3 keys because those key
-         IDs are not part of the fingerprint.  While we are doing that, we
-         fixup all the keyID offsets */
+      /* For version 1 blobs, we need to store the keyids for all v3
+       * keys because those key IDs are not part of the fingerprint.
+       * While we are doing that, we fixup all the keyID offsets.  For
+       * version 2 blobs (which can't carry v3 keys) we compute the
+       * keyids in the fly because they are just stripped down
+       * fingerprints.  */
       for (i=0; i < blob->nkeys; i++ )
         {
           if (blob->keys[i].off_kid)
@@ -711,8 +749,26 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
 {
   gpg_error_t err;
   KEYBOXBLOB blob;
+  int need_fpr32 = 0;
 
   *r_blob = NULL;
+
+
+  /* Check whether we need a blob with 32 bit fingerprints. We could
+   * use this always but for backward compatiblity we do this only for
+   * v5 keys.  */
+  if (info->primary.version == 5)
+    need_fpr32 = 1;
+  else
+    {
+      struct _keybox_openpgp_key_info *kinfo;
+      for (kinfo = &info->subkeys; kinfo; kinfo = kinfo->next)
+        if (kinfo->version == 5)
+          {
+            need_fpr32 = 1;
+            break;
+          }
+    }
 
   blob = xtrycalloc (1, sizeof *blob);
   if (!blob)
@@ -756,7 +812,8 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
 
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;
-  err = create_blob_header (blob, KEYBOX_BLOBTYPE_PGP, as_ephemeral);
+  err = create_blob_header (blob, KEYBOX_BLOBTYPE_PGP,
+                            as_ephemeral, need_fpr32);
   if (err)
     goto leave;
   err = pgp_create_blob_keyblock (blob, image, imagelen);
@@ -943,7 +1000,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;
   /* write out what we already have */
-  rc = create_blob_header (blob, KEYBOX_BLOBTYPE_X509, as_ephemeral);
+  rc = create_blob_header (blob, KEYBOX_BLOBTYPE_X509, as_ephemeral, 0);
   if (rc)
     goto leave;
   rc = x509_create_blob_cert (blob, cert);

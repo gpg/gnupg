@@ -244,9 +244,9 @@ gpg_error_t keydb_search_next (KEYDB_HANDLE hd);
    key id.  */
 gpg_error_t keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
 
-/* This is a convenience function for searching for keys with a long
-   (20 byte) fingerprint.  */
-gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
+/* This is a convenience function for searching for keys by
+ * fingerprint.  */
+gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr, size_t fprlen);
 
 
 /*-- pkclist.c --*/

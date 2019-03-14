@@ -1052,6 +1052,7 @@ keydb_search_fpr (ctrl_t ctrl, KEYDB_HANDLE hd, const byte *fpr)
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FPR;
   memcpy (desc.u.fpr, fpr, 20);
+  desc.fprlen = 20;
   return keydb_search (ctrl, hd, &desc, 1);
 }
 

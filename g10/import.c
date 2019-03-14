@@ -2957,9 +2957,7 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
     size_t an;
 
     fingerprint_from_pk (pk, afp, &an);
-    while (an < MAX_FINGERPRINT_LEN)
-      afp[an++] = 0;
-    rc = keydb_search_fpr (hd, afp);
+    rc = keydb_search_fpr (hd, afp, an);
   }
   if (rc)
     {

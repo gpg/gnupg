@@ -170,6 +170,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   ulong nserial;
   ulong unhashed;
   const byte *p;
+  int is_fpr32;  /* blob ersion 2 */
 
   buffer = _keybox_get_blob_image (blob, &length);
 
@@ -207,7 +208,9 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       fprintf (fp, "[can't dump this blob type]\n");
       return 0;
     }
+  /* Here we have either BLOGTYPE_X509 or BLOBTYPE_OPENPGP */
   fprintf (fp, "Version: %d\n", buffer[5]);
+  is_fpr32 = buffer[5] == 2;
 
   if (length < 40)
     {
@@ -267,15 +270,24 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       ulong kidoff, kflags;
 
       fprintf (fp, "Key-Fpr[%lu]: ", n );
-      for (i=0; i < 20; i++ )
-        fprintf (fp, "%02X", p[i]);
-      kidoff = get32 (p + 20);
-      fprintf (fp, "\nKey-Kid-Off[%lu]: %lu\n", n, kidoff );
-      fprintf (fp, "Key-Kid[%lu]: ", n );
-      /* fixme: check bounds */
-      for (i=0; i < 8; i++ )
-        fprintf (fp, "%02X", buffer[kidoff+i] );
-      kflags = get16 (p + 24 );
+      if (is_fpr32)
+        {
+          kflags = get16 (p + 32 );
+          for (i=0; i < ((kflags & 0x80)?32:20); i++ )
+            fprintf (fp, "%02X", p[i]);
+        }
+      else
+        {
+          for (i=0; i < 20; i++ )
+            fprintf (fp, "%02X", p[i]);
+          kidoff = get32 (p + 20);
+          fprintf (fp, "\nKey-Kid-Off[%lu]: %lu\n", n, kidoff );
+          fprintf (fp, "Key-Kid[%lu]: ", n );
+          /* fixme: check bounds */
+          for (i=0; i < 8; i++ )
+            fprintf (fp, "%02X", buffer[kidoff+i] );
+          kflags = get16 (p + 24 );
+        }
       fprintf( fp, "\nKey-Flags[%lu]: %04lX\n", n, kflags);
     }
 

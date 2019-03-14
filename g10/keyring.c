@@ -997,6 +997,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           break;
         case KEYDB_SEARCH_MODE_FPR16:
         case KEYDB_SEARCH_MODE_FPR20:
+        case KEYDB_SEARCH_MODE_FPR32:
         case KEYDB_SEARCH_MODE_FPR:
           need_fpr = 1;
           break;
@@ -1134,11 +1135,12 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           pk = pkt.pkt.public_key;
           ++pk_no;
 
-          if (need_fpr) {
-            fingerprint_from_pk (pk, afp, &an);
-            while (an < 20) /* fill up to 20 bytes */
-              afp[an++] = 0;
-          }
+          if (need_fpr)
+            {
+              fingerprint_from_pk (pk, afp, &an);
+              while (an < 32) /* fill up to 32 bytes */
+                afp[an++] = 0;
+            }
           if (need_keyid)
             keyid_from_pk (pk, aki);
 
@@ -1185,8 +1187,16 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
               goto found;
             break;
           case KEYDB_SEARCH_MODE_FPR20:
-          case KEYDB_SEARCH_MODE_FPR:
             if (pk && !memcmp (desc[n].u.fpr, afp, 20))
+              goto found;
+            break;
+          case KEYDB_SEARCH_MODE_FPR32:
+            if (pk && !memcmp (desc[n].u.fpr, afp, 32))
+              goto found;
+            break;
+          case KEYDB_SEARCH_MODE_FPR:
+            if (pk && desc[n].fprlen >= 16 && desc[n].fprlen <= 32
+                && !memcmp (desc[n].u.fpr, afp, desc[n].fprlen))
               goto found;
             break;
           case KEYDB_SEARCH_MODE_FIRST:

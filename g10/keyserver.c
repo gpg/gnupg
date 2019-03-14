@@ -527,6 +527,25 @@ print_keyrec (ctrl_t ctrl, int number,struct keyrec *keyrec)
       }
       break;
 
+      /* If we get a modern fingerprint, we have the most
+	 flexibility. */
+    case KEYDB_SEARCH_MODE_FPR32:
+      {
+	u32 kid[2];
+	keyid_from_fingerprint (ctrl, keyrec->desc.u.fpr, 32, kid);
+	es_printf("key %s",keystr(kid));
+      }
+      break;
+
+    case KEYDB_SEARCH_MODE_FPR:
+      {
+	u32 kid[2];
+	keyid_from_fingerprint (ctrl, keyrec->desc.u.fpr, keyrec->desc.fprlen,
+                                kid);
+	es_printf("key %s",keystr(kid));
+      }
+      break;
+
     default:
       BUG();
       break;
@@ -614,7 +633,9 @@ parse_keyrec(char *keystring)
       if (err || (work->desc.mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && work->desc.mode != KEYDB_SEARCH_MODE_LONG_KID
                   && work->desc.mode != KEYDB_SEARCH_MODE_FPR16
-                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR20))
+                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR20
+                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR32
+                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR))
 	{
 	  work->desc.mode=KEYDB_SEARCH_MODE_NONE;
 	  return ret;
@@ -996,7 +1017,9 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
       if (err || (desc.mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && desc.mode != KEYDB_SEARCH_MODE_LONG_KID
                   && desc.mode != KEYDB_SEARCH_MODE_FPR16
-                  && desc.mode != KEYDB_SEARCH_MODE_FPR20))
+                  && desc.mode != KEYDB_SEARCH_MODE_FPR20
+                  && desc.mode != KEYDB_SEARCH_MODE_FPR32
+                  && desc.mode != KEYDB_SEARCH_MODE_FPR))
 	{
 	  log_error(_("\"%s\" not a key ID: skipping\n"),users->d);
 	  continue;
@@ -1070,6 +1093,16 @@ keyserver_retrieval_screener (kbnode_t keyblock, void *opaque)
               if (fpr_len == 20 && !memcmp (fpr, desc[n].u.fpr, 20))
                 return 0;
             }
+          else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR32)
+            {
+              if (fpr_len == 32 && !memcmp (fpr, desc[n].u.fpr, 32))
+                return 0;
+            }
+          else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR)
+            {
+              if (fpr_len == desc[n].fprlen && !memcmp (fpr, desc[n].u.fpr, 32))
+                return 0;
+            }
           else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR16)
             {
               if (fpr_len == 16 && !memcmp (fpr, desc[n].u.fpr, 16))
@@ -1111,7 +1144,9 @@ keyserver_import (ctrl_t ctrl, strlist_t users)
       if (err || (desc[count].mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && desc[count].mode != KEYDB_SEARCH_MODE_LONG_KID
                   && desc[count].mode != KEYDB_SEARCH_MODE_FPR16
-                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR20))
+                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR20
+                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR32
+                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR))
 	{
 	  log_error (_("\"%s\" not a key ID: skipping\n"), users->d);
 	  continue;
@@ -1171,10 +1206,13 @@ keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
     desc.mode=KEYDB_SEARCH_MODE_FPR16;
   else if(fprint_len==20)
     desc.mode=KEYDB_SEARCH_MODE_FPR20;
+  else if(fprint_len==32)
+    desc.mode=KEYDB_SEARCH_MODE_FPR32;
   else
     return -1;
 
   memcpy(desc.u.fpr,fprint,fprint_len);
+  desc.fprlen = fprint_len;
 
   /* TODO: Warn here if the fingerprint we got doesn't match the one
      we asked for? */
@@ -1291,20 +1329,23 @@ keyidlist (ctrl_t ctrl, strlist_t users, KEYDB_SEARCH_DESC **klist,
              This is because it's easy to calculate any sort of keyid
              from a v4 fingerprint, but not a v3 fingerprint. */
 
-	  if(node->pkt->pkt.public_key->version<4)
+	  if (node->pkt->pkt.public_key->version < 4)
 	    {
 	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
 	      keyid_from_pk(node->pkt->pkt.public_key,
 			    (*klist)[*count].u.kid);
 	    }
 	  else
-	    {
+            {
 	      size_t dummy;
 
-	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_FPR20;
-	      fingerprint_from_pk(node->pkt->pkt.public_key,
-				  (*klist)[*count].u.fpr,&dummy);
-	    }
+              if (node->pkt->pkt.public_key->version == 4)
+                (*klist)[*count].mode = KEYDB_SEARCH_MODE_FPR20;
+              else
+                (*klist)[*count].mode = KEYDB_SEARCH_MODE_FPR32;
+	      fingerprint_from_pk (node->pkt->pkt.public_key,
+                                   (*klist)[*count].u.fpr,&dummy);
+            }
 
 	  /* This is a little hackish, using the skipfncvalue as a
 	     void* pointer to the keyserver spec, but we don't need
@@ -1621,9 +1662,10 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
       int quiet = 0;
 
       if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR20
+          || desc[idx].mode == KEYDB_SEARCH_MODE_FPR32
           || desc[idx].mode == KEYDB_SEARCH_MODE_FPR16)
         {
-          n = 1+2+2*20;
+          n = 1+2+2*32;
           if (idx && linelen + n > MAX_KS_GET_LINELEN)
             break; /* Declare end of this chunk.  */
           linelen += n;
@@ -1635,10 +1677,12 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
             {
               strcpy (pattern[npat], "0x");
               bin2hex (desc[idx].u.fpr,
+                       desc[idx].mode == KEYDB_SEARCH_MODE_FPR32? 32 :
                        desc[idx].mode == KEYDB_SEARCH_MODE_FPR20? 20 : 16,
                        pattern[npat]+2);
               npat++;
-              if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR20)
+              if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR20
+                  || desc[idx].mode == KEYDB_SEARCH_MODE_FPR32)
                 npat_fpr++;
             }
         }
@@ -1717,7 +1761,7 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
         }
     }
 
-  /* Remember now many of search items were considered.  Note that
+  /* Remember how many of the search items were considered.  Note that
      this is different from NPAT.  */
   *r_ndesc_used = idx;
 
