@@ -376,8 +376,6 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
 		     (ulong) desc.u.kid[0], (ulong) desc.u.kid[1]);
       break;
 
-    case KEYDB_SEARCH_MODE_FPR16:
-    case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
     case KEYDB_SEARCH_MODE_ISSUER:
     case KEYDB_SEARCH_MODE_ISSUER_SN:

@@ -327,9 +327,10 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                 }
               desc->u.fpr[i] = c;
             }
+          desc->fprlen = 16;
           for (; i < 32; i++)
             desc->u.fpr[i]= 0;
-          mode = KEYDB_SEARCH_MODE_FPR16;
+          mode = KEYDB_SEARCH_MODE_FPR;
         }
       else if ((hexlength == 40
                 && (s[hexlength] == 0
@@ -350,9 +351,10 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                 }
               desc->u.fpr[i] = c;
             }
+          desc->fprlen = 20;
           for (; i < 32; i++)
             desc->u.fpr[i]= 0;
-          mode = KEYDB_SEARCH_MODE_FPR20;
+          mode = KEYDB_SEARCH_MODE_FPR;
         }
       else if ((hexlength == 64
                 && (s[hexlength] == 0
@@ -373,7 +375,8 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                 }
               desc->u.fpr[i] = c;
             }
-          mode = KEYDB_SEARCH_MODE_FPR32;
+          desc->fprlen = 32;
+          mode = KEYDB_SEARCH_MODE_FPR;
         }
       else if (!hexprefix)
         {
@@ -393,7 +396,10 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                   desc->u.fpr[i] = c;
                 }
               if (i == 20)
-                mode = KEYDB_SEARCH_MODE_FPR20;
+                {
+                  desc->fprlen = 20;
+                  mode = KEYDB_SEARCH_MODE_FPR;
+                }
               for (; i < 32; i++)
                 desc->u.fpr[i]= 0;
             }
@@ -438,7 +444,10 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                       s += 2;
                     }
                   if (i == 20)
-                    mode = KEYDB_SEARCH_MODE_FPR20;
+                    {
+                      desc->fprlen = 20;
+                      mode = KEYDB_SEARCH_MODE_FPR;
+                    }
                   for (; i < 32; i++)
                     desc->u.fpr[i]= 0;
                 }

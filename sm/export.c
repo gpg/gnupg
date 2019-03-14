@@ -198,8 +198,6 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
     {
       for (i=0; (i < ndesc
                  && (desc[i].mode == KEYDB_SEARCH_MODE_FPR
-                     || desc[i].mode == KEYDB_SEARCH_MODE_FPR20
-                     || desc[i].mode == KEYDB_SEARCH_MODE_FPR16
                      || desc[i].mode == KEYDB_SEARCH_MODE_KEYGRIP)); i++)
         ;
       if (i == ndesc)

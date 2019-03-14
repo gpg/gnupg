@@ -559,21 +559,9 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
     case KEYDB_SEARCH_MODE_LONG_KID:
       return xasprintf ("LONG_KID: '%s'",
                         format_keyid (desc->u.kid, KF_LONG, b, sizeof (b)));
-    case KEYDB_SEARCH_MODE_FPR16:
-      bin2hex (desc->u.fpr, 16, fpr);
-      return xasprintf ("FPR16: '%s'",
-                        format_hexfingerprint (fpr, b, sizeof (b)));
-    case KEYDB_SEARCH_MODE_FPR20:
-      bin2hex (desc->u.fpr, 20, fpr);
-      return xasprintf ("FPR20: '%s'",
-                        format_hexfingerprint (fpr, b, sizeof (b)));
-    case KEYDB_SEARCH_MODE_FPR32:
-      bin2hex (desc->u.fpr, 20, fpr);
-      return xasprintf ("FPR32: '%s'",
-                        format_hexfingerprint (fpr, b, sizeof (b)));
     case KEYDB_SEARCH_MODE_FPR:
       bin2hex (desc->u.fpr, desc->fprlen, fpr);
-      return xasprintf ("FPR: '%s'",
+      return xasprintf ("FPR%02d: '%s'", desc->fprlen,
                         format_hexfingerprint (fpr, b, sizeof (b)));
     case KEYDB_SEARCH_MODE_ISSUER:
       return xasprintf ("ISSUER: '%s'", desc->u.name);
@@ -1534,10 +1522,11 @@ keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
 
   memset (&desc, 0, sizeof (desc));
   fingerprint_from_pk (pk, desc.u.fpr, &len);
-  if (len == 20)
-    desc.mode = KEYDB_SEARCH_MODE_FPR20;
-  else if (len == 32)
-    desc.mode = KEYDB_SEARCH_MODE_FPR32;
+  if (len == 20 || len == 32)
+    {
+      desc.mode = KEYDB_SEARCH_MODE_FPR;
+      desc.fprlen = len;
+    }
   else
     log_bug ("%s: Unsupported key length: %zu\n", __func__, len);
 
@@ -1910,11 +1899,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   /* NB: If one of the exact search modes below is used in a loop to
      walk over all keys (with the same fingerprint) the caching must
      have been disabled for the handle.  */
-  if (desc[0].mode == KEYDB_SEARCH_MODE_FPR20)
-    fprlen = 20;
-  else if (desc[0].mode == KEYDB_SEARCH_MODE_FPR32)
-    fprlen = 32;
-  else if (desc[0].mode == KEYDB_SEARCH_MODE_FPR)
+  if (desc[0].mode == KEYDB_SEARCH_MODE_FPR)
     fprlen = desc[0].fprlen;
   else
     fprlen = 0;

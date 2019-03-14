@@ -946,8 +946,7 @@ wks_cmd_install_key (const char *fname, const char *userid)
     }
 
   if (!classify_user_id (fname, &desc, 1)
-      && (desc.mode == KEYDB_SEARCH_MODE_FPR
-          || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+      && desc.mode == KEYDB_SEARCH_MODE_FPR)
     {
       /* FNAME looks like a fingerprint.  Get the key from the
        * standard keyring.  */

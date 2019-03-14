@@ -1083,18 +1083,6 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
                 goto found;
               break;
 
-            case KEYDB_SEARCH_MODE_FPR20:
-              pk_no = has_fingerprint (blob, desc[n].u.fpr, 20);
-              if (pk_no)
-                goto found;
-              break;
-
-            case KEYDB_SEARCH_MODE_FPR32:
-              pk_no = has_fingerprint (blob, desc[n].u.fpr, 32);
-              if (pk_no)
-                goto found;
-              break;
-
             case KEYDB_SEARCH_MODE_KEYGRIP:
               if (has_keygrip (blob, desc[n].u.grip))
                 goto found;

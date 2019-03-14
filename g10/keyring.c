@@ -995,9 +995,6 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         case KEYDB_SEARCH_MODE_LONG_KID:
           need_keyid = 1;
           break;
-        case KEYDB_SEARCH_MODE_FPR16:
-        case KEYDB_SEARCH_MODE_FPR20:
-        case KEYDB_SEARCH_MODE_FPR32:
         case KEYDB_SEARCH_MODE_FPR:
           need_fpr = 1;
           break;
@@ -1180,18 +1177,6 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           case KEYDB_SEARCH_MODE_LONG_KID:
             if (pk && desc[n].u.kid[0] == aki[0]
                 && desc[n].u.kid[1] == aki[1])
-              goto found;
-            break;
-          case KEYDB_SEARCH_MODE_FPR16:
-            if (pk && !memcmp (desc[n].u.fpr, afp, 16))
-              goto found;
-            break;
-          case KEYDB_SEARCH_MODE_FPR20:
-            if (pk && !memcmp (desc[n].u.fpr, afp, 20))
-              goto found;
-            break;
-          case KEYDB_SEARCH_MODE_FPR32:
-            if (pk && !memcmp (desc[n].u.fpr, afp, 32))
               goto found;
             break;
           case KEYDB_SEARCH_MODE_FPR:

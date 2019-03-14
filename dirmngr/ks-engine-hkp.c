@@ -1437,7 +1437,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
-  char fprbuf[2+40+1];
+  char fprbuf[2+64+1];
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
@@ -1456,6 +1456,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   err = classify_user_id (pattern, &desc, 1);
   if (err)
     return err;
+  log_assert (desc.fprlen <= 64);
   switch (desc.mode)
     {
     case KEYDB_SEARCH_MODE_EXACT:
@@ -1473,17 +1474,10 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
                 (ulong)desc.u.kid[0], (ulong)desc.u.kid[1]);
       pattern = fprbuf;
       break;
-    case KEYDB_SEARCH_MODE_FPR16:
-      fprbuf[0] = '0';
-      fprbuf[1] = 'x';
-      bin2hex (desc.u.fpr, 16, fprbuf+2);
-      pattern = fprbuf;
-      break;
-    case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
       fprbuf[0] = '0';
       fprbuf[1] = 'x';
-      bin2hex (desc.u.fpr, 20, fprbuf+2);
+      bin2hex (desc.u.fpr, desc.fprlen, fprbuf+2);
       pattern = fprbuf;
       break;
     default:
@@ -1586,7 +1580,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
-  char kidbuf[2+40+1];
+  char kidbuf[2+64+1];
   const char *exactname = NULL;
   char *searchkey = NULL;
   char *hostport = NULL;
@@ -1607,6 +1601,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   err = classify_user_id (keyspec, &desc, 1);
   if (err)
     return err;
+  log_assert (desc.fprlen <= 64);
   switch (desc.mode)
     {
     case KEYDB_SEARCH_MODE_SHORT_KID:
@@ -1616,21 +1611,21 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
       snprintf (kidbuf, sizeof kidbuf, "0x%08lX%08lX",
 		(ulong)desc.u.kid[0], (ulong)desc.u.kid[1]);
       break;
-    case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
-      /* This is a v4 fingerprint. */
+      if (desc.fprlen < 20)
+        {
+          log_error ("HKP keyservers do not support v3 fingerprints\n");
+          return gpg_error (GPG_ERR_INV_USER_ID);
+        }
       kidbuf[0] = '0';
       kidbuf[1] = 'x';
-      bin2hex (desc.u.fpr, 20, kidbuf+2);
+      bin2hex (desc.u.fpr, desc.fprlen, kidbuf+2);
       break;
 
     case KEYDB_SEARCH_MODE_EXACT:
       exactname = desc.u.name;
       break;
 
-    case KEYDB_SEARCH_MODE_FPR16:
-      log_error ("HKP keyservers do not support v3 fingerprints\n");
-      /* fall through */
     default:
       return gpg_error (GPG_ERR_INV_USER_ID);
     }

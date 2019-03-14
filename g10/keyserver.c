@@ -470,7 +470,6 @@ parse_preferred_keyserver(PKT_signature *sig)
 static void
 print_keyrec (ctrl_t ctrl, int number,struct keyrec *keyrec)
 {
-  int i;
 
   iobuf_writebyte(keyrec->uidbuf,0);
   iobuf_flush_temp(keyrec->uidbuf);
@@ -507,34 +506,6 @@ print_keyrec (ctrl_t ctrl, int number,struct keyrec *keyrec)
 	 --keyid-format via keystr(). */
     case KEYDB_SEARCH_MODE_LONG_KID:
       es_printf ("key %s",keystr(keyrec->desc.u.kid));
-      break;
-
-      /* If it gave us a PGP 2.x fingerprint, not much we can do
-	 beyond displaying it. */
-    case KEYDB_SEARCH_MODE_FPR16:
-      es_printf ("key ");
-      for(i=0;i<16;i++)
-	es_printf ("%02X",keyrec->desc.u.fpr[i]);
-      break;
-
-      /* If we get a modern fingerprint, we have the most
-	 flexibility. */
-    case KEYDB_SEARCH_MODE_FPR20:
-      {
-	u32 kid[2];
-	keyid_from_fingerprint (ctrl, keyrec->desc.u.fpr,20,kid);
-	es_printf("key %s",keystr(kid));
-      }
-      break;
-
-      /* If we get a modern fingerprint, we have the most
-	 flexibility. */
-    case KEYDB_SEARCH_MODE_FPR32:
-      {
-	u32 kid[2];
-	keyid_from_fingerprint (ctrl, keyrec->desc.u.fpr, 32, kid);
-	es_printf("key %s",keystr(kid));
-      }
       break;
 
     case KEYDB_SEARCH_MODE_FPR:
@@ -632,9 +603,6 @@ parse_keyrec(char *keystring)
       err = classify_user_id (tok, &work->desc, 1);
       if (err || (work->desc.mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && work->desc.mode != KEYDB_SEARCH_MODE_LONG_KID
-                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR16
-                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR20
-                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR32
                   && work->desc.mode != KEYDB_SEARCH_MODE_FPR))
 	{
 	  work->desc.mode=KEYDB_SEARCH_MODE_NONE;
@@ -1016,9 +984,6 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
       err = classify_user_id (users->d, &desc, 1);
       if (err || (desc.mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && desc.mode != KEYDB_SEARCH_MODE_LONG_KID
-                  && desc.mode != KEYDB_SEARCH_MODE_FPR16
-                  && desc.mode != KEYDB_SEARCH_MODE_FPR20
-                  && desc.mode != KEYDB_SEARCH_MODE_FPR32
                   && desc.mode != KEYDB_SEARCH_MODE_FPR))
 	{
 	  log_error(_("\"%s\" not a key ID: skipping\n"),users->d);
@@ -1088,24 +1053,9 @@ keyserver_retrieval_screener (kbnode_t keyblock, void *opaque)
       /* Compare requested and returned fingerprints if available. */
       for (n = 0; n < ndesc; n++)
         {
-          if (desc[n].mode == KEYDB_SEARCH_MODE_FPR20)
-            {
-              if (fpr_len == 20 && !memcmp (fpr, desc[n].u.fpr, 20))
-                return 0;
-            }
-          else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR32)
-            {
-              if (fpr_len == 32 && !memcmp (fpr, desc[n].u.fpr, 32))
-                return 0;
-            }
-          else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR)
+          if (desc[n].mode == KEYDB_SEARCH_MODE_FPR)
             {
               if (fpr_len == desc[n].fprlen && !memcmp (fpr, desc[n].u.fpr, 32))
-                return 0;
-            }
-          else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR16)
-            {
-              if (fpr_len == 16 && !memcmp (fpr, desc[n].u.fpr, 16))
                 return 0;
             }
           else if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
@@ -1143,9 +1093,6 @@ keyserver_import (ctrl_t ctrl, strlist_t users)
       err = classify_user_id (users->d, &desc[count], 1);
       if (err || (desc[count].mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && desc[count].mode != KEYDB_SEARCH_MODE_LONG_KID
-                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR16
-                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR20
-                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR32
                   && desc[count].mode != KEYDB_SEARCH_MODE_FPR))
 	{
 	  log_error (_("\"%s\" not a key ID: skipping\n"), users->d);
@@ -1202,12 +1149,8 @@ keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
 
   memset(&desc,0,sizeof(desc));
 
-  if(fprint_len==16)
-    desc.mode=KEYDB_SEARCH_MODE_FPR16;
-  else if(fprint_len==20)
-    desc.mode=KEYDB_SEARCH_MODE_FPR20;
-  else if(fprint_len==32)
-    desc.mode=KEYDB_SEARCH_MODE_FPR32;
+  if (fprint_len == 16 || fprint_len == 20 || fprint_len == 32)
+    desc.mode = KEYDB_SEARCH_MODE_FPR;
   else
     return -1;
 
@@ -1337,14 +1280,12 @@ keyidlist (ctrl_t ctrl, strlist_t users, KEYDB_SEARCH_DESC **klist,
 	    }
 	  else
             {
-	      size_t dummy;
+	      size_t fprlen;
 
-              if (node->pkt->pkt.public_key->version == 4)
-                (*klist)[*count].mode = KEYDB_SEARCH_MODE_FPR20;
-              else
-                (*klist)[*count].mode = KEYDB_SEARCH_MODE_FPR32;
 	      fingerprint_from_pk (node->pkt->pkt.public_key,
-                                   (*klist)[*count].u.fpr,&dummy);
+                                   (*klist)[*count].u.fpr, &fprlen);
+              (*klist)[*count].mode = KEYDB_SEARCH_MODE_FPR;
+              (*klist)[*count].fprlen = fprlen;
             }
 
 	  /* This is a little hackish, using the skipfncvalue as a
@@ -1661,11 +1602,9 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
     {
       int quiet = 0;
 
-      if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR20
-          || desc[idx].mode == KEYDB_SEARCH_MODE_FPR32
-          || desc[idx].mode == KEYDB_SEARCH_MODE_FPR16)
+      if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR)
         {
-          n = 1+2+2*32;
+          n = 1+2+2*desc[idx].fprlen;
           if (idx && linelen + n > MAX_KS_GET_LINELEN)
             break; /* Declare end of this chunk.  */
           linelen += n;
@@ -1676,13 +1615,9 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
           else
             {
               strcpy (pattern[npat], "0x");
-              bin2hex (desc[idx].u.fpr,
-                       desc[idx].mode == KEYDB_SEARCH_MODE_FPR32? 32 :
-                       desc[idx].mode == KEYDB_SEARCH_MODE_FPR20? 20 : 16,
-                       pattern[npat]+2);
+              bin2hex (desc[idx].u.fpr, desc[idx].fprlen, pattern[npat]+2);
               npat++;
-              if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR20
-                  || desc[idx].mode == KEYDB_SEARCH_MODE_FPR32)
+              if (desc[idx].fprlen == 20 || desc[idx].fprlen == 32)
                 npat_fpr++;
             }
         }

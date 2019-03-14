@@ -853,8 +853,7 @@ command_send (const char *fingerprint, const char *userid)
   time_t thistime;
 
   if (classify_user_id (fingerprint, &desc, 1)
-      || !(desc.mode == KEYDB_SEARCH_MODE_FPR
-           || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+      || desc.mode != KEYDB_SEARCH_MODE_FPR)
     {
       log_error (_("\"%s\" is not a fingerprint\n"), fingerprint);
       err = gpg_error (GPG_ERR_INV_NAME);

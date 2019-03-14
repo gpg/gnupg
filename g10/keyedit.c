@@ -2564,10 +2564,7 @@ find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
   *r_kdbhd = NULL;
 
   if (classify_user_id (fpr, &desc, 1)
-      || !(desc.mode == KEYDB_SEARCH_MODE_FPR
-           || desc.mode == KEYDB_SEARCH_MODE_FPR16
-           || desc.mode == KEYDB_SEARCH_MODE_FPR20
-           || desc.mode == KEYDB_SEARCH_MODE_FPR32))
+      || desc.mode != KEYDB_SEARCH_MODE_FPR)
     {
       log_error (_("\"%s\" is not a fingerprint\n"), fpr);
       err = gpg_error (GPG_ERR_INV_NAME);
@@ -2582,25 +2579,9 @@ find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
 
   /* Check that the primary fingerprint has been given. */
   fingerprint_from_pk (keyblock->pkt->pkt.public_key, fprbin, &fprlen);
-  if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR16
-      && !memcmp (fprbin, desc.u.fpr, 16))
-    ;
-  else if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR
-           && !memcmp (fprbin, desc.u.fpr, 16)
-           && !desc.u.fpr[16]
-           && !desc.u.fpr[17]
-           && !desc.u.fpr[18]
-           && !desc.u.fpr[19])
-    ;
-  else if (fprlen == 20 && desc.mode == KEYDB_SEARCH_MODE_FPR20
-           && !memcmp (fprbin, desc.u.fpr, 20))
-    ;
-  else if (fprlen == 32 && desc.mode == KEYDB_SEARCH_MODE_FPR32
-           && !memcmp (fprbin, desc.u.fpr, 32))
-    ;
-  else if (desc.mode == KEYDB_SEARCH_MODE_FPR
-           && fprlen == desc.fprlen
-           && !memcmp (fprbin, desc.u.fpr, fprlen))
+  if (desc.mode == KEYDB_SEARCH_MODE_FPR
+      && fprlen == desc.fprlen
+      && !memcmp (fprbin, desc.u.fpr, fprlen))
     ;
   else
     {
@@ -2924,9 +2905,7 @@ keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr,
 
           /* Parse the fingerprint.  */
           if (classify_user_id (subkeyfprs[idx], &desc, 1)
-              || !(desc.mode == KEYDB_SEARCH_MODE_FPR
-                   || desc.mode == KEYDB_SEARCH_MODE_FPR20
-                   || desc.mode == KEYDB_SEARCH_MODE_FPR32))
+              || desc.mode != KEYDB_SEARCH_MODE_FPR)
             {
               log_error (_("\"%s\" is not a proper fingerprint\n"),
                          subkeyfprs[idx] );

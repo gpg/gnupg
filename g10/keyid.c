@@ -493,24 +493,6 @@ keystr_from_desc(KEYDB_SEARCH_DESC *desc)
     case KEYDB_SEARCH_MODE_SHORT_KID:
       return keystr(desc->u.kid);
 
-    case KEYDB_SEARCH_MODE_FPR20:
-      {
-	u32 keyid[2];
-
-	keyid[0] = buf32_to_u32 (desc->u.fpr+12);
-	keyid[1] = buf32_to_u32 (desc->u.fpr+16);
-	return keystr(keyid);
-      }
-
-    case KEYDB_SEARCH_MODE_FPR32:
-      {
-	u32 keyid[2];
-
-	keyid[0] = buf32_to_u32 (desc->u.fpr);
-	keyid[1] = buf32_to_u32 (desc->u.fpr+4);
-	return keystr(keyid);
-      }
-
     case KEYDB_SEARCH_MODE_FPR:
       {
 	u32 keyid[2];
@@ -520,16 +502,17 @@ keystr_from_desc(KEYDB_SEARCH_DESC *desc)
             keyid[0] = buf32_to_u32 (desc->u.fpr);
             keyid[1] = buf32_to_u32 (desc->u.fpr+4);
           }
-        else
+        else if (desc->fprlen == 20)
           {
             keyid[0] = buf32_to_u32 (desc->u.fpr+12);
             keyid[1] = buf32_to_u32 (desc->u.fpr+16);
           }
+        else if (desc->fprlen == 16)
+          return "?v3 fpr?";
+        else /* oops */
+          return "?vx fpr?";
 	return keystr(keyid);
       }
-
-    case KEYDB_SEARCH_MODE_FPR16:
-      return "?v3 fpr?";
 
     default:
       BUG();

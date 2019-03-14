@@ -5082,9 +5082,6 @@ main (int argc, char **argv)
 
 	      if (! (desc.mode == KEYDB_SEARCH_MODE_SHORT_KID
 		     || desc.mode == KEYDB_SEARCH_MODE_LONG_KID
-		     || desc.mode == KEYDB_SEARCH_MODE_FPR16
-		     || desc.mode == KEYDB_SEARCH_MODE_FPR20
-		     || desc.mode == KEYDB_SEARCH_MODE_FPR32
 		     || desc.mode == KEYDB_SEARCH_MODE_FPR
 		     || desc.mode == KEYDB_SEARCH_MODE_KEYGRIP))
 		{

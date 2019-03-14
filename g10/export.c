@@ -451,9 +451,6 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
       keyid_from_pk (node->pkt->pkt.public_key, kid);
       break;
 
-    case KEYDB_SEARCH_MODE_FPR16:
-    case KEYDB_SEARCH_MODE_FPR20:
-    case KEYDB_SEARCH_MODE_FPR32:
     case KEYDB_SEARCH_MODE_FPR:
       fingerprint_from_pk (node->pkt->pkt.public_key, fpr, &fprlen);
       break;
@@ -471,21 +468,6 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
 
     case KEYDB_SEARCH_MODE_LONG_KID:
       if (desc->u.kid[0] == kid[0] && desc->u.kid[1] == kid[1])
-        result = 1;
-      break;
-
-    case KEYDB_SEARCH_MODE_FPR16:
-      if (fprlen == 16 && !memcmp (desc->u.fpr, fpr, 16))
-        result = 1;
-      break;
-
-    case KEYDB_SEARCH_MODE_FPR20:
-      if (fprlen == 20 && !memcmp (desc->u.fpr, fpr, 20))
-        result = 1;
-      break;
-
-    case KEYDB_SEARCH_MODE_FPR32:
-      if (fprlen == 32 && !memcmp (desc->u.fpr, fpr, 32))
         result = 1;
       break;
 

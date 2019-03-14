@@ -897,9 +897,6 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 	  if (!include_unusable
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_SHORT_KID
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_LONG_KID
-	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR16
-	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR20
-	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR32
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR)
             {
               ctx->items[n].skipfnc = skip_unusable;
