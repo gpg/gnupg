@@ -3677,13 +3677,14 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 
 
 /* Display basic key information.  This function is suitable to show
-   information on the key without any dependencies on the trustdb or
-   any other internal GnuPG stuff.  KEYBLOCK may either be a public or
-   a secret key.  This function may be called with KEYBLOCK containing
-   secret keys and thus the printing of "pub" vs. "sec" does only
-   depend on the packet type and not by checking with gpg-agent.  */
+ * information on the key without any dependencies on the trustdb or
+ * any other internal GnuPG stuff.  KEYBLOCK may either be a public or
+ * a secret key.  This function may be called with KEYBLOCK containing
+ * secret keys and thus the printing of "pub" vs. "sec" does only
+ * depend on the packet type and not by checking with gpg-agent.  If
+ * PRINT_SEC ist set "sec" is printed instead of "pub".  */
 void
-show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock)
+show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock, int print_sec)
 {
   KBNODE node;
   int i;
@@ -3696,13 +3697,17 @@ show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock)
           || node->pkt->pkttype == PKT_SECRET_KEY)
 	{
 	  PKT_public_key *pk = node->pkt->pkt.public_key;
+          const char *tag;
+
+          if (node->pkt->pkttype == PKT_SECRET_KEY || print_sec)
+            tag = "sec";
+          else
+            tag = "pub";
 
 	  /* Note, we use the same format string as in other show
 	     functions to make the translation job easier. */
 	  tty_printf ("%s  %s/%s  ",
-		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" :
-		      node->pkt->pkttype == PKT_PUBLIC_SUBKEY ? "sub" :
-		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" :"ssb",
+                      tag,
                       pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
 		      keystr_from_pk (pk));
 	  tty_printf (_("created: %s"), datestr_from_pk (pk));

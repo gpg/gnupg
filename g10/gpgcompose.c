@@ -3075,10 +3075,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 }
 
 void
-show_basic_key_info (ctrl_t ctrl, KBNODE keyblock)
+show_basic_key_info (ctrl_t ctrl, KBNODE keyblock, int made_from_sec)
 {
   (void)ctrl;
-  (void) keyblock;
+  (void)keyblock;
+  (void)made_from_sec;
 }
 
 int

@@ -1666,7 +1666,8 @@ update_key_origin (kbnode_t keyblock, u32 curtime, int origin, const char *url)
  * the internal errorcount, so that invalid input can be detected by
  * programs which called gpg.  If SILENT is no messages are printed -
  * even most error messages are suppressed.  ORIGIN is the origin of
- * the key (0 for unknown) and URL the corresponding URL.
+ * the key (0 for unknown) and URL the corresponding URL.  FROM_SK
+ * indicates that the key has been made from a secret key.
  */
 static gpg_error_t
 import_one (ctrl_t ctrl,
@@ -1710,9 +1711,11 @@ import_one (ctrl_t ctrl,
   keyid_from_pk( pk, keyid );
   uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
-  if (opt.verbose && !opt.interactive && !silent)
+  if (opt.verbose && !opt.interactive && !silent && !from_sk)
     {
-      log_info( "pub  %s/%s %s  ",
+      /* Note that we do not print this info in FROM_SK mode
+       * because import_one already printed that.  */
+      log_info ("pub  %s/%s %s  ",
                 pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
                 keystr_from_pk(pk), datestr_from_pk(pk) );
       if (uidnode)
@@ -1745,7 +1748,7 @@ import_one (ctrl_t ctrl,
         print_import_check (pk, uidnode->pkt->pkt.user_id);
       merge_keys_and_selfsig (ctrl, keyblock);
       tty_printf ("\n");
-      show_basic_key_info (ctrl, keyblock);
+      show_basic_key_info (ctrl, keyblock, from_sk);
       tty_printf ("\n");
       if (!cpr_get_answer_is_yes ("import.okay",
                                   "Do you want to import this key? (y/N) "))
