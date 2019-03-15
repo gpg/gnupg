@@ -1084,23 +1084,14 @@ print_import_ok (PKT_public_key *pk, unsigned int reason)
 static void
 print_import_check (PKT_public_key * pk, PKT_user_id * id)
 {
-  char * buf;
-  byte fpr[24];
+  byte hexfpr[2*MAX_FINGERPRINT_LEN+1];
   u32 keyid[2];
-  size_t i, n;
-  size_t pos = 0;
 
-  buf = xmalloc (17+41+id->len+32);
   keyid_from_pk (pk, keyid);
-  sprintf (buf, "%08X%08X ", keyid[0], keyid[1]);
-  pos = 17;
-  fingerprint_from_pk (pk, fpr, &n);
-  for (i = 0; i < n; i++, pos += 2)
-    sprintf (buf+pos, "%02X", fpr[i]);
-  strcat (buf, " ");
-  strcat (buf, id->name);
-  write_status_text (STATUS_IMPORT_CHECK, buf);
-  xfree (buf);
+  hexfingerprint (pk, hexfpr, sizeof hexfpr);
+  write_status_printf (STATUS_IMPORT_CHECK, "%08X%08X %s %s",
+                       keyid[0], keyid[1], hexfpr, id->name);
+
 }
 
 

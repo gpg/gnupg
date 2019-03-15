@@ -142,7 +142,8 @@ write_status ( int no )
 
 
 /* Write a status line with code NO followed by the string TEXT and
-   directly followed by the remaining strings up to a NULL. */
+ * directly followed by the remaining strings up to a NULL.  Embedded
+ * CR and LFs in the strings (but not in TEXT) are C-style escaped.*/
 void
 write_status_strings (int no, const char *text, ...)
 {
@@ -188,12 +189,12 @@ write_status_text (int no, const char *text)
 
 
 /* Write a status line with code NO followed by the output of the
- * printf style FORMAT.  The caller needs to make sure that LFs and
- * CRs are not printed.  */
+ * printf style FORMAT.  Embedded CR and LFs are C-style escaped.  */
 void
 write_status_printf (int no, const char *format, ...)
 {
   va_list arg_ptr;
+  char *buf;
 
   if (!statusfp || !status_currently_allowed (no) )
     return;  /* Not enabled or allowed. */
@@ -204,7 +205,30 @@ write_status_printf (int no, const char *format, ...)
     {
       es_putc ( ' ', statusfp);
       va_start (arg_ptr, format);
-      es_vfprintf (statusfp, format, arg_ptr);
+      buf = gpgrt_vbsprintf (format, arg_ptr);
+      if (!buf)
+        log_error ("error printing status line: %s\n",
+                   gpg_strerror (gpg_err_code_from_syserror ()));
+      else
+        {
+          if (strpbrk (buf, "\r\n"))
+            {
+              const byte *s;
+              for (s=buf; *s; s++)
+                {
+                  if (*s == '\n')
+                    es_fputs ("\\n", statusfp);
+                  else if (*s == '\r')
+                    es_fputs ("\\r", statusfp);
+                  else
+                    es_fputc (*s, statusfp);
+                }
+            }
+          else
+            es_fputs (buf, statusfp);
+          gpgrt_free (buf);
+        }
+
       va_end (arg_ptr);
     }
   es_putc ('\n', statusfp);
