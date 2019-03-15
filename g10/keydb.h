@@ -52,12 +52,13 @@ typedef struct getkey_ctx_s *getkey_ctx_t;
  * This structure is also used to bind arbitrary packets together.
  */
 
-struct kbnode_struct {
-    KBNODE next;
-    PACKET *pkt;
-    int flag;
-    int private_flag;
-    ulong recno;  /* used while updating the trustdb */
+struct kbnode_struct
+{
+  kbnode_t next;
+  PACKET *pkt;
+  int flag;          /* Local use during keyblock processing (not cloned).*/
+  unsigned int tag;  /* Ditto. */
+  int private_flag;
 };
 
 #define is_deleted_kbnode(a)  ((a)->private_flag & 1)

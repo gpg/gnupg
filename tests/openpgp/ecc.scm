@@ -175,7 +175,7 @@ Rg==
 	 (display "This is one line\n" (fdopen fd "wb")))
 
   (for-each-p
-   "Checking ECDSA decryption"
+   "Checking ECDH decryption"
    (lambda (test)
      (lettmp (x y)
        (call-with-output-file

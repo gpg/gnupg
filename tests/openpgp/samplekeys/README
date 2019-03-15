@@ -29,3 +29,5 @@ Notes:
   such a file is created which is then directly followed by a separate
   armored public key block.  To create such a sample concatenate
   pgp-desktop-skr.asc and E657FB607BB4F21C90BB6651BC067AF28BC90111.asc
+- ecc-sample-2-sec.asc and ecc-sample-3-sec.asc do not have and
+  binding signatures either.  ecc-sample-1-sec.asc has them, though.
