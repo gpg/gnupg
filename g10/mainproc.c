@@ -946,9 +946,6 @@ proc_plaintext( CTX c, PACKET *pkt )
   if (rc)
     log_error ("handle plaintext failed: %s\n", gpg_strerror (rc));
 
-  free_packet (pkt, NULL);
-  c->last_was_session_key = 0;
-
   /* We add a marker control packet instead of the plaintext packet.
    * This is so that we can later detect invalid packet sequences.
    * The apcket is further used to convey extra data from the
@@ -973,6 +970,9 @@ proc_plaintext( CTX c, PACKET *pkt )
       extrahash[extrahashlen++] = pt->timestamp >>  8;
       extrahash[extrahashlen++] = pt->timestamp      ;
     }
+
+  free_packet (pkt, NULL);
+  c->last_was_session_key = 0;
 
   n = new_kbnode (create_gpg_control (CTRLPKT_PLAINTEXT_MARK,
                                       extrahash, extrahashlen));
