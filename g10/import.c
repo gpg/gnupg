@@ -109,8 +109,8 @@ static gpg_error_t import_one (ctrl_t ctrl,
                        unsigned char **fpr, size_t *fpr_len,
                        unsigned int options, int from_sk, int silent,
                        import_screener_t screener, void *screener_arg,
-                       int origin, const char *url);
-static int import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
+                       int origin, const char *url, int *r_valid);
+static gpg_error_t import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                               struct import_stats_s *stats, int batch,
                               unsigned int options, int for_migration,
                               import_screener_t screener, void *screener_arg);
@@ -588,7 +588,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
       if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
         rc = import_one (ctrl, keyblock,
                          stats, fpr, fpr_len, options, 0, 0,
-                         screener, screener_arg, origin, url);
+                         screener, screener_arg, origin, url, NULL);
       else if (keyblock->pkt->pkttype == PKT_SECRET_KEY)
         rc = import_secret_one (ctrl, keyblock, stats,
                                 opt.batch, options, 0,
@@ -1667,7 +1667,9 @@ update_key_origin (kbnode_t keyblock, u32 curtime, int origin, const char *url)
  * programs which called gpg.  If SILENT is no messages are printed -
  * even most error messages are suppressed.  ORIGIN is the origin of
  * the key (0 for unknown) and URL the corresponding URL.  FROM_SK
- * indicates that the key has been made from a secret key.
+ * indicates that the key has been made from a secret key.  If R_SAVED
+ * is not NULL a boolean will be stored indicating whether the keyblock
+ * has valid parts.
  */
 static gpg_error_t
 import_one (ctrl_t ctrl,
@@ -1675,7 +1677,7 @@ import_one (ctrl_t ctrl,
 	    unsigned char **fpr, size_t *fpr_len, unsigned int options,
 	    int from_sk, int silent,
             import_screener_t screener, void *screener_arg,
-            int origin, const char *url)
+            int origin, const char *url, int *r_valid)
 {
   gpg_error_t err = 0;
   PKT_public_key *pk;
@@ -1693,6 +1695,9 @@ import_one (ctrl_t ctrl,
   int merge_keys_done = 0;
   int any_filter = 0;
   KEYDB_HANDLE hd = NULL;
+
+  if (r_valid)
+    *r_valid = 0;
 
   /* If show-only is active we don't won't any extra output.  */
   if ((options & (IMPORT_SHOW | IMPORT_DRY_RUN)))
@@ -1714,7 +1719,7 @@ import_one (ctrl_t ctrl,
   if (opt.verbose && !opt.interactive && !silent && !from_sk)
     {
       /* Note that we do not print this info in FROM_SK mode
-       * because import_one already printed that.  */
+       * because import_secret_one already printed that.  */
       log_info ("pub  %s/%s %s  ",
                 pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
                 keystr_from_pk(pk), datestr_from_pk(pk) );
@@ -1848,6 +1853,10 @@ import_one (ctrl_t ctrl,
       stats->no_user_id++;
       return 0;
     }
+
+  /* The keyblock is valid and ready for real import.  */
+  if (r_valid)
+    *r_valid = 1;
 
   /* Show the key in the form it is merged or inserted.  We skip this
    * if "import-export" is also active without --armor or the output
@@ -2463,14 +2472,21 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
 
 
 /* Walk a secret keyblock and produce a public keyblock out of it.
-   Returns a new node or NULL on error. */
+ * Returns a new node or NULL on error.  Modifies the tag field of the
+ * nodes.  */
 static kbnode_t
 sec_to_pub_keyblock (kbnode_t sec_keyblock)
 {
   kbnode_t pub_keyblock = NULL;
   kbnode_t ctx = NULL;
   kbnode_t secnode, pubnode;
+  unsigned int tag = 0;
 
+  /* Set a tag to all nodes.  */
+  for (secnode = sec_keyblock; secnode; secnode = secnode->next)
+    secnode->tag = ++tag;
+
+  /* Copy.  */
   while ((secnode = walk_kbnode (sec_keyblock, &ctx, 0)))
     {
       if (secnode->pkt->pkttype == PKT_SECRET_KEY
@@ -2500,6 +2516,7 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
 	{
 	  pubnode = clone_kbnode (secnode);
 	}
+      pubnode->tag = secnode->tag;
 
       if (!pub_keyblock)
 	pub_keyblock = pubnode;
@@ -2510,23 +2527,67 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
   return pub_keyblock;
 }
 
+
+/* Delete all notes in the keyblock at R_KEYBLOCK which are not in
+ * PUB_KEYBLOCK.  Modifies the tags of both keyblock's nodes.  */
+static gpg_error_t
+resync_sec_with_pub_keyblock (kbnode_t *r_keyblock, kbnode_t pub_keyblock)
+{
+  kbnode_t sec_keyblock = *r_keyblock;
+  kbnode_t node;
+  unsigned int *taglist;
+  unsigned int ntaglist, n;
+
+  /* Collect all tags in an array for faster searching.  */
+  for (ntaglist = 0, node = pub_keyblock; node; node = node->next)
+    ntaglist++;
+  taglist = xtrycalloc (ntaglist, sizeof *taglist);
+  if (!taglist)
+    return gpg_error_from_syserror ();
+  for (ntaglist = 0, node = pub_keyblock; node; node = node->next)
+    taglist[ntaglist++] = node->tag;
+
+  /* Walks over the secret keyblock and delete all nodes which are not
+   * in the tag list.  Those nodes have been delete in the
+   * pub_keyblock.  Sequential search is a bit lazt and could be
+   * optimized by sorting and bsearch; however secret key rings are
+   * short and there are easier weaus to DoS gpg.  */
+  for (node = sec_keyblock; node; node = node->next)
+    {
+      for (n=0; n < ntaglist; n++)
+        if (taglist[n] == node->tag)
+          break;
+      if (n == ntaglist)
+        delete_kbnode (node);
+    }
+
+  xfree (taglist);
+
+  /* Commit the as deleted marked nodes and return the possibly
+   * modified keyblock.  */
+  commit_kbnode (&sec_keyblock);
+  *r_keyblock = sec_keyblock;
+  return 0;
+}
+
+
 /****************
  * Ditto for secret keys.  Handling is simpler than for public keys.
  * We allow secret key importing only when allow is true, this is so
  * that a secret key can not be imported accidentally and thereby tampering
  * with the trust calculation.
  */
-static int
+static gpg_error_t
 import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
-                   struct import_stats_s *stats, int batch, unsigned int options,
-                   int for_migration,
+                   struct import_stats_s *stats, int batch,
+                   unsigned int options, int for_migration,
                    import_screener_t screener, void *screener_arg)
 {
   PKT_public_key *pk;
   struct seckey_info *ski;
   kbnode_t node, uidnode;
   u32 keyid[2];
-  int rc = 0;
+  gpg_error_t err = 0;
   int nr_prev;
   kbnode_t pub_keyblock;
   char pkstrbuf[PUBKEY_STRING_SIZE];
@@ -2550,7 +2611,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 
   if (opt.verbose && !for_migration)
     {
-      log_info ("sec  %s/%s %s   ",
+      log_info ("sec  %s/%s %s  ",
                 pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
                 keystr_from_pk (pk), datestr_from_pk (pk));
       if (uidnode)
@@ -2610,20 +2671,35 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
   /* Make a public key out of the key. */
   pub_keyblock = sec_to_pub_keyblock (keyblock);
   if (!pub_keyblock)
-    log_error ("key %s: failed to create public key from secret key\n",
-                   keystr_from_pk (pk));
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("key %s: failed to create public key from secret key\n",
+                 keystr_from_pk (pk));
+    }
   else
     {
+      int valid;
+
       /* Note that this outputs an IMPORT_OK status message for the
 	 public key block, and below we will output another one for
 	 the secret keys.  FIXME?  */
       import_one (ctrl, pub_keyblock, stats,
 		  NULL, NULL, options, 1, for_migration,
-                  screener, screener_arg, 0, NULL);
+                  screener, screener_arg, 0, NULL, &valid);
 
-      /* Fixme: We should check for an invalid keyblock and
-	 cancel the secret key import in this case.  */
-      release_kbnode (pub_keyblock);
+      /* The secret keyblock may not have nodes which are deleted in
+       * the public keyblock.  Otherwise we would import just the
+       * secret key without having the public key.  That would be
+       * surprising and clutters out private-keys-v1.d.  */
+      err = resync_sec_with_pub_keyblock (&keyblock, pub_keyblock);
+      if (err)
+        goto leave;
+
+      if (!valid)
+        {
+          err = gpg_error (GPG_ERR_NO_SECKEY);
+          goto leave;
+        }
 
       /* At least we cancel the secret key import when the public key
 	 import was skipped due to MERGE_ONLY option and a new
@@ -2631,7 +2707,8 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
       if (!(opt.dry_run || (options & IMPORT_DRY_RUN))
           && stats->skipped_new_keys <= nr_prev)
 	{
-          /* Read the keyblock again to get the effects of a merge.  */
+          /* Read the keyblock again to get the effects of a merge for
+           * the public key.  */
           /* Fixme: we should do this based on the fingerprint or
              even better let import_one return the merged
              keyblock.  */
@@ -2641,8 +2718,6 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                        keystr_from_pk (pk));
           else
             {
-              gpg_error_t err;
-
               /* transfer_secret_keys collects subkey stats.  */
               struct import_stats_s subkey_stats = {0};
 
@@ -2680,6 +2755,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 
                   if (is_status_enabled ())
                     print_import_ok (pk, status);
+
                   check_prefs (ctrl, node);
                 }
               release_kbnode (node);
@@ -2687,7 +2763,9 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
         }
     }
 
-  return rc;
+ leave:
+  release_kbnode (pub_keyblock);
+  return err;
 }
 
 

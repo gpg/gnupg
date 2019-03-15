@@ -117,7 +117,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
        * - On-card keys of an active card
        * - On-disk keys with protection
        * - On-card keys from cards which are not plugged it.  Here a
-       *   cancel-all button should stop aksing for other cards.
+       *   cancel-all button should stop asking for other cards.
        * Without any anonymous keys the sorting can be skipped.
        */
       for (k = list; k; k = k->next)
