@@ -105,6 +105,7 @@ struct reader_table_s {
   int (*check_pinpad)(int, int, pininfo_t *);
   void (*dump_status_reader)(int);
   int (*set_progress_cb)(int, gcry_handler_progress_t, void*);
+  int (*set_prompt_cb)(int, void (*) (void *, int), void*);
   int (*pinpad_verify)(int, int, int, int, int, pininfo_t *);
   int (*pinpad_modify)(int, int, int, int, int, pininfo_t *);
 
@@ -444,6 +445,7 @@ new_reader_slot (void)
   reader_table[reader].check_pinpad = check_pcsc_pinpad;
   reader_table[reader].dump_status_reader = NULL;
   reader_table[reader].set_progress_cb = NULL;
+  reader_table[reader].set_prompt_cb = NULL;
   reader_table[reader].pinpad_verify = pcsc_pinpad_verify;
   reader_table[reader].pinpad_modify = pcsc_pinpad_modify;
 
@@ -1404,6 +1406,14 @@ set_progress_cb_ccid_reader (int slot, gcry_handler_progress_t cb, void *cb_arg)
   return ccid_set_progress_cb (slotp->ccid.handle, cb, cb_arg);
 }
 
+static int
+set_prompt_cb_ccid_reader (int slot, void (*cb) (void *, int ), void *cb_arg)
+{
+  reader_table_t slotp = reader_table + slot;
+
+  return ccid_set_prompt_cb (slotp->ccid.handle, cb, cb_arg);
+}
+
 
 static int
 get_status_ccid (int slot, unsigned int *status, int on_wire)
@@ -1543,6 +1553,7 @@ open_ccid_reader (struct dev_list *dl)
   reader_table[slot].check_pinpad = check_ccid_pinpad;
   reader_table[slot].dump_status_reader = dump_ccid_reader_status;
   reader_table[slot].set_progress_cb = set_progress_cb_ccid_reader;
+  reader_table[slot].set_prompt_cb = set_prompt_cb_ccid_reader;
   reader_table[slot].pinpad_verify = ccid_pinpad_operation;
   reader_table[slot].pinpad_modify = ccid_pinpad_operation;
   /* Our CCID reader code does not support T=0 at all, thus reset the
@@ -2382,6 +2393,29 @@ apdu_set_progress_cb (int slot, gcry_handler_progress_t cb, void *cb_arg)
 }
 
 
+int
+apdu_set_prompt_cb (int slot, void (*cb) (void *, int), void *cb_arg)
+{
+  int sw;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
+  if (reader_table[slot].set_prompt_cb)
+    {
+      sw = lock_slot (slot);
+      if (!sw)
+        {
+          sw = reader_table[slot].set_prompt_cb (slot, cb, cb_arg);
+          unlock_slot (slot);
+        }
+    }
+  else
+    sw = 0;
+  return sw;
+}
+
+
 /* Do a reset for the card in reader at SLOT. */
 int
 apdu_reset (int slot)
@@ -2612,7 +2646,7 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 }
 
 
-/* Core APDU tranceiver function. Parameters are described at
+/* Core APDU transceiver function. Parameters are described at
    apdu_send_le with the exception of PININFO which indicates pinpad
    related operations if not NULL.  If EXTENDED_MODE is not 0
    command chaining or extended length will be used according to these
@@ -3029,19 +3063,25 @@ apdu_send_simple (int slot, int extended_mode,
 
 
 /* This is a more generic version of the apdu sending routine.  It
-   takes an already formatted APDU in APDUDATA or length APDUDATALEN
-   and returns with an APDU including the status word.  With
-   HANDLE_MORE set to true this function will handle the MORE DATA
-   status and return all APDUs concatenated with one status word at
-   the end.  If EXTENDED_LENGTH is != 0 extended lengths are allowed
-   with a max. result data length of EXTENDED_LENGTH bytes.  The
-   function does not return a regular status word but 0 on success.
-   If the slot is locked, the function returns immediately with an
-   error.  */
+ * takes an already formatted APDU in APDUDATA or length APDUDATALEN
+ * and returns with an APDU including the status word.  With
+ * HANDLE_MORE set to true this function will handle the MORE DATA
+ * status and return all APDUs concatenated with one status word at
+ * the end.  If EXTENDED_LENGTH is != 0 extended lengths are allowed
+ * with a max. result data length of EXTENDED_LENGTH bytes.  The
+ * function does not return a regular status word but 0 on success.
+ * If the slot is locked, the function returns immediately with an
+ * error.
+ *
+ * Out of historical reasons the function returns 0 on success and
+ * outs the status word at the end of the result to be able to get the
+ * status word in the case of a not provided RETBUF, R_SW can be used
+ * to store the SW.  But note that R_SW qill only be set if the
+ * function returns 0. */
 int
 apdu_send_direct (int slot, size_t extended_length,
                   const unsigned char *apdudata, size_t apdudatalen,
-                  int handle_more,
+                  int handle_more, unsigned int *r_sw,
                   unsigned char **retbuf, size_t *retbuflen)
 {
 #define SHORT_RESULT_BUFFER_SIZE 258
@@ -3248,8 +3288,12 @@ apdu_send_direct (int slot, size_t extended_length,
       (*retbuf)[(*retbuflen)++] = sw;
     }
 
+  if (r_sw)
+    *r_sw = sw;
+
   if (DBG_CARD_IO && retbuf)
     log_printhex (*retbuf, *retbuflen, "      dump: ");
+
 
   return 0;
 }

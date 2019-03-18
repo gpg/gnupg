@@ -50,6 +50,7 @@
 #define CMD_PUT_DATA    0xDA
 #define CMD_MSE         0x22
 #define CMD_PSO         0x2A
+#define CMD_GENERAL_AUTHENTICATE  0x87
 #define CMD_INTERNAL_AUTHENTICATE 0x88
 #define CMD_GENERATE_KEYPAIR      0x47
 #define CMD_GET_CHALLENGE         0x84
@@ -66,6 +67,7 @@ map_sw (int sw)
     case SW_EEPROM_FAILURE: ec = GPG_ERR_HARDWARE; break;
     case SW_TERM_STATE:     ec = GPG_ERR_OBJ_TERM_STATE; break;
     case SW_WRONG_LENGTH:   ec = GPG_ERR_INV_VALUE; break;
+    case SW_ACK_TIMEOUT:    ec = GPG_ERR_TIMEOUT; break;
     case SW_SM_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_CC_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_CHV_WRONG:      ec = GPG_ERR_BAD_PIN; break;
@@ -138,6 +140,21 @@ iso7816_select_application (int slot, const char *aid, size_t aidlen,
 }
 
 
+/* This is the same as iso7816_select_application but may return data
+ * at RESULT,RESULTLEN).  */
+gpg_error_t
+iso7816_select_application_ext (int slot, const char *aid, size_t aidlen,
+                                unsigned int flags,
+                                unsigned char **result, size_t *resultlen)
+{
+  int sw;
+  sw = apdu_send (slot, 0, 0x00, CMD_SELECT_FILE, 4,
+                  (flags&1)? 0:0x0c, aidlen, aid,
+                  result, resultlen);
+  return map_sw (sw);
+}
+
+
 gpg_error_t
 iso7816_select_file (int slot, int tag, int is_dir)
 {
@@ -205,29 +222,66 @@ iso7816_list_directory (int slot, int list_dirs,
 }
 
 
+/* Wrapper around apdu_send. RESULT can be NULL if no result is
+ * expected.  In addition to an gpg-error return code the actual
+ * status word is stored at R_SW unless that is NULL.  */
+gpg_error_t
+iso7816_send_apdu (int slot, int extended_mode,
+                   int class, int ins, int p0, int p1,
+                   int lc, const void *data,
+                   unsigned int *r_sw,
+                   unsigned char **result, size_t *resultlen)
+{
+  int sw;
+
+  if (result)
+    {
+      *result = NULL;
+      *resultlen = 0;
+    }
+
+  sw = apdu_send (slot, extended_mode, class, ins, p0, p1, lc, data,
+                  result, resultlen);
+  if (sw != SW_SUCCESS && result)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+    }
+  if (r_sw)
+    *r_sw = sw;
+  return map_sw (sw);
+}
+
+
 /* This function sends an already formatted APDU to the card.  With
    HANDLE_MORE set to true a MORE DATA status will be handled
    internally.  The return value is a gpg error code (i.e. a mapped
    status word).  This is basically the same as apdu_send_direct but
    it maps the status word and does not return it in the result
-   buffer.  */
+   buffer.  However, it R_SW is not NULL the status word is stored
+   R_SW for closer inspection. */
 gpg_error_t
 iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen,
-                     int handle_more,
+                     int handle_more, unsigned int *r_sw,
                      unsigned char **result, size_t *resultlen)
 {
-  int sw;
+  int sw, sw2;
 
-  if (!result || !resultlen)
-    return gpg_error (GPG_ERR_INV_VALUE);
-  *result = NULL;
-  *resultlen = 0;
+  if (result)
+    {
+      *result = NULL;
+      *resultlen = 0;
+    }
 
   sw = apdu_send_direct (slot, 0, apdudata, apdudatalen, handle_more,
-                         result, resultlen);
+                         &sw2, result, resultlen);
   if (!sw)
     {
-      if (*resultlen < 2)
+      if (!result)
+        sw = sw2;
+      else if (*resultlen < 2)
         sw = SW_HOST_GENERAL_ERROR;
       else
         {
@@ -236,13 +290,15 @@ iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen,
           (*resultlen)--;
         }
     }
-  if (sw != SW_SUCCESS)
+  if (sw != SW_SUCCESS && result)
     {
       /* Make sure that pending buffers are released. */
       xfree (*result);
       *result = NULL;
       *resultlen = 0;
     }
+  if (r_sw)
+    *r_sw = sw;
   return map_sw (sw);
 }
 
@@ -324,6 +380,7 @@ iso7816_change_reference_data (int slot, int chvno,
 
   sw = apdu_send_simple (slot, 0, 0x00, CMD_CHANGE_REFERENCE_DATA,
                          oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
+  wipememory (buf, oldchvlen+newchvlen);
   xfree (buf);
   return map_sw (sw);
 
@@ -396,6 +453,70 @@ iso7816_get_data (int slot, int extended_mode, int tag,
 }
 
 
+/* Perform a GET DATA command requesting TAG and storing the result in
+ * a newly allocated buffer at the address passed by RESULT.  Return
+ * the length of this data at the address of RESULTLEN.  This variant
+ * is needed for long (3 octet) tags. */
+gpg_error_t
+iso7816_get_data_odd (int slot, int extended_mode, unsigned int tag,
+                      unsigned char **result, size_t *resultlen)
+{
+  int sw;
+  int le;
+  int datalen;
+  unsigned char data[5];
+
+  if (!result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  if (extended_mode > 0 && extended_mode < 256)
+    le = 65534; /* Not 65535 in case it is used as some special flag.  */
+  else if (extended_mode > 0)
+    le = extended_mode;
+  else
+    le = 256;
+
+  data[0] = 0x5c;
+  if (tag <= 0xff)
+    {
+      data[1] = 1;
+      data[2] = tag;
+      datalen = 3;
+    }
+  else if (tag <= 0xffff)
+    {
+      data[1] = 2;
+      data[2] = (tag >> 8);
+      data[3] = tag;
+      datalen = 4;
+    }
+  else
+    {
+      data[1] = 3;
+      data[2] = (tag >> 16);
+      data[3] = (tag >> 8);
+      data[4] = tag;
+      datalen = 5;
+    }
+
+  sw = apdu_send_le (slot, extended_mode, 0x00, CMD_GET_DATA + 1,
+                     0x3f, 0xff, datalen, data, le,
+                     result, resultlen);
+  if (sw != SW_SUCCESS)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+      return map_sw (sw);
+    }
+
+  return 0;
+}
+
+
 /* Perform a PUT DATA command on card in SLOT.  Write DATA of length
    DATALEN to TAG.  EXTENDED_MODE controls whether extended length
    headers or command chaining is used instead of single length
@@ -427,7 +548,7 @@ iso7816_put_data_odd (int slot, int extended_mode, int tag,
 
 /* Manage Security Environment.  This is a weird operation and there
    is no easy abstraction for it.  Furthermore, some card seem to have
-   a different interpreation of 7816-8 and thus we resort to let the
+   a different interpretation of 7816-8 and thus we resort to let the
    caller decide what to do. */
 gpg_error_t
 iso7816_manage_security_env (int slot, int p1, int p2,
@@ -445,7 +566,7 @@ iso7816_manage_security_env (int slot, int p1, int p2,
 
 
 /* Perform the security operation COMPUTE DIGITAL SIGANTURE.  On
-   success 0 is returned and the data is availavle in a newly
+   success 0 is returned and the data is available in a newly
    allocated buffer stored at RESULT with its length stored at
    RESULTLEN.  For LE see do_generate_keypair. */
 gpg_error_t
@@ -542,7 +663,7 @@ iso7816_decipher (int slot, int extended_mode,
 }
 
 
-/*  For LE see do_generate_keypair.  */
+/* For LE see do_generate_keypair.  */
 gpg_error_t
 iso7816_internal_authenticate (int slot, int extended_mode,
                                const unsigned char *data, size_t datalen,
@@ -579,12 +700,50 @@ iso7816_internal_authenticate (int slot, int extended_mode,
 }
 
 
+/* For LE see do_generate_keypair.  */
+gpg_error_t
+iso7816_general_authenticate (int slot, int extended_mode,
+                              int algoref, int keyref,
+                              const unsigned char *data, size_t datalen,
+                              int le,
+                              unsigned char **result, size_t *resultlen)
+{
+  int sw;
+
+  if (!data || !datalen || !result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  if (!extended_mode)
+    le = 256;  /* Ignore provided Le and use what apdu_send uses. */
+  else if (le >= 0 && le < 256)
+    le = 256;
+
+  sw = apdu_send_le (slot, extended_mode,
+                     0x00, CMD_GENERAL_AUTHENTICATE, algoref, keyref,
+                     datalen, (const char*)data,
+                     le,
+                     result, resultlen);
+  if (sw != SW_SUCCESS)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+      return map_sw (sw);
+    }
+
+  return 0;
+}
+
+
 /* LE is the expected return length.  This is usually 0 except if
    extended length mode is used and more than 256 byte will be
    returned.  In that case a value of -1 uses a large default
    (e.g. 4096 bytes), a value larger 256 used that value.  */
 static gpg_error_t
-do_generate_keypair (int slot, int extended_mode, int read_only,
+do_generate_keypair (int slot, int extended_mode, int p1, int p2,
                      const char *data, size_t datalen, int le,
                      unsigned char **result, size_t *resultlen)
 {
@@ -596,7 +755,7 @@ do_generate_keypair (int slot, int extended_mode, int read_only,
   *resultlen = 0;
 
   sw = apdu_send_le (slot, extended_mode,
-                     0x00, CMD_GENERATE_KEYPAIR, read_only? 0x81:0x80, 0,
+                     0x00, CMD_GENERATE_KEYPAIR, p1, p2,
                      datalen, data,
                      le >= 0 && le < 256? 256:le,
                      result, resultlen);
@@ -614,12 +773,12 @@ do_generate_keypair (int slot, int extended_mode, int read_only,
 
 
 gpg_error_t
-iso7816_generate_keypair (int slot, int extended_mode,
+iso7816_generate_keypair (int slot, int extended_mode, int p1, int p2,
                           const char *data, size_t datalen,
                           int le,
                           unsigned char **result, size_t *resultlen)
 {
-  return do_generate_keypair (slot, extended_mode, 0,
+  return do_generate_keypair (slot, extended_mode, p1, p2,
                               data, datalen, le, result, resultlen);
 }
 
@@ -630,7 +789,7 @@ iso7816_read_public_key (int slot, int extended_mode,
                          int le,
                          unsigned char **result, size_t *resultlen)
 {
-  return do_generate_keypair (slot, extended_mode, 1,
+  return do_generate_keypair (slot, extended_mode, 0x81, 0,
                               data, datalen, le, result, resultlen);
 }
 

@@ -95,7 +95,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
      output be a multiple of 8 bytes.  */
   if (openpgp_pk_algo == PUBKEY_ALGO_ECDH)
     {
-      /* Pad to 8 byte granulatiry; the padding byte is the number of
+      /* Pad to 8 byte granularity; the padding byte is the number of
        * padded bytes.
        *
        * A  DEK(k bytes)  CSUM(2 bytes) 0x 0x 0x 0x ... 0x
@@ -143,7 +143,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
    *
    *	   0  2  RND(i bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
    *
-   * (But how can we store the leading 0 - the external representaion
+   * (But how can we store the leading 0 - the external representation
    *  of MPIs doesn't allow leading zeroes =:-)
    *
    * RND are (at least 1) non-zero random bytes.

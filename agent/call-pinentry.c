@@ -85,6 +85,7 @@ struct entry_parm_s
   int lines;
   size_t size;
   unsigned char *buffer;
+  int status;
 };
 
 
@@ -98,11 +99,15 @@ void
 initialize_module_call_pinentry (void)
 {
   static int initialized;
+  int err;
 
   if (!initialized)
     {
-      if (npth_mutex_init (&entry_lock, NULL))
-        initialized = 1;
+      err = npth_mutex_init (&entry_lock, NULL);
+      if (err)
+	log_fatal ("error initializing mutex: %s\n", strerror (err));
+
+      initialized = 1;
     }
 }
 
@@ -497,14 +502,16 @@ start_pinentry (ctrl_t ctrl)
 
   {
     /* Provide a few default strings for use by the pinentries.  This
-       may help a pinentry to avoid implementing localization code.  */
+     * may help a pinentry to avoid implementing localization code.
+     * Note that gpg-agent has been set to utf-8 so that the strings
+     * are in the expected encoding.  */
     static const struct { const char *key, *value; int what; } tbl[] = {
-      /* TRANSLATORS: These are labels for buttons etc used in
-         Pinentries.  An underscore indicates that the next letter
-         should be used as an accelerator.  Double the underscore for
-         a literal one.  The actual to be translated text starts after
-         the second vertical bar.  Note that gpg-agent has been set to
-         utf-8 so that the strings are in the expected encoding.  */
+      /* TRANSLATORS: These are labels for buttons etc as used in
+       * Pinentries.  In your translation copy the text before the
+       * second vertical bar verbatim; translate only the following
+       * text.  An underscore indicates that the next letter should be
+       * used as an accelerator.  Double the underscore to have
+       * pinentry display a literal underscore.   */
       { "ok",     N_("|pinentry-label|_OK") },
       { "cancel", N_("|pinentry-label|_Cancel") },
       { "yes",    N_("|pinentry-label|_Yes") },
@@ -888,13 +895,6 @@ setup_qualitybar (ctrl_t ctrl)
   return 0;
 }
 
-enum
-  {
-    PINENTRY_STATUS_CLOSE_BUTTON = 1 << 0,
-    PINENTRY_STATUS_PIN_REPEATED = 1 << 8,
-    PINENTRY_STATUS_PASSWORD_FROM_CACHE = 1 << 9
-  };
-
 /* Check the button_info line for a close action.  Also check for the
    PIN_REPEATED flag.  */
 static gpg_error_t
@@ -942,6 +942,112 @@ build_cmd_setdesc (char *line, size_t linelen, const char *desc)
 
 
 
+/* Watch the socket's EOF condition, while checking finish of
+   foreground thread.  When EOF condition is detected, terminate
+   the pinentry process behind the assuan pipe.
+ */
+static void *
+watch_sock (void *arg)
+{
+  gnupg_fd_t *p = (gnupg_fd_t *)arg;
+  pid_t pid = assuan_get_pid (entry_ctx);
+
+  while (1)
+    {
+      int err;
+      gnupg_fd_t sock = *p;
+      fd_set fdset;
+      struct timeval timeout = { 0, 500000 };
+
+      if (sock == GNUPG_INVALID_FD)
+        return NULL;
+
+      FD_ZERO (&fdset);
+      FD_SET (FD2INT (sock), &fdset);
+      err = npth_select (FD2INT (sock)+1, &fdset, NULL, NULL, &timeout);
+
+      if (err < 0)
+        {
+          if (errno == EINTR)
+            continue;
+          else
+            return NULL;
+        }
+
+      /* Possibly, it's EOF.  */
+      if (err > 0)
+        break;
+    }
+
+  if (pid == (pid_t)(-1))
+    ; /* No pid available can't send a kill. */
+#ifdef HAVE_W32_SYSTEM
+  /* Older versions of assuan set PID to 0 on Windows to indicate an
+     invalid value.  */
+  else if (pid != (pid_t) INVALID_HANDLE_VALUE && pid != 0)
+    TerminateProcess ((HANDLE)pid, 1);
+#else
+  else if (pid > 0)
+    kill (pid, SIGINT);
+#endif
+
+  return NULL;
+}
+
+
+/* Ask pinentry to get a pin by "GETPIN" command, spawning a thread
+   detecting the socket's EOF.
+ */
+static gpg_error_t
+do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
+{
+  npth_attr_t tattr;
+  gpg_error_t rc;
+  int err;
+  npth_t thread;
+  int saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
+  gnupg_fd_t sock_watched = ctrl->thread_startup.fd;
+
+  err = npth_attr_init (&tattr);
+  if (err)
+    {
+      log_error ("do_getpin: error npth_attr_init: %s\n", strerror (err));
+      return gpg_error_from_errno (err);
+    }
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
+
+  err = npth_create (&thread, &tattr, watch_sock, (void *)&sock_watched);
+  npth_attr_destroy (&tattr);
+  if (err)
+    {
+      log_error ("do_getpin: error spawning thread: %s\n", strerror (err));
+      return gpg_error_from_errno (err);
+    }
+
+  assuan_begin_confidential (entry_ctx);
+  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, parm,
+                        inq_quality, entry_ctx,
+                        pinentry_status_cb, &parm->status);
+  assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
+  /* Most pinentries out in the wild return the old Assuan error code
+     for canceled which gets translated to an assuan Cancel error and
+     not to the code for a user cancel.  Fix this here. */
+  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+  /* Change error code in case the window close button was clicked
+     to cancel the operation.  */
+  if ((parm->status & PINENTRY_STATUS_CLOSE_BUTTON)
+      && gpg_err_code (rc) == GPG_ERR_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
+
+  sock_watched = GNUPG_INVALID_FD;
+  err = npth_join (thread, NULL);
+  if (err)
+    log_error ("do_getpin: error joining thread: %s\n", strerror (err));
+
+  return rc;
+}
+
 /* Call the Entry and ask for the PIN.  We do check for a valid PIN
    number here and repeat it as long as we have invalid formed
    numbers.  KEYINFO and CACHE_MODE are used to tell pinentry something
@@ -958,8 +1064,6 @@ agent_askpin (ctrl_t ctrl,
   struct entry_parm_s parm;
   const char *errtext = NULL;
   int is_pin = 0;
-  int saveflag;
-  unsigned int pinentry_status;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -1070,6 +1174,7 @@ agent_askpin (ctrl_t ctrl,
         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
     }
   pininfo->repeat_okay = 0;
+  pininfo->status = 0;
 
   for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
     {
@@ -1101,27 +1206,8 @@ agent_askpin (ctrl_t ctrl,
             return unlock_pinentry (ctrl, rc);
         }
 
-      saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
-      assuan_begin_confidential (entry_ctx);
-      pinentry_status = 0;
-      rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
-                            inq_quality, entry_ctx,
-                            pinentry_status_cb, &pinentry_status);
-      assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
-      /* Most pinentries out in the wild return the old Assuan error code
-         for canceled which gets translated to an assuan Cancel error and
-         not to the code for a user cancel.  Fix this here. */
-      if (rc && gpg_err_source (rc)
-          && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
-        rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
-
-
-      /* Change error code in case the window close button was clicked
-         to cancel the operation.  */
-      if ((pinentry_status & PINENTRY_STATUS_CLOSE_BUTTON)
-	  && gpg_err_code (rc) == GPG_ERR_CANCELED)
-        rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
-
+      rc = do_getpin (ctrl, &parm);
+      pininfo->status = parm.status;
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
         errtext = is_pin? L_("PIN too long")
                         : L_("Passphrase too long");
@@ -1145,12 +1231,19 @@ agent_askpin (ctrl_t ctrl,
           /* More checks by utilizing the optional callback. */
           pininfo->cb_errtext = NULL;
           rc = pininfo->check_cb (pininfo);
-          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
-              && pininfo->cb_errtext)
-            errtext = pininfo->cb_errtext;
-          else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
-                   || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-            errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
+          /* When pinentry cache causes an error, return now.  */
+          if (rc
+              && (pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+            return unlock_pinentry (ctrl, rc);
+
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE)
+            {
+              if (pininfo->cb_errtext)
+                errtext = pininfo->cb_errtext;
+              else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+                       || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+                errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
+            }
           else if (rc)
             return unlock_pinentry (ctrl, rc);
         }
@@ -1158,12 +1251,12 @@ agent_askpin (ctrl_t ctrl,
       if (!errtext)
         {
           if (pininfo->with_repeat
-	      && (pinentry_status & PINENTRY_STATUS_PIN_REPEATED))
+              && (pininfo->status & PINENTRY_STATUS_PIN_REPEATED))
             pininfo->repeat_okay = 1;
           return unlock_pinentry (ctrl, 0); /* okay, got a PIN or passphrase */
         }
 
-      if ((pinentry_status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+      if ((pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
 	/* The password was read from the cache.  Don't count this
 	   against the retry count.  */
 	pininfo->failed_tries --;
@@ -1183,12 +1276,9 @@ agent_get_passphrase (ctrl_t ctrl,
                       const char *errtext, int with_qualitybar,
 		      const char *keyinfo, cache_mode_t cache_mode)
 {
-
   int rc;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
-  int saveflag;
-  unsigned int pinentry_status;
 
   *retpass = NULL;
   if (opt.batch)
@@ -1272,24 +1362,7 @@ agent_get_passphrase (ctrl_t ctrl,
   if (!parm.buffer)
     return unlock_pinentry (ctrl, out_of_core ());
 
-  saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
-  assuan_begin_confidential (entry_ctx);
-  pinentry_status = 0;
-  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
-                        inq_quality, entry_ctx,
-                        pinentry_status_cb, &pinentry_status);
-  assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
-  /* Most pinentries out in the wild return the old Assuan error code
-     for canceled which gets translated to an assuan Cancel error and
-     not to the code for a user cancel.  Fix this here. */
-  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
-    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
-  /* Change error code in case the window close button was clicked
-     to cancel the operation.  */
-  if ((pinentry_status & PINENTRY_STATUS_CLOSE_BUTTON)
-      && gpg_err_code (rc) == GPG_ERR_CANCELED)
-    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
-
+  rc = do_getpin (ctrl, &parm);
   if (rc)
     xfree (parm.buffer);
   else
@@ -1537,14 +1610,6 @@ agent_popup_message_stop (ctrl_t ctrl)
       TerminateProcess (process, 1);
     }
 #else
-  else if (pid && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
-    { /* The daemon already died.  No need to send a kill.  However
-         because we already waited for the process, we need to tell
-         assuan that it should not wait again (done by
-         unlock_pinentry). */
-      if (rc == pid)
-        assuan_set_flag (entry_ctx, ASSUAN_NO_WAITPID, 1);
-    }
   else if (pid > 0)
     kill (pid, SIGINT);
 #endif

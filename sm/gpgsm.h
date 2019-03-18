@@ -76,7 +76,7 @@ struct
   const char *protect_tool_program;
   char *outfile;    /* name of output file */
 
-  int with_key_data;/* include raw key in the column delimted output */
+  int with_key_data;/* include raw key in the column delimited output */
 
   int fingerprint;  /* list fingerprints in all key listings */
 

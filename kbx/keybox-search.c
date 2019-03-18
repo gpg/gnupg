@@ -66,18 +66,31 @@ blob_get_first_keyid (KEYBOXBLOB blob, u32 *kid)
 {
   const unsigned char *buffer;
   size_t length, nkeys, keyinfolen;
+  int fpr32;
 
   buffer = _keybox_get_blob_image (blob, &length);
   if (length < 48)
     return 0; /* blob too short */
+  fpr32 = buffer[5] == 2;
+  if (fpr32 && length < 56)
+    return 0; /* blob to short */
 
   nkeys = get16 (buffer + 16);
   keyinfolen = get16 (buffer + 18);
-  if (!nkeys || keyinfolen < 28)
+  if (!nkeys || keyinfolen < (fpr32?56:28))
     return 0; /* invalid blob */
 
-  kid[0] = get32 (buffer + 32);
-  kid[1] = get32 (buffer + 36);
+  if (fpr32 && (get16 (buffer + 20 + 32) & 0x80))
+    {
+      /* 32 byte fingerprint.  */
+      kid[0] = get32 (buffer + 20);
+      kid[1] = get32 (buffer + 20 + 4);
+    }
+  else /* 20 byte fingerprint.  */
+    {
+      kid[0] = get32 (buffer + 20 + 12);
+      kid[1] = get32 (buffer + 20 + 16);
+    }
 
   return 1;
 }
@@ -229,22 +242,23 @@ blob_cmp_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
    For X.509 this is always 1, for OpenPGP this is 1 for the primary
    key and 2 and more for the subkeys.  */
 static int
-blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr)
+blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr, unsigned int fprlen)
 {
   const unsigned char *buffer;
   size_t length;
   size_t pos, off;
   size_t nkeys, keyinfolen;
-  int idx;
+  int idx, fpr32, storedfprlen;
 
   buffer = _keybox_get_blob_image (blob, &length);
   if (length < 40)
     return 0; /* blob too short */
+  fpr32 = buffer[5] == 2;
 
   /*keys*/
   nkeys = get16 (buffer + 16);
   keyinfolen = get16 (buffer + 18 );
-  if (keyinfolen < 28)
+  if (keyinfolen < (fpr32?56:28))
     return 0; /* invalid blob */
   pos = 20;
   if (pos + (uint64_t)keyinfolen*nkeys > (uint64_t)length)
@@ -253,12 +267,19 @@ blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr)
   for (idx=0; idx < nkeys; idx++)
     {
       off = pos + idx*keyinfolen;
-      if (!memcmp (buffer + off, fpr, 20))
+      if (fpr32)
+        storedfprlen = (get16 (buffer + off + 32) & 0x80)? 32:20;
+      else
+        storedfprlen = 20;
+      if (storedfprlen == fprlen
+          && !memcmp (buffer + off, fpr, storedfprlen))
         return idx+1; /* found */
     }
   return 0; /* not found */
 }
 
+
+/* Helper for has_short_kid and has_long_kid.  */
 static int
 blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
                    int fproff, int fprlen)
@@ -267,25 +288,33 @@ blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
   size_t length;
   size_t pos, off;
   size_t nkeys, keyinfolen;
-  int idx;
+  int idx, fpr32, storedfprlen;
 
   buffer = _keybox_get_blob_image (blob, &length);
   if (length < 40)
     return 0; /* blob too short */
+  fpr32 = buffer[5] == 2;
 
   /*keys*/
   nkeys = get16 (buffer + 16);
   keyinfolen = get16 (buffer + 18 );
-  if (keyinfolen < 28)
+  if (keyinfolen < (fpr32?56:28))
     return 0; /* invalid blob */
   pos = 20;
   if (pos + (uint64_t)keyinfolen*nkeys > (uint64_t)length)
     return 0; /* out of bounds */
 
+  if (fpr32)
+    fproff = 0; /* keyid are the high-order bits.  */
   for (idx=0; idx < nkeys; idx++)
     {
       off = pos + idx*keyinfolen;
-      if (!memcmp (buffer + off + fproff, fpr, fprlen))
+      if (fpr32)
+        storedfprlen = (get16 (buffer + off + 32) & 0x80)? 32:20;
+      else
+        storedfprlen = 20;
+      if (storedfprlen == fproff + fprlen
+          && !memcmp (buffer + off + fproff, fpr, fprlen))
         return idx+1; /* found */
     }
   return 0; /* not found */
@@ -497,6 +526,58 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
 }
 
 
+/* Return true if the key in BLOB matches the 20 bytes keygrip GRIP.
+ * We don't have the keygrips as meta data, thus we need to parse the
+ * certificate. Fixme: We might want to return proper error codes
+ * instead of failing a search for invalid certificates etc.  */
+static int
+blob_openpgp_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
+{
+  int rc = 0;
+  const unsigned char *buffer;
+  size_t length;
+  size_t cert_off, cert_len;
+  struct _keybox_openpgp_info info;
+  struct _keybox_openpgp_key_info *k;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 40)
+    return 0; /* Too short. */
+  cert_off = get32 (buffer+8);
+  cert_len = get32 (buffer+12);
+  if ((uint64_t)cert_off+(uint64_t)cert_len > (uint64_t)length)
+    return 0; /* Too short.  */
+
+  if (_keybox_parse_openpgp (buffer + cert_off, cert_len, NULL, &info))
+    return 0; /* Parse error.  */
+
+  if (!memcmp (info.primary.grip, grip, 20))
+    {
+      rc = 1;
+      goto leave;
+    }
+
+  if (info.nsubkeys)
+    {
+      k = &info.subkeys;
+      do
+        {
+          if (!memcmp (k->grip, grip, 20))
+            {
+              rc = 1;
+              goto leave;
+            }
+          k = k->next;
+        }
+      while (k);
+    }
+
+ leave:
+  _keybox_destroy_openpgp_info (&info);
+  return rc;
+}
+
+
 #ifdef KEYBOX_WITH_X509
 /* Return true if the key in BLOB matches the 20 bytes keygrip GRIP.
    We don't have the keygrips as meta data, thus we need to parse the
@@ -598,20 +679,19 @@ has_long_kid (KEYBOXBLOB blob, u32 mkid, u32 lkid)
 }
 
 static inline int
-has_fingerprint (KEYBOXBLOB blob, const unsigned char *fpr)
+has_fingerprint (KEYBOXBLOB blob, const unsigned char *fpr, unsigned int fprlen)
 {
-  return blob_cmp_fpr (blob, fpr);
+  return blob_cmp_fpr (blob, fpr, fprlen);
 }
 
 static inline int
 has_keygrip (KEYBOXBLOB blob, const unsigned char *grip)
 {
+  if (blob_get_type (blob) == KEYBOX_BLOBTYPE_PGP)
+    return blob_openpgp_has_grip (blob, grip);
 #ifdef KEYBOX_WITH_X509
   if (blob_get_type (blob) == KEYBOX_BLOBTYPE_X509)
     return blob_x509_has_grip (blob, grip);
-#else
-  (void)blob;
-  (void)grip;
 #endif
   return 0;
 }
@@ -996,12 +1076,13 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
               if (pk_no)
                 goto found;
               break;
+
             case KEYDB_SEARCH_MODE_FPR:
-            case KEYDB_SEARCH_MODE_FPR20:
-              pk_no = has_fingerprint (blob, desc[n].u.fpr);
+              pk_no = has_fingerprint (blob, desc[n].u.fpr, desc[n].fprlen);
               if (pk_no)
                 goto found;
               break;
+
             case KEYDB_SEARCH_MODE_KEYGRIP:
               if (has_keygrip (blob, desc[n].u.grip))
                 goto found;
@@ -1069,7 +1150,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 
 
 /* Return the last found keyblock.  Returns 0 on success and stores a
- * new iobuf at R_IOBUF.  R_UID_NO and R_PK_NO are used to retun the
+ * new iobuf at R_IOBUF.  R_UID_NO and R_PK_NO are used to return the
  * number of the key or user id which was matched the search criteria;
  * if not known they are set to 0. */
 gpg_error_t

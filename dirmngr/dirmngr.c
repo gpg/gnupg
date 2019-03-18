@@ -338,7 +338,7 @@ static int active_connections;
  * thread to run background network tasks.  */
 static int network_activity_seen;
 
-/* A list of filenames registred with --hkp-cacert.  */
+/* A list of filenames registered with --hkp-cacert.  */
 static strlist_t hkp_cacert_filenames;
 
 
@@ -411,7 +411,7 @@ my_strusage( int level )
 
 /* Callback from libksba to hash a provided buffer.  Our current
    implementation does only allow SHA-1 for hashing. This may be
-   extended by mapping the name, testing for algorithm availibility
+   extended by mapping the name, testing for algorithm availability
    and adjust the length checks accordingly. */
 static gpg_error_t
 my_ksba_hash_buffer (void *arg, const char *oid,
@@ -520,7 +520,7 @@ set_tor_mode (void)
 {
   if (dirmngr_use_tor ())
     {
-      /* Enable Tor mode and when called again force a new curcuit
+      /* Enable Tor mode and when called again force a new circuit
        * (e.g. on SIGHUP).  */
       enable_dns_tormode (1);
       if (assuan_sock_set_flag (ASSUAN_INVALID_FD, "tor-mode", 1))
@@ -752,7 +752,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 }
 
 
-/* This fucntion is called after option parsing to adjust some values
+/* This function is called after option parsing to adjust some values
  * and call option setup functions.  */
 static void
 post_option_parsing (void)
@@ -763,7 +763,6 @@ post_option_parsing (void)
     opt.connect_quick_timeout = opt.connect_timeout;
 
   set_debug ();
-  set_tor_mode ();
 }
 
 
@@ -802,6 +801,7 @@ static void
 thread_init (void)
 {
   npth_init ();
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
   /* Now with NPth running we can set the logging callback.  Our
@@ -877,7 +877,6 @@ main (int argc, char **argv)
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   assuan_sock_init ();
   setup_libassuan_logging (&opt.debug, dirmngr_assuan_log_monitor);
 
@@ -1090,7 +1089,12 @@ main (int argc, char **argv)
       log_printf ("\n");
     }
 
+  /* Note that we do not run set_tor_mode in --gpgconf-list mode
+   * because it will attempt to connect to the tor client and that can
+   * be time consuming.  */
   post_option_parsing ();
+  if (cmd != aGPGConfTest && cmd != aGPGConfList)
+    set_tor_mode ();
 
   /* Get LDAP server list from file. */
 #if USE_LDAP
@@ -1143,6 +1147,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       http_register_netactivity_cb (netactivity_action);
       start_command_handler (ASSUAN_INVALID_FD, 0);
       shutdown_reaper ();
@@ -1178,6 +1183,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (3);
       shutdown_reaper ();
@@ -1399,6 +1405,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (fd);
       shutdown_reaper ();
@@ -1421,6 +1428,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       if (!argc)
         rc = crl_cache_load (&ctrlbuf, NULL);
       else
@@ -1444,6 +1452,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);
       if (rc)
         log_error (_("fetching CRL from '%s' failed: %s\n"),
@@ -1859,6 +1868,7 @@ dirmngr_sighup_action (void)
   log_info (_("SIGHUP received - "
               "re-reading configuration and flushing caches\n"));
   reread_configuration ();
+  set_tor_mode ();
   cert_cache_deinit (0);
   crl_cache_deinit ();
   cert_cache_init (hkp_cacert_filenames);

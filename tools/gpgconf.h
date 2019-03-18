@@ -43,6 +43,34 @@ void gpgconf_failure (gpg_error_t err) GPGRT_ATTR_NORETURN;
 
 /*-- gpgconf-comp.c --*/
 
+/* Component system.  Each component is a set of options that can be
+ * configured at the same time.  If you change this, don't forget to
+ * update GC_COMPONENT in gpgconf-comp.c.  */
+typedef enum
+  {
+    /* The classic GPG for OpenPGP.  */
+    GC_COMPONENT_GPG,
+
+    /* The GPG Agent.  */
+    GC_COMPONENT_GPG_AGENT,
+
+    /* The Smardcard Daemon.  */
+    GC_COMPONENT_SCDAEMON,
+
+    /* GPG for S/MIME.  */
+    GC_COMPONENT_GPGSM,
+
+    /* The LDAP Directory Manager for CRLs.  */
+    GC_COMPONENT_DIRMNGR,
+
+    /* The external Pinentry.  */
+    GC_COMPONENT_PINENTRY,
+
+    /* The number of components.  */
+    GC_COMPONENT_NR
+  } gc_component_t;
+
+
 /* Initialize the components.  */
 void gc_components_init (void);
 

@@ -41,7 +41,9 @@
 # define DEFAULT_CIPHER_ALGO     CIPHER_ALGO_3DES
 #endif
 
-#if GCRYPT_VERSION_NUMBER < 0x019000
+/* We will start using OCB mode by default only if the yet to be
+ * released libgcrypt 1.9 is used.  */
+#if GCRYPT_VERSION_NUMBER < 0x010900
 # define DEFAULT_AEAD_ALGO  AEAD_ALGO_OCB
 #else
 # define DEFAULT_AEAD_ALGO  AEAD_ALGO_EAX
@@ -392,7 +394,8 @@ struct impex_filter_parm_s
 
 const char *impex_filter_getval (void *cookie, const char *propname);
 gpg_error_t transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
-                                  kbnode_t sec_keyblock, int batch, int force);
+                                  kbnode_t sec_keyblock, int batch, int force,
+                                  int only_marked);
 
 int collapse_uids( KBNODE *keyblock );
 
@@ -504,8 +507,6 @@ void card_edit (ctrl_t ctrl, strlist_t commands);
 gpg_error_t  card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock);
 int  card_store_subkey (KBNODE node, int use);
 #endif
-
-#define S2K_DECODE_COUNT(_val) ((16ul + ((_val) & 15)) << (((_val) >> 4) + 6))
 
 /*-- migrate.c --*/
 void migrate_secring (ctrl_t ctrl);

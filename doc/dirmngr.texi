@@ -1096,7 +1096,7 @@ as a binary blob.
 @c In the end the same fucntionality is used, albeit hidden by a couple
 @c of indirection and argument and result code mangling.  It furthere
 @c ingetrages OCSP checking depending on options are the way it is
-@c called.  GPGSM still uses this command but might eventuall switch over
+@c called.  GPGSM still uses this command but might eventually switch over
 @c to CHECKCRL and CHECKOCSP so that ISVALID can be retired.
 @c
 @c

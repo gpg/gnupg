@@ -515,7 +515,7 @@ host_and_port_from_url (const char *url, int *port)
   if ((p = strchr (buf, '/')))
     *p++ = 0;
   strlwr (buf);
-  if ((p = strchr (p, ':')))
+  if ((p = strchr (buf, ':')))
     {
       *p++ = 0;
       *port = atoi (p);
@@ -637,7 +637,7 @@ armor_data (char **r_string, const void *data, size_t datalen)
 }
 
 
-/* Copy all data from IN to OUT.  OUT may be NULL to use this fucntion
+/* Copy all data from IN to OUT.  OUT may be NULL to use this function
  * as a dummy reader.  */
 gpg_error_t
 copy_stream (estream_t in, estream_t out)

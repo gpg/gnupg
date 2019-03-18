@@ -51,14 +51,24 @@ gpg_error_t iso7816_map_sw (int sw);
 gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen,
                                         unsigned int flags);
+gpg_error_t iso7816_select_application_ext (int slot,
+                                            const char *aid, size_t aidlen,
+                                            unsigned int flags,
+                                            unsigned char **result,
+                                            size_t *resultlen);
 gpg_error_t iso7816_select_file (int slot, int tag, int is_dir);
 gpg_error_t iso7816_select_path (int slot,
                                  const unsigned short *path, size_t pathlen);
 gpg_error_t iso7816_list_directory (int slot, int list_dirs,
                                     unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_send_apdu (int slot, int extended_mode,
+                               int class, int ins, int p0, int p1,
+                               int lc, const void *data,
+                               unsigned int *r_sw,
+                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_apdu_direct (int slot,
                                  const void *apdudata, size_t apdudatalen,
-                                 int handle_more,
+                                 int handle_more, unsigned int *r_sw,
                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_check_pinpad (int slot, int command,
                                   pininfo_t *pininfo);
@@ -78,6 +88,8 @@ gpg_error_t iso7816_reset_retry_counter_with_rc (int slot, int chvno,
                                                  size_t datalen);
 gpg_error_t iso7816_get_data (int slot, int extended_mode, int tag,
                               unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_get_data_odd (int slot, int extended_mode, unsigned int tag,
+                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_put_data (int slot, int extended_mode, int tag,
                               const void *data, size_t datalen);
 gpg_error_t iso7816_put_data_odd (int slot, int extended_mode, int tag,
@@ -97,10 +109,19 @@ gpg_error_t iso7816_internal_authenticate (int slot, int extended_mode,
                                    const unsigned char *data, size_t datalen,
                                    int le,
                                    unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_general_authenticate (int slot, int extended_mode,
+                                          int algoref, int keyref,
+                                          const unsigned char *data,
+                                          size_t datalen,
+                                          int le,
+                                          unsigned char **result,
+                                          size_t *resultlen);
 gpg_error_t iso7816_generate_keypair (int slot, int extended_mode,
-                                    const char *data, size_t datalen,
-                                    int le,
-                                    unsigned char **result, size_t *resultlen);
+                                      int p1, int p2,
+                                      const char *data, size_t datalen,
+                                      int le,
+                                      unsigned char **result,
+                                      size_t *resultlen);
 gpg_error_t iso7816_read_public_key (int slot, int extended_mode,
                                     const char *data, size_t datalen,
                                     int le,

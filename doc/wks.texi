@@ -61,11 +61,12 @@ Service provider.  This is usuallay done to upload a key into a Web
 Key Directory.
 
 With the @option{--supported} command the caller can test whether a
-site supports the Web Key Service.  The argument is an arbitray
+site supports the Web Key Service.  The argument is an arbitrary
 address in the to be tested domain. For example
 @file{foo@@example.net}.  The command returns success if the Web Key
 Service is supported.  The operation is silent; to get diagnostic
-output use the option @option{--verbose}.
+output use the option @option{--verbose}.  See option
+@option{--with-colons} for a variant of this command.
 
 With the @option{--check} command the caller can test whether a key
 exists for a supplied mail address.  The command returns success if a
@@ -89,6 +90,17 @@ decrypted MIME message.  The result of these commands are another mail
 which can be send in the same way as the mail created with
 @option{--create}.
 
+The command @option{--install-key} manually installs a key into a
+local directory (see option @option{-C}) reflecting the structure of a
+WKD.  The arguments are a file with the keyblock and the user-id to
+install.  If the first argument resembles a fingerprint the key is
+taken from the current keyring; to force the use of a file, prefix the
+first argument with "./".  If no arguments are given the parameters
+are read from stdin; the expected format are lines with the
+fingerprint and the mailbox separated by a space.  The command
+@option{--remove-key} removes a key from that directory, its only
+argument is a user-id.
+
 @command{gpg-wks-client} is not commonly invoked directly and thus it
 is not installed in the bin directory.  Here is an example how it can
 be invoked manually to check for a Web Key Directory entry for
@@ -109,6 +121,44 @@ $(gpgconf --list-dirs libexecdir)/gpg-wks-client --check foo@@example.net
 Directly send created mails using the @command{sendmail} command.
 Requires installation of that command.
 
+@item --with-colons
+@opindex with-colons
+This option has currently only an effect on the @option{--supported}
+command.  If it is used all arguments on the command line are taken
+as domain names and tested for WKD support.  The output format is one
+line per domain with colon delimited fields.  The currently specified
+fields are (future versions may specify additional fields):
+
+@table @asis
+
+  @item 1 - domain
+  This is the domain name.  Although quoting is not required for valid
+  domain names this field is specified to be quoted in standard C
+  manner.
+
+  @item 2 - WKD
+  If the value is true the domain supports the Web Key Directory.
+
+  @item 3 - WKS
+  If the value is true the domain supports the Web Key Service
+  protocol to upload keys to the directory.
+
+  @item 4 - error-code
+  This may contain an gpg-error code to describe certain
+  failures.  Use @samp{gpg-error CODE} to explain the code.
+
+  @item 5 - protocol-version
+  The minimum protocol version supported by the server.
+
+  @item 6 - auth-submit
+  The auth-submit flag from the policy file of the server.
+
+  @item 7 - mailbox-only
+  The mailbox-only flag from the policy file of the server.
+@end table
+
+
+
 @item --output @var{file}
 @itemx -o
 @opindex output
@@ -121,6 +171,13 @@ Write special status strings to the file descriptor @var{n}.
 This program returns only the status messages SUCCESS or FAILURE which
 are helpful when the caller uses a double fork approach and can't
 easily get the return code of the process.
+
+@item -C @var{dir}
+@itemx --directory @var{dir}
+@opindex directory
+Use @var{dir} as top level directory for the commands
+@option{--install-key} and @option{--remove-key}.  The default is
+@file{openpgpkey}.
 
 @item --verbose
 @opindex verbose
@@ -206,7 +263,7 @@ mail is processed.  Commonly this command is used with the option
 @option{--send} to directly send the crerated mails back.  See below
 for an installation example.
 
-The command @option{--cron} is used for regualr cleanup tasks.  For
+The command @option{--cron} is used for regular cleanup tasks.  For
 example non-confirmed requested should be removed after their expire
 time.  It is best to run this command once a day from a cronjob.
 
@@ -215,9 +272,9 @@ Further it creates missing directories for the configuration and
 prints warnings pertaining to problems in the configuration.
 
 The command @option{--check-key} (or just @option{--check}) checks
-whether a key with the given user-id is installed.  The process return
-success in this case; to also print a diagnostic, use option
-@option{-v}.  If the key is not installed a diagnostics is printed and
+whether a key with the given user-id is installed.  The process returns
+success in this case; to also print a diagnostic use the option
+@option{-v}.  If the key is not installed a diagnostic is printed and
 the process returns failure; to suppress the diagnostic, use option
 @option{-q}.  More than one user-id can be given; see also option
 @option{with-file}.
@@ -226,7 +283,9 @@ The command @option{--install-key} manually installs a key into the
 WKD.  The arguments are a file with the keyblock and the user-id to
 install.  If the first argument resembles a fingerprint the key is
 taken from the current keyring; to force the use of a file, prefix the
-first argument with "./".
+first argument with "./".  If no arguments are given the parameters
+are read from stdin; the expected format are lines with the
+fingerprint and the mailbox separated by a space.
 
 The command @option{--remove-key} uninstalls a key from the WKD.  The
 process returns success in this case; to also print a diagnostic, use
@@ -243,6 +302,12 @@ The command @option{--revoke-key} is not yet functional.
 
 @table @gnupgtabopt
 
+@item -C @var{dir}
+@itemx --directory @var{dir}
+@opindex directory
+Use @var{dir} as top level directory for domains.  The default is
+@file{/var/lib/gnupg/wks}.
+
 @item --from @var{mailaddr}
 @opindex from
 Use @var{mailaddr} as the default sender address.
@@ -256,21 +321,22 @@ Add the mail header "@var{name}: @var{value}" to all outgoing mails.
 Directly send created mails using the @command{sendmail} command.
 Requires installation of that command.
 
-@item --output @var{file}
-@itemx -o
+@item -o @var{file}
+@itemx --output @var{file}
 @opindex output
 Write the created mail also to @var{file}. Note that the value
 @code{-} for @var{file} would write it to stdout.
 
 @item --with-dir
 @opindex with-dir
-Also print the directory name for each domain listed by command
-@option{--list-domains}.
+When used with the command @option{--list-domains} print for each
+installed domain the domain name and its directory name.
 
 @item --with-file
 @opindex with-file
-With command @option{--check-key} print for each user-id, the address,
-'i' for installed key or 'n' for not installed key, and the filename.
+When used with the command @option{--check-key} print for each user-id,
+the address, 'i' for installed key or 'n' for not installed key, and
+the filename.
 
 @item --verbose
 @opindex verbose
@@ -316,7 +382,7 @@ Finally run
   $ gpg-wks-server --list-domains
 @end example
 
-to create the required sub-directories with the permission set
+to create the required sub-directories with the permissions set
 correctly.  For each domain a submission address needs to be
 configured.  All service mails are directed to that address.  It can
 be the same address for all configured domains, for example:
@@ -326,7 +392,7 @@ be the same address for all configured domains, for example:
   $ echo key-submission@@example.net >submission-address
 @end example
 
-The protocol requires that the key to be published is sent with an
+The protocol requires that the key to be published is send with an
 encrypted mail to the service.  Thus you need to create a key for
 the submission address:
 

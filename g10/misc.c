@@ -513,6 +513,7 @@ map_pk_gcry_to_openpgp (enum gcry_pk_algos algo)
 {
   switch (algo)
     {
+    case GCRY_PK_EDDSA:  return PUBKEY_ALGO_EDDSA;
     case GCRY_PK_ECDSA:  return PUBKEY_ALGO_ECDSA;
     case GCRY_PK_ECDH:   return PUBKEY_ALGO_ECDH;
     default: return algo < 110 ? (pubkey_algo_t)algo : 0;
@@ -549,7 +550,7 @@ openpgp_cipher_blocklen (cipher_algo_t algo)
 
 /****************
  * Wrapper around the libgcrypt function with additional checks on
- * the OpenPGP contraints for the algo ID.
+ * the OpenPGP constraints for the algo ID.
  */
 int
 openpgp_cipher_test_algo (cipher_algo_t algo)
@@ -712,7 +713,7 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
 #endif
 
     case PUBKEY_ALGO_ELGAMAL:
-      /* Dont't allow type 20 keys unless in rfc2440 mode.  */
+      /* Don't allow type 20 keys unless in rfc2440 mode.  */
       if (RFC2440)
         ga = GCRY_PK_ELG;
       break;
@@ -722,6 +723,13 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
     }
   if (!ga)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
+
+  /* Elgamal in OpenPGP used to support signing and Libgcrypt still
+   * does.  However, we removed the signing capability from gpg ages
+   * ago.  This function should reflect this so that errors are thrown
+   * early and not only when we try to sign using Elgamal.  */
+  if (ga == GCRY_PK_ELG && (use & (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG)))
+    return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
 
   /* Now check whether Libgcrypt has support for the algorithm.  */
   return gcry_pk_algo_info (ga, GCRYCTL_TEST_ALGO, NULL, &use_buf);
@@ -1521,6 +1529,8 @@ optlen(const char *s)
     return strlen(s);
 }
 
+
+/* Note: This function returns true on success.  */
 int
 parse_options(char *str,unsigned int *options,
 	      struct parse_options *opts,int noisy)

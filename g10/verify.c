@@ -69,7 +69,7 @@ verify_signatures (ctrl_t ctrl, int nfiles, char **files )
      * we can do it is by reading one byte from stdin and then unget
      * it; the problem here is that we may be reading from the
      * terminal (which could be detected using isatty() but won't work
-     * when under contol of a pty using program (e.g. expect)) and
+     * when under control of a pty using program (e.g. expect)) and
      * might get us in trouble when stdin is used for another purpose
      * (--passphrase-fd 0).  So we have to break with the behaviour
      * prior to gpg 1.0.4 by assuming that case 3 is a normal

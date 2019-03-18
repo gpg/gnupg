@@ -41,12 +41,21 @@ struct
 } opt;
 
 
+/* An info structure to avoid global variables.  */
+struct tarinfo_s
+{
+  unsigned long long nblocks;     /* Count of processed blocks.  */
+  unsigned long long headerblock; /* Number of current header block. */
+};
+typedef struct tarinfo_s *tarinfo_t;
+
+
 /* The size of a tar record.  All IO is done in chunks of this size.
    Note that we don't care about blocking because this version of tar
    is not expected to be used directly on a tape drive in fact it is
    used in a pipeline with GPG and thus any blocking would be
    useless.  */
-#define RECORDSIZE 512 
+#define RECORDSIZE 512
 
 
 /* Description of the USTAR header format.  */
@@ -64,16 +73,16 @@ struct ustar_raw_header
   char magic[6];
   char version[2];
   char uname[32];
-  char gname[32];   
-  char devmajor[8]; 
+  char gname[32];
+  char devmajor[8];
   char devminor[8];
-  char prefix[155]; 
+  char prefix[155];
   char pad[12];
 };
 
 
 /* Filetypes as defined by USTAR.  */
-typedef enum 
+typedef enum
   {
     TF_REGULAR,
     TF_HARDLINK,
@@ -88,12 +97,12 @@ typedef enum
   } typeflag_t;
 
 
-/* The internal represenation of a TAR header.  */
+/* The internal representation of a TAR header.  */
 struct tar_header_s;
 typedef struct tar_header_s *tar_header_t;
 struct tar_header_s
 {
-  tar_header_t next;        /* Used to build a linked list iof entries.  */
+  tar_header_t next;        /* Used to build a linked list of entries.  */
 
   unsigned long mode;       /* The file mode.  */
   unsigned long nlink;      /* Number of hard links.  */
@@ -106,7 +115,7 @@ struct tar_header_s
                                that 32 bit and thus allows tracking
                                times beyond 2106.  */
   typeflag_t typeflag;      /* The type of the file.  */
-  
+
 
   unsigned long long nrecords; /* Number of data records.  */
 
@@ -126,7 +135,8 @@ gpg_error_t gpgtar_extract (const char *filename, int decrypt);
 
 /*-- gpgtar-list.c --*/
 gpg_error_t gpgtar_list (const char *filename, int decrypt);
-gpg_error_t gpgtar_read_header (estream_t stream, tar_header_t *r_header);
+gpg_error_t gpgtar_read_header (estream_t stream, tarinfo_t info,
+                                tar_header_t *r_header);
 void gpgtar_print_header (tar_header_t header, estream_t out);
 
 

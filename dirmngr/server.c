@@ -731,7 +731,7 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
       /* We lowercase ascii characters but the DANE I-D does not allow
          this.  FIXME: Check after the release of the RFC whether to
          change this.  */
-      mbox = mailbox_from_userid (line);
+      mbox = mailbox_from_userid (line, 0);
       if (!mbox || !(domain = strchr (mbox, '@')))
         {
           err = set_error (GPG_ERR_INV_USER_ID, "no mailbox in user id");
@@ -837,8 +837,11 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   gpg_error_t err = 0;
   char *mbox = NULL;
   char *domainbuf = NULL;
-  char *domain;     /* Points to mbox or domainbuf.  */
-  char *domain_orig;/* Points to mbox.  */
+  char *domain;     /* Points to mbox or domainbuf.  This is used to
+                     * connect to the host.  */
+  char *domain_orig;/* Points to mbox.  This is the used for the
+                     * query; i.e. the domain part of the
+                     * addrspec.  */
   char sha1buf[20];
   char *uri = NULL;
   char *encodedhash = NULL;
@@ -847,6 +850,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   int is_wkd_query;   /* True if this is a real WKD query.  */
   int no_log = 0;
   char portstr[20] = { 0 };
+  int subdomain_mode = 0;
 
   opt_submission_addr = has_option (line, "--submission-address");
   opt_policy_flags = has_option (line, "--policy-flags");
@@ -855,7 +859,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   line = skip_options (line);
   is_wkd_query = !(opt_policy_flags || opt_submission_addr);
 
-  mbox = mailbox_from_userid (line);
+  mbox = mailbox_from_userid (line, 0);
   if (!mbox || !(domain = strchr (mbox, '@')))
     {
       err = set_error (GPG_ERR_INV_USER_ID, "no mailbox in user id");
@@ -864,7 +868,8 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   *domain++ = 0;
   domain_orig = domain;
 
-  /* First check whether we already know that the domain does not
+
+  /* Let's check whether we already know that the domain does not
    * support WKD.  */
   if (is_wkd_query)
     {
@@ -875,8 +880,41 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
         }
     }
 
-  /* Check for SRV records.  */
-  if (1)
+
+  /* First try the new "openpgp" subdomain.  We check that the domain
+   * is valid because it is later used as an unescaped filename part
+   * of the URI.  */
+  if (is_valid_domain_name (domain_orig))
+    {
+      dns_addrinfo_t aibuf;
+
+      domainbuf = strconcat ( "openpgpkey.", domain_orig, NULL);
+      if (!domainbuf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      /* FIXME: We should put a cache into dns-stuff because the same
+       * query (with a different port and socket type, though) will be
+       * done later by http function.  */
+      err = resolve_dns_name (ctrl, domainbuf, 0, 0, 0, &aibuf, NULL);
+      if (err)
+        {
+          err = 0;
+          xfree (domainbuf);
+          domainbuf = NULL;
+        }
+      else /* Got a subdomain. */
+        {
+          free_dns_addrinfo (aibuf);
+          subdomain_mode = 1;
+          domain = domainbuf;
+        }
+    }
+
+  /* Check for SRV records unless we have a subdomain. */
+  if (!subdomain_mode)
     {
       struct srventry *srvs;
       unsigned int srvscount;
@@ -931,6 +969,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       xfree (srvs);
     }
 
+  /* Prepare the hash of the local part.  */
   gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, mbox, strlen (mbox));
   encodedhash = zb32_encode (sha1buf, 8*20);
   if (!encodedhash)
@@ -944,7 +983,10 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       uri = strconcat ("https://",
                        domain,
                        portstr,
-                       "/.well-known/openpgpkey/submission-address",
+                       "/.well-known/openpgpkey/",
+                       subdomain_mode? domain_orig : "",
+                       subdomain_mode? "/" : "",
+                       "submission-address",
                        NULL);
     }
   else if (opt_policy_flags)
@@ -952,24 +994,39 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       uri = strconcat ("https://",
                        domain,
                        portstr,
-                       "/.well-known/openpgpkey/policy",
+                       "/.well-known/openpgpkey/",
+                       subdomain_mode? domain_orig : "",
+                       subdomain_mode? "/" : "",
+                       "policy",
                        NULL);
     }
   else
     {
-      uri = strconcat ("https://",
-                       domain,
-                       portstr,
-                       "/.well-known/openpgpkey/hu/",
-                       encodedhash,
-                       NULL);
-      no_log = 1;
-      if (uri)
+      char *escapedmbox;
+
+      escapedmbox = http_escape_string (mbox, "%;?&=");
+      if (escapedmbox)
         {
-          err = dirmngr_status_printf (ctrl, "SOURCE", "https://%s%s",
-                                       domain, portstr);
-          if (err)
-            goto leave;
+          uri = strconcat ("https://",
+                           domain,
+                           portstr,
+                           "/.well-known/openpgpkey/",
+                           subdomain_mode? domain_orig : "",
+                           subdomain_mode? "/" : "",
+                           "hu/",
+                           encodedhash,
+                           "?l=",
+                           escapedmbox,
+                           NULL);
+          xfree (escapedmbox);
+          no_log = 1;
+          if (uri)
+            {
+              err = dirmngr_status_printf (ctrl, "SOURCE", "https://%s%s",
+                                           domain, portstr);
+              if (err)
+                goto leave;
+            }
         }
     }
   if (!uri)
@@ -2680,6 +2737,20 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_flushcrls[] =
+  "FLUSHCRLS\n"
+  "\n"
+  "Remove all cached CRLs from memory and\n"
+  "the file system.";
+static gpg_error_t
+cmd_flushcrls (assuan_context_t ctx, char *line)
+{
+  (void)line;
+
+  return leave_cmd (ctx, crl_cache_flush () ? GPG_ERR_GENERAL : 0);
+}
+
+
 
 /* Tell the assuan library about our commands. */
 static int
@@ -2710,6 +2781,7 @@ register_commands (assuan_context_t ctx)
     { "LOADSWDB",   cmd_loadswdb,   hlp_loadswdb },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
     { "RELOADDIRMNGR",cmd_reloaddirmngr,hlp_reloaddirmngr },
+    { "FLUSHCRLS",  cmd_flushcrls,  hlp_flushcrls },
     { NULL, NULL }
   };
   int i, j, rc;

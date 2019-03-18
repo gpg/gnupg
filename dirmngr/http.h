@@ -58,6 +58,8 @@ struct parsed_uri_s
   char *auth;           /* username/password for basic auth.  */
   char *host; 	        /* Host (converted to lowercase). */
   unsigned short port;  /* Port (always set if the host is set). */
+  unsigned short off_host; /* Offset to the HOST respective PATH parts  */
+  unsigned short off_path; /* in the original URI buffer.               */
   char *path; 	        /* Path. */
   uri_tuple_t params;	/* ";xxxxx" */
   uri_tuple_t query;	/* "?xxx=yyy" */
@@ -99,6 +101,21 @@ typedef struct http_session_s *http_session_t;
 
 struct http_context_s;
 typedef struct http_context_s *http_t;
+
+/* An object used to track redirection infos.  */
+struct http_redir_info_s
+{
+  unsigned int redirects_left;   /* Number of still possible redirects.    */
+  const char *orig_url;          /* The original requested URL.            */
+  unsigned int orig_onion:1;     /* Original request was an onion address. */
+  unsigned int orig_https:1;     /* Original request was a http address.   */
+  unsigned int silent:1;         /* No diagnostics.                        */
+  unsigned int allow_downgrade:1;/* Allow a downgrade from https to http.  */
+  unsigned int trust_location:1; /* Trust the received Location header.    */
+};
+typedef struct http_redir_info_s http_redir_info_t;
+
+
 
 /* A TLS verify callback function.  */
 typedef gpg_error_t (*http_verify_cb_t) (void *opaque,
@@ -175,6 +192,12 @@ gpg_error_t http_verify_server_credentials (http_session_t sess);
 
 char *http_escape_string (const char *string, const char *specials);
 char *http_escape_data (const void *data, size_t datalen, const char *specials);
+
+gpg_error_t http_prepare_redirect (http_redir_info_t *info,
+                                   unsigned int status_code,
+                                   const char *location, char **r_url);
+
+const char *http_status2string (unsigned int status);
 
 
 #endif /*GNUPG_COMMON_HTTP_H*/

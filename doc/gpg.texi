@@ -624,9 +624,9 @@ fingerprint (preferred) or their keyid.
 @end table
 
 
-@c *******************************************
-@c *******  KEY MANGEMENT COMMANDS  **********
-@c *******************************************
+@c ********************************************
+@c *******  KEY MANAGEMENT COMMANDS  **********
+@c ********************************************
 @node OpenPGP Key Management
 @subsection How to manage your keys
 
@@ -1328,6 +1328,10 @@ give the opposite meaning.  The options are:
   meaningful when using @option{--with-colons} along with
   @option{--check-signatures}.
 
+  @item show-only-fpr-mbox
+  @opindex list-options:show-only-fpr-mbox
+  For each valid user-id which also has a valid mail address print
+  only the fingerprint and the mail address.
 @end table
 
 @item --verify-options @var{parameters}
@@ -1724,7 +1728,8 @@ Set what trust model GnuPG should follow. The models are:
   @opindex trust-model:auto
   Select the trust model depending on whatever the internal trust
   database says. This is the default model if such a database already
-  exists.
+  exists.  Note that a tofu trust model is not considered here and
+  must be enabled explicitly.
 @end table
 
 @item --auto-key-locate @var{mechanisms}
@@ -1782,7 +1787,9 @@ list.  The default is "local,wkd".
 
   @item clear
   Clear all defined mechanisms.  This is useful to override
-  mechanisms given in a config file.
+  mechanisms given in a config file.  Note that a @code{nodefault} in
+  @var{mechanisms} will also be cleared unless it is given after the
+  @code{clear}.
 
 @end table
 
@@ -1888,32 +1895,12 @@ are available for all keyserver types, some common options are:
   retrieving keys by subkey id.
 
   @item timeout
-  Tell the keyserver helper program how long (in seconds) to try and
-  perform a keyserver action before giving up. Note that performing
-  multiple actions at the same time uses this timeout value per action.
-  For example, when retrieving multiple keys via @option{--receive-keys}, the
-  timeout applies separately to each key retrieval, and not to the
-  @option{--receive-keys} command as a whole. Defaults to 30 seconds.
-
-  @item http-proxy=@var{value}
-  This option is deprecated.
-  Set the proxy to use for HTTP and HKP keyservers.
-  This overrides any proxy defined in @file{dirmngr.conf}.
-
-  @item verbose
-  This option has no more function since GnuPG 2.1.  Use the
-  @code{dirmngr} configuration options instead.
-
-  @item debug
-  This option has no more function since GnuPG 2.1.  Use the
-  @code{dirmngr} configuration options instead.
-
-  @item check-cert
-  This option has no more function since GnuPG 2.1.  Use the
-  @code{dirmngr} configuration options instead.
-
+  @itemx http-proxy=@var{value}
+  @itemx verbose
+  @itemx debug
+  @itemx check-cert
   @item ca-cert-file
-  This option has no more function since GnuPG 2.1.  Use the
+  These options have no more function since GnuPG 2.1.  Use the
   @code{dirmngr} configuration options instead.
 
 @end table
@@ -2342,6 +2329,11 @@ opposite meaning. The options are:
   on the keyring. This option is the same as running the @option{--edit-key}
   command "clean" after import. Defaults to no.
 
+  @item import-drop-uids
+  Do not import any user ids or their binding signatures.  This option
+  can be used to update only the subkeys or other non-user id related
+  information.
+
   @item repair-keys.  After import, fix various problems with the
   keys.  For example, this reorders signatures, and strips duplicate
   signatures.  Defaults to yes.
@@ -2506,6 +2498,11 @@ opposite meaning.  The options are:
   running the @option{--edit-key} command "minimize" before export except
   that the local copy of the key is not modified. Defaults to no.
 
+  @item export-drop-uids
+  Do no export any user id or attribute packets or their associates
+  signatures.  Note that due to missing user ids the resulting output is
+  not strictly RFC-4880 compliant.
+
   @item export-pka
   Instead of outputting the key material output PKA records suitable
   to put into DNS zone files.  An ORIGIN line is printed before each
@@ -2612,7 +2609,7 @@ These options are obsolete and have no effect since GnuPG 2.1.
 @item --force-aead
 @opindex force-aead
 Force the use of AEAD encryption over MDC encryption.  AEAD is a
-modern and faster way to do authenticated encrytion than the old MDC
+modern and faster way to do authenticated encryption than the old MDC
 method.  See also options @option{--aead-algo} and
 @option{--chunk-size}.
 
@@ -2768,7 +2765,7 @@ This option is obsolete; it is handled as an alias for @option{--pgp7}
 
 @item --pgp7
 @opindex pgp7
-Set up all options to be as PGP 7 compliant as possible. This allowd
+Set up all options to be as PGP 7 compliant as possible. This allowed
 the ciphers IDEA, 3DES, CAST5,AES128, AES192, AES256, and TWOFISH.,
 the hashes MD5, SHA1 and RIPEMD160, and the compression algorithms
 none and ZIP.  This option implies @option{--escape-from-lines} and
@@ -3040,7 +3037,7 @@ same thing.
 @opindex aead-algo
 Specify that the AEAD algorithm @var{name} is to be used.  This is
 useful for symmetric encryption where no key preference are available
-to select the AEAD algorithm.  Runing @command{@gpgname} with option
+to select the AEAD algorithm.  Running @command{@gpgname} with option
 @option{--version} shows the available AEAD algorithms.  In general,
 you do not want to use this option as it allows you to violate the
 OpenPGP standard.  The option @option{--personal-aead-preferences} is
@@ -3313,7 +3310,7 @@ command has the same effect as using @option{--list-keys} with
 @option{--with-sig-list}.  Note that in contrast to
 @option{--check-signatures} the key signatures are not verified.  This
 command can be used to create a list of signing keys missing in the
-lcoal keyring; for example:
+local keyring; for example:
 
 @example
       gpg --list-sigs --with-colons USERID | \

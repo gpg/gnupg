@@ -551,14 +551,13 @@ gnupg_tmpfile (void)
 void
 gnupg_reopen_std (const char *pgmname)
 {
-#if defined(HAVE_STAT) && !defined(HAVE_W32_SYSTEM)
-  struct stat statbuf;
+#ifdef F_GETFD
   int did_stdin = 0;
   int did_stdout = 0;
   int did_stderr = 0;
   FILE *complain;
 
-  if (fstat (STDIN_FILENO, &statbuf) == -1 && errno ==EBADF)
+  if (fcntl (STDIN_FILENO, F_GETFD) == -1 && errno ==EBADF)
     {
       if (open ("/dev/null",O_RDONLY) == STDIN_FILENO)
 	did_stdin = 1;
@@ -566,7 +565,7 @@ gnupg_reopen_std (const char *pgmname)
 	did_stdin = 2;
     }
 
-  if (fstat (STDOUT_FILENO, &statbuf) == -1 && errno == EBADF)
+  if (fcntl (STDOUT_FILENO, F_GETFD) == -1 && errno == EBADF)
     {
       if (open ("/dev/null",O_WRONLY) == STDOUT_FILENO)
 	did_stdout = 1;
@@ -574,7 +573,7 @@ gnupg_reopen_std (const char *pgmname)
 	did_stdout = 2;
     }
 
-  if (fstat (STDERR_FILENO, &statbuf)==-1 && errno==EBADF)
+  if (fcntl (STDERR_FILENO, F_GETFD)==-1 && errno==EBADF)
     {
       if (open ("/dev/null", O_WRONLY) == STDERR_FILENO)
 	did_stderr = 1;
@@ -607,7 +606,7 @@ gnupg_reopen_std (const char *pgmname)
 
   if (did_stdin == 2 || did_stdout == 2 || did_stderr == 2)
     exit (3);
-#else /* !(HAVE_STAT && !HAVE_W32_SYSTEM) */
+#else /* !F_GETFD */
   (void)pgmname;
 #endif
 }

@@ -157,8 +157,9 @@ INST_NAME=gnupg-w32
 # Use this to override the installaion directory for native builds.
 INSTALL_PREFIX=none
 
-# The Authenticode key used to sign the Windows installer
+# The Authenticode key and cert chain used to sign the Windows installer
 AUTHENTICODE_KEY=${HOME}/.gnupg/g10code-authenticode-key.p12
+AUTHENTICODE_CERTS=${HOME}/.gnupg/g10code-authenticode-certs.pem
 
 
 # Directory names.
@@ -520,12 +521,12 @@ endif
 # The LDFLAGS is needed for -lintl for glib.
 ifeq ($(WITH_GUI),1)
 speedo_pkg_gpgme_configure = \
-	--enable-static --enable-w32-glib --disable-w32-qt \
+	--enable-static --enable-w32-glib  \
 	--with-gpg-error-prefix=$(idir) \
 	LDFLAGS=-L$(idir)/lib
 else
 speedo_pkg_gpgme_configure = \
-	--disable-static --disable-w32-glib --disable-w32-qt \
+	--disable-static --disable-w32-glib \
 	--with-gpg-error-prefix=$(idir) \
 	LDFLAGS=-L$(idir)/lib
 endif
@@ -970,7 +971,7 @@ else
 endif
 	@touch $(stampdir)/stamp-$(1)-01-configure
 
-# Note that unpack has no 64 bit version becuase it is just the source.
+# Note that unpack has no 64 bit version because it is just the source.
 # Fixme: We should use templates to create the standard and w64
 # version of these rules.
 $(stampdir)/stamp-w64-$(1)-01-configure: $(stampdir)/stamp-$(1)-00-unpack
@@ -1142,7 +1143,7 @@ all-speedo: $(stampdir)/stamp-final
 
 report-speedo: $(addprefix report-,$(speedo_build_list))
 
-# Just to check if we catched all stamps.
+# Just to check if we caught all stamps.
 clean-stamps:
 	$(RM) -fR $(stampdir)
 
@@ -1211,7 +1212,9 @@ extra_installer_options += -DWITH_GUI=1
 endif
 
 installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
-	$(MAKENSIS) -V2 \
+	(nsis3_args=$$(makensis -version | grep -q "^v3" && \
+                  echo "-INPUTCHARSET CP1252"); \
+	$(MAKENSIS) -V2 $$nsis3_args \
                     -DINST_DIR=$(idir) \
                     -DINST6_DIR=$(idir6) \
                     -DBUILD_DIR=$(bdir) \
@@ -1222,7 +1225,7 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 		    -DNAME=$(INST_NAME) \
 	            -DVERSION=$(INST_VERSION) \
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
-		    $(extra_installer_options) $(w32src)/inst.nsi
+		    $(extra_installer_options) $(w32src)/inst.nsi)
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe"
 
 
@@ -1266,8 +1269,11 @@ sign-installer:
 	 echo "speedo:  * Signing installer" ;\
 	 echo "speedo:  * Key: $(AUTHENTICODE_KEY)";\
 	 echo "speedo:  */" ;\
-	 osslsigncode sign -pkcs12 $(AUTHENTICODE_KEY) -askpass \
-            -h sha256 -in "PLAY/inst/$$exefile" -out "../../$$exefile" ;\
+	 osslsigncode sign -certs $(AUTHENTICODE_CERTS)\
+            -pkcs12 $(AUTHENTICODE_KEY) -askpass \
+            -ts "http://timestamp.globalsign.com/scripts/timstamp.dll" \
+            -h sha256 -n GnuPG -i https://gnupg.org \
+	    -in "PLAY/inst/$$exefile" -out "../../$$exefile" ;\
 	 exefile="../../$$exefile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
 	 echo "speedo: /*" ;\
@@ -1283,7 +1289,7 @@ endif
 
 
 #
-# Check availibility of standard tools
+# Check availability of standard tools
 #
 check-tools:
 

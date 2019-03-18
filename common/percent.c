@@ -37,16 +37,16 @@
 
 
 /* Create a newly alloced string from STRING with all spaces and
-   control characters converted to plus signs or %xx sequences.  The
-   function returns the new string or NULL in case of a malloc
-   failure.
-
-   Note that we also escape the quote character to work around a bug
-   in the mingw32 runtime which does not correcty handle command line
-   quoting.  We correctly double the quote mark when calling a program
-   (i.e. gpg-protect-tool), but the pre-main code does not notice the
-   double quote as an escaped quote.  We do this also on POSIX systems
-   for consistency.  */
+ * control characters converted to plus signs or %xx sequences.  The
+ * function returns the new string or NULL in case of a malloc
+ * failure.
+ *
+ * Note that this fucntion also escapes the quote character to work
+ * around a bug in the mingw32 runtime which does not correctly handle
+ * command line quoting.  We correctly double the quote mark when
+ * calling a program (i.e. gpg-protect-tool), but the pre-main code
+ * does not notice the double quote as an escaped quote.  We do this
+ * also on POSIX systems for consistency.  */
 char *
 percent_plus_escape (const char *string)
 {
@@ -87,19 +87,36 @@ percent_plus_escape (const char *string)
 }
 
 
-/* Create a newly alloced string from (DATA,DATALEN) with embedded
- * Nuls quoted as %00.  The standard percent unescaping can be
- * used to reverse this encoding.   */
+/* Create a newly malloced string from (DATA,DATALEN) with embedded
+ * nuls quoted as %00.  The standard percent unescaping can be used to
+ * reverse this encoding.  With PLUS_ESCAPE set plus-escaping (spaces
+ * are replaced by a '+') and escaping of characters with values less
+ * than 0x20 is used.  If PREFIX is not NULL it will be prepended to
+ * the output in standard escape format; that is PLUS_ESCAPING is
+ * ignored for PREFIX. */
 char *
-percent_data_escape (const void *data, size_t datalen)
+percent_data_escape (int plus_escape, const char *prefix,
+                     const void *data, size_t datalen)
 {
   char *buffer, *p;
-  const char *s;
-  size_t n, length;
+  const unsigned char *s;
+  size_t n;
+  size_t length = 1;
 
-  for (length=1, s=data, n=datalen; n; s++, n--)
+  if (prefix)
     {
-      if (!*s || *s == '%')
+      for (s = prefix; *s; s++)
+        {
+          if (*s == '%' || *s < 0x20)
+            length += 3;
+          else
+            length++;
+        }
+    }
+
+  for (s=data, n=datalen; n; s++, n--)
+    {
+      if (!*s || *s == '%' || (plus_escape && (*s < ' ' || *s == '+')))
         length += 3;
       else
         length++;
@@ -108,6 +125,20 @@ percent_data_escape (const void *data, size_t datalen)
   buffer = p = xtrymalloc (length);
   if (!buffer)
     return NULL;
+
+  if (prefix)
+    {
+      for (s = prefix; *s; s++)
+        {
+          if (*s == '%' || *s < 0x20)
+            {
+              snprintf (p, 4, "%%%02X", *s);
+              p += 3;
+            }
+          else
+            *p++ = *s;
+        }
+    }
 
   for (s=data, n=datalen; n; s++, n--)
     {
@@ -121,13 +152,21 @@ percent_data_escape (const void *data, size_t datalen)
           memcpy (p, "%25", 3);
           p += 3;
         }
+      else if (plus_escape && *s == ' ')
+        {
+          *p++ = '+';
+        }
+      else if (plus_escape && (*s < ' ' || *s == '+'))
+        {
+          snprintf (p, 4, "%%%02X", *s);
+          p += 3;
+        }
       else
         *p++ = *s;
     }
   *p = 0;
 
   return buffer;
-
 }
 
 

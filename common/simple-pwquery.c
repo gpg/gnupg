@@ -75,7 +75,7 @@
 
 
 /* Name of the socket to be used.  This is a kludge to keep on using
-   the existsing code despite that we only support a standard socket.  */
+   the existing code despite that we only support a standard socket.  */
 static char *default_gpg_agent_info;
 
 
@@ -246,6 +246,7 @@ agent_open (assuan_context_t *ctx)
 #ifdef SPWQ_USE_LOGGING
       log_error (_("no gpg-agent running in this session\n"));
 #endif
+      *ctx = NULL;
       return SPWQ_NO_AGENT;
     }
 

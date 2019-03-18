@@ -887,7 +887,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   int no_protection;
-  unsigned char *value;
+  unsigned char *value = NULL;
   size_t valuelen;
   unsigned char *newpasswd = NULL;
   membuf_t outbuf;
@@ -1595,19 +1595,24 @@ static const char hlp_clear_passphrase[] =
   "may be used to invalidate the cache entry for a passphrase.  The\n"
   "function returns with OK even when there is no cached passphrase.\n"
   "The --mode=normal option is used to clear an entry for a cacheid\n"
-  "added by the agent.\n";
+  "added by the agent.  The --mode=ssh option is used for a cacheid\n"
+  "added for ssh.\n";
 static gpg_error_t
 cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   char *cacheid = NULL;
   char *p;
-  int opt_normal;
+  cache_mode_t cache_mode = CACHE_MODE_USER;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  opt_normal = has_option (line, "--mode=normal");
+  if (has_option (line, "--mode=normal"))
+    cache_mode = CACHE_MODE_NORMAL;
+  else if (has_option (line, "--mode=ssh"))
+    cache_mode = CACHE_MODE_SSH;
+
   line = skip_options (line);
 
   /* parse the stuff */
@@ -1620,12 +1625,9 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
   if (!*cacheid || strlen (cacheid) > 50)
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
 
-  agent_put_cache (ctrl, cacheid,
-                   opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER,
-                   NULL, 0);
+  agent_put_cache (ctrl, cacheid, cache_mode, NULL, 0);
 
-  agent_clear_passphrase (ctrl, cacheid,
-			  opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER);
+  agent_clear_passphrase (ctrl, cacheid, cache_mode);
 
   return 0;
 }
@@ -2482,19 +2484,23 @@ cmd_delete_key (assuan_context_t ctx, char *line)
 #endif
 
 static const char hlp_keytocard[] =
-  "KEYTOCARD [--force] <hexstring_with_keygrip> <serialno> <id> <timestamp>\n"
-  "\n";
+  "KEYTOCARD [--force] <hexgrip> <serialno> <keyref> [<timestamp>]\n"
+  "\n"
+  "TIMESTAMP is required for OpenPGP and defaults to the Epoch.  The\n"
+  "SERIALNO is used for checking; use \"-\" to disable the check.";
 static gpg_error_t
 cmd_keytocard (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int force;
   gpg_error_t err = 0;
+  char *argv[5];
+  int argc;
   unsigned char grip[20];
+  const char *serialno, *timestamp_str, *keyref;
   gcry_sexp_t s_skey = NULL;
   unsigned char *keydata;
   size_t keydatalen;
-  const char *serialno, *timestamp_str, *id;
   unsigned char *shadow_info = NULL;
   time_t timestamp;
 
@@ -2504,7 +2510,14 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   force = has_option (line, "--force");
   line = skip_options (line);
 
-  err = parse_keygrip (ctx, line, grip);
+  argc = split_fields (line, argv, DIM (argv));
+  if (argc < 3)
+    {
+      err = gpg_error (GPG_ERR_MISSING_VALUE);
+      goto leave;
+    }
+
+  err = parse_keygrip (ctx, argv[0], grip);
   if (err)
     goto leave;
 
@@ -2514,39 +2527,19 @@ cmd_keytocard (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  /* Fixme: Replace the parsing code by split_fields().  */
-  line += 40;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  serialno = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (!*line)
-    {
-      err = gpg_error (GPG_ERR_MISSING_VALUE);
-      goto leave;
-    }
-  *line = '\0';
-  line++;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  id = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (!*line)
-    {
-      err = gpg_error (GPG_ERR_MISSING_VALUE);
-      goto leave;
-    }
-  *line = '\0';
-  line++;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  timestamp_str = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (*line)
-    *line = '\0';
+  /* Note that checking of the s/n is currently not implemented but we
+   * want to provide a clean interface if we ever implement it.  */
+  serialno = argv[1];
+  if (!strcmp (serialno, "-"))
+    serialno = NULL;
+
+  keyref = argv[2];
+
+  /* FIXME: Default to the creation time as stored in the private
+   * key.  The parameter is here so that gpg can make sure that the
+   * timestamp as used for key creation (and thus the openPGP
+   * fingerprint) is used.  */
+  timestamp_str = argc > 3? argv[3] : "19700101T000000";
 
   if ((timestamp = isotime2epoch (timestamp_str)) == (time_t)(-1))
     {
@@ -2558,38 +2551,37 @@ cmd_keytocard (assuan_context_t ctx, char *line)
                              &shadow_info, CACHE_MODE_IGNORE, NULL,
                              &s_skey, NULL);
   if (err)
-    {
-      xfree (shadow_info);
-      goto leave;
-    }
+    goto leave;
   if (shadow_info)
     {
-      /* Key is on a smartcard already.  */
-      xfree (shadow_info);
-      gcry_sexp_release (s_skey);
+      /* Key is already on a smartcard - we can't extract it. */
       err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       goto leave;
     }
 
-  keydatalen =  gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
+  /* Note: We can't use make_canon_sexp because we need to allocate a
+   * few extra bytes for our hack below.  */
+  keydatalen = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
   keydata = xtrymalloc_secure (keydatalen + 30);
   if (keydata == NULL)
     {
       err = gpg_error_from_syserror ();
-      gcry_sexp_release (s_skey);
       goto leave;
     }
-
   gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
   gcry_sexp_release (s_skey);
+  s_skey = NULL;
   keydatalen--;			/* Decrement for last '\0'.  */
-  /* Add timestamp "created-at" in the private key */
+  /* Hack to insert the timestamp "created-at" into the private key.  */
   snprintf (keydata+keydatalen-1, 30, KEYTOCARD_TIMESTAMP_FORMAT, timestamp);
   keydatalen += 10 + 19 - 1;
-  err = divert_writekey (ctrl, force, serialno, id, keydata, keydatalen);
+
+  err = divert_writekey (ctrl, force, serialno, keyref, keydata, keydatalen);
   xfree (keydata);
 
  leave:
+  gcry_sexp_release (s_skey);
+  xfree (shadow_info);
   return leave_cmd (ctx, err);
 }
 
@@ -2751,7 +2743,7 @@ cmd_put_secret (assuan_context_t ctx, char *line)
    * into a string.  Instead of resorting to base64 encoding we use a
    * special percent escaping which only quoted the Nul and the
    * percent character. */
-  string = percent_data_escape (value? value : valstr, valuelen);
+  string = percent_data_escape (0, NULL, value? value : valstr, valuelen);
   if (!string)
     {
       err = gpg_error_from_syserror ();
@@ -3588,8 +3580,13 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
         }
       else
         {
+#ifdef HAVE_W32_SYSTEM
+          pid = assuan_get_pid (ctx);
+          ctrl->client_uid = -1;
+#else
           pid = client_creds->pid;
           ctrl->client_uid = client_creds->uid;
+#endif
         }
       ctrl->client_pid = (pid == ASSUAN_INVALID_PID)? 0 : (unsigned long)pid;
       ctrl->server_local->connect_from_self = (pid == getpid ());

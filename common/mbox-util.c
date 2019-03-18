@@ -173,11 +173,12 @@ is_valid_mailbox (const char *name)
 
 
 /* Return the mailbox (local-part@domain) form a standard user id.
-   All plain ASCII characters in the result are converted to
-   lowercase.  Caller must free the result.  Returns NULL if no valid
-   mailbox was found (or we are out of memory). */
+ * All plain ASCII characters in the result are converted to
+ * lowercase.  If SUBADDRESS is 1, '+' denoted sub-addresses are not
+ * included in the result.  Caller must free the result.  Returns NULL
+ * if no valid mailbox was found (or we are out of memory). */
 char *
-mailbox_from_userid (const char *userid)
+mailbox_from_userid (const char *userid, int subaddress)
 {
   const char *s, *s_end;
   size_t len;
@@ -225,6 +226,29 @@ mailbox_from_userid (const char *userid)
     }
   else
     errno = EINVAL;
+
+  if (result && subaddress == 1)
+    {
+      char *atsign, *plus;
+
+      if ((atsign = strchr (result, '@')))
+        {
+          /* We consider a subaddress only if there is a single '+'
+           * in the local part and the '+' is not the first or last
+           * character.  */
+          *atsign = 0;
+          if ((plus = strchr (result, '+'))
+              && !strchr (plus+1, '+')
+              && result != plus
+              && plus[1] )
+            {
+              *atsign = '@';
+              memmove (plus, atsign, strlen (atsign)+1);
+            }
+          else
+            *atsign = '@';
+        }
+    }
 
   return result? ascii_strlwr (result): NULL;
 }

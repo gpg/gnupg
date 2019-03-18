@@ -35,6 +35,7 @@
 # include <netdb.h>
 #endif /*!HAVE_W32_SYSTEM*/
 
+#include <npth.h>
 #include "dirmngr.h"
 #include "misc.h"
 #include "../common/userids.h"
@@ -108,6 +109,8 @@ struct hostinfo_s
    resolved from a pool name and its allocated size.*/
 static hostinfo_t *hosttable;
 static int hosttable_size;
+/* A mutex used to serialize access to the hosttable. */
+static npth_mutex_t hosttable_lock;
 
 /* The number of host slots we initially allocate for HOSTTABLE.  */
 #define INITIAL_HOSTTABLE_SIZE 50
@@ -756,9 +759,15 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
   if (!name || !*name || !strcmp (name, "localhost"))
     return 0;
 
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
+
   idx = find_hostinfo (name);
   if (idx == -1)
-    return gpg_error (GPG_ERR_NOT_FOUND);
+    {
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
 
   hi = hosttable[idx];
   if (alive && hi->dead)
@@ -817,6 +826,10 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
         }
     }
 
+ leave:
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
+
   return err;
 }
 
@@ -837,7 +850,9 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
   if (err)
     return err;
 
-  /* FIXME: We need a lock for the hosttable.  */
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
+
   curtime = gnupg_get_time ();
   for (idx=0; idx < hosttable_size; idx++)
     if ((hi=hosttable[idx]))
@@ -930,12 +945,12 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
                               diedstr? ")":""   );
         xfree (died);
         if (err)
-          return err;
+	  goto leave;
 
         if (hi->cname)
           err = ks_printf_help (ctrl, "  .       %s", hi->cname);
         if (err)
-          return err;
+	  goto leave;
 
         if (hi->pool)
           {
@@ -950,14 +965,21 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
             put_membuf( &mb, "", 1);
             p = get_membuf (&mb, NULL);
             if (!p)
-              return gpg_error_from_syserror ();
+	      {
+		err = gpg_error_from_syserror ();
+		goto leave;
+	      }
             err = ks_print_help (ctrl, p);
             xfree (p);
             if (err)
-              return err;
+              goto leave;
           }
       }
-  return 0;
+
+ leave:
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
+  return err;
 }
 
 
@@ -1026,9 +1048,16 @@ make_host_part (ctrl_t ctrl,
       protocol = KS_PROTOCOL_HKP;
     }
 
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
+
   portstr[0] = 0;
   err = map_host (ctrl, host, srvtag, force_reselect, protocol,
                   &hostname, portstr, r_httpflags, r_httphost);
+
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
+
   if (err)
     return err;
 
@@ -1102,6 +1131,9 @@ ks_hkp_housekeeping (time_t curtime)
   int idx;
   hostinfo_t hi;
 
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
+
   for (idx=0; idx < hosttable_size; idx++)
     {
       hi = hosttable[idx];
@@ -1118,6 +1150,9 @@ ks_hkp_housekeeping (time_t curtime)
           log_info ("resurrected host '%s'", hi->name);
         }
     }
+
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
 }
 
 
@@ -1128,6 +1163,9 @@ ks_hkp_reload (void)
 {
   int idx, count;
   hostinfo_t hi;
+
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
 
   for (idx=count=0; idx < hosttable_size; idx++)
     {
@@ -1142,6 +1180,9 @@ ks_hkp_reload (void)
     }
   if (count)
     log_info ("number of resurrected hosts: %d", count);
+
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
 }
 
 
@@ -1160,18 +1201,21 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   gpg_error_t err;
   http_session_t session = NULL;
   http_t http = NULL;
-  int redirects_left = MAX_REDIRECTS;
+  http_redir_info_t redirinfo = { MAX_REDIRECTS };
   estream_t fp = NULL;
   char *request_buffer = NULL;
   parsed_uri_t uri = NULL;
-  int is_onion;
 
   *r_fp = NULL;
 
   err = http_parse_uri (&uri, request, 0);
   if (err)
     goto leave;
-  is_onion = uri->onion;
+  redirinfo.orig_url   = request;
+  redirinfo.orig_onion = uri->onion;
+  redirinfo.allow_downgrade = 1;
+  /* FIXME: I am not sure whey we allow a downgrade for hkp requests.
+   * Needs at least an explanation here..  */
 
   err = http_session_new (&session, httphost,
                           ((ctrl->http_no_crl? HTTP_FLAG_NO_CRL : 0)
@@ -1252,45 +1296,18 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
     case 302:
     case 307:
       {
-        const char *s = http_get_header (http, "Location");
+        xfree (request_buffer);
+        err = http_prepare_redirect (&redirinfo, http_get_status_code (http),
+                                     http_get_header (http, "Location"),
+                                     &request_buffer);
+        if (err)
+          goto leave;
 
-        log_info (_("URL '%s' redirected to '%s' (%u)\n"),
-                  request, s?s:"[none]", http_get_status_code (http));
-        if (s && *s && redirects_left-- )
-          {
-            if (is_onion)
-              {
-                /* Make sure that an onion address only redirects to
-                 * another onion address.  */
-                http_release_parsed_uri (uri);
-                uri = NULL;
-                err = http_parse_uri (&uri, s, 0);
-                if (err)
-                  goto leave;
-
-                if (! uri->onion)
-                  {
-                    err = gpg_error (GPG_ERR_FORBIDDEN);
-                    goto leave;
-                  }
-              }
-
-            xfree (request_buffer);
-            request_buffer = xtrystrdup (s);
-            if (request_buffer)
-              {
-                request = request_buffer;
-                http_close (http, 0);
-                http = NULL;
-                goto once_more;
-              }
-            err = gpg_error_from_syserror ();
-          }
-        else
-          err = gpg_error (GPG_ERR_NO_DATA);
-        log_error (_("too many redirections\n"));
+        request = request_buffer;
+        http_close (http, 0);
+        http = NULL;
       }
-      goto leave;
+      goto once_more;
 
     case 501:
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
@@ -1335,12 +1352,12 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
    down to zero. */
 static int
 handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
-                           unsigned int *tries_left)
+                           unsigned int http_status, unsigned int *tries_left)
 {
   int retry = 0;
 
   /* Fixme: Should we disable all hosts of a protocol family if a
-   * request for an address of that familiy returned ENETDOWN?  */
+   * request for an address of that family returned ENETDOWN?  */
 
   switch (gpg_err_code (err))
     {
@@ -1378,6 +1395,27 @@ handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
         }
       break;
 
+    case GPG_ERR_NO_DATA:
+      {
+        switch (http_status)
+          {
+          case 502: /* Bad Gateway  */
+            log_info ("marking host dead due to a %u (%s)\n",
+                      http_status, http_status2string (http_status));
+            if (mark_host_dead (request) && *tries_left)
+              retry = 1;
+            break;
+
+          case 503: /* Service Unavailable */
+          case 504: /* Gateway Timeout    */
+            log_info ("selecting a different host due to a %u (%s)",
+                      http_status, http_status2string (http_status));
+            retry = 1;
+            break;
+          }
+      }
+      break;
+
     default:
       break;
     }
@@ -1399,13 +1437,14 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
-  char fprbuf[2+40+1];
+  char fprbuf[2+64+1];
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
   int reselect;
   unsigned int httpflags;
   char *httphost = NULL;
+  unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
@@ -1417,6 +1456,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   err = classify_user_id (pattern, &desc, 1);
   if (err)
     return err;
+  log_assert (desc.fprlen <= 64);
   switch (desc.mode)
     {
     case KEYDB_SEARCH_MODE_EXACT:
@@ -1434,17 +1474,10 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
                 (ulong)desc.u.kid[0], (ulong)desc.u.kid[1]);
       pattern = fprbuf;
       break;
-    case KEYDB_SEARCH_MODE_FPR16:
-      fprbuf[0] = '0';
-      fprbuf[1] = 'x';
-      bin2hex (desc.u.fpr, 16, fprbuf+2);
-      pattern = fprbuf;
-      break;
-    case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
       fprbuf[0] = '0';
       fprbuf[1] = 'x';
-      bin2hex (desc.u.fpr, 20, fprbuf+2);
+      bin2hex (desc.u.fpr, desc.fprlen, fprbuf+2);
       pattern = fprbuf;
       break;
     default:
@@ -1487,14 +1520,20 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
-                      NULL, NULL, &fp, r_http_status);
-  if (handle_send_request_error (ctrl, err, request, &tries))
+                      NULL, NULL, &fp, &http_status);
+  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
     {
       reselect = 1;
       goto again;
     }
+  if (r_http_status)
+    *r_http_status = http_status;
   if (err)
-    goto leave;
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+        dirmngr_status (ctrl, "SOURCE", hostport, NULL);
+      goto leave;
+    }
 
   err = dirmngr_status (ctrl, "SOURCE", hostport, NULL);
   if (err)
@@ -1541,7 +1580,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
-  char kidbuf[2+40+1];
+  char kidbuf[2+64+1];
   const char *exactname = NULL;
   char *searchkey = NULL;
   char *hostport = NULL;
@@ -1550,6 +1589,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   int reselect;
   char *httphost = NULL;
   unsigned int httpflags;
+  unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
@@ -1561,6 +1601,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   err = classify_user_id (keyspec, &desc, 1);
   if (err)
     return err;
+  log_assert (desc.fprlen <= 64);
   switch (desc.mode)
     {
     case KEYDB_SEARCH_MODE_SHORT_KID:
@@ -1570,21 +1611,21 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
       snprintf (kidbuf, sizeof kidbuf, "0x%08lX%08lX",
 		(ulong)desc.u.kid[0], (ulong)desc.u.kid[1]);
       break;
-    case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
-      /* This is a v4 fingerprint. */
+      if (desc.fprlen < 20)
+        {
+          log_error ("HKP keyservers do not support v3 fingerprints\n");
+          return gpg_error (GPG_ERR_INV_USER_ID);
+        }
       kidbuf[0] = '0';
       kidbuf[1] = 'x';
-      bin2hex (desc.u.fpr, 20, kidbuf+2);
+      bin2hex (desc.u.fpr, desc.fprlen, kidbuf+2);
       break;
 
     case KEYDB_SEARCH_MODE_EXACT:
       exactname = desc.u.name;
       break;
 
-    case KEYDB_SEARCH_MODE_FPR16:
-      log_error ("HKP keyservers do not support v3 fingerprints\n");
-      /* fall through */
     default:
       return gpg_error (GPG_ERR_INV_USER_ID);
     }
@@ -1622,14 +1663,18 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
-                      NULL, NULL, &fp, NULL);
-  if (handle_send_request_error (ctrl, err, request, &tries))
+                      NULL, NULL, &fp, &http_status);
+  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
     {
       reselect = 1;
       goto again;
     }
   if (err)
-    goto leave;
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+        dirmngr_status (ctrl, "SOURCE", hostport, NULL);
+      goto leave;
+    }
 
   err = dirmngr_status (ctrl, "SOURCE", hostport, NULL);
   if (err)
@@ -1693,6 +1738,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   int reselect;
   char *httphost = NULL;
   unsigned int httpflags;
+  unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   parm.datastring = NULL;
@@ -1731,8 +1777,8 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, 0,
-                      put_post_cb, &parm, &fp, NULL);
-  if (handle_send_request_error (ctrl, err, request, &tries))
+                      put_post_cb, &parm, &fp, &http_status);
+  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
     {
       reselect = 1;
       goto again;
@@ -1748,4 +1794,14 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   xfree (hostport);
   xfree (httphost);
   return err;
+}
+
+void
+ks_hkp_init (void)
+{
+  int err;
+
+  err = npth_mutex_init (&hosttable_lock, NULL);
+  if (err)
+    log_fatal ("error initializing mutex: %s\n", strerror (err));
 }

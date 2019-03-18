@@ -255,6 +255,9 @@ struct ccid_driver_s
   void (*progress_cb)(void *, const char *, int, int, int);
   void *progress_cb_arg;
 
+  void (*prompt_cb)(void *, int);
+  void *prompt_cb_arg;
+
   unsigned char intr_buf[64];
   struct libusb_transfer *transfer;
 };
@@ -1467,8 +1470,7 @@ intr_cb (struct libusb_transfer *transfer)
 
   DEBUGOUT_1 ("CCID: interrupt callback %d\n", transfer->status);
 
-  if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT
-      || transfer->status == LIBUSB_TRANSFER_NO_DEVICE)
+  if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT)
     {
       int err;
 
@@ -1651,15 +1653,13 @@ ccid_open_usb_reader (const char *spec_reader_name,
       goto leave;
     }
 
-  if (set_no != 0)
+  /* Submit SET_INTERFACE control transfer which can reset the device.  */
+  rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
+  if (rc)
     {
-      rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
-      if (rc)
-        {
-          DEBUGOUT_1 ("usb_set_interface_alt_setting failed: %d\n", rc);
-          rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
-          goto leave;
-        }
+      DEBUGOUT_1 ("usb_set_interface_alt_setting failed: %d\n", rc);
+      rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
+      goto leave;
     }
 
   rc = ccid_vendor_specific_init (*handle);
@@ -1802,6 +1802,19 @@ ccid_set_progress_cb (ccid_driver_t handle,
 }
 
 
+int
+ccid_set_prompt_cb (ccid_driver_t handle,
+		    void (*cb)(void *, int), void *cb_arg)
+{
+  if (!handle)
+    return CCID_DRIVER_ERR_INV_VALUE;
+
+  handle->prompt_cb = cb;
+  handle->prompt_cb_arg = cb_arg;
+  return 0;
+}
+
+
 /* Close the reader HANDLE. */
 int
 ccid_close_reader (ccid_driver_t handle)
@@ -1921,7 +1934,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
    is the sequence number used to send the request and EXPECTED_TYPE
    the type of message we expect. Does checks on the ccid
    header. TIMEOUT is the timeout value in ms. NO_DEBUG may be set to
-   avoid debug messages in case of no error; this can be overriden
+   avoid debug messages in case of no error; this can be overridden
    with a glibal debug level of at least 3. Returns 0 on success. */
 static int
 bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
@@ -1930,6 +1943,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
 {
   int rc;
   int msglen;
+  int notified = 0;
 
   /* Fixme: The next line for the current Valgrind without support
      for USB IOCTLs. */
@@ -1982,13 +1996,24 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
      we got the expected message type.  This is in particular required
      for the Cherry keyboard which sends a time extension request for
      each key hit.  */
-  if ( !(buffer[7] & 0x03) && (buffer[7] & 0xC0) == 0x80)
+  if (!(buffer[7] & 0x03) && (buffer[7] & 0xC0) == 0x80)
     {
       /* Card present and active, time extension requested. */
       DEBUGOUT_2 ("time extension requested (%02X,%02X)\n",
                   buffer[7], buffer[8]);
+
+      /* Gnuk enhancement to prompt user input by ack button */
+      if (buffer[8] == 0xff && !notified)
+        {
+          notified = 1;
+	  handle->prompt_cb (handle->prompt_cb_arg, 1);
+        }
+
       goto retry;
     }
+
+  if (notified)
+    handle->prompt_cb (handle->prompt_cb_arg, 0);
 
   if (buffer[0] != expected_type && buffer[0] != RDR_to_PC_SlotStatus)
     {
@@ -2928,7 +2953,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
    bit 3     unused
    bit 2..0  Source Node Address (SAD)
 
-   If node adresses are not used, SAD and DAD should be set to 0 on
+   If node addresses are not used, SAD and DAD should be set to 0 on
    the first block sent to the card.  If they are used they should
    have different values (0 for one is okay); that first block sets up
    the addresses of the nodes.
@@ -3270,7 +3295,7 @@ ccid_transceive (ccid_driver_t handle,
               /* Wait time extension request. */
               unsigned char bwi = tpdu[3];
 
-              /* Check if it's unsual value which can't be expressed in ATR.  */
+              /* Check if it's unusual value which can't be expressed in ATR.  */
               if (bwi > 15)
                 wait_more = 1;
 

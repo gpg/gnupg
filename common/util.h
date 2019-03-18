@@ -39,7 +39,10 @@
  * libgpg-error version.  Define them here.
  * Example: (#if GPG_ERROR_VERSION_NUMBER < 0x011500 // 1.21)
  */
-
+#if GPG_ERROR_VERSION_NUMBER < 0x012400 /* 1.36 */
+#define GPG_ERR_NO_AUTH   314
+#define GPG_ERR_BAD_AUTH  315
+#endif /*GPG_ERROR_VERSION_NUMBER*/
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
@@ -189,6 +192,7 @@ gpg_error_t get_rsa_pk_from_canon_sexp (const unsigned char *keydata,
 int get_pk_algo_from_key (gcry_sexp_t key);
 int get_pk_algo_from_canon_sexp (const unsigned char *keydata,
                                  size_t keydatalen);
+char *pubkey_algo_string (gcry_sexp_t s_pkey);
 
 /*-- convert.c --*/
 int hex2bin (const char *string, void *buffer, size_t length);
@@ -201,7 +205,8 @@ char *hex2str_alloc (const char *hexstring, size_t *r_count);
 
 /*-- percent.c --*/
 char *percent_plus_escape (const char *string);
-char *percent_data_escape (const void *data, size_t datalen);
+char *percent_data_escape (int plus, const char *prefix,
+                           const void *data, size_t datalen);
 char *percent_plus_unescape (const char *string, int nulrepl);
 char *percent_unescape (const char *string, int nulrepl);
 
@@ -210,8 +215,11 @@ size_t percent_unescape_inplace (char *string, int nulrepl);
 
 /*-- openpgp-oid.c --*/
 gpg_error_t openpgp_oid_from_str (const char *string, gcry_mpi_t *r_mpi);
+char *openpgp_oidbuf_to_str (const unsigned char *buf, size_t len);
 char *openpgp_oid_to_str (gcry_mpi_t a);
+int openpgp_oidbuf_is_ed25519 (const void *buf, size_t len);
 int openpgp_oid_is_ed25519 (gcry_mpi_t a);
+int openpgp_oidbuf_is_cv25519 (const void *buf, size_t len);
 int openpgp_oid_is_cv25519 (gcry_mpi_t a);
 const char *openpgp_curve_to_oid (const char *name, unsigned int *r_nbits);
 const char *openpgp_oid_to_curve (const char *oid, int canon);
@@ -258,6 +266,13 @@ void gnupg_module_name_flush_some (void);
 void gnupg_set_builddir (const char *newdir);
 
 
+/* A list of constants to identify protocols.  This is used by tools
+ * which need to distinguish between the different protocols
+ * implemented by GnuPG.  May be used as bit flags.  */
+#define GNUPG_PROTOCOL_OPENPGP    1   /* The one and only (gpg).      */
+#define GNUPG_PROTOCOL_CMS        2   /* The core of S/MIME (gpgsm)   */
+#define GNUPG_PROTOCOL_SSH_AGENT  4   /* Out ssh-agent implementation */
+
 
 /*-- gpgrlhelp.c --*/
 void gnupg_rl_initialize (void);
@@ -299,6 +314,7 @@ void print_hexstring (FILE *fp, const void *buffer, size_t length,
                       int reserved);
 char *try_make_printable_string (const void *p, size_t n, int delim);
 char *make_printable_string (const void *p, size_t n, int delim);
+char *decode_c_string (const char *src);
 
 int is_file_compressed (const char *s, int *ret_rc);
 

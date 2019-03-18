@@ -1250,13 +1250,15 @@ crl_cache_deinit (void)
 }
 
 
-/* Delete the cache from disk. Return 0 on success.*/
+/* Delete the cache from disk and memory. Return 0 on success.*/
 int
 crl_cache_flush (void)
 {
   int rc;
 
+  crl_cache_deinit ();
   rc = cleanup_cache_dir (0)? -1 : 0;
+  crl_cache_init ();
 
   return rc;
 }
@@ -1782,7 +1784,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
             ksba_sexp_t keyid;
 
             /* We need to look for the issuer only after having read
-               all items.  The issuer itselfs comes before the items
+               all items.  The issuer itself comes before the items
                but the optional authorityKeyIdentifier comes after the
                items. */
             err = ksba_crl_get_issuer (crl, &crlissuer);
@@ -1907,7 +1909,7 @@ get_crl_number (ksba_crl_t crl)
 
 
 /* Return the authorityKeyIdentifier or NULL if it is not available.
-   The issuer name may consists of several parts - they are delimted by
+   The issuer name may consists of several parts - they are delimited by
    0x01. */
 static char *
 get_auth_key_id (ksba_crl_t crl, char **serialno)

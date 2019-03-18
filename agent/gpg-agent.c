@@ -112,6 +112,7 @@ enum cmd_and_opt_values
   oCheckPassphrasePattern,
   oMaxPassphraseDays,
   oEnablePassphraseHistory,
+  oDisableExtendedKeyFormat,
   oEnableExtendedKeyFormat,
   oUseStandardSocket,
   oNoUseStandardSocket,
@@ -135,10 +136,13 @@ enum cmd_and_opt_values
   oDisableScdaemon,
   oDisableCheckOwnSocket,
   oS2KCount,
+  oS2KCalibration,
   oAutoExpandSecmem,
   oListenBacklog,
 
-  oWriteEnvFile
+  oWriteEnvFile,
+
+  oNoop
 };
 
 
@@ -250,9 +254,11 @@ static ARGPARSE_OPTS opts[] = {
                 /* */           "@"
 #endif
                 ),
+  ARGPARSE_s_n (oDisableExtendedKeyFormat, "disable-extended-key-format", "@"),
   ARGPARSE_s_n (oEnableExtendedKeyFormat, "enable-extended-key-format", "@"),
 
   ARGPARSE_s_u (oS2KCount, "s2k-count", "@"),
+  ARGPARSE_s_u (oS2KCalibration, "s2k-calibration", "@"),
 
   ARGPARSE_op_u (oAutoExpandSecmem, "auto-expand-secmem", "@"),
 
@@ -262,6 +268,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_o_s (oWriteEnvFile, "write-env-file", "@"),
   ARGPARSE_s_n (oUseStandardSocket, "use-standard-socket", "@"),
   ARGPARSE_s_n (oNoUseStandardSocket, "no-use-standard-socket", "@"),
+
+  /* Dummy options.  */
+
 
   ARGPARSE_end () /* End of list */
 };
@@ -823,7 +832,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.check_passphrase_pattern = NULL;
       opt.max_passphrase_days = MAX_PASSPHRASE_DAYS;
       opt.enable_passphrase_history = 0;
-      opt.enable_extended_key_format = 0;
+      opt.enable_extended_key_format = 1;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
       opt.allow_external_cache = 1;
@@ -834,6 +843,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       /* Note: When changing the next line, change also gpgconf_list.  */
       opt.ssh_fingerprint_digest = GCRY_MD_MD5;
       opt.s2k_count = 0;
+      set_s2k_calibration_time (0);  /* Set to default.  */
       return 1;
     }
 
@@ -851,7 +861,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oLogFile:
       if (!reread)
-        return 0; /* not handeld */
+        return 0; /* not handled */
       if (!current_logfile || !pargs->r.ret_str
           || strcmp (current_logfile, pargs->r.ret_str))
         {
@@ -898,7 +908,11 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       break;
 
     case oEnableExtendedKeyFormat:
-      opt.enable_extended_key_format = 1;
+      opt.enable_extended_key_format = 2;
+      break;
+    case oDisableExtendedKeyFormat:
+      if (opt.enable_extended_key_format != 2)
+        opt.enable_extended_key_format = 0;
       break;
 
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
@@ -928,6 +942,12 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oS2KCount:
       opt.s2k_count = pargs->r.ret_ulong;
       break;
+
+    case oS2KCalibration:
+      set_s2k_calibration_time (pargs->r.ret_ulong);
+      break;
+
+    case oNoop: break;
 
     default:
       return 0; /* not handled */
@@ -1444,8 +1464,6 @@ main (int argc, char **argv )
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("pinentry-timeout:%lu:0:\n",
                  GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
-      es_printf ("enable-extended-key-format:%lu:\n",
-                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("grab:%lu:\n",
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
@@ -1768,7 +1786,7 @@ main (int argc, char **argv )
 
           /* Unless we are running with a program given on the command
            * line we can assume that the inotify things works and thus
-           * we can avoid tye regular stat calls.  */
+           * we can avoid the regular stat calls.  */
           if (!argc)
             reliable_homedir_inotify = 1;
         }
@@ -2108,7 +2126,7 @@ get_agent_scd_notify_event (void)
                                  GetCurrentProcess(), &h2,
                                  EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
         {
-          log_error ("setting syncronize for scd notify event failed: %s\n",
+          log_error ("setting synchronize for scd notify event failed: %s\n",
                      w32_strerror (-1) );
           CloseHandle (h);
         }
@@ -2369,9 +2387,6 @@ handle_tick (void)
 
   if (!last_minute)
     last_minute = time (NULL);
-
-  /* Check whether the scdaemon has died and cleanup in this case. */
-  agent_scd_check_aliveness ();
 
   /* If we are running as a child of another process, check whether
      the parent is still alive and shutdown if not. */

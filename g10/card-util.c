@@ -216,6 +216,7 @@ get_manufacturer (unsigned int no)
 
     case 0x1337: return "Warsaw Hackerspace";
     case 0x2342: return "warpzone"; /* hackerspace Muenster.  */
+    case 0x4354: return "Confidential Technologies";   /* cotech.de */
     case 0x63AF: return "Trustica";
     case 0xBD0E: return "Paranoidlabs";
     case 0xF517: return "FSIJ";
@@ -275,7 +276,7 @@ print_keygrip (estream_t fp, const unsigned char *grp)
     {
       tty_fprintf (fp, "      keygrip ....: ");
       for (i=0; i < 20 ; i++, grp++)
-        es_fprintf (fp, "%02X", *grp);
+        tty_fprintf (fp, "%02X", *grp);
       tty_fprintf (fp, "\n");
     }
 }
@@ -511,6 +512,15 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       es_fprintf (fp, "pinretry:%d:%d:%d:\n",
                   info.chvretry[0], info.chvretry[1], info.chvretry[2]);
       es_fprintf (fp, "sigcount:%lu:::\n", info.sig_counter);
+      if (info.extcap.kdf)
+        {
+          es_fprintf (fp, "kdf:%s:\n", info.kdf_do_enabled ? "on" : "off");
+        }
+      if (info.extcap.bt)
+        {
+          es_fprintf (fp, "uif:%d:%d:%d:\n",
+                      info.uif[0], info.uif[1], info.uif[2]);
+        }
 
       for (i=0; i < 4; i++)
         {
@@ -617,6 +627,17 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       tty_fprintf (fp,    "PIN retry counter : %d %d %d\n",
                    info.chvretry[0], info.chvretry[1], info.chvretry[2]);
       tty_fprintf (fp,    "Signature counter : %lu\n", info.sig_counter);
+      if (info.extcap.kdf)
+        {
+          tty_fprintf (fp, "KDF setting ......: %s\n",
+                       info.kdf_do_enabled ? "on" : "off");
+        }
+      if (info.extcap.bt)
+        {
+          tty_fprintf (fp, "UIF setting ......: Sign=%s Decrypt=%s Auth=%s\n",
+                       info.uif[0] ? "on" : "off", info.uif[1] ? "on" : "off",
+                       info.uif[2] ? "on" : "off");
+        }
       tty_fprintf (fp, "Signature key ....:");
       print_shax_fpr (fp, info.fpr1len? info.fpr1:NULL, info.fpr1len);
       if (info.fpr1len && info.fpr1time)
@@ -647,7 +668,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
                 info.fpr3len? info.fpr3 : NULL);
       thefprlen = (info.fpr1len? info.fpr1len : info.fpr2len? info.fpr2len :
                    info.fpr3len? info.fpr3len : 0);
-      /* If the fingerprint is all 0xff, the key has no asssociated
+      /* If the fingerprint is all 0xff, the key has no associated
          OpenPGP certificate.  */
       if ( thefpr && !fpr_is_ff (thefpr, thefprlen)
            && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen))
@@ -674,7 +695,7 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 {
   int err;
   strlist_t card_list, sl;
-  char *serialno0;
+  char *serialno0, *serialno1;
   int all_cards = 0;
 
   if (serialno == NULL)
@@ -700,8 +721,6 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 
   for (sl = card_list; sl; sl = sl->next)
     {
-      char *serialno1;
-
       if (!all_cards && strcmp (serialno, sl->d))
         continue;
 
@@ -722,7 +741,8 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
     }
 
   /* Select the original card again.  */
-  err = agent_scd_serialno (&serialno0, serialno0);
+  err = agent_scd_serialno (&serialno1, serialno0);
+  xfree (serialno1);
 
  leave:
   xfree (serialno0);
@@ -2019,7 +2039,7 @@ gen_kdf_data (unsigned char *data, int single_salt)
 
   p = data;
 
-  s2k_char = encode_s2k_iterations (0);
+  s2k_char = encode_s2k_iterations (agent_get_s2k_count ());
   iterations = S2K_DECODE_COUNT (s2k_char);
   count_4byte[0] = (iterations >> 24) & 0xff;
   count_4byte[1] = (iterations >> 16) & 0xff;
@@ -2110,6 +2130,49 @@ kdf_setup (const char *args)
  leave:
   agent_release_card_info (&info);
 }
+
+static void
+uif (int arg_number, const char *arg_rest)
+{
+  struct agent_card_info_s info;
+  int feature_available;
+  gpg_error_t err;
+  char name[100];
+  unsigned char data[2];
+
+  memset (&info, 0, sizeof info);
+
+  err = agent_scd_getattr ("EXTCAP", &info);
+  if (err)
+    {
+      log_error (_("error getting card info: %s\n"), gpg_strerror (err));
+      return;
+    }
+
+  feature_available = info.extcap.bt;
+  agent_release_card_info (&info);
+
+  if (!feature_available)
+    {
+      log_error (_("This command is not supported by this card\n"));
+      tty_printf ("\n");
+      return;
+    }
+
+  snprintf (name, sizeof name, "UIF-%d", arg_number);
+  if ( !strcmp (arg_rest, "off") )
+    data[0] = 0x00;
+  else if ( !strcmp (arg_rest, "on") )
+    data[0] = 0x01;
+  else if ( !strcmp (arg_rest, "permanent") )
+    data[0] = 0x02;
+
+  data[1] = 0x20;
+
+  err = agent_scd_setattr (name, data, 2, NULL);
+  if (err)
+    log_error (_("error for setup UIF: %s\n"), gpg_strerror (err));
+}
 
 /* Data used by the command parser.  This needs to be outside of the
    function scope to allow readline based command completion.  */
@@ -2120,7 +2183,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
-    cmdKEYATTR,
+    cmdKEYATTR, cmdUIF,
     cmdINVCMD
   };
 
@@ -2152,10 +2215,11 @@ static struct
     { "generate", cmdGENERATE, 1, N_("generate new keys")},
     { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
     { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
-    { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code") },
+    { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code")},
     { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
     { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
     { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
+    { "uif", cmdUIF, 1, N_("change the User Interaction Flag")},
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "readcert", cmdREADCERT, 0, NULL },
@@ -2445,6 +2509,14 @@ card_edit (ctrl_t ctrl, strlist_t commands)
 
         case cmdKEYATTR:
           key_attr ();
+          break;
+
+        case cmdUIF:
+          if ( arg_number < 1 || arg_number > 3 )
+            tty_printf ("usage: uif N [on|off|permanent]\n"
+                        "       1 <= N <= 3\n");
+          else
+            uif (arg_number, arg_rest);
           break;
 
         case cmdQUIT:

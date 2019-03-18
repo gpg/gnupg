@@ -25,6 +25,7 @@
 #include "keydb.h"
 #include "main.h"
 #include "options.h"
+#include "call-agent.h"
 
 static int do_debug;
 #define debug(fmt, ...) \
@@ -2248,9 +2249,12 @@ sk_esk (const char *option, int argc, char *argv[], void *cookie)
   log_assert (sizeof (si.salt) == sizeof (ske->s2k.salt));
   memcpy (ske->s2k.salt, si.salt, sizeof (ske->s2k.salt));
   if (! si.s2k_is_session_key)
-    /* 0 means get the default.  */
-    ske->s2k.count = encode_s2k_iterations (si.iterations);
-
+    {
+      if (!si.iterations)
+        ske->s2k.count = encode_s2k_iterations (agent_get_s2k_count ());
+      else
+        ske->s2k.count = encode_s2k_iterations (si.iterations);
+    }
 
   /* Derive the symmetric key that is either the session key or the
      key used to encrypt the session key.  */
@@ -2281,16 +2285,27 @@ sk_esk (const char *option, int argc, char *argv[], void *cookie)
     /* Encrypt the session key using the s2k specifier.  */
     {
       DEK *sesdekp = &sesdek;
+      void *enckey;
+      size_t enckeylen;
 
       /* Now encrypt the session key (or rather, the algorithm used to
-         encrypt the SKESK plus the session key) using ENCKEY.  */
-      err = encrypt_seskey (&s2kdek, 0, &sesdekp,
-                            (void**)&ske->seskey, (size_t *)&ske->seskeylen);
+         encrypt the SKESK plus the session key) using S2KDEK.  */
+      err = encrypt_seskey (&s2kdek, 0, &sesdekp, &enckey, &enckeylen);
+
       if (err)
         log_fatal ("encrypt_seskey failed: %s\n", gpg_strerror (err));
 
+      if (enckeylen - 1 > sesdek.keylen)
+        log_fatal ("key size is too big: %zu\n", enckeylen);
+      else
+        {
+          ske->seskeylen = (byte)enckeylen;
+          memcpy (ske->seskey, enckey, enckeylen);
+        }
+
       /* Save the session key for later.  */
       session_key = sesdek;
+      xfree (enckey);
     }
 
   pkt.pkttype = PKT_SYMKEY_ENC;
@@ -3060,10 +3075,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 }
 
 void
-show_basic_key_info (ctrl_t ctrl, KBNODE keyblock)
+show_basic_key_info (ctrl_t ctrl, KBNODE keyblock, int made_from_sec)
 {
   (void)ctrl;
-  (void) keyblock;
+  (void)keyblock;
+  (void)made_from_sec;
 }
 
 int

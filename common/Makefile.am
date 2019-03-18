@@ -83,7 +83,7 @@ common_sources = \
 	localename.c \
 	session-env.c session-env.h \
 	userids.c userids.h \
-	openpgp-oid.c \
+	openpgp-oid.c openpgp-s2k.c \
 	ssh-utils.c ssh-utils.h \
 	agent-opt.c \
 	helpfile.c \

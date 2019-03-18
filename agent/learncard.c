@@ -40,7 +40,7 @@ struct keypair_info_s
   char hexgrip[1];   /* The keygrip (i.e. a hash over the public key
                         parameters) formatted as a hex string.
                         Allocated somewhat large to also act as
-                        memeory for the above ID field. */
+                        memory for the above ID field. */
 };
 typedef struct keypair_info_s *KEYPAIR_INFO;
 

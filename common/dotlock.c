@@ -140,7 +140,7 @@
    you pass (0) instead of (-1) the function does not wait in case the
    file is already locked but returns -1 and sets ERRNO to EACCES.
    Any other positive value for the second parameter is considered a
-   timeout valuie in milliseconds.
+   timeout value in milliseconds.
 
    To release the lock you call:
 

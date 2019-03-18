@@ -97,7 +97,7 @@ cleanup_export_globals (void)
 }
 
 
-/* Option parser for export options.  See parse_options fro
+/* Option parser for export options.  See parse_options for
    details.  */
 int
 parse_export_options(char *str,unsigned int *options,int noisy)
@@ -114,6 +114,8 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("remove unusable parts from key during export")},
       {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
        N_("remove as much as possible from key during export")},
+      {"export-drop-uids", EXPORT_DROP_UIDS, NULL,
+       N_("Do not export user id or attribute packets")},
 
       {"export-pka", EXPORT_PKA_FORMAT, NULL, NULL },
       {"export-dane", EXPORT_DANE_FORMAT, NULL, NULL },
@@ -136,14 +138,20 @@ parse_export_options(char *str,unsigned int *options,int noisy)
   int rc;
 
   rc = parse_options (str, options, export_opts, noisy);
-  if (rc && (*options & EXPORT_BACKUP))
+  if (!rc)
+    return 0;
+
+  /* Alter other options we want or don't want for restore.  */
+  if ((*options & EXPORT_BACKUP))
     {
-      /* Alter other options we want or don't want for restore.  */
       *options |= (EXPORT_LOCAL_SIGS | EXPORT_ATTRIBUTES
                    | EXPORT_SENSITIVE_REVKEYS);
       *options &= ~(EXPORT_CLEAN | EXPORT_MINIMAL
                     | EXPORT_PKA_FORMAT | EXPORT_DANE_FORMAT);
     }
+  /* Dropping uids also means to drop attributes.  */
+  if ((*options & EXPORT_DROP_UIDS))
+    *options &= ~(EXPORT_ATTRIBUTES);
   return rc;
 }
 
@@ -443,10 +451,8 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
       keyid_from_pk (node->pkt->pkt.public_key, kid);
       break;
 
-    case KEYDB_SEARCH_MODE_FPR16:
-    case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
-      fingerprint_from_pk (node->pkt->pkt.public_key, fpr,&fprlen);
+      fingerprint_from_pk (node->pkt->pkt.public_key, fpr, &fprlen);
       break;
 
     default:
@@ -465,14 +471,8 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
         result = 1;
       break;
 
-    case KEYDB_SEARCH_MODE_FPR16:
-      if (!memcmp (desc->u.fpr, fpr, 16))
-        result = 1;
-      break;
-
-    case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
-      if (!memcmp (desc->u.fpr, fpr, 20))
+      if (fprlen == desc->fprlen && !memcmp (desc->u.fpr, fpr, desc->fprlen))
         result = 1;
       break;
 
@@ -1171,7 +1171,7 @@ print_status_exported (PKT_public_key *pk)
  * passphrase-protected.  Otherwise, store secret key material in the
  * clear.
  *
- * CACHE_NONCE_ADDR is used to share nonce for multple key retrievals.
+ * CACHE_NONCE_ADDR is used to share nonce for multiple key retrievals.
  */
 gpg_error_t
 receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
@@ -1461,7 +1461,7 @@ print_pka_or_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
         continue;
 
       xfree (mbox);
-      mbox = mailbox_from_userid (uid->name);
+      mbox = mailbox_from_userid (uid->name, 0);
       if (!mbox)
         continue;
 
@@ -1575,7 +1575,7 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
       if (node->pkt->pkttype == PKT_COMMENT)
         continue;
 
-      /* Skip ring trust packets - they should not ne here anyway.  */
+      /* Skip ring trust packets - they should not be here anyway.  */
       if (node->pkt->pkttype == PKT_RING_TRUST)
         continue;
 
@@ -1648,6 +1648,19 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
               if (i < node->pkt->pkt.signature->numrevkeys)
                 continue;
             }
+        }
+
+      /* Don't export user ids (and attributes)?  This is not RFC-4880
+       * compliant but we allow it anyway.  */
+      if ((options & EXPORT_DROP_UIDS)
+          && node->pkt->pkttype == PKT_USER_ID)
+        {
+          /* Skip until we get to something that is not a user id (or
+           * attrib) or a signature on it.  */
+          while (kbctx->next && kbctx->next->pkt->pkttype == PKT_SIGNATURE)
+            kbctx = kbctx->next;
+
+          continue;
         }
 
       /* Don't export attribs? */

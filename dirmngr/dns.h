@@ -132,19 +132,6 @@ DNS_PUBLIC int *dns_debug_p(void);
 /*
  * C O M P I L E R  A N N O T A T I O N S
  *
- * GCC with -Wextra, and clang by default, complain about overrides in
- * initializer lists. Overriding previous member initializers is well
- * defined behavior in C. dns.c relies on this behavior to define default,
- * overrideable member values when instantiating configuration objects.
- *
- * dns_quietinit() guards a compound literal expression with pragmas to
- * silence these shrill warnings. This alleviates the burden of requiring
- * third-party projects to adjust their compiler flags.
- *
- * NOTE: If you take the address of the compound literal, take the address
- * of the transformed expression, otherwise the compound literal lifetime is
- * tied to the scope of the GCC statement expression.
- *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #if defined __clang__
@@ -152,21 +139,15 @@ DNS_PUBLIC int *dns_debug_p(void);
 #define DNS_PRAGMA_QUIET _Pragma("clang diagnostic ignored \"-Winitializer-overrides\"")
 #define DNS_PRAGMA_POP _Pragma("clang diagnostic pop")
 
-#define dns_quietinit(...) \
-	DNS_PRAGMA_PUSH DNS_PRAGMA_QUIET __VA_ARGS__ DNS_PRAGMA_POP
 #elif (__GNUC__ == 4 && __GNUC_MINOR__ >= 6) || __GNUC__ > 4
 #define DNS_PRAGMA_PUSH _Pragma("GCC diagnostic push")
 #define DNS_PRAGMA_QUIET _Pragma("GCC diagnostic ignored \"-Woverride-init\"")
 #define DNS_PRAGMA_POP _Pragma("GCC diagnostic pop")
 
-/* GCC parses the _Pragma operator less elegantly than clang. */
-#define dns_quietinit(...) \
-	__extension__ ({ DNS_PRAGMA_PUSH DNS_PRAGMA_QUIET __VA_ARGS__; DNS_PRAGMA_POP })
 #else
 #define DNS_PRAGMA_PUSH
 #define DNS_PRAGMA_QUIET
 #define DNS_PRAGMA_POP
-#define dns_quietinit(...) __VA_ARGS__
 #endif
 
 #if defined __GNUC__
@@ -291,25 +272,15 @@ enum dns_rcode {
  */
 #define DNS_STRMAXLEN 47 /* "QUESTION|ANSWER|AUTHORITY|ADDITIONAL" */
 
-DNS_PUBLIC const char *dns_strsection(enum dns_section, void *, size_t);
-#define dns_strsection3(a, b, c) \
-				dns_strsection((a), (b), (c))
-#define dns_strsection1(a)	dns_strsection((a), (char [DNS_STRMAXLEN + 1]){ 0 }, DNS_STRMAXLEN + 1)
-#define dns_strsection(...)	DNS_PP_CALL(DNS_PP_XPASTE(dns_strsection, DNS_PP_NARG(__VA_ARGS__)), __VA_ARGS__)
+DNS_PUBLIC const char *dns_strsection(enum dns_section);
 
 DNS_PUBLIC enum dns_section dns_isection(const char *);
 
-DNS_PUBLIC const char *dns_strclass(enum dns_class, void *, size_t);
-#define dns_strclass3(a, b, c)	dns_strclass((a), (b), (c))
-#define dns_strclass1(a)	dns_strclass((a), (char [DNS_STRMAXLEN + 1]){ 0 }, DNS_STRMAXLEN + 1)
-#define dns_strclass(...)	DNS_PP_CALL(DNS_PP_XPASTE(dns_strclass, DNS_PP_NARG(__VA_ARGS__)), __VA_ARGS__)
+DNS_PUBLIC const char *dns_strclass(enum dns_class);
 
 DNS_PUBLIC enum dns_class dns_iclass(const char *);
 
-DNS_PUBLIC const char *dns_strtype(enum dns_type, void *, size_t);
-#define dns_strtype3(a, b, c)	dns_strtype((a), (b), (c))
-#define dns_strtype1(a)		dns_strtype((a), (char [DNS_STRMAXLEN + 1]){ 0 }, DNS_STRMAXLEN + 1)
-#define dns_strtype(...)	DNS_PP_CALL(DNS_PP_XPASTE(dns_strtype, DNS_PP_NARG(__VA_ARGS__)), __VA_ARGS__)
+DNS_PUBLIC const char *dns_strtype(enum dns_type);
 
 DNS_PUBLIC enum dns_type dns_itype(const char *);
 
@@ -422,9 +393,6 @@ struct dns_packet {
 
 #define dns_p_sizeof(P)		dns_p_calcsize((P)->end)
 
-/** takes size of maximum desired payload */
-#define dns_p_new(n)		(dns_p_init((struct dns_packet *)&(union { unsigned char b[dns_p_calcsize((n))]; struct dns_packet p; }){ { 0 } }, dns_p_calcsize((n))))
-
 /** takes size of entire packet structure as allocated */
 DNS_PUBLIC struct dns_packet *dns_p_init(struct dns_packet *, size_t);
 
@@ -463,11 +431,6 @@ DNS_PUBLIC int dns_p_study(struct dns_packet *);
 #define DNS_D_ANCHOR	1	/* anchor domain w/ root "." */
 #define DNS_D_CLEAVE	2	/* cleave sub-domain */
 #define DNS_D_TRIM	4	/* remove superfluous dots */
-
-#define dns_d_new3(a, b, f)	dns_d_init(&(char[DNS_D_MAXNAME + 1]){ 0 }, DNS_D_MAXNAME + 1, (a), (b), (f))
-#define dns_d_new2(a, f)	dns_d_new3((a), strlen((a)), (f))
-#define dns_d_new1(a)		dns_d_new3((a), strlen((a)), DNS_D_ANCHOR)
-#define dns_d_new(...)		DNS_PP_CALL(DNS_PP_XPASTE(dns_d_new, DNS_PP_NARG(__VA_ARGS__)), __VA_ARGS__)
 
 DNS_PUBLIC char *dns_d_init(void *, size_t, const void *, size_t, int);
 
@@ -521,9 +484,6 @@ DNS_PUBLIC int dns_rr_cmp(struct dns_rr *, struct dns_packet *, struct dns_rr *,
 DNS_PUBLIC size_t dns_rr_print(void *, size_t, struct dns_rr *, struct dns_packet *, int *);
 
 
-#define dns_rr_i_new(P, ...) \
-	dns_rr_i_init(&dns_quietinit((struct dns_rr_i){ 0, __VA_ARGS__ }), (P))
-
 struct dns_rr_i {
 	enum dns_section section;
 	const void *name;
@@ -551,7 +511,7 @@ DNS_PUBLIC int dns_rr_i_order(struct dns_rr *, struct dns_rr *, struct dns_rr_i 
 
 DNS_PUBLIC int dns_rr_i_shuffle(struct dns_rr *, struct dns_rr *, struct dns_rr_i *, struct dns_packet *);
 
-DNS_PUBLIC struct dns_rr_i *dns_rr_i_init(struct dns_rr_i *, struct dns_packet *);
+DNS_PUBLIC void dns_rr_i_init(struct dns_rr_i *);
 
 #define dns_rr_i_save(i)	((i)->saved = (i)->state)
 #define dns_rr_i_rewind(i)	((i)->state = (i)->saved)
@@ -560,7 +520,7 @@ DNS_PUBLIC struct dns_rr_i *dns_rr_i_init(struct dns_rr_i *, struct dns_packet *
 DNS_PUBLIC unsigned dns_rr_grep(struct dns_rr *, unsigned, struct dns_rr_i *, struct dns_packet *, int *);
 
 #define dns_rr_foreach_(rr, P, ...)	\
-	for (struct dns_rr_i DNS_PP_XPASTE(i, __LINE__) = *dns_rr_i_new((P), __VA_ARGS__); dns_rr_grep((rr), 1, &DNS_PP_XPASTE(i, __LINE__), (P), &(int){ 0 }); )
+	for (struct dns_rr_i DNS_PP_XPASTE(i, __LINE__) = { __VA_ARGS__ }; dns_rr_grep((rr), 1, &DNS_PP_XPASTE(i, __LINE__), (P), NULL); )
 
 #define dns_rr_foreach(...)	dns_rr_foreach_(__VA_ARGS__)
 
@@ -1001,7 +961,6 @@ struct dns_hints_i {
 	} state;
 }; /* struct dns_hints_i */
 
-#define dns_hints_i_new(...)	(&(struct dns_hints_i){ __VA_ARGS__ })
 
 DNS_PUBLIC unsigned dns_hints_grep(struct sockaddr **, socklen_t *, unsigned, struct dns_hints_i *, struct dns_hints *);
 
@@ -1053,9 +1012,6 @@ DNS_PUBLIC void dns_cache_close(struct dns_cache *);
 
 #define DNS_OPTS_INITIALIZER_ { 0, 0 }, 0, 0
 #define DNS_OPTS_INITIALIZER  { DNS_OPTS_INITIALIZER_ }
-#define DNS_OPTS_INIT(...)    { DNS_OPTS_INITIALIZER_, __VA_ARGS__ }
-
-#define dns_opts(...) (&dns_quietinit((struct dns_options)DNS_OPTS_INIT(__VA_ARGS__)))
 
 struct dns_options {
 	/*

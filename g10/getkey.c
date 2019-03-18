@@ -60,7 +60,7 @@ struct getkey_ctx_s
      search or not.  A search that is exact requires that a key or
      subkey meet all of the specified criteria.  A search that is not
      exact allows selecting a different key or subkey from the
-     keyblock that matched the critera.  Further, an exact search
+     keyblock that matched the criteria.  Further, an exact search
      returns the key or subkey that matched whereas a non-exact search
      typically returns the primary key.  See finish_lookup for
      details.  */
@@ -897,8 +897,6 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 	  if (!include_unusable
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_SHORT_KID
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_LONG_KID
-	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR16
-	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR20
 	      && ctx->items[n].mode != KEYDB_SEARCH_MODE_FPR)
             {
               ctx->items[n].skipfnc = skip_unusable;
@@ -1373,7 +1371,7 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
        n; n = find_next_kbnode (n, PKT_USER_ID))
     {
       PKT_user_id *uid = n->pkt->pkt.user_id;
-      char *mbox = mailbox_from_userid (uid->name);
+      char *mbox = mailbox_from_userid (uid->name, 0);
       int match = mbox ? strcasecmp (name, mbox) == 0 : 0;
 
       xfree (mbox);
@@ -1654,7 +1652,7 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
   if (r_keyblock)
     *r_keyblock = NULL;
 
-  if (fprint_len == 20 || fprint_len == 16)
+  if (fprint_len == 32 || fprint_len == 20 || fprint_len == 16)
     {
       struct getkey_ctx_s ctx;
       KBNODE kb = NULL;
@@ -1670,9 +1668,9 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
         return gpg_error_from_syserror ();
 
       ctx.nitems = 1;
-      ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
-	: KEYDB_SEARCH_MODE_FPR20;
+      ctx.items[0].mode = KEYDB_SEARCH_MODE_FPR;
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
+      ctx.items[0].fprlen = fprint_len;
       if (pk)
         ctx.req_usage = pk->req_usage;
       rc = lookup (ctrl, &ctx, 0, &kb, &found_key);
@@ -1745,8 +1743,6 @@ get_keyblock_byfprint_fast (kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
 
   for (i = 0; i < MAX_FINGERPRINT_LEN && i < fprint_len; i++)
     fprbuf[i] = fprint[i];
-  while (i < MAX_FINGERPRINT_LEN)
-    fprbuf[i++] = 0;
 
   hd = keydb_new ();
   if (!hd)
@@ -1770,7 +1766,7 @@ get_keyblock_byfprint_fast (kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
   if (r_hd)
     *r_hd = hd;
 
-  err = keydb_search_fpr (hd, fprbuf);
+  err = keydb_search_fpr (hd, fprbuf, fprint_len);
   if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     {
       if (!r_hd)
@@ -2577,10 +2573,22 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 			xrealloc (pk->revkey, sizeof (struct revocation_key) *
 				  (pk->numrevkeys + sig->numrevkeys));
 
-		      for (i = 0; i < sig->numrevkeys; i++)
-			memcpy (&pk->revkey[pk->numrevkeys++],
-				&sig->revkey[i],
-				sizeof (struct revocation_key));
+		      for (i = 0; i < sig->numrevkeys; i++, pk->numrevkeys++)
+                        {
+                          pk->revkey[pk->numrevkeys].class
+                            = sig->revkey[i].class;
+                          pk->revkey[pk->numrevkeys].algid
+                            = sig->revkey[i].algid;
+                          pk->revkey[pk->numrevkeys].fprlen
+                            = sig->revkey[i].fprlen;
+                          memcpy (pk->revkey[pk->numrevkeys].fpr,
+                                  sig->revkey[i].fpr, sig->revkey[i].fprlen);
+                          memset (pk->revkey[pk->numrevkeys].fpr
+                                  + sig->revkey[i].fprlen,
+                                  0,
+                                  sizeof (sig->revkey[i].fpr)
+                                  - sig->revkey[i].fprlen);
+                        }
 		    }
 
 		  if (sig->timestamp >= sigdate)
@@ -3364,7 +3372,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
  *
  *  1. No requested usage and no primary key requested
  *     Examples for this case are that we have a keyID to be used
- *     for decrytion or verification.
+ *     for decryption or verification.
  *  2. No usage but primary key requested
  *     This is the case for all functions which work on an
  *     entire keyblock, e.g. for editing or listing

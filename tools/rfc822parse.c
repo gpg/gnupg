@@ -41,6 +41,12 @@
 
 #include "rfc822parse.h"
 
+/* All valid characters in a header name.  */
+#define HEADER_NAME_CHARS  ("abcdefghijklmnopqrstuvwxyz" \
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+                            "-01234567890")
+
+
 enum token_type
   {
     tSPACE,
@@ -90,7 +96,7 @@ struct rfc822parse_context
   void *callback_value;
   int callback_error;
   int in_body;
-  int in_preamble;      /* Wether we are before the first boundary. */
+  int in_preamble;      /* Whether we are before the first boundary. */
   part_t parts;         /* The tree of parts. */
   part_t current_part;  /* Whom we are processing (points into parts). */
   const char *boundary; /* Current boundary. */
@@ -131,27 +137,30 @@ lowercase_string (unsigned char *string)
       *string = *string - 'A' + 'a';
 }
 
-/* Transform a header name into a standard capitalized format; i.e
-   "Content-Type".  Conversion stops at the colon.  As usual we don't
-   use the localized versions of ctype.h.
- */
-static void
-capitalize_header_name (unsigned char *name)
-{
-  int first = 1;
 
-  for (; *name && *name != ':'; name++)
-    if (*name == '-')
-      first = 1;
-    else if (first)
-      {
-        if (*name >= 'a' && *name <= 'z')
-          *name = *name - 'a' + 'A';
-        first = 0;
-      }
-    else if (*name >= 'A' && *name <= 'Z')
-      *name = *name - 'A' + 'a';
+static int
+my_toupper (int c)
+{
+  if (c >= 'a' && c <= 'z')
+    c &= ~0x20;
+  return c;
 }
+
+/* This is the same as ascii_strcasecmp.  */
+static int
+my_strcasecmp (const char *a, const char *b)
+{
+  if (a == b)
+    return 0;
+
+  for (; *a && *b; a++, b++)
+    {
+      if (*a != *b && my_toupper(*a) != my_toupper(*b))
+        break;
+    }
+  return *a == *b? 0 : (my_toupper (*a) - my_toupper (*b));
+}
+
 
 #ifndef HAVE_STPCPY
 static char *
@@ -167,7 +176,7 @@ my_stpcpy (char *a,const char *b)
 #endif
 
 
-/* If a callback has been registerd, call it for the event of type
+/* If a callback has been registered, call it for the event of type
    EVENT. */
 static int
 do_callback (rfc822parse_t msg, rfc822parse_event_t event)
@@ -226,6 +235,62 @@ release_handle_data (rfc822parse_t msg)
   msg->current_part = NULL;
   msg->boundary = NULL;
 }
+
+
+/* Check that the header name is valid.  We allow all lower and
+ * uppercase letters and, except for the first character, digits and
+ * the dash.  The check stops at the first colon or at string end.
+ * Returns true if the name is valid.  */
+int
+rfc822_valid_header_name_p (const char *name)
+{
+  const char *s;
+  size_t namelen;
+
+  if ((s=strchr (name, ':')))
+    namelen = s - name;
+  else
+    namelen = strlen (name);
+
+  if (!namelen
+      || strspn (name, HEADER_NAME_CHARS) != namelen
+      || strchr ("-0123456789", *name))
+    return 0;
+  return 1;
+}
+
+
+/* Transform a header NAME into a standard capitalized format.
+ * Conversion stops at the colon. */
+void
+rfc822_capitalize_header_name (char *name)
+{
+  unsigned char *p = name;
+  int first = 1;
+
+  /* Special cases first.  */
+  if (!my_strcasecmp (name, "MIME-Version"))
+    {
+      strcpy (name, "MIME-Version");
+      return;
+    }
+
+  /* Regular cases.  */
+  for (; *p && *p != ':'; p++)
+    {
+      if (*p == '-')
+        first = 1;
+      else if (first)
+        {
+          if (*p >= 'a' && *p <= 'z')
+            *p = *p - 'a' + 'A';
+          first = 0;
+        }
+      else if (*p >= 'A' && *p <= 'Z')
+        *p = *p - 'A' + 'a';
+    }
+}
+
 
 
 /* Create a new parsing context for an entire rfc822 message and
@@ -432,7 +497,7 @@ insert_header (rfc822parse_t msg, const unsigned char *line, size_t length)
 
   /* Transform a field name into canonical format. */
   if (!hdr->cont && strchr (line, ':'))
-     capitalize_header_name (hdr->line);
+    rfc822_capitalize_header_name (hdr->line);
 
   *msg->current_part->hdr_lines_tail = hdr;
   msg->current_part->hdr_lines_tail = &hdr->next;
@@ -578,7 +643,7 @@ rfc822parse_get_field (rfc822parse_t msg, const char *name, int which,
 
 /****************
  * Enumerate all header.  Caller has to provide the address of a pointer
- * which has to be initialzed to NULL, the caller should then never change this
+ * which has to be initialized to NULL, the caller should then never change this
  * pointer until he has closed the enumeration by passing again the address
  * of the pointer but with msg set to NULL.
  * The function returns pointers to all the header lines or NULL when
@@ -616,7 +681,7 @@ rfc822parse_enum_header_lines (rfc822parse_t msg, void **context)
  *	   >0 : Retrieve the n-th field
 
  * RPREV may be used to return the predecessor of the returned field;
- * which may be NULL for the very first one. It has to be initialzed
+ * which may be NULL for the very first one. It has to be initialized
  * to either NULL in which case the search start at the first header line,
  * or it may point to a headerline, where the search should start
  */
@@ -1013,7 +1078,7 @@ is_parameter (TOKEN t)
    parse context is valid; NULL is returned in case that attr is not
    defined in the header, a missing value is reppresented by an empty string.
 
-   With LOWER_VALUE set to true, a matching field valuebe be
+   With LOWER_VALUE set to true, a matching field value will be
    lowercased.
 
    Note, that ATTR should be lowercase.

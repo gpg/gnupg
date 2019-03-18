@@ -151,7 +151,7 @@ static char tor_socks_password[20];
 
 
 #ifdef USE_LIBDNS
-/* Libdns gobal data.  */
+/* Libdns global data.  */
 struct libdns_s
 {
   struct dns_resolv_conf *resolv_conf;
@@ -701,6 +701,11 @@ libdns_res_open (ctrl_t ctrl, struct dns_resolver **r_res)
   gpg_error_t err;
   struct dns_resolver *res;
   int derr;
+  struct dns_options opts = { 0 };
+
+  opts.socks_host     = &libdns.socks_host;
+  opts.socks_user     = tor_socks_user;
+  opts.socks_password = tor_socks_password;
 
   *r_res = NULL;
 
@@ -726,10 +731,7 @@ libdns_res_open (ctrl_t ctrl, struct dns_resolver **r_res)
     set_dns_timeout (0);
 
   res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (.socks_host     = &libdns.socks_host,
-                                .socks_user     = tor_socks_user,
-                                .socks_password = tor_socks_password ),
-                      &derr);
+                      &opts, &derr);
   if (!res)
     return libdns_error_to_gpg_error (derr);
 
@@ -1056,16 +1058,17 @@ resolve_name_standard (ctrl_t ctrl, const char *name, unsigned short port,
 
 
 /* This a wrapper around getaddrinfo with slightly different semantics.
-   NAME is the name to resolve.
-   PORT is the requested port or 0.
-   WANT_FAMILY is either 0 (AF_UNSPEC), AF_INET6, or AF_INET4.
-   WANT_SOCKETTYPE is either SOCK_STREAM or SOCK_DGRAM.
-
-   On success the result is stored in a linked list with the head
-   stored at the address R_AI; the caller must call gpg_addrinfo_free
-   on this.  If R_CANONNAME is not NULL the official name of the host
-   is stored there as a malloced string; if that name is not available
-   NULL is stored.  */
+ * NAME is the name to resolve.
+ * PORT is the requested port or 0.
+ * WANT_FAMILY is either 0 (AF_UNSPEC), AF_INET6, or AF_INET4.
+ * WANT_SOCKETTYPE is either 0 for any socket type
+ *                 or SOCK_STREAM or SOCK_DGRAM.
+ *
+ * On success the result is stored in a linked list with the head
+ * stored at the address R_AI; the caller must call free_dns_addrinfo
+ * on this.  If R_CANONNAME is not NULL the official name of the host
+ * is stored there as a malloced string; if that name is not available
+ * NULL is stored.  */
 gpg_error_t
 resolve_dns_name (ctrl_t ctrl, const char *name, unsigned short port,
                   int want_family, int want_socktype,
@@ -1167,7 +1170,7 @@ resolve_addr_libdns (ctrl_t ctrl,
       struct dns_rr_i rri;
 
       memset (&rri, 0, sizeof rri);
-      dns_rr_i_init (&rri, ans);
+      dns_rr_i_init (&rri);
       rri.section = DNS_S_ALL & ~DNS_S_QD;
       rri.name    = host;
       rri.type    = DNS_T_PTR;
@@ -1458,7 +1461,7 @@ get_dns_cert_libdns (ctrl_t ctrl, const char *name, int want_certtype,
     goto leave;
 
   memset (&rri, 0, sizeof rri);
-  dns_rr_i_init (&rri, ans);
+  dns_rr_i_init (&rri);
   rri.section = DNS_S_ALL & ~DNS_S_QD;
   rri.name    = host;
   rri.type    = qtype;
@@ -1888,7 +1891,7 @@ getsrv_libdns (ctrl_t ctrl,
     goto leave;
 
   memset (&rri, 0, sizeof rri);
-  dns_rr_i_init (&rri, ans);
+  dns_rr_i_init (&rri);
   rri.section = DNS_S_ALL & ~DNS_S_QD;
   rri.name	  = host;
   rri.type	  = DNS_T_SRV;

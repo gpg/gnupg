@@ -177,7 +177,7 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
    string or a white space character.  The function makes sure that
    the resulting string in BUFFER is terminated by a Nul byte.  Note
    that the returned string may include embedded Nul bytes; the extra
-   Nul byte at the end is used to make sure tha the result can always
+   Nul byte at the end is used to make sure that the result can always
    be used as a C-string.
 
    BUFSIZE is the available length of BUFFER; if the converted result

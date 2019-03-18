@@ -49,6 +49,22 @@
 #include "mischelp.h"
 
 
+void
+wipememory (void *ptr, size_t len)
+{
+#if defined(HAVE_W32_SYSTEM) && defined(SecureZeroMemory)
+  SecureZeroMemory (ptr, len);
+#elif defined(HAVE_EXPLICIT_BZERO)
+  explicit_bzero (ptr, len);
+#else
+  /* Prevent compiler from optimizing away the call to memset by accessing
+     memset through volatile pointer. */
+  static void *(*volatile memset_ptr)(void *, int, size_t) = (void *)memset;
+  memset_ptr (ptr, 0, len);
+#endif
+}
+
+
 /* Check whether the files NAME1 and NAME2 are identical.  This is for
    example achieved by comparing the inode numbers of the files.  */
 int

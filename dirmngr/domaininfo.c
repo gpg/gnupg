@@ -119,7 +119,7 @@ domaininfo_print_stats (void)
 }
 
 
-/* Return true if DOMAIN definitely does not support WKD.  Noet that
+/* Return true if DOMAIN definitely does not support WKD.  Note that
  * DOMAIN is expected to be lowercase.  */
 int
 domaininfo_is_wkd_not_supported (const char *domain)

@@ -376,8 +376,6 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
 		     (ulong) desc.u.kid[0], (ulong) desc.u.kid[1]);
       break;
 
-    case KEYDB_SEARCH_MODE_FPR16:
-    case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
     case KEYDB_SEARCH_MODE_ISSUER:
     case KEYDB_SEARCH_MODE_ISSUER_SN:
@@ -1694,26 +1692,16 @@ extract_attributes (LDAPMod ***modlist, char *line)
 
   if (is_pub || is_sub)
     {
-      char *size = fields[2];
-      int val = atoi (size);
-      size = NULL;
+      char padded[6];
+      int val;
 
-      if (val > 0)
-	{
-	  /* We zero pad this on the left to make PGP happy. */
-	  char padded[6];
-	  if (val < 99999 && val > 0)
-	    {
-	      snprintf (padded, sizeof padded, "%05u", val);
-	      size = padded;
-	    }
-	}
-
-      if (size)
-	{
-	  if (is_pub || is_sub)
-	    modlist_add (modlist, "pgpKeySize", size);
-	}
+      val = atoi (fields[2]);
+      if (val < 99999 && val > 0)
+        {
+          /* We zero pad this on the left to make PGP happy. */
+          snprintf (padded, sizeof padded, "%05u", val);
+          modlist_add (modlist, "pgpKeySize", padded);
+        }
     }
 
   if (is_pub)
@@ -1736,10 +1724,7 @@ extract_attributes (LDAPMod ***modlist, char *line)
 	}
 
       if (algo)
-	{
-	  if (is_pub)
-	    modlist_add (modlist, "pgpKeyType", algo);
-	}
+        modlist_add (modlist, "pgpKeyType", algo);
     }
 
   if (is_pub || is_sub || is_sig)

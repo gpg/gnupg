@@ -142,15 +142,16 @@ the administration and the architecture.
 * Specify a User ID::   How to Specify a User Id.
 * Trust Values::        How GnuPG displays trust values.
 
-* Helper Tools::        Description of small helper tools
-* Web Key Service::     Tools for the Web Key Service
+* Smart Card Tool::     Tool to administrate smart cards.
+* Helper Tools::        Description of small helper tools.
+* Web Key Service::     Tools for the Web Key Service.
 
 * Howtos::              How to do certain things.
 * System Notes::        Notes pertaining to certain OSes.
-* Debugging::           How to solve problems
+* Debugging::           How to solve problems.
 
 * Copying::             GNU General Public License says
-                        how you can copy and share GnuPG
+                        how you can copy and share GnuPG.
 * Contributors::        People who have contributed to GnuPG.
 
 * Glossary::            Short description of terms used.
@@ -186,6 +187,7 @@ the administration and the architecture.
 @cindex trust values
 @include trust-values.texi
 
+@include gpg-card.texi
 @include tools.texi
 @include wks.texi
 
@@ -237,5 +239,3 @@ the administration and the architecture.
 
 
 @bye
-
-

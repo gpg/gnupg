@@ -395,7 +395,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
 
                      Further we ignore them if they are due to an
                      identical certificate (which may happen if a
-                     certificate is accidential duplicated in the
+                     certificate is accidentally duplicated in the
                      keybox).  */
                   if (!keydb_get_cert (kh, &cert2))
                     {
@@ -533,7 +533,7 @@ gpgsm_find_cert (ctrl_t ctrl,
             }
 
           /* If we don't have the KEYID filter we need to check for
-             ambiguous search results.  Note, that it is somehwat
+             ambiguous search results.  Note, that it is somewhat
              reasonable to assume that a specification of a KEYID
              won't lead to ambiguous names. */
           if (!rc && !keyid)

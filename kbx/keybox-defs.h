@@ -94,14 +94,16 @@ struct keybox_handle {
 };
 
 
-/* Openpgp helper structures. */
+/* OpenPGP helper structures.  */
 struct _keybox_openpgp_key_info
 {
   struct _keybox_openpgp_key_info *next;
   int algo;
+  int version;
+  unsigned char grip[20];
   unsigned char keyid[8];
-  int fprlen;  /* Either 16 or 20 */
-  unsigned char fpr[20];
+  int fprlen;  /* Either 16, 20 or 32 */
+  unsigned char fpr[32];
 };
 
 struct _keybox_openpgp_uid_info

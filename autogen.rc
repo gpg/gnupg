@@ -17,25 +17,15 @@ esac
 case "$myhost" in
   w32)
     configure_opts="
-      --with-gpg-error-prefix=@SYSROOT@
-      --with-ksba-prefix=@SYSROOT@
-      --with-libgcrypt-prefix=@SYSROOT@
-      --with-libassuan-prefix=@SYSROOT@
       --with-zlib=@SYSROOT@
       --with-regex=@SYSROOT@
-      --with-npth-prefix=@SYSROOT@
       --disable-g13
       "
     ;;
 
   amd64)
     configure_opts="
-      --with-gpg-error-prefix=@SYSROOT@
-      --with-ksba-prefix=@SYSROOT@
-      --with-libgcrypt-prefix=@SYSROOT@
-      --with-libassuan-prefix=@SYSROOT@
       --with-zlib=/usr/x86_64-linux-gnu/usr
-      --with-pth-prefix=/usr/x86_64-linux-gnu/usr
      "
     ;;
 esac

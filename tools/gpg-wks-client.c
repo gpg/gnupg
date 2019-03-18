@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "../common/util.h"
 #include "../common/status.h"
@@ -48,6 +50,7 @@ enum cmd_and_opt_values
     oQuiet      = 'q',
     oVerbose	= 'v',
     oOutput     = 'o',
+    oDirectory  = 'C',
 
     oDebug      = 500,
 
@@ -56,11 +59,14 @@ enum cmd_and_opt_values
     aCreate,
     aReceive,
     aRead,
+    aInstallKey,
+    aRemoveKey,
 
     oGpgProgram,
     oSend,
     oFakeSubmissionAddr,
     oStatusFD,
+    oWithColons,
 
     oDummy
   };
@@ -80,6 +86,10 @@ static ARGPARSE_OPTS opts[] = {
               ("receive a MIME confirmation request")),
   ARGPARSE_c (aRead,      "read",
               ("receive a plain text confirmation request")),
+  ARGPARSE_c (aInstallKey, "install-key",
+              "install a key into a directory"),
+  ARGPARSE_c (aRemoveKey, "remove-key",
+              "remove a key from a directory"),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -90,6 +100,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oSend, "send", "send the mail using sendmail"),
   ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
   ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
+  ARGPARSE_s_n (oWithColons, "with-colons", "@"),
+  ARGPARSE_s_s (oDirectory, "directory", "@"),
 
   ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
 
@@ -192,6 +204,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oGpgProgram:
           opt.gpg_program = pargs->r.ret_str;
           break;
+        case oDirectory:
+          opt.directory = pargs->r.ret_str;
+          break;
         case oSend:
           opt.use_sendmail = 1;
           break;
@@ -204,12 +219,17 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oStatusFD:
           wks_set_status_fd (translate_sys2libc_fd_int (pargs->r.ret_int, 1));
           break;
+        case oWithColons:
+          opt.with_colons = 1;
+          break;
 
 	case aSupported:
 	case aCreate:
 	case aReceive:
 	case aRead:
         case aCheck:
+        case aInstallKey:
+        case aRemoveKey:
           cmd = pargs->r_opt;
           break;
 
@@ -264,18 +284,52 @@ main (int argc, char **argv)
   if (!opt.gpg_program)
     opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
 
+  if (!opt.directory)
+    opt.directory = "openpgpkey";
+
   /* Tell call-dirmngr what options we want.  */
   set_dirmngr_options (opt.verbose, (opt.debug & DBG_IPC_VALUE), 1);
+
+
+  /* Check that the top directory exists.  */
+  if (cmd == aInstallKey || cmd == aRemoveKey)
+    {
+      struct stat sb;
+
+      if (stat (opt.directory, &sb))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error accessing directory '%s': %s\n",
+                     opt.directory, gpg_strerror (err));
+          goto leave;
+        }
+      if (!S_ISDIR(sb.st_mode))
+        {
+          log_error ("error accessing directory '%s': %s\n",
+                     opt.directory, "not a directory");
+          err = gpg_error (GPG_ERR_ENOENT);
+          goto leave;
+        }
+    }
 
   /* Run the selected command.  */
   switch (cmd)
     {
     case aSupported:
-      if (argc != 1)
-        wrong_args ("--supported USER-ID");
-      err = command_supported (argv[0]);
-      if (err && gpg_err_code (err) != GPG_ERR_FALSE)
-        log_error ("checking support failed: %s\n", gpg_strerror (err));
+      if (opt.with_colons)
+        {
+          for (; argc; argc--, argv++)
+            command_supported (*argv);
+          err = 0;
+        }
+      else
+        {
+          if (argc != 1)
+            wrong_args ("--supported DOMAIN");
+          err = command_supported (argv[0]);
+          if (err && gpg_err_code (err) != GPG_ERR_FALSE)
+            log_error ("checking support failed: %s\n", gpg_strerror (err));
+        }
       break;
 
     case aCreate:
@@ -308,12 +362,28 @@ main (int argc, char **argv)
       err = command_check (argv[0]);
       break;
 
+    case aInstallKey:
+      if (!argc)
+        err = wks_cmd_install_key (NULL, NULL);
+      else if (argc == 2)
+        err = wks_cmd_install_key (*argv, argv[1]);
+      else
+        wrong_args ("--install-key [FILE|FINGERPRINT USER-ID]");
+      break;
+
+    case aRemoveKey:
+      if (argc != 1)
+        wrong_args ("--remove-key USER-ID");
+      err = wks_cmd_remove_key (*argv);
+      break;
+
     default:
       usage (1);
       err = 0;
       break;
     }
 
+ leave:
   if (err)
     wks_write_status (STATUS_FAILURE, "- %u", err);
   else if (log_get_errorcount (0))
@@ -471,6 +541,134 @@ decrypt_stream (estream_t *r_output, struct decrypt_stream_parm_s *decinfo,
 }
 
 
+/* Return the submission address for the address or just the domain in
+ * ADDRSPEC.  The submission address is stored as a malloced string at
+ * R_SUBMISSION_ADDRESS.  At R_POLICY the policy flags of the domain
+ * are stored.  The caller needs to free them with wks_free_policy.
+ * The function returns an error code on failure to find a submission
+ * address or policy file.  Note: The function may store NULL at
+ * R_SUBMISSION_ADDRESS but return success to indicate that the web
+ * key directory is supported but not the web key service.  As per WKD
+ * specs a policy file is always required and will thus be return on
+ * success.  */
+static gpg_error_t
+get_policy_and_sa (const char *addrspec, int silent,
+                   policy_flags_t *r_policy, char **r_submission_address)
+{
+  gpg_error_t err;
+  estream_t mbuf = NULL;
+  const char *domain;
+  const char *s;
+  policy_flags_t policy = NULL;
+  char *submission_to = NULL;
+
+  *r_submission_address = NULL;
+  *r_policy = NULL;
+
+  domain = strchr (addrspec, '@');
+  if (domain)
+    domain++;
+
+  if (opt.with_colons)
+    {
+      s = domain? domain : addrspec;
+      es_write_sanitized (es_stdout, s, strlen (s), ":", NULL);
+      es_putc (':', es_stdout);
+    }
+
+  /* We first try to get the submission address from the policy file
+   * (this is the new method).  If both are available we check that
+   * they match and print a warning if not.  In the latter case we
+   * keep on using the one from the submission-address file.    */
+  err = wkd_get_policy_flags (addrspec, &mbuf);
+  if (err && gpg_err_code (err) != GPG_ERR_NO_DATA
+      && gpg_err_code (err) != GPG_ERR_NO_NAME)
+    {
+      if (!opt.with_colons)
+        log_error ("error reading policy flags for '%s': %s\n",
+                   domain, gpg_strerror (err));
+      goto leave;
+    }
+  if (!mbuf)
+    {
+      if (!opt.with_colons)
+        log_error ("provider for '%s' does NOT support the Web Key Directory\n",
+                   addrspec);
+      err = gpg_error (GPG_ERR_FALSE);
+      goto leave;
+    }
+
+  policy = xtrycalloc (1, sizeof *policy);
+  if (!policy)
+    err = gpg_error_from_syserror ();
+  else
+    err = wks_parse_policy (policy, mbuf, 1);
+  es_fclose (mbuf);
+  mbuf = NULL;
+  if (err)
+    goto leave;
+
+  err = wkd_get_submission_address (addrspec, &submission_to);
+  if (err && !policy->submission_address)
+    {
+      if (!silent && !opt.with_colons)
+        log_error (_("error looking up submission address for domain '%s'"
+                     ": %s\n"), domain, gpg_strerror (err));
+      if (!silent && gpg_err_code (err) == GPG_ERR_NO_DATA && !opt.with_colons)
+        log_error (_("this domain probably doesn't support WKS.\n"));
+      goto leave;
+    }
+
+  if (submission_to && policy->submission_address
+      && ascii_strcasecmp (submission_to, policy->submission_address))
+    log_info ("Warning: different submission addresses (sa=%s, po=%s)\n",
+              submission_to, policy->submission_address);
+
+  if (!submission_to && policy->submission_address)
+    {
+      submission_to = xtrystrdup (policy->submission_address);
+      if (!submission_to)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+ leave:
+  *r_submission_address = submission_to;
+  submission_to = NULL;
+  *r_policy = policy;
+  policy = NULL;
+
+  if (opt.with_colons)
+    {
+      if (*r_policy && !*r_submission_address)
+        es_fprintf (es_stdout, "1:0::");
+      else if (*r_policy && *r_submission_address)
+        es_fprintf (es_stdout, "1:1::");
+      else if (err && !(gpg_err_code (err) == GPG_ERR_FALSE
+                        || gpg_err_code (err) == GPG_ERR_NO_DATA
+                        || gpg_err_code (err) == GPG_ERR_UNKNOWN_HOST))
+        es_fprintf (es_stdout, "0:0:%d:", err);
+      else
+        es_fprintf (es_stdout, "0:0::");
+      if (*r_policy)
+        {
+          es_fprintf (es_stdout, "%u:%u:%u:",
+                      (*r_policy)->protocol_version,
+                      (*r_policy)->auth_submit,
+                      (*r_policy)->mailbox_only);
+        }
+      es_putc ('\n', es_stdout);
+    }
+
+  xfree (submission_to);
+  wks_free_policy (policy);
+  xfree (policy);
+  es_fclose (mbuf);
+  return err;
+}
+
 
 
 /* Check whether the  provider supports the WKS protocol.  */
@@ -480,15 +678,16 @@ command_supported (char *userid)
   gpg_error_t err;
   char *addrspec = NULL;
   char *submission_to = NULL;
+  policy_flags_t policy = NULL;
 
   if (!strchr (userid, '@'))
     {
       char *tmp = xstrconcat ("foo@", userid, NULL);
-      addrspec = mailbox_from_userid (tmp);
+      addrspec = mailbox_from_userid (tmp, 0);
       xfree (tmp);
     }
   else
-    addrspec = mailbox_from_userid (userid);
+    addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
       log_error (_("\"%s\" is not a proper mail address\n"), userid);
@@ -497,24 +696,41 @@ command_supported (char *userid)
     }
 
   /* Get the submission address.  */
-  err = wkd_get_submission_address (addrspec, &submission_to);
-  if (err)
+  err = get_policy_and_sa (addrspec, 1, &policy, &submission_to);
+  if (err || !submission_to)
     {
-      if (gpg_err_code (err) == GPG_ERR_NO_DATA
-          || gpg_err_code (err) == GPG_ERR_UNKNOWN_HOST)
+      if (!submission_to
+          || gpg_err_code (err) == GPG_ERR_FALSE
+          || gpg_err_code (err) == GPG_ERR_NO_DATA
+          || gpg_err_code (err) == GPG_ERR_UNKNOWN_HOST
+          )
         {
-          if (opt.verbose)
-            log_info ("provider for '%s' does NOT support WKS (%s)\n",
-                      addrspec, gpg_strerror (err));
+          /* FALSE is returned if we already figured out that even the
+           * Web Key Directory is not supported and thus printed an
+           * error message.  */
+          if (opt.verbose && gpg_err_code (err) != GPG_ERR_FALSE
+              && !opt.with_colons)
+            {
+              if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+                log_info ("provider for '%s' does NOT support WKS\n",
+                          addrspec);
+              else
+                log_info ("provider for '%s' does NOT support WKS (%s)\n",
+                          addrspec, gpg_strerror (err));
+            }
           err = gpg_error (GPG_ERR_FALSE);
-          log_inc_errorcount ();
+          if (!opt.with_colons)
+            log_inc_errorcount ();
         }
       goto leave;
     }
-  if (opt.verbose)
+
+  if (opt.verbose && !opt.with_colons)
     log_info ("provider for '%s' supports WKS\n", addrspec);
 
  leave:
+  wks_free_policy (policy);
+  xfree (policy);
   xfree (submission_to);
   xfree (addrspec);
   return err;
@@ -534,7 +750,7 @@ command_check (char *userid)
   uidinfo_list_t sl;
   int found = 0;
 
-  addrspec = mailbox_from_userid (userid);
+  addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
       log_error (_("\"%s\" is not a proper mail address\n"), userid);
@@ -628,7 +844,7 @@ command_send (const char *fingerprint, const char *userid)
   estream_t keyenc = NULL;
   char *submission_to = NULL;
   mime_maker_t mime = NULL;
-  struct policy_flags_s policy;
+  policy_flags_t policy = NULL;
   int no_encrypt = 0;
   int posteo_hack = 0;
   const char *domain;
@@ -636,18 +852,15 @@ command_send (const char *fingerprint, const char *userid)
   uidinfo_list_t uid, thisuid;
   time_t thistime;
 
-  memset (&policy, 0, sizeof policy);
-
   if (classify_user_id (fingerprint, &desc, 1)
-      || !(desc.mode == KEYDB_SEARCH_MODE_FPR
-           || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+      || desc.mode != KEYDB_SEARCH_MODE_FPR)
     {
       log_error (_("\"%s\" is not a fingerprint\n"), fingerprint);
       err = gpg_error (GPG_ERR_INV_NAME);
       goto leave;
     }
 
-  addrspec = mailbox_from_userid (userid);
+  addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
       log_error (_("\"%s\" is not a proper mail address\n"), userid);
@@ -665,62 +878,26 @@ command_send (const char *fingerprint, const char *userid)
   /* Get the submission address.  */
   if (fake_submission_addr)
     {
+      policy = xcalloc (1, sizeof *policy);
       submission_to = xstrdup (fake_submission_addr);
       err = 0;
     }
   else
     {
-      /* We first try to get the submission address from the policy
-       * file (this is the new method).  If both are available we
-       * check that they match and print a warning if not.  In the
-       * latter case we keep on using the one from the
-       * submission-address file.  */
-      estream_t mbuf;
-
-      err = wkd_get_policy_flags (addrspec, &mbuf);
-      if (err && gpg_err_code (err) != GPG_ERR_NO_DATA)
-        {
-          log_error ("error reading policy flags for '%s': %s\n",
-                     domain, gpg_strerror (err));
-          goto leave;
-        }
-      if (mbuf)
-        {
-          err = wks_parse_policy (&policy, mbuf, 1);
-          es_fclose (mbuf);
-          if (err)
-            goto leave;
-        }
-
-      err = wkd_get_submission_address (addrspec, &submission_to);
-      if (err && !policy.submission_address)
-        {
-          log_error (_("error looking up submission address for domain '%s'"
-                       ": %s\n"), domain, gpg_strerror (err));
-          if (gpg_err_code (err) == GPG_ERR_NO_DATA)
-            log_error (_("this domain probably doesn't support WKS.\n"));
-          goto leave;
-        }
-
-      if (submission_to && policy.submission_address
-          && ascii_strcasecmp (submission_to, policy.submission_address))
-        log_info ("Warning: different submission addresses (sa=%s, po=%s)\n",
-                  submission_to, policy.submission_address);
-
+      err = get_policy_and_sa (addrspec, 0, &policy, &submission_to);
+      if (err)
+        goto leave;
       if (!submission_to)
         {
-          submission_to = xtrystrdup (policy.submission_address);
-          if (!submission_to)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
+          log_error (_("this domain probably doesn't support WKS.\n"));
+          err = gpg_error (GPG_ERR_NO_DATA);
+          goto leave;
         }
     }
 
   log_info ("submitting request to '%s'\n", submission_to);
 
-  if (policy.auth_submit)
+  if (policy->auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
 
   /* In case the key has several uids with the same addr-spec we will
@@ -738,8 +915,7 @@ command_send (const char *fingerprint, const char *userid)
     {
       if (!uid->mbox)
         continue; /* Should not happen anyway.  */
-      if (policy.mailbox_only
-          && ascii_strcasecmp (uid->uid, uid->mbox))
+      if (policy->mailbox_only && ascii_strcasecmp (uid->uid, uid->mbox))
         continue; /* UID has more than just the mailbox.  */
       if (uid->created > thistime)
         {
@@ -770,7 +946,7 @@ command_send (const char *fingerprint, const char *userid)
       key = newkey;
     }
 
-  if (policy.mailbox_only
+  if (policy->mailbox_only
       && (!thisuid->mbox || ascii_strcasecmp (thisuid->uid, thisuid->mbox)))
     {
       log_info ("Warning: policy requires 'mailbox-only'"
@@ -791,7 +967,7 @@ command_send (const char *fingerprint, const char *userid)
 
   /* Hack to support posteo but let them disable this by setting the
    * new policy-version flag.  */
-  if (policy.protocol_version < 3
+  if (policy->protocol_version < 3
       && !ascii_strcasecmp (domain, "posteo.de"))
     {
       log_info ("Warning: Using draft-1 method for domain '%s'\n", domain);
@@ -908,7 +1084,8 @@ command_send (const char *fingerprint, const char *userid)
   free_uidinfo_list (uidlist);
   es_fclose (keyenc);
   es_fclose (key);
-  wks_free_policy (&policy);
+  wks_free_policy (policy);
+  xfree (policy);
   xfree (addrspec);
   return err;
 }
@@ -973,6 +1150,7 @@ encrypt_response (estream_t *r_output, estream_t input, const char *addrspec,
   ccparray_put (&ccp, "--status-fd=2");
   ccparray_put (&ccp, "--always-trust");
   ccparray_put (&ccp, "--armor");
+  ccparray_put (&ccp, "-z0");  /* No compression for improved robustness.  */
   if (fake_submission_addr)
     ccparray_put (&ccp, "--auto-key-locate=clear,local");
   else

@@ -343,7 +343,7 @@ validate_responder_cert (ctrl_t ctrl, ksba_cert_t cert,
 
          Note, that in theory we could simply ask the client via an
          inquire to validate a certificate but this might involve
-         calling DirMngr again recursivly - we can't do that as of now
+         calling DirMngr again recursively - we can't do that as of now
          (neither DirMngr nor gpgsm have the ability for concurrent
          access to DirMngr.   */
 
@@ -391,7 +391,7 @@ check_signature_core (ctrl_t ctrl, ksba_cert_t cert, gcry_sexp_t s_sig,
 }
 
 
-/* Check the signature of an OCSP repsonse.  OCSP is the context,
+/* Check the signature of an OCSP response.  OCSP is the context,
    S_SIG the signature value and MD the handle of the hash we used for
    the response.  This function automagically finds the correct public
    key.  If SIGNER_FPR_LIST is not NULL, the default OCSP reponder has been
@@ -653,6 +653,33 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
   if (err)
     goto leave;
 
+  /* It is sometimes useful to know the responder ID. */
+  if (opt.verbose)
+    {
+      char *resp_name;
+      ksba_sexp_t resp_keyid;
+
+      err = ksba_ocsp_get_responder_id (ocsp, &resp_name, &resp_keyid);
+      if (err)
+        log_info (_("error getting responder ID: %s\n"), gpg_strerror (err));
+      else
+        {
+          log_info ("responder id: ");
+          if (resp_name)
+            log_printf ("'/%s' ", resp_name);
+          if (resp_keyid)
+            {
+              log_printf ("{");
+              dump_serial (resp_keyid);
+              log_printf ("} ");
+            }
+          log_printf ("\n");
+        }
+      ksba_free (resp_name);
+      ksba_free (resp_keyid);
+      err = 0;
+    }
+
   /* We got a useful answer, check that the answer has a valid signature. */
   sigval = ksba_ocsp_get_sig_val (ocsp, produced_at);
   if (!sigval || !*produced_at)
@@ -761,7 +788,7 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
         err = gpg_error (GPG_ERR_TIME_CONFLICT);
     }
 
-  /* Check that we are not beyound NEXT_UPDATE  (plus some extra time). */
+  /* Check that we are not beyond NEXT_UPDATE  (plus some extra time). */
   if (*next_update)
     {
       gnupg_copy_time (tmp_time, next_update);

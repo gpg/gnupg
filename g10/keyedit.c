@@ -1894,7 +1894,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    node = new_kbnode (pkt);
 
             /* Transfer it to gpg-agent which handles secret keys.  */
-            err = transfer_secret_keys (ctrl, NULL, node, 1, 1);
+            err = transfer_secret_keys (ctrl, NULL, node, 1, 1, 0);
 
             /* Treat the pkt as a public key.  */
             pkt->pkttype = PKT_PUBLIC_KEY;
@@ -2564,9 +2564,7 @@ find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
   *r_kdbhd = NULL;
 
   if (classify_user_id (fpr, &desc, 1)
-      || !(desc.mode == KEYDB_SEARCH_MODE_FPR
-           || desc.mode == KEYDB_SEARCH_MODE_FPR16
-           || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+      || desc.mode != KEYDB_SEARCH_MODE_FPR)
     {
       log_error (_("\"%s\" is not a fingerprint\n"), fpr);
       err = gpg_error (GPG_ERR_INV_NAME);
@@ -2581,19 +2579,9 @@ find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
 
   /* Check that the primary fingerprint has been given. */
   fingerprint_from_pk (keyblock->pkt->pkt.public_key, fprbin, &fprlen);
-  if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR16
-      && !memcmp (fprbin, desc.u.fpr, 16))
-    ;
-  else if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR
-           && !memcmp (fprbin, desc.u.fpr, 16)
-           && !desc.u.fpr[16]
-           && !desc.u.fpr[17]
-           && !desc.u.fpr[18]
-           && !desc.u.fpr[19])
-    ;
-  else if (fprlen == 20 && (desc.mode == KEYDB_SEARCH_MODE_FPR20
-                            || desc.mode == KEYDB_SEARCH_MODE_FPR)
-           && !memcmp (fprbin, desc.u.fpr, 20))
+  if (desc.mode == KEYDB_SEARCH_MODE_FPR
+      && fprlen == desc.fprlen
+      && !memcmp (fprbin, desc.u.fpr, fprlen))
     ;
   else
     {
@@ -2917,8 +2905,7 @@ keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr,
 
           /* Parse the fingerprint.  */
           if (classify_user_id (subkeyfprs[idx], &desc, 1)
-              || !(desc.mode == KEYDB_SEARCH_MODE_FPR
-                   || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+              || desc.mode != KEYDB_SEARCH_MODE_FPR)
             {
               log_error (_("\"%s\" is not a proper fingerprint\n"),
                          subkeyfprs[idx] );
@@ -3524,7 +3511,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 
 		    algo = gcry_pk_algo_name (pk->revkey[i].algid);
 		    keyid_from_fingerprint (ctrl, pk->revkey[i].fpr,
-					    MAX_FINGERPRINT_LEN, r_keyid);
+					    pk->revkey[i].fprlen, r_keyid);
 
 		    user = get_user_id_string_native (ctrl, r_keyid);
 		    tty_fprintf (fp,
@@ -3690,13 +3677,14 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 
 
 /* Display basic key information.  This function is suitable to show
-   information on the key without any dependencies on the trustdb or
-   any other internal GnuPG stuff.  KEYBLOCK may either be a public or
-   a secret key.  This function may be called with KEYBLOCK containing
-   secret keys and thus the printing of "pub" vs. "sec" does only
-   depend on the packet type and not by checking with gpg-agent.  */
+ * information on the key without any dependencies on the trustdb or
+ * any other internal GnuPG stuff.  KEYBLOCK may either be a public or
+ * a secret key.  This function may be called with KEYBLOCK containing
+ * secret keys and thus the printing of "pub" vs. "sec" does only
+ * depend on the packet type and not by checking with gpg-agent.  If
+ * PRINT_SEC ist set "sec" is printed instead of "pub".  */
 void
-show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock)
+show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock, int print_sec)
 {
   KBNODE node;
   int i;
@@ -3709,13 +3697,17 @@ show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock)
           || node->pkt->pkttype == PKT_SECRET_KEY)
 	{
 	  PKT_public_key *pk = node->pkt->pkt.public_key;
+          const char *tag;
+
+          if (node->pkt->pkttype == PKT_SECRET_KEY || print_sec)
+            tag = "sec";
+          else
+            tag = "pub";
 
 	  /* Note, we use the same format string as in other show
 	     functions to make the translation job easier. */
 	  tty_printf ("%s  %s/%s  ",
-		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" :
-		      node->pkt->pkttype == PKT_PUBLIC_SUBKEY ? "sub" :
-		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" :"ssb",
+                      tag,
                       pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
 		      keystr_from_pk (pk));
 	  tty_printf (_("created: %s"), datestr_from_pk (pk));
@@ -4309,13 +4301,14 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
       xfree (answer);
 
       fingerprint_from_pk (revoker_pk, revkey.fpr, &fprlen);
-      if (fprlen != 20)
+      if (fprlen != 20 && fprlen != 32)
 	{
 	  log_error (_("cannot appoint a PGP 2.x style key as a "
 		       "designated revoker\n"));
 	  continue;
 	}
 
+      revkey.fprlen = fprlen;
       revkey.class = 0x80;
       if (sensitive)
 	revkey.class |= 0x40;

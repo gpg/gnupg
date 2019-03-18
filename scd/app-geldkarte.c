@@ -254,7 +254,7 @@ copy_bcd (const unsigned char *string, size_t length)
 }
 
 
-/* Convert the BCD number at STING of LENGTH into an integer and store
+/* Convert the BCD number at STRING of LENGTH into an integer and store
    that at RESULT.  Return 0 on success.  */
 static gpg_error_t
 bcd_to_int (const unsigned char *string, size_t length, int *result)

@@ -41,6 +41,7 @@
 
 #include "cvt-openpgp.h"
 #include "../common/sexp-parse.h"
+#include "../common/openpgpdefs.h"  /* For s2k functions.  */
 
 
 /* The protection mode for encryption.  The supported modes for
@@ -48,9 +49,6 @@
 #define PROT_CIPHER        GCRY_CIPHER_AES128
 #define PROT_CIPHER_STRING "aes"
 #define PROT_CIPHER_KEYLEN (128/8)
-
-/* Decode an rfc4880 encoded S2K count.  */
-#define S2K_DECODE_COUNT(_val) ((16ul + ((_val) & 15)) << (((_val) >> 4) + 6))
 
 
 /* A table containing the information needed to create a protected
@@ -69,6 +67,13 @@ static const struct {
   { "ecc",  "pabgnqd", 6, 6, 1 },
   { NULL }
 };
+
+
+/* The number of milliseconds we use in the S2K function and the
+ * calibrated count value.  A count value of zero indicates that the
+ * calibration has not yet been done or needs to be done again.  */
+static unsigned int s2k_calibration_time = AGENT_S2K_CALIBRATION;
+static unsigned long s2k_calibrated_count;
 
 
 /* A helper object for time measurement.  */
@@ -175,11 +180,11 @@ calibrate_s2k_count (void)
       ms = calibrate_s2k_count_one (count);
       if (opt.verbose > 1)
         log_info ("S2K calibration: %lu -> %lums\n", count, ms);
-      if (ms > AGENT_S2K_CALIBRATION)
+      if (ms > s2k_calibration_time)
         break;
     }
 
-  count = (unsigned long)(((double)count / ms) * AGENT_S2K_CALIBRATION);
+  count = (unsigned long)(((double)count / ms) * s2k_calibration_time);
   count /= 1024;
   count *= 1024;
   if (count < 65536)
@@ -195,18 +200,30 @@ calibrate_s2k_count (void)
 }
 
 
+/* Set the calibration time.  This may be called early at startup or
+ * at any time.  Thus it should one set variables.  */
+void
+set_s2k_calibration_time (unsigned int milliseconds)
+{
+  if (!milliseconds)
+    milliseconds = AGENT_S2K_CALIBRATION;
+  else if (milliseconds > 60 * 1000)
+    milliseconds = 60 * 1000;  /* Cap at 60 seconds.  */
+  s2k_calibration_time = milliseconds;
+  s2k_calibrated_count = 0;  /* Force re-calibration.  */
+}
+
+
 /* Return the calibrated S2K count.  This is only public for the use
  * of the Assuan getinfo s2k_count_cal command.  */
 unsigned long
 get_calibrated_s2k_count (void)
 {
-  static unsigned long count;
-
-  if (!count)
-    count = calibrate_s2k_count ();
+  if (!s2k_calibrated_count)
+    s2k_calibrated_count = calibrate_s2k_count ();
 
   /* Enforce a lower limit.  */
-  return count < 65536 ? 65536 : count;
+  return s2k_calibrated_count < 65536 ? 65536 : s2k_calibrated_count;
 }
 
 
@@ -606,7 +623,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   int have_curve = 0;
 
   if (use_ocb == -1)
-    use_ocb = opt.enable_extended_key_format;
+    use_ocb = !!opt.enable_extended_key_format;
 
   /* Create an S-expression with the protected-at timestamp.  */
   memcpy (timestamp_exp, "(12:protected-at15:", 19);
@@ -1109,7 +1126,7 @@ agent_unprotect (ctrl_t ctrl,
   if (!protect_info[infidx].algo)
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
 
-  /* See wether we have a protected-at timestamp.  */
+  /* See whether we have a protected-at timestamp.  */
   protect_list = s;  /* Save for later.  */
   if (protected_at)
     {

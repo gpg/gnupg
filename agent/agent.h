@@ -124,7 +124,11 @@ struct
      passphrase change.  */
   int enable_passphrase_history;
 
-  /* If set the extended key format is used for new keys.  */
+  /* If set the extended key format is used for new keys.  Note that
+   * this may vave the value 2 in which case
+   * --disable-extended-key-format won't have any effect and thus
+   * effectivley locking it.  This is required to support existing
+   * profiles which lock the use of --enable-extended-key-format. */
   int enable_extended_key_format;
 
   int running_detached; /* We are running detached from the tty. */
@@ -266,6 +270,14 @@ struct server_control_s
 };
 
 
+/* Status of pinentry.  */
+enum
+  {
+    PINENTRY_STATUS_CLOSE_BUTTON = 1 << 0,
+    PINENTRY_STATUS_PIN_REPEATED = 1 << 8,
+    PINENTRY_STATUS_PASSWORD_FROM_CACHE = 1 << 9
+  };
+
 /* Information pertaining to pinentry requests.  */
 struct pin_entry_info_s
 {
@@ -275,7 +287,8 @@ struct pin_entry_info_s
   int failed_tries; /* Number of tries so far failed.  */
   int with_qualitybar; /* Set if the quality bar should be displayed.  */
   int with_repeat;  /* Request repetition of the passphrase.  */
-  int repeat_okay;  /* Repetition worked. */
+  int repeat_okay;  /* Repetition worked.  */
+  unsigned int status; /* Status.  */
   gpg_error_t (*check_cb)(struct pin_entry_info_s *); /* CB used to check
                                                          the PIN */
   void *check_cb_arg;  /* optional argument which might be of use in the CB */
@@ -488,6 +501,7 @@ gpg_error_t agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
                                      char **passphrase_addr);
 
 /*-- protect.c --*/
+void set_s2k_calibration_time (unsigned int milliseconds);
 unsigned long get_calibrated_s2k_count (void);
 unsigned long get_standard_s2k_count (void);
 unsigned char get_standard_s2k_count_rfc4880 (void);
@@ -538,15 +552,15 @@ int divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                       char **r_buf, size_t *r_len, int *r_padding);
 int divert_generic_cmd (ctrl_t ctrl,
                         const char *cmdline, void *assuan_context);
-int divert_writekey (ctrl_t ctrl, int force, const char *serialno,
-                     const char *id, const char *keydata, size_t keydatalen);
+gpg_error_t divert_writekey (ctrl_t ctrl, int force, const char *serialno,
+                             const char *keyref,
+                             const char *keydata, size_t keydatalen);
 
 
 /*-- call-scd.c --*/
 void initialize_module_call_scd (void);
 void agent_scd_dump_state (void);
 int agent_scd_check_running (void);
-void agent_scd_check_aliveness (void);
 int agent_reset_scd (ctrl_t ctrl);
 int agent_card_learn (ctrl_t ctrl,
                       void (*kpinfo_cb)(void*, const char *),
@@ -577,12 +591,12 @@ int agent_card_pkdecrypt (ctrl_t ctrl,
 int agent_card_readcert (ctrl_t ctrl,
                          const char *id, char **r_buf, size_t *r_buflen);
 int agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf);
-int agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
-                         const char *id, const char *keydata,
-                         size_t keydatalen,
-                         int (*getpin_cb)(void *, const char *,
-                                          const char *, char*, size_t),
-                         void *getpin_cb_arg);
+gpg_error_t agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
+                                 const char *keyref,
+                                 const char *keydata, size_t keydatalen,
+                                 int (*getpin_cb)(void *, const char *,
+                                                  const char *, char*, size_t),
+                                 void *getpin_cb_arg);
 gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result);
 gpg_error_t agent_card_cardlist (ctrl_t ctrl, strlist_t *result);
 int agent_card_scd (ctrl_t ctrl, const char *cmdline,

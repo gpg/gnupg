@@ -807,8 +807,10 @@ create_request (ctrl_t ctrl,
   if (err)
     return err;
 
-  string = get_parameter_value (para, pHASHALGO, 0);
-  if (string)
+  len = gcry_sexp_canon_len (public, 0, NULL, NULL);
+  if (get_pk_algo_from_canon_sexp (public, len) == GCRY_PK_EDDSA)
+    mdalgo = GCRY_MD_SHA512;
+  else if ((string = get_parameter_value (para, pHASHALGO, 0)))
     mdalgo = gcry_md_map_name (string);
   else
     mdalgo = GCRY_MD_SHA256;
@@ -1312,7 +1314,7 @@ create_request (ctrl_t ctrl,
           log_info ("about to sign the %s for key: &%s\n",
                     certmode? "certificate":"CSR", hexgrip);
 
-          if (carddirect)
+          if (carddirect && !certmode)
             rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
                                    gcry_md_read (md, mdalgo),
                                    gcry_md_get_algo_dlen (mdalgo),

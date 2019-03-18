@@ -810,6 +810,19 @@ ascii_strlwr (char *s)
   return s;
 }
 
+/* Upcase all ASCII characters in S.  */
+char *
+ascii_strupr (char *s)
+{
+  char *p = s;
+
+  for (p=s; *p; p++ )
+    if (isascii (*p) && *p >= 'a' && *p <= 'z')
+      *p &= ~0x20;
+
+  return s;
+}
+
 int
 ascii_strcasecmp( const char *a, const char *b )
 {
@@ -1400,7 +1413,7 @@ parse_version_number (const char *s, int *number)
 
 
 /* This function breaks up the complete string-representation of the
-   version number S, which is of the following struture: <major
+   version number S, which is of the following structure: <major
    number>.<minor number>[.<micro number>]<patch level>.  The major,
    minor, and micro number components will be stored in *MAJOR, *MINOR
    and *MICRO.  If MICRO is not given 0 is used instead.

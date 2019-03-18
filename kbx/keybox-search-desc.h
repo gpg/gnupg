@@ -36,9 +36,7 @@ typedef enum {
   KEYDB_SEARCH_MODE_WORDS,
   KEYDB_SEARCH_MODE_SHORT_KID,
   KEYDB_SEARCH_MODE_LONG_KID,
-  KEYDB_SEARCH_MODE_FPR16,
-  KEYDB_SEARCH_MODE_FPR20,
-  KEYDB_SEARCH_MODE_FPR,
+  KEYDB_SEARCH_MODE_FPR,     /* (Length of fpr in .fprlen) */
   KEYDB_SEARCH_MODE_ISSUER,
   KEYDB_SEARCH_MODE_ISSUER_SN,
   KEYDB_SEARCH_MODE_SN,
@@ -49,7 +47,7 @@ typedef enum {
 } KeydbSearchMode;
 
 
-/* Forwward declaration.  See g10/packet.h.  */
+/* Forward declaration.  See g10/packet.h.  */
 struct gpg_pkt_user_id_s;
 typedef struct gpg_pkt_user_id_s *gpg_pkt_user_id_t;
 
@@ -69,10 +67,11 @@ struct keydb_search_desc
   int snlen;  /* -1 := sn is a hex string */
   union {
     const char *name;
-    unsigned char fpr[24];
+    unsigned char fpr[32];
     u32 kid[2]; /* Note that this is in native endianness.  */
     unsigned char grip[20];
   } u;
+  byte fprlen;  /* Only used with KEYDB_SEARCH_MODE_FPR.  */
   int exact;    /* Use exactly this key ('!' suffix in gpg).  */
 };
 

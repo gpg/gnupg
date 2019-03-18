@@ -337,7 +337,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     kbnode_t keyblock;
     kbnode_t node;
     getkey_ctx_t ctx;
-    pubkey_t results;
+    SK_LIST results;
   } *c = *context;
 
   if (!c)
@@ -345,7 +345,11 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
       /* Make a new context.  */
       c = xtrycalloc (1, sizeof *c);
       if (!c)
-        return gpg_error_from_syserror ();
+        {
+          err = gpg_error_from_syserror ();
+          free_public_key (sk);
+          return err;
+        }
       *context = c;
     }
 
@@ -354,7 +358,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
       /* Free the context.  */
       xfree (c->serialno);
       free_strlist (c->card_list);
-      pubkeys_free (c->results);
+      release_sk_list (c->results);
       release_kbnode (c->keyblock);
       getkey_end (ctrl, c->ctx);
       xfree (c);
@@ -363,7 +367,10 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     }
 
   if (c->eof)
-    return gpg_error (GPG_ERR_EOF);
+    {
+      free_public_key (sk);
+      return gpg_error (GPG_ERR_EOF);
+    }
 
   for (;;)
     {
@@ -373,6 +380,8 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
           /* Loop over the list of secret keys.  */
           do
             {
+              char *serialno;
+
               name = NULL;
               keyblock = NULL;
               switch (c->state)
@@ -408,8 +417,6 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                 case 4: /* Get next item from card list.  */
                   if (c->sl)
                     {
-                      char *serialno;
-
                       err = agent_scd_serialno (&serialno, c->sl->d);
                       if (err)
                         {
@@ -437,9 +444,13 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                     }
                   else
                     {
-                      if (c->serialno)
-                        /* Select the original card again.  */
-                        agent_scd_serialno (&c->serialno, c->serialno);
+                      serialno = c->serialno;
+                      if (serialno)
+                        {
+                          /* Select the original card again.  */
+                          agent_scd_serialno (&c->serialno, serialno);
+                          xfree (serialno);
+                        }
                       c->state++;
                     }
                   break;
@@ -475,6 +486,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 
                 default: /* No more names to check - stop.  */
                   c->eof = 1;
+                  free_public_key (sk);
                   return gpg_error (GPG_ERR_EOF);
                 }
             }
@@ -504,7 +516,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
           if (c->node->pkt->pkttype == PKT_PUBLIC_KEY
               || c->node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
             {
-              pubkey_t r;
+              SK_LIST r;
 
               /* Skip this candidate if it's already enumerated.  */
               for (r = c->results; r; r = r->next)
@@ -525,7 +537,6 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                 }
 
               r->pk = sk;
-              r->keyblock = NULL;
               r->next = c->results;
               c->results = r;
 

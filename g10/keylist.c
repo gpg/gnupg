@@ -212,7 +212,7 @@ print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk)
   else
     p = get_user_id_native (ctrl, keyid);
 
-  if (fp)
+  if (!fp)
     tty_printf ("\n");
   tty_fprintf (fp, "%s  %s/%s %s %s\n",
                pk->flags.primary? "pub":"sub",
@@ -541,7 +541,7 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
         ; /* Secret key listing requested but this isn't one.  */
       else
         {
-          if (!opt.with_colons)
+          if (!opt.with_colons && !(opt.list_options & LIST_SHOW_ONLY_FPR_MBOX))
             {
               resname = keydb_get_resource_name (hd);
               if (lastresname != resname)
@@ -611,6 +611,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
     {
       log_error ("error reading key: %s\n", gpg_strerror (rc));
       getkey_end (ctrl, ctx);
+      write_status_error ("keylist.getkey", rc);
       return;
     }
 
@@ -1020,7 +1021,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
               char *mbox, *hash, *p;
               char hashbuf[32];
 
-              mbox = mailbox_from_userid (uid->name);
+              mbox = mailbox_from_userid (uid->name, 0);
               if (mbox && (p = strchr (mbox, '@')))
                 {
                   *p++ = 0;
@@ -1254,6 +1255,57 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
   xfree (hexgrip);
 }
 
+
+/* Do a simple key listing printing only the fingerprint and the mail
+ * address of valid keys.  */
+static void
+list_keyblock_simple (ctrl_t ctrl, kbnode_t keyblock)
+{
+  gpg_err_code_t ec;
+  kbnode_t kbctx;
+  kbnode_t node;
+  char hexfpr[2*MAX_FINGERPRINT_LEN+1];
+  char *mbox;
+
+  (void)ctrl;
+
+  node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
+  if (!node)
+    {
+      log_error ("Oops; key lost!\n");
+      dump_kbnode (keyblock);
+      return;
+    }
+  hexfingerprint (node->pkt->pkt.public_key, hexfpr, sizeof hexfpr);
+
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+	{
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+
+	  if (uid->attrib_data)
+	    continue;
+
+	  if (uid->flags.expired || uid->flags.revoked)
+            continue;
+
+          mbox = mailbox_from_userid (uid->name, 0);
+          if (!mbox)
+            {
+              ec = gpg_err_code_from_syserror ();
+              if (ec != GPG_ERR_EINVAL)
+                log_error ("error getting mailbox from user-id: %s\n",
+                           gpg_strerror (ec));
+              continue;
+            }
+          es_fprintf (es_stdout, "%s %s\n", hexfpr, mbox);
+          xfree (mbox);
+	}
+    }
+}
+
+
 void
 print_revokers (estream_t fp, PKT_public_key * pk)
 {
@@ -1270,7 +1322,7 @@ print_revokers (estream_t fp, PKT_public_key * pk)
 
 	  es_fprintf (fp, "rvk:::%d::::::", pk->revkey[i].algid);
 	  p = pk->revkey[i].fpr;
-	  for (j = 0; j < 20; j++, p++)
+	  for (j = 0; j < pk->revkey[i].fprlen; j++, p++)
 	    es_fprintf (fp, "%02X", *p);
 	  es_fprintf (fp, ":%02x%s:\n",
                       pk->revkey[i].class,
@@ -1807,6 +1859,12 @@ list_keyblock (ctrl_t ctrl,
 
   if (opt.with_colons)
     list_keyblock_colon (ctrl, keyblock, secret, has_secret);
+  else if ((opt.list_options & LIST_SHOW_ONLY_FPR_MBOX))
+    {
+      if (!listctx->no_validity)
+        check_trustdb_stale (ctrl);
+      list_keyblock_simple (ctrl, keyblock);
+    }
   else
     list_keyblock_print (ctrl, keyblock, secret, fpr, listctx);
 
@@ -2044,10 +2102,18 @@ print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret)
     tty_fprintf (fp, "/%s", keystr_from_pk (pk));
   tty_fprintf (fp, " %s", datestr_from_pk (pk));
 
-  if ((opt.list_options & LIST_SHOW_USAGE))
+  if (pk->flags.primary
+      && !(openpgp_pk_algo_usage (pk->pubkey_algo)
+           & (PUBKEY_USAGE_CERT| PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH)))
+    {
+      /* A primary key which is really not capable to sign.  */
+      tty_fprintf (fp, " [INVALID_ALGO]");
+    }
+  else if ((opt.list_options & LIST_SHOW_USAGE))
     {
       tty_fprintf (fp, " [%s]", usagestr_from_pk (pk, 0));
     }
+
   if (pk->flags.revoked)
     {
       tty_fprintf (fp, " [");

@@ -37,11 +37,14 @@
 
 static int check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 				gcry_md_hd_t digest,
+                                const void *extrahash, size_t extrahashlen,
 				int *r_expired, int *r_revoked,
 				PKT_public_key *ret_pk);
 
 static int check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
-                                       gcry_md_hd_t digest);
+                                       gcry_md_hd_t digest,
+                                       const void *extrahash,
+                                       size_t extrahashlen);
 
 
 /* Statistics for signature verification.  */
@@ -69,7 +72,7 @@ sig_check_dump_stats (void)
 int
 check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
 {
-  return check_signature2 (ctrl, sig, digest, NULL, NULL, NULL, NULL);
+  return check_signature2 (ctrl, sig, digest, NULL, 0, NULL, NULL, NULL, NULL);
 }
 
 
@@ -95,6 +98,9 @@ check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
  * signature data from the version number through the hashed subpacket
  * data (inclusive) is hashed.")
  *
+ * EXTRAHASH and EXTRAHASHLEN is additional data which is hashed with
+ * v5 signatures.  They may be NULL to use the default.
+ *
  * If R_EXPIREDATE is not NULL, R_EXPIREDATE is set to the key's
  * expiry.
  *
@@ -112,7 +118,9 @@ check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
  * Returns 0 on success.  An error code otherwise.  */
 gpg_error_t
 check_signature2 (ctrl_t ctrl,
-                  PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
+                  PKT_signature *sig, gcry_md_hd_t digest,
+                  const void *extrahash, size_t extrahashlen,
+                  u32 *r_expiredate,
 		  int *r_expired, int *r_revoked, PKT_public_key **r_pk)
 {
   int rc=0;
@@ -179,7 +187,8 @@ check_signature2 (ctrl_t ctrl,
       if (r_expiredate)
         *r_expiredate = pk->expiredate;
 
-      rc = check_signature_end (pk, sig, digest, r_expired, r_revoked, NULL);
+      rc = check_signature_end (pk, sig, digest, extrahash, extrahashlen,
+                                r_expired, r_revoked, NULL);
 
       /* Check the backsig.  This is a back signature (0x19) from
        * the subkey on the primary key.  The idea here is that it
@@ -424,6 +433,7 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
 static int
 check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 		     gcry_md_hd_t digest,
+                     const void *extrahash, size_t extrahashlen,
 		     int *r_expired, int *r_revoked, PKT_public_key *ret_pk)
 {
   int rc = 0;
@@ -432,7 +442,8 @@ check_signature_end (PKT_public_key *pk, PKT_signature *sig,
                                                r_expired, r_revoked)))
     return rc;
 
-  if ((rc = check_signature_end_simple (pk, sig, digest)))
+  if ((rc = check_signature_end_simple (pk, sig, digest,
+                                        extrahash, extrahashlen)))
     return rc;
 
   if (!rc && ret_pk)
@@ -447,7 +458,8 @@ check_signature_end (PKT_public_key *pk, PKT_signature *sig,
  * expiration, revocation, etc.  */
 static int
 check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
-                            gcry_md_hd_t digest)
+                            gcry_md_hd_t digest,
+                            const void *extrahash, size_t extrahashlen)
 {
   gcry_mpi_t result = NULL;
   int rc = 0;
@@ -480,7 +492,8 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
     }
 
   /* For data signatures check that the key has sign usage.  */
-  if (IS_SIG (sig) && !(pk->pubkey_usage & PUBKEY_USAGE_SIG))
+  if (!IS_BACK_SIG (sig) && IS_SIG (sig)
+      && !(pk->pubkey_usage & PUBKEY_USAGE_SIG))
     {
       rc = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
       if (!opt.quiet)
@@ -509,8 +522,10 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
     }
   else
     {
-      byte buf[6];
+      byte buf[10];
+      int i;
       size_t n;
+
       gcry_md_putc (digest, sig->pubkey_algo);
       gcry_md_putc (digest, sig->digest_algo);
       if (sig->hashed)
@@ -529,14 +544,44 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
 	  gcry_md_putc (digest, 0);
 	  n = 6;
 	}
-	/* add some magic per Section 5.2.4 of RFC 4880.  */
-	buf[0] = sig->version;
-	buf[1] = 0xff;
-	buf[2] = n >> 24;
-	buf[3] = n >> 16;
-	buf[4] = n >>  8;
-	buf[5] = n;
-	gcry_md_write( digest, buf, 6 );
+      /* Hash data from the literal data packet.  */
+      if (sig->version >= 5
+          && (sig->sig_class == 0x00 || sig->sig_class == 0x01))
+        {
+          /* - One octet content format
+           * - File name (one octet length followed by the name)
+           * - Four octet timestamp */
+          if (extrahash && extrahashlen)
+            gcry_md_write (digest, extrahash, extrahashlen);
+          else /* Detached signature. */
+            {
+              memset (buf, 0, 6);
+              gcry_md_write (digest, buf, 6);
+            }
+        }
+      /* Add some magic per Section 5.2.4 of RFC 4880.  */
+      i = 0;
+      buf[i++] = sig->version;
+      buf[i++] = 0xff;
+      if (sig->version >= 5)
+        {
+#if SIZEOF_SIZE_T > 4
+          buf[i++] = n >> 56;
+          buf[i++] = n >> 48;
+          buf[i++] = n >> 40;
+          buf[i++] = n >> 32;
+#else
+          buf[i++] = 0;
+          buf[i++] = 0;
+          buf[i++] = 0;
+          buf[i++] = 0;
+#endif
+        }
+      buf[i++] = n >> 24;
+      buf[i++] = n >> 16;
+      buf[i++] = n >>  8;
+      buf[i++] = n;
+      gcry_md_write (digest, buf, i);
     }
     gcry_md_final( digest );
 
@@ -571,7 +616,7 @@ hash_uid_packet (PKT_user_id *uid, gcry_md_hd_t md, PKT_signature *sig )
 {
   if (uid->attrib_data)
     {
-      if (sig->version >=4)
+      if (sig->version >= 4)
         {
           byte buf[5];
           buf[0] = 0xd1;		   /* packet of type 17 */
@@ -585,7 +630,7 @@ hash_uid_packet (PKT_user_id *uid, gcry_md_hd_t md, PKT_signature *sig )
     }
   else
     {
-      if (sig->version >=4)
+      if (sig->version >= 4)
         {
           byte buf[5];
           buf[0] = 0xb4;	      /* indicates a userid packet */
@@ -706,8 +751,8 @@ check_revocation_keys (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig)
 	  /* The revoker's keyid.  */
           u32 keyid[2];
 
-          keyid_from_fingerprint (ctrl, pk->revkey[i].fpr,
-                                  MAX_FINGERPRINT_LEN, keyid);
+          keyid_from_fingerprint (ctrl, pk->revkey[i].fpr, pk->revkey[i].fprlen,
+                                  keyid);
 
           if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
 	    /* The signature was generated by a designated revoker.
@@ -762,7 +807,7 @@ check_backsig (PKT_public_key *main_pk,PKT_public_key *sub_pk,
     {
       hash_public_key(md,main_pk);
       hash_public_key(md,sub_pk);
-      rc = check_signature_end (sub_pk, backsig, md, NULL, NULL, NULL);
+      rc = check_signature_end (sub_pk, backsig, md, NULL, 0, NULL, NULL, NULL);
       cache_sig_result(backsig,rc);
       gcry_md_close(md);
     }
@@ -949,28 +994,28 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
     {
       log_assert (packet->pkttype == PKT_PUBLIC_KEY);
       hash_public_key (md, packet->pkt.public_key);
-      rc = check_signature_end_simple (signer, sig, md);
+      rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_BACK_SIG (sig))
     {
       log_assert (packet->pkttype == PKT_PUBLIC_KEY);
       hash_public_key (md, packet->pkt.public_key);
       hash_public_key (md, signer);
-      rc = check_signature_end_simple (signer, sig, md);
+      rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_SUBKEY_SIG (sig) || IS_SUBKEY_REV (sig))
     {
       log_assert (packet->pkttype == PKT_PUBLIC_SUBKEY);
       hash_public_key (md, pripk);
       hash_public_key (md, packet->pkt.public_key);
-      rc = check_signature_end_simple (signer, sig, md);
+      rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_UID_SIG (sig) || IS_UID_REV (sig))
     {
       log_assert (packet->pkttype == PKT_USER_ID);
       hash_public_key (md, pripk);
       hash_uid_packet (packet->pkt.user_id, md, sig);
-      rc = check_signature_end_simple (signer, sig, md);
+      rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else
     {

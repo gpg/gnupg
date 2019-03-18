@@ -55,6 +55,9 @@
 /* Maximum allowed size of certificate data as used in inquiries. */
 #define MAXLEN_CERTDATA 16384
 
+/* Maximum allowed size for "SETATTR --inquire". */
+#define MAXLEN_SETATTRDATA 16384
+
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
@@ -333,7 +336,7 @@ static const char hlp_learn[] =
   "or a \"CANCEL\" to force the function to terminate with a Cancel\n"
   "error message.\n"
   "\n"
-  "With the option --keypairinfo only KEYPARIINFO lstatus lines are\n"
+  "With the option --keypairinfo only KEYPARIINFO status lines are\n"
   "returned.\n"
   "\n"
   "The response of this command is a list of status lines formatted as\n"
@@ -346,11 +349,12 @@ static const char hlp_learn[] =
   "    P15     = PKCS-15 structure used\n"
   "    DINSIG  = DIN SIG\n"
   "    OPENPGP = OpenPGP card\n"
+  "    PIV     = PIV card\n"
   "    NKS     = NetKey card\n"
   "\n"
   "are implemented.  These strings are aliases for the AID\n"
   "\n"
-  "  S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id>\n"
+  "  S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id> [<usage>]\n"
   "\n"
   "If there is no certificate yet stored on the card a single 'X' is\n"
   "returned as the keygrip.  In addition to the keypair info, information\n"
@@ -465,7 +469,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 static const char hlp_readcert[] =
-  "READCERT <hexified_certid>|<keyid>\n"
+  "READCERT <hexified_certid>|<keyid>|<oid>\n"
   "\n"
   "Note, that this function may even be used on a locked card.";
 static gpg_error_t
@@ -498,7 +502,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_readkey[] =
-  "READKEY [--advanced] <keyid>\n"
+  "READKEY [--advanced] <keyid>|<oid>\n"
   "\n"
   "Return the public key for the given cert or key ID as a standard\n"
   "S-expression.\n"
@@ -512,11 +516,8 @@ cmd_readkey (assuan_context_t ctx, char *line)
   int rc;
   int advanced = 0;
   unsigned char *cert = NULL;
-  size_t ncert, n;
-  ksba_cert_t kc = NULL;
-  ksba_sexp_t p;
-  unsigned char *pk;
-  size_t pklen;
+  unsigned char *pk = NULL;
+  size_t ncert, pklen;
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -525,59 +526,68 @@ cmd_readkey (assuan_context_t ctx, char *line)
     advanced = 1;
 
   line = skip_options (line);
-
   line = xstrdup (line); /* Need a copy of the line. */
+
   /* If the application supports the READKEY function we use that.
      Otherwise we use the old way by extracting it from the
      certificate.  */
-  rc = app_readkey (ctrl->app_ctx, ctrl, advanced, line, &pk, &pklen);
+  rc = app_readkey (ctrl->app_ctx, ctrl, line, &pk, &pklen);
   if (!rc)
-    { /* Yeah, got that key - send it back.  */
-      rc = assuan_send_data (ctx, pk, pklen);
-      xfree (pk);
-      xfree (line);
-      line = NULL;
-      goto leave;
-    }
-
-  if (gpg_err_code (rc) != GPG_ERR_UNSUPPORTED_OPERATION)
-    log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
-  else
+    ; /* Okay, got that key.  */
+  else if (gpg_err_code (rc) == GPG_ERR_UNSUPPORTED_OPERATION
+           || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
+      /* Fall back to certificate reading.  */
       rc = app_readcert (ctrl->app_ctx, ctrl, line, &cert, &ncert);
       if (rc)
-        log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
+        {
+          log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+      rc = app_help_pubkey_from_cert (cert, ncert, &pk, &pklen);
+      if (rc)
+        {
+          log_error ("failed to parse the certificate: %s\n",
+                     gpg_strerror (rc));
+          goto leave;
+        }
     }
-  xfree (line);
-  line = NULL;
-  if (rc)
-    goto leave;
-
-  rc = ksba_cert_new (&kc);
-  if (rc)
-    goto leave;
-
-  rc = ksba_cert_init_from_mem (kc, cert, ncert);
-  if (rc)
+  else
     {
-      log_error ("failed to parse the certificate: %s\n", gpg_strerror (rc));
+      log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
-  p = ksba_cert_get_public_key (kc);
-  if (!p)
+  if (advanced)
     {
-      rc = gpg_error (GPG_ERR_NO_PUBKEY);
-      goto leave;
+      gcry_sexp_t s_key;
+      unsigned char *pkadv;
+      size_t pkadvlen;
+
+      rc = gcry_sexp_new (&s_key, pk, pklen, 0);
+      if (rc)
+        goto leave;
+
+      pkadvlen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, NULL, 0);
+      pkadv = xtrymalloc (pkadvlen);
+      if (!pkadv)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+      log_assert (pkadvlen);
+
+      gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, pkadv, pkadvlen);
+      gcry_sexp_release (s_key);
+      /* (One less to adjust for the trailing '\0') */
+      rc = assuan_send_data (ctx, pkadv, pkadvlen-1);
+      xfree (pkadv);
     }
-
-  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
-  rc = assuan_send_data (ctx, p, n);
-  xfree (p);
-
+  else
+    rc = assuan_send_data (ctx, pk, pklen);
 
  leave:
-  ksba_cert_release (kc);
+  xfree (pk);
   xfree (cert);
   return rc;
 }
@@ -902,7 +912,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
 
 
 static const char hlp_setattr[] =
-  "SETATTR <name> <value> \n"
+  "SETATTR [--inquire] <name> <value> \n"
   "\n"
   "This command is used to store data on a smartcard.  The allowed\n"
   "names and values are depend on the currently selected smartcard\n"
@@ -911,6 +921,10 @@ static const char hlp_setattr[] =
   "However, the current implementation assumes that NAME is not\n"
   "escaped; this works as long as no one uses arbitrary escaping.\n"
   "\n"
+  "If the option --inquire is used, VALUE shall not be given; instead\n"
+  "an inquiry using the keyword \"VALUE\" is used to retrieve it.  The\n"
+  "value is in this case considered to be confidential and not logged.\n"
+  "\n"
   "A PIN will be requested for most NAMEs.  See the corresponding\n"
   "setattr function of the actually used application (app-*.c) for\n"
   "details.";
@@ -918,14 +932,18 @@ static gpg_error_t
 cmd_setattr (assuan_context_t ctx, char *orig_line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int rc;
+  gpg_error_t err;
   char *keyword;
   int keywordlen;
   size_t nbytes;
   char *line, *linebuf;
+  int opt_inquire;
 
-  if ((rc = open_card (ctrl)))
-    return rc;
+  opt_inquire = has_option (orig_line, "--inquire");
+  orig_line = skip_options (orig_line);
+
+  if ((err = open_card (ctrl)))
+    return err;
 
   /* We need to use a copy of LINE, because PIN_CB uses the same
      context and thus reuses the Assuan provided LINE. */
@@ -940,20 +958,38 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
       *line++ = 0;
   while (spacep (line))
     line++;
-  nbytes = percent_plus_unescape_inplace (line, 0);
+  if (opt_inquire)
+    {
+      unsigned char *value;
 
-  rc = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
-                    (const unsigned char*)line, nbytes);
+      assuan_begin_confidential (ctx);
+      err = assuan_inquire (ctx, "VALUE", &value, &nbytes, MAXLEN_SETATTRDATA);
+      assuan_end_confidential (ctx);
+      if (!err)
+        {
+          err = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
+                             value, nbytes);
+          wipememory (value, nbytes);
+          xfree (value);
+        }
+
+   }
+  else
+    {
+      nbytes = percent_plus_unescape_inplace (line, 0);
+      err = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
+                         (const unsigned char*)line, nbytes);
+    }
+
   xfree (linebuf);
-
-  return rc;
+  return err;
 }
 
 
 static const char hlp_writecert[] =
   "WRITECERT <hexified_certid>\n"
   "\n"
-  "This command is used to store a certifciate on a smartcard.  The\n"
+  "This command is used to store a certificate on a smartcard.  The\n"
   "allowed certids depend on the currently selected smartcard\n"
   "application. The actual certifciate is requested using the inquiry\n"
   "\"CERTDATA\" and needs to be provided in its raw (e.g. DER) form.\n"
@@ -1072,10 +1108,10 @@ cmd_writekey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] =
-  "GENKEY [--force] [--timestamp=<isodate>] <no>\n"
+  "GENKEY [--force] [--timestamp=<isodate>] <keyref>\n"
   "\n"
-  "Generate a key on-card identified by NO, which is application\n"
-  "specific.  Return values are application specific.  For OpenPGP\n"
+  "Generate a key on-card identified by <keyref>, which is application\n"
+  "specific.  Return values are also application specific.  For OpenPGP\n"
   "cards 3 status lines are returned:\n"
   "\n"
   "  S KEY-FPR  <hexstring>\n"
@@ -1084,7 +1120,7 @@ static const char hlp_genkey[] =
   "\n"
   "  'p' and 'n' are the names of the RSA parameters; '-' is used to\n"
   "  indicate that HEXDATA is the first chunk of a parameter given\n"
-  "  by the next KEY-DATA.\n"
+  "  by the next KEY-DATA.  Only used by GnuPG version < 2.1.\n"
   "\n"
   "--force is required to overwrite an already existing key.  The\n"
   "KEY-CREATED-AT is required for further processing because it is\n"
@@ -1100,10 +1136,12 @@ static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int rc;
-  char *keyno;
+  gpg_error_t err;
+  char *keyref_buffer = NULL;
+  char *keyref;
   int force;
   const char *s;
+  char *opt_algo = NULL;
   time_t timestamp;
 
   force = has_option (line, "--force");
@@ -1119,29 +1157,38 @@ cmd_genkey (assuan_context_t ctx, char *line)
   else
     timestamp = 0;
 
+  err = get_option_value (line, "--algo", &opt_algo);
+  if (err)
+    goto leave;
 
   line = skip_options (line);
   if (!*line)
     return set_error (GPG_ERR_ASS_PARAMETER, "no key number given");
-  keyno = line;
+  keyref = line;
   while (*line && !spacep (line))
     line++;
   *line = 0;
 
-  if ((rc = open_card (ctrl)))
-    return rc;
+  if ((err = open_card (ctrl)))
+    goto leave;
 
   if (!ctrl->app_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
-  keyno = xtrystrdup (keyno);
-  if (!keyno)
-    return out_of_core ();
-  rc = app_genkey (ctrl->app_ctx, ctrl, keyno, force? 1:0,
-                   timestamp, pin_cb, ctx);
-  xfree (keyno);
+  keyref = keyref_buffer = xtrystrdup (keyref);
+  if (!keyref)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = app_genkey (ctrl->app_ctx, ctrl, keyref, opt_algo,
+                    force? APP_GENKEY_FLAG_FORCE : 0,
+                    timestamp, pin_cb, ctx);
 
-  return rc;
+ leave:
+  xfree (keyref_buffer);
+  xfree (opt_algo);
+  return err;
 }
 
 
@@ -1191,12 +1238,13 @@ cmd_random (assuan_context_t ctx, char *line)
 
 
 static const char hlp_passwd[] =
-  "PASSWD [--reset] [--nullpin] <chvno>\n"
+  "PASSWD [--reset] [--nullpin] [--clear] <chvno>\n"
   "\n"
   "Change the PIN or, if --reset is given, reset the retry counter of\n"
   "the card holder verification vector CHVNO.  The option --nullpin is\n"
-  "used for TCOS cards to set the initial PIN.  The format of CHVNO\n"
-  "depends on the card application.";
+  "used for TCOS cards to set the initial PIN.  The option --clear clears\n"
+  "the security status associated with the PIN so that the PIN needs to\n"
+  "be presented again. The format of CHVNO depends on the card application.";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
@@ -1209,6 +1257,8 @@ cmd_passwd (assuan_context_t ctx, char *line)
     flags |= APP_CHANGE_FLAG_RESET;
   if (has_option (line, "--nullpin"))
     flags |= APP_CHANGE_FLAG_NULLPIN;
+  if (has_option (line, "--clear"))
+    flags |= APP_CHANGE_FLAG_CLEAR;
 
   line = skip_options (line);
 
@@ -1218,6 +1268,11 @@ cmd_passwd (assuan_context_t ctx, char *line)
   while (*line && !spacep (line))
     line++;
   *line = 0;
+
+  /* Do not allow other flags aside of --clear. */
+  if ((flags & APP_CHANGE_FLAG_CLEAR) && (flags & ~APP_CHANGE_FLAG_CLEAR))
+    return set_error (GPG_ERR_UNSUPPORTED_OPERATION,
+                      "--clear used with other options");
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -1640,7 +1695,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
 
       rc = apdu_send_direct (app->slot, exlen,
                              apdu, apdulen, handle_more,
-                             &result, &resultlen);
+                             NULL, &result, &resultlen);
       if (rc)
         log_error ("apdu_send_direct failed: %s\n", gpg_strerror (rc));
       else
@@ -1895,6 +1950,54 @@ send_status_direct (ctrl_t ctrl, const char *keyword, const char *args)
     log_error ("error: LF detected in status line - not sending\n");
   else
     assuan_write_status (ctx, keyword, args);
+}
+
+
+/* This status functions expects a printf style format string.  No
+ * filtering of the data is done instead the orintf formatted data is
+ * send using assuan_send_status. */
+gpg_error_t
+send_status_printf (ctrl_t ctrl, const char *keyword, const char *format, ...)
+{
+  gpg_error_t err;
+  va_list arg_ptr;
+  assuan_context_t ctx;
+
+  if (!ctrl || !ctrl->server_local || !(ctx = ctrl->server_local->assuan_ctx))
+    return 0;
+
+  va_start (arg_ptr, format);
+  err = vprint_assuan_status (ctx, keyword, format, arg_ptr);
+  va_end (arg_ptr);
+  return err;
+}
+
+
+void
+popup_prompt (void *opaque, int on)
+{
+  ctrl_t ctrl = opaque;
+
+  if (ctrl)
+    {
+      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+      if (ctx)
+        {
+          const char *cmd;
+          gpg_error_t err;
+          unsigned char *value;
+          size_t valuelen;
+
+          if (on)
+            cmd = "POPUPPINPADPROMPT --ack";
+          else
+            cmd = "DISMISSPINPADPROMPT";
+          err = assuan_inquire (ctx, cmd, &value, &valuelen, 100);
+          if (!err)
+            xfree (value);
+        }
+    }
 }
 
 

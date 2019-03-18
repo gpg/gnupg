@@ -3180,7 +3180,7 @@ msgid "Really sign all text user IDs? (y/N) "
 msgstr "Er du sikker på at du vil signerere alle bruker-id-er? (j/N) "
 
 msgid "Really sign all user IDs? (y/N) "
-msgstr "Er du sikekr på at du vil signerere alle bruker-id-er? (j/N) "
+msgstr "Er du sikker på at du vil signerere alle bruker-id-er? (j/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Tips: Velg bruker-id-en(e) du vil signere\n"

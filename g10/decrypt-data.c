@@ -42,7 +42,7 @@ static int decode_filter ( void *opaque, int control, IOBUF a,
 /* Our context object.  */
 struct decode_filter_context_s
 {
-  /* Recounter (max value is 2).  We need it becuase we do not know
+  /* Recounter (max value is 2).  We need it because we do not know
    * whether the iobuf or the outer control code frees this object
    * first.  */
   int  refcount;
@@ -551,31 +551,42 @@ fill_buffer (decode_filter_ctx_t dfx, iobuf_t stream,
              byte *buffer, size_t nbytes, size_t offset)
 {
   size_t nread = offset;
-  int c;
+  size_t curr;
+  int ret;
 
   if (dfx->partial)
     {
-      for (; nread < nbytes; nread++ )
+      while (nread < nbytes)
         {
-          if ((c = iobuf_get (stream)) == -1)
+          curr = nbytes - nread;
+
+          ret = iobuf_read (stream, &buffer[nread], curr);
+          if (ret == -1)
             {
               dfx->eof_seen = 1; /* Normal EOF. */
               break;
             }
-          buffer[nread] = c;
+
+          nread += ret;
         }
     }
   else
     {
-      for (; nread < nbytes && dfx->length; nread++, dfx->length--)
+      while (nread < nbytes && dfx->length)
         {
-          c = iobuf_get (stream);
-          if (c == -1)
+          curr = nbytes - nread;
+          if (curr > dfx->length)
+            curr = dfx->length;
+
+          ret = iobuf_read (stream, &buffer[nread], curr);
+          if (ret == -1)
             {
               dfx->eof_seen = 3; /* Premature EOF. */
               break;
             }
-          buffer[nread] = c;
+
+          nread += ret;
+          dfx->length -= ret;
         }
       if (!dfx->length)
         dfx->eof_seen = 1; /* Normal EOF.  */
@@ -647,7 +658,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
    * case when a chunk ends within the buffer.  */
   if (DBG_FILTER)
     log_debug ("decrypt: chunklen=%ju total=%ju size=%zu len=%zu%s\n",
-               (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, size, len,
+               dfx->chunklen, dfx->total, size, len,
                dfx->eof_seen? " eof":"");
 
   while (len && dfx->chunklen + len >= dfx->chunksize)
@@ -683,7 +694,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       len -= n;
 
       if (DBG_FILTER)
-        log_debug ("ndecrypted: %zu (nchunk=%zu) bytes left: %zu at off=%zu\n",
+        log_debug ("ndecrypted: %zu (nchunk=%ju) bytes left: %zu at off=%zu\n",
                    totallen, dfx->chunklen, len, off);
 
       /* Check the tag.  */
@@ -765,7 +776,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       dfx->chunklen += len;
       dfx->total += len;
       if (DBG_FILTER)
-        log_debug ("ndecrypted: %zu (nchunk=%zu)\n", totallen, dfx->chunklen);
+        log_debug ("ndecrypted: %zu (nchunk=%ju)\n", totallen, dfx->chunklen);
     }
 
   if (dfx->eof_seen)
@@ -873,7 +884,6 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
   decode_filter_ctx_t dfx = opaque;
   size_t n, size = *ret_len;
   int rc = 0;
-  int c;
 
   /* Note: We need to distinguish between a partial and a fixed length
      packet.  The first is the usual case as created by GPG.  However
@@ -894,25 +904,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
       log_assert (size > 44); /* Our code requires at least this size.  */
 
       /* Get at least 22 bytes and put it ahead in the buffer.  */
-      if (dfx->partial)
-        {
-          for (n=22; n < 44; n++)
-            {
-              if ( (c = iobuf_get(a)) == -1 )
-                break;
-              buf[n] = c;
-            }
-        }
-      else
-        {
-          for (n=22; n < 44 && dfx->length; n++, dfx->length--)
-            {
-              c = iobuf_get (a);
-              if (c == -1)
-                break; /* Premature EOF.  */
-              buf[n] = c;
-            }
-        }
+      n = fill_buffer (dfx, a, buf, 44, 22);
       if (n == 44)
         {
           /* We have enough stuff - flush the holdback buffer.  */
@@ -923,37 +915,11 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
 	    }
           else
             {
-
               memcpy (buf, dfx->holdback, 22);
 	    }
+
           /* Fill up the buffer. */
-          if (dfx->partial)
-            {
-              for (; n < size; n++ )
-                {
-                  if ( (c = iobuf_get(a)) == -1 )
-                    {
-                      dfx->eof_seen = 1; /* Normal EOF. */
-                      break;
-                    }
-                  buf[n] = c;
-                }
-            }
-          else
-            {
-              for (; n < size && dfx->length; n++, dfx->length--)
-                {
-                  c = iobuf_get(a);
-                  if (c == -1)
-                    {
-                      dfx->eof_seen = 3; /* Premature EOF. */
-                      break;
-                    }
-                  buf[n] = c;
-                }
-              if (!dfx->length)
-                dfx->eof_seen = 1; /* Normal EOF.  */
-            }
+          n = fill_buffer (dfx, a, buf, size, n);
 
           /* Move the trailing 22 bytes back to the holdback buffer.  We
              have at least 44 bytes thus a memmove is not needed.  */
@@ -1008,7 +974,7 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
   decode_filter_ctx_t fc = opaque;
   size_t size = *ret_len;
   size_t n;
-  int c, rc = 0;
+  int rc = 0;
 
 
   if ( control == IOBUFCTRL_UNDERFLOW && fc->eof_seen )
@@ -1020,34 +986,7 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
     {
       log_assert (a);
 
-      if (fc->partial)
-        {
-          for (n=0; n < size; n++ )
-            {
-              c = iobuf_get(a);
-              if (c == -1)
-                {
-                  fc->eof_seen = 1; /* Normal EOF. */
-                  break;
-                }
-              buf[n] = c;
-            }
-        }
-      else
-        {
-          for (n=0; n < size && fc->length; n++, fc->length--)
-            {
-              c = iobuf_get(a);
-              if (c == -1)
-                {
-                  fc->eof_seen = 3; /* Premature EOF. */
-                  break;
-                }
-              buf[n] = c;
-            }
-          if (!fc->length)
-            fc->eof_seen = 1; /* Normal EOF.  */
-        }
+      n = fill_buffer (fc, a, buf, size, 0);
       if (n)
         {
           if (fc->cipher_hd)

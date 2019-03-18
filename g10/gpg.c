@@ -2009,6 +2009,8 @@ parse_list_options(char *str)
        N_("show expiration dates during signature listings")},
       {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL,
        NULL},
+      {"show-only-fpr-mbox",LIST_SHOW_ONLY_FPR_MBOX, NULL,
+       NULL},
       {NULL,0,NULL,NULL}
     };
 
@@ -2146,6 +2148,8 @@ static struct gnupg_compliance_option compliance_options[] =
 static void
 set_compliance_option (enum cmd_and_opt_values option)
 {
+  opt.flags.rfc4880bis = 0;  /* Clear becuase it is initially set.  */
+
   switch (option)
     {
     case oRFC4880bis:
@@ -2192,7 +2196,10 @@ set_compliance_option (enum cmd_and_opt_values option)
       break;
     case oPGP7:  opt.compliance = CO_PGP7;  break;
     case oPGP8:  opt.compliance = CO_PGP8;  break;
-    case oGnuPG: opt.compliance = CO_GNUPG; break;
+    case oGnuPG:
+      opt.compliance = CO_GNUPG;
+      opt.flags.rfc4880bis = 1;
+      break;
 
     case oDE_VS:
       set_compliance_option (oOpenPGP);
@@ -2439,6 +2446,8 @@ main (int argc, char **argv)
     opt.passphrase_repeat = 1;
     opt.emit_version = 0;
     opt.weak_digests = NULL;
+    opt.compliance = CO_GNUPG;
+    opt.flags.rfc4880bis = 1;
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
@@ -3130,7 +3139,7 @@ main (int argc, char **argv)
 	    break;
 	  case oSender:
             {
-              char *mbox = mailbox_from_userid (pargs.r.ret_str);
+              char *mbox = mailbox_from_userid (pargs.r.ret_str, 0);
               if (!mbox)
                 log_error (_("\"%s\" is not a proper mail address\n"),
                            pargs.r.ret_str);
@@ -3554,7 +3563,7 @@ main (int argc, char **argv)
 	  case oAutoKeyLocate:
             if (default_akl)
               {
-                /* This is the first time --aito-key-locate is seen.
+                /* This is the first time --auto-key-locate is seen.
                  * We need to reset the default akl.  */
                 default_akl = 0;
                 release_akl();
@@ -3728,7 +3737,7 @@ main (int argc, char **argv)
 	log_info(_("WARNING: program may create a core file!\n"));
 
     if (opt.flags.rfc4880bis)
-	log_info ("WARNING: using experimental features from RFC4880bis!\n");
+	log_info ("Note: RFC4880bis features are enabled.\n");
     else
       {
         opt.mimemode = 0; /* This will use text mode instead.  */
@@ -3891,7 +3900,7 @@ main (int argc, char **argv)
        keygen_set_std_prefs(pers_compress_list,PREFTYPE_ZIP))
       log_error(_("invalid personal compress preferences\n"));
 
-    /* Check chunk size.  Please fix also the man page if you chnage
+    /* Check chunk size.  Please fix also the man page if you change
      * the default.  The limits are given by the specs.  */
     if (!opt.chunk_size)
       opt.chunk_size = 27; /* Default to the suggested max of 128 MiB.  */
@@ -4875,9 +4884,9 @@ main (int argc, char **argv)
 
 	    while( endless || count ) {
 		byte *p;
-                /* Wee need a multiple of 3, so that in case of
+                /* We need a multiple of 3, so that in case of
                    armored output we get a correct string.  No
-                   linefolding is done, as it is best to levae this to
+                   linefolding is done, as it is best to leave this to
                    other tools */
 		size_t n = !endless && count < 99? count : 99;
 
@@ -5073,8 +5082,6 @@ main (int argc, char **argv)
 
 	      if (! (desc.mode == KEYDB_SEARCH_MODE_SHORT_KID
 		     || desc.mode == KEYDB_SEARCH_MODE_LONG_KID
-		     || desc.mode == KEYDB_SEARCH_MODE_FPR16
-		     || desc.mode == KEYDB_SEARCH_MODE_FPR20
 		     || desc.mode == KEYDB_SEARCH_MODE_FPR
 		     || desc.mode == KEYDB_SEARCH_MODE_KEYGRIP))
 		{

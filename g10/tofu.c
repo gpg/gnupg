@@ -3292,7 +3292,7 @@ show_warning (const char *fingerprint, strlist_t user_id_list)
 static char *
 email_from_user_id (const char *user_id)
 {
-  char *email = mailbox_from_userid (user_id);
+  char *email = mailbox_from_userid (user_id, 0);
   if (! email)
     {
       /* Hmm, no email address was provided or we are out of core.  Just

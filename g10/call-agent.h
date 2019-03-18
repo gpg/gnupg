@@ -69,8 +69,11 @@ struct agent_card_info_s
     unsigned int ki:1;     /* Key import available.  */
     unsigned int aac:1;    /* Algorithm attributes are changeable.  */
     unsigned int kdf:1;    /* KDF object to support PIN hashing available.  */
+    unsigned int bt:1;     /* Button for confirmation available.  */
   } extcap;
   unsigned int status_indicator;
+  int kdf_do_enabled;      /* True if card has a KDF object.  */
+  int uif[3];              /* True if User Interaction Flag is on.  */
 };
 
 
@@ -143,7 +146,7 @@ gpg_error_t agent_clear_passphrase (const char *cache_id);
 gpg_error_t gpg_agent_get_confirmation (const char *desc);
 
 /* Return the S2K iteration count as computed by gpg-agent.  */
-gpg_error_t agent_get_s2k_count (unsigned long *r_count);
+unsigned long agent_get_s2k_count (void);
 
 /* Check whether a secret key for public key PK is available.  Returns
    0 if the secret key is available. */
@@ -192,14 +195,14 @@ gpg_error_t agent_keywrap_key (ctrl_t ctrl, int forexport,
 gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
                               char **cache_nonce_addr, const void *key,
                               size_t keylen, int unattended, int force,
-			      u32 *keyid, u32 *mainkeyid, int pubkey_algo);
+                              u32 *keyid, u32 *mainkeyid, int pubkey_algo);
 
 /* Receive a key from the agent.  */
 gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,
                               const char *desc, int openpgp_protected,
                               char **cache_nonce_addr,
                               unsigned char **r_result, size_t *r_resultlen,
-			      u32 *keyid, u32 *mainkeyid, int pubkey_algo);
+                              u32 *keyid, u32 *mainkeyid, int pubkey_algo);
 
 /* Delete a key from the agent.  */
 gpg_error_t agent_delete_key (ctrl_t ctrl, const char *hexkeygrip,

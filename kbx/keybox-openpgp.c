@@ -38,6 +38,13 @@
 #include "../common/openpgpdefs.h"
 #include "../common/host2net.h"
 
+struct keyparm_s
+{
+  const char *mpi;
+  int len;   /* int to avoid a cast in gcry_sexp_build.  */
+};
+
+
 /* Assume a valid OpenPGP packet at the address pointed to by BUFBTR
    which has a maximum length as stored at BUFLEN.  Return the header
    information of that packet and advance the pointer stored at BUFPTR
@@ -165,6 +172,86 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
 }
 
 
+/* Take a list of key parameters KP for the OpenPGP ALGO and compute
+ * the keygrip which will be stored at GRIP.  GRIP needs to be a
+ * buffer of 20 bytes.  */
+static gpg_error_t
+keygrip_from_keyparm (int algo, struct keyparm_s *kp, unsigned char *grip)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_pkey = NULL;
+
+  switch (algo)
+    {
+    case PUBKEY_ALGO_DSA:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(dsa(p%b)(q%b)(g%b)(y%b)))",
+                             kp[0].len, kp[0].mpi,
+                             kp[1].len, kp[1].mpi,
+                             kp[2].len, kp[2].mpi,
+                             kp[3].len, kp[3].mpi);
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL:
+    case PUBKEY_ALGO_ELGAMAL_E:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(elg(p%b)(g%b)(y%b)))",
+                             kp[0].len, kp[0].mpi,
+                             kp[1].len, kp[1].mpi,
+                             kp[2].len, kp[2].mpi);
+      break;
+
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_S:
+    case PUBKEY_ALGO_RSA_E:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(rsa(n%b)(e%b)))",
+                             kp[0].len, kp[0].mpi,
+                             kp[1].len, kp[1].mpi);
+      break;
+
+    case PUBKEY_ALGO_EDDSA:
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_ECDH:
+      {
+        char *curve = openpgp_oidbuf_to_str (kp[0].mpi, kp[0].len);
+        if (!curve)
+          err = gpg_error_from_syserror ();
+        else
+          {
+            err = gcry_sexp_build
+              (&s_pkey, NULL,
+               (algo == PUBKEY_ALGO_EDDSA)?
+               "(public-key(ecc(curve%s)(flags eddsa)(q%b)))":
+               (algo == PUBKEY_ALGO_ECDH
+                && openpgp_oidbuf_is_cv25519 (kp[0].mpi, kp[0].len))?
+               "(public-key(ecc(curve%s)(flags djb-tweak)(q%b)))":
+               "(public-key(ecc(curve%s)(q%b)))",
+               curve, kp[1].len, kp[1].mpi);
+            xfree (curve);
+          }
+      }
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      break;
+    }
+
+  if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
+    {
+      log_info ("kbx: error computing keygrip\n");
+      err = gpg_error (GPG_ERR_GENERAL);
+    }
+
+  gcry_sexp_release (s_pkey);
+
+  if (err)
+    memset (grip, 0, 20);
+  return err;
+}
+
+
 /* Parse a key packet and store the information in KI. */
 static gpg_error_t
 parse_key (const unsigned char *data, size_t datalen,
@@ -176,16 +263,19 @@ parse_key (const unsigned char *data, size_t datalen,
   size_t n;
   int npkey;
   unsigned char hashbuffer[768];
-  const unsigned char *mpi_n = NULL;
-  size_t mpi_n_len = 0, mpi_e_len = 0;
   gcry_md_hd_t md;
   int is_ecc = 0;
+  int is_v5;
+  /* unsigned int pkbytes;  for v5: # of octets of the public key params.  */
+  struct keyparm_s keyparm[OPENPGP_MAX_NPKEY];
+  unsigned char *helpmpibuf[OPENPGP_MAX_NPKEY] = { NULL };
 
   if (datalen < 5)
     return gpg_error (GPG_ERR_INV_PACKET);
   version = *data++; datalen--;
-  if (version < 2 || version > 4 )
+  if (version < 2 || version > 5 )
     return gpg_error (GPG_ERR_INV_PACKET); /* Invalid version. */
+  is_v5 = version == 5;
 
   /*timestamp = ((data[0]<<24)|(data[1]<<16)|(data[2]<<8)|(data[3]));*/
   data +=4; datalen -=4;
@@ -200,6 +290,15 @@ parse_key (const unsigned char *data, size_t datalen,
   if (!datalen)
     return gpg_error (GPG_ERR_INV_PACKET);
   algorithm = *data++; datalen--;
+
+  if (is_v5)
+    {
+      if (datalen < 4)
+        return gpg_error (GPG_ERR_INV_PACKET);
+      /* pkbytes = buf32_to_uint (data); */
+      data += 4;
+      datalen -= 4;
+    }
 
   switch (algorithm)
     {
@@ -228,6 +327,7 @@ parse_key (const unsigned char *data, size_t datalen,
       return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
     }
 
+  ki->version = version;
   ki->algo = algorithm;
 
   for (i=0; i < npkey; i++ )
@@ -245,6 +345,9 @@ parse_key (const unsigned char *data, size_t datalen,
           nbytes++; /* The size byte itself.  */
           if (datalen < nbytes)
             return gpg_error (GPG_ERR_INV_PACKET);
+
+          keyparm[i].mpi = data;
+          keyparm[i].len = nbytes;
         }
       else
         {
@@ -254,20 +357,39 @@ parse_key (const unsigned char *data, size_t datalen,
           nbytes = (nbits+7) / 8;
           if (datalen < nbytes)
             return gpg_error (GPG_ERR_INV_PACKET);
-          /* For use by v3 fingerprint calculation we need to know the RSA
-             modulus and exponent. */
-          if (i==0)
-            {
-              mpi_n = data;
-              mpi_n_len = nbytes;
-            }
-          else if (i==1)
-            mpi_e_len = nbytes;
+
+          keyparm[i].mpi = data;
+          keyparm[i].len = nbytes;
         }
 
       data += nbytes; datalen -= nbytes;
     }
   n = data - data_start;
+
+
+  /* Note: Starting here we need to jump to leave on error. */
+
+  /* Make sure the MPIs are unsigned.  */
+  for (i=0; i < npkey; i++)
+    {
+      if (!keyparm[i].len || (keyparm[i].mpi[0] & 0x80))
+        {
+          helpmpibuf[i] = xtrymalloc (1+keyparm[i].len);
+          if (!helpmpibuf[i])
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          helpmpibuf[i][0] = 0;
+          memcpy (helpmpibuf[i]+1, keyparm[i].mpi, keyparm[i].len);
+          keyparm[i].mpi = helpmpibuf[i];
+          keyparm[i].len++;
+        }
+    }
+
+  err = keygrip_from_keyparm (algorithm, keyparm, ki->grip);
+  if (err)
+    goto leave;
 
   if (version < 4)
     {
@@ -279,20 +401,20 @@ parse_key (const unsigned char *data, size_t datalen,
       err = gcry_md_open (&md, GCRY_MD_MD5, 0);
       if (err)
         return err; /* Oops */
-      gcry_md_write (md, mpi_n, mpi_n_len);
-      gcry_md_write (md, mpi_n+mpi_n_len+2, mpi_e_len);
+      gcry_md_write (md, keyparm[0].mpi, keyparm[0].len);
+      gcry_md_write (md, keyparm[1].mpi, keyparm[1].len);
       memcpy (ki->fpr, gcry_md_read (md, 0), 16);
       gcry_md_close (md);
       ki->fprlen = 16;
 
-      if (mpi_n_len < 8)
+      if (keyparm[0].len < 8)
         {
           /* Moduli less than 64 bit are out of the specs scope.  Zero
              them out because this is what gpg does too. */
           memset (ki->keyid, 0, 8);
         }
       else
-        memcpy (ki->keyid, mpi_n + mpi_n_len - 8, 8);
+        memcpy (ki->keyid, keyparm[0].mpi + keyparm[0].len - 8, 8);
     }
   else
     {
@@ -302,32 +424,70 @@ parse_key (const unsigned char *data, size_t datalen,
          have a scatter-gather enabled hash function. What we do here
          is to use a static buffer if this one is large enough and
          only use the regular hash functions if this buffer is not
-         large enough. */
-      if ( 3 + n < sizeof hashbuffer )
+         large enough.
+         FIXME: Factor this out to a shared fingerprint function.
+       */
+      if (version == 5)
         {
-          hashbuffer[0] = 0x99;     /* CTB */
-          hashbuffer[1] = (n >> 8); /* 2 byte length header. */
-          hashbuffer[2] = n;
-          memcpy (hashbuffer + 3, data_start, n);
-          gcry_md_hash_buffer (GCRY_MD_SHA1, ki->fpr, hashbuffer, 3 + n);
+          if ( 5 + n < sizeof hashbuffer )
+            {
+              hashbuffer[0] = 0x9a;     /* CTB */
+              hashbuffer[1] = (n >> 24);/* 4 byte length header. */
+              hashbuffer[2] = (n >> 16);
+              hashbuffer[3] = (n >>  8);
+              hashbuffer[4] = (n      );
+              memcpy (hashbuffer + 5, data_start, n);
+              gcry_md_hash_buffer (GCRY_MD_SHA256, ki->fpr, hashbuffer, 5 + n);
+            }
+          else
+            {
+              err = gcry_md_open (&md, GCRY_MD_SHA256, 0);
+              if (err)
+                return err; /* Oops */
+              gcry_md_putc (md, 0x9a );     /* CTB */
+              gcry_md_putc (md, (n >> 24)); /* 4 byte length header. */
+              gcry_md_putc (md, (n >> 16));
+              gcry_md_putc (md, (n >>  8));
+              gcry_md_putc (md, (n      ));
+              gcry_md_write (md, data_start, n);
+              memcpy (ki->fpr, gcry_md_read (md, 0), 32);
+              gcry_md_close (md);
+            }
+          ki->fprlen = 32;
+          memcpy (ki->keyid, ki->fpr, 8);
         }
       else
         {
-          err = gcry_md_open (&md, GCRY_MD_SHA1, 0);
-          if (err)
-            return err; /* Oops */
-          gcry_md_putc (md, 0x99 );     /* CTB */
-          gcry_md_putc (md, (n >> 8) ); /* 2 byte length header. */
-          gcry_md_putc (md, n );
-          gcry_md_write (md, data_start, n);
-          memcpy (ki->fpr, gcry_md_read (md, 0), 20);
-          gcry_md_close (md);
+          if ( 3 + n < sizeof hashbuffer )
+            {
+              hashbuffer[0] = 0x99;     /* CTB */
+              hashbuffer[1] = (n >> 8); /* 2 byte length header. */
+              hashbuffer[2] = (n     );
+              memcpy (hashbuffer + 3, data_start, n);
+              gcry_md_hash_buffer (GCRY_MD_SHA1, ki->fpr, hashbuffer, 3 + n);
+            }
+          else
+            {
+              err = gcry_md_open (&md, GCRY_MD_SHA1, 0);
+              if (err)
+                return err; /* Oops */
+              gcry_md_putc (md, 0x99 );     /* CTB */
+              gcry_md_putc (md, (n >> 8));  /* 2 byte length header. */
+              gcry_md_putc (md, (n     ));
+              gcry_md_write (md, data_start, n);
+              memcpy (ki->fpr, gcry_md_read (md, 0), 20);
+              gcry_md_close (md);
+            }
+          ki->fprlen = 20;
+          memcpy (ki->keyid, ki->fpr+12, 8);
         }
-      ki->fprlen = 20;
-      memcpy (ki->keyid, ki->fpr+12, 8);
     }
 
-  return 0;
+ leave:
+  for (i=0; i < npkey; i++)
+    xfree (helpmpibuf[i]);
+
+  return err;
 }
 
 

@@ -34,11 +34,11 @@
 #define DEBUG_PARSE_PACKET 1
 
 
-/* Constants to allocate static MPI arrays. */
-#define PUBKEY_MAX_NPKEY  5
-#define PUBKEY_MAX_NSKEY  7
-#define PUBKEY_MAX_NSIG   2
-#define PUBKEY_MAX_NENC   2
+/* Constants to allocate static MPI arrays.  */
+#define PUBKEY_MAX_NPKEY  OPENPGP_MAX_NPKEY
+#define PUBKEY_MAX_NSKEY  OPENPGP_MAX_NSKEY
+#define PUBKEY_MAX_NSIG   OPENPGP_MAX_NSIG
+#define PUBKEY_MAX_NENC   OPENPGP_MAX_NENC
 
 /* Usage flags */
 #define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN  /* Good for signatures. */
@@ -137,6 +137,7 @@ struct pubkey_enc_list
   struct pubkey_enc_list *next;
   u32 keyid[2];
   int pubkey_algo;
+  int result;
   gcry_mpi_t data[PUBKEY_MAX_NENC];
 };
 
@@ -180,6 +181,8 @@ struct revocation_key {
   byte class;
   /* The public-key algorithm ID.  */
   byte algid;
+  /* The length of the fingerprint.  */
+  byte fprlen;
   /* The fingerprint of the authorized key.  */
   byte fpr[MAX_FINGERPRINT_LEN];
 };
@@ -244,7 +247,7 @@ typedef struct
   const byte *trust_regexp;
   struct revocation_key *revkey;
   int numrevkeys;
-  int help_counter;          /* Used internally bu some fucntions.  */
+  int help_counter;          /* Used internally bu some functions.  */
   pka_info_t *pka_info;      /* Malloced PKA data or NULL if not
                                 available.  See also flags.pka_tried. */
   char *signers_uid;         /* Malloced value of the SIGNERS_UID
@@ -850,7 +853,7 @@ PACKET *create_gpg_control ( ctrlpkttype_t type,
 /*-- build-packet.c --*/
 int build_packet (iobuf_t out, PACKET *pkt);
 gpg_error_t build_packet_and_meta (iobuf_t out, PACKET *pkt);
-gpg_error_t gpg_mpi_write (iobuf_t out, gcry_mpi_t a);
+gpg_error_t gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *t_nwritten);
 gpg_error_t gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a);
 u32 calc_packet_length( PACKET *pkt );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
@@ -897,6 +900,7 @@ int check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest);
  * it and verifying the signature.  */
 gpg_error_t check_signature2 (ctrl_t ctrl,
                               PKT_signature *sig, gcry_md_hd_t digest,
+                              const void *extrahash, size_t extrahashlen,
                               u32 *r_expiredate, int *r_expired, int *r_revoked,
                               PKT_public_key **r_pk);
 

@@ -107,7 +107,7 @@ if [ ! -d /etc/skel/.gnupg ]; then
     exit 1
 fi
 cd "/etc/skel/.gnupg" || (error "error cd-ing to \`/etc/skel/.gnupg'"; exit 1)
-filelist=$(find . \( -type f -or -type d \) -not -name '*~' -not -name . -print)
+filelist=$(find . \( -type f -o -type d \) '!' -name '*~' '!' -name . -print)
 
 
 if ! umask 0077 ; then

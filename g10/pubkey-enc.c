@@ -110,6 +110,16 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           continue;
         }
 
+      /* FIXME: The list needs to be sorted so that we try the keys in
+       * an appropriate order.  For example:
+       * - On-disk keys w/o protection
+       * - On-disk keys with a cached passphrase
+       * - On-card keys of an active card
+       * - On-disk keys with protection
+       * - On-card keys from cards which are not plugged it.  Here a
+       *   cancel-all button should stop asking for other cards.
+       * Without any anonymous keys the sorting can be skipped.
+       */
       for (k = list; k; k = k->next)
         {
           if (!(k->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
@@ -122,6 +132,8 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           if (openpgp_pk_test_algo2 (k->pubkey_algo, PUBKEY_USAGE_ENC))
             continue;
 
+          k->result = GPG_ERR_NO_SECKEY;
+
           if (sk->pubkey_algo != k->pubkey_algo)
             continue;
 
@@ -129,6 +141,9 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
 
           if (!k->keyid[0] && !k->keyid[1])
             {
+              if (opt.skip_hidden_recipients)
+                continue;
+
               if (!opt.quiet)
                 log_info (_("anonymous recipient; trying secret key %s ...\n"),
                           keystr (keyid));
@@ -142,6 +157,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           rc = get_it (ctrl, k, dek, sk, keyid);
           if (!rc)
             {
+              k->result = 0;
               if (!opt.quiet && !k->keyid[0] && !k->keyid[1])
                 log_info (_("okay, we are the anonymous recipient.\n"));
               search_for_secret_keys = 0;

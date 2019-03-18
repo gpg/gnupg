@@ -25,9 +25,16 @@
 #include <npth.h>
 #include <ksba.h>
 
+/* Flags used with app_change_pin.  */
+#define APP_CHANGE_FLAG_RESET    1  /* PIN Reset mode.  */
+#define APP_CHANGE_FLAG_NULLPIN  2  /* NULL PIN mode.  */
+#define APP_CHANGE_FLAG_CLEAR    4  /* Clear the given PIN.  */
 
-#define APP_CHANGE_FLAG_RESET    1
-#define APP_CHANGE_FLAG_NULLPIN  2
+/* Flags used with app_genkey.  */
+#define APP_GENKEY_FLAG_FORCE    1  /* Force overwriting existing key.  */
+
+/* Flags used with app_writekey.  */
+#define APP_WRITEKEY_FLAG_FORCE  1  /* Force overwriting existing key.  */
 
 /* Bit flags set by the decipher function into R_INFO.  */
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
@@ -51,8 +58,10 @@ struct app_ctx_s {
 
   unsigned char *serialno; /* Serialnumber in raw form, allocated. */
   size_t serialnolen;      /* Length in octets of serialnumber. */
+  const char *cardtype;    /* NULL or string with the token's type.  */
   const char *apptype;
-  unsigned int card_version;
+  unsigned int cardversion;/* Firmware version of the token or 0.  */
+  unsigned int appversion; /* Version of the application or 0.     */
   unsigned int card_status;
   unsigned int reset_requested:1;
   unsigned int periodical_check_needed:1;
@@ -66,7 +75,7 @@ struct app_ctx_s {
     gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl, unsigned int flags);
     gpg_error_t (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
-    gpg_error_t (*readkey) (app_t app, int advanced, const char *certid,
+    gpg_error_t (*readkey) (app_t app, const char *certid,
                     unsigned char **pk, size_t *pklen);
     gpg_error_t (*getattr) (app_t app, ctrl_t ctrl, const char *name);
     gpg_error_t (*setattr) (app_t app, const char *name,
@@ -101,8 +110,8 @@ struct app_ctx_s {
                              void *pincb_arg,
                              const unsigned char *pk, size_t pklen);
     gpg_error_t (*genkey) (app_t app, ctrl_t ctrl,
-                           const char *keynostr, unsigned int flags,
-                           time_t createtime,
+                           const char *keyref, const char *keytype,
+                           unsigned int flags, time_t createtime,
                            gpg_error_t (*pincb)(void*, const char *, char **),
                            void *pincb_arg);
     gpg_error_t (*change_pin) (app_t app, ctrl_t ctrl,
@@ -118,6 +127,8 @@ struct app_ctx_s {
 /*-- app-help.c --*/
 unsigned int app_help_count_bits (const unsigned char *a, size_t len);
 gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip);
+gpg_error_t app_help_pubkey_from_cert (const void *cert, size_t certlen,
+                                       unsigned char **r_pk, size_t *r_pklen);
 size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 
 
@@ -139,7 +150,7 @@ gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
                                     unsigned int flags);
 gpg_error_t app_readcert (app_t app, ctrl_t ctrl, const char *certid,
                   unsigned char **cert, size_t *certlen);
-gpg_error_t app_readkey (app_t app, ctrl_t ctrl, int advanced,
+gpg_error_t app_readkey (app_t app, ctrl_t ctrl,
                  const char *keyid, unsigned char **pk, size_t *pklen);
 gpg_error_t app_getattr (app_t app, ctrl_t ctrl, const char *name);
 gpg_error_t app_setattr (app_t app, ctrl_t ctrl, const char *name,
@@ -173,16 +184,16 @@ gpg_error_t app_writekey (app_t app, ctrl_t ctrl,
                           void *pincb_arg,
                           const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
-                        const char *keynostr, unsigned int flags,
-                        time_t createtime,
+                        const char *keynostr, const char *keytype,
+                        unsigned int flags, time_t createtime,
                         gpg_error_t (*pincb)(void*, const char *, char **),
                         void *pincb_arg);
 gpg_error_t app_get_challenge (app_t app, ctrl_t ctrl, size_t nbytes,
                                unsigned char *buffer);
 gpg_error_t app_change_pin (app_t app, ctrl_t ctrl,
-                    const char *chvnostr, int reset_mode,
-                    gpg_error_t (*pincb)(void*, const char *, char **),
-                    void *pincb_arg);
+                            const char *chvnostr, unsigned int flags,
+                            gpg_error_t (*pincb)(void*, const char *, char **),
+                            void *pincb_arg);
 gpg_error_t app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
                    gpg_error_t (*pincb)(void*, const char *, char **),
                    void *pincb_arg);
@@ -205,6 +216,9 @@ gpg_error_t app_select_geldkarte (app_t app);
 
 /*-- app-sc-hsm.c --*/
 gpg_error_t app_select_sc_hsm (app_t app);
+
+/*-- app-piv.c --*/
+gpg_error_t app_select_piv (app_t app);
 
 
 #endif /*GNUPG_SCD_APP_COMMON_H*/

@@ -277,12 +277,12 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 
 		fingerprint_from_pk (list->pk, fpr, &fprlen);
 
-		/* Don't get involved with keys that don't have 160
-		   bit fingerprints */
-		if(fprlen!=20)
+		/* Don't get involved with keys that don't have a v4
+		 * or v5 fingerprint */
+		if (fprlen != 20 && fprlen != 32)
 		  continue;
 
-		if(memcmp(fpr,pk->revkey[i].fpr,20)==0)
+		if (!memcmp(fpr,pk->revkey[i].fpr, fprlen))
 		  break;
 	      }
 
@@ -295,7 +295,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 	  {
 	    pk2 = xmalloc_clear (sizeof *pk2);
 	    rc = get_pubkey_byfprint (ctrl, pk2, NULL,
-                                      pk->revkey[i].fpr, MAX_FINGERPRINT_LEN);
+                                      pk->revkey[i].fpr, pk->revkey[i].fprlen);
 	  }
 
 	/* We have the revocation key.  */
@@ -388,15 +388,18 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 
 		    for(j=0;j<signode->pkt->pkt.signature->numrevkeys;j++)
 		      {
-			if(pk->revkey[i].class==
-			   signode->pkt->pkt.signature->revkey[j].class &&
-			   pk->revkey[i].algid==
-			   signode->pkt->pkt.signature->revkey[j].algid &&
-			   memcmp(pk->revkey[i].fpr,
-				  signode->pkt->pkt.signature->revkey[j].fpr,
-				  MAX_FINGERPRINT_LEN)==0)
+			if (pk->revkey[i].class
+                               == signode->pkt->pkt.signature->revkey[j].class
+                            && pk->revkey[i].algid
+                                == signode->pkt->pkt.signature->revkey[j].algid
+                            && pk->revkey[i].fprlen
+                               == signode->pkt->pkt.signature->revkey[j].fprlen
+                            && !memcmp
+                                 (pk->revkey[i].fpr,
+                                  signode->pkt->pkt.signature->revkey[j].fpr,
+                                  pk->revkey[i].fprlen))
 			  {
-			    revkey=signode->pkt->pkt.signature;
+			    revkey = signode->pkt->pkt.signature;
 			    break;
 			  }
 		      }

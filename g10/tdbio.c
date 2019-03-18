@@ -106,7 +106,7 @@ struct cmp_xdir_struct
 static char *db_name;
 
 /* The handle for locking the trustdb file and a counter to record how
- * often this lock has been taken.  That counter is required becuase
+ * often this lock has been taken.  That counter is required because
  * dotlock does not implemen recursive locks.  */
 static dotlock_t lockhandle;
 static unsigned int is_locked;
@@ -562,6 +562,12 @@ tdbio_update_version_record (ctrl_t ctrl)
 {
   TRUSTREC rec;
   int rc;
+  int opt_tm;
+
+  /* Never store a TOFU trust model in the trustdb.  Use PGP instead.  */
+  opt_tm = opt.trust_model;
+  if (opt_tm == TM_TOFU || opt_tm == TM_TOFU_PGP)
+    opt_tm = TM_PGP;
 
   memset (&rec, 0, sizeof rec);
 
@@ -572,7 +578,7 @@ tdbio_update_version_record (ctrl_t ctrl)
       rec.r.ver.marginals   = opt.marginals_needed;
       rec.r.ver.completes   = opt.completes_needed;
       rec.r.ver.cert_depth  = opt.max_cert_depth;
-      rec.r.ver.trust_model = opt.trust_model;
+      rec.r.ver.trust_model = opt_tm;
       rec.r.ver.min_cert_level = opt.min_cert_level;
       rc = tdbio_write_record (ctrl, &rec);
     }
@@ -583,7 +589,7 @@ tdbio_update_version_record (ctrl_t ctrl)
 
 /*
  * Create and write the trustdb version record.
- * This is called with the writelock activ.
+ * This is called with the writelock active.
  * Returns: 0 on success or an error code.
  */
 static int
@@ -591,6 +597,12 @@ create_version_record (ctrl_t ctrl)
 {
   TRUSTREC rec;
   int rc;
+  int opt_tm;
+
+  /* Never store a TOFU trust model in the trustdb.  Use PGP instead.  */
+  opt_tm = opt.trust_model;
+  if (opt_tm == TM_TOFU || opt_tm == TM_TOFU_PGP)
+    opt_tm = TM_PGP;
 
   memset (&rec, 0, sizeof rec);
   rec.r.ver.version     = 3;
@@ -598,8 +610,8 @@ create_version_record (ctrl_t ctrl)
   rec.r.ver.marginals   = opt.marginals_needed;
   rec.r.ver.completes   = opt.completes_needed;
   rec.r.ver.cert_depth  = opt.max_cert_depth;
-  if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC)
-    rec.r.ver.trust_model = opt.trust_model;
+  if (opt_tm == TM_PGP || opt_tm == TM_CLASSIC)
+    rec.r.ver.trust_model = opt_tm;
   else
     rec.r.ver.trust_model = TM_PGP;
   rec.r.ver.min_cert_level = opt.min_cert_level;
@@ -883,16 +895,25 @@ tdbio_db_matches_options()
     {
       TRUSTREC vr;
       int rc;
+      int opt_tm, tm;
 
       rc = tdbio_read_record (0, &vr, RECTYPE_VER);
       if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
 		   db_name, gpg_strerror (rc) );
 
+      /* Consider tofu and pgp the same.  */
+      tm = vr.r.ver.trust_model;
+      if (tm == TM_TOFU || tm == TM_TOFU_PGP)
+        tm = TM_PGP;
+      opt_tm  = opt.trust_model;
+      if (opt_tm == TM_TOFU || opt_tm == TM_TOFU_PGP)
+        opt_tm = TM_PGP;
+
       yes_no = vr.r.ver.marginals == opt.marginals_needed
 	&& vr.r.ver.completes == opt.completes_needed
 	&& vr.r.ver.cert_depth == opt.max_cert_depth
-	&& vr.r.ver.trust_model == opt.trust_model
+	&& tm == opt_tm
 	&& vr.r.ver.min_cert_level == opt.min_cert_level;
     }
 
@@ -1118,7 +1139,7 @@ upd_hashtable (ctrl_t ctrl, ulong table, byte *key, int keylen, ulong newrecnum)
 
               if (rec.r.hlst.next)
                 {
-                  /* read the next reord of the list.  */
+                  /* read the next record of the list.  */
                   rc = tdbio_read_record (rec.r.hlst.next, &rec, RECTYPE_HLST);
                   if (rc)
                     {

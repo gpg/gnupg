@@ -1,4 +1,4 @@
-/* armor.c - Armor flter
+/* armor.c - Armor filter
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007 Free Software Foundation, Inc.
  *
@@ -37,17 +37,10 @@
 
 #define MAX_LINELEN 20000
 
-#define CRCINIT 0xB704CE
-#define CRCPOLY 0X864CFB
-#define CRCUPDATE(a,c) do {						    \
-			a = ((a) << 8) ^ crc_table[((a)&0xff >> 16) ^ (c)]; \
-			a &= 0x00ffffff;				    \
-		    } while(0)
-static u32 crc_table[256];
-static byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			 "abcdefghijklmnopqrstuvwxyz"
-			 "0123456789+/";
-static byte asctobin[256]; /* runtime initialized */
+static const byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                               "abcdefghijklmnopqrstuvwxyz"
+                               "0123456789+/";
+static u32 asctobin[4][256]; /* runtime initialized */
 static int is_initialized;
 
 
@@ -121,9 +114,22 @@ armor_filter_context_t *
 new_armor_context (void)
 {
   armor_filter_context_t *afx;
+  gpg_error_t err;
 
   afx = xcalloc (1, sizeof *afx);
-  afx->refcount = 1;
+  if (afx)
+    {
+      err = gcry_md_open (&afx->crc_md, GCRY_MD_CRC24_RFC2440, 0);
+      if (err != 0)
+	{
+	  log_error ("gcry_md_open failed for GCRY_MD_CRC24_RFC2440: %s",
+		    gpg_strerror (err));
+	  xfree (afx);
+	  return NULL;
+	}
+
+      afx->refcount = 1;
+    }
 
   return afx;
 }
@@ -138,6 +144,7 @@ release_armor_context (armor_filter_context_t *afx)
   log_assert (afx->refcount);
   if ( --afx->refcount )
     return;
+  gcry_md_close (afx->crc_md);
   xfree (afx);
 }
 
@@ -161,32 +168,39 @@ push_armor_filter (armor_filter_context_t *afx, iobuf_t iobuf)
 static void
 initialize(void)
 {
-    int i, j;
-    u32 t;
-    byte *s;
+    u32 i;
+    const byte *s;
 
-    /* init the crc lookup table */
-    crc_table[0] = 0;
-    for(i=j=0; j < 128; j++ ) {
-	t = crc_table[j];
-	if( t & 0x00800000 ) {
-	    t <<= 1;
-	    crc_table[i++] = t ^ CRCPOLY;
-	    crc_table[i++] = t;
-	}
-	else {
-	    t <<= 1;
-	    crc_table[i++] = t;
-	    crc_table[i++] = t ^ CRCPOLY;
-	}
-    }
-    /* build the helptable for radix64 to bin conversion */
-    for(i=0; i < 256; i++ )
-	asctobin[i] = 255; /* used to detect invalid characters */
+    /* Build the helptable for radix64 to bin conversion.  Value 0xffffffff is
+       used to detect invalid characters.  */
+    memset (asctobin, 0xff, sizeof(asctobin));
     for(s=bintoasc,i=0; *s; s++,i++ )
-	asctobin[*s] = i;
+      {
+	asctobin[0][*s] = i << (0 * 6);
+	asctobin[1][*s] = i << (1 * 6);
+	asctobin[2][*s] = i << (2 * 6);
+	asctobin[3][*s] = i << (3 * 6);
+      }
 
     is_initialized=1;
+}
+
+
+static inline u32
+get_afx_crc (armor_filter_context_t *afx)
+{
+  const byte *crc_buf;
+  u32 crc;
+
+  crc_buf = gcry_md_read (afx->crc_md, GCRY_MD_CRC24_RFC2440);
+
+  crc = crc_buf[0];
+  crc <<= 8;
+  crc |= crc_buf[1];
+  crc <<= 8;
+  crc |= crc_buf[2];
+
+  return crc;
 }
 
 
@@ -592,7 +606,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	afx->faked = 1;
     else {
 	afx->inp_checked = 1;
-	afx->crc = CRCINIT;
+	gcry_md_reset (afx->crc_md);
 	afx->idx = 0;
 	afx->radbuf[0] = 0;
     }
@@ -768,7 +782,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    }
 	}
 	afx->inp_checked = 1;
-	afx->crc = CRCINIT;
+	gcry_md_reset (afx->crc_md);
 	afx->idx = 0;
 	afx->radbuf[0] = 0;
     }
@@ -793,14 +807,14 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	      byte *buf, size_t size )
 {
     byte val;
-    int c=0, c2; /*init c because gcc is not clever enough for the continue*/
+    int c;
+    u32 binc;
     int checkcrc=0;
     int rc = 0;
     size_t n = 0;
-    int  idx, i, onlypad=0;
-    u32 crc;
+    int idx, onlypad=0;
+    int skip_fast = 0;
 
-    crc = afx->crc;
     idx = afx->idx;
     val = afx->radbuf[0];
     for( n=0; n < size; ) {
@@ -820,6 +834,122 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	}
 
       again:
+	binc = asctobin[0][c];
+
+	if( binc != 0xffffffffUL )
+	  {
+	    if( idx == 0 && skip_fast == 0
+		&& afx->buffer_pos + (16 - 1) < afx->buffer_len
+		&& n + 12 < size)
+	      {
+		/* Fast path for radix64 to binary conversion.  */
+		u32 b0,b1,b2,b3;
+
+		/* Speculatively load 15 more input bytes.  */
+		b0 = binc << (3 * 6);
+		b0 |= asctobin[2][afx->buffer[afx->buffer_pos + 0]];
+		b0 |= asctobin[1][afx->buffer[afx->buffer_pos + 1]];
+		b0 |= asctobin[0][afx->buffer[afx->buffer_pos + 2]];
+		b1  = asctobin[3][afx->buffer[afx->buffer_pos + 3]];
+		b1 |= asctobin[2][afx->buffer[afx->buffer_pos + 4]];
+		b1 |= asctobin[1][afx->buffer[afx->buffer_pos + 5]];
+		b1 |= asctobin[0][afx->buffer[afx->buffer_pos + 6]];
+		b2  = asctobin[3][afx->buffer[afx->buffer_pos + 7]];
+		b2 |= asctobin[2][afx->buffer[afx->buffer_pos + 8]];
+		b2 |= asctobin[1][afx->buffer[afx->buffer_pos + 9]];
+		b2 |= asctobin[0][afx->buffer[afx->buffer_pos + 10]];
+		b3  = asctobin[3][afx->buffer[afx->buffer_pos + 11]];
+		b3 |= asctobin[2][afx->buffer[afx->buffer_pos + 12]];
+		b3 |= asctobin[1][afx->buffer[afx->buffer_pos + 13]];
+		b3 |= asctobin[0][afx->buffer[afx->buffer_pos + 14]];
+
+		/* Check if any of the input bytes were invalid. */
+		if( (b0 | b1 | b2 | b3) != 0xffffffffUL )
+		  {
+		    /* All 16 bytes are valid. */
+		    buf[n + 0] = b0 >> (2 * 8);
+		    buf[n + 1] = b0 >> (1 * 8);
+		    buf[n + 2] = b0 >> (0 * 8);
+		    buf[n + 3] = b1 >> (2 * 8);
+		    buf[n + 4] = b1 >> (1 * 8);
+		    buf[n + 5] = b1 >> (0 * 8);
+		    buf[n + 6] = b2 >> (2 * 8);
+		    buf[n + 7] = b2 >> (1 * 8);
+		    buf[n + 8] = b2 >> (0 * 8);
+		    buf[n + 9] = b3 >> (2 * 8);
+		    buf[n + 10] = b3 >> (1 * 8);
+		    buf[n + 11] = b3 >> (0 * 8);
+		    afx->buffer_pos += 16 - 1;
+		    n += 12;
+		    continue;
+		  }
+		else if( b0 == 0xffffffffUL )
+		  {
+		    /* byte[1..3] have invalid character(s).  Switch to slow
+		       path.  */
+		    skip_fast = 1;
+		  }
+		else if( b1 == 0xffffffffUL )
+		  {
+		    /* byte[4..7] have invalid character(s), first 4 bytes are
+		       valid.  */
+		    buf[n + 0] = b0 >> (2 * 8);
+		    buf[n + 1] = b0 >> (1 * 8);
+		    buf[n + 2] = b0 >> (0 * 8);
+		    afx->buffer_pos += 4 - 1;
+		    n += 3;
+		    skip_fast = 1;
+		    continue;
+		  }
+		else if( b2 == 0xffffffffUL )
+		  {
+		    /* byte[8..11] have invalid character(s), first 8 bytes are
+		       valid.  */
+		    buf[n + 0] = b0 >> (2 * 8);
+		    buf[n + 1] = b0 >> (1 * 8);
+		    buf[n + 2] = b0 >> (0 * 8);
+		    buf[n + 3] = b1 >> (2 * 8);
+		    buf[n + 4] = b1 >> (1 * 8);
+		    buf[n + 5] = b1 >> (0 * 8);
+		    afx->buffer_pos += 8 - 1;
+		    n += 6;
+		    skip_fast = 1;
+		    continue;
+		  }
+		else /*if( b3 == 0xffffffffUL )*/
+		  {
+		    /* byte[12..15] have invalid character(s), first 12 bytes
+		       are valid.  */
+		    buf[n + 0] = b0 >> (2 * 8);
+		    buf[n + 1] = b0 >> (1 * 8);
+		    buf[n + 2] = b0 >> (0 * 8);
+		    buf[n + 3] = b1 >> (2 * 8);
+		    buf[n + 4] = b1 >> (1 * 8);
+		    buf[n + 5] = b1 >> (0 * 8);
+		    buf[n + 6] = b2 >> (2 * 8);
+		    buf[n + 7] = b2 >> (1 * 8);
+		    buf[n + 8] = b2 >> (0 * 8);
+		    afx->buffer_pos += 12 - 1;
+		    n += 9;
+		    skip_fast = 1;
+		    continue;
+		  }
+	      }
+
+	    switch(idx)
+	      {
+		case 0: val =  binc << 2; break;
+		case 1: val |= (binc>>4)&3; buf[n++]=val;val=(binc<<4)&0xf0;break;
+		case 2: val |= (binc>>2)&15; buf[n++]=val;val=(binc<<6)&0xc0;break;
+		case 3: val |= binc&0x3f; buf[n++] = val; break;
+	      }
+	    idx = (idx+1) % 4;
+
+	    continue;
+	  }
+
+	skip_fast = 0;
+
 	if( c == '\n' || c == ' ' || c == '\r' || c == '\t' )
 	    continue;
 	else if( c == '=' ) { /* pad character: stop */
@@ -850,10 +980,10 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
             if (afx->buffer_pos + 6 < afx->buffer_len
                 && afx->buffer[afx->buffer_pos + 0] == '3'
                 && afx->buffer[afx->buffer_pos + 1] == 'D'
-                && asctobin[afx->buffer[afx->buffer_pos + 2]] != 255
-                && asctobin[afx->buffer[afx->buffer_pos + 3]] != 255
-                && asctobin[afx->buffer[afx->buffer_pos + 4]] != 255
-                && asctobin[afx->buffer[afx->buffer_pos + 5]] != 255
+                && asctobin[0][afx->buffer[afx->buffer_pos + 2]] != 0xffffffffUL
+                && asctobin[0][afx->buffer[afx->buffer_pos + 3]] != 0xffffffffUL
+                && asctobin[0][afx->buffer[afx->buffer_pos + 4]] != 0xffffffffUL
+                && asctobin[0][afx->buffer[afx->buffer_pos + 5]] != 0xffffffffUL
                 && afx->buffer[afx->buffer_pos + 6] == '\n')
               {
                 afx->buffer_pos += 2;
@@ -868,27 +998,20 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    checkcrc++;
 	    break;
 	}
-	else if( (c = asctobin[(c2=c)]) == 255 ) {
-	    log_error(_("invalid radix64 character %02X skipped\n"), c2);
+	else {
+	    log_error(_("invalid radix64 character %02X skipped\n"), c);
 	    continue;
 	}
-	switch(idx) {
-	  case 0: val =  c << 2; break;
-	  case 1: val |= (c>>4)&3; buf[n++]=val;val=(c<<4)&0xf0;break;
-	  case 2: val |= (c>>2)&15; buf[n++]=val;val=(c<<6)&0xc0;break;
-	  case 3: val |= c&0x3f; buf[n++] = val; break;
-	}
-	idx = (idx+1) % 4;
     }
 
-    for(i=0; i < n; i++ )
-	crc = (crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ buf[i]];
-    crc &= 0x00ffffff;
-    afx->crc = crc;
     afx->idx = idx;
     afx->radbuf[0] = val;
 
+    if( n )
+      gcry_md_write (afx->crc_md, buf, n);
+
     if( checkcrc ) {
+	gcry_md_final (afx->crc_md);
 	afx->any_data = 1;
 	afx->inp_checked=0;
 	afx->faked = 0;
@@ -911,19 +1034,19 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		continue;
 	    break;
 	}
-	if( c == -1 )
+	if( !afx->buffer_len )
 	    log_error(_("premature eof (no CRC)\n"));
 	else {
 	    u32 mycrc = 0;
 	    idx = 0;
 	    do {
-		if( (c = asctobin[c]) == 255 )
+		if( (binc = asctobin[0][c]) == 0xffffffffUL )
 		    break;
 		switch(idx) {
-		  case 0: val =  c << 2; break;
-		  case 1: val |= (c>>4)&3; mycrc |= val << 16;val=(c<<4)&0xf0;break;
-		  case 2: val |= (c>>2)&15; mycrc |= val << 8;val=(c<<6)&0xc0;break;
-		  case 3: val |= c&0x3f; mycrc |= val; break;
+		  case 0: val =  binc << 2; break;
+		  case 1: val |= (binc>>4)&3; mycrc |= val << 16;val=(binc<<4)&0xf0;break;
+		  case 2: val |= (binc>>2)&15; mycrc |= val << 8;val=(binc<<6)&0xc0;break;
+		  case 3: val |= binc&0x3f; mycrc |= val; break;
 		}
 		for(;;) {
 		    if( afx->buffer_pos < afx->buffer_len )
@@ -945,7 +1068,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		if( !afx->buffer_len )
 		    break; /* eof */
 	    } while( ++idx < 4 );
-	    if( c == -1 ) {
+	    if( !afx->buffer_len ) {
 		log_info(_("premature eof (in CRC)\n"));
 		rc = invalid_crc();
 	    }
@@ -957,10 +1080,10 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		log_info(_("malformed CRC\n"));
 		rc = invalid_crc();
 	    }
-	    else if( mycrc != afx->crc ) {
-                log_info (_("CRC error; %06lX - %06lX\n"),
-				    (ulong)afx->crc, (ulong)mycrc);
-                rc = invalid_crc();
+	    else if( mycrc != get_afx_crc (afx) ) {
+		log_info (_("CRC error; %06lX - %06lX\n"),
+				    (ulong)get_afx_crc (afx), (ulong)mycrc);
+		rc = invalid_crc();
 	    }
 	    else {
 		rc = 0;
@@ -997,6 +1120,121 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     return rc;
 }
 
+static void
+armor_output_buf_as_radix64 (armor_filter_context_t *afx, IOBUF a,
+			     byte *buf, size_t size)
+{
+  byte radbuf[sizeof (afx->radbuf)];
+  byte outbuf[64 + sizeof (afx->eol)];
+  unsigned int eollen = strlen (afx->eol);
+  u32 in, in2;
+  int idx, idx2;
+  int i;
+
+  idx = afx->idx;
+  idx2 = afx->idx2;
+  memcpy (radbuf, afx->radbuf, sizeof (afx->radbuf));
+
+  if (size && (idx || idx2))
+    {
+      /* preload eol to outbuf buffer */
+      memcpy (outbuf + 4, afx->eol, sizeof (afx->eol));
+
+      for (; size && (idx || idx2); buf++, size--)
+	{
+	  radbuf[idx++] = *buf;
+	  if (idx > 2)
+	    {
+	      idx = 0;
+	      in = (u32)radbuf[0] << (2 * 8);
+	      in |= (u32)radbuf[1] << (1 * 8);
+	      in |= (u32)radbuf[2] << (0 * 8);
+	      outbuf[0] = bintoasc[(in >> 18) & 077];
+	      outbuf[1] = bintoasc[(in >> 12) & 077];
+	      outbuf[2] = bintoasc[(in >> 6) & 077];
+	      outbuf[3] = bintoasc[(in >> 0) & 077];
+	      if (++idx2 >= (64/4))
+		{ /* pgp doesn't like 72 here */
+		  idx2=0;
+		  iobuf_write (a, outbuf, 4 + eollen);
+		}
+	      else
+		{
+		  iobuf_write (a, outbuf, 4);
+		}
+	    }
+	}
+    }
+
+  if (size >= (64/4)*3)
+    {
+      /* preload eol to outbuf buffer */
+      memcpy (outbuf + 64, afx->eol, sizeof(afx->eol));
+
+      do
+	{
+	  /* idx and idx2 == 0 */
+
+	  for (i = 0; i < (64/8); i++)
+	    {
+	      in = (u32)buf[0] << (2 * 8);
+	      in |= (u32)buf[1] << (1 * 8);
+	      in |= (u32)buf[2] << (0 * 8);
+	      in2 = (u32)buf[3] << (2 * 8);
+	      in2 |= (u32)buf[4] << (1 * 8);
+	      in2 |= (u32)buf[5] << (0 * 8);
+	      outbuf[i*8+0] = bintoasc[(in >> 18) & 077];
+	      outbuf[i*8+1] = bintoasc[(in >> 12) & 077];
+	      outbuf[i*8+2] = bintoasc[(in >> 6) & 077];
+	      outbuf[i*8+3] = bintoasc[(in >> 0) & 077];
+	      outbuf[i*8+4] = bintoasc[(in2 >> 18) & 077];
+	      outbuf[i*8+5] = bintoasc[(in2 >> 12) & 077];
+	      outbuf[i*8+6] = bintoasc[(in2 >> 6) & 077];
+	      outbuf[i*8+7] = bintoasc[(in2 >> 0) & 077];
+	      buf+=6;
+	      size-=6;
+	    }
+
+	  /* pgp doesn't like 72 here */
+	  iobuf_write (a, outbuf, 64 + eollen);
+	}
+      while (size >= (64/4)*3);
+
+      /* restore eol for tail handling */
+      if (size)
+	memcpy (outbuf + 4, afx->eol, sizeof (afx->eol));
+    }
+
+  for (; size; buf++, size--)
+    {
+      radbuf[idx++] = *buf;
+      if (idx > 2)
+	{
+	  idx = 0;
+	  in = (u32)radbuf[0] << (2 * 8);
+	  in |= (u32)radbuf[1] << (1 * 8);
+	  in |= (u32)radbuf[2] << (0 * 8);
+	  outbuf[0] = bintoasc[(in >> 18) & 077];
+	  outbuf[1] = bintoasc[(in >> 12) & 077];
+	  outbuf[2] = bintoasc[(in >> 6) & 077];
+	  outbuf[3] = bintoasc[(in >> 0) & 077];
+	  if (++idx2 >= (64/4))
+	    { /* pgp doesn't like 72 here */
+	      idx2=0;
+	      iobuf_write (a, outbuf, 4 + eollen);
+	    }
+	  else
+	    {
+	      iobuf_write (a, outbuf, 4);
+	    }
+	}
+    }
+
+  memcpy (afx->radbuf, radbuf, sizeof (afx->radbuf));
+  afx->idx = idx;
+  afx->idx2 = idx2;
+}
+
 /****************
  * This filter is used to handle the armor stuff
  */
@@ -1006,7 +1244,7 @@ armor_filter( void *opaque, int control,
 {
     size_t size = *ret_len;
     armor_filter_context_t *afx = opaque;
-    int rc=0, i, c;
+    int rc=0, c;
     byte radbuf[3];
     int  idx, idx2;
     size_t n=0;
@@ -1188,43 +1426,13 @@ armor_filter( void *opaque, int control,
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;
-	    afx->crc = CRCINIT;
-
+	    gcry_md_reset (afx->crc_md);
 	}
-	crc = afx->crc;
-	idx = afx->idx;
-	idx2 = afx->idx2;
-	for(i=0; i < idx; i++ )
-	    radbuf[i] = afx->radbuf[i];
 
-	for(i=0; i < size; i++ )
-	    crc = (crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ buf[i]];
-	crc &= 0x00ffffff;
-
-	for( ; size; buf++, size-- ) {
-	    radbuf[idx++] = *buf;
-	    if( idx > 2 ) {
-		idx = 0;
-		c = bintoasc[(*radbuf >> 2) & 077];
-		iobuf_put(a, c);
-		c = bintoasc[(((*radbuf<<4)&060)|((radbuf[1] >> 4)&017))&077];
-		iobuf_put(a, c);
-		c = bintoasc[(((radbuf[1]<<2)&074)|((radbuf[2]>>6)&03))&077];
-		iobuf_put(a, c);
-		c = bintoasc[radbuf[2]&077];
-		iobuf_put(a, c);
-		if( ++idx2 >= (64/4) )
-		  { /* pgp doesn't like 72 here */
-		    iobuf_writestr(a,afx->eol);
-		    idx2=0;
-		  }
-	    }
-	}
-	for(i=0; i < idx; i++ )
-	    afx->radbuf[i] = radbuf[i];
-	afx->idx = idx;
-	afx->idx2 = idx2;
-	afx->crc  = crc;
+	if( size ) {
+	    gcry_md_write (afx->crc_md, buf, size);
+	    armor_output_buf_as_radix64 (afx, a, buf, size);
+        }
     }
     else if( control == IOBUFCTRL_INIT )
       {
@@ -1250,7 +1458,8 @@ armor_filter( void *opaque, int control,
 	if( afx->cancel )
 	    ;
 	else if( afx->status ) { /* pad, write cecksum, and bottom line */
-	    crc = afx->crc;
+	    gcry_md_final (afx->crc_md);
+	    crc = get_afx_crc (afx);
 	    idx = afx->idx;
 	    idx2 = afx->idx2;
 	    if( idx ) {
@@ -1349,222 +1558,4 @@ make_radix64_string( const byte *data, size_t len )
     }
     *p = 0;
     return buffer;
-}
-
-
-/***********************************************
- *  For the pipemode command we can't use the armor filter for various
- *  reasons, so we use this new unarmor_pump stuff to remove the armor
- */
-
-enum unarmor_state_e {
-    STA_init = 0,
-    STA_bypass,
-    STA_wait_newline,
-    STA_wait_dash,
-    STA_first_dash,
-    STA_compare_header,
-    STA_found_header_wait_newline,
-    STA_skip_header_lines,
-    STA_skip_header_lines_non_ws,
-    STA_read_data,
-    STA_wait_crc,
-    STA_read_crc,
-    STA_ready
-};
-
-struct unarmor_pump_s {
-    enum unarmor_state_e state;
-    byte val;
-    int checkcrc;
-    int pos;   /* counts from 0..3 */
-    u32 crc;
-    u32 mycrc; /* the one store in the data */
-};
-
-
-
-UnarmorPump
-unarmor_pump_new (void)
-{
-    UnarmorPump x;
-
-    if( !is_initialized )
-        initialize();
-    x = xmalloc_clear (sizeof *x);
-    return x;
-}
-
-void
-unarmor_pump_release (UnarmorPump x)
-{
-    xfree (x);
-}
-
-/*
- * Get the next character from the ascii armor taken from the IOBUF
- * created earlier by unarmor_pump_new().
- * Return:  c = Character
- *        256 = ignore this value
- *         -1 = End of current armor
- *         -2 = Premature EOF (not used)
- *         -3 = Invalid armor
- */
-int
-unarmor_pump (UnarmorPump x, int c)
-{
-    int rval = 256; /* default is to ignore the return value */
-
-    switch (x->state) {
-      case STA_init:
-        {
-            byte tmp[2];
-            tmp[0] = c;
-            tmp[1] = 0;
-            if ( is_armored (tmp) )
-                x->state = c == '-'? STA_first_dash : STA_wait_newline;
-            else {
-                x->state = STA_bypass;
-                return c;
-            }
-        }
-        break;
-      case STA_bypass:
-        return c; /* return here to avoid crc calculation */
-      case STA_wait_newline:
-        if (c == '\n')
-            x->state = STA_wait_dash;
-        break;
-      case STA_wait_dash:
-        x->state = c == '-'? STA_first_dash : STA_wait_newline;
-        break;
-      case STA_first_dash: /* just need for initialization */
-        x->pos = 0;
-        x->state = STA_compare_header; /* fall through */
-      case STA_compare_header:
-        if ( "-----BEGIN PGP SIGNATURE-----"[++x->pos] == c ) {
-            if ( x->pos == 28 )
-                x->state = STA_found_header_wait_newline;
-        }
-        else
-            x->state = c == '\n'? STA_wait_dash : STA_wait_newline;
-        break;
-      case STA_found_header_wait_newline:
-        /* to make CR,LF issues easier we simply allow for white space
-           behind the 5 dashes */
-        if ( c == '\n' )
-            x->state = STA_skip_header_lines;
-        else if ( c != '\r' && c != ' ' && c != '\t' )
-            x->state = STA_wait_dash; /* garbage after the header line */
-        break;
-      case STA_skip_header_lines:
-        /* i.e. wait for one empty line */
-        if ( c == '\n' ) {
-            x->state = STA_read_data;
-            x->crc = CRCINIT;
-            x->val = 0;
-            x->pos = 0;
-        }
-        else if ( c != '\r' && c != ' ' && c != '\t' )
-            x->state = STA_skip_header_lines_non_ws;
-        break;
-      case STA_skip_header_lines_non_ws:
-        /* like above but we already encountered non white space */
-        if ( c == '\n' )
-            x->state = STA_skip_header_lines;
-        break;
-      case STA_read_data:
-        /* fixme: we don't check for the trailing dash lines but rely
-         * on the armor stop characters */
-        if( c == '\n' || c == ' ' || c == '\r' || c == '\t' )
-            break; /* skip all kind of white space */
-
-        if( c == '=' ) { /* pad character: stop */
-            if( x->pos == 1 ) /* in this case val has some value */
-                rval = x->val;
-            x->state = STA_wait_crc;
-            break;
-        }
-
-        {
-            int c2;
-            if( (c = asctobin[(c2=c)]) == 255 ) {
-                log_error(_("invalid radix64 character %02X skipped\n"), c2);
-                break;
-            }
-        }
-
-        switch(x->pos) {
-          case 0:
-            x->val = c << 2;
-            break;
-          case 1:
-            x->val |= (c>>4)&3;
-            rval = x->val;
-            x->val = (c<<4)&0xf0;
-            break;
-          case 2:
-            x->val |= (c>>2)&15;
-            rval = x->val;
-            x->val = (c<<6)&0xc0;
-            break;
-          case 3:
-            x->val |= c&0x3f;
-            rval = x->val;
-            break;
-        }
-        x->pos = (x->pos+1) % 4;
-        break;
-      case STA_wait_crc:
-        if( c == '\n' || c == ' ' || c == '\r' || c == '\t' || c == '=' )
-            break; /* skip ws and pad characters */
-        /* assume that we are at the next line */
-        x->state = STA_read_crc;
-        x->pos = 0;
-        x->mycrc = 0; /* fall through */
-      case STA_read_crc:
-        if( (c = asctobin[c]) == 255 ) {
-            rval = -1; /* ready */
-            if( x->crc != x->mycrc ) {
-                log_info (_("CRC error; %06lX - %06lX\n"),
-                          (ulong)x->crc, (ulong)x->mycrc);
-                if ( invalid_crc() )
-                    rval = -3;
-            }
-            x->state = STA_ready; /* not sure whether this is correct */
-            break;
-        }
-
-        switch(x->pos) {
-          case 0:
-            x->val = c << 2;
-            break;
-          case 1:
-            x->val |= (c>>4)&3;
-            x->mycrc |= x->val << 16;
-            x->val = (c<<4)&0xf0;
-            break;
-          case 2:
-            x->val |= (c>>2)&15;
-            x->mycrc |= x->val << 8;
-            x->val = (c<<6)&0xc0;
-            break;
-          case 3:
-            x->val |= c&0x3f;
-            x->mycrc |= x->val;
-            break;
-        }
-        x->pos = (x->pos+1) % 4;
-        break;
-      case STA_ready:
-        rval = -1;
-        break;
-    }
-
-    if ( !(rval & ~255) ) { /* compute the CRC */
-        x->crc = (x->crc << 8) ^ crc_table[((x->crc >> 16)&0xff) ^ rval];
-        x->crc &= 0x00ffffff;
-    }
-
-    return rval;
 }

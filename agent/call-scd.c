@@ -54,17 +54,10 @@ struct scd_local_s
      SCD_LOCAL_LIST (see below). */
   struct scd_local_s *next_local;
 
-  /* We need to get back to the ctrl object actually referencing this
-     structure.  This is really an awkward way of enumerating the local
-     contexts.  A much cleaner way would be to keep a global list of
-     ctrl objects to enumerate them.  */
-  ctrl_t ctrl_backlink;
-
-  assuan_context_t ctx; /* NULL or session context for the SCdaemon
-                           used with this connection. */
-  int locked;           /* This flag is used to assert proper use of
-                           start_scd and unlock_scd. */
-
+  assuan_context_t ctx;   /* NULL or session context for the SCdaemon
+                             used with this connection. */
+  unsigned int in_use: 1; /* CTX is in use.  */
+  unsigned int invalid:1; /* CTX is invalid, should be released.  */
 };
 
 
@@ -138,7 +131,7 @@ initialize_module_call_scd (void)
     {
       err = npth_mutex_init (&start_scd_lock, NULL);
       if (err)
-	log_fatal ("error initializing mutex: %s\n", strerror (err));
+        log_fatal ("error initializing mutex: %s\n", strerror (err));
       initialized = 1;
     }
 }
@@ -168,14 +161,33 @@ agent_scd_dump_state (void)
 static int
 unlock_scd (ctrl_t ctrl, int rc)
 {
-  if (ctrl->scd_local->locked != 1)
+  int err;
+
+  if (ctrl->scd_local->in_use == 0)
     {
-      log_error ("unlock_scd: invalid lock count (%d)\n",
-                 ctrl->scd_local->locked);
+      log_error ("unlock_scd: CTX is not in use\n");
       if (!rc)
         rc = gpg_error (GPG_ERR_INTERNAL);
     }
-  ctrl->scd_local->locked = 0;
+  err = npth_mutex_lock (&start_scd_lock);
+  if (err)
+    {
+      log_error ("failed to acquire the start_scd lock: %s\n", strerror (err));
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
+  ctrl->scd_local->in_use = 0;
+  if (ctrl->scd_local->invalid)
+    {
+      assuan_release (ctrl->scd_local->ctx);
+      ctrl->scd_local->ctx = NULL;
+      ctrl->scd_local->invalid = 0;
+    }
+  err = npth_mutex_unlock (&start_scd_lock);
+  if (err)
+    {
+      log_error ("failed to release the start_scd lock: %s\n", strerror (err));
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
   return rc;
 }
 
@@ -188,6 +200,86 @@ atfork_cb (void *opaque, int where)
 
   if (!where)
     gcry_control (GCRYCTL_TERM_SECMEM);
+}
+
+
+static void *
+wait_child_thread (void *arg)
+{
+  int err;
+  struct scd_local_s *sl;
+
+#ifdef HAVE_W32_SYSTEM
+  HANDLE pid = (HANDLE)arg;
+
+  npth_unprotect ();
+  WaitForSingleObject ((HANDLE)pid, INFINITE);
+  npth_protect ();
+  log_info ("scdaemon finished\n");
+#else
+  int wstatus;
+  pid_t pid = (pid_t)(uintptr_t)arg;
+
+ again:
+  npth_unprotect ();
+  err = waitpid (pid, &wstatus, 0);
+  npth_protect ();
+
+  if (err < 0)
+    {
+      if (errno == EINTR)
+        goto again;
+      log_error ("waitpid failed: %s\n", strerror (errno));
+      return NULL;
+    }
+  else
+    {
+      if (WIFEXITED (wstatus))
+        log_info ("scdaemon finished (status %d)\n", WEXITSTATUS (wstatus));
+      else if (WIFSIGNALED (wstatus))
+        log_info ("scdaemon killed by signal %d\n", WTERMSIG (wstatus));
+      else
+        {
+          if (WIFSTOPPED (wstatus))
+            log_info ("scdaemon stopped by signal %d\n", WSTOPSIG (wstatus));
+          goto again;
+        }
+    }
+#endif
+
+  err = npth_mutex_lock (&start_scd_lock);
+  if (err)
+    {
+      log_error ("failed to acquire the start_scd lock: %s\n",
+                 strerror (err));
+    }
+  else
+    {
+      assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
+
+      for (sl = scd_local_list; sl; sl = sl->next_local)
+        {
+          sl->invalid = 1;
+          if (!sl->in_use && sl->ctx)
+            {
+              assuan_release (sl->ctx);
+              sl->ctx = NULL;
+            }
+        }
+
+      primary_scd_ctx = NULL;
+      primary_scd_ctx_reusable = 0;
+
+      xfree (socket_name);
+      socket_name = NULL;
+
+      err = npth_mutex_unlock (&start_scd_lock);
+      if (err)
+        log_error ("failed to release the start_scd lock after waitpid: %s\n",
+                   strerror (err));
+    }
+
+  return NULL;
 }
 
 
@@ -211,37 +303,19 @@ start_scd (ctrl_t ctrl)
   if (opt.disable_scdaemon)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
-  /* If this is the first call for this session, setup the local data
-     structure. */
-  if (!ctrl->scd_local)
+  if (ctrl->scd_local && ctrl->scd_local->ctx)
     {
-      ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
-      if (!ctrl->scd_local)
-        return gpg_error_from_syserror ();
-      ctrl->scd_local->ctrl_backlink = ctrl;
-      ctrl->scd_local->next_local = scd_local_list;
-      scd_local_list = ctrl->scd_local;
+      ctrl->scd_local->in_use = 1;
+      return 0; /* Okay, the context is fine.  */
     }
 
-
-  /* Assert that the lock count is as expected. */
-  if (ctrl->scd_local->locked)
+  if (ctrl->scd_local && ctrl->scd_local->in_use)
     {
-      log_error ("start_scd: invalid lock count (%d)\n",
-                 ctrl->scd_local->locked);
+      log_error ("start_scd: CTX is in use\n");
       return gpg_error (GPG_ERR_INTERNAL);
     }
-  ctrl->scd_local->locked++;
 
-  if (ctrl->scd_local->ctx)
-    return 0; /* Okay, the context is fine.  We used to test for an
-                 alive context here and do an disconnect.  Now that we
-                 have a ticker function to check for it, it is easier
-                 not to check here but to let the connection run on an
-                 error instead. */
-
-
-  /* We need to protect the following code. */
+  /* We need to serialize the access to scd_local_list and primary_scd_ctx. */
   rc = npth_mutex_lock (&start_scd_lock);
   if (rc)
     {
@@ -249,6 +323,25 @@ start_scd (ctrl_t ctrl)
                  strerror (rc));
       return gpg_error (GPG_ERR_INTERNAL);
     }
+
+  /* If this is the first call for this session, setup the local data
+     structure. */
+  if (!ctrl->scd_local)
+    {
+      ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
+      if (!ctrl->scd_local)
+	{
+	  err = gpg_error_from_syserror ();
+	  rc = npth_mutex_unlock (&start_scd_lock);
+	  if (rc)
+	    log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
+	  return err;
+	}
+      ctrl->scd_local->next_local = scd_local_list;
+      scd_local_list = ctrl->scd_local;
+    }
+
+  ctrl->scd_local->in_use = 1;
 
   /* Check whether the pipe server has already been started and in
      this case either reuse a lingering pipe connection or establish a
@@ -351,7 +444,7 @@ start_scd (ctrl_t ctrl)
      detached flag so that under Windows SCDAEMON does not show up a
      new window.  */
   rc = assuan_pipe_connect (ctx, opt.scdaemon_program, argv,
-			    no_close_list, atfork_cb, NULL,
+                            no_close_list, atfork_cb, NULL,
                             ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
@@ -415,21 +508,41 @@ start_scd (ctrl_t ctrl)
   primary_scd_ctx = ctx;
   primary_scd_ctx_reusable = 0;
 
+  {
+    npth_t thread;
+    npth_attr_t tattr;
+    pid_t pid;
+
+    pid = assuan_get_pid (primary_scd_ctx);
+    err = npth_attr_init (&tattr);
+    if (!err)
+      {
+        npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
+        err = npth_create (&thread, &tattr, wait_child_thread,
+                           (void *)(uintptr_t)pid);
+        if (err)
+          log_error ("error spawning wait_child_thread: %s\n", strerror (err));
+        npth_attr_destroy (&tattr);
+      }
+  }
+
  leave:
+  rc = npth_mutex_unlock (&start_scd_lock);
+  if (rc)
+    log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
+
   xfree (abs_homedir);
   if (err)
     {
       unlock_scd (ctrl, err);
       if (ctx)
-	assuan_release (ctx);
+        assuan_release (ctx);
     }
   else
     {
+      ctrl->scd_local->invalid = 0;
       ctrl->scd_local->ctx = ctx;
     }
-  rc = npth_mutex_unlock (&start_scd_lock);
-  if (rc)
-    log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
   return err;
 }
 
@@ -444,144 +557,69 @@ agent_scd_check_running (void)
 }
 
 
-/* Check whether the Scdaemon is still alive and clean it up if not. */
-void
-agent_scd_check_aliveness (void)
-{
-  pid_t pid;
-#ifdef HAVE_W32_SYSTEM
-  DWORD rc;
-#else
-  int rc;
-#endif
-  struct timespec abstime;
-  int err;
-
-  if (!primary_scd_ctx)
-    return; /* No scdaemon running. */
-
-  /* This is not a critical function so we use a short timeout while
-     acquiring the lock.  */
-  npth_clock_gettime (&abstime);
-  abstime.tv_sec += 1;
-  err = npth_mutex_timedlock (&start_scd_lock, &abstime);
-  if (err)
-    {
-      if (err == ETIMEDOUT)
-        {
-          if (opt.verbose > 1)
-            log_info ("failed to acquire the start_scd lock while"
-                      " doing an aliveness check: %s\n", strerror (err));
-        }
-      else
-        log_error ("failed to acquire the start_scd lock while"
-                   " doing an aliveness check: %s\n", strerror (err));
-      return;
-    }
-
-  if (primary_scd_ctx)
-    {
-      pid = assuan_get_pid (primary_scd_ctx);
-#ifdef HAVE_W32_SYSTEM
-      /* If we have a PID we disconnect if either GetExitProcessCode
-         fails or if ir returns the exit code of the scdaemon.  259 is
-         the error code for STILL_ALIVE.  */
-      if (pid != (pid_t)(void*)(-1) && pid
-          && (!GetExitCodeProcess ((HANDLE)pid, &rc) || rc != 259))
-#else
-      if (pid != (pid_t)(-1) && pid
-          && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
-#endif
-        {
-          /* Okay, scdaemon died.  Disconnect the primary connection
-             now but take care that it won't do another wait. Also
-             cleanup all other connections and release their
-             resources.  The next use will start a new daemon then.
-             Due to the use of the START_SCD_LOCAL we are sure that
-             none of these context are actually in use. */
-          struct scd_local_s *sl;
-
-          assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
-          assuan_release (primary_scd_ctx);
-
-          for (sl=scd_local_list; sl; sl = sl->next_local)
-            {
-              if (sl->ctx)
-                {
-                  if (sl->ctx != primary_scd_ctx)
-                    assuan_release (sl->ctx);
-                  sl->ctx = NULL;
-                }
-            }
-
-          primary_scd_ctx = NULL;
-          primary_scd_ctx_reusable = 0;
-
-          xfree (socket_name);
-          socket_name = NULL;
-        }
-    }
-
-  err = npth_mutex_unlock (&start_scd_lock);
-  if (err)
-    log_error ("failed to release the start_scd lock while"
-               " doing the aliveness check: %s\n", strerror (err));
-}
-
-
-
 /* Reset the SCD if it has been used.  Actually it is not a reset but
    a cleanup of resources used by the current connection. */
 int
 agent_reset_scd (ctrl_t ctrl)
 {
-  if (ctrl->scd_local)
+  int err = npth_mutex_lock (&start_scd_lock);
+
+  if (err)
     {
-      if (ctrl->scd_local->ctx)
+      log_error ("failed to acquire the start_scd lock: %s\n",
+                 strerror (err));
+    }
+  else
+    {
+      if (ctrl->scd_local)
         {
-          /* We can't disconnect the primary context because libassuan
-             does a waitpid on it and thus the system would hang.
-             Instead we send a reset and keep that connection for
-             reuse. */
-          if (ctrl->scd_local->ctx == primary_scd_ctx)
+          if (ctrl->scd_local->ctx)
             {
-              /* Send a RESTART to the SCD.  This is required for the
-                 primary connection as a kind of virtual EOF; we don't
-                 have another way to tell it that the next command
-                 should be viewed as if a new connection has been
-                 made.  For the non-primary connections this is not
-                 needed as we simply close the socket.  We don't check
-                 for an error here because the RESTART may fail for
-                 example if the scdaemon has already been terminated.
-                 Anyway, we need to set the reusable flag to make sure
-                 that the aliveness check can clean it up. */
-              assuan_transact (primary_scd_ctx, "RESTART",
-                               NULL, NULL, NULL, NULL, NULL, NULL);
-              primary_scd_ctx_reusable = 1;
+              /* We send a reset and keep that connection for reuse. */
+              if (ctrl->scd_local->ctx == primary_scd_ctx)
+                {
+                  /* Send a RESTART to the SCD.  This is required for the
+                     primary connection as a kind of virtual EOF; we don't
+                     have another way to tell it that the next command
+                     should be viewed as if a new connection has been
+                     made.  For the non-primary connections this is not
+                     needed as we simply close the socket.  We don't check
+                     for an error here because the RESTART may fail for
+                     example if the scdaemon has already been terminated.
+                     Anyway, we need to set the reusable flag to make sure
+                     that the aliveness check can clean it up. */
+                  assuan_transact (primary_scd_ctx, "RESTART",
+                                   NULL, NULL, NULL, NULL, NULL, NULL);
+                  primary_scd_ctx_reusable = 1;
+                }
+              else
+                assuan_release (ctrl->scd_local->ctx);
+              ctrl->scd_local->ctx = NULL;
             }
-          else
-            assuan_release (ctrl->scd_local->ctx);
-          ctrl->scd_local->ctx = NULL;
-        }
 
-      /* Remove the local context from our list and release it. */
-      if (!scd_local_list)
-        BUG ();
-      else if (scd_local_list == ctrl->scd_local)
-        scd_local_list = ctrl->scd_local->next_local;
-      else
-        {
-          struct scd_local_s *sl;
-
-          for (sl=scd_local_list; sl->next_local; sl = sl->next_local)
-            if (sl->next_local == ctrl->scd_local)
-              break;
-          if (!sl->next_local)
+          /* Remove the local context from our list and release it. */
+          if (!scd_local_list)
             BUG ();
-          sl->next_local = ctrl->scd_local->next_local;
+          else if (scd_local_list == ctrl->scd_local)
+            scd_local_list = ctrl->scd_local->next_local;
+          else
+            {
+              struct scd_local_s *sl;
+
+              for (sl=scd_local_list; sl->next_local; sl = sl->next_local)
+                if (sl->next_local == ctrl->scd_local)
+                  break;
+              if (!sl->next_local)
+                BUG ();
+              sl->next_local = ctrl->scd_local->next_local;
+            }
+          xfree (ctrl->scd_local);
+          ctrl->scd_local = NULL;
         }
-      xfree (ctrl->scd_local);
-      ctrl->scd_local = NULL;
+
+      err = npth_mutex_unlock (&start_scd_lock);
+      if (err)
+        log_error ("failed to release the start_scd lock: %s\n", strerror (err));
     }
 
   return 0;
@@ -1055,23 +1093,27 @@ inq_writekey_parms (void *opaque, const char *line)
 }
 
 
-int
+/* Call scd to write a key to a card under the id KEYREF.  */
+gpg_error_t
 agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
-                     const char *id, const char *keydata, size_t keydatalen,
+                     const char *keyref,
+                     const char *keydata, size_t keydatalen,
                      int (*getpin_cb)(void *, const char *,
                                       const char *, char*, size_t),
                      void *getpin_cb_arg)
 {
-  int rc;
+  gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
   struct inq_needpin_parm_s parms;
 
-  (void)serialno;
-  rc = start_scd (ctrl);
-  if (rc)
-    return rc;
+  (void)serialno; /* NULL or a number to check for the correct card.
+                   * But is is not implemented.  */
 
-  snprintf (line, DIM(line), "WRITEKEY %s%s", force ? "--force " : "", id);
+  err = start_scd (ctrl);
+  if (err)
+    return err;
+
+  snprintf (line, DIM(line), "WRITEKEY %s%s", force ? "--force " : "", keyref);
   parms.ctx = ctrl->scd_local->ctx;
   parms.getpin_cb = getpin_cb;
   parms.getpin_cb_arg = getpin_cb_arg;
@@ -1080,9 +1122,9 @@ agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
   parms.keydata = keydata;
   parms.keydatalen = keydatalen;
 
-  rc = assuan_transact (ctrl->scd_local->ctx, line, NULL, NULL,
-                        inq_writekey_parms, &parms, NULL, NULL);
-  return unlock_scd (ctrl, rc);
+  err = assuan_transact (ctrl->scd_local->ctx, line, NULL, NULL,
+                         inq_writekey_parms, &parms, NULL, NULL);
+  return unlock_scd (ctrl, err);
 }
 
 

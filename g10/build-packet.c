@@ -243,12 +243,15 @@ build_packet_and_meta (iobuf_t out, PACKET *pkt)
 
 
 /*
- * Write the mpi A to OUT.
+ * Write the mpi A to OUT.  If R_NWRITTEN is not NULL the number of
+ * bytes written is stored there.  To only get the number of bytes
+ * which would be written NULL may be passed for OUT.
  */
 gpg_error_t
-gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
+gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
 {
-  int rc;
+  gpg_error_t err;
+  unsigned int nwritten = 0;
 
   if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
     {
@@ -277,9 +280,17 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
       /* gcry_log_debughex (" ", p, (nbits+7)/8); */
       lenhdr[0] = nbits >> 8;
       lenhdr[1] = nbits;
-      rc = iobuf_write (out, lenhdr, 2);
-      if (!rc && p)
-        rc = iobuf_write (out, p, (nbits+7)/8);
+      err = out? iobuf_write (out, lenhdr, 2) : 0;
+      if (!err)
+        {
+          nwritten += 2;
+          if (p)
+            {
+              err = out? iobuf_write (out, p, (nbits+7)/8) : 0;
+              if (!err)
+                nwritten += (nbits+7)/8;
+            }
+        }
     }
   else
     {
@@ -287,18 +298,25 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
       size_t nbytes;
 
       nbytes = DIM(buffer);
-      rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
-      if( !rc )
-        rc = iobuf_write( out, buffer, nbytes );
-      else if (gpg_err_code(rc) == GPG_ERR_TOO_SHORT )
+      err = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
+      if (!err)
+        {
+          err = out? iobuf_write (out, buffer, nbytes) : 0;
+          if (!err)
+            nwritten += nbytes;
+        }
+      else if (gpg_err_code (err) == GPG_ERR_TOO_SHORT )
         {
           log_info ("mpi too large (%u bits)\n", gcry_mpi_get_nbits (a));
-          /* The buffer was too small. We better tell the user about the MPI. */
-          rc = gpg_error (GPG_ERR_TOO_LARGE);
+          /* The buffer was too small.  We better tell the user about
+           * the MPI. */
+          err = gpg_error (GPG_ERR_TOO_LARGE);
         }
     }
 
-  return rc;
+  if (r_nwritten)
+    *r_nwritten = nwritten;
+  return err;
 }
 
 
@@ -463,29 +481,29 @@ static int
 do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 {
   gpg_error_t err = 0;
-  /* The length of the body is stored in the packet's header, which
-     occurs before the body.  Unfortunately, we don't know the length
-     of the packet's body until we've written all of the data!  To
-     work around this, we first write the data into this temporary
-     buffer, then generate the header, and finally copy the contents
-     of this buffer to OUT.  */
-  iobuf_t a = iobuf_temp();
+  iobuf_t a;
   int i, nskey, npkey;
+  u32 pkbytes = 0;
+  int is_v5;
 
-  log_assert (pk->version == 0 || pk->version == 4);
+  log_assert (pk->version == 0 || pk->version == 4 || pk->version == 5);
   log_assert (ctb_pkttype (ctb) == PKT_PUBLIC_KEY
               || ctb_pkttype (ctb) == PKT_PUBLIC_SUBKEY
               || ctb_pkttype (ctb) == PKT_SECRET_KEY
               || ctb_pkttype (ctb) == PKT_SECRET_SUBKEY);
 
-  /* Write the version number - if none is specified, use 4 */
-  if ( !pk->version )
-    iobuf_put ( a, 4 );
-  else
-    iobuf_put ( a, pk->version );
-  write_32 (a, pk->timestamp );
+  /* The length of the body is stored in the packet's header, which
+   * occurs before the body.  Unfortunately, we don't know the length
+   * of the packet's body until we've written all of the data!  To
+   * work around this, we first write the data into this temporary
+   * buffer, then generate the header, and finally copy the content
+   * of this buffer to OUT.  */
+  a = iobuf_temp();
 
-  iobuf_put (a, pk->pubkey_algo );
+  /* Note that the Version number, Timestamp, Algo, and the v5 Key
+   * material count are written at the end of the function. */
+
+  is_v5 = (pk->version == 5);
 
   /* Get number of secret and public parameters.  They are held in one
      array: the public ones followed by the secret ones.  */
@@ -509,11 +527,13 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           || (pk->pubkey_algo == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2)))
         err = gpg_mpi_write_nohdr (a, pk->pkey[i]);
       else
-        err = gpg_mpi_write (a, pk->pkey[i]);
+        err = gpg_mpi_write (a, pk->pkey[i], NULL);
       if (err)
         goto leave;
     }
 
+  /* Record the length of the public key part.  */
+  pkbytes = iobuf_get_temp_length (a);
 
   if (pk->seckey_info)
     {
@@ -523,9 +543,26 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
       /* Build the header for protected (encrypted) secret parameters.  */
       if (ski->is_protected)
         {
-          /* OpenPGP protection according to rfc2440. */
-          iobuf_put (a, ski->sha1chk? 0xfe : 0xff);
-          iobuf_put (a, ski->algo);
+          iobuf_put (a, ski->sha1chk? 0xfe : 0xff); /* S2k usage.  */
+          if (is_v5)
+            {
+              /* For a v5 key determine the count of the following
+               * key-protection material and write it.  */
+              int count = 1;  /* Pubkey algo octet. */
+              if (ski->s2k.mode >= 1000)
+                count += 6;   /* GNU specific mode descriptor.  */
+              else
+                count += 2;   /* Mode and hash algo.  */
+              if (ski->s2k.mode == 1 || ski->s2k.mode == 3)
+                count += 8;   /* Salt.  */
+              if (ski->s2k.mode == 3)
+                count++;      /* S2K.COUNT */
+              if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002)
+                count += ski->ivlen;
+
+              iobuf_put (a, count);
+            }
+          iobuf_put (a, ski->algo);  /* Pubkey algo octet.  */
           if (ski->s2k.mode >= 1000)
             {
               /* These modes are not possible in OpenPGP, we use them
@@ -556,13 +593,24 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
         }
       else /* Not protected. */
-        iobuf_put (a, 0 );
+        {
+          iobuf_put (a, 0 );  /* S2K usage = not protected.  */
+          if (is_v5)
+            iobuf_put (a, 0); /* Zero octets of key-protection
+                               * material follows.  */
+        }
 
       if (ski->s2k.mode == 1001)
-        ; /* GnuPG extension - don't write a secret key at all. */
+        {
+          /* GnuPG extension - don't write a secret key at all. */
+          if (is_v5)
+            write_32 (a, 0); /* Zero octets of key material.  */
+        }
       else if (ski->s2k.mode == 1002)
         {
           /* GnuPG extension - divert to OpenPGP smartcard. */
+          if (is_v5)
+            write_32 (a, 1 + ski->ivlen);
           /* Length of the serial number or 0 for no serial number. */
           iobuf_put (a, ski->ivlen );
           /* The serial number gets stored in the IV field.  */
@@ -576,15 +624,36 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
           log_assert (gcry_mpi_get_flag (pk->pkey[npkey], GCRYMPI_FLAG_OPAQUE));
           p = gcry_mpi_get_opaque (pk->pkey[npkey], &ndatabits);
+          /* For v5 keys we first write the number of octets of the
+           * following encrypted key material.  */
+          if (is_v5)
+            write_32 (a, p? (ndatabits+7)/8 : 0);
           if (p)
             iobuf_write (a, p, (ndatabits+7)/8 );
         }
       else
         {
           /* Non-protected key. */
+          if (is_v5)
+            {
+              unsigned int skbytes = 0;
+              unsigned int n;
+              int j;
+
+              for (j=i; j < nskey; j++ )
+                {
+                  if ((err = gpg_mpi_write (NULL, pk->pkey[j], &n)))
+                    goto leave;
+                  skbytes += n;
+                }
+
+              write_32 (a, skbytes);
+            }
+
           for ( ; i < nskey; i++ )
-            if ( (err = gpg_mpi_write (a, pk->pkey[i])))
+            if ( (err = gpg_mpi_write (a, pk->pkey[i], NULL)))
               goto leave;
+
           write_16 (a, ski->csum );
         }
     }
@@ -593,11 +662,23 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   if (!err)
     {
       /* Build the header of the packet - which we must do after
-         writing all the other stuff, so that we know the length of
-         the packet */
-      write_header2 (out, ctb, iobuf_get_temp_length(a), 0);
+       * writing all the other stuff, so that we know the length of
+       * the packet */
+      u32 len = iobuf_get_temp_length (a);
+      len += 1; /* version number  */
+      len += 4; /* timestamp  */
+      len += 1; /* algo  */
+      if (is_v5)
+        len += 4; /* public key material count  */
+
+      write_header2 (out, ctb, len, 0);
        /* And finally write it out to the real stream. */
-      err = iobuf_write_temp (out, a);
+      iobuf_put (out, pk->version? pk->version : 4); /* version number  */
+      write_32 (out, pk->timestamp );
+      iobuf_put (out, pk->pubkey_algo);  /* algo */
+      if (is_v5)
+        write_32 (out, pkbytes);        /* public key material count  */
+      err = iobuf_write_temp (out, a);  /* pub and sec key material */
     }
 
   iobuf_close (a); /* Close the temporary buffer */
@@ -688,7 +769,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
       if (enc->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
         rc = gpg_mpi_write_nohdr (a, enc->data[i]);
       else
-        rc = gpg_mpi_write (a, enc->data[i]);
+        rc = gpg_mpi_write (a, enc->data[i], NULL);
     }
 
   if (!rc)
@@ -1135,10 +1216,10 @@ build_sig_subpkt_from_sig (PKT_signature *sig, PKT_public_key *pksk)
 
     /* Write the new ISSUER_FPR subpacket.  */
     fingerprint_from_pk (pksk, buf+1, &fprlen);
-    if (fprlen == 20)
+    if (fprlen == 20 || fprlen == 32)
       {
         buf[0] = pksk->version;
-        build_sig_subpkt (sig, SIGSUBPKT_ISSUER_FPR, buf, 21);
+        build_sig_subpkt (sig, SIGSUBPKT_ISSUER_FPR, buf, fprlen + 1);
       }
 
     /* Write the timestamp.  */
@@ -1297,7 +1378,7 @@ string_to_notation(const char *string,int is_utf8)
     }
 
   notation->name=xmalloc((s-string)+1);
-  strncpy(notation->name,string,s-string);
+  memcpy(notation->name,string,s-string);
   notation->name[s-string]='\0';
 
   if(!saw_at && !opt.expert)
@@ -1536,7 +1617,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   else
     iobuf_put( a, sig->version );
   if ( sig->version < 4 )
-    iobuf_put (a, 5 ); /* Constant */
+    iobuf_put (a, 5 ); /* Constant used by pre-v4 signatures. */
   iobuf_put (a, sig->sig_class );
   if ( sig->version < 4 )
     {
@@ -1567,7 +1648,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   if ( !n )
     write_fake_data( a, sig->data[0] );
   for (i=0; i < n && !rc ; i++ )
-    rc = gpg_mpi_write (a, sig->data[i] );
+    rc = gpg_mpi_write (a, sig->data[i], NULL);
 
   if (!rc)
     {

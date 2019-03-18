@@ -30,7 +30,7 @@
    expanded once and non existing macros expand to the empty string.
    A macro is dereferenced by prefixing its name with a dollar sign;
    the end of the name is currently indicated by a white space, a
-   dollar sign or a slash.  To use a dollor sign verbatim, double it.
+   dollar sign or a slash.  To use a dollar sign verbatim, double it.
 
    A macro is assigned by prefixing a statement with the macro name
    and an equal sign.  The value is assigned verbatim if it does not
@@ -47,7 +47,7 @@
 
    [<name> =] <statement> [<args>]
 
-   If NAME is not specifed but the statement returns a value it is
+   If NAME is not specified but the statement returns a value it is
    assigned to the name "?" so that it can be referenced using "$?".
    The following commands are implemented:
 
@@ -274,7 +274,7 @@ writen (int fd, const char *buffer, size_t length)
    type and store that in recv_type.  The function terminates on a
    communication error.  Returns a pointer into the inputline to the
    first byte of the arguments.  The parsing is very strict to match
-   exaclty what we want to send. */
+   exactly what we want to send. */
 static char *
 read_assuan (int fd)
 {
@@ -397,7 +397,7 @@ write_assuan (int fd, const char *line)
 
 /* Start the server with path PGMNAME and connect its stdout and
    strerr to a newly created pipes; the file descriptors are then
-   store in the gloabl variables SERVER_SEND_FD and
+   store in the global variables SERVER_SEND_FD and
    SERVER_RECV_FD. The initial handcheck is performed.*/
 static void
 start_server (const char *pgmname)
@@ -468,7 +468,7 @@ start_server (const char *pgmname)
 
 
 
-/* Script intepreter. */
+/* Script interpreter. */
 
 static void
 unset_var (const char *name)

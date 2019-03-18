@@ -388,7 +388,7 @@ parse_one_pattern (const char *pattern)
 }
 
 /* Take the string STRING and escape it according to the URL rules.
-   Retun a newly allocated string. */
+   Return a newly allocated string. */
 static char *
 escape4url (const char *string)
 {

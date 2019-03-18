@@ -52,12 +52,13 @@ typedef struct getkey_ctx_s *getkey_ctx_t;
  * This structure is also used to bind arbitrary packets together.
  */
 
-struct kbnode_struct {
-    KBNODE next;
-    PACKET *pkt;
-    int flag;
-    int private_flag;
-    ulong recno;  /* used while updating the trustdb */
+struct kbnode_struct
+{
+  kbnode_t next;
+  PACKET *pkt;
+  int flag;          /* Local use during keyblock processing (not cloned).*/
+  unsigned int tag;  /* Ditto. */
+  int private_flag;
 };
 
 #define is_deleted_kbnode(a)  ((a)->private_flag & 1)
@@ -244,9 +245,9 @@ gpg_error_t keydb_search_next (KEYDB_HANDLE hd);
    key id.  */
 gpg_error_t keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
 
-/* This is a convenience function for searching for keys with a long
-   (20 byte) fingerprint.  */
-gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
+/* This is a convenience function for searching for keys by
+ * fingerprint.  */
+gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr, size_t fprlen);
 
 
 /*-- pkclist.c --*/
@@ -276,7 +277,6 @@ gpg_error_t build_sk_list (ctrl_t ctrl, strlist_t locusr,
                            SK_LIST *ret_sk_list, unsigned use);
 
 /*-- passphrase.h --*/
-unsigned char encode_s2k_iterations (int iterations);
 int  have_static_passphrase(void);
 const char *get_static_passphrase (void);
 void set_passphrase_from_string(const char *pass);

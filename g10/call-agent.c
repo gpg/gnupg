@@ -609,6 +609,8 @@ learn_status_cb (void *opaque, const char *line)
                     parm->extcap.ki = abool;
                   else if (!strcmp (p, "aac"))
                     parm->extcap.aac = abool;
+                  else if (!strcmp (p, "bt"))
+                    parm->extcap.bt = abool;
                   else if (!strcmp (p, "kdf"))
                     parm->extcap.kdf = abool;
                   else if (!strcmp (p, "si"))
@@ -704,6 +706,21 @@ learn_status_cb (void *opaque, const char *line)
       log_assert (no >= 0 && no <= 3);
       xfree (parm->private_do[no]);
       parm->private_do[no] = unescape_status_string (line);
+    }
+  else if (keywordlen == 3 && !memcmp (keyword, "KDF", 3))
+    {
+      parm->kdf_do_enabled = 1;
+    }
+  else if (keywordlen == 5 && !memcmp (keyword, "UIF-", 4)
+           && strchr("123", keyword[4]))
+    {
+      unsigned char *data;
+      int no = keyword[4] - '1';
+
+      log_assert (no >= 0 && no <= 2);
+      data = unescape_status_string (line);
+      parm->uif[no] = (data[0] != 0xff);
+      xfree (data);
     }
 
   return 0;
@@ -1201,7 +1218,7 @@ agent_scd_cardlist (strlist_t *result)
 
   memset (&parm, 0, sizeof parm);
   *result = NULL;
-  err = start_agent (NULL, 1);
+  err = start_agent (NULL, 1 | FLAG_FOR_CARD_SUPPRESS_ERRORS);
   if (err)
     return err;
 
@@ -1444,19 +1461,19 @@ gpg_agent_get_confirmation (const char *desc)
 }
 
 
-/* Return the S2K iteration count as computed by gpg-agent.  */
-gpg_error_t
-agent_get_s2k_count (unsigned long *r_count)
+/* Return the S2K iteration count as computed by gpg-agent.  On error
+ * print a warning and return a default value. */
+unsigned long
+agent_get_s2k_count (void)
 {
   gpg_error_t err;
   membuf_t data;
   char *buf;
-
-  *r_count = 0;
+  unsigned long count = 0;
 
   err = start_agent (NULL, 0);
   if (err)
-    return err;
+    goto leave;
 
   init_membuf (&data, 32);
   err = assuan_transact (agent_ctx, "GETINFO s2k_count",
@@ -1472,11 +1489,23 @@ agent_get_s2k_count (unsigned long *r_count)
         err = gpg_error_from_syserror ();
       else
         {
-          *r_count = strtoul (buf, NULL, 10);
+          count = strtoul (buf, NULL, 10);
           xfree (buf);
         }
     }
-  return err;
+
+ leave:
+  if (err || count < 65536)
+    {
+      /* Don't print an error if an older agent is used.  */
+      if (err && gpg_err_code (err) != GPG_ERR_ASS_PARAMETER)
+        log_error (_("problem with the agent: %s\n"), gpg_strerror (err));
+
+      /* Default to 65536 which was used up to 2.0.13.  */
+      count = 65536;
+    }
+
+  return count;
 }
 
 

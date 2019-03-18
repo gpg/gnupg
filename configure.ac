@@ -129,7 +129,10 @@ GNUPG_BUILD_PROGRAM(symcryptrun, no)
 # We use gpgtar to unpack test data, hence we always build it.  If the
 # user opts out, we simply don't install it.
 GNUPG_BUILD_PROGRAM(gpgtar, yes)
-GNUPG_BUILD_PROGRAM(wks-tools, no)
+# We also install the gpg-wks-server tool by default but disable it
+# later for platforms where it can't be build.
+GNUPG_BUILD_PROGRAM(wks-tools, yes)
+
 
 AC_SUBST(PACKAGE)
 AC_SUBST(PACKAGE_GT)
@@ -507,6 +510,7 @@ AH_BOTTOM([
 #define GNUPG_PRIVATE_KEYS_DIR  "private-keys-v1.d"
 #define GNUPG_PUBLIC_KEYS_DIR   "public-keys.d"
 #define GNUPG_OPENPGP_REVOC_DIR "openpgp-revocs.d"
+#define GNUPG_CACHE_DIR         "cache.d"
 
 #define GNUPG_DEF_COPYRIGHT_LINE \
         "Copyright (C) 2018 Free Software Foundation, Inc."
@@ -623,7 +627,6 @@ AC_ARG_VAR(YAT2M, [tool to convert texi to man pages])
 AM_CONDITIONAL(HAVE_YAT2M, test -n "$ac_cv_path_YAT2M")
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
-GNUPG_CHECK_USTAR
 
 
 # We need to compile and run a program on the build machine.  A
@@ -682,6 +685,7 @@ case "${host}" in
         try_gettext="no"
 	use_simple_gettext=yes
 	mmap_needed=no
+        build_wks_tools=no
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -689,6 +693,7 @@ case "${host}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         have_dosish_system=yes
         try_gettext="no"
+        build_wks_tools=no
         ;;
 
     i?86-*-msdosdjgpp*)
@@ -697,6 +702,7 @@ case "${host}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         have_dosish_system=yes
         try_gettext="no"
+        build_wks_tools=no
         ;;
 
     *-*-hpux*)
@@ -727,6 +733,7 @@ case "${host}" in
         # Android is fully utf-8 and we do not want to use iconv to
         # keeps things simple
         require_iconv=no
+        build_wks_tools=no
         ;;
     *-apple-darwin*)
         AC_DEFINE(_DARWIN_C_SOURCE, 900000L,
@@ -1361,6 +1368,7 @@ AC_CHECK_SIZEOF(unsigned short)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
+AC_CHECK_SIZEOF(size_t)
 AC_HEADER_TIME
 AC_CHECK_SIZEOF(time_t,,[[
 #include <stdio.h>
@@ -1394,16 +1402,16 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS([atexit canonicalize_file_name clock_gettime ctermid  \
-                fcntl flockfile fsync ftello ftruncate funlockfile   \
-                getaddrinfo getenv getpagesize getpwnam getpwuid     \
-                getrlimit getrusage gettimeofday gmtime_r            \
-                inet_ntop inet_pton isascii lstat                    \
-                memicmp memmove memrchr mmap nl_langinfo pipe        \
-                raise rand setenv setlocale setrlimit sigaction      \
-                sigprocmask stat stpcpy strcasecmp strerror strftime \
-                stricmp strlwr strncasecmp strpbrk strsep            \
-                strtol strtoul strtoull tcgetattr timegm times       \
-                ttyname unsetenv wait4 waitpid ])
+                explicit_bzero fcntl flockfile fsync ftello          \
+                ftruncate funlockfile getaddrinfo getenv getpagesize \
+                getpwnam getpwuid getrlimit getrusage gettimeofday   \
+                gmtime_r inet_ntop inet_pton isascii lstat memicmp   \
+                memmove memrchr mmap nl_langinfo pipe raise rand     \
+                setenv setlocale setrlimit sigaction sigprocmask     \
+                stat stpcpy strcasecmp strerror strftime stricmp     \
+                strlwr strncasecmp strpbrk strsep strtol strtoul     \
+                strtoull tcgetattr timegm times ttyname unsetenv     \
+                wait4 waitpid ])
 
 # On some systems (e.g. Solaris) nanosleep requires linking to librl.
 # Given that we use nanosleep only as an optimization over a select
@@ -1482,7 +1490,7 @@ if test "$use_regex" = yes ; then
     use_regex=no
   else
     if test x"$cross_compiling" = xyes; then
-      AC_MSG_WARN([cross compiling; assuming regexp libray is not broken])
+      AC_MSG_WARN([cross compiling; assuming regexp library is not broken])
     else
       AC_CACHE_CHECK([whether your system's regexp library is broken],
        [gnupg_cv_regex_broken],
@@ -2046,7 +2054,6 @@ agent/Makefile
 scd/Makefile
 g13/Makefile
 dirmngr/Makefile
-tools/gpg-zip
 tools/Makefile
 doc/Makefile
 tests/Makefile

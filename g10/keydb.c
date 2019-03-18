@@ -81,6 +81,7 @@ enum keyblock_cache_states {
 struct keyblock_cache {
   enum keyblock_cache_states state;
   byte fpr[MAX_FINGERPRINT_LEN];
+  byte fprlen;
   iobuf_t iobuf; /* Image of the keyblock.  */
   int pk_no;
   int uid_no;
@@ -558,17 +559,9 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
     case KEYDB_SEARCH_MODE_LONG_KID:
       return xasprintf ("LONG_KID: '%s'",
                         format_keyid (desc->u.kid, KF_LONG, b, sizeof (b)));
-    case KEYDB_SEARCH_MODE_FPR16:
-      bin2hex (desc->u.fpr, 16, fpr);
-      return xasprintf ("FPR16: '%s'",
-                        format_hexfingerprint (fpr, b, sizeof (b)));
-    case KEYDB_SEARCH_MODE_FPR20:
-      bin2hex (desc->u.fpr, 20, fpr);
-      return xasprintf ("FPR20: '%s'",
-                        format_hexfingerprint (fpr, b, sizeof (b)));
     case KEYDB_SEARCH_MODE_FPR:
-      bin2hex (desc->u.fpr, 20, fpr);
-      return xasprintf ("FPR: '%s'",
+      bin2hex (desc->u.fpr, desc->fprlen, fpr);
+      return xasprintf ("FPR%02d: '%s'", desc->fprlen,
                         format_hexfingerprint (fpr, b, sizeof (b)));
     case KEYDB_SEARCH_MODE_ISSUER:
       return xasprintf ("ISSUER: '%s'", desc->u.name);
@@ -1529,8 +1522,11 @@ keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
 
   memset (&desc, 0, sizeof (desc));
   fingerprint_from_pk (pk, desc.u.fpr, &len);
-  if (len == 20)
-    desc.mode = KEYDB_SEARCH_MODE_FPR20;
+  if (len == 20 || len == 32)
+    {
+      desc.mode = KEYDB_SEARCH_MODE_FPR;
+      desc.fprlen = len;
+    }
   else
     log_bug ("%s: Unsupported key length: %zu\n", __func__, len);
 
@@ -1862,6 +1858,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   int was_reset = hd->is_reset;
   /* If an entry is already in the cache, then don't add it again.  */
   int already_in_cache = 0;
+  int fprlen;
 
   if (descindex)
     *descindex = 0; /* Make sure it is always set on return.  */
@@ -1902,12 +1899,17 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   /* NB: If one of the exact search modes below is used in a loop to
      walk over all keys (with the same fingerprint) the caching must
      have been disabled for the handle.  */
+  if (desc[0].mode == KEYDB_SEARCH_MODE_FPR)
+    fprlen = desc[0].fprlen;
+  else
+    fprlen = 0;
+
   if (!hd->no_caching
       && ndesc == 1
-      && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
-          || desc[0].mode == KEYDB_SEARCH_MODE_FPR)
-      && hd->keyblock_cache.state  == KEYBLOCK_CACHE_FILLED
-      && !memcmp (hd->keyblock_cache.fpr, desc[0].u.fpr, 20)
+      && fprlen
+      && hd->keyblock_cache.state == KEYBLOCK_CACHE_FILLED
+      && hd->keyblock_cache.fprlen == fprlen
+      && !memcmp (hd->keyblock_cache.fpr, desc[0].u.fpr, fprlen)
       /* Make sure the current file position occurs before the cached
          result to avoid an infinite loop.  */
       && (hd->current < hd->keyblock_cache.resource
@@ -1922,8 +1924,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       hd->current = hd->keyblock_cache.resource;
       /* HD->KEYBLOCK_CACHE.OFFSET is the last byte in the record.
          Seek just beyond that.  */
-      keybox_seek (hd->active[hd->current].u.kb,
-                   hd->keyblock_cache.offset + 1);
+      keybox_seek (hd->active[hd->current].u.kb, hd->keyblock_cache.offset + 1);
       keydb_stats.found_cached++;
       return 0;
     }
@@ -1986,8 +1987,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   keyblock_cache_clear (hd);
   if (!hd->no_caching
       && !rc
-      && ndesc == 1 && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
-                        || desc[0].mode == KEYDB_SEARCH_MODE_FPR)
+      && ndesc == 1
+      && fprlen
       && hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYBOX)
     {
       hd->keyblock_cache.state = KEYBLOCK_CACHE_PREPARED;
@@ -1997,11 +1998,14 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
          within the record.  */
       hd->keyblock_cache.offset
         = keybox_offset (hd->active[hd->current].u.kb) - 1;
-      memcpy (hd->keyblock_cache.fpr, desc[0].u.fpr, 20);
+      memcpy (hd->keyblock_cache.fpr, desc[0].u.fpr, fprlen);
+      hd->keyblock_cache.fprlen = fprlen;
     }
 
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
-      && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID && was_reset
+      && ndesc == 1
+      && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
+      && was_reset
       && !already_in_cache)
     kid_not_found_insert (desc[0].u.kid);
 
@@ -2078,12 +2082,13 @@ keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
  * off.  If you want to search the whole database, then you need to
  * first call keydb_search_reset().  */
 gpg_error_t
-keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr)
+keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr, size_t fprlen)
 {
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FPR;
-  memcpy (desc.u.fpr, fpr, MAX_FINGERPRINT_LEN);
+  memcpy (desc.u.fpr, fpr, fprlen);
+  desc.fprlen = fprlen;
   return keydb_search (hd, &desc, 1, NULL);
 }

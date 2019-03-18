@@ -195,8 +195,13 @@ struct ssh_key_type_spec
      algorithm.  */
   ssh_signature_encoder_t signature_encoder;
 
-  /* The name of the ECC curve or NULL.  */
+  /* The name of the ECC curve or NULL for non-ECC algos.  This is the
+   * canonical name for the curve as specified by RFC-5656.  */
   const char *curve_name;
+
+  /* An alias for curve_name or NULL.  Actually this is Libcgrypt's
+   * primary name of the curve.  */
+  const char *alt_curve_name;
 
   /* The hash algorithm to be used with this key.  0 for using the
      default.  */
@@ -297,68 +302,71 @@ static const ssh_key_type_spec_t ssh_key_types[] =
     {
       "ssh-ed25519", "Ed25519", GCRY_PK_EDDSA, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_eddsa,
-      "Ed25519", 0,               SPEC_FLAG_IS_EdDSA
+      "Ed25519", NULL, 0,   SPEC_FLAG_IS_EdDSA
     },
     {
       "ssh-rsa", "RSA", GCRY_PK_RSA, "nedupq", "en",   "s",  "nedpqu",
       ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
-      NULL, 0,                    SPEC_FLAG_USE_PKCS1V2
+      NULL, NULL, 0,        SPEC_FLAG_USE_PKCS1V2
     },
     {
       "ssh-dss", "DSA", GCRY_PK_DSA, "pqgyx",  "pqgy", "rs", "pqgyx",
       NULL,                 ssh_signature_encoder_dsa,
-      NULL, 0, 0
+      NULL, NULL, 0, 0
     },
     {
       "ecdsa-sha2-nistp256", "ECDSA", GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
-      "nistp256", GCRY_MD_SHA256, SPEC_FLAG_IS_ECDSA
+      "nistp256", "NIST P-256", GCRY_MD_SHA256, SPEC_FLAG_IS_ECDSA
     },
     {
       "ecdsa-sha2-nistp384", "ECDSA", GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
-      "nistp384", GCRY_MD_SHA384, SPEC_FLAG_IS_ECDSA
+      "nistp384", "NIST P-384", GCRY_MD_SHA384, SPEC_FLAG_IS_ECDSA
     },
     {
       "ecdsa-sha2-nistp521", "ECDSA", GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
-      "nistp521", GCRY_MD_SHA512, SPEC_FLAG_IS_ECDSA
+      "nistp521", "NIST P-521", GCRY_MD_SHA512, SPEC_FLAG_IS_ECDSA
     },
     {
       "ssh-ed25519-cert-v01@openssh.com", "Ed25519",
       GCRY_PK_EDDSA, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_eddsa,
-      "Ed25519", 0, SPEC_FLAG_IS_EdDSA | SPEC_FLAG_WITH_CERT
+      "Ed25519", NULL, 0,   SPEC_FLAG_IS_EdDSA | SPEC_FLAG_WITH_CERT
     },
     {
       "ssh-rsa-cert-v01@openssh.com", "RSA",
       GCRY_PK_RSA, "nedupq", "en",   "s",  "nedpqu",
       ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
-      NULL, 0, SPEC_FLAG_USE_PKCS1V2 | SPEC_FLAG_WITH_CERT
+      NULL, NULL, 0, SPEC_FLAG_USE_PKCS1V2 | SPEC_FLAG_WITH_CERT
     },
     {
       "ssh-dss-cert-v01@openssh.com", "DSA",
       GCRY_PK_DSA, "pqgyx",  "pqgy", "rs", "pqgyx",
       NULL,                 ssh_signature_encoder_dsa,
-      NULL, 0, SPEC_FLAG_WITH_CERT | SPEC_FLAG_WITH_CERT
+      NULL, NULL, 0, SPEC_FLAG_WITH_CERT | SPEC_FLAG_WITH_CERT
     },
     {
       "ecdsa-sha2-nistp256-cert-v01@openssh.com", "ECDSA",
       GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
-      "nistp256", GCRY_MD_SHA256, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
+      "nistp256", "NIST P-256", GCRY_MD_SHA256,
+                                SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
     },
     {
       "ecdsa-sha2-nistp384-cert-v01@openssh.com", "ECDSA",
       GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
-      "nistp384", GCRY_MD_SHA384, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
+      "nistp384", "NIST P-384", GCRY_MD_SHA384,
+                                SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
     },
     {
       "ecdsa-sha2-nistp521-cert-v01@openssh.com", "ECDSA",
       GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
-      "nistp521", GCRY_MD_SHA512, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
+      "nistp521", "NIST P-521", GCRY_MD_SHA512,
+                                SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
     }
   };
 
@@ -389,16 +397,24 @@ realloc_secure (void *a, size_t n)
 
 
 /* Lookup the ssh-identifier for the ECC curve CURVE_NAME.  Returns
-   NULL if not found.  */
+ * NULL if not found.  If found the ssh indetifier is returned and a
+ * pointer to the canonical curve name as specified for ssh is stored
+ * at R_CANON_NAME.  */
 static const char *
-ssh_identifier_from_curve_name (const char *curve_name)
+ssh_identifier_from_curve_name (const char *curve_name,
+                                const char **r_canon_name)
 {
   int i;
 
   for (i = 0; i < DIM (ssh_key_types); i++)
     if (ssh_key_types[i].curve_name
-        && !strcmp (ssh_key_types[i].curve_name, curve_name))
-      return ssh_key_types[i].ssh_identifier;
+        && (!strcmp (ssh_key_types[i].curve_name, curve_name)
+            || (ssh_key_types[i].alt_curve_name
+                && !strcmp (ssh_key_types[i].alt_curve_name, curve_name))))
+      {
+        *r_canon_name = ssh_key_types[i].curve_name;
+        return ssh_key_types[i].ssh_identifier;
+      }
 
   return NULL;
 }
@@ -1849,7 +1865,6 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
   gpg_error_t err = 0;
   gcry_sexp_t value_list = NULL;
   gcry_sexp_t value_pair = NULL;
-  char *curve_name = NULL;
   estream_t stream = NULL;
   void *blob = NULL;
   size_t blob_size;
@@ -1867,7 +1882,7 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
       goto out;
     }
 
-  /* Get the type of the key extpression.  */
+  /* Get the type of the key expression.  */
   data = gcry_sexp_nth_data (sexp, 0, &datalen);
   if (!data)
     {
@@ -1898,49 +1913,17 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
   /* Write the ssh algorithm identifier.  */
   if ((key_spec.flags & SPEC_FLAG_IS_ECDSA))
     {
-      /* Parse the "curve" parameter.  We currently expect the curve
-         name for ECC and not the parameters of the curve.  This can
-         easily be changed but then we need to find the curve name
-         from the parameters using gcry_pk_get_curve.  */
-      const char *mapped;
-      const char *sshname;
+      /* Map the curve name to the ssh name.  */
+      const char *name, *sshname, *canon_name;
 
-      gcry_sexp_release (value_pair);
-      value_pair = gcry_sexp_find_token (value_list, "curve", 5);
-      if (!value_pair)
-	{
-	  err = gpg_error (GPG_ERR_INV_CURVE);
-	  goto out;
-        }
-      curve_name = gcry_sexp_nth_string (value_pair, 1);
-      if (!curve_name)
-	{
-	  err = gpg_error (GPG_ERR_INV_CURVE); /* (Or out of core.)  */
-	  goto out;
-        }
-
-      /* Fixme: The mapping should be done by using gcry_pk_get_curve
-         et al to iterate over all name aliases.  */
-      if (!strcmp (curve_name, "NIST P-256"))
-        mapped = "nistp256";
-      else if (!strcmp (curve_name, "NIST P-384"))
-        mapped = "nistp384";
-      else if (!strcmp (curve_name, "NIST P-521"))
-        mapped = "nistp521";
-      else
-        mapped = NULL;
-      if (mapped)
+      name = gcry_pk_get_curve (sexp, 0, NULL);
+      if (!name)
         {
-          xfree (curve_name);
-          curve_name = xtrystrdup (mapped);
-          if (!curve_name)
-            {
-              err = gpg_error_from_syserror ();
-              goto out;
-            }
+          err = gpg_error (GPG_ERR_INV_CURVE);
+          goto out;
         }
 
-      sshname = ssh_identifier_from_curve_name (curve_name);
+      sshname = ssh_identifier_from_curve_name (name, &canon_name);
       if (!sshname)
         {
           err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -1949,7 +1932,7 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
       err = stream_write_cstring (stream, sshname);
       if (err)
         goto out;
-      err = stream_write_cstring (stream, curve_name);
+      err = stream_write_cstring (stream, canon_name);
       if (err)
         goto out;
     }
@@ -2022,7 +2005,6 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
  out:
   gcry_sexp_release (value_list);
   gcry_sexp_release (value_pair);
-  xfree (curve_name);
   es_fclose (stream);
   es_free (blob);
 
@@ -2081,7 +2063,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
   ssh_key_type_spec_t spec;
   gcry_mpi_t *mpi_list = NULL;
   const char *elems;
-  char *curve_name = NULL;
+  const char *curve_name = NULL;
 
 
   err = stream_read_cstring (stream, &key_type);
@@ -2204,34 +2186,19 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
        * certificate.
        */
       unsigned char *buffer;
-      const char *mapped;
 
       err = stream_read_string (cert? cert : stream, 0, &buffer, NULL);
       if (err)
         goto out;
-      curve_name = buffer;
-      /* Fixme: Check that curve_name matches the keytype.  */
-      /* Because Libgcrypt < 1.6 has no support for the "nistpNNN"
-         curve names, we need to translate them here to Libgcrypt's
-         native names.  */
-      if (!strcmp (curve_name, "nistp256"))
-        mapped = "NIST P-256";
-      else if (!strcmp (curve_name, "nistp384"))
-        mapped = "NIST P-384";
-      else if (!strcmp (curve_name, "nistp521"))
-        mapped = "NIST P-521";
-      else
-        mapped = NULL;
-      if (mapped)
+      /* Get the canonical name.  Should be the same as the read
+       * string but we use this mapping to validate that name.  */
+      if (!ssh_identifier_from_curve_name (buffer, &curve_name))
         {
-          xfree (curve_name);
-          curve_name = xtrystrdup (mapped);
-          if (!curve_name)
-            {
-              err = gpg_error_from_syserror ();
-              goto out;
-            }
+          err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+          xfree (buffer);
+          goto out;
         }
+      xfree (buffer);
 
       err = ssh_receive_mpint_list (stream, secret, &spec, cert, &mpi_list);
       if (err)
@@ -2299,7 +2266,6 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
  out:
   es_fclose (cert);
   mpint_list_free (mpi_list);
-  xfree (curve_name);
   xfree (key_type);
   xfree (comment);
 
@@ -2647,6 +2613,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
             continue;
 
           err = ssh_send_key_public (key_blobs, key_public, cardsn);
+          if (err && opt.verbose)
+            gcry_log_debugsxp ("pubkey", key_public);
           gcry_sexp_release (key_public);
           key_public = NULL;
           xfree (cardsn);
@@ -2722,6 +2690,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
     }
   else
     {
+      log_error ("ssh request identities failed: %s <%s>\n",
+                 gpg_strerror (err), gpg_strsource (err));
       ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
     }
 
@@ -2751,7 +2721,7 @@ data_hash (unsigned char *data, size_t data_n,
    allow the use of signature algorithms that implement the hashing
    internally (e.g. Ed25519).  On success the created signature is
    stored in ssh format at R_SIG and it's size at R_SIGLEN; the caller
-   must use es_free to releaase this memory.  */
+   must use es_free to release this memory.  */
 static gpg_error_t
 data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
            const void *hash, size_t hashlen,
@@ -3249,9 +3219,10 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   while (1)
     {
       err = stream_read_byte (request, &b);
-      if (gpg_err_code (err) == GPG_ERR_EOF)
-	{
-	  err = 0;
+      if (err)
+        {
+          if (gpg_err_code (err) == GPG_ERR_EOF)
+            err = 0;
 	  break;
 	}
 
@@ -3625,7 +3596,7 @@ static void
 get_client_info (int fd, struct peer_info_s *out)
 {
   pid_t client_pid = (pid_t)(-1);
-  uid_t client_uid = (uid_t)-1;
+  int client_uid = -1;
 
 #ifdef SO_PEERCRED
   {
@@ -3640,10 +3611,10 @@ get_client_info (int fd, struct peer_info_s *out)
       {
 #if defined (HAVE_STRUCT_SOCKPEERCRED_PID) || defined (HAVE_STRUCT_UCRED_PID)
         client_pid = cr.pid;
-        client_uid = cr.uid;
+        client_uid = (int)cr.uid;
 #elif defined (HAVE_STRUCT_UCRED_CR_PID)
         client_pid = cr.cr_pid;
-        client_pid = cr.cr_uid;
+        client_uid = (int)cr.cr_uid;
 #else
 #error "Unknown SO_PEERCRED struct"
 #endif
@@ -3660,7 +3631,7 @@ get_client_info (int fd, struct peer_info_s *out)
       len = sizeof (struct xucred);
 
       if (!getsockopt (fd, SOL_LOCAL, LOCAL_PEERCRED, &cr, &len))
-	client_uid = cr.cr_uid;
+	client_uid = (int)cr.cr_uid;
     }
 #endif
   }
@@ -3670,8 +3641,10 @@ get_client_info (int fd, struct peer_info_s *out)
     socklen_t unpl = sizeof unp;
 
     if (getsockopt (fd, 0, LOCAL_PEEREID, &unp, &unpl) != -1)
-      client_pid = unp.unp_pid;
-      client_uid = unp.unp_euid;
+      {
+        client_pid = unp.unp_pid;
+        client_uid = (int)unp.unp_euid;
+      }
   }
 #elif defined (HAVE_GETPEERUCRED)
   {
@@ -3680,7 +3653,7 @@ get_client_info (int fd, struct peer_info_s *out)
     if (getpeerucred (fd, &ucred) != -1)
       {
         client_pid = ucred_getpid (ucred);
-	client_uid = ucred_geteuid (ucred);
+	client_uid = (int)ucred_geteuid (ucred);
         ucred_free (ucred);
       }
   }
@@ -3689,7 +3662,7 @@ get_client_info (int fd, struct peer_info_s *out)
 #endif
 
   out->pid = (client_pid == (pid_t)(-1)? 0 : (unsigned long)client_pid);
-  out->uid = (int)client_uid;
+  out->uid = client_uid;
 }
 
 

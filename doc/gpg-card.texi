@@ -1,0 +1,517 @@
+@c card-tool.texi - man page for gpg-card-tool
+@c Copyright (C) 2019 g10 Code GmbH
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file GnuPG.texi.
+
+@include defs.inc
+
+@node Smart Card Tool
+@chapter Smart Card Tool
+
+GnuPG comes with tool to administrate smart cards and USB tokens.  This
+tool is an extension of the @option{--edit-key} command available with
+@command{gpg}.
+
+@menu
+* gpg-card::             Administrate smart cards.
+@end menu
+
+@c
+@c  GPG-CARD-TOOL
+@c
+@manpage gpg-card.1
+@node gpg-card
+@section Administrate smart cards.
+@ifset manverb
+.B gpg-card
+\- Administrate Smart Cards
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B gpg-card
+.RI [ options ]
+.br
+.B gpg-card
+.RI [ options ]
+.I command
+.RI {
+.B --
+.I command
+.RI }
+@end ifset
+
+@mansect description
+The @command{gpg-card} is used to administrate smart cards and USB
+tokens.  It provides a superset of features from @command{gpg
+--card-edit} an can be considered a frontend to @command{scdaemon}
+which is a daemon started by @command{gpg-agent} to handle smart
+cards.
+
+If @command{gpg-card} is invoked without commands an interactive
+mode is used.
+
+If @command{gpg-card} is invoked with one or more commands the
+same commands as available in the interactive mode are run from the
+command line.  These commands need to be delimited with a double-dash.
+If a double-dash or a shell specific character is required as part of
+a command the entire command needs to be put in quotes.  If one of
+those commands returns an error the remaining commands are mot anymore
+run unless the command was prefixed with a single dash.
+
+A list of commands is available by using the command @code{help} and a
+detailed description of each command is printed by using @code{help
+COMMAND}.
+
+See the NOTES sections for instructions pertaining to specific cards
+or card applications.
+
+@mansect options
+@noindent
+@command{gpg-card} understands these options:
+
+@table @gnupgtabopt
+
+@item --with-colons
+@opindex with-colons
+This option has currently no effect.
+
+@item --status-fd @var{n}
+@opindex status-fd
+Write special status strings to the file descriptor @var{n}.  This
+program returns only the status messages SUCCESS or FAILURE which are
+helpful when the caller uses a double fork approach and can't easily
+get the return code of the process.
+
+@item --verbose
+@opindex verbose
+Enable extra informational output.
+
+@item --quiet
+@opindex quiet
+Disable almost all informational output.
+
+@item --version
+@opindex version
+Print version of the program and exit.
+
+@item --help
+@opindex help
+Display a brief help page and exit.
+
+@item --no-autostart
+@opindex no-autostart
+Do not start the gpg-agent if it has not yet been started and its
+service is required.  This option is mostly useful on machines where
+the connection to gpg-agent has been redirected to another machines.
+
+@item --agent-program @var{file}
+@opindex agent-program
+Specify the agent program to be started if none is running.  The
+default value is determined by running @command{gpgconf} with the
+option @option{--list-dirs}.
+
+@item --gpg-program @var{file}
+@opindex gpg-program
+Specify a non-default gpg binary to be used by certain commands.
+
+@item --gpgsm-program @var{file}
+@opindex gpgsm-program
+Specify a non-default gpgsm binary to be used by certain commands.
+
+@end table
+
+@mansect notes (OpenPGP)
+The support for OpenPGP cards in @command{gpg-card} is not yet
+complete.  For missing features, please continue to use @code{gpg
+--card-edit}.
+
+@mansect notes (PIV)
+@noindent
+GnuPG has support for PIV cards (``Personal Identity Verification''
+as specified by NIST Special Publication 800-73-4).  This section
+describes how to initialize (personalize) a fresh Yubikey token
+featuring the PIV application (requires Yubikey-5).  We assume that
+the credentials have not yet been changed and thus are:
+@table @asis
+@item Authentication key
+This is a 24 byte key described by the hex string
+@code{010203040506070801020304050607080102030405060708}.
+@item PIV Application PIN
+This is the string @code{123456}.
+@item PIN Unblocking Key
+This is the string @code{12345678}.
+@end table
+See the example section on how to change these defaults.  For
+production use it is important to use secure values for them.  Note that
+the Authentication Key is not queried via the usual Pinentry dialog
+but needs to be entered manually or read from a file.  The use of a
+dedicated machine to personalize tokens is strongly suggested.
+
+To see what is on the card, the command @code{list} can be given.  We
+will use the interactive mode in the following (the string
+@emph{gpg/card>} is the prompt).  An example output for a fresh card
+is:
+
+@example
+gpg/card> list
+Reader ...........: 1050:0407:X:0
+Card type ........: yubikey
+Card firmware ....: 5.1.2
+Serial number ....: D2760001240102010006090746250000
+Application type .: OpenPGP
+Version ..........: 2.1
+[...]
+@end example
+
+It can be seen by the ``Application type'' line that GnuPG selected the
+OpenPGP application of the Yubikey.  This is because GnuPG assigns the
+highest priority to the OpenPGP application.  To use the PIV
+application of the Yubikey, the OpenPGP application needs to be
+disabled:
+
+@example
+gpg/card> yubikey disable all opgp
+gpg/card> yubikey list
+Application  USB    NFC
+-----------------------
+OTP          yes    yes
+U2F          yes    yes
+OPGP         no     no
+PIV          yes    no
+OATH         yes    yes
+FIDO2        yes    yes
+gpg/card> reset
+@end example
+
+The @code{reset} is required so that the GnuPG system rereads the
+card.  Note that disabled applications keep all their data and can at
+any time be re-enabled (see @emph{help yubikey}).  Now a @emph{list}
+command shows this:
+
+@example
+gpg/card> list
+Reader ...........: 1050:0407:X:0
+Card type ........: yubikey
+Card firmware ....: 5.1.2
+Serial number ....: FF020001008A77C1
+Application type .: PIV
+Version ..........: 1.0
+Displayed s/n ....: yk-9074625
+PIN usage policy .: app-pin
+PIN retry counter : - 3 -
+PIV authentication: [none]
+      keyref .....: PIV.9A
+Card authenticat. : [none]
+      keyref .....: PIV.9E
+Digital signature : [none]
+      keyref .....: PIV.9C
+Key management ...: [none]
+      keyref .....: PIV.9D
+@end example
+
+Note that the ``Displayed s/sn'' is printed on the token and also
+shown in Pinentry prompts asking for the PIN.  The four standard key
+slots are always shown, if other key slots are initialized they are
+shown as well.  The @emph{PIV authentication} key (internal reference
+@emph{PIV.9A}) is used to authenticate the card and the card holder.
+The use of the associated private key is protected by the Application
+PIN which needs to be provided once and the key can the be used until
+the card is reset or removed from the reader or USB port.  GnuPG uses
+this key with its @emph{Secure Shell} support.  The @emph{Card
+authentication} key (@emph{PIV.9E}) is also known as the CAK and used
+to support physical access applications.  The private key is not
+protected by a PIN and can thus immediately be used.  The @emph{Digital
+signature} key (@emph{PIV.9C}) is used to digitally sign documents.
+The use of the associated private key is protected by the Application
+PIN which needs to be provided for each signing operation.  The
+@emph{Key management} key (@emph{PIV.9D}) is used for encryption.  The
+use of the associated private key is protected by the Application PIN
+which needs to be provided only once so that decryption operations can
+then be done until the card is reset or removed from the reader or USB
+port.
+
+We now generate tree of the four keys.  Note that GnuPG does currently
+not use the the @emph{Card authentication} key but because it is
+mandatory by the specs we create it anyway.  Key generation requires
+that we authenticate to the card.  This can be done either on the
+command line (which would reveal the key):
+
+@example
+gpg/card> auth 010203040506070801020304050607080102030405060708
+@end example
+
+or by reading the key from a file.  That file needs to consist of one
+LF terminated line with the hex encoded key (as above):
+
+@example
+gpg/card> auth < myauth.key
+@end example
+
+As usual @samp{help auth} gives help for this command.  An error
+message is printed if a non-matching key is used.  The authentication
+is valid until a reset of the card or until the card is removed from
+the reader or the USB port.  Note that that in non-interactive mode
+the @samp{<} needs to be quoted so that the shell does not interpret
+it as a its own redirection symbol.
+
+@noindent
+Here are the actual commands to generate the keys:
+
+@example
+gpg/card> generate --algo=nistp384 PIV.9A
+PIV card no. yk-9074625 detected
+gpg/card> generate --algo=nistp256 PIV.9E
+PIV card no. yk-9074625 detected
+gpg/card> generate --algo=rsa2048 PIV.9C
+PIV card no. yk-9074625 detected
+@end example
+
+If a key has already been created for one of the slots an error will
+be printed; to create a new key anyway the option @samp{--force} can be
+used.  Note that only the private and public keys have been created
+but no certificates are stored in the key slots.  In fact, GnuPG uses
+its own non-standard method to store just the public key in place of
+the the certificate.  Other application will not be able to make use
+these keys until @command{gpgsm} or another tool has been used to
+create and store the respective certificates.   Let us see what the
+list command now shows:
+
+@example
+gpg/card> list
+Reader ...........: 1050:0407:X:0
+Card type ........: yubikey
+Card firmware ....: 5.1.2
+Serial number ....: FF020001008A77C1
+Application type .: PIV
+Version ..........: 1.0
+Displayed s/n ....: yk-9074625
+PIN usage policy .: app-pin
+PIN retry counter : - 3 -
+PIV authentication: 213D1825FDE0F8240CB4E4229F01AF90AC658C2E
+      keyref .....: PIV.9A  (auth)
+      algorithm ..: nistp384
+Card authenticat. : 7A53E6CFFE7220A0E646B4632EE29E5A7104499C
+      keyref .....: PIV.9E  (auth)
+      algorithm ..: nistp256
+Digital signature : 32A6C6FAFCB8421878608AAB452D5470DD3223ED
+      keyref .....: PIV.9C  (sign,cert)
+      algorithm ..: rsa2048
+Key management ...: [none]
+      keyref .....: PIV.9D
+@end example
+
+The primary information for each key is the @emph{keygrip}, a 40 byte
+hex-string identifying the key.  This keygrip is a unique identifier
+for the specific parameters of a key.  It is used by
+@command{gpg-agent} and other parts of GnuPG to associate a private
+key to its protocol specific certificate format (X.509, OpenPGP, or
+SecureShell).  Below the keygrip the key reference along with the key
+usage capabilities are show.  Finally the algorithm is printed in the
+format used by @command {gpg}.  At that point no other information is
+shown because for these new keys gpg won't be able to find matching
+certificates.
+
+Although we could have created the @emph{Key management} key also with
+the generate command, we will create that key off-card so that a
+backup exists.  To accomplish this a key needs to be created with
+either @command{gpg} or @command{gpgsm} or imported in one of these
+tools.  In our example we create a self-signed X.509 certificate (exit
+the gpg-card tool, first):
+
+@example
+$ gpgsm --gen-key -o encr.crt
+   (1) RSA
+   (2) Existing key
+   (3) Existing key from card
+Your selection? 1
+What keysize do you want? (3072) 2048
+Requested keysize is 2048 bits
+Possible actions for a RSA key:
+   (1) sign, encrypt
+   (2) sign
+   (3) encrypt
+Your selection? 3
+Enter the X.509 subject name: CN=Encryption key for yk-9074625,O=example,C=DE
+Enter email addresses (end with an empty line):
+> otto@@example.net
+>
+Enter DNS names (optional; end with an empty line):
+>
+Enter URIs (optional; end with an empty line):
+>
+Create self-signed certificate? (y/N) y
+These parameters are used:
+    Key-Type: RSA
+    Key-Length: 2048
+    Key-Usage: encrypt
+    Serial: random
+    Name-DN: CN=Encryption key for yk-9074625,O=example,C=DE
+    Name-Email: otto@@example.net
+
+Proceed with creation? (y/N)
+Now creating self-signed certificate.  This may take a while ...
+gpgsm: about to sign the certificate for key: &34798AAFE0A7565088101CC4AE31C5C8C74461CB
+gpgsm: certificate created
+Ready.
+$ gpgsm --import encr.crt
+gpgsm: certificate imported
+gpgsm: total number processed: 1
+gpgsm:               imported: 1
+@end example
+
+Note the last steps which imported the created certificate.  If you
+you instead created a certificate signing request (CSR) instead of a
+self-signed certificate and sent this off to a CA you would do the
+same import step with the certificate received from the CA.  Take note
+of the keygrip (prefixed with an ampersand) as shown during the
+certificate creation or listed it again using @samp{gpgsm
+--with-keygrip -k otto@@example.net}.  Now to move the key and
+certificate to the card start @command{gpg-card} again and enter:
+
+@example
+gpg/card> writekey PIV.9D 34798AAFE0A7565088101CC4AE31C5C8C74461CB
+gpg/card> writecert PIV.9D < encr.crt
+@end example
+
+If you entered a passphrase to protect the private key, you will be
+asked for it via the Pinentry prompt.  On success the key and the
+certificate has been written to the card and a @code{list} command
+shows:
+
+@example
+[...]
+Key management ...: 34798AAFE0A7565088101CC4AE31C5C8C74461CB
+      keyref .....: PIV.9D  (encr)
+      algorithm ..: rsa2048
+      used for ...: X.509
+        user id ..: CN=Encryption key for yk-9074625,O=example,C=DE
+        user id ..: <otto@@example.net>
+@end example
+
+In case the same key (identified by the keygrip) has been used for
+several certificates you will see several ``used for'' parts.  With
+this the encryption key is now fully functional and can be used to
+decrypt messages encrypted to this certificate.  @sc{Take care:} the
+original key is still stored on-disk and should be moved to a backup
+medium.  This can simply be done by copying the file
+@file{34798AAFE0A7565088101CC4AE31C5C8C74461CB.key} from the directory
+@file{~/.gnupg/private-keys-v1.d/} to the backup medium and deleting
+the file at its original place.
+
+The final example is to create a self-signed certificate for digital
+signatures.  Leave @command{gpg-card} using @code{quit} or by pressing
+Control-D and use gpgsm:
+
+@example
+$ gpgsm --learn
+$ gpgsm --gen-key -o sign.crt
+Please select what kind of key you want:
+   (1) RSA
+   (2) Existing key
+   (3) Existing key from card
+Your selection? 3
+Serial number of the card: FF020001008A77C1
+Available keys:
+   (1) 213D1825FDE0F8240CB4E4229F01AF90AC658C2E PIV.9A nistp384
+   (2) 7A53E6CFFE7220A0E646B4632EE29E5A7104499C PIV.9E nistp256
+   (3) 32A6C6FAFCB8421878608AAB452D5470DD3223ED PIV.9C rsa2048
+   (4) 34798AAFE0A7565088101CC4AE31C5C8C74461CB PIV.9D rsa2048
+Your selection? 3
+Possible actions for a RSA key:
+   (1) sign, encrypt
+   (2) sign
+   (3) encrypt
+Your selection? 2
+Enter the X.509 subject name: CN=Signing key for yk-9074625,O=example,C=DE
+Enter email addresses (end with an empty line):
+> otto@@example.net
+>
+Enter DNS names (optional; end with an empty line):
+>
+Enter URIs (optional; end with an empty line):
+>
+Create self-signed certificate? (y/N)
+These parameters are used:
+    Key-Type: card:PIV.9C
+    Key-Length: 1024
+    Key-Usage: sign
+    Serial: random
+    Name-DN: CN=Signing key for yk-9074625,O=example,C=DE
+    Name-Email: otto@@example.net
+
+Proceed with creation? (y/N) y
+Now creating self-signed certificate.  This may take a while ...
+gpgsm: about to sign the certificate for key: &32A6C6FAFCB8421878608AAB452D5470DD3223ED
+gpgsm: certificate created
+Ready.
+$ gpgsm --import sign.crt
+gpgsm: certificate imported
+gpgsm: total number processed: 1
+gpgsm:               imported: 1
+@end example
+
+The use of @samp{gpgsm --learn} is currently necessary so that
+gpg-agent knows what keys are available on the card.  The need for
+this command will eventually be removed.  The remaining commands are
+similar to the creation of an on-disk key.  However, here we select
+the @samp{Digital signature} key.  During the creation process you
+will be asked for the Application PIN of the card.  The final step is
+to write the certificate to the card using @command{gpg-card}:
+
+@example
+gpg/card> writecert PIV.9C < sign.crt
+@end example
+
+By running list again we will see the fully initialized card:
+
+@example
+Reader ...........: 1050:0407:X:0
+Card type ........: yubikey
+Card firmware ....: 5.1.2
+Serial number ....: FF020001008A77C1
+Application type .: PIV
+Version ..........: 1.0
+Displayed s/n ....: yk-9074625
+PIN usage policy .: app-pin
+PIN retry counter : - [verified] -
+PIV authentication: 213D1825FDE0F8240CB4E4229F01AF90AC658C2E
+      keyref .....: PIV.9A  (auth)
+      algorithm ..: nistp384
+Card authenticat. : 7A53E6CFFE7220A0E646B4632EE29E5A7104499C
+      keyref .....: PIV.9E  (auth)
+      algorithm ..: nistp256
+Digital signature : 32A6C6FAFCB8421878608AAB452D5470DD3223ED
+      keyref .....: PIV.9C  (sign,cert)
+      algorithm ..: rsa2048
+      used for ...: X.509
+        user id ..: CN=Signing key for yk-9074625,O=example,C=DE
+        user id ..: <otto@@example.net>
+Key management ...: 34798AAFE0A7565088101CC4AE31C5C8C74461CB
+      keyref .....: PIV.9D  (encr)
+      algorithm ..: rsa2048
+      used for ...: X.509
+        user id ..: CN=Encryption key for yk-9074625,O=example,C=DE
+        user id ..: <otto@@example.net>
+@end example
+
+It is now possible to sign and to encrypt with this card using gpgsm
+and to use the @samp{PIV authentication} key with ssh:
+
+@example
+$ ssh-add -l
+384 SHA256:0qnJ0Y0ehWxKcx2frLfEljf6GCdlO55OZed5HqGHsaU cardno:yk-9074625 (ECDSA)
+@end example
+
+As usual use ssh-add with the uppercase @samp{-L} to list the public
+ssh key.  To use the certificates with Thunderbird or Mozilla, please
+consult the Scute manual for details.
+
+
+
+@c @mansect examples
+
+@mansect see also
+@ifset isman
+@command{scdaemon}(1)
+@end ifset

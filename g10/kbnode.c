@@ -68,8 +68,8 @@ alloc_node (void)
   n->next = NULL;
   n->pkt = NULL;
   n->flag = 0;
+  n->tag = 0;
   n->private_flag=0;
-  n->recno = 0;
   return n;
 }
 

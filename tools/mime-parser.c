@@ -50,7 +50,7 @@ struct mime_parser_context_s
 {
   void *cookie;                /* Cookie passed to all callbacks.  */
 
-  /* The callback to announce the transation from header to body.  */
+  /* The callback to announce the transition from header to body.  */
   gpg_error_t (*t2body) (void *cookie, int level);
 
   /* The callback to announce a new part.  */

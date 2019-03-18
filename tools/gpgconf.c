@@ -47,6 +47,7 @@ enum cmd_and_opt_values
     oHomedir,
     oBuilddir,
     oStatusFD,
+    oShowSocket,
 
     aListComponents,
     aCheckPrograms,
@@ -108,6 +109,7 @@ static ARGPARSE_OPTS opts[] =
     { oBuilddir, "build-prefix", 2, "@" },
     { oNull, "null", 0, "@" },
     { oNoVerbose, "no-verbose",  0, "@"},
+    ARGPARSE_s_n (oShowSocket, "show-socket", "@"),
 
     ARGPARSE_end(),
   };
@@ -525,6 +527,7 @@ main (int argc, char **argv)
   int no_more_options = 0;
   enum cmd_and_opt_values cmd = 0;
   estream_t outfp = NULL;
+  int show_socket = 0;
 
   early_system_init ();
   gnupg_reopen_std (GPGCONF_NAME);
@@ -558,6 +561,7 @@ main (int argc, char **argv)
         case oStatusFD:
           set_status_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
           break;
+        case oShowSocket: show_socket = 1; break;
 
 	case aListDirs:
         case aListComponents:
@@ -682,7 +686,22 @@ main (int argc, char **argv)
             }
           else if (cmd == aLaunch)
             {
-              if (gc_component_launch (idx))
+              err = gc_component_launch (idx);
+              if (show_socket)
+                {
+                  char *names[2];
+
+                  if (idx == GC_COMPONENT_GPG_AGENT)
+                    names[0] = "agent-socket";
+                  else if (idx == GC_COMPONENT_DIRMNGR)
+                    names[0] = "dirmngr-socket";
+                  else
+                    names[0] = NULL;
+                  names[1] = NULL;
+                  get_outfp (&outfp);
+                  list_dirs (outfp, names);
+                }
+              if (err)
                 gpgconf_failure (0);
             }
           else
@@ -823,7 +842,7 @@ main (int argc, char **argv)
           ;
         else if (rmdir (socketdir))
           {
-            /* If the director is not empty we first try to delet
+            /* If the director is not empty we first try to delete
              * socket files.  */
             err = gpg_error_from_syserror ();
             if (gpg_err_code (err) == GPG_ERR_ENOTEMPTY

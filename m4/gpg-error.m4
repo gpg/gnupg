@@ -1,5 +1,5 @@
 # gpg-error.m4 - autoconf macro to detect libgpg-error.
-# Copyright (C) 2002, 2003, 2004, 2011, 2014 g10 Code GmbH
+# Copyright (C) 2002, 2003, 2004, 2011, 2014, 2018 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2014-10-02
+# Last-changed: 2018-11-02
 
 
 dnl AM_PATH_GPG_ERROR([MINIMUM-VERSION,
@@ -61,16 +61,55 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
   fi
 
   AC_PATH_PROG(GPG_ERROR_CONFIG, gpg-error-config, no)
-  min_gpg_error_version=ifelse([$1], ,0.0,$1)
-  AC_MSG_CHECKING(for GPG Error - version >= $min_gpg_error_version)
+  min_gpg_error_version=ifelse([$1], ,1.33,$1)
   ok=no
-  if test "$GPG_ERROR_CONFIG" != "no" \
-     && test -f "$GPG_ERROR_CONFIG" ; then
+
+  if test "$prefix" = NONE ; then
+    prefix_option_expanded=/usr/local
+  else
+    prefix_option_expanded="$prefix"
+  fi
+  if test "$exec_prefix" = NONE ; then
+    exec_prefix_option_expanded=$prefix_option_expanded
+  else
+    exec_prefix_option_expanded=$(prefix=$prefix_option_expanded eval echo $exec_prefix)
+  fi
+  libdir_option_expanded=$(prefix=$prefix_option_expanded exec_prefix=$exec_prefix_option_expanded eval echo $libdir)
+
+  if test -f $libdir_option_expanded/pkgconfig/gpg-error.pc; then
+    gpgrt_libdir=$libdir_option_expanded
+  else
+    if crt1_path=$(${CC:-cc} -print-file-name=crt1.o 2>/dev/null); then
+      if possible_libdir=$(cd ${crt1_path%/*} && pwd 2>/dev/null); then
+        if test -f $possible_libdir/pkgconfig/gpg-error.pc; then
+          gpgrt_libdir=$possible_libdir
+        fi
+      fi
+    fi
+  fi
+
+  if test "$GPG_ERROR_CONFIG" = "no" -a -n "$gpgrt_libdir"; then
+    AC_PATH_PROG(GPGRT_CONFIG, gpgrt-config, no)
+    if test "$GPGRT_CONFIG" = "no"; then
+      unset GPGRT_CONFIG
+    else
+      GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
+      if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
+        GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
+        AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
+        gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
+      else
+        unset GPGRT_CONFIG
+      fi
+    fi
+  else
+    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+  fi
+  if test "$GPG_ERROR_CONFIG" != "no"; then
     req_major=`echo $min_gpg_error_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
     req_minor=`echo $min_gpg_error_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
-    gpg_error_config_version=`$GPG_ERROR_CONFIG $gpg_error_config_args --version`
     major=`echo $gpg_error_config_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
     minor=`echo $gpg_error_config_version | \
@@ -84,23 +123,51 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
             fi
         fi
     fi
+    if test -z "$GPGRT_CONFIG" -a -n "$gpgrt_libdir"; then
+      if test "$major" -gt 1 -o "$major" -eq 1 -a "$minor" -ge 33; then
+        AC_PATH_PROG(GPGRT_CONFIG, gpgrt-config, no)
+        if test "$GPGRT_CONFIG" = "no"; then
+          unset GPGRT_CONFIG
+        else
+          GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
+          if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
+            GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
+            AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
+          else
+            unset GPGRT_CONFIG
+          fi
+        fi
+      fi
+    fi
   fi
+  AC_MSG_CHECKING(for GPG Error - version >= $min_gpg_error_version)
   if test $ok = yes; then
-    GPG_ERROR_CFLAGS=`$GPG_ERROR_CONFIG $gpg_error_config_args --cflags`
-    GPG_ERROR_LIBS=`$GPG_ERROR_CONFIG $gpg_error_config_args --libs`
-    GPG_ERROR_MT_CFLAGS=`$GPG_ERROR_CONFIG $gpg_error_config_args --mt --cflags 2>/dev/null`
-    GPG_ERROR_MT_LIBS=`$GPG_ERROR_CONFIG $gpg_error_config_args --mt --libs 2>/dev/null`
+    GPG_ERROR_CFLAGS=`$GPG_ERROR_CONFIG --cflags`
+    GPG_ERROR_LIBS=`$GPG_ERROR_CONFIG --libs`
+    if test -z "$GPGRT_CONFIG"; then
+      GPG_ERROR_MT_CFLAGS=`$GPG_ERROR_CONFIG --mt --cflags 2>/dev/null`
+      GPG_ERROR_MT_LIBS=`$GPG_ERROR_CONFIG --mt --libs 2>/dev/null`
+    else
+      GPG_ERROR_MT_CFLAGS=`$GPG_ERROR_CONFIG --variable=mtcflags 2>/dev/null`
+      GPG_ERROR_MT_CFLAGS="$GPG_ERROR_CFLAGS${GPG_ERROR_CFLAGS:+ }$GPG_ERROR_MT_CFLAGS"
+      GPG_ERROR_MT_LIBS=`$GPG_ERROR_CONFIG --variable=mtlibs 2>/dev/null`
+      GPG_ERROR_MT_LIBS="$GPG_ERROR_LIBS${GPG_ERROR_LIBS:+ }$GPG_ERROR_MT_LIBS"
+    fi
     AC_MSG_RESULT([yes ($gpg_error_config_version)])
     ifelse([$2], , :, [$2])
-    gpg_error_config_host=`$GPG_ERROR_CONFIG $gpg_error_config_args --host 2>/dev/null || echo none`
+    if test -z "$GPGRT_CONFIG"; then
+      gpg_error_config_host=`$GPG_ERROR_CONFIG --host 2>/dev/null || echo none`
+    else
+      gpg_error_config_host=`$GPG_ERROR_CONFIG --variable=host 2>/dev/null || echo none`
+    fi
     if test x"$gpg_error_config_host" != xnone ; then
       if test x"$gpg_error_config_host" != x"$host" ; then
   AC_MSG_WARN([[
 ***
-*** The config script $GPG_ERROR_CONFIG was
+*** The config script "$GPG_ERROR_CONFIG" was
 *** built for $gpg_error_config_host and thus may not match the
 *** used host $host.
-*** You may want to use the configure option --with-gpg-error-prefix
+*** You may want to use the configure option --with-libgpg-error-prefix
 *** to specify a matching config script or use \$SYSROOT.
 ***]])
         gpg_config_script_warn="$gpg_config_script_warn libgpg-error"

@@ -195,7 +195,7 @@ has_percent0A_suffix (const char *string)
    string with the passphrase, the buffer may optionally be padded
    with arbitrary characters.
 
-   If DESC_TEXT is not NULL it can be used as further informtion shown
+   If DESC_TEXT is not NULL it can be used as further information shown
    atop of the INFO message.
 
    INFO gets displayed as part of a generic string.  However if the
@@ -278,25 +278,47 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
         {
           if (info)
             {
-              char *desc, *desc2;
+              char *desc;
+              const char *desc2;
 
-              if ( asprintf (&desc,
-                             L_("%s%%0A%%0AUse the reader's pinpad for input."),
-                             info) < 0 )
+              if (!strcmp (info, "--ack"))
+                {
+                  desc2 = L_("Push ACK button on card/token.");
+
+                  if (desc_text)
+                    {
+                      desc = strconcat (desc_text,
+                                        has_percent0A_suffix (desc_text)
+                                        ? "%0A" : "%0A%0A",
+                                        desc2, NULL);
+                      desc2 = NULL;
+                    }
+                  else
+                    desc = NULL;
+                }
+              else
+                {
+                  desc2 = NULL;
+
+                  if (desc_text)
+                    desc = strconcat (desc_text,
+                                      has_percent0A_suffix (desc_text)
+                                      ? "%0A" : "%0A%0A",
+                                      info, "%0A%0A",
+                                      L_("Use the reader's pinpad for input."),
+                                      NULL);
+                  else
+                    desc = strconcat (info, "%0A%0A",
+                                      L_("Use the reader's pinpad for input."),
+                                      NULL);
+                }
+
+              if (!desc2 && !desc)
                 rc = gpg_error_from_syserror ();
               else
                 {
-                  /* Prepend DESC_TEXT to INFO.  */
-                  if (desc_text)
-                    desc2 = strconcat (desc_text,
-                                       has_percent0A_suffix (desc_text)
-                                       ? "%0A" : "%0A%0A",
-                                       desc, NULL);
-                  else
-                    desc2 = NULL;
                   rc = agent_popup_message_start (ctrl,
                                                   desc2? desc2:desc, NULL);
-                  xfree (desc2);
                   xfree (desc);
                 }
             }
@@ -476,6 +498,7 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   char *kid;
   const unsigned char *s;
   size_t n;
+  int depth;
   const unsigned char *ciphertext;
   size_t ciphertextlen;
   char *plaintext;
@@ -484,7 +507,6 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   (void)desc_text;
 
   *r_padding = -1;
-
   s = cipher;
   if (*s != '(')
     return gpg_error (GPG_ERR_INV_SEXP);
@@ -500,6 +522,21 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
+
+  /* First check whether we have a flags parameter and skip it.  */
+  if (smatch (&s, n, "flags"))
+    {
+      depth = 1;
+      if (sskip (&s, &depth) || depth)
+        return gpg_error (GPG_ERR_INV_SEXP);
+      if (*s != '(')
+        return gpg_error (GPG_ERR_INV_SEXP);
+      s++;
+      n = snext (&s);
+      if (!n)
+        return gpg_error (GPG_ERR_INV_SEXP);
+    }
+
   if (smatch (&s, n, "rsa"))
     {
       if (*s != '(')
@@ -560,12 +597,13 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   return rc;
 }
 
-int
+
+gpg_error_t
 divert_writekey (ctrl_t ctrl, int force, const char *serialno,
-                 const char *id, const char *keydata, size_t keydatalen)
+                 const char *keyref, const char *keydata, size_t keydatalen)
 {
-  return agent_card_writekey (ctrl, force, serialno, id, keydata, keydatalen,
-                              getpin_cb, ctrl);
+  return agent_card_writekey (ctrl, force, serialno, keyref,
+                              keydata, keydatalen, getpin_cb, ctrl);
 }
 
 int

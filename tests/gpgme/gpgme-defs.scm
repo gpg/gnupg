@@ -67,8 +67,7 @@
   (create-file
    "gpg-agent.conf"
    (string-append "pinentry-program " (tool 'pinentry))
-   (string-append "scdaemon-program " (tool 'scdaemon))
-   )
+   "disable-scdaemon")
 
   (start-agent)
 

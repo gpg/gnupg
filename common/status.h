@@ -163,6 +163,10 @@ enum
 
 
 const char *get_status_string (int code);
+void gnupg_set_status_fd (int fd);
+void gnupg_status_printf (int no, const char *format,
+                          ...) GPGRT_ATTR_PRINTF(2,3);
+
 const char *get_inv_recpsgnr_code (gpg_error_t err);
 
 

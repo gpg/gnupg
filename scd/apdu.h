@@ -31,6 +31,7 @@ enum {
   SW_EOF_REACHED    = 0x6282,
   SW_TERM_STATE     = 0x6285, /* Selected file is in termination state.  */
   SW_EEPROM_FAILURE = 0x6581,
+  SW_ACK_TIMEOUT    = 0x6600, /* OpenPGPcard: Ack timeout.  */
   SW_WRONG_LENGTH   = 0x6700,
   SW_SM_NOT_SUP     = 0x6882, /* Secure Messaging is not supported.  */
   SW_CC_NOT_SUP     = 0x6884, /* Command Chaining is not supported.  */
@@ -117,6 +118,7 @@ int apdu_connect (int slot);
 int apdu_disconnect (int slot);
 
 int apdu_set_progress_cb (int slot, gcry_handler_progress_t cb, void *cb_arg);
+int apdu_set_prompt_cb (int slot, void (*cb) (void *, int), void *cb_arg);
 
 int apdu_reset (int slot);
 int apdu_get_status (int slot, int hang, unsigned int *status);
@@ -137,7 +139,7 @@ int apdu_send_le (int slot, int extended_mode,
                   unsigned char **retbuf, size_t *retbuflen);
 int apdu_send_direct (int slot, size_t extended_length,
                       const unsigned char *apdudata, size_t apdudatalen,
-                      int handle_more,
+                      int handle_more, unsigned int *r_sw,
                       unsigned char **retbuf, size_t *retbuflen);
 const char *apdu_get_reader_name (int slot);
 

@@ -234,7 +234,7 @@ The currently defined protection modes are:
      (csum n)
      (protection PROTTYPE PROTALGO IV S2KMODE S2KHASH S2KSALT S2KCOUNT)))
 
-  Note that the public key paramaters in SKEY are duplicated and
+  Note that the public key parameters in SKEY are duplicated and
   should be identical to their copies in the standard parameter
   elements.  Here is an example of an entire protected private key
   using this format:
@@ -359,8 +359,8 @@ KEY_1 to KEY_N are unique identifiers for the shared secret, for
 example an URI.  In case this information should be kept confidential
 as well, they may not appear in the unprotected part; however they are
 mandatory in the encrypted_octet_string.  The list of keywords is
-optional.  The oder of the "key" lists and the order of the "value"
-lists mut match, that is the first "key"-list is associated with the
+optional.  The order of the "key" lists and the order of the "value"
+lists must match, that is the first "key"-list is associated with the
 first "value" list in the encrypted_octet_string.
 
 The protection mode etc. is identical to the protection mode as

@@ -367,20 +367,29 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
       if (is_RSA)
         {
-          check_signature = 1;
-          if (*buf & 0x80)
-            {
-              len++;
-              buf = xtryrealloc (buf, len);
-              if (!buf)
-                goto leave;
+          unsigned char *p = buf;
 
-              memmove (buf + 1, buf, len - 1);
-              *buf = 0;
+          check_signature = 1;
+
+          /*
+           * Smartcard returns fixed-size data, which is good for
+           * PKCS1.  If variable-size unsigned MPI is needed, remove
+           * zeros.
+           */
+          if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1
+              || ctrl->digest.raw_value)
+            {
+              int i;
+
+              for (i = 0; i < len - 1; i++)
+                if (p[i])
+                  break;
+              p += i;
+              len -= i;
             }
 
           err = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%b)))",
-                                 (int)len, buf);
+                                 (int)len, p);
         }
       else if (is_EdDSA)
         {
@@ -389,53 +398,34 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         }
       else if (is_ECDSA)
         {
-          unsigned char *r_buf_allocated = NULL;
-          unsigned char *s_buf_allocated = NULL;
           unsigned char *r_buf, *s_buf;
           int r_buflen, s_buflen;
+          int i;
 
           r_buflen = s_buflen = len/2;
 
-          if (*buf & 0x80)
-            {
-              r_buflen++;
-              r_buf_allocated = xtrymalloc (r_buflen);
-              if (!r_buf_allocated)
-                {
-                  err = gpg_error_from_syserror ();
-                  goto leave;
-                }
+          /*
+           * Smartcard returns fixed-size data.  For ECDSA signature,
+           * variable-size unsigned MPI is assumed, thus, remove
+           * zeros.
+           */
+          r_buf = buf;
+          for (i = 0; i < r_buflen - 1; i++)
+            if (r_buf[i])
+              break;
+          r_buf += i;
+          r_buflen -= i;
 
-              r_buf = r_buf_allocated;
-              memcpy (r_buf + 1, buf, len/2);
-              *r_buf = 0;
-            }
-          else
-            r_buf = buf;
-
-          if (*(buf + len/2) & 0x80)
-            {
-              s_buflen++;
-              s_buf_allocated = xtrymalloc (s_buflen);
-              if (!s_buf_allocated)
-                {
-                  err = gpg_error_from_syserror ();
-                  xfree (r_buf_allocated);
-                  goto leave;
-                }
-
-              s_buf = s_buf_allocated;
-              memcpy (s_buf + 1, buf + len/2, len/2);
-              *s_buf = 0;
-            }
-          else
-            s_buf = buf + len/2;
+          s_buf = buf + len/2;
+          for (i = 0; i < s_buflen - 1; i++)
+            if (s_buf[i])
+              break;
+          s_buf += i;
+          s_buflen -= i;
 
           err = gcry_sexp_build (&s_sig, NULL, "(sig-val(ecdsa(r%b)(s%b)))",
                                  r_buflen, r_buf,
                                  s_buflen, s_buf);
-          xfree (r_buf_allocated);
-          xfree (s_buf_allocated);
         }
       else
         err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);

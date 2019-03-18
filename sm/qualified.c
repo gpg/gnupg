@@ -140,7 +140,7 @@ read_list (char *key, char *country, int *lnr)
    Returns: 0 if the certificate is included.  GPG_ERR_NOT_FOUND if it
    is not in the list or any other error (e.g. if no list of
    qualified signatures is available.  If COUNTRY has not been passed
-   as NULL a string witha maximum length of 2 will be copied into it;
+   as NULL a string with a maximum length of 2 will be copied into it;
    thus the caller needs to provide a buffer of length 3. */
 gpg_error_t
 gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert, char *country)

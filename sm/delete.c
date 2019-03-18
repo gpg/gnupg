@@ -64,8 +64,6 @@ delete_one (ctrl_t ctrl, const char *username)
   /* If the key is specified in a unique way, include ephemeral keys
      in the search.  */
   if ( desc.mode == KEYDB_SEARCH_MODE_FPR
-       || desc.mode == KEYDB_SEARCH_MODE_FPR20
-       || desc.mode == KEYDB_SEARCH_MODE_FPR16
        || desc.mode == KEYDB_SEARCH_MODE_KEYGRIP )
     {
       is_ephem = 1;
