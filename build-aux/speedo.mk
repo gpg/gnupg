@@ -1212,7 +1212,9 @@ extra_installer_options += -DWITH_GUI=1
 endif
 
 installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
-	$(MAKENSIS) -V2 \
+	(nsis3_args=$$(makensis -version | grep -q "^v3" && \
+                  echo "-INPUTCHARSET CP1252"); \
+	$(MAKENSIS) -V2 $$nsis3_args \
                     -DINST_DIR=$(idir) \
                     -DINST6_DIR=$(idir6) \
                     -DBUILD_DIR=$(bdir) \
@@ -1223,7 +1225,7 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 		    -DNAME=$(INST_NAME) \
 	            -DVERSION=$(INST_VERSION) \
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
-		    $(extra_installer_options) $(w32src)/inst.nsi
+		    $(extra_installer_options) $(w32src)/inst.nsi)
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe"
 
 
