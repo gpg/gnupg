@@ -1476,6 +1476,8 @@ keyring_rebuild_cache (ctrl_t ctrl, void *token, int noisy)
         {
           if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
             continue;  /* Skip legacy keys.  */
+          if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_VERSION)
+            continue;  /* Skip keys with unknown version.  */
           log_error ("keyring_get_keyblock failed: %s\n", gpg_strerror (rc));
           goto leave;
         }

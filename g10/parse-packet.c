@@ -2296,7 +2296,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       log_error ("packet(%d) with unknown version %d\n", pkttype, version);
       if (list_mode)
         es_fputs (":key packet: [unknown version]\n", listfp);
-      err = gpg_error (GPG_ERR_INV_PACKET);
+      err = gpg_error (GPG_ERR_UNKNOWN_VERSION);
       goto leave;
     }
 

@@ -527,6 +527,8 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
 	{
           if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
             continue;  /* Skip legacy keys.  */
+          if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_VERSION)
+            continue;  /* Skip keys with unknown versions.  */
 	  log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
 	  goto leave;
 	}

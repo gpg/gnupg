@@ -860,12 +860,14 @@ read_block( IOBUF a, int with_meta,
   skip_sigs = 0;
   while ((rc=parse_packet (&parsectx, pkt)) != -1)
     {
-      if (rc && (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
+      if (rc && ((gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
+                 || gpg_err_code (rc) == GPG_ERR_UNKNOWN_VERSION)
                  && (pkt->pkttype == PKT_PUBLIC_KEY
                      || pkt->pkttype == PKT_SECRET_KEY)))
         {
           in_v3key = 1;
-          ++*r_v3keys;
+          if (gpg_err_code (rc) != GPG_ERR_UNKNOWN_VERSION)
+            ++*r_v3keys;
           free_packet (pkt, &parsectx);
           init_packet (pkt);
           continue;
