@@ -394,7 +394,8 @@ struct impex_filter_parm_s
 
 const char *impex_filter_getval (void *cookie, const char *propname);
 gpg_error_t transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
-                                  kbnode_t sec_keyblock, int batch, int force);
+                                  kbnode_t sec_keyblock, int batch, int force,
+                                  int only_marked);
 
 int collapse_uids( KBNODE *keyblock );
 

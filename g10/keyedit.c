@@ -1894,7 +1894,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    node = new_kbnode (pkt);
 
             /* Transfer it to gpg-agent which handles secret keys.  */
-            err = transfer_secret_keys (ctrl, NULL, node, 1, 1);
+            err = transfer_secret_keys (ctrl, NULL, node, 1, 1, 0);
 
             /* Treat the pkt as a public key.  */
             pkt->pkttype = PKT_PUBLIC_KEY;

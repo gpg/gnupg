@@ -1,6 +1,6 @@
 /* import.c - import a key into our key storage.
  * Copyright (C) 1998-2007, 2010-2011 Free Software Foundation, Inc.
- * Copyright (C) 2014, 2016, 2017  Werner Koch
+ * Copyright (C) 2014, 2016, 2017, 2019  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -75,6 +75,8 @@ struct import_stats_s
 #define NODE_DELETION_MARK 4
 /* A node flag used to temporary mark a node. */
 #define NODE_FLAG_A  8
+/* A flag used by transfer_secret_keys. */
+#define NODE_TRANSFER_SECKEY 16
 
 
 /* An object and a global instance to store selectors created from
@@ -110,10 +112,15 @@ static gpg_error_t import_one (ctrl_t ctrl,
                        unsigned int options, int from_sk, int silent,
                        import_screener_t screener, void *screener_arg,
                        int origin, const char *url, int *r_valid);
+static gpg_error_t import_matching_seckeys (
+                       ctrl_t ctrl, kbnode_t seckeys,
+                       const byte *mainfpr, size_t mainfprlen,
+                       struct import_stats_s *stats, int batch);
 static gpg_error_t import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                               struct import_stats_s *stats, int batch,
                               unsigned int options, int for_migration,
-                              import_screener_t screener, void *screener_arg);
+                              import_screener_t screener, void *screener_arg,
+                              kbnode_t *r_secattic);
 static int import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
                                struct import_stats_s *stats);
 static int chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
@@ -566,6 +573,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
   kbnode_t keyblock = NULL;  /* Need to initialize because gcc can't
                                 grasp the return semantics of
                                 read_block. */
+  kbnode_t secattic = NULL;  /* Kludge for PGP desktop percularity */
   int rc = 0;
   int v3keys;
 
@@ -586,18 +594,63 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
     {
       stats->v3keys += v3keys;
       if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
-        rc = import_one (ctrl, keyblock,
-                         stats, fpr, fpr_len, options, 0, 0,
-                         screener, screener_arg, origin, url, NULL);
+        {
+          rc = import_one (ctrl, keyblock,
+                           stats, fpr, fpr_len, options, 0, 0,
+                           screener, screener_arg, origin, url, NULL);
+          if (secattic)
+            {
+              byte tmpfpr[MAX_FINGERPRINT_LEN];
+              size_t tmpfprlen;
+
+              if (!rc && !(opt.dry_run || (options & IMPORT_DRY_RUN)))
+                {
+                  /* Kudge for PGP desktop - see below.  */
+                  fingerprint_from_pk (keyblock->pkt->pkt.public_key,
+                                       tmpfpr, &tmpfprlen);
+                  rc = import_matching_seckeys (ctrl, secattic,
+                                                tmpfpr, tmpfprlen,
+                                                stats, opt.batch);
+                }
+              release_kbnode (secattic);
+              secattic = NULL;
+            }
+        }
       else if (keyblock->pkt->pkttype == PKT_SECRET_KEY)
-        rc = import_secret_one (ctrl, keyblock, stats,
-                                opt.batch, options, 0,
-                                screener, screener_arg);
+        {
+          release_kbnode (secattic);
+          secattic = NULL;
+          rc = import_secret_one (ctrl, keyblock, stats,
+                                  opt.batch, options, 0,
+                                  screener, screener_arg, &secattic);
+          keyblock = NULL;  /* Ownership was transferred.  */
+          if (secattic)
+            {
+              if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
+                rc = 0; /* Try import after the next pubkey.  */
+
+              /* The attic is a workaround for the peculiar PGP
+               * Desktop method of exporting a secret key: The
+               * exported file is the concatenation of two armored
+               * keyblocks; first the private one and then the public
+               * one.  The strange thing is that the secret one has no
+               * binding signatures at all and thus we have not
+               * imported it.  The attic stores that secret keys and
+               * we try to import it once after the very next public
+               * keyblock.  */
+            }
+        }
       else if (keyblock->pkt->pkttype == PKT_SIGNATURE
                && IS_KEY_REV (keyblock->pkt->pkt.signature) )
-        rc = import_revoke_cert (ctrl, keyblock, options, stats);
+        {
+          release_kbnode (secattic);
+          secattic = NULL;
+          rc = import_revoke_cert (ctrl, keyblock, options, stats);
+        }
       else
         {
+          release_kbnode (secattic);
+          secattic = NULL;
           log_info (_("skipping block of type %d\n"), keyblock->pkt->pkttype);
 	}
       release_kbnode (keyblock);
@@ -623,6 +676,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
   else if (rc && gpg_err_code (rc) != GPG_ERR_INV_KEYRING)
     log_error (_("error reading '%s': %s\n"), fname, gpg_strerror (rc));
 
+  release_kbnode (secattic);
   return rc;
 }
 
@@ -659,8 +713,11 @@ import_old_secring (ctrl_t ctrl, const char *fname)
   while (!(err = read_block (inp, 0, &pending_pkt, &keyblock, &v3keys)))
     {
       if (keyblock->pkt->pkttype == PKT_SECRET_KEY)
-        err = import_secret_one (ctrl, keyblock, stats, 1, 0, 1,
-                                 NULL, NULL);
+        {
+          err = import_secret_one (ctrl, keyblock, stats, 1, 0, 1,
+                                   NULL, NULL, NULL);
+          keyblock = NULL; /* Ownership was transferred.  */
+        }
       release_kbnode (keyblock);
       if (err)
         break;
@@ -2181,12 +2238,15 @@ import_one (ctrl_t ctrl,
 
 
 /* Transfer all the secret keys in SEC_KEYBLOCK to the gpg-agent.  The
-   function prints diagnostics and returns an error code.  If BATCH is
-   true the secret keys are stored by gpg-agent in the transfer format
-   (i.e. no re-protection and aksing for passphrases). */
+ * function prints diagnostics and returns an error code.  If BATCH is
+ * true the secret keys are stored by gpg-agent in the transfer format
+ * (i.e. no re-protection and aksing for passphrases). If ONLY_MARKED
+ * is set, only those nodes with flag NODE_TRANSFER_SECKEY are
+ * processed.  */
 gpg_error_t
 transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
-                      kbnode_t sec_keyblock, int batch, int force)
+                      kbnode_t sec_keyblock, int batch, int force,
+                      int only_marked)
 {
   gpg_error_t err = 0;
   void *kek = NULL;
@@ -2227,11 +2287,15 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
   xfree (kek);
   kek = NULL;
 
+  /* Note: We need to use walk_kbnode so that we skip nodes which are
+   * marked as deleted.  */
   main_pk = NULL;
   while ((node = walk_kbnode (sec_keyblock, &ctx, 0)))
     {
       if (node->pkt->pkttype != PKT_SECRET_KEY
           && node->pkt->pkttype != PKT_SECRET_SUBKEY)
+        continue;
+      if (only_marked && !(node->flag & NODE_TRANSFER_SECKEY))
         continue;
       pk = node->pkt->pkt.public_key;
       if (!main_pk)
@@ -2531,12 +2595,15 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
 /* Delete all notes in the keyblock at R_KEYBLOCK which are not in
  * PUB_KEYBLOCK.  Modifies the tags of both keyblock's nodes.  */
 static gpg_error_t
-resync_sec_with_pub_keyblock (kbnode_t *r_keyblock, kbnode_t pub_keyblock)
+resync_sec_with_pub_keyblock (kbnode_t *r_keyblock, kbnode_t pub_keyblock,
+                              kbnode_t *r_removedsecs)
 {
   kbnode_t sec_keyblock = *r_keyblock;
-  kbnode_t node;
+  kbnode_t node, prevnode;
   unsigned int *taglist;
   unsigned int ntaglist, n;
+  kbnode_t attic = NULL;
+  kbnode_t *attic_head = &attic;
 
   /* Collect all tags in an array for faster searching.  */
   for (ntaglist = 0, node = pub_keyblock; node; node = node->next)
@@ -2548,40 +2615,188 @@ resync_sec_with_pub_keyblock (kbnode_t *r_keyblock, kbnode_t pub_keyblock)
     taglist[ntaglist++] = node->tag;
 
   /* Walks over the secret keyblock and delete all nodes which are not
-   * in the tag list.  Those nodes have been delete in the
-   * pub_keyblock.  Sequential search is a bit lazt and could be
-   * optimized by sorting and bsearch; however secret key rings are
-   * short and there are easier weaus to DoS gpg.  */
-  for (node = sec_keyblock; node; node = node->next)
+   * in the tag list.  Those nodes have been deleted in the
+   * pub_keyblock.  Sequential search is a bit lazy and could be
+   * optimized by sorting and bsearch; however secret keyrings are
+   * short and there are easier ways to DoS the import.  */
+ again:
+  for (prevnode=NULL, node=sec_keyblock; node; prevnode=node, node=node->next)
     {
       for (n=0; n < ntaglist; n++)
         if (taglist[n] == node->tag)
           break;
-      if (n == ntaglist)
-        delete_kbnode (node);
+      if (n == ntaglist)  /* Not in public keyblock.  */
+        {
+          if (node->pkt->pkttype == PKT_SECRET_KEY
+              || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+            {
+              if (!prevnode)
+                sec_keyblock = node->next;
+              else
+                prevnode->next = node->next;
+              node->next = NULL;
+              *attic_head = node;
+              attic_head = &node->next;
+              goto again;  /* That's lame; I know.  */
+            }
+          else
+            delete_kbnode (node);
+        }
     }
 
   xfree (taglist);
 
   /* Commit the as deleted marked nodes and return the possibly
-   * modified keyblock.  */
+   * modified keyblock and a list of removed secret key nodes.  */
   commit_kbnode (&sec_keyblock);
   *r_keyblock = sec_keyblock;
+  *r_removedsecs = attic;
   return 0;
 }
 
 
-/****************
- * Ditto for secret keys.  Handling is simpler than for public keys.
- * We allow secret key importing only when allow is true, this is so
- * that a secret key can not be imported accidentally and thereby tampering
- * with the trust calculation.
+/* Helper for import_secret_one.  */
+static gpg_error_t
+do_transfer (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
+             struct import_stats_s *stats, int batch, int only_marked)
+
+{
+  gpg_error_t err;
+  struct import_stats_s subkey_stats = {0};
+
+  err = transfer_secret_keys (ctrl, &subkey_stats, keyblock,
+                              batch, 0, only_marked);
+  if (gpg_err_code (err) == GPG_ERR_NOT_PROCESSED)
+    {
+      /* TRANSLATORS: For a smartcard, each private key on host has a
+       * reference (stub) to a smartcard and actual private key data
+       * is stored on the card.  A single smartcard can have up to
+       * three private key data.  Importing private key stub is always
+       * skipped in 2.1, and it returns GPG_ERR_NOT_PROCESSED.
+       * Instead, user should be suggested to run 'gpg --card-status',
+       * then, references to a card will be automatically created
+       * again.  */
+      log_info (_("To migrate '%s', with each smartcard, "
+                  "run: %s\n"), "secring.gpg", "gpg --card-status");
+      err = 0;
+    }
+
+  if (!err)
+    {
+      int status = 16;
+
+      if (!opt.quiet)
+        log_info (_("key %s: secret key imported\n"), keystr_from_pk (pk));
+      if (subkey_stats.secret_imported)
+        {
+          status |= 1;
+          stats->secret_imported += 1;
+        }
+      if (subkey_stats.secret_dups)
+        stats->secret_dups += 1;
+
+      if (is_status_enabled ())
+        print_import_ok (pk, status);
+    }
+
+  return err;
+}
+
+
+/* If the secret keys (main or subkey) in SECKEYS have a corresponding
+ * public key in the public key described by (FPR,FPRLEN) import these
+ * parts.
+ */
+static gpg_error_t
+import_matching_seckeys (ctrl_t ctrl, kbnode_t seckeys,
+                         const byte *mainfpr, size_t mainfprlen,
+                         struct import_stats_s *stats, int batch)
+{
+  gpg_error_t err;
+  kbnode_t pub_keyblock = NULL;
+  kbnode_t node;
+  struct { byte fpr[MAX_FINGERPRINT_LEN]; size_t fprlen; } *fprlist = NULL;
+  size_t n, nfprlist;
+  byte fpr[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
+  PKT_public_key *pk;
+
+  /* Get the entire public key block from our keystore and put all its
+   * fingerprints into an array.  */
+  err = get_pubkey_byfprint (ctrl, NULL, &pub_keyblock, mainfpr, mainfprlen);
+  if (err)
+    goto leave;
+  log_assert (pub_keyblock && pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  pk = pub_keyblock->pkt->pkt.public_key;
+
+  for (nfprlist = 0, node = pub_keyblock; node; node = node->next)
+    if (node->pkt->pkttype == PKT_PUBLIC_KEY
+        || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+      nfprlist++;
+  log_assert (nfprlist);
+  fprlist = xtrycalloc (nfprlist, sizeof *fprlist);
+  if (!fprlist)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  for (n = 0, node = pub_keyblock; node; node = node->next)
+    if (node->pkt->pkttype == PKT_PUBLIC_KEY
+        || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+      {
+        fingerprint_from_pk (node->pkt->pkt.public_key,
+                             fprlist[n].fpr, &fprlist[n].fprlen);
+        n++;
+      }
+  log_assert (n == nfprlist);
+
+  /* for (n=0; n < nfprlist; n++) */
+  /*   log_printhex (fprlist[n].fpr, fprlist[n].fprlen, "pubkey %zu:", n); */
+
+  /* Mark all secret keys which have a matching public key part in
+   * PUB_KEYBLOCK.  */
+  for (node = seckeys; node; node = node->next)
+    {
+      if (node->pkt->pkttype != PKT_SECRET_KEY
+          && node->pkt->pkttype != PKT_SECRET_SUBKEY)
+        continue; /* Should not happen.  */
+      fingerprint_from_pk (node->pkt->pkt.public_key, fpr, &fprlen);
+      node->flag &= ~NODE_TRANSFER_SECKEY;
+      for (n=0; n < nfprlist; n++)
+        if (fprlist[n].fprlen == fprlen && !memcmp (fprlist[n].fpr,fpr,fprlen))
+          {
+            node->flag |= NODE_TRANSFER_SECKEY;
+            /* log_debug ("found matching seckey\n"); */
+            break;
+          }
+    }
+
+  /* Transfer all marked keys.  */
+  err = do_transfer (ctrl, seckeys, pk, stats, batch, 1);
+
+ leave:
+  xfree (fprlist);
+  release_kbnode (pub_keyblock);
+  return err;
+}
+
+
+/* Import function for a single secret keyblock.  Handling is simpler
+ * than for public keys.  We allow secret key importing only when
+ * allow is true, this is so that a secret key can not be imported
+ * accidentally and thereby tampering with the trust calculation.
+ *
+ * Ownership of KEYBLOCK is transferred to this function!
+ *
+ * If R_SECATTIC is not null the last special sec_keyblock is stored
+ * there.
  */
 static gpg_error_t
 import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                    struct import_stats_s *stats, int batch,
                    unsigned int options, int for_migration,
-                   import_screener_t screener, void *screener_arg)
+                   import_screener_t screener, void *screener_arg,
+                   kbnode_t *r_secattic)
 {
   PKT_public_key *pk;
   struct seckey_info *ski;
@@ -2590,6 +2805,9 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
   gpg_error_t err = 0;
   int nr_prev;
   kbnode_t pub_keyblock;
+  kbnode_t attic = NULL;
+  byte fpr[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
   char pkstrbuf[PUBKEY_STRING_SIZE];
 
   /* Get the key and print some info about it */
@@ -2599,6 +2817,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 
   pk = node->pkt->pkt.public_key;
 
+  fingerprint_from_pk (pk, fpr, &fprlen);
   keyid_from_pk (pk, keyid);
   uidnode = find_next_kbnode (keyblock, PKT_USER_ID);
 
@@ -2606,6 +2825,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
     {
       log_error (_("secret key %s: %s\n"), keystr_from_pk (pk),
                  _("rejected by import screener"));
+      release_kbnode (keyblock);
       return 0;
   }
 
@@ -2625,6 +2845,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
     {
       if (!for_migration)
         log_error (_("importing secret keys not allowed\n"));
+      release_kbnode (keyblock);
       return 0;
     }
 
@@ -2632,6 +2853,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
     {
       if (!for_migration)
         log_error( _("key %s: no user ID\n"), keystr_from_pk (pk));
+      release_kbnode (keyblock);
       return 0;
     }
 
@@ -2640,6 +2862,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
     {
       /* Actually an internal error.  */
       log_error ("key %s: secret key info missing\n", keystr_from_pk (pk));
+      release_kbnode (keyblock);
       return 0;
     }
 
@@ -2650,6 +2873,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
       if (!for_migration)
         log_error (_("key %s: secret key with invalid cipher %d"
                      " - skipped\n"), keystr_from_pk (pk), ski->algo);
+      release_kbnode (keyblock);
       return 0;
     }
 
@@ -2660,6 +2884,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
          to put a secret key into the keyring and the user might later
          be tricked into signing stuff with that key.  */
       log_error (_("importing secret keys not allowed\n"));
+      release_kbnode (keyblock);
       return 0;
     }
 #endif
@@ -2691,15 +2916,42 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
        * the public keyblock.  Otherwise we would import just the
        * secret key without having the public key.  That would be
        * surprising and clutters out private-keys-v1.d.  */
-      err = resync_sec_with_pub_keyblock (&keyblock, pub_keyblock);
+      err = resync_sec_with_pub_keyblock (&keyblock, pub_keyblock, &attic);
       if (err)
         goto leave;
 
       if (!valid)
         {
-          err = gpg_error (GPG_ERR_NO_SECKEY);
+          /* If the block was not valid the primary key is left in the
+           * original keyblock because we require that for the first
+           * node.   Move it to ATTIC.  */
+          if (keyblock && keyblock->pkt->pkttype == PKT_SECRET_KEY)
+            {
+              node = keyblock;
+              keyblock = node->next;
+              node->next = NULL;
+              if (attic)
+                {
+                  node->next = attic;
+                  attic = node;
+                }
+              else
+                attic = node;
+            }
+
+          /* Try to import the secret key iff we have a public key.  */
+          if (attic && !(opt.dry_run || (options & IMPORT_DRY_RUN)))
+            err = import_matching_seckeys (ctrl, attic, fpr, fprlen,
+                                           stats, batch);
+          else
+            err = gpg_error (GPG_ERR_NO_SECKEY);
           goto leave;
         }
+
+      /* log_debug ("attic is:\n"); */
+      /* dump_kbnode (attic); */
+
+      /* Proceed with the valid parts of PUBKEYBLOCK. */
 
       /* At least we cancel the secret key import when the public key
 	 import was skipped due to MERGE_ONLY option and a new
@@ -2709,62 +2961,37 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 	{
           /* Read the keyblock again to get the effects of a merge for
            * the public key.  */
-          /* Fixme: we should do this based on the fingerprint or
-             even better let import_one return the merged
-             keyblock.  */
-          node = get_pubkeyblock (ctrl, keyid);
-          if (!node)
-            log_error ("key %s: failed to re-lookup public key\n",
-                       keystr_from_pk (pk));
+          err = get_pubkey_byfprint (ctrl, NULL, &node, fpr, fprlen);
+          if (err || !node)
+            log_error ("key %s: failed to re-lookup public key: %s\n",
+                       keystr_from_pk (pk), gpg_strerror (err));
           else
             {
-              /* transfer_secret_keys collects subkey stats.  */
-              struct import_stats_s subkey_stats = {0};
-
-              err = transfer_secret_keys (ctrl, &subkey_stats, keyblock,
-                                          batch, 0);
-              if (gpg_err_code (err) == GPG_ERR_NOT_PROCESSED)
-                {
-                  /* TRANSLATORS: For smartcard, each private key on
-                     host has a reference (stub) to a smartcard and
-                     actual private key data is stored on the card.  A
-                     single smartcard can have up to three private key
-                     data.  Importing private key stub is always
-                     skipped in 2.1, and it returns
-                     GPG_ERR_NOT_PROCESSED.  Instead, user should be
-                     suggested to run 'gpg --card-status', then,
-                     references to a card will be automatically
-                     created again.  */
-                  log_info (_("To migrate '%s', with each smartcard, "
-                              "run: %s\n"), "secring.gpg", "gpg --card-status");
-                  err = 0;
-                }
+              err = do_transfer (ctrl, keyblock, pk, stats, batch, 0);
               if (!err)
-                {
-		  int status = 16;
-                  if (!opt.quiet)
-                    log_info (_("key %s: secret key imported\n"),
-                              keystr_from_pk (pk));
-		  if (subkey_stats.secret_imported)
-                    {
-                      status |= 1;
-                      stats->secret_imported += 1;
-                    }
-		  if (subkey_stats.secret_dups)
-                    stats->secret_dups += 1;
-
-                  if (is_status_enabled ())
-                    print_import_ok (pk, status);
-
-                  check_prefs (ctrl, node);
-                }
+                check_prefs (ctrl, node);
               release_kbnode (node);
+
+              if (!err && attic)
+                {
+                  /* Try to import invalid subkeys.  This can be the
+                   * case if the primary secret key was imported due
+                   * to --allow-non-selfsigned-uid.  */
+                  err = import_matching_seckeys (ctrl, attic, fpr, fprlen,
+                                                 stats, batch);
+                }
+
             }
         }
     }
 
  leave:
+  release_kbnode (keyblock);
   release_kbnode (pub_keyblock);
+  if (r_secattic)
+    *r_secattic = attic;
+  else
+    release_kbnode (attic);
   return err;
 }
 
