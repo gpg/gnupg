@@ -2704,6 +2704,18 @@ msgstr "密钥 %s：私钥已存在\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "密钥 %s：发送至代理人程序时出现错误：%s\n"
 
+#. TRANSLATORS: For a smartcard, each private key on host has a
+#. * reference (stub) to a smartcard and actual private key data
+#. * is stored on the card.  A single smartcard can have up to
+#. * three private key data.  Importing private key stub is always
+#. * skipped in 2.1, and it returns GPG_ERR_NOT_PROCESSED.
+#. * Instead, user should be suggested to run 'gpg --card-status',
+#. * then, references to a card will be automatically created
+#. * again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr "要迁移 ‘%s’，对每一张智能卡，执行：%s\n"
+
 #, c-format
 msgid "secret key %s: %s\n"
 msgstr "私钥 %s：%s\n"
@@ -2715,20 +2727,6 @@ msgstr "私钥导入被禁止\n"
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "密钥 %s：私钥使用了无效的密文算法 %d - 已跳过\n"
-
-#. TRANSLATORS: For smartcard, each private key on
-#. host has a reference (stub) to a smartcard and
-#. actual private key data is stored on the card.  A
-#. single smartcard can have up to three private key
-#. data.  Importing private key stub is always
-#. skipped in 2.1, and it returns
-#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
-#. suggested to run 'gpg --card-status', then,
-#. references to a card will be automatically
-#. created again.
-#, c-format
-msgid "To migrate '%s', with each smartcard, run: %s\n"
-msgstr "要迁移 ‘%s’，对每一张智能卡，执行：%s\n"
 
 msgid "No reason specified"
 msgstr "未指定原因"

@@ -2811,6 +2811,20 @@ msgstr "ключ %s: закритий ключ вже існує\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "ключ %s: помилка під час спроби надсилання агенту: %s\n"
 
+#. TRANSLATORS: For a smartcard, each private key on host has a
+#. * reference (stub) to a smartcard and actual private key data
+#. * is stored on the card.  A single smartcard can have up to
+#. * three private key data.  Importing private key stub is always
+#. * skipped in 2.1, and it returns GPG_ERR_NOT_PROCESSED.
+#. * Instead, user should be suggested to run 'gpg --card-status',
+#. * then, references to a card will be automatically created
+#. * again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+"Для перенесення «%s» на кожній із карток пам’яті слід виконати таку команду: "
+"%s\n"
+
 #, c-format
 msgid "secret key %s: %s\n"
 msgstr "закритий ключ %s: %s\n"
@@ -2822,22 +2836,6 @@ msgstr "імпортування закритих ключів забороне�
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "ключ %s: закритий ключ з некоректним шифром %d — пропущено\n"
-
-#. TRANSLATORS: For smartcard, each private key on
-#. host has a reference (stub) to a smartcard and
-#. actual private key data is stored on the card.  A
-#. single smartcard can have up to three private key
-#. data.  Importing private key stub is always
-#. skipped in 2.1, and it returns
-#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
-#. suggested to run 'gpg --card-status', then,
-#. references to a card will be automatically
-#. created again.
-#, c-format
-msgid "To migrate '%s', with each smartcard, run: %s\n"
-msgstr ""
-"Для перенесення «%s» на кожній із карток пам’яті слід виконати таку команду: "
-"%s\n"
 
 msgid "No reason specified"
 msgstr "Причину не вказано"

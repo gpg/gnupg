@@ -200,8 +200,12 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Kod resetujący"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Push ACK button on card/token."
+msgstr ""
+
+#, fuzzy
+#| msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Use the reader's pinpad for input."
 msgstr "%s%%0A%%0ADo wpisywania należy użyć klawiatury czytnika."
 
 msgid "Repeat this Reset Code"
@@ -2739,6 +2743,19 @@ msgstr "klucz %s: klucz prywatny już istnieje\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "klucz %s: błąd wysyłania do agenta: %s\n"
 
+#. TRANSLATORS: For a smartcard, each private key on host has a
+#. * reference (stub) to a smartcard and actual private key data
+#. * is stored on the card.  A single smartcard can have up to
+#. * three private key data.  Importing private key stub is always
+#. * skipped in 2.1, and it returns GPG_ERR_NOT_PROCESSED.
+#. * Instead, user should be suggested to run 'gpg --card-status',
+#. * then, references to a card will be automatically created
+#. * again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+"Aby zmigrować ,,%s'', dla każdej karty procesorowej należy uruchomić: %s\n"
+
 #, c-format
 msgid "secret key %s: %s\n"
 msgstr "klucz prywatny %s: %s\n"
@@ -2750,21 +2767,6 @@ msgstr "wczytywanie kluczy tajnych nie jest dozwolone\n"
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "klucz %s: klucz tajny z błędnym szyfrem %d - pominięty\n"
-
-#. TRANSLATORS: For smartcard, each private key on
-#. host has a reference (stub) to a smartcard and
-#. actual private key data is stored on the card.  A
-#. single smartcard can have up to three private key
-#. data.  Importing private key stub is always
-#. skipped in 2.1, and it returns
-#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
-#. suggested to run 'gpg --card-status', then,
-#. references to a card will be automatically
-#. created again.
-#, c-format
-msgid "To migrate '%s', with each smartcard, run: %s\n"
-msgstr ""
-"Aby zmigrować ,,%s'', dla każdej karty procesorowej należy uruchomić: %s\n"
 
 msgid "No reason specified"
 msgstr "nie podano przyczyny"
