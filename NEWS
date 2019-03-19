@@ -1,5 +1,40 @@
-Noteworthy changes in version 2.2.14 (unreleased)
+Noteworthy changes in version 2.2.14 (2019-03-19)
 -------------------------------------------------
+
+  * gpg: Allow import of PGP desktop exported secret keys.  Also avoid
+   importing secret keys if the secret keyblock is not valid.  [#4392]
+
+  * gpg: Do not error out on version 5 keys in the local keyring.
+
+  * gpg: Make invalid primary key algo obvious in key listings.
+
+  * sm: Do not mark a certificate in a key listing as de-vs compliant
+    if its use for a signature will not be possible.
+
+  * sm: Fix certificate creation with key on card.
+
+  * sm: Create rsa3072 bit certificates by default.
+
+  * sm: Print Yubikey attestation extensions with --dump-cert.
+
+  * agent: Fix cancellation handling for scdaemon.
+
+  * agent: Support --mode=ssh option for CLEAR_PASSPHRASE.  [#4340]
+
+  * scd: Fix flushing of the CA-FPR DOs in app-openpgp.
+
+  * scd: Avoid a conflict error with the "undefined" app.
+
+  * dirmngr: Add CSRF protection exception for protonmail.
+
+  * dirmngr: Fix build problems with gcc 9 in libdns.
+
+  * gpgconf: New option --show-socket for use wity --launch.
+
+  * gpgtar: Make option -C work for archive creation.
+
+  Release-info: https://dev.gnupg.org/T4412
+  See-also: gnupg-announce/2019q1/000435.html
 
 
 Noteworthy changes in version 2.2.13 (2019-02-12)
