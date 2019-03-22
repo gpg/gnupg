@@ -19,6 +19,7 @@
 
 /* Some notes:
  * - Specs for PIV are at http://dx.doi.org/10.6028/NIST.SP.800-73-4
+ * - https://developers.yubico.com/PIV/Introduction/PIV_attestation.html
  *
  * - Access control matrix:
  *   | Action       | 9B  | PIN | PUK |                              |
