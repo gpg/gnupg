@@ -98,11 +98,12 @@ gpg_error_t wks_parse_policy (policy_flags_t flags, estream_t stream,
                               int ignore_unknown);
 void wks_free_policy (policy_flags_t policy);
 
-gpg_error_t wks_fname_from_userid (const char *userid,
+gpg_error_t wks_fname_from_userid (const char *userid, int hash_only,
                                    char **r_fname, char **r_addrspec);
 gpg_error_t wks_compute_hu_fname (char **r_fname, const char *addrspec);
 gpg_error_t wks_cmd_install_key (const char *fname, const char *userid);
 gpg_error_t wks_cmd_remove_key (const char *userid);
+gpg_error_t wks_cmd_print_wkd_hash (const char *userid);
 
 
 /*-- wks-receive.c --*/

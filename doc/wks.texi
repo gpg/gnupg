@@ -101,6 +101,10 @@ fingerprint and the mailbox separated by a space.  The command
 @option{--remove-key} removes a key from that directory, its only
 argument is a user-id.
 
+The command @option{--print-wkd-hash} prints a WKD user id identifier
+and the corresponding mailbox from the user-ids given on the command
+line or via stdin (one user-id per line).
+
 @command{gpg-wks-client} is not commonly invoked directly and thus it
 is not installed in the bin directory.  Here is an example how it can
 be invoked manually to check for a Web Key Directory entry for
