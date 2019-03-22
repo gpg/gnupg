@@ -2334,7 +2334,8 @@ opposite meaning. The options are:
   can be used to update only the subkeys or other non-user id related
   information.
 
-  @item repair-keys.  After import, fix various problems with the
+  @item repair-keys
+  After import, fix various problems with the
   keys.  For example, this reorders signatures, and strips duplicate
   signatures.  Defaults to yes.
 
