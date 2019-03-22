@@ -2320,7 +2320,8 @@ opposite meaning. The options are:
   on the keyring. This option is the same as running the @option{--edit-key}
   command "clean" after import. Defaults to no.
 
-  @item repair-keys.  After import, fix various problems with the
+  @item repair-keys
+  After import, fix various problems with the
   keys.  For example, this reorders signatures, and strips duplicate
   signatures.  Defaults to yes.
 
