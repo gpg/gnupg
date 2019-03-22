@@ -33,6 +33,31 @@
 
 static npth_mutex_t app_list_lock;
 static app_t app_top;
+
+
+/* The list of application names and there select function.  Of no
+ * specfic application is selected the first available application on
+ * a card is selected.  */
+struct app_priority_list_s
+{
+  char const *name;
+  gpg_error_t (*select_func)(app_t);
+};
+
+static struct app_priority_list_s app_priority_list[] =
+  {{ "openpgp",   app_select_openpgp   },
+   { "piv",       app_select_piv       },
+   { "nks",       app_select_nks       },
+   { "p15",       app_select_p15       },
+   { "geldkarte", app_select_geldkarte },
+   { "dinsig",    app_select_dinsig    },
+   { "sc-hsm",    app_select_sc_hsm    },
+   { NULL,        NULL                 }
+  };
+
+
+
+
 
 static void
 print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
@@ -179,6 +204,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
   unsigned char *result = NULL;
   size_t resultlen;
   int want_undefined;
+  int i;
 
   /* Need to allocate a new one.  */
   app = xtrycalloc (1, sizeof *app);
@@ -330,26 +356,18 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
         goto leave;
 
       /* Set a default error so that we run through the application
-       * selecion chain.  */
+       * selection chain.  */
       err = gpg_error (GPG_ERR_NOT_FOUND);
     }
 
-  if (err && is_app_allowed ("openpgp")
-          && (!name || !strcmp (name, "openpgp")))
-    err = app_select_openpgp (app);
-  if (err && is_app_allowed ("piv") && (!name || !strcmp (name, "piv")))
-    err = app_select_piv (app);
-  if (err && is_app_allowed ("nks") && (!name || !strcmp (name, "nks")))
-    err = app_select_nks (app);
-  if (err && is_app_allowed ("p15") && (!name || !strcmp (name, "p15")))
-    err = app_select_p15 (app);
-  if (err && is_app_allowed ("geldkarte")
-      && (!name || !strcmp (name, "geldkarte")))
-    err = app_select_geldkarte (app);
-  if (err && is_app_allowed ("dinsig") && (!name || !strcmp (name, "dinsig")))
-    err = app_select_dinsig (app);
-  if (err && is_app_allowed ("sc-hsm") && (!name || !strcmp (name, "sc-hsm")))
-    err = app_select_sc_hsm (app);
+  /* Find the first available app if NAME is NULL or the one matching
+   * NAME but only if that application is also enabled.  */
+  for (i=0; err && app_priority_list[i].name; i++)
+    {
+      if (is_app_allowed (app_priority_list[i].name)
+          && (!name || !strcmp (name, app_priority_list[i].name)))
+        err = app_priority_list[i].select_func (app);
+    }
   if (err && name && gpg_err_code (err) != GPG_ERR_OBJ_TERM_STATE)
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 
