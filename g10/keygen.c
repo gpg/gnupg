@@ -2507,14 +2507,25 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
       else
         {
           /* If the user selected a signing algorithm and Curve25519
-             we need to set the algo to EdDSA and update the curve name. */
-          if ((*algo == PUBKEY_ALGO_ECDSA || *algo == PUBKEY_ALGO_EDDSA)
-              && curves[idx].eddsa_curve)
+             we need to set the algo to EdDSA and update the curve name.
+             If switching away from EdDSA, we need to set the algo back
+             to ECDSA. */
+          if (*algo == PUBKEY_ALGO_ECDSA || *algo == PUBKEY_ALGO_EDDSA)
             {
-              if (subkey_algo && *subkey_algo == PUBKEY_ALGO_ECDSA)
-                *subkey_algo = PUBKEY_ALGO_EDDSA;
-              *algo = PUBKEY_ALGO_EDDSA;
-              result = curves[idx].eddsa_curve;
+              if (curves[idx].eddsa_curve)
+                {
+                  if (subkey_algo && *subkey_algo == PUBKEY_ALGO_ECDSA)
+                    *subkey_algo = PUBKEY_ALGO_EDDSA;
+                  *algo = PUBKEY_ALGO_EDDSA;
+                  result = curves[idx].eddsa_curve;
+                }
+              else
+                {
+                  if (subkey_algo && *subkey_algo == PUBKEY_ALGO_EDDSA)
+                    *subkey_algo = PUBKEY_ALGO_ECDSA;
+                  *algo = PUBKEY_ALGO_ECDSA;
+                  result = curves[idx].name;
+                }
             }
           else
             result = curves[idx].name;
