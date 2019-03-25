@@ -62,6 +62,7 @@ enum cmd_and_opt_values
     aInstallKey,
     aRemoveKey,
     aPrintWKDHash,
+    aPrintWKDURL,
 
     oGpgProgram,
     oSend,
@@ -93,6 +94,8 @@ static ARGPARSE_OPTS opts[] = {
               "remove a key from a directory"),
   ARGPARSE_c (aPrintWKDHash, "print-wkd-hash",
               "Print the WKD identifier for the given user ids"),
+  ARGPARSE_c (aPrintWKDURL, "print-wkd-url",
+              "Print the WKD URL for the given user id"),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -236,6 +239,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case aInstallKey:
         case aRemoveKey:
         case aPrintWKDHash:
+        case aPrintWKDURL:
           cmd = pargs->r_opt;
           break;
 
@@ -384,13 +388,24 @@ main (int argc, char **argv)
       break;
 
     case aPrintWKDHash:
+    case aPrintWKDURL:
       if (!argc)
-        err = proc_userid_from_stdin (wks_cmd_print_wkd_hash, "printing hash");
+        {
+          if (cmd == aPrintWKDHash)
+            err = proc_userid_from_stdin (wks_cmd_print_wkd_hash,
+                                          "printing WKD hash");
+          else
+            err = proc_userid_from_stdin (wks_cmd_print_wkd_url,
+                                          "printing WKD URL");
+        }
       else
         {
           for (err = delayed_err = 0; !err && argc; argc--, argv++)
             {
-              err = wks_cmd_print_wkd_hash (*argv);
+              if (cmd == aPrintWKDHash)
+                err = wks_cmd_print_wkd_hash (*argv);
+              else
+                err = wks_cmd_print_wkd_url (*argv);
               if (gpg_err_code (err) == GPG_ERR_INV_USER_ID)
                 {
                   /* Diagnostic already printed.  */

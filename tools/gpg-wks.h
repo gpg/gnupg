@@ -104,6 +104,7 @@ gpg_error_t wks_compute_hu_fname (char **r_fname, const char *addrspec);
 gpg_error_t wks_cmd_install_key (const char *fname, const char *userid);
 gpg_error_t wks_cmd_remove_key (const char *userid);
 gpg_error_t wks_cmd_print_wkd_hash (const char *userid);
+gpg_error_t wks_cmd_print_wkd_url (const char *userid);
 
 
 /*-- wks-receive.c --*/
