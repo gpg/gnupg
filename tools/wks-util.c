@@ -1104,7 +1104,7 @@ wks_cmd_remove_key (const char *userid)
 }
 
 
-/* Print the WKD hash for the user ids to stdout.  */
+/* Print the WKD hash for the user id to stdout.  */
 gpg_error_t
 wks_cmd_print_wkd_hash (const char *userid)
 {
@@ -1116,6 +1116,31 @@ wks_cmd_print_wkd_hash (const char *userid)
     return err;
 
   es_printf ("%s %s\n", fname, addrspec);
+
+  xfree (fname);
+  xfree (addrspec);
+  return err;
+}
+
+
+/* Print the WKD URL for the user id to stdout.  */
+gpg_error_t
+wks_cmd_print_wkd_url (const char *userid)
+{
+  gpg_error_t err;
+  char *addrspec, *fname;
+  char *domain;
+
+  err = wks_fname_from_userid (userid, 1, &fname, &addrspec);
+  if (err)
+    return err;
+
+  domain = strchr (addrspec, '@');
+  if (domain)
+    *domain++ = 0;
+
+  es_printf ("https://openpgpkey.%s/.well-known/openpgpkey/%s/hu/%s?l=%s\n",
+             domain, domain, fname, addrspec);
 
   xfree (fname);
   xfree (addrspec);
