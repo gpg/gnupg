@@ -3289,7 +3289,8 @@ secret keyrings.
 
 @item --no-keyring
 @opindex no-keyring
-Do not add use any keyrings even if specified as options.
+Do not use any keyring at all.  This overrides the default and all
+options which specify keyrings.
 
 @item --skip-verify
 @opindex skip-verify
