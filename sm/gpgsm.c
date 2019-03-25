@@ -1281,8 +1281,12 @@ main ( int argc, char **argv)
         case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
         case oDebugIgnoreExpiration: opt.ignore_expiration = 1; break;
 
-        case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
-        case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;
+        case oStatusFD:
+            ctrl.status_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 1);
+            break;
+        case oLoggerFD:
+            log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+            break;
         case oWithMD5Fingerprint:
           opt.with_md5_fingerprint=1; /*fall through*/
         case oWithFingerprint:
