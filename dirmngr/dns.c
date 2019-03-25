@@ -2217,8 +2217,8 @@ static void dns_p_dump3(struct dns_packet *P, struct dns_rr_i *I, FILE *fp) {
 
 
 void dns_p_dump(struct dns_packet *P, FILE *fp) {
-	struct dns_rr_i _I = { 0 };
-	dns_p_dump3(P, &_I, fp);
+	struct dns_rr_i I_instance = { 0 };
+	dns_p_dump3(P, &I_instance, fp);
 } /* dns_p_dump() */
 
 
@@ -5275,8 +5275,8 @@ error:
 
 
 struct dns_packet *dns_hosts_query(struct dns_hosts *hosts, struct dns_packet *Q, int *error_) {
-	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _P = { 0 };
-	struct dns_packet *P	= dns_p_init(&_P.p, 512);
+	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } P_instance = { 0 };
+	struct dns_packet *P	= dns_p_init(&P_instance.p, 512);
 	struct dns_packet *A	= 0;
 	struct dns_rr rr;
 	struct dns_hosts_entry *ent;
@@ -6837,7 +6837,7 @@ unsigned dns_hints_grep(struct sockaddr **sa, socklen_t *sa_len, unsigned lim, s
 
 
 struct dns_packet *dns_hints_query(struct dns_hints *hints, struct dns_packet *Q, int *error_) {
-	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _P = { 0 };
+	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } P_instance = { 0 };
 	struct dns_packet *A, *P;
 	struct dns_rr rr;
 	char zone[DNS_D_MAXNAME + 1];
@@ -6846,11 +6846,11 @@ struct dns_packet *dns_hints_query(struct dns_hints *hints, struct dns_packet *Q
 	struct sockaddr *sa;
 	socklen_t slen;
 	int error;
-	struct dns_rr_i _I = { 0 };
+	struct dns_rr_i I_instance = { 0 };
 
-	_I.section = DNS_S_QUESTION;
+	I_instance.section = DNS_S_QUESTION;
 
-	if (!dns_rr_grep(&rr, 1, &_I, Q, &error))
+	if (!dns_rr_grep(&rr, 1, &I_instance, Q, &error))
 		goto error;
 
 	if (!(zlen = dns_d_expand(zone, sizeof zone, rr.dn.p, Q, &error)))
@@ -6858,7 +6858,7 @@ struct dns_packet *dns_hints_query(struct dns_hints *hints, struct dns_packet *Q
 	else if (zlen >= sizeof zone)
 		goto toolong;
 
-	P			= dns_p_init(&_P.p, 512);
+	P			= dns_p_init(&P_instance.p, 512);
 	dns_header(P)->qr	= 1;
 
 	if ((error = dns_rr_copy(P, &rr, Q)))
@@ -8463,8 +8463,8 @@ error:
 
 
 static struct dns_packet *dns_res_glue(struct dns_resolver *R, struct dns_packet *Q) {
-	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _P = { 0 };
-	struct dns_packet *P	= dns_p_init(&_P.p, 512);
+	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } P_instance = { 0 };
+	struct dns_packet *P	= dns_p_init(&P_instance.p, 512);
 	char qname[DNS_D_MAXNAME + 1];
 	size_t qlen;
 	enum dns_type qtype;
@@ -8537,20 +8537,20 @@ static int dns_res_nameserv_cmp(struct dns_rr *a, struct dns_rr *b, struct dns_r
 	int cmp, error;
 
 	if (!(error = dns_ns_parse(&ns, a, P))) {
-		struct dns_rr_i _I = { 0 };
+		struct dns_rr_i I_instance = { 0 };
 
-		_I.section = (DNS_S_ALL & ~DNS_S_QD);
-		_I.name = ns.host;
-		_I.type = DNS_T_A;
-		glued[0] = !!dns_rr_grep(&x, 1, &_I, P, &error);
+		I_instance.section = (DNS_S_ALL & ~DNS_S_QD);
+		I_instance.name = ns.host;
+		I_instance.type = DNS_T_A;
+		glued[0] = !!dns_rr_grep(&x, 1, &I_instance, P, &error);
 	}
 	if (!(error = dns_ns_parse(&ns, b, P))) {
-		struct dns_rr_i _I = { 0 };
+		struct dns_rr_i I_instance = { 0 };
 
-		_I.section = (DNS_S_ALL & ~DNS_S_QD);
-		_I.name = ns.host;
-		_I.type = DNS_T_A;
-		glued[1] = !!dns_rr_grep(&y, 1, &_I, P, &error);
+		I_instance.section = (DNS_S_ALL & ~DNS_S_QD);
+		I_instance.name = ns.host;
+		I_instance.type = DNS_T_A;
+		glued[1] = !!dns_rr_grep(&y, 1, &I_instance, P, &error);
 	}
 	if ((cmp = glued[1] - glued[0])) {
 		return cmp;
@@ -9916,13 +9916,13 @@ exec:
 		return dns_ai_setent(ent, &any, rr.type, ai);
 	case DNS_AI_S_SUBMIT_G:
 	{
-		struct dns_rr_i _I = { 0 };
+		struct dns_rr_i I_instance = { 0 };
 
-		_I.section = DNS_S_QD;
-		_I.name = ai->g.name;
-		_I.type = ai->g.type;
+		I_instance.section = DNS_S_QD;
+		I_instance.name = ai->g.name;
+		I_instance.type = ai->g.type;
 		/* skip if already queried */
-		if (dns_rr_grep(&rr, 1, &_I, ai->glue, &error))
+		if (dns_rr_grep(&rr, 1, &I_instance, ai->glue, &error))
 			dns_ai_goto(DNS_AI_S_FOREACH_I);
 		/* skip if we recursed (CNAME chains should have been handled in the resolver) */
 		if (++ai->g_depth > 1)
@@ -10598,7 +10598,7 @@ static struct dns_trace *trace(const char *mode) {
 
 
 static void print_packet(struct dns_packet *P, FILE *fp) {
-	struct dns_rr_i _I = { 0 };
+	struct dns_rr_i I_instance = { 0 };
 	I.sort = MAIN.sort;
 	dns_p_dump3(P, &I, fp);
 
@@ -10608,10 +10608,10 @@ static void print_packet(struct dns_packet *P, FILE *fp) {
 
 
 static int parse_packet(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
-	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _P = { 0 };
-	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _Q = { 0 };
-	struct dns_packet *P	= dns_p_init(&_P.p, 512);
-	struct dns_packet *Q	= dns_p_init(&_Q.p, 512);
+	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } P_instance = { 0 };
+	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } Q_instance = { 0 };
+	struct dns_packet *P	= dns_p_init(&P_instance.p, 512);
+	struct dns_packet *Q	= dns_p_init(&Q_instance.p, 512);
 	enum dns_section section;
 	struct dns_rr rr;
 	int error;
@@ -10655,7 +10655,7 @@ static int parse_packet(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 	const char *dn = "ns8.yahoo.com";
 	char *_name = dns_d_init(_p, sizeof _p, dn, strlen (dn), DNS_D_ANCHOR);
 	struct dns_rr rrset[32];
-	struct dns_rr_i _I = { 0 };
+	struct dns_rr_i I_instance = { 0 };
 	struct dns_rr_i *rri	= &I;
 	unsigned rrcount	= dns_rr_grep(rrset, lengthof(rrset), rri, Q, &error);
 
@@ -10818,8 +10818,8 @@ static int show_hosts(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 
 
 static int query_hosts(int argc, char *argv[]) {
-	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _Q = { 0 };
-	struct dns_packet *Q	= dns_p_init(&_Q.p, 512);
+	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } Q_instance = { 0 };
+	struct dns_packet *Q	= dns_p_init(&Q_instance.p, 512);
 	struct dns_packet *A;
 	char qname[DNS_D_MAXNAME + 1];
 	size_t qlen;
@@ -10937,8 +10937,8 @@ static int dump_random(int argc, char *argv[]) {
 
 
 static int send_query(int argc, char *argv[]) {
-	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _Q = { 0 };
-	struct dns_packet *A, *Q	= dns_p_init(&_Q.p, 512);
+	union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } Q_instance = { 0 };
+	struct dns_packet *A, *Q	= dns_p_init(&Q_instance.p, 512);
 	char host[INET6_ADDRSTRLEN + 1];
 	struct sockaddr_storage ss;
 	struct dns_socket *so;
@@ -11033,10 +11033,10 @@ static int show_hints(int argc, char *argv[]) {
 	if (0 == strcmp(how, "plain")) {
 		dns_hints_dump(hints, stdout);
 	} else {
-		union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _P = { 0 };
+		union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } P_instance = { 0 };
 		struct dns_packet *query, *answer;
 
-		query	= dns_p_init(&_P.p, 512);
+		query	= dns_p_init(&P_instance.p, 512);
 
 		if ((error = dns_p_push(query, DNS_S_QUESTION, who, strlen(who), DNS_T_A, DNS_C_IN, 0, 0)))
 			panic("%s: %s", who, dns_strerror(error));
@@ -11199,8 +11199,8 @@ static int echo_port(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 		panic("127.0.0.1:5353: %s", dns_strerror(errno));
 
 	for (;;) {
-		union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } _P = { 0 };
-		struct dns_packet *pkt = dns_p_init(&_P.p, 512);
+		union { unsigned char b[dns_p_calcsize((512))]; struct dns_packet p; } P_instance = { 0 };
+		struct dns_packet *pkt = dns_p_init(&P_instance.p, 512);
 		struct sockaddr_storage ss;
 		socklen_t slen = sizeof ss;
 		ssize_t count;
