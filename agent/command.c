@@ -1075,7 +1075,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyinfo[] =
-  "KEYINFO [--[ssh-]list] [--data] [--ssh-fpr] [--with-ssh] <keygrip>\n"
+  "KEYINFO [--[ssh-]list] [--data] [--ssh-fpr[=algo]] [--with-ssh] <keygrip>\n"
   "\n"
   "Return information about the key specified by the KEYGRIP.  If the\n"
   "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
@@ -1111,7 +1111,9 @@ static const char hlp_keyinfo[] =
   "    '-' - Unknown protection.\n"
   "\n"
   "FPR returns the formatted ssh-style fingerprint of the key.  It is only\n"
-  "    printed if the option --ssh-fpr has been used.  It defaults to '-'.\n"
+  "    printed if the option --ssh-fpr has been used.  If ALGO is not given\n"
+  "    to that option the default ssh fingerprint algo is used.  Without the\n"
+  "    option a '-' is printed.\n"
   "\n"
   "TTL is the TTL in seconds for that key or '-' if n/a.\n"
   "\n"
@@ -1198,7 +1200,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 
       if (!agent_raw_key_from_file (ctrl, grip, &key))
         {
-          ssh_get_fingerprint_string (key, GCRY_MD_MD5, &fpr);
+          ssh_get_fingerprint_string (key, with_ssh_fpr, &fpr);
           gcry_sexp_release (key);
         }
     }
@@ -1279,7 +1281,21 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else
     list_mode = has_option (line, "--list");
   opt_data = has_option (line, "--data");
-  opt_ssh_fpr = has_option (line, "--ssh-fpr");
+
+  if (has_option_name (line, "--ssh-fpr"))
+    {
+      if (has_option (line, "--ssh-fpr=md5"))
+        opt_ssh_fpr = GCRY_MD_MD5;
+      else if (has_option (line, "--ssh-fpr=sha1"))
+        opt_ssh_fpr = GCRY_MD_SHA1;
+      else if (has_option (line, "--ssh-fpr=sha256"))
+        opt_ssh_fpr = GCRY_MD_SHA256;
+      else
+        opt_ssh_fpr = opt.ssh_fingerprint_digest;
+    }
+  else
+    opt_ssh_fpr = 0;
+
   opt_with_ssh = has_option (line, "--with-ssh");
   line = skip_options (line);
 
