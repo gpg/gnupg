@@ -1742,6 +1742,8 @@ main ( int argc, char **argv)
 
   if (!do_not_setup_keys)
     {
+      int errcount = log_get_errorcount (0);
+
       for (sl = locusr; sl ; sl = sl->next)
         {
           int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 1, &signerlist, 0);
@@ -1770,6 +1772,15 @@ main ( int argc, char **argv)
             if ((sl->flags & 1))
               do_add_recipient (&ctrl, sl->d, &recplist, 1, recp_required);
         }
+
+      /* We do not require a recipient for decryption but because
+       * recipients and signers are always checked and log_error is
+       * sometimes used (for failed signing keys or due to a failed
+       * CRL checking) that would have bumbed up the error counter.
+       * We clear the counter in the decryption case because there is
+       * no reason to force decryption to fail. */
+      if (cmd == aDecrypt && !errcount)
+        log_get_errorcount (1); /* clear counter */
     }
 
   if (log_get_errorcount(0))
