@@ -1,5 +1,23 @@
-Noteworthy changes in version 2.2.15 (unreleased)
+Noteworthy changes in version 2.2.15 (2019-03-26)
 -------------------------------------------------
+
+  * sm: Fix --logger-fd and --status-fd on Windows for non-standard
+    file descriptors.
+
+  * sm: Allow decryption even if expired keys are configured.  [#4431]
+
+  * agent: Change command KEYINFO to print ssh fingerprints with other
+    hash algos.
+
+  * dirmngr: Fix build problems on Solaris due to the use of reserved
+    symbol names.  [#4420]
+
+  * wkd: New commands --print-wkd-hash and --print-wkd-url for
+    gpg-wks-client.
+
+  Release-info: https://dev.gnupg.org/T4434
+  See-also: gnupg-announce/2019q1/000436.html
+
 
 Noteworthy changes in version 2.2.14 (2019-03-19)
 -------------------------------------------------
