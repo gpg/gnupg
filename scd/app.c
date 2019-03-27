@@ -247,9 +247,12 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
            * config.  */
           static char const yk_aid[] =
             { 0xA0, 0x00, 0x00, 0x05, 0x27, 0x47, 0x11, 0x17 }; /*MGR*/
+          static char const otp_aid[] =
+            { 0xA0, 0x00, 0x00, 0x05, 0x27, 0x20, 0x01 }; /*OTP*/
           unsigned char *buf;
           size_t buflen;
-          const unsigned char *s0, *s1;
+          const unsigned char *s0;
+          unsigned char formfactor;
           size_t n;
 
           if (!iso7816_select_application (slot, yk_aid, sizeof yk_aid,
@@ -269,29 +272,43 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
               if (buflen > 1)
                 {
                   s0 = find_tlv (buf+1, buflen-1, 0x04, &n);  /* Form factor */
-                  if (s0 && n == 1)
+                  formfactor = (s0 && n == 1)? *s0 : 0;
+
+                  s0 = find_tlv (buf+1, buflen-1, 0x02, &n);  /* Serial */
+                  if (s0 && n >= 4)
                     {
-                      s1 = find_tlv (buf+1, buflen-1, 0x02, &n);  /* Serial */
-                      if (s1 && n >= 4)
+                      app->serialno = xtrymalloc (3 + 1 + n);
+                      if (app->serialno)
                         {
-                          app->serialno = xtrymalloc (3 + 1 + n);
-                          if (app->serialno)
-                            {
-                              app->serialnolen = 3 + 1 + n;
-                              app->serialno[0] = 0xff;
-                              app->serialno[1] = 0x02;
-                              app->serialno[2] = 0x0;
-                              app->serialno[3] = *s0;
-                              memcpy (app->serialno + 4, s1, n);
-                              /* Note that we do not clear the error
-                               * so that no further serial number
-                               * testing is done.  After all we just
-                               * set the serial number.  */
-                            }
+                          app->serialnolen = 3 + 1 + n;
+                          app->serialno[0] = 0xff;
+                          app->serialno[1] = 0x02;
+                          app->serialno[2] = 0x0;
+                          app->serialno[3] = formfactor;
+                          memcpy (app->serialno + 4, s0, n);
+                          /* Note that we do not clear the error
+                           * so that no further serial number
+                           * testing is done.  After all we just
+                           * set the serial number.  */
                         }
-                      s1 = find_tlv (buf+1, buflen-1, 0x05, &n);  /* version */
-                      if (s1 && n == 3)
-                        app->cardversion = ((s1[0]<<16)|(s1[1]<<8)|s1[2]);
+                    }
+
+                  s0 = find_tlv (buf+1, buflen-1, 0x05, &n);  /* version */
+                  if (s0 && n == 3)
+                    app->cardversion = ((s0[0]<<16)|(s0[1]<<8)|s0[2]);
+                  else if (!s0)
+                    {
+                      /* No version - this is not a Yubikey 5.  We now
+                       * switch to the OTP app and take the first
+                       * three bytes of the reponse as version
+                       * number.  */
+                      xfree (buf);
+                      buf = NULL;
+                      if (!iso7816_select_application_ext (slot,
+                                                       otp_aid, sizeof otp_aid,
+                                                       1, &buf, &buflen)
+                          && buflen > 3)
+                        app->cardversion = ((buf[0]<<16)|(buf[1]<<8)|buf[2]);
                     }
                 }
               xfree (buf);
