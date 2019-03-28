@@ -59,6 +59,59 @@ static struct app_priority_list_s app_priority_list[] =
 
 
 
+/* Initialization function to change the default app_priority_list.
+ * LIST is a list of comma or space separated strings with application
+ * names.  Unknown names will only result in warning message.
+ * Application not mentioned in LIST are used in their original order
+ * after the given once.  */
+void
+app_update_priority_list (const char *arg)
+{
+  struct app_priority_list_s save;
+  char **names;
+  int i, j, idx;
+
+  names = strtokenize (arg, ", ");
+  if (!names)
+    log_fatal ("strtokenize failed: %s\n",
+               gpg_strerror (gpg_error_from_syserror ()));
+
+  idx = 0;
+  for (i=0; names[i]; i++)
+    {
+      ascii_strlwr (names[i]);
+      for (j=0; j < i; j++)
+        if (!strcmp (names[j], names[i]))
+          break;
+      if (j < i)
+        {
+          log_info ("warning: duplicate application '%s' in priority list\n",
+                    names[i]);
+          continue;
+        }
+
+      for (j=idx; app_priority_list[j].name; j++)
+        if (!strcmp (names[i], app_priority_list[j].name))
+          break;
+      if (!app_priority_list[j].name)
+        {
+          log_info ("warning: unknown application '%s' in priority list\n",
+                    names[i]);
+          continue;
+        }
+      save = app_priority_list[idx];
+      app_priority_list[idx] = app_priority_list[j];
+      app_priority_list[j] = save;
+      idx++;
+    }
+  log_assert (idx < DIM (app_priority_list));
+
+  xfree (names);
+  for (i=0; app_priority_list[i].name; i++)
+    log_info ("app priority %d: %s\n", i, app_priority_list[i].name);
+}
+
+
 static void
 print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
 {
@@ -511,32 +564,21 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
 char *
 get_supported_applications (void)
 {
-  const char *list[] = {
-    "openpgp",
-    "piv",
-    "nks",
-    "p15",
-    "geldkarte",
-    "dinsig",
-    "sc-hsm",
-    /* Note: "undefined" is not listed here because it needs special
-       treatment by the client.  */
-    NULL
-  };
   int idx;
   size_t nbytes;
   char *buffer, *p;
+  const char *s;
 
-  for (nbytes=1, idx=0; list[idx]; idx++)
-    nbytes += strlen (list[idx]) + 1 + 1;
+  for (nbytes=1, idx=0; (s=app_priority_list[idx].name); idx++)
+    nbytes += strlen (s) + 1 + 1;
 
   buffer = xtrymalloc (nbytes);
   if (!buffer)
     return NULL;
 
-  for (p=buffer, idx=0; list[idx]; idx++)
-    if (is_app_allowed (list[idx]))
-      p = stpcpy (stpcpy (p, list[idx]), ":\n");
+  for (p=buffer, idx=0; (s=app_priority_list[idx].name); idx++)
+    if (is_app_allowed (s))
+      p = stpcpy (stpcpy (p, s), ":\n");
   *p = 0;
 
   return buffer;

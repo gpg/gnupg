@@ -653,6 +653,10 @@ static gc_option_t gc_options_scdaemon[] =
    { "card-timeout", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "|N|disconnect the card after N seconds of inactivity",
      GC_ARG_TYPE_UINT32, GC_BACKEND_SCDAEMON },
+   { "application-priority",
+     GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
+     "gnupg", "|LIST|Change the application priority to LIST",
+     GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
