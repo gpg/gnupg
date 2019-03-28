@@ -2988,7 +2988,7 @@ cmd_yubikey (card_info_t info, char *argstr)
 
   /* Note that we always do a learn to get a chance to the card back
    * into a usable state.  */
-  err = yubikey_commands (fp, nwords, words);
+  err = yubikey_commands (info, fp, nwords, words);
   err2 = scd_learn (info);
   if (err2)
     log_error ("Error re-reading card: %s\n", gpg_strerror (err));

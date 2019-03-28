@@ -310,7 +310,7 @@ yk_enable_disable (struct ykapps_s *yk, struct iface_s *iface,
  * stream to output information.  This function must only be called on
  * Yubikeys. */
 gpg_error_t
-yubikey_commands (estream_t fp, int argc, char *argv[])
+yubikey_commands (card_info_t info, estream_t fp, int argc, char *argv[])
 {
   gpg_error_t err;
   enum {ykLIST, ykENABLE, ykDISABLE } cmd;
@@ -333,6 +333,14 @@ yubikey_commands (estream_t fp, int argc, char *argv[])
   else
     {
       err = gpg_error (GPG_ERR_UNKNOWN_COMMAND);
+      goto leave;
+    }
+
+  if (info->cardversion < 0x050000 && cmd != ykLIST)
+    {
+      log_info ("Sub-command '%s' is only support by Yubikey-5 and later\n",
+                argv[0]);
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       goto leave;
     }
 
