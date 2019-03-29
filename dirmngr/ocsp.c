@@ -238,6 +238,10 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
               }
               break;
 
+            case 413:  /* Payload too large */
+              err = gpg_error (GPG_ERR_TOO_LARGE);
+              break;
+
             default:
               log_error (_("error accessing '%s': http status %u\n"),
                          url, http_get_status_code (http));

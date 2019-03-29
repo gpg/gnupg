@@ -1313,6 +1313,10 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
       goto leave;
 
+    case 413:  /* Payload too large */
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
+
     default:
       log_error (_("error accessing '%s': http status %u\n"),
                  request, http_get_status_code (http));
