@@ -174,6 +174,10 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
       }
       goto once_more;
 
+    case 413:  /* Payload too large */
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
+
     default:
       log_error (_("error accessing '%s': http status %u\n"),
                  url, http_get_status_code (http));
