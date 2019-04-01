@@ -1315,7 +1315,7 @@ subkey_is_ok (const PKT_public_key *sub)
 
 /* Return true if KEYBLOCK has only expired encryption subkyes.  Note
  * that the function returns false if the key has no encryption
- * subkeys at all or the subkecys are revoked.  */
+ * subkeys at all or the subkeys are revoked.  */
 static int
 only_expired_enc_subkeys (kbnode_t keyblock)
 {

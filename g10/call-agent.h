@@ -101,9 +101,8 @@ int agent_keytocard (const char *hexgrip, int keyno, int force,
                      const char *serialno, const char *timestamp);
 
 /* Send a SETATTR command to the SCdaemon. */
-int agent_scd_setattr (const char *name,
-                       const unsigned char *value, size_t valuelen,
-                       const char *serialno);
+gpg_error_t agent_scd_setattr (const char *name,
+                               const void *value, size_t valuelen);
 
 /* Send a WRITECERT command to the SCdaemon. */
 int agent_scd_writecert (const char *certidstr,
