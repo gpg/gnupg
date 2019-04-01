@@ -761,10 +761,86 @@ agent_scd_learn (struct agent_card_info_s *info, int force)
 }
 
 
+
+/* Callback for the agent_scd_keypairinfo function.  */
+static gpg_error_t
+scd_keypairinfo_status_cb (void *opaque, const char *line)
+{
+  strlist_t *listaddr = opaque;
+  const char *keyword = line;
+  int keywordlen;
+  strlist_t sl;
+  char *p;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 11 && !memcmp (keyword, "KEYPAIRINFO", keywordlen))
+    {
+      sl = append_to_strlist (listaddr, line);
+      p = sl->d;
+      /* Make sure that we only have two tokens so that future
+       * extensions of the format won't change the format expected by
+       * the caller.  */
+      while (*p && !spacep (p))
+        p++;
+      if (*p)
+        {
+          while (spacep (p))
+            p++;
+          while (*p && !spacep (p))
+            p++;
+          *p = 0;
+        }
+    }
+
+  return 0;
+}
+
+
+/* Read the keypairinfo lines of the current card directly from
+ * scdaemon.  The list is returned as a string made up of the keygrip,
+ * a space and the keyref.  */
+gpg_error_t
+agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
+{
+  gpg_error_t err;
+  strlist_t list = NULL;
+  struct default_inq_parm_s inq_parm;
+
+  *r_list = NULL;
+  err= start_agent (ctrl, 1);
+  if (err)
+    return err;
+  memset (&inq_parm, 0, sizeof inq_parm);
+  inq_parm.ctx = agent_ctx;
+
+  err = assuan_transact (agent_ctx, "SCD LEARN --force",
+                         NULL, NULL,
+                         default_inq_cb, &inq_parm,
+                         scd_keypairinfo_status_cb, &list);
+  if (!err && !list)
+    err = gpg_error (GPG_ERR_NO_DATA);
+  if (err)
+    {
+      free_strlist (list);
+      return err;
+    }
+  *r_list = list;
+  return 0;
+}
+
+
+
 /* Send an APDU to the current card.  On success the status word is
-   stored at R_SW.  With HEXAPDU being NULL only a RESET command is
-   send to scd.  With HEXAPDU being the string "undefined" the command
-   "SERIALNO undefined" is send to scd. */
+ * stored at R_SW.  With HEXAPDU being NULL only a RESET command is
+ * send to scd.  With HEXAPDU being the string "undefined" the command
+ * "SERIALNO undefined" is send to scd.
+ * Used by:
+ *  card-util.c
+ */
 gpg_error_t
 agent_scd_apdu (const char *hexapdu, unsigned int *r_sw)
 {
