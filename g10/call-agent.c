@@ -336,7 +336,7 @@ start_agent (ctrl_t ctrl, int flag_for_card)
       if (!(flag_for_card & FLAG_FOR_CARD_SUPPRESS_ERRORS))
         rc = warn_version_mismatch (agent_ctx, SCDAEMON_NAME, 2);
       if (!rc)
-        rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
+        rc = assuan_transact (agent_ctx, "SCD SERIALNO",
                               NULL, NULL, NULL, NULL,
                               learn_status_cb, &info);
       if (rc && !(flag_for_card & FLAG_FOR_CARD_SUPPRESS_ERRORS))
