@@ -91,8 +91,6 @@ change_pin (int unblock_v2, int allow_admin)
   log_info (_("OpenPGP card no. %s detected\n"),
               info.serialno? info.serialno : "[none]");
 
-  agent_clear_pin_cache (info.serialno);
-
   if (opt.batch)
     {
       agent_release_card_info (&info);
@@ -1278,8 +1276,6 @@ static int
 check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
 {
   int rc = 0;
-
-  agent_clear_pin_cache (info->serialno);
 
   *forced_chv1 = !info->chv1_cached;
   if (*forced_chv1)
