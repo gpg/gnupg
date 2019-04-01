@@ -108,10 +108,6 @@ gpg_error_t agent_scd_setattr (const char *name,
 int agent_scd_writecert (const char *certidstr,
                           const unsigned char *certdata, size_t certdatalen);
 
-/* Send a WRITEKEY command to the SCdaemon. */
-int agent_scd_writekey (int keyno, const char *serialno,
-                        const unsigned char *keydata, size_t keydatalen);
-
 /* Send a GENKEY command to the SCdaemon. */
 int agent_scd_genkey (int keyno, int force, u32 *createtime);
 
@@ -124,10 +120,6 @@ int agent_scd_change_pin (int chvno, const char *serialno);
 
 /* Send the CHECKPIN command to the SCdaemon. */
 int agent_scd_checkpin  (const char *serialno);
-
-/* Dummy function, only implemented by gpg 1.4. */
-void agent_clear_pin_cache (const char *sn);
-
 
 /* Send the GET_PASSPHRASE command to the agent.  */
 gpg_error_t agent_get_passphrase (const char *cache_id,
