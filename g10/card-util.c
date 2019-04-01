@@ -419,36 +419,43 @@ current_card_status (ctrl_t ctrl, estream_t fp,
   if (!info.serialno || strncmp (info.serialno, "D27600012401", 12)
       || strlen (info.serialno) != 32 )
     {
+      const char *name1, *name2;
       if (info.apptype && !strcmp (info.apptype, "NKS"))
         {
-          if (opt.with_colons)
-            es_fputs ("netkey-card:\n", fp);
-          log_info ("this is a NetKey card\n");
+          name1 = "netkey";
+          name2 = "NetKey";
         }
       else if (info.apptype && !strcmp (info.apptype, "DINSIG"))
         {
-          if (opt.with_colons)
-            es_fputs ("dinsig-card:\n", fp);
-          log_info ("this is a DINSIG compliant card\n");
+          name1 = "dinsig";
+          name2 = "DINSIG";
         }
       else if (info.apptype && !strcmp (info.apptype, "P15"))
         {
-          if (opt.with_colons)
-            es_fputs ("pkcs15-card:\n", fp);
-          log_info ("this is a PKCS#15 compliant card\n");
+          name1 = "pkcs15";
+          name2 = "PKCS#15";
         }
       else if (info.apptype && !strcmp (info.apptype, "GELDKARTE"))
         {
-          if (opt.with_colons)
-            es_fputs ("geldkarte-card:\n", fp);
-          log_info ("this is a Geldkarte compliant card\n");
+          name1 = "geldkarte";
+          name2 = "Geldkarte";
+        }
+      else if (info.apptype && !strcmp (info.apptype, "PIV"))
+        {
+          name1 = "piv";
+          name2 = "PIV";
         }
       else
         {
-          if (opt.with_colons)
-            es_fputs ("unknown:\n", fp);
+          name1 = "unknown";
+          name2 = "Unknown";
         }
-      log_info ("not an OpenPGP card\n");
+
+      if (opt.with_colons)
+        es_fprintf (fp, "%s-card:\n", name1);
+      else
+        tty_fprintf (fp, "Application type .: %s\n", name2);
+
       agent_release_card_info (&info);
       xfree (pk);
       return;
@@ -463,6 +470,8 @@ current_card_status (ctrl_t ctrl, estream_t fp,
 
   if (opt.with_colons)
     es_fputs ("openpgp-card:\n", fp);
+  else
+    tty_fprintf (fp, "Application type .: %s\n", "OpenPGP");
 
 
   if (opt.with_colons)
@@ -695,6 +704,7 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
   strlist_t card_list, sl;
   char *serialno0, *serialno1;
   int all_cards = 0;
+  int any_card = 0;
 
   if (serialno == NULL)
     {
@@ -721,6 +731,10 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
     {
       if (!all_cards && strcmp (serialno, sl->d))
         continue;
+
+      if (any_card && !opt.with_colons)
+        tty_fprintf (fp, "\n");
+      any_card = 1;
 
       err = agent_scd_serialno (&serialno1, sl->d);
       if (err)
