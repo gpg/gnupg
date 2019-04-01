@@ -249,6 +249,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
               gcry_sexp_t s_pkey;
               char *algostr = NULL;
               const char *keyref;
+              int any = 0;
 
               keyref = strchr (sl->d, ' ');
               if (keyref)
@@ -262,7 +263,28 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
                     }
                   xfree (pkey);
                 }
-              tty_printf ("   (%d) %s %s\n", count, sl->d, algostr);
+              tty_printf ("   (%d) %s %s", count, sl->d, algostr);
+              if ((sl->flags & GCRY_PK_USAGE_CERT))
+                {
+                  tty_printf ("%scert", any?",":" (");
+                  any = 1;
+                }
+              if ((sl->flags & GCRY_PK_USAGE_SIGN))
+                {
+                  tty_printf ("%ssign", any?",":" (");
+                  any = 1;
+                }
+              if ((sl->flags & GCRY_PK_USAGE_AUTH))
+                {
+                  tty_printf ("%sauth", any?",":" (");
+                  any = 1;
+                }
+              if ((sl->flags & GCRY_PK_USAGE_ENCR))
+                {
+                  tty_printf ("%sencr", any?",":" (");
+                  any = 1;
+                }
+              tty_printf ("%s\n", any?")":"");
               xfree (algostr);
             }
           xfree (answer);

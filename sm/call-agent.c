@@ -785,9 +785,9 @@ scd_keypairinfo_status_cb (void *opaque, const char *line)
     {
       sl = append_to_strlist (listaddr, line);
       p = sl->d;
-      /* Make sure that we only have two tokes so that future
-         extensions of the format won't change the format expected by
-         the caller.  */
+      /* Make sure that we only have two tokens so that future
+       * extensions of the format won't change the format expected by
+       * the caller.  */
       while (*p && !spacep (p))
         p++;
       if (*p)
@@ -796,7 +796,22 @@ scd_keypairinfo_status_cb (void *opaque, const char *line)
             p++;
           while (*p && !spacep (p))
             p++;
-          *p = 0;
+          if (*p)
+            {
+              *p++ = 0;
+              while (spacep (p))
+                p++;
+              while (*p && !spacep (p))
+                {
+                  switch (*p++)
+                    {
+                    case 'c': sl->flags |= GCRY_PK_USAGE_CERT; break;
+                    case 's': sl->flags |= GCRY_PK_USAGE_SIGN; break;
+                    case 'e': sl->flags |= GCRY_PK_USAGE_ENCR; break;
+                    case 'a': sl->flags |= GCRY_PK_USAGE_AUTH; break;
+                    }
+                }
+            }
         }
     }
 
@@ -806,7 +821,7 @@ scd_keypairinfo_status_cb (void *opaque, const char *line)
 
 /* Call the agent to read the keypairinfo lines of the current card.
    The list is returned as a string made up of the keygrip, a space
-   and the keyid.  */
+   and the keyid.  The flags of the string carry the usage bits.  */
 int
 gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
 {
