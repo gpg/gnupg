@@ -720,7 +720,10 @@ learn_status_cb (void *opaque, const char *line)
   return 0;
 }
 
-/* Call the scdaemon to learn about a smartcard */
+
+/* Call the scdaemon to learn about a smartcard.  Note that in
+ * contradiction to the function's name, gpg-agent's LEARN command is
+ * used and not the low-level "SCD LEARN". */
 int
 agent_scd_learn (struct agent_card_info_s *info, int force)
 {
@@ -868,22 +871,20 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 }
 
 
-/* Send an setattr command to the SCdaemon.  SERIALNO is not actually
-   used here but required by gpg 1.4's implementation of this code in
-   cardglue.c. */
-int
-agent_scd_setattr (const char *name,
-                   const unsigned char *value, size_t valuelen,
-                   const char *serialno)
+/* Send an setattr command to the SCdaemon.
+ * Used by:
+ *   card-util.c
+ */
+gpg_error_t
+agent_scd_setattr (const char *name, const void *value_arg, size_t valuelen)
 {
-  int rc;
+  gpg_error_t err;
+  const unsigned char *value = value_arg;
   char line[ASSUAN_LINELENGTH];
   char *p;
   struct default_inq_parm_s parm;
 
   memset (&parm, 0, sizeof parm);
-
-  (void)serialno;
 
   if (!*name || !valuelen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -910,16 +911,16 @@ agent_scd_setattr (const char *name,
     }
   *p = 0;
 
-  rc = start_agent (NULL, 1);
-  if (!rc)
+  err = start_agent (NULL, 1);
+  if (!err)
     {
       parm.ctx = agent_ctx;
-      rc = assuan_transact (agent_ctx, line, NULL, NULL,
+      err = assuan_transact (agent_ctx, line, NULL, NULL,
                             default_inq_cb, &parm, NULL, NULL);
     }
 
-  status_sc_op_failure (rc);
-  return rc;
+  status_sc_op_failure (err);
+  return err;
 }
 
 

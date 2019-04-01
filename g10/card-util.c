@@ -814,7 +814,7 @@ change_name (void)
       return -1;
     }
 
-  rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname), NULL );
+  rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname));
   if (rc)
     log_error ("error setting Name: %s\n", gpg_strerror (rc));
 
@@ -835,7 +835,7 @@ change_url (void)
   trim_spaces (url);
   cpr_kill_prompt ();
 
-  rc = agent_scd_setattr ("PUBKEY-URL", url, strlen (url), NULL );
+  rc = agent_scd_setattr ("PUBKEY-URL", url, strlen (url));
   if (rc)
     log_error ("error setting URL: %s\n", gpg_strerror (rc));
   xfree (url);
@@ -991,7 +991,7 @@ change_login (const char *args)
       n = strlen (data);
     }
 
-  rc = agent_scd_setattr ("LOGIN-DATA", data, n, NULL );
+  rc = agent_scd_setattr ("LOGIN-DATA", data, n);
   if (rc)
     log_error ("error setting login data: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -1029,7 +1029,7 @@ change_private_do (const char *args, int nr)
       n = strlen (data);
     }
 
-  rc = agent_scd_setattr (do_name, data, n, NULL );
+  rc = agent_scd_setattr (do_name, data, n);
   if (rc)
     log_error ("error setting private DO: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -1128,7 +1128,7 @@ change_lang (void)
       return -1;
     }
 
-  rc = agent_scd_setattr ("DISP-LANG", data, strlen (data), NULL );
+  rc = agent_scd_setattr ("DISP-LANG", data, strlen (data));
   if (rc)
     log_error ("error setting lang: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -1164,7 +1164,7 @@ change_sex (void)
       return -1;
     }
 
-  rc = agent_scd_setattr ("DISP-SEX", str, 1, NULL );
+  rc = agent_scd_setattr ("DISP-SEX", str, 1);
   if (rc)
     log_error ("error setting sex: %s\n", gpg_strerror (rc));
   xfree (data);
@@ -1210,7 +1210,7 @@ change_cafpr (int fprno)
 
   rc = agent_scd_setattr (fprno==1?"CA-FPR-1":
                           fprno==2?"CA-FPR-2":
-                          fprno==3?"CA-FPR-3":"x", fpr, 20, NULL );
+                          fprno==3?"CA-FPR-3":"x", fpr, 20);
   if (rc)
     log_error ("error setting cafpr: %s\n", gpg_strerror (rc));
   write_sc_op_status (rc);
@@ -1236,7 +1236,7 @@ toggle_forcesig (void)
   newstate = !info.chv1_cached;
   agent_release_card_info (&info);
 
-  rc = agent_scd_setattr ("CHV-STATUS-1", newstate? "\x01":"", 1, NULL);
+  rc = agent_scd_setattr ("CHV-STATUS-1", newstate? "\x01":"", 1);
   if (rc)
     log_error ("error toggling signature PIN flag: %s\n", gpg_strerror (rc));
   write_sc_op_status (rc);
@@ -1286,7 +1286,7 @@ check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
     { /* Switch off the forced mode so that during key generation we
          don't get bothered with PIN queries for each
          self-signature. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1, info->serialno);
+      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
       if (rc)
         {
           log_error ("error clearing forced signature PIN flag: %s\n",
@@ -1317,7 +1317,7 @@ restore_forced_chv1 (int *forced_chv1)
 
   if (*forced_chv1)
     { /* Switch back to forced state. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1, NULL);
+      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
       if (rc)
         {
           log_error ("error setting forced signature PIN flag: %s\n",
@@ -1565,7 +1565,7 @@ do_change_keyattr (int keyno, const struct key_attr *key_attr)
       return gpg_error (GPG_ERR_PUBKEY_ALGO);
     }
 
-  err = agent_scd_setattr ("KEY-ATTR", args, strlen (args), NULL);
+  err = agent_scd_setattr ("KEY-ATTR", args, strlen (args));
   if (err)
     log_error (_("error changing key attribute for key %d: %s\n"),
                keyno+1, gpg_strerror (err));
@@ -2111,8 +2111,7 @@ kdf_setup (const char *args)
     goto leave_error;
 
   err = agent_scd_setattr ("KDF", kdf_data,
-                           single ? KDF_DATA_LENGTH_MIN : KDF_DATA_LENGTH_MAX,
-                           NULL);
+                           single ? KDF_DATA_LENGTH_MIN : KDF_DATA_LENGTH_MAX);
   if (err)
     goto leave_error;
 
@@ -2125,6 +2124,8 @@ kdf_setup (const char *args)
  leave:
   agent_release_card_info (&info);
 }
+
+
 
 /* Data used by the command parser.  This needs to be outside of the
    function scope to allow readline based command completion.  */
