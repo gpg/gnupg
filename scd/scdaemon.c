@@ -99,7 +99,9 @@ enum cmd_and_opt_values
   oDenyAdmin,
   oDisableApplication,
   oEnablePinpadVarlen,
-  oListenBacklog
+  oListenBacklog,
+
+  oNoop
 };
 
 
@@ -158,6 +160,9 @@ static ARGPARSE_OPTS opts[] = {
                 N_("use variable length input for pinpad")),
   ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
+
+  /* Stubs for options which are implemented by 2.3 or later.  */
+  ARGPARSE_s_s (oNoop, "application-priority", "@"),
 
   ARGPARSE_end ()
 };
@@ -621,6 +626,8 @@ main (int argc, char **argv )
         case oListenBacklog:
           listen_backlog = pargs.r.ret_int;
           break;
+
+        case oNoop: break;
 
         default:
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
