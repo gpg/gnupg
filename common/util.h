@@ -199,7 +199,7 @@ gpg_error_t get_rsa_pk_from_canon_sexp (const unsigned char *keydata,
 int get_pk_algo_from_key (gcry_sexp_t key);
 int get_pk_algo_from_canon_sexp (const unsigned char *keydata,
                                  size_t keydatalen);
-char *pubkey_algo_string (gcry_sexp_t s_pkey);
+char *pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid);
 
 /*-- convert.c --*/
 int hex2bin (const char *string, void *buffer, size_t length);
