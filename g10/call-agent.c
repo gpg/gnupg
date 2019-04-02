@@ -1229,6 +1229,49 @@ agent_scd_readcert (const char *certidstr,
 }
 
 
+/* This is a variant of agent_readkey which sends a READKEY command
+ * directly Scdaemon.  On success a new s-expression is stored at
+ * R_RESULT.  */
+gpg_error_t
+agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  unsigned char *buf;
+  size_t len, buflen;
+  struct default_inq_parm_s dfltparm;
+
+  memset (&dfltparm, 0, sizeof dfltparm);
+  dfltparm.ctx = agent_ctx;
+
+  *r_result = NULL;
+  err = start_agent (NULL, 1);
+  if (err)
+    return err;
+
+  init_membuf (&data, 1024);
+  snprintf (line, DIM(line), "SCD READKEY %s", keyrefstr);
+  err = assuan_transact (agent_ctx, line,
+                         put_membuf_cb, &data,
+                         default_inq_cb, &dfltparm,
+                         NULL, NULL);
+  if (err)
+    {
+      xfree (get_membuf (&data, &len));
+      return err;
+    }
+  buf = get_membuf (&data, &buflen);
+  if (!buf)
+    return gpg_error_from_syserror ();
+
+  err = gcry_sexp_new (r_result, buf, buflen, 0);
+  xfree (buf);
+
+  return err;
+}
+
+
 
 struct card_cardlist_parm_s {
   int error;

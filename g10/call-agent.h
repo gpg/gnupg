@@ -112,9 +112,12 @@ int agent_scd_writecert (const char *certidstr,
 /* Send a GENKEY command to the SCdaemon. */
 int agent_scd_genkey (int keyno, int force, u32 *createtime);
 
-/* Send a READKEY command to the SCdaemon. */
+/* Send a READCERT command to the SCdaemon. */
 int agent_scd_readcert (const char *certidstr,
                         void **r_buf, size_t *r_buflen);
+
+/* Send a READKEY command to the SCdaemon.  */
+gpg_error_t agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result);
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
 int agent_scd_change_pin (int chvno, const char *serialno);

@@ -1566,6 +1566,7 @@ Description of some debug flags:
    | ecc/*   | 11 | ECC (set your own capabilities) |
    | ecc/e   | 12 | ECC (encrypt only)              |
    | keygrip | 13 | Existing key                    |
+   | cardkey | 14 | Existing key from card          |
 
    If one of the "foo/*" names are used a "keygen.flags" prompt needs
    to be answered as well.  Instead of toggling the predefined flags,
