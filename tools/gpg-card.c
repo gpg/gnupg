@@ -673,7 +673,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
 
       if (!scd_readkey (kinfo->keyref, &s_pkey))
         {
-          char *tmp = pubkey_algo_string (s_pkey);
+          char *tmp = pubkey_algo_string (s_pkey, NULL);
           tty_fprintf (fp, "      algorithm ..: %s\n", tmp);
           xfree (tmp);
           gcry_sexp_release (s_pkey);

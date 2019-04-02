@@ -581,15 +581,18 @@ get_pk_algo_from_canon_sexp (const unsigned char *keydata, size_t keydatalen)
 
 /* Given the public key S_PKEY, return a new buffer with a descriptive
  * string for its algorithm.  This function may return NULL on memory
- * error. */
+ * error.  If R_ALGOID is not NULL the gcrypt algo id is stored there. */
 char *
-pubkey_algo_string (gcry_sexp_t s_pkey)
+pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid)
 {
   const char *prefix;
   gcry_sexp_t l1;
   char *algoname;
   int algo;
   char *result;
+
+  if (r_algoid)
+    *r_algoid = 0;
 
   l1 = gcry_sexp_find_token (s_pkey, "public-key", 0);
   if (!l1)
@@ -632,6 +635,8 @@ pubkey_algo_string (gcry_sexp_t s_pkey)
   else
     result = xtryasprintf ("X_algo_%d", algo);
 
+  if (r_algoid)
+    *r_algoid = algo;
   xfree (algoname);
   return result;
 }

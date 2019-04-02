@@ -258,7 +258,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
                   if (!gpgsm_agent_readkey (ctrl, 1, keyref, &pkey))
                     {
                       if (!gcry_sexp_new (&s_pkey, pkey, 0, 0))
-                        algostr = pubkey_algo_string (s_pkey);
+                        algostr = pubkey_algo_string (s_pkey, NULL);
                       gcry_sexp_release (s_pkey);
                     }
                   xfree (pkey);
