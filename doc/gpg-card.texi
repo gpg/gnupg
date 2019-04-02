@@ -210,7 +210,7 @@ Key management ...: [none]
       keyref .....: PIV.9D
 @end example
 
-Note that the ``Displayed s/sn'' is printed on the token and also
+Note that the ``Displayed s/n'' is printed on the token and also
 shown in Pinentry prompts asking for the PIN.  The four standard key
 slots are always shown, if other key slots are initialized they are
 shown as well.  The @emph{PIV authentication} key (internal reference
@@ -231,11 +231,11 @@ which needs to be provided only once so that decryption operations can
 then be done until the card is reset or removed from the reader or USB
 port.
 
-We now generate tree of the four keys.  Note that GnuPG does currently
-not use the the @emph{Card authentication} key but because it is
-mandatory by the specs we create it anyway.  Key generation requires
-that we authenticate to the card.  This can be done either on the
-command line (which would reveal the key):
+We now generate three of the four keys.  Note that GnuPG does
+currently not use the the @emph{Card authentication} key; however,
+that key is mandatory by the PIV standard and thus we create it too.
+Key generation requires that we authenticate to the card.  This can be
+done either on the command line (which would reveal the key):
 
 @example
 gpg/card> auth 010203040506070801020304050607080102030405060708
@@ -360,7 +360,7 @@ gpgsm: total number processed: 1
 gpgsm:               imported: 1
 @end example
 
-Note the last steps which imported the created certificate.  If you
+Note the last step which imported the created certificate.  If you
 you instead created a certificate signing request (CSR) instead of a
 self-signed certificate and sent this off to a CA you would do the
 same import step with the certificate received from the CA.  Take note

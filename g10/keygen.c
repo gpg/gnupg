@@ -1881,24 +1881,26 @@ print_key_flags(int flags)
 
 
 /* Ask for the key flags and return them.  CURRENT gives the current
- * usage which should normally be given as 0. */
+ * usage which should normally be given as 0.  MASK gives the allowed
+ * flags.  */
 unsigned int
-ask_key_flags (int algo, int subkey, unsigned int current)
+ask_key_flags_with_mask (int algo, int subkey, unsigned int current,
+                         unsigned int mask)
 {
   /* TRANSLATORS: Please use only plain ASCII characters for the
-     translation.  If this is not possible use single digits.  The
-     string needs to 8 bytes long. Here is a description of the
-     functions:
-
-       s = Toggle signing capability
-       e = Toggle encryption capability
-       a = Toggle authentication capability
-       q = Finish
-  */
+   * translation.  If this is not possible use single digits.  The
+   * string needs to 8 bytes long. Here is a description of the
+   * functions:
+   *
+   *   s = Toggle signing capability
+   *   e = Toggle encryption capability
+   *   a = Toggle authentication capability
+   *   q = Finish
+   */
   const char *togglers = _("SsEeAaQq");
   char *answer = NULL;
   const char *s;
-  unsigned int possible = openpgp_pk_algo_usage(algo);
+  unsigned int possible;
 
   if ( strlen(togglers) != 8 )
     {
@@ -1907,22 +1909,26 @@ ask_key_flags (int algo, int subkey, unsigned int current)
       togglers = "11223300";
     }
 
-  /* Only primary keys may certify. */
-  if(subkey)
-    possible&=~PUBKEY_USAGE_CERT;
+  /* Mask the possible usage flags.  This is for example used for a
+   * card based key.  */
+  possible = (openpgp_pk_algo_usage (algo) & mask);
 
-  /* Preload the current set with the possible set, minus
-     authentication if CURRENT has been given as 0.  If CURRENT has
-     been has non-zero we mask with all possible usages. */
+  /* However, only primary keys may certify. */
+  if (subkey)
+    possible &= ~PUBKEY_USAGE_CERT;
+
+  /* Preload the current set with the possible set, without
+   * authentication if CURRENT is 0.  If CURRENT is non-zero we mask
+   * with all possible usages.  */
   if (current)
     current &= possible;
   else
     current = (possible&~PUBKEY_USAGE_AUTH);
 
-  for(;;)
+  for (;;)
     {
       tty_printf("\n");
-      tty_printf(_("Possible actions for a %s key: "),
+      tty_printf(_("Possible actions for this %s key: "),
                  (algo == PUBKEY_ALGO_ECDSA
                   || algo == PUBKEY_ALGO_EDDSA)
                  ? "ECDSA/EdDSA" : openpgp_pk_algo_name (algo));
@@ -2009,6 +2015,13 @@ ask_key_flags (int algo, int subkey, unsigned int current)
 }
 
 
+unsigned int
+ask_key_flags (int algo, int subkey, unsigned int current)
+{
+  return ask_key_flags_with_mask (algo, subkey, current, ~0);
+}
+
+
 /* Check whether we have a key for the key with HEXGRIP.  Returns 0 if
    there is no such key or the OpenPGP algo number for the key.  */
 static int
@@ -2047,10 +2060,12 @@ static int
 ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           char **r_keygrip)
 {
+  gpg_error_t err;
   char *keygrip = NULL;
   char *answer = NULL;
   int algo;
   int dummy_algo;
+  char *p;
 
   if (!r_subkey_algo)
     r_subkey_algo = &dummy_algo;
@@ -2101,6 +2116,8 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 
   if (opt.expert && r_keygrip)
     tty_printf (_("  (%d) Existing key\n"), 13 );
+  if (r_keygrip)
+    tty_printf (_("  (%d) Existing key from card\n"), 14 );
 
   for (;;)
     {
@@ -2221,9 +2238,130 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           *r_usage = ask_key_flags (algo, addmode, 0);
           break;
 	}
+      else if ((algo == 14 || !strcmp (answer, "cardkey")) && r_keygrip)
+        {
+          char *serialno;
+          strlist_t keypairlist, sl;
+          int count, selection;
+
+          err = agent_scd_serialno (&serialno, NULL);
+          if (err)
+            {
+              tty_printf (_("error reading the card: %s\n"),
+                          gpg_strerror (err));
+              goto ask_again;
+            }
+          tty_printf (_("Serial number of the card: %s\n"), serialno);
+          xfree (serialno);
+
+          err = agent_scd_keypairinfo (ctrl, &keypairlist);
+          if (err)
+            {
+              tty_printf (_("error reading the card: %s\n"),
+                          gpg_strerror (err));
+              goto ask_again;
+            }
+
+          do
+            {
+              tty_printf (_("Available keys:\n"));
+              for (count=1,sl=keypairlist; sl; sl = sl->next, count++)
+                {
+                  gcry_sexp_t s_pkey;
+                  char *algostr = NULL;
+                  enum gcry_pk_algos algoid = 0;
+                  const char *keyref;
+                  int any = 0;
+
+                  keyref = strchr (sl->d, ' ');
+                  if (keyref)
+                    {
+                      keyref++;
+                      if (!agent_scd_readkey (keyref, &s_pkey))
+                        {
+                          algostr = pubkey_algo_string (s_pkey, &algoid);
+                          gcry_sexp_release (s_pkey);
+                        }
+                    }
+                  /* We use the flags also encode the algo for use
+                   * below.  We need to tweak the algo in case
+                   * GCRY_PK_ECC is returned becuase pubkey_algo_string
+                   * is not aware of the OpenPGP algo mapping.
+                   * FIXME: This is an ugly hack. */
+                  sl->flags &= 0xff;
+                  if (algoid == GCRY_PK_ECC
+                      && algostr && !strncmp (algostr, "nistp", 5)
+                      && !(sl->flags & GCRY_PK_USAGE_ENCR))
+                    sl->flags |= (PUBKEY_ALGO_ECDSA << 8);
+                  else
+                    sl->flags |= (map_pk_gcry_to_openpgp (algoid) << 8);
+
+                  tty_printf ("   (%d) %s %s", count, sl->d, algostr);
+                  if ((sl->flags & GCRY_PK_USAGE_CERT))
+                    {
+                      tty_printf ("%scert", any?",":" (");
+                      any = 1;
+                    }
+                  if ((sl->flags & GCRY_PK_USAGE_SIGN))
+                    {
+                      tty_printf ("%ssign", any?",":" (");
+                      any = 1;
+                    }
+                  if ((sl->flags & GCRY_PK_USAGE_AUTH))
+                    {
+                      tty_printf ("%sauth", any?",":" (");
+                      any = 1;
+                    }
+                  if ((sl->flags & GCRY_PK_USAGE_ENCR))
+                    {
+                      tty_printf ("%sencr", any?",":" (");
+                      any = 1;
+                    }
+                  tty_printf ("%s\n", any?")":"");
+                  xfree (algostr);
+                }
+
+              xfree (answer);
+              answer = cpr_get ("keygen.cardkey", _("Your selection? "));
+              cpr_kill_prompt ();
+              trim_spaces (answer);
+              selection = atoi (answer);
+            }
+          while (!(selection > 0 && selection < count));
+
+          for (count=1,sl=keypairlist; sl; sl = sl->next, count++)
+            if (count == selection)
+              break;
+          if (!sl)
+            {
+              /* Just in case COUNT is zero (no keys).  */
+              free_strlist (keypairlist);
+              goto ask_again;
+            }
+
+          xfree (keygrip);
+          keygrip = xstrdup (sl->d);
+          if ((p = strchr (keygrip, ' ')))
+            *p = 0;
+          algo = (sl->flags >>8);
+          if (opt.expert)
+            *r_usage = ask_key_flags_with_mask (algo, addmode,
+                                                (sl->flags & 0xff),
+                                                (sl->flags & 0xff));
+          else
+            {
+              *r_usage = (sl->flags & 0xff);
+              if (addmode)
+                *r_usage &= ~GCRY_PK_USAGE_CERT;
+            }
+          free_strlist (keypairlist);
+          break;
+	}
       else
         tty_printf (_("Invalid selection.\n"));
 
+    ask_again:
+      ;
     }
 
   xfree(answer);
