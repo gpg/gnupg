@@ -506,19 +506,18 @@ print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
   for (; list; list = list->next)
     {
       PKT_public_key *pk;
-      const char *algstr;
+      char pkstrbuf[PUBKEY_STRING_SIZE];
+      char *p;
 
-      algstr = openpgp_pk_algo_name (list->pubkey_algo);
       pk = xmalloc_clear (sizeof *pk);
 
-      if (!algstr)
-        algstr = "[?]";
       pk->pubkey_algo = list->pubkey_algo;
       if (!get_pubkey (ctrl, pk, list->keyid))
         {
-          char *p;
-          log_info (_("encrypted with %u-bit %s key, ID %s, created %s\n"),
-                    nbits_from_pk (pk), algstr, keystr_from_pk(pk),
+          pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
+
+          log_info (_("encrypted with %s key, ID %s, created %s\n"),
+                    pkstrbuf, keystr_from_pk (pk),
                     strtimestamp (pk->timestamp));
           p = get_user_id_native (ctrl, list->keyid);
           log_printf (_("      \"%s\"\n"), p);
@@ -526,7 +525,8 @@ print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
         }
       else
         log_info (_("encrypted with %s key, ID %s\n"),
-                  algstr, keystr(list->keyid));
+                  openpgp_pk_algo_name (list->pubkey_algo),
+                  keystr(list->keyid));
 
       free_public_key (pk);
     }

@@ -68,7 +68,7 @@ pubkey_letter( int algo )
 }
 
 /* Return a string describing the public key algorithm and the
-   keysize.  For elliptic curves the functions prints the name of the
+   keysize.  For elliptic curves the function prints the name of the
    curve because the keysize is a property of the curve.  The string
    is copied to the supplied buffer up a length of BUFSIZE-1.
    Examples for the output are:
