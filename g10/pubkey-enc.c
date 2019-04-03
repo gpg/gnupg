@@ -305,6 +305,16 @@ get_it (ctrl_t ctrl,
               err = gpg_error (GPG_ERR_WRONG_SECKEY);
               goto leave;
             }
+
+          /* FIXME: Actually the leading zero is required but due to
+           * the way we encode the output in libgcrypt as an MPI we
+           * are not able to encode that leading zero.  However, when
+           * using a Smartcard we are doing it the right way and
+           * therefore we have to skip the zero.  This should be fixed
+           * in gpg-agent of course. */
+          if (!frame[n])
+            n++;
+
           if (frame[n] == 1 && frame[nframe - 1] == 2)
             {
               log_info (_("old encoding of the DEK is not supported\n"));

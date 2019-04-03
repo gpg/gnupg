@@ -926,6 +926,86 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
   return rc;
 }
 
+/* Object used with the agent_scd_getattr_one.  */
+struct getattr_one_parm_s {
+  const char *keyword;  /* Keyword to look for.  */
+  char *data;           /* Malloced and unescaped data.  */
+  gpg_error_t err;      /* Error code or 0 on success. */
+};
+
+
+/* Callback for agent_scd_getattr_one.  */
+static gpg_error_t
+getattr_one_status_cb (void *opaque, const char *line)
+{
+  struct getattr_one_parm_s *parm = opaque;
+  const char *s;
+
+  if (parm->data)
+    return 0; /* We want only the first occurrence.  */
+
+  if ((s=has_leading_keyword (line, parm->keyword)))
+    {
+      parm->data = percent_plus_unescape (s, 0xff);
+      if (!parm->data)
+        parm->err = gpg_error_from_syserror ();
+    }
+
+  return 0;
+}
+
+
+/* Simplified version of agent_scd_getattr.  This function returns
+ * only the first occurance of the attribute NAME and stores it at
+ * R_VALUE.  A nul in the result is silennly replaced by 0xff.  On
+ * error NULL is stored at R_VALUE.  */
+gpg_error_t
+agent_scd_getattr_one (const char *name, char **r_value)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s inqparm;
+  struct getattr_one_parm_s parm;
+
+  *r_value = NULL;
+
+  if (!*name)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  memset (&inqparm, 0, sizeof inqparm);
+  inqparm.ctx = agent_ctx;
+
+  memset (&parm, 0, sizeof parm);
+  parm.keyword = name;
+
+  /* We assume that NAME does not need escaping. */
+  if (12 + strlen (name) > DIM(line)-1)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+  stpcpy (stpcpy (line, "SCD GETATTR "), name);
+
+  err = start_agent (NULL, 1);
+  if (err)
+    return err;
+
+  err = assuan_transact (agent_ctx, line,
+                         NULL, NULL,
+                         default_inq_cb, &inqparm,
+                         getattr_one_status_cb, &parm);
+  if (!err && parm.err)
+    err = parm.err;
+  else if (!err && !parm.data)
+    err = gpg_error (GPG_ERR_NO_DATA);
+
+  if (!err)
+    *r_value = parm.data;
+  else
+    xfree (parm.data);
+
+  return err;
+}
+
+
+
 /* Call the agent to retrieve a data object.  This function returns
  * the data in the same structure as used by the learn command.  It is
  * allowed to update such a structure using this command.

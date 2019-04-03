@@ -286,3 +286,310 @@ build_sk_list (ctrl_t ctrl,
     *ret_sk_list = sk_list;
   return err;
 }
+
+
+/* Enumerate some secret keys (specifically, those specified with
+ * --default-key and --try-secret-key).  Use the following procedure:
+ *
+ *  1) Initialize a void pointer to NULL
+ *  2) Pass a reference to this pointer to this function (content)
+ *     and provide space for the secret key (sk)
+ *  3) Call this function as long as it does not return an error (or
+ *     until you are done).  The error code GPG_ERR_EOF indicates the
+ *     end of the listing.
+ *  4) Call this function a last time with SK set to NULL,
+ *     so that can free it's context.
+ *
+ * In pseudo-code:
+ *
+ *   void *ctx = NULL;
+ *   PKT_public_key *sk = xmalloc_clear (sizeof (*sk));
+ *
+ *   while ((err = enum_secret_keys (&ctx, sk)))
+ *     { // Process SK.
+ *       if (done)
+ *         break;
+ *       sk = xmalloc_clear (sizeof (*sk));
+ *     }
+ *
+ *   // Release any resources used by CTX.
+ *   enum_secret_keys (&ctx, NULL);
+ *
+ *   if (gpg_err_code (err) != GPG_ERR_EOF)
+ *     ; // An error occurred.
+ */
+gpg_error_t
+enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
+{
+  gpg_error_t err = 0;
+  const char *name;
+  kbnode_t keyblock;
+  struct
+  {
+    int eof;
+    int state;
+    strlist_t sl;
+    strlist_t card_list;
+    char *serialno;
+    char fpr2[2 * MAX_FINGERPRINT_LEN + 3 ];
+    struct agent_card_info_s info;
+    kbnode_t keyblock;
+    kbnode_t node;
+    getkey_ctx_t ctx;
+    SK_LIST results;
+  } *c = *context;
+
+#if MAX_FINGERPRINT_LEN < KEYGRIP_LEN
+# error buffer too short for this configuration
+#endif
+
+  if (!c)
+    {
+      /* Make a new context.  */
+      c = xtrycalloc (1, sizeof *c);
+      if (!c)
+        {
+          err = gpg_error_from_syserror ();
+          free_public_key (sk);
+          return err;
+        }
+      *context = c;
+    }
+
+  if (!sk)
+    {
+      /* Free the context.  */
+      xfree (c->serialno);
+      free_strlist (c->card_list);
+      release_sk_list (c->results);
+      release_kbnode (c->keyblock);
+      getkey_end (ctrl, c->ctx);
+      xfree (c);
+      *context = NULL;
+      return 0;
+    }
+
+  if (c->eof)
+    {
+      free_public_key (sk);
+      return gpg_error (GPG_ERR_EOF);
+    }
+
+  for (;;)
+    {
+      /* Loop until we have a keyblock.  */
+      while (!c->keyblock)
+        {
+          /* Loop over the list of secret keys.  */
+          do
+            {
+              char *serialno;
+
+              name = NULL;
+              keyblock = NULL;
+              switch (c->state)
+                {
+                case 0: /* First try to use the --default-key.  */
+                  name = parse_def_secret_key (ctrl);
+                  c->state = 1;
+                  break;
+
+                case 1: /* Init list of keys to try.  */
+                  c->sl = opt.secret_keys_to_try;
+                  c->state++;
+                  break;
+
+                case 2: /* Get next item from list.  */
+                  if (c->sl)
+                    {
+                      name = c->sl->d;
+                      c->sl = c->sl->next;
+                    }
+                  else
+                    c->state++;
+                  break;
+
+                case 3: /* Init list of card keys to try.  */
+                  err = agent_scd_cardlist (&c->card_list);
+                  if (!err)
+                    agent_scd_serialno (&c->serialno, NULL);
+                  c->sl = c->card_list;
+                  c->state++;
+                  break;
+
+                case 4: /* Get next item from card list.  */
+                  if (c->sl)
+                    {
+                      err = agent_scd_serialno (&serialno, c->sl->d);
+                      if (err)
+                        {
+                          if (opt.verbose)
+                            log_info (_("error getting serial number of card: %s\n"),
+                                      gpg_strerror (err));
+                          c->sl = c->sl->next;
+                          continue;
+                        }
+
+                      xfree (serialno);
+                      err = agent_scd_getattr ("KEY-FPR", &c->info);
+                      if (!err)
+                        {
+                          if (c->info.fpr2valid)
+                            {
+                              c->fpr2[0] = '0';
+                              c->fpr2[1] = 'x';
+                              bin2hex (c->info.fpr2, sizeof c->info.fpr2,
+                                       c->fpr2 + 2);
+                              name = c->fpr2;
+                            }
+                        }
+                      else if (gpg_err_code (err) == GPG_ERR_INV_NAME)
+                        {
+                          /* KEY-FPR not supported by the card - get
+                           * the key using the keygrip.  */
+                          char *keyref;
+                          strlist_t kplist, sl;
+                          const char *s;
+                          int i;
+
+                          err = agent_scd_getattr_one ("$ENCRKEYID", &keyref);
+                          if (!err)
+                            {
+                              err = agent_scd_keypairinfo (ctrl, &kplist);
+                              if (!err)
+                                {
+                                  for (sl = kplist; sl; sl = sl->next)
+                                    if ((s = strchr (sl->d, ' '))
+                                        && !strcmp (s+1, keyref))
+                                      break;
+                                  if (sl)
+                                    {
+                                      c->fpr2[0] = '&';
+                                      for (i=1, s=sl->d;
+                                           (*s && *s != ' '
+                                            && i < sizeof c->fpr2 - 3);
+                                           s++, i++)
+                                        c->fpr2[i] = *s;
+                                      c->fpr2[i] = 0;
+                                      name = c->fpr2;
+                                    }
+                                  else /* Restore error.  */
+                                    err = gpg_error (GPG_ERR_INV_NAME);
+                                  free_strlist (kplist);
+                                }
+                            }
+                          xfree (keyref);
+                        }
+                      if (err)
+                        log_error ("error retrieving key from card: %s\n",
+                                   gpg_strerror (err));
+
+                      c->sl = c->sl->next;
+                    }
+                  else
+                    {
+                      serialno = c->serialno;
+                      if (serialno)
+                        {
+                          /* Select the original card again.  */
+                          agent_scd_serialno (&c->serialno, serialno);
+                          xfree (serialno);
+                        }
+                      c->state++;
+                    }
+                  break;
+
+                case 5: /* Init search context to enum all secret keys.  */
+                  err = getkey_bynames (ctrl, &c->ctx, NULL, NULL, 1,
+                                        &keyblock);
+                  if (err)
+                    {
+                      release_kbnode (keyblock);
+                      keyblock = NULL;
+                      getkey_end (ctrl, c->ctx);
+                      c->ctx = NULL;
+                    }
+                  c->state++;
+                  break;
+
+                case 6: /* Get next item from the context.  */
+                  if (c->ctx)
+                    {
+                      err = getkey_next (ctrl, c->ctx, NULL, &keyblock);
+                      if (err)
+                        {
+                          release_kbnode (keyblock);
+                          keyblock = NULL;
+                          getkey_end (ctrl, c->ctx);
+                          c->ctx = NULL;
+                        }
+                    }
+                  else
+                    c->state++;
+                  break;
+
+                default: /* No more names to check - stop.  */
+                  c->eof = 1;
+                  free_public_key (sk);
+                  return gpg_error (GPG_ERR_EOF);
+                }
+            }
+          while ((!name || !*name) && !keyblock);
+
+          if (keyblock)
+            c->node = c->keyblock = keyblock;
+          else
+            {
+              err = getkey_byname (ctrl, NULL, NULL, name, 1, &c->keyblock);
+              if (err)
+                {
+                  /* getkey_byname might return a keyblock even in the
+                     error case - I have not checked.  Thus better release
+                     it.  */
+                  release_kbnode (c->keyblock);
+                  c->keyblock = NULL;
+                }
+              else
+                c->node = c->keyblock;
+            }
+        }
+
+      /* Get the next key from the current keyblock.  */
+      for (; c->node; c->node = c->node->next)
+        {
+          if (c->node->pkt->pkttype == PKT_PUBLIC_KEY
+              || c->node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+            {
+              SK_LIST r;
+
+              /* Skip this candidate if it's already enumerated.  */
+              for (r = c->results; r; r = r->next)
+                if (!cmp_public_keys (r->pk, c->node->pkt->pkt.public_key))
+                  break;
+              if (r)
+                continue;
+
+              copy_public_key (sk, c->node->pkt->pkt.public_key);
+              c->node = c->node->next;
+
+              r = xtrycalloc (1, sizeof (*r));
+              if (!r)
+                {
+                  err = gpg_error_from_syserror ();
+                  free_public_key (sk);
+                  return err;
+                }
+
+              r->pk = sk;
+              r->next = c->results;
+              c->results = r;
+
+              return 0; /* Found.  */
+            }
+        }
+
+      /* Dispose the keyblock and continue.  */
+      release_kbnode (c->keyblock);
+      c->keyblock = NULL;
+    }
+}
