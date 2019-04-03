@@ -423,6 +423,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                           if (opt.verbose)
                             log_info (_("error getting serial number of card: %s\n"),
                                       gpg_strerror (err));
+                          c->sl = c->sl->next;
                           continue;
                         }
 
