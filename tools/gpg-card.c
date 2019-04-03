@@ -1000,6 +1000,81 @@ list_card (card_info_t info)
 
 
 
+/* The LIST command.  This also updates INFO. */
+static gpg_error_t
+cmd_list (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  int opt_cards;
+  strlist_t cards = NULL;
+  strlist_t sl;
+  estream_t fp = opt.interactive? NULL : es_stdout;
+  int cardno, count;
+
+
+  if (!info)
+    return print_help
+      ("LIST [--cards] [N]\n\n"
+       "Show the content of the current card or with N given the N-th card.\n"
+       "Option --cards lists available cards.",
+       0);
+
+  opt_cards = has_leading_option (argstr, "--cards");
+  argstr = skip_options (argstr);
+
+
+  if (digitp (argstr))
+    {
+      cardno = atoi (argstr);
+      while (digitp (argstr))
+        argstr++;
+      while (spacep (argstr))
+        argstr++;
+    }
+  else
+    cardno = -1;
+
+
+  if (opt_cards)
+    {
+      err = scd_cardlist (&cards);
+      if (err)
+        goto leave;
+      for (count = 0, sl = cards; sl; sl = sl->next, count++)
+        tty_fprintf (fp, "%d %s\n", count, sl->d);
+    }
+  else
+    {
+      if (cardno != -1)
+        {
+          err = scd_cardlist (&cards);
+          if (err)
+            goto leave;
+          for (count = 0, sl = cards; sl; sl = sl->next, count++)
+            if (count == cardno)
+              break;
+          if (!sl)
+            {
+              err = gpg_error (GPG_ERR_INV_INDEX);
+              goto leave;
+            }
+          err = scd_serialno (NULL, sl->d);
+          if (err)
+            goto leave;
+        }
+
+      err = scd_learn (info);
+      if (!err)
+        list_card (info);
+    }
+
+ leave:
+  free_strlist (cards);
+  return err;
+}
+
+
+
 /* The VERIFY command.  */
 static gpg_error_t
 cmd_verify (card_info_t info, char *argstr)
@@ -2478,9 +2553,8 @@ cmd_factoryreset (card_info_t info)
   if (err)
     goto leave;
 
-  /* Then, connect the card again (answer used as a dummy).  */
-  xfree (answer); answer = NULL;
-  err = scd_serialno (&answer, NULL);
+  /* Then, connect the card again.  */
+  err = scd_serialno (NULL, NULL);
 
  leave:
   if (err && any_apdu && !is_yubikey)
@@ -3158,20 +3232,6 @@ dispatch_command (card_info_t info, const char *orig_command)
         }
       break;
 
-    case cmdLIST:
-      if (!info)
-        print_help ("LIST\n\n"
-                    "Show content of the card.", 0);
-      else
-        {
-          err = scd_learn (info);
-          if (err)
-            log_error ("Error reading card: %s\n", gpg_strerror (err));
-          else
-            list_card (info);
-        }
-      break;
-
     case cmdRESET:
       if (!info)
         print_help ("RESET\n\n"
@@ -3183,6 +3243,7 @@ dispatch_command (card_info_t info, const char *orig_command)
         }
       break;
 
+    case cmdLIST:         err = cmd_list (info, argstr); break;
     case cmdVERIFY:       err = cmd_verify (info, argstr); break;
     case cmdAUTH:         err = cmd_authenticate (info, argstr); break;
     case cmdNAME:         err = cmd_name (info, argstr); break;
@@ -3268,14 +3329,11 @@ interactive_loop (void)
         }
       else if (redisplay)
         {
-          err = scd_learn (info);
+          err = cmd_list (info, "");
           if (err)
-            {
-              log_error ("Error reading card: %s\n", gpg_strerror (err));
-            }
+            log_error ("Error reading card: %s\n", gpg_strerror (err));
           else
             {
-              list_card (info);
               tty_printf("\n");
               redisplay = 0;
             }
@@ -3388,17 +3446,6 @@ interactive_loop (void)
             }
           break;
 
-        case cmdLIST:
-          if (!info)
-            print_help ("LIST\n\n"
-                        "Show content of the card.", 0);
-          else
-            {
-              /* Actual work is done by the redisplay code block.  */
-              redisplay = 1;
-            }
-          break;
-
         case cmdRESET:
           if (!info)
             print_help ("RESET\n\n"
@@ -3410,6 +3457,7 @@ interactive_loop (void)
             }
           break;
 
+        case cmdLIST:      err = cmd_list (info, argstr); break;
         case cmdVERIFY:
           err = cmd_verify (info, argstr);
           if (!err)
