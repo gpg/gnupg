@@ -836,7 +836,7 @@ gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
   inq_parm.ctrl = ctrl;
   inq_parm.ctx = agent_ctx;
 
-  rc = assuan_transact (agent_ctx, "SCD LEARN --force",
+  rc = assuan_transact (agent_ctx, "SCD LEARN --keypairinfo",
                         NULL, NULL,
                         default_inq_cb, &inq_parm,
                         scd_keypairinfo_status_cb, &list);

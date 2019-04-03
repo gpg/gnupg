@@ -812,7 +812,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     int special;
   } table[] = {
     { "SERIALNO",     0x0000, -1 },
-    { "$AUTHKEYID",   0x0000, -2 }, /* Default key for ssh.  */
+    { "$AUTHKEYID",   0x0000, -2 }, /* Default ssh key.  */
+    { "$ENCRKEYID",   0x0000, -6 }, /* Default encryption key.  */
+    { "$SIGNKEYID",   0x0000, -7 }, /* Default signing key.  */
     { "$DISPSERIALNO",0x0000, -3 },
     { "CHV-STATUS",   0x0000, -4 },
     { "CHV-USAGE",    0x007E, -5 }
@@ -882,6 +884,16 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                                       s[0], s[1]);
           xfree (relptr);
         }
+    }
+  else if (table[idx].special == -6)
+    {
+      char const tmp[] = "PIV.9D"; /* Key Management.  */
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
+    }
+  else if (table[idx].special == -7)
+    {
+      char const tmp[] = "PIV.9C"; /* Digital Signature.  */
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
     }
   else
     {

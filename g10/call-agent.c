@@ -839,7 +839,7 @@ agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
   memset (&inq_parm, 0, sizeof inq_parm);
   inq_parm.ctx = agent_ctx;
 
-  err = assuan_transact (agent_ctx, "SCD LEARN --force",
+  err = assuan_transact (agent_ctx, "SCD LEARN --keypairinfo",
                          NULL, NULL,
                          default_inq_cb, &inq_parm,
                          scd_keypairinfo_status_cb, &list);

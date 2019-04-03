@@ -987,6 +987,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "PRIVATE-DO-3", 0x0103 },
     { "PRIVATE-DO-4", 0x0104 },
     { "$AUTHKEYID",   0x0000, -3 },
+    { "$ENCRKEYID",   0x0000, -6 },
+    { "$SIGNKEYID",   0x0000, -7 },
     { "$DISPSERIALNO",0x0000, -4 },
     { "UIF-1",        0x00D6, 0 },
     { "UIF-2",        0x00D7, 0 },
@@ -1069,6 +1071,18 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     {
       for (i=0; i < 3; i++)
         send_key_attr (ctrl, app, table[idx].name, i);
+      return 0;
+    }
+  if (table[idx].special == -6)
+    {
+      char const tmp[] = "OPENPGP.2";
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
+      return 0;
+    }
+  if (table[idx].special == -7)
+    {
+      char const tmp[] = "OPENPGP.1";
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }
 
