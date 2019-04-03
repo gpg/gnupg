@@ -308,8 +308,10 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     int special;
   } table[] = {
     { "$AUTHKEYID",   1 },
-    { "NKS-VERSION",  2 },
-    { "CHV-STATUS",   3 },
+    { "$ENCRKEYID",   2 },
+    { "$SIGNKEYID",   3 },
+    { "NKS-VERSION",  4 },
+    { "CHV-STATUS",   5 },
     { NULL, 0 }
   };
   gpg_error_t err = 0;
@@ -339,13 +341,27 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       }
       break;
 
-    case 2: /* NKS-VERSION */
+    case 2: /* $ENCRKEYID */
+      {
+        char const tmp[] = "NKS-NKS3.45B1";
+        send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
+      }
+      break;
+
+    case 3: /* $SIGNKEYID */
+      {
+        char const tmp[] = "NKS-NKS3.4531";
+        send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
+      }
+      break;
+
+    case 4: /* NKS-VERSION */
       snprintf (buffer, sizeof buffer, "%d", app->app_local->nks_version);
       send_status_info (ctrl, table[idx].name,
                         buffer, strlen (buffer), NULL, 0);
       break;
 
-    case 3: /* CHV-STATUS */
+    case 5: /* CHV-STATUS */
       {
         /* Returns: PW1.CH PW2.CH PW1.CH.SIG PW2.CH.SIG That are the
            two global passwords followed by the two SigG passwords.
