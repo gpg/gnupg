@@ -824,13 +824,15 @@ scd_keypairinfo_status_cb (void *opaque, const char *line)
 /* Read the keypairinfo lines of the current card directly from
  * scdaemon.  The list is returned as a string made up of the keygrip,
  * a space and the keyref.  The flags of the string carry the usage
- * bits. */
+ * bits.  If KEYREF is not NULL, only a single string is returned
+ * which matches the given keyref. */
 gpg_error_t
-agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
+agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref, strlist_t *r_list)
 {
   gpg_error_t err;
   strlist_t list = NULL;
   struct default_inq_parm_s inq_parm;
+  char line[ASSUAN_LINELENGTH];
 
   *r_list = NULL;
   err= start_agent (ctrl, 1);
@@ -839,7 +841,12 @@ agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
   memset (&inq_parm, 0, sizeof inq_parm);
   inq_parm.ctx = agent_ctx;
 
-  err = assuan_transact (agent_ctx, "SCD LEARN --keypairinfo",
+  if (keyref)
+    snprintf (line, DIM(line), "SCD READKEY --info-only %s", keyref);
+  else
+    snprintf (line, DIM(line), "SCD LEARN --keypairinfo");
+
+  err = assuan_transact (agent_ctx, line,
                          NULL, NULL,
                          default_inq_cb, &inq_parm,
                          scd_keypairinfo_status_cb, &list);

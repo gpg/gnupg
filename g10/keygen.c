@@ -2254,7 +2254,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           tty_printf (_("Serial number of the card: %s\n"), serialno);
           xfree (serialno);
 
-          err = agent_scd_keypairinfo (ctrl, &keypairlist);
+          err = agent_scd_keypairinfo (ctrl, NULL, &keypairlist);
           if (err)
             {
               tty_printf (_("error reading the card: %s\n"),

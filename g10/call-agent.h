@@ -85,7 +85,8 @@ void agent_release_card_info (struct agent_card_info_s *info);
 int agent_scd_learn (struct agent_card_info_s *info, int force);
 
 /* Get the keypariinfo directly from scdaemon.  */
-gpg_error_t agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list);
+gpg_error_t agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref,
+                                   strlist_t *r_list);
 
 /* Return list of cards.  */
 int agent_scd_cardlist (strlist_t *result);

@@ -450,38 +450,31 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                           /* KEY-FPR not supported by the card - get
                            * the key using the keygrip.  */
                           char *keyref;
-                          strlist_t kplist, sl;
+                          strlist_t kplist;
                           const char *s;
                           int i;
 
                           err = agent_scd_getattr_one ("$ENCRKEYID", &keyref);
                           if (!err)
                             {
-                              err = agent_scd_keypairinfo (ctrl, &kplist);
+                              err = agent_scd_keypairinfo (ctrl, keyref,
+                                                           &kplist);
                               if (!err)
                                 {
-                                  for (sl = kplist; sl; sl = sl->next)
-                                    if ((s = strchr (sl->d, ' '))
-                                        && !strcmp (s+1, keyref))
-                                      break;
-                                  if (sl)
-                                    {
-                                      c->fpr2[0] = '&';
-                                      for (i=1, s=sl->d;
-                                           (*s && *s != ' '
-                                            && i < sizeof c->fpr2 - 3);
-                                           s++, i++)
-                                        c->fpr2[i] = *s;
-                                      c->fpr2[i] = 0;
-                                      name = c->fpr2;
-                                    }
-                                  else /* Restore error.  */
-                                    err = gpg_error (GPG_ERR_INV_NAME);
+                                  c->fpr2[0] = '&';
+                                  for (i=1, s=kplist->d;
+                                       (*s && *s != ' '
+                                        && i < sizeof c->fpr2 - 3);
+                                       s++, i++)
+                                    c->fpr2[i] = *s;
+                                  c->fpr2[i] = 0;
+                                  name = c->fpr2;
                                   free_strlist (kplist);
                                 }
+                              xfree (keyref);
                             }
-                          xfree (keyref);
                         }
+
                       if (err)
                         log_error ("error retrieving key from card: %s\n",
                                    gpg_strerror (err));
