@@ -618,7 +618,8 @@ do_readcert (app_t app, const char *certid,
    certificate parsing code in commands.c:cmd_readkey.  For internal
    use PK and PKLEN may be NULL to just check for an existing key.  */
 static gpg_error_t
-do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
+do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
+            unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
   unsigned char *buffer[2];
@@ -651,6 +652,14 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
     {
       xfree (buffer[0]);
       return err;
+    }
+
+  if ((flags & APP_READKEY_FLAG_INFO))
+    {
+      /* Not yet implemented but we won't get here for any regular
+       * keyrefs anyway, thus the top layer will provide the
+       * keypairinfo from the certificate.  */
+      (void)ctrl;
     }
 
   if (pk && pklen)
@@ -698,7 +707,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   else
     return gpg_error (GPG_ERR_INV_ID);
 
-  if (!force && !do_readkey (app, keyid, NULL, NULL))
+  if (!force && !do_readkey (app, ctrl, keyid, 0, NULL, NULL))
     return gpg_error (GPG_ERR_EEXIST);
 
   /* Parse the S-expression.  */

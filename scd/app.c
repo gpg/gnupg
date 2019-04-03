@@ -772,14 +772,15 @@ app_readcert (app_t app, ctrl_t ctrl, const char *certid,
 
 
 /* Read the key with ID KEYID.  On success a canonical encoded
-   S-expression with the public key will get stored at PK and its
-   length (for assertions) at PKLEN; the caller must release that
-   buffer. On error NULL will be stored at PK and PKLEN and an error
-   code returned.
-
-   This function might not be supported by all applications.  */
+ * S-expression with the public key will get stored at PK and its
+ * length (for assertions) at PKLEN; the caller must release that
+ * buffer. On error NULL will be stored at PK and PKLEN and an error
+ * code returned.  If the key is not required NULL may be passed for
+ * PK; this makse send if the APP_READKEY_FLAG_INFO has also been set.
+ *
+ * This function might not be supported by all applications.  */
 gpg_error_t
-app_readkey (app_t app, ctrl_t ctrl, const char *keyid,
+app_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
              unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
@@ -789,7 +790,7 @@ app_readkey (app_t app, ctrl_t ctrl, const char *keyid,
   if (pklen)
     *pklen = 0;
 
-  if (!app || !keyid || !pk || !pklen)
+  if (!app || !keyid)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
@@ -798,7 +799,7 @@ app_readkey (app_t app, ctrl_t ctrl, const char *keyid,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err= app->fnc.readkey (app, keyid, pk, pklen);
+  err= app->fnc.readkey (app, ctrl, keyid, flags, pk, pklen);
   unlock_app (app);
   return err;
 }

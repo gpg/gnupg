@@ -1889,7 +1889,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
    buffer. On error PK and PKLEN are not changed and an error code is
    returned.  */
 static gpg_error_t
-do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
+do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
+            unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
   int keyno;
@@ -1912,15 +1913,25 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   if (!buf)
     return gpg_error (GPG_ERR_NO_PUBKEY);
 
-  *pklen = app->app_local->pk[keyno].keylen;
-  *pk = xtrymalloc (*pklen);
-  if (!*pk)
+  if ((flags & APP_READKEY_FLAG_INFO))
     {
-      err = gpg_error_from_syserror ();
-      *pklen = 0;
-      return err;
+      err = send_keypair_info (app, ctrl, keyno+1);
+      if (err)
+        return err;
     }
-  memcpy (*pk, buf, *pklen);
+
+  if (pk && pklen)
+    {
+      *pklen = app->app_local->pk[keyno].keylen;
+      *pk = xtrymalloc (*pklen);
+      if (!*pk)
+        {
+          err = gpg_error_from_syserror ();
+          *pklen = 0;
+          return err;
+        }
+      memcpy (*pk, buf, *pklen);
+    }
 
   return 0;
 }

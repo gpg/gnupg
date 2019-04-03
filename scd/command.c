@@ -502,19 +502,20 @@ cmd_readcert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_readkey[] =
-  "READKEY [--advanced] <keyid>|<oid>\n"
+  "READKEY [--advanced] [--info[-only]] <keyid>|<oid>\n"
   "\n"
   "Return the public key for the given cert or key ID as a standard\n"
-  "S-expression.\n"
-  "In --advanced mode it returns the S-expression in advanced format.\n"
-  "\n"
-  "Note that this function may even be used on a locked card.";
+  "S-expression.  With --advanced  the S-expression is returned in\n"
+  "advanced format.  With --info a KEYPAIRINFO status line is also\n"
+  "emitted; with --info-only the regular output is suppressed.";
 static gpg_error_t
 cmd_readkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   int advanced = 0;
+  int opt_info = 0;
+  int opt_nokey = 0;
   unsigned char *cert = NULL;
   unsigned char *pk = NULL;
   size_t ncert, pklen;
@@ -524,6 +525,10 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
   if (has_option (line, "--advanced"))
     advanced = 1;
+  if (has_option (line, "--info"))
+    opt_info = 1;
+  if (has_option (line, "--info-only"))
+    opt_info = opt_nokey = 1;
 
   line = skip_options (line);
   line = xstrdup (line); /* Need a copy of the line. */
@@ -531,7 +536,9 @@ cmd_readkey (assuan_context_t ctx, char *line)
   /* If the application supports the READKEY function we use that.
      Otherwise we use the old way by extracting it from the
      certificate.  */
-  rc = app_readkey (ctrl->app_ctx, ctrl, line, &pk, &pklen);
+  rc = app_readkey (ctrl->app_ctx, ctrl, line,
+                    opt_info? APP_READKEY_FLAG_INFO : 0,
+                    opt_nokey? NULL : &pk, &pklen);
   if (!rc)
     ; /* Okay, got that key.  */
   else if (gpg_err_code (rc) == GPG_ERR_UNSUPPORTED_OPERATION
@@ -551,6 +558,26 @@ cmd_readkey (assuan_context_t ctx, char *line)
                      gpg_strerror (rc));
           goto leave;
         }
+
+      if (opt_info)
+        {
+          char keygripstr[KEYGRIP_LEN*2+1];
+
+          rc = app_help_get_keygrip_string_pk (pk, pklen, keygripstr);
+          if (rc)
+            {
+              log_error ("app_help_get_keygrip_string failed: %s\n",
+                         gpg_strerror (rc));
+              goto leave;
+            }
+
+          /* FIXME: Using LINE is not correct because it might be an
+           * OID and has not been canonicalized (i.e. uppercased).  */
+          send_status_info (ctrl, "KEYPAIRINFO",
+                            keygripstr, strlen (keygripstr),
+                            line, strlen (line),
+                            NULL, (size_t)0);
+        }
     }
   else
     {
@@ -558,7 +585,9 @@ cmd_readkey (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  if (advanced)
+  if (opt_nokey)
+    ;
+  else if (advanced)
     {
       gcry_sexp_t s_key;
       unsigned char *pkadv;

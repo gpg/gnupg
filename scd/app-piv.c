@@ -1465,7 +1465,7 @@ do_readcert (app_t app, const char *certid,
  * returned.
  */
 static gpg_error_t
-do_readkey (app_t app, const char *keyrefstr,
+do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
             unsigned char **r_pk, size_t *r_pklen)
 {
   gpg_error_t err;
@@ -1517,9 +1517,35 @@ do_readkey (app_t app, const char *keyrefstr,
         goto leave;
     }
 
-  *r_pk = pk;
-  pk = NULL;
-  *r_pklen = pklen;
+  if ((flags & APP_READKEY_FLAG_INFO))
+    {
+      char keygripstr[KEYGRIP_LEN*2+1];
+      char idbuf[50];
+      const char *usage;
+
+      err = app_help_get_keygrip_string_pk (pk, pklen, keygripstr);
+      if (err)
+        {
+          log_error ("app_help_get_keygrip_string_pk failed: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      usage = dobj->usage? dobj->usage : "";
+
+      snprintf (idbuf, sizeof idbuf, "PIV.%s", dobj->keyref);
+      send_status_info (ctrl, "KEYPAIRINFO",
+                        keygripstr, strlen (keygripstr),
+                        idbuf, strlen (idbuf),
+                        usage, strlen (usage),
+                        NULL, (size_t)0);
+    }
+
+  if (r_pk && r_pklen)
+    {
+      *r_pk = pk;
+      pk = NULL;
+      *r_pklen = pklen;
+    }
 
  leave:
   gcry_sexp_release (s_pkey);
@@ -3218,7 +3244,7 @@ do_writecert (app_t app, ctrl_t ctrl,
    * GPG_ERR_NO_PUBKEY).  We enforce this because otherwise the only
    * way to detect whether a key exists is by trying to use that
    * key. */
-  err = do_readkey (app, certrefstr, &orig_pk, &orig_pklen);
+  err = do_readkey (app, ctrl, certrefstr, 0, &orig_pk, &orig_pklen);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)

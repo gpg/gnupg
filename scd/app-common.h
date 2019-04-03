@@ -36,8 +36,12 @@
 /* Flags used with app_writekey.  */
 #define APP_WRITEKEY_FLAG_FORCE  1  /* Force overwriting existing key.  */
 
+/* Flags used with app_readkey.  */
+#define APP_READKEY_FLAG_INFO    1  /* Send also a KEYPAIRINFO line.  */
+
 /* Bit flags set by the decipher function into R_INFO.  */
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
+
 
 
 struct app_local_s;  /* Defined by all app-*.c.  */
@@ -75,8 +79,9 @@ struct app_ctx_s {
     gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl, unsigned int flags);
     gpg_error_t (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
-    gpg_error_t (*readkey) (app_t app, const char *certid,
-                    unsigned char **pk, size_t *pklen);
+    gpg_error_t (*readkey) (app_t app, ctrl_t ctrl,
+                            const char *certid, unsigned int flags,
+                            unsigned char **pk, size_t *pklen);
     gpg_error_t (*getattr) (app_t app, ctrl_t ctrl, const char *name);
     gpg_error_t (*setattr) (app_t app, const char *name,
                     gpg_error_t (*pincb)(void*, const char *, char **),
@@ -126,6 +131,8 @@ struct app_ctx_s {
 
 /*-- app-help.c --*/
 unsigned int app_help_count_bits (const unsigned char *a, size_t len);
+gpg_error_t app_help_get_keygrip_string_pk (const void *pk, size_t pklen,
+                                            char *hexkeygrip);
 gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip);
 gpg_error_t app_help_pubkey_from_cert (const void *cert, size_t certlen,
                                        unsigned char **r_pk, size_t *r_pklen);
@@ -152,7 +159,8 @@ gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
 gpg_error_t app_readcert (app_t app, ctrl_t ctrl, const char *certid,
                   unsigned char **cert, size_t *certlen);
 gpg_error_t app_readkey (app_t app, ctrl_t ctrl,
-                 const char *keyid, unsigned char **pk, size_t *pklen);
+                         const char *keyid, unsigned int flags,
+                         unsigned char **pk, size_t *pklen);
 gpg_error_t app_getattr (app_t app, ctrl_t ctrl, const char *name);
 gpg_error_t app_setattr (app_t app, ctrl_t ctrl, const char *name,
                  gpg_error_t (*pincb)(void*, const char *, char **),
