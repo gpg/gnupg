@@ -2434,15 +2434,34 @@ do_decipher (app_t app, const char *keyidstr,
 
   /* Check that the ciphertext has the right length; due to internal
    * convey mechanism using MPIs leading zero bytes might have been
-   * lost.  Adjust for this.  Note that for ECC this actually
-   * superfluous because the first octet is always '04' to indicate an
+   * lost.  Adjust for this.  Unfortunately the ciphertext might have
+   * also been prefixed with a leading zero to make it a positive
+   * number; that may be a too long frame and we need to adjust for
+   * this too.  Note that for ECC thoses fixes are not reqquired
+   * because the first octet is always '04' to indicate an
    * uncompressed point.  */
   if (indatalen > framelen)
     {
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      log_error ("piv: input of %zu octets too large for mechanism %d\n",
-                 indatalen, mechanism);
-      goto leave;
+      if (mechanism == PIV_ALGORITHM_RSA
+          && indatalen == framelen + 1 && !*indata)
+        {
+          indata_buffer = xtrycalloc (1, framelen);
+          if (!indata_buffer)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (indata_buffer, indata+1, framelen);
+          indata = indata_buffer;
+          indatalen = framelen;
+        }
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          log_error ("piv: input of %zu octets too large for mechanism %d\n",
+                     indatalen, mechanism);
+          goto leave;
+        }
     }
   if (indatalen < framelen)
     {
