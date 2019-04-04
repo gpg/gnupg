@@ -110,8 +110,6 @@
 
 /* CCID command timeout.  */
 #define CCID_CMD_TIMEOUT (5*1000)
-/* OpenPGPcard v2.1 requires huge timeout for key generation.  */
-#define CCID_CMD_TIMEOUT_LONGER (60*1000)
 
 /* Depending on how this source is used we either define our error
    output to go to stderr or to the GnuPG based logging functions.  We
@@ -3147,7 +3145,7 @@ ccid_transceive (ccid_driver_t handle,
           msg[0] = PC_to_RDR_XfrBlock;
           msg[5] = 0; /* slot */
           msg[6] = seqno = handle->seqno++;
-          msg[7] = wait_more; /* bBWI */
+          msg[7] = (wait_more ? wait_more : 1); /* bBWI */
           msg[8] = 0; /* RFU */
           msg[9] = 0; /* RFU */
           set_msg_len (msg, tpdulen);
@@ -3173,7 +3171,7 @@ ccid_transceive (ccid_driver_t handle,
       msg = recv_buffer;
       rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
                     via_escape? RDR_to_PC_Escape : RDR_to_PC_DataBlock, seqno,
-                    wait_more? CCID_CMD_TIMEOUT_LONGER: CCID_CMD_TIMEOUT, 0);
+                    (wait_more ? wait_more : 1) * CCID_CMD_TIMEOUT, 0);
       if (rc)
         return rc;
 
@@ -3203,6 +3201,7 @@ ccid_transceive (ccid_driver_t handle,
                     (!(msg[pcboff] & 0x80) && (msg[pcboff] & 0x20)?
                      " [more]":""));
 
+      wait_more = 0;
       if (!(tpdu[1] & 0x80))
         { /* This is an I-block. */
           retries = 0;
@@ -3348,9 +3347,7 @@ ccid_transceive (ccid_driver_t handle,
               /* Wait time extension request. */
               unsigned char bwi = tpdu[3];
 
-              /* Check if it's unsual value which can't be expressed in ATR.  */
-              if (bwi > 15)
-                wait_more = 1;
+	      wait_more = bwi;
 
               msg = send_buffer;
               tpdu = msg + hdrlen;
