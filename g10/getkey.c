@@ -112,6 +112,7 @@ static struct
 typedef struct keyid_list
 {
   struct keyid_list *next;
+  byte fprlen;
   char fpr[MAX_FINGERPRINT_LEN];
   u32 keyid[2];
 } *keyid_list_t;
@@ -311,6 +312,7 @@ cache_user_id (KBNODE keyblock)
   size_t uidlen;
   keyid_list_t keyids = NULL;
   KBNODE k;
+  size_t n;
 
   for (k = keyblock; k; k = k->next)
     {
@@ -320,7 +322,8 @@ cache_user_id (KBNODE keyblock)
 	  keyid_list_t a = xmalloc_clear (sizeof *a);
 	  /* Hmmm: For a long list of keyids it might be an advantage
 	   * to append the keys.  */
-          fingerprint_from_pk (k->pkt->pkt.public_key, a->fpr, NULL);
+          fingerprint_from_pk (k->pkt->pkt.public_key, a->fpr, &n);
+          a->fprlen = n;
 	  keyid_from_pk (k->pkt->pkt.public_key, a->keyid);
 	  /* First check for duplicates.  */
 	  for (r = user_id_db; r; r = r->next)
@@ -329,7 +332,8 @@ cache_user_id (KBNODE keyblock)
 
 	      for (b = r->keyids; b; b = b->next)
 		{
-		  if (!memcmp (b->fpr, a->fpr, MAX_FINGERPRINT_LEN))
+		  if (b->fprlen == a->fprlen
+                      && !memcmp (b->fpr, a->fpr, a->fprlen))
 		    {
 		      if (DBG_CACHE)
 			log_debug ("cache_user_id: already in cache\n");
@@ -1637,7 +1641,7 @@ get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
  *
  * FPRINT is a byte array whose contents is the fingerprint to use as
  * the search term.  FPRINT_LEN specifies the length of the
- * fingerprint (in bytes).  Currently, only 16 and 20-byte
+ * fingerprint (in bytes).  Currently, only 16, 20, and 32-byte
  * fingerprints are supported.
  *
  * FIXME: We should replace this with the _byname function.  This can
@@ -3943,8 +3947,8 @@ get_user_id_native (ctrl_t ctrl, u32 *keyid)
    returned string, which must be freed using xfree, may not be NUL
    terminated.  To determine the length of the string, you must use
    *RN.  */
-char *
-get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn)
+static char *
+get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t fprlen, size_t *rn)
 {
   user_id_db_t r;
   char *p;
@@ -3958,7 +3962,7 @@ get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn)
 	  keyid_list_t a;
 	  for (a = r->keyids; a; a = a->next)
 	    {
-	      if (!memcmp (a->fpr, fpr, MAX_FINGERPRINT_LEN))
+	      if (a->fprlen == fprlen && !memcmp (a->fpr, fpr, fprlen))
 		{
                   /* An empty string as user id is possible.  Make
                      sure that the malloc allocates one byte and does
@@ -3972,7 +3976,7 @@ get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn)
 	}
     }
   while (++pass < 2
-	 && !get_pubkey_byfprint (ctrl, NULL, NULL, fpr, MAX_FINGERPRINT_LEN));
+	 && !get_pubkey_byfprint (ctrl, NULL, NULL, fpr, fprlen));
   p = xstrdup (user_id_not_found_utf8 ());
   *rn = strlen (p);
   return p;
@@ -3982,10 +3986,10 @@ get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn)
    encoding.  The returned string needs to be freed.  Unlike
    get_user_id_byfpr, the returned string is NUL terminated.  */
 char *
-get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr)
+get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr, size_t fprlen)
 {
   size_t rn;
-  char *p = get_user_id_byfpr (ctrl, fpr, &rn);
+  char *p = get_user_id_byfpr (ctrl, fpr, fprlen, &rn);
   char *p2 = utf8_to_native (p, rn, 0);
   xfree (p);
   return p2;
