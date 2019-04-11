@@ -669,6 +669,18 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
 
       if (!(++stats->count % 100) && !opt.quiet)
         log_info (_("%lu keys processed so far\n"), stats->count );
+
+      if (origin == KEYORG_WKD && stats->count >= 5)
+        {
+          /* We limit the number of keys _received_ from the WKD to 5.
+           * In fact there should be only one key but some sites want
+           * to store a few expired keys there also.  gpg's key
+           * selection will later figure out which key to use.  Note
+           * that for WKD we always return the fingerprint of the
+           * first imported key.  */
+          log_info ("import from WKD stopped after %d keys\n", 5);
+          break;
+        }
     }
   stats->v3keys += v3keys;
   if (rc == -1)
@@ -2203,14 +2215,19 @@ import_one (ctrl_t ctrl,
          fingerprint of the key in all cases.  */
       if (fpr)
         {
-          xfree (*fpr);
           /* Note that we need to compare against 0 here because
              COUNT gets only incremented after returning from this
              function.  */
           if (!stats->count)
-            *fpr = fingerprint_from_pk (pk, NULL, fpr_len);
-          else
-            *fpr = NULL;
+            {
+              xfree (*fpr);
+              *fpr = fingerprint_from_pk (pk, NULL, fpr_len);
+            }
+          else if (origin != KEYORG_WKD)
+            {
+              xfree (*fpr);
+              *fpr = NULL;
+            }
         }
     }
 
