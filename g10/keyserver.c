@@ -2072,8 +2072,9 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
       int armor_status = opt.no_armor;
       import_filter_t save_filt;
 
-      /* Keys returned via WKD are in binary format. */
-      opt.no_armor = 1;
+      /* Keys returned via WKD are in binary format.  However, we
+       * relax that requirement and allow also for armored data.  */
+      opt.no_armor = 0;
       save_filt = save_and_clear_import_filter ();
       if (!save_filt)
         err = gpg_error_from_syserror ();
