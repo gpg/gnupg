@@ -36,6 +36,7 @@
 #include "../common/i18n.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
+#include "objcache.h"
 #include "../common/host2net.h"
 #include "../common/mbox-util.h"
 #include "../common/status.h"
@@ -141,7 +142,6 @@ typedef struct user_id_db
   char name[1];
 } *user_id_db_t;
 static user_id_db_t user_id_db;
-static int uid_cache_entries;	/* Number of entries in uid cache. */
 
 static void merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock);
 static int lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
@@ -262,115 +262,6 @@ user_id_not_found_utf8 (void)
 }
 
 
-
-/* Return the user ID from the given keyblock.
- * We use the primary uid flag which has been set by the merge_selfsigs
- * function.  The returned value is only valid as long as the given
- * keyblock is not changed.  */
-static const char *
-get_primary_uid (KBNODE keyblock, size_t * uidlen)
-{
-  KBNODE k;
-  const char *s;
-
-  for (k = keyblock; k; k = k->next)
-    {
-      if (k->pkt->pkttype == PKT_USER_ID
-	  && !k->pkt->pkt.user_id->attrib_data
-	  && k->pkt->pkt.user_id->flags.primary)
-	{
-	  *uidlen = k->pkt->pkt.user_id->len;
-	  return k->pkt->pkt.user_id->name;
-	}
-    }
-  s = user_id_not_found_utf8 ();
-  *uidlen = strlen (s);
-  return s;
-}
-
-
-static void
-release_keyid_list (keyid_list_t k)
-{
-  while (k)
-    {
-      keyid_list_t k2 = k->next;
-      xfree (k);
-      k = k2;
-    }
-}
-
-/****************
- * Store the association of keyid and userid
- * Feed only public keys to this function.
- */
-static void
-cache_user_id (KBNODE keyblock)
-{
-  user_id_db_t r;
-  const char *uid;
-  size_t uidlen;
-  keyid_list_t keyids = NULL;
-  KBNODE k;
-  size_t n;
-
-  for (k = keyblock; k; k = k->next)
-    {
-      if (k->pkt->pkttype == PKT_PUBLIC_KEY
-	  || k->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-	{
-	  keyid_list_t a = xmalloc_clear (sizeof *a);
-	  /* Hmmm: For a long list of keyids it might be an advantage
-	   * to append the keys.  */
-          fingerprint_from_pk (k->pkt->pkt.public_key, a->fpr, &n);
-          a->fprlen = n;
-	  keyid_from_pk (k->pkt->pkt.public_key, a->keyid);
-	  /* First check for duplicates.  */
-	  for (r = user_id_db; r; r = r->next)
-	    {
-	      keyid_list_t b;
-
-	      for (b = r->keyids; b; b = b->next)
-		{
-		  if (b->fprlen == a->fprlen
-                      && !memcmp (b->fpr, a->fpr, a->fprlen))
-		    {
-		      if (DBG_CACHE)
-			log_debug ("cache_user_id: already in cache\n");
-		      release_keyid_list (keyids);
-		      xfree (a);
-		      return;
-		    }
-		}
-	    }
-	  /* Now put it into the cache.  */
-	  a->next = keyids;
-	  keyids = a;
-	}
-    }
-  if (!keyids)
-    BUG (); /* No key no fun.  */
-
-
-  uid = get_primary_uid (keyblock, &uidlen);
-
-  if (uid_cache_entries >= MAX_UID_CACHE_ENTRIES)
-    {
-      /* fixme: use another algorithm to free some cache slots */
-      r = user_id_db;
-      user_id_db = r->next;
-      release_keyid_list (r->keyids);
-      xfree (r);
-      uid_cache_entries--;
-    }
-  r = xmalloc (sizeof *r + uidlen - 1);
-  r->keyids = keyids;
-  r->len = uidlen;
-  memcpy (r->name, uid, r->len);
-  r->next = user_id_db;
-  user_id_db = r;
-  uid_cache_entries++;
-}
 
 
 /* Disable and drop the public key cache (which is filled by
@@ -3627,7 +3518,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
       xfree (tempkeystr);
     }
 
-  cache_user_id (keyblock);
+  cache_put_keyblock (keyblock);
 
   return latest_key ? latest_key : keyblock; /* Found.  */
 }
@@ -3848,6 +3739,7 @@ get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len,
   int pass = 0;
   char *p;
 
+  log_assert (mode != 2);
   if (r_nouid)
     *r_nouid = 0;
 
@@ -3862,13 +3754,7 @@ get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len,
 		{
                   if (mode == 2)
                     {
-                      /* An empty string as user id is possible.  Make
-                         sure that the malloc allocates one byte and
-                         does not bail out.  */
-                      p = xmalloc (r->len? r->len : 1);
-                      memcpy (p, r->name, r->len);
-                      if (r_len)
-                        *r_len = r->len;
+                      BUG ();
                     }
                   else
                     {
@@ -3926,7 +3812,31 @@ get_long_user_id_string (ctrl_t ctrl, u32 * keyid)
 char *
 get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn, int *r_nouid)
 {
-  return get_user_id_string (ctrl, keyid, 2, rn, r_nouid);
+  char *name;
+  unsigned int namelen;
+
+  if (r_nouid)
+    *r_nouid = 0;
+
+  name = cache_get_uid_bykid (keyid, &namelen);
+  if (!name)
+    {
+      /* Get it so that the cache will be filled.  */
+      if (!get_pubkey (ctrl, NULL, keyid))
+        name = cache_get_uid_bykid (keyid, &namelen);
+    }
+
+  if (!name)
+    {
+      name = xstrdup (user_id_not_found_utf8 ());
+      namelen = strlen (name);
+      if (r_nouid)
+        *r_nouid = 1;
+    }
+
+  if (rn && name)
+    *rn = namelen;
+  return name;
 }
 
 

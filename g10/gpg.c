@@ -59,6 +59,7 @@
 #include "../common/asshelp.h"
 #include "call-dirmngr.h"
 #include "tofu.h"
+#include "objcache.h"
 #include "../common/init.h"
 #include "../common/mbox-util.h"
 #include "../common/shareddefs.h"
@@ -5223,6 +5224,7 @@ g10_exit( int rc )
     {
       keydb_dump_stats ();
       sig_check_dump_stats ();
+      objcache_dump_stats ();
       gcry_control (GCRYCTL_DUMP_MEMORY_STATS);
       gcry_control (GCRYCTL_DUMP_RANDOM_STATS);
     }

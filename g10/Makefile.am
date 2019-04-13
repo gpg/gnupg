@@ -121,6 +121,7 @@ common_source =  \
 	      sig-check.c	\
 	      keylist.c 	\
 	      pkglue.c pkglue.h \
+	      objcache.c objcache.h \
 	      ecdh.c
 
 gpg_sources = server.c          \
