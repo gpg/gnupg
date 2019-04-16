@@ -148,13 +148,13 @@ if MAINTAINER_MODE
 audit-events.h: Makefile.am mkstrtable.awk exaudit.awk audit.h
 	$(AWK) -f $(srcdir)/exaudit.awk $(srcdir)/audit.h \
 	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
-		   -v namespace=eventstr_  > $(srcdir)/audit-events.h
+		   -v pkg_namespace=eventstr_  > $(srcdir)/audit-events.h
 
 # Create the status-codes.h include file from status.h
 status-codes.h: Makefile.am mkstrtable.awk exstatus.awk status.h
 	$(AWK) -f $(srcdir)/exstatus.awk $(srcdir)/status.h \
 	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
-		   -v namespace=statusstr_  > $(srcdir)/status-codes.h
+		   -v pkg_namespace=statusstr_  > $(srcdir)/status-codes.h
 endif
 
 #
