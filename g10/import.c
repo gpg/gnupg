@@ -689,6 +689,13 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
     log_error (_("error reading '%s': %s\n"), fname, gpg_strerror (rc));
 
   release_kbnode (secattic);
+
+  /* When read_block loop was stopped by error, we have PENDING_PKT left.  */
+  if (pending_pkt)
+    {
+      free_packet (pending_pkt, NULL);
+      xfree (pending_pkt);
+    }
   return rc;
 }
 
