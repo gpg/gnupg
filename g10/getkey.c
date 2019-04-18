@@ -1495,15 +1495,14 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
               /* Old key is better.  */
               release_public_key_parts (&new.key);
               free_user_id (new.uid);
-              new.uid = NULL;
             }
           else
             {
               /* A tie.  Keep the old key.  */
               release_public_key_parts (&new.key);
               free_user_id (new.uid);
-              new.uid = NULL;
             }
+          new.uid = NULL;
         }
       getkey_end (ctrl, ctx);
       ctx = NULL;
