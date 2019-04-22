@@ -4294,6 +4294,50 @@ check_against_given_fingerprint (app_t app, const char *fpr, int key)
 }
 
 
+static int
+check_keyidstr (app_t app, const char *keyidstr, int keyno)
+{
+  int rc;
+  const char *s;
+  int n;
+  const char *fpr = NULL;
+  unsigned char tmp_sn[20]; /* Actually 16 bytes but also for the fpr. */
+
+  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
+    return gpg_error (GPG_ERR_INV_ID);
+  else
+    {
+      for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+        ;
+      if (n != 32)
+        return gpg_error (GPG_ERR_INV_ID);
+      else if (!*s)
+        ; /* no fingerprint given: we allow this for now. */
+      else if (*s == '/')
+        fpr = s + 1;
+      else
+        return gpg_error (GPG_ERR_INV_ID);
+
+      for (s=keyidstr, n=0; n < 16; s += 2, n++)
+        tmp_sn[n] = xtoi_2 (s);
+
+      if (app->serialnolen != 16)
+        return gpg_error (GPG_ERR_INV_CARD);
+      if (memcmp (app->serialno, tmp_sn, 16))
+        return gpg_error (GPG_ERR_WRONG_CARD);
+    }
+
+  /* If a fingerprint has been specified check it against the one on
+     the card.  This is allows for a meaningful error message in case
+     the key on the card has been replaced but the shadow information
+     known to gpg was not updated.  If there is no fingerprint, gpg
+     will detect a bogus signature anyway due to the
+     verify-after-signing feature. */
+  rc = (fpr&&keyno)? check_against_given_fingerprint (app, fpr, keyno) : 0;
+
+  return rc;
+}
+
 
 /* Compute a digital signature on INDATA which is expected to be the
    raw message digest. For this application the KEYIDSTR consists of
@@ -4339,10 +4383,6 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   int rc;
   unsigned char data[19+64];
   size_t datalen;
-  unsigned char tmp_sn[20]; /* Actually 16 bytes but also for the fpr. */
-  const char *s;
-  int n;
-  const char *fpr = NULL;
   unsigned long sigcount;
   int use_auth = 0;
   int exmode, le_value;
@@ -4387,39 +4427,12 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     ;
   else if (!strcmp (keyidstr, "OPENPGP.3"))
     use_auth = 1;
-  else if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
-    return gpg_error (GPG_ERR_INV_ID);
   else
     {
-      for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
-        ;
-      if (n != 32)
-        return gpg_error (GPG_ERR_INV_ID);
-      else if (!*s)
-        ; /* no fingerprint given: we allow this for now. */
-      else if (*s == '/')
-        fpr = s + 1;
-      else
-        return gpg_error (GPG_ERR_INV_ID);
-
-      for (s=keyidstr, n=0; n < 16; s += 2, n++)
-        tmp_sn[n] = xtoi_2 (s);
-
-      if (app->serialnolen != 16)
-        return gpg_error (GPG_ERR_INV_CARD);
-      if (memcmp (app->serialno, tmp_sn, 16))
-        return gpg_error (GPG_ERR_WRONG_CARD);
+      rc = check_keyidstr (app, keyidstr, 1);
+      if (rc)
+        return rc;
     }
-
-  /* If a fingerprint has been specified check it against the one on
-     the card.  This is allows for a meaningful error message in case
-     the key on the card has been replaced but the shadow information
-     known to gpg was not updated.  If there is no fingerprint, gpg
-     will detect a bogus signature anyway due to the
-     verify-after-signing feature. */
-  rc = fpr? check_against_given_fingerprint (app, fpr, 1) : 0;
-  if (rc)
-    return rc;
 
   /* Concatenate prefix and digest.  */
 #define X(a,b,d) \
@@ -4537,10 +4550,6 @@ do_auth (app_t app, const char *keyidstr,
          unsigned char **outdata, size_t *outdatalen )
 {
   int rc;
-  unsigned char tmp_sn[20]; /* Actually 16 but we use it also for the fpr. */
-  const char *s;
-  int n;
-  const char *fpr = NULL;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -4568,39 +4577,12 @@ do_auth (app_t app, const char *keyidstr,
   /* Check whether an OpenPGP card of any version has been requested. */
   if (!strcmp (keyidstr, "OPENPGP.3"))
     ;
-  else if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
-    return gpg_error (GPG_ERR_INV_ID);
   else
     {
-      for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
-        ;
-      if (n != 32)
-        return gpg_error (GPG_ERR_INV_ID);
-      else if (!*s)
-        ; /* no fingerprint given: we allow this for now. */
-      else if (*s == '/')
-        fpr = s + 1;
-      else
-        return gpg_error (GPG_ERR_INV_ID);
-
-      for (s=keyidstr, n=0; n < 16; s += 2, n++)
-        tmp_sn[n] = xtoi_2 (s);
-
-      if (app->serialnolen != 16)
-        return gpg_error (GPG_ERR_INV_CARD);
-      if (memcmp (app->serialno, tmp_sn, 16))
-        return gpg_error (GPG_ERR_WRONG_CARD);
+      rc = check_keyidstr (app, keyidstr, 3);
+      if (rc)
+        return rc;
     }
-
-  /* If a fingerprint has been specified check it against the one on
-     the card.  This is allows for a meaningful error message in case
-     the key on the card has been replaced but the shadow information
-     known to gpg was not updated.  If there is no fingerprint, gpg
-     will detect a bogus signature anyway due to the
-     verify-after-signing feature. */
-  rc = fpr? check_against_given_fingerprint (app, fpr, 3) : 0;
-  if (rc)
-    return rc;
 
   rc = verify_chv2 (app, pincb, pincb_arg);
   if (!rc)
@@ -4637,11 +4619,8 @@ do_decipher (app_t app, const char *keyidstr,
              unsigned char **outdata, size_t *outdatalen,
              unsigned int *r_info)
 {
-  int rc;
-  unsigned char tmp_sn[20]; /* actually 16 but we use it also for the fpr. */
-  const char *s;
   int n;
-  const char *fpr = NULL;
+  int rc;
   int exmode, le_value;
   unsigned char *fixbuf = NULL;
   int padind = 0;
@@ -4653,38 +4632,12 @@ do_decipher (app_t app, const char *keyidstr,
   /* Check whether an OpenPGP card of any version has been requested. */
   if (!strcmp (keyidstr, "OPENPGP.2"))
     ;
-  else if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
-    return gpg_error (GPG_ERR_INV_ID);
   else
     {
-      for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
-        ;
-      if (n != 32)
-        return gpg_error (GPG_ERR_INV_ID);
-      else if (!*s)
-        ; /* no fingerprint given: we allow this for now. */
-      else if (*s == '/')
-        fpr = s + 1;
-      else
-        return gpg_error (GPG_ERR_INV_ID);
-
-      for (s=keyidstr, n=0; n < 16; s += 2, n++)
-        tmp_sn[n] = xtoi_2 (s);
-
-      if (app->serialnolen != 16)
-        return gpg_error (GPG_ERR_INV_CARD);
-      if (memcmp (app->serialno, tmp_sn, 16))
-        return gpg_error (GPG_ERR_WRONG_CARD);
+      rc = check_keyidstr (app, keyidstr, 2);
+      if (rc)
+        return rc;
     }
-
-  /* If a fingerprint has been specified check it against the one on
-     the card.  This is allows for a meaningful error message in case
-     the key on the card has been replaced but the shadow information
-     known to gpg was not updated.  If there is no fingerprint, the
-     decryption won't produce the right plaintext anyway. */
-  rc = fpr? check_against_given_fingerprint (app, fpr, 2) : 0;
-  if (rc)
-    return rc;
 
   rc = verify_chv2 (app, pincb, pincb_arg);
   if (rc)
@@ -4901,38 +4854,18 @@ do_check_pin (app_t app, const char *keyidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
-  unsigned char tmp_sn[20];
-  const char *s;
-  int n;
   int admin_pin = 0;
+  int rc;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* Check whether an OpenPGP card of any version has been requested. */
-  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
-    return gpg_error (GPG_ERR_INV_ID);
+  rc = check_keyidstr (app, keyidstr, 0);
+  if (rc)
+    return rc;
 
-  for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
-    ;
-  if (n != 32)
-    return gpg_error (GPG_ERR_INV_ID);
-  else if (!*s)
-    ; /* No fingerprint given: we allow this for now. */
-  else if (*s == '/')
-    ; /* We ignore a fingerprint. */
-  else if (!strcmp (s, "[CHV3]") )
+  if (strlen (keyidstr) >= 32+6 && !strcmp (keyidstr+32, "[CHV3]"))
     admin_pin = 1;
-  else
-    return gpg_error (GPG_ERR_INV_ID);
-
-  for (s=keyidstr, n=0; n < 16; s += 2, n++)
-    tmp_sn[n] = xtoi_2 (s);
-
-  if (app->serialnolen != 16)
-    return gpg_error (GPG_ERR_INV_CARD);
-  if (memcmp (app->serialno, tmp_sn, 16))
-    return gpg_error (GPG_ERR_WRONG_CARD);
 
   /* Yes, there is a race conditions: The user might pull the card
      right here and we won't notice that.  However this is not a
