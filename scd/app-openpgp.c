@@ -176,6 +176,7 @@ struct app_local_s {
                            is usually only required for cross checks
                            because the length of an S-expression is
                            implicitly available.  */
+    unsigned char keygrip_str[41]; /* The keygrip, null terminated */
   } pk[3];
 
   unsigned char status_indicator; /* The card status indicator.  */
@@ -1575,6 +1576,23 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
 }
 
 
+static gpg_error_t
+store_keygrip (app_t app, int keyno)
+{
+  gpg_error_t err;
+  unsigned char grip[20];
+
+  err = keygrip_from_canon_sexp (app->app_local->pk[keyno].key,
+                                 app->app_local->pk[keyno].keylen,
+                                 grip);
+  if (err)
+    return err;
+
+  bin2hex (grip, 20, app->app_local->pk[keyno].keygrip_str);
+  return 0;
+}
+
+
 /* Parse tag-length-value data for public key in BUFFER of BUFLEN
    length.  Key of KEYNO in APP is updated with an S-expression of
    public key.  When CTRL is not NULL, fingerprint is computed with
@@ -1626,6 +1644,8 @@ read_public_key (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
       app->app_local->pk[keyno].key = keybuf;
       /* Decrement for trailing '\0' */
       app->app_local->pk[keyno].keylen = len - 1;
+
+      err = store_keygrip (app, keyno);
     }
 
   return err;
@@ -1773,11 +1793,13 @@ get_public_key (app_t app, int keyno)
       app->app_local->pk[keyno].key = (unsigned char*)keybuf;
       /* Decrement for trailing '\0' */
       app->app_local->pk[keyno].keylen = len - 1;
+      err = store_keygrip (app, keyno);
     }
 
  leave:
   /* Set a flag to indicate that we tried to read the key.  */
-  app->app_local->pk[keyno].read_done = 1;
+  if (!err)
+    app->app_local->pk[keyno].read_done = 1;
 
   xfree (buffer);
   return err;
@@ -1796,8 +1818,6 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
   /* Note that GnuPG 1.x does not need this and it would be too time
      consuming to send it just for the fun of it. */
 #if GNUPG_MAJOR_VERSION > 1
-  unsigned char grip[20];
-  char gripstr[41];
   char idbuf[50];
   const char *usage;
 
@@ -1809,14 +1829,6 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
   if (!app->app_local->pk[keyno].key)
     goto leave; /* No such key - ignore. */
 
-  err = keygrip_from_canon_sexp (app->app_local->pk[keyno].key,
-                                 app->app_local->pk[keyno].keylen,
-                                 grip);
-  if (err)
-    goto leave;
-
-  bin2hex (grip, 20, gripstr);
-
   switch (keyno)
     {
     case 0: usage = "sc"; break;
@@ -1827,7 +1839,7 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
 
   sprintf (idbuf, "OPENPGP.%d", keyno+1);
   send_status_info (ctrl, "KEYPAIRINFO",
-                    gripstr, 40,
+                    app->app_local->pk[keyno].keygrip_str, 40,
                     idbuf, strlen (idbuf),
                     usage, strlen (usage),
                     NULL, (size_t)0);
@@ -4294,6 +4306,17 @@ check_against_given_fingerprint (app_t app, const char *fpr, int key)
 }
 
 
+/* Check KEYIDSTR, if it's valid.
+   When KEYNO is 0, it means it's for PIN check.
+   Otherwise, KEYNO corresponds to the slot (signing, decipher and auth).
+   KEYIDSTR is either:
+    (1) Serial number
+    (2) Serial number "/" fingerprint
+    (3) keygrip
+
+   When KEYNO is 0 and KEYIDSTR is for a keygrip, the keygrip should
+   be to be compared is the first one (keygrip for signing).
+ */
 static int
 check_keyidstr (app_t app, const char *keyidstr, int keyno)
 {
@@ -4303,13 +4326,26 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno)
   const char *fpr = NULL;
   unsigned char tmp_sn[20]; /* Actually 16 bytes but also for the fpr. */
 
-  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
+  if (strlen (keyidstr) < 32)
     return gpg_error (GPG_ERR_INV_ID);
   else
     {
       for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
         ;
-      if (n != 32)
+
+      /* Check if it's a keygrip */
+      if (n == 40)
+        {
+          const unsigned char *keygrip_str;
+
+          keygrip_str = app->app_local->pk[keyno?keyno-1:0].keygrip_str;
+          if (!strncmp (keygrip_str, keyidstr, 40))
+            return 0;
+	  else
+	    return gpg_error (GPG_ERR_INV_ID);
+        }
+
+      if (n != 32 || strncmp (keyidstr, "D27600012401", 12))
         return gpg_error (GPG_ERR_INV_ID);
       else if (!*s)
         ; /* no fingerprint given: we allow this for now. */
@@ -4864,7 +4900,8 @@ do_check_pin (app_t app, const char *keyidstr,
   if (rc)
     return rc;
 
-  if (strlen (keyidstr) >= 32+6 && !strcmp (keyidstr+32, "[CHV3]"))
+  if ((strlen (keyidstr) >= 32+6 && !strcmp (keyidstr+32, "[CHV3]"))
+      || (strlen (keyidstr) >= 40+6 && !strcmp (keyidstr+40, "[CHV3]")))
     admin_pin = 1;
 
   /* Yes, there is a race conditions: The user might pull the card
