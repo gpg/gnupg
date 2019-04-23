@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.13\n"
+"Project-Id-Version: gnupg 2.2.15\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-02-06 17:14+0900\n"
+"PO-Revision-Date: 2019-04-23 12:54+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -3371,7 +3371,7 @@ msgstr "'%s'は、有効な有効期限ではありません\n"
 
 #, c-format
 msgid "\"%s\" is not a proper fingerprint\n"
-msgstr "\"%s\"はフ正しいィンガープリントではありません\n"
+msgstr "\"%s\"は正しいフィンガープリントではありません\n"
 
 #, c-format
 msgid "subkey \"%s\" not found\n"
