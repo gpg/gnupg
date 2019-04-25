@@ -126,8 +126,17 @@ struct app_ctx_s {
     gpg_error_t (*check_pin) (app_t app, const char *keyidstr,
                       gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg);
+    int (*with_keygrip) (app_t app, ctrl_t ctrl, int action,
+                         const char *keygrip_str);
   } fnc;
 };
+
+enum
+ {
+  KEYGRIP_ACTION_SEND_DATA,
+  KEYGRIP_ACTION_WRITE_STATUS,
+  KEYGRIP_ACTION_LOOKUP
+ };
 
 /*-- app-help.c --*/
 unsigned int app_help_count_bits (const unsigned char *a, size_t len);
@@ -206,6 +215,7 @@ gpg_error_t app_change_pin (app_t app, ctrl_t ctrl,
 gpg_error_t app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
                    gpg_error_t (*pincb)(void*, const char *, char **),
                    void *pincb_arg);
+app_t app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str);
 
 
 /*-- app-openpgp.c --*/

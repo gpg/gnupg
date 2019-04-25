@@ -4945,6 +4945,59 @@ do_check_pin (app_t app, const char *keyidstr,
     return verify_chv2 (app, pincb, pincb_arg);
 }
 
+static int
+do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
+{
+  int i;
+
+  if (action == KEYGRIP_ACTION_LOOKUP)
+    {
+      if (keygrip_str == NULL)
+        return 1;
+
+      for (i = 0; i < 3; i++)
+        if (app->app_local->pk[i].read_done
+            && !strcmp (keygrip_str, app->app_local->pk[i].keygrip_str))
+          return 0;                     /* Found */
+
+      return 1;
+    }
+  else
+    {
+      char idbuf[50];
+      char buf[65];
+      int data = (action == KEYGRIP_ACTION_SEND_DATA);
+
+      if (DIM (buf) < 2 * app->serialnolen + 1)
+        return 0;
+
+      bin2hex (app->serialno, app->serialnolen, buf);
+
+      if (keygrip_str == NULL)
+        {
+          for (i = 0; i < 3; i++)
+            if (app->app_local->pk[i].read_done)
+              {
+                sprintf (idbuf, "OPENPGP.%d", i+1);
+                send_keyinfo (ctrl, data,
+                              app->app_local->pk[i].keygrip_str,buf, idbuf);
+              }
+        }
+      else
+        {
+          for (i = 0; i < 3; i++)
+            if (app->app_local->pk[i].read_done
+                && !strcmp (keygrip_str, app->app_local->pk[i].keygrip_str))
+              {
+                sprintf (idbuf, "OPENPGP.%d", i+1);
+                send_keyinfo (ctrl, data, keygrip_str, buf, idbuf);
+                return 0;
+              }
+        }
+
+      return 1;
+    }
+}
 
 /* Show information about card capabilities.  */
 static void
@@ -5327,6 +5380,7 @@ app_select_openpgp (app_t app)
       app->fnc.decipher = do_decipher;
       app->fnc.change_pin = do_change_pin;
       app->fnc.check_pin = do_check_pin;
+      app->fnc.with_keygrip = do_with_keygrip;
    }
 
 leave:

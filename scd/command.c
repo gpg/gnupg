@@ -424,7 +424,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
       serial = app_get_serialno (ctrl->app_ctx);
       if (!serial)
-	return gpg_error (GPG_ERR_INV_VALUE);
+        return gpg_error (GPG_ERR_INV_VALUE);
 
       rc = assuan_write_status (ctx, "SERIALNO", serial);
       if (rc < 0)
@@ -1757,6 +1757,76 @@ cmd_killscd (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_keyinfo[] =
+  "KEYINFO [--list] [--data] <keygrip>\n"
+  "\n"
+  "Return information about the key specified by the KEYGRIP.  If the\n"
+  "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
+  "--list is given the keygrip is ignored and information about all\n"
+  "available keys are returned.  Unless --data is given, the\n"
+  "information is returned as a status line using the format:\n"
+  "\n"
+  "  KEYINFO <keygrip> T <serialno> <idstr>\n"
+  "\n"
+  "KEYGRIP is the keygrip.\n"
+  "\n"
+  "SERIALNO is an ASCII string with the serial number of the\n"
+  "         smartcard.  If the serial number is not known a single\n"
+  "         dash '-' is used instead.\n"
+  "\n"
+  "IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it\n"
+  "      is not known a dash is used instead.\n"
+  "\n"
+  "More information may be added in the future.";
+static gpg_error_t
+cmd_keyinfo (assuan_context_t ctx, char *line)
+{
+  int list_mode;
+  int opt_data;
+  int action;
+  char *keygrip_str;
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  list_mode = has_option (line, "--list");
+  opt_data = has_option (line, "--data");
+  line = skip_options (line);
+
+  if (list_mode)
+    keygrip_str = NULL;
+  else
+    keygrip_str = line;
+
+  if (opt_data)
+    action = KEYGRIP_ACTION_SEND_DATA;
+  else
+    action = KEYGRIP_ACTION_WRITE_STATUS;
+
+  app_do_with_keygrip (ctrl, action, keygrip_str);
+
+  return 0;
+}
+
+void
+send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
+              const char *serialno, const char *idstr)
+{
+  char *string;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+  string = xtryasprintf ("%s T %s %s\n", keygrip_str,
+                         serialno? serialno : "-",
+                         idstr? idstr : "-");
+  if (!string)
+    return;
+
+  if (!data)
+    assuan_write_status (ctx, "KEYINFO", string);
+  else
+    assuan_send_data (ctx, string, strlen (string));
+
+  xfree (string);
+  return;
+}
 
 /* Tell the assuan library about our commands */
 static int
@@ -1792,6 +1862,7 @@ register_commands (assuan_context_t ctx)
     { "DISCONNECT",   cmd_disconnect,hlp_disconnect },
     { "APDU",         cmd_apdu,     hlp_apdu },
     { "KILLSCD",      cmd_killscd,  hlp_killscd },
+    { "KEYINFO",      cmd_keyinfo,  hlp_keyinfo },
     { NULL }
   };
   int i, rc;

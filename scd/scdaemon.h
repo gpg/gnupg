@@ -125,6 +125,8 @@ void send_status_info (ctrl_t ctrl, const char *keyword, ...)
 void send_status_direct (ctrl_t ctrl, const char *keyword, const char *args);
 gpg_error_t send_status_printf (ctrl_t ctrl, const char *keyword,
                                 const char *format, ...) GPGRT_ATTR_PRINTF(3,4);
+void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
+                   const char *serialno, const char *idstr);
 
 void popup_prompt (void *opaque, int on);
 void send_client_notifications (app_t app, int removal);

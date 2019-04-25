@@ -1290,3 +1290,24 @@ app_send_card_list (ctrl_t ctrl)
     }
   npth_mutex_unlock (&app_list_lock);
 }
+
+/* Execute an action for each app.  ACTION can be one of:
+     KEYGRIP_ACTION_SEND_DATA: send data if KEYGRIP_STR matches
+     KEYGRIP_ACTION_WRITE_STATUS: write status if KEYGRIP_STR matches
+     KEYGRIP_ACTION_LOOKUP: Return matching APP
+ */
+app_t
+app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
+{
+  app_t a;
+
+  npth_mutex_lock (&app_list_lock);
+
+  for (a = app_top; a; a = a->next)
+    if (a->fnc.with_keygrip
+        && !a->fnc.with_keygrip (a, ctrl, action, keygrip_str))
+      break;
+
+  npth_mutex_unlock (&app_list_lock);
+  return a;
+}
