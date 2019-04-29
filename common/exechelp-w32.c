@@ -856,6 +856,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   int cr_flags;
   char *cmdline;
   gpg_err_code_t ec;
+  BOOL in_job = FALSE;
 
   /* We don't use ENVP.  */
   (void)envp;
@@ -883,6 +884,50 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_NEW_PROCESS_GROUP
               | DETACHED_PROCESS);
+
+  /* Check if we were spawned as part of a Job.
+   * In a job we need to add CREATE_BREAKAWAY_FROM_JOB
+   * to the cr_flags, otherwise our child processes
+   * are killed when we terminate. */
+  if (!IsProcessInJob (GetCurrentProcess(), NULL, &in_job))
+    {
+      log_error ("IsProcessInJob() failed: %s\n", w32_strerror (-1));
+      in_job = FALSE;
+    }
+
+  if (in_job)
+    {
+      /* Only try to break away from job if it is allowed, otherwise
+       * CreateProcess() would fail with an "Access is denied" error. */
+      JOBOBJECT_EXTENDED_LIMIT_INFORMATION info;
+      if (!QueryInformationJobObject (NULL, JobObjectExtendedLimitInformation,
+                                      &info, sizeof info, NULL))
+        {
+          log_error ("QueryInformationJobObject() failed: %s\n",
+                     w32_strerror (-1));
+        }
+      else if ((info.BasicLimitInformation.LimitFlags &
+                JOB_OBJECT_LIMIT_BREAKAWAY_OK))
+        {
+          log_debug ("Using CREATE_BREAKAWAY_FROM_JOB flag\n");
+          cr_flags |= CREATE_BREAKAWAY_FROM_JOB;
+        }
+      else if ((info.BasicLimitInformation.LimitFlags &
+                JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK))
+        {
+          /* The child process should automatically detach from the job. */
+          log_debug ("Not using CREATE_BREAKAWAY_FROM_JOB flag; "
+                     "JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK is set\n");
+        }
+      else
+        {
+          /* It seems that the child process must remain in the job.
+           * This is not necessarily an error, although it can cause premature
+           * termination of the child process when the job is closed. */
+          log_debug ("Not using CREATE_BREAKAWAY_FROM_JOB flag\n");
+        }
+    }
+
 /*   log_debug ("CreateProcess(detached), path='%s' cmdline='%s'\n", */
 /*              pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
