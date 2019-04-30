@@ -51,7 +51,7 @@ endif
 
 libexec_PROGRAMS = gpg-wks-client gpg-pair-tool
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card ${symcryptrun}
+bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card ${symcryptrun} gpg-signcode
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server}
 endif
@@ -138,6 +138,10 @@ gpg_card_LDADD = \
 	$(GPG_ERROR_LIBS) \
         $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
         $(gpg_card_tool_rc_objs)
+
+gpg_signcode_SOURCES = gpg-signcode.c
+gpg_signcode_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+                     $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 
 if !DISABLE_REGEX
