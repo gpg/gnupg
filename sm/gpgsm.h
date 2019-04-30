@@ -149,6 +149,21 @@ struct
   strlist_t ignored_cert_extensions;
 
   enum gnupg_compliance_mode compliance;
+
+  /* Enable creation of authenticode signatures.  */
+  int authenticode;
+
+  /* A list of extra attributes put into a signed data object.  For a
+   * signed each attribute each string has the format:
+   *   <oid>:s:<hex_or_filename>
+   * and for an unsigned attribute
+   *   <oid>:u:<hex_or_filename>
+   * The OID is in the usual dotted decimal for. The HEX_OR_FILENAME
+   * is either a list of hex digits or a filename with the DER encoded
+   * value.  A filename is detected by the presence of a slash in the
+   * HEX_OR_FILENAME.  The actual value needs to be encoded as a SET OF
+   * attribute values.  */
+  strlist_t attributes;
 } opt;
 
 /* Debug values and macros.  */

@@ -192,6 +192,8 @@ enum cmd_and_opt_values {
   oNoRandomSeedFile,
   oNoCommonCertsImport,
   oIgnoreCertExtension,
+  oAuthenticode,
+  oAttribute,
   oNoAutostart
  };
 
@@ -402,6 +404,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
+  ARGPARSE_s_n (oAuthenticode, "authenticode", "@"),
+  ARGPARSE_s_s (oAttribute,    "attribute", "@"),
 
   /* Command aliases.  */
   ARGPARSE_c (aListKeys, "list-key", "@"),
@@ -1458,6 +1462,12 @@ main ( int argc, char **argv)
 
         case oIgnoreCertExtension:
           add_to_strlist (&opt.ignored_cert_extensions, pargs.r.ret_str);
+          break;
+
+        case oAuthenticode: opt.authenticode = 1; break;
+
+        case oAttribute:
+          add_to_strlist (&opt.attributes, pargs.r.ret_str);
           break;
 
         case oNoAutostart: opt.autostart = 0; break;
