@@ -1667,7 +1667,8 @@ agent_get_shadow_info (const unsigned char *shadowkey,
    R_HEXSN and the Id string as a malloced string at R_IDSTR.  On
    error an error code is returned and NULL is stored at the result
    parameters addresses.  If the serial number or the ID string is not
-   required, NULL may be passed for them.  */
+   required, NULL may be passed for them.  Note that R_PINLEN is
+   currently not used by any caller.  */
 gpg_error_t
 parse_shadow_info (const unsigned char *shadow_info,
                    char **r_hexsn, char **r_idstr, int *r_pinlen)

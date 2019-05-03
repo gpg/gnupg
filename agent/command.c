@@ -2255,10 +2255,11 @@ cmd_import_key (assuan_context_t ctx, char *line)
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
                            ctrl->s2k_count, -1);
       if (!err)
-        err = agent_write_private_key (grip, finalkey, finalkeylen, force);
+        err = agent_write_private_key (grip, finalkey, finalkeylen, force,
+                                       NULL, NULL);
     }
   else
-    err = agent_write_private_key (grip, key, realkeylen, force);
+    err = agent_write_private_key (grip, key, realkeylen, force, NULL, NULL);
 
  leave:
   gcry_sexp_release (openpgp_sexp);

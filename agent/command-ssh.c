@@ -3142,7 +3142,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
     goto out;
 
   /* Store this key to our key storage.  */
-  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0);
+  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0, NULL, NULL);
   if (err)
     goto out;
 

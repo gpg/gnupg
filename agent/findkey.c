@@ -55,12 +55,14 @@ struct try_unprotect_arg_s
 /* Note: Ownership of FNAME and FP are moved to this function.  */
 static gpg_error_t
 write_extended_private_key (char *fname, estream_t fp, int update,
-                            const void *buf, size_t len)
+                            const void *buf, size_t len,
+                            const char *serialno, const char *keyref)
 {
   gpg_error_t err;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
   int remove = 0;
+  char *token = NULL;
 
   if (update)
     {
@@ -92,6 +94,37 @@ write_extended_private_key (char *fname, estream_t fp, int update,
   err = nvc_set_private_key (pk, key);
   if (err)
     goto leave;
+
+  /* If requested write a Token line.  */
+  if (serialno && keyref)
+    {
+      nve_t item;
+      const char *s;
+
+      token = strconcat (serialno, " ", keyref, NULL);
+      if (!token)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      /* fixme: the strcmp should compare only the first two strings.  */
+      for (item = nvc_lookup (pk, "Token:");
+           item;
+           item = nve_next_value (item, "Token:"))
+        if ((s = nve_value (item)) && !strcmp (s, token))
+          break;
+      if (!item)
+        {
+          /* No token or no token with that value exists.  Add a new
+           * one so that keys which have been stored on several cards
+           * are well supported.  */
+          err = nvc_add (pk, "Token:", token);
+          if (err)
+            goto leave;
+        }
+    }
+
 
   err = es_fseek (fp, 0, SEEK_SET);
   if (err)
@@ -132,15 +165,18 @@ write_extended_private_key (char *fname, estream_t fp, int update,
   xfree (fname);
   gcry_sexp_release (key);
   nvc_release (pk);
+  xfree (token);
   return err;
 }
 
 /* Write an S-expression formatted key to our key storage.  With FORCE
-   passed as true an existing key with the given GRIP will get
-   overwritten.  */
+ * passed as true an existing key with the given GRIP will get
+ * overwritten.  If SERIALNO and KEYREF are give an a Token line is added to
+ * th key if the extended format ist used.  */
 int
 agent_write_private_key (const unsigned char *grip,
-                         const void *buffer, size_t length, int force)
+                         const void *buffer, size_t length, int force,
+                         const char *serialno, const char *keyref)
 {
   char *fname;
   estream_t fp;
@@ -208,17 +244,20 @@ agent_write_private_key (const unsigned char *grip,
       if (first != '(')
         {
           /* Key is already in the extended format.  */
-          return write_extended_private_key (fname, fp, 1, buffer, length);
+          return write_extended_private_key (fname, fp, 1, buffer, length,
+                                             serialno, keyref);
         }
       if (first == '(' && opt.enable_extended_key_format)
         {
           /* Key is in the old format - but we want the extended format.  */
-          return write_extended_private_key (fname, fp, 0, buffer, length);
+          return write_extended_private_key (fname, fp, 0, buffer, length,
+                                             serialno, keyref);
         }
     }
 
   if (opt.enable_extended_key_format)
-    return write_extended_private_key (fname, fp, 0, buffer, length);
+    return write_extended_private_key (fname, fp, 0, buffer, length,
+                                       serialno, keyref);
 
   if (es_fwrite (buffer, length, 1, fp) != 1)
     {
@@ -1580,6 +1619,13 @@ agent_write_shadow_key (const unsigned char *grip,
   unsigned char *shdkey;
   size_t len;
 
+  /* Just in case some caller did not parse the stuff correctly, skip
+   * leading spaces.  */
+  while (spacep (serialno))
+    serialno++;
+  while (spacep (keyid))
+    keyid++;
+
   shadow_info = make_shadow_info (serialno, keyid);
   if (!shadow_info)
     return gpg_error_from_syserror ();
@@ -1593,7 +1639,7 @@ agent_write_shadow_key (const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, len, force);
+  err = agent_write_private_key (grip, shdkey, len, force, serialno, keyid);
   xfree (shdkey);
   if (err)
     log_error ("error writing key: %s\n", gpg_strerror (err));
