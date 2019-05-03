@@ -251,7 +251,7 @@ The option @option{--use-tor} switches Dirmngr and thus GnuPG into
 ``Tor mode'' to route all network access via Tor (an anonymity
 network).  Certain other features are disabled in this mode.  The
 effect of @option{--use-tor} cannot be overridden by any other command
-or even be reloading gpg-agent.  The use of @option{--no-use-tor}
+or even by reloading dirmngr.  The use of @option{--no-use-tor}
 disables the use of Tor.  The default is to use Tor if it is available
 on startup or after reloading dirmngr.
 
@@ -1178,5 +1178,3 @@ as a binary blob.
 @c used for this.  The first one starts a search and the second one is
 @c used to retrieve certificate after certificate.
 @c
-
-
