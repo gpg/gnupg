@@ -757,6 +757,8 @@ cmd_pksign (assuan_context_t ctx, char *line)
   size_t outdatalen;
   char *keyidstr;
   int hash_algo;
+  app_t app;
+  int direct = 0;
 
   if (has_option (line, "--hash=rmd160"))
     hash_algo = GCRY_MD_RMD160;
@@ -789,11 +791,30 @@ cmd_pksign (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return out_of_core ();
 
-  rc = app_sign (ctrl->app_ctx, ctrl,
-                 keyidstr, hash_algo,
-                 pin_cb, ctx,
-                 ctrl->in_data.value, ctrl->in_data.valuelen,
-                 &outdata, &outdatalen);
+  /* When it's a keygrip, we directly use APP, with no change of
+     ctrl->app_ctx. */
+  if (strlen (keyidstr) == 40)
+    {
+      app = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      direct = 1;
+    }
+  else
+    app = ctrl->app_ctx;
+
+  if (app)
+    {
+      if (direct)
+        app->ref_count++;
+      rc = app_sign (app, ctrl,
+                     keyidstr, hash_algo,
+                     pin_cb, ctx,
+                     ctrl->in_data.value, ctrl->in_data.valuelen,
+                     &outdata, &outdatalen);
+      if (direct)
+        app->ref_count--;
+    }
+  else
+    rc = gpg_error (GPG_ERR_NO_SECKEY);
 
   xfree (keyidstr);
   if (rc)
@@ -822,6 +843,8 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
+  app_t app;
+  int direct = 0;
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -836,9 +859,29 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return out_of_core ();
 
-  rc = app_auth (ctrl->app_ctx, ctrl, keyidstr, pin_cb, ctx,
-                 ctrl->in_data.value, ctrl->in_data.valuelen,
-                 &outdata, &outdatalen);
+  /* When it's a keygrip, we directly use APP, with no change of
+     ctrl->app_ctx. */
+  if (strlen (keyidstr) == 40)
+    {
+      app = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      direct = 1;
+    }
+  else
+    app = ctrl->app_ctx;
+
+  if (app)
+    {
+      if (direct)
+        app->ref_count++;
+      rc = app_auth (app, ctrl, keyidstr, pin_cb, ctx,
+                     ctrl->in_data.value, ctrl->in_data.valuelen,
+                     &outdata, &outdatalen);
+      if (direct)
+        app->ref_count--;
+    }
+  else
+    rc = gpg_error (GPG_ERR_NO_SECKEY);
+
   xfree (keyidstr);
   if (rc)
     {
@@ -867,6 +910,8 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   size_t outdatalen;
   char *keyidstr;
   unsigned int infoflags;
+  app_t app;
+  int direct = 0;
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -874,9 +919,29 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
     return out_of_core ();
-  rc = app_decipher (ctrl->app_ctx, ctrl, keyidstr, pin_cb, ctx,
-                     ctrl->in_data.value, ctrl->in_data.valuelen,
-                     &outdata, &outdatalen, &infoflags);
+
+  /* When it's a keygrip, we directly use APP, with no change of
+     ctrl->app_ctx. */
+  if (strlen (keyidstr) == 40)
+    {
+      app = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      direct = 1;
+    }
+  else
+    app = ctrl->app_ctx;
+
+  if (app)
+    {
+      if (direct)
+        app->ref_count++;
+      rc = app_decipher (ctrl->app_ctx, ctrl, keyidstr, pin_cb, ctx,
+                         ctrl->in_data.value, ctrl->in_data.valuelen,
+                         &outdata, &outdatalen, &infoflags);
+      if (direct)
+        app->ref_count--;
+    }
+  else
+    rc = gpg_error (GPG_ERR_NO_SECKEY);
 
   xfree (keyidstr);
   if (rc)
