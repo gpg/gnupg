@@ -514,6 +514,21 @@ nvc_delete (nvc_t pk, nve_t entry)
   nve_release (entry, pk->private_key_mode);
 }
 
+
+/* Delete the entries with NAME from PK.  */
+void
+nvc_delete_named (nvc_t pk, const char *name)
+{
+  nve_t e;
+
+  if (!valid_name (name))
+    return;
+
+  while ((e = nvc_lookup (pk, name)))
+    nvc_delete (pk, e);
+}
+
+
 
 
 /* Lookup and iteration.  */
@@ -562,6 +577,25 @@ nve_next_value (nve_t entry, const char *name)
       return entry;
   return NULL;
 }
+
+
+/* Return the string for the first entry in NVC with NAME.  If an
+ * entry with NAME is missing in NVC or its value is the empty string
+ * NULL is returned.  Note that the The returned string is a pointer
+ * into NVC.  */
+const char *
+nvc_get_string (nvc_t nvc, const char *name)
+{
+  nve_t item;
+
+  if (!nvc)
+    return NULL;
+  item = nvc_lookup (nvc, name);
+  if (!item)
+    return NULL;
+  return nve_value (item);
+}
+
 
 
 

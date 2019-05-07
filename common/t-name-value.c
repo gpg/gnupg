@@ -292,6 +292,7 @@ run_modification_tests (void)
 {
   gpg_error_t err;
   nvc_t pk;
+  nve_t e;
   gcry_sexp_t key;
   char *buf;
 
@@ -343,6 +344,30 @@ run_modification_tests (void)
   buf = nvc_to_string (pk);
   assert (strcmp (buf, "") == 0);
   xfree (buf);
+
+  /* Test whether we can delete an entry by name.  */
+  err = nvc_add (pk, "Key:", "(3:foo)");
+  assert (!err);
+  e = nvc_lookup (pk, "Key:");
+  assert (e);
+  nvc_delete_named (pk, "Kez:");  /* Delete an inexistant name.  */
+  e = nvc_lookup (pk, "Key:");
+  assert (e);
+  nvc_delete_named (pk, "Key:");
+  e = nvc_lookup (pk, "Key:");
+  assert (!e);
+
+  /* Ditto but now whether it deletes all entries with that name.  We
+   * don't use "Key" because that name is special in private key mode.  */
+  err = nvc_add (pk, "AKey:", "A-value");
+  assert (!err);
+  err = nvc_add (pk, "AKey:", "B-value");
+  assert (!err);
+  e = nvc_lookup (pk, "AKey:");
+  assert (e);
+  nvc_delete_named (pk, "AKey:");
+  e = nvc_lookup (pk, "AKey:");
+  assert (!e);
 
   nvc_set (pk, "Foo:", "A really long value spanning across multiple lines"
 	   " that has to be wrapped at a convenient space.");
