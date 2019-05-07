@@ -90,8 +90,8 @@ so that the file can be easily inspected and edited.  See section
 This is a short human readable description for the key which can be
 used by the software to describe the key in a user interface.  For
 example as part of the description in a prompt for a PIN or
-passphrase.  It is often used instead of a comment element preent in
-the S-expression of the "Key" item.
+passphrase.  It is often used instead of a comment element as present
+in the S-expression of the "Key" item.
 
 *** OpenSSH-cert
 This takes a base64 encoded string wrapped so that this

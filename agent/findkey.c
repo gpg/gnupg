@@ -1,7 +1,7 @@
 /* findkey.c - Locate the secret key
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
  *               2010, 2011 Free Software Foundation, Inc.
- * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2014, 2019 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -50,6 +50,36 @@ struct try_unprotect_arg_s
   int change_required; /* Set by the callback to indicate that the
                           user should change the passphrase.  */
 };
+
+
+/* Repalce all linefeeds in STRING by "%0A" and return a new malloced
+ * string.  May return NULL on memory error.  */
+static char *
+linefeed_to_percent0A (const char *string)
+{
+  const char *s;
+  size_t n;
+  char *buf, *p;
+
+  for (n=0, s=string; *s; s++)
+    if (*s == '\n')
+      n += 3;
+    else
+      n++;
+  p = buf = xtrymalloc (n+1);
+  if (!buf)
+    return NULL;
+  for (s=string; *s; s++)
+    if (*s == '\n')
+      {
+        memcpy (p, "%0A", 3);
+        p += 3;
+      }
+    else
+      *p++ = *s;
+  *p = 0;
+  return buf;
+}
 
 
 /* Note: Ownership of FNAME and FP are moved to this function.  */
@@ -734,10 +764,13 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
 
 
 /* Read the key identified by GRIP from the private key directory and
-   return it as an gcrypt S-expression object in RESULT.  On failure
-   returns an error code and stores NULL at RESULT. */
+ * return it as an gcrypt S-expression object in RESULT.  If R_KEYMETA
+ * is not NULl and the extended key format is used, the meta data
+ * items are stored there.  However the "Key:" item is removed from
+ * it.  On failure returns an error code and stores NULL at RESULT and
+ * R_KEYMETA. */
 static gpg_error_t
-read_key_file (const unsigned char *grip, gcry_sexp_t *result)
+read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
 {
   gpg_error_t err;
   char *fname;
@@ -750,6 +783,8 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   char first;
 
   *result = NULL;
+  if (r_keymeta)
+    *r_keymeta = NULL;
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
@@ -788,7 +823,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   if (first != '(')
     {
       /* Key is in extended format.  */
-      nvc_t pk;
+      nvc_t pk = NULL;
       int line;
 
       err = nvc_parse_private_key (&pk, &line, fp);
@@ -800,12 +835,17 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
       else
         {
           err = nvc_get_private_key (pk, result);
-          nvc_release (pk);
           if (err)
             log_error ("error getting private key from '%s': %s\n",
                        fname, gpg_strerror (err));
+          else
+            nvc_delete_named (pk, "Key:");
         }
 
+      if (!err && r_keymeta)
+        *r_keymeta = pk;
+      else
+        nvc_release (pk);
       xfree (fname);
       return err;
     }
@@ -905,6 +945,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   unsigned char *buf;
   size_t len, buflen, erroff;
   gcry_sexp_t s_skey;
+  nvc_t keymeta = NULL;
 
   *result = NULL;
   if (shadow_info)
@@ -912,7 +953,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (r_passphrase)
     *r_passphrase = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, &keymeta);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -925,7 +966,10 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
      now.  */
   err = make_canon_sexp (s_skey, &buf, &len);
   if (err)
-    return err;
+    {
+      nvc_release (keymeta);
+      return err;
+    }
 
   switch (agent_private_key_type (buf))
     {
@@ -950,25 +994,35 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
     case PRIVATE_KEY_PROTECTED:
       {
 	char *desc_text_final;
-	char *comment = NULL;
+	char *comment_buffer = NULL;
+	const char *comment = NULL;
 
         /* Note, that we will take the comment as a C string for
-           display purposes; i.e. all stuff beyond a Nul character is
-           ignored.  */
-        {
-          gcry_sexp_t comment_sexp;
+         * display purposes; i.e. all stuff beyond a Nul character is
+         * ignored.  If a "Label" entry is available in the meta data
+         * this is used instead of the s-ecpression comment.  */
+        if (keymeta && (comment = nvc_get_string (keymeta, "Label:")))
+          {
+            if (strchr (comment, '\n')
+                && (comment_buffer = linefeed_to_percent0A (comment)))
+              comment = comment_buffer;
+          }
+        else
+          {
+            gcry_sexp_t comment_sexp;
 
-          comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
-          if (comment_sexp)
-            comment = gcry_sexp_nth_string (comment_sexp, 1);
-          gcry_sexp_release (comment_sexp);
-        }
+            comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+            if (comment_sexp)
+              comment_buffer = gcry_sexp_nth_string (comment_sexp, 1);
+            gcry_sexp_release (comment_sexp);
+            comment = comment_buffer;
+          }
 
         desc_text_final = NULL;
 	if (desc_text)
           err = agent_modify_description (desc_text, comment, s_skey,
                                           &desc_text_final);
-        gcry_free (comment);
+        gcry_free (comment_buffer);
 
 	if (!err)
 	  {
@@ -1023,6 +1077,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           xfree (*r_passphrase);
           *r_passphrase = NULL;
         }
+      nvc_release (keymeta);
       return err;
     }
 
@@ -1039,10 +1094,12 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           xfree (*r_passphrase);
           *r_passphrase = NULL;
         }
+      nvc_release (keymeta);
       return err;
     }
 
   *result = s_skey;
+  nvc_release (keymeta);
   return 0;
 }
 
@@ -1242,7 +1299,7 @@ agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (!err)
     *result = s_skey;
   return err;
@@ -1280,7 +1337,7 @@ agent_public_key_from_file (ctrl_t ctrl,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (err)
     return err;
 
@@ -1425,7 +1482,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
   {
     gcry_sexp_t sexp;
 
-    err = read_key_file (grip, &sexp);
+    err = read_key_file (grip, &sexp, NULL);
     if (err)
       {
         if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1509,7 +1566,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   char *default_desc = NULL;
   int key_type;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (gpg_err_code (err) == GPG_ERR_ENOENT)
     err = gpg_error (GPG_ERR_NO_SECKEY);
   if (err)
