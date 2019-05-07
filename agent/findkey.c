@@ -401,6 +401,33 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 }
 
 
+/* Return true if the STRING has an %C or %c expando.  */
+static int
+has_comment_expando (const char *string)
+{
+  const char *s;
+  int percent = 0;
+
+  if (!string)
+    return 0;
+
+  for (s = string; *s; s++)
+    {
+      if (percent)
+        {
+          if (*s == 'c' || *s == 'C')
+            return 1;
+          percent = 0;
+        }
+      else if (*s == '%')
+        percent = 1;
+    }
+  return 0;
+}
+
+
+
+
 /* Modify a Key description, replacing certain special format
    characters.  List of currently supported replacements:
 
@@ -946,6 +973,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   size_t len, buflen, erroff;
   gcry_sexp_t s_skey;
   nvc_t keymeta = NULL;
+  char *desc_text_buffer = NULL;  /* Used in case we extend DESC_TEXT.  */
 
   *result = NULL;
   if (shadow_info)
@@ -968,6 +996,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (err)
     {
       nvc_release (keymeta);
+      xfree (desc_text_buffer);
       return err;
     }
 
@@ -1006,6 +1035,14 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
             if (strchr (comment, '\n')
                 && (comment_buffer = linefeed_to_percent0A (comment)))
               comment = comment_buffer;
+            /* In case DESC_TEXT has no escape pattern for a comment
+             * we append one.  */
+            if (desc_text && !has_comment_expando (desc_text))
+              {
+                desc_text_buffer = strconcat (desc_text, "%0A%C", NULL);
+                if (desc_text_buffer)
+                  desc_text = desc_text_buffer;
+              }
           }
         else
           {
@@ -1078,6 +1115,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           *r_passphrase = NULL;
         }
       nvc_release (keymeta);
+      xfree (desc_text_buffer);
       return err;
     }
 
@@ -1095,11 +1133,13 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           *r_passphrase = NULL;
         }
       nvc_release (keymeta);
+      xfree (desc_text_buffer);
       return err;
     }
 
   *result = s_skey;
   nvc_release (keymeta);
+  xfree (desc_text_buffer);
   return 0;
 }
 
