@@ -1258,8 +1258,8 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 }
 
 
-/* Entry int for the command KEYINFO.  This function handles the
-   command option processing.  For details see hlp_keyinfo above.  */
+/* Entry into the command KEYINFO.  This function handles the
+ * command option processing.  For details see hlp_keyinfo above.  */
 static gpg_error_t
 cmd_keyinfo (assuan_context_t ctx, char *line)
 {
