@@ -157,9 +157,41 @@ INST_NAME=gnupg-w32
 # Use this to override the installaion directory for native builds.
 INSTALL_PREFIX=none
 
-# The Authenticode key and cert chain used to sign the Windows installer
+# The Authenticode key and cert chain used to sign the Windows
+# installer If AUTHENTICODE_SIGNHOST is specified, signing is done on
+# that host using the Windows signtool.  The signhost is usually an
+# entry in .ssh/config.  Depending on the used token it might be
+# necessary to allow single signon and unlock the token before running
+# this makefile.  All files given in AUTHENTICODE_FILES are signed
+# before they are put into the installer.
+AUTHENTICODE_SIGNHOST=authenticode-signhost
+AUTHENTICODE_TOOL='"C:\Program Files (x86)\Windows Kits\10\bin\signtool.exe"'
 AUTHENTICODE_KEY=${HOME}/.gnupg/g10code-authenticode-key.p12
 AUTHENTICODE_CERTS=${HOME}/.gnupg/g10code-authenticode-certs.pem
+AUTHENTICODE_FILES= \
+                    dirmngr.exe               \
+                    dirmngr_ldap.exe          \
+                    gpg-agent.exe             \
+                    gpg-connect-agent.exe     \
+                    gpg-preset-passphrase.exe \
+                    gpg-wks-client.exe        \
+                    gpg.exe                   \
+                    gpgconf.exe               \
+                    gpgme-w32spawn.exe        \
+                    gpgsm.exe                 \
+                    gpgtar.exe                \
+                    gpgv.exe                  \
+                    libassuan-0.dll           \
+                    libgcrypt-20.dll          \
+                    libgpg-error-0.dll        \
+                    libgpgme-11.dll           \
+                    libksba-8.dll             \
+                    libnpth-0.dll             \
+                    libsqlite3-0.dll          \
+                    pinentry-w32.exe          \
+                    scdaemon.exe	      \
+                    zlib1.dll
+
 
 
 # Directory names.
@@ -1211,7 +1243,22 @@ ifeq ($(WITH_GUI),1)
 extra_installer_options += -DWITH_GUI=1
 endif
 
+# Note that we sign only when doing the final installer.
 installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
+	(set -e;\
+	 cd "$(idir)"; \
+	 if echo "$(idir)" | grep -q '/PLAY-release/' ; then \
+	   for f in $(AUTHENTICODE_FILES); do \
+             if [ -f "bin/$$f" ]; then \
+	       $(call AUTHENTICODE_sign,"bin/$$f","bin/$$f");\
+	     elif [ -f "libexec/$$f" ]; then \
+	       $(call AUTHENTICODE_sign,"libexec/$$f","libexec/$$f");\
+	     else \
+	       echo "speedo: WARNING: file '$$f' not available for signing";\
+             fi;\
+           done; \
+         fi \
+        )
 	$(MAKENSIS) -V2 \
                     -DINST_DIR=$(idir) \
                     -DINST6_DIR=$(idir6) \
@@ -1235,6 +1282,28 @@ define MKSWDB_commands
    echo "$${pref}sha1 $$(sha1sum <$(1)|cut -d' ' -f1)" ;\
    echo "$${pref}sha2 $$(sha256sum <$(1)|cut -d' ' -f1)" ;\
  ) | tee $(1).swdb
+endef
+
+# Sign the file $1 and save the result as $2
+define AUTHENTICODE_sign
+   set -e;\
+   if [ -n "$(AUTHENTICODE_SIGNHOST)" ]; then \
+     echo "speedo: Signing via host $(AUTHENTICODE_SIGNHOST)";\
+     scp $(1) "$(AUTHENTICODE_SIGNHOST):a.exe" ;\
+     ssh "$(AUTHENTICODE_SIGNHOST)" $(AUTHENTICODE_TOOL) sign \
+        /n '"g10 Code GmbH"' \
+        /tr 'http://rfc3161timestamp.globalsign.com/advanced' /td sha256 \
+        /fd sha256 /du https://gnupg.org a.exe ;\
+     scp "$(AUTHENTICODE_SIGNHOST):a.exe" $(2);\
+     echo "speedo: signed file is '$(2)'" ;\
+   else \
+     echo "speedo: Signing using key $(AUTHENTICODE_KEY)";\
+     osslsigncode sign -certs $(AUTHENTICODE_CERTS) \
+       -pkcs12 $(AUTHENTICODE_KEY) -askpass \
+       -ts "http://timestamp.globalsign.com/scripts/timstamp.dll" \
+       -h sha256 -n GnuPG -i https://gnupg.org \
+       -in $(1) -out $(2) ;\
+   fi
 endef
 
 
@@ -1265,13 +1334,8 @@ sign-installer:
 	 exefile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ;\
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Signing installer" ;\
-	 echo "speedo:  * Key: $(AUTHENTICODE_KEY)";\
 	 echo "speedo:  */" ;\
-	 osslsigncode sign -certs $(AUTHENTICODE_CERTS)\
-            -pkcs12 $(AUTHENTICODE_KEY) -askpass \
-            -ts "http://timestamp.globalsign.com/scripts/timstamp.dll" \
-            -h sha256 -n GnuPG -i https://gnupg.org \
-	    -in "PLAY/inst/$$exefile" -out "../../$$exefile" ;\
+	 $(call AUTHENTICODE_sign,"PLAY/inst/$$exefile","../../$$exefile");\
 	 exefile="../../$$exefile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
 	 echo "speedo: /*" ;\
