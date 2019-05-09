@@ -3530,7 +3530,8 @@ same_host_p (parsed_uri_t a, parsed_uri_t b)
     { "protonmail.com", "api.protonmail.com" },
     { NULL,             "api.protonmail.ch"  },
     { "protonmail.ch",  "api.protonmail.com" },
-    { NULL,             "api.protonmail.ch"  }
+    { NULL,             "api.protonmail.ch"  },
+    { "pm.me",          "api.protonmail.ch"  }
   };
   int i;
   const char *from;
