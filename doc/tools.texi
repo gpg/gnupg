@@ -352,11 +352,12 @@ may use this command to ensure that they are started.  Using "all" for
 
 @item --kill [@var{component}]
 @opindex kill
-Kill the given component.  Components which support killing are
-@command{gpg-agent} and @command{scdaemon}.  Components which don't
-support reloading are ignored.  Using "all" for @var{component} kills
-all components running as daemons.  Note that as of now reload and
-kill have the same effect for @command{scdaemon}.
+Kill the given component that runs as a daemon, including
+@command{gpg-agent}, @command{dirmngr}, and @command{scdaemon}.  A
+@command{component} which does not run as a daemon will be ignored.
+Using "all" for @var{component} kills all components running as
+daemons.  Note that as of now reload and kill have the same effect for
+@command{scdaemon}.
 
 @item --create-socketdir
 @opindex create-socketdir
