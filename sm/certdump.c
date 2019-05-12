@@ -658,6 +658,9 @@ format_name_writer (void *cookie, const void *buffer, size_t size)
   struct format_name_cookie *c = cookie;
   char *p;
 
+  if (!buffer)  /* Flush. */
+    return 0;  /* (Actually we could use SIZE because that should be 0 too.)  */
+
   if (!c->buffer)
     {
       p = xtrymalloc (size + 1 + 1);
