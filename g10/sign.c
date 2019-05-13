@@ -1593,6 +1593,13 @@ update_keysig_packet (ctrl_t ctrl,
 
     if ( opt.cert_digest_algo )
       digest_algo = opt.cert_digest_algo;
+    else if (pksk->pubkey_algo == PUBKEY_ALGO_DSA
+             || pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
+             || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
+      digest_algo = orig_sig->digest_algo;
+    else if (orig_sig->digest_algo == DIGEST_ALGO_SHA1
+             || orig_sig->digest_algo == DIGEST_ALGO_RMD160)
+      digest_algo = DEFAULT_DIGEST_ALGO;
     else
       digest_algo = orig_sig->digest_algo;
 
