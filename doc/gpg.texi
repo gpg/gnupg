@@ -3081,10 +3081,14 @@ the same thing.
 @opindex cert-digest-algo
 Use @var{name} as the message digest algorithm used when signing a
 key. Running the program with the command @option{--version} yields a
-list of supported algorithms. Be aware that if you choose an algorithm
-that GnuPG supports but other OpenPGP implementations do not, then some
-users will not be able to use the key signatures you make, or quite
-possibly your entire key.
+list of supported algorithms.  Be aware that if you choose an
+algorithm that GnuPG supports but other OpenPGP implementations do
+not, then some users will not be able to use the key signatures you
+make, or quite possibly your entire key.  Note also that a public key
+algorithm must be compatible with the specified digest algorithm; thus
+selecting an arbitrary digest algorithm may result in error messages
+from lower crypto layers or lead to security flaws.
+
 
 @item --disable-cipher-algo @var{name}
 @opindex disable-cipher-algo

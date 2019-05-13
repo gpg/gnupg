@@ -343,7 +343,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 	    push_armor_filter (afx, out);
 
 	    /* create it */
-	    rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk2, 0x20, 0,
+	    rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk2, 0x20,
 				     0, 0,
 				     revocation_reason_build_cb, reason,
                                      NULL);
@@ -474,7 +474,7 @@ create_revocation (ctrl_t ctrl,
   afx->hdrlines = "Comment: This is a revocation certificate\n";
   push_armor_filter (afx, out);
 
-  rc = make_keysig_packet (ctrl, &sig, psk, NULL, NULL, psk, 0x20, 0,
+  rc = make_keysig_packet (ctrl, &sig, psk, NULL, NULL, psk, 0x20,
                            0, 0,
                            revocation_reason_build_cb, reason, cache_nonce);
   if (rc)

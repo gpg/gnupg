@@ -1799,12 +1799,19 @@ signature (const char *option, int argc, char *argv[], void *cookie)
       keyid_copy (si.issuer_pk->keyid, pk_keyid (pripk));
     }
 
+  /* The reuse of core gpg stuff by this tool is questionable when it
+   * requires adding extra code to the actual gpg code.  It does not
+   * make sense to pass an extra parameter and in particular not given
+   * that gpg already has opt.cert_digest_algo to override it.  */
+  if (si.digest_algo)
+    log_info ("note: digest algo can't be passed to make_keysig_packet\n");
+
   /* Changing the issuer's key id is fragile.  Check to make sure
      make_keysig_packet didn't recompute the keyid.  */
   keyid_copy (keyid, si.issuer_pk->keyid);
   err = make_keysig_packet (global_ctrl,
                             &sig, si.pk, si.uid, si.sk, si.issuer_pk,
-                            si.class, si.digest_algo,
+                            si.class,
                             si.timestamp, si.expiration,
                             mksubpkt_callback, &si, NULL);
   log_assert (keyid_cmp (keyid, si.issuer_pk->keyid) == 0);

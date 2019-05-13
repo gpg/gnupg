@@ -1022,7 +1022,7 @@ make_backsig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pk,
   cache_public_key (sub_pk);
 
   err = make_keysig_packet (ctrl, &backsig, pk, NULL, sub_pk, sub_psk, 0x19,
-                            0, timestamp, 0, NULL, NULL, cache_nonce);
+                            timestamp, 0, NULL, NULL, cache_nonce);
   if (err)
     log_error ("make_keysig_packet failed for backsig: %s\n",
                gpg_strerror (err));
@@ -1130,7 +1130,7 @@ write_direct_sig (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
 
   /* Make the signature.  */
   err = make_keysig_packet (ctrl, &sig, pk, NULL,NULL, psk, 0x1F,
-                            0, timestamp, 0,
+                            timestamp, 0,
                             keygen_add_revkey, revkey, cache_nonce);
   if (err)
     {
@@ -1185,7 +1185,7 @@ write_selfsigs (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
 
   /* Make the signature.  */
   err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, psk, 0x13,
-                            0, timestamp, 0,
+                            timestamp, 0,
                             keygen_add_std_prefs, pk, cache_nonce);
   if (err)
     {
@@ -1245,7 +1245,7 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
   oduap.usage = use;
   oduap.pk = sub_pk;
   err = make_keysig_packet (ctrl, &sig, pri_pk, NULL, sub_pk, pri_psk, 0x18,
-                            0, timestamp, 0,
+                            timestamp, 0,
                             keygen_add_key_flags_and_expire, &oduap,
                             cache_nonce);
   if (err)

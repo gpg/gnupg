@@ -1593,7 +1593,7 @@ make_keysig_packet (ctrl_t ctrl,
                     PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,
 		    PKT_public_key *pksk,
-		    int sigclass, int digest_algo,
+		    int sigclass,
                     u32 timestamp, u32 duration,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque,
                     const char *cache_nonce)
@@ -1601,6 +1601,7 @@ make_keysig_packet (ctrl_t ctrl,
   PKT_signature *sig;
   int rc = 0;
   int sigversion;
+  int digest_algo;
   gcry_md_hd_t md;
 
   log_assert ((sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
@@ -1612,31 +1613,22 @@ make_keysig_packet (ctrl_t ctrl,
   else
     sigversion = 4;
 
-  if (!digest_algo)
+  /* Select the digest algo to use. */
+  if (opt.cert_digest_algo)     /* Forceful override by the user.  */
+    digest_algo = opt.cert_digest_algo;
+  else if (pksk->pubkey_algo == PUBKEY_ALGO_DSA) /* Meet DSA requirements.  */
+    digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
+  else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA /* Meet ECDSA requirements. */
+           || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
     {
-      /* Basically, this means use SHA1 always unless the user
-       * specified something (use whatever they said), or it's DSA
-       * (use the best match).  They still can't pick an inappropriate
-       * hash for DSA or the signature will fail.  Note that this
-       * still allows the caller of make_keysig_packet to override the
-       * user setting if it must. */
-
-      if (opt.cert_digest_algo)
-        digest_algo = opt.cert_digest_algo;
-      else if (pksk->pubkey_algo == PUBKEY_ALGO_DSA)
-        digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
-      else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
-               || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
-        {
-          if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
-            digest_algo = DIGEST_ALGO_SHA256;
-          else
-            digest_algo = match_dsa_hash
-              (ecdsa_qbits_from_Q (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
-        }
+      if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
+        digest_algo = DIGEST_ALGO_SHA256;
       else
-        digest_algo = DEFAULT_DIGEST_ALGO;
+        digest_algo = match_dsa_hash
+          (ecdsa_qbits_from_Q (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
     }
+  else /* Use the default.  */
+    digest_algo = DEFAULT_DIGEST_ALGO;
 
   if (gcry_md_open (&md, digest_algo, 0))
     BUG ();

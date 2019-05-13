@@ -1012,7 +1012,8 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 					 node->pkt->pkt.user_id,
 					 NULL,
 					 pk,
-					 0x13, 0, 0, 0,
+					 0x13,
+                                         0, 0,
 					 keygen_add_std_prefs, primary_pk,
                                          NULL);
 	      else
@@ -1020,7 +1021,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 					 node->pkt->pkt.user_id,
 					 NULL,
 					 pk,
-					 class, 0,
+					 class,
 					 timestamp, duration,
 					 sign_mk_attrib, &attrib,
                                          NULL);
@@ -3991,7 +3992,7 @@ menu_adduid (ctrl_t ctrl, kbnode_t pub_keyblock,
       return 0;
     }
 
-  err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x13, 0, 0, 0,
+  err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x13, 0, 0,
                             keygen_add_std_prefs, pk, NULL);
   if (err)
     {
@@ -4374,7 +4375,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
       break;
     }
 
-  rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk, 0x1F, 0, 0, 0,
+  rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk, 0x1F, 0, 0,
 			   keygen_add_revkey, &revkey, NULL);
   if (rc)
     {
@@ -5898,7 +5899,7 @@ reloop:			/* (must use this, because we are modifying the list) */
 	}
       rc = make_keysig_packet (ctrl, &sig, primary_pk,
 			       unode->pkt->pkt.user_id,
-			       NULL, signerkey, 0x30, 0, 0, 0,
+			       NULL, signerkey, 0x30, 0, 0,
                                sign_mk_attrib, &attrib, NULL);
       free_public_key (signerkey);
       if (rc)
@@ -5977,11 +5978,11 @@ core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
           memset (&attrib, 0, sizeof attrib);
           /* should not need to cast away const here; but
              revocation_reason_build_cb needs to take a non-const
-             void* in order to meet the function signtuare for the
+             void* in order to meet the function signutare for the
              mksubpkt argument to make_keysig_packet */
           attrib.reason = (struct revocation_reason_info *)reason;
 
-          rc = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x30, 0,
+          rc = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x30,
                                    timestamp, 0,
                                    sign_mk_attrib, &attrib, NULL);
           if (rc)
@@ -6111,7 +6112,7 @@ menu_revkey (ctrl_t ctrl, kbnode_t pub_keyblock)
     return 0;
 
   rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk,
-			   0x20, 0, 0, 0,
+			   0x20, 0, 0,
 			   revocation_reason_build_cb, reason, NULL);
   if (rc)
     {
@@ -6173,7 +6174,7 @@ menu_revsubkey (ctrl_t ctrl, kbnode_t pub_keyblock)
 
 	  node->flag &= ~NODFLG_SELKEY;
 	  rc = make_keysig_packet (ctrl, &sig, mainpk, NULL, subpk, mainpk,
-				   0x28, 0, 0, 0, sign_mk_attrib, &attrib,
+				   0x28, 0, 0, sign_mk_attrib, &attrib,
                                    NULL);
 	  if (rc)
 	    {
