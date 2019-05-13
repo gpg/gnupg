@@ -1714,8 +1714,19 @@ update_keysig_packet (ctrl_t ctrl,
       || (orig_sig->sig_class == 0x18 && !subpk))
     return GPG_ERR_GENERAL;
 
+  /* Either use the override digest algo or in the normal case the
+   * original digest algorithm.  However, iff the original digest
+   * algorithms is SHA-1 and we are in gnupg or de-vs compliance mode
+   * we switch to SHA-256 (done by the macro).  */
   if  (opt.cert_digest_algo)
     digest_algo = opt.cert_digest_algo;
+  else if (pksk->pubkey_algo == PUBKEY_ALGO_DSA
+           || pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
+           || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
+    digest_algo = orig_sig->digest_algo;
+  else if (orig_sig->digest_algo == DIGEST_ALGO_SHA1
+           || orig_sig->digest_algo == DIGEST_ALGO_RMD160)
+    digest_algo = DEFAULT_DIGEST_ALGO;
   else
     digest_algo = orig_sig->digest_algo;
 
