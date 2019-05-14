@@ -47,7 +47,6 @@ struct resource_item {
     KEYBOX_HANDLE kr;
   } u;
   void *token;
-  dotlock_t lockhandle;
 };
 
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
@@ -58,7 +57,14 @@ static int any_registered;
 
 
 struct keydb_handle {
+
+  /* If this flag is set the resources is locked.  */
   int locked;
+
+  /* If this flag is set a lock will only be released by
+   * keydb_release.  */
+  int keep_lock;
+
   int found;
   int saved_found;
   int current;
@@ -346,26 +352,20 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
           err = gpg_error (GPG_ERR_RESOURCE_LIMIT);
         else
           {
+            KEYBOX_HANDLE kbxhd;
+
             all_resources[used_resources].type = rt;
             all_resources[used_resources].u.kr = NULL; /* Not used here */
             all_resources[used_resources].token = token;
 
-            all_resources[used_resources].lockhandle
-              = dotlock_create (filename, 0);
-            if (!all_resources[used_resources].lockhandle)
-              log_fatal ( _("can't create lock for '%s'\n"), filename);
-
-            /* Do a compress run if needed and the file is not locked. */
-            if (!dotlock_take (all_resources[used_resources].lockhandle, 0))
+            /* Do a compress run if needed and the keybox is not locked. */
+            kbxhd = keybox_new_x509 (token, 0);
+            if (kbxhd)
               {
-                KEYBOX_HANDLE kbxhd = keybox_new_x509 (token, 0);
+                if (!keybox_lock (kbxhd, 1, 0))
+                  keybox_compress (kbxhd);
 
-                if (kbxhd)
-                  {
-                    keybox_compress (kbxhd);
-                    keybox_release (kbxhd);
-                  }
-                dotlock_release (all_resources[used_resources].lockhandle);
+                keybox_release (kbxhd);
               }
 
             used_resources++;
@@ -415,7 +415,6 @@ keydb_new (void)
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           hd->active[j].type   = all_resources[i].type;
           hd->active[j].token  = all_resources[i].token;
-          hd->active[j].lockhandle = all_resources[i].lockhandle;
           hd->active[j].u.kr = keybox_new_x509 (all_resources[i].token, 0);
           if (!hd->active[j].u.kr)
             {
@@ -442,6 +441,7 @@ keydb_release (KEYDB_HANDLE hd)
   assert (active_handles > 0);
   active_handles--;
 
+  hd->keep_lock = 0;
   unlock_all (hd);
   for (i=0; i < hd->used; i++)
     {
@@ -526,17 +526,22 @@ keydb_set_ephemeral (KEYDB_HANDLE hd, int yes)
 
 
 /* If the keyring has not yet been locked, lock it now.  This
-   operation is required before any update operation; it is optional
-   for an insert operation.  The lock is released with
-   keydb_released. */
+ * operation is required before any update operation; it is optional
+ * for an insert operation.  The lock is kept until a keydb_release so
+ * that internal unlock_all calls have no effect.  */
 gpg_error_t
 keydb_lock (KEYDB_HANDLE hd)
 {
+  gpg_error_t err;
+
   if (!hd)
     return gpg_error (GPG_ERR_INV_HANDLE);
-  if (hd->locked)
-    return 0; /* Already locked. */
-  return lock_all (hd);
+
+  err = lock_all (hd);
+  if (!err)
+    hd->keep_lock = 1;
+
+  return err;
 }
 
 
@@ -556,8 +561,7 @@ lock_all (KEYDB_HANDLE hd)
         case KEYDB_RESOURCE_TYPE_NONE:
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          if (hd->active[i].lockhandle)
-            rc = dotlock_take (hd->active[i].lockhandle, -1);
+          rc = keybox_lock (hd->active[i].u.kr, 1, -1);
           break;
         }
       if (rc)
@@ -566,7 +570,7 @@ lock_all (KEYDB_HANDLE hd)
 
     if (rc)
       {
-        /* revert the already set locks */
+        /* Revert the already set locks.  */
         for (i--; i >= 0; i--)
           {
             switch (hd->active[i].type)
@@ -574,8 +578,7 @@ lock_all (KEYDB_HANDLE hd)
               case KEYDB_RESOURCE_TYPE_NONE:
                 break;
               case KEYDB_RESOURCE_TYPE_KEYBOX:
-                if (hd->active[i].lockhandle)
-                  dotlock_release (hd->active[i].lockhandle);
+                keybox_lock (hd->active[i].u.kr, 0, 0);
                 break;
               }
           }
@@ -583,10 +586,7 @@ lock_all (KEYDB_HANDLE hd)
     else
       hd->locked = 1;
 
-    /* make_dotlock () does not yet guarantee that errno is set, thus
-       we can't rely on the error reason and will simply use
-       EACCES. */
-    return rc? gpg_error (GPG_ERR_EACCES) : 0;
+    return rc;
 }
 
 static void
@@ -594,7 +594,7 @@ unlock_all (KEYDB_HANDLE hd)
 {
   int i;
 
-  if (!hd->locked)
+  if (!hd->locked || hd->keep_lock)
     return;
 
   for (i=hd->used-1; i >= 0; i--)
@@ -604,8 +604,7 @@ unlock_all (KEYDB_HANDLE hd)
         case KEYDB_RESOURCE_TYPE_NONE:
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          if (hd->active[i].lockhandle)
-            dotlock_release (hd->active[i].lockhandle);
+          keybox_lock (hd->active[i].u.kr, 0, 0);
           break;
         }
     }
@@ -840,7 +839,7 @@ keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
  * The current keyblock or cert will be deleted.
  */
 int
-keydb_delete (KEYDB_HANDLE hd, int unlock)
+keydb_delete (KEYDB_HANDLE hd)
 {
   int rc = -1;
 
@@ -866,8 +865,7 @@ keydb_delete (KEYDB_HANDLE hd, int unlock)
       break;
     }
 
-  if (unlock)
-    unlock_all (hd);
+  unlock_all (hd);
   return rc;
 }
 

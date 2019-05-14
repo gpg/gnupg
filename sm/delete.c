@@ -113,7 +113,8 @@ delete_one (ctrl_t ctrl, const char *username)
       goto leave;
     }
 
-  /* We need to search again to get back to the right position. */
+  /* We need to search again to get back to the right position.  Neo
+   * that the lock is kept until the KH is released.  */
   rc = keydb_lock (kh);
   if (rc)
     {
@@ -132,7 +133,7 @@ delete_one (ctrl_t ctrl, const char *username)
           goto leave;
         }
 
-      rc = keydb_delete (kh, duplicates ? 0 : 1);
+      rc = keydb_delete (kh);
       if (rc)
         goto leave;
       if (opt.verbose)

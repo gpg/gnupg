@@ -261,10 +261,12 @@ _keybox_close_file (KEYBOX_HANDLE hd)
 
 
 /*
- * Lock the keybox at handle HD, or unlock if YES is false.
+ * Lock the keybox at handle HD, or unlock if YES is false.  TIMEOUT
+ * is the value used for dotlock_take.  In general -1 should be used
+ * when taking a lock; use 0 when releasing a lock.
  */
 gpg_error_t
-keybox_lock (KEYBOX_HANDLE hd, int yes)
+keybox_lock (KEYBOX_HANDLE hd, int yes, long timeout)
 {
   gpg_error_t err = 0;
   KB_NAME kb = hd->kb;
@@ -302,10 +304,13 @@ keybox_lock (KEYBOX_HANDLE hd, int yes)
               hd->fp = NULL;
             }
 #endif /*HAVE_W32_SYSTEM*/
-          if (dotlock_take (kb->lockhd, -1))
+          if (dotlock_take (kb->lockhd, timeout))
             {
               err = gpg_error_from_syserror ();
-              log_info ("can't lock '%s'\n", kb->fname );
+              if (!timeout && gpg_err_code (err) == GPG_ERR_EACCES)
+                ; /* No diagnostic if we only tried to lock.  */
+              else
+                log_info ("can't lock '%s'\n", kb->fname );
             }
           else
             kb->is_locked = 1;
