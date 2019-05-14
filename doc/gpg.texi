@@ -1330,8 +1330,9 @@ give the opposite meaning.  The options are:
 
   @item show-only-fpr-mbox
   @opindex list-options:show-only-fpr-mbox
-  For each valid user-id which also has a valid mail address print
-  only the fingerprint and the mail address.
+  For each self-signed user-id which contains an email address print
+  only the fingerprint and the email address, one pair per line. Do
+  not print any other data.
 @end table
 
 @item --verify-options @var{parameters}
