@@ -596,7 +596,10 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
   top_list = gcry_sexp_find_token (s_key, "private-key", 0);
   if (!top_list)
     goto bad_seckey;
-  if (gcry_sexp_length(top_list) != 2)
+
+  /* ignore all S-expression after the first sublist -- we assume that
+     they are comments or otherwise irrelevant to OpenPGP */
+  if (gcry_sexp_length(top_list) < 2)
     goto bad_seckey;
   key = gcry_sexp_nth (top_list, 1);
   if (!key)
