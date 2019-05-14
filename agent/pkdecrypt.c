@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
@@ -119,10 +118,10 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
           gcry_sexp_dump (s_plain);
         }
       len = gcry_sexp_sprint (s_plain, GCRYSEXP_FMT_CANON, NULL, 0);
-      assert (len);
+      log_assert (len);
       buf = xmalloc (len);
       len = gcry_sexp_sprint (s_plain, GCRYSEXP_FMT_CANON, buf, len);
-      assert (len);
+      log_assert (len);
       if (*buf == '(')
         put_membuf (outbuf, buf, len);
       else

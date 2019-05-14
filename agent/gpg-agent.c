@@ -26,7 +26,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <time.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -1952,7 +1951,7 @@ agent_set_progress_cb (void (*cb)(ctrl_t ctrl, const char *what,
 static void
 agent_init_default_ctrl (ctrl_t ctrl)
 {
-  assert (ctrl->session_env);
+  log_assert (ctrl->session_env);
 
   /* Note we ignore malloc errors because we can't do much about it
      and the request will fail anyway shortly after this

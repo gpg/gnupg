@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "agent.h"
 #include "../common/i18n.h"
@@ -571,7 +570,7 @@ do_unprotect (const char *passphrase,
             }
           skey[i] = NULL;
           skeylen = i;
-          assert (skeylen <= skeysize);
+          log_assert (skeylen <= skeysize);
 
           /* Note: at this point NDATA should be 2 for a simple
              checksum or 20 for the sha1 digest.  */
@@ -1105,8 +1104,8 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
   int ndata;
   unsigned char *p, *data;
 
-  assert (npkey < nskey);
-  assert (nskey < DIM (bufarr));
+  log_assert (npkey < nskey);
+  log_assert (nskey < DIM (bufarr));
 
   /* Collect only the secret key parameters into BUFARR et al and
      compute the required size of the data buffer.  */
@@ -1143,7 +1142,7 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
       xfree (bufarr[i]);
       bufarr[i] = NULL;
     }
-  assert (p == data + ndata - 20);
+  log_assert (p == data + ndata - 20);
 
   /* Append a hash of the secret key parameters.  */
   gcry_md_hash_buffer (GCRY_MD_SHA1, p, data, ndata - 20);

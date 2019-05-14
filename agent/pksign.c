@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
-#include <unistd.h>
 #include <sys/stat.h>
 
 #include "agent.h"
@@ -250,13 +248,13 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
   frame[n++] = 0;
   frame[n++] = 1; /* Block type. */
   i = nframe - mdlen - 3 ;
-  assert (i >= 8); /* At least 8 bytes of padding.  */
+  log_assert (i >= 8); /* At least 8 bytes of padding.  */
   memset (frame+n, 0xff, i );
   n += i;
   frame[n++] = 0;
   memcpy (frame+n, md, mdlen );
   n += mdlen;
-  assert (n == nframe);
+  log_assert (n == nframe);
 
   /* Create the S-expression.  */
   rc = gcry_sexp_build (&hash, NULL,

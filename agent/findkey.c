@@ -26,10 +26,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <assert.h>
 #include <npth.h> /* (we use pth_sleep) */
 
 #include "agent.h"
@@ -336,7 +334,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
   gnupg_isotime_t now, protected_at, tmptime;
   char *desc = NULL;
 
-  assert (!arg->unprotected_key);
+  log_assert (!arg->unprotected_key);
 
   arg->change_required = 0;
   err = agent_unprotect (ctrl, arg->protected_key, pi->pin, protected_at,
@@ -740,7 +738,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
     }
   else
     {
-      assert (arg.unprotected_key);
+      log_assert (arg.unprotected_key);
       if (arg.change_required)
         {
           /* The callback told as that the user should change their
@@ -748,7 +746,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
           size_t canlen, erroff;
           gcry_sexp_t s_skey;
 
-          assert (arg.unprotected_key);
+          log_assert (arg.unprotected_key);
           canlen = gcry_sexp_canon_len (arg.unprotected_key, 0, NULL, NULL);
           rc = gcry_sexp_sscan (&s_skey, &erroff,
                                 (char*)arg.unprotected_key, canlen);
@@ -1415,7 +1413,7 @@ agent_public_key_from_file (ctrl_t ctrl,
      such a task.  After all that is what we do in protect.c.  Need
      to find common patterns and write a straightformward API to use
      them.  */
-  assert (sizeof (size_t) <= sizeof (void*));
+  log_assert (sizeof (size_t) <= sizeof (void*));
 
   format = xtrymalloc (15+4+7*npkey+10+15+1+1);
   if (!format)
@@ -1440,14 +1438,14 @@ agent_public_key_from_file (ctrl_t ctrl,
       *p++ = '(';
       *p++ = *s++;
       p = stpcpy (p, " %m)");
-      assert (argidx < DIM (args));
+      log_assert (argidx < DIM (args));
       args[argidx++] = &array[idx];
     }
   *p++ = ')';
   if (uri)
     {
       p = stpcpy (p, "(uri %b)");
-      assert (argidx+1 < DIM (args));
+      log_assert (argidx+1 < DIM (args));
       uri_intlen = (int)uri_length;
       args[argidx++] = (void *)&uri_intlen;
       args[argidx++] = (void *)&uri;
@@ -1455,14 +1453,14 @@ agent_public_key_from_file (ctrl_t ctrl,
   if (comment)
     {
       p = stpcpy (p, "(comment %b)");
-      assert (argidx+1 < DIM (args));
+      log_assert (argidx+1 < DIM (args));
       comment_intlen = (int)comment_length;
       args[argidx++] = (void *)&comment_intlen;
       args[argidx++] = (void*)&comment;
     }
   *p++ = ')';
   *p = 0;
-  assert (argidx < DIM (args));
+  log_assert (argidx < DIM (args));
   args[argidx] = NULL;
 
   err = gcry_sexp_build_array (&list, NULL, format, args);
@@ -1559,7 +1557,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
           if (!err)
             {
               n = gcry_sexp_canon_len (s, 0, NULL, NULL);
-              assert (n);
+              log_assert (n);
               *r_shadow_info = xtrymalloc (n);
               if (!*r_shadow_info)
                 err = gpg_error_from_syserror ();

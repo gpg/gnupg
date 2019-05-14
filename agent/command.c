@@ -30,7 +30,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -2212,7 +2211,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
         goto leave; /* Invalid canonical encoded S-expression.  */
       if (passphrase)
         {
-          assert (!opt_unattended);
+          log_assert (!opt_unattended);
           if (!cache_nonce)
             {
               char buf[12];

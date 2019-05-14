@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 
 #include "agent.h"
 #include "../common/i18n.h"
@@ -47,12 +46,12 @@ store_key (gcry_sexp_t private, const char *passphrase, int force,
     }
 
   len = gcry_sexp_sprint (private, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
+  log_assert (len);
   buf = gcry_malloc_secure (len);
   if (!buf)
       return out_of_core ();
   len = gcry_sexp_sprint (private, GCRYSEXP_FMT_CANON, buf, len);
-  assert (len);
+  log_assert (len);
 
   if (passphrase)
     {
@@ -127,7 +126,7 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
   argv[i++] = "--",
   argv[i++] = opt.check_passphrase_pattern,
   argv[i] = NULL;
-  assert (i < sizeof argv);
+  log_assert (i < sizeof argv);
 
   if (gnupg_spawn_process_fd (pgmname, argv, fileno (infp), -1, -1, &pid))
     result = 1; /* Execute error - assume password should no be used.  */
@@ -557,7 +556,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
   if (DBG_CRYPTO)
     log_debug ("returning public key\n");
   len = gcry_sexp_sprint (s_public, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
+  log_assert (len);
   buf = xtrymalloc (len);
   if (!buf)
     {
@@ -567,7 +566,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
       return tmperr;
     }
   len = gcry_sexp_sprint (s_public, GCRYSEXP_FMT_CANON, buf, len);
-  assert (len);
+  log_assert (len);
   put_membuf (outbuf, buf, len);
   gcry_sexp_release (s_public);
   xfree (buf);
