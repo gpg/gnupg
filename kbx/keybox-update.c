@@ -423,7 +423,7 @@ keybox_update_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen)
   if (off == (off_t)-1)
     return gpg_error (GPG_ERR_GENERAL);
 
-  /* Close this the file so that we do no mess up the position for a
+  /* Close the file so that we do no mess up the position for a
      next search.  */
   _keybox_close_file (hd);
 

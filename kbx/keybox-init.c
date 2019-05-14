@@ -291,18 +291,14 @@ keybox_lock (KEYBOX_HANDLE hd, int yes, long timeout)
       if (!kb->is_locked)
         {
 #ifdef HAVE_W32_SYSTEM
-            /* Under Windows we need to close the file before we try
-             * to lock it.  This is because another process might have
-             * taken the lock and is using keybox_file_rename to
-             * rename the base file.  How if our dotlock_take below is
-             * waiting for the lock but we have the base file still
-             * open, keybox_file_rename will never succeed as we are
-             * in a deadlock.  */
-          if (hd->fp)
-            {
-              fclose (hd->fp);
-              hd->fp = NULL;
-            }
+          /* Under Windows we need to close the file before we try
+           * to lock it.  This is because another process might have
+           * taken the lock and is using keybox_file_rename to
+           * rename the base file.  Now if our dotlock_take below is
+           * waiting for the lock but we have the base file still
+           * open, keybox_file_rename will never succeed as we are
+           * in a deadlock.  */
+          _keybox_close_file (hd);
 #endif /*HAVE_W32_SYSTEM*/
           if (dotlock_take (kb->lockhd, timeout))
             {
