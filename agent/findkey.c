@@ -1230,6 +1230,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   gcry_sexp_t uri_sexp, comment_sexp;
   const char *uri, *comment;
   size_t uri_length, comment_length;
+  int uri_intlen, comment_intlen;
   char *format, *p;
   void *args[2+7+2+2+1]; /* Size is 2 + max. # of elements + 2 for uri + 2
                             for comment + end-of-list.  */
@@ -1311,14 +1312,16 @@ agent_public_key_from_file (ctrl_t ctrl,
     {
       p = stpcpy (p, "(uri %b)");
       assert (argidx+1 < DIM (args));
-      args[argidx++] = (void *)&uri_length;
+      uri_intlen = (int)uri_length;
+      args[argidx++] = (void *)&uri_intlen;
       args[argidx++] = (void *)&uri;
     }
   if (comment)
     {
       p = stpcpy (p, "(comment %b)");
       assert (argidx+1 < DIM (args));
-      args[argidx++] = (void *)&comment_length;
+      comment_intlen = (int)comment_length;
+      args[argidx++] = (void *)&comment_intlen;
       args[argidx++] = (void*)&comment;
     }
   *p++ = ')';
