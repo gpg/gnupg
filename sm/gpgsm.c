@@ -430,6 +430,8 @@ static struct debug_flags_s debug_flags [] =
     { DBG_MEMSTAT_VALUE, "memstat" },
     { DBG_HASHING_VALUE, "hashing" },
     { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_CLOCK_VALUE  , "clock"   },
+    { DBG_LOOKUP_VALUE , "lookup"  },
     { 0, NULL }
   };
 

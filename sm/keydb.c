@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -401,11 +400,14 @@ keydb_new (void)
   KEYDB_HANDLE hd;
   int i, j;
 
+  if (DBG_CLOCK)
+    log_clock ("%s: enter\n", __func__);
+
   hd = xcalloc (1, sizeof *hd);
   hd->found = -1;
   hd->saved_found = -1;
 
-  assert (used_resources <= MAX_KEYDB_RESOURCES);
+  log_assert (used_resources <= MAX_KEYDB_RESOURCES);
   for (i=j=0; i < used_resources; i++)
     {
       switch (all_resources[i].type)
@@ -428,6 +430,8 @@ keydb_new (void)
   hd->used = j;
 
   active_handles++;
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (hd=%p)\n", __func__, hd);
   return hd;
 }
 
@@ -438,7 +442,11 @@ keydb_release (KEYDB_HANDLE hd)
 
   if (!hd)
     return;
-  assert (active_handles > 0);
+
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
+  log_assert (active_handles > 0);
   active_handles--;
 
   hd->keep_lock = 0;
@@ -455,7 +463,9 @@ keydb_release (KEYDB_HANDLE hd)
         }
     }
 
-    xfree (hd);
+  xfree (hd);
+  if (DBG_CLOCK)
+    log_clock ("%s: leave\n", __func__);
 }
 
 
@@ -537,10 +547,14 @@ keydb_lock (KEYDB_HANDLE hd)
   if (!hd)
     return gpg_error (GPG_ERR_INV_HANDLE);
 
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
   err = lock_all (hd);
   if (!err)
     hd->keep_lock = 1;
 
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
   return err;
 }
 
@@ -637,6 +651,8 @@ keydb_push_found_state (KEYDB_HANDLE hd)
 
   hd->saved_found = hd->found;
   hd->found = -1;
+  if (DBG_CLOCK)
+    log_clock ("%s: done (hd=%p)\n", __func__, hd);
 }
 
 
@@ -660,6 +676,8 @@ keydb_pop_found_state (KEYDB_HANDLE hd)
       keybox_pop_found_state (hd->active[hd->found].u.kr);
       break;
     }
+  if (DBG_CLOCK)
+    log_clock ("%s: done (hd=%p)\n", __func__, hd);
 }
 
 
@@ -677,9 +695,16 @@ keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if ( hd->found < 0 || hd->found >= hd->used)
-    return -1; /* nothing found */
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
 
+  if ( hd->found < 0 || hd->found >= hd->used)
+    {
+      rc = -1; /* nothing found */
+      goto leave;
+    }
+
+  rc = GPG_ERR_BUG;
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
@@ -690,8 +715,12 @@ keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
       break;
     }
 
+ leave:
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (rc=%d)\n", __func__, rc);
   return rc;
 }
+
 
 /* Return a flag of the last found object. WHICH is the flag requested;
    it should be one of the KEYBOX_FLAG_ values.  If the operation is
@@ -700,14 +729,21 @@ keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
 gpg_error_t
 keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
 {
-  int err = 0;
+  gpg_error_t err;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if ( hd->found < 0 || hd->found >= hd->used)
-    return gpg_error (GPG_ERR_NOTHING_FOUND);
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
 
+  if ( hd->found < 0 || hd->found >= hd->used)
+    {
+      err = gpg_error (GPG_ERR_NOTHING_FOUND);
+      goto leave;
+    }
+
+  err = gpg_error (GPG_ERR_BUG);
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
@@ -718,8 +754,12 @@ keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
       break;
     }
 
+ leave:
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
   return err;
 }
+
 
 /* Set a flag of the last found object. WHICH is the flag to be set; it
    should be one of the KEYBOX_FLAG_ values.  If the operation is
@@ -730,16 +770,25 @@ keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
 gpg_error_t
 keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
 {
-  int err = 0;
+  gpg_error_t err = 0;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
   if ( hd->found < 0 || hd->found >= hd->used)
-    return gpg_error (GPG_ERR_NOTHING_FOUND);
+    {
+      err = gpg_error (GPG_ERR_NOTHING_FOUND);
+      goto leave;
+    }
 
   if (!hd->locked)
-    return gpg_error (GPG_ERR_NOT_LOCKED);
+    {
+      err = gpg_error (GPG_ERR_NOT_LOCKED);
+      goto leave;
+    }
 
   switch (hd->active[hd->found].type)
     {
@@ -751,16 +800,19 @@ keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
       break;
     }
 
+ leave:
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
   return err;
 }
 
 /*
  * Insert a new Certificate into one of the resources.
  */
-int
+gpg_error_t
 keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
-  int rc = -1;
+  gpg_error_t err;
   int idx;
   unsigned char digest[20];
 
@@ -770,103 +822,136 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
   if (opt.dry_run)
     return 0;
 
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
   if ( hd->found >= 0 && hd->found < hd->used)
     idx = hd->found;
   else if ( hd->current >= 0 && hd->current < hd->used)
     idx = hd->current;
   else
-    return gpg_error (GPG_ERR_GENERAL);
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
 
   if (!hd->locked)
-    return gpg_error (GPG_ERR_NOT_LOCKED);
+    {
+      err = gpg_error (GPG_ERR_NOT_LOCKED);
+      goto leave;
+    }
 
   gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL); /* kludge*/
 
+  err = gpg_error (GPG_ERR_BUG);
   switch (hd->active[idx].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = gpg_error (GPG_ERR_GENERAL);
+      err = gpg_error (GPG_ERR_GENERAL);
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
-      rc = keybox_insert_cert (hd->active[idx].u.kr, cert, digest);
+      err = keybox_insert_cert (hd->active[idx].u.kr, cert, digest);
       break;
     }
 
   unlock_all (hd);
-  return rc;
+
+ leave:
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
+  return err;
 }
 
 
 
 /* Update the current keyblock with KB.  */
-int
+/* Note: This function is currently not called.  */
+gpg_error_t
 keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
-  int rc = 0;
+  gpg_error_t err;
   unsigned char digest[20];
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ( hd->found < 0 || hd->found >= hd->used)
-    return -1; /* nothing found */
+    return gpg_error (GPG_ERR_NOT_FOUND);
 
   if (opt.dry_run)
     return 0;
 
-  rc = lock_all (hd);
-  if (rc)
-    return rc;
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
+  err = lock_all (hd);
+  if (err)
+    goto leave;
 
   gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL); /* kludge*/
 
+  err = gpg_error (GPG_ERR_BUG);
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = gpg_error (GPG_ERR_GENERAL); /* oops */
+      err = gpg_error (GPG_ERR_GENERAL); /* oops */
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
-      rc = keybox_update_cert (hd->active[hd->found].u.kr, cert, digest);
+      err = keybox_update_cert (hd->active[hd->found].u.kr, cert, digest);
       break;
     }
 
   unlock_all (hd);
-  return rc;
+ leave:
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
+  return err;
 }
 
 
 /*
  * The current keyblock or cert will be deleted.
  */
-int
+gpg_error_t
 keydb_delete (KEYDB_HANDLE hd)
 {
-  int rc = -1;
+  gpg_error_t err;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ( hd->found < 0 || hd->found >= hd->used)
-    return -1; /* nothing found */
+    return gpg_error (GPG_ERR_NOT_FOUND);
 
-  if( opt.dry_run )
+  if (opt.dry_run)
     return 0;
 
-  if (!hd->locked)
-    return gpg_error (GPG_ERR_NOT_LOCKED);
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
 
+  if (!hd->locked)
+    {
+      err = gpg_error (GPG_ERR_NOT_LOCKED);
+      goto leave;
+    }
+
+  err = gpg_error (GPG_ERR_BUG);
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = gpg_error (GPG_ERR_GENERAL);
+      err = gpg_error (GPG_ERR_GENERAL);
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
-      rc = keybox_delete (hd->active[hd->found].u.kr);
+      err = keybox_delete (hd->active[hd->found].u.kr);
       break;
     }
 
   unlock_all (hd);
-  return rc;
+
+ leave:
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
+  return err;
 }
 
 
@@ -939,28 +1024,91 @@ keydb_rebuild_caches (void)
 gpg_error_t
 keydb_search_reset (KEYDB_HANDLE hd)
 {
+  gpg_error_t err = 0;
   int i;
-  gpg_error_t rc = 0;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
   hd->current = 0;
   hd->found = -1;
   /* and reset all resources */
-  for (i=0; !rc && i < hd->used; i++)
+  for (i=0; !err && i < hd->used; i++)
     {
       switch (hd->active[i].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE:
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          rc = keybox_search_reset (hd->active[i].u.kr);
+          err = keybox_search_reset (hd->active[i].u.kr);
           break;
         }
     }
-  return rc;
+
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
+  return err;
 }
+
+
+char *
+keydb_search_desc_dump (struct keydb_search_desc *desc)
+{
+  char *fpr;
+  char *result;
+
+  switch (desc->mode)
+    {
+    case KEYDB_SEARCH_MODE_EXACT:
+      return xasprintf ("EXACT: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_SUBSTR:
+      return xasprintf ("SUBSTR: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_MAIL:
+      return xasprintf ("MAIL: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_MAILSUB:
+      return xasprintf ("MAILSUB: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_MAILEND:
+      return xasprintf ("MAILEND: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_WORDS:
+      return xasprintf ("WORDS: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_SHORT_KID:
+      return xasprintf ("SHORT_KID: '%08lX'", (ulong)desc->u.kid[1]);
+    case KEYDB_SEARCH_MODE_LONG_KID:
+      return xasprintf ("LONG_KID: '%08lX%08lX'",
+                        (ulong)desc->u.kid[0], (ulong)desc->u.kid[1]);
+    case KEYDB_SEARCH_MODE_FPR:
+      fpr = bin2hexcolon (desc->u.fpr, desc->fprlen, NULL);
+      result = xasprintf ("FPR%02d: '%s'", desc->fprlen, fpr);
+      xfree (fpr);
+      return result;
+    case KEYDB_SEARCH_MODE_ISSUER:
+      return xasprintf ("ISSUER: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_ISSUER_SN:
+      return xasprintf ("ISSUER_SN: '%*s'",
+                        (int) (desc->snlen == -1
+                               ? strlen (desc->sn) : desc->snlen),
+                        desc->sn);
+    case KEYDB_SEARCH_MODE_SN:
+      return xasprintf ("SN: '%*s'",
+                        (int) (desc->snlen == -1
+                               ? strlen (desc->sn) : desc->snlen),
+                        desc->sn);
+    case KEYDB_SEARCH_MODE_SUBJECT:
+      return xasprintf ("SUBJECT: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_KEYGRIP:
+      return xasprintf ("KEYGRIP: %s", desc->u.grip);
+    case KEYDB_SEARCH_MODE_FIRST:
+      return xasprintf ("FIRST");
+    case KEYDB_SEARCH_MODE_NEXT:
+      return xasprintf ("NEXT");
+    default:
+      return xasprintf ("Bad search mode (%d)", desc->mode);
+    }
+}
+
 
 /*
  * Search through all keydb resources, starting at the current position,
@@ -972,6 +1120,7 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
 {
   int rc = -1;
   unsigned long skipped;
+  int i;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -983,7 +1132,22 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
       return gpg_error (GPG_ERR_NOT_FOUND);
     }
 
-  while (rc == -1 && hd->current >= 0 && hd->current < hd->used)
+  if (DBG_CLOCK)
+    log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
+  if (DBG_LOOKUP)
+    {
+      log_debug ("%s: %zd search description(s):\n", __func__, ndesc);
+      for (i = 0; i < ndesc; i ++)
+        {
+          char *t = keydb_search_desc_dump (&desc[i]);
+          log_debug ("%s:   %d: %s\n", __func__, i, t);
+          xfree (t);
+        }
+    }
+
+  while ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+         && hd->current >= 0 && hd->current < hd->used)
     {
       switch (hd->active[hd->current].type)
         {
@@ -996,6 +1160,15 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
                               NULL, &skipped);
           break;
         }
+
+      if (DBG_LOOKUP)
+        log_debug ("%s: searched %s (resource %d of %d) => %s\n",
+                   __func__,
+                   hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYBOX
+                      ? "keybox" : "unknown type",
+                   hd->current, hd->used,
+                   rc == -1 ? "EOF" : gpg_strerror (rc));
+
       if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
         { /* EOF -> switch to next resource */
           hd->current++;
@@ -1004,6 +1177,9 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
         hd->found = hd->current;
     }
 
+
+  if (DBG_CLOCK)
+    log_clock ("%s: leave (rc=%d)\n", __func__, rc);
   return rc;
 }
 

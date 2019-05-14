@@ -46,10 +46,10 @@ gpg_error_t keydb_set_flags (KEYDB_HANDLE hd, int which, int idx,
 void keydb_push_found_state (KEYDB_HANDLE hd);
 void keydb_pop_found_state (KEYDB_HANDLE hd);
 int keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert);
-int keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
-int keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
+gpg_error_t keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
+gpg_error_t keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
 
-int keydb_delete (KEYDB_HANDLE hd);
+gpg_error_t keydb_delete (KEYDB_HANDLE hd);
 
 int keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
 void keydb_rebuild_caches (void);
