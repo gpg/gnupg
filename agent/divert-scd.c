@@ -32,28 +32,43 @@
 #include "../common/sexp-parse.h"
 
 
-static int
-ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
+static gpg_error_t
+ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
+              const unsigned char *grip, char **r_kid)
 {
-  int rc, i;
+  int i;
   char *serialno;
   int no_card = 0;
   char *desc;
   char *want_sn, *want_kid, *want_sn_disp;
   int len;
+  struct card_key_info_s *keyinfo;
+  gpg_error_t err;
+  char hexgrip[41];
 
   *r_kid = NULL;
 
-  rc = parse_shadow_info (shadow_info, &want_sn, &want_kid, NULL);
-  if (rc)
-    return rc;
+  bin2hex (grip, 20, hexgrip);
+  err = agent_card_keyinfo (ctrl, hexgrip, &keyinfo);
+  if (!err)
+    {
+      agent_card_free_keyinfo (keyinfo);
+      if ((*r_kid = xtrystrdup (hexgrip)))
+        return 0;
+      else
+        return gpg_error_from_syserror ();
+    }
+
+  err = parse_shadow_info (shadow_info, &want_sn, &want_kid, NULL);
+  if (err)
+    return err;
   want_sn_disp = xtrystrdup (want_sn);
   if (!want_sn_disp)
     {
-      rc = gpg_error_from_syserror ();
+      err = gpg_error_from_syserror ();
       xfree (want_sn);
       xfree (want_kid);
-      return rc;
+      return err;
     }
 
   len = strlen (want_sn_disp);
@@ -76,8 +91,8 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
 
   for (;;)
     {
-      rc = agent_card_serialno (ctrl, &serialno, want_sn);
-      if (!rc)
+      err = agent_card_serialno (ctrl, &serialno, want_sn);
+      if (!err)
         {
           log_debug ("detected card with S/N %s\n", serialno);
           i = strcmp (serialno, want_sn);
@@ -91,24 +106,24 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
               return 0; /* yes, we have the correct card */
             }
         }
-      else if (gpg_err_code (rc) == GPG_ERR_ENODEV)
+      else if (gpg_err_code (err) == GPG_ERR_ENODEV)
         {
           log_debug ("no device present\n");
-          rc = 0;
+          err = 0;
           no_card = 1;
         }
-      else if (gpg_err_code (rc) == GPG_ERR_CARD_NOT_PRESENT)
+      else if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
         {
           log_debug ("no card present\n");
-          rc = 0;
+          err = 0;
           no_card = 2;
         }
       else
         {
-          log_error ("error accessing card: %s\n", gpg_strerror (rc));
+          log_error ("error accessing card: %s\n", gpg_strerror (err));
         }
 
-      if (!rc)
+      if (!err)
         {
           if (asprintf (&desc,
                     "%s:%%0A%%0A"
@@ -119,24 +134,24 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
                              "insert the one with serial number"),
                         want_sn_disp) < 0)
             {
-              rc = out_of_core ();
+              err = out_of_core ();
             }
           else
             {
-              rc = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
+              err = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
               if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK &&
-                  gpg_err_code (rc) == GPG_ERR_NO_PIN_ENTRY)
-                rc = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+                  gpg_err_code (err) == GPG_ERR_NO_PIN_ENTRY)
+                err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
 
               xfree (desc);
             }
         }
-      if (rc)
+      if (err)
         {
           xfree (want_sn_disp);
           xfree (want_sn);
           xfree (want_kid);
-          return rc;
+          return err;
         }
     }
 }
@@ -434,7 +449,7 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
  *
  * FIXME: Explain the other args.  */
 int
-divert_pksign (ctrl_t ctrl, const char *desc_text,
+divert_pksign (ctrl_t ctrl, const char *desc_text, const unsigned char *grip,
                const unsigned char *digest, size_t digestlen, int algo,
                const unsigned char *shadow_info, unsigned char **r_sig,
                size_t *r_siglen)
@@ -446,7 +461,7 @@ divert_pksign (ctrl_t ctrl, const char *desc_text,
 
   (void)desc_text;
 
-  rc = ask_for_card (ctrl, shadow_info, &kid);
+  rc = ask_for_card (ctrl, shadow_info, grip, &kid);
   if (rc)
     return rc;
 
@@ -490,6 +505,7 @@ divert_pksign (ctrl_t ctrl, const char *desc_text,
    R_PADDING with -1 for not known.  */
 int
 divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+                  const unsigned char *grip,
                   const unsigned char *cipher,
                   const unsigned char *shadow_info,
                   char **r_buf, size_t *r_len, int *r_padding)
@@ -581,7 +597,7 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   ciphertext = s;
   ciphertextlen = n;
 
-  rc = ask_for_card (ctrl, shadow_info, &kid);
+  rc = ask_for_card (ctrl, shadow_info, grip, &kid);
   if (rc)
     return rc;
 

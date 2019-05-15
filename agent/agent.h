@@ -361,6 +361,15 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
 #endif
 
 
+/* Information from scdaemon for card keys.  */
+struct card_key_info_s
+{
+  struct card_key_info_s *next;
+  char keygrip[40];
+  char *serialno;
+  char *idstr;
+};
+
 /*-- gpg-agent.c --*/
 void agent_exit (int rc)
                 GPGRT_ATTR_NORETURN; /* Also implemented in other tools */
@@ -544,10 +553,12 @@ void agent_reload_trustlist (void);
 
 /*-- divert-scd.c --*/
 int divert_pksign (ctrl_t ctrl, const char *desc_text,
+                   const unsigned char *grip,
                    const unsigned char *digest, size_t digestlen, int algo,
                    const unsigned char *shadow_info, unsigned char **r_sig,
                    size_t *r_siglen);
 int divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+                      const unsigned char *grip,
                       const unsigned char *cipher,
                       const unsigned char *shadow_info,
                       char **r_buf, size_t *r_len, int *r_padding);
@@ -604,6 +615,9 @@ int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *,
                                      const char *, char*, size_t),
                     void *getpin_cb_arg, void *assuan_context);
+void agent_card_free_keyinfo (struct card_key_info_s *l);
+gpg_error_t agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
+                                struct card_key_info_s **result);
 
 
 /*-- learncard.c --*/

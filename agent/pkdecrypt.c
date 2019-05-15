@@ -85,8 +85,8 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
           goto leave;
         }
 
-      rc = divert_pkdecrypt (ctrl, desc_text, ciphertext, shadow_info,
-                             &buf, &len, r_padding);
+      rc = divert_pkdecrypt (ctrl, desc_text, ctrl->keygrip, ciphertext,
+                             shadow_info, &buf, &len, r_padding);
       if (rc)
         {
           log_error ("smartcard decryption failed: %s\n", gpg_strerror (rc));

@@ -352,6 +352,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
           agent_modify_description (desc_text, NULL, s_skey, &desc2);
 
         err = divert_pksign (ctrl, desc2? desc2 : desc_text,
+                             ctrl->keygrip,
                              data, datalen,
                              ctrl->digest.algo,
                              shadow_info, &buf, &len);
