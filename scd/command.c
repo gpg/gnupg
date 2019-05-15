@@ -1851,6 +1851,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   int action;
   char *keygrip_str;
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  app_t a;
 
   list_mode = has_option (line, "--list");
   opt_data = has_option (line, "--data");
@@ -1866,8 +1867,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else
     action = KEYGRIP_ACTION_WRITE_STATUS;
 
-  app_do_with_keygrip (ctrl, action, keygrip_str);
+  a = app_do_with_keygrip (ctrl, action, keygrip_str);
 
+  if (!list_mode && !a)
+    return gpg_error (GPG_ERR_NOT_FOUND);
   return 0;
 }
 
