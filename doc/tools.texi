@@ -393,6 +393,8 @@ extends numerical field values by human-readable descriptions.
 @opindex quiet
 Try to be as quiet as possible.
 
+@include opt-homedir.texi
+
 @item -n
 @itemx --dry-run
 Do not actually change anything.  This is currently only implemented

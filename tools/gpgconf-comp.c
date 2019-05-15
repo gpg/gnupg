@@ -1156,12 +1156,8 @@ gpg_agent_runtime_change (int killflag)
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   if (!gnupg_default_homedir_p ())
     {
-      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
-      if (!abs_homedir)
-        err = gpg_error_from_syserror ();
-
       argv[i++] = "--homedir";
-      argv[i++] = abs_homedir;
+      argv[i++] = gnupg_homedir ();
     }
   argv[i++] = "--no-autostart";
   argv[i++] = killflag? "KILLAGENT" : "RELOADAGENT";
@@ -1199,12 +1195,8 @@ scdaemon_runtime_change (int killflag)
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   if (!gnupg_default_homedir_p ())
     {
-      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
-      if (!abs_homedir)
-        err = gpg_error_from_syserror ();
-
       argv[i++] = "--homedir";
-      argv[i++] = abs_homedir;
+      argv[i++] = gnupg_homedir ();
     }
   argv[i++] = "-s";
   argv[i++] = "--no-autostart";
@@ -1243,12 +1235,8 @@ dirmngr_runtime_change (int killflag)
     argv[3] = NULL;
   else
     {
-      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
-      if (!abs_homedir)
-        err = gpg_error_from_syserror ();
-
       argv[3] = "--homedir";
-      argv[4] = abs_homedir;
+      argv[4] = gnupg_homedir ();
       argv[5] = NULL;
     }
 
@@ -1270,7 +1258,7 @@ gc_component_launch (int component)
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[3];
+  const char *argv[5];
   int i;
   pid_t pid;
 
@@ -1292,6 +1280,11 @@ gc_component_launch (int component)
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   i = 0;
+  if (!gnupg_default_homedir_p ())
+    {
+      argv[i++] = "--homedir";
+      argv[i++] = gnupg_homedir ();
+    }
   if (component == GC_COMPONENT_DIRMNGR)
     argv[i++] = "--dirmngr";
   argv[i++] = "NOP";
