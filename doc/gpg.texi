@@ -434,9 +434,8 @@ file given with option @option{--output}.  Use together with
 @item --send-keys @var{keyIDs}
 @opindex send-keys
 Similar to @option{--export} but sends the keys to a keyserver.
-Fingerprints may be used instead of key IDs.  Option
-@option{--keyserver} must be used to give the name of this
-keyserver. Don't send your complete keyring to a keyserver --- select
+Fingerprints may be used instead of key IDs.
+Don't send your complete keyring to a keyserver --- select
 only those keys which are new or changed by you.  If no @var{keyIDs}
 are given, @command{@gpgname} does nothing.
 
@@ -491,27 +490,25 @@ signatures, user-IDs and subkeys.
 @opindex receive-keys
 @itemx --recv-keys @var{keyIDs}
 @opindex recv-keys
-Import the keys with the given @var{keyIDs} from a keyserver. Option
-@option{--keyserver} must be used to give the name of this keyserver.
+Import the keys with the given @var{keyIDs} from a keyserver.
 
 @item --refresh-keys
 @opindex refresh-keys
 Request updates from a keyserver for keys that already exist on the
 local keyring. This is useful for updating a key with the latest
 signatures, user IDs, etc. Calling this with no arguments will refresh
-the entire keyring. Option @option{--keyserver} must be used to give the
-name of the keyserver for all keys that do not have preferred keyservers
-set (see @option{--keyserver-options honor-keyserver-url}).
+the entire keyring.
 
 @item --search-keys @var{names}
 @opindex search-keys
-Search the keyserver for the given @var{names}. Multiple names given here will
-be joined together to create the search string for the keyserver.
-Option @option{--keyserver} must be used to give the name of this
-keyserver.  Keyservers that support different search methods allow using
-the syntax specified in "How to specify a user ID" below. Note that
-different keyserver types support different search methods. Currently
-only LDAP supports them all.
+Search the keyserver for the given @var{names}. Multiple names given
+here will be joined together to create the search string for the
+keyserver.  Note that keyservers search for @var{names} in a different
+and simpler way than gpg does.  The best choice is to use a mail
+address.  Due to data privacy reasons keyservers may even not even
+allow searching by user id or mail address and thus may only return
+results when being used with the @option{--recv-key} command to
+search by key fingerprint or keyid.
 
 @item --fetch-keys @var{URIs}
 @opindex fetch-keys
@@ -1766,12 +1763,11 @@ list.  The default is "local,wkd".
   PGP Universal method of checking @samp{ldap://keys.(thedomain)}.
 
   @item keyserver
-  Locate a key using whatever keyserver is defined using the
-  @option{--keyserver} option.
+  Locate a key using a keyserver.
 
   @item keyserver-URL
-  In addition, a keyserver URL as used in the @option{--keyserver} option
-  may be used here to query that particular keyserver.
+  In addition, a keyserver URL as used in the @command{dirmngr}
+  configuration may be used here to query that particular keyserver.
 
   @item local
   Locate the key using the local keyrings.  This mechanism allows the user to
