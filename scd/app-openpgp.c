@@ -50,18 +50,7 @@
 #include <assert.h>
 #include <time.h>
 
-#if GNUPG_MAJOR_VERSION == 1
-/* This is used with GnuPG version < 1.9.  The code has been source
-   copied from the current GnuPG >= 1.9  and is maintained over
-   there. */
-#include "options.h"
-#include "errors.h"
-#include "memory.h"
-#include "cardglue.h"
-#else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
-#endif /* GNUPG_MAJOR_VERSION != 1 */
-
 #include "../common/util.h"
 #include "../common/i18n.h"
 #include "iso7816.h"
@@ -1229,7 +1218,6 @@ get_remaining_tries (app_t app, int adminpw)
    the according hex representation to FPR.  Caller must have provide
    a buffer at FPR of least 41 bytes.  Returns 0 on success or an
    error code. */
-#if GNUPG_MAJOR_VERSION > 1
 static gpg_error_t
 retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
 {
@@ -1248,7 +1236,6 @@ retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
   xfree (relptr);
   return err;
 }
-#endif /*GNUPG_MAJOR_VERSION > 1*/
 
 
 /* Retrieve the public key material for the RSA key, whose fingerprint
@@ -1257,7 +1244,6 @@ retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
    public exponent at E and ELEN.  Returns zero on success, an error
    code on failure.  Caller must release the allocated buffers at M
    and E if the function returns success.  */
-#if GNUPG_MAJOR_VERSION > 1
 static gpg_error_t
 retrieve_key_material (FILE *fp, const char *hexkeyid,
                        const unsigned char **m, size_t *mlen,
@@ -1362,7 +1348,6 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
   xfree (line);
   return err;
 }
-#endif /*GNUPG_MAJOR_VERSION > 1*/
 
 
 static gpg_error_t
@@ -1662,7 +1647,6 @@ read_public_key (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
    consuming to send it just for the fun of it. However, given that we
    use the same code in gpg 1.4, we can't use the gcry S-expression
    here but need to open encode it. */
-#if GNUPG_MAJOR_VERSION > 1
 static gpg_error_t
 get_public_key (app_t app, int keyno)
 {
@@ -1804,8 +1788,6 @@ get_public_key (app_t app, int keyno)
   xfree (buffer);
   return err;
 }
-#endif /* GNUPG_MAJOR_VERSION > 1 */
-
 
 
 /* Send the KEYPAIRINFO back. KEY needs to be in the range [1,3].
@@ -1815,9 +1797,6 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
 {
   int keyno = key - 1;
   gpg_error_t err = 0;
-  /* Note that GnuPG 1.x does not need this and it would be too time
-     consuming to send it just for the fun of it. */
-#if GNUPG_MAJOR_VERSION > 1
   char idbuf[50];
   const char *usage;
 
@@ -1845,8 +1824,6 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
                     NULL, (size_t)0);
 
  leave:
-#endif /* GNUPG_MAJOR_VERSION > 1 */
-
   return err;
 }
 
@@ -1956,7 +1933,6 @@ static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **cert, size_t *certlen)
 {
-#if GNUPG_MAJOR_VERSION > 1
   gpg_error_t err;
   unsigned char *buffer;
   size_t buflen;
@@ -1985,9 +1961,6 @@ do_readcert (app_t app, const char *certid,
     }
   xfree (relptr);
   return err;
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 
@@ -2374,13 +2347,11 @@ verify_chv3 (app_t app,
 {
   int rc = 0;
 
-#if GNUPG_MAJOR_VERSION != 1
   if (!opt.allow_admin)
     {
       log_info (_("access to admin commands is not configured\n"));
       return gpg_error (GPG_ERR_EACCES);
     }
-#endif
 
   if (!app->did_chv3)
     {
@@ -2569,7 +2540,6 @@ do_writecert (app_t app, ctrl_t ctrl,
               const unsigned char *certdata, size_t certdatalen)
 {
   (void)ctrl;
-#if GNUPG_MAJOR_VERSION > 1
   if (strcmp (certidstr, "OPENPGP.3"))
     return gpg_error (GPG_ERR_INV_ID);
   if (!certdata || !certdatalen)
@@ -2579,9 +2549,6 @@ do_writecert (app_t app, ctrl_t ctrl,
   if (certdatalen > app->app_local->extcap.max_certlen_3)
     return gpg_error (GPG_ERR_TOO_LARGE);
   return do_setattr (app, "CERT-3", pincb, pincb_arg, certdata, certdatalen);
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 

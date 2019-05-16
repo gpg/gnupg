@@ -43,22 +43,12 @@
 #endif /*USE_G10CODE_RAPDU*/
 
 #if defined(GNUPG_SCD_MAIN_HEADER)
-#include GNUPG_SCD_MAIN_HEADER
-#elif GNUPG_MAJOR_VERSION == 1
-/* This is used with GnuPG version < 1.9.  The code has been source
-   copied from the current GnuPG >= 1.9  and is maintained over
-   there. */
-#include "../common/options.h"
-#include "errors.h"
-#include "memory.h"
-#include "../common/util.h"
-#include "../common/i18n.h"
-#include "dynload.h"
-#include "cardglue.h"
-#else /* GNUPG_MAJOR_VERSION != 1 */
-#include "scdaemon.h"
-#include "../common/exechelp.h"
-#endif /* GNUPG_MAJOR_VERSION != 1 */
+# include GNUPG_SCD_MAIN_HEADER
+#else /*!GNUPG_SCD_MAIN_HEADER*/
+# include "scdaemon.h"
+# include "../common/exechelp.h"
+#endif /*!GNUPG_SCD_MAIN_HEADER*/
+
 #include "../common/host2net.h"
 
 #include "iso7816.h"
