@@ -900,6 +900,7 @@ main (int argc, char **argv)
 void
 gpgconf_failure (gpg_error_t err)
 {
+  log_flush ();
   if (!err)
     err = gpg_error (GPG_ERR_GENERAL);
   gpgconf_write_status

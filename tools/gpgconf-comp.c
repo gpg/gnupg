@@ -1269,8 +1269,17 @@ gc_component_launch (int component)
   if (!(component == GC_COMPONENT_GPG_AGENT
         || component == GC_COMPONENT_DIRMNGR))
     {
-      es_fputs (_("Component not suitable for launching"), es_stderr);
-      es_putc ('\n', es_stderr);
+      log_error ("%s\n", _("Component not suitable for launching"));
+      gpgconf_failure (0);
+    }
+
+  if (gc_component_check_options (component, NULL, NULL))
+    {
+      log_error (_("Configuration file of component %s is broken\n"),
+                 gc_component[component].name);
+      if (!opt.quiet)
+        log_info (_("Note: Use the command \"%s%s\" to get details.\n"),
+                  "gpgconf --check-options ", gc_component[component].name);
       gpgconf_failure (0);
     }
 
@@ -1681,8 +1690,9 @@ collect_error_output (estream_t fp, const char *tag)
 }
 
 
-/* Check the options of a single component.  Returns 0 if everything
-   is OK.  */
+/* Check the options of a single component.  If CONF_FILE is NULL the
+ * standard config file is used.  If OUT is not NULL the output is
+ * written to that stream.  Returns 0 if everything is OK.  */
 int
 gc_component_check_options (int component, estream_t out, const char *conf_file)
 {
