@@ -4950,6 +4950,10 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
 {
   int i;
 
+  /* Make sure we have load the public keys.  */
+  for (i = 0; i < 3; i++)
+    get_public_key (app, i);
+
   if (action == KEYGRIP_ACTION_LOOKUP)
     {
       if (keygrip_str == NULL)

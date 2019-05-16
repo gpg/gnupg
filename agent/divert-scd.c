@@ -48,15 +48,22 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
 
   *r_kid = NULL;
 
-  bin2hex (grip, 20, hexgrip);
-  err = agent_card_keyinfo (ctrl, hexgrip, &keyinfo);
+  /* Scan device(s), and check if key for GRIP is available.  */
+  err = agent_card_serialno (ctrl, &serialno, NULL);
   if (!err)
     {
-      agent_card_free_keyinfo (keyinfo);
-      if ((*r_kid = xtrystrdup (hexgrip)))
-        return 0;
-      else
-        return gpg_error_from_syserror ();
+      xfree (serialno);
+      bin2hex (grip, 20, hexgrip);
+      err = agent_card_keyinfo (ctrl, hexgrip, &keyinfo);
+      if (!err)
+        {
+          /* Key for GRIP found, use it directly.  */
+          agent_card_free_keyinfo (keyinfo);
+          if ((*r_kid = xtrystrdup (hexgrip)))
+            return 0;
+          else
+            return gpg_error_from_syserror ();
+        }
     }
 
   err = parse_shadow_info (shadow_info, &want_sn, &want_kid, NULL);
