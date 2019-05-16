@@ -903,9 +903,9 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
           return rc;
         }
       /* log_debug ("%s: re-opened file\n", __func__); */
-      if (ndesc && desc[0].mode == KEYDB_SEARCH_MODE_NEXT && lastfoundoff)
+      if (ndesc && desc[0].mode != KEYDB_SEARCH_MODE_FIRST && lastfoundoff)
         {
-          /* Search mode is next and the last search operation
+          /* Search mode is not first and the last search operation
            * returned a blob which also was not the first one.  We now
            * need to skip over that blob and hope that the file has
            * not changed.  */
