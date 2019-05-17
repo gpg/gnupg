@@ -48,7 +48,6 @@ decrypt_message (ctrl_t ctrl, const char *filename)
   armor_filter_context_t *afx = NULL;
   progress_filter_context_t *pfx;
   int rc;
-  int no_out = 0;
 
   pfx = new_progress_context ();
 
@@ -82,11 +81,13 @@ decrypt_message (ctrl_t ctrl, const char *filename)
 
   if (!opt.outfile)
     {
-      no_out = 1;
       opt.outfile = "-";
+      opt.flags.dummy_outfile = 1;
     }
+  else
+    opt.flags.dummy_outfile = 0;
   rc = proc_encryption_packets (ctrl, NULL, fp );
-  if (no_out)
+  if (opt.flags.dummy_outfile)
     opt.outfile = NULL;
 
   iobuf_close (fp);
