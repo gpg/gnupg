@@ -241,6 +241,8 @@ struct
     unsigned int disable_signer_uid:1;
     /* Flag to enable experimental features from RFC4880bis.  */
     unsigned int rfc4880bis:1;
+    /* Hack: --output is not given but OUTFILE was temporary set to "-".  */
+    unsigned int dummy_outfile:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

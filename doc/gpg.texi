@@ -2976,7 +2976,8 @@ to display the message. This option overrides @option{--set-filename}.
 @itemx --no-use-embedded-filename
 @opindex use-embedded-filename
 Try to create a file with a name as embedded in the data. This can be
-a dangerous option as it enables overwriting files. Defaults to no.
+a dangerous option as it enables overwriting files.  Defaults to no.
+Note that the option @option{--output} overrides this option.
 
 @item --cipher-algo @var{name}
 @opindex cipher-algo
