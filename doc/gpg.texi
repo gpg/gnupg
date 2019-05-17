@@ -1426,19 +1426,24 @@ viewed (e.g. "f"), "%V" for the calculated validity as a string (e.g.
 and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 
-The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
-STDIN". Note that if your image viewer program is not secure, then
-executing it from GnuPG does not make it secure.
+On Unix the default viewer is
+@code{xloadimage -fork -quiet -title 'KeyID 0x%k' STDIN}
+with a fallback to
+@code{display -title 'KeyID 0x%k' %i}
+and finally to
+@code{xdg-open %i}.
+On Windows
+@code{!ShellExecute 400 %i} is used; here the command is a meta
+command to use that API call followed by a wait time in milliseconds
+which is used to give the viewer time to read the temporary image file
+before gpg deletes it again.  Note that if your image viewer program
+is not secure, then executing it from gpg does not make it secure.
 
 @item --exec-path @var{string}
 @opindex exec-path
 @efindex PATH
-Sets a list of directories to search for photo viewers and keyserver
-helpers. If not provided, keyserver helpers use the compiled-in
-default directory, and photo viewers use the @code{PATH} environment
-variable.
-Note, that on W32 system this value is ignored when searching for
-keyserver helpers.
+Sets a list of directories to search for photo viewers If not provided
+photo viewers use the @code{PATH} environment variable.
 
 @item --keyring @var{file}
 @opindex keyring

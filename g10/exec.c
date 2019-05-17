@@ -77,37 +77,99 @@ set_exec_path(const char *path) { return GPG_ERR_GENERAL; }
 static int
 w32_system(const char *command)
 {
-#ifdef HAVE_W32CE_SYSTEM
-#warning Change this code to use common/exechelp.c
-#else
-  PROCESS_INFORMATION pi;
-  STARTUPINFO si;
-  char *string;
+  if (!strncmp (command, "!ShellExecute ", 14))
+    {
+      SHELLEXECUTEINFOW see;
+      wchar_t *wname;
+      int waitms;
 
-  /* We must use a copy of the command as CreateProcess modifies this
-     argument. */
-  string=xstrdup(command);
+      command = command + 14;
+      while (spacep (command))
+        command++;
+      waitms = atoi (command);
+      if (waitms < 0)
+        waitms = 0;
+      else if (waitms > 60*1000)
+        waitms = 60000;
+      while (*command && !spacep (command))
+        command++;
+      while (spacep (command))
+        command++;
 
-  memset(&pi,0,sizeof(pi));
-  memset(&si,0,sizeof(si));
-  si.cb=sizeof(si);
+      wname = utf8_to_wchar (command);
+      if (!wname)
+        return -1;
 
-  if(!CreateProcess(NULL,string,NULL,NULL,FALSE,
-                    DETACHED_PROCESS,
-                    NULL,NULL,&si,&pi))
-    return -1;
+      memset (&see, 0, sizeof see);
+      see.cbSize = sizeof see;
+      see.fMask = (SEE_MASK_NOCLOSEPROCESS
+                   | SEE_MASK_NOASYNC
+                   | SEE_MASK_FLAG_NO_UI
+                   | SEE_MASK_NO_CONSOLE);
+      see.lpVerb = L"open";
+      see.lpFile = (LPCWSTR)wname;
+      see.nShow = SW_SHOW;
 
-  /* Wait for the child to exit */
-  WaitForSingleObject(pi.hProcess,INFINITE);
+      if (DBG_EXTPROG)
+        log_debug ("running ShellExecuteEx(open,'%s')\n", command);
+      if (!ShellExecuteExW (&see))
+        {
+          if (DBG_EXTPROG)
+            log_debug ("ShellExecuteEx failed: rc=%d\n", (int)GetLastError ());
+          xfree (wname);
+          return -1;
+        }
+      if (DBG_EXTPROG)
+        log_debug ("ShellExecuteEx succeeded (hProcess=%p,hInstApp=%d)\n",
+                   see.hProcess, (int)see.hInstApp);
 
-  CloseHandle(pi.hProcess);
-  CloseHandle(pi.hThread);
-  xfree(string);
+      if (!see.hProcess)
+        {
+          gnupg_usleep (waitms*1000);
+          if (DBG_EXTPROG)
+            log_debug ("ShellExecuteEx ready (wait=%dms)\n", waitms);
+        }
+      else
+        {
+          WaitForSingleObject (see.hProcess, INFINITE);
+          if (DBG_EXTPROG)
+            log_debug ("ShellExecuteEx ready\n");
+        }
+      CloseHandle (see.hProcess);
+
+      xfree (wname);
+    }
+  else
+    {
+      char *string;
+      PROCESS_INFORMATION pi;
+      STARTUPINFO si;
+
+      /* We must use a copy of the command as CreateProcess modifies
+       * this argument. */
+      string = xstrdup (command);
+
+      memset (&pi, 0, sizeof(pi));
+      memset (&si, 0, sizeof(si));
+      si.cb = sizeof (si);
+
+      if (!CreateProcess (NULL, string, NULL, NULL, FALSE,
+                          DETACHED_PROCESS,
+                          NULL, NULL, &si, &pi))
+        return -1;
+
+      /* Wait for the child to exit */
+      WaitForSingleObject (pi.hProcess, INFINITE);
+
+      CloseHandle (pi.hProcess);
+      CloseHandle (pi.hThread);
+      xfree (string);
+    }
 
   return 0;
-#endif
 }
-#endif
+#endif /*_W32*/
+
 
 /* Replaces current $PATH */
 int
@@ -508,7 +570,7 @@ exec_read(struct exec_info *info)
   if(info->flags.use_temp_files)
     {
       if(DBG_EXTPROG)
-	log_debug("system() command is %s\n",info->command);
+	log_debug ("running command: %s\n",info->command);
 
 #if defined (_WIN32)
       info->progreturn=w32_system(info->command);
