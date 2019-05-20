@@ -1120,10 +1120,12 @@ agent_askpin (ctrl_t ctrl,
      we do not error out in this case.  */
   if (keyinfo && (cache_mode == CACHE_MODE_NORMAL
                   || cache_mode == CACHE_MODE_USER
-                  || cache_mode == CACHE_MODE_SSH))
+                  || cache_mode == CACHE_MODE_SSH
+                  || cache_mode == CACHE_MODE_EXPORT))
     snprintf (line, DIM(line), "SETKEYINFO %c/%s",
 	      cache_mode == CACHE_MODE_USER? 'u' :
-	      cache_mode == CACHE_MODE_SSH? 's' : 'n',
+	      cache_mode == CACHE_MODE_SSH? 's' :
+	      cache_mode == CACHE_MODE_EXPORT? 'e' : 'n',
 	      keyinfo);
   else
     snprintf (line, DIM(line), "SETKEYINFO --clear");
@@ -1313,10 +1315,12 @@ agent_get_passphrase (ctrl_t ctrl,
      we do not error out in this case.  */
   if (keyinfo && (cache_mode == CACHE_MODE_NORMAL
                   || cache_mode == CACHE_MODE_USER
-                  || cache_mode == CACHE_MODE_SSH))
+                  || cache_mode == CACHE_MODE_SSH
+                  || cache_mode == CACHE_MODE_EXPORT))
     snprintf (line, DIM(line), "SETKEYINFO %c/%s",
 	      cache_mode == CACHE_MODE_USER? 'u' :
-	      cache_mode == CACHE_MODE_SSH? 's' : 'n',
+	      cache_mode == CACHE_MODE_SSH? 's' :
+              cache_mode == CACHE_MODE_EXPORT? 'e' : 'n',
 	      keyinfo);
   else
     snprintf (line, DIM(line), "SETKEYINFO --clear");
@@ -1635,7 +1639,8 @@ agent_clear_passphrase (ctrl_t ctrl,
 
   if (! (keyinfo && (cache_mode == CACHE_MODE_NORMAL
 		     || cache_mode == CACHE_MODE_USER
-		     || cache_mode == CACHE_MODE_SSH)))
+		     || cache_mode == CACHE_MODE_SSH
+		     || cache_mode == CACHE_MODE_EXPORT)))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   rc = start_pinentry (ctrl);

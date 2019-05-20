@@ -49,32 +49,6 @@
 	       "Secret key packet not found")
     (check-exported-key dump keyid)))
 
-(lettmp
- ;; Prepare two temporary files for communication with the fake
- ;; pinentry program.
- (logfile ppfile)
-
- (define (prepare-passphrases . passphrases)
-   (call-with-output-file ppfile
-     (lambda (port)
-       (for-each (lambda (passphrase)
-		   (display passphrase port)
-		   (display #\newline port)) passphrases))))
-
- (define CONFIRM "fake-entry being started to CONFIRM the weak phrase")
-
- (define (assert-passphrases-consumed)
-   (call-with-input-file ppfile
-     (lambda (port)
-       (unless
-	(eof-object? (peek-char port))
-	(fail (string-append
-		"Expected all passphrases to be consumed, but found: "
-		(read-all port)))))))
-
- (setenv "PINENTRY_USER_DATA"
-	 (string-append "--logfile=" logfile " --passphrasefile=" ppfile) #t)
-
  (for-each-p
   "Checking key export"
   (lambda (keyid)
@@ -84,17 +58,9 @@
       (pipe:gpg '(--list-packets)))
      (tr:call-with-content check-exported-public-key keyid))
 
-    (if (string=? "D74C5F22" keyid)
-	;; Key D74C5F22 is protected by a passphrase.  Prepare this
-	;; one.  Currently, GnuPG does not ask for an export passphrase
-	;; in this case.
-	(prepare-passphrases usrpass1))
-
     (tr:do
      (tr:pipe-do
       (pipe:gpg `(--export-secret-keys ,keyid))
       (pipe:gpg '(--list-packets)))
-     (tr:call-with-content check-exported-private-key keyid))
-
-    (assert-passphrases-consumed))
-  '("D74C5F22" "C40FDECF" "ECABF51D")))
+     (tr:call-with-content check-exported-private-key keyid)))
+  '("D74C5F22" "C40FDECF" "ECABF51D"))

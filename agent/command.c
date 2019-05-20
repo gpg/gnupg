@@ -1611,7 +1611,8 @@ static const char hlp_clear_passphrase[] =
   "function returns with OK even when there is no cached passphrase.\n"
   "The --mode=normal option is used to clear an entry for a cacheid\n"
   "added by the agent.  The --mode=ssh option is used for a cacheid\n"
-  "added for ssh.\n";
+  "added for ssh.  The --mode=export option is used for a cacheid\n"
+  "added for secret key export.\n";
 static gpg_error_t
 cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
@@ -1627,6 +1628,8 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
     cache_mode = CACHE_MODE_NORMAL;
   else if (has_option (line, "--mode=ssh"))
     cache_mode = CACHE_MODE_SSH;
+  else if (has_option (line, "--mode=export"))
+    cache_mode = CACHE_MODE_EXPORT;
 
   line = skip_options (line);
 
@@ -2347,7 +2350,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
      the passphrase so that we can use it to re-encrypt it.  */
   err = agent_key_from_file (ctrl, cache_nonce,
                              ctrl->server_local->keydesc, grip,
-                             &shadow_info, CACHE_MODE_IGNORE, NULL, &s_skey,
+                             &shadow_info, CACHE_MODE_EXPORT, NULL, &s_skey,
                              openpgp ? &passphrase : NULL);
   if (err)
     goto leave;
