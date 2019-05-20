@@ -188,7 +188,7 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
                * pre-caution is that since 2.1 the secret key may also
                * be used for other protocols and thus deleting it from
                * the gpg would also delete the key for other tools. */
-              if (!err)
+              if (!err && !opt.dry_run)
                 err = agent_delete_key (NULL, hexgrip, prompt,
                                         opt.answer_yes);
               xfree (prompt);
@@ -219,7 +219,7 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
 	}
       else
 	{
-	  err = keydb_delete_keyblock (hd);
+	  err = opt.dry_run? 0 : keydb_delete_keyblock (hd);
 	  if (err)
             {
               log_error (_("deleting keyblock failed: %s\n"),
@@ -232,7 +232,7 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
 	 revalidation_mark().  This makes sense - only deleting keys
 	 that have ownertrust set should trigger this. */
 
-      if (!secret && pk && clear_ownertrusts (ctrl, pk))
+      if (!secret && pk && !opt.dry_run && clear_ownertrusts (ctrl, pk))
         {
           if (opt.verbose)
             log_info (_("ownertrust information cleared\n"));
