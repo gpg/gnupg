@@ -680,9 +680,8 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       if ( thefpr && !fpr_is_ff (thefpr, thefprlen)
            && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen))
         {
-          print_pubkey_info (ctrl, fp, pk);
-          if (keyblock)
-            print_card_key_info (fp, keyblock);
+          print_key_info (ctrl, fp, 0, pk, 0);
+          print_card_key_info (fp, keyblock);
         }
       else
         tty_fprintf (fp, "[none]\n");

@@ -475,7 +475,7 @@ do_we_trust_pre (ctrl_t ctrl, PKT_public_key *pk, unsigned int trustlevel )
 
   if( !opt.batch && !rc )
     {
-      print_pubkey_info (ctrl, NULL,pk);
+      print_key_info (ctrl, NULL, 0, pk, 0);
       print_fingerprint (ctrl, NULL, pk, 2);
       tty_printf("\n");
 

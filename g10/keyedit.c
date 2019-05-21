@@ -4356,7 +4356,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 	    continue;
 	}
 
-      print_pubkey_info (ctrl, NULL, revoker_pk);
+      print_key_info (ctrl, NULL, 0, revoker_pk, 0);
       print_fingerprint (ctrl, NULL, revoker_pk, 2);
       tty_printf ("\n");
 

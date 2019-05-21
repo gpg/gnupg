@@ -135,10 +135,7 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
     }
   else
     {
-      if (secret)
-        print_seckey_info (ctrl, pk);
-      else
-        print_pubkey_info (ctrl, NULL, pk );
+      print_key_info (ctrl, NULL, 0, pk, secret);
       tty_printf( "\n" );
 
       yes = cpr_get_answer_is_yes

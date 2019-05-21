@@ -305,11 +305,11 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 
 	    any = 1;
 
-            print_pubkey_info (ctrl, NULL, pk);
+            print_key_info (ctrl, NULL, 0, pk, 0);
 	    tty_printf ("\n");
 
 	    tty_printf (_("To be revoked by:\n"));
-            print_seckey_info (ctrl, pk2);
+            print_key_info (ctrl, NULL, 0, pk2, 1);
 
 	    if(pk->revkey[i].class&0x40)
 	      tty_printf(_("(This is a sensitive revocation key)\n"));
@@ -669,30 +669,26 @@ gen_revoke (ctrl_t ctrl, const char *uname)
 
   rc = keydb_search (kdbhd, &desc, 1, NULL);
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
-    /* Not ambiguous.  */
     {
+      /* Not ambiguous.  */
     }
   else if (rc == 0)
-    /* Ambiguous.  */
     {
-      char *info;
-
+      /* Ambiguous.  */
       /* TRANSLATORS: The %s prints a key specification which
          for example has been given at the command line.  Several lines
          lines with secret key infos are printed after this message.  */
       log_error (_("'%s' matches multiple secret keys:\n"), uname);
 
-      info = format_seckey_info (ctrl, keyblock->pkt->pkt.public_key);
-      log_error ("  %s\n", info);
-      xfree (info);
+      print_key_info_log (ctrl, GPGRT_LOGLVL_ERROR, 2,
+                          keyblock->pkt->pkt.public_key, 1);
       release_kbnode (keyblock);
 
       rc = keydb_get_keyblock (kdbhd, &keyblock);
       while (! rc)
         {
-          info = format_seckey_info (ctrl, keyblock->pkt->pkt.public_key);
-          log_info ("  %s\n", info);
-          xfree (info);
+          print_key_info_log (ctrl, GPGRT_LOGLVL_INFO, 2,
+                              keyblock->pkt->pkt.public_key, 1);
           release_kbnode (keyblock);
           keyblock = NULL;
 
@@ -726,7 +722,7 @@ gen_revoke (ctrl_t ctrl, const char *uname)
     }
 
   keyid_from_pk (psk, keyid );
-  print_seckey_info (ctrl, psk);
+  print_key_info (ctrl, NULL, 0, psk, 1);
 
   tty_printf("\n");
   if (!cpr_get_answer_is_yes ("gen_revoke.okay",

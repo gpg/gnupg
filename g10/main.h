@@ -470,9 +470,10 @@ void show_keyserver_url(PKT_signature *sig,int indent,int mode);
 void show_notation(PKT_signature *sig,int indent,int mode,int which);
 void dump_attribs (const PKT_user_id *uid, PKT_public_key *pk);
 void set_attrib_fd(int fd);
-char *format_seckey_info (ctrl_t ctrl, PKT_public_key *pk);
-void print_seckey_info (ctrl_t ctrl, PKT_public_key *pk);
-void print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk);
+void print_key_info (ctrl_t ctrl, estream_t fp, int indent,
+                     PKT_public_key *pk, int secret);
+void print_key_info_log (ctrl_t ctrl, int loglevel, int indent,
+                     PKT_public_key *pk, int secret);
 void print_card_key_info (estream_t fp, KBNODE keyblock);
 void print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret);
 
