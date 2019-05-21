@@ -218,18 +218,22 @@ print_status_key_not_created (const char *handle)
 
 
 
-static void
-write_uid( KBNODE root, const char *s )
+static gpg_error_t
+write_uid (kbnode_t root, const char *s)
 {
-    PACKET *pkt = xmalloc_clear(sizeof *pkt );
-    size_t n = strlen(s);
+  PACKET *pkt = xmalloc_clear (sizeof *pkt);
+  size_t n = strlen (s);
 
-    pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = xmalloc_clear (sizeof *pkt->pkt.user_id + n);
-    pkt->pkt.user_id->len = n;
-    pkt->pkt.user_id->ref = 1;
-    strcpy(pkt->pkt.user_id->name, s);
-    add_kbnode( root, new_kbnode( pkt ) );
+  if (n > MAX_UID_PACKET_LENGTH - 10)
+    return gpg_error (GPG_ERR_INV_USER_ID);
+
+  pkt->pkttype = PKT_USER_ID;
+  pkt->pkt.user_id = xmalloc_clear (sizeof *pkt->pkt.user_id + n);
+  pkt->pkt.user_id->len = n;
+  pkt->pkt.user_id->ref = 1;
+  strcpy (pkt->pkt.user_id->name, s);
+  add_kbnode (root, new_kbnode (pkt));
+  return 0;
 }
 
 static void
@@ -4751,10 +4755,11 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
   if (!err && (s = get_parameter_value (para, pUSERID)))
     {
-      write_uid (pub_root, s );
-      err = write_selfsigs (ctrl, pub_root, pri_psk,
-                            get_parameter_uint (para, pKEYUSAGE), timestamp,
-                            cache_nonce);
+      err = write_uid (pub_root, s );
+      if (!err)
+        err = write_selfsigs (ctrl, pub_root, pri_psk,
+                              get_parameter_uint (para, pKEYUSAGE), timestamp,
+                              cache_nonce);
     }
 
   /* Write the auth key to the card before the encryption key.  This
