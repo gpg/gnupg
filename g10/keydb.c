@@ -1249,12 +1249,19 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
 	}
       if (err)
         {
-          if (gpg_err_code (err) != GPG_ERR_UNKNOWN_VERSION)
+          es_fflush (es_stdout);
+          log_error ("parse_keyblock_image: read error: %s\n",
+                     gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_INV_PACKET)
             {
-              log_error ("parse_keyblock_image: read error: %s\n",
-                         gpg_strerror (err));
-              err = gpg_error (GPG_ERR_INV_KEYRING);
+              free_packet (pkt, &parsectx);
+              init_packet (pkt);
+              continue;
             }
+          /* Unknown version maybe due to v5 keys - we treat this
+           * error different.  */
+          if (gpg_err_code (err) != GPG_ERR_UNKNOWN_VERSION)
+            err = gpg_error (GPG_ERR_INV_KEYRING);
           break;
         }
 
