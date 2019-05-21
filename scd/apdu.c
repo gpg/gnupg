@@ -256,8 +256,13 @@ static npth_mutex_t reader_table_lock;
 
 struct pcsc_io_request_s
 {
+#if defined(_WIN32) || defined(__CYGWIN__)
+  pcsc_dword_t protocol;
+  pcsc_dword_t pci_len;
+#else
   unsigned long protocol;
   unsigned long pci_len;
+#endif
 };
 
 typedef struct pcsc_io_request_s *pcsc_io_request_t;
