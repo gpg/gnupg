@@ -33,6 +33,11 @@
 
 #define DEBUG_PARSE_PACKET 1
 
+/* Maximum length of packets to avoid excessive memory allocation.  */
+#define MAX_KEY_PACKET_LENGTH     (256 * 1024)
+#define MAX_UID_PACKET_LENGTH     (  2 * 1024)
+#define MAX_COMMENT_PACKET_LENGTH ( 64 * 1024)
+#define MAX_ATTR_PACKET_LENGTH    ( 16 * 1024*1024)
 
 /* Constants to allocate static MPI arrays.  */
 #define PUBKEY_MAX_NPKEY  OPENPGP_MAX_NPKEY

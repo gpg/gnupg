@@ -447,15 +447,21 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
    * Without forcing HDRLEN to 2 in this case an indeterminate length
    * packet would be written which is not allowed.  Note that we are
    * always called with a CTB indicating an old packet header format,
-   * so that forcing a 2 octet header works.  */
+   * so that forcing a 2 octet header works.  We also check for the
+   * maximum allowed packet size by the parser using an arbitrary
+   * extra 10 bytes for header data. */
   if (uid->attrib_data)
     {
+      if (uid->attrib_len > MAX_ATTR_PACKET_LENGTH - 10)
+        return gpg_error (GPG_ERR_TOO_LARGE);
       hdrlen = uid->attrib_len? 0 : 2;
       write_header2 (out, ctb, uid->attrib_len, hdrlen);
       rc = iobuf_write( out, uid->attrib_data, uid->attrib_len );
     }
   else
     {
+      if (uid->len > MAX_UID_PACKET_LENGTH - 10)
+        return gpg_error (GPG_ERR_TOO_LARGE);
       hdrlen = uid->len? 0 : 2;
       write_header2 (out, ctb, uid->len, hdrlen);
       rc = iobuf_write( out, uid->name, uid->len );
