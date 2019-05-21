@@ -3003,8 +3003,8 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
       goto out;
     }
 
-  gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON, buffer_new, buffer_new_n);
-  /* FIXME: guarantee?  */
+  buffer_new_n = gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON,
+                                   buffer_new, buffer_new_n);
 
   if (*passphrase)
     err = agent_protect (buffer_new, passphrase, buffer, buffer_n, 0, -1);
