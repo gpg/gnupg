@@ -1242,8 +1242,15 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
 	}
       if (err)
         {
+          es_fflush (es_stdout);
           log_error ("parse_keyblock_image: read error: %s\n",
                      gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_INV_PACKET)
+            {
+              free_packet (pkt, &parsectx);
+              init_packet (pkt);
+              continue;
+            }
           err = gpg_error (GPG_ERR_INV_KEYRING);
           break;
         }
