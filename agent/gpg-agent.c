@@ -2441,6 +2441,9 @@ agent_sighup_action (void)
      "pinentry" binary that one can be used in case the
      "pinentry-basic" fallback was in use.  */
   gnupg_module_name_flush_some ();
+
+  if (opt.disable_scdaemon)
+    agent_card_killscd ();
 }
 
 

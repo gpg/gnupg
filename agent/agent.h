@@ -618,6 +618,7 @@ int agent_card_scd (ctrl_t ctrl, const char *cmdline,
 void agent_card_free_keyinfo (struct card_key_info_s *l);
 gpg_error_t agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
                                 struct card_key_info_s **result);
+void agent_card_killscd (void);
 
 
 /*-- learncard.c --*/
