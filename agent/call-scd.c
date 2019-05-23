@@ -1324,3 +1324,12 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
 
   return unlock_scd (ctrl, 0);
 }
+
+void
+agent_card_killscd (void)
+{
+  if (primary_scd_ctx == NULL)
+    return;
+  assuan_transact (primary_scd_ctx, "KILLSCD",
+                   NULL, NULL, NULL, NULL, NULL, NULL);
+}

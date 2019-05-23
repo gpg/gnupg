@@ -597,6 +597,7 @@ int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *,
                                      const char *, char*, size_t),
                     void *getpin_cb_arg, void *assuan_context);
+void agent_card_killscd (void);
 
 
 /*-- learncard.c --*/
