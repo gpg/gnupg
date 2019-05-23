@@ -3185,7 +3185,11 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 		  memcpy (&pk->revoked, &rinfo, sizeof (rinfo));
 		}
 	      if (main_pk->has_expired)
-		pk->has_expired = main_pk->has_expired;
+		{
+		  pk->has_expired = main_pk->has_expired;
+		  if (!pk->expiredate || pk->expiredate > main_pk->expiredate)
+		    pk->expiredate = main_pk->expiredate;
+		}
 	    }
 	}
       return;
