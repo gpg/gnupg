@@ -414,6 +414,8 @@ void export_print_stats (export_stats_t stats);
 int parse_export_options(char *str,unsigned int *options,int noisy);
 gpg_error_t parse_and_set_export_filter (const char *string);
 
+int exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, kbnode_t node);
+
 int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
                     export_stats_t stats);
 int export_seckeys (ctrl_t ctrl, strlist_t users, unsigned int options,
