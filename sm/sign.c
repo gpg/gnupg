@@ -161,7 +161,7 @@ gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
           return rc;
         }
 
-      if (!gpgsm_cert_use_sign_p (cert))
+      if (!gpgsm_cert_use_sign_p (cert, 1))
         {
           p = gpgsm_get_keygrip_hexstring (cert);
           if (p)
@@ -504,7 +504,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
       /* Although we don't check for ambiguous specification we will
          check that the signer's certificate is usable and valid.  */
-      rc = gpgsm_cert_use_sign_p (cert);
+      rc = gpgsm_cert_use_sign_p (cert, 0);
       if (!rc)
         rc = gpgsm_validate_chain (ctrl, cert, "", NULL, 0, NULL, 0, NULL);
       if (rc)
@@ -613,7 +613,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   /* Gather certificates of signers and store them in the CMS object. */
   for (cl=signerlist; cl; cl = cl->next)
     {
-      rc = gpgsm_cert_use_sign_p (cl->cert);
+      rc = gpgsm_cert_use_sign_p (cl->cert, 0);
       if (rc)
         goto leave;
 
