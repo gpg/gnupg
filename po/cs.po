@@ -4,7 +4,7 @@
 # Magda Procházková <magda@math.muni.cz> 2001,
 # Roman Pavlik <rp@tns.cz> 2001, 2002, 2003, 2004, 2005.
 # Petr Pisar <petr.pisar@atlas.cz>, 2009, 2010, 2011, 2013, 2014, 2015, 2016.
-# Petr Pisar <petr.pisar@atlas.cz>, 2017, 2018.
+# Petr Pisar <petr.pisar@atlas.cz>, 2017, 2018, 2019.
 #
 # A "%%0A" is used by Pinentry to insert a line break. The double percent
 # sign is actually needed because it is also a printf format string. If you
@@ -31,13 +31,14 @@
 # DP (distribution point (of CRL)) → DP
 # load → zavést
 # OCSP request → OCSP dotaz
+# token → bezpečnostní zařízení
 # validate → ověřit (platnost)
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.2.10\n"
+"Project-Id-Version: gnupg2 2.2.15\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-11-06 11:01+0100\n"
+"PO-Revision-Date: 2019-04-21 06:20+02:00\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <gnupg-i18n@gnupg.org>\n"
 "Language: cs\n"
@@ -231,12 +232,10 @@ msgid "Reset Code"
 msgstr "Resetační kód"
 
 msgid "Push ACK button on card/token."
-msgstr ""
+msgstr "Potvrďte tlačítkem na kartě nebo bezpečnostním zařízení."
 
-#, fuzzy
-#| msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgid "Use the reader's pinpad for input."
-msgstr "%s%%0A%%0APro vstup použijte klávesnici čtečky."
+msgstr "Pro vstup použijte klávesnici čtečky."
 
 msgid "Repeat this Reset Code"
 msgstr "Zopakujte resetační kód"
@@ -8188,11 +8187,9 @@ msgstr "URL „%s“ přesměrováno na „%s“ (%u)\n"
 msgid "too many redirections\n"
 msgstr "příliš mnoho přesměrování\n"
 
-# g10/import.c:766 g10/openfile.c:261#, c-format
-#, fuzzy, c-format
-#| msgid "writing to '%s'\n"
+#, c-format
 msgid "redirection changed to '%s'\n"
-msgstr "zapisuje se do „%s“\n"
+msgstr "přesměrování změněno na „%s“\n"
 
 #, c-format
 msgid "error allocating memory: %s\n"
