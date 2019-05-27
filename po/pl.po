@@ -6,9 +6,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.2.12\n"
+"Project-Id-Version: gnupg-2.2.14\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-01-09 21:45+0100\n"
+"PO-Revision-Date: 2019-03-24 10:29+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -201,12 +201,10 @@ msgid "Reset Code"
 msgstr "Kod resetujący"
 
 msgid "Push ACK button on card/token."
-msgstr ""
+msgstr "Wciśnij przycisk ACK na karcie/tokenie."
 
-#, fuzzy
-#| msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgid "Use the reader's pinpad for input."
-msgstr "%s%%0A%%0ADo wpisywania należy użyć klawiatury czytnika."
+msgstr "Do wpisywania należy użyć klawiatury czytnika."
 
 msgid "Repeat this Reset Code"
 msgstr "Powtórz ten kod resetujący"
