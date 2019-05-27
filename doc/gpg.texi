@@ -404,7 +404,10 @@ functionality is also available as the subcommand "passwd" with the
 @opindex delete-keys
 Remove key from the public keyring. In batch mode either @option{--yes} is
 required or the key must be specified by fingerprint. This is a
-safeguard against accidental deletion of multiple keys.
+safeguard against accidental deletion of multiple keys.  If the
+exclamation mark syntax is used with the fingerprint of a subkey only
+that subkey is deleted; if the exclamation mark is used with the
+fingerprint of the primary key the entire public key is deleted.
 
 @item --delete-secret-keys @var{name}
 @opindex delete-secret-keys
@@ -413,7 +416,10 @@ specified by fingerprint.  The option @option{--yes} can be used to
 advice gpg-agent not to request a confirmation.  This extra
 pre-caution is done because @command{@gpgname} can't be sure that the
 secret key (as controlled by gpg-agent) is only used for the given
-OpenPGP public key.
+OpenPGP public key.  If the exclamation mark syntax is used with the
+fingerprint of a subkey only the secret part of that subkey is
+deleted; if the exclamation mark is used with the fingerprint of the
+primary key only the secret part of the primary key is deleted.
 
 
 @item --delete-secret-and-public-key @var{name}

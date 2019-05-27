@@ -428,8 +428,8 @@ new_subkey_list_item (KBNODE node)
    (keyID or fingerprint) and does match the one at NODE.  It is
    assumed that the packet at NODE is either a public or secret
    subkey. */
-static int
-exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
+int
+exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, kbnode_t node)
 {
   u32 kid[2];
   byte fpr[MAX_FINGERPRINT_LEN];
