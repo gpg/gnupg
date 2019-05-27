@@ -315,7 +315,7 @@ int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
 int gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert);
 
 /*-- certlist.c --*/
-int gpgsm_cert_use_sign_p (ksba_cert_t cert);
+int gpgsm_cert_use_sign_p (ksba_cert_t cert, int silent);
 int gpgsm_cert_use_encrypt_p (ksba_cert_t cert);
 int gpgsm_cert_use_verify_p (ksba_cert_t cert);
 int gpgsm_cert_use_decrypt_p (ksba_cert_t cert);
