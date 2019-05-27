@@ -534,7 +534,7 @@ check_utks (sqlite3 *db)
                      NULL, NULL, &err);
   if (rc)
     {
-      log_error (_("error creating 'ultimately_trusted_keys' TOFU table: %s\n"),
+      log_error ("error creating 'ultimately_trusted_keys' TOFU table: %s\n",
                  err);
       sqlite3_free (err);
       goto out;
@@ -840,7 +840,7 @@ initdb (sqlite3 *db)
                          NULL, NULL, &err);
       if (rc)
         {
-	  log_error (_("error creating 'encryptions' TOFU table: %s\n"),
+	  log_error ("error creating 'encryptions' TOFU table: %s\n",
 		     err);
           sqlite3_free (err);
         }
@@ -870,7 +870,7 @@ initdb (sqlite3 *db)
              * safely ignore.  */
             rc = 0;
           else
-            log_error (_("adding column effective_policy to bindings DB: %s\n"),
+            log_error ("adding column effective_policy to bindings DB: %s\n",
                        err);
 	  sqlite3_free (err);
 	}
@@ -2146,8 +2146,7 @@ build_conflict_set (ctrl_t ctrl, tofu_dbs_t dbs,
       rc = keydb_search_reset (hd);
       if (rc)
         {
-          log_error (_("resetting keydb: %s\n"),
-                     gpg_strerror (rc));
+          log_error ("resetting keydb failed: %s\n", gpg_strerror (rc));
           continue;
         }
 
@@ -2614,8 +2613,8 @@ get_policy (ctrl_t ctrl, tofu_dbs_t dbs, PKT_public_key *pk,
       if (record_binding (dbs, fingerprint, email, user_id,
                           policy == TOFU_POLICY_NONE ? TOFU_POLICY_AUTO : policy,
                           effective_policy, conflict, 1, 0, now) != 0)
-        log_error (_("error setting TOFU binding's policy"
-                     " to %s\n"), tofu_policy_str (policy));
+        log_error ("error setting TOFU binding's policy"
+                     " to %s\n", tofu_policy_str (policy));
     }
 
   /* If the caller wants the set of conflicts, return it.  */
@@ -3152,14 +3151,10 @@ show_statistics (tofu_dbs_t dbs,
             es_fprintf (fp, _("%s: Verified 0 signatures."), email);
           else
             {
-              /* TRANSLATORS: The final %s is replaced by a string like
-                 "7~months". */
+              /* Note: Translation not possible with that wording.  */
               char *ago_str = time_ago_str (now - signature_first_seen);
               es_fprintf
-                (fp,
-                 ngettext("%s: Verified %ld~signature in the past %s.",
-                          "%s: Verified %ld~signatures in the past %s.",
-                          signature_count),
+                (fp, "%s: Verified %ld~signatures in the past %s.",
                  email, signature_count, ago_str);
               xfree (ago_str);
             }
@@ -3172,12 +3167,9 @@ show_statistics (tofu_dbs_t dbs,
             {
               char *ago_str = time_ago_str (now - encryption_first_done);
 
-              /* TRANSLATORS: The final %s is replaced by a string like
-                 "7~months". */
-              es_fprintf (fp,
-                          ngettext("Encrypted %ld~message in the past %s.",
-                                   "Encrypted %ld~messages in the past %s.",
-                                   encryption_count),
+              /* Note: Translation not possible with this kind of
+               * composition.  */
+              es_fprintf (fp, "Encrypted %ld~messages in the past %s.",
                           encryption_count, ago_str);
               xfree (ago_str);
             }
@@ -3944,7 +3936,7 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
                             policy, TOFU_POLICY_NONE, NULL, 0, 1, now);
       if (err)
         {
-          log_error (_("error setting policy for key %s, user id \"%s\": %s"),
+          log_error ("error setting policy for key %s, user id \"%s\": %s",
                      fingerprint, email, gpg_strerror (err));
           xfree (email);
           break;
