@@ -1,6 +1,65 @@
 Noteworthy changes in version 2.2.16 (unreleased)
 -------------------------------------------------
 
+  * gpg,gpgsm: Fix deadlock on Windows due to a keybox sharing
+    violation.  [#4505]
+
+  * gpg: Allow deletion of subkeys with --delete-key.  This finally
+    makes the bang-suffix work as expected for that command.  [#4457]
+
+  * gpg: Replace SHA-1 by SHA-256 in self-signatures when updating
+    them with --quick-set-expire or --quick-set-primary-uid. [#4508]
+
+  * gpg: Improve the photo image viewer selection.  [#4334]
+
+  * gpg: Fix decryption with --use-embedded-filename.  [#4500]
+
+  * gpg: Remove hints on using the --keyserver option.  [#4512]
+
+  * gpg: Fix export of certain secret keys with comments.  [#4490]
+
+  * gpg: Reject too long user-ids in --quick-gen-key.  [#4532]
+
+  * gpg: Fix a double free in the best key selection code.  [#4462]
+
+  * gpg: Fix the key generation dialog for switching back from EdDSA
+    to ECDSA.
+
+  * gpg: Use AES-192 with SHA-384 to comply with RFC-6637.
+
+  * gpg: Use only the addrspec from the Signer's UID subpacket to
+    mitigate a problem with another implementation.
+
+  * gpg: Skip invalid packets during a keyring listing and sync
+    diagnostics with the output.
+
+  * gpgsm: Avoid confusing diagnostic when signing with the default
+    key.  [#4535]
+
+  * agent: Do not delete any secret key in --dry-run mode.
+
+  * agent: Fix failures on 64 bit big-endian boxes related to URIs in
+    a keyfile.  [#4501]
+
+  * agent: Stop scdaemon after a reload with disable-scdaemon newly
+    configured.  [#4326]
+
+  * dirmngr: Improve caching algorithm for WKD domains.
+
+  * gpgconf: Make --homedir work for --launch.  [#4496]
+
+  * gpgconf: Before --launch check for a valid config file.  [#4497]
+
+  * wkd: Do not import more than 5 keys from one WKD address.
+
+  * wkd: Accept keys which are stored in armored format in the
+    directory.
+
+  * The installer for Windows now comes with signed binaries.
+
+  Release-info: https://dev.gnupg.org/T4509
+
+
 Noteworthy changes in version 2.2.15 (2019-03-26)
 -------------------------------------------------
 
@@ -53,7 +112,7 @@ Noteworthy changes in version 2.2.14 (2019-03-19)
 
   * dirmngr: Fix build problems with gcc 9 in libdns.
 
-  * gpgconf: New option --show-socket for use wity --launch.
+  * gpgconf: New option --show-socket for use with --launch.
 
   * gpgtar: Make option -C work for archive creation.
 
