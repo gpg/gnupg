@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-11-06 10:59+0100\n"
+"PO-Revision-Date: 2019-05-27 12:47+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -213,12 +213,10 @@ msgid "Reset Code"
 msgstr "Rückstellcode"
 
 msgid "Push ACK button on card/token."
-msgstr ""
+msgstr "Bitte die Bestätigungstaste des Tokens drücken."
 
-#, fuzzy
-#| msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgid "Use the reader's pinpad for input."
-msgstr "%s%%0A%%0AZur Eingabe die Tastatur des Kartenlesers verwenden."
+msgstr "Zur Eingabe die Tastatur des Kartenlesers verwenden."
 
 msgid "Repeat this Reset Code"
 msgstr "Rückstellcode bitte wiederholen"
@@ -1609,6 +1607,23 @@ msgstr "(es sei denn, Sie geben den Schlüssel mittels Fingerprint an)\n"
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "dies kann im Batchmodus ohne \"--yes\" nicht durchgeführt werden\n"
 
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+"Hinweis: Der öffentliche Schlüssel mit allen Unterschlüsseln wird gelöscht.\n"
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr "Hinweis: Nur der angezeigte öffentliche Unterschlüssel wird gelöscht.\n"
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+"Hinweis: Nur der geheime Teil des angezeigten Hauptschlüssels wird "
+"gelöscht.\n"
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
+"Hinweis: Nur der geheime Teil des angezeigten Unterschlüssels wird "
+"gelöscht.\n"
+
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Diesen Schlüssel aus dem Schlüsselbund löschen? (j/N) "
 
@@ -1624,6 +1639,10 @@ msgstr "Schlüssel"
 
 msgid "subkey"
 msgstr "Unterschlüssel"
+
+#, c-format
+msgid "update failed: %s\n"
+msgstr "Änderung fehlgeschlagen: %s\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3445,10 +3464,6 @@ msgid "Quit without saving? (y/N) "
 msgstr "Beenden ohne zu speichern? (j/N) "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "Änderung fehlgeschlagen: %s\n"
-
-#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "Schlüssel ist nicht geändert worden, also ist kein Speichern nötig.\n"
 
@@ -4434,10 +4449,6 @@ msgstr "Schlüssel \"%s\" wurde auf dem Schlüsselserver nicht gefunden\n"
 #, c-format
 msgid "key not found on keyserver\n"
 msgstr "Schlüssel wurde auf dem Schlüsselserver nicht gefunden\n"
-
-#, c-format
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "Kein Schlüsselserver bekannt (Option --keyserver verwenden)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -5724,11 +5735,6 @@ msgstr ""
 msgid "unsupported TOFU database version: %s\n"
 msgstr "Nicht unterstützte TOFU Datenbank Version: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error creating temporary file: %s\n"
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
-
 #, c-format
 msgid "TOFU DB error"
 msgstr "TOFU (Trust on First Use) database error"
@@ -5745,15 +5751,6 @@ msgstr "Fehler beim Feststellen der TOFU Datenbank Version: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "Fehler beim Initialisieren der TOFU Datenbank: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error creating temporary file: %s\n"
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr ""
-
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "Fehler beim Öffner der TOFU Datenbank '%s': %s\n"
@@ -5762,36 +5759,28 @@ msgstr "Fehler beim Öffner der TOFU Datenbank '%s': %s\n"
 msgid "error updating TOFU database: %s\n"
 msgstr "Fehler beim Schreiben der TOFU Datenbank: %s\n"
 
-#, fuzzy, c-format
-#| msgid "The email address \"%s\" is associated with %d key:\n"
-#| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
+#, c-format
 msgid ""
 "This is the first time the email address \"%s\" is being used with key %s."
-msgstr "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
+msgstr ""
+"Die Mail-Adresse \"%s\" wird zum ersten mal mit dem Schlüssel %s verwendet."
 
-#, fuzzy, c-format
-#| msgid "The email address \"%s\" is associated with %d key:\n"
-#| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
+#, c-format
 msgid "The email address \"%s\" is associated with %d key!"
 msgid_plural "The email address \"%s\" is associated with %d keys!"
-msgstr[0] "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
-msgstr[1] "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
+msgstr[0] "Die Mail-Adresse \"%s\" ist mit %d Schlüssel assoziert!"
+msgstr[1] "Die Mail-Adresse \"%s\" ist mit %d Schlüsseln assoziert!"
 
-#, fuzzy
-#| msgid ""
-#| "The key with fingerprint %s raised a conflict with the binding %s.  Since "
-#| "this binding's policy was 'auto', it was changed to 'ask'."
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
-msgstr ""
-"Der Schlüssel mit dem Fingerabdruck %s steht im Konflikt mit der Bindung "
-"(%s).  Die Richtlinie dieser Bindung wurde deswegen von 'auto' auf 'ask' "
-"geändert."
+msgstr "  Aufgrund der Bindungs-Richtline 'auto' wurde sie auf 'ask' geändert."
 
 #, c-format
 msgid ""
 "Please indicate whether this email address should be associated with key %s "
 "or whether you think someone is impersonating \"%s\"."
 msgstr ""
+"Bitte geben Sie an, ob diese Mailadresse mit dem Schlüssel %s\n"
+"verbunden sein soll oder ob jemand anderes sich für \"%s\" ausgibt."
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
@@ -5833,87 +5822,72 @@ msgid_plural "Encrypted %d messages."
 msgstr[0] "%d Nachricht wurde verschlüsselt."
 msgstr[1] "%d Nachrichten wurden verschlüsselt."
 
-#, fuzzy, c-format
-#| msgid "%ld message signed in the future."
-#| msgid_plural "%ld messages signed in the future."
+#, c-format
 msgid "Verified %d message in the future."
 msgid_plural "Verified %d messages in the future."
-msgstr[0] "%ld Nachricht in der Zukunft signiert."
-msgstr[1] "%ld Nachrichten in der Zukunf signiert."
+msgstr[0] "%d Nachricht in der Zukunft signiert."
+msgstr[1] "%d Nachrichten in der Zukunf signiert."
 
-#, fuzzy, c-format
-#| msgid "%ld message signed in the future."
-#| msgid_plural "%ld messages signed in the future."
+#, c-format
 msgid "Encrypted %d message in the future."
 msgid_plural "Encrypted %d messages in the future."
-msgstr[0] "%ld Nachricht in der Zukunft signiert."
-msgstr[1] "%ld Nachrichten in der Zukunf signiert."
+msgstr[0] "%d Nachricht in der Zukunft verschlüsselt."
+msgstr[1] "%d Nachrichten in der Zukunft verschlüsselt."
 
-#, fuzzy, c-format
-#| msgid " over the past %ld day."
-#| msgid_plural " over the past %ld days."
+#, c-format
 msgid "Messages verified over the past %d day: %d."
 msgid_plural "Messages verified over the past %d days: %d."
-msgstr[0] " innerhalb des letzten Tages."
-msgstr[1] " innerhalb der letzten %ld Tage."
+msgstr[0] ""
+"Nachrichten die innerhalb des letzten %d Tages überprüft wurden: %d."
+msgstr[1] "Nachrichten die innerhalb der letzten %d Tage überprüft wurden: %d."
 
-#, fuzzy, c-format
-#| msgid " over the past %ld day."
-#| msgid_plural " over the past %ld days."
+#, c-format
 msgid "Messages encrypted over the past %d day: %d."
 msgid_plural "Messages encrypted over the past %d days: %d."
-msgstr[0] " innerhalb des letzten Tages."
-msgstr[1] " innerhalb der letzten %ld Tage."
+msgstr[0] ""
+"Nachrichten die innerhalb des letzten %d Tages verschlüsselt wurden: %d."
+msgstr[1] ""
+"Nachrichten die innerhalb der letzten %d Tage verschlüsselt wurden: %d."
 
-#, fuzzy, c-format
-#| msgid " over the past %ld month."
-#| msgid_plural " over the past %ld months."
+#, c-format
 msgid "Messages verified over the past %d month: %d."
 msgid_plural "Messages verified over the past %d months: %d."
-msgstr[0] " innerhalb des letzten Monats."
-msgstr[1] " innerhalb der letzten %ld Monate."
+msgstr[0] ""
+"Nachrichten die innerhalb des letzten %d Monats überprüft wurden: %d."
+msgstr[1] ""
+"Nachrichten die innerhalb der letzten %d Monate überprüft wurden: %d."
 
-#, fuzzy, c-format
-#| msgid " over the past %ld month."
-#| msgid_plural " over the past %ld months."
+#, c-format
 msgid "Messages encrypted over the past %d month: %d."
 msgid_plural "Messages encrypted over the past %d months: %d."
-msgstr[0] " innerhalb des letzten Monats."
-msgstr[1] " innerhalb der letzten %ld Monate."
+msgstr[0] ""
+"Nachrichten die innerhalb des letzten %d Monats verschlüsselt wurden: %d."
+msgstr[1] ""
+"Nachrichten die innerhalb der letzten %d Monate verschlüsselt wurden: %d."
 
-#, fuzzy, c-format
-#| msgid " over the past %ld day."
-#| msgid_plural " over the past %ld days."
+#, c-format
 msgid "Messages verified over the past %d year: %d."
 msgid_plural "Messages verified over the past %d years: %d."
-msgstr[0] " innerhalb des letzten Tages."
-msgstr[1] " innerhalb der letzten %ld Tage."
+msgstr[0] ""
+"Nachrichten die innerhalb des letzten %d Jahres überprüft wurden: %d."
+msgstr[1] ""
+"Nachrichten die innerhalb der letzten %d Jahre überprüft wurden: %d."
 
-#, fuzzy, c-format
-#| msgid " over the past %ld day."
-#| msgid_plural " over the past %ld days."
+#, c-format
 msgid "Messages encrypted over the past %d year: %d."
 msgid_plural "Messages encrypted over the past %d years: %d."
-msgstr[0] " innerhalb des letzten Tages."
-msgstr[1] " innerhalb der letzten %ld Tage."
+msgstr[0] ""
+"Nachrichten die innerhalb des letzten %d Jahres verschlüsselt wurden: %d."
+msgstr[1] ""
+"Nachrichten die innerhalb der letzten %d Jahre verschlüsselt wurden: %d."
 
-#, fuzzy, c-format
-#| msgid " over the past %ld day."
-#| msgid_plural " over the past %ld days."
+#, c-format
 msgid "Messages verified in the past: %d."
-msgstr " innerhalb des letzten Tages."
+msgstr "Nachrichten die in der Vergangenheit überprüft wurden: %d."
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Verified %ld message signed by \"%s\"\n"
-#| "in the past %s."
-#| msgid_plural ""
-#| "Verified %ld messages signed by \"%s\"\n"
-#| "in the past %s."
+#, c-format
 msgid "Messages encrypted in the past: %d."
-msgstr ""
-"%ld überprüfte Nachricht von \"%s\"\n"
-"in den letzten %s."
+msgstr "Nachricht die in der Vergangenheit verschlüsselt wurden: %d."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5938,21 +5912,11 @@ msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr "(G)ut, einmal (A)kzeptieren, (U)nbekannt, einmal ab(L)ehnen, (F)alsch?"
 
 msgid "Defaulting to unknown.\n"
-msgstr ""
+msgstr "Als Voreinstellung wird 'Unbekannt' verwendet.\n"
 
 #, c-format
 msgid "TOFU db corruption detected.\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing key: %s\n"
-msgid "resetting keydb: %s\n"
-msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error setting TOFU binding's trust level to %s\n"
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "Fehler beim Setzen der TOFU Binding Vertrauensstufe auf %s\n"
+msgstr "TOFU Datenbank ist defekt.\n"
 
 #, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -6000,72 +5964,27 @@ msgid_plural "%lld~seconds"
 msgstr[0] "%lld~Sekunde"
 msgstr[1] "%lld~Sekunden"
 
-#, fuzzy, c-format
-#| msgid "TOFU: few signatures %d message %s"
-#| msgid_plural "TOFU: few signatures %d messages %s"
+#, c-format
 msgid "%s: Verified 0~signatures and encrypted 0~messages."
-msgstr ""
-"WARNUNG: Falls sie glauben, mehr als %d mit diesem Schlüssel signierte\n"
-"Nachricht erhalten zu haben, so kann es sich bei diesem Schlüssel um\n"
-"eine Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine\n"
-"Variationen (z.B. zusätzliche Leerzeichen).  Falls Ihnen der Schlüssel\n"
-"suspekt erscheint, so benutzen Sie '%s' um den Schlüssel als Fälschung\n"
-"zu markieren."
+msgstr "%s: 0~Signaturen und 0~Nachrichten verschlüsselt."
 
-#, fuzzy, c-format
-#| msgid "Deleted %d signatures.\n"
+#, c-format
 msgid "%s: Verified 0 signatures."
-msgstr "%d Beglaubigungen entfernt.\n"
+msgstr "%s: 0~Signaturen überprüft."
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Verified %ld message signed by \"%s\"\n"
-#| "in the past %s."
-#| msgid_plural ""
-#| "Verified %ld messages signed by \"%s\"\n"
-#| "in the past %s."
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] ""
-"%ld überprüfte Nachricht von \"%s\"\n"
-"in den letzten %s."
-msgstr[1] ""
-"%ld überprüfte Nachrichten von \"%s\"\n"
-"in den letzten %s."
-
-#, fuzzy
-#| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted 0 messages."
-msgstr "Verschlüsselt mit %lu Passphrases\n"
+msgstr "0 Nachrichten verschlüsselt."
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Verified %ld message signed by \"%s\"\n"
-#| "in the past %s."
-#| msgid_plural ""
-#| "Verified %ld messages signed by \"%s\"\n"
-#| "in the past %s."
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] ""
-"%ld überprüfte Nachricht von \"%s\"\n"
-"in den letzten %s."
-msgstr[1] ""
-"%ld überprüfte Nachrichten von \"%s\"\n"
-"in den letzten %s."
-
-#, fuzzy, c-format
-#| msgid "policy: %s"
+#, c-format
 msgid "(policy: %s)"
-msgstr "Richtlinie: %s"
+msgstr "(Richtlinie: %s)"
 
-#, fuzzy, c-format
-#| msgid "Warning: we've have yet to see a message signed by this key!\n"
+#, c-format
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
-"WARNUNG: Wir müssen noch eine mit diesem Schlüssel signierte Nachricht "
-"sehen.\n"
+"WARNUNG: Wir müssen noch eine mit diesem Schlüssel und User-ID signierte "
+"Nachricht sehen.\n"
 
 #, c-format
 msgid ""
@@ -6074,19 +5993,17 @@ msgstr ""
 "WARNUNG: Wir haben nur eine einzige mit diesem Schlüssel signierte Nachricht "
 "gesehen.\n"
 
-#, fuzzy, c-format
-#| msgid "Warning: we've have yet to see a message signed by this key!\n"
+#, c-format
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr ""
-"WARNUNG: Wir müssen noch eine mit diesem Schlüssel signierte Nachricht "
-"sehen.\n"
+"WARNUNG: Sie müssen noch eine verschlüselte Nachricht an diesen Schlüssel "
+"senden!\n"
 
-#, fuzzy, c-format
-#| msgid "Warning: we've only seen a single message signed by this key!\n"
+#, c-format
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
-"WARNUNG: Wir haben nur eine einzige mit diesem Schlüssel signierte Nachricht "
-"gesehen.\n"
+"WARNUNG: Sie haben nur eine verschlüsselte Nachricht an diesen Schlüssel "
+"erstellt!\n"
 
 #, c-format
 msgid ""
@@ -6125,6 +6042,7 @@ msgstr "Fehler beim Öffnen der TOFU Datenbank: %s\n"
 #, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
+"WARNUNG: Es wird an %s verschlüsselt, welcher nur widerrufene User-IDs hat.\n"
 
 #, fuzzy, c-format
 #| msgid "error writing public keyring '%s': %s\n"
@@ -8376,10 +8294,9 @@ msgstr "URL `%s' nach `%s' umgeleitet (%u)\n"
 msgid "too many redirections\n"
 msgstr "zu viele verschachtelte Umleitungen\n"
 
-#, fuzzy, c-format
-#| msgid "writing to '%s'\n"
+#, c-format
 msgid "redirection changed to '%s'\n"
-msgstr "Schreiben nach '%s'\n"
+msgstr "\"Redirection\" geändert auf '%s'\n"
 
 #, c-format
 msgid "error allocating memory: %s\n"
@@ -8867,6 +8784,14 @@ msgid "Component not suitable for launching"
 msgstr "Komponente unterstützt kein direktes starten"
 
 #, c-format
+msgid "Configuration file of component %s is broken\n"
+msgstr "Die Konfigurationsdatei der Komponente %s ist defekt\n"
+
+#, c-format
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Hinweis: Für Details bitte das Kommando \"%s%s\" verwenden.\n"
+
+#, c-format
 msgid "External verification of component %s failed"
 msgstr "Die externe Überprüfung der Komponente %s war nicht erfolgreich"
 
@@ -9096,6 +9021,61 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#, fuzzy
+#~| msgid "error creating temporary file: %s\n"
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
+
+#, fuzzy
+#~| msgid "error creating temporary file: %s\n"
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
+
+#, fuzzy
+#~| msgid "error writing key: %s\n"
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
+
+#, fuzzy
+#~| msgid "error setting TOFU binding's trust level to %s\n"
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "Fehler beim Setzen der TOFU Binding Vertrauensstufe auf %s\n"
+
+#, fuzzy
+#~| msgid ""
+#~| "Verified %ld message signed by \"%s\"\n"
+#~| "in the past %s."
+#~| msgid_plural ""
+#~| "Verified %ld messages signed by \"%s\"\n"
+#~| "in the past %s."
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] ""
+#~ "%ld überprüfte Nachricht von \"%s\"\n"
+#~ "in den letzten %s."
+#~ msgstr[1] ""
+#~ "%ld überprüfte Nachrichten von \"%s\"\n"
+#~ "in den letzten %s."
+
+#, fuzzy
+#~| msgid ""
+#~| "Verified %ld message signed by \"%s\"\n"
+#~| "in the past %s."
+#~| msgid_plural ""
+#~| "Verified %ld messages signed by \"%s\"\n"
+#~| "in the past %s."
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] ""
+#~ "%ld überprüfte Nachricht von \"%s\"\n"
+#~ "in den letzten %s."
+#~ msgstr[1] ""
+#~ "%ld überprüfte Nachrichten von \"%s\"\n"
+#~ "in den letzten %s."
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr "Kein Schlüsselserver bekannt (Option --keyserver verwenden)\n"
 
 #~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
 #~ msgstr "Warte bis der Dirmngr bereit ist ... (%ds)\n"
