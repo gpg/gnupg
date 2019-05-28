@@ -1391,6 +1391,9 @@ agent_get_confirmation (ctrl_t ctrl,
       if (ctrl->pinentry_mode == PINENTRY_MODE_CANCEL)
         return gpg_error (GPG_ERR_CANCELED);
 
+      if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+        return pinentry_loopback_confirm (ctrl, desc, 1, ok, notok);
+
       return gpg_error (GPG_ERR_NO_PIN_ENTRY);
     }
 
@@ -1486,7 +1489,15 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
   int err;
 
   if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
-    return gpg_error (GPG_ERR_CANCELED);
+    {
+      if (ctrl->pinentry_mode == PINENTRY_MODE_CANCEL)
+        return gpg_error (GPG_ERR_CANCELED);
+
+      if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+        return pinentry_loopback_confirm (ctrl, desc, 0, ok_btn, NULL);
+
+      return gpg_error (GPG_ERR_NO_PIN_ENTRY);
+    }
 
   rc = start_pinentry (ctrl);
   if (rc)
@@ -1536,6 +1547,9 @@ agent_popup_message_stop (ctrl_t ctrl)
   pid_t pid;
 
   (void)ctrl;
+
+  if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+    return;
 
   if (!popup_tid || !entry_ctx)
     {
