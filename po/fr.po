@@ -1656,6 +1656,18 @@ msgstr "(à moins d'indiquer la clef par son empreinte)\n"
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "impossible de faire cela en mode automatique sans « --yes »\n"
 
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
+
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Faut-il supprimer cette clef du porte-clefs ? (o/N) "
 
@@ -1671,6 +1683,10 @@ msgstr "clef"
 
 msgid "subkey"
 msgstr "sous-clef"
+
+#, c-format
+msgid "update failed: %s\n"
+msgstr "échec de la mise à jour : %s\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3536,10 +3552,6 @@ msgid "Quit without saving? (y/N) "
 msgstr "Faut-il quitter sans enregistrer ? (o/N) "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "échec de la mise à jour : %s\n"
-
-#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "La clef n'a pas été modifiée donc la mise à jour est inutile.\n"
 
@@ -4572,10 +4584,6 @@ msgstr "clef « %s » introuvable sur le serveur de clefs\n"
 #, c-format
 msgid "key not found on keyserver\n"
 msgstr "clef introuvable sur le serveur de clefs\n"
-
-#, c-format
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "pas de serveur de clefs connu (utilisez l'option --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -5899,11 +5907,6 @@ msgstr ""
 msgid "unsupported TOFU database version: %s\n"
 msgstr "algorithme non pris en charge : %s"
 
-#, fuzzy, c-format
-#| msgid "error creating temporary file: %s\n"
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "erreur de création du fichier temporaire : %s\n"
-
 #, c-format
 msgid "TOFU DB error"
 msgstr ""
@@ -5922,15 +5925,6 @@ msgstr "erreur d'écriture en encodage base64 : %s\n"
 #| msgid "error initializing reader object: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "erreur d'initialisation de l'objet lecteur : %s\n"
-
-#, fuzzy, c-format
-#| msgid "error sending data: %s\n"
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "erreur d'envoi de données : %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error opening '%s': %s\n"
@@ -6093,16 +6087,6 @@ msgid "TOFU db corruption detected.\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "error writing key: %s\n"
-msgid "resetting keydb: %s\n"
-msgstr "erreur d'écriture la clef : %s\n"
-
-#, fuzzy, c-format
-#| msgid "error setting OCSP target: %s\n"
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "erreur de configuration de la cible OCSP : %s\n"
-
-#, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
 msgid "error changing TOFU policy: %s\n"
 msgstr "erreur de création d'un tube : %s\n"
@@ -6158,24 +6142,10 @@ msgstr ""
 msgid "%s: Verified 0 signatures."
 msgstr "%d signatures supprimées\n"
 
-#, fuzzy, c-format
-#| msgid "print message digests"
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "indiquer les fonctions de hachage"
-msgstr[1] "indiquer les fonctions de hachage"
-
 #, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted 0 messages."
 msgstr "chiffré avec %lu phrases secrètes\n"
-
-#, fuzzy, c-format
-#| msgid "print message digests"
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "indiquer les fonctions de hachage"
-msgstr[1] "indiquer les fonctions de hachage"
 
 #, fuzzy, c-format
 #| msgid "validity: %s"
@@ -6224,11 +6194,6 @@ msgstr "erreur d'envoi de données : %s\n"
 #, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing public keyring '%s': %s\n"
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "erreur d'écriture du porte-clefs public « %s » : %s\n"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -8652,16 +8617,16 @@ msgid "OCSP responder at '%s' status: %s\n"
 msgstr "répondeur OCSP à l'état « %s » : %s\n"
 
 #, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr "échec d'établissement d'un contexte de hachage pour OCSP : %s\n"
+
+#, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "échec de hachage de la réponse OCSP pour « %s » : %s\n"
 
 #, c-format
 msgid "not signed by a default OCSP signer's certificate"
 msgstr "non signée par un certificat de signataire OCSP par défaut"
-
-#, c-format
-msgid "only SHA-1 is supported for OCSP responses\n"
-msgstr "seul SHA-1 est pris en charge pour les réponses\n"
 
 #, c-format
 msgid "allocating list item failed: %s\n"
@@ -8711,10 +8676,6 @@ msgstr "utilisation du répondeur OCSP « %s » par défaut\n"
 #, c-format
 msgid "using OCSP responder '%s'\n"
 msgstr "utilisation du répondeur OCSP « %s »\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr "échec d'établissement d'un contexte de hachage pour OCSP : %s\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -9048,6 +9009,16 @@ msgstr "Entrée de code personnel et de phrase secrète"
 msgid "Component not suitable for launching"
 msgstr "Composant non convenable pour le lancement"
 
+#, fuzzy, c-format
+#| msgid "External verification of component %s failed"
+msgid "Configuration file of component %s is broken\n"
+msgstr "Échec de vérification externe du composant %s"
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Veuillez d'abord utiliser la commande « toggle ».\n"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "Échec de vérification externe du composant %s"
@@ -9285,6 +9256,51 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr "pas de serveur de clefs connu (utilisez l'option --keyserver)\n"
+
+#, fuzzy
+#~| msgid "error creating temporary file: %s\n"
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "erreur de création du fichier temporaire : %s\n"
+
+#, fuzzy
+#~| msgid "error sending data: %s\n"
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "erreur d'envoi de données : %s\n"
+
+#, fuzzy
+#~| msgid "error writing key: %s\n"
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "erreur d'écriture la clef : %s\n"
+
+#, fuzzy
+#~| msgid "error setting OCSP target: %s\n"
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "erreur de configuration de la cible OCSP : %s\n"
+
+#, fuzzy
+#~| msgid "print message digests"
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "indiquer les fonctions de hachage"
+#~ msgstr[1] "indiquer les fonctions de hachage"
+
+#, fuzzy
+#~| msgid "print message digests"
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "indiquer les fonctions de hachage"
+#~ msgstr[1] "indiquer les fonctions de hachage"
+
+#, fuzzy
+#~| msgid "error writing public keyring '%s': %s\n"
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "erreur d'écriture du porte-clefs public « %s » : %s\n"
+
+#~ msgid "only SHA-1 is supported for OCSP responses\n"
+#~ msgstr "seul SHA-1 est pris en charge pour les réponses\n"
 
 #~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
 #~ msgstr "attente pour permettre au dirmngr d'arriver… (%d s)\n"

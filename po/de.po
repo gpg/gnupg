@@ -1612,7 +1612,8 @@ msgstr ""
 "Hinweis: Der öffentliche Schlüssel mit allen Unterschlüsseln wird gelöscht.\n"
 
 msgid "Note: Only the shown public subkey will be deleted.\n"
-msgstr "Hinweis: Nur der angezeigte öffentliche Unterschlüssel wird gelöscht.\n"
+msgstr ""
+"Hinweis: Nur der angezeigte öffentliche Unterschlüssel wird gelöscht.\n"
 
 msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
 msgstr ""
@@ -6044,11 +6045,6 @@ msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 "WARNUNG: Es wird an %s verschlüsselt, welcher nur widerrufene User-IDs hat.\n"
 
-#, fuzzy, c-format
-#| msgid "error writing public keyring '%s': %s\n"
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "Fehler beim Schreiben des öff. Schlüsselbundes `%s': %s\n"
-
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
 msgstr "'%s' ist keine gültige lange Schlüssel-ID\n"
@@ -8407,16 +8403,16 @@ msgid "OCSP responder at '%s' status: %s\n"
 msgstr "OCSP Responder `%s' Status: %s\n"
 
 #, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr "Kontext zum Hashen von OCSP kann nicht erzeugt werden: %s\n"
+
+#, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "Hashen der OCSP Antwort für `%s' fehlgeschlagen: %s\n"
 
 #, c-format
 msgid "not signed by a default OCSP signer's certificate"
 msgstr "Nicht durch voreingestelltes OCSP \"Signer-Zertifikat\" signiert"
-
-#, c-format
-msgid "only SHA-1 is supported for OCSP responses\n"
-msgstr "Lediglich SHA-1 wird bei OCSP Antworten unterstützt\n"
 
 #, c-format
 msgid "allocating list item failed: %s\n"
@@ -8466,10 +8462,6 @@ msgstr "Der voreingestellte OCSP Responder `%s' wird benutzt\n"
 #, c-format
 msgid "using OCSP responder '%s'\n"
 msgstr "Der OCSP Responder `%s' wird benutzt\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr "Kontext zum Hashen von OCSP kann nicht erzeugt werden: %s\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -9021,6 +9013,14 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#, fuzzy
+#~| msgid "error writing public keyring '%s': %s\n"
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "Fehler beim Schreiben des öff. Schlüsselbundes `%s': %s\n"
+
+#~ msgid "only SHA-1 is supported for OCSP responses\n"
+#~ msgstr "Lediglich SHA-1 wird bei OCSP Antworten unterstützt\n"
 
 #, fuzzy
 #~| msgid "error creating temporary file: %s\n"

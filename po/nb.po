@@ -1589,6 +1589,18 @@ msgstr "(med mindre du oppgir nøkkel ved hjelp av fingeravtrykk)\n"
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "du må bruke «--yes» for å gjøre dette i buntmodus\n"
 
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
+
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Vil du slette denne nøkkelen fra nøkkelknippet? (j/N) "
 
@@ -1605,6 +1617,10 @@ msgstr "nøkkel"
 
 msgid "subkey"
 msgstr "undernøkkel"
+
+#, c-format
+msgid "update failed: %s\n"
+msgstr "oppdatering mislyktes: %s\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3377,10 +3393,6 @@ msgid "Quit without saving? (y/N) "
 msgstr "Vil du avslutte uten å lagre? (j/N) "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "oppdatering mislyktes: %s\n"
-
-#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "Nøkkelen ble ikke endret, så ingen oppdatering er nødvendig.\n"
 
@@ -4366,10 +4378,6 @@ msgstr "fant ikke nøkkelen «%s» på nøkkeltjener\n"
 #, c-format
 msgid "key not found on keyserver\n"
 msgstr "fant ikke nøkkelen på nøkkeltjener\n"
-
-#, c-format
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "ingen kjent nøkkeltjener (bruk valget «--keyserver»)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -5598,10 +5606,6 @@ msgid "unsupported TOFU database version: %s\n"
 msgstr "TOFU-databaseversjon støttes ikke: %s\n"
 
 #, c-format
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "feil under oppretting av TOFU-tabell «ultimately_trusted_keys»: %s\n"
-
-#, c-format
 msgid "TOFU DB error"
 msgstr "TOFU DB-feil"
 
@@ -5616,14 +5620,6 @@ msgstr "klarte ikke å kontrollere versjon av TOFU-database: %s\n"
 #, c-format
 msgid "error initializing TOFU database: %s\n"
 msgstr "feil under oppstart av TOFU-database: %s\n"
-
-#, c-format
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "feil under oppretting av TOFU-tabell «encryptions»: %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr "legger til kolonne «effective_policy» i tilknytningsdatabase: %s\n"
 
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5775,14 +5771,6 @@ msgid "TOFU db corruption detected.\n"
 msgstr "Oppdaget ødelagt del av TOFU-database.\n"
 
 #, c-format
-msgid "resetting keydb: %s\n"
-msgstr "tilbakestiller nøkkeldatabase: %s\n"
-
-#, c-format
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "feil under endring av regel for TOFU-tilknytning til %s\n"
-
-#, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "feil under endring av TOFU-regler: %s\n"
 
@@ -5836,20 +5824,8 @@ msgstr "%s: Bekreftet 0~signaturer og kryptert 0~meldinger."
 msgid "%s: Verified 0 signatures."
 msgstr "%s: Bekreftet 0 signaturer."
 
-#, c-format
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "%s: Bekreftet %ld~signatur i løpet av siste %s."
-msgstr[1] "%s: Bekreftet %ld~signatur i løpet av siste %s."
-
 msgid "Encrypted 0 messages."
 msgstr "Kryptert 0 meldinger."
-
-#, c-format
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "Kryptert %ld~melding i løpet av siste %s."
-msgstr[1] "Kryptert %ld~meldinger i løpet av siste %s."
 
 #, c-format
 msgid "(policy: %s)"
@@ -5913,10 +5889,6 @@ msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 "ADVARSEL: krypterer til %s. Denne har ingen bruker-id-er som ikke er "
 "opphevet\n"
-
-#, c-format
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "feil under endring av regel for nøkkel %s, bruker-id «%s»: %s"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -8206,16 +8178,16 @@ msgid "OCSP responder at '%s' status: %s\n"
 msgstr "Status for OCSP-svartjeneste ved «%s»: %s\n"
 
 #, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr "klarte ikke å sette opp kontrollsum-kontekst for OCSP: %s\n"
+
+#, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "summering av OCSP-svar for «%s» mislyktes: %s\n"
 
 #, c-format
 msgid "not signed by a default OCSP signer's certificate"
 msgstr "ikke signert av sertifikat som tilhører en forvalgt OCSP-fullmektig"
-
-#, c-format
-msgid "only SHA-1 is supported for OCSP responses\n"
-msgstr "OSCP-svar skal bare bruke SHA-1\n"
 
 #, c-format
 msgid "allocating list item failed: %s\n"
@@ -8264,10 +8236,6 @@ msgstr "bruker forvalgt OCSP-svartjeneste «%s»\n"
 #, c-format
 msgid "using OCSP responder '%s'\n"
 msgstr "bruker OCSP-svartjeneste «%s»\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr "klarte ikke å sette opp kontrollsum-kontekst for OCSP: %s\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8577,6 +8545,16 @@ msgstr "Skriving av passordfrase"
 msgid "Component not suitable for launching"
 msgstr "Komponent egner seg ikke for oppstart"
 
+#, fuzzy, c-format
+#| msgid "External verification of component %s failed"
+msgid "Configuration file of component %s is broken\n"
+msgstr "Ekstern bekreftelse av komponent %s mislyktes"
+
+#, fuzzy, c-format
+#| msgid "Note: Use the command \"%s\" to restart them.\n"
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Merk: Bruk kommandoen «%s» for å starte dem på nytt.\n"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "Ekstern bekreftelse av komponent %s mislyktes"
@@ -8807,6 +8785,41 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr "ingen kjent nøkkeltjener (bruk valget «--keyserver»)\n"
+
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr ""
+#~ "feil under oppretting av TOFU-tabell «ultimately_trusted_keys»: %s\n"
+
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "feil under oppretting av TOFU-tabell «encryptions»: %s\n"
+
+#~ msgid "adding column effective_policy to bindings DB: %s\n"
+#~ msgstr "legger til kolonne «effective_policy» i tilknytningsdatabase: %s\n"
+
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "tilbakestiller nøkkeldatabase: %s\n"
+
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "feil under endring av regel for TOFU-tilknytning til %s\n"
+
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "%s: Bekreftet %ld~signatur i løpet av siste %s."
+#~ msgstr[1] "%s: Bekreftet %ld~signatur i løpet av siste %s."
+
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "Kryptert %ld~melding i løpet av siste %s."
+#~ msgstr[1] "Kryptert %ld~meldinger i løpet av siste %s."
+
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "feil under endring av regel for nøkkel %s, bruker-id «%s»: %s"
+
+#~ msgid "only SHA-1 is supported for OCSP responses\n"
+#~ msgstr "OSCP-svar skal bare bruke SHA-1\n"
 
 #~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
 #~ msgstr "venter på at dirmngr skal dukke opp … (%ds)\n"

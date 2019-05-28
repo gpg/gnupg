@@ -1723,6 +1723,18 @@ msgstr "(med mindre du angiver nøglen med fingeraftryk)\n"
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "kan ikke udføre dette i jobtilstand uden »--yes«\n"
 
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
+
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Slet denne nøgle fra nøgleringen? (j/N) "
 
@@ -1741,6 +1753,10 @@ msgstr ""
 #| msgid "Pubkey: "
 msgid "subkey"
 msgstr "Pubkey: "
+
+#, c-format
+msgid "update failed: %s\n"
+msgstr "opdatering mislykkedes: %s\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3648,10 +3664,6 @@ msgid "Quit without saving? (y/N) "
 msgstr "Afslut uden at gemme? (j/N) "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "opdatering mislykkedes: %s\n"
-
-#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "Nøgle ikke ændret så ingen opdatering krævet.\n"
 
@@ -4691,10 +4703,6 @@ msgstr "nøgle »%s« blev ikke fundet på nøgleserver\n"
 #, c-format
 msgid "key not found on keyserver\n"
 msgstr "nøgle blev ikke fundet på nøgleserver\n"
-
-#, c-format
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "ingen kendt nøgleserver (brug tilvalget --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -5990,11 +5998,6 @@ msgstr ""
 msgid "unsupported TOFU database version: %s\n"
 msgstr "ikke understøttet algoritme: %s"
 
-#, fuzzy, c-format
-#| msgid "error creating temporary file: %s\n"
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "fejl ved oprettelse af midlertidig fil: %s\n"
-
 #, c-format
 msgid "TOFU DB error"
 msgstr ""
@@ -6013,15 +6016,6 @@ msgstr "fejl ved skrivning af hemmelig nøglering »%s«: %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s: fejl ved skrivning af mappepost: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error sending %s command: %s\n"
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "fejl under afsendelse af %s-kommando: %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error opening `%s': %s\n"
@@ -6184,16 +6178,6 @@ msgid "TOFU db corruption detected.\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "error writing key: %s\n"
-msgid "resetting keydb: %s\n"
-msgstr "fejl ved skrivning af nøgle: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error storing flags: %s\n"
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "fejl ved lagring af flag: %s\n"
-
-#, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
 msgid "error changing TOFU policy: %s\n"
 msgstr "fejl ved oprettelse af datakanal: %s\n"
@@ -6249,24 +6233,10 @@ msgstr ""
 msgid "%s: Verified 0 signatures."
 msgstr "Slettede %d underskrifter.\n"
 
-#, fuzzy, c-format
-#| msgid "print message digests"
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "vis beskedsammendrag"
-msgstr[1] "vis beskedsammendrag"
-
 #, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted 0 messages."
 msgstr "krypteret med %lu adgangsfraser\n"
-
-#, fuzzy, c-format
-#| msgid "print message digests"
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "vis beskedsammendrag"
-msgstr[1] "vis beskedsammendrag"
 
 #, fuzzy, c-format
 #| msgid "validity: %s"
@@ -6315,11 +6285,6 @@ msgstr "fejl under afsendelse af %s-kommando: %s\n"
 #, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing public keyring `%s': %s\n"
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "fejl ved skrivning af offentlig nøglering »%s«: %s\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid long keyID\n"
@@ -8850,6 +8815,10 @@ msgstr "fejl ved binding af sokkel til »%s«: %s\n"
 msgid "OCSP responder at '%s' status: %s\n"
 msgstr ""
 
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "checking the trust list failed: %s\n"
 msgid "hashing the OCSP response for '%s' failed: %s\n"
@@ -8857,10 +8826,6 @@ msgstr "kontrol af troværdighedslisten mislykkedes: %s\n"
 
 #, c-format
 msgid "not signed by a default OCSP signer's certificate"
-msgstr ""
-
-#, c-format
-msgid "only SHA-1 is supported for OCSP responses\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8921,10 +8886,6 @@ msgstr "bruger standard-PIN som %s\n"
 #| msgid "using cipher %s\n"
 msgid "using OCSP responder '%s'\n"
 msgstr "bruger chiffer %s\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error storing certificate: %s\n"
@@ -9273,6 +9234,16 @@ msgstr "Ugyldig adgangsfrase"
 msgid "Component not suitable for launching"
 msgstr "Komponent blev ikke fundet"
 
+#, fuzzy, c-format
+#| msgid "External verification of component %s failed"
+msgid "Configuration file of component %s is broken\n"
+msgstr "Ekstern verifikation af komponent %s mislykkedes"
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Brug venligst kommandoen »toggle« først.\n"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "Ekstern verifikation af komponent %s mislykkedes"
@@ -9524,6 +9495,48 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr "ingen kendt nøgleserver (brug tilvalget --keyserver)\n"
+
+#, fuzzy
+#~| msgid "error creating temporary file: %s\n"
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "fejl ved oprettelse af midlertidig fil: %s\n"
+
+#, fuzzy
+#~| msgid "error sending %s command: %s\n"
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "fejl under afsendelse af %s-kommando: %s\n"
+
+#, fuzzy
+#~| msgid "error writing key: %s\n"
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "fejl ved skrivning af nøgle: %s\n"
+
+#, fuzzy
+#~| msgid "error storing flags: %s\n"
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "fejl ved lagring af flag: %s\n"
+
+#, fuzzy
+#~| msgid "print message digests"
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "vis beskedsammendrag"
+#~ msgstr[1] "vis beskedsammendrag"
+
+#, fuzzy
+#~| msgid "print message digests"
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "vis beskedsammendrag"
+#~ msgstr[1] "vis beskedsammendrag"
+
+#, fuzzy
+#~| msgid "error writing public keyring `%s': %s\n"
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "fejl ved skrivning af offentlig nøglering »%s«: %s\n"
 
 #, fuzzy
 #~| msgid "waiting %d seconds for the agent to come up\n"

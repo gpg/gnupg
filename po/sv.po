@@ -1759,6 +1759,18 @@ msgstr "(om du inte anger nyckeln med hjälp av fingeravtrycket)\n"
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "kan inte göra så i satsläge utan \"--yes\"\n"
 
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
+
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Ta bort denna nyckel från nyckelringen? (j/N) "
 
@@ -1777,6 +1789,10 @@ msgstr ""
 #| msgid "Pubkey: "
 msgid "subkey"
 msgstr "Publik nyckel: "
+
+#, c-format
+msgid "update failed: %s\n"
+msgstr "uppdateringen misslyckades: %s\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3714,10 +3730,6 @@ msgid "Quit without saving? (y/N) "
 msgstr "Avsluta utan att spara? (j/N) "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "uppdateringen misslyckades: %s\n"
-
-#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "Nyckeln är oförändrad så det behövs ingen uppdatering.\n"
 
@@ -4770,10 +4782,6 @@ msgstr "nyckeln \"%s\" hittades inte på nyckelservern\n"
 #, c-format
 msgid "key not found on keyserver\n"
 msgstr "nyckeln hittades inte på nyckelservern\n"
-
-#, c-format
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "ingen nyckelserver är känd (använd flaggan --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -6093,11 +6101,6 @@ msgstr ""
 msgid "unsupported TOFU database version: %s\n"
 msgstr "algoritmen stöds inte: %s"
 
-#, fuzzy, c-format
-#| msgid "error creating temporary file: %s\n"
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "fel när temporärfil skapades: %s\n"
-
 #, c-format
 msgid "TOFU DB error"
 msgstr ""
@@ -6116,15 +6119,6 @@ msgstr "fel vid skrivning av hemliga nyckelringen \"%s\": %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s: fel vid läsning av katalogpost: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error sending %s command: %s\n"
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "fel vid sändning av %s-kommando: %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error opening `%s': %s\n"
@@ -6287,16 +6281,6 @@ msgid "TOFU db corruption detected.\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "error writing key: %s\n"
-msgid "resetting keydb: %s\n"
-msgstr "fel vid skrivning av nyckel: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error storing flags: %s\n"
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "fel vid lagring av flaggor: %s\n"
-
-#, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
 msgid "error changing TOFU policy: %s\n"
 msgstr "fel när ett rör skapades: %s\n"
@@ -6352,24 +6336,10 @@ msgstr ""
 msgid "%s: Verified 0 signatures."
 msgstr "Raderade %d signaturer.\n"
 
-#, fuzzy, c-format
-#| msgid "print message digests"
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "skriv ut kontrollsummor"
-msgstr[1] "skriv ut kontrollsummor"
-
 #, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted 0 messages."
 msgstr "krypterad med %lu lösenfraser\n"
-
-#, fuzzy, c-format
-#| msgid "print message digests"
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "skriv ut kontrollsummor"
-msgstr[1] "skriv ut kontrollsummor"
 
 #, fuzzy, c-format
 #| msgid "validity: %s"
@@ -6418,11 +6388,6 @@ msgstr "fel vid sändning av %s-kommando: %s\n"
 #, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing public keyring `%s': %s\n"
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "fel vid skrivning av publika nyckelringen \"%s\": %s\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid long keyID\n"
@@ -8991,6 +8956,10 @@ msgstr "fel när \"%s\" bands till uttag: %s\n"
 msgid "OCSP responder at '%s' status: %s\n"
 msgstr ""
 
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "checking the trust list failed: %s\n"
 msgid "hashing the OCSP response for '%s' failed: %s\n"
@@ -8998,10 +8967,6 @@ msgstr "kontroll mot tillitslistan misslyckades: %s\n"
 
 #, c-format
 msgid "not signed by a default OCSP signer's certificate"
-msgstr ""
-
-#, c-format
-msgid "only SHA-1 is supported for OCSP responses\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -9062,10 +9027,6 @@ msgstr "använder standard-PIN som %s\n"
 #| msgid "using cipher %s\n"
 msgid "using OCSP responder '%s'\n"
 msgstr "använder %s-chiffer\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error storing certificate: %s\n"
@@ -9415,6 +9376,16 @@ msgstr "Felaktig lösenfras"
 msgid "Component not suitable for launching"
 msgstr "Komponenten hittades inte"
 
+#, fuzzy, c-format
+#| msgid "External verification of component %s failed"
+msgid "Configuration file of component %s is broken\n"
+msgstr "Extern validering av komponenten %s misslyckades"
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Använd kommandot \"toggle\" först.\n"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "Extern validering av komponenten %s misslyckades"
@@ -9668,6 +9639,48 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr "ingen nyckelserver är känd (använd flaggan --keyserver)\n"
+
+#, fuzzy
+#~| msgid "error creating temporary file: %s\n"
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "fel när temporärfil skapades: %s\n"
+
+#, fuzzy
+#~| msgid "error sending %s command: %s\n"
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "fel vid sändning av %s-kommando: %s\n"
+
+#, fuzzy
+#~| msgid "error writing key: %s\n"
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "fel vid skrivning av nyckel: %s\n"
+
+#, fuzzy
+#~| msgid "error storing flags: %s\n"
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "fel vid lagring av flaggor: %s\n"
+
+#, fuzzy
+#~| msgid "print message digests"
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "skriv ut kontrollsummor"
+#~ msgstr[1] "skriv ut kontrollsummor"
+
+#, fuzzy
+#~| msgid "print message digests"
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "skriv ut kontrollsummor"
+#~ msgstr[1] "skriv ut kontrollsummor"
+
+#, fuzzy
+#~| msgid "error writing public keyring `%s': %s\n"
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "fel vid skrivning av publika nyckelringen \"%s\": %s\n"
 
 #, fuzzy
 #~| msgid "waiting %d seconds for the agent to come up\n"

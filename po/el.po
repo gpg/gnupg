@@ -1669,6 +1669,18 @@ msgstr "(εκτός εάν προσδιορίσετε ένα κλειδί από
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "δεν μπορεί να γίνει αυτό σε κατάσταση δέσμης χωρίς το \"--yes\"\n"
 
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
+
 #, fuzzy
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Διαγραφή αυτού του κλειδιού από τη κλειδοθήκη; "
@@ -1688,6 +1700,10 @@ msgstr "key"
 #| msgid "Pubkey: "
 msgid "subkey"
 msgstr "ΔημοσΚλειδί:"
+
+#, c-format
+msgid "update failed: %s\n"
+msgstr "η ενημέρωση απέτυχε: %s\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3612,10 +3628,6 @@ msgid "Quit without saving? (y/N) "
 msgstr "Τερματισμός χωρίς αποθήκευση; "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "η ενημέρωση απέτυχε: %s\n"
-
-#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "Το κλειδί δεν άλλαξε οπότε δεν χρειάζεται ενημέρωση.\n"
 
@@ -4652,10 +4664,6 @@ msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
 #, fuzzy, c-format
 msgid "key not found on keyserver\n"
 msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
-
-#, c-format
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -5932,10 +5940,6 @@ msgstr ""
 "\n"
 "Υποστηριζόμενοι αλγόριθμοι:\n"
 
-#, fuzzy, c-format
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
-
 #, c-format
 msgid "TOFU DB error"
 msgstr ""
@@ -5953,14 +5957,6 @@ msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκη�
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s: σφάλμα στην εγγραφή της εγγραφής dir : %s\n"
-
-#, fuzzy, c-format
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -6115,14 +6111,6 @@ msgid "TOFU db corruption detected.\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "resetting keydb: %s\n"
-msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
@@ -6177,22 +6165,10 @@ msgstr ""
 msgid "%s: Verified 0 signatures."
 msgstr "Διαγράφηκαν %d υπογραφές.\n"
 
-#, fuzzy, c-format
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
-msgstr[1] "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
-
 #, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted 0 messages."
 msgstr "κρυπτογραφημένο με %lu φράσεις κλειδιά\n"
-
-#, fuzzy, c-format
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
-msgstr[1] "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
 
 #, fuzzy, c-format
 #| msgid "Policy: "
@@ -6240,11 +6216,6 @@ msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 #, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing public keyring `%s': %s\n"
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "αδυναμία εγγραφής δημόσιας κλειδοθήκης `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid long keyID\n"
@@ -8606,16 +8577,16 @@ msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 msgid "OCSP responder at '%s' status: %s\n"
 msgstr ""
 
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
 #, c-format
 msgid "not signed by a default OCSP signer's certificate"
-msgstr ""
-
-#, c-format
-msgid "only SHA-1 is supported for OCSP responses\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8668,10 +8639,6 @@ msgstr ""
 #| msgid "using cipher %s\n"
 msgid "using OCSP responder '%s'\n"
 msgstr "χρήση του κρυπταλγόριθμου: %s\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8995,6 +8962,15 @@ msgid "Component not suitable for launching"
 msgstr "δεν βρέθηκε το δημόσιο κλειδί"
 
 #, c-format
+msgid "Configuration file of component %s is broken\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Παρακαλώ χρησιμοποιείστε την εντολή \"toggle\" πρώτα.\n"
+
+#, c-format
 msgid "External verification of component %s failed"
 msgstr ""
 
@@ -9229,6 +9205,39 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
+
+#, fuzzy
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
+#~ msgstr[1] "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
+
+#, fuzzy
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
+#~ msgstr[1] "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
+
+#, fuzzy
+#~| msgid "error writing public keyring `%s': %s\n"
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "αδυναμία εγγραφής δημόσιας κλειδοθήκης `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error looking up: %s\n"

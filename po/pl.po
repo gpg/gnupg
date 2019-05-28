@@ -1566,6 +1566,18 @@ msgstr "(chyba, że klucz zostaje wybrany przez podanie odcisku)\n"
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "bez opcji ,,--yes'' nie działa w trybie wsadowym\n"
 
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
+
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Usunąć ten klucz ze zbioru? (t/N) "
 
@@ -1581,6 +1593,10 @@ msgstr "klucza"
 
 msgid "subkey"
 msgstr "podklucza"
+
+#, c-format
+msgid "update failed: %s\n"
+msgstr "zapis zmian nie powiódł się: %s\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3393,10 +3409,6 @@ msgid "Quit without saving? (y/N) "
 msgstr "Wyjść bez zapisania zmian? (t/N) "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "zapis zmian nie powiódł się: %s\n"
-
-#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "Klucz nie został zmieniony więc zapis zmian nie jest konieczny.\n"
 
@@ -4400,10 +4412,6 @@ msgstr "klucz ,,%s'' nie został odnaleziony na serwerze kluczy\n"
 #, c-format
 msgid "key not found on keyserver\n"
 msgstr "klucz nie został odnaleziony na serwerze kluczy\n"
-
-#, c-format
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "brak znanyk serwerów kluczy (użyj opcji --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -5661,10 +5669,6 @@ msgid "unsupported TOFU database version: %s\n"
 msgstr "nieobsługiwana wersja bazy danych TOFU: %s\n"
 
 #, c-format
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "błąd tworzenia tabeli TOFU ,,ultimately_trusted_keys'': %s\n"
-
-#, c-format
 msgid "TOFU DB error"
 msgstr "Błąd bazy danych TOFU"
 
@@ -5679,14 +5683,6 @@ msgstr "błąd określania wersji bazy danych TOFU: %s\n"
 #, c-format
 msgid "error initializing TOFU database: %s\n"
 msgstr "błąd inicjowania bazy danych TOFU: %s\n"
-
-#, c-format
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "błąd tworzenia tabeli TOFU ,,encryptions'': %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr "dodawanie kolumny effective_policy do bazy danych powiązań: %s\n"
 
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5856,14 +5852,6 @@ msgid "TOFU db corruption detected.\n"
 msgstr "Wykryto uszkodzenie bazy danych TOFU.\n"
 
 #, c-format
-msgid "resetting keydb: %s\n"
-msgstr "resetowanie bazy danych kluczy: %s\n"
-
-#, c-format
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "błąd ustawiania polityki powiądań TOFU na %s\n"
-
-#, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "błąd zmiany polityki TOFU: %s\n"
 
@@ -5924,22 +5912,8 @@ msgstr "%s: Sprawdzono 0~podpisów i zaszyfrowano 0~wiadomości."
 msgid "%s: Verified 0 signatures."
 msgstr "%s Sprawdzono 0 podpisów."
 
-#, c-format
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "%s: Sprawdzono %ld~podpis przez %s."
-msgstr[1] "%s: Sprawdzono %ld~podpisy przez %s."
-msgstr[2] "%s: Sprawdzono %ld~podpisów przez %s."
-
 msgid "Encrypted 0 messages."
 msgstr "Zaszyfrowano 0 wiadomości."
-
-#, c-format
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "Zaszyfrowano %ld~wiadomość przez %s."
-msgstr[1] "Zaszyfrowano %ld~wiadomości przez %s."
-msgstr[2] "Zaszyfrowano %ld~wiadomości przez %s."
 
 #, c-format
 msgid "(policy: %s)"
@@ -6011,11 +5985,6 @@ msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 "OSTRZEŻENIE: szyfrowanie kluczem %s, który nie ma unieważnionych "
 "identyfikatorów użytkownika\n"
-
-#, c-format
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr ""
-"błąd ustawiania polityki dla klucza %s, identyfikator użytkownika ,,%s'': %s"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -8338,16 +8307,16 @@ msgid "OCSP responder at '%s' status: %s\n"
 msgstr "status respondera OCSP pod ,,%s'': %s\n"
 
 #, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr "nie udało się ustanowić kontekstu haszowania dla OCSP: %s\n"
+
+#, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "liczenie skrótu odpowiedzi OCSP dla ,,%s'' nie powiodło się: %s\n"
 
 #, c-format
 msgid "not signed by a default OCSP signer's certificate"
 msgstr "nie podpisane domyślnym certyfikatem podpisującego OCSP"
-
-#, c-format
-msgid "only SHA-1 is supported for OCSP responses\n"
-msgstr "dla odpowiedzi OCSP obsługiwane jest tylko SHA-1\n"
 
 #, c-format
 msgid "allocating list item failed: %s\n"
@@ -8397,10 +8366,6 @@ msgstr "użycie domyślnego respondera OCSP ,,%s''\n"
 #, c-format
 msgid "using OCSP responder '%s'\n"
 msgstr "użycie respondera OCSP ,,%s''\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr "nie udało się ustanowić kontekstu haszowania dla OCSP: %s\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8712,6 +8677,16 @@ msgstr "Wpisywanie hasła"
 msgid "Component not suitable for launching"
 msgstr "Komponent nie nadaje się do uruchomienia"
 
+#, fuzzy, c-format
+#| msgid "External verification of component %s failed"
+msgid "Configuration file of component %s is broken\n"
+msgstr "Zewnętrzna weryfikacja komponentu %s nie powiodła się"
+
+#, fuzzy, c-format
+#| msgid "Note: Use the command \"%s\" to restart them.\n"
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Uwaga: do restartu ich należy użyć polecenia ,,%s''.\n"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "Zewnętrzna weryfikacja komponentu %s nie powiodła się"
@@ -8943,3 +8918,41 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr "brak znanyk serwerów kluczy (użyj opcji --keyserver)\n"
+
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "błąd tworzenia tabeli TOFU ,,ultimately_trusted_keys'': %s\n"
+
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "błąd tworzenia tabeli TOFU ,,encryptions'': %s\n"
+
+#~ msgid "adding column effective_policy to bindings DB: %s\n"
+#~ msgstr "dodawanie kolumny effective_policy do bazy danych powiązań: %s\n"
+
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "resetowanie bazy danych kluczy: %s\n"
+
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "błąd ustawiania polityki powiądań TOFU na %s\n"
+
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "%s: Sprawdzono %ld~podpis przez %s."
+#~ msgstr[1] "%s: Sprawdzono %ld~podpisy przez %s."
+#~ msgstr[2] "%s: Sprawdzono %ld~podpisów przez %s."
+
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "Zaszyfrowano %ld~wiadomość przez %s."
+#~ msgstr[1] "Zaszyfrowano %ld~wiadomości przez %s."
+#~ msgstr[2] "Zaszyfrowano %ld~wiadomości przez %s."
+
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr ""
+#~ "błąd ustawiania polityki dla klucza %s, identyfikator użytkownika ,,%s'': "
+#~ "%s"
+
+#~ msgid "only SHA-1 is supported for OCSP responses\n"
+#~ msgstr "dla odpowiedzi OCSP obsługiwane jest tylko SHA-1\n"
