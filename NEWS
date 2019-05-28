@@ -1,6 +1,88 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.2.16:
+
+  * gpg,gpgsm: Fix deadlock on Windows due to a keybox sharing
+    violation.  [#4505]
+
+  * gpg: Allow deletion of subkeys with --delete-key.  This finally
+    makes the bang-suffix work as expected for that command.  [#4457]
+
+  * gpg: Replace SHA-1 by SHA-256 in self-signatures when updating
+    them with --quick-set-expire or --quick-set-primary-uid. [#4508]
+
+  * gpg: Improve the photo image viewer selection.  [#4334]
+
+  * gpg: Fix decryption with --use-embedded-filename.  [#4500]
+
+  * gpg: Remove hints on using the --keyserver option.  [#4512]
+
+  * gpg: Fix export of certain secret keys with comments.  [#4490]
+
+  * gpg: Reject too long user-ids in --quick-gen-key.  [#4532]
+
+  * gpg: Fix a double free in the best key selection code.  [#4462]
+
+  * gpg: Fix the key generation dialog for switching back from EdDSA
+    to ECDSA.
+
+  * gpg: Use AES-192 with SHA-384 to comply with RFC-6637.
+
+  * gpg: Use only the addrspec from the Signer's UID subpacket to
+    mitigate a problem with another implementation.
+
+  * gpg: Skip invalid packets during a keyring listing and sync
+    diagnostics with the output.
+
+  * gpgsm: Avoid confusing diagnostic when signing with the default
+    key.  [#4535]
+
+  * agent: Do not delete any secret key in --dry-run mode.
+
+  * agent: Fix failures on 64 bit big-endian boxes related to URIs in
+    a keyfile.  [#4501]
+
+  * agent: Stop scdaemon after a reload with disable-scdaemon newly
+    configured.  [#4326]
+
+  * dirmngr: Improve caching algorithm for WKD domains.
+
+  * dirmngr: Support other hash algorithms than SHA-1 for OCSP.  [#3966]
+
+  * gpgconf: Make --homedir work for --launch.  [#4496]
+
+  * gpgconf: Before --launch check for a valid config file.  [#4497]
+
+  * wkd: Do not import more than 5 keys from one WKD address.
+
+  * wkd: Accept keys which are stored in armored format in the
+    directory.
+
+  * The installer for Windows now comes with signed binaries.
+
+  Release-info: https://dev.gnupg.org/T4509
+  See-also: gnupg-announce/2019q2/000438.html
+
+  Changes also found in 2.2.15:
+
+  * sm: Fix --logger-fd and --status-fd on Windows for non-standard
+    file descriptors.
+
+  * sm: Allow decryption even if expired keys are configured.  [#4431]
+
+  * agent: Change command KEYINFO to print ssh fingerprints with other
+    hash algos.
+
+  * dirmngr: Fix build problems on Solaris due to the use of reserved
+    symbol names.  [#4420]
+
+  * wkd: New commands --print-wkd-hash and --print-wkd-url for
+    gpg-wks-client.
+
+  Release-info: https://dev.gnupg.org/T4434
+  See-also: gnupg-announce/2019q1/000436.html
+
   Changes also found in 2.2.14:
 
   * gpg: Allow import of PGP desktop exported secret keys.  Also avoid
@@ -487,6 +569,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
   Version 2.2.12 (2018-12-14)
   Version 2.2.13 (2019-02-12)
   Version 2.2.14 (2019-03-19)
+  Version 2.2.15 (2019-03-26)
+  Version 2.2.16 (2019-05-28)
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
