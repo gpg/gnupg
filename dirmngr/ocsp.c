@@ -116,10 +116,15 @@ read_response (estream_t fp, unsigned char **r_buffer, size_t *r_buflen)
 
 /* Construct an OCSP request, send it to the configured OCSP responder
    and parse the response. On success the OCSP context may be used to
-   further process the response. */
+   further process the response.  The signature value and the
+   production date are returned at R_SIGVAL and R_PRODUCED_AT; they
+   may be NULL or an empty string if not available.  A new hash
+   context is returned at R_MD.  */
 static gpg_error_t
-do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
-                 const char *url, ksba_cert_t cert, ksba_cert_t issuer_cert)
+do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp,
+                 const char *url, ksba_cert_t cert, ksba_cert_t issuer_cert,
+                 ksba_sexp_t *r_sigval, ksba_isotime_t r_produced_at,
+                 gcry_md_hd_t *r_md)
 {
   gpg_error_t err;
   unsigned char *request, *response;
@@ -131,6 +136,10 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
   char *free_this = NULL;
 
   (void)ctrl;
+
+  *r_sigval = NULL;
+  *r_produced_at = 0;
+  *r_md = NULL;
 
   if (dirmngr_use_tor ())
     {
@@ -263,6 +272,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
       xfree (free_this);
       return err;
     }
+  /* log_printhex (response, responselen, "ocsp response"); */
 
   err = ksba_ocsp_parse_response (ocsp, response, responselen,
                                   &response_status);
@@ -290,11 +300,34 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
     }
   if (response_status == KSBA_OCSP_RSPSTATUS_SUCCESS)
     {
+      int hash_algo;
+
       if (opt.verbose)
         log_info (_("OCSP responder at '%s' status: %s\n"), url, t);
 
+      /* Get the signature value now because we can all this fucntion
+       * only once.  */
+      *r_sigval = ksba_ocsp_get_sig_val (ocsp, r_produced_at);
+
+      hash_algo = hash_algo_from_sigval (*r_sigval);
+      if (!hash_algo)
+        {
+          if (opt.verbose)
+            log_info ("ocsp: using SHA-256 as fallback hash algo.\n");
+          hash_algo = GCRY_MD_SHA256;
+        }
+      err = gcry_md_open (r_md, hash_algo, 0);
+      if (err)
+        {
+          log_error (_("failed to establish a hashing context for OCSP: %s\n"),
+                     gpg_strerror (err));
+          goto leave;
+        }
+      if (DBG_HASHING)
+        gcry_md_debug (*r_md, "ocsp");
+
       err = ksba_ocsp_hash_response (ocsp, response, responselen,
-                                     HASH_FNC, md);
+                                     HASH_FNC, *r_md);
       if (err)
         log_error (_("hashing the OCSP response for '%s' failed: %s\n"),
                    url, gpg_strerror (err));
@@ -305,8 +338,17 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
       err = gpg_error (GPG_ERR_GENERAL);
     }
 
+ leave:
   xfree (response);
   xfree (free_this);
+  if (err)
+    {
+      xfree (*r_sigval);
+      *r_sigval = NULL;
+      *r_produced_at = 0;
+      gcry_md_close (*r_md);
+      *r_md = NULL;
+    }
   return err;
 }
 
@@ -391,7 +433,7 @@ check_signature_core (ctrl_t ctrl, ksba_cert_t cert, gcry_sexp_t s_sig,
 
   /* We simply ignore all errors. */
   gcry_sexp_release (s_pkey);
-  return -1;
+  return err;
 }
 
 
@@ -410,18 +452,27 @@ check_signature (ctrl_t ctrl,
   int algo, cert_idx;
   gcry_sexp_t s_hash;
   ksba_cert_t cert;
+  const char *s;
 
   /* Create a suitable S-expression with the hash value of our response. */
   gcry_md_final (md);
   algo = gcry_md_get_algo (md);
-  if (algo != GCRY_MD_SHA1 )
+  s = gcry_md_algo_name (algo);
+  if (algo && s && strlen (s) < 16)
     {
-      log_error (_("only SHA-1 is supported for OCSP responses\n"));
-      return gpg_error (GPG_ERR_DIGEST_ALGO);
+      char hashalgostr[16+1];
+      int i;
+
+      for (i=0; s[i]; i++)
+        hashalgostr[i] = ascii_tolower (s[i]);
+      hashalgostr[i] = 0;
+      err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
+                             hashalgostr,
+                             (int)gcry_md_get_algo_dlen (algo),
+                             gcry_md_read (md, algo));
     }
-  err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash sha1 %b))",
-                         gcry_md_get_algo_dlen (algo),
-                         gcry_md_read (md, algo));
+  else
+    err = gpg_error (GPG_ERR_DIGEST_ALGO);
   if (err)
     {
       log_error (_("creating S-expression failed: %s\n"), gcry_strerror (err));
@@ -465,6 +516,7 @@ check_signature (ctrl_t ctrl,
         {
           cert_ref_t cref;
 
+          /* dump_cert ("from ocsp response", cert); */
           cref = xtrymalloc (sizeof *cref);
           if (!cref)
             log_error (_("allocating list item failed: %s\n"),
@@ -500,8 +552,6 @@ check_signature (ctrl_t ctrl,
             }
           log_printf ("not found\n");
         }
-      ksba_free (name);
-      ksba_free (keyid);
 
       if (cert)
         {
@@ -510,10 +560,24 @@ check_signature (ctrl_t ctrl,
           ksba_cert_release (cert);
           if (!err)
             {
+              ksba_free (name);
+              ksba_free (keyid);
               gcry_sexp_release (s_hash);
               return 0; /* Successfully verified the signature. */
             }
+          log_error ("responder certificate ");
+          if (name)
+            log_printf ("'/%s' ", name);
+          if (keyid)
+            {
+              log_printf ("{");
+              dump_serial (keyid);
+              log_printf ("} ");
+            }
+          log_printf ("did not verify: %s\n", gpg_strerror (err));
         }
+      ksba_free (name);
+      ksba_free (keyid);
     }
 
   gcry_sexp_release (s_hash);
@@ -588,8 +652,6 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
       goto leave;
     }
 
-
-
   /* Figure out the OCSP responder to use.
      1. Try to get the reponder from the certificate.
         We do only take http and https style URIs into account.
@@ -646,14 +708,8 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
     }
 
   /* Ask the OCSP responder. */
-  err = gcry_md_open (&md, GCRY_MD_SHA1, 0);
-  if (err)
-    {
-      log_error (_("failed to establish a hashing context for OCSP: %s\n"),
-                 gpg_strerror (err));
-      goto leave;
-    }
-  err = do_ocsp_request (ctrl, ocsp, md, url, cert, issuer_cert);
+  err = do_ocsp_request (ctrl, ocsp, url, cert, issuer_cert,
+                         &sigval, produced_at, &md);
   if (err)
     goto leave;
 
@@ -685,8 +741,7 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
     }
 
   /* We got a useful answer, check that the answer has a valid signature. */
-  sigval = ksba_ocsp_get_sig_val (ocsp, produced_at);
-  if (!sigval || !*produced_at)
+  if (!sigval || !*produced_at || !md)
     {
       err = gpg_error (GPG_ERR_INV_OBJ);
       goto leave;
