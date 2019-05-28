@@ -44,16 +44,21 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
       int i;
 
       s = gcry_md_algo_name (algo);
-      if (s && strlen (s) < 16)
+      if (!s || strlen (s) >= 16)
+        {
+          hash = NULL;
+          rc = gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
+      else
 	{
-	  for (i=0; i < strlen (s); i++)
-	    tmp[i] = tolower (s[i]);
+	  for (i=0; s[i]; i++)
+	    tmp[i] = ascii_tolower (s[i]);
 	  tmp[i] = '\0';
-	}
 
-      rc = gcry_sexp_build (&hash, NULL,
-			    "(data (flags pkcs1) (hash %s %b))",
-			    tmp, (int)mdlen, md);
+          rc = gcry_sexp_build (&hash, NULL,
+                                "(data (flags pkcs1) (hash %s %b))",
+                                tmp, (int)mdlen, md);
+	}
     }
   else
     {
