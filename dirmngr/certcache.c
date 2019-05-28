@@ -1471,6 +1471,9 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
                 {
                   ksba_cert_ref (ci->cert);
                   release_cache_lock ();
+                  if (DBG_LOOKUP)
+                    log_debug ("%s: certificate found in the cache"
+                               " via ocsp_certs\n", __func__);
                   return ci->cert; /* We use this certificate. */
                 }
       release_cache_lock ();
@@ -1478,7 +1481,7 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
         log_debug ("find_cert_bysubject: certificate not in ocsp_certs\n");
     }
 
-  /* No check whether the certificate is cached.  */
+  /* Now check whether the certificate is cached.  */
   for (seq=0; (cert = get_cert_bysubject (subject_dn, seq)); seq++)
     {
       if (!keyid)
@@ -1487,6 +1490,9 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
           && !cmp_simple_canon_sexp (keyid, subj))
         {
           xfree (subj);
+          if (DBG_LOOKUP)
+            log_debug ("%s: certificate found in the cache"
+                       " via subject DN\n", __func__);
           break; /* Found matching cert. */
         }
       xfree (subj);
@@ -1494,6 +1500,34 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
     }
   if (cert)
     return cert; /* Done.  */
+
+  /* If we do not have a subject DN but have a keyid, try to locate it
+   * by keyid.  */
+  if (!subject_dn && keyid)
+    {
+      int i;
+      cert_item_t ci;
+      ksba_sexp_t ski;
+
+      acquire_cache_read_lock ();
+      for (i=0; i < 256; i++)
+        for (ci=cert_cache[i]; ci; ci = ci->next)
+          if (ci->cert && !ksba_cert_get_subj_key_id (ci->cert, NULL, &ski))
+            {
+              if (!cmp_simple_canon_sexp (keyid, ski))
+                {
+                  ksba_free (ski);
+                  ksba_cert_ref (ci->cert);
+                  release_cache_lock ();
+                  if (DBG_LOOKUP)
+                    log_debug ("%s: certificate found in the cache"
+                               " via ski\n", __func__);
+                  return ci->cert;
+                }
+              ksba_free (ski);
+            }
+      release_cache_lock ();
+    }
 
   if (DBG_LOOKUP)
     log_debug ("find_cert_bysubject: certificate not in cache\n");
