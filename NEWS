@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.16 (unreleased)
+Noteworthy changes in version 2.2.16 (2019-05-28)
 -------------------------------------------------
 
   * gpg,gpgsm: Fix deadlock on Windows due to a keybox sharing
@@ -46,6 +46,8 @@ Noteworthy changes in version 2.2.16 (unreleased)
 
   * dirmngr: Improve caching algorithm for WKD domains.
 
+  * dirmngr: Support other hash algorithms than SHA-1 for OCSP.  [#3966]
+
   * gpgconf: Make --homedir work for --launch.  [#4496]
 
   * gpgconf: Before --launch check for a valid config file.  [#4497]
@@ -58,6 +60,7 @@ Noteworthy changes in version 2.2.16 (unreleased)
   * The installer for Windows now comes with signed binaries.
 
   Release-info: https://dev.gnupg.org/T4509
+  See-also: gnupg-announce/2019q2/000438.html
 
 
 Noteworthy changes in version 2.2.15 (2019-03-26)
