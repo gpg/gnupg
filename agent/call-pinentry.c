@@ -1454,55 +1454,6 @@ agent_get_confirmation (ctrl_t ctrl,
 
 
 
-/* Pop up the PINentry, display the text DESC and a button with the
-   text OK_BTN (which may be NULL to use the default of "OK") and wait
-   for the user to hit this button.  The return value is not
-   relevant.  */
-int
-agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
-{
-  int rc;
-  char line[ASSUAN_LINELENGTH];
-
-  if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
-    return gpg_error (GPG_ERR_CANCELED);
-
-  rc = start_pinentry (ctrl);
-  if (rc)
-    return rc;
-
-  if (desc)
-    build_cmd_setdesc (line, DIM(line), desc);
-  else
-    snprintf (line, DIM(line), "RESET");
-  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  /* Most pinentries out in the wild return the old Assuan error code
-     for canceled which gets translated to an assuan Cancel error and
-     not to the code for a user cancel.  Fix this here. */
-  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
-    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
-
-  if (rc)
-    return unlock_pinentry (ctrl, rc);
-
-  if (ok_btn)
-    {
-      snprintf (line, DIM(line), "SETOK %s", ok_btn);
-      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL,
-                            NULL, NULL, NULL);
-      if (rc)
-        return unlock_pinentry (ctrl, rc);
-    }
-
-  rc = assuan_transact (entry_ctx, "CONFIRM --one-button", NULL, NULL, NULL,
-                        NULL, NULL, NULL);
-  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
-    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
-
-  return unlock_pinentry (ctrl, rc);
-}
-
-
 /* The thread running the popup message. */
 static void *
 popup_message_thread (void *arg)

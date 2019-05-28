@@ -148,27 +148,10 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
 
 
 static int
-take_this_one_anyway2 (ctrl_t ctrl, const char *desc, const char *anyway_btn)
+take_this_one_anyway (ctrl_t ctrl, const char *desc, const char *anyway_btn)
 {
-  gpg_error_t err;
-
-  if (opt.enforce_passphrase_constraints)
-    {
-      err = agent_show_message (ctrl, desc, L_("Enter new passphrase"));
-      if (!err)
-        err = gpg_error (GPG_ERR_CANCELED);
-    }
-  else
-    err = agent_get_confirmation (ctrl, desc,
-                                  anyway_btn, L_("Enter new passphrase"), 0);
-  return err;
-}
-
-
-static int
-take_this_one_anyway (ctrl_t ctrl, const char *desc)
-{
-  return take_this_one_anyway2 (ctrl, desc, L_("Take this one anyway"));
+  return agent_get_confirmation (ctrl, desc,
+                                 anyway_btn, L_("Enter new passphrase"), 0);
 }
 
 
@@ -211,8 +194,8 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
 	  if (opt.enforce_passphrase_constraints)
 	    *failed_constraint = xstrdup (desc);
 	  else
-	    err = take_this_one_anyway2 (ctrl, desc,
-					 L_("Yes, protection is not needed"));
+	    err = take_this_one_anyway (ctrl, desc,
+					L_("Yes, protection is not needed"));
 	}
 
       goto leave;
@@ -310,7 +293,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
 	*failed_constraint = msg;
       else
 	{
-	  err = take_this_one_anyway (ctrl, msg);
+	  err = take_this_one_anyway (ctrl, msg, L_("Take this one anyway"));
 	  xfree (msg);
 	}
     }
