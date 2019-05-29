@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-02-14 17:41+0100\n"
+"PO-Revision-Date: 2019-05-29 17:41+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -1577,16 +1577,16 @@ msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "не могу выполнить в пакетном режиме без \"--yes\"\n"
 
 msgid "Note: The public primary key and all its subkeys will be deleted.\n"
-msgstr ""
+msgstr "Замечание: Будут удалены открытый первичный ключ и все его подключи.\n"
 
 msgid "Note: Only the shown public subkey will be deleted.\n"
-msgstr ""
+msgstr "Замечание: Будет удален только показанный открытый подключ.\n"
 
 msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
-msgstr ""
+msgstr "Замечание: Будет удалена только секретная часть показанного первичного ключа.\n"
 
 msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
-msgstr ""
+msgstr "Замечание: Будет удалена только секретная часть показанного подключа.\n"
 
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Удалить данный ключ из таблицы? (y/N) "
@@ -8656,15 +8656,13 @@ msgstr "Ввод фраз-паролей"
 msgid "Component not suitable for launching"
 msgstr "Компонент не подходит для запуска"
 
-#, fuzzy, c-format
-#| msgid "External verification of component %s failed"
+#, c-format
 msgid "Configuration file of component %s is broken\n"
-msgstr "Внешняя проверка компонента %s не прошла"
+msgstr "Файл конфигурации компонента %s неисправен\n"
 
-#, fuzzy, c-format
-#| msgid "Note: Use the command \"%s\" to restart them.\n"
+#, c-format
 msgid "Note: Use the command \"%s%s\" to get details.\n"
-msgstr "Замечание: Для их перезагрузки воспользуйтесь командой \"%s\".\n"
+msgstr "Замечание: Подробности можно вывести командой \"%s%s\".\n"
 
 #, c-format
 msgid "External verification of component %s failed"
