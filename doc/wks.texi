@@ -61,7 +61,7 @@ Service provider.  This is usuallay done to upload a key into a Web
 Key Directory.
 
 With the @option{--supported} command the caller can test whether a
-site supports the Web Key Service.  The argument is an arbitray
+site supports the Web Key Service.  The argument is an arbitrary
 address in the to be tested domain. For example
 @file{foo@@example.net}.  The command returns success if the Web Key
 Service is supported.  The operation is silent; to get diagnostic
