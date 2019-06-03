@@ -2887,7 +2887,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
                 {
                   cmdopt = line;
                   if (!command_has_option (cmd, cmdopt))
-                    rc = gpg_error (GPG_ERR_GENERAL);
+                    rc = gpg_error (GPG_ERR_FALSE);
                 }
             }
         }
@@ -2901,7 +2901,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "restricted"))
     {
-      rc = ctrl->restricted? 0 : gpg_error (GPG_ERR_GENERAL);
+      rc = ctrl->restricted? 0 : gpg_error (GPG_ERR_FALSE);
     }
   else if (ctrl->restricted)
     {
@@ -2935,7 +2935,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "scd_running"))
     {
-      rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_GENERAL);
+      rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_FALSE);
     }
   else if (!strcmp (line, "std_env_names"))
     {
