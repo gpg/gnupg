@@ -21,6 +21,7 @@ GnuPG comes with a couple of smaller tools:
 * gpgparsemail::          Parse a mail message into an annotated format
 * symcryptrun::           Call a simple symmetric encryption tool.
 * gpgtar::                Encrypt or sign files into an archive.
+* gpg-check-pattern::     Check a passphrase on stdin against the patternfile.
 @end menu
 
 @c
@@ -2108,5 +2109,52 @@ gpgtar --list-archive test1
 @ifset isman
 @command{gpg}(1),
 @command{tar}(1),
+@end ifset
+@include see-also-note.texi
+
+@c
+@c  GPG-CHECK-PATTERN
+@c
+@manpage gpg-check-pattern.1
+@node gpg-check-pattern
+@section Check a passphrase on stdin against the patternfile
+@ifset manverb
+.B gpg-check-pattern
+\- Check a passphrase on stdin against the patternfile
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B gpg\-check\-pattern
+.RI [ options ]
+.I patternfile
+@end ifset
+
+@mansect description
+@command{gpg-check-pattern} checks a passphrase given on stdin against
+a specified pattern file.
+
+@mansect options
+@noindent
+
+@table @gnupgtabopt
+
+@item --verbose
+@opindex verbose
+Enable extra informational output.
+
+@item --check
+@opindex check
+Run only a syntax check on the patternfile.
+
+@item --null
+@opindex null
+Input is expected to be null delimited.
+
+@end table
+
+@mansect see also
+@ifset isman
+@command{gpg}(1),
 @end ifset
 @include see-also-note.texi

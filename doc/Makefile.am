@@ -95,7 +95,7 @@ myman_pages   = gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 gpgtar.1 \
 		applygnupgdefaults.8 gpg-wks-client.1 gpg-wks-server.1 \
-		dirmngr-client.1 gpg-card.1
+		dirmngr-client.1 gpg-card.1 gpg-check-pattern.1
 if USE_GPG2_HACK
 myman_pages += gpg2.1 gpgv2.1
 else
