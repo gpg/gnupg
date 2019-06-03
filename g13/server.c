@@ -530,7 +530,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
                 {
                   cmdopt = line;
                   if (!command_has_option (cmd, cmdopt))
-                    err = gpg_error (GPG_ERR_GENERAL);
+                    err = gpg_error (GPG_ERR_FALSE);
                 }
             }
         }
