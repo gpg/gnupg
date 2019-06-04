@@ -5231,6 +5231,7 @@ g10_exit( int rc )
   if (opt.debug)
     gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
 
+  gnupg_block_all_signals ();
   emergency_cleanup ();
 
   rc = rc? rc : log_get_errorcount(0)? 2 : g10_errors_seen? 1 : 0;
