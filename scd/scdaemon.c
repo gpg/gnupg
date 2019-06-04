@@ -89,7 +89,6 @@ enum cmd_and_opt_values
   oDaemon,
   oBatch,
   oReaderPort,
-  oCardTimeout,
   octapiDriver,
   opcscDriver,
   oDisableCCID,
@@ -144,8 +143,6 @@ static ARGPARSE_OPTS opts[] = {
                                     "@"
 #endif
                 /* end --disable-ccid */),
-  ARGPARSE_s_u (oCardTimeout, "card-timeout",
-                N_("|N|disconnect the card after N seconds of inactivity")),
 
   ARGPARSE_s_n (oDisablePinpad, "disable-pinpad",
                 N_("do not use a reader's pinpad")),
@@ -613,8 +610,6 @@ main (int argc, char **argv )
         case oAllowAdmin: /* Dummy because allow is now the default.  */
           break;
         case oDenyAdmin: opt.allow_admin = 0; break;
-
-        case oCardTimeout: opt.card_timeout = pargs.r.ret_ulong; break;
 
         case oDisableApplication:
           add_to_strlist (&opt.disabled_applications, pargs.r.ret_str);

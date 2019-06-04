@@ -286,20 +286,6 @@ To get a list of available CCID readers you may use this command:
 @end smallexample
 @end cartouche
 
-@item --card-timeout @var{n}
-@opindex card-timeout
-If @var{n} is not 0 and no client is actively using the card, the card
-will be powered down after @var{n} seconds.  Powering down the card
-avoids a potential risk of damaging a card when used with certain
-cheap readers.  This also allows applications that are not aware of
-Scdaemon to access the card.  The disadvantage of using a card timeout
-is that accessing the card takes longer and that the user needs to
-enter the PIN again after the next power up.
-
-Note that with the current version of Scdaemon the card is powered
-down immediately at the next timer tick for any value of @var{n} other
-than 0.
-
 @item --enable-pinpad-varlen
 @opindex enable-pinpad-varlen
 Please specify this option when the card reader supports variable
