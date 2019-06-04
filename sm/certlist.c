@@ -352,19 +352,14 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                 {
                   /* There might be another certificate with the
                      correct usage, so we try again */
-                  if (!wrong_usage)
-                    { /* save the first match */
-                      wrong_usage = rc;
-                      ksba_cert_release (cert);
-                      cert = NULL;
-                      goto get_next;
-                    }
-                  else if (same_subject_issuer (first_subject, first_issuer,
-                                                cert))
+                  if (!wrong_usage
+                      || same_subject_issuer (first_subject, first_issuer,cert))
                     {
-                      wrong_usage = rc;
+                      if (!wrong_usage)
+                        wrong_usage = rc; /* save error of the first match */
                       ksba_cert_release (cert);
                       cert = NULL;
+                      log_info (_("looking for another certificate\n"));
                       goto get_next;
                     }
                   else
