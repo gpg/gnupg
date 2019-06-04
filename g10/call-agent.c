@@ -41,12 +41,20 @@
 #include "../common/status.h"
 #include "../common/shareddefs.h"
 #include "../common/host2net.h"
+#include "../common/ttyio.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
 
 
 static assuan_context_t agent_ctx = NULL;
 static int did_early_card_test;
+
+struct confirm_parm_s
+{
+  char *desc;
+  char *ok;
+  char *notok;
+};
 
 struct default_inq_parm_s
 {
@@ -57,6 +65,7 @@ struct default_inq_parm_s
     u32 *mainkeyid;
     int pubkey_algo;
   } keyinfo;
+  struct confirm_parm_s *confirm;
 };
 
 struct cipher_parm_s
@@ -136,6 +145,7 @@ default_inq_cb (void *opaque, const char *line)
 {
   gpg_error_t err = 0;
   struct default_inq_parm_s *parm = opaque;
+  const char *s;
 
   if (has_leading_keyword (line, "PINENTRY_LAUNCHED"))
     {
@@ -151,7 +161,7 @@ default_inq_cb (void *opaque, const char *line)
     {
       if (have_static_passphrase ())
         {
-          const char *s = get_static_passphrase ();
+          s = get_static_passphrase ();
           err = assuan_send_data (parm->ctx, s, strlen (s));
         }
       else
@@ -174,6 +184,27 @@ default_inq_cb (void *opaque, const char *line)
           else
             err = assuan_send_data (parm->ctx, pw, strlen (pw));
           xfree (pw);
+        }
+    }
+  else if ((s = has_leading_keyword (line, "CONFIRM"))
+           && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK
+           && parm->confirm)
+    {
+      int ask = atoi (s);
+      int yes;
+
+      if (ask)
+        {
+          yes = cpr_get_answer_is_yes (NULL, parm->confirm->desc);
+          if (yes)
+            err = assuan_send_data (parm->ctx, NULL, 0);
+          else
+            err = gpg_error (GPG_ERR_NOT_CONFIRMED);
+        }
+      else
+        {
+          tty_printf ("%s", parm->confirm->desc);
+          err = assuan_send_data (parm->ctx, NULL, 0);
         }
     }
   else
@@ -2512,6 +2543,31 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
 }
 
 
+/* Status callback for handling confirmation.  */
+static gpg_error_t
+confirm_status_cb (void *opaque, const char *line)
+{
+  struct confirm_parm_s *parm = opaque;
+  const char *s;
+
+  if ((s = has_leading_keyword (line, "SETDESC")))
+    {
+      xfree (parm->desc);
+      parm->desc = unescape_status_string (s);
+    }
+  else if ((s = has_leading_keyword (line, "SETOK")))
+    {
+      xfree (parm->ok);
+      parm->ok = unescape_status_string (s);
+    }
+  else if ((s = has_leading_keyword (line, "SETNOTOK")))
+    {
+      xfree (parm->notok);
+      parm->notok = unescape_status_string (s);
+    }
+
+  return 0;
+}
 
 /* Ask the agent to delete the key identified by HEXKEYGRIP.  If DESC
    is not NULL, display DESC instead of the default description
@@ -2524,9 +2580,12 @@ agent_delete_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
   struct default_inq_parm_s dfltparm;
+  struct confirm_parm_s confirm_parm;
 
+  memset (&confirm_parm, 0, sizeof confirm_parm);
   memset (&dfltparm, 0, sizeof dfltparm);
   dfltparm.ctrl = ctrl;
+  dfltparm.confirm = &confirm_parm;
 
   err = start_agent (ctrl, 0);
   if (err)
@@ -2548,7 +2607,10 @@ agent_delete_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
             force? " --force":"", hexkeygrip);
   err = assuan_transact (agent_ctx, line, NULL, NULL,
                          default_inq_cb, &dfltparm,
-                         NULL, NULL);
+                         confirm_status_cb, &confirm_parm);
+  xfree (confirm_parm.desc);
+  xfree (confirm_parm.ok);
+  xfree (confirm_parm.notok);
   return err;
 }
 

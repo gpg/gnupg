@@ -3680,3 +3680,26 @@ pinentry_loopback(ctrl_t ctrl, const char *keyword,
   assuan_end_confidential (ctx);
   return rc;
 }
+
+/* Helper for the pinentry loopback mode to ask confirmation
+   or just to show message.  */
+gpg_error_t
+pinentry_loopback_confirm (ctrl_t ctrl, const char *desc,
+                           int ask_confirmation,
+                           const char *ok, const char *notok)
+{
+  gpg_error_t err = 0;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+  if (desc)
+    err = print_assuan_status (ctx, "SETDESC", "%s", desc);
+  if (!err && ok)
+    err = print_assuan_status (ctx, "SETOK", "%s", ok);
+  if (!err && notok)
+    err = print_assuan_status (ctx, "SETNOTOK", "%s", notok);
+
+  if (!err)
+    err = assuan_inquire (ctx, ask_confirmation ? "CONFIRM 1" : "CONFIRM 0",
+                          NULL, NULL, 0);
+  return err;
+}
