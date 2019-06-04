@@ -438,7 +438,7 @@ start_pinentry (ctrl_t ctrl)
         return unlock_pinentry (ctrl, rc);
     }
   value = session_env_getenv (ctrl->session_env, "TERM");
-  if (value)
+  if (value && *value)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s", value) < 0 )
