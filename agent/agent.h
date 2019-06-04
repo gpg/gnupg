@@ -398,8 +398,11 @@ void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
 void start_command_handler (ctrl_t, gnupg_fd_t, gnupg_fd_t);
 gpg_error_t pinentry_loopback (ctrl_t, const char *keyword,
-	                       unsigned char **buffer, size_t *size,
-			       size_t max_length);
+                               unsigned char **buffer, size_t *size,
+                               size_t max_length);
+gpg_error_t pinentry_loopback_confirm (ctrl_t ctrl, const char *desc,
+                                       int ask_confirmation,
+                                       const char *ok, const char *notok);
 
 #ifdef HAVE_W32_SYSTEM
 int serve_mmapped_ssh_request (ctrl_t ctrl,
