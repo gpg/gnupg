@@ -286,6 +286,12 @@ To get a list of available CCID readers you may use this command:
 @end smallexample
 @end cartouche
 
+@item --card-timeout @var{n}
+@opindex card-timeout
+This option is deprecated.  In GnuPG 2.0, it used to be used for
+DISCONNECT command to control timing issue.  Since DISCONNECT command
+works synchronously, it has no effect.
+
 @item --enable-pinpad-varlen
 @opindex enable-pinpad-varlen
 Please specify this option when the card reader supports variable
