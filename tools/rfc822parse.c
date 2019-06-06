@@ -420,7 +420,9 @@ transition_to_body (rfc822parse_t msg)
               s = rfc822parse_query_parameter (ctx, "boundary", 0);
               if (s)
                 {
-                  assert (!msg->current_part->boundary);
+                  if (msg->current_part->boundary)
+                    return -1;
+
                   msg->current_part->boundary = malloc (strlen (s) + 1);
                   if (msg->current_part->boundary)
                     {
@@ -437,7 +439,8 @@ transition_to_body (rfc822parse_t msg)
                           return -1;
                         }
                       rc = do_callback (msg, RFC822PARSE_LEVEL_DOWN);
-                      assert (!msg->current_part->down);
+                      if (msg->current_part->down)
+                        return -1;
                       msg->current_part->down = part;
                       msg->current_part = part;
                       msg->in_preamble = 1;
@@ -458,8 +461,9 @@ transition_to_header (rfc822parse_t msg)
 {
   part_t part;
 
-  assert (msg->current_part);
-  assert (!msg->current_part->right);
+  if (!(msg->current_part
+        && !msg->current_part->right))
+    return -1;
 
   part = new_part ();
   if (!part)
@@ -476,7 +480,9 @@ insert_header (rfc822parse_t msg, const unsigned char *line, size_t length)
 {
   HDR_LINE hdr;
 
-  assert (msg->current_part);
+  if (!msg->current_part)
+    return -1;
+
   if (!length)
     {
       msg->in_body = 1;
