@@ -654,7 +654,7 @@ parse_message (FILE *fp)
 
 
       if (rfc822parse_insert (msg, line, length))
-	die ("parser failed");
+	die ("parser failed: %s", strerror (errno));
 
       if (info.hashing)
         {
