@@ -1175,6 +1175,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   /* FIXME: I am not sure whey we allow a downgrade for hkp requests.
    * Needs at least an explanation here..  */
 
+ once_more:
   err = http_session_new (&session, httphost,
                           ((ctrl->http_no_crl? HTTP_FLAG_NO_CRL : 0)
                            | HTTP_FLAG_TRUST_DEF),
@@ -1184,7 +1185,6 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   http_session_set_log_cb (session, cert_log_cb);
   http_session_set_timeout (session, ctrl->timeout);
 
- once_more:
   err = http_open (&http,
                    post_cb? HTTP_REQ_POST : HTTP_REQ_GET,
                    request,
@@ -1264,6 +1264,8 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
         request = request_buffer;
         http_close (http, 0);
         http = NULL;
+        http_session_release (session);
+        session = NULL;
       }
       goto once_more;
 
