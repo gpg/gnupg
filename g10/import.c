@@ -3536,6 +3536,7 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
                   /* It's valid, so is it newer? */
                   if (sig->timestamp >= rsdate)
                     {
+                      knode->flag |= NODE_GOOD_SELFSIG; /* Subkey is valid.  */
                       if (rsnode)
                         {
                           /* Delete the last revocation sig since
