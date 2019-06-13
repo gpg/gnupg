@@ -78,6 +78,7 @@ XTESTS = \
 	gpgv-forged-keyring.scm \
 	armor.scm \
 	import.scm \
+	import-incomplete.scm \
 	import-revocation-certificate.scm \
 	ecc.scm \
 	4gb-packet.scm \
