@@ -1788,7 +1788,6 @@ import_one_real (ctrl_t ctrl,
   size_t an;
   char pkstrbuf[PUBKEY_STRING_SIZE];
   int merge_keys_done = 0;
-  int any_filter = 0;
   KEYDB_HANDLE hd = NULL;
 
   if (r_valid)
@@ -1823,14 +1822,6 @@ import_one_real (ctrl_t ctrl,
                            uidnode->pkt->pkt.user_id->name,
                            uidnode->pkt->pkt.user_id->len );
       log_printf ("\n");
-    }
-
-
-  if (!uidnode )
-    {
-      if (!silent)
-        log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
-      return 0;
     }
 
   if (screener && screener (keyblock, screener_arg))
@@ -1907,17 +1898,10 @@ import_one_real (ctrl_t ctrl,
 	  }
     }
 
-  if (!delete_inv_parts (ctrl, keyblock, keyid, options ) )
-    {
-      if (!silent)
-        {
-          log_error( _("key %s: no valid user IDs\n"), keystr_from_pk(pk));
-          if (!opt.quiet )
-            log_info(_("this may be caused by a missing self-signature\n"));
-        }
-      stats->no_user_id++;
-      return 0;
-    }
+  /* Delete invalid parts, and note if we have any valid ones left.
+   * We will later abort import if this key is new but contains
+   * no valid uids.  */
+  delete_inv_parts (ctrl, keyblock, keyid, options);
 
   /* Get rid of deleted nodes.  */
   commit_kbnode (&keyblock);
@@ -1927,24 +1911,11 @@ import_one_real (ctrl_t ctrl,
     {
       apply_keep_uid_filter (ctrl, keyblock, import_filter.keep_uid);
       commit_kbnode (&keyblock);
-      any_filter = 1;
     }
   if (import_filter.drop_sig)
     {
       apply_drop_sig_filter (ctrl, keyblock, import_filter.drop_sig);
       commit_kbnode (&keyblock);
-      any_filter = 1;
-    }
-
-  /* If we ran any filter we need to check that at least one user id
-   * is left in the keyring.  Note that we do not use log_error in
-   * this case. */
-  if (any_filter && !any_uid_left (keyblock))
-    {
-      if (!opt.quiet )
-        log_info ( _("key %s: no valid user IDs\n"), keystr_from_pk (pk));
-      stats->no_user_id++;
-      return 0;
     }
 
   /* The keyblock is valid and ready for real import.  */
@@ -2001,6 +1972,13 @@ import_one_real (ctrl_t ctrl,
         log_info( _("key %s: new key - skipped\n"), keystr(keyid));
       err = 0;
       stats->skipped_new_keys++;
+    }
+  else if (err && !any_uid_left (keyblock))
+    {
+      if (!silent)
+        log_info( _("key %s: new key but contains no user ID - skipped\n"), keystr(keyid));
+      err = 0;
+      stats->no_user_id++;
     }
   else if (err)  /* Insert this key. */
     {
