@@ -3300,6 +3300,94 @@ do_writecert (app_t app, ctrl_t ctrl,
 }
 
 
+/* Process the various keygrip based info requests.  */
+static gpg_error_t
+do_with_keygrip (app_t app, ctrl_t ctrl, int action,
+                 const char *want_keygripstr)
+{
+  gpg_error_t err;
+  char *keygripstr = NULL;
+  char *serialno = NULL;
+  char idbuf[20];
+  int data = 0;
+  int i, tag, dummy_got_cert;
+
+  /* First a quick check for valid parameters.  */
+  switch (action)
+    {
+    case KEYGRIP_ACTION_LOOKUP:
+      if (!want_keygripstr)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      break;
+    case KEYGRIP_ACTION_SEND_DATA:
+      data = 1;
+      break;
+    case KEYGRIP_ACTION_WRITE_STATUS:
+      break;
+    default:
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  /* Allocate the s/n string if needed.  */
+  if (action != KEYGRIP_ACTION_LOOKUP)
+    {
+      serialno = app_get_serialno (app);
+      if (!serialno)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  for (i = 0; (tag = data_objects[i].tag); i++)
+    {
+      if (!data_objects[i].keypair)
+        continue;
+
+      xfree (keygripstr);
+      if (get_keygrip_by_tag (app, tag, &keygripstr, &dummy_got_cert))
+        continue;
+
+      if (action == KEYGRIP_ACTION_LOOKUP)
+        {
+          if (!strcmp (keygripstr, want_keygripstr))
+            {
+              err = 0; /* Found */
+              goto leave;
+            }
+        }
+      else if (!want_keygripstr || !strcmp (keygripstr, want_keygripstr))
+        {
+          snprintf (idbuf, sizeof idbuf, "PIV.%s", data_objects[i].keyref);
+          send_keyinfo (ctrl, data, keygripstr, serialno, idbuf);
+          if (want_keygripstr)
+            {
+              err = 0; /* Found */
+              goto leave;
+            }
+        }
+    }
+
+  /* Return an error so that the dispatcher keeps on looping over the
+   * other applications.  For clarity we use a different error code
+   * when listing all keys.  Note that in lookup mode WANT_KEYGRIPSTR
+   * is not NULL.  */
+  if (!want_keygripstr)
+    err = gpg_error (GPG_ERR_TRUE);
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+
+ leave:
+  xfree (keygripstr);
+  xfree (serialno);
+  return err;
+}
+
+
 /* Select the PIV application on the card in SLOT.  This function must
  * be used before any other PIV application functions. */
 gpg_error_t
@@ -3398,6 +3486,7 @@ app_select_piv (app_t app)
   app->fnc.decipher = do_decipher;
   app->fnc.change_pin = do_change_chv;
   app->fnc.check_pin = do_check_chv;
+  app->fnc.with_keygrip = do_with_keygrip;
 
 
 leave:

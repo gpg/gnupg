@@ -1874,6 +1874,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   return 0;
 }
 
+
+/* Send a keyinfo string as used by the KEYGRIP_ACTION_SEND_DATA.  If
+ * DATA is true the string is emitted as a data line, else as a status
+ * line.  */
 void
 send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
               const char *serialno, const char *idstr)
@@ -1895,6 +1899,8 @@ send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
   xfree (string);
   return;
 }
+
+
 
 /* Tell the assuan library about our commands */
 static int
