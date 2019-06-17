@@ -1731,7 +1731,8 @@ get_public_key (app_t app, int keyno)
       hexkeyid = fpr + 24;
 
       ret = gpgrt_asprintf
-        (&command, "gpg --list-keys --with-colons --with-key-data '%s'", fpr);
+        (&command, "%s --list-keys --with-colons --with-key-data '%s'",
+         gnupg_module_name (GNUPG_MODULE_NAME_GPG), fpr);
       if (ret < 0)
         {
           err = gpg_error_from_syserror ();
