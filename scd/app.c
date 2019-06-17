@@ -242,7 +242,7 @@ app_reset (app_t app, ctrl_t ctrl, int send_reset)
   else
     {
       ctrl->app_ctx = NULL;
-      release_application (app, 0);
+      app_unref (app);
     }
 
   return err;
@@ -541,6 +541,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
       err = check_conflict (a, name);
       if (!err)
         {
+          /* Note: We do not use app_ref as we are already locked.  */
           a->ref_count++;
           *r_app = a;
           if (a_prev)
@@ -604,7 +605,8 @@ deallocate_app (app_t app)
       a_prev = a;
 
   if (app->ref_count)
-    log_error ("trying to release context used yet (%d)\n", app->ref_count);
+    log_error ("trying to release still used app context (%d)\n",
+               app->ref_count);
 
   if (app->fnc.deinit)
     {
@@ -618,13 +620,24 @@ deallocate_app (app_t app)
   xfree (app);
 }
 
-/* Free the resources associated with the application APP.  APP is
-   allowed to be NULL in which case this is a no-op.  Note that we are
-   using reference counting to track the users of the application and
-   actually deferring the deallocation to allow for a later reuse by
-   a new connection. */
+
+/* Increment the reference counter for APP.  Returns the APP.  */
+app_t
+app_ref (app_t app)
+{
+  lock_app (app, NULL);
+  ++app->ref_count;
+  unlock_app (app);
+  return app;
+}
+
+
+/* Decrement the reference counter for APP.  Note that we are using
+ * reference counting to track the users of the application and are
+ * deferring the actual deallocation to allow for a later reuse by a
+ * new connection.  Using NULL for APP is a no-op. */
 void
-release_application (app_t app, int locked_already)
+app_unref (app_t app)
 {
   if (!app)
     return;
@@ -634,15 +647,26 @@ release_application (app_t app, int locked_already)
      is using the card - this way the PIN cache and other cached data
      are preserved.  */
 
-  if (!locked_already)
-    lock_app (app, NULL);
+  lock_app (app, NULL);
+  if (!app->ref_count)
+    log_bug ("trying to release an already released context\n");
+  --app->ref_count;
+  unlock_app (app);
+}
+
+
+/* This is the same as app_unref but assumes that APP is already
+ * locked.  */
+void
+app_unref_locked (app_t app)
+{
+  if (!app)
+    return;
 
   if (!app->ref_count)
     log_bug ("trying to release an already released context\n");
 
   --app->ref_count;
-  if (!locked_already)
-    unlock_app (app);
 }
 
 

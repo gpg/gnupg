@@ -234,7 +234,7 @@ open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
 
   /* Re-scan USB devices.  Release APP, before the scan.  */
   ctrl->app_ctx = NULL;
-  release_application (app, 0);
+  app_unref (app);
 
   if (serialno)
     serialno_bin = hex_to_buffer (serialno, &serialno_bin_len);
@@ -804,14 +804,14 @@ cmd_pksign (assuan_context_t ctx, char *line)
   if (app)
     {
       if (direct)
-        app->ref_count++;
+        app_ref (app);
       rc = app_sign (app, ctrl,
                      keyidstr, hash_algo,
                      pin_cb, ctx,
                      ctrl->in_data.value, ctrl->in_data.valuelen,
                      &outdata, &outdatalen);
       if (direct)
-        app->ref_count--;
+        app_unref (app);
     }
   else
     rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -872,12 +872,12 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   if (app)
     {
       if (direct)
-        app->ref_count++;
+        app_ref (app);
       rc = app_auth (app, ctrl, keyidstr, pin_cb, ctx,
                      ctrl->in_data.value, ctrl->in_data.valuelen,
                      &outdata, &outdatalen);
       if (direct)
-        app->ref_count--;
+        app_unref (app);
     }
   else
     rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -933,12 +933,12 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   if (app)
     {
       if (direct)
-        app->ref_count++;
+        app_ref (app);
       rc = app_decipher (ctrl->app_ctx, ctrl, keyidstr, pin_cb, ctx,
                          ctrl->in_data.value, ctrl->in_data.valuelen,
                          &outdata, &outdatalen, &infoflags);
       if (direct)
-        app->ref_count--;
+        app_unref (app);
     }
   else
     rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -1648,7 +1648,7 @@ cmd_restart (assuan_context_t ctx, char *line)
   if (app)
     {
       ctrl->app_ctx = NULL;
-      release_application (app, 0);
+      app_unref (app);
     }
   if (locked_session && ctrl->server_local == locked_session)
     {
@@ -2169,7 +2169,8 @@ popup_prompt (void *opaque, int on)
 }
 
 
-/* Helper to send the clients a status change notification.  */
+/* Helper to send the clients a status change notification.  Note that
+ * this fucntion assumes that APP is already locked.  */
 void
 send_client_notifications (app_t app, int removal)
 {
@@ -2199,7 +2200,7 @@ send_client_notifications (app_t app, int removal)
           {
             sl->ctrl_backlink->app_ctx = NULL;
             sl->card_removed = 1;
-            release_application (app, 1);
+            app_unref_locked (app);
           }
 
         if (!sl->event_signal || !sl->assuan_ctx)

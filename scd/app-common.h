@@ -164,7 +164,11 @@ gpg_error_t select_application (ctrl_t ctrl, const char *name, app_t *r_app,
                                 int scan, const unsigned char *serialno_bin,
                                 size_t serialno_bin_len);
 char *get_supported_applications (void);
-void release_application (app_t app, int locked_already);
+
+app_t app_ref (app_t app);
+void  app_unref (app_t app);
+void  app_unref_locked (app_t app);
+
 gpg_error_t app_munge_serialno (app_t app);
 gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
                                     unsigned int flags);

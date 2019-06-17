@@ -129,7 +129,10 @@ void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
                    const char *serialno, const char *idstr);
 
 void popup_prompt (void *opaque, int on);
+
+/* Take care: this function assumes that APP is locked.  */
 void send_client_notifications (app_t app, int removal);
+
 void scd_kick_the_loop (void);
 int get_active_connection_count (void);
 
