@@ -1292,9 +1292,27 @@ app_send_card_list (ctrl_t ctrl)
 }
 
 /* Execute an action for each app.  ACTION can be one of:
-     KEYGRIP_ACTION_SEND_DATA: send data if KEYGRIP_STR matches
-     KEYGRIP_ACTION_WRITE_STATUS: write status if KEYGRIP_STR matches
-     KEYGRIP_ACTION_LOOKUP: Return matching APP
+ *
+ * - KEYGRIP_ACTION_SEND_DATA
+ *
+ *     If KEYGRIP_STR matches a public key of any active application
+ *     send information as LF terminated data lines about the public
+ *     key.  The format of these lines is
+ *         <keygrip> T <serialno> <idstr>
+ *     If a match was found a pointer to the matching application is
+ *     returned.  With the KEYGRIP_STR given as NULL, lines for all
+ *     keys will be send and the return value is NULL.
+ *
+ * - KEYGRIP_ACTION_WRITE_STATUS
+ *
+ *     Same as KEYGRIP_ACTION_SEND_DATA but uses status lines instead
+ *     of data lines.
+ *
+ * - KEYGRIP_ACTION_LOOKUP
+ *
+ *     Returns a pointer to the application matching KEYGRIP_STR but
+ *     does not emit any status or data lines.  If no key with that
+ *     keygrip is available or KEYGRIP_STR is NULL, NULL is returned.
  */
 app_t
 app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)

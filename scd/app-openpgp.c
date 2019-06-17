@@ -4913,7 +4913,7 @@ do_check_pin (app_t app, const char *keyidstr,
     return verify_chv2 (app, pincb, pincb_arg);
 }
 
-static int
+static gpg_error_t
 do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
 {
   int i;
@@ -4925,14 +4925,12 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
   if (action == KEYGRIP_ACTION_LOOKUP)
     {
       if (keygrip_str == NULL)
-        return 1;
+        return gpg_error (GPG_ERR_NOT_FOUND);
 
       for (i = 0; i < 3; i++)
         if (app->app_local->pk[i].read_done
             && !strcmp (keygrip_str, app->app_local->pk[i].keygrip_str))
-          return 0;                     /* Found */
-
-      return 1;
+          return 0; /* Found */
     }
   else
     {
@@ -4941,7 +4939,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
       int data = (action == KEYGRIP_ACTION_SEND_DATA);
 
       if (DIM (buf) < 2 * app->serialnolen + 1)
-        return 0;
+        return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
 
       bin2hex (app->serialno, app->serialnolen, buf);
 
@@ -4954,6 +4952,10 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
                 send_keyinfo (ctrl, data,
                               app->app_local->pk[i].keygrip_str,buf, idbuf);
               }
+          /* Return an error so that the dispatcher keeps on looping
+           * over the other applications.  Only for clarity we use a
+           * different error code than for the not_found case.  */
+          return gpg_error (GPG_ERR_TRUE);
         }
       else
         {
@@ -4966,9 +4968,9 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
                 return 0;
               }
         }
-
-      return 1;
     }
+
+  return gpg_error (GPG_ERR_NOT_FOUND);
 }
 
 /* Show information about card capabilities.  */
