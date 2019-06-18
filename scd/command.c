@@ -1885,9 +1885,11 @@ send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
   char *string;
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
 
-  string = xtryasprintf ("%s T %s %s", keygrip_str,
+  string = xtryasprintf ("%s T %s %s%s", keygrip_str,
                          serialno? serialno : "-",
-                         idstr? idstr : "-");
+                         idstr? idstr : "-",
+                         data? "\n" : "");
+
   if (!string)
     return;
 
