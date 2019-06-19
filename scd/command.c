@@ -145,10 +145,10 @@ hex_to_buffer (const char *string, size_t *r_length)
 static void
 do_reset (ctrl_t ctrl, int send_reset)
 {
-  app_t app = ctrl->app_ctx;
+  card_t card = ctrl->card_ctx;
 
-  if (app)
-    app_reset (app, ctrl, IS_LOCKED (ctrl)? 0: send_reset);
+  if (card)
+    card_reset (card, ctrl, IS_LOCKED (ctrl)? 0: send_reset);
 
   /* If we hold a lock, unlock now. */
   if (locked_session && ctrl->server_local == locked_session)
@@ -157,6 +157,8 @@ do_reset (ctrl_t ctrl, int send_reset)
       log_info ("implicitly unlocking due to RESET\n");
     }
 }
+
+
 
 static gpg_error_t
 reset_notify (assuan_context_t ctx, char *line)
@@ -211,10 +213,10 @@ open_card (ctrl_t ctrl)
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
 
-  if (ctrl->app_ctx)
+  if (ctrl->card_ctx)
     return 0;
 
-  return select_application (ctrl, NULL, &ctrl->app_ctx, 0, NULL, 0);
+  return select_application (ctrl, NULL, &ctrl->card_ctx, 0, NULL, 0);
 }
 
 /* Explicitly open a card for a specific use of APPTYPE or SERIALNO.  */
@@ -224,22 +226,24 @@ open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
   gpg_error_t err;
   unsigned char *serialno_bin = NULL;
   size_t serialno_bin_len = 0;
-  app_t app = ctrl->app_ctx;
+  card_t card = ctrl->card_ctx;
 
   /* If we are already initialized for one specific application we
      need to check that the client didn't requested a specific
      application different from the one in use before we continue. */
-  if (apptype && ctrl->app_ctx)
-    return check_application_conflict (apptype, ctrl->app_ctx);
+  /* FIXME: Extend to allow switching between apps.  */
+  if (apptype && ctrl->card_ctx)
+    return check_application_conflict (apptype, ctrl->card_ctx);
 
-  /* Re-scan USB devices.  Release APP, before the scan.  */
-  ctrl->app_ctx = NULL;
-  app_unref (app);
+  /* Re-scan USB devices.  Release CARD, before the scan.  */
+  /* FIXME: Is a card_unref sufficient or do we need to deallocate?  */
+  ctrl->card_ctx = NULL;
+  card_unref (card);
 
   if (serialno)
     serialno_bin = hex_to_buffer (serialno, &serialno_bin_len);
 
-  err = select_application (ctrl, apptype, &ctrl->app_ctx, 1,
+  err = select_application (ctrl, apptype, &ctrl->card_ctx, 1,
                             serialno_bin, serialno_bin_len);
   xfree (serialno_bin);
 
@@ -313,7 +317,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
         c->server_local->card_removed = 0;
     }
 
-  serial = app_get_serialno (ctrl->app_ctx);
+  serial = card_get_serialno (ctrl->card_ctx);
   if (!serial)
     return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -411,18 +415,18 @@ cmd_learn (assuan_context_t ctx, char *line)
     {
       const char *reader;
       char *serial;
-      app_t app = ctrl->app_ctx;
+      card_t card = ctrl->card_ctx;
 
-      if (!app)
+      if (!card)
         return gpg_error (GPG_ERR_CARD_NOT_PRESENT);
 
-      reader = apdu_get_reader_name (app->slot);
+      reader = apdu_get_reader_name (card->slot);
       if (!reader)
         return out_of_core ();
       send_status_direct (ctrl, "READER", reader);
       /* No need to free the string of READER.  */
 
-      serial = app_get_serialno (ctrl->app_ctx);
+      serial = card_get_serialno (ctrl->card_ctx);
       if (!serial)
         return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -461,7 +465,7 @@ cmd_learn (assuan_context_t ctx, char *line)
   /* Let the application print out its collection of useful status
      information. */
   if (!rc)
-    rc = app_write_learn_status (ctrl->app_ctx, ctrl, only_keypairinfo);
+    rc = app_write_learn_status (ctrl->card_ctx, ctrl, only_keypairinfo);
 
   return rc;
 }
@@ -484,7 +488,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
     return rc;
 
   line = xstrdup (line); /* Need a copy of the line. */
-  rc = app_readcert (ctrl->app_ctx, ctrl, line, &cert, &ncert);
+  rc = app_readcert (ctrl->card_ctx, ctrl, line, &cert, &ncert);
   if (rc)
     log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
   xfree (line);
@@ -536,7 +540,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   /* If the application supports the READKEY function we use that.
      Otherwise we use the old way by extracting it from the
      certificate.  */
-  rc = app_readkey (ctrl->app_ctx, ctrl, line,
+  rc = app_readkey (ctrl->card_ctx, ctrl, line,
                     opt_info? APP_READKEY_FLAG_INFO : 0,
                     opt_nokey? NULL : &pk, &pklen);
   if (!rc)
@@ -545,7 +549,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
            || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
       /* Fall back to certificate reading.  */
-      rc = app_readcert (ctrl->app_ctx, ctrl, line, &cert, &ncert);
+      rc = app_readcert (ctrl->card_ctx, ctrl, line, &cert, &ncert);
       if (rc)
         {
           log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
@@ -757,7 +761,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   size_t outdatalen;
   char *keyidstr;
   int hash_algo;
-  app_t app;
+  card_t card;
   int direct = 0;
 
   if (has_option (line, "--hash=rmd160"))
@@ -791,27 +795,27 @@ cmd_pksign (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return out_of_core ();
 
-  /* When it's a keygrip, we directly use APP, with no change of
-     ctrl->app_ctx. */
+  /* When it's a keygrip, we directly use the card, with no change of
+     ctrl->card_ctx. */
   if (strlen (keyidstr) == 40)
     {
-      app = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
       direct = 1;
     }
   else
-    app = ctrl->app_ctx;
+    card = ctrl->card_ctx;
 
-  if (app)
+  if (card)
     {
       if (direct)
-        app_ref (app);
-      rc = app_sign (app, ctrl,
+        card_ref (card);
+      rc = app_sign (card, ctrl,
                      keyidstr, hash_algo,
                      pin_cb, ctx,
                      ctrl->in_data.value, ctrl->in_data.valuelen,
                      &outdata, &outdatalen);
       if (direct)
-        app_unref (app);
+        card_unref (card);
     }
   else
     rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -843,13 +847,13 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   unsigned char *outdata;
   size_t outdatalen;
   char *keyidstr;
-  app_t app;
+  card_t card;
   int direct = 0;
 
   if ((rc = open_card (ctrl)))
     return rc;
 
-  if (!ctrl->app_ctx)
+  if (!ctrl->card_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
  /* We have to use a copy of the key ID because the function may use
@@ -859,25 +863,25 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return out_of_core ();
 
-  /* When it's a keygrip, we directly use APP, with no change of
-     ctrl->app_ctx. */
+  /* When it's a keygrip, we directly use CARD, with no change of
+     ctrl->card_ctx. */
   if (strlen (keyidstr) == 40)
     {
-      app = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
       direct = 1;
     }
   else
-    app = ctrl->app_ctx;
+    card = ctrl->card_ctx;
 
-  if (app)
+  if (card)
     {
       if (direct)
-        app_ref (app);
-      rc = app_auth (app, ctrl, keyidstr, pin_cb, ctx,
+        card_ref (card);
+      rc = app_auth (card, ctrl, keyidstr, pin_cb, ctx,
                      ctrl->in_data.value, ctrl->in_data.valuelen,
                      &outdata, &outdatalen);
       if (direct)
-        app_unref (app);
+        card_unref (card);
     }
   else
     rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -910,7 +914,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   size_t outdatalen;
   char *keyidstr;
   unsigned int infoflags;
-  app_t app;
+  card_t card;
   int direct = 0;
 
   if ((rc = open_card (ctrl)))
@@ -920,25 +924,25 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return out_of_core ();
 
-  /* When it's a keygrip, we directly use APP, with no change of
-     ctrl->app_ctx. */
+  /* When it's a keygrip, we directly use CARD, with no change of
+     ctrl->card_ctx. */
   if (strlen (keyidstr) == 40)
     {
-      app = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
       direct = 1;
     }
   else
-    app = ctrl->app_ctx;
+    card = ctrl->card_ctx;
 
-  if (app)
+  if (card)
     {
       if (direct)
-        app_ref (app);
-      rc = app_decipher (ctrl->app_ctx, ctrl, keyidstr, pin_cb, ctx,
+        card_ref (card);
+      rc = app_decipher (card, ctrl, keyidstr, pin_cb, ctx,
                          ctrl->in_data.value, ctrl->in_data.valuelen,
                          &outdata, &outdatalen, &infoflags);
       if (direct)
-        app_unref (app);
+        card_unref (card);
     }
   else
     rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -999,7 +1003,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
 
   /* FIXME: Applications should not return sensitive data if the card
      is locked.  */
-  rc = app_getattr (ctrl->app_ctx, ctrl, keyword);
+  rc = app_getattr (ctrl->card_ctx, ctrl, keyword);
 
   return rc;
 }
@@ -1061,7 +1065,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
       assuan_end_confidential (ctx);
       if (!err)
         {
-          err = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
+          err = app_setattr (ctrl->card_ctx, ctrl, keyword, pin_cb, ctx,
                              value, nbytes);
           wipememory (value, nbytes);
           xfree (value);
@@ -1071,7 +1075,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
   else
     {
       nbytes = percent_plus_unescape_inplace (line, 0);
-      err = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
+      err = app_setattr (ctrl->card_ctx, ctrl, keyword, pin_cb, ctx,
                          (const unsigned char*)line, nbytes);
     }
 
@@ -1112,7 +1116,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  if (!ctrl->app_ctx)
+  if (!ctrl->card_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   certid = xtrystrdup (certid);
@@ -1129,7 +1133,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
     }
 
   /* Write the certificate to the card. */
-  rc = app_writecert (ctrl->app_ctx, ctrl, certid,
+  rc = app_writecert (ctrl->card_ctx, ctrl, certid,
                       pin_cb, ctx, certdata, certdatalen);
   xfree (certid);
   xfree (certdata);
@@ -1174,7 +1178,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  if (!ctrl->app_ctx)
+  if (!ctrl->card_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   keyid = xtrystrdup (keyid);
@@ -1192,7 +1196,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
     }
 
   /* Write the key to the card. */
-  rc = app_writekey (ctrl->app_ctx, ctrl, keyid, force? 1:0,
+  rc = app_writekey (ctrl->card_ctx, ctrl, keyid, force? 1:0,
                      pin_cb, ctx, keydata, keydatalen);
   xfree (keyid);
   xfree (keydata);
@@ -1266,7 +1270,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   if ((err = open_card (ctrl)))
     goto leave;
 
-  if (!ctrl->app_ctx)
+  if (!ctrl->card_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   keyref = keyref_buffer = xtrystrdup (keyref);
@@ -1275,7 +1279,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  err = app_genkey (ctrl->app_ctx, ctrl, keyref, opt_algo,
+  err = app_genkey (ctrl->card_ctx, ctrl, keyref, opt_algo,
                     force? APP_GENKEY_FLAG_FORCE : 0,
                     timestamp, pin_cb, ctx);
 
@@ -1310,14 +1314,14 @@ cmd_random (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  if (!ctrl->app_ctx)
+  if (!ctrl->card_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   buffer = xtrymalloc (nbytes);
   if (!buffer)
     return out_of_core ();
 
-  rc = app_get_challenge (ctrl->app_ctx, ctrl, nbytes, buffer);
+  rc = app_get_challenge (ctrl->card_ctx, ctrl, nbytes, buffer);
   if (!rc)
     {
       rc = assuan_send_data (ctx, buffer, nbytes);
@@ -1371,13 +1375,13 @@ cmd_passwd (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  if (!ctrl->app_ctx)
+  if (!ctrl->card_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   chvnostr = xtrystrdup (chvnostr);
   if (!chvnostr)
     return out_of_core ();
-  rc = app_change_pin (ctrl->app_ctx, ctrl, chvnostr, flags, pin_cb, ctx);
+  rc = app_change_pin (ctrl->card_ctx, ctrl, chvnostr, flags, pin_cb, ctx);
   if (rc)
     log_error ("command passwd failed: %s\n", gpg_strerror (rc));
   xfree (chvnostr);
@@ -1428,7 +1432,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  if (!ctrl->app_ctx)
+  if (!ctrl->card_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   /* We have to use a copy of the key ID because the function may use
@@ -1438,7 +1442,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
   if (!idstr)
     return out_of_core ();
 
-  rc = app_check_pin (ctrl->app_ctx, ctrl, idstr, pin_cb, ctx);
+  rc = app_check_pin (ctrl->card_ctx, ctrl, idstr, pin_cb, ctx);
   xfree (idstr);
   if (rc)
     log_error ("app_check_pin failed: %s\n", gpg_strerror (rc));
@@ -1641,14 +1645,14 @@ static gpg_error_t
 cmd_restart (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  app_t app = ctrl->app_ctx;
+  card_t card = ctrl->card_ctx;
 
   (void)line;
 
-  if (app)
+  if (card)
     {
-      ctrl->app_ctx = NULL;
-      app_unref (app);
+      ctrl->card_ctx = NULL;
+      card_unref (card);
     }
   if (locked_session && ctrl->server_local == locked_session)
     {
@@ -1670,10 +1674,10 @@ cmd_disconnect (assuan_context_t ctx, char *line)
 
   (void)line;
 
-  if (!ctrl->app_ctx)
+  if (!ctrl->card_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
-  apdu_disconnect (ctrl->app_ctx->slot);
+  apdu_disconnect (ctrl->card_ctx->slot);
   return 0;
 }
 
@@ -1702,7 +1706,7 @@ static gpg_error_t
 cmd_apdu (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  app_t app;
+  card_t card;
   int rc;
   unsigned char *apdu;
   size_t apdulen;
@@ -1732,8 +1736,8 @@ cmd_apdu (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  app = ctrl->app_ctx;
-  if (!app)
+  card = ctrl->card_ctx;
+  if (!card)
     return gpg_error (GPG_ERR_CARD_NOT_PRESENT);
 
   if (with_atr)
@@ -1742,7 +1746,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
       size_t atrlen;
       char hexbuf[400];
 
-      atr = apdu_get_atr (app->slot, &atrlen);
+      atr = apdu_get_atr (card->slot, &atrlen);
       if (!atr || atrlen > sizeof hexbuf - 2 )
         {
           rc = gpg_error (GPG_ERR_INV_CARD);
@@ -1787,7 +1791,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
       unsigned char *result = NULL;
       size_t resultlen;
 
-      rc = apdu_send_direct (app->slot, exlen,
+      rc = apdu_send_direct (card->slot, exlen,
                              apdu, apdulen, handle_more,
                              NULL, &result, &resultlen);
       if (rc)
@@ -1851,7 +1855,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   int action;
   char *keygrip_str;
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  app_t a;
+  card_t card;
 
   list_mode = has_option (line, "--list");
   opt_data = has_option (line, "--data");
@@ -1867,9 +1871,9 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else
     action = KEYGRIP_ACTION_WRITE_STATUS;
 
-  a = app_do_with_keygrip (ctrl, action, keygrip_str);
+  card = app_do_with_keygrip (ctrl, action, keygrip_str);
 
-  if (!list_mode && !a)
+  if (!list_mode && !card)
     return gpg_error (GPG_ERR_NOT_FOUND);
   return 0;
 }
@@ -2180,7 +2184,7 @@ popup_prompt (void *opaque, int on)
 /* Helper to send the clients a status change notification.  Note that
  * this fucntion assumes that APP is already locked.  */
 void
-send_client_notifications (app_t app, int removal)
+send_client_notifications (card_t card, int removal)
 {
   struct {
     pid_t pid;
@@ -2195,7 +2199,7 @@ send_client_notifications (app_t app, int removal)
   struct server_local_s *sl;
 
   for (sl=session_list; sl; sl = sl->next_session)
-    if (sl->ctrl_backlink && sl->ctrl_backlink->app_ctx == app)
+    if (sl->ctrl_backlink && sl->ctrl_backlink->card_ctx == card)
       {
         pid_t pid;
 #ifdef HAVE_W32_SYSTEM
@@ -2206,9 +2210,9 @@ send_client_notifications (app_t app, int removal)
 
         if (removal)
           {
-            sl->ctrl_backlink->app_ctx = NULL;
+            sl->ctrl_backlink->card_ctx = NULL;
             sl->card_removed = 1;
-            app_unref_locked (app);
+            card_unref_locked (card);
           }
 
         if (!sl->event_signal || !sl->assuan_ctx)

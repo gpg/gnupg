@@ -338,7 +338,7 @@ get_cached_data (app_t app, int tag,
   else
     exmode = 0;
 
-  err = iso7816_get_data (app->slot, exmode, tag, &p, &len);
+  err = iso7816_get_data (app_get_slot (app), exmode, tag, &p, &len);
   if (err)
     return err;
   if (len)
@@ -469,7 +469,7 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
   if (app->appversion > 0x0100 && data_objects[i].get_immediate_in_v11)
     {
       exmode = 0;
-      rc = iso7816_get_data (app->slot, exmode, tag, &buffer, &buflen);
+      rc = iso7816_get_data (app_get_slot (app), exmode, tag, &buffer, &buflen);
       if (rc)
         {
           *r_rc = rc;
@@ -811,7 +811,7 @@ store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
   tag2 = 0xCE + keynumber;
   flush_cache_item (app, 0xCD);
 
-  rc = iso7816_put_data (app->slot, 0, tag, fpr, 20);
+  rc = iso7816_put_data (app_get_slot (app), 0, tag, fpr, 20);
   if (rc)
     log_error (_("failed to store the fingerprint: %s\n"),gpg_strerror (rc));
 
@@ -824,7 +824,7 @@ store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
       buf[2] = timestamp >>  8;
       buf[3] = timestamp;
 
-      rc = iso7816_put_data (app->slot, 0, tag2, buf, 4);
+      rc = iso7816_put_data (app_get_slot (app), 0, tag2, buf, 4);
       if (rc)
         log_error (_("failed to store the creation date: %s\n"),
                    gpg_strerror (rc));
@@ -1691,7 +1691,7 @@ get_public_key (app_t app, int keyno)
           le_value = 256; /* Use legacy value. */
         }
 
-      err = iso7816_read_public_key (app->slot, exmode,
+      err = iso7816_read_public_key (app_get_slot (app), exmode,
                                      (keyno == 0? "\xB6" :
                                       keyno == 1? "\xB8" : "\xA4"),
                                      2, le_value, &buffer, &buflen);
@@ -2161,7 +2161,7 @@ verify_a_chv (app_t app,
       /* Special case for def_chv2 mechanism. */
       if (opt.verbose)
         log_info (_("using default PIN as %s\n"), "CHV2");
-      rc = iso7816_verify (app->slot, 0x82, "123456", 6);
+      rc = iso7816_verify (app_get_slot (app), 0x82, "123456", 6);
       if (rc)
         {
           /* Verification of CHV2 with the default PIN failed,
@@ -2194,7 +2194,7 @@ verify_a_chv (app_t app,
   }
 
   if (!opt.disable_pinpad
-      && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo)
+      && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo)
       && !check_pinpad_request (app, &pininfo, 0))
     {
       /* The reader supports the verify command through the pinpad.
@@ -2210,7 +2210,7 @@ verify_a_chv (app_t app,
                     gpg_strerror (rc));
           return rc;
         }
-      rc = iso7816_verify_kp (app->slot, 0x80+chvno, &pininfo);
+      rc = iso7816_verify_kp (app_get_slot (app), 0x80+chvno, &pininfo);
       /* Dismiss the prompt. */
       pincb (pincb_arg, NULL, NULL);
 
@@ -2241,7 +2241,8 @@ verify_a_chv (app_t app,
 
       rc = pin2hash_if_kdf (app, chvno, *pinvalue, pinlen);
       if (!rc)
-        rc = iso7816_verify (app->slot, 0x80+chvno, *pinvalue, *pinlen);
+        rc = iso7816_verify (app_get_slot (app),
+                             0x80 + chvno, *pinvalue, *pinlen);
     }
 
   if (rc)
@@ -2281,7 +2282,7 @@ verify_chv2 (app_t app,
          the card is not configured to require a verification before
          each CHV1 controlled operation (force_chv1) and if we are not
          using the pinpad (PINVALUE == NULL). */
-      rc = iso7816_verify (app->slot, 0x81, pinvalue, pinlen);
+      rc = iso7816_verify (app_get_slot (app), 0x81, pinvalue, pinlen);
       if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
         rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
       if (rc)
@@ -2369,7 +2370,8 @@ verify_chv3 (app_t app,
         return rc;
 
       if (!opt.disable_pinpad
-          && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo)
+          && !iso7816_check_pinpad (app_get_slot (app),
+                                    ISO7816_VERIFY, &pininfo)
           && !check_pinpad_request (app, &pininfo, 1))
         {
           /* The reader supports the verify command through the pinpad. */
@@ -2382,7 +2384,7 @@ verify_chv3 (app_t app,
                         gpg_strerror (rc));
               return rc;
             }
-          rc = iso7816_verify_kp (app->slot, 0x83, &pininfo);
+          rc = iso7816_verify_kp (app_get_slot (app), 0x83, &pininfo);
           /* Dismiss the prompt. */
           pincb (pincb_arg, NULL, NULL);
         }
@@ -2411,7 +2413,7 @@ verify_chv3 (app_t app,
 
           rc = pin2hash_if_kdf (app, 3, pinvalue, &pinlen);
           if (!rc)
-            rc = iso7816_verify (app->slot, 0x83, pinvalue, pinlen);
+            rc = iso7816_verify (app_get_slot (app), 0x83, pinvalue, pinlen);
           xfree (pinvalue);
         }
 
@@ -2510,7 +2512,8 @@ do_setattr (app_t app, const char *name,
     exmode = -254; /* Command chaining with max. 254 bytes.  */
   else
     exmode = 0;
-  rc = iso7816_put_data (app->slot, exmode, table[idx].tag, value, valuelen);
+  rc = iso7816_put_data (app_get_slot (app),
+                         exmode, table[idx].tag, value, valuelen);
   if (rc)
     log_error ("failed to set '%s': %s\n", table[idx].name, gpg_strerror (rc));
 
@@ -2567,7 +2570,7 @@ clear_chv_status (app_t app, int chvno)
   apdu[2] = 0xff;
   apdu[3] = 0x80+chvno;
 
-  err = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
+  err = iso7816_apdu_direct (app_get_slot (app), apdu, 4, 0, NULL, NULL, NULL);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_INV_VALUE)
@@ -2578,7 +2581,8 @@ clear_chv_status (app_t app, int chvno)
   if (chvno == 1)
     {
       apdu[3]++;
-      err = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
+      err = iso7816_apdu_direct (app_get_slot (app),
+                                 apdu, 4, 0, NULL, NULL, NULL);
       app->did_chv1 = app->did_chv2 = 0;
     }
   else if (chvno == 2)
@@ -2689,7 +2693,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       /* Version 2 cards.  */
 
       if (!opt.disable_pinpad
-          && !iso7816_check_pinpad (app->slot,
+          && !iso7816_check_pinpad (app_get_slot (app),
                                     ISO7816_CHANGE_REFERENCE_DATA, &pininfo)
           && !check_pinpad_request (app, &pininfo, chvno == 3))
         use_pinpad = 1;
@@ -2832,7 +2836,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
               rc = pin2hash_if_kdf (app, 0, buffer+pinlen0, &pinlen);
             }
           if (!rc)
-            rc = iso7816_reset_retry_counter_with_rc (app->slot, 0x81,
+            rc = iso7816_reset_retry_counter_with_rc (app_get_slot (app), 0x81,
                                                       buffer, pinlen0+pinlen);
           wipememory (buffer, pinlen0 + pinlen);
           xfree (buffer);
@@ -2849,31 +2853,37 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         {
           rc = pin2hash_if_kdf (app, 0, pinvalue, &pinlen);
           if (!rc)
-            rc = iso7816_put_data (app->slot, 0, 0xD3, pinvalue, pinlen);
+            rc = iso7816_put_data (app_get_slot (app),
+                                   0, 0xD3, pinvalue, pinlen);
         }
     }
   else if (reset_mode)
     {
       rc = pin2hash_if_kdf (app, 1, pinvalue, &pinlen);
       if (!rc)
-        rc = iso7816_reset_retry_counter (app->slot, 0x81, pinvalue, pinlen);
+        rc = iso7816_reset_retry_counter (app_get_slot (app),
+                                          0x81, pinvalue, pinlen);
       if (!rc && !app->app_local->extcap.is_v2)
-        rc = iso7816_reset_retry_counter (app->slot, 0x82, pinvalue, pinlen);
+        rc = iso7816_reset_retry_counter (app_get_slot (app),
+                                          0x82, pinvalue, pinlen);
     }
   else if (!app->app_local->extcap.is_v2)
     {
       /* Version 1 cards.  */
       if (chvno == 1 || chvno == 2)
         {
-          rc = iso7816_change_reference_data (app->slot, 0x81, NULL, 0,
+          rc = iso7816_change_reference_data (app_get_slot (app),
+                                              0x81, NULL, 0,
                                               pinvalue, strlen (pinvalue));
           if (!rc)
-            rc = iso7816_change_reference_data (app->slot, 0x82, NULL, 0,
+            rc = iso7816_change_reference_data (app_get_slot (app),
+                                                0x82, NULL, 0,
                                                 pinvalue, strlen (pinvalue));
         }
       else /* CHVNO == 3 */
         {
-          rc = iso7816_change_reference_data (app->slot, 0x80 + chvno, NULL, 0,
+          rc = iso7816_change_reference_data (app_get_slot (app),
+                                              0x80 + chvno, NULL, 0,
                                               pinvalue, strlen (pinvalue));
         }
     }
@@ -2894,7 +2904,8 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
                         gpg_strerror (rc));
               goto leave;
             }
-          rc = iso7816_change_reference_data_kp (app->slot, 0x80 + chvno, 0,
+          rc = iso7816_change_reference_data_kp (app_get_slot (app),
+                                                 0x80 + chvno, 0,
                                                  &pininfo);
           pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
         }
@@ -2904,7 +2915,8 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           if (!rc)
             rc = pin2hash_if_kdf (app, chvno, pinvalue, &pinlen);
           if (!rc)
-            rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,
+            rc = iso7816_change_reference_data (app_get_slot (app),
+                                                0x80 + chvno,
                                                 oldpinvalue, pinlen0,
                                                 pinvalue, pinlen);
         }
@@ -2947,7 +2959,7 @@ does_key_exist (app_t app, int keyidx, int generating, int force)
 
   assert (keyidx >=0 && keyidx <= 2);
 
-  if (iso7816_get_data (app->slot, 0, 0x006E, &buffer, &buflen))
+  if (iso7816_get_data (app_get_slot (app), 0, 0x006E, &buffer, &buflen))
     {
       log_error (_("error reading application data\n"));
       return gpg_error (GPG_ERR_GENERAL);
@@ -3261,7 +3273,7 @@ change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
     return err;
 
   /* Change the attribute.  */
-  err = iso7816_put_data (app->slot, 0, 0xC1+keyno, buf, buflen);
+  err = iso7816_put_data (app_get_slot (app), 0, 0xC1+keyno, buf, buflen);
   if (err)
     log_error ("error changing key attribute (key=%d)\n", keyno+1);
   else
@@ -3653,7 +3665,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         exmode = -254;
       else
         exmode = 0;
-      err = iso7816_put_data_odd (app->slot, exmode, 0x3fff,
+      err = iso7816_put_data_odd (app_get_slot (app), exmode, 0x3fff,
                                   template, template_len);
     }
   else
@@ -3703,7 +3715,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         goto leave;
 
       /* Store the key. */
-      err = iso7816_put_data (app->slot, 0,
+      err = iso7816_put_data (app_get_slot (app), 0,
                               (app->appversion > 0x0007? 0xE0:0xE9)+keyno,
                               template, template_len);
     }
@@ -3975,7 +3987,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         exmode = -254;
       else
         exmode = 0;
-      err = iso7816_put_data_odd (app->slot, exmode, 0x3fff,
+      err = iso7816_put_data_odd (app_get_slot (app), exmode, 0x3fff,
                                   template, template_len);
       xfree (template);
     }
@@ -4143,7 +4155,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, const char *keytype,
 
   log_info (_("please wait while key is being generated ...\n"));
   start_at = time (NULL);
-  err = iso7816_generate_keypair (app->slot, exmode, 0x80, 0,
+  err = iso7816_generate_keypair (app_get_slot (app), exmode, 0x80, 0,
                                   (keyno == 0? "\xB6" :
                                    keyno == 1? "\xB8" : "\xA4"),
                                   2, le_value, &buffer, &buflen);
@@ -4325,9 +4337,9 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno)
       for (s=keyidstr, n=0; n < 16; s += 2, n++)
         tmp_sn[n] = xtoi_2 (s);
 
-      if (app->serialnolen != 16)
+      if (app->card->serialnolen != 16)
         return gpg_error (GPG_ERR_INV_CARD);
-      if (memcmp (app->serialno, tmp_sn, 16))
+      if (memcmp (app->card->serialno, tmp_sn, 16))
         return gpg_error (GPG_ERR_WRONG_CARD);
     }
 
@@ -4485,7 +4497,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       char *pinvalue;
       int pinlen;
 
-      rc = verify_a_chv (app, pincb, pincb_arg, 1, sigcount, &pinvalue, &pinlen);
+      rc = verify_a_chv (app, pincb, pincb_arg, 1, sigcount,
+                         &pinvalue, &pinlen);
       if (rc)
         return rc;
 
@@ -4498,7 +4511,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
          pinpad has been used. */
       if (!app->did_chv2 && pinvalue && !app->app_local->extcap.is_v2)
         {
-          rc = iso7816_verify (app->slot, 0x82, pinvalue, pinlen);
+          rc = iso7816_verify (app_get_slot (app), 0x82, pinvalue, pinlen);
           if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
             rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
           if (rc)
@@ -4526,7 +4539,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       exmode = 0;
       le_value = 0;
     }
-  rc = iso7816_compute_ds (app->slot, exmode, data, datalen, le_value,
+  rc = iso7816_compute_ds (app_get_slot (app), exmode, data, datalen, le_value,
                            outdata, outdatalen);
   if (gpg_err_code (rc) == GPG_ERR_TIMEOUT)
     clear_chv_status (app, 1);
@@ -4605,7 +4618,7 @@ do_auth (app_t app, const char *keyidstr,
           exmode = 0;
           le_value = 0;
         }
-      rc = iso7816_internal_authenticate (app->slot, exmode,
+      rc = iso7816_internal_authenticate (app_get_slot (app), exmode,
                                           indata, indatalen, le_value,
                                           outdata, outdatalen);
       if (gpg_err_code (rc) == GPG_ERR_TIMEOUT)
@@ -4800,7 +4813,7 @@ do_decipher (app_t app, const char *keyidstr,
   else
     exmode = le_value = 0;
 
-  rc = iso7816_decipher (app->slot, exmode,
+  rc = iso7816_decipher (app_get_slot (app), exmode,
                          indata, indatalen, le_value, padind,
                          outdata, outdatalen);
   xfree (fixbuf);
@@ -4938,10 +4951,10 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
       char buf[65];
       int data = (action == KEYGRIP_ACTION_SEND_DATA);
 
-      if (DIM (buf) < 2 * app->serialnolen + 1)
+      if (DIM (buf) < 2 * app->card->serialnolen + 1)
         return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
 
-      bin2hex (app->serialno, app->serialnolen, buf);
+      bin2hex (app->card->serialno, app->card->serialnolen, buf);
 
       if (keygrip_str == NULL)
         {
@@ -5198,7 +5211,7 @@ gpg_error_t
 app_select_openpgp (app_t app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
-  int slot = app->slot;
+  int slot = app_get_slot (app);
   int rc;
   unsigned char *buffer;
   size_t buflen;
@@ -5236,9 +5249,9 @@ app_select_openpgp (app_t app)
       app->appversion |= buffer[7];
       manufacturer = (buffer[8]<<8 | buffer[9]);
 
-      xfree (app->serialno);
-      app->serialno = buffer;
-      app->serialnolen = buflen;
+      xfree (app->card->serialno);
+      app->card->serialno = buffer;
+      app->card->serialnolen = buflen;
       buffer = NULL;
       app->app_local = xtrycalloc (1, sizeof *app->app_local);
       if (!app->app_local)

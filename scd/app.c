@@ -31,8 +31,13 @@
 #include "apdu.h"
 #include "../common/tlv.h"
 
-static npth_mutex_t app_list_lock;
-static app_t app_top;
+/* Lock to protect the list of cards and its associated
+ * applications.  */
+static npth_mutex_t card_list_lock;
+
+/* A list of card contexts.  A card is a collection of applications
+ * (described by app_t) on the same physical token. */
+static card_t card_top;
 
 
 /* The list of application names and there select function.  Of no
@@ -126,58 +131,67 @@ print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
 }
 
 
-/* Lock the reader SLOT.  This function shall be used right before
-   calling any of the actual application functions to serialize access
-   to the reader.  We do this always even if the reader is not
-   actually used.  This allows an actual connection to assume that it
-   never shares a reader (while performing one command).  Returns 0 on
-   success; only then the unlock_reader function must be called after
-   returning from the handler. */
+/* Lock the CARD.  This function shall be used right before calling
+ * any of the actual application functions to serialize access to the
+ * reader.  We do this always even if the card is not actually used.
+ * This allows an actual connection to assume that it never shares a
+ * card (while performing one command).  Returns 0 on success; only
+ * then the unlock_reader function must be called after returning from
+ * the handler.  Right now we assume a that a reader has just one
+ * card; this may eventually need refinement. */
 static gpg_error_t
-lock_app (app_t app, ctrl_t ctrl)
+lock_card (card_t card, ctrl_t ctrl)
 {
-  if (npth_mutex_lock (&app->lock))
+  if (npth_mutex_lock (&card->lock))
     {
       gpg_error_t err = gpg_error_from_syserror ();
-      log_error ("failed to acquire APP lock for %p: %s\n",
-                 app, gpg_strerror (err));
+      log_error ("failed to acquire CARD lock for %p: %s\n",
+                 card, gpg_strerror (err));
       return err;
     }
 
-  apdu_set_progress_cb (app->slot, print_progress_line, ctrl);
-  apdu_set_prompt_cb (app->slot, popup_prompt, ctrl);
+  apdu_set_progress_cb (card->slot, print_progress_line, ctrl);
+  apdu_set_prompt_cb (card->slot, popup_prompt, ctrl);
 
   return 0;
 }
 
-/* Release a lock on the reader.  See lock_reader(). */
-static void
-unlock_app (app_t app)
-{
-  apdu_set_progress_cb (app->slot, NULL, NULL);
-  apdu_set_prompt_cb (app->slot, NULL, NULL);
 
-  if (npth_mutex_unlock (&app->lock))
+/* Release a lock on a card.  See lock_reader(). */
+static void
+unlock_card (card_t card)
+{
+  apdu_set_progress_cb (card->slot, NULL, NULL);
+  apdu_set_prompt_cb (card->slot, NULL, NULL);
+
+  if (npth_mutex_unlock (&card->lock))
     {
       gpg_error_t err = gpg_error_from_syserror ();
-      log_error ("failed to release APP lock for %p: %s\n",
-                 app, gpg_strerror (err));
+      log_error ("failed to release CARD lock for %p: %s\n",
+                 card, gpg_strerror (err));
     }
 }
 
 
 /* This function may be called to print information pertaining to the
-   current state of this module to the log. */
+ * current state of this module to the log. */
 void
 app_dump_state (void)
 {
+  card_t c;
   app_t a;
 
-  npth_mutex_lock (&app_list_lock);
-  for (a = app_top; a; a = a->next)
-    log_info ("app_dump_state: app=%p type='%s'\n", a, a->apptype);
-  npth_mutex_unlock (&app_list_lock);
+  npth_mutex_lock (&card_list_lock);
+  for (c = card_top; c; c = c->next)
+    {
+      log_info ("app_dump_state: card=%p slot=%d type=%s\n",
+                c, c->slot, c->cardtype? c->cardtype:"unknown");
+      for (a=c->app; a; a = a->next)
+        log_info ("app_dump_state:   app=%p type='%s'\n", a, a->apptype);
+    }
+  npth_mutex_unlock (&card_list_lock);
 }
+
 
 /* Check whether the application NAME is allowed.  This does not mean
    we have support for it though.  */
@@ -194,33 +208,40 @@ is_app_allowed (const char *name)
 
 
 static gpg_error_t
-check_conflict (app_t app, const char *name)
+check_conflict (card_t card, const char *name)
 {
-  if (!app || !name || (app->apptype && !ascii_strcasecmp (app->apptype, name)))
+  if (!card || !name)
+    return 0;
+  if (!card->app)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED); /* Should not happen.  */
+
+  /* FIXME:  Needs changes for app switching.  */
+  if (card->app->apptype && !ascii_strcasecmp (card->app->apptype, name))
     return 0;
 
-  if (app->apptype && !strcmp (app->apptype, "UNDEFINED"))
+  if (card->app->apptype && !strcmp (card->app->apptype, "UNDEFINED"))
     return 0;
 
   log_info ("application '%s' in use - can't switch\n",
-            app->apptype? app->apptype : "<null>");
+            card->app->apptype? card->app->apptype : "<null>");
 
   return gpg_error (GPG_ERR_CONFLICT);
 }
+
 
 /* This function is used by the serialno command to check for an
    application conflict which may appear if the serialno command is
    used to request a specific application and the connection has
    already done a select_application. */
 gpg_error_t
-check_application_conflict (const char *name, app_t app)
+check_application_conflict (const char *name, card_t card)
 {
-  return check_conflict (app, name);
+  return check_conflict (card, name);
 }
 
 
 gpg_error_t
-app_reset (app_t app, ctrl_t ctrl, int send_reset)
+card_reset (card_t card, ctrl_t ctrl, int send_reset)
 {
   gpg_error_t err = 0;
 
@@ -228,21 +249,21 @@ app_reset (app_t app, ctrl_t ctrl, int send_reset)
     {
       int sw;
 
-      lock_app (app, ctrl);
-      sw = apdu_reset (app->slot);
+      lock_card (card, ctrl);
+      sw = apdu_reset (card->slot);
       if (sw)
         err = gpg_error (GPG_ERR_CARD_RESET);
 
-      app->reset_requested = 1;
-      unlock_app (app);
+      card->reset_requested = 1;
+      unlock_card (card);
 
       scd_kick_the_loop ();
       gnupg_sleep (1);
     }
   else
     {
-      ctrl->app_ctx = NULL;
-      app_unref (app);
+      ctrl->card_ctx = NULL;
+      card_unref (card);
     }
 
   return err;
@@ -253,36 +274,37 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                   int periodical_check_needed)
 {
   gpg_error_t err = 0;
+  card_t card = NULL;
   app_t app = NULL;
   unsigned char *result = NULL;
   size_t resultlen;
   int want_undefined;
   int i;
 
-  /* Need to allocate a new one.  */
-  app = xtrycalloc (1, sizeof *app);
-  if (!app)
+  /* Need to allocate a new card object  */
+  card = xtrycalloc (1, sizeof *card);
+  if (!card)
     {
       err = gpg_error_from_syserror ();
       log_info ("error allocating context: %s\n", gpg_strerror (err));
       return err;
     }
 
-  app->slot = slot;
-  app->card_status = (unsigned int)-1;
+  card->slot = slot;
+  card->card_status = (unsigned int)-1;
 
-  if (npth_mutex_init (&app->lock, NULL))
+  if (npth_mutex_init (&card->lock, NULL))
     {
       err = gpg_error_from_syserror ();
       log_error ("error initializing mutex: %s\n", gpg_strerror (err));
-      xfree (app);
+      xfree (card);
       return err;
     }
 
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     {
-      xfree (app);
+      xfree (card);
       return err;
     }
 
@@ -313,7 +335,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
               && !iso7816_apdu_direct (slot, "\x00\x1d\x00\x00\x00", 5, 0,
                                        NULL, &buf, &buflen))
             {
-              app->cardtype = "yubikey";
+              card->cardtype = "yubikey";
               if (opt.verbose)
                 {
                   log_info ("Yubico: config=");
@@ -330,15 +352,15 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                   s0 = find_tlv (buf+1, buflen-1, 0x02, &n);  /* Serial */
                   if (s0 && n >= 4)
                     {
-                      app->serialno = xtrymalloc (3 + 1 + n);
-                      if (app->serialno)
+                      card->serialno = xtrymalloc (3 + 1 + n);
+                      if (card->serialno)
                         {
-                          app->serialnolen = 3 + 1 + n;
-                          app->serialno[0] = 0xff;
-                          app->serialno[1] = 0x02;
-                          app->serialno[2] = 0x0;
-                          app->serialno[3] = formfactor;
-                          memcpy (app->serialno + 4, s0, n);
+                          card->serialnolen = 3 + 1 + n;
+                          card->serialno[0] = 0xff;
+                          card->serialno[1] = 0x02;
+                          card->serialno[2] = 0x0;
+                          card->serialno[3] = formfactor;
+                          memcpy (card->serialno + 4, s0, n);
                           /* Note that we do not clear the error
                            * so that no further serial number
                            * testing is done.  After all we just
@@ -348,7 +370,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
 
                   s0 = find_tlv (buf+1, buflen-1, 0x05, &n);  /* version */
                   if (s0 && n == 3)
-                    app->cardversion = ((s0[0]<<16)|(s0[1]<<8)|s0[2]);
+                    card->cardversion = ((s0[0]<<16)|(s0[1]<<8)|s0[2]);
                   else if (!s0)
                     {
                       /* No version - this is not a Yubikey 5.  We now
@@ -361,7 +383,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                                                        otp_aid, sizeof otp_aid,
                                                        1, &buf, &buflen)
                           && buflen > 3)
-                        app->cardversion = ((buf[0]<<16)|(buf[1]<<8)|buf[2]);
+                        card->cardversion = ((buf[0]<<16)|(buf[1]<<8)|buf[2]);
                     }
                 }
               xfree (buf);
@@ -382,7 +404,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
             resultlen -= (p-result);
           if (p && n > resultlen && n == 0x0d && resultlen+1 == n)
             {
-              /* The object it does not fit into the buffer.  This is an
+              /* The object does not fit into the buffer.  This is an
                  invalid encoding (or the buffer is too short.  However, I
                  have some test cards with such an invalid encoding and
                  therefore I use this ugly workaround to return something
@@ -396,9 +418,9 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
               /* The GDO file is pretty short, thus we simply reuse it for
                  storing the serial number. */
               memmove (result, p, n);
-              app->serialno = result;
-              app->serialnolen = n;
-              err = app_munge_serialno (app);
+              card->serialno = result;
+              card->serialnolen = n;
+              err = app_munge_serialno (card);
               if (err)
                 goto leave;
             }
@@ -407,6 +429,17 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
           result = NULL;
         }
     }
+
+  /* Allocate a new app object.  */
+  app = xtrycalloc (1, sizeof *app);
+  if (!app)
+    {
+      err = gpg_error_from_syserror ();
+      log_info ("error allocating app context: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  card->app = app;
+  app->card = card;
 
   /* Figure out the application to use.  */
   if (want_undefined)
@@ -430,7 +463,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
       err = gpg_error (GPG_ERR_NOT_FOUND);
     }
 
-  /* Find the first available app if NAME is NULL or the one matching
+  /* Find the first available app if NAME is NULL or the matching
    * NAME but only if that application is also enabled.  */
   for (i=0; err && app_priority_list[i].name; i++)
     {
@@ -450,44 +483,47 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
       else
         log_info ("no supported card application found: %s\n",
                   gpg_strerror (err));
-      unlock_app (app);
+      unlock_card (card);
       xfree (app);
+      xfree (card);
       return err;
     }
 
-  app->periodical_check_needed = periodical_check_needed;
-  app->next = app_top;
-  app_top = app;
-  unlock_app (app);
+  card->periodical_check_needed = periodical_check_needed;
+
+  card->next = card_top;
+  card_top = card;
+  unlock_card (card);
   return 0;
 }
 
+
 /* If called with NAME as NULL, select the best fitting application
-   and return a context; otherwise select the application with NAME
-   and return a context.  Returns an error code and stores NULL at
-   R_APP if no application was found or no card is present. */
+ * and return its card context; otherwise select the application with
+ * NAME and return its card context.  Returns an error code and stores
+ * NULL at R_CARD if no application was found or no card is present.  */
 gpg_error_t
-select_application (ctrl_t ctrl, const char *name, app_t *r_app,
+select_application (ctrl_t ctrl, const char *name, card_t *r_card,
                     int scan, const unsigned char *serialno_bin,
                     size_t serialno_bin_len)
 {
   gpg_error_t err = 0;
-  app_t a, a_prev = NULL;
+  card_t card, card_prev = NULL;
 
-  *r_app = NULL;
+  *r_card = NULL;
 
-  npth_mutex_lock (&app_list_lock);
+  npth_mutex_lock (&card_list_lock);
 
-  if (scan || !app_top)
+  if (scan || !card_top)
     {
       struct dev_list *l;
-      int new_app = 0;
+      int new_card = 0;
 
       /* Scan the devices to find new device(s).  */
       err = apdu_dev_list_start (opt.reader_port, &l);
       if (err)
         {
-          npth_mutex_unlock (&app_list_lock);
+          npth_mutex_unlock (&card_list_lock);
           return err;
         }
 
@@ -496,7 +532,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
           int slot;
           int periodical_check_needed_this;
 
-          slot = apdu_open_reader (l, !app_top);
+          slot = apdu_open_reader (l, !card_top);
           if (slot < 0)
             break;
 
@@ -510,7 +546,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
             {
               err = app_new_register (slot, ctrl, name,
                                       periodical_check_needed_this);
-              new_app++;
+              new_card++;
             }
 
           if (err)
@@ -520,43 +556,43 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
       apdu_dev_list_finish (l);
 
       /* If new device(s), kick the scdaemon loop.  */
-      if (new_app)
+      if (new_card)
         scd_kick_the_loop ();
     }
 
-  for (a = app_top; a; a = a->next)
+  for (card = card_top; card; card = card->next)
     {
-      lock_app (a, ctrl);
+      lock_card (card, ctrl);
       if (serialno_bin == NULL)
         break;
-      if (a->serialnolen == serialno_bin_len
-          && !memcmp (a->serialno, serialno_bin, a->serialnolen))
+      if (card->serialnolen == serialno_bin_len
+          && !memcmp (card->serialno, serialno_bin, card->serialnolen))
         break;
-      unlock_app (a);
-      a_prev = a;
+      unlock_card (card);
+      card_prev = card;
     }
 
-  if (a)
+  if (card)
     {
-      err = check_conflict (a, name);
+      err = check_conflict (card, name);
       if (!err)
         {
-          /* Note: We do not use app_ref as we are already locked.  */
-          a->ref_count++;
-          *r_app = a;
-          if (a_prev)
+          /* Note: We do not use card_ref as we are already locked.  */
+          card->ref_count++;
+          *r_card = card;
+          if (card_prev)
             {
-              a_prev->next = a->next;
-              a->next = app_top;
-              app_top = a;
+              card_prev->next = card->next;
+              card->next = card_top;
+              card_top = card;
             }
       }
-      unlock_app (a);
+      unlock_card (card);
     }
   else
     err = gpg_error (GPG_ERR_ENODEV);
 
-  npth_mutex_unlock (&app_list_lock);
+  npth_mutex_unlock (&card_list_lock);
 
   return err;
 }
@@ -588,85 +624,88 @@ get_supported_applications (void)
 
 /* Deallocate the application.  */
 static void
-deallocate_app (app_t app)
+deallocate_card (card_t card)
 {
-  app_t a, a_prev = NULL;
+  card_t c, c_prev = NULL;
+  app_t a, anext;
 
-  for (a = app_top; a; a = a->next)
-    if (a == app)
+  for (c = card_top; c; c = c->next)
+    if (c == card)
       {
-        if (a_prev == NULL)
-          app_top = a->next;
+        if (c_prev == NULL)
+          card_top = c->next;
         else
-          a_prev->next = a->next;
+          c_prev->next = c->next;
         break;
       }
     else
-      a_prev = a;
+      c_prev = c;
 
-  if (app->ref_count)
-    log_error ("trying to release still used app context (%d)\n",
-               app->ref_count);
+  if (card->ref_count)
+    log_error ("releasing still used card context (%d)\n", card->ref_count);
 
-  if (app->fnc.deinit)
+  for (a = card->app; a; a = anext)
     {
-      app->fnc.deinit (app);
-      app->fnc.deinit = NULL;
+      if (a->fnc.deinit)
+        {
+          a->fnc.deinit (a);
+          a->fnc.deinit = NULL;
+        }
+      anext = a->next;
+      xfree (a);
     }
 
-  xfree (app->serialno);
+  xfree (card->serialno);
 
-  unlock_app (app);
-  xfree (app);
+  unlock_card (card);
+  xfree (card);
 }
 
 
-/* Increment the reference counter for APP.  Returns the APP.  */
-app_t
-app_ref (app_t app)
+/* Increment the reference counter of CARD.  Returns CARD.  */
+card_t
+card_ref (card_t card)
 {
-  lock_app (app, NULL);
-  ++app->ref_count;
-  unlock_app (app);
-  return app;
+  lock_card (card, NULL);
+  ++card->ref_count;
+  unlock_card (card);
+  return card;
 }
 
 
-/* Decrement the reference counter for APP.  Note that we are using
- * reference counting to track the users of the application and are
- * deferring the actual deallocation to allow for a later reuse by a
- * new connection.  Using NULL for APP is a no-op. */
+/* Decrement the reference counter for CARD.  Note that we are using
+ * reference counting to track the users of the card's application and
+ * are deferring the actual deallocation to allow for a later reuse by
+ * a new connection.  Using NULL for CARD is a no-op. */
 void
-app_unref (app_t app)
+card_unref (card_t card)
 {
-  if (!app)
+  if (!card)
     return;
 
-  /* We don't deallocate app here.  Instead, we keep it.  This is
+  /* We don't deallocate CARD here.  Instead, we keep it.  This is
      useful so that a card does not get reset even if only one session
      is using the card - this way the PIN cache and other cached data
      are preserved.  */
 
-  lock_app (app, NULL);
-  if (!app->ref_count)
-    log_bug ("trying to release an already released context\n");
-  --app->ref_count;
-  unlock_app (app);
+  lock_card (card, NULL);
+  card_unref_locked (card);
+  unlock_card (card);
 }
 
 
-/* This is the same as app_unref but assumes that APP is already
+/* This is the same as card_unref but assumes that CARD is already
  * locked.  */
 void
-app_unref_locked (app_t app)
+card_unref_locked (card_t card)
 {
-  if (!app)
+  if (!card)
     return;
 
-  if (!app->ref_count)
-    log_bug ("trying to release an already released context\n");
+  if (!card->ref_count)
+    log_bug ("tried to release an already released card context\n");
 
-  --app->ref_count;
+  --card->ref_count;
 }
 
 
@@ -686,30 +725,30 @@ app_unref_locked (app_t app)
      All other serial number not starting with FF are used as they are.
 */
 gpg_error_t
-app_munge_serialno (app_t app)
+app_munge_serialno (card_t card)
 {
-  if (app->serialnolen && app->serialno[0] == 0xff)
+  if (card->serialnolen && card->serialno[0] == 0xff)
     {
       /* The serial number starts with our special prefix.  This
          requires that we put our default prefix "FF0000" in front. */
-      unsigned char *p = xtrymalloc (app->serialnolen + 3);
+      unsigned char *p = xtrymalloc (card->serialnolen + 3);
       if (!p)
         return gpg_error_from_syserror ();
       memcpy (p, "\xff\0", 3);
-      memcpy (p+3, app->serialno, app->serialnolen);
-      app->serialnolen += 3;
-      xfree (app->serialno);
-      app->serialno = p;
+      memcpy (p+3, card->serialno, card->serialnolen);
+      card->serialnolen += 3;
+      xfree (card->serialno);
+      card->serialno = p;
     }
-  else if (!app->serialnolen)
+  else if (!card->serialnolen)
     {
       unsigned char *p = xtrymalloc (3);
       if (!p)
         return gpg_error_from_syserror ();
       memcpy (p, "\xff\x7f", 3);
-      app->serialnolen = 3;
-      xfree (app->serialno);
-      app->serialno = p;
+      card->serialnolen = 3;
+      xfree (card->serialno);
+      card->serialno = p;
     }
   return 0;
 }
@@ -720,52 +759,66 @@ app_munge_serialno (app_t app)
    returned as a malloced string (hex encoded) in SERIAL.  Caller must
    free SERIAL unless the function returns an error.  */
 char *
-app_get_serialno (app_t app)
+card_get_serialno (card_t card)
 {
   char *serial;
 
-  if (!app)
+  if (!card)
     return NULL;
 
-  if (!app->serialnolen)
+  if (!card->serialnolen)
     serial = xtrystrdup ("FF7F00");
   else
-    serial = bin2hex (app->serialno, app->serialnolen, NULL);
+    serial = bin2hex (card->serialno, card->serialnolen, NULL);
 
   return serial;
+}
+
+/* Same as card_get_serialno but takes an APP object.  */
+char *
+app_get_serialno (app_t app)
+{
+  if (!app || !app->card)
+    return NULL;
+  return card_get_serialno (app->card);
 }
 
 
 /* Write out the application specific status lines for the LEARN
    command. */
 gpg_error_t
-app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
+app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
+  app_t app;
 
-  if (!app)
+  if (!card)
     return gpg_error (GPG_ERR_INV_VALUE);
+  if (!card->app)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  app = card->app;
   if (!app->fnc.learn_status)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   /* We do not send CARD and APPTYPE if only keypairinfo is requested.  */
   if (!(flags &1))
     {
-      if (app->cardtype)
-        send_status_direct (ctrl, "CARDTYPE", app->cardtype);
-      if (app->cardversion)
-        send_status_printf (ctrl, "CARDVERSION", "%X", app->cardversion);
+      if (card->cardtype)
+        send_status_direct (ctrl, "CARDTYPE", card->cardtype);
+      if (card->cardversion)
+        send_status_printf (ctrl, "CARDVERSION", "%X", card->cardversion);
       if (app->apptype)
         send_status_direct (ctrl, "APPTYPE", app->apptype);
       if (app->appversion)
         send_status_printf (ctrl, "APPVERSION", "%X", app->appversion);
+      /* FIXME: Send infor for the otehr active apps of the card?  */
     }
 
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.learn_status (app, ctrl, flags);
-  unlock_app (app);
+  err = app->fnc.learn_status (card->app, ctrl, flags);
+  unlock_card (card);
   return err;
 }
 
@@ -775,22 +828,22 @@ app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
    buffer put into CERT and the length of the certificate put into
    CERTLEN. */
 gpg_error_t
-app_readcert (app_t app, ctrl_t ctrl, const char *certid,
+app_readcert (card_t card, ctrl_t ctrl, const char *certid,
               unsigned char **cert, size_t *certlen)
 {
   gpg_error_t err;
 
-  if (!app)
+  if (!card)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.readcert)
+  if (!card->app->fnc.readcert)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.readcert (app, certid, cert, certlen);
-  unlock_app (app);
+  err = card->app->fnc.readcert (card->app, certid, cert, certlen);
+  unlock_card (card);
   return err;
 }
 
@@ -804,7 +857,7 @@ app_readcert (app_t app, ctrl_t ctrl, const char *certid,
  *
  * This function might not be supported by all applications.  */
 gpg_error_t
-app_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
+app_readkey (card_t card, ctrl_t ctrl, const char *keyid, unsigned int flags,
              unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
@@ -814,47 +867,47 @@ app_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
   if (pklen)
     *pklen = 0;
 
-  if (!app || !keyid)
+  if (!card || !keyid)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.readkey)
+  if (!card->app->fnc.readkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err= app->fnc.readkey (app, ctrl, keyid, flags, pk, pklen);
-  unlock_app (app);
+  err = card->app->fnc.readkey (card->app, ctrl, keyid, flags, pk, pklen);
+  unlock_card (card);
   return err;
 }
 
 
 /* Perform a GETATTR operation.  */
 gpg_error_t
-app_getattr (app_t app, ctrl_t ctrl, const char *name)
+app_getattr (card_t card, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
 
-  if (!app || !name || !*name)
+  if (!card || !name || !*name)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
 
-  if (app->cardtype && name && !strcmp (name, "CARDTYPE"))
+  if (card->cardtype && name && !strcmp (name, "CARDTYPE"))
     {
-      send_status_direct (ctrl, "CARDTYPE", app->cardtype);
+      send_status_direct (ctrl, "CARDTYPE", card->cardtype);
       return 0;
     }
-  if (app->apptype && name && !strcmp (name, "APPTYPE"))
+  if (card->app->apptype && name && !strcmp (name, "APPTYPE"))
     {
-      send_status_direct (ctrl, "APPTYPE", app->apptype);
+      send_status_direct (ctrl, "APPTYPE", card->app->apptype);
       return 0;
     }
   if (name && !strcmp (name, "SERIALNO"))
     {
       char *serial;
 
-      serial = app_get_serialno (app);
+      serial = card_get_serialno (card);
       if (!serial)
         return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -863,44 +916,47 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
       return 0;
     }
 
-  if (!app->fnc.getattr)
+  if (!card->app->fnc.getattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.getattr (app, ctrl, name);
-  unlock_app (app);
+  err = card->app->fnc.getattr (card->app, ctrl, name);
+  unlock_card (card);
   return err;
 }
 
+
 /* Perform a SETATTR operation.  */
 gpg_error_t
-app_setattr (app_t app, ctrl_t ctrl, const char *name,
+app_setattr (card_t card, ctrl_t ctrl, const char *name,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const unsigned char *value, size_t valuelen)
 {
   gpg_error_t err;
 
-  if (!app || !name || !*name || !value)
+  if (!card || !name || !*name || !value)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.setattr)
+  if (!card->app->fnc.setattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.setattr (app, name, pincb, pincb_arg, value, valuelen);
-  unlock_app (app);
+  err = card->app->fnc.setattr (card->app, name, pincb, pincb_arg,
+                                value, valuelen);
+  unlock_card (card);
   return err;
 }
+
 
 /* Create the signature and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
 gpg_error_t
-app_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
+app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           gpg_error_t (*pincb)(void*, const char *, char **),
           void *pincb_arg,
           const void *indata, size_t indatalen,
@@ -908,31 +964,32 @@ app_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 {
   gpg_error_t err;
 
-  if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!card || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.sign)
+  if (!card->app->fnc.sign)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.sign (app, keyidstr, hashalgo,
-                       pincb, pincb_arg,
-                       indata, indatalen,
-                       outdata, outdatalen);
-  unlock_app (app);
+  err = card->app->fnc.sign (card->app, keyidstr, hashalgo,
+                             pincb, pincb_arg,
+                             indata, indatalen,
+                             outdata, outdatalen);
+  unlock_card (card);
   if (opt.verbose)
     log_info ("operation sign result: %s\n", gpg_strerror (err));
   return err;
 }
+
 
 /* Create the signature using the INTERNAL AUTHENTICATE command and
    return the allocated result in OUTDATA.  If a PIN is required the
    PINCB will be used to ask for the PIN; it should return the PIN in
    an allocated buffer and put it into PIN.  */
 gpg_error_t
-app_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
+app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
           gpg_error_t (*pincb)(void*, const char *, char **),
           void *pincb_arg,
           const void *indata, size_t indatalen,
@@ -940,20 +997,20 @@ app_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
 {
   gpg_error_t err;
 
-  if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!card || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.auth)
+  if (!card->app->fnc.auth)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.auth (app, keyidstr,
-                       pincb, pincb_arg,
-                       indata, indatalen,
-                       outdata, outdatalen);
-  unlock_app (app);
+  err = card->app->fnc.auth (card->app, keyidstr,
+                             pincb, pincb_arg,
+                             indata, indatalen,
+                             outdata, outdatalen);
+  unlock_card (card);
   if (opt.verbose)
     log_info ("operation auth result: %s\n", gpg_strerror (err));
   return err;
@@ -964,7 +1021,7 @@ app_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
 gpg_error_t
-app_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
+app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg,
               const void *indata, size_t indatalen,
@@ -975,21 +1032,21 @@ app_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   *r_info = 0;
 
-  if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!card || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.decipher)
+  if (!card->app->fnc.decipher)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.decipher (app, keyidstr,
-                           pincb, pincb_arg,
-                           indata, indatalen,
-                           outdata, outdatalen,
-                           r_info);
-  unlock_app (app);
+  err = card->app->fnc.decipher (card->app, keyidstr,
+                                 pincb, pincb_arg,
+                                 indata, indatalen,
+                                 outdata, outdatalen,
+                                 r_info);
+  unlock_card (card);
   if (opt.verbose)
     log_info ("operation decipher result: %s\n", gpg_strerror (err));
   return err;
@@ -998,26 +1055,26 @@ app_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
 /* Perform the WRITECERT operation.  */
 gpg_error_t
-app_writecert (app_t app, ctrl_t ctrl,
-              const char *certidstr,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg,
-              const unsigned char *data, size_t datalen)
+app_writecert (card_t card, ctrl_t ctrl,
+               const char *certidstr,
+               gpg_error_t (*pincb)(void*, const char *, char **),
+               void *pincb_arg,
+               const unsigned char *data, size_t datalen)
 {
   gpg_error_t err;
 
-  if (!app || !certidstr || !*certidstr || !pincb)
+  if (!card || !certidstr || !*certidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.writecert)
+  if (!card->app->fnc.writecert)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.writecert (app, ctrl, certidstr,
-                            pincb, pincb_arg, data, datalen);
-  unlock_app (app);
+  err = card->app->fnc.writecert (card->app, ctrl, certidstr,
+                                  pincb, pincb_arg, data, datalen);
+  unlock_card (card);
   if (opt.verbose)
     log_info ("operation writecert result: %s\n", gpg_strerror (err));
   return err;
@@ -1026,7 +1083,7 @@ app_writecert (app_t app, ctrl_t ctrl,
 
 /* Perform the WRITEKEY operation.  */
 gpg_error_t
-app_writekey (app_t app, ctrl_t ctrl,
+app_writekey (card_t card, ctrl_t ctrl,
               const char *keyidstr, unsigned int flags,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg,
@@ -1034,18 +1091,18 @@ app_writekey (app_t app, ctrl_t ctrl,
 {
   gpg_error_t err;
 
-  if (!app || !keyidstr || !*keyidstr || !pincb)
+  if (!card || !keyidstr || !*keyidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.writekey)
+  if (!card->app->fnc.writekey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.writekey (app, ctrl, keyidstr, flags,
-                           pincb, pincb_arg, keydata, keydatalen);
-  unlock_app (app);
+  err = card->app->fnc.writekey (card->app, ctrl, keyidstr, flags,
+                                 pincb, pincb_arg, keydata, keydatalen);
+  unlock_card (card);
   if (opt.verbose)
     log_info ("operation writekey result: %s\n", gpg_strerror (err));
   return err;
@@ -1054,25 +1111,25 @@ app_writekey (app_t app, ctrl_t ctrl,
 
 /* Perform a SETATTR operation.  */
 gpg_error_t
-app_genkey (app_t app, ctrl_t ctrl, const char *keynostr,
+app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
             const char *keytype, unsigned int flags, time_t createtime,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
   gpg_error_t err;
 
-  if (!app || !keynostr || !*keynostr || !pincb)
+  if (!card || !keynostr || !*keynostr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.genkey)
+  if (!card->app->fnc.genkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.genkey (app, ctrl, keynostr, keytype, flags,
-                         createtime, pincb, pincb_arg);
-  unlock_app (app);
+  err = card->app->fnc.genkey (card->app, ctrl, keynostr, keytype, flags,
+                               createtime, pincb, pincb_arg);
+  unlock_card (card);
   if (opt.verbose)
     log_info ("operation genkey result: %s\n", gpg_strerror (err));
   return err;
@@ -1083,44 +1140,45 @@ app_genkey (app_t app, ctrl_t ctrl, const char *keynostr,
    directly accesses the card without any application specific
    wrapper. */
 gpg_error_t
-app_get_challenge (app_t app, ctrl_t ctrl, size_t nbytes, unsigned char *buffer)
+app_get_challenge (card_t card, ctrl_t ctrl,
+                   size_t nbytes, unsigned char *buffer)
 {
   gpg_error_t err;
 
-  if (!app || !nbytes || !buffer)
+  if (!card || !nbytes || !buffer)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = iso7816_get_challenge (app->slot, nbytes, buffer);
-  unlock_app (app);
+  err = iso7816_get_challenge (card->slot, nbytes, buffer);
+  unlock_card (card);
   return err;
 }
 
 
-
 /* Perform a CHANGE REFERENCE DATA or RESET RETRY COUNTER operation.  */
 gpg_error_t
-app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr,
+app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
                 unsigned int flags,
                 gpg_error_t (*pincb)(void*, const char *, char **),
                 void *pincb_arg)
 {
   gpg_error_t err;
 
-  if (!app || !chvnostr || !*chvnostr || !pincb)
+  if (!card || !chvnostr || !*chvnostr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.change_pin)
+  if (!card->app->fnc.change_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.change_pin (app, ctrl, chvnostr, flags, pincb, pincb_arg);
-  unlock_app (app);
+  err = card->app->fnc.change_pin (card->app, ctrl,
+                                   chvnostr, flags, pincb, pincb_arg);
+  unlock_card (card);
   if (opt.verbose)
     log_info ("operation change_pin result: %s\n", gpg_strerror (err));
   return err;
@@ -1131,27 +1189,28 @@ app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr,
    be used to initialize a the PIN cache for long lasting other
    operations.  Its use is highly application dependent. */
 gpg_error_t
-app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
+app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
                gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
 {
   gpg_error_t err;
 
-  if (!app || !keyidstr || !*keyidstr || !pincb)
+  if (!card || !keyidstr || !*keyidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
+  if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  if (!app->fnc.check_pin)
+  if (!card->app->fnc.check_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_app (app, ctrl);
+  err = lock_card (card, ctrl);
   if (err)
     return err;
-  err = app->fnc.check_pin (app, keyidstr, pincb, pincb_arg);
-  unlock_app (app);
+  err = card->app->fnc.check_pin (card->app, keyidstr, pincb, pincb_arg);
+  unlock_card (card);
   if (opt.verbose)
     log_info ("operation check_pin result: %s\n", gpg_strerror (err));
   return err;
 }
+
 
 static void
 report_change (int slot, int old_status, int cur_status)
@@ -1212,26 +1271,27 @@ report_change (int slot, int old_status, int cur_status)
   xfree (homestr);
 }
 
+
 int
 scd_update_reader_status_file (void)
 {
-  app_t a, app_next;
+  card_t card, card_next;
   int periodical_check_needed = 0;
 
-  npth_mutex_lock (&app_list_lock);
-  for (a = app_top; a; a = app_next)
+  npth_mutex_lock (&card_list_lock);
+  for (card = card_top; card; card = card_next)
     {
       int sw;
       unsigned int status;
 
-      lock_app (a, NULL);
-      app_next = a->next;
+      lock_card (card, NULL);
+      card_next = card->next;
 
-      if (a->reset_requested)
+      if (card->reset_requested)
         status = 0;
       else
         {
-          sw = apdu_get_status (a->slot, 0, &status);
+          sw = apdu_get_status (card->slot, 0, &status);
           if (sw == SW_HOST_NO_READER)
             {
               /* Most likely the _reader_ has been unplugged.  */
@@ -1240,40 +1300,41 @@ scd_update_reader_status_file (void)
           else if (sw)
             {
               /* Get status failed.  Ignore that.  */
-              if (a->periodical_check_needed)
+              if (card->periodical_check_needed)
                 periodical_check_needed = 1;
-              unlock_app (a);
+              unlock_card (card);
               continue;
             }
         }
 
-      if (a->card_status != status)
+      if (card->card_status != status)
         {
-          report_change (a->slot, a->card_status, status);
-          send_client_notifications (a, status == 0);
+          report_change (card->slot, card->card_status, status);
+          send_client_notifications (card, status == 0);
 
           if (status == 0)
             {
-              log_debug ("Removal of a card: %d\n", a->slot);
-              apdu_close_reader (a->slot);
-              deallocate_app (a);
+              log_debug ("Removal of a card: %d\n", card->slot);
+              apdu_close_reader (card->slot);
+              deallocate_card (card);
             }
           else
             {
-              a->card_status = status;
-              if (a->periodical_check_needed)
+              card->card_status = status;
+              if (card->periodical_check_needed)
                 periodical_check_needed = 1;
-              unlock_app (a);
+              unlock_card (card);
             }
         }
       else
         {
-          if (a->periodical_check_needed)
+          if (card->periodical_check_needed)
             periodical_check_needed = 1;
-          unlock_app (a);
+          unlock_card (card);
         }
     }
-  npth_mutex_unlock (&app_list_lock);
+
+  npth_mutex_unlock (&card_list_lock);
 
   return periodical_check_needed;
 }
@@ -1287,7 +1348,7 @@ initialize_module_command (void)
 {
   gpg_error_t err;
 
-  if (npth_mutex_init (&app_list_lock, NULL))
+  if (npth_mutex_init (&card_list_lock, NULL))
     {
       err = gpg_error_from_syserror ();
       log_error ("app: error initializing mutex: %s\n", gpg_strerror (err));
@@ -1297,23 +1358,25 @@ initialize_module_command (void)
   return apdu_init ();
 }
 
+
 void
 app_send_card_list (ctrl_t ctrl)
 {
-  app_t a;
+  card_t c;
   char buf[65];
 
-  npth_mutex_lock (&app_list_lock);
-  for (a = app_top; a; a = a->next)
+  npth_mutex_lock (&card_list_lock);
+  for (c = card_top; c; c = c->next)
     {
-      if (DIM (buf) < 2 * a->serialnolen + 1)
+      if (DIM (buf) < 2 * c->serialnolen + 1)
         continue;
 
-      bin2hex (a->serialno, a->serialnolen, buf);
+      bin2hex (c->serialno, c->serialnolen, buf);
       send_status_direct (ctrl, "SERIALNO", buf);
     }
-  npth_mutex_unlock (&app_list_lock);
+  npth_mutex_unlock (&card_list_lock);
 }
+
 
 /* Execute an action for each app.  ACTION can be one of:
  *
@@ -1338,18 +1401,24 @@ app_send_card_list (ctrl_t ctrl)
  *     does not emit any status or data lines.  If no key with that
  *     keygrip is available or KEYGRIP_STR is NULL, NULL is returned.
  */
-app_t
+card_t
 app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
 {
+  card_t c;
   app_t a;
 
-  npth_mutex_lock (&app_list_lock);
+  npth_mutex_lock (&card_list_lock);
 
-  for (a = app_top; a; a = a->next)
-    if (a->fnc.with_keygrip
-        && !a->fnc.with_keygrip (a, ctrl, action, keygrip_str))
-      break;
+  for (c = card_top; c; c = c->next)
+    for (a = c->app; a; a = a->next)
+      if (a->fnc.with_keygrip
+          && !a->fnc.with_keygrip (a, ctrl, action, keygrip_str))
+        break;
+  /* FIXME: Add app switching logic.  The above code assumes that the
+   * actions can be performend without switching.  This needs to be
+   * checked.  For a lookup we also need to reorder the apps so that
+   * the selected one will be used. */
 
-  npth_mutex_unlock (&app_list_lock);
-  return a;
+  npth_mutex_unlock (&card_list_lock);
+  return c;
 }

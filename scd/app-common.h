@@ -46,29 +46,53 @@
 
 struct app_local_s;  /* Defined by all app-*.c.  */
 
-struct app_ctx_s {
-  struct app_ctx_s *next;
+
+/* The object describing a card.  */
+struct card_ctx_s {
+  struct card_ctx_s *next;
 
   npth_mutex_t lock;
 
-  /* Number of connections currently using this application context.
-     If this is not 0 the application has been initialized and the
-     function pointers may be used.  Note that for unsupported
-     operations the particular function pointer is set to NULL */
+  /* Number of connections currently using this application context.  */
   unsigned int ref_count;
 
   /* Used reader slot. */
   int slot;
 
+  const char *cardtype;    /* NULL or string with the token's type.  */
+  unsigned int cardversion;/* Firmware version of the token or 0.  */
+
+  unsigned int card_status;
+
+  /* The serial number is associated with the card and not with a
+   * specific app.  If a card uses different serial numbers for its
+   * applications, our code picks the serial number of a specific
+   * application and uses that.  */
   unsigned char *serialno; /* Serialnumber in raw form, allocated. */
   size_t serialnolen;      /* Length in octets of serialnumber. */
-  const char *cardtype;    /* NULL or string with the token's type.  */
-  const char *apptype;
-  unsigned int cardversion;/* Firmware version of the token or 0.  */
-  unsigned int appversion; /* Version of the application or 0.     */
-  unsigned int card_status;
+
+  /* A linked list of applications used on this card.  The app at the
+   * head of the list is the currently active app; To work with the
+   * other apps, switching to that app might be needed.  Switching will
+   * put the active app at the head of the list.  */
+  app_t app;
+
+  /* Various flags.  */
   unsigned int reset_requested:1;
   unsigned int periodical_check_needed:1;
+};
+
+
+/* The object describing a card's applications.  A card may have
+ * several applications and it is usuallay required to explicity
+ * switch between applications.  */
+struct app_ctx_s {
+  struct app_ctx_s *next;
+
+  card_t card;  /* Link back to the card.  */
+
+  const char *apptype;
+  unsigned int appversion; /* Version of the application or 0.     */
   unsigned int did_chv1:1;
   unsigned int force_chv1:1;   /* True if the card does not cache CHV1. */
   unsigned int did_chv2:1;
@@ -141,6 +165,16 @@ enum
  };
 
 
+/* Helper to get the slot from an APP object. */
+static inline int
+app_get_slot (app_t app)
+{
+  if (app && app->card)
+    return app->card->slot;
+  return -1;
+}
+
+
 /*-- app-help.c --*/
 unsigned int app_help_count_bits (const unsigned char *a, size_t len);
 gpg_error_t app_help_get_keygrip_string_pk (const void *pk, size_t pklen,
@@ -154,75 +188,77 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 /*-- app.c --*/
 void app_update_priority_list (const char *arg);
 void app_send_card_list (ctrl_t ctrl);
+char *card_get_serialno (card_t card);
 char *app_get_serialno (app_t app);
 
 void app_dump_state (void);
 void application_notify_card_reset (int slot);
-gpg_error_t check_application_conflict (const char *name, app_t app);
-gpg_error_t app_reset (app_t app, ctrl_t ctrl, int send_reset);
-gpg_error_t select_application (ctrl_t ctrl, const char *name, app_t *r_app,
+gpg_error_t check_application_conflict (const char *name, card_t card);
+gpg_error_t card_reset (card_t card, ctrl_t ctrl, int send_reset);
+gpg_error_t select_application (ctrl_t ctrl, const char *name, card_t *r_app,
                                 int scan, const unsigned char *serialno_bin,
                                 size_t serialno_bin_len);
 char *get_supported_applications (void);
 
-app_t app_ref (app_t app);
-void  app_unref (app_t app);
-void  app_unref_locked (app_t app);
+card_t card_ref (card_t card);
+void   card_unref (card_t card);
+void   card_unref_locked (card_t card);
 
-gpg_error_t app_munge_serialno (app_t app);
-gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
+gpg_error_t app_munge_serialno (card_t card);
+gpg_error_t app_write_learn_status (card_t card, ctrl_t ctrl,
                                     unsigned int flags);
-gpg_error_t app_readcert (app_t app, ctrl_t ctrl, const char *certid,
+gpg_error_t app_readcert (card_t card, ctrl_t ctrl, const char *certid,
                   unsigned char **cert, size_t *certlen);
-gpg_error_t app_readkey (app_t app, ctrl_t ctrl,
+gpg_error_t app_readkey (card_t card, ctrl_t ctrl,
                          const char *keyid, unsigned int flags,
                          unsigned char **pk, size_t *pklen);
-gpg_error_t app_getattr (app_t app, ctrl_t ctrl, const char *name);
-gpg_error_t app_setattr (app_t app, ctrl_t ctrl, const char *name,
-                 gpg_error_t (*pincb)(void*, const char *, char **),
-                 void *pincb_arg,
-                 const unsigned char *value, size_t valuelen);
-gpg_error_t app_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg,
-              const void *indata, size_t indatalen,
-              unsigned char **outdata, size_t *outdatalen );
-gpg_error_t app_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
+gpg_error_t app_getattr (card_t card, ctrl_t ctrl, const char *name);
+gpg_error_t app_setattr (card_t card, ctrl_t ctrl, const char *name,
+                         gpg_error_t (*pincb)(void*, const char *, char **),
+                         void *pincb_arg,
+                         const unsigned char *value, size_t valuelen);
+gpg_error_t app_sign (card_t card, ctrl_t ctrl,
+                      const char *keyidstr, int hashalgo,
                       gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg,
                       const void *indata, size_t indatalen,
                       unsigned char **outdata, size_t *outdatalen);
-gpg_error_t app_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
+gpg_error_t app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
+                      gpg_error_t (*pincb)(void*, const char *, char **),
+                      void *pincb_arg,
+                      const void *indata, size_t indatalen,
+                      unsigned char **outdata, size_t *outdatalen);
+gpg_error_t app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
                           gpg_error_t (*pincb)(void*, const char *, char **),
                           void *pincb_arg,
                           const void *indata, size_t indatalen,
                           unsigned char **outdata, size_t *outdatalen,
                           unsigned int *r_info);
-gpg_error_t app_writecert (app_t app, ctrl_t ctrl,
+gpg_error_t app_writecert (card_t card, ctrl_t ctrl,
                            const char *certidstr,
                            gpg_error_t (*pincb)(void*, const char *, char **),
                            void *pincb_arg,
                            const unsigned char *keydata, size_t keydatalen);
-gpg_error_t app_writekey (app_t app, ctrl_t ctrl,
+gpg_error_t app_writekey (card_t card, ctrl_t ctrl,
                           const char *keyidstr, unsigned int flags,
                           gpg_error_t (*pincb)(void*, const char *, char **),
                           void *pincb_arg,
                           const unsigned char *keydata, size_t keydatalen);
-gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
+gpg_error_t app_genkey (card_t card, ctrl_t ctrl,
                         const char *keynostr, const char *keytype,
                         unsigned int flags, time_t createtime,
                         gpg_error_t (*pincb)(void*, const char *, char **),
                         void *pincb_arg);
-gpg_error_t app_get_challenge (app_t app, ctrl_t ctrl, size_t nbytes,
+gpg_error_t app_get_challenge (card_t card, ctrl_t ctrl, size_t nbytes,
                                unsigned char *buffer);
-gpg_error_t app_change_pin (app_t app, ctrl_t ctrl,
+gpg_error_t app_change_pin (card_t card, ctrl_t ctrl,
                             const char *chvnostr, unsigned int flags,
                             gpg_error_t (*pincb)(void*, const char *, char **),
                             void *pincb_arg);
-gpg_error_t app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
-                   gpg_error_t (*pincb)(void*, const char *, char **),
-                   void *pincb_arg);
-app_t app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str);
+gpg_error_t app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
+                           gpg_error_t (*pincb)(void*, const char *, char **),
+                           void *pincb_arg);
+card_t app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str);
 
 
 /*-- app-openpgp.c --*/

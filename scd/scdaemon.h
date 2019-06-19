@@ -84,6 +84,7 @@ struct
 #define DBG_READER  (opt.debug & DBG_READER_VALUE)
 
 struct server_local_s;
+struct card_ctx_s;
 struct app_ctx_s;
 
 struct server_control_s
@@ -101,7 +102,7 @@ struct server_control_s
      associated.  Note that this is shared with the other connections:
      All connections accessing the same reader are using the same
      application context. */
-  struct app_ctx_s *app_ctx;
+  struct card_ctx_s *card_ctx;
 
   /* Helper to store the value we are going to sign */
   struct
@@ -111,6 +112,7 @@ struct server_control_s
   } in_data;
 };
 
+typedef struct card_ctx_s *card_t;
 typedef struct app_ctx_s *app_t;
 
 /*-- scdaemon.c --*/
@@ -130,8 +132,8 @@ void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
 
 void popup_prompt (void *opaque, int on);
 
-/* Take care: this function assumes that APP is locked.  */
-void send_client_notifications (app_t app, int removal);
+/* Take care: this function assumes that CARD is locked.  */
+void send_client_notifications (card_t card, int removal);
 
 void scd_kick_the_loop (void);
 int get_active_connection_count (void);

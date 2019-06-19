@@ -484,7 +484,8 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No private keys. */
 
-  err = select_and_read_binary (app->slot, fid, "PrKDF", &buffer, &buflen, 255);
+  err = select_and_read_binary (app_get_slot (app),
+                                fid, "PrKDF", &buffer, &buflen, 255);
   if (err)
     return err;
 
@@ -832,7 +833,7 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
   xfree (buffer);
   buffer = NULL;
   buflen = 0;
-  err = select_and_read_binary (app->slot,
+  err = select_and_read_binary (app_get_slot (app),
                                 ((SC_HSM_EE_PREFIX << 8) | (fid & 0xFF)),
                                 "CertEF", &buffer, &buflen, 1);
   if (!err && buffer[0] == 0x30)
@@ -953,7 +954,8 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No certificates. */
 
-  err = select_and_read_binary (app->slot, fid, "CDF", &buffer, &buflen, 255);
+  err = select_and_read_binary (app_get_slot (app), fid, "CDF",
+                                &buffer, &buflen, 255);
   if (err)
     return err;
 
@@ -1202,7 +1204,7 @@ read_serialno(app_t app)
   size_t n, objlen, hdrlen, chrlen;
   int class, tag, constructed, ndef;
 
-  err = select_and_read_binary (app->slot, 0x2F02, "EF.C_DevAut",
+  err = select_and_read_binary (app_get_slot (app), 0x2F02, "EF.C_DevAut",
                                 &buffer, &buflen, 512);
   if (err)
     return err;
@@ -1229,15 +1231,15 @@ read_serialno(app_t app)
     }
   chrlen -= 5;
 
-  app->serialno = xtrymalloc (chrlen);
-  if (!app->serialno)
+  app->card->serialno = xtrymalloc (chrlen);
+  if (!app->card->serialno)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
 
-  app->serialnolen = chrlen;
-  memcpy (app->serialno, chr, chrlen);
+  app->card->serialnolen = chrlen;
+  memcpy (app->card->serialno, chr, chrlen);
 
  leave:
   xfree (buffer);
@@ -1260,7 +1262,7 @@ read_meta (app_t app)
   if (err)
     return err;
 
-  err = list_ef (app->slot, &eflist, &eflistlen);
+  err = list_ef (app_get_slot (app), &eflist, &eflistlen);
   if (err)
     return err;
 
@@ -1454,7 +1456,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       return 0;
     }
 
-  err = select_and_read_binary (app->slot, cdf->fid, "CD",
+  err = select_and_read_binary (app_get_slot (app), cdf->fid, "CD",
                                 &buffer, &buflen, 4096);
   if (err)
     {
@@ -1592,7 +1594,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   else if (!strcmp (name, "$DISPSERIALNO"))
     {
-      send_status_info (ctrl, name, app->serialno, app->serialnolen, NULL, 0);
+      send_status_info (ctrl, name,
+                        app->card->serialno, app->card->serialnolen, NULL, 0);
       return 0;
     }
 
@@ -1693,8 +1696,8 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   char *prompt;
   int sw;
 
-  sw = apdu_send_simple (app->slot, 0, 0x00, ISO7816_VERIFY, 0x00, 0x81,
-                         -1, NULL);
+  sw = apdu_send_simple (app_get_slot (app),
+                         0, 0x00, ISO7816_VERIFY, 0x00, 0x81, -1, NULL);
 
   if (sw == SW_SUCCESS)
     return 0;                   /* PIN already verified */
@@ -1719,7 +1722,7 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   prompt = "||Please enter the PIN";
 
   if (!opt.disable_pinpad
-      && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo) )
+      && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
       err = pincb (pincb_arg, prompt, NULL);
       if (err)
@@ -1728,7 +1731,7 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
           return err;
         }
 
-      err = iso7816_verify_kp (app->slot, 0x81, &pininfo);
+      err = iso7816_verify_kp (app_get_slot (app), 0x81, &pininfo);
       pincb (pincb_arg, NULL, NULL);  /* Dismiss the prompt. */
     }
   else
@@ -1740,7 +1743,8 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
           return err;
         }
 
-      err = iso7816_verify (app->slot, 0x81, pinvalue, strlen(pinvalue));
+      err = iso7816_verify (app_get_slot (app),
+                            0x81, pinvalue, strlen(pinvalue));
       xfree (pinvalue);
     }
   if (err)
@@ -1883,7 +1887,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   if (err)
     return err;
 
-  sw = apdu_send_le (app->slot, 1, 0x80, 0x68, prkdf->key_reference, algoid,
+  sw = apdu_send_le (app_get_slot (app),
+                     1, 0x80, 0x68, prkdf->key_reference, algoid,
                      cdsblklen, cdsblk, 0, outdata, outdatalen);
   return iso7816_map_sw (sw);
 }
@@ -2018,7 +2023,8 @@ do_decipher (app_t app, const char *keyidstr,
   if (err)
     return err;
 
-  sw = apdu_send_le (app->slot, 1, 0x80, 0x62, prkdf->key_reference, 0x21,
+  sw = apdu_send_le (app_get_slot (app),
+                     1, 0x80, 0x62, prkdf->key_reference, 0x21,
                      p1blklen, p1blk, 0, &rspdata, &rspdatalen);
   err = iso7816_map_sw (sw);
   if (err)
@@ -2044,7 +2050,7 @@ do_decipher (app_t app, const char *keyidstr,
 gpg_error_t
 app_select_sc_hsm (app_t app)
 {
-  int slot = app->slot;
+  int slot = app_get_slot (app);
   int rc;
 
   rc = iso7816_select_application (slot, sc_hsm_aid, sizeof sc_hsm_aid, 0);

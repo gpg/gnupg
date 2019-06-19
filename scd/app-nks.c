@@ -151,13 +151,15 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
   int i;
   int offset[2] = { 0, 0 };
 
-  err = iso7816_select_file (app->slot, fid, 0);
+  err = iso7816_select_file (app_get_slot (app), fid, 0);
   if (err)
     return err;
-  err = iso7816_read_record (app->slot, 1, 1, 0, &buffer[0], &buflen[0]);
+  err = iso7816_read_record (app_get_slot (app), 1, 1, 0,
+                             &buffer[0], &buflen[0]);
   if (err)
     return err;
-  err = iso7816_read_record (app->slot, 2, 1, 0, &buffer[1], &buflen[1]);
+  err = iso7816_read_record (app_get_slot (app), 2, 1, 0,
+                             &buffer[1], &buflen[1]);
   if (err)
     {
       xfree (buffer[0]);
@@ -272,7 +274,7 @@ get_chv_status (app_t app, int sigg, int pwid)
   command[2] = 0x00;
   command[3] = pwid;
 
-  if (apdu_send_direct (app->slot, 0, (unsigned char *)command,
+  if (apdu_send_direct (app_get_slot (app), 0, (unsigned char *)command,
                         4, 0, NULL, &result, &resultlen))
     rc = -1; /* Error. */
   else if (resultlen < 2)
@@ -406,7 +408,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
         {
           size_t len;
 
-          len = app_help_read_length_of_cert (app->slot,
+          len = app_help_read_length_of_cert (app_get_slot (app),
                                               filelist[i].fid, NULL);
           if (len)
             {
@@ -528,14 +530,14 @@ do_readcert (app_t app, const char *certid,
   /* Read the entire file.  fixme: This could be optimized by first
      reading the header to figure out how long the certificate
      actually is. */
-  err = iso7816_select_file (app->slot, fid, 0);
+  err = iso7816_select_file (app_get_slot (app), fid, 0);
   if (err)
     {
       log_error ("error selecting FID 0x%04X: %s\n", fid, gpg_strerror (err));
       return err;
     }
 
-  err = iso7816_read_binary (app->slot, 0, 0, &buffer, &buflen);
+  err = iso7816_read_binary (app_get_slot (app), 0, 0, &buffer, &buflen);
   if (err)
     {
       log_error ("error reading certificate from FID 0x%04X: %s\n",
@@ -633,13 +635,14 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   /* Access the KEYD file which is always in the master directory.  */
-  err = iso7816_select_path (app->slot, path, DIM (path));
+  err = iso7816_select_path (app_get_slot (app), path, DIM (path));
   if (err)
     return err;
   /* Due to the above select we need to re-select our application.  */
   app->app_local->need_app_select = 1;
   /* Get the two records.  */
-  err = iso7816_read_record (app->slot, 5, 1, 0, &buffer[0], &buflen[0]);
+  err = iso7816_read_record (app_get_slot (app), 5, 1, 0,
+                             &buffer[0], &buflen[0]);
   if (err)
     return err;
   if (all_zero_p (buffer[0], buflen[0]))
@@ -647,7 +650,8 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
       xfree (buffer[0]);
       return gpg_error (GPG_ERR_NOT_FOUND);
     }
-  err = iso7816_read_record (app->slot, 6, 1, 0, &buffer[1], &buflen[1]);
+  err = iso7816_read_record (app_get_slot (app), 6, 1, 0,
+                             &buffer[1], &buflen[1]);
   if (err)
     {
       xfree (buffer[0]);
@@ -760,7 +764,7 @@ do_writekey (app_t app, ctrl_t ctrl,
 /*   mse[10] = 0x82; /\* RSA public exponent of up to 4 bytes.  *\/ */
 /*   mse[12] = rsa_e_len; */
 /*   memcpy (mse+12, rsa_e, rsa_e_len); */
-/*   err = iso7816_manage_security_env (app->slot, 0x81, 0xB6, */
+/*   err = iso7816_manage_security_env (app_get_slot (app), 0x81, 0xB6, */
 /*                                      mse, sizeof mse); */
 
  leave:
@@ -803,7 +807,7 @@ verify_pin (app_t app, int pwid, const char *desc,
   pininfo.maxlen = 16;
 
   if (!opt.disable_pinpad
-      && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo) )
+      && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
       rc = pincb (pincb_arg, desc, NULL);
       if (rc)
@@ -813,7 +817,7 @@ verify_pin (app_t app, int pwid, const char *desc,
           return rc;
         }
 
-      rc = iso7816_verify_kp (app->slot, pwid, &pininfo);
+      rc = iso7816_verify_kp (app_get_slot (app), pwid, &pininfo);
       pincb (pincb_arg, NULL, NULL);  /* Dismiss the prompt. */
     }
   else
@@ -834,7 +838,8 @@ verify_pin (app_t app, int pwid, const char *desc,
           return rc;
         }
 
-      rc = iso7816_verify (app->slot, pwid, pinvalue, strlen (pinvalue));
+      rc = iso7816_verify (app_get_slot (app), pwid,
+                           pinvalue, strlen (pinvalue));
       xfree (pinvalue);
     }
 
@@ -972,7 +977,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       mse[3] = 0x84; /* Private key reference.  */
       mse[4] = 1;
       mse[5] = kid;
-      rc = iso7816_manage_security_env (app->slot, 0x41, 0xB6,
+      rc = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB6,
                                         mse, sizeof mse);
     }
   /* Verify using PW1.CH.  */
@@ -980,7 +985,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     rc = verify_pin (app, 0, NULL, pincb, pincb_arg);
   /* Compute the signature.  */
   if (!rc)
-    rc = iso7816_compute_ds (app->slot, 0, data, datalen, 0,
+    rc = iso7816_compute_ds (app_get_slot (app), 0, data, datalen, 0,
                              outdata, outdatalen);
   return rc;
 }
@@ -1047,7 +1052,7 @@ do_decipher (app_t app, const char *keyidstr,
       mse[3] = 0x84; /* Private key reference.  */
       mse[4] = 1;
       mse[5] = kid;
-      rc = iso7816_manage_security_env (app->slot, 0x41, 0xB8,
+      rc = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB8,
                                         mse, sizeof mse);
     }
   else
@@ -1057,7 +1062,7 @@ do_decipher (app_t app, const char *keyidstr,
           0x80, 1, 0x10, /* Select algorithm RSA. */
           0x84, 1, 0x81  /* Select local secret key 1 for decryption. */
         };
-      rc = iso7816_manage_security_env (app->slot, 0xC1, 0xB8,
+      rc = iso7816_manage_security_env (app_get_slot (app), 0xC1, 0xB8,
                                         mse, sizeof mse);
 
     }
@@ -1068,7 +1073,8 @@ do_decipher (app_t app, const char *keyidstr,
   /* Note that we need to use extended length APDUs for TCOS 3 cards.
      Command chaining does not work.  */
   if (!rc)
-    rc = iso7816_decipher (app->slot, app->app_local->nks_version > 2? 1:0,
+    rc = iso7816_decipher (app_get_slot (app),
+                           app->app_local->nks_version > 2? 1:0,
                            indata, indatalen, 0, 0x81,
                            outdata, outdatalen);
   return rc;
@@ -1260,13 +1266,13 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
         }
       memcpy (data, oldpin, oldpinlen);
       memcpy (data+oldpinlen, newpin, newpinlen);
-      err = iso7816_reset_retry_counter_with_rc (app->slot, pwid,
+      err = iso7816_reset_retry_counter_with_rc (app_get_slot (app), pwid,
                                                  data, datalen);
       wipememory (data, datalen);
       xfree (data);
     }
   else
-    err = iso7816_change_reference_data (app->slot, pwid,
+    err = iso7816_change_reference_data (app_get_slot (app), pwid,
                                          oldpin, oldpinlen,
                                          newpin, newpinlen);
  leave:
@@ -1347,9 +1353,11 @@ switch_application (app_t app, int enable_sigg)
 
   log_info ("app-nks: switching to %s\n", enable_sigg? "SigG":"NKS");
   if (enable_sigg)
-    err = iso7816_select_application (app->slot, aid_sigg, sizeof aid_sigg, 0);
+    err = iso7816_select_application (app_get_slot (app),
+                                      aid_sigg, sizeof aid_sigg, 0);
   else
-    err = iso7816_select_application (app->slot, aid_nks, sizeof aid_nks, 0);
+    err = iso7816_select_application (app_get_slot (app),
+                                      aid_nks, sizeof aid_nks, 0);
 
   if (!err && enable_sigg && app->app_local->nks_version >= 3
       && !app->app_local->sigg_msig_checked)
@@ -1362,9 +1370,10 @@ switch_application (app_t app, int enable_sigg)
 
       app->app_local->sigg_msig_checked = 1;
       app->app_local->sigg_is_msig = 1;
-      err = iso7816_select_file (app->slot, 0x5349, 0);
+      err = iso7816_select_file (app_get_slot (app), 0x5349, 0);
       if (!err)
-        err = iso7816_read_record (app->slot, 1, 1, 0, &buffer, &buflen);
+        err = iso7816_read_record (app_get_slot (app), 1, 1, 0,
+                                   &buffer, &buflen);
       if (!err)
         {
           tmpl = find_tlv (buffer, buflen, 0x7a, &tmpllen);
@@ -1396,7 +1405,7 @@ switch_application (app_t app, int enable_sigg)
 gpg_error_t
 app_select_nks (app_t app)
 {
-  int slot = app->slot;
+  int slot = app_get_slot (app);
   int rc;
 
   rc = iso7816_select_application (slot, aid_nks, sizeof aid_nks, 0);

@@ -277,7 +277,7 @@ app_select_geldkarte (app_t app)
   static char const aid[] =
     { 0xD2, 0x76, 0x00, 0x00, 0x25, 0x45, 0x50, 0x02, 0x00 };
   gpg_error_t err;
-  int slot = app->slot;
+  int slot = app_get_slot (app);
   unsigned char *result = NULL;
   size_t resultlen;
   struct app_local_s *ld;
@@ -316,17 +316,17 @@ app_select_geldkarte (app_t app)
   app->fnc.deinit = do_deinit;
 
   /* If we don't have a serialno yet construct it from the EF_ID.  */
-  if (!app->serialno)
+  if (!app->card->serialno)
     {
-      app->serialno = xtrymalloc (10);
-      if (!app->serialno)
+      app->card->serialno = xtrymalloc (10);
+      if (!app->card->serialno)
         {
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      memcpy (app->serialno, result, 10);
-      app->serialnolen = 10;
-      err = app_munge_serialno (app);
+      memcpy (app->card->serialno, result, 10);
+      app->card->serialnolen = 10;
+      err = app_munge_serialno (app->card);
       if (err)
         goto leave;
     }
