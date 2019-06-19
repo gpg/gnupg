@@ -312,7 +312,7 @@ app_select_geldkarte (app_t app)
       goto leave; /* Probably not a Geldkarte. */
     }
 
-  app->apptype = "GELDKARTE";
+  app->apptype = APPTYPE_GELDKARTE;
   app->fnc.deinit = do_deinit;
 
   /* If we don't have a serialno yet construct it from the EF_ID.  */

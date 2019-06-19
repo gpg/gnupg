@@ -43,7 +43,34 @@
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
 
 
+/* List of supported card types.  Generic is the usual ISO7817-4
+ * compliant card.  More specific card or token versions can be given
+ * here.  Use strcardtype() to map them to a string. */
+typedef enum
+  {
+   CARDTYPE_GENERIC = 0,
+   CARDTYPE_YUBIKEY
 
+  } cardtype_t;
+
+/* List of supported card applications.  The source code for each
+ * application can usually be found in an app-NAME.c file.  Use
+ * strapptype() to map them to a string.  */
+typedef enum
+  {
+   APPTYPE_NONE = 0,
+   APPTYPE_UNDEFINED,
+   APPTYPE_OPENPGP,
+   APPTYPE_PIV,
+   APPTYPE_NKS,
+   APPTYPE_P15,
+   APPTYPE_GELDKARTE,
+   APPTYPE_DINSIG,
+   APPTYPE_SC_HSM
+  } apptype_t;
+
+
+/* Formeard declararion.  */
 struct app_local_s;  /* Defined by all app-*.c.  */
 
 
@@ -59,7 +86,7 @@ struct card_ctx_s {
   /* Used reader slot. */
   int slot;
 
-  const char *cardtype;    /* NULL or string with the token's type.  */
+  cardtype_t cardtype;     /* The token's type.  */
   unsigned int cardversion;/* Firmware version of the token or 0.  */
 
   unsigned int card_status;
@@ -91,7 +118,7 @@ struct app_ctx_s {
 
   card_t card;  /* Link back to the card.  */
 
-  const char *apptype;
+  apptype_t apptype;       /* The type of the application.  */
   unsigned int appversion; /* Version of the application or 0.     */
   unsigned int did_chv1:1;
   unsigned int force_chv1:1;   /* True if the card does not cache CHV1. */
@@ -186,6 +213,9 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 
 
 /*-- app.c --*/
+const char *strcardtype (cardtype_t t);
+const char *strapptype (apptype_t t);
+
 void app_update_priority_list (const char *arg);
 void app_send_card_list (ctrl_t ctrl);
 char *card_get_serialno (card_t card);

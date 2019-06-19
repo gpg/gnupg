@@ -556,7 +556,7 @@ app_select_dinsig (app_t app)
   rc = iso7816_select_application (slot, aid, sizeof aid, 0);
   if (!rc)
     {
-      app->apptype = "DINSIG";
+      app->apptype = APPTYPE_DINSIG;
 
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;

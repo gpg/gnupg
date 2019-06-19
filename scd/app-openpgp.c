@@ -5224,7 +5224,7 @@ app_select_openpgp (app_t app)
     {
       unsigned int manufacturer;
 
-      app->apptype = "OPENPGP";
+      app->apptype = APPTYPE_OPENPGP;
 
       app->did_chv1 = 0;
       app->did_chv2 = 0;

@@ -3413,7 +3413,7 @@ app_select_piv (app_t app)
   if (err)
     goto leave;
 
-  app->apptype = "PIV";
+  app->apptype = APPTYPE_PIV;
   app->did_chv1 = 0;
   app->did_chv2 = 0;
   app->did_chv3 = 0;
@@ -3466,7 +3466,7 @@ app_select_piv (app_t app)
       goto leave;
     }
 
-  if (app->card->cardtype && !strcmp (app->card->cardtype, "yubikey"))
+  if (app->card->cardtype == CARDTYPE_YUBIKEY)
     app->app_local->flags.yubikey = 1;
 
 

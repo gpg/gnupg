@@ -40,30 +40,58 @@ static npth_mutex_t card_list_lock;
 static card_t card_top;
 
 
-/* The list of application names and there select function.  Of no
- * specfic application is selected the first available application on
+/* The list of application names and their select function.  If no
+ * specific application is selected the first available application on
  * a card is selected.  */
 struct app_priority_list_s
 {
+  apptype_t apptype;
   char const *name;
   gpg_error_t (*select_func)(app_t);
 };
 
 static struct app_priority_list_s app_priority_list[] =
-  {{ "openpgp",   app_select_openpgp   },
-   { "piv",       app_select_piv       },
-   { "nks",       app_select_nks       },
-   { "p15",       app_select_p15       },
-   { "geldkarte", app_select_geldkarte },
-   { "dinsig",    app_select_dinsig    },
-   { "sc-hsm",    app_select_sc_hsm    },
-   { NULL,        NULL                 }
+  {{ APPTYPE_OPENPGP  , "openpgp",   app_select_openpgp   },
+   { APPTYPE_PIV      , "piv",       app_select_piv       },
+   { APPTYPE_NKS      , "nks",       app_select_nks       },
+   { APPTYPE_P15      , "p15",       app_select_p15       },
+   { APPTYPE_GELDKARTE, "geldkarte", app_select_geldkarte },
+   { APPTYPE_DINSIG   , "dinsig",    app_select_dinsig    },
+   { APPTYPE_SC_HSM   , "sc-hsm",    app_select_sc_hsm    },
+   { APPTYPE_NONE     , NULL,        NULL                 }
+   /* APPTYPE_UNDEFINED is special and not listed here.  */
   };
 
 
 
 
 
+/* Map a cardtype to a string.  Never returns NULL.  */
+const char *
+strcardtype (cardtype_t t)
+{
+  switch (t)
+    {
+    case CARDTYPE_GENERIC: return "generic";
+    case CARDTYPE_YUBIKEY: return "yubikey";
+    }
+  return "?";
+}
+
+
+/* Map an application type to a string.  Never returns NULL.  */
+const char *
+strapptype (apptype_t t)
+{
+  int i;
+
+  for (i=0; app_priority_list[i].apptype; i++)
+    if (app_priority_list[i].apptype == t)
+      return app_priority_list[i].name;
+  return t == APPTYPE_UNDEFINED? "undefined" : t? "?" : "none";
+}
+
+
 /* Initialization function to change the default app_priority_list.
  * LIST is a list of comma or space separated strings with application
  * names.  Unknown names will only result in warning message.
@@ -185,9 +213,10 @@ app_dump_state (void)
   for (c = card_top; c; c = c->next)
     {
       log_info ("app_dump_state: card=%p slot=%d type=%s\n",
-                c, c->slot, c->cardtype? c->cardtype:"unknown");
+                c, c->slot, strcardtype (c->cardtype));
       for (a=c->app; a; a = a->next)
-        log_info ("app_dump_state:   app=%p type='%s'\n", a, a->apptype);
+        log_info ("app_dump_state:   app=%p type='%s'\n",
+                  a, strapptype (a->apptype));
     }
   npth_mutex_unlock (&card_list_lock);
 }
@@ -216,14 +245,15 @@ check_conflict (card_t card, const char *name)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED); /* Should not happen.  */
 
   /* FIXME:  Needs changes for app switching.  */
-  if (card->app->apptype && !ascii_strcasecmp (card->app->apptype, name))
+  if (!card->app->apptype
+      || !ascii_strcasecmp (strapptype (card->app->apptype), name))
     return 0;
 
-  if (card->app->apptype && !strcmp (card->app->apptype, "UNDEFINED"))
+  if (card->app->apptype == APPTYPE_UNDEFINED)
     return 0;
 
   log_info ("application '%s' in use - can't switch\n",
-            card->app->apptype? card->app->apptype : "<null>");
+            strapptype (card->app->apptype));
 
   return gpg_error (GPG_ERR_CONFLICT);
 }
@@ -335,7 +365,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
               && !iso7816_apdu_direct (slot, "\x00\x1d\x00\x00\x00", 5, 0,
                                        NULL, &buf, &buflen))
             {
-              card->cardtype = "yubikey";
+              card->cardtype = CARDTYPE_YUBIKEY;
               if (opt.verbose)
                 {
                   log_info ("Yubico: config=");
@@ -446,7 +476,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
     {
       /* We switch to the "undefined" application only if explicitly
          requested.  */
-      app->apptype = "UNDEFINED";
+      app->apptype = APPTYPE_UNDEFINED;
       /* Clear the error so that we don't run through the application
        * selection chain.  */
       err = 0;
@@ -804,14 +834,14 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
   if (!(flags &1))
     {
       if (card->cardtype)
-        send_status_direct (ctrl, "CARDTYPE", card->cardtype);
+        send_status_direct (ctrl, "CARDTYPE", strcardtype (card->cardtype));
       if (card->cardversion)
         send_status_printf (ctrl, "CARDVERSION", "%X", card->cardversion);
       if (app->apptype)
-        send_status_direct (ctrl, "APPTYPE", app->apptype);
+        send_status_direct (ctrl, "APPTYPE", strapptype (app->apptype));
       if (app->appversion)
         send_status_printf (ctrl, "APPVERSION", "%X", app->appversion);
-      /* FIXME: Send infor for the otehr active apps of the card?  */
+      /* FIXME: Send info for the other active apps of the card?  */
     }
 
   err = lock_card (card, ctrl);
@@ -893,14 +923,14 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
   if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
 
-  if (card->cardtype && name && !strcmp (name, "CARDTYPE"))
+  if (name && !strcmp (name, "CARDTYPE"))
     {
-      send_status_direct (ctrl, "CARDTYPE", card->cardtype);
+      send_status_direct (ctrl, "CARDTYPE", strcardtype (card->cardtype));
       return 0;
     }
-  if (card->app->apptype && name && !strcmp (name, "APPTYPE"))
+  if (name && !strcmp (name, "APPTYPE"))
     {
-      send_status_direct (ctrl, "APPTYPE", card->app->apptype);
+      send_status_direct (ctrl, "APPTYPE", strapptype (card->app->apptype));
       return 0;
     }
   if (name && !strcmp (name, "SERIALNO"))

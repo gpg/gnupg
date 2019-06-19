@@ -2056,7 +2056,7 @@ app_select_sc_hsm (app_t app)
   rc = iso7816_select_application (slot, sc_hsm_aid, sizeof sc_hsm_aid, 0);
   if (!rc)
     {
-      app->apptype = "SC-HSM";
+      app->apptype = APPTYPE_SC_HSM;
 
       app->app_local = xtrycalloc (1, sizeof *app->app_local);
       if (!app->app_local)
