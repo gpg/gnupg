@@ -870,7 +870,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
         {
           size_t len;
 
-          len = app_help_read_length_of_cert (app->slot,
+          len = app_help_read_length_of_cert (app_get_slot (app),
                                               filelist[i].fid, NULL);
           if (len)
             {
@@ -962,7 +962,7 @@ readcert_from_ef (app_t app, int fid, unsigned char **cert, size_t *certlen)
   /* Read the entire file.  fixme: This could be optimized by first
      reading the header to figure out how long the certificate
      actually is. */
-  err = iso7816_select_file (app->slot, fid, 0);
+  err = iso7816_select_file (app_get_slot (app), fid, 0);
   if (err)
     {
       log_error ("nks: error selecting FID 0x%04X: %s\n",
@@ -970,7 +970,7 @@ readcert_from_ef (app_t app, int fid, unsigned char **cert, size_t *certlen)
       return err;
     }
 
-  err = iso7816_read_binary (app->slot, 0, 0, &buffer, &buflen);
+  err = iso7816_read_binary (app_get_slot (app), 0, 0, &buffer, &buflen);
   if (err)
     {
       log_error ("nks: error reading certificate from FID 0x%04X: %s\n",
@@ -1515,7 +1515,7 @@ do_writekey (app_t app, ctrl_t ctrl,
 /*   mse[10] = 0x82; /\* RSA public exponent of up to 4 bytes.  *\/ */
 /*   mse[12] = rsa_e_len; */
 /*   memcpy (mse+12, rsa_e, rsa_e_len); */
-/*   err = iso7816_manage_security_env (app->slot, 0x81, 0xB6, */
+/*   err = iso7816_manage_security_env (app_get_slot (app), 0x81, 0xB6, */
 /*                                      mse, sizeof mse); */
 
  leave:
@@ -1659,7 +1659,7 @@ verify_pin (app_t app, int pwid, const char *desc,
     }
 
   if (!opt.disable_pinpad
-      && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo) )
+      && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
       prompt = make_prompt (app, remaining, desc, extrapromptline);
       rc = pincb (pincb_arg, prompt, NULL);
@@ -1671,7 +1671,7 @@ verify_pin (app_t app, int pwid, const char *desc,
           return rc;
         }
 
-      rc = iso7816_verify_kp (app->slot, pwid, &pininfo);
+      rc = iso7816_verify_kp (app_get_slot (app), pwid, &pininfo);
       pincb (pincb_arg, NULL, NULL);  /* Dismiss the prompt. */
     }
   else
@@ -1694,7 +1694,8 @@ verify_pin (app_t app, int pwid, const char *desc,
           return rc;
         }
 
-      rc = iso7816_verify (app->slot, pwid, pinvalue, strlen (pinvalue));
+      rc = iso7816_verify (app_get_slot (app), pwid,
+                           pinvalue, strlen (pinvalue));
       xfree (pinvalue);
     }
 

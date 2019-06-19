@@ -100,7 +100,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   /* Return the certificate of the card holder. */
   fid = 0xC000;
-  len = app_help_read_length_of_cert (app->slot, fid, &certoff);
+  len = app_help_read_length_of_cert (app_get_slot (app), fid, &certoff);
   if (!len)
     return 0; /* Card has not been personalized. */
 
@@ -113,7 +113,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   /* Now we need to read the certificate, so that we can get the
      public key out of it.  */
-  err = iso7816_read_binary (app->slot, certoff, len-certoff, &der, &derlen);
+  err = iso7816_read_binary (app_get_slot (app), certoff, len-certoff,
+                             &der, &derlen);
   if (err)
     {
       log_info ("error reading entire certificate from FID 0x%04X: %s\n",
@@ -192,14 +193,14 @@ do_readcert (app_t app, const char *certid,
   /* Read the entire file.  fixme: This could be optimized by first
      reading the header to figure out how long the certificate
      actually is. */
-  err = iso7816_select_file (app->slot, fid, 0);
+  err = iso7816_select_file (app_get_slot (app), fid, 0);
   if (err)
     {
       log_error ("error selecting FID 0x%04X: %s\n", fid, gpg_strerror (err));
       return err;
     }
 
-  err = iso7816_read_binary (app->slot, 0, 0, &buffer, &buflen);
+  err = iso7816_read_binary (app_get_slot (app), 0, 0, &buffer, &buflen);
   if (err)
     {
       log_error ("error reading certificate from FID 0x%04X: %s\n",
@@ -292,7 +293,7 @@ verify_pin (app_t app,
   pininfo.maxlen = 8;
 
   if (!opt.disable_pinpad
-      && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo) )
+      && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
       rc = pincb (pincb_arg,
                   _("||Please enter your PIN at the reader's pinpad"),
@@ -303,7 +304,7 @@ verify_pin (app_t app,
                     gpg_strerror (rc));
           return rc;
         }
-      rc = iso7816_verify_kp (app->slot, 0x81, &pininfo);
+      rc = iso7816_verify_kp (app_get_slot (app), 0x81, &pininfo);
       /* Dismiss the prompt. */
       pincb (pincb_arg, NULL, NULL);
     }
@@ -344,7 +345,8 @@ verify_pin (app_t app,
           return gpg_error (GPG_ERR_BAD_PIN);
         }
 
-      rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
+      rc = iso7816_verify (app_get_slot (app), 0x81,
+                           pinvalue, strlen (pinvalue));
       if (gpg_err_code (rc) == GPG_ERR_INV_VALUE)
         {
           /* We assume that ISO 9564-1 encoding is used and we failed
@@ -365,7 +367,8 @@ verify_pin (app_t app,
             paddedpin[i++] = (((*s - '0') << 4) | 0x0f);
           while (i < sizeof paddedpin)
             paddedpin[i++] = 0xff;
-          rc = iso7816_verify (app->slot, 0x81, paddedpin, sizeof paddedpin);
+          rc = iso7816_verify (app_get_slot (app), 0x81,
+                               paddedpin, sizeof paddedpin);
         }
       xfree (pinvalue);
     }
@@ -483,7 +486,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
   rc = verify_pin (app, pincb, pincb_arg);
   if (!rc)
-    rc = iso7816_compute_ds (app->slot, 0, data, datalen, 0,
+    rc = iso7816_compute_ds (app_get_slot (app), 0, data, datalen, 0,
                              outdata, outdatalen);
   return rc;
 }
@@ -533,7 +536,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       return err;
     }
 
-  err = iso7816_change_reference_data (app->slot, 0x81,
+  err = iso7816_change_reference_data (app_get_slot (app), 0x81,
                                        oldpin, oldpinlen,
                                        pinvalue, strlen (pinvalue));
   xfree (pinvalue);
@@ -548,7 +551,7 @@ gpg_error_t
 app_select_dinsig (app_t app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };
-  int slot = app->slot;
+  int slot = app_get_slot (app);
   int rc;
 
   rc = iso7816_select_application (slot, aid, sizeof aid, 0);
