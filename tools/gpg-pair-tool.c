@@ -1022,7 +1022,6 @@ create_dh_keypair (unsigned char *dh_secret, size_t dh_secret_len,
 {
   gpg_error_t err;
   unsigned char *p;
-  const unsigned char G[32] = { 0x9 };
 
   /* We need a temporary buffer for the public key.  Check the length
    * for the later memcpy.  */
@@ -1036,7 +1035,7 @@ create_dh_keypair (unsigned char *dh_secret, size_t dh_secret_len,
   memcpy (dh_secret, p, 32);
   xfree (p);
 
-  err = gcry_ecc_mul_point (GCRY_ECC_CURVE25519, &p, dh_secret, G);
+  err = gcry_ecc_mul_point (GCRY_ECC_CURVE25519, &p, dh_secret, NULL);
   if (err)
     return err;
 
