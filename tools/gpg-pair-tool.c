@@ -976,7 +976,7 @@ read_message (unsigned char **r_msg, size_t *r_msglen, int *r_msgtype,
 static gpg_error_t
 display_sas (const unsigned char *hash, size_t hashlen, int wait)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   unsigned long sas = 0;
   char sasbuf[12];
 
