@@ -4,13 +4,13 @@
 # IIDA Yosiaki <iida@gnu.org>, 1999, 2000, 2002, 2003, 2004.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
-# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018.
+# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.13\n"
+"Project-Id-Version: gnupg 2.2.16\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-04-23 11:50+0900\n"
+"PO-Revision-Date: 2019-06-20 13:57+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -242,9 +242,6 @@ msgstr "一時ファイルの書き込みエラー: %s\n"
 msgid "Enter new passphrase"
 msgstr "新しいパスフレーズを入力してください"
 
-msgid "Take this one anyway"
-msgstr "それでもこれを使います"
-
 #, c-format
 msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
@@ -281,6 +278,9 @@ msgstr ""
 
 msgid "Warning: You have entered an insecure passphrase."
 msgstr "警告: 安全とは言えないパスフレーズが入力されました。"
+
+msgid "Take this one anyway"
+msgstr "それでもこれを使います"
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -579,7 +579,7 @@ msgid "error reading '%s', line %d: %s\n"
 msgstr "'%s'の読み込みエラー(行 %d): %s\n"
 
 msgid "error reading list of trusted root certificates\n"
-msgstr "信用されたルート証明書のリストの読み込みエラ−\n"
+msgstr "信用されたルート証明書のリストの読み込みエラー\n"
 
 #. TRANSLATORS: This prompt is shown by the Pinentry
 #. and has one special property: A "%%0A" is used by
@@ -676,7 +676,7 @@ msgid "checking created signature failed: %s\n"
 msgstr "作成された署名の検査に失敗しました: %s\n"
 
 msgid "secret key parts are not available\n"
-msgstr "秘密部分が得られません\n"
+msgstr "秘密鍵部分が利用できません\n"
 
 #, c-format
 msgid "public key algorithm %d (%s) is not supported\n"
@@ -731,7 +731,7 @@ msgid "can't connect to '%s': %s\n"
 msgstr "'%s'へ接続できません: %s\n"
 
 msgid "problem setting the gpg-agent options\n"
-msgstr "gpg-agentオプションの設定の問題\n"
+msgstr "gpg-agentのオプション設定の問題\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1541,6 +1541,18 @@ msgstr "(フィンガー・プリントで鍵を指定してない限り)\n"
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "これは\"--yes\"なしでバッチ・モードではできません\n"
 
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr "注意: 主鍵とすべての副鍵の公開鍵が削除されます。\n"
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr "注意: 表示されている副鍵の公開鍵だけが削除されます。\n"
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr "注意: 表示されている主鍵の秘密鍵だけが削除されます。\n"
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr "注意: 表示されている副鍵の秘密鍵だけが削除されます。"
+
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "この鍵を鍵リングから削除しますか? (y/N) "
 
@@ -1556,6 +1568,10 @@ msgstr "鍵"
 
 msgid "subkey"
 msgstr "副鍵: "
+
+#, c-format
+msgid "update failed: %s\n"
+msgstr "更新に失敗しました: %s\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3274,10 +3290,6 @@ msgstr "変更を保存しますか? (y/N) "
 msgid "Quit without saving? (y/N) "
 msgstr "保存せずに終了しますか? (y/N) "
 
-#, c-format
-msgid "update failed: %s\n"
-msgstr "更新に失敗しました: %s\n"
-
 msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新は不要です。\n"
 
@@ -4232,9 +4244,6 @@ msgstr "鍵\"%s\"が鍵サーバに見つかりません\n"
 msgid "key not found on keyserver\n"
 msgstr "鍵が鍵サーバに見つかりません\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "既知の鍵サーバがありません (オプション--keyserverを使いましょう)\n"
-
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "鍵%sを%sからサーバ%sに要求\n"
@@ -4311,6 +4320,7 @@ msgstr "公開鍵の復号に失敗しました: %s\n"
 msgid "public key encrypted data: good DEK\n"
 msgstr "公開鍵による暗号化データ: 正しいDEKです\n"
 
+#, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "%s暗号化データを仮定\n"
 
@@ -5375,9 +5385,6 @@ msgid "unsupported TOFU database version: %s\n"
 msgstr "サポートされていないTOFUデータベースバージョン: %s\n"
 
 #, c-format
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "'ultimately_trusted_keys' TOFUテーブル作成エラー: %s\n"
-
 msgid "TOFU DB error"
 msgstr "TOFU DBエラー"
 
@@ -5392,14 +5399,6 @@ msgstr "TOFUデータベースのバージョン判定エラー: %s\n"
 #, c-format
 msgid "error initializing TOFU database: %s\n"
 msgstr "TOFUデータベースの初期化エラー: %s\n"
-
-#, c-format
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "'encryptions' TOFUデータベースの作成エラー: %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr "バインディングDBにカラムeffective_policyを追加: %s\n"
 
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5540,14 +5539,6 @@ msgid "TOFU db corruption detected.\n"
 msgstr "TOFU dbが壊れていることが検出されました。\n"
 
 #, c-format
-msgid "resetting keydb: %s\n"
-msgstr "keydbをリセット: %s\n"
-
-#, c-format
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "TOFUバインディングのポリシーを %s に設定エラー\n"
-
-#, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "TOFUポリシーの作成エラー: %s\n"
 
@@ -5594,18 +5585,8 @@ msgstr "%s: 0個の署名を検証、0個のメッセージを暗号化しまし
 msgid "%s: Verified 0 signatures."
 msgstr "%s: 0個の署名を検証しました。"
 
-#, c-format
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "%s: 署名を%ld個検証しました(これまで %s に)。"
-
 msgid "Encrypted 0 messages."
 msgstr "0 個のメッセージを暗号化しました。"
-
-#, c-format
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "メッセージを%ld個暗号化しました(これまで %s に)。"
 
 #, c-format
 msgid "(policy: %s)"
@@ -5653,10 +5634,6 @@ msgstr "TOFUデータベースのオープンでエラー: %s\n"
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 "*警告*: %s に暗号化します。失効していないユーザIDが一つもないものです\n"
-
-#, c-format
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "鍵%s, ユーザID \"%s\"のポリシーの設定エラー: %s"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -5823,7 +5800,7 @@ msgstr "fd %dが開けません: %s\n"
 msgid "WARNING: encrypting without integrity protection is dangerous\n"
 msgstr "*警告*: 完全性保護なしでの暗号化は危険です\n"
 
-#,  c-format
+#, c-format
 msgid "Hint: Do not use option %s\n"
 msgstr "ヒント: オプション %s を使わない\n"
 
@@ -6376,6 +6353,9 @@ msgstr "証明書は暗号化のために使えません\n"
 
 msgid "certificate is not usable for signing\n"
 msgstr "証明書は署名のために使えません\n"
+
+msgid "looking for another certificate\n"
+msgstr "別の証明書を探索する"
 
 #, c-format
 msgid "line %d: invalid algorithm\n"
@@ -7824,14 +7804,15 @@ msgid "OCSP responder at '%s' status: %s\n"
 msgstr "OSCP応答が '%s' でステイタス: %s\n"
 
 #, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr "OCSPのハッシュ・コンテクストを確立するのに失敗しました: %s\n"
+
+#, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "'%s'に対するOCSP応答のハッシングに失敗しました: %s\n"
 
 msgid "not signed by a default OCSP signer's certificate"
 msgstr "デフォルトOCSP署名者の証明で署名されていません"
-
-msgid "only SHA-1 is supported for OCSP responses\n"
-msgstr "SHA-1だけがOCSPレスポンスとしてサポートされています\n"
 
 #, c-format
 msgid "allocating list item failed: %s\n"
@@ -7875,10 +7856,6 @@ msgstr "デフォルトOCSP応答'%s'を使います\n"
 #, c-format
 msgid "using OCSP responder '%s'\n"
 msgstr "OCSP応答'%s'を使います\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr "OCSPのハッシュ・コンテクストを確立するのに失敗しました: %s\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8179,6 +8156,14 @@ msgid "Component not suitable for launching"
 msgstr "コンポーネントが起動するために適切ではありません"
 
 #, c-format
+msgid "Configuration file of component %s is broken\n"
+msgstr "コンポーネント%sのコンフィグレーション・ファイルが壊れています\n"
+
+#, c-format
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "注意: \"%s\"コマンドを使って詳細を得てください。\n"
+
+#, c-format
 msgid "External verification of component %s failed"
 msgstr "コンポーネント%sの外部の検証が失敗しました"
 
@@ -8428,6 +8413,38 @@ msgstr "プライベート鍵をデータオブジェクトに保管します"
 
 msgid "Yubikey management commands"
 msgstr "Yubikey管理コマンド"
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr "既知の鍵サーバがありません (オプション--keyserverを使いましょう)\n"
+
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "'ultimately_trusted_keys' TOFUテーブル作成エラー: %s\n"
+
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "'encryptions' TOFUデータベースの作成エラー: %s\n"
+
+#~ msgid "adding column effective_policy to bindings DB: %s\n"
+#~ msgstr "バインディングDBにカラムeffective_policyを追加: %s\n"
+
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "keydbをリセット: %s\n"
+
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "TOFUバインディングのポリシーを %s に設定エラー\n"
+
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "%s: 署名を%ld個検証しました(これまで %s に)。"
+
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "メッセージを%ld個暗号化しました(これまで %s に)。"
+
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "鍵%s, ユーザID \"%s\"のポリシーの設定エラー: %s"
+
+#~ msgid "only SHA-1 is supported for OCSP responses\n"
+#~ msgstr "SHA-1だけがOCSPレスポンスとしてサポートされています\n"
 
 #~ msgid "male"
 #~ msgstr "男"
