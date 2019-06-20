@@ -1021,50 +1021,32 @@ create_dh_keypair (unsigned char *dh_secret, size_t dh_secret_len,
                    unsigned char *dh_public, size_t dh_public_len)
 {
   gpg_error_t err;
-  gcry_sexp_t sexp;
-  gcry_sexp_t s_keypair;
-  gcry_buffer_t secret;
-  gcry_buffer_t public;
-  unsigned char publicbuf[33];
+  unsigned char *p;
+  const unsigned char G[32] = { 0x9 };
 
   /* We need a temporary buffer for the public key.  Check the length
    * for the later memcpy.  */
-  if (dh_public_len < 32)
+  if (dh_public_len < 32 || dh_secret_len < 32)
     return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
 
-  secret.size = dh_secret_len;
-  secret.data = dh_secret;
-  secret.off  = 0;
-  public.size = sizeof publicbuf;
-  public.data = publicbuf;
-  public.off  = 0;
+  p = gcry_random_bytes (32, GCRY_VERY_STRONG_RANDOM);
+  if (!p)
+    return gpg_error_from_syserror ();
 
-  err = gcry_sexp_build (&sexp, NULL,
-                         "(genkey(ecc(curve Curve25519)(flags djb-tweak)))");
-  if (err)
-    return err;
-  err = gcry_pk_genkey (&s_keypair, sexp);
-  gcry_sexp_release (sexp);
-  if (err)
-    return err;
-  err = gcry_sexp_extract_param (s_keypair, "key-data!private-key",
-                                 "&dq", &secret, &public, NULL);
-  gcry_sexp_release (s_keypair);
+  memcpy (dh_secret, p, 32);
+  xfree (p);
+
+  err = gcry_ecc_mul_point (GCRY_ECC_CURVE25519, &p, dh_secret, G);
   if (err)
     return err;
 
-  /* Gcrypt prepends a 0x40 indicator - remove that.  */
-  if (public.len == 33)
-    {
-      public.len = 32;
-      memmove (public.data, publicbuf+1, 32);
-    }
-  memcpy (dh_public, public.data, public.len);
+  memcpy (dh_public, p, 32);
+  xfree (p);
 
   if (DBG_CRYPTO)
     {
-      log_printhex (secret.data, secret.len, "DH secret:");
-      log_printhex (public.data, public.len, "DH public:");
+      log_printhex (dh_secret, 32, "DH secret:");
+      log_printhex (dh_public, 32, "DH public:");
     }
 
   return 0;
@@ -1189,52 +1171,24 @@ compute_master_secret (unsigned char *master, size_t masterlen,
                        const unsigned char *pk_b, size_t pk_b_len)
 {
   gpg_error_t err;
-  gcry_sexp_t s_sk_a = NULL;
-  gcry_sexp_t s_pk_b = NULL;
-  gcry_sexp_t s_shared = NULL;
-  gcry_sexp_t s_tmp;
-  const char *s;
-  size_t n;
+  unsigned char *s;
 
   log_assert (masterlen == 32);
+  log_assert (sk_a_len == 32);
+  log_assert (pk_b_len == 32);
 
-  err = gcry_sexp_build (&s_sk_a, NULL, "%b", (int)sk_a_len, sk_a);
-  if (!err)
-    err = gcry_sexp_build (&s_pk_b, NULL,
-                           "(public-key(ecdh(curve Curve25519)"
-                           "  (flags djb-tweak)(q%b)))",
-                           (int)pk_b_len, pk_b);
-  if (err)
-    {
-      log_error ("error building S-expression: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  err = gcry_pk_encrypt (&s_shared, s_sk_a, s_pk_b);
+  err = gcry_ecc_mul_point (GCRY_ECC_CURVE25519, &s, sk_a, pk_b);
   if (err)
     {
       log_error ("error computing DH: %s\n", gpg_strerror (err));
       goto leave;
     }
-  /* gcry_log_debugsxp ("sk_a", s_sk_a); */
-  /* gcry_log_debugsxp ("pk_b", s_pk_b); */
-  /* gcry_log_debugsxp ("shared", s_shared); */
 
-  s_tmp = gcry_sexp_find_token (s_shared, "s", 0);
-  if (!s_tmp || !(s = gcry_sexp_nth_data (s_tmp, 1, &n))
-      || n != 33 || s[0] != 0x40)
-    {
-      err = gpg_error (GPG_ERR_INTERNAL);
-      log_error ("error computing DH: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-  memcpy (master, s+1, 32);
-
+  memcpy (master, s, 32);
 
  leave:
-  gcry_sexp_release (s_sk_a);
-  gcry_sexp_release (s_pk_b);
-  gcry_sexp_release (s_shared);
+  xfree (s);
+
   return err;
 }
 
