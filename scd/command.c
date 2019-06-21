@@ -220,7 +220,8 @@ open_card (ctrl_t ctrl)
 
 /* Explicitly open a card for a specific use of APPTYPE or SERIALNO.  */
 static gpg_error_t
-open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
+open_card_with_request (ctrl_t ctrl,
+                        const char *apptypestr, const char *serialno)
 {
   gpg_error_t err;
   unsigned char *serialno_bin = NULL;
@@ -231,8 +232,8 @@ open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
      need to check that the client didn't requested a specific
      application different from the one in use before we continue. */
   /* FIXME: Extend to allow switching between apps.  */
-  if (apptype && ctrl->card_ctx)
-    return check_application_conflict (apptype, ctrl->card_ctx);
+  if (apptypestr && ctrl->card_ctx)
+    return check_application_conflict (ctrl->card_ctx, apptypestr);
 
   /* Re-scan USB devices.  Release CARD, before the scan.  */
   /* FIXME: Is a card_unref sufficient or do we need to deallocate?  */
@@ -242,7 +243,7 @@ open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
   if (serialno)
     serialno_bin = hex_to_buffer (serialno, &serialno_bin_len);
 
-  err = select_application (ctrl, apptype, &ctrl->card_ctx, 1,
+  err = select_application (ctrl, apptypestr, &ctrl->card_ctx, 1,
                             serialno_bin, serialno_bin_len);
   xfree (serialno_bin);
 

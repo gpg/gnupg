@@ -235,15 +235,23 @@ is_app_allowed (const char *name)
 }
 
 
-static gpg_error_t
-check_conflict (card_t card, const char *name)
+/* This function is mainly used by the serialno command to check for
+ * an application conflict which may appear if the serialno command is
+ * used to request a specific application and the connection has
+ * already done a select_application.   Return values are:
+ *   0              - No conflict
+ *   GPG_ERR_FALSE  - Another application is in use but it is possible
+ *                    to switch to the requested application.
+ *   other code     - Switching is not possible.
+ */
+gpg_error_t
+check_application_conflict (card_t card, const char *name)
 {
   if (!card || !name)
     return 0;
   if (!card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED); /* Should not happen.  */
 
-  /* FIXME:  Needs changes for app switching.  */
   if (!card->app->apptype
       || !ascii_strcasecmp (strapptype (card->app->apptype), name))
     return 0;
@@ -251,21 +259,26 @@ check_conflict (card_t card, const char *name)
   if (card->app->apptype == APPTYPE_UNDEFINED)
     return 0;
 
+  if (card->cardtype == CARDTYPE_YUBIKEY)
+    {
+      if (card->app->apptype == APPTYPE_OPENPGP)
+        {
+          /* Current app is OpenPGP.  */
+          if (!ascii_strcasecmp (name, "piv"))
+            return gpg_error (GPG_ERR_FALSE);  /* Switching allowed.  */
+        }
+      else if (card->app->apptype == APPTYPE_PIV)
+        {
+          /* Current app is PIV.  */
+          if (!ascii_strcasecmp (name, "openpgp"))
+            return gpg_error (GPG_ERR_FALSE);  /* Switching allowed.  */
+        }
+    }
+
   log_info ("application '%s' in use - can't switch\n",
             strapptype (card->app->apptype));
 
   return gpg_error (GPG_ERR_CONFLICT);
-}
-
-
-/* This function is used by the serialno command to check for an
-   application conflict which may appear if the serialno command is
-   used to request a specific application and the connection has
-   already done a select_application. */
-gpg_error_t
-check_application_conflict (const char *name, card_t card)
-{
-  return check_conflict (card, name);
 }
 
 
@@ -607,7 +620,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
 
   if (card)
     {
-      err = check_conflict (card, name);
+      err = check_application_conflict (card, name);
       if (!err)
         {
           /* Note: We do not use card_ref as we are already locked.  */
