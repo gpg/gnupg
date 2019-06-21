@@ -519,9 +519,13 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
     }
 
   card->periodical_check_needed = periodical_check_needed;
-
   card->next = card_top;
   card_top = card;
+
+  /* If no current apptype is known for this session, set it now.  */
+  if (!ctrl->current_apptype)
+    ctrl->current_apptype = app->apptype;
+
   unlock_card (card);
   return 0;
 }
@@ -684,8 +688,9 @@ deallocate_card (card_t card)
       xfree (a);
     }
 
-  xfree (card->serialno);
+  scd_clear_current_app (card);
 
+  xfree (card->serialno);
   unlock_card (card);
   xfree (card);
 }

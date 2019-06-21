@@ -2069,6 +2069,21 @@ scd_command_handler (ctrl_t ctrl, int fd)
 }
 
 
+/* Clear the current application info for CARD from all sessions.
+ * This is used while deallocating a card.  */
+void
+scd_clear_current_app (card_t card)
+{
+  struct server_local_s *sl;
+
+  for (sl=session_list; sl; sl = sl->next_session)
+    {
+      if (sl->ctrl_backlink->card_ctx == card)
+        sl->ctrl_backlink->current_apptype = APPTYPE_NONE;
+    }
+}
+
+
 /* Send a line with status information via assuan and escape all given
    buffers. The variable elements are pairs of (char *, size_t),
    terminated with a (NULL, 0). */
@@ -2181,7 +2196,7 @@ popup_prompt (void *opaque, int on)
 
 
 /* Helper to send the clients a status change notification.  Note that
- * this fucntion assumes that APP is already locked.  */
+ * this function assumes that APP is already locked.  */
 void
 send_client_notifications (card_t card, int removal)
 {

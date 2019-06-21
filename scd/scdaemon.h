@@ -106,6 +106,11 @@ struct server_control_s
      application context. */
   struct card_ctx_s *card_ctx;
 
+  /* The currently active application for this context.  We need to
+   * knw this for cards which are abale to swicth on the fly between
+   * apps.  */
+  apptype_t current_apptype;
+
   /* Helper to store the value we are going to sign */
   struct
   {
@@ -122,6 +127,7 @@ const char *scd_get_socket_name (void);
 /*-- command.c --*/
 gpg_error_t initialize_module_command (void);
 int  scd_command_handler (ctrl_t, int);
+void scd_clear_current_app (card_t card);
 void send_status_info (ctrl_t ctrl, const char *keyword, ...)
      GPGRT_ATTR_SENTINEL(1);
 void send_status_direct (ctrl_t ctrl, const char *keyword, const char *args);
