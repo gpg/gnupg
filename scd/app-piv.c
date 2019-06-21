@@ -61,7 +61,6 @@
 #include "../common/util.h"
 #include "../common/i18n.h"
 #include "iso7816.h"
-#include "app-common.h"
 #include "../common/tlv.h"
 #include "../common/host2net.h"
 #include "apdu.h" /* We use apdu_send_direct.  */

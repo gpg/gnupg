@@ -46,7 +46,6 @@
 
 #include "../common/i18n.h"
 #include "../common/sysutils.h"
-#include "app-common.h"
 #include "iso7816.h"
 #include "apdu.h"
 #include "ccid-driver.h"

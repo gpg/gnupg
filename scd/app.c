@@ -26,7 +26,6 @@
 
 #include "scdaemon.h"
 #include "../common/exechelp.h"
-#include "app-common.h"
 #include "iso7816.h"
 #include "apdu.h"
 #include "../common/tlv.h"

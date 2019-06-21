@@ -70,13 +70,18 @@ typedef enum
   } apptype_t;
 
 
-/* Formeard declararion.  */
+/* Forward declarations.  */
+struct card_ctx_s;
+struct app_ctx_s;
 struct app_local_s;  /* Defined by all app-*.c.  */
 
 
+typedef struct card_ctx_s *card_t;
+typedef struct app_ctx_s *app_t;
+
 /* The object describing a card.  */
 struct card_ctx_s {
-  struct card_ctx_s *next;
+  card_t next;
 
   npth_mutex_t lock;
 
@@ -114,7 +119,7 @@ struct card_ctx_s {
  * several applications and it is usuallay required to explicity
  * switch between applications.  */
 struct app_ctx_s {
-  struct app_ctx_s *next;
+  app_t next;
 
   card_t card;  /* Link back to the card.  */
 
