@@ -1028,6 +1028,9 @@ create_dh_keypair (unsigned char *dh_secret, size_t dh_secret_len,
   if (dh_public_len < 32 || dh_secret_len < 32)
     return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
 
+  if (gcry_ecc_get_algo_keylen (GCRY_ECC_CURVE25519) > dh_public_len)
+    return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
+
   p = gcry_random_bytes (32, GCRY_VERY_STRONG_RANDOM);
   if (!p)
     return gpg_error_from_syserror ();
@@ -1035,12 +1038,9 @@ create_dh_keypair (unsigned char *dh_secret, size_t dh_secret_len,
   memcpy (dh_secret, p, 32);
   xfree (p);
 
-  err = gcry_ecc_mul_point (GCRY_ECC_CURVE25519, &p, dh_secret, NULL);
+  err = gcry_ecc_mul_point (GCRY_ECC_CURVE25519, dh_public, dh_secret, NULL);
   if (err)
     return err;
-
-  memcpy (dh_public, p, 32);
-  xfree (p);
 
   if (DBG_CRYPTO)
     {
@@ -1170,23 +1170,14 @@ compute_master_secret (unsigned char *master, size_t masterlen,
                        const unsigned char *pk_b, size_t pk_b_len)
 {
   gpg_error_t err;
-  unsigned char *s;
 
   log_assert (masterlen == 32);
   log_assert (sk_a_len == 32);
   log_assert (pk_b_len == 32);
 
-  err = gcry_ecc_mul_point (GCRY_ECC_CURVE25519, &s, sk_a, pk_b);
+  err = gcry_ecc_mul_point (GCRY_ECC_CURVE25519, master, sk_a, pk_b);
   if (err)
-    {
-      log_error ("error computing DH: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  memcpy (master, s, 32);
-
- leave:
-  xfree (s);
+    log_error ("error computing DH: %s\n", gpg_strerror (err));
 
   return err;
 }
