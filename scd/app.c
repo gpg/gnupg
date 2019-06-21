@@ -1492,6 +1492,7 @@ app_send_card_list (ctrl_t ctrl)
 card_t
 app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
 {
+  gpg_error_t err;
   card_t c;
   app_t a;
 
@@ -1499,9 +1500,17 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
 
   for (c = card_top; c; c = c->next)
     for (a = c->app; a; a = a->next)
-      if (a->fnc.with_keygrip
-          && !a->fnc.with_keygrip (a, ctrl, action, keygrip_str))
-        break;
+      if (a->fnc.with_keygrip)
+        {
+          if (!lock_card (c, ctrl))
+            {
+              err = a->fnc.with_keygrip (a, ctrl, action, keygrip_str);
+              unlock_card (c);
+              if (!err)
+                break;
+            }
+        }
+
   /* FIXME: Add app switching logic.  The above code assumes that the
    * actions can be performend without switching.  This needs to be
    * checked.  For a lookup we also need to reorder the apps so that
