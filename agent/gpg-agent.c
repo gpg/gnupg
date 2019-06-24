@@ -2115,7 +2115,7 @@ get_agent_scd_notify_event (void)
                                  GetCurrentProcess(), &h2,
                                  EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
         {
-          log_error ("setting syncronize for scd notify event failed: %s\n",
+          log_error ("setting synchronize for scd notify event failed: %s\n",
                      w32_strerror (-1) );
           CloseHandle (h);
         }

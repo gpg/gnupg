@@ -116,7 +116,7 @@
                            Note that this value matches TRUST_FLAG_REVOKED
    - u16  RFU
    - u32  Recheck_after
-   - u32  Latest timestamp in the keyblock (useful for KS syncronsiation?)
+   - u32  Latest timestamp in the keyblock (useful for KS synchronization?)
    - u32  Blob created at
    - u32  [NRES] Size of reserved space (not including this field)
    - bN   Reserved space of size NRES for future use.
@@ -126,7 +126,7 @@
    - bN   Space for the keyblock or certificate.
    - bN   RFU.  This is the remaining space after keyblock and before
           the checksum.  It is not covered by the checksum.
-   - b20  SHA-1 checksum (useful for KS syncronisation?)
+   - b20  SHA-1 checksum (useful for KS synchronization?)
           Note, that KBX versions before GnuPG 2.1 used an MD5
           checksum.  However it was only created but never checked.
           Thus we do not expect problems if we switch to SHA-1.  If

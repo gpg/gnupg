@@ -640,7 +640,7 @@ count_bits (const unsigned char *a, size_t len)
     Where FLAGS is a plain hexadecimal number representing flag values.
     The lsb is here the rightmost bit.  Defined flags bits are:
 
-      Bit 0 = CHV1 and CHV2 are not syncronized
+      Bit 0 = CHV1 and CHV2 are not synchronized
       Bit 1 = CHV2 has been set to the default PIN of "123456"
               (this implies that bit 0 is also set).
 

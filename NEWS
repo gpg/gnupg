@@ -2643,7 +2643,7 @@ Noteworthy changes in version 1.9.2 (2003-11-17)
    command but from the menu provided by the new --card-edit command.
 
  * PINs are now properly cached and there are only 2 PINs visible.
-   The 3rd PIN (CHV2) is internally syncronized with the regular PIN.
+   The 3rd PIN (CHV2) is internally synchronized with the regular PIN.
 
  * All kind of other internal stuff.
 
