@@ -2963,7 +2963,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
       bit 7    1
       bit 6    1
       bit 5    clear=request,set=response
-      bit 4..0  0 = resyncronisation request
+      bit 4..0  0 = resynchronization request
                 1 = information field size request
                 2 = abort request
                 3 = extension of BWT request
