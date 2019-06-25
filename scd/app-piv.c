@@ -81,6 +81,10 @@
 #define PIV_ALGORITHM_ECC_P384   0x14
 
 
+/* The AID for PIV.  */
+static char const piv_aid[] = { 0xA0, 0x00, 0x00, 0x03, 0x08, /* RID=NIST */
+                                0x00, 0x00, 0x10, 0x00        /* PIX=PIV  */ };
+
 
 /* A table describing the DOs of a PIV card.  */
 struct data_object_s
@@ -3390,13 +3394,32 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
 }
 
 
+/* Reselect the application.  This is used by cards which support
+ * on-the-fly switching between applications.  */
+static gpg_error_t
+do_reselect (app_t app, ctrl_t ctrl)
+{
+  gpg_error_t err;
+
+  (void)ctrl;
+
+  /* An extra check which should not be necessary because the caller
+   * should have made sure that a re-select is only called for
+   * approriate cards.  */
+  if (!app->app_local->flags.yubikey)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  err = iso7816_select_application (app_get_slot (app),
+                                    piv_aid, sizeof piv_aid, 0x0001);
+  return err;
+}
+
+
 /* Select the PIV application on the card in SLOT.  This function must
  * be used before any other PIV application functions. */
 gpg_error_t
 app_select_piv (app_t app)
 {
-  static char const aid[] = { 0xA0, 0x00, 0x00, 0x03, 0x08, /* RID=NIST */
-                              0x00, 0x00, 0x10, 0x00        /* PIX=PIV  */ };
   int slot = app_get_slot (app);
   gpg_error_t err;
   unsigned char *apt = NULL;
@@ -3407,7 +3430,7 @@ app_select_piv (app_t app)
   /* Note that we select using the AID without the 2 octet version
    * number.  This allows for better reporting of future specs.  We
    * need to use the use-zero-for-P2-flag.  */
-  err = iso7816_select_application_ext (slot, aid, sizeof aid, 0x0001,
+  err = iso7816_select_application_ext (slot, piv_aid, sizeof piv_aid, 0x0001,
                                         &apt, &aptlen);
   if (err)
     goto leave;
@@ -3427,7 +3450,7 @@ app_select_piv (app_t app)
     }
 
   s = find_tlv (apt, aptlen, 0x4F, &n);
-  if (!s || n != 6 || memcmp (s, aid+5, 4))
+  if (!s || n != 6 || memcmp (s, piv_aid+5, 4))
     {
       /* The PIX does not match.  */
       log_error ("piv: missing or invalid DO 0x4F in APT\n");
@@ -3450,7 +3473,7 @@ app_select_piv (app_t app)
       goto leave;
     }
   s = find_tlv (s, n, 0x4F, &n);
-  if (!s || n != 5 || memcmp (s, aid, 5))
+  if (!s || n != 5 || memcmp (s, piv_aid, 5))
     {
       /* The RID does not match.  */
       log_error ("piv: missing or invalid DO 0x79.4F in APT\n");
@@ -3475,6 +3498,7 @@ app_select_piv (app_t app)
     dump_all_do (slot);
 
   app->fnc.deinit = do_deinit;
+  app->fnc.reselect = do_reselect;
   app->fnc.learn_status = do_learn_status;
   app->fnc.readcert = do_readcert;
   app->fnc.readkey = do_readkey;

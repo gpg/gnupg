@@ -91,6 +91,24 @@ strapptype (apptype_t t)
 }
 
 
+/* Return the apptype for NAME.  */
+static apptype_t
+apptype_from_name (const char *name)
+{
+  int i;
+
+  if (!name)
+    return APPTYPE_NONE;
+
+  for (i=0; app_priority_list[i].apptype; i++)
+    if (!ascii_strcasecmp (app_priority_list[i].name, name))
+      return app_priority_list[i].apptype;
+  if (!ascii_strcasecmp ("undefined", name))
+    return APPTYPE_UNDEFINED;
+  return APPTYPE_NONE;
+}
+
+
 /* Initialization function to change the default app_priority_list.
  * LIST is a list of comma or space separated strings with application
  * names.  Unknown names will only result in warning message.
@@ -247,14 +265,18 @@ is_app_allowed (const char *name)
 gpg_error_t
 check_application_conflict (card_t card, const char *name)
 {
+  app_t app;
+
   if (!card || !name)
     return 0;
   if (!card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED); /* Should not happen.  */
 
-  if (!card->app->apptype
-      || !ascii_strcasecmp (strapptype (card->app->apptype), name))
-    return 0;
+  /* Check whether the requested NAME matches any already selected
+   * application.  */
+  for (app = card->app; app; app = app->next)
+    if (!ascii_strcasecmp (strapptype (app->apptype), name))
+      return 0;
 
   if (card->app->apptype == APPTYPE_UNDEFINED)
     return 0;
@@ -535,10 +557,6 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
   card->next = card_top;
   card_top = card;
 
-  /* If no current apptype is known for this session, set it now.  */
-  if (!ctrl->current_apptype)
-    ctrl->current_apptype = app->apptype;
-
   unlock_card (card);
   return 0;
 }
@@ -632,7 +650,9 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
               card->next = card_top;
               card_top = card;
             }
-      }
+
+          ctrl->current_apptype = card->app ? card->app->apptype : 0;
+        }
       unlock_card (card);
     }
   else
@@ -640,6 +660,82 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
 
   npth_mutex_unlock (&card_list_lock);
 
+  return err;
+}
+
+
+/* This function needs to be called with the NAME of the new
+ * application to be selected on CARD.  On success the application is
+ * added to the list of the card's active applications as currently
+ * active application.  On error no new application is allocated.
+ * Selecting an already selected application has no effect. */
+gpg_error_t
+select_additional_application (ctrl_t ctrl, const char *name)
+{
+  gpg_error_t err = 0;
+  apptype_t req_apptype;
+  card_t card;
+  app_t app = NULL;
+  int i;
+
+  req_apptype = apptype_from_name (name);
+  if (!req_apptype)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+
+  card = ctrl->card_ctx;
+  if (!card)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+
+  err = lock_card (card, ctrl);
+  if (err)
+    return err;
+
+  /* Check that the requested app has not yet been put onto the list.  */
+  for (app = card->app; app; app = app->next)
+    if (app->apptype == req_apptype)
+      {
+        /* We already got this one.  Note that in this case we don't
+         * make it the current one but it doesn't matter because
+         * maybe_switch_app will do that anyway.  */
+        err = 0;
+        app = NULL;
+        goto leave;
+      }
+  app = NULL;
+
+  /* Allocate a new app object.  */
+  app = xtrycalloc (1, sizeof *app);
+  if (!app)
+    {
+      err = gpg_error_from_syserror ();
+      log_info ("error allocating app context: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Find the app and run the select.  */
+  for (i=0; app_priority_list[i].apptype; i++)
+    {
+      if (app_priority_list[i].apptype == req_apptype
+          && is_app_allowed (app_priority_list[i].name))
+        err = app_priority_list[i].select_func (app);
+    }
+  if (!app_priority_list[i].apptype
+      || (err && gpg_err_code (err) != GPG_ERR_OBJ_TERM_STATE))
+    err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  if (err)
+    goto leave;
+
+  /* Add this app.  We make it the current one to avoid an extra
+   * reselect by maybe_switch_app after the select we just did.  */
+  app->next = card->app;
+  card->app = app;
+  ctrl->current_apptype = app->apptype;
+  log_error ("added app '%s' to the card context\n", strapptype(app->apptype));
+
+ leave:
+  unlock_card (card);
+  xfree (app);
   return err;
 }
 
@@ -831,6 +927,63 @@ app_get_serialno (app_t app)
 }
 
 
+/* Check that the card has been initialized and whether we need to
+ * switch to another application on the same card.  Switching means
+ * that the new active app will be moved to the head of the list at
+ * CARD->app.  Thus function must be called with the card lock held. */
+static gpg_error_t
+maybe_switch_app (ctrl_t ctrl, card_t card)
+{
+  gpg_error_t err;
+  app_t app, app_prev;
+
+  if (!card->ref_count || !card->app)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if (!ctrl->current_apptype)
+    {
+      /* For whatever reasons the current apptype has not been set -
+       * fix that and use the current app.  */
+      ctrl->current_apptype = card->app->apptype;
+      return 0;
+    }
+  log_debug ("card=%p want=%s card->app=%s\n",
+             card, strapptype (ctrl->current_apptype),
+             strapptype (card->app->apptype));
+  app_dump_state ();
+  if (ctrl->current_apptype == card->app->apptype)
+    return 0; /* No need to switch.  */
+  app_prev = card->app;
+  for (app = app_prev->next; app; app_prev = app, app = app->next)
+    if (app->apptype == ctrl->current_apptype)
+      break;
+  if (!app)
+    return gpg_error (GPG_ERR_WRONG_CARD);
+
+  if (!app->fnc.reselect)
+    {
+      log_error ("oops: reselect function missing for '%s'\n",
+                 strapptype(app->apptype));
+      return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+    }
+  err = app->fnc.reselect (app, ctrl);
+  if (err)
+    {
+      log_error ("error re-selecting '%s': %s\n",
+                 strapptype(app->apptype), gpg_strerror (err));
+      return err;
+    }
+  /* Swap APP with the head of the app list.  Note that APP is not the
+   * head of the list. */
+  app_prev->next = app->next;
+  app->next = card->app;
+  card->app = app;
+  ctrl->current_apptype = app->apptype;
+  log_error ("switched to '%s'\n", strapptype(app->apptype));
+
+  return 0;
+}
+
+
 /* Write out the application specific status lines for the LEARN
    command. */
 gpg_error_t
@@ -846,13 +999,14 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
   if (err)
     return err;
 
-  app = card->app;
-  if (!app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  else if (!app->fnc.learn_status)
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
+  else if (!card->app->fnc.learn_status)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
     {
+      app = card->app;
+
       /* We do not send CARD and APPTYPE if only keypairinfo is requested.  */
       if (!(flags &1))
         {
@@ -891,8 +1045,8 @@ app_readcert (card_t card, ctrl_t ctrl, const char *certid,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.readcert)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -928,8 +1082,8 @@ app_readkey (card_t card, ctrl_t ctrl, const char *keyid, unsigned int flags,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.readkey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -952,8 +1106,8 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (name && !strcmp (name, "CARDTYPE"))
     {
       send_status_direct (ctrl, "CARDTYPE", strcardtype (card->cardtype));
@@ -1000,8 +1154,8 @@ app_setattr (card_t card, ctrl_t ctrl, const char *name,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.setattr)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1031,8 +1185,8 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.sign)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1067,8 +1221,8 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.auth)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1105,8 +1259,8 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.decipher)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1139,8 +1293,8 @@ app_writecert (card_t card, ctrl_t ctrl,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.writecert)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1170,8 +1324,8 @@ app_writekey (card_t card, ctrl_t ctrl,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.writekey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1200,8 +1354,8 @@ app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.genkey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1255,8 +1409,8 @@ app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.change_pin)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1286,8 +1440,8 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
   if (err)
     return err;
 
-  if (!card->ref_count || !card->app)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if ((err = maybe_switch_app (ctrl, card)))
+    ;
   else if (!card->app->fnc.check_pin)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
@@ -1513,8 +1667,12 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
 
   /* FIXME: Add app switching logic.  The above code assumes that the
    * actions can be performend without switching.  This needs to be
-   * checked.  For a lookup we also need to reorder the apps so that
-   * the selected one will be used.  */
+   * checked.  */
+
+  /* Force switching of the app if the selected one is not the current
+   * one.  Changing the current apptype is sufficient to do this.  */
+  if (c && c->app && c->app->apptype != a->apptype)
+    ctrl->current_apptype = a->apptype;
 
   npth_mutex_unlock (&card_list_lock);
   return c;

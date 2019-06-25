@@ -107,7 +107,7 @@ struct server_control_s
   struct card_ctx_s *card_ctx;
 
   /* The currently active application for this context.  We need to
-   * knw this for cards which are abale to swicth on the fly between
+   * know this for cards which are able to switch on the fly between
    * apps.  */
   apptype_t current_apptype;
 

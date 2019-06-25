@@ -1424,6 +1424,7 @@ app_select_nks (app_t app)
         log_info ("Detected NKS version: %d\n", app->app_local->nks_version);
 
       app->fnc.deinit = do_deinit;
+      app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
       app->fnc.readkey = do_readkey;

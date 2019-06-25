@@ -231,9 +231,16 @@ open_card_with_request (ctrl_t ctrl,
   /* If we are already initialized for one specific application we
      need to check that the client didn't requested a specific
      application different from the one in use before we continue. */
-  /* FIXME: Extend to allow switching between apps.  */
   if (apptypestr && ctrl->card_ctx)
-    return check_application_conflict (ctrl->card_ctx, apptypestr);
+    {
+      err = check_application_conflict (ctrl->card_ctx, apptypestr);
+      if (gpg_err_code (err) == GPG_ERR_FALSE)
+        {
+          /* Different application but switching is supported.  */
+          err = select_additional_application (ctrl, apptypestr);
+        }
+      return err;
+    }
 
   /* Re-scan USB devices.  Release CARD, before the scan.  */
   /* FIXME: Is a card_unref sufficient or do we need to deallocate?  */
@@ -2083,7 +2090,6 @@ scd_clear_current_app (card_t card)
         sl->ctrl_backlink->current_apptype = APPTYPE_NONE;
     }
 }
-
 
 /* Send a line with status information via assuan and escape all given
    buffers. The variable elements are pairs of (char *, size_t),

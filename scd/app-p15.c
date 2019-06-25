@@ -3415,6 +3415,7 @@ app_select_p15 (app_t app)
         }
 
       app->fnc.deinit = do_deinit;
+      app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
       app->fnc.getattr = do_getattr;

@@ -557,6 +557,7 @@ app_select_dinsig (app_t app)
     {
       app->apptype = APPTYPE_DINSIG;
 
+      app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
       app->fnc.getattr = NULL;

@@ -59,6 +59,11 @@
 #include "../common/openpgpdefs.h"
 
 
+
+/* The AID of this application.  */
+static char const openpgp_aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
+
+
 /* A table describing the DOs of the card.  */
 static struct {
   int tag;
@@ -5204,12 +5209,35 @@ parse_algorithm_attribute (app_t app, int keyno)
   xfree (relptr);
 }
 
+
+/* Reselect the application.  This is used by cards which support
+ * on-the-fly switching between applications.  */
+static gpg_error_t
+do_reselect (app_t app, ctrl_t ctrl)
+{
+  gpg_error_t err;
+
+  (void)ctrl;
+
+  /* An extra check which should not be necessary because the caller
+   * should have made sure that a re-select is only called for
+   * approriate cards.  */
+  if (app->card->cardtype != CARDTYPE_YUBIKEY)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  /* Note that the card can't cope with P2=0xCO, thus we need to pass
+   * a special flag value. */
+  err = iso7816_select_application (app_get_slot (app),
+                                    openpgp_aid, sizeof openpgp_aid, 0x0001);
+  return err;
+}
+
+
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
 gpg_error_t
 app_select_openpgp (app_t app)
 {
-  static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int slot = app_get_slot (app);
   int rc;
   unsigned char *buffer;
@@ -5218,7 +5246,8 @@ app_select_openpgp (app_t app)
 
   /* Note that the card can't cope with P2=0xCO, thus we need to pass a
      special flag value. */
-  rc = iso7816_select_application (slot, aid, sizeof aid, 0x0001);
+  rc = iso7816_select_application (slot,
+                                   openpgp_aid, sizeof openpgp_aid, 0x0001);
   if (!rc)
     {
       unsigned int manufacturer;
@@ -5353,6 +5382,7 @@ app_select_openpgp (app_t app)
         dump_all_do (slot);
 
       app->fnc.deinit = do_deinit;
+      app->fnc.reselect = do_reselect;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
       app->fnc.readkey = do_readkey;

@@ -132,6 +132,7 @@ struct app_ctx_s {
   struct app_local_s *app_local;  /* Local to the application. */
   struct {
     void (*deinit) (app_t app);
+    gpg_error_t (*reselect) (app_t app, ctrl_t ctrl);
     gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl, unsigned int flags);
     gpg_error_t (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
@@ -233,6 +234,7 @@ gpg_error_t card_reset (card_t card, ctrl_t ctrl, int send_reset);
 gpg_error_t select_application (ctrl_t ctrl, const char *name, card_t *r_app,
                                 int scan, const unsigned char *serialno_bin,
                                 size_t serialno_bin_len);
+gpg_error_t select_additional_application (ctrl_t ctrl, const char *name);
 char *get_supported_applications (void);
 
 card_t card_ref (card_t card);
