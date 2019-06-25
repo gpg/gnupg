@@ -1601,22 +1601,55 @@ initialize_module_command (void)
 }
 
 
-void
+/* Sort helper for app_send_card_list.  */
+static int
+compare_card_list_items (const void *arg_a, const void *arg_b)
+{
+  const card_t a = *(const card_t *)arg_a;
+  const card_t b = *(const card_t *)arg_b;
+
+  return a->slot - b->slot;
+}
+
+
+/* Send status lines with the serialno of all inserted cards.  */
+gpg_error_t
 app_send_card_list (ctrl_t ctrl)
 {
+  gpg_error_t err;
   card_t c;
   char buf[65];
+  card_t *cardlist = NULL;
+  int n, ncardlist;
 
   npth_mutex_lock (&card_list_lock);
-  for (c = card_top; c; c = c->next)
+  for (n=0, c = card_top; c; c = c->next)
+    n++;
+  cardlist = xtrycalloc (n, sizeof *cardlist);
+  if (!cardlist)
     {
-      if (DIM (buf) < 2 * c->serialnolen + 1)
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  for (ncardlist=0, c = card_top; c; c = c->next)
+    cardlist[ncardlist++] = c;
+  qsort (cardlist, ncardlist, sizeof *cardlist, compare_card_list_items);
+
+  for (n=0; n < ncardlist; n++)
+    {
+      if (DIM (buf) < 2 * cardlist[n]->serialnolen + 1)
         continue;
 
-      bin2hex (c->serialno, c->serialnolen, buf);
+      bin2hex (cardlist[n]->serialno, cardlist[n]->serialnolen, buf);
       send_status_direct (ctrl, "SERIALNO", buf);
     }
+
+  err = 0;
+
+ leave:
   npth_mutex_unlock (&card_list_lock);
+  xfree (cardlist);
+  return err;
 }
 
 

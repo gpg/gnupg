@@ -223,7 +223,7 @@ const char *strcardtype (cardtype_t t);
 const char *strapptype (apptype_t t);
 
 void app_update_priority_list (const char *arg);
-void app_send_card_list (ctrl_t ctrl);
+gpg_error_t app_send_card_list (ctrl_t ctrl);
 char *card_get_serialno (card_t card);
 char *app_get_serialno (app_t app);
 

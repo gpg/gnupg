@@ -1630,7 +1630,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
       ctrl_t ctrl = assuan_get_pointer (ctx);
 
-      app_send_card_list (ctrl);
+      rc = app_send_card_list (ctrl);
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
