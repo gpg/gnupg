@@ -260,10 +260,15 @@ is_app_allowed (const char *name)
  *   0              - No conflict
  *   GPG_ERR_FALSE  - Another application is in use but it is possible
  *                    to switch to the requested application.
- *   other code     - Switching is not possible.
+ *   Other code     - Switching is not possible.
+ *
+ * If SERIALNO_BIN is not NULL a coflict is onl asserted if the
+ * serialno of the card matches.
  */
 gpg_error_t
-check_application_conflict (card_t card, const char *name)
+check_application_conflict (card_t card, const char *name,
+                            const unsigned char *serialno_bin,
+                            size_t serialno_bin_len)
 {
   app_t app;
 
@@ -271,6 +276,13 @@ check_application_conflict (card_t card, const char *name)
     return 0;
   if (!card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED); /* Should not happen.  */
+
+  if (serialno_bin && card->serialno)
+    {
+      if (serialno_bin_len != card->serialnolen
+          || memcmp (serialno_bin, card->serialno, card->serialnolen))
+        return 0; /* The card does not match the requested S/N.  */
+    }
 
   /* Check whether the requested NAME matches any already selected
    * application.  */
@@ -638,7 +650,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
 
   if (card)
     {
-      err = check_application_conflict (card, name);
+      err = check_application_conflict (card, name, NULL, 0);
       if (!err)
         {
           /* Note: We do not use card_ref as we are already locked.  */

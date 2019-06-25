@@ -228,18 +228,22 @@ open_card_with_request (ctrl_t ctrl,
   size_t serialno_bin_len = 0;
   card_t card = ctrl->card_ctx;
 
+  if (serialno)
+    serialno_bin = hex_to_buffer (serialno, &serialno_bin_len);
+
   /* If we are already initialized for one specific application we
      need to check that the client didn't requested a specific
      application different from the one in use before we continue. */
   if (apptypestr && ctrl->card_ctx)
     {
-      err = check_application_conflict (ctrl->card_ctx, apptypestr);
+      err = check_application_conflict (ctrl->card_ctx, apptypestr,
+                                        serialno_bin, serialno_bin_len);
       if (gpg_err_code (err) == GPG_ERR_FALSE)
         {
           /* Different application but switching is supported.  */
           err = select_additional_application (ctrl, apptypestr);
         }
-      return err;
+      goto leave;
     }
 
   /* Re-scan USB devices.  Release CARD, before the scan.  */
@@ -247,13 +251,11 @@ open_card_with_request (ctrl_t ctrl,
   ctrl->card_ctx = NULL;
   card_unref (card);
 
-  if (serialno)
-    serialno_bin = hex_to_buffer (serialno, &serialno_bin_len);
-
   err = select_application (ctrl, apptypestr, &ctrl->card_ctx, 1,
                             serialno_bin, serialno_bin_len);
-  xfree (serialno_bin);
 
+ leave:
+  xfree (serialno_bin);
   return err;
 }
 
