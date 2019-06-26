@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.2.16\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-06-20 13:57+0900\n"
+"PO-Revision-Date: 2019-06-27 08:29+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1551,7 +1551,7 @@ msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
 msgstr "注意: 表示されている主鍵の秘密鍵だけが削除されます。\n"
 
 msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
-msgstr "注意: 表示されている副鍵の秘密鍵だけが削除されます。"
+msgstr "注意: 表示されている副鍵の秘密鍵だけが削除されます。\n"
 
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "この鍵を鍵リングから削除しますか? (y/N) "
@@ -6355,7 +6355,7 @@ msgid "certificate is not usable for signing\n"
 msgstr "証明書は署名のために使えません\n"
 
 msgid "looking for another certificate\n"
-msgstr "別の証明書を探索する"
+msgstr "別の証明書を探索する\n"
 
 #, c-format
 msgid "line %d: invalid algorithm\n"
@@ -8161,7 +8161,7 @@ msgstr "コンポーネント%sのコンフィグレーション・ファイル�
 
 #, c-format
 msgid "Note: Use the command \"%s%s\" to get details.\n"
-msgstr "注意: \"%s\"コマンドを使って詳細を得てください。\n"
+msgstr "注意: \"%s%s\"コマンドを使って詳細を得てください。\n"
 
 #, c-format
 msgid "External verification of component %s failed"
