@@ -948,15 +948,14 @@ build_cmd_setdesc (char *line, size_t linelen, const char *desc)
 static void *
 watch_sock (void *arg)
 {
-  gnupg_fd_t *p = (gnupg_fd_t *)arg;
   pid_t pid = assuan_get_pid (entry_ctx);
 
   while (1)
     {
       int err;
-      gnupg_fd_t sock = *p;
       fd_set fdset;
       struct timeval timeout = { 0, 500000 };
+      gnupg_fd_t sock = *(gnupg_fd_t *)arg;
 
       if (sock == GNUPG_INVALID_FD)
         return NULL;
@@ -994,18 +993,11 @@ watch_sock (void *arg)
 }
 
 
-/* Ask pinentry to get a pin by "GETPIN" command, spawning a thread
-   detecting the socket's EOF.
- */
 static gpg_error_t
-do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
+watch_sock_start (gnupg_fd_t *sock_p, npth_t *thread_p)
 {
   npth_attr_t tattr;
-  gpg_error_t rc;
   int err;
-  npth_t thread;
-  int saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
-  gnupg_fd_t sock_watched = ctrl->thread_startup.fd;
 
   err = npth_attr_init (&tattr);
   if (err)
@@ -1015,13 +1007,43 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
     }
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
 
-  err = npth_create (&thread, &tattr, watch_sock, (void *)&sock_watched);
+  err = npth_create (thread_p, &tattr, watch_sock, sock_p);
   npth_attr_destroy (&tattr);
   if (err)
     {
       log_error ("do_getpin: error spawning thread: %s\n", strerror (err));
       return gpg_error_from_errno (err);
     }
+
+  return 0;
+}
+
+static void
+watch_sock_end (gnupg_fd_t *sock_p, npth_t *thread_p)
+{
+  int err;
+
+  *sock_p = GNUPG_INVALID_FD;
+  err = npth_join (*thread_p, NULL);
+  if (err)
+    log_error ("watch_sock_end: error joining thread: %s\n", strerror (err));
+}
+
+
+/* Ask pinentry to get a pin by "GETPIN" command, spawning a thread
+   detecting the socket's EOF.
+ */
+static gpg_error_t
+do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
+{
+  gpg_error_t rc;
+  int saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
+  gnupg_fd_t sock_watched = ctrl->thread_startup.fd;
+  npth_t thread;
+
+  rc = watch_sock_start (&sock_watched, &thread);
+  if (rc)
+    return rc;
 
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, parm,
@@ -1039,10 +1061,7 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
       && gpg_err_code (rc) == GPG_ERR_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
 
-  sock_watched = GNUPG_INVALID_FD;
-  err = npth_join (thread, NULL);
-  if (err)
-    log_error ("do_getpin: error joining thread: %s\n", strerror (err));
+  watch_sock_end (&sock_watched, &thread);
 
   return rc;
 }
@@ -1447,12 +1466,23 @@ agent_get_confirmation (ctrl_t ctrl,
         return unlock_pinentry (ctrl, rc);
     }
 
-  rc = assuan_transact (entry_ctx, "CONFIRM",
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
-    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+  {
+    gnupg_fd_t sock_watched = ctrl->thread_startup.fd;
+    npth_t thread;
 
-  return unlock_pinentry (ctrl, rc);
+    rc = watch_sock_start (&sock_watched, &thread);
+    if (rc)
+      return rc;
+
+    rc = assuan_transact (entry_ctx, "CONFIRM",
+                          NULL, NULL, NULL, NULL, NULL, NULL);
+    if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+      rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+
+    watch_sock_end (&sock_watched, &thread);
+
+    return unlock_pinentry (ctrl, rc);
+  }
 }
 
 
@@ -1461,7 +1491,13 @@ agent_get_confirmation (ctrl_t ctrl,
 static void *
 popup_message_thread (void *arg)
 {
-  (void)arg;
+  gpg_error_t rc;
+  gnupg_fd_t sock_watched = *(gnupg_fd_t *)arg;
+  npth_t thread;
+
+  rc = watch_sock_start (&sock_watched, &thread);
+  if (rc)
+    return NULL;
 
   /* We use the --one-button hack instead of the MESSAGE command to
      allow the use of old Pinentries.  Those old Pinentries will then
@@ -1469,6 +1505,7 @@ popup_message_thread (void *arg)
      annoyance. */
   assuan_transact (entry_ctx, "CONFIRM --one-button",
                    NULL, NULL, NULL, NULL, NULL, NULL);
+  watch_sock_end (&sock_watched, &thread);
   popup_finished = 1;
   return NULL;
 }
@@ -1525,7 +1562,8 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
 
   popup_finished = 0;
-  err = npth_create (&popup_tid, &tattr, popup_message_thread, NULL);
+  err = npth_create (&popup_tid, &tattr, popup_message_thread,
+                     &ctrl->thread_startup.fd);
   npth_attr_destroy (&tattr);
   if (err)
     {
