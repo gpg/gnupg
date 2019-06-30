@@ -767,7 +767,7 @@ http_session_new (http_session_t *r_session,
 
     is_hkps_pool = (intended_hostname
                     && !ascii_strcasecmp (intended_hostname,
-                                          get_default_keyserver (1)));
+                                          "hkps.pool.sks-keyservers.net"));
 
     /* If the user has not specified a CA list, and they are looking
      * for the hkps pool from sks-keyservers.net, then default to
