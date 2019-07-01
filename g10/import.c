@@ -129,6 +129,7 @@ static int delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock,
                              u32 *keyid, unsigned int options);
 static int any_uid_left (kbnode_t keyblock);
 static int remove_all_uids (kbnode_t *keyblock);
+static void remove_all_non_self_sigs (kbnode_t *keyblock, u32 *keyid);
 static int merge_blocks (ctrl_t ctrl, unsigned int options,
                          kbnode_t keyblock_orig,
 			 kbnode_t keyblock, u32 *keyid,
@@ -1783,12 +1784,12 @@ update_key_origin (kbnode_t keyblock, u32 curtime, int origin, const char *url)
  * has valid parts.
  */
 static gpg_error_t
-import_one (ctrl_t ctrl,
-            kbnode_t keyblock, struct import_stats_s *stats,
-	    unsigned char **fpr, size_t *fpr_len, unsigned int options,
-	    int from_sk, int silent,
-            import_screener_t screener, void *screener_arg,
-            int origin, const char *url, int *r_valid)
+import_one_real (ctrl_t ctrl,
+                 kbnode_t keyblock, struct import_stats_s *stats,
+                 unsigned char **fpr, size_t *fpr_len, unsigned int options,
+                 int from_sk, int silent,
+                 import_screener_t screener, void *screener_arg,
+                 int origin, const char *url, int *r_valid)
 {
   gpg_error_t err = 0;
   PKT_public_key *pk;
@@ -1870,6 +1871,13 @@ import_one (ctrl_t ctrl,
                                   "Do you want to import this key? (y/N) "))
         return 0;
     }
+
+  /* Remove all non-self-sigs if requested.  Noe that this is a NOP if
+   * that option has been globally set but we may also be called
+   * latter with the already parsed keyblock and a locally changed
+   * option.  This is why we need to remove them here as well.  */
+  if ((options & IMPORT_SELF_SIGS_ONLY))
+    remove_all_non_self_sigs (&keyblock, keyid);
 
   /* Remove or collapse the user ids.  */
   if ((options & IMPORT_DROP_UIDS))
@@ -2080,22 +2088,25 @@ import_one (ctrl_t ctrl,
       hd = NULL;
 
       /* We are ready.  */
-      if (!opt.quiet && !silent)
+      if (!err && !opt.quiet && !silent)
         {
           char *p = get_user_id_byfpr_native (ctrl, fpr2, fpr2len);
           log_info (_("key %s: public key \"%s\" imported\n"),
                     keystr(keyid), p);
           xfree(p);
         }
-      if (is_status_enabled())
+      if (!err && is_status_enabled())
         {
           char *us = get_long_user_id_string (ctrl, keyid);
           write_status_text( STATUS_IMPORTED, us );
           xfree(us);
           print_import_ok (pk, 1);
         }
-      stats->imported++;
-      new_key = 1;
+      if (!err)
+        {
+          stats->imported++;
+          new_key = 1;
+        }
     }
   else /* Key already exists - merge.  */
     {
@@ -2165,8 +2176,10 @@ import_one (ctrl_t ctrl,
           keydb_release (hd);
           hd = NULL;
 
-          /* We are ready.  */
-          if (!opt.quiet && !silent)
+          /* We are ready.  Print and update stats if we got no error.
+           * An error here comes from writing the keyblock and thus
+           * very likely means that no update happened.  */
+          if (!err && !opt.quiet && !silent)
             {
               char *p = get_user_id_byfpr_native (ctrl, fpr2, fpr2len);
               if (n_uids == 1 )
@@ -2202,14 +2215,17 @@ import_one (ctrl_t ctrl,
               xfree(p);
             }
 
-          stats->n_uids +=n_uids;
-          stats->n_sigs +=n_sigs;
-          stats->n_subk +=n_subk;
-          stats->n_sigs_cleaned +=n_sigs_cleaned;
-          stats->n_uids_cleaned +=n_uids_cleaned;
+          if (!err)
+            {
+              stats->n_uids +=n_uids;
+              stats->n_sigs +=n_sigs;
+              stats->n_subk +=n_subk;
+              stats->n_sigs_cleaned +=n_sigs_cleaned;
+              stats->n_uids_cleaned +=n_uids_cleaned;
 
-          if (is_status_enabled () && !silent)
-            print_import_ok (pk, ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
+              if (is_status_enabled () && !silent)
+                print_import_ok (pk, ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
+            }
 	}
       else
         {
@@ -2292,6 +2308,39 @@ import_one (ctrl_t ctrl,
 
   release_kbnode( keyblock_orig );
 
+  return err;
+}
+
+
+/* Wrapper around import_one_real to retry the import in some cases.  */
+static gpg_error_t
+import_one (ctrl_t ctrl,
+            kbnode_t keyblock, struct import_stats_s *stats,
+	    unsigned char **fpr, size_t *fpr_len, unsigned int options,
+	    int from_sk, int silent,
+            import_screener_t screener, void *screener_arg,
+            int origin, const char *url, int *r_valid)
+{
+  gpg_error_t err;
+
+  err = import_one_real (ctrl, keyblock, stats, fpr, fpr_len, options,
+                         from_sk, silent, screener, screener_arg,
+                         origin, url, r_valid);
+  if (gpg_err_code (err) == GPG_ERR_TOO_LARGE
+      && gpg_err_source (err) == GPG_ERR_SOURCE_KEYBOX)
+    {
+      /* We hit the maximum image length.  Ask the wrapper to do
+       * everything again but this time with some extra options.  */
+      u32 keyid[2];
+
+      keyid_from_pk (keyblock->pkt->pkt.public_key, keyid);
+      log_info ("key %s: keyblock too large, retrying with self-sigs-only\n",
+                keystr (keyid));
+      options |= IMPORT_SELF_SIGS_ONLY | IMPORT_CLEAN;
+      err = import_one_real (ctrl, keyblock, stats, fpr, fpr_len, options,
+                             from_sk, silent, screener, screener_arg,
+                             origin, url, r_valid);
+    }
   return err;
 }
 
@@ -2974,7 +3023,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
       /* The secret keyblock may not have nodes which are deleted in
        * the public keyblock.  Otherwise we would import just the
        * secret key without having the public key.  That would be
-       * surprising and clutters out private-keys-v1.d.  */
+       * surprising and clutters our private-keys-v1.d.  */
       err = resync_sec_with_pub_keyblock (&keyblock, pub_keyblock, &attic);
       if (err)
         goto leave;
@@ -3820,6 +3869,38 @@ remove_all_uids (kbnode_t *keyblock)
 
   commit_kbnode (keyblock);
   return any;
+}
+
+
+/* Delete all non-self-sigs from KEYBLOCK.
+ * Returns: True if the keyblock has changed.  */
+static void
+remove_all_non_self_sigs (kbnode_t *keyblock, u32 *keyid)
+{
+  kbnode_t node;
+  unsigned int dropped = 0;
+
+  for (node = *keyblock; node; node = node->next)
+    {
+      if (is_deleted_kbnode (node))
+	continue;
+
+      if (node->pkt->pkttype != PKT_SIGNATURE)
+	continue;
+
+      if (node->pkt->pkt.signature->keyid[0] == keyid[0]
+          && node->pkt->pkt.signature->keyid[1] == keyid[1])
+        continue;
+      delete_kbnode (node);
+      dropped++;
+    }
+
+  if (dropped)
+    commit_kbnode (keyblock);
+
+  if (dropped && opt.verbose)
+    log_info ("key %s: number of dropped non-self-signatures: %u\n",
+              keystr (keyid), dropped);
 }
 
 
