@@ -190,7 +190,10 @@ parse_import_options(char *str,unsigned int *options,int noisy)
        N_("remove as much as possible from key after import")},
 
       {"import-drop-uids", IMPORT_DROP_UIDS, NULL,
-       N_("Do not import user id or attribute packets")},
+       N_("do not import user id or attribute packets")},
+
+      {"self-sigs-only", IMPORT_SELF_SIGS_ONLY, NULL,
+       N_("ignore key-signatures which are not self-signatures")},
 
       {"import-export", IMPORT_EXPORT, NULL,
        N_("run import filters and export key immediately")},
@@ -861,6 +864,8 @@ read_block( IOBUF a, unsigned int options,
   PACKET *pkt;
   kbnode_t root = NULL;
   int in_cert, in_v3key, skip_sigs;
+  u32 keyid[2];
+  unsigned int dropped_nonselfsigs = 0;
 
   *r_v3keys = 0;
 
@@ -983,16 +988,43 @@ read_block( IOBUF a, unsigned int options,
           init_packet(pkt);
           break;
 
+        case PKT_SIGNATURE:
+          if (!in_cert)
+            goto x_default;
+          if (!(options & IMPORT_SELF_SIGS_ONLY))
+            goto x_default;
+	  if (pkt->pkt.signature->keyid[0] == keyid[0]
+              && pkt->pkt.signature->keyid[1] == keyid[1])
+	    { /* This is likely a self-signature.  We import this one.
+               * Eventually we should use the ISSUER_FPR to compare
+               * self-signatures, but that will work only for v5 keys
+               * which are currently not even deployed.
+               * Note that we do not do any crypto verify here because
+               * that would defeat this very mitigation of DoS by
+               * importing a key with a huge amount of faked
+               * key-signatures.  A verification will be done later in
+               * the processing anyway.  Here we want a cheap an early
+               * way to drop non-self-signatures.  */
+              goto x_default;
+            }
+          /* Skip this signature.  */
+          dropped_nonselfsigs++;
+          free_packet (pkt, &parsectx);
+          init_packet(pkt);
+          break;
+
         case PKT_PUBLIC_KEY:
         case PKT_SECRET_KEY:
-          if (in_cert ) /* Store this packet.  */
+          if (in_cert) /* Store this packet.  */
             {
               *pending_pkt = pkt;
               pkt = NULL;
               goto ready;
             }
           in_cert = 1;
-          /* fall through */
+          keyid_from_pk (pkt->pkt.public_key, keyid);
+          goto x_default;
+
         default:
         x_default:
           if (in_cert && valid_keyblock_packet (pkt->pkttype))
@@ -1021,6 +1053,10 @@ read_block( IOBUF a, unsigned int options,
   free_packet (pkt, &parsectx);
   deinit_parse_packet (&parsectx);
   xfree( pkt );
+  if (!rc && dropped_nonselfsigs && opt.verbose)
+    log_info ("key %s: number of dropped non-self-signatures: %u\n",
+              keystr (keyid), dropped_nonselfsigs);
+
   return rc;
 }
 

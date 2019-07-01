@@ -2341,6 +2341,14 @@ opposite meaning. The options are:
   can be used to update only the subkeys or other non-user id related
   information.
 
+  @item self-sigs-only
+  Accept only self-signatures while importing a key.  All other
+  key-signatures are skipped at an early import stage.  This option
+  can be used with @code{keyserver-options} to mitigate attempts to
+  flood a key with bogus signatures from a keyserver.  The drawback is
+  that all other valid key-signatures, as required by the Web of Trust
+  are also not imported.
+
   @item repair-keys
   After import, fix various problems with the
   keys.  For example, this reorders signatures, and strips duplicate
