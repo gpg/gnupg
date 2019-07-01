@@ -1343,7 +1343,7 @@ gc_component_kill (int component)
     }
 
   /* Do the restart for the selected backends.  */
-  for (backend = 0; backend < GC_BACKEND_NR; backend++)
+  for (backend = GC_BACKEND_NR-1; backend; backend--)
     {
       if (runtime[backend] && gc_backend[backend].runtime_change)
         (*gc_backend[backend].runtime_change) (1);
