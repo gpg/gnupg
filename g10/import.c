@@ -102,7 +102,7 @@ static int import (ctrl_t ctrl,
 		   unsigned char **fpr, size_t *fpr_len, unsigned int options,
 		   import_screener_t screener, void *screener_arg,
                    int origin, const char *url);
-static int read_block (IOBUF a, int with_meta,
+static int read_block (IOBUF a, unsigned int options,
                        PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys);
 static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
 static gpg_error_t import_one (ctrl_t ctrl,
@@ -589,8 +589,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
       release_armor_context (afx);
     }
 
-  while (!(rc = read_block (inp, !!(options & IMPORT_RESTORE),
-                            &pending_pkt, &keyblock, &v3keys)))
+  while (!(rc = read_block (inp, options, &pending_pkt, &keyblock, &v3keys)))
     {
       stats->v3keys += v3keys;
       if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
@@ -845,16 +844,16 @@ valid_keyblock_packet (int pkttype)
 }
 
 
-/****************
- * Read the next keyblock from stream A.
- * Meta data (ring trust packets) are only considered of WITH_META is set.
- * PENDING_PKT should be initialized to NULL and not changed by the caller.
- * Return: 0 = okay, -1 no more blocks or another errorcode.
- *         The int at R_V3KEY counts the number of unsupported v3
- *         keyblocks.
+/* Read the next keyblock from stream A.  Meta data (ring trust
+ * packets) are only considered if OPTIONS has the IMPORT_RESTORE flag
+ * set.  PENDING_PKT should be initialized to NULL and not changed by
+ * the caller.
+ *
+ * Returns 0 for okay, -1 no more blocks, or any other errorcode.  The
+ * integer at R_V3KEY counts the number of unsupported v3 keyblocks.
  */
 static int
-read_block( IOBUF a, int with_meta,
+read_block( IOBUF a, unsigned int options,
             PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
 {
   int rc;
@@ -877,7 +876,7 @@ read_block( IOBUF a, int with_meta,
   pkt = xmalloc (sizeof *pkt);
   init_packet (pkt);
   init_parse_packet (&parsectx, a);
-  if (!with_meta)
+  if (!(options & IMPORT_RESTORE))
     parsectx.skip_meta = 1;
   in_v3key = 0;
   skip_sigs = 0;
