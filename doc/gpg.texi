@@ -2644,11 +2644,11 @@ legacy non-MDC message is exceptionally required, the option
 
 @item --disable-signer-uid
 @opindex disable-signer-uid
-By default the user ID of the signing key is embedded in the data
-signature.  As of now this is only done if the signing key has been
-specified with @option{local-user} using a mail address.  This
-information can be helpful for verifier to locate the key; see
-option @option{--auto-key-retrieve}.
+By default the user ID of the signing key is embedded in the data signature.
+As of now this is only done if the signing key has been specified with
+@option{local-user} using a mail address, or with @option{sender}.  This
+information can be helpful for verifier to locate the key; see option
+@option{--auto-key-retrieve}.
 
 @item --personal-cipher-preferences @var{string}
 @opindex personal-cipher-preferences
