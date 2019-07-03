@@ -3539,6 +3539,10 @@ same_host_p (parsed_uri_t a, parsed_uri_t b)
     { NULL,             "api.protonmail.ch"  },
     { "pm.me",          "api.protonmail.ch"  }
   };
+  static const char *subdomains[] =
+    {
+      "openpgpkey."
+    };
   int i;
   const char *from;
 
@@ -3557,6 +3561,22 @@ same_host_p (parsed_uri_t a, parsed_uri_t b)
         continue;
       if (!ascii_strcasecmp (from, a->host)
           && !ascii_strcasecmp (allow[i].to, b->host))
+        return 1;
+    }
+
+  /* Also consider hosts the same if they differ only in a subdomain;
+   * in both direction.  This allows to have redirection between the
+   * WKD advanced and direct lookup methods. */
+  for (i=0; i < DIM (subdomains); i++)
+    {
+      const char *subdom = subdomains[i];
+      size_t subdomlen = strlen (subdom);
+
+      if (!ascii_strncasecmp (a->host, subdom, subdomlen)
+          && !ascii_strcasecmp (a->host + subdomlen, b->host))
+        return 1;
+      if (!ascii_strncasecmp (b->host, subdom, subdomlen)
+          && !ascii_strcasecmp (b->host + subdomlen, a->host))
         return 1;
     }
 
