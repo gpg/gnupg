@@ -898,7 +898,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       /* FIXME: We should put a cache into dns-stuff because the same
        * query (with a different port and socket type, though) will be
        * done later by http function.  */
-      err = resolve_dns_name (ctrl, domainbuf, 0, 0, 0, &aibuf, NULL);
+      err = resolve_dns_name (domainbuf, 0, 0, 0, &aibuf, NULL);
       if (err)
         {
           err = 0;
