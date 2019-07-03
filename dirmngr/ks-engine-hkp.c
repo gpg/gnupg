@@ -67,6 +67,10 @@
 /* Number of retries done for a dead host etc.  */
 #define SEND_REQUEST_RETRIES 3
 
+/* Number of retries done in case of transient errors.  */
+#define SEND_REQUEST_EXTRA_RETRIES 5
+
+
 enum ks_protocol { KS_PROTOCOL_HKP, KS_PROTOCOL_HKPS, KS_PROTOCOL_MAX };
 
 /* Objects used to maintain information about hosts.  */
@@ -1311,10 +1315,12 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
    with REQUEST.  The function returns true if the caller shall try
    again.  TRIES_LEFT points to a variable to track the number of
    retries; this function decrements it and won't return true if it is
-   down to zero. */
+   down to zero.  EXTRA_TRIES_LEFT does the same but only for
+   transient http status codes.  */
 static int
 handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
-                           unsigned int http_status, unsigned int *tries_left)
+                           unsigned int http_status, unsigned int *tries_left,
+                           unsigned int *extra_tries_left)
 {
   int retry = 0;
 
@@ -1370,9 +1376,12 @@ handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
 
           case 503: /* Service Unavailable */
           case 504: /* Gateway Timeout    */
-            log_info ("selecting a different host due to a %u (%s)",
-                      http_status, http_status2string (http_status));
-            retry = 1;
+            if (*extra_tries_left)
+              {
+                log_info ("selecting a different host due to a %u (%s)",
+                          http_status, http_status2string (http_status));
+                retry = 2;
+              }
             break;
           }
       }
@@ -1382,8 +1391,16 @@ handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
       break;
     }
 
-  if (*tries_left)
-    --*tries_left;
+  if (retry == 2)
+    {
+      if (*extra_tries_left)
+        --*extra_tries_left;
+    }
+  else
+    {
+      if (*tries_left)
+        --*tries_left;
+    }
 
   return retry;
 }
@@ -1408,6 +1425,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   char *httphost = NULL;
   unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
+  unsigned int extra_tries = SEND_REQUEST_EXTRA_RETRIES;
 
   *r_fp = NULL;
 
@@ -1489,7 +1507,8 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
                       NULL, NULL, &fp, &http_status);
-  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
+  if (handle_send_request_error (ctrl, err, request, http_status,
+                                 &tries, &extra_tries))
     {
       reselect = 1;
       goto again;
@@ -1559,6 +1578,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   unsigned int httpflags;
   unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
+  unsigned int extra_tries = SEND_REQUEST_EXTRA_RETRIES;
 
   *r_fp = NULL;
 
@@ -1631,7 +1651,8 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
                       NULL, NULL, &fp, &http_status);
-  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
+  if (handle_send_request_error (ctrl, err, request, http_status,
+                                 &tries, &extra_tries))
     {
       reselect = 1;
       goto again;
@@ -1707,6 +1728,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   unsigned int httpflags;
   unsigned int http_status;
   unsigned int tries = SEND_REQUEST_RETRIES;
+  unsigned int extra_tries = SEND_REQUEST_EXTRA_RETRIES;
 
   parm.datastring = NULL;
 
@@ -1745,7 +1767,8 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, 0,
                       put_post_cb, &parm, &fp, &http_status);
-  if (handle_send_request_error (ctrl, err, request, http_status, &tries))
+  if (handle_send_request_error (ctrl, err, request, http_status,
+                                 &tries, &extra_tries))
     {
       reselect = 1;
       goto again;
