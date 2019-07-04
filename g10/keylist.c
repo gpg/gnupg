@@ -51,7 +51,7 @@
 static void list_all (ctrl_t, int, int);
 static void list_one (ctrl_t ctrl,
                       strlist_t names, int secret, int mark_secret);
-static void locate_one (ctrl_t ctrl, strlist_t names);
+static void locate_one (ctrl_t ctrl, strlist_t names, int no_local);
 static void print_card_serialno (const char *serialno);
 
 struct keylist_context
@@ -83,10 +83,11 @@ keylist_context_release (struct keylist_context *listctx)
 
 
 /* List the keys.  If list is NULL, all available keys are listed.
-   With LOCATE_MODE set the locate algorithm is used to find a
-   key.  */
+ * With LOCATE_MODE set the locate algorithm is used to find a key; if
+ * in addition NO_LOCAL is set the locate does not look into the local
+ * keyring.  */
 void
-public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
+public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode, int no_local)
 {
 #ifndef NO_TRUST_MODELS
   if (opt.with_colons)
@@ -140,7 +141,7 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
 #endif
 
   if (locate_mode)
-    locate_one (ctrl, list);
+    locate_one (ctrl, list, no_local);
   else if (!list)
     list_all (ctrl, 0, opt.with_secret);
   else
@@ -658,7 +659,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
 
 
 static void
-locate_one (ctrl_t ctrl, strlist_t names)
+locate_one (ctrl_t ctrl, strlist_t names, int no_local)
 {
   int rc = 0;
   strlist_t sl;
@@ -672,7 +673,10 @@ locate_one (ctrl_t ctrl, strlist_t names)
 
   for (sl = names; sl; sl = sl->next)
     {
-      rc = get_best_pubkey_byname (ctrl, &ctx, NULL, sl->d, &keyblock, 1);
+      rc = get_best_pubkey_byname (ctrl,
+                                   no_local? GET_PUBKEY_NO_LOCAL
+                                   /*    */: GET_PUBKEY_NORMAL,
+                                   &ctx, NULL, sl->d, &keyblock, 1);
       if (rc)
 	{
 	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY)

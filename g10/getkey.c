@@ -936,7 +936,9 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
    * Note: we only save the search context in RETCTX if the local
    * method is the first method tried (either explicitly or
    * implicitly).  */
-  if (mode != GET_PUBKEY_NO_AKL)
+  if (mode == GET_PUBKEY_NO_LOCAL)
+    nodefault = 1;  /* Auto-key-locate but ignore "local".  */
+  else if (mode != GET_PUBKEY_NO_AKL)
     {
       /* auto-key-locate is enabled.  */
 
@@ -965,7 +967,13 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
       anylocalfirst = 1;
     }
 
-  if (nodefault && is_mbox)
+  if (mode == GET_PUBKEY_NO_LOCAL)
+    {
+      /* Force using the AKL.  If IS_MBOX is not set this is the final
+       * error code.  */
+      rc = GPG_ERR_NO_PUBKEY;
+    }
+  else if (nodefault && is_mbox)
     {
       /* Either "nodefault" or "local" (explicitly) appeared in the
        * auto key locate list and NAME appears to be an email address.
@@ -1012,17 +1020,25 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	      break;
 
 	    case AKL_LOCAL:
-	      mechanism_string = "Local";
-	      did_akl_local = 1;
-	      if (retctx)
-		{
-		  getkey_end (ctrl, *retctx);
-		  *retctx = NULL;
-		}
-	      add_to_strlist (&namelist, name);
-	      rc = key_byname (ctrl, anylocalfirst ? retctx : NULL,
-			       namelist, pk, 0,
-			       include_unusable, ret_keyblock, ret_kdbhd);
+              if (mode == GET_PUBKEY_NO_LOCAL)
+                {
+                  mechanism_string = "None";
+                  rc = GPG_ERR_NO_PUBKEY;
+                }
+              else
+                {
+                  mechanism_string = "Local";
+                  did_akl_local = 1;
+                  if (retctx)
+                    {
+                      getkey_end (ctrl, *retctx);
+                      *retctx = NULL;
+                    }
+                  add_to_strlist (&namelist, name);
+                  rc = key_byname (ctrl, anylocalfirst ? retctx : NULL,
+                                   namelist, pk, 0,
+                                   include_unusable, ret_keyblock, ret_kdbhd);
+                }
 	      break;
 
 	    case AKL_CERT:
@@ -1156,7 +1172,6 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 		      no_fingerprint ? _("No fingerprint") : gpg_strerror (rc));
 	}
     }
-
 
   if (rc && retctx)
     {
@@ -1310,7 +1325,8 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
  * resembles a mail address, the results are ranked and only the best
  * result is returned.  */
 gpg_error_t
-get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
+get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
+                        GETKEY_CTX *retctx, PKT_public_key *pk,
                         const char *name, KBNODE *ret_keyblock,
                         int include_unusable)
 {
@@ -1333,7 +1349,7 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
       getkey_end (ctrl, ctx);
       ctx = NULL;
     }
-  err = get_pubkey_byname (ctrl, GET_PUBKEY_NORMAL,
+  err = get_pubkey_byname (ctrl, mode,
                            &ctx, pk, name, ret_keyblock,
                            NULL, include_unusable);
   if (err)
