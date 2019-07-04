@@ -1200,7 +1200,8 @@ sig_revocation_key (const char *option, int argc, char *argv[], void *cookie)
                option, argv[0]);
 
   pk.req_usage = PUBKEY_USAGE_SIG;
-  err = get_pubkey_byname (NULL, NULL, &pk, argv[1], NULL, NULL, 1, 1);
+  err = get_pubkey_byname (NULL, GET_PUBKEY_NO_AKL,
+                           NULL, &pk, argv[1], NULL, NULL, 1);
   if (err)
     log_fatal ("looking up key %s: %s\n", argv[1], gpg_strerror (err));
 
@@ -2457,7 +2458,8 @@ pk_esk (const char *option, int argc, char *argv[], void *cookie)
 
   memset (&pk, 0, sizeof (pk));
   pk.req_usage = PUBKEY_USAGE_ENC;
-  err = get_pubkey_byname (NULL, NULL, &pk, pi.keyid, NULL, NULL, 1, 1);
+  err = get_pubkey_byname (NULL, GET_PUBKEY_NO_AKL,
+                           NULL, &pk, pi.keyid, NULL, NULL, 1);
   if (err)
     log_fatal ("%s: looking up key %s: %s\n",
                option, pi.keyid, gpg_strerror (err));

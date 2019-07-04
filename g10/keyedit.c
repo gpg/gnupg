@@ -1438,7 +1438,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 #endif
 
   /* Get the public key */
-  err = get_pubkey_byname (ctrl, NULL, NULL, username, &keyblock, &kdbhd, 1, 1);
+  err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                           NULL, NULL, username, &keyblock, &kdbhd, 1);
   if (err)
     {
       log_error (_("key \"%s\" not found: %s\n"), username, gpg_strerror (err));
@@ -2571,7 +2572,8 @@ find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
       err = gpg_error (GPG_ERR_INV_NAME);
       goto leave;
     }
-  err = get_pubkey_byname (ctrl, NULL, NULL, fpr, &keyblock, &kdbhd, 1, 1);
+  err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                           NULL, NULL, fpr, &keyblock, &kdbhd, 1);
   if (err)
     {
       log_error (_("key \"%s\" not found: %s\n"), fpr, gpg_strerror (err));
@@ -4290,7 +4292,8 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
          primary keys only, but some casual testing shows that PGP and
          GnuPG both can handle a designated revocation from a subkey. */
       revoker_pk->req_usage = PUBKEY_USAGE_CERT;
-      rc = get_pubkey_byname (ctrl, NULL, revoker_pk, answer, NULL, NULL, 1, 1);
+      rc = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                              NULL, revoker_pk, answer, NULL, NULL, 1);
       if (rc)
 	{
 	  log_error (_("key \"%s\" not found: %s\n"), answer,

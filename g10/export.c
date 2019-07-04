@@ -2174,10 +2174,10 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
     {
       getkey_ctx_t getkeyctx;
 
-      err = get_pubkey_byname (ctrl, &getkeyctx, NULL, userid, &keyblock,
+      err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                               &getkeyctx, NULL, userid, &keyblock,
                                NULL,
-                               0  /* Only usable keys or given exact. */,
-                               1  /* No AKL lookup.  */);
+                               0  /* Only usable keys or given exact. */);
       if (!err)
         {
           err = getkey_next (ctrl, getkeyctx, NULL, NULL);
