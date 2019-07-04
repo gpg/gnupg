@@ -1015,14 +1015,14 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	    {
 	    case AKL_NODEFAULT:
 	      /* This is a dummy mechanism.  */
-	      mechanism_string = "None";
+	      mechanism_string = "";
 	      rc = GPG_ERR_NO_PUBKEY;
 	      break;
 
 	    case AKL_LOCAL:
               if (mode == GET_PUBKEY_NO_LOCAL)
                 {
-                  mechanism_string = "None";
+                  mechanism_string = "";
                   rc = GPG_ERR_NO_PUBKEY;
                 }
               else
@@ -1165,8 +1165,8 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                           name, mechanism_string);
 	      break;
 	    }
-	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY
-              || opt.verbose || no_fingerprint)
+	  if ((gpg_err_code (rc) != GPG_ERR_NO_PUBKEY
+               || opt.verbose || no_fingerprint) && *mechanism_string)
 	    log_info (_("error retrieving '%s' via %s: %s\n"),
 		      name, mechanism_string,
 		      no_fingerprint ? _("No fingerprint") : gpg_strerror (rc));
