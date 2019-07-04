@@ -363,7 +363,7 @@ int get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 
 /* Likewise, but only return the best match if NAME resembles a mail
  * address.  */
-gpg_error_t get_best_pubkey_byname (ctrl_t ctrl,
+gpg_error_t get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                                     GETKEY_CTX *retctx, PKT_public_key *pk,
                                     const char *name, KBNODE *ret_keyblock,
                                     int include_unusable);
