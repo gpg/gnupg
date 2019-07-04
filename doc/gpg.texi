@@ -1917,6 +1917,11 @@ are available for all keyserver types, some common options are:
 
 @end table
 
+The default list of options is: "self-sigs-only, import-clean,
+repair-keys, repair-pks-subkey-bug, export-attributes,
+honor-pka-record".
+
+
 @item --completes-needed @var{n}
 @opindex compliant-needed
 Number of completely trusted users to introduce a new
