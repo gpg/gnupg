@@ -975,8 +975,8 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
           r->pk = xmalloc_clear (sizeof *r->pk);
           r->pk->req_usage = PUBKEY_USAGE_ENC;
 
-          rc = get_pubkey_byname (ctrl, NULL, r->pk, default_key,
-                                   NULL, NULL, 0, 1);
+          rc = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                                  NULL, r->pk, default_key, NULL, NULL, 0);
           if (rc)
             {
               xfree (r->pk);
@@ -1041,8 +1041,8 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
           /* We explicitly allow encrypt-to to an disabled key; thus
              we pass 1 for the second last argument and 1 as the last
              argument to disable AKL. */
-          if ( (rc = get_pubkey_byname (ctrl,
-                                        NULL, pk, rov->d, NULL, NULL, 1, 1)) )
+          if ((rc = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                                       NULL, pk, rov->d, NULL, NULL, 1)))
             {
               free_public_key ( pk ); pk = NULL;
               log_error (_("%s: skipped: %s\n"), rov->d, gpg_strerror (rc) );
@@ -1179,7 +1179,8 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
           free_public_key (pk);
           pk = xmalloc_clear( sizeof *pk );
           pk->req_usage = PUBKEY_USAGE_ENC;
-          rc = get_pubkey_byname (ctrl, NULL, pk, answer, NULL, NULL, 0, 0 );
+          rc = get_pubkey_byname (ctrl, GET_PUBKEY_NORMAL,
+                                  NULL, pk, answer, NULL, NULL, 0);
           if (rc)
             tty_printf(_("No such user ID.\n"));
           else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo,
@@ -1257,7 +1258,8 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
 
       /* The default recipient is allowed to be disabled; thus pass 1
          as second last argument.  We also don't want an AKL. */
-      rc = get_pubkey_byname (ctrl, NULL, pk, def_rec, NULL, NULL, 1, 1);
+      rc = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                              NULL, pk, def_rec, NULL, NULL, 1);
       if (rc)
         log_error(_("unknown default recipient \"%s\"\n"), def_rec );
       else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo,

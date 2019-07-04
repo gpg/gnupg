@@ -345,12 +345,21 @@ typedef struct pubkey_s *pubkey_t;
 /* Free a list of public keys.  */
 void pubkeys_free (pubkey_t keys);
 
+
+/* Mode flags for get_pubkey_byname.  */
+enum get_pubkey_modes
+  {
+   GET_PUBKEY_NORMAL = 0,
+   GET_PUBKEY_NO_AKL = 1,
+   GET_PUBKEY_NO_LOCAL = 2
+  };
+
 /* Find a public key identified by NAME.  */
-int get_pubkey_byname (ctrl_t ctrl,
+int get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                        GETKEY_CTX *retctx, PKT_public_key *pk,
 		       const char *name,
                        KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd,
-		       int include_unusable, int no_akl );
+		       int include_unusable);
 
 /* Likewise, but only return the best match if NAME resembles a mail
  * address.  */
