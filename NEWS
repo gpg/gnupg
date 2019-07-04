@@ -1,8 +1,26 @@
 Noteworthy changes in version 2.2.17 (unreleased)
 -------------------------------------------------
 
+  * gpg: Ignore all key-signatures received from keyservers.  This
+    change is required to mitigate a DoS due to keys flooded with
+    faked key-signatures.  The old behaviour can be achieved by adding
+      keyserver-options no-self-sigs-only,no-import-clean
+    to your gpg.conf.  [#4607]
+
+  * gpg: If an imported keyblocks is too large to be stored in the
+    keybox (pubring.kbx) do not error out but fallback to an import
+    using the options "self-sigs-only,import-clean".  [#4591]
+
+  * gpg: New command --locate-external-key which can be used to
+    refresh keys from the Web Key Directory or via other methods
+    configured with --auto-key-locate.
+
+  * gpg: New import option "self-sigs-only".
+
   * dirmngr: Support the "openpgpkey" subdomain feature from
     draft-koch-openpgp-webkey-service-07. [#4590].
+
+  Release-info: https://dev.gnupg.org/T4606
 
 
 Noteworthy changes in version 2.2.16 (2019-05-28)
