@@ -1814,10 +1814,26 @@ These options enable or disable the automatic retrieving of keys from
 a keyserver when verifying signatures made by keys that are not on the
 local keyring.  The default is @option{--no-auto-key-retrieve}.
 
-If the method "wkd" is included in the list of methods given to
-@option{auto-key-locate}, the signer's user ID is part of the
-signature, and the option @option{--disable-signer-uid} is not used,
-the "wkd" method may also be used to retrieve a key.
+The order of methods tried to lookup the key is:
+
+1. If a preferred keyserver is specified in the signature and the
+option @option{honor-keyserver-url} is active (which is not the
+default), that keyserver is tried.  Note that the creator of the
+signature uses the option @option{--sig-keyserver-url} to specify the
+preferred keyserver for data signatures.
+
+2. If the signature has the Signer's UID set (e.g. using
+@option{--sender} while creating the signature) a Web Key Directory
+(WKD) lookup is done.  This is the default configuration but can be
+disabled by removing WKD from the auto-key-locate list or by using the
+option @option{--disable-signer-uid}.
+
+3. If the option @option{honor-pka-record} is active, the legacy PKA
+method is used.
+
+4. If any keyserver is configured and the Issuer Fingerprint is part
+of the signature (since GnuPG 2.1.16), the configured keyservers are
+tried.
 
 Note that this option makes a "web bug" like behavior possible.
 Keyserver or Web Key Directory operators can see which keys you
