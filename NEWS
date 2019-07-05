@@ -17,8 +17,19 @@ Noteworthy changes in version 2.2.17 (unreleased)
 
   * gpg: New import option "self-sigs-only".
 
+  * gpg: In --auto-key-retrieve prefer WKD over keyservers.  [#4595]
+
   * dirmngr: Support the "openpgpkey" subdomain feature from
     draft-koch-openpgp-webkey-service-07. [#4590].
+
+  * dirmngr: Add an exception for the "openpgpkey" subdomain to the
+    CSRF protection.  [#4603]
+
+  * dirmngr: Fix endless loop due to http errors 503 and 504.  [#4600]
+
+  * dirmngr: Fix TLS bug during redirection of HKP requests.  [#4566]
+
+  * gpgconf: Fix a race condition when killing components.  [#4577]
 
   Release-info: https://dev.gnupg.org/T4606
 
