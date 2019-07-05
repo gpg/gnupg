@@ -583,7 +583,7 @@ proc_encrypted (CTX c, PACKET *pkt)
           struct pubkey_enc_list *list;
 
           for (list = c->pkenc_list; list; list = list->next)
-            if (list->result == GPG_ERR_NO_SECKEY)
+            if (list->result != -1)
               {
                 char buf[20];
                 snprintf (buf, sizeof buf, "%08lX%08lX",
@@ -668,7 +668,10 @@ proc_encrypted (CTX c, PACKET *pkt)
         }
     }
   else if (!c->dek)
-    result = GPG_ERR_NO_SECKEY;
+    {
+      if (!result)
+        result = GPG_ERR_NO_SECKEY;
+    }
 
   /* Compute compliance with CO_DE_VS.  */
   if (!result && is_status_enabled ()
