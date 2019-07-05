@@ -397,16 +397,17 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
               char *hexkeygrip = NULL;
               char *desc = NULL;
               char kidbuf[16+1];
+              int tmp_rc;
 
               *kidbuf = 0;
 
-              rc = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
-              if (rc == -1 && recp)
+              tmp_rc = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
+              if (tmp_rc == -1 && recp)
                 break; /* no more recipients */
               audit_log_i (ctrl->audit, AUDIT_NEW_RECP, recp);
-              if (rc)
+              if (tmp_rc)
                 log_error ("recp %d - error getting info: %s\n",
-                           recp, gpg_strerror (rc));
+                           recp, gpg_strerror (tmp_rc));
               else
                 {
                   ksba_cert_t cert = NULL;
@@ -569,7 +570,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   audit_log_i (ctrl->audit, AUDIT_NEW_RECP, recp);
                   if (tmp_rc)
                     log_error ("recp %d - error getting info: %s\n",
-                               recp, gpg_strerror (rc));
+                               recp, gpg_strerror (tmp_rc));
                   else
                     {
                       char *tmpstr = gpgsm_format_sn_issuer (serial, issuer);
@@ -583,7 +584,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 
           if (!any_key)
             {
-              rc = gpg_error (GPG_ERR_NO_SECKEY);
+              if (!rc)
+                rc = gpg_error (GPG_ERR_NO_SECKEY);
               goto leave;
             }
         }
