@@ -333,7 +333,7 @@ parse_keyserver_uri (const char *string,int require_scheme)
     {
       /* Three slashes means network path with a default host name.
          This is a hack because it does not crok all possible
-         combiantions.  We should better repalce all code bythe parser
+         combinations.  We should better replace all code by the parser
          from http.c.  */
       keyserver->path = xstrdup (uri+2);
     }
