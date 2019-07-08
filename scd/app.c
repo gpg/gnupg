@@ -1706,9 +1706,11 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
               err = a->fnc.with_keygrip (a, ctrl, action, keygrip_str);
               unlock_card (c);
               if (!err)
-                break;
+                goto leave_the_loop;
             }
         }
+
+ leave_the_loop:
 
   /* FIXME: Add app switching logic.  The above code assumes that the
    * actions can be performend without switching.  This needs to be
