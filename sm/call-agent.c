@@ -409,19 +409,19 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
     {
     case GCRY_PK_RSA:
       rc = gcry_sexp_build (&sig, NULL, "(sig-val(rsa(s%b)))",
-                            sigbuflen, sigbuf);
+                            (int)sigbuflen, sigbuf);
       break;
 
     case GCRY_PK_ECC:
       rc = gcry_sexp_build (&sig, NULL, "(sig-val(ecdsa(r%b)(s%b)))",
-                            sigbuflen/2, sigbuf,
-                            sigbuflen/2, sigbuf + sigbuflen/2);
+                            (int)sigbuflen/2, sigbuf,
+                            (int)sigbuflen/2, sigbuf + sigbuflen/2);
       break;
 
     case GCRY_PK_EDDSA:
       rc = gcry_sexp_build (&sig, NULL, "(sig-val(eddsa(r%b)(s%b)))",
-                            sigbuflen/2, sigbuf,
-                            sigbuflen/2, sigbuf + sigbuflen/2);
+                            (int)sigbuflen/2, sigbuf,
+                            (int)sigbuflen/2, sigbuf + sigbuflen/2);
       break;
 
     default:
