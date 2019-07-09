@@ -36,9 +36,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.2.15\n"
+"Project-Id-Version: gnupg2 2.2.16\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-04-21 06:20+02:00\n"
+"PO-Revision-Date: 2019-07-05 20:26+02:00\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <gnupg-i18n@gnupg.org>\n"
 "Language: cs\n"
@@ -1605,16 +1605,16 @@ msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "bez parametru „--yes“ to nelze v dávkovém režimu provést\n"
 
 msgid "Note: The public primary key and all its subkeys will be deleted.\n"
-msgstr ""
+msgstr "Poznámka: Veřejný primární klíč a všechny jeho podklíče budou smazány.\n"
 
 msgid "Note: Only the shown public subkey will be deleted.\n"
-msgstr ""
+msgstr "Poznámka: Smazán bude pouze zobrazený podklíč.\n"
 
 msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
-msgstr ""
+msgstr "Poznámka: Smazána bude pouze tajná část zobrazeného primárního klíče.\n"
 
 msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
-msgstr ""
+msgstr "Poznámka: Smazána bude pouze tajná část zobrazeného podklíče.\n"
 
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Smazat tento klíč ze souboru klíčů? (a/N) "
@@ -2614,7 +2614,7 @@ msgstr "                       beze změn: %lu\n"
 
 #, c-format
 msgid "          new user IDs: %lu\n"
-msgstr "               nové ID uživatelů: %lu\n"
+msgstr "               nová ID uživatelů: %lu\n"
 
 #, c-format
 msgid "           new subkeys: %lu\n"
@@ -8634,15 +8634,13 @@ msgstr "Pole pro heslo"
 msgid "Component not suitable for launching"
 msgstr "Komponenta není vhodná pro spuštění"
 
-#, fuzzy, c-format
-#| msgid "External verification of component %s failed"
+#, c-format
 msgid "Configuration file of component %s is broken\n"
-msgstr "Selhalo externí ověření komponenty %s"
+msgstr "Konfigurační soubor komponenty %s je rozbitý\n"
 
-#, fuzzy, c-format
-#| msgid "Note: Use the command \"%s\" to restart them.\n"
+#, c-format
 msgid "Note: Use the command \"%s%s\" to get details.\n"
-msgstr "Poznámka: Restartovat je můžete příkazem „%s“.\n"
+msgstr "Poznámka: Podrobnosti získáte příkazem „%s%s“.\n"
 
 #, c-format
 msgid "External verification of component %s failed"
