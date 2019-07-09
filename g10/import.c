@@ -855,6 +855,7 @@ read_block( IOBUF a, unsigned int options,
   kbnode_t root = NULL;
   int in_cert, in_v3key, skip_sigs;
   u32 keyid[2];
+  int got_keyid = 0;
   unsigned int dropped_nonselfsigs = 0;
 
   *r_v3keys = 0;
@@ -863,7 +864,11 @@ read_block( IOBUF a, unsigned int options,
     {
       root = new_kbnode( *pending_pkt );
       *pending_pkt = NULL;
+      log_assert (root->pkt->pkttype == PKT_PUBLIC_KEY
+                  || root->pkt->pkttype == PKT_SECRET_KEY);
       in_cert = 1;
+      keyid_from_pk (root->pkt->pkt.public_key, keyid);
+      got_keyid = 1;
     }
   else
     in_cert = 0;
@@ -985,6 +990,7 @@ read_block( IOBUF a, unsigned int options,
             goto x_default;
           if (!(options & IMPORT_SELF_SIGS_ONLY))
             goto x_default;
+          log_assert (got_keyid);
 	  if (pkt->pkt.signature->keyid[0] == keyid[0]
               && pkt->pkt.signature->keyid[1] == keyid[1])
 	    { /* This is likely a self-signature.  We import this one.
@@ -1007,6 +1013,11 @@ read_block( IOBUF a, unsigned int options,
 
         case PKT_PUBLIC_KEY:
         case PKT_SECRET_KEY:
+          if (!got_keyid)
+            {
+              keyid_from_pk (pkt->pkt.public_key, keyid);
+              got_keyid = 1;
+            }
           if (in_cert) /* Store this packet.  */
             {
               *pending_pkt = pkt;
@@ -1014,7 +1025,6 @@ read_block( IOBUF a, unsigned int options,
               goto ready;
             }
           in_cert = 1;
-          keyid_from_pk (pkt->pkt.public_key, keyid);
           goto x_default;
 
         default:
