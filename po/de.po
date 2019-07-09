@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-05-27 12:47+0200\n"
+"PO-Revision-Date: 2019-07-09 13:31+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -2591,6 +2591,9 @@ msgstr "entferne nach dem Import unbrauchbare Teile des Schlüssels"
 msgid "remove as much as possible from key after import"
 msgstr "nach dem Import soviel wie möglich aus dem Schlüssel entfernen"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr "Ignoriere Signaturen die keine Eigenbeglaubigungen sind"
+
 msgid "run import filters and export key immediately"
 msgstr "Import-Filter anwenden und Schlüssel direkt exportieren"
 
@@ -4629,6 +4632,10 @@ msgstr "               Aussteller \"%s\"\n"
 #, c-format
 msgid "Key available at: "
 msgstr "Schlüssel erhältlich bei: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr "Hinweis: Benutze '%s' um diese Information zu verwenden\n"
 
 msgid "[uncertain]"
 msgstr "[ungewiß]  "
