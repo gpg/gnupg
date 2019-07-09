@@ -2301,7 +2301,9 @@ import_one (ctrl_t ctrl,
                          from_sk, silent, screener, screener_arg,
                          origin, url, r_valid);
   if (gpg_err_code (err) == GPG_ERR_TOO_LARGE
-      && gpg_err_source (err) == GPG_ERR_SOURCE_KEYBOX)
+      && gpg_err_source (err) == GPG_ERR_SOURCE_KEYBOX
+      && ((options & (IMPORT_SELF_SIGS_ONLY | IMPORT_CLEAN))
+          != (IMPORT_SELF_SIGS_ONLY | IMPORT_CLEAN)))
     {
       /* We hit the maximum image length.  Ask the wrapper to do
        * everything again but this time with some extra options.  */
