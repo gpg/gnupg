@@ -2756,6 +2756,9 @@ msgstr "ithalat sonrası anahtardan kullanışsız parçaları kaldırır"
 msgid "remove as much as possible from key after import"
 msgstr "ithalat sonrası anahtardan mümkün olduğunca çok şey kaldırır"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr ""
 
@@ -4909,6 +4912,10 @@ msgstr "                nam-ı diğer \"%s\""
 #, c-format
 msgid "Key available at: "
 msgstr "Anahtar burada:"
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[şüpheli]"

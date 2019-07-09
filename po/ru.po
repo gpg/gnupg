@@ -1583,10 +1583,13 @@ msgid "Note: Only the shown public subkey will be deleted.\n"
 msgstr "Замечание: Будет удален только показанный открытый подключ.\n"
 
 msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
-msgstr "Замечание: Будет удалена только секретная часть показанного первичного ключа.\n"
+msgstr ""
+"Замечание: Будет удалена только секретная часть показанного первичного "
+"ключа.\n"
 
 msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
-msgstr "Замечание: Будет удалена только секретная часть показанного подключа.\n"
+msgstr ""
+"Замечание: Будет удалена только секретная часть показанного подключа.\n"
 
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Удалить данный ключ из таблицы? (y/N) "
@@ -2540,6 +2543,9 @@ msgstr "удалить после импорта непригодные част
 
 msgid "remove as much as possible from key after import"
 msgstr "удалить после импорта из ключа как можно больше"
+
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
 
 msgid "run import filters and export key immediately"
 msgstr "применить фильтры импорта и немедленно экспортировать ключ"
@@ -4571,6 +4577,10 @@ msgstr "                издатель \"%s\"\n"
 #, c-format
 msgid "Key available at: "
 msgstr "Ключ доступен на: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[сомнительно]"

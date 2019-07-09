@@ -2602,6 +2602,9 @@ msgstr "вилучити невикористані частини ключа п
 msgid "remove as much as possible from key after import"
 msgstr "вилучити максимум частин з ключа після імпортування"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr "запустити фільтри імпортування та експортувати ключ негайно"
 
@@ -4660,6 +4663,10 @@ msgstr "               видавець «%s»\n"
 #, c-format
 msgid "Key available at: "
 msgstr "Ключ доступний на: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[непевний]"

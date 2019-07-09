@@ -2500,6 +2500,9 @@ msgstr "导入后移除密钥中无用的部分"
 msgid "remove as much as possible from key after import"
 msgstr "导入后尽可能多地移除密钥中的可选部分"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr "运行导入过滤器并立即导出密钥"
 
@@ -4451,6 +4454,10 @@ msgstr "               签发者 \"%s\"\n"
 #, c-format
 msgid "Key available at: "
 msgstr "密钥在以下地方可用： "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[不确定]"

@@ -1605,13 +1605,15 @@ msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "bez parametru „--yes“ to nelze v dávkovém režimu provést\n"
 
 msgid "Note: The public primary key and all its subkeys will be deleted.\n"
-msgstr "Poznámka: Veřejný primární klíč a všechny jeho podklíče budou smazány.\n"
+msgstr ""
+"Poznámka: Veřejný primární klíč a všechny jeho podklíče budou smazány.\n"
 
 msgid "Note: Only the shown public subkey will be deleted.\n"
 msgstr "Poznámka: Smazán bude pouze zobrazený podklíč.\n"
 
 msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
-msgstr "Poznámka: Smazána bude pouze tajná část zobrazeného primárního klíče.\n"
+msgstr ""
+"Poznámka: Smazána bude pouze tajná část zobrazeného primárního klíče.\n"
 
 msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
 msgstr "Poznámka: Smazána bude pouze tajná část zobrazeného podklíče.\n"
@@ -2570,6 +2572,9 @@ msgstr "odstranit z klíče po importu nepoužitelné části"
 
 msgid "remove as much as possible from key after import"
 msgstr "odstranit po importu z klíče vše, co lze"
+
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
 
 msgid "run import filters and export key immediately"
 msgstr "spustit importní filtry a exportovat klíč okamžitě"
@@ -4585,6 +4590,10 @@ msgstr "               vydavatel „%s“\n"
 #, c-format
 msgid "Key available at: "
 msgstr "Klíč k dispozici na: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[nejistý]"

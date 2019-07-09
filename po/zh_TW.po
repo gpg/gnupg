@@ -2572,6 +2572,9 @@ msgstr "匯入後從金鑰中移除無法使用的部分"
 msgid "remove as much as possible from key after import"
 msgstr "匯入後盡可能地從金鑰中移除"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr ""
 
@@ -4576,6 +4579,10 @@ msgstr "                亦即 \"%s\""
 #, c-format
 msgid "Key available at: "
 msgstr "可用的金鑰於: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[ 不確定 ]"

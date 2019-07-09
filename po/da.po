@@ -2764,6 +2764,9 @@ msgstr "fjern ubrugelige dele fra nøgle efter import"
 msgid "remove as much as possible from key after import"
 msgstr "fjern så meget som muligt fra nøgle efter import"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr ""
 
@@ -4879,6 +4882,10 @@ msgstr "       også kendt som »%s«"
 #, c-format
 msgid "Key available at: "
 msgstr "Nøgle tilgængelig på: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[usikker]"

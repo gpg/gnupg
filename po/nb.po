@@ -2535,6 +2535,9 @@ msgstr "fjern ubrukelige deler av nøkkel etter importering"
 msgid "remove as much as possible from key after import"
 msgstr "fjern så mye som mulig fra nøkkel etter importering"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr "kjør importeringsfiltre og eksporter nøkkel umiddelbart"
 
@@ -4551,6 +4554,10 @@ msgstr "                utsteder «%s»\n"
 #, c-format
 msgid "Key available at: "
 msgstr "Nøkkel tilgjengelig ved: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[usikker]"

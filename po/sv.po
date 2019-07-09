@@ -2828,6 +2828,9 @@ msgstr "ta bort oanvändbara delar från nyckeln efter importering"
 msgid "remove as much as possible from key after import"
 msgstr "ta bort så mycket som möjligt från nyckeln efter importering"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr ""
 
@@ -4965,6 +4968,10 @@ msgstr "      även känd som \"%s\""
 #, c-format
 msgid "Key available at: "
 msgstr "Nyckeln tillgänglig hos: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 # Visas vid ogiltig signatur:
 # Eftersom signaturen är ogiltig kan man inte vara säker på att angivet namn och nyckel-id är riktigt.

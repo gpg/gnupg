@@ -2785,6 +2785,9 @@ msgstr "la clau secreta és inusable"
 msgid "remove as much as possible from key after import"
 msgstr ""
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr ""
 
@@ -4949,6 +4952,10 @@ msgstr "              alias \""
 #, c-format
 msgid "Key available at: "
 msgstr "La clau és disponible en: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[incert]"

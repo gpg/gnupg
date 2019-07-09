@@ -2749,6 +2749,9 @@ msgstr "cheie secretă de nefolosit"
 msgid "remove as much as possible from key after import"
 msgstr ""
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr ""
 
@@ -4846,6 +4849,10 @@ msgstr "                aka \"%s\""
 #, c-format
 msgid "Key available at: "
 msgstr "Cheie disponibilă la: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[nesigur]"

@@ -2679,6 +2679,9 @@ msgstr "nettoyer les parties inutilisables de la clef après l'importation"
 msgid "remove as much as possible from key after import"
 msgstr "supprimer autant que possible de la clef après l'importation"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr ""
 
@@ -4761,6 +4764,10 @@ msgstr "                alias « %s »"
 #, c-format
 msgid "Key available at: "
 msgstr "Clef disponible sur : "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[doute]"

@@ -2568,6 +2568,9 @@ msgstr "borrar partes inútiles de la clave después de importar"
 msgid "remove as much as possible from key after import"
 msgstr "borrar tanto como sea posible de la clave tras importar"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr "ejecutar filtros de importación y exportar clave inmediatamente"
 
@@ -4569,6 +4572,10 @@ msgstr "               emisor \"%s\"\n"
 #, c-format
 msgid "Key available at: "
 msgstr "Clave disponible en: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[incierto]"

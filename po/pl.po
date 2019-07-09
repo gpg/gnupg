@@ -1567,13 +1567,15 @@ msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "bez opcji ,,--yes'' nie działa w trybie wsadowym\n"
 
 msgid "Note: The public primary key and all its subkeys will be deleted.\n"
-msgstr "Uwaga: główny klucz publiczny i wszystkie jego podklucze zostaną usunięte.\n"
+msgstr ""
+"Uwaga: główny klucz publiczny i wszystkie jego podklucze zostaną usunięte.\n"
 
 msgid "Note: Only the shown public subkey will be deleted.\n"
 msgstr "Uwaga: usunięty zostanie tylko pokazany podklucz publiczny.\n"
 
 msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
-msgstr "Uwaga: usunięta zostanie tylko tajna część pokazanego klucza głównego.\n"
+msgstr ""
+"Uwaga: usunięta zostanie tylko tajna część pokazanego klucza głównego.\n"
 
 msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
 msgstr "Uwaga: usunięta zostanie tylko tajna część pokazanego podklucza.\n"
@@ -2535,6 +2537,9 @@ msgstr "usuwanie bezużytecznych części kluczy po imporcie"
 
 msgid "remove as much as possible from key after import"
 msgstr "usuwanie jak największej części kluczy po imporcie"
+
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
 
 msgid "run import filters and export key immediately"
 msgstr "natychmiastowe uruchomienie filtrów importu i eksport klucza"
@@ -4587,6 +4592,10 @@ msgstr "                        wystawca ,,%s''\n"
 #, c-format
 msgid "Key available at: "
 msgstr "Klucz dostępny w: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[niepewne]"

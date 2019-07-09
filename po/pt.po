@@ -2691,6 +2691,9 @@ msgstr "chave secreta não utilizável"
 msgid "remove as much as possible from key after import"
 msgstr ""
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr ""
 
@@ -4807,6 +4810,10 @@ msgstr "                   ou \""
 #, fuzzy, c-format
 msgid "Key available at: "
 msgstr "Nenhuma ajuda disponível"
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[incerto]"

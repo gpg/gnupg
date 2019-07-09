@@ -2508,6 +2508,9 @@ msgstr "インポート後、利用できない部分を鍵から除去します
 msgid "remove as much as possible from key after import"
 msgstr "インポート後、できるだけ除去します"
 
+msgid "ignore key-signatures which are not self-signatures"
+msgstr ""
+
 msgid "run import filters and export key immediately"
 msgstr "インポート・フィルタを実行し鍵をすぐにエクスポートします"
 
@@ -4472,6 +4475,10 @@ msgstr "               発行者\"%s\"\n"
 #, c-format
 msgid "Key available at: "
 msgstr "以下に鍵があります: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[不確定]"
