@@ -6,9 +6,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.2.14\n"
+"Project-Id-Version: gnupg-2.2.16\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-03-24 10:29+0100\n"
+"PO-Revision-Date: 2019-05-29 17:45+0200\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -1567,16 +1567,16 @@ msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "bez opcji ,,--yes'' nie działa w trybie wsadowym\n"
 
 msgid "Note: The public primary key and all its subkeys will be deleted.\n"
-msgstr ""
+msgstr "Uwaga: główny klucz publiczny i wszystkie jego podklucze zostaną usunięte.\n"
 
 msgid "Note: Only the shown public subkey will be deleted.\n"
-msgstr ""
+msgstr "Uwaga: usunięty zostanie tylko pokazany podklucz publiczny.\n"
 
 msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
-msgstr ""
+msgstr "Uwaga: usunięta zostanie tylko tajna część pokazanego klucza głównego.\n"
 
 msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
-msgstr ""
+msgstr "Uwaga: usunięta zostanie tylko tajna część pokazanego podklucza.\n"
 
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Usunąć ten klucz ze zbioru? (t/N) "
@@ -8677,15 +8677,13 @@ msgstr "Wpisywanie hasła"
 msgid "Component not suitable for launching"
 msgstr "Komponent nie nadaje się do uruchomienia"
 
-#, fuzzy, c-format
-#| msgid "External verification of component %s failed"
+#, c-format
 msgid "Configuration file of component %s is broken\n"
-msgstr "Zewnętrzna weryfikacja komponentu %s nie powiodła się"
+msgstr "Plik konfiguracyjny komponentu %s jest uszkodzony\n"
 
-#, fuzzy, c-format
-#| msgid "Note: Use the command \"%s\" to restart them.\n"
+#, c-format
 msgid "Note: Use the command \"%s%s\" to get details.\n"
-msgstr "Uwaga: do restartu ich należy użyć polecenia ,,%s''.\n"
+msgstr "Podpowiedź: można użyć polecenia ,,%s%s'', aby uzyskać szczegóły.\n"
 
 #, c-format
 msgid "External verification of component %s failed"
@@ -8918,41 +8916,3 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
-
-#~ msgid "no keyserver known (use option --keyserver)\n"
-#~ msgstr "brak znanyk serwerów kluczy (użyj opcji --keyserver)\n"
-
-#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-#~ msgstr "błąd tworzenia tabeli TOFU ,,ultimately_trusted_keys'': %s\n"
-
-#~ msgid "error creating 'encryptions' TOFU table: %s\n"
-#~ msgstr "błąd tworzenia tabeli TOFU ,,encryptions'': %s\n"
-
-#~ msgid "adding column effective_policy to bindings DB: %s\n"
-#~ msgstr "dodawanie kolumny effective_policy do bazy danych powiązań: %s\n"
-
-#~ msgid "resetting keydb: %s\n"
-#~ msgstr "resetowanie bazy danych kluczy: %s\n"
-
-#~ msgid "error setting TOFU binding's policy to %s\n"
-#~ msgstr "błąd ustawiania polityki powiądań TOFU na %s\n"
-
-#~ msgid "%s: Verified %ld~signature in the past %s."
-#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
-#~ msgstr[0] "%s: Sprawdzono %ld~podpis przez %s."
-#~ msgstr[1] "%s: Sprawdzono %ld~podpisy przez %s."
-#~ msgstr[2] "%s: Sprawdzono %ld~podpisów przez %s."
-
-#~ msgid "Encrypted %ld~message in the past %s."
-#~ msgid_plural "Encrypted %ld~messages in the past %s."
-#~ msgstr[0] "Zaszyfrowano %ld~wiadomość przez %s."
-#~ msgstr[1] "Zaszyfrowano %ld~wiadomości przez %s."
-#~ msgstr[2] "Zaszyfrowano %ld~wiadomości przez %s."
-
-#~ msgid "error setting policy for key %s, user id \"%s\": %s"
-#~ msgstr ""
-#~ "błąd ustawiania polityki dla klucza %s, identyfikator użytkownika ,,%s'': "
-#~ "%s"
-
-#~ msgid "only SHA-1 is supported for OCSP responses\n"
-#~ msgstr "dla odpowiedzi OCSP obsługiwane jest tylko SHA-1\n"
