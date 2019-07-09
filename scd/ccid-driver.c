@@ -1717,31 +1717,37 @@ ccid_require_get_status (ccid_driver_t handle)
   return 1;
 }
 
-
-static void
-do_close_reader (ccid_driver_t handle)
+static int
+send_power_off (ccid_driver_t handle)
 {
   int rc;
   unsigned char msg[100];
   size_t msglen;
   unsigned char seqno;
 
-  if (!handle->powered_off)
-    {
-      msg[0] = PC_to_RDR_IccPowerOff;
-      msg[5] = 0; /* slot */
-      msg[6] = seqno = handle->seqno++;
-      msg[7] = 0; /* RFU */
-      msg[8] = 0; /* RFU */
-      msg[9] = 0; /* RFU */
-      set_msg_len (msg, 0);
-      msglen = 10;
+  msg[0] = PC_to_RDR_IccPowerOff;
+  msg[5] = 0; /* slot */
+  msg[6] = seqno = handle->seqno++;
+  msg[7] = 0; /* RFU */
+  msg[8] = 0; /* RFU */
+  msg[9] = 0; /* RFU */
+  set_msg_len (msg, 0);
+  msglen = 10;
 
-      rc = bulk_out (handle, msg, msglen, 0);
-      if (!rc)
-        bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,
-                 seqno, 2000, 0);
-    }
+  rc = bulk_out (handle, msg, msglen, 0);
+  if (!rc)
+    bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,
+             seqno, 2000, 0);
+  return rc;
+}
+
+static void
+do_close_reader (ccid_driver_t handle)
+{
+  int rc;
+
+  if (!handle->powered_off)
+    send_power_off (handle);
 
   if (handle->transfer)
     {
@@ -2596,6 +2602,21 @@ ccid_get_atr (ccid_driver_t handle,
       if (!send_escape_cmd (handle, (const unsigned char*)"\xF1\x01", 2,
                             NULL, 0, NULL))
         goto again;
+    }
+  else if (statusbits == 0 && CCID_COMMAND_FAILED (msg))
+    {
+      /* Card was active already, and something went wrong with
+         PC_to_RDR_IccPowerOn command.  It may be baud-rate mismatch
+         between the card and the reader.  To recover from this state,
+         send PC_to_RDR_IccPowerOff command to reset the card and try
+         again.
+       */
+      rc = send_power_off (handle);
+      if (rc)
+        return rc;
+
+      statusbits = 1;
+      goto again;
     }
   else if (CCID_COMMAND_FAILED (msg))
     return CCID_DRIVER_ERR_CARD_IO_ERROR;
