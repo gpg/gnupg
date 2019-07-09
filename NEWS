@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.17 (unreleased)
+Noteworthy changes in version 2.2.17 (2019-07-09)
 -------------------------------------------------
 
   * gpg: Ignore all key-signatures received from keyservers.  This
@@ -32,6 +32,7 @@ Noteworthy changes in version 2.2.17 (unreleased)
   * gpgconf: Fix a race condition when killing components.  [#4577]
 
   Release-info: https://dev.gnupg.org/T4606
+  See-also: gnupg-announce/2019q3/000439.html
 
 
 Noteworthy changes in version 2.2.16 (2019-05-28)
