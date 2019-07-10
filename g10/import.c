@@ -853,6 +853,7 @@ read_block( IOBUF a, unsigned int options,
   struct parse_packet_ctx_s parsectx;
   PACKET *pkt;
   kbnode_t root = NULL;
+  kbnode_t lastnode = NULL;
   int in_cert, in_v3key, skip_sigs;
   u32 keyid[2];
   int got_keyid = 0;
@@ -862,7 +863,7 @@ read_block( IOBUF a, unsigned int options,
 
   if (*pending_pkt)
     {
-      root = new_kbnode( *pending_pkt );
+      root = lastnode = new_kbnode( *pending_pkt );
       *pending_pkt = NULL;
       log_assert (root->pkt->pkttype == PKT_PUBLIC_KEY
                   || root->pkt->pkttype == PKT_SECRET_KEY);
@@ -1032,9 +1033,12 @@ read_block( IOBUF a, unsigned int options,
           if (in_cert && valid_keyblock_packet (pkt->pkttype))
             {
               if (!root )
-                root = new_kbnode (pkt);
+                root = lastnode = new_kbnode (pkt);
               else
-                add_kbnode (root, new_kbnode (pkt));
+                {
+                  lastnode->next = new_kbnode (pkt);
+                  lastnode = lastnode->next;
+                }
               pkt = xmalloc (sizeof *pkt);
             }
           else
@@ -2605,6 +2609,7 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
   kbnode_t pub_keyblock = NULL;
   kbnode_t ctx = NULL;
   kbnode_t secnode, pubnode;
+  kbnode_t lastnode = NULL;
   unsigned int tag = 0;
 
   /* Set a tag to all nodes.  */
@@ -2644,9 +2649,12 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
       pubnode->tag = secnode->tag;
 
       if (!pub_keyblock)
-	pub_keyblock = pubnode;
+        pub_keyblock = lastnode = pubnode;
       else
-	add_kbnode (pub_keyblock, pubnode);
+        {
+          lastnode->next = pubnode;
+          lastnode = pubnode;
+        }
     }
 
   return pub_keyblock;
