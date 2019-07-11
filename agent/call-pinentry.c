@@ -423,7 +423,17 @@ start_pinentry (ctrl_t ctrl)
                         opt.no_grab? "OPTION no-grab":"OPTION grab",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (ctrl, rc);
+    {
+      if (gpg_err_code (rc) == GPG_ERR_NOT_SUPPORTED
+          || gpg_err_code (rc) == GPG_ERR_UNKNOWN_OPTION)
+        {
+          if (opt.verbose)
+            log_info ("Option no-grab/grab is ignored by pinentry.\n");
+          /* Keep going even if the feature is not supported.  */
+        }
+      else
+        return unlock_pinentry (ctrl, rc);
+    }
 
   value = session_env_getenv (ctrl->session_env, "GPG_TTY");
   if (value)
