@@ -112,10 +112,15 @@
 #define CCID_CMD_TIMEOUT (5*1000)
 
 /* Depending on how this source is used we either define our error
- * output to go to stderr or to the GnuPG based logging functions.  We
- * use the latter when GNUPG_SCD_MAIN_HEADER is defined.  */
-#if defined(GNUPG_SCD_MAIN_HEADER)
-# include GNUPG_SCD_MAIN_HEADER
+ * output to go to the GnuPG based logging functions or to stderr.  We
+ * use the former when GNUPG_MAJOR_VERSION or GNUPG_SCD_MAIN_HEADER is
+ * defined.  */
+#if defined(GNUPG_MAJOR_VERSION) || defined(GNUPG_SCD_MAIN_HEADER)
+# if defined(GNUPG_SCD_MAIN_HEADER)
+#  include GNUPG_SCD_MAIN_HEADER
+# else /* This is the modularized GnuPG 1.9 or later. */
+#  include "scdaemon.h"
+# endif
 
 # define DEBUGOUT(t)         do { if (debug_level) \
                                   log_debug (DRVNAME t); } while (0)
