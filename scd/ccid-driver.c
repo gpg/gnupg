@@ -978,7 +978,7 @@ get_escaped_usb_string (libusb_device_handle *idev, int idx,
   rc = libusb_control_transfer (idev, LIBUSB_ENDPOINT_IN,
                                 LIBUSB_REQUEST_GET_DESCRIPTOR,
                                 (LIBUSB_DT_STRING << 8), 0,
-                                (char*)buf, sizeof buf, 1000 /* ms timeout */);
+                                buf, sizeof buf, 1000 /* ms timeout */);
 #ifdef USE_NPTH
   npth_protect ();
 #endif
@@ -993,7 +993,7 @@ get_escaped_usb_string (libusb_device_handle *idev, int idx,
   rc = libusb_control_transfer (idev, LIBUSB_ENDPOINT_IN,
                                 LIBUSB_REQUEST_GET_DESCRIPTOR,
                                 (LIBUSB_DT_STRING << 8) + idx, langid,
-                                (char*)buf, sizeof buf, 1000 /* ms timeout */);
+                                buf, sizeof buf, 1000 /* ms timeout */);
 #ifdef USE_NPTH
   npth_protect ();
 #endif
@@ -1510,7 +1510,9 @@ intr_cb (struct libusb_transfer *transfer)
         {
           DEBUGOUT ("CCID: card removed\n");
           handle->powered_off = 1;
+#if defined(GNUPG_MAJOR_VERSION)
           scd_kick_the_loop ();
+#endif
         }
       else
         {
@@ -1525,7 +1527,9 @@ intr_cb (struct libusb_transfer *transfer)
     device_removed:
       DEBUGOUT ("CCID: device removed\n");
       handle->powered_off = 1;
+#if defined(GNUPG_MAJOR_VERSION)
       scd_kick_the_loop ();
+#endif
     }
 }
 
@@ -1937,7 +1941,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
   npth_unprotect ();
 #endif
   rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
-                             (char*)msg, msglen, &transferred,
+                             msg, msglen, &transferred,
                              5000 /* ms timeout */);
 #ifdef USE_NPTH
   npth_protect ();
@@ -2106,7 +2110,9 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
         {
           DEBUGOUT ("CCID: card inactive/removed\n");
           handle->powered_off = 1;
+#if defined(GNUPG_MAJOR_VERSION)
           scd_kick_the_loop ();
+#endif
         }
     }
 
@@ -2120,7 +2126,7 @@ static int
 abort_cmd (ccid_driver_t handle, int seqno)
 {
   int rc;
-  char dummybuf[8];
+  unsigned char dummybuf[8];
   unsigned char msg[100];
   int msglen;
 
@@ -2171,7 +2177,7 @@ abort_cmd (ccid_driver_t handle, int seqno)
       npth_unprotect ();
 #endif
       rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
-                                 (char*)msg, msglen, &transferred,
+                                 msg, msglen, &transferred,
                                  5000 /* ms timeout */);
 #ifdef USE_NPTH
       npth_protect ();
@@ -2189,7 +2195,7 @@ abort_cmd (ccid_driver_t handle, int seqno)
       npth_unprotect ();
 #endif
       rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
-                                 (char*)msg, sizeof msg, &msglen,
+                                 msg, sizeof msg, &msglen,
                                  5000 /*ms timeout*/);
 #ifdef USE_NPTH
       npth_protect ();
@@ -2310,7 +2316,7 @@ ccid_poll (ccid_driver_t handle)
   int i, j;
 
   rc = libusb_interrupt_transfer (handle->idev, handle->ep_intr,
-                                  (char*)msg, sizeof msg, &msglen,
+                                  msg, sizeof msg, &msglen,
                                   0 /* ms timeout */ );
   if (rc == LIBUSB_ERROR_TIMEOUT)
     return 0;
@@ -3787,7 +3793,7 @@ print_result (int rc, const unsigned char *data, size_t length)
 int
 main (int argc, char **argv)
 {
-  int rc;
+  gpg_error_t err;
   ccid_driver_t ccid;
   int slotstat;
   unsigned char result[512];
@@ -3796,6 +3802,8 @@ main (int argc, char **argv)
   int verify_123456 = 0;
   int did_verify = 0;
   int no_poll = 0;
+  int idx_max;
+  struct ccid_dev_table *ccid_table;
 
   if (argc)
     {
@@ -3839,27 +3847,36 @@ main (int argc, char **argv)
         break;
     }
 
-  rc = ccid_open_reader (&ccid, argc? *argv:NULL, NULL);
-  if (rc)
+  err = ccid_dev_scan (&idx_max, &ccid_table);
+  if (err)
     return 1;
+
+  if (idx_max == 0)
+    return 1;
+
+  err = ccid_open_reader (argc? *argv:NULL, 0, ccid_table, &ccid, NULL);
+  if (err)
+    return 1;
+
+  ccid_dev_scan_finish (ccid_table, idx_max);
 
   if (!no_poll)
     ccid_poll (ccid);
   fputs ("getting ATR ...\n", stderr);
-  rc = ccid_get_atr (ccid, NULL, 0, NULL);
-  if (rc)
+  err = ccid_get_atr (ccid, NULL, 0, NULL);
+  if (err)
     {
-      print_error (rc);
+      print_error (err);
       return 1;
     }
 
   if (!no_poll)
     ccid_poll (ccid);
   fputs ("getting slot status ...\n", stderr);
-  rc = ccid_slot_status (ccid, &slotstat, 1);
-  if (rc)
+  err = ccid_slot_status (ccid, &slotstat, 1);
+  if (err)
     {
-      print_error (rc);
+      print_error (err);
       return 1;
     }
 
@@ -3870,10 +3887,10 @@ main (int argc, char **argv)
   {
     static unsigned char apdu[] = {
       0, 0xA4, 4, 0, 6, 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01};
-    rc = ccid_transceive (ccid,
-                          apdu, sizeof apdu,
-                          result, sizeof result, &resultlen);
-    print_result (rc, result, resultlen);
+    err = ccid_transceive (ccid,
+                           apdu, sizeof apdu,
+                           result, sizeof result, &resultlen);
+    print_result (err, result, resultlen);
   }
 
 
@@ -3883,9 +3900,9 @@ main (int argc, char **argv)
   fputs ("getting OpenPGP DO 0x65 ....\n", stderr);
   {
     static unsigned char apdu[] = { 0, 0xCA, 0, 0x65, 254 };
-    rc = ccid_transceive (ccid, apdu, sizeof apdu,
-                          result, sizeof result, &resultlen);
-    print_result (rc, result, resultlen);
+    err = ccid_transceive (ccid, apdu, sizeof apdu,
+                           result, sizeof result, &resultlen);
+    print_result (err, result, resultlen);
   }
 
   if (!no_pinpad)
@@ -3895,22 +3912,18 @@ main (int argc, char **argv)
   if (!no_pinpad)
     {
       static unsigned char apdu[] = { 0, 0x20, 0, 0x81 };
+      pininfo_t pininfo = { 0, 0, 0 };
 
-
-      if (ccid_transceive_secure (ccid,
-                                  apdu, sizeof apdu,
-                                  1, 0, 0, 0,
+      if (ccid_transceive_secure (ccid, apdu, sizeof apdu, &pininfo,
                                   NULL, 0, NULL))
         fputs ("can't verify using a PIN-Pad reader\n", stderr);
       else
         {
-          fputs ("verifying CHV1 using the PINPad ....\n", stderr);
+           fputs ("verifying CHV1 using the PINPad ....\n", stderr);
 
-          rc = ccid_transceive_secure (ccid,
-                                       apdu, sizeof apdu,
-                                       1, 0, 0, 0,
-                                       result, sizeof result, &resultlen);
-          print_result (rc, result, resultlen);
+          err = ccid_transceive_secure (ccid, apdu, sizeof apdu, &pininfo,
+                                        result, sizeof result, &resultlen);
+          print_result (err, result, resultlen);
           did_verify = 1;
         }
     }
@@ -3921,20 +3934,20 @@ main (int argc, char **argv)
       {
         static unsigned char apdu[] = {0, 0x20, 0, 0x81,
                                        6, '1','2','3','4','5','6'};
-        rc = ccid_transceive (ccid, apdu, sizeof apdu,
-                              result, sizeof result, &resultlen);
-        print_result (rc, result, resultlen);
+        err = ccid_transceive (ccid, apdu, sizeof apdu,
+                               result, sizeof result, &resultlen);
+        print_result (err, result, resultlen);
       }
     }
 
-  if (!rc)
+  if (!err)
     {
       fputs ("getting OpenPGP DO 0x5E ....\n", stderr);
       {
         static unsigned char apdu[] = { 0, 0xCA, 0, 0x5E, 254 };
-        rc = ccid_transceive (ccid, apdu, sizeof apdu,
-                              result, sizeof result, &resultlen);
-        print_result (rc, result, resultlen);
+        err = ccid_transceive (ccid, apdu, sizeof apdu,
+                               result, sizeof result, &resultlen);
+        print_result (err, result, resultlen);
       }
     }
 
@@ -3945,7 +3958,7 @@ main (int argc, char **argv)
 
 /*
  * Local Variables:
- *  compile-command: "gcc -DTEST -Wall -I/usr/local/include -lusb -g ccid-driver.c"
+ *  compile-command: "gcc -DTEST -DGPGRT_ENABLE_ES_MACROS -DHAVE_NPTH -DUSE_NPTH -Wall -I/usr/include/libusb-1.0 -I/usr/local/include -lusb-1.0 -g ccid-driver.c -lnpth -lgpg-error"
  * End:
  */
 #endif /*TEST*/
