@@ -24,5 +24,6 @@
 void objcache_dump_stats (void);
 void cache_put_keyblock (kbnode_t keyblock);
 char *cache_get_uid_bykid (u32 *keyid, unsigned int *r_length);
+char *cache_get_uid_byfpr (const byte *fpr, size_t fprlen, size_t *r_length);
 
 #endif /*GNUPG_G10_OBJCACHE_H*/

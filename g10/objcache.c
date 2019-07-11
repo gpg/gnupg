@@ -640,3 +640,50 @@ cache_get_uid_bykid (u32 *keyid, unsigned int *r_length)
 
   return p;
 }
+
+
+/* Return the user id string for FPR with FPRLEN.  If a user id is not
+ * found (or on malloc error) NULL is returned.  If R_LENGTH is not
+ * NULL the length of the user id is stored there; this does not
+ * included the always appended nul.  Note that a user id may include
+ * an internal nul which can be detected by the caller by comparing to
+ * the returned length.  */
+char *
+cache_get_uid_byfpr (const byte *fpr, size_t fprlen, size_t *r_length)
+{
+  char *p;
+  unsigned int hash;
+  u32 keyid[2];
+  key_item_t ki;
+
+  if (r_length)
+    *r_length = 0;
+
+  if (!key_table)
+    return NULL;
+
+  keyid_from_fingerprint (NULL, fpr, fprlen, keyid);
+  hash = key_table_hasher (keyid);
+  for (ki = key_table[hash]; ki; ki = ki->next)
+    if (ki->fprlen == fprlen && !memcmp (ki->fpr, fpr, fprlen))
+      break; /* Found */
+
+  if (!ki)
+    return NULL; /* Not found.  */
+
+  if (!ki->ui)
+    p = NULL;  /* No user id known for key.  */
+  else
+    {
+      p = xtrymalloc (ki->ui->namelen + 1);
+      if (p)
+        {
+          memcpy (p, ki->ui->name, ki->ui->namelen + 1);
+          if (r_length)
+            *r_length = ki->ui->namelen;
+          ki->usecount++;
+        }
+    }
+
+  return p;
+}

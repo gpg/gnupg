@@ -134,14 +134,6 @@ static int pk_cache_disabled;
 #if MAX_UID_CACHE_ENTRIES < 5
 #error we really need the userid cache
 #endif
-typedef struct user_id_db
-{
-  struct user_id_db *next;
-  keyid_list_t keyids;
-  int len;
-  char name[1];
-} *user_id_db_t;
-static user_id_db_t user_id_db;
 
 static void merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock);
 static int lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
@@ -3759,62 +3751,40 @@ get_seckey_default_or_card (ctrl_t ctrl, PKT_public_key *pk,
  * this string must be freed by xfree.  If R_NOUID is not NULL it is
  * set to true if a user id was not found; otherwise to false.  */
 static char *
-get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len,
-                    int *r_nouid)
+get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode)
 {
-  user_id_db_t r;
-  keyid_list_t a;
-  int pass = 0;
+  char *name;
+  unsigned int namelen;
   char *p;
 
   log_assert (mode != 2);
-  if (r_nouid)
-    *r_nouid = 0;
 
-  /* Try it two times; second pass reads from the database.  */
-  do
+  name = cache_get_uid_bykid (keyid, &namelen);
+  if (!name)
     {
-      for (r = user_id_db; r; r = r->next)
-	{
-	  for (a = r->keyids; a; a = a->next)
-	    {
-	      if (a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1])
-		{
-                  if (mode == 2)
-                    {
-                      BUG ();
-                    }
-                  else
-                    {
-                      if (mode)
-                        p = xasprintf ("%08lX%08lX %.*s",
-                                       (ulong) keyid[0], (ulong) keyid[1],
-                                       r->len, r->name);
-                      else
-                        p = xasprintf ("%s %.*s", keystr (keyid),
-                                       r->len, r->name);
-                      if (r_len)
-                        *r_len = strlen (p);
-                    }
-
-                  return p;
-		}
-	    }
-	}
+      /* Get it so that the cache will be filled.  */
+      if (!get_pubkey (ctrl, NULL, keyid))
+        name = cache_get_uid_bykid (keyid, &namelen);
     }
-  while (++pass < 2 && !get_pubkey (ctrl, NULL, keyid));
 
-  if (mode == 2)
-    p = xstrdup (user_id_not_found_utf8 ());
-  else if (mode)
-    p = xasprintf ("%08lX%08lX [?]", (ulong) keyid[0], (ulong) keyid[1]);
+  if (name)
+    {
+      if (mode)
+        p = xasprintf ("%08lX%08lX %.*s",
+                       (ulong) keyid[0], (ulong) keyid[1], namelen, name);
+      else
+        p = xasprintf ("%s %.*s", keystr (keyid), namelen, name);
+
+      xfree (name);
+    }
   else
-    p = xasprintf ("%s [?]", keystr (keyid));
+    {
+      if (mode)
+        p = xasprintf ("%08lX%08lX [?]", (ulong) keyid[0], (ulong) keyid[1]);
+      else
+        p = xasprintf ("%s [?]", keystr (keyid));
+    }
 
-  if (r_nouid)
-    *r_nouid = 1;
-  if (r_len)
-    *r_len = strlen (p);
   return p;
 }
 
@@ -3822,7 +3792,7 @@ get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len,
 char *
 get_user_id_string_native (ctrl_t ctrl, u32 * keyid)
 {
-  char *p = get_user_id_string (ctrl, keyid, 0, NULL, NULL);
+  char *p = get_user_id_string (ctrl, keyid, 0);
   char *p2 = utf8_to_native (p, strlen (p), 0);
   xfree (p);
   return p2;
@@ -3832,7 +3802,7 @@ get_user_id_string_native (ctrl_t ctrl, u32 * keyid)
 char *
 get_long_user_id_string (ctrl_t ctrl, u32 * keyid)
 {
-  return get_user_id_string (ctrl, keyid, 1, NULL, NULL);
+  return get_user_id_string (ctrl, keyid, 1);
 }
 
 
@@ -3888,36 +3858,23 @@ get_user_id_native (ctrl_t ctrl, u32 *keyid)
 static char *
 get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t fprlen, size_t *rn)
 {
-  user_id_db_t r;
-  char *p;
-  int pass = 0;
+  char *name;
 
-  /* Try it two times; second pass reads from the database.  */
-  do
+  name = cache_get_uid_byfpr (fpr, fprlen, rn);
+  if (!name)
     {
-      for (r = user_id_db; r; r = r->next)
-	{
-	  keyid_list_t a;
-	  for (a = r->keyids; a; a = a->next)
-	    {
-	      if (a->fprlen == fprlen && !memcmp (a->fpr, fpr, fprlen))
-		{
-                  /* An empty string as user id is possible.  Make
-                     sure that the malloc allocates one byte and does
-                     not bail out.  */
-		  p = xmalloc (r->len? r->len : 1);
-		  memcpy (p, r->name, r->len);
-		  *rn = r->len;
-		  return p;
-		}
-	    }
-	}
+      /* Get it so that the cache will be filled.  */
+      if (!get_pubkey_byfprint (ctrl, NULL, NULL, fpr, fprlen))
+        name = cache_get_uid_byfpr (fpr, fprlen, rn);
     }
-  while (++pass < 2
-	 && !get_pubkey_byfprint (ctrl, NULL, NULL, fpr, fprlen));
-  p = xstrdup (user_id_not_found_utf8 ());
-  *rn = strlen (p);
-  return p;
+
+  if (!name)
+    {
+      name = xstrdup (user_id_not_found_utf8 ());
+      *rn = strlen (name);
+    }
+
+  return name;
 }
 
 /* Like get_user_id_byfpr, but convert the string to the native
