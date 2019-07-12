@@ -1939,7 +1939,7 @@ command_check_key (const char *userid)
   char *addrspec = NULL;
   char *fname = NULL;
 
-  err = wks_fname_from_userid (userid, &fname, &addrspec);
+  err = wks_fname_from_userid (userid, 0, &fname, &addrspec);
   if (err)
     goto leave;
 

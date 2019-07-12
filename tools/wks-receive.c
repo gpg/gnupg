@@ -96,7 +96,7 @@ decrypt_data (receive_ctx_t ctx)
   /* We limit the output to 64 KiB to avoid DoS using compression
    * tricks.  A regular client will anyway only send a minimal key;
    * that is one w/o key signatures and attribute packets.  */
-  ccparray_put (&ccp, "--max-output=0xf0000"); /*FIXME: Change s/F/1/ */
+  ccparray_put (&ccp, "--max-output=0x10000");
   ccparray_put (&ccp, "--batch");
   if (opt.verbose)
     ccparray_put (&ccp, "--verbose");

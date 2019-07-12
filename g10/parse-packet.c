@@ -35,13 +35,8 @@
 #include "main.h"
 #include "../common/i18n.h"
 #include "../common/host2net.h"
+#include "../common/mbox-util.h"
 
-
-/* Maximum length of packets to avoid excessive memory allocation.  */
-#define MAX_KEY_PACKET_LENGTH     (256 * 1024)
-#define MAX_UID_PACKET_LENGTH     (  2 * 1024)
-#define MAX_COMMENT_PACKET_LENGTH ( 64 * 1024)
-#define MAX_ATTR_PACKET_LENGTH    ( 16 * 1024*1024)
 
 static int mpi_print_mode;
 static int list_mode;
@@ -2118,11 +2113,19 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIGNERS_UID, &len);
       if (p && len)
         {
+          char *mbox;
+
           sig->signers_uid = try_make_printable_string (p, len, 0);
           if (!sig->signers_uid)
             {
               rc = gpg_error_from_syserror ();
               goto leave;
+            }
+          mbox = mailbox_from_userid (sig->signers_uid, 0);
+          if (mbox)
+            {
+              xfree (sig->signers_uid);
+              sig->signers_uid = mbox;
             }
         }
 

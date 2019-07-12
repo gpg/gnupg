@@ -149,6 +149,21 @@ struct
   strlist_t ignored_cert_extensions;
 
   enum gnupg_compliance_mode compliance;
+
+  /* Enable creation of authenticode signatures.  */
+  int authenticode;
+
+  /* A list of extra attributes put into a signed data object.  For a
+   * signed each attribute each string has the format:
+   *   <oid>:s:<hex_or_filename>
+   * and for an unsigned attribute
+   *   <oid>:u:<hex_or_filename>
+   * The OID is in the usual dotted decimal for. The HEX_OR_FILENAME
+   * is either a list of hex digits or a filename with the DER encoded
+   * value.  A filename is detected by the presence of a slash in the
+   * HEX_OR_FILENAME.  The actual value needs to be encoded as a SET OF
+   * attribute values.  */
+  strlist_t attributes;
 } opt;
 
 /* Debug values and macros.  */
@@ -160,6 +175,8 @@ struct
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 #define DBG_IPC_VALUE     1024  /* debug assuan communication */
+#define DBG_CLOCK_VALUE   4096
+#define DBG_LOOKUP_VALUE  8192	/* debug the key lookup */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
@@ -167,6 +184,8 @@ struct
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_IPC     (opt.debug & DBG_IPC_VALUE)
+#define DBG_CLOCK   (opt.debug & DBG_CLOCK_VALUE)
+#define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 
 /* Forward declaration for an object defined in server.c */
 struct server_local_s;
@@ -318,7 +337,7 @@ int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
 int gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert);
 
 /*-- certlist.c --*/
-int gpgsm_cert_use_sign_p (ksba_cert_t cert);
+int gpgsm_cert_use_sign_p (ksba_cert_t cert, int silent);
 int gpgsm_cert_use_encrypt_p (ksba_cert_t cert);
 int gpgsm_cert_use_verify_p (ksba_cert_t cert);
 int gpgsm_cert_use_decrypt_p (ksba_cert_t cert);

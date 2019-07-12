@@ -227,18 +227,22 @@ print_status_key_not_created (const char *handle)
 
 
 
-static void
-write_uid( KBNODE root, const char *s )
+static gpg_error_t
+write_uid (kbnode_t root, const char *s)
 {
-    PACKET *pkt = xmalloc_clear(sizeof *pkt );
-    size_t n = strlen(s);
+  PACKET *pkt = xmalloc_clear (sizeof *pkt);
+  size_t n = strlen (s);
 
-    pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = xmalloc_clear (sizeof *pkt->pkt.user_id + n);
-    pkt->pkt.user_id->len = n;
-    pkt->pkt.user_id->ref = 1;
-    strcpy(pkt->pkt.user_id->name, s);
-    add_kbnode( root, new_kbnode( pkt ) );
+  if (n > MAX_UID_PACKET_LENGTH - 10)
+    return gpg_error (GPG_ERR_INV_USER_ID);
+
+  pkt->pkttype = PKT_USER_ID;
+  pkt->pkt.user_id = xmalloc_clear (sizeof *pkt->pkt.user_id + n);
+  pkt->pkt.user_id->len = n;
+  pkt->pkt.user_id->ref = 1;
+  strcpy (pkt->pkt.user_id->name, s);
+  add_kbnode (root, new_kbnode (pkt));
+  return 0;
 }
 
 static void
@@ -1022,7 +1026,7 @@ make_backsig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pk,
   cache_public_key (sub_pk);
 
   err = make_keysig_packet (ctrl, &backsig, pk, NULL, sub_pk, sub_psk, 0x19,
-                            0, timestamp, 0, NULL, NULL, cache_nonce);
+                            timestamp, 0, NULL, NULL, cache_nonce);
   if (err)
     log_error ("make_keysig_packet failed for backsig: %s\n",
                gpg_strerror (err));
@@ -1130,7 +1134,7 @@ write_direct_sig (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
 
   /* Make the signature.  */
   err = make_keysig_packet (ctrl, &sig, pk, NULL,NULL, psk, 0x1F,
-                            0, timestamp, 0,
+                            timestamp, 0,
                             keygen_add_revkey, revkey, cache_nonce);
   if (err)
     {
@@ -1185,7 +1189,7 @@ write_selfsigs (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
 
   /* Make the signature.  */
   err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, psk, 0x13,
-                            0, timestamp, 0,
+                            timestamp, 0,
                             keygen_add_std_prefs, pk, cache_nonce);
   if (err)
     {
@@ -1245,7 +1249,7 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
   oduap.usage = use;
   oduap.pk = sub_pk;
   err = make_keysig_packet (ctrl, &sig, pri_pk, NULL, sub_pk, pri_psk, 0x18,
-                            0, timestamp, 0,
+                            timestamp, 0,
                             keygen_add_key_flags_and_expire, &oduap,
                             cache_nonce);
   if (err)
@@ -1881,24 +1885,26 @@ print_key_flags(int flags)
 
 
 /* Ask for the key flags and return them.  CURRENT gives the current
- * usage which should normally be given as 0. */
+ * usage which should normally be given as 0.  MASK gives the allowed
+ * flags.  */
 unsigned int
-ask_key_flags (int algo, int subkey, unsigned int current)
+ask_key_flags_with_mask (int algo, int subkey, unsigned int current,
+                         unsigned int mask)
 {
   /* TRANSLATORS: Please use only plain ASCII characters for the
-     translation.  If this is not possible use single digits.  The
-     string needs to 8 bytes long. Here is a description of the
-     functions:
-
-       s = Toggle signing capability
-       e = Toggle encryption capability
-       a = Toggle authentication capability
-       q = Finish
-  */
+   * translation.  If this is not possible use single digits.  The
+   * string needs to 8 bytes long. Here is a description of the
+   * functions:
+   *
+   *   s = Toggle signing capability
+   *   e = Toggle encryption capability
+   *   a = Toggle authentication capability
+   *   q = Finish
+   */
   const char *togglers = _("SsEeAaQq");
   char *answer = NULL;
   const char *s;
-  unsigned int possible = openpgp_pk_algo_usage(algo);
+  unsigned int possible;
 
   if ( strlen(togglers) != 8 )
     {
@@ -1907,22 +1913,26 @@ ask_key_flags (int algo, int subkey, unsigned int current)
       togglers = "11223300";
     }
 
-  /* Only primary keys may certify. */
-  if(subkey)
-    possible&=~PUBKEY_USAGE_CERT;
+  /* Mask the possible usage flags.  This is for example used for a
+   * card based key.  */
+  possible = (openpgp_pk_algo_usage (algo) & mask);
 
-  /* Preload the current set with the possible set, minus
-     authentication if CURRENT has been given as 0.  If CURRENT has
-     been has non-zero we mask with all possible usages. */
+  /* However, only primary keys may certify. */
+  if (subkey)
+    possible &= ~PUBKEY_USAGE_CERT;
+
+  /* Preload the current set with the possible set, without
+   * authentication if CURRENT is 0.  If CURRENT is non-zero we mask
+   * with all possible usages.  */
   if (current)
     current &= possible;
   else
     current = (possible&~PUBKEY_USAGE_AUTH);
 
-  for(;;)
+  for (;;)
     {
       tty_printf("\n");
-      tty_printf(_("Possible actions for a %s key: "),
+      tty_printf(_("Possible actions for this %s key: "),
                  (algo == PUBKEY_ALGO_ECDSA
                   || algo == PUBKEY_ALGO_EDDSA)
                  ? "ECDSA/EdDSA" : openpgp_pk_algo_name (algo));
@@ -2009,6 +2019,13 @@ ask_key_flags (int algo, int subkey, unsigned int current)
 }
 
 
+unsigned int
+ask_key_flags (int algo, int subkey, unsigned int current)
+{
+  return ask_key_flags_with_mask (algo, subkey, current, ~0);
+}
+
+
 /* Check whether we have a key for the key with HEXGRIP.  Returns 0 if
    there is no such key or the OpenPGP algo number for the key.  */
 static int
@@ -2047,10 +2064,12 @@ static int
 ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           char **r_keygrip)
 {
+  gpg_error_t err;
   char *keygrip = NULL;
   char *answer = NULL;
   int algo;
   int dummy_algo;
+  char *p;
 
   if (!r_subkey_algo)
     r_subkey_algo = &dummy_algo;
@@ -2101,6 +2120,8 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 
   if (opt.expert && r_keygrip)
     tty_printf (_("  (%d) Existing key\n"), 13 );
+  if (r_keygrip)
+    tty_printf (_("  (%d) Existing key from card\n"), 14 );
 
   for (;;)
     {
@@ -2221,9 +2242,130 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           *r_usage = ask_key_flags (algo, addmode, 0);
           break;
 	}
+      else if ((algo == 14 || !strcmp (answer, "cardkey")) && r_keygrip)
+        {
+          char *serialno;
+          strlist_t keypairlist, sl;
+          int count, selection;
+
+          err = agent_scd_serialno (&serialno, NULL);
+          if (err)
+            {
+              tty_printf (_("error reading the card: %s\n"),
+                          gpg_strerror (err));
+              goto ask_again;
+            }
+          tty_printf (_("Serial number of the card: %s\n"), serialno);
+          xfree (serialno);
+
+          err = agent_scd_keypairinfo (ctrl, NULL, &keypairlist);
+          if (err)
+            {
+              tty_printf (_("error reading the card: %s\n"),
+                          gpg_strerror (err));
+              goto ask_again;
+            }
+
+          do
+            {
+              tty_printf (_("Available keys:\n"));
+              for (count=1,sl=keypairlist; sl; sl = sl->next, count++)
+                {
+                  gcry_sexp_t s_pkey;
+                  char *algostr = NULL;
+                  enum gcry_pk_algos algoid = 0;
+                  const char *keyref;
+                  int any = 0;
+
+                  keyref = strchr (sl->d, ' ');
+                  if (keyref)
+                    {
+                      keyref++;
+                      if (!agent_scd_readkey (keyref, &s_pkey))
+                        {
+                          algostr = pubkey_algo_string (s_pkey, &algoid);
+                          gcry_sexp_release (s_pkey);
+                        }
+                    }
+                  /* We use the flags also encode the algo for use
+                   * below.  We need to tweak the algo in case
+                   * GCRY_PK_ECC is returned becuase pubkey_algo_string
+                   * is not aware of the OpenPGP algo mapping.
+                   * FIXME: This is an ugly hack. */
+                  sl->flags &= 0xff;
+                  if (algoid == GCRY_PK_ECC
+                      && algostr && !strncmp (algostr, "nistp", 5)
+                      && !(sl->flags & GCRY_PK_USAGE_ENCR))
+                    sl->flags |= (PUBKEY_ALGO_ECDSA << 8);
+                  else
+                    sl->flags |= (map_pk_gcry_to_openpgp (algoid) << 8);
+
+                  tty_printf ("   (%d) %s %s", count, sl->d, algostr);
+                  if ((sl->flags & GCRY_PK_USAGE_CERT))
+                    {
+                      tty_printf ("%scert", any?",":" (");
+                      any = 1;
+                    }
+                  if ((sl->flags & GCRY_PK_USAGE_SIGN))
+                    {
+                      tty_printf ("%ssign", any?",":" (");
+                      any = 1;
+                    }
+                  if ((sl->flags & GCRY_PK_USAGE_AUTH))
+                    {
+                      tty_printf ("%sauth", any?",":" (");
+                      any = 1;
+                    }
+                  if ((sl->flags & GCRY_PK_USAGE_ENCR))
+                    {
+                      tty_printf ("%sencr", any?",":" (");
+                      any = 1;
+                    }
+                  tty_printf ("%s\n", any?")":"");
+                  xfree (algostr);
+                }
+
+              xfree (answer);
+              answer = cpr_get ("keygen.cardkey", _("Your selection? "));
+              cpr_kill_prompt ();
+              trim_spaces (answer);
+              selection = atoi (answer);
+            }
+          while (!(selection > 0 && selection < count));
+
+          for (count=1,sl=keypairlist; sl; sl = sl->next, count++)
+            if (count == selection)
+              break;
+          if (!sl)
+            {
+              /* Just in case COUNT is zero (no keys).  */
+              free_strlist (keypairlist);
+              goto ask_again;
+            }
+
+          xfree (keygrip);
+          keygrip = xstrdup (sl->d);
+          if ((p = strchr (keygrip, ' ')))
+            *p = 0;
+          algo = (sl->flags >>8);
+          if (opt.expert)
+            *r_usage = ask_key_flags_with_mask (algo, addmode,
+                                                (sl->flags & 0xff),
+                                                (sl->flags & 0xff));
+          else
+            {
+              *r_usage = (sl->flags & 0xff);
+              if (addmode)
+                *r_usage &= ~GCRY_PK_USAGE_CERT;
+            }
+          free_strlist (keypairlist);
+          break;
+	}
       else
         tty_printf (_("Invalid selection.\n"));
 
+    ask_again:
+      ;
     }
 
   xfree(answer);
@@ -2507,14 +2649,25 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
       else
         {
           /* If the user selected a signing algorithm and Curve25519
-             we need to set the algo to EdDSA and update the curve name. */
-          if ((*algo == PUBKEY_ALGO_ECDSA || *algo == PUBKEY_ALGO_EDDSA)
-              && curves[idx].eddsa_curve)
+             we need to set the algo to EdDSA and update the curve name.
+             If switching away from EdDSA, we need to set the algo back
+             to ECDSA. */
+          if (*algo == PUBKEY_ALGO_ECDSA || *algo == PUBKEY_ALGO_EDDSA)
             {
-              if (subkey_algo && *subkey_algo == PUBKEY_ALGO_ECDSA)
-                *subkey_algo = PUBKEY_ALGO_EDDSA;
-              *algo = PUBKEY_ALGO_EDDSA;
-              result = curves[idx].eddsa_curve;
+              if (curves[idx].eddsa_curve)
+                {
+                  if (subkey_algo && *subkey_algo == PUBKEY_ALGO_ECDSA)
+                    *subkey_algo = PUBKEY_ALGO_EDDSA;
+                  *algo = PUBKEY_ALGO_EDDSA;
+                  result = curves[idx].eddsa_curve;
+                }
+              else
+                {
+                  if (subkey_algo && *subkey_algo == PUBKEY_ALGO_EDDSA)
+                    *subkey_algo = PUBKEY_ALGO_ECDSA;
+                  *algo = PUBKEY_ALGO_ECDSA;
+                  result = curves[idx].name;
+                }
             }
           else
             result = curves[idx].name;
@@ -4943,10 +5096,11 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
   if (!err && (s = get_parameter_value (para, pUSERID)))
     {
-      write_uid (pub_root, s );
-      err = write_selfsigs (ctrl, pub_root, pri_psk,
-                            get_parameter_uint (para, pKEYUSAGE), timestamp,
-                            cache_nonce);
+      err = write_uid (pub_root, s );
+      if (!err)
+        err = write_selfsigs (ctrl, pub_root, pri_psk,
+                              get_parameter_uint (para, pKEYUSAGE), timestamp,
+                              cache_nonce);
     }
 
   /* Write the auth key to the card before the encryption key.  This

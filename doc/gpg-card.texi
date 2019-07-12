@@ -8,9 +8,9 @@
 @node Smart Card Tool
 @chapter Smart Card Tool
 
-GnuPG comes with tool to administrate smart cards and USB tokens.  This
-tool is an extension of the @option{--edit-key} command available with
-@command{gpg}.
+GnuPG comes with a tool to administrate smart cards and USB tokens.
+This tool is an enhanced version of the @option{--edit-key} command
+available with @command{gpg}.
 
 @menu
 * gpg-card::             Administrate smart cards.
@@ -135,7 +135,7 @@ featuring the PIV application (requires Yubikey-5).  We assume that
 the credentials have not yet been changed and thus are:
 @table @asis
 @item Authentication key
-This is a 24 byte key described by the hex string
+This is a 24 byte key described by the hex string @*
 @code{010203040506070801020304050607080102030405060708}.
 @item PIV Application PIN
 This is the string @code{123456}.
@@ -164,11 +164,13 @@ Version ..........: 2.1
 [...]
 @end example
 
-It can be seen by the ``Application type'' line that GnuPG selected the
-OpenPGP application of the Yubikey.  This is because GnuPG assigns the
-highest priority to the OpenPGP application.  To use the PIV
-application of the Yubikey, the OpenPGP application needs to be
-disabled:
+It can be seen by the ``Application type'' line that GnuPG selected
+the OpenPGP application of the Yubikey.  This is because GnuPG assigns
+the highest priority to the OpenPGP application.  To use the PIV
+application of the Yubikey several methods can be used:
+
+With a Yubikey 5 or later the OpenPGP application on the Yubikey can
+be disabled:
 
 @example
 gpg/card> yubikey disable all opgp
@@ -186,8 +188,32 @@ gpg/card> reset
 
 The @code{reset} is required so that the GnuPG system rereads the
 card.  Note that disabled applications keep all their data and can at
-any time be re-enabled (see @emph{help yubikey}).  Now a @emph{list}
-command shows this:
+any time be re-enabled (use @kbd{help yubikey}).
+
+Another option, which works for all Yubikey versions, is to disable
+the support for OpenPGP cards in scdaemon.  This is done by adding the
+line
+
+@smallexample
+disable-application openpgp
+@end smallexample
+
+to @file{~/.gnupg/scdaemon.conf} and by restarting scdaemon, either by
+killing the process or by using @kbd{gpgconf --kill scdaemon}.  Finally
+the default order in which card applications are tried by scdaemon can
+be changed.   For example to prefer PIV over OpenPGP it is sufficient
+to add
+
+@smallexample
+application-priority piv
+@end smallexample
+
+to @file{~/.gnupg/scdaemon.conf} and to restart @command{scdaemon}.
+This has an effect only on tokens which support both, PIV and OpenPGP,
+but does not hamper the use of OpenPGP only tokens.
+
+With one of these methods employed the @code{list} command of
+@command{gpg-card} shows this:
 
 @example
 gpg/card> list
@@ -210,7 +236,12 @@ Key management ...: [none]
       keyref .....: PIV.9D
 @end example
 
-Note that the ``Displayed s/sn'' is printed on the token and also
+In case several tokens are plugged into the computer, gpg-card will
+show only one.  To show another token the number of the token (0, 1,
+2, ...) can be given as an argument to the @code{list} command.  The
+command @kbd{list --cards} prints a list of all inserted tokens.
+
+Note that the ``Displayed s/n'' is printed on the token and also
 shown in Pinentry prompts asking for the PIN.  The four standard key
 slots are always shown, if other key slots are initialized they are
 shown as well.  The @emph{PIV authentication} key (internal reference
@@ -231,11 +262,11 @@ which needs to be provided only once so that decryption operations can
 then be done until the card is reset or removed from the reader or USB
 port.
 
-We now generate tree of the four keys.  Note that GnuPG does currently
-not use the the @emph{Card authentication} key but because it is
-mandatory by the specs we create it anyway.  Key generation requires
-that we authenticate to the card.  This can be done either on the
-command line (which would reveal the key):
+We now generate three of the four keys.  Note that GnuPG does
+currently not use the the @emph{Card authentication} key; however,
+that key is mandatory by the PIV standard and thus we create it too.
+Key generation requires that we authenticate to the card.  This can be
+done either on the command line (which would reveal the key):
 
 @example
 gpg/card> auth 010203040506070801020304050607080102030405060708
@@ -360,7 +391,7 @@ gpgsm: total number processed: 1
 gpgsm:               imported: 1
 @end example
 
-Note the last steps which imported the created certificate.  If you
+Note the last step which imported the created certificate.  If you
 you instead created a certificate signing request (CSR) instead of a
 self-signed certificate and sent this off to a CA you would do the
 same import step with the certificate received from the CA.  Take note
@@ -507,7 +538,111 @@ As usual use ssh-add with the uppercase @samp{-L} to list the public
 ssh key.  To use the certificates with Thunderbird or Mozilla, please
 consult the Scute manual for details.
 
+If you want to use the same PIV keys also for OpenPGP (for example on
+a Yubikey to avoid switching between OpenPGP and PIV), this is also
+possible:
 
+@example
+$ gpgsm --learn
+$ gpg --full-gen-key
+Please select what kind of key you want:
+   (1) RSA and RSA (default)
+   (2) DSA and Elgamal
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+  (14) Existing key from card
+Your selection? 14
+Serial number of the card: FF020001008A77C1
+Available keys:
+   (1) 213D1825FDE0F8240CB4E4229F01AF90AC658C2E PIV.9A nistp384 (auth)
+   (2) 7A53E6CFFE7220A0E646B4632EE29E5A7104499C PIV.9E nistp256 (auth)
+   (3) 32A6C6FAFCB8421878608AAB452D5470DD3223ED PIV.9C rsa2048 (cert,sign)
+   (4) 34798AAFE0A7565088101CC4AE31C5C8C74461CB PIV.9D rsa2048 (encr)
+Your selection? 3
+Please specify how long the key should be valid.
+         0 = key does not expire
+      <n>  = key expires in n days
+      <n>w = key expires in n weeks
+      <n>m = key expires in n months
+      <n>y = key expires in n years
+Key is valid for? (0)
+Key does not expire at all
+Is this correct? (y/N) y
+
+GnuPG needs to construct a user ID to identify your key.
+
+Real name:
+Email address: otto@@example.net
+Comment:
+You selected this USER-ID:
+    "otto@@example.net"
+
+Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o
+gpg: key C3AFA9ED971BB365 marked as ultimately trusted
+gpg: revocation certificate stored as '[...]D971BB365.rev'
+public and secret key created and signed.
+
+Note that this key cannot be used for encryption.  You may want to use
+the command "--edit-key" to generate a subkey for this purpose.
+pub   rsa2048 2019-04-04 [SC]
+      7F899AE2FB73159DD68A1B20C3AFA9ED971BB365
+uid                      otto@@example.net
+@end example
+
+Note that you will be asked two times to enter the PIN of your PIV
+card.  If you run @command{gpg} in @option{--expert} mode you will
+also ge given the option to change the usage flags of the key.  The next
+typescript shows how to add the encryption subkey:
+
+@example
+$ gpg --edit-key 7F899AE2FB73159DD68A1B20C3AFA9ED971BB365
+Secret key is available.
+
+sec  rsa2048/C3AFA9ED971BB365
+     created: 2019-04-04  expires: never       usage: SC
+     card-no: FF020001008A77C1
+     trust: ultimate      validity: ultimate
+[ultimate] (1). otto@@example.net
+gpg> addkey
+Secret parts of primary key are stored on-card.
+Please select what kind of key you want:
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+   (5) Elgamal (encrypt only)
+   (6) RSA (encrypt only)
+  (14) Existing key from card
+Your selection? 14
+Serial number of the card: FF020001008A77C1
+Available keys:
+   (1) 213D1825FDE0F8240CB4E4229F01AF90AC658C2E PIV.9A nistp384 (auth)
+   (2) 7A53E6CFFE7220A0E646B4632EE29E5A7104499C PIV.9E nistp256 (auth)
+   (3) 32A6C6FAFCB8421878608AAB452D5470DD3223ED PIV.9C rsa2048 (cert,sign)
+   (4) 34798AAFE0A7565088101CC4AE31C5C8C74461CB PIV.9D rsa2048 (encr)
+Your selection? 4
+Please specify how long the key should be valid.
+         0 = key does not expire
+      <n>  = key expires in n days
+      <n>w = key expires in n weeks
+      <n>m = key expires in n months
+      <n>y = key expires in n years
+Key is valid for? (0)
+Key does not expire at all
+Is this correct? (y/N) y
+Really create? (y/N) y
+
+sec  rsa2048/C3AFA9ED971BB365
+     created: 2019-04-04  expires: never       usage: SC
+     card-no: FF020001008A77C1
+     trust: ultimate      validity: ultimate
+ssb  rsa2048/7067860A98FCE6E1
+     created: 2019-04-04  expires: never       usage: E
+     card-no: FF020001008A77C1
+[ultimate] (1). otto@@example.net
+
+gpg> save
+@end example
+
+Now you can use your PIV card also with @command{gpg}.
 
 @c @mansect examples
 

@@ -528,7 +528,7 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
           memcpy (p, iv+blklen, blklen); /* Add padding.  */
           p += blklen;
         }
-      assert ( p - outbuf == outlen);
+      log_assert ( p - outbuf == outlen);
       if (use_ocb)
         {
           gcry_cipher_final (hd);
@@ -718,11 +718,11 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   hash_end = s;
   s++;
   /* Skip to the end of the S-expression.  */
-  assert (depth == 1);
+  log_assert (depth == 1);
   rc = sskip (&s, &depth);
   if (rc)
     return rc;
-  assert (!depth);
+  log_assert (!depth);
   real_end = s-1;
 
   rc = do_encryption (hash_begin, hash_end - hash_begin + 1,
@@ -760,7 +760,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
 
   memcpy (p, prot_end+1, real_end - prot_end);
   p += real_end - prot_end;
-  assert ( p - *result == *resultlen);
+  log_assert ( p - *result == *resultlen);
   xfree (protected);
 
   return 0;
@@ -999,7 +999,7 @@ merge_lists (const unsigned char *protectedkey,
 
   /* Skip over the protected list element in the original list.  */
   s = protectedkey + replacepos;
-  assert (*s == '(');
+  log_assert (*s == '(');
   s++;
   i = 1;
   rc = sskip (&s, &i);
@@ -1026,7 +1026,7 @@ merge_lists (const unsigned char *protectedkey,
   rc = sskip (&s, &i);
   if (rc)
     goto failure;
-  assert (s[-1] == ')');
+  log_assert (s[-1] == ')');
   endpos = s; /* one behind the end of the list */
 
   /* Append the rest. */
@@ -1571,7 +1571,7 @@ agent_shadow_key (const unsigned char *pubkey,
   point = s; /* insert right before the point */
   depth--;
   s++;
-  assert (depth == 1);
+  log_assert (depth == 1);
 
   /* Calculate required length by taking in account: the "shadowed-"
      prefix, the "shadowed", "t1-v1" as well as some parenthesis */
@@ -1667,7 +1667,8 @@ agent_get_shadow_info (const unsigned char *shadowkey,
    R_HEXSN and the Id string as a malloced string at R_IDSTR.  On
    error an error code is returned and NULL is stored at the result
    parameters addresses.  If the serial number or the ID string is not
-   required, NULL may be passed for them.  */
+   required, NULL may be passed for them.  Note that R_PINLEN is
+   currently not used by any caller.  */
 gpg_error_t
 parse_shadow_info (const unsigned char *shadow_info,
                    char **r_hexsn, char **r_idstr, int *r_pinlen)

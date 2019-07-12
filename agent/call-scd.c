@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 #include <unistd.h>
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
@@ -330,13 +329,13 @@ start_scd (ctrl_t ctrl)
     {
       ctrl->scd_local = xtrycalloc (1, sizeof *ctrl->scd_local);
       if (!ctrl->scd_local)
-	{
-	  err = gpg_error_from_syserror ();
-	  rc = npth_mutex_unlock (&start_scd_lock);
-	  if (rc)
-	    log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
-	  return err;
-	}
+        {
+          err = gpg_error_from_syserror ();
+          rc = npth_mutex_unlock (&start_scd_lock);
+          if (rc)
+            log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
+          return err;
+        }
       ctrl->scd_local->next_local = scd_local_list;
       scd_local_list = ctrl->scd_local;
     }
@@ -1282,6 +1281,156 @@ agent_card_cardlist (ctrl_t ctrl, strlist_t *result)
 }
 
 
+struct card_keyinfo_parm_s {
+  int error;
+  struct card_key_info_s *list;
+};
+
+/* Callback function for agent_card_keylist.  */
+static gpg_error_t
+card_keyinfo_cb (void *opaque, const char *line)
+{
+  struct card_keyinfo_parm_s *parm = opaque;
+  const char *keyword = line;
+  int keywordlen;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 7 && !memcmp (keyword, "KEYINFO", keywordlen))
+    {
+      const char *s;
+      int n;
+      struct card_key_info_s *keyinfo;
+      struct card_key_info_s **l_p = &parm->list;
+
+      while ((*l_p))
+        l_p = &(*l_p)->next;
+
+      keyinfo = xtrycalloc (1, sizeof *keyinfo);
+      if (!keyinfo)
+        {
+        alloc_error:
+          if (!parm->error)
+            parm->error = gpg_error_from_syserror ();
+          return 0;
+        }
+
+      for (n=0,s=line; hexdigitp (s); s++, n++)
+        ;
+
+      if (n != 40)
+        {
+        parm_error:
+          if (!parm->error)
+            parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+          return 0;
+        }
+
+      memcpy (keyinfo->keygrip, line, 40);
+
+      line = s;
+
+      if (!*line)
+        goto parm_error;
+
+      while (spacep (line))
+        line++;
+
+      if (*line++ != 'T')
+        goto parm_error;
+
+      if (!*line)
+        goto parm_error;
+
+      while (spacep (line))
+        line++;
+
+      for (n=0,s=line; hexdigitp (s); s++, n++)
+        ;
+
+      if (!n)
+        goto parm_error;
+
+      keyinfo->serialno = xtrymalloc (n+1);
+      if (!keyinfo->serialno)
+        goto alloc_error;
+
+      memcpy (keyinfo->serialno, line, n);
+      keyinfo->serialno[n] = 0;
+
+      line = s;
+
+      if (!*line)
+        goto parm_error;
+
+      while (spacep (line))
+        line++;
+
+      if (!*line)
+        goto parm_error;
+
+      keyinfo->idstr = xtrystrdup (line);
+      if (!keyinfo->idstr)
+        goto alloc_error;
+
+      *l_p = keyinfo;
+    }
+
+  return 0;
+}
+
+
+void
+agent_card_free_keyinfo (struct card_key_info_s *l)
+{
+  struct card_key_info_s *l_next;
+
+  for (; l; l = l_next)
+    {
+      l_next = l->next;
+      free (l->serialno);
+      free (l->idstr);
+      free (l);
+    }
+}
+
+/* Call the scdaemon to check if a key of KEYGRIP is available, or
+   retrieve list of available keys on cards. On success the allocated
+   structure is stored at RESULT.  On error an error code is returned
+   and NULL is stored at RESULT.  */
+gpg_error_t
+agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
+                    struct card_key_info_s **result)
+{
+  int err;
+  struct card_keyinfo_parm_s parm;
+  char line[ASSUAN_LINELENGTH];
+
+  *result = NULL;
+
+  memset (&parm, 0, sizeof parm);
+  snprintf (line, sizeof line, "KEYINFO %s", keygrip ? keygrip : "--list");
+
+  err = start_scd (ctrl);
+  if (err)
+    return err;
+
+  err = assuan_transact (ctrl->scd_local->ctx, line,
+                         NULL, NULL, NULL, NULL,
+                         card_keyinfo_cb, &parm);
+  if (!err && parm.error)
+    err = parm.error;
+
+  if (!err)
+    *result = parm.list;
+  else
+    agent_card_free_keyinfo (parm.list);
+
+  return unlock_scd (ctrl, err);
+}
 
 static gpg_error_t
 pass_status_thru (void *opaque, const char *line)
@@ -1365,4 +1514,13 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
     }
 
   return unlock_scd (ctrl, 0);
+}
+
+void
+agent_card_killscd (void)
+{
+  if (primary_scd_ctx == NULL)
+    return;
+  assuan_transact (primary_scd_ctx, "KILLSCD",
+                   NULL, NULL, NULL, NULL, NULL, NULL);
 }

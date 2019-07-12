@@ -51,7 +51,7 @@
 static void list_all (ctrl_t, int, int);
 static void list_one (ctrl_t ctrl,
                       strlist_t names, int secret, int mark_secret);
-static void locate_one (ctrl_t ctrl, strlist_t names);
+static void locate_one (ctrl_t ctrl, strlist_t names, int no_local);
 static void print_card_serialno (const char *serialno);
 
 struct keylist_context
@@ -83,10 +83,11 @@ keylist_context_release (struct keylist_context *listctx)
 
 
 /* List the keys.  If list is NULL, all available keys are listed.
-   With LOCATE_MODE set the locate algorithm is used to find a
-   key.  */
+ * With LOCATE_MODE set the locate algorithm is used to find a key; if
+ * in addition NO_LOCAL is set the locate does not look into the local
+ * keyring.  */
 void
-public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
+public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode, int no_local)
 {
 #ifndef NO_TRUST_MODELS
   if (opt.with_colons)
@@ -140,7 +141,7 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
 #endif
 
   if (locate_mode)
-    locate_one (ctrl, list);
+    locate_one (ctrl, list, no_local);
   else if (!list)
     list_all (ctrl, 0, opt.with_secret);
   else
@@ -165,43 +166,15 @@ secret_key_list (ctrl_t ctrl, strlist_t list)
     list_one (ctrl, list, 1, 0);
 }
 
-char *
-format_seckey_info (ctrl_t ctrl, PKT_public_key *pk)
+
+/* Helper for print_key_info and print_key_info_log.  */
+static char *
+format_key_info (ctrl_t ctrl, PKT_public_key *pk, int secret)
 {
   u32 keyid[2];
   char *p;
   char pkstrbuf[PUBKEY_STRING_SIZE];
-  char *info;
-
-  keyid_from_pk (pk, keyid);
-  p = get_user_id_native (ctrl, keyid);
-
-  info = xtryasprintf ("sec  %s/%s %s %s",
-                       pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-                       keystr (keyid), datestr_from_pk (pk), p);
-
-  xfree (p);
-
-  return info;
-}
-
-void
-print_seckey_info (ctrl_t ctrl, PKT_public_key *pk)
-{
-  char *p = format_seckey_info (ctrl, pk);
-  tty_printf ("\n%s\n", p);
-  xfree (p);
-}
-
-/* Print information about the public key.  With FP passed as NULL,
-   the tty output interface is used, otherwise output is directed to
-   the given stream.  */
-void
-print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk)
-{
-  u32 keyid[2];
-  char *p;
-  char pkstrbuf[PUBKEY_STRING_SIZE];
+  char *result;
 
   keyid_from_pk (pk, keyid);
 
@@ -212,13 +185,59 @@ print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk)
   else
     p = get_user_id_native (ctrl, keyid);
 
-  if (!fp)
-    tty_printf ("\n");
-  tty_fprintf (fp, "%s  %s/%s %s %s\n",
-               pk->flags.primary? "pub":"sub",
-               pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-               keystr (keyid), datestr_from_pk (pk), p);
+  result = xtryasprintf ("%s  %s/%s %s %s",
+                         secret? (pk->flags.primary? "sec":"ssb")
+                         /* */ : (pk->flags.primary? "pub":"sub"),
+                         pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+                         keystr (keyid), datestr_from_pk (pk), p);
   xfree (p);
+  return result;
+}
+
+
+/* Print basic information about a public or secret key.  With FP
+ * passed as NULL, the tty output interface is used, otherwise output
+ * is directed to the given stream.  INDENT gives the requested
+ * indentation; if that is a negative value indentation is suppressed
+ * for the first line.  SECRET tells that the PK has a secret part.
+ * FIXME: This is similar in use to print_key_line and thus both
+ * functions should eventually be united.
+ */
+void
+print_key_info (ctrl_t ctrl, estream_t fp,
+                int indent, PKT_public_key *pk, int secret)
+{
+  int indentabs = indent >= 0? indent : -indent;
+  char *info;
+
+  /* Note: Negative values for INDENT are not yet needed. */
+
+  info = format_key_info (ctrl, pk, secret);
+
+  if (!fp && indent >= 0)
+    tty_printf ("\n");  /* (Backward compatibility to old code) */
+  tty_fprintf (fp, "%*s%s\n", indentabs, "",
+               info? info : "[Ooops - out of core]");
+
+  xfree (info);
+}
+
+
+/* Same as print_key_info put print using the log functions at
+ * LOGLEVEL.  */
+void
+print_key_info_log (ctrl_t ctrl, int loglevel,
+                    int indent, PKT_public_key *pk, int secret)
+{
+  int indentabs = indent >= 0? indent : -indent;
+  char *info;
+
+  info = format_key_info (ctrl, pk, secret);
+
+  log_log (loglevel, "%*s%s\n", indentabs, "",
+           info? info : "[Ooops - out of core]");
+
+  xfree (info);
 }
 
 
@@ -640,7 +659,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
 
 
 static void
-locate_one (ctrl_t ctrl, strlist_t names)
+locate_one (ctrl_t ctrl, strlist_t names, int no_local)
 {
   int rc = 0;
   strlist_t sl;
@@ -654,7 +673,10 @@ locate_one (ctrl_t ctrl, strlist_t names)
 
   for (sl = names; sl; sl = sl->next)
     {
-      rc = get_best_pubkey_byname (ctrl, &ctx, NULL, sl->d, &keyblock, 1);
+      rc = get_best_pubkey_byname (ctrl,
+                                   no_local? GET_PUBKEY_NO_LOCAL
+                                   /*    */: GET_PUBKEY_NORMAL,
+                                   &ctx, NULL, sl->d, &keyblock, 1);
       if (rc)
 	{
 	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY)

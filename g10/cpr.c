@@ -62,7 +62,7 @@ progress_cb (void *ctx, const char *what, int printchar,
 
 
 /* Return true if the status message NO may currently be issued.  We
-   need this to avoid syncronisation problem while auto retrieving a
+   need this to avoid synchronization problem while auto retrieving a
    key.  There it may happen that a status NODATA is issued for a non
    available key and the user may falsely interpret this has a missing
    signature. */

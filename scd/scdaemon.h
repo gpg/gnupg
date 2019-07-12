@@ -30,6 +30,8 @@
 #include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/sysutils.h"
+#include "app-common.h"
+
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -84,6 +86,7 @@ struct
 #define DBG_READER  (opt.debug & DBG_READER_VALUE)
 
 struct server_local_s;
+struct card_ctx_s;
 struct app_ctx_s;
 
 struct server_control_s
@@ -101,7 +104,12 @@ struct server_control_s
      associated.  Note that this is shared with the other connections:
      All connections accessing the same reader are using the same
      application context. */
-  struct app_ctx_s *app_ctx;
+  struct card_ctx_s *card_ctx;
+
+  /* The currently active application for this context.  We need to
+   * know this for cards which are able to switch on the fly between
+   * apps.  */
+  apptype_t current_apptype;
 
   /* Helper to store the value we are going to sign */
   struct
@@ -111,7 +119,6 @@ struct server_control_s
   } in_data;
 };
 
-typedef struct app_ctx_s *app_t;
 
 /*-- scdaemon.c --*/
 void scd_exit (int rc);
@@ -120,14 +127,20 @@ const char *scd_get_socket_name (void);
 /*-- command.c --*/
 gpg_error_t initialize_module_command (void);
 int  scd_command_handler (ctrl_t, int);
+void scd_clear_current_app (card_t card);
 void send_status_info (ctrl_t ctrl, const char *keyword, ...)
      GPGRT_ATTR_SENTINEL(1);
 void send_status_direct (ctrl_t ctrl, const char *keyword, const char *args);
 gpg_error_t send_status_printf (ctrl_t ctrl, const char *keyword,
                                 const char *format, ...) GPGRT_ATTR_PRINTF(3,4);
+void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
+                   const char *serialno, const char *idstr);
 
 void popup_prompt (void *opaque, int on);
-void send_client_notifications (app_t app, int removal);
+
+/* Take care: this function assumes that CARD is locked.  */
+void send_client_notifications (card_t card, int removal);
+
 void scd_kick_the_loop (void);
 int get_active_connection_count (void);
 

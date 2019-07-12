@@ -749,9 +749,12 @@ write_to_file (estream_t src, const char *fname)
 
 
 /* Return the filename and optionally the addrspec for USERID at
- * R_FNAME and R_ADDRSPEC.  R_ADDRSPEC might also be set on error.  */
+ * R_FNAME and R_ADDRSPEC.  R_ADDRSPEC might also be set on error.  If
+ * HASH_ONLY is set only the has is returned at R_FNAME and no file is
+ * created.  */
 gpg_error_t
-wks_fname_from_userid (const char *userid, char **r_fname, char **r_addrspec)
+wks_fname_from_userid (const char *userid, int hash_only,
+                       char **r_fname, char **r_addrspec)
 {
   gpg_error_t err;
   char *addrspec = NULL;
@@ -767,7 +770,7 @@ wks_fname_from_userid (const char *userid, char **r_fname, char **r_addrspec)
   addrspec = mailbox_from_userid (userid, 0);
   if (!addrspec)
     {
-      if (opt.verbose)
+      if (opt.verbose || hash_only)
         log_info ("\"%s\" is not a proper mail address\n", userid);
       err = gpg_error (GPG_ERR_INV_USER_ID);
       goto leave;
@@ -788,11 +791,20 @@ wks_fname_from_userid (const char *userid, char **r_fname, char **r_addrspec)
       goto leave;
     }
 
-  *r_fname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
-  if (!*r_fname)
-    err = gpg_error_from_syserror ();
+  if (hash_only)
+    {
+      *r_fname = hash;
+      hash = NULL;
+      err = 0;
+    }
   else
-    err = 0;
+    {
+      *r_fname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
+      if (!*r_fname)
+        err = gpg_error_from_syserror ();
+      else
+        err = 0;
+    }
 
  leave:
   if (r_addrspec && addrspec)
@@ -1061,7 +1073,7 @@ wks_cmd_remove_key (const char *userid)
   char *addrspec = NULL;
   char *fname = NULL;
 
-  err = wks_fname_from_userid (userid, &fname, &addrspec);
+  err = wks_fname_from_userid (userid, 0, &fname, &addrspec);
   if (err)
     goto leave;
 
@@ -1085,6 +1097,50 @@ wks_cmd_remove_key (const char *userid)
   err = 0;
 
  leave:
+  xfree (fname);
+  xfree (addrspec);
+  return err;
+}
+
+
+/* Print the WKD hash for the user id to stdout.  */
+gpg_error_t
+wks_cmd_print_wkd_hash (const char *userid)
+{
+  gpg_error_t err;
+  char *addrspec, *fname;
+
+  err = wks_fname_from_userid (userid, 1, &fname, &addrspec);
+  if (err)
+    return err;
+
+  es_printf ("%s %s\n", fname, addrspec);
+
+  xfree (fname);
+  xfree (addrspec);
+  return err;
+}
+
+
+/* Print the WKD URL for the user id to stdout.  */
+gpg_error_t
+wks_cmd_print_wkd_url (const char *userid)
+{
+  gpg_error_t err;
+  char *addrspec, *fname;
+  char *domain;
+
+  err = wks_fname_from_userid (userid, 1, &fname, &addrspec);
+  if (err)
+    return err;
+
+  domain = strchr (addrspec, '@');
+  if (domain)
+    *domain++ = 0;
+
+  es_printf ("https://openpgpkey.%s/.well-known/openpgpkey/%s/hu/%s?l=%s\n",
+             domain, domain, fname, addrspec);
+
   xfree (fname);
   xfree (addrspec);
   return err;

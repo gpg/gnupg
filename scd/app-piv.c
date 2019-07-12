@@ -19,6 +19,7 @@
 
 /* Some notes:
  * - Specs for PIV are at http://dx.doi.org/10.6028/NIST.SP.800-73-4
+ * - https://developers.yubico.com/PIV/Introduction/PIV_attestation.html
  *
  * - Access control matrix:
  *   | Action       | 9B  | PIN | PUK |                              |
@@ -60,7 +61,6 @@
 #include "../common/util.h"
 #include "../common/i18n.h"
 #include "iso7816.h"
-#include "app-common.h"
 #include "../common/tlv.h"
 #include "../common/host2net.h"
 #include "apdu.h" /* We use apdu_send_direct.  */
@@ -80,6 +80,10 @@
 #define PIV_ALGORITHM_ECC_P256   0x11
 #define PIV_ALGORITHM_ECC_P384   0x14
 
+
+/* The AID for PIV.  */
+static char const piv_aid[] = { 0xA0, 0x00, 0x00, 0x03, 0x08, /* RID=NIST */
+                                0x00, 0x00, 0x10, 0x00        /* PIX=PIV  */ };
 
 
 /* A table describing the DOs of a PIV card.  */
@@ -282,7 +286,7 @@ get_cached_data (app_t app, int tag,
           }
     }
 
-  err = iso7816_get_data_odd (app->slot, 0, tag, &p, &len);
+  err = iso7816_get_data_odd (app_get_slot (app), 0, tag, &p, &len);
   if (err)
     return err;
 
@@ -736,18 +740,18 @@ get_dispserialno (app_t app, int failmode)
 {
   char *result;
 
-  if (app->serialno && app->serialnolen == 3+1+4
-      && !memcmp (app->serialno, "\xff\x02\x00", 3))
+  if (app->card && app->card->serialno && app->card->serialnolen == 3+1+4
+      && !memcmp (app->card->serialno, "\xff\x02\x00", 3))
     {
       /* This is a 4 byte S/N of a Yubikey which seems to be printed
        * on the token in decimal.  Maybe they will print larger S/N
        * also in decimal but we can't be sure, thus do it only for
        * these 32 bit numbers.  */
       unsigned long sn;
-      sn  = app->serialno[4] * 16777216;
-      sn += app->serialno[5] * 65536;
-      sn += app->serialno[6] * 256;
-      sn += app->serialno[7];
+      sn  = app->card->serialno[4] * 16777216;
+      sn += app->card->serialno[5] * 65536;
+      sn += app->card->serialno[6] * 256;
+      sn += app->card->serialno[7];
       result = xtryasprintf ("yk-%lu", sn);
     }
   else if (failmode)
@@ -785,7 +789,7 @@ get_chv_status (app_t app, const char *keyrefstr)
   apdu[1] = ISO7816_VERIFY;
   apdu[2] = 0x00;
   apdu[3] = keyref;
-  if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
+  if (!iso7816_apdu_direct (app_get_slot (app), apdu, 4, 0, &sw, NULL, NULL))
     result = -5; /* No need to verification.  */
   else if (sw == 0x6a88 || sw == 0x6a80)
     result = -2; /* No such PIN.  */
@@ -811,7 +815,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     int special;
   } table[] = {
     { "SERIALNO",     0x0000, -1 },
-    { "$AUTHKEYID",   0x0000, -2 }, /* Default key for ssh.  */
+    { "$AUTHKEYID",   0x0000, -2 }, /* Default ssh key.  */
+    { "$ENCRKEYID",   0x0000, -6 }, /* Default encryption key.  */
+    { "$SIGNKEYID",   0x0000, -7 }, /* Default signing key.  */
     { "$DISPSERIALNO",0x0000, -3 },
     { "CHV-STATUS",   0x0000, -4 },
     { "CHV-USAGE",    0x007E, -5 }
@@ -882,6 +888,16 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           xfree (relptr);
         }
     }
+  else if (table[idx].special == -6)
+    {
+      char const tmp[] = "PIV.9D"; /* Key Management.  */
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
+    }
+  else if (table[idx].special == -7)
+    {
+      char const tmp[] = "PIV.9C"; /* Digital Signature.  */
+      send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
+    }
   else
     {
       relptr = get_one_do (app, table[idx].tag, &value, &valuelen, &err);
@@ -925,7 +941,7 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
   tmpl[2] = 0x80;
   tmpl[3] = 0;    /* (Empty witness requests a witness.)  */
   tmpllen = 4;
-  err = iso7816_general_authenticate (app->slot, 0,
+  err = iso7816_general_authenticate (app_get_slot (app), 0,
                                       PIV_ALGORITHM_3DES_ECB_0, 0x9B,
                                       tmpl, tmpllen, 0,
                                       &outdata, &outdatalen);
@@ -958,7 +974,7 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
   tmpl[23] = 0;
   tmpllen = 24;
   xfree (outdata);
-  err = iso7816_general_authenticate (app->slot, 0,
+  err = iso7816_general_authenticate (app_get_slot (app), 0,
                                       PIV_ALGORITHM_3DES_ECB_0, 0x9B,
                                       tmpl, tmpllen, 0,
                                       &outdata, &outdatalen);
@@ -1032,7 +1048,8 @@ set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
       apdu[6] = 0x9b;
       apdu[7] = 24;
       memcpy (apdu+8, value, 24);
-      err = iso7816_apdu_direct (app->slot, apdu, 8+24, 0, &sw, NULL, NULL);
+      err = iso7816_apdu_direct (app_get_slot (app), apdu, 8+24, 0,
+                                 &sw, NULL, NULL);
       wipememory (apdu+8, 24);
       if (err)
         log_error ("piv: setting admin key failed; sw=%04x\n", sw);
@@ -1413,7 +1430,7 @@ do_readcert (app_t app, const char *certid,
       apdu[1] = 0xf9;  /* Yubikey: Get attestation cert.  */
       apdu[2] = xtoi_2 (certid+9);
       apdu[3] = 0;
-      err = iso7816_apdu_direct (app->slot, apdu, 4, 1,
+      err = iso7816_apdu_direct (app_get_slot (app), apdu, 4, 1,
                                  NULL, &result, &resultlen);
       if (!err)
         {
@@ -1452,7 +1469,7 @@ do_readcert (app_t app, const char *certid,
  * returned.
  */
 static gpg_error_t
-do_readkey (app_t app, const char *keyrefstr,
+do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
             unsigned char **r_pk, size_t *r_pklen)
 {
   gpg_error_t err;
@@ -1504,9 +1521,35 @@ do_readkey (app_t app, const char *keyrefstr,
         goto leave;
     }
 
-  *r_pk = pk;
-  pk = NULL;
-  *r_pklen = pklen;
+  if ((flags & APP_READKEY_FLAG_INFO))
+    {
+      char keygripstr[KEYGRIP_LEN*2+1];
+      char idbuf[50];
+      const char *usage;
+
+      err = app_help_get_keygrip_string_pk (pk, pklen, keygripstr);
+      if (err)
+        {
+          log_error ("app_help_get_keygrip_string_pk failed: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      usage = dobj->usage? dobj->usage : "";
+
+      snprintf (idbuf, sizeof idbuf, "PIV.%s", dobj->keyref);
+      send_status_info (ctrl, "KEYPAIRINFO",
+                        keygripstr, strlen (keygripstr),
+                        idbuf, strlen (idbuf),
+                        usage, strlen (usage),
+                        NULL, (size_t)0);
+    }
+
+  if (r_pk && r_pklen)
+    {
+      *r_pk = pk;
+      pk = NULL;
+      *r_pklen = pklen;
+    }
 
  leave:
   gcry_sexp_release (s_pkey);
@@ -1841,7 +1884,7 @@ verify_chv (app_t app, int keyref, int force,
   apdu[1] = ISO7816_VERIFY;
   apdu[2] = 0x00;
   apdu[3] = keyref;
-  if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
+  if (!iso7816_apdu_direct (app_get_slot (app), apdu, 4, 0, &sw, NULL, NULL))
     {
       if (!force) /* No need to verification.  */
         return 0;  /* All fine.  */
@@ -1857,7 +1900,7 @@ verify_chv (app_t app, int keyref, int force,
   if (err)
     return err;
 
-  err = iso7816_verify (app->slot, keyref, pin, pinlen);
+  err = iso7816_verify (app_get_slot (app), keyref, pin, pinlen);
   wipememory (pin, pinlen);
   xfree (pin);
   if (err)
@@ -1918,7 +1961,8 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
       apdu[1] = ISO7816_VERIFY;
       apdu[2] = 0xff;
       apdu[3] = keyref;
-      err = iso7816_apdu_direct (app->slot, apdu, 4, 0, NULL, NULL, NULL);
+      err = iso7816_apdu_direct (app_get_slot (app), apdu, 4, 0,
+                                 NULL, NULL, NULL);
       goto leave;
     }
 
@@ -1940,7 +1984,7 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
   apdu[1] = ISO7816_VERIFY;
   apdu[2] = 0x00;
   apdu[3] = keyref;
-  if (!iso7816_apdu_direct (app->slot, apdu, 4, 0, &sw, NULL, NULL))
+  if (!iso7816_apdu_direct (app_get_slot (app), apdu, 4, 0, &sw, NULL, NULL))
     remaining = -1; /* Already verified, thus full number of tries.  */
   else if ((sw & 0xfff0) == 0x63C0)
     remaining = (sw & 0x000f); /* PIN has REMAINING tries left.  */
@@ -1957,7 +2001,7 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
    * old is wrong.  This is not possible for the PUK, though. */
   if (keyref != 0x81)
     {
-      err = iso7816_verify (app->slot, keyref, oldpin, oldpinlen);
+      err = iso7816_verify (app_get_slot (app), keyref, oldpin, oldpinlen);
       if (err)
         {
           log_error ("CHV %02X verification failed: %s\n",
@@ -1982,7 +2026,8 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
         }
       memcpy (buf, oldpin, oldpinlen);
       memcpy (buf+oldpinlen, newpin, newpinlen);
-      err = iso7816_reset_retry_counter_with_rc (app->slot, targetkeyref,
+      err = iso7816_reset_retry_counter_with_rc (app_get_slot (app),
+                                                 targetkeyref,
                                                  buf, oldpinlen+newpinlen);
       xfree (buf);
       if (err)
@@ -1991,7 +2036,7 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
     }
   else
     {
-      err = iso7816_change_reference_data (app->slot, keyref,
+      err = iso7816_change_reference_data (app_get_slot (app), keyref,
                                            oldpin, oldpinlen,
                                            newpin, newpinlen);
       if (err)
@@ -2230,7 +2275,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     goto leave;
 
   /* Note: the -1 requests command chaining.  */
-  err = iso7816_general_authenticate (app->slot, -1,
+  err = iso7816_general_authenticate (app_get_slot (app), -1,
                                       mechanism, keyref,
                                       apdudata, (int)apdudatalen, 0,
                                       &outdata, &outdatalen);
@@ -2395,15 +2440,34 @@ do_decipher (app_t app, const char *keyidstr,
 
   /* Check that the ciphertext has the right length; due to internal
    * convey mechanism using MPIs leading zero bytes might have been
-   * lost.  Adjust for this.  Note that for ECC this actually
-   * superfluous because the first octet is always '04' to indicate an
+   * lost.  Adjust for this.  Unfortunately the ciphertext might have
+   * also been prefixed with a leading zero to make it a positive
+   * number; that may be a too long frame and we need to adjust for
+   * this too.  Note that for ECC thoses fixes are not reqquired
+   * because the first octet is always '04' to indicate an
    * uncompressed point.  */
   if (indatalen > framelen)
     {
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      log_error ("piv: input of %zu octets too large for mechanism %d\n",
-                 indatalen, mechanism);
-      goto leave;
+      if (mechanism == PIV_ALGORITHM_RSA
+          && indatalen == framelen + 1 && !*indata)
+        {
+          indata_buffer = xtrycalloc (1, framelen);
+          if (!indata_buffer)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (indata_buffer, indata+1, framelen);
+          indata = indata_buffer;
+          indatalen = framelen;
+        }
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          log_error ("piv: input of %zu octets too large for mechanism %d\n",
+                     indatalen, mechanism);
+          goto leave;
+        }
     }
   if (indatalen < framelen)
     {
@@ -2434,7 +2498,7 @@ do_decipher (app_t app, const char *keyidstr,
     goto leave;
 
   /* Note: the -1 requests command chaining.  */
-  err = iso7816_general_authenticate (app->slot, -1,
+  err = iso7816_general_authenticate (app_get_slot (app), -1,
                                       mechanism, keyref,
                                       apdudata, (int)apdudatalen, 0,
                                       &outdata, &outdatalen);
@@ -2635,7 +2699,7 @@ writekey_rsa (app_t app, data_object_t dobj, int keyref,
   if (err)
     goto leave;
 
-  err = iso7816_send_apdu (app->slot,
+  err = iso7816_send_apdu (app_get_slot (app),
                            -1,         /* Use command chaining.  */
                            0,          /* Class */
                            0xfe,       /* Ins: Yubikey Import Asym. Key.  */
@@ -2657,7 +2721,7 @@ writekey_rsa (app_t app, data_object_t dobj, int keyref,
   if (err)
     goto leave;
   tmpl[0] = PIV_ALGORITHM_RSA;
-  err = put_data (app->slot, dobj->tag,
+  err = put_data (app_get_slot (app), dobj->tag,
                   (int)0x80,   (size_t)1, tmpl,
                   (int)0x7f49, (size_t)apdudatalen, apdudata,
                   (int)0,      (size_t)0, NULL);
@@ -2787,7 +2851,7 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
   if (err)
     goto leave;
 
-  err = iso7816_send_apdu (app->slot,
+  err = iso7816_send_apdu (app_get_slot (app),
                            -1,         /* Use command chaining.  */
                            0,          /* Class */
                            0xfe,       /* Ins: Yubikey Import Asym. Key.  */
@@ -2808,7 +2872,7 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
   if (err)
     goto leave;
   tmpl[0] = mechanism;
-  err = put_data (app->slot, dobj->tag,
+  err = put_data (app_get_slot (app), dobj->tag,
                   (int)0x80,   (size_t)1, tmpl,
                   (int)0x7f49, (size_t)apdudatalen, apdudata,
                   (int)0,      (size_t)0, NULL);
@@ -2894,7 +2958,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   /* First clear an existing key.  We do this by writing an empty 7f49
    * tag.  This will return GPG_ERR_NO_PUBKEY on a later read.  */
   flush_cached_data (app, dobj->tag);
-  err = put_data (app->slot, dobj->tag,
+  err = put_data (app_get_slot (app), dobj->tag,
                   (int)0x7f49, (size_t)0, "",
                   (int)0,      (size_t)0, NULL);
   if (err)
@@ -3122,7 +3186,7 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
   tmpl[3] = 1;
   tmpl[4] = mechanism;
   tmpllen = 5;
-  err = iso7816_generate_keypair (app->slot, 0, 0, keyref,
+  err = iso7816_generate_keypair (app_get_slot (app), 0, 0, keyref,
                                   tmpl, tmpllen, 0, &buffer, &buflen);
   if (err)
     {
@@ -3152,7 +3216,7 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
 
   tmpl[0] = mechanism;
   flush_cached_data (app, dobj->tag);
-  err = put_data (app->slot, dobj->tag,
+  err = put_data (app_get_slot (app), dobj->tag,
                   (int)0x80,   (size_t)1,          tmpl,
                   (int)0x7f49, (size_t)keydatalen, keydata,
                   (int)0,      (size_t)0,          NULL);
@@ -3205,7 +3269,7 @@ do_writecert (app_t app, ctrl_t ctrl,
    * GPG_ERR_NO_PUBKEY).  We enforce this because otherwise the only
    * way to detect whether a key exists is by trying to use that
    * key. */
-  err = do_readkey (app, certrefstr, &orig_pk, &orig_pklen);
+  err = do_readkey (app, ctrl, certrefstr, 0, &orig_pk, &orig_pklen);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -3223,7 +3287,7 @@ do_writecert (app_t app, ctrl_t ctrl,
       goto leave;
     }
 
-  err = put_data (app->slot, dobj->tag,
+  err = put_data (app_get_slot (app), dobj->tag,
                   (int)0x70, (size_t)certlen, cert,/* Certificate */
                   (int)0x71, (size_t)1,       "",  /* No compress */
                   (int)0xfe, (size_t)0,       "",  /* Empty LRC. */
@@ -3242,14 +3306,121 @@ do_writecert (app_t app, ctrl_t ctrl,
 }
 
 
+/* Process the various keygrip based info requests.  */
+static gpg_error_t
+do_with_keygrip (app_t app, ctrl_t ctrl, int action,
+                 const char *want_keygripstr)
+{
+  gpg_error_t err;
+  char *keygripstr = NULL;
+  char *serialno = NULL;
+  char idbuf[20];
+  int data = 0;
+  int i, tag, dummy_got_cert;
+
+  /* First a quick check for valid parameters.  */
+  switch (action)
+    {
+    case KEYGRIP_ACTION_LOOKUP:
+      if (!want_keygripstr)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      break;
+    case KEYGRIP_ACTION_SEND_DATA:
+      data = 1;
+      break;
+    case KEYGRIP_ACTION_WRITE_STATUS:
+      break;
+    default:
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  /* Allocate the s/n string if needed.  */
+  if (action != KEYGRIP_ACTION_LOOKUP)
+    {
+      serialno = app_get_serialno (app);
+      if (!serialno)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  for (i = 0; (tag = data_objects[i].tag); i++)
+    {
+      if (!data_objects[i].keypair)
+        continue;
+
+      xfree (keygripstr);
+      if (get_keygrip_by_tag (app, tag, &keygripstr, &dummy_got_cert))
+        continue;
+
+      if (action == KEYGRIP_ACTION_LOOKUP)
+        {
+          if (!strcmp (keygripstr, want_keygripstr))
+            {
+              err = 0; /* Found */
+              goto leave;
+            }
+        }
+      else if (!want_keygripstr || !strcmp (keygripstr, want_keygripstr))
+        {
+          snprintf (idbuf, sizeof idbuf, "PIV.%s", data_objects[i].keyref);
+          send_keyinfo (ctrl, data, keygripstr, serialno, idbuf);
+          if (want_keygripstr)
+            {
+              err = 0; /* Found */
+              goto leave;
+            }
+        }
+    }
+
+  /* Return an error so that the dispatcher keeps on looping over the
+   * other applications.  For clarity we use a different error code
+   * when listing all keys.  Note that in lookup mode WANT_KEYGRIPSTR
+   * is not NULL.  */
+  if (!want_keygripstr)
+    err = gpg_error (GPG_ERR_TRUE);
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+
+ leave:
+  xfree (keygripstr);
+  xfree (serialno);
+  return err;
+}
+
+
+/* Reselect the application.  This is used by cards which support
+ * on-the-fly switching between applications.  */
+static gpg_error_t
+do_reselect (app_t app, ctrl_t ctrl)
+{
+  gpg_error_t err;
+
+  (void)ctrl;
+
+  /* An extra check which should not be necessary because the caller
+   * should have made sure that a re-select is only called for
+   * approriate cards.  */
+  if (!app->app_local->flags.yubikey)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  err = iso7816_select_application (app_get_slot (app),
+                                    piv_aid, sizeof piv_aid, 0x0001);
+  return err;
+}
+
+
 /* Select the PIV application on the card in SLOT.  This function must
  * be used before any other PIV application functions. */
 gpg_error_t
 app_select_piv (app_t app)
 {
-  static char const aid[] = { 0xA0, 0x00, 0x00, 0x03, 0x08, /* RID=NIST */
-                              0x00, 0x00, 0x10, 0x00        /* PIX=PIV  */ };
-  int slot = app->slot;
+  int slot = app_get_slot (app);
   gpg_error_t err;
   unsigned char *apt = NULL;
   size_t aptlen;
@@ -3259,12 +3430,12 @@ app_select_piv (app_t app)
   /* Note that we select using the AID without the 2 octet version
    * number.  This allows for better reporting of future specs.  We
    * need to use the use-zero-for-P2-flag.  */
-  err = iso7816_select_application_ext (slot, aid, sizeof aid, 0x0001,
+  err = iso7816_select_application_ext (slot, piv_aid, sizeof piv_aid, 0x0001,
                                         &apt, &aptlen);
   if (err)
     goto leave;
 
-  app->apptype = "PIV";
+  app->apptype = APPTYPE_PIV;
   app->did_chv1 = 0;
   app->did_chv2 = 0;
   app->did_chv3 = 0;
@@ -3279,7 +3450,7 @@ app_select_piv (app_t app)
     }
 
   s = find_tlv (apt, aptlen, 0x4F, &n);
-  if (!s || n != 6 || memcmp (s, aid+5, 4))
+  if (!s || n != 6 || memcmp (s, piv_aid+5, 4))
     {
       /* The PIX does not match.  */
       log_error ("piv: missing or invalid DO 0x4F in APT\n");
@@ -3302,7 +3473,7 @@ app_select_piv (app_t app)
       goto leave;
     }
   s = find_tlv (s, n, 0x4F, &n);
-  if (!s || n != 5 || memcmp (s, aid, 5))
+  if (!s || n != 5 || memcmp (s, piv_aid, 5))
     {
       /* The RID does not match.  */
       log_error ("piv: missing or invalid DO 0x79.4F in APT\n");
@@ -3317,7 +3488,7 @@ app_select_piv (app_t app)
       goto leave;
     }
 
-  if (app->cardtype && !strcmp (app->cardtype, "yubikey"))
+  if (app->card->cardtype == CARDTYPE_YUBIKEY)
     app->app_local->flags.yubikey = 1;
 
 
@@ -3327,6 +3498,7 @@ app_select_piv (app_t app)
     dump_all_do (slot);
 
   app->fnc.deinit = do_deinit;
+  app->fnc.reselect = do_reselect;
   app->fnc.learn_status = do_learn_status;
   app->fnc.readcert = do_readcert;
   app->fnc.readkey = do_readkey;
@@ -3340,6 +3512,7 @@ app_select_piv (app_t app)
   app->fnc.decipher = do_decipher;
   app->fnc.change_pin = do_change_chv;
   app->fnc.check_pin = do_check_chv;
+  app->fnc.with_keygrip = do_with_keygrip;
 
 
 leave:

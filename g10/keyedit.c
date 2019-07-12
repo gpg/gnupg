@@ -1012,7 +1012,8 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 					 node->pkt->pkt.user_id,
 					 NULL,
 					 pk,
-					 0x13, 0, 0, 0,
+					 0x13,
+                                         0, 0,
 					 keygen_add_std_prefs, primary_pk,
                                          NULL);
 	      else
@@ -1020,7 +1021,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 					 node->pkt->pkt.user_id,
 					 NULL,
 					 pk,
-					 class, 0,
+					 class,
 					 timestamp, duration,
 					 sign_mk_attrib, &attrib,
                                          NULL);
@@ -1437,7 +1438,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 #endif
 
   /* Get the public key */
-  err = get_pubkey_byname (ctrl, NULL, NULL, username, &keyblock, &kdbhd, 1, 1);
+  err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                           NULL, NULL, username, &keyblock, &kdbhd, 1);
   if (err)
     {
       log_error (_("key \"%s\" not found: %s\n"), username, gpg_strerror (err));
@@ -2570,7 +2572,8 @@ find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
       err = gpg_error (GPG_ERR_INV_NAME);
       goto leave;
     }
-  err = get_pubkey_byname (ctrl, NULL, NULL, fpr, &keyblock, &kdbhd, 1, 1);
+  err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                           NULL, NULL, fpr, &keyblock, &kdbhd, 1);
   if (err)
     {
       log_error (_("key \"%s\" not found: %s\n"), fpr, gpg_strerror (err));
@@ -3991,7 +3994,7 @@ menu_adduid (ctrl_t ctrl, kbnode_t pub_keyblock,
       return 0;
     }
 
-  err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x13, 0, 0, 0,
+  err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x13, 0, 0,
                             keygen_add_std_prefs, pk, NULL);
   if (err)
     {
@@ -4289,7 +4292,8 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
          primary keys only, but some casual testing shows that PGP and
          GnuPG both can handle a designated revocation from a subkey. */
       revoker_pk->req_usage = PUBKEY_USAGE_CERT;
-      rc = get_pubkey_byname (ctrl, NULL, revoker_pk, answer, NULL, NULL, 1, 1);
+      rc = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                              NULL, revoker_pk, answer, NULL, NULL, 1);
       if (rc)
 	{
 	  log_error (_("key \"%s\" not found: %s\n"), answer,
@@ -4355,7 +4359,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 	    continue;
 	}
 
-      print_pubkey_info (ctrl, NULL, revoker_pk);
+      print_key_info (ctrl, NULL, 0, revoker_pk, 0);
       print_fingerprint (ctrl, NULL, revoker_pk, 2);
       tty_printf ("\n");
 
@@ -4374,7 +4378,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
       break;
     }
 
-  rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk, 0x1F, 0, 0, 0,
+  rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk, 0x1F, 0, 0,
 			   keygen_add_revkey, &revkey, NULL);
   if (rc)
     {
@@ -5898,7 +5902,7 @@ reloop:			/* (must use this, because we are modifying the list) */
 	}
       rc = make_keysig_packet (ctrl, &sig, primary_pk,
 			       unode->pkt->pkt.user_id,
-			       NULL, signerkey, 0x30, 0, 0, 0,
+			       NULL, signerkey, 0x30, 0, 0,
                                sign_mk_attrib, &attrib, NULL);
       free_public_key (signerkey);
       if (rc)
@@ -5977,11 +5981,11 @@ core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
           memset (&attrib, 0, sizeof attrib);
           /* should not need to cast away const here; but
              revocation_reason_build_cb needs to take a non-const
-             void* in order to meet the function signtuare for the
+             void* in order to meet the function signutare for the
              mksubpkt argument to make_keysig_packet */
           attrib.reason = (struct revocation_reason_info *)reason;
 
-          rc = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x30, 0,
+          rc = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x30,
                                    timestamp, 0,
                                    sign_mk_attrib, &attrib, NULL);
           if (rc)
@@ -6111,7 +6115,7 @@ menu_revkey (ctrl_t ctrl, kbnode_t pub_keyblock)
     return 0;
 
   rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk,
-			   0x20, 0, 0, 0,
+			   0x20, 0, 0,
 			   revocation_reason_build_cb, reason, NULL);
   if (rc)
     {
@@ -6173,7 +6177,7 @@ menu_revsubkey (ctrl_t ctrl, kbnode_t pub_keyblock)
 
 	  node->flag &= ~NODFLG_SELKEY;
 	  rc = make_keysig_packet (ctrl, &sig, mainpk, NULL, subpk, mainpk,
-				   0x28, 0, 0, 0, sign_mk_attrib, &attrib,
+				   0x28, 0, 0, sign_mk_attrib, &attrib,
                                    NULL);
 	  if (rc)
 	    {

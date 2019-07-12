@@ -47,6 +47,7 @@ struct domaininfo_s
   unsigned int wkd_not_found:1;      /* A WKD query failed.               */
   unsigned int wkd_supported:1;      /* One WKD entry was found.          */
   unsigned int wkd_not_supported:1;  /* Definitely does not support WKD.  */
+  unsigned int keepmark:1;           /* Private to insert_or_update().    */
   char name[1];
 };
 typedef struct domaininfo_s *domaininfo_t;
@@ -143,7 +144,10 @@ insert_or_update (const char *domain,
 {
   domaininfo_t di;
   domaininfo_t di_new;
-  domaininfo_t di_cut;
+  domaininfo_t drop = NULL;
+  domaininfo_t drop_extra = NULL;
+  int nkept = 0;
+  int ndropped = 0;
   u32 hash;
   int count;
 
@@ -162,7 +166,6 @@ insert_or_update (const char *domain,
 
   /* Need to do another lookup because the malloc is a system call and
    * thus the hash array may have been changed by another thread.  */
-  di_cut = NULL;
   for (count=0, di = domainbuckets[hash]; di; di = di->next, count++)
     if (!strcmp (di->name, domain))
       {
@@ -172,16 +175,89 @@ insert_or_update (const char *domain,
       }
 
   /* Before we insert we need to check whether the chain gets too long.  */
-  di_cut = NULL;
   if (count >= MAX_DOMAINBUCKET_LEN)
     {
-      for (count=0, di = domainbuckets[hash]; di; di = di->next, count++)
-        if (count >= MAX_DOMAINBUCKET_LEN/2)
-          {
-            di_cut = di->next;
-            di->next = NULL;
-            break;
-          }
+      domaininfo_t bucket;
+      domaininfo_t *array;
+      int narray, idx;
+      domaininfo_t keep = NULL;
+
+      /* Unlink from the global list before doing a syscall.  */
+      bucket = domainbuckets[hash];
+      domainbuckets[hash] = NULL;
+
+      array = xtrycalloc (count, sizeof *array);
+      if (!array)
+        {
+          /* That's bad; give up the entire bucket.  */
+          log_error ("domaininfo: error allocating helper array: %s\n",
+                     gpg_strerror (gpg_err_code_from_syserror ()));
+          drop_extra = bucket;
+          goto leave;
+        }
+      narray = 0;
+
+      /* Move all items into an array for easier processing.  */
+      for (di = bucket; di; di = di->next)
+        array[narray++] = di;
+      log_assert (narray == count);
+
+      /* Mark all item in the array which are flagged to support wkd
+       * but not more than half of the maximum.  This way we will at
+       * the end drop half of the items. */
+      count = 0;
+      for (idx=0; idx < narray; idx++)
+        {
+          di = array[idx];
+          di->keepmark = 0; /* Clear flag here on the first pass.  */
+          if (di->wkd_supported && count < MAX_DOMAINBUCKET_LEN/2)
+            {
+              di->keepmark = 1;
+              count++;
+            }
+        }
+      /* Now mark those which are marked as not found.  */
+      /* FIXME: we should use an LRU algorithm here.    */
+      for (idx=0; idx < narray; idx++)
+        {
+          di = array[idx];
+          if (!di->keepmark
+              && di->wkd_not_supported && count < MAX_DOMAINBUCKET_LEN/2)
+            {
+              di->keepmark = 1;
+              count++;
+            }
+        }
+
+      /* Build a bucket list and a second list for later freeing the
+       * items (we can't do it directly because a free is a system
+       * call and we want to avoid locks in this module.  Note that
+       * the kept items will be reversed order which does not matter.  */
+      for (idx=0; idx < narray; idx++)
+        {
+          di = array[idx];
+          if (di->keepmark)
+            {
+              di->next = keep;
+              keep = di;
+              nkept++;
+            }
+          else
+            {
+              di->next = drop;
+              drop = di;
+              ndropped++;
+            }
+        }
+
+      /* In case another thread added new stuff to the domain list we
+       * simply drop them instead all.  It would also be possible to
+       * append them to our list but then we can't guarantee that a
+       * bucket list is almost all of the time limited to
+       * MAX_DOMAINBUCKET_LEN.  Not sure whether this is really a
+       * sensible strategy.  */
+      drop_extra = domainbuckets[hash];
+      domainbuckets[hash] = keep;
     }
 
   /* Insert */
@@ -190,17 +266,28 @@ insert_or_update (const char *domain,
   di->next = domainbuckets[hash];
   domainbuckets[hash] = di;
 
-  /* Remove the rest of the cutted chain.  */
-  while (di_cut)
+  if (opt.verbose && (nkept || ndropped))
+    log_info ("domaininfo: bucket=%lu kept=%d purged=%d\n",
+              (unsigned long)hash, nkept, ndropped);
+
+ leave:
+  /* Remove the dropped items.  */
+  while (drop)
     {
-      di = di_cut->next;
-      xfree (di_cut);
-      di_cut = di;
+      di = drop->next;
+      xfree (drop);
+      drop = di;
+    }
+  while (drop_extra)
+    {
+      di = drop_extra->next;
+      xfree (drop_extra);
+      drop_extra = di;
     }
 }
 
 
-/* Helper for domaininfo_set_no_name.  */
+/* Helper for domaininfo_set_no_name.  May not do any syscalls. */
 static void
 set_no_name_cb (domaininfo_t di, int insert_mode)
 {
@@ -224,7 +311,7 @@ domaininfo_set_no_name (const char *domain)
 }
 
 
-/* Helper for domaininfo_set_wkd_supported.  */
+/* Helper for domaininfo_set_wkd_supported.  May not do any syscalls. */
 static void
 set_wkd_supported_cb (domaininfo_t di, int insert_mode)
 {
@@ -245,7 +332,7 @@ domaininfo_set_wkd_supported (const char *domain)
 }
 
 
-/* Helper for domaininfo_set_wkd_not_supported.  */
+/* Helper for domaininfo_set_wkd_not_supported.  May not do any syscalls. */
 static void
 set_wkd_not_supported_cb (domaininfo_t di, int insert_mode)
 {
@@ -265,7 +352,7 @@ domaininfo_set_wkd_not_supported (const char *domain)
 
 
 
-/* Helper for domaininfo_set_wkd_not_found.  */
+/* Helper for domaininfo_set_wkd_not_found.  May not do any syscalls. */
 static void
 set_wkd_not_found_cb (domaininfo_t di, int insert_mode)
 {

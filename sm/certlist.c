@@ -48,7 +48,7 @@ static const char oid_kp_ocspSigning[]    = "1.3.6.1.5.5.7.3.9";
    debugging).  MODE 4 is for certificate signing, MODE for COSP
    response signing. */
 static int
-cert_usage_p (ksba_cert_t cert, int mode)
+cert_usage_p (ksba_cert_t cert, int mode, int silent)
 {
   gpg_error_t err;
   unsigned int use;
@@ -118,7 +118,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
       if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         {
           err = 0;
-          if (opt.verbose && mode < 2)
+          if (opt.verbose && mode < 2 && !silent)
             log_info (_("no key usage specified - assuming all usages\n"));
           use = ~0;
         }
@@ -139,8 +139,9 @@ cert_usage_p (ksba_cert_t cert, int mode)
     {
       if ((use & (KSBA_KEYUSAGE_KEY_CERT_SIGN)))
         return 0;
-      log_info (_("certificate should not have "
-                  "been used for certification\n"));
+      if (!silent)
+        log_info (_("certificate should not have "
+                    "been used for certification\n"));
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
@@ -151,8 +152,9 @@ cert_usage_p (ksba_cert_t cert, int mode)
               || (use & (KSBA_KEYUSAGE_KEY_CERT_SIGN
                          |KSBA_KEYUSAGE_CRL_SIGN))))
         return 0;
-      log_info (_("certificate should not have "
-                  "been used for OCSP response signing\n"));
+      if (!silent)
+        log_info (_("certificate should not have "
+                    "been used for OCSP response signing\n"));
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
@@ -162,19 +164,22 @@ cert_usage_p (ksba_cert_t cert, int mode)
       )
     return 0;
 
-  log_info (mode==3? _("certificate should not have been used for encryption\n"):
-            mode==2? _("certificate should not have been used for signing\n"):
-            mode==1? _("certificate is not usable for encryption\n"):
-                     _("certificate is not usable for signing\n"));
+  if (!silent)
+    log_info
+      (mode==3? _("certificate should not have been used for encryption\n"):
+       mode==2? _("certificate should not have been used for signing\n"):
+       mode==1? _("certificate is not usable for encryption\n"):
+       /**/     _("certificate is not usable for signing\n"));
+
   return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
 }
 
 
 /* Return 0 if the cert is usable for signing */
 int
-gpgsm_cert_use_sign_p (ksba_cert_t cert)
+gpgsm_cert_use_sign_p (ksba_cert_t cert, int silent)
 {
-  return cert_usage_p (cert, 0);
+  return cert_usage_p (cert, 0, silent);
 }
 
 
@@ -182,31 +187,31 @@ gpgsm_cert_use_sign_p (ksba_cert_t cert)
 int
 gpgsm_cert_use_encrypt_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 1);
+  return cert_usage_p (cert, 1, 0);
 }
 
 int
 gpgsm_cert_use_verify_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 2);
+  return cert_usage_p (cert, 2, 0);
 }
 
 int
 gpgsm_cert_use_decrypt_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 3);
+  return cert_usage_p (cert, 3, 0);
 }
 
 int
 gpgsm_cert_use_cert_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 4);
+  return cert_usage_p (cert, 4, 0);
 }
 
 int
 gpgsm_cert_use_ocsp_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 5);
+  return cert_usage_p (cert, 5, 0);
 }
 
 
@@ -341,25 +346,20 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                   first_subject = ksba_cert_get_subject (cert, 0);
                   first_issuer = ksba_cert_get_issuer (cert, 0);
                 }
-              rc = secret? gpgsm_cert_use_sign_p (cert)
+              rc = secret? gpgsm_cert_use_sign_p (cert, 0)
                          : gpgsm_cert_use_encrypt_p (cert);
               if (gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE)
                 {
                   /* There might be another certificate with the
                      correct usage, so we try again */
-                  if (!wrong_usage)
-                    { /* save the first match */
-                      wrong_usage = rc;
-                      ksba_cert_release (cert);
-                      cert = NULL;
-                      goto get_next;
-                    }
-                  else if (same_subject_issuer (first_subject, first_issuer,
-                                                cert))
+                  if (!wrong_usage
+                      || same_subject_issuer (first_subject, first_issuer,cert))
                     {
-                      wrong_usage = rc;
+                      if (!wrong_usage)
+                        wrong_usage = rc; /* save error of the first match */
                       ksba_cert_release (cert);
                       cert = NULL;
+                      log_info (_("looking for another certificate\n"));
                       goto get_next;
                     }
                   else
@@ -403,8 +403,8 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                                                       first_issuer,
                                                       cert2)
                                  && ((gpg_err_code (
-                                      secret? gpgsm_cert_use_sign_p (cert2)
-                                      : gpgsm_cert_use_encrypt_p (cert2)
+                                      secret? gpgsm_cert_use_sign_p (cert2,0)
+                                            : gpgsm_cert_use_encrypt_p (cert2)
                                       )
                                      )  == GPG_ERR_WRONG_KEY_USAGE));
                       if (tmp)

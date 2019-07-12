@@ -20,6 +20,8 @@ ed25519-cv25519-sample-1.asc  Ed25519+CV25519 sample key (no passphrase)
 silent-running.asc     Collection of sample secret keys (no passphrases)
 rsa-primary-auth-only.pub.asc  rsa2408 primary only, usage: cert,auth
 rsa-primary-auth-only.sec.asc  Ditto but the secret keyblock.
+v5-sample-1-pub.asc    A version 5 key (ed25519/cert,sign,v5+cv25519/v5)
+v5-sample-1-sec.asc    Ditto, but the secret keyblock (unprotected).
 
 
 Notes:

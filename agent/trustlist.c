@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <npth.h>
@@ -550,7 +549,7 @@ insert_colons (const char *string)
         }
     }
   *p = 0;
-  assert (strlen (buffer) <= nnew);
+  log_assert (strlen (buffer) <= nnew);
 
   return buffer;
 }

@@ -33,6 +33,11 @@
 
 #define DEBUG_PARSE_PACKET 1
 
+/* Maximum length of packets to avoid excessive memory allocation.  */
+#define MAX_KEY_PACKET_LENGTH     (256 * 1024)
+#define MAX_UID_PACKET_LENGTH     (  2 * 1024)
+#define MAX_COMMENT_PACKET_LENGTH ( 64 * 1024)
+#define MAX_ATTR_PACKET_LENGTH    ( 16 * 1024*1024)
 
 /* Constants to allocate static MPI arrays.  */
 #define PUBKEY_MAX_NPKEY  OPENPGP_MAX_NPKEY
@@ -394,6 +399,7 @@ typedef struct
   byte    pubkey_algo;
   byte    pubkey_usage;   /* for now only used to pass it to getkey() */
   byte    req_usage;      /* hack to pass a request to getkey() */
+  byte    fprlen;         /* 0 or length of FPR.  */
   u32     has_expired;    /* set to the expiration date if expired */
   /* keyid of the primary key.  Never access this value directly.
      Instead, use pk_main_keyid().  */
@@ -401,6 +407,8 @@ typedef struct
   /* keyid of this key.  Never access this value directly!  Instead,
      use pk_keyid().  */
   u32     keyid[2];
+  /* Fingerprint of the key.  Only valid if FPRLEN is not 0.  */
+  byte    fpr[MAX_FINGERPRINT_LEN];
   prefitem_t *prefs;      /* list of preferences (may be NULL) */
   struct
   {
@@ -928,7 +936,7 @@ int ask_for_detached_datafile( gcry_md_hd_t md, gcry_md_hd_t md2,
 int make_keysig_packet (ctrl_t ctrl,
                         PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_user_id *uid, PKT_public_key *subpk,
-			PKT_public_key *pksk, int sigclass, int digest_algo,
+			PKT_public_key *pksk, int sigclass,
 			u32 timestamp, u32 duration,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque,

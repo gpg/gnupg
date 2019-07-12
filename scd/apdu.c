@@ -42,23 +42,11 @@
 #include "rapdu.h"
 #endif /*USE_G10CODE_RAPDU*/
 
-#if defined(GNUPG_SCD_MAIN_HEADER)
-#include GNUPG_SCD_MAIN_HEADER
-#elif GNUPG_MAJOR_VERSION == 1
-/* This is used with GnuPG version < 1.9.  The code has been source
-   copied from the current GnuPG >= 1.9  and is maintained over
-   there. */
-#include "../common/options.h"
-#include "errors.h"
-#include "memory.h"
-#include "../common/util.h"
-#include "../common/i18n.h"
-#include "dynload.h"
-#include "cardglue.h"
-#else /* GNUPG_MAJOR_VERSION != 1 */
-#include "scdaemon.h"
-#include "../common/exechelp.h"
-#endif /* GNUPG_MAJOR_VERSION != 1 */
+#if defined(GNUPG_MAJOR_VERSION)
+# include "scdaemon.h"
+# include "../common/exechelp.h"
+#endif /*GNUPG_MAJOR_VERSION*/
+
 #include "../common/host2net.h"
 
 #include "iso7816.h"
@@ -266,8 +254,13 @@ static npth_mutex_t reader_table_lock;
 
 struct pcsc_io_request_s
 {
+#if defined(_WIN32) || defined(__CYGWIN__)
+  pcsc_dword_t protocol;
+  pcsc_dword_t pci_len;
+#else
   unsigned long protocol;
   unsigned long pci_len;
+#endif
 };
 
 typedef struct pcsc_io_request_s *pcsc_io_request_t;

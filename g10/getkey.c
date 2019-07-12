@@ -36,6 +36,7 @@
 #include "../common/i18n.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
+#include "objcache.h"
 #include "../common/host2net.h"
 #include "../common/mbox-util.h"
 #include "../common/status.h"
@@ -112,6 +113,7 @@ static struct
 typedef struct keyid_list
 {
   struct keyid_list *next;
+  byte fprlen;
   char fpr[MAX_FINGERPRINT_LEN];
   u32 keyid[2];
 } *keyid_list_t;
@@ -132,15 +134,6 @@ static int pk_cache_disabled;
 #if MAX_UID_CACHE_ENTRIES < 5
 #error we really need the userid cache
 #endif
-typedef struct user_id_db
-{
-  struct user_id_db *next;
-  keyid_list_t keyids;
-  int len;
-  char name[1];
-} *user_id_db_t;
-static user_id_db_t user_id_db;
-static int uid_cache_entries;	/* Number of entries in uid cache. */
 
 static void merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock);
 static int lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
@@ -261,112 +254,6 @@ user_id_not_found_utf8 (void)
 }
 
 
-
-/* Return the user ID from the given keyblock.
- * We use the primary uid flag which has been set by the merge_selfsigs
- * function.  The returned value is only valid as long as the given
- * keyblock is not changed.  */
-static const char *
-get_primary_uid (KBNODE keyblock, size_t * uidlen)
-{
-  KBNODE k;
-  const char *s;
-
-  for (k = keyblock; k; k = k->next)
-    {
-      if (k->pkt->pkttype == PKT_USER_ID
-	  && !k->pkt->pkt.user_id->attrib_data
-	  && k->pkt->pkt.user_id->flags.primary)
-	{
-	  *uidlen = k->pkt->pkt.user_id->len;
-	  return k->pkt->pkt.user_id->name;
-	}
-    }
-  s = user_id_not_found_utf8 ();
-  *uidlen = strlen (s);
-  return s;
-}
-
-
-static void
-release_keyid_list (keyid_list_t k)
-{
-  while (k)
-    {
-      keyid_list_t k2 = k->next;
-      xfree (k);
-      k = k2;
-    }
-}
-
-/****************
- * Store the association of keyid and userid
- * Feed only public keys to this function.
- */
-static void
-cache_user_id (KBNODE keyblock)
-{
-  user_id_db_t r;
-  const char *uid;
-  size_t uidlen;
-  keyid_list_t keyids = NULL;
-  KBNODE k;
-
-  for (k = keyblock; k; k = k->next)
-    {
-      if (k->pkt->pkttype == PKT_PUBLIC_KEY
-	  || k->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-	{
-	  keyid_list_t a = xmalloc_clear (sizeof *a);
-	  /* Hmmm: For a long list of keyids it might be an advantage
-	   * to append the keys.  */
-          fingerprint_from_pk (k->pkt->pkt.public_key, a->fpr, NULL);
-	  keyid_from_pk (k->pkt->pkt.public_key, a->keyid);
-	  /* First check for duplicates.  */
-	  for (r = user_id_db; r; r = r->next)
-	    {
-	      keyid_list_t b;
-
-	      for (b = r->keyids; b; b = b->next)
-		{
-		  if (!memcmp (b->fpr, a->fpr, MAX_FINGERPRINT_LEN))
-		    {
-		      if (DBG_CACHE)
-			log_debug ("cache_user_id: already in cache\n");
-		      release_keyid_list (keyids);
-		      xfree (a);
-		      return;
-		    }
-		}
-	    }
-	  /* Now put it into the cache.  */
-	  a->next = keyids;
-	  keyids = a;
-	}
-    }
-  if (!keyids)
-    BUG (); /* No key no fun.  */
-
-
-  uid = get_primary_uid (keyblock, &uidlen);
-
-  if (uid_cache_entries >= MAX_UID_CACHE_ENTRIES)
-    {
-      /* fixme: use another algorithm to free some cache slots */
-      r = user_id_db;
-      user_id_db = r->next;
-      release_keyid_list (r->keyids);
-      xfree (r);
-      uid_cache_entries--;
-    }
-  r = xmalloc (sizeof *r + uidlen - 1);
-  r->keyids = keyids;
-  r->len = uidlen;
-  memcpy (r->name, uid, r->len);
-  r->next = user_id_db;
-  user_id_db = r;
-  uid_cache_entries++;
-}
 
 
 /* Disable and drop the public key cache (which is filled by
@@ -948,11 +835,21 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 
 /* Find a public key identified by NAME.
  *
- * If name appears to be a valid RFC822 mailbox (i.e., email
- * address) and auto key lookup is enabled (no_akl == 0), then the
- * specified auto key lookup methods (--auto-key-lookup) are used to
- * import the key into the local keyring.  Otherwise, just the local
- * keyring is consulted.
+ * If name appears to be a valid RFC822 mailbox (i.e., email address)
+ * and auto key lookup is enabled (mode != GET_PUBKEY_NO_AKL), then
+ * the specified auto key lookup methods (--auto-key-lookup) are used
+ * to import the key into the local keyring.  Otherwise, just the
+ * local keyring is consulted.
+ *
+ * MODE can be one of:
+ *    GET_PUBKEY_NORMAL   - The standard mode
+ *    GET_PUBKEY_NO_AKL   - The auto key locate functionality is
+ *                          disabled and only the local key ring is
+ *                          considered.  Note: the local key ring is
+ *                          consulted even if local is not in the
+ *                          auto-key-locate option list!
+ *    GET_PUBKEY_NO_LOCAL - Only the auto key locate functionaly is
+ *                          used and no local search is done.
  *
  * If RETCTX is not NULL, then the constructed context is returned in
  * *RETCTX so that getpubkey_next can be used to get subsequent
@@ -988,18 +885,14 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
  * documentation for skip_unusable for an exact definition) are
  * skipped unless they are looked up by key id or by fingerprint.
  *
- * If NO_AKL is set, then the auto key locate functionality is
- * disabled and only the local key ring is considered.  Note: the
- * local key ring is consulted even if local is not in the
- * --auto-key-locate option list!
- *
  * This function returns 0 on success.  Otherwise, an error code is
  * returned.  In particular, GPG_ERR_NO_PUBKEY or GPG_ERR_NO_SECKEY
  * (if want_secret is set) is returned if the key is not found.  */
 int
-get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
+get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
+                   GETKEY_CTX * retctx, PKT_public_key * pk,
 		   const char *name, KBNODE * ret_keyblock,
-		   KEYDB_HANDLE * ret_kdbhd, int include_unusable, int no_akl)
+		   KEYDB_HANDLE * ret_kdbhd, int include_unusable)
 {
   int rc;
   strlist_t namelist = NULL;
@@ -1035,7 +928,9 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
    * Note: we only save the search context in RETCTX if the local
    * method is the first method tried (either explicitly or
    * implicitly).  */
-  if (!no_akl)
+  if (mode == GET_PUBKEY_NO_LOCAL)
+    nodefault = 1;  /* Auto-key-locate but ignore "local".  */
+  else if (mode != GET_PUBKEY_NO_AKL)
     {
       /* auto-key-locate is enabled.  */
 
@@ -1064,7 +959,13 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
       anylocalfirst = 1;
     }
 
-  if (nodefault && is_mbox)
+  if (mode == GET_PUBKEY_NO_LOCAL)
+    {
+      /* Force using the AKL.  If IS_MBOX is not set this is the final
+       * error code.  */
+      rc = GPG_ERR_NO_PUBKEY;
+    }
+  else if (nodefault && is_mbox)
     {
       /* Either "nodefault" or "local" (explicitly) appeared in the
        * auto key locate list and NAME appears to be an email address.
@@ -1085,7 +986,9 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
   /* If the requested name resembles a valid mailbox and automatic
      retrieval has been enabled, we try to import the key. */
-  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY && !no_akl && is_mbox)
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
+      && mode != GET_PUBKEY_NO_AKL
+      && is_mbox)
     {
       /* NAME wasn't present in the local keyring (or we didn't try
        * the local keyring).  Since the auto key locate feature is
@@ -1104,22 +1007,30 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	    {
 	    case AKL_NODEFAULT:
 	      /* This is a dummy mechanism.  */
-	      mechanism_string = "None";
+	      mechanism_string = "";
 	      rc = GPG_ERR_NO_PUBKEY;
 	      break;
 
 	    case AKL_LOCAL:
-	      mechanism_string = "Local";
-	      did_akl_local = 1;
-	      if (retctx)
-		{
-		  getkey_end (ctrl, *retctx);
-		  *retctx = NULL;
-		}
-	      add_to_strlist (&namelist, name);
-	      rc = key_byname (ctrl, anylocalfirst ? retctx : NULL,
-			       namelist, pk, 0,
-			       include_unusable, ret_keyblock, ret_kdbhd);
+              if (mode == GET_PUBKEY_NO_LOCAL)
+                {
+                  mechanism_string = "";
+                  rc = GPG_ERR_NO_PUBKEY;
+                }
+              else
+                {
+                  mechanism_string = "Local";
+                  did_akl_local = 1;
+                  if (retctx)
+                    {
+                      getkey_end (ctrl, *retctx);
+                      *retctx = NULL;
+                    }
+                  add_to_strlist (&namelist, name);
+                  rc = key_byname (ctrl, anylocalfirst ? retctx : NULL,
+                                   namelist, pk, 0,
+                                   include_unusable, ret_keyblock, ret_kdbhd);
+                }
 	      break;
 
 	    case AKL_CERT:
@@ -1246,14 +1157,13 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
                           name, mechanism_string);
 	      break;
 	    }
-	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY
-              || opt.verbose || no_fingerprint)
+	  if ((gpg_err_code (rc) != GPG_ERR_NO_PUBKEY
+               || opt.verbose || no_fingerprint) && *mechanism_string)
 	    log_info (_("error retrieving '%s' via %s: %s\n"),
 		      name, mechanism_string,
 		      no_fingerprint ? _("No fingerprint") : gpg_strerror (rc));
 	}
     }
-
 
   if (rc && retctx)
     {
@@ -1315,7 +1225,7 @@ subkey_is_ok (const PKT_public_key *sub)
 
 /* Return true if KEYBLOCK has only expired encryption subkyes.  Note
  * that the function returns false if the key has no encryption
- * subkeys at all or the subkecys are revoked.  */
+ * subkeys at all or the subkeys are revoked.  */
 static int
 only_expired_enc_subkeys (kbnode_t keyblock)
 {
@@ -1407,7 +1317,8 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
  * resembles a mail address, the results are ranked and only the best
  * result is returned.  */
 gpg_error_t
-get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
+get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
+                        GETKEY_CTX *retctx, PKT_public_key *pk,
                         const char *name, KBNODE *ret_keyblock,
                         int include_unusable)
 {
@@ -1430,8 +1341,9 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
       getkey_end (ctrl, ctx);
       ctx = NULL;
     }
-  err = get_pubkey_byname (ctrl, &ctx, pk, name, ret_keyblock,
-                           NULL, include_unusable, 0);
+  err = get_pubkey_byname (ctrl, mode,
+                           &ctx, pk, name, ret_keyblock,
+                           NULL, include_unusable);
   if (err)
     {
       getkey_end (ctrl, ctx);
@@ -1493,15 +1405,14 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
               /* Old key is better.  */
               release_public_key_parts (&new.key);
               free_user_id (new.uid);
-              new.uid = NULL;
             }
           else
             {
               /* A tie.  Keep the old key.  */
               release_public_key_parts (&new.key);
               free_user_id (new.uid);
-              new.uid = NULL;
             }
+          new.uid = NULL;
         }
       getkey_end (ctrl, ctx);
       ctx = NULL;
@@ -1637,7 +1548,7 @@ get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
  *
  * FPRINT is a byte array whose contents is the fingerprint to use as
  * the search term.  FPRINT_LEN specifies the length of the
- * fingerprint (in bytes).  Currently, only 16 and 20-byte
+ * fingerprint (in bytes).  Currently, only 16, 20, and 32-byte
  * fingerprints are supported.
  *
  * FIXME: We should replace this with the _byname function.  This can
@@ -3291,7 +3202,11 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 		  memcpy (&pk->revoked, &rinfo, sizeof (rinfo));
 		}
 	      if (main_pk->has_expired)
-		pk->has_expired = main_pk->has_expired;
+		{
+		  pk->has_expired = main_pk->has_expired;
+		  if (!pk->expiredate || pk->expiredate > main_pk->expiredate)
+		    pk->expiredate = main_pk->expiredate;
+		}
 	    }
 	}
       return;
@@ -3623,7 +3538,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
       xfree (tempkeystr);
     }
 
-  cache_user_id (keyblock);
+  cache_put_keyblock (keyblock);
 
   return latest_key ? latest_key : keyblock; /* Found.  */
 }
@@ -3836,67 +3751,40 @@ get_seckey_default_or_card (ctrl_t ctrl, PKT_public_key *pk,
  * this string must be freed by xfree.  If R_NOUID is not NULL it is
  * set to true if a user id was not found; otherwise to false.  */
 static char *
-get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len,
-                    int *r_nouid)
+get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode)
 {
-  user_id_db_t r;
-  keyid_list_t a;
-  int pass = 0;
+  char *name;
+  unsigned int namelen;
   char *p;
 
-  if (r_nouid)
-    *r_nouid = 0;
+  log_assert (mode != 2);
 
-  /* Try it two times; second pass reads from the database.  */
-  do
+  name = cache_get_uid_bykid (keyid, &namelen);
+  if (!name)
     {
-      for (r = user_id_db; r; r = r->next)
-	{
-	  for (a = r->keyids; a; a = a->next)
-	    {
-	      if (a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1])
-		{
-                  if (mode == 2)
-                    {
-                      /* An empty string as user id is possible.  Make
-                         sure that the malloc allocates one byte and
-                         does not bail out.  */
-                      p = xmalloc (r->len? r->len : 1);
-                      memcpy (p, r->name, r->len);
-                      if (r_len)
-                        *r_len = r->len;
-                    }
-                  else
-                    {
-                      if (mode)
-                        p = xasprintf ("%08lX%08lX %.*s",
-                                       (ulong) keyid[0], (ulong) keyid[1],
-                                       r->len, r->name);
-                      else
-                        p = xasprintf ("%s %.*s", keystr (keyid),
-                                       r->len, r->name);
-                      if (r_len)
-                        *r_len = strlen (p);
-                    }
-
-                  return p;
-		}
-	    }
-	}
+      /* Get it so that the cache will be filled.  */
+      if (!get_pubkey (ctrl, NULL, keyid))
+        name = cache_get_uid_bykid (keyid, &namelen);
     }
-  while (++pass < 2 && !get_pubkey (ctrl, NULL, keyid));
 
-  if (mode == 2)
-    p = xstrdup (user_id_not_found_utf8 ());
-  else if (mode)
-    p = xasprintf ("%08lX%08lX [?]", (ulong) keyid[0], (ulong) keyid[1]);
+  if (name)
+    {
+      if (mode)
+        p = xasprintf ("%08lX%08lX %.*s",
+                       (ulong) keyid[0], (ulong) keyid[1], namelen, name);
+      else
+        p = xasprintf ("%s %.*s", keystr (keyid), namelen, name);
+
+      xfree (name);
+    }
   else
-    p = xasprintf ("%s [?]", keystr (keyid));
+    {
+      if (mode)
+        p = xasprintf ("%08lX%08lX [?]", (ulong) keyid[0], (ulong) keyid[1]);
+      else
+        p = xasprintf ("%s [?]", keystr (keyid));
+    }
 
-  if (r_nouid)
-    *r_nouid = 1;
-  if (r_len)
-    *r_len = strlen (p);
   return p;
 }
 
@@ -3904,7 +3792,7 @@ get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len,
 char *
 get_user_id_string_native (ctrl_t ctrl, u32 * keyid)
 {
-  char *p = get_user_id_string (ctrl, keyid, 0, NULL, NULL);
+  char *p = get_user_id_string (ctrl, keyid, 0);
   char *p2 = utf8_to_native (p, strlen (p), 0);
   xfree (p);
   return p2;
@@ -3914,7 +3802,7 @@ get_user_id_string_native (ctrl_t ctrl, u32 * keyid)
 char *
 get_long_user_id_string (ctrl_t ctrl, u32 * keyid)
 {
-  return get_user_id_string (ctrl, keyid, 1, NULL, NULL);
+  return get_user_id_string (ctrl, keyid, 1);
 }
 
 
@@ -3922,7 +3810,31 @@ get_long_user_id_string (ctrl_t ctrl, u32 * keyid)
 char *
 get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn, int *r_nouid)
 {
-  return get_user_id_string (ctrl, keyid, 2, rn, r_nouid);
+  char *name;
+  unsigned int namelen;
+
+  if (r_nouid)
+    *r_nouid = 0;
+
+  name = cache_get_uid_bykid (keyid, &namelen);
+  if (!name)
+    {
+      /* Get it so that the cache will be filled.  */
+      if (!get_pubkey (ctrl, NULL, keyid))
+        name = cache_get_uid_bykid (keyid, &namelen);
+    }
+
+  if (!name)
+    {
+      name = xstrdup (user_id_not_found_utf8 ());
+      namelen = strlen (name);
+      if (r_nouid)
+        *r_nouid = 1;
+    }
+
+  if (rn && name)
+    *rn = namelen;
+  return name;
 }
 
 
@@ -3943,49 +3855,36 @@ get_user_id_native (ctrl_t ctrl, u32 *keyid)
    returned string, which must be freed using xfree, may not be NUL
    terminated.  To determine the length of the string, you must use
    *RN.  */
-char *
-get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn)
+static char *
+get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t fprlen, size_t *rn)
 {
-  user_id_db_t r;
-  char *p;
-  int pass = 0;
+  char *name;
 
-  /* Try it two times; second pass reads from the database.  */
-  do
+  name = cache_get_uid_byfpr (fpr, fprlen, rn);
+  if (!name)
     {
-      for (r = user_id_db; r; r = r->next)
-	{
-	  keyid_list_t a;
-	  for (a = r->keyids; a; a = a->next)
-	    {
-	      if (!memcmp (a->fpr, fpr, MAX_FINGERPRINT_LEN))
-		{
-                  /* An empty string as user id is possible.  Make
-                     sure that the malloc allocates one byte and does
-                     not bail out.  */
-		  p = xmalloc (r->len? r->len : 1);
-		  memcpy (p, r->name, r->len);
-		  *rn = r->len;
-		  return p;
-		}
-	    }
-	}
+      /* Get it so that the cache will be filled.  */
+      if (!get_pubkey_byfprint (ctrl, NULL, NULL, fpr, fprlen))
+        name = cache_get_uid_byfpr (fpr, fprlen, rn);
     }
-  while (++pass < 2
-	 && !get_pubkey_byfprint (ctrl, NULL, NULL, fpr, MAX_FINGERPRINT_LEN));
-  p = xstrdup (user_id_not_found_utf8 ());
-  *rn = strlen (p);
-  return p;
+
+  if (!name)
+    {
+      name = xstrdup (user_id_not_found_utf8 ());
+      *rn = strlen (name);
+    }
+
+  return name;
 }
 
 /* Like get_user_id_byfpr, but convert the string to the native
    encoding.  The returned string needs to be freed.  Unlike
    get_user_id_byfpr, the returned string is NUL terminated.  */
 char *
-get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr)
+get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr, size_t fprlen)
 {
   size_t rn;
-  char *p = get_user_id_byfpr (ctrl, fpr, &rn);
+  char *p = get_user_id_byfpr (ctrl, fpr, fprlen, &rn);
   char *p2 = utf8_to_native (p, rn, 0);
   xfree (p);
   return p2;

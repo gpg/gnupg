@@ -18,7 +18,8 @@ hexadecimal representation of the keygrip[2] and suffixed with ".key".
 
 * Extended Private Key Format
 
-GnuPG 2.3+ will use a new format to store private keys that is both
+** Overview
+GnuPG 2.3+ uses a new format to store private keys that is both
 more flexible and easier to read and edit by human beings.  The new
 format stores name,value-pairs using the common mail and http header
 convention.  Example (here indented with two spaces):
@@ -28,6 +29,8 @@ convention.  Example (here indented with two spaces):
   Use-for-ssh: yes
   OpenSSH-cert: long base64 encoded string wrapped so that this
     key file can be easily edited with a standard editor.
+  Token: D2760001240102000005000011730000 OPENPGP.1
+  Token: FF020001008A77C1 PIV.9C
   Key: (shadowed-private-key
     (rsa
     (n #00AA1AD2A55FD8C8FDE9E1941772D9CC903FA43B268CB1B5A1BAFDC900
@@ -52,32 +55,65 @@ Keys in the extended format can be recognized by looking at the first
 byte of the file.  If it starts with a '(' it is a naked S-expression,
 otherwise it is a key in extended format.
 
-** Names
-
+*** Names
 A name must start with a letter and end with a colon.  Valid
 characters are all ASCII letters, numbers and the hyphen.  Comparison
 of names is done case insensitively.  Names may be used several times
-to represent an array of values.
+to represent an array of values.  Note that the name "Key" is special
+in that it is madandory must occur only once.
 
-The name "Key:" is special in that it may occur only once and the
-associated value holds the actual S-expression with the cryptographic
-key.  The S-expression is formatted using the 'Advanced Format'
-(GCRYSEXP_FMT_ADVANCED) that avoids non-printable characters so that
-the file can be easily inspected and edited.  See section 'Private Key
-Format' below for details.
-
-** Values
-
+*** Values
 Values are UTF-8 encoded strings.  Values can be wrapped at any point,
 and continued in the next line indicated by leading whitespace.  A
 continuation line with one leading space does not introduce a blank so
 that the lines can be effectively concatenated.  A blank line as part
 of a continuation line encodes a newline.
 
-** Comments
-
+*** Comments
 Lines containing only whitespace, and lines starting with whitespace
 followed by '#' are considered to be comments and are ignored.
+
+** Well defined names
+
+*** Description
+This is a human readable string describing the key.
+
+*** Key
+The name "Key" is special in that it is mandatory and must occur only
+once.  The associated value holds the actual S-expression with the
+cryptographic key.  The S-expression is formatted using the 'Advanced
+Format' (GCRYSEXP_FMT_ADVANCED) that avoids non-printable characters
+so that the file can be easily inspected and edited.  See section
+'Private Key Format' below for details.
+
+*** Label
+This is a short human readable description for the key which can be
+used by the software to describe the key in a user interface.  For
+example as part of the description in a prompt for a PIN or
+passphrase.  It is often used instead of a comment element as present
+in the S-expression of the "Key" item.
+
+*** OpenSSH-cert
+This takes a base64 encoded string wrapped so that this
+key file can be easily edited with a standard editor.  Several of such
+items can be used.
+
+*** Token
+If such an item exists it overrides the info given by the "shadow"
+parameter in the S-expression.  Using this item makes it possible to
+describe a key which is stored on several tokens and also makes it
+easy to update this info using a standard editor.  The syntax is the
+same as with the "shadow" parameter:
+
+- Serialnumber of the token
+- Key reference from the token in full format (e.g. "OpenPGP.2")
+- An optional fixed length of the PIN.
+
+*** Use-for-ssh
+If given and the value is "yes" or "1" the key is allowed for use by
+gpg-agent's ssh-agent implementation.  This is thus the same as
+putting the keygrip into the 'sshcontrol' file.  Only one such item
+should exist.
 
 * Private Key Format
 ** Unprotected Private Key Format

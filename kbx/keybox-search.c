@@ -873,16 +873,21 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
   KEYBOXBLOB blob = NULL;
   struct sn_array_s *sn_array = NULL;
   int pk_no, uid_no;
+  off_t lastfoundoff;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* clear last found result */
+  /* Clear last found result but reord the offset of the last found
+   * blob which we may need later. */
   if (hd->found.blob)
     {
+      lastfoundoff = _keybox_get_blob_fileoffset (hd->found.blob);
       _keybox_release_blob (hd->found.blob);
       hd->found.blob = NULL;
     }
+  else
+    lastfoundoff = 0;
 
   if (hd->error)
     return hd->error; /* still in error state */
@@ -901,6 +906,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
         case KEYDB_SEARCH_MODE_FIRST:
           /* always restart the search in this mode */
           keybox_search_reset (hd);
+          lastfoundoff = 0;
           break;
         default:
           break;
@@ -924,6 +930,32 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
         {
           xfree (sn_array);
           return rc;
+        }
+      /* log_debug ("%s: re-opened file\n", __func__); */
+      if (ndesc && desc[0].mode != KEYDB_SEARCH_MODE_FIRST && lastfoundoff)
+        {
+          /* Search mode is not first and the last search operation
+           * returned a blob which also was not the first one.  We now
+           * need to skip over that blob and hope that the file has
+           * not changed.  */
+          if (fseeko (hd->fp, lastfoundoff, SEEK_SET))
+            {
+              rc = gpg_error_from_syserror ();
+              log_debug ("%s: seeking to last found offset failed: %s\n",
+                         __func__, gpg_strerror (rc));
+              xfree (sn_array);
+              return gpg_error (GPG_ERR_NOTHING_FOUND);
+            }
+          /* log_debug ("%s: re-opened file and sought to last offset\n", */
+          /*            __func__); */
+          rc = _keybox_read_blob (NULL, hd->fp, NULL);
+          if (rc)
+            {
+              log_debug ("%s: skipping last found blob failed: %s\n",
+                         __func__, gpg_strerror (rc));
+              xfree (sn_array);
+              return gpg_error (GPG_ERR_NOTHING_FOUND);
+            }
         }
     }
 

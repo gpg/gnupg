@@ -1,5 +1,5 @@
-/* trans.c - translatable strings
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+/* objcache.h - Caching functions for keys and user ids.
+ * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -15,26 +15,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-/* To avoid any problems with the gettext implementation (there used
-   to be some vulnerabilities in the last years and the use of
-   external files is a minor security problem in itself), we use our
-   own simple translation stuff */
+#ifndef GNUPG_G10_OBJCACHE_H
+#define GNUPG_G10_OBJCACHE_H
 
-#include <config.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <sys/stat.h>
+void objcache_dump_stats (void);
+void cache_put_keyblock (kbnode_t keyblock);
+char *cache_get_uid_bykid (u32 *keyid, unsigned int *r_length);
+char *cache_get_uid_byfpr (const byte *fpr, size_t fprlen, size_t *r_length);
 
-#include "agent.h"
-
-const char *
-trans (const char *text)
-{
-  return text;
-}
+#endif /*GNUPG_G10_OBJCACHE_H*/

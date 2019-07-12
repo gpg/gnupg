@@ -84,6 +84,10 @@ void agent_release_card_info (struct agent_card_info_s *info);
 /* Return card info. */
 int agent_scd_learn (struct agent_card_info_s *info, int force);
 
+/* Get the keypariinfo directly from scdaemon.  */
+gpg_error_t agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref,
+                                   strlist_t *r_list);
+
 /* Return list of cards.  */
 int agent_scd_cardlist (strlist_t *result);
 
@@ -93,6 +97,9 @@ int agent_scd_serialno (char **r_serialno, const char *demand);
 /* Send an APDU to the card.  */
 gpg_error_t agent_scd_apdu (const char *hexapdu, unsigned int *r_sw);
 
+/* Get attribute NAME from the card and store at R_VALUE.  */
+gpg_error_t agent_scd_getattr_one (const char *name, char **r_value);
+
 /* Update INFO with the attribute NAME. */
 int agent_scd_getattr (const char *name, struct agent_card_info_s *info);
 
@@ -101,34 +108,28 @@ int agent_keytocard (const char *hexgrip, int keyno, int force,
                      const char *serialno, const char *timestamp);
 
 /* Send a SETATTR command to the SCdaemon. */
-int agent_scd_setattr (const char *name,
-                       const unsigned char *value, size_t valuelen,
-                       const char *serialno);
+gpg_error_t agent_scd_setattr (const char *name,
+                               const void *value, size_t valuelen);
 
 /* Send a WRITECERT command to the SCdaemon. */
 int agent_scd_writecert (const char *certidstr,
                           const unsigned char *certdata, size_t certdatalen);
 
-/* Send a WRITEKEY command to the SCdaemon. */
-int agent_scd_writekey (int keyno, const char *serialno,
-                        const unsigned char *keydata, size_t keydatalen);
-
 /* Send a GENKEY command to the SCdaemon. */
 int agent_scd_genkey (int keyno, int force, u32 *createtime);
 
-/* Send a READKEY command to the SCdaemon. */
+/* Send a READCERT command to the SCdaemon. */
 int agent_scd_readcert (const char *certidstr,
                         void **r_buf, size_t *r_buflen);
+
+/* Send a READKEY command to the SCdaemon.  */
+gpg_error_t agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result);
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
 int agent_scd_change_pin (int chvno, const char *serialno);
 
 /* Send the CHECKPIN command to the SCdaemon. */
 int agent_scd_checkpin  (const char *serialno);
-
-/* Dummy function, only implemented by gpg 1.4. */
-void agent_clear_pin_cache (const char *sn);
-
 
 /* Send the GET_PASSPHRASE command to the agent.  */
 gpg_error_t agent_get_passphrase (const char *cache_id,

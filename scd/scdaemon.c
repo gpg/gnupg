@@ -46,7 +46,6 @@
 
 #include "../common/i18n.h"
 #include "../common/sysutils.h"
-#include "app-common.h"
 #include "iso7816.h"
 #include "apdu.h"
 #include "ccid-driver.h"
@@ -98,6 +97,7 @@ enum cmd_and_opt_values
   oAllowAdmin,
   oDenyAdmin,
   oDisableApplication,
+  oApplicationPriority,
   oEnablePinpadVarlen,
   oListenBacklog
 };
@@ -154,6 +154,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDenyAdmin, "deny-admin",
                 N_("deny the use of admin card commands")),
   ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
+  ARGPARSE_s_s (oApplicationPriority, "application-priority",
+                N_("|LIST|Change the application priority to LIST")),
   ARGPARSE_s_n (oEnablePinpadVarlen, "enable-pinpad-varlen",
                 N_("use variable length input for pinpad")),
   ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
@@ -436,6 +438,7 @@ main (int argc, char **argv )
   struct assuan_malloc_hooks malloc_hooks;
   int res;
   npth_t pipecon_handler;
+  const char *application_priority = NULL;
 
   early_system_init ();
   set_strusage (my_strusage);
@@ -616,6 +619,10 @@ main (int argc, char **argv )
           add_to_strlist (&opt.disabled_applications, pargs.r.ret_str);
           break;
 
+        case oApplicationPriority:
+          application_priority = pargs.r.ret_str;
+          break;
+
         case oEnablePinpadVarlen: opt.enable_pinpad_varlen = 1; break;
 
         case oListenBacklog:
@@ -720,6 +727,7 @@ main (int argc, char **argv )
       es_printf ("disable-pinpad:%lu:\n", GC_OPT_FLAG_NONE );
       es_printf ("card-timeout:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, 0);
       es_printf ("enable-pinpad-varlen:%lu:\n", GC_OPT_FLAG_NONE );
+      es_printf ("application-priority:%lu:\n", GC_OPT_FLAG_NONE );
 
       scd_exit (0);
     }
@@ -738,6 +746,9 @@ main (int argc, char **argv )
       gnupg_sleep (debug_wait);
       log_debug ("... okay\n");
     }
+
+  if (application_priority)
+    app_update_priority_list (application_priority);
 
   if (pipe_server)
     {

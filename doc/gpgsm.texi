@@ -349,7 +349,8 @@ verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
 @item --policy-file @var{filename}
 @opindex policy-file
-Change the default name of the policy file to @var{filename}.
+Change the default name of the policy file to @var{filename}.  The
+default name is @file{policies.txt}.
 
 @item --agent-program @var{file}
 @opindex agent-program

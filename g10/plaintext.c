@@ -70,7 +70,8 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
           goto leave;
         }
     }
-  else if (opt.outfile)
+  else if (opt.outfile
+           && !(opt.flags.use_embedded_filename && opt.flags.dummy_outfile))
     {
       fname = xtrystrdup (opt.outfile);
       if (!fname)

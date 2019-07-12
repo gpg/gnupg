@@ -25,7 +25,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #ifdef HAVE_LOCALE_H

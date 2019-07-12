@@ -64,9 +64,10 @@ static int any_error;
 struct
 {
   int is_bi;
+  char timestamp[20];
   char address[50];
   int count;
-  char data[2000];
+  char data[16000];
 } databuffer;
 
 
@@ -576,7 +577,10 @@ flush_data (void)
     return;
 
   if (verbose)
-    printf ("Address: %s\n", databuffer.address);
+    {
+      printf ("Timestamp: %s\n", databuffer.timestamp);
+      printf ("Address..: %s\n", databuffer.address);
+    }
   if (databuffer.is_bi)
     {
       print_r2p (databuffer.data, databuffer.count);
@@ -590,7 +594,8 @@ flush_data (void)
 }
 
 static void
-collect_data (char *hexdata, const char *address, unsigned int lineno)
+collect_data (char *hexdata, const char *timestamp,
+              const char *address, unsigned int lineno)
 {
   size_t length;
   int is_bi;
@@ -602,6 +607,9 @@ collect_data (char *hexdata, const char *address, unsigned int lineno)
   if (databuffer.is_bi != is_bi || strcmp (databuffer.address, address))
     flush_data ();
   databuffer.is_bi = is_bi;
+  if (strlen (timestamp) >= sizeof databuffer.timestamp)
+    die ("timestamp field too long");
+  strcpy (databuffer.timestamp, timestamp);
   if (strlen (address) >= sizeof databuffer.address)
     die ("address field too long");
   strcpy (databuffer.address, address);
@@ -627,7 +635,7 @@ collect_data (char *hexdata, const char *address, unsigned int lineno)
 
       if (length >= sizeof (databuffer.data))
         {
-          err ("too much data at line %u - can handle only up to % bytes",
+          err ("too much data at line %u - can handle only up to %zu bytes",
                lineno, sizeof (databuffer.data));
           break;
         }
@@ -641,43 +649,50 @@ static void
 parse_line (char *line, unsigned int lineno)
 {
   char *p;
-  char *event_type, *address, *data, *status, *datatag;
+  char *timestamp, *event_type, *address, *data, *status, *datatag;
+
+  if (*line == '#' || !*line)
+    return;
 
   if (debug)
     printf ("line[%u] ='%s'\n", lineno, line);
 
   p = strtok (line, " ");
   if (!p)
-    die ("invalid line %d (no URB)");
-  p = strtok (NULL, " ");
-  if (!p)
-    die ("invalid line %d (no timestamp)");
+    die ("invalid line %d (no URB)", lineno);
+  timestamp = strtok (NULL, " ");
+  if (!timestamp)
+    die ("invalid line %d (no timestamp)", lineno);
   event_type = strtok (NULL, " ");
   if (!event_type)
-    die ("invalid line %d (no event type)");
+    die ("invalid line %d (no event type)", lineno);
   address = strtok (NULL, " ");
   if (!address)
-    die ("invalid line %d (no address");
+    die ("invalid line %d (no address", lineno);
   if (usb_bus || usb_dev)
     {
       int bus, dev;
 
       p = strchr (address, ':');
       if (!p)
-        die ("invalid line %d (invalid address");
+        die ("invalid line %d (invalid address", lineno);
       p++;
       bus = atoi (p);
       p = strchr (p, ':');
       if (!p)
-        die ("invalid line %d (invalid address");
+        die ("invalid line %d (invalid address", lineno);
       p++;
       dev = atoi (p);
 
       if ((usb_bus && usb_bus != bus) || (usb_dev && usb_dev != dev))
         return;  /* We don't want that one.  */
     }
-  if (*address != 'B' || (address[1] != 'o' && address[1] != 'i'))
-    return; /* We only want block in and block out.  */
+  if (*address == 'B' && (address[1] == 'o' || address[1] == 'i'))
+    ; /* We want block ind and out.  */
+  else if (*address == 'C' && (address[1] == 'o' || address[1] == 'i'))
+    ; /* We want control ind and out.  */
+  else
+    return; /* But nothing else.  */
   status = strtok (NULL, " ");
   if (!status)
     return;
@@ -692,7 +707,7 @@ parse_line (char *line, unsigned int lineno)
   if (datatag && *datatag == '=')
     {
       data = strtok (NULL, "");
-      collect_data (data?data:"", address, lineno);
+      collect_data (data?data:"", timestamp, address, lineno);
     }
 }
 

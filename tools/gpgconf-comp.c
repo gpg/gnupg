@@ -653,6 +653,10 @@ static gc_option_t gc_options_scdaemon[] =
    { "card-timeout", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "|N|disconnect the card after N seconds of inactivity",
      GC_ARG_TYPE_UINT32, GC_BACKEND_SCDAEMON },
+   { "application-priority",
+     GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
+     "gnupg", "|LIST|Change the application priority to LIST",
+     GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
@@ -967,7 +971,7 @@ static gc_option_t gc_options_dirmngr[] =
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      "gnupg", N_("Options controlling the use of Tor") },
    { "use-tor", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
-     "dirmngr", "route all network traffic via TOR",
+     "dirmngr", "route all network traffic via Tor",
       GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
 
    { "Keyserver",
@@ -1152,12 +1156,8 @@ gpg_agent_runtime_change (int killflag)
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   if (!gnupg_default_homedir_p ())
     {
-      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
-      if (!abs_homedir)
-        err = gpg_error_from_syserror ();
-
       argv[i++] = "--homedir";
-      argv[i++] = abs_homedir;
+      argv[i++] = gnupg_homedir ();
     }
   argv[i++] = "--no-autostart";
   argv[i++] = killflag? "KILLAGENT" : "RELOADAGENT";
@@ -1195,12 +1195,8 @@ scdaemon_runtime_change (int killflag)
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   if (!gnupg_default_homedir_p ())
     {
-      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
-      if (!abs_homedir)
-        err = gpg_error_from_syserror ();
-
       argv[i++] = "--homedir";
-      argv[i++] = abs_homedir;
+      argv[i++] = gnupg_homedir ();
     }
   argv[i++] = "-s";
   argv[i++] = "--no-autostart";
@@ -1239,12 +1235,8 @@ dirmngr_runtime_change (int killflag)
     argv[3] = NULL;
   else
     {
-      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
-      if (!abs_homedir)
-        err = gpg_error_from_syserror ();
-
       argv[3] = "--homedir";
-      argv[4] = abs_homedir;
+      argv[4] = gnupg_homedir ();
       argv[5] = NULL;
     }
 
@@ -1266,7 +1258,7 @@ gc_component_launch (int component)
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[3];
+  const char *argv[5];
   int i;
   pid_t pid;
 
@@ -1281,13 +1273,27 @@ gc_component_launch (int component)
   if (!(component == GC_COMPONENT_GPG_AGENT
         || component == GC_COMPONENT_DIRMNGR))
     {
-      es_fputs (_("Component not suitable for launching"), es_stderr);
-      es_putc ('\n', es_stderr);
+      log_error ("%s\n", _("Component not suitable for launching"));
+      gpgconf_failure (0);
+    }
+
+  if (gc_component_check_options (component, NULL, NULL))
+    {
+      log_error (_("Configuration file of component %s is broken\n"),
+                 gc_component[component].name);
+      if (!opt.quiet)
+        log_info (_("Note: Use the command \"%s%s\" to get details.\n"),
+                  "gpgconf --check-options ", gc_component[component].name);
       gpgconf_failure (0);
     }
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   i = 0;
+  if (!gnupg_default_homedir_p ())
+    {
+      argv[i++] = "--homedir";
+      argv[i++] = gnupg_homedir ();
+    }
   if (component == GC_COMPONENT_DIRMNGR)
     argv[i++] = "--dirmngr";
   argv[i++] = "NOP";
@@ -1337,7 +1343,7 @@ gc_component_kill (int component)
     }
 
   /* Do the restart for the selected backends.  */
-  for (backend = 0; backend < GC_BACKEND_NR; backend++)
+  for (backend = GC_BACKEND_NR-1; backend; backend--)
     {
       if (runtime[backend] && gc_backend[backend].runtime_change)
         (*gc_backend[backend].runtime_change) (1);
@@ -1688,8 +1694,9 @@ collect_error_output (estream_t fp, const char *tag)
 }
 
 
-/* Check the options of a single component.  Returns 0 if everything
-   is OK.  */
+/* Check the options of a single component.  If CONF_FILE is NULL the
+ * standard config file is used.  If OUT is not NULL the output is
+ * written to that stream.  Returns 0 if everything is OK.  */
 int
 gc_component_check_options (int component, estream_t out, const char *conf_file)
 {

@@ -514,6 +514,21 @@ nvc_delete (nvc_t pk, nve_t entry)
   nve_release (entry, pk->private_key_mode);
 }
 
+
+/* Delete the entries with NAME from PK.  */
+void
+nvc_delete_named (nvc_t pk, const char *name)
+{
+  nve_t e;
+
+  if (!valid_name (name))
+    return;
+
+  while ((e = nvc_lookup (pk, name)))
+    nvc_delete (pk, e);
+}
+
+
 
 
 /* Lookup and iteration.  */
@@ -562,6 +577,25 @@ nve_next_value (nve_t entry, const char *name)
       return entry;
   return NULL;
 }
+
+
+/* Return the string for the first entry in NVC with NAME.  If an
+ * entry with NAME is missing in NVC or its value is the empty string
+ * NULL is returned.  Note that the The returned string is a pointer
+ * into NVC.  */
+const char *
+nvc_get_string (nvc_t nvc, const char *name)
+{
+  nve_t item;
+
+  if (!nvc)
+    return NULL;
+  item = nvc_lookup (nvc, name);
+  if (!item)
+    return NULL;
+  return nve_value (item);
+}
+
 
 
 
@@ -778,29 +812,56 @@ nvc_parse_private_key (nvc_t *result, int *errlinep, estream_t stream)
 }
 
 
+/* Helper fpr nvc_write.  */
+static gpg_error_t
+write_one_entry (nve_t entry, estream_t stream)
+{
+  gpg_error_t err;
+  strlist_t sl;
+
+  if (entry->name)
+    es_fputs (entry->name, stream);
+
+  err = assert_raw_value (entry);
+  if (err)
+    return err;
+
+  for (sl = entry->raw_value; sl; sl = sl->next)
+    es_fputs (sl->d, stream);
+
+  if (es_ferror (stream))
+    return my_error_from_syserror ();
+
+  return 0;
+}
+
+
 /* Write a representation of PK to STREAM.  */
 gpg_error_t
 nvc_write (nvc_t pk, estream_t stream)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   nve_t entry;
-  strlist_t s;
+  nve_t keyentry = NULL;
 
   for (entry = pk->first; entry; entry = entry->next)
     {
-      if (entry->name)
-	es_fputs (entry->name, stream);
+      if (pk->private_key_mode
+          && entry->name && !ascii_strcasecmp (entry->name, "Key:"))
+        {
+          if (!keyentry)
+            keyentry = entry;
+          continue;
+        }
 
-      err = assert_raw_value (entry);
+      err = write_one_entry (entry, stream);
       if (err)
 	return err;
-
-      for (s = entry->raw_value; s; s = s->next)
-	es_fputs (s->d, stream);
-
-      if (es_ferror (stream))
-	return my_error_from_syserror ();
     }
 
-  return 0;
+  /* In private key mode we write the Key always last.  */
+  if (keyentry)
+    err = write_one_entry (keyentry, stream);
+
+  return err;
 }

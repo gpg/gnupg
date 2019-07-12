@@ -340,6 +340,10 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     SK_LIST results;
   } *c = *context;
 
+#if MAX_FINGERPRINT_LEN < KEYGRIP_LEN
+# error buffer too short for this configuration
+#endif
+
   if (!c)
     {
       /* Make a new context.  */
@@ -423,23 +427,58 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                           if (opt.verbose)
                             log_info (_("error getting serial number of card: %s\n"),
                                       gpg_strerror (err));
+                          c->sl = c->sl->next;
                           continue;
                         }
 
                       xfree (serialno);
                       c->info.fpr2len = 0;
                       err = agent_scd_getattr ("KEY-FPR", &c->info);
+                      if (!err)
+                        {
+                          if (c->info.fpr2len)
+                            {
+                              c->fpr2[0] = '0';
+                              c->fpr2[1] = 'x';
+                              bin2hex (c->info.fpr2, sizeof c->info.fpr2,
+                                       c->fpr2 + 2);
+                              name = c->fpr2;
+                            }
+                        }
+                      else if (gpg_err_code (err) == GPG_ERR_INV_NAME)
+                        {
+                          /* KEY-FPR not supported by the card - get
+                           * the key using the keygrip.  */
+                          char *keyref;
+                          strlist_t kplist;
+                          const char *s;
+                          int i;
+
+                          err = agent_scd_getattr_one ("$ENCRKEYID", &keyref);
+                          if (!err)
+                            {
+                              err = agent_scd_keypairinfo (ctrl, keyref,
+                                                           &kplist);
+                              if (!err)
+                                {
+                                  c->fpr2[0] = '&';
+                                  for (i=1, s=kplist->d;
+                                       (*s && *s != ' '
+                                        && i < sizeof c->fpr2 - 3);
+                                       s++, i++)
+                                    c->fpr2[i] = *s;
+                                  c->fpr2[i] = 0;
+                                  name = c->fpr2;
+                                  free_strlist (kplist);
+                                }
+                              xfree (keyref);
+                            }
+                        }
+
                       if (err)
-                        log_error ("error retrieving key fingerprint from card: %s\n",
+                        log_error ("error retrieving key from card: %s\n",
                                    gpg_strerror (err));
 
-                      if (c->info.fpr2len)
-                        {
-                          c->fpr2[0] = '0';
-                          c->fpr2[1] = 'x';
-                          bin2hex (c->info.fpr2, sizeof c->info.fpr2,c->fpr2+2);
-                          name = c->fpr2;
-                        }
                       c->sl = c->sl->next;
                     }
                   else

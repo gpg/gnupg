@@ -192,6 +192,8 @@ enum cmd_and_opt_values {
   oNoRandomSeedFile,
   oNoCommonCertsImport,
   oIgnoreCertExtension,
+  oAuthenticode,
+  oAttribute,
   oNoAutostart
  };
 
@@ -402,6 +404,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
+  ARGPARSE_s_n (oAuthenticode, "authenticode", "@"),
+  ARGPARSE_s_s (oAttribute,    "attribute", "@"),
 
   /* Command aliases.  */
   ARGPARSE_c (aListKeys, "list-key", "@"),
@@ -426,6 +430,8 @@ static struct debug_flags_s debug_flags [] =
     { DBG_MEMSTAT_VALUE, "memstat" },
     { DBG_HASHING_VALUE, "hashing" },
     { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_CLOCK_VALUE  , "clock"   },
+    { DBG_LOOKUP_VALUE , "lookup"  },
     { 0, NULL }
   };
 
@@ -1283,8 +1289,12 @@ main ( int argc, char **argv)
         case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
         case oDebugIgnoreExpiration: opt.ignore_expiration = 1; break;
 
-        case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
-        case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;
+        case oStatusFD:
+            ctrl.status_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 1);
+            break;
+        case oLoggerFD:
+            log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+            break;
         case oWithMD5Fingerprint:
           opt.with_md5_fingerprint=1; /*fall through*/
         case oWithFingerprint:
@@ -1454,6 +1464,12 @@ main ( int argc, char **argv)
 
         case oIgnoreCertExtension:
           add_to_strlist (&opt.ignored_cert_extensions, pargs.r.ret_str);
+          break;
+
+        case oAuthenticode: opt.authenticode = 1; break;
+
+        case oAttribute:
+          add_to_strlist (&opt.attributes, pargs.r.ret_str);
           break;
 
         case oNoAutostart: opt.autostart = 0; break;
@@ -1738,6 +1754,8 @@ main ( int argc, char **argv)
 
   if (!do_not_setup_keys)
     {
+      int errcount = log_get_errorcount (0);
+
       for (sl = locusr; sl ; sl = sl->next)
         {
           int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 1, &signerlist, 0);
@@ -1766,6 +1784,15 @@ main ( int argc, char **argv)
             if ((sl->flags & 1))
               do_add_recipient (&ctrl, sl->d, &recplist, 1, recp_required);
         }
+
+      /* We do not require a recipient for decryption but because
+       * recipients and signers are always checked and log_error is
+       * sometimes used (for failed signing keys or due to a failed
+       * CRL checking) that would have bumbed up the error counter.
+       * We clear the counter in the decryption case because there is
+       * no reason to force decryption to fail. */
+      if (cmd == aDecrypt && !errcount)
+        log_get_errorcount (1); /* clear counter */
     }
 
   if (log_get_errorcount(0))

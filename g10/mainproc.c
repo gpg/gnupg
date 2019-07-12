@@ -506,19 +506,18 @@ print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
   for (; list; list = list->next)
     {
       PKT_public_key *pk;
-      const char *algstr;
+      char pkstrbuf[PUBKEY_STRING_SIZE];
+      char *p;
 
-      algstr = openpgp_pk_algo_name (list->pubkey_algo);
       pk = xmalloc_clear (sizeof *pk);
 
-      if (!algstr)
-        algstr = "[?]";
       pk->pubkey_algo = list->pubkey_algo;
       if (!get_pubkey (ctrl, pk, list->keyid))
         {
-          char *p;
-          log_info (_("encrypted with %u-bit %s key, ID %s, created %s\n"),
-                    nbits_from_pk (pk), algstr, keystr_from_pk(pk),
+          pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
+
+          log_info (_("encrypted with %s key, ID %s, created %s\n"),
+                    pkstrbuf, keystr_from_pk (pk),
                     strtimestamp (pk->timestamp));
           p = get_user_id_native (ctrl, list->keyid);
           log_printf (_("      \"%s\"\n"), p);
@@ -526,7 +525,8 @@ print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
         }
       else
         log_info (_("encrypted with %s key, ID %s\n"),
-                  algstr, keystr(list->keyid));
+                  openpgp_pk_algo_name (list->pubkey_algo),
+                  keystr(list->keyid));
 
       free_public_key (pk);
     }
@@ -574,7 +574,7 @@ proc_encrypted (CTX c, PACKET *pkt)
           write_status_error ("pkdecrypt_failed", result);
         }
     }
-  else
+  else if (c->pkenc_list)
     {
       c->dek = xmalloc_secure_clear (sizeof *c->dek);
       result = get_session_key (c->ctrl, c->pkenc_list, c->dek);
@@ -583,7 +583,7 @@ proc_encrypted (CTX c, PACKET *pkt)
           struct pubkey_enc_list *list;
 
           for (list = c->pkenc_list; list; list = list->next)
-            if (list->result == GPG_ERR_NO_SECKEY)
+            if (list->result != -1)
               {
                 char buf[20];
                 snprintf (buf, sizeof buf, "%08lX%08lX",
@@ -668,7 +668,13 @@ proc_encrypted (CTX c, PACKET *pkt)
         }
     }
   else if (!c->dek)
-    result = GPG_ERR_NO_SECKEY;
+    {
+      if (c->symkeys && !c->pkenc_list)
+        result = gpg_error (GPG_ERR_BAD_KEY);
+
+      if (!result)
+        result = gpg_error (GPG_ERR_NO_SECKEY);
+    }
 
   /* Compute compliance with CO_DE_VS.  */
   if (!result && is_status_enabled ()
@@ -780,7 +786,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       if ((gpg_err_code (result) == GPG_ERR_BAD_KEY
 	   || gpg_err_code (result) == GPG_ERR_CHECKSUM
 	   || gpg_err_code (result) == GPG_ERR_CIPHER_ALGO)
-          && *c->dek->s2k_cacheid != '\0')
+          && c->dek && *c->dek->s2k_cacheid != '\0')
         {
           if (opt.debug)
             log_debug ("cleared passphrase cached with ID: %s\n",
@@ -1840,7 +1846,6 @@ check_sig_and_print (CTX c, kbnode_t node)
   int is_revkey = 0;
   char *issuer_fpr = NULL;
   PKT_public_key *pk = NULL;  /* The public key for the signature or NULL. */
-  int tried_ks_by_fpr;
   const void *extrahash = NULL;
   size_t extrahashlen = 0;
 
@@ -1999,12 +2004,17 @@ check_sig_and_print (CTX c, kbnode_t node)
   rc = do_check_sig (c, node, extrahash, extrahashlen,
                      NULL, &is_expkey, &is_revkey, &pk);
 
-  /* If the key isn't found, check for a preferred keyserver.  */
-  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY && sig->flags.pref_ks)
+  /* If the key isn't found, check for a preferred keyserver.  Note
+   * that this is only done if honor-keyserver-url has been set.  We
+   * test for this in the loop so that we can show info about the
+   * preferred keyservers.  */
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
+      && sig->flags.pref_ks)
     {
       const byte *p;
       int seq = 0;
       size_t n;
+      int any_pref_ks = 0;
 
       while ((p=enum_sig_subpkt (sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL)))
         {
@@ -2015,9 +2025,10 @@ check_sig_and_print (CTX c, kbnode_t node)
           log_info(_("Key available at: ") );
           print_utf8_buffer (log_get_stream(), p, n);
           log_printf ("\n");
+          any_pref_ks = 1;
 
-          if (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
-              && opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL)
+          if ((opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
+              && (opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL))
             {
               struct keyserver_spec *spec;
 
@@ -2025,6 +2036,10 @@ check_sig_and_print (CTX c, kbnode_t node)
               if (spec)
                 {
                   int res;
+
+                  if (DBG_LOOKUP)
+                    log_debug ("trying auto-key-retrieve method %s\n",
+                               "Pref-KS");
 
                   free_public_key (pk);
                   pk = NULL;
@@ -2034,6 +2049,9 @@ check_sig_and_print (CTX c, kbnode_t node)
                   if (!res)
                     rc = do_check_sig (c, node, extrahash, extrahashlen,
                                        NULL, &is_expkey, &is_revkey, &pk);
+                  else if (DBG_LOOKUP)
+                    log_debug ("lookup via %s failed: %s\n", "Pref-KS",
+                               gpg_strerror (res));
                   free_keyserver_spec (spec);
 
                   if (!rc)
@@ -2041,10 +2059,44 @@ check_sig_and_print (CTX c, kbnode_t node)
                 }
             }
         }
+
+      if (any_pref_ks
+          && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
+          && !(opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL))
+        log_info (_("Note: Use '%s' to make use of this info\n"),
+                  "--keyserver-option honor-keyserver-url");
+    }
+
+  /* If the above methods didn't work, our next try is to retrieve the
+   * key from the WKD.  This requires that WKD is in the AKL and the
+   * Signer's UID is in the signature.  */
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
+      && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
+      && !opt.flags.disable_signer_uid
+      && akl_has_wkd_method ()
+      && sig->signers_uid)
+    {
+      int res;
+
+      if (DBG_LOOKUP)
+        log_debug ("trying auto-key-retrieve method %s\n", "WKD");
+      free_public_key (pk);
+      pk = NULL;
+      glo_ctrl.in_auto_key_retrieve++;
+      res = keyserver_import_wkd (c->ctrl, sig->signers_uid, 1, NULL, NULL);
+      glo_ctrl.in_auto_key_retrieve--;
+      /* Fixme: If the fingerprint is embedded in the signature,
+       * compare it to the fingerprint of the returned key.  */
+      if (!res)
+        rc = do_check_sig (c, node, extrahash, extrahashlen,
+                           NULL, &is_expkey, &is_revkey, &pk);
+      else if (DBG_LOOKUP)
+        log_debug ("lookup via %s failed: %s\n", "WKD", gpg_strerror (res));
     }
 
   /* If the avove methods didn't work, our next try is to use the URI
-   * from a DNS PKA record.  */
+   * from a DNS PKA record.  This is a legacy method which will
+   * eventually be removed.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
       && (opt.keyserver_options.options & KEYSERVER_HONOR_PKA_RECORD))
@@ -2061,6 +2113,9 @@ check_sig_and_print (CTX c, kbnode_t node)
           spec = parse_keyserver_uri (uri, 1);
           if (spec)
             {
+              if (DBG_LOOKUP)
+                log_debug ("trying auto-key-retrieve method %s\n", "PKA");
+
               free_public_key (pk);
               pk = NULL;
               glo_ctrl.in_auto_key_retrieve++;
@@ -2070,16 +2125,16 @@ check_sig_and_print (CTX c, kbnode_t node)
               if (!res)
                 rc = do_check_sig (c, node, extrahash, extrahashlen,
                                    NULL, &is_expkey, &is_revkey, &pk);
+              else if (DBG_LOOKUP)
+                log_debug ("lookup via %s failed: %s\n", "PKA",
+                           gpg_strerror (res));
             }
         }
     }
 
   /* If the above methods didn't work, our next try is to locate
    * the key via its fingerprint from a keyserver.  This requires
-   * that the signers fingerprint is encoded in the signature.  We
-   * favor this over the WKD method (to be tried next), because an
-   * arbitrary keyserver is less subject to web bug like monitoring.  */
-  tried_ks_by_fpr = 0;
+   * that the signers fingerprint is encoded in the signature.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
       && keyserver_any_configured (c->ctrl))
@@ -2091,58 +2146,21 @@ check_sig_and_print (CTX c, kbnode_t node)
       p = issuer_fpr_raw (sig, &n);
       if (p)
         {
+          if (DBG_LOOKUP)
+            log_debug ("trying auto-key-retrieve method %s\n", "KS");
+
           /* v4 or v5 packet with a SHA-1/256 fingerprint.  */
           free_public_key (pk);
           pk = NULL;
           glo_ctrl.in_auto_key_retrieve++;
           res = keyserver_import_fprint (c->ctrl, p, n, opt.keyserver, 1);
-          tried_ks_by_fpr = 1;
           glo_ctrl.in_auto_key_retrieve--;
           if (!res)
             rc = do_check_sig (c, node, extrahash, extrahashlen,
                                NULL, &is_expkey, &is_revkey, &pk);
+          else if (DBG_LOOKUP)
+            log_debug ("lookup via %s failed: %s\n", "KS", gpg_strerror (res));
         }
-    }
-
-  /* If the above methods didn't work, our next try is to retrieve the
-   * key from the WKD. */
-  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
-      && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
-      && !opt.flags.disable_signer_uid
-      && akl_has_wkd_method ()
-      && sig->signers_uid)
-    {
-      int res;
-
-      free_public_key (pk);
-      pk = NULL;
-      glo_ctrl.in_auto_key_retrieve++;
-      res = keyserver_import_wkd (c->ctrl, sig->signers_uid, 1, NULL, NULL);
-      glo_ctrl.in_auto_key_retrieve--;
-      /* Fixme: If the fingerprint is embedded in the signature,
-       * compare it to the fingerprint of the returned key.  */
-      if (!res)
-        rc = do_check_sig (c, node, extrahash, extrahashlen,
-                           NULL, &is_expkey, &is_revkey, &pk);
-    }
-
-  /* If the above methods did't work, our next try is to use a
-   * keyserver.  */
-  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
-      && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
-      && !tried_ks_by_fpr
-      && keyserver_any_configured (c->ctrl))
-    {
-      int res;
-
-      free_public_key (pk);
-      pk = NULL;
-      glo_ctrl.in_auto_key_retrieve++;
-      res = keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver, 1);
-      glo_ctrl.in_auto_key_retrieve--;
-      if (!res)
-        rc = do_check_sig (c, node, extrahash, extrahashlen,
-                           NULL, &is_expkey, &is_revkey, &pk);
     }
 
   if (!rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE)

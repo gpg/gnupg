@@ -41,7 +41,6 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <assert.h>
 #ifndef HAVE_W32_SYSTEM
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -1030,7 +1029,7 @@ search_control_file (ssh_control_file_t cf, const char *hexgrip,
 {
   gpg_error_t err;
 
-  assert (strlen (hexgrip) == 40 );
+  log_assert (strlen (hexgrip) == 40 );
 
   if (r_disabled)
     *r_disabled = 0;
@@ -2646,7 +2645,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
         continue; /* Should not happen.  */
       if (cf->item.disabled)
         continue;
-      assert (strlen (cf->item.hexgrip) == 40);
+      log_assert (strlen (cf->item.hexgrip) == 40);
       hex2bin (cf->item.hexgrip, grip, sizeof (grip));
 
       err = agent_public_key_from_file (ctrl, grip, &key_public);
@@ -3008,8 +3007,8 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
       goto out;
     }
 
-  gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON, buffer_new, buffer_new_n);
-  /* FIXME: guarantee?  */
+  buffer_new_n = gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON,
+                                   buffer_new, buffer_new_n);
 
   if (*passphrase)
     err = agent_protect (buffer_new, passphrase, buffer, buffer_n, 0, -1);
@@ -3142,7 +3141,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
     goto out;
 
   /* Store this key to our key storage.  */
-  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0);
+  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0, NULL, NULL);
   if (err)
     goto out;
 

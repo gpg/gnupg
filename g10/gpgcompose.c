@@ -1200,7 +1200,8 @@ sig_revocation_key (const char *option, int argc, char *argv[], void *cookie)
                option, argv[0]);
 
   pk.req_usage = PUBKEY_USAGE_SIG;
-  err = get_pubkey_byname (NULL, NULL, &pk, argv[1], NULL, NULL, 1, 1);
+  err = get_pubkey_byname (NULL, GET_PUBKEY_NO_AKL,
+                           NULL, &pk, argv[1], NULL, NULL, 1);
   if (err)
     log_fatal ("looking up key %s: %s\n", argv[1], gpg_strerror (err));
 
@@ -1799,12 +1800,19 @@ signature (const char *option, int argc, char *argv[], void *cookie)
       keyid_copy (si.issuer_pk->keyid, pk_keyid (pripk));
     }
 
+  /* The reuse of core gpg stuff by this tool is questionable when it
+   * requires adding extra code to the actual gpg code.  It does not
+   * make sense to pass an extra parameter and in particular not given
+   * that gpg already has opt.cert_digest_algo to override it.  */
+  if (si.digest_algo)
+    log_info ("note: digest algo can't be passed to make_keysig_packet\n");
+
   /* Changing the issuer's key id is fragile.  Check to make sure
      make_keysig_packet didn't recompute the keyid.  */
   keyid_copy (keyid, si.issuer_pk->keyid);
   err = make_keysig_packet (global_ctrl,
                             &sig, si.pk, si.uid, si.sk, si.issuer_pk,
-                            si.class, si.digest_algo,
+                            si.class,
                             si.timestamp, si.expiration,
                             mksubpkt_callback, &si, NULL);
   log_assert (keyid_cmp (keyid, si.issuer_pk->keyid) == 0);
@@ -2450,7 +2458,8 @@ pk_esk (const char *option, int argc, char *argv[], void *cookie)
 
   memset (&pk, 0, sizeof (pk));
   pk.req_usage = PUBKEY_USAGE_ENC;
-  err = get_pubkey_byname (NULL, NULL, &pk, pi.keyid, NULL, NULL, 1, 1);
+  err = get_pubkey_byname (NULL, GET_PUBKEY_NO_AKL,
+                           NULL, &pk, pi.keyid, NULL, NULL, 1);
   if (err)
     log_fatal ("%s: looking up key %s: %s\n",
                option, pi.keyid, gpg_strerror (err));

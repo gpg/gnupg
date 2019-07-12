@@ -333,7 +333,7 @@ parse_keyserver_uri (const char *string,int require_scheme)
     {
       /* Three slashes means network path with a default host name.
          This is a hack because it does not crok all possible
-         combiantions.  We should better repalce all code bythe parser
+         combinations.  We should better replace all code by the parser
          from http.c.  */
       keyserver->path = xstrdup (uri+2);
     }
@@ -1519,9 +1519,7 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
         log_info (_("key not found on keyserver\n"));
     }
 
-  if (gpg_err_code (err) == GPG_ERR_NO_KEYSERVER)
-    log_error (_("no keyserver known (use option --keyserver)\n"));
-  else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     err = gpg_error (GPG_ERR_NOT_FOUND);
   else if (err)
     log_error ("error searching keyserver: %s\n", gpg_strerror (err));
@@ -2051,8 +2049,9 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
       int armor_status = opt.no_armor;
       import_filter_t save_filt;
 
-      /* Keys returned via WKD are in binary format. */
-      opt.no_armor = 1;
+      /* Keys returned via WKD are in binary format.  However, we
+       * relax that requirement and allow also for armored data.  */
+      opt.no_armor = 0;
       save_filt = save_and_clear_import_filter ();
       if (!save_filt)
         err = gpg_error_from_syserror ();

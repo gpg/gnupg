@@ -429,6 +429,24 @@ put_data_to_file (const char *fname, const void *buffer, size_t length)
 }
 
 
+/* Return a malloced string with the number opf the menu PROMPT.
+ * Control-D is mapped to "Q".  */
+static char *
+get_selection (const char *prompt)
+{
+  char *answer;
+
+  tty_printf ("\n");
+  tty_printf ("%s", prompt);
+  tty_printf ("\n");
+  answer = tty_get (_("Your selection? "));
+  tty_kill_prompt ();
+  if (*answer == CONTROL_D)
+    strcpy (answer, "q");
+  return answer;
+}
+
+
 
 /* Simply prints TEXT to the output.  Returns 0 as a convenience.
  * This is a separate fucntion so that it can be extended to run
@@ -655,7 +673,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
 
       if (!scd_readkey (kinfo->keyref, &s_pkey))
         {
-          char *tmp = pubkey_algo_string (s_pkey);
+          char *tmp = pubkey_algo_string (s_pkey, NULL);
           tty_fprintf (fp, "      algorithm ..: %s\n", tmp);
           xfree (tmp);
           gcry_sexp_release (s_pkey);
@@ -978,6 +996,81 @@ list_card (card_info_t info)
     case APP_TYPE_PIV:     list_piv (info, fp); break;
     default: break;
     }
+}
+
+
+
+/* The LIST command.  This also updates INFO. */
+static gpg_error_t
+cmd_list (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  int opt_cards;
+  strlist_t cards = NULL;
+  strlist_t sl;
+  estream_t fp = opt.interactive? NULL : es_stdout;
+  int cardno, count;
+
+
+  if (!info)
+    return print_help
+      ("LIST [--cards] [N]\n\n"
+       "Show the content of the current card or with N given the N-th card.\n"
+       "Option --cards lists available cards.",
+       0);
+
+  opt_cards = has_leading_option (argstr, "--cards");
+  argstr = skip_options (argstr);
+
+
+  if (digitp (argstr))
+    {
+      cardno = atoi (argstr);
+      while (digitp (argstr))
+        argstr++;
+      while (spacep (argstr))
+        argstr++;
+    }
+  else
+    cardno = -1;
+
+
+  if (opt_cards)
+    {
+      err = scd_cardlist (&cards);
+      if (err)
+        goto leave;
+      for (count = 0, sl = cards; sl; sl = sl->next, count++)
+        tty_fprintf (fp, "%d %s\n", count, sl->d);
+    }
+  else
+    {
+      if (cardno != -1)
+        {
+          err = scd_cardlist (&cards);
+          if (err)
+            goto leave;
+          for (count = 0, sl = cards; sl; sl = sl->next, count++)
+            if (count == cardno)
+              break;
+          if (!sl)
+            {
+              err = gpg_error (GPG_ERR_INV_INDEX);
+              goto leave;
+            }
+          err = scd_serialno (NULL, sl->d);
+          if (err)
+            goto leave;
+        }
+
+      err = scd_learn (info);
+      if (!err)
+        list_card (info);
+    }
+
+ leave:
+  free_strlist (cards);
+  return err;
 }
 
 
@@ -2097,21 +2190,23 @@ cmd_generate (card_info_t info, char *argstr)
 
 
 
-/* Sub-menu to change a PIN.  */
+/* Change a PIN.  */
 static gpg_error_t
 cmd_passwd (card_info_t info, char *argstr)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   char *answer = NULL;
-  const char *pinref;
+  const char *pinref = NULL;
+  int reset_mode = 0;
+  int menu_used = 0;
 
   if (!info)
     return print_help
       ("PASSWD [PINREF]\n\n"
-       "Menu to change or unblock the PINs.  Note that the\n"
-       "presented menu options depend on the type of card\n"
-       "and whether the admin mode is enabled.  For OpenPGP\n"
-       "and PIV cards defaults for PINREF are available.",
+       "Change or unblock the PINs.  Note that in interactive mode\n"
+       "and without a PINREF a menu is presented for certain cards;\n"
+       "in non-interactive and without a PINREF a default value is\n"
+       "used for these cards.",
        0);
 
   if (opt.interactive || opt.verbose)
@@ -2119,92 +2214,93 @@ cmd_passwd (card_info_t info, char *argstr)
               app_type_string (info->apptype),
               info->dispserialno? info->dispserialno : info->serialno);
 
-  if (!*argstr && info->apptype == APP_TYPE_OPENPGP)
+  if (*argstr)
+    pinref = argstr;
+  else if (opt.interactive && info->apptype == APP_TYPE_OPENPGP)
     {
-      /* For an OpenPGP card we present the well known menu if no
-       * argument is given.  */
-      for (;;)
+      menu_used = 1;
+      while (!pinref)
         {
-          tty_printf ("\n");
-          tty_printf ("1 - change PIN\n"
-                      "2 - unblock and set new PIN\n"
-                      "3 - change Admin PIN\n"
-                      "4 - set the Reset Code\n"
-                      "Q - quit\n");
-          tty_printf ("\n");
-
-          err = 0;
           xfree (answer);
-          answer = tty_get (_("Your selection? "));
-          tty_kill_prompt ();
-          if (*answer == CONTROL_D)
-            break;  /* Quit.  */
+          answer = get_selection ("1 - change the PIN\n"
+                                  "2 - unblock and set new a PIN\n"
+                                  "3 - change the Admin PIN\n"
+                                  "4 - set the Reset Code\n"
+                                  "Q - quit\n");
           if (strlen (answer) != 1)
             continue;
-          if (*answer == 'q' || *answer == 'Q')
-            break;  /* Quit.  */
-
-          if (*answer == '1')
-            {
-              /* Change PIN (same as the direct thing in non-admin mode).  */
-              err = scd_change_pin ("OPENPGP.1", 0);
-              if (err)
-                log_error ("Error changing the PIN: %s\n", gpg_strerror (err));
-              else
-                log_info ("PIN changed.\n");
-            }
+          else if (*answer == 'q' || *answer == 'Q')
+            goto leave;
+          else if (*answer == '1')
+            pinref = "OPENPGP.1";
           else if (*answer == '2')
-            {
-              /* Unblock PIN by setting a new PIN.  */
-              err = scd_change_pin ("OPENPGP.1", 1);
-              if (err)
-                log_error ("Error unblocking the PIN: %s\n", gpg_strerror(err));
-              else
-                log_info ("PIN unblocked and new PIN set.\n");
-            }
+            { pinref = "OPENPGP.1"; reset_mode = 1; }
           else if (*answer == '3')
-            {
-              /* Change Admin PIN.  */
-              err = scd_change_pin ("OPENPGP.3", 0);
-              if (err)
-                log_error ("Error changing the PIN: %s\n", gpg_strerror (err));
-              else
-                log_info ("PIN changed.\n");
-	  }
+            pinref = "OPENPGP.3";
           else if (*answer == '4')
-            {
-              /* Set a new Reset Code.  */
-              err = scd_change_pin ("OPENPGP.2", 1);
-              if (err)
-                log_error ("Error setting the Reset Code: %s\n",
-                           gpg_strerror (err));
-              else
-                log_info ("Reset Code set.\n");
-            }
+            { pinref = "OPENPGP.2"; reset_mode = 1; }
+        }
+    }
+  else if (info->apptype == APP_TYPE_OPENPGP)
+    pinref = "OPENPGP.1";
+  else if (opt.interactive && info->apptype == APP_TYPE_PIV)
+    {
+      menu_used = 1;
+      while (!pinref)
+        {
+          xfree (answer);
+          answer = get_selection ("1 - change the PIN\n"
+                                  "2 - change the PUK\n"
+                                  "3 - change the Global PIN\n"
+                                  "Q - quit\n");
+          if (strlen (answer) != 1)
+            ;
+          else if (*answer == 'q' || *answer == 'Q')
+            goto leave;
+          else if (*answer == '1')
+            pinref = "PIV.80";
+          else if (*answer == '2')
+            pinref = "PIV.81";
+          else if (*answer == '3')
+            pinref = "PIV.00";
+        }
+    }
+  else if (info->apptype == APP_TYPE_PIV)
+    pinref = "PIV.80";
+  else
+    {
+      err = gpg_error (GPG_ERR_MISSING_VALUE);
+      goto leave;
+    }
 
-        } /*end for loop*/
+  err = scd_change_pin (pinref, reset_mode);
+  if (err)
+    {
+      if (!opt.interactive && !menu_used && !opt.verbose)
+        ;
+      else if (!ascii_strcasecmp (pinref, "PIV.81"))
+        log_error ("Error changing the PUK.\n");
+      else if (!ascii_strcasecmp (pinref, "OPENPGP.1") && reset_mode)
+        log_error ("Error unblocking the PIN.\n");
+      else if (!ascii_strcasecmp (pinref, "OPENPGP.2") && reset_mode)
+        log_error ("Error setting the Reset Code.\n");
+      else if (!ascii_strcasecmp (pinref, "OPENPGP.3"))
+        log_error ("Error changing the Admin PIN.\n");
+      else
+        log_error ("Error changing the PIN.\n");
     }
   else
     {
-      if (*argstr)
-        pinref = argstr;
-      else if (info->apptype == APP_TYPE_PIV)
-        pinref = "PIV.80";
-      else
-        {
-          /* Note that we do not have a default value for OpenPGP
-           * because we want to be mostly compatible to "gpg
-           * --card-edit" and show a menu in that case (above).  */
-          err = gpg_error (GPG_ERR_MISSING_VALUE);
-          goto leave;
-        }
-      err = scd_change_pin (pinref, 0);
-      if (err)
-        goto leave;
-
-      if (info->apptype == APP_TYPE_PIV
-          && !ascii_strcasecmp (pinref, "PIV.81"))
+      if (!opt.interactive && !opt.verbose)
+        ;
+      else if (!ascii_strcasecmp (pinref, "PIV.81"))
         log_info ("PUK changed.\n");
+      else if (!ascii_strcasecmp (pinref, "OPENPGP.1") && reset_mode)
+        log_info ("PIN unblocked and new PIN set.\n");
+      else if (!ascii_strcasecmp (pinref, "OPENPGP.2") && reset_mode)
+        log_info ("Reset Code set.\n");
+      else if (!ascii_strcasecmp (pinref, "OPENPGP.3"))
+        log_info ("Admin PIN changed.\n");
       else
         log_info ("PIN changed.\n");
     }
@@ -2261,7 +2357,7 @@ cmd_unblock (card_info_t info)
     }
   else
     {
-      log_info ("Unblocking not yet supported for '%s'\n",
+      log_info ("Unblocking not supported for '%s'.\n",
                 app_type_string (info->apptype));
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
@@ -2457,9 +2553,8 @@ cmd_factoryreset (card_info_t info)
   if (err)
     goto leave;
 
-  /* Then, connect the card again (answer used as a dummy).  */
-  xfree (answer); answer = NULL;
-  err = scd_serialno (&answer, NULL);
+  /* Then, connect the card again.  */
+  err = scd_serialno (NULL, NULL);
 
  leave:
   if (err && any_apdu && !is_yubikey)
@@ -2988,7 +3083,7 @@ cmd_yubikey (card_info_t info, char *argstr)
 
   /* Note that we always do a learn to get a chance to the card back
    * into a usable state.  */
-  err = yubikey_commands (fp, nwords, words);
+  err = yubikey_commands (info, fp, nwords, words);
   err2 = scd_learn (info);
   if (err2)
     log_error ("Error re-reading card: %s\n", gpg_strerror (err));
@@ -3137,20 +3232,6 @@ dispatch_command (card_info_t info, const char *orig_command)
         }
       break;
 
-    case cmdLIST:
-      if (!info)
-        print_help ("LIST\n\n"
-                    "Show content of the card.", 0);
-      else
-        {
-          err = scd_learn (info);
-          if (err)
-            log_error ("Error reading card: %s\n", gpg_strerror (err));
-          else
-            list_card (info);
-        }
-      break;
-
     case cmdRESET:
       if (!info)
         print_help ("RESET\n\n"
@@ -3162,6 +3243,7 @@ dispatch_command (card_info_t info, const char *orig_command)
         }
       break;
 
+    case cmdLIST:         err = cmd_list (info, argstr); break;
     case cmdVERIFY:       err = cmd_verify (info, argstr); break;
     case cmdAUTH:         err = cmd_authenticate (info, argstr); break;
     case cmdNAME:         err = cmd_name (info, argstr); break;
@@ -3247,14 +3329,11 @@ interactive_loop (void)
         }
       else if (redisplay)
         {
-          err = scd_learn (info);
+          err = cmd_list (info, "");
           if (err)
-            {
-              log_error ("Error reading card: %s\n", gpg_strerror (err));
-            }
+            log_error ("Error reading card: %s\n", gpg_strerror (err));
           else
             {
-              list_card (info);
               tty_printf("\n");
               redisplay = 0;
             }
@@ -3367,17 +3446,6 @@ interactive_loop (void)
             }
           break;
 
-        case cmdLIST:
-          if (!info)
-            print_help ("LIST\n\n"
-                        "Show content of the card.", 0);
-          else
-            {
-              /* Actual work is done by the redisplay code block.  */
-              redisplay = 1;
-            }
-          break;
-
         case cmdRESET:
           if (!info)
             print_help ("RESET\n\n"
@@ -3389,6 +3457,7 @@ interactive_loop (void)
             }
           break;
 
+        case cmdLIST:      err = cmd_list (info, argstr); break;
         case cmdVERIFY:
           err = cmd_verify (info, argstr);
           if (!err)

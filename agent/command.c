@@ -30,7 +30,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -1075,7 +1074,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyinfo[] =
-  "KEYINFO [--[ssh-]list] [--data] [--ssh-fpr] [--with-ssh] <keygrip>\n"
+  "KEYINFO [--[ssh-]list] [--data] [--ssh-fpr[=algo]] [--with-ssh] <keygrip>\n"
   "\n"
   "Return information about the key specified by the KEYGRIP.  If the\n"
   "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
@@ -1111,7 +1110,9 @@ static const char hlp_keyinfo[] =
   "    '-' - Unknown protection.\n"
   "\n"
   "FPR returns the formatted ssh-style fingerprint of the key.  It is only\n"
-  "    printed if the option --ssh-fpr has been used.  It defaults to '-'.\n"
+  "    printed if the option --ssh-fpr has been used.  If ALGO is not given\n"
+  "    to that option the default ssh fingerprint algo is used.  Without the\n"
+  "    option a '-' is printed.\n"
   "\n"
   "TTL is the TTL in seconds for that key or '-' if n/a.\n"
   "\n"
@@ -1119,13 +1120,14 @@ static const char hlp_keyinfo[] =
   "      'D' - The key has been disabled,\n"
   "      'S' - The key is listed in sshcontrol (requires --with-ssh),\n"
   "      'c' - Use of the key needs to be confirmed,\n"
+  "      'A' - The key is available on card,\n"
   "      '-' - No flags given.\n"
   "\n"
   "More information may be added in the future.";
 static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
                 int data, int with_ssh_fpr, int in_ssh,
-                int ttl, int disabled, int confirm)
+                int ttl, int disabled, int confirm, int on_card)
 {
   gpg_error_t err;
   char hexgrip[40+1];
@@ -1166,6 +1168,8 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
     strcat (flagsbuf, "S");
   if (confirm)
     strcat (flagsbuf, "c");
+  if (on_card)
+    strcat (flagsbuf, "A");
   if (!*flagsbuf)
     strcpy (flagsbuf, "-");
 
@@ -1198,7 +1202,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 
       if (!agent_raw_key_from_file (ctrl, grip, &key))
         {
-          ssh_get_fingerprint_string (key, GCRY_MD_MD5, &fpr);
+          ssh_get_fingerprint_string (key, with_ssh_fpr, &fpr);
           gcry_sexp_release (key);
         }
     }
@@ -1256,8 +1260,8 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 }
 
 
-/* Entry int for the command KEYINFO.  This function handles the
-   command option processing.  For details see hlp_keyinfo above.  */
+/* Entry into the command KEYINFO.  This function handles the
+ * command option processing.  For details see hlp_keyinfo above.  */
 static gpg_error_t
 cmd_keyinfo (assuan_context_t ctx, char *line)
 {
@@ -1270,6 +1274,9 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   ssh_control_file_t cf = NULL;
   char hexgrip[41];
   int disabled, ttl, confirm, is_ssh;
+  struct card_key_info_s *keyinfo_on_cards;
+  struct card_key_info_s *l;
+  int on_card;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -1279,12 +1286,28 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else
     list_mode = has_option (line, "--list");
   opt_data = has_option (line, "--data");
-  opt_ssh_fpr = has_option (line, "--ssh-fpr");
+
+  if (has_option_name (line, "--ssh-fpr"))
+    {
+      if (has_option (line, "--ssh-fpr=md5"))
+        opt_ssh_fpr = GCRY_MD_MD5;
+      else if (has_option (line, "--ssh-fpr=sha1"))
+        opt_ssh_fpr = GCRY_MD_SHA1;
+      else if (has_option (line, "--ssh-fpr=sha256"))
+        opt_ssh_fpr = GCRY_MD_SHA256;
+      else
+        opt_ssh_fpr = opt.ssh_fingerprint_digest;
+    }
+  else
+    opt_ssh_fpr = 0;
+
   opt_with_ssh = has_option (line, "--with-ssh");
   line = skip_options (line);
 
   if (opt_with_ssh || list_mode == 2)
     cf = ssh_open_control_file ();
+
+  agent_card_keyinfo (ctrl, NULL, &keyinfo_on_cards);
 
   if (list_mode == 2)
     {
@@ -1295,8 +1318,14 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
             {
               if (hex2bin (hexgrip, grip, 20) < 0 )
                 continue; /* Bad hex string.  */
+
+              on_card = 0;
+              for (l = keyinfo_on_cards; l; l = l->next)
+                if (!memcmp (l->keygrip, hexgrip, 40))
+                  on_card = 1;
+
               err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, 1,
-                                    ttl, disabled, confirm);
+                                    ttl, disabled, confirm, on_card);
               if (err)
                 goto leave;
             }
@@ -1346,8 +1375,13 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
                 goto leave;
             }
 
+          on_card = 0;
+          for (l = keyinfo_on_cards; l; l = l->next)
+            if (!memcmp (l->keygrip, hexgrip, 40))
+              on_card = 1;
+
           err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, is_ssh,
-                                ttl, disabled, confirm);
+                                ttl, disabled, confirm, on_card);
           if (err)
             goto leave;
         }
@@ -1369,11 +1403,17 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
             goto leave;
         }
 
+      on_card = 0;
+      for (l = keyinfo_on_cards; l; l = l->next)
+        if (!memcmp (l->keygrip, line, 40))
+          on_card = 1;
+
       err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, is_ssh,
-                            ttl, disabled, confirm);
+                            ttl, disabled, confirm, on_card);
     }
 
  leave:
+  agent_card_free_keyinfo (keyinfo_on_cards);
   ssh_close_control_file (cf);
   if (dir)
     closedir (dir);
@@ -2196,7 +2236,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
         goto leave; /* Invalid canonical encoded S-expression.  */
       if (passphrase)
         {
-          assert (!opt_unattended);
+          log_assert (!opt_unattended);
           if (!cache_nonce)
             {
               char buf[12];
@@ -2239,10 +2279,11 @@ cmd_import_key (assuan_context_t ctx, char *line)
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
                            ctrl->s2k_count, -1);
       if (!err)
-        err = agent_write_private_key (grip, finalkey, finalkeylen, force);
+        err = agent_write_private_key (grip, finalkey, finalkeylen, force,
+                                       NULL, NULL);
     }
   else
-    err = agent_write_private_key (grip, key, realkeylen, force);
+    err = agent_write_private_key (grip, key, realkeylen, force, NULL, NULL);
 
  leave:
   gcry_sexp_release (openpgp_sexp);
@@ -3069,7 +3110,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
                 {
                   cmdopt = line;
                   if (!command_has_option (cmd, cmdopt))
-                    rc = gpg_error (GPG_ERR_GENERAL);
+                    rc = gpg_error (GPG_ERR_FALSE);
                 }
             }
         }
@@ -3083,7 +3124,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "restricted"))
     {
-      rc = ctrl->restricted? 0 : gpg_error (GPG_ERR_GENERAL);
+      rc = ctrl->restricted? 0 : gpg_error (GPG_ERR_FALSE);
     }
   else if (ctrl->restricted)
     {
@@ -3117,7 +3158,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "scd_running"))
     {
-      rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_GENERAL);
+      rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_FALSE);
     }
   else if (!strcmp (line, "std_env_names"))
     {
@@ -3638,4 +3679,27 @@ pinentry_loopback(ctrl_t ctrl, const char *keyword,
   rc = assuan_inquire (ctx, keyword, buffer, size, max_length);
   assuan_end_confidential (ctx);
   return rc;
+}
+
+/* Helper for the pinentry loopback mode to ask confirmation
+   or just to show message.  */
+gpg_error_t
+pinentry_loopback_confirm (ctrl_t ctrl, const char *desc,
+                           int ask_confirmation,
+                           const char *ok, const char *notok)
+{
+  gpg_error_t err = 0;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+  if (desc)
+    err = print_assuan_status (ctx, "SETDESC", "%s", desc);
+  if (!err && ok)
+    err = print_assuan_status (ctx, "SETOK", "%s", ok);
+  if (!err && notok)
+    err = print_assuan_status (ctx, "SETNOTOK", "%s", notok);
+
+  if (!err)
+    err = assuan_inquire (ctx, ask_confirmation ? "CONFIRM 1" : "CONFIRM 0",
+                          NULL, NULL, 0);
+  return err;
 }

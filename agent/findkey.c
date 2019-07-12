@@ -1,7 +1,7 @@
 /* findkey.c - Locate the secret key
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
  *               2010, 2011 Free Software Foundation, Inc.
- * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2014, 2019 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -26,10 +26,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <assert.h>
 #include <npth.h> /* (we use pth_sleep) */
 
 #include "agent.h"
@@ -52,15 +50,47 @@ struct try_unprotect_arg_s
 };
 
 
+/* Repalce all linefeeds in STRING by "%0A" and return a new malloced
+ * string.  May return NULL on memory error.  */
+static char *
+linefeed_to_percent0A (const char *string)
+{
+  const char *s;
+  size_t n;
+  char *buf, *p;
+
+  for (n=0, s=string; *s; s++)
+    if (*s == '\n')
+      n += 3;
+    else
+      n++;
+  p = buf = xtrymalloc (n+1);
+  if (!buf)
+    return NULL;
+  for (s=string; *s; s++)
+    if (*s == '\n')
+      {
+        memcpy (p, "%0A", 3);
+        p += 3;
+      }
+    else
+      *p++ = *s;
+  *p = 0;
+  return buf;
+}
+
+
 /* Note: Ownership of FNAME and FP are moved to this function.  */
 static gpg_error_t
 write_extended_private_key (char *fname, estream_t fp, int update,
-                            const void *buf, size_t len)
+                            const void *buf, size_t len,
+                            const char *serialno, const char *keyref)
 {
   gpg_error_t err;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
   int remove = 0;
+  char *token = NULL;
 
   if (update)
     {
@@ -92,6 +122,37 @@ write_extended_private_key (char *fname, estream_t fp, int update,
   err = nvc_set_private_key (pk, key);
   if (err)
     goto leave;
+
+  /* If requested write a Token line.  */
+  if (serialno && keyref)
+    {
+      nve_t item;
+      const char *s;
+
+      token = strconcat (serialno, " ", keyref, NULL);
+      if (!token)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      /* fixme: the strcmp should compare only the first two strings.  */
+      for (item = nvc_lookup (pk, "Token:");
+           item;
+           item = nve_next_value (item, "Token:"))
+        if ((s = nve_value (item)) && !strcmp (s, token))
+          break;
+      if (!item)
+        {
+          /* No token or no token with that value exists.  Add a new
+           * one so that keys which have been stored on several cards
+           * are well supported.  */
+          err = nvc_add (pk, "Token:", token);
+          if (err)
+            goto leave;
+        }
+    }
+
 
   err = es_fseek (fp, 0, SEEK_SET);
   if (err)
@@ -132,15 +193,18 @@ write_extended_private_key (char *fname, estream_t fp, int update,
   xfree (fname);
   gcry_sexp_release (key);
   nvc_release (pk);
+  xfree (token);
   return err;
 }
 
 /* Write an S-expression formatted key to our key storage.  With FORCE
-   passed as true an existing key with the given GRIP will get
-   overwritten.  */
+ * passed as true an existing key with the given GRIP will get
+ * overwritten.  If SERIALNO and KEYREF are give an a Token line is added to
+ * th key if the extended format ist used.  */
 int
 agent_write_private_key (const unsigned char *grip,
-                         const void *buffer, size_t length, int force)
+                         const void *buffer, size_t length, int force,
+                         const char *serialno, const char *keyref)
 {
   char *fname;
   estream_t fp;
@@ -208,17 +272,20 @@ agent_write_private_key (const unsigned char *grip,
       if (first != '(')
         {
           /* Key is already in the extended format.  */
-          return write_extended_private_key (fname, fp, 1, buffer, length);
+          return write_extended_private_key (fname, fp, 1, buffer, length,
+                                             serialno, keyref);
         }
       if (first == '(' && opt.enable_extended_key_format)
         {
           /* Key is in the old format - but we want the extended format.  */
-          return write_extended_private_key (fname, fp, 0, buffer, length);
+          return write_extended_private_key (fname, fp, 0, buffer, length,
+                                             serialno, keyref);
         }
     }
 
   if (opt.enable_extended_key_format)
-    return write_extended_private_key (fname, fp, 0, buffer, length);
+    return write_extended_private_key (fname, fp, 0, buffer, length,
+                                       serialno, keyref);
 
   if (es_fwrite (buffer, length, 1, fp) != 1)
     {
@@ -267,7 +334,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
   gnupg_isotime_t now, protected_at, tmptime;
   char *desc = NULL;
 
-  assert (!arg->unprotected_key);
+  log_assert (!arg->unprotected_key);
 
   arg->change_required = 0;
   err = agent_unprotect (ctrl, arg->protected_key, pi->pin, protected_at,
@@ -330,6 +397,33 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 
   return err;
 }
+
+
+/* Return true if the STRING has an %C or %c expando.  */
+static int
+has_comment_expando (const char *string)
+{
+  const char *s;
+  int percent = 0;
+
+  if (!string)
+    return 0;
+
+  for (s = string; *s; s++)
+    {
+      if (percent)
+        {
+          if (*s == 'c' || *s == 'C')
+            return 1;
+          percent = 0;
+        }
+      else if (*s == '%')
+        percent = 1;
+    }
+  return 0;
+}
+
+
 
 
 /* Modify a Key description, replacing certain special format
@@ -644,7 +738,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
     }
   else
     {
-      assert (arg.unprotected_key);
+      log_assert (arg.unprotected_key);
       if (arg.change_required)
         {
           /* The callback told as that the user should change their
@@ -652,7 +746,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
           size_t canlen, erroff;
           gcry_sexp_t s_skey;
 
-          assert (arg.unprotected_key);
+          log_assert (arg.unprotected_key);
           canlen = gcry_sexp_canon_len (arg.unprotected_key, 0, NULL, NULL);
           rc = gcry_sexp_sscan (&s_skey, &erroff,
                                 (char*)arg.unprotected_key, canlen);
@@ -695,10 +789,13 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
 
 
 /* Read the key identified by GRIP from the private key directory and
-   return it as an gcrypt S-expression object in RESULT.  On failure
-   returns an error code and stores NULL at RESULT. */
+ * return it as an gcrypt S-expression object in RESULT.  If R_KEYMETA
+ * is not NULl and the extended key format is used, the meta data
+ * items are stored there.  However the "Key:" item is removed from
+ * it.  On failure returns an error code and stores NULL at RESULT and
+ * R_KEYMETA. */
 static gpg_error_t
-read_key_file (const unsigned char *grip, gcry_sexp_t *result)
+read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
 {
   gpg_error_t err;
   char *fname;
@@ -711,6 +808,8 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   char first;
 
   *result = NULL;
+  if (r_keymeta)
+    *r_keymeta = NULL;
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
@@ -749,7 +848,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   if (first != '(')
     {
       /* Key is in extended format.  */
-      nvc_t pk;
+      nvc_t pk = NULL;
       int line;
 
       err = nvc_parse_private_key (&pk, &line, fp);
@@ -761,12 +860,17 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
       else
         {
           err = nvc_get_private_key (pk, result);
-          nvc_release (pk);
           if (err)
             log_error ("error getting private key from '%s': %s\n",
                        fname, gpg_strerror (err));
+          else
+            nvc_delete_named (pk, "Key:");
         }
 
+      if (!err && r_keymeta)
+        *r_keymeta = pk;
+      else
+        nvc_release (pk);
       xfree (fname);
       return err;
     }
@@ -866,6 +970,8 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   unsigned char *buf;
   size_t len, buflen, erroff;
   gcry_sexp_t s_skey;
+  nvc_t keymeta = NULL;
+  char *desc_text_buffer = NULL;  /* Used in case we extend DESC_TEXT.  */
 
   *result = NULL;
   if (shadow_info)
@@ -873,7 +979,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (r_passphrase)
     *r_passphrase = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, &keymeta);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -886,7 +992,11 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
      now.  */
   err = make_canon_sexp (s_skey, &buf, &len);
   if (err)
-    return err;
+    {
+      nvc_release (keymeta);
+      xfree (desc_text_buffer);
+      return err;
+    }
 
   switch (agent_private_key_type (buf))
     {
@@ -911,25 +1021,43 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
     case PRIVATE_KEY_PROTECTED:
       {
 	char *desc_text_final;
-	char *comment = NULL;
+	char *comment_buffer = NULL;
+	const char *comment = NULL;
 
         /* Note, that we will take the comment as a C string for
-           display purposes; i.e. all stuff beyond a Nul character is
-           ignored.  */
-        {
-          gcry_sexp_t comment_sexp;
+         * display purposes; i.e. all stuff beyond a Nul character is
+         * ignored.  If a "Label" entry is available in the meta data
+         * this is used instead of the s-ecpression comment.  */
+        if (keymeta && (comment = nvc_get_string (keymeta, "Label:")))
+          {
+            if (strchr (comment, '\n')
+                && (comment_buffer = linefeed_to_percent0A (comment)))
+              comment = comment_buffer;
+            /* In case DESC_TEXT has no escape pattern for a comment
+             * we append one.  */
+            if (desc_text && !has_comment_expando (desc_text))
+              {
+                desc_text_buffer = strconcat (desc_text, "%0A%C", NULL);
+                if (desc_text_buffer)
+                  desc_text = desc_text_buffer;
+              }
+          }
+        else
+          {
+            gcry_sexp_t comment_sexp;
 
-          comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
-          if (comment_sexp)
-            comment = gcry_sexp_nth_string (comment_sexp, 1);
-          gcry_sexp_release (comment_sexp);
-        }
+            comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+            if (comment_sexp)
+              comment_buffer = gcry_sexp_nth_string (comment_sexp, 1);
+            gcry_sexp_release (comment_sexp);
+            comment = comment_buffer;
+          }
 
         desc_text_final = NULL;
 	if (desc_text)
           err = agent_modify_description (desc_text, comment, s_skey,
                                           &desc_text_final);
-        gcry_free (comment);
+        gcry_free (comment_buffer);
 
 	if (!err)
 	  {
@@ -984,6 +1112,8 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           xfree (*r_passphrase);
           *r_passphrase = NULL;
         }
+      nvc_release (keymeta);
+      xfree (desc_text_buffer);
       return err;
     }
 
@@ -1000,10 +1130,14 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           xfree (*r_passphrase);
           *r_passphrase = NULL;
         }
+      nvc_release (keymeta);
+      xfree (desc_text_buffer);
       return err;
     }
 
   *result = s_skey;
+  nvc_release (keymeta);
+  xfree (desc_text_buffer);
   return 0;
 }
 
@@ -1203,7 +1337,7 @@ agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (!err)
     *result = s_skey;
   return err;
@@ -1230,6 +1364,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   gcry_sexp_t uri_sexp, comment_sexp;
   const char *uri, *comment;
   size_t uri_length, comment_length;
+  int uri_intlen, comment_intlen;
   char *format, *p;
   void *args[2+7+2+2+1]; /* Size is 2 + max. # of elements + 2 for uri + 2
                             for comment + end-of-list.  */
@@ -1241,7 +1376,7 @@ agent_public_key_from_file (ctrl_t ctrl,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (err)
     return err;
 
@@ -1278,7 +1413,7 @@ agent_public_key_from_file (ctrl_t ctrl,
      such a task.  After all that is what we do in protect.c.  Need
      to find common patterns and write a straightformward API to use
      them.  */
-  assert (sizeof (size_t) <= sizeof (void*));
+  log_assert (sizeof (size_t) <= sizeof (void*));
 
   format = xtrymalloc (15+4+7*npkey+10+15+1+1);
   if (!format)
@@ -1303,27 +1438,29 @@ agent_public_key_from_file (ctrl_t ctrl,
       *p++ = '(';
       *p++ = *s++;
       p = stpcpy (p, " %m)");
-      assert (argidx < DIM (args));
+      log_assert (argidx < DIM (args));
       args[argidx++] = &array[idx];
     }
   *p++ = ')';
   if (uri)
     {
       p = stpcpy (p, "(uri %b)");
-      assert (argidx+1 < DIM (args));
-      args[argidx++] = (void *)&uri_length;
+      log_assert (argidx+1 < DIM (args));
+      uri_intlen = (int)uri_length;
+      args[argidx++] = (void *)&uri_intlen;
       args[argidx++] = (void *)&uri;
     }
   if (comment)
     {
       p = stpcpy (p, "(comment %b)");
-      assert (argidx+1 < DIM (args));
-      args[argidx++] = (void *)&comment_length;
+      log_assert (argidx+1 < DIM (args));
+      comment_intlen = (int)comment_length;
+      args[argidx++] = (void *)&comment_intlen;
       args[argidx++] = (void*)&comment;
     }
   *p++ = ')';
   *p = 0;
-  assert (argidx < DIM (args));
+  log_assert (argidx < DIM (args));
   args[argidx] = NULL;
 
   err = gcry_sexp_build_array (&list, NULL, format, args);
@@ -1386,7 +1523,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
   {
     gcry_sexp_t sexp;
 
-    err = read_key_file (grip, &sexp);
+    err = read_key_file (grip, &sexp, NULL);
     if (err)
       {
         if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1420,7 +1557,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
           if (!err)
             {
               n = gcry_sexp_canon_len (s, 0, NULL, NULL);
-              assert (n);
+              log_assert (n);
               *r_shadow_info = xtrymalloc (n);
               if (!*r_shadow_info)
                 err = gpg_error_from_syserror ();
@@ -1470,7 +1607,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   char *default_desc = NULL;
   int key_type;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (gpg_err_code (err) == GPG_ERR_ENOENT)
     err = gpg_error (GPG_ERR_NO_SECKEY);
   if (err)
@@ -1580,6 +1717,13 @@ agent_write_shadow_key (const unsigned char *grip,
   unsigned char *shdkey;
   size_t len;
 
+  /* Just in case some caller did not parse the stuff correctly, skip
+   * leading spaces.  */
+  while (spacep (serialno))
+    serialno++;
+  while (spacep (keyid))
+    keyid++;
+
   shadow_info = make_shadow_info (serialno, keyid);
   if (!shadow_info)
     return gpg_error_from_syserror ();
@@ -1593,7 +1737,7 @@ agent_write_shadow_key (const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, len, force);
+  err = agent_write_private_key (grip, shdkey, len, force, serialno, keyid);
   xfree (shdkey);
   if (err)
     log_error ("error writing key: %s\n", gpg_strerror (err));

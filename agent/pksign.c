@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
-#include <unistd.h>
 #include <sys/stat.h>
 
 #include "agent.h"
@@ -46,16 +44,21 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
       int i;
 
       s = gcry_md_algo_name (algo);
-      if (s && strlen (s) < 16)
+      if (!s || strlen (s) >= 16)
+        {
+          hash = NULL;
+          rc = gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
+      else
 	{
-	  for (i=0; i < strlen (s); i++)
-	    tmp[i] = tolower (s[i]);
+	  for (i=0; s[i]; i++)
+	    tmp[i] = ascii_tolower (s[i]);
 	  tmp[i] = '\0';
-	}
 
-      rc = gcry_sexp_build (&hash, NULL,
-			    "(data (flags pkcs1) (hash %s %b))",
-			    tmp, (int)mdlen, md);
+          rc = gcry_sexp_build (&hash, NULL,
+                                "(data (flags pkcs1) (hash %s %b))",
+                                tmp, (int)mdlen, md);
+	}
     }
   else
     {
@@ -250,13 +253,13 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
   frame[n++] = 0;
   frame[n++] = 1; /* Block type. */
   i = nframe - mdlen - 3 ;
-  assert (i >= 8); /* At least 8 bytes of padding.  */
+  log_assert (i >= 8); /* At least 8 bytes of padding.  */
   memset (frame+n, 0xff, i );
   n += i;
   frame[n++] = 0;
   memcpy (frame+n, md, mdlen );
   n += mdlen;
-  assert (n == nframe);
+  log_assert (n == nframe);
 
   /* Create the S-expression.  */
   rc = gcry_sexp_build (&hash, NULL,
@@ -354,6 +357,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
           agent_modify_description (desc_text, NULL, s_skey, &desc2);
 
         err = divert_pksign (ctrl, desc2? desc2 : desc_text,
+                             ctrl->keygrip,
                              data, datalen,
                              ctrl->digest.algo,
                              shadow_info, &buf, &len);

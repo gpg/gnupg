@@ -1,6 +1,6 @@
 /* keydb.c - key database dispatcher
  * Copyright (C) 2001-2013 Free Software Foundation, Inc.
- * Coyrright (C) 2001-2015 Werner Koch
+ * Copyright (C) 2001-2015 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -1076,7 +1076,7 @@ lock_all (KEYDB_HANDLE hd)
           rc = keyring_lock (hd->active[i].u.kr, 1);
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          rc = keybox_lock (hd->active[i].u.kb, 1);
+          rc = keybox_lock (hd->active[i].u.kb, 1, -1);
           break;
         }
     }
@@ -1094,7 +1094,7 @@ lock_all (KEYDB_HANDLE hd)
               keyring_lock (hd->active[i].u.kr, 0);
               break;
             case KEYDB_RESOURCE_TYPE_KEYBOX:
-              keybox_lock (hd->active[i].u.kb, 0);
+              keybox_lock (hd->active[i].u.kb, 0, 0);
               break;
             }
         }
@@ -1127,7 +1127,7 @@ unlock_all (KEYDB_HANDLE hd)
           keyring_lock (hd->active[i].u.kr, 0);
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          keybox_lock (hd->active[i].u.kb, 0);
+          keybox_lock (hd->active[i].u.kb, 0, 0);
           break;
         }
     }
@@ -1242,8 +1242,15 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
 	}
       if (err)
         {
+          es_fflush (es_stdout);
           log_error ("parse_keyblock_image: read error: %s\n",
                      gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_INV_PACKET)
+            {
+              free_packet (pkt, &parsectx);
+              init_packet (pkt);
+              continue;
+            }
           err = gpg_error (GPG_ERR_INV_KEYRING);
           break;
         }

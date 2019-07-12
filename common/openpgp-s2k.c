@@ -39,7 +39,7 @@
 #include "openpgpdefs.h"
 
 
-/* Pack an s2k iteration count into the form specified in RFC-48800.
+/* Pack an s2k iteration count into the form specified in RFC-4880.
  * If we're in between valid values, round up.  */
 unsigned char
 encode_s2k_iterations (int iterations)

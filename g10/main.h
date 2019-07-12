@@ -414,6 +414,8 @@ void export_print_stats (export_stats_t stats);
 int parse_export_options(char *str,unsigned int *options,int noisy);
 gpg_error_t parse_and_set_export_filter (const char *string);
 
+int exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, kbnode_t node);
+
 int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
                     export_stats_t stats);
 int export_seckeys (ctrl_t ctrl, strlist_t users, unsigned int options,
@@ -456,7 +458,8 @@ struct revocation_reason_info * get_default_uid_revocation_reason(void);
 void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/
-void public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode );
+void public_key_list (ctrl_t ctrl, strlist_t list,
+                      int locate_mode, int no_local);
 void secret_key_list (ctrl_t ctrl, strlist_t list );
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
@@ -470,9 +473,10 @@ void show_keyserver_url(PKT_signature *sig,int indent,int mode);
 void show_notation(PKT_signature *sig,int indent,int mode,int which);
 void dump_attribs (const PKT_user_id *uid, PKT_public_key *pk);
 void set_attrib_fd(int fd);
-char *format_seckey_info (ctrl_t ctrl, PKT_public_key *pk);
-void print_seckey_info (ctrl_t ctrl, PKT_public_key *pk);
-void print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk);
+void print_key_info (ctrl_t ctrl, estream_t fp, int indent,
+                     PKT_public_key *pk, int secret);
+void print_key_info_log (ctrl_t ctrl, int loglevel, int indent,
+                     PKT_public_key *pk, int secret);
 void print_card_key_info (estream_t fp, KBNODE keyblock);
 void print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret);
 

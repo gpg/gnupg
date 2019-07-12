@@ -346,12 +346,17 @@ numbers 1-9 or "T" for 10 and above to indicate trust signature levels
 
 
 @item --locate-keys
+@itemx --locate-external-keys
 @opindex locate-keys
+@opindex locate-external-keys
 Locate the keys given as arguments.  This command basically uses the
-same algorithm as used when locating keys for encryption or signing and
-may thus be used to see what keys @command{@gpgname} might use.  In
-particular external methods as defined by @option{--auto-key-locate} may
-be used to locate a key.  Only public keys are listed.
+same algorithm as used when locating keys for encryption or signing
+and may thus be used to see what keys @command{@gpgname} might use.
+In particular external methods as defined by
+@option{--auto-key-locate} may be used to locate a key.  Only public
+keys are listed.  The variant @option{--locate-external-keys} does not
+consider a locally existing key and can thus be used to force the
+refresh of a key via the defined external methods.
 
 @item --show-keys
 @opindex show-keys
@@ -404,7 +409,10 @@ functionality is also available as the subcommand "passwd" with the
 @opindex delete-keys
 Remove key from the public keyring. In batch mode either @option{--yes} is
 required or the key must be specified by fingerprint. This is a
-safeguard against accidental deletion of multiple keys.
+safeguard against accidental deletion of multiple keys.  If the
+exclamation mark syntax is used with the fingerprint of a subkey only
+that subkey is deleted; if the exclamation mark is used with the
+fingerprint of the primary key the entire public key is deleted.
 
 @item --delete-secret-keys @var{name}
 @opindex delete-secret-keys
@@ -413,7 +421,10 @@ specified by fingerprint.  The option @option{--yes} can be used to
 advice gpg-agent not to request a confirmation.  This extra
 pre-caution is done because @command{@gpgname} can't be sure that the
 secret key (as controlled by gpg-agent) is only used for the given
-OpenPGP public key.
+OpenPGP public key.  If the exclamation mark syntax is used with the
+fingerprint of a subkey only the secret part of that subkey is
+deleted; if the exclamation mark is used with the fingerprint of the
+primary key only the secret part of the primary key is deleted.
 
 
 @item --delete-secret-and-public-key @var{name}
@@ -434,9 +445,8 @@ file given with option @option{--output}.  Use together with
 @item --send-keys @var{keyIDs}
 @opindex send-keys
 Similar to @option{--export} but sends the keys to a keyserver.
-Fingerprints may be used instead of key IDs.  Option
-@option{--keyserver} must be used to give the name of this
-keyserver. Don't send your complete keyring to a keyserver --- select
+Fingerprints may be used instead of key IDs.
+Don't send your complete keyring to a keyserver --- select
 only those keys which are new or changed by you.  If no @var{keyIDs}
 are given, @command{@gpgname} does nothing.
 
@@ -491,27 +501,25 @@ signatures, user-IDs and subkeys.
 @opindex receive-keys
 @itemx --recv-keys @var{keyIDs}
 @opindex recv-keys
-Import the keys with the given @var{keyIDs} from a keyserver. Option
-@option{--keyserver} must be used to give the name of this keyserver.
+Import the keys with the given @var{keyIDs} from a keyserver.
 
 @item --refresh-keys
 @opindex refresh-keys
 Request updates from a keyserver for keys that already exist on the
 local keyring. This is useful for updating a key with the latest
 signatures, user IDs, etc. Calling this with no arguments will refresh
-the entire keyring. Option @option{--keyserver} must be used to give the
-name of the keyserver for all keys that do not have preferred keyservers
-set (see @option{--keyserver-options honor-keyserver-url}).
+the entire keyring.
 
 @item --search-keys @var{names}
 @opindex search-keys
-Search the keyserver for the given @var{names}. Multiple names given here will
-be joined together to create the search string for the keyserver.
-Option @option{--keyserver} must be used to give the name of this
-keyserver.  Keyservers that support different search methods allow using
-the syntax specified in "How to specify a user ID" below. Note that
-different keyserver types support different search methods. Currently
-only LDAP supports them all.
+Search the keyserver for the given @var{names}. Multiple names given
+here will be joined together to create the search string for the
+keyserver.  Note that keyservers search for @var{names} in a different
+and simpler way than gpg does.  The best choice is to use a mail
+address.  Due to data privacy reasons keyservers may even not even
+allow searching by user id or mail address and thus may only return
+results when being used with the @option{--recv-key} command to
+search by key fingerprint or keyid.
 
 @item --fetch-keys @var{URIs}
 @opindex fetch-keys
@@ -1330,8 +1338,8 @@ give the opposite meaning.  The options are:
 
   @item show-only-fpr-mbox
   @opindex list-options:show-only-fpr-mbox
-  For each valid user-id which also has a valid mail address print
-  only the fingerprint and the mail address.
+  For each user-id which has a valid mail address print
+  only the fingerprint followed by the mail address.
 @end table
 
 @item --verify-options @var{parameters}
@@ -1429,19 +1437,24 @@ viewed (e.g. "f"), "%V" for the calculated validity as a string (e.g.
 and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 
-The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
-STDIN". Note that if your image viewer program is not secure, then
-executing it from GnuPG does not make it secure.
+On Unix the default viewer is
+@code{xloadimage -fork -quiet -title 'KeyID 0x%k' STDIN}
+with a fallback to
+@code{display -title 'KeyID 0x%k' %i}
+and finally to
+@code{xdg-open %i}.
+On Windows
+@code{!ShellExecute 400 %i} is used; here the command is a meta
+command to use that API call followed by a wait time in milliseconds
+which is used to give the viewer time to read the temporary image file
+before gpg deletes it again.  Note that if your image viewer program
+is not secure, then executing it from gpg does not make it secure.
 
 @item --exec-path @var{string}
 @opindex exec-path
 @efindex PATH
-Sets a list of directories to search for photo viewers and keyserver
-helpers. If not provided, keyserver helpers use the compiled-in
-default directory, and photo viewers use the @code{PATH} environment
-variable.
-Note, that on W32 system this value is ignored when searching for
-keyserver helpers.
+Sets a list of directories to search for photo viewers If not provided
+photo viewers use the @code{PATH} environment variable.
 
 @item --keyring @var{file}
 @opindex keyring
@@ -1766,12 +1779,11 @@ list.  The default is "local,wkd".
   PGP Universal method of checking @samp{ldap://keys.(thedomain)}.
 
   @item keyserver
-  Locate a key using whatever keyserver is defined using the
-  @option{--keyserver} option.
+  Locate a key using a keyserver.
 
   @item keyserver-URL
-  In addition, a keyserver URL as used in the @option{--keyserver} option
-  may be used here to query that particular keyserver.
+  In addition, a keyserver URL as used in the @command{dirmngr}
+  configuration may be used here to query that particular keyserver.
 
   @item local
   Locate the key using the local keyrings.  This mechanism allows the user to
@@ -1802,10 +1814,26 @@ These options enable or disable the automatic retrieving of keys from
 a keyserver when verifying signatures made by keys that are not on the
 local keyring.  The default is @option{--no-auto-key-retrieve}.
 
-If the method "wkd" is included in the list of methods given to
-@option{auto-key-locate}, the signer's user ID is part of the
-signature, and the option @option{--disable-signer-uid} is not used,
-the "wkd" method may also be used to retrieve a key.
+The order of methods tried to lookup the key is:
+
+1. If a preferred keyserver is specified in the signature and the
+option @option{honor-keyserver-url} is active (which is not the
+default), that keyserver is tried.  Note that the creator of the
+signature uses the option @option{--sig-keyserver-url} to specify the
+preferred keyserver for data signatures.
+
+2. If the signature has the Signer's UID set (e.g. using
+@option{--sender} while creating the signature) a Web Key Directory
+(WKD) lookup is done.  This is the default configuration but can be
+disabled by removing WKD from the auto-key-locate list or by using the
+option @option{--disable-signer-uid}.
+
+3. If the option @option{honor-pka-record} is active, the legacy PKA
+method is used.
+
+4. If any keyserver is configured and the Issuer Fingerprint is part
+of the signature (since GnuPG 2.1.16), the configured keyservers are
+tried.
 
 Note that this option makes a "web bug" like behavior possible.
 Keyserver or Web Key Directory operators can see which keys you
@@ -1904,6 +1932,11 @@ are available for all keyserver types, some common options are:
   @code{dirmngr} configuration options instead.
 
 @end table
+
+The default list of options is: "self-sigs-only, import-clean,
+repair-keys, repair-pks-subkey-bug, export-attributes,
+honor-pka-record".
+
 
 @item --completes-needed @var{n}
 @opindex compliant-needed
@@ -2334,7 +2367,16 @@ opposite meaning. The options are:
   can be used to update only the subkeys or other non-user id related
   information.
 
-  @item repair-keys.  After import, fix various problems with the
+  @item self-sigs-only
+  Accept only self-signatures while importing a key.  All other
+  key-signatures are skipped at an early import stage.  This option
+  can be used with @code{keyserver-options} to mitigate attempts to
+  flood a key with bogus signatures from a keyserver.  The drawback is
+  that all other valid key-signatures, as required by the Web of Trust
+  are also not imported.
+
+  @item repair-keys
+  After import, fix various problems with the
   keys.  For example, this reorders signatures, and strips duplicate
   signatures.  Defaults to yes.
 
@@ -2628,11 +2670,11 @@ legacy non-MDC message is exceptionally required, the option
 
 @item --disable-signer-uid
 @opindex disable-signer-uid
-By default the user ID of the signing key is embedded in the data
-signature.  As of now this is only done if the signing key has been
-specified with @option{local-user} using a mail address.  This
-information can be helpful for verifier to locate the key; see
-option @option{--auto-key-retrieve}.
+By default the user ID of the signing key is embedded in the data signature.
+As of now this is only done if the signing key has been specified with
+@option{local-user} using a mail address, or with @option{sender}.  This
+information can be helpful for verifier to locate the key; see option
+@option{--auto-key-retrieve}.
 
 @item --personal-cipher-preferences @var{string}
 @opindex personal-cipher-preferences
@@ -3021,7 +3063,8 @@ to display the message. This option overrides @option{--set-filename}.
 @itemx --no-use-embedded-filename
 @opindex use-embedded-filename
 Try to create a file with a name as embedded in the data. This can be
-a dangerous option as it enables overwriting files. Defaults to no.
+a dangerous option as it enables overwriting files.  Defaults to no.
+Note that the option @option{--output} overrides this option.
 
 @item --cipher-algo @var{name}
 @opindex cipher-algo
@@ -3080,10 +3123,14 @@ the same thing.
 @opindex cert-digest-algo
 Use @var{name} as the message digest algorithm used when signing a
 key. Running the program with the command @option{--version} yields a
-list of supported algorithms. Be aware that if you choose an algorithm
-that GnuPG supports but other OpenPGP implementations do not, then some
-users will not be able to use the key signatures you make, or quite
-possibly your entire key.
+list of supported algorithms.  Be aware that if you choose an
+algorithm that GnuPG supports but other OpenPGP implementations do
+not, then some users will not be able to use the key signatures you
+make, or quite possibly your entire key.  Note also that a public key
+algorithm must be compatible with the specified digest algorithm; thus
+selecting an arbitrary digest algorithm may result in error messages
+from lower crypto layers or lead to security flaws.
+
 
 @item --disable-cipher-algo @var{name}
 @opindex disable-cipher-algo
@@ -3288,7 +3335,8 @@ secret keyrings.
 
 @item --no-keyring
 @opindex no-keyring
-Do not add use any keyrings even if specified as options.
+Do not use any keyring at all.  This overrides the default and all
+options which specify keyrings.
 
 @item --skip-verify
 @opindex skip-verify

@@ -249,6 +249,8 @@ struct
     unsigned int disable_signer_uid:1;
     /* Flag to enable experimental features from RFC4880bis.  */
     unsigned int rfc4880bis:1;
+    /* Hack: --output is not given but OUTFILE was temporary set to "-".  */
+    unsigned int dummy_outfile:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local
@@ -361,6 +363,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define IMPORT_REPAIR_KEYS               (1<<11)
 #define IMPORT_DRY_RUN                   (1<<12)
 #define IMPORT_DROP_UIDS                 (1<<13)
+#define IMPORT_SELF_SIGS_ONLY            (1<<14)
 
 #define EXPORT_LOCAL_SIGS                (1<<0)
 #define EXPORT_ATTRIBUTES                (1<<1)

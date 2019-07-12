@@ -361,6 +361,15 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
 #endif
 
 
+/* Information from scdaemon for card keys.  */
+struct card_key_info_s
+{
+  struct card_key_info_s *next;
+  char keygrip[40];
+  char *serialno;
+  char *idstr;
+};
+
 /*-- gpg-agent.c --*/
 void agent_exit (int rc)
                 GPGRT_ATTR_NORETURN; /* Also implemented in other tools */
@@ -389,8 +398,11 @@ void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
 void start_command_handler (ctrl_t, gnupg_fd_t, gnupg_fd_t);
 gpg_error_t pinentry_loopback (ctrl_t, const char *keyword,
-	                       unsigned char **buffer, size_t *size,
-			       size_t max_length);
+                               unsigned char **buffer, size_t *size,
+                               size_t max_length);
+gpg_error_t pinentry_loopback_confirm (ctrl_t ctrl, const char *desc,
+                                       int ask_confirmation,
+                                       const char *ok, const char *notok);
 
 #ifdef HAVE_W32_SYSTEM
 int serve_mmapped_ssh_request (ctrl_t ctrl,
@@ -414,7 +426,8 @@ void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 gpg_error_t agent_modify_description (const char *in, const char *comment,
                                       const gcry_sexp_t key, char **result);
 int agent_write_private_key (const unsigned char *grip,
-                             const void *buffer, size_t length, int force);
+                             const void *buffer, size_t length, int force,
+                             const char *serialno, const char *keyref);
 gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  const char *cache_nonce,
                                  const char *desc_text,
@@ -543,10 +556,12 @@ void agent_reload_trustlist (void);
 
 /*-- divert-scd.c --*/
 int divert_pksign (ctrl_t ctrl, const char *desc_text,
+                   const unsigned char *grip,
                    const unsigned char *digest, size_t digestlen, int algo,
                    const unsigned char *shadow_info, unsigned char **r_sig,
                    size_t *r_siglen);
 int divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+                      const unsigned char *grip,
                       const unsigned char *cipher,
                       const unsigned char *shadow_info,
                       char **r_buf, size_t *r_len, int *r_padding);
@@ -603,6 +618,10 @@ int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *,
                                      const char *, char*, size_t),
                     void *getpin_cb_arg, void *assuan_context);
+void agent_card_free_keyinfo (struct card_key_info_s *l);
+gpg_error_t agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
+                                struct card_key_info_s **result);
+void agent_card_killscd (void);
 
 
 /*-- learncard.c --*/

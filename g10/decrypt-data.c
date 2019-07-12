@@ -471,6 +471,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
     {
       char *filename = NULL;
       estream_t fp;
+
       rc = get_output_file ("", 0, ed->buf, &filename, &fp);
       if (! rc)
         {
@@ -492,8 +493,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
                        filename, gpg_strerror (rc));
 
           iobuf_close (output);
-          if (afx)
-            release_armor_context (afx);
+          release_armor_context (afx);
         }
       xfree (filename);
     }

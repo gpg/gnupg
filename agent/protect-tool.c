@@ -25,7 +25,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #ifdef HAVE_LOCALE_H
@@ -198,10 +197,10 @@ make_canonical (const char *fname, const char *buf, size_t buflen)
       return NULL;
     }
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
+  log_assert (len);
   result = xmalloc (len);
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, result, len);
-  assert (len);
+  log_assert (len);
   gcry_sexp_release (sexp);
   return result;
 }
@@ -222,10 +221,10 @@ make_advanced (const unsigned char *buf, size_t buflen)
       return NULL;
     }
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
-  assert (len);
+  log_assert (len);
   result = xmalloc (len);
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, result, len);
-  assert (len);
+  log_assert (len);
   gcry_sexp_release (sexp);
   return result;
 }
@@ -433,7 +432,7 @@ read_and_shadow (const char *fname)
       return;
     }
   resultlen = gcry_sexp_canon_len (result, 0, NULL,NULL);
-  assert (resultlen);
+  log_assert (resultlen);
 
   if (opt_armor)
     {
@@ -469,7 +468,7 @@ show_shadow_info (const char *fname)
       return;
     }
   infolen = gcry_sexp_canon_len (info, 0, NULL,NULL);
-  assert (infolen);
+  log_assert (infolen);
 
   if (opt_armor)
     {
@@ -496,7 +495,7 @@ show_file (const char *fname)
     return;
 
   keylen = gcry_sexp_canon_len (key, 0, NULL,NULL);
-  assert (keylen);
+  log_assert (keylen);
 
   if (opt_canonical)
     {
@@ -723,7 +722,7 @@ get_passphrase (int promptno)
                    gpg_strerror (err));
       agent_exit (0);
     }
-  assert (pw);
+  log_assert (pw);
 
   return pw;
 }
@@ -799,12 +798,15 @@ agent_askpin (ctrl_t ctrl,
  * to stdout. */
 int
 agent_write_private_key (const unsigned char *grip,
-                         const void *buffer, size_t length, int force)
+                         const void *buffer, size_t length, int force,
+                         const char *serialno, const char *keyref)
 {
   char hexgrip[40+4+1];
   char *p;
 
   (void)force;
+  (void)serialno;
+  (void)keyref;
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");

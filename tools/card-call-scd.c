@@ -310,11 +310,13 @@ static gpg_error_t
 start_agent (unsigned int flags)
 {
   gpg_error_t err;
+  int started = 0;
 
   if (agent_ctx)
     err = 0;
   else
     {
+      started = 1;
       err = start_new_gpg_agent (&agent_ctx,
                                  GPG_ERR_SOURCE_DEFAULT,
                                  opt.agent_program,
@@ -347,7 +349,7 @@ start_agent (unsigned int flags)
         }
     }
 
-  if (!err && !(flags & START_AGENT_NO_STARTUP_CMDS))
+  if (started && !err && !(flags & START_AGENT_NO_STARTUP_CMDS))
     {
       /* Request the serial number of the card for an early test.  */
       struct card_info_s info;
@@ -990,7 +992,7 @@ learn_status_cb (void *opaque, const char *line)
 
 
 /* Call the scdaemon to learn about a smartcard.  This fills INFO
- * wioth data from the card. */
+ * with data from the card. */
 gpg_error_t
 scd_learn (card_info_t info)
 {
@@ -1268,7 +1270,7 @@ scd_genkey (const char *keyref, int force, const char *algo, u32 *createtime)
 
 /* Return the serial number of the card or an appropriate error.  The
  * serial number is returned as a hexstring.  If DEMAND is not NULL
- * the reader with the a card of the serilanumber DEMAND is
+ * the reader with the a card of the serial number DEMAND is
  * requested.  */
 gpg_error_t
 scd_serialno (char **r_serialno, const char *demand)
@@ -1295,7 +1297,10 @@ scd_serialno (char **r_serialno, const char *demand)
       return err;
     }
 
-  *r_serialno = serialno;
+  if (r_serialno)
+    *r_serialno = serialno;
+  else
+    xfree (serialno);
   return 0;
 }
 

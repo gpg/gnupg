@@ -38,7 +38,6 @@
 #include "scdaemon.h"
 
 #include "iso7816.h"
-#include "app-common.h"
 #include "../common/tlv.h"
 #include "apdu.h" /* fixme: we should move the card detection to a
                      separate file */
@@ -443,7 +442,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
 
   if (app->app_local->direct_path_selection)
     {
-      err = iso7816_select_path (app->slot, path+1, pathlen-1);
+      err = iso7816_select_path (app_get_slot (app), path+1, pathlen-1);
       if (err)
         {
           log_error ("error selecting path ");
@@ -461,7 +460,8 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
          supported by the card. */
       for (i=0; i < pathlen; i++)
         {
-          err = iso7816_select_file (app->slot, path[i], !(i+1 == pathlen));
+          err = iso7816_select_file (app_get_slot (app),
+                                     path[i], !(i+1 == pathlen));
           if (err)
             {
               log_error ("error selecting part %d from path ", i);
@@ -612,7 +612,8 @@ read_ef_odf (app_t app, unsigned short odf_fid)
   unsigned short value;
   size_t offset;
 
-  err = select_and_read_binary (app->slot, odf_fid, "ODF", &buffer, &buflen);
+  err = select_and_read_binary (app_get_slot (app), odf_fid, "ODF",
+                                &buffer, &buflen);
   if (err)
     return err;
 
@@ -826,7 +827,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No private keys. */
 
-  err = select_and_read_binary (app->slot, fid, "PrKDF", &buffer, &buflen);
+  err = select_and_read_binary (app_get_slot (app), fid, "PrKDF",
+                                &buffer, &buflen);
   if (err)
     return err;
 
@@ -1282,7 +1284,8 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No certificates. */
 
-  err = select_and_read_binary (app->slot, fid, "CDF", &buffer, &buflen);
+  err = select_and_read_binary (app_get_slot (app), fid, "CDF",
+                                &buffer, &buflen);
   if (err)
     return err;
 
@@ -1555,7 +1558,8 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No authentication objects. */
 
-  err = select_and_read_binary (app->slot, fid, "AODF", &buffer, &buflen);
+  err = select_and_read_binary (app_get_slot (app), fid, "AODF",
+                                &buffer, &buflen);
   if (err)
     return err;
 
@@ -2216,7 +2220,7 @@ read_ef_tokeninfo (app_t app)
   int class, tag, constructed, ndef;
   unsigned long ul;
 
-  err = select_and_read_binary (app->slot, 0x5032, "TokenInfo",
+  err = select_and_read_binary (app_get_slot (app), 0x5032, "TokenInfo",
                                 &buffer, &buflen);
   if (err)
     return err;
@@ -2294,13 +2298,13 @@ read_p15_info (app_t app)
     {
       /* If we don't have a serial number yet but the TokenInfo provides
          one, use that. */
-      if (!app->serialno && app->app_local->serialno)
+      if (!app->card->serialno && app->app_local->serialno)
         {
-          app->serialno = app->app_local->serialno;
-          app->serialnolen = app->app_local->serialnolen;
+          app->card->serialno = app->app_local->serialno;
+          app->card->serialnolen = app->app_local->serialnolen;
           app->app_local->serialno = NULL;
           app->app_local->serialnolen = 0;
-          err = app_munge_serialno (app);
+          err = app_munge_serialno (app->card);
           if (err)
             return err;
         }
@@ -2553,7 +2557,8 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
   if (err)
     goto leave;
 
-  err = iso7816_read_binary (app->slot, cdf->off, cdf->len, &buffer, &buflen);
+  err = iso7816_read_binary (app_get_slot (app), cdf->off, cdf->len,
+                             &buffer, &buflen);
   if (!err && (!buflen || *buffer == 0xff))
     err = gpg_error (GPG_ERR_NOT_FOUND);
   if (err)
@@ -2713,7 +2718,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
           err = select_ef_by_path (app, path, DIM(path) );
           if (!err)
-            err = iso7816_read_binary (app->slot, 0, 0, &buffer, &buflen);
+            err = iso7816_read_binary (app_get_slot (app), 0, 0,
+                                       &buffer, &buflen);
           if (err)
             {
               log_error ("error accessing EF(ID): %s\n", gpg_strerror (err));
@@ -2758,7 +2764,7 @@ micardo_mse (app_t app, unsigned short fid)
   unsigned char msebuf[10];
 
   /* Read the KeyD file containing extra information on keys. */
-  err = iso7816_select_file (app->slot, 0x0013, 0);
+  err = iso7816_select_file (app_get_slot (app), 0x0013, 0);
   if (err)
     {
       log_error ("error reading EF_keyD: %s\n", gpg_strerror (err));
@@ -2772,7 +2778,8 @@ micardo_mse (app_t app, unsigned short fid)
       size_t n, nn;
       const unsigned char *p, *pp;
 
-      err = iso7816_read_record (app->slot, recno, 1, 0, &buffer, &buflen);
+      err = iso7816_read_record (app_get_slot (app), recno, 1, 0,
+                                 &buffer, &buflen);
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
         break; /* ready */
       if (err)
@@ -2811,7 +2818,8 @@ micardo_mse (app_t app, unsigned short fid)
   /* Restore the security environment to SE_NUM if needed */
   if (se_num)
     {
-      err = iso7816_manage_security_env (app->slot, 0xf3, se_num, NULL, 0);
+      err = iso7816_manage_security_env (app_get_slot (app),
+                                         0xf3, se_num, NULL, 0);
       if (err)
         {
           log_error ("restoring SE to %d failed: %s\n",
@@ -2826,7 +2834,7 @@ micardo_mse (app_t app, unsigned short fid)
   msebuf[2] = 0x80;
   msebuf[3] = (refdata >> 8);
   msebuf[4] = refdata;
-  err = iso7816_manage_security_env (app->slot, 0x41, 0xb6, msebuf, 5);
+  err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xb6, msebuf, 5);
   if (err)
     {
       log_error ("setting SE to reference file %04hX failed: %s\n",
@@ -2948,7 +2956,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       mse[3] = 0x84; /* Private key reference tag. */
       mse[4] = prkdf->key_reference_valid? prkdf->key_reference : 0x82;
 
-      err = iso7816_manage_security_env (app->slot,
+      err = iso7816_manage_security_env (app_get_slot (app),
                                          0x41, 0xB6,
                                          mse, sizeof mse);
       no_data_padding = 1;
@@ -3101,7 +3109,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       else
         pinvaluelen = strlen (pinvalue);
 
-      err = iso7816_verify (app->slot,
+      err = iso7816_verify (app_get_slot (app),
                             aodf->pin_reference_valid? aodf->pin_reference : 0,
                             pinvalue, pinvaluelen);
       xfree (pinvalue);
@@ -3170,7 +3178,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       mse[1] = 1;
       mse[2] = prkdf->key_reference;
 
-      err = iso7816_manage_security_env (app->slot,
+      err = iso7816_manage_security_env (app_get_slot (app),
                                          0x41, 0xB6,
                                          mse, sizeof mse);
     }
@@ -3181,11 +3189,14 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
 
   if (hashalgo == MD_USER_TLS_MD5SHA1)
-    err = iso7816_compute_ds (app->slot, 0, data, 36, 0, outdata, outdatalen);
+    err = iso7816_compute_ds (app_get_slot (app),
+                              0, data, 36, 0, outdata, outdatalen);
   else if (no_data_padding)
-    err = iso7816_compute_ds (app->slot, 0, data+15, 20, 0,outdata,outdatalen);
+    err = iso7816_compute_ds (app_get_slot (app),
+                              0, data+15, 20, 0,outdata,outdatalen);
   else
-    err = iso7816_compute_ds (app->slot, 0, data, 35, 0, outdata, outdatalen);
+    err = iso7816_compute_ds (app_get_slot (app),
+                              0, data, 35, 0, outdata, outdatalen);
   return err;
 }
 
@@ -3280,7 +3291,7 @@ read_home_df (int slot, int *r_belpic)
 gpg_error_t
 app_select_p15 (app_t app)
 {
-  int slot = app->slot;
+  int slot = app_get_slot (app);
   int rc;
   unsigned short def_home_df = 0;
   card_type_t card_type = CARD_TYPE_UNKNOWN;
@@ -3298,7 +3309,7 @@ app_select_p15 (app_t app)
          Using the 2f02 just works. */
       unsigned short path[1] = { 0x2f00 };
 
-      rc = iso7816_select_path (app->slot, path, 1);
+      rc = iso7816_select_path (app_get_slot (app), path, 1);
       if (!rc)
         {
           direct = 1;
@@ -3306,7 +3317,7 @@ app_select_p15 (app_t app)
           if (def_home_df)
             {
               path[0] = def_home_df;
-              rc = iso7816_select_path (app->slot, path, 1);
+              rc = iso7816_select_path (app_get_slot (app), path, 1);
             }
         }
     }
@@ -3330,7 +3341,7 @@ app_select_p15 (app_t app)
           size_t atrlen;
           int i;
 
-          atr = apdu_get_atr (app->slot, &atrlen);
+          atr = apdu_get_atr (app_get_slot (app), &atrlen);
           if (!atr)
             rc = gpg_error (GPG_ERR_INV_CARD);
           else
@@ -3348,7 +3359,7 @@ app_select_p15 (app_t app)
     }
   if (!rc)
     {
-      app->apptype = "P15";
+      app->apptype = APPTYPE_P15;
 
       app->app_local = xtrycalloc (1, sizeof *app->app_local);
       if (!app->app_local)
@@ -3381,8 +3392,8 @@ app_select_p15 (app_t app)
          prototype card right here because we need to access to
          EF(TokenInfo).  We mark such a serial number by the using a
          prefix of FF0100. */
-      if (app->serialnolen == 12
-          && !memcmp (app->serialno, "\xD2\x76\0\0\0\0\0\0\0\0\0\0", 12))
+      if (app->card->serialnolen == 12
+          && !memcmp (app->card->serialno, "\xD2\x76\0\0\0\0\0\0\0\0\0\0", 12))
         {
           /* This is a German card with a silly serial number.  Try to get
              the serial number from the EF(TokenInfo). . */
@@ -3390,20 +3401,21 @@ app_select_p15 (app_t app)
 
           /* FIXME: actually get it from EF(TokenInfo). */
 
-          p = xtrymalloc (3 + app->serialnolen);
+          p = xtrymalloc (3 + app->card->serialnolen);
           if (!p)
             rc = gpg_error (gpg_err_code_from_errno (errno));
           else
             {
               memcpy (p, "\xff\x01", 3);
-              memcpy (p+3, app->serialno, app->serialnolen);
-              app->serialnolen += 3;
-              xfree (app->serialno);
-              app->serialno = p;
+              memcpy (p+3, app->card->serialno, app->card->serialnolen);
+              app->card->serialnolen += 3;
+              xfree (app->card->serialno);
+              app->card->serialno = p;
             }
         }
 
       app->fnc.deinit = do_deinit;
+      app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
       app->fnc.getattr = do_getattr;

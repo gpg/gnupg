@@ -1076,7 +1076,7 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
  * signature packet's data structure.
  *
  * TODO: add r_revoked here as well.  It has the same problems as
- * r_expiredate and r_expired and the cache.  */
+ * r_expiredate and r_expired and the cache [nw].  Which problems [wk]? */
 int
 check_key_signature2 (ctrl_t ctrl,
                       kbnode_t root, kbnode_t node, PKT_public_key *check_pk,

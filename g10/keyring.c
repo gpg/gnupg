@@ -473,11 +473,14 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
         }
 
         in_cert = 1;
-        node = lastnode = new_kbnode (pkt);
+        node = new_kbnode (pkt);
         if (!keyblock)
-          keyblock = node;
+          keyblock = lastnode = node;
         else
-          add_kbnode (keyblock, node);
+          {
+            lastnode->next = node;
+            lastnode = node;
+          }
         switch (pkt->pkttype)
           {
           case PKT_PUBLIC_KEY:

@@ -161,7 +161,7 @@ gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
           return rc;
         }
 
-      if (!gpgsm_cert_use_sign_p (cert))
+      if (!gpgsm_cert_use_sign_p (cert, 1))
         {
           p = gpgsm_get_keygrip_hexstring (cert);
           if (p)
@@ -302,6 +302,99 @@ add_certificate_list (ctrl_t ctrl, ksba_cms_t cms, ksba_cert_t cert)
 }
 
 
+#if KSBA_VERSION_NUMBER >= 0x010400 && 0 /* 1.4.0 */
+static gpg_error_t
+add_signed_attribute (ksba_cms_t cms, const char *attrstr)
+{
+  gpg_error_t err;
+  char **fields = NULL;
+  const char *s;
+  int i;
+  unsigned char *der = NULL;
+  size_t derlen;
+
+  fields = strtokenize (attrstr, ":");
+  if (!fields)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("strtokenize failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  for (i=0; fields[i]; i++)
+    ;
+  if (i != 3)
+    {
+      err = gpg_error (GPG_ERR_SYNTAX);
+      log_error ("invalid attribute specification '%s': %s\n",
+                 attrstr, i < 3 ? "not enough fields":"too many fields");
+      goto leave;
+    }
+  if (!ascii_strcasecmp (fields[1], "u"))
+    {
+      err = 0;
+      goto leave; /* Skip unsigned attruibutes.  */
+    }
+  if (ascii_strcasecmp (fields[1], "s"))
+    {
+      err = gpg_error (GPG_ERR_SYNTAX);
+      log_error ("invalid attribute specification '%s': %s\n",
+                 attrstr, "type is not 's' or 'u'");
+      goto leave;
+    }
+  /* Check that the OID is valid.  */
+  err = ksba_oid_from_str (fields[0], &der, &derlen);
+  if (err)
+    {
+      log_error ("invalid attribute specification '%s': %s\n",
+                 attrstr, gpg_strerror (err));
+      goto leave;
+    }
+  xfree (der);
+  der = NULL;
+
+  if (strchr (fields[2], '/'))
+    {
+      /* FIXME: read from file. */
+    }
+  else /* Directly given in hex.  */
+    {
+      for (i=0, s = fields[2]; hexdigitp (s); s++, i++)
+        ;
+      if (*s || !i || (i&1))
+        {
+          log_error ("invalid attribute specification '%s': %s\n",
+                     attrstr, "invalid hex encoding of the data");
+          err = gpg_error (GPG_ERR_SYNTAX);
+          goto leave;
+        }
+      der = xtrystrdup (fields[2]);
+      if (!der)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("malloc failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      for (s=fields[2], derlen=0; s[0] && s[1]; s += 2)
+        der[derlen++] = xtoi_2 (s);
+    }
+
+  /* Store the data in the CMS object for all signers.  */
+  err = ksba_cms_add_attribute (cms, -1, fields[0], 0, der, derlen);
+  if (err)
+    {
+      log_error ("invalid attribute specification '%s': %s\n",
+                 attrstr, gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  xfree (der);
+  xfree (fields);
+  return err;
+}
+#endif /*ksba >= 1.4.0 */
+
 
 
 /* Perform a sign operation.
@@ -377,10 +470,17 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       goto leave;
     }
 
-  /* We are going to create signed data with data as encap. content */
+  /* We are going to create signed data with data as encap. content.
+   * In authenticode mode we use spcIndirectDataContext instead.  */
   err = ksba_cms_set_content_type (cms, 0, KSBA_CT_SIGNED_DATA);
   if (!err)
-    err = ksba_cms_set_content_type (cms, 1, KSBA_CT_DATA);
+    err = ksba_cms_set_content_type
+      (cms, 1,
+#if KSBA_VERSION_NUMBER >= 0x010400 && 0
+       opt.authenticode? KSBA_CT_SPC_IND_DATA_CTX :
+#endif
+       KSBA_CT_DATA
+       );
   if (err)
     {
       log_debug ("ksba_cms_set_content_type failed: %s\n",
@@ -404,7 +504,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
       /* Although we don't check for ambiguous specification we will
          check that the signer's certificate is usable and valid.  */
-      rc = gpgsm_cert_use_sign_p (cert);
+      rc = gpgsm_cert_use_sign_p (cert, 0);
       if (!rc)
         rc = gpgsm_validate_chain (ctrl, cert, "", NULL, 0, NULL, 0, NULL);
       if (rc)
@@ -513,7 +613,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   /* Gather certificates of signers and store them in the CMS object. */
   for (cl=signerlist; cl; cl = cl->next)
     {
-      rc = gpgsm_cert_use_sign_p (cl->cert);
+      rc = gpgsm_cert_use_sign_p (cl->cert, 0);
       if (rc)
         goto leave;
 
@@ -642,6 +742,20 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           goto leave;
         }
     }
+
+  /* We can add signed attributes only when build against libksba 1.4.  */
+#if KSBA_VERSION_NUMBER >= 0x010400 && 0 /* 1.4.0 */
+  {
+    strlist_t sl;
+
+    for (sl = opt.attributes; sl; sl = sl->next)
+      if ((err = add_signed_attribute (cms, sl->d)))
+        goto leave;
+  }
+#else
+  log_info ("Note: option --attribute is ignored by this version\n");
+#endif /*ksba >= 1.4.0  */
+
 
   /* We need to write at least a minimal list of our capabilities to
      try to convince some MUAs to use 3DES and not the crippled

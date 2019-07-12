@@ -68,7 +68,7 @@ pubkey_letter( int algo )
 }
 
 /* Return a string describing the public key algorithm and the
-   keysize.  For elliptic curves the functions prints the name of the
+   keysize.  For elliptic curves the function prints the name of the
    curve because the keysize is a property of the curve.  The string
    is copied to the supplied buffer up a length of BUFSIZE-1.
    Examples for the output are:
@@ -250,20 +250,6 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
           xfree(pp[i]);
         }
     }
-}
-
-
-static gcry_md_hd_t
-do_fingerprint_md( PKT_public_key *pk )
-{
-  gcry_md_hd_t md;
-
-  if (gcry_md_open (&md, pk->version == 5 ? GCRY_MD_SHA256 : GCRY_MD_SHA1, 0))
-    BUG ();
-  hash_public_key (md,pk);
-  gcry_md_final (md);
-
-  return md;
 }
 
 
@@ -520,6 +506,37 @@ keystr_from_desc(KEYDB_SEARCH_DESC *desc)
 }
 
 
+/* Compute the fingerprint and keyid and store it in PK.  */
+static void
+compute_fingerprint (PKT_public_key *pk)
+{
+  const byte *dp;
+  gcry_md_hd_t md;
+  size_t len;
+
+  if (gcry_md_open (&md, pk->version == 5 ? GCRY_MD_SHA256 : GCRY_MD_SHA1, 0))
+    BUG ();
+  hash_public_key (md, pk);
+  gcry_md_final (md);
+  dp = gcry_md_read (md, 0);
+  len = gcry_md_get_algo_dlen (gcry_md_get_algo (md));
+  log_assert (len <= MAX_FINGERPRINT_LEN);
+  memcpy (pk->fpr, dp, len);
+  pk->fprlen = len;
+  if (pk->version == 5)
+    {
+      pk->keyid[0] = buf32_to_u32 (dp);
+      pk->keyid[1] = buf32_to_u32 (dp+4);
+    }
+  else
+    {
+      pk->keyid[0] = buf32_to_u32 (dp+12);
+      pk->keyid[1] = buf32_to_u32 (dp+16);
+    }
+  gcry_md_close( md);
+}
+
+
 /*
  * Get the keyid from the public key PK and store it at KEYID unless
  * this is NULL.  Returns the 32 bit short keyid.
@@ -532,37 +549,11 @@ keyid_from_pk (PKT_public_key *pk, u32 *keyid)
   if (!keyid)
     keyid = dummy_keyid;
 
-  if( pk->keyid[0] || pk->keyid[1] )
-    {
-      keyid[0] = pk->keyid[0];
-      keyid[1] = pk->keyid[1];
-    }
-  else
-    {
-      const byte *dp;
-      gcry_md_hd_t md;
+  if (!pk->fprlen)
+    compute_fingerprint (pk);
 
-      md = do_fingerprint_md(pk);
-      if(md)
-	{
-	  dp = gcry_md_read ( md, 0 );
-          if (pk->version == 5)
-            {
-              keyid[0] = buf32_to_u32 (dp);
-              keyid[1] = buf32_to_u32 (dp+4);
-            }
-          else
-            {
-              keyid[0] = buf32_to_u32 (dp+12);
-              keyid[1] = buf32_to_u32 (dp+16);
-            }
-	  gcry_md_close (md);
-	  pk->keyid[0] = keyid[0];
-	  pk->keyid[1] = keyid[1];
-	}
-      else
-	pk->keyid[0] = pk->keyid[1] = keyid[0]= keyid[1] = 0xFFFFFFFF;
-    }
+  keyid[0] = pk->keyid[0];
+  keyid[1] = pk->keyid[1];
 
   return keyid[1]; /*FIXME:shortkeyid ist different for v5*/
 }
@@ -805,6 +796,7 @@ colon_expirestr_from_sig (PKT_signature *sig)
 }
 
 
+
 /*
  * Return a byte array with the fingerprint for the given PK/SK
  * The length of the array is returned in ret_len. Caller must free
@@ -813,31 +805,15 @@ colon_expirestr_from_sig (PKT_signature *sig)
 byte *
 fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 {
-  const byte *dp;
-  size_t len;
-  gcry_md_hd_t md;
+  if (!pk->fprlen)
+    compute_fingerprint (pk);
 
-  md = do_fingerprint_md (pk);
-  dp = gcry_md_read (md, 0);
-  len = gcry_md_get_algo_dlen (gcry_md_get_algo (md));
-  log_assert (len <= MAX_FINGERPRINT_LEN);
   if (!array)
-    array = xmalloc ( len );
-  memcpy (array, dp, len );
-  if (pk->version == 5)
-    {
-      pk->keyid[0] = buf32_to_u32 (dp);
-      pk->keyid[1] = buf32_to_u32 (dp+4);
-    }
-  else
-    {
-      pk->keyid[0] = buf32_to_u32 (dp+12);
-      pk->keyid[1] = buf32_to_u32 (dp+16);
-    }
-  gcry_md_close( md);
+    array = xmalloc (pk->fprlen);
+  memcpy (array, pk->fpr, pk->fprlen);
 
   if (ret_len)
-    *ret_len = len;
+    *ret_len = pk->fprlen;
   return array;
 }
 
@@ -852,19 +828,19 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 char *
 hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen)
 {
-  unsigned char fpr[MAX_FINGERPRINT_LEN];
-  size_t len;
+  if (!pk->fprlen)
+    compute_fingerprint (pk);
 
-  fingerprint_from_pk (pk, fpr, &len);
   if (!buffer)
     {
-      buffer = xtrymalloc (2 * len + 1);
+      buffer = xtrymalloc (2 * pk->fprlen + 1);
       if (!buffer)
         return NULL;
     }
-  else if (buflen < 2*len+1)
+  else if (buflen < 2 * pk->fprlen + 1)
     log_fatal ("%s: buffer too short (%zu)\n", __func__, buflen);
-  bin2hex (fpr, len, buffer);
+
+  bin2hex (pk->fpr, pk->fprlen, buffer);
   return buffer;
 }
 

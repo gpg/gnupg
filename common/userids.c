@@ -380,8 +380,10 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
         }
       else if (!hexprefix)
         {
-          /* The fingerprint in an X.509 listing is often delimited by
-             colons, so we try to single this case out. */
+          /* The fingerprint of an X.509 listing is often delimited by
+           * colons, so we try to single this case out.  Note that the
+           * OpenPGP bang suffix is not supported here.  */
+          desc->exact = 0;
           mode = 0;
           hexlength = strspn (s, ":0123456789abcdefABCDEF");
           if (hexlength == 59 && (!s[hexlength] || spacep (s+hexlength)))
@@ -454,7 +456,6 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
             }
           if (!mode) /* Default to substring search.  */
             {
-              desc->exact = 0;
               desc->u.name = s;
               mode = KEYDB_SEARCH_MODE_SUBSTR;
             }

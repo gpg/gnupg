@@ -1373,6 +1373,8 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
       else
         es_fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
     }
+  if (opt.debug)
+    es_fflush (fp);
 }
 
 

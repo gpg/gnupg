@@ -75,25 +75,21 @@ gpg_error_t
 get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
 {
   PKT_public_key *sk = NULL;
-  int rc;
+  gpg_error_t err;
   void *enum_context = NULL;
   u32 keyid[2];
   int search_for_secret_keys = 1;
+  struct pubkey_enc_list *k;
 
   if (DBG_CLOCK)
     log_clock ("get_session_key enter");
 
   while (search_for_secret_keys)
     {
-      struct pubkey_enc_list *k;
-
       sk = xmalloc_clear (sizeof *sk);
-      rc = enum_secret_keys (ctrl, &enum_context, sk);
-      if (rc)
-        {
-          rc = GPG_ERR_NO_SECKEY;
-          break;
-        }
+      err = enum_secret_keys (ctrl, &enum_context, sk);
+      if (err)
+        break;
 
       if (!(sk->pubkey_usage & PUBKEY_USAGE_ENC))
         continue;
@@ -132,8 +128,6 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           if (openpgp_pk_test_algo2 (k->pubkey_algo, PUBKEY_USAGE_ENC))
             continue;
 
-          k->result = GPG_ERR_NO_SECKEY;
-
           if (sk->pubkey_algo != k->pubkey_algo)
             continue;
 
@@ -154,16 +148,16 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           else
             continue;
 
-          rc = get_it (ctrl, k, dek, sk, keyid);
-          if (!rc)
+          err = get_it (ctrl, k, dek, sk, keyid);
+          k->result = err;
+          if (!err)
             {
-              k->result = 0;
               if (!opt.quiet && !k->keyid[0] && !k->keyid[1])
                 log_info (_("okay, we are the anonymous recipient.\n"));
               search_for_secret_keys = 0;
               break;
             }
-          else if (gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
+          else if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
             {
               search_for_secret_keys = 0;
               break; /* Don't try any more secret keys.  */
@@ -172,9 +166,19 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
     }
   enum_secret_keys (ctrl, &enum_context, NULL);  /* free context */
 
+  if (gpg_err_code (err) == GPG_ERR_EOF)
+    {
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+
+      /* Return the last specific error, if any.  */
+      for (k = list; k; k = k->next)
+        if (k->result != -1)
+          err = k->result;
+    }
+
   if (DBG_CLOCK)
     log_clock ("get_session_key leave");
-  return rc;
+  return err;
 }
 
 
@@ -319,6 +323,16 @@ get_it (ctrl_t ctrl,
               err = gpg_error (GPG_ERR_WRONG_SECKEY);
               goto leave;
             }
+
+          /* FIXME: Actually the leading zero is required but due to
+           * the way we encode the output in libgcrypt as an MPI we
+           * are not able to encode that leading zero.  However, when
+           * using a Smartcard we are doing it the right way and
+           * therefore we have to skip the zero.  This should be fixed
+           * in gpg-agent of course. */
+          if (!frame[n])
+            n++;
+
           if (frame[n] == 1 && frame[nframe - 1] == 2)
             {
               log_info (_("old encoding of the DEK is not supported\n"));

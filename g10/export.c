@@ -436,8 +436,8 @@ new_subkey_list_item (KBNODE node)
    (keyID or fingerprint) and does match the one at NODE.  It is
    assumed that the packet at NODE is either a public or secret
    subkey. */
-static int
-exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
+int
+exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, kbnode_t node)
 {
   u32 kid[2];
   byte fpr[MAX_FINGERPRINT_LEN];
@@ -596,7 +596,10 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
   top_list = gcry_sexp_find_token (s_key, "private-key", 0);
   if (!top_list)
     goto bad_seckey;
-  if (gcry_sexp_length(top_list) != 2)
+
+  /* ignore all S-expression after the first sublist -- we assume that
+     they are comments or otherwise irrelevant to OpenPGP */
+  if (gcry_sexp_length(top_list) < 2)
     goto bad_seckey;
   key = gcry_sexp_nth (top_list, 1);
   if (!key)
@@ -2171,10 +2174,10 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
     {
       getkey_ctx_t getkeyctx;
 
-      err = get_pubkey_byname (ctrl, &getkeyctx, NULL, userid, &keyblock,
+      err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                               &getkeyctx, NULL, userid, &keyblock,
                                NULL,
-                               0  /* Only usable keys or given exact. */,
-                               1  /* No AKL lookup.  */);
+                               0  /* Only usable keys or given exact. */);
       if (!err)
         {
           err = getkey_next (ctrl, getkeyctx, NULL, NULL);

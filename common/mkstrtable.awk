@@ -76,7 +76,7 @@
 #
 # The variable prefix can be used to prepend a string to each message.
 #
-# The variable namespace can be used to prepend a string to each
+# The variable pkg_namespace can be used to prepend a string to each
 # variable and macro name.
 
 BEGIN {
@@ -101,7 +101,7 @@ header {
       print "/* The purpose of this complex string table is to produce";
       print "   optimal code with a minimum of relocations.  */";
       print "";
-      print "static const char " namespace "msgstr[] = ";
+      print "static const char " pkg_namespace "msgstr[] = ";
       header = 0;
     }
   else
@@ -109,7 +109,7 @@ header {
 }
 
 !header {
-  sub (/\#.+/, "");
+  sub (/#.+/, "");
   sub (/[ 	]+$/, ""); # Strip trailing space and tab characters.
 
   if (/^$/)
@@ -149,14 +149,14 @@ END {
   else
     print "  gettext_noop (\"" prefix last_msgstr "\");";
   print "";
-  print "static const int " namespace "msgidx[] =";
+  print "static const int " pkg_namespace "msgidx[] =";
   print "  {";
   for (i = 0; i < coded_msgs; i++)
     print "    " pos[i] ",";
   print "    " pos[coded_msgs];
   print "  };";
   print "";
-  print "#define " namespace "msgidxof(code) (0 ? -1 \\";
+  print "#define " pkg_namespace "msgidxof(code) (0 ? -1 \\";
 
 # Gather the ranges.
   skip = code[0];

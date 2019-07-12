@@ -345,16 +345,25 @@ typedef struct pubkey_s *pubkey_t;
 /* Free a list of public keys.  */
 void pubkeys_free (pubkey_t keys);
 
+
+/* Mode flags for get_pubkey_byname.  */
+enum get_pubkey_modes
+  {
+   GET_PUBKEY_NORMAL = 0,
+   GET_PUBKEY_NO_AKL = 1,
+   GET_PUBKEY_NO_LOCAL = 2
+  };
+
 /* Find a public key identified by NAME.  */
-int get_pubkey_byname (ctrl_t ctrl,
+int get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                        GETKEY_CTX *retctx, PKT_public_key *pk,
 		       const char *name,
                        KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd,
-		       int include_unusable, int no_akl );
+		       int include_unusable);
 
 /* Likewise, but only return the best match if NAME resembles a mail
  * address.  */
-gpg_error_t get_best_pubkey_byname (ctrl_t ctrl,
+gpg_error_t get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                                     GETKEY_CTX *retctx, PKT_public_key *pk,
                                     const char *name, KBNODE *ret_keyblock,
                                     int include_unusable);
@@ -436,8 +445,7 @@ char *get_user_id_string_native (ctrl_t ctrl, u32 *keyid);
 char *get_long_user_id_string (ctrl_t ctrl, u32 *keyid);
 char *get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn, int *r_nouid);
 char *get_user_id_native (ctrl_t ctrl, u32 *keyid);
-char *get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn);
-char *get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr);
+char *get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr, size_t fprlen);
 
 void release_akl(void);
 int parse_auto_key_locate(const char *options);
