@@ -328,7 +328,7 @@ whether Tor is locally running or not.  The check for a running Tor is
 done for each new connection.
 
 If no keyserver is explicitly configured, dirmngr will use the
-built-in default of hkps://hkps.pool.sks-keyservers.net.
+built-in default of hkps://keys.openpgp.org.
 
 @item --nameserver @var{ipaddr}
 @opindex nameserver
