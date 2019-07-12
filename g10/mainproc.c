@@ -574,7 +574,7 @@ proc_encrypted (CTX c, PACKET *pkt)
           write_status_error ("pkdecrypt_failed", result);
         }
     }
-  else
+  else if (c->pkenc_list)
     {
       c->dek = xmalloc_secure_clear (sizeof *c->dek);
       result = get_session_key (c->ctrl, c->pkenc_list, c->dek);
@@ -669,8 +669,11 @@ proc_encrypted (CTX c, PACKET *pkt)
     }
   else if (!c->dek)
     {
+      if (c->symkeys && !c->pkenc_list)
+        result = gpg_error (GPG_ERR_BAD_KEY);
+
       if (!result)
-        result = GPG_ERR_NO_SECKEY;
+        result = gpg_error (GPG_ERR_NO_SECKEY);
     }
 
   /* Compute compliance with CO_DE_VS.  */
@@ -783,7 +786,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       if ((gpg_err_code (result) == GPG_ERR_BAD_KEY
 	   || gpg_err_code (result) == GPG_ERR_CHECKSUM
 	   || gpg_err_code (result) == GPG_ERR_CIPHER_ALGO)
-          && *c->dek->s2k_cacheid != '\0')
+          && c->dek && *c->dek->s2k_cacheid != '\0')
         {
           if (opt.debug)
             log_debug ("cleared passphrase cached with ID: %s\n",
