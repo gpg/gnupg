@@ -42,12 +42,10 @@
 #include "rapdu.h"
 #endif /*USE_G10CODE_RAPDU*/
 
-#if defined(GNUPG_SCD_MAIN_HEADER)
-# include GNUPG_SCD_MAIN_HEADER
-#else /*!GNUPG_SCD_MAIN_HEADER*/
+#if defined(GNUPG_MAJOR_VERSION)
 # include "scdaemon.h"
 # include "../common/exechelp.h"
-#endif /*!GNUPG_SCD_MAIN_HEADER*/
+#endif /*GNUPG_MAJOR_VERSION*/
 
 #include "../common/host2net.h"
 

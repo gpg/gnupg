@@ -23,11 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(GNUPG_SCD_MAIN_HEADER)
-# include GNUPG_SCD_MAIN_HEADER
-#else
+#if defined(GNUPG_MAJOR_VERSION)
 # include "scdaemon.h"
-#endif /*!GNUPG_SCD_MAIN_HEADER*/
+#endif /*GNUPG_MAJOR_VERSION*/
 
 #include "iso7816.h"
 #include "apdu.h"
