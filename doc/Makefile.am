@@ -121,6 +121,7 @@ mkdefsinc: mkdefsinc.c Makefile ../config.h
 	$(CC_FOR_BUILD) -I. -I.. -I$(srcdir) $(AM_CPPFLAGS) \
                         -o $@ $(srcdir)/mkdefsinc.c
 
+if MAINTAINER_MODE
 .svg.eps:
 	convert `test -f '$<' || echo '$(srcdir)/'`$< $@
 
@@ -141,6 +142,7 @@ mkdefsinc: mkdefsinc.c Makefile ../config.h
 
 .fig.pdf:
 	fig2dev -L pdf `test -f '$<' || echo '$(srcdir)/'`$< $@
+endif
 
 
 yat2m-stamp: $(myman_sources) defs.inc
