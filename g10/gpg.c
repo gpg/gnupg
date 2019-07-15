@@ -2425,8 +2425,7 @@ main (int argc, char **argv)
     opt.export_options = EXPORT_ATTRIBUTES;
     opt.keyserver_options.import_options = (IMPORT_REPAIR_KEYS
 					    | IMPORT_REPAIR_PKS_SUBKEY_BUG
-                                            | IMPORT_SELF_SIGS_ONLY
-                                            | IMPORT_CLEAN);
+                                            | IMPORT_SELF_SIGS_ONLY);
     opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
     opt.keyserver_options.options = KEYSERVER_HONOR_PKA_RECORD;
     opt.verify_options = (LIST_SHOW_UID_VALIDITY
