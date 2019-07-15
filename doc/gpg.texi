@@ -1933,7 +1933,7 @@ are available for all keyserver types, some common options are:
 
 @end table
 
-The default list of options is: "self-sigs-only, import-clean,
+The default list of options is: "self-sigs-only,
 repair-keys, repair-pks-subkey-bug, export-attributes,
 honor-pka-record".
 
