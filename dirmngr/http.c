@@ -791,6 +791,8 @@ http_session_new (http_session_t *r_session,
                         pemname, gnutls_strerror (rc));
             xfree (pemname);
           }
+
+        add_system_cas = 0;
       }
 
     /* Add configured certificates to the session.  */
