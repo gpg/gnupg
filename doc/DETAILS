@@ -177,8 +177,9 @@ described here.
     Signature class as per RFC-4880.  This is a 2 digit hexnumber
     followed by either the letter 'x' for an exportable signature or
     the letter 'l' for a local-only signature.  The class byte of an
-    revocation key is also given here, 'x' and 'l' is used the same
-    way.  This field if not used for X.509.
+    revocation key is also given here, by a 2 digit hexnumber and
+    optionally followed by the letter 's' for the "sensitive"
+    flag.  This field is not used for X.509.
 
     "rev" and "rvs" may be followed by a comma and a 2 digit hexnumber
     with the revocation reason.
