@@ -675,7 +675,7 @@ keybox_compress (KEYBOX_HANDLE hd)
         {
           u32 last_maint = buf32_to_u32 (buffer+20);
 
-          if ( (last_maint + 3*3600) > time (NULL) )
+          if ( (last_maint + 3*3600) < make_timestamp () )
             {
               fclose (fp);
               _keybox_release_blob (blob);

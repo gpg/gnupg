@@ -1102,7 +1102,7 @@ _keybox_update_header_blob (KEYBOXBLOB blob, int for_openpgp)
     {
       u32 val = make_timestamp ();
 
-      /* Update the last maintenance run times tamp. */
+      /* Update the last maintenance run timestamp. */
       blob->blob[20]   = (val >> 24);
       blob->blob[20+1] = (val >> 16);
       blob->blob[20+2] = (val >>  8);
