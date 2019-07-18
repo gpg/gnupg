@@ -38,10 +38,8 @@ and solving problems.
 
 A keybox is a file format used to store public keys along with meta
 information and indices.  The commonly used one is the file
-@file{pubring.kbx} in the @file{.gnupg} directory. It contains all
-X.509 certificates as well as OpenPGP keys@footnote{Well, OpenPGP keys
-are not implemented, @command{gpg} still used the keyring file
-@file{pubring.gpg}.}.
+@file{pubring.kbx} in the @file{.gnupg} directory.  It contains all
+X.509 certificates as well as OpenPGP keys.
 
 @noindent
 When called the standard way, e.g.:
@@ -287,5 +285,3 @@ use of a smartcard:
 @caption{GnuPG card architecture}
 @center @image{gnupg-card-architecture, 150mm,, GnuPG card architecture}
 @end float
-
-
