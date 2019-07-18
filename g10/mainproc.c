@@ -325,7 +325,8 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
        * the gnupg < 2.2 bug compatible case which would terminate the
        * process on GPG_ERR_CIPHER_ALGO.  Note that with AEAD (above)
        * we will have a reliable test here.  */
-      if (openpgp_cipher_test_algo (seskey[0]))
+      if (openpgp_cipher_test_algo (seskey[0])
+          || openpgp_cipher_get_algo_keylen (seskey[0]) != slen - 1)
         {
           err = gpg_error (GPG_ERR_CHECKSUM);
           goto leave;

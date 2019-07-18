@@ -30,16 +30,16 @@ typedef struct
   /* Whether we've already printed information about this key.  This
    * is currently only used in decrypt_data() and only if we are in
    * verbose mode.  */
-  int algo_info_printed : 1;
+  unsigned int algo_info_printed : 1;
 
   /* AEAD shall be used.  The value is the AEAD algo. */
   int use_aead : 4;
 
   /* MDC shall be used.  */
-  int use_mdc : 1;
+  unsigned int use_mdc : 1;
 
   /* This key was read from a SK-ESK packet (see proc_symkey_enc).  */
-  int symmetric : 1;
+  unsigned int symmetric : 1;
 
   /* This is the largest used keylen (256 bit). */
   byte key[32];
