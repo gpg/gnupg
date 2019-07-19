@@ -521,7 +521,16 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       es_fprintf (fp, "sigcount:%lu:::\n", info.sig_counter);
       if (info.extcap.kdf)
         {
-          es_fprintf (fp, "kdf:%s:\n", info.kdf_do_enabled ? "on" : "off");
+          const char *setup;
+
+          if (info.kdf_do_enabled == 0)
+            setup = "off";
+          else if (info.kdf_do_enabled == 1)
+            setup = "single";
+          else
+            setup = "on";
+
+          es_fprintf (fp, "kdf:%s:\n", setup);
         }
       if (info.extcap.bt)
         {
@@ -636,8 +645,16 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       tty_fprintf (fp,    "Signature counter : %lu\n", info.sig_counter);
       if (info.extcap.kdf)
         {
-          tty_fprintf (fp, "KDF setting ......: %s\n",
-                       info.kdf_do_enabled ? "on" : "off");
+          const char *setup;
+
+          if (info.kdf_do_enabled == 0)
+            setup = "off";
+          else if (info.kdf_do_enabled == 1)
+            setup = "single";
+          else
+            setup = "on";
+
+          tty_fprintf (fp, "KDF setting ......: %s\n", setup);
         }
       if (info.extcap.bt)
         {

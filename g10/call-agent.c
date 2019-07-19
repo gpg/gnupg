@@ -740,7 +740,15 @@ learn_status_cb (void *opaque, const char *line)
     }
   else if (keywordlen == 3 && !memcmp (keyword, "KDF", 3))
     {
-      parm->kdf_do_enabled = 1;
+      unsigned char *data = unescape_status_string (line);
+
+      if (data[2] != 0x03)
+        parm->kdf_do_enabled = 0;
+      else if (data[22] != 0x85)
+        parm->kdf_do_enabled = 1;
+      else
+        parm->kdf_do_enabled = 2;
+      xfree (data);
     }
   else if (keywordlen == 5 && !memcmp (keyword, "UIF-", 4)
            && strchr("123", keyword[4]))
