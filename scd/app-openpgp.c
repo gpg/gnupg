@@ -4296,7 +4296,8 @@ check_against_given_fingerprint (app_t app, const char *fpr, int key)
    KEYIDSTR is either:
     (1) Serial number
     (2) Serial number "/" fingerprint
-    (3) keygrip
+    (3) Serial number "[CHV3]"
+    (4) keygrip
 
    When KEYNO is 0 and KEYIDSTR is for a keygrip, the keygrip should
    be to be compared is the first one (keygrip for signing).
@@ -4335,8 +4336,6 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno)
         ; /* no fingerprint given: we allow this for now. */
       else if (*s == '/')
         fpr = s + 1;
-      else
-        return gpg_error (GPG_ERR_INV_ID);
 
       for (s=keyidstr, n=0; n < 16; s += 2, n++)
         tmp_sn[n] = xtoi_2 (s);
