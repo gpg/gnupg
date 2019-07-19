@@ -2103,7 +2103,7 @@ kdf_setup (const char *args)
   struct agent_card_info_s info;
   gpg_error_t err;
   unsigned char kdf_data[KDF_DATA_LENGTH_MAX];
-  int single = (*args != 0);
+  size_t len;
 
   memset (&info, 0, sizeof info);
 
@@ -2120,12 +2120,25 @@ kdf_setup (const char *args)
       goto leave;
     }
 
-  err = gen_kdf_data (kdf_data, single);
-  if (err)
-    goto leave_error;
+  if (!strcmp (args, "off"))
+    {
+      len = 5;
+      memcpy (kdf_data, "\xF9\x03\x81\x01\x00", len);
+    }
+  else
+    {
+      int single = 0;
 
-  err = agent_scd_setattr ("KDF", kdf_data,
-                           single ? KDF_DATA_LENGTH_MIN : KDF_DATA_LENGTH_MAX);
+      if (*args != 0)
+        single = 1;
+
+      len = single ? KDF_DATA_LENGTH_MIN: KDF_DATA_LENGTH_MAX;
+      err = gen_kdf_data (kdf_data, single);
+      if (err)
+        goto leave_error;
+    }
+
+  err = agent_scd_setattr ("KDF", kdf_data, len);
   if (err)
     goto leave_error;
 
@@ -2225,7 +2238,8 @@ static struct
     { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
     { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code")},
     { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
-    { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
+    { "kdf-setup", cmdKDFSETUP, 1,
+      N_("setup KDF for PIN authentication (on/single/off)")},
     { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
     { "uif", cmdUIF, 1, N_("change the User Interaction Flag")},
     /* Note, that we do not announce these command yet. */
