@@ -71,7 +71,7 @@ struct agent_card_info_s
     unsigned int kdf:1;    /* KDF object to support PIN hashing available.  */
   } extcap;
   unsigned int status_indicator;
-  int kdf_do_enabled;      /* Card has a KDF object */
+  int kdf_do_enabled;      /* Non-zero if card has a KDF object, 0 if not.  */
 };
 
 
