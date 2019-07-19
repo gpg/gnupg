@@ -701,7 +701,7 @@ static ARGPARSE_OPTS opts[] = {
               "delete-secret-and-public-keys", "@"),
   ARGPARSE_c (aRebuildKeydbCaches, "rebuild-keydb-caches", "@"),
 
-  ARGPARSE_s_s (oPassphrase,      "passphrase", "@"),
+  ARGPARSE_o_s (oPassphrase,      "passphrase", "@"),
   ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
   ARGPARSE_s_s (oPassphraseFile,  "passphrase-file", "@"),
   ARGPARSE_s_i (oPassphraseRepeat,"passphrase-repeat", "@"),
@@ -3095,7 +3095,7 @@ main (int argc, char **argv)
 	  case oBZ2CompressLevel: opt.bz2_compress_level = pargs.r.ret_int; break;
 	  case oBZ2DecompressLowmem: opt.bz2_decompress_lowmem=1; break;
 	  case oPassphrase:
-	    set_passphrase_from_string(pargs.r.ret_str);
+            set_passphrase_from_string (pargs.r_type ? pargs.r.ret_str : "");
 	    break;
 	  case oPassphraseFD:
             pwfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
