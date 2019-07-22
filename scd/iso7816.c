@@ -79,6 +79,7 @@ map_sw (int sw)
     case SW_FILE_NOT_FOUND: ec = GPG_ERR_ENOENT; break;
     case SW_RECORD_NOT_FOUND:ec= GPG_ERR_NOT_FOUND; break;
     case SW_REF_NOT_FOUND:  ec = GPG_ERR_NO_OBJ; break;
+    case SW_INCORRECT_P0_P1:ec = GPG_ERR_INV_VALUE; break;
     case SW_BAD_P0_P1:      ec = GPG_ERR_INV_VALUE; break;
     case SW_EXACT_LENGTH:   ec = GPG_ERR_INV_VALUE; break;
     case SW_INS_NOT_SUP:    ec = GPG_ERR_CARD; break;
