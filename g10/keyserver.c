@@ -31,7 +31,6 @@
 #include "filter.h"
 #include "keydb.h"
 #include "../common/status.h"
-#include "exec.h"
 #include "main.h"
 #include "../common/i18n.h"
 #include "../common/ttyio.h"
