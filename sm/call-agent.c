@@ -477,7 +477,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
-   membuf_t data;
+  membuf_t data;
   struct cipher_parm_s cipher_parm;
   size_t n, len;
   char *p, *buf, *endp;
@@ -528,7 +528,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
       return rc;
     }
 
-  put_membuf (&data, "", 1); /* Make sure it is 0 terminated. */
+  put_membuf (&data, "", 1); /* Make sure it is 0 terminated so we can invoke strtoul safely. */
   buf = get_membuf (&data, &len);
   if (!buf)
     return gpg_error (GPG_ERR_ENOMEM);
@@ -538,8 +538,14 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
     {
       if (len < 13 || memcmp (buf, "(5:value", 8) ) /* "(5:valueN:D)\0" */
         return gpg_error (GPG_ERR_INV_SEXP);
-      len -= 11;   /* Count only the data of the second part. */
+      /* Trim any spurious trailing Nuls: */
+      while (buf[len-1] == 0)
+        len--;
+      if (buf[len-1] != ')')
+        return gpg_error (GPG_ERR_INV_SEXP);
+      len--; /* Drop the final close-paren: */
       p = buf + 8; /* Skip leading parenthesis and the value tag. */
+      len -= 8; /* Count only the data of the second part. */
     }
   else
     {

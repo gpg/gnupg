@@ -2323,25 +2323,28 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
       return err;
     }
 
-  put_membuf (&data, "", 1); /* Make sure it is 0 terminated.  */
   buf = get_membuf (&data, &len);
   if (!buf)
     return gpg_error_from_syserror ();
-  log_assert (len); /* (we forced Nul termination.)  */
 
-  if (*buf != '(')
+  if (len == 0 || *buf != '(')
     {
       xfree (buf);
       return gpg_error (GPG_ERR_INV_SEXP);
     }
 
-  if (len < 13 || memcmp (buf, "(5:value", 8) ) /* "(5:valueN:D)\0" */
+  if (len < 12 || memcmp (buf, "(5:value", 8) ) /* "(5:valueN:D)" */
     {
       xfree (buf);
       return gpg_error (GPG_ERR_INV_SEXP);
     }
-  len -= 10;   /* Count only the data of the second part. */
+  while (buf[len-1] == 0)
+    len--;
+  if (buf[len-1] != ')')
+    return gpg_error (GPG_ERR_INV_SEXP);
+  len--; /* Drop the final close-paren. */
   p = buf + 8; /* Skip leading parenthesis and the value tag. */
+  len -= 8;   /* Count only the data of the second part. */
 
   n = strtoul (p, &endp, 10);
   if (!n || *endp != ':')
