@@ -492,8 +492,13 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       if (!(err = lock_spawning (&lock, gnupg_homedir (), "agent", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
-          err = gnupg_spawn_process_detached (program? program : agent_program,
-                                              argv, NULL);
+          pid_t pid;
+
+          err = gnupg_spawn_process_fd (program? program : agent_program,
+                                        argv, -1, -1, -1, &pid);
+          if (!err)
+            err = gnupg_wait_process (program? program : agent_program,
+                                      pid, 1, NULL);
           if (err)
             log_error ("failed to start agent '%s': %s\n",
                        agent_program, gpg_strerror (err));
@@ -627,7 +632,12 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       if (!(err = lock_spawning (&lock, gnupg_homedir (), "dirmngr", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
-          err = gnupg_spawn_process_detached (dirmngr_program, argv, NULL);
+          pid_t pid;
+
+          err = gnupg_spawn_process_fd (dirmngr_program, argv,
+                                        -1, -1, -1, &pid);
+          if (!err)
+            err = gnupg_wait_process (dirmngr_program, pid, 1, NULL);
           if (err)
             log_error ("failed to start the dirmngr '%s': %s\n",
                        dirmngr_program, gpg_strerror (err));
