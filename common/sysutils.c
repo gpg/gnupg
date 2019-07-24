@@ -380,7 +380,7 @@ translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 
   /* Note that _open_osfhandle is currently defined to take and return
      a long.  */
-  x = _open_osfhandle ((long)fd, for_write ? 1 : 0);
+  x = _open_osfhandle ((intptr_t)fd, for_write ? 1 : 0);
   if (x == -1)
     log_error ("failed to translate osfhandle %p\n", (void *) fd);
   return x;
@@ -511,7 +511,7 @@ gnupg_tmpfile (void)
           int fd = (int)file;
           fp = _wfdopen (fd, L"w+b");
 #else
-          int fd = _open_osfhandle ((long)file, 0);
+          int fd = _open_osfhandle ((intptr_t)file, 0);
           if (fd == -1)
             {
               CloseHandle (file);
