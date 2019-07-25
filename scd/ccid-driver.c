@@ -2844,7 +2844,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
   size_t apdu_part_len;
   size_t msglen;
   unsigned char seqno;
-  int bwi = 4;
+  int bwi = 0;
   unsigned char chain = 0;
 
   if (apdu_len == 0 || apdu_len > sizeof (msg) - 10)
@@ -3096,7 +3096,7 @@ ccid_transceive (ccid_driver_t handle,
           msg[0] = PC_to_RDR_XfrBlock;
           msg[5] = 0; /* slot */
           msg[6] = seqno = handle->seqno++;
-          msg[7] = 4; /* bBWI */
+          msg[7] = wait_more; /* bBWI */
           msg[8] = 0; /* RFU */
           msg[9] = 0; /* RFU */
           set_msg_len (msg, tpdulen);
