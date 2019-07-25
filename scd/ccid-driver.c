@@ -1946,6 +1946,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   int rc;
   int msglen;
   int notified = 0;
+  int bwi = 1;
 
   /* Fixme: The next line for the current Valgrind without support
      for USB IOCTLs. */
@@ -1956,7 +1957,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   npth_unprotect ();
 #endif
   rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
-                             (char*)buffer, length, &msglen, timeout);
+                             buffer, length, &msglen, bwi*timeout);
 #ifdef USE_NPTH
   npth_protect ();
 #endif
@@ -2003,6 +2004,10 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       /* Card present and active, time extension requested. */
       DEBUGOUT_2 ("time extension requested (%02X,%02X)\n",
                   buffer[7], buffer[8]);
+
+      bwi = 1;
+      if (buffer[8] != 0 && buffer[8] != 0xff)
+        bwi = buffer[8];
 
       /* Gnuk enhancement to prompt user input by ack button */
       if (buffer[8] == 0xff && !notified)
