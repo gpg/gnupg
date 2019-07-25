@@ -20,32 +20,7 @@
 #ifndef _EXEC_H_
 #define _EXEC_H_
 
-#include <unistd.h>
-#include <stdio.h>
-
-#include "../common/iobuf.h"
-
-struct exec_info
-{
-  int progreturn;
-  struct
-  {
-    unsigned int binary:1;
-    unsigned int writeonly:1;
-    unsigned int madedir:1;
-    unsigned int use_temp_files:1;
-    unsigned int keep_temp_files:1;
-  } flags;
-  pid_t child;
-  FILE *tochild;
-  iobuf_t fromchild;
-  char *command,*name,*tempdir,*tempfile_in,*tempfile_out;
-};
-
-int exec_write(struct exec_info **info,const char *program,
-	       const char *args_in,const char *name,int writeonly,int binary);
-int exec_read(struct exec_info *info);
-int exec_finish(struct exec_info *info);
 int set_exec_path(const char *path);
+int w32_system(const char *command);
 
 #endif /* !_EXEC_H_ */
