@@ -496,7 +496,8 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
       return rc;
     }
 
-  put_membuf (&data, "", 1); /* Make sure it is 0 terminated so we can invoke strtoul safely. */
+  /* Make sure it is 0 terminated so we can invoke strtoul safely.  */
+  put_membuf (&data, "", 1);
   buf = get_membuf (&data, &len);
   if (!buf)
     return gpg_error (GPG_ERR_ENOMEM);
@@ -512,14 +513,14 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
       if (buf[len-1] != ')')
         return gpg_error (GPG_ERR_INV_SEXP);
       len--; /* Drop the final close-paren: */
-      p = buf + 8; /* Skip leading parenthesis and the value tag. */
-      len -= 8; /* Count only the data of the second part. */
+      p = buf + 8; /* Skip leading parenthesis and the value tag.  */
+      len -= 8; /* Count only the data of the second part.  */
     }
   else
     {
       /* For compatibility with older gpg-agents handle the old style
-         incomplete S-exps. */
-      len--;      /* Do not count the Nul. */
+         incomplete S-exps.  */
+      len--;      /* Do not count the Nul.  */
       p = buf;
     }
 
@@ -527,8 +528,8 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   if (!n || *endp != ':')
     return gpg_error (GPG_ERR_INV_SEXP);
   endp++;
-  if (endp-p+n > len)
-    return gpg_error (GPG_ERR_INV_SEXP); /* Oops: Inconsistent S-Exp. */
+  if (endp-p+n != len)
+    return gpg_error (GPG_ERR_INV_SEXP); /* Oops: Inconsistent S-Exp.  */
 
   memmove (buf, endp, n);
 
