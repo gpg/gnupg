@@ -157,7 +157,26 @@ print_assuan_status_strings (assuan_context_t ctx, const char *keyword, ...)
 /* This function is similar to print_assuan_status but takes a CTRL
  * arg instead of an assuan context as first argument.  */
 gpg_error_t
-status_printf (ctrl_t ctrl, int no, const char *format, ...)
+status_printf (ctrl_t ctrl, const char *keyword, const char *format, ...)
+{
+  gpg_error_t err;
+  va_list arg_ptr;
+  assuan_context_t ctx;
+
+  if (!ctrl || !the_assuan_ctx_func || !(ctx = the_assuan_ctx_func (ctrl)))
+    return 0;
+
+  va_start (arg_ptr, format);
+  err = vprint_assuan_status (ctx, keyword, format, arg_ptr);
+  va_end (arg_ptr);
+  return err;
+}
+
+
+/* Same as sytus_printf but takes a status number instead of a
+ * keyword.  */
+gpg_error_t
+status_no_printf (ctrl_t ctrl, int no, const char *format, ...)
 {
   gpg_error_t err;
   va_list arg_ptr;
