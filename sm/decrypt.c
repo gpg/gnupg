@@ -75,10 +75,10 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
     log_printhex (seskey, seskeylen, "pkcs1 encoded session key:");
 
   n=0;
-  if (seskeylen == 24 || seskeylen == 16)
+  if (seskeylen == 32 || seskeylen == 24 || seskeylen == 16)
     {
-      /* Smells like a 3-DES or AES-128 key.  This might happen
-       * because a SC has already done the unpacking.  A better
+      /* Smells like an AES-128, 3-DES, or AES-256 key.  This might
+       * happen because a SC has already done the unpacking.  A better
        * solution would be to test for this only after we triggered
        * the GPG_ERR_INV_SESSION_KEY. */
     }
