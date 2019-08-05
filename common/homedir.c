@@ -945,6 +945,17 @@ gnupg_cachedir (void)
 }
 
 
+/* Return the standard socket name used by gpg-agent.  */
+const char *
+gpg_agent_socket_name (void)
+{
+  static char *name;
+
+  if (!name)
+    name = make_filename (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
+  return name;
+}
+
 /* Return the user socket name used by DirMngr.  */
 const char *
 dirmngr_socket_name (void)
