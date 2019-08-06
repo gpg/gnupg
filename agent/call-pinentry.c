@@ -1481,15 +1481,16 @@ agent_get_confirmation (ctrl_t ctrl,
     npth_t thread;
 
     rc = watch_sock_start (&sock_watched, &thread);
-    if (rc)
-      return rc;
+    if (!rc)
+      {
+        rc = assuan_transact (entry_ctx, "CONFIRM",
+                              NULL, NULL, NULL, NULL, NULL, NULL);
+        if (rc && gpg_err_source (rc)
+            && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+          rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 
-    rc = assuan_transact (entry_ctx, "CONFIRM",
-                          NULL, NULL, NULL, NULL, NULL, NULL);
-    if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
-      rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
-
-    watch_sock_end (&sock_watched, &thread);
+        watch_sock_end (&sock_watched, &thread);
+      }
 
     return unlock_pinentry (ctrl, rc);
   }
