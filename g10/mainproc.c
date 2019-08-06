@@ -584,7 +584,7 @@ proc_encrypted (CTX c, PACKET *pkt)
           struct pubkey_enc_list *list;
 
           for (list = c->pkenc_list; list; list = list->next)
-            if (list->result != -1)
+            if (list->result && list->result != -1)
               {
                 char buf[20];
                 snprintf (buf, sizeof buf, "%08lX%08lX",
