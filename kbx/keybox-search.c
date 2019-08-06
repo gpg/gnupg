@@ -1180,11 +1180,70 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
    a successful search operation.
 */
 
+/* Return the raw data from the last found blob.  Caller must release
+ * the value stored at R_BUFFER.  If called with NULL for R_BUFFER
+ * only the needed length for the buffer and the public key type is
+ * returned.  */
+gpg_error_t
+keybox_get_data (KEYBOX_HANDLE hd, void **r_buffer, size_t *r_length,
+                 enum pubkey_types *r_pubkey_type)
+{
+  const unsigned char *buffer;
+  size_t length;
+  size_t image_off, image_len;
+
+  if (r_buffer)
+    *r_buffer = NULL;
+  if (r_length)
+    *r_length = 0;
+  if (r_pubkey_type)
+    *r_pubkey_type = PUBKEY_TYPE_UNKNOWN;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!hd->found.blob)
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+
+  switch (blob_get_type (hd->found.blob))
+    {
+    case KEYBOX_BLOBTYPE_PGP:
+      if (r_pubkey_type)
+        *r_pubkey_type = PUBKEY_TYPE_OPGP;
+      break;
+    case KEYBOX_BLOBTYPE_X509:
+      if (r_pubkey_type)
+        *r_pubkey_type = PUBKEY_TYPE_X509;
+      break;
+    default:
+      return gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
+    }
+
+  buffer = _keybox_get_blob_image (hd->found.blob, &length);
+  if (length < 40)
+    return gpg_error (GPG_ERR_TOO_SHORT);
+  image_off = get32 (buffer+8);
+  image_len = get32 (buffer+12);
+  if ((uint64_t)image_off+(uint64_t)image_len > (uint64_t)length)
+    return gpg_error (GPG_ERR_TOO_SHORT);
+
+  if (r_length)
+    *r_length = image_len;
+  if (r_buffer)
+    {
+      *r_buffer = xtrymalloc (image_len);
+      if (!*r_buffer)
+        return gpg_error_from_syserror ();
+      memcpy (*r_buffer, buffer + image_off, image_len);
+    }
+
+  return 0;
+}
+
 
 /* Return the last found keyblock.  Returns 0 on success and stores a
  * new iobuf at R_IOBUF.  R_UID_NO and R_PK_NO are used to return the
- * number of the key or user id which was matched the search criteria;
- * if not known they are set to 0. */
+ * index of the key or user id which matched the search criteria; if
+ * not known they are set to 0. */
 gpg_error_t
 keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,
                      int *r_pk_no, int *r_uid_no)

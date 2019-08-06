@@ -56,7 +56,7 @@
 #include "../common/init.h"
 #include "../common/gc-opt-flags.h"
 #include "../common/exechelp.h"
-
+#include "frontend.h"
 
 enum cmd_and_opt_values
   {
@@ -127,6 +127,8 @@ static struct debug_flags_s debug_flags [] =
     { DBG_MEMSTAT_VALUE, "memstat" },
     { DBG_HASHING_VALUE, "hashing" },
     { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_CLOCK_VALUE  , "clock"   },
+    { DBG_LOOKUP_VALUE , "lookup"  },
     { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
   };
 
@@ -727,6 +729,9 @@ main (int argc, char **argv )
           kbxd_exit (1);
         }
       kbxd_init_default_ctrl (ctrl);
+
+      kbxd_add_resource (ctrl, "pubring.kbx", 0);
+
       kbxd_start_command_handler (ctrl, GNUPG_INVALID_FD, 0);
       kbxd_deinit_default_ctrl (ctrl);
       xfree (ctrl);
@@ -847,6 +852,22 @@ main (int argc, char **argv )
                      gnupg_daemon_rootdir (), strerror (errno));
           exit (1);
         }
+
+      {
+        ctrl_t ctrl;
+
+        ctrl = xtrycalloc (1, sizeof *ctrl);
+        if (!ctrl)
+          {
+            log_error ("error allocating connection control data: %s\n",
+                       strerror (errno) );
+            kbxd_exit (1);
+          }
+        kbxd_init_default_ctrl (ctrl);
+        kbxd_add_resource (ctrl, "pubring.kbx", 0);
+        kbxd_deinit_default_ctrl (ctrl);
+        xfree (ctrl);
+      }
 
       log_info ("%s %s started\n", strusage(11), strusage(13) );
       handle_connections (fd);
@@ -974,6 +995,7 @@ kbxd_deinit_default_ctrl (ctrl_t ctrl)
 {
   if (!ctrl)
     return;
+  kbxd_release_session_info (ctrl);
   ctrl->magic = 0xdeadbeef;
   unregister_progress_cb ();
   xfree (ctrl->lc_messages);

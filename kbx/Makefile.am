@@ -73,8 +73,12 @@ kbxutil_LDADD   = $(common_libs) \
 
 
 keyboxd_SOURCES = \
-	keyboxd.c keyboxd.h \
-	kbxserver.c
+	keyboxd.c keyboxd.h   \
+	kbxserver.c           \
+	frontend.c frontend.h \
+	backend.h backend-support.c \
+	backend-kbx.c \
+	$(common_sources)
 
 keyboxd_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) \
 		$(INCICONV)

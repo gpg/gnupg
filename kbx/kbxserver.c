@@ -1,5 +1,5 @@
 /* kbxserver.c - Handle Assuan commands send to the keyboxd
- * Copyright (C) 2018 g10 Code GmbH
+ * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -31,10 +31,11 @@
 
 #include "keyboxd.h"
 #include <assuan.h>
-
 #include "../common/i18n.h"
 #include "../common/server-help.h"
-
+#include "../common/userids.h"
+#include "../common/asshelp.h"
+#include "frontend.h"
 
 
 
@@ -65,10 +66,97 @@ struct server_local_s
   unsigned int inhibit_data_logging : 1;
   unsigned int inhibit_data_logging_now : 1;
 
-  /* Dummy option.  */
-  int foo;
+  /* This flag is set if the last search command was called with --more.  */
+  unsigned int search_expecting_more : 1;
+
+  /* This flag is set if the last search command was successful.  */
+  unsigned int search_any_found : 1;
+
+  /* The first is the current search description as parsed by the
+   * cmd_search.  If more than one pattern is required, cmd_search
+   * also allocates and sets multi_search_desc and
+   * multi_search_desc_len.  If a search description has ever been
+   * allocated the allocated size is stored at
+   * multi_search_desc_size.  */
+  KEYBOX_SEARCH_DESC search_desc;
+  KEYBOX_SEARCH_DESC *multi_search_desc;
+  unsigned int multi_search_desc_size;
+  unsigned int multi_search_desc_len;
 };
 
+
+
+
+/* Return the assuan contxt from the local server info in CTRL.  */
+static assuan_context_t
+get_assuan_ctx_from_ctrl (ctrl_t ctrl)
+{
+  if (!ctrl || !ctrl->server_local)
+    return NULL;
+  return ctrl->server_local->assuan_ctx;
+}
+
+
+/* A wrapper around assuan_send_data which makes debugging the output
+ * in verbose mode easier.  It also takes CTRL as argument.  */
+gpg_error_t
+kbxd_write_data_line (ctrl_t ctrl, const void *buffer_arg, size_t size)
+{
+  const char *buffer = buffer_arg;
+  assuan_context_t ctx = get_assuan_ctx_from_ctrl (ctrl);
+  gpg_error_t err;
+
+  if (!ctx) /* Oops - no assuan context.  */
+    return gpg_error (GPG_ERR_NOT_PROCESSED);
+
+  /* If we do not want logging, enable it here.  */
+  if (ctrl && ctrl->server_local && ctrl->server_local->inhibit_data_logging)
+    ctrl->server_local->inhibit_data_logging_now = 1;
+
+  if (opt.verbose && buffer && size)
+    {
+      /* Ease reading of output by limiting the line length.  */
+      size_t n, nbytes;
+
+      nbytes = size;
+      do
+        {
+          n = nbytes > 64? 64 : nbytes;
+          err = assuan_send_data (ctx, buffer, n);
+          if (err)
+            {
+              gpg_err_set_errno (EIO);
+              goto leave;
+            }
+          buffer += n;
+          nbytes -= n;
+          if (nbytes && (err=assuan_send_data (ctx, NULL, 0))) /* Flush line. */
+            {
+              gpg_err_set_errno (EIO);
+              goto leave;
+            }
+        }
+      while (nbytes);
+    }
+  else
+    {
+      err = assuan_send_data (ctx, buffer, size);
+      if (err)
+        {
+          gpg_err_set_errno (EIO);  /* For use by data_line_cookie_write.  */
+          goto leave;
+        }
+    }
+
+ leave:
+  if (ctrl && ctrl->server_local && ctrl->server_local->inhibit_data_logging)
+    {
+      ctrl->server_local->inhibit_data_logging_now = 0;
+      ctrl->server_local->inhibit_data_logging_count += size;
+    }
+
+  return err;
+}
 
 
 
@@ -100,11 +188,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
 
-  if (!strcmp (key, "foo"))
-    {
-      ctrl->server_local->foo = 1;
-    }
-  else if (!strcmp (key, "lc-messages"))
+  if (!strcmp (key, "lc-messages"))
     {
       if (ctrl->lc_messages)
         xfree (ctrl->lc_messages);
@@ -120,22 +204,151 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 
 
 
-static const char hlp_foo[] =
-  "FOO <user_id>\n"
+static const char hlp_search[] =
+  "SEARCH [--no-data] [[--more] PATTERN]\n"
   "\n"
-  "Bla bla\n"
-  "more bla.";
+  "Search for the keys identified by PATTERN.  With --more more\n"
+  "patterns to be used for the search are expected with the next\n"
+  "command.  With --no-data only the search status is returned but\n"
+  "not the actual data.  See also \"NEXT\".";
 static gpg_error_t
-cmd_foo (assuan_context_t ctx, char *line)
+cmd_search (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  int opt_more, opt_no_data;
+  gpg_error_t err;
+  unsigned int n, k;
+
+  opt_no_data = has_option (line, "--no-data");
+  opt_more = has_option (line, "--more");
+  line = skip_options (line);
+
+  ctrl->server_local->search_any_found = 0;
+
+  if (!*line && opt_more)
+    {
+      err = set_error (GPG_ERR_INV_ARG, "--more but no pattern");
+      goto leave;
+    }
+  else if (!*line && ctrl->server_local->search_expecting_more)
+    {
+      /* It would be too surprising to first set a pattern but finally
+       * add no pattern to search the entire DB.  */
+      err = set_error (GPG_ERR_INV_ARG, "--more pending but no pattern");
+      goto leave;
+    }
+
+  err = classify_user_id (line, &ctrl->server_local->search_desc, 0);
+  if (err)
+    goto leave;
+  if (opt_more || ctrl->server_local->search_expecting_more)
+    {
+      /* More pattern are expected - store the current one and return
+       * success.  */
+      if (!ctrl->server_local->multi_search_desc_size)
+        {
+          n = 10;
+          ctrl->server_local->multi_search_desc
+            = xtrycalloc (n, sizeof *ctrl->server_local->multi_search_desc);
+          if (!ctrl->server_local->multi_search_desc)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          ctrl->server_local->multi_search_desc_size = n;
+        }
+
+      if (ctrl->server_local->multi_search_desc_len
+          == ctrl->server_local->multi_search_desc_size)
+        {
+          KEYBOX_SEARCH_DESC *desc;
+          n = ctrl->server_local->multi_search_desc_size + 10;
+          desc = xtrycalloc (n, sizeof *desc);
+          if (!desc)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          for (k=0; k < ctrl->server_local->multi_search_desc_size; k++)
+            desc[k] = ctrl->server_local->multi_search_desc[k];
+          xfree (ctrl->server_local->multi_search_desc);
+          ctrl->server_local->multi_search_desc = desc;
+          ctrl->server_local->multi_search_desc_size = n;
+        }
+      /* Actually store.  */
+      ctrl->server_local->multi_search_desc
+        [ctrl->server_local->multi_search_desc_len++]
+        = ctrl->server_local->search_desc;
+
+      if (opt_more)
+        {
+          /* We need to be called aagain with more pattern.  */
+          ctrl->server_local->search_expecting_more = 1;
+          goto leave;
+        }
+      ctrl->server_local->search_expecting_more = 0;
+      /* Continue with the actual search.  */
+    }
+  else
+    ctrl->server_local->multi_search_desc_len = 0;
+
+  ctrl->no_data_return = opt_no_data;
+  if (ctrl->server_local->multi_search_desc_len)
+    err = kbxd_search (ctrl, ctrl->server_local->multi_search_desc,
+                       ctrl->server_local->multi_search_desc_len, 1);
+  else
+    err = kbxd_search (ctrl, &ctrl->server_local->search_desc, 1, 1);
+  if (err)
+    goto leave;
+
+  /* Set a flag for use by NEXT.  */
+  ctrl->server_local->search_any_found = 1;
+
+ leave:
+  if (err)
+    ctrl->server_local->multi_search_desc_len = 0;
+  ctrl->no_data_return = 0;
+  return leave_cmd (ctx, err);
+}
+
+
+static const char hlp_next[] =
+  "NEXT [--no-data]\n"
+  "\n"
+  "Get the next search result from a previus search.";
+static gpg_error_t
+cmd_next (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int opt_no_data;
   gpg_error_t err;
 
-  (void)ctrl;
-  (void)line;
+  opt_no_data = has_option (line, "--no-data");
+  line = skip_options (line);
 
-  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  if (*line)
+    {
+      err = set_error (GPG_ERR_INV_ARG, "no args expected");
+      goto leave;
+    }
 
+  if (!ctrl->server_local->search_any_found)
+    {
+      err = set_error (GPG_ERR_NOTHING_FOUND, "no previous SEARCH");
+      goto leave;
+    }
+
+  ctrl->no_data_return = opt_no_data;
+  if (ctrl->server_local->multi_search_desc_len)
+    err = kbxd_search (ctrl, ctrl->server_local->multi_search_desc,
+                       ctrl->server_local->multi_search_desc_len, 0);
+  else
+    err = kbxd_search (ctrl, &ctrl->server_local->search_desc, 1, 0);
+  if (err)
+    goto leave;
+
+ leave:
+  ctrl->no_data_return = 0;
   return leave_cmd (ctx, err);
 }
 
@@ -250,7 +463,8 @@ register_commands (assuan_context_t ctx)
     assuan_handler_t handler;
     const char * const help;
   } table[] = {
-    { "FOO",        cmd_foo,        hlp_foo },
+    { "SEARCH",     cmd_search,     hlp_search },
+    { "NEXT",       cmd_next,       hlp_next   },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "KILLKEYBOXD",cmd_killkeyboxd,hlp_killkeyboxd },
     { "RELOADKEYBOXD",cmd_reloadkeyboxd,hlp_reloadkeyboxd },
@@ -303,16 +517,6 @@ kbxd_assuan_log_monitor (assuan_context_t ctx, unsigned int cat,
 
   /* Disallow logging if *_now is true.  */
   return !ctrl->server_local->inhibit_data_logging_now;
-}
-
-
-/* Return the assuan contxt from the local server info in CTRL.  */
-static assuan_context_t
-get_assuan_ctx_from_ctrl (ctrl_t ctrl)
-{
-  if (!ctrl || !ctrl->server_local)
-    return NULL;
-  return ctrl->server_local->assuan_ctx;
 }
 
 
@@ -441,6 +645,7 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
                ctrl->refcount);
   else
     {
+      xfree (ctrl->server_local->multi_search_desc);
       xfree (ctrl->server_local);
       ctrl->server_local = NULL;
     }

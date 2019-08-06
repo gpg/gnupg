@@ -1137,6 +1137,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** BEGIN_STREAM, END_STREAM
     Used to issued by the experimental pipemode.
 
+** Inter-component codes
+   Status codes are also used between the components of the GnuPG
+   system via the Assuan S lines.  Some of them are documented here:
+
+*** PUBKEY_TYPE <n>
+    The type of the public key in the following D-lines or communicated
+    via a pipe.  <n> is the value of =enum pubkey_types=.
+
+
+
+
 
 * Format of the --attribute-fd output
 

@@ -85,6 +85,9 @@ gpg_error_t _keybox_write_header_blob (FILE *fp, estream_t stream,
                                        int openpgp_flag);
 
 /*-- keybox-search.c --*/
+gpg_error_t keybox_get_data (KEYBOX_HANDLE hd,
+                             void **r_buffer, size_t *r_length,
+                             enum pubkey_types *r_pubkey_type);
 gpg_error_t keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,
                                  int *r_uid_no, int *r_pk_no);
 #ifdef KEYBOX_WITH_X509

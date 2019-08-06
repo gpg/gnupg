@@ -47,6 +47,15 @@ typedef enum {
 } KeydbSearchMode;
 
 
+/* Identifiers for the public key types we use in GnuPG.  */
+enum pubkey_types
+  {
+   PUBKEY_TYPE_UNKNOWN = 0,
+   PUBKEY_TYPE_OPGP    = 1,
+   PUBKEY_TYPE_X509    = 2
+  };
+
+
 /* Forward declaration.  See g10/packet.h.  */
 struct gpg_pkt_user_id_s;
 typedef struct gpg_pkt_user_id_s *gpg_pkt_user_id_t;

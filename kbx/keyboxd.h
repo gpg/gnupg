@@ -55,6 +55,8 @@ struct
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 #define DBG_IPC_VALUE     1024  /* Enable Assuan debugging.  */
+#define DBG_CLOCK_VALUE   4096  /* debug timings (required build option).  */
+#define DBG_LOOKUP_VALUE  8192	/* debug the key lookup */
 
 /* Test macros for the debug option.  */
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
@@ -62,6 +64,14 @@ struct
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_IPC     (opt.debug & DBG_IPC_VALUE)
+#define DBG_CLOCK   (opt.debug & DBG_CLOCK_VALUE)
+#define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
+
+
+/* Declaration of a database request object.  This is used for all
+ * database operation (search, insert, update, delete).  */
+struct db_request_s;
+typedef struct db_request_s *db_request_t;
 
 /* Forward reference for local definitions in command.c.  */
 struct server_local_s;
@@ -95,6 +105,13 @@ struct server_control_s
   unsigned long client_pid;
   int client_uid;
 
+  /* Two database request objects used with a connection.  They are
+   * auto-created as needed.  */
+  db_request_t opgp_req;
+  db_request_t x509_req;
+
+  /* Flags for the current request.  */
+  unsigned int no_data_return : 1;  /* Used by SEARCH and NEXT.  */
 };
 
 
@@ -132,6 +149,8 @@ void kbxd_sighup_action (void);
 
 
 /*-- kbxserver.c --*/
+gpg_error_t kbxd_write_data_line (ctrl_t ctrl,
+                                  const void *buffer_arg, size_t size);
 void kbxd_start_command_handler (ctrl_t, gnupg_fd_t, unsigned int);
 
 #endif /*KEYBOXD_H*/
