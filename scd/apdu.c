@@ -2107,14 +2107,8 @@ apdu_open_reader (struct dev_list *dl, int app_empty)
             dl->idx++;
         }
 
-      /* Not found.  Try one for PC/SC, only when it's the initial scan.  */
-      if (app_empty && dl->idx == dl->idx_max)
-        {
-          dl->idx++;
-          slot = apdu_open_one_reader (dl->portstr);
-        }
-      else
-        slot = -1;
+      /* Not found.  */
+      slot = -1;
     }
   else
 #endif
