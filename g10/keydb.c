@@ -448,7 +448,7 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
         rc = gpg_error_from_syserror ();
       else
         {
-          rc = _keybox_write_header_blob (fp, 1);
+          rc = _keybox_write_header_blob (fp, NULL, 1);
           fclose (fp);
         }
       if (rc)

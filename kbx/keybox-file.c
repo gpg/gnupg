@@ -146,9 +146,9 @@ _keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
 }
 
 
-/* Write a fresh header type blob. */
-int
-_keybox_write_header_blob (FILE *fp, int for_openpgp)
+/* Write a fresh header type blob.  Either FP or STREAM must be used. */
+gpg_error_t
+_keybox_write_header_blob (FILE *fp, estream_t stream, int for_openpgp)
 {
   unsigned char image[32];
   u32 val;
@@ -174,7 +174,15 @@ _keybox_write_header_blob (FILE *fp, int for_openpgp)
   image[20+2] = (val >>  8);
   image[20+3] = (val      );
 
-  if (fwrite (image, 32, 1, fp) != 1)
-    return gpg_error_from_syserror ();
+  if (fp)
+    {
+      if (fwrite (image, 32, 1, fp) != 1)
+        return gpg_error_from_syserror ();
+    }
+  else
+    {
+      if (es_fwrite (image, 32, 1, stream) != 1)
+        return gpg_error_from_syserror ();
+    }
   return 0;
 }
