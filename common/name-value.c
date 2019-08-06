@@ -195,11 +195,11 @@ assert_raw_value (nve_t entry)
 	  size_t i;
 
 	  /* Find a suitable space to break on.  */
-	  for (i = linelen - 1; linelen - i < 30 && linelen - i > offset; i--)
-	    if (ascii_isspace (entry->value[i]))
+	  for (i = linelen - 1; linelen - i < 30; i--)
+	    if (ascii_isspace (entry->value[offset+i]))
 	      break;
 
-	  if (ascii_isspace (entry->value[i]))
+	  if (ascii_isspace (entry->value[offset+i]))
 	    {
 	      /* Found one.  */
 	      amount = i;
