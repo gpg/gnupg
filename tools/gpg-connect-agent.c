@@ -60,12 +60,14 @@ enum cmd_and_opt_values
     oHomedir,
     oAgentProgram,
     oDirmngrProgram,
+    oKeyboxdProgram,
     oHex,
     oDecode,
     oNoExtConnect,
     oDirmngr,
+    oKeyboxd,
     oUIServer,
-    oNoAutostart,
+    oNoAutostart
 
   };
 
@@ -79,6 +81,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oHex,   "hex",       N_("print data out hex encoded")),
   ARGPARSE_s_n (oDecode,"decode",    N_("decode received data lines")),
   ARGPARSE_s_n (oDirmngr,"dirmngr",  N_("connect to the dirmngr")),
+  ARGPARSE_s_n (oKeyboxd,"keyboxd",  N_("connect to the keyboxd")),
   ARGPARSE_s_n (oUIServer, "uiserver", "@"),
   ARGPARSE_s_s (oRawSocket, "raw-socket",
                 N_("|NAME|connect to Assuan socket NAME")),
@@ -97,6 +100,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHomedir, "homedir", "@" ),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
+  ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
 
   ARGPARSE_end ()
 };
@@ -109,11 +113,13 @@ struct
   int quiet;		/* Be extra quiet.  */
   int autostart;        /* Start the server if not running.  */
   const char *homedir;  /* Configuration directory name */
-  const char *agent_program;  /* Value of --agent-program.  */
+  const char *agent_program;    /* Value of --agent-program.    */
   const char *dirmngr_program;  /* Value of --dirmngr-program.  */
+  const char *keyboxd_program;  /* Value of --keyboxd-program.  */
   int hex;              /* Print data lines in hex format. */
   int decode;           /* Decode received data lines.  */
   int use_dirmngr;      /* Use the dirmngr and not gpg-agent.  */
+  int use_keyboxd;      /* Use the keyboxd and not gpg-agent.  */
   int use_uiserver;     /* Use the standard UI server.  */
   const char *raw_socket; /* Name of socket to connect in raw mode. */
   const char *tcp_socket; /* Name of server to connect in tcp mode. */
@@ -1200,10 +1206,12 @@ main (int argc, char **argv)
         case oHomedir:   gnupg_set_homedir (pargs.r.ret_str); break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
+        case oKeyboxdProgram: opt.keyboxd_program = pargs.r.ret_str;  break;
         case oNoAutostart:    opt.autostart = 0; break;
         case oHex:       opt.hex = 1; break;
         case oDecode:    opt.decode = 1; break;
         case oDirmngr:   opt.use_dirmngr = 1; break;
+        case oKeyboxd:   opt.use_keyboxd = 1; break;
         case oUIServer:  opt.use_uiserver = 1; break;
         case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
         case oTcpSocket: opt.tcp_socket = pargs.r.ret_str; break;
@@ -1879,7 +1887,10 @@ main (int argc, char **argv)
     }
 
   if (opt.verbose)
-    log_info ("closing connection to agent\n");
+    log_info ("closing connection to %s\n",
+              opt.use_dirmngr? "dirmngr" :
+              opt.use_keyboxd? "keyboxd" :
+              "agent");
 
   /* XXX: We would like to release the context here, but libassuan
      nicely says good bye to the server, which results in a SIGPIPE if
@@ -2224,6 +2235,13 @@ start_agent (void)
                              opt.autostart,
                              !opt.quiet, 0,
                              NULL, NULL);
+  else if (opt.use_keyboxd)
+    err = start_new_keyboxd (&ctx,
+                             GPG_ERR_SOURCE_DEFAULT,
+                             opt.keyboxd_program,
+                             opt.autostart,
+                             !opt.quiet, 0,
+                             NULL, NULL);
   else
     err = start_new_gpg_agent (&ctx,
                                GPG_ERR_SOURCE_DEFAULT,
@@ -2239,12 +2257,15 @@ start_agent (void)
     {
       if (!opt.autostart
           && (gpg_err_code (err)
-              == (opt.use_dirmngr? GPG_ERR_NO_DIRMNGR : GPG_ERR_NO_AGENT)))
+              == (opt.use_dirmngr? GPG_ERR_NO_DIRMNGR :
+                  opt.use_keyboxd? GPG_ERR_NO_KEYBOXD : GPG_ERR_NO_AGENT)))
         {
           /* In the no-autostart case we don't make gpg-connect-agent
              fail on a missing server.  */
           log_info (opt.use_dirmngr?
                     _("no dirmngr running in this session\n"):
+                    opt.use_keyboxd?
+                    _("no keybox daemon running in this session\n"):
                     _("no gpg-agent running in this session\n"));
           exit (0);
         }

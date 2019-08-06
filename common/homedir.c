@@ -1115,6 +1115,13 @@ gnupg_module_name (int which)
       X(bindir, "dirmngr", DIRMNGR_NAME);
 #endif
 
+    case GNUPG_MODULE_NAME_KEYBOXD:
+#ifdef GNUPG_DEFAULT_KEYBOXD
+      return GNUPG_DEFAULT_KEYBOXD;
+#else
+      X(bindir, "keyboxd", KEYBOXD_NAME);
+#endif
+
     case GNUPG_MODULE_NAME_PROTECT_TOOL:
 #ifdef GNUPG_DEFAULT_PROTECT_TOOL
       return GNUPG_DEFAULT_PROTECT_TOOL;

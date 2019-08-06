@@ -65,6 +65,16 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg);
 
+/* This function is used to connect to the keyboxd.  If needed the
+ * keyboxd is started.  */
+gpg_error_t
+start_new_keyboxd (assuan_context_t *r_ctx,
+                   gpg_err_source_t errsource,
+                   const char *keyboxd_program,
+                   int autostart, int verbose, int debug,
+                   gpg_error_t (*status_cb)(ctrl_t, int, ...),
+                   ctrl_t status_cb_arg);
+
 /* This function is used to connect to the dirmngr.  On some platforms
    the function is able starts a dirmngr process if needed.  */
 gpg_error_t

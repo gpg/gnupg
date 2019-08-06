@@ -191,6 +191,14 @@ AM_CONDITIONAL(GNUPG_DIRMNGR_PGM, test -n "$GNUPG_DIRMNGR_PGM")
 show_gnupg_dirmngr_pgm="(default)"
 test -n "$GNUPG_DIRMNGR_PGM" && show_gnupg_dirmngr_pgm="$GNUPG_DIRMNGR_PGM"
 
+AC_ARG_WITH(keyboxd-pgm,
+    [  --with-keyboxd-pgm=PATH  Use PATH as the default for the keyboxd)],
+          GNUPG_KEYBOXD_PGM="$withval", GNUPG_KEYBOXD_PGM="" )
+AC_SUBST(GNUPG_KEYBOXD_PGM)
+AM_CONDITIONAL(GNUPG_KEYBOXD_PGM, test -n "$GNUPG_KEYBOXD_PGM")
+show_gnupg_keyboxd_pgm="(default)"
+test -n "$GNUPG_KEYBOXD_PGM" && show_gnupg_keyboxd_pgm="$GNUPG_KEYBOXD_PGM"
+
 AC_ARG_WITH(protect-tool-pgm,
     [  --with-protect-tool-pgm=PATH  Use PATH as the default for the protect-tool)],
           GNUPG_PROTECT_TOOL_PGM="$withval", GNUPG_PROTECT_TOOL_PGM="" )
@@ -1870,6 +1878,10 @@ AC_DEFINE_UNQUOTED(DIRMNGR_NAME, "dirmngr", [The name of the dirmngr])
 AC_DEFINE_UNQUOTED(DIRMNGR_DISP_NAME, "DirMngr",
                                       [The displayed name of dirmngr])
 
+AC_DEFINE_UNQUOTED(KEYBOXD_NAME, "keyboxd", [The name of the keyboxd])
+AC_DEFINE_UNQUOTED(KEYBOXD_DISP_NAME, "Keyboxd",
+                                      [The displayed name of keyboxd])
+
 AC_DEFINE_UNQUOTED(G13_NAME, "g13", [The name of the g13 tool])
 AC_DEFINE_UNQUOTED(G13_DISP_NAME, "G13", [The displayed name of g13])
 
@@ -2090,6 +2102,7 @@ echo "
         Default agent:     $show_gnupg_agent_pgm
         Default pinentry:  $show_gnupg_pinentry_pgm
         Default scdaemon:  $show_gnupg_scdaemon_pgm
+        Default keyboxd:   $show_gnupg_keyboxd_pgm
         Default dirmngr:   $show_gnupg_dirmngr_pgm
 
         Dirmngr auto start:  $dirmngr_auto_start

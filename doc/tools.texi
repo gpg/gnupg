@@ -1328,10 +1328,21 @@ Specify the directory manager (keyserver client) program to be started
 if none is running.  This has only an effect if used together with the
 option @option{--dirmngr}.
 
+@item --keyboxd-program @var{file}
+@opindex keyboxd-program
+Specify the keybox daemon program to be started if none is running.
+This has only an effect if used together with the option
+@option{--keyboxd}.
+
 @item --dirmngr
 @opindex dirmngr
 Connect to a running directory manager (keyserver client) instead of
 to the gpg-agent.  If a dirmngr is not running, start it.
+
+@item --keyboxd
+@opindex keyboxd
+Connect to a running keybox daemon instead of
+to the gpg-agent.  If a keyboxd is not running, start it.
 
 @item -S
 @itemx --raw-socket @var{name}

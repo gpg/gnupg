@@ -43,6 +43,10 @@
 #define GPG_ERR_NO_AUTH   314
 #define GPG_ERR_BAD_AUTH  315
 #endif /*GPG_ERROR_VERSION_NUMBER*/
+#if GPG_ERROR_VERSION_NUMBER < 0x012500 /* 1.37 */
+#define GPG_ERR_NO_KEYBOXD  316
+#define GPG_ERR_KEYBOXD     317
+#endif /*GPG_ERROR_VERSION_NUMBER*/
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
@@ -243,6 +247,7 @@ const char *gnupg_libdir (void);
 const char *gnupg_datadir (void);
 const char *gnupg_localedir (void);
 const char *gnupg_cachedir (void);
+const char *gpg_agent_socket_name (void);
 const char *dirmngr_socket_name (void);
 
 char *_gnupg_socketdir_internal (int skip_checks, unsigned *r_info);
@@ -261,6 +266,7 @@ char *_gnupg_socketdir_internal (int skip_checks, unsigned *r_info);
 #define GNUPG_MODULE_NAME_GPGCONF       10
 #define GNUPG_MODULE_NAME_DIRMNGR_LDAP  11
 #define GNUPG_MODULE_NAME_GPGV          12
+#define GNUPG_MODULE_NAME_KEYBOXD       13
 const char *gnupg_module_name (int which);
 void gnupg_module_name_flush_some (void);
 void gnupg_set_builddir (const char *newdir);

@@ -56,9 +56,11 @@
    operation after we started them before giving up.  */
 #ifdef HAVE_W32CE_SYSTEM
 # define SECS_TO_WAIT_FOR_AGENT 30
+# define SECS_TO_WAIT_FOR_KEYBOXD 30
 # define SECS_TO_WAIT_FOR_DIRMNGR 30
 #else
 # define SECS_TO_WAIT_FOR_AGENT 5
+# define SECS_TO_WAIT_FOR_KEYBOXD 5
 # define SECS_TO_WAIT_FOR_DIRMNGR 5
 #endif
 
@@ -308,17 +310,14 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
 }
 
 
-/* Helper for start_new_gpg_agent and start_new_dirmngr.
- * Values for WHICH are:
- *   0 - Start gpg-agent
- *   1 - Start dirmngr
- * SECS give the number of seconds to wait.  SOCKNAME is the name of
+/* Helper to start a service.
+ * SECS gives the number of seconds to wait.  SOCKNAME is the name of
  * the socket to connect.  VERBOSE is the usual verbose flag. CTX is
  * the assuan context.  DID_SUCCESS_MSG will be set to 1 if a success
  * messages has been printed.
  */
 static gpg_error_t
-wait_for_sock (int secs, int which, const char *sockname,
+wait_for_sock (int secs, int module_name_id, const char *sockname,
                int verbose, assuan_context_t ctx, int *did_success_msg)
 {
   gpg_error_t err = 0;
@@ -343,8 +342,10 @@ wait_for_sock (int secs, int which, const char *sockname,
           /*            next_sleep_us); */
           if (secsleft < lastalert)
             {
-              log_info (which == 1?
+              log_info (module_name_id == GNUPG_MODULE_NAME_DIRMNGR?
                         _("waiting for the dirmngr to come up ... (%ds)\n"):
+                        module_name_id == GNUPG_MODULE_NAME_KEYBOXD?
+                        _("waiting for the keyboxd to come up ... (%ds)\n"):
                         _("waiting for the agent to come up ... (%ds)\n"),
                         secsleft);
               lastalert = secsleft;
@@ -357,8 +358,10 @@ wait_for_sock (int secs, int which, const char *sockname,
         {
           if (verbose)
             {
-              log_info (which == 1?
+              log_info (module_name_id == GNUPG_MODULE_NAME_DIRMNGR?
                         _("connection to the dirmngr established\n"):
+                        module_name_id == GNUPG_MODULE_NAME_KEYBOXD?
+                        _("connection to the keyboxd established\n"):
                         _("connection to the agent established\n"));
               *did_success_msg = 1;
             }
@@ -428,6 +431,14 @@ start_new_service (assuan_context_t *r_ctx,
       status_start_line = "starting_dirmngr ? 0 0";
       no_service_err = GPG_ERR_NO_DIRMNGR;
       seconds_to_wait = SECS_TO_WAIT_FOR_DIRMNGR;
+      break;
+    case GNUPG_MODULE_NAME_KEYBOXD:
+      sockname = make_filename (gnupg_socketdir (), KEYBOXD_SOCK_NAME, NULL);
+      lock_name = "keyboxd";
+      printed_name = "keyboxd";
+      status_start_line = "starting_keyboxd ? 0 0";
+      no_service_err = GPG_ERR_NO_KEYBOXD;
+      seconds_to_wait = SECS_TO_WAIT_FOR_KEYBOXD;
       break;
     default:
       err = gpg_error (GPG_ERR_INV_ARG);
@@ -520,7 +531,7 @@ start_new_service (assuan_context_t *r_ctx,
                        printed_name, program? program : program_name,
                        gpg_strerror (err));
           else
-            err = wait_for_sock (seconds_to_wait, 0,
+            err = wait_for_sock (seconds_to_wait, module_name_id,
                                  sockname, verbose, ctx, &did_success_msg);
         }
 
@@ -590,6 +601,25 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
   return start_new_service (r_ctx, GNUPG_MODULE_NAME_AGENT,
                             errsource, agent_program,
                             opt_lc_ctype, opt_lc_messages, session_env,
+                            autostart, verbose, debug,
+                            status_cb, status_cb_arg);
+}
+
+
+/* Try to connect to the dirmngr via a socket.  On platforms
+   supporting it, start it up if needed and if AUTOSTART is true.
+   Returns a new assuan context at R_CTX or an error code. */
+gpg_error_t
+start_new_keyboxd (assuan_context_t *r_ctx,
+                   gpg_err_source_t errsource,
+                   const char *keyboxd_program,
+                   int autostart, int verbose, int debug,
+                   gpg_error_t (*status_cb)(ctrl_t, int, ...),
+                   ctrl_t status_cb_arg)
+{
+  return start_new_service (r_ctx, GNUPG_MODULE_NAME_KEYBOXD,
+                            errsource, keyboxd_program,
+                            NULL, NULL, NULL,
                             autostart, verbose, debug,
                             status_cb, status_cb_arg);
 }
