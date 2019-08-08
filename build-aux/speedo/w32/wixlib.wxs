@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  - Installer module for GnuPG on Windows using WiX  -*- coding: utf-8; -*-
+ Copyright (C) 2019 g10 Code GmbH
+
+ This file is part of GnuPG.
+
+ GnuPG is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ GnuPG is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<!-- Components of GnuPG
+generated with:
+heat dir "C:\GnuPG" -var var.SourceDir -cg CMP_GnuPG -dr GnuPG -g1
+and then manually edited:
+ - Changed some files that are in libexec but should be in bin on windows
+ - Change filenames of the dll.a files to .imp
+ - Changed pinentry-basic.exe to pinentry-w32.exe
+ - Added the "gpg_env_cmp"
+ - Added the "gpg_reg_cmp"
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="DIR_GnuPG">
+      <Directory Id="dirEF4D3E0A6DFFD685C7634E46091895D9"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <ComponentGroup Id="CMP_GnuPG">
+      <Component Id="gpg_reg_cmp" Guid="7F122F29-DB6A-4DE5-9DD2-0DAF1A24A61F" Directory="dirEF4D3E0A6DFFD685C7634E46091895D9">
+        <RegistryValue Id="r_gpg4win_0" Root="HKMU" Key="Software\GnuPG" Name="Install Directory" Action="write"
+                       Type="string" Value="[DIR_GnuPG]" KeyPath="yes"/>
+      </Component>
+      <Component Id="gpg_env_cmp" Guid="27C32EC9-A1D3-44E1-B2F4-4B28DE1D49CB" Directory="dirEF4D3E0A6DFFD685C7634E46091895D9" KeyPath="yes">
+        <Environment Id="env_path" Name="PATH" Action="set" System="yes" Part="last" Value="[DIR_GnuPG]bin"/>
+      </Component>
+      <Component Id="cmp066CEAEFCC5CBE9211D9560CDD8A928D" Directory="dirEF4D3E0A6DFFD685C7634E46091895D9" Guid="001FC107-D3D7-455B-BE11-B95F6B4589F7">
+        <File Id="fil4FE0B52B2DB214DE5A85EE13B4D94708" KeyPath="yes" Source="$(var.BuildDir)\README.txt"/>
+      </Component>
+      <Component Id="cmp61470F19F532AFC30F74AE2799652CD5" Directory="dirEF4D3E0A6DFFD685C7634E46091895D9" Guid="1877EDF3-23B6-4A42-A8C7-9AB19D1B63D4">
+        <File Id="fil83721933C9B66170CE8F86C39E540277" KeyPath="yes" Source="$(var.BuildDir)\VERSION"/>
+      </Component>
+      <Component Id="cmpA047B2C8287DF1A20F8977FC5862B2F1" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="A67CDD27-50B5-4BD2-9BFE-E460402EF46F">
+        <File Id="filEE6B373B4AA5B761B6A9F70711499CC1" KeyPath="yes" Source="$(var.SourceDir)\bin\dirmngr.exe"/>
+      </Component>
+      <Component Id="cmp7B127BD0DBE7CC36F6D0F9CFCE7FCA25" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="39806F99-5DC9-48C3-90A0-12B634877C03">
+        <File Id="fil3F415158125B773933CC11545A216DE1" KeyPath="yes" Source="$(var.SourceDir)\libexec\dirmngr_ldap.exe"/>
+      </Component>
+      <Component Id="cmp3B8F4C481B336EF2822290BB0E9C9B5C" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="E211E222-E13B-4015-9103-D99E955E5CBC">
+        <File Id="fil4F17D9143148344A04FF0BDD3A3BCCAE" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg-agent.exe"/>
+      </Component>
+      <Component Id="cmp74961776CCC7B203F500FE261DC12F92" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FBA2569C-554D-4C06-88FC-0FD6541B5B4B">
+        <File Id="filB82A767EB9971018C006215A9FDE77EF" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg-connect-agent.exe"/>
+      </Component>
+      <Component Id="cmp6C1FB70721B208E33DB24296B93AB93F" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FE29D2AA-3151-4421-B8C0-355F69F267A1">
+        <File Id="fil563D2C0464DCE7ECADE6E15C0FC65821" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-preset-passphrase.exe"/>
+      </Component>
+      <Component Id="cmpB87CCF9DDCB6D9B36B92B0F9FA24FDC9" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="9BB809F3-C09B-4A1E-B52D-B68CBE59AE3B">
+        <File Id="fil8A3F9D3F6E36120B183DDF4981D84C1B" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-wks-client.exe"/>
+      </Component>
+      <Component Id="cmpEC270B071977C15E14328A04D3BBC3E8" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="4BE9D7E7-6054-4D78-9292-4D58DBA81684">
+        <File Id="fil822B20E83B1A966BABB0574CE6611B02" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg.exe"/>
+      </Component>
+      <Component Id="cmpAF601EA2DF4EFD403CBF65A0D5162912" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="28A7D50E-4BC0-4A38-8420-52C5D1EB3F55">
+        <File Id="fil00B1F6AD370147577D6F7C998ACE6121" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgconf.exe"/>
+      </Component>
+      <Component Id="cmp3BA8A06E4085F542FDAA78BAFB507AD4" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="E026569F-F37A-49FC-A529-68BDE3097218">
+        <File Id="fil1A596ECA8DC19F8EC626168033269CFE" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpgme-w32spawn.exe"/>
+      </Component>
+      <Component Id="cmp28685CE9EF72251E2DB49488E4F253A0" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="BC5A0A60-3E5C-4FDD-BFEC-EA0C3F370958">
+        <File Id="fil3632B0ED7374F4D2C34F884D0AB1CD55" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgsm.exe"/>
+      </Component>
+      <Component Id="cmp54C435FEA8B2269F880E08CA5A5E6958" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="5221235C-B773-4FB1-8DF1-6DA0F2CB509F">
+        <File Id="fil980DF38F855EAF59B36B0E59629174C6" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgtar.exe"/>
+      </Component>
+      <Component Id="cmp2D1FC2D5A2C9B057FC22A0EBE475D6C2" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="AF6741CB-C010-436E-BD56-B622EEED11D9">
+        <File Id="fil8403D82C4985B5B7EAF7365C15C2A799" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgv.exe"/>
+      </Component>
+      <Component Id="cmpF92C3483916C55841364708FCE4E1773" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="A8AEC3EA-1634-43C1-B47B-1A87BC39CF6B">
+        <File Id="filEE96FA35D6EEEBB2244C7F37E619364D" KeyPath="yes" Source="$(var.SourceDir)\bin\libassuan-0.dll"/>
+      </Component>
+      <Component Id="cmp387993E51EFE71AAD3DB75D48EF2C869" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="B40F4166-2B27-4F9C-A6C5-9788042EE134">
+        <File Id="filEE39C3CE2166E1496C1618124EDBBB7E" KeyPath="yes" Source="$(var.SourceDir)\bin\libgcrypt-20.dll"/>
+      </Component>
+      <Component Id="cmpA55348E1B63D2B8001A86EBE5A88B479" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="475D7E3F-8FA7-4B68-801C-083210A63B03">
+        <File Id="filEF34E24421329153F11FC15FBA8812A0" KeyPath="yes" Source="$(var.SourceDir)\bin\libgpg-error-0.dll"/>
+      </Component>
+      <Component Id="cmpDBDFA95FDDD0A86801D39E55BF3BC868" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="5BE73ECB-4F28-4320-9ED6-1ECC2536E547">
+        <File Id="fil6AC228365277B587545F74B1089D5476" KeyPath="yes" Source="$(var.SourceDir)\bin\libgpgme-11.dll"/>
+      </Component>
+      <Component Id="cmp9304510805DD3179141F4262F000041B" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="A824D70D-80C0-45E6-8FE8-A3B316384173">
+        <File Id="filC065951849A7371A734CB3174EF3FE0E" KeyPath="yes" Source="$(var.SourceDir)\bin\libksba-8.dll"/>
+      </Component>
+      <Component Id="cmp57527A666119B7A83597EA85962DEEFD" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="8A712561-DAD0-48C8-8BED-7035BACFFF7C">
+        <File Id="filF3D2E6F605C5B15E24519F7F015480CC" KeyPath="yes" Source="$(var.SourceDir)\bin\libnpth-0.dll"/>
+      </Component>
+      <Component Id="cmpC056F063A80E93157FDD8E5EFB2CE016" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="20439DF2-C028-43DD-9BC1-482FDE51C8C5">
+        <File Id="filF97663792C6DE115203B57642F12933C" KeyPath="yes" Source="$(var.SourceDir)\bin\libsqlite3-0.dll"/>
+      </Component>
+      <Component Id="cmp1EA054F1DCA27F5E05A6BB12C0FD5037" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="C4BB5B91-A126-4E9E-9E59-194CB722E8A5">
+        <File Id="fil52E5309B19823ED3214CA9CA0F5E434D" KeyPath="yes" Source="$(var.SourceDir)\bin\pinentry-w32.exe" Name="pinentry-basic.exe"/>
+      </Component>
+      <Component Id="cmpAA05573F0D76C9310DCD01BFB4DB4305" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="66C19BF2-D4FA-4634-9ED1-1A00F683A600">
+        <File Id="fil9E22630F67B9B40257D95BADF833F086" KeyPath="yes" Source="$(var.SourceDir)\libexec\scdaemon.exe"/>
+      </Component>
+      <Component Id="cmp7C407BC67635AF8AC77E3A5834574ABB" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="409840AF-C584-4F80-BFDA-F18E011EE7BD">
+        <File Id="filA7AF69726FFAE45C70D1433D00CB88FC" KeyPath="yes" Source="$(var.SourceDir)\bin\zlib1.dll"/>
+      </Component>
+      <Component Id="cmp65E1A11E56D561E0DAB42C9A35916855" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="40E7AA38-7E94-4F4D-87B2-3816ADB0C42E">
+        <File Id="fil5B2ABA47FA067CDCB130F32840CFC387" KeyPath="yes" Source="$(var.SourceDir)\include\assuan.h"/>
+      </Component>
+      <Component Id="cmp3FE689F1A58AD9B69436C579C9259821" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="A426A94C-9A5B-498D-8409-DD08822C388B">
+        <File Id="fil387A3FD45F5E34C55EFF0DCD23F22208" KeyPath="yes" Source="$(var.SourceDir)\include\gcrypt.h"/>
+      </Component>
+      <Component Id="cmp60C98038298D866C96CD9E8B567D506E" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="E9EAFCE0-373A-4F8F-8804-9A478A8B3F46">
+        <File Id="fil0CA9A6FD42409FBE4DE71D8307617803" KeyPath="yes" Source="$(var.SourceDir)\include\gpg-error.h"/>
+      </Component>
+      <Component Id="cmp6DFA25F5C06C7D4378B57B4972B9ABF9" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="3A0D85D2-F3FA-46FC-84A3-DB5EC1E5EFFE">
+        <File Id="fil12216064300F3BD74F304FB7BBF82DF8" KeyPath="yes" Source="$(var.SourceDir)\include\gpgme.h"/>
+      </Component>
+      <Component Id="cmp24395F851942E67A35947276D2E7898E" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="3B75734A-329A-4ECA-BD49-6118D2AC1192">
+        <File Id="filA775AF0DD0F9ED50A0D55FF9CDE33975" KeyPath="yes" Source="$(var.SourceDir)\include\ksba.h"/>
+      </Component>
+      <Component Id="cmpA1D8400F87F838D27D13A63CA2580834" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="C42872EF-5741-47F2-A5BD-68B73496ED61">
+        <File Id="fil8BBD19F8D3F29F086038916A0D759B98" KeyPath="yes" Source="$(var.SourceDir)\include\npth.h"/>
+      </Component>
+      <Component Id="cmp7559C87436CE56F0C09DF9E12FE7F743" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="85A4893D-6264-43B9-A43D-0B56F908DB7C">
+        <File Id="filB5A2BAF9AF20045FB9FB5B6DE48D00DF" KeyPath="yes" Source="$(var.SourceDir)\lib\libassuan.dll.a" Name="libassuan.imp"/>
+      </Component>
+      <Component Id="cmp902C045469438D8239D32F4D15D4DE06" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="C3427945-C116-4359-BD23-7B158E21B641">
+        <File Id="filB9244BC5F732BC08D6E9442A1ADBE51A" KeyPath="yes" Source="$(var.SourceDir)\lib\libgcrypt.dll.a" Name="libgcrypt.imp"/>
+      </Component>
+      <Component Id="cmpF41B20B2A8CAD3CBA8917622CABACA0D" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="591391E9-D3DD-45F2-A038-14D1B8542778">
+        <File Id="filA6EB6699DCA86B1FBE961D53E2E24440" KeyPath="yes" Source="$(var.SourceDir)\lib\libgpg-error.dll.a" Name="libgpg-error.imp"/>
+      </Component>
+      <Component Id="cmp51A12EB5E7192912DCC1637F9417A39E" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="E15FE761-BF44-4130-B354-EBE8F6A0F5D8">
+        <File Id="fil710653D37212C7F55D9AF2FCF7189BA7" KeyPath="yes" Source="$(var.SourceDir)\lib\libgpgme.dll.a" Name="libgpgme.imp"/>
+      </Component>
+      <Component Id="cmp30558FA612DCFC9CE144A01F3B4BC87A" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="CBC1DADD-384C-4C28-B535-DCADD5C5D958">
+        <File Id="fil972A246C4D46A8ECD31DD7C6CC4D5B58" KeyPath="yes" Source="$(var.SourceDir)\lib\libksba.dll.a" Name="libksba.imp"/>
+      </Component>
+      <Component Id="cmpB5509E83C14EE3080355A3EAF09D1C8D" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="FEC81836-944E-4613-A498-E620B981EB04">
+        <File Id="fil0615847C26E386E0B892124531F2ABBC" KeyPath="yes" Source="$(var.SourceDir)\lib\libnpth.dll.a" Name="libnpth.imp"/>
+      </Component>
+      <Component Id="cmp909B0412FDFCFD5092D93932AF982A72" Directory="dirC2E6BF1CC65903EA3A1AD83349586122" Guid="D30E7138-0D1C-48F4-8F53-E1EC6333F610">
+        <File Id="fil322067E40CE41C36574A7CC520D75876" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\vsnfd.prf" Name="VS-NfD.prf"/>
+      </Component>
+      <Component Id="cmp59D652F2B6BBFD90563BF58D6CE6BE7B" Directory="dirF4B1502A83344E3C92AB58989653B465" Guid="1C51D4AF-B308-40A3-B8D8-CEDA5AB2A383">
+        <File Id="filCB1BD20C87EE88A17D7502E26268DA65" KeyPath="yes" Source="$(var.SourceDir)\share\gnupg\distsigkey.gpg"/>
+      </Component>
+      <Component Id="cmpB3614EC83F6377F9DB10BC5C5A78AA47" Directory="dirF4B1502A83344E3C92AB58989653B465" Guid="BACEBFAD-8B9A-4A40-9402-42B3D8DDFDE3">
+        <File Id="fil0E0180B133150E83BBEDA55A98F3EF53" KeyPath="yes" Source="$(var.SourceDir)\share\gnupg\sks-keyservers.netCA.pem"/>
+      </Component>
+      <Component Id="cmp546709111F313BA25B92228092A64615" Directory="dirC8F3DBB83340CAA01AAA7A2A483F2C9D" Guid="03FC08BD-E454-4F57-BC28-226C3784F391">
+        <File Id="filB3D8051BA1609D83EEA2EE794DF525CD" KeyPath="yes" Source="$(var.SourceDir)\share\locale\ca\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp0B01FD63A8971642DB9EC8902AE64467" Directory="dir141CB5729CD460F84352D7BFBCF4386E" Guid="B67AEAE8-891E-4D08-AB1B-F2E735C0D0BB">
+        <File Id="fil811398B2F4B9063CE8B46D51462204E6" KeyPath="yes" Source="$(var.SourceDir)\share\locale\cs\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpFEA38F2E83B626E2DB8C64EBFDD5F87F" Directory="dir141CB5729CD460F84352D7BFBCF4386E" Guid="F8ED9E6E-C30F-47BB-B17F-8A2516573271">
+        <File Id="filFABAC9AECF9EBB85C304D09AF59AF2A9" KeyPath="yes" Source="$(var.SourceDir)\share\locale\cs\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmpA1D261AF329A02C03DA43105A4870E9B" Directory="dir219EE67997F4683B56B7B40BEE76BECA" Guid="827F592D-1E65-47FF-8BFB-DC95482355AB">
+        <File Id="fil3E0196FD51F525407A0404DDD6EF9950" KeyPath="yes" Source="$(var.SourceDir)\share\locale\da\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp9524F383B8CA244F4358210CA093CE53" Directory="dir219EE67997F4683B56B7B40BEE76BECA" Guid="9B1B3B43-FF0D-4018-B80D-2C6DFE2A8BC6">
+        <File Id="filB1426F1BBEAFE0D062117DE8B5F5EC60" KeyPath="yes" Source="$(var.SourceDir)\share\locale\da\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp453C1B1DFFA1D3F5F77C20ABED4FB501" Directory="dirD54A193F36E233547636F2C139EE1FF4" Guid="9ED93287-D2BD-481E-A924-25420319B3A3">
+        <File Id="filBED78A4CC27F6AB64486763E8575A682" KeyPath="yes" Source="$(var.SourceDir)\share\locale\de\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp3579BBDFDECAD8E12F0DCBB423B27BDE" Directory="dirD54A193F36E233547636F2C139EE1FF4" Guid="9AD79F61-111B-4365-ABC6-9A0D509016D5">
+        <File Id="filA78CD7B4A920A5F00F5A35EE4047DAFD" KeyPath="yes" Source="$(var.SourceDir)\share\locale\de\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmpBD95AF2DBA6797BABBD361E77D660844" Directory="dir413F01097C66B82C5F6BEC66B78FF01A" Guid="AF0381F1-27A6-4ECF-A04E-A6194470CF4A">
+        <File Id="fil5051D9DDD25D14F2072FE671D9BE4A88" KeyPath="yes" Source="$(var.SourceDir)\share\locale\el\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpB2EE1A46945B665B245BDEAC20C07C59" Directory="dirD30F6EC4D19878BC1D4AD48D1D7B5B87" Guid="98939176-31EF-46B1-A1E8-04C741EB2E42">
+        <File Id="filF903A2E0B4F19FAB403ACB58C8A36F46" KeyPath="yes" Source="$(var.SourceDir)\share\locale\en@boldquot\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp5E48E37FE117181CACBE2E2F8317B299" Directory="dir3BBFD6070062CD151BFE332233C479AC" Guid="F18A4CD6-5C64-43E4-961C-BF2D1520D38C">
+        <File Id="filEF5659796AD116AFB2058F362B56F1CB" KeyPath="yes" Source="$(var.SourceDir)\share\locale\en@quot\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpAE36863359F64D5B7D0083B6F3072B2B" Directory="dirC78504765289243B95E8A367FB5AE790" Guid="FF25CA11-581A-4AC3-AA15-B09B7C70C57F">
+        <File Id="filF2B163C929DD753B4A7AE927F75B2AAA" KeyPath="yes" Source="$(var.SourceDir)\share\locale\eo\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp58E07898FC1EABA8C96B5099DE73CE56" Directory="dirC78504765289243B95E8A367FB5AE790" Guid="25D5E4B1-0585-4011-9F43-2E8027080AE5">
+        <File Id="fil4C012DF8082F3BB8103B19C99E305785" KeyPath="yes" Source="$(var.SourceDir)\share\locale\eo\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmpCB3F1506E7156F718DB761C6A14685FE" Directory="dir5AD787E17B0242315401083D50AE9954" Guid="96A724A3-2DF0-436A-B408-9DD2CBCEF57C">
+        <File Id="fil0CE86D5A00D6BE8DB27459FD15D7CC17" KeyPath="yes" Source="$(var.SourceDir)\share\locale\es\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpB54C2AADB54A2E3EC76B0F7E64E5D515" Directory="dir5AD787E17B0242315401083D50AE9954" Guid="12C99424-2F85-466B-B5D0-DCB530EA805F">
+        <File Id="fil79F29C03578FB1881FB72BD77C0DE911" KeyPath="yes" Source="$(var.SourceDir)\share\locale\es\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp395184651FCD4192805C52F6CCF8F857" Directory="dir03482DEF59807192455649DD930D56F9" Guid="F2FECA4A-D7B4-455B-B46A-301A59F6537F">
+        <File Id="filDDE34C283CF00D2E00C773BBAE5E7790" KeyPath="yes" Source="$(var.SourceDir)\share\locale\et\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp41602D9FC6BEA689FC0055C519834BC9" Directory="dir7258CFD55BE72CAA15463E0C4367D933" Guid="6850B5E4-BB31-458D-93EA-F75F11F5D3DF">
+        <File Id="filE58B5D56A326026B4F8B14A4D1EBF228" KeyPath="yes" Source="$(var.SourceDir)\share\locale\fi\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp3B741FA3C43918B7E61B1385BA857CC5" Directory="dir80EBECAD50382115BFB3623AB7C5CABB" Guid="492A7496-CB3E-4BFE-B62B-EF29174477D6">
+        <File Id="filBCCEAD5A71A6CB99E838F38D14FD6720" KeyPath="yes" Source="$(var.SourceDir)\share\locale\fr\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp04E88B936153B4524F20916881D87C54" Directory="dir80EBECAD50382115BFB3623AB7C5CABB" Guid="007B9CA6-2493-482E-8586-7E3B23083E55">
+        <File Id="fil36741F053CE48197E6844A8DBCD9EE5A" KeyPath="yes" Source="$(var.SourceDir)\share\locale\fr\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmpCE4A03AF9717BC3514250310A93AC516" Directory="dirB413C8D9BB72BA2ACF4475C5ED540B29" Guid="7901B164-D5C2-4A5B-958E-83CE87F9EBF3">
+        <File Id="fil392B26641E4A84053B893C71C9A8B3DA" KeyPath="yes" Source="$(var.SourceDir)\share\locale\gl\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp40EABC79B84039E2A85BCCD27D33217C" Directory="dirAC75323D1E05EB729A23BF8CC19F6CE1" Guid="9A170067-0AAD-48FE-933D-BFA4BB5737DF">
+        <File Id="fil23841F8CEE8D77C8292145F90B4127A0" KeyPath="yes" Source="$(var.SourceDir)\share\locale\hu\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp69E8684ED1EE085A450C3DB3E4FEC1DF" Directory="dirAC75323D1E05EB729A23BF8CC19F6CE1" Guid="27160F4D-FCE5-4286-8CE6-92DA7902121D">
+        <File Id="fil015280FE4A4A4A03BE986ED8A41496D8" KeyPath="yes" Source="$(var.SourceDir)\share\locale\hu\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp4C11B77F811ADD2D41DB2E491925688B" Directory="dirB53C46AD0FE0B9E9F4ED6E068BDE8EBD" Guid="9B8A4557-FFF7-4FB5-86C2-230514DC57FE">
+        <File Id="filDF9BF4DA4EFC2138E35BF0886EBC08C0" KeyPath="yes" Source="$(var.SourceDir)\share\locale\id\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpC1D2F0D1498E07D5394E670945473CDD" Directory="dir6947822B32929E5EE9E2F5BB37E33C99" Guid="9F0EA006-3C9E-4AD7-8CF1-8BC5143B5BAD">
+        <File Id="fil778D477BBD9EB473266BA40BFFC806E2" KeyPath="yes" Source="$(var.SourceDir)\share\locale\it\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp7E5A87AA208D9D1BA7B7EC2AB884BB61" Directory="dir6947822B32929E5EE9E2F5BB37E33C99" Guid="0D1565C6-B32A-4997-928B-36E1DC604886">
+        <File Id="fil3654A2F71B3000371FF3A607EB058394" KeyPath="yes" Source="$(var.SourceDir)\share\locale\it\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp7705EC95E7BA4142FFF90BC6A10268A6" Directory="dir0F00EB134F84CCFA6585F3AA2B092ED5" Guid="76DC6A7A-6C55-4738-8C6D-81B5EEF00680">
+        <File Id="filB514C4C69CD922C01058D9DA912A2950" KeyPath="yes" Source="$(var.SourceDir)\share\locale\ja\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp5BA4E78E60402DE65E67F674320470A6" Directory="dir0F00EB134F84CCFA6585F3AA2B092ED5" Guid="83978CB6-0C1C-45BB-A394-8FFE7257C1D6">
+        <File Id="filFD7D0D79172CE8755D21593034699CF8" KeyPath="yes" Source="$(var.SourceDir)\share\locale\ja\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp5A2891458CB34BEA5C6EACC1B3C4B881" Directory="dir7D7752BA12ED1126D964503F2919F42D" Guid="C871047C-759E-443D-A6CE-7AC5CED25592">
+        <File Id="filCC4AD270C5FBA0E3C96A919250019018" KeyPath="yes" Source="$(var.SourceDir)\share\locale\nb\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpE127926655EFAB9AA602584CEB9E9D1B" Directory="dirA9625026AF72FEFB1FAD1F94501AEF83" Guid="5A4B3DE7-94E2-4265-9BA0-2AC7AFF409BA">
+        <File Id="filEF9D2291E34CF54043445C689D49DD8B" KeyPath="yes" Source="$(var.SourceDir)\share\locale\nl\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp0D8D30445E1BB80DF1DCC38F6C8C4FB1" Directory="dir3AF4D2B9487DCDDC8A57062D4C6901EC" Guid="A85DF60D-4ABD-4649-AF8C-4F8CEC001A23">
+        <File Id="filC14FDE5CC6F0A330FB85D37C24BAB178" KeyPath="yes" Source="$(var.SourceDir)\share\locale\pl\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpF7830AE39E55351DBB29A3D8641DDCF7" Directory="dir3AF4D2B9487DCDDC8A57062D4C6901EC" Guid="D7819086-08A0-4DFE-ACBF-806D4EF13B8F">
+        <File Id="fil14BA82E453CCF0FF276383023C69FFC6" KeyPath="yes" Source="$(var.SourceDir)\share\locale\pl\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmpE4AF04300A648AF46772477B4BCD50A9" Directory="dirD80A015C242F188C2E1454B5A4D2010E" Guid="B2AC4417-31C5-486F-B916-414298C4C311">
+        <File Id="filD0B5C04E092E0EE30E716E50ECAC72EF" KeyPath="yes" Source="$(var.SourceDir)\share\locale\pt\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp533CEE1F897C777253CA0F688CEAD4B3" Directory="dirD80A015C242F188C2E1454B5A4D2010E" Guid="DB7493C1-9247-4F58-A4F4-C75464E1295C">
+        <File Id="filB72FA9BA953EB2E2D4985179FFACC6DC" KeyPath="yes" Source="$(var.SourceDir)\share\locale\pt\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp4A2F6505F6FF8C55E6D589F3F661F983" Directory="dir8E149DF65F3B10EA3AD2436850623AEF" Guid="1F1258EA-A31F-4220-9E11-9968C385DEA5">
+        <File Id="filBEED76EC0BF8B09FD32ABA8EE7A3B1BA" KeyPath="yes" Source="$(var.SourceDir)\share\locale\ro\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp35F0B761EF52F231FDCF18F90101C243" Directory="dir8E149DF65F3B10EA3AD2436850623AEF" Guid="BC99F8F6-2C26-4B0F-8295-3227D982A601">
+        <File Id="filB8B8C8B4336151105E454757B13CCEAD" KeyPath="yes" Source="$(var.SourceDir)\share\locale\ro\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp139163DE87471A416369EF26F8CD95DE" Directory="dirEDC8B39F817DC0C264AF78A4861B98A5" Guid="A7CA5650-72CD-418F-8ABD-5C703422BF6C">
+        <File Id="fil476570A41ADB583A8EBE0E899D741C1D" KeyPath="yes" Source="$(var.SourceDir)\share\locale\ru\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpB8918417A4AE4B54CC8327692BF86794" Directory="dirEDC8B39F817DC0C264AF78A4861B98A5" Guid="8E45AA5B-8D64-4E47-9899-D9D712D7A9B4">
+        <File Id="fil22C7ED660A4A562E2E805A54247A3A8D" KeyPath="yes" Source="$(var.SourceDir)\share\locale\ru\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmpF8B71E49E683C025CD601C29B85D4C1A" Directory="dir2E9ED3D3A42B560362582A080F2D8EB7" Guid="419A6E51-364D-49E5-9353-7E37EC7A0126">
+        <File Id="fil3CD6A360EBA3B678A69601849455308B" KeyPath="yes" Source="$(var.SourceDir)\share\locale\sk\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp01CE203B24E5F0B3D3426CFCD6091596" Directory="dirF73F41B3426675E91A925612314E760D" Guid="097D3693-A8B3-4DFC-B0FF-D14610DB0200">
+        <File Id="fil757033D78BBF57A8700AA388B496D4B1" KeyPath="yes" Source="$(var.SourceDir)\share\locale\sr\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp13FA2CA1F2386382384F0BFE8BD4ADB4" Directory="dirCAB2D2CE70E9126EBD48DDFEE60E7781" Guid="F47BC1D4-EDD7-4376-9F09-45150463BE8D">
+        <File Id="fil2240B649D5A4A6EFDE64D63943510803" KeyPath="yes" Source="$(var.SourceDir)\share\locale\sv\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpE5E3020E114EB5CF185D0172FF66796D" Directory="dirCAB2D2CE70E9126EBD48DDFEE60E7781" Guid="EB6C57F3-3A35-4746-B502-B871B093DD70">
+        <File Id="filCA62F18DC52CD983C794CBB0782841F6" KeyPath="yes" Source="$(var.SourceDir)\share\locale\sv\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp48640C4F90991656CDAB5867F14089C5" Directory="dir5D2CF7C0932EADDFECCD159795AC414C" Guid="ED13C94B-16F6-41EC-B384-A4789FFDDF1C">
+        <File Id="fil9E4D4968B6514B941ED29456945457FB" KeyPath="yes" Source="$(var.SourceDir)\share\locale\tr\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp4551AA101DFA1C1973F11346D4FE85D8" Directory="dir13556507D1D7C34DAAA5E416583DA3BA" Guid="B4D0F8D3-624B-4D70-A860-6780C98CAF3A">
+        <File Id="filABB395BD133D2ABF362DB6322EF3E6E0" KeyPath="yes" Source="$(var.SourceDir)\share\locale\uk\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpDC700475DBB14F58460607F4C6D7C808" Directory="dir13556507D1D7C34DAAA5E416583DA3BA" Guid="DFA12ED0-0DBB-44A3-828B-544E42848ECA">
+        <File Id="fil0A499A3437867D3591AADB00D373CFB6" KeyPath="yes" Source="$(var.SourceDir)\share\locale\uk\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp56309B32C0E45B2040DB0FBF16C05D40" Directory="dir721ABBF14E4EE3A800878547BA5529B8" Guid="17A1D9DA-801B-4C23-B1AC-D405E9A7FB76">
+        <File Id="filCC31A85EF9124C55B9E4B83ED1190CBE" KeyPath="yes" Source="$(var.SourceDir)\share\locale\vi\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp48AA79D88C3B058F88BAE0F89EC07964" Directory="dirB2160A461FB69C07887EEC237C628C3F" Guid="F7849778-675B-4E81-97F7-2C2BBC1A66C0">
+        <File Id="fil1B7A20D6971217F00EEF33F1CD815BF4" KeyPath="yes" Source="$(var.SourceDir)\share\locale\zh_CN\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmpDAD1E61B19B57AA9F0C18F979E2DB953" Directory="dirB2160A461FB69C07887EEC237C628C3F" Guid="1149BDED-4DB9-4D71-B904-60A41D3DC002">
+        <File Id="fil98F23973F18C7612B4EF19D180934A13" KeyPath="yes" Source="$(var.SourceDir)\share\locale\zh_CN\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+      <Component Id="cmp6DE01ED3D9CF376BAE71CEF2CFBE87FA" Directory="dirBA8895851647F6285902F09081099B1C" Guid="04956C7A-BD53-4D06-8E91-C546D978E945">
+        <File Id="fil404A4C6020D045EAB28BCFB83D054DDA" KeyPath="yes" Source="$(var.SourceDir)\share\locale\zh_TW\LC_MESSAGES\gnupg2.mo"/>
+      </Component>
+      <Component Id="cmp8AA8F263229FC31A4B134E9E3B5CBD2A" Directory="dirBA8895851647F6285902F09081099B1C" Guid="0677C519-752D-448D-8D23-05CBA7B384B4">
+        <File Id="filBF66E344620143485028A132A7065F2C" KeyPath="yes" Source="$(var.SourceDir)\share\locale\zh_TW\LC_MESSAGES\libgpg-error.mo"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir45F9BF0D9027944353D2097BEA229C4B">
+      <Directory Id="dir03482DEF59807192455649DD930D56F9" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir0388F8EB0714C4C03EEE51D81D96767B" Name="sv"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir05D708F44AE366B2A1B3515757353BF8" Name="pt"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir78781F0EC0F0500B48FDBEE640A12270">
+      <Directory Id="dir0F00EB134F84CCFA6585F3AA2B092ED5" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir91BE2823B1F0AFFD0216A44DE5D4EE94">
+      <Directory Id="dir13556507D1D7C34DAAA5E416583DA3BA" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE46249598446819F7AA7C9A2914C6D83">
+      <Directory Id="dir141CB5729CD460F84352D7BFBCF4386E" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir17DA43D7EF00B3DBBFEE8ED3BE893755" Name="zh_TW"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir1C070A4A8EAFE1AEDA2C3879FD9D478A" Name="pl"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir1C59FE40E4A3D1C252E8DC21ED3FD35F" Name="sk"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir1CE84C7F92B3B82920AFF2CB0BAD8C92" Name="fr"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir1DDB41C9C53372E27617C37DE057F0A2" Name="en@boldquot"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirFEC9F97E00E1DB82803BCC2C95BD967E">
+      <Directory Id="dir219EE67997F4683B56B7B40BEE76BECA" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir1C59FE40E4A3D1C252E8DC21ED3FD35F">
+      <Directory Id="dir2E9ED3D3A42B560362582A080F2D8EB7" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirEF4D3E0A6DFFD685C7634E46091895D9">
+      <Directory Id="dir39F5678CDEA54A3E48058808B3D68E81" Name="include"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir1C070A4A8EAFE1AEDA2C3879FD9D478A">
+      <Directory Id="dir3AF4D2B9487DCDDC8A57062D4C6901EC" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirACF0C8FF72868611C9823E3AF7C96E11">
+      <Directory Id="dir3BBFD6070062CD151BFE332233C479AC" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir406CDA0C2AF347056FF1F29C50A512A2" Name="vi"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirBB0EE79F9E6AB87660CAAC61EDDB7432">
+      <Directory Id="dir413F01097C66B82C5F6BEC66B78FF01A" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir45F9BF0D9027944353D2097BEA229C4B" Name="et"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir49983B200CB1A1C893A5BC026452B90E" Name="ro"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir7BFF80ABAF1D317F0C75F1491A11C917">
+      <Directory Id="dir4F1B7A79DBDF2C05F29C779072E6C575" Name="locale"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir75C3ECEBFB2717BED8681E7513E6AD58">
+      <Directory Id="dir5AD787E17B0242315401083D50AE9954" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirBD37452189F56F813660FF9E60B6DA4F">
+      <Directory Id="dir5D2CF7C0932EADDFECCD159795AC414C" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirEF4D3E0A6DFFD685C7634E46091895D9">
+      <Directory Id="dir6694D0A4AAD84EF827096DD86D1B4FA2" Name="lib"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir70DD220968FA035FF9A88BA8C6E72D41">
+      <Directory Id="dir6947822B32929E5EE9E2F5BB37E33C99" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir70DD220968FA035FF9A88BA8C6E72D41" Name="it"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir406CDA0C2AF347056FF1F29C50A512A2">
+      <Directory Id="dir721ABBF14E4EE3A800878547BA5529B8" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirD00B86267339B6DD4ABBD3CE21ABF020">
+      <Directory Id="dir7258CFD55BE72CAA15463E0C4367D933" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir73F71F2B5EA5C0BEE7C1AC62BC1CDD00" Name="hu"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir75C3ECEBFB2717BED8681E7513E6AD58" Name="es"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir78781F0EC0F0500B48FDBEE640A12270" Name="ja"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir7A5947AF5A504DECDE3201037F256CB1" Name="de"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirEF4D3E0A6DFFD685C7634E46091895D9">
+      <Directory Id="dir7BFF80ABAF1D317F0C75F1491A11C917" Name="share"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirD211F027155495F926B97F997DD06573">
+      <Directory Id="dir7D7752BA12ED1126D964503F2919F42D" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir1CE84C7F92B3B82920AFF2CB0BAD8C92">
+      <Directory Id="dir80EBECAD50382115BFB3623AB7C5CABB" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir837961AB354A543B79D765904301D522" Name="eo"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir8D24EE6C11C3CBEC565C048AF1E690E8" Name="id"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir49983B200CB1A1C893A5BC026452B90E">
+      <Directory Id="dir8E149DF65F3B10EA3AD2436850623AEF" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dir91BE2823B1F0AFFD0216A44DE5D4EE94" Name="uk"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirA58838A162DA815C458A68D5A3A53B58">
+      <Directory Id="dir926A54C6CC889938C4091ECCB93FB640" Name="gnupg"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir7BFF80ABAF1D317F0C75F1491A11C917">
+      <Directory Id="dirA58838A162DA815C458A68D5A3A53B58" Name="doc"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE2D6A167979D9DAF78E0DC18293E05DD">
+      <Directory Id="dirA9625026AF72FEFB1FAD1F94501AEF83" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirEF4D3E0A6DFFD685C7634E46091895D9">
+      <Directory Id="dirAA72FFDDFA224FB221D53750596B0142" Name="bin"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir73F71F2B5EA5C0BEE7C1AC62BC1CDD00">
+      <Directory Id="dirAC75323D1E05EB729A23BF8CC19F6CE1" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirACF0C8FF72868611C9823E3AF7C96E11" Name="en@quot"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirCC1090D8BE2128FA3CA703FAD54F41A0">
+      <Directory Id="dirB2160A461FB69C07887EEC237C628C3F" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE7E0782B19315880FE9BD84AF1682721">
+      <Directory Id="dirB413C8D9BB72BA2ACF4475C5ED540B29" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir8D24EE6C11C3CBEC565C048AF1E690E8">
+      <Directory Id="dirB53C46AD0FE0B9E9F4ED6E068BDE8EBD" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir17DA43D7EF00B3DBBFEE8ED3BE893755">
+      <Directory Id="dirBA8895851647F6285902F09081099B1C" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirBB0EE79F9E6AB87660CAAC61EDDB7432" Name="el"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirBD37452189F56F813660FF9E60B6DA4F" Name="tr"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir926A54C6CC889938C4091ECCB93FB640">
+      <Directory Id="dirC2E6BF1CC65903EA3A1AD83349586122" Name="examples"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir837961AB354A543B79D765904301D522">
+      <Directory Id="dirC78504765289243B95E8A367FB5AE790" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirD39E83202D907BF20C7103C263E10E78">
+      <Directory Id="dirC8F3DBB83340CAA01AAA7A2A483F2C9D" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir0388F8EB0714C4C03EEE51D81D96767B">
+      <Directory Id="dirCAB2D2CE70E9126EBD48DDFEE60E7781" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirCC1090D8BE2128FA3CA703FAD54F41A0" Name="zh_CN"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirD00B86267339B6DD4ABBD3CE21ABF020" Name="fi"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirD14BA95A8404FE8F595737D4EB6D0ECC" Name="ru"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirD211F027155495F926B97F997DD06573" Name="nb"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir1DDB41C9C53372E27617C37DE057F0A2">
+      <Directory Id="dirD30F6EC4D19878BC1D4AD48D1D7B5B87" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirD39E83202D907BF20C7103C263E10E78" Name="ca"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir7A5947AF5A504DECDE3201037F256CB1">
+      <Directory Id="dirD54A193F36E233547636F2C139EE1FF4" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir05D708F44AE366B2A1B3515757353BF8">
+      <Directory Id="dirD80A015C242F188C2E1454B5A4D2010E" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirE2D6A167979D9DAF78E0DC18293E05DD" Name="nl"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirE46249598446819F7AA7C9A2914C6D83" Name="cs"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirE62A81CFBBCD8D97197ABD459F171516" Name="sr"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirE7E0782B19315880FE9BD84AF1682721" Name="gl"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirD14BA95A8404FE8F595737D4EB6D0ECC">
+      <Directory Id="dirEDC8B39F817DC0C264AF78A4861B98A5" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir7BFF80ABAF1D317F0C75F1491A11C917">
+      <Directory Id="dirF4B1502A83344E3C92AB58989653B465" Name="gnupg"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE62A81CFBBCD8D97197ABD459F171516">
+      <Directory Id="dirF73F41B3426675E91A925612314E760D" Name="LC_MESSAGES"/>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir4F1B7A79DBDF2C05F29C779072E6C575">
+      <Directory Id="dirFEC9F97E00E1DB82803BCC2C95BD967E" Name="da"/>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

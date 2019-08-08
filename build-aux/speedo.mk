@@ -1,5 +1,5 @@
 # speedo.mk - Speedo rebuilds speedily.
-# Copyright (C) 2008, 2014 g10 Code GmbH
+# Copyright (C) 2008, 2014, 2019 g10 Code GmbH
 #
 # speedo is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@
 # We need to know our own name.
 SPEEDO_MK := $(realpath $(lastword $(MAKEFILE_LIST)))
 
-.PHONY : help native native-gui w32-installer w32-source
+.PHONY : help native native-gui w32-installer w32-source w32-wixlib
 .PHONY :      git-native git-native-gui git-w32-installer git-w32-source
 .PHONY :      this-native this-native-gui this-w32-installer this-w32-source
 
@@ -58,6 +58,7 @@ help:
 	@echo '  w32-installer      Build a Windows installer'
 	@echo '  w32-source         Pack a source archive'
 	@echo '  w32-release        Build a Windows release'
+	@echo '  w32-wixlib         Build a wixlib for MSI packages'
 	@echo '  w32-sign-installer Sign the installer'
 	@echo
 	@echo 'You may append INSTALL_PREFIX=<dir> for native builds.'
@@ -66,6 +67,8 @@ help:
 	@echo 'Use STATIC=1 to build with statically linked libraries.'
 	@echo 'Use SELFCHECK=0 for a non-released version.'
 	@echo 'Use CUSTOM_SWDB=1 for an already downloaded swdb.lst.'
+	@echo 'Use WIXPREFIX to provide the WIX binaries for the MSI package.'
+	@echo '    Using WIX also requires wine with installed wine mono.'
 
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
 
@@ -96,6 +99,15 @@ git-w32-installer: check-tools
 this-w32-installer: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=0 \
 	                                           CUSTOM_SWDB=1 installer
+w32-wixlib: check-tools
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=0 wixlib
+
+git-w32-wixlib: check-tools
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=0 wixlib
+
+this-w32-wixlib: check-tools
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=0 \
+	                                           CUSTOM_SWDB=1 wixlib
 
 w32-source: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=0 dist-source
@@ -156,6 +168,9 @@ INST_NAME=gnupg-w32
 
 # Use this to override the installaion directory for native builds.
 INSTALL_PREFIX=none
+
+# Set this to the location of wixtools
+WIXPREFIX=
 
 # The Authenticode key and cert chain used to sign the Windows
 # installer If AUTHENTICODE_SIGNHOST is specified, signing is done on
@@ -731,6 +746,8 @@ W32CC = i686-w64-mingw32-gcc
 
 MKDIR=mkdir
 MAKENSIS=makensis
+WINE=wine
+
 SHA1SUM := $(shell $(topsrc)/build-aux/getswdb.sh --find-sha1sum)
 ifeq ($(SHA1SUM),false)
 $(error The sha1sum tool is missing)
@@ -1275,6 +1292,59 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 		    $(extra_installer_options) $(w32src)/inst.nsi)
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe"
 
+# We use the installer target to ensure everything is done and signed
+wixlib: installer $(bdir)/README.txt $(w32src)/wixlib.wxs
+	if [ -z "$$(which $(WINE))" ]; then \
+		echo "ERROR: For the w32-wixlib wine needs to be installed."; \
+		exit 1; \
+	fi;
+	if [ -z "$(WIXPREFIX)" ]; then \
+		echo "ERROR: You must set WIXPREFIX to an installation of wixtools."; \
+		exit 1; \
+	fi;
+	(if [ -z "$$WINEPREFIX" ]; then \
+		WINEPREFIX="$$HOME/.wine"; \
+		if [ ! -e "$$WINEPREFIX/dosdevices" ]; then \
+			echo "ERROR: No wine prefix found under $$WINEPREFIX"; \
+			exit 1; \
+		fi; \
+	fi; \
+	WINEINST=$$WINEPREFIX/dosdevices/k:; \
+	WINESRC=$$WINEPREFIX/dosdevices/i:; \
+	WINEBUILD=$$WINEPREFIX/dosdevices/j:; \
+	if [ -e "$$WINEINST" ]; then \
+		echo "ERROR: $$WINEINST already exists. Please remove."; \
+		exit 1; \
+	fi; \
+	if [ -e "$$WINESRC" ]; then \
+		echo "ERROR: $$WINESRC already exists. Please remove."; \
+		exit 1; \
+	fi; \
+	if [ -e "$$WINEBUILD" ]; then \
+		echo "ERROR: $$WINEBUILD already exists. Please remove."; \
+		exit 1; \
+	fi; \
+	echo "$(INST_NAME)" > $(bdir)/VERSION; \
+	echo "$(INST_VERSION)" >> $(bdir)/VERSION; \
+	MSI_VERSION=$$(echo $(INST_VERSION) | tr -s \\-beta .); \
+	(ln -s $(idir) $$WINEINST; \
+	 ln -s $(w32src) $$WINESRC; \
+	 ln -s $(bdir)  $$WINEBUILD; \
+		$(WINE) $(WIXPREFIX)/candle.exe \
+		-dSourceDir=k: \
+		-dBuildDir=j: \
+		-dVersion=$$MSI_VERSION \
+		-out k:\\$(INST_NAME).wixobj \
+		-pedantic -wx i:\\wixlib.wxs ;\
+		$(WINE) $(WIXPREFIX)/lit.exe \
+		-out k:\\$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib \
+		-bf \
+		-wx \
+		-pedantic \
+		k:\\$(INST_NAME).wixobj \
+	); \
+		(rm $$WINEINST; rm $$WINESRC; rm $$WINEBUILD;) \
+	)
 
 define MKSWDB_commands
  ( pref="#+macro: gnupg24_w32_" ;\
@@ -1318,11 +1388,21 @@ installer-from-source: dist-source
 	 tar xJf "../$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).tar.xz";\
 	 cd $(INST_NAME)-$(INST_VERSION); \
          $(MAKE) -f build-aux/speedo.mk this-w32-installer SELFCHECK=0;\
+	 if [ -n "$(WIXPREFIX)" ]; then \
+		 cd $(INST_NAME)-$(INST_VERSION); \
+		 $(MAKE) -f build-aux/speedo.mk this-w32-wixlib SELFCHECK=0;\
+	 fi; \
 	 reldate="$$(date -u +%Y-%m-%d)" ;\
 	 exefile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ;\
 	 cp "PLAY/inst/$$exefile" ../.. ;\
 	 exefile="../../$$exefile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
+	 msifile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib"; \
+	 if [ -e "$${msifile}" ]; then \
+		 cp "PLAY/inst/$$msifile" ../..; \
+		 msifile="../../$$msifile" ; \
+		 $(call MKSWDB_commands,$${msifile},$${reldate}); \
+	 fi \
 	)
 
 # This target repeats some of the installer-from-source steps but it
@@ -1334,12 +1414,17 @@ sign-installer:
 	 cd $(INST_NAME)-$(INST_VERSION); \
 	 reldate="$$(date -u +%Y-%m-%d)" ;\
 	 exefile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ;\
+	 msifile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib ;\
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Signing installer" ;\
 	 echo "speedo:  */" ;\
 	 $(call AUTHENTICODE_sign,"PLAY/inst/$$exefile","../../$$exefile");\
 	 exefile="../../$$exefile" ;\
+	 msifile="../../$$msifile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
+	 if [ -e "$${msifile}" ]; then \
+	   $(call MKSWDB_commands,$${msifile},$${reldate}); \
+	 fi; \
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Verification result" ;\
 	 echo "speedo:  */" ;\
