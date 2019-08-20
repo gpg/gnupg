@@ -1491,7 +1491,7 @@ Incremented with any change of any of the other counters.
 @item KEY
 Incremented for added or removed private keys.
 @item CARD
-Incremented for changes of the card readers stati.
+Incremented for each change of the card reader's status.
 @end table
 
 @node Agent GETINFO
