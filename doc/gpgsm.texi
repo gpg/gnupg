@@ -224,7 +224,7 @@ mainly for debugging.
 @item --keydb-clear-some-cert-flags
 @opindex keydb-clear-some-cert-flags
 This is a debugging aid to reset certain flags in the key database
-which are used to cache certain certificate stati.  It is especially
+which are used to cache certain certificate statuses.  It is especially
 useful if a bad CRL or a weird running OCSP responder did accidentally
 revoke certificate.  There is no security issue with this command
 because @command{gpgsm} always make sure that the validity of a certificate is

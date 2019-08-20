@@ -1091,7 +1091,7 @@ Directly sign a key from the passphrase without any further user
 interaction.  The @var{fpr} must be the verified primary fingerprint
 of a key in the local keyring. If no @var{names} are given, all
 useful user ids are signed; with given [@var{names}] only useful user
-ids matching one of theses names are signed.  By default, or if a name
+ids matching one of these names are signed.  By default, or if a name
 is prefixed with a '*', a case insensitive substring match is used.
 If a name is prefixed with a '=' a case sensitive exact match is done.
 
@@ -3655,7 +3655,7 @@ files; They all live in the current home directory (@pxref{option
   certificates.  The file name corresponds to the OpenPGP fingerprint of
   the respective key.  It is suggested to backup those certificates and
   if the primary private key is not stored on the disk to move them to
-  an external storage device.  Anyone who can access theses files is
+  an external storage device.  Anyone who can access these files is
   able to revoke the corresponding key.  You may want to print them out.
   You should backup all files in this directory and take care to keep
   this backup closed away.

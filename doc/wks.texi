@@ -260,7 +260,7 @@ Display a brief help page and exit.
 @end ifset
 
 @mansect description
-The @command{gpg-wks-server} is a server site implementation of the
+The @command{gpg-wks-server} is a server side implementation of the
 Web Key Service.  It receives requests for publication, sends
 confirmation requests, receives confirmations, and published the key.
 It also has features to ease the setup and maintenance of a Web Key
@@ -268,7 +268,7 @@ Directory.
 
 When used with the command @option{--receive} a single Web Key Service
 mail is processed.  Commonly this command is used with the option
-@option{--send} to directly send the crerated mails back.  See below
+@option{--send} to directly send the created mails back.  See below
 for an installation example.
 
 The command @option{--cron} is used for regular cleanup tasks.  For
@@ -400,7 +400,7 @@ be the same address for all configured domains, for example:
   $ echo key-submission@@example.net >submission-address
 @end example
 
-The protocol requires that the key to be published is send with an
+The protocol requires that the key to be published is sent with an
 encrypted mail to the service.  Thus you need to create a key for
 the submission address:
 
