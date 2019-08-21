@@ -275,6 +275,8 @@ check_application_conflict (card_t card, const char *name,
                             const unsigned char *serialno_bin,
                             size_t serialno_bin_len)
 {
+  apptype_t apptype;
+
   if (!card || !name)
     return 0;
   if (!card->app)
@@ -286,6 +288,10 @@ check_application_conflict (card_t card, const char *name,
           || memcmp (serialno_bin, card->serialno, card->serialnolen))
         return 0; /* The card does not match the requested S/N.  */
     }
+
+  apptype = apptype_from_name (name);
+  if (card->app->apptype == apptype)
+    return 0;
 
   if (card->app->apptype == APPTYPE_UNDEFINED)
     return 0;
