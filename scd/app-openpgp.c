@@ -1793,6 +1793,7 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
   unsigned char grip[20];
   char gripstr[41];
   char idbuf[50];
+  const char *usage;
 
   err = get_public_key (app, keyno);
   if (err)
@@ -1810,10 +1811,19 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
 
   bin2hex (grip, 20, gripstr);
 
+  switch (keyno)
+    {
+    case 0: usage = "sc"; break;
+    case 1: usage = "e";  break;
+    case 2: usage = "sa"; break;
+    default: usage = "";  break;
+    }
+
   sprintf (idbuf, "OPENPGP.%d", keyno+1);
   send_status_info (ctrl, "KEYPAIRINFO",
                     gripstr, 40,
                     idbuf, strlen (idbuf),
+                    usage, strlen (usage),
                     NULL, (size_t)0);
 
  leave:
