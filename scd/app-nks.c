@@ -402,6 +402,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
   char ct_buf[100], id_buf[100];
   int i;
   const char *tag;
+  const char *usage;
 
   if (is_sigg)
     tag = "SIGG";
@@ -451,9 +452,19 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
             {
               snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X",
                         tag, filelist[i].fid);
+              if (filelist[i].issignkey && filelist[i].isenckey)
+                usage = "sae";
+              else if (filelist[i].issignkey)
+                usage = "sa";
+              else if (filelist[i].isenckey)
+                usage = "e";
+              else
+                usage = "";
+
               send_status_info (ctrl, "KEYPAIRINFO",
                                 gripstr, 40,
                                 id_buf, strlen (id_buf),
+                                usage, strlen (usage),
                                 NULL, (size_t)0);
             }
         }
