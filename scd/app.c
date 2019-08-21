@@ -270,8 +270,6 @@ check_application_conflict (card_t card, const char *name,
                             const unsigned char *serialno_bin,
                             size_t serialno_bin_len)
 {
-  app_t app;
-
   if (!card || !name)
     return 0;
   if (!card->app)
@@ -283,12 +281,6 @@ check_application_conflict (card_t card, const char *name,
           || memcmp (serialno_bin, card->serialno, card->serialnolen))
         return 0; /* The card does not match the requested S/N.  */
     }
-
-  /* Check whether the requested NAME matches any already selected
-   * application.  */
-  for (app = card->app; app; app = app->next)
-    if (!ascii_strcasecmp (strapptype (app->apptype), name))
-      return 0;
 
   if (card->app->apptype == APPTYPE_UNDEFINED)
     return 0;
@@ -664,7 +656,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
               card_top = card;
             }
 
-          ctrl->current_apptype = card->app ? card->app->apptype : 0;
+          ctrl->current_apptype = card->app ? card->app->apptype : APPTYPE_NONE;
         }
       unlock_card (card);
     }
@@ -712,9 +704,10 @@ select_additional_application (ctrl_t ctrl, const char *name)
          * maybe_switch_app will do that anyway.  */
         err = 0;
         app = NULL;
+        ctrl->current_apptype = req_apptype;
+        log_debug ("current_apptype is set to %s\n", name);
         goto leave;
       }
-  app = NULL;
 
   /* Allocate a new app object.  */
   app = xtrycalloc (1, sizeof *app);
