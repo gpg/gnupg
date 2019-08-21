@@ -426,6 +426,7 @@ enum cmd_and_opt_values
     oKeyOrigin,
     oRequestOrigin,
     oNoSymkeyCache,
+    oUseOnlyOpenPGPCard,
 
     oNoop
   };
@@ -895,6 +896,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
+
+  /* Options which can be used in special circumstances. They are not
+   * published and we hope they are never required.  */
+  ARGPARSE_s_n (oUseOnlyOpenPGPCard, "use-only-openpgp-card", "@"),
 
   /* Dummy options with warnings.  */
   ARGPARSE_s_n (oUseAgent,      "use-agent", "@"),
@@ -3640,6 +3645,10 @@ main (int argc, char **argv)
 
 	  case oDefaultNewKeyAlgo:
             opt.def_new_key_algo = pargs.r.ret_str;
+            break;
+
+          case oUseOnlyOpenPGPCard:
+            opt.flags.use_only_openpgp_card = 1;
             break;
 
 	  case oNoop: break;

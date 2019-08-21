@@ -251,6 +251,9 @@ struct
     unsigned int rfc4880bis:1;
     /* Hack: --output is not given but OUTFILE was temporary set to "-".  */
     unsigned int dummy_outfile:1;
+    /* Force the use of the OpenPGP card and do not allow the use of
+     * another card.  */
+    unsigned int use_only_openpgp_card:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

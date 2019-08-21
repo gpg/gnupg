@@ -3516,6 +3516,13 @@ file and returns with failure if the configuration file would prevent
 @command{@gpgname} from startup.  Thus it may be used to run a syntax check
 on the configuration file.
 
+@c @item --use-only-openpgp-card
+@c @opindex use-only-openpgp-card
+@c Only access OpenPGP card's and no other cards.  This is a hidden
+@c option which could be used in case an old use case required the
+@c OpenPGP card while several cards are avaiable.  This option might be
+@c removed if it turns out that nobody requires it.
+
 @end table
 
 @c *******************************
