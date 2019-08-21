@@ -30,6 +30,11 @@
 #include "apdu.h"
 #include "../common/tlv.h"
 
+
+/* Forward declaration of internal function.  */
+static gpg_error_t
+select_additional_application_internal (card_t card, apptype_t req_apptype);
+
 /* Lock to protect the list of cards and its associated
  * applications.  */
 static npth_mutex_t card_list_lock;
@@ -645,6 +650,22 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
     {
       err = check_application_conflict (card, name, NULL, 0);
       if (!err)
+        ctrl->current_apptype = card->app ? card->app->apptype : APPTYPE_NONE;
+      else if (gpg_err_code (err) == GPG_ERR_FALSE)
+        {
+          apptype_t req_apptype = apptype_from_name (name);
+
+          if (!req_apptype)
+            err = gpg_error (GPG_ERR_NOT_FOUND);
+          else
+            {
+              err = select_additional_application_internal (card, req_apptype);
+              if (!err)
+                ctrl->current_apptype = req_apptype;
+            }
+        }
+
+      if (!err)
         {
           /* Note: We do not use card_ref as we are already locked.  */
           card->ref_count++;
@@ -655,8 +676,6 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
               card->next = card_top;
               card_top = card;
             }
-
-          ctrl->current_apptype = card->app ? card->app->apptype : APPTYPE_NONE;
         }
       unlock_card (card);
     }
@@ -669,31 +688,12 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
 }
 
 
-/* This function needs to be called with the NAME of the new
- * application to be selected on CARD.  On success the application is
- * added to the list of the card's active applications as currently
- * active application.  On error no new application is allocated.
- * Selecting an already selected application has no effect. */
-gpg_error_t
-select_additional_application (ctrl_t ctrl, const char *name)
+static gpg_error_t
+select_additional_application_internal (card_t card, apptype_t req_apptype)
 {
   gpg_error_t err = 0;
-  apptype_t req_apptype;
-  card_t card;
-  app_t app = NULL;
+  app_t app;
   int i;
-
-  req_apptype = apptype_from_name (name);
-  if (!req_apptype)
-    err = gpg_error (GPG_ERR_NOT_FOUND);
-
-  card = ctrl->card_ctx;
-  if (!card)
-    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   /* Check that the requested app has not yet been put onto the list.  */
   for (app = card->app; app; app = app->next)
@@ -704,8 +704,6 @@ select_additional_application (ctrl_t ctrl, const char *name)
          * maybe_switch_app will do that anyway.  */
         err = 0;
         app = NULL;
-        ctrl->current_apptype = req_apptype;
-        log_debug ("current_apptype is set to %s\n", name);
         goto leave;
       }
 
@@ -740,13 +738,46 @@ select_additional_application (ctrl_t ctrl, const char *name)
    * reselect by maybe_switch_app after the select we just did.  */
   app->next = card->app;
   card->app = app;
-  ctrl->current_apptype = app->apptype;
   log_info ("added app '%s' to the card context\n", strapptype (app->apptype));
 
  leave:
-  unlock_card (card);
   if (err)
     xfree (app);
+  return err;
+}
+
+/* This function needs to be called with the NAME of the new
+ * application to be selected on CARD.  On success the application is
+ * added to the list of the card's active applications as currently
+ * active application.  On error no new application is allocated.
+ * Selecting an already selected application has no effect. */
+gpg_error_t
+select_additional_application (ctrl_t ctrl, const char *name)
+{
+  gpg_error_t err = 0;
+  apptype_t req_apptype;
+  card_t card;
+
+  req_apptype = apptype_from_name (name);
+  if (!req_apptype)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+
+  card = ctrl->card_ctx;
+  if (!card)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+
+  err = lock_card (card, ctrl);
+  if (err)
+    return err;
+
+  err = select_additional_application_internal (card, req_apptype);
+  if (!err)
+    {
+      ctrl->current_apptype = req_apptype;
+      log_debug ("current_apptype is set to %s\n", name);
+    }
+
+  unlock_card (card);
   return err;
 }
 
