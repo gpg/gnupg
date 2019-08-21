@@ -2268,6 +2268,12 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 
           do
             {
+              char *authkeyref, *encrkeyref, *signkeyref;
+
+              agent_scd_getattr_one ("$AUTHKEYID", &authkeyref);
+              agent_scd_getattr_one ("$ENCRKEYID", &encrkeyref);
+              agent_scd_getattr_one ("$SIGNKEYID", &signkeyref);
+
               tty_printf (_("Available keys:\n"));
               for (count=1,sl=keypairlist; sl; sl = sl->next, count++)
                 {
@@ -2308,17 +2314,23 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                     }
                   if ((sl->flags & GCRY_PK_USAGE_SIGN))
                     {
-                      tty_printf ("%ssign", any?",":" (");
+                      tty_printf ("%ssign%s", any?",":" (",
+                                  (signkeyref && keyref
+                                   && !strcmp (signkeyref, keyref))? "*":"");
                       any = 1;
                     }
                   if ((sl->flags & GCRY_PK_USAGE_AUTH))
                     {
-                      tty_printf ("%sauth", any?",":" (");
+                      tty_printf ("%sauth%s", any?",":" (",
+                                  (authkeyref && keyref
+                                   && !strcmp (authkeyref, keyref))? "*":"");
                       any = 1;
                     }
                   if ((sl->flags & GCRY_PK_USAGE_ENCR))
                     {
-                      tty_printf ("%sencr", any?",":" (");
+                      tty_printf ("%sencr%s", any?",":" (",
+                                  (encrkeyref && keyref
+                                   && !strcmp (encrkeyref, keyref))? "*":"");
                       any = 1;
                     }
                   tty_printf ("%s\n", any?")":"");
@@ -2330,6 +2342,10 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
               cpr_kill_prompt ();
               trim_spaces (answer);
               selection = atoi (answer);
+              xfree (authkeyref);
+              xfree (encrkeyref);
+              xfree (signkeyref);
+
             }
           while (!(selection > 0 && selection < count));
 

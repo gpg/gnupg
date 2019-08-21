@@ -133,6 +133,14 @@ encryption.  This algorithm should only be used in certain domains.
 Please consult your security expert first.
 .
 
+.gpg.keygen.cardkey
+Select which key from the card shall be used.
+
+The listing shows the selection index, the keygrip (a string of hex
+digits), the card specific key reference, the algorithm used for this
+key, and in parentheses the usage of the key (cert, sign, auth, encr).
+If known the standard usage for a key is marked with an asterisk.
+.
 
 .gpg.keygen.flags
 Toggle the capabilities of the key.
