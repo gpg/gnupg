@@ -249,6 +249,7 @@ open_card_with_request (ctrl_t ctrl,
   /* Re-scan USB devices.  Release CARD, before the scan.  */
   /* FIXME: Is a card_unref sufficient or do we need to deallocate?  */
   ctrl->card_ctx = NULL;
+  ctrl->current_apptype = APPTYPE_NONE;
   card_unref (card);
 
   err = select_application (ctrl, apptypestr, &ctrl->card_ctx, 1,
@@ -1661,6 +1662,7 @@ cmd_restart (assuan_context_t ctx, char *line)
   if (card)
     {
       ctrl->card_ctx = NULL;
+      ctrl->current_apptype = APPTYPE_NONE;
       card_unref (card);
     }
   if (locked_session && ctrl->server_local == locked_session)
@@ -2079,20 +2081,6 @@ scd_command_handler (ctrl_t ctrl, int fd)
 }
 
 
-/* Clear the current application info for CARD from all sessions.
- * This is used while deallocating a card.  */
-void
-scd_clear_current_app (card_t card)
-{
-  struct server_local_s *sl;
-
-  for (sl=session_list; sl; sl = sl->next_session)
-    {
-      if (sl->ctrl_backlink->card_ctx == card)
-        sl->ctrl_backlink->current_apptype = APPTYPE_NONE;
-    }
-}
-
 /* Send a line with status information via assuan and escape all given
    buffers. The variable elements are pairs of (char *, size_t),
    terminated with a (NULL, 0). */
@@ -2234,6 +2222,7 @@ send_client_notifications (card_t card, int removal)
         if (removal)
           {
             sl->ctrl_backlink->card_ctx = NULL;
+            sl->ctrl_backlink->current_apptype = APPTYPE_NONE;
             sl->card_removed = 1;
             card_unref_locked (card);
           }

@@ -339,6 +339,7 @@ card_reset (card_t card, ctrl_t ctrl, int send_reset)
   else
     {
       ctrl->card_ctx = NULL;
+      ctrl->current_apptype = APPTYPE_NONE;
       card_unref (card);
     }
 
@@ -813,8 +814,6 @@ deallocate_card (card_t card)
       anext = a->next;
       xfree (a);
     }
-
-  scd_clear_current_app (card);
 
   xfree (card->serialno);
   unlock_card (card);
