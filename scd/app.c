@@ -723,13 +723,17 @@ select_additional_application (ctrl_t ctrl, const char *name)
       log_info ("error allocating app context: %s\n", gpg_strerror (err));
       goto leave;
     }
+  app->card = card;
 
   /* Find the app and run the select.  */
   for (i=0; app_priority_list[i].apptype; i++)
     {
       if (app_priority_list[i].apptype == req_apptype
           && is_app_allowed (app_priority_list[i].name))
-        err = app_priority_list[i].select_func (app);
+        {
+          err = app_priority_list[i].select_func (app);
+          break;
+        }
     }
   if (!app_priority_list[i].apptype
       || (err && gpg_err_code (err) != GPG_ERR_OBJ_TERM_STATE))
@@ -743,11 +747,12 @@ select_additional_application (ctrl_t ctrl, const char *name)
   app->next = card->app;
   card->app = app;
   ctrl->current_apptype = app->apptype;
-  log_error ("added app '%s' to the card context\n", strapptype(app->apptype));
+  log_info ("added app '%s' to the card context\n", strapptype (app->apptype));
 
  leave:
   unlock_card (card);
-  xfree (app);
+  if (err)
+    xfree (app);
   return err;
 }
 
@@ -990,7 +995,7 @@ maybe_switch_app (ctrl_t ctrl, card_t card)
   app->next = card->app;
   card->app = app;
   ctrl->current_apptype = app->apptype;
-  log_error ("switched to '%s'\n", strapptype(app->apptype));
+  log_info ("switched to '%s'\n", strapptype (app->apptype));
 
   return 0;
 }
