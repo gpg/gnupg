@@ -4505,8 +4505,6 @@ struct dns_trace *dns_trace_open(FILE *fp, dns_error_t *error) {
 
 	if (fp) {
 		trace->fp = fp;
-	} else if (!(fp = tmpfile())) {
-		goto syerr;
 	}
 
 	trace->id = dns_trace_mkid();
