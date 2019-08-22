@@ -815,7 +815,7 @@ list_openpgp (card_info_t info, estream_t fp)
   print_string (fp, "Language prefs ...: ", info->disp_lang);
   tty_fprintf (fp, "Salutation .......: %s\n",
                info->disp_sex == 1? _("Mr."):
-               info->disp_sex == 2? _("Mrs.") : "");
+               info->disp_sex == 2? _("Ms.") : "");
   print_string (fp, "URL of public key : ", info->pubkey_url);
   print_string (fp, "Login data .......: ", info->login_data);
   if (info->private_do[0])
@@ -1464,7 +1464,7 @@ cmd_salut (card_info_t info, const char *argstr)
     str = "9";
   else
     {
-      data = tty_get (_("Salutation (M = Mr., F = Mrs., or space): "));
+      data = tty_get (_("Salutation (M = Mr., F = Ms., or space): "));
       trim_spaces (data);
       tty_kill_prompt ();
       if (*data == CONTROL_D)
