@@ -142,7 +142,8 @@ static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                                      const char *expirestr,
                                      int *r_algo, unsigned int *r_usage,
                                      u32 *r_expire, unsigned int *r_nbits,
-                                     const char **r_curve);
+                                     const char **r_curve,
+                                     char **r_keygrip);
 static void do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                                  struct output_control_s *outctrl, int card );
 static int write_keyblock (iobuf_t out, kbnode_t node);
@@ -2146,6 +2147,10 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                       && algostr && !strncmp (algostr, "nistp", 5)
                       && !(sl->flags & GCRY_PK_USAGE_ENCR))
                     sl->flags |= (PUBKEY_ALGO_ECDSA << 8);
+                  else if (algoid == GCRY_PK_ECC
+                           && algostr && !strcmp (algostr, "ed25519")
+                           && !(sl->flags & GCRY_PK_USAGE_ENCR))
+                    sl->flags = (PUBKEY_ALGO_EDDSA << 8);
                   else
                     sl->flags |= (map_pk_gcry_to_openpgp (algoid) << 8);
 
@@ -3057,11 +3062,14 @@ generate_user_id (KBNODE keyblock, const char *uidstr)
  * this is useful if for example the default algorithm is used for a
  * subkey.  */
 static gpg_error_t
-parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
+parse_key_parameter_part (ctrl_t ctrl,
+                          char *string, int for_subkey, int clear_cert,
                           int *r_algo, unsigned int *r_size,
                           unsigned int *r_keyuse,
-                          char const **r_curve)
+                          char const **r_curve,
+                          char **r_keygrip)
 {
+  gpg_error_t err;
   char *flags;
   int algo;
   char *endp;
@@ -3071,6 +3079,8 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
   int keyuse;
   int i;
   const char *s;
+  int from_card = 0;
+  char *keygrip = NULL;
 
   if (!string || !*string)
     return 0; /* Success.  */
@@ -3080,7 +3090,9 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
     *flags++ = 0;
 
   algo = 0;
-  if (strlen (string) >= 3 && (digitp (string+3) || !string[3]))
+  if (!ascii_strcasecmp (string, "card"))
+    from_card = 1;
+  else if (strlen (string) >= 3 && (digitp (string+3) || !string[3]))
     {
       if (!ascii_memcasecmp (string, "rsa", 3))
         algo = PUBKEY_ALGO_RSA;
@@ -3089,7 +3101,10 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
       else if (!ascii_memcasecmp (string, "elg", 3))
         algo = PUBKEY_ALGO_ELGAMAL_E;
     }
-  if (algo)
+
+  if (from_card)
+    ; /* We need the flags before we can figure out the key to use.  */
+  else if (algo)
     {
       if (!string[3])
         size = get_keysize_range (algo, NULL, NULL);
@@ -3134,7 +3149,7 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
             keyuse |= PUBKEY_USAGE_AUTH;
           else if (!ascii_strcasecmp (s, "cert"))
             keyuse |= PUBKEY_USAGE_CERT;
-          else if (!ascii_strcasecmp (s, "ecdsa"))
+          else if (!ascii_strcasecmp (s, "ecdsa") && !from_card)
             {
               if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
                 algo = PUBKEY_ALGO_ECDSA;
@@ -3145,7 +3160,7 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
                 }
               ecdh_or_ecdsa = 0;
             }
-          else if (!ascii_strcasecmp (s, "ecdh"))
+          else if (!ascii_strcasecmp (s, "ecdh") && !from_card)
             {
               if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
                 algo = PUBKEY_ALGO_ECDH;
@@ -3156,7 +3171,7 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
                 }
               ecdh_or_ecdsa = 0;
             }
-          else if (!ascii_strcasecmp (s, "eddsa"))
+          else if (!ascii_strcasecmp (s, "eddsa") && !from_card)
             {
               /* Not required but we allow it for consistency.  */
               if (algo == PUBKEY_ALGO_EDDSA)
@@ -3177,8 +3192,115 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
       xfree (tokens);
     }
 
-  /* If not yet decided switch between ecdh and ecdsa.  */
-  if (ecdh_or_ecdsa && keyuse)
+  /* If not yet decided switch between ecdh and ecdsa unless we want
+   * to read the algo from the current card.  */
+  if (from_card)
+    {
+      strlist_t keypairlist, sl;
+      char *reqkeyref;
+
+      if (!keyuse)
+        keyuse = (for_subkey? PUBKEY_USAGE_ENC
+                  /* */     : (PUBKEY_USAGE_CERT|PUBKEY_USAGE_SIG));
+
+      /* Access the card to make sure we have one and to show the S/N.  */
+      {
+        char *serialno;
+
+        err = agent_scd_serialno (&serialno, NULL);
+        if (err)
+          {
+            log_error (_("error reading the card: %s\n"), gpg_strerror (err));
+            return err;
+          }
+        if (!opt.quiet)
+          log_info (_("Serial number of the card: %s\n"), serialno);
+        xfree (serialno);
+      }
+
+      err = agent_scd_keypairinfo (ctrl, &keypairlist);
+      if (err)
+        {
+          log_error (_("error reading the card: %s\n"), gpg_strerror (err));
+          return err;
+        }
+      agent_scd_getattr_one ((keyuse & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_CERT))
+                             ? "$SIGNKEYID":"$ENCRKEYID", &reqkeyref);
+
+      algo = 0; /* Should already be the case.  */
+      for (sl=keypairlist; sl && !algo; sl = sl->next)
+        {
+          gcry_sexp_t s_pkey;
+          char *algostr = NULL;
+          enum gcry_pk_algos algoid = 0;
+          const char *keyref;
+
+          if (!reqkeyref)
+            continue; /* Card does not provide the info (skip all).  */
+
+          keyref = strchr (sl->d, ' ');
+          if (!keyref)
+            continue; /* Ooops.  */
+          keyref++;
+          if (strcmp (reqkeyref, keyref))
+            continue;  /* This is not the requested keyref.  */
+
+          if ((keyuse & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_CERT))
+              && (sl->flags & (GCRY_PK_USAGE_SIGN|GCRY_PK_USAGE_CERT)))
+            ; /* Okay */
+          else if ((keyuse & PUBKEY_USAGE_ENC)
+                   && (sl->flags & GCRY_PK_USAGE_ENCR))
+            ; /* Okay */
+          else
+            continue; /* Not usable for us.  */
+
+          if (agent_scd_readkey (keyref, &s_pkey))
+            continue;  /* Could not read the key.  */
+
+          algostr = pubkey_algo_string (s_pkey, &algoid);
+          gcry_sexp_release (s_pkey);
+
+
+          /* Map to OpenPGP algo number.
+           * We need to tweak the algo in case GCRY_PK_ECC is returned
+           * because pubkey_algo_string is not aware of the OpenPGP
+           * algo mapping.  FIXME: This is an ugly hack. */
+          if (algoid == GCRY_PK_ECC
+              && algostr && !strncmp (algostr, "nistp", 5)
+              && !(sl->flags & GCRY_PK_USAGE_ENCR))
+            algo = PUBKEY_ALGO_ECDSA;
+          else if (algoid == GCRY_PK_ECC
+                   && algostr && !strcmp (algostr, "ed25519")
+                   && !(sl->flags & GCRY_PK_USAGE_ENCR))
+            algo = PUBKEY_ALGO_EDDSA;
+          else
+            algo = map_pk_gcry_to_openpgp (algoid);
+
+          xfree (algostr);
+          xfree (keygrip);
+          keygrip = xtrystrdup (sl->d);
+          if (!keygrip)
+            {
+              err = gpg_error_from_syserror ();
+              xfree (reqkeyref);
+              free_strlist (keypairlist);
+              return err;
+            }
+          if ((endp = strchr (keygrip, ' ')))
+            *endp = 0;
+        }
+
+      xfree (reqkeyref);
+      free_strlist (keypairlist);
+      if (!algo || !keygrip)
+        {
+          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+          log_error ("no usable key on the card: %s\n", gpg_strerror (err));
+          xfree (keygrip);
+          return err;
+        }
+    }
+  else if (ecdh_or_ecdsa && keyuse)
     algo = (keyuse & PUBKEY_USAGE_ENC)? PUBKEY_ALGO_ECDH : PUBKEY_ALGO_ECDSA;
   else if (ecdh_or_ecdsa)
     algo = for_subkey? PUBKEY_ALGO_ECDH : PUBKEY_ALGO_ECDSA;
@@ -3218,7 +3340,10 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
        || ((keyuse & PUBKEY_USAGE_ENC)
            && !pubkey_get_nenc (algo))
        || (for_subkey && (keyuse & PUBKEY_USAGE_CERT)))
-    return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+    {
+      xfree (keygrip);
+      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+    }
 
   /* Return values.  */
   if (r_algo)
@@ -3238,10 +3363,16 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
 
       *r_size = fixup_keysize (size, algo, 1);
     }
+
   if (r_keyuse)
     *r_keyuse = keyuse;
   if (r_curve)
     *r_curve = curve;
+
+  if (r_keygrip)
+    *r_keygrip = keygrip;
+  else
+    xfree (keygrip);
 
   return 0;
 }
@@ -3263,7 +3394,7 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
  *
  * All strings with an unknown prefix are considered an elliptic
  * curve.  Curves which have no implicit algorithm require that FLAGS
- * is given to select whether ECDSA or ECDH is used; this can eoither
+ * is given to select whether ECDSA or ECDH is used; this can either
  * be done using an algorithm keyword or usage keywords.
  *
  * FLAGS is a comma delimited string of keywords:
@@ -3289,14 +3420,17 @@ parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
  *
  */
 gpg_error_t
-parse_key_parameter_string (const char *string, int part,
+parse_key_parameter_string (ctrl_t ctrl,
+                            const char *string, int part,
                             unsigned int suggested_use,
                             int *r_algo, unsigned int *r_size,
                             unsigned int *r_keyuse,
                             char const **r_curve,
+                            char **r_keygrip,
                             int *r_subalgo, unsigned int *r_subsize,
-                            unsigned *r_subkeyuse,
-                            char const **r_subcurve)
+                            unsigned int *r_subkeyuse,
+                            char const **r_subcurve,
+                            char **r_subkeygrip)
 {
   gpg_error_t err = 0;
   char *primary, *secondary;
@@ -3309,6 +3443,8 @@ parse_key_parameter_string (const char *string, int part,
     *r_keyuse = 0;
   if (r_curve)
     *r_curve = NULL;
+  if (r_keygrip)
+    *r_keygrip = NULL;
   if (r_subalgo)
     *r_subalgo = 0;
   if (r_subsize)
@@ -3317,6 +3453,8 @@ parse_key_parameter_string (const char *string, int part,
     *r_subkeyuse = 0;
   if (r_subcurve)
     *r_subcurve = NULL;
+  if (r_subkeygrip)
+    *r_subkeygrip = NULL;
 
   if (!string || !*string
       || !ascii_strcasecmp (string, "default") || !strcmp (string, "-"))
@@ -3324,6 +3462,8 @@ parse_key_parameter_string (const char *string, int part,
   else if (!ascii_strcasecmp (string, "future-default")
            || !ascii_strcasecmp (string, "futuredefault"))
     string = FUTURE_STD_KEY_PARAM;
+  else if (!ascii_strcasecmp (string, "card"))
+    string = "card/cert,sign+card/encr";
 
   primary = xstrdup (string);
   secondary = strchr (primary, '+');
@@ -3331,11 +3471,14 @@ parse_key_parameter_string (const char *string, int part,
     *secondary++ = 0;
   if (part == -1 || part == 0)
     {
-      err = parse_key_parameter_part (primary, 0, 0, r_algo, r_size,
-                                      r_keyuse, r_curve);
+      err = parse_key_parameter_part (ctrl, primary,
+                                      0, 0, r_algo, r_size,
+                                      r_keyuse, r_curve, r_keygrip);
       if (!err && part == -1)
-        err = parse_key_parameter_part (secondary, 1, 0, r_subalgo, r_subsize,
-                                        r_subkeyuse, r_subcurve);
+        err = parse_key_parameter_part (ctrl, secondary,
+                                        1, 0, r_subalgo, r_subsize,
+                                        r_subkeyuse, r_subcurve,
+                                        r_subkeygrip);
     }
   else if (part == 1)
     {
@@ -3347,15 +3490,21 @@ parse_key_parameter_string (const char *string, int part,
        * to force clearing the cert usage. */
       if (secondary)
         {
-          err = parse_key_parameter_part (secondary, 1, 0,
-                                          r_algo, r_size, r_keyuse, r_curve);
+          err = parse_key_parameter_part (ctrl, secondary,
+                                          1, 0,
+                                          r_algo, r_size, r_keyuse, r_curve,
+                                          r_keygrip);
           if (!err && suggested_use && r_keyuse && !(suggested_use & *r_keyuse))
-            err = parse_key_parameter_part (primary, 1, 1 /*(clear cert)*/,
-                                            r_algo, r_size, r_keyuse, r_curve);
+            err = parse_key_parameter_part (ctrl, primary,
+                                            1, 1 /*(clear cert)*/,
+                                            r_algo, r_size, r_keyuse, r_curve,
+                                            r_keygrip);
         }
       else
-        err = parse_key_parameter_part (primary, 1, 0,
-                                        r_algo, r_size, r_keyuse, r_curve);
+        err = parse_key_parameter_part (ctrl, primary,
+                                        1, 0,
+                                        r_algo, r_size, r_keyuse, r_curve,
+                                        r_keygrip);
     }
 
   xfree (primary);
@@ -3420,7 +3569,7 @@ get_parameter_passphrase (struct para_data_s *para)
 
 
 static int
-get_parameter_algo( struct para_data_s *para, enum para_name key,
+get_parameter_algo (ctrl_t ctrl, struct para_data_s *para, enum para_name key,
                     int *r_default)
 {
   int i;
@@ -3442,10 +3591,9 @@ get_parameter_algo( struct para_data_s *para, enum para_name key,
        * for the curve etc.  That is a ugly but demanded for backward
        * compatibility with the batch key generation.  It would be
        * better to make full use of parse_key_parameter_string.  */
-      parse_key_parameter_string (NULL, 0, 0,
-                                  &i, NULL, NULL, NULL,
-                                  NULL, NULL, NULL, NULL);
-
+      parse_key_parameter_string (ctrl, NULL, 0, 0,
+                                  &i, NULL, NULL, NULL, NULL,
+                                  NULL, NULL, NULL, NULL, NULL);
       if (r_default)
         *r_default = 1;
     }
@@ -3640,7 +3788,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   r = get_parameter( para, pKEYTYPE );
   if(r)
     {
-      algo = get_parameter_algo (para, pKEYTYPE, &is_default);
+      algo = get_parameter_algo (ctrl, para, pKEYTYPE, &is_default);
       if (openpgp_pk_test_algo2 (algo, PUBKEY_USAGE_SIG))
 	{
 	  log_error ("%s:%d: invalid algorithm\n", fname, r->lnr );
@@ -3682,7 +3830,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   r = get_parameter( para, pSUBKEYTYPE );
   if(r)
     {
-      algo = get_parameter_algo (para, pSUBKEYTYPE, &is_default);
+      algo = get_parameter_algo (ctrl, para, pSUBKEYTYPE, &is_default);
       if (openpgp_pk_test_algo (algo))
 	{
 	  log_error ("%s:%d: invalid algorithm\n", fname, r->lnr );
@@ -4040,7 +4188,8 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 /* Helper for quick_generate_keypair.  */
 static struct para_data_s *
 quickgen_set_para (struct para_data_s *para, int for_subkey,
-                   int algo, int nbits, const char *curve, unsigned int use)
+                   int algo, int nbits, const char *curve, unsigned int use,
+                   const char *keygrip)
 {
   struct para_data_s *r;
 
@@ -4062,7 +4211,15 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
   r->next = para;
   para = r;
 
-  if (curve)
+  if (keygrip)
+    {
+      r = xmalloc_clear (sizeof *r + strlen (keygrip));
+      r->key = for_subkey? pSUBKEYGRIP : pKEYGRIP;
+      strcpy (r->u.value, keygrip);
+      r->next = para;
+      para = r;
+    }
+  else if (curve)
     {
       r = xmalloc_clear (sizeof *r + strlen (curve));
       r->key = for_subkey? pSUBKEYCURVE : pKEYCURVE;
@@ -4166,7 +4323,8 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
 
   if ((!*algostr || !ascii_strcasecmp (algostr, "default")
        || !ascii_strcasecmp (algostr, "future-default")
-       || !ascii_strcasecmp (algostr, "futuredefault"))
+       || !ascii_strcasecmp (algostr, "futuredefault")
+       || !ascii_strcasecmp (algostr, "card"))
       && (!*usagestr || !ascii_strcasecmp (usagestr, "default")
           || !strcmp (usagestr, "-")))
     {
@@ -4175,22 +4333,25 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       unsigned int size, subsize;
       unsigned int keyuse, subkeyuse;
       const char *curve, *subcurve;
+      char *keygrip, *subkeygrip;
 
-      err = parse_key_parameter_string (algostr, -1, 0,
+      err = parse_key_parameter_string (ctrl, algostr, -1, 0,
                                         &algo, &size, &keyuse, &curve,
+                                        &keygrip,
                                         &subalgo, &subsize, &subkeyuse,
-                                        &subcurve);
+                                        &subcurve, &subkeygrip);
       if (err)
         {
           log_error (_("Key generation failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
 
-      para = quickgen_set_para (para, 0, algo, size, curve, keyuse);
+      para = quickgen_set_para (para, 0, algo, size, curve, keyuse,
+                                keygrip);
       if (subalgo)
         para = quickgen_set_para (para, 1,
-                                  subalgo, subsize, subcurve, subkeyuse);
-
+                                  subalgo, subsize, subcurve, subkeyuse,
+                                  subkeygrip);
       if (*expirestr)
         {
           u32 expire;
@@ -4208,6 +4369,9 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
           r->next = para;
           para = r;
         }
+
+      xfree (keygrip);
+      xfree (subkeygrip);
     }
   else
     {
@@ -4217,21 +4381,26 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       u32 expire;
       unsigned int nbits;
       const char *curve;
+      char *keygrip;
 
       err = parse_algo_usage_expire (ctrl, 0, algostr, usagestr, expirestr,
-                                     &algo, &use, &expire, &nbits, &curve);
+                                     &algo, &use, &expire, &nbits, &curve,
+                                     &keygrip);
       if (err)
         {
           log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
           goto leave;
         }
 
-      para = quickgen_set_para (para, 0, algo, nbits, curve, use);
+      para = quickgen_set_para (para, 0, algo, nbits, curve, use,
+                                keygrip);
       r = xmalloc_clear (sizeof *r + 20);
       r->key = pKEYEXPIRE;
       r->u.expire = expire;
       r->next = para;
       para = r;
+
+      xfree (keygrip);
     }
 
   /* If the pinentry loopback mode is not and we have a static
@@ -4544,6 +4713,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
       unsigned int size, subsize;
       unsigned int keyuse, subkeyuse;
       const char *curve, *subcurve;
+      char *keygrip, *subkeygrip;
 
       tty_printf ( _("Note: Use \"%s %s\""
                      " for a full featured key generation dialog.\n"),
@@ -4554,21 +4724,27 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
 #endif
                    , "--full-generate-key" );
 
-      err = parse_key_parameter_string (NULL, -1, 0,
+      err = parse_key_parameter_string (ctrl, NULL, -1, 0,
                                         &algo, &size, &keyuse, &curve,
+                                        &keygrip,
                                         &subalgo, &subsize,
-                                        &subkeyuse, &subcurve);
+                                        &subkeyuse, &subcurve,
+                                        &subkeygrip);
       if (err)
         {
           log_error (_("Key generation failed: %s\n"), gpg_strerror (err));
           return;
         }
-      para = quickgen_set_para (para, 0, algo, size, curve, keyuse);
+      para = quickgen_set_para (para, 0,
+                                algo, size, curve, keyuse,
+                                keygrip);
       if (subalgo)
         para = quickgen_set_para (para, 1,
-                                  subalgo, subsize, subcurve, subkeyuse);
+                                  subalgo, subsize, subcurve, subkeyuse,
+                                  subkeygrip);
 
-
+      xfree (keygrip);
+      xfree (subkeygrip);
     }
 
 
@@ -4851,7 +5027,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
      node of the subkey but that is more work than just to pass the
      current timestamp.  */
 
-  algo = get_parameter_algo( para, pKEYTYPE, NULL );
+  algo = get_parameter_algo (ctrl, para, pKEYTYPE, NULL );
   expire = get_parameter_u32( para, pKEYEXPIRE );
   key_from_hexgrip = get_parameter_value (para, pKEYGRIP);
   if (key_from_hexgrip)
@@ -4909,7 +5085,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
   if (!err && card && get_parameter (para, pAUTHKEYTYPE))
     {
-      err = gen_card_key (3, get_parameter_algo( para, pAUTHKEYTYPE, NULL ),
+      err = gen_card_key (3, get_parameter_algo (ctrl, para,
+                                                 pAUTHKEYTYPE, NULL ),
                           0, pub_root, &timestamp, expire);
       if (!err)
         err = write_keybinding (ctrl, pub_root, pri_psk, NULL,
@@ -4918,7 +5095,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
   if (!err && get_parameter (para, pSUBKEYTYPE))
     {
-      int subkey_algo = get_parameter_algo (para, pSUBKEYTYPE, NULL);
+      int subkey_algo = get_parameter_algo (ctrl, para, pSUBKEYTYPE, NULL);
 
       s = NULL;
       key_from_hexgrip = get_parameter_value (para, pSUBKEYGRIP);
@@ -5007,7 +5184,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
           int no_enc_rsa;
           PKT_public_key *pk;
 
-          no_enc_rsa = ((get_parameter_algo (para, pKEYTYPE, NULL)
+          no_enc_rsa = ((get_parameter_algo (ctrl, para, pKEYTYPE, NULL)
                          == PUBKEY_ALGO_RSA)
                         && get_parameter_uint (para, pKEYUSAGE)
                         && !((get_parameter_uint (para, pKEYUSAGE)
@@ -5040,7 +5217,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
 
           if (!opt.batch
-              && (get_parameter_algo (para, pKEYTYPE, NULL) == PUBKEY_ALGO_DSA
+              && (get_parameter_algo (ctrl, para,
+                                      pKEYTYPE, NULL) == PUBKEY_ALGO_DSA
                   || no_enc_rsa )
               && !get_parameter (para, pSUBKEYTYPE) )
             {
@@ -5079,7 +5257,8 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                          const char *algostr, const char *usagestr,
                          const char *expirestr,
                          int *r_algo, unsigned int *r_usage, u32 *r_expire,
-                         unsigned int *r_nbits, const char **r_curve)
+                         unsigned int *r_nbits, const char **r_curve,
+                         char **r_keygrip)
 {
   gpg_error_t err;
   int algo;
@@ -5089,6 +5268,8 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
   const char *curve = NULL;
 
   *r_curve = NULL;
+  if (r_keygrip)
+    *r_keygrip = NULL;
 
   nbits = 0;
 
@@ -5101,12 +5282,20 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
       return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
 
-  err = parse_key_parameter_string (algostr, for_subkey? 1 : 0,
+  err = parse_key_parameter_string (ctrl, algostr, for_subkey? 1 : 0,
                                     usagestr? parse_usagestr (usagestr):0,
                                     &algo, &nbits, &use, &curve,
-                                    NULL, NULL, NULL, NULL);
+                                    r_keygrip,
+                                    NULL, NULL, NULL, NULL, NULL);
   if (err)
-    return err;
+    {
+      if (r_keygrip)
+        {
+          xfree (*r_keygrip);
+          *r_keygrip = NULL;
+        }
+      return err;
+    }
 
   /* Parse the usage string.  */
   if (!usagestr || !*usagestr
@@ -5115,7 +5304,14 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
   else if ((wantuse = parse_usagestr (usagestr)) != -1)
     use = wantuse;
   else
-    return gpg_error (GPG_ERR_INV_VALUE);
+    {
+      if (r_keygrip)
+        {
+          xfree (*r_keygrip);
+          *r_keygrip = NULL;
+        }
+      return gpg_error (GPG_ERR_INV_VALUE);
+    }
 
   /* Make sure a primary key has the CERT usage.  */
   if (!for_subkey)
@@ -5129,12 +5325,26 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
        || ((use & PUBKEY_USAGE_ENC)
            && !pubkey_get_nenc (algo))
        || (for_subkey && (use & PUBKEY_USAGE_CERT)))
-    return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+    {
+      if (r_keygrip)
+        {
+          xfree (*r_keygrip);
+          *r_keygrip = NULL;
+        }
+      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+    }
 
   /* Parse the expire string.  */
   expire = parse_expire_string (expirestr);
   if (expire == (u32)-1 )
-    return gpg_error (GPG_ERR_INV_VALUE);
+    {
+      if (r_keygrip)
+        {
+          xfree (*r_keygrip);
+          *r_keygrip = NULL;
+        }
+      return gpg_error (GPG_ERR_INV_VALUE);
+    }
 
   if (curve)
     *r_curve = curve;
@@ -5251,7 +5461,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   else /* Unattended mode.  */
     {
       err = parse_algo_usage_expire (ctrl, 1, algostr, usagestr, expirestr,
-                                     &algo, &use, &expire, &nbits, &curve);
+                                     &algo, &use, &expire, &nbits, &curve,
+                                     &key_from_hexgrip);
       if (err)
         goto leave;
     }
