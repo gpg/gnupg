@@ -683,6 +683,15 @@ supplied passphrase is used for the new key and the agent does not ask
 for it.  To create a key without any protection @code{--passphrase ''}
 may be used.
 
+To create an OpenPGP key from the keys available on the currently
+inserted smartcard, the special string ``card'' can be used for
+@var{algo}.  If the card features an encryption and a signing key, gpg
+will figure them out and creates an OpenPGP key consisting of the
+usual primary key and one subkey.  This works only with certain
+smartcards.  Note that the interactive @option{--full-gen-key} command
+allows to do the same but with greater flexibility in the selection of
+the smartcard keys.
+
 Note that it is possible to create a primary key and a subkey using
 non-default algorithms by using ``default'' and changing the default
 parameters using the option @option{--default-new-key-algo}.
