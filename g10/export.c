@@ -2142,6 +2142,105 @@ key_to_sshblob (membuf_t *mb, const char *identifier, ...)
   return err;
 }
 
+
+static gpg_error_t
+export_one_ssh_key (estream_t fp, PKT_public_key *pk)
+{
+  gpg_error_t err;
+  const char *identifier = NULL;
+  membuf_t mb;
+  struct b64state b64_state;
+  void *blob;
+  size_t bloblen;
+
+  init_membuf (&mb, 4096);
+
+  switch (pk->pubkey_algo)
+    {
+    case PUBKEY_ALGO_DSA:
+      identifier = "ssh-dss";
+      err = key_to_sshblob (&mb, identifier,
+                            pk->pkey[0], pk->pkey[1], pk->pkey[2], pk->pkey[3],
+                            NULL);
+      break;
+
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_S:
+      identifier = "ssh-rsa";
+      err = key_to_sshblob (&mb, identifier, pk->pkey[1], pk->pkey[0], NULL);
+      break;
+
+    case PUBKEY_ALGO_ECDSA:
+      {
+        char *curveoid;
+        const char *curve;
+
+        curveoid = openpgp_oid_to_str (pk->pkey[0]);
+        if (!curveoid)
+          err = gpg_error_from_syserror ();
+        else if (!(curve = openpgp_oid_to_curve (curveoid, 0)))
+          err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+        else
+          {
+            if (!strcmp (curve, "nistp256"))
+              identifier = "ecdsa-sha2-nistp256";
+            else if (!strcmp (curve, "nistp384"))
+              identifier = "ecdsa-sha2-nistp384";
+            else if (!strcmp (curve, "nistp521"))
+              identifier = "ecdsa-sha2-nistp521";
+
+            if (!identifier)
+              err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+            else
+              err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL);
+          }
+        xfree (curveoid);
+      }
+      break;
+
+    case PUBKEY_ALGO_EDDSA:
+      if (!openpgp_oid_is_ed25519 (pk->pkey[0]))
+        err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      else
+        {
+          identifier = "ssh-ed25519";
+          err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL);
+        }
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL_E:
+    case PUBKEY_ALGO_ELGAMAL:
+      err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
+      break;
+
+    default:
+      err = GPG_ERR_PUBKEY_ALGO;
+      break;
+    }
+
+  if (err)
+    goto leave;
+
+  err = b64enc_start_es (&b64_state, fp, "");
+  if (err)
+    goto leave;
+
+  blob = get_membuf (&mb, &bloblen);
+  if (blob)
+    {
+      es_fprintf (fp, "%s ", identifier);
+      err = b64enc_write (&b64_state, blob, bloblen);
+      es_fprintf (fp, " openpgp:0x%08lX\n", (ulong)keyid_from_pk (pk, NULL));
+      xfree (blob);
+    }
+
+  b64enc_finish (&b64_state);
+
+ leave:
+  xfree (get_membuf (&mb, NULL));
+  return err;
+}
+
 /* Export the key identified by USERID in the SSH public key format.
    The function exports the latest subkey with Authentication
    capability unless the '!' suffix is used to export a specific
@@ -2156,13 +2255,8 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
   u32 curtime = make_timestamp ();
   kbnode_t latest_key, node;
   PKT_public_key *pk;
-  const char *identifier = NULL;
-  membuf_t mb;
   estream_t fp = NULL;
-  struct b64state b64_state;
   const char *fname = "-";
-
-  init_membuf (&mb, 4096);
 
   /* We need to know whether the key has been specified using the
      exact syntax ('!' suffix).  Thus we need to run a
@@ -2319,72 +2413,6 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
   if (DBG_LOOKUP)
     log_debug ("\tusing key %08lX\n", (ulong) keyid_from_pk (pk, NULL));
 
-  switch (pk->pubkey_algo)
-    {
-    case PUBKEY_ALGO_DSA:
-      identifier = "ssh-dss";
-      err = key_to_sshblob (&mb, identifier,
-                            pk->pkey[0], pk->pkey[1], pk->pkey[2], pk->pkey[3],
-                            NULL);
-      break;
-
-    case PUBKEY_ALGO_RSA:
-    case PUBKEY_ALGO_RSA_S:
-      identifier = "ssh-rsa";
-      err = key_to_sshblob (&mb, identifier, pk->pkey[1], pk->pkey[0], NULL);
-      break;
-
-    case PUBKEY_ALGO_ECDSA:
-      {
-        char *curveoid;
-        const char *curve;
-
-        curveoid = openpgp_oid_to_str (pk->pkey[0]);
-        if (!curveoid)
-          err = gpg_error_from_syserror ();
-        else if (!(curve = openpgp_oid_to_curve (curveoid, 0)))
-          err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
-        else
-          {
-            if (!strcmp (curve, "nistp256"))
-              identifier = "ecdsa-sha2-nistp256";
-            else if (!strcmp (curve, "nistp384"))
-              identifier = "ecdsa-sha2-nistp384";
-            else if (!strcmp (curve, "nistp521"))
-              identifier = "ecdsa-sha2-nistp521";
-
-            if (!identifier)
-              err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
-            else
-              err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL);
-          }
-        xfree (curveoid);
-      }
-      break;
-
-    case PUBKEY_ALGO_EDDSA:
-      if (!openpgp_oid_is_ed25519 (pk->pkey[0]))
-        err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
-      else
-        {
-          identifier = "ssh-ed25519";
-          err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL);
-        }
-      break;
-
-    case PUBKEY_ALGO_ELGAMAL_E:
-    case PUBKEY_ALGO_ELGAMAL:
-      err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
-      break;
-
-    default:
-      err = GPG_ERR_PUBKEY_ALGO;
-      break;
-    }
-
-  if (!identifier)
-    goto leave;
-
   if (opt.outfile && *opt.outfile && strcmp (opt.outfile, "-"))
     fp = es_fopen ((fname = opt.outfile), "w");
   else
@@ -2396,26 +2424,9 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
       goto leave;
     }
 
-  es_fprintf (fp, "%s ", identifier);
-  err = b64enc_start_es (&b64_state, fp, "");
-  if (!err)
-    {
-      void *blob;
-      size_t bloblen;
-
-      blob = get_membuf (&mb, &bloblen);
-      if (blob)
-        {
-          err = b64enc_write (&b64_state, blob, bloblen);
-          xfree (blob);
-          if (err)
-            goto leave;
-        }
-      err = b64enc_finish (&b64_state);
-    }
+  err = export_one_ssh_key (fp, pk);
   if (err)
     goto leave;
-  es_fprintf (fp, " openpgp:0x%08lX\n", (ulong)keyid_from_pk (pk, NULL));
 
   if (es_ferror (fp))
     err = gpg_error_from_syserror ();
@@ -2431,7 +2442,6 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
 
  leave:
   es_fclose (fp);
-  xfree (get_membuf (&mb, NULL));
   release_kbnode (keyblock);
   return err;
 }
