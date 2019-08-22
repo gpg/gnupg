@@ -576,7 +576,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       print_name (fp, "Language prefs ...: ", info.disp_lang);
       tty_fprintf (fp, "Salutation .......: %s\n",
                    info.disp_sex == 1? _("Mr."):
-                   info.disp_sex == 2? _("Mrs.") : "");
+                   info.disp_sex == 2? _("Ms.") : "");
       print_name (fp, "URL of public key : ", info.pubkey_url);
       print_name (fp, "Login data .......: ", info.login_data);
       if (info.private_do[0])
@@ -1157,7 +1157,7 @@ change_sex (void)
   int rc;
 
   data = cpr_get ("cardedit.change_sex",
-                  _("Salutation (M = Mr., F = Mrs., or space): "));
+                  _("Salutation (M = Mr., F = Ms., or space): "));
   if (!data)
     return -1;
   trim_spaces (data);
