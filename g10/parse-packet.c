@@ -270,7 +270,7 @@ unknown_pubkey_warning (int algo)
      encryption/signing.  */
   if (pubkey_get_npkey (algo))
     {
-      if (opt.verbose)
+      if (opt.verbose && !glo_ctrl.silence_parse_warnings)
         {
           if (!pubkey_get_nsig (algo))
             log_info ("public key algorithm %s not suitable for %s\n",
@@ -285,7 +285,7 @@ unknown_pubkey_warning (int algo)
       algo &= 0xff;
       if (!unknown_pubkey_algos[algo])
         {
-          if (opt.verbose)
+          if (opt.verbose && !glo_ctrl.silence_parse_warnings)
             log_info (_("can't handle public key algorithm %d\n"), algo);
           unknown_pubkey_algos[algo] = 1;
         }
@@ -1679,7 +1679,7 @@ can_handle_critical_notation (const byte *name, size_t len)
     if (sl->flags == len && !memcmp (sl->d, name, len))
       return 1; /* Known */
 
-  if (opt.verbose)
+  if (opt.verbose && !glo_ctrl.silence_parse_warnings)
     {
       log_info(_("Unknown critical signature notation: ") );
       print_utf8_buffer (log_get_stream(), name, len);
@@ -1800,7 +1800,7 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
 		goto too_short;
 	      if (!can_handle_critical (buffer + 1, n - 1, type))
 		{
-		  if (opt.verbose)
+		  if (opt.verbose && !glo_ctrl.silence_parse_warnings)
 		    log_info (_("subpacket of type %d has "
 				"critical bit set\n"), type);
 		  if (start)
@@ -1851,14 +1851,14 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
   return NULL;	/* End of packets; not found.  */
 
  too_short:
-  if (opt.verbose)
+  if (opt.verbose && !glo_ctrl.silence_parse_warnings)
     log_info ("buffer shorter than subpacket\n");
   if (start)
     *start = -1;
   return NULL;
 
  no_type_byte:
-  if (opt.verbose)
+  if (opt.verbose && !glo_ctrl.silence_parse_warnings)
     log_info ("type octet missing in subpacket\n");
   if (start)
     *start = -1;
@@ -2070,7 +2070,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       if (p)
 	sig->timestamp = buf32_to_u32 (p);
       else if (!(sig->pubkey_algo >= 100 && sig->pubkey_algo <= 110)
-	       && opt.verbose)
+	       && opt.verbose && !glo_ctrl.silence_parse_warnings)
 	log_info ("signature packet without timestamp\n");
 
       /* Set the key id.  We first try the issuer fingerprint and if
@@ -2093,7 +2093,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	  sig->keyid[1] = buf32_to_u32 (p + 4);
 	}
       else if (!(sig->pubkey_algo >= 100 && sig->pubkey_algo <= 110)
-	       && opt.verbose)
+	       && opt.verbose && !glo_ctrl.silence_parse_warnings)
 	log_info ("signature packet without keyid\n");
 
       p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL);
@@ -2344,7 +2344,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       /* Not anymore supported since 2.1.  Use an older gpg version
        * (i.e. gpg 1.4) to parse v3 packets.  */
-      if (opt.verbose > 1)
+      if (opt.verbose > 1 && !glo_ctrl.silence_parse_warnings)
         log_info ("packet(%d) with obsolete version %d\n", pkttype, version);
       if (list_mode)
         es_fprintf (listfp, ":key packet: [obsolete version %d]\n", version);
@@ -2866,7 +2866,7 @@ parse_attribute_subpkts (PKT_user_id * uid)
   return count;
 
  too_short:
-  if (opt.verbose)
+  if (opt.verbose && !glo_ctrl.silence_parse_warnings)
     log_info ("buffer shorter than attribute subpacket\n");
   uid->attribs = attribs;
   uid->numattribs = count;

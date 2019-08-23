@@ -301,6 +301,9 @@ struct {
      codes.  Thus for the --server purposes we store some of the error
      codes here.  FIXME! */
   gpg_error_t lasterr;
+
+  /* Kludge to silence some warnings using --secret-key-list. */
+  int silence_parse_warnings;
 } glo_ctrl;
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
