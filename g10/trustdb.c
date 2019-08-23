@@ -303,7 +303,9 @@ verify_own_keys (ctrl_t ctrl)
 	      release_public_key_parts (&pk);
 	    }
 
-          log_info (_("key %s marked as ultimately trusted\n"),keystr(k->kid));
+          if (!opt.quiet)
+            log_info (_("key %s marked as ultimately trusted\n"),
+                      keystr(k->kid));
         }
     }
 
