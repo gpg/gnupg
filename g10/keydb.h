@@ -448,6 +448,7 @@ char *get_user_id_native (ctrl_t ctrl, u32 *keyid);
 char *get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr, size_t fprlen);
 
 void release_akl(void);
+int akl_empty_or_only_local (void);
 int parse_auto_key_locate(const char *options);
 int parse_key_origin (char *string);
 const char *key_origin_string (int origin);

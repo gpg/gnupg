@@ -3922,6 +3922,26 @@ release_akl (void)
     }
 }
 
+
+/* Returns true if the AKL is empty or has only the local method
+ * active.  */
+int
+akl_empty_or_only_local (void)
+{
+  struct akl *akl;
+  int any = 0;
+
+  for (akl = opt.auto_key_locate; akl; akl = akl->next)
+    if (akl->type != AKL_NODEFAULT && akl->type != AKL_LOCAL)
+      {
+        any = 1;
+        break;
+      }
+
+  return !any;
+}
+
+
 /* Returns false on error. */
 int
 parse_auto_key_locate (const char *options_arg)
