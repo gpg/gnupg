@@ -76,7 +76,7 @@ void keybox_pop_found_state (KEYBOX_HANDLE hd);
 const char *keybox_get_resource_name (KEYBOX_HANDLE hd);
 int keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes);
 
-gpg_error_t keybox_lock (KEYBOX_HANDLE hd, int yes);
+gpg_error_t keybox_lock (KEYBOX_HANDLE hd, int yes, long timeout);
 
 /*-- keybox-file.c --*/
 /* Fixme: This function does not belong here: Provide a better
