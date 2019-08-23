@@ -523,7 +523,11 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
   lastresname = NULL;
   do
     {
+      if (secret)
+        glo_ctrl.silence_parse_warnings++;
       rc = keydb_get_keyblock (hd, &keyblock);
+      if (secret)
+        glo_ctrl.silence_parse_warnings--;
       if (rc)
 	{
           if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
