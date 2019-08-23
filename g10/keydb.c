@@ -805,14 +805,27 @@ keydb_add_resource (const char *url, unsigned int flags)
               err = gpg_error (GPG_ERR_RESOURCE_LIMIT);
             else
               {
+                KEYBOX_HANDLE kbxhd;
+
                 if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY))
                   primary_keydb = token;
                 all_resources[used_resources].type = rt;
                 all_resources[used_resources].u.kb = NULL; /* Not used here */
                 all_resources[used_resources].token = token;
 
-                /* FIXME: Do a compress run if needed and no other
-                   user is currently using the keybox. */
+                /* Do a compress run if needed and no other user is
+                 * currently using the keybox. */
+                kbxhd = keybox_new_openpgp (token, 0);
+                if (kbxhd)
+                  {
+                    if (!keybox_lock (kbxhd, 1, 0))
+                      {
+                        keybox_compress (kbxhd);
+                        keybox_lock (kbxhd, 0, 0);
+                      }
+
+                    keybox_release (kbxhd);
+                  }
 
                 used_resources++;
               }

@@ -362,7 +362,10 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
             if (kbxhd)
               {
                 if (!keybox_lock (kbxhd, 1, 0))
-                  keybox_compress (kbxhd);
+                  {
+                    keybox_compress (kbxhd);
+                    keybox_lock (kbxhd, 0, 0);
+                  }
 
                 keybox_release (kbxhd);
               }
