@@ -573,6 +573,7 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
   int rc;
   unsigned long count = 0;
   struct file_stats_s stats;
+  int skipped_deleted;
 
   memset (&stats, 0, sizeof stats);
 
@@ -581,7 +582,7 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
 
   for (;;)
     {
-      rc = _keybox_read_blob (&blob, fp, NULL);
+      rc = _keybox_read_blob (&blob, fp, &skipped_deleted);
       if (gpg_err_code (rc) == GPG_ERR_TOO_LARGE
           && gpg_err_source (rc) == GPG_ERR_SOURCE_KEYBOX)
         {
@@ -598,8 +599,12 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
       if (rc)
         break;
 
+      count += skipped_deleted;
+
       if (stats_only)
         {
+          stats.total_blob_count += skipped_deleted;
+          stats.empty_blob_count += skipped_deleted;
           update_stats (blob, &stats);
         }
       else
