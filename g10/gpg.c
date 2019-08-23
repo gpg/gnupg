@@ -950,6 +950,9 @@ static struct debug_flags_s debug_flags [] =
 #define ALWAYS_ADD_KEYRINGS 0
 #endif
 
+/* The list of the default AKL methods.  */
+#define DEFAULT_AKL_LIST "local,wkd"
+
 
 int g10_errors_seen = 0;
 
@@ -2484,7 +2487,7 @@ main (int argc, char **argv)
 
     /* Set default options which require that malloc stuff is ready.  */
     additional_weak_digest ("MD5");
-    parse_auto_key_locate ("local,wkd");
+    parse_auto_key_locate (DEFAULT_AKL_LIST);
 
     /* Try for a version specific config file first */
     default_configname = get_default_configname ();
@@ -4444,7 +4447,17 @@ main (int argc, char **argv)
 	sl = NULL;
 	for (; argc; argc--, argv++)
           add_to_strlist2( &sl, *argv, utf8_strings );
+        if (cmd == aLocateExtKeys && akl_empty_or_only_local ())
+          {
+            /* This is a kludge to let --locate-external-keys even
+             * work if the config file has --no-auto-key-locate.  This
+             * better matches the expectations of the user.  */
+            release_akl ();
+            parse_auto_key_locate (DEFAULT_AKL_LIST);
+          }
 	public_key_list (ctrl, sl, 1, cmd == aLocateExtKeys);
+
+
 	free_strlist (sl);
 	break;
 
