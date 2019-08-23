@@ -675,7 +675,7 @@ keybox_compress (KEYBOX_HANDLE hd)
         {
           u32 last_maint = buf32_to_u32 (buffer+20);
 
-          if ( (last_maint + 3*3600) < make_timestamp () )
+          if ( (last_maint + 3*3600) > make_timestamp () )
             {
               fclose (fp);
               _keybox_release_blob (blob);
@@ -700,7 +700,7 @@ keybox_compress (KEYBOX_HANDLE hd)
      automagically skip any blobs flagged as deleted.  Thus what we
      only have to do is to check all ephemeral flagged blocks whether
      their time has come and write out all other blobs. */
-  cut_time = time(NULL) - 86400;
+  cut_time = make_timestamp () - 86400;
   first_blob = 1;
   skipped_deleted = 0;
   for (rc=0; !(read_rc = _keybox_read_blob (&blob, fp, &skipped_deleted));
