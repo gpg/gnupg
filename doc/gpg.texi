@@ -198,7 +198,7 @@ Make a detached signature.
 @opindex encrypt
 Encrypt data to one or more public keys. This command may be combined
 with @option{--sign} (to sign and encrypt a message),
-@option{--symmetric} (to encrypt a message that can decrypted using a
+@option{--symmetric} (to encrypt a message that can be decrypted using a
 secret key or a passphrase), or @option{--sign} and
 @option{--symmetric} together (for a signed message that can be
 decrypted using a secret key or a passphrase).  @option{--recipient}
