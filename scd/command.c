@@ -338,7 +338,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
 
 
 static const char hlp_learn[] =
-  "LEARN [--force] [--keypairinfo]\n"
+  "LEARN [--force] [--keypairinfo] [--multi]\n"
   "\n"
   "Learn all useful information of the currently inserted card.  When\n"
   "used without the force options, the command might do an INQUIRE\n"
@@ -366,7 +366,8 @@ static const char hlp_learn[] =
   "    PIV     = PIV card\n"
   "    NKS     = NetKey card\n"
   "\n"
-  "are implemented.  These strings are aliases for the AID\n"
+  "are implemented.  These strings are aliases for the AID.  With option\n"
+  "--multi information for all switchable apps are returned.\n"
   "\n"
   "  S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id> [<usage>]\n"
   "\n"
@@ -413,6 +414,7 @@ cmd_learn (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
   int only_keypairinfo = has_option (line, "--keypairinfo");
+  int opt_multi = has_option (line, "--multi");
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -477,7 +479,8 @@ cmd_learn (assuan_context_t ctx, char *line)
   if (!rc)
     rc = app_write_learn_status
       (ctrl->card_ctx, ctrl,
-       (only_keypairinfo? APP_LEARN_FLAG_KEYPAIRINFO : 0));
+       ( (only_keypairinfo? APP_LEARN_FLAG_KEYPAIRINFO : 0)
+         | (opt_multi? APP_LEARN_FLAG_MULTI : 0)) );
 
   return rc;
 }

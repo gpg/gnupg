@@ -44,6 +44,8 @@
 
 /* Flags used by the app_write_learn_status.  */
 #define APP_LEARN_FLAG_KEYPAIRINFO  1 /* Return only keypair infos.  */
+#define APP_LEARN_FLAG_MULTI        2 /* Return info for all apps.  */
+
 
 /* List of supported card types.  Generic is the usual ISO7817-4
  * compliant card.  More specific card or token versions can be given

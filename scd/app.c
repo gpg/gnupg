@@ -1030,13 +1030,36 @@ maybe_switch_app (ctrl_t ctrl, card_t card)
 }
 
 
+/* Helper for app_write_learn_status.  */
+static gpg_error_t
+write_learn_status_core (card_t card, app_t app, ctrl_t ctrl,
+                         unsigned int flags)
+{
+  /* We do not send CARD and APPTYPE if only keypairinfo is requested.  */
+  if (!(flags & APP_LEARN_FLAG_KEYPAIRINFO))
+    {
+      if (card && card->cardtype)
+        send_status_direct (ctrl, "CARDTYPE", strcardtype (card->cardtype));
+      if (card && card->cardversion)
+        send_status_printf (ctrl, "CARDVERSION", "%X", card->cardversion);
+      if (app->apptype)
+        send_status_direct (ctrl, "APPTYPE", strapptype (app->apptype));
+      if (app->appversion)
+        send_status_printf (ctrl, "APPVERSION", "%X", app->appversion);
+    }
+
+  return app->fnc.learn_status (app, ctrl, flags);
+}
+
+
 /* Write out the application specific status lines for the LEARN
    command. */
 gpg_error_t
 app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
 {
-  gpg_error_t err;
+  gpg_error_t err, err2;
   app_t app;
+  int any_reselect = 0;
 
   if (!card)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1045,29 +1068,43 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
   if (err)
     return err;
 
+  /* Always make sure that the current app for this connection has
+   * been selected and is at the top of the list.  */
   if ((err = maybe_switch_app (ctrl, card)))
     ;
   else if (!card->app->fnc.learn_status)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
     {
-      app = card->app;
-
-      /* We do not send CARD and APPTYPE if only keypairinfo is requested.  */
-      if (!(flags & APP_LEARN_FLAG_KEYPAIRINFO))
+      err = write_learn_status_core (card, card->app, ctrl, flags);
+      if (!err && card->app->fnc.reselect && (flags & APP_LEARN_FLAG_MULTI))
         {
-          if (card->cardtype)
-            send_status_direct (ctrl, "CARDTYPE", strcardtype (card->cardtype));
-          if (card->cardversion)
-            send_status_printf (ctrl, "CARDVERSION", "%X", card->cardversion);
-          if (app->apptype)
-            send_status_direct (ctrl, "APPTYPE", strapptype (app->apptype));
-          if (app->appversion)
-            send_status_printf (ctrl, "APPVERSION", "%X", app->appversion);
-          /* FIXME: Send info for the other active apps of the card?  */
+          /* The current app has the reselect feature so that we can
+           * loop over all other apps which are capable of a reselect
+           * and finally reselect the first app again.  Note that we
+           * did the learn for the currently selected card above.  */
+          app = card->app;
+          for (app = app->next; app && !err; app = app->next)
+            if (app->fnc.reselect)
+              {
+                any_reselect = 1;
+                err = app->fnc.reselect (app, ctrl);
+                if (!err)
+                  err = write_learn_status_core (NULL, app, ctrl, flags);
+              }
+          app = card->app;
+          if (any_reselect)
+            {
+              err2 = app->fnc.reselect (app, ctrl);
+              if (err2)
+                {
+                  log_error ("error re-selecting '%s': %s\n",
+                             strapptype(app->apptype), gpg_strerror (err2));
+                  if (!err)
+                    err = err2;
+                }
+            }
         }
-
-      err = app->fnc.learn_status (app, ctrl, flags);
     }
 
   unlock_card (card);
