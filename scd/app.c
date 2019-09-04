@@ -744,7 +744,8 @@ select_additional_application_internal (card_t card, apptype_t req_apptype)
    * reselect by maybe_switch_app after the select we just did.  */
   app->next = card->app;
   card->app = app;
-  log_info ("added app '%s' to the card context\n", strapptype (app->apptype));
+  log_info ("added app '%s' to the card context and switched\n",
+            strapptype (app->apptype));
 
  leave:
   if (err)
@@ -766,7 +767,7 @@ select_additional_application (ctrl_t ctrl, const char *name)
 
   req_apptype = apptype_from_name (name);
   if (!req_apptype)
-    err = gpg_error (GPG_ERR_NOT_FOUND);
+    return gpg_error (GPG_ERR_NOT_FOUND);
 
   card = ctrl->card_ctx;
   if (!card)
