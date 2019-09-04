@@ -105,6 +105,12 @@ static struct server_local_s *session_list;
    in this variable. */
 static struct server_local_s *locked_session;
 
+
+
+/*  Local prototypes.  */
+static int command_has_option (const char *cmd, const char *cmdopt);
+
+
 
 /* Convert the STRING into a newly allocated buffer while translating
    the hex numbers.  Stops at the first invalid character.  Blanks and
@@ -1573,7 +1579,9 @@ static const char hlp_getinfo[] =
   "                application per line, fields delimited by colons,\n"
   "                first field is the name.\n"
   "  card_list   - Return a list of serial numbers of active cards,\n"
-  "                using a status response.";
+  "                using a status response.\n"
+  "  cmd_has_option CMD OPT\n"
+  "                  - Returns OK if command CMD has option OPT.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1590,6 +1598,38 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 
       snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
       rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strncmp (line, "cmd_has_option", 14)
+           && (line[14] == ' ' || line[14] == '\t' || !line[14]))
+    {
+      char *cmd, *cmdopt;
+      line += 14;
+      while (*line == ' ' || *line == '\t')
+        line++;
+      if (!*line)
+        rc = gpg_error (GPG_ERR_MISSING_VALUE);
+      else
+        {
+          cmd = line;
+          while (*line && (*line != ' ' && *line != '\t'))
+            line++;
+          if (!*line)
+            rc = gpg_error (GPG_ERR_MISSING_VALUE);
+          else
+            {
+              *line++ = 0;
+              while (*line == ' ' || *line == '\t')
+                line++;
+              if (!*line)
+                rc = gpg_error (GPG_ERR_MISSING_VALUE);
+              else
+                {
+                  cmdopt = line;
+                  if (!command_has_option (cmd, cmdopt))
+                    rc = gpg_error (GPG_ERR_FALSE);
+                }
+            }
+        }
     }
   else if (!strcmp (line, "socket_name"))
     {
@@ -1934,6 +1974,20 @@ send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
 
 
 
+/* Return true if the command CMD implements the option OPT.  */
+static int
+command_has_option (const char *cmd, const char *cmdopt)
+{
+  if (!strcmp (cmd, "SERIALNO"))
+    {
+      if (!strcmp (cmdopt, "all"))
+        return 1;
+    }
+
+  return 0;
+}
+
+
 /* Tell the assuan library about our commands */
 static int
 register_commands (assuan_context_t ctx)
