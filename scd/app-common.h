@@ -39,9 +39,11 @@
 /* Flags used with app_readkey.  */
 #define APP_READKEY_FLAG_INFO    1  /* Send also a KEYPAIRINFO line.  */
 
-/* Bit flags set by the decipher function into R_INFO.  */
+/* Flags set by the decipher function into R_INFO.  */
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
 
+/* Flags used by the app_write_learn_status.  */
+#define APP_LEARN_FLAG_KEYPAIRINFO  1 /* Return only keypair infos.  */
 
 /* List of supported card types.  Generic is the usual ISO7817-4
  * compliant card.  More specific card or token versions can be given

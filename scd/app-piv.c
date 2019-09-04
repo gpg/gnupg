@@ -1176,7 +1176,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   for (i=0; data_objects[i].tag; i++)
     if (data_objects[i].keypair)
-      send_keypair_and_cert_info (app, ctrl, data_objects + i, !!(flags & 1));
+      send_keypair_and_cert_info (app, ctrl, data_objects + i,
+                                  !!(flags & APP_LEARN_FLAG_KEYPAIRINFO));
 
 
   return 0;

@@ -420,7 +420,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
       if (!!filelist[i].is_sigg != !!is_sigg)
         continue;
 
-      if (filelist[i].certtype && !(flags &1))
+      if (filelist[i].certtype && !(flags & APP_LEARN_FLAG_KEYPAIRINFO))
         {
           size_t len;
 

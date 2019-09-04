@@ -475,7 +475,9 @@ cmd_learn (assuan_context_t ctx, char *line)
   /* Let the application print out its collection of useful status
      information. */
   if (!rc)
-    rc = app_write_learn_status (ctrl->card_ctx, ctrl, only_keypairinfo);
+    rc = app_write_learn_status
+      (ctrl->card_ctx, ctrl,
+       (only_keypairinfo? APP_LEARN_FLAG_KEYPAIRINFO : 0));
 
   return rc;
 }

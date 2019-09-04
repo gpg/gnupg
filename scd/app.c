@@ -1054,7 +1054,7 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
       app = card->app;
 
       /* We do not send CARD and APPTYPE if only keypairinfo is requested.  */
-      if (!(flags &1))
+      if (!(flags & APP_LEARN_FLAG_KEYPAIRINFO))
         {
           if (card->cardtype)
             send_status_direct (ctrl, "CARDTYPE", strcardtype (card->cardtype));
