@@ -218,10 +218,12 @@ open_card (ctrl_t ctrl)
   return select_application (ctrl, NULL, &ctrl->card_ctx, 0, NULL, 0);
 }
 
-/* Explicitly open a card for a specific use of APPTYPE or SERIALNO.  */
+/* Explicitly open a card for a specific use of APPTYPE or SERIALNO.
+ * If OPT_ALL ist set also add all possible additional apps. */
 static gpg_error_t
 open_card_with_request (ctrl_t ctrl,
-                        const char *apptypestr, const char *serialno)
+                        const char *apptypestr, const char *serialno,
+                        int opt_all)
 {
   gpg_error_t err;
   unsigned char *serialno_bin = NULL;
@@ -254,6 +256,8 @@ open_card_with_request (ctrl_t ctrl,
 
   err = select_application (ctrl, apptypestr, &ctrl->card_ctx, 1,
                             serialno_bin, serialno_bin_len);
+  if (!err && opt_all)
+    err = select_additional_application (ctrl, APPTYPE_NONE);
 
  leave:
   xfree (serialno_bin);
@@ -262,13 +266,16 @@ open_card_with_request (ctrl_t ctrl,
 
 
 static const char hlp_serialno[] =
-  "SERIALNO [--demand=<serialno>] [<apptype>]\n"
+  "SERIALNO [--demand=<serialno>] [--all] [<apptype>]\n"
   "\n"
   "Return the serial number of the card using a status response.  This\n"
   "function should be used to check for the presence of a card.\n"
   "\n"
   "If --demand is given, an application on the card with SERIALNO is\n"
   "selected and an error is returned if no such card available.\n"
+  "\n"
+  "If --all is given, all possible other applications of the card are\n"
+  "will also be selected for on-the-fly swicthing.\n"
   "\n"
   "If APPTYPE is given, an application of that type is selected and an\n"
   "error is returned if the application is not supported or available.\n"
@@ -291,6 +298,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
   int rc = 0;
   char *serial;
   const char *demand;
+  int opt_all = has_option (line, "--all");
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -308,11 +316,13 @@ cmd_serialno (assuan_context_t ctx, char *line)
   else
     demand = NULL;
 
+  line = skip_options (line);
+
   /* Clear the remove flag so that the open_card is able to reread it.  */
   if (ctrl->server_local->card_removed)
     ctrl->server_local->card_removed = 0;
 
-  if ((rc = open_card_with_request (ctrl, *line? line:NULL, demand)))
+  if ((rc = open_card_with_request (ctrl, *line? line:NULL, demand, opt_all)))
     {
       ctrl->server_local->card_removed = 1;
       return rc;

@@ -753,6 +753,78 @@ select_additional_application_internal (card_t card, apptype_t req_apptype)
   return err;
 }
 
+
+/* Add all possible additional applications to the card context but do
+ * not change the current one.  This current works only for Yubikeys. */
+static gpg_error_t
+select_all_additional_applications_internal (card_t card)
+{
+  gpg_error_t err = 0;
+  apptype_t candidates[3];
+  int i, j;
+
+  if (card->cardtype == CARDTYPE_YUBIKEY)
+    {
+      candidates[0] = APPTYPE_OPENPGP;
+      candidates[1] = APPTYPE_PIV;
+      candidates[2] = APPTYPE_NONE;
+    }
+  else
+    {
+      candidates[0] = APPTYPE_NONE;
+    }
+
+  /* Find the app and run the select.  */
+  for (i=0; app_priority_list[i].apptype; i++)
+    {
+      app_t app, app_r, app_prev;
+
+      for (j=0; candidates[j]; j++)
+        if (candidates[j] == app_priority_list[i].apptype
+            && is_app_allowed (app_priority_list[i].name))
+          break;
+      if (!candidates[j])
+        continue;
+
+      for (app = card->app; app; app = app->next)
+        if (app->apptype == candidates[j])
+          break;
+      if (app)
+        continue; /* Already on the list of apps.  */
+
+      app = xtrycalloc (1, sizeof *app);
+      if (!app)
+        {
+          err = gpg_error_from_syserror ();
+          log_info ("error allocating app context: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      app->card = card;
+      err = app_priority_list[i].select_func (app);
+      if (err)
+        {
+          log_error ("error selecting additional app '%s': %s - skipped\n",
+                     strapptype (candidates[j]), gpg_strerror (err));
+          err = 0;
+          xfree (app);
+        }
+      else
+        {
+          /* Append to the list of apps.  */
+          app_prev = card->app;
+          for (app_r=app_prev->next; app_r; app_prev=app_r, app_r=app_r->next)
+            ;
+          app_prev->next = app;
+          log_info ("added app '%s' to the card context\n",
+                    strapptype (app->apptype));
+        }
+    }
+
+ leave:
+  return err;
+}
+
+
 /* This function needs to be called with the NAME of the new
  * application to be selected on CARD.  On success the application is
  * added to the list of the card's active applications as currently
@@ -765,9 +837,14 @@ select_additional_application (ctrl_t ctrl, const char *name)
   apptype_t req_apptype;
   card_t card;
 
-  req_apptype = apptype_from_name (name);
-  if (!req_apptype)
-    return gpg_error (GPG_ERR_NOT_FOUND);
+  if (!name)
+    req_apptype = 0;
+  else
+    {
+      req_apptype = apptype_from_name (name);
+      if (!req_apptype)
+        return gpg_error (GPG_ERR_NOT_FOUND);
+    }
 
   card = ctrl->card_ctx;
   if (!card)
@@ -777,11 +854,18 @@ select_additional_application (ctrl_t ctrl, const char *name)
   if (err)
     return err;
 
-  err = select_additional_application_internal (card, req_apptype);
-  if (!err)
+  if (req_apptype)
     {
-      ctrl->current_apptype = req_apptype;
-      log_debug ("current_apptype is set to %s\n", name);
+      err = select_additional_application_internal (card, req_apptype);
+      if (!err)
+        {
+          ctrl->current_apptype = req_apptype;
+          log_debug ("current_apptype is set to %s\n", name);
+        }
+    }
+  else
+    {
+      err = select_all_additional_applications_internal (card);
     }
 
   unlock_card (card);
