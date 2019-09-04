@@ -1405,7 +1405,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
 
-  if ((flags & 1))
+  if ((flags & APP_LEARN_FLAG_KEYPAIRINFO))
     err = 0;
   else
     {
