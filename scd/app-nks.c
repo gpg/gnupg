@@ -866,7 +866,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
       if (filelist[i].nks_app_id != nks_app_id)
         continue;
 
-      if (filelist[i].certtype && !(flags &1))
+      if (filelist[i].certtype && !(flags & APP_LEARN_FLAG_KEYPAIRINFO))
         {
           size_t len;
 
