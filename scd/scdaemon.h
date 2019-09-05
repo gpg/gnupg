@@ -67,6 +67,7 @@ struct
 } opt;
 
 
+#define DBG_APP_VALUE     1     /* Debug app speific stuff.  */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
 #define DBG_CRYPTO_VALUE  4	/* debug low level crypto */
 #define DBG_MEMORY_VALUE  32	/* debug memory allocation stuff */
@@ -77,6 +78,7 @@ struct
 #define DBG_CARD_IO_VALUE 2048
 #define DBG_READER_VALUE  4096  /* Trace reader related functions.  */
 
+#define DBG_APP     (opt.debug & DBG_APP_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)

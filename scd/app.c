@@ -96,6 +96,13 @@ strapptype (apptype_t t)
 }
 
 
+const char *
+xstrapptype (app_t app)
+{
+  return app? strapptype (app->apptype) : "[no_app]";
+}
+
+
 /* Return the apptype for NAME.  */
 static apptype_t
 apptype_from_name (const char *name)
@@ -1218,7 +1225,12 @@ app_readcert (card_t card, ctrl_t ctrl, const char *certid,
   else if (!card->app->fnc.readcert)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.readcert (card->app, certid, cert, certlen);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling readcert(%s)\n",
+                   card->slot, xstrapptype (card->app), certid);
+      err = card->app->fnc.readcert (card->app, certid, cert, certlen);
+    }
 
   unlock_card (card);
   return err;
@@ -1255,7 +1267,12 @@ app_readkey (card_t card, ctrl_t ctrl, const char *keyid, unsigned int flags,
   else if (!card->app->fnc.readkey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.readkey (card->app, ctrl, keyid, flags, pk, pklen);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling readkey(%s)\n",
+                   card->slot, xstrapptype (card->app), keyid);
+      err = card->app->fnc.readkey (card->app, ctrl, keyid, flags, pk, pklen);
+    }
 
   unlock_card (card);
   return err;
@@ -1300,7 +1317,12 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
   else if (!card->app->fnc.getattr)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.getattr (card->app, ctrl, name);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling getattr(%s)\n",
+                   card->slot, xstrapptype (card->app), name);
+      err = card->app->fnc.getattr (card->app, ctrl, name);
+    }
 
   unlock_card (card);
   return err;
@@ -1327,8 +1349,13 @@ app_setattr (card_t card, ctrl_t ctrl, const char *name,
   else if (!card->app->fnc.setattr)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.setattr (card->app, name, pincb, pincb_arg,
-                                  value, valuelen);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling setattr(%s)\n",
+                   card->slot, xstrapptype (card->app), name);
+      err = card->app->fnc.setattr (card->app, name, pincb, pincb_arg,
+                                    value, valuelen);
+    }
 
   unlock_card (card);
   return err;
@@ -1358,10 +1385,15 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   else if (!card->app->fnc.sign)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.sign (card->app, keyidstr, hashalgo,
-                               pincb, pincb_arg,
-                               indata, indatalen,
-                               outdata, outdatalen);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling sign(%s)\n",
+                   card->slot, xstrapptype (card->app), keyidstr);
+      err = card->app->fnc.sign (card->app, keyidstr, hashalgo,
+                                 pincb, pincb_arg,
+                                 indata, indatalen,
+                                 outdata, outdatalen);
+    }
 
   unlock_card (card);
   if (opt.verbose)
@@ -1394,10 +1426,15 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
   else if (!card->app->fnc.auth)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.auth (card->app, keyidstr,
-                               pincb, pincb_arg,
-                               indata, indatalen,
-                               outdata, outdatalen);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling auth(%s)\n",
+                   card->slot, xstrapptype (card->app), keyidstr);
+      err = card->app->fnc.auth (card->app, keyidstr,
+                                 pincb, pincb_arg,
+                                 indata, indatalen,
+                                 outdata, outdatalen);
+    }
 
   unlock_card (card);
   if (opt.verbose)
@@ -1432,11 +1469,16 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
   else if (!card->app->fnc.decipher)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.decipher (card->app, keyidstr,
-                                   pincb, pincb_arg,
-                                   indata, indatalen,
-                                   outdata, outdatalen,
-                                   r_info);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling decipher(%s)\n",
+                   card->slot, xstrapptype (card->app), keyidstr);
+      err = card->app->fnc.decipher (card->app, keyidstr,
+                                     pincb, pincb_arg,
+                                     indata, indatalen,
+                                     outdata, outdatalen,
+                                     r_info);
+    }
 
   unlock_card (card);
   if (opt.verbose)
@@ -1466,8 +1508,13 @@ app_writecert (card_t card, ctrl_t ctrl,
   else if (!card->app->fnc.writecert)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.writecert (card->app, ctrl, certidstr,
-                                    pincb, pincb_arg, data, datalen);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling writecert(%s)\n",
+                   card->slot, xstrapptype (card->app), certidstr);
+      err = card->app->fnc.writecert (card->app, ctrl, certidstr,
+                                      pincb, pincb_arg, data, datalen);
+    }
 
   unlock_card (card);
   if (opt.verbose)
@@ -1497,8 +1544,13 @@ app_writekey (card_t card, ctrl_t ctrl,
   else if (!card->app->fnc.writekey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.writekey (card->app, ctrl, keyidstr, flags,
-                                   pincb, pincb_arg, keydata, keydatalen);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling writekey(%s)\n",
+                   card->slot, xstrapptype (card->app), keyidstr);
+      err = card->app->fnc.writekey (card->app, ctrl, keyidstr, flags,
+                                     pincb, pincb_arg, keydata, keydatalen);
+    }
 
   unlock_card (card);
   if (opt.verbose)
@@ -1527,8 +1579,13 @@ app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
   else if (!card->app->fnc.genkey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.genkey (card->app, ctrl, keynostr, keytype, flags,
-                                 createtime, pincb, pincb_arg);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling genkey(%s)\n",
+                   card->slot, xstrapptype (card->app), keynostr);
+      err = card->app->fnc.genkey (card->app, ctrl, keynostr, keytype, flags,
+                                   createtime, pincb, pincb_arg);
+    }
 
   unlock_card (card);
   if (opt.verbose)
@@ -1582,8 +1639,13 @@ app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
   else if (!card->app->fnc.change_pin)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.change_pin (card->app, ctrl,
-                                     chvnostr, flags, pincb, pincb_arg);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling change_pin(%s)\n",
+                   card->slot, xstrapptype (card->app), chvnostr);
+      err = card->app->fnc.change_pin (card->app, ctrl,
+                                       chvnostr, flags, pincb, pincb_arg);
+    }
 
   unlock_card (card);
   if (opt.verbose)
@@ -1613,7 +1675,12 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
   else if (!card->app->fnc.check_pin)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
-    err = card->app->fnc.check_pin (card->app, keyidstr, pincb, pincb_arg);
+    {
+      if (DBG_APP)
+        log_debug ("slot %d app %s: calling check_pin(%s)\n",
+                   card->slot, xstrapptype (card->app), keyidstr);
+      err = card->app->fnc.check_pin (card->app, keyidstr, pincb, pincb_arg);
+    }
 
   unlock_card (card);
   if (opt.verbose)
