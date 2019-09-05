@@ -1914,24 +1914,33 @@ app_send_card_list (ctrl_t ctrl)
 card_t
 app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
 {
-  gpg_error_t err;
+  int locked = 0;
   card_t c;
   app_t a;
 
   npth_mutex_lock (&card_list_lock);
 
   for (c = card_top; c; c = c->next)
-    for (a = c->app; a; a = a->next)
-      if (a->fnc.with_keygrip)
+    {
+      if (lock_card (c, ctrl))
         {
-          if (!lock_card (c, ctrl))
-            {
-              err = a->fnc.with_keygrip (a, ctrl, action, keygrip_str);
-              unlock_card (c);
-              if (!err)
-                goto leave_the_loop;
-            }
+          c = NULL;
+          goto leave_the_loop;
         }
+      locked = 1;
+      for (a = c->app; a; a = a->next)
+        if (a->fnc.with_keygrip)
+          {
+            if (DBG_APP)
+              log_debug ("slot %d app %s: calling with_keygrip(action=%d)\n",
+                         c->slot, xstrapptype (a), action);
+            if (!a->fnc.with_keygrip (a, ctrl, action, keygrip_str))
+              goto leave_the_loop;
+          }
+      unlock_card (c);
+      locked = 0;
+    }
+
 
  leave_the_loop:
 
@@ -1944,6 +1953,11 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
   if (c && c->app && c->app->apptype != a->apptype)
     ctrl->current_apptype = a->apptype;
 
+  if (locked && c)
+    {
+      unlock_card (c);
+      locked = 0;
+    }
   npth_mutex_unlock (&card_list_lock);
   return c;
 }
