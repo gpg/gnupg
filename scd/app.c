@@ -121,6 +121,31 @@ apptype_from_name (const char *name)
 }
 
 
+/* Return the apptype for KEYREF.  This is the first part of the
+ * KEYREF up to the dot.  */
+static apptype_t
+apptype_from_keyref (const char *keyref)
+{
+  int i;
+  unsigned int n;
+  const char *s;
+
+  if (!keyref)
+    return APPTYPE_NONE;
+  s = strchr (keyref, '.');
+  if (!s || s == keyref || !s[1])
+    return APPTYPE_NONE; /* Not a valid keyref.  */
+  n = s - keyref;
+
+  for (i=0; app_priority_list[i].apptype; i++)
+    if (strlen (app_priority_list[i].name) == n
+        && !ascii_strncasecmp (app_priority_list[i].name, keyref, n))
+      return app_priority_list[i].apptype;
+
+  return APPTYPE_NONE;
+}
+
+
 /* Initialization function to change the default app_priority_list.
  * LIST is a list of comma or space separated strings with application
  * names.  Unknown names will only result in warning message.
@@ -243,6 +268,7 @@ app_dump_state (void)
     {
       log_info ("app_dump_state: card=%p slot=%d type=%s\n",
                 c, c->slot, strcardtype (c->cardtype));
+      /* FIXME The use of log_info risks a race!  */
       for (a=c->app; a; a = a->next)
         log_info ("app_dump_state:   app=%p type='%s'\n",
                   a, strapptype (a->apptype));
@@ -1070,10 +1096,12 @@ app_get_serialno (app_t app)
  * that the new active app will be moved to the head of the list at
  * CARD->app.  Thus function must be called with the card lock held. */
 static gpg_error_t
-maybe_switch_app (ctrl_t ctrl, card_t card)
+maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
 {
   gpg_error_t err;
-  app_t app, app_prev;
+  app_t app;
+  app_t app_prev = NULL;
+  apptype_t apptype;
 
   if (!card->ref_count || !card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
@@ -1084,39 +1112,82 @@ maybe_switch_app (ctrl_t ctrl, card_t card)
       ctrl->current_apptype = card->app->apptype;
       return 0;
     }
-  log_debug ("card=%p want=%s card->app=%s\n",
-             card, strapptype (ctrl->current_apptype),
-             strapptype (card->app->apptype));
-  app_dump_state ();
-  if (ctrl->current_apptype == card->app->apptype)
-    return 0; /* No need to switch.  */
-  app_prev = card->app;
-  for (app = app_prev->next; app; app_prev = app, app = app->next)
-    if (app->apptype == ctrl->current_apptype)
-      break;
+  if (DBG_APP)
+    log_debug ("slot %d: have=%s want=%s keyref=%s\n",
+               card->slot, strapptype (card->app->apptype),
+               strapptype (ctrl->current_apptype),
+               keyref? keyref:"[none]");
+
+  app = NULL;
+  if (keyref)
+    {
+      /* Switch based on the requested KEYREF.  */
+      apptype = apptype_from_keyref (keyref);
+      if (apptype)
+        {
+          for (app = card->app; app; app_prev = app, app = app->next)
+            if (app->apptype == apptype)
+              break;
+          if (!app_prev && ctrl->current_apptype == card->app->apptype)
+            return 0;  /* Already the first app - no need to switch.  */
+        }
+      else if (strlen (keyref) == 40)
+        {
+          /* This looks like a keygrip.  Iterate over all apps to find
+           * the corresponding app.  */
+          for (app = card->app; app; app_prev = app, app = app->next)
+            if (app->fnc.with_keygrip
+                && !app->fnc.with_keygrip (app, ctrl,
+                                           KEYGRIP_ACTION_LOOKUP, keyref))
+              break;
+          if (!app_prev && ctrl->current_apptype == card->app->apptype)
+            return 0;   /* Already the first app - no need to switch.  */
+        }
+    }
+
+  if (!app)
+    {
+      /* Switch based on the current application of this connection or
+       * if a keyref based switch didn't worked.  */
+      if (ctrl->current_apptype == card->app->apptype)
+        return 0; /* No need to switch.  */
+      app_prev = card->app;
+      for (app = app_prev->next; app; app_prev = app, app = app->next)
+        if (app->apptype == ctrl->current_apptype)
+          break;
+    }
   if (!app)
     return gpg_error (GPG_ERR_WRONG_CARD);
 
   if (!app->fnc.reselect)
     {
       log_error ("oops: reselect function missing for '%s'\n",
-                 strapptype(app->apptype));
+                 strapptype (app->apptype));
       return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
     }
   err = app->fnc.reselect (app, ctrl);
   if (err)
     {
-      log_error ("error re-selecting '%s': %s\n",
-                 strapptype(app->apptype), gpg_strerror (err));
+      log_error ("card %d: error re-selecting '%s': %s\n",
+                 card->slot, xstrapptype (app), gpg_strerror (err));
       return err;
     }
-  /* Swap APP with the head of the app list.  Note that APP is not the
-   * head of the list. */
-  app_prev->next = app->next;
-  app->next = card->app;
-  card->app = app;
+
+  /* Swap APP with the head of the app list if needed.  Note that APP
+   * is not the head of the list. */
+  if (app_prev)
+    {
+      app_prev->next = app->next;
+      app->next = card->app;
+      card->app = app;
+    }
+
+  if (opt.verbose)
+    log_info ("card %d: %s '%s'\n",
+              card->slot, app_prev? "switched to":"re-selected",
+              xstrapptype (app));
+
   ctrl->current_apptype = app->apptype;
-  log_info ("switched to '%s'\n", strapptype (app->apptype));
 
   return 0;
 }
@@ -1162,7 +1233,7 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
 
   /* Always make sure that the current app for this connection has
    * been selected and is at the top of the list.  */
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
   else if (!card->app->fnc.learn_status)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1220,7 +1291,7 @@ app_readcert (card_t card, ctrl_t ctrl, const char *certid,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, certid)))
     ;
   else if (!card->app->fnc.readcert)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1262,7 +1333,7 @@ app_readkey (card_t card, ctrl_t ctrl, const char *keyid, unsigned int flags,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, keyid)))
     ;
   else if (!card->app->fnc.readkey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1291,7 +1362,7 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
   else if (name && !strcmp (name, "CARDTYPE"))
     {
@@ -1344,7 +1415,7 @@ app_setattr (card_t card, ctrl_t ctrl, const char *name,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
   else if (!card->app->fnc.setattr)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1380,7 +1451,7 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, keyidstr)))
     ;
   else if (!card->app->fnc.sign)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1421,7 +1492,7 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, keyidstr)))
     ;
   else if (!card->app->fnc.auth)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1464,7 +1535,7 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, keyidstr)))
     ;
   else if (!card->app->fnc.decipher)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1503,7 +1574,7 @@ app_writecert (card_t card, ctrl_t ctrl,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, certidstr)))
     ;
   else if (!card->app->fnc.writecert)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1539,7 +1610,7 @@ app_writekey (card_t card, ctrl_t ctrl,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, keyidstr)))
     ;
   else if (!card->app->fnc.writekey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1574,7 +1645,7 @@ app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, keynostr)))
     ;
   else if (!card->app->fnc.genkey)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1634,7 +1705,7 @@ app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
   else if (!card->app->fnc.change_pin)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1670,7 +1741,7 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
   if (err)
     return err;
 
-  if ((err = maybe_switch_app (ctrl, card)))
+  if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
   else if (!card->app->fnc.check_pin)
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
