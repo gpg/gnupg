@@ -1366,7 +1366,7 @@ find_dobj_by_keyref (app_t app, const char *keyref)
 
   (void)app;
 
-  if (!ascii_strncasecmp (keyref, "PIV.", 4))
+  if (!ascii_strncasecmp (keyref, "PIV.", 4))  /* Standard keyref */
     {
       keyref += 4;
       for (i=0; data_objects[i].tag; i++)
@@ -1376,7 +1376,7 @@ find_dobj_by_keyref (app_t app, const char *keyref)
             return data_objects + i;
           }
     }
-  else if (!strncmp (keyref, "2.16.840.1.101.3.7.", 19))
+  else if (!strncmp (keyref, "2.16.840.1.101.3.7.", 19))  /* OID */
     {
       keyref += 19;
       for (i=0; data_objects[i].tag; i++)
@@ -1385,6 +1385,26 @@ find_dobj_by_keyref (app_t app, const char *keyref)
           {
             return data_objects + i;
           }
+    }
+  else if (strlen (keyref) == 40)  /* A keygrip */
+    {
+      char *keygripstr = NULL;
+      int tag, dummy_got_cert;
+
+      for (i=0; (tag=data_objects[i].tag); i++)
+        {
+          if (!data_objects[i].keypair)
+            continue;
+          xfree (keygripstr);
+          if (get_keygrip_by_tag (app, tag, &keygripstr, &dummy_got_cert))
+            continue;
+          if (!strcmp (keygripstr, keyref))
+            {
+              xfree (keygripstr);
+              return data_objects + i;
+            }
+        }
+      xfree (keygripstr);
     }
 
   return NULL;
