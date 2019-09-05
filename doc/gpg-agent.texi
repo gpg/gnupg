@@ -256,30 +256,11 @@ however carefully selected to best aid in debugging.
 
 @item --debug @var{flags}
 @opindex debug
-This option is only useful for debugging and the behavior may change at
-any time without notice.  FLAGS are bit encoded and may be given in
-usual C-Syntax. The currently defined bits are:
-
-@table @code
-@item 0  (1)
-X.509 or OpenPGP protocol related data
-@item 1  (2)
-values of big number integers
-@item 2  (4)
-low level crypto operations
-@item 5  (32)
-memory allocation
-@item 6  (64)
-caching
-@item 7  (128)
-show memory statistics
-@item 9  (512)
-write hashed data to files named @code{dbgmd-000*}
-@item 10 (1024)
-trace Assuan protocol
-@item 12 (4096)
-bypass all certificate validation
-@end table
+Set debug flags.  All flags are or-ed and @var{flags} may be given
+in C syntax (e.g. 0x0042) or as a comma separated list of flag names.
+To get a list of all supported flags the single word "help" can be
+used. This option is only useful for debugging and the behavior may
+change at any time without notice.
 
 @item --debug-all
 @opindex debug-all

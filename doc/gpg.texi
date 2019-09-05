@@ -2894,10 +2894,11 @@ however carefully selected to best aid in debugging.
 
 @item --debug @var{flags}
 @opindex debug
-Set debugging flags. All flags are or-ed and @var{flags} may be given
+Set debug flags.  All flags are or-ed and @var{flags} may be given
 in C syntax (e.g. 0x0042) or as a comma separated list of flag names.
 To get a list of all supported flags the single word "help" can be
-used.
+used. This option is only useful for debugging and the behavior may
+change at any time without notice.
 
 @item --debug-all
 @opindex debug-all
