@@ -36,128 +36,81 @@ static gpg_error_t
 ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
               const unsigned char *grip, char **r_kid)
 {
-  int i;
   char *serialno;
-  int no_card = 0;
   char *desc;
-  char *want_sn, *want_kid, *want_sn_disp;
+  char *want_sn;
   int len;
-  struct card_key_info_s *keyinfo;
   gpg_error_t err;
   char hexgrip[41];
 
   *r_kid = NULL;
+  bin2hex (grip, 20, hexgrip);
 
-  /* Scan device(s), and check if key for GRIP is available.  */
-  err = agent_card_serialno (ctrl, &serialno, NULL);
-  if (!err)
-    {
-      xfree (serialno);
-      bin2hex (grip, 20, hexgrip);
-      err = agent_card_keyinfo (ctrl, hexgrip, &keyinfo);
-      if (!err)
-        {
-          /* Key for GRIP found, use it directly.  */
-          agent_card_free_keyinfo (keyinfo);
-          if ((*r_kid = xtrystrdup (hexgrip)))
-            return 0;
-          else
-            return gpg_error_from_syserror ();
-        }
-    }
-
-  err = parse_shadow_info (shadow_info, &want_sn, &want_kid, NULL);
+  err = parse_shadow_info (shadow_info, &want_sn, NULL, NULL);
   if (err)
     return err;
-  want_sn_disp = xtrystrdup (want_sn);
-  if (!want_sn_disp)
-    {
-      err = gpg_error_from_syserror ();
-      xfree (want_sn);
-      xfree (want_kid);
-      return err;
-    }
 
-  len = strlen (want_sn_disp);
-  if (len == 32 && !strncmp (want_sn_disp, "D27600012401", 12))
+  len = strlen (want_sn);
+  if (len == 32 && !strncmp (want_sn, "D27600012401", 12))
     {
       /* This is an OpenPGP card - reformat  */
-      memmove (want_sn_disp, want_sn_disp+16, 4);
-      want_sn_disp[4] = ' ';
-      memmove (want_sn_disp+5, want_sn_disp+20, 8);
-      want_sn_disp[13] = 0;
+      memmove (want_sn, want_sn+16, 4);
+      want_sn[4] = ' ';
+      memmove (want_sn+5, want_sn+20, 8);
+      want_sn[13] = 0;
     }
-  else if (len == 20 && want_sn_disp[19] == '0')
+  else if (len == 20 && want_sn[19] == '0')
     {
       /* We assume that a 20 byte serial number is a standard one
        * which has the property to have a zero in the last nibble (Due
        * to BCD representation).  We don't display this '0' because it
        * may confuse the user.  */
-      want_sn_disp[19] = 0;
+      want_sn[19] = 0;
     }
 
   for (;;)
     {
-      err = agent_card_serialno (ctrl, &serialno, want_sn);
+      /* Scan device(s), and check if key for GRIP is available.  */
+      err = agent_card_serialno (ctrl, &serialno, NULL);
       if (!err)
         {
-          log_debug ("detected card with S/N %s\n", serialno);
-          i = strcmp (serialno, want_sn);
+          struct card_key_info_s *keyinfo;
+
           xfree (serialno);
-          serialno = NULL;
-          if (!i)
+          err = agent_card_keyinfo (ctrl, hexgrip, &keyinfo);
+          if (!err)
             {
-              xfree (want_sn_disp);
+              /* Key for GRIP found, use it directly.  */
+              agent_card_free_keyinfo (keyinfo);
               xfree (want_sn);
-              *r_kid = want_kid;
-              return 0; /* yes, we have the correct card */
+              if ((*r_kid = xtrystrdup (hexgrip)))
+                return 0;
+              else
+                return gpg_error_from_syserror ();
             }
         }
-      else if (gpg_err_code (err) == GPG_ERR_ENODEV)
+
+      if (asprintf (&desc,
+                    "%s:%%0A%%0A"
+                    "  %s",
+                    L_("Please insert the card with serial number"),
+                    want_sn) < 0)
         {
-          log_debug ("no device present\n");
-          err = 0;
-          no_card = 1;
-        }
-      else if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
-        {
-          log_debug ("no card present\n");
-          err = 0;
-          no_card = 2;
+          err = out_of_core ();
         }
       else
         {
-          log_error ("error accessing card: %s\n", gpg_strerror (err));
+          err = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
+          if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK &&
+              gpg_err_code (err) == GPG_ERR_NO_PIN_ENTRY)
+            err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+
+          xfree (desc);
         }
 
-      if (!err)
-        {
-          if (asprintf (&desc,
-                    "%s:%%0A%%0A"
-                    "  %s",
-                        no_card
-                        ? L_("Please insert the card with serial number")
-                        : L_("Please remove the current card and "
-                             "insert the one with serial number"),
-                        want_sn_disp) < 0)
-            {
-              err = out_of_core ();
-            }
-          else
-            {
-              err = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
-              if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK &&
-                  gpg_err_code (err) == GPG_ERR_NO_PIN_ENTRY)
-                err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
-
-              xfree (desc);
-            }
-        }
       if (err)
         {
-          xfree (want_sn_disp);
           xfree (want_sn);
-          xfree (want_kid);
           return err;
         }
     }
