@@ -86,7 +86,9 @@ mk_notation_policy_etc (PKT_signature *sig,
   args.pksk = pksk;
 
   /* Notation data. */
-  if (IS_SIG(sig) && opt.sig_notations)
+  if (IS_ATTST_SIGS(sig))
+    ;
+  else if (IS_SIG(sig) && opt.sig_notations)
     nd = opt.sig_notations;
   else if (IS_CERT(sig) && opt.cert_notations)
     nd = opt.cert_notations;
@@ -113,7 +115,9 @@ mk_notation_policy_etc (PKT_signature *sig,
     }
 
   /* Set policy URL. */
-  if (IS_SIG(sig) && opt.sig_policy_url)
+  if (IS_ATTST_SIGS(sig))
+    ;
+  else if (IS_SIG(sig) && opt.sig_policy_url)
     pu = opt.sig_policy_url;
   else if (IS_CERT(sig) && opt.cert_policy_url)
     pu = opt.cert_policy_url;

@@ -119,6 +119,8 @@ typedef enum
     SIGSUBPKT_ISSUER_FPR    = 33, /* Issuer fingerprint. */
     SIGSUBPKT_PREF_AEAD     = 34, /* Preferred AEAD algorithms. */
 
+    SIGSUBPKT_ATTST_SIGS    = 37, /* Attested Certifications.  */
+
     SIGSUBPKT_FLAG_CRITICAL = 128
   }
 sigsubpkttype_t;

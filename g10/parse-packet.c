@@ -1360,17 +1360,20 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 
 
 /* Dump a subpacket to LISTFP.  BUFFER contains the subpacket in
-   question and points to the type field in the subpacket header (not
-   the start of the header).  TYPE is the subpacket's type with the
-   critical bit cleared.  CRITICAL is the value of the CRITICAL bit.
-   BUFLEN is the length of the buffer and LENGTH is the length of the
-   subpacket according to the subpacket's header.  */
+ * question and points to the type field in the subpacket header (not
+ * the start of the header).  TYPE is the subpacket's type with the
+ * critical bit cleared.  CRITICAL is the value of the CRITICAL bit.
+ * BUFLEN is the length of the buffer and LENGTH is the length of the
+ * subpacket according to the subpacket's header.  DIGEST_ALGO is the
+ * digest algo of the signature.  */
 static void
 dump_sig_subpkt (int hashed, int type, int critical,
-		 const byte * buffer, size_t buflen, size_t length)
+		 const byte * buffer, size_t buflen, size_t length,
+                 int digest_algo)
 {
   const char *p = NULL;
   int i;
+  int nprinted;
 
   /* The CERT has warning out with explains how to use GNUPG to detect
    * the ARRs - we print our old message here when it is a faked ARR
@@ -1388,9 +1391,11 @@ dump_sig_subpkt (int hashed, int type, int critical,
   buffer++;
   length--;
 
-  es_fprintf (listfp, "\t%s%ssubpkt %d len %u (",	/*) */
-              critical ? "critical " : "",
-              hashed ? "hashed " : "", type, (unsigned) length);
+  nprinted = es_fprintf (listfp, "\t%s%ssubpkt %d len %u (",	/*) */
+                         critical ? "critical " : "",
+                         hashed ? "hashed " : "", type, (unsigned) length);
+  if (nprinted < 1)
+    nprinted = 1; /*(we use (nprinted-1) later.)*/
   if (length > buflen)
     {
       es_fprintf (listfp, "too short: buffer is only %u)\n", (unsigned) buflen);
@@ -1585,6 +1590,32 @@ dump_sig_subpkt (int hashed, int type, int critical,
                     buffer[0] == 3 ? buffer[15] : buffer[2],
                     buffer[0] == 3 ? buffer[16] : buffer[3]);
       break;
+
+    case SIGSUBPKT_ATTST_SIGS:
+      {
+        unsigned int hlen;
+
+	es_fputs ("attst-sigs: ", listfp);
+        hlen = gcry_md_get_algo_dlen (map_md_openpgp_to_gcry (digest_algo));
+	if (!hlen)
+	  p = "[unknown digest algo]";
+        else if ((length % hlen))
+	  p = "[invalid length]";
+	else
+	  {
+            es_fprintf (listfp, "%d", length/hlen);
+            while (length)
+              {
+                es_fprintf (listfp, "\n\t%*s", nprinted-1, "");
+                es_write_hexstring (listfp, buffer, hlen, 0, NULL);
+                buffer += hlen;
+                length -= hlen;
+              }
+	  }
+      }
+      break;
+
+
     default:
       if (type >= 100 && type <= 110)
 	p = "experimental / private subpacket";
@@ -1627,6 +1658,7 @@ parse_one_sig_subpkt (const byte * buffer, size_t n, int type)
     case SIGSUBPKT_PREF_KS:
     case SIGSUBPKT_FEATURES:
     case SIGSUBPKT_REGEXP:
+    case SIGSUBPKT_ATTST_SIGS:
       return 0;
     case SIGSUBPKT_SIGNATURE:
     case SIGSUBPKT_EXPORTABLE:
@@ -1721,6 +1753,7 @@ can_handle_critical (const byte * buffer, size_t n, int type)
     case SIGSUBPKT_FEATURES:
     case SIGSUBPKT_TRUST:
     case SIGSUBPKT_REGEXP:
+    case SIGSUBPKT_ATTST_SIGS:
       /* Is it enough to show the policy or keyserver? */
     case SIGSUBPKT_POLICY:
     case SIGSUBPKT_PREF_KS:
@@ -1812,7 +1845,7 @@ enum_sig_subpkt (PKT_signature *sig, int want_hashed, sigsubpkttype_t reqtype,
 	}
       else if (reqtype < 0) /* List packets.  */
 	dump_sig_subpkt (reqtype == SIGSUBPKT_LIST_HASHED,
-			 type, *critical, buffer, buflen, n);
+			 type, *critical, buffer, buflen, n, sig->digest_algo);
       else if (type == reqtype) /* Found.  */
 	{
 	  buffer++;
