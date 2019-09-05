@@ -299,11 +299,11 @@ keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
           PKT_public_key *pk = keyblock->pkt->pkt.public_key;
           const unsigned char *s;
 
-          s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL);
+          s = parse_sig_subpkt (sig, 1, SIGSUBPKT_PRIMARY_UID, NULL);
           if (s && *s)
             tty_fprintf (fp, "             [primary]\n");
 
-          s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
+          s = parse_sig_subpkt (sig, 1, SIGSUBPKT_KEY_EXPIRE, NULL);
           if (s && buf32_to_u32 (s))
             tty_fprintf (fp, "             [expires: %s]\n",
                          isotimestamp (pk->timestamp + buf32_to_u32 (s)));
@@ -3158,8 +3158,8 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	  const byte *pref_ks;
 	  size_t pref_ks_len;
 
-	  pref_ks = parse_sig_subpkt (selfsig->hashed,
-				      SIGSUBPKT_PREF_KS, &pref_ks_len);
+	  pref_ks = parse_sig_subpkt (selfsig, 1,
+                                      SIGSUBPKT_PREF_KS, &pref_ks_len);
 	  if (pref_ks && pref_ks_len)
 	    {
 	      tty_printf ("     ");
@@ -4870,10 +4870,10 @@ menu_set_primary_uid (ctrl_t ctrl, kbnode_t pub_keyblock)
 		  int action;
 
 		  /* See whether this signature has the primary UID flag.  */
-		  p = parse_sig_subpkt (sig->hashed,
+		  p = parse_sig_subpkt (sig, 1,
 					SIGSUBPKT_PRIMARY_UID, NULL);
 		  if (!p)
-		    p = parse_sig_subpkt (sig->unhashed,
+		    p = parse_sig_subpkt (sig, 0,
 					  SIGSUBPKT_PRIMARY_UID, NULL);
 		  if (p && *p)	/* yes */
 		    action = selected ? 0 : -1;
@@ -5086,7 +5086,7 @@ menu_set_keyserver_url (ctrl_t ctrl, const char *url, kbnode_t pub_keyblock)
 		  const byte *p;
 		  size_t plen;
 
-		  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_KS, &plen);
+		  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_KS, &plen);
 		  if (p && plen)
 		    {
 		      tty_printf ("Current preferred keyserver for user"

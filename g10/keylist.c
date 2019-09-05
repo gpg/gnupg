@@ -338,8 +338,7 @@ show_policy_url (PKT_signature * sig, int indent, int mode)
   int seq = 0, crit;
   estream_t fp = mode < 0? NULL : mode ? log_get_stream () : es_stdout;
 
-  while ((p =
-	  enum_sig_subpkt (sig->hashed, SIGSUBPKT_POLICY, &len, &seq, &crit)))
+  while ((p = enum_sig_subpkt (sig, 1, SIGSUBPKT_POLICY, &len, &seq, &crit)))
     {
       if (mode != 2)
 	{
@@ -379,9 +378,7 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
   int seq = 0, crit;
   estream_t fp = mode < 0? NULL : mode ? log_get_stream () : es_stdout;
 
-  while ((p =
-	  enum_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_KS, &len, &seq,
-			   &crit)))
+  while ((p = enum_sig_subpkt (sig, 1, SIGSUBPKT_PREF_KS, &len, &seq, &crit)))
     {
       if (mode != 2)
 	{
@@ -874,12 +871,12 @@ print_subpackets_colon (PKT_signature * sig)
 
       seq = 0;
 
-      while ((p = enum_sig_subpkt (sig->hashed, *i, &len, &seq, &crit)))
+      while ((p = enum_sig_subpkt (sig, 1, *i, &len, &seq, &crit)))
 	print_one_subpacket (*i, len, 0x01 | (crit ? 0x02 : 0), p);
 
       seq = 0;
 
-      while ((p = enum_sig_subpkt (sig->unhashed, *i, &len, &seq, &crit)))
+      while ((p = enum_sig_subpkt (sig, 0, *i, &len, &seq, &crit)))
 	print_one_subpacket (*i, len, 0x00 | (crit ? 0x02 : 0), p);
     }
 }

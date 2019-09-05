@@ -1734,8 +1734,8 @@ can_handle_critical (const byte * buffer, size_t n, int type)
 
 
 const byte *
-enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
-		 size_t * ret_n, int *start, int *critical)
+enum_sig_subpkt (PKT_signature *sig, int want_hashed, sigsubpkttype_t reqtype,
+		 size_t *ret_n, int *start, int *critical)
 {
   const byte *buffer;
   int buflen;
@@ -1743,6 +1743,7 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
   int critical_dummy;
   int offset;
   size_t n;
+  const subpktarea_t *pktbuf = want_hashed? sig->hashed : sig->unhashed;
   int seq = 0;
   int reqseq = start ? *start : 0;
 
@@ -1867,21 +1868,21 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
 
 
 const byte *
-parse_sig_subpkt (const subpktarea_t * buffer, sigsubpkttype_t reqtype,
-		  size_t * ret_n)
+parse_sig_subpkt (PKT_signature *sig, int want_hashed, sigsubpkttype_t reqtype,
+		  size_t *ret_n)
 {
-  return enum_sig_subpkt (buffer, reqtype, ret_n, NULL, NULL);
+  return enum_sig_subpkt (sig, want_hashed, reqtype, ret_n, NULL, NULL);
 }
 
 
 const byte *
-parse_sig_subpkt2 (PKT_signature * sig, sigsubpkttype_t reqtype)
+parse_sig_subpkt2 (PKT_signature *sig, sigsubpkttype_t reqtype)
 {
   const byte *p;
 
-  p = parse_sig_subpkt (sig->hashed, reqtype, NULL);
+  p = parse_sig_subpkt (sig, 1, reqtype, NULL);
   if (!p)
-    p = parse_sig_subpkt (sig->unhashed, reqtype, NULL);
+    p = parse_sig_subpkt (sig, 0, reqtype, NULL);
   return p;
 }
 
@@ -1897,8 +1898,8 @@ parse_revkeys (PKT_signature * sig)
   if (sig->sig_class != 0x1F)
     return;
 
-  while ((revkey = enum_sig_subpkt (sig->hashed, SIGSUBPKT_REV_KEY,
-				    &len, &seq, NULL)))
+  while ((revkey = enum_sig_subpkt (sig, 1, SIGSUBPKT_REV_KEY,
+                                    &len, &seq, NULL)))
     {
       /* Consider only valid packets.  They must have a length of
        * either 2+20 or 2+32 octets and bit 7 of the class octet must
@@ -2062,11 +2063,11 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 
       /* Set sig->flags.unknown_critical if there is a critical bit
        * set for packets which we do not understand.  */
-      if (!parse_sig_subpkt (sig->hashed, SIGSUBPKT_TEST_CRITICAL, NULL)
-	  || !parse_sig_subpkt (sig->unhashed, SIGSUBPKT_TEST_CRITICAL, NULL))
+      if (!parse_sig_subpkt (sig, 1, SIGSUBPKT_TEST_CRITICAL, NULL)
+	  || !parse_sig_subpkt (sig, 0, SIGSUBPKT_TEST_CRITICAL, NULL))
 	sig->flags.unknown_critical = 1;
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_CREATED, NULL);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_SIG_CREATED, NULL);
       if (p)
 	sig->timestamp = buf32_to_u32 (p);
       else if (!(sig->pubkey_algo >= 100 && sig->pubkey_algo <= 110)
@@ -2076,7 +2077,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       /* Set the key id.  We first try the issuer fingerprint and if
        * it is a v4 signature the fallback to the issuer.  Note that
        * only the issuer packet is also searched in the unhashed area.  */
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &len);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_ISSUER_FPR, &len);
       if (p && len == 21 && p[0] == 4)
         {
           sig->keyid[0] = buf32_to_u32 (p + 1 + 12);
@@ -2096,21 +2097,21 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	       && opt.verbose && !glo_ctrl.silence_parse_warnings)
 	log_info ("signature packet without keyid\n");
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_SIG_EXPIRE, NULL);
       if (p && buf32_to_u32 (p))
 	sig->expiredate = sig->timestamp + buf32_to_u32 (p);
       if (sig->expiredate && sig->expiredate <= make_timestamp ())
 	sig->flags.expired = 1;
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_POLICY, NULL);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_POLICY, NULL);
       if (p)
 	sig->flags.policy_url = 1;
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_KS, NULL);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_KS, NULL);
       if (p)
 	sig->flags.pref_ks = 1;
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIGNERS_UID, &len);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_SIGNERS_UID, &len);
       if (p && len)
         {
           char *mbox;
@@ -2129,15 +2130,15 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
             }
         }
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_NOTATION, NULL);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_NOTATION, NULL);
       if (p)
 	sig->flags.notation = 1;
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_REVOCABLE, NULL);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_REVOCABLE, NULL);
       if (p && *p == 0)
 	sig->flags.revocable = 0;
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_TRUST, &len);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_TRUST, &len);
       if (p && len == 2)
 	{
 	  sig->trust_depth = p[0];
@@ -2146,7 +2147,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	  /* Only look for a regexp if there is also a trust
 	     subpacket. */
 	  sig->trust_regexp =
-	    parse_sig_subpkt (sig->hashed, SIGSUBPKT_REGEXP, &len);
+	    parse_sig_subpkt (sig, 1, SIGSUBPKT_REGEXP, &len);
 
 	  /* If the regular expression is of 0 length, there is no
 	     regular expression. */
@@ -2179,8 +2180,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
                   sig->digest_algo, sig->digest_start[0], sig->digest_start[1]);
       if (is_v4or5)
 	{
-	  parse_sig_subpkt (sig->hashed, SIGSUBPKT_LIST_HASHED, NULL);
-	  parse_sig_subpkt (sig->unhashed, SIGSUBPKT_LIST_UNHASHED, NULL);
+	  parse_sig_subpkt (sig, 1, SIGSUBPKT_LIST_HASHED, NULL);
+	  parse_sig_subpkt (sig, 0, SIGSUBPKT_LIST_UNHASHED, NULL);
 	}
     }
 

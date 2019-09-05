@@ -452,7 +452,7 @@ parse_preferred_keyserver(PKT_signature *sig)
   const byte *p;
   size_t plen;
 
-  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&plen);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_KS, &plen);
   if(p && plen)
     {
       byte *dupe=xmalloc(plen+1);

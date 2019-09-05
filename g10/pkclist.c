@@ -63,8 +63,8 @@ do_show_revocation_reason( PKT_signature *sig )
     int seq = 0;
     const char *text;
 
-    while( (p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_REVOC_REASON,
-				 &n, &seq, NULL )) ) {
+    while ((p = enum_sig_subpkt (sig, 1, SIGSUBPKT_REVOC_REASON,
+				 &n, &seq, NULL)) ) {
 	if( !n )
 	    continue; /* invalid - just skip it */
 

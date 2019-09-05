@@ -2149,7 +2149,7 @@ parse_key_usage (PKT_signature * sig)
   size_t n;
   byte flags;
 
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_KEY_FLAGS, &n);
   if (p && n)
     {
       /* First octet of the keyflags.  */
@@ -2247,7 +2247,7 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   uid->help_key_usage = parse_key_usage (sig);
 
   /* Ditto for the key expiration.  */
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_KEY_EXPIRE, NULL);
   if (p && buf32_to_u32 (p))
     uid->help_key_expire = keycreated + buf32_to_u32 (p);
   else
@@ -2256,7 +2256,7 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   /* Set the primary user ID flag - we will later wipe out some
    * of them to only have one in our keyblock.  */
   uid->flags.primary = 0;
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PRIMARY_UID, NULL);
   if (p && *p)
     uid->flags.primary = 2;
 
@@ -2268,16 +2268,16 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   /* Now build the preferences list.  These must come from the
      hashed section so nobody can modify the ciphers a key is
      willing to accept.  */
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_SYM, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_SYM, &n);
   sym = p;
   nsym = p ? n : 0;
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_AEAD, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_AEAD, &n);
   aead = p;
   naead = p ? n : 0;
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_HASH, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_HASH, &n);
   hash = p;
   nhash = p ? n : 0;
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_COMPR, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_COMPR, &n);
   zip = p;
   nzip = p ? n : 0;
   if (uid->prefs)
@@ -2315,19 +2315,19 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
 
   /* See whether we have the MDC feature.  */
   uid->flags.mdc = 0;
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_FEATURES, &n);
   if (p && n && (p[0] & 0x01))
     uid->flags.mdc = 1;
 
   /* See whether we have the AEAD feature.  */
   uid->flags.aead = 0;
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_FEATURES, &n);
   if (p && n && (p[0] & 0x02))
     uid->flags.aead = 1;
 
   /* And the keyserver modify flag.  */
   uid->flags.ks_modify = 1;
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KS_FLAGS, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_KS_FLAGS, &n);
   if (p && n && (p[0] & 0x80))
     uid->flags.ks_modify = 0;
 }
@@ -2562,7 +2562,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 
       key_usage = parse_key_usage (sig);
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_KEY_EXPIRE, NULL);
       if (p && buf32_to_u32 (p))
 	{
 	  key_expire = keytimestamp + buf32_to_u32 (p);
@@ -3050,7 +3050,7 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
 
   subpk->pubkey_usage = key_usage;
 
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_KEY_EXPIRE, NULL);
   if (p && buf32_to_u32 (p))
     key_expire = keytimestamp + buf32_to_u32 (p);
   else
@@ -3077,8 +3077,8 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
       /* We do this while() since there may be other embedded
        * signatures in the future.  We only want 0x19 here. */
 
-      while ((p = enum_sig_subpkt (sig->hashed,
-				   SIGSUBPKT_SIGNATURE, &n, &seq, NULL)))
+      while ((p = enum_sig_subpkt (sig, 1, SIGSUBPKT_SIGNATURE,
+                                   &n, &seq, NULL)))
 	if (n > 3
 	    && ((p[0] == 3 && p[2] == 0x19) || (p[0] == 4 && p[1] == 0x19)))
 	  {
@@ -3102,8 +3102,7 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
 
       /* It is safe to have this in the unhashed area since the 0x19
        * is located on the selfsig for convenience, not security. */
-
-      while ((p = enum_sig_subpkt (sig->unhashed, SIGSUBPKT_SIGNATURE,
+      while ((p = enum_sig_subpkt (sig, 0, SIGSUBPKT_SIGNATURE,
 				   &n, &seq, NULL)))
 	if (n > 3
 	    && ((p[0] == 3 && p[2] == 0x19) || (p[0] == 4 && p[1] == 0x19)))

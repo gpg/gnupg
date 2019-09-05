@@ -692,7 +692,7 @@ add_feature_mdc (PKT_signature *sig,int enabled)
     int i;
     char *buf;
 
-    s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
+    s = parse_sig_subpkt (sig, 1, SIGSUBPKT_FEATURES, &n );
     /* Already set or cleared */
     if (s && n &&
 	((enabled && (s[0] & 0x01)) || (!enabled && !(s[0] & 0x01))))
@@ -734,7 +734,7 @@ add_feature_aead (PKT_signature *sig, int enabled)
   int i;
   char *buf;
 
-  s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
+  s = parse_sig_subpkt (sig, 1, SIGSUBPKT_FEATURES, &n );
   if (s && n && ((enabled && (s[0] & 0x02)) || (!enabled && !(s[0] & 0x02))))
     return; /* Already set or cleared */
 
@@ -776,7 +776,7 @@ add_feature_v5 (PKT_signature *sig, int enabled)
   int i;
   char *buf;
 
-  s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
+  s = parse_sig_subpkt (sig, 1, SIGSUBPKT_FEATURES, &n );
   if (s && n && ((enabled && (s[0] & 0x04)) || (!enabled && !(s[0] & 0x04))))
     return; /* Already set or cleared */
 
@@ -821,7 +821,7 @@ add_keyserver_modify (PKT_signature *sig,int enabled)
   /* The keyserver modify flag is a negative flag (i.e. no-modify) */
   enabled=!enabled;
 
-  s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KS_FLAGS, &n );
+  s = parse_sig_subpkt (sig, 1, SIGSUBPKT_KS_FLAGS, &n );
   /* Already set or cleared */
   if (s && n &&
       ((enabled && (s[0] & 0x80)) || (!enabled && !(s[0] & 0x80))))

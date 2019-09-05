@@ -1784,7 +1784,7 @@ issuer_fpr_raw (PKT_signature *sig, size_t *r_len)
   const byte *p;
   size_t n;
 
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &n);
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_ISSUER_FPR, &n);
   if (p && ((n == 21 && p[0] == 4) || (n == 33 && p[0] == 5)))
     {
       *r_len = n - 1;
@@ -2017,7 +2017,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       size_t n;
       int any_pref_ks = 0;
 
-      while ((p=enum_sig_subpkt (sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL)))
+      while ((p=enum_sig_subpkt (sig, 1, SIGSUBPKT_PREF_KS, &n, &seq, NULL)))
         {
           /* According to my favorite copy editor, in English grammar,
              you say "at" if the key is located on a web page, but

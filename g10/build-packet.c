@@ -1527,7 +1527,7 @@ sig_to_notation(PKT_signature *sig)
        - n1 bytes of name data
        - n2 bytes of value data
    */
-  while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq,&crit)))
+  while((p=enum_sig_subpkt (sig, 1, SIGSUBPKT_NOTATION, &len, &seq, &crit)))
     {
       int n1,n2;
       struct notation *n=NULL;

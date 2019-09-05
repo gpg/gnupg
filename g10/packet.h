@@ -775,58 +775,61 @@ int skip_some_packets (iobuf_t inp, unsigned int n);
 int parse_signature( iobuf_t inp, int pkttype, unsigned long pktlen,
 		     PKT_signature *sig );
 
-/* Given a subpacket area (typically either PKT_signature.hashed or
-   PKT_signature.unhashed), either:
-
-     - test whether there are any subpackets with the critical bit set
-       that we don't understand,
-
-     - list the subpackets, or,
-
-     - find a subpacket with a specific type.
-
-   REQTYPE indicates the type of operation.
-
-   If REQTYPE is SIGSUBPKT_TEST_CRITICAL, then this function checks
-   whether there are any subpackets that have the critical bit and
-   which GnuPG cannot handle.  If GnuPG understands all subpackets
-   whose critical bit is set, then this function returns simply
-   returns SUBPKTS.  If there is a subpacket whose critical bit is set
-   and which GnuPG does not understand, then this function returns
-   NULL and, if START is not NULL, sets *START to the 1-based index of
-   the subpacket that violates the constraint.
-
-   If REQTYPE is SIGSUBPKT_LIST_HASHED or SIGSUBPKT_LIST_UNHASHED, the
-   packets are dumped.  Note: if REQTYPE is SIGSUBPKT_LIST_HASHED,
-   this function does not check whether the hash is correct; this is
-   merely an indication of the section that the subpackets came from.
-
-   If REQTYPE is anything else, then this function interprets the
-   values as a subpacket type and looks for the first subpacket with
-   that type.  If such a packet is found, *CRITICAL (if not NULL) is
-   set if the critical bit was set, *RET_N is set to the offset of the
-   subpacket's content within the SUBPKTS buffer, *START is set to the
-   1-based index of the subpacket within the buffer, and returns
-   &SUBPKTS[*RET_N].
-
-   *START is the number of initial subpackets to not consider.  Thus,
-   if *START is 2, then the first 2 subpackets are ignored.  */
-const byte *enum_sig_subpkt ( const subpktarea_t *subpkts,
-                              sigsubpkttype_t reqtype,
-                              size_t *ret_n, int *start, int *critical );
+/* Given a signature packet, either:
+ *
+ *   - test whether there are any subpackets with the critical bit set
+ *     that we don't understand,
+ *
+ *   - list the subpackets, or,
+ *
+ *   - find a subpacket with a specific type.
+ *
+ * The WANT_HASHED flag indicates that the hashed area shall be
+ * considered.
+ *
+ * REQTYPE indicates the type of operation.
+ *
+ * If REQTYPE is SIGSUBPKT_TEST_CRITICAL, then this function checks
+ * whether there are any subpackets that have the critical bit and
+ * which GnuPG cannot handle.  If GnuPG understands all subpackets
+ * whose critical bit is set, then this function returns simply
+ * returns SUBPKTS.  If there is a subpacket whose critical bit is set
+ * and which GnuPG does not understand, then this function returns
+ * NULL and, if START is not NULL, sets *START to the 1-based index of
+ * the subpacket that violates the constraint.
+ *
+ * If REQTYPE is SIGSUBPKT_LIST_HASHED or SIGSUBPKT_LIST_UNHASHED, the
+ * packets are dumped.  Note: if REQTYPE is SIGSUBPKT_LIST_HASHED,
+ * this function does not check whether the hash is correct; this is
+ * merely an indication of the section that the subpackets came from.
+ *
+ * If REQTYPE is anything else, then this function interprets the
+ * values as a subpacket type and looks for the first subpacket with
+ * that type.  If such a packet is found, *CRITICAL (if not NULL) is
+ * set if the critical bit was set, *RET_N is set to the offset of the
+ * subpacket's content within the SUBPKTS buffer, *START is set to the
+ * 1-based index of the subpacket within the buffer, and returns
+ * &SUBPKTS[*RET_N].
+ *
+ * *START is the number of initial subpackets to not consider.  Thus,
+ * if *START is 2, then the first 2 subpackets are ignored.
+ */
+const byte *enum_sig_subpkt (PKT_signature *sig, int want_hashed,
+                             sigsubpkttype_t reqtype,
+                             size_t *ret_n, int *start, int *critical );
 
 /* Shorthand for:
-
-     enum_sig_subpkt (buffer, reqtype, ret_n, NULL, NULL); */
-const byte *parse_sig_subpkt ( const subpktarea_t *buffer,
-                               sigsubpkttype_t reqtype,
-                               size_t *ret_n );
+ *
+ *    enum_sig_subpkt (sig, want_hashed, reqtype, ret_n, NULL, NULL);
+ */
+const byte *parse_sig_subpkt (PKT_signature *sig, int want_hashed,
+                              sigsubpkttype_t reqtype,
+                              size_t *ret_n );
 
 /* This calls parse_sig_subpkt first on the hashed signature area in
-   SIG and then, if that returns NULL, calls parse_sig_subpkt on the
-   unhashed subpacket area in SIG.  */
-const byte *parse_sig_subpkt2 ( PKT_signature *sig,
-                                sigsubpkttype_t reqtype);
+ * SIG and then, if that returns NULL, calls parse_sig_subpkt on the
+ * unhashed subpacket area in SIG.  */
+const byte *parse_sig_subpkt2 (PKT_signature *sig, sigsubpkttype_t reqtype);
 
 /* Returns whether the N byte large buffer BUFFER is sufficient to
    hold a subpacket of type TYPE.  Note: the buffer refers to the

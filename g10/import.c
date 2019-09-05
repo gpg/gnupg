@@ -3151,7 +3151,7 @@ get_revocation_reason (PKT_signature *sig, char **r_reason,
     *r_comment = NULL;
 
   /* Skip over empty reason packets.  */
-  while ((reason_p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_REVOC_REASON,
+  while ((reason_p = enum_sig_subpkt (sig, 1, SIGSUBPKT_REVOC_REASON,
                                       &reason_n, &reason_seq, NULL))
          && !reason_n)
     ;

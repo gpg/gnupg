@@ -192,7 +192,7 @@ mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
           const byte *p;
           u32 expire;
 
-          p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL );
+          p = parse_sig_subpkt (sig, 1, SIGSUBPKT_SIG_EXPIRE, NULL );
           expire = p? sig->timestamp + buf32_to_u32(p) : 0;
 
           if (expire==0 || expire > curtime )
