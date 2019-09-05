@@ -5228,6 +5228,12 @@ do_reselect (app_t app, ctrl_t ctrl)
    * a special flag value. */
   err = iso7816_select_application (app_get_slot (app),
                                     openpgp_aid, sizeof openpgp_aid, 0x0001);
+  if (!err)
+    {
+      app->did_chv1 = 0;
+      app->did_chv2 = 0;
+      app->did_chv3 = 0;
+    }
   return err;
 }
 
