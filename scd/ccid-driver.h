@@ -124,12 +124,12 @@ struct ccid_dev_table;
 int ccid_set_debug_level (int level);
 char *ccid_get_reader_list (void);
 
-gpg_error_t ccid_dev_scan (int *idx_max, struct ccid_dev_table **t_p);
-void ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max);
-unsigned int ccid_get_BAI (int, struct ccid_dev_table *tbl);
+gpg_error_t ccid_dev_scan (int *idx_max, void **t_p);
+void ccid_dev_scan_finish (void *tbl0, int max);
+unsigned int ccid_get_BAI (int, void *tbl0);
 int ccid_compare_BAI (ccid_driver_t handle, unsigned int);
 int ccid_open_reader (const char *spec_reader_name,
-                      int idx, struct ccid_dev_table *ccid_table,
+                      int idx, void *ccid_table0,
                       ccid_driver_t *handle, char **rdrname_p);
 int ccid_set_progress_cb (ccid_driver_t handle,
                           void (*cb)(void *, const char *, int, int, int),

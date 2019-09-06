@@ -1308,7 +1308,7 @@ static libusb_device **ccid_usb_dev_list;
 static struct ccid_dev_table ccid_dev_table[MAX_DEVICE];
 
 gpg_error_t
-ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
+ccid_dev_scan (int *idx_max_p, void **t_p)
 {
   ssize_t n;
   libusb_device *dev;
@@ -1435,9 +1435,10 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
 }
 
 void
-ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max)
+ccid_dev_scan_finish (void *tbl0, int max)
 {
   int i;
+  struct ccid_dev_table *tbl = tbl0;
 
   for (i = 0; i < max; i++)
     {
@@ -1456,12 +1457,13 @@ ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max)
 }
 
 unsigned int
-ccid_get_BAI (int idx, struct ccid_dev_table *tbl)
+ccid_get_BAI (int idx, void *tbl0)
 {
   int n;
   int bus, addr, intf;
   unsigned int bai;
   libusb_device *dev;
+  struct ccid_dev_table *tbl = tbl0;
 
   n = tbl[idx].n;
   dev = ccid_usb_dev_list[n];
@@ -1565,7 +1567,7 @@ ccid_usb_thread (void *arg)
 
 static int
 ccid_open_usb_reader (const char *spec_reader_name,
-                      int idx, struct ccid_dev_table *ccid_table,
+                      int idx, void *ccid_table0,
                       ccid_driver_t *handle, char **rdrname_p)
 {
   libusb_device *dev;
@@ -1577,6 +1579,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
   int n;
   int bus, addr;
   unsigned int bai;
+  struct ccid_dev_table *ccid_table = ccid_table0;
 
   n = ccid_table[idx].n;
   ifc_no = ccid_table[idx].interface_number;
@@ -1707,9 +1710,11 @@ ccid_open_usb_reader (const char *spec_reader_name,
    pointer to be used as handle in HANDLE.  Returns 0 on success. */
 int
 ccid_open_reader (const char *spec_reader_name, int idx,
-                  struct ccid_dev_table *ccid_table,
+                  void *ccid_table0,
                   ccid_driver_t *handle, char **rdrname_p)
 {
+  struct ccid_dev_table *ccid_table = ccid_table0;
+
   *handle = calloc (1, sizeof **handle);
   if (!*handle)
     {

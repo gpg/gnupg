@@ -67,7 +67,7 @@
 #include "ccid-driver.h"
 
 struct dev_list {
-  struct ccid_dev_table *ccid_table;
+  void *table;
   const char *portstr;
   int idx;
   int idx_max;
@@ -1534,7 +1534,7 @@ open_ccid_reader (struct dev_list *dl)
     return -1;
   slotp = reader_table + slot;
 
-  err = ccid_open_reader (dl->portstr, dl->idx, dl->ccid_table,
+  err = ccid_open_reader (dl->portstr, dl->idx, dl->table,
                           &slotp->ccid.handle, &slotp->rdrname);
   if (!err)
     {
@@ -1893,14 +1893,14 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
 #ifdef HAVE_LIBUSB
   if (opt.disable_ccid)
     {
-      dl->ccid_table = NULL;
+      dl->table = NULL;
       dl->idx_max = 1;
     }
   else
     {
       gpg_error_t err;
 
-      err = ccid_dev_scan (&dl->idx_max, &dl->ccid_table);
+      err = ccid_dev_scan (&dl->idx_max, &dl->table);
       if (err)
         return err;
 
@@ -1922,7 +1922,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
         }
     }
 #else
-  dl->ccid_table = NULL;
+  dl->table = NULL;
   dl->idx_max = 1;
 #endif /* HAVE_LIBUSB */
 
@@ -1934,8 +1934,8 @@ void
 apdu_dev_list_finish (struct dev_list *dl)
 {
 #ifdef HAVE_LIBUSB
-  if (dl->ccid_table)
-    ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
+  if (dl->table)
+    ccid_dev_scan_finish (dl->table, dl->idx_max);
 #endif
   xfree (dl);
   npth_mutex_unlock (&reader_table_lock);
@@ -2051,7 +2051,7 @@ apdu_open_reader (struct dev_list *dl, int app_empty)
   int slot;
 
 #ifdef HAVE_LIBUSB
-  if (dl->ccid_table)
+  if (dl->table)
     { /* CCID readers.  */
       int readerno;
 
@@ -2088,7 +2088,7 @@ apdu_open_reader (struct dev_list *dl, int app_empty)
 
       while (dl->idx < dl->idx_max)
         {
-          unsigned int bai = ccid_get_BAI (dl->idx, dl->ccid_table);
+          unsigned int bai = ccid_get_BAI (dl->idx, dl->table);
 
           if (DBG_READER)
             log_debug ("apdu_open_reader: BAI=%x\n", bai);
