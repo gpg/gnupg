@@ -1833,9 +1833,10 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs)
         log_error (_("skipped \"%s\": %s\n"), kspec->d, gpg_strerror (err));
       else
         {
-          log_info (_("sending key %s to %s\n"),
-                    keystr (keyblock->pkt->pkt.public_key->keyid),
-                    ksurl?ksurl:"[?]");
+          if (!opt.quiet)
+            log_info (_("sending key %s to %s\n"),
+                      keystr (keyblock->pkt->pkt.public_key->keyid),
+                      ksurl?ksurl:"[?]");
 
           err = gpg_dirmngr_ks_put (ctrl, data, datalen, keyblock);
           release_kbnode (keyblock);
