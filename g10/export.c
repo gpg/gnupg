@@ -1877,7 +1877,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
     stats = &dummystats;
   *any = 0;
   init_packet (&pkt);
-  kdbhd = keydb_new ();
+  kdbhd = keydb_new (ctrl);
   if (!kdbhd)
     return gpg_error_from_syserror ();
 

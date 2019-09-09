@@ -25,6 +25,7 @@ static void
 do_test (int argc, char *argv[])
 {
   int rc;
+  ctrl_t ctrl;
   KEYDB_HANDLE hd1, hd2;
   KEYDB_SEARCH_DESC desc1, desc2;
   KBNODE kb1, kb2, p;
@@ -35,16 +36,17 @@ do_test (int argc, char *argv[])
   (void) argc;
   (void) argv;
 
+  ctrl = xcalloc (1, sizeof *ctrl);
   fname = prepend_srcdir ("t-keydb-keyring.kbx");
   rc = keydb_add_resource (fname, 0);
   test_free (fname);
   if (rc)
     ABORT ("Failed to open keyring.");
 
-  hd1 = keydb_new ();
+  hd1 = keydb_new (ctrl);
   if (!hd1)
     ABORT ("");
-  hd2 = keydb_new ();
+  hd2 = keydb_new (ctrl);
   if (!hd2)
     ABORT ("");
 
@@ -101,4 +103,5 @@ do_test (int argc, char *argv[])
   release_kbnode (kb2);
   keydb_release (hd1);
   keydb_release (hd2);
+  xfree (ctrl);
 }

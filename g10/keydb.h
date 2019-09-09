@@ -163,6 +163,38 @@ is_in_klist (struct key_item *k, PKT_signature *sig)
 }
 
 
+/*-- call-keyboxd.c --*/
+
+/* Create a new database handle.  Returns NULL on error, sets ERRNO,
+ * and prints an error diagnostic. */
+KEYDB_HANDLE keydb_new (ctrl_t ctrl);
+
+/* Release a keydb handle.  */
+void keydb_release (KEYDB_HANDLE hd);
+
+/* Take a lock if we are not using the keyboxd.  */
+gpg_error_t keydb_lock (KEYDB_HANDLE hd);
+
+/* Return the keyblock last found by keydb_search.  */
+gpg_error_t keydb_get_keyblock (KEYDB_HANDLE hd, kbnode_t *ret_kb);
+
+/* Update the keyblock KB.  */
+gpg_error_t keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb);
+
+/* Insert a keyblock into one of the storage system.  */
+gpg_error_t keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb);
+
+/* Delete the currently selected keyblock.  */
+gpg_error_t keydb_delete_keyblock (KEYDB_HANDLE hd);
+
+/* Clears the current search result and resets the handle's position.  */
+gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
+
+/* Search the database for keys matching the search description.  */
+gpg_error_t keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
+                          size_t ndesc, size_t *descindex);
+
+
 
 /*-- keydb.c --*/
 
@@ -181,17 +213,6 @@ gpg_error_t keydb_add_resource (const char *url, unsigned int flags);
 /* Dump some statistics to the log.  */
 void keydb_dump_stats (void);
 
-/* Create a new database handle.  Returns NULL on error, sets ERRNO,
-   and prints an error diagnostic. */
-KEYDB_HANDLE keydb_new (void);
-
-/* Free all resources owned by the database handle.  */
-void keydb_release (KEYDB_HANDLE hd);
-
-/* Take a lock on the files immediately and not only during insert or
- * update.  This lock is released with keydb_release.  */
-gpg_error_t keydb_lock (KEYDB_HANDLE hd);
-
 /* Set a flag on the handle to suppress use of cached results.  This
    is required for updating a keyring and for key listings.  Fixme:
    Using a new parameter for keydb_new might be a better solution.  */
@@ -206,18 +227,6 @@ void keydb_pop_found_state (KEYDB_HANDLE hd);
 /* Return the file name of the resource.  */
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);
 
-/* Return the keyblock last found by keydb_search.  */
-gpg_error_t keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
-
-/* Update the keyblock KB.  */
-gpg_error_t keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb);
-
-/* Insert a keyblock into one of the underlying keyrings or keyboxes.  */
-gpg_error_t keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb);
-
-/* Delete the currently selected keyblock.  */
-gpg_error_t keydb_delete_keyblock (KEYDB_HANDLE hd);
-
 /* Find the first writable resource.  */
 gpg_error_t keydb_locate_writable (KEYDB_HANDLE hd);
 
@@ -227,13 +236,6 @@ void keydb_rebuild_caches (ctrl_t ctrl, int noisy);
 /* Return the number of skipped blocks (because they were to large to
    read from a keybox) since the last search reset.  */
 unsigned long keydb_get_skipped_counter (KEYDB_HANDLE hd);
-
-/* Clears the current search result and resets the handle's position.  */
-gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
-
-/* Search the database for keys matching the search description.  */
-gpg_error_t keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
-                          size_t ndesc, size_t *descindex);
 
 /* Return the first non-legacy key in the database.  */
 gpg_error_t keydb_search_first (KEYDB_HANDLE hd);
@@ -323,7 +325,7 @@ int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 /* Similar to get_pubkey, but it does not take PK->REQ_USAGE into
    account nor does it merge in the self-signed data.  This function
    also only considers primary keys.  */
-int get_pubkey_fast (PKT_public_key *pk, u32 *keyid);
+int get_pubkey_fast (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 
 /* Return the entire keyblock used to create SIG.  This is a
  * specialized version of get_pubkeyblock.  */
@@ -383,13 +385,14 @@ int get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
 /* This function is similar to get_pubkey_byfprint, but it doesn't
    merge the self-signed data into the public key and subkeys or into
    the user ids.  */
-gpg_error_t get_pubkey_byfprint_fast (PKT_public_key *pk,
+gpg_error_t get_pubkey_byfprint_fast (ctrl_t ctrl, PKT_public_key *pk,
                                       const byte *fprint, size_t fprint_len);
 
 /* This function is similar to get_pubkey_byfprint, but it doesn't
    merge the self-signed data into the public key and subkeys or into
    the user ids.  */
-gpg_error_t get_keyblock_byfprint_fast (kbnode_t *r_keyblock,
+gpg_error_t get_keyblock_byfprint_fast (ctrl_t ctrl,
+                                        kbnode_t *r_keyblock,
                                         KEYDB_HANDLE *r_hd,
                                         const byte *fprint, size_t fprint_len,
                                         int lock);
@@ -397,7 +400,7 @@ gpg_error_t get_keyblock_byfprint_fast (kbnode_t *r_keyblock,
 
 /* Returns true if a secret key is available for the public key with
    key id KEYID.  */
-int have_secret_key_with_kid (u32 *keyid);
+int have_secret_key_with_kid (ctrl_t ctrl, u32 *keyid);
 
 /* Parse the --default-key parameter.  Returns the last key (in terms
    of when the option is given) that is available.  */

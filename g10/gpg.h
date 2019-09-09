@@ -60,16 +60,19 @@
 /* Object used to keep state locally to server.c . */
 struct server_local_s;
 
+/* Object used to keep state locally to call-keyboxd.c .  */
+struct keyboxd_local_s;
+typedef struct keyboxd_local_s *keyboxd_local_t;
+
 /* Object used to keep state locally to call-dirmngr.c .  */
 struct dirmngr_local_s;
 typedef struct dirmngr_local_s *dirmngr_local_t;
 
 /* Object used to describe a keyblock node.  */
-typedef struct kbnode_struct *KBNODE;   /* Deprecated use kbnode_t. */
-typedef struct kbnode_struct *kbnode_t;
+typedef struct kbnode_struct *KBNODE;   /* Deprecated use kbnode_t. */typedef struct kbnode_struct *kbnode_t;
 
 /* The handle for keydb operations.  */
-typedef struct keydb_handle *KEYDB_HANDLE;
+typedef struct keydb_handle_s *KEYDB_HANDLE;
 
 /* TOFU database meta object.  */
 struct tofu_dbs_s;
@@ -95,6 +98,9 @@ struct server_control_s
 
   /* Local data for call-dirmngr.c  */
   dirmngr_local_t dirmngr_local;
+
+  /* Local data for call-keyboxd.c  */
+  keyboxd_local_t keyboxd_local;
 
   /* Local data for tofu.c  */
   struct {

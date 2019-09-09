@@ -614,7 +614,7 @@ pk_search_terms (const char *option, int argc, char *argv[], void *cookie)
   if (err)
     log_fatal ("search terms '%s': %s\n", argv[0], gpg_strerror (err));
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
 
   err = keydb_search (hd, &desc, 1, NULL);
   if (err)
@@ -810,7 +810,7 @@ sig_issuer (const char *option, int argc, char *argv[], void *cookie)
   if (err)
     log_fatal ("search terms '%s': %s\n", argv[0], gpg_strerror (err));
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
 
   err = keydb_search (hd, &desc, 1, NULL);
   if (err)

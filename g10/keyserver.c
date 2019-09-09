@@ -1196,7 +1196,7 @@ keyidlist (ctrl_t ctrl, strlist_t users, KEYDB_SEARCH_DESC **klist,
 
   *klist=xmalloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
-  kdbhd = keydb_new ();
+  kdbhd = keydb_new (ctrl);
   if (!kdbhd)
     {
       rc = gpg_error_from_syserror ();

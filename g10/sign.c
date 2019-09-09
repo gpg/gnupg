@@ -70,7 +70,7 @@ typedef struct pt_extra_hash_data_s *pt_extra_hash_data_t;
  * a valid NAME=VALUE format.
  */
 static void
-mk_notation_policy_etc (PKT_signature *sig,
+mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
 			PKT_public_key *pk, PKT_public_key *pksk)
 {
   const char *string;
@@ -97,7 +97,7 @@ mk_notation_policy_etc (PKT_signature *sig,
 
       for (item = nd; item; item = item->next)
         {
-          item->altvalue = pct_expando (item->value,&args);
+          item->altvalue = pct_expando (ctrl, item->value,&args);
           if (!item->altvalue)
             log_error (_("WARNING: unable to %%-expand notation "
                          "(too large).  Using unexpanded.\n"));
@@ -122,7 +122,7 @@ mk_notation_policy_etc (PKT_signature *sig,
     {
       string = pu->d;
 
-      p = pct_expando (string, &args);
+      p = pct_expando (ctrl, string, &args);
       if (!p)
         {
           log_error(_("WARNING: unable to %%-expand policy URL "
@@ -145,7 +145,7 @@ mk_notation_policy_etc (PKT_signature *sig,
     {
       string = pu->d;
 
-      p = pct_expando (string, &args);
+      p = pct_expando (ctrl, string, &args);
       if (!p)
         {
           log_error (_("WARNING: unable to %%-expand preferred keyserver URL"
@@ -834,7 +834,7 @@ write_signature_packets (ctrl_t ctrl,
         BUG ();
 
       build_sig_subpkt_from_sig (sig, pk);
-      mk_notation_policy_etc (sig, NULL, pk);
+      mk_notation_policy_etc (ctrl, sig, NULL, pk);
       hash_sigversion_to_magic (md, sig, extrahash);
       gcry_md_final (md);
 
@@ -1660,7 +1660,7 @@ make_keysig_packet (ctrl_t ctrl,
   sig->sig_class = sigclass;
 
   build_sig_subpkt_from_sig (sig, pksk);
-  mk_notation_policy_etc (sig, pk, pksk);
+  mk_notation_policy_etc (ctrl, sig, pk, pksk);
 
   /* Crucial that the call to mksubpkt comes LAST before the calls
    * to finalize the sig as that makes it possible for the mksubpkt

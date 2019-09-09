@@ -338,7 +338,7 @@ show_photos (ctrl_t ctrl, const struct user_attribute *attrs, int count,
 #endif
 
 	/* make command grow */
-	command=pct_expando(opt.photo_viewer,&args);
+	command=pct_expando (ctrl, opt.photo_viewer,&args);
 	if(!command)
 	  goto fail;
 

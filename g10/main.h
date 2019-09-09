@@ -157,7 +157,7 @@ struct expando_args
   const byte *namehash;
 };
 
-char *pct_expando(const char *string,struct expando_args *args);
+char *pct_expando (ctrl_t ctrl, const char *string,struct expando_args *args);
 void deprecated_warning(const char *configname,unsigned int configlineno,
 			const char *option,const char *repl1,const char *repl2);
 void deprecated_command (const char *name);

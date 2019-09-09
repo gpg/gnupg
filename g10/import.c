@@ -2022,7 +2022,7 @@ import_one_real (ctrl_t ctrl,
     goto leave;
 
   /* Do we have this key already in one of our pubrings ? */
-  err = get_keyblock_byfprint_fast (&keyblock_orig, &hd,
+  err = get_keyblock_byfprint_fast (ctrl, &keyblock_orig, &hd,
                                     fpr2, fpr2len, 1/*locked*/);
   if ((err
        && gpg_err_code (err) != GPG_ERR_NO_PUBKEY
@@ -2310,13 +2310,13 @@ import_one_real (ctrl_t ctrl,
   if (mod_key)
     {
       revocation_present (ctrl, keyblock_orig);
-      if (!from_sk && have_secret_key_with_kid (keyid))
+      if (!from_sk && have_secret_key_with_kid (ctrl, keyid))
         check_prefs (ctrl, keyblock_orig);
     }
   else if (new_key)
     {
       revocation_present (ctrl, keyblock);
-      if (!from_sk && have_secret_key_with_kid (keyid))
+      if (!from_sk && have_secret_key_with_kid (ctrl, keyid))
         check_prefs (ctrl, keyblock);
     }
 
@@ -3372,7 +3372,7 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
     }
 
   /* Read the original keyblock. */
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     {
       rc = gpg_error_from_syserror ();
@@ -3768,7 +3768,8 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
       else if (node->pkt->pkttype == PKT_SIGNATURE
                && !node->pkt->pkt.signature->flags.exportable
                && !(options&IMPORT_LOCAL_SIGS)
-               && !have_secret_key_with_kid (node->pkt->pkt.signature->keyid))
+               && !have_secret_key_with_kid (ctrl,
+                                             node->pkt->pkt.signature->keyid))
         {
           /* here we violate the rfc a bit by still allowing
            * to import non-exportable signature when we have the
@@ -4089,7 +4090,7 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
                        * itself?  */
                       gpg_error_t err;
 
-		      err = get_pubkey_byfprint_fast (NULL,
+		      err = get_pubkey_byfprint_fast (ctrl, NULL,
                                                       sig->revkey[idx].fpr,
                                                       sig->revkey[idx].fprlen);
 		      if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY
@@ -4111,7 +4112,7 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
                                                        opt.keyserver, 0);
 
 			      /* Do we have it now? */
-			      err = get_pubkey_byfprint_fast (NULL,
+			      err = get_pubkey_byfprint_fast (ctrl, NULL,
 						     sig->revkey[idx].fpr,
                                                      sig->revkey[idx].fprlen);
 			    }

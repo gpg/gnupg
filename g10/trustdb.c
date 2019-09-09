@@ -2015,7 +2015,7 @@ validate_keys (ctrl_t ctrl, int interactive)
      trust. */
   keydb_rebuild_caches (ctrl, 0);
 
-  kdb = keydb_new ();
+  kdb = keydb_new (ctrl);
   if (!kdb)
     return gpg_error_from_syserror ();
 

@@ -4332,7 +4332,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
     desc.mode = KEYDB_SEARCH_MODE_EXACT;
     desc.u.name = uid;
 
-    kdbhd = keydb_new ();
+    kdbhd = keydb_new (ctrl);
     if (!kdbhd)
       goto leave;
 
@@ -5184,7 +5184,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
     {
       KEYDB_HANDLE pub_hd;
 
-      pub_hd = keydb_new ();
+      pub_hd = keydb_new (ctrl);
       if (!pub_hd)
         err = gpg_error_from_syserror ();
       else

@@ -895,7 +895,7 @@ get_signature_count (PKT_public_key *pk)
 /* Expand %-strings.  Returns a string which must be xfreed.  Returns
    NULL if the string cannot be expanded (too large). */
 char *
-pct_expando(const char *string,struct expando_args *args)
+pct_expando (ctrl_t ctrl, const char *string,struct expando_args *args)
 {
   const char *ch=string;
   int idx=0,maxlen=0,done=0;
@@ -1017,7 +1017,7 @@ pct_expando(const char *string,struct expando_args *args)
 			PKT_public_key *pk=
 			  xmalloc_clear(sizeof(PKT_public_key));
 
-			if (!get_pubkey_fast (pk,args->pksk->main_keyid))
+			if (!get_pubkey_fast (ctrl, pk,args->pksk->main_keyid))
 			  fingerprint_from_pk (pk, array, &len);
 			else
 			  memset (array, 0, (len=MAX_FINGERPRINT_LEN));

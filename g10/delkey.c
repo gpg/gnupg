@@ -65,7 +65,7 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
 
   *r_sec_avail = 0;
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     return gpg_error_from_syserror ();
 
@@ -131,7 +131,7 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
 
   if (!secret && !force)
     {
-      if (have_secret_key_with_kid (keyid))
+      if (have_secret_key_with_kid (ctrl, keyid))
         {
           *r_sec_avail = 1;
           err = gpg_error (GPG_ERR_EOF);
@@ -141,7 +141,7 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
         err = 0;
     }
 
-  if (secret && !have_secret_key_with_kid (keyid))
+  if (secret && !have_secret_key_with_kid (ctrl, keyid))
     {
       err = gpg_error (GPG_ERR_NOT_FOUND);
       log_error (_("key \"%s\" not found\n"), username);
