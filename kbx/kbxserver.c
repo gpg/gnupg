@@ -225,22 +225,34 @@ cmd_search (assuan_context_t ctx, char *line)
 
   ctrl->server_local->search_any_found = 0;
 
-  if (!*line && opt_more)
+  if (!*line)
     {
-      err = set_error (GPG_ERR_INV_ARG, "--more but no pattern");
-      goto leave;
+      if (opt_more)
+        {
+          err = set_error (GPG_ERR_INV_ARG, "--more but no pattern");
+          goto leave;
+        }
+      else if (!*line && ctrl->server_local->search_expecting_more)
+        {
+          /* It would be too surprising to first set a pattern but
+           * finally add no pattern to search the entire DB.  */
+          err = set_error (GPG_ERR_INV_ARG, "--more pending but no pattern");
+          goto leave;
+        }
+      else /* No pattern - return the first item.  */
+        {
+          memset (&ctrl->server_local->search_desc, 0,
+                  sizeof ctrl->server_local->search_desc);
+          ctrl->server_local->search_desc.mode = KEYDB_SEARCH_MODE_FIRST;
+        }
     }
-  else if (!*line && ctrl->server_local->search_expecting_more)
+  else
     {
-      /* It would be too surprising to first set a pattern but finally
-       * add no pattern to search the entire DB.  */
-      err = set_error (GPG_ERR_INV_ARG, "--more pending but no pattern");
-      goto leave;
+      err = classify_user_id (line, &ctrl->server_local->search_desc, 0);
+      if (err)
+        goto leave;
     }
 
-  err = classify_user_id (line, &ctrl->server_local->search_desc, 0);
-  if (err)
-    goto leave;
   if (opt_more || ctrl->server_local->search_expecting_more)
     {
       /* More pattern are expected - store the current one and return
