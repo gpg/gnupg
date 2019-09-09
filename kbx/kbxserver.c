@@ -352,10 +352,24 @@ cmd_next (assuan_context_t ctx, char *line)
 
   ctrl->no_data_return = opt_no_data;
   if (ctrl->server_local->multi_search_desc_len)
-    err = kbxd_search (ctrl, ctrl->server_local->multi_search_desc,
-                       ctrl->server_local->multi_search_desc_len, 0);
+    {
+      /* The next condition should never be tru but we better handle
+       * the first/next transition anyway.  */
+      if (ctrl->server_local->multi_search_desc[0].mode
+          == KEYDB_SEARCH_MODE_FIRST)
+        ctrl->server_local->multi_search_desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
+
+      err = kbxd_search (ctrl, ctrl->server_local->multi_search_desc,
+                         ctrl->server_local->multi_search_desc_len, 0);
+    }
   else
-    err = kbxd_search (ctrl, &ctrl->server_local->search_desc, 1, 0);
+    {
+      /* We need to do the transition from first to next here.  */
+      if (ctrl->server_local->search_desc.mode == KEYDB_SEARCH_MODE_FIRST)
+        ctrl->server_local->search_desc.mode = KEYDB_SEARCH_MODE_NEXT;
+
+      err = kbxd_search (ctrl, &ctrl->server_local->search_desc, 1, 0);
+    }
   if (err)
     goto leave;
 
