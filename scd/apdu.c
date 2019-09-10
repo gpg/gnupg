@@ -76,6 +76,12 @@ typedef unsigned int pcsc_dword_t;
 typedef unsigned long pcsc_dword_t;
 #endif
 
+/* PC/SC context to access readers.  Shared among all readers.  */
+static struct pcsc {
+  int count;
+  long context;
+} pcsc;
+
 /* A structure to collect information pertaining to one reader
    slot. */
 struct reader_table_s {
@@ -101,7 +107,6 @@ struct reader_table_s {
     ccid_driver_t handle;
   } ccid;
   struct {
-    long context;
     long card;
     pcsc_dword_t protocol;
     pcsc_dword_t verify_ioctl;
@@ -652,9 +657,7 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
   memset (rdrstates, 0, sizeof *rdrstates);
   rdrstates[0].reader = reader_table[slot].rdrname;
   rdrstates[0].current_state = reader_table[slot].pcsc.current_state;
-  err = pcsc_get_status_change (reader_table[slot].pcsc.context,
-                                0,
-                                rdrstates, 1);
+  err = pcsc_get_status_change (pcsc.context, 0, rdrstates, 1);
   if (err == PCSC_E_TIMEOUT)
     err = 0; /* Timeout is no error here.  */
   if (err)
@@ -788,7 +791,12 @@ control_pcsc (int slot, pcsc_dword_t ioctl_code,
 static int
 close_pcsc_reader (int slot)
 {
-  pcsc_release_context (reader_table[slot].pcsc.context);
+  (void)slot;
+  if (--pcsc.count == 0)
+    {
+      pcsc_release_context (pcsc.context);
+      pcsc.context = -1;
+    }
   return 0;
 }
 
@@ -807,7 +815,7 @@ connect_pcsc_card (int slot)
   reader_table[slot].atrlen = 0;
   reader_table[slot].is_t0 = 0;
 
-  err = pcsc_connect (reader_table[slot].pcsc.context,
+  err = pcsc_connect (pcsc.context,
                       reader_table[slot].rdrname,
                       PCSC_SHARE_EXCLUSIVE,
                       PCSC_PROTOCOL_T0|PCSC_PROTOCOL_T1,
@@ -826,10 +834,11 @@ connect_pcsc_card (int slot)
       pcsc_dword_t readerlen, atrlen;
       pcsc_dword_t card_state, card_protocol;
 
+      pcsc.count++;
       pcsc_vendor_specific_init (slot);
 
       atrlen = DIM (reader_table[0].atr);
-      readerlen = sizeof reader -1 ;
+      readerlen = sizeof reader - 1;
       err = pcsc_status (reader_table[slot].pcsc.card,
                          reader, &readerlen,
                          &card_state, &card_protocol,
@@ -1042,6 +1051,21 @@ pcsc_vendor_specific_init (int slot)
   return 0;
 }
 
+static int
+pcsc_init (void)
+{
+  long err;
+
+  err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL, &pcsc.context);
+  if (err)
+    {
+      log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      return -1;
+    }
+
+  return 0;
+}
 
 /* Open the PC/SC reader without using the wrapper.  Returns -1 on
    error or a slot number for the reader.  */
@@ -1059,40 +1083,28 @@ open_pcsc_reader (const char *portstr)
   if (slot == -1)
     return -1;
 
-  /* Fixme: Allocating a context for each slot is not required.  One
-     global context should be sufficient.  */
-  err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL,
-                                &reader_table[slot].pcsc.context);
-  if (err)
-    {
-      log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
-                 pcsc_error_string (err), err);
-      reader_table[slot].used = 0;
-      unlock_slot (slot);
-      return -1;
-    }
+  reader_table[slot].used = 0;
+  unlock_slot (slot);
 
-  err = pcsc_list_readers (reader_table[slot].pcsc.context,
-                           NULL, NULL, &nreader);
+  err = pcsc_list_readers (pcsc.context, NULL, NULL, &nreader);
   if (!err)
     {
       list = xtrymalloc (nreader+1); /* Better add 1 for safety reasons. */
       if (!list)
         {
           log_error ("error allocating memory for reader list\n");
-          pcsc_release_context (reader_table[slot].pcsc.context);
+          close_pcsc_reader (0);
           reader_table[slot].used = 0;
           unlock_slot (slot);
           return -1 /*SW_HOST_OUT_OF_CORE*/;
         }
-      err = pcsc_list_readers (reader_table[slot].pcsc.context,
-                               NULL, list, &nreader);
+      err = pcsc_list_readers (pcsc.context, NULL, list, &nreader);
     }
   if (err)
     {
       log_error ("pcsc_list_readers failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
-      pcsc_release_context (reader_table[slot].pcsc.context);
+      close_pcsc_reader (0);
       reader_table[slot].used = 0;
       xfree (list);
       unlock_slot (slot);
@@ -1123,7 +1135,7 @@ open_pcsc_reader (const char *portstr)
   if (!reader_table[slot].rdrname)
     {
       log_error ("error allocating memory for reader name\n");
-      pcsc_release_context (reader_table[slot].pcsc.context);
+      close_pcsc_reader (0);
       reader_table[slot].used = 0;
       unlock_slot (slot);
       return -1;
@@ -2113,6 +2125,11 @@ apdu_open_reader (struct dev_list *dl, int app_empty)
   else
 #endif
     { /* PC/SC readers.  */
+
+      if (pcsc.context < 0)
+        if (pcsc_init () < 0)
+          return -1;
+
       if (app_empty && dl->idx == 0)
         {
           dl->idx++;
@@ -3298,6 +3315,9 @@ apdu_init (void)
 #ifdef USE_NPTH
   gpg_error_t err;
   int i;
+
+  pcsc.count = 0;
+  pcsc.context = -1;
 
   if (npth_mutex_init (&reader_table_lock, NULL))
     goto leave;
