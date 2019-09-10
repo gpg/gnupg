@@ -165,6 +165,9 @@ is_in_klist (struct key_item *k, PKT_signature *sig)
 
 /*-- call-keyboxd.c --*/
 
+/* Release all open contexts to the keyboxd.  */
+void gpg_keyboxd_deinit_session_data (ctrl_t ctrl);
+
 /* Create a new database handle.  Returns NULL on error, sets ERRNO,
  * and prints an error diagnostic. */
 KEYDB_HANDLE keydb_new (ctrl_t ctrl);

@@ -28,6 +28,7 @@
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
 #endif
+#include <npth.h>
 
 #include "gpg.h"
 #include <assuan.h>
@@ -36,6 +37,8 @@
 #include "options.h"
 #include "../common/i18n.h"
 #include "../common/asshelp.h"
+#include "../common/host2net.h"
+#include "../common/exechelp.h"
 #include "../common/status.h"
 #include "keydb.h"
 
@@ -54,17 +57,63 @@ struct keyboxd_local_s
   /* The active Assuan context. */
   assuan_context_t ctx;
 
+  /* This object is used if fd-passing is used to convey the
+   * keyblocks.  */
+  struct {
+    /* NULL or a stream used to receive data.  */
+    estream_t fp;
+
+    /* Condition variable to sync the datastream with the command.  */
+    npth_mutex_t mutex;
+    npth_cond_t  cond;
+
+    /* The found keyblock or the parsing error.   */
+    kbnode_t found_keyblock;
+    gpg_error_t found_err;
+  } datastream;
+
+  /* I/O buffer with the last search result or NULL.  Used if
+   * D-lines are used to convey the keyblocks. */
+  iobuf_t search_result;
+
   /* This flag set while an operation is running on this context.  */
   unsigned int is_active : 1;
 
   /* This flag is set to record that the standard per session init has
    * been done.  */
   unsigned int per_session_init_done : 1;
+
+  /* Flag indicating that a search reset is required.  */
+  unsigned int need_search_reset : 1;
 };
+
+
+/* Local prototypes.  */
+static void *datastream_thread (void *arg);
 
 
 
 
+static void
+lock_datastream (keyboxd_local_t kbl)
+{
+  int rc = npth_mutex_lock (&kbl->datastream.mutex);
+  if (rc)
+    log_fatal ("%s: failed to acquire mutex: %s\n", __func__,
+               gpg_strerror (gpg_error_from_errno (rc)));
+}
+
+
+static void
+unlock_datastream (keyboxd_local_t kbl)
+{
+  int rc = npth_mutex_unlock (&kbl->datastream.mutex);
+  if (rc)
+    log_fatal ("%s: failed to release mutex: %s\n", __func__,
+               gpg_strerror (gpg_error_from_errno (rc)));
+}
+
+
 /* Deinitialize all session resources pertaining to the keyboxd.  */
 void
 gpg_keyboxd_deinit_session_data (ctrl_t ctrl)
@@ -77,7 +126,12 @@ gpg_keyboxd_deinit_session_data (ctrl_t ctrl)
       if (kbl->is_active)
         log_error ("oops: trying to cleanup an active keyboxd context\n");
       else
-        assuan_release (kbl->ctx);
+        {
+          es_fclose (kbl->datastream.fp);
+          kbl->datastream.fp = NULL;
+          assuan_release (kbl->ctx);
+          kbl->ctx = NULL;
+        }
       xfree (kbl);
     }
 }
@@ -165,18 +219,86 @@ create_new_context (ctrl_t ctrl, assuan_context_t *r_ctx)
 }
 
 
-/* Get a context for accessing keyboxd.  If no context is available a
- * new one is created and if necessary keyboxd is started.  On success
- * an assuan context is stored at R_CTX.  This context may only be
- * released by means of close_context.  Note that NULL is stored at
- * R_CTX on error.  */
+
+/* Setup the pipe used for receiving data from the keyboxd.  Store the
+ * info on KBL.  */
 static gpg_error_t
-open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
+prepare_data_pipe (keyboxd_local_t kbl)
 {
   gpg_error_t err;
+  int rc;
+  int inpipe[2];
+  estream_t infp;
+  npth_t thread;
+  npth_attr_t tattr;
+
+  err = gnupg_create_inbound_pipe (inpipe, &infp, 0);
+  if (err)
+    {
+      log_error ("error creating inbound pipe: %s\n", gpg_strerror (err));
+      return err;  /* That should not happen.  */
+    }
+
+  err = assuan_sendfd (kbl->ctx, INT2FD (inpipe[1]));
+  if (err)
+    {
+      log_error ("sending sending fd %d to keyboxd: %s <%s>\n",
+                 inpipe[1], gpg_strerror (err), gpg_strsource (err));
+      es_fclose (infp);
+      close (inpipe[1]);
+      return 0; /* Server may not support fd-passing.  */
+    }
+
+  err = assuan_transact (kbl->ctx, "OUTPUT FD",
+                         NULL, NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    {
+      log_info ("keyboxd does not accept our fd: %s <%s>\n",
+                gpg_strerror (err), gpg_strsource (err));
+      es_fclose (infp);
+      return 0;
+    }
+
+  kbl->datastream.fp = infp;
+  kbl->datastream.found_keyblock = NULL;
+  kbl->datastream.found_err = 0;
+
+  rc = npth_attr_init (&tattr);
+  if (rc)
+    {
+      err = gpg_error_from_errno (rc);
+      log_error ("error preparing thread for keyboxd: %s\n",gpg_strerror (err));
+      es_fclose (infp);
+      kbl->datastream.fp = NULL;
+      return err;
+    }
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
+  rc = npth_create (&thread, &tattr, datastream_thread, kbl);
+  if (rc)
+    {
+      err = gpg_error_from_errno (rc);
+      log_error ("error spawning thread for keyboxd: %s\n", gpg_strerror (err));
+      npth_attr_destroy (&tattr);
+      es_fclose (infp);
+      kbl->datastream.fp = NULL;
+      return err;
+    }
+
+  return 0;
+}
+
+
+/* Get a context for accessing keyboxd.  If no context is available a
+ * new one is created and if necessary keyboxd is started.  R_KBL
+ * receives a pointer to the local context object.  */
+static gpg_error_t
+open_context (ctrl_t ctrl, keyboxd_local_t *r_kbl)
+{
+  gpg_error_t err;
+  int rc;
   keyboxd_local_t kbl;
 
-  *r_ctx = NULL;
+  *r_kbl = NULL;
   for (;;)
     {
       for (kbl = ctrl->keyboxd_local; kbl && kbl->is_active; kbl = kbl->next)
@@ -189,12 +311,16 @@ open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
           /* But first do the per session init if not yet done.  */
           if (!kbl->per_session_init_done)
             {
+              err = prepare_data_pipe (kbl);
+              if (err)
+                return err;
               kbl->per_session_init_done = 1;
             }
 
           kbl->is_active = 1;
+          kbl->need_search_reset = 1;
 
-          *r_ctx = kbl->ctx;
+          *r_kbl = kbl;
           return 0;
         }
 
@@ -202,43 +328,40 @@ open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
       kbl = xtrycalloc (1, sizeof *kbl);
       if (!kbl)
         return gpg_error_from_syserror ();
-      err = create_new_context (ctrl, &kbl->ctx);
-      if (err)
+
+      rc = npth_mutex_init (&kbl->datastream.mutex, NULL);
+      if (rc)
         {
+          err = gpg_error_from_errno (rc);
+          log_error ("error initializing mutex: %s\n", gpg_strerror (err));
+          xfree (kbl);
+          return err;
+        }
+      rc = npth_cond_init (&kbl->datastream.cond, NULL);
+      if (rc)
+        {
+          err = gpg_error_from_errno (rc);
+          log_error ("error initializing condition: %s\n", gpg_strerror (err));
+          npth_mutex_destroy (&kbl->datastream.mutex);
           xfree (kbl);
           return err;
         }
 
-      /* Although we are not yet using nPth in gpg we better prepare
-       * to be nPth thread safe.  Thus we add it to the list and
-       * retry; this is easier than to employ a lock.  */
+      err = create_new_context (ctrl, &kbl->ctx);
+      if (err)
+        {
+          npth_cond_destroy (&kbl->datastream.cond);
+          npth_mutex_destroy (&kbl->datastream.mutex);
+          xfree (kbl);
+          return err;
+        }
+
+      /* For thread-saftey we add it to the list and retry; this is
+       * easier than to employ a lock.  */
       kbl->next = ctrl->keyboxd_local;
       ctrl->keyboxd_local = kbl;
     }
-}
-
-
-/* Close the assuan context CTX and return it to a pool of unused
- * contexts.  If CTX is NULL, the function does nothing.  */
-static void
-close_context (ctrl_t ctrl, assuan_context_t ctx)
-{
-  keyboxd_local_t kbl;
-
-  if (!ctx)
-    return;
-
-  for (kbl = ctrl->keyboxd_local; kbl; kbl = kbl->next)
-    {
-      if (kbl->ctx == ctx)
-        {
-          if (!kbl->is_active)
-            log_fatal ("closing inactive keyboxd context %p\n", ctx);
-          kbl->is_active = 0;
-          return;
-        }
-    }
-  log_fatal ("closing unknown keyboxd ctx %p\n", ctx);
+  /*NOTREACHED*/
 }
 
 
@@ -275,11 +398,8 @@ keydb_new (ctrl_t ctrl)
     }
   hd->use_keyboxd = 1;
   hd->ctrl = ctrl;
-  hd->need_search_reset = 1;
 
-  err = open_context (ctrl, &hd->assuan_context);
-  if (err)
-    goto leave;
+  err = open_context (ctrl, &hd->kbl);
 
  leave:
   if (err)
@@ -300,14 +420,25 @@ keydb_new (ctrl_t ctrl)
 void
 keydb_release (KEYDB_HANDLE hd)
 {
+  keyboxd_local_t kbl;
+
   if (!hd)
     return;
 
+  if (DBG_CLOCK)
+    log_clock ("keydb_release");
   if (!hd->use_keyboxd)
     internal_keydb_deinit (hd);
   else
     {
-      close_context (hd->ctrl, hd->assuan_context);
+      kbl = hd->kbl;
+      if (DBG_CLOCK)
+        log_clock ("close_context (found)");
+      if (!kbl->is_active)
+        log_fatal ("closing inactive keyboxd context %p\n", kbl);
+      kbl->is_active = 0;
+      hd->kbl = NULL;
+      hd->ctrl = NULL;
     }
   xfree (hd);
 }
@@ -465,6 +596,86 @@ keydb_get_keyblock_do_parse (iobuf_t iobuf, int pk_no, int uid_no,
 }
 
 
+/* The thread used to read from the data stream.  This is running as
+ * long as the connection and its datastream exists.  */
+static void *
+datastream_thread (void *arg)
+{
+  keyboxd_local_t kbl = arg;
+  gpg_error_t err;
+  int rc;
+  unsigned char lenbuf[4];
+  size_t nread, datalen;
+  iobuf_t iobuf;
+  int pk_no, uid_no;
+  kbnode_t keyblock, tmpkeyblock;
+
+
+  log_debug ("Datastream_thread started\n");
+  while (kbl->datastream.fp)
+    {
+      /* log_debug ("Datastream_thread waiting ...\n"); */
+      if (es_read (kbl->datastream.fp, lenbuf, 4, &nread))
+        {
+          err = gpg_error_from_syserror ();
+          if (gpg_err_code (err) == GPG_ERR_EAGAIN)
+            continue;
+          log_error ("error reading data length from keyboxd: %s\n",
+                     gpg_strerror (err));
+          gnupg_sleep (1);
+          continue;
+        }
+      if (nread != 4)
+        {
+          err = gpg_error (GPG_ERR_EIO);
+          log_error ("error reading data length from keyboxd: %s\n",
+                     "short read");
+          continue;
+        }
+
+      datalen = buf32_to_size_t (lenbuf);
+      /* log_debug ("keyboxd announced %zu bytes\n", datalen); */
+
+      iobuf = iobuf_esopen (kbl->datastream.fp, "rb", 1, datalen);
+      pk_no = uid_no = 0;  /* FIXME: Get this from the keyboxd.  */
+      err = keydb_get_keyblock_do_parse (iobuf, pk_no, uid_no, &keyblock);
+      iobuf_close (iobuf);
+      if (!err)
+        {
+          /* log_debug ("parsing datastream succeeded\n"); */
+
+          /* Thread-safe assignment to the result var:  */
+          tmpkeyblock = kbl->datastream.found_keyblock;
+          kbl->datastream.found_keyblock = keyblock;
+          release_kbnode (tmpkeyblock);
+      }
+      else
+        {
+          /* log_debug ("parsing datastream failed: %s <%s>\n", */
+          /*            gpg_strerror (err), gpg_strsource (err)); */
+          tmpkeyblock = kbl->datastream.found_keyblock;
+          kbl->datastream.found_keyblock = NULL;
+          kbl->datastream.found_err = err;
+          release_kbnode (tmpkeyblock);
+        }
+
+      /* Tell the main thread.  */
+      lock_datastream (kbl);
+      rc = npth_cond_signal (&kbl->datastream.cond);
+      if (rc)
+        {
+          err = gpg_error_from_errno (rc);
+          log_error ("%s: signaling condition failed: %s\n",
+                     __func__, gpg_strerror (err));
+        }
+      unlock_datastream (kbl);
+    }
+  log_debug ("Datastream_thread finished\n");
+
+  return NULL;
+}
+
+
 /* Return the keyblock last found by keydb_search() in *RET_KB.
  *
  * On success, the function returns 0 and the caller must free *RET_KB
@@ -494,19 +705,27 @@ keydb_get_keyblock (KEYDB_HANDLE hd, kbnode_t *ret_kb)
       goto leave;
     }
 
-  if (!hd->search_result)
+  if (hd->kbl->search_result)
+    {
+      pk_no = uid_no = 0;  /*FIXME: Get this from the keyboxd.  */
+      err = keydb_get_keyblock_do_parse (hd->kbl->search_result,
+                                         pk_no, uid_no, ret_kb);
+      /* In contrast to the old code we close the iobuf here and thus
+       * this function may be called only once to get a keyblock.  */
+      iobuf_close (hd->kbl->search_result);
+      hd->kbl->search_result = NULL;
+    }
+  else if (hd->kbl->datastream.found_keyblock)
+    {
+      *ret_kb = hd->kbl->datastream.found_keyblock;
+      hd->kbl->datastream.found_keyblock = NULL;
+      err = 0;
+    }
+  else
     {
       err = gpg_error (GPG_ERR_VALUE_NOT_FOUND);
       goto leave;
     }
-
-  pk_no = uid_no = 0;  /*FIXME: Get this from the keyboxd.  */
-  err = keydb_get_keyblock_do_parse (hd->search_result, pk_no, uid_no, ret_kb);
-  /* In contrast to the old code we close the iobuf here and thus this
-   * function may be called only once to get a keyblock.  */
-  iobuf_close (hd->search_result);
-  hd->search_result = NULL;
-
 
  leave:
   if (DBG_CLOCK)
@@ -636,7 +855,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
 
   /* All we need todo is to tell search that a reset is pending.  Noet
    * that keydb_new sets this flag as well.  */
-  hd->need_search_reset = 1;
+  hd->kbl->need_search_reset = 1;
   err = 0;
 
  leave:
@@ -697,14 +916,20 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       goto leave;
     }
 
-
-  if (hd->search_result)
+  /* Clear the result objects.  */
+  if (hd->kbl->search_result)
     {
-      iobuf_close (hd->search_result);
-      hd->search_result = NULL;
+      iobuf_close (hd->kbl->search_result);
+      hd->kbl->search_result = NULL;
+    }
+  if (hd->kbl->datastream.found_keyblock)
+    {
+      release_kbnode (hd->kbl->datastream.found_keyblock);
+      hd->kbl->datastream.found_keyblock = NULL;
     }
 
-  if (!hd->need_search_reset)
+  /* Check whether this is a NEXT search.  */
+  if (!hd->kbl->need_search_reset)
     {
       /* No reset requested thus continue the search.  The keyboxd
        * keeps the context of the search and thus the NEXT operates on
@@ -717,7 +942,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       goto do_search;
     }
 
-  hd->need_search_reset = 0;
+  hd->kbl->need_search_reset = 0;
 
   if (!ndesc)
     {
@@ -807,31 +1032,68 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     }
 
  do_search:
-  {
-    membuf_t data;
-    void *buffer;
-    size_t len;
+  if (hd->kbl->datastream.fp)
+    {
+      /* log_debug ("Sending command '%s'\n", line); */
+      err = assuan_transact (hd->kbl->ctx, line,
+                             NULL, NULL,
+                             NULL, NULL,
+                             NULL, NULL);
+      if (err)
+        {
+          /* log_debug ("Finished command with error: %s\n", gpg_strerror (err)); */
+          /* Fixme: On unexpected errors we need a way to cancek the
+           * data stream.  Probly it will be best to closeand reopen
+           * it.  */
+        }
+      else
+        {
+          int rc;
 
-    init_membuf (&data, 8192);
-    err = assuan_transact (hd->assuan_context, line,
-                           put_membuf_cb, &data,
-                           NULL, NULL,
-                           NULL, NULL);
-    if (err)
-      {
-        xfree (get_membuf (&data, &len));
-        goto leave;
-      }
+          /* log_debug ("Finished command .. telling data stream\n"); */
+          lock_datastream (hd->kbl);
+          if (!hd->kbl->datastream.found_keyblock)
+            {
+              /* log_debug ("%s: waiting on datastream_cond ...\n", __func__); */
+              rc = npth_cond_wait (&hd->kbl->datastream.cond,
+                                   &hd->kbl->datastream.mutex);
+              /* log_debug ("%s: waiting on datastream.cond done\n", __func__); */
+              if (rc)
+                {
+                  err = gpg_error_from_errno (rc);
+                  log_error ("%s: waiting on condition failed: %s\n",
+                             __func__, gpg_strerror (err));
+                }
+            }
+          unlock_datastream (hd->kbl);
+        }
+    }
+  else /* Slower D-line version if fd-passing was not successful.  */
+    {
+      membuf_t data;
+      void *buffer;
+      size_t len;
 
-    buffer = get_membuf (&data, &len);
-    if (!buffer)
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-      }
+      init_membuf (&data, 8192);
+      err = assuan_transact (hd->kbl->ctx, line,
+                             put_membuf_cb, &data,
+                             NULL, NULL,
+                             NULL, NULL);
+      if (err)
+        {
+          xfree (get_membuf (&data, &len));
+          goto leave;
+        }
 
-    /* Fixme: Avoid double allocation.  */
-    hd->search_result = iobuf_temp_with_content (buffer, len);
+      buffer = get_membuf (&data, &len);
+      if (!buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      hd->kbl->search_result = iobuf_temp_with_content (buffer, len);
+      xfree (buffer);
   }
 
 

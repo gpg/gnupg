@@ -92,14 +92,9 @@ struct keydb_handle_s
   /* A shallow pointer with the CTRL used to create this handle.  */
   ctrl_t ctrl;
 
-  /* The context used to communicate with the keyboxd.  */
-  assuan_context_t assuan_context;
-
-  /* I/O buffer with the last search result or NULL.  */
-  iobuf_t search_result;
-
-  /* Flag indicating that a search reset is required.  */
-  unsigned int need_search_reset : 1;
+  /* Connection info which also keep the local state.  (This is points
+   * into the CTRL->keybox_local list.) */
+  keyboxd_local_t kbl;
 
   /* END USE_KEYBOXD */
 

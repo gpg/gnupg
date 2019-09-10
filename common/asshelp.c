@@ -310,14 +310,15 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
 }
 
 
-/* Helper to start a service.
- * SECS gives the number of seconds to wait.  SOCKNAME is the name of
- * the socket to connect.  VERBOSE is the usual verbose flag. CTX is
- * the assuan context.  DID_SUCCESS_MSG will be set to 1 if a success
- * messages has been printed.
+/* Helper to start a service.  SECS gives the number of seconds to
+ * wait.  SOCKNAME is the name of the socket to connect.  VERBOSE is
+ * the usual verbose flag.  CTX is the assuan context.  CONNECT_FLAGS
+ * are the assuan connect flags.  DID_SUCCESS_MSG will be set to 1 if
+ * a success messages has been printed.
  */
 static gpg_error_t
 wait_for_sock (int secs, int module_name_id, const char *sockname,
+               unsigned int connect_flags,
                int verbose, assuan_context_t ctx, int *did_success_msg)
 {
   gpg_error_t err = 0;
@@ -353,7 +354,7 @@ wait_for_sock (int secs, int module_name_id, const char *sockname,
         }
       gnupg_usleep (next_sleep_us);
       elapsed_us += next_sleep_us;
-      err = assuan_socket_connect (ctx, sockname, 0, 0);
+      err = assuan_socket_connect (ctx, sockname, 0, connect_flags);
       if (!err)
         {
           if (verbose)
@@ -403,6 +404,7 @@ start_new_service (assuan_context_t *r_ctx,
   const char *status_start_line;
   int no_service_err;
   int seconds_to_wait;
+  unsigned int connect_flags = 0;
   const char *argv[6];
 
   *r_ctx = NULL;
@@ -439,6 +441,7 @@ start_new_service (assuan_context_t *r_ctx,
       status_start_line = "starting_keyboxd ? 0 0";
       no_service_err = GPG_ERR_NO_KEYBOXD;
       seconds_to_wait = SECS_TO_WAIT_FOR_KEYBOXD;
+      connect_flags |= ASSUAN_SOCKET_CONNECT_FDPASSING;
       break;
     default:
       err = gpg_error (GPG_ERR_INV_ARG);
@@ -446,7 +449,7 @@ start_new_service (assuan_context_t *r_ctx,
       return err;
     }
 
-  err = assuan_socket_connect (ctx, sockname, 0, 0);
+  err = assuan_socket_connect (ctx, sockname, 0, connect_flags);
   if (err && autostart)
     {
       char *abs_homedir;
@@ -522,7 +525,7 @@ start_new_service (assuan_context_t *r_ctx,
       argv[i++] = NULL;
 
       if (!(err = lock_spawning (&lock, gnupg_homedir (), lock_name, verbose))
-          && assuan_socket_connect (ctx, sockname, 0, 0))
+          && assuan_socket_connect (ctx, sockname, 0, connect_flags))
         {
           err = gnupg_spawn_process_detached (program? program : program_name,
                                               argv, NULL);
@@ -532,7 +535,8 @@ start_new_service (assuan_context_t *r_ctx,
                        gpg_strerror (err));
           else
             err = wait_for_sock (seconds_to_wait, module_name_id,
-                                 sockname, verbose, ctx, &did_success_msg);
+                                 sockname, connect_flags,
+                                 verbose, ctx, &did_success_msg);
         }
 
       unlock_spawning (&lock, lock_name);

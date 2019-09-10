@@ -29,9 +29,9 @@ AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(SQLITE3_CFLAGS) $(LIBGCRYPT_CFLAGS) \
-            $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
+            $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) $(GPG_ERROR_CFLAGS)
 
-needed_libs = ../kbx/libkeybox.a $(libcommon)
+needed_libs = ../kbx/libkeybox.a $(libcommonpth)
 
 # Because there are no program specific transform macros we need to
 # work around that to allow installing gpg as gpg2.
@@ -178,11 +178,11 @@ gpgv_SOURCES = gpgv.c           \
 LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS)
 gpg_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
-             $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+             $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpg_LDFLAGS = $(extra_bin_ldflags)
 gpgv_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
-	      $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+	      $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpgv_LDFLAGS = $(extra_bin_ldflags)
 
@@ -197,17 +197,17 @@ t_rmd160_SOURCES = t-rmd160.c rmd160.c
 t_rmd160_LDADD = $(t_common_ldadd)
 t_keydb_SOURCES = t-keydb.c test-stubs.c $(common_source)
 t_keydb_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
-              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+              $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(t_common_ldadd)
 t_keydb_get_keyblock_SOURCES = t-keydb-get-keyblock.c test-stubs.c \
 	      $(common_source)
 t_keydb_get_keyblock_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
-              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+              $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(t_common_ldadd)
 t_stutter_SOURCES = t-stutter.c test-stubs.c \
 	      $(common_source)
 t_stutter_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
-	      $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+	      $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(t_common_ldadd)
 
 

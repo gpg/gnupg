@@ -36,6 +36,7 @@
 # endif
 # include <windows.h>
 #endif
+#include <npth.h>
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
@@ -978,6 +979,9 @@ static void add_policy_url( const char *string, int which );
 static void add_keyserver_url( const char *string, int which );
 static void emergency_cleanup (void);
 static void read_sessionkey_from_fd (int fd);
+
+/* NPth wrapper function definitions. */
+ASSUAN_SYSTEM_NPTH_IMPL;
 
 
 static char *
@@ -2246,6 +2250,7 @@ gpg_deinit_default_ctrl (ctrl_t ctrl)
   gpg_dirmngr_deinit_session_data (ctrl);
 
   keydb_release (ctrl->cached_getkey_kdb);
+  gpg_keyboxd_deinit_session_data (ctrl);
 }
 
 
@@ -3736,6 +3741,11 @@ main (int argc, char **argv)
       }
 #endif
 
+    /* Init threading which is used by some helper functions.  */
+    npth_init ();
+    assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
+    gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
+
     /* FIXME: We should use logging to a file only in server mode;
        however we have not yet implemetyed that.  Thus we try to get
        away with --batch as indication for logging to file
@@ -3743,7 +3753,9 @@ main (int argc, char **argv)
     if (logfile && opt.batch)
       {
         log_set_file (logfile);
-        log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_TIME | GPGRT_LOG_WITH_PID);
+        log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX
+                               | GPGRT_LOG_WITH_TIME
+                               | GPGRT_LOG_WITH_PID ));
       }
 
     if (opt.verbose > 2)
