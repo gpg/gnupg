@@ -35,6 +35,7 @@
 #include "../common/server-help.h"
 #include "../common/userids.h"
 #include "../common/asshelp.h"
+#include "../common/host2net.h"
 #include "frontend.h"
 
 
@@ -82,6 +83,9 @@ struct server_local_s
   KEYBOX_SEARCH_DESC *multi_search_desc;
   unsigned int multi_search_desc_size;
   unsigned int multi_search_desc_len;
+
+  /* If not NULL write output to this stream instead of using D lines.  */
+  estream_t outstream;
 };
 
 
@@ -97,6 +101,56 @@ get_assuan_ctx_from_ctrl (ctrl_t ctrl)
 }
 
 
+/* If OUTPUT has been used prepare the output FD for use.  This needs
+ * to be called by all functions which will in any way use
+ * kbxd_write_data_line later.  Whether the output goes to the output
+ * stream is decided by this function.  */
+static gpg_error_t
+prepare_outstream (ctrl_t ctrl)
+{
+  int fd;
+
+  log_assert (ctrl && ctrl->server_local);
+
+  if (ctrl->server_local->outstream)
+    return 0;  /* Already enabled.  */
+
+  fd = translate_sys2libc_fd
+    (assuan_get_output_fd (get_assuan_ctx_from_ctrl (ctrl)), 1);
+  if (fd == -1)
+    return 0;  /* No Output command active.  */
+
+  ctrl->server_local->outstream = es_fdopen_nc (fd, "w");
+  if (!ctrl->server_local->outstream)
+    return gpg_err_code_from_syserror ();
+  return 0;
+}
+
+
+/* The usual writen function; here with diagnostic output.  */
+static gpg_error_t
+kbxd_writen (estream_t fp, const void *buffer, size_t length)
+{
+  gpg_error_t err;
+  size_t nwritten;
+
+  if (es_write (fp, buffer, length, &nwritten))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error writing OUTPUT: %s\n", gpg_strerror (err));
+    }
+  else if (length != nwritten)
+    {
+      err = gpg_error (GPG_ERR_EIO);
+      log_error ("error writing OUTPUT: %s\n", "short write");
+    }
+  else
+    err = 0;
+
+  return err;
+}
+
+
 /* A wrapper around assuan_send_data which makes debugging the output
  * in verbose mode easier.  It also takes CTRL as argument.  */
 gpg_error_t
@@ -109,11 +163,29 @@ kbxd_write_data_line (ctrl_t ctrl, const void *buffer_arg, size_t size)
   if (!ctx) /* Oops - no assuan context.  */
     return gpg_error (GPG_ERR_NOT_PROCESSED);
 
+  /* Write toa file descriptor if enabled.  */
+  if (ctrl && ctrl->server_local && ctrl->server_local->outstream)
+    {
+      unsigned char lenbuf[4];
+
+      ulongtobuf (lenbuf, size);
+      err = kbxd_writen (ctrl->server_local->outstream, lenbuf, 4);
+      if (!err)
+        err = kbxd_writen (ctrl->server_local->outstream, buffer, size);
+      if (!err && es_fflush (ctrl->server_local->outstream))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error writing OUTPUT: %s\n", gpg_strerror (err));
+        }
+
+      goto leave;
+    }
+
   /* If we do not want logging, enable it here.  */
   if (ctrl && ctrl->server_local && ctrl->server_local->inhibit_data_logging)
     ctrl->server_local->inhibit_data_logging_now = 1;
 
-  if (opt.verbose && buffer && size)
+  if (0 && opt.verbose && buffer && size)
     {
       /* Ease reading of output by limiting the line length.  */
       size_t n, nbytes;
@@ -151,8 +223,8 @@ kbxd_write_data_line (ctrl_t ctrl, const void *buffer_arg, size_t size)
  leave:
   if (ctrl && ctrl->server_local && ctrl->server_local->inhibit_data_logging)
     {
-      ctrl->server_local->inhibit_data_logging_now = 0;
       ctrl->server_local->inhibit_data_logging_count += size;
+      ctrl->server_local->inhibit_data_logging_now = 0;
     }
 
   return err;
@@ -304,8 +376,14 @@ cmd_search (assuan_context_t ctx, char *line)
   else
     ctrl->server_local->multi_search_desc_len = 0;
 
+  ctrl->server_local->inhibit_data_logging = 1;
+  ctrl->server_local->inhibit_data_logging_now = 0;
+  ctrl->server_local->inhibit_data_logging_count = 0;
   ctrl->no_data_return = opt_no_data;
-  if (ctrl->server_local->multi_search_desc_len)
+  err = prepare_outstream (ctrl);
+  if (err)
+    ;
+  else if (ctrl->server_local->multi_search_desc_len)
     err = kbxd_search (ctrl, ctrl->server_local->multi_search_desc,
                        ctrl->server_local->multi_search_desc_len, 1);
   else
@@ -320,6 +398,7 @@ cmd_search (assuan_context_t ctx, char *line)
   if (err)
     ctrl->server_local->multi_search_desc_len = 0;
   ctrl->no_data_return = 0;
+  ctrl->server_local->inhibit_data_logging = 0;
   return leave_cmd (ctx, err);
 }
 
@@ -350,8 +429,14 @@ cmd_next (assuan_context_t ctx, char *line)
       goto leave;
     }
 
+  ctrl->server_local->inhibit_data_logging = 1;
+  ctrl->server_local->inhibit_data_logging_now = 0;
+  ctrl->server_local->inhibit_data_logging_count = 0;
   ctrl->no_data_return = opt_no_data;
-  if (ctrl->server_local->multi_search_desc_len)
+  err = prepare_outstream (ctrl);
+  if (err)
+    ;
+  else if (ctrl->server_local->multi_search_desc_len)
     {
       /* The next condition should never be tru but we better handle
        * the first/next transition anyway.  */
@@ -375,6 +460,7 @@ cmd_next (assuan_context_t ctx, char *line)
 
  leave:
   ctrl->no_data_return = 0;
+  ctrl->server_local->inhibit_data_logging = 0;
   return leave_cmd (ctx, err);
 }
 
@@ -479,6 +565,13 @@ cmd_reloadkeyboxd (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_output[] =
+  "OUTPUT FD[=<n>]\n"
+  "\n"
+  "Set the file descriptor to write the output data to N.  If N is not\n"
+  "given and the operating system supports file descriptor passing, the\n"
+  "file descriptor currently in flight will be used.";
+
 
 /* Tell the assuan library about our commands. */
 static int
@@ -492,6 +585,7 @@ register_commands (assuan_context_t ctx)
     { "SEARCH",     cmd_search,     hlp_search },
     { "NEXT",       cmd_next,       hlp_next   },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
+    { "OUTPUT",     NULL,           hlp_output },
     { "KILLKEYBOXD",cmd_killkeyboxd,hlp_killkeyboxd },
     { "RELOADKEYBOXD",cmd_reloadkeyboxd,hlp_reloadkeyboxd },
     { NULL, NULL }
@@ -584,7 +678,9 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
     }
   else
     {
-      rc = assuan_init_socket_server (ctx, fd, ASSUAN_SOCKET_SERVER_ACCEPTED);
+      rc = assuan_init_socket_server (ctx, fd,
+                                      (ASSUAN_SOCKET_SERVER_ACCEPTED
+                                       |ASSUAN_SOCKET_SERVER_FDPASSING));
     }
 
   if (rc)
@@ -658,6 +754,7 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
         }
     }
 
+  assuan_close_output_fd (ctx);
 
   set_assuan_context_func (NULL);
   ctrl->server_local->assuan_ctx = NULL;

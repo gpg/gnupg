@@ -58,6 +58,12 @@
 #include "../common/exechelp.h"
 #include "frontend.h"
 
+
+/* Urrgs: Put this into a separate header - but it needs assuan.h first.  */
+extern int kbxd_assuan_log_monitor (assuan_context_t ctx, unsigned int cat,
+                                    const char *msg);
+
+
 enum cmd_and_opt_values
   {
     aNull = 0,
@@ -488,7 +494,7 @@ main (int argc, char **argv )
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   assuan_sock_init ();
   assuan_sock_set_system_hooks (ASSUAN_SYSTEM_NPTH);
-  setup_libassuan_logging (&opt.debug, NULL);
+  setup_libassuan_logging (&opt.debug, kbxd_assuan_log_monitor);
 
   setup_libgcrypt_logging ();
   gcry_set_progress_handler (kbxd_libgcrypt_progress_cb, NULL);
