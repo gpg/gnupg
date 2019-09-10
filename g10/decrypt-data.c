@@ -475,7 +475,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       rc = get_output_file ("", 0, ed->buf, &filename, &fp);
       if (! rc)
         {
-          iobuf_t output = iobuf_esopen (fp, "w", 0);
+          iobuf_t output = iobuf_esopen (fp, "w", 0, 0);
           armor_filter_context_t *afx = NULL;
 
           if (opt.armor)

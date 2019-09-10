@@ -550,7 +550,7 @@ import_keys_es_stream (ctrl_t ctrl, estream_t fp,
   gpg_error_t err;
   iobuf_t inp;
 
-  inp = iobuf_esopen (fp, "rb", 1);
+  inp = iobuf_esopen (fp, "rb", 1, 0);
   if (!inp)
     {
       err = gpg_error_from_syserror ();
