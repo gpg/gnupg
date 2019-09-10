@@ -46,6 +46,7 @@ profiles =
 EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem \
 	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png \
 	     gnupg-module-overview.png gnupg-module-overview.pdf \
+	     gnupg-module-overview.eps gnupg-card-architecture.eps \
              gnupg-card-architecture.png gnupg-card-architecture.pdf \
              FAQ gnupg7.texi mkdefsinc.c defsincdate \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
@@ -53,6 +54,7 @@ EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem \
              trust-values.texi
 
 BUILT_SOURCES = gnupg-module-overview.png gnupg-module-overview.pdf \
+                gnupg-module-overview.eps gnupg-card-architecture.eps \
                 gnupg-card-architecture.png gnupg-card-architecture.pdf \
                 defsincdate defs.inc
 
@@ -110,8 +112,6 @@ watchgnupg_SOURCE = gnupg.texi
 CLEANFILES = yat2m mkdefsinc defs.inc
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
-                 gnupg-card-architecture.eps \
-                 gnupg-module-overview.eps \
 		 $(myman_pages) gnupg.7
 
 yat2m: yat2m.c
