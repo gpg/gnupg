@@ -645,7 +645,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
           int slot;
           int periodical_check_needed_this;
 
-          slot = apdu_open_reader (l, !card_top);
+          slot = apdu_open_reader (l);
           if (slot < 0)
             break;
 

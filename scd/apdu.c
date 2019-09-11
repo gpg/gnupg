@@ -2055,7 +2055,7 @@ apdu_dev_list_finish (struct dev_list *dl)
 
 
 int
-apdu_open_reader (struct dev_list *dl, int app_empty)
+apdu_open_reader (struct dev_list *dl)
 {
   int slot;
 
@@ -2175,15 +2175,6 @@ apdu_open_reader (struct dev_list *dl, int app_empty)
 
       /* Not found.  */
       slot = -1;
-#if 0
-      if (app_empty && dl->idx == 0)
-        {
-          dl->idx++;
-          slot = apdu_open_one_reader (dl->portstr);
-        }
-      else
-        slot = -1;
-#endif
     }
 
   return slot;
