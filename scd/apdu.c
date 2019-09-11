@@ -1062,14 +1062,6 @@ pcsc_init (void)
   static int pcsc_api_loaded;
   long err;
 
-  err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL, &pcsc.context);
-  if (err)
-    {
-      log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
-                 pcsc_error_string (err), err);
-      return -1;
-    }
-
   /* Lets try the PC/SC API */
   if (!pcsc_api_loaded)
     {
@@ -1152,6 +1144,15 @@ pcsc_init (void)
           return -1;
         }
       pcsc_api_loaded = 1;
+
+      err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL,
+                                    &pcsc.context);
+      if (err)
+        {
+          log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
+                     pcsc_error_string (err), err);
+          return -1;
+        }
     }
 
   return 0;
@@ -2051,9 +2052,12 @@ apdu_open_reader (struct dev_list *dl, int app_empty)
   int slot;
 
 #ifdef HAVE_LIBUSB
-  if (dl->table)
+  if (!opt.disable_ccid)
     { /* CCID readers.  */
       int readerno;
+
+      if (!dl->table)
+        return -1;
 
       /* See whether we want to use the reader ID string or a reader
          number. A readerno of -1 indicates that the reader ID string is
