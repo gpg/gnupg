@@ -1998,17 +1998,25 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
 
       while (nreader)
         {
-          if (!*p && !p[1])
+          size_t n;
+
+          if (!*p)
             break;
-          log_info ("detected reader '%s'\n", p);
-          if (nreader < (strlen (p)+1))
+
+          for (n = 0; n < nreader; n++)
+            if (!p[n])
+              break;
+
+          if (n >= nreader)
             {
               log_error ("invalid response from pcsc_list_readers\n");
               break;
             }
+
+          log_info ("detected reader '%s'\n", p);
           pcsc.rdrname[dl->idx_max] = p;
-          nreader -= strlen (p)+1;
-          p += strlen (p) + 1;
+          nreader -= n + 1;
+          p += n + 1;
           dl->idx_max++;
           if (dl->idx_max >= MAX_READER)
             {
