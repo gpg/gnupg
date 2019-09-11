@@ -77,9 +77,10 @@ typedef unsigned long pcsc_dword_t;
 #endif
 
 /* PC/SC context to access readers.  Shared among all readers.  */
-static struct pcsc {
+static struct pcsc_global_data {
   int count;
   long context;
+  const char *rdrname[MAX_READER];
 } pcsc;
 
 /* A structure to collect information pertaining to one reader
@@ -794,8 +795,12 @@ close_pcsc_reader (int slot)
   (void)slot;
   if (--pcsc.count == 0)
     {
+      int i;
+
       pcsc_release_context (pcsc.context);
       pcsc.context = -1;
+      for (i = 0; i < MAX_READER; i++)
+        pcsc.rdrname[i] = NULL;
     }
   return 0;
 }
@@ -1054,6 +1059,7 @@ pcsc_vendor_specific_init (int slot)
 static int
 pcsc_init (void)
 {
+  static int pcsc_api_loaded;
   long err;
 
   err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL, &pcsc.context);
@@ -1064,72 +1070,103 @@ pcsc_init (void)
       return -1;
     }
 
+  /* Lets try the PC/SC API */
+  if (!pcsc_api_loaded)
+    {
+      void *handle;
+
+      handle = dlopen (opt.pcsc_driver, RTLD_LAZY);
+      if (!handle)
+        {
+          log_error ("apdu_open_reader: failed to open driver '%s': %s\n",
+                     opt.pcsc_driver, dlerror ());
+          return -1;
+        }
+
+      pcsc_establish_context = dlsym (handle, "SCardEstablishContext");
+      pcsc_release_context   = dlsym (handle, "SCardReleaseContext");
+      pcsc_list_readers      = dlsym (handle, "SCardListReaders");
+#if defined(_WIN32) || defined(__CYGWIN__)
+      if (!pcsc_list_readers)
+        pcsc_list_readers    = dlsym (handle, "SCardListReadersA");
+#endif
+      pcsc_get_status_change = dlsym (handle, "SCardGetStatusChange");
+#if defined(_WIN32) || defined(__CYGWIN__)
+      if (!pcsc_get_status_change)
+        pcsc_get_status_change = dlsym (handle, "SCardGetStatusChangeA");
+#endif
+      pcsc_connect           = dlsym (handle, "SCardConnect");
+#if defined(_WIN32) || defined(__CYGWIN__)
+      if (!pcsc_connect)
+        pcsc_connect         = dlsym (handle, "SCardConnectA");
+#endif
+      pcsc_reconnect         = dlsym (handle, "SCardReconnect");
+#if defined(_WIN32) || defined(__CYGWIN__)
+      if (!pcsc_reconnect)
+        pcsc_reconnect       = dlsym (handle, "SCardReconnectA");
+#endif
+      pcsc_disconnect        = dlsym (handle, "SCardDisconnect");
+      pcsc_status            = dlsym (handle, "SCardStatus");
+#if defined(_WIN32) || defined(__CYGWIN__)
+      if (!pcsc_status)
+        pcsc_status          = dlsym (handle, "SCardStatusA");
+#endif
+      pcsc_begin_transaction = dlsym (handle, "SCardBeginTransaction");
+      pcsc_end_transaction   = dlsym (handle, "SCardEndTransaction");
+      pcsc_transmit          = dlsym (handle, "SCardTransmit");
+      pcsc_set_timeout       = dlsym (handle, "SCardSetTimeout");
+      pcsc_control           = dlsym (handle, "SCardControl");
+
+      if (!pcsc_establish_context
+          || !pcsc_release_context
+          || !pcsc_list_readers
+          || !pcsc_get_status_change
+          || !pcsc_connect
+          || !pcsc_reconnect
+          || !pcsc_disconnect
+          || !pcsc_status
+          || !pcsc_begin_transaction
+          || !pcsc_end_transaction
+          || !pcsc_transmit
+          || !pcsc_control
+          /* || !pcsc_set_timeout */)
+        {
+          /* Note that set_timeout is currently not used and also not
+             available under Windows. */
+          log_error ("apdu_open_reader: invalid PC/SC driver "
+                     "(%d%d%d%d%d%d%d%d%d%d%d%d%d)\n",
+                     !!pcsc_establish_context,
+                     !!pcsc_release_context,
+                     !!pcsc_list_readers,
+                     !!pcsc_get_status_change,
+                     !!pcsc_connect,
+                     !!pcsc_reconnect,
+                     !!pcsc_disconnect,
+                     !!pcsc_status,
+                     !!pcsc_begin_transaction,
+                     !!pcsc_end_transaction,
+                     !!pcsc_transmit,
+                     !!pcsc_set_timeout,
+                     !!pcsc_control );
+          dlclose (handle);
+          return -1;
+        }
+      pcsc_api_loaded = 1;
+    }
+
   return 0;
 }
 
-/* Open the PC/SC reader without using the wrapper.  Returns -1 on
-   error or a slot number for the reader.  */
+/* Open the PC/SC reader.  Returns -1 on error or a slot number for
+   the reader.  */
 static int
-open_pcsc_reader (const char *portstr)
+open_pcsc_reader (const char *rdrname)
 {
-  long err;
   int slot;
-  char *list = NULL;
-  char *rdrname = NULL;
-  pcsc_dword_t nreader;
-  char *p;
 
   slot = new_reader_slot ();
   if (slot == -1)
     return -1;
-
-  reader_table[slot].used = 0;
-  unlock_slot (slot);
-
-  err = pcsc_list_readers (pcsc.context, NULL, NULL, &nreader);
-  if (!err)
-    {
-      list = xtrymalloc (nreader+1); /* Better add 1 for safety reasons. */
-      if (!list)
-        {
-          log_error ("error allocating memory for reader list\n");
-          close_pcsc_reader (0);
-          reader_table[slot].used = 0;
-          unlock_slot (slot);
-          return -1 /*SW_HOST_OUT_OF_CORE*/;
-        }
-      err = pcsc_list_readers (pcsc.context, NULL, list, &nreader);
-    }
-  if (err)
-    {
-      log_error ("pcsc_list_readers failed: %s (0x%lx)\n",
-                 pcsc_error_string (err), err);
-      close_pcsc_reader (0);
-      reader_table[slot].used = 0;
-      xfree (list);
-      unlock_slot (slot);
-      return -1;
-    }
-
-  p = list;
-  while (nreader)
-    {
-      if (!*p && !p[1])
-        break;
-      log_info ("detected reader '%s'\n", p);
-      if (nreader < (strlen (p)+1))
-        {
-          log_error ("invalid response from pcsc_list_readers\n");
-          break;
-        }
-      if (!rdrname && portstr && !strncmp (p, portstr, strlen (portstr)))
-        rdrname = p;
-      nreader -= strlen (p)+1;
-      p += strlen (p) + 1;
-    }
-
-  if (!rdrname)
-    rdrname = list;
 
   reader_table[slot].rdrname = xtrystrdup (rdrname);
   if (!reader_table[slot].rdrname)
@@ -1140,8 +1177,6 @@ open_pcsc_reader (const char *portstr)
       unlock_slot (slot);
       return -1;
     }
-  xfree (list);
-  list = NULL;
 
   reader_table[slot].pcsc.card = 0;
   reader_table[slot].atrlen = 0;
@@ -1878,29 +1913,28 @@ gpg_error_t
 apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
 {
   struct dev_list *dl = xtrymalloc (sizeof (struct dev_list));
+  gpg_error_t err;
 
   *l_p = NULL;
   if (!dl)
     return gpg_error_from_syserror ();
 
+  dl->table = NULL;
   dl->portstr = portstr;
   dl->idx = 0;
+  dl->idx_max = 0;
 
   npth_mutex_lock (&reader_table_lock);
 
 #ifdef HAVE_LIBUSB
-  if (opt.disable_ccid)
+  if (!opt.disable_ccid)
     {
-      dl->table = NULL;
-      dl->idx_max = 1;
-    }
-  else
-    {
-      gpg_error_t err;
-
       err = ccid_dev_scan (&dl->idx_max, &dl->table);
       if (err)
-        return err;
+        {
+          npth_mutex_unlock (&reader_table_lock);
+          return err;
+        }
 
       if (dl->idx_max == 0)
         {
@@ -1919,10 +1953,70 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
             dl->idx_max = 1;
         }
     }
-#else
-  dl->table = NULL;
-  dl->idx_max = 1;
-#endif /* HAVE_LIBUSB */
+  else
+#endif
+    { /* PC/SC readers.  */
+      long r;
+      pcsc_dword_t nreader;
+      char *p = NULL;
+
+      if (pcsc.context < 0)
+        if (pcsc_init () < 0)
+          {
+            npth_mutex_unlock (&reader_table_lock);
+            return gpg_error (GPG_ERR_NO_SERVICE);
+          }
+
+      r = pcsc_list_readers (pcsc.context, NULL, NULL, &nreader);
+      if (!r)
+        {
+          p = xtrymalloc (nreader);
+          if (!p)
+            {
+              err = gpg_error_from_syserror ();
+
+              log_error ("error allocating memory for reader list\n");
+              close_pcsc_reader (0);
+              npth_mutex_unlock (&reader_table_lock);
+              return err;
+            }
+          r = pcsc_list_readers (pcsc.context, NULL, p, &nreader);
+        }
+      if (r)
+        {
+          log_error ("pcsc_list_readers failed: %s (0x%lx)\n",
+                     pcsc_error_string (r), r);
+          xfree (p);
+          close_pcsc_reader (0);
+          npth_mutex_unlock (&reader_table_lock);
+          return gpg_error (GPG_ERR_NO_SERVICE);
+        }
+
+      dl->table = p;
+      dl->idx_max = 0;
+
+      while (nreader)
+        {
+          if (!*p && !p[1])
+            break;
+          log_info ("detected reader '%s'\n", p);
+          if (nreader < (strlen (p)+1))
+            {
+              log_error ("invalid response from pcsc_list_readers\n");
+              break;
+            }
+          pcsc.rdrname[dl->idx_max] = p;
+          nreader -= strlen (p)+1;
+          p += strlen (p) + 1;
+          dl->idx_max++;
+          if (dl->idx_max >= MAX_READER)
+            {
+              log_error ("too many readers from pcsc_list_readers\n");
+              dl->idx_max--;
+              break;
+            }
+        }
+    }
 
   *l_p = dl;
   return 0;
@@ -1932,116 +2026,24 @@ void
 apdu_dev_list_finish (struct dev_list *dl)
 {
 #ifdef HAVE_LIBUSB
-  if (dl->table)
-    ccid_dev_scan_finish (dl->table, dl->idx_max);
+  if (!opt.disable_ccid)
+    {
+      if (dl->table)
+        ccid_dev_scan_finish (dl->table, dl->idx_max);
+    }
+  else
 #endif
+    { /* PC/SC readers.  */
+      int i;
+
+      xfree (dl->table);
+      for (i = 0; i < MAX_READER; i++)
+        pcsc.rdrname[i] = NULL;
+    }
   xfree (dl);
   npth_mutex_unlock (&reader_table_lock);
 }
 
-
-/* Open the reader and return an internal slot number or -1 on
-   error. If PORTSTR is NULL we default to a suitable port (for ctAPI:
-   the first USB reader.  For PC/SC the first listed reader). */
-static int
-apdu_open_one_reader (const char *portstr)
-{
-  static int pcsc_api_loaded;
-  int slot;
-
-  if (DBG_READER)
-    log_debug ("enter: apdu_open_reader: portstr=%s\n", portstr);
-
-  /* Lets try the PC/SC API */
-  if (!pcsc_api_loaded)
-    {
-      void *handle;
-
-      handle = dlopen (opt.pcsc_driver, RTLD_LAZY);
-      if (!handle)
-        {
-          log_error ("apdu_open_reader: failed to open driver '%s': %s\n",
-                     opt.pcsc_driver, dlerror ());
-          return -1;
-        }
-
-      pcsc_establish_context = dlsym (handle, "SCardEstablishContext");
-      pcsc_release_context   = dlsym (handle, "SCardReleaseContext");
-      pcsc_list_readers      = dlsym (handle, "SCardListReaders");
-#if defined(_WIN32) || defined(__CYGWIN__)
-      if (!pcsc_list_readers)
-        pcsc_list_readers    = dlsym (handle, "SCardListReadersA");
-#endif
-      pcsc_get_status_change = dlsym (handle, "SCardGetStatusChange");
-#if defined(_WIN32) || defined(__CYGWIN__)
-      if (!pcsc_get_status_change)
-        pcsc_get_status_change = dlsym (handle, "SCardGetStatusChangeA");
-#endif
-      pcsc_connect           = dlsym (handle, "SCardConnect");
-#if defined(_WIN32) || defined(__CYGWIN__)
-      if (!pcsc_connect)
-        pcsc_connect         = dlsym (handle, "SCardConnectA");
-#endif
-      pcsc_reconnect         = dlsym (handle, "SCardReconnect");
-#if defined(_WIN32) || defined(__CYGWIN__)
-      if (!pcsc_reconnect)
-        pcsc_reconnect       = dlsym (handle, "SCardReconnectA");
-#endif
-      pcsc_disconnect        = dlsym (handle, "SCardDisconnect");
-      pcsc_status            = dlsym (handle, "SCardStatus");
-#if defined(_WIN32) || defined(__CYGWIN__)
-      if (!pcsc_status)
-        pcsc_status          = dlsym (handle, "SCardStatusA");
-#endif
-      pcsc_begin_transaction = dlsym (handle, "SCardBeginTransaction");
-      pcsc_end_transaction   = dlsym (handle, "SCardEndTransaction");
-      pcsc_transmit          = dlsym (handle, "SCardTransmit");
-      pcsc_set_timeout       = dlsym (handle, "SCardSetTimeout");
-      pcsc_control           = dlsym (handle, "SCardControl");
-
-      if (!pcsc_establish_context
-          || !pcsc_release_context
-          || !pcsc_list_readers
-          || !pcsc_get_status_change
-          || !pcsc_connect
-          || !pcsc_reconnect
-          || !pcsc_disconnect
-          || !pcsc_status
-          || !pcsc_begin_transaction
-          || !pcsc_end_transaction
-          || !pcsc_transmit
-          || !pcsc_control
-          /* || !pcsc_set_timeout */)
-        {
-          /* Note that set_timeout is currently not used and also not
-             available under Windows. */
-          log_error ("apdu_open_reader: invalid PC/SC driver "
-                     "(%d%d%d%d%d%d%d%d%d%d%d%d%d)\n",
-                     !!pcsc_establish_context,
-                     !!pcsc_release_context,
-                     !!pcsc_list_readers,
-                     !!pcsc_get_status_change,
-                     !!pcsc_connect,
-                     !!pcsc_reconnect,
-                     !!pcsc_disconnect,
-                     !!pcsc_status,
-                     !!pcsc_begin_transaction,
-                     !!pcsc_end_transaction,
-                     !!pcsc_transmit,
-                     !!pcsc_set_timeout,
-                     !!pcsc_control );
-          dlclose (handle);
-          return -1;
-        }
-      pcsc_api_loaded = 1;
-    }
-
-  slot = open_pcsc_reader (portstr);
-
-  if (DBG_READER)
-    log_debug ("leave: apdu_open_reader => slot=%d [pc/sc]\n", slot);
-  return slot;
-}
 
 int
 apdu_open_reader (struct dev_list *dl, int app_empty)
@@ -2125,11 +2127,43 @@ apdu_open_reader (struct dev_list *dl, int app_empty)
   else
 #endif
     { /* PC/SC readers.  */
+      while (dl->idx < dl->idx_max)
+        {
+          const char *rdrname = pcsc.rdrname[dl->idx];
 
-      if (pcsc.context < 0)
-        if (pcsc_init () < 0)
-          return -1;
+          if (DBG_READER)
+            log_debug ("apdu_open_reader: %s\n", rdrname);
 
+          /* Check the identity of reader against already opened one.  */
+          for (slot = 0; slot < MAX_READER; slot++)
+            if (reader_table[slot].used
+                && !strcmp (reader_table[slot].rdrname, rdrname))
+              break;
+
+          if (slot == MAX_READER)
+            { /* Found a new device.  */
+              if (DBG_READER)
+                log_debug ("apdu_open_reader: new device=%s\n", rdrname);
+
+              slot = open_pcsc_reader (rdrname);
+
+              dl->idx++;
+              if (slot >= 0)
+                return slot;
+              else
+                {
+                  /* Skip this reader.  */
+                  log_error ("pcsc open error: skip\n");
+                  continue;
+                }
+            }
+          else
+            dl->idx++;
+        }
+
+      /* Not found.  */
+      slot = -1;
+#if 0
       if (app_empty && dl->idx == 0)
         {
           dl->idx++;
@@ -2137,6 +2171,7 @@ apdu_open_reader (struct dev_list *dl, int app_empty)
         }
       else
         slot = -1;
+#endif
     }
 
   return slot;
@@ -3318,6 +3353,8 @@ apdu_init (void)
 
   pcsc.count = 0;
   pcsc.context = -1;
+  for (i = 0; i < MAX_READER; i++)
+    pcsc.rdrname[i] = NULL;
 
   if (npth_mutex_init (&reader_table_lock, NULL))
     goto leave;
