@@ -2058,44 +2058,37 @@ int
 apdu_open_reader (struct dev_list *dl)
 {
   int slot;
+  int readerno;
+
+  if (!dl->table)
+    return -1;
+
+  /* See whether we want to use the reader ID string or a reader
+     number. A readerno of -1 indicates that the reader ID string is
+     to be used. */
+  if (dl->portstr && strchr (dl->portstr, ':'))
+    readerno = -1; /* We want to use the readerid.  */
+  else if (dl->portstr)
+    {
+      readerno = atoi (dl->portstr);
+      if (readerno < 0 || readerno >= dl->idx_max)
+        return -1;
+
+      dl->idx = readerno;
+      dl->portstr = NULL;
+    }
+  else
+    readerno = 0;  /* Default. */
 
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
     { /* CCID readers.  */
-      int readerno;
-
-      if (!dl->table)
-        return -1;
-
-      /* See whether we want to use the reader ID string or a reader
-         number. A readerno of -1 indicates that the reader ID string is
-         to be used. */
-      if (dl->portstr && strchr (dl->portstr, ':'))
-        readerno = -1; /* We want to use the readerid.  */
-      else if (dl->portstr)
-        {
-          readerno = atoi (dl->portstr);
-          if (readerno < 0)
-            {
-              return -1;
-            }
-        }
-      else
-        readerno = 0;  /* Default. */
-
       if (readerno > 0)
         { /* Use single, the specific reader.  */
-          if (readerno >= dl->idx_max)
-            return -1;
-
-          dl->idx = readerno;
-          dl->portstr = NULL;
           slot = open_ccid_reader (dl);
+          /* And stick the reader and no scan.  */
           dl->idx = dl->idx_max;
-          if (slot >= 0)
-            return slot;
-          else
-            return -1;
+          return slot;
         }
 
       while (dl->idx < dl->idx_max)
@@ -2139,6 +2132,14 @@ apdu_open_reader (struct dev_list *dl)
   else
 #endif
     { /* PC/SC readers.  */
+      if (readerno > 0)
+        { /* Use single, the specific reader.  */
+          slot = open_pcsc_reader (pcsc.rdrname[readerno]);
+          /* And stick the reader and no scan.  */
+          dl->idx = dl->idx_max;
+          return slot;
+        }
+
       while (dl->idx < dl->idx_max)
         {
           const char *rdrname = pcsc.rdrname[dl->idx];
@@ -2156,6 +2157,10 @@ apdu_open_reader (struct dev_list *dl)
             { /* Found a new device.  */
               if (DBG_READER)
                 log_debug ("apdu_open_reader: new device=%s\n", rdrname);
+
+              /* When reader string is specified, check if it is the one.  */
+              if (readerno < 0 && strcmp (rdrname, dl->portstr) != 0)
+                continue;
 
               slot = open_pcsc_reader (rdrname);
 
