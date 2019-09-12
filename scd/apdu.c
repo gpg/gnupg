@@ -1939,19 +1939,12 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
 
       if (dl->idx_max == 0)
         {
-          /* If a CCID reader specification has been given, the user does
-             not want a fallback to other drivers. */
-          if (portstr && strlen (portstr) > 5 && portstr[4] == ':')
-            {
-              if (DBG_READER)
-                log_debug ("leave: apdu_open_reader => slot=-1 (no ccid)\n");
+          if (DBG_READER)
+            log_debug ("leave: apdu_open_reader => slot=-1 (no ccid)\n");
 
-              xfree (dl);
-              npth_mutex_unlock (&reader_table_lock);
-              return gpg_error (GPG_ERR_ENODEV);
-            }
-          else
-            dl->idx_max = 1;
+          xfree (dl);
+          npth_mutex_unlock (&reader_table_lock);
+          return gpg_error (GPG_ERR_ENODEV);
         }
     }
   else
