@@ -77,6 +77,12 @@ run_mbox_test (void)
       { "<fo()o@example.org> ()", "fo()o@example.org" },
       { "fo()o@example.org", NULL},
       { "Mr. Foo <foo@example.org><bar@example.net>", "foo@example.org"},
+      { "Surname, Forename | company <foo@example.org>", "foo@example.org"},
+      /* The next one is for sure not RFC-822 correct but nevertheless
+       * the way gpg does it.  We won't change it because the user-id
+       * is only rfc-822 alike and not compliant (think only of our
+       * utf-8 requirement).  */
+      { "\"<foo@example.org>\" <foo@example.net>", "foo@example.org"},
       { NULL, NULL }
     };
   int idx;
