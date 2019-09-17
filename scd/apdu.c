@@ -76,10 +76,16 @@ typedef unsigned int pcsc_dword_t;
 typedef unsigned long pcsc_dword_t;
 #endif
 
+#ifdef HAVE_W32_SYSTEM
+#define HANDLE uintptr_t
+#else
+#define HANDLE long
+#endif
+
 /* PC/SC context to access readers.  Shared among all readers.  */
 static struct pcsc_global_data {
+  HANDLE context;
   int count;
-  long context;
   const char *rdrname[MAX_READER];
 } pcsc;
 
@@ -108,7 +114,7 @@ struct reader_table_s {
     ccid_driver_t handle;
   } ccid;
   struct {
-    long card;
+    HANDLE card;
     pcsc_dword_t protocol;
     pcsc_dword_t verify_ioctl;
     pcsc_dword_t modify_ioctl;
@@ -294,35 +300,35 @@ typedef struct pcsc_readerstate_s *pcsc_readerstate_t;
 long (* DLSTDCALL pcsc_establish_context) (pcsc_dword_t scope,
                                            const void *reserved1,
                                            const void *reserved2,
-                                           long *r_context);
-long (* DLSTDCALL pcsc_release_context) (long context);
-long (* DLSTDCALL pcsc_list_readers) (long context,
+                                           HANDLE *r_context);
+long (* DLSTDCALL pcsc_release_context) (HANDLE context);
+long (* DLSTDCALL pcsc_list_readers) (HANDLE context,
                                       const char *groups,
                                       char *readers, pcsc_dword_t*readerslen);
-long (* DLSTDCALL pcsc_get_status_change) (long context,
+long (* DLSTDCALL pcsc_get_status_change) (HANDLE context,
                                            pcsc_dword_t timeout,
                                            pcsc_readerstate_t readerstates,
                                            pcsc_dword_t nreaderstates);
-long (* DLSTDCALL pcsc_connect) (long context,
+long (* DLSTDCALL pcsc_connect) (HANDLE context,
                                  const char *reader,
                                  pcsc_dword_t share_mode,
                                  pcsc_dword_t preferred_protocols,
-                                 long *r_card,
+                                 HANDLE *r_card,
                                  pcsc_dword_t *r_active_protocol);
-long (* DLSTDCALL pcsc_reconnect) (long card,
+long (* DLSTDCALL pcsc_reconnect) (HANDLE card,
                                    pcsc_dword_t share_mode,
                                    pcsc_dword_t preferred_protocols,
                                    pcsc_dword_t initialization,
                                    pcsc_dword_t *r_active_protocol);
-long (* DLSTDCALL pcsc_disconnect) (long card,
+long (* DLSTDCALL pcsc_disconnect) (HANDLE card,
                                     pcsc_dword_t disposition);
-long (* DLSTDCALL pcsc_status) (long card,
+long (* DLSTDCALL pcsc_status) (HANDLE card,
                                 char *reader, pcsc_dword_t *readerlen,
                                 pcsc_dword_t *r_state,
                                 pcsc_dword_t *r_protocol,
                                 unsigned char *atr, pcsc_dword_t *atrlen);
 long (* DLSTDCALL pcsc_begin_transaction) (long card);
-long (* DLSTDCALL pcsc_end_transaction) (long card,
+long (* DLSTDCALL pcsc_end_transaction) (HANDLE card,
                                          pcsc_dword_t disposition);
 long (* DLSTDCALL pcsc_transmit) (long card,
                                   const pcsc_io_request_t send_pci,
@@ -331,9 +337,9 @@ long (* DLSTDCALL pcsc_transmit) (long card,
                                   pcsc_io_request_t recv_pci,
                                   unsigned char *recv_buffer,
                                   pcsc_dword_t *recv_len);
-long (* DLSTDCALL pcsc_set_timeout) (long context,
+long (* DLSTDCALL pcsc_set_timeout) (HANDLE context,
                                      pcsc_dword_t timeout);
-long (* DLSTDCALL pcsc_control) (long card,
+long (* DLSTDCALL pcsc_control) (HANDLE card,
                                  pcsc_dword_t control_code,
                                  const void *send_buffer,
                                  pcsc_dword_t send_len,
@@ -798,7 +804,7 @@ close_pcsc_reader (int slot)
       int i;
 
       pcsc_release_context (pcsc.context);
-      pcsc.context = -1;
+      pcsc.context = 0;
       for (i = 0; i < MAX_READER; i++)
         pcsc.rdrname[i] = NULL;
     }
@@ -839,7 +845,6 @@ connect_pcsc_card (int slot)
       pcsc_dword_t readerlen, atrlen;
       pcsc_dword_t card_state, card_protocol;
 
-      pcsc.count++;
       pcsc_vendor_specific_init (slot);
 
       atrlen = DIM (reader_table[0].atr);
@@ -1144,15 +1149,15 @@ pcsc_init (void)
           return -1;
         }
       pcsc_api_loaded = 1;
+    }
 
-      err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL,
-                                    &pcsc.context);
-      if (err)
-        {
-          log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
-                     pcsc_error_string (err), err);
-          return -1;
-        }
+  err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL,
+                                &pcsc.context);
+  if (err)
+    {
+      log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      return -1;
     }
 
   return 0;
@@ -1190,6 +1195,7 @@ open_pcsc_reader (const char *rdrname)
   reader_table[slot].send_apdu_reader = pcsc_send_apdu;
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
 
+  pcsc.count++;
   dump_reader_status (slot);
   unlock_slot (slot);
   return slot;
@@ -1954,7 +1960,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
       pcsc_dword_t nreader;
       char *p = NULL;
 
-      if (pcsc.context < 0)
+      if (!pcsc.context)
         if (pcsc_init () < 0)
           {
             npth_mutex_unlock (&reader_table_lock);
@@ -1989,7 +1995,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
       dl->table = p;
       dl->idx_max = 0;
 
-      while (nreader)
+      while (nreader > 0)
         {
           size_t n;
 
@@ -2011,7 +2017,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
           nreader -= n + 1;
           p += n + 1;
           dl->idx_max++;
-          if (dl->idx_max >= MAX_READER)
+          if (dl->idx_max > MAX_READER)
             {
               log_error ("too many readers from pcsc_list_readers\n");
               dl->idx_max--;
@@ -3353,7 +3359,7 @@ apdu_init (void)
   int i;
 
   pcsc.count = 0;
-  pcsc.context = -1;
+  pcsc.context = 0;
   for (i = 0; i < MAX_READER; i++)
     pcsc.rdrname[i] = NULL;
 
