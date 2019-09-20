@@ -801,7 +801,26 @@ AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
 #
 AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_API:$NEED_LIBGCRYPT_VERSION",
         have_libgcrypt=yes,have_libgcrypt=no)
-
+# And, then, check if it's newer than 1.9.0.
+have_libgcrypt_newer=no
+if test $ok = yes; then
+    if test "$major" -gt 1; then
+        have_libgcrypt_newer=yes
+    else
+        if test "$major" -eq 1; then
+            if test "$minor" -gt 9; then
+               have_libgcrypt_newer=yes
+            else
+               if test "$minor" -eq 9; then
+                   if test "$micro" -ge 0; then
+                     have_libgcrypt_newer=yes
+                   fi
+               fi
+            fi
+        fi
+    fi
+fi
+AM_CONDITIONAL(HAVE_NEWER_LIBGCRYPT, [test $have_libgcrypt_newer = yes])
 
 #
 # libassuan is used for IPC
