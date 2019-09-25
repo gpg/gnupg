@@ -1141,12 +1141,12 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
    Status codes are also used between the components of the GnuPG
    system via the Assuan S lines.  Some of them are documented here:
 
-*** PUBKEY_TYPE <n>
-    The type of the public key in the following D-lines or communicated
-    via a pipe.  <n> is the value of =enum pubkey_types=.
-
-
-
+*** PUBKEY_INFO <n> <ubid>
+    The type of the public key in the following D-lines or
+    communicated via a pipe.  <n> is the value of =enum pubkey_types=
+    and <ubid> the Unique Blob ID which is a SHA-1 digest the entire
+    blob here formatted in hex..  The consumer of this status line
+    should be prepared to see a <ubid> of up to 64 characters.
 
 
 * Format of the --attribute-fd output

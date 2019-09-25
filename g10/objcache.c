@@ -30,8 +30,8 @@
 #include "options.h"
 #include "objcache.h"
 
-/* Note that max value for uid_items is actually a the threshold when
- * we start to look for ietms which can be removed.  */
+/* Note that max value for uid_items is actually the threshold when
+ * we start to look for items which can be removed.  */
 #define NO_OF_UID_ITEM_BUCKETS    107
 #define MAX_UID_ITEMS_PER_BUCKET  20
 
