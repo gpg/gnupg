@@ -207,7 +207,7 @@ compare_blobs (const void *arg_a, const void *arg_b)
 /* Put the blob (BLOBDATA, BLOBDATALEN) into the cache using UBID as
  * the index.  If it is already in the cache nothing happens.  */
 static void
-blob_table_put (const unsigned char *ubid,
+blob_table_put (const unsigned char *ubid, enum pubkey_types pktype,
                 const void *blobdata, unsigned int blobdatalen)
 {
   unsigned int hash;
@@ -335,6 +335,7 @@ blob_table_put (const unsigned char *ubid,
   b = blob_attic;
   blob_attic = b->next;
   b->next = NULL;
+  b->pktype = pktype;
   b->data = blobdatacopy;
   b->datalen = blobdatalen;
   memcpy (b->ubid, ubid, 20);
@@ -932,6 +933,7 @@ be_cache_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
       reqpart->cache_seqno.fpr = 0;
       reqpart->cache_seqno.kid = 0;
       reqpart->cache_seqno.grip = 0;
+      reqpart->cache_seqno.ubid = 0;
       err = 0;
       goto leave;
     }
@@ -991,6 +993,27 @@ be_cache_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
         /* case KEYDB_SEARCH_MODE_KEYGRIP: */
         /*   ki = query_by_grip (desc[n].u.fpr, desc[n].fprlen); */
         /*   break; */
+
+        case KEYDB_SEARCH_MODE_UBID:
+          /* This is the quite special UBID mode: If this is
+           * encountered in the search list we will return just this
+           * one and obviously look only into the blob cache.  */
+          if (reqpart->cache_seqno.ubid)
+            err = gpg_error (GPG_ERR_NOT_FOUND);
+          else
+            {
+              b = blob_table_get (desc[n].u.ubid);
+              if (b)
+                {
+                  err = be_return_pubkey (ctrl, b->data, b->datalen,
+                                          b->pktype, desc[n].u.ubid);
+                  blob_unref (b);
+                  reqpart->cache_seqno.ubid++;
+                }
+              else
+                err = gpg_error (GPG_ERR_EOF);
+            }
+          goto leave;
 
         default:
           ki = NULL;
@@ -1123,7 +1146,7 @@ be_cache_pubkey (ctrl_t ctrl, const unsigned char *ubid,
           return;
         }
 
-      blob_table_put (ubid, blob, bloblen);
+      blob_table_put (ubid, pubkey_type, blob, bloblen);
 
       kinfo = &info.primary;
       key_table_put (kinfo->fpr, kinfo->fprlen, ubid, 0);

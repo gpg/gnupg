@@ -65,6 +65,9 @@
  *   (note that you can't search for these characters). Compare
  *   is not case sensitive.
  * - If the userid starts with a '&' a 40 hex digits keygrip is expected.
+ * - If the userid starts with a '^' followed by 40 hex digits it describes
+ *   a Unique-Blob-ID (UBID) which is the hash of keyblob or certificate as
+ *   stored in the database.  This is used in the IPC of the keyboxd.
  */
 
 gpg_error_t
@@ -248,6 +251,17 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
             goto out;
           }
         mode = KEYDB_SEARCH_MODE_KEYGRIP;
+      }
+      break;
+
+    case '^': /* UBID */
+      {
+        if (hex2bin (s+1, desc->u.ubid, 20) < 0)
+          {
+            rc = gpg_error (GPG_ERR_INV_USER_ID); /* Invalid. */
+            goto out;
+          }
+        mode = KEYDB_SEARCH_MODE_UBID;
       }
       break;
 

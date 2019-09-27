@@ -1017,6 +1017,14 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       }
       break;
 
+    case KEYDB_SEARCH_MODE_UBID:
+      {
+        unsigned char hexubid[20 * 2 + 1];
+        bin2hex (desc[0].u.grip, 20, hexubid);
+        snprintf (line, sizeof line, "SEARCH ^%s", hexubid);
+      }
+      break;
+
     case KEYDB_SEARCH_MODE_FIRST:
       snprintf (line, sizeof line, "SEARCH");
       break;

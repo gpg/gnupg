@@ -302,6 +302,8 @@ be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
   unsigned long skipped_long_blobs;
   KEYDB_SEARCH_DESC desc;
 
+  (void)ctrl;
+
   log_assert (backend_hd && backend_hd->db_type == DB_TYPE_KBX);
   log_assert (request);
 

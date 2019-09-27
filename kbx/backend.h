@@ -61,6 +61,7 @@ struct db_request_part_s
     unsigned int fpr;
     unsigned int kid;
     unsigned int grip;
+    unsigned int ubid;
   } cache_seqno;
 };
 typedef struct db_request_part_s *db_request_part_t;
