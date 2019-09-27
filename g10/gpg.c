@@ -36,6 +36,7 @@
 # endif
 # include <windows.h>
 #endif
+#include <npth.h>
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
@@ -361,6 +362,7 @@ enum cmd_and_opt_values
     oUseAgent,
     oNoUseAgent,
     oGpgAgentInfo,
+    oUseKeyboxd,
     oMergeOnly,
     oTryAllSecrets,
     oTrustedKey,
@@ -378,6 +380,7 @@ enum cmd_and_opt_values
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
     oAgentProgram,
+    oKeyboxdProgram,
     oDirmngrProgram,
     oDisableDirmngr,
     oDisplay,
@@ -850,6 +853,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oPersonalCompressPreferences, "personal-compress-prefs", "@"),
 
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+  ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
   ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr", "@"),
   ARGPARSE_s_s (oDisplay,    "display",    "@"),
@@ -896,6 +900,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
+  ARGPARSE_s_n (oUseKeyboxd,    "use-keyboxd", "@"),
 
   /* Options which can be used in special circumstances. They are not
    * published and we hope they are never required.  */
@@ -982,6 +987,9 @@ static void add_policy_url( const char *string, int which );
 static void add_keyserver_url( const char *string, int which );
 static void emergency_cleanup (void);
 static void read_sessionkey_from_fd (int fd);
+
+/* NPth wrapper function definitions. */
+ASSUAN_SYSTEM_NPTH_IMPL;
 
 
 static char *
@@ -2250,6 +2258,7 @@ gpg_deinit_default_ctrl (ctrl_t ctrl)
   gpg_dirmngr_deinit_session_data (ctrl);
 
   keydb_release (ctrl->cached_getkey_kdb);
+  gpg_keyboxd_deinit_session_data (ctrl);
 }
 
 
@@ -2742,6 +2751,11 @@ main (int argc, char **argv)
 	  case oGpgAgentInfo:
 	    obsolete_option (configname, configlineno, "gpg-agent-info");
             break;
+
+          case oUseKeyboxd:
+            opt.use_keyboxd = 1;
+            break;
+
           case oReaderPort:
 	    obsolete_scdaemon_option (configname, configlineno, "reader-port");
             break;
@@ -3499,6 +3513,7 @@ main (int argc, char **argv)
 	    pers_compress_list=pargs.r.ret_str;
 	    break;
           case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
+          case oKeyboxdProgram: opt.keyboxd_program = pargs.r.ret_str;  break;
           case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str; break;
 	  case oDisableDirmngr: opt.disable_dirmngr = 1;  break;
           case oWeakDigest:
@@ -3738,6 +3753,11 @@ main (int argc, char **argv)
       }
 #endif
 
+    /* Init threading which is used by some helper functions.  */
+    npth_init ();
+    assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
+    gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
+
     /* FIXME: We should use logging to a file only in server mode;
        however we have not yet implemetyed that.  Thus we try to get
        away with --batch as indication for logging to file
@@ -3745,7 +3765,9 @@ main (int argc, char **argv)
     if (logfile && opt.batch)
       {
         log_set_file (logfile);
-        log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_TIME | GPGRT_LOG_WITH_PID);
+        log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX
+                               | GPGRT_LOG_WITH_TIME
+                               | GPGRT_LOG_WITH_PID ));
       }
 
     if (opt.verbose > 2)
@@ -4120,8 +4142,10 @@ main (int argc, char **argv)
     /* Add the keyrings, but not for some special commands.  We always
      * need to add the keyrings if we are running under SELinux, this
      * is so that the rings are added to the list of secured files.
-     * We do not add any keyring if --no-keyring has been used.  */
-    if (default_keyring >= 0
+     * We do not add any keyring if --no-keyring or --use-keyboxd has
+     * been used.  */
+    if (!opt.use_keyboxd
+        && default_keyring >= 0
         && (ALWAYS_ADD_KEYRINGS
             || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest)))
       {
@@ -4133,9 +4157,8 @@ main (int argc, char **argv)
       }
     FREE_STRLIST(nrings);
 
+    /* In loopback mode, never ask for the password multiple times.  */
     if (opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
-      /* In loopback mode, never ask for the password multiple
-	 times.  */
       {
 	opt.passphrase_repeat = 0;
       }
@@ -5089,7 +5112,7 @@ main (int argc, char **argv)
 
 	  policy = parse_tofu_policy (argv[0]);
 
-	  hd = keydb_new ();
+	  hd = keydb_new (ctrl);
 	  if (! hd)
             {
               write_status_failure ("tofu-driver", gpg_error(GPG_ERR_GENERAL));

@@ -182,7 +182,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
       if (!newfp )
         return gpg_error_from_syserror ();
 
-      rc = _keybox_write_header_blob (newfp, for_openpgp);
+      rc = _keybox_write_header_blob (newfp, NULL, for_openpgp);
       if (rc)
         {
           fclose (newfp);
@@ -730,7 +730,7 @@ keybox_compress (KEYBOX_HANDLE hd)
             }
 
           /* The header blob is missing.  Insert it.  */
-          rc = _keybox_write_header_blob (newfp, hd->for_openpgp);
+          rc = _keybox_write_header_blob (newfp, NULL, hd->for_openpgp);
           if (rc)
             break;
           any_changes = 1;

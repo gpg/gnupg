@@ -217,7 +217,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 
     afx = new_armor_context ();
 
-    kdbhd = keydb_new ();
+    kdbhd = keydb_new (ctrl);
     if (!kdbhd)
       {
         rc = gpg_error_from_syserror ();
@@ -641,7 +641,7 @@ gen_revoke (ctrl_t ctrl, const char *uname)
     }
 
   /* Search the userid; we don't want the whole getkey stuff here.  */
-  kdbhd = keydb_new ();
+  kdbhd = keydb_new (ctrl);
   if (!kdbhd)
     {
       rc = gpg_error_from_syserror ();

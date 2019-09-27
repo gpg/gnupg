@@ -42,9 +42,19 @@ typedef enum {
   KEYDB_SEARCH_MODE_SN,
   KEYDB_SEARCH_MODE_SUBJECT,
   KEYDB_SEARCH_MODE_KEYGRIP,
+  KEYDB_SEARCH_MODE_UBID,
   KEYDB_SEARCH_MODE_FIRST,
   KEYDB_SEARCH_MODE_NEXT
 } KeydbSearchMode;
+
+
+/* Identifiers for the public key types we use in GnuPG.  */
+enum pubkey_types
+  {
+   PUBKEY_TYPE_UNKNOWN = 0,
+   PUBKEY_TYPE_OPGP    = 1,
+   PUBKEY_TYPE_X509    = 2
+  };
 
 
 /* Forward declaration.  See g10/packet.h.  */
@@ -70,6 +80,7 @@ struct keydb_search_desc
     unsigned char fpr[32];
     u32 kid[2]; /* Note that this is in native endianness.  */
     unsigned char grip[20];
+    unsigned char ubid[20];
   } u;
   byte fprlen;  /* Only used with KEYDB_SEARCH_MODE_FPR.  */
   int exact;    /* Use exactly this key ('!' suffix in gpg).  */

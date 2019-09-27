@@ -667,8 +667,8 @@ show_photos (ctrl_t ctrl, const struct user_attribute *attrs, int count,
         int offset = attrs[i].len-len;
 
 	/* make command grow */
-	command = pct_expando (opt.photo_viewer, &args);
-	if (!command)
+	command = pct_expando (ctrl, opt.photo_viewer,&args);
+	if(!command)
 	  goto fail;
 
 	name = xmalloc (1 + 16 + strlen(EXTSEP_S)

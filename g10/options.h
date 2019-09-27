@@ -126,6 +126,7 @@ struct
   int completes_needed;
   int max_cert_depth;
   const char *agent_program;
+  const char *keyboxd_program;
   const char *dirmngr_program;
   int disable_dirmngr;
 
@@ -287,6 +288,8 @@ struct
   int only_sign_text_ids;
 
   int no_symkey_cache;   /* Disable the cache used for --symmetric.  */
+
+  int use_keyboxd;       /* Use the external keyboxd as storage backend.  */
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't

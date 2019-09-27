@@ -2289,7 +2289,7 @@ quick_find_keyblock (ctrl_t ctrl, const char *username,
   *r_keyblock = NULL;
 
   /* Search the key; we don't want the whole getkey stuff here.  */
-  kdbhd = keydb_new ();
+  kdbhd = keydb_new (ctrl);
   if (!kdbhd)
     {
       /* Note that keydb_new has already used log_error.  */
@@ -5761,7 +5761,7 @@ menu_revsig (ctrl_t ctrl, kbnode_t keyblock)
 	}
       else if (!skip && node->pkt->pkttype == PKT_SIGNATURE
 	       && ((sig = node->pkt->pkt.signature),
-		   have_secret_key_with_kid (sig->keyid)))
+		   have_secret_key_with_kid (ctrl, sig->keyid)))
 	{
 	  if ((sig->sig_class & ~3) == 0x10)
 	    {
@@ -5800,7 +5800,7 @@ menu_revsig (ctrl_t ctrl, kbnode_t keyblock)
 	}
       else if (!skip && node->pkt->pkttype == PKT_SIGNATURE
 	       && ((sig = node->pkt->pkt.signature),
-		   have_secret_key_with_kid (sig->keyid)))
+		   have_secret_key_with_kid (ctrl, sig->keyid)))
 	{
 	  if ((sig->sig_class & ~3) == 0x10)
 	    {

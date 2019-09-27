@@ -403,7 +403,7 @@ get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
       }
     else
       {
-        ctx.kr_handle = keydb_new ();
+        ctx.kr_handle = keydb_new (ctrl);
         if (!ctx.kr_handle)
           {
             rc = gpg_error_from_syserror ();
@@ -448,7 +448,7 @@ leave:
  * Return the public key in *PK.  The resources in *PK should be
  * released using release_public_key_parts().  */
 int
-get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
+get_pubkey_fast (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
 {
   int rc = 0;
   KEYDB_HANDLE hd;
@@ -476,7 +476,7 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
   }
 #endif
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     return gpg_error_from_syserror ();
   rc = keydb_search_kid (hd, keyid);
@@ -550,7 +550,7 @@ get_pubkeyblock (ctrl_t ctrl, u32 * keyid)
   memset (&ctx, 0, sizeof ctx);
   /* No need to set exact here because we want the entire block.  */
   ctx.not_allocated = 1;
-  ctx.kr_handle = keydb_new ();
+  ctx.kr_handle = keydb_new (ctrl);
   if (!ctx.kr_handle)
     return NULL;
   ctx.nitems = 1;
@@ -592,7 +592,7 @@ get_seckey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid)
   memset (&ctx, 0, sizeof ctx);
   ctx.exact = 1; /* Use the key ID exactly as given.  */
   ctx.not_allocated = 1;
-  ctx.kr_handle = keydb_new ();
+  ctx.kr_handle = keydb_new (ctrl);
   if (!ctx.kr_handle)
     return gpg_error_from_syserror ();
   ctx.nitems = 1;
@@ -807,7 +807,7 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
     }
 
   ctx->want_secret = want_secret;
-  ctx->kr_handle = keydb_new ();
+  ctx->kr_handle = keydb_new (ctrl);
   if (!ctx->kr_handle)
     {
       rc = gpg_error_from_syserror ();
@@ -1448,7 +1448,7 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                 err = gpg_error_from_syserror ();
               else
                 {
-                  ctx->kr_handle = keydb_new ();
+                  ctx->kr_handle = keydb_new (ctrl);
                   if (! ctx->kr_handle)
                     {
                       err = gpg_error_from_syserror ();
@@ -1594,7 +1594,7 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
       ctx.not_allocated = 1;
       /* FIXME: We should get the handle from the cache like we do in
        * get_pubkey.  */
-      ctx.kr_handle = keydb_new ();
+      ctx.kr_handle = keydb_new (ctrl);
       if (!ctx.kr_handle)
         return gpg_error_from_syserror ();
 
@@ -1632,13 +1632,14 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
  * Like get_pubkey_byfprint, PK may be NULL.  In that case, this
  * function effectively just checks for the existence of the key.  */
 gpg_error_t
-get_pubkey_byfprint_fast (PKT_public_key * pk,
+get_pubkey_byfprint_fast (ctrl_t ctrl, PKT_public_key * pk,
 			  const byte * fprint, size_t fprint_len)
 {
   gpg_error_t err;
   KBNODE keyblock;
 
-  err = get_keyblock_byfprint_fast (&keyblock, NULL, fprint, fprint_len, 0);
+  err = get_keyblock_byfprint_fast (ctrl,
+                                    &keyblock, NULL, fprint, fprint_len, 0);
   if (!err)
     {
       if (pk)
@@ -1658,7 +1659,8 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
  * it may have a value of NULL, though.  This allows to do an insert
  * operation on a locked keydb handle.  */
 gpg_error_t
-get_keyblock_byfprint_fast (kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
+get_keyblock_byfprint_fast (ctrl_t ctrl,
+                            kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
                             const byte *fprint, size_t fprint_len, int lock)
 {
   gpg_error_t err;
@@ -1675,7 +1677,7 @@ get_keyblock_byfprint_fast (kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
   for (i = 0; i < MAX_FINGERPRINT_LEN && i < fprint_len; i++)
     fprbuf[i] = fprint[i];
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     return gpg_error_from_syserror ();
 
@@ -1757,7 +1759,7 @@ parse_def_secret_key (ctrl_t ctrl)
 
       if (! hd)
         {
-          hd = keydb_new ();
+          hd = keydb_new (ctrl);
           if (!hd)
             return NULL;
         }
@@ -2732,7 +2734,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 		   * reason to check that an ultimately trusted key is
 		   * still valid - if it has been revoked the user
 		   * should also remove the ultimate trust flag.  */
-		  if (get_pubkey_fast (ultimate_pk, sig->keyid) == 0
+		  if (get_pubkey_fast (ctrl, ultimate_pk, sig->keyid) == 0
 		      && check_key_signature2 (ctrl,
                                                keyblock, k, ultimate_pk,
 					       NULL, NULL, NULL, NULL) == 0
@@ -4117,7 +4119,7 @@ key_origin_string (int origin)
    the secret key is valid; this check merely indicates whether there
    is some secret key with the specified key id.  */
 int
-have_secret_key_with_kid (u32 *keyid)
+have_secret_key_with_kid (ctrl_t ctrl, u32 *keyid)
 {
   gpg_error_t err;
   KEYDB_HANDLE kdbhd;
@@ -4126,7 +4128,7 @@ have_secret_key_with_kid (u32 *keyid)
   kbnode_t node;
   int result = 0;
 
-  kdbhd = keydb_new ();
+  kdbhd = keydb_new (ctrl);
   if (!kdbhd)
     return 0;
   memset (&desc, 0, sizeof desc);

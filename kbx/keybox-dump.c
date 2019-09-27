@@ -63,6 +63,41 @@ print_string (FILE *fp, const byte *p, size_t n, int delim)
 }
 
 
+static void
+print_ubib (const byte *buffer, size_t length, FILE *fp)
+{
+  const byte *p;
+  int i;
+  size_t image_off, image_len;
+  unsigned char digest[20];
+
+  fprintf (fp, "UBIB: ");
+  if (length < 40)
+    {
+      fputs ("[blob too short for a stored UBIB]\n", fp);
+      return;
+    }
+
+  p = buffer + length - 40;
+  for (i=0; i < 20; p++, i++)
+    fprintf (fp, "%02X", *p);
+
+  image_off = get32 (buffer+8);
+  image_len = get32 (buffer+12);
+  if ((uint64_t)image_off+(uint64_t)image_len > (uint64_t)length)
+    {
+      fputs (" [image claims to be longer than the blob]\n", fp);
+      return;
+    }
+
+  gcry_md_hash_buffer (GCRY_MD_SHA1, digest, buffer+image_off,image_len);
+  if (memcmp (digest, buffer + length - 40, 20))
+    fputs (" [does not match the image]\n", fp);
+  else
+    fputc ('\n', fp);
+}
+
+
 static int
 print_checksum (const byte *buffer, size_t length, size_t unhashed, FILE *fp)
 {
@@ -171,6 +206,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   ulong unhashed;
   const byte *p;
   int is_fpr32;  /* blob ersion 2 */
+  int have_ubib = 0;
 
   buffer = _keybox_get_blob_image (blob, &length);
 
@@ -236,6 +272,14 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
             putc (',', fp);
           fputs ("ephemeral", fp);
           any++;
+        }
+      if ((n & 4))
+        {
+          if (any)
+            putc (',', fp);
+          fputs ("ubid", fp);
+          any++;
+          have_ubib = 1;
         }
       putc (')', fp);
     }
@@ -422,6 +466,8 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       n = get32 ( buffer + length - unhashed);
       fprintf (fp, "Storage-Flags: %08lx\n", n );
     }
+  if (have_ubib)
+    print_ubib (buffer, length, fp);
   print_checksum (buffer, length, unhashed, fp);
   return 0;
 }

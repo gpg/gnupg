@@ -56,7 +56,7 @@ AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
 NEED_GPG_ERROR_VERSION=1.29
 
 NEED_LIBGCRYPT_API=1
-NEED_LIBGCRYPT_VERSION=1.7.0
+NEED_LIBGCRYPT_VERSION=1.8.0
 
 NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.5.0
@@ -190,6 +190,14 @@ AC_SUBST(GNUPG_DIRMNGR_PGM)
 AM_CONDITIONAL(GNUPG_DIRMNGR_PGM, test -n "$GNUPG_DIRMNGR_PGM")
 show_gnupg_dirmngr_pgm="(default)"
 test -n "$GNUPG_DIRMNGR_PGM" && show_gnupg_dirmngr_pgm="$GNUPG_DIRMNGR_PGM"
+
+AC_ARG_WITH(keyboxd-pgm,
+    [  --with-keyboxd-pgm=PATH  Use PATH as the default for the keyboxd)],
+          GNUPG_KEYBOXD_PGM="$withval", GNUPG_KEYBOXD_PGM="" )
+AC_SUBST(GNUPG_KEYBOXD_PGM)
+AM_CONDITIONAL(GNUPG_KEYBOXD_PGM, test -n "$GNUPG_KEYBOXD_PGM")
+show_gnupg_keyboxd_pgm="(default)"
+test -n "$GNUPG_KEYBOXD_PGM" && show_gnupg_keyboxd_pgm="$GNUPG_KEYBOXD_PGM"
 
 AC_ARG_WITH(protect-tool-pgm,
     [  --with-protect-tool-pgm=PATH  Use PATH as the default for the protect-tool)],
@@ -508,6 +516,7 @@ AH_BOTTOM([
 #define GNUPG_DEFAULT_HOMEDIR "~/.gnupg"
 #endif
 #define GNUPG_PRIVATE_KEYS_DIR  "private-keys-v1.d"
+#define GNUPG_PUBLIC_KEYS_DIR   "public-keys.d"
 #define GNUPG_OPENPGP_REVOC_DIR "openpgp-revocs.d"
 #define GNUPG_CACHE_DIR         "cache.d"
 
@@ -1888,6 +1897,10 @@ AC_DEFINE_UNQUOTED(DIRMNGR_NAME, "dirmngr", [The name of the dirmngr])
 AC_DEFINE_UNQUOTED(DIRMNGR_DISP_NAME, "DirMngr",
                                       [The displayed name of dirmngr])
 
+AC_DEFINE_UNQUOTED(KEYBOXD_NAME, "keyboxd", [The name of the keyboxd])
+AC_DEFINE_UNQUOTED(KEYBOXD_DISP_NAME, "Keyboxd",
+                                      [The displayed name of keyboxd])
+
 AC_DEFINE_UNQUOTED(G13_NAME, "g13", [The name of the g13 tool])
 AC_DEFINE_UNQUOTED(G13_DISP_NAME, "G13", [The displayed name of g13])
 
@@ -1909,6 +1922,8 @@ AC_DEFINE_UNQUOTED(DIRMNGR_INFO_NAME, "DIRMNGR_INFO",
                    [The name of the dirmngr info envvar])
 AC_DEFINE_UNQUOTED(SCDAEMON_SOCK_NAME, "S.scdaemon",
                    [The name of the SCdaemon socket])
+AC_DEFINE_UNQUOTED(KEYBOXD_SOCK_NAME, "S.keyboxd",
+                   [The name of the keyboxd socket])
 AC_DEFINE_UNQUOTED(DIRMNGR_SOCK_NAME, "S.dirmngr",
                    [The name of the dirmngr socket])
 AC_DEFINE_UNQUOTED(DIRMNGR_DEFAULT_KEYSERVER,
@@ -2106,6 +2121,7 @@ echo "
         Default agent:     $show_gnupg_agent_pgm
         Default pinentry:  $show_gnupg_pinentry_pgm
         Default scdaemon:  $show_gnupg_scdaemon_pgm
+        Default keyboxd:   $show_gnupg_keyboxd_pgm
         Default dirmngr:   $show_gnupg_dirmngr_pgm
 
         Dirmngr auto start:  $dirmngr_auto_start

@@ -524,7 +524,7 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
   if (opt.check_sigs)
     listctx.check_sigs = 1;
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     rc = gpg_error_from_syserror ();
   else

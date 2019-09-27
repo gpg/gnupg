@@ -65,6 +65,16 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg);
 
+/* This function is used to connect to the keyboxd.  If needed the
+ * keyboxd is started.  */
+gpg_error_t
+start_new_keyboxd (assuan_context_t *r_ctx,
+                   gpg_err_source_t errsource,
+                   const char *keyboxd_program,
+                   int autostart, int verbose, int debug,
+                   gpg_error_t (*status_cb)(ctrl_t, int, ...),
+                   ctrl_t status_cb_arg);
+
 /* This function is used to connect to the dirmngr.  On some platforms
    the function is able starts a dirmngr process if needed.  */
 gpg_error_t
@@ -82,8 +92,16 @@ gpg_error_t get_assuan_server_version (assuan_context_t ctx,
 
 /*-- asshelp2.c --*/
 
+void set_assuan_context_func (assuan_context_t (*func)(ctrl_t ctrl));
+
 /* Helper function to print an assuan status line using a printf
    format string.  */
+
+gpg_error_t status_printf (ctrl_t ctrl, const char *keyword, const char *format,
+                           ...) GPGRT_ATTR_PRINTF(3,4);
+gpg_error_t status_no_printf (ctrl_t ctrl, int no, const char *format,
+                           ...) GPGRT_ATTR_PRINTF(3,4);
+
 gpg_error_t print_assuan_status (assuan_context_t ctx,
                                  const char *keyword,
                                  const char *format,

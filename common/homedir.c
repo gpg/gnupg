@@ -945,6 +945,17 @@ gnupg_cachedir (void)
 }
 
 
+/* Return the standard socket name used by gpg-agent.  */
+const char *
+gpg_agent_socket_name (void)
+{
+  static char *name;
+
+  if (!name)
+    name = make_filename (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
+  return name;
+}
+
 /* Return the user socket name used by DirMngr.  */
 const char *
 dirmngr_socket_name (void)
@@ -1102,6 +1113,13 @@ gnupg_module_name (int which)
       return GNUPG_DEFAULT_DIRMNGR;
 #else
       X(bindir, "dirmngr", DIRMNGR_NAME);
+#endif
+
+    case GNUPG_MODULE_NAME_KEYBOXD:
+#ifdef GNUPG_DEFAULT_KEYBOXD
+      return GNUPG_DEFAULT_KEYBOXD;
+#else
+      X(bindir, "keyboxd", KEYBOXD_NAME);
 #endif
 
     case GNUPG_MODULE_NAME_PROTECT_TOOL:

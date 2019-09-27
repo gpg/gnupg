@@ -328,8 +328,10 @@ iobuf_t iobuf_fdopen_nc (int fd, const char *mode);
    letter 'w', creates an output filter.  Otherwise, creates an input
    filter.  If KEEP_OPEN is TRUE, then the stream is not closed when
    the filter is destroyed.  Otherwise, the stream is closed when the
-   filter is destroyed.  */
-iobuf_t iobuf_esopen (estream_t estream, const char *mode, int keep_open);
+   filter is destroyed.  If READLIMIT is not 0 this gives a limit on
+   the number of bytes to read from estream.  */
+iobuf_t iobuf_esopen (estream_t estream, const char *mode, int keep_open,
+                      size_t readlimit);
 
 /* Create a filter using an existing socket.  On Windows creates a
    special socket filter.  On non-Windows systems simply, this simply

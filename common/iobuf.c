@@ -106,6 +106,8 @@ typedef struct
   int keep_open;
   int no_cache;
   int eof_seen;
+  int use_readlimit;   /* Take care of the readlimit.  */
+  size_t readlimit;    /* Number of bytes left to read.  */
   int print_only_name; /* Flags indicating that fname is not a real file.  */
   char fname[1];       /* Name of the file.  */
 } file_es_filter_ctx_t;
@@ -634,6 +636,34 @@ file_es_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	{
 	  rc = -1;
 	  *ret_len = 0;
+	}
+      else if (a->use_readlimit)
+	{
+          nbytes = 0;
+          if (!a->readlimit)
+	    {			/* eof */
+	      a->eof_seen = 1;
+	      rc = -1;
+	    }
+          else
+            {
+              if (size > a->readlimit)
+                size = a->readlimit;
+              rc = es_read (f, buf, size, &nbytes);
+              if (rc == -1)
+                {			/* error */
+                  rc = gpg_error_from_syserror ();
+                  log_error ("%s: read error: %s\n", a->fname,strerror (errno));
+                }
+              else if (!nbytes)
+                {			/* eof */
+                  a->eof_seen = 1;
+                  rc = -1;
+                }
+              else
+                a->readlimit -= nbytes;
+            }
+	  *ret_len = nbytes;
 	}
       else
 	{
@@ -1412,7 +1442,8 @@ iobuf_fdopen_nc (int fd, const char *mode)
 
 
 iobuf_t
-iobuf_esopen (estream_t estream, const char *mode, int keep_open)
+iobuf_esopen (estream_t estream, const char *mode, int keep_open,
+              size_t readlimit)
 {
   iobuf_t a;
   file_es_filter_ctx_t *fcx;
@@ -1424,7 +1455,9 @@ iobuf_esopen (estream_t estream, const char *mode, int keep_open)
   fcx->fp = estream;
   fcx->print_only_name = 1;
   fcx->keep_open = keep_open;
-  sprintf (fcx->fname, "[fd %p]", estream);
+  fcx->readlimit = readlimit;
+  fcx->use_readlimit = !!readlimit;
+  snprintf (fcx->fname, 30, "[fd %p]", estream);
   a->filter = file_es_filter;
   a->filter_ov = fcx;
   file_es_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);

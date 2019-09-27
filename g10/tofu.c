@@ -2131,7 +2131,7 @@ build_conflict_set (ctrl_t ctrl, tofu_dbs_t dbs,
   /* If two keys have cross signatures, then they are controlled by
    * the same person and thus are not in conflict.  */
   kb_all = xcalloc (sizeof (kb_all[0]), conflict_set_count);
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   for (i = 0, iter = conflict_set;
        i < conflict_set_count;
        i ++, iter = iter->next)

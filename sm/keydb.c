@@ -224,7 +224,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
   /* Make sure that at least one record is in a new keybox file, so
      that the detection magic for OpenPGP keyboxes works the next time
      it is used.  */
-  rc = _keybox_write_header_blob (fp, 0);
+  rc = _keybox_write_header_blob (fp, NULL, 0);
   if (rc)
     {
       fclose (fp);
