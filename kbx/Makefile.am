@@ -77,6 +77,7 @@ keyboxd_SOURCES = \
 	kbxserver.c           \
 	frontend.c frontend.h \
 	backend.h backend-support.c \
+	backend-cache.c \
 	backend-kbx.c \
 	$(common_sources)
 

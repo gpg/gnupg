@@ -696,6 +696,26 @@ has_keygrip (KEYBOXBLOB blob, const unsigned char *grip)
   return 0;
 }
 
+static inline int
+has_ubid (KEYBOXBLOB blob, const unsigned char *ubid)
+{
+  size_t length;
+  const unsigned char *buffer;
+  size_t image_off, image_len;
+  unsigned char ubid_blob[20];
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 40)
+    return 0; /*GPG_ERR_TOO_SHORT*/
+  image_off = get32 (buffer+8);
+  image_len = get32 (buffer+12);
+  if ((uint64_t)image_off+(uint64_t)image_len > (uint64_t)length)
+    return 0; /*GPG_ERR_TOO_SHORT*/
+
+  gcry_md_hash_buffer (GCRY_MD_SHA1, ubid_blob, buffer + image_off, image_len);
+
+  return !memcmp (ubid, ubid_blob, 20);
+}
 
 static inline int
 has_issuer (KEYBOXBLOB blob, const char *name)
@@ -1117,6 +1137,10 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 
             case KEYDB_SEARCH_MODE_KEYGRIP:
               if (has_keygrip (blob, desc[n].u.grip))
+                goto found;
+              break;
+            case KEYDB_SEARCH_MODE_UBID:
+              if (has_ubid (blob, desc[n].u.ubid))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_FIRST:

@@ -67,7 +67,7 @@ take_read_lock (ctrl_t ctrl)
 
 
 /* Release a lock.  It is valid to call this even if no lock has been
- * taken which which case this is a nop.  */
+ * taken in which case this is a nop.  */
 static void
 release_lock (ctrl_t ctrl)
 {
@@ -87,12 +87,17 @@ kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
 {
   gpg_error_t err;
   char *filename;
-  enum database_types db_type;
+  enum database_types db_type = 0;
   backend_handle_t handle = NULL;
   unsigned int n, dbidx;
 
   /* Do tilde expansion etc. */
-  if (strchr (filename_arg, DIRSEP_C)
+  if (!strcmp (filename_arg, "[cache]"))
+    {
+      filename = xstrdup (filename_arg);
+      db_type = DB_TYPE_CACHE;
+    }
+  else if (strchr (filename_arg, DIRSEP_C)
 #ifdef HAVE_W32_SYSTEM
       || strchr (filename_arg, '/')  /* Windows also accepts a slash.  */
 #endif
@@ -102,8 +107,20 @@ kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
     filename = make_filename (gnupg_homedir (), GNUPG_PUBLIC_KEYS_DIR,
                               filename_arg, NULL);
 
+  /* If this is the first call to the function and the request is not
+   * for the cache backend, add the cache backend so that it will
+   * always be the first to be queried.  */
+  if (!no_of_databases && !db_type)
+    {
+      err = kbxd_add_resource (ctrl, "[cache]", 0);
+      if (err)
+        goto leave;
+    }
+
   n = strlen (filename);
-  if (n > 4 && !strcmp (filename + n - 4, ".kbx"))
+  if (db_type)
+    ; /* We already know it.  */
+  else if (n > 4 && !strcmp (filename + n - 4, ".kbx"))
     db_type = DB_TYPE_KBX;
   else
     {
@@ -116,6 +133,10 @@ kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
   switch (db_type)
     {
     case DB_TYPE_NONE: /* NOTREACHED */
+      break;
+
+    case DB_TYPE_CACHE:
+      err = be_cache_add_resource (ctrl, &handle);
       break;
 
     case DB_TYPE_KBX:
@@ -134,8 +155,8 @@ kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
       /* No table yet or table is full.  */
       if (!databases)
         {
-          /* Create first set of data bases.  Note that the type for all
-           * entries is DB_TYPE_NONE.  */
+          /* Create first set of databases.  Note that the initial
+           * type for all entries is DB_TYPE_NONE.  */
           dbidx = 4;
           databases = xtrycalloc (dbidx, sizeof *databases);
           if (!databases)
@@ -204,6 +225,7 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
   unsigned int dbidx;
   db_desc_t db;
   db_request_t request;
+  int start_at_ubid = 0;
 
   if (DBG_CLOCK)
     log_clock ("%s: enter", __func__);
@@ -248,6 +270,10 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
             case DB_TYPE_NONE: /* NOTREACHED */
               break;
 
+            case DB_TYPE_CACHE:
+              err = 0; /* Nothing to do.  */
+              break;
+
             case DB_TYPE_KBX:
               err = be_kbx_search (ctrl, db->backend_handle, request, NULL, 0);
               break;
@@ -278,7 +304,10 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
   request->next_dbidx = dbidx;
   if (!(dbidx < no_of_databases))
     {
-      /* All databases have been searched.  */
+      /* All databases have been searched.  Put the non-found mark
+       * into the cache for all descriptors.
+       * FIXME: We need to see which pubkey type we need to insert.  */
+      be_cache_not_found (ctrl, PUBKEY_TYPE_UNKNOWN, desc, ndesc);
       err = gpg_error (GPG_ERR_NOT_FOUND);
       goto leave;
     }
@@ -292,9 +321,32 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
       err = gpg_error (GPG_ERR_INTERNAL);
       break;
 
+    case DB_TYPE_CACHE:
+      err = be_cache_search (ctrl, db->backend_handle, request,
+                             desc, ndesc);
+      /* Expected error codes from the cache lookup are:
+       *  0 - found and returned via the cache
+       *  GPG_ERR_NOT_FOUND - marked in the cache as not available
+       *  GPG_ERR_EOF - cache miss. */
+      break;
+
     case DB_TYPE_KBX:
+      if (start_at_ubid)
+        {
+          /* We need to set the startpoint for the search.  */
+          err = be_kbx_seek (ctrl, db->backend_handle, request,
+                             request->last_cached_ubid);
+          if (err)
+            {
+              log_debug ("%s: seeking %s to an UBID failed: %s\n",
+                         __func__, strdbtype (db->db_type), gpg_strerror (err));
+              break;
+            }
+        }
       err = be_kbx_search (ctrl, db->backend_handle, request,
                            desc, ndesc);
+      if (start_at_ubid && gpg_err_code (err) == GPG_ERR_EOF)
+        be_cache_mark_final (ctrl, request);
       break;
     }
 
@@ -303,10 +355,19 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
                __func__, strdbtype (db->db_type), dbidx, no_of_databases,
                gpg_strerror (err));
   request->any_search = 1;
+  start_at_ubid = 0;
   if (!err)
-    request->any_found = 1;
+    {
+      request->any_found = 1;
+    }
   else if (gpg_err_code (err) == GPG_ERR_EOF)
     {
+      if (db->db_type == DB_TYPE_CACHE && request->last_cached_valid)
+        {
+          if (request->last_cached_final)
+            goto leave;
+          start_at_ubid = 1;
+        }
       request->next_dbidx++;
       goto next_db;
     }

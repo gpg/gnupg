@@ -34,7 +34,7 @@
 struct backend_handle_s
 {
   enum database_types db_type; /* Always DB_TYPE_KBX.  */
-  unsigned int backend_id;     /* Id of this backend.  */
+  unsigned int backend_id;     /* Always the id of the backend.  */
 
   void *token;  /* Used to create a new KEYBOX_HANDLE.  */
   char filename[1];
@@ -226,6 +226,17 @@ be_kbx_release_kbx_hd (KEYBOX_HANDLE kbx_hd)
 }
 
 
+/* Helper for be_find_request_part to initialize a kbx request part.  */
+gpg_error_t
+be_kbx_init_request_part (backend_handle_t backend_hd, db_request_part_t part)
+{
+  part->kbx_hd = keybox_new_openpgp (backend_hd->token, 0);
+  if (!part->kbx_hd)
+    return gpg_error_from_syserror ();
+  return 0;
+}
+
+
 /* Search for the keys described by (DESC,NDESC) and return them to
  * the caller.  BACKEND_HD is the handle for this backend and REQUEST
  * is the current database request object.  */
@@ -242,28 +253,9 @@ be_kbx_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
   log_assert (request);
 
   /* Find the specific request part or allocate it.  */
-  for (part = request->part; part; part = part->next)
-    if (part->backend_id == backend_hd->backend_id)
-      break;
-  if (!part)
-    {
-      part = xtrycalloc (1, sizeof *part);
-      if (!part)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      part->backend_id = backend_hd->backend_id;
-      part->kbx_hd = keybox_new_openpgp (backend_hd->token, 0);
-      if (!part->kbx_hd)
-        {
-          err = gpg_error_from_syserror ();
-          xfree (part);
-          goto leave;
-        }
-      part->next = request->part;
-      request->part = part;
-    }
+  err = be_find_request_part (backend_hd, request, &part);
+  if (err)
+    goto leave;
 
   if (!desc)
     err = keybox_search_reset (part->kbx_hd);
@@ -279,13 +271,55 @@ be_kbx_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
       void *buffer;
       size_t buflen;
       enum pubkey_types pubkey_type;
+      unsigned char blobid[20];
 
       err = keybox_get_data (part->kbx_hd, &buffer, &buflen, &pubkey_type);
       if (err)
         goto leave;
-      /* Note: be_return_pubkey always takes ownership of BUFFER.  */
-      err = be_return_pubkey (ctrl, buffer, buflen, pubkey_type);
+      gcry_md_hash_buffer (GCRY_MD_SHA1, blobid, buffer, buflen);
+      err = be_return_pubkey (ctrl, buffer, buflen, pubkey_type, blobid);
+      if (!err)
+        be_cache_pubkey (ctrl, blobid, buffer, buflen, pubkey_type);
+      xfree (buffer);
     }
+
+ leave:
+  return err;
+}
+
+
+/* Seek in the keybox to the given UBID.  BACKEND_HD is the handle for
+ * this backend and REQUEST is the current database request object.
+ * This does a dummy read so that the next search operation starts
+ * right after that UBID. */
+gpg_error_t
+be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
+                  db_request_t request, unsigned char *ubid)
+{
+  gpg_error_t err;
+  db_request_part_t part;
+  size_t descindex;
+  unsigned long skipped_long_blobs;
+  KEYDB_SEARCH_DESC desc;
+
+  log_assert (backend_hd && backend_hd->db_type == DB_TYPE_KBX);
+  log_assert (request);
+
+  memset (&desc, 0, sizeof desc);
+  desc.mode = KEYDB_SEARCH_MODE_UBID;
+  memcpy (desc.u.ubid, ubid, 20);
+
+  /* Find the specific request part or allocate it.  */
+  err = be_find_request_part (backend_hd, request, &part);
+  if (err)
+    goto leave;
+
+  err = keybox_search_reset (part->kbx_hd);
+  if (!err)
+    err = keybox_search (part->kbx_hd, &desc, 1, 0,
+                         &descindex, &skipped_long_blobs);
+  if (err == -1)
+    err = gpg_error (GPG_ERR_EOF);
 
  leave:
   return err;

@@ -31,6 +31,7 @@ typedef struct keybox_handle *KEYBOX_HANDLE;
 enum database_types
   {
    DB_TYPE_NONE,   /* No database at all (unitialized etc.).  */
+   DB_TYPE_CACHE,  /* The cache backend (backend-cache.c).    */
    DB_TYPE_KBX     /* Keybox type database (backend-kbx.c).   */
   };
 
@@ -42,7 +43,7 @@ struct backend_handle_s;
 typedef struct backend_handle_s *backend_handle_t;
 
 
-/* Object to store backend specific databsde information per database
+/* Object to store backend specific database information per database
  * handle.  */
 struct db_request_part_s
 {
@@ -53,6 +54,14 @@ struct db_request_part_s
 
   /* The handle used for a KBX backend or NULL.  */
   KEYBOX_HANDLE kbx_hd;
+
+  /* For the CACHE backend the indices into the bloblist for each
+   * index type.  */
+  struct {
+    unsigned int fpr;
+    unsigned int kid;
+    unsigned int grip;
+  } cache_seqno;
 };
 typedef struct db_request_part_s *db_request_part_t;
 
@@ -63,11 +72,24 @@ struct db_request_s
 {
   unsigned int any_search:1;  /* Any search has been done.  */
   unsigned int any_found:1;   /* Any object has been found.  */
+  unsigned int last_cached_valid:1; /* see below */
+  unsigned int last_cached_final:1; /* see below */
+  unsigned int last_cached_fprlen:8;/* see below */
 
   db_request_part_t part;
 
   /* Counter to track the next to be searched database index.  */
   unsigned int next_dbidx;
+
+  /* The last UBID found in the cache and the corresponding keyid and,
+   * if found via fpr, the fingerprint.  For the LAST_CACHE_FPRLEN see
+   * above.  The entry here is only valid if LAST_CACHE_VALID is set;
+   * if LAST_CACHE_FINAL is also set, this indicates that no further
+   * database searches are required.  */
+  unsigned char last_cached_ubid[20];
+  u32 last_cached_kid_h;
+  u32 last_cached_kid_l;
+  unsigned char last_cached_fpr[32];
 };
 
 
@@ -77,8 +99,26 @@ const char *strdbtype (enum database_types t);
 unsigned int be_new_backend_id (void);
 void be_generic_release_backend (ctrl_t ctrl, backend_handle_t hd);
 void be_release_request (db_request_t req);
-gpg_error_t be_return_pubkey (ctrl_t ctrl, void *buffer, size_t buflen,
-                              enum pubkey_types pubkey_type);
+gpg_error_t be_find_request_part (backend_handle_t backend_hd,
+                                  db_request_t request,
+                                  db_request_part_t *r_part);
+gpg_error_t be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
+                              enum pubkey_types pubkey_type,
+                              const unsigned char *ubid);
+
+
+/*-- backend-cache.c --*/
+gpg_error_t be_cache_add_resource (ctrl_t ctrl, backend_handle_t *r_hd);
+void be_cache_release_resource (ctrl_t ctrl, backend_handle_t hd);
+gpg_error_t be_cache_search (ctrl_t ctrl, backend_handle_t backend_hd,
+                             db_request_t request,
+                             KEYDB_SEARCH_DESC *desc, unsigned int ndesc);
+void be_cache_mark_final (ctrl_t ctrl, db_request_t request);
+void be_cache_pubkey (ctrl_t ctrl, const unsigned char *ubid,
+                      const void *blob, unsigned int bloblen,
+                      enum pubkey_types pubkey_type);
+void be_cache_not_found (ctrl_t ctrl, enum pubkey_types pubkey_type,
+                         KEYDB_SEARCH_DESC *desc, unsigned int ndesc);
 
 
 /*-- backend-kbx.c --*/
@@ -87,9 +127,13 @@ gpg_error_t be_kbx_add_resource (ctrl_t ctrl, backend_handle_t *r_hd,
 void be_kbx_release_resource (ctrl_t ctrl, backend_handle_t hd);
 
 void be_kbx_release_kbx_hd (KEYBOX_HANDLE kbx_hd);
+gpg_error_t be_kbx_init_request_part (backend_handle_t backend_hd,
+                                      db_request_part_t part);
 gpg_error_t be_kbx_search (ctrl_t ctrl, backend_handle_t hd,
                            db_request_t request,
                            KEYDB_SEARCH_DESC *desc, unsigned int ndesc);
+gpg_error_t be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
+                         db_request_t request, unsigned char *ubid);
 
 
 #endif /*KBX_BACKEND_H*/

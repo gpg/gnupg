@@ -28,12 +28,15 @@
 #include "../common/i18n.h"
 #include "../common/asshelp.h"
 #include "backend.h"
+#include "keybox.h"
 
 
-/* Common definition part of all backend handle.  */
+/* Common definition part of all backend handle.  All definitions of
+ * this structure must start with these fields.  */
 struct backend_handle_s
 {
   enum database_types db_type;
+  unsigned int backend_id;
 };
 
 
@@ -45,6 +48,7 @@ strdbtype (enum database_types t)
   switch (t)
     {
     case DB_TYPE_NONE: return "none";
+    case DB_TYPE_CACHE:return "cache";
     case DB_TYPE_KBX:  return "keybox";
     }
   return "?";
@@ -76,6 +80,9 @@ be_generic_release_backend (ctrl_t ctrl, backend_handle_t hd)
     case DB_TYPE_NONE:
       xfree (hd);
       break;
+    case DB_TYPE_CACHE:
+      be_cache_release_resource (ctrl, hd);
+      break;
     case DB_TYPE_KBX:
       be_kbx_release_resource (ctrl, hd);
       break;
@@ -104,16 +111,53 @@ be_release_request (db_request_t req)
 }
 
 
-/* Return the public key (BUFFER,BUFLEN) which has the type
- * PUBVKEY_TYPE to the caller.  Owenership of BUFFER is taken by thgis
- * function even in the error case.  */
+/* Given the backend handle BACKEND_HD and the REQUEST find or
+ * allocate a request part for that backend and store it at R_PART.
+ * On error R_PART is set to NULL and an error returned.  */
 gpg_error_t
-be_return_pubkey (ctrl_t ctrl, void *buffer, size_t buflen,
-                  enum pubkey_types pubkey_type)
+be_find_request_part (backend_handle_t backend_hd, db_request_t request,
+                      db_request_part_t *r_part)
 {
   gpg_error_t err;
+  db_request_part_t part;
 
-  err = status_printf (ctrl, "PUBKEY_TYPE", "%d", pubkey_type);
+  for (part = request->part; part; part = part->next)
+    if (part->backend_id == backend_hd->backend_id)
+      break;
+  if (!part)
+    {
+      part = xtrycalloc (1, sizeof *part);
+      if (!part)
+        return gpg_error_from_syserror ();
+      part->backend_id = backend_hd->backend_id;
+      if (backend_hd->db_type == DB_TYPE_KBX)
+        {
+          err = be_kbx_init_request_part (backend_hd, part);
+          if (err)
+            {
+              xfree (part);
+              return err;
+            }
+        }
+      part->next = request->part;
+      request->part = part;
+    }
+  *r_part = part;
+  return 0;
+}
+
+
+/* Return the public key (BUFFER,BUFLEN) which has the type
+ * PUBKEY_TYPE to the caller.  */
+gpg_error_t
+be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
+                  enum pubkey_types pubkey_type, const unsigned char *ubid)
+{
+  gpg_error_t err;
+  char hexubid[41];
+
+  bin2hex (ubid, 20, hexubid);
+  err = status_printf (ctrl, "PUBKEY_INFO", "%d %s", pubkey_type, hexubid);
   if (err)
     goto leave;
 
@@ -123,6 +167,5 @@ be_return_pubkey (ctrl_t ctrl, void *buffer, size_t buflen,
     err = kbxd_write_data_line(ctrl, buffer, buflen);
 
  leave:
-  xfree (buffer);
   return err;
 }

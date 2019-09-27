@@ -236,7 +236,7 @@ kbxd_write_data_line (ctrl_t ctrl, const void *buffer_arg, size_t size)
 static gpg_error_t
 leave_cmd (assuan_context_t ctx, gpg_error_t err)
 {
-  if (err)
+  if (err && opt.verbose)
     {
       const char *name = assuan_get_command_name (ctx);
       if (!name)
