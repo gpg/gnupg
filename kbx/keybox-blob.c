@@ -67,6 +67,7 @@
    - u16  Blob flags
           bit 0 = contains secret key material (not used)
           bit 1 = ephemeral blob (e.g. used while querying external resources)
+          bit 2 = blob has an UBID field.
    - u32  Offset to the OpenPGP keyblock or the X.509 DER encoded
           certificate
    - u32  The length of the keyblock or certificate
@@ -143,7 +144,10 @@
           IDs go here.
    - bN   Space for the keyblock or certificate.
    - bN   RFU.  This is the remaining space after keyblock and before
-          the checksum.  It is not covered by the checksum.
+          the checksum.  Not part of the SHA-1 checksum.
+   - bN   Only if blob flags bit 2 is set: 20 octet Unique Blob-ID (UBID).
+          This is the SHA-1 checksum of the keyblock or certificate.
+          This is not part of the SHA-1 checksum below.
    - b20  SHA-1 checksum (useful for KS synchronization?)
           Note, that KBX versions before GnuPG 2.1 used an MD5
           checksum.  However it was only created but never checked.
@@ -173,6 +177,10 @@
 
 
 #include "../common/gettime.h"
+#include "../common/host2net.h"
+
+
+#define get32(a) buf32_to_ulong ((a))
 
 
 /* special values of the signature status */
@@ -559,7 +567,7 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral,
   put32 ( a, 0 ); /* blob length, needs fixup */
   put8 ( a, blobtype);
   put8 ( a, want_fpr32? 2:1 );  /* blob type version */
-  put16 ( a, as_ephemeral? 2:0 ); /* blob flags */
+  put16 ( a, as_ephemeral? 6:4 ); /* blob flags */
 
   put32 ( a, 0 ); /* offset to the raw data, needs fixup */
   put32 ( a, 0 ); /* length of the raw data, needs fixup */
@@ -686,8 +694,8 @@ create_blob_finish (KEYBOXBLOB blob)
   unsigned char *pp;
   size_t n;
 
-  /* Write a placeholder for the checksum */
-  put_membuf (a, NULL, 20);
+  /* Write placeholders for the UBID and the checksum */
+  put_membuf (a, NULL, 40);
 
   /* get the memory area */
   n = 0; /* (Just to avoid compiler warning.) */
@@ -721,8 +729,11 @@ create_blob_finish (KEYBOXBLOB blob)
     blob->fixups = NULL;
   }
 
+  /* Compute and store the UBID.                     (image_off)  (image_len) */
+  gcry_md_hash_buffer (GCRY_MD_SHA1, p + n - 40, p + get32 (p+8), get32 (p+12));
+
   /* Compute and store the SHA-1 checksum. */
-  gcry_md_hash_buffer (GCRY_MD_SHA1, p + n - 20, p, n - 20);
+  gcry_md_hash_buffer (GCRY_MD_SHA1, p + n - 20, p, n - 40);
 
   pp = xtrymalloc (n);
   if ( !pp )

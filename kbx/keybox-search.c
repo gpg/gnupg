@@ -707,14 +707,23 @@ has_ubid (KEYBOXBLOB blob, const unsigned char *ubid)
   buffer = _keybox_get_blob_image (blob, &length);
   if (length < 40)
     return 0; /*GPG_ERR_TOO_SHORT*/
-  image_off = get32 (buffer+8);
-  image_len = get32 (buffer+12);
-  if ((uint64_t)image_off+(uint64_t)image_len > (uint64_t)length)
-    return 0; /*GPG_ERR_TOO_SHORT*/
 
-  gcry_md_hash_buffer (GCRY_MD_SHA1, ubid_blob, buffer + image_off, image_len);
+  if ((get16 (buffer + 6) & 4))
+    {
+      /* The blob has a stored UBID.  */
+      return !memcmp (ubid, buffer + length - 40, 20);
+    }
+  else
+    {
+      /* Need to compute the UBID.  */
+      image_off = get32 (buffer+8);
+      image_len = get32 (buffer+12);
+      if ((uint64_t)image_off+(uint64_t)image_len > (uint64_t)length)
+        return 0; /*GPG_ERR_TOO_SHORT*/
 
-  return !memcmp (ubid, ubid_blob, 20);
+      gcry_md_hash_buffer (GCRY_MD_SHA1, ubid_blob, buffer+image_off,image_len);
+      return !memcmp (ubid, ubid_blob, 20);
+    }
 }
 
 static inline int
