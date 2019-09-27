@@ -1603,7 +1603,7 @@ dump_sig_subpkt (int hashed, int type, int critical,
 	  p = "[invalid length]";
 	else
 	  {
-            es_fprintf (listfp, "%d", length/hlen);
+            es_fprintf (listfp, "%u", (unsigned int)length/hlen);
             while (length)
               {
                 es_fprintf (listfp, "\n\t%*s", nprinted-1, "");
