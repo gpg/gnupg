@@ -194,7 +194,11 @@ kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
 
  leave:
   if (err)
-    be_generic_release_backend (ctrl, handle);
+    {
+      log_error ("error adding resource '%s': %s\n",
+                 filename, gpg_strerror (err));
+      be_generic_release_backend (ctrl, handle);
+    }
   xfree (filename);
   return err;
 }

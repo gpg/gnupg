@@ -200,7 +200,7 @@ be_kbx_add_resource (ctrl_t ctrl, backend_handle_t *r_hd,
 
  leave:
   xfree (hd);
-  return 0;
+  return err;
 }
 
 
