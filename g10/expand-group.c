@@ -53,21 +53,36 @@ expand_id (const char *id, strlist_t *into, unsigned int flags)
 }
 
 /* For simplicity, and to avoid potential loops, we only expand once -
- * you can't make an alias that points to an alias.  */
+ * you can't make an alias that points to an alias.  If PREPEND_INPUT
+ * is true each item from INPUT is prepended to the new list; if it is
+ * false the original item from INPUT is only added if no group
+ * existed for it. */
 strlist_t
-expand_group (strlist_t input)
+expand_group (strlist_t input, int prepend_input)
 {
   strlist_t output = NULL;
   strlist_t sl, rover;
 
   for (rover = input; rover; rover = rover->next)
-    if (!(rover->flags & PK_LIST_FROM_FILE)
-        && !expand_id (rover->d, &output, rover->flags))
-      {
-	 /* Didn't find any groups, so use the existing string */
-	 sl = add_to_strlist (&output, rover->d);
-	 sl->flags = rover->flags;
-      }
+    {
+      if ((rover->flags & PK_LIST_FROM_FILE))
+        continue;
+      if (!expand_id (rover->d, &output, rover->flags))
+        {
+          /* Didn't find any groups, so use the existing string unless
+           * we will anyway add it due to the prepend flag.  */
+          if (!prepend_input)
+            {
+              sl = add_to_strlist (&output, rover->d);
+              sl->flags = rover->flags;
+            }
+        }
+      if (prepend_input)
+        {
+          sl = add_to_strlist (&output, rover->d);
+          sl->flags = rover->flags;
+        }
+    }
 
   return output;
 }

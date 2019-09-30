@@ -729,7 +729,8 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 {
   int rc = 0;
   int n;
-  strlist_t r, namelist_expanded = NULL, link = NULL;
+  strlist_t r;
+  strlist_t namelist_expanded = NULL;
   GETKEY_CTX ctx;
   KBNODE help_kb = NULL;
   KBNODE found_key = NULL;
@@ -758,18 +759,8 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
     }
   else
     {
-      namelist_expanded = expand_group (namelist);
-
-      /* Chain namelist and namelist_expanded */
-      for (r = namelist; r; r = r->next)
-        {
-	  if (!r->next)
-	    {
-	      r->next = namelist_expanded;
-	      link = r;
-	      break;
-	    }
-	 }
+      namelist_expanded = expand_group (namelist, 1);
+      namelist = namelist_expanded;
 
       /* Build the search context.  */
       for (n = 0, r = namelist; r; r = r->next)
@@ -832,7 +823,18 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
   release_kbnode (help_kb);
 
   if (retctx) /* Caller wants the context.  */
-    *retctx = ctx;
+    {
+      if (ctx->extra_list)
+        {
+          for (r=ctx->extra_list; r->next; r = r->next)
+            ;
+          r->next = namelist_expanded;
+        }
+      else
+        ctx->extra_list = namelist_expanded;
+      namelist_expanded = NULL;
+      *retctx = ctx;
+    }
   else
     {
       if (ret_kdbhd)
@@ -843,12 +845,8 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
       getkey_end (ctrl, ctx);
     }
 
-leave:
-  if (namelist_expanded)
-    free_strlist(namelist_expanded);
-  /* Un-chain namelist and namelist_expanded */
-  if (link)
-    link->next = NULL;
+ leave:
+  free_strlist (namelist_expanded);
   return rc;
 }
 
@@ -1193,8 +1191,17 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 
   if (retctx && *retctx)
     {
-      log_assert (!(*retctx)->extra_list);
-      (*retctx)->extra_list = namelist;
+      GETKEY_CTX ctx = *retctx;
+      strlist_t sl;
+
+      if (ctx->extra_list)
+        {
+          for (sl=ctx->extra_list; sl->next; sl = sl->next)
+            ;
+          sl->next = namelist;
+        }
+      else
+        ctx->extra_list = namelist;
       (*retctx)->found_via_akl = mechanism_type;
     }
   else

@@ -904,7 +904,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
 
   /* Try to expand groups if any have been defined. */
   if (opt.grouplist)
-    remusr = expand_group (rcpts);
+    remusr = expand_group (rcpts, 0);
   else
     remusr = rcpts;
 

@@ -267,7 +267,7 @@ int  check_signatures_trust (ctrl_t ctrl, PKT_signature *sig);
 
 void release_pk_list (PK_LIST pk_list);
 int expand_id (const char *id, strlist_t *into, unsigned int flags);
-strlist_t expand_group (strlist_t input);
+strlist_t expand_group (strlist_t input, int prepend_input);
 int  build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list);
 gpg_error_t find_and_check_key (ctrl_t ctrl,
                                 const char *name, unsigned int use,
