@@ -1054,7 +1054,8 @@ keyserver_retrieval_screener (kbnode_t keyblock, void *opaque)
         {
           if (desc[n].mode == KEYDB_SEARCH_MODE_FPR)
             {
-              if (fpr_len == desc[n].fprlen && !memcmp (fpr, desc[n].u.fpr, 32))
+              if (fpr_len == desc[n].fprlen
+                  && !memcmp (fpr, desc[n].u.fpr, desc[n].fprlen))
                 return 0;
             }
           else if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
