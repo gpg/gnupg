@@ -288,13 +288,15 @@ be_kbx_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
 }
 
 
-/* Seek in the keybox to the given UBID.  BACKEND_HD is the handle for
- * this backend and REQUEST is the current database request object.
- * This does a dummy read so that the next search operation starts
- * right after that UBID. */
+/* Seek in the keybox to the given UBID (if UBID is not NULL) or to
+ * the primary fingerprint specified by (FPR,FPRLEN).  BACKEND_HD is
+ * the handle for this backend and REQUEST is the current database
+ * request object.  This does a dummy read so that the next search
+ * operation starts right after that UBID. */
 gpg_error_t
 be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
-                  db_request_t request, unsigned char *ubid)
+             db_request_t request, const unsigned char *ubid,
+             const unsigned char *fpr, unsigned int fprlen)
 {
   gpg_error_t err;
   db_request_part_t part;
@@ -308,8 +310,19 @@ be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
   log_assert (request);
 
   memset (&desc, 0, sizeof desc);
-  desc.mode = KEYDB_SEARCH_MODE_UBID;
-  memcpy (desc.u.ubid, ubid, 20);
+  if (ubid)
+    {
+      desc.mode = KEYDB_SEARCH_MODE_FPR;
+      memcpy (desc.u.ubid, ubid, 20);
+    }
+  else
+    {
+      if (fprlen > sizeof desc.u.fpr)
+        return gpg_error (GPG_ERR_TOO_LARGE);
+      desc.mode = KEYDB_SEARCH_MODE_FPR;
+      memcpy (desc.u.fpr, fpr, fprlen);
+      desc.fprlen = fprlen;
+    }
 
   /* Find the specific request part or allocate it.  */
   err = be_find_request_part (backend_hd, request, &part);
@@ -324,5 +337,52 @@ be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
     err = gpg_error (GPG_ERR_EOF);
 
  leave:
+  return err;
+}
+
+
+/* Insert (BLOB,BLOBLEN) into the keybox.  BACKEND_HD is the handle
+ * for this backend and REQUEST is the current database request
+ * object.  */
+gpg_error_t
+be_kbx_insert (ctrl_t ctrl, backend_handle_t backend_hd,
+               db_request_t request, enum pubkey_types pktype,
+               const void *blob, size_t bloblen)
+{
+  gpg_error_t err;
+  db_request_part_t part;
+  ksba_cert_t cert = NULL;
+
+  (void)ctrl;
+
+  log_assert (backend_hd && backend_hd->db_type == DB_TYPE_KBX);
+  log_assert (request);
+
+  /* Find the specific request part or allocate it.  */
+  err = be_find_request_part (backend_hd, request, &part);
+  if (err)
+    goto leave;
+
+  if (pktype == PUBKEY_TYPE_OPGP)
+    err = keybox_insert_keyblock (part->kbx_hd, blob, bloblen);
+  else if (pktype == PUBKEY_TYPE_X509)
+    {
+      unsigned char sha1[20];
+
+      err = ksba_cert_new (&cert);
+      if (err)
+        goto leave;
+      err = ksba_cert_init_from_mem (cert, blob, bloblen);
+      if (err)
+        goto leave;
+      gcry_md_hash_buffer (GCRY_MD_SHA1, sha1, blob, bloblen);
+
+      err = keybox_insert_cert (part->kbx_hd, cert, sha1);
+    }
+  else
+    err = gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
+
+ leave:
+  ksba_cert_release (cert);
   return err;
 }

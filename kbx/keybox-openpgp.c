@@ -667,7 +667,7 @@ _keybox_destroy_openpgp_info (keybox_openpgp_info_t info)
   struct _keybox_openpgp_key_info *k, *k2;
   struct _keybox_openpgp_uid_info *u, *u2;
 
-  assert (!info->primary.next);
+  log_assert (!info->primary.next);
   for (k=info->subkeys.next; k; k = k2)
     {
       k2 = k->next;

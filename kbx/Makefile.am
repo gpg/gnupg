@@ -81,10 +81,10 @@ keyboxd_SOURCES = \
 	backend-kbx.c \
 	$(common_sources)
 
-keyboxd_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) \
-		$(INCICONV)
+keyboxd_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1 \
+                 $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) $(INCICONV)
 keyboxd_LDADD = $(commonpth_libs) \
-                $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
+                $(KSBA_LIBS) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
 		$(resource_objs)
 keyboxd_LDFLAGS = $(extra_bin_ldflags)

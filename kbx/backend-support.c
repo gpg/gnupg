@@ -27,8 +27,9 @@
 #include "keyboxd.h"
 #include "../common/i18n.h"
 #include "../common/asshelp.h"
+#include "../common/tlv.h"
 #include "backend.h"
-#include "keybox.h"
+#include "keybox-defs.h"
 
 
 /* Common definition part of all backend handle.  All definitions of
@@ -167,5 +168,109 @@ be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
     err = kbxd_write_data_line(ctrl, buffer, buflen);
 
  leave:
+  return err;
+}
+
+
+
+/* Return true if (BLOB/BLOBLEN) seems to be an X509 certificate.  */
+static int
+is_x509_blob (const unsigned char *blob, size_t bloblen)
+{
+  const unsigned char *p;
+  size_t n, objlen, hdrlen;
+  int class, tag, cons, ndef;
+
+  /* An X.509 certificate can be identified by this DER encoding:
+   *
+   *  30 82 05 B8 30 82 04 A0 A0 03 02 01 02 02 07 15 46 A0 BF 30 07 39
+   *  ----------- +++++++++++ ----- ++++++++ --------------------------
+   *  SEQUENCE    SEQUENCE    [0]   INTEGER  INTEGER
+   *              (tbs)            (version) (s/n)
+   *
+   */
+
+  p = blob;
+  n = bloblen;
+  if (parse_ber_header (&p, &n, &class, &tag, &cons, &ndef, &objlen, &hdrlen))
+    return 0; /* Not a proper BER object.  */
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && cons))
+    return 0; /* Does not start with a sequence.  */
+
+  if (parse_ber_header (&p, &n, &class, &tag, &cons, &ndef, &objlen, &hdrlen))
+    return 0; /* Not a proper BER object.  */
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && cons))
+    return 0; /* No TBS sequence.  */
+  if (n < 7 || objlen < 7)
+    return 0; /* Too short:  [0], version and min. s/n required.  */
+
+  if (parse_ber_header (&p, &n, &class, &tag, &cons, &ndef, &objlen, &hdrlen))
+    return 0; /* Not a proper BER object.  */
+  if (!(class == CLASS_CONTEXT && tag == 0 && cons))
+    return 0; /* No context tag.  */
+
+  if (parse_ber_header (&p, &n, &class, &tag, &cons, &ndef, &objlen, &hdrlen))
+    return 0; /* Not a proper BER object.  */
+
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_INTEGER
+        && !cons && objlen == 1 && n && (*p == 1 || *p == 2)))
+    return 0; /* Unknown X.509 version.  */
+  p++;  /* Skip version number.  */
+  n--;
+
+  if (parse_ber_header (&p, &n, &class, &tag, &cons, &ndef, &objlen, &hdrlen))
+    return 0; /* Not a proper BER object.  */
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_INTEGER && !cons))
+    return 0;  /* No s/n.  */
+
+  return 1; /* Looks like an X.509 certificate. */
+}
+
+
+/* Return the public key type and the (primary) fingerprint for
+ * (BLOB,BLOBLEN).  R_FPR must point to a buffer of at least 32 bytes,
+ * it received the fi gerprint on success with the length of that
+ * fingerprint stored at R_FPRLEN.  R_PKTYPE receives the public key
+ * type.  */
+gpg_error_t
+be_fingerprint_from_blob (const void *blob, size_t bloblen,
+                          enum pubkey_types *r_pktype,
+                          char *r_fpr, unsigned int *r_fprlen)
+{
+  gpg_error_t err;
+
+  if (is_x509_blob (blob, bloblen))
+    {
+      /* Although libksba has a dedicated function to compute the
+       * fingerprint we compute it here directly because we know that
+       * we have the entire certificate here (we checked the start of
+       * the blob and assume that the length is also okay).  */
+      *r_pktype = PUBKEY_TYPE_X509;
+      gcry_md_hash_buffer (GCRY_MD_SHA1, r_fpr, blob, bloblen);
+      *r_fprlen = 20;
+
+      err = 0;
+    }
+  else
+    {
+      struct _keybox_openpgp_info info;
+
+      err = _keybox_parse_openpgp (blob, bloblen, NULL, &info);
+      if (err)
+        {
+          log_info ("error parsing OpenPGP blob: %s\n", gpg_strerror (err));
+          err = gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
+        }
+      else
+        {
+          *r_pktype = PUBKEY_TYPE_OPGP;
+          log_assert (info.primary.fprlen <= 32);
+          memcpy (r_fpr, info.primary.fpr, info.primary.fprlen);
+          *r_fprlen = info.primary.fprlen;
+
+          _keybox_destroy_openpgp_info (&info);
+        }
+    }
+
   return err;
 }

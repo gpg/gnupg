@@ -58,12 +58,12 @@ take_read_lock (ctrl_t ctrl)
 
 
 /* Take a lock for reading and writing the databases.  */
-/* static void */
-/* take_read_write_lock (ctrl_t ctrl) */
-/* { */
-/*   /\* FIXME *\/ */
-/*   (void)ctrl; */
-/* } */
+static void
+take_read_write_lock (ctrl_t ctrl)
+{
+  /* FIXME */
+  (void)ctrl;
+}
 
 
 /* Release a lock.  It is valid to call this even if no lock has been
@@ -339,7 +339,7 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
         {
           /* We need to set the startpoint for the search.  */
           err = be_kbx_seek (ctrl, db->backend_handle, request,
-                             request->last_cached_ubid);
+                             request->last_cached_ubid, NULL, 0);
           if (err)
             {
               log_debug ("%s: seeking %s to an UBID failed: %s\n",
@@ -381,5 +381,85 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
   release_lock (ctrl);
   if (DBG_CLOCK)
     log_clock ("%s: leave (%s)", __func__, err? "not found" : "found");
+  return err;
+}
+
+
+
+/* Store; that is insert or update the key (BLOB,BLOBLEN).  If
+ * ONLY_UPDATE is set the key must exist.  */
+gpg_error_t
+kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen, int only_update)
+{
+  gpg_error_t err;
+  db_request_t request;
+  unsigned int dbidx;
+  db_desc_t db;
+  char fpr[32];
+  unsigned int fprlen;
+  enum pubkey_types pktype;
+  int insert = 0;
+
+  if (DBG_CLOCK)
+    log_clock ("%s: enter", __func__);
+
+  take_read_write_lock (ctrl);
+
+  /* Allocate a handle object if none exists for this context.  */
+  if (!ctrl->opgp_req)
+    {
+      ctrl->opgp_req = xtrycalloc (1, sizeof *ctrl->opgp_req);
+      if (!ctrl->opgp_req)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+  request = ctrl->opgp_req;
+
+  /* Check whether to insert or update.  */
+  err = be_fingerprint_from_blob (blob, bloblen, &pktype, fpr, &fprlen);
+  if (err)
+    goto leave;
+
+  /* FIXME: We force the use of the KBX backend.  */
+  for (dbidx=0; dbidx < no_of_databases; dbidx++)
+    if (databases[dbidx].db_type == DB_TYPE_KBX)
+      break;
+  if (!(dbidx < no_of_databases))
+    {
+      err = gpg_error (GPG_ERR_NOT_INITIALIZED);
+      goto leave;
+    }
+  db = databases + dbidx;
+
+  err = be_kbx_seek (ctrl, db->backend_handle, request, NULL, fpr, fprlen);
+  if (!err)
+    ; /* Found - need to update.  */
+  else if (gpg_err_code (err) == GPG_ERR_EOF)
+    insert = 1; /* Not found - need to insert.  */
+  else
+    {
+      log_debug ("%s: searching fingerprint failed: %s\n",
+                 __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (insert)
+    {
+      err = be_kbx_insert (ctrl, db->backend_handle, request,
+                           pktype, blob, bloblen);
+    }
+  else if (only_update)
+    err = gpg_error (GPG_ERR_DUP_KEY);
+  else /* Update.  */
+    {
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+
+ leave:
+  release_lock (ctrl);
+  if (DBG_CLOCK)
+    log_clock ("%s: leave", __func__);
   return err;
 }

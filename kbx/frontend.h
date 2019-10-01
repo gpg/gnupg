@@ -31,6 +31,8 @@ void kbxd_release_session_info (ctrl_t ctrl);
 gpg_error_t kbxd_search (ctrl_t ctrl,
                          KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
                          int reset);
+gpg_error_t kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
+                        int only_update);
 
 
 #endif /*KBX_FRONTEND_H*/

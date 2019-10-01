@@ -465,6 +465,55 @@ cmd_next (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_store[] =
+  "STORE [--update]\n"
+  "\n"
+  "Insert a key into the database.  Whether to insert or update\n"
+  "the key is decided by looking at the primary key's fingerprint.\n"
+  "With option --update the key must already exist. The actual key\n"
+  "material is requested by this function using\n"
+  "  INQUIRE BLOB";
+static gpg_error_t
+cmd_store (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int opt_update;
+  gpg_error_t err;
+  unsigned char *value = NULL;
+  size_t valuelen;
+
+  opt_update = has_option (line, "--update");
+  line = skip_options (line);
+  if (*line)
+    {
+      err = set_error (GPG_ERR_INV_ARG, "no args expected");
+      goto leave;
+    }
+
+  /* Ask for the key material.  */
+  err = assuan_inquire (ctx, "BLOB", &value, &valuelen, 0);
+  if (err)
+    {
+      log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+
+  if (!valuelen) /* No data received. */
+    {
+      err = gpg_error (GPG_ERR_MISSING_VALUE);
+      goto leave;
+    }
+
+  err = kbxd_store (ctrl, value, valuelen, opt_update);
+
+
+ leave:
+  xfree (value);
+  return leave_cmd (ctx, err);
+}
+
+
+
 
 static const char hlp_getinfo[] =
   "GETINFO <what>\n"
@@ -584,6 +633,7 @@ register_commands (assuan_context_t ctx)
   } table[] = {
     { "SEARCH",     cmd_search,     hlp_search },
     { "NEXT",       cmd_next,       hlp_next   },
+    { "STORE",      cmd_store,      hlp_store  },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "OUTPUT",     NULL,           hlp_output },
     { "KILLKEYBOXD",cmd_killkeyboxd,hlp_killkeyboxd },

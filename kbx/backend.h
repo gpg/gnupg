@@ -106,6 +106,9 @@ gpg_error_t be_find_request_part (backend_handle_t backend_hd,
 gpg_error_t be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
                               enum pubkey_types pubkey_type,
                               const unsigned char *ubid);
+gpg_error_t be_fingerprint_from_blob (const void *blob, size_t bloblen,
+                                      enum pubkey_types *r_pktype,
+                                      char *r_fpr, unsigned int *r_fprlen);
 
 
 /*-- backend-cache.c --*/
@@ -134,7 +137,11 @@ gpg_error_t be_kbx_search (ctrl_t ctrl, backend_handle_t hd,
                            db_request_t request,
                            KEYDB_SEARCH_DESC *desc, unsigned int ndesc);
 gpg_error_t be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
-                         db_request_t request, unsigned char *ubid);
+                         db_request_t request, const unsigned char *ubid,
+                         const unsigned char *fpr, unsigned int fprlen);
+gpg_error_t be_kbx_insert (ctrl_t ctrl, backend_handle_t backend_hd,
+                           db_request_t request, enum pubkey_types pktype,
+                           const void *blob, size_t bloblen);
 
 
 #endif /*KBX_BACKEND_H*/
