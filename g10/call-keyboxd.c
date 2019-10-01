@@ -779,6 +779,7 @@ keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
  * came is used.  If there was no previous search result (or
  * keydb_search_reset was called), then the keyring / keybox where the
  * next search would start is used (i.e., the current file position).
+ * In keyboxd mode the keyboxd decides where to store it.
  *
  * Note: this doesn't do anything if --dry-run was specified.
  *
@@ -853,12 +854,41 @@ keydb_search_reset (KEYDB_HANDLE hd)
       goto leave;
     }
 
-  /* All we need todo is to tell search that a reset is pending.  Noet
+  /* All we need todo is to tell search that a reset is pending.  Note
    * that keydb_new sets this flag as well.  */
   hd->kbl->need_search_reset = 1;
   err = 0;
 
  leave:
+  return err;
+}
+
+
+
+/* Status callback for SEARCH and NEXT operaions.  */
+static gpg_error_t
+search_status_cb (void *opaque, const char *line)
+{
+  KEYDB_HANDLE hd = opaque;
+  gpg_error_t err = 0;
+  const char *s;
+
+  if ((s = has_leading_keyword (line, "PUBKEY_INFO")))
+    {
+      if (atoi (s) != PUBKEY_TYPE_OPGP)
+        err = gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
+      else
+        {
+          hd->last_ubid_valid = 0;
+          while (*s && !spacep (s))
+            s++;
+          if (hex2fixedbuf (s, hd->last_ubid, sizeof hd->last_ubid))
+            hd->last_ubid_valid = 1;
+          else
+            err = gpg_error (GPG_ERR_INV_VALUE);
+        }
+    }
+
   return err;
 }
 
@@ -1040,19 +1070,20 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     }
 
  do_search:
+  hd->last_ubid_valid = 0;
   if (hd->kbl->datastream.fp)
     {
       /* log_debug ("Sending command '%s'\n", line); */
       err = assuan_transact (hd->kbl->ctx, line,
                              NULL, NULL,
                              NULL, NULL,
-                             NULL, NULL);
+                             search_status_cb, hd);
       if (err)
         {
           /* log_debug ("Finished command with error: %s\n", gpg_strerror (err)); */
-          /* Fixme: On unexpected errors we need a way to cancek the
-           * data stream.  Probly it will be best to closeand reopen
-           * it.  */
+          /* Fixme: On unexpected errors we need a way to cancel the
+           * data stream.  Probably it will be best to close and
+           * reopen it.  */
         }
       else
         {
@@ -1086,7 +1117,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       err = assuan_transact (hd->kbl->ctx, line,
                              put_membuf_cb, &data,
                              NULL, NULL,
-                             NULL, NULL);
+                             search_status_cb, hd);
       if (err)
         {
           xfree (get_membuf (&data, &len));
@@ -1104,6 +1135,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       xfree (buffer);
   }
 
+  /* if (hd->last_ubid_valid) */
+  /*   log_printhex (hd->last_ubid, 20, "found UBID:"); */
 
  leave:
   if (DBG_CLOCK)

@@ -92,9 +92,15 @@ struct keydb_handle_s
   /* A shallow pointer with the CTRL used to create this handle.  */
   ctrl_t ctrl;
 
-  /* Connection info which also keep the local state.  (This is points
+  /* Connection info which also keeps the local state.  (This points
    * into the CTRL->keybox_local list.) */
   keyboxd_local_t kbl;
+
+  /* Various flags.  */
+  unsigned int last_ubid_valid:1;
+
+  /* The UBID of the last returned keyblock.  */
+  unsigned char last_ubid[20];
 
   /* END USE_KEYBOXD */
 
