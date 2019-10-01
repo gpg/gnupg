@@ -191,7 +191,7 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
    HEXSTRING.
 
    On success the function returns a pointer to the next character
-   after HEXSTRING (which is either end-of-string or a the next white
+   after HEXSTRING (which is either end-of-string or the next white
    space).  If BUFLEN is not NULL the number of valid vytes in BUFFER
    is stored there (an extra Nul byte is not counted); this will even
    be done if BUFFER has been passed as NULL. */
@@ -263,4 +263,35 @@ hex2str_alloc (const char *hexstring, size_t *r_count)
   if (!hex2str (hexstring, result, nbytes+1, NULL))
     BUG ();
   return result;
+}
+
+
+
+/* Take the hex-encoded string HEXSTR and put it into the provided
+ * BUFFER in binary format.  The length of the buffer is BUFEFR_SIZE
+ * and the expected size of the hex-string (sans leading and trailing
+ * spaces) is 2*BUFFER_SIZE.  Returns the actual scanned length of
+ * HEXSTR including any leading and trailing spaces on success or 0 on
+ * error.  The HEXSTR must be terminated by a Space or a Nul and may
+ * have leading spaces.  */
+unsigned int
+hex2fixedbuf (const char *hexstr, void *buffer_arg, size_t buffer_size)
+{
+  unsigned char *buffer = buffer_arg;
+  const char *s;
+  unsigned int leading_spaces, n;
+
+  for (leading_spaces = 0; *hexstr && *hexstr == ' '; hexstr++)
+    leading_spaces++;
+
+  for (s=hexstr, n=0; hexdigitp (s); s++, n++)
+    ;
+  if ((*s && *s != ' ') || !(n == 2*buffer_size))
+    return 0; /* Invalid or wrong length. */
+  for (s=hexstr, n=0; *s && n < buffer_size; s += 2, n++)
+    buffer[n] = xtoi_2 (s);
+  while (*s && *s == ' ')
+    s++;
+
+  return leading_spaces + (s - hexstr);
 }

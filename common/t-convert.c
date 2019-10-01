@@ -445,6 +445,43 @@ test_hex2str (void)
 
 
 
+static void
+test_hex2fixedbuf (void)
+{
+  static struct {
+    const char *hex;
+    unsigned bufsize;
+    unsigned int resultlen;
+    const char *result;
+  } tests[] = {
+    /* Simple tests.  */
+    { "112233445566778899aabbccddeeff1122", 17, 34,
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22"},
+    { " 112233445566778899aabbccddeeff1122", 17, 35,
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22"},
+    { "112233445566778899aabbccddeeff1122 ", 17, 35,
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22"},
+    { "  112233445566778899aabbccddeeff1122 ", 17, 37,
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22"},
+    { "  112233445566778899aabbccddeeff11 ", 16, 35,
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11"},
+    { "  112233445566778899aabbccddeeff11", 16, 34,
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11"}
+  };
+  char buffer[100];  /* Large enough for all tests.  */
+  int idx;
+  unsigned int n;
+
+  for (idx=0; idx < DIM (tests); idx++)
+    {
+      n = hex2fixedbuf (tests[idx].hex, buffer, tests[idx].bufsize);
+      if (n != tests[idx].resultlen)
+        fail (idx);
+      else if (memcmp (buffer, tests[idx].result, tests[idx].bufsize))
+        fail (idx);
+    }
+
+}
 
 
 int
@@ -458,6 +495,7 @@ main (int argc, char **argv)
   test_bin2hex ();
   test_bin2hexcolon ();
   test_hex2str ();
+  test_hex2fixedbuf ();
 
   return 0;
 }

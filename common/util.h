@@ -206,6 +206,7 @@ char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
 const char *hex2str (const char *hexstring,
                      char *buffer, size_t bufsize, size_t *buflen);
 char *hex2str_alloc (const char *hexstring, size_t *r_count);
+unsigned int hex2fixedbuf (const char *hexstr, void *buffer, size_t bufsize);
 
 /*-- percent.c --*/
 char *percent_plus_escape (const char *string);
