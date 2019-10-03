@@ -1012,16 +1012,12 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
   else if (IS_UID_SIG (sig) || IS_UID_REV (sig))
     {
       log_assert (packet->pkttype == PKT_USER_ID);
-      log_debug ("algo=%d selfsig=%d tm=%lu\n",
-                 sig->digest_algo, *is_selfsig, (unsigned long)sig->timestamp);
-      if (sig->digest_algo == DIGEST_ALGO_SHA1 && !*is_selfsig
-          && sig->timestamp > 1547856000)
+      if (sig->digest_algo == DIGEST_ALGO_SHA1 && !*is_selfsig)
         {
           /* If the signature was created using SHA-1 we consider this
            * signature invalid because it makes it possible to mount a
            * chosen-prefix collision.  We don't do this for
-           * self-signatures or for signatures created before the
-           * somewhat arbitrary cut-off date 2019-01-19.  */
+           * self-signatures, though.  */
           rc = gpg_error (GPG_ERR_DIGEST_ALGO);
         }
       else
