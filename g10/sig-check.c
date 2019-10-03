@@ -824,6 +824,10 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
   PKT_public_key *pripk = kb->pkt->pkt.public_key;
   gcry_md_hd_t md;
   int signer_alloced = 0;
+  int stub_is_selfsig;
+
+  if (!is_selfsig)
+    is_selfsig = &stub_is_selfsig;
 
   rc = openpgp_pk_test_algo (sig->pubkey_algo);
   if (rc)
@@ -857,14 +861,11 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
 
   if (signer)
     {
-      if (is_selfsig)
-        {
-          if (signer->keyid[0] == pripk->keyid[0]
-              && signer->keyid[1] == pripk->keyid[1])
-            *is_selfsig = 1;
-          else
-            *is_selfsig = 0;
-        }
+      if (signer->keyid[0] == pripk->keyid[0]
+          && signer->keyid[1] == pripk->keyid[1])
+        *is_selfsig = 1;
+      else
+        *is_selfsig = 0;
     }
   else
     {
@@ -874,8 +875,7 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
         {
           /* Issued by the primary key.  */
           signer = pripk;
-          if (is_selfsig)
-            *is_selfsig = 1;
+          *is_selfsig = 1;
         }
       else
         {
@@ -904,8 +904,7 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
           if (! signer)
             {
               /* Signer by some other key.  */
-              if (is_selfsig)
-                *is_selfsig = 0;
+              *is_selfsig = 0;
               if (ret_pk)
                 {
                   signer = ret_pk;
@@ -966,9 +965,22 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
   else if (IS_UID_SIG (sig) || IS_UID_REV (sig))
     {
       log_assert (packet->pkttype == PKT_USER_ID);
-      hash_public_key (md, pripk);
-      hash_uid_packet (packet->pkt.user_id, md, sig);
-      rc = check_signature_end_simple (signer, sig, md);
+      if (sig->digest_algo == DIGEST_ALGO_SHA1 && !*is_selfsig
+          && sig->timestamp > 1547856000)
+        {
+          /* If the signature was created using SHA-1 we consider this
+           * signature invalid because it makes it possible to mount a
+           * chosen-prefix collision.  We don't do this for
+           * self-signatures or for signatures created before the
+           * somewhat arbitrary cut-off date 2019-01-19.  */
+          rc = gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
+      else
+        {
+          hash_public_key (md, pripk);
+          hash_uid_packet (packet->pkt.user_id, md, sig);
+          rc = check_signature_end_simple (signer, sig, md);
+        }
     }
   else
     {
