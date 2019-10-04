@@ -386,3 +386,54 @@ be_kbx_insert (ctrl_t ctrl, backend_handle_t backend_hd,
   ksba_cert_release (cert);
   return err;
 }
+
+
+/* Update (BLOB,BLOBLEN) in the keybox.  BACKEND_HD is the handle for
+ * this backend and REQUEST is the current database request object.  */
+gpg_error_t
+be_kbx_update (ctrl_t ctrl, backend_handle_t backend_hd,
+               db_request_t request, enum pubkey_types pktype,
+               const void *blob, size_t bloblen)
+{
+  gpg_error_t err;
+  db_request_part_t part;
+  ksba_cert_t cert = NULL;
+
+  (void)ctrl;
+
+  log_assert (backend_hd && backend_hd->db_type == DB_TYPE_KBX);
+  log_assert (request);
+
+  /* Find the specific request part or allocate it.  */
+  err = be_find_request_part (backend_hd, request, &part);
+  if (err)
+    goto leave;
+
+  /* FIXME: We make use of the fact that we know that the caller
+   * already did a keybox search.  This needs to be made more
+   * explicit.  */
+  if (pktype == PUBKEY_TYPE_OPGP)
+    {
+      err = keybox_update_keyblock (part->kbx_hd, blob, bloblen);
+    }
+  else if (pktype == PUBKEY_TYPE_X509)
+    {
+      unsigned char sha1[20];
+
+      err = ksba_cert_new (&cert);
+      if (err)
+        goto leave;
+      err = ksba_cert_init_from_mem (cert, blob, bloblen);
+      if (err)
+        goto leave;
+      gcry_md_hash_buffer (GCRY_MD_SHA1, sha1, blob, bloblen);
+
+      err = keybox_update_cert (part->kbx_hd, cert, sha1);
+    }
+  else
+    err = gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
+
+ leave:
+  ksba_cert_release (cert);
+  return err;
+}

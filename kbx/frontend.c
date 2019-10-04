@@ -454,7 +454,8 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen, int only_update)
     err = gpg_error (GPG_ERR_DUP_KEY);
   else /* Update.  */
     {
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      err = be_kbx_update (ctrl, db->backend_handle, request,
+                           pktype, blob, bloblen);
     }
 
  leave:
