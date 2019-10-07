@@ -69,7 +69,9 @@ Florian Weimer	<fw@deneb.enyo.de>  Assigns past and future changes
     (changed:g10/parse-packet.c, include/iobuf.h, util/iobuf.c)
 
 g10 Code GmbH   <info@g10code.com>  Assigns past and future changes
-    (all work since 2001 as indicated by mail addresses in ChangeLogs)
+(all work since 2001 as indicated by mail addresses in ChangeLogs)
+Assignment for future changes terminated on 2012-12-04
+(mail 87boe9x0e3.fsf@vigenere.g10code.de)
 
 Gaël Quéri  <gael@lautre.net>  Translations [fr]
     (fixed a lot of typos)
@@ -151,6 +153,8 @@ Walter Koch <koch@u32.de>  Translations [de]
 Werner Koch  <wk@gnupg.org>  Assigns GNU Privacy Guard and future changes.
     (started the whole thing, wrote the S/MIME extensions, the
      smartcard daemon and the gpg-agent)
+Assignment for future changes terminated on 2013-03-29
+(mail 878v6dbut0.fsf@vigenere.g10code.de dated 2013-02-24).
 
 Yosiaki IIDA <iida@ring.gr.jp> Translations [ja]
 
