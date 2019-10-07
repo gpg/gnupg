@@ -1484,7 +1484,10 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
             }
 
           if (pk)
-            *pk = best.key;
+            {
+              release_public_key_parts (pk);
+              *pk = best.key;
+            }
           else
             release_public_key_parts (&best.key);
         }
