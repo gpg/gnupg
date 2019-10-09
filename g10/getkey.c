@@ -1442,6 +1442,8 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
   int is_mbox = is_valid_mailbox (name);
   int wkd_tried = 0;
 
+  log_assert (ret_keyblock != NULL);
+
   if (retctx)
     *retctx = NULL;
 
@@ -1504,7 +1506,10 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
       struct pubkey_cmp_cookie new = { 0 };
       kbnode_t new_keyblock;
 
-      while (getkey_next (ctrl, ctx, &new.key, &new_keyblock) == 0)
+      copy_public_key (&new.key, (*ret_keyblock)->pkt->pkt.public_key);
+      new_keyblock = clone_kbnode (*ret_keyblock);
+
+      do
         {
           int diff = pubkey_cmp (ctrl, name, &best, &new, new_keyblock);
           release_kbnode (new_keyblock);
@@ -1529,6 +1534,8 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
             }
           new.uid = NULL;
         }
+      while (getkey_next (ctrl, ctx, &new.key, &new_keyblock) == 0);
+
       getkey_end (ctrl, ctx);
       ctx = NULL;
       free_user_id (best.uid);
