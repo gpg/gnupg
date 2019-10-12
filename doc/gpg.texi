@@ -3818,10 +3818,10 @@ the same type.  For example the four options in this example:
 
 @c man:.RS
 @example
- --import-option keep-uid="uid =~ Alfa"
- --import-option keep-uid="&& uid !~ Test"
- --import-option keep-uid="|| uid =~ Alpha"
- --import-option keep-uid="uid !~ Test"
+ --import-filter keep-uid="uid =~ Alfa"
+ --import-filter keep-uid="&& uid !~ Test"
+ --import-filter keep-uid="|| uid =~ Alpha"
+ --import-filter keep-uid="uid !~ Test"
 @end example
 @c man:.RE
 
@@ -3830,7 +3830,7 @@ which is equivalent to
 
 @c man:.RS
 @example
- --import-option \
+ --import-filter \
   keep-uid="uid =~ Alfa" && uid !~ Test" || uid =~ Alpha" && "uid !~ Test"
 @end example
 @c man:.RE
