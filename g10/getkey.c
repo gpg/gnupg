@@ -1353,6 +1353,7 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
   struct getkey_ctx_s *ctx = NULL;
   int is_mbox = is_valid_mailbox (name);
   int wkd_tried = 0;
+  PKT_public_key *pk2;
 
   log_assert (ret_keyblock != NULL);
 
@@ -1362,11 +1363,8 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
  start_over:
   if (ctx)  /* Clear  in case of a start over.  */
     {
-      if (ret_keyblock)
-        {
-          release_kbnode (*ret_keyblock);
-          *ret_keyblock = NULL;
-        }
+      release_kbnode (*ret_keyblock);
+      *ret_keyblock = NULL;
       getkey_end (ctrl, ctx);
       ctx = NULL;
     }
@@ -1379,13 +1377,14 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
       return err;
     }
 
+  pk2 = (*ret_keyblock)->pkt->pkt.public_key;
+
   /* If the keyblock was retrieved from the local database and the key
    * has expired, do further checks.  However, we can do this only if
    * the caller requested a keyblock.  */
-  if (is_mbox && ctx && ctx->found_via_akl == AKL_LOCAL && ret_keyblock)
+  if (is_mbox && ctx && ctx->found_via_akl == AKL_LOCAL)
     {
       u32 now = make_timestamp ();
-      PKT_public_key *pk2 = (*ret_keyblock)->pkt->pkt.public_key;
       int found;
 
       /* If the key has expired and its origin was the WKD then try to
@@ -1417,11 +1416,15 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
       struct pubkey_cmp_cookie best = { 0 };
       struct pubkey_cmp_cookie new = { 0 };
       kbnode_t new_keyblock;
+      u32 *keyid = pk_keyid (pk2);
 
-      copy_public_key (&new.key, (*ret_keyblock)->pkt->pkt.public_key);
-      new_keyblock = clone_kbnode (*ret_keyblock);
+      ctx->exact = 1;
+      ctx->nitems = 1;
+      ctx->items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
+      ctx->items[0].u.kid[0] = keyid[0];
+      ctx->items[0].u.kid[1] = keyid[1];
 
-      do
+      while (getkey_next (ctrl, ctx, &new.key, &new_keyblock) == 0)
         {
           int diff = pubkey_cmp (ctrl, name, &best, &new, new_keyblock);
           release_kbnode (new_keyblock);
@@ -1446,7 +1449,6 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
             }
           new.uid = NULL;
         }
-      while (getkey_next (ctrl, ctx, &new.key, &new_keyblock) == 0);
 
       getkey_end (ctrl, ctx);
       ctx = NULL;
@@ -1455,7 +1457,7 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 
       if (best.valid)
         {
-          if (retctx || ret_keyblock)
+          if (1)
             {
               ctx = xtrycalloc (1, sizeof **retctx);
               if (! ctx)
@@ -1473,19 +1475,16 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                     }
                   else
                     {
-                      u32 *keyid = pk_keyid (&best.key);
+                      keyid = pk_keyid (&best.key);
                       ctx->exact = 1;
                       ctx->nitems = 1;
                       ctx->items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
                       ctx->items[0].u.kid[0] = keyid[0];
                       ctx->items[0].u.kid[1] = keyid[1];
 
-                      if (ret_keyblock)
-                        {
-                          release_kbnode (*ret_keyblock);
-                          *ret_keyblock = NULL;
-                          err = getkey_next (ctrl, ctx, NULL, ret_keyblock);
-                        }
+                      release_kbnode (*ret_keyblock);
+                      *ret_keyblock = NULL;
+                      err = getkey_next (ctrl, ctx, NULL, ret_keyblock);
                     }
                 }
             }
