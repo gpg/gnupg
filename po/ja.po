@@ -4,13 +4,13 @@
 # IIDA Yosiaki <iida@gnu.org>, 1999, 2000, 2002, 2003, 2004.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
-# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018.
+# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.15\n"
+"Project-Id-Version: gnupg 2.2.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-04-23 12:54+0900\n"
+"PO-Revision-Date: 2019-10-15 10:05+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1568,16 +1568,16 @@ msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "\"--yes\"なしでバッチ・モードではできません\n"
 
 msgid "Note: The public primary key and all its subkeys will be deleted.\n"
-msgstr ""
+msgstr "注意: 主鍵とすべての副鍵の公開鍵が削除されます。\n"
 
 msgid "Note: Only the shown public subkey will be deleted.\n"
-msgstr ""
+msgstr "注意: 表示されている副鍵の公開鍵だけが削除されます。\n"
 
 msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
-msgstr ""
+msgstr "注意: 表示されている主鍵の秘密鍵だけが削除されます。\n"
 
 msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
-msgstr ""
+msgstr "注意: 表示されている副鍵の秘密鍵だけが削除されます。\n"
 
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "この鍵を鍵リングから削除しますか? (y/N) "
@@ -1603,7 +1603,6 @@ msgstr "更新に失敗しました: %s\n"
 msgid "deleting keyblock failed: %s\n"
 msgstr "鍵ブロックの削除に失敗しました: %s\n"
 
-#, c-format
 msgid "ownertrust information cleared\n"
 msgstr "所有者信用情報をクリアしました\n"
 
@@ -2509,7 +2508,7 @@ msgid "remove as much as possible from key after import"
 msgstr "インポート後、できるだけ除去します"
 
 msgid "ignore key-signatures which are not self-signatures"
-msgstr ""
+msgstr "自己署名ではない鍵への署名は無視します"
 
 msgid "run import filters and export key immediately"
 msgstr "インポート・フィルタを実行し鍵をすぐにエクスポートします"
@@ -4478,7 +4477,7 @@ msgstr "以下に鍵があります: "
 
 #, c-format
 msgid "Note: Use '%s' to make use of this info\n"
-msgstr ""
+msgstr "注意: この情報を利用するには '%s' を使ってください\n"
 
 msgid "[uncertain]"
 msgstr "[不確定]"
@@ -8411,15 +8410,13 @@ msgstr "パスフレーズ入力"
 msgid "Component not suitable for launching"
 msgstr "コンポーネントが起動するために適切ではありません"
 
-#, fuzzy, c-format
-#| msgid "External verification of component %s failed"
+#, c-format
 msgid "Configuration file of component %s is broken\n"
-msgstr "コンポーネント%sの外部の検証が失敗しました"
+msgstr "コンポーネント%sのコンフィグレーション・ファイルが壊れています\n"
 
-#, fuzzy, c-format
-#| msgid "Note: Use the command \"%s\" to restart them.\n"
+#, c-format
 msgid "Note: Use the command \"%s%s\" to get details.\n"
-msgstr "注意: \"%s\"コマンドを使って再起動してください。\n"
+msgstr "注意: \"%s%s\"コマンドを使って詳細を得てください。\n"
 
 #, c-format
 msgid "External verification of component %s failed"
@@ -8570,19 +8567,15 @@ msgstr "'%s'の読み込みエラー: %s\n"
 msgid "error closing %s: %s\n"
 msgstr "'%s'でクローズのエラー: %s\n"
 
-#, c-format
 msgid "no --program option provided\n"
 msgstr "--programオプションが指定されていません\n"
 
-#, c-format
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr "--decryptと--encryptだけがサポートされています\n"
 
-#, c-format
 msgid "no --keyfile option provided\n"
 msgstr "--keyfileオプションが与えられていません\n"
 
-#, c-format
 msgid "cannot allocate args vector\n"
 msgstr "引数ベクタが確保できません\n"
 
