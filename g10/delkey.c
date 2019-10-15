@@ -279,21 +279,14 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
 
           /* Delete the specified public subkey.  */
           for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
-            {
-              if (thiskeyonly && targetnode != node)
-                continue;
+            if (targetnode == node)
+              break;
+          log_assert (node);
+          delete_kbnode (node);
+          while ((node = walk_kbnode (keyblock, &kbctx, 0))
+                 && node->pkt->pkttype == PKT_SIGNATURE)
+            delete_kbnode (node);
 
-              if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-                {
-                  selected = targetnode == node;
-                  if (selected)
-                    delete_kbnode (node);
-                }
-              else if (selected && node->pkt->pkttype == PKT_SIGNATURE)
-                delete_kbnode (node);
-              else
-                selected = 0;
-            }
           commit_kbnode (&keyblock);
           err = keydb_update_keyblock (ctrl, hd, keyblock);
           if (err)
