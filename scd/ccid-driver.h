@@ -83,6 +83,7 @@ enum {
 #define VASCO_920       0x0920
 #define GEMPC_PINPAD    0x3478
 #define GEMPC_CT30      0x3437
+#define GEMPC_EZIO      0x34c2    /* (!=34c0) Also known as IDBridge CT710 */
 #define VEGA_ALPHA      0x0008
 #define CYBERJACK_GO    0x0504
 #define CRYPTOUCAN      0x81e6

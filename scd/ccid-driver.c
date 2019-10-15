@@ -3435,15 +3435,29 @@ ccid_transceive_secure (ccid_driver_t handle,
         cherry_mode = 1;
       break;
     case VENDOR_NXP:
-      if (handle->id_product == CRYPTOUCAN){
-        pininfo->maxlen = 25;
-        enable_varlen = 1;
-      }
+      if (handle->id_product == CRYPTOUCAN)
+        {
+          pininfo->maxlen = 25;
+          enable_varlen = 1;
+        }
+      break;
+    case VENDOR_GEMPC:
+      if (handle->id_product == GEMPC_PINPAD)
+        {
+          pininfo->maxlen = 25;
+          enable_varlen = 1;
+          break;
+        }
+      else if (handle->id_product == GEMPC_EZIO)
+        {
+          enable_varlen = 0;
+          pininfo->minlen = 4;
+          pininfo->maxlen = 8;
+          break;
+        }
       break;
     default:
-      if ((handle->id_vendor == VENDOR_GEMPC &&
-           handle->id_product == GEMPC_PINPAD)
-          || (handle->id_vendor == VENDOR_VEGA &&
+      if ((handle->id_vendor == VENDOR_VEGA &&
               handle->id_product == VEGA_ALPHA))
         {
           enable_varlen = 0;
