@@ -1353,12 +1353,15 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
   struct getkey_ctx_s *ctx = NULL;
   int is_mbox = is_valid_mailbox (name);
   int wkd_tried = 0;
-  PKT_public_key *pk2;
+  PKT_public_key pk0;
 
   log_assert (ret_keyblock != NULL);
 
   if (retctx)
     *retctx = NULL;
+
+  memset (&pk0, 0, sizeof pk0);
+  pk0.req_usage = pk? pk->req_usage : 0;
 
  start_over:
   if (ctx)  /* Clear  in case of a start over.  */
@@ -1369,15 +1372,13 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
       ctx = NULL;
     }
   err = get_pubkey_byname (ctrl, mode,
-                           &ctx, pk, name, ret_keyblock,
+                           &ctx, &pk0, name, ret_keyblock,
                            NULL, include_unusable);
   if (err)
     {
       getkey_end (ctrl, ctx);
       return err;
     }
-
-  pk2 = (*ret_keyblock)->pkt->pkt.public_key;
 
   /* If the keyblock was retrieved from the local database and the key
    * has expired, do further checks.  However, we can do this only if
@@ -1394,9 +1395,9 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
        * Unfortunately that does not yet work because KEYUPDATE is
        * only updated during import iff the key has actually changed
        * (see import.c:import_one).  */
-      if (!wkd_tried && pk2->keyorg == KEYORG_WKD
-          && (pk2->keyupdate + 3*3600) < now
-          && (pk2->has_expired || only_expired_enc_subkeys (*ret_keyblock)))
+      if (!wkd_tried && pk0.keyorg == KEYORG_WKD
+          && (pk0.keyupdate + 3*3600) < now
+          && (pk0.has_expired || only_expired_enc_subkeys (*ret_keyblock)))
         {
           if (opt.verbose)
             log_info (_("checking for a fresh copy of an expired key via %s\n"),
@@ -1406,7 +1407,10 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
           found = !keyserver_import_wkd (ctrl, name, 0, NULL, NULL);
           glo_ctrl.in_auto_key_retrieve--;
           if (found)
-            goto start_over;
+            {
+              release_public_key_parts (&pk0);
+              goto start_over;
+            }
         }
     }
 
@@ -1416,13 +1420,16 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
       struct pubkey_cmp_cookie best = { 0 };
       struct pubkey_cmp_cookie new = { 0 };
       kbnode_t new_keyblock;
-      u32 *keyid = pk_keyid (pk2);
 
-      ctx->exact = 1;
-      ctx->nitems = 1;
-      ctx->items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
-      ctx->items[0].u.kid[0] = keyid[0];
-      ctx->items[0].u.kid[1] = keyid[1];
+      copy_public_key (&new.key, &pk0);
+      if (pubkey_cmp (ctrl, name, &best, &new, *ret_keyblock) >= 0)
+        {
+          release_public_key_parts (&new.key);
+          free_user_id (new.uid);
+        }
+      else
+        best = new;
+      new.uid = NULL;
 
       while (getkey_next (ctrl, ctx, &new.key, &new_keyblock) == 0)
         {
@@ -1475,9 +1482,10 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                     }
                   else
                     {
-                      keyid = pk_keyid (&best.key);
+                      u32 *keyid = pk_keyid (&best.key);
                       ctx->exact = 1;
                       ctx->nitems = 1;
+                      ctx->req_usage = pk0.req_usage;
                       ctx->items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
                       ctx->items[0].u.kid[0] = keyid[0];
                       ctx->items[0].u.kid[1] = keyid[1];
@@ -1490,13 +1498,25 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
             }
 
           if (pk)
-            {
-              release_public_key_parts (pk);
-              *pk = best.key;
-            }
+            *pk = best.key;
           else
             release_public_key_parts (&best.key);
+          release_public_key_parts (&pk0);
         }
+      else
+        {
+          if (pk)
+            *pk = pk0;
+          else
+            release_public_key_parts (&pk0);
+        }
+    }
+  else
+    {
+      if (pk)
+        *pk = pk0;
+      else
+        release_public_key_parts (&pk0);
     }
 
   if (err && ctx)
