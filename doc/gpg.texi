@@ -350,13 +350,13 @@ numbers 1-9 or "T" for 10 and above to indicate trust signature levels
 @opindex locate-keys
 @opindex locate-external-keys
 Locate the keys given as arguments.  This command basically uses the
-same algorithm as used when locating keys for encryption or signing
-and may thus be used to see what keys @command{@gpgname} might use.
-In particular external methods as defined by
-@option{--auto-key-locate} may be used to locate a key.  Only public
-keys are listed.  The variant @option{--locate-external-keys} does not
-consider a locally existing key and can thus be used to force the
-refresh of a key via the defined external methods.
+same algorithm as used when locating keys for encryption and may thus
+be used to see what keys @command{@gpgname} might use.  In particular
+external methods as defined by @option{--auto-key-locate} may be used
+to locate a key.  Only public keys are listed.  The variant
+@option{--locate-external-keys} does not consider a locally existing
+key and can thus be used to force the refresh of a key via the defined
+external methods.
 
 @item --show-keys
 @opindex show-keys
