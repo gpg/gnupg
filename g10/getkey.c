@@ -1288,7 +1288,11 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
 {
   kbnode_t n;
 
-  new->creation_time = 0;
+  if ((new->key.pubkey_usage & PUBKEY_USAGE_ENC) == 0)
+    new->creation_time = 0;
+  else
+    new->creation_time = new->key.timestamp;
+
   for (n = find_next_kbnode (new_keyblock, PKT_PUBLIC_SUBKEY);
        n; n = find_next_kbnode (n, PKT_PUBLIC_SUBKEY))
     {
@@ -1303,6 +1307,10 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
       if (sub->timestamp > new->creation_time)
         new->creation_time = sub->timestamp;
     }
+
+  /* When new key has no encryption key, use OLD key.  */
+  if (new->creation_time == 0)
+    return 1;
 
   for (n = find_next_kbnode (new_keyblock, PKT_USER_ID);
        n; n = find_next_kbnode (n, PKT_USER_ID))
@@ -1416,7 +1424,7 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 
   if (is_mbox && ctx)
     {
-      /* Rank results and return only the most relevant key.  */
+      /* Rank results and return only the most relevant key for encryption.  */
       struct pubkey_cmp_cookie best = { 0 };
       struct pubkey_cmp_cookie new = { 0 };
       kbnode_t new_keyblock;
@@ -1464,36 +1472,33 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 
       if (best.valid)
         {
-          if (1)
+          ctx = xtrycalloc (1, sizeof **retctx);
+          if (! ctx)
+            err = gpg_error_from_syserror ();
+          else
             {
-              ctx = xtrycalloc (1, sizeof **retctx);
-              if (! ctx)
-                err = gpg_error_from_syserror ();
+              ctx->kr_handle = keydb_new (ctrl);
+              if (! ctx->kr_handle)
+                {
+                  err = gpg_error_from_syserror ();
+                  xfree (ctx);
+                  ctx = NULL;
+                  if (retctx)
+                    *retctx = NULL;
+                }
               else
                 {
-                  ctx->kr_handle = keydb_new (ctrl);
-                  if (! ctx->kr_handle)
-                    {
-                      err = gpg_error_from_syserror ();
-                      xfree (ctx);
-                      ctx = NULL;
-                      if (retctx)
-                        *retctx = NULL;
-                    }
-                  else
-                    {
-                      u32 *keyid = pk_keyid (&best.key);
-                      ctx->exact = 1;
-                      ctx->nitems = 1;
-                      ctx->req_usage = pk0.req_usage;
-                      ctx->items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
-                      ctx->items[0].u.kid[0] = keyid[0];
-                      ctx->items[0].u.kid[1] = keyid[1];
+                  u32 *keyid = pk_keyid (&best.key);
+                  ctx->exact = 1;
+                  ctx->nitems = 1;
+                  ctx->req_usage = pk0.req_usage;
+                  ctx->items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
+                  ctx->items[0].u.kid[0] = keyid[0];
+                  ctx->items[0].u.kid[1] = keyid[1];
 
-                      release_kbnode (*ret_keyblock);
-                      *ret_keyblock = NULL;
-                      err = getkey_next (ctrl, ctx, NULL, ret_keyblock);
-                    }
+                  release_kbnode (*ret_keyblock);
+                  *ret_keyblock = NULL;
+                  err = getkey_next (ctrl, ctx, NULL, ret_keyblock);
                 }
             }
 
