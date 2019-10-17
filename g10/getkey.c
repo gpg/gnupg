@@ -1491,7 +1491,6 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                   u32 *keyid = pk_keyid (&best.key);
                   ctx->exact = 1;
                   ctx->nitems = 1;
-                  ctx->req_usage = pk0.req_usage;
                   ctx->items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
                   ctx->items[0].u.kid[0] = keyid[0];
                   ctx->items[0].u.kid[1] = keyid[1];
