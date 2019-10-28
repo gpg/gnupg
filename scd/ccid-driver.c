@@ -3444,15 +3444,15 @@ ccid_transceive_secure (ccid_driver_t handle,
     case VENDOR_GEMPC:
       if (handle->id_product == GEMPC_PINPAD)
         {
-          pininfo->maxlen = 25;
-          enable_varlen = 1;
+          enable_varlen = 0;
+          pininfo->minlen = 4;
+          pininfo->maxlen = 8;
           break;
         }
       else if (handle->id_product == GEMPC_EZIO)
         {
-          enable_varlen = 0;
-          pininfo->minlen = 4;
-          pininfo->maxlen = 8;
+          pininfo->maxlen = 25;
+          enable_varlen = 1;
           break;
         }
       break;
