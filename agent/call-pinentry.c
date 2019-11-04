@@ -1078,7 +1078,8 @@ agent_askpin (ctrl_t ctrl,
         {
           /* TRANSLATORS: The string is appended to an error message in
              the pinentry.  The %s is the actual error message, the
-             two %d give the current and maximum number of tries. */
+             two %d give the current and maximum number of tries.
+             Do not translate the "SETERROR" keyword. */
           snprintf (line, DIM(line), L_("SETERROR %s (try %d of %d)"),
                     errtext, pininfo->failed_tries+1, pininfo->max_tries);
           rc = assuan_transact (entry_ctx, line,

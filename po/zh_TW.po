@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-11-02 17:42+0100\n"
+"PO-Revision-Date: 2019-11-04 09:49+0100\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
@@ -107,7 +107,7 @@ msgstr "前後不一致 - 請再試一次"
 #. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
-msgstr "設定錯誤: %s (第 %d 次嘗試, 最多 %d 次)"
+msgstr "SETERROR %s (第 %d 次嘗試, 最多 %d 次)"
 
 msgid "Repeat:"
 msgstr "重複:"
