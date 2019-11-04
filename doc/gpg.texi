@@ -617,6 +617,15 @@ with ant release.
 Pack or unpack an arbitrary input into/from an OpenPGP ASCII armor.
 This is a GnuPG extension to OpenPGP and in general not very useful.
 
+@item --unwrap
+@opindex unwrap
+This command is similar to @option{--decrypt} with the change that the
+output is not the usual plaintext but the original message with the
+decryption layer removed.  Thus the output will be an OpenPGP data
+structure which often means a signed OpenPGP message.  Note that this
+command may or may not remove a compression layer which is often found
+beneath the encryption layer.
+
 @item --tofu-policy @{auto|good|unknown|bad|ask@}  @var{keys}
 @opindex tofu-policy
 Set the TOFU policy for all the bindings associated with the specified
