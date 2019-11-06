@@ -275,8 +275,6 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
 	}
       else if (thiskeyonly == 2)
         {
-          int selected = 0;
-
           /* Delete the specified public subkey.  */
           for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
             if (targetnode == node)
