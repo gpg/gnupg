@@ -3758,11 +3758,7 @@ main (int argc, char **argv)
     assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
     gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
-    /* FIXME: We should use logging to a file only in server mode;
-       however we have not yet implemetyed that.  Thus we try to get
-       away with --batch as indication for logging to file
-       required. */
-    if (logfile && opt.batch)
+    if (logfile)
       {
         log_set_file (logfile);
         log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX
