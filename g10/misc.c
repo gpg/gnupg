@@ -1203,7 +1203,7 @@ string_to_cipher_algo (const char *string)
 
 /*
  * Map an AEAD mode string to a an AEAD algorithm number as defined by
- * rrc4880bis.  Also support the "An" syntax as used by the preference
+ * rfc4880bis.  Also support the "An" syntax as used by the preference
  * strings.
  */
 aead_algo_t

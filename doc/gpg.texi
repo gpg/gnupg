@@ -2673,9 +2673,6 @@ modern and faster way to do authenticated encryption than the old MDC
 method.  See also options @option{--aead-algo} and
 @option{--chunk-size}.
 
-As of now this option requires the use of option @option{--rfc4880bis}
-to declare that a not yet standardized feature is used.
-
 @item --force-mdc
 @itemx --disable-mdc
 @opindex force-mdc
@@ -2784,11 +2781,12 @@ options.
 
 @item --gnupg
 @opindex gnupg
-Use standard GnuPG behavior. This is essentially OpenPGP behavior
-(see @option{--openpgp}), but with some additional workarounds for common
-compatibility problems in different versions of PGP. This is the
-default option, so it is not generally needed, but it may be useful to
-override a different compliance option in the gpg.conf file.
+Use standard GnuPG behavior. This is essentially OpenPGP behavior (see
+@option{--openpgp}), but with extension from the proposed update to
+OpenPGP and with some additional workarounds for common compatibility
+problems in different versions of PGP.  This is the default option, so
+it is not generally needed, but it may be useful to override a
+different compliance option in the gpg.conf file.
 
 @item --openpgp
 @opindex openpgp
@@ -2806,10 +2804,8 @@ behavior. Note that this is currently the same thing as
 
 @item --rfc4880bis
 @opindex rfc4880bis
-Enable experimental features from proposed updates to RFC-4880.  This
-option can be used in addition to the other compliance options.
-Warning: The behavior may change with any GnuPG release and created
-keys or data may not be usable with future GnuPG versions.
+Reset all packet, cipher and digest options to strict according to the
+proposed updates of RFC-4880.
 
 @item --rfc2440
 @opindex rfc2440
