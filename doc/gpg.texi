@@ -2363,12 +2363,14 @@ opposite meaning. The options are:
   command "clean" after import. Defaults to no.
 
   @item self-sigs-only
-  Accept only self-signatures while importing a key.  All other
-  key-signatures are skipped at an early import stage.  This option
-  can be used with @code{keyserver-options} to mitigate attempts to
-  flood a key with bogus signatures from a keyserver.  The drawback is
-  that all other valid key-signatures, as required by the Web of Trust
-  are also not imported.
+  Accept only self-signatures while importing a key.  All other key
+  signatures are skipped at an early import stage.  This option can be
+  used with @code{keyserver-options} to mitigate attempts to flood a
+  key with bogus signatures from a keyserver.  The drawback is that
+  all other valid key signatures, as required by the Web of Trust are
+  also not imported.  Note that when using this option along with
+  import-clean it suppresses the final clean step after merging the
+  imported key into the existing key.
 
   @item repair-keys
   After import, fix various problems with the
