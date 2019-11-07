@@ -966,13 +966,15 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
     {
       log_assert (packet->pkttype == PKT_USER_ID);
       if (sig->digest_algo == DIGEST_ALGO_SHA1 && !*is_selfsig
-          && sig->timestamp > 1547856000)
+          && sig->timestamp > 1547856000
+          && !opt.flags.allow_weak_key_signatures)
         {
           /* If the signature was created using SHA-1 we consider this
            * signature invalid because it makes it possible to mount a
            * chosen-prefix collision.  We don't do this for
            * self-signatures or for signatures created before the
            * somewhat arbitrary cut-off date 2019-01-19.  */
+          print_sha1_keysig_rejected_note ();
           rc = gpg_error (GPG_ERR_DIGEST_ALGO);
         }
       else

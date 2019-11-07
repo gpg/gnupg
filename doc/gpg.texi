@@ -113,9 +113,12 @@ only one command is allowed.  Generally speaking, irrelevant options
 are silently ignored, and may not be checked for correctness.
 
 @command{@gpgname} may be run with no commands. In this case it will
-perform a reasonable action depending on the type of file it is given
-as input (an encrypted message is decrypted, a signature is verified,
-a file containing keys is listed, etc.).
+print a warning perform a reasonable action depending on the type of
+file it is given as input (an encrypted message is decrypted, a
+signature is verified, a file containing keys is listed, etc.).
+
+If you run into any problems, please add the option @option{--verbose}
+to the invocation to see more diagnostics.
 
 
 @menu
@@ -3272,6 +3275,12 @@ supplied multiple times if multiple algorithms should be considered
 weak.  See also @option{--allow-weak-digest-algos} to disable
 rejection of weak digests.  MD5 is always considered weak, and does
 not need to be listed explicitly.
+
+@item --allow-weak-key-signatures
+@opindex allow-weak-key-signatures
+To avoid a minor risk of collision attacks on third-party key
+signatures made using SHA-1, those key signatures are considered
+invalid.  This options allows to override this restriction.
 
 @item --no-default-keyring
 @opindex no-default-keyring

@@ -407,6 +407,7 @@ enum cmd_and_opt_values
     oAllowMultipleMessages,
     oNoAllowMultipleMessages,
     oAllowWeakDigestAlgos,
+    oAllowWeakKeySignatures,
     oFakedSystemTime,
     oNoAutostart,
     oPrintPKARecords,
@@ -887,6 +888,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
+
+  /* Options to override new security defaults.  */
+  ARGPARSE_s_n (oAllowWeakKeySignatures, "allow-weak-key-signatures", "@"),
 
   /* Options which can be used in special circumstances. They are not
    * published and we hope they are never required.  */
@@ -3556,6 +3560,10 @@ main (int argc, char **argv)
 
           case oAllowWeakDigestAlgos:
             opt.flags.allow_weak_digest_algos = 1;
+            break;
+
+          case oAllowWeakKeySignatures:
+            opt.flags.allow_weak_key_signatures = 1;
             break;
 
           case oFakedSystemTime:
