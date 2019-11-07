@@ -2151,7 +2151,10 @@ import_one_real (ctrl_t ctrl,
       if (err)
         goto leave;
 
-      if ((options & IMPORT_CLEAN))
+      /* Clean the final keyblock again if requested.  we can't do
+       * this if only self-signatures are imported; see bug #4628.  */
+      if ((options & IMPORT_CLEAN)
+          && !(options & IMPORT_SELF_SIGS_ONLY))
         {
           merge_keys_and_selfsig (ctrl, keyblock_orig);
           clean_all_uids (ctrl, keyblock_orig, opt.verbose,
