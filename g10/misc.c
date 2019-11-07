@@ -362,6 +362,24 @@ print_digest_rejected_note (enum gcry_md_algos algo)
 }
 
 
+void
+print_sha1_keysig_rejected_note (void)
+{
+  static int shown;
+
+  if (shown)
+    return;
+
+  shown = 1;
+  es_fflush (es_stdout);
+  log_info (_("Note: third-party key signatures using"
+              " the %s algorithm are rejected\n"),
+            gcry_md_algo_name (GCRY_MD_SHA1));
+  print_further_info ("use option \"%s\" to override",
+                      "--allow-weak-key-signatures");
+}
+
+
 /* Print a message
  *  "(reported error: %s)\n
  * in verbose mode to further explain an error.  If the error code has

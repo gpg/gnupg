@@ -1012,12 +1012,14 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
   else if (IS_UID_SIG (sig) || IS_UID_REV (sig))
     {
       log_assert (packet->pkttype == PKT_USER_ID);
-      if (sig->digest_algo == DIGEST_ALGO_SHA1 && !*is_selfsig)
+      if (sig->digest_algo == DIGEST_ALGO_SHA1 && !*is_selfsig
+          && !opt.flags.allow_weak_key_signatures)
         {
           /* If the signature was created using SHA-1 we consider this
            * signature invalid because it makes it possible to mount a
            * chosen-prefix collision.  We don't do this for
            * self-signatures, though.  */
+          print_sha1_keysig_rejected_note ();
           rc = gpg_error (GPG_ERR_DIGEST_ALGO);
         }
       else

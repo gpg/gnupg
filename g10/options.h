@@ -246,6 +246,7 @@ struct
     unsigned int utf8_filename:1;
     unsigned int dsa2:1;
     unsigned int allow_weak_digest_algos:1;
+    unsigned int allow_weak_key_signatures:1;
     unsigned int large_rsa:1;
     unsigned int disable_signer_uid:1;
     /* Flag to enable experimental features from RFC4880bis.  */
