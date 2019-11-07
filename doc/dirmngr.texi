@@ -399,9 +399,10 @@ configured LDAP server if the connection using the "proxy" failed.
 
 @item --ldapserverlist-file @var{file}
 @opindex ldapserverlist-file
-Read the list of LDAP servers to consult for CRLs and certificates from
-file instead of the default per-user ldap server list file. The default
-value for @var{file} is @file{dirmngr_ldapservers.conf}.
+Read a list of LDAP servers to consult for CRLs and certificates from
+file.  This servers from this list are used after any servers set by a
+client for its session. The default value for @var{file} is
+@file{dirmngr_ldapservers.conf}.
 
 This server list file contains one LDAP server per line in the format
 

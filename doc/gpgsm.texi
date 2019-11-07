@@ -347,6 +347,22 @@ Outputs additional information while running.
 You can increase the verbosity by giving several
 verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
+
+@item --keyserver @var{string}
+@opindex keyserver
+Add an LDAP server to use for certificate and CRL lookup.  This option
+can be given multiple times to configure more than one LDAP server.
+Note that the @command{dirmngr} can in addition be configured with a
+default list of LDAP servers to be used after those configured with
+this option.  The syntax of @var{string} is:
+
+@sc{hostname:port:username:password:base_dn}
+
+Note that all parts of that string are expected to be UTF-8 encoded.
+This may lead to problems if the @sc{password} has originally been
+encoded as Latin-1; in such a case better configure this LDAP server
+using the global configuration of @command{dirmngr}.
+
 @item --policy-file @var{filename}
 @opindex policy-file
 Change the default name of the policy file to @var{filename}.  The
