@@ -634,7 +634,10 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     This indicates the length of the plaintext that is about to be
     written.  Note that if the plaintext packet has partial length
     encoding it is not possible to know the length ahead of time.  In
-    that case, this status tag does not appear.
+    that case, this status tag does not appear.  The length is only
+    exact for binary formats; other formats ('t', 'u') may do post
+    processing like line ending conversion so that the actual number
+    of bytes written may be differ.
 
 *** ATTRIBUTE <arguments>
     The list or arguments are:
