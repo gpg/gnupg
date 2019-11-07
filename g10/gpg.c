@@ -3774,7 +3774,7 @@ main (int argc, char **argv)
 
     if (opt.flags.rfc4880bis)
       {
-        if (!opt.quiet)
+        if (opt.verbose)
           log_info ("Note: RFC4880bis features are enabled.\n");
       }
     else
