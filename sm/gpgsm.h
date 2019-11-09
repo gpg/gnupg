@@ -48,6 +48,7 @@ struct keyserver_spec
   char *user;
   char *pass;
   char *base;
+  unsigned int use_ldaps:1;
 };
 
 

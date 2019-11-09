@@ -123,6 +123,7 @@ enum
     oDN,
     oFilter,
     oAttr,
+    oTls,
 
     oOnlySearchTimeout,
     oLogWithPID
@@ -138,6 +139,7 @@ static ARGPARSE_OPTS opts[] = {
                                   " a record oriented format")},
   { oProxy,    "proxy",     2,
     N_("|NAME|ignore host part and connect through NAME")},
+  { oTls,      "tls",       0, N_("force a TLS connection")},
   { oHost,     "host",      2, N_("|NAME|connect to host NAME")},
   { oPort,     "port",      1, N_("|N|connect to port N")},
   { oUser,     "user",      2, N_("|NAME|use user NAME for authentication")},
@@ -163,6 +165,7 @@ struct my_opt_s
   my_ldap_timeval_t timeout;/* Timeout for the LDAP search functions.  */
   unsigned int alarm_timeout; /* And for the alarm based timeout.  */
   int multi;
+  int force_tls;
 
   estream_t outstream;    /* Send output to this stream.  */
 
@@ -287,6 +290,7 @@ ldap_wrapper_main (char **argv, estream_t outstream)
           myopt->pass = getenv ("DIRMNGR_LDAP_PASS");
           break;
         case oProxy: myopt->proxy = pargs.r.ret_str; break;
+        case oTls:  myopt->force_tls = 1; break;
         case oHost: myopt->host = pargs.r.ret_str; break;
         case oPort: myopt->port = pargs.r.ret_int; break;
         case oDN:   myopt->dn = pargs.r.ret_str; break;
@@ -622,12 +626,19 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   attrs[1] = NULL;
   attr = attrs[0];
 
-  if (!port)
+  if (!port && myopt->force_tls)
+    port = 636;
+  else if (!port)
     port = (ludp->lud_scheme && !strcmp (ludp->lud_scheme, "ldaps"))? 636:389;
 
   if (myopt->verbose)
     {
       log_info (_("processing url '%s'\n"), url);
+      if (myopt->force_tls)
+        log_info ("forcing tls\n");
+      else
+        log_info ("not forcing tls\n");
+
       if (myopt->user)
         log_info (_("          user '%s'\n"), myopt->user);
       if (myopt->pass)
@@ -665,17 +676,48 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
       && ludp->lud_attrs && ludp->lud_attrs[0] && ludp->lud_attrs[1])
     log_info (_("WARNING: using first attribute only\n"));
 
-
   set_timeout (myopt);
-  npth_unprotect ();
-  ld = my_ldap_init (host, port);
-  npth_protect ();
-  if (!ld)
+
+  if (myopt->force_tls
+      || (ludp->lud_scheme && !strcmp (ludp->lud_scheme, "ldaps")))
     {
-      log_error (_("LDAP init to '%s:%d' failed: %s\n"),
-                 host, port, strerror (errno));
-      return -1;
+      char *uri;
+
+      uri = xtryasprintf ("ldaps://%s:%d", host, port);
+      if (!uri)
+        {
+          log_error (_("error allocating memory: %s\n"),
+                     gpg_strerror (gpg_error_from_syserror ()));
+          return -1;
+        }
+      ret = ldap_initialize (&ld, uri);
+      if (ret)
+        {
+          log_error (_("LDAP init to '%s' failed: %s\n"),
+                     uri, ldap_err2string (ret));
+          xfree (uri);
+          return -1;
+        }
+      else if (myopt->verbose)
+        log_info (_("LDAP init to '%s' done\n"), uri);
+      xfree (uri);
     }
+  else
+    {
+      /* Keep the old way so to avoid regressions.  Eventually we
+       * should really consider the supplied scheme and use only
+       * ldap_initialize.  */
+      npth_unprotect ();
+      ld = my_ldap_init (host, port);
+      npth_protect ();
+      if (!ld)
+        {
+          log_error (_("LDAP init to '%s:%d' failed: %s\n"),
+                     host, port, strerror (errno));
+          return -1;
+        }
+    }
+
   npth_unprotect ();
   /* Fixme:  Can we use MYOPT->user or is it shared with other theeads?.  */
   ret = my_ldap_simple_bind_s (ld, myopt->user, myopt->pass);

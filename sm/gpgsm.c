@@ -817,9 +817,17 @@ parse_keyserver_line (char *line,
 {
   char *p;
   char *endp;
+  const char *s;
   struct keyserver_spec *server;
   int fieldno;
   int fail = 0;
+  int i;
+
+  if (!filename)
+    {
+      filename = "[cmd]";
+      lineno = 0;
+    }
 
   /* Parse the colon separated fields.  */
   server = xcalloc (1, sizeof *server);
@@ -833,7 +841,7 @@ parse_keyserver_line (char *line,
 	{
 	case 1:
 	  if (*p)
-	    server->host = xstrdup (p);
+            server->host = xstrdup (p);
 	  else
 	    {
 	      log_error (_("%s:%u: no hostname given\n"),
@@ -867,6 +875,32 @@ parse_keyserver_line (char *line,
 	  if (*p)
 	    server->base = xstrdup (p);
 	  break;
+
+        case 6:
+          {
+            char **flags = NULL;
+
+            flags = strtokenize (p, ",");
+            if (!flags)
+              log_fatal ("strtokenize failed: %s\n",
+                         gpg_strerror (gpg_error_from_syserror ()));
+
+            for (i=0; (s = flags[i]); i++)
+              {
+                if (!*s)
+                  ;
+                else if (!ascii_strcasecmp (s, "ldaps"))
+                  server->use_ldaps = 1;
+                else if (!ascii_strcasecmp (s, "ldap"))
+                  server->use_ldaps = 0;
+                else
+                  log_info (_("%s:%u: ignoring unknown flag '%s'\n"),
+                            filename, lineno, s);
+              }
+
+            xfree (flags);
+          }
+          break;
 
 	default:
 	  /* (We silently ignore extra fields.) */

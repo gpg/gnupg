@@ -223,8 +223,9 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
       char *pass = server->pass ? server->pass : "";
       char *base = server->base ? server->base : "";
 
-      snprintf (line, DIM (line), "LDAPSERVER %s:%i:%s:%s:%s",
-		server->host, server->port, user, pass, base);
+      snprintf (line, DIM (line), "LDAPSERVER %s:%i:%s:%s:%s:%s",
+		server->host, server->port, user, pass, base,
+                server->use_ldaps? "ldaps":"");
 
       assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       /* The code below is not required because we don't return an error.  */

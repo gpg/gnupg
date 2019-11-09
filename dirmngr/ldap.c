@@ -525,7 +525,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
   int argc = 0;
   int argc_malloced = 0;
   char portbuf[30], timeoutbuf[30];
-
+  int use_ldaps = 0;
 
   *context = NULL;
 
@@ -554,7 +554,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
           goto leave;
         }
       base = server->base;
-
+      use_ldaps = server->use_ldaps;
     }
   else /* Use a default server. */
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
@@ -587,6 +587,8 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
       argv[argc++] = "--proxy";
       argv[argc++] = proxy;
     }
+  if (use_ldaps)
+    argv[argc++] = "--tls";
   if (host)
     {
       argv[argc++] = "--host";

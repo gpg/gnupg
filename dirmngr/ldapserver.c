@@ -55,6 +55,7 @@ ldapserver_list_free (ldap_server_t servers)
    3. field: Username
    4. field: Password
    5. field: Base DN
+   6. field: Flags
 
    FILENAME and LINENO are used for diagnostic purposes only.
 */
@@ -64,9 +65,11 @@ ldapserver_parse_one (char *line,
 {
   char *p;
   char *endp;
+  const char *s;
   ldap_server_t server;
   int fieldno;
   int fail = 0;
+  int i;
 
   /* Parse the colon separated fields.  */
   server = xcalloc (1, sizeof *server);
@@ -114,6 +117,32 @@ ldapserver_parse_one (char *line,
 	  if (*p)
 	    server->base = xstrdup (p);
 	  break;
+
+        case 6:
+          {
+            char **flags = NULL;
+
+            flags = strtokenize (p, ",");
+            if (!flags)
+              log_fatal ("strtokenize failed: %s\n",
+                         gpg_strerror (gpg_error_from_syserror ()));
+
+            for (i=0; (s = flags[i]); i++)
+              {
+                if (!*s)
+                  ;
+                else if (!ascii_strcasecmp (s, "ldaps"))
+                  server->use_ldaps = 1;
+                else if (!ascii_strcasecmp (s, "ldap"))
+                  server->use_ldaps = 0;
+                else
+                  log_info (_("%s:%u: ignoring unknown flag '%s'\n"),
+                            filename, lineno, s);
+              }
+
+            xfree (flags);
+          }
+          break;
 
 	default:
 	  /* (We silently ignore extra fields.) */

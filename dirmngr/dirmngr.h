@@ -50,6 +50,7 @@ struct ldap_server_s
   char *user;
   char *pass;
   char *base;
+  unsigned int use_ldaps:1;
 };
 typedef struct ldap_server_s *ldap_server_t;
 

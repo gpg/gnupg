@@ -406,9 +406,13 @@ client for its session. The default value for @var{file} is
 
 This server list file contains one LDAP server per line in the format
 
-@sc{hostname:port:username:password:base_dn}
+@sc{hostname:port:username:password:base_dn:flags}
 
 Lines starting with a  @samp{#} are comments.
+
+The only defined flag is @code{ldaps} to specify that a TLS
+connections shall be used.  Flags are comma delimited; unknown flags
+are ignored.
 
 Note that as usual all strings entered are expected to be UTF-8 encoded.
 Obviously this will lead to problems if the password has originally been
