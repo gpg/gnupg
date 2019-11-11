@@ -49,7 +49,14 @@
 #define LF "\n"
 #endif
 
+/* Bitflags to convey hints on what kind of signayire is created.  */
+#define SIGNHINT_KEYSIG  1
+#define SIGNHINT_SELFSIG 2
+
+
+/* Hack */
 static int recipient_digest_algo=0;
+
 
 /****************
  * Create notations and other stuff.  It is assumed that the stings in
@@ -252,10 +259,12 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 
 
 /* Perform the sign operation.  If CACHE_NONCE is given the agent is
-   advised to use that cached passphrase for the key.  */
+ * advised to use that cached passphrase for the key.  SIGNHINTS has
+ * hints so that we can do some additional checks. */
 static int
 do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
-	 gcry_md_hd_t md, int mdalgo, const char *cache_nonce)
+	 gcry_md_hd_t md, int mdalgo,
+         const char *cache_nonce, unsigned int signhints)
 {
   gpg_error_t err;
   byte *dp;
@@ -277,6 +286,19 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
 
   if (!mdalgo)
     mdalgo = gcry_md_get_algo (md);
+
+  if ((signhints & SIGNHINT_KEYSIG) && !(signhints & SIGNHINT_SELFSIG)
+      && mdalgo == GCRY_MD_SHA1
+      && !opt.flags.allow_weak_key_signatures)
+    {
+      /* We do not allow the creation of third-party key signatures
+       * using SHA-1 because we also reject them when verifying.  Note
+       * that this will render dsa1024 keys unsuitable for such
+       * keysigs and in turn the WoT. */
+      print_sha1_keysig_rejected_note ();
+      err = gpg_error (GPG_ERR_DIGEST_ALGO);
+      goto leave;
+    }
 
   /* Check compliance.  */
   if (! gnupg_digest_is_allowed (opt.compliance, 1, mdalgo))
@@ -374,12 +396,12 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
 static int
 complete_sig (ctrl_t ctrl,
               PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
-              const char *cache_nonce)
+              const char *cache_nonce, unsigned int signhints)
 {
   int rc;
 
   /* if (!(rc = check_secret_key (pksk, 0))) */
-  rc = do_sign (ctrl, pksk, sig, md, 0, cache_nonce);
+  rc = do_sign (ctrl, pksk, sig, md, 0, cache_nonce, signhints);
   return rc;
 }
 
@@ -753,7 +775,7 @@ write_signature_packets (ctrl_t ctrl,
       hash_sigversion_to_magic (md, sig);
       gcry_md_final (md);
 
-      rc = do_sign (ctrl, pk, sig, md, hash_for (pk), cache_nonce);
+      rc = do_sign (ctrl, pk, sig, md, hash_for (pk), cache_nonce, 0);
       gcry_md_close (md);
       if (!rc)
         {
@@ -1468,6 +1490,8 @@ make_keysig_packet (ctrl_t ctrl,
     int rc=0;
     int sigversion;
     gcry_md_hd_t md;
+    u32 pk_keyid[2], pksk_keyid[2];
+    unsigned int signhints;
 
     log_assert ((sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
                 || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
@@ -1503,6 +1527,12 @@ make_keysig_packet (ctrl_t ctrl,
 	else
 	  digest_algo = DEFAULT_DIGEST_ALGO;
       }
+
+    signhints = SIGNHINT_KEYSIG;
+    keyid_from_pk (pk, pk_keyid);
+    keyid_from_pk (pksk, pksk_keyid);
+    if (pk_keyid[0] == pksk_keyid[0] && pk_keyid[1] == pksk_keyid[1])
+      signhints |= SIGNHINT_SELFSIG;
 
     if ( gcry_md_open (&md, digest_algo, 0 ) )
       BUG ();
@@ -1549,7 +1579,7 @@ make_keysig_packet (ctrl_t ctrl,
         hash_sigversion_to_magic (md, sig);
 	gcry_md_final (md);
 
-	rc = complete_sig (ctrl, sig, pksk, md, cache_nonce);
+	rc = complete_sig (ctrl, sig, pksk, md, cache_nonce, signhints);
     }
 
     gcry_md_close (md);
@@ -1585,6 +1615,8 @@ update_keysig_packet (ctrl_t ctrl,
     gpg_error_t rc = 0;
     int digest_algo;
     gcry_md_hd_t md;
+    u32 pk_keyid[2], pksk_keyid[2];
+    unsigned int signhints;
 
     if ((!orig_sig || !pk || !pksk)
 	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
@@ -1602,6 +1634,12 @@ update_keysig_packet (ctrl_t ctrl,
       digest_algo = DEFAULT_DIGEST_ALGO;
     else
       digest_algo = orig_sig->digest_algo;
+
+    signhints = SIGNHINT_KEYSIG;
+    keyid_from_pk (pk, pk_keyid);
+    keyid_from_pk (pksk, pksk_keyid);
+    if (pk_keyid[0] == pksk_keyid[0] && pk_keyid[1] == pksk_keyid[1])
+      signhints |= SIGNHINT_SELFSIG;
 
     if ( gcry_md_open (&md, digest_algo, 0 ) )
       BUG ();
@@ -1656,7 +1694,7 @@ update_keysig_packet (ctrl_t ctrl,
         hash_sigversion_to_magic (md, sig);
 	gcry_md_final (md);
 
-	rc = complete_sig (ctrl, sig, pksk, md, NULL);
+	rc = complete_sig (ctrl, sig, pksk, md, NULL, signhints);
     }
 
  leave:
