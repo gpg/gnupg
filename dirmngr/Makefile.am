@@ -26,9 +26,7 @@ dist_pkgdata_DATA = sks-keyservers.netCA.pem
 
 bin_PROGRAMS = dirmngr dirmngr-client
 
-if USE_LDAPWRAPPER
 libexec_PROGRAMS = dirmngr_ldap
-endif
 
 noinst_PROGRAMS = $(module_tests) $(module_net_tests) $(module_maint_tests)
 TESTS = $(module_tests) $(module_net_tests)
@@ -47,12 +45,6 @@ if HAVE_W32_SYSTEM
 ldap_url = ldap-url.h ldap-url.c
 else
 ldap_url =
-endif
-
-if USE_LDAPWRAPPER
-extraldap_src = ldap-wrapper.c
-else
-extraldap_src = ldap-wrapper-ce.c  dirmngr_ldap.c
 endif
 
 noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
@@ -76,7 +68,7 @@ endif
 if USE_LDAP
 dirmngr_SOURCES += ldapserver.h ldapserver.c ldap.c w32-ldap-help.h \
                    ldap-wrapper.h ldap-parse-uri.c ldap-parse-uri.h \
-                   ks-engine-ldap.c $(ldap_url) $(extraldap_src)
+                   ks-engine-ldap.c $(ldap_url) ldap-wrapper.c
 ldaplibs = $(LDAPLIBS)
 else
 ldaplibs =
@@ -90,19 +82,14 @@ dirmngr_LDADD = $(libcommonpth) \
 if USE_LDAP
 dirmngr_LDADD += $(ldaplibs)
 endif
-if !USE_LDAPWRAPPER
-dirmngr_LDADD += $(ldaplibs)
-endif
 dirmngr_LDFLAGS = $(extra_bin_ldflags)
 
-if USE_LDAPWRAPPER
 dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url)
 dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) \
 		     $(GPG_ERROR_LIBS) $(LIBGCRYPT_LIBS) $(LDAPLIBS) \
 		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
-endif
 
 dirmngr_client_SOURCES = dirmngr-client.c
 dirmngr_client_LDADD = $(libcommon) \

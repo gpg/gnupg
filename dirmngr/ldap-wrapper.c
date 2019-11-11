@@ -21,11 +21,10 @@
 /*
  * We can't use LDAP directly for these reasons:
  *
- * 1. On some systems the LDAP library uses (indirectly) pthreads and
- *    that is not compatible with GNU Pth.  Since 2.1 we use nPth
- *    instead of GNU Pth which does not have this problem anymore
- *    because it will use pthreads if the platform supports it.  Thus
- *    this was a historical reasons.
+ * 1. The LDAP library is linked to separate crypto library like
+ *    OpenSSL and even if it is linked to the libary we use in dirmngr
+ *    (ntbtls or gnutls) it is sometimes a different version of that
+ *    libary with all the surprising failures you may get due to this.
  *
  * 2. It is huge library in particular if TLS comes into play.  So
  *    problems with unfreed memory might turn up and we don't want
@@ -70,10 +69,6 @@
 #define setenv(a,b,c) SetEnvironmentVariable ((a),(b))
 #else
 #define pth_close(fd) close(fd)
-#endif
-
-#ifndef USE_LDAPWRAPPER
-# error This module is not expected to be build.
 #endif
 
 /* In case sysconf does not return a value we need to have a limit. */
@@ -188,7 +183,7 @@ destroy_wrapper (struct wrapper_context_s *ctx)
 }
 
 
-/* Print the content of LINE to thye log stream but make sure to only
+/* Print the content of LINE to the log stream but make sure to only
    print complete lines.  Using NULL for LINE will flush any pending
    output.  LINE may be modified by this function. */
 static void
@@ -377,12 +372,13 @@ ldap_reaper_thread (void *dummy)
 
       if (DBG_EXTPROG)
         {
-          log_debug ("ldap-reaper: next run (count=%d size=%d, timeout=%d)\n",
+          log_debug ("ldap-reaper: next run (count=%d size=%d timeout=%d)\n",
                      count, fparraysize, millisecs);
           for (count=0; count < fparraysize; count++)
             if (!fparray[count].ignore)
-              log_debug ("ldap-reaper: fp[%d] stream=%p want=%d\n",
-                         count, fparray[count].stream,fparray[count].want_read);
+              log_debug ("ldap-reaper: fp[%d] stream=%p %s\n",
+                         count, fparray[count].stream,
+                         fparray[count].want_read? "want_read":"");
         }
 
       ret = es_poll (fparray, fparraysize, millisecs);
@@ -405,7 +401,7 @@ ldap_reaper_thread (void *dummy)
         {
           for (count=0; count < fparraysize; count++)
             if (!fparray[count].ignore)
-              log_debug ("ldap-reaper: fp[%d] stream=%p r=%d %c%c%c%c%c%c%c\n",
+              log_debug ("ldap-reaper: fp[%d] stream=%p rc=%d %c%c%c%c%c%c%c\n",
                          count, fparray[count].stream, ret,
                          fparray[count].got_read? 'r':'-',
                          fparray[count].got_write?'w':'-',
@@ -498,7 +494,7 @@ ldap_reaper_thread (void *dummy)
          * wrappers.  */
         if (any_action && DBG_EXTPROG)
           {
-            log_debug ("ldap worker stati:\n");
+            log_debug ("ldap worker states:\n");
             for (ctx = reaper_list; ctx; ctx = ctx->next)
               log_debug ("  c=%p pid=%d/%d rdr=%p logfp=%p"
                          " ctrl=%p/%d la=%lu rdy=%d\n",
@@ -718,8 +714,9 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
 
       if (DBG_EXTPROG)
         {
-          log_debug ("%s: fp[0] stream=%p want=%d\n",
-                     __func__, fparray[0].stream,fparray[0].want_read);
+          log_debug ("%s: fp[0] stream=%p %s\n",
+                     __func__, fparray[0].stream,
+                     fparray[0].want_read?"want_read":"");
         }
 
       ret = es_poll (fparray, DIM (fparray), millisecs);
@@ -733,7 +730,7 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
         }
       if (DBG_EXTPROG)
         {
-          log_debug ("%s: fp[0] stream=%p r=%d %c%c%c%c%c%c%c\n",
+          log_debug ("%s: fp[0] stream=%p rc=%d %c%c%c%c%c%c%c\n",
                      __func__, fparray[0].stream, ret,
                      fparray[0].got_read? 'r':'-',
                      fparray[0].got_write?'w':'-',
