@@ -47,7 +47,7 @@ ldap_server_t ldapserver_parse_one (char *line,
 struct ldapserver_iter
 {
   ctrl_t ctrl;
-  enum { LDAPSERVER_SESSION, LDAPSERVER_OPT } group;
+  enum { LDAPSERVER_SESSION, LDAPSERVER_GLOBAL } group;
   ldap_server_t server;
 };
 
@@ -62,7 +62,7 @@ ldapserver_iter_next (struct ldapserver_iter *iter)
     {
       if (iter->group == LDAPSERVER_SESSION)
 	{
-	  iter->group = LDAPSERVER_OPT;
+	  iter->group = LDAPSERVER_GLOBAL;
 	  iter->server = opt.ldapservers;
 	}
     }
@@ -72,7 +72,7 @@ ldapserver_iter_next (struct ldapserver_iter *iter)
 static inline int
 ldapserver_iter_end_p (struct ldapserver_iter *iter)
 {
-  return (iter->group == LDAPSERVER_OPT && iter->server == NULL);
+  return (iter->group == LDAPSERVER_GLOBAL && iter->server == NULL);
 }
 
 
