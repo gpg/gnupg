@@ -134,6 +134,9 @@ void set_dns_nameserver (const char *ipaddr);
 /* SIGHUP action handler for this module.  */
 void reload_dns_stuff (int force);
 
+/* Housekeeping for this module.  */
+void dns_stuff_housekeeping (void);
+
 void free_dns_addrinfo (dns_addrinfo_t ai);
 
 /* Function similar to getaddrinfo.  */
@@ -164,6 +167,10 @@ gpg_error_t get_dns_cert (const char *name, int want_certtype,
 gpg_error_t get_dns_srv (const char *name,
                          const char *service, const char *proto,
                          struct srventry **list, unsigned int *r_count);
+
+
+/* Store true in the variable if such an IP interface is usable.  */
+void check_inet_support (int *r_v4, int *r_v6);
 
 
 #endif /*GNUPG_DIRMNGR_DNS_STUFF_H*/
