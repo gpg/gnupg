@@ -149,6 +149,15 @@ static char tor_nameserver[40+20];
 static char tor_socks_user[30];
 static char tor_socks_password[20];
 
+/* To avoid checking the interface too often we cache the result.  */
+static struct
+{
+  unsigned int valid:1;
+  unsigned int v4:1;
+  unsigned int v6:1;
+} cached_inet_support;
+
+
 
 #ifdef USE_LIBDNS
 /* Libdns global data.  */
@@ -686,6 +695,21 @@ reload_dns_stuff (int force)
 #else
   (void)force;
 #endif
+
+  /* We also flush the IPv4/v6 support flag cache.  */
+  cached_inet_support.valid = 0;
+}
+
+
+/* Called from time to time from the housekeeping thread.  */
+void
+dns_stuff_housekeeping (void)
+{
+  /* With the current housekeeping interval of 10 minutes we flush
+   * that case so that a new or removed interface will be detected not
+   * later than 10 minutes after it changed.  This way the user does
+   * not need a reload.  */
+  cached_inet_support.valid = 0;
 }
 
 
@@ -2386,4 +2410,84 @@ get_dns_cname (ctrl_t ctrl, const char *name, char **r_cname)
                err ? ": " : " -> ",
                err ? gpg_strerror (err) : *r_cname);
   return err;
+}
+
+
+/* Check whether the machine has any usable inet devices up and
+ * running.  We put this into dns because on Windows this is
+ * implemented using getaddrinfo and thus easiest done here.  */
+void
+check_inet_support (int *r_v4, int *r_v6)
+{
+  if (cached_inet_support.valid)
+    {
+      *r_v4 = cached_inet_support.v4;
+      *r_v6 = cached_inet_support.v6;
+      return;
+    }
+
+  *r_v4 = *r_v6 = 0;
+
+#ifdef HAVE_W32_SYSTEM
+  {
+    gpg_error_t err;
+    int ret;
+    struct addrinfo *aibuf = NULL;
+    struct addrinfo *ai;
+
+    ret = getaddrinfo ("..localmachine", NULL, NULL, &aibuf);
+    if (ret)
+      {
+        err = map_eai_to_gpg_error (ret);
+        log_error ("%s: getaddrinfo failed: %s\n",__func__, gpg_strerror (err));
+        aibuf = NULL;
+      }
+
+    for (ai = aibuf; ai; ai = ai->ai_next)
+      {
+        if (opt_debug)
+          {
+            log_debug ("%s:  family: %d\n", __func__, ai->ai_family);
+            if (ai->ai_family == AF_INET6 || ai->ai_family == AF_INET)
+              {
+                char buffer[46];
+                DWORD buflen;
+                buflen = sizeof buffer;
+                if (WSAAddressToString (ai->ai_addr, (DWORD)ai->ai_addrlen,
+                                        NULL, buffer, &buflen))
+                  log_debug ("%s: WSAAddressToString failed: ec=%u\n",
+                             __func__, (unsigned int)WSAGetLastError ());
+                else
+                  log_debug ("%s:     addr: %s\n", __func__, buffer);
+              }
+          }
+        if (ai->ai_family == AF_INET6)
+          {
+            struct sockaddr_in6 *v6addr = (struct sockaddr_in6 *)ai->ai_addr;
+            if (!IN6_IS_ADDR_LINKLOCAL (&v6addr->sin6_addr))
+              *r_v6 = 1;
+          }
+        else if (ai->ai_family == AF_INET)
+          {
+            *r_v4 = 1;
+          }
+      }
+
+    if (aibuf)
+      freeaddrinfo (aibuf);
+  }
+#else /*!HAVE_W32_SYSTEM*/
+  {
+    /* For now we assume that we have both protocols.  */
+    *r_v4 = *r_v6 = 1;
+  }
+#endif /*!HAVE_W32_SYSTEM*/
+
+  if (opt_verbose)
+    log_info ("detected interfaces:%s%s\n",
+              *r_v4? " IPv4":"", *r_v6? " IPv4":"");
+
+  cached_inet_support.valid = 1;
+  cached_inet_support.v4 = *r_v4;
+  cached_inet_support.v6 = *r_v6;
 }

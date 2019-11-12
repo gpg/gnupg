@@ -1962,6 +1962,7 @@ housekeeping_thread (void *arg)
   memset (&ctrlbuf, 0, sizeof ctrlbuf);
   dirmngr_init_default_ctrl (&ctrlbuf);
 
+  dns_stuff_housekeeping ();
   ks_hkp_housekeeping (curtime);
   if (network_activity_seen)
     {

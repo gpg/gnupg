@@ -2908,7 +2908,7 @@ connect_server (ctrl_t ctrl, const char *server, unsigned short port,
   unsigned int srvcount = 0;
   int hostfound = 0;
   int anyhostaddr = 0;
-  int srv, connected;
+  int srv, connected, v4_valid, v6_valid;
   gpg_error_t last_err = 0;
   struct srventry *serverlist = NULL;
 
@@ -2917,6 +2917,8 @@ connect_server (ctrl_t ctrl, const char *server, unsigned short port,
 #if defined(HAVE_W32_SYSTEM) && !defined(HTTP_NO_WSASTARTUP)
   init_sockets ();
 #endif /*Windows*/
+
+  check_inet_support (&v4_valid, &v6_valid);
 
   /* Onion addresses require special treatment.  */
   if (is_onion_address (server))
@@ -2996,9 +2998,11 @@ connect_server (ctrl_t ctrl, const char *server, unsigned short port,
 
       for (ai = aibuf; ai && !connected; ai = ai->next)
         {
-          if (ai->family == AF_INET && (flags & HTTP_FLAG_IGNORE_IPv4))
+          if (ai->family == AF_INET
+              && ((flags & HTTP_FLAG_IGNORE_IPv4) || !v4_valid))
             continue;
-          if (ai->family == AF_INET6 && (flags & HTTP_FLAG_IGNORE_IPv6))
+          if (ai->family == AF_INET6
+              && ((flags & HTTP_FLAG_IGNORE_IPv6) || !v6_valid))
             continue;
 
           if (sock != ASSUAN_INVALID_FD)
