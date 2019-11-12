@@ -1638,7 +1638,7 @@ parse_ldapserver_file (const char* filename)
   fp = es_fopen (filename, "r");
   if (!fp)
     {
-      log_error (_("error opening '%s': %s\n"), filename, strerror (errno));
+      log_info ("failed to open '%s': %s\n", filename, strerror (errno));
       return NULL;
     }
 
