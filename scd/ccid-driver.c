@@ -3439,8 +3439,9 @@ ccid_transceive_secure (ccid_driver_t handle,
         {
           pininfo->maxlen = 25;
           enable_varlen = 1;
+          break;
         }
-      break;
+      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     case VENDOR_GEMPC:
       if (handle->id_product == GEMPC_PINPAD)
         {
@@ -3455,10 +3456,10 @@ ccid_transceive_secure (ccid_driver_t handle,
           enable_varlen = 1;
           break;
         }
-      break;
+      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     default:
       if ((handle->id_vendor == VENDOR_VEGA &&
-              handle->id_product == VEGA_ALPHA))
+           handle->id_product == VEGA_ALPHA))
         {
           enable_varlen = 0;
           pininfo->minlen = 4;
