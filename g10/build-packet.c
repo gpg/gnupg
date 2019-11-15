@@ -364,7 +364,55 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
 
 
 /*
- * Write an opaque MPI to the output stream without length info.
+ * Write the mpi A to the output stream OUT as "SOS" (Simply Octet
+ * String).  If R_NWRITTEN is not NULL the number of bytes written is
+ * stored there.  To only get the number of bytes which would be
+ * written, NULL may be passed for OUT.
+ */
+gpg_error_t
+gpg_sos_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
+{
+  gpg_error_t err;
+  unsigned int nwritten = 0;
+
+  if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    {
+      unsigned int nbits;
+      const unsigned char *p;
+      unsigned char lenhdr[2];
+
+      /* gcry_log_debugmpi ("a", a); */
+      p = gcry_mpi_get_opaque (a, &nbits);
+      /* gcry_log_debug ("   [%u bit]\n", nbits); */
+      /* gcry_log_debughex (" ", p, (nbits+7)/8); */
+      lenhdr[0] = nbits >> 8;
+      lenhdr[1] = nbits;
+      err = out? iobuf_write (out, lenhdr, 2) : 0;
+      if (!err)
+        {
+          nwritten += 2;
+          if (p)
+            {
+              err = out? iobuf_write (out, p, (nbits+7)/8) : 0;
+              if (!err)
+                nwritten += (nbits+7)/8;
+            }
+        }
+    }
+  else
+    {
+      log_info ("non-opaque MPI (%u bits) for SOS\n", gcry_mpi_get_nbits (a));
+      err = gpg_error (GPG_ERR_INV_DATA);
+    }
+
+  if (r_nwritten)
+    *r_nwritten = nwritten;
+  return err;
+}
+
+
+/*
+ * Write an opaque string to the output stream without length info.
  */
 gpg_error_t
 gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a)
@@ -576,7 +624,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           || (pk->pubkey_algo == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2)))
         err = gpg_mpi_write_nohdr (a, pk->pkey[i]);
       else
-        err = gpg_mpi_write (a, pk->pkey[i], NULL);
+        err = gpg_sos_write (a, pk->pkey[i], NULL);
       if (err)
         goto leave;
     }
@@ -691,7 +739,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
               for (j=i; j < nskey; j++ )
                 {
-                  if ((err = gpg_mpi_write (NULL, pk->pkey[j], &n)))
+                  if ((err = gpg_sos_write (NULL, pk->pkey[j], &n)))
                     goto leave;
                   skbytes += n;
                 }
@@ -700,7 +748,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
             }
 
           for ( ; i < nskey; i++ )
-            if ( (err = gpg_mpi_write (a, pk->pkey[i], NULL)))
+            if ( (err = gpg_sos_write (a, pk->pkey[i], NULL)))
               goto leave;
 
           write_16 (a, ski->csum );
@@ -1696,8 +1744,12 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   n = pubkey_get_nsig( sig->pubkey_algo );
   if ( !n )
     write_fake_data( a, sig->data[0] );
-  for (i=0; i < n && !rc ; i++ )
-    rc = gpg_mpi_write (a, sig->data[i], NULL);
+  if (sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
+    for (i=0; i < n && !rc ; i++ )
+      rc = gpg_sos_write (a, sig->data[i], NULL);
+  else
+    for (i=0; i < n && !rc ; i++ )
+      rc = gpg_mpi_write (a, sig->data[i], NULL);
 
   if (!rc)
     {
