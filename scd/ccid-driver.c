@@ -3423,13 +3423,27 @@ ccid_transceive_secure (ccid_driver_t handle,
       if (handle->id_product == CRYPTOUCAN){
         pininfo->maxlen = 25;
         enable_varlen = 1;
+        break;
       }
-      break;
+      return CCID_DRIVER_ERR_NOT_SUPPORTED;
+    case VENDOR_GEMPC:
+      if (handle->id_product == GEMPC_PINPAD)
+        {
+          enable_varlen = 0;
+          pininfo->minlen = 4;
+          pininfo->maxlen = 8;
+          break;
+        }
+      else if (handle->id_product == GEMPC_EZIO)
+        {
+          pininfo->maxlen = 25;
+          enable_varlen = 1;
+          break;
+        }
+      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     default:
-      if ((handle->id_vendor == VENDOR_GEMPC &&
-           handle->id_product == GEMPC_PINPAD)
-          || (handle->id_vendor == VENDOR_VEGA &&
-              handle->id_product == VEGA_ALPHA))
+      if ((handle->id_vendor == VENDOR_VEGA &&
+           handle->id_product == VEGA_ALPHA))
         {
           enable_varlen = 0;
           pininfo->minlen = 4;
