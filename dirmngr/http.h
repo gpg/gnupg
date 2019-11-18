@@ -32,6 +32,7 @@
 #define GNUPG_COMMON_HTTP_H
 
 #include <gpg-error.h>
+#include "../common/fwddecl.h"
 
 struct uri_tuple_s
 {
@@ -106,6 +107,7 @@ typedef struct http_context_s *http_t;
 struct http_redir_info_s
 {
   unsigned int redirects_left;   /* Number of still possible redirects.    */
+  ctrl_t ctrl;                   /* The usual connection info or NULL.     */
   const char *orig_url;          /* The original requested URL.            */
   unsigned int orig_onion:1;     /* Original request was an onion address. */
   unsigned int orig_https:1;     /* Original request was a http address.   */

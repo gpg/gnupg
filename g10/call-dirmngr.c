@@ -414,6 +414,10 @@ ks_status_cb (void *opaque, const char *line)
         warn = _("Tor is not properly configured");
       else if ((s2 = has_leading_keyword (s, "dns_config_problem")))
         warn = _("DNS is not properly configured");
+      else if ((s2 = has_leading_keyword (s, "http_redirect")))
+        warn = _("unacceptable HTTP redirect from server");
+      else if ((s2 = has_leading_keyword (s, "http_redirect_cleanup")))
+        warn = _("unacceptable HTTP redirect from server was cleaned up");
       else
         warn = NULL;
 

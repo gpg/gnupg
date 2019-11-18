@@ -101,6 +101,7 @@
 #include "../common/i18n.h"
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "dns-stuff.h"
+#include "dirmngr-status.h"    /* (dirmngr_status_printf)  */
 #include "http.h"
 #include "http-common.h"
 
@@ -3634,13 +3635,23 @@ http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
    * https address. */
   if (info->orig_onion && !locuri->onion)
     {
+      dirmngr_status_printf (info->ctrl, "WARNING",
+                             "http_redirect %u"
+                             " redirect from onion to non-onion address"
+                             " rejected",
+                             err);
       http_release_parsed_uri (locuri);
       return gpg_error (GPG_ERR_FORBIDDEN);
     }
   if (!info->allow_downgrade && info->orig_https && !locuri->use_tls)
     {
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      dirmngr_status_printf (info->ctrl, "WARNING",
+                             "http_redirect %u"
+                             " redirect '%s' to '%s' rejected",
+                             err, info->orig_url, location);
       http_release_parsed_uri (locuri);
-      return gpg_error (GPG_ERR_FORBIDDEN);
+      return err;
     }
 
   if (info->trust_location)
@@ -3720,6 +3731,10 @@ http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
       http_release_parsed_uri (locuri);
       if (!info->silent)
         log_info (_("redirection changed to '%s'\n"), newurl);
+      dirmngr_status_printf (info->ctrl, "WARNING",
+                             "http_redirect_cleanup %u"
+                             " changed from '%s' to '%s'",
+                             0, info->orig_url, newurl);
     }
 
   *r_url = newurl;
