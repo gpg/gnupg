@@ -82,6 +82,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
   err = http_parse_uri (&uri, url, 0);
   if (err)
     goto leave;
+  redirinfo.ctrl       = ctrl;
   redirinfo.orig_url   = url;
   redirinfo.orig_onion = uri->onion;
   redirinfo.orig_https = uri->use_tls;
