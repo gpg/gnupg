@@ -2913,7 +2913,9 @@ Write log output to file descriptor @var{n} and not to STDERR.
 @itemx --logger-file @var{file}
 @opindex log-file
 Same as @option{--logger-fd}, except the logger data is written to
-file @var{file}.  Use @file{socket://} to log to s socket.
+file @var{file}.  Use @file{socket://} to log to a socket.  Note that
+in this version of gpg the option has only an effect if
+@option{--batch} is also used.
 
 @item --attribute-fd @var{n}
 @opindex attribute-fd
