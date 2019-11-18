@@ -78,6 +78,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
   estream_t fp = NULL;
   char *request_buffer = NULL;
   parsed_uri_t uri = NULL;
+  parsed_uri_t helpuri = NULL;
 
   err = http_parse_uri (&uri, url, 0);
   if (err)
@@ -134,9 +135,25 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
     }
   if (err)
     {
-      /* Fixme: After a redirection we show the old host name.  */
       log_error (_("error connecting to '%s': %s\n"),
                  url, gpg_strerror (err));
+      if (gpg_err_code (err) == GPG_ERR_WRONG_NAME
+          && gpg_err_source (err) == GPG_ERR_SOURCE_TLS)
+        {
+          const char *errhostname;
+
+          http_release_parsed_uri (helpuri);
+          if (http_parse_uri (&helpuri, url, 0))
+            errhostname = url; /* On parse error we use the full URL. */
+          else
+            errhostname = helpuri->host? helpuri->host : "?";
+
+          dirmngr_status_printf (ctrl, "NOTE",
+                                 "tls_cert_error %u"
+                                 " bad cert for '%s': %s",
+                                 err, errhostname,
+                                 "Hostname does not match the certificate");
+        }
       goto leave;
     }
 
@@ -203,5 +220,6 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
   http_session_release (session);
   xfree (request_buffer);
   http_release_parsed_uri (uri);
+  http_release_parsed_uri (helpuri);
   return err;
 }
