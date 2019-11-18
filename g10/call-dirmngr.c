@@ -395,6 +395,7 @@ ks_status_cb (void *opaque, const char *line)
   gpg_error_t err = 0;
   const char *s, *s2;
   const char *warn;
+  int is_note = 0;
 
   if ((s = has_leading_keyword (line, parm->keyword? parm->keyword : "SOURCE")))
     {
@@ -406,7 +407,8 @@ ks_status_cb (void *opaque, const char *line)
             err = gpg_error_from_syserror ();
         }
     }
-  else if ((s = has_leading_keyword (line, "WARNING")))
+  else if ((s = has_leading_keyword (line, "WARNING"))
+           || (is_note = !!(s = has_leading_keyword (line, "NOTE"))))
     {
       if ((s2 = has_leading_keyword (s, "tor_not_running")))
         warn = _("Tor is not running");
@@ -418,12 +420,17 @@ ks_status_cb (void *opaque, const char *line)
         warn = _("unacceptable HTTP redirect from server");
       else if ((s2 = has_leading_keyword (s, "http_redirect_cleanup")))
         warn = _("unacceptable HTTP redirect from server was cleaned up");
+      else if ((s2 = has_leading_keyword (s, "tls_cert_error")))
+        warn = _("server uses an invalid certificate");
       else
         warn = NULL;
 
       if (warn)
         {
-          log_info (_("WARNING: %s\n"), warn);
+          if (is_note)
+            log_info (_("Note: %s\n"), warn);
+          else
+            log_info (_("WARNING: %s\n"), warn);
           if (s2)
             {
               while (*s2 && !spacep (s2))
