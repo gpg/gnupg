@@ -616,7 +616,7 @@ start_pinentry (ctrl_t ctrl)
 
   /* Ask the pinentry for its version and flavor and store that as a
    * string in MB.  This information is useful for helping users to
-   * figure out Pinentry problems.  Noet that "flavor" may also return
+   * figure out Pinentry problems.  Note that "flavor" may also return
    * a status line with the features; we use a dedicated handler for
    * that.  */
   {

@@ -2470,7 +2470,7 @@ check_inet_support (int *r_v4, int *r_v6)
 
   if (opt_verbose)
     log_info ("detected interfaces:%s%s\n",
-              *r_v4? " IPv4":"", *r_v6? " IPv4":"");
+              *r_v4? " IPv4":"", *r_v6? " IPv6":"");
 
   cached_inet_support.valid = 1;
   cached_inet_support.v4 = *r_v4;
