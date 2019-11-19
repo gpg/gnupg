@@ -112,7 +112,6 @@ dirmngr/dirmngr-client.c
 dirmngr/dirmngr.c
 dirmngr/dirmngr_ldap.c
 dirmngr/http.c
-dirmngr/ldap-wrapper-ce.c
 dirmngr/ldap-wrapper.c
 dirmngr/ldap.c
 dirmngr/ldapserver.c
