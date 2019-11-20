@@ -234,6 +234,7 @@ sos_read (iobuf_t inp, unsigned int *ret_nread, int secure)
     }
 
   a = gcry_mpi_set_opaque (NULL, buf, nbits);
+  gcry_mpi_set_flag (a, GCRYMPI_FLAG_USER2);
   *ret_nread = nread;
   return a;
 
