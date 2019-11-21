@@ -314,8 +314,8 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       size_t fpn;
 
       /* Get the shared point and the ephemeral public key.  */
-      shared = get_mpi_from_sexp (s_ciph, "s", GCRYMPI_FMT_USG);
-      public = get_mpi_from_sexp (s_ciph, "e", GCRYMPI_FMT_USG);
+      shared = get_mpi_from_sexp (s_ciph, "s", GCRYMPI_FMT_OPAQUE);
+      public = get_mpi_from_sexp (s_ciph, "e", GCRYMPI_FMT_OPAQUE);
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
       if (DBG_CRYPTO)

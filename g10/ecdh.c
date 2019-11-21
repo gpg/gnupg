@@ -98,7 +98,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   gpg_error_t err;
   byte *secret_x;
   int secret_x_size;
-  unsigned int nbits;
+  unsigned int nbits, nbits1;
   const unsigned char *kek_params;
   size_t kek_params_size;
   int kdf_hash_algo;
@@ -118,19 +118,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     /* Extract x component of the shared point: this is the actual
        shared secret. */
     nbytes = (mpi_get_nbits (pkey[1] /* public point */)+7)/8;
-    secret_x = xtrymalloc_secure (nbytes);
-    if (!secret_x)
-      return gpg_error_from_syserror ();
-
-    err = gcry_mpi_print (GCRYMPI_FMT_USG, secret_x, nbytes,
-                          &nbytes, shared_mpi);
-    if (err)
-      {
-        xfree (secret_x);
-        log_error ("ECDH ephemeral export of shared point failed: %s\n",
-                   gpg_strerror (err));
-        return err;
-      }
+    secret_x = gcry_mpi_get_opaque (shared_mpi, &nbits1);
 
     /* Expected size of the x component */
     secret_x_size = (nbits+7)/8;
@@ -184,7 +172,6 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
   if (kek_params_size != 4 || kek_params[0] != 3 || kek_params[1] != 1)
     {
-      xfree (secret_x);
       return gpg_error (GPG_ERR_BAD_PUBKEY);
     }
 
@@ -200,14 +187,12 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       && kdf_hash_algo != GCRY_MD_SHA384
       && kdf_hash_algo != GCRY_MD_SHA512)
     {
-      xfree (secret_x);
       return gpg_error (GPG_ERR_BAD_PUBKEY);
     }
   if (kdf_encr_algo != CIPHER_ALGO_AES
       && kdf_encr_algo != CIPHER_ALGO_AES192
       && kdf_encr_algo != CIPHER_ALGO_AES256)
     {
-      xfree (secret_x);
       return gpg_error (GPG_ERR_BAD_PUBKEY);
     }
 
@@ -231,7 +216,6 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     iobuf_close (obuf);
     if (err)
       {
-        xfree (secret_x);
         return err;
       }
 
@@ -249,7 +233,6 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       {
         log_error ("gcry_md_open failed for kdf_hash_algo %d: %s",
                    kdf_hash_algo, gpg_strerror (err));
-        xfree (secret_x);
         return err;
       }
     gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
@@ -290,13 +273,10 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       {
         log_error ("ecdh failed to initialize AESWRAP: %s\n",
                    gpg_strerror (err));
-        xfree (secret_x);
         return err;
       }
 
     err = gcry_cipher_setkey (hd, secret_x, secret_x_size);
-    xfree (secret_x);
-    secret_x = NULL;
     if (err)
       {
         gcry_cipher_close (hd);
