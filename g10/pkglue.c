@@ -152,6 +152,7 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
       gcry_mpi_t s = data[1];
       size_t rlen, slen, n;  /* (bytes) */
       char buf[64];
+      unsigned int nbits;
 
       log_assert (neededfixedlen <= sizeof buf);
 
@@ -182,6 +183,17 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
               memset (buf, 0, neededfixedlen - n);
               r = gcry_mpi_set_opaque_copy (NULL, buf, neededfixedlen * 8);
             }
+          else if (rlen < neededfixedlen
+                   && gcry_mpi_get_flag (r, GCRYMPI_FLAG_OPAQUE))
+            {
+              const unsigned char *p;
+
+              p = gcry_mpi_get_opaque (r, &nbits);
+              n = (nbits+7)/8;
+              memcpy (buf + (neededfixedlen - n), p, n);
+              memset (buf, 0, neededfixedlen - n);
+              gcry_mpi_set_opaque_copy (r, buf, neededfixedlen * 8);
+            }
           if (slen < neededfixedlen
               && !gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE)
               && !(rc=gcry_mpi_print (GCRYMPI_FMT_USG, buf, sizeof buf, &n, s)))
@@ -190,6 +202,17 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
               memmove (buf + (neededfixedlen - n), buf, n);
               memset (buf, 0, neededfixedlen - n);
               s = gcry_mpi_set_opaque_copy (NULL, buf, neededfixedlen * 8);
+            }
+          else if (slen < neededfixedlen
+                   && gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE))
+            {
+              const unsigned char *p;
+
+              p = gcry_mpi_get_opaque (s, &nbits);
+              n = (nbits+7)/8;
+              memcpy (buf + (neededfixedlen - n), p, n);
+              memset (buf, 0, neededfixedlen - n);
+              gcry_mpi_set_opaque_copy (s, buf, neededfixedlen * 8);
             }
 
           if (!rc)
