@@ -282,13 +282,7 @@ get_it (ctrl_t ctrl,
       gcry_mpi_t decoded;
 
       /* At the beginning the frame are the bytes of shared point MPI.  */
-      err = gcry_mpi_scan (&shared_mpi, GCRYMPI_FMT_USG, frame, nframe, NULL);
-      if (err)
-        {
-          err = gpg_error (GPG_ERR_WRONG_SECKEY);
-          goto leave;
-        }
-
+      shared_mpi = gcry_mpi_set_opaque_copy (NULL, frame, nframe * 8);
       err = pk_ecdh_decrypt (&decoded, fp, enc->data[1]/*encr data as an MPI*/,
                              shared_mpi, sk->pkey);
       mpi_release (shared_mpi);
