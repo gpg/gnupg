@@ -742,8 +742,17 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
               for (j=i; j < nskey; j++ )
                 {
-                  if ((err = gpg_sos_write (NULL, pk->pkey[j], &n)))
-                    goto leave;
+                  if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
+                      || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+                    {
+                      if ((err = gpg_sos_write (NULL, pk->pkey[j], &n)))
+                        goto leave;
+                    }
+                  else
+                    {
+                      if ( (err = gpg_mpi_write (a, pk->pkey[i], NULL)))
+                        goto leave;
+                    }
                   skbytes += n;
                 }
 
@@ -751,8 +760,15 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
             }
 
           for ( ; i < nskey; i++ )
-            if ( (err = gpg_sos_write (a, pk->pkey[i], NULL)))
-              goto leave;
+            if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
+                || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+              {
+                if ( (err = gpg_sos_write (a, pk->pkey[i], NULL)))
+                  goto leave;
+              }
+            else
+              if ( (err = gpg_mpi_write (a, pk->pkey[i], NULL)))
+                goto leave;
 
           write_16 (a, ski->csum );
         }
