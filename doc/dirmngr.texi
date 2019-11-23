@@ -260,7 +260,8 @@ on startup or after reloading dirmngr.
 This option forces the use of the system's standard DNS resolver code.
 This is mainly used for debugging.  Note that on Windows a standard
 resolver is not used and all DNS access will return the error ``Not
-Implemented'' if this function is used.
+Implemented'' if this option is used.  Using this together with enabled
+Tor mode returns the error ``Not Enabled''.
 
 @item --recursive-resolver
 @opindex recursive-resolver
