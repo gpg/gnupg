@@ -21,6 +21,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "../common/util.h"
 #include "../common/status.h"
@@ -867,6 +868,81 @@ wks_compute_hu_fname (char **r_fname, const char *addrspec)
 }
 
 
+/* Make sure that a policy file exists for addrspec.  Directories must
+ * already exist.  */
+static gpg_error_t
+ensure_policy_file (const char *addrspec)
+{
+  gpg_error_t err;
+  const char *domain;
+  char *fname;
+  estream_t fp;
+
+  domain = strchr (addrspec, '@');
+  if (!domain || !domain[1] || domain == addrspec)
+    return gpg_error (GPG_ERR_INV_ARG);
+  domain++;
+
+  /* Create the filename.  */
+  fname = make_filename_try (opt.directory, domain, "policy", NULL);
+  err = fname? 0 : gpg_error_from_syserror ();
+  if (err)
+    goto leave;
+
+  /* First a quick check whether it already exists.  */
+  if (!access (fname, F_OK))
+    {
+      err = 0; /* File already exists.  */
+      goto leave;
+    }
+  err = gpg_error_from_syserror ();
+  if (gpg_err_code (err) == GPG_ERR_ENOENT)
+    err = 0;
+  else
+    {
+      log_error ("domain %s: problem with '%s': %s\n",
+                 domain, fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Now create the file.  */
+  fp = es_fopen (fname, "wxb");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      if (gpg_err_code (err) == GPG_ERR_EEXIST)
+        err = 0; /* Was created between the access() and fopen().  */
+      else
+        log_error ("domain %s: error creating '%s': %s\n",
+                   domain, fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  es_fprintf (fp, "# Policy flags for domain %s\n", domain);
+  if (es_ferror (fp) || es_fclose (fp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (opt.verbose)
+    log_info ("policy file '%s' created\n", fname);
+
+  /* Make sure the policy file world readable.  */
+  if (gnupg_chmod (fname, "-rw-rw-r--"))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("can't set permissions of '%s': %s\n",
+                 fname, gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  xfree (fname);
+  return err;
+}
+
 
 /* Helper form wks_cmd_install_key.  */
 static gpg_error_t
@@ -1040,6 +1116,12 @@ wks_cmd_install_key (const char *fname, const char *userid)
   if (err)
     goto leave;
 
+  /* Now that wks_compute_hu_fname has created missing directories we
+   * can create a policy file if it does not exist.  */
+  err = ensure_policy_file (addrspec);
+  if (err)
+    goto leave;
+
   /* Publish.  */
   err = write_to_file (fp, huname);
   if (err)
@@ -1055,6 +1137,7 @@ wks_cmd_install_key (const char *fname, const char *userid)
 
   if (!opt.quiet)
     log_info ("key %s published for '%s'\n", fpr, addrspec);
+
 
  leave:
   xfree (huname);
