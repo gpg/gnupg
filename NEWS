@@ -1,6 +1,72 @@
 Noteworthy changes in version 2.2.18 (unreleased)
 -------------------------------------------------
 
+  * gpg: Changes to the way keys on a smartcards are detected.  This
+    allows the use of non-OpenPGP cards.  In the case of a not very
+    likely regression the new option --use-only-openpgp-card is
+    available.  [#4681]
+
+  * gpg: The commands --full-gen-key and --quick-gen-key now allow
+    direct key generation from supported cards.  [#4681]
+
+  * gpg: Prepare against chosen-prefix SHA-1 collisions in key
+    signatures.  This change removes all SHA-1 based key signature
+    newer than 2019-01-19 from the web-of-trust.  Note that this
+    includes all key signature created with dsa1024 keys.  The new
+    option --allow-weak-key-signatues can be used to override the new
+    and safer behaviour.  [#4755,CVE-2019-14855]
+
+  * gpg: Improve performance for import of large keyblocks.  [#4592]
+
+  * gpg: Implement a keybox compression run.  [#4644]
+
+  * gpg: Show warnings from dirmngr about redirect and certificate
+    problems (details require --verbose as usual).
+
+  * gpg: Allow to pass the empty string for the passphrase if the
+    '--passphase=' syntax is used.  [#4633]
+
+  * gpg: Fix printing of the KDF object attributes.
+
+  * gpg: Avoid surprises with --locate-external-key and certain
+    --auto-key-locate settings.  [#4662]
+
+  * gpg: Improve selection of best matching key.  [#4713]
+
+  * gpg: Delete key binding signature when deletring a subkey.
+    [#4665,#4457]
+
+  * gpg: Fix a potential loss of key sigantures during import with
+    self-sigs-only active.  [#4628]
+
+  * gpg: Silence "marked as ultimately trusted" diagnostics if
+    option --quiet is used.  [#4634]
+
+  * gpg: Silence some diagnostics during in key listsing even with
+    option --verbose.  [#4627]
+
+  * gpg, gpgsm: Change parsing of agent's pkdecrypt results.  [#4652]
+
+  * gpgsm: Support AES-256 keys.
+
+  * gpgsm: Fix a bug in triggering a keybox compression run if
+    --faked-system-time is used.
+
+  * dirmngr: System CA certificates are no longer used for the SKS
+    pool if GNUTLS instead of NTBTLS is used as TLS library.  [#4594]
+
+  * dirmngr: On Windows detect usability of IPv4 and IPv6 interfaces
+    to avoid long timeouts.  [#4165]
+
+  * scd: Fix BWI value for APDU level transfers to make Gemalto Ezio
+    Shield and Trustica Cryptoucan work.  [#4654,#4566]
+
+  * wkd: gpg-wks-client --install-key now installs the required policy
+    file.
+
+  Release-info: https://dev.gnupg.org/T4684
+  See-also: gnupg-announce/2019q4/
+
 
 Noteworthy changes in version 2.2.17 (2019-07-09)
 -------------------------------------------------
