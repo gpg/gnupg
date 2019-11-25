@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-07-09 13:31+0200\n"
+"PO-Revision-Date: 2019-11-25 16:24+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -100,6 +100,7 @@ msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (Versuch %d von %d)"
@@ -1293,14 +1294,11 @@ msgstr "Ihre Auswahl? "
 msgid "[not set]"
 msgstr "[nicht gesetzt]"
 
-msgid "male"
-msgstr "männlich"
+msgid "Mr."
+msgstr "Hr."
 
-msgid "female"
-msgstr "weiblich"
-
-msgid "unspecified"
-msgstr "unbestimmt"
+msgid "Ms."
+msgstr "Fr."
 
 msgid "not forced"
 msgstr "nicht zwingend"
@@ -1354,8 +1352,8 @@ msgstr "Fehler: Ungültige Länge der Einstellungs-Zeichenfolge.\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Fehler: Ungültige Zeichen in der Einstellungs-Zeichenfolge\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Geschlecht: (Männlich (M), Weiblich (F) oder Leerzeichen): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr "Anrede (M=Hr., F=Fr. oder Leerzeichen): "
 
 msgid "Error: invalid response.\n"
 msgstr "Fehler: ungültige Antwort.\n"
@@ -1534,8 +1532,8 @@ msgstr "Ändern der Logindaten"
 msgid "change the language preferences"
 msgstr "Ändern der Spracheinstellungen"
 
-msgid "change card holder's sex"
-msgstr "Ändern des Geschlechts des Kartenbesitzers"
+msgid "change card holder's salutation"
+msgstr "Ändern der Anrede des Kartenbesitzers"
 
 msgid "change a CA fingerprint"
 msgstr "Ändern des CA-Fingerabdrucks"
@@ -3916,14 +3914,14 @@ msgid "Authenticate"
 msgstr "Authentisierung"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsVvAaQq"
@@ -4003,6 +4001,10 @@ msgstr "  (%d) ECC (nur verschlüsseln)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) Vorhandener Schlüssel\n"
 
+#, c-format
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Vorhandener Schlüssel auf der Karte\n"
+
 msgid "Enter the keygrip: "
 msgstr "Geben Sie den \"Keygrip\" ein: "
 
@@ -4011,6 +4013,17 @@ msgstr "Kein gültiger \"Keygrip\" (40 Hex-Ziffern werden erwartet)\n"
 
 msgid "No key with this keygrip\n"
 msgstr "Kein Schlüssel mit diesem \"Keygrip\"\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "Fehler beim Lesen von der Karte: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "Karten-Seriennummer: %s\n"
+
+msgid "Available keys:\n"
+msgstr "Vorhandene Schlüssel:\n"
 
 #, c-format
 msgid "rounded to %u bits\n"
@@ -4733,6 +4746,10 @@ msgstr "WARNUNG: Die Verwendung des Hashverfahrens %s ist nicht ratsam\n"
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "Hinweis: %s basierte Signaturen werden zurückgewiesen.\n"
+
+#, c-format
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
+msgstr "Hinweis: Beglaubigungen von Dritten basierend auf dem %s Algorithmus werden zurückgewiesen.\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -6948,17 +6965,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Vorhandener Schlüssel auf der Karte\n"
 
 #, c-format
-msgid "error reading the card: %s\n"
-msgstr "Fehler beim Lesen von der Karte: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "Karten-Seriennummer: %s\n"
-
-msgid "Available keys:\n"
-msgstr "Vorhandene Schlüssel:\n"
-
-#, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Mögliche Vorgänge eines %s-Schlüssels:\n"
 
@@ -9020,6 +9026,18 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "male"
+#~ msgstr "männlich"
+
+#~ msgid "female"
+#~ msgstr "weiblich"
+
+#~ msgid "unspecified"
+#~ msgstr "unbestimmt"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Geschlecht: (Männlich (M), Weiblich (F) oder Leerzeichen): "
 
 #, fuzzy
 #~| msgid "error writing public keyring '%s': %s\n"
