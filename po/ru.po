@@ -97,6 +97,7 @@ msgstr "не подходит - попробуйте еще раз"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (попытка %d из %d)"
@@ -1270,14 +1271,11 @@ msgstr "Ваш выбор? "
 msgid "[not set]"
 msgstr "[не установлено]"
 
-msgid "male"
-msgstr "мужской"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "женский"
-
-msgid "unspecified"
-msgstr "не указан"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "не требуется"
@@ -1330,8 +1328,8 @@ msgstr "Ошибка: недопустимая длина строки пред�
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Ошибка: недопустимые символы в строке предпочтений.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Пол ((M) мужской, (F) женский или пробел): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Ошибка: недопустимый ответ.\n"
@@ -1503,7 +1501,9 @@ msgstr "изменить имя учетной записи"
 msgid "change the language preferences"
 msgstr "изменить языковые предпочтения"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "изменить пол держателя карты"
 
 msgid "change a CA fingerprint"
@@ -3856,14 +3856,14 @@ msgid "Authenticate"
 msgstr "Удостоверить личность"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "11223300"
@@ -3943,6 +3943,11 @@ msgstr "  (%d) ECC (только для шифрования)\n"
 msgid "  (%d) Existing key\n"
 msgstr "  (%d) Имеющийся ключ\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Имеющийся на карте ключ\n"
+
 msgid "Enter the keygrip: "
 msgstr "Введите код ключа:"
 
@@ -3951,6 +3956,17 @@ msgstr "Недопустимый код ключа (ожидается 40 шес
 
 msgid "No key with this keygrip\n"
 msgstr "Нет ключа с таким кодом\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "ошибка чтения карты: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "Серийный номер карты: %s\n"
+
+msgid "Available keys:\n"
+msgstr "Доступные ключи:\n"
 
 #, c-format
 msgid "rounded to %u bits\n"
@@ -4677,6 +4693,11 @@ msgstr "Внимание: хеш-функция %s не рекомендуетс
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Замечание: подписи с хеш-функцией %s игнорируются\n"
+
+#, fuzzy, c-format
+#| msgid "Note: signatures using the %s algorithm are rejected\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "Замечание: подписи с хеш-функцией %s игнорируются\n"
 
 #, c-format
@@ -6833,17 +6854,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Имеющийся на карте ключ\n"
 
 #, c-format
-msgid "error reading the card: %s\n"
-msgstr "ошибка чтения карты: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "Серийный номер карты: %s\n"
-
-msgid "Available keys:\n"
-msgstr "Доступные ключи:\n"
-
-#, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Возможные действия для ключа %s:\n"
 
@@ -8904,6 +8914,18 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "male"
+#~ msgstr "мужской"
+
+#~ msgid "female"
+#~ msgstr "женский"
+
+#~ msgid "unspecified"
+#~ msgstr "не указан"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Пол ((M) мужской, (F) женский или пробел): "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "не заданы серверы ключей (используйте --keyserver)\n"

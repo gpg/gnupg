@@ -115,6 +115,7 @@ msgstr "matcher ikke - prøv igen"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (forsøg %d af %d)"
@@ -1388,14 +1389,11 @@ msgstr "Dit valg? "
 msgid "[not set]"
 msgstr "[ikke indstillet]"
 
-msgid "male"
-msgstr "mand"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "kvinde"
-
-msgid "unspecified"
-msgstr "ikke angivet"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "ikke tvunget"
@@ -1450,8 +1448,8 @@ msgstr "Fejl: ugyldig længde for præferencestreng.\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Fejl: ugyldige tegn i præferencestreng.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Køn ((M)and, Kvinde(F) eller mellemrum): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Fejl: ugyldigt svar.\n"
@@ -1646,7 +1644,9 @@ msgstr "ændr logindnavnet"
 msgid "change the language preferences"
 msgstr "ændr sprogpræferencerne"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "ændr kortholders køn"
 
 msgid "change a CA fingerprint"
@@ -4139,14 +4139,14 @@ msgid "Authenticate"
 msgstr "Godkend"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "UuKkGfAa"
@@ -4231,6 +4231,11 @@ msgstr "   (%d) RSA (kun krypter)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) Eksisterende nøgle\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Eksisterende nøgle fra kort\n"
+
 # key grip
 # chiefly  ( US ) See also grip the person in charge of moving and setting up camera
 # tracks and scenery in a film or television studio
@@ -4242,6 +4247,17 @@ msgstr "Ikke et gyldigt nøglegreb (forventer 40 hex cifre)\n"
 
 msgid "No key with this keygrip\n"
 msgstr "Ingen nøgle med dette nøglegreb\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "fejl ved læsning af kort: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "Serielnummer for kortet: %s\n"
+
+msgid "Available keys:\n"
+msgstr "Tilgængelige nøgler:\n"
 
 #, fuzzy, c-format
 #| msgid "rounded up to %u bits\n"
@@ -4986,6 +5002,11 @@ msgstr "ADVARSEL: sammendragsalgoritme %s er forældet\n"
 #, fuzzy, c-format
 #| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s underskrift, sammendragsalgoritme %s\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "%s underskrift, sammendragsalgoritme %s\n"
 
 #, fuzzy, c-format
@@ -7203,17 +7224,6 @@ msgstr "   (%d) Eksisterende nøgle\n"
 #, c-format
 msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Eksisterende nøgle fra kort\n"
-
-#, c-format
-msgid "error reading the card: %s\n"
-msgstr "fejl ved læsning af kort: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "Serielnummer for kortet: %s\n"
-
-msgid "Available keys:\n"
-msgstr "Tilgængelige nøgler:\n"
 
 #, c-format
 msgid "Possible actions for a %s key:\n"
@@ -9502,6 +9512,18 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "male"
+#~ msgstr "mand"
+
+#~ msgid "female"
+#~ msgstr "kvinde"
+
+#~ msgid "unspecified"
+#~ msgstr "ikke angivet"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Køn ((M)and, Kvinde(F) eller mellemrum): "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "ingen kendt nøgleserver (brug tilvalget --keyserver)\n"

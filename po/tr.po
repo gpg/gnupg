@@ -98,6 +98,7 @@ msgstr "aynı değiller - tekrar deneyin"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (%d/%d dene)"
@@ -1382,14 +1383,11 @@ msgstr "Seçiminiz? "
 msgid "[not set]"
 msgstr "[belirtilmedi]"
 
-msgid "male"
-msgstr "erkek"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "dişi"
-
-msgid "unspecified"
-msgstr "belirtilmemiş"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "zorlanmadı"
@@ -1443,8 +1441,8 @@ msgstr "Hata: tercih dizgesinin uzunluğu geçersiz.\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Hata: tercih dizgesindeki karakterler geçersiz.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Cinsiyet ((E)rkek, (D)işi veya boşluk): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Hata: yanıt geçersiz.\n"
@@ -1629,7 +1627,9 @@ msgstr "oturum açma ismini değiştirir"
 msgid "change the language preferences"
 msgstr "dil tercihlerini değiştirir"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "kart sahibinin cinsiyetini değiştirir"
 
 msgid "change a CA fingerprint"
@@ -4163,14 +4163,14 @@ msgid "Authenticate"
 msgstr "Kimlik kanıtla"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "OoŞşKkçÇ"
@@ -4254,6 +4254,11 @@ msgstr "   (%d) RSA (sadece şifrelemek için)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) Mevcut anahtar\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Karttaki mevcut anahtar\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Simgelemi giriniz: "
@@ -4264,6 +4269,18 @@ msgstr ""
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "%d indisli bir yardımcı anahtar yok\n"
+
+#, fuzzy, c-format
+msgid "error reading the card: %s\n"
+msgstr "%s: serbest kaydı okuma hatası: %s\n"
+
+#, fuzzy, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "kartın seri numarası alınırken hata: %s\n"
+
+#, fuzzy
+msgid "Available keys:\n"
+msgstr "anahtarı iptal eder"
 
 #, fuzzy, c-format
 #| msgid "rounded up to %u bits\n"
@@ -5013,6 +5030,11 @@ msgstr "UYARI: %s özet algoritması artık önerilmiyor.\n"
 #, fuzzy, c-format
 #| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s imzası, %s özet algoritması\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "%s imzası, %s özet algoritması\n"
 
 #, fuzzy, c-format
@@ -7242,18 +7264,6 @@ msgstr "   (%d) Mevcut anahtar\n"
 #, c-format
 msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Karttaki mevcut anahtar\n"
-
-#, fuzzy, c-format
-msgid "error reading the card: %s\n"
-msgstr "%s: serbest kaydı okuma hatası: %s\n"
-
-#, fuzzy, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "kartın seri numarası alınırken hata: %s\n"
-
-#, fuzzy
-msgid "Available keys:\n"
-msgstr "anahtarı iptal eder"
 
 #, c-format
 msgid "Possible actions for a %s key:\n"
@@ -9548,6 +9558,18 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "male"
+#~ msgstr "erkek"
+
+#~ msgid "female"
+#~ msgstr "dişi"
+
+#~ msgid "unspecified"
+#~ msgstr "belirtilmemiş"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Cinsiyet ((E)rkek, (D)işi veya boşluk): "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr ""

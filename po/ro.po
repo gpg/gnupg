@@ -99,6 +99,7 @@ msgstr ""
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -1357,14 +1358,11 @@ msgstr "Selecţia d-voastră? "
 msgid "[not set]"
 msgstr "[nesetat(ă)]"
 
-msgid "male"
-msgstr "masculin"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "feminin"
-
-msgid "unspecified"
-msgstr "nespecificat(ă)"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "neforţat(ă)"
@@ -1418,8 +1416,8 @@ msgstr "Eroare: lungime invalidă pentru şir preferinţe.\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Eroare: caractere invalide în şir preferinţe.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Sex ((M)asculin, (F)eminin sau spaţiu): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Eroare: răspuns invalid.\n"
@@ -1602,7 +1600,9 @@ msgstr "schimbă numele de login"
 msgid "change the language preferences"
 msgstr "schimbă preferinţele de limbă"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "schimbă sexul purtătorului cardului"
 
 msgid "change a CA fingerprint"
@@ -4110,14 +4110,14 @@ msgid "Authenticate"
 msgstr "Autentifică"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsCcAaTt"
@@ -4200,6 +4200,10 @@ msgstr "   (%d) RSA (numai cifrare)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (2) Cheie de cifrare\n"
 
+#, fuzzy, c-format
+msgid "  (%d) Existing key from card\n"
+msgstr "   (2) Cheie de cifrare\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notare semnătură: "
@@ -4210,6 +4214,18 @@ msgstr ""
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Nici o subcheie cu indicele %d\n"
+
+#, fuzzy, c-format
+msgid "error reading the card: %s\n"
+msgstr "%s: eroare citire înregistrare liberă: %s\n"
+
+#, fuzzy, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "eroare la obţinerea numărului serial: %s\n"
+
+#, fuzzy
+msgid "Available keys:\n"
+msgstr "deactivează cheia"
 
 #, fuzzy, c-format
 #| msgid "rounded up to %u bits\n"
@@ -4952,6 +4968,11 @@ msgstr "AVERTISMENT: algoritmul rezumat %s este prea vechi (deprecated)\n"
 #, fuzzy, c-format
 #| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "semnătură %s, algoritm rezumat %s\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "semnătură %s, algoritm rezumat %s\n"
 
 #, fuzzy, c-format
@@ -7137,18 +7158,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error reading the card: %s\n"
-msgstr "%s: eroare citire înregistrare liberă: %s\n"
-
-#, fuzzy, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "eroare la obţinerea numărului serial: %s\n"
-
-#, fuzzy
-msgid "Available keys:\n"
-msgstr "deactivează cheia"
-
-#, fuzzy, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Acţiuni posibile pentru o cheie %s: "
 
@@ -9269,6 +9278,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "male"
+#~ msgstr "masculin"
+
+#~ msgid "female"
+#~ msgstr "feminin"
+
+#~ msgid "unspecified"
+#~ msgstr "nespecificat(ă)"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Sex ((M)asculin, (F)eminin sau spaţiu): "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "nici un server de chei cunoscut (folosiţi opţiunea --keyserver)\n"

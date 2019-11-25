@@ -105,6 +105,7 @@ msgstr "前後不一致 - 請再試一次"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (第 %d 次嘗試, 最多 %d 次)"
@@ -1277,14 +1278,11 @@ msgstr "你要選哪一個? "
 msgid "[not set]"
 msgstr "[未設定]"
 
-msgid "male"
-msgstr "男性"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "女性"
-
-msgid "unspecified"
-msgstr "未特定"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "不強迫使用"
@@ -1337,8 +1335,8 @@ msgstr "錯誤: 無效的偏好設定字串長度\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "錯誤: 偏好設定字串中含有無效的字符\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "性別 ((M)男性, (F)女性或留空): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "錯誤: 無效的回應.\n"
@@ -1525,7 +1523,9 @@ msgstr "變更登入名稱"
 msgid "change the language preferences"
 msgstr "變更介面語言偏好設定"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "變更卡片持有者的性別"
 
 msgid "change a CA fingerprint"
@@ -3875,14 +3875,14 @@ msgid "Authenticate"
 msgstr "鑑定"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsEeAaQq"
@@ -3962,6 +3962,11 @@ msgstr "   (%d) ECC (僅能用於加密)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) 現有的金鑰\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) 卡片上現存的金鑰\n"
+
 msgid "Enter the keygrip: "
 msgstr "請輸入金鑰鑰柄: "
 
@@ -3970,6 +3975,17 @@ msgstr "不是有效的金鑰鑰柄 (應該要是 40 位十六進制數值)\n"
 
 msgid "No key with this keygrip\n"
 msgstr "沒有金鑰有此金鑰鑰柄\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "讀取卡片時出錯: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "卡片序號: %s\n"
+
+msgid "Available keys:\n"
+msgstr "可用金鑰:\n"
 
 #, c-format
 msgid "rounded to %u bits\n"
@@ -4675,6 +4691,11 @@ msgstr "警告: 已不建議使用 %s 摘要演算法\n"
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "請注意: 採用 %s 演算法的簽章已遭駁回\n"
+
+#, fuzzy, c-format
+#| msgid "Note: signatures using the %s algorithm are rejected\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "請注意: 採用 %s 演算法的簽章已遭駁回\n"
 
 #, fuzzy, c-format
@@ -6770,17 +6791,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) 卡片上現存的金鑰\n"
 
 #, c-format
-msgid "error reading the card: %s\n"
-msgstr "讀取卡片時出錯: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "卡片序號: %s\n"
-
-msgid "Available keys:\n"
-msgstr "可用金鑰:\n"
-
-#, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "%s 金鑰可能的動作:\n"
 
@@ -8807,6 +8817,18 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "male"
+#~ msgstr "男性"
+
+#~ msgid "female"
+#~ msgstr "女性"
+
+#~ msgid "unspecified"
+#~ msgstr "未特定"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "性別 ((M)男性, (F)女性或留空): "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "沒有已知的金鑰伺服器 (使用 --keyserver 選項)\n"

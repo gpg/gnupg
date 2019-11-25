@@ -96,6 +96,7 @@ msgstr "一致しません - もう一度"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (現在 %d / 最大 %d)"
@@ -1260,14 +1261,11 @@ msgstr "あなたの選択は? "
 msgid "[not set]"
 msgstr "[未設定]"
 
-msgid "male"
-msgstr "男"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "女"
-
-msgid "unspecified"
-msgstr "無指定"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "強制なし"
@@ -1320,8 +1318,8 @@ msgstr "エラー: 優先指定の文字列の長さが無効です。\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "エラー: 優先指定の文字列に無効な文字があります。\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "性別 ((M)男、(F)女、または空白): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "エラー: 無効な応答。\n"
@@ -1494,7 +1492,9 @@ msgstr "ログイン名の変更"
 msgid "change the language preferences"
 msgstr "言語の優先指定の変更"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "カード所有者の性別の変更"
 
 msgid "change a CA fingerprint"
@@ -1603,6 +1603,7 @@ msgstr "更新に失敗しました: %s\n"
 msgid "deleting keyblock failed: %s\n"
 msgstr "鍵ブロックの削除に失敗しました: %s\n"
 
+#, c-format
 msgid "ownertrust information cleared\n"
 msgstr "所有者信用情報をクリアしました\n"
 
@@ -3779,14 +3780,14 @@ msgid "Authenticate"
 msgstr "Authenticate"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsEeAaQq"
@@ -3866,6 +3867,11 @@ msgstr "  (%d) ECC (暗号化のみ)\n"
 msgid "  (%d) Existing key\n"
 msgstr "  (%d) 既存の鍵\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) カードに存在する鍵\n"
+
 msgid "Enter the keygrip: "
 msgstr "keygripを入力: "
 
@@ -3874,6 +3880,17 @@ msgstr "有効なkeygrip (40桁の16進数字)ではありません\n"
 
 msgid "No key with this keygrip\n"
 msgstr "このkeygripの鍵はありません\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "カードの読み込みエラー: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "カードのシリアル番号: %s\n"
+
+msgid "Available keys:\n"
+msgstr "利用可能な鍵:\n"
 
 #, c-format
 msgid "rounded to %u bits\n"
@@ -4570,6 +4587,11 @@ msgstr "*警告*: ダイジェスト・アルゴリズム %s は廃止されて�
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
+
+#, fuzzy, c-format
+#| msgid "Note: signatures using the %s algorithm are rejected\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
 
 #, c-format
@@ -6620,17 +6642,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) カードに存在する鍵\n"
 
 #, c-format
-msgid "error reading the card: %s\n"
-msgstr "カードの読み込みエラー: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "カードのシリアル番号: %s\n"
-
-msgid "Available keys:\n"
-msgstr "利用可能な鍵:\n"
-
-#, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "%s鍵に可能な操作:\n"
 
@@ -8567,15 +8578,19 @@ msgstr "'%s'の読み込みエラー: %s\n"
 msgid "error closing %s: %s\n"
 msgstr "'%s'でクローズのエラー: %s\n"
 
+#, c-format
 msgid "no --program option provided\n"
 msgstr "--programオプションが指定されていません\n"
 
+#, c-format
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr "--decryptと--encryptだけがサポートされています\n"
 
+#, c-format
 msgid "no --keyfile option provided\n"
 msgstr "--keyfileオプションが与えられていません\n"
 
+#, c-format
 msgid "cannot allocate args vector\n"
 msgstr "引数ベクタが確保できません\n"
 
@@ -8644,6 +8659,18 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "male"
+#~ msgstr "男"
+
+#~ msgid "female"
+#~ msgstr "女"
+
+#~ msgid "unspecified"
+#~ msgstr "無指定"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "性別 ((M)男、(F)女、または空白): "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "既知の鍵サーバがありません (オプション--keyserverを使いましょう)\n"

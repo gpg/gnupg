@@ -107,6 +107,7 @@ msgstr "ne correspond pas — veuillez réessayer"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (essai %d sur %d)"
@@ -1322,14 +1323,11 @@ msgstr "Quel est votre choix ? "
 msgid "[not set]"
 msgstr "[non positionné]"
 
-msgid "male"
-msgstr "masculin"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "féminin"
-
-msgid "unspecified"
-msgstr "non indiqué"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "non forcé"
@@ -1382,8 +1380,8 @@ msgstr "Erreur : taille incorrecte de la chaîne de préférences.\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Erreur : caractères incorrects dans la chaîne de préférences.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Sexe ((M)asculin, (F)éminin ou espace) : "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Erreur : réponse incorrecte.\n"
@@ -1576,7 +1574,9 @@ msgstr "modifier l'identifiant de connexion"
 msgid "change the language preferences"
 msgstr "modifier les préférences de langue"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "modifier le sexe du détenteur de la carte"
 
 msgid "change a CA fingerprint"
@@ -4026,14 +4026,14 @@ msgid "Authenticate"
 msgstr "Authentifier"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsCcAaQq"
@@ -4113,6 +4113,11 @@ msgstr "  (%d) ECC (chiffrement seul)\n"
 msgid "  (%d) Existing key\n"
 msgstr "  (%d) Clef existante\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Clef existante sur la carte\n"
+
 msgid "Enter the keygrip: "
 msgstr "Entrez le keygrip : "
 
@@ -4121,6 +4126,17 @@ msgstr "Ce n'est pas un keygrip valable (40 chiffres hexadécimaux attendus)\n"
 
 msgid "No key with this keygrip\n"
 msgstr "Pas de clef avec ce keygrip\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "erreur de lecture de la carte : %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "Numéro de série de la carte : %s\n"
+
+msgid "Available keys:\n"
+msgstr "Clefs disponibles :\n"
 
 #, c-format
 msgid "rounded to %u bits\n"
@@ -4867,6 +4883,11 @@ msgstr "Attention : l'algorithme de hachage %s est déconseillé\n"
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Remarque : les signatures utilisant l’algorithme %s sont rejetées\n"
+
+#, fuzzy, c-format
+#| msgid "Note: signatures using the %s algorithm are rejected\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "Remarque : les signatures utilisant l’algorithme %s sont rejetées\n"
 
 #, fuzzy, c-format
@@ -7126,17 +7147,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Clef existante sur la carte\n"
 
 #, c-format
-msgid "error reading the card: %s\n"
-msgstr "erreur de lecture de la carte : %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "Numéro de série de la carte : %s\n"
-
-msgid "Available keys:\n"
-msgstr "Clefs disponibles :\n"
-
-#, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Actions possibles pour une clef %s :\n"
 
@@ -9263,6 +9273,18 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "male"
+#~ msgstr "masculin"
+
+#~ msgid "female"
+#~ msgstr "féminin"
+
+#~ msgid "unspecified"
+#~ msgstr "non indiqué"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Sexe ((M)asculin, (F)éminin ou espace) : "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "pas de serveur de clefs connu (utilisez l'option --keyserver)\n"

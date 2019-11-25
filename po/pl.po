@@ -94,6 +94,7 @@ msgstr "nie pasują - proszę spróbować jeszcze raz"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (próba %d z %d)"
@@ -1260,14 +1261,11 @@ msgstr "Twój wybór? "
 msgid "[not set]"
 msgstr "[nie ustawiono]"
 
-msgid "male"
-msgstr "mężczyzna"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "kobieta"
-
-msgid "unspecified"
-msgstr "nie podano"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "nie wymuszono"
@@ -1320,8 +1318,8 @@ msgstr "Błąd: niewłaściwa długość tekstu preferencji.\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Błąd: niewłaściwe znaki w tekście preferencji.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Płeć (M - mężczyzna, F - kobieta lub spacja): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Błąd: niewłaściwa odpowiedź.\n"
@@ -1493,7 +1491,9 @@ msgstr "zmiana nazwy logowania"
 msgid "change the language preferences"
 msgstr "zmiana preferowanych języków"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "zmiana płci posiadacza karty"
 
 msgid "change a CA fingerprint"
@@ -3859,14 +3859,14 @@ msgid "Authenticate"
 msgstr "Uwierzytelnianie"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "PpSsUuZz"
@@ -3946,6 +3946,11 @@ msgstr "   (%d) ECC (tylko do szyfrowania)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) Istniejący klucz\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Istniejący klucz z karty\n"
+
 msgid "Enter the keygrip: "
 msgstr "Uchwyt klucza: "
 
@@ -3954,6 +3959,17 @@ msgstr "Nieprawidłowy uchwyt klucza (oczekiwano 40 cyfr szesnastkowych)\n"
 
 msgid "No key with this keygrip\n"
 msgstr "Brak klucza o tym uchwycie\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "błąd odczytu karty: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "Numer seryjny karty: %s\n"
+
+msgid "Available keys:\n"
+msgstr "Dostępne klucze:\n"
 
 #, c-format
 msgid "rounded to %u bits\n"
@@ -4692,6 +4708,11 @@ msgstr "OSTRZEŻENIE: algorytm skrótu %s jest odradzany\n"
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Uwaga: podpisy wykorzystujące algorytm %s są odrzucane\n"
+
+#, fuzzy, c-format
+#| msgid "Note: signatures using the %s algorithm are rejected\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "Uwaga: podpisy wykorzystujące algorytm %s są odrzucane\n"
 
 #, c-format
@@ -6871,17 +6892,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Istniejący klucz z karty\n"
 
 #, c-format
-msgid "error reading the card: %s\n"
-msgstr "błąd odczytu karty: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "Numer seryjny karty: %s\n"
-
-msgid "Available keys:\n"
-msgstr "Dostępne klucze:\n"
-
-#, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Możliwe akcje dla klucza %s:\n"
 
@@ -8925,3 +8935,15 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#~ msgid "male"
+#~ msgstr "mężczyzna"
+
+#~ msgid "female"
+#~ msgstr "kobieta"
+
+#~ msgid "unspecified"
+#~ msgstr "nie podano"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Płeć (M - mężczyzna, F - kobieta lub spacja): "

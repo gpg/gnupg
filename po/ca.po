@@ -114,6 +114,7 @@ msgstr ""
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -1401,14 +1402,11 @@ msgstr "La vostra selecció? "
 msgid "[not set]"
 msgstr "[no establert]"
 
-msgid "male"
-msgstr "home"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "dóna"
-
-msgid "unspecified"
-msgstr "no especificat"
+msgid "Ms."
+msgstr ""
 
 # Gènere?  Nombre?  Passat, futur?  ivb
 # Probablement és una clau, femení. jm
@@ -1470,7 +1468,7 @@ msgstr "hi ha un caràcter invàlid en la cadena de preferència\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "hi ha un caràcter invàlid en la cadena de preferència\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
 msgstr ""
 
 #, fuzzy
@@ -1654,7 +1652,7 @@ msgstr "canvia la data de caducitat"
 msgid "change the language preferences"
 msgstr "canvia la confiança"
 
-msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr ""
 
 #, fuzzy
@@ -4200,14 +4198,14 @@ msgid "Authenticate"
 msgstr ""
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr ""
@@ -4289,6 +4287,10 @@ msgstr "   (%d) RSA (només xifrar)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) RSA (només xifrar)\n"
 
+#, fuzzy, c-format
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) RSA (només xifrar)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notació de signatura: "
@@ -4299,6 +4301,18 @@ msgstr ""
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "No hi ha cap ID amb l'índex %d\n"
+
+#, fuzzy, c-format
+msgid "error reading the card: %s\n"
+msgstr "%s: error en llegir el registre lliure: %s\n"
+
+#, fuzzy, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
+
+#, fuzzy
+msgid "Available keys:\n"
+msgstr "desactiva una clau"
 
 #, fuzzy, c-format
 #| msgid "rounded up to %u bits\n"
@@ -5053,6 +5067,11 @@ msgstr "AVÍS: %s és una opció desaconsellada.\n"
 #, fuzzy, c-format
 #| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "signatura %s, algorisme de resum %s\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "signatura %s, algorisme de resum %s\n"
 
 #, fuzzy, c-format
@@ -7257,18 +7276,6 @@ msgstr "   (%d) RSA (només xifrar)\n"
 msgid "   (%d) Existing key from card\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "error reading the card: %s\n"
-msgstr "%s: error en llegir el registre lliure: %s\n"
-
-#, fuzzy, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "error en la creació de la contrasenya: %s\n"
-
-#, fuzzy
-msgid "Available keys:\n"
-msgstr "desactiva una clau"
-
 #, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr ""
@@ -9379,6 +9386,15 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "male"
+#~ msgstr "home"
+
+#~ msgid "female"
+#~ msgstr "dóna"
+
+#~ msgid "unspecified"
+#~ msgstr "no especificat"
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "no es coneix cap servidor de claus (useu l'opció \"--keyserver\")\n"

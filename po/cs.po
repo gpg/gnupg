@@ -124,6 +124,7 @@ msgstr "neshodují se – zkuste to znovu"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (pokus %d z %d)"
@@ -1296,14 +1297,11 @@ msgstr "Váš výběr? "
 msgid "[not set]"
 msgstr "[není nastaveno]"
 
-msgid "male"
-msgstr "muž"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "žena"
-
-msgid "unspecified"
-msgstr "neuvedeno"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "není vyžadováno"
@@ -1356,8 +1354,8 @@ msgstr "Chyba: neplatná délka řetězce s předvolbami.\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Chyba: neplatný znak v řetězci s předvolbami\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Zadejte pohlaví: M – mužské, F – ženské, nebo stiskněte mezerník: "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Chyba: neplatná odpověď.\n"
@@ -1531,7 +1529,9 @@ msgstr "změnit login name"
 msgid "change the language preferences"
 msgstr "změnit jazykové předvolby"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "změní pohlaví držitele karty"
 
 msgid "change a CA fingerprint"
@@ -3861,14 +3861,14 @@ msgid "Authenticate"
 msgstr "Autentizace"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsEeAaQq"
@@ -3948,6 +3948,11 @@ msgstr "  (%d) ECC (pouze pro šifrování)\n"
 msgid "  (%d) Existing key\n"
 msgstr "  (%d) Existující klíč\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Klíč existující na kartě\n"
+
 msgid "Enter the keygrip: "
 msgstr "Vložte keygrip: "
 
@@ -3956,6 +3961,17 @@ msgstr "Není platným keygripem (očekáváno 40 šestnáctkových číslic)\n"
 
 msgid "No key with this keygrip\n"
 msgstr "Klíč s takovým keygripem neexistuje\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "chyba při čtení z karty: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "Sériové číslo karty: %s\n"
+
+msgid "Available keys:\n"
+msgstr "Dostupné klíče:\n"
 
 #, c-format
 msgid "rounded to %u bits\n"
@@ -4685,6 +4701,11 @@ msgstr "VAROVÁNÍ: vyžádaný algoritmus %s není doporučen\n"
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Poznámka: podpisy používající algoritmus %s jsou zamítány\n"
+
+#, fuzzy, c-format
+#| msgid "Note: signatures using the %s algorithm are rejected\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "Poznámka: podpisy používající algoritmus %s jsou zamítány\n"
 
 #, c-format
@@ -6837,17 +6858,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Klíč existující na kartě\n"
 
 #, c-format
-msgid "error reading the card: %s\n"
-msgstr "chyba při čtení z karty: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "Sériové číslo karty: %s\n"
-
-msgid "Available keys:\n"
-msgstr "Dostupné klíče:\n"
-
-#, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Možné způsoby užití %s klíče:\n"
 
@@ -8881,6 +8891,18 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "male"
+#~ msgstr "muž"
+
+#~ msgid "female"
+#~ msgstr "žena"
+
+#~ msgid "unspecified"
+#~ msgstr "neuvedeno"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Zadejte pohlaví: M – mužské, F – ženské, nebo stiskněte mezerník: "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "žádný server klíčů není znám (použijte volbu --keyserver)\n"

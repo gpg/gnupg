@@ -124,6 +124,7 @@ msgstr "stämmer inte överens - försök igen"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (försök %d av %d)"
@@ -1415,14 +1416,11 @@ msgstr "Vad väljer du? "
 msgid "[not set]"
 msgstr "[inte inställt]"
 
-msgid "male"
-msgstr "man"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "kvinna"
-
-msgid "unspecified"
-msgstr "ej angiven"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "inte tvingad"
@@ -1477,8 +1475,8 @@ msgstr "Fel: ogiltig längd på inställningssträngen\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Fel: ogiltiga tecken i inställningssträngen.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Kön ((M)an, Kvinna(F) eller blanksteg): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Fel: ogiltigt svar.\n"
@@ -1677,7 +1675,9 @@ msgstr "ändra inloggningsnamnet"
 msgid "change the language preferences"
 msgstr "ändra språkinställningarna"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "ändra kortinnehavarens kön"
 
 msgid "change a CA fingerprint"
@@ -4213,14 +4213,14 @@ msgstr "Autentisera"
 # A = Authentisera
 # Q = Avsluta
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsKkAaQq"
@@ -4305,6 +4305,11 @@ msgstr "   (%d) RSA (endast kryptering)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) Befintlig nyckel\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Befintlig nyckel från kort\n"
+
 msgid "Enter the keygrip: "
 msgstr "Ange nyckelhashen: "
 
@@ -4313,6 +4318,17 @@ msgstr "Inte en giltig nyckelhash (förväntade 40 hexadecimala siffror)\n"
 
 msgid "No key with this keygrip\n"
 msgstr "Ingen nyckel med denna nyckelhash\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "fel vid läsning av kortet: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "Serienummer för kortet: %s\n"
+
+msgid "Available keys:\n"
+msgstr "Tillgängliga nycklar:\n"
 
 #, fuzzy, c-format
 #| msgid "rounded up to %u bits\n"
@@ -5073,6 +5089,11 @@ msgstr "VARNING: sammandragsalgoritmen %s är föråldrad\n"
 #, fuzzy, c-format
 #| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s signatur, sammandragsalgoritm %s\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "%s signatur, sammandragsalgoritm %s\n"
 
 #, fuzzy, c-format
@@ -7337,17 +7358,6 @@ msgstr "   (%d) Befintlig nyckel\n"
 #, c-format
 msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Befintlig nyckel från kort\n"
-
-#, c-format
-msgid "error reading the card: %s\n"
-msgstr "fel vid läsning av kortet: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "Serienummer för kortet: %s\n"
-
-msgid "Available keys:\n"
-msgstr "Tillgängliga nycklar:\n"
 
 #, c-format
 msgid "Possible actions for a %s key:\n"
@@ -9646,6 +9656,18 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "male"
+#~ msgstr "man"
+
+#~ msgid "female"
+#~ msgstr "kvinna"
+
+#~ msgid "unspecified"
+#~ msgstr "ej angiven"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Kön ((M)an, Kvinna(F) eller blanksteg): "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "ingen nyckelserver är känd (använd flaggan --keyserver)\n"

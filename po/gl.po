@@ -93,6 +93,7 @@ msgstr ""
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -1339,17 +1340,11 @@ msgstr "¿A súa selección? "
 msgid "[not set]"
 msgstr ""
 
-#, fuzzy
-msgid "male"
-msgstr "enable"
+msgid "Mr."
+msgstr ""
 
-#, fuzzy
-msgid "female"
-msgstr "enable"
-
-#, fuzzy
-msgid "unspecified"
-msgstr "Non se especificou un motivo"
+msgid "Ms."
+msgstr ""
 
 #, fuzzy
 msgid "not forced"
@@ -1408,7 +1403,7 @@ msgstr "caracter non válido na cadea de preferencias\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "caracter non válido na cadea de preferencias\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
 msgstr ""
 
 #, fuzzy
@@ -1591,7 +1586,7 @@ msgstr "cambia-la fecha de expiración"
 msgid "change the language preferences"
 msgstr "cambia-la confianza sobre o dono"
 
-msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr ""
 
 #, fuzzy
@@ -4098,14 +4093,14 @@ msgid "Authenticate"
 msgstr ""
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr ""
@@ -4187,6 +4182,10 @@ msgstr "   (%d) RSA (só cifrar)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) RSA (só cifrar)\n"
 
+#, fuzzy, c-format
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) RSA (só cifrar)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notación de sinaturas: "
@@ -4197,6 +4196,18 @@ msgstr ""
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Non hai ID de usuario con índice %d\n"
+
+#, fuzzy, c-format
+msgid "error reading the card: %s\n"
+msgstr "%s: erro ao ler un rexistro libre: %s\n"
+
+#, fuzzy, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "erro ao crea-lo contrasinal: %s\n"
+
+#, fuzzy
+msgid "Available keys:\n"
+msgstr "deshabilitar unha chave"
 
 #, fuzzy, c-format
 #| msgid "rounded up to %u bits\n"
@@ -4942,6 +4953,11 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Sinatura %s, algoritmo de resumo %s\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "Sinatura %s, algoritmo de resumo %s\n"
 
 #, fuzzy, c-format
@@ -7099,18 +7115,6 @@ msgstr "   (%d) RSA (só cifrar)\n"
 msgid "   (%d) Existing key from card\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "error reading the card: %s\n"
-msgstr "%s: erro ao ler un rexistro libre: %s\n"
-
-#, fuzzy, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "erro ao crea-lo contrasinal: %s\n"
-
-#, fuzzy
-msgid "Available keys:\n"
-msgstr "deshabilitar unha chave"
-
 #, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr ""
@@ -9209,6 +9213,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "male"
+#~ msgstr "enable"
+
+#, fuzzy
+#~ msgid "female"
+#~ msgstr "enable"
+
+#, fuzzy
+#~ msgid "unspecified"
+#~ msgstr "Non se especificou un motivo"
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr ""

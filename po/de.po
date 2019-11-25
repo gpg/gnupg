@@ -4749,7 +4749,9 @@ msgstr "Hinweis: %s basierte Signaturen werden zurückgewiesen.\n"
 
 #, c-format
 msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
-msgstr "Hinweis: Beglaubigungen von Dritten basierend auf dem %s Algorithmus werden zurückgewiesen.\n"
+msgstr ""
+"Hinweis: Beglaubigungen von Dritten basierend auf dem %s Algorithmus werden "
+"zurückgewiesen.\n"
 
 #, c-format
 msgid "(reported error: %s)\n"

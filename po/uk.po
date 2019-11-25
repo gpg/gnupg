@@ -97,6 +97,7 @@ msgstr "паролі не збігаються, повторіть спробу"
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (спроба %d з %d)"
@@ -1279,14 +1280,11 @@ msgstr "Ваш вибір? "
 msgid "[not set]"
 msgstr "[не встановлено]"
 
-msgid "male"
-msgstr "чоловіча"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "жіноча"
-
-msgid "unspecified"
-msgstr "не вказано"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "не увімкнено"
@@ -1340,8 +1338,8 @@ msgstr "Помилка: некоректна довжина рядка осно�
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Помилка: некоректні символи у рядку основної мови.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Стать (чоловіча (M), жіноча (F) або пробіл): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Помилка: некоректна відповідь.\n"
@@ -1529,7 +1527,9 @@ msgstr "змінити ім’я користувача"
 msgid "change the language preferences"
 msgstr "змінити основну мову"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "змінити поле статі власника картки"
 
 msgid "change a CA fingerprint"
@@ -3931,14 +3931,14 @@ msgid "Authenticate"
 msgstr "Пройти розпізнавання"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsEeAaQq"
@@ -4019,6 +4019,11 @@ msgstr "  (%d) ECC (лише шифрування)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) Вже записаний ключ\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card\n"
+msgstr "   (%d) Вже записаний ключ з картки\n"
+
 msgid "Enter the keygrip: "
 msgstr "Вкажіть keygrip: "
 
@@ -4027,6 +4032,17 @@ msgstr "Некоректний keygrip (мало бути вказано 40 ші
 
 msgid "No key with this keygrip\n"
 msgstr "Немає ключів з таким значенням keygrip\n"
+
+#, c-format
+msgid "error reading the card: %s\n"
+msgstr "помилка читання картки: %s\n"
+
+#, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "Серійний номер картки: %s\n"
+
+msgid "Available keys:\n"
+msgstr "Доступні ключі:\n"
 
 #, c-format
 msgid "rounded to %u bits\n"
@@ -4764,6 +4780,11 @@ msgstr "УВАГА: алгоритм обчислення контрольних
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Зауваження: підписи за допомогою алгоритму %s відкинуто\n"
+
+#, fuzzy, c-format
+#| msgid "Note: signatures using the %s algorithm are rejected\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr "Зауваження: підписи за допомогою алгоритму %s відкинуто\n"
 
 #, c-format
@@ -6974,17 +6995,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Вже записаний ключ з картки\n"
 
 #, c-format
-msgid "error reading the card: %s\n"
-msgstr "помилка читання картки: %s\n"
-
-#, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "Серійний номер картки: %s\n"
-
-msgid "Available keys:\n"
-msgstr "Доступні ключі:\n"
-
-#, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Можливі дії для ключа %s:\n"
 
@@ -9033,6 +9043,18 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "male"
+#~ msgstr "чоловіча"
+
+#~ msgid "female"
+#~ msgstr "жіноча"
+
+#~ msgid "unspecified"
+#~ msgstr "не вказано"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Стать (чоловіча (M), жіноча (F) або пробіл): "
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr ""
