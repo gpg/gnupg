@@ -1,7 +1,7 @@
-Noteworthy changes in version 2.2.18 (unreleased)
+Noteworthy changes in version 2.2.18 (2019-11-25)
 -------------------------------------------------
 
-  * gpg: Changes to the way keys on a smartcards are detected.  This
+  * gpg: Changed the way keys are detected on a smartcards; this
     allows the use of non-OpenPGP cards.  In the case of a not very
     likely regression the new option --use-only-openpgp-card is
     available.  [#4681]
@@ -65,7 +65,7 @@ Noteworthy changes in version 2.2.18 (unreleased)
     file.
 
   Release-info: https://dev.gnupg.org/T4684
-  See-also: gnupg-announce/2019q4/
+  See-also: gnupg-announce/2019q4/000442.html
 
 
 Noteworthy changes in version 2.2.17 (2019-07-09)
