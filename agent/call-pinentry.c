@@ -191,6 +191,37 @@ unlock_pinentry (ctrl_t ctrl, gpg_error_t rc)
 }
 
 
+/* Helper for at_fork_cb which can also be called by the parent to
+ * show shich envvars will be set.  */
+static void
+atfork_core (ctrl_t ctrl, int debug_mode)
+{
+  int iterator = 0;
+  const char *name, *assname, *value;
+
+  while ((name = session_env_list_stdenvnames (&iterator, &assname)))
+    {
+      /* For all new envvars (!ASSNAME) and the two medium old ones
+       * which do have an assuan name but are conveyed using
+       * environment variables, update the environment of the forked
+       * process.  */
+      if (!assname
+          || !strcmp (name, "XAUTHORITY")
+          || !strcmp (name, "PINENTRY_USER_DATA"))
+        {
+          value = session_env_getenv (ctrl->session_env, name);
+          if (value)
+            {
+              if (debug_mode)
+                log_debug ("pinentry: atfork used setenv(%s,%s)\n",name,value);
+              else
+                gnupg_setenv (name, value, 1);
+            }
+        }
+    }
+}
+
+
 /* To make sure we leave no secrets in our image after forking of the
    pinentry, we use this callback. */
 static void
@@ -200,26 +231,8 @@ atfork_cb (void *opaque, int where)
 
   if (!where)
     {
-      int iterator = 0;
-      const char *name, *assname, *value;
-
       gcry_control (GCRYCTL_TERM_SECMEM);
-
-      while ((name = session_env_list_stdenvnames (&iterator, &assname)))
-        {
-          /* For all new envvars (!ASSNAME) and the two medium old
-             ones which do have an assuan name but are conveyed using
-             environment variables, update the environment of the
-             forked process.  */
-          if (!assname
-              || !strcmp (name, "XAUTHORITY")
-              || !strcmp (name, "PINENTRY_USER_DATA"))
-            {
-              value = session_env_getenv (ctrl->session_env, name);
-              if (value)
-                gnupg_setenv (name, value, 1);
-            }
-        }
+      atfork_core (ctrl, 0);
     }
 }
 
@@ -405,6 +418,9 @@ start_pinentry (ctrl_t ctrl)
 
   if (DBG_IPC)
     log_debug ("connection to PIN entry established\n");
+
+  if (opt.debug_pinentry)
+    atfork_core (ctrl, 1);
 
   value = session_env_getenv (ctrl->session_env, "PINENTRY_USER_DATA");
   if (value != NULL)
