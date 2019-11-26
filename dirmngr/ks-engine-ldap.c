@@ -308,15 +308,15 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
 
   if(!uri)
     err = ks_print_help (ctrl, "  ldap");
-  else if (strcmp (uri->scheme, "ldap") == 0
-      || strcmp (uri->scheme, "ldaps") == 0
-      || strcmp (uri->scheme, "ldapi") == 0)
+  else if (uri->is_ldap)
     err = ks_print_help (ctrl, data);
   else
     err = 0;
 
   return err;
 }
+
+
 
 /* Convert a keyspec to a filter.  Return an error if the keyspec is
    bad or is not supported.  The filter is escaped and returned in

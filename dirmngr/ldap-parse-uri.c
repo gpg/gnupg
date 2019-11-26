@@ -30,36 +30,23 @@
 #include "../common/util.h"
 #include "http.h"
 
-/* Returns 1 if the string is an LDAP URL (begins with ldap:, ldaps:
-   or ldapi:).  */
+/* Returns 1 if the string is an LDAP URL.  */
 int
 ldap_uri_p (const char *url)
 {
-  char *colon = strchr (url, ':');
-  if (! colon)
-    return 0;
-  else
-    {
-      int offset = (uintptr_t) colon - (uintptr_t) url;
+  parsed_uri_t puri;
+  int result;
 
-      if (/* All lower case.  */
-	  (offset == 4 && memcmp (url, "ldap", 4) == 0)
-	  || (offset == 5
-	      && (memcmp (url, "ldaps", 5) == 0
-		  && memcmp (url, "ldapi", 5) == 0))
-	  /* Mixed case.  */
-	  || ((url[0] == 'l' || url[0] == 'L')
-	      && (url[1] == 'd' || url[1] == 'D')
-	      && (url[2] == 'a' || url[2] == 'A')
-	      && (url[3] == 'p' || url[3] == 'P')
-	      && (url[4] == ':'
-		  || ((url[4] == 's' || url[4] == 'S'
-		       || url[4] == 'i' || url[4] == 'i')
-		      && url[5] == ':'))))
-	return 1;
-      return 0;
-    }
+  if (http_parse_uri (&puri, url, 1))
+    result = 0;
+  else
+    result = !!puri->is_ldap;
+
+  http_release_parsed_uri (puri);
+
+  return result;
 }
+
 
 /* Parse a URI and put the result into *purip.  On success the
    caller must use http_release_parsed_uri() to releases the resources.

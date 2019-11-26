@@ -419,8 +419,9 @@ main (int argc, char **argv)
             }
           putchar ('\n');
         }
-      printf ("Flags :%s%s%s%s\n",
+      printf ("Flags :%s%s%s%s%s\n",
               uri->is_http? " http":"",
+              uri->is_ldap? " ldap":"",
               uri->opaque?  " opaque":"",
               uri->v6lit?   " v6lit":"",
               uri->onion?   " onion":"");

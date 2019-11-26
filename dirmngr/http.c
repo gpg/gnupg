@@ -1292,7 +1292,7 @@ parse_uri (parsed_uri_t *ret_uri, const char *uri,
  * On success the caller must use http_release_parsed_uri() to
  * releases the resources.  If NO_SCHEME_CHECK is set, the function
  * tries to parse the URL in the same way it would do for an HTTP
- * style URI.
+ * style URI; this can for example be used for hkps or ldap schemes.
  */
 gpg_error_t
 http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
@@ -1341,6 +1341,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
   uri->params = uri->query = NULL;
   uri->use_tls = 0;
   uri->is_http = 0;
+  uri->is_ldap = 0;
   uri->opaque = 0;
   uri->v6lit = 0;
   uri->onion = 0;
@@ -1380,7 +1381,24 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
           uri->use_tls = 1;
         }
       else if (!no_scheme_check)
-	return GPG_ERR_INV_URI; /* Unsupported scheme */
+	return GPG_ERR_INV_URI; /* Not an http style scheme.  */
+      else if (!strcmp (uri->scheme, "ldap") && !force_tls)
+        {
+          uri->port = 389;
+          uri->is_ldap = 1;
+        }
+      else if (!strcmp (uri->scheme, "ldaps")
+               || (force_tls && (!strcmp (uri->scheme, "ldap"))))
+        {
+          uri->port = 636;
+          uri->is_ldap = 1;
+          uri->use_tls = 1;
+        }
+      else if (!strcmp (uri->scheme, "ldapi"))  /* LDAP via IPC.  */
+        {
+          uri->port = 0;
+          uri->is_ldap = 1;
+        }
 
       p = p2;
 
@@ -1446,8 +1464,8 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
 	    return GPG_ERR_BAD_URI;	/* Hostname includes a Nul. */
 	  p = p2 ? p2 : NULL;
 	}
-      else if (uri->is_http)
-	return GPG_ERR_INV_URI; /* No Leading double slash for HTTP.  */
+      else if (!no_scheme_check && (uri->is_http || uri->is_ldap))
+	return GPG_ERR_INV_URI; /* HTTP or LDAP w/o leading double slash. */
       else
         {
           uri->opaque = 1;

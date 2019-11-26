@@ -51,10 +51,11 @@ struct parsed_uri_s
   char *original;       /* Unmodified copy of the parsed URI.  */
   char *scheme;	        /* Pointer to the scheme string (always lowercase). */
   unsigned int is_http:1; /* This is a HTTP style URI.   */
+  unsigned int is_ldap:1; /* This is a LDAP style URI.   */
   unsigned int use_tls:1; /* Whether TLS should be used. */
-  unsigned int opaque:1;/* Unknown scheme; PATH has the rest.  */
-  unsigned int v6lit:1; /* Host was given as a literal v6 address.  */
-  unsigned int onion:1; /* .onion address given.  */
+  unsigned int opaque:1;  /* Unknown scheme; PATH has the rest.  */
+  unsigned int v6lit:1;   /* Host was given as a literal v6 address.  */
+  unsigned int onion:1;   /* .onion address given.  */
   unsigned int explicit_port :1; /* The port was explicitly specified.  */
   char *auth;           /* username/password for basic auth.  */
   char *host; 	        /* Host (converted to lowercase). */
