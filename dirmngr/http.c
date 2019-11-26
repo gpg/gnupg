@@ -2,7 +2,7 @@
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2015-2018 g10 Code GmbH
+ * Copyright (C) 2015-2019 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -39,9 +39,8 @@
   - stpcpy is required
   - fixme: list other requirements.
 
-
-  - With HTTP_USE_NTBTLS or HTTP_USE_GNUTLS support for https is
-    provided (this also requires estream).
+  - Either HTTP_USE_NTBTLS or HTTP_USE_GNUTLS must be defind to select
+    which TLS library to use.
 
   - With HTTP_NO_WSASTARTUP the socket initialization is not done
     under Windows.  This is useful if the socket layer has already
@@ -136,13 +135,10 @@
 
 #if HTTP_USE_NTBTLS
 typedef ntbtls_t         tls_session_t;
-# define USE_TLS 1
 #elif HTTP_USE_GNUTLS
 typedef gnutls_session_t tls_session_t;
-# define USE_TLS 1
 #else
-typedef void *tls_session_t;
-# undef USE_TLS
+# error building without TLS is not supported
 #endif
 
 static gpg_err_code_t do_parse_uri (parsed_uri_t uri, int only_local_part,
@@ -241,10 +237,7 @@ struct http_session_s
   unsigned long magic;
 
   int refcount;    /* Number of references to this object.  */
-#ifdef HTTP_USE_GNUTLS
-  gnutls_certificate_credentials_t certcred;
-#endif /*HTTP_USE_GNUTLS*/
-#ifdef USE_TLS
+
   tls_session_t tls_session;
   struct {
     int done;      /* Verifciation has been done.  */
@@ -252,7 +245,7 @@ struct http_session_s
     unsigned int status; /* Verification status.  */
   } verify;
   char *servername; /* Malloced server name.  */
-#endif /*USE_TLS*/
+
   /* A callback function to log details of TLS certifciates.  */
   void (*cert_log_cb) (http_session_t, gpg_error_t, const char *,
                        const void **, size_t *);
@@ -266,6 +259,10 @@ struct http_session_s
 
   /* The connect timeout */
   unsigned int connect_timeout;
+
+#ifdef HTTP_USE_GNUTLS
+  gnutls_certificate_credentials_t certcred;
+#endif /*HTTP_USE_GNUTLS*/
 };
 
 
@@ -649,31 +646,29 @@ notify_netactivity (void)
 
 
 
-#ifdef USE_TLS
 /* Free the TLS session associated with SESS, if any.  */
 static void
 close_tls_session (http_session_t sess)
 {
   if (sess->tls_session)
     {
-# if HTTP_USE_NTBTLS
+#if HTTP_USE_NTBTLS
       /* FIXME!!
          Possibly, ntbtls_get_transport and close those streams.
          Somehow get SOCK to call my_socket_unref.
       */
       ntbtls_release (sess->tls_session);
-# elif HTTP_USE_GNUTLS
+#elif HTTP_USE_GNUTLS
       my_socket_t sock = gnutls_transport_get_ptr (sess->tls_session);
       my_socket_unref (sock, NULL, NULL);
       gnutls_deinit (sess->tls_session);
       if (sess->certcred)
         gnutls_certificate_free_credentials (sess->certcred);
-# endif /*HTTP_USE_GNUTLS*/
+#endif /*HTTP_USE_GNUTLS*/
       xfree (sess->servername);
       sess->tls_session = NULL;
     }
 }
-#endif /*USE_TLS*/
 
 
 /* Release a session.  Take care not to release it while it is being
@@ -693,14 +688,13 @@ session_unref (int lnr, http_session_t sess)
   if (sess->refcount)
     return;
 
-#ifdef USE_TLS
   close_tls_session (sess);
-#endif /*USE_TLS*/
 
   sess->magic = 0xdeadbeef;
   xfree (sess);
 }
 #define http_session_unref(a) session_unref (__LINE__, (a))
+
 
 void
 http_session_release (http_session_t sess)
@@ -887,9 +881,7 @@ http_session_new (http_session_t *r_session,
     log_debug ("http.c:session_new: sess %p created\n", sess);
   err = 0;
 
-#if USE_TLS
  leave:
-#endif /*USE_TLS*/
   if (err)
     http_session_unref (sess);
   else
@@ -1379,7 +1371,6 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
           uri->port = 11371;
           uri->is_http = 1;
         }
-#ifdef USE_TLS
       else if (!strcmp (uri->scheme, "https") || !strcmp (uri->scheme,"hkps")
                || (force_tls && (!strcmp (uri->scheme, "http")
                                  || !strcmp (uri->scheme,"hkp"))))
@@ -1388,7 +1379,6 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
           uri->is_http = 1;
           uri->use_tls = 1;
         }
-#endif /*USE_TLS*/
       else if (!no_scheme_check)
 	return GPG_ERR_INV_URI; /* Unsupported scheme */
 
@@ -1752,16 +1742,13 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
   char *proxy_authstr = NULL;
   char *authstr = NULL;
   assuan_fd_t sock;
-#ifdef USE_TLS
   int have_http_proxy = 0;
-#endif
 
   if (hd->uri->use_tls && !hd->session)
     {
       log_error ("TLS requested but no session object provided\n");
       return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
     }
-#ifdef USE_TLS
   if (hd->uri->use_tls && !hd->session->tls_session)
     {
       log_error ("TLS requested but no TLS context available\n");
@@ -1769,15 +1756,12 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
     }
   if (opt_debug)
     log_debug ("Using TLS library: %s %s\n",
-# if HTTP_USE_NTBTLS
+#if HTTP_USE_NTBTLS
                "NTBTLS", ntbtls_check_version (NULL)
-# elif HTTP_USE_GNUTLS
+#elif HTTP_USE_GNUTLS
                "GNUTLS", gnutls_check_version (NULL)
-# else
-               "?", "?"
-# endif /*HTTP_USE_*TLS*/
+#endif /*HTTP_USE_GNUTLS*/
                );
-#endif /*USE_TLS*/
 
   if ((hd->flags & HTTP_FLAG_FORCE_TOR))
     {
@@ -1798,12 +1782,11 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
   port = hd->uri->port ? hd->uri->port : 80;
 
   /* Try to use SNI.  */
-#ifdef USE_TLS
   if (hd->uri->use_tls)
     {
-# if HTTP_USE_GNUTLS
+#if HTTP_USE_GNUTLS
       int rc;
-# endif
+#endif
 
       xfree (hd->session->servername);
       hd->session->servername = xtrystrdup (httphost? httphost : server);
@@ -1813,7 +1796,7 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
           return err;
         }
 
-# if HTTP_USE_NTBTLS
+#if HTTP_USE_NTBTLS
       err = ntbtls_set_hostname (hd->session->tls_session,
                                  hd->session->servername);
       if (err)
@@ -1821,16 +1804,15 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
           log_info ("ntbtls_set_hostname failed: %s\n", gpg_strerror (err));
           return err;
         }
-# elif HTTP_USE_GNUTLS
+#elif HTTP_USE_GNUTLS
       rc = gnutls_server_name_set (hd->session->tls_session,
                                    GNUTLS_NAME_DNS,
                                    hd->session->servername,
                                    strlen (hd->session->servername));
       if (rc < 0)
         log_info ("gnutls_server_name_set failed: %s\n", gnutls_strerror (rc));
-# endif /*HTTP_USE_GNUTLS*/
+#endif /*HTTP_USE_GNUTLS*/
     }
-#endif /*USE_TLS*/
 
   if ( (proxy && *proxy)
        || ( (hd->flags & HTTP_FLAG_TRY_PROXY)
@@ -1855,10 +1837,8 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
 
       if (err)
         ;
-#ifdef USE_TLS
       else if (!strcmp (uri->scheme, "http"))
         have_http_proxy = 1;
-#endif
       else if (!strcmp (uri->scheme, "socks4")
                || !strcmp (uri->scheme, "socks5h"))
         err = gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
@@ -1911,7 +1891,6 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
       return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
     }
 
-#if USE_TLS
   if (have_http_proxy && hd->uri->use_tls)
     {
       int saved_flags;
@@ -1998,7 +1977,6 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
        * TLS session and talk directly to the target server.  */
       http_proxy = NULL;
     }
-#endif	/* USE_TLS */
 
 #if HTTP_USE_NTBTLS
   if (hd->uri->use_tls)
@@ -2009,12 +1987,12 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
 
       /* Until we support send/recv in estream under Windows we need
        * to use es_fopencookie.  */
-#ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_W32_SYSTEM
       in = es_fopencookie ((void*)(unsigned int)hd->sock->fd, "rb",
                            simple_cookie_functions);
-#else
+# else
       in = es_fdopen_nc (hd->sock->fd, "rb");
-#endif
+# endif
       if (!in)
         {
           err = gpg_error_from_syserror ();
@@ -2022,12 +2000,12 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
           return err;
         }
 
-#ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_W32_SYSTEM
       out = es_fopencookie ((void*)(unsigned int)hd->sock->fd, "wb",
                             simple_cookie_functions);
-#else
+# else
       out = es_fdopen_nc (hd->sock->fd, "wb");
-#endif
+# endif
       if (!out)
         {
           err = gpg_error_from_syserror ();
@@ -2045,7 +2023,6 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
           return err;
         }
 
-#ifdef HTTP_USE_NTBTLS
       if (hd->session->verify_cb)
         {
           err = ntbtls_set_verify_cb (hd->session->tls_session,
@@ -2058,7 +2035,6 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
               return err;
             }
         }
-#endif /*HTTP_USE_NTBTLS*/
 
       while ((err = ntbtls_handshake (hd->session->tls_session)))
         {
@@ -2077,11 +2053,7 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
       /* Try the available verify callbacks until one returns success
        * or a real error.  Note that NTBTLS does the verification
        * during the handshake via   */
-#ifdef HTTP_USE_NTBTLS
       err = 0; /* Fixme check that the CB has been called.  */
-#else
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 
       if (hd->session->verify_cb
           && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR
@@ -2109,7 +2081,9 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
         }
 
     }
+
 #elif HTTP_USE_GNUTLS
+
   if (hd->uri->use_tls)
     {
       int rc;
@@ -2166,6 +2140,7 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
           return err;
         }
     }
+
 #endif /*HTTP_USE_GNUTLS*/
 
   if (auth || hd->uri->auth)
@@ -2178,7 +2153,8 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
           if (!myauth)
             {
               xfree (proxy_authstr);
-              return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+              return gpg_err_make (default_errsource,
+                                   gpg_err_code_from_syserror ());
             }
           remove_escapes (myauth);
         }
@@ -3511,6 +3487,7 @@ http_verify_server_credentials (http_session_t sess)
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 #endif
 }
+
 
 /* Return the first query variable with the specified key.  If there
    is no such variable, return NULL.  */

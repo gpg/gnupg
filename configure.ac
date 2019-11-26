@@ -1026,7 +1026,7 @@ AC_ARG_ENABLE(npth-debug,
 
 
 #
-# NTBTLS is our TLS library.  If it is not available fallback to
+# NTBTLS is our TLS library.  If it is not available we fall back to
 # GNUTLS.
 #
 AC_ARG_ENABLE(ntbtls,
@@ -1057,9 +1057,10 @@ else
     AC_DEFINE(HTTP_USE_GNUTLS, 1, [Enable GNUTLS support in http.c])
   else
     tmp=$(echo "$LIBGNUTLS_PKG_ERRORS" | tr '\n' '\v' | sed 's/\v/\n*** /g')
+    build_dirmngr=no
     AC_MSG_WARN([[
 ***
-*** Building without NTBTLS and GNUTLS - no TLS access to keyservers.
+*** Neither NTBTLS nor GNUTLS available - not building dirmngr.
 ***
 *** $tmp]])
   fi
