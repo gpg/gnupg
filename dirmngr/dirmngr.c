@@ -1984,9 +1984,14 @@ housekeeping_thread (void *arg)
 }
 
 
-#if GPGRT_GCC_HAVE_PUSH_PRAGMA
+/* We try to enable correct overflow handling for signed int (commonly
+ * used for time_t). With gcc 4.2 -fno-strict-overflow was introduced
+ * and used here as a pragma.  Later gcc versions (gcc 6?) removed
+ * this as a pragma and -fwrapv was then suggested as a replacement
+ * for -fno-strict-overflow.  */
+#if GPGRT_HAVE_PRAGMA_GCC_PUSH
 # pragma GCC push_options
-# pragma GCC optimize ("no-strict-overflow")
+# pragma GCC optimize ("wrapv")
 #endif
 static int
 time_for_housekeeping_p (time_t curtime)
@@ -2004,7 +2009,7 @@ time_for_housekeeping_p (time_t curtime)
     }
   return 0;
 }
-#if GPGRT_GCC_HAVE_PUSH_PRAGMA
+#if GPGRT_HAVE_PRAGMA_GCC_PUSH
 # pragma GCC pop_options
 #endif
 
