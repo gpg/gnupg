@@ -79,6 +79,49 @@ ctb_pkttype (int ctb)
 }
 
 
+/* Build a keyblock image from KEYBLOCK.  Returns 0 on success and
+ * only then stores a new iobuf object at R_IOBUF; the returned iobuf
+ * can be access with the iobuf_get_temp_buffer and
+ * iobuf_get_temp_length macros.  */
+gpg_error_t
+build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf)
+{
+  gpg_error_t err;
+  iobuf_t iobuf;
+  kbnode_t kbctx, node;
+
+  *r_iobuf = NULL;
+
+  iobuf = iobuf_temp ();
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+    {
+      /* Make sure to use only packets valid on a keyblock.  */
+      switch (node->pkt->pkttype)
+        {
+        case PKT_PUBLIC_KEY:
+        case PKT_PUBLIC_SUBKEY:
+        case PKT_SIGNATURE:
+        case PKT_USER_ID:
+        case PKT_ATTRIBUTE:
+        case PKT_RING_TRUST:
+          break;
+        default:
+          continue;
+        }
+
+      err = build_packet_and_meta (iobuf, node->pkt);
+      if (err)
+        {
+          iobuf_close (iobuf);
+          return err;
+        }
+    }
+
+  *r_iobuf = iobuf;
+  return 0;
+}
+
+
 /* Build a packet and write it to the stream OUT.
  * Returns: 0 on success or on an error code.  */
 int

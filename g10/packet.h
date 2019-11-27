@@ -862,6 +862,7 @@ PACKET *create_gpg_control ( ctrlpkttype_t type,
                              size_t datalen );
 
 /*-- build-packet.c --*/
+gpg_error_t build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf);
 int build_packet (iobuf_t out, PACKET *pkt);
 gpg_error_t build_packet_and_meta (iobuf_t out, PACKET *pkt);
 gpg_error_t gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *t_nwritten);
