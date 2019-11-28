@@ -50,7 +50,7 @@
 
 /* The maximum length of a formatted fingerprint as returned by
  * format_hexfingerprint().  */
-#define MAX_FORMATTED_FINGERPRINT_LEN 59
+#define MAX_FORMATTED_FINGERPRINT_LEN 60
 
 
 /*

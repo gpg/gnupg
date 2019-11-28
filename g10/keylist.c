@@ -2059,9 +2059,9 @@ print_fingerprint (ctrl_t ctrl, estream_t override_fp,
         {
           if (!i)
             ;
-          else if (!(i%8))
+          else if (!(i%10))
             tty_fprintf (fp, "\n%*s ", (int)strlen(text)+1, "");
-          else if (!(i%4))
+          else if (!(i%5))
             tty_fprintf (fp, "  ");
           else
             tty_fprintf (fp, " ");

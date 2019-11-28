@@ -873,10 +873,10 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
       /* The v5 fingerprint is commonly printed truncated to 25
        * octets.  We accept the truncated as well as the full hex
        * version here and format it like this:
-       * B2CCB6 838332 5D61BA C50F9F 5E CD21A8 0AC8C5 2565C8 C52565
+       * 19347 BC987 24640 25F99 DF3EC 2E000 0ED98 84892 E1F7B 3EA4C
        */
       hexlen = 50;
-      space = 8 * 6 + 2 + 8 + 1;
+      space = 10 * 5 + 9 + 1;
     }
   else  /* Other fingerprint versions - print as is.  */
     {
@@ -908,18 +908,9 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
     }
   else if (hexlen == 50)  /* v5 fingerprint */
     {
-      for (i=j=0; i < 24; i++)
+      for (i=j=0; i < 50; i++)
         {
-          if (i && !(i % 6))
-            buffer[j++] = ' ';
-          buffer[j++] = fingerprint[i];
-        }
-      buffer[j++] = ' ';
-      buffer[j++] = fingerprint[i++];
-      buffer[j++] = fingerprint[i++];
-      for (; i < 50; i++)
-        {
-          if (!((i-26) % 6))
+          if (i && !(i % 5))
             buffer[j++] = ' ';
           buffer[j++] = fingerprint[i];
         }
