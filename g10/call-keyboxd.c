@@ -734,6 +734,35 @@ keydb_get_keyblock (KEYDB_HANDLE hd, kbnode_t *ret_kb)
 }
 
 
+
+/* Communication object for STORE commands.  */
+struct store_parm_s
+{
+  assuan_context_t ctx;
+  const void *data;   /* The key in OpenPGP binary format.  */
+  size_t datalen;     /* The length of DATA.  */
+};
+
+
+/* Handle the inquiries from the STORE command.  */
+static gpg_error_t
+store_inq_cb (void *opaque, const char *line)
+{
+  struct store_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+
+  if (has_leading_keyword (line, "BLOB"))
+    {
+      if (parm->data)
+        err = assuan_send_data (parm->ctx, parm->data, parm->datalen);
+    }
+  else
+    return gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
+
+  return err;
+}
+
+
 /* Update the keyblock KB (i.e., extract the fingerprint and find the
  * corresponding keyblock in the keyring).
  *
@@ -753,6 +782,8 @@ gpg_error_t
 keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
 {
   gpg_error_t err;
+  iobuf_t iobuf = NULL;
+  struct store_parm_s parm = {NULL};
 
   log_assert (kb);
   log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
@@ -766,16 +797,33 @@ keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
       goto leave;
     }
 
-  err = GPG_ERR_NOT_IMPLEMENTED;
+  if (opt.dry_run)
+    {
+      err = 0;
+      goto leave;
+    }
+
+  err = build_keyblock_image (kb, &iobuf);
+  if (err)
+    goto leave;
+
+  parm.ctx = hd->kbl->ctx;
+  parm.data = iobuf_get_temp_buffer (iobuf);
+  parm.datalen = iobuf_get_temp_length (iobuf);
+  err = assuan_transact (hd->kbl->ctx, "STORE --update",
+                         NULL, NULL,
+                         store_inq_cb, &parm,
+                         NULL, NULL);
 
  leave:
+  iobuf_close (iobuf);
   return err;
 }
 
 
 /* Insert a keyblock into one of the underlying keyrings or keyboxes.
  *
- * Be default, the keyring / keybox from which the last search result
+ * By default, the keyring / keybox from which the last search result
  * came is used.  If there was no previous search result (or
  * keydb_search_reset was called), then the keyring / keybox where the
  * next search would start is used (i.e., the current file position).
@@ -788,6 +836,8 @@ gpg_error_t
 keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
   gpg_error_t err;
+  iobuf_t iobuf = NULL;
+  struct store_parm_s parm = {NULL};
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
@@ -798,9 +848,26 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
       goto leave;
     }
 
-  err = GPG_ERR_NOT_IMPLEMENTED;
+  if (opt.dry_run)
+    {
+      err = 0;
+      goto leave;
+    }
+
+  err = build_keyblock_image (kb, &iobuf);
+  if (err)
+    goto leave;
+
+  parm.ctx = hd->kbl->ctx;
+  parm.data = iobuf_get_temp_buffer (iobuf);
+  parm.datalen = iobuf_get_temp_length (iobuf);
+  err = assuan_transact (hd->kbl->ctx, "STORE --insert",
+                         NULL, NULL,
+                         store_inq_cb, &parm,
+                         NULL, NULL);
 
  leave:
+  iobuf_close (iobuf);
   return err;
 }
 
@@ -814,6 +881,8 @@ gpg_error_t
 keydb_delete_keyblock (KEYDB_HANDLE hd)
 {
   gpg_error_t err;
+  unsigned char hexubid[UBID_LEN * 2 + 1];
+  char line[ASSUAN_LINELENGTH];
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
@@ -824,7 +893,24 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
       goto leave;
     }
 
-  err = GPG_ERR_NOT_IMPLEMENTED;
+  if (opt.dry_run)
+    {
+      err = 0;
+      goto leave;
+    }
+
+  if (!hd->last_ubid_valid)
+    {
+      err = gpg_error (GPG_ERR_VALUE_NOT_FOUND);
+      goto leave;
+    }
+
+  bin2hex (hd->last_ubid, UBID_LEN, hexubid);
+  snprintf (line, sizeof line, "DELETE %s", hexubid);
+  err = assuan_transact (hd->kbl->ctx, line,
+                         NULL, NULL,
+                         NULL, NULL,
+                         NULL, NULL);
 
  leave:
   return err;
@@ -854,9 +940,12 @@ keydb_search_reset (KEYDB_HANDLE hd)
       goto leave;
     }
 
-  /* All we need todo is to tell search that a reset is pending.  Note
-   * that keydb_new sets this flag as well.  */
+  /* All we need is to tell search that a reset is pending.  Note that
+   * keydb_new sets this flag as well.  To comply with the
+   * specification of keydb_delete_keyblock we also need to clear the
+   * ubid flag so that after a reset a delete can't be performed.  */
   hd->kbl->need_search_reset = 1;
+  hd->last_ubid_valid = 0;
   err = 0;
 
  leave:
@@ -1050,7 +1139,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     case KEYDB_SEARCH_MODE_UBID:
       {
         unsigned char hexubid[UBID_LEN * 2 + 1];
-        bin2hex (desc[0].u.grip, UBID_LEN, hexubid);
+        bin2hex (desc[0].u.ubid, UBID_LEN, hexubid);
         snprintf (line, sizeof line, "SEARCH ^%s", hexubid);
       }
       break;
