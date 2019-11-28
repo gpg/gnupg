@@ -522,6 +522,46 @@ cmd_store (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_delete[] =
+  "DELETE <ubid> \n"
+  "\n"
+  "Delete a key into the database.  The UBID identifies the key.\n";
+static gpg_error_t
+cmd_delete (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  int n;
+  unsigned char ubid[UBID_LEN];
+
+  line = skip_options (line);
+  if (!*line)
+    {
+      err = set_error (GPG_ERR_INV_ARG, "UBID missing");
+      goto leave;
+    }
+
+  /* Skip an optional UBID identifier character.  */
+  if (*line == '^' && line[1])
+    line++;
+  if ((n=hex2bin (line, ubid, UBID_LEN)) < 0)
+    {
+      err = set_error (GPG_ERR_INV_USER_ID, "invalid UBID");
+      goto leave;
+    }
+  if (line[n])
+    {
+      err = set_error (GPG_ERR_INV_ARG, "garbage after UBID");
+      goto leave;
+    }
+
+  err = kbxd_delete (ctrl, ubid);
+
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
 
 
 static const char hlp_getinfo[] =
@@ -643,6 +683,7 @@ register_commands (assuan_context_t ctx)
     { "SEARCH",     cmd_search,     hlp_search },
     { "NEXT",       cmd_next,       hlp_next   },
     { "STORE",      cmd_store,      hlp_store  },
+    { "DELETE",     cmd_delete,     hlp_delete  },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "OUTPUT",     NULL,           hlp_output },
     { "KILLKEYBOXD",cmd_killkeyboxd,hlp_killkeyboxd },

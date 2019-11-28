@@ -425,3 +425,33 @@ be_kbx_update (ctrl_t ctrl, backend_handle_t backend_hd,
   ksba_cert_release (cert);
   return err;
 }
+
+
+/* Delete the blob from the keybox.  BACKEND_HD is the handle for
+ * this backend and REQUEST is the current database request object.  */
+gpg_error_t
+be_kbx_delete (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request)
+{
+  gpg_error_t err;
+  db_request_part_t part;
+  ksba_cert_t cert = NULL;
+
+  (void)ctrl;
+
+  log_assert (backend_hd && backend_hd->db_type == DB_TYPE_KBX);
+  log_assert (request);
+
+  /* Find the specific request part or allocate it.  */
+  err = be_find_request_part (backend_hd, request, &part);
+  if (err)
+    goto leave;
+
+  /* FIXME: We make use of the fact that we know that the caller
+   * already did a keybox search.  This needs to be made more
+   * explicit.  */
+  err = keybox_delete (part->kbx_hd);
+
+ leave:
+  ksba_cert_release (cert);
+  return err;
+}

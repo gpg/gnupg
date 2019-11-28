@@ -41,6 +41,7 @@ gpg_error_t kbxd_search (ctrl_t ctrl,
                          int reset);
 gpg_error_t kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
                         enum kbxd_store_modes mode);
+gpg_error_t kbxd_delete (ctrl_t ctrl, const unsigned char *ubid);
 
 
 #endif /*KBX_FRONTEND_H*/

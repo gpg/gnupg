@@ -144,6 +144,8 @@ gpg_error_t be_kbx_insert (ctrl_t ctrl, backend_handle_t backend_hd,
 gpg_error_t be_kbx_update (ctrl_t ctrl, backend_handle_t backend_hd,
                            db_request_t request, enum pubkey_types pktype,
                            const void *blob, size_t bloblen);
+gpg_error_t be_kbx_delete (ctrl_t ctrl, backend_handle_t backend_hd,
+                           db_request_t request);
 
 
 #endif /*KBX_BACKEND_H*/

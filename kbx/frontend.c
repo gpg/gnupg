@@ -469,3 +469,67 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
     log_clock ("%s: leave", __func__);
   return err;
 }
+
+
+
+
+/* Delete; remove the blob identified by UBID.  */
+gpg_error_t
+kbxd_delete (ctrl_t ctrl, const unsigned char *ubid)
+{
+  gpg_error_t err;
+  db_request_t request;
+  unsigned int dbidx;
+  db_desc_t db;
+
+  if (DBG_CLOCK)
+    log_clock ("%s: enter", __func__);
+
+  take_read_write_lock (ctrl);
+
+  /* Allocate a handle object if none exists for this context.  */
+  if (!ctrl->opgp_req)
+    {
+      ctrl->opgp_req = xtrycalloc (1, sizeof *ctrl->opgp_req);
+      if (!ctrl->opgp_req)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+  request = ctrl->opgp_req;
+
+  /* FIXME: We force the use of the KBX backend.  */
+  for (dbidx=0; dbidx < no_of_databases; dbidx++)
+    if (databases[dbidx].db_type == DB_TYPE_KBX)
+      break;
+  if (!(dbidx < no_of_databases))
+    {
+      err = gpg_error (GPG_ERR_NOT_INITIALIZED);
+      goto leave;
+    }
+  db = databases + dbidx;
+
+  err = be_kbx_seek (ctrl, db->backend_handle, request, ubid);
+  if (!err)
+    ; /* Found - we can delete.  */
+  else if (gpg_err_code (err) == GPG_ERR_EOF)
+    {
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
+  else
+    {
+      log_debug ("%s: searching primary fingerprint failed: %s\n",
+                 __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  err = be_kbx_delete (ctrl, db->backend_handle, request);
+
+ leave:
+  release_lock (ctrl);
+  if (DBG_CLOCK)
+    log_clock ("%s: leave", __func__);
+  return err;
+}
