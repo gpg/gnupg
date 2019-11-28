@@ -1274,7 +1274,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "ecc") || !strcmp (name, "ecdsa"))
     {
       algoname = "ecc";
-      format = "qd?";
+      format = "/qd?";
       npkey = 1;
       nskey = 2;
       curve = gcry_sexp_find_token (list, "curve", 0);
@@ -1365,7 +1365,10 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       put_membuf_str (&mbuf, "(skey");
       for (i=j=0; i < npkey; i++)
         {
-          put_membuf_str (&mbuf, " _ %m");
+          if (gcry_mpi_get_flag (array[i], GCRYMPI_FLAG_OPAQUE))
+            put_membuf_str (&mbuf, " e %m");
+          else
+            put_membuf_str (&mbuf, " _ %m");
           format_args[j++] = array + i;
         }
       put_membuf_str (&mbuf, " e %m");
