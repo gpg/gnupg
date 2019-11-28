@@ -751,7 +751,7 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
       if (err)
         goto leave;
       if (!err)
-        err = gcry_sexp_extract_param (key, NULL, "q",
+        err = gcry_sexp_extract_param (key, NULL, "/q",
                                        &pub_params[0],
                                        NULL);
       if (!err && (gcry_mpi_cmp(pk->pkey[1], pub_params[0])))
@@ -764,7 +764,7 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
         {
           gcry_mpi_release (pk->pkey[sec_start]);
           pk->pkey[sec_start] = NULL;
-          err = gcry_sexp_extract_param (key, NULL, "d",
+          err = gcry_sexp_extract_param (key, NULL, "/d",
                                          &pk->pkey[sec_start],
                                          NULL);
         }
