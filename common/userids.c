@@ -256,7 +256,7 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
 
     case '^': /* UBID */
       {
-        if (hex2bin (s+1, desc->u.ubid, 20) < 0)
+        if (hex2bin (s+1, desc->u.ubid, UBID_LEN) < 0)
           {
             rc = gpg_error (GPG_ERR_INV_USER_ID); /* Invalid. */
             goto out;

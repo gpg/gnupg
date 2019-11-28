@@ -1049,8 +1049,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 
     case KEYDB_SEARCH_MODE_UBID:
       {
-        unsigned char hexubid[20 * 2 + 1];
-        bin2hex (desc[0].u.grip, 20, hexubid);
+        unsigned char hexubid[UBID_LEN * 2 + 1];
+        bin2hex (desc[0].u.grip, UBID_LEN, hexubid);
         snprintf (line, sizeof line, "SEARCH ^%s", hexubid);
       }
       break;

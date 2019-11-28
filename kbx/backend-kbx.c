@@ -271,15 +271,15 @@ be_kbx_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
       void *buffer;
       size_t buflen;
       enum pubkey_types pubkey_type;
-      unsigned char blobid[20];
+      unsigned char ubid[UBID_LEN];
 
-      err = keybox_get_data (part->kbx_hd, &buffer, &buflen, &pubkey_type);
+      err = keybox_get_data (part->kbx_hd, &buffer, &buflen,
+                             &pubkey_type, ubid);
       if (err)
         goto leave;
-      gcry_md_hash_buffer (GCRY_MD_SHA1, blobid, buffer, buflen);
-      err = be_return_pubkey (ctrl, buffer, buflen, pubkey_type, blobid);
+      err = be_return_pubkey (ctrl, buffer, buflen, pubkey_type, ubid);
       if (!err)
-        be_cache_pubkey (ctrl, blobid, buffer, buflen, pubkey_type);
+        be_cache_pubkey (ctrl, ubid, buffer, buflen, pubkey_type);
       xfree (buffer);
     }
 
@@ -295,8 +295,7 @@ be_kbx_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
  * operation starts right after that UBID. */
 gpg_error_t
 be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
-             db_request_t request, const unsigned char *ubid,
-             const unsigned char *fpr, unsigned int fprlen)
+             db_request_t request, const unsigned char *ubid)
 {
   gpg_error_t err;
   db_request_part_t part;
@@ -310,19 +309,8 @@ be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
   log_assert (request);
 
   memset (&desc, 0, sizeof desc);
-  if (ubid)
-    {
-      desc.mode = KEYDB_SEARCH_MODE_FPR;
-      memcpy (desc.u.ubid, ubid, 20);
-    }
-  else
-    {
-      if (fprlen > sizeof desc.u.fpr)
-        return gpg_error (GPG_ERR_TOO_LARGE);
-      desc.mode = KEYDB_SEARCH_MODE_FPR;
-      memcpy (desc.u.fpr, fpr, fprlen);
-      desc.fprlen = fprlen;
-    }
+  desc.mode = KEYDB_SEARCH_MODE_UBID;
+  memcpy (desc.u.ubid, ubid, UBID_LEN);
 
   /* Find the specific request part or allocate it.  */
   err = be_find_request_part (backend_hd, request, &part);

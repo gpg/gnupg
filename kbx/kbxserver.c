@@ -466,29 +466,38 @@ cmd_next (assuan_context_t ctx, char *line)
 
 
 static const char hlp_store[] =
-  "STORE [--update]\n"
+  "STORE [--update|--insert]\n"
   "\n"
   "Insert a key into the database.  Whether to insert or update\n"
   "the key is decided by looking at the primary key's fingerprint.\n"
-  "With option --update the key must already exist. The actual key\n"
-  "material is requested by this function using\n"
+  "With option --update the key must already exist.\n"
+  "With option --insert the key must not already exist.\n"
+  "The actual key material is requested by this function using\n"
   "  INQUIRE BLOB";
 static gpg_error_t
 cmd_store (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int opt_update;
+  int opt_update, opt_insert;
+  enum kbxd_store_modes mode;
   gpg_error_t err;
   unsigned char *value = NULL;
   size_t valuelen;
 
   opt_update = has_option (line, "--update");
+  opt_insert = has_option (line, "--insert");
   line = skip_options (line);
   if (*line)
     {
       err = set_error (GPG_ERR_INV_ARG, "no args expected");
       goto leave;
     }
+  if (opt_update && !opt_insert)
+    mode = KBXD_STORE_UPDATE;
+  else if (!opt_update && opt_insert)
+    mode = KBXD_STORE_INSERT;
+  else
+    mode = KBXD_STORE_AUTO;
 
   /* Ask for the key material.  */
   err = assuan_inquire (ctx, "BLOB", &value, &valuelen, 0);
@@ -504,7 +513,7 @@ cmd_store (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  err = kbxd_store (ctrl, value, valuelen, opt_update);
+  err = kbxd_store (ctrl, value, valuelen, mode);
 
 
  leave:

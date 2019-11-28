@@ -456,8 +456,8 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
   char b[MAX_FORMATTED_FINGERPRINT_LEN + 1];
   char fpr[2 * MAX_FINGERPRINT_LEN + 1];
 
-#if MAX_FINGERPRINT_LEN < 20
-#error MAX_FINGERPRINT_LEN shorter than GRIP and UBID length/
+#if MAX_FINGERPRINT_LEN < UBID_LEN || MAX_FINGERPRINT_LEN < KEYGRIP_LEN
+#error MAX_FINGERPRINT_LEN is shorter than KEYGRIP or UBID length.
 #endif
 
   switch (desc->mode)
@@ -499,10 +499,10 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
     case KEYDB_SEARCH_MODE_SUBJECT:
       return xasprintf ("SUBJECT: '%s'", desc->u.name);
     case KEYDB_SEARCH_MODE_KEYGRIP:
-      bin2hex (desc[0].u.grip, 20, fpr);
+      bin2hex (desc[0].u.grip, KEYGRIP_LEN, fpr);
       return xasprintf ("KEYGRIP: %s", fpr);
     case KEYDB_SEARCH_MODE_UBID:
-      bin2hex (desc[0].u.ubid, 20, fpr);
+      bin2hex (desc[0].u.ubid, UBID_LEN, fpr);
       return xasprintf ("UBID: %s", fpr);
     case KEYDB_SEARCH_MODE_FIRST:
       return xasprintf ("FIRST");

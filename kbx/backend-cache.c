@@ -63,7 +63,7 @@ typedef struct blob_s
   unsigned int usecount;
   unsigned int datalen;
   unsigned char *data;        /* The actual data of length DATALEN.  */
-  unsigned char ubid[20];
+  unsigned char ubid[UBID_LEN];
 } *blob_t;
 
 
@@ -90,7 +90,7 @@ typedef struct bloblist_s
   unsigned int subkey:1;        /* The entry is for a subkey.   */
   unsigned int fprlen:8;        /* The length of the fingerprint or 0.  */
   char fpr[32];                 /* The buffer for the fingerprint.  */
-  unsigned char ubid[20];       /* The Unique-Blob-ID of the blob.  */
+  unsigned char ubid[UBID_LEN]; /* The Unique-Blob-ID of the blob.  */
 } *bloblist_t;
 
 static bloblist_t bloblist_attic;  /* List of freed items.  */
@@ -179,7 +179,7 @@ find_blob (unsigned int hash, const unsigned char *ubid,
   unsigned int count = 0;
 
   for (b = blob_table[hash]; b; b = b->next, count++)
-    if (!memcmp (b->ubid, ubid, 20))
+    if (!memcmp (b->ubid, ubid, UBID_LEN))
       break;
   if (r_count)
     *r_count = count;
@@ -338,7 +338,7 @@ blob_table_put (const unsigned char *ubid, enum pubkey_types pktype,
   b->pktype = pktype;
   b->data = blobdatacopy;
   b->datalen = blobdatalen;
-  memcpy (b->ubid, ubid, 20);
+  memcpy (b->ubid, ubid, UBID_LEN);
   b->usecount = 1;
   b->refcount = 1;
   b->next = blob_table[hash];
@@ -532,9 +532,9 @@ new_bloblist_item (const unsigned char *fpr, unsigned int fprlen,
   bl->next = NULL;
 
   if (ubid)
-    memcpy (bl->ubid, ubid, 20);
+    memcpy (bl->ubid, ubid, UBID_LEN);
   else
-    memset (bl->ubid, 0, 20);
+    memset (bl->ubid, 0, UBID_LEN);
   bl->ubid_valid = 1;
   bl->final_kid = 0;
   bl->final_fpr = 0;
@@ -846,6 +846,19 @@ query_by_fpr (const unsigned char *fpr, unsigned int fprlen)
 
 
 
+/* Make sure the tables are initialized.  */
+gpg_error_t
+be_cache_initialize (void)
+{
+  gpg_error_t err;
+
+  err = blob_table_init ();
+  if (!err)
+    err = key_table_init ();
+  return err;
+}
+
+
 /* Install a new resource and return a handle for that backend.  */
 gpg_error_t
 be_cache_add_resource (ctrl_t ctrl, backend_handle_t *r_hd)
@@ -863,11 +876,8 @@ be_cache_add_resource (ctrl_t ctrl, backend_handle_t *r_hd)
 
   hd->backend_id = be_new_backend_id ();
 
-  err = blob_table_init ();
-  if (err)
-    goto leave;
-
-  err = key_table_init ();
+  /* Just in case make sure we are initialized.  */
+  err = be_cache_initialize ();
   if (err)
     goto leave;
 
@@ -1030,7 +1040,7 @@ be_cache_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
     {
       if (bl && bl->ubid_valid)
         {
-          memcpy (request->last_cached_ubid, bl->ubid, 20);
+          memcpy (request->last_cached_ubid, bl->ubid, UBID_LEN);
           request->last_cached_valid = 1;
           request->last_cached_fprlen = desc[descidx].fprlen;
           memcpy (request->last_cached_fpr,

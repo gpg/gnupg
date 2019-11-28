@@ -100,7 +100,7 @@ struct keydb_handle_s
   unsigned int last_ubid_valid:1;
 
   /* The UBID of the last returned keyblock.  */
-  unsigned char last_ubid[20];
+  unsigned char last_ubid[UBID_LEN];
 
   /* END USE_KEYBOXD */
 

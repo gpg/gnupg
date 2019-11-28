@@ -23,6 +23,14 @@
 #include "keybox-search-desc.h"
 
 
+enum kbxd_store_modes
+  {
+   KBXD_STORE_AUTO = 0, /* Update or insert.    */
+   KBXD_STORE_INSERT,   /* Allow only inserts.  */
+   KBXD_STORE_UPDATE    /* Allow only updates.  */
+  };
+
+
 gpg_error_t kbxd_add_resource  (ctrl_t ctrl,
                                 const char *filename_arg, int readonly);
 
@@ -32,7 +40,7 @@ gpg_error_t kbxd_search (ctrl_t ctrl,
                          KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
                          int reset);
 gpg_error_t kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
-                        int only_update);
+                        enum kbxd_store_modes mode);
 
 
 #endif /*KBX_FRONTEND_H*/

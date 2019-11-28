@@ -83,11 +83,11 @@ struct db_request_s
   unsigned int next_dbidx;
 
   /* The last UBID found in the cache and the corresponding keyid and,
-   * if found via fpr, the fingerprint.  For the LAST_CACHE_FPRLEN see
-   * above.  The entry here is only valid if LAST_CACHE_VALID is set;
-   * if LAST_CACHE_FINAL is also set, this indicates that no further
+   * if found via fpr, the fingerprint.  For the LAST_CACHED_FPRLEN see
+   * above.  The entry here is only valid if LAST_CACHED_VALID is set;
+   * if LAST_CACHED_FINAL is also set, this indicates that no further
    * database searches are required.  */
-  unsigned char last_cached_ubid[20];
+  unsigned char last_cached_ubid[UBID_LEN];
   u32 last_cached_kid_h;
   u32 last_cached_kid_l;
   unsigned char last_cached_fpr[32];
@@ -106,12 +106,12 @@ gpg_error_t be_find_request_part (backend_handle_t backend_hd,
 gpg_error_t be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
                               enum pubkey_types pubkey_type,
                               const unsigned char *ubid);
-gpg_error_t be_fingerprint_from_blob (const void *blob, size_t bloblen,
-                                      enum pubkey_types *r_pktype,
-                                      char *r_fpr, unsigned int *r_fprlen);
+gpg_error_t be_ubid_from_blob (const void *blob, size_t bloblen,
+                               enum pubkey_types *r_pktype, char *r_ubid);
 
 
 /*-- backend-cache.c --*/
+gpg_error_t be_cache_initialize (void);
 gpg_error_t be_cache_add_resource (ctrl_t ctrl, backend_handle_t *r_hd);
 void be_cache_release_resource (ctrl_t ctrl, backend_handle_t hd);
 gpg_error_t be_cache_search (ctrl_t ctrl, backend_handle_t backend_hd,
@@ -137,8 +137,7 @@ gpg_error_t be_kbx_search (ctrl_t ctrl, backend_handle_t hd,
                            db_request_t request,
                            KEYDB_SEARCH_DESC *desc, unsigned int ndesc);
 gpg_error_t be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
-                         db_request_t request, const unsigned char *ubid,
-                         const unsigned char *fpr, unsigned int fprlen);
+                         db_request_t request, const unsigned char *ubid);
 gpg_error_t be_kbx_insert (ctrl_t ctrl, backend_handle_t backend_hd,
                            db_request_t request, enum pubkey_types pktype,
                            const void *blob, size_t bloblen);

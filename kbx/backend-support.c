@@ -155,9 +155,9 @@ be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
                   enum pubkey_types pubkey_type, const unsigned char *ubid)
 {
   gpg_error_t err;
-  char hexubid[41];
+  char hexubid[2*UBID_LEN+1];
 
-  bin2hex (ubid, 20, hexubid);
+  bin2hex (ubid, UBID_LEN, hexubid);
   err = status_printf (ctrl, "PUBKEY_INFO", "%d %s", pubkey_type, hexubid);
   if (err)
     goto leave;
@@ -228,14 +228,12 @@ is_x509_blob (const unsigned char *blob, size_t bloblen)
 
 
 /* Return the public key type and the (primary) fingerprint for
- * (BLOB,BLOBLEN).  R_FPR must point to a buffer of at least 32 bytes,
- * it received the fi gerprint on success with the length of that
- * fingerprint stored at R_FPRLEN.  R_PKTYPE receives the public key
- * type.  */
+ * (BLOB,BLOBLEN).  r_UBID must point to a buffer of at least UBID_LEN
+ * bytes, on success it receives the UBID (primary fingerprint
+ * truncated 20 octets). R_PKTYPE receives the public key type.  */
 gpg_error_t
-be_fingerprint_from_blob (const void *blob, size_t bloblen,
-                          enum pubkey_types *r_pktype,
-                          char *r_fpr, unsigned int *r_fprlen)
+be_ubid_from_blob (const void *blob, size_t bloblen,
+                   enum pubkey_types *r_pktype, char *r_ubid)
 {
   gpg_error_t err;
 
@@ -246,9 +244,7 @@ be_fingerprint_from_blob (const void *blob, size_t bloblen,
        * we have the entire certificate here (we checked the start of
        * the blob and assume that the length is also okay).  */
       *r_pktype = PUBKEY_TYPE_X509;
-      gcry_md_hash_buffer (GCRY_MD_SHA1, r_fpr, blob, bloblen);
-      *r_fprlen = 20;
-
+      gcry_md_hash_buffer (GCRY_MD_SHA1, r_ubid, blob, bloblen);
       err = 0;
     }
   else
@@ -264,10 +260,8 @@ be_fingerprint_from_blob (const void *blob, size_t bloblen,
       else
         {
           *r_pktype = PUBKEY_TYPE_OPGP;
-          log_assert (info.primary.fprlen <= 32);
-          memcpy (r_fpr, info.primary.fpr, info.primary.fprlen);
-          *r_fprlen = info.primary.fprlen;
-
+          log_assert (info.primary.fprlen >= 20);
+          memcpy (r_ubid, info.primary.fpr, UBID_LEN);
           _keybox_destroy_openpgp_info (&info);
         }
     }

@@ -112,7 +112,8 @@ kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
    * always be the first to be queried.  */
   if (!no_of_databases && !db_type)
     {
-      err = kbxd_add_resource (ctrl, "[cache]", 0);
+      err = be_cache_initialize ();
+      /* err = kbxd_add_resource (ctrl, "[cache]", 0); */
       if (err)
         goto leave;
     }
@@ -339,7 +340,7 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
         {
           /* We need to set the startpoint for the search.  */
           err = be_kbx_seek (ctrl, db->backend_handle, request,
-                             request->last_cached_ubid, NULL, 0);
+                             request->last_cached_ubid);
           if (err)
             {
               log_debug ("%s: seeking %s to an UBID failed: %s\n",
@@ -386,17 +387,17 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
 
 
 
-/* Store; that is insert or update the key (BLOB,BLOBLEN).  If
- * ONLY_UPDATE is set the key must exist.  */
+/* Store; that is insert or update the key (BLOB,BLOBLEN).  MODE
+ * controls whether only updates or only inserts are allowed.  */
 gpg_error_t
-kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen, int only_update)
+kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
+            enum kbxd_store_modes mode)
 {
   gpg_error_t err;
   db_request_t request;
   unsigned int dbidx;
   db_desc_t db;
-  char fpr[32];
-  unsigned int fprlen;
+  char ubid[UBID_LEN];
   enum pubkey_types pktype;
   int insert = 0;
 
@@ -418,7 +419,7 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen, int only_update)
   request = ctrl->opgp_req;
 
   /* Check whether to insert or update.  */
-  err = be_fingerprint_from_blob (blob, bloblen, &pktype, fpr, &fprlen);
+  err = be_ubid_from_blob (blob, bloblen, &pktype, ubid);
   if (err)
     goto leave;
 
@@ -433,7 +434,7 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen, int only_update)
     }
   db = databases + dbidx;
 
-  err = be_kbx_seek (ctrl, db->backend_handle, request, NULL, fpr, fprlen);
+  err = be_kbx_seek (ctrl, db->backend_handle, request, ubid);
   if (!err)
     ; /* Found - need to update.  */
   else if (gpg_err_code (err) == GPG_ERR_EOF)
@@ -447,15 +448,19 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen, int only_update)
 
   if (insert)
     {
-      err = be_kbx_insert (ctrl, db->backend_handle, request,
-                           pktype, blob, bloblen);
+      if (mode == KBXD_STORE_UPDATE)
+        err = gpg_error (GPG_ERR_CONFLICT);
+      else
+        err = be_kbx_insert (ctrl, db->backend_handle, request,
+                             pktype, blob, bloblen);
     }
-  else if (only_update)
-    err = gpg_error (GPG_ERR_DUP_KEY);
   else /* Update.  */
     {
-      err = be_kbx_update (ctrl, db->backend_handle, request,
-                           pktype, blob, bloblen);
+      if (mode == KBXD_STORE_INSERT)
+        err = gpg_error (GPG_ERR_CONFLICT);
+      else
+        err = be_kbx_update (ctrl, db->backend_handle, request,
+                             pktype, blob, bloblen);
     }
 
  leave:

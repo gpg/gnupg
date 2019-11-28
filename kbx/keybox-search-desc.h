@@ -61,6 +61,7 @@ enum pubkey_types
 struct gpg_pkt_user_id_s;
 typedef struct gpg_pkt_user_id_s *gpg_pkt_user_id_t;
 
+
 /* A search descriptor.  */
 struct keydb_search_desc
 {
@@ -79,8 +80,8 @@ struct keydb_search_desc
     const char *name;
     unsigned char fpr[32];
     u32 kid[2]; /* Note that this is in native endianness.  */
-    unsigned char grip[20];
-    unsigned char ubid[20];
+    unsigned char grip[KEYGRIP_LEN];
+    unsigned char ubid[UBID_LEN];
   } u;
   byte fprlen;  /* Only used with KEYDB_SEARCH_MODE_FPR.  */
   int exact;    /* Use exactly this key ('!' suffix in gpg).  */
