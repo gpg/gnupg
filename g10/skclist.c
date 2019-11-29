@@ -292,13 +292,16 @@ build_sk_list (ctrl_t ctrl,
  * --default-key and --try-secret-key).  Use the following procedure:
  *
  *  1) Initialize a void pointer to NULL
- *  2) Pass a reference to this pointer to this function (content)
- *     and provide space for the secret key (sk)
+ *  2) Pass a reference to this pointer to this function (CONTEXT)
+ *     and provide space for the secret key (SK)
  *  3) Call this function as long as it does not return an error (or
  *     until you are done).  The error code GPG_ERR_EOF indicates the
  *     end of the listing.
  *  4) Call this function a last time with SK set to NULL,
  *     so that can free it's context.
+ *
+ *  TAKE CARE: When the function returns SK belongs to CONTEXT and may
+ *  not be freed by the caller; neither on success nor on error.
  *
  * In pseudo-code:
  *

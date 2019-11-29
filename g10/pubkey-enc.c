@@ -114,11 +114,11 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
 
       for (;;)
         {
-          free_public_key (sk);
           sk = xmalloc_clear (sizeof *sk);
           rc = enum_secret_keys (ctrl, &enum_context, sk);
           if (rc)
             {
+              sk = NULL;  /* enum_secret_keys turns SK into a shallow copy! */
               rc = GPG_ERR_NO_SECKEY;
               break;
             }
@@ -148,10 +148,14 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
             {
               if (!opt.quiet)
                 log_info (_("okay, we are the anonymous recipient.\n"));
+              sk = NULL;
               break;
             }
           else if (gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
-            break; /* Don't try any more secret keys.  */
+            {
+              sk = NULL;
+              break; /* Don't try any more secret keys.  */
+            }
         }
       enum_secret_keys (ctrl, &enum_context, NULL);  /* free context */
     }
