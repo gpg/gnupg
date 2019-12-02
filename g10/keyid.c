@@ -194,6 +194,8 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
                 pp[i] = NULL;
               if (is_sos)
                 {
+                  const unsigned char *p0 = p;
+                  CALC_NBITS (nbits, p0);
                   pp[i][0] = (nbits >> 8);
                   pp[i][1] = nbits;
                 }

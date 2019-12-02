@@ -309,15 +309,7 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
           /* Strip leading zero bits.  */
           for (; nbits >= 8 && !*p; p++, nbits -= 8)
             ;
-          if (nbits >= 8 && !(*p & 0x80))
-            if (--nbits >= 7 && !(*p & 0x40))
-              if (--nbits >= 6 && !(*p & 0x20))
-                if (--nbits >= 5 && !(*p & 0x10))
-                  if (--nbits >= 4 && !(*p & 0x08))
-                    if (--nbits >= 3 && !(*p & 0x04))
-                      if (--nbits >= 2 && !(*p & 0x02))
-                        if (--nbits >= 1 && !(*p & 0x01))
-                          --nbits;
+          CALC_NBITS (nbits, p);
         }
       /* gcry_log_debug ("   [%u bit]\n", nbits); */
       /* gcry_log_debughex (" ", p, (nbits+7)/8); */

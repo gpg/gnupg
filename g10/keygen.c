@@ -1336,6 +1336,7 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
       goto leave;
     }
   array[1] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_OPAQUE);
+  gcry_mpi_set_flag (array[1], GCRYMPI_FLAG_USER2);
   gcry_sexp_release (l2);
   if (!array[1])
     {
