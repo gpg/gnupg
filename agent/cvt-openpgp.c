@@ -1274,7 +1274,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "ecc") || !strcmp (name, "ecdsa"))
     {
       algoname = "ecc";
-      format = "/qd?";
+      format = "q/d?";
       npkey = 1;
       nskey = 2;
       curve = gcry_sexp_find_token (list, "curve", 0);
