@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.2.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-10-15 10:05+0900\n"
+"PO-Revision-Date: 2019-12-03 17:06+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1262,10 +1262,10 @@ msgid "[not set]"
 msgstr "[未設定]"
 
 msgid "Mr."
-msgstr ""
+msgstr "Mr."
 
 msgid "Ms."
-msgstr ""
+msgstr "Ms."
 
 msgid "not forced"
 msgstr "強制なし"
@@ -1319,7 +1319,7 @@ msgid "Error: invalid characters in preference string.\n"
 msgstr "エラー: 優先指定の文字列に無効な文字があります。\n"
 
 msgid "Salutation (M = Mr., F = Ms., or space): "
-msgstr ""
+msgstr "敬称 (M = Mr., F = Ms., あるいは空白): "
 
 msgid "Error: invalid response.\n"
 msgstr "エラー: 無効な応答。\n"
@@ -1492,10 +1492,8 @@ msgstr "ログイン名の変更"
 msgid "change the language preferences"
 msgstr "言語の優先指定の変更"
 
-#, fuzzy
-#| msgid "change card holder's sex"
 msgid "change card holder's salutation"
-msgstr "カード所有者の性別の変更"
+msgstr "カード所有者の敬称の変更"
 
 msgid "change a CA fingerprint"
 msgstr "CAフィンガープリントの変更"
@@ -3867,10 +3865,9 @@ msgstr "  (%d) ECC (暗号化のみ)\n"
 msgid "  (%d) Existing key\n"
 msgstr "  (%d) 既存の鍵\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) Existing key from card\n"
+#, c-format
 msgid "  (%d) Existing key from card\n"
-msgstr "   (%d) カードに存在する鍵\n"
+msgstr "  (%d) カードに存在する鍵\n"
 
 msgid "Enter the keygrip: "
 msgstr "keygripを入力: "
@@ -4589,10 +4586,9 @@ msgstr "*警告*: ダイジェスト・アルゴリズム %s は廃止されて�
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
 
-#, fuzzy, c-format
-#| msgid "Note: signatures using the %s algorithm are rejected\n"
+#, c-format
 msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
-msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
+msgstr "注意: アルゴリズム %s を用いた第三者の鍵への署名は拒否されました\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
