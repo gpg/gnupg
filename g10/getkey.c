@@ -1025,6 +1025,17 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 
   /* Does NAME appear to be a mailbox (mail address)?  */
   is_mbox = is_valid_mailbox (name);
+  if (!is_mbox && *name == '<' && name[1] && name[strlen(name)-1]=='>'
+      && name[1] != '>'
+      && is_valid_mailbox_mem (name+1, strlen (name)-2))
+    {
+      /* The mailbox is in the form "<foo@example.org>" which is not
+       * detected by is_valid_mailbox.  Set the flag but keep name as
+       * it is because the bracketed name is actual the better
+       * specification for a local search and the other methods
+       * extract the mail address anyway.  */
+      is_mbox = 1;
+    }
 
   /* The auto-key-locate feature works as follows: there are a number
    * of methods to look up keys.  By default, the local keyring is
@@ -1439,11 +1450,23 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 {
   gpg_error_t err;
   struct getkey_ctx_s *ctx = NULL;
-  int is_mbox = is_valid_mailbox (name);
+  int is_mbox;
   int wkd_tried = 0;
 
   if (retctx)
     *retctx = NULL;
+
+  is_mbox = is_valid_mailbox (name);
+  if (!is_mbox && *name == '<' && name[1] && name[strlen(name)-1]=='>'
+      && name[1] != '>'
+      && is_valid_mailbox_mem (name+1, strlen (name)-2))
+    {
+      /* The mailbox is in the form "<foo@example.org>" which is not
+       * detected by is_valid_mailbox.  Set the flag but keep name as
+       * it is because get_pubkey_byname does an is_valid_mailbox_mem
+       * itself.  */
+      is_mbox = 1;
+    }
 
  start_over:
   if (ctx)  /* Clear  in case of a start over.  */
@@ -1461,8 +1484,7 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                            NULL, include_unusable);
   if (err)
     {
-      getkey_end (ctrl, ctx);
-      return err;
+      goto leave;
     }
 
   /* If the keyblock was retrieved from the local database and the key
@@ -1588,10 +1610,13 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
     }
 
   if (retctx && ctx)
-    *retctx = ctx;
-  else
-    getkey_end (ctrl, ctx);
+    {
+      *retctx = ctx;
+      ctx = NULL;
+    }
 
+ leave:
+  getkey_end (ctrl, ctx);
   return err;
 }
 
