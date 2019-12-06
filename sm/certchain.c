@@ -445,8 +445,9 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
   int rc;
   ksba_cert_t cert = NULL;
   ksba_sexp_t subj = NULL;
-  int anyfound = 0;
-  ksba_isotime_t not_before, last_not_before;
+  ksba_isotime_t not_before, not_after, last_not_before, ne_last_not_before;
+  ksba_cert_t found_cert = NULL;
+  ksba_cert_t ne_found_cert = NULL;
 
   keydb_search_reset (kh);
   while (!(rc = keydb_search_subject (ctrl, kh, issuer)))
@@ -457,7 +458,7 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
         {
           log_error ("keydb_get_cert() failed: rc=%d\n", rc);
           rc = -1;
-          break;
+          goto leave;
         }
       xfree (subj);
       if (!ksba_cert_get_subj_key_id (cert, NULL, &subj))
@@ -466,34 +467,103 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
             {
               /* Found matching cert. */
               rc = ksba_cert_get_validity (cert, 0, not_before);
+              if (!rc)
+                rc = ksba_cert_get_validity (cert, 1, not_after);
               if (rc)
                 {
                   log_error ("keydb_get_validity() failed: rc=%d\n", rc);
                   rc = -1;
-                  break;
+                  goto leave;
                 }
 
-              if (!anyfound || strcmp (last_not_before, not_before) < 0)
+              if (!found_cert
+                  || strcmp (last_not_before, not_before) < 0)
                 {
                   /* This certificate is the first one found or newer
-                     than the previous one.  This copes with
-                     re-issuing CA certificates while keeping the same
-                     key information.  */
-                  anyfound = 1;
+                   * than the previous one.  This copes with
+                   * re-issuing CA certificates while keeping the same
+                   * key information.  */
                   gnupg_copy_time (last_not_before, not_before);
+                  ksba_cert_release (found_cert);
+                  ksba_cert_ref ((found_cert = cert));
                   keydb_push_found_state (kh);
+                }
+
+              if (*not_after && strcmp (ctrl->current_time, not_after) > 0 )
+                ; /* CERT has expired - don't consider it.  */
+              else if (!ne_found_cert
+                       || strcmp (ne_last_not_before, not_before) < 0)
+                {
+                  /* This certificate is the first non-expired one
+                   * found or newer than the previous non-expired one.  */
+                  gnupg_copy_time (ne_last_not_before, not_before);
+                  ksba_cert_release (ne_found_cert);
+                  ksba_cert_ref ((ne_found_cert = cert));
                 }
             }
         }
     }
 
-  if (anyfound)
+  if (!found_cert)
+    goto leave;
+
+  /* Take the last saved one.  Note that push/pop_found_state are
+   * misnomers because there is no stack of states.  Renaming them to
+   * save/restore_found_state would be better.  */
+  keydb_pop_found_state (kh);
+  rc = 0;  /* Ignore EOF or other error after the first cert.  */
+
+  /* We need to consider some corner cases.  It is possible that we
+   * have a long term certificate (e.g. valid from 2008 to 2033) as
+   * well as a re-issued (i.e. using the same key material) short term
+   * certificate (say from 2016 to 2019).  Using the short term
+   * certificate is the proper solution.  But we need to take care if
+   * there is no re-issued new short term certificate (e.g. from 2020
+   * to 2023) available.  In that case it is better to use the long
+   * term certificate which is still valid.  The code may run into
+   * minor problems in the case of the chain validation mode.  Given
+   * that this corner case is due to non-diligent PKI management we
+   * ignore this problem.  */
+
+  /* The most common case is that the found certificate is not expired
+   * and thus identical to the one found from the list of non-expired
+   * certs.  We can stop here.  */
+  if (found_cert == ne_found_cert)
+    goto leave;
+  /* If we do not have a non expired certificate the actual cert is
+   * expired and we can also stop here.  */
+  if (!ne_found_cert)
+    goto leave;
+  /* Now we need to see whether the found certificate is expired and
+   * only in this case we return the certificate found in the list of
+   * non-expired certs.  */
+  rc = ksba_cert_get_validity (found_cert, 1, not_after);
+  if (rc)
     {
-      /* Take the last saved one.  */
-      keydb_pop_found_state (kh);
-      rc = 0;  /* Ignore EOF or other error after the first cert.  */
+      log_error ("keydb_get_validity() failed: rc=%d\n", rc);
+      rc = -1;
+      goto leave;
+    }
+  if (*not_after && strcmp (ctrl->current_time, not_after) > 0 )
+    { /* CERT has expired.  Use the NE_FOUND_CERT.  Because we have no
+       * found state for this we need to search for it again.  */
+      unsigned char fpr[20];
+
+      gpgsm_get_fingerprint (ne_found_cert, GCRY_MD_SHA1, fpr, NULL);
+      keydb_search_reset (kh);
+      rc = keydb_search_fpr (ctrl, kh, fpr);
+      if (rc)
+        {
+          log_error ("keydb_search_fpr() failed: rc=%d\n", rc);
+          rc = -1;
+          goto leave;
+        }
+      /* Ready.  The NE_FOUND_CERT is availabale via keydb_get_cert.  */
     }
 
+ leave:
+  ksba_cert_release (found_cert);
+  ksba_cert_release (ne_found_cert);
   ksba_cert_release (cert);
   xfree (subj);
   return rc? -1:0;
@@ -643,7 +713,7 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
    issuer used as a fallback if the other methods don't work.  If
    FIND_NEXT is true, the function shall return the next possible
    issuer.  The certificate itself is not directly returned but a
-   keydb_get_cert on the keyDb context KH will return it.  Returns 0
+   keydb_get_cert on the keydb context KH will return it.  Returns 0
    on success, -1 if not found or an error code.  */
 static int
 find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
@@ -699,7 +769,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
 
       if (rc == -1 && keyid && !find_next)
         {
-          /* Not found by AIK.issuer_sn.  Lets try the AIK.ki
+          /* Not found by AKI.issuer_sn.  Lets try the AKI.ki
              instead. Loop over all certificates with that issuer as
              subject and stop for the one with a matching
              subjectKeyIdentifier. */
@@ -1037,7 +1107,7 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
 /* Helper for gpgsm_validate_chain to check the validity period of
    SUBJECT_CERT.  The caller needs to pass EXPTIME which will be
    updated to the nearest expiration time seen.  A DEPTH of 0 indicates
-   the target certifciate, -1 the final root certificate and other
+   the target certificate, -1 the final root certificate and other
    values intermediate certificates. */
 static gpg_error_t
 check_validity_period (ksba_isotime_t current_time,
@@ -1296,6 +1366,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
 
 
   gnupg_get_isotime (current_time);
+  gnupg_copy_time (ctrl->current_time, current_time);
 
   if ( (flags & VALIDATE_FLAG_CHAIN_MODEL) )
     {
@@ -1516,7 +1587,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                        _("root certificate is not marked trusted"));
               /* If we already figured out that the certificate is
                  expired it does not make much sense to ask the user
-                 whether we wants to trust the root certificate.  We
+                 whether they want to trust the root certificate.  We
                  should do this only if the certificate under question
                  will then be usable.  If the certificate has a well
                  known private key asking the user does not make any

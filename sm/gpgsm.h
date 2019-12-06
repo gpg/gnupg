@@ -228,6 +228,9 @@ struct server_control_s
                            1 := chain model,
                            2 := STEED model. */
   int offline;        /* If true gpgsm won't do any network access.  */
+
+  /* The current time.  Used as a helper in certchain.c.  */
+  ksba_isotime_t current_time;
 };
 
 
