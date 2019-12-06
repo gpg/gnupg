@@ -876,6 +876,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       if (domaininfo_is_wkd_not_supported (domain_orig))
         {
           err = gpg_error (GPG_ERR_NO_DATA);
+          dirmngr_status_printf (ctrl, "NOTE", "wkd_cached_result %u", err);
           goto leave;
         }
     }
