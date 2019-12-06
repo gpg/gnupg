@@ -394,7 +394,7 @@ ks_status_cb (void *opaque, const char *line)
   struct ks_status_parm_s *parm = opaque;
   gpg_error_t err = 0;
   const char *s, *s2;
-  const char *warn;
+  const char *warn = NULL;
   int is_note = 0;
 
   if ((s = has_leading_keyword (line, parm->keyword? parm->keyword : "SOURCE")))
@@ -410,7 +410,12 @@ ks_status_cb (void *opaque, const char *line)
   else if ((s = has_leading_keyword (line, "WARNING"))
            || (is_note = !!(s = has_leading_keyword (line, "NOTE"))))
     {
-      if ((s2 = has_leading_keyword (s, "tor_not_running")))
+      if ((s2 = has_leading_keyword (s, "wkd_cached_result")))
+        {
+          if (opt.verbose)
+            warn = _("WKD uses a cached result");
+        }
+      else if ((s2 = has_leading_keyword (s, "tor_not_running")))
         warn = _("Tor is not running");
       else if ((s2 = has_leading_keyword (s, "tor_config_problem")))
         warn = _("Tor is not properly configured");
