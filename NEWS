@@ -1,5 +1,17 @@
-Noteworthy changes in version 2.2.19 (unreleased)
+Noteworthy changes in version 2.2.19 (2019-12-07)
 -------------------------------------------------
+
+  * gpg: Fix double free when decrypting for hidden recipients.
+    Regression in 2.2.18.  [#4762].
+
+  * gpg: Use auto-key-locate for encryption even for mail addressed
+    given with angle brackets.  [#4726]
+
+  * gpgsm: Add special case for certain expired intermediate
+    certificates.  [#4696]
+
+  Release-info: https://dev.gnupg.org/T4768
+  See-also: gnupg-announce/2019q4/000443.html
 
 
 Noteworthy changes in version 2.2.18 (2019-11-25)
@@ -37,10 +49,10 @@ Noteworthy changes in version 2.2.18 (2019-11-25)
 
   * gpg: Improve selection of best matching key.  [#4713]
 
-  * gpg: Delete key binding signature when deletring a subkey.
+  * gpg: Delete key binding signature when deleting a subkey.
     [#4665,#4457]
 
-  * gpg: Fix a potential loss of key sigantures during import with
+  * gpg: Fix a potential loss of key signatures during import with
     self-sigs-only active.  [#4628]
 
   * gpg: Silence "marked as ultimately trusted" diagnostics if
