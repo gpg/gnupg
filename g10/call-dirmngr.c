@@ -240,8 +240,9 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
           err = assuan_transact (ctx, "OPTION honor-keyserver-url-used",
                                  NULL, NULL, NULL, NULL, NULL, NULL);
           if (gpg_err_code (err) == GPG_ERR_FORBIDDEN)
-            log_error (_("keyserver option \"honor-keyserver-url\""
-                         " may not be used in Tor mode\n"));
+            log_error (_("keyserver option \"%s\""
+                         " may not be used in %s mode\n"),
+                       "honor-keyserver-url", "Tor");
           else if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
             err = 0; /* Old dirmngr versions do not support this option.  */
         }

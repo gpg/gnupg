@@ -34,6 +34,7 @@ common/init.c
 g10/armor.c
 g10/build-packet.c
 g10/call-agent.c
+g10/call-dirmngr.c
 g10/card-util.c
 g10/dearmor.c
 g10/decrypt.c
@@ -126,4 +127,3 @@ tools/gpgconf.c
 tools/no-libgcrypt.c
 tools/symcryptrun.c
 tools/gpg-check-pattern.c
-
