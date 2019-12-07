@@ -1310,6 +1310,44 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "%s ne havas sencon kun %s!\n"
 
 #, fuzzy, c-format
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent ne estas disponata en ĉi tiu sesio\n"
+
+#, fuzzy, c-format
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+msgid "Tor is not properly configured"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy
+msgid "DNS is not properly configured"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "krei revokatestilon"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "kiraso: %s\n"
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "sekreta ŝlosilo ne havebla"
 
@@ -6676,10 +6714,6 @@ msgstr ""
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "no dirmngr running in this session\n"
-msgstr "gpg-agent ne estas disponata en ĉi tiu sesio\n"
-
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr ""
@@ -9131,6 +9165,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, fuzzy
 #~ msgid "male"

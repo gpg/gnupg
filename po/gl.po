@@ -1315,6 +1315,45 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "¡%s aínda non traballa con %s!\n"
 
 #, fuzzy, c-format
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent non está dispoñible nesta sesión\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "non se pode empregar %s no modo %s\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+msgid "Tor is not properly configured"
+msgstr "erro: pegada dactilar non válida\n"
+
+#, fuzzy
+msgid "DNS is not properly configured"
+msgstr "erro: pegada dactilar non válida\n"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "xerar un certificado de revocación"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "armadura: %s\n"
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "a chave secreta non está dispoñible"
 
@@ -6744,10 +6783,6 @@ msgstr ""
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "no dirmngr running in this session\n"
-msgstr "gpg-agent non está dispoñible nesta sesión\n"
-
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr ""
@@ -9213,6 +9248,12 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "non se pode empregar %s no modo %s\n"
 
 #, fuzzy
 #~ msgid "male"

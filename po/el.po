@@ -1310,6 +1310,45 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "το %s ακόμα δε λειτουργεί μαζί με το %s\n"
 
 #, fuzzy, c-format
+msgid "no dirmngr running in this session\n"
+msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "απαγορεύετε η χρήση του %s στην κατάσταση %s.\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+msgid "Tor is not properly configured"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+#, fuzzy
+msgid "DNS is not properly configured"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "θωράκιση: %s\n"
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "το μυστικό κλειδί δεν είναι διαθέσιμο"
 
@@ -6759,10 +6798,6 @@ msgstr ""
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "no dirmngr running in this session\n"
-msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
-
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr ""
@@ -9216,6 +9251,12 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "απαγορεύετε η χρήση του %s στην κατάσταση %s.\n"
 
 #, fuzzy
 #~ msgid "male"

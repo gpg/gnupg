@@ -1363,6 +1363,48 @@ msgstr "Brug venligst kommandoen »toggle« først.\n"
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s virker endnu ikke med %s\n"
 
+#, fuzzy, c-format
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "ingen gpg-agent kører i denne session\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "du kan ikke bruge %s i tilstanden %s\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid fingerprint"
+msgid "Tor is not properly configured"
+msgstr "ugyldig fingeraftryk"
+
+#, fuzzy
+#| msgid "invalid fingerprint"
+msgid "DNS is not properly configured"
+msgstr "ugyldig fingeraftryk"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "opret et tilbagekaldscertifikat"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "panser: %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP-kort er ikke tilgængeligt: %s\n"
@@ -6848,11 +6890,6 @@ msgstr "håndtering for fd %d startet\n"
 msgid "handler for fd %d terminated\n"
 msgstr "håndtering for fd %d termineret\n"
 
-#, fuzzy, c-format
-#| msgid "no gpg-agent running in this session\n"
-msgid "no dirmngr running in this session\n"
-msgstr "ingen gpg-agent kører i denne session\n"
-
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "anmodt om valideringsmodel af certifikat: %s"
@@ -9512,6 +9549,12 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "du kan ikke bruge %s i tilstanden %s\n"
 
 #~ msgid "male"
 #~ msgstr "mand"

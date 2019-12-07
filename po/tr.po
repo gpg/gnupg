@@ -1357,6 +1357,48 @@ msgstr "lütfen önce \"seçmece\" komutunu kullanın.\n"
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s, %s ile henüz çalışmıyor\n"
 
+#, fuzzy, c-format
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "bu oturumda çalışan gpg-agent yok\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid fingerprint"
+msgid "Tor is not properly configured"
+msgstr "parmakizi geçersiz"
+
+#, fuzzy
+#| msgid "invalid fingerprint"
+msgid "DNS is not properly configured"
+msgstr "parmakizi geçersiz"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "bir yürürlükten kaldırma sertifikası üretir"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "zırh: %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP anahtarı kullanılabilir değil: %s\n"
@@ -6886,11 +6928,6 @@ msgstr "fd %d için eylemci başlatıldı\n"
 msgid "handler for fd %d terminated\n"
 msgstr "fd %d için eylemci sonlandı\n"
 
-#, fuzzy, c-format
-#| msgid "no gpg-agent running in this session\n"
-msgid "no dirmngr running in this session\n"
-msgstr "bu oturumda çalışan gpg-agent yok\n"
-
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "sertifika tarafından istenen geçerlilik modeli: %s"
@@ -9558,6 +9595,12 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
 
 #~ msgid "male"
 #~ msgstr "erkek"

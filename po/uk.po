@@ -1255,6 +1255,47 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "%s ще не може працювати разом з %s\n"
 
 #, c-format
+msgid "no dirmngr running in this session\n"
+msgstr "у цьому сеансі не запущено dirmngr\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "не можна використовувати %s у режимі %s\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "Tor is not properly configured"
+msgstr "«%s» не є відбитком\n"
+
+#, fuzzy
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "DNS is not properly configured"
+msgstr "«%s» не є відбитком\n"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "створити сертифікат відкликання"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "формат ASCII: %s\n"
+
+#, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "Не вдалося отримати доступ до картки OpenPGP: %s\n"
 
@@ -6631,10 +6672,6 @@ msgid "handler for fd %d terminated\n"
 msgstr "роботу обробника для дескриптора %d перервано\n"
 
 #, c-format
-msgid "no dirmngr running in this session\n"
-msgstr "у цьому сеансі не запущено dirmngr\n"
-
-#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "модель перевірки, запитана сертифікатом: %s"
 
@@ -9043,6 +9080,12 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "не можна використовувати %s у режимі %s\n"
 
 #~ msgid "male"
 #~ msgstr "чоловіча"

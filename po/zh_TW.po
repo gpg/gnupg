@@ -1252,6 +1252,48 @@ msgstr "請先使用 \"toggle\" 指令.\n"
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s 還沒辦法跟 %s 一起運作\n"
 
+#, fuzzy, c-format
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "在此階段中沒有執行中的 gpg-agent\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "你不能夠將 %s 用於 %s 模式中\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "Tor is not properly configured"
+msgstr "\"%s\" 不是指紋\n"
+
+#, fuzzy
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "DNS is not properly configured"
+msgstr "\"%s\" 不是指紋\n"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "產生撤銷憑證"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "封裝: %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "沒有可用的 OpenPGP 卡片: %s\n"
@@ -6434,11 +6476,6 @@ msgstr "用於 fd %d 的經手程式已啟動\n"
 msgid "handler for fd %d terminated\n"
 msgstr "用於 fd %d 的經手程式已終止\n"
 
-#, fuzzy, c-format
-#| msgid "no gpg-agent running in this session\n"
-msgid "no dirmngr running in this session\n"
-msgstr "在此階段中沒有執行中的 gpg-agent\n"
-
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "憑證所要求的驗證模型: %s"
@@ -8817,6 +8854,12 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "你不能夠將 %s 用於 %s 模式中\n"
 
 #~ msgid "male"
 #~ msgstr "男性"

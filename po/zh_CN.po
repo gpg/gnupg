@@ -1224,6 +1224,49 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "%s 与 %s 模式不兼容\n"
 
 #, c-format
+msgid "no dirmngr running in this session\n"
+msgstr ""
+"此会话中没有正在运行的 dirmngr\n"
+"\n"
+
+#, fuzzy, c-format
+#| msgid "option '%s' may not be used in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "选项 ‘%s’ 可能不能用于 %s 模式\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+#| msgid "\"%s\" is not a proper fingerprint\n"
+msgid "Tor is not properly configured"
+msgstr "“%s” 不是一个正确的指纹\n"
+
+#, fuzzy
+#| msgid "\"%s\" is not a proper fingerprint\n"
+msgid "DNS is not properly configured"
+msgstr "“%s” 不是一个正确的指纹\n"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "生成一份吊销证书"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "字符封装：%s\n"
+
+#, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP 卡不可用：%s\n"
 
@@ -6232,12 +6275,6 @@ msgid "handler for fd %d terminated\n"
 msgstr "fd %d 的句柄已关闭\n"
 
 #, c-format
-msgid "no dirmngr running in this session\n"
-msgstr ""
-"此会话中没有正在运行的 dirmngr\n"
-"\n"
-
-#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "证书所请求的验证模型：%s"
 
@@ -8604,6 +8641,12 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#, fuzzy
+#~| msgid "option '%s' may not be used in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "选项 ‘%s’ 可能不能用于 %s 模式\n"
 
 #, fuzzy
 #~| msgid "No reason specified"
