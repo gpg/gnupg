@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-11-25 16:24+0100\n"
+"PO-Revision-Date: 2019-12-07 11:54+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1267,6 +1267,39 @@ msgstr "Hinweis: Der Befehl \"%s\" startet diese Server neu.\n"
 #, c-format
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s is nicht konform mit dem %s Modus\n"
+
+#, c-format
+msgid "no dirmngr running in this session\n"
+msgstr "Der Dirmngr läuft nicht für diese Session\n"
+
+#, c-format
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "Die Schlüsselserveroption \"%s\" ist im %s-Modus nicht erlaubt.\n"
+
+msgid "WKD uses a cached result"
+msgstr "WKD Abfrage wurde aus dem Cache bedient"
+
+msgid "Tor is not running"
+msgstr "Der Tor Dienst läuft nicht"
+
+msgid "Tor is not properly configured"
+msgstr "Der Tor Dienst ist falsch konfiguriert"
+
+msgid "DNS is not properly configured"
+msgstr "DNS is falsch konfiguriert"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr "HTTP Weiterleitung kann nicht akzeptiert werden"
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr "HTTP Weiterleitung wurde gesäubert"
+
+msgid "server uses an invalid certificate"
+msgstr "Der Server benutzt eine ungültiges Zertifikat"
+
+#, c-format
+msgid "Note: %s\n"
+msgstr "Hinweis: %s\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -6592,10 +6625,6 @@ msgid "handler for fd %d terminated\n"
 msgstr "Handhabungsroutine für den fd %d beendet\n"
 
 #, c-format
-msgid "no dirmngr running in this session\n"
-msgstr "Der Dirmngr läuft nicht für diese Session\n"
-
-#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "Durch Zertifikat angefordertes Gültigkeitsmodell: %s"
 
@@ -9028,6 +9057,11 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "Die Schlüsselserveroption \"%s\" ist im %s-Modus nicht erlaubt.\n"
 
 #~ msgid "male"
 #~ msgstr "männlich"
