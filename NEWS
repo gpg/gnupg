@@ -1,6 +1,124 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.2.19:
+
+  * gpg: Only in 2.2.19; not requird in master: Fix double free when
+    decrypting for hidden recipients.  Regression in 2.2.18.  [#4762].
+
+  * gpg: Use auto-key-locate for encryption even for mail addresses
+    given with angle brackets.  [#4726]
+
+  * gpgsm: Add special case for certain expired intermediate
+    certificates.  [#4696]
+
+  Release-info: https://dev.gnupg.org/T4768
+  See-also: gnupg-announce/2019q4/000443.html
+
+  Changes also found in 2.2.18:
+
+  * gpg: Changed the way keys are detected on a smartcards; this
+    allows the use of non-OpenPGP cards.  In the case of a not very
+    likely regression the new option --use-only-openpgp-card is
+    available.  [#4681]
+
+  * gpg: The commands --full-gen-key and --quick-gen-key now allow
+    direct key generation from supported cards.  [#4681]
+
+  * gpg: Prepare against chosen-prefix SHA-1 collisions in key
+    signatures.  This change removes all SHA-1 based key signature
+    from the web-of-trust.  Note that this includes all key signature
+    created with dsa1024 keys.  (Version 2.2.18 limits this to key
+    signatures newer than 2019-01-19.)  The new option
+    --allow-weak-key-signatues can be used to override the new and
+    safer behaviour.  [#4755,CVE-2019-14855]
+
+  * gpg: Improve performance for import of large keyblocks.  [#4592]
+
+  * gpg: Implement a keybox compression run.  [#4644]
+
+  * gpg: Show warnings from dirmngr about redirect and certificate
+    problems (details require --verbose as usual).
+
+  * gpg: Allow to pass the empty string for the passphrase if the
+    '--passphase=' syntax is used.  [#4633]
+
+  * gpg: Fix printing of the KDF object attributes.
+
+  * gpg: Avoid surprises with --locate-external-key and certain
+    --auto-key-locate settings.  [#4662]
+
+  * gpg: Improve selection of best matching key.  [#4713]
+
+  * gpg: Delete key binding signature when deleting a subkey.
+    [#4665,#4457]
+
+  * gpg: Fix a potential loss of key signatures during import with
+    self-sigs-only active.  [#4628]
+
+  * gpg: Silence "marked as ultimately trusted" diagnostics if
+    option --quiet is used.  [#4634]
+
+  * gpg: Silence some diagnostics during in key listsing even with
+    option --verbose.  [#4627]
+
+  * gpg, gpgsm: Change parsing of agent's pkdecrypt results.  [#4652]
+
+  * gpgsm: Support AES-256 keys.
+
+  * gpgsm: Fix a bug in triggering a keybox compression run if
+    --faked-system-time is used.
+
+  * dirmngr: System CA certificates are no longer used for the SKS
+    pool if GNUTLS instead of NTBTLS is used as TLS library.  [#4594]
+
+  * dirmngr: On Windows detect usability of IPv4 and IPv6 interfaces
+    to avoid long timeouts.  [#4165]
+
+  * scd: Fix BWI value for APDU level transfers to make Gemalto Ezio
+    Shield and Trustica Cryptoucan work.  [#4654,#4566]
+
+  * wkd: gpg-wks-client --install-key now installs the required policy
+    file.
+
+  Release-info: https://dev.gnupg.org/T4684
+  See-also: gnupg-announce/2019q4/000442.html
+
+  Changes also found in 2.2.17:
+
+  * gpg: Ignore all key-signatures received from keyservers.  This
+    change is required to mitigate a DoS due to keys flooded with
+    faked key-signatures.  The old behaviour can be achieved by adding
+      keyserver-options no-self-sigs-only,no-import-clean
+    to your gpg.conf.  [#4607]
+
+  * gpg: If an imported keyblocks is too large to be stored in the
+    keybox (pubring.kbx) do not error out but fallback to an import
+    using the options "self-sigs-only,import-clean".  [#4591]
+
+  * gpg: New command --locate-external-key which can be used to
+    refresh keys from the Web Key Directory or via other methods
+    configured with --auto-key-locate.
+
+  * gpg: New import option "self-sigs-only".
+
+  * gpg: In --auto-key-retrieve prefer WKD over keyservers.  [#4595]
+
+  * dirmngr: Support the "openpgpkey" subdomain feature from
+    draft-koch-openpgp-webkey-service-07. [#4590].
+
+  * dirmngr: Add an exception for the "openpgpkey" subdomain to the
+    CSRF protection.  [#4603]
+
+  * dirmngr: Fix endless loop due to http errors 503 and 504.  [#4600]
+
+  * dirmngr: Fix TLS bug during redirection of HKP requests.  [#4566]
+
+  * gpgconf: Fix a race condition when killing components.  [#4577]
+
+  Release-info: https://dev.gnupg.org/T4606
+  See-also: gnupg-announce/2019q3/000439.html
+
   Changes also found in 2.2.16:
 
   * gpg,gpgsm: Fix deadlock on Windows due to a keybox sharing
@@ -571,7 +689,9 @@ Noteworthy changes in version 2.3.0 (unreleased)
   Version 2.2.14 (2019-03-19)
   Version 2.2.15 (2019-03-26)
   Version 2.2.16 (2019-05-28)
-
+  Version 2.2.17 (2019-07-09)
+  Version 2.2.18 (2019-11-25)
+  Version 2.2.19 (2019-12-07)
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
 ------------------------------------------------
