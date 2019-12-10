@@ -32,19 +32,12 @@
 #include "frontend.h"
 
 
-/* An object to describe a single database.  */
-struct db_desc_s
+/* An object to keep infos about the database.  */
+struct
 {
   enum database_types db_type;
   backend_handle_t backend_handle;
-};
-typedef struct db_desc_s *db_desc_t;
-
-
-/* The table of databases and the size of that table.  */
-static db_desc_t databases;
-static unsigned int no_of_databases;
-
+} the_database;
 
 
 
@@ -76,28 +69,23 @@ release_lock (ctrl_t ctrl)
 }
 
 
-/* Add a new resource to the database.  Depending on the FILENAME
- * suffix we decide which one to use.  This function must be called at
- * daemon startup because it employs no locking.  If FILENAME has no
+/* Set the database to use.  Depending on the FILENAME suffix we
+ * decide which one to use.  This function must be called at daemon
+ * startup because it employs no locking.  If FILENAME has no
  * directory separator, the file is expected or created below
- * "$GNUPGHOME/public-keys-v1.d/".  In READONLY mode the file must
- * exists; otherwise it is created.  */
+ * "$GNUPGHOME/public-keys.d/".  In READONLY mode the file must exists;
+ * otherwise it is created.  */
 gpg_error_t
-kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
+kbxd_set_database (ctrl_t ctrl, const char *filename_arg, int readonly)
 {
   gpg_error_t err;
   char *filename;
   enum database_types db_type = 0;
   backend_handle_t handle = NULL;
-  unsigned int n, dbidx;
+  unsigned int n;
 
   /* Do tilde expansion etc. */
-  if (!strcmp (filename_arg, "[cache]"))
-    {
-      filename = xstrdup (filename_arg);
-      db_type = DB_TYPE_CACHE;
-    }
-  else if (strchr (filename_arg, DIRSEP_C)
+  if (strchr (filename_arg, DIRSEP_C)
 #ifdef HAVE_W32_SYSTEM
       || strchr (filename_arg, '/')  /* Windows also accepts a slash.  */
 #endif
@@ -110,13 +98,17 @@ kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
   /* If this is the first call to the function and the request is not
    * for the cache backend, add the cache backend so that it will
    * always be the first to be queried.  */
-  if (!no_of_databases && !db_type)
+  if (the_database.db_type)
     {
-      err = be_cache_initialize ();
-      /* err = kbxd_add_resource (ctrl, "[cache]", 0); */
-      if (err)
-        goto leave;
+      log_error ("error: only one database allowed\n");
+      err = gpg_error (GPG_ERR_CONFLICT);
+      goto leave;
     }
+
+  /* Init the cache.  */
+  err = be_cache_initialize ();
+  if (err)
+    goto leave;
 
   n = strlen (filename);
   if (db_type)
@@ -147,56 +139,14 @@ kbxd_add_resource  (ctrl_t ctrl, const char *filename_arg, int readonly)
   if (err)
     goto leave;
 
-  /* All good, create an entry in the table. */
-  for (dbidx = 0; dbidx < no_of_databases; dbidx++)
-    if (!databases[dbidx].db_type)
-      break;
-  if (dbidx == no_of_databases)
-    {
-      /* No table yet or table is full.  */
-      if (!databases)
-        {
-          /* Create first set of databases.  Note that the initial
-           * type for all entries is DB_TYPE_NONE.  */
-          dbidx = 4;
-          databases = xtrycalloc (dbidx, sizeof *databases);
-          if (!databases)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          no_of_databases = dbidx;
-          dbidx = 0; /* Put into first slot.  */
-        }
-      else
-        {
-          db_desc_t newdb;
-
-          dbidx = no_of_databases + (no_of_databases == 4? 12 : 16);
-          newdb = xtrycalloc (dbidx, sizeof *databases);
-          if (!databases)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          for (n=0; n < no_of_databases; n++)
-            newdb[n] = databases[n];
-          xfree (databases);
-          databases = newdb;
-          n = no_of_databases;
-          no_of_databases = dbidx;
-          dbidx = n; /* Put into first new slot.  */
-        }
-    }
-
-  databases[dbidx].db_type = db_type;
-  databases[dbidx].backend_handle = handle;
+  the_database.db_type = db_type;
+  the_database.backend_handle = handle;
   handle = NULL;
 
  leave:
   if (err)
     {
-      log_error ("error adding resource '%s': %s\n",
+      log_error ("error setting database '%s': %s\n",
                  filename, gpg_strerror (err));
       be_generic_release_backend (ctrl, handle);
     }
@@ -227,8 +177,6 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
 {
   gpg_error_t err;
   int i;
-  unsigned int dbidx;
-  db_desc_t db;
   db_request_t request;
   int start_at_ubid = 0;
 
@@ -260,35 +208,37 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
     }
   request = ctrl->opgp_req;
 
+  if (!the_database.db_type)
+    {
+      log_error ("%s: error: no database configured\n", __func__);
+      err = gpg_error (GPG_ERR_NOT_INITIALIZED);
+      goto leave;
+    }
+
   /* If requested do a reset.  Using the reset flag is faster than
    * letting the caller do a separate call for an intial reset.  */
   if (!desc || reset)
     {
-      for (dbidx=0; dbidx < no_of_databases; dbidx++)
+      switch (the_database.db_type)
         {
-          db = databases + dbidx;
-          if (!db->db_type)
-            continue;  /* Empty slot.  */
+        case DB_TYPE_CACHE:
+          err = 0; /* Nothing to do.  */
+          break;
 
-          switch (db->db_type)
-            {
-            case DB_TYPE_NONE: /* NOTREACHED */
-              break;
+        case DB_TYPE_KBX:
+          err = be_kbx_search (ctrl, the_database.backend_handle,
+                               request, NULL, 0);
+          break;
 
-            case DB_TYPE_CACHE:
-              err = 0; /* Nothing to do.  */
-              break;
-
-            case DB_TYPE_KBX:
-              err = be_kbx_search (ctrl, db->backend_handle, request, NULL, 0);
-              break;
-            }
-          if (err)
-            {
-              log_error ("error during the %ssearch reset: %s\n",
-                         reset? "initial ":"", gpg_strerror (err));
-              goto leave;
-            }
+        default:
+          err = gpg_error (GPG_ERR_INTERNAL);
+          break;
+        }
+      if (err)
+        {
+          log_error ("error during the %ssearch reset: %s\n",
+                     reset? "initial ":"", gpg_strerror (err));
+          goto leave;
         }
       request->any_search = 0;
       request->any_found = 0;
@@ -300,34 +250,11 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
         }
     }
 
-
-  /* Move to the next non-empty slot.  */
- next_db:
-  for (dbidx=request->next_dbidx; (dbidx < no_of_databases
-                                   && !databases[dbidx].db_type); dbidx++)
-    ;
-  request->next_dbidx = dbidx;
-  if (!(dbidx < no_of_databases))
-    {
-      /* All databases have been searched.  Put the non-found mark
-       * into the cache for all descriptors.
-       * FIXME: We need to see which pubkey type we need to insert.  */
-      be_cache_not_found (ctrl, PUBKEY_TYPE_UNKNOWN, desc, ndesc);
-      err = gpg_error (GPG_ERR_NOT_FOUND);
-      goto leave;
-    }
-  db = databases + dbidx;
-
   /* Divert to the backend for the actual search.  */
-  switch (db->db_type)
+  switch (the_database.db_type)
     {
-    case DB_TYPE_NONE:
-      /* NOTREACHED */
-      err = gpg_error (GPG_ERR_INTERNAL);
-      break;
-
     case DB_TYPE_CACHE:
-      err = be_cache_search (ctrl, db->backend_handle, request,
+      err = be_cache_search (ctrl, the_database.backend_handle, request,
                              desc, ndesc);
       /* Expected error codes from the cache lookup are:
        *  0 - found and returned via the cache
@@ -339,26 +266,31 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
       if (start_at_ubid)
         {
           /* We need to set the startpoint for the search.  */
-          err = be_kbx_seek (ctrl, db->backend_handle, request,
+          err = be_kbx_seek (ctrl, the_database.backend_handle, request,
                              request->last_cached_ubid);
           if (err)
             {
-              log_debug ("%s: seeking %s to an UBID failed: %s\n",
-                         __func__, strdbtype (db->db_type), gpg_strerror (err));
+              log_debug ("%s: seeking %s to an UBID failed: %s\n", __func__,
+                         strdbtype (the_database.db_type), gpg_strerror (err));
               break;
             }
         }
-      err = be_kbx_search (ctrl, db->backend_handle, request,
+      err = be_kbx_search (ctrl, the_database.backend_handle, request,
                            desc, ndesc);
       if (start_at_ubid && gpg_err_code (err) == GPG_ERR_EOF)
         be_cache_mark_final (ctrl, request);
       break;
+
+    default:
+      log_error ("%s: unsupported database type %d\n",
+                 __func__, the_database.db_type);
+      err = gpg_error (GPG_ERR_INTERNAL);
+      break;
     }
 
   if (DBG_LOOKUP)
-    log_debug ("%s: searched %s (db %u of %u) => %s\n",
-               __func__, strdbtype (db->db_type), dbidx, no_of_databases,
-               gpg_strerror (err));
+    log_debug ("%s: searched %s => %s\n", __func__,
+               strdbtype (the_database.db_type), gpg_strerror (err));
   request->any_search = 1;
   start_at_ubid = 0;
   if (!err)
@@ -367,14 +299,17 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
     }
   else if (gpg_err_code (err) == GPG_ERR_EOF)
     {
-      if (db->db_type == DB_TYPE_CACHE && request->last_cached_valid)
+      if (the_database.db_type == DB_TYPE_CACHE && request->last_cached_valid)
         {
           if (request->last_cached_final)
             goto leave;
           start_at_ubid = 1;
         }
       request->next_dbidx++;
-      goto next_db;
+      /* FIXME: We need to see which pubkey type we need to insert.  */
+      be_cache_not_found (ctrl, PUBKEY_TYPE_UNKNOWN, desc, ndesc);
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
     }
 
 
@@ -395,8 +330,6 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
 {
   gpg_error_t err;
   db_request_t request;
-  unsigned int dbidx;
-  db_desc_t db;
   char ubid[UBID_LEN];
   enum pubkey_types pktype;
   int insert = 0;
@@ -418,23 +351,29 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
     }
   request = ctrl->opgp_req;
 
+  if (!the_database.db_type)
+    {
+      log_error ("%s: error: no database configured\n", __func__);
+      err = gpg_error (GPG_ERR_NOT_INITIALIZED);
+      goto leave;
+    }
+
   /* Check whether to insert or update.  */
   err = be_ubid_from_blob (blob, bloblen, &pktype, ubid);
   if (err)
     goto leave;
 
-  /* FIXME: We force the use of the KBX backend.  */
-  for (dbidx=0; dbidx < no_of_databases; dbidx++)
-    if (databases[dbidx].db_type == DB_TYPE_KBX)
-      break;
-  if (!(dbidx < no_of_databases))
+  if (the_database.db_type == DB_TYPE_KBX)
     {
-      err = gpg_error (GPG_ERR_NOT_INITIALIZED);
-      goto leave;
+      err = be_kbx_seek (ctrl, the_database.backend_handle, request, ubid);
     }
-  db = databases + dbidx;
+  else
+    {
+      log_error ("%s: unsupported database type %d\n",
+                 __func__, the_database.db_type);
+      err = gpg_error (GPG_ERR_INTERNAL);
+    }
 
-  err = be_kbx_seek (ctrl, db->backend_handle, request, ubid);
   if (!err)
     ; /* Found - need to update.  */
   else if (gpg_err_code (err) == GPG_ERR_EOF)
@@ -450,17 +389,21 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
     {
       if (mode == KBXD_STORE_UPDATE)
         err = gpg_error (GPG_ERR_CONFLICT);
-      else
-        err = be_kbx_insert (ctrl, db->backend_handle, request,
+      else if (the_database.db_type == DB_TYPE_KBX)
+        err = be_kbx_insert (ctrl, the_database.backend_handle, request,
                              pktype, blob, bloblen);
+      else
+        err = gpg_error (GPG_ERR_INTERNAL);
     }
   else /* Update.  */
     {
       if (mode == KBXD_STORE_INSERT)
         err = gpg_error (GPG_ERR_CONFLICT);
-      else
-        err = be_kbx_update (ctrl, db->backend_handle, request,
+      else if (the_database.db_type == DB_TYPE_KBX)
+        err = be_kbx_update (ctrl, the_database.backend_handle, request,
                              pktype, blob, bloblen);
+      else
+        err = gpg_error (GPG_ERR_INTERNAL);
     }
 
  leave:
@@ -479,8 +422,6 @@ kbxd_delete (ctrl_t ctrl, const unsigned char *ubid)
 {
   gpg_error_t err;
   db_request_t request;
-  unsigned int dbidx;
-  db_desc_t db;
 
   if (DBG_CLOCK)
     log_clock ("%s: enter", __func__);
@@ -499,18 +440,24 @@ kbxd_delete (ctrl_t ctrl, const unsigned char *ubid)
     }
   request = ctrl->opgp_req;
 
-  /* FIXME: We force the use of the KBX backend.  */
-  for (dbidx=0; dbidx < no_of_databases; dbidx++)
-    if (databases[dbidx].db_type == DB_TYPE_KBX)
-      break;
-  if (!(dbidx < no_of_databases))
+  if (!the_database.db_type)
     {
+      log_error ("%s: error: no database configured\n", __func__);
       err = gpg_error (GPG_ERR_NOT_INITIALIZED);
       goto leave;
     }
-  db = databases + dbidx;
 
-  err = be_kbx_seek (ctrl, db->backend_handle, request, ubid);
+  if (the_database.db_type == DB_TYPE_KBX)
+    {
+      err = be_kbx_seek (ctrl, the_database.backend_handle, request, ubid);
+    }
+  else
+    {
+      log_error ("%s: unsupported database type %d\n",
+                 __func__, the_database.db_type);
+      err = gpg_error (GPG_ERR_INTERNAL);
+    }
+
   if (!err)
     ; /* Found - we can delete.  */
   else if (gpg_err_code (err) == GPG_ERR_EOF)
@@ -525,7 +472,10 @@ kbxd_delete (ctrl_t ctrl, const unsigned char *ubid)
       goto leave;
     }
 
-  err = be_kbx_delete (ctrl, db->backend_handle, request);
+  if (the_database.db_type == DB_TYPE_KBX)
+    err = be_kbx_delete (ctrl, the_database.backend_handle, request);
+  else
+    err = gpg_error (GPG_ERR_INTERNAL);
 
  leave:
   release_lock (ctrl);

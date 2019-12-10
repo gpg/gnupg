@@ -31,8 +31,8 @@ enum kbxd_store_modes
   };
 
 
-gpg_error_t kbxd_add_resource  (ctrl_t ctrl,
-                                const char *filename_arg, int readonly);
+gpg_error_t kbxd_set_database (ctrl_t ctrl,
+                               const char *filename_arg, int readonly);
 
 void kbxd_release_session_info (ctrl_t ctrl);
 

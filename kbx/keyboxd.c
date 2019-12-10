@@ -736,7 +736,7 @@ main (int argc, char **argv )
         }
       kbxd_init_default_ctrl (ctrl);
 
-      kbxd_add_resource (ctrl, "pubring.kbx", 0);
+      kbxd_set_database (ctrl, "pubring.kbx", 0);
 
       kbxd_start_command_handler (ctrl, GNUPG_INVALID_FD, 0);
       kbxd_deinit_default_ctrl (ctrl);
@@ -870,7 +870,7 @@ main (int argc, char **argv )
             kbxd_exit (1);
           }
         kbxd_init_default_ctrl (ctrl);
-        kbxd_add_resource (ctrl, "pubring.kbx", 0);
+        kbxd_set_database (ctrl, "pubring.kbx", 0);
         kbxd_deinit_default_ctrl (ctrl);
         xfree (ctrl);
       }
