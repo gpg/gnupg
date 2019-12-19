@@ -1240,7 +1240,7 @@ dist-source: installer
               --transform='s,^,$(INST_NAME)-$(INST_VERSION)/,' \
 	     PLAY/stamps/stamp-*-00-unpack PLAY/src swdb.lst swdb.lst.sig ;\
 	 [ -f "$$tarname".xz ] && rm "$$tarname".xz;\
-         xz "$$tarname" ;\
+         xz -T0 "$$tarname" ;\
 	)
 
 
