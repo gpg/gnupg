@@ -69,6 +69,28 @@ help:
 	@echo 'Use CUSTOM_SWDB=1 for an already downloaded swdb.lst.'
 	@echo 'Use WIXPREFIX to provide the WIX binaries for the MSI package.'
 	@echo '    Using WIX also requires wine with installed wine mono.'
+	@echo '    Seee help-wixlib for more information'
+
+help-wixlib:
+	@echo 'The buildsystem can create a wixlib to build MSI packages.'
+	@echo ''
+	@echo 'On debian install the packages "wine"'
+	@echo '  apt-get install wine'
+	@echo ''
+	@echo 'Download the wine-mono msi:'
+	@echo '  https://dl.winehq.org/wine/wine-mono/'
+	@echo ''
+	@echo 'Install it:'
+	@echo '  wine msiexec /i ~/Downloads/wine-mono-4.9.4.msi'
+	@echo ''
+	@echo 'Download the wix toolset binary zip from:'
+	@echo '  https://github.com/wixtoolset/wix3/releases'
+	@echo 'The default folder searches for ~/w32root/wixtools'
+	@echo 'Alternative locations can be passed by WIXPREFIX variable'
+	@echo '  unzip -d ~/w32root/wixtools ~/Downloads/wix311-binaries.zip'
+	@echo ''
+	@echo 'Afterwards w32-release will build also a wixlib.'
+
 
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
 
@@ -170,7 +192,7 @@ INST_NAME=gnupg-w32
 INSTALL_PREFIX=none
 
 # Set this to the location of wixtools
-WIXPREFIX=
+WIXPREFIX=$(shell readlink -f ~/w32root/wixtools)
 
 # The Authenticode key and cert chain used to sign the Windows
 # installer If AUTHENTICODE_SIGNHOST is specified, signing is done on
@@ -1295,10 +1317,12 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 wixlib: installer $(bdir)/README.txt $(w32src)/wixlib.wxs
 	if [ -z "$$(which $(WINE))" ]; then \
 		echo "ERROR: For the w32-wixlib wine needs to be installed."; \
+		echo "ERROR: see 'help-w32-wixlib'"; \
 		exit 1; \
 	fi;
-	if [ -z "$(WIXPREFIX)" ]; then \
+	if [ ! -d "$(WIXPREFIX)" ]; then \
 		echo "ERROR: You must set WIXPREFIX to an installation of wixtools."; \
+		echo "ERROR: see 'help-w32-wixlib'"; \
 		exit 1; \
 	fi;
 	(if [ -z "$$WINEPREFIX" ]; then \
@@ -1346,7 +1370,7 @@ wixlib: installer $(bdir)/README.txt $(w32src)/wixlib.wxs
 	)
 
 define MKSWDB_commands
- ( pref="#+macro: gnupg22_w32_" ;\
+ ( pref="#+macro: gnupg22_w32_$(3)" ;\
    echo "$${pref}ver  $(INST_VERSION)_$(BUILD_DATESTR)"  ;\
    echo "$${pref}date $(2)" ;\
    echo "$${pref}size $$(wc -c <$(1)|awk '{print int($$1/1024)}')k";\
@@ -1386,9 +1410,8 @@ installer-from-source: dist-source
 	 cd PLAY-release; \
 	 tar xJf "../$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).tar.xz";\
 	 cd $(INST_NAME)-$(INST_VERSION); \
-         $(MAKE) -f build-aux/speedo.mk this-w32-installer SELFCHECK=0;\
-	 if [ -n "$(WIXPREFIX)" ]; then \
-		 cd $(INST_NAME)-$(INST_VERSION); \
+	 $(MAKE) -f build-aux/speedo.mk this-w32-installer SELFCHECK=0;\
+	 if [ -d "$(WIXPREFIX)" ]; then \
 		 $(MAKE) -f build-aux/speedo.mk this-w32-wixlib SELFCHECK=0;\
 	 fi; \
 	 reldate="$$(date -u +%Y-%m-%d)" ;\
@@ -1397,10 +1420,10 @@ installer-from-source: dist-source
 	 exefile="../../$$exefile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
 	 msifile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib"; \
-	 if [ -e "$${msifile}" ]; then \
+	 if [ -e "PLAY/inst/$${msifile}" ]; then \
 		 cp "PLAY/inst/$$msifile" ../..; \
 		 msifile="../../$$msifile" ; \
-		 $(call MKSWDB_commands,$${msifile},$${reldate}); \
+		 $(call MKSWDB_commands,$${msifile},$${reldate},"wixlib_"); \
 	 fi \
 	)
 
@@ -1422,7 +1445,7 @@ sign-installer:
 	 msifile="../../$$msifile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
 	 if [ -e "$${msifile}" ]; then \
-	   $(call MKSWDB_commands,$${msifile},$${reldate}); \
+	   $(call MKSWDB_commands,$${msifile},$${reldate},"wixlib_"); \
 	 fi; \
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Verification result" ;\

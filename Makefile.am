@@ -209,6 +209,7 @@ sign-release:
 		  $${release_w32_name}.tar.xz.sig \
 		  $${release_w32_name}.exe.sig    \
 		  $${release_w32_name}.exe.swdb" ;\
+	  files3="$${release_w32_name}.wixlib"; \
 	  $(MAKE) -f $(RELEASE_NAME)/build-aux/speedo.mk w32-sign-installer ;\
 	  echo "/* Signing the source tarball ..." ;\
 	  gpg -sbu $(RELEASE_SIGNING_KEY) $(RELEASE_NAME).tar.bz2 ;\
@@ -224,7 +225,7 @@ sign-release:
           cat "../$(RELEASE_NAME).buildlog" swdb.snippet \
                | gzip >$(RELEASE_NAME).buildlog ;\
           echo "Release created - copying it to the local archive ..." ;\
-	  scp -p $${files1} $${files2} $(RELEASE_ARCHIVE_DIR)/ || true;\
+	  scp -p $${files1} $${files2} $${files3} $(RELEASE_ARCHIVE_DIR)/ || true;\
 	  echo '/*' ;\
 	  echo ' * All done; for checksums see dist/swdb.snippet' ;\
 	  echo ' */' ;\
