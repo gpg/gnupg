@@ -1391,13 +1391,15 @@ define AUTHENTICODE_sign
         /fd sha256 /du https://gnupg.org a.exe ;\
      scp "$(AUTHENTICODE_SIGNHOST):a.exe" $(2);\
      echo "speedo: signed file is '$(2)'" ;\
-   else \
+   elif [ -e "$(AUTHENTICODE_KEY)" ]; then \
      echo "speedo: Signing using key $(AUTHENTICODE_KEY)";\
      osslsigncode sign -certs $(AUTHENTICODE_CERTS) \
        -pkcs12 $(AUTHENTICODE_KEY) -askpass \
        -ts "http://timestamp.globalsign.com/scripts/timstamp.dll" \
        -h sha256 -n GnuPG -i https://gnupg.org \
        -in $(1) -out $(2) ;\
+   else \
+     echo "speedo: WARNING: Binaries are not signed"; \
    fi
 endef
 
