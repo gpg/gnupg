@@ -188,7 +188,7 @@ struct app_ctx_s {
                       gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg);
     gpg_error_t (*with_keygrip) (app_t app, ctrl_t ctrl, int action,
-                                 const char *keygrip_str);
+                                 const char *keygrip_str, int capability);
   } fnc;
 };
 
@@ -301,7 +301,8 @@ gpg_error_t app_change_pin (card_t card, ctrl_t ctrl,
 gpg_error_t app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
                            gpg_error_t (*pincb)(void*, const char *, char **),
                            void *pincb_arg);
-card_t app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str);
+card_t app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
+                            int capability);
 
 
 /*-- app-openpgp.c --*/

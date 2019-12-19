@@ -3330,7 +3330,7 @@ do_writecert (app_t app, ctrl_t ctrl,
 /* Process the various keygrip based info requests.  */
 static gpg_error_t
 do_with_keygrip (app_t app, ctrl_t ctrl, int action,
-                 const char *want_keygripstr)
+                 const char *want_keygripstr, int capability)
 {
   gpg_error_t err;
   char *keygripstr = NULL;
@@ -3389,6 +3389,22 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
         }
       else if (!want_keygripstr || !strcmp (keygripstr, want_keygripstr))
         {
+          if (capability == 1)
+            {
+              if (strcmp (data_objects[i].keyref, "9C"))
+                continue;
+            }
+          if (capability == 2)
+            {
+              if (strcmp (data_objects[i].keyref, "9D"))
+                continue;
+            }
+          if (capability == 3)
+            {
+              if (strcmp (data_objects[i].keyref, "9A"))
+                continue;
+            }
+
           snprintf (idbuf, sizeof idbuf, "PIV.%s", data_objects[i].keyref);
           send_keyinfo (ctrl, data, keygripstr, serialno, idbuf);
           if (want_keygripstr)

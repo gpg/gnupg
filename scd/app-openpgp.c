@@ -4929,8 +4929,23 @@ do_check_pin (app_t app, const char *keyidstr,
     return verify_chv2 (app, pincb, pincb_arg);
 }
 
+static void
+send_keyinfo_if_available (app_t app, ctrl_t ctrl, char *serial,
+                           int data, int i)
+{
+  char idbuf[50];
+
+  if (app->app_local->pk[i].read_done)
+    {
+      sprintf (idbuf, "OPENPGP.%d", i+1);
+      send_keyinfo (ctrl, data,
+                    app->app_local->pk[i].keygrip_str, serial, idbuf);
+    }
+}
+
 static gpg_error_t
-do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
+do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str,
+                 int capability)
 {
   int i;
 
@@ -4950,7 +4965,6 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
     }
   else
     {
-      char idbuf[50];
       char buf[65];
       int data = (action == KEYGRIP_ACTION_SEND_DATA);
 
@@ -4961,13 +4975,17 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
 
       if (keygrip_str == NULL)
         {
-          for (i = 0; i < 3; i++)
-            if (app->app_local->pk[i].read_done)
-              {
-                sprintf (idbuf, "OPENPGP.%d", i+1);
-                send_keyinfo (ctrl, data,
-                              app->app_local->pk[i].keygrip_str,buf, idbuf);
-              }
+          if (capability == 0)
+            {
+              for (i = 0; i < 3; i++)
+                send_keyinfo_if_available (app, ctrl, buf, data, i);
+            }
+          else
+            {
+              i = capability - 1;
+              send_keyinfo_if_available (app, ctrl, buf, data, i);
+            }
+
           /* Return an error so that the dispatcher keeps on looping
            * over the other applications.  Only for clarity we use a
            * different error code than for the not_found case.  */
@@ -4976,11 +4994,9 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str)
       else
         {
           for (i = 0; i < 3; i++)
-            if (app->app_local->pk[i].read_done
-                && !strcmp (keygrip_str, app->app_local->pk[i].keygrip_str))
+            if (!strcmp (keygrip_str, app->app_local->pk[i].keygrip_str))
               {
-                sprintf (idbuf, "OPENPGP.%d", i+1);
-                send_keyinfo (ctrl, data, keygrip_str, buf, idbuf);
+                send_keyinfo_if_available (app, ctrl, buf, data, i);
                 return 0;
               }
         }

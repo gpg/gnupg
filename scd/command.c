@@ -830,7 +830,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
      ctrl->card_ctx. */
   if (strlen (keyidstr) == 40)
     {
-      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr, 0);
       direct = 1;
     }
   else
@@ -898,7 +898,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
      ctrl->card_ctx. */
   if (strlen (keyidstr) == 40)
     {
-      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr, 0);
       direct = 1;
     }
   else
@@ -959,7 +959,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
      ctrl->card_ctx. */
   if (strlen (keyidstr) == 40)
     {
-      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr);
+      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keyidstr, 0);
       direct = 1;
     }
   else
@@ -1893,12 +1893,13 @@ cmd_killscd (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyinfo[] =
-  "KEYINFO [--list] [--data] <keygrip>\n"
+  "KEYINFO [--list[=auth|encr|sign]] [--data] <keygrip>\n"
   "\n"
   "Return information about the key specified by the KEYGRIP.  If the\n"
   "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
   "--list is given the keygrip is ignored and information about all\n"
-  "available keys are returned.  Unless --data is given, the\n"
+  "available keys are returned.  Capability may limit the listing.\n"
+  "Unless --data is given, the\n"
   "information is returned as a status line using the format:\n"
   "\n"
   "  KEYINFO <keygrip> T <serialno> <idstr>\n"
@@ -1916,30 +1917,37 @@ static const char hlp_keyinfo[] =
 static gpg_error_t
 cmd_keyinfo (assuan_context_t ctx, char *line)
 {
-  int list_mode;
+  int cap;
   int opt_data;
   int action;
   char *keygrip_str;
   ctrl_t ctrl = assuan_get_pointer (ctx);
   card_t card;
 
-  list_mode = has_option (line, "--list");
-  opt_data = has_option (line, "--data");
-  line = skip_options (line);
-
-  if (list_mode)
-    keygrip_str = NULL;
+  cap = 0;
+  keygrip_str = NULL;
+  if (has_option (line, "--list"))
+    cap = 0;
+  else if (has_option (line, "--list=sign"))
+    cap = 1;
+  else if (has_option (line, "--list=encr"))
+    cap = 2;
+  else if (has_option (line, "--list=auth"))
+    cap = 3;
   else
     keygrip_str = line;
+
+  opt_data = has_option (line, "--data");
+  line = skip_options (line);
 
   if (opt_data)
     action = KEYGRIP_ACTION_SEND_DATA;
   else
     action = KEYGRIP_ACTION_WRITE_STATUS;
 
-  card = app_do_with_keygrip (ctrl, action, keygrip_str);
+  card = app_do_with_keygrip (ctrl, action, keygrip_str, cap);
 
-  if (!list_mode && !card)
+  if (keygrip_str && !card)
     return gpg_error (GPG_ERR_NOT_FOUND);
   return 0;
 }

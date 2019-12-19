@@ -1138,7 +1138,7 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
           for (app = card->app; app; app_prev = app, app = app->next)
             if (app->fnc.with_keygrip
                 && !app->fnc.with_keygrip (app, ctrl,
-                                           KEYGRIP_ACTION_LOOKUP, keyref))
+                                           KEYGRIP_ACTION_LOOKUP, keyref, 0))
               break;
           if (!app_prev && ctrl->current_apptype == card->app->apptype)
             return 0;   /* Already the first app - no need to switch.  */
@@ -1969,7 +1969,8 @@ app_send_card_list (ctrl_t ctrl)
  *         <keygrip> T <serialno> <idstr>
  *     If a match was found a pointer to the matching application is
  *     returned.  With the KEYGRIP_STR given as NULL, lines for all
- *     keys will be send and the return value is NULL.
+ *     keys (with CAPABILITY) will be send and the return value is
+ *     GPG_ERR_TRUE.
  *
  * - KEYGRIP_ACTION_WRITE_STATUS
  *
@@ -1980,10 +1981,12 @@ app_send_card_list (ctrl_t ctrl)
  *
  *     Returns a pointer to the application matching KEYGRIP_STR but
  *     does not emit any status or data lines.  If no key with that
- *     keygrip is available or KEYGRIP_STR is NULL, NULL is returned.
+ *     keygrip is available or KEYGRIP_STR is NULL, GPG_ERR_NOT_FOUND
+ *     is returned.
  */
 card_t
-app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
+app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
+                     int capability)
 {
   int locked = 0;
   card_t c;
@@ -2005,7 +2008,7 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str)
             if (DBG_APP)
               log_debug ("slot %d app %s: calling with_keygrip(action=%d)\n",
                          c->slot, xstrapptype (a), action);
-            if (!a->fnc.with_keygrip (a, ctrl, action, keygrip_str))
+            if (!a->fnc.with_keygrip (a, ctrl, action, keygrip_str, capability))
               goto leave_the_loop;
           }
       unlock_card (c);
