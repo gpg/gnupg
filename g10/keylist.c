@@ -608,6 +608,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
   int rc = 0;
   KBNODE keyblock = NULL;
   GETKEY_CTX ctx;
+  int any_secret;
   const char *resname;
   const char *keyring_str = _("Keyring");
   int i;
@@ -637,16 +638,32 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
 
   do
     {
-      if ((opt.list_options & LIST_SHOW_KEYRING) && !opt.with_colons)
+      /* getkey_bynames makes sure that only secret keys are returned
+       * if requested, thus we do not need to test again.  With
+       * MARK_SECRET set (ie. option --with-secret) we have to test
+       * for a secret key, though.  */
+      if (secret)
+        any_secret = 1;
+      else if (mark_secret)
+        any_secret = !agent_probe_any_secret_key (NULL, keyblock);
+      else
+        any_secret = 0;
+
+      if (secret && !any_secret)
+        ;/* Secret key listing requested but getkey_bynames failed.  */
+      else
         {
-          resname = keydb_get_resource_name (get_ctx_handle (ctx));
-          es_fprintf (es_stdout, "%s: %s\n", keyring_str, resname);
-          for (i = strlen (resname) + strlen (keyring_str) + 2; i; i--)
-            es_putc ('-', es_stdout);
-          es_putc ('\n', es_stdout);
+          if ((opt.list_options & LIST_SHOW_KEYRING) && !opt.with_colons)
+            {
+              resname = keydb_get_resource_name (get_ctx_handle (ctx));
+              es_fprintf (es_stdout, "%s: %s\n", keyring_str, resname);
+              for (i = strlen (resname) + strlen (keyring_str) + 2; i; i--)
+                es_putc ('-', es_stdout);
+              es_putc ('\n', es_stdout);
+            }
+          list_keyblock (ctrl, keyblock, secret, any_secret,
+                         opt.fingerprint, &listctx);
         }
-      list_keyblock (ctrl,
-                     keyblock, secret, mark_secret, opt.fingerprint, &listctx);
       release_kbnode (keyblock);
     }
   while (!getkey_next (ctrl, ctx, NULL, &keyblock));
