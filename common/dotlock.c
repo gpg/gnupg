@@ -1229,7 +1229,7 @@ dotlock_take_w32 (dotlock_t h, long timeout)
 
 
 /* Take a lock on H.  A value of 0 for TIMEOUT returns immediately if
-   the lock can't be taked, -1 waits forever (hopefully not), other
+   the lock can't be taken, -1 waits forever (hopefully not), other
    values wait for TIMEOUT milliseconds.  Returns: 0 on success  */
 int
 dotlock_take (dotlock_t h, long timeout)
