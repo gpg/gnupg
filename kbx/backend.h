@@ -32,7 +32,8 @@ enum database_types
   {
    DB_TYPE_NONE,   /* No database at all (unitialized etc.).  */
    DB_TYPE_CACHE,  /* The cache backend (backend-cache.c).    */
-   DB_TYPE_KBX     /* Keybox type database (backend-kbx.c).   */
+   DB_TYPE_KBX,    /* Keybox type database (backend-kbx.c).   */
+   DB_TYPE_SQLITE  /* SQLite type database (backend-sqlite.c).*/
   };
 
 
@@ -41,6 +42,11 @@ enum database_types
  * first field is the database_type to help with debugging.  */
 struct backend_handle_s;
 typedef struct backend_handle_s *backend_handle_t;
+
+
+/* Private data for sqlite requests.  */
+struct be_sqlite_local_s;
+typedef struct be_sqlite_local_s *be_sqlite_local_t;
 
 
 /* Object to store backend specific database information per database
@@ -52,8 +58,11 @@ struct db_request_part_s
   /* Id of the backend instance this object pertains to.  */
   unsigned int backend_id;
 
-  /* The handle used for a KBX backend or NULL.  */
+  /* Local data for a KBX backend or NULL.  */
   KEYBOX_HANDLE kbx_hd;
+
+  /* Local data for a sqlite backend.  */
+  be_sqlite_local_t besqlite;
 
   /* For the CACHE backend the indices into the bloblist for each
    * index type.  */
@@ -106,6 +115,7 @@ gpg_error_t be_find_request_part (backend_handle_t backend_hd,
 gpg_error_t be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
                               enum pubkey_types pubkey_type,
                               const unsigned char *ubid);
+int be_is_x509_blob (const unsigned char *blob, size_t bloblen);
 gpg_error_t be_ubid_from_blob (const void *blob, size_t bloblen,
                                enum pubkey_types *r_pktype, char *r_ubid);
 
@@ -146,6 +156,26 @@ gpg_error_t be_kbx_update (ctrl_t ctrl, backend_handle_t backend_hd,
                            const void *blob, size_t bloblen);
 gpg_error_t be_kbx_delete (ctrl_t ctrl, backend_handle_t backend_hd,
                            db_request_t request);
+
+
+/*-- backend-sqlite.c --*/
+gpg_error_t be_sqlite_add_resource (ctrl_t ctrl, backend_handle_t *r_hd,
+                                    const char *filename, int readonly);
+void be_sqlite_release_resource (ctrl_t ctrl, backend_handle_t hd);
+
+gpg_error_t be_sqlite_init_local (backend_handle_t backend_hd,
+                                  db_request_part_t part);
+void be_sqlite_release_local (be_sqlite_local_t ctx);
+gpg_error_t be_sqlite_search (ctrl_t ctrl, backend_handle_t hd,
+                              db_request_t request,
+                              KEYDB_SEARCH_DESC *desc, unsigned int ndesc);
+gpg_error_t be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
+                             db_request_t request, enum kbxd_store_modes mode,
+                             enum pubkey_types pktype,
+                             const unsigned char *ubid,
+                             const void *blob, size_t bloblen);
+gpg_error_t be_sqlite_delete (ctrl_t ctrl, backend_handle_t backend_hd,
+                              db_request_t request, const unsigned char *ubid);
 
 
 #endif /*KBX_BACKEND_H*/

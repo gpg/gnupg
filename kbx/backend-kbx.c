@@ -434,7 +434,6 @@ be_kbx_delete (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request)
 {
   gpg_error_t err;
   db_request_part_t part;
-  ksba_cert_t cert = NULL;
 
   (void)ctrl;
 
@@ -452,6 +451,5 @@ be_kbx_delete (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request)
   err = keybox_delete (part->kbx_hd);
 
  leave:
-  ksba_cert_release (cert);
   return err;
 }

@@ -23,14 +23,6 @@
 #include "keybox-search-desc.h"
 
 
-enum kbxd_store_modes
-  {
-   KBXD_STORE_AUTO = 0, /* Update or insert.    */
-   KBXD_STORE_INSERT,   /* Allow only inserts.  */
-   KBXD_STORE_UPDATE    /* Allow only updates.  */
-  };
-
-
 gpg_error_t kbxd_set_database (ctrl_t ctrl,
                                const char *filename_arg, int readonly);
 

@@ -137,6 +137,14 @@ struct server_control_s
 #define L_(a) (a)
 #endif
 
+enum kbxd_store_modes
+  {
+   KBXD_STORE_AUTO = 0, /* Update or insert.    */
+   KBXD_STORE_INSERT,   /* Allow only inserts.  */
+   KBXD_STORE_UPDATE    /* Allow only updates.  */
+  };
+
+
 
 /*-- keyboxd.c --*/
 void kbxd_exit (int rc) GPGRT_ATTR_NORETURN;

@@ -51,6 +51,7 @@ strdbtype (enum database_types t)
     case DB_TYPE_NONE: return "none";
     case DB_TYPE_CACHE:return "cache";
     case DB_TYPE_KBX:  return "keybox";
+    case DB_TYPE_SQLITE: return "sqlite";
     }
   return "?";
 }
@@ -87,6 +88,9 @@ be_generic_release_backend (ctrl_t ctrl, backend_handle_t hd)
     case DB_TYPE_KBX:
       be_kbx_release_resource (ctrl, hd);
       break;
+    case DB_TYPE_SQLITE:
+      be_sqlite_release_resource (ctrl, hd);
+      break;
     default:
       log_error ("%s: faulty backend handle of type %d given\n",
                  __func__, hd->db_type);
@@ -107,6 +111,7 @@ be_release_request (db_request_t req)
     {
       partn = part->next;
       be_kbx_release_kbx_hd (part->kbx_hd);
+      be_sqlite_release_local (part->besqlite);
       xfree (part);
     }
 }
@@ -134,6 +139,15 @@ be_find_request_part (backend_handle_t backend_hd, db_request_t request,
       if (backend_hd->db_type == DB_TYPE_KBX)
         {
           err = be_kbx_init_request_part (backend_hd, part);
+          if (err)
+            {
+              xfree (part);
+              return err;
+            }
+        }
+      else if (backend_hd->db_type == DB_TYPE_SQLITE)
+        {
+          err = be_sqlite_init_local (backend_hd, part);
           if (err)
             {
               xfree (part);
@@ -174,8 +188,8 @@ be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
 
 
 /* Return true if (BLOB/BLOBLEN) seems to be an X509 certificate.  */
-static int
-is_x509_blob (const unsigned char *blob, size_t bloblen)
+int
+be_is_x509_blob (const unsigned char *blob, size_t bloblen)
 {
   const unsigned char *p;
   size_t n, objlen, hdrlen;
@@ -237,7 +251,7 @@ be_ubid_from_blob (const void *blob, size_t bloblen,
 {
   gpg_error_t err;
 
-  if (is_x509_blob (blob, bloblen))
+  if (be_is_x509_blob (blob, bloblen))
     {
       /* Although libksba has a dedicated function to compute the
        * fingerprint we compute it here directly because we know that

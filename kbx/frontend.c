@@ -115,6 +115,8 @@ kbxd_set_database (ctrl_t ctrl, const char *filename_arg, int readonly)
     ; /* We already know it.  */
   else if (n > 4 && !strcmp (filename + n - 4, ".kbx"))
     db_type = DB_TYPE_KBX;
+  else if (n > 3 && !strcmp (filename + n - 3, ".db"))
+    db_type = DB_TYPE_SQLITE;
   else
     {
       log_error (_("can't use file '%s': %s\n"), filename, _("unknown suffix"));
@@ -135,7 +137,11 @@ kbxd_set_database (ctrl_t ctrl, const char *filename_arg, int readonly)
     case DB_TYPE_KBX:
       err = be_kbx_add_resource (ctrl, &handle, filename, readonly);
       break;
-    }
+
+    case DB_TYPE_SQLITE:
+      err = be_sqlite_add_resource (ctrl, &handle, filename, readonly);
+      break;
+      }
   if (err)
     goto leave;
 
@@ -170,7 +176,9 @@ kbxd_release_session_info (ctrl_t ctrl)
 
 
 /* Search for the keys described by (DESC,NDESC) and return them to
- * the caller.  If RESET is set, the search state is first reset. */
+ * the caller.  If RESET is set, the search state is first reset.
+ * Only a reset guarantees that changed search description in DESC are
+ * considered.  */
 gpg_error_t
 kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
              int reset)
@@ -178,7 +186,6 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
   gpg_error_t err;
   int i;
   db_request_t request;
-  int start_at_ubid = 0;
 
   if (DBG_CLOCK)
     log_clock ("%s: enter", __func__);
@@ -230,6 +237,11 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
                                request, NULL, 0);
           break;
 
+        case DB_TYPE_SQLITE:
+          err = be_sqlite_search (ctrl, the_database.backend_handle,
+                                  request, NULL, 0);
+          break;
+
         default:
           err = gpg_error (GPG_ERR_INTERNAL);
           break;
@@ -263,22 +275,13 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
       break;
 
     case DB_TYPE_KBX:
-      if (start_at_ubid)
-        {
-          /* We need to set the startpoint for the search.  */
-          err = be_kbx_seek (ctrl, the_database.backend_handle, request,
-                             request->last_cached_ubid);
-          if (err)
-            {
-              log_debug ("%s: seeking %s to an UBID failed: %s\n", __func__,
-                         strdbtype (the_database.db_type), gpg_strerror (err));
-              break;
-            }
-        }
       err = be_kbx_search (ctrl, the_database.backend_handle, request,
                            desc, ndesc);
-      if (start_at_ubid && gpg_err_code (err) == GPG_ERR_EOF)
-        be_cache_mark_final (ctrl, request);
+      break;
+
+    case DB_TYPE_SQLITE:
+      err = be_sqlite_search (ctrl, the_database.backend_handle, request,
+                              desc, ndesc);
       break;
 
     default:
@@ -292,7 +295,6 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
     log_debug ("%s: searched %s => %s\n", __func__,
                strdbtype (the_database.db_type), gpg_strerror (err));
   request->any_search = 1;
-  start_at_ubid = 0;
   if (!err)
     {
       request->any_found = 1;
@@ -303,7 +305,6 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
         {
           if (request->last_cached_final)
             goto leave;
-          start_at_ubid = 1;
         }
       request->next_dbidx++;
       /* FIXME: We need to see which pubkey type we need to insert.  */
@@ -366,6 +367,38 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
   if (the_database.db_type == DB_TYPE_KBX)
     {
       err = be_kbx_seek (ctrl, the_database.backend_handle, request, ubid);
+      if (!err)
+        ; /* Found - need to update.  */
+      else if (gpg_err_code (err) == GPG_ERR_EOF)
+        insert = 1; /* Not found - need to insert.  */
+      else
+        {
+          log_debug ("%s: searching fingerprint failed: %s\n",
+                     __func__, gpg_strerror (err));
+          goto leave;
+        }
+
+      if (insert)
+        {
+          if (mode == KBXD_STORE_UPDATE)
+            err = gpg_error (GPG_ERR_CONFLICT);
+          else
+            err = be_kbx_insert (ctrl, the_database.backend_handle, request,
+                                 pktype, blob, bloblen);
+        }
+      else /* Update.  */
+        {
+          if (mode == KBXD_STORE_INSERT)
+            err = gpg_error (GPG_ERR_CONFLICT);
+          else
+            err = be_kbx_update (ctrl, the_database.backend_handle, request,
+                                 pktype, blob, bloblen);
+        }
+    }
+  else if (the_database.db_type == DB_TYPE_SQLITE)
+    {
+      err = be_sqlite_store (ctrl, the_database.backend_handle, request,
+                             mode, pktype, ubid, blob, bloblen);
     }
   else
     {
@@ -374,37 +407,6 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
       err = gpg_error (GPG_ERR_INTERNAL);
     }
 
-  if (!err)
-    ; /* Found - need to update.  */
-  else if (gpg_err_code (err) == GPG_ERR_EOF)
-    insert = 1; /* Not found - need to insert.  */
-  else
-    {
-      log_debug ("%s: searching fingerprint failed: %s\n",
-                 __func__, gpg_strerror (err));
-      goto leave;
-    }
-
-  if (insert)
-    {
-      if (mode == KBXD_STORE_UPDATE)
-        err = gpg_error (GPG_ERR_CONFLICT);
-      else if (the_database.db_type == DB_TYPE_KBX)
-        err = be_kbx_insert (ctrl, the_database.backend_handle, request,
-                             pktype, blob, bloblen);
-      else
-        err = gpg_error (GPG_ERR_INTERNAL);
-    }
-  else /* Update.  */
-    {
-      if (mode == KBXD_STORE_INSERT)
-        err = gpg_error (GPG_ERR_CONFLICT);
-      else if (the_database.db_type == DB_TYPE_KBX)
-        err = be_kbx_update (ctrl, the_database.backend_handle, request,
-                             pktype, blob, bloblen);
-      else
-        err = gpg_error (GPG_ERR_INTERNAL);
-    }
 
  leave:
   release_lock (ctrl);
@@ -450,6 +452,24 @@ kbxd_delete (ctrl_t ctrl, const unsigned char *ubid)
   if (the_database.db_type == DB_TYPE_KBX)
     {
       err = be_kbx_seek (ctrl, the_database.backend_handle, request, ubid);
+      if (!err)
+        ; /* Found - we can delete.  */
+      else if (gpg_err_code (err) == GPG_ERR_EOF)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      else
+        {
+          log_debug ("%s: searching primary fingerprint failed: %s\n",
+                     __func__, gpg_strerror (err));
+          goto leave;
+        }
+      err = be_kbx_delete (ctrl, the_database.backend_handle, request);
+    }
+  else if (the_database.db_type == DB_TYPE_SQLITE)
+    {
+      err = be_sqlite_delete (ctrl, the_database.backend_handle, request, ubid);
     }
   else
     {
@@ -458,24 +478,6 @@ kbxd_delete (ctrl_t ctrl, const unsigned char *ubid)
       err = gpg_error (GPG_ERR_INTERNAL);
     }
 
-  if (!err)
-    ; /* Found - we can delete.  */
-  else if (gpg_err_code (err) == GPG_ERR_EOF)
-    {
-      err = gpg_error (GPG_ERR_NOT_FOUND);
-      goto leave;
-    }
-  else
-    {
-      log_debug ("%s: searching primary fingerprint failed: %s\n",
-                 __func__, gpg_strerror (err));
-      goto leave;
-    }
-
-  if (the_database.db_type == DB_TYPE_KBX)
-    err = be_kbx_delete (ctrl, the_database.backend_handle, request);
-  else
-    err = gpg_error (GPG_ERR_INTERNAL);
 
  leave:
   release_lock (ctrl);
