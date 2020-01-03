@@ -263,7 +263,7 @@ open_card_with_request (ctrl_t ctrl,
   err = select_application (ctrl, apptypestr, &ctrl->card_ctx, 1,
                             serialno_bin, serialno_bin_len);
   if (!err && opt_all)
-    err = select_additional_application (ctrl, APPTYPE_NONE);
+    err = select_additional_application (ctrl, NULL);
 
  leave:
   xfree (serialno_bin);

@@ -293,7 +293,7 @@ build_sk_list (ctrl_t ctrl,
  * --default-key and --try-secret-key).  Use the following procedure:
  *
  *  1) Initialize a void pointer to NULL
- *  2) Pass a reference to this pointer to this function (content)
+ *  2) Pass a reference to this pointer to this function (context)
  *     and provide space for the secret key (sk)
  *  3) Call this function as long as it does not return an error (or
  *     until you are done).  The error code GPG_ERR_EOF indicates the

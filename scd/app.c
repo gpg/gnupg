@@ -788,7 +788,7 @@ select_additional_application_internal (card_t card, apptype_t req_apptype)
 
 
 /* Add all possible additional applications to the card context but do
- * not change the current one.  This current works only for Yubikeys. */
+ * not change the current one.  This currently works only for Yubikeys. */
 static gpg_error_t
 select_all_additional_applications_internal (card_t card)
 {
