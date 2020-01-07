@@ -1068,7 +1068,7 @@ set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
 /* Handle the SETATTR operation. All arguments are already basically
  * checked. */
 static gpg_error_t
-do_setattr (app_t app, const char *name,
+do_setattr (app_t app, ctrl_t ctrl, const char *name,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg,
             const unsigned char *value, size_t valuelen)
@@ -1089,6 +1089,7 @@ do_setattr (app_t app, const char *name,
   };
   int idx;
 
+  (void)ctrl;
   (void)pincb;
   (void)pincb_arg;
 
@@ -2075,11 +2076,13 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
 /* Perform a simple verify operation for the PIN specified by PWIDSTR.
  * For valid values see do_change_chv.  */
 static gpg_error_t
-do_check_chv (app_t app, const char *pwidstr,
+do_check_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
   int keyref;
+
+  (void)ctrl;
 
   keyref = parse_chv_keyref (pwidstr);
   if (keyref == -1)
@@ -2100,7 +2103,7 @@ do_check_chv (app_t app, const char *pwidstr,
  * OID to the indata or checks that it is consistent.
  */
 static gpg_error_t
-do_sign (app_t app, const char *keyidstr, int hashalgo,
+do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata_arg, size_t indatalen,
@@ -2120,6 +2123,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   unsigned char *apdudata = NULL;
   size_t apdudatalen;
   int force_verify;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     {
@@ -2384,13 +2389,13 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
  * whereas SIGN may accept a plain digest and does the padding if
  * needed.  This is also the reason why SIGN takes a hashalgo. */
 static gpg_error_t
-do_auth (app_t app, const char *keyidstr,
+do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **r_outdata, size_t *r_outdatalen)
 {
-  return do_sign (app, keyidstr, 0, pincb, pincb_arg, indata, indatalen,
+  return do_sign (app, ctrl, keyidstr, 0, pincb, pincb_arg, indata, indatalen,
                   r_outdata, r_outdatalen);
 }
 
@@ -2398,7 +2403,7 @@ do_auth (app_t app, const char *keyidstr,
 /* Decrypt the data in (INDATA,INDATALEN) and on success store the
  * mallocated result at (R_OUTDATA,R_OUTDATALEN).  */
 static gpg_error_t
-do_decipher (app_t app, const char *keyidstr,
+do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata_arg, size_t indatalen,
@@ -2417,6 +2422,8 @@ do_decipher (app_t app, const char *keyidstr,
   unsigned char *indata_buffer = NULL; /* Malloced helper.  */
   unsigned char *apdudata = NULL;
   size_t apdudatalen;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     {
@@ -3431,6 +3438,23 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
 }
 
 
+/* Prepare a reselect of another application.  This is used by cards
+ * which support on-the-fly switching between applications.  The
+ * function is called to give us a chance to save state for a future
+ * reselect of us again.  */
+static gpg_error_t
+do_prep_reselect (app_t app, ctrl_t ctrl)
+{
+  gpg_error_t err;
+
+  (void)app;
+  (void)ctrl;
+
+  err = 0;
+  return err;
+}
+
+
 /* Reselect the application.  This is used by cards which support
  * on-the-fly switching between applications.  */
 static gpg_error_t
@@ -3442,7 +3466,7 @@ do_reselect (app_t app, ctrl_t ctrl)
 
   /* An extra check which should not be necessary because the caller
    * should have made sure that a re-select is only called for
-   * approriate cards.  */
+   * appropriate cards.  */
   if (!app->app_local->flags.yubikey)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
@@ -3535,6 +3559,7 @@ app_select_piv (app_t app)
     dump_all_do (slot);
 
   app->fnc.deinit = do_deinit;
+  app->fnc.prep_reselect = do_prep_reselect;
   app->fnc.reselect = do_reselect;
   app->fnc.learn_status = do_learn_status;
   app->fnc.readcert = do_readcert;

@@ -663,7 +663,10 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
             }
 
           if (err)
-            apdu_close_reader (slot);
+            {
+              pincache_put (ctrl, slot, NULL, NULL, NULL);
+              apdu_close_reader (slot);
+            }
         }
 
       apdu_dev_list_finish (l);
@@ -1094,7 +1097,7 @@ app_get_serialno (app_t app)
 /* Check that the card has been initialized and whether we need to
  * switch to another application on the same card.  Switching means
  * that the new active app will be moved to the head of the list at
- * CARD->app.  Thus function must be called with the card lock held. */
+ * CARD->app.  This function must be called with the card lock held. */
 static gpg_error_t
 maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
 {
@@ -1165,6 +1168,20 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
                  strapptype (app->apptype));
       return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
     }
+
+  /* Give the current app a chance to save some state before another
+   * app is selected.  We ignore errors here because that state saving
+   * (e.g. putting PINs into a cache) is a convenience feature and not
+   * required to always work. */
+  if (app_prev && app_prev->fnc.prep_reselect)
+    {
+      err = app_prev->fnc.prep_reselect (app_prev, ctrl);
+      if (err)
+        log_info ("card %d: preparing re-select failed for '%s': %s\n",
+                  card->slot, xstrapptype (app_prev), gpg_strerror (err));
+      err = 0;
+    }
+
   err = app->fnc.reselect (app, ctrl);
   if (err)
     {
@@ -1220,8 +1237,8 @@ write_learn_status_core (card_t card, app_t app, ctrl_t ctrl,
 gpg_error_t
 app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
 {
-  gpg_error_t err, err2;
-  app_t app;
+  gpg_error_t err, err2, tmperr;
+  app_t app, last_app;
   int any_reselect = 0;
 
   if (!card)
@@ -1246,18 +1263,37 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
            * loop over all other apps which are capable of a reselect
            * and finally reselect the first app again.  Note that we
            * did the learn for the currently selected card above.  */
-          app = card->app;
+          app = last_app = card->app;
           for (app = app->next; app && !err; app = app->next)
             if (app->fnc.reselect)
               {
+                if (last_app && last_app->fnc.prep_reselect)
+                  {
+                    tmperr = last_app->fnc.prep_reselect (last_app, ctrl);
+                    if (tmperr)
+                      log_info ("card %d: preparing re-select failed for '%s'"
+                                ": %s\n", card->slot, xstrapptype (last_app),
+                                gpg_strerror (tmperr));
+                  }
                 any_reselect = 1;
                 err = app->fnc.reselect (app, ctrl);
                 if (!err)
-                  err = write_learn_status_core (NULL, app, ctrl, flags);
+                  {
+                    last_app = app;
+                    err = write_learn_status_core (NULL, app, ctrl, flags);
+                  }
               }
           app = card->app;
           if (any_reselect)
             {
+              if (last_app && last_app->fnc.prep_reselect)
+                {
+                  tmperr = last_app->fnc.prep_reselect (last_app, ctrl);
+                  if (tmperr)
+                    log_info ("card %d: preparing re-select failed for '%s'"
+                              ": %s\n", card->slot, xstrapptype (last_app),
+                              gpg_strerror (tmperr));
+                }
               err2 = app->fnc.reselect (app, ctrl);
               if (err2)
                 {
@@ -1424,7 +1460,7 @@ app_setattr (card_t card, ctrl_t ctrl, const char *name,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling setattr(%s)\n",
                    card->slot, xstrapptype (card->app), name);
-      err = card->app->fnc.setattr (card->app, name, pincb, pincb_arg,
+      err = card->app->fnc.setattr (card->app, ctrl, name, pincb, pincb_arg,
                                     value, valuelen);
     }
 
@@ -1460,7 +1496,7 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling sign(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.sign (card->app, keyidstr, hashalgo,
+      err = card->app->fnc.sign (card->app, ctrl, keyidstr, hashalgo,
                                  pincb, pincb_arg,
                                  indata, indatalen,
                                  outdata, outdatalen);
@@ -1501,7 +1537,7 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling auth(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.auth (card->app, keyidstr,
+      err = card->app->fnc.auth (card->app, ctrl, keyidstr,
                                  pincb, pincb_arg,
                                  indata, indatalen,
                                  outdata, outdatalen);
@@ -1544,7 +1580,7 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling decipher(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.decipher (card->app, keyidstr,
+      err = card->app->fnc.decipher (card->app, ctrl, keyidstr,
                                      pincb, pincb_arg,
                                      indata, indatalen,
                                      outdata, outdatalen,
@@ -1750,7 +1786,8 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling check_pin(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.check_pin (card->app, keyidstr, pincb, pincb_arg);
+      err = card->app->fnc.check_pin (card->app, ctrl, keyidstr,
+                                      pincb, pincb_arg);
     }
 
   unlock_card (card);
@@ -1863,6 +1900,7 @@ scd_update_reader_status_file (void)
           if (status == 0)
             {
               log_debug ("Removal of a card: %d\n", card->slot);
+              pincache_put (NULL, card->slot, NULL, NULL, NULL);
               apdu_close_reader (card->slot);
               deallocate_card (card);
             }

@@ -887,7 +887,7 @@ verify_pin (app_t app, int pwid, const char *desc,
    that callback should return the PIN in an allocated buffer and
    store that in the 3rd argument.  */
 static gpg_error_t
-do_sign (app_t app, const char *keyidstr, int hashalgo,
+do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -906,6 +906,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   unsigned char data[83];   /* Must be large enough for a SHA-1 digest
                                + the largest OID prefix. */
   size_t datalen;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1022,7 +1024,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
 static gpg_error_t
-do_decipher (app_t app, const char *keyidstr,
+do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
@@ -1034,6 +1036,7 @@ do_decipher (app_t app, const char *keyidstr,
   int fid;
   int kid;
 
+  (void)ctrl;
   (void)r_info;
 
   if (!keyidstr || !*keyidstr || !indatalen)
@@ -1310,7 +1313,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
 
 /* Perform a simple verify operation.  KEYIDSTR should be NULL or empty.  */
 static gpg_error_t
-do_check_pin (app_t app, const char *pwidstr,
+do_check_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
@@ -1318,6 +1321,8 @@ do_check_pin (app_t app, const char *pwidstr,
   int pwid;
   int is_sigg;
   const char *desc;
+
+  (void)ctrl;
 
   desc = parse_pwidstr (pwidstr, 0, &is_sigg, &pwid);
   if (!desc)
@@ -1451,6 +1456,7 @@ app_select_nks (app_t app)
         log_info ("Detected NKS version: %d\n", app->app_local->nks_version);
 
       app->fnc.deinit = do_deinit;
+      app->fnc.prep_reselect = NULL;
       app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;

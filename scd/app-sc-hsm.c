@@ -1773,7 +1773,7 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
    the ECDSA signature in X9.62 format (SEQ/INT(r)/INT(s))
 */
 static gpg_error_t
-do_sign (app_t app, const char *keyidstr, int hashalgo,
+do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -1809,6 +1809,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   size_t cdsblklen;
   unsigned char algoid;
   int sw;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1901,7 +1903,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
    must match the criteria used for the attribute $AUTHKEYID.  See
    do_sign for calling conventions; there is no HASHALGO, though. */
 static gpg_error_t
-do_auth (app_t app, const char *keyidstr,
+do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -1924,7 +1926,7 @@ do_auth (app_t app, const char *keyidstr,
     }
 
   algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
-  return do_sign (app, keyidstr, algo, pincb, pincb_arg,
+  return do_sign (app, ctrl, keyidstr, algo, pincb, pincb_arg,
                   indata, indatalen, outdata, outdatalen);
 }
 
@@ -1973,7 +1975,7 @@ strip_PKCS15_padding(unsigned char *src, int srclen, unsigned char **dst,
 /* Decrypt a PKCS#1 V1.5 formatted cryptogram using the referenced
    key.  */
 static gpg_error_t
-do_decipher (app_t app, const char *keyidstr,
+do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
@@ -1987,6 +1989,8 @@ do_decipher (app_t app, const char *keyidstr,
   size_t rspdatalen;
   size_t p1blklen;
   int sw;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -2069,6 +2073,7 @@ app_select_sc_hsm (app_t app)
         goto leave;
 
       app->fnc.deinit = do_deinit;
+      app->fnc.prep_reselect = NULL;
       app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;

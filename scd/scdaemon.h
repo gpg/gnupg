@@ -137,6 +137,11 @@ gpg_error_t send_status_printf (ctrl_t ctrl, const char *keyword,
 void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
                    const char *serialno, const char *idstr);
 
+void pincache_put (ctrl_t ctrl, int slot, const char *appname,
+                   const char *pinref, const char *pin);
+gpg_error_t pincache_get (ctrl_t ctrl, int slot, const char *appname,
+                          const char *pinref, char **r_pin);
+
 void popup_prompt (void *opaque, int on);
 
 /* Take care: this function assumes that CARD is locked.  */

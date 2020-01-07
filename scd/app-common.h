@@ -136,6 +136,7 @@ struct app_ctx_s {
   struct app_local_s *app_local;  /* Local to the application. */
   struct {
     void (*deinit) (app_t app);
+    gpg_error_t (*prep_reselect) (app_t app, ctrl_t ctrl);
     gpg_error_t (*reselect) (app_t app, ctrl_t ctrl);
     gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl, unsigned int flags);
     gpg_error_t (*readcert) (app_t app, const char *certid,
@@ -144,22 +145,22 @@ struct app_ctx_s {
                             const char *certid, unsigned int flags,
                             unsigned char **pk, size_t *pklen);
     gpg_error_t (*getattr) (app_t app, ctrl_t ctrl, const char *name);
-    gpg_error_t (*setattr) (app_t app, const char *name,
+    gpg_error_t (*setattr) (app_t app, ctrl_t ctrl, const char *name,
                     gpg_error_t (*pincb)(void*, const char *, char **),
                     void *pincb_arg,
                     const unsigned char *value, size_t valuelen);
-    gpg_error_t (*sign) (app_t app,
+    gpg_error_t (*sign) (app_t app, ctrl_t ctrl,
                  const char *keyidstr, int hashalgo,
                  gpg_error_t (*pincb)(void*, const char *, char **),
                  void *pincb_arg,
                  const void *indata, size_t indatalen,
                  unsigned char **outdata, size_t *outdatalen );
-    gpg_error_t (*auth) (app_t app, const char *keyidstr,
+    gpg_error_t (*auth) (app_t app, ctrl_t ctrl, const char *keyidstr,
                  gpg_error_t (*pincb)(void*, const char *, char **),
                  void *pincb_arg,
                  const void *indata, size_t indatalen,
                  unsigned char **outdata, size_t *outdatalen);
-    gpg_error_t (*decipher) (app_t app, const char *keyidstr,
+    gpg_error_t (*decipher) (app_t app, ctrl_t ctrl, const char *keyidstr,
                              gpg_error_t (*pincb)(void*, const char *, char **),
                              void *pincb_arg,
                              const void *indata, size_t indatalen,
@@ -184,7 +185,7 @@ struct app_ctx_s {
                        const char *chvnostr, unsigned int flags,
                        gpg_error_t (*pincb)(void*, const char *, char **),
                        void *pincb_arg);
-    gpg_error_t (*check_pin) (app_t app, const char *keyidstr,
+    gpg_error_t (*check_pin) (app_t app, ctrl_t ctrl, const char *keyidstr,
                       gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg);
     gpg_error_t (*with_keygrip) (app_t app, ctrl_t ctrl, int action,

@@ -42,7 +42,8 @@
 #include "../common/asshelp.h"
 #include "../common/server-help.h"
 
-/* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
+/* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN.  That
+ * length needs to small compared to the maximum Assuan line length.  */
 #define MAXLEN_PIN 100
 
 /* Maximum allowed size of key data as used in inquiries. */
@@ -281,7 +282,7 @@ static const char hlp_serialno[] =
   "selected and an error is returned if no such card available.\n"
   "\n"
   "If --all is given, all possible other applications of the card are\n"
-  "will also be selected for on-the-fly swicthing.\n"
+  "also selected to prepare for \"LEARN --force --multi\".\n"
   "\n"
   "If APPTYPE is given, an application of that type is selected and an\n"
   "error is returned if the application is not supported or available.\n"
@@ -2237,6 +2238,191 @@ send_status_printf (ctrl_t ctrl, const char *keyword, const char *format, ...)
   va_start (arg_ptr, format);
   err = vprint_assuan_status (ctx, keyword, format, arg_ptr);
   va_end (arg_ptr);
+  return err;
+}
+
+
+/* Store the PIN in the PIN cache. The key to identify the PIN
+ * consists of (SLOT,APPNAME,PINREF).  If PIN is NULL the PIN stored
+ * under the given key is cleared.  If APPNAME and PINREF are NULL the
+ * entire PIN cache for SLOT is cleared.  If SLOT is -1 the entire PIN
+ * cache is cleared.  We do no use an scdaemon internal cache but let
+ * gpg-agent cache because it is better suited for this.  */
+void
+pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
+              const char *pin)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  char line[950];
+  gcry_cipher_hd_t cipherhd = NULL;
+  char *pinbuf = NULL;
+  unsigned char *wrappedkey = NULL;
+  size_t pinlen, pinbuflen, wrappedkeylen;
+
+  if (!ctrl)
+    {
+      /* No CTRL object provided.  We could pick an arbitrary
+       * connection and send the status to that one.  However, such a
+       * connection is inlikley to wait for a respinse from use and
+       * thus it would at best be read as a response to the next
+       * command send to us.  That is not good because it may clog up
+       * our connection.  Thus we better don't do that.  A better will
+       * be to queue this up and let the agent poll for general status
+       * messages.  */
+      /* struct server_local_s *sl; */
+      /* for (sl=session_list; sl; sl = sl->next_session) */
+      /*   if (sl->ctrl_backlink && sl->ctrl_backlink->server_local */
+      /*       && sl->ctrl_backlink->server_local->assuan_ctx) */
+      /*     { */
+      /*       ctrl = sl->ctrl_backlink; */
+      /*       break; */
+      /*     } */
+    }
+
+  if (!ctrl || !ctrl->server_local || !(ctx=ctrl->server_local->assuan_ctx))
+    return;
+  if (pin && !*pin)
+    return;  /* Ignore an empty PIN.  */
+
+  snprintf (line, sizeof line, "%d/%s/%s ",
+            slot, appname? appname:"-", pinref? pinref:"-");
+
+  /* Without an APPNAME etc or without a PIN we clear the cache and
+   * thus there is no need to send the pin - even if the caller
+   * accidentially passed a pin.  */
+  if (pin && slot != -1 && appname && pinref)
+    {
+      pinlen = strlen (pin);
+      if ((pinlen % 8))
+        {
+          /* Pad with zeroes (AESWRAP requires multiples of 64 bit but
+           * at least 128 bit data).  */
+          pinbuflen = pinlen + 8 - (pinlen % 8);
+          if (pinbuflen < 16)
+            pinbuflen = 16;
+          pinbuf = xtrycalloc_secure (1, pinbuflen);
+          if (!pinbuf)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (pinbuf, pin, pinlen);
+          pinlen = pinbuflen;
+          pin = pinbuf;
+        }
+
+      err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                              GCRY_CIPHER_MODE_AESWRAP, 0);
+      if (!err)
+        err = gcry_cipher_setkey (cipherhd, "1234567890123456", 16);
+      if (err)
+        goto leave;
+
+      wrappedkeylen = pinlen + 8;
+      wrappedkey = xtrymalloc (wrappedkeylen);
+      if (!wrappedkey)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      err = gcry_cipher_encrypt (cipherhd, wrappedkey, wrappedkeylen,
+                                 pin, pinlen);
+      if (err)
+        goto leave;
+      gcry_cipher_close (cipherhd);
+      cipherhd = NULL;
+      if (strlen (line) + 2*wrappedkeylen + 1 >= sizeof line)
+        {
+          log_error ("%s: PIN or pinref string too long - ignored", __func__);
+          goto leave;
+        }
+      bin2hex (wrappedkey, wrappedkeylen, line + strlen (line));
+    }
+
+  send_status_direct (ctrl, "PINCACHE_PUT", line);
+
+ leave:
+  xfree (pinbuf);
+  xfree (wrappedkey);
+  gcry_cipher_close (cipherhd);
+  if (err)
+    log_error ("%s: error caching PIN: %s\n", __func__, gpg_strerror (err));
+}
+
+
+/* Ask the agent for a cached PIN for the tuple (SLOT,APPNAME,PINREF).
+ * Returns on success and stores the PIN at R_PIN; the caller needs to
+ * wipe(!)  and then free that value.  On error NULL is stored at
+ * R_PIN and an error code returned.  Common error codes are:
+ *  GPG_ERR_NOT_SUPPORTED - Client does not support the PIN cache
+ *  GPG_ERR_NO_DATA       - No PIN cached for the given key tuple
+ */
+gpg_error_t
+pincache_get (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
+              char **r_pin)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  char command[512];
+  unsigned char *value = NULL;
+  size_t valuelen;
+  unsigned char *wrappedkey = NULL;
+  size_t wrappedkeylen;
+  gcry_cipher_hd_t cipherhd = NULL;
+
+  if (slot == -1 || !appname || !pinref || !r_pin)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+  if (!ctrl || !ctrl->server_local || !(ctx = ctrl->server_local->assuan_ctx))
+    {
+      err = set_error (GPG_ERR_USE_CONDITIONS, "called w/o assuan context");
+      goto leave;
+    }
+
+  snprintf (command, sizeof command, "PINCACHE_GET %d/%s/%s",
+            slot, appname? appname:"-", pinref? pinref:"-");
+
+  err = assuan_inquire (ctx, command, &wrappedkey, &wrappedkeylen,
+                        MAXLEN_PIN+24);
+  if (gpg_err_code (err) == GPG_ERR_ASS_CANCELED)
+    err = set_error (GPG_ERR_NOT_SUPPORTED,
+                     "client does not feature a PIN cache");
+  else if (!err && (!wrappedkey || wrappedkeylen < 24))
+    err = set_error (GPG_ERR_INV_LENGTH, "received too short cryptogram");
+  else if (!err)
+    {
+      valuelen = wrappedkeylen - 8;
+      value = xtrymalloc_secure (valuelen);
+      if (!value)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                              GCRY_CIPHER_MODE_AESWRAP, 0);
+      if (!err)
+        err = gcry_cipher_setkey (cipherhd, "1234567890123456", 16);
+      if (err)
+        goto leave;
+
+      err = gcry_cipher_decrypt (cipherhd, value, valuelen,
+                                 wrappedkey, wrappedkeylen);
+      if (err)
+        goto leave;
+
+      *r_pin = value;
+      value = NULL;
+    }
+
+ leave:
+  gcry_cipher_close (cipherhd);
+  xfree (wrappedkey);
+  xfree (value);
   return err;
 }
 

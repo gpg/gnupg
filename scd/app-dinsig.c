@@ -389,7 +389,7 @@ verify_pin (app_t app,
    that callback should return the PIN in an allocated buffer and
    store that in the 3rd argument.  */
 static gpg_error_t
-do_sign (app_t app, const char *keyidstr, int hashalgo,
+do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -410,6 +410,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   unsigned char data[19+32]; /* Must be large enough for a SHA-256 digest
                                 + the largest OID _prefix above. */
   int datalen;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -557,6 +559,7 @@ app_select_dinsig (app_t app)
     {
       app->apptype = APPTYPE_DINSIG;
 
+      app->fnc.prep_reselect = NULL;
       app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;

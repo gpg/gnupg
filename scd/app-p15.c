@@ -2853,7 +2853,7 @@ micardo_mse (app_t app, unsigned short fid)
    that callback should return the PIN in an allocated buffer and
    store that as the 3rd argument.  */
 static gpg_error_t
-do_sign (app_t app, const char *keyidstr, int hashalgo,
+do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -2875,6 +2875,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   aodf_object_t aodf;      /* The associated authentication object. */
   int no_data_padding = 0; /* True if the card want the data without padding.*/
   int mse_done = 0;        /* Set to true if the MSE has been done. */
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -3208,7 +3210,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
    must match the criteria used for the attribute $AUTHKEYID.  See
    do_sign for calling conventions; there is no HASHALGO, though. */
 static gpg_error_t
-do_auth (app_t app, const char *keyidstr,
+do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -3231,7 +3233,7 @@ do_auth (app_t app, const char *keyidstr,
     }
 
   algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
-  return do_sign (app, keyidstr, algo, pincb, pincb_arg,
+  return do_sign (app, ctrl, keyidstr, algo, pincb, pincb_arg,
                   indata, indatalen, outdata, outdatalen);
 }
 
@@ -3415,6 +3417,7 @@ app_select_p15 (app_t app)
         }
 
       app->fnc.deinit = do_deinit;
+      app->fnc.prep_reselect = NULL;
       app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
