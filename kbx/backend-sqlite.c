@@ -775,7 +775,7 @@ run_select_statement (be_sqlite_local_t ctx,
       if (!ctx->select_stmt)
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
-                               " WHERE f.kid = ?1",
+                               " WHERE p.ubid = f.ubid AND f.kid = ?1",
                                &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_int64 (ctx->select_stmt, 1,
@@ -786,7 +786,7 @@ run_select_statement (be_sqlite_local_t ctx,
       if (!ctx->select_stmt)
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
-                               " WHERE f.fpr = ?1",
+                               " WHERE p.ubid = f.ubid AND f.fpr = ?1",
                                &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
@@ -797,7 +797,7 @@ run_select_statement (be_sqlite_local_t ctx,
       if (!ctx->select_stmt)
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
-                               " WHERE f.keygrip = ?1",
+                               " WHERE p.ubid = f.ubid AND f.keygrip = ?1",
                                &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
