@@ -2434,7 +2434,7 @@ agent_sighup_action (void)
   log_info ("SIGHUP received - "
             "re-reading configuration and flushing cache\n");
 
-  agent_flush_cache ();
+  agent_flush_cache (0);
   reread_configuration ();
   agent_reload_trustlist ();
   /* We flush the module name cache so that after installing a

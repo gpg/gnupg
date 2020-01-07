@@ -204,7 +204,9 @@ housekeeping (void)
   /* First expire the actual data */
   for (r=thecache; r; r = r->next)
     {
-      if (r->pw && r->ttl >= 0 && r->accessed + r->ttl < current)
+      if (r->cache_mode == CACHE_MODE_PIN)
+        ; /* Don't let it expire - scdaemon explictly flushes them.  */
+      else if (r->pw && r->ttl >= 0 && r->accessed + r->ttl < current)
         {
           if (DBG_CACHE)
             log_debug ("  expired '%s'.%d (%ds after last access)\n",
@@ -226,6 +228,7 @@ housekeeping (void)
       switch (r->cache_mode)
         {
         case CACHE_MODE_DATA:
+        case CACHE_MODE_PIN:
           continue;  /* No MAX TTL here.  */
         case CACHE_MODE_SSH: maxttl = opt.max_cache_ttl_ssh; break;
         default: maxttl = opt.max_cache_ttl; break;
@@ -288,13 +291,13 @@ agent_cache_housekeeping (void)
 
 
 void
-agent_flush_cache (void)
+agent_flush_cache (int pincache_only)
 {
   ITEM r;
   int res;
 
   if (DBG_CACHE)
-    log_debug ("agent_flush_cache\n");
+    log_debug ("agent_flush_cache%s\n", pincache_only?" (pincache only)":"");
 
   res = npth_mutex_lock (&cache_lock);
   if (res)
@@ -302,6 +305,8 @@ agent_flush_cache (void)
 
   for (r=thecache; r; r = r->next)
     {
+      if (pincache_only && r->cache_mode != CACHE_MODE_PIN)
+        continue;
       if (r->pw)
         {
           if (DBG_CACHE)
@@ -361,6 +366,7 @@ agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
         {
         case CACHE_MODE_SSH: ttl = opt.def_cache_ttl_ssh; break;
         case CACHE_MODE_DATA: ttl = DEF_CACHE_TTL_DATA; break;
+        case CACHE_MODE_PIN: ttl = -1; break;
         default: ttl = opt.def_cache_ttl; break;
         }
     }
@@ -369,11 +375,24 @@ agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
 
   for (r=thecache; r; r = r->next)
     {
-      if (((cache_mode != CACHE_MODE_USER
-            && cache_mode != CACHE_MODE_NONCE)
-           || cache_mode_equal (r->cache_mode, cache_mode))
-          && r->restricted == restricted
-          && !strcmp (r->key, key))
+      if (cache_mode == CACHE_MODE_PIN && data)
+        {
+          /* PIN mode is special because it is only used by scdaemon.  */
+          if (!strcmp (r->key, key))
+            break;
+        }
+      else if (cache_mode == CACHE_MODE_PIN)
+        {
+          /* FIXME: Parse the structure of the key and delete several
+           * cached PINS.  */
+          if (!strcmp (r->key, key))
+            break;
+        }
+      else if (((cache_mode != CACHE_MODE_USER
+                 && cache_mode != CACHE_MODE_NONCE)
+                || cache_mode_equal (r->cache_mode, cache_mode))
+               && r->restricted == restricted
+               && !strcmp (r->key, key))
         break;
     }
   if (r) /* Replace.  */
@@ -437,6 +456,7 @@ agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
   int res;
   int last_stored = 0;
   int restricted = ctrl? ctrl->restricted : -1;
+  int yes;
 
   if (cache_mode == CACHE_MODE_IGNORE)
     return NULL;
@@ -461,12 +481,19 @@ agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
 
   for (r=thecache; r; r = r->next)
     {
-      if (r->pw
-          && ((cache_mode != CACHE_MODE_USER
-               && cache_mode != CACHE_MODE_NONCE)
-              || cache_mode_equal (r->cache_mode, cache_mode))
-          && r->restricted == restricted
-          && !strcmp (r->key, key))
+      if (cache_mode == CACHE_MODE_PIN)
+        yes = (r->pw && !strcmp (r->key, key));
+      else if (r->pw
+               && ((cache_mode != CACHE_MODE_USER
+                    && cache_mode != CACHE_MODE_NONCE)
+                   || cache_mode_equal (r->cache_mode, cache_mode))
+               && r->restricted == restricted
+               && !strcmp (r->key, key))
+        yes = 1;
+      else
+        yes = 0;
+
+      if (yes)
         {
           /* Note: To avoid races KEY may not be accessed anymore
            * below.  Note also that we don't update the accessed time

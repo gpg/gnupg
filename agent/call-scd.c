@@ -246,6 +246,8 @@ wait_child_thread (void *arg)
     }
 #endif
 
+  agent_flush_cache (1);  /* Flush the PIN cache.  */
+
   err = npth_mutex_lock (&start_scd_lock);
   if (err)
     {
@@ -388,6 +390,8 @@ start_scd (ctrl_t ctrl)
   /* Nope, it has not been started.  Fire it up now. */
   if (opt.verbose)
     log_info ("no running SCdaemon - starting it\n");
+
+  agent_flush_cache (1);  /* Make sure the PIN cache is flushed.  */
 
   if (fflush (NULL))
     {
@@ -626,10 +630,136 @@ agent_reset_scd (ctrl_t ctrl)
 
 
 
+/* This handler is a helper for pincache_put_cb but may also be called
+ * directly for that status code with ARGS being the arguments after
+ * the status keyword (and with white space removed).  */
+static gpg_error_t
+handle_pincache_put (const char *args)
+{
+  gpg_error_t err;
+  const char *s, *key, *hexwrappedpin;
+  char *keybuf = NULL;
+  unsigned char *wrappedpin = NULL;
+  size_t keylen, hexwrappedpinlen, wrappedpinlen;
+  char *value = NULL;
+  size_t valuelen;
+  gcry_cipher_hd_t cipherhd = NULL;
+
+  key = s = args;
+  while (*s && !spacep (s))
+    s++;
+  keylen = s - key;
+  if (keylen < 3)
+    {
+      /* At least we need 2 slashes and slot number.  */
+      log_error ("%s: ignoring invalid key\n", __func__);
+      err = 0;
+      goto leave;
+    }
+
+
+  keybuf = xtrymalloc (keylen+1);
+  if (!keybuf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  memcpy (keybuf, key, keylen);
+  keybuf[keylen] = 0;
+  key = keybuf;
+
+  while (spacep (s))
+    s++;
+  hexwrappedpin = s;
+  while (*s && !spacep (s))
+    s++;
+  hexwrappedpinlen = s - hexwrappedpin;
+  if (!hexwrappedpinlen)
+    {
+      /* Flush the cache.  The cache module knows aboput the structure
+       * of the key to flush only parts.  */
+      log_debug ("%s: flushing cache '%s'\n", __func__, key);
+      agent_put_cache (NULL, key, CACHE_MODE_PIN, NULL, -1);
+      err = 0;
+      goto leave;
+    }
+
+  if (hexwrappedpinlen < 2*24)
+    {
+      log_error ("%s: ignoring request with too short cryptogram\n", __func__);
+      err = 0;
+      goto leave;
+    }
+  wrappedpinlen = hexwrappedpinlen / 2;
+  wrappedpin = xtrymalloc (wrappedpinlen);
+  if (!wrappedpin)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (hex2bin (hexwrappedpin, wrappedpin, wrappedpinlen) == -1)
+    {
+      log_error ("%s: invalid hex length\n", __func__);
+      err = gpg_error (GPG_ERR_INV_LENGTH);
+      goto leave;
+    }
+
+  valuelen = wrappedpinlen - 8;
+  value = xtrymalloc_secure (valuelen+1);
+  if (!value)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (!err)
+    err = gcry_cipher_setkey (cipherhd, "1234567890123456", 16);
+  if (!err)
+    err = gcry_cipher_decrypt (cipherhd, value, valuelen,
+                               wrappedpin, wrappedpinlen);
+  if (err)
+    {
+      log_error ("%s: error decrypting the cryptogram: %s\n",
+                 __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  log_debug ("%s: caching '%s'->'%s'\n", __func__, key, value);
+  agent_put_cache (NULL, key, CACHE_MODE_PIN, value, -1);
+
+ leave:
+  xfree (keybuf);
+  xfree (value);
+  xfree (wrappedpin);
+  gcry_cipher_close (cipherhd);
+  return err;
+}
+
+
+/* This status callback is to intercept the PINCACHE_PUT status messages.  */
+static gpg_error_t
+pincache_put_cb (void *opaque, const char *line)
+{
+  const char *s;
+
+  (void)opaque;
+
+  s = has_leading_keyword (line, "PINCACHE_PUT");
+  if (s)
+    return handle_pincache_put (s);
+  else
+    return 0;
+}
+
+
+
 static gpg_error_t
 learn_status_cb (void *opaque, const char *line)
 {
   struct learn_parm_s *parm = opaque;
+  gpg_error_t err = 0;
   const char *keyword = line;
   int keywordlen;
 
@@ -645,12 +775,14 @@ learn_status_cb (void *opaque, const char *line)
     {
       parm->kpinfo_cb (parm->kpinfo_cb_arg, line);
     }
+  else if (keywordlen == 12 && !memcmp (keyword, "PINCACHE_PUT", keywordlen))
+    err = handle_pincache_put (line);
   else if (keywordlen && *line)
     {
       parm->sinfo_cb (parm->sinfo_cb_arg, keyword, keywordlen, line);
     }
 
-  return 0;
+  return err;
 }
 
 /* Perform the LEARN command and return a list of all private keys
@@ -692,6 +824,7 @@ agent_card_learn (ctrl_t ctrl,
 static gpg_error_t
 get_serialno_cb (void *opaque, const char *line)
 {
+  gpg_error_t err = 0;
   char **serialno = opaque;
   const char *keyword = line;
   const char *s;
@@ -716,8 +849,10 @@ get_serialno_cb (void *opaque, const char *line)
       memcpy (*serialno, line, n);
       (*serialno)[n] = 0;
     }
+  else if (keywordlen == 12 && !memcmp (keyword, "PINCACHE_PUT", keywordlen))
+    err = handle_pincache_put (line);
 
-  return 0;
+  return err;
 }
 
 /* Return the serial number of the card or an appropriate error.  The
@@ -786,6 +921,12 @@ inq_needpin (void *opaque, const char *line)
     {
       rc = parm->getpin_cb (parm->getpin_cb_arg, parm->getpin_cb_desc,
                             "", NULL, 0);
+    }
+  else if ((s = has_leading_keyword (line, "PINCACHE_GET")))
+    {
+      /* rc = parm->getpin_cb (parm->getpin_cb_arg, parm->getpin_cb_desc, */
+      /*                       "", NULL, 0); */
+      rc = 0;
     }
   else if (parm->passthru)
     {
@@ -876,7 +1017,7 @@ agent_card_pksign (ctrl_t ctrl,
   bin2hex (indata, indatalen, stpcpy (line, "SETDATA "));
 
   rc = assuan_transact (ctrl->scd_local->ctx, line,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
+                        NULL, NULL, NULL, NULL, pincache_put_cb, NULL);
   if (rc)
     return unlock_scd (ctrl, rc);
 
@@ -897,7 +1038,7 @@ agent_card_pksign (ctrl_t ctrl,
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         put_membuf_cb, &data,
                         inq_needpin, &inqparm,
-                        NULL, NULL);
+                        pincache_put_cb, NULL);
 
   if (rc)
     {
@@ -918,6 +1059,7 @@ agent_card_pksign (ctrl_t ctrl,
 static gpg_error_t
 padding_info_cb (void *opaque, const char *line)
 {
+  gpg_error_t err = 0;
   int *r_padding = opaque;
   const char *s;
 
@@ -925,8 +1067,10 @@ padding_info_cb (void *opaque, const char *line)
     {
       *r_padding = atoi (s);
     }
+  else if ((s=has_leading_keyword (line, "PINCACHE_PUT")))
+    err = handle_pincache_put (line);
 
-  return 0;
+  return err;
 }
 
 
@@ -1023,7 +1167,7 @@ agent_card_readcert (ctrl_t ctrl,
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         put_membuf_cb, &data,
                         NULL, NULL,
-                        NULL, NULL);
+                        pincache_put_cb, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -1058,7 +1202,7 @@ agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         put_membuf_cb, &data,
                         NULL, NULL,
-                        NULL, NULL);
+                        pincache_put_cb, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -1122,7 +1266,8 @@ agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
   parms.keydatalen = keydatalen;
 
   err = assuan_transact (ctrl->scd_local->ctx, line, NULL, NULL,
-                         inq_writekey_parms, &parms, NULL, NULL);
+                         inq_writekey_parms, &parms,
+                         pincache_put_cb, NULL);
   return unlock_scd (ctrl, err);
 }
 
@@ -1140,6 +1285,7 @@ struct card_getattr_parm_s {
 static gpg_error_t
 card_getattr_cb (void *opaque, const char *line)
 {
+  gpg_error_t err = 0;
   struct card_getattr_parm_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
@@ -1159,8 +1305,10 @@ card_getattr_cb (void *opaque, const char *line)
       if (!parm->data)
         parm->error = errno;
     }
+  else if (keywordlen == 12 && !memcmp (keyword, "PINCACHE_PUT", keywordlen))
+    err = handle_pincache_put (line);
 
-  return 0;
+  return err;
 }
 
 
@@ -1221,6 +1369,7 @@ struct card_cardlist_parm_s {
 static gpg_error_t
 card_cardlist_cb (void *opaque, const char *line)
 {
+  gpg_error_t err = 0;
   struct card_cardlist_parm_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
@@ -1243,8 +1392,10 @@ card_cardlist_cb (void *opaque, const char *line)
       else
         add_to_strlist (&parm->list, line);
     }
+  else if (keywordlen == 12 && !memcmp (keyword, "PINCACHE_PUT", keywordlen))
+    err = handle_pincache_put (line);
 
-  return 0;
+  return err;
 }
 
 /* Call the scdaemon to retrieve list of available cards. On success
@@ -1290,6 +1441,7 @@ struct card_keyinfo_parm_s {
 static gpg_error_t
 card_keyinfo_cb (void *opaque, const char *line)
 {
+  gpg_error_t err = 0;
   struct card_keyinfo_parm_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
@@ -1378,8 +1530,10 @@ card_keyinfo_cb (void *opaque, const char *line)
 
       *l_p = keyinfo;
     }
+  else if (keywordlen == 12 && !memcmp (keyword, "PINCACHE_PUT", keywordlen))
+    err = handle_pincache_put (line);
 
-  return 0;
+  return err;
 }
 
 
@@ -1435,6 +1589,7 @@ agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
 static gpg_error_t
 pass_status_thru (void *opaque, const char *line)
 {
+  gpg_error_t err = 0;
   assuan_context_t ctx = opaque;
   char keyword[200];
   int i;
@@ -1459,9 +1614,13 @@ pass_status_thru (void *opaque, const char *line)
       while (spacep (line))
         line++;
 
-      assuan_write_status (ctx, keyword, line);
+      /* We do not want to pass PINCACHE_PUT through.  */
+      if (!strcmp (keyword, "PINCACHE_PUT"))
+        err = handle_pincache_put (line);
+      else
+        assuan_write_status (ctx, keyword, line);
     }
-  return 0;
+  return err;
 }
 
 static gpg_error_t
@@ -1523,4 +1682,5 @@ agent_card_killscd (void)
     return;
   assuan_transact (primary_scd_ctx, "KILLSCD",
                    NULL, NULL, NULL, NULL, NULL, NULL);
+  agent_flush_cache (1);  /* Flush the PIN cache.  */
 }

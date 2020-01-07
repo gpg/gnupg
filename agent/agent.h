@@ -322,6 +322,7 @@ typedef enum
     CACHE_MODE_USER,       /* GET_PASSPHRASE related cache. */
     CACHE_MODE_SSH,        /* SSH related cache. */
     CACHE_MODE_NONCE,      /* This is a non-predictable nonce.  */
+    CACHE_MODE_PIN,        /* PINs stored/retrieved by scdaemon.  */
     CACHE_MODE_DATA        /* Arbitrary data.  */
   }
 cache_mode_t;
@@ -479,7 +480,7 @@ int agent_clear_passphrase (ctrl_t ctrl,
 void initialize_module_cache (void);
 void deinitialize_module_cache (void);
 void agent_cache_housekeeping (void);
-void agent_flush_cache (void);
+void agent_flush_cache (int pincache_only);
 int agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
                      const char *data, int ttl);
 char *agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode);
