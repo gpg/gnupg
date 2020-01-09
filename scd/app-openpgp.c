@@ -1,6 +1,7 @@
 /* app-openpgp.c - The OpenPGP card application.
- * Copyright (C) 2003, 2004, 2005, 2007, 2008,
- *               2009, 2013, 2014, 2015 Free Software Foundation, Inc.
+ * Copyright (C) 2003-2005, 2007-2009,
+ *               2013-2015 Free Software Foundation, Inc.
+ * Copyright (C) 2003-2005, 2007-2009, 2013-2015, 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -287,6 +288,35 @@ do_deinit (app_t app)
         }
       xfree (app->app_local);
       app->app_local = NULL;
+    }
+}
+
+
+/* This is a helper to do a wipememory followed by a free.  In general
+ * we do not need this if the buffer has been allocated in secure
+ * memory.  However at some places we can't make that sure and thus we
+ * better to an extra wipe here.  */
+static void
+wipe_and_free (void *p, size_t len)
+{
+  if (p)
+    {
+      if (len)
+        wipememory (p, len);
+      xfree (p);
+    }
+}
+
+
+/* Similar to wipe_and_free but assumes P is eitehr NULL or a proper
+ * string.  */
+static void
+wipe_and_free_string (char *p)
+{
+  if (p)
+    {
+      wipememory (p, strlen (p));
+      xfree (p);
     }
 }
 
@@ -2074,24 +2104,38 @@ get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
 #define KDF_DATA_LENGTH_MAX 110
 
 /* Compute hash if KDF-DO is available.  CHVNO must be 0 for reset
-   code, 1 or 2 for user pin and 3 for admin pin.
- */
+ * code, 1 or 2 for user pin and 3 for admin pin.  PIN is the original
+ * PIN as entered by the user.  R_PINVALUE and r_PINLEN will receive a
+ * newly allocated buffer with a possible modified pin.  */
 static gpg_error_t
-pin2hash_if_kdf (app_t app, int chvno, char *pinvalue, int *r_pinlen)
+pin2hash_if_kdf (app_t app, int chvno, const char *pin,
+                 char **r_pinvalue, size_t *r_pinlen)
 {
   gpg_error_t err = 0;
   void *relptr = NULL;
   unsigned char *buffer;
-  size_t buflen;
+  size_t pinlen, buflen;
+  char *dek = NULL;
+  size_t deklen = 32;
 
+  *r_pinvalue = NULL;
+  *r_pinlen = 0;
+
+  pinlen = strlen (pin);
   if (app->app_local->extcap.kdf_do
       && (relptr = get_one_do (app, 0x00F9, &buffer, &buflen, NULL))
       && buflen >= KDF_DATA_LENGTH_MIN && (buffer[2] == 0x03))
     {
       const char *salt;
       unsigned long s2k_count;
-      char dek[32];
       int salt_index;
+
+      dek = xtrymalloc (deklen);
+      if (!dek)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
 
       s2k_count = (((unsigned int)buffer[8] << 24)
                    | (buffer[9] << 16) | (buffer[10] << 8) | buffer[11]);
@@ -2107,33 +2151,41 @@ pin2hash_if_kdf (app_t app, int chvno, char *pinvalue, int *r_pinlen)
         }
 
       salt = &buffer[salt_index];
-      err = gcry_kdf_derive (pinvalue, strlen (pinvalue),
+      err = gcry_kdf_derive (pin, pinlen,
                              GCRY_KDF_ITERSALTED_S2K,
                              DIGEST_ALGO_SHA256, salt, 8,
-                             s2k_count, sizeof (dek), dek);
+                             s2k_count, deklen, dek);
       if (!err)
         {
-          /* pinvalue has a buffer of MAXLEN_PIN+1, 32 is OK.  */
-          *r_pinlen = 32;
-          memcpy (pinvalue, dek, *r_pinlen);
-          wipememory (dek, *r_pinlen);
+          *r_pinlen = deklen;
+          *r_pinvalue = dek;
+          dek = NULL;
         }
-   }
+    }
   else
-    *r_pinlen = strlen (pinvalue);
+    {
+      /* Just copy the PIN to a malloced buffer.  */
+      *r_pinvalue = xtrymalloc_secure (pinlen + 1);
+      if (!*r_pinvalue)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      strcpy (*r_pinvalue, pin);
+      *r_pinlen = pinlen;
+    }
 
  leave:
+  xfree (dek);
   xfree (relptr);
   return err;
 }
 
 
-/* Helper to cache a PIN.  If PIN is NULL the cache is cleared. */
-static void
-cache_pin (app_t app, ctrl_t ctrl, int chvno, const char *pin)
+static const char *
+chvno_to_keyref (int chvno)
 {
   const char *keyref;
-
   switch (chvno)
     {
     case 1: keyref = "1"; break;
@@ -2141,10 +2193,52 @@ cache_pin (app_t app, ctrl_t ctrl, int chvno, const char *pin)
     case 3: keyref = "3"; break;
     default: keyref = NULL; break;
     }
-
-  if (app->card->cardtype == CARDTYPE_YUBIKEY && keyref)
-    pincache_put (ctrl, app_get_slot (app), "openpgp", keyref, pin);
+  return keyref;
 }
+
+
+/* Helper to cache a PIN.  If PIN is NULL the cache is cleared. */
+static void
+cache_pin (app_t app, ctrl_t ctrl, int chvno, const char *pin)
+{
+  const char *keyref = chvno_to_keyref (chvno);
+
+  if (!keyref)
+    return;
+  switch (app->card->cardtype)
+    {
+    case CARDTYPE_YUBIKEY: break;
+    default: return;
+    }
+
+  pincache_put (ctrl, app_get_slot (app), "openpgp", keyref, pin);
+}
+
+
+/* If the PIN cache is expected and really has a valid PIN return that
+ * pin at R_PIN.  Returns true if that is the case; otherwise
+ * false.  */
+static int
+pin_from_cache (app_t app, ctrl_t ctrl, int chvno, char **r_pin)
+{
+  const char *keyref = chvno_to_keyref (chvno);
+
+  *r_pin = NULL;
+
+  if (!keyref)
+    return 0;
+  switch (app->card->cardtype)
+    {
+    case CARDTYPE_YUBIKEY: break;
+    default: return 0;
+    }
+
+  if (pincache_get (ctrl, app_get_slot (app), "openpgp", keyref, r_pin))
+    return 0;
+
+  return 1;
+}
+
 
 
 /* Verify a CHV either using the pinentry or if possible by
@@ -2158,10 +2252,10 @@ cache_pin (app_t app, ctrl_t ctrl, int chvno, const char *pin)
    as an indication that the pinpad has been used.
    */
 static gpg_error_t
-verify_a_chv (app_t app,
+verify_a_chv (app_t app, ctrl_t ctrl,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg, int chvno, unsigned long sigcount,
-              char **pinvalue, int *pinlen)
+              char **r_pinvalue, size_t *r_pinlen)
 {
   int rc = 0;
   char *prompt_buffer = NULL;
@@ -2169,11 +2263,12 @@ verify_a_chv (app_t app,
   pininfo_t pininfo;
   int minlen = 6;
   int remaining;
+  char *pin = NULL;
 
   log_assert (chvno == 1 || chvno == 2);
 
-  *pinvalue = NULL;
-  *pinlen = 0;
+  *r_pinvalue = NULL;
+  *r_pinlen = 0;
 
   remaining = get_remaining_tries (app, 0);
   if (remaining == -1)
@@ -2221,8 +2316,10 @@ verify_a_chv (app_t app,
       && !check_pinpad_request (app, &pininfo, 0))
     {
       /* The reader supports the verify command through the pinpad.
-         Note that the pincb appends a text to the prompt telling the
-         user to use the pinpad. */
+       * In this case we do not utilize the PIN cache because by using
+       * a pinpad the PIN can't have been cached.
+       * Note that the pincb appends a text to the prompt telling the
+       * user to use the pinpad. */
       rc = pincb (pincb_arg, prompt, NULL);
       prompt = NULL;
       xfree (prompt_buffer);
@@ -2236,13 +2333,18 @@ verify_a_chv (app_t app,
       rc = iso7816_verify_kp (app_get_slot (app), 0x80+chvno, &pininfo);
       /* Dismiss the prompt. */
       pincb (pincb_arg, NULL, NULL);
-
-      log_assert (!*pinvalue);
     }
   else
     {
-      /* The reader has no pinpad or we don't want to use it. */
-      rc = pincb (pincb_arg, prompt, pinvalue);
+      /* The reader has no pinpad or we don't want to use it.  If we
+       * have at least the standard 3 remaining tries we first try to
+       * get the PIN from the cache.  With less remaining tries it is
+       * better to let the user know about failed attempts (which
+       * might be due to a bug in the PIN cache handling). */
+      if (remaining >= 3 && pin_from_cache (app, ctrl, chvno, &pin))
+        rc = 0;
+      else
+        rc = pincb (pincb_arg, prompt, &pin);
       prompt = NULL;
       xfree (prompt_buffer);
       prompt_buffer = NULL;
@@ -2253,26 +2355,29 @@ verify_a_chv (app_t app,
           return rc;
         }
 
-      if (strlen (*pinvalue) < minlen)
+      if (strlen (pin) < minlen)
         {
           log_error (_("PIN for CHV%d is too short;"
                        " minimum length is %d\n"), chvno, minlen);
-          xfree (*pinvalue);
-          *pinvalue = NULL;
+          wipe_and_free_string (pin);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
 
-      rc = pin2hash_if_kdf (app, chvno, *pinvalue, pinlen);
+      rc = pin2hash_if_kdf (app, chvno, pin, r_pinvalue, r_pinlen);
       if (!rc)
         rc = iso7816_verify (app_get_slot (app),
-                             0x80 + chvno, *pinvalue, *pinlen);
+                             0x80 + chvno, *r_pinvalue, *r_pinlen);
+      if (!rc)
+        cache_pin (app, ctrl, chvno, pin);
     }
 
+  wipe_and_free_string (pin);
   if (rc)
     {
       log_error (_("verify CHV%d failed: %s\n"), chvno, gpg_strerror (rc));
-      xfree (*pinvalue);
-      *pinvalue = NULL;
+      xfree (*r_pinvalue);
+      *r_pinvalue = NULL;
+      *r_pinlen = 0;
       flush_cache_after_error (app);
     }
 
@@ -2289,16 +2394,15 @@ verify_chv2 (app_t app, ctrl_t ctrl,
 {
   int rc;
   char *pinvalue;
-  int pinlen;
+  size_t pinlen;
 
   if (app->did_chv2)
     return 0;  /* We already verified CHV2.  */
 
-  rc = verify_a_chv (app, pincb, pincb_arg, 2, 0, &pinvalue, &pinlen);
+  rc = verify_a_chv (app, ctrl, pincb, pincb_arg, 2, 0, &pinvalue, &pinlen);
   if (rc)
     return rc;
   app->did_chv2 = 1;
-  cache_pin (app, ctrl, 2, pinvalue);
 
   if (!app->did_chv1 && !app->force_chv1 && pinvalue)
     {
@@ -2317,26 +2421,31 @@ verify_chv2 (app_t app, ctrl_t ctrl,
       else
         {
           app->did_chv1 = 1;
-          cache_pin (app, ctrl, 1, pinvalue);
+          /* Note that we are not able to cache the CHV 1 here because
+           * it is possible that due to the use of a KDF-DO PINVALUE
+           * has the hashed binary PIN of length PINLEN.  */
         }
     }
 
-  xfree (pinvalue);
+  wipe_and_free (pinvalue, pinlen);
 
   return rc;
 }
 
 
 /* Build the prompt to enter the Admin PIN.  The prompt depends on the
-   current sdtate of the card.  */
+ * current state of the card.  If R_REMAINING is not NULL the
+ * remaining tries are stored there.  */
 static gpg_error_t
-build_enter_admin_pin_prompt (app_t app, char **r_prompt)
+build_enter_admin_pin_prompt (app_t app, char **r_prompt, int *r_remaining)
 {
   int remaining;
   char *prompt;
   char *infoblock;
 
   *r_prompt = NULL;
+  if (r_remaining)
+    *r_remaining = 0;
 
   remaining = get_remaining_tries (app, 1);
   if (remaining == -1)
@@ -2364,6 +2473,8 @@ build_enter_admin_pin_prompt (app_t app, char **r_prompt)
     return gpg_error_from_syserror ();
 
   *r_prompt = prompt;
+  if (r_remaining)
+    *r_remaining = remaining;
   return 0;
 }
 
@@ -2387,12 +2498,13 @@ verify_chv3 (app_t app, ctrl_t ctrl,
       pininfo_t pininfo;
       int minlen = 8;
       char *prompt;
+      int remaining;
 
       memset (&pininfo, 0, sizeof pininfo);
       pininfo.fixedlen = -1;
       pininfo.minlen = minlen;
 
-      rc = build_enter_admin_pin_prompt (app, &prompt);
+      rc = build_enter_admin_pin_prompt (app, &prompt, &remaining);
       if (rc)
         return rc;
 
@@ -2417,10 +2529,14 @@ verify_chv3 (app_t app, ctrl_t ctrl,
         }
       else
         {
+          char *pin;
           char *pinvalue;
-          int pinlen;
+          size_t pinlen;
 
-          rc = pincb (pincb_arg, prompt, &pinvalue);
+          if (remaining >= 3 && pin_from_cache (app, ctrl, 3, &pin))
+            rc = 0;
+          else
+            rc = pincb (pincb_arg, prompt, &pin);
           xfree (prompt);
           prompt = NULL;
           if (rc)
@@ -2430,20 +2546,21 @@ verify_chv3 (app_t app, ctrl_t ctrl,
               return rc;
             }
 
-          if (strlen (pinvalue) < minlen)
+          if (strlen (pin) < minlen)
             {
               log_error (_("PIN for CHV%d is too short;"
                            " minimum length is %d\n"), 3, minlen);
-              xfree (pinvalue);
+              wipe_and_free_string (pin);
               return gpg_error (GPG_ERR_BAD_PIN);
             }
 
-          rc = pin2hash_if_kdf (app, 3, pinvalue, &pinlen);
+          rc = pin2hash_if_kdf (app, 3, pin, &pinvalue, &pinlen);
           if (!rc)
             rc = iso7816_verify (app_get_slot (app), 0x83, pinvalue, pinlen);
           if (!rc)
-            cache_pin (app, ctrl, 3, pinvalue);
-          xfree (pinvalue);
+            cache_pin (app, ctrl, 3, pin);
+          wipe_and_free_string (pin);
+          wipe_and_free (pinvalue, pinlen);
         }
 
       if (rc)
@@ -2660,8 +2777,6 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   pininfo_t pininfo;
   int use_pinpad = 0;
   int minlen = 6;
-  int pinlen0 = 0;
-  int pinlen = 0;
 
   if (digitp (chvnostr))
     chvno = atoi (chvnostr);
@@ -2677,6 +2792,11 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.fixedlen = -1;
   pininfo.minlen = minlen;
+
+  /* Better clear all the PIN caches first.  */
+  cache_pin (app, ctrl, 1, NULL);
+  cache_pin (app, ctrl, 2, NULL);
+  cache_pin (app, ctrl, 3, NULL);
 
   if ((flags & APP_CHANGE_FLAG_CLEAR))
     return clear_chv_status (app, ctrl, chvno);
@@ -2694,7 +2814,6 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       if (reset_mode || chvno == 3)
         {
           /* We always require that the PIN is entered. */
-          cache_pin (app, ctrl, 3, NULL);
           app->did_chv3 = 0;
           rc = verify_chv3 (app, ctrl, pincb, pincb_arg);
           if (rc)
@@ -2706,8 +2825,6 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
              value, thus we enforce it here.  */
           int save_force = app->force_chv1;
 
-          cache_pin (app, ctrl, 1, NULL);
-          cache_pin (app, ctrl, 2, NULL);
           app->force_chv1 = 0;
           app->did_chv1 = 0;
           app->did_chv2 = 0;
@@ -2754,7 +2871,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
               if (chvno == 3)
                 {
                   minlen = 8;
-                  rc = build_enter_admin_pin_prompt (app, &promptbuf);
+                  rc = build_enter_admin_pin_prompt (app, &promptbuf, NULL);
                   if (rc)
                     goto leave;
                   prompt = promptbuf;
@@ -2855,29 +2972,38 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
 
   if (resetcode)
     {
-      char *buffer;
+      char *result1 = NULL;
+      char *result2 = NULL;
+      char *buffer = NULL;
+      size_t resultlen1, resultlen2, bufferlen=0;
 
-      buffer = xtrymalloc (strlen (resetcode) + strlen (pinvalue) + 1);
-      if (!buffer)
-        rc = gpg_error_from_syserror ();
-      else
+      rc = pin2hash_if_kdf (app, 0, resetcode, &result1, &resultlen1);
+      if (!rc)
+        rc = pin2hash_if_kdf (app, 0, pinvalue, &result2, &resultlen2);
+      if (!rc)
         {
-          strcpy (buffer, resetcode);
-          rc = pin2hash_if_kdf (app, 0, buffer, &pinlen0);
-          if (!rc)
+          bufferlen = resultlen1 + resultlen2;
+          buffer = xtrymalloc (bufferlen);
+          if (!buffer)
+            rc = gpg_error_from_syserror ();
+          else
             {
-              strcpy (buffer+pinlen0, pinvalue);
-              rc = pin2hash_if_kdf (app, 0, buffer+pinlen0, &pinlen);
+              memcpy (buffer, result1, resultlen1);
+              memcpy (buffer+resultlen1, result2, resultlen2);
             }
-          if (!rc)
-            rc = iso7816_reset_retry_counter_with_rc (app_get_slot (app), 0x81,
-                                                      buffer, pinlen0+pinlen);
-          wipememory (buffer, pinlen0 + pinlen);
-          xfree (buffer);
         }
+      if (!rc)
+        rc = iso7816_reset_retry_counter_with_rc (app_get_slot (app), 0x81,
+                                                  buffer, bufferlen);
+      wipe_and_free (result1, resultlen1);
+      wipe_and_free (result2, resultlen2);
+      wipe_and_free (buffer, bufferlen);
     }
   else if (set_resetcode)
     {
+      char *buffer = NULL;
+      size_t bufferlen;
+
       if (strlen (pinvalue) < 8)
         {
           log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
@@ -2885,21 +3011,28 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         }
       else
         {
-          rc = pin2hash_if_kdf (app, 0, pinvalue, &pinlen);
+          rc = pin2hash_if_kdf (app, 0, pinvalue, &buffer, &bufferlen);
           if (!rc)
             rc = iso7816_put_data (app_get_slot (app),
-                                   0, 0xD3, pinvalue, pinlen);
+                                   0, 0xD3, buffer, bufferlen);
         }
+
+      wipe_and_free (buffer, bufferlen);
     }
   else if (reset_mode)
     {
-      rc = pin2hash_if_kdf (app, 1, pinvalue, &pinlen);
+      char *buffer = NULL;
+      size_t bufferlen;
+
+      rc = pin2hash_if_kdf (app, 1, pinvalue, &buffer, &bufferlen);
       if (!rc)
         rc = iso7816_reset_retry_counter (app_get_slot (app),
-                                          0x81, pinvalue, pinlen);
+                                          0x81, buffer, bufferlen);
       if (!rc && !app->app_local->extcap.is_v2)
         rc = iso7816_reset_retry_counter (app_get_slot (app),
-                                          0x82, pinvalue, pinlen);
+                                          0x82, buffer, bufferlen);
+
+      wipe_and_free (buffer, bufferlen);
     }
   else if (!app->app_local->extcap.is_v2)
     {
@@ -2945,36 +3078,30 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         }
       else
         {
-          rc = pin2hash_if_kdf (app, chvno, oldpinvalue, &pinlen0);
+          char *buffer1 = NULL;
+          char *buffer2 = NULL;
+          size_t bufferlen1, bufferlen2;
+
+          rc = pin2hash_if_kdf (app, chvno, oldpinvalue, &buffer1, &bufferlen1);
           if (!rc)
-            rc = pin2hash_if_kdf (app, chvno, pinvalue, &pinlen);
+            rc = pin2hash_if_kdf (app, chvno, pinvalue, &buffer2, &bufferlen2);
           if (!rc)
             rc = iso7816_change_reference_data (app_get_slot (app),
                                                 0x80 + chvno,
-                                                oldpinvalue, pinlen0,
-                                                pinvalue, pinlen);
+                                                buffer1, bufferlen1,
+                                                buffer2, bufferlen2);
+          wipe_and_free (buffer1, bufferlen1);
+          wipe_and_free (buffer2, bufferlen2);
         }
     }
 
-  if (pinvalue)
-    {
-      wipememory (pinvalue, pinlen);
-      xfree (pinvalue);
-    }
+  wipe_and_free_string (pinvalue);
   if (rc)
     flush_cache_after_error (app);
 
  leave:
-  if (resetcode)
-    {
-      wipememory (resetcode, strlen (resetcode));
-      xfree (resetcode);
-    }
-  if (oldpinvalue)
-    {
-      wipememory (oldpinvalue, pinlen0);
-      xfree (oldpinvalue);
-    }
+  wipe_and_free_string (resetcode);
+  wipe_and_free_string (oldpinvalue);
   return rc;
 }
 
@@ -4533,16 +4660,14 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   if (!app->did_chv1 || app->force_chv1)
     {
       char *pinvalue;
-      int pinlen;
+      size_t pinlen;
 
-      rc = verify_a_chv (app, pincb, pincb_arg, 1, sigcount,
+      rc = verify_a_chv (app, ctrl, pincb, pincb_arg, 1, sigcount,
                          &pinvalue, &pinlen);
       if (rc)
         return rc;
 
       app->did_chv1 = 1;
-      if (!app->force_chv1)
-        cache_pin (app, ctrl, 1, pinvalue);
 
       /* For cards with versions < 2 we want to keep CHV1 and CHV2 in
          sync, thus we verify CHV2 here using the given PIN.  Cards
@@ -4557,14 +4682,14 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           if (rc)
             {
               log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
-              xfree (pinvalue);
+              wipe_and_free (pinvalue, pinlen);
               flush_cache_after_error (app);
               return rc;
             }
           app->did_chv2 = 1;
           cache_pin (app, ctrl, 2, pinvalue);
         }
-      xfree (pinvalue);
+      wipe_and_free (pinvalue, pinlen);
     }
 
 
