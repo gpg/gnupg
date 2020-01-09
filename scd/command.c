@@ -2242,12 +2242,33 @@ send_status_printf (ctrl_t ctrl, const char *keyword, const char *format, ...)
 }
 
 
+/* Set a gcrypt key for use with the pincache.  The key is a random
+ * key unique for this process and is useless after this process has
+ * terminated.  This way the cached PINs stored in the gpg-agent are
+ * bound to this specific process.  The main purpose of this
+ * encryption is to hide the PIN in logs of the IPC.  */
+static gpg_error_t
+set_key_for_pincache (gcry_cipher_hd_t hd)
+{
+  static int initialized;
+  static unsigned char keybuf[16];
+
+  if (!initialized)
+    {
+      gcry_randomize (keybuf, sizeof keybuf, GCRY_STRONG_RANDOM);
+      initialized = 1;
+    }
+
+  return gcry_cipher_setkey (hd, keybuf, sizeof keybuf);
+}
+
+
 /* Store the PIN in the PIN cache. The key to identify the PIN
  * consists of (SLOT,APPNAME,PINREF).  If PIN is NULL the PIN stored
  * under the given key is cleared.  If APPNAME and PINREF are NULL the
  * entire PIN cache for SLOT is cleared.  If SLOT is -1 the entire PIN
  * cache is cleared.  We do no use an scdaemon internal cache but let
- * gpg-agent cache because it is better suited for this.  */
+ * gpg-agent cache it because it is better suited for this.  */
 void
 pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
               const char *pin)
@@ -2286,36 +2307,35 @@ pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
     return;  /* Ignore an empty PIN.  */
 
   snprintf (line, sizeof line, "%d/%s/%s ",
-            slot, appname? appname:"-", pinref? pinref:"-");
+            slot, appname? appname:"", pinref? pinref:"");
 
   /* Without an APPNAME etc or without a PIN we clear the cache and
    * thus there is no need to send the pin - even if the caller
    * accidentially passed a pin.  */
   if (pin && slot != -1 && appname && pinref)
     {
+      /* FIXME: Replace this by OCB mode and use the cache key as
+       * additional data.  */
       pinlen = strlen (pin);
-      if ((pinlen % 8))
+      /* Pad with zeroes (AESWRAP requires multiples of 64 bit but
+       * at least 128 bit data).  */
+      pinbuflen = pinlen + 8 - (pinlen % 8);
+      if (pinbuflen < 16)
+        pinbuflen = 16;
+      pinbuf = xtrycalloc_secure (1, pinbuflen);
+      if (!pinbuf)
         {
-          /* Pad with zeroes (AESWRAP requires multiples of 64 bit but
-           * at least 128 bit data).  */
-          pinbuflen = pinlen + 8 - (pinlen % 8);
-          if (pinbuflen < 16)
-            pinbuflen = 16;
-          pinbuf = xtrycalloc_secure (1, pinbuflen);
-          if (!pinbuf)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          memcpy (pinbuf, pin, pinlen);
-          pinlen = pinbuflen;
-          pin = pinbuf;
+          err = gpg_error_from_syserror ();
+          goto leave;
         }
+      memcpy (pinbuf, pin, pinlen);
+      pinlen = pinbuflen;
+      pin = pinbuf;
 
       err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
                               GCRY_CIPHER_MODE_AESWRAP, 0);
       if (!err)
-        err = gcry_cipher_setkey (cipherhd, "1234567890123456", 16);
+        err = set_key_for_pincache (cipherhd);
       if (err)
         goto leave;
 
@@ -2379,45 +2399,77 @@ pincache_get (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
     }
   if (!ctrl || !ctrl->server_local || !(ctx = ctrl->server_local->assuan_ctx))
     {
-      err = set_error (GPG_ERR_USE_CONDITIONS, "called w/o assuan context");
+      err = gpg_error (GPG_ERR_USE_CONDITIONS);
+      log_error ("%s: called w/o assuan context\n", __func__);
       goto leave;
     }
 
   snprintf (command, sizeof command, "PINCACHE_GET %d/%s/%s",
-            slot, appname? appname:"-", pinref? pinref:"-");
+            slot, appname? appname:"", pinref? pinref:"");
 
+  /* Limit the inquire to something reasonable.  The 32 extra bytes
+   * are a guessed size for padding etc.  */
   err = assuan_inquire (ctx, command, &wrappedkey, &wrappedkeylen,
-                        MAXLEN_PIN+24);
+                        2*MAXLEN_PIN+32);
   if (gpg_err_code (err) == GPG_ERR_ASS_CANCELED)
-    err = set_error (GPG_ERR_NOT_SUPPORTED,
-                     "client does not feature a PIN cache");
-  else if (!err && (!wrappedkey || wrappedkeylen < 24))
-    err = set_error (GPG_ERR_INV_LENGTH, "received too short cryptogram");
-  else if (!err)
     {
-      valuelen = wrappedkeylen - 8;
-      value = xtrymalloc_secure (valuelen);
-      if (!value)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
-                              GCRY_CIPHER_MODE_AESWRAP, 0);
-      if (!err)
-        err = gcry_cipher_setkey (cipherhd, "1234567890123456", 16);
-      if (err)
-        goto leave;
-
-      err = gcry_cipher_decrypt (cipherhd, value, valuelen,
-                                 wrappedkey, wrappedkeylen);
-      if (err)
-        goto leave;
-
-      *r_pin = value;
-      value = NULL;
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      log_info ("caller does not feature a PIN cache");
+      goto leave;
     }
+  if (err)
+    {
+      log_error ("%s: sending PINCACHE_GET to caller failed: %s\n",
+                 __func__, gpg_strerror (err));
+      goto leave;
+    }
+  if (!wrappedkey || !wrappedkeylen)
+    {
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
+
+  /* Convert to hex to binary and store it in (wrappedkey, wrappedkeylen).  */
+  if (!hex2str (wrappedkey, wrappedkey, wrappedkeylen, &wrappedkeylen))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("%s: caller returned invalid hex string: %s\n",
+                 __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (!wrappedkey || wrappedkeylen < 24)
+    {
+      err = gpg_error (GPG_ERR_INV_LENGTH); /* too short cryptogram */
+      goto leave;
+    }
+
+  valuelen = wrappedkeylen - 8;
+  value = xtrymalloc_secure (valuelen);
+  if (!value)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (!err)
+    err = set_key_for_pincache (cipherhd);
+  if (err)
+    goto leave;
+
+  err = gcry_cipher_decrypt (cipherhd, value, valuelen,
+                             wrappedkey, wrappedkeylen);
+  if (err)
+    {
+      log_error ("%s: cached value could not be decrypted: %s\n",
+                 __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  *r_pin = value;
+  value = NULL;
 
  leave:
   gcry_cipher_close (cipherhd);

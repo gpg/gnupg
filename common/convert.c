@@ -192,7 +192,7 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
 
    On success the function returns a pointer to the next character
    after HEXSTRING (which is either end-of-string or the next white
-   space).  If BUFLEN is not NULL the number of valid vytes in BUFFER
+   space).  If BUFLEN is not NULL the number of valid bytes in BUFFER
    is stored there (an extra Nul byte is not counted); this will even
    be done if BUFFER has been passed as NULL. */
 const char *

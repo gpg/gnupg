@@ -446,7 +446,8 @@ agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
 }
 
 
-/* Try to find an item in the cache.  */
+/* Try to find an item in the cache.  Returns NULL if not found or an
+ * malloced string with the value.  */
 char *
 agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
 {

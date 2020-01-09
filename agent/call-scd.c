@@ -637,13 +637,9 @@ static gpg_error_t
 handle_pincache_put (const char *args)
 {
   gpg_error_t err;
-  const char *s, *key, *hexwrappedpin;
+  const char *s, *key, *pin;
   char *keybuf = NULL;
-  unsigned char *wrappedpin = NULL;
-  size_t keylen, hexwrappedpinlen, wrappedpinlen;
-  char *value = NULL;
-  size_t valuelen;
-  gcry_cipher_hd_t cipherhd = NULL;
+  size_t keylen;
 
   key = s = args;
   while (*s && !spacep (s))
@@ -657,7 +653,6 @@ handle_pincache_put (const char *args)
       goto leave;
     }
 
-
   keybuf = xtrymalloc (keylen+1);
   if (!keybuf)
     {
@@ -670,70 +665,23 @@ handle_pincache_put (const char *args)
 
   while (spacep (s))
     s++;
-  hexwrappedpin = s;
-  while (*s && !spacep (s))
-    s++;
-  hexwrappedpinlen = s - hexwrappedpin;
-  if (!hexwrappedpinlen)
+  pin = s;
+  if (!*pin)
     {
-      /* Flush the cache.  The cache module knows aboput the structure
-       * of the key to flush only parts.  */
+      /* No value - flush the cache.  The cache module knows aboput
+       * the structure of the key to flush only parts.  */
       log_debug ("%s: flushing cache '%s'\n", __func__, key);
       agent_put_cache (NULL, key, CACHE_MODE_PIN, NULL, -1);
       err = 0;
       goto leave;
     }
 
-  if (hexwrappedpinlen < 2*24)
-    {
-      log_error ("%s: ignoring request with too short cryptogram\n", __func__);
-      err = 0;
-      goto leave;
-    }
-  wrappedpinlen = hexwrappedpinlen / 2;
-  wrappedpin = xtrymalloc (wrappedpinlen);
-  if (!wrappedpin)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-  if (hex2bin (hexwrappedpin, wrappedpin, wrappedpinlen) == -1)
-    {
-      log_error ("%s: invalid hex length\n", __func__);
-      err = gpg_error (GPG_ERR_INV_LENGTH);
-      goto leave;
-    }
-
-  valuelen = wrappedpinlen - 8;
-  value = xtrymalloc_secure (valuelen+1);
-  if (!value)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
-                          GCRY_CIPHER_MODE_AESWRAP, 0);
-  if (!err)
-    err = gcry_cipher_setkey (cipherhd, "1234567890123456", 16);
-  if (!err)
-    err = gcry_cipher_decrypt (cipherhd, value, valuelen,
-                               wrappedpin, wrappedpinlen);
-  if (err)
-    {
-      log_error ("%s: error decrypting the cryptogram: %s\n",
-                 __func__, gpg_strerror (err));
-      goto leave;
-    }
-
-  log_debug ("%s: caching '%s'->'%s'\n", __func__, key, value);
-  agent_put_cache (NULL, key, CACHE_MODE_PIN, value, -1);
+  log_debug ("%s: caching '%s'->'%s'\n", __func__, key, pin);
+  agent_put_cache (NULL, key, CACHE_MODE_PIN, pin, -1);
+  err = 0;
 
  leave:
   xfree (keybuf);
-  xfree (value);
-  xfree (wrappedpin);
-  gcry_cipher_close (cipherhd);
   return err;
 }
 
@@ -751,6 +699,43 @@ pincache_put_cb (void *opaque, const char *line)
     return handle_pincache_put (s);
   else
     return 0;
+}
+
+
+/* Handle a PINCACHE_GET inquiry.  ARGS are the arguments of the
+ * inquiry which should be a single string with the key for the cached
+ * value.  CTX is the Assuan handle.  */
+static gpg_error_t
+handle_pincache_get (const char *args, assuan_context_t ctx)
+{
+  gpg_error_t err;
+  const char *key;
+  char *pin = NULL;
+
+  log_debug ("%s: enter '%s'\n", __func__, args);
+  key = args;
+  if (strlen (key) < 5)
+    {
+      /* We need at least 2 slashes, one slot number and two 1 byte strings.*/
+      err = gpg_error (GPG_ERR_INV_REQUEST);
+      log_debug ("%s: key too short\n", __func__);
+      goto leave;
+    }
+
+  pin = agent_get_cache (NULL, key, CACHE_MODE_PIN);
+  if (!pin || !*pin)
+    {
+      xfree (pin);
+      err = 0;  /* Not found is indicated by sending no data back.  */
+      log_debug ("%s: not cached\n", __func__);
+      goto leave;
+    }
+  log_debug ("%s: cache returned '%s'\n", __func__, pin);
+  err = assuan_send_data (ctx, pin, strlen (pin));
+
+ leave:
+  xfree (pin);
+  return err;
 }
 
 
@@ -924,9 +909,7 @@ inq_needpin (void *opaque, const char *line)
     }
   else if ((s = has_leading_keyword (line, "PINCACHE_GET")))
     {
-      /* rc = parm->getpin_cb (parm->getpin_cb_arg, parm->getpin_cb_desc, */
-      /*                       "", NULL, 0); */
-      rc = 0;
+      rc = handle_pincache_get (s, parm->ctx);
     }
   else if (parm->passthru)
     {
