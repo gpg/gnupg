@@ -614,14 +614,13 @@ gpg_error_t agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
                                                   const char *, char*, size_t),
                                  void *getpin_cb_arg);
 gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result);
-gpg_error_t agent_card_cardlist (ctrl_t ctrl, strlist_t *result);
 int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *,
                                      const char *, char*, size_t),
                     void *getpin_cb_arg, void *assuan_context);
 void agent_card_free_keyinfo (struct card_key_info_s *l);
 gpg_error_t agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
-                                struct card_key_info_s **result);
+                                int cap, struct card_key_info_s **result);
 void agent_card_killscd (void);
 
 

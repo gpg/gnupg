@@ -77,7 +77,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
           struct card_key_info_s *keyinfo;
 
           xfree (serialno);
-          err = agent_card_keyinfo (ctrl, hexgrip, &keyinfo);
+          err = agent_card_keyinfo (ctrl, hexgrip, 0, &keyinfo);
           if (!err)
             {
               /* Key for GRIP found, use it directly.  */

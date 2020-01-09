@@ -2374,34 +2374,6 @@ ssh_key_grip (gcry_sexp_t key, unsigned char *buffer)
 }
 
 
-static gpg_error_t
-card_key_list (ctrl_t ctrl, char **r_serialno, strlist_t *result)
-{
-  gpg_error_t err;
-
-  *r_serialno = NULL;
-  *result = NULL;
-
-  err = agent_card_serialno (ctrl, r_serialno, NULL);
-  if (err)
-    {
-      if (gpg_err_code (err) != GPG_ERR_ENODEV && opt.verbose)
-        log_info (_("error getting serial number of card: %s\n"),
-                  gpg_strerror (err));
-
-      /* Nothing available.  */
-      return 0;
-    }
-
-  err = agent_card_cardlist (ctrl, result);
-  if (err)
-    {
-      xfree (*r_serialno);
-      *r_serialno = NULL;
-    }
-  return err;
-}
-
 /* Check whether a smartcard is available and whether it has a usable
    key.  Store a copy of that key at R_PK and return 0.  If no key is
    available store NULL at R_PK and return an error code.  If CARDSN
@@ -2582,9 +2554,18 @@ ssh_handler_request_identities (ctrl_t ctrl,
   if (!opt.disable_scdaemon)
     {
       char *serialno;
-      strlist_t card_list, sl;
+      struct card_key_info_s *keyinfo_list;
+      struct card_key_info_s *keyinfo;
 
-      err = card_key_list (ctrl, &serialno, &card_list);
+      /* Scan device(s), and get list of KEYGRIP.  */
+      err = agent_card_serialno (ctrl, &serialno, NULL);
+      if (!err)
+        {
+          xfree (serialno);
+          err = agent_card_keyinfo (ctrl, NULL, GCRY_PK_USAGE_AUTH,
+                                    &keyinfo_list);
+        }
+
       if (err)
         {
           if (opt.verbose)
@@ -2593,12 +2574,18 @@ ssh_handler_request_identities (ctrl_t ctrl,
           goto scd_out;
         }
 
-      for (sl = card_list; sl; sl = sl->next)
+      for (keyinfo = keyinfo_list; keyinfo; keyinfo = keyinfo->next)
         {
           char *serialno0;
           char *cardsn;
 
-          err = agent_card_serialno (ctrl, &serialno0, sl->d);
+          /*
+           * FIXME: Do access by KEYGRIP directly, not by $AUTHKEYID.
+           * In scdaemon, implement SCD READKEY <KEYGRIP> and
+           * SCD GETATTR <KEYGRIP>.
+           * Then, no switch of foreground card occurrs.
+           */
+          err = agent_card_serialno (ctrl, &serialno0, keyinfo->serialno);
           if (err)
             {
               if (opt.verbose)
@@ -2619,16 +2606,14 @@ ssh_handler_request_identities (ctrl_t ctrl,
           xfree (cardsn);
           if (err)
             {
-              xfree (serialno);
-              free_strlist (card_list);
+              agent_card_free_keyinfo (keyinfo_list);
               goto out;
             }
 
           key_counter++;
         }
 
-      xfree (serialno);
-      free_strlist (card_list);
+      agent_card_free_keyinfo (keyinfo_list);
     }
 
  scd_out:

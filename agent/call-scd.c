@@ -1360,78 +1360,6 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
 
 
 
-struct card_cardlist_parm_s {
-  int error;
-  strlist_t list;
-};
-
-/* Callback function for agent_card_cardlist.  */
-static gpg_error_t
-card_cardlist_cb (void *opaque, const char *line)
-{
-  gpg_error_t err = 0;
-  struct card_cardlist_parm_s *parm = opaque;
-  const char *keyword = line;
-  int keywordlen;
-
-  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
-    ;
-  while (spacep (line))
-    line++;
-
-  if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
-    {
-      const char *s;
-      int n;
-
-      for (n=0,s=line; hexdigitp (s); s++, n++)
-        ;
-
-      if (!n || (n&1) || *s)
-        parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
-      else
-        add_to_strlist (&parm->list, line);
-    }
-  else if (keywordlen == 12 && !memcmp (keyword, "PINCACHE_PUT", keywordlen))
-    err = handle_pincache_put (line);
-
-  return err;
-}
-
-/* Call the scdaemon to retrieve list of available cards. On success
-   the allocated strlist is stored at RESULT.  On error an error code is
-   returned and NULL stored at RESULT. */
-gpg_error_t
-agent_card_cardlist (ctrl_t ctrl, strlist_t *result)
-{
-  int err;
-  struct card_cardlist_parm_s parm;
-  char line[ASSUAN_LINELENGTH];
-
-  *result = NULL;
-
-  memset (&parm, 0, sizeof parm);
-  strcpy (line, "GETINFO card_list");
-
-  err = start_scd (ctrl);
-  if (err)
-    return err;
-
-  err = assuan_transact (ctrl->scd_local->ctx, line,
-                         NULL, NULL, NULL, NULL,
-                         card_cardlist_cb, &parm);
-  if (!err && parm.error)
-    err = parm.error;
-
-  if (!err)
-    *result = parm.list;
-  else
-    free_strlist (parm.list);
-
-  return unlock_scd (ctrl, err);
-}
-
-
 struct card_keyinfo_parm_s {
   int error;
   struct card_key_info_s *list;
@@ -1552,21 +1480,32 @@ agent_card_free_keyinfo (struct card_key_info_s *l)
 }
 
 /* Call the scdaemon to check if a key of KEYGRIP is available, or
-   retrieve list of available keys on cards. On success the allocated
-   structure is stored at RESULT.  On error an error code is returned
+   retrieve list of available keys on cards.  With CAP, we can limit
+   keys with specified capability.  On success, the allocated
+   structure is stored at RESULT.  On error, an error code is returned
    and NULL is stored at RESULT.  */
 gpg_error_t
-agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
+agent_card_keyinfo (ctrl_t ctrl, const char *keygrip, int cap,
                     struct card_key_info_s **result)
 {
   int err;
   struct card_keyinfo_parm_s parm;
   char line[ASSUAN_LINELENGTH];
+  char *list_option;
 
   *result = NULL;
 
+  switch (cap)
+    {
+    case                  0: list_option = "--list";      break;
+    case GCRY_PK_USAGE_SIGN: list_option = "--list=sign"; break;
+    case GCRY_PK_USAGE_ENCR: list_option = "--list=encr"; break;
+    case GCRY_PK_USAGE_AUTH: list_option = "--list=auth"; break;
+    default:                 return gpg_error (GPG_ERR_INV_VALUE);
+    }
+
   memset (&parm, 0, sizeof parm);
-  snprintf (line, sizeof line, "KEYINFO %s", keygrip ? keygrip : "--list");
+  snprintf (line, sizeof line, "KEYINFO %s", keygrip ? keygrip : list_option);
 
   err = start_scd (ctrl);
   if (err)

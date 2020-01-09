@@ -1307,7 +1307,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   if (opt_with_ssh || list_mode == 2)
     cf = ssh_open_control_file ();
 
-  agent_card_keyinfo (ctrl, NULL, &keyinfo_on_cards);
+  agent_card_keyinfo (ctrl, NULL, 0, &keyinfo_on_cards);
 
   if (list_mode == 2)
     {
