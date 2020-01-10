@@ -1920,7 +1920,21 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
   int keyno;
   unsigned char *buf;
 
-  if (!strcmp (keyid, "OPENPGP.1"))
+  if (strlen (keyid) == 40)
+    {
+      const unsigned char *keygrip_str;
+
+      for (keyno = 0; keyno < 3; keyno++)
+        {
+          keygrip_str = app->app_local->pk[keyno].keygrip_str;
+          if (!strncmp (keygrip_str, keyid, 40))
+            break;
+        }
+
+      if (keyno >= 3)
+        return gpg_error (GPG_ERR_INV_ID);
+    }
+  else if (!strcmp (keyid, "OPENPGP.1"))
     keyno = 0;
   else if (!strcmp (keyid, "OPENPGP.2"))
     keyno = 1;

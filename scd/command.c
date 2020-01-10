@@ -537,8 +537,74 @@ cmd_readcert (assuan_context_t ctx, char *line)
 }
 
 
+static gpg_error_t
+do_readkey (card_t card, ctrl_t ctrl, const char *line,
+            int opt_info, int opt_nokey,
+            unsigned char **pk_p, size_t *pklen_p)
+{
+  int rc;
+
+  /* If the application supports the READKEY function we use that.
+     Otherwise we use the old way by extracting it from the
+     certificate.  */
+  rc = app_readkey (card, ctrl, line,
+                    opt_info? APP_READKEY_FLAG_INFO : 0,
+                    opt_nokey? NULL : pk_p, pklen_p);
+  if (!rc)
+    /* Okay, got that key.  */
+    return 0;
+
+  if (gpg_err_code (rc) == GPG_ERR_UNSUPPORTED_OPERATION
+      || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+    {
+      unsigned char *cert = NULL;
+      size_t ncert;
+
+      /* Fall back to certificate reading.  */
+      rc = app_readcert (card, ctrl, line, &cert, &ncert);
+      if (rc)
+        {
+          log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+
+      rc = app_help_pubkey_from_cert (cert, ncert, pk_p, pklen_p);
+      xfree (cert);
+      if (rc)
+        {
+          log_error ("failed to parse the certificate: %s\n",
+                     gpg_strerror (rc));
+          return rc;
+        }
+
+      if (opt_info)
+        {
+          char keygripstr[KEYGRIP_LEN*2+1];
+
+          rc = app_help_get_keygrip_string_pk (*pk_p, *pklen_p, keygripstr);
+          if (rc)
+            {
+              log_error ("app_help_get_keygrip_string failed: %s\n",
+                         gpg_strerror (rc));
+              return rc;
+            }
+
+          /* FIXME: Using LINE is not correct because it might be an
+           * OID and has not been canonicalized (i.e. uppercased).  */
+          send_status_info (ctrl, "KEYPAIRINFO",
+                            keygripstr, strlen (keygripstr),
+                            line, strlen (line),
+                            NULL, (size_t)0);
+        }
+    }
+  else
+    log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
+
+  return rc;
+}
+
 static const char hlp_readkey[] =
-  "READKEY [--advanced] [--info[-only]] <keyid>|<oid>\n"
+  "READKEY [--advanced] [--info[-only]] <keyid>|<oid>|<keygrip>\n"
   "\n"
   "Return the public key for the given cert or key ID as a standard\n"
   "S-expression.  With --advanced  the S-expression is returned in\n"
@@ -552,9 +618,10 @@ cmd_readkey (assuan_context_t ctx, char *line)
   int advanced = 0;
   int opt_info = 0;
   int opt_nokey = 0;
-  unsigned char *cert = NULL;
   unsigned char *pk = NULL;
-  size_t ncert, pklen;
+  size_t pklen;
+  card_t card;
+  int direct = 0;
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -569,57 +636,26 @@ cmd_readkey (assuan_context_t ctx, char *line)
   line = skip_options (line);
   line = xstrdup (line); /* Need a copy of the line. */
 
-  /* If the application supports the READKEY function we use that.
-     Otherwise we use the old way by extracting it from the
-     certificate.  */
-  rc = app_readkey (ctrl->card_ctx, ctrl, line,
-                    opt_info? APP_READKEY_FLAG_INFO : 0,
-                    opt_nokey? NULL : &pk, &pklen);
-  if (!rc)
-    ; /* Okay, got that key.  */
-  else if (gpg_err_code (rc) == GPG_ERR_UNSUPPORTED_OPERATION
-           || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+  if (strlen (line) == 40)
     {
-      /* Fall back to certificate reading.  */
-      rc = app_readcert (ctrl->card_ctx, ctrl, line, &cert, &ncert);
-      if (rc)
-        {
-          log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
-          goto leave;
-        }
-      rc = app_help_pubkey_from_cert (cert, ncert, &pk, &pklen);
-      if (rc)
-        {
-          log_error ("failed to parse the certificate: %s\n",
-                     gpg_strerror (rc));
-          goto leave;
-        }
-
-      if (opt_info)
-        {
-          char keygripstr[KEYGRIP_LEN*2+1];
-
-          rc = app_help_get_keygrip_string_pk (pk, pklen, keygripstr);
-          if (rc)
-            {
-              log_error ("app_help_get_keygrip_string failed: %s\n",
-                         gpg_strerror (rc));
-              goto leave;
-            }
-
-          /* FIXME: Using LINE is not correct because it might be an
-           * OID and has not been canonicalized (i.e. uppercased).  */
-          send_status_info (ctrl, "KEYPAIRINFO",
-                            keygripstr, strlen (keygripstr),
-                            line, strlen (line),
-                            NULL, (size_t)0);
-        }
+      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, line, 0);
+      direct = 1;
     }
   else
+    card = ctrl->card_ctx;
+
+  if (card)
     {
-      log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
-      goto leave;
+      if (direct)
+        card_ref (card);
+
+      rc = do_readkey (card, ctrl, line, opt_info, opt_nokey, &pk, &pklen);
+
+      if (direct)
+        card_unref (card);
     }
+  else
+    rc = gpg_error (GPG_ERR_NO_SECKEY);
 
   if (opt_nokey)
     ;
@@ -653,7 +689,6 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
  leave:
   xfree (pk);
-  xfree (cert);
   return rc;
 }
 
@@ -1004,7 +1039,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
 
 static const char hlp_getattr[] =
-  "GETATTR <name>\n"
+  "GETATTR <name> [<keygrip>]\n"
   "\n"
   "This command is used to retrieve data from a smartcard.  The\n"
   "allowed names depend on the currently selected smartcard\n"
@@ -1014,13 +1049,16 @@ static const char hlp_getattr[] =
   "However, the current implementation assumes that Name is not escaped;\n"
   "this works as long as no one uses arbitrary escaping. \n"
   "\n"
-  "Note, that this function may even be used on a locked card.";
+  "Note, that this function may even be used on a locked card.\n"
+  "When KEYGRIP is specified, it accesses directly with the KEYGRIP.";
 static gpg_error_t
 cmd_getattr (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   const char *keyword;
+  card_t card;
+  int direct = 0;
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -1029,13 +1067,30 @@ cmd_getattr (assuan_context_t ctx, char *line)
   for (; *line && !spacep (line); line++)
     ;
   if (*line)
-      *line++ = 0;
+    *line++ = 0;
 
-  /* (We ignore any garbage for now.) */
+  if (strlen (line) == 40)
+    {
+      card = app_do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, line, 0);
+      direct = 1;
+    }
+  else
+    card = ctrl->card_ctx;
 
-  /* FIXME: Applications should not return sensitive data if the card
-     is locked.  */
-  rc = app_getattr (ctrl->card_ctx, ctrl, keyword);
+  if (card)
+    {
+      if (direct)
+        card_ref (card);
+
+      /* FIXME: Applications should not return sensitive data if the card
+         is locked.  */
+      rc = app_getattr (card, ctrl, keyword);
+
+      if (direct)
+        card_unref (card);
+    }
+  else
+    rc = gpg_error (GPG_ERR_NO_SECKEY);
 
   return rc;
 }
