@@ -2374,17 +2374,16 @@ ssh_key_grip (gcry_sexp_t key, unsigned char *buffer)
 }
 
 
-/* Check whether a smartcard is available and whether it has a usable
-   key.  Store a copy of that key at R_PK and return 0.  If no key is
-   available store NULL at R_PK and return an error code.  If CARDSN
-   is not NULL, a string with the serial number of the card will be
-   a malloced and stored there. */
+/* Check whether a key of KEYGRIP on smartcard is available and
+   whether it has a usable key.  Store a copy of that key at R_PK and
+   return 0.  If no key is available store NULL at R_PK and return an
+   error code.  If CARDSN is not NULL, a string with the serial number
+   of the card will be a malloced and stored there. */
 static gpg_error_t
-card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
+card_key_available (ctrl_t ctrl, const struct card_key_info_s *keyinfo,
+                    gcry_sexp_t *r_pk, char **cardsn)
 {
   gpg_error_t err;
-  char *authkeyid;
-  char *serialno = NULL;
   unsigned char *pkbuf;
   size_t pkbuflen;
   gcry_sexp_t s_pk;
@@ -2394,48 +2393,12 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
   if (cardsn)
     *cardsn = NULL;
 
-  /* First see whether a card is available and whether the application
-     is supported.  */
-  err = agent_card_getattr (ctrl, "$AUTHKEYID", &authkeyid);
-  if ( gpg_err_code (err) == GPG_ERR_CARD_REMOVED )
-    {
-      /* Ask for the serial number to reset the card.  */
-      err = agent_card_serialno (ctrl, &serialno, NULL);
-      if (err)
-        {
-          if (opt.verbose)
-            log_info (_("error getting serial number of card: %s\n"),
-                      gpg_strerror (err));
-          return err;
-        }
-      log_info (_("detected card with S/N: %s\n"), serialno);
-      err = agent_card_getattr (ctrl, "$AUTHKEYID", &authkeyid);
-    }
-  if (err)
-    {
-      log_error (_("no authentication key for ssh on card: %s\n"),
-                 gpg_strerror (err));
-      xfree (serialno);
-      return err;
-    }
-
-  /* Get the S/N if we don't have it yet.  Use the fast getattr method.  */
-  if (!serialno && (err = agent_card_getattr (ctrl, "SERIALNO", &serialno)) )
-    {
-      log_error (_("error getting serial number of card: %s\n"),
-                 gpg_strerror (err));
-      xfree (authkeyid);
-      return err;
-    }
-
   /* Read the public key.  */
-  err = agent_card_readkey (ctrl, authkeyid, &pkbuf);
+  err = agent_card_readkey (ctrl, keyinfo->keygrip, &pkbuf);
   if (err)
     {
       if (opt.verbose)
         log_info (_("no suitable card key found: %s\n"), gpg_strerror (err));
-      xfree (serialno);
-      xfree (authkeyid);
       return err;
     }
 
@@ -2446,33 +2409,19 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
       log_error ("failed to build S-Exp from received card key: %s\n",
                  gpg_strerror (err));
       xfree (pkbuf);
-      xfree (serialno);
-      xfree (authkeyid);
       return err;
     }
 
-  err = ssh_key_grip (s_pk, grip);
-  if (err)
-    {
-      log_debug ("error computing keygrip from received card key: %s\n",
-		 gcry_strerror (err));
-      xfree (pkbuf);
-      gcry_sexp_release (s_pk);
-      xfree (serialno);
-      xfree (authkeyid);
-      return err;
-    }
-
+  hex2bin (keyinfo->keygrip, grip, sizeof (grip));
   if ( agent_key_available (grip) )
     {
       /* (Shadow)-key is not available in our key storage.  */
-      err = agent_write_shadow_key (grip, serialno, authkeyid, pkbuf, 0);
+      err = agent_write_shadow_key (grip, keyinfo->serialno,
+                                    keyinfo->idstr, pkbuf, 0);
       if (err)
         {
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
-          xfree (serialno);
-          xfree (authkeyid);
           return err;
         }
     }
@@ -2483,27 +2432,24 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 
       /* If the card handler is able to return a short serialnumber,
          use that one, else use the complete serialno. */
-      if (!agent_card_getattr (ctrl, "$DISPSERIALNO", &dispsn))
+      if (!agent_card_getattr (ctrl, "$DISPSERIALNO", &dispsn,
+                               keyinfo->keygrip))
         {
           *cardsn = xtryasprintf ("cardno:%s", dispsn);
           xfree (dispsn);
         }
       else
-        *cardsn = xtryasprintf ("cardno:%s", serialno);
+        *cardsn = xtryasprintf ("cardno:%s", keyinfo->serialno);
       if (!*cardsn)
         {
           err = gpg_error_from_syserror ();
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
-          xfree (serialno);
-          xfree (authkeyid);
           return err;
         }
     }
 
   xfree (pkbuf);
-  xfree (serialno);
-  xfree (authkeyid);
   *r_pk = s_pk;
   return 0;
 }
@@ -2576,26 +2522,9 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
       for (keyinfo = keyinfo_list; keyinfo; keyinfo = keyinfo->next)
         {
-          char *serialno0;
           char *cardsn;
 
-          /*
-           * FIXME: Do access by KEYGRIP directly, not by $AUTHKEYID.
-           * In scdaemon, implement SCD READKEY <KEYGRIP> and
-           * SCD GETATTR <KEYGRIP>.
-           * Then, no switch of foreground card occurrs.
-           */
-          err = agent_card_serialno (ctrl, &serialno0, keyinfo->serialno);
-          if (err)
-            {
-              if (opt.verbose)
-                log_info (_("error getting serial number of card: %s\n"),
-                          gpg_strerror (err));
-              continue;
-            }
-
-          xfree (serialno0);
-          if (card_key_available (ctrl, &key_public, &cardsn))
+          if (card_key_available (ctrl, keyinfo, &key_public, &cardsn))
             continue;
 
           err = ssh_send_key_public (key_blobs, key_public, cardsn);
