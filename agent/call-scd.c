@@ -1461,9 +1461,9 @@ agent_card_free_keyinfo (struct card_key_info_s *l)
   for (; l; l = l_next)
     {
       l_next = l->next;
-      free (l->serialno);
-      free (l->idstr);
-      free (l);
+      xfree (l->serialno);
+      xfree (l->idstr);
+      xfree (l);
     }
 }
 
