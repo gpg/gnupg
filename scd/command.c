@@ -519,7 +519,10 @@ cmd_readcert (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  line = xstrdup (line); /* Need a copy of the line. */
+  line = xtrystrdup (line); /* Need a copy of the line. */
+  if (!line)
+    return gpg_error_from_syserror ();
+
   rc = app_readcert (ctrl->card_ctx, ctrl, line, &cert, &ncert);
   if (rc)
     log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
@@ -634,7 +637,10 @@ cmd_readkey (assuan_context_t ctx, char *line)
     opt_info = opt_nokey = 1;
 
   line = skip_options (line);
-  line = xstrdup (line); /* Need a copy of the line. */
+
+  line = xtrystrdup (line); /* Need a copy of the line. */
+  if (!line)
+    return gpg_error_from_syserror ();
 
   if (strlen (line) == 40)
     {
@@ -689,6 +695,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
  leave:
   xfree (pk);
+  xfree (line);
   return rc;
 }
 

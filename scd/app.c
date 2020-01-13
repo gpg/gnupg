@@ -2046,7 +2046,6 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
                      int capability)
 {
   int locked = 0;
-  gpg_error_t err;
   card_t c;
   app_t a, a_prev;
 
