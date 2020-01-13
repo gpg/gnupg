@@ -1300,7 +1300,8 @@ card_getattr_cb (void *opaque, const char *line)
    NULL is never stored in this case.  On error an error code is
    returned and NULL stored at RESULT. */
 gpg_error_t
-agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
+agent_card_getattr (ctrl_t ctrl, const char *name, char **result,
+                    const char *keygrip)
 {
   int err;
   struct card_getattr_parm_s parm;
@@ -1318,7 +1319,10 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
   /* We assume that NAME does not need escaping. */
   if (8 + strlen (name) > DIM(line)-1)
     return gpg_error (GPG_ERR_TOO_LARGE);
-  stpcpy (stpcpy (line, "GETATTR "), name);
+  if (keygrip == NULL)
+    stpcpy (stpcpy (line, "GETATTR "), name);
+  else
+    snprintf (line, sizeof line, "GETATTR %s %s", name, keygrip);
 
   err = start_scd (ctrl);
   if (err)
@@ -1393,6 +1397,7 @@ card_keyinfo_cb (void *opaque, const char *line)
         }
 
       memcpy (keyinfo->keygrip, line, 40);
+      keyinfo->keygrip[40] = 0;
 
       line = s;
 

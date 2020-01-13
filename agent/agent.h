@@ -366,7 +366,7 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
 struct card_key_info_s
 {
   struct card_key_info_s *next;
-  char keygrip[40];
+  char keygrip[41];
   char *serialno;
   char *idstr;
 };
@@ -613,7 +613,8 @@ gpg_error_t agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
                                  int (*getpin_cb)(void *, const char *,
                                                   const char *, char*, size_t),
                                  void *getpin_cb_arg);
-gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result);
+gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result,
+                                const char *keygrip);
 int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *,
                                      const char *, char*, size_t),

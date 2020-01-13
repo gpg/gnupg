@@ -1010,7 +1010,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
     {
       const char *keyid = opt_card;
 
-      rc = agent_card_getattr (ctrl, "SERIALNO", &serialno);
+      rc = agent_card_getattr (ctrl, "SERIALNO", &serialno, NULL);
       if (rc)
         {
           log_error (_("error getting serial number of card: %s\n"),
