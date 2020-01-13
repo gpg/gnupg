@@ -215,6 +215,18 @@ struct app_local_s {
     unsigned int def_chv2:1;  /* Use 123456 for CHV2.  */
   } flags;
 
+
+  /* Keep track on whether we cache a certain PIN so that we get it
+   * from the cache only if we know we cached it.  This inhibits the
+   * use of the same cache entry for a card plugged in and out without
+   * gpg-agent having noticed that due to a bug.  */
+  struct
+  {
+    unsigned int maybe_chv1:1;
+    unsigned int maybe_chv2:1;
+    unsigned int maybe_chv3:1;
+  } pincache;
+
   /* Pinpad request specified on card.  */
   struct
   {
@@ -223,8 +235,8 @@ struct app_local_s {
     int fixedlen_admin;
   } pinpad;
 
-   struct
-   {
+  struct
+  {
     key_type_t key_type;
     union {
       struct {
@@ -240,6 +252,7 @@ struct app_local_s {
       } ecc;
     };
    } keyattr[3];
+
 };
 
 #define ECC_FLAG_DJB_TWEAK (1 << 0)
@@ -2227,6 +2240,13 @@ cache_pin (app_t app, ctrl_t ctrl, int chvno, const char *pin)
 
   pincache_put (ctrl, app_get_slot (app), "openpgp", keyref,
                 pin, pin? strlen (pin):0);
+
+  switch (chvno)
+    {
+    case 1: app->app_local->pincache.maybe_chv1 = !!pin; break;
+    case 2: app->app_local->pincache.maybe_chv2 = !!pin; break;
+    case 3: app->app_local->pincache.maybe_chv3 = !!pin; break;
+    }
 }
 
 
@@ -2237,6 +2257,7 @@ static int
 pin_from_cache (app_t app, ctrl_t ctrl, int chvno, char **r_pin)
 {
   const char *keyref = chvno_to_keyref (chvno);
+  int maybe_cached;
 
   *r_pin = NULL;
 
@@ -2248,12 +2269,22 @@ pin_from_cache (app_t app, ctrl_t ctrl, int chvno, char **r_pin)
     default: return 0;
     }
 
+  switch (chvno)
+    {
+    case 1: maybe_cached = app->app_local->pincache.maybe_chv1; break;
+    case 2: maybe_cached = app->app_local->pincache.maybe_chv2; break;
+    case 3: maybe_cached = app->app_local->pincache.maybe_chv3; break;
+    default: maybe_cached = 0; break;
+    }
+
+  if (!maybe_cached)
+    return 0;
+
   if (pincache_get (ctrl, app_get_slot (app), "openpgp", keyref, r_pin))
     return 0;
 
   return 1;
 }
-
 
 
 /* Verify a CHV either using the pinentry or if possible by

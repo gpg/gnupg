@@ -213,6 +213,21 @@ struct app_local_s {
     unsigned int yubikey:1;  /* This is on a Yubikey.  */
   } flags;
 
+  /* Keep track on whether we cache a certain PIN so that we get it
+   * from the cache only if we know we cached it.  This inhibits the
+   * use of the same cache entry for a card plugged in and out without
+   * gpg-agent having noticed that due to a bug.  */
+  struct
+  {
+    unsigned int maybe_00:1;
+    unsigned int maybe_80:1;
+    unsigned int maybe_81:1;
+    unsigned int maybe_96:1;
+    unsigned int maybe_97:1;
+    unsigned int maybe_98:1;
+    unsigned int maybe_9B:1;
+  } pincache;
+
 };
 
 
@@ -1726,8 +1741,22 @@ cache_pin (app_t app, ctrl_t ctrl, int pinno,
     default: return;
     }
 
+
+
   snprintf (pinref, sizeof pinref, "%02x", pinno);
   pincache_put (ctrl, app_get_slot (app), "piv", pinref, pin, pinlen);
+
+  switch (pinno)
+    {
+    case 0x00: app->app_local->pincache.maybe_00 = !!pin; break;
+    case 0x80: app->app_local->pincache.maybe_80 = !!pin; break;
+    case 0x81: app->app_local->pincache.maybe_81 = !!pin; break;
+    case 0x96: app->app_local->pincache.maybe_96 = !!pin; break;
+    case 0x97: app->app_local->pincache.maybe_97 = !!pin; break;
+    case 0x98: app->app_local->pincache.maybe_98 = !!pin; break;
+    case 0x9B: app->app_local->pincache.maybe_9B = !!pin; break;
+    }
+
 }
 
 
@@ -1738,6 +1767,7 @@ static int
 pin_from_cache (app_t app, ctrl_t ctrl, int pinno, char **r_pin)
 {
   char pinref[20];
+  int maybe_cached;
 
   *r_pin = NULL;
 
@@ -1748,6 +1778,21 @@ pin_from_cache (app_t app, ctrl_t ctrl, int pinno, char **r_pin)
     case CARDTYPE_YUBIKEY: break;
     default: return 0;
     }
+
+  switch (pinno)
+    {
+    case 0x00: maybe_cached = app->app_local->pincache.maybe_00; break;
+    case 0x80: maybe_cached = app->app_local->pincache.maybe_80; break;
+    case 0x81: maybe_cached = app->app_local->pincache.maybe_81; break;
+    case 0x96: maybe_cached = app->app_local->pincache.maybe_96; break;
+    case 0x97: maybe_cached = app->app_local->pincache.maybe_97; break;
+    case 0x98: maybe_cached = app->app_local->pincache.maybe_98; break;
+    case 0x9B: maybe_cached = app->app_local->pincache.maybe_9B; break;
+    default:   maybe_cached = 0;
+    }
+
+  if (!maybe_cached)
+    return 0;
 
   snprintf (pinref, sizeof pinref, "%02x", pinno);
   if (pincache_get (ctrl, app_get_slot (app), "piv", pinref, r_pin))
@@ -1875,7 +1920,8 @@ ask_and_prepare_chv (app_t app, ctrl_t ctrl,
     default:
       return gpg_error (GPG_ERR_INV_ID);
     }
-
+#warning debug...
+  no_cache =0;
   /* Ask for the PIN.  */
   if (!no_cache && remaining >= 3
       && pin_from_cache (app, ctrl, keyref, &pinvalue))
