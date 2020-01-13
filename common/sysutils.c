@@ -87,6 +87,11 @@
  * an explanation of these file names.  */
 static int allow_special_filenames;
 
+#ifdef HAVE_W32_SYSTEM
+/* State of gnupg_inhibit_set_foregound_window.  */
+static int inhibit_set_foregound_window;
+#endif
+
 
 static GPGRT_INLINE gpg_error_t
 my_error_from_syserror (void)
@@ -612,6 +617,20 @@ gnupg_reopen_std (const char *pgmname)
 }
 
 
+/* Inhibit calls to AllowSetForegroundWindow on Windows.  Calling this
+ * with YES set to true calls to gnupg_allow_set_foregound_window are
+ * shunted.  */
+void
+gnupg_inhibit_set_foregound_window (int yes)
+{
+#ifdef HAVE_W32_SYSTEM
+  inhibit_set_foregound_window = yes;
+#else
+  (void)yes;
+#endif
+}
+
+
 /* Hack required for Windows.  */
 void
 gnupg_allow_set_foregound_window (pid_t pid)
@@ -620,6 +639,8 @@ gnupg_allow_set_foregound_window (pid_t pid)
     log_info ("%s called with invalid pid %lu\n",
               "gnupg_allow_set_foregound_window", (unsigned long)pid);
 #if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
+  else if (inhibit_set_foregound_window)
+    ;
   else if (!AllowSetForegroundWindow ((pid_t)pid == (pid_t)(-1)?ASFW_ANY:pid))
     log_info ("AllowSetForegroundWindow(%lu) failed: %s\n",
                (unsigned long)pid, w32_strerror (-1));

@@ -4167,6 +4167,15 @@ main (int argc, char **argv)
 	opt.passphrase_repeat = 0;
       }
 
+    /* If no pinentry is expected shunt
+     * gnupg_allow_set_foregound_window to avoid useless error
+     * messages on Windows.  */
+    if (opt.pinentry_mode != PINENTRY_MODE_ASK)
+      {
+        gnupg_inhibit_set_foregound_window (1);
+      }
+
+
     if (cmd == aGPGConfTest)
       g10_exit(0);
 

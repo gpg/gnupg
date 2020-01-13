@@ -1737,6 +1737,14 @@ main ( int argc, char **argv)
   if (!cmd && opt.fingerprint && !with_fpr)
     set_cmd (&cmd, aListKeys);
 
+  /* If no pinentry is expected shunt
+   * gnupg_allow_set_foregound_window to avoid useless error
+   * messages on Windows.  */
+  if (opt.pinentry_mode != PINENTRY_MODE_ASK)
+    {
+      gnupg_inhibit_set_foregound_window (1);
+    }
+
   /* Add default keybox. */
   if (!nrings && default_keyring)
     {
