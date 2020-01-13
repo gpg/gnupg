@@ -300,7 +300,7 @@ is_app_allowed (const char *name)
  *                    to switch to the requested application.
  *   Other code     - Switching is not possible.
  *
- * If SERIALNO_BIN is not NULL a coflict is onl asserted if the
+ * If SERIALNO_BIN is not NULL a conflict is only asserted if the
  * serialno of the card matches.
  */
 gpg_error_t
@@ -1032,7 +1032,7 @@ card_unref_locked (card_t card)
      FF 02 00 = Serial number from Yubikey config
      FF 7F 00 = No serialno.
 
-     All other serial number not starting with FF are used as they are.
+     All other serial numbers not starting with FF are used as they are.
 */
 gpg_error_t
 app_munge_serialno (card_t card)
@@ -1091,6 +1091,46 @@ app_get_serialno (app_t app)
   if (!app || !app->card)
     return NULL;
   return card_get_serialno (app->card);
+}
+
+
+/* Helper to run the reselect function.  */
+static gpg_error_t
+run_reselect (ctrl_t ctrl, card_t c, app_t a, app_t a_prev)
+{
+  gpg_error_t err;
+
+  if (!a->fnc.reselect)
+    {
+      log_info ("slot %d, app %s: re-select not implemented\n",
+                c->slot, xstrapptype (a));
+      return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+    }
+
+  /* Give the current app a chance to save some state before another
+   * app is selected.  We ignore errors here because that state saving
+   * (e.g. putting PINs into a cache) is a convenience feature and not
+   * required to always work. */
+  if (a_prev && a_prev->fnc.prep_reselect)
+    {
+      err = a_prev->fnc.prep_reselect (a_prev, ctrl);
+      if (err)
+        log_error ("slot %d, app %s: preparing re-select from %s failed: %s\n",
+                   c->slot, xstrapptype (a),
+                   xstrapptype (a_prev), gpg_strerror (err));
+    }
+
+  err = a->fnc.reselect (a, ctrl);
+  if (err)
+    {
+      log_error ("slot %d, app %s: error re-selecting: %s\n",
+                     c->slot, xstrapptype (a), gpg_strerror (err));
+      return err;
+    }
+  if (DBG_APP)
+    log_debug ("slot %d, app %s: re-selected\n", c->slot, xstrapptype (a));
+
+  return 0;
 }
 
 
@@ -1162,33 +1202,9 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
   if (!app)
     return gpg_error (GPG_ERR_WRONG_CARD);
 
-  if (!app->fnc.reselect)
-    {
-      log_error ("oops: reselect function missing for '%s'\n",
-                 strapptype (app->apptype));
-      return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-    }
-
-  /* Give the current app a chance to save some state before another
-   * app is selected.  We ignore errors here because that state saving
-   * (e.g. putting PINs into a cache) is a convenience feature and not
-   * required to always work. */
-  if (app_prev && app_prev->fnc.prep_reselect)
-    {
-      err = app_prev->fnc.prep_reselect (app_prev, ctrl);
-      if (err)
-        log_info ("card %d: preparing re-select failed for '%s': %s\n",
-                  card->slot, xstrapptype (app_prev), gpg_strerror (err));
-      err = 0;
-    }
-
-  err = app->fnc.reselect (app, ctrl);
+  err = run_reselect (ctrl, card, app, app_prev);
   if (err)
-    {
-      log_error ("card %d: error re-selecting '%s': %s\n",
-                 card->slot, xstrapptype (app), gpg_strerror (err));
-      return err;
-    }
+    return err;
 
   /* Swap APP with the head of the app list if needed.  Note that APP
    * is not the head of the list. */
@@ -1200,9 +1216,9 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
     }
 
   if (opt.verbose)
-    log_info ("card %d: %s '%s'\n",
-              card->slot, app_prev? "switched to":"re-selected",
-              xstrapptype (app));
+    log_info ("slot %d, app %s: %s\n",
+              card->slot, xstrapptype (app),
+              app_prev? "switched":"re-selected");
 
   ctrl->current_apptype = app->apptype;
 
@@ -1271,8 +1287,10 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
                   {
                     tmperr = last_app->fnc.prep_reselect (last_app, ctrl);
                     if (tmperr)
-                      log_info ("card %d: preparing re-select failed for '%s'"
-                                ": %s\n", card->slot, xstrapptype (last_app),
+                      log_info ("slot %d, app %s:"
+                                " preparing re-select from %s failed: %s\n",
+                                card->slot, xstrapptype (app),
+                                xstrapptype (last_app),
                                 gpg_strerror (tmperr));
                   }
                 any_reselect = 1;
@@ -1290,9 +1308,10 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
                 {
                   tmperr = last_app->fnc.prep_reselect (last_app, ctrl);
                   if (tmperr)
-                    log_info ("card %d: preparing re-select failed for '%s'"
-                              ": %s\n", card->slot, xstrapptype (last_app),
-                              gpg_strerror (tmperr));
+                    log_info ("slot %d, app %s:"
+                              " preparing re-select from %s failed: %s\n",
+                              card->slot, xstrapptype (app),
+                              xstrapptype (last_app), gpg_strerror (tmperr));
                 }
               err2 = app->fnc.reselect (app, ctrl);
               if (err2)
@@ -2027,8 +2046,9 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
                      int capability)
 {
   int locked = 0;
+  gpg_error_t err;
   card_t c;
-  app_t a;
+  app_t a, a_prev;
 
   npth_mutex_lock (&card_list_lock);
 
@@ -2040,26 +2060,43 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
           goto leave_the_loop;
         }
       locked = 1;
+      a_prev = NULL;
       for (a = c->app; a; a = a->next)
-        if (a->fnc.with_keygrip)
-          {
-            if (DBG_APP)
-              log_debug ("slot %d app %s: calling with_keygrip(action=%d)\n",
-                         c->slot, xstrapptype (a), action);
-            if (!a->fnc.with_keygrip (a, ctrl, action, keygrip_str, capability))
-              goto leave_the_loop;
-          }
+        {
+          if (!a->fnc.with_keygrip)
+            continue;
+
+          /* Note that we need to do a re-select even for the current
+           * app because the last selected application (e.g. after
+           * init) might be a different one and we do not run
+           * maybe_switch_app here.  Of course we we do this only iff
+           * we have an additional app. */
+          if (c->app->next)
+            {
+              if (run_reselect (ctrl, c, a, a_prev))
+                continue;
+            }
+          a_prev = a;
+
+          if (DBG_APP)
+            log_debug ("slot %d, app %s: calling with_keygrip(%s)\n",
+                       c->slot, xstrapptype (a),
+                       action == KEYGRIP_ACTION_SEND_DATA? "send_data":
+                       action == KEYGRIP_ACTION_WRITE_STATUS? "write_data":
+                       action == KEYGRIP_ACTION_LOOKUP? "lookup":"?");
+          if (!a->fnc.with_keygrip (a, ctrl, action, keygrip_str, capability))
+            goto leave_the_loop; /* ACTION_LOOKUP succeeded.  */
+        }
+
+      /* Select the first app again.  */
+      if (c->app->next)
+        run_reselect (ctrl, c, c->app, a_prev);
+
       unlock_card (c);
       locked = 0;
     }
 
-
  leave_the_loop:
-
-  /* FIXME: Add app switching logic.  The above code assumes that the
-   * actions can be performend without switching.  This needs to be
-   * checked.  */
-
   /* Force switching of the app if the selected one is not the current
    * one.  Changing the current apptype is sufficient to do this.  */
   if (c && c->app && c->app->apptype != a->apptype)

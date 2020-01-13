@@ -282,7 +282,7 @@ static const char hlp_serialno[] =
   "selected and an error is returned if no such card available.\n"
   "\n"
   "If --all is given, all possible other applications of the card are\n"
-  "also selected to prepare for \"LEARN --force --multi\".\n"
+  "also selected to prepare for things like \"LEARN --force --multi\".\n"
   "\n"
   "If APPTYPE is given, an application of that type is selected and an\n"
   "error is returned if the application is not supported or available.\n"

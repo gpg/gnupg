@@ -854,7 +854,7 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno, const char *demand)
     return rc;
 
   if (!demand)
-    strcpy (line, "SERIALNO");
+    strcpy (line, "SERIALNO --all");
   else
     snprintf (line, DIM(line), "SERIALNO --demand=%s", demand);
 

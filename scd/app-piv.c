@@ -764,13 +764,13 @@ get_dispserialno (app_t app, int failmode)
 
 
 /* The verify command can be used to retrieve the security status of
- * the card.  Given the PIN name (e.g. "PIV.80" for thge application
+ * the card.  Given the PIN name (e.g. "PIV.80" for the application
  * pin, a status is returned:
  *
  *        -1 = Error retrieving the data,
  *        -2 = No such PIN,
  *        -3 = PIN blocked,
- *        -5 = Verify still valid,
+ *        -5 = Verified and still valid,
  *    n >= 0 = Number of verification attempts left.
  */
 static int

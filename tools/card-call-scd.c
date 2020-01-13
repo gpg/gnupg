@@ -360,7 +360,7 @@ start_agent (unsigned int flags)
         err = warn_version_mismatch (agent_ctx, SCDAEMON_NAME, 2);
 
       if (!err)
-        err = assuan_transact (agent_ctx, "SCD SERIALNO",
+        err = assuan_transact (agent_ctx, "SCD SERIALNO --all",
                                NULL, NULL, NULL, NULL,
                                learn_status_cb, &info);
       if (err && !(flags & START_AGENT_SUPPRESS_ERRORS))
@@ -1284,7 +1284,7 @@ scd_serialno (char **r_serialno, const char *demand)
     return err;
 
   if (!demand)
-    strcpy (line, "SCD SERIALNO");
+    strcpy (line, "SCD SERIALNO --all");
   else
     snprintf (line, DIM(line), "SCD SERIALNO --demand=%s", demand);
 
