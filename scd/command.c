@@ -2333,7 +2333,7 @@ set_key_for_pincache (gcry_cipher_hd_t hd)
  * gpg-agent cache it because it is better suited for this.  */
 void
 pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
-              const char *pin)
+              const char *pin, unsigned int pinlen)
 {
   gpg_error_t err;
   assuan_context_t ctx;
@@ -2341,7 +2341,7 @@ pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
   gcry_cipher_hd_t cipherhd = NULL;
   char *pinbuf = NULL;
   unsigned char *wrappedkey = NULL;
-  size_t pinlen, pinbuflen, wrappedkeylen;
+  size_t pinbuflen, wrappedkeylen;
 
   if (!ctrl)
     {
@@ -2365,7 +2365,7 @@ pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
 
   if (!ctrl || !ctrl->server_local || !(ctx=ctrl->server_local->assuan_ctx))
     return;
-  if (pin && !*pin)
+  if (pin && !pinlen)
     return;  /* Ignore an empty PIN.  */
 
   snprintf (line, sizeof line, "%d/%s/%s ",
@@ -2378,7 +2378,6 @@ pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
     {
       /* FIXME: Replace this by OCB mode and use the cache key as
        * additional data.  */
-      pinlen = strlen (pin);
       /* Pad with zeroes (AESWRAP requires multiples of 64 bit but
        * at least 128 bit data).  */
       pinbuflen = pinlen + 8 - (pinlen % 8);

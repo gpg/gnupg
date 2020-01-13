@@ -664,7 +664,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
 
           if (err)
             {
-              pincache_put (ctrl, slot, NULL, NULL, NULL);
+              pincache_put (ctrl, slot, NULL, NULL, NULL, 0);
               apdu_close_reader (slot);
             }
         }
@@ -1919,7 +1919,7 @@ scd_update_reader_status_file (void)
           if (status == 0)
             {
               log_debug ("Removal of a card: %d\n", card->slot);
-              pincache_put (NULL, card->slot, NULL, NULL, NULL);
+              pincache_put (NULL, card->slot, NULL, NULL, NULL, 0);
               apdu_close_reader (card->slot);
               deallocate_card (card);
             }

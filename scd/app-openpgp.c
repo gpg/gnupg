@@ -2225,7 +2225,8 @@ cache_pin (app_t app, ctrl_t ctrl, int chvno, const char *pin)
     default: return;
     }
 
-  pincache_put (ctrl, app_get_slot (app), "openpgp", keyref, pin);
+  pincache_put (ctrl, app_get_slot (app), "openpgp", keyref,
+                pin, pin? strlen (pin):0);
 }
 
 

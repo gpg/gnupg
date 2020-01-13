@@ -1,5 +1,5 @@
 /* app-piv.c - The OpenPGP card application.
- * Copyright (C) 2019 g10 Code GmbH
+ * Copyright (C) 2019, 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -1711,6 +1711,52 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_mechanism)
 }
 
 
+/* Helper to cache the pin PINNO.  If PIN is NULL the cache is cleared. */
+static void
+cache_pin (app_t app, ctrl_t ctrl, int pinno,
+           const char *pin, unsigned int pinlen)
+{
+  char pinref[20];
+
+  if (pinno < 0)
+    return;
+  switch (app->card->cardtype)
+    {
+    case CARDTYPE_YUBIKEY: break;
+    default: return;
+    }
+
+  snprintf (pinref, sizeof pinref, "%02x", pinno);
+  pincache_put (ctrl, app_get_slot (app), "piv", pinref, pin, pinlen);
+}
+
+
+/* If the PIN cache is available and really has a valid PIN return
+ * that pin at R_PIN.  Returns true if that is the case; otherwise
+ * false.  */
+static int
+pin_from_cache (app_t app, ctrl_t ctrl, int pinno, char **r_pin)
+{
+  char pinref[20];
+
+  *r_pin = NULL;
+
+  if (pinno < 0)
+    return 0;
+  switch (app->card->cardtype)
+    {
+    case CARDTYPE_YUBIKEY: break;
+    default: return 0;
+    }
+
+  snprintf (pinref, sizeof pinref, "%02x", pinno);
+  if (pincache_get (ctrl, app_get_slot (app), "piv", pinref, r_pin))
+    return 0;
+
+  return 1;
+}
+
+
 /* Return an allocated string to be used as prompt.  Returns NULL on
  * malloc error.  */
 static char *
@@ -1768,9 +1814,11 @@ make_prompt (app_t app, int remaining, const char *firstline)
 /* Helper for verify_chv to ask for the PIN and to prepare/pad it.  On
  * success the result is stored at (R_PIN,R_PINLEN).  */
 static gpg_error_t
-ask_and_prepare_chv (app_t app, int keyref, int ask_new, int remaining,
+ask_and_prepare_chv (app_t app, ctrl_t ctrl,
+                     int keyref, int ask_new, int remaining, int no_cache,
                      gpg_error_t (*pincb)(void*,const char *,char **),
-                     void *pincb_arg, char **r_pin, unsigned int *r_pinlen)
+                     void *pincb_arg, char **r_pin, unsigned int *r_pinlen,
+                     unsigned int *r_unpaddedpinlen)
 {
   gpg_error_t err;
   const char *label;
@@ -1782,6 +1830,8 @@ ask_and_prepare_chv (app_t app, int keyref, int ask_new, int remaining,
 
   *r_pin = NULL;
   *r_pinlen = 0;
+  if (r_unpaddedpinlen)
+    *r_unpaddedpinlen = 0;
 
   if (ask_new)
     remaining = -1;
@@ -1827,10 +1877,16 @@ ask_and_prepare_chv (app_t app, int keyref, int ask_new, int remaining,
     }
 
   /* Ask for the PIN.  */
-  prompt = make_prompt (app, remaining, label);
-  err = pincb (pincb_arg, prompt, &pinvalue);
-  xfree (prompt);
-  prompt = NULL;
+  if (!no_cache && remaining >= 3
+      && pin_from_cache (app, ctrl, keyref, &pinvalue))
+    err = 0;
+  else
+    {
+      prompt = make_prompt (app, remaining, label);
+      err = pincb (pincb_arg, prompt, &pinvalue);
+      xfree (prompt);
+      prompt = NULL;
+    }
   if (err)
     {
       log_info (_("PIN callback returned error: %s\n"), gpg_strerror (err));
@@ -1873,6 +1929,10 @@ ask_and_prepare_chv (app_t app, int keyref, int ask_new, int remaining,
   memcpy (pinbuffer, pinvalue, pinlen);
   wipememory (pinvalue, pinlen);
   xfree (pinvalue);
+
+  if (r_unpaddedpinlen)
+    *r_unpaddedpinlen = pinlen;
+
   if (padding)
     {
       memset (pinbuffer + pinlen, 0xff, maxlen - pinlen);
@@ -1890,7 +1950,7 @@ ask_and_prepare_chv (app_t app, int keyref, int ask_new, int remaining,
  * either the Appication PIN or the Global PIN.  If FORCE is true a
  * verification is always done.  */
 static gpg_error_t
-verify_chv (app_t app, int keyref, int force,
+verify_chv (app_t app, ctrl_t ctrl, int keyref, int force,
             gpg_error_t (*pincb)(void*,const char *,char **), void *pincb_arg)
 {
   gpg_error_t err;
@@ -1898,7 +1958,7 @@ verify_chv (app_t app, int keyref, int force,
   unsigned int sw;
   int remaining;
   char *pin = NULL;
-  unsigned int pinlen;
+  unsigned int pinlen, unpaddedpinlen;
 
   /* First check whether a verify is at all needed.  This is done with
    * P1 being 0 and no Lc and command data send.  */
@@ -1917,17 +1977,24 @@ verify_chv (app_t app, int keyref, int force,
   else
     remaining = -1;
 
-  err = ask_and_prepare_chv (app, keyref, 0, remaining, pincb, pincb_arg,
-                             &pin, &pinlen);
+  err = ask_and_prepare_chv (app, ctrl, keyref, 0, remaining, force,
+                             pincb, pincb_arg,
+                             &pin, &pinlen, &unpaddedpinlen);
   if (err)
     return err;
 
   err = iso7816_verify (app_get_slot (app), keyref, pin, pinlen);
+  if (err)
+    {
+      log_error ("CHV %02X verification failed: %s\n",
+                 keyref, gpg_strerror (err));
+      cache_pin (app, ctrl, keyref, NULL, 0);
+    }
+  else
+    cache_pin (app, ctrl, keyref, pin, unpaddedpinlen);
+
   wipememory (pin, pinlen);
   xfree (pin);
-  if (err)
-    log_error ("CHV %02X verification failed: %s\n",
-               keyref, gpg_strerror (err));
 
   return err;
 }
@@ -1976,6 +2043,8 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
       goto leave;
     }
 
+  cache_pin (app, ctrl, keyref, NULL, 0);
+
   /* First see whether the special --clear mode has been requested.  */
   if ((flags & APP_CHANGE_FLAG_CLEAR))
     {
@@ -2014,8 +2083,9 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
     remaining = -1;
 
   /* Ask for the old pin or puk.  */
-  err = ask_and_prepare_chv (app, keyref, 0, remaining, pincb, pincb_arg,
-                             &oldpin, &oldpinlen);
+  err = ask_and_prepare_chv (app, ctrl, keyref, 0, remaining, 0,
+                             pincb, pincb_arg,
+                             &oldpin, &oldpinlen, NULL);
   if (err)
     return err;
 
@@ -2033,8 +2103,9 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
     }
 
   /* Ask for the new pin.  */
-  err = ask_and_prepare_chv (app, targetkeyref, 1, -1, pincb, pincb_arg,
-                             &newpin, &newpinlen);
+  err = ask_and_prepare_chv (app, ctrl, targetkeyref, 1, -1, 0,
+                             pincb, pincb_arg,
+                             &newpin, &newpinlen, NULL);
   if (err)
     return err;
 
@@ -2088,7 +2159,7 @@ do_check_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
   if (keyref == -1)
     return gpg_error (GPG_ERR_INV_ID);
 
-  return verify_chv (app, keyref, 0, pincb, pincb_arg);
+  return verify_chv (app, ctrl, keyref, 0, pincb, pincb_arg);
 }
 
 
@@ -2287,7 +2358,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
 
   /* Now verify the Application PIN.  */
-  err = verify_chv (app, 0x80, force_verify, pincb, pincb_arg);
+  err = verify_chv (app, ctrl, 0x80, force_verify, pincb, pincb_arg);
   if (err)
     return err;
 
@@ -2511,7 +2582,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     }
 
   /* Now verify the Application PIN.  */
-  err = verify_chv (app, 0x80, 0, pincb, pincb_arg);
+  err = verify_chv (app, ctrl, 0x80, 0, pincb, pincb_arg);
   if (err)
     return err;
 
