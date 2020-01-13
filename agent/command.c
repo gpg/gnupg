@@ -112,6 +112,16 @@ struct server_local_s
 
   /* Last PASSWD_NONCE sent as status (malloced). */
   char *last_passwd_nonce;
+
+  /* Per connection cache of the keyinfo from the cards.  The
+   * eventcounters for cards at the time the info was fetched is
+   * stored here as a freshness indicator.  */
+  struct {
+    struct card_key_info_s *ki;
+    unsigned int eventno;
+    unsigned int maybe_key_change;
+  } last_card_keyinfo;
+
 };
 
 
@@ -147,6 +157,11 @@ struct
   /* Incremented if a change of the card readers stati has been
      detected. */
   unsigned int card;
+
+  /* Internal counter to track possible changes to a key.
+   * FIXME: This should be replaced by generic notifications from scd.
+   */
+  unsigned int maybe_key_change;
 
 } eventcounter;
 
@@ -927,6 +942,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   if (*line)
     cache_nonce = xtrystrdup (line);
 
+  eventcounter.maybe_key_change++;
+
   /* First inquire the parameters */
   rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", MAXLEN_KEYPARAM);
   if (!rc)
@@ -1307,7 +1324,24 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   if (opt_with_ssh || list_mode == 2)
     cf = ssh_open_control_file ();
 
-  agent_card_keyinfo (ctrl, NULL, 0, &keyinfo_on_cards);
+  /* Take the keyinfo for cards from our local cache.  Actually this
+   * cache could be a global one but then we would need to employ
+   * reference counting. */
+  if (ctrl->server_local->last_card_keyinfo.ki
+      && ctrl->server_local->last_card_keyinfo.eventno == eventcounter.card
+      && (ctrl->server_local->last_card_keyinfo.maybe_key_change
+          == eventcounter.maybe_key_change))
+    {
+      keyinfo_on_cards = ctrl->server_local->last_card_keyinfo.ki;
+    }
+  else if (!agent_card_keyinfo (ctrl, NULL, 0, &keyinfo_on_cards))
+    {
+      agent_card_free_keyinfo (ctrl->server_local->last_card_keyinfo.ki);
+      ctrl->server_local->last_card_keyinfo.ki = keyinfo_on_cards;
+      ctrl->server_local->last_card_keyinfo.eventno = eventcounter.card;
+      ctrl->server_local->last_card_keyinfo.maybe_key_change
+        = eventcounter.maybe_key_change;
+    }
 
   if (list_mode == 2)
     {
@@ -1413,7 +1447,6 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
     }
 
  leave:
-  agent_card_free_keyinfo (keyinfo_on_cards);
   ssh_close_control_file (cf);
   if (dir)
     closedir (dir);
@@ -2034,6 +2067,9 @@ cmd_scd (assuan_context_t ctx, char *line)
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
+  /* All  SCD prefixed commands may change a key.  */
+  eventcounter.maybe_key_change++;
+
   rc = divert_generic_cmd (ctrl, line, ctx);
 #else
   (void)ctx; (void)line;
@@ -2151,6 +2187,8 @@ cmd_import_key (assuan_context_t ctx, char *line)
   *p = '\0';
   if (*line)
     cache_nonce = xtrystrdup (line);
+
+  eventcounter.maybe_key_change++;
 
   assuan_begin_confidential (ctx);
   err = assuan_inquire (ctx, "KEYDATA",
@@ -2494,6 +2532,8 @@ cmd_delete_key (assuan_context_t ctx, char *line)
   force = has_option (line, "--force");
   stub_only = has_option (line, "--stub-only");
   line = skip_options (line);
+
+  eventcounter.maybe_key_change++;
 
   /* If the use of a loopback pinentry has been disabled, we assume
    * that a silent deletion of keys shall also not be allowed.  */
@@ -3639,6 +3679,9 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
           continue;
         }
     }
+
+  /* Clear the keyinfo cache.  */
+  agent_card_free_keyinfo (ctrl->server_local->last_card_keyinfo.ki);
 
   /* Reset the nonce caches.  */
   clear_nonce_cache (ctrl);
