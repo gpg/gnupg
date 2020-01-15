@@ -219,10 +219,11 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
   char *bak_fname = NULL;
   char *tmp_fname = NULL;
   int save_slash;
+  struct stat file_stat;
 
   /* A quick test whether the filename already exists. */
-  if (!access (filename, F_OK))
-    return !access (filename, R_OK)? 0 : gpg_error (GPG_ERR_EACCES);
+  if (!stat(filename, &file_stat))
+    return 0;
 
   /* If we don't want to create a new file at all, there is no need to
      go any further - bail out right here.  */
@@ -248,7 +249,7 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
                                            not happen though.  */
   save_slash = *last_slash_in_filename;
   *last_slash_in_filename = 0;
-  if (access(filename, F_OK))
+  if (stat(filename, &file_stat))
     {
       static int tried;
 
@@ -257,7 +258,7 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
           tried = 1;
           try_make_homedir (filename);
         }
-      if (access (filename, F_OK))
+      if (stat(filename, &file_stat))
         {
           rc = gpg_error_from_syserror ();
           *last_slash_in_filename = save_slash;
