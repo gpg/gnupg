@@ -1860,7 +1860,8 @@ parse_def_secret_key (ctrl_t ctrl)
           PKT_public_key *pk = node->pkt->pkt.public_key;
 
           /* Check that the key has the signing capability.  */
-          if (! (pk->pubkey_usage & PUBKEY_USAGE_SIG))
+          if (! (pk->pubkey_usage & PUBKEY_USAGE_SIG)
+              && ! (pk->pubkey_usage & PUBKEY_USAGE_CERT))
             continue;
 
           /* Check if the key is valid.  */
