@@ -1886,7 +1886,10 @@ enum_sig_subpkt (PKT_signature *sig, int want_hashed, sigsubpkttype_t reqtype,
 
  too_short:
   if (opt.verbose && !glo_ctrl.silence_parse_warnings)
-    log_info ("buffer shorter than subpacket\n");
+    log_printhex (pktbuf->data, pktbuf->len > 16? 16 : pktbuf->len,
+                  "buffer shorter than subpacket (%zu/%d/%zu); dump:",
+                  pktbuf->len, buflen, n);
+
   if (start)
     *start = -1;
   return NULL;
