@@ -1493,8 +1493,171 @@ agent_scd_cardlist (strlist_t *result)
 
   return 0;
 }
+
+struct card_keyinfo_parm_s {
+  int error;
+  struct card_key_info_s *list;
+};
+
+/* Callback function for agent_card_keylist.  */
+static gpg_error_t
+card_keyinfo_cb (void *opaque, const char *line)
+{
+  gpg_error_t err = 0;
+  struct card_keyinfo_parm_s *parm = opaque;
+  const char *keyword = line;
+  int keywordlen;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 7 && !memcmp (keyword, "KEYINFO", keywordlen))
+    {
+      const char *s;
+      int n;
+      struct card_key_info_s *keyinfo;
+      struct card_key_info_s **l_p = &parm->list;
+
+      while ((*l_p))
+        l_p = &(*l_p)->next;
+
+      keyinfo = xtrycalloc (1, sizeof *keyinfo);
+      if (!keyinfo)
+        {
+        alloc_error:
+          if (!parm->error)
+            parm->error = gpg_error_from_syserror ();
+          return 0;
+        }
+
+      for (n=0,s=line; hexdigitp (s); s++, n++)
+        ;
+
+      if (n != 40)
+        {
+        parm_error:
+          if (!parm->error)
+            parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+          return 0;
+        }
+
+      memcpy (keyinfo->keygrip, line, 40);
+      keyinfo->keygrip[40] = 0;
+
+      line = s;
+
+      if (!*line)
+        goto parm_error;
+
+      while (spacep (line))
+        line++;
+
+      if (*line++ != 'T')
+        goto parm_error;
+
+      if (!*line)
+        goto parm_error;
+
+      while (spacep (line))
+        line++;
+
+      for (n=0,s=line; hexdigitp (s); s++, n++)
+        ;
+
+      if (!n)
+        goto parm_error;
+
+      keyinfo->serialno = xtrymalloc (n+1);
+      if (!keyinfo->serialno)
+        goto alloc_error;
+
+      memcpy (keyinfo->serialno, line, n);
+      keyinfo->serialno[n] = 0;
+
+      line = s;
+
+      if (!*line)
+        goto parm_error;
+
+      while (spacep (line))
+        line++;
+
+      if (!*line)
+        goto parm_error;
+
+      keyinfo->idstr = xtrystrdup (line);
+      if (!keyinfo->idstr)
+        goto alloc_error;
+
+      *l_p = keyinfo;
+    }
+
+  return err;
+}
 
 
+void
+agent_scd_free_keyinfo (struct card_key_info_s *l)
+{
+  struct card_key_info_s *l_next;
+
+  for (; l; l = l_next)
+    {
+      l_next = l->next;
+      xfree (l->serialno);
+      xfree (l->idstr);
+      xfree (l);
+    }
+}
+
+/* Call the scdaemon to check if a key of KEYGRIP is available, or
+   retrieve list of available keys on cards.  With CAP, we can limit
+   keys with specified capability.  On success, the allocated
+   structure is stored at RESULT.  On error, an error code is returned
+   and NULL is stored at RESULT.  */
+gpg_error_t
+agent_scd_keyinfo (const char *keygrip, int cap,
+                   struct card_key_info_s **result)
+{
+  int err;
+  struct card_keyinfo_parm_s parm;
+  char line[ASSUAN_LINELENGTH];
+  char *list_option;
+
+  *result = NULL;
+
+  switch (cap)
+    {
+    case                  0: list_option = "--list";      break;
+    case GCRY_PK_USAGE_SIGN: list_option = "--list=sign"; break;
+    case GCRY_PK_USAGE_ENCR: list_option = "--list=encr"; break;
+    case GCRY_PK_USAGE_AUTH: list_option = "--list=auth"; break;
+    default:                 return gpg_error (GPG_ERR_INV_VALUE);
+    }
+
+  memset (&parm, 0, sizeof parm);
+  snprintf (line, sizeof line, "SCD KEYINFO %s",
+            keygrip ? keygrip : list_option);
+
+  err = start_agent (NULL, 1 | FLAG_FOR_CARD_SUPPRESS_ERRORS);
+  if (err)
+    return err;
+
+  err = assuan_transact (agent_ctx, line,
+                         NULL, NULL, NULL, NULL,
+                         card_keyinfo_cb, &parm);
+  if (!err && parm.error)
+    err = parm.error;
+
+  if (!err)
+    *result = parm.list;
+  else
+    agent_scd_free_keyinfo (parm.list);
+
+  return err;
+}
 
 /* Change the PIN of an OpenPGP card or reset the retry counter.
  * CHVNO 1: Change the PIN
