@@ -330,10 +330,9 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     int eof;
     int state;
     strlist_t sl;
-    strlist_t card_list;
-    char *serialno;
-    char fpr2[2 * MAX_FINGERPRINT_LEN + 3 ];
-    struct agent_card_info_s info;
+    struct card_key_info_s *card_keyinfo;
+    struct card_key_info_s *card_keyinfo_list;
+    char fpr2[2 * MAX_FINGERPRINT_LEN + 2 ];
     kbnode_t keyblock;
     kbnode_t node;
     getkey_ctx_t ctx;
@@ -360,8 +359,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
   if (!sk)
     {
       /* Free the context.  */
-      xfree (c->serialno);
-      free_strlist (c->card_list);
+      agent_scd_free_keyinfo (c->card_keyinfo_list);
       release_sk_list (c->results);
       release_kbnode (c->keyblock);
       getkey_end (ctrl, c->ctx);
@@ -411,87 +409,38 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                   break;
 
                 case 3: /* Init list of card keys to try.  */
-                  err = agent_scd_cardlist (&c->card_list);
+                  c->card_keyinfo_list = NULL;
+                  err = agent_scd_serialno (&serialno, NULL);
                   if (!err)
-                    agent_scd_serialno (&c->serialno, NULL);
-                  c->sl = c->card_list;
+                    {
+                      xfree (serialno);
+                      err = agent_scd_keyinfo (NULL, GCRY_PK_USAGE_ENCR,
+                                               &c->card_keyinfo_list);
+                    }
+                  c->card_keyinfo = c->card_keyinfo_list;
                   c->state++;
                   break;
 
-                case 4: /* Get next item from card list.  */
-                  if (c->sl)
+                case 4: /* Get next item from card keyinfo.  */
+                  if (c->card_keyinfo)
                     {
-                      err = agent_scd_serialno (&serialno, c->sl->d);
-                      if (err)
-                        {
-                          if (opt.verbose)
-                            log_info (_("error getting serial number of card: %s\n"),
-                                      gpg_strerror (err));
-                          c->sl = c->sl->next;
-                          continue;
-                        }
+                      const char *s;
+                      int i;
 
-                      xfree (serialno);
-                      c->info.fpr2len = 0;
-                      err = agent_scd_getattr ("KEY-FPR", &c->info);
-                      if (!err)
-                        {
-                          if (c->info.fpr2len)
-                            {
-                              c->fpr2[0] = '0';
-                              c->fpr2[1] = 'x';
-                              bin2hex (c->info.fpr2, sizeof c->info.fpr2,
-                                       c->fpr2 + 2);
-                              name = c->fpr2;
-                            }
-                        }
-                      else if (gpg_err_code (err) == GPG_ERR_INV_NAME)
-                        {
-                          /* KEY-FPR not supported by the card - get
-                           * the key using the keygrip.  */
-                          char *keyref;
-                          strlist_t kplist;
-                          const char *s;
-                          int i;
+                      /* Get the key using the keygrip.  */
+                      c->fpr2[0] = '&';
+                      for (i=1, s = c->card_keyinfo->keygrip;
+                           (*s && *s != ' '
+                            && i < sizeof c->fpr2 - 2);
+                           s++, i++)
+                        c->fpr2[i] = *s;
+                      c->fpr2[i] = 0;
+                      name = c->fpr2;
 
-                          err = agent_scd_getattr_one ("$ENCRKEYID", &keyref);
-                          if (!err)
-                            {
-                              err = agent_scd_keypairinfo (ctrl, keyref,
-                                                           &kplist);
-                              if (!err)
-                                {
-                                  c->fpr2[0] = '&';
-                                  for (i=1, s=kplist->d;
-                                       (*s && *s != ' '
-                                        && i < sizeof c->fpr2 - 3);
-                                       s++, i++)
-                                    c->fpr2[i] = *s;
-                                  c->fpr2[i] = 0;
-                                  name = c->fpr2;
-                                  free_strlist (kplist);
-                                }
-                              xfree (keyref);
-                            }
-                        }
-
-                      if (err)
-                        log_error ("error retrieving key from card: %s\n",
-                                   gpg_strerror (err));
-
-                      c->sl = c->sl->next;
+                      c->card_keyinfo = c->card_keyinfo->next;
                     }
                   else
-                    {
-                      serialno = c->serialno;
-                      if (serialno)
-                        {
-                          /* Select the original card again.  */
-                          agent_scd_serialno (&c->serialno, serialno);
-                          xfree (serialno);
-                        }
-                      c->state++;
-                    }
+                    c->state++;
                   break;
 
                 case 5: /* Init search context to enum all secret keys.  */
