@@ -1,5 +1,5 @@
 /* card-call-scd.c - IPC calls to scdaemon.
- * Copyright (C) 2019 g10 Code GmbH
+ * Copyright (C) 2019, 2020 g10 Code GmbH
  * Copyright (C) 2001-2003, 2006-2011, 2013 Free Software Foundation, Inc.
  * Copyright (C) 2013-2015  Werner Koch
  *
@@ -88,6 +88,7 @@ struct genkey_parm_s
 struct card_cardlist_parm_s
 {
   gpg_error_t error;
+  int with_apps;
   strlist_t list;
 };
 
@@ -557,6 +558,45 @@ get_serialno_cb (void *opaque, const char *line)
   return 0;
 }
 
+
+/* Make the card with SERIALNO the current one.  */
+gpg_error_t
+scd_switchcard (const char *serialno)
+{
+  int err;
+  char line[ASSUAN_LINELENGTH];
+
+  err = start_agent (START_AGENT_SUPPRESS_ERRORS);
+  if (err)
+    return err;
+
+  snprintf (line, DIM(line), "SCD SWITCHCARD -- %s", serialno);
+  return assuan_transact (agent_ctx, line,
+                          NULL, NULL, NULL, NULL,
+                          NULL, NULL);
+}
+
+
+/* Make the app APPNAME the one on the card.  */
+gpg_error_t
+scd_switchapp (const char *appname)
+{
+  int err;
+  char line[ASSUAN_LINELENGTH];
+
+  if (appname && !*appname)
+    appname = NULL;
+
+  err = start_agent (START_AGENT_SUPPRESS_ERRORS);
+  if (err)
+    return err;
+
+  snprintf (line, DIM(line), "SCD SWITCHAPP --%s%s",
+            appname? " ":"", appname? appname:"");
+  return assuan_transact (agent_ctx, line,
+                          NULL, NULL, NULL, NULL,
+                          NULL, NULL);
+}
 
 
 /* For historical reasons OpenPGP cards simply use the numbers 1 to 3
@@ -1286,7 +1326,7 @@ scd_serialno (char **r_serialno, const char *demand)
   if (!demand)
     strcpy (line, "SCD SERIALNO --all");
   else
-    snprintf (line, DIM(line), "SCD SERIALNO --demand=%s", demand);
+    snprintf (line, DIM(line), "SCD SERIALNO --demand=%s --all", demand);
 
   err = assuan_transact (agent_ctx, line,
                          NULL, NULL, NULL, NULL,
@@ -1407,10 +1447,24 @@ card_cardlist_cb (void *opaque, const char *line)
       for (n=0,s=line; hexdigitp (s); s++, n++)
         ;
 
-      if (!n || (n&1) || *s)
+      if (!n || (n&1))
         parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+      if (parm->with_apps)
+        {
+          /* Format of the stored string is the S/N, a space, and a
+           * space separated list of appnames.  */
+          if (*s != ' ' || spacep (s+1) || !s[1])
+            parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+          else /* We assume the rest of the line is well formatted.  */
+            add_to_strlist (&parm->list, line);
+        }
       else
-        add_to_strlist (&parm->list, line);
+        {
+          if (*s)
+            parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+          else
+            add_to_strlist (&parm->list, line);
+        }
     }
 
   return 0;
@@ -1432,6 +1486,39 @@ scd_cardlist (strlist_t *result)
     return err;
 
   err = assuan_transact (agent_ctx, "SCD GETINFO card_list",
+                         NULL, NULL, NULL, NULL,
+                         card_cardlist_cb, &parm);
+  if (!err && parm.error)
+    err = parm.error;
+
+  if (!err)
+    *result = parm.list;
+  else
+    free_strlist (parm.list);
+
+  return err;
+}
+
+
+/* Return the serial numbers and appnames of the current card or, with
+ * ALL given has true, of all cards currently inserted.  */
+gpg_error_t
+scd_applist (strlist_t *result, int all)
+{
+  gpg_error_t err;
+  struct card_cardlist_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  *result = NULL;
+
+  err = start_agent (START_AGENT_SUPPRESS_ERRORS);
+  if (err)
+    return err;
+
+  parm.with_apps = 1;
+  err = assuan_transact (agent_ctx,
+                         all ? "SCD GETINFO all_active_apps"
+                         /**/: "SCD GETINFO active_apps",
                          NULL, NULL, NULL, NULL,
                          card_cardlist_cb, &parm);
   if (!err && parm.error)

@@ -204,6 +204,10 @@ const char *app_type_string (app_type_t app_type);
 
 gpg_error_t scd_apdu (const char *hexapdu, unsigned int *r_sw,
                       unsigned char **r_data, size_t *r_datalen);
+
+gpg_error_t scd_switchcard (const char *serialno);
+gpg_error_t scd_switchapp (const char *appname);
+
 gpg_error_t scd_learn (card_info_t info);
 gpg_error_t scd_getattr (const char *name, struct card_info_s *info);
 gpg_error_t scd_setattr (const char *name,
@@ -214,10 +218,12 @@ gpg_error_t scd_writekey (const char *keyref, int force, const char *keygrip);
 gpg_error_t scd_genkey (const char *keyref, int force, const char *algo,
                         u32 *createtime);
 gpg_error_t scd_serialno (char **r_serialno, const char *demand);
+
 gpg_error_t scd_readcert (const char *certidstr,
                           void **r_buf, size_t *r_buflen);
 gpg_error_t scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result);
 gpg_error_t scd_cardlist (strlist_t *result);
+gpg_error_t scd_applist (strlist_t *result, int all);
 gpg_error_t scd_change_pin (const char *pinref, int reset_mode);
 gpg_error_t scd_checkpin (const char *serialno);
 

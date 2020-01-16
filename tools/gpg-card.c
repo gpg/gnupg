@@ -1,5 +1,5 @@
 /* gpg-card.c - An interactive tool to work with cards.
- * Copyright (C) 2019 g10 Code GmbH
+ * Copyright (C) 2019, 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -1000,53 +1000,118 @@ list_card (card_info_t info)
 
 
 
-/* The LIST command.  This also updates INFO. */
+/* The LIST command.  This also updates INFO if needed. */
 static gpg_error_t
 cmd_list (card_info_t info, char *argstr)
 {
   gpg_error_t err;
-  int opt_cards;
+  int opt_cards, opt_apps;
   strlist_t cards = NULL;
   strlist_t sl;
   estream_t fp = opt.interactive? NULL : es_stdout;
-  int cardno, count;
-
+  int cardno = -1;
+  char *appstr = NULL;
+  int count;
+  int need_learn = 0;
+  int star;
+  size_t snlen;
+  const char *s;
 
   if (!info)
     return print_help
-      ("LIST [--cards] [N]\n\n"
-       "Show the content of the current card or with N given the N-th card.\n"
-       "Option --cards lists available cards.",
+      ("LIST [--cards] [--apps] [N] [APP]\n\n"
+       "Show the content of the current card.\n"
+       "With N given select and list the n-th card;\n"
+       "with APP also given select that application.\n"
+       "To select an APP on the current card use '-' for N.\n"
+       "Option --cards lists available cards.\n"
+       "Option --apps lists additional card applications",
        0);
 
   opt_cards = has_leading_option (argstr, "--cards");
+  opt_apps = has_leading_option (argstr, "--apps");
   argstr = skip_options (argstr);
 
 
-  if (digitp (argstr))
+  if (digitp (argstr) || (*argstr == '-' && spacep (argstr+1)))
     {
-      cardno = atoi (argstr);
-      while (digitp (argstr))
-        argstr++;
+      if (*argstr == '-' && (argstr[1] || spacep (argstr+1)))
+        argstr++;  /* Keep current card.  */
+      else
+        {
+          cardno = atoi (argstr);
+          while (digitp (argstr))
+            argstr++;
+        }
       while (spacep (argstr))
         argstr++;
+      if (*argstr)
+        {
+          appstr = argstr;
+          while (*argstr && !spacep (argstr))
+            argstr++;
+          while (spacep (argstr))
+            argstr++;
+          if (*argstr)
+            {
+              /* Extra arguments found.  */
+              err = gpg_error (GPG_ERR_INV_ARG);
+              goto leave;
+            }
+        }
     }
-  else
-    cardno = -1;
-
-
-  if (opt_cards)
+  else if (*argstr)
     {
-      err = scd_cardlist (&cards);
+      /* First argument needs to be a digit.  */
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+
+  if (!info->serialno)
+    {
+      /* This is probably the first call.  We need to send a SERIALNO
+       * command to scd so that our session knows all cards.  */
+      err = scd_serialno (NULL, NULL);
+      if (err)
+        goto leave;
+      need_learn = 1;
+    }
+
+
+  if (opt_cards || opt_apps)
+    {
+      /* Note that with option --apps CARDS is here the list of all
+       * apps.  Format is "SERIALNO APPNAME {APPNAME}".  We print the
+       * card number in the first column. */
+      if (opt_apps)
+        err = scd_applist (&cards, opt_cards);
+      else
+        err = scd_cardlist (&cards);
       if (err)
         goto leave;
       for (count = 0, sl = cards; sl; sl = sl->next, count++)
-        tty_fprintf (fp, "%d %s\n", count, sl->d);
+        {
+          if (info && info->serialno)
+            {
+              s = strchr (sl->d, ' ');
+              if (s)
+                snlen = s - sl->d;
+              else
+                snlen = strlen (sl->d);
+              star = (strlen (info->serialno) == snlen
+                      && !memcmp (info->serialno, sl->d, snlen));
+            }
+          else
+            star = 0;
+          tty_fprintf (fp, "%d%c %s\n", count, star? '*':' ', sl->d);
+        }
     }
   else
     {
       if (cardno != -1)
         {
+          /* Switch to the requested card.  */
           err = scd_cardlist (&cards);
           if (err)
             goto leave;
@@ -1058,12 +1123,23 @@ cmd_list (card_info_t info, char *argstr)
               err = gpg_error (GPG_ERR_INV_INDEX);
               goto leave;
             }
-          err = scd_serialno (NULL, sl->d);
-          if (err)
-            goto leave;
+          err = scd_switchcard (sl->d);
+          need_learn = 1;
         }
 
-      err = scd_learn (info);
+      if (appstr && *appstr)
+        {
+          /* Switch to the requested app.  */
+          err = scd_switchapp (appstr);
+          if (err)
+            goto leave;
+          need_learn = 1;
+        }
+
+      if (need_learn)
+        err = scd_learn (info);
+      else
+        err = 0;
       if (!err)
         list_card (info);
     }
@@ -3341,7 +3417,7 @@ interactive_loop (void)
 
       if (!info)
         {
-          /* Copy the pending help arg into our answer.  Noe that
+          /* Copy the pending help arg into our answer.  Note that
            * help_arg points into answer.  */
           p = xstrdup (help_arg);
           help_arg = NULL;
