@@ -29,11 +29,14 @@
 #include "iso7816.h"
 #include "apdu.h"
 #include "../common/tlv.h"
+#include "../common/membuf.h"
 
 
 /* Forward declaration of internal function.  */
 static gpg_error_t
 select_additional_application_internal (card_t card, apptype_t req_apptype);
+static gpg_error_t
+send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl);
 
 /* Lock to protect the list of cards and its associated
  * applications.  */
@@ -726,6 +729,56 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
 
   npth_mutex_unlock (&card_list_lock);
 
+  return err;
+}
+
+
+/* Switch the current card for the session CTRL and print a SERIALNO
+ * status line on success.  (SERIALNO, SERIALNOLEN) is the binary s/n
+ * of the card to switch to.  */
+gpg_error_t
+app_switch_current_card (ctrl_t ctrl,
+                         const unsigned char *serialno, size_t serialnolen)
+{
+  gpg_error_t err;
+  card_t card, cardtmp;
+
+  npth_mutex_lock (&card_list_lock);
+
+  if (!ctrl->card_ctx)
+    {
+      err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+      goto leave;
+    }
+
+  if (serialno && serialnolen)
+    {
+      for (card = card_top; card; card = card->next)
+        {
+          if (card->serialnolen == serialnolen
+              && !memcmp (card->serialno, serialno, card->serialnolen))
+            break;
+        }
+      if (!card)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+
+      /* Note: We do not use card_ref here because we only swap the
+       * context of the current session and there is no chance of a
+       * context switch.  This also works if the card stays the same. */
+      cardtmp = ctrl->card_ctx;
+      ctrl->card_ctx = card;
+      card->ref_count++;
+      card_unref_locked (cardtmp);
+    }
+
+  /* Print the status line.  */
+  err = send_serialno_and_app_status (ctrl->card_ctx, 0, ctrl);
+
+ leave:
+  npth_mutex_unlock (&card_list_lock);
   return err;
 }
 
@@ -1975,13 +2028,58 @@ compare_card_list_items (const void *arg_a, const void *arg_b)
 }
 
 
-/* Send status lines with the serialno of all inserted cards.  */
-gpg_error_t
-app_send_card_list (ctrl_t ctrl)
+/* Helper for send_card_and_app_list and app_switch_active_app.  */
+static gpg_error_t
+send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
+{
+  gpg_error_t err;
+  app_t a;
+  char buf[65];
+  char *p;
+  membuf_t mb;
+
+  if (DIM (buf) < 2 * card->serialnolen + 1)
+    return 0; /* Oops.  */
+
+  bin2hex (card->serialno, card->serialnolen, buf);
+  if (with_apps)
+    {
+      /* Note that in case the additional applications have not yet been
+       * added to the card context (which is commonly done by means of
+       * "SERIALNO --all", we do that here.  */
+      err = select_all_additional_applications_internal (card);
+      if (err)
+        return err;
+
+      init_membuf (&mb, 256);
+      put_membuf_str (&mb, buf);
+      for (a = card->app; a; a = a->next)
+        {
+          if (!a->fnc.with_keygrip)
+            continue;
+          put_membuf (&mb, " ", 1);
+          put_membuf_str (&mb, xstrapptype (a));
+        }
+      put_membuf (&mb, "", 1);
+      p = get_membuf (&mb, NULL);
+      if (!p)
+        return gpg_error_from_syserror ();
+      send_status_direct (ctrl, "SERIALNO", p);
+      xfree (p);
+    }
+  else
+    send_status_direct (ctrl, "SERIALNO", buf);
+
+  return 0;
+}
+
+
+/* Common code for app_send_card_list and app_send_active_apps.  */
+static gpg_error_t
+send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
 {
   gpg_error_t err;
   card_t c;
-  char buf[65];
   card_t *cardlist = NULL;
   int n, ncardlist;
 
@@ -2000,11 +2098,11 @@ app_send_card_list (ctrl_t ctrl)
 
   for (n=0; n < ncardlist; n++)
     {
-      if (DIM (buf) < 2 * cardlist[n]->serialnolen + 1)
+      if (wantcard && wantcard != cardlist[n])
         continue;
-
-      bin2hex (cardlist[n]->serialno, cardlist[n]->serialnolen, buf);
-      send_status_direct (ctrl, "SERIALNO", buf);
+      err = send_serialno_and_app_status (cardlist[n], with_apps, ctrl);
+      if (err)
+        goto leave;
     }
 
   err = 0;
@@ -2012,6 +2110,69 @@ app_send_card_list (ctrl_t ctrl)
  leave:
   npth_mutex_unlock (&card_list_lock);
   xfree (cardlist);
+  return err;
+}
+
+
+/* Send status lines with the serialno of all inserted cards.  */
+gpg_error_t
+app_send_card_list (ctrl_t ctrl)
+{
+  return send_card_and_app_list (ctrl, NULL, 0);
+}
+
+
+/* Send status lines with the serialno and appname of the current card
+ * or of all cards if CARD is NULL.  */
+gpg_error_t
+app_send_active_apps (card_t card, ctrl_t ctrl)
+{
+  return send_card_and_app_list (ctrl, card, 1);
+}
+
+
+/* Switch to APPNAME and print a respective status line with that app
+ * listed first.  If APPNAME is NULL or the empty string no switching
+ * is done but the status line is printed anyway.  */
+gpg_error_t
+app_switch_active_app (card_t card, ctrl_t ctrl, const char *appname)
+{
+  gpg_error_t err;
+  apptype_t apptype;
+
+  if (!card)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  err = lock_card (card, ctrl);
+  if (err)
+    return err;
+
+  /* Note that in case the additional applications have not yet been
+   * added to the card context (which is commonly done by means of
+   * "SERIALNO --all", we do that here.  */
+  err = select_all_additional_applications_internal (card);
+  if (err)
+    goto leave;
+
+  if (appname && *appname)
+    {
+      apptype = apptype_from_name (appname);
+      if (!apptype)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+
+      ctrl->current_apptype = apptype;
+      err = maybe_switch_app (ctrl, card, NULL);
+      if (err)
+        goto leave;
+    }
+
+  /* Print the status line.  */
+  err = send_serialno_and_app_status (card, 1, ctrl);
+
+ leave:
+  unlock_card (card);
   return err;
 }
 

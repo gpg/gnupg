@@ -229,6 +229,7 @@ const char *strapptype (apptype_t t);
 
 void app_update_priority_list (const char *arg);
 gpg_error_t app_send_card_list (ctrl_t ctrl);
+gpg_error_t app_send_active_apps (card_t card, ctrl_t ctrl);
 char *card_get_serialno (card_t card);
 char *app_get_serialno (app_t app);
 
@@ -242,6 +243,13 @@ gpg_error_t select_application (ctrl_t ctrl, const char *name, card_t *r_app,
                                 int scan, const unsigned char *serialno_bin,
                                 size_t serialno_bin_len);
 gpg_error_t select_additional_application (ctrl_t ctrl, const char *name);
+
+gpg_error_t app_switch_current_card (ctrl_t ctrl,
+                                     const unsigned char *serialno,
+                                     size_t serialnolen);
+gpg_error_t app_switch_active_app (card_t card, ctrl_t ctrl,
+                                   const char *appname);
+
 char *get_supported_applications (void);
 
 card_t card_ref (card_t card);

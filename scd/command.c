@@ -287,8 +287,7 @@ static const char hlp_serialno[] =
   "If APPTYPE is given, an application of that type is selected and an\n"
   "error is returned if the application is not supported or available.\n"
   "The default is to auto-select the application using a hardwired\n"
-  "preference system.  Note, that a future extension to this function\n"
-  "may enable specifying a list and order of applications to try.\n"
+  "preference system.\n"
   "\n"
   "This function is special in that it can be used to reset the card.\n"
   "Most other functions will return an error when a card change has\n"
@@ -351,6 +350,70 @@ cmd_serialno (assuan_context_t ctx, char *line)
   rc = assuan_write_status (ctx, "SERIALNO", serial);
   xfree (serial);
   return rc;
+}
+
+
+
+static const char hlp_switchcard[] =
+  "SWITCHCARD [<serialno>]\n"
+  "\n"
+  "Make the card with SERIALNO the current card.\n"
+  "The command \"getinfo card_list\" can be used to list\n"
+  "the serial numbers of inserted and known cards.  Note\n"
+  "that the command \"SERIALNO\" can be used to refresh\n"
+  "the list of known cards.  A simple SERIALNO status\n"
+  "is printed on success.";
+static gpg_error_t
+cmd_switchcard (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  unsigned char *sn_bin = NULL;
+  size_t sn_bin_len = 0;
+
+  if ((err = open_card (ctrl)))
+    return err;
+
+  line = skip_options (line);
+
+  if (*line)
+    {
+      sn_bin = hex_to_buffer (line, &sn_bin_len);
+      if (!sn_bin)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  /* Note that an SN_BIN of NULL will only print the status.  */
+  err = app_switch_current_card (ctrl, sn_bin, sn_bin_len);
+
+ leave:
+  xfree (sn_bin);
+  return err;
+}
+
+
+static const char hlp_switchapp[] =
+  "SWITCHAPP [<appname>]\n"
+  "\n"
+  "Make APPNAME the active application for the current card.\n"
+  "Only some cards support switching between application; the\n"
+  "command \"getinfo active_app\" can be used to get a list of\n"
+  "applications which can be switched to.  A SERIALNO status\n"
+  "including the active appname is printed on success.";
+static gpg_error_t
+cmd_switchapp (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+
+  if ((err = open_card (ctrl)))
+    return err;
+
+  line = skip_options (line);
+  return app_switch_active_app (ctrl->card_ctx, ctrl, line);
 }
 
 
@@ -1641,10 +1704,12 @@ static const char hlp_getinfo[] =
   "  app_list    - Return a list of supported applications.  One\n"
   "                application per line, fields delimited by colons,\n"
   "                first field is the name.\n"
-  "  card_list   - Return a list of serial numbers of active cards,\n"
-  "                using a status response.\n"
+  "  card_list   - Return a list of serial numbers of all inserted cards.\n"
+  "  active_apps - Return a list of active apps on the current card.\n"
+  "  all_active_apps\n"
+  "              - Return a list of active apps on all inserted cards.\n"
   "  cmd_has_option CMD OPT\n"
-  "                  - Returns OK if command CMD has option OPT.\n";
+  "               - Returns OK if command CMD has option OPT.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1752,6 +1817,19 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       ctrl_t ctrl = assuan_get_pointer (ctx);
 
       rc = app_send_card_list (ctrl);
+    }
+  else if (!strcmp (line, "active_apps"))
+    {
+      ctrl_t ctrl = assuan_get_pointer (ctx);
+      if (!ctrl->card_ctx)
+        rc = 0; /* No current card - no active apps.  */
+      else
+        rc = app_send_active_apps (ctrl->card_ctx, ctrl);
+    }
+  else if (!strcmp (line, "all_active_apps"))
+    {
+      ctrl_t ctrl = assuan_get_pointer (ctx);
+      rc = app_send_active_apps (NULL, ctrl);
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
@@ -2069,6 +2147,8 @@ register_commands (assuan_context_t ctx)
     const char * const help;
   } table[] = {
     { "SERIALNO",     cmd_serialno, hlp_serialno },
+    { "SWITCHCARD",   cmd_switchcard,hlp_switchcard },
+    { "SWITCHAPP",    cmd_switchapp,hlp_switchapp },
     { "LEARN",        cmd_learn,    hlp_learn },
     { "READCERT",     cmd_readcert, hlp_readcert },
     { "READKEY",      cmd_readkey,  hlp_readkey },
