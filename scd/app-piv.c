@@ -1920,8 +1920,7 @@ ask_and_prepare_chv (app_t app, ctrl_t ctrl,
     default:
       return gpg_error (GPG_ERR_INV_ID);
     }
-#warning debug...
-  no_cache =0;
+
   /* Ask for the PIN.  */
   if (!no_cache && remaining >= 3
       && pin_from_cache (app, ctrl, keyref, &pinvalue))
