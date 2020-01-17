@@ -305,6 +305,9 @@ default_homedir (void)
             {
               char *tmp, *p;
 
+              /* This is deprecated; gpgconf --list-dirs prints a
+               * warning if the homedir has been taken from the
+               * registry.  */
               tmp = read_w32_registry_string (NULL,
                                               GNUPG_REGISTRY_DIR,
                                               "HomeDir");

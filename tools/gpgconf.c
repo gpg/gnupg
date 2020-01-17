@@ -274,6 +274,20 @@ list_dirs (estream_t fp, char **names)
 
       xfree (tmp);
     }
+
+
+#ifdef HAVE_W32_SYSTEM
+  tmp = read_w32_registry_string (NULL,
+                                  GNUPG_REGISTRY_DIR,
+                                  "HomeDir");
+  if (tmp)
+    {
+      es_fflush (fp);
+      log_info ("Warning: homedir taken from registry key (%s %s)\n",
+                GNUPG_REGISTRY_DIR, "HomeDir");
+      xfree (tmp);
+    }
+#endif /*HAVE_W32_SYSTEM*/
 }
 
 
