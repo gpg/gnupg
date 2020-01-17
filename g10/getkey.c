@@ -3470,6 +3470,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
       kbnode_t nextk;
       int n_subkeys = 0;
       int n_revoked_or_expired = 0;
+      int last_secret_key_avail = 0;
 
       /* Either start a loop or check just this one subkey.  */
       for (k = foundk ? foundk : keyblock; k; k = nextk)
@@ -3527,11 +3528,23 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	      continue;
 	    }
 
-          if (want_secret && !agent_probe_secret_key (NULL, pk))
+          if (want_secret)
             {
-              if (DBG_LOOKUP)
-                log_debug ("\tno secret key\n");
-              continue;
+              int secret_key_avail = agent_probe_secret_key (NULL, pk);
+
+              if (!secret_key_avail)
+                {
+                  if (DBG_LOOKUP)
+                    log_debug ("\tno secret key\n");
+                  continue;
+                }
+
+              if (secret_key_avail > last_secret_key_avail)
+                {
+                  /* Use this key.  */
+                  last_secret_key_avail = secret_key_avail;
+                  latest_date = 0;
+                }
             }
 
 	  if (DBG_LOOKUP)

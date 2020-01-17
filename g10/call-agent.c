@@ -1927,14 +1927,62 @@ agent_get_s2k_count (void)
 
 
 
+struct keyinfo_data_parm_s
+{
+  char *serialno;
+  int is_smartcard;
+  int passphrase_cached;
+  int cleartext;
+  int card_available;
+};
+
+
+static gpg_error_t
+keyinfo_status_cb (void *opaque, const char *line)
+{
+  struct keyinfo_data_parm_s *data = opaque;
+  char *s;
+
+  if ((s = has_leading_keyword (line, "KEYINFO")) && data)
+    {
+      /* Parse the arguments:
+       *      0        1        2        3       4          5
+       *   <keygrip> <type> <serialno> <idstr> <cached> <protection>
+       *
+       *      6        7        8
+       *   <sshfpr>  <ttl>  <flags>
+       */
+      char *fields[9];
+
+      if (split_fields (s, fields, DIM (fields)) == 9)
+        {
+          data->is_smartcard = (fields[1][0] == 'T');
+          if (data->is_smartcard && !data->serialno && strcmp (fields[2], "-"))
+            data->serialno = xtrystrdup (fields[2]);
+          /* '1' for cached */
+          data->passphrase_cached = (fields[4][0] == '1');
+          /* 'P' for protected, 'C' for clear */
+          data->cleartext = (fields[5][0] == 'C');
+          /* 'A' for card is available */
+          data->card_available = (fields[8][0] == 'A');
+        }
+    }
+  return 0;
+}
+
+
 /* Ask the agent whether a secret key for the given public key is
-   available.  Returns 0 if not available.  */
+   available.  Returns 0 if not available.  Bigger value is preferred.  */
 int
 agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
   char *hexgrip;
+
+  struct keyinfo_data_parm_s keyinfo;
+
+  memset (&keyinfo, 0, sizeof keyinfo);
 
   err = start_agent (ctrl, 0);
   if (err)
@@ -1944,12 +1992,24 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
   if (err)
     return err;
 
-  snprintf (line, sizeof line, "HAVEKEY %s", hexgrip);
+  snprintf (line, sizeof line, "KEYINFO %s", hexgrip);
   xfree (hexgrip);
 
-  err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
+                         keyinfo_status_cb, &keyinfo);
+  xfree (keyinfo.serialno);
   if (err)
     return 0;
+
+  if (keyinfo.card_available)
+    return 4;
+
+  if (keyinfo.passphrase_cached)
+    return 3;
+
+  if (keyinfo.is_smartcard)
+    return 2;
+
   return 1;
 }
 
@@ -2006,41 +2066,6 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
 
 
 
-struct keyinfo_data_parm_s
-{
-  char *serialno;
-  int cleartext;
-};
-
-
-static gpg_error_t
-keyinfo_status_cb (void *opaque, const char *line)
-{
-  struct keyinfo_data_parm_s *data = opaque;
-  int is_smartcard;
-  char *s;
-
-  if ((s = has_leading_keyword (line, "KEYINFO")) && data)
-    {
-      /* Parse the arguments:
-       *      0        1        2        3       4          5
-       *   <keygrip> <type> <serialno> <idstr> <cached> <protection>
-       */
-      char *fields[6];
-
-      if (split_fields (s, fields, DIM (fields)) == 6)
-        {
-          is_smartcard = (fields[1][0] == 'T');
-          if (is_smartcard && !data->serialno && strcmp (fields[2], "-"))
-            data->serialno = xtrystrdup (fields[2]);
-          /* 'P' for protected, 'C' for clear */
-          data->cleartext = (fields[5][0] == 'C');
-        }
-    }
-  return 0;
-}
-
-
 /* Return the serial number for a secret key.  If the returned serial
    number is NULL, the key is not stored on a smartcard.  Caller needs
    to free R_SERIALNO.
