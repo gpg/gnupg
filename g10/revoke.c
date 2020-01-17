@@ -315,8 +315,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 	      tty_printf(_("(This is a sensitive revocation key)\n"));
 	    tty_printf("\n");
 
-	    rc = agent_probe_secret_key (ctrl, pk2);
-	    if (rc)
+	    if (!agent_probe_secret_key (ctrl, pk2))
 	      {
 		tty_printf (_("Secret key is not available.\n"));
 		continue;
@@ -714,9 +713,9 @@ gen_revoke (ctrl_t ctrl, const char *uname)
     BUG ();
 
   psk = node->pkt->pkt.public_key;
-  rc = agent_probe_secret_key (NULL, psk);
-  if (rc)
+  if (!agent_probe_secret_key (NULL, psk))
     {
+      rc = gpg_error (GPG_ERR_NO_SECKEY);
       log_error (_("secret key \"%s\" not found: %s\n"),
                  uname, gpg_strerror (rc));
       goto leave;

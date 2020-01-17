@@ -767,9 +767,11 @@ get_seckey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid)
 
   if (!err)
     {
-      err = agent_probe_secret_key (/*ctrl*/NULL, pk);
-      if (err)
-	release_public_key_parts (pk);
+      if (!agent_probe_secret_key (/*ctrl*/NULL, pk))
+        {
+          release_public_key_parts (pk);
+          err = gpg_error (GPG_ERR_NO_SECKEY);
+        }
     }
 
   return err;
@@ -2157,10 +2159,12 @@ parse_def_secret_key (ctrl_t ctrl)
               continue;
             }
 
-          err = agent_probe_secret_key (ctrl, pk);
-          if (! err)
-            /* This is a valid key.  */
-            break;
+          if (agent_probe_secret_key (ctrl, pk))
+            {
+              /* This is a valid key.  */
+              err = 0;
+              break;
+            }
         }
       while ((node = find_next_kbnode (node, PKT_PUBLIC_SUBKEY)));
 
@@ -3816,7 +3820,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	      continue;
 	    }
 
-          if (want_secret && agent_probe_secret_key (NULL, pk))
+          if (want_secret && !agent_probe_secret_key (NULL, pk))
             {
               if (DBG_LOOKUP)
                 log_debug ("\tno secret key\n");
@@ -4565,7 +4569,7 @@ have_secret_key_with_kid (u32 *keyid)
               log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
                           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
-              if (!agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
+              if (agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
 		result = 1; /* Secret key available.  */
 	      else
 		result = 0;

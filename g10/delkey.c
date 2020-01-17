@@ -239,7 +239,7 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
               if (thiskeyonly && targetnode != node)
                 continue;
 
-              if (agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
+              if (!agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
                 continue;  /* No secret key for that public (sub)key.  */
 
               prompt = gpg_format_keydesc (ctrl,
