@@ -164,8 +164,8 @@ gpg_error_t gpg_agent_get_confirmation (const char *desc);
 unsigned long agent_get_s2k_count (void);
 
 /* Check whether a secret key for public key PK is available.  Returns
-   0 if the secret key is available. */
-gpg_error_t agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk);
+   0 if not available, positive value if the secret key is available. */
+int agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk);
 
 /* Ask the agent whether a secret key is availabale for any of the
    keys (primary or sub) in KEYBLOCK.  Returns 0 if available.  */

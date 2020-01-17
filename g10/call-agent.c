@@ -1928,8 +1928,8 @@ agent_get_s2k_count (void)
 
 
 /* Ask the agent whether a secret key for the given public key is
-   available.  Returns 0 if available.  */
-gpg_error_t
+   available.  Returns 0 if not available.  */
+int
 agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
 {
   gpg_error_t err;
@@ -1948,7 +1948,9 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
   xfree (hexgrip);
 
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  return err;
+  if (err)
+    return 0;
+  return 1;
 }
 
 /* Ask the agent whether a secret key is available for any of the

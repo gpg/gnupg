@@ -1454,7 +1454,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
     {
       have_anyseckey = !agent_probe_any_secret_key (ctrl, keyblock);
       if (have_anyseckey
-          && !agent_probe_secret_key (ctrl, keyblock->pkt->pkt.public_key))
+          && agent_probe_secret_key (ctrl, keyblock->pkt->pkt.public_key))
         {
           /* The primary key is also available.   */
           have_seckey = 1;
@@ -2324,7 +2324,8 @@ quick_find_keyblock (ctrl_t ctrl, const char *username,
           /* We require the secret primary key to set the primary UID.  */
           node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
           log_assert (node);
-          err = agent_probe_secret_key (ctrl, node->pkt->pkt.public_key);
+          if (!agent_probe_secret_key (ctrl, node->pkt->pkt.public_key))
+            err = gpg_error (GPG_ERR_NO_SECKEY);
         }
     }
   else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -3229,7 +3230,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	    }
 
 	  keyid_from_pk (pk, keyid);
-          have_seckey = !agent_probe_secret_key (ctrl, pk);
+          have_seckey = agent_probe_secret_key (ctrl, pk);
 
           if (node->pkt->pkttype == PKT_PUBLIC_KEY)
             es_fputs (have_seckey? "sec:" : "pub:", fp);
