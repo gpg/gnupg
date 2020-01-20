@@ -1,5 +1,6 @@
 /* watchgnupg.c - Socket server for GnuPG logs
  *	Copyright (C) 2003, 2004, 2010 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004, 2010, 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -30,6 +31,8 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -51,6 +54,10 @@
 #if !defined(SUN_LEN) || !defined(PF_LOCAL) || !defined(AF_LOCAL)
 #define GNUPG_COMMON_NEED_AFLOCAL
 #include "../common/mischelp.h"
+#endif
+
+#ifndef GNUPG_DEF_COPYRIGHT_LINE
+#define GNUPG_DEF_COPYRIGHT_LINE "Copyright (C) 2020 g10 Code GmbH"
 #endif
 
 
@@ -248,6 +255,86 @@ setup_client (int server_fd, int is_un)
 }
 
 
+/* Get the logsocketname by reading from gpgconf.  Caller needs to
+ * release the buffer.  */
+static char *
+get_logname (const char *homedir)
+{
+  int rp[2];
+  pid_t pid;
+  int i, c;
+  unsigned int pos;
+  char filename[1024], *buf;
+  FILE *fp;
+
+  if (pipe (rp) == -1)
+    die ("error creating a pipe: %s", strerror (errno));
+
+  pid = fork ();
+  if (pid == -1)
+    die ("error forking process: %s", strerror (errno));
+
+  if (!pid)
+    { /* Child. */
+      int fd;
+
+      fd = open ("/dev/null", O_WRONLY);
+      if (fd == -1)
+        die ("can't open '/dev/null': %s", strerror (errno));
+      if (fd != 0 && dup2 (fd, 0) == -1)
+        die ("dup2 stderr failed: %s", strerror (errno));
+
+      /* Connect stdout to our pipe. */
+      if (rp[1] != 1 && dup2 (rp[1], 1) == -1)
+        die ("dup2 stdout failed: %s", strerror (errno));
+
+      /* Close other files.  20 is an arbitrary number; at this point
+       * we have not opened many files. */
+      for (i=3; i < 20; i++)
+        close (i);
+      errno = 0;
+
+      if (homedir)
+        execlp ("gpgconf", "gpgconf", "--homedir", homedir,
+                "-0", "--list-dirs", "socketdir", NULL);
+      else
+        execlp ("gpgconf", "gpgconf",
+                "-0", "--list-dirs", "socketdir", NULL);
+      die ("failed to exec gpgconf: %s", strerror (errno));
+    }
+
+  /* Parent. */
+  close (rp[1]);
+
+  fp = fdopen (rp[0], "r");
+  if (!fp)
+    die ("can't fdopen pipe for reading: %s", strerror (errno));
+
+  pos = 0;
+  while ((c=getc (fp)) != EOF)
+    {
+      if (pos+1 >= sizeof filename)
+        die ("gpgconf returned a too long filename\n");
+      filename[pos++] = c;
+      if (!c)
+        break;
+    }
+  fclose (fp);
+  if (c == EOF)
+    die ("error reading from gpgconf: %s", "premature EOF");
+
+  while ((i=waitpid (pid, NULL, 0)) == -1 && errno == EINTR)
+    ;
+  if (i == -1)
+    die ("waiting for gpgconf failed: %s", strerror (errno));
+
+  buf = xmalloc (strlen (filename) + 6 + 1);
+  strcpy (buf, filename);
+  strcat (buf, "/S.log");
+
+  return buf;
+}
+
 
 static void
 print_version (int with_help)
@@ -262,17 +349,19 @@ print_version (int with_help)
   if (with_help)
     fputs
       ("\n"
-       "Usage: " PGM " [OPTIONS] SOCKETNAME\n"
+       "Usage: " PGM " [OPTIONS] [SOCKETNAME]\n"
        "       " PGM " [OPTIONS] PORT [SOCKETNAME]\n"
        "Open the local socket SOCKETNAME (or the TCP port PORT)\n"
-       "and display log messages\n"
+       "and display log messages.  If --tcp is not used and no\n"
+       "socket name is given, it is taken from the gpgconf tool.\n"
        "\n"
-       "  --tcp       listen on a TCP port and optionally on a local socket\n"
-       "  --force     delete an already existing socket file\n"
-       "  --verbose   enable extra informational output\n"
-       "  --time-only print only the time; not a full timestamp\n"
-       "  --version   print version of the program and exit\n"
-       "  --help      display this help and exit\n"
+       "  --tcp         listen on a TCP port and optionally on a local socket\n"
+       "  --force       delete an already existing socket file\n"
+       "  --verbose     enable extra informational output\n"
+       "  --time-only   print only the time; not a full timestamp\n"
+       "  --homedir DIR use DIR for gpgconf's --homedir option\n"
+       "  --version     print version of the program and exit\n"
+       "  --help        display this help and exit\n"
        BUGREPORT_LINE, stdout );
 
   exit (0);
@@ -284,6 +373,8 @@ main (int argc, char **argv)
   int last_argc = -1;
   int force = 0;
   int tcp = 0;
+  char *homedir = NULL;
+  char *logname = NULL;
 
   struct sockaddr_un srvr_addr_un;
   struct sockaddr_in srvr_addr_in;
@@ -330,11 +421,31 @@ main (int argc, char **argv)
           tcp = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--homedir"))
+        {
+          argc--; argv++;
+          if (!argc)
+            die ("option --homedir requires an argument\n");
+          argc--;
+          homedir = *argv++;
+        }
     }
 
-  if (!((!tcp && argc == 1) || (tcp && (argc == 1 || argc == 2))))
+  if (!tcp && argc == 1)
+    ;
+  else if (tcp && (argc == 1 || argc == 2))
+    ; /* Option --tcp optionally allows to also read from a socket. */
+  else if (!tcp && !argc)
     {
-      fprintf (stderr, "usage: " PGM " socketname\n"
+      /* No args given - figure out the socket using gpgconf.  We also
+       * force overwriting the socket because the constructed name
+       * can't be some accidently given name.  */
+      logname = get_logname (homedir);
+      force = 1;
+    }
+  else
+    {
+      fprintf (stderr, "usage: " PGM " [socketname]\n"
                        "       " PGM " --tcp port [socketname]\n");
       exit (1);
     }
@@ -348,6 +459,8 @@ main (int argc, char **argv)
     {
       port = 0;
     }
+  if (argc)
+    logname = *argv;
 
   setvbuf (stdout, NULL, _IOLBF, 0);
 
@@ -366,13 +479,13 @@ main (int argc, char **argv)
   else
     server_in = -1;
 
-  if (argc)
+  if (logname)
     {
       server_un = socket (PF_LOCAL, SOCK_STREAM, 0);
       if (server_un == -1)
         die ("socket(PF_LOCAL) failed: %s\n", strerror (errno));
       if (verbose)
-        fprintf (stderr, "listening on socket '%s'\n", *argv);
+        fprintf (stderr, "listening on socket '%s'\n", logname);
     }
   else
     server_un = -1;
@@ -406,11 +519,12 @@ main (int argc, char **argv)
       addr_in = (struct sockaddr *)&srvr_addr_in;
       addrlen_in = sizeof srvr_addr_in;
     }
-  if (argc)
+  if (logname)
     {
       memset (&srvr_addr_un, 0, sizeof srvr_addr_un);
       srvr_addr_un.sun_family = AF_LOCAL;
-      strncpy (srvr_addr_un.sun_path, *argv, sizeof (srvr_addr_un.sun_path)-1);
+      strncpy (srvr_addr_un.sun_path, logname,
+               sizeof (srvr_addr_un.sun_path)-1);
       srvr_addr_un.sun_path[sizeof (srvr_addr_un.sun_path) - 1] = 0;
       addr_un = (struct sockaddr *)&srvr_addr_un;
       addrlen_un = SUN_LEN (&srvr_addr_un);
@@ -431,7 +545,7 @@ main (int argc, char **argv)
           goto again;
         }
       else
-        die ("bind to '%s' failed: %s\n", *argv, strerror (errno));
+        die ("bind to '%s' failed: %s\n", logname, strerror (errno));
     }
 
   if (server_in != -1 && listen (server_in, 5))

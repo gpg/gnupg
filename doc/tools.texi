@@ -50,19 +50,30 @@ listener for such a socket.  It ameliorates the output with a time stamp
 and makes sure that long lines are not interspersed with log output from
 other utilities.  This tool is not available for Windows.
 
-
 @noindent
 @command{watchgnupg} is commonly invoked as
 
 @example
+watchgnupg
+@end example
+
+which is a shorthand for
+
+@example
 watchgnupg --force $(gpgconf --list-dirs socketdir)/S.log
+@end example
+
+To watch GnuPG running with a different home directory, use
+
+@example
+watchgnupg --homedir DIR
 @end example
 @manpause
 
 @noindent
 This starts it on the current terminal for listening on the standard
-logging socket (which is either @file{~/.gnupg/S.log} or
-@file{/var/run/user/UID/gnupg/S.log}).
+logging socket (this is commonly @file{/var/run/user/UID/gnupg/S.log}
+or if no such user directory hierarchy exists @file{~/.gnupg/S.log}).
 
 @mansect options
 @noindent
@@ -72,12 +83,20 @@ logging socket (which is either @file{~/.gnupg/S.log} or
 
 @item --force
 @opindex force
-Delete an already existing socket file.
+Delete an already existing socket file.  This option is implictly used
+if no socket name has been given on the command line.
+
+@item --homedir @var{DIR}
+If no socket name is given on the command line, pass @var{DIR} to
+gpgconf so that the socket for a GnuPG running with DIR has its home
+directory is used.  Note that the environment variable @var{GNUPGHOME}
+is ignored by watchgnupg.
 
 @anchor{option watchgnupg --tcp}
 @item --tcp @var{n}
-Instead of reading from a local socket, listen for connects on TCP port
-@var{n}.
+Instead of reading from a local socket, listen for connects on TCP
+port @var{n}.  A Unix domain socket can optionally also be given as a
+second source.  This option does not use a default socket name.
 
 @item --time-only
 @opindex time-only
@@ -102,14 +121,14 @@ Display a brief help page and exit.
 @chapheading Examples
 
 @example
-$ watchgnupg --force --time-only $(gpgconf --list-dirs socketdir)/S.log
+$ watchgnupg --time-only
 @end example
 
 This waits for connections on the local socket
-(e.g. @file{/home/foo/.gnupg/S.log}) and shows all log entries.  To
-make this work the option @option{log-file} needs to be used with all
-modules which logs are to be shown.  The suggested entry for the
-configuration files is:
+(e.g. @file{/var/run/user/1234/gnupg/S.log}) and shows all log
+entries.  To make this work the option @option{log-file} needs to be
+used with all modules which logs are to be shown.  The suggested entry
+for the configuration files is:
 
 @example
 log-file socket://
