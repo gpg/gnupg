@@ -949,7 +949,7 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
   if (!hd)
     return NULL;
 
-  if (!hd->use_keyboxd)
+  if (hd->use_keyboxd)
     return "[keyboxd]";
 
   if ( hd->found >= 0 && hd->found < hd->used)
