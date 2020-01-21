@@ -208,6 +208,7 @@ get_manufacturer (unsigned int no)
     case 0x0008: return "LogoEmail";
     case 0x0009: return "Fidesmo";
     case 0x000A: return "Dangerous Things";
+    case 0x000B: return "Feitian Technologies";
 
     case 0x002A: return "Magrathea";
     case 0x0042: return "GnuPG e.V.";
