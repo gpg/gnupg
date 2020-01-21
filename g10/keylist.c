@@ -1690,7 +1690,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
           char *reason_text = NULL;
           char *reason_comment = NULL;
           size_t reason_commentlen;
-          int reason_code;
+          int reason_code = 0;  /* Init to silence compiler warning.  */
 
 	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
 	      || sig->sig_class == 0x30)
