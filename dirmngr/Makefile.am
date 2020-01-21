@@ -26,7 +26,11 @@ dist_pkgdata_DATA = sks-keyservers.netCA.pem
 
 bin_PROGRAMS = dirmngr dirmngr-client
 
+if USE_LDAP
 libexec_PROGRAMS = dirmngr_ldap
+else
+libexec_PROGRAMS =
+endif
 
 noinst_PROGRAMS = $(module_tests) $(module_net_tests) $(module_maint_tests)
 TESTS = $(module_tests) $(module_net_tests)
@@ -84,12 +88,14 @@ dirmngr_LDADD += $(ldaplibs)
 endif
 dirmngr_LDFLAGS = $(extra_bin_ldflags)
 
+if USE_LDAP
 dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url)
 dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) \
 		     $(GPG_ERROR_LIBS) $(LIBGCRYPT_LIBS) $(LDAPLIBS) \
 		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
+endif
 
 dirmngr_client_SOURCES = dirmngr-client.c
 dirmngr_client_LDADD = $(libcommon) \
