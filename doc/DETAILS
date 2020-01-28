@@ -735,7 +735,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     Issued if no senders are usable.
 
 *** KEY_CONSIDERED <fpr> <flags>
-    Issued to explian the lookup of a key.  FPR is the hexified
+    Issued to explain the lookup of a key.  FPR is the hexified
     fingerprint of the primary key.  The bit values for FLAGS are:
 
     - 1 :: The key has not been selected.
