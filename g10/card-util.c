@@ -216,6 +216,7 @@ get_manufacturer (unsigned int no)
     case 0x1337: return "Warsaw Hackerspace";
     case 0x2342: return "warpzone"; /* hackerspace Muenster.  */
     case 0x4354: return "Confidential Technologies";   /* cotech.de */
+    case 0x5443: return "TIF-IT e.V.";
     case 0x63AF: return "Trustica";
     case 0xBD0E: return "Paranoidlabs";
     case 0xF517: return "FSIJ";
