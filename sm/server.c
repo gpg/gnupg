@@ -1,6 +1,6 @@
 /* server.c - Server mode and main entry point
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
- *               2010 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2010 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2011, 2013-2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -883,10 +883,10 @@ cmd_message (assuan_context_t ctx, char *line)
 
 
 static const char hlp_listkeys[] =
-  "LISTKEYS [<patterns>]\n"
-  "LISTSECRETKEYS [<patterns>]\n"
-  "DUMPKEYS [<patterns>]\n"
-  "DUMPSECRETKEYS [<patterns>]\n"
+  "LISTKEYS       [<options>] [<patterns>]\n"
+  "LISTSECRETKEYS [<options>] [<patterns>]\n"
+  "DUMPKEYS       [<options>] [<patterns>]\n"
+  "DUMPSECRETKEYS [<options>] [<patterns>]\n"
   "\n"
   "List all certificates or only those specified by PATTERNS.  Each\n"
   "pattern shall be a percent-plus escaped certificate specification.\n"
@@ -895,8 +895,12 @@ static const char hlp_listkeys[] =
   "smartcard has been registered.  The \"DUMP\" versions of the command\n"
   "are only useful for debugging.  The output format is a percent escaped\n"
   "colon delimited listing as described in the manual.\n"
+  "Supported values for OPTIONS are:\n"
+  "  --           Stop option processing\n"
+  "  --issuer-der PATTERN is a DER of the serialnumber as hexstring;\n"
+  "               the issuer is then inquired with \"ISSUER_DER\".\n"
   "\n"
-  "These \"OPTION\" command keys effect the output::\n"
+  "These Assuan \"OPTION\" command keys effect the output::\n"
   "\n"
   "  \"list-mode\" set to 0: List only local certificates (default).\n"
   "                     1: Ditto.\n"
@@ -916,9 +920,14 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   estream_t fp;
   char *p;
+  size_t n;
   strlist_t list, sl;
   unsigned int listmode;
   gpg_error_t err;
+  int opt_issuer_der;
+
+  opt_issuer_der = has_option (line, "--issuer-der");
+  line = skip_options (line);
 
   /* Break the line down into an strlist. */
   list = NULL;
@@ -942,6 +951,63 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
           list = sl;
         }
     }
+  if (opt_issuer_der && (!list || list->next))
+    {
+      free_strlist (list);
+      return set_error (GPG_ERR_INV_ARG,
+                        "only one arg for --issuer-der please");
+    }
+
+  if (opt_issuer_der)
+    {
+      unsigned char *value = NULL;
+      size_t valuelen;
+      char *issuer;
+
+      err = assuan_inquire (ctx, "ISSUER_DER", &value, &valuelen, 0);
+      if (err)
+        {
+          free_strlist (list);
+          return err;
+        }
+      if (!valuelen)
+        {
+          xfree (value);
+          free_strlist (list);
+          return gpg_error (GPG_ERR_MISSING_VALUE);
+        }
+      err = ksba_dn_der2str (value, valuelen, &issuer);
+      xfree (value);
+      if (err)
+        {
+          free_strlist (list);
+          return err;
+        }
+      /* ksba_dn_der2str seems to always append "\\0A".  Trim that.  */
+      n = strlen (issuer);
+      if (n > 3 && !strcmp (issuer + n - 3, "\\0A"))
+        issuer[n-3] = 0;
+
+      p = strconcat ("#", list->d, "/", issuer, NULL);
+      if (!p)
+        {
+          err = gpg_error_from_syserror ();
+          ksba_free (issuer);
+          free_strlist (list);
+          return err;
+        }
+      ksba_free (issuer);
+      free_strlist (list);
+      list = NULL;
+      if (!add_to_strlist_try (&list, p))
+        {
+          err = gpg_error_from_syserror ();
+          xfree (p);
+          return err;
+        }
+      xfree (p);
+    }
+
 
   if (ctrl->server_local->list_to_output)
     {
