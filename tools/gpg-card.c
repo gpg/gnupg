@@ -2157,8 +2157,9 @@ static gpg_error_t
 cmd_generate (card_info_t info, char *argstr)
 {
   static char * const valid_algos[] =
-    { "rsa2048", "rsa3072", "rsa4096",
-      "nistp256", "nistp384", "nistp521",
+    { "rsa2048", "rsa3072", "rsa4096", "",
+      "nistp256", "nistp384", "nistp521", "",
+      "brainpoolP256r1", "brainpoolP384r1", "brainpoolP512r1", "",
       "ed25519", "cv25519",
       NULL
     };
@@ -2172,8 +2173,9 @@ cmd_generate (card_info_t info, char *argstr)
   if (!info)
     return print_help
       ("GENERATE [--force] [--algo=ALGO] KEYREF\n\n"
-       "Create a new key on a card.  For OpenPGP cards are menu is used\n"
-       "and KEYREF is ignored.  Use --force to overwrite an existing key.",
+       "Create a new key on a card.  For OpenPGP cards a menu is used\n"
+       "and KEYREF is ignored.  Use --force to overwrite an existing key.\n"
+       "Using \"help\" for ALGO gives a list of known algorithms.\n",
        APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
   if (opt.interactive || opt.verbose)
@@ -2210,17 +2212,30 @@ cmd_generate (card_info_t info, char *argstr)
   if (opt_algo)
     {
       for (i=0; valid_algos[i]; i++)
-        if (!strcmp (valid_algos[i], opt_algo))
+        if (*valid_algos[i] && !strcmp (valid_algos[i], opt_algo))
           break;
       if (!valid_algos[i])
         {
-          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-          log_info ("Invalid algorithm '%s' given.  Use one:\n", opt_algo);
+          int lf = 1;
+          if (!ascii_strcasecmp (opt_algo, "help"))
+            log_info ("Known algorithms:\n");
+          else
+            {
+              log_info ("Invalid algorithm '%s' given.  Use one:\n", opt_algo);
+              err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+            }
           for (i=0; valid_algos[i]; i++)
-            if (!(i%5))
-              log_info ("  %s%s", valid_algos[i], valid_algos[i+1]?",":".");
-            else
-              log_printf (" %s%s", valid_algos[i], valid_algos[i+1]?",":".");
+            {
+              if (!*valid_algos[i])
+                lf = 1;
+              else if (lf)
+                {
+                  lf = 0;
+                  log_info ("  %s%s", valid_algos[i], valid_algos[i+1]?",":".");
+                }
+              else
+                log_printf (" %s%s", valid_algos[i], valid_algos[i+1]?",":".");
+            }
           log_info ("Note that the card may not support all of them.\n");
           goto leave;
         }
