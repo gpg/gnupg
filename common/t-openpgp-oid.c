@@ -27,7 +27,7 @@
 #define pass()  do { ; } while(0)
 #define fail(a,e)                                                       \
   do { fprintf (stderr, "%s:%d: test %d failed (%s)\n",                 \
-                __FILE__,__LINE__, (a), gpg_strerror (e));              \
+                __func__, __LINE__, (a), gpg_strerror (e));             \
     exit (1);                                                           \
   } while(0)
 
@@ -150,7 +150,7 @@ test_openpgp_oid_to_str (void)
       if (strcmp (string, samples[idx].string))
         fail (idx, 0);
       xfree (string);
-}
+    }
 
 }
 
@@ -226,6 +226,74 @@ test_openpgp_enum_curves (void)
 }
 
 
+static void
+test_get_keyalgo_string (void)
+{
+  static struct
+  {
+    int algo;
+    unsigned int nbits;
+    const char *curve;
+    const char *name;
+  } samples[] =
+      {
+       { GCRY_PK_RSA, 1024, NULL, "rsa1024" },
+       { GCRY_PK_RSA, 1536, NULL, "rsa1536" },
+       { GCRY_PK_RSA, 768,  NULL, "rsa768"  },
+       { GCRY_PK_DSA, 3072, NULL, "dsa3072" },
+       { GCRY_PK_DSA, 1024, NULL, "dsa1024" },
+       { GCRY_PK_ELG, 2048, NULL, "elg2048" },
+       { GCRY_PK_ELG, 0,    NULL, "unknown_20" },
+       { 47114711,    1000, NULL, "unknown_47114711" },
+       /* Note that we don't care about the actual ECC algorithm.  */
+       { GCRY_PK_EDDSA,  0, "1.3.6.1.4.1.11591.15.1", "ed25519" },
+       { GCRY_PK_ECDSA,  0, "1.3.6.1.4.1.11591.15.1", "ed25519" },
+       { GCRY_PK_ECDH,   0, "1.3.6.1.4.1.11591.15.1", "ed25519" },
+       { GCRY_PK_ECDH,   0, "1.3.6.1.4.1.3029.1.5.1", "cv25519" },
+       { GCRY_PK_ECDH,   0, "1.3.36.3.3.2.8.1.1.7",   "brainpoolP256r1" },
+       { GCRY_PK_ECDH,   0, "1.3.36.3.3.2.8.1.1.11",  "brainpoolP384r1" },
+       { GCRY_PK_ECDH,   0, "1.3.36.3.3.2.8.1.1.13",  "brainpoolP512r1" },
+       { GCRY_PK_ECDH,   0, "1.3.132.0.10",           "secp256k1" },
+       { GCRY_PK_ECDH,   0, "1.2.840.10045.3.1.7",    "nistp256"  },
+       { GCRY_PK_ECDH,   0, "1.3.132.0.34",           "nistp384"  },
+       { GCRY_PK_ECDH,   0, "1.3.132.0.35",           "nistp521"  },
+       { GCRY_PK_ECDH,   0, "1.2.3.4.5.6",            "E_1.2.3.4.5.6" },
+       { GCRY_PK_ECDH,   0, BADOID,    "E_1.3.6.1.4.1.11591.2.12242973" },
+
+       /* Some again to test existing lookups.  */
+       { GCRY_PK_RSA, 768,  NULL, "rsa768"  },
+       { GCRY_PK_DSA, 3072, NULL, "dsa3072" },
+       { GCRY_PK_DSA, 1024, NULL, "dsa1024" },
+       { GCRY_PK_ECDH,   0, "1.3.6.1.4.1.11591.15.1", "ed25519" },
+       { GCRY_PK_ECDH,   0, "1.3.6.1.4.1.3029.1.5.1", "cv25519" },
+       { GCRY_PK_ECDH,   0, "1.3.36.3.3.2.8.1.1.7",   "brainpoolP256r1" },
+       { 47114711,    1000, NULL, "unknown_47114711" }
+      };
+  int idx;
+  const char *name;
+  int oops = 0;
+  int pass;
+
+  /* We do several passes becuase that is how the function is
+   * called.  */
+  for (pass=0; pass < 3; pass++)
+    for (idx=0; idx < DIM (samples); idx++)
+      {
+        name = get_keyalgo_string (samples[idx].algo,
+                                   samples[idx].nbits,
+                                   samples[idx].curve);
+        if (strcmp (samples[idx].name, name))
+          {
+            fprintf (stderr, "%s:test %d.%d: want '%s' got '%s'\n",
+                     __func__, pass, idx, samples[idx].name, name);
+            oops = 1;
+          }
+    }
+  if (oops)
+    exit (1);
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -241,6 +309,7 @@ main (int argc, char **argv)
   test_openpgp_oid_to_str ();
   test_openpgp_oid_is_ed25519 ();
   test_openpgp_enum_curves ();
+  test_get_keyalgo_string ();
 
   return 0;
 }

@@ -88,7 +88,10 @@ pubkey_letter( int algo )
    "256E"  - ECDSA using a curve with 256 bit
 
    The macro PUBKEY_STRING_SIZE may be used to allocate a buffer with
-   a suitable size.*/
+   a suitable size.  Note that a more general version of this function
+   exists as get_keyalgo_string.  However, that has no special
+   treatment for the old and unsupported Elgamal which we here print as
+   xxxNNNN.  */
 char *
 pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
 {
