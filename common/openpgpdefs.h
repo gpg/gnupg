@@ -209,8 +209,14 @@ compress_algo_t;
 #define S2K_DECODE_COUNT(_val) ((16ul + ((_val) & 15)) << (((_val) >> 4) + 6))
 
 
-/*--openpgp-s2k.c --*/
+/*-- openpgp-s2k.c --*/
 unsigned char encode_s2k_iterations (int iterations);
+
+
+/*-- openpgp-oid.c --*/
+pubkey_algo_t map_gcry_pk_to_openpgp (enum gcry_pk_algos algo);
+enum gcry_pk_algos map_openpgp_pk_to_gcry (pubkey_algo_t algo);
+
 
 
 #endif /*GNUPG_COMMON_OPENPGPDEFS_H*/

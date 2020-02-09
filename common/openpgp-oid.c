@@ -462,3 +462,33 @@ openpgp_is_curve_supported (const char *name, int *r_algo,
     }
   return NULL;
 }
+
+
+/* Map a Gcrypt public key algorithm number to the used by OpenPGP.
+ * Returns 0 for unknown gcry algorithm.  */
+pubkey_algo_t
+map_gcry_pk_to_openpgp (enum gcry_pk_algos algo)
+{
+  switch (algo)
+    {
+    case GCRY_PK_EDDSA:  return PUBKEY_ALGO_EDDSA;
+    case GCRY_PK_ECDSA:  return PUBKEY_ALGO_ECDSA;
+    case GCRY_PK_ECDH:   return PUBKEY_ALGO_ECDH;
+    default: return algo < 110 ? (pubkey_algo_t)algo : 0;
+    }
+}
+
+
+/* Map an OpenPGP public key algorithm number to the one used by
+ * Libgcrypt.  Returns 0 for unknown gcry algorithm.  */
+enum gcry_pk_algos
+map_openpgp_pk_to_gcry (pubkey_algo_t algo)
+{
+  switch (algo)
+    {
+    case PUBKEY_ALGO_EDDSA:  return GCRY_PK_EDDSA;
+    case PUBKEY_ALGO_ECDSA:  return GCRY_PK_ECDSA;
+    case PUBKEY_ALGO_ECDH:   return GCRY_PK_ECDH;
+    default: return algo < 110 ? algo : 0;
+    }
+}

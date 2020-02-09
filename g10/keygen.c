@@ -2048,7 +2048,7 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
   algo = get_pk_algo_from_canon_sexp (public, publiclen);
   xfree (public);
 
-  return map_pk_gcry_to_openpgp (algo);
+  return map_gcry_pk_to_openpgp (algo);
 }
 
 
@@ -2309,7 +2309,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                            && !(sl->flags & GCRY_PK_USAGE_ENCR))
                     sl->flags = (PUBKEY_ALGO_EDDSA << 8);
                   else
-                    sl->flags |= (map_pk_gcry_to_openpgp (algoid) << 8);
+                    sl->flags |= (map_gcry_pk_to_openpgp (algoid) << 8);
 
                   tty_printf ("   (%d) %s %s", count, sl->d, algostr);
                   if ((sl->flags & GCRY_PK_USAGE_CERT))
@@ -3451,7 +3451,7 @@ parse_key_parameter_part (ctrl_t ctrl,
                    && !(sl->flags & GCRY_PK_USAGE_ENCR))
             algo = PUBKEY_ALGO_EDDSA;
           else
-            algo = map_pk_gcry_to_openpgp (algoid);
+            algo = map_gcry_pk_to_openpgp (algoid);
 
           xfree (algostr);
           xfree (keygrip);
@@ -3796,7 +3796,7 @@ get_parameter_algo (ctrl_t ctrl, struct para_data_s *para, enum para_name key,
   else if (!ascii_strcasecmp (r->u.value, "ECDH"))
     i = PUBKEY_ALGO_ECDH;
   else
-    i = map_pk_gcry_to_openpgp (gcry_pk_map_name (r->u.value));
+    i = map_gcry_pk_to_openpgp (gcry_pk_map_name (r->u.value));
 
   if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
     i = 0; /* we don't want to allow generation of these algorithms */
