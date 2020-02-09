@@ -389,9 +389,9 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
 }
 
 
-/* Map an OpenPGP OID to the Libgcrypt curve NAME.  Returns NULL for
-   unknown curve names.  Unless CANON is set we prefer an alias name
-   here which is more suitable for printing.  */
+/* Map an OpenPGP OID to the Libgcrypt curve name.  Returns NULL for
+ * unknown curve names.  Unless CANON is set we prefer an alias name
+ * here which is more suitable for printing.  */
 const char *
 openpgp_oid_to_curve (const char *oidstr, int canon)
 {
@@ -402,6 +402,27 @@ openpgp_oid_to_curve (const char *oidstr, int canon)
 
   for (i=0; oidtable[i].name; i++)
     if (!strcmp (oidtable[i].oidstr, oidstr))
+      return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
+
+  return NULL;
+}
+
+
+/* Map an OpenPGP OID, name or alias to the Libgcrypt curve name.
+ * Returns NULL for unknown curve names.  Unless CANON is set we
+ * prefer an alias name here which is more suitable for printing.  */
+const char *
+openpgp_oid_or_name_to_curve (const char *oidname, int canon)
+{
+  int i;
+
+  if (!oidname)
+    return NULL;
+
+  for (i=0; oidtable[i].name; i++)
+    if (!strcmp (oidtable[i].oidstr, oidname)
+        || !strcmp (oidtable[i].name, oidname)
+        || (oidtable[i].alias &&!strcmp (oidtable[i].alias, oidname)))
       return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
 
   return NULL;
@@ -528,7 +549,7 @@ const char *
 get_keyalgo_string (enum gcry_pk_algos algo,
                     unsigned int nbits, const char *curve)
 {
-  const char *prefix = NULL;
+  const char *prefix;
   int i;
   char *name, *curvebuf;
 
@@ -537,9 +558,11 @@ get_keyalgo_string (enum gcry_pk_algos algo,
     case GCRY_PK_RSA:   prefix = "rsa"; break;
     case GCRY_PK_ELG:   prefix = "elg"; break;
     case GCRY_PK_DSA:	prefix = "dsa"; break;
+    case GCRY_PK_ECC:
     case GCRY_PK_ECDH:
     case GCRY_PK_ECDSA:
     case GCRY_PK_EDDSA: prefix = "";    break;
+    default:            prefix = NULL;  break;
     }
 
   if (prefix && *prefix && nbits)
@@ -569,7 +592,7 @@ get_keyalgo_string (enum gcry_pk_algos algo,
         }
 
       /* Not yet in the table - add it.  */
-      curvename = openpgp_oid_to_curve (curve, 0);
+      curvename = openpgp_oid_or_name_to_curve (curve, 0);
       if (curvename)
         name = xasprintf ("%s", curvename);
       else if (curve)

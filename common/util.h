@@ -232,6 +232,7 @@ int openpgp_oidbuf_is_cv25519 (const void *buf, size_t len);
 int openpgp_oid_is_cv25519 (gcry_mpi_t a);
 const char *openpgp_curve_to_oid (const char *name, unsigned int *r_nbits);
 const char *openpgp_oid_to_curve (const char *oid, int canon);
+const char *openpgp_oid_or_name_to_curve (const char *oidname, int canon);
 const char *openpgp_enum_curves (int *idxp);
 const char *openpgp_is_curve_supported (const char *name,
                                         int *r_algo, unsigned int *r_nbits);
