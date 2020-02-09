@@ -71,6 +71,21 @@ static const char oid_ed25519[] =
 static const char oid_cv25519[] =
   { 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x97, 0x55, 0x01, 0x05, 0x01 };
 
+/* A table to store keyalgo strings like "rsa2048 or "ed25519" so that
+ * we do not need to allocate them.  This is currently a simple array
+ * but may eventually be changed to a fast data structure.  Noet that
+ * unknown algorithms are stored with (NBITS,CURVE) set to (0,NULL). */
+struct keyalgo_string_s
+{
+  enum gcry_pk_algos algo;   /* Mandatory. */
+  unsigned int nbits;        /* Size for classical algos.  */
+  char *curve;               /* Curvename (OID) or NULL.   */
+  char *name;                /* Allocated name.  */
+};
+static struct keyalgo_string_s *keyalgo_strings;  /* The table.       */
+static size_t keyalgo_strings_size;               /* Allocated size.  */
+static size_t keyalgo_strings_used;               /* Used size.       */
+
 
 /* Helper for openpgp_oid_from_str.  */
 static size_t
@@ -383,9 +398,9 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
 }
 
 
-/* Map an OpenPGP OID to the Libgcrypt curve NAME.  Returns NULL for
-   unknown curve names.  Unless CANON is set we prefer an alias name
-   here which is more suitable for printing.  */
+/* Map an OpenPGP OID to the Libgcrypt curve name.  Returns NULL for
+ * unknown curve names.  Unless CANON is set we prefer an alias name
+ * here which is more suitable for printing.  */
 const char *
 openpgp_oid_to_curve (const char *oidstr, int canon)
 {
@@ -396,6 +411,27 @@ openpgp_oid_to_curve (const char *oidstr, int canon)
 
   for (i=0; oidtable[i].name; i++)
     if (!strcmp (oidtable[i].oidstr, oidstr))
+      return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
+
+  return NULL;
+}
+
+
+/* Map an OpenPGP OID, name or alias to the Libgcrypt curve name.
+ * Returns NULL for unknown curve names.  Unless CANON is set we
+ * prefer an alias name here which is more suitable for printing.  */
+const char *
+openpgp_oid_or_name_to_curve (const char *oidname, int canon)
+{
+  int i;
+
+  if (!oidname)
+    return NULL;
+
+  for (i=0; oidtable[i].name; i++)
+    if (!strcmp (oidtable[i].oidstr, oidname)
+        || !strcmp (oidtable[i].name, oidname)
+        || (oidtable[i].alias &&!strcmp (oidtable[i].alias, oidname)))
       return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
 
   return NULL;
@@ -469,4 +505,127 @@ openpgp_is_curve_supported (const char *name, int *r_algo,
         }
     }
   return NULL;
+}
+
+
+/* Map an OpenPGP public key algorithm number to the one used by
+ * Libgcrypt.  Returns 0 for unknown gcry algorithm.  */
+enum gcry_pk_algos
+map_openpgp_pk_to_gcry (pubkey_algo_t algo)
+{
+  switch (algo)
+    {
+    case PUBKEY_ALGO_EDDSA:  return GCRY_PK_EDDSA;
+    case PUBKEY_ALGO_ECDSA:  return GCRY_PK_ECDSA;
+    case PUBKEY_ALGO_ECDH:   return GCRY_PK_ECDH;
+    default: return algo < 110 ? (enum gcry_pk_algos)algo : 0;
+    }
+}
+
+
+/* Return a string describing the public key algorithm and the
+ * keysize.  For elliptic curves the function prints the name of the
+ * curve because the keysize is a property of the curve.  ALGO is the
+ * Gcrypt algorithmj number, curve is either NULL or give the PID of
+ * the curve, NBITS is either 0 or the size of the algorithms for RSA
+ * etc.  The returned string is taken from permanent table.  Examples
+ * for the output are:
+ *
+ * "rsa3072"    - RSA with 3072 bit
+ * "elg1024"    - Elgamal with 1024 bit
+ * "ed25519"    - ECC using the curve Ed25519.
+ * "E_1.2.3.4"  - ECC using the unsupported curve with OID "1.2.3.4".
+ * "E_1.3.6.1.4.1.11591.2.12242973" - ECC with a bogus OID.
+ * "unknown_N"  - Unknown OpenPGP algorithm N.
+ *                If N is > 110 this is a gcrypt algo.
+ */
+const char *
+get_keyalgo_string (enum gcry_pk_algos algo,
+                    unsigned int nbits, const char *curve)
+{
+  const char *prefix;
+  int i;
+  char *name, *curvebuf;
+
+  switch (algo)
+    {
+    case GCRY_PK_RSA:   prefix = "rsa"; break;
+    case GCRY_PK_ELG:   prefix = "elg"; break;
+    case GCRY_PK_DSA:	prefix = "dsa"; break;
+    case GCRY_PK_ECC:
+    case GCRY_PK_ECDH:
+    case GCRY_PK_ECDSA:
+    case GCRY_PK_EDDSA: prefix = "";    break;
+    default:            prefix = NULL;  break;
+    }
+
+  if (prefix && *prefix && nbits)
+    {
+      for (i=0; i < keyalgo_strings_used; i++)
+        {
+          if (keyalgo_strings[i].algo == algo
+              && keyalgo_strings[i].nbits
+              && keyalgo_strings[i].nbits == nbits)
+            return keyalgo_strings[i].name;
+        }
+      /* Not yet in the table - add it.  */
+      name = xasprintf ("%s%u", prefix, nbits);
+      nbits = nbits? nbits : 1;  /* No nbits - oops - use 1 instead.  */
+      curvebuf = NULL;
+    }
+  else if (prefix && !*prefix)
+    {
+      const char *curvename;
+
+      for (i=0; i < keyalgo_strings_used; i++)
+        {
+          if (keyalgo_strings[i].algo == algo
+              && keyalgo_strings[i].curve
+              && !strcmp (keyalgo_strings[i].curve, curve))
+            return keyalgo_strings[i].name;
+        }
+
+      /* Not yet in the table - add it.  */
+      curvename = openpgp_oid_or_name_to_curve (curve, 0);
+      if (curvename)
+        name = xasprintf ("%s", curvename);
+      else if (curve)
+        name = xasprintf ("E_%s", curve);
+      else
+        name = xasprintf ("E_error");
+      nbits = 0;
+      curvebuf = xstrdup (curve);
+    }
+  else
+    {
+      for (i=0; i < keyalgo_strings_used; i++)
+        {
+          if (keyalgo_strings[i].algo == algo
+              && !keyalgo_strings[i].nbits
+              && !keyalgo_strings[i].curve)
+            return keyalgo_strings[i].name;
+        }
+      /* Not yet in the table - add it.  */
+      name = xasprintf ("unknown_%u", (unsigned int)algo);
+      nbits = 0;
+      curvebuf = NULL;
+    }
+
+  /* Store a new entry.  This is a loop because of a possible nPth
+   * thread switch during xrealloc.  */
+  while (keyalgo_strings_used >= keyalgo_strings_size)
+    {
+      keyalgo_strings_size += 10;
+      if (keyalgo_strings_size > 1024*1024)
+        log_fatal ("%s: table getting too large - possible DoS\n", __func__);
+      keyalgo_strings = xrealloc (keyalgo_strings, (keyalgo_strings_size
+                                                    * sizeof *keyalgo_strings));
+    }
+  keyalgo_strings[keyalgo_strings_used].algo = algo;
+  keyalgo_strings[keyalgo_strings_used].nbits = nbits;
+  keyalgo_strings[keyalgo_strings_used].curve = curvebuf;
+  keyalgo_strings[keyalgo_strings_used].name = name;
+  keyalgo_strings_used++;
+
+  return name;  /* Note that this is in the table.  */
 }
