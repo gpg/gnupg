@@ -297,7 +297,6 @@ openpgp_oid_to_str (gcry_mpi_t a)
       return NULL;
     }
 
-  buf = gcry_mpi_get_opaque (a, &lengthi);
   return openpgp_oidbuf_to_str (buf, (lengthi+7)/8);
 }
 
