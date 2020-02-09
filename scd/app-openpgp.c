@@ -955,8 +955,12 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
 {
   char buffer[200];
 
-  assert (keyno >=0 && keyno < DIM(app->app_local->keyattr));
+  log_assert (keyno >=0 && keyno < DIM(app->app_local->keyattr));
 
+  /* Note that the code in gpg-card supports prefixing the key number
+   * with "OPENPGP." but older code does not yet support this.  There
+   * is also a discrepancy with the algorithm numbers: We should use
+   * the gcrypt numbers but the current code assumes OpenPGP numbers.  */
   if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
     snprintf (buffer, sizeof buffer, "%d 1 rsa%u %u %d",
               keyno+1,
@@ -4311,7 +4315,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, const char *keytype,
   const unsigned char *keydata;
   size_t buflen, keydatalen;
   u32 created_at;
-  int keyno = atoi (keynostr) - 1;
+  int keyno;
   int force = (flags & 1);
   time_t start_at;
   int exmode = 0;
@@ -4319,7 +4323,12 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, const char *keytype,
 
   (void)keytype;  /* Ignored for OpenPGP cards.  */
 
-  if (keyno < 0 || keyno > 2)
+  /* Strip the OpenPGP prefix which is for historical reasons optional.  */
+  if (!ascii_strncasecmp (keynostr, "OPENPGP.", 8))
+    keynostr += 8;
+
+  keyno = atoi (keynostr) - 1;
+  if (!digitp (keynostr) || keyno < 0 || keyno > 2)
     return gpg_error (GPG_ERR_INV_ID);
 
   /* We flush the cache to increase the traffic before a key

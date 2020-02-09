@@ -2171,7 +2171,7 @@ static struct gnupg_compliance_option compliance_options[] =
 static void
 set_compliance_option (enum cmd_and_opt_values option)
 {
-  opt.flags.rfc4880bis = 0;  /* Clear becuase it is initially set.  */
+  opt.flags.rfc4880bis = 0;  /* Clear because it is initially set.  */
 
   switch (option)
     {
