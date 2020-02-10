@@ -55,6 +55,7 @@
 #endif /*HTTP_USE_GNUTLS*/
 
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #define GNUPG_COMMON_NEED_AFLOCAL
 #include "dirmngr.h"
 

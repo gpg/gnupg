@@ -27,6 +27,8 @@
 # include <readline/readline.h>
 #endif /*HAVE_LIBREADLINE*/
 
+#define INCLUDED_BY_MAIN_MODULE 1
+
 #include "../common/util.h"
 #include "../common/status.h"
 #include "../common/i18n.h"

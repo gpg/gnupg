@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "gpgconf.h"
 #include "../common/i18n.h"
 #include "../common/sysutils.h"

@@ -46,6 +46,7 @@
 
 
 /* A large struct name "opt" to keep global flags. */
+EXTERN_UNLESS_MAIN_MODULE
 struct
 {
   unsigned int debug; /* Debug flags (DBG_foo_VALUE). */

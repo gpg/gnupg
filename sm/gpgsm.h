@@ -53,6 +53,7 @@ struct keyserver_spec
 
 
 /* A large struct named "opt" to keep global flags. */
+EXTERN_UNLESS_MAIN_MODULE
 struct
 {
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */

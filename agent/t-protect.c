@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "agent.h"
 
 

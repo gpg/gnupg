@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
 
 /* A unit test consists of one or more tests.  Tests can be broken

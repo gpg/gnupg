@@ -34,6 +34,7 @@
 #include <string.h>
 #include <assert.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "../common/util.h"
 #include "../common/i18n.h"
 #include "../common/sysutils.h"

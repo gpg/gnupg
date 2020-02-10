@@ -48,6 +48,14 @@
 #define GPG_ERR_KEYBOXD     317
 #endif /*GPG_ERROR_VERSION_NUMBER*/
 
+#ifndef EXTERN_UNLESS_MAIN_MODULE
+# if !defined (INCLUDED_BY_MAIN_MODULE)
+#  define EXTERN_UNLESS_MAIN_MODULE extern
+# else
+#  define EXTERN_UNLESS_MAIN_MODULE
+# endif
+#endif
+
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
 

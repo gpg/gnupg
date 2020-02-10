@@ -22,9 +22,9 @@
 
 #include "../common/types.h"
 #include "../common/iobuf.h"
+#include "../common/util.h"
 #include "keydb.h"
 #include "keyedit.h"
-#include "../common/util.h"
 
 /* It could be argued that the default cipher should be 3DES rather
    than AES128, and the default compression should be 0

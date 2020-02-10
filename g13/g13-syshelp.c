@@ -31,6 +31,7 @@
 #endif
 #include <unistd.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "g13-syshelp.h"
 
 #include <gcrypt.h>
