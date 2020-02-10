@@ -127,6 +127,7 @@ typedef struct keyinfolabel_s *keyinfolabel_t;
 
 
 /* Local prototypes.  */
+static void show_keysize_warning (void);
 static gpg_error_t dispatch_command (card_info_t info, const char *command);
 static void interactive_loop (void);
 #ifdef HAVE_LIBREADLINE
@@ -652,6 +653,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
         {
           tty_fprintf (fp, "[none]\n");
           tty_fprintf (fp, "      keyref .....: %s\n", kinfo->keyref);
+          tty_fprintf (fp, "      algorithm ..: %s\n", kinfo->keyalgo);
           goto leave;
         }
 
@@ -680,6 +682,10 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
           xfree (tmp);
           gcry_sexp_release (s_pkey);
           s_pkey = NULL;
+        }
+      else
+        {
+          tty_fprintf (fp, "      algorithm ..: %s\n", kinfo->keyalgo);
         }
 
       if (kinfo->fprlen && kinfo->created)
@@ -746,6 +752,8 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
       tty_fprintf (fp, " [none]\n");
       if (label_keyref)
         tty_fprintf (fp, "      keyref .....: %s\n", label_keyref);
+      if (kinfo)
+        tty_fprintf (fp, "      algorithm ..: %s\n", kinfo->keyalgo);
     }
 
  leave:
@@ -798,7 +806,6 @@ list_openpgp (card_info_t info, estream_t fp)
     { "Authentication key:", "OPENPGP.3" },
     { NULL, NULL }
   };
-  int i;
 
   if (!info->serialno
       || strncmp (info->serialno, "D27600012401", 12)
@@ -845,26 +852,6 @@ list_openpgp (card_info_t info, estream_t fp)
     }
   tty_fprintf (fp, "Signature PIN ....: %s\n",
                info->chv1_cached? _("not forced"): _("forced"));
-  if (info->key_attr[0].algo)
-    {
-      tty_fprintf (fp,    "Key attributes ...:");
-      for (i=0; i < DIM (info->key_attr); i++)
-        if (info->key_attr[i].algo == PUBKEY_ALGO_RSA)
-          tty_fprintf (fp, " rsa%u", info->key_attr[i].nbits);
-        else if (info->key_attr[i].algo == PUBKEY_ALGO_ECDH
-                 || info->key_attr[i].algo == PUBKEY_ALGO_ECDSA
-                 || info->key_attr[i].algo == PUBKEY_ALGO_EDDSA)
-          {
-            const char *curve_for_print = "?";
-            const char *oid;
-
-            if (info->key_attr[i].curve
-                && (oid = openpgp_curve_to_oid (info->key_attr[i].curve, NULL)))
-              curve_for_print = openpgp_oid_to_curve (oid, 0);
-            tty_fprintf (fp, " %s", curve_for_print);
-          }
-      tty_fprintf (fp, "\n");
-    }
   tty_fprintf (fp, "Max. PIN lengths .: %d %d %d\n",
                info->chvmaxlen[0], info->chvmaxlen[1], info->chvmaxlen[2]);
   tty_fprintf (fp, "PIN retry counter : %d %d %d\n",
@@ -2002,7 +1989,7 @@ cmd_forcesig (card_info_t info)
 
 
 
-/* Helper for cmd_generate_openpgp.  Noe that either 0 or 1 is stored at
+/* Helper for cmd_generate_openpgp.  Nore that either 0 or 1 is stored at
  * FORCED_CHV1. */
 static gpg_error_t
 check_pin_for_key_operation (card_info_t info, int *forced_chv1)
@@ -2055,9 +2042,42 @@ restore_forced_chv1 (int *forced_chv1)
 }
 
 
-/* Implementation of cmd_generate for OpenPGP cards.  */
+/* Ask whether existing keys shall be overwritten.  With NULL used for
+ * KINFO it will ask for all keys, other wise for the given key.  */
 static gpg_error_t
-generate_openpgp (card_info_t info)
+ask_replace_keys (key_info_t kinfo)
+{
+  gpg_error_t err;
+  char *answer;
+
+  tty_printf ("\n");
+  if (kinfo)
+    log_info (_("Note: key %s is already stored on the card!\n"),
+              kinfo->keyref);
+  else
+    log_info (_("Note: Keys are already stored on the card!\n"));
+  tty_printf ("\n");
+  if (kinfo)
+    answer = tty_getf (_("Replace existing key %s ? (y/N) "), kinfo->keyref);
+  else
+    answer = tty_get (_("Replace existing keys? (y/N) "));
+  tty_kill_prompt ();
+  if (*answer == CONTROL_D)
+    err = gpg_error (GPG_ERR_CANCELED);
+  else if (!answer_is_yes_no_default (answer, 0/*(default to No)*/))
+    err = gpg_error (GPG_ERR_CANCELED);
+  else
+    err = 0;
+
+  xfree (answer);
+  return err;
+}
+
+
+/* Implementation of cmd_generate for OpenPGP cards to generate all
+ * standard keys at once.  */
+static gpg_error_t
+generate_all_openpgp_card_keys (card_info_t info, char **algos)
 {
   gpg_error_t err;
   int forced_chv1 = -1;
@@ -2089,22 +2109,9 @@ generate_openpgp (card_info_t info)
       || (kinfo3 && kinfo3->fprlen && !mem_is_zero (kinfo3->fpr,kinfo3->fprlen))
       )
     {
-      tty_printf ("\n");
-      log_info (_("Note: keys are already stored on the card!\n"));
-      tty_printf ("\n");
-      answer = tty_get (_("Replace existing keys? (y/N) "));
-      tty_kill_prompt ();
-      if (*answer == CONTROL_D)
-        {
-          err = gpg_error (GPG_ERR_CANCELED);
-          goto leave;
-        }
-
-      if (!answer_is_yes_no_default (answer, 0/*(default to No)*/))
-        {
-          err = gpg_error (GPG_ERR_CANCELED);
-          goto leave;
-        }
+      err = ask_replace_keys (NULL);
+      if (err)
+        goto leave;
     }
 
   /* If no displayed name has been set, we assume that this is a fresh
@@ -2123,7 +2130,9 @@ generate_openpgp (card_info_t info)
   if (err)
     goto leave;
 
-  /* FIXME: We need to divert to a function which spwans gpg which
+  (void)algos;  /* FIXME: If we have ALGOS, we need to change the key attr. */
+
+  /* FIXME: We need to divert to a function which spawns gpg which
    * will then create the key.  This also requires new features in
    * gpg.  We might also first create the keys on the card and then
    * tell gpg to use them to create the OpenPGP keyblock. */
@@ -2138,17 +2147,50 @@ generate_openpgp (card_info_t info)
 }
 
 
-/* Generic implementation of cmd_generate.  */
+/* Create a single key.  This is a helper for cmd_generate.  */
 static gpg_error_t
-generate_generic (card_info_t info, const char *keyref, int force,
-                  const char *algo)
+generate_key (card_info_t info, const char *keyref, int force,
+              const char *algo)
 {
   gpg_error_t err;
+  key_info_t kinfo;
 
-  (void)info;
+  if (info->apptype == APP_TYPE_OPENPGP)
+    {
+      kinfo = find_kinfo (info, keyref);
+      if (!kinfo)
+        {
+          err = gpg_error (GPG_ERR_INV_ID);
+          goto leave;
+        }
+
+      if (!force
+          && kinfo->fprlen && !mem_is_zero (kinfo->fpr, kinfo->fprlen))
+        {
+          err = ask_replace_keys (NULL);
+          if (err)
+            goto leave;
+        }
+
+      log_debug ("current algo is: %s\n", kinfo->keyalgo);
+      if (algo)
+        {
+          log_debug ("setting algo to: %s\n", algo);
+          /* OpenPGP cards require us to set the key attributes prior
+           * to generation because the generate command does not take
+           * key attributes.  Actually this should be hidden by
+           * scd/app-openpgp but that is not the case.  */
+
+
+
+        }
+      goto leave;
+      /* err = generate_openpgp (info); */
+    }
 
   err = scd_genkey (keyref, force, algo, NULL);
 
+ leave:
   return err;
 }
 
@@ -2165,17 +2207,21 @@ cmd_generate (card_info_t info, char *argstr)
     };
   gpg_error_t err;
   int opt_force;
-  char *opt_algo = NULL; /* Malloced.  */
+  char *p;
+  char **opt_algo = NULL;      /* Malloced.  */
   char *keyref_buffer = NULL;  /* Malloced.  */
   char *keyref;          /* Points into argstr or keyref_buffer.  */
-  int i;
+  int i, j;
 
   if (!info)
     return print_help
-      ("GENERATE [--force] [--algo=ALGO] KEYREF\n\n"
-       "Create a new key on a card.  For OpenPGP cards a menu is used\n"
-       "and KEYREF is ignored.  Use --force to overwrite an existing key.\n"
-       "Using \"help\" for ALGO gives a list of known algorithms.\n",
+      ("GENERATE [--force] [--algo=ALGO{+ALGO2}] KEYREF\n\n"
+       "Create a new key on a card.\n"
+       "Use --force to overwrite an existing key.\n"
+       "Use \"help\" for ALGO to get a list of known algorithms.\n"
+       "For OpenPGP cards several algos may be given.\n"
+       "Note that the OpenPGP key generation is done interactively\n"
+       "unless a single ALGO or KEYREF are given.",
        APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
   if (opt.interactive || opt.verbose)
@@ -2184,9 +2230,21 @@ cmd_generate (card_info_t info, char *argstr)
               info->dispserialno? info->dispserialno : info->serialno);
 
   opt_force = has_leading_option (argstr, "--force");
-  err = get_option_value (argstr, "--algo", &opt_algo);
+  err = get_option_value (argstr, "--algo", &p);
   if (err)
     goto leave;
+  if (p)
+    {
+      opt_algo = strtokenize (p, "+");
+      if (!opt_algo)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (p);
+          goto leave;
+        }
+      xfree (p);
+    }
+
   argstr = skip_options (argstr);
 
   keyref = argstr;
@@ -2211,33 +2269,40 @@ cmd_generate (card_info_t info, char *argstr)
 
   if (opt_algo)
     {
-      for (i=0; valid_algos[i]; i++)
-        if (*valid_algos[i] && !strcmp (valid_algos[i], opt_algo))
-          break;
-      if (!valid_algos[i])
+      /* opt_algo is an array of algos.  */
+      for (i=0; opt_algo[i]; i++)
         {
-          int lf = 1;
-          if (!ascii_strcasecmp (opt_algo, "help"))
-            log_info ("Known algorithms:\n");
-          else
+          for (j=0; valid_algos[j]; j++)
+            if (*valid_algos[j] && !strcmp (valid_algos[j], opt_algo[i]))
+              break;
+          if (!valid_algos[j])
             {
-              log_info ("Invalid algorithm '%s' given.  Use one:\n", opt_algo);
-              err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-            }
-          for (i=0; valid_algos[i]; i++)
-            {
-              if (!*valid_algos[i])
-                lf = 1;
-              else if (lf)
-                {
-                  lf = 0;
-                  log_info ("  %s%s", valid_algos[i], valid_algos[i+1]?",":".");
-                }
+              int lf = 1;
+              if (!ascii_strcasecmp (opt_algo[i], "help"))
+                log_info ("Known algorithms:\n");
               else
-                log_printf (" %s%s", valid_algos[i], valid_algos[i+1]?",":".");
+                {
+                  log_info ("Invalid algorithm '%s' given.  Use one of:\n",
+                            opt_algo[i]);
+                  err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+                }
+              for (i=0; valid_algos[i]; i++)
+                {
+                  if (!*valid_algos[i])
+                    lf = 1;
+                  else if (lf)
+                    {
+                      lf = 0;
+                      log_info ("  %s%s",
+                                valid_algos[i], valid_algos[i+1]?",":".");
+                    }
+                  else
+                    log_printf (" %s%s",
+                                valid_algos[i], valid_algos[i+1]?",":".");
+                }
+              show_keysize_warning ();
+              goto leave;
             }
-          log_info ("Note that the card may not support all of them.\n");
-          goto leave;
         }
     }
 
@@ -2264,16 +2329,25 @@ cmd_generate (card_info_t info, char *argstr)
     }
 
   /* Divert to dedicated functions.  */
-  if (info->apptype == APP_TYPE_OPENPGP)
+  if (info->apptype == APP_TYPE_OPENPGP
+      && !keyref
+      && (!opt_algo || (opt_algo[0] && opt_algo[1])))
     {
-      if (opt_force || opt_algo || keyref)
-        log_info ("Note: Options are ignored for OpenPGP cards.\n");
-      err = generate_openpgp (info);
+      /* With no algo requested or more than one algo requested and no
+       * keyref given we create all keys.  */
+      if (opt_force || keyref)
+        log_info ("Note: OpenPGP key generation is interactive.\n");
+      err = generate_all_openpgp_card_keys (info, opt_algo);
     }
   else if (!keyref)
     err = gpg_error (GPG_ERR_INV_ID);
+  else if (opt_algo && opt_algo[0] && opt_algo[1])
+    {
+      log_error ("only one algorithm expected as value for --algo.\n");
+      err = gpg_error (GPG_ERR_INV_ARG);
+    }
   else
-    err = generate_generic (info, keyref, opt_force, opt_algo);
+    err = generate_key (info, keyref, opt_force, opt_algo? opt_algo[0]:NULL);
 
  leave:
   xfree (opt_algo);
@@ -2805,295 +2879,6 @@ show_keysize_warning (void)
 }
 
 
-/* Ask for the size of a card key.  NBITS is the current size
- * configured for the card.  Returns 0 on success and stored the
- * chosen key size at R_KEYSIZE; 0 is stored to indicate that the
- * default size shall be used.  */
-static gpg_error_t
-ask_card_rsa_keysize (unsigned int nbits, unsigned int *r_keysize)
-{
-  unsigned int min_nbits = 1024;
-  unsigned int max_nbits = 4096;
-  char*answer;
-  unsigned int req_nbits;
-
-  for (;;)
-    {
-      answer = tty_getf (_("What keysize do you want? (%u) "), nbits);
-      trim_spaces (answer);
-      tty_kill_prompt ();
-      if (*answer == CONTROL_D)
-        {
-          xfree (answer);
-          return gpg_error (GPG_ERR_CANCELED);
-        }
-      req_nbits = *answer? atoi (answer): nbits;
-      xfree (answer);
-
-      if (req_nbits != nbits && (req_nbits % 32) )
-        {
-          req_nbits = ((req_nbits + 31) / 32) * 32;
-          tty_printf (_("rounded up to %u bits\n"), req_nbits);
-        }
-
-      if (req_nbits == nbits)
-        {
-          /* Use default.  */
-          *r_keysize = 0;
-          return 0;
-        }
-
-      if (req_nbits < min_nbits || req_nbits > max_nbits)
-        {
-          tty_printf (_("%s keysizes must be in the range %u-%u\n"),
-                      "RSA", min_nbits, max_nbits);
-        }
-      else
-        {
-          *r_keysize = req_nbits;
-          return 0;
-        }
-    }
-}
-
-
-/* Ask for the key attribute of a card key.  CURRENT is the current
- * attribute configured for the card.  KEYNO is the number of the key
- * used to select the prompt.  Stores NULL at result to use the
- * default attribute or stores the selected attribute structure at
- * RESULT.  On error an error code is returned.  */
-static gpg_error_t
-ask_card_keyattr (int keyno, const struct key_attr *current,
-                  struct key_attr **result)
-{
-  gpg_error_t err;
-  struct key_attr *key_attr = NULL;
-  char *answer = NULL;
-  int selection;
-
-  *result = NULL;
-
-  key_attr = xcalloc (1, sizeof *key_attr);
-
-  tty_printf (_("Changing card key attribute for: "));
-  if (keyno == 0)
-    tty_printf (_("Signature key\n"));
-  else if (keyno == 1)
-    tty_printf (_("Encryption key\n"));
-  else
-    tty_printf (_("Authentication key\n"));
-
-  tty_printf (_("Please select what kind of key you want:\n"));
-  tty_printf (_("   (%d) RSA\n"), 1 );
-  tty_printf (_("   (%d) ECC\n"), 2 );
-
-  for (;;)
-    {
-      xfree (answer);
-      answer = tty_get (_("Your selection? "));
-      trim_spaces (answer);
-      tty_kill_prompt ();
-      if (!*answer || *answer == CONTROL_D)
-        {
-          err = gpg_error (GPG_ERR_CANCELED);
-          goto leave;
-        }
-      selection = *answer? atoi (answer) : 0;
-
-      if (selection == 1 || selection == 2)
-        break;
-      else
-        tty_printf (_("Invalid selection.\n"));
-    }
-
-
-  if (selection == 1)
-    {
-      unsigned int nbits, result_nbits;
-
-      if (current->algo == PUBKEY_ALGO_RSA)
-        nbits = current->nbits;
-      else
-        nbits = 2048;
-
-      err = ask_card_rsa_keysize (nbits, &result_nbits);
-      if (err)
-        goto leave;
-      if (result_nbits == 0)
-        {
-          if (current->algo == PUBKEY_ALGO_RSA)
-            {
-              xfree (key_attr);
-              key_attr = NULL;
-            }
-          else
-            result_nbits = nbits;
-        }
-
-      if (key_attr)
-        {
-          key_attr->algo = PUBKEY_ALGO_RSA;
-          key_attr->nbits = result_nbits;
-        }
-    }
-  else if (selection == 2)
-    {
-      const char *curve;
-      /* const char *oid_str; */
-      int algo;
-
-      if (current->algo == PUBKEY_ALGO_RSA)
-        {
-          if (keyno == 1) /* Encryption key */
-            algo = PUBKEY_ALGO_ECDH;
-          else /* Signature key or Authentication key */
-            algo = PUBKEY_ALGO_ECDSA;
-          curve = NULL;
-        }
-      else
-        {
-          algo = current->algo;
-          curve = current->curve;
-        }
-
-      (void)curve;
-      (void)algo;
-      err = GPG_ERR_NOT_IMPLEMENTED;
-      goto leave;
-      /* FIXME: We need to move the ask_cure code out to common or
-       * provide another sultion.  */
-      /* curve = ask_curve (&algo, NULL, curve); */
-      /* if (curve) */
-      /*   { */
-      /*     key_attr->algo = algo; */
-      /*     oid_str = openpgp_curve_to_oid (curve, NULL); */
-      /*     key_attr->curve = openpgp_oid_to_curve (oid_str, 0); */
-      /*   } */
-      /* else */
-      /*   { */
-      /*     xfree (key_attr); */
-      /*     key_attr = NULL; */
-      /*   } */
-    }
-  else
-    {
-      err = gpg_error (GPG_ERR_BUG);
-      goto leave;
-    }
-
-  /* Tell the user what we are going to do.  */
-  if (key_attr->algo == PUBKEY_ALGO_RSA)
-    {
-      tty_printf (_("The card will now be re-configured"
-                    " to generate a key of %u bits\n"), key_attr->nbits);
-    }
-  else if (key_attr->algo == PUBKEY_ALGO_ECDH
-           || key_attr->algo == PUBKEY_ALGO_ECDSA
-           || key_attr->algo == PUBKEY_ALGO_EDDSA)
-    {
-      tty_printf (_("The card will now be re-configured"
-                    " to generate a key of type: %s\n"), key_attr->curve);
-    }
-  show_keysize_warning ();
-
-  *result = key_attr;
-  key_attr = NULL;
-
- leave:
-  xfree (key_attr);
-  xfree (answer);
-  return err;
-}
-
-
-/* Change the key attribute of key KEYNO (0..2) and show an error
- * message if that fails.  */
-static gpg_error_t
-do_change_keyattr (int keyno, const struct key_attr *key_attr)
-{
-  gpg_error_t err = 0;
-  char args[100];
-
-  if (key_attr->algo == PUBKEY_ALGO_RSA)
-    snprintf (args, sizeof args, "--force %d 1 rsa%u", keyno+1,
-              key_attr->nbits);
-  else if (key_attr->algo == PUBKEY_ALGO_ECDH
-           || key_attr->algo == PUBKEY_ALGO_ECDSA
-           || key_attr->algo == PUBKEY_ALGO_EDDSA)
-    snprintf (args, sizeof args, "--force %d %d %s",
-              keyno+1, key_attr->algo, key_attr->curve);
-  else
-    {
-      /* FIXME: Above we use openpgp algo names but in the error
-       * message we use the gcrypt names.  We should settle for a
-       * consistent solution. */
-      log_error (_("public key algorithm %d (%s) is not supported\n"),
-                 key_attr->algo, gcry_pk_algo_name (key_attr->algo));
-      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-      goto leave;
-    }
-
-  err = scd_setattr ("KEY-ATTR", args, strlen (args));
-  if (err)
-    log_error (_("error changing key attribute for key %d: %s\n"),
-               keyno+1, gpg_strerror (err));
- leave:
-  return err;
-}
-
-
-static gpg_error_t
-cmd_keyattr (card_info_t info, char *argstr)
-{
-  gpg_error_t err = 0;
-  int keyno;
-  struct key_attr *key_attr = NULL;
-
-  (void)argstr;
-
-  if (!info)
-    return print_help
-      ("KEY-ATTR\n\n"
-       "Menu to change the key attributes of an OpenPGP card.",
-       APP_TYPE_OPENPGP, 0);
-
-  if (info->apptype != APP_TYPE_OPENPGP)
-    {
-      log_info ("Note: This is an OpenPGP only command.\n");
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
-
-  if (!(info->is_v2 && info->extcap.aac))
-    {
-      log_error (_("This command is not supported by this card\n"));
-      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-      goto leave;
-    }
-
-  for (keyno = 0; keyno < DIM (info->key_attr); keyno++)
-    {
-      xfree (key_attr);
-      key_attr = NULL;
-      err = ask_card_keyattr (keyno, &info->key_attr[keyno], &key_attr);
-      if (err)
-        goto leave;
-
-      err = do_change_keyattr (keyno, key_attr);
-      if (err)
-        {
-          /* Error: Better read the default key attribute again.  */
-          log_debug ("FIXME\n");
-          /* Ask again for this key. */
-          keyno--;
-        }
-    }
-
- leave:
-  xfree (key_attr);
-  return err;
-}
-
-
 static gpg_error_t
 cmd_uif (card_info_t info, char *argstr)
 {
@@ -3196,7 +2981,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdWRITEKEY,  cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
-    cmdKEYATTR, cmdUIF, cmdAUTH, cmdYUBIKEY,
+    cmdUIF, cmdAUTH, cmdYUBIKEY,
     cmdINVCMD
   };
 
@@ -3230,7 +3015,6 @@ static struct
   { "reset"   ,  cmdRESET,      N_("send a reset to the card daemon")},
   { "factory-reset",cmdFACTRST, N_("destroy all keys and data")},
   { "kdf-setup", cmdKDFSETUP,   N_("setup KDF for PIN authentication")},
-  { "key-attr",  cmdKEYATTR,    N_("change the key attribute")},
   { "uif",       cmdUIF,        N_("change the User Interaction Flag")},
   { "privatedo", cmdPRIVATEDO,  N_("change a private data object")},
   { "readcert",  cmdREADCERT,   N_("read a certificate from a data object")},
@@ -3356,7 +3140,6 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdUNBLOCK:      err = cmd_unblock (info); break;
     case cmdFACTRST:      err = cmd_factoryreset (info); break;
     case cmdKDFSETUP:     err = cmd_kdfsetup (info, argstr); break;
-    case cmdKEYATTR:      err = cmd_keyattr (info, argstr); break;
     case cmdUIF:          err = cmd_uif (info, argstr); break;
     case cmdYUBIKEY:      err = cmd_yubikey (info, argstr); break;
 
@@ -3578,7 +3361,6 @@ interactive_loop (void)
             redisplay = 1;
           break;
         case cmdKDFSETUP:  err = cmd_kdfsetup (info, argstr); break;
-        case cmdKEYATTR:   err = cmd_keyattr (info, argstr); break;
         case cmdUIF:       err = cmd_uif (info, argstr); break;
         case cmdYUBIKEY:   err = cmd_yubikey (info, argstr); break;
 

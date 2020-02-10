@@ -102,16 +102,6 @@ typedef enum
   } app_type_t;
 
 
-/* OpenPGP card key attributes.  */
-struct key_attr
-{
-  int algo;              /* Algorithm identifier.  */
-  union {
-    unsigned int nbits;  /* Supported keysize.  */
-    const char *curve;   /* Name of curve.  */
-  };
-};
-
 /* An object to store information pertaining to a key pair as stored
  * on a card.  This is commonly used as a linked list with all keys
  * known for the current card.  */
@@ -122,6 +112,11 @@ struct key_info_s
   unsigned char grip[20];/* The keygrip.  */
 
   unsigned char xflag;   /* Temporary flag to help processing a list. */
+
+  /* OpenPGP card and possible other cards keyalgo string (an atom)
+   * and the id of the algorithm. */
+  const char *keyalgo;
+  enum gcry_pk_algos keyalgo_id;
 
   /* The three next items are mostly useful for OpenPGP cards.  */
   unsigned char fprlen;  /* Use length of the next item.  */
@@ -169,7 +164,6 @@ struct card_info_s
   int chvmaxlen[3];  /* Maximum allowed length of a CHV. */
   int chvinfo[3];    /* Allowed retries for the CHV; 0 = blocked. */
   unsigned char chvusage[2]; /* Data object 5F2F */
-  struct key_attr key_attr[3]; /* OpenPGP card key attributes.  */
   struct {
     unsigned int ki:1;     /* Key import available.  */
     unsigned int aac:1;    /* Algorithm attributes are changeable.  */
