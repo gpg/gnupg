@@ -23,6 +23,7 @@
 #include "../common/util.h"
 
 /* We keep all global options in the structure OPT.  */
+EXTERN_UNLESS_MAIN_MODULE
 struct
 {
   int verbose;		/* Verbosity level.  */

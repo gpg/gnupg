@@ -23,7 +23,9 @@
 #include "../common/util.h"
 #include "../common/strlist.h"
 
+
 /* We keep all global options in the structure OPT.  */
+EXTERN_UNLESS_MAIN_MODULE
 struct
 {
   int verbose;

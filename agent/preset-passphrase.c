@@ -44,6 +44,7 @@
 # include <windows.h>  /* To initialize the sockets.  fixme */
 #endif
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "agent.h"
 #include "../common/simple-pwquery.h"
 #include "../common/i18n.h"

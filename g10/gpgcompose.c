@@ -20,6 +20,7 @@
 #include <config.h>
 #include <errno.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
 #include "packet.h"
 #include "keydb.h"

@@ -28,6 +28,8 @@
 #include <fcntl.h>
 /*#include <mcheck.h>*/
 
+#define INCLUDED_BY_MAIN_MODULE 1
+
 #include "gpgsm.h"
 #include <gcrypt.h>
 #include <assuan.h> /* malloc hooks */

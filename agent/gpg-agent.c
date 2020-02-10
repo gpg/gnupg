@@ -49,6 +49,7 @@
 #endif
 #include <npth.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #define GNUPG_COMMON_NEED_AFLOCAL
 #include "agent.h"
 #include <assuan.h> /* Malloc hooks  and socket wrappers. */

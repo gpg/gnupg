@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "../common/util.h"
 #include "../common/init.h"
 #include "../common/sysutils.h"

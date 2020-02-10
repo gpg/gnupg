@@ -30,14 +30,6 @@
 #include "../common/session-env.h"
 #include "../common/compliance.h"
 
-#ifndef EXTERN_UNLESS_MAIN_MODULE
-/* Norcraft can't cope with common symbols */
-#if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
-#define EXTERN_UNLESS_MAIN_MODULE extern
-#else
-#define EXTERN_UNLESS_MAIN_MODULE
-#endif
-#endif
 
 /* Declaration of a keyserver spec type.  The definition is found in
    ../common/keyserver.h.  */

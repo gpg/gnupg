@@ -118,6 +118,7 @@ struct close_cache_s
 typedef struct close_cache_s *close_cache_t;
 static close_cache_t close_cache;
 
+int iobuf_debug_mode;
 
 
 #ifdef HAVE_W32_SYSTEM

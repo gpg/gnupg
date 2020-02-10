@@ -38,6 +38,7 @@
 #include <fcntl.h> /* for setmode() */
 #endif
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "agent.h"
 #include "../common/i18n.h"
 #include "../common/get-passphrase.h"

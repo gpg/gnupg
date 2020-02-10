@@ -37,6 +37,7 @@
 #include <signal.h>
 #include <npth.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #define GNUPG_COMMON_NEED_AFLOCAL
 #include "scdaemon.h"
 #include <ksba.h>
