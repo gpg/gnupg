@@ -3426,7 +3426,7 @@ Allow processing of multiple OpenPGP messages contained in a single file
 or stream.  Some programs that call GPG are not prepared to deal with
 multiple messages being processed together, so this option defaults to
 no.  Note that versions of GPG prior to 1.4.7 always allowed multiple
-messages.
+messages.  Future versions of GnUPG will remove this option.
 
 Warning: Do not use this option unless you need it as a temporary
 workaround!
@@ -3868,20 +3868,26 @@ or "Alpha" but not the string "test".
 @mansect return value
 @chapheading RETURN VALUE
 
-The program returns 0 if everything was fine, 1 if at least
-a signature was bad, and other error codes for fatal errors.
+The program returns 0 if there are no severe errors, 1 if at least a
+signature was bad, and other error codes for fatal errors.
+
+Note that signature verification requires exact knowledge of what has
+been signed and by whom it has beensigned.  Using only the return code
+is thus not an appropriate way to verify a signature by a script.
+Either make proper use or the status codes or use the @command{gpgv}
+tool which has been designed to make signature verification easy for
+scripts.
 
 @mansect warnings
 @chapheading WARNINGS
 
-Use a *good* password for your user account and a *good* passphrase
-to protect your secret key. This passphrase is the weakest part of the
-whole system. Programs to do dictionary attacks on your secret keyring
-are very easy to write and so you should protect your "~/.gnupg/"
-directory very well.
-
-Keep in mind that, if this program is used over a network (telnet), it
-is *very* easy to spy out your passphrase!
+Use a good password for your user account and make sure that all
+security issues are always fixed on your machine.  Also employ
+diligent physical protection to your machine.  Consider to use a good
+passphrase as a last resort protection to your secret key in the case
+your machine gets stolen.  It is important that your secret key is
+never leaked.  Using an easy to carry around token or smartcard with
+the secret key is often a advisable.
 
 If you are going to verify detached signatures, make sure that the
 program knows about it; either give both filenames on the command line
