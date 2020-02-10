@@ -191,7 +191,8 @@ verify_one_file (ctrl_t ctrl, const char *name )
 int
 verify_files (ctrl_t ctrl, int nfiles, char **files )
 {
-    int i;
+    int i, rc;
+    int first_rc = 0;
 
     if( !nfiles ) { /* read the filenames from stdin */
 	char line[2048];
@@ -203,19 +204,26 @@ verify_files (ctrl_t ctrl, int nfiles, char **files )
 		log_error(_("input line %u too long or missing LF\n"), lno );
 		return GPG_ERR_GENERAL;
 	    }
-	    /* This code does not work on MSDOS but how cares there are
+	    /* This code does not work on MSDOS but hwo cares there are
 	     * also no script languages available.  We don't strip any
 	     * spaces, so that we can process nearly all filenames */
 	    line[strlen(line)-1] = 0;
-	    verify_one_file (ctrl, line );
+	    rc = verify_one_file (ctrl, line);
+            if (!first_rc)
+              first_rc = rc;
 	}
 
     }
     else {  /* take filenames from the array */
 	for(i=0; i < nfiles; i++ )
-            verify_one_file (ctrl, files[i] );
+          {
+            rc = verify_one_file (ctrl, files[i]);
+            if (!first_rc)
+              first_rc = rc;
+          }
     }
-    return 0;
+
+    return first_rc;
 }
 
 
