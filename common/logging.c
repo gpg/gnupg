@@ -129,7 +129,9 @@ log_get_errorcount (int clear)
 void
 log_inc_errorcount (void)
 {
-   errorcount++;
+  /* Protect against counter overflow.  */
+  if (errorcount < 30000)
+    errorcount++;
 }
 
 
@@ -932,9 +934,7 @@ log_error (const char *fmt, ...)
   va_start (arg_ptr, fmt);
   do_logv (GPGRT_LOG_ERROR, 0, NULL, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
-  /* Protect against counter overflow.  */
-  if (errorcount < 30000)
-    errorcount++;
+  log_inc_errorcount ();
 }
 
 
