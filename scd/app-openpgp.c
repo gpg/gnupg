@@ -1953,11 +1953,11 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
       if (keyno >= 3)
         return gpg_error (GPG_ERR_INV_ID);
     }
-  else if (!strcmp (keyid, "OPENPGP.1"))
+  else if (!ascii_strcasecmp (keyid, "OPENPGP.1"))
     keyno = 0;
-  else if (!strcmp (keyid, "OPENPGP.2"))
+  else if (!ascii_strcasecmp (keyid, "OPENPGP.2"))
     keyno = 1;
-  else if (!strcmp (keyid, "OPENPGP.3"))
+  else if (!ascii_strcasecmp (keyid, "OPENPGP.3"))
     keyno = 2;
   else
     return gpg_error (GPG_ERR_INV_ID);
@@ -4350,11 +4350,11 @@ do_writekey (app_t app, ctrl_t ctrl,
 
   (void)ctrl;
 
-  if (!strcmp (keyid, "OPENPGP.1"))
+  if (!ascii_strcasecmp (keyid, "OPENPGP.1"))
     keyno = 0;
-  else if (!strcmp (keyid, "OPENPGP.2"))
+  else if (!ascii_strcasecmp (keyid, "OPENPGP.2"))
     keyno = 1;
-  else if (!strcmp (keyid, "OPENPGP.3"))
+  else if (!ascii_strcasecmp (keyid, "OPENPGP.3"))
     keyno = 2;
   else
     return gpg_error (GPG_ERR_INV_ID);
@@ -4775,9 +4775,9 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 #undef X
 
   /* Check whether an OpenPGP card of any version has been requested. */
-  if (!strcmp (keyidstr, "OPENPGP.1"))
+  if (!ascii_strcasecmp (keyidstr, "OPENPGP.1"))
     ;
-  else if (!strcmp (keyidstr, "OPENPGP.3"))
+  else if (!ascii_strcasecmp (keyidstr, "OPENPGP.3"))
     use_auth = 1;
   else
     {
@@ -4932,7 +4932,7 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
     }
 
   /* Check whether an OpenPGP card of any version has been requested. */
-  if (!strcmp (keyidstr, "OPENPGP.3"))
+  if (!ascii_strcasecmp (keyidstr, "OPENPGP.3"))
     ;
   else
     {
@@ -4987,7 +4987,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check whether an OpenPGP card of any version has been requested. */
-  if (!strcmp (keyidstr, "OPENPGP.2"))
+  if (!ascii_strcasecmp (keyidstr, "OPENPGP.2"))
     ;
   else
     {
