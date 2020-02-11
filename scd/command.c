@@ -2368,7 +2368,7 @@ send_status_direct (ctrl_t ctrl, const char *keyword, const char *args)
 
 
 /* This status functions expects a printf style format string.  No
- * filtering of the data is done instead the orintf formatted data is
+ * filtering of the data is done instead the printf formatted data is
  * send using assuan_send_status. */
 gpg_error_t
 send_status_printf (ctrl_t ctrl, const char *keyword, const char *format, ...)
