@@ -2140,7 +2140,7 @@ generate_all_openpgp_card_keys (card_info_t info, char **algos)
    * tell gpg to use them to create the OpenPGP keyblock. */
   /* generate_keypair (ctrl, 1, NULL, info.serialno, want_backup); */
   (void)want_backup;
-  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  err = scd_genkey ("OPENPGP.1", 1, NULL, NULL);
 
  leave:
   restore_forced_chv1 (&forced_chv1);
@@ -2172,22 +2172,8 @@ generate_key (card_info_t info, const char *keyref, int force,
           err = ask_replace_keys (NULL);
           if (err)
             goto leave;
+          force = 1;
         }
-
-      log_debug ("current algo is: %s\n", kinfo->keyalgo);
-      if (algo)
-        {
-          log_debug ("setting algo to: %s\n", algo);
-          /* OpenPGP cards require us to set the key attributes prior
-           * to generation because the generate command does not take
-           * key attributes.  Actually this should be hidden by
-           * scd/app-openpgp but that is not the case.  */
-
-
-
-        }
-      goto leave;
-      /* err = generate_openpgp (info); */
     }
 
   err = scd_genkey (keyref, force, algo, NULL);

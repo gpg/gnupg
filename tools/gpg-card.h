@@ -1,5 +1,5 @@
 /* gpg-card.h - Common definitions for the gpg-card-tool
- * Copyright (C) 2019 g10 Code GmbH
+ * Copyright (C) 2019, 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
