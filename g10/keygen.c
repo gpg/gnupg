@@ -1160,7 +1160,7 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
       goto leave;
     }
   gcry_sexp_release (l2);
-  oidstr = openpgp_curve_to_oid (curve, &nbits);
+  oidstr = openpgp_curve_to_oid (curve, &nbits, NULL);
   if (!oidstr)
     {
       /* That can't happen because we used one of the curves

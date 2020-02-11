@@ -1504,7 +1504,7 @@ ecdh_params (const char *curve)
 {
   unsigned int nbits;
 
-  openpgp_curve_to_oid (curve, &nbits);
+  openpgp_curve_to_oid (curve, &nbits, NULL);
 
   /* See RFC-6637 for those constants.
          0x03: Number of bytes
@@ -1545,7 +1545,7 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
     }
 
   curve = app->app_local->keyattr[keyno].ecc.curve;
-  oidstr = openpgp_curve_to_oid (curve, NULL);
+  oidstr = openpgp_curve_to_oid (curve, NULL, NULL);
   err = openpgp_oid_from_str (oidstr, &oid);
   if (err)
     return err;
@@ -3498,7 +3498,7 @@ change_keyattr_from_string (app_t app,
       const unsigned char *oidbuf;
       size_t oid_len;
 
-      oidstr = openpgp_curve_to_oid (string+n, NULL);
+      oidstr = openpgp_curve_to_oid (string+n, NULL, NULL);
       if (!oidstr)
         {
           err = gpg_error (GPG_ERR_INV_DATA);
@@ -4004,7 +4004,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   else
     algo = PUBKEY_ALGO_ECDSA;
 
-  oidstr = openpgp_curve_to_oid (curve, &n);
+  oidstr = openpgp_curve_to_oid (curve, &n, NULL);
   ecc_d_fixed_len = (n+7)/8;
   err = openpgp_oid_from_str (oidstr, &oid);
   if (err)

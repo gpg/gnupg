@@ -337,13 +337,17 @@ openpgp_oid_is_cv25519 (gcry_mpi_t a)
 
 /* Map the Libgcrypt ECC curve NAME to an OID.  If R_NBITS is not NULL
    store the bit size of the curve there.  Returns NULL for unknown
-   curve names.  */
+   curve names.  If R_ALGO is not NULL and a specific ECC algorithm is
+   required for this curve its OpenPGP algorithm number is stored
+   there; otherwise 0 is stored which indicates that ECDSA or ECDH can
+   be used. */
 const char *
-openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
+openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
 {
   int i;
   unsigned int nbits = 0;
   const char *oidstr = NULL;
+  int algo = 0;
 
   if (name)
     {
@@ -353,6 +357,7 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
           {
             oidstr = oidtable[i].oidstr;
             nbits  = oidtable[i].nbits;
+            algo   = oidtable[i].pubkey_algo;
             break;
           }
       if (!oidtable[i].name)
@@ -364,6 +369,7 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
               {
                 oidstr = oidtable[i].oidstr;
                 nbits  = oidtable[i].nbits;
+                algo   = oidtable[i].pubkey_algo;
                 break;
               }
         }
@@ -371,6 +377,8 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
 
   if (r_nbits)
     *r_nbits = nbits;
+  if (r_algo)
+    *r_algo = algo;
   return oidstr;
 }
 

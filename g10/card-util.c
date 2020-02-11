@@ -586,7 +586,8 @@ current_card_status (ctrl_t ctrl, estream_t fp,
                 if (info.key_attr[i].curve)
                   {
                     const char *oid;
-                    oid = openpgp_curve_to_oid (info.key_attr[i].curve, NULL);
+                    oid = openpgp_curve_to_oid (info.key_attr[i].curve,
+                                                NULL, NULL);
                     if (oid)
                       curve_for_print = openpgp_oid_to_curve (oid, 0);
                   }
@@ -1489,7 +1490,7 @@ ask_card_keyattr (int keyno, const struct key_attr *current)
       if (curve)
         {
           key_attr->algo = algo;
-          oid_str = openpgp_curve_to_oid (curve, NULL);
+          oid_str = openpgp_curve_to_oid (curve, NULL, NULL);
           key_attr->curve = openpgp_oid_to_curve (oid_str, 0);
         }
       else

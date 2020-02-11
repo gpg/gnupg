@@ -567,7 +567,7 @@ match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk)
       log_error ("no curve name\n");
       return gpg_error (GPG_ERR_UNKNOWN_CURVE);
     }
-  oidstr = openpgp_curve_to_oid (curve_str, NULL);
+  oidstr = openpgp_curve_to_oid (curve_str, NULL, NULL);
   if (!oidstr)
     {
       log_error ("no OID known for curve '%s'\n", curve_str);
@@ -1073,7 +1073,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
           goto leave;
         }
 
-      oidstr = openpgp_curve_to_oid (curve, NULL);
+      oidstr = openpgp_curve_to_oid (curve, NULL, NULL);
       if (!oidstr)
         {
           log_error ("no OID known for curve '%s'\n", curve);
