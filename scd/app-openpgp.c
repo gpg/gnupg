@@ -238,6 +238,7 @@ struct app_local_s {
   struct
   {
     key_type_t key_type;
+    const char *keyalgo;         /* Algorithm in standard string format.  */
     union {
       struct {
         unsigned int n_bits;     /* Size of the modulus in bits.  The rest
@@ -273,6 +274,7 @@ static gpg_error_t change_keyattr_from_string
                            (app_t app, ctrl_t ctrl,
                             gpg_error_t (*pincb)(void*, const char *, char **),
                             void *pincb_arg,
+                            const char *keyref, const char *keyalgo,
                             const void *value, size_t valuelen);
 
 
@@ -2682,6 +2684,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
 
   if (table[idx].special == 3)
     return change_keyattr_from_string (app, ctrl, pincb, pincb_arg,
+                                       NULL, NULL,
                                        value, valuelen);
 
   switch (table[idx].need_chv)
@@ -3487,9 +3490,10 @@ change_keyattr (app_t app, ctrl_t ctrl,
   /* Change the attribute.  */
   err = iso7816_put_data (app_get_slot (app), 0, 0xC1+keyno, buf, buflen);
   if (err)
-    log_error ("error changing key attribute (key=%d)\n", keyno+1);
+    log_error ("error changing key attribute of OPENPGP.%d\n",
+               keyno+1);
   else
-    log_info ("key attribute changed (key=%d)\n", keyno+1);
+    log_info ("key attribute of OPENPGP.%d changed\n", keyno+1);
   flush_cache (app);
   parse_algorithm_attribute (app, keyno);
   app->did_chv1 = 0;
@@ -3549,51 +3553,138 @@ change_rsa_keyattr (app_t app, ctrl_t ctrl, int keyno, unsigned int nbits,
 
 
 /* Helper to process an setattr command for name KEY-ATTR.
-   In (VALUE,VALUELEN), it expects following string:
-        RSA: "--force <key> <algo> rsa<nbits>"
-        ECC: "--force <key> <algo> <curvename>"
-  */
+ *
+ * If KEYREF and KEYALGO are NULL (VALUE,VALUELEN) are expected to
+ * contain one of the following strings:
+ *       RSA: "--force <key> <algo> rsa<nbits>"
+ *       ECC: "--force <key> <algo> <curvename>"
+ *
+ * If KEYREF and KEYALGO is given the key attribute for KEYREF are
+ * changed to what is described by KEYALGO (e.g. "rsa3072", "rsa2048",
+ * or "ed25519").
+ */
 static gpg_error_t
 change_keyattr_from_string (app_t app, ctrl_t ctrl,
                             gpg_error_t (*pincb)(void*, const char *, char **),
                             void *pincb_arg,
+                            const char *keyref, const char *keyalgo,
                             const void *value, size_t valuelen)
 {
   gpg_error_t err = 0;
-  char *string;
+  char *string = NULL;
   int key, keyno, algo;
-  int n = 0;
+  unsigned int nbits = 0;
+  const char *oidstr = NULL; /* OID of the curve.  */
+  char *endp;
 
-  /* VALUE is expected to be a string but not guaranteed to be
-     terminated.  Thus copy it to an allocated buffer first. */
-  string = xtrymalloc (valuelen+1);
-  if (!string)
-    return gpg_error_from_syserror ();
-  memcpy (string, value, valuelen);
-  string[valuelen] = 0;
-
-  /* Because this function deletes the key we require the string
-     "--force" in the data to make clear that something serious might
-     happen.  */
-  sscanf (string, "--force %d %d %n", &key, &algo, &n);
-  if (n < 12)
+  if (keyref && keyalgo && *keyref && *keyalgo)
     {
-      err = gpg_error (GPG_ERR_INV_DATA);
+      if (!ascii_strcasecmp (keyref, "OPENPGP.1"))
+        keyno = 0;
+      else if (!ascii_strcasecmp (keyref, "OPENPGP.2"))
+        keyno = 1;
+      else if (!ascii_strcasecmp (keyref, "OPENPGP.3"))
+        keyno = 2;
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_ID);
+          goto leave;
+        }
+
+      if (!strncmp (keyalgo, "rsa", 3) && digitp (keyalgo+3))
+        {
+          errno = 0;
+          nbits = strtoul (keyalgo+3, &endp, 10);
+          if (errno || *endp)
+            {
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+          algo = PUBKEY_ALGO_RSA;
+        }
+      else if ((!strncmp (keyalgo, "dsa", 3) || !strncmp (keyalgo, "elg", 3))
+               && digitp (keyalgo+3))
+        {
+          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+          goto leave;
+        }
+      else
+        {
+          nbits = 0;
+          oidstr = openpgp_curve_to_oid (keyalgo, NULL, &algo);
+          if (!oidstr)
+            {
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+          if (!algo)
+            algo = keyno == 1? PUBKEY_ALGO_ECDH : PUBKEY_ALGO_ECDSA;
+        }
+
+    }
+  else if (!keyref && !keyalgo && value)
+    {
+      int n;
+
+      /* VALUE is expected to be a string but not guaranteed to be
+       * terminated.  Thus copy it to an allocated buffer first. */
+      string = xtrymalloc (valuelen+1);
+      if (!string)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      memcpy (string, value, valuelen);
+      string[valuelen] = 0;
+
+      /* Because this function deletes the key we require the string
+       * "--force" in the data to make clear that something serious
+       * might happen.  */
+      n = 0;
+      sscanf (string, "--force %d %d %n", &key, &algo, &n);
+      if (n < 12)
+        {
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+      keyno = key - 1;
+      if (algo == PUBKEY_ALGO_RSA)
+        {
+          errno = 0;
+          nbits = strtoul (string+n+3, NULL, 10);
+          if (errno)
+            {
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+        }
+      else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA
+               || algo == PUBKEY_ALGO_EDDSA)
+        {
+          oidstr = openpgp_curve_to_oid (string+n, NULL, NULL);
+          if (!oidstr)
+            {
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+        }
+      else
+        {
+          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+          goto leave;
+        }
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
       goto leave;
     }
 
-  keyno = key - 1;
   if (keyno < 0 || keyno > 2)
     err = gpg_error (GPG_ERR_INV_ID);
   else if (algo == PUBKEY_ALGO_RSA)
     {
-      unsigned int nbits;
-
-      errno = 0;
-      nbits = strtoul (string+n+3, NULL, 10);
-      if (errno)
-        err = gpg_error (GPG_ERR_INV_DATA);
-      else if (nbits < 1024)
+      if (nbits < 1024)
         err = gpg_error (GPG_ERR_TOO_SHORT);
       else if (nbits > 4096)
         err = gpg_error (GPG_ERR_TOO_LARGE);
@@ -3603,18 +3694,23 @@ change_keyattr_from_string (app_t app, ctrl_t ctrl,
   else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA)
     {
-      const char *oidstr;
       gcry_mpi_t oid;
       const unsigned char *oidbuf;
       size_t oid_len;
+      unsigned int n;
 
-      oidstr = openpgp_curve_to_oid (string+n, NULL, NULL);
-      if (!oidstr)
-        {
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
+      /* Check that the requested algo matches the properties of the
+       * key slot.  */
+      if (keyno == 1 && algo != PUBKEY_ALGO_ECDH)
+        err = gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+      else if (keyno != 1 && algo == PUBKEY_ALGO_ECDH)
+        err = gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+      else
+        err = 0;
+      if (err)
+        goto leave;
 
+      /* Convert the OID string to an OpenPGP formatted OID.  */
       err = openpgp_oid_from_str (oidstr, &oid);
       if (err)
         goto leave;
@@ -3622,7 +3718,14 @@ change_keyattr_from_string (app_t app, ctrl_t ctrl,
       oidbuf = gcry_mpi_get_opaque (oid, &n);
       oid_len = (n+7)/8;
 
-      /* We have enough room at STRING.  */
+      /* Create the template.  */
+      xfree (string);
+      string = xtrymalloc (1 + oid_len);
+      if (!string)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
       string[0] = algo;
       memcpy (string+1, oidbuf+1, oid_len-1);
       err = change_keyattr (app, ctrl,keyno, string, oid_len, pincb, pincb_arg);
@@ -4304,26 +4407,26 @@ do_writekey (app_t app, ctrl_t ctrl,
 
 /* Handle the GENKEY command. */
 static gpg_error_t
-do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, const char *keytype,
+do_genkey (app_t app, ctrl_t ctrl,  const char *keyref, const char *keyalgo,
            unsigned int flags, time_t createtime,
            gpg_error_t (*pincb)(void*, const char *, char **),
            void *pincb_arg)
 {
   gpg_error_t err;
   char numbuf[30];
+  const char *keynostr;
   unsigned char *buffer = NULL;
   const unsigned char *keydata;
   size_t buflen, keydatalen;
   u32 created_at;
   int keyno;
-  int force = (flags & 1);
+  int force = !!(flags & APP_GENKEY_FLAG_FORCE);
   time_t start_at;
   int exmode = 0;
   int le_value = 256; /* Use legacy value. */
 
-  (void)keytype;  /* Ignored for OpenPGP cards.  */
-
   /* Strip the OpenPGP prefix which is for historical reasons optional.  */
+  keynostr = keyref;
   if (!ascii_strncasecmp (keynostr, "OPENPGP.", 8))
     keynostr += 8;
 
@@ -4345,6 +4448,19 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, const char *keytype,
   err = does_key_exist (app, keyno, 1, force);
   if (err)
     return err;
+
+  if (keyalgo && app->app_local->keyattr[keyno].keyalgo
+      && strcmp (keyalgo, app->app_local->keyattr[keyno].keyalgo))
+    {
+      /* Specific algorithm requested which is not the currently
+       * configured algorithm.  Change it.  */
+      log_info ("openpgp: changing key attribute from %s to %s\n",
+                 app->app_local->keyattr[keyno].keyalgo, keyalgo);
+      err = change_keyattr_from_string (app, ctrl, pincb, pincb_arg,
+                                        keyref, keyalgo, NULL, 0);
+      if (err)
+        return err;
+    }
 
   if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
     {
@@ -5316,7 +5432,7 @@ parse_historical (struct app_local_s *apploc,
 
 /*
  * Check if the OID in an DER encoding is available by GnuPG/libgcrypt,
- * and return the curve name.  Return NULL if not available.
+ * and return the canonical curve name.  Return NULL if not available.
  * The constant string is not allocated dynamically, never free it.
  */
 static const char *
@@ -5360,8 +5476,11 @@ parse_algorithm_attribute (app_t app, int keyno)
   size_t buflen;
   void *relptr;
   const char desc[3][5] = {"sign", "encr", "auth"};
+  enum gcry_pk_algos galgo;
+  unsigned int nbits;
+  const char *curve;
 
-  assert (keyno >=0 && keyno <= 2);
+  log_assert (keyno >=0 && keyno <= 2);
 
   app->app_local->keyattr[keyno].key_type = KEY_TYPE_RSA;
   app->app_local->keyattr[keyno].rsa.n_bits = 0;
@@ -5381,6 +5500,11 @@ parse_algorithm_attribute (app_t app, int keyno)
 
   if (opt.verbose)
     log_info ("Key-Attr-%s ..: ", desc[keyno]);
+
+  galgo = map_openpgp_pk_to_gcry (*buffer);
+  nbits = 0;
+  curve = NULL;
+
   if (*buffer == PUBKEY_ALGO_RSA && (buflen == 5 || buflen == 6))
     {
       app->app_local->keyattr[keyno].rsa.n_bits = (buffer[1]<<8 | buffer[2]);
@@ -5395,6 +5519,7 @@ parse_algorithm_attribute (app_t app, int keyno)
                                                      buffer[5] == 3? RSA_CRT_N :
                                                      RSA_UNKNOWN_FMT);
 
+      nbits = app->app_local->keyattr[keyno].rsa.n_bits;
       if (opt.verbose)
         log_printf
           ("RSA, n=%u, e=%u, fmt=%s\n",
@@ -5408,7 +5533,6 @@ parse_algorithm_attribute (app_t app, int keyno)
   else if (*buffer == PUBKEY_ALGO_ECDH || *buffer == PUBKEY_ALGO_ECDSA
            || *buffer == PUBKEY_ALGO_EDDSA)
     {
-      const char *curve;
       int oidlen = buflen - 1;
 
       app->app_local->keyattr[keyno].ecc.flags = 0;
@@ -5442,6 +5566,13 @@ parse_algorithm_attribute (app_t app, int keyno)
     }
   else if (opt.verbose)
     log_printhex (buffer, buflen, "");
+
+  app->app_local->keyattr[keyno].keyalgo
+    = get_keyalgo_string (galgo, nbits, curve);
+
+  if (opt.verbose)
+    log_info ("Key-Algo-%s ..: %s\n",
+              desc[keyno], app->app_local->keyattr[keyno].keyalgo);
 
   xfree (relptr);
 }

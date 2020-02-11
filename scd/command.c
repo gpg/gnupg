@@ -1363,7 +1363,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] =
-  "GENKEY [--force] [--timestamp=<isodate>] <keyref>\n"
+  "GENKEY [--force] [--timestamp=<isodate>] [--algo=ALGO] <keyref>\n"
   "\n"
   "Generate a key on-card identified by <keyref>, which is application\n"
   "specific.  Return values are also application specific.  For OpenPGP\n"
@@ -1384,6 +1384,9 @@ static const char hlp_genkey[] =
   "If --timestamp is given an OpenPGP key will be created using this\n"
   "value.  The value needs to be in ISO Format; e.g.\n"
   "\"--timestamp=20030316T120000\" and after 1970-01-01 00:00:00.\n"
+  "\n"
+  "The option --algo can be used to request creation using a specific\n"
+  "algorithm.  The possible algorithms are card dependent.\n"
   "\n"
   "The public part of the key can also later be retrieved using the\n"
   "READKEY command.";
@@ -1562,7 +1565,7 @@ static const char hlp_checkpin[] =
   "   entry system, only the regular CHV will get blocked and not the\n"
   "   dangerous CHV3.  IDSTR is the usual card's serial number in hex\n"
   "   notation; an optional fingerprint part will get ignored.  There\n"
-  "   is however a special mode if the IDSTR is sffixed with the\n"
+  "   is however a special mode if the IDSTR is suffixed with the\n"
   "   literal string \"[CHV3]\": In this case the Admin PIN is checked\n"
   "   if and only if the retry counter is still at 3.\n"
   "\n"
