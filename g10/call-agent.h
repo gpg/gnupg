@@ -137,7 +137,8 @@ int agent_scd_readcert (const char *certidstr,
                         void **r_buf, size_t *r_buflen);
 
 /* Send a READKEY command to the SCdaemon.  */
-gpg_error_t agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result);
+gpg_error_t agent_scd_readkey (const char *keyrefstr,
+                               gcry_sexp_t *r_result, u32 *r_keytime);
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
 int agent_scd_change_pin (int chvno, const char *serialno);
@@ -183,7 +184,7 @@ gpg_error_t agent_genkey (ctrl_t ctrl,
                           const char *passphrase,
                           gcry_sexp_t *r_pubkey);
 
-/* Read a public key.  */
+/* Read a public key.  FROMCARD may be 0, 1, or 2. */
 gpg_error_t agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
                            unsigned char **r_pubkey);
 

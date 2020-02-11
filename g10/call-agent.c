@@ -1,6 +1,7 @@
 /* call-agent.c - Divert GPG operations to the agent.
  * Copyright (C) 2001-2003, 2006-2011, 2013 Free Software Foundation, Inc.
  * Copyright (C) 2013-2015  Werner Koch
+ * Copyright (C) 2020       g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -1379,11 +1380,35 @@ agent_scd_readcert (const char *certidstr,
 }
 
 
+/* Callback for the agent_scd_readkey fucntion.  */
+static gpg_error_t
+readkey_status_cb (void *opaque, const char *line)
+{
+  u32 *keytimep  = opaque;
+  const char *args;
+
+  if ((args = has_leading_keyword (line, "KEY-TIME")))
+    {
+      /* Skip the keyref - READKEY returns just one.  */
+      while (*args && !spacep (args))
+        args++;
+      while (spacep (args))
+        args++;
+      /* We are at the keytime. */
+      *keytimep = strtoul (args, NULL, 10);
+    }
+
+  return 0;
+}
+
 /* This is a variant of agent_readkey which sends a READKEY command
  * directly Scdaemon.  On success a new s-expression is stored at
- * R_RESULT.  */
+ * R_RESULT.  If R_KEYTIME is not NULL the key cresation time of an
+ * OpenPGP card is stored there - if that is not known 0 is stored.
+ * In the latter case it is allowed to pass NULL for R_RESULT.  */
 gpg_error_t
-agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result)
+agent_scd_readkey (const char *keyrefstr,
+                   gcry_sexp_t *r_result, u32 *r_keytime)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
@@ -1391,21 +1416,28 @@ agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result)
   unsigned char *buf;
   size_t len, buflen;
   struct default_inq_parm_s dfltparm;
+  u32 keytime;
 
   memset (&dfltparm, 0, sizeof dfltparm);
   dfltparm.ctx = agent_ctx;
 
-  *r_result = NULL;
+  if (r_result)
+    *r_result = NULL;
+  if (r_keytime)
+    *r_keytime = 0;
   err = start_agent (NULL, 1);
   if (err)
     return err;
 
   init_membuf (&data, 1024);
-  snprintf (line, DIM(line), "SCD READKEY %s", keyrefstr);
+  snprintf (line, DIM(line),
+            "SCD READKEY --info%s -- %s",
+            r_result? "":"-only", keyrefstr);
+  keytime = 0;
   err = assuan_transact (agent_ctx, line,
                          put_membuf_cb, &data,
                          default_inq_cb, &dfltparm,
-                         NULL, NULL);
+                         readkey_status_cb, &keytime);
   if (err)
     {
       xfree (get_membuf (&data, &len));
@@ -1415,9 +1447,14 @@ agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result)
   if (!buf)
     return gpg_error_from_syserror ();
 
-  err = gcry_sexp_new (r_result, buf, buflen, 0);
+  if (r_result)
+    err = gcry_sexp_new (r_result, buf, buflen, 0);
+  else
+    err = 0;
   xfree (buf);
 
+  if (!err && r_keytime)
+    *r_keytime = keytime;
   return err;
 }
 
@@ -2250,10 +2287,12 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr, char **passwd_nonce_addr,
 
 
 
-/* Call the agent to read the public key part for a given keygrip.  If
-   FROMCARD is true, the key is directly read from the current
-   smartcard. In this case HEXKEYGRIP should be the keyID
-   (e.g. OPENPGP.3). */
+/* Call the agent to read the public key part for a given keygrip.
+ * Values from FROMCARD:
+ *   0 - Standard
+ *   1 - The key is read from the current card
+ *       via the agent and a stub file is created.
+ */
 gpg_error_t
 agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
                unsigned char **r_pubkey)
@@ -2278,8 +2317,10 @@ agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   if (err)
     return err;
 
-  snprintf (line, DIM(line), "READKEY %s%s", fromcard? "--card ":"",
-            hexkeygrip);
+  if (fromcard)
+    snprintf (line, DIM(line), "READKEY --card -- %s", hexkeygrip);
+  else
+    snprintf (line, DIM(line), "READKEY -- %s", hexkeygrip);
 
   init_membuf (&data, 1024);
   err = assuan_transact (agent_ctx, line,
