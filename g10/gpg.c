@@ -1879,7 +1879,7 @@ list_config(char *items)
 	  es_printf ("cfg:curveoid:");
           for (iter=0, first=1; (s = openpgp_enum_curves (&iter)); first = 0)
             {
-              s = openpgp_curve_to_oid (s, NULL);
+              s = openpgp_curve_to_oid (s, NULL, NULL);
               es_printf ("%s%s", first?"":";", s? s:"[?]");
             }
 	  es_printf ("\n");

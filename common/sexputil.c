@@ -623,7 +623,7 @@ pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid)
     {
       const char *curve = gcry_pk_get_curve (s_pkey, 0, NULL);
       const char *name = openpgp_oid_to_curve
-        (openpgp_curve_to_oid (curve, NULL), 0);
+        (openpgp_curve_to_oid (curve, NULL, NULL), 0);
 
       if (name)
         result = xtrystrdup (name);

@@ -2927,9 +2927,10 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
           name[toklen] = 0;
           /* Canonicalize the curve name.  We use the openpgp
            * functions here because Libgcrypt has no generic curve
-           * alias lookup feature and the PIV suppotred curves alre
+           * alias lookup feature and the PIV supported curves are
            * also supported by OpenPGP.  */
-          xname = openpgp_oid_to_curve (openpgp_curve_to_oid (name, NULL), 0);
+          xname = openpgp_oid_to_curve (openpgp_curve_to_oid (name, NULL, NULL),
+                                        0);
           xfree (name);
 
           if (xname && !strcmp (xname, "nistp256"))
