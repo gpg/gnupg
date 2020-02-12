@@ -76,14 +76,17 @@ struct agent_card_info_s
   int uif[3];              /* True if User Interaction Flag is on.  */
 };
 
-/* Information from scdaemon for card keys.  */
-struct card_key_info_s
+
+/* Object to store information from the KEYPAIRINFO or the KEYINFO
+ * status lines.  */
+struct keypair_info_s
 {
-  struct card_key_info_s *next;
+  struct keypair_info_s *next;
   char keygrip[41];
   char *serialno;
-  char *idstr;
+  char *idstr;     /* (aka keyref) */
 };
+typedef struct keypair_info_s *keypair_info_t;
 
 /* Release the card info structure. */
 void agent_release_card_info (struct agent_card_info_s *info);
@@ -98,12 +101,12 @@ gpg_error_t agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref,
 /* Return list of cards.  */
 int agent_scd_cardlist (strlist_t *result);
 
-/* Free card key information.  */
-void agent_scd_free_keyinfo (struct card_key_info_s *l);
+/* Free a keypair info list.  */
+void free_keypair_info (keypair_info_t l);
 
 /* Return card key information.  */
 gpg_error_t agent_scd_keyinfo (const char *keygrip, int cap,
-                               struct card_key_info_s **result);
+                               keypair_info_t *result);
 
 /* Return the serial number, possibly select by DEMAND.  */
 int agent_scd_serialno (char **r_serialno, const char *demand);

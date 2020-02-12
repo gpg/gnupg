@@ -1530,10 +1530,12 @@ agent_scd_cardlist (strlist_t *result)
 
   return 0;
 }
+
+
 
 struct card_keyinfo_parm_s {
   int error;
-  struct card_key_info_s *list;
+  keypair_info_t list;
 };
 
 /* Callback function for agent_card_keylist.  */
@@ -1554,8 +1556,8 @@ card_keyinfo_cb (void *opaque, const char *line)
     {
       const char *s;
       int n;
-      struct card_key_info_s *keyinfo;
-      struct card_key_info_s **l_p = &parm->list;
+      keypair_info_t keyinfo;
+      keypair_info_t *l_p = &parm->list;
 
       while ((*l_p))
         l_p = &(*l_p)->next;
@@ -1636,9 +1638,9 @@ card_keyinfo_cb (void *opaque, const char *line)
 
 
 void
-agent_scd_free_keyinfo (struct card_key_info_s *l)
+free_keypair_info (keypair_info_t l)
 {
-  struct card_key_info_s *l_next;
+  keypair_info_t l_next;
 
   for (; l; l = l_next)
     {
@@ -1656,7 +1658,7 @@ agent_scd_free_keyinfo (struct card_key_info_s *l)
    and NULL is stored at RESULT.  */
 gpg_error_t
 agent_scd_keyinfo (const char *keygrip, int cap,
-                   struct card_key_info_s **result)
+                   keypair_info_t *result)
 {
   int err;
   struct card_keyinfo_parm_s parm;
@@ -1691,7 +1693,7 @@ agent_scd_keyinfo (const char *keygrip, int cap,
   if (!err)
     *result = parm.list;
   else
-    agent_scd_free_keyinfo (parm.list);
+    free_keypair_info (parm.list);
 
   return err;
 }

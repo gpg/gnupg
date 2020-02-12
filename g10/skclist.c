@@ -330,8 +330,8 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     int eof;
     int state;
     strlist_t sl;
-    struct card_key_info_s *card_keyinfo;
-    struct card_key_info_s *card_keyinfo_list;
+    keypair_info_t card_keyinfo;
+    keypair_info_t card_keyinfo_list;
     char fpr2[2 * MAX_FINGERPRINT_LEN + 2 ];
     kbnode_t keyblock;
     kbnode_t node;
@@ -359,7 +359,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
   if (!sk)
     {
       /* Free the context.  */
-      agent_scd_free_keyinfo (c->card_keyinfo_list);
+      free_keypair_info (c->card_keyinfo_list);
       release_sk_list (c->results);
       release_kbnode (c->keyblock);
       getkey_end (ctrl, c->ctx);
