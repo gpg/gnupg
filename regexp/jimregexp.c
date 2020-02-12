@@ -1214,12 +1214,16 @@ static int regtry( regex_t *preg, const char *string )
 	preg->reginput = string;
 
 	for (i = 0; i < preg->nmatch; i++) {
-		preg->pmatch[i].rm_so = -1;
-		preg->pmatch[i].rm_eo = -1;
+		if (preg->pmatch) {
+			preg->pmatch[i].rm_so = -1;
+			preg->pmatch[i].rm_eo = -1;
+		}
 	}
 	if (regmatch(preg, 1)) {
-		preg->pmatch[0].rm_so = string - preg->start;
-		preg->pmatch[0].rm_eo = preg->reginput - preg->start;
+		if (preg->pmatch) {
+			preg->pmatch[0].rm_so = string - preg->start;
+			preg->pmatch[0].rm_eo = preg->reginput - preg->start;
+		}
 		return(1);
 	} else
 		return(0);
@@ -1569,13 +1573,13 @@ static int regmatch(regex_t *preg, int prog)
 				if (regmatch(preg, next)) {
 					if (OP(preg, scan) < CLOSE) {
 						int no = OP(preg, scan) - OPEN;
-						if (no < preg->nmatch && preg->pmatch[no].rm_so == -1) {
+						if (no < preg->nmatch && preg->pmatch && preg->pmatch[no].rm_so == -1) {
 							preg->pmatch[no].rm_so = save - preg->start;
 						}
 					}
 					else {
 						int no = OP(preg, scan) - CLOSE;
-						if (no < preg->nmatch && preg->pmatch[no].rm_eo == -1) {
+						if (no < preg->nmatch && preg->pmatch && preg->pmatch[no].rm_eo == -1) {
 							preg->pmatch[no].rm_eo = save - preg->start;
 						}
 					}

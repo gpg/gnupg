@@ -37,7 +37,7 @@ typedef struct {
  * it anyway.
  */
 
-typedef struct regexp {
+struct regexp {
 	/* -- public -- */
 	int re_nsub;		/* number of parenthesized subexpressions */
 
@@ -64,9 +64,9 @@ typedef struct regexp {
 	/* Input to regexec() */
 	regmatch_t *pmatch;		/* submatches will be stored here */
 	int nmatch;				/* size of pmatch[] */
-} regexp;
+};
 
-typedef regexp regex_t;
+typedef struct regexp regex_t;
 
 #define REG_EXTENDED 0
 #define REG_NEWLINE 1
