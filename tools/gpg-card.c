@@ -537,13 +537,8 @@ print_shax_fpr (estream_t fp, const unsigned char *fpr, unsigned int fprlen)
 
   if (fpr)
     {
-      /* FIXME: Fix formatting for FPRLEN != 20 */
-      for (i=0; i < fprlen ; i+=2, fpr += 2 )
-        {
-          if (i == 10 )
-            tty_fprintf (fp, " ");
-          tty_fprintf (fp, " %02X%02X", *fpr, fpr[1]);
-        }
+      for (i=0; i < fprlen ; i++, fpr++)
+        tty_fprintf (fp, "%02X", *fpr);
     }
   else
     tty_fprintf (fp, " [none]");
@@ -698,7 +693,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
 
       if (kinfo->fprlen && kinfo->created)
         {
-          tty_fprintf (fp, "      fingerprint :");
+          tty_fprintf (fp, "      stored fpr .: ");
           print_shax_fpr (fp, kinfo->fpr, kinfo->fprlen);
           tty_fprintf (fp, "      created ....: %s\n",
                        isotimestamp (kinfo->created));
@@ -725,7 +720,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
            * fingerprint or a reference to it.  */
           if (kb->protocol == GNUPG_PROTOCOL_OPENPGP)
             {
-              tty_fprintf (fp, "        main key .:");
+              tty_fprintf (fp, "        main key .: ");
               for (ki=firstkinfo; ki; ki = ki->next)
                 if (pubkey->grip_valid
                     && !memcmp (ki->grip, pubkey->grip, KEYGRIP_LEN))
@@ -744,11 +739,20 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
                   else
                     s = NULL;
                   if (s)
-                    tty_fprintf (fp, " <%s>\n", s);
+                    tty_fprintf (fp, "<%s>\n", s);
                   else
-                    tty_fprintf (fp, " <Key %s>\n", ki->keyref);
+                    tty_fprintf (fp, "<Key %s>\n", ki->keyref);
+
+                  tty_fprintf (fp, "        fpr ......: ");
+                  for (; pubkey; pubkey = pubkey->next)
+                    if (pubkey->grip_valid
+                        && !memcmp (ki->grip, pubkey->grip, KEYGRIP_LEN))
+                      break;
+                  print_shax_fpr (fp, pubkey->fpr, pubkey->fprlen);
+                  tty_fprintf (fp, "        created ..: %s\n",
+                               isotimestamp (pubkey->created));
                 }
-              else
+              else /* Print the primary key as fallback.  */
                 print_shax_fpr (fp, pubkey->fpr, pubkey->fprlen);
             }
           for (uid = kb->uids; uid; uid = uid->next)

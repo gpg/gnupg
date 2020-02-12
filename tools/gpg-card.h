@@ -67,6 +67,7 @@ struct pubkey_s
   unsigned char grip[KEYGRIP_LEN];
   unsigned char fpr[MAX_FINGERPRINT_LEN];
   unsigned char fprlen;     /* The used length of a FPR.  */
+  time_t created;           /* The creation date of the key.  */
   unsigned int grip_valid:1;/* The grip is valid.  */
   unsigned int requested: 1;/* This is the requested grip.  */
 };

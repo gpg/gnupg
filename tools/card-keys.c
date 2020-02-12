@@ -174,6 +174,10 @@ parse_key_record (char **fields, int nfields, pubkey_t *r_pubkey)
   pubkey = xtrycalloc (1, sizeof *pubkey);
   if (!pubkey)
     return gpg_error_from_syserror ();
+
+  if (nfields > 5)
+    pubkey->created = parse_timestamp (fields[5], NULL);
+
   *r_pubkey = pubkey;
   return 0;
 }
