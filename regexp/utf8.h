@@ -12,7 +12,6 @@ extern "C" {
  *
  * See LICENCE for licence details.
  */
-#include <jim-config.h>
 
 /* Currently we support unicode points up to 2^22-1 */
 #define MAX_UTF8_LEN 4

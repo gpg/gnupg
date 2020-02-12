@@ -52,15 +52,12 @@
  * regular-expression syntax might require a total rethink.
  */
 
-#include "jimautoconf.h"
-
 #if defined(JIM_REGEXP)
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "jim.h"
 #include "jimregexp.h"
 #include "utf8.h"
 
