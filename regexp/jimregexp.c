@@ -61,6 +61,8 @@
 #include "jimregexp.h"
 #include "utf8.h"
 
+#define UCHAR(c) ((unsigned char)(c))
+
 /* An arbitrary limit, but this seems enough. Must be less than 1000. */
 #define REG_MAX_PAREN 100
 
@@ -1877,6 +1879,8 @@ size_t regerror(int errcode, const regex_t *preg, char *errbuf,  size_t errbuf_s
 		"contains null char",
 	};
 	const char *err;
+
+        (void)preg;
 
 	if (errcode < 0 || errcode >= REG_ERR_NUM) {
 		err = "Bad error code";
