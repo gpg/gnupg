@@ -56,9 +56,7 @@ if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server}
 endif
 
-if !DISABLE_REGEX
 libexec_PROGRAMS += gpg-check-pattern
-endif
 
 if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS = clean-sat make-dns-cert gpgsplit
@@ -91,6 +89,9 @@ endif
 if HAVE_W32CE_SYSTEM
 opt_libassuan_libs = $(LIBASSUAN_LIBS)
 endif
+
+regexp_libs = ../regexp/libregexp.a
+
 
 gpgsplit_LDADD = $(common_libs) \
 	         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
@@ -140,13 +141,12 @@ gpg_card_LDADD = \
         $(gpg_card_tool_rc_objs)
 
 
-if !DISABLE_REGEX
 gpg_check_pattern_SOURCES = gpg-check-pattern.c
 gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
-gpg_check_pattern_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+gpg_check_pattern_LDADD = $(common_libs) $(regexp_libs) $(LIBGCRYPT_LIBS) \
+			  $(GPG_ERROR_LIBS) \
 			  $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS) \
 			  $(LIBICONV)
-endif
 
 gpgtar_SOURCES = \
 	gpgtar.c gpgtar.h \

@@ -276,11 +276,7 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     gnupg-test.stop random_seed gpg-agent.log tofu.db \
 	     passphrases sshcontrol S.gpg-agent.ssh report.xml
 
-if DISABLE_REGEX
-EXTRA_DIST += trust-pgp-4.scm
-else
 XTESTS += trust-pgp-4.scm
-endif
 
 clean-local:
 	-rm -rf private-keys-v1.d openpgp-revocs.d tofu.d gpgtar.d
