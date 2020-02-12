@@ -1482,7 +1482,7 @@ card_cardlist_cb (void *opaque, const char *line)
         {
           /* Format of the stored string is the S/N, a space, and a
            * space separated list of appnames.  */
-          if (*s != ' ' || spacep (s+1) || !s[1])
+          if (*s && (*s != ' ' || spacep (s+1) || !s[1]))
             parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
           else /* We assume the rest of the line is well formatted.  */
             add_to_strlist (&parm->list, line);
