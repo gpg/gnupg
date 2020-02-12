@@ -71,6 +71,8 @@ enum opt_values
     oLCctype,
     oLCmessages,
 
+    oNoKeyLookup,
+
     oDummy
   };
 
@@ -94,6 +96,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oXauthority, "xauthority", "@"),
   ARGPARSE_s_s (oLCctype,    "lc-ctype",   "@"),
   ARGPARSE_s_s (oLCmessages, "lc-messages","@"),
+  ARGPARSE_s_n (oNoKeyLookup,"no-key-lookup",
+                "use --no-key-lookup for \"list\""),
 
   ARGPARSE_end ()
 };
@@ -219,6 +223,8 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
                                                pargs->r.ret_str); break;
         case oLCctype:     opt.lc_ctype = pargs->r.ret_str; break;
         case oLCmessages:  opt.lc_messages = pargs->r.ret_str; break;
+
+        case oNoKeyLookup: opt.no_key_lookup = 1; break;
 
         default: pargs->err = 2; break;
 	}
@@ -636,7 +642,7 @@ mem_is_zero (const char *mem, unsigned int memlen)
  * reference if no info is available; it may be NULL.  */
 static void
 list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
-                const char *label_keyref, estream_t fp)
+                const char *label_keyref, estream_t fp, int no_key_lookup)
 {
   gpg_error_t err;
   keyblock_t keyblock = NULL;
@@ -697,9 +703,12 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
           tty_fprintf (fp, "      created ....: %s\n",
                        isotimestamp (kinfo->created));
         }
-      err = get_matching_keys (kinfo->grip,
-                               (GNUPG_PROTOCOL_OPENPGP | GNUPG_PROTOCOL_CMS),
-                               &keyblock);
+      if (no_key_lookup)
+        err = 0;
+      else
+        err = get_matching_keys (kinfo->grip,
+                                 (GNUPG_PROTOCOL_OPENPGP | GNUPG_PROTOCOL_CMS),
+                                 &keyblock);
       if (err)
         {
           if (gpg_err_code (err) != GPG_ERR_NO_PUBKEY)
@@ -765,7 +774,8 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
 
 /* List all keyinfo in INFO using the list of LABELS.  */
 static void
-list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp)
+list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
+                int no_key_lookup)
 {
   key_info_t kinfo;
   int idx, i;
@@ -780,7 +790,8 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp)
         {
           tty_fprintf (fp, "%s", labels[idx].label);
           kinfo = find_kinfo (info, labels[idx].keyref);
-          list_one_kinfo (info->kinfo, kinfo, labels[idx].keyref, fp);
+          list_one_kinfo (info->kinfo, kinfo, labels[idx].keyref,
+                          fp, no_key_lookup);
           if (kinfo)
             kinfo->xflag = 1;
         }
@@ -793,14 +804,14 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp)
       for (i=5+strlen (kinfo->keyref); i < 18; i++)
         tty_fprintf (fp, ".");
       tty_fprintf (fp, ":");
-      list_one_kinfo (info->kinfo, kinfo, NULL, fp);
+      list_one_kinfo (info->kinfo, kinfo, NULL, fp, no_key_lookup);
     }
 }
 
 
 /* List OpenPGP card specific data.  */
 static void
-list_openpgp (card_info_t info, estream_t fp)
+list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
 {
   static struct keyinfolabel_s keyinfolabels[] = {
     { "Signature key ....:", "OPENPGP.1" },
@@ -871,14 +882,14 @@ list_openpgp (card_info_t info, estream_t fp)
                    info->uif[2] ? "on" : "off");
     }
 
-  list_all_kinfo (info, keyinfolabels, fp);
+  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
 
 }
 
 
 /* List PIV card specific data.  */
 static void
-list_piv (card_info_t info, estream_t fp)
+list_piv (card_info_t info, estream_t fp, int no_key_lookup)
 {
   static struct keyinfolabel_s keyinfolabels[] = {
     { "PIV authentication:", "PIV.9A" },
@@ -931,8 +942,7 @@ list_piv (card_info_t info, estream_t fp)
         }
     }
   tty_fprintf (fp, "\n");
-  list_all_kinfo (info, keyinfolabels, fp);
-
+  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
 }
 
 
@@ -955,9 +965,11 @@ print_a_version (estream_t fp, const char *prefix, unsigned int value)
 }
 
 
-/* Print all available information about the current card. */
+/* Print all available information about the current card.  With
+ * NO_KEY_LOOKUP the sometimes expensive listing of all matching
+ * OpenPGP and X.509 keys is not done */
 static void
-list_card (card_info_t info)
+list_card (card_info_t info, int no_key_lookup)
 {
   estream_t fp = opt.interactive? NULL : es_stdout;
 
@@ -983,8 +995,8 @@ list_card (card_info_t info)
 
   switch (info->apptype)
     {
-    case APP_TYPE_OPENPGP: list_openpgp (info, fp); break;
-    case APP_TYPE_PIV:     list_piv (info, fp); break;
+    case APP_TYPE_OPENPGP: list_openpgp (info, fp, no_key_lookup); break;
+    case APP_TYPE_PIV:     list_piv (info, fp, no_key_lookup); break;
     default: break;
     }
 }
@@ -996,7 +1008,7 @@ static gpg_error_t
 cmd_list (card_info_t info, char *argstr)
 {
   gpg_error_t err;
-  int opt_cards, opt_apps;
+  int opt_cards, opt_apps, opt_no_key_lookup;
   strlist_t cards = NULL;
   strlist_t sl;
   estream_t fp = opt.interactive? NULL : es_stdout;
@@ -1010,19 +1022,23 @@ cmd_list (card_info_t info, char *argstr)
 
   if (!info)
     return print_help
-      ("LIST [--cards] [--apps] [N] [APP]\n\n"
+      ("LIST [--cards] [--apps] [--no-key-lookup] [N] [APP]\n\n"
        "Show the content of the current card.\n"
        "With N given select and list the n-th card;\n"
        "with APP also given select that application.\n"
        "To select an APP on the current card use '-' for N.\n"
-       "Option --cards lists available cards.\n"
-       "Option --apps lists additional card applications",
-       0);
+       "  --cards lists available cards\n"
+       "  --apps  lists additional card applications\n"
+       "  --no-key-lookup does not list matching OpenPGP or X.509 keys\n"
+       , 0);
 
   opt_cards = has_leading_option (argstr, "--cards");
   opt_apps = has_leading_option (argstr, "--apps");
+  opt_no_key_lookup = has_leading_option (argstr, "--no-key-lookup");
   argstr = skip_options (argstr);
 
+  if (opt.no_key_lookup)
+    opt_no_key_lookup = 1;
 
   if (digitp (argstr) || (*argstr == '-' && spacep (argstr+1)))
     {
@@ -1132,7 +1148,7 @@ cmd_list (card_info_t info, char *argstr)
       else
         err = 0;
       if (!err)
-        list_card (info);
+        list_card (info, opt_no_key_lookup);
     }
 
  leave:

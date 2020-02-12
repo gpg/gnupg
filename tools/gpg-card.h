@@ -38,6 +38,8 @@ struct
   const char *agent_program;
   int autostart;
 
+  int no_key_lookup;  /* Assume --no-key-lookup for "list".  */
+
   /* Options passed to the gpg-agent: */
   session_env_t session_env;
   char *lc_ctype;
