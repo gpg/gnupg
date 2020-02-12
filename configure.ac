@@ -1479,12 +1479,6 @@ AC_CHECK_FUNCS([getpeerucred])
 #
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
 
-#
-# Define for regexp support
-#
-AC_DEFINE(DISABLE_REGEX,0, [Define to disable regular expression support])
-
-
 
 #
 # Do we have zlib? Must do it here because Solaris failed
