@@ -248,6 +248,7 @@ struct
     /* Force the use of the OpenPGP card and do not allow the use of
      * another card.  */
     unsigned int use_only_openpgp_card:1;
+    unsigned int full_timestrings:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

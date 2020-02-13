@@ -679,7 +679,7 @@ mk_datestr (char *buffer, size_t bufsize, u32 timestamp)
  *    Format is: yyyy-mm-dd
  */
 const char *
-datestr_from_pk (PKT_public_key *pk)
+dateonlystr_from_pk (PKT_public_key *pk)
 {
   static char buffer[MK_DATESTR_SIZE];
 
@@ -687,12 +687,34 @@ datestr_from_pk (PKT_public_key *pk)
 }
 
 
+/* Same as dateonlystr_from_pk but with a global option a full iso
+ * timestamp is returned.  In this case it shares a static buffer with
+ * isotimestamp(). */
 const char *
-datestr_from_sig (PKT_signature *sig )
+datestr_from_pk (PKT_public_key *pk)
+{
+  if (opt.flags.full_timestrings)
+    return isotimestamp (pk->timestamp);
+  else
+    return dateonlystr_from_pk (pk);
+}
+
+
+const char *
+dateonlystr_from_sig (PKT_signature *sig )
 {
   static char buffer[MK_DATESTR_SIZE];
 
   return mk_datestr (buffer, sizeof buffer, sig->timestamp);
+}
+
+const char *
+datestr_from_sig (PKT_signature *sig )
+{
+  if (opt.flags.full_timestrings)
+    return isotimestamp (sig->timestamp);
+  else
+    return dateonlystr_from_sig (sig);
 }
 
 
@@ -703,6 +725,10 @@ expirestr_from_pk (PKT_public_key *pk)
 
   if (!pk->expiredate)
     return _("never     ");
+
+  if (opt.flags.full_timestrings)
+    return isotimestamp (pk->expiredate);
+
   return mk_datestr (buffer, sizeof buffer, pk->expiredate);
 }
 
@@ -714,6 +740,10 @@ expirestr_from_sig (PKT_signature *sig)
 
   if (!sig->expiredate)
     return _("never     ");
+
+  if (opt.flags.full_timestrings)
+    return isotimestamp (sig->expiredate);
+
   return mk_datestr (buffer, sizeof buffer, sig->expiredate);
 }
 
@@ -725,6 +755,10 @@ revokestr_from_pk( PKT_public_key *pk )
 
   if(!pk->revoked.date)
     return _("never     ");
+
+  if (opt.flags.full_timestrings)
+    return isotimestamp (pk->revoked.date);
+
   return mk_datestr (buffer, sizeof buffer, pk->revoked.date);
 }
 

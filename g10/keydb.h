@@ -533,7 +533,9 @@ unsigned nbits_from_pk( PKT_public_key *pk );
 char *mk_datestr (char *buffer, size_t bufsize, u32 timestamp);
 #define MK_DATESTR_SIZE 11
 
+const char *dateonlystr_from_pk (PKT_public_key *pk);
 const char *datestr_from_pk( PKT_public_key *pk );
+const char *dateonlystr_from_sig( PKT_signature *sig );
 const char *datestr_from_sig( PKT_signature *sig );
 const char *expirestr_from_pk( PKT_public_key *pk );
 const char *expirestr_from_sig( PKT_signature *sig );

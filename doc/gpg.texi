@@ -2942,6 +2942,14 @@ forth to @var{epoch} which is the number of seconds elapsed since the year
 If you suffix @var{epoch} with an exclamation mark (!), the system time
 will appear to be frozen at the specified time.
 
+@item --full-timestrings
+@opindex full-timestrings
+Change the format of printed creation and expiration times from just
+the date to the date and time.  This is in general not useful and the
+same information is anyway available in @option{--with-colons} mode.
+These longer strings are also not well aligned with other printed
+data.
+
 @item --enable-progress-filter
 @opindex enable-progress-filter
 Enable certain PROGRESS status outputs. This option allows frontends

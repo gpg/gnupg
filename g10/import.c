@@ -1411,7 +1411,7 @@ impex_filter_getval (void *cookie, const char *propname)
         }
       else if (!strcmp (propname, "sig_created_d"))
         {
-          result = datestr_from_sig (sig);
+          result = dateonlystr_from_sig (sig);
         }
       else if (!strcmp (propname, "sig_algo"))
         {
@@ -1454,7 +1454,7 @@ impex_filter_getval (void *cookie, const char *propname)
         }
       else if (!strcmp (propname, "key_created_d"))
         {
-          result = datestr_from_pk (pk);
+          result = dateonlystr_from_pk (pk);
         }
       else if (!strcmp (propname, "expired"))
         {

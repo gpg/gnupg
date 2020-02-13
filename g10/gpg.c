@@ -431,6 +431,7 @@ enum cmd_and_opt_values
     oRequestOrigin,
     oNoSymkeyCache,
     oUseOnlyOpenPGPCard,
+    oFullTimestrings,
 
     oNoop
   };
@@ -902,6 +903,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
   ARGPARSE_s_n (oUseKeyboxd,    "use-keyboxd", "@"),
+  ARGPARSE_s_n (oFullTimestrings, "full-timestrings", "@"),
 
   /* Options to override new security defaults.  */
   ARGPARSE_s_n (oAllowWeakKeySignatures, "allow-weak-key-signatures", "@"),
@@ -3675,6 +3677,10 @@ main (int argc, char **argv)
 
           case oUseOnlyOpenPGPCard:
             opt.flags.use_only_openpgp_card = 1;
+            break;
+
+          case oFullTimestrings:
+            opt.flags.full_timestrings = 1;
             break;
 
 	  case oNoop: break;
