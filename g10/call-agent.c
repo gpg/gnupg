@@ -810,15 +810,23 @@ agent_scd_learn (struct agent_card_info_s *info, int force)
 
 
 
+struct keypairinfo_cb_parm_s
+{
+  keypair_info_t kpinfo;
+  keypair_info_t *kpinfo_tail;
+};
+
+
 /* Callback for the agent_scd_keypairinfo function.  */
 static gpg_error_t
 scd_keypairinfo_status_cb (void *opaque, const char *line)
 {
-  strlist_t *listaddr = opaque;
+  struct keypairinfo_cb_parm_s *parm = opaque;
+  gpg_error_t err = 0;
   const char *keyword = line;
   int keywordlen;
-  strlist_t sl;
-  char *p;
+  char *line_buffer = NULL;
+  keypair_info_t kpi = NULL;
 
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
@@ -827,39 +835,93 @@ scd_keypairinfo_status_cb (void *opaque, const char *line)
 
   if (keywordlen == 11 && !memcmp (keyword, "KEYPAIRINFO", keywordlen))
     {
-      sl = append_to_strlist (listaddr, line);
-      p = sl->d;
-      /* Make sure that we only have two tokens so that future
-       * extensions of the format won't change the format expected by
-       * the caller.  */
-      while (*p && !spacep (p))
-        p++;
-      if (*p)
+      /* The format of such a line is:
+       *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime]
+       */
+      char *fields[4];
+      int nfields;
+      const char *hexgrp, *keyref, *usage;
+      time_t atime;
+      u32 keytime;
+
+      line_buffer = xtrystrdup (line);
+      if (!line_buffer)
         {
-          while (spacep (p))
-            p++;
-          while (*p && !spacep (p))
-            p++;
-          if (*p)
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      if ((nfields = split_fields (line_buffer, fields, DIM (fields))) < 2)
+        goto leave;  /* not enough args - invalid status line - ignore  */
+
+      hexgrp = fields[0];
+      keyref = fields[1];
+      if (nfields > 2)
+        usage = fields[2];
+      else
+        usage = "";
+      if (nfields > 3)
+        {
+          atime = parse_timestamp (fields[3], NULL);
+          if (atime == (time_t)(-1))
+            atime = 0;
+          keytime = atime;
+        }
+      else
+        keytime = 0;
+
+      kpi = xtrycalloc (1, sizeof *kpi);
+      if (!kpi)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      if (*hexgrp == 'X' && !hexgrp[1])
+        *kpi->keygrip = 0; /* No hexgrip.  */
+      else if (strlen (hexgrp) == 2*KEYGRIP_LEN)
+        mem2str (kpi->keygrip, hexgrp, sizeof kpi->keygrip);
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+
+      if (!*keyref)
+        {
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+      kpi->idstr = xtrystrdup (keyref);
+      if (!kpi->idstr)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      /* Parse and set the usage.  */
+      for (; *usage; usage++)
+        {
+          switch (*usage)
             {
-              *p++ = 0;
-              while (spacep (p))
-                p++;
-              while (*p && !spacep (p))
-                {
-                  switch (*p++)
-                    {
-                    case 'c': sl->flags |= GCRY_PK_USAGE_CERT; break;
-                    case 's': sl->flags |= GCRY_PK_USAGE_SIGN; break;
-                    case 'e': sl->flags |= GCRY_PK_USAGE_ENCR; break;
-                    case 'a': sl->flags |= GCRY_PK_USAGE_AUTH; break;
-                    }
-                }
+            case 's': kpi->usage |= GCRY_PK_USAGE_SIGN; break;
+            case 'c': kpi->usage |= GCRY_PK_USAGE_CERT; break;
+            case 'a': kpi->usage |= GCRY_PK_USAGE_AUTH; break;
+            case 'e': kpi->usage |= GCRY_PK_USAGE_ENCR; break;
             }
         }
+
+      kpi->keytime = keytime;
+
+      /* Append to the list.  */
+      *parm->kpinfo_tail = kpi;
+      parm->kpinfo_tail = &kpi->next;
+      kpi = NULL;
     }
 
-  return 0;
+ leave:
+  free_keypair_info (kpi);
+  xfree (line_buffer);
+  return err;
 }
 
 
@@ -869,10 +931,10 @@ scd_keypairinfo_status_cb (void *opaque, const char *line)
  * bits.  If KEYREF is not NULL, only a single string is returned
  * which matches the given keyref. */
 gpg_error_t
-agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref, strlist_t *r_list)
+agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref, keypair_info_t *r_list)
 {
   gpg_error_t err;
-  strlist_t list = NULL;
+  struct keypairinfo_cb_parm_s parm;
   struct default_inq_parm_s inq_parm;
   char line[ASSUAN_LINELENGTH];
 
@@ -883,6 +945,9 @@ agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref, strlist_t *r_list)
   memset (&inq_parm, 0, sizeof inq_parm);
   inq_parm.ctx = agent_ctx;
 
+  parm.kpinfo = NULL;
+  parm.kpinfo_tail = &parm.kpinfo;
+
   if (keyref)
     snprintf (line, DIM(line), "SCD READKEY --info-only %s", keyref);
   else
@@ -891,16 +956,15 @@ agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref, strlist_t *r_list)
   err = assuan_transact (agent_ctx, line,
                          NULL, NULL,
                          default_inq_cb, &inq_parm,
-                         scd_keypairinfo_status_cb, &list);
-  if (!err && !list)
+                         scd_keypairinfo_status_cb, &parm);
+  if (!err && !parm.kpinfo)
     err = gpg_error (GPG_ERR_NO_DATA);
+
   if (err)
-    {
-      free_strlist (list);
-      return err;
-    }
-  *r_list = list;
-  return 0;
+    free_keypair_info (parm.kpinfo);
+  else
+    *r_list = parm.kpinfo;
+  return err;
 }
 
 
@@ -1384,22 +1448,50 @@ agent_scd_readcert (const char *certidstr,
 static gpg_error_t
 readkey_status_cb (void *opaque, const char *line)
 {
-  u32 *keytimep  = opaque;
+  u32 *keytimep = opaque;
+  gpg_error_t err = 0;
   const char *args;
+  char *line_buffer = NULL;
 
-  if ((args = has_leading_keyword (line, "KEY-TIME")))
+  /* FIXME: Get that info from the KEYPAIRINFO line.  */
+  if ((args = has_leading_keyword (line, "KEYPAIRINFO"))
+      && !*keytimep)
     {
-      /* Skip the keyref - READKEY returns just one.  */
-      while (*args && !spacep (args))
-        args++;
-      while (spacep (args))
-        args++;
-      /* We are at the keytime. */
-      *keytimep = strtoul (args, NULL, 10);
+      /* The format of such a line is:
+       *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime]
+       *
+       * Note that we use only the first valid KEYPAIRINFO line.  More
+       * lines are possible if a second card carries the same key.
+       */
+      char *fields[4];
+      int nfields;
+      time_t atime;
+
+      line_buffer = xtrystrdup (line);
+      if (!line_buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      if ((nfields = split_fields (line_buffer, fields, DIM (fields))) < 4)
+        goto leave;  /* not enough args - ignore  */
+
+      if (nfields > 3)
+        {
+          atime = parse_timestamp (fields[3], NULL);
+          if (atime == (time_t)(-1))
+            atime = 0;
+          *keytimep = atime;
+        }
+      else
+        *keytimep = 0;
     }
 
-  return 0;
+ leave:
+  xfree (line_buffer);
+  return err;
 }
+
 
 /* This is a variant of agent_readkey which sends a READKEY command
  * directly Scdaemon.  On success a new s-expression is stored at
@@ -1407,7 +1499,7 @@ readkey_status_cb (void *opaque, const char *line)
  * OpenPGP card is stored there - if that is not known 0 is stored.
  * In the latter case it is allowed to pass NULL for R_RESULT.  */
 gpg_error_t
-agent_scd_readkey (const char *keyrefstr,
+agent_scd_readkey (ctrl_t ctrl, const char *keyrefstr,
                    gcry_sexp_t *r_result, u32 *r_keytime)
 {
   gpg_error_t err;
@@ -1425,7 +1517,7 @@ agent_scd_readkey (const char *keyrefstr,
     *r_result = NULL;
   if (r_keytime)
     *r_keytime = 0;
-  err = start_agent (NULL, 1);
+  err = start_agent (ctrl, 1);
   if (err)
     return err;
 
@@ -1637,6 +1729,7 @@ card_keyinfo_cb (void *opaque, const char *line)
 }
 
 
+/* Free a keypair info list.  */
 void
 free_keypair_info (keypair_info_t l)
 {

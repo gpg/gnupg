@@ -82,9 +82,12 @@ struct agent_card_info_s
 struct keypair_info_s
 {
   struct keypair_info_s *next;
-  char keygrip[41];
-  char *serialno;
-  char *idstr;     /* (aka keyref) */
+  char keygrip[2 * KEYGRIP_LEN + 1];  /* Stored in hex.  */
+  char *serialno;      /* NULL or the malloced serialno.  */
+  char *idstr;         /* Malloced keyref (e.g. "OPENPGP.1") */
+  unsigned int usage;  /* Key usage flags.  */
+  u32 keytime;         /* Key creation time from the card's DO.  */
+  int algo;            /* Helper to store the pubkey algo.       */
 };
 typedef struct keypair_info_s *keypair_info_t;
 
@@ -96,7 +99,7 @@ int agent_scd_learn (struct agent_card_info_s *info, int force);
 
 /* Get the keypariinfo directly from scdaemon.  */
 gpg_error_t agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref,
-                                   strlist_t *r_list);
+                                   keypair_info_t *r_list);
 
 /* Return list of cards.  */
 int agent_scd_cardlist (strlist_t *result);
@@ -140,7 +143,7 @@ int agent_scd_readcert (const char *certidstr,
                         void **r_buf, size_t *r_buflen);
 
 /* Send a READKEY command to the SCdaemon.  */
-gpg_error_t agent_scd_readkey (const char *keyrefstr,
+gpg_error_t agent_scd_readkey (ctrl_t ctrl, const char *keyrefstr,
                                gcry_sexp_t *r_result, u32 *r_keytime);
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
