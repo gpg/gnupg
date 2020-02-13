@@ -124,6 +124,7 @@ build_agent=yes
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
 GNUPG_BUILD_PROGRAM(g13, no)
 GNUPG_BUILD_PROGRAM(dirmngr, yes)
+GNUPG_BUILD_PROGRAM(keyboxd, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
 GNUPG_BUILD_PROGRAM(symcryptrun, no)
 # We use gpgtar to unpack test data, hence we always build it.  If the
@@ -948,10 +949,11 @@ if test x"$use_tofu" = xyes ; then
     AC_SUBST([SQLITE3_LIBS])
   else
     use_tofu=no
+    build_keyboxd=no
     tmp=$(echo "$SQLITE3_PKG_ERRORS" | tr '\n' '\v' | sed 's/\v/\n*** /g')
     AC_MSG_WARN([[
 ***
-*** Building without SQLite support - TOFU disabled
+*** Building without SQLite support - TOFU and Keyboxd disabled
 ***
 *** $tmp]])
   fi
@@ -1834,6 +1836,7 @@ AM_CONDITIONAL(BUILD_AGENT,       test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON,    test "$build_scdaemon" = "yes")
 AM_CONDITIONAL(BUILD_G13,         test "$build_g13" = "yes")
 AM_CONDITIONAL(BUILD_DIRMNGR,     test "$build_dirmngr" = "yes")
+AM_CONDITIONAL(BUILD_KEYBOXD,     test "$build_keyboxd" = "yes")
 AM_CONDITIONAL(BUILD_DOC,         test "$build_doc" = "yes")
 AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
@@ -1860,6 +1863,9 @@ if test "$build_scdaemon" = yes ; then
 fi
 if test "$build_dirmngr" = yes ; then
     AC_DEFINE(BUILD_WITH_DIRMNGR,1,[Defined if DIRMNGR is to be build])
+fi
+if test "$build_keyboxd" = yes ; then
+    AC_DEFINE(BUILD_WITH_KEYBOXD,1,[Defined if KEYBOXD is to be build])
 fi
 if test "$build_g13" = yes ; then
     AC_DEFINE(BUILD_WITH_G13,1,[Defined if G13 is to be build])
@@ -2105,6 +2111,7 @@ echo "
         Smartcard: $build_scdaemon $build_scdaemon_extra
         G13:       $build_g13
         Dirmngr:   $build_dirmngr
+        Keyboxd:   $build_keyboxd
         Gpgtar:    $build_gpgtar
         WKS tools: $build_wks_tools
 

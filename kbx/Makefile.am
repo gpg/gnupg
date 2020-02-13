@@ -29,9 +29,13 @@ endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
-noinst_LIBRARIES = libkeybox.a libkeybox509.a
 bin_PROGRAMS = kbxutil
+noinst_LIBRARIES = libkeybox.a libkeybox509.a
+if BUILD_KEYBOXD
 libexec_PROGRAMS = keyboxd
+else
+libexec_PROGRAMS =
+endif
 
 if HAVE_W32CE_SYSTEM
 extra_libs =  $(LIBASSUAN_LIBS)
