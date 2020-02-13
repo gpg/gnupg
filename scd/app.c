@@ -2037,6 +2037,7 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
   char buf[65];
   char *p;
   membuf_t mb;
+  int any = 0;
 
   if (DIM (buf) < 2 * card->serialnolen + 1)
     return 0; /* Oops.  */
@@ -2057,8 +2058,16 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
         {
           if (!a->fnc.with_keygrip)
             continue;
+          any = 1;
           put_membuf (&mb, " ", 1);
           put_membuf_str (&mb, xstrapptype (a));
+        }
+      if (!any && card->app)
+        {
+          /* No card app supports the with_keygrip function.  Use the
+           * main app as fallback.  */
+          put_membuf (&mb, " ", 1);
+          put_membuf_str (&mb, xstrapptype (card->app));
         }
       put_membuf (&mb, "", 1);
       p = get_membuf (&mb, NULL);
