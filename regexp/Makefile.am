@@ -27,15 +27,12 @@ AM_CFLAGS =
 libregexp_a_SOURCES = jimregexp.h utf8.h jimregexp.c utf8.c
 libregexp_a_CFLAGS = $(AM_CFLAGS)
 
-EXTRA_DIST = parse-unidata.awk UnicodeData.txt
-
-utf8.o: _unicode_mapping.c
+EXTRA_DIST = parse-unidata.awk UnicodeData.txt _unicode_mapping.c
 
 if MAINTAINER_MODE
+BUILT_SOURCES = _unicode_mapping.c
 MAINTAINERCLEANFILES = _unicode_mapping.c
 
 _unicode_mapping.c: parse-unidata.awk UnicodeData.txt
 	$(AWK) -f $(srcdir)/parse-unidata.awk $(srcdir)/UnicodeData.txt >$@
-else
-EXTRA_DIST += _unicode_mapping.c
 endif
