@@ -60,22 +60,6 @@ int utf8_charlen(int c)
     return 1;
 }
 
-int utf8_strlen(const char *str, int bytelen)
-{
-    int charlen = 0;
-    if (bytelen < 0) {
-        bytelen = strlen(str);
-    }
-    while (bytelen > 0) {
-        int c;
-        int l = utf8_tounicode(str, &c);
-        charlen++;
-        str += l;
-        bytelen -= l;
-    }
-    return charlen;
-}
-
 int utf8_index(const char *str, int index)
 {
     const char *s = str;
@@ -83,27 +67,6 @@ int utf8_index(const char *str, int index)
         s += utf8_charlen(*s);
     }
     return s - str;
-}
-
-int utf8_prev_len(const char *str, int len)
-{
-    int n = 1;
-
-    assert(len > 0);
-
-    /* Look up to len chars backward for a start-of-char byte */
-    while (--len) {
-        if ((str[-n] & 0x80) == 0) {
-            /* Start of a 1-byte char */
-            break;
-        }
-        if ((str[-n] & 0xc0) == 0xc0) {
-            /* Start of a multi-byte char */
-            break;
-        }
-        n++;
-    }
-    return n;
 }
 
 int utf8_tounicode(const char *str, int *uc)
@@ -183,13 +146,5 @@ int utf8_upper(int ch)
         return toupper(ch);
     }
     return utf8_map_case(unicode_case_mapping_upper, ARRAYSIZE(unicode_case_mapping_upper), ch);
-}
-
-int utf8_lower(int ch)
-{
-    if (isascii(ch)) {
-        return tolower(ch);
-    }
-    return utf8_map_case(unicode_case_mapping_lower, ARRAYSIZE(unicode_case_mapping_lower), ch);
 }
 #endif /* JIM_BOOTSTRAP */
