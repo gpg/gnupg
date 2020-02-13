@@ -790,31 +790,6 @@ learn_status_cb (void *opaque, const char *line)
         {
           parm->disp_sex = *line == '1'? 1 : *line == '2' ? 2: 0;
         }
-      else if (!memcmp (keyword, "KEY-TIME", keywordlen))
-        {
-          /* The format of such a line is:
-           *   KEY-TIME <keyref> <timestamp>
-           */
-          const char *timestamp;
-
-          line_buffer = pline = xstrdup (line);
-
-          keyref = parse_keyref_helper (pline);
-          while (*pline && !spacep (pline))
-            pline++;
-          if (*pline)
-            *pline++ = 0; /* Terminate keyref.  */
-          while (spacep (pline)) /* Skip to the timestamp.  */
-            pline++;
-          timestamp = pline;
-
-          /* Check whether we already have an item for the keyref.  */
-          kinfo = find_kinfo (parm, keyref);
-          if (!kinfo)  /* No: new entry.  */
-            kinfo = create_kinfo (parm, keyref);
-
-          kinfo->created = strtoul (timestamp, NULL, 10);
-        }
       else if (!memcmp (keyword, "KEY-ATTR", keywordlen))
         {
           char keyrefbuf[20];
@@ -968,33 +943,28 @@ learn_status_cb (void *opaque, const char *line)
       else if (!memcmp (keyword, "KEYPAIRINFO", keywordlen))
         {
           /* The format of such a line is:
-           *   KEYPAIRINFO <hexgrip> <keyref> [usage]
+           *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime]
            */
-          char *hexgrp, *usage;
+          char *fields[4];
+          int nfields;
+          const char *hexgrp, *usage;
+          time_t keytime;
 
           line_buffer = pline = xstrdup (line);
 
-          hexgrp = pline;
-          while (*pline && !spacep (pline))
-            pline++;
-          while (spacep (pline))
-            pline++;
+          if ((nfields = split_fields (line_buffer, fields, DIM (fields))) < 2)
+            goto leave;  /* not enough args - invalid status line.  */
 
-          keyref = pline;
-          while (*pline && !spacep (pline))
-            pline++;
-          if (*pline)
-            {
-              *pline++ = 0;
-              while (spacep (pline))
-                pline++;
-              usage = pline;
-              while (*pline && !spacep (pline))
-                pline++;
-              *pline = 0;
-            }
+          hexgrp = fields[0];
+          keyref = fields[1];
+          if (nfields > 2)
+            usage = fields[2];
           else
             usage = "";
+          if (nfields > 3)
+            keytime = parse_timestamp (fields[3], NULL);
+          else
+            keytime = 0;
 
           /* Check whether we already have an item for the keyref.  */
           kinfo = find_kinfo (parm, keyref);
@@ -1021,6 +991,8 @@ learn_status_cb (void *opaque, const char *line)
                 case 'e': kinfo->usage |= GCRY_PK_USAGE_ENCR; break;
                 }
             }
+          /* Store the keytime.  */
+          kinfo->created = keytime == (time_t)(-1)? 0 : (u32)keytime;
         }
       else if (!memcmp (keyword, "CARDVERSION", keywordlen))
         {
@@ -1055,6 +1027,7 @@ learn_status_cb (void *opaque, const char *line)
       break;
     }
 
+ leave:
   xfree (line_buffer);
   return 0;
 }
