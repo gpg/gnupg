@@ -716,10 +716,10 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
                        kb->protocol == GNUPG_PROTOCOL_OPENPGP? "OpenPGP" :
                        kb->protocol == GNUPG_PROTOCOL_CMS? "X.509" : "?");
           pubkey = kb->keys;
-          /* If this is not the primary key print the primary key's
-           * fingerprint or a reference to it.  */
           if (kb->protocol == GNUPG_PROTOCOL_OPENPGP)
             {
+              /* If this is not the primary key print the primary
+               * key's fingerprint or a reference to it.  */
               tty_fprintf (fp, "        main key .: ");
               for (ki=firstkinfo; ki; ki = ki->next)
                 if (pubkey->grip_valid
@@ -742,18 +742,22 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
                     tty_fprintf (fp, "<%s>\n", s);
                   else
                     tty_fprintf (fp, "<Key %s>\n", ki->keyref);
+                }
+              else /* Print the primary key as fallback.  */
+                print_shax_fpr (fp, pubkey->fpr, pubkey->fprlen);
 
+              /* Find the primary or subkey of that key.  */
+              for (; pubkey; pubkey = pubkey->next)
+                if (pubkey->grip_valid
+                    && !memcmp (kinfo->grip, pubkey->grip, KEYGRIP_LEN))
+                  break;
+              if (pubkey)
+                {
                   tty_fprintf (fp, "        fpr ......: ");
-                  for (; pubkey; pubkey = pubkey->next)
-                    if (pubkey->grip_valid
-                        && !memcmp (ki->grip, pubkey->grip, KEYGRIP_LEN))
-                      break;
                   print_shax_fpr (fp, pubkey->fpr, pubkey->fprlen);
                   tty_fprintf (fp, "        created ..: %s\n",
                                isotimestamp (pubkey->created));
                 }
-              else /* Print the primary key as fallback.  */
-                print_shax_fpr (fp, pubkey->fpr, pubkey->fprlen);
             }
           for (uid = kb->uids; uid; uid = uid->next)
             {
