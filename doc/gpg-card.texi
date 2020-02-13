@@ -339,7 +339,7 @@ for the specific parameters of a key.  It is used by
 key to its protocol specific certificate format (X.509, OpenPGP, or
 SecureShell).  Below the keygrip the key reference along with the key
 usage capabilities are show.  Finally the algorithm is printed in the
-format used by @command {gpg}.  At that point no other information is
+format used by @command{gpg}.  At that point no other information is
 shown because for these new keys gpg won't be able to find matching
 certificates.
 
