@@ -1157,6 +1157,20 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     that the keyboxd SEARCH command can be used to lookup the public
     key using the <ubid> prefixed with a caret (^).
 
+*** KEYPAIRINFO <grip> <keyref> [<usage>] [<keytime>]
+    This status is emitted by scdaemon and gpg-agent to convey brief
+    information about keypairs stored on tokens.  <grip> is the
+    hexified keygrip of the key or, if no key is stored, an "X".
+    <keyref> is the ID of a card's key; for example "OPENPGP.2" for
+    the second key slot of an OpenPGP card.  <usage> is optional and
+    returns technically possible key usages, this is a string of
+    single letters describing the usage ('c' for certify, 'e' for
+    encryption, 's' for signing, 'a' for authentication). A '-' can be
+    used to tell that usage flags are not conveyed.  <keytime> is used
+    by OpenPGP cards for the stored key creation time.  A '-' means no
+    info available.  The format is the usual ISO string are a number
+    with the seconds since Epoch.
+
 * Format of the --attribute-fd output
 
   When --attribute-fd is set, during key listings (--list-keys,

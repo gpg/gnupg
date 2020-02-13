@@ -1881,8 +1881,8 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
 {
   int keyno = key - 1;
   gpg_error_t err = 0;
-  char idbuf[50];
   const char *usage;
+  u32 fprtime;
 
   err = get_public_key (app, keyno);
   if (err)
@@ -1897,15 +1897,15 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
     case 0: usage = "sc"; break;
     case 1: usage = "e";  break;
     case 2: usage = "sa"; break;
-    default: usage = "";  break;
+    default: usage = "-";  break;
     }
 
-  sprintf (idbuf, "OPENPGP.%d", keyno+1);
-  send_status_info (ctrl, "KEYPAIRINFO",
-                    app->app_local->pk[keyno].keygrip_str, 40,
-                    idbuf, strlen (idbuf),
-                    usage, strlen (usage),
-                    NULL, (size_t)0);
+  if (retrieve_fprtime_from_card (app, keyno, &fprtime))
+    fprtime = 0;
+
+  err = send_status_printf (ctrl, "KEYPAIRINFO", "%s OPENPGP.%d %s %lu",
+                            app->app_local->pk[keyno].keygrip_str,
+                            keyno+1, usage, (unsigned long)fprtime);
 
  leave:
   return err;
@@ -1968,7 +1968,6 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
   gpg_error_t err;
   int keyno;
   unsigned char *buf;
-  u32 fprtime;
 
   if (strlen (keyid) == 40)
     {
@@ -2006,13 +2005,6 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
       err = send_keypair_info (app, ctrl, keyno+1);
       if (err)
         return err;
-      if (!retrieve_fprtime_from_card (app, keyno, &fprtime))
-        {
-          err = send_status_printf (ctrl, "KEY-TIME", "OPENPGP.%d %lu",
-                                    keyno+1, (unsigned long)fprtime);
-          if (err)
-            return err;
-        }
     }
 
   if (pk && pklen)
