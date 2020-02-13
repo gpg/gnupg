@@ -294,6 +294,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   gcry_sexp_t s_hash = NULL;
   gcry_sexp_t s_pkey = NULL;
   unsigned char *shadow_info = NULL;
+  int no_shadow_info = 0;
   const unsigned char *data;
   int datalen;
   int check_signature = 0;
@@ -315,16 +316,19 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   err = agent_key_from_file (ctrl, cache_nonce, desc_text, ctrl->keygrip,
                              &shadow_info, cache_mode, lookup_ttl,
                              &s_skey, NULL);
-  if (err)
+  if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)
+    no_shadow_info = 1;
+  else if (err)
     {
-      if (gpg_err_code (err) != GPG_ERR_NO_SECKEY)
-        log_error ("failed to read the secret key\n");
+      log_error ("failed to read the secret key\n");
       goto leave;
     }
 
-  if (shadow_info)
+  if (shadow_info || no_shadow_info)
     {
-      /* Divert operation to the smartcard */
+      /* Divert operation to the smartcard.  With NO_SHADOW_INFO set
+       * we don't have the keystub but we want to see whether the key
+       * is on the active card.  */
       size_t len;
       unsigned char *buf = NULL;
       int key_type;
@@ -332,18 +336,65 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       int is_ECDSA = 0;
       int is_EdDSA = 0;
 
-      err = agent_public_key_from_file (ctrl, ctrl->keygrip, &s_pkey);
-      if (err)
+      if (no_shadow_info)
         {
-          log_error ("failed to read the public key\n");
-          goto leave;
+          /* Try to get the public key from the card or fail with the
+           * original NO_SECKEY error.  We also write a stub file (we
+           * are here only because no stub exists). */
+          char *serialno;
+          unsigned char *pkbuf = NULL;
+          size_t pkbuflen;
+          char hexgrip[2*KEYGRIP_LEN+1];
+          char *keyref;
+
+          if (agent_card_serialno (ctrl, &serialno, NULL))
+            {
+              /* No card availabale or error reading the card.  */
+              err = gpg_error (GPG_ERR_NO_SECKEY);
+              goto leave;
+            }
+          bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
+          if (agent_card_readkey (ctrl, hexgrip, &pkbuf, &keyref))
+            {
+              /* No such key on the card.  */
+              xfree (serialno);
+              err = gpg_error (GPG_ERR_NO_SECKEY);
+              goto leave;
+            }
+          pkbuflen = gcry_sexp_canon_len (pkbuf, 0, NULL, NULL);
+          err = gcry_sexp_sscan (&s_pkey, NULL, (char*)pkbuf, pkbuflen);
+          if (err)
+            {
+              xfree (serialno);
+              xfree (pkbuf);
+              xfree (keyref);
+              log_error ("%s: corrupted key returned by scdaemon\n", __func__);
+              goto leave;
+            }
+
+          if (keyref)
+            agent_write_shadow_key (ctrl->keygrip, serialno, keyref, pkbuf, 0);
+
+          xfree (serialno);
+          xfree (pkbuf);
+          xfree (keyref);
+        }
+      else
+        {
+          /* Get the public key from the stub file.  */
+          err = agent_public_key_from_file (ctrl, ctrl->keygrip, &s_pkey);
+          if (err)
+            {
+              log_error ("failed to read the public key\n");
+              goto leave;
+            }
         }
 
-      if (agent_is_eddsa_key (s_skey))
+      if (agent_is_eddsa_key (s_pkey))
         is_EdDSA = 1;
       else
         {
-          key_type = agent_is_dsa_key (s_skey);
+          key_type = agent_is_dsa_key (s_pkey);
           if (key_type == 0)
             is_RSA = 1;
           else if (key_type == GCRY_PK_ECDSA)
@@ -354,7 +405,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         char *desc2 = NULL;
 
         if (desc_text)
-          agent_modify_description (desc_text, NULL, s_skey, &desc2);
+          agent_modify_description (desc_text, NULL, s_pkey, &desc2);
 
         err = divert_pksign (ctrl, desc2? desc2 : desc_text,
                              ctrl->keygrip,
@@ -444,7 +495,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
     }
   else
     {
-      /* No smartcard, but a private key */
+      /* No smartcard, but a private key (in S_SKEY). */
       int dsaalgo = 0;
 
       /* Put the hash into a sexp */
@@ -494,7 +545,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   /* Check that the signature verification worked and nothing is
    * fooling us e.g. by a bug in the signature create code or by
    * deliberately introduced faults.  Because Libgcrypt 1.7 does this
-   * for RSA internally there is no need to do it here again.  */
+   * for RSA internally there is no need to do it here again.  We do
+   * this always for card based RSA keys, though.  */
   if (check_signature)
     {
       gcry_sexp_t sexp_key = s_pkey? s_pkey: s_skey;

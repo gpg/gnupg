@@ -1035,7 +1035,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
           goto leave;
         }
 
-      rc = agent_card_readkey (ctrl, keyid, &pkbuf);
+      rc = agent_card_readkey (ctrl, keyid, &pkbuf, NULL);
       if (rc)
         goto leave;
       pkbuflen = gcry_sexp_canon_len (pkbuf, 0, NULL, NULL);

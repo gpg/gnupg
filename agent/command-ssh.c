@@ -2394,7 +2394,7 @@ card_key_available (ctrl_t ctrl, const struct card_key_info_s *keyinfo,
     *cardsn = NULL;
 
   /* Read the public key.  */
-  err = agent_card_readkey (ctrl, keyinfo->keygrip, &pkbuf);
+  err = agent_card_readkey (ctrl, keyinfo->keygrip, &pkbuf, NULL);
   if (err)
     {
       if (opt.verbose)

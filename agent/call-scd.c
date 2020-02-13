@@ -686,7 +686,8 @@ handle_pincache_put (const char *args)
 }
 
 
-/* This status callback is to intercept the PINCACHE_PUT status messages.  */
+/* This status callback is to intercept the PINCACHE_PUT status
+ * messages.  OPAQUE is not used.  */
 static gpg_error_t
 pincache_put_cb (void *opaque, const char *line)
 {
@@ -840,8 +841,11 @@ get_serialno_cb (void *opaque, const char *line)
   return err;
 }
 
+
 /* Return the serial number of the card or an appropriate error.  The
-   serial number is returned as a hexstring. */
+ * serial number is returned as a hexstring.  If the serial number is
+ * not required by the caller R_SERIALNO can be NULL; this might be
+ * useful to test whether a card is available. */
 int
 agent_card_serialno (ctrl_t ctrl, char **r_serialno, const char *demand)
 {
@@ -866,7 +870,10 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno, const char *demand)
       xfree (serialno);
       return unlock_scd (ctrl, rc);
     }
-  *r_serialno = serialno;
+  if (r_serialno)
+    *r_serialno = serialno;
+  else
+    xfree (serialno);
   return unlock_scd (ctrl, 0);
 }
 
@@ -1165,41 +1172,107 @@ agent_card_readcert (ctrl_t ctrl,
 
 
 
-/* Read a key with ID and return it in an allocate buffer pointed to
-   by r_BUF as a valid S-expression. */
+struct readkey_status_parm_s
+{
+  char *keyref;
+};
+
+static gpg_error_t
+readkey_status_cb (void *opaque, const char *line)
+{
+  struct readkey_status_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+  char *line_buffer = NULL;
+  const char *s;
+
+  if ((s = has_leading_keyword (line, "KEYPAIRINFO"))
+      && !parm->keyref)
+    {
+      /* The format of such a line is:
+       *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime]
+       *
+       * Here we only need the keyref.  We use only the first received
+       * KEYPAIRINFO; it is possible to receive several if there are
+       * two or more active cards with the same key.  */
+      char *fields[2];
+      int nfields;
+
+      line_buffer = xtrystrdup (line);
+      if (!line_buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      if ((nfields = split_fields (line_buffer, fields, DIM (fields))) < 2)
+        goto leave;  /* Not enough args; invalid status line - skip.  */
+
+      parm->keyref = xtrystrdup (fields[1]);
+      if (!parm->keyref)
+        err = gpg_error_from_syserror ();
+    }
+  else
+    err = pincache_put_cb (NULL, line);
+
+ leave:
+  xfree (line_buffer);
+  return err;
+}
+
+
+/* Read a key with ID (keyref or keygrip) and return it in a malloced
+ * buffer pointed to by R_BUF as a valid S-expression.  If R_KEYREF is
+ * not NULL the keyref is stored there. */
 int
-agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
+agent_card_readkey (ctrl_t ctrl, const char *id,
+                    unsigned char **r_buf, char **r_keyref)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
   membuf_t data;
   size_t len, buflen;
+  struct readkey_status_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
 
   *r_buf = NULL;
+  if (r_keyref)
+    *r_keyref = NULL;
+
   rc = start_scd (ctrl);
   if (rc)
     return rc;
 
   init_membuf (&data, 1024);
-  snprintf (line, DIM(line), "READKEY %s", id);
+  snprintf (line, DIM(line), "READKEY%s -- %s",
+            r_keyref? " --info":"", id);
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         put_membuf_cb, &data,
                         NULL, NULL,
-                        pincache_put_cb, NULL);
+                        readkey_status_cb, &parm);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
+      xfree (parm.keyref);
       return unlock_scd (ctrl, rc);
     }
   *r_buf = get_membuf (&data, &buflen);
   if (!*r_buf)
-    return unlock_scd (ctrl, gpg_error (GPG_ERR_ENOMEM));
+    {
+      xfree (parm.keyref);
+      return unlock_scd (ctrl, gpg_error (GPG_ERR_ENOMEM));
+    }
 
   if (!gcry_sexp_canon_len (*r_buf, buflen, NULL, NULL))
     {
+      xfree (parm.keyref);
       xfree (*r_buf); *r_buf = NULL;
       return unlock_scd (ctrl, gpg_error (GPG_ERR_INV_VALUE));
     }
+  if (r_keyref)
+    *r_keyref = parm.keyref;
+  else
+    xfree (parm.keyref);
 
   return unlock_scd (ctrl, 0);
 }

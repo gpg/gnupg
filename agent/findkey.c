@@ -1166,6 +1166,8 @@ key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
   if (!list)
     list = gcry_sexp_find_token (s_key, "private-key", 0 );
   if (!list)
+    list = gcry_sexp_find_token (s_key, "public-key", 0 );
+  if (!list)
     {
       log_error ("invalid private key format\n");
       return gpg_error (GPG_ERR_BAD_SECKEY);

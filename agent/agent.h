@@ -607,7 +607,8 @@ int agent_card_pkdecrypt (ctrl_t ctrl,
                           char **r_buf, size_t *r_buflen, int *r_padding);
 int agent_card_readcert (ctrl_t ctrl,
                          const char *id, char **r_buf, size_t *r_buflen);
-int agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf);
+int agent_card_readkey (ctrl_t ctrl, const char *id,
+                        unsigned char **r_buf, char **r_keyref);
 gpg_error_t agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
                                  const char *keyref,
                                  const char *keydata, size_t keydatalen,

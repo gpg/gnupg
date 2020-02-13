@@ -46,11 +46,16 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
   *r_kid = NULL;
   bin2hex (grip, 20, hexgrip);
 
-  err = parse_shadow_info (shadow_info, &want_sn, NULL, NULL);
-  if (err)
-    return err;
+  if (shadow_info)
+    {
+      err = parse_shadow_info (shadow_info, &want_sn, NULL, NULL);
+      if (err)
+        return err;
+    }
+  else
+    want_sn = NULL;
 
-  len = strlen (want_sn);
+  len = want_sn? strlen (want_sn) : 0;
   if (len == 32 && !strncmp (want_sn, "D27600012401", 12))
     {
       /* This is an OpenPGP card - reformat  */
@@ -90,7 +95,9 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
             }
         }
 
-      if (asprintf (&desc,
+      if (!want_sn)
+        ; /* No shadow info so we can't ask; ERR is already set.  */
+      else if (asprintf (&desc,
                     "%s:%%0A%%0A"
                     "  %s",
                     L_("Please insert the card with serial number"),
@@ -407,6 +414,9 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
  * smartcard.  DESC_TEXT is the original text for a prompt has send by
  * gpg to gpg-agent.
  *
+ * Note: If SHADOW_INFO is NULL the user can't be asked to insert the
+ * card, we simply try to use an inserted card with the given keygrip.
+ *
  * FIXME: Explain the other args.  */
 int
 divert_pksign (ctrl_t ctrl, const char *desc_text, const unsigned char *grip,
@@ -424,6 +434,8 @@ divert_pksign (ctrl_t ctrl, const char *desc_text, const unsigned char *grip,
   rc = ask_for_card (ctrl, shadow_info, grip, &kid);
   if (rc)
     return rc;
+  /* Note that the KID may be an keyref or a keygrip.  The signing
+   * functions handle both.  */
 
   if (algo == MD_USER_TLS_MD5SHA1)
     {

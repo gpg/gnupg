@@ -401,7 +401,7 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
         continue; /* The key is already available. */
 
       /* Unknown key - store it. */
-      rc = agent_card_readkey (ctrl, item->id, &pubkey);
+      rc = agent_card_readkey (ctrl, item->id, &pubkey, NULL);
       if (rc)
         {
           log_debug ("agent_card_readkey failed: %s\n", gpg_strerror (rc));
