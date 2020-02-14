@@ -47,6 +47,11 @@
  *   shorthand character classes, increased number of parentheses to 100,
  *   backslash escape sequences. It also removes \n as an alternative to |.
  *
+ *** THIS IS AN ALTERED VERSION.  It was altered to offer POSIX-like
+ *** regular expression routines of regcomp/regexec/regerror/regfree,
+ *** with UTF-8 support, by NIIBE Yutaka <gniibe@fsij.org> on
+ *** 2020-02-14.
+ *
  * Beware that some of this code is subtly aware of the way operator
  * precedence is structured in regular expressions.  Serious changes in
  * regular-expression syntax might require a total rethink.
