@@ -326,15 +326,25 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
               c = parm->line[parm->readpos++];
               if (c == '\n' || c == ' ' || c == '\r' || c == '\t')
                 continue;
-              if (c == '=')
-                { /* pad character: stop */
-                  if (idx == 1)
-                    buffer[n++] = val;
-                  parm->stop_seen = 1;
-                  break;
-                }
-              if( (c = asctobin[(c2=c)]) == 255 )
+              if ((c = asctobin[(c2=c)]) == 255)
                 {
+                  if (c2 == '=')
+                    { /* pad character: stop */
+                      if (idx == 1)
+                        buffer[n++] = val;
+                      parm->stop_seen = 1;
+                      break;
+                    }
+                  else if (c2 == '-'
+                           && parm->readpos == 1
+                           && parm->readpos-1+9 < parm->linelen
+                           && !strncmp ((char*)parm->line + parm->readpos-1,
+                                        "-----END ", 9))
+                    { /* END line seen (padding was not needed). */
+                      log_debug ("END seen\n");
+                      parm->stop_seen = 1;
+                      break;
+                    }
                   log_error (_("invalid radix64 character %02x skipped\n"),
                              c2);
                   continue;
