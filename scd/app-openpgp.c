@@ -60,6 +60,8 @@
 #include "../common/openpgpdefs.h"
 
 
+#define KDF_DATA_LENGTH_MIN  90
+#define KDF_DATA_LENGTH_MAX 110
 
 /* The AID of this application.  */
 static char const openpgp_aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
@@ -198,7 +200,7 @@ struct app_local_s {
     unsigned int private_dos:1;
     unsigned int algo_attr_change:1;   /* Algorithm attributes changeable.  */
     unsigned int has_decrypt:1;        /* Support symmetric decryption.     */
-    unsigned int kdf_do:1;                /* Support KDF DO.                */
+    unsigned int kdf_do:1;             /* Support KDF DO.                   */
 
     unsigned int sm_algo:2;            /* Symmetric crypto algo for SM.     */
     unsigned int pin_blk2:1;           /* PIN block 2 format supported.     */
@@ -230,6 +232,7 @@ struct app_local_s {
   /* Pinpad request specified on card.  */
   struct
   {
+    unsigned int disabled:1;    /* No pinpad use because of KDF DO.  */
     unsigned int specified:1;
     int fixedlen_user;
     int fixedlen_admin;
@@ -1036,7 +1039,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "UIF-1",        0x00D6, 0 },
     { "UIF-2",        0x00D7, 0 },
     { "UIF-3",        0x00D8, 0 },
-    { "KDF",          0x00F9 },
+    { "KDF",          0x00F9, 5 },
     { NULL, 0 }
   };
   int idx, i, rc;
@@ -1161,10 +1164,24 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
             for (i=0; i < 3; i++)
               send_fprtime_if_not_null (ctrl, table[idx].name, i+1, value+i*4);
         }
+      else if (table[idx].special == 5)
+        {
+          if ((valuelen == KDF_DATA_LENGTH_MIN
+               || valuelen == KDF_DATA_LENGTH_MAX)
+              && (value[2] == 0x03))
+            app->app_local->pinpad.disabled = 1;
+          else
+            app->app_local->pinpad.disabled = 0;
+        }
       else
         send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
 
       xfree (relptr);
+    }
+  else
+    {
+      if (table[idx].special == 5)
+        app->app_local->pinpad.disabled = 0;
     }
   return rc;
 }
@@ -2069,6 +2086,9 @@ do_readcert (app_t app, const char *certid,
 static int
 check_pinpad_request (app_t app, pininfo_t *pininfo, int admin_pin)
 {
+  if (app->app_local->pinpad.disabled)
+    return 1;
+
   if (app->app_local->pinpad.specified == 0) /* No preference on card.  */
     {
       if (pininfo->fixedlen == 0) /* Reader has varlen capability.  */
@@ -2162,9 +2182,6 @@ get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
 
   return result;
 }
-
-#define KDF_DATA_LENGTH_MIN  90
-#define KDF_DATA_LENGTH_MAX 110
 
 /* Compute hash if KDF-DO is available.  CHVNO must be 0 for reset
  * code, 1 or 2 for user pin and 3 for admin pin.  PIN is the original
@@ -2757,6 +2774,12 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
       app->did_chv1 = 0;
       app->did_chv2 = 0;
       app->did_chv3 = 0;
+
+      if ((valuelen == KDF_DATA_LENGTH_MIN || valuelen == KDF_DATA_LENGTH_MAX)
+          && (value[2] == 0x03))
+        app->app_local->pinpad.disabled = 1;
+      else
+        app->app_local->pinpad.disabled = 0;
     }
 
   return rc;
@@ -4689,8 +4712,8 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno)
           keygrip_str = app->app_local->pk[keyno?keyno-1:0].keygrip_str;
           if (!strncmp (keygrip_str, keyidstr, 40))
             return 0;
-	  else
-	    return gpg_error (GPG_ERR_INV_ID);
+          else
+            return gpg_error (GPG_ERR_INV_ID);
         }
 
       if (n != 32 || strncmp (keyidstr, "D27600012401", 12))
