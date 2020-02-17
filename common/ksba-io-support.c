@@ -341,7 +341,6 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
                            && !strncmp ((char*)parm->line + parm->readpos-1,
                                         "-----END ", 9))
                     { /* END line seen (padding was not needed). */
-                      log_debug ("END seen\n");
                       parm->stop_seen = 1;
                       break;
                     }
