@@ -1011,53 +1011,92 @@ list_card (card_info_t info, int no_key_lookup)
 
 
 
+/* Helper for cmd_list.  */
+static void
+print_card_list (estream_t fp, card_info_t info, strlist_t cards,
+                 int only_current)
+{
+  int count;
+  strlist_t sl;
+  size_t snlen;
+  int star;
+  const char *s;
+
+  for (count = 0, sl = cards; sl; sl = sl->next, count++)
+    {
+      if (info && info->serialno)
+        {
+          s = strchr (sl->d, ' ');
+          if (s)
+            snlen = s - sl->d;
+          else
+            snlen = strlen (sl->d);
+          star = (strlen (info->serialno) == snlen
+                  && !memcmp (info->serialno, sl->d, snlen));
+        }
+      else
+        star = 0;
+      if (!only_current || star)
+        tty_fprintf (fp, "%d%c %s\n", count, star? '*':' ', sl->d);
+    }
+}
+
+
 /* The LIST command.  This also updates INFO if needed. */
 static gpg_error_t
 cmd_list (card_info_t info, char *argstr)
 {
   gpg_error_t err;
-  int opt_cards, opt_apps, opt_no_key_lookup;
+  int opt_cards, opt_apps, opt_info, opt_no_key_lookup;
   strlist_t cards = NULL;
   strlist_t sl;
   estream_t fp = opt.interactive? NULL : es_stdout;
-  int cardno = -1;
+  const char *cardsn = NULL;
   char *appstr = NULL;
   int count;
   int need_learn = 0;
-  int star;
-  size_t snlen;
-  const char *s;
 
   if (!info)
     return print_help
-      ("LIST [--cards] [--apps] [--no-key-lookup] [N] [APP]\n\n"
+      ("LIST [--cards] [--apps] [--info] [--no-key-lookup] [N] [APP]\n\n"
        "Show the content of the current card.\n"
-       "With N given select and list the n-th card;\n"
+       "With N given select and list the N-th card;\n"
        "with APP also given select that application.\n"
        "To select an APP on the current card use '-' for N.\n"
-       "  --cards lists available cards\n"
-       "  --apps  lists additional card applications\n"
+       "The S/N of the card may be used instead of N.\n"
+       "  --cards   lists available cards\n"
+       "  --apps    lists additional card applications\n"
+       "  --info    selects a card and prints its s/n\n"
        "  --no-key-lookup does not list matching OpenPGP or X.509 keys\n"
        , 0);
 
   opt_cards = has_leading_option (argstr, "--cards");
   opt_apps = has_leading_option (argstr, "--apps");
+  opt_info = has_leading_option (argstr, "--info");
   opt_no_key_lookup = has_leading_option (argstr, "--no-key-lookup");
   argstr = skip_options (argstr);
 
   if (opt.no_key_lookup)
     opt_no_key_lookup = 1;
 
-  if (digitp (argstr) || (*argstr == '-' && spacep (argstr+1)))
+  if (hexdigitp (argstr) || (*argstr == '-' && spacep (argstr+1)))
     {
       if (*argstr == '-' && (argstr[1] || spacep (argstr+1)))
         argstr++;  /* Keep current card.  */
       else
         {
-          cardno = atoi (argstr);
-          while (digitp (argstr))
+          cardsn = argstr;
+          while (hexdigitp (argstr))
             argstr++;
+          if (*argstr && !spacep (argstr))
+            {
+              err = gpg_error (GPG_ERR_INV_ARG);
+              goto leave;
+            }
+          if (*argstr)
+            *argstr++ = 0;
         }
+
       while (spacep (argstr))
         argstr++;
       if (*argstr)
@@ -1082,7 +1121,6 @@ cmd_list (card_info_t info, char *argstr)
       goto leave;
     }
 
-
   if (!info->serialno)
     {
       /* This is probably the first call.  We need to send a SERIALNO
@@ -1092,7 +1130,6 @@ cmd_list (card_info_t info, char *argstr)
         goto leave;
       need_learn = 1;
     }
-
 
   if (opt_cards || opt_apps)
     {
@@ -1105,41 +1142,52 @@ cmd_list (card_info_t info, char *argstr)
         err = scd_cardlist (&cards);
       if (err)
         goto leave;
-      for (count = 0, sl = cards; sl; sl = sl->next, count++)
-        {
-          if (info && info->serialno)
-            {
-              s = strchr (sl->d, ' ');
-              if (s)
-                snlen = s - sl->d;
-              else
-                snlen = strlen (sl->d);
-              star = (strlen (info->serialno) == snlen
-                      && !memcmp (info->serialno, sl->d, snlen));
-            }
-          else
-            star = 0;
-          tty_fprintf (fp, "%d%c %s\n", count, star? '*':' ', sl->d);
-        }
+      print_card_list (fp, info, cards, 0);
     }
   else
     {
-      if (cardno != -1)
+      if (cardsn)
         {
-          /* Switch to the requested card.  */
+          int i, cardno;
+
           err = scd_cardlist (&cards);
           if (err)
             goto leave;
-          for (count = 0, sl = cards; sl; sl = sl->next, count++)
-            if (count == cardno)
-              break;
-          if (!sl)
+
+          /* Switch to the requested card.  */
+          for (i=0; digitp (cardsn+i); i++)
+            ;
+          if (i && i < 4 && !cardsn[i])
+            { /* Looks like an index into the card list.  */
+              cardno = atoi (cardsn);
+              for (count = 0, sl = cards; sl; sl = sl->next, count++)
+                if (count == cardno)
+                  break;
+              if (!sl)
+                {
+                  err = gpg_error (GPG_ERR_INV_INDEX);
+                  goto leave;
+                }
+            }
+          else  /* S/N of card specified.  */
             {
-              err = gpg_error (GPG_ERR_INV_INDEX);
-              goto leave;
+              for (sl = cards; sl; sl = sl->next)
+                if (!ascii_strcasecmp (sl->d, cardsn))
+                  break;
+              if (!sl)
+                {
+                  err = gpg_error (GPG_ERR_INV_INDEX);
+                  goto leave;
+                }
             }
           err = scd_switchcard (sl->d);
           need_learn = 1;
+        }
+      else /* --info with not args - show app list.  */
+        {
+          err = scd_applist (&cards, 1);
+          if (err)
+            goto leave;
         }
 
       if (appstr && *appstr)
@@ -1155,7 +1203,12 @@ cmd_list (card_info_t info, char *argstr)
         err = scd_learn (info);
       else
         err = 0;
-      if (!err)
+
+      if (err)
+        ;
+      else if (opt_info)
+        print_card_list (fp, info, cards, 1);
+      else
         list_card (info, opt_no_key_lookup);
     }
 
