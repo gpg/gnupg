@@ -349,7 +349,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
           if (agent_card_serialno (ctrl, &serialno, NULL))
             {
-              /* No card availabale or error reading the card.  */
+              /* No card available or error reading the card.  */
               err = gpg_error (GPG_ERR_NO_SECKEY);
               goto leave;
             }

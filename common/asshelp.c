@@ -600,7 +600,7 @@ start_new_service (assuan_context_t *r_ctx,
 }
 
 
-/* Try to connect tothe agent or start a new one.  */
+/* Try to connect to the agent or start a new one.  */
 gpg_error_t
 start_new_gpg_agent (assuan_context_t *r_ctx,
                      gpg_err_source_t errsource,

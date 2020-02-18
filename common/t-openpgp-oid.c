@@ -274,7 +274,7 @@ test_get_keyalgo_string (void)
   int oops = 0;
   int pass;
 
-  /* We do several passes becuase that is how the function is
+  /* We do several passes because that is how the function is
    * called.  */
   for (pass=0; pass < 3; pass++)
     for (idx=0; idx < DIM (samples); idx++)

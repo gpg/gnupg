@@ -814,7 +814,7 @@ keydb_dump_stats (void)
 
 
 /* keydb_new diverts to here in non-keyboxd mode.  HD is just the
- * calloced structure with the handle type intialized.  */
+ * calloced structure with the handle type initialized.  */
 gpg_error_t
 internal_keydb_init (KEYDB_HANDLE hd)
 {

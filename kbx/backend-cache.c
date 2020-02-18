@@ -421,7 +421,7 @@ key_item_unref (key_item_t ki)
 
 
 /* Given the hash value and the search info, find the key item in the
- * bucket.  Return NULL if not found or the key item if fount.  Always
+ * bucket.  Return NULL if not found or the key item if found.  Always
  * returns the the number of items searched, which is in the case of a
  * not-found the length of the chain.  Note that FPR may only be NULL
  * if FPRLEN is 0. */
@@ -624,7 +624,7 @@ maybe_flush_some_key_buckets (unsigned int hash, unsigned int count)
 }
 
 
-/* Thsi is the core of
+/* This is the core of
  *   key_table_put,
  *   key_table_put_no_fpr,
  *   key_table_put_no_kid.
@@ -680,7 +680,7 @@ do_key_table_put (u32 kid_h, u32 kid_l,
   /* If the bucket is full remove a couple of items. */
   if (maybe_flush_some_key_buckets (hash, count))
     {
-      /* During the fucntion call another thread might have changed
+      /* During the function call another thread might have changed
        * the bucket.  Thus we need to start over.  */
       do_find_again = 1;
     }

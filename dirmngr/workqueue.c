@@ -38,7 +38,7 @@ struct wqitem_s
    * task is not associated with a specific session.  */
   unsigned int session_id;
 
-  /* The function to perform the backgrount task.  */
+  /* The function to perform the background task.  */
   wqtask_t func;
 
   /* A string with the string argument for that task.  */
@@ -59,7 +59,7 @@ workqueue_dump_queue (ctrl_t ctrl)
   wqitem_t item;
   unsigned int count;
 
-  /* Temporay detach the entiere workqueue so that other threads don't
+  /* Temporarily detach the entiere workqueue so that other threads don't
    * get into our way.  */
   saved_workqueue = workqueue;
   workqueue = NULL;

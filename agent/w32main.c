@@ -40,8 +40,8 @@ static HWND glob_hwnd;
    number of args to reserve before the first one.  This code is based
    on Alexandre Julliard's LGPLed wine-0.9.34/dlls/kernel32/process.c
    and modified to fit into our framework.  The function returns NULL
-   on error; on success an arry with the argiments is returned.  This
-   array has been allocaqted using a plain malloc (and not the usual
+   on error; on success an array with the arguments is returned.  This
+   array has been allocated using a plain malloc (and not the usual
    xtrymalloc). */
 static char **
 build_argv (char *cmdline_arg, int reserved)

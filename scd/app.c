@@ -491,7 +491,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                     {
                       /* No version - this is not a Yubikey 5.  We now
                        * switch to the OTP app and take the first
-                       * three bytes of the reponse as version
+                       * three bytes of the response as version
                        * number.  */
                       xfree (buf);
                       buf = NULL;
@@ -1421,7 +1421,7 @@ app_readcert (card_t card, ctrl_t ctrl, const char *certid,
  * length (for assertions) at PKLEN; the caller must release that
  * buffer. On error NULL will be stored at PK and PKLEN and an error
  * code returned.  If the key is not required NULL may be passed for
- * PK; this makse send if the APP_READKEY_FLAG_INFO has also been set.
+ * PK; this makes sense if the APP_READKEY_FLAG_INFO has also been set.
  *
  * This function might not be supported by all applications.  */
 gpg_error_t

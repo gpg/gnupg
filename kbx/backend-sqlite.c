@@ -107,7 +107,7 @@ static struct
    /* The actual data; either X.509 certificates or OpenPGP
     * keyblocks.  */
    { "CREATE TABLE IF NOT EXISTS pubkey ("
-     /* The 20 octet truncted primary-fpr */
+     /* The 20 octet truncated primary-fpr */
      "ubid     BLOB NOT NULL PRIMARY KEY,"
      /* The type of the public key: 1 = openpgp, 2 = X.509.  */
      "type  INTEGER NOT NULL,"
@@ -486,7 +486,7 @@ run_sql_statement (const char *sqlstr)
 }
 
 
-/* Create and intitialize a new SQL database file if it does not
+/* Create and initialize a new SQL database file if it does not
  * exists; else open it and check that all required objects are
  * available.  */
 static gpg_error_t
@@ -1085,7 +1085,7 @@ store_into_userid (const unsigned char *ubid, enum pubkey_types pktype,
 }
 
 
-/* Store (BLOB,BLOBLEN) into the database.  UBID is the UBID macthing
+/* Store (BLOB,BLOBLEN) into the database.  UBID is the UBID matching
  * that blob.  BACKEND_HD is the handle for this backend and REQUEST
  * is the current database request object.  MODE is the store
  * mode.  */

@@ -87,7 +87,7 @@ static byte w32_portable_app;
 #endif /*HAVE_W32_SYSTEM*/
 
 #ifdef HAVE_W32_SYSTEM
-/* This flag is true if this process' binary has been installed under
+/* This flag is true if this process's binary has been installed under
    bin and not in the root directory as often used before GnuPG 2.1. */
 static byte w32_bin_is_bin;
 #endif /*HAVE_W32_SYSTEM*/

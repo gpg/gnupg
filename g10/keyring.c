@@ -598,7 +598,7 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
 
     /* Close this one otherwise we will lose the position for
      * a next search.  Fixme: it would be better to adjust the position
-     * after the write opertions.
+     * after the write operations.
      */
     iobuf_close (hd->current.iobuf);
     hd->current.iobuf = NULL;
@@ -638,7 +638,7 @@ keyring_delete_keyblock (KEYRING_HANDLE hd)
 
     /* close this one otherwise we will lose the position for
      * a next search.  Fixme: it would be better to adjust the position
-     * after the write opertions.
+     * after the write operations.
      */
     iobuf_close (hd->current.iobuf);
     hd->current.iobuf = NULL;

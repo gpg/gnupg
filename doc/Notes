@@ -130,7 +130,7 @@ the colon format if you want to manually debug things.
 > * How to import a CRL
 
 CRLs are managed by the dirmngr which is a separate package.  The idea
-is to eventaully turn it into a system daemon, so that on a multi-user
+is to eventually turn it into a system daemon, so that on a multi-user
 machine CRLs are handled more efficiently.  As of now the dirmngr
 needs service from gpgsm thus it is best to call it through gpgsm:
 

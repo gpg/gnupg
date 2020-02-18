@@ -350,7 +350,7 @@ run_modification_tests (void)
   assert (!err);
   e = nvc_lookup (pk, "Key:");
   assert (e);
-  nvc_delete_named (pk, "Kez:");  /* Delete an inexistant name.  */
+  nvc_delete_named (pk, "Kez:");  /* Delete an nonexistent name.  */
   e = nvc_lookup (pk, "Key:");
   assert (e);
   nvc_delete_named (pk, "Key:");

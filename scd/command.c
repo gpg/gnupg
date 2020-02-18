@@ -226,7 +226,7 @@ open_card (ctrl_t ctrl)
 }
 
 /* Explicitly open a card for a specific use of APPTYPE or SERIALNO.
- * If OPT_ALL ist set also add all possible additional apps. */
+ * If OPT_ALL is set also add all possible additional apps. */
 static gpg_error_t
 open_card_with_request (ctrl_t ctrl,
                         const char *apptypestr, const char *serialno,
@@ -1900,7 +1900,7 @@ static const char hlp_apdu[] =
   "Send an APDU to the current reader.  This command bypasses the high\n"
   "level functions and sends the data directly to the card.  HEXSTRING\n"
   "is expected to be a proper APDU.  If HEXSTRING is not given no\n"
-  "commands are set to the card but the command will implictly check\n"
+  "commands are set to the card but the command will implicitly check\n"
   "whether the card is ready for use. \n"
   "\n"
   "Using the option \"--atr\" returns the ATR of the card as a status\n"
@@ -2457,7 +2457,7 @@ pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
 
   /* Without an APPNAME etc or without a PIN we clear the cache and
    * thus there is no need to send the pin - even if the caller
-   * accidentially passed a pin.  */
+   * accidentally passed a pin.  */
   if (pin && slot != -1 && appname && pinref)
     {
       /* FIXME: Replace this by OCB mode and use the cache key as

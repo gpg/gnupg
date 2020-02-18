@@ -917,7 +917,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* Clear last found result but reord the offset of the last found
+  /* Clear last found result but record the offset of the last found
    * blob which we may need later. */
   if (hd->found.blob)
     {

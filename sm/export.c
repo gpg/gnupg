@@ -47,7 +47,7 @@ struct duptable_s
   struct duptable_s *next;
 
   /* Note that we only need to store 19 bytes because the first byte
-     is implictly given by the table index (we require at least 8
+     is implicitly given by the table index (we require at least 8
      bits). */
   unsigned char fpr[19];
 };

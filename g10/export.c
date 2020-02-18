@@ -556,7 +556,7 @@ match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk)
 }
 
 
-/* Return a canonicalized public key algoithms.  This is used to
+/* Return a canonicalized public key algorithms.  This is used to
    compare different flavors of algorithms (e.g. ELG and ELG_E are
    considered the same).  */
 static enum gcry_pk_algos

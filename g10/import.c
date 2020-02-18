@@ -1886,7 +1886,7 @@ import_one_real (ctrl_t ctrl,
         return 0;
     }
 
-  /* Remove all non-self-sigs if requested.  Noe that this is a NOP if
+  /* Remove all non-self-sigs if requested.  Note that this is a NOP if
    * that option has been globally set but we may also be called
    * latter with the already parsed keyblock and a locally changed
    * option.  This is why we need to remove them here as well.  */
@@ -3129,7 +3129,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 
 
 /* Return the recocation reason from signature SIG.  If no revocation
- * reason is availabale 0 is returned, in other cases the reason
+ * reason is available 0 is returned, in other cases the reason
  * (0..255).  If R_REASON is not NULL a malloced textual
  * representation of the code is stored there.  If R_COMMENT is not
  * NULL the comment from the reason is stored there and its length at

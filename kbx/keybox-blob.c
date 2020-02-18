@@ -759,7 +759,7 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
 
 
   /* Check whether we need a blob with 32 bit fingerprints. We could
-   * use this always but for backward compatiblity we do this only for
+   * use this always but for backward compatibility we do this only for
    * v5 keys.  */
   if (info->primary.version == 5)
     need_fpr32 = 1;

@@ -56,7 +56,7 @@ same commands as available in the interactive mode are run from the
 command line.  These commands need to be delimited with a double-dash.
 If a double-dash or a shell specific character is required as part of
 a command the entire command needs to be put in quotes.  If one of
-those commands returns an error the remaining commands are mot anymore
+those commands returns an error the remaining commands are not anymore
 run unless the command was prefixed with a single dash.
 
 A list of commands is available by using the command @code{help} and a

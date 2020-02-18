@@ -868,7 +868,7 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
  *                          considered.  Note: the local key ring is
  *                          consulted even if local is not in the
  *                          auto-key-locate option list!
- *    GET_PUBKEY_NO_LOCAL - Only the auto key locate functionaly is
+ *    GET_PUBKEY_NO_LOCAL - Only the auto key locate functionality is
  *                          used and no local search is done.
  *
  * If RETCTX is not NULL, then the constructed context is returned in
@@ -1762,7 +1762,7 @@ get_keyblock_byfprint_fast (ctrl_t ctrl,
       keydb_disable_caching (hd);
     }
 
-  /* Fo all other errors we return the handle.  */
+  /* For all other errors we return the handle.  */
   if (r_hd)
     *r_hd = hd;
 

@@ -305,7 +305,7 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 /* Run the program PGMNAME with the command line arguments given in
  * the NULL terminates array ARGV.  If INPUT is not NULL it will be
  * fed to stdin of the process.  stderr is logged using log_info and
- * the process' stdout is written to OUTPUT.  If OUTPUT is NULL the
+ * the process's stdout is written to OUTPUT.  If OUTPUT is NULL the
  * output is discarded.  If INEXTRA is given, an additional input
  * stream will be passed to the child; to tell the child about this
  * ARGV is scanned and the first occurrence of an argument
@@ -582,7 +582,7 @@ nop_free (void *ptr)
 /* Run the program PGMNAME with the command line arguments given in
    the NULL terminates array ARGV.  If INPUT_STRING is not NULL it
    will be fed to stdin of the process.  stderr is logged using
-   log_info and the process' stdout is returned in a newly malloced
+   log_info and the process's stdout is returned in a newly malloced
    buffer RESULT with the length stored at RESULTLEN if not given as
    NULL.  A hidden Nul is appended to the output.  On error NULL is
    stored at RESULT, a diagnostic is printed, and an error code

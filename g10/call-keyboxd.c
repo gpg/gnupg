@@ -876,7 +876,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
  * search yet on this database handle (or called keydb_search_reset),
  * then this function returns an error.
  *
- * Returns 0 on success or an error code, if an error occured.  */
+ * Returns 0 on success or an error code, if an error occurred.  */
 gpg_error_t
 keydb_delete_keyblock (KEYDB_HANDLE hd)
 {

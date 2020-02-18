@@ -458,10 +458,10 @@ get_selection (const char *prompt)
 
 
 /* Simply prints TEXT to the output.  Returns 0 as a convenience.
- * This is a separate fucntion so that it can be extended to run
+ * This is a separate function so that it can be extended to run
  * less(1) or so.  The extra arguments are int values terminated by a
  * 0 to indicate card application types supported with this command.
- * If none are given (just teh final 0), this is a general
+ * If none are given (just the final 0), this is a general
  * command.  */
 static gpg_error_t
 print_help (const char *text, ...)
@@ -1206,7 +1206,7 @@ cmd_authenticate (card_info_t info, char *argstr)
   if (!info)
     return print_help
       ("AUTHENTICATE [--setkey] [--raw] [< FILE]|KEY\n\n"
-       "Perform a mutual autentication either by reading the key\n"
+       "Perform a mutual authentication either by reading the key\n"
        "from FILE or by taking it from the command line.  Without\n"
        "the option --raw the key is expected to be hex encoded.\n"
        "To install a new administration key --setkey is used; this\n"
@@ -2015,7 +2015,7 @@ cmd_forcesig (card_info_t info)
 
 
 
-/* Helper for cmd_generate_openpgp.  Nore that either 0 or 1 is stored at
+/* Helper for cmd_generate_openpgp.  Note that either 0 or 1 is stored at
  * FORCED_CHV1. */
 static gpg_error_t
 check_pin_for_key_operation (card_info_t info, int *forced_chv1)

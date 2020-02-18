@@ -255,7 +255,7 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
             -1 = Error retrieving the data,
             -2 = No such PIN,
             -3 = PIN blocked,
-            -4 = NullPIN activ,
+            -4 = NullPIN active,
         n >= 0 = Number of verification attempts left.  */
 static int
 get_chv_status (app_t app, int sigg, int pwid)
@@ -287,7 +287,7 @@ get_chv_status (app_t app, int sigg, int pwid)
       else if (sw == 0x6983)
         rc = -3; /* PIN is blocked.  */
       else if (sw == 0x6985)
-        rc = -4; /* NullPIN is activ.  */
+        rc = -4; /* NullPIN is active.  */
       else if ((sw & 0xfff0) == 0x63C0)
         rc = (sw & 0x000f); /* PIN has N tries left.  */
       else

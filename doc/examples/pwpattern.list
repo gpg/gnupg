@@ -10,7 +10,7 @@
  
 # Reject the usual metavariables.  Usual not required because
 # gpg-agent can be used to reject all passphrases shorter than 8
-# charactes.
+# characters.
 foo
 bar
 baz

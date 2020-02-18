@@ -48,7 +48,7 @@
 #define MAX_DIGEST_LEN 64
 
 /* The maximum length of a passphrase (in bytes).  Note: this is
-   further contrained by the Assuan line length (and any other text on
+   further constrained by the Assuan line length (and any other text on
    the same line).  However, the Assuan line length is 1k bytes so
    this shouldn't be a problem in practice.  */
 #define MAX_PASSPHRASE_LEN 255
@@ -126,7 +126,7 @@ struct
   int enable_passphrase_history;
 
   /* If set the extended key format is used for new keys.  Note that
-   * this may vave the value 2 in which case
+   * this may have the value 2 in which case
    * --disable-extended-key-format won't have any effect and thus
    * effectivley locking it.  This is required to support existing
    * profiles which lock the use of --enable-extended-key-format. */

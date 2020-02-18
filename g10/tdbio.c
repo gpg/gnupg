@@ -107,7 +107,7 @@ static char *db_name;
 
 /* The handle for locking the trustdb file and a counter to record how
  * often this lock has been taken.  That counter is required because
- * dotlock does not implemen recursive locks.  */
+ * dotlock does not implement recursive locks.  */
 static dotlock_t lockhandle;
 static unsigned int is_locked;
 

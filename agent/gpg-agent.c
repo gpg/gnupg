@@ -2030,7 +2030,7 @@ agent_copy_startup_env (ctrl_t ctrl)
    Fixme: Due to the way the argument parsing works, we create a
    memory leak here for all string type arguments.  There is currently
    no clean way to tell whether the memory for the argument has been
-   allocated or points into the process' original arguments.  Unless
+   allocated or points into the process's original arguments.  Unless
    we have a mechanism to tell this, we need to live on with this. */
 static void
 reread_configuration (void)

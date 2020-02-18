@@ -1085,7 +1085,7 @@ as a binary blob.
 @c
 @c If no certificate was found, the function returns with the error
 @c GPG_ERR_MISSING_CERT.  Now the signature is verified.  If this fails,
-@c the erro is returned.  On success the @code{validate_cert_chain} is
+@c the error is returned.  On success the @code{validate_cert_chain} is
 @c used to verify that the certificate is actually valid.
 @c
 @c Here we may encounter a recursive situation:

@@ -369,7 +369,7 @@ key_table_get (PKT_public_key *pk, u32 *keyid)
             /* Found.  We need to check for dups.  */
             for (ki2 = ki->next; ki2; ki2 = ki2->next)
               if (ki2->keyid[0] == keyid[0] && ki2->keyid[1] == keyid[1])
-                return NULL;  /* Duplicated keyid - retrun NULL.  */
+                return NULL;  /* Duplicated keyid - return NULL.  */
 
             /* This is the only one - return it.  */
             return ki;
@@ -486,7 +486,7 @@ key_table_put (PKT_public_key *pk, uid_item_t ui)
     }
 
   /* Add an item to the bucket.  We allocate a whole block of items
-   * for cache performace reasons.  */
+   * for cache performance reasons.  */
   if (!key_item_attic)
     {
       key_item_t kiblock;

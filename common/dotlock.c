@@ -124,7 +124,7 @@
    that the handle shall only be used by one thread at a time.  This
    function creates a unique file temporary file (".#lk*") in the same
    directory as FNAME and returns a handle for further operations.
-   The module keeps track of theses unique files so that they will be
+   The module keeps track of these unique files so that they will be
    unlinked using the atexit handler.  If you don't need the lock file
    anymore, you may also explicitly remove it with a call to:
 
@@ -1110,7 +1110,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
     }
   else if ( same_node && kill (pid, 0) && errno == ESRCH )
     {
-      /* Note: It is unlikley that we get a race here unless a pid is
+      /* Note: It is unlikely that we get a race here unless a pid is
          reused too fast or a new process with the same pid as the one
          of the stale file tries to lock right at the same time as we.  */
       my_info_1 (_("removing stale lockfile (created by %d)\n"), pid);

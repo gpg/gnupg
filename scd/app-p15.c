@@ -2057,7 +2057,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             }
         }
 
-      /* Igonore further objects which might be there due to future
+      /* Ignore further objects which might be there due to future
          extensions of pkcs#15. */
 
     ready:

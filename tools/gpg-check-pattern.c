@@ -223,7 +223,7 @@ main (int argc, char **argv )
 /* Read a file FNAME into a buffer and return that malloced buffer.
    Caller must free the buffer.  On error NULL is returned, on success
    the valid length of the buffer is stored at R_LENGTH.  The returned
-   buffer is guarnteed to be nul terminated.  */
+   buffer is guaranteed to be nul terminated.  */
 static char *
 read_file (const char *fname, size_t *r_length)
 {

@@ -331,7 +331,7 @@ valid_swdb_name_p (const char *name)
  *            Common codes seen:
  *            GPG_ERR_TOO_OLD :: The SWDB file is to old to be used.
  *            GPG_ERR_ENOENT  :: The SWDB file is not available.
- *            GPG_ERR_BAD_SIGNATURE :: Currupted SWDB file.
+ *            GPG_ERR_BAD_SIGNATURE :: Corrupted SWDB file.
  * filedate:: Date of the swdb file (yyyymmddThhmmss)
  * verified:: Date we checked the validity of the file (yyyyymmddThhmmss)
  * version :: The version string from the swdb.

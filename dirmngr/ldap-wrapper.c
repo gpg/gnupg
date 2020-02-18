@@ -22,9 +22,9 @@
  * We can't use LDAP directly for these reasons:
  *
  * 1. The LDAP library is linked to separate crypto library like
- *    OpenSSL and even if it is linked to the libary we use in dirmngr
+ *    OpenSSL and even if it is linked to the library we use in dirmngr
  *    (ntbtls or gnutls) it is sometimes a different version of that
- *    libary with all the surprising failures you may get due to this.
+ *    library with all the surprising failures you may get due to this.
  *
  * 2. It is huge library in particular if TLS comes into play.  So
  *    problems with unfreed memory might turn up and we don't want

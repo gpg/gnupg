@@ -333,7 +333,7 @@ add_signed_attribute (ksba_cms_t cms, const char *attrstr)
   if (!ascii_strcasecmp (fields[1], "u"))
     {
       err = 0;
-      goto leave; /* Skip unsigned attruibutes.  */
+      goto leave; /* Skip unsigned attributes.  */
     }
   if (ascii_strcasecmp (fields[1], "s"))
     {

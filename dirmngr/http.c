@@ -39,7 +39,7 @@
   - stpcpy is required
   - fixme: list other requirements.
 
-  - Either HTTP_USE_NTBTLS or HTTP_USE_GNUTLS must be defind to select
+  - Either HTTP_USE_NTBTLS or HTTP_USE_GNUTLS must be defined to select
     which TLS library to use.
 
   - With HTTP_NO_WSASTARTUP the socket initialization is not done

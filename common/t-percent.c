@@ -222,7 +222,7 @@ test_percent_data_escape (void)
         {
           /* Note extra condition above handles the one test case
            * which reverts a plus to a space due to the use of the
-           * plus-unescape fucntion also for the prefix part.  */
+           * plus-unescape function also for the prefix part.  */
           fail (i);
         }
       else if (memcmp (buf+prefixlen, tbl[i].data, tbl[i].datalen))

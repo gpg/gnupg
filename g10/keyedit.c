@@ -3686,7 +3686,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
  * a secret key.  This function may be called with KEYBLOCK containing
  * secret keys and thus the printing of "pub" vs. "sec" does only
  * depend on the packet type and not by checking with gpg-agent.  If
- * PRINT_SEC ist set "sec" is printed instead of "pub".  */
+ * PRINT_SEC is set "sec" is printed instead of "pub".  */
 void
 show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock, int print_sec)
 {

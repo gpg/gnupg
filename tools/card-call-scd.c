@@ -804,7 +804,7 @@ learn_status_cb (void *opaque, const char *line)
 
           /* Note that KEY-ATTR returns OpenPGP algorithm numbers but
            * we want to use the Gcrypt numbers here.  A compatible
-           * change would be to add another paramater along with a
+           * change would be to add another parameter along with a
            * magic algo number to indicate that.  */
           algo = PUBKEY_ALGO_RSA;
           keyno = n = 0;
@@ -1215,7 +1215,7 @@ scd_writecert (const char *certidstr,
 
 /* Send a WRITEKEY command to the agent (so that the agent can fetch
  * the key to write).  KEYGRIP is the hexified keygrip of the source
- * key which will be written to tye slot KEYREF.  FORCE must be true
+ * key which will be written to the slot KEYREF.  FORCE must be true
  * to overwrite an existing key.  */
 gpg_error_t
 scd_writekey (const char *keyref, int force, const char *keygrip)

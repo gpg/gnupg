@@ -1992,7 +1992,7 @@ ask_and_prepare_chv (app_t app, ctrl_t ctrl,
 
 
 /* Verify the card holder verification identified by KEYREF.  This is
- * either the Appication PIN or the Global PIN.  If FORCE is true a
+ * either the Application PIN or the Global PIN.  If FORCE is true a
  * verification is always done.  */
 static gpg_error_t
 verify_chv (app_t app, ctrl_t ctrl, int keyref, int force,
@@ -2587,7 +2587,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
    * lost.  Adjust for this.  Unfortunately the ciphertext might have
    * also been prefixed with a leading zero to make it a positive
    * number; that may be a too long frame and we need to adjust for
-   * this too.  Note that for ECC thoses fixes are not reqquired
+   * this too.  Note that for ECC those fixes are not reqquired
    * because the first octet is always '04' to indicate an
    * uncompressed point.  */
   if (indatalen > framelen)

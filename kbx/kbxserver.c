@@ -406,7 +406,7 @@ cmd_search (assuan_context_t ctx, char *line)
 static const char hlp_next[] =
   "NEXT [--no-data]\n"
   "\n"
-  "Get the next search result from a previus search.";
+  "Get the next search result from a previous search.";
 static gpg_error_t
 cmd_next (assuan_context_t ctx, char *line)
 {

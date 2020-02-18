@@ -1614,7 +1614,7 @@ dirmngr_deinit_default_ctrl (ctrl_t ctrl)
 /* Create a list of LDAP servers from the file FILENAME. Returns the
    list or NULL in case of errors.
 
-   The format fo such a file is line oriented where empty lines and
+   The format of such a file is line oriented where empty lines and
    lines starting with a hash mark are ignored.  All other lines are
    assumed to be colon seprated with these fields:
 
@@ -1821,7 +1821,7 @@ parse_ocsp_signer (const char *string)
    Fixme: Due to the way the argument parsing works, we create a
    memory leak here for all string type arguments.  There is currently
    no clean way to tell whether the memory for the argument has been
-   allocated or points into the process' original arguments.  Unless
+   allocated or points into the process's original arguments.  Unless
    we have a mechanism to tell this, we need to live on with this. */
 static void
 reread_configuration (void)

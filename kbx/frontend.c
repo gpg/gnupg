@@ -223,7 +223,7 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
     }
 
   /* If requested do a reset.  Using the reset flag is faster than
-   * letting the caller do a separate call for an intial reset.  */
+   * letting the caller do a separate call for an initial reset.  */
   if (!desc || reset)
     {
       switch (the_database.db_type)

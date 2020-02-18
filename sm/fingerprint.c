@@ -158,7 +158,7 @@ gpgsm_get_short_fingerprint (ksba_cert_t cert, unsigned long *r_high)
 
 
 /* Return the so called KEYGRIP which is the SHA-1 hash of the public
-   key parameters expressed as an canoncial encoded S-Exp.  ARRAY must
+   key parameters expressed as an canonical encoded S-Exp.  ARRAY must
    be 20 bytes long.  Returns ARRAY or a newly allocated buffer if ARRAY was
    given as NULL.  May return NULL on error.  */
 unsigned char *

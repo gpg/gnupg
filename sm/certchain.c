@@ -558,7 +558,7 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
           rc = -1;
           goto leave;
         }
-      /* Ready.  The NE_FOUND_CERT is availabale via keydb_get_cert.  */
+      /* Ready.  The NE_FOUND_CERT is available via keydb_get_cert.  */
     }
 
  leave:

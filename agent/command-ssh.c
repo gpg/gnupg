@@ -1508,7 +1508,7 @@ ssh_signature_encoder_dsa (ssh_key_type_spec_t *spec,
 
   /* DSA specific code.  */
 
-  /* FIXME: Why this complicated code?  Why collecting boths mpis in a
+  /* FIXME: Why this complicated code?  Why collecting both mpis in a
      buffer instead of writing them out one after the other?  */
   for (i = 0; i < 2; i++)
     {

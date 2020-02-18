@@ -299,7 +299,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   Changes also found in 2.2.11:
 
-  * gpgsm: Fix CRL loading when intermediate certicates are not yet
+  * gpgsm: Fix CRL loading when intermediate certificates are not yet
     trusted.
 
   * gpgsm: Fix an error message about the digest algo.  [#4219]
@@ -634,7 +634,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * gpgsm: Do not expect X.509 keyids to be unique.  [#1644]
 
-  * agent: Fix stucked Pinentry when using --max-passphrase-days. [#3190]
+  * agent: Fix stuck Pinentry when using --max-passphrase-days. [#3190]
 
   * agent: New option --s2k-count.  [#3276 (workaround)]
 
@@ -1910,7 +1910,7 @@ Noteworthy changes in version 2.1.0 (2014-11-06)
 
  * scdaemon: Rename option --disable-pinpad (was --disable-keypad).
 
- * scdaemon: Better support fo CCID readers.  Now, internal CCID
+ * scdaemon: Better support for CCID readers.  Now, internal CCID
    driver supports readers with no auto configuration feature.
 
  * dirmngr: Removed support for the original HKP keyserver which is

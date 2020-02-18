@@ -117,7 +117,7 @@ create_keybox (const char *filename)
 
   /* Make sure that at least one record is in a new keybox file, so
    * that the detection magic will work the next time it is used.
-   * We always set the OpenPGP blobs maybe availabale flag.   */
+   * We always set the OpenPGP blobs maybe available flag.   */
   fp = es_fopen (filename, "w+b,mode=-rw-------");
   if (!fp)
     {

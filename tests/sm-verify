@@ -90,7 +90,7 @@ fail-if !$trusted
 send BYE
 expect-ok
 
-# We als have tampered version.
+# We also have tampered version.
 sig = openfile $srcdir/text-2.osig-bad.pem
 
 pipeserver $GPGSM

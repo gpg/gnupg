@@ -41,7 +41,7 @@
  * function returns the new string or NULL in case of a malloc
  * failure.
  *
- * Note that this fucntion also escapes the quote character to work
+ * Note that this function also escapes the quote character to work
  * around a bug in the mingw32 runtime which does not correctly handle
  * command line quoting.  We correctly double the quote mark when
  * calling a program (i.e. gpg-protect-tool), but the pre-main code

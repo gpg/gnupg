@@ -757,7 +757,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 ──────────────────────────
 
   Since version 2.1.14 the export and import options have been enhanced
-  to allow the use of /gpg/ to modify a key without first stroing it in
+  to allow the use of /gpg/ to modify a key without first storing it in
   the keyring.  For example:
 
   ┌────

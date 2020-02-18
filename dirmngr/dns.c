@@ -7646,7 +7646,7 @@ retry:
 			goto udp_connect_retry;
 		} else if (error == ECONNREFUSED)
 			/* Error for previous socket operation may
-			   be reserverd(?) asynchronously. */
+			   be reserved(?) asynchronously. */
 			goto udp_connect_retry;
 
 		if (error)
@@ -8244,7 +8244,7 @@ struct dns_resolver *dns_res_open(struct dns_resolv_conf *resconf, struct dns_ho
 	/*
 	 * Don't try to load it ourselves because a NULL object might be an
 	 * error from, say, dns_resconf_root(), and loading
-	 * dns_resconf_local() by default would create undesirable surpises.
+	 * dns_resconf_local() by default would create undesirable surprises.
 	 */
 	if (!resconf || !hosts || !hints) {
 		if (!*_error)

@@ -3554,7 +3554,7 @@ on the configuration file.
 @c @opindex use-only-openpgp-card
 @c Only access OpenPGP card's and no other cards.  This is a hidden
 @c option which could be used in case an old use case required the
-@c OpenPGP card while several cards are avaiable.  This option might be
+@c OpenPGP card while several cards are available.  This option might be
 @c removed if it turns out that nobody requires it.
 
 @end table
@@ -3945,7 +3945,7 @@ The program returns 0 if there are no severe errors, 1 if at least a
 signature was bad, and other error codes for fatal errors.
 
 Note that signature verification requires exact knowledge of what has
-been signed and by whom it has beensigned.  Using only the return code
+been signed and by whom it has been signed.  Using only the return code
 is thus not an appropriate way to verify a signature by a script.
 Either make proper use or the status codes or use the @command{gpgv}
 tool which has been designed to make signature verification easy for

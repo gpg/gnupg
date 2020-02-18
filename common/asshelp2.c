@@ -45,7 +45,7 @@
 static assuan_context_t (*the_assuan_ctx_func)(ctrl_t ctrl);
 
 
-/* Set FUNC to be used as a mapping fucntion from CTRL to an assuan
+/* Set FUNC to be used as a mapping function from CTRL to an assuan
  * context.  Pass NULL for FUNC to disable the use of the assuan
  * context in this module.  */
 void

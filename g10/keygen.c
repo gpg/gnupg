@@ -3247,7 +3247,7 @@ generate_user_id (KBNODE keyblock, const char *uidstr)
  * subkey.  If R_KEYVERSION is not NULL it will receive the version of
  * the key; this is currently 4 but can be changed with the flag "v5"
  * to create a v5 key.  If R_KEYTIME is not NULL and the key has been
- * taken fron active OpenPGP card, its creation time is stored
+ * taken from active OpenPGP card, its creation time is stored
  * there.  */
 static gpg_error_t
 parse_key_parameter_part (ctrl_t ctrl,

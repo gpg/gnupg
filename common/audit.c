@@ -80,7 +80,7 @@ static void writeout_rem (audit_ctx_t ctx,
 
 
 /* Add NAME to the list of help tags.  NAME needs to be a const string
-   an this function merly stores this pointer.  */
+   an this function merely stores this pointer.  */
 static void
 add_helptag (audit_ctx_t ctx, const char *name)
 {

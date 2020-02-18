@@ -30,7 +30,7 @@ typedef struct keybox_handle *KEYBOX_HANDLE;
 /* The types of the backends.  */
 enum database_types
   {
-   DB_TYPE_NONE,   /* No database at all (unitialized etc.).  */
+   DB_TYPE_NONE,   /* No database at all (uninitialized etc.).  */
    DB_TYPE_CACHE,  /* The cache backend (backend-cache.c).    */
    DB_TYPE_KBX,    /* Keybox type database (backend-kbx.c).   */
    DB_TYPE_SQLITE  /* SQLite type database (backend-sqlite.c).*/

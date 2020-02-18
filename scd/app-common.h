@@ -120,7 +120,7 @@ struct card_ctx_s {
 
 
 /* The object describing a card's applications.  A card may have
- * several applications and it is usuallay required to explicity
+ * several applications and it is usually required to explicitly
  * switch between applications.  */
 struct app_ctx_s {
   app_t next;

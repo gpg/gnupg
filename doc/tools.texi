@@ -83,7 +83,7 @@ or if no such user directory hierarchy exists @file{~/.gnupg/S.log}).
 
 @item --force
 @opindex force
-Delete an already existing socket file.  This option is implictly used
+Delete an already existing socket file.  This option is implicitly used
 if no socket name has been given on the command line.
 
 @item --homedir @var{DIR}

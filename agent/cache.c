@@ -205,7 +205,7 @@ housekeeping (void)
   for (r=thecache; r; r = r->next)
     {
       if (r->cache_mode == CACHE_MODE_PIN)
-        ; /* Don't let it expire - scdaemon explictly flushes them.  */
+        ; /* Don't let it expire - scdaemon explicitly flushes them.  */
       else if (r->pw && r->ttl >= 0 && r->accessed + r->ttl < current)
         {
           if (DBG_CACHE)

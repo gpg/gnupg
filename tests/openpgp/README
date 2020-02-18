@@ -29,7 +29,7 @@ and exit codes.
 
 To inspect the environment in which tests are running, or to quickly
 create keys for debugging or testing, you can start a shell.  There is
-one test that doese just that:
+one test that does just that:
 
   obj $ make -C tests/openpgp check TESTS=shell.scm
   PASS: tests/openpgp/setup.scm

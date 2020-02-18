@@ -87,7 +87,7 @@
  * The Responder receives the DHPART2 message and checks that the hash
  * of the received PKi matches the Hash(PKi) value as received earlier
  * with the COMMIT message.  The Responder now also computes the
- * shared master secret from its SKr and the recived PKi and derives
+ * shared master secret from its SKr and the received PKi and derives
  * the keys:
  *
  *  - HMACi-key using the label "GPG-pa1-HMACi-key".
@@ -324,7 +324,7 @@ set_status_fd (int fd)
 }
 
 
-/* Write a status line with code NO followed by the outout of the
+/* Write a status line with code NO followed by the output of the
  * printf style FORMAT.  The caller needs to make sure that LFs and
  * CRs are not printed.  */
 static void
@@ -876,7 +876,7 @@ send_message (const unsigned char *msg, size_t msglen)
  * error NULL is stored at R_MSG, a diagnostic printed and an error
  * code returned.  The returned message has a proper message type and
  * an appropriate length.  The message type is stored at R_MSGTYPE and
- * if a state is availabale it is stored at R_STATE.  */
+ * if a state is available it is stored at R_STATE.  */
 static gpg_error_t
 read_message (unsigned char **r_msg, size_t *r_msglen, int *r_msgtype,
               nvc_t *r_state)

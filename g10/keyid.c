@@ -558,7 +558,7 @@ keyid_from_pk (PKT_public_key *pk, u32 *keyid)
   keyid[0] = pk->keyid[0];
   keyid[1] = pk->keyid[1];
 
-  return keyid[1]; /*FIXME:shortkeyid ist different for v5*/
+  return keyid[1]; /*FIXME:shortkeyid is different for v5*/
 }
 
 
@@ -965,7 +965,7 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
 
 
 /* Return the so called KEYGRIP which is the SHA-1 hash of the public
-   key parameters expressed as an canoncial encoded S-Exp.  ARRAY must
+   key parameters expressed as an canonical encoded S-Exp.  ARRAY must
    be 20 bytes long.  Returns 0 on success or an error code.  */
 gpg_error_t
 keygrip_from_pk (PKT_public_key *pk, unsigned char *array)

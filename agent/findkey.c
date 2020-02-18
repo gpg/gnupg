@@ -199,8 +199,8 @@ write_extended_private_key (char *fname, estream_t fp, int update,
 
 /* Write an S-expression formatted key to our key storage.  With FORCE
  * passed as true an existing key with the given GRIP will get
- * overwritten.  If SERIALNO and KEYREF are give an a Token line is added to
- * th key if the extended format ist used.  */
+ * overwritten.  If SERIALNO and KEYREF are given a Token line is added to
+ * the key if the extended format is used.  */
 int
 agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length, int force,

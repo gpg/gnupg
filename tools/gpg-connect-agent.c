@@ -492,7 +492,7 @@ arithmetic_op (int operator, const char *operands)
 
      unescape ARGS
            Remove C-style escapes from string.  Note that "\0" and
-           "\x00" terminate the string implictly.  Use "\x7d" to
+           "\x00" terminate the string implicitly.  Use "\x7d" to
            represent the closing brace.  The args start right after
            the first space after the function name.
 

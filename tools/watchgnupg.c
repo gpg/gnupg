@@ -439,7 +439,7 @@ main (int argc, char **argv)
     {
       /* No args given - figure out the socket using gpgconf.  We also
        * force overwriting the socket because the constructed name
-       * can't be some accidently given name.  */
+       * can't be some accidentally given name.  */
       logname = get_logname (homedir);
       force = 1;
     }

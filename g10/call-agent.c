@@ -1091,7 +1091,7 @@ getattr_one_status_cb (void *opaque, const char *line)
 
 
 /* Simplified version of agent_scd_getattr.  This function returns
- * only the first occurance of the attribute NAME and stores it at
+ * only the first occurrence of the attribute NAME and stores it at
  * R_VALUE.  A nul in the result is silennly replaced by 0xff.  On
  * error NULL is stored at R_VALUE.  */
 gpg_error_t
@@ -1444,7 +1444,7 @@ agent_scd_readcert (const char *certidstr,
 }
 
 
-/* Callback for the agent_scd_readkey fucntion.  */
+/* Callback for the agent_scd_readkey function.  */
 static gpg_error_t
 readkey_status_cb (void *opaque, const char *line)
 {

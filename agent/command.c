@@ -656,7 +656,7 @@ static const char hlp_setkeydesc[] =
   "Set a description to be used for the next PKSIGN, PKDECRYPT, IMPORT_KEY\n"
   "or EXPORT_KEY operation if this operation requires a passphrase.  If\n"
   "this command is not used a default text will be used.  Note, that\n"
-  "this description implictly selects the label used for the entry\n"
+  "this description implicitly selects the label used for the entry\n"
   "box; if the string contains the string PIN (which in general will\n"
   "not be translated), \"PIN\" is used, otherwise the translation of\n"
   "\"passphrase\" is used.  The description string should not contain\n"

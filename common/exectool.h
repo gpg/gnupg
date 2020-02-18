@@ -46,7 +46,7 @@ typedef void (*exec_tool_status_cb_t) (void *opaque,
 /* Run the program PGMNAME with the command line arguments given in
    the NULL terminates array ARGV.  If INPUT_STRING is not NULL it
    will be fed to stdin of the process.  stderr is logged using
-   log_info and the process' stdout is returned in a newly malloced
+   log_info and the process's stdout is returned in a newly malloced
    buffer RESULT with the length stored at RESULTLEN if not given as
    NULL.  A hidden Nul is appended to the output.  On error NULL is
    stored at RESULT, a diagnostic is printed, and an error code
@@ -58,7 +58,7 @@ gpg_error_t gnupg_exec_tool (const char *pgmname, const char *argv[],
 /* Run the program PGMNAME with the command line arguments given in
    the NULL terminates array ARGV.  If INPUT is not NULL it will be
    fed to stdin of the process.  stderr is logged using log_info and
-   the process' stdout is written to OUTPUT.  On error a diagnostic is
+   the process's stdout is written to OUTPUT.  On error a diagnostic is
    printed, and an error code returned.  INEXTRA is reserved. */
 gpg_error_t gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                                     estream_t input, estream_t inextra,

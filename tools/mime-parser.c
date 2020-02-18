@@ -130,7 +130,7 @@ show_message_parser_event (rfc822parse_event_t event)
 /* Do in-place decoding of quoted-printable data of LENGTH in BUFFER.
    Returns the new length of the buffer and stores true at R_SLBRK if
    the line ended with a soft line break; false is stored if not.
-   This function asssumes that a complete line is passed in
+   This function assumes that a complete line is passed in
    buffer.  */
 static size_t
 qp_decode (char *buffer, size_t length, int *r_slbrk)
@@ -196,7 +196,7 @@ parse_message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
   const char *s;
   int rc = 0;
 
-  /* Make the RFC822 parser context availabale for callbacks.  */
+  /* Make the RFC822 parser context available for callbacks.  */
   ctx->msg = msg;
 
   if (ctx->debug)

@@ -22,7 +22,7 @@
 
 /* This file may be used as part of GnuPG or standalone.  A GnuPG
    build is detected by the presence of the macro GNUPG_MAJOR_VERSION.
-   Some feature are only availalbe in the GnuPG build mode.
+   Some feature are only available in the GnuPG build mode.
  */
 
 #ifdef HAVE_CONFIG_H
