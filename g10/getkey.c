@@ -3810,7 +3810,15 @@ get_seckey_default_or_card (ctrl_t ctrl, PKT_public_key *pk,
   if (def_secret_key)
     add_to_strlist (&namelist, def_secret_key);
   else if (fpr_card)
-    return get_pubkey_byfprint (ctrl, pk, NULL, fpr_card, fpr_len);
+    {
+      int rc = get_pubkey_byfprint (ctrl, pk, NULL, fpr_card, fpr_len);
+
+      /* The key on card can be not suitable for requested usage.  */
+      if (rc == GPG_ERR_UNUSABLE_PUBKEY)
+        fpr_card = NULL;        /* Fallthrough as no card.  */
+      else
+        return rc;
+    }
 
   if (!fpr_card
       || (def_secret_key && def_secret_key[strlen (def_secret_key)-1] == '!'))
