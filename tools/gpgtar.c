@@ -27,6 +27,9 @@
    gpg.  So here we go.  */
 
 #include <config.h>
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -41,6 +44,7 @@
 #include "../common/openpgpdefs.h"
 #include "../common/init.h"
 #include "../common/strlist.h"
+#include "../common/argparse.h" /* temporary hack.  */
 
 #include "gpgtar.h"
 

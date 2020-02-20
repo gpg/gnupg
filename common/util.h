@@ -62,7 +62,6 @@
 
 /* Get all the stuff from jnlib. */
 #include "../common/logging.h"
-#include "../common/argparse.h"
 #include "../common/stringhelp.h"
 #include "../common/mischelp.h"
 #include "../common/strlist.h"

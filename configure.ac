@@ -522,7 +522,7 @@ AH_BOTTOM([
 #define GNUPG_CACHE_DIR         "cache.d"
 
 #define GNUPG_DEF_COPYRIGHT_LINE \
-        "Copyright (C) 2018 Free Software Foundation, Inc."
+        "Copyright (C) 2020 Free Software Foundation, Inc."
 
 /* For some systems (DOS currently), we hardcode the path here.  For
    POSIX systems the values are constructed by the Makefiles, so that
@@ -579,6 +579,9 @@ AH_BOTTOM([
 
 /* Enable the log_ macros from gpgrt.  */
 #define GPGRT_ENABLE_LOG_MACROS 1
+
+/* We want the argparse macros from gpgrt.  */
+#define GPGRT_ENABLE_ARGPARSE_MACROS 1
 
 /* Tell libgcrypt not to use its own libgpg-error implementation. */
 #define USE_LIBGPG_ERROR 1

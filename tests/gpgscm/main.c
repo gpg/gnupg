@@ -19,6 +19,9 @@
  */
 
 #include <config.h>
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <assert.h>
 #include <ctype.h>
@@ -48,6 +51,7 @@
 #include "../../common/strlist.h"
 #include "../../common/sysutils.h"
 #include "../../common/util.h"
+#include "../common/argparse.h" /* temporary hack.  */
 
 /* The TinyScheme banner.  Unfortunately, it isn't in the header
    file.  */

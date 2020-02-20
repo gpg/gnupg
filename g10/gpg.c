@@ -1,7 +1,7 @@
-/* gpg.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998-2011 Free Software Foundation, Inc.
- * Copyright (C) 1997-2017 Werner Koch
- * Copyright (C) 2015-2017 g10 Code GmbH
+/* gpg.c - The GnuPG OpenPGP tool
+ * Copyright (C) 1998-2020 Free Software Foundation, Inc.
+ * Copyright (C) 1997-2019 Werner Koch
+ * Copyright (C) 2015-2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -17,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -437,7 +438,7 @@ enum cmd_and_opt_values
   };
 
 
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
 
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
@@ -638,7 +639,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oDisplayCharset, "display-charset", "@"),
   ARGPARSE_s_s (oDisplayCharset, "charset", "@"),
-  ARGPARSE_s_s (oOptions, "options", "@"),
+  ARGPARSE_conffile (oOptions, "options", "@"),
 
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
@@ -744,7 +745,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
   ARGPARSE_s_n (oNoKeyring, "no-keyring", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
-  ARGPARSE_s_n (oNoOptions, "no-options", "@"),
+  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_n (oNoBatch, "no-batch", "@"),
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
@@ -1082,10 +1083,13 @@ my_strusage( int level )
   static char *digests, *pubkeys, *ciphers, *zips, *aeads, *ver_gcry;
   const char *p;
 
-    switch( level ) {
+  switch( level ) {
+      case  9: p = "GPL-3.0-or-later"; break;
       case 11: p = "@GPG@ (@GNUPG@)";
 	break;
       case 13: p = VERSION; break;
+      case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
+
       case 17: p = PRINTABLE_OS_NAME; break;
       case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -2325,10 +2329,11 @@ get_default_configname (void)
   return configname;
 }
 
+
 int
 main (int argc, char **argv)
 {
-    ARGPARSE_ARGS pargs;
+    gpgrt_argparse_t pargs;
     IOBUF a;
     int rc=0;
     int orig_argc;
@@ -2342,13 +2347,11 @@ main (int argc, char **argv)
     strlist_t nrings = NULL;
     armor_filter_context_t *afx = NULL;
     int detached_sig = 0;
-    FILE *configfp = NULL;
-    char *configname = NULL;
-    char *save_configname = NULL;
-    char *default_configname = NULL;
-    unsigned configlineno;
-    int parse_debug = 0;
-    int default_config = 1;
+    char *last_configname = NULL;
+    const char *configname = NULL; /* NULL or points to last_configname.
+                                    * NULL also indicates that we are
+                                    * processing options from the cmdline.  */
+    int debug_argparser = 0;
     int default_keyring = 1;
     int greeting = 0;
     int nogreeting = 0;
@@ -2398,7 +2401,7 @@ main (int argc, char **argv)
     gnupg_reopen_std (GPG_NAME);
     trap_unaligned ();
     gnupg_rl_initialize ();
-    set_strusage (my_strusage);
+    gpgrt_set_strusage (my_strusage);
     gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
     log_set_prefix (GPG_NAME, GPGRT_LOG_WITH_PREFIX);
 
@@ -2477,43 +2480,47 @@ main (int argc, char **argv)
     opt.compliance = CO_GNUPG;
     opt.flags.rfc4880bis = 1;
 
-    /* Check whether we have a config file on the command line.  */
+    /* Check special options given on the command line.  */
     orig_argc = argc;
     orig_argv = argv;
     pargs.argc = &argc;
     pargs.argv = &argv;
     pargs.flags= (ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
-    while( arg_parse( &pargs, opts) ) {
-	if( pargs.r_opt == oDebug || pargs.r_opt == oDebugAll )
-	    parse_debug++;
-	else if (pargs.r_opt == oDebugIOLBF)
-            es_setvbuf (es_stdout, NULL, _IOLBF, 0);
-	else if( pargs.r_opt == oOptions ) {
-	    /* yes there is one, so we do not try the default one, but
-	     * read the option file when it is encountered at the commandline
-	     */
-	    default_config = 0;
-	}
-	else if( pargs.r_opt == oNoOptions )
+    while (gpgrt_argparse (NULL, &pargs, opts))
+      {
+	switch (pargs.r_opt)
           {
-	    default_config = 0; /* --no-options */
+          case oDebug:
+          case oDebugAll:
+            debug_argparser++;
+            break;
+
+          case oDebugIOLBF:
+            es_setvbuf (es_stdout, NULL, _IOLBF, 0);
+            break;
+
+          case oNoOptions:
+            /* Set here here because the homedir would otherwise be
+             * created before main option parsing starts.  */
             opt.no_homedir_creation = 1;
+            break;
+
+          case oHomedir:
+            gnupg_set_homedir (pargs.r.ret_str);
+            break;
+
+          case oNoPermissionWarn:
+            opt.no_perm_warn = 1;
+            break;
           }
-        else if( pargs.r_opt == oHomedir )
-	    gnupg_set_homedir (pargs.r.ret_str);
-	else if( pargs.r_opt == oNoPermissionWarn )
-	    opt.no_perm_warn=1;
-	else if (pargs.r_opt == oStrict )
-	  {
-	    /* Not used */
-	  }
-	else if (pargs.r_opt == oNoStrict )
-	  {
-	    /* Not used */
-	  }
-    }
+      }
+    /* Reset the flags.  */
+    pargs.flags &= ~(ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
 
 #ifdef HAVE_DOSISH_SYSTEM
+    /* FIXME: Do we still need this?  No: gnupg_homedir calls
+     * make_filename which changes the slashed anyway.  IsDBCSLeadByte still
+     * needed?  See bug #561.  */
     if ( strchr (gnupg_homedir (), '\\') ) {
       char *d, *buf = xmalloc (strlen (gnupg_homedir ())+1);
       const char *s;
@@ -2555,64 +2562,89 @@ main (int argc, char **argv)
     additional_weak_digest ("MD5");
     parse_auto_key_locate (DEFAULT_AKL_LIST);
 
-    /* Try for a version specific config file first */
-    default_configname = get_default_configname ();
-    if (default_config)
-      configname = xstrdup (default_configname);
-
     argc = orig_argc;
     argv = orig_argv;
     pargs.argc = &argc;
     pargs.argv = &argv;
-    pargs.flags= ARGPARSE_FLAG_KEEP;
+    /* We are re-using the struct, thus the reset flag.  We OR the
+     * flags so that the internal intialized flag won't be cleared. */
+    pargs.flags |= (ARGPARSE_FLAG_RESET
+                    | ARGPARSE_FLAG_KEEP
+                    | ARGPARSE_FLAG_SYS
+                    | ARGPARSE_FLAG_USER);
+    /* FIXME: Add an option to allow for version specific config files.  */
 
     /* By this point we have a homedir, and cannot change it. */
     check_permissions (gnupg_homedir (), 0);
 
-  next_pass:
-    if( configname ) {
-      if(check_permissions(configname,1))
-	{
-	  /* If any options file is unsafe, then disable any external
-	     programs for keyserver calls or photo IDs.  Since the
-	     external program to call is set in the options file, a
-	     unsafe options file can lead to an arbitrary program
-	     being run. */
+    /* The configuraton directories for use by gpgrt_argparser.  */
+    gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
+    gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 
-	  opt.exec_disable=1;
-	}
 
-	configlineno = 0;
-	configfp = fopen( configname, "r" );
-        if (configfp && is_secured_file (fileno (configfp)))
-          {
-            fclose (configfp);
-            configfp = NULL;
-            gpg_err_set_errno (EPERM);
-          }
-	if( !configfp ) {
-	    if( default_config ) {
-		if( parse_debug )
-		    log_info(_("Note: no default option file '%s'\n"),
-							    configname );
-	    }
-	    else {
-		log_error(_("option file '%s': %s\n"),
-				    configname, strerror(errno) );
-		g10_exit(2);
-	    }
-	    xfree(configname); configname = NULL;
-	}
-	if( parse_debug && configname )
-	    log_info(_("reading options from '%s'\n"), configname );
-	default_config = 0;
-    }
+    /* if( configname ) { */
+    /* FIXME: Add callback to check config file permissions.  */
+    /*   if(check_permissions(configname,1)) */
+    /*     { */
+    /*       /\* If any options file is unsafe, then disable any external */
+    /*          programs for keyserver calls or photo IDs.  Since the */
+    /*          external program to call is set in the options file, a */
+    /*          unsafe options file can lead to an arbitrary program */
+    /*          being run. *\/ */
 
-    while( optfile_parse( configfp, configname, &configlineno,
-						&pargs, opts) )
+    /*       opt.exec_disable=1; */
+    /*     } */
+
+    /*     configlineno = 0; */
+    /*     configfp = fopen( configname, "r" ); */
+    /*     if (configfp && is_secured_file (fileno (configfp))) */
+    /*       { */
+    /*         fclose (configfp); */
+    /*         configfp = NULL; */
+    /*         gpg_err_set_errno (EPERM); */
+    /*       } */
+    /*     if( !configfp ) { */
+    /*         if( default_config ) { */
+    /*     	if( parse_debug ) */
+    /*     	    log_info(_("Note: no default option file '%s'\n"), */
+    /*     						    configname ); */
+    /*         } */
+    /*         else { */
+    /*     	log_error(_("option file '%s': %s\n"), */
+    /*     			    configname, strerror(errno) ); */
+    /*     	g10_exit(2); */
+    /*         } */
+    /*         xfree(configname); configname = NULL; */
+    /*     } */
+    /*     if( parse_debug && configname ) */
+    /*         log_info(_("reading options from '%s'\n"), configname ); */
+    /*     default_config = 0; */
+    /* } */
+
+    while (gpgrt_argparser (&pargs, opts, GPG_NAME EXTSEP_S "conf" ))
       {
-	switch( pargs.r_opt )
+	switch (pargs.r_opt)
 	  {
+          case ARGPARSE_CONFFILE:
+            if (debug_argparser)
+              log_info (_("reading options from '%s'\n"),
+                         pargs.r_type? pargs.r.ret_str: "[cmdline]");
+            if (pargs.r_type)
+              {
+                xfree (last_configname);
+                last_configname = xstrdup (pargs.r.ret_str);
+                configname = last_configname;
+              }
+            else
+              configname = NULL;
+            break;
+
+            /* case oOptions: */
+            /* case oNoOptions: */
+            /* We will never see these options here because
+             * gpgrt_argparse handles them for us.  */
+            /* break */
+
 	  case aListConfig:
 	  case aListGcryptConfig:
           case aGPGConfList:
@@ -2752,10 +2784,10 @@ main (int argc, char **argv)
             break;
 
           case oNoUseAgent:
-	    obsolete_option (configname, configlineno, "no-use-agent");
+	    obsolete_option (configname, pargs.lineno, "no-use-agent");
             break;
 	  case oGpgAgentInfo:
-	    obsolete_option (configname, configlineno, "gpg-agent-info");
+	    obsolete_option (configname, pargs.lineno, "gpg-agent-info");
             break;
 
           case oUseKeyboxd:
@@ -2763,19 +2795,19 @@ main (int argc, char **argv)
             break;
 
           case oReaderPort:
-	    obsolete_scdaemon_option (configname, configlineno, "reader-port");
+	    obsolete_scdaemon_option (configname, pargs.lineno, "reader-port");
             break;
           case octapiDriver:
-	    obsolete_scdaemon_option (configname, configlineno, "ctapi-driver");
+	    obsolete_scdaemon_option (configname, pargs.lineno, "ctapi-driver");
             break;
           case opcscDriver:
-	    obsolete_scdaemon_option (configname, configlineno, "pcsc-driver");
+	    obsolete_scdaemon_option (configname, pargs.lineno, "pcsc-driver");
             break;
           case oDisableCCID:
-	    obsolete_scdaemon_option (configname, configlineno, "disable-ccid");
+	    obsolete_scdaemon_option (configname, pargs.lineno, "disable-ccid");
             break;
           case oHonorHttpProxy:
-	    obsolete_option (configname, configlineno, "honor-http-proxy");
+	    obsolete_option (configname, pargs.lineno, "honor-http-proxy");
             break;
 
 	  case oAnswerYes: opt.answer_yes = 1; break;
@@ -2786,7 +2818,7 @@ main (int argc, char **argv)
 	    sl->flags = KEYDB_RESOURCE_FLAG_PRIMARY;
 	    break;
 	  case oShowKeyring:
-	    deprecated_warning(configname,configlineno,"--show-keyring",
+	    deprecated_warning(configname,pargs.lineno,"--show-keyring",
 			       "--list-options ","show-keyring");
 	    opt.list_options|=LIST_SHOW_KEYRING;
 	    break;
@@ -2871,14 +2903,6 @@ main (int argc, char **argv)
             /* Ignore this old option.  */
             break;
 
-	  case oOptions:
-	    /* config files may not be nested (silently ignore them) */
-	    if( !configfp ) {
-		xfree(configname);
-		configname = xstrdup(pargs.r.ret_str);
-		goto next_pass;
-	    }
-	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 
 	  case oNoDefKeyring:
@@ -2911,7 +2935,7 @@ main (int argc, char **argv)
 	  case oDefaultKey:
             sl = add_to_strlist (&opt.def_secret_key, pargs.r.ret_str);
             sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
-            if (configfp)
+            if (configname)
               sl->flags |= PK_LIST_CONFIG;
             break;
 	  case oDefRecipient:
@@ -2929,7 +2953,6 @@ main (int argc, char **argv)
             xfree(opt.def_recipient); opt.def_recipient = NULL;
             opt.def_recipient_self = 0;
             break;
-	  case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
 	  case oHomedir: break;
 	  case oNoBatch: opt.batch = 0; break;
 
@@ -2961,7 +2984,7 @@ main (int argc, char **argv)
 	    opt.tofu_default_policy = parse_tofu_policy (pargs.r.ret_str);
 	    break;
 	  case oTOFUDBFormat:
-	    obsolete_option (configname, configlineno, "tofu-db-format");
+	    obsolete_option (configname, pargs.lineno, "tofu-db-format");
 	    break;
 
 	  case oForceOwnertrust:
@@ -3018,17 +3041,17 @@ main (int argc, char **argv)
 	  case oSigPolicyURL: add_policy_url(pargs.r.ret_str,0); break;
 	  case oCertPolicyURL: add_policy_url(pargs.r.ret_str,1); break;
           case oShowPolicyURL:
-	    deprecated_warning(configname,configlineno,"--show-policy-url",
+	    deprecated_warning(configname,pargs.lineno,"--show-policy-url",
 			       "--list-options ","show-policy-urls");
-	    deprecated_warning(configname,configlineno,"--show-policy-url",
+	    deprecated_warning(configname,pargs.lineno,"--show-policy-url",
 			       "--verify-options ","show-policy-urls");
 	    opt.list_options|=LIST_SHOW_POLICY_URLS;
 	    opt.verify_options|=VERIFY_SHOW_POLICY_URLS;
 	    break;
 	  case oNoShowPolicyURL:
-	    deprecated_warning(configname,configlineno,"--no-show-policy-url",
+	    deprecated_warning(configname,pargs.lineno,"--no-show-policy-url",
 			       "--list-options ","no-show-policy-urls");
-	    deprecated_warning(configname,configlineno,"--no-show-policy-url",
+	    deprecated_warning(configname,pargs.lineno,"--no-show-policy-url",
 			       "--verify-options ","no-show-policy-urls");
 	    opt.list_options&=~LIST_SHOW_POLICY_URLS;
 	    opt.verify_options&=~VERIFY_SHOW_POLICY_URLS;
@@ -3045,7 +3068,7 @@ main (int argc, char **argv)
 	      append_to_strlist(&opt.comments,pargs.r.ret_str);
 	    break;
 	  case oDefaultComment:
-	    deprecated_warning(configname,configlineno,
+	    deprecated_warning(configname,pargs.lineno,
 			       "--default-comment","--no-comments","");
 	    /* fall through */
 	  case oNoComments:
@@ -3055,17 +3078,17 @@ main (int argc, char **argv)
 	  case oThrowKeyids: opt.throw_keyids = 1; break;
 	  case oNoThrowKeyids: opt.throw_keyids = 0; break;
 	  case oShowPhotos:
-	    deprecated_warning(configname,configlineno,"--show-photos",
+	    deprecated_warning(configname,pargs.lineno,"--show-photos",
 			       "--list-options ","show-photos");
-	    deprecated_warning(configname,configlineno,"--show-photos",
+	    deprecated_warning(configname,pargs.lineno,"--show-photos",
 			       "--verify-options ","show-photos");
 	    opt.list_options|=LIST_SHOW_PHOTOS;
 	    opt.verify_options|=VERIFY_SHOW_PHOTOS;
 	    break;
 	  case oNoShowPhotos:
-	    deprecated_warning(configname,configlineno,"--no-show-photos",
+	    deprecated_warning(configname,pargs.lineno,"--no-show-photos",
 			       "--list-options ","no-show-photos");
-	    deprecated_warning(configname,configlineno,"--no-show-photos",
+	    deprecated_warning(configname,pargs.lineno,"--no-show-photos",
 			       "--verify-options ","no-show-photos");
 	    opt.list_options&=~LIST_SHOW_PHOTOS;
 	    opt.verify_options&=~VERIFY_SHOW_PHOTOS;
@@ -3096,7 +3119,7 @@ main (int argc, char **argv)
              * enough space for the flags.  */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
 	    sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
-            if (configfp)
+            if (configname)
               sl->flags |= PK_LIST_CONFIG;
             if (pargs.r_opt == oHiddenRecipient
                 || pargs.r_opt == oHiddenRecipientFile)
@@ -3112,7 +3135,7 @@ main (int argc, char **argv)
             /* Store an additional recipient.  */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
 	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_ENCRYPT_TO);
-            if (configfp)
+            if (configname)
               sl->flags |= PK_LIST_CONFIG;
             if (pargs.r_opt == oHiddenEncryptTo)
               sl->flags |= PK_LIST_HIDDEN;
@@ -3122,7 +3145,7 @@ main (int argc, char **argv)
             opt.no_encrypt_to = 1;
             break;
           case oEncryptToDefaultKey:
-            opt.encrypt_to_default_key = configfp ? 2 : 1;
+            opt.encrypt_to_default_key = configname ? 2 : 1;
             break;
 
 	  case oTrySecretKey:
@@ -3168,7 +3191,7 @@ main (int argc, char **argv)
 	  case oLocalUser: /* store the local users */
 	    sl = add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
             sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
-            if (configfp)
+            if (configname)
               sl->flags |= PK_LIST_CONFIG;
 	    break;
 	  case oSender:
@@ -3311,7 +3334,7 @@ main (int argc, char **argv)
 	      {
 		if(configname)
 		  log_error(_("%s:%d: invalid keyserver options\n"),
-			    configname,configlineno);
+			    configname,pargs.lineno);
 		else
 		  log_error(_("invalid keyserver options\n"));
 	      }
@@ -3321,7 +3344,7 @@ main (int argc, char **argv)
 	      {
 		if(configname)
 		  log_error(_("%s:%d: invalid import options\n"),
-			    configname,configlineno);
+			    configname,pargs.lineno);
 		else
 		  log_error(_("invalid import options\n"));
 	      }
@@ -3336,7 +3359,7 @@ main (int argc, char **argv)
 	      {
 		if(configname)
 		  log_error(_("%s:%d: invalid export options\n"),
-			    configname,configlineno);
+			    configname,pargs.lineno);
 		else
 		  log_error(_("invalid export options\n"));
 	      }
@@ -3351,7 +3374,7 @@ main (int argc, char **argv)
 	      {
 		if(configname)
 		  log_error(_("%s:%d: invalid list options\n"),
-			    configname,configlineno);
+			    configname,pargs.lineno);
 		else
 		  log_error(_("invalid list options\n"));
 	      }
@@ -3391,7 +3414,7 @@ main (int argc, char **argv)
 		{
 		  if(configname)
 		    log_error(_("%s:%d: invalid verify options\n"),
-			      configname,configlineno);
+			      configname,pargs.lineno);
 		  else
 		    log_error(_("invalid verify options\n"));
 		}
@@ -3412,17 +3435,17 @@ main (int argc, char **argv)
 	  case oCertNotation: add_notation_data( pargs.r.ret_str, 1 ); break;
           case oKnownNotation: register_known_notation (pargs.r.ret_str); break;
 	  case oShowNotation:
-	    deprecated_warning(configname,configlineno,"--show-notation",
+	    deprecated_warning(configname,pargs.lineno,"--show-notation",
 			       "--list-options ","show-notations");
-	    deprecated_warning(configname,configlineno,"--show-notation",
+	    deprecated_warning(configname,pargs.lineno,"--show-notation",
 			       "--verify-options ","show-notations");
 	    opt.list_options|=LIST_SHOW_NOTATIONS;
 	    opt.verify_options|=VERIFY_SHOW_NOTATIONS;
 	    break;
 	  case oNoShowNotation:
-	    deprecated_warning(configname,configlineno,"--no-show-notation",
+	    deprecated_warning(configname,pargs.lineno,"--no-show-notation",
 			       "--list-options ","no-show-notations");
-	    deprecated_warning(configname,configlineno,"--no-show-notation",
+	    deprecated_warning(configname,pargs.lineno,"--no-show-notation",
 			       "--verify-options ","no-show-notations");
 	    opt.list_options&=~LIST_SHOW_NOTATIONS;
 	    opt.verify_options&=~VERIFY_SHOW_NOTATIONS;
@@ -3475,7 +3498,7 @@ main (int argc, char **argv)
                 ovrseskeyfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
 		break;
 	  case oMergeOnly:
-	        deprecated_warning(configname,configlineno,"--merge-only",
+	        deprecated_warning(configname,pargs.lineno,"--merge-only",
 				   "--import-options ","merge-only");
 		opt.import_options|=IMPORT_MERGE_ONLY;
 	    break;
@@ -3607,7 +3630,7 @@ main (int argc, char **argv)
 	      {
 		if(configname)
 		  log_error(_("%s:%d: invalid auto-key-locate list\n"),
-			    configname,configlineno);
+			    configname,pargs.lineno);
 		else
 		  log_error(_("invalid auto-key-locate list\n"));
 	      }
@@ -3629,7 +3652,7 @@ main (int argc, char **argv)
             if (configname)
               log_info("%s:%d: WARNING: gpg not built with large secure "
                          "memory buffer.  Ignoring enable-large-rsa\n",
-                        configname,configlineno);
+                        configname,pargs.lineno);
             else
               log_info("WARNING: gpg not built with large secure "
                          "memory buffer.  Ignoring --enable-large-rsa\n");
@@ -3686,7 +3709,7 @@ main (int argc, char **argv)
 	  case oNoop: break;
 
 	  default:
-            if (configfp)
+            if (configname)
               pargs.err = ARGPARSE_PRINT_WARNING;
             else
               {
@@ -3700,19 +3723,8 @@ main (int argc, char **argv)
 	  }
       }
 
-    if (configfp)
-      {
-	fclose( configfp );
-	configfp = NULL;
-        /* Remember the first config file name. */
-        if (!save_configname)
-          save_configname = configname;
-        else
-          xfree(configname);
-        configname = NULL;
-	goto next_pass;
-      }
-    xfree(configname); configname = NULL;
+    gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+
     if (log_get_errorcount (0))
       {
         write_status_failure ("option-parser", gpg_error(GPG_ERR_GENERAL));
@@ -3723,11 +3735,10 @@ main (int argc, char **argv)
        directly after the option parsing. */
     if (cmd == aGPGConfList)
       {
-        gpgconf_list (save_configname ? save_configname : default_configname);
+        gpgconf_list (last_configname ? last_configname : "UNKNOWN");
         g10_exit (0);
       }
-    xfree (save_configname);
-    xfree (default_configname);
+    xfree (last_configname);
 
     if (print_dane_records)
       log_error ("invalid option \"%s\"; use \"%s\" instead\n",
@@ -3750,19 +3761,19 @@ main (int argc, char **argv)
     if( greeting )
       {
 	es_fprintf (es_stderr, "%s %s; %s\n",
-                    strusage(11), strusage(13), strusage(14) );
-	es_fprintf (es_stderr, "%s\n", strusage(15) );
+                    gpgrt_strusage(11), gpgrt_strusage(13), gpgrt_strusage(14));
+	es_fprintf (es_stderr, "%s\n", gpgrt_strusage(15) );
       }
 #ifdef IS_DEVELOPMENT_VERSION
     if (!opt.batch)
       {
 	const char *s;
 
-	if((s=strusage(25)))
+	if((s=gpgrt_strusage(25)))
 	  log_info("%s\n",s);
-	if((s=strusage(26)))
+	if((s=gpgrt_strusage(26)))
 	  log_info("%s\n",s);
-	if((s=strusage(27)))
+	if((s=gpgrt_strusage(27)))
 	  log_info("%s\n",s);
       }
 #endif

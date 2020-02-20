@@ -18,6 +18,9 @@
  */
 
 #include <config.h>
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,6 +40,7 @@
 #include "keybox-defs.h"
 #include "../common/init.h"
 #include <gcrypt.h>
+#include "../common/argparse.h" /* temporary hack.  */
 
 
 enum cmd_and_opt_values {

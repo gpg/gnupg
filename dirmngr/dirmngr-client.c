@@ -19,6 +19,9 @@
  */
 
 #include <config.h>
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +44,7 @@
 #include "../common/i18n.h"
 #include "../common/util.h"
 #include "../common/init.h"
+#include "../common/argparse.h" /* temporary hack.  */
 
 
 /* Constants for the options.  */

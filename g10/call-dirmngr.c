@@ -146,7 +146,7 @@ warn_version_mismatch (assuan_context_t ctx, const char *servername)
 {
   gpg_error_t err;
   char *serverversion;
-  const char *myversion = strusage (13);
+  const char *myversion = gpgrt_strusage (13);
 
   err = get_assuan_server_version (ctx, 0, &serverversion);
   if (err)

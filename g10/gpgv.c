@@ -19,6 +19,9 @@
  */
 
 #include <config.h>
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +39,7 @@
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
 #include "../common/util.h"
+#include "../common/argparse.h" /* temporary hack.  */
 #include "packet.h"
 #include "../common/iobuf.h"
 #include "main.h"
@@ -176,7 +180,7 @@ main( int argc, char **argv )
   ctrl_t ctrl;
 
   early_system_init ();
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix ("gpgv", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */

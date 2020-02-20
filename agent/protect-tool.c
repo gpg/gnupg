@@ -18,6 +18,9 @@
  */
 
 #include <config.h>
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,6 +46,7 @@
 #include "../common/get-passphrase.h"
 #include "../common/sysutils.h"
 #include "../common/init.h"
+#include "../common/argparse.h" /* temporary hack.  */
 
 
 enum cmd_and_opt_values

@@ -28,6 +28,9 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <stdio.h>
 #include <stdlib.h>

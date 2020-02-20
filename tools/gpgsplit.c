@@ -18,6 +18,9 @@
  */
 
 #include <config.h>
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +42,7 @@
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "../common/util.h"
 #include "../common/openpgpdefs.h"
+#include "../common/argparse.h" /* temporary hack.  */
 
 #ifdef HAVE_BZIP2
 # include <bzlib.h>

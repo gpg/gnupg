@@ -19,6 +19,9 @@
  */
 
 #include <config.h>
+/* We don't want to have the macros from gpgrt here until we have
+ * completely replaced this module by the one from gpgrt.  */
+#undef GPGRT_ENABLE_ARGPARSE_MACROS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +44,7 @@
 #include "../common/ttyio.h"
 #include "../common/server-help.h"
 #include "../common/openpgpdefs.h"
+#include "../common/argparse.h" /* temporary hack.  */
 
 #include "gpg-card.h"
 
