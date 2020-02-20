@@ -1,6 +1,7 @@
 /* gpgv.c - The GnuPG signature verify utility
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2006,
- *               2008, 2009, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2020 Free Software Foundation, Inc.
+ * Copyright (C) 1997-2019 Werner Koch
+ * Copyright (C) 2015-2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,12 +17,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,7 +38,6 @@
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
 #include "../common/util.h"
-#include "../common/argparse.h" /* temporary hack.  */
 #include "packet.h"
 #include "../common/iobuf.h"
 #include "main.h"
@@ -74,7 +72,7 @@ enum cmd_and_opt_values {
 };
 
 
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   ARGPARSE_group (300, N_("@\nOptions:\n ")),
 
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
@@ -142,9 +140,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@GPG@v (GnuPG)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -172,11 +172,10 @@ my_strusage( int level )
 int
 main( int argc, char **argv )
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   int rc=0;
   strlist_t sl;
   strlist_t nrings = NULL;
-  unsigned configlineno;
   ctrl_t ctrl;
 
   early_system_init ();
@@ -210,11 +209,13 @@ main( int argc, char **argv )
 
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* do not remove the args */
-  while (optfile_parse( NULL, NULL, &configlineno, &pargs, opts))
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gpgrt_argparser (&pargs, opts, NULL))
     {
       switch (pargs.r_opt)
         {
+        case ARGPARSE_CONFFILE: break;
+
         case oQuiet: opt.quiet = 1; break;
         case oVerbose:
           opt.verbose++;
@@ -253,6 +254,8 @@ main( int argc, char **argv )
         default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
+
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (log_get_errorcount (0))
     g10_exit(2);
