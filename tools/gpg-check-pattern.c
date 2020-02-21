@@ -15,12 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +45,6 @@
 #include "../common/i18n.h"
 #include "../common/sysutils.h"
 #include "../common/init.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 
 enum cmd_and_opt_values
@@ -68,7 +65,7 @@ enum cmd_and_opt_values
 
 
 /* The list of commands and options.  */
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
 
   { 301, NULL, 0, N_("@Options:\n ") },
 
@@ -137,9 +134,11 @@ my_strusage (int level)
   const char *p;
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "gpg-check-pattern (@GnuPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -161,13 +160,13 @@ my_strusage (int level)
 int
 main (int argc, char **argv )
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   char *raw_pattern;
   size_t raw_pattern_length;
   pattern_t *patternarray;
 
   early_system_init ();
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   log_set_prefix ("gpg-check-pattern", GPGRT_LOG_WITH_PREFIX);
 
@@ -180,8 +179,8 @@ main (int argc, char **argv )
 
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* (do not remove the args) */
-  while (arg_parse (&pargs, opts) )
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -193,11 +192,12 @@ main (int argc, char **argv )
         default : pargs.err = 2; break;
 	}
     }
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
   if (log_get_errorcount(0))
     exit (2);
 
   if (argc != 1)
-    usage (1);
+    gpgrt_usage (1);
 
   /* We read the entire pattern file into our memory and parse it
      using a separate function.  This allows us to eventual do the

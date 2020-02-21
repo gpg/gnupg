@@ -16,13 +16,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +31,6 @@
 
 #include "../common/i18n.h"
 #include "../common/util.h"
-#include "../common/argparse.h" /* temporary hack.  */
 #include "../common/asshelp.h"
 #include "../common/sysutils.h"
 #include "../common/membuf.h"
@@ -77,7 +73,7 @@ enum cmd_and_opt_values
 
 
 /* The list of commands and options. */
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
@@ -205,9 +201,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@GPG@-connect-agent (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -1158,7 +1156,7 @@ help_cmd_p (const char *line)
 int
 main (int argc, char **argv)
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   int no_more_options = 0;
   assuan_context_t ctx;
   char *line, *p;
@@ -1183,7 +1181,7 @@ main (int argc, char **argv)
 
   early_system_init ();
   gnupg_rl_initialize ();
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix ("gpg-connect-agent", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
@@ -1199,8 +1197,8 @@ main (int argc, char **argv)
   /* Parse the command line. */
   pargs.argc  = &argc;
   pargs.argv  = &argv;
-  pargs.flags =  1;  /* Do not remove the args.  */
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, &pargs, opts))
+  pargs.flags = ARGPARSE_FLAG_KEEP;
+  while (!no_more_options && gpgrt_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -1230,6 +1228,7 @@ main (int argc, char **argv)
         default: pargs.err = 2; break;
 	}
     }
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (log_get_errorcount (0))
     exit (2);

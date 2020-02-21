@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 /* The Web Key Service I-D defines an update protocol to store a
@@ -24,9 +25,7 @@
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,7 +47,6 @@
 #include "mime-maker.h"
 #include "send-mail.h"
 #include "gpg-wks.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 
 /* The time we wait for a confirmation response.  */
@@ -87,7 +85,7 @@ enum cmd_and_opt_values
 
 
 /* The list of commands and options. */
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   ARGPARSE_group (300, ("@Commands:\n ")),
 
   ARGPARSE_c (aReceive,   "receive",
@@ -176,9 +174,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "LGPL-2.1-or-later"; break;
     case 11: p = "gpg-wks-server"; break;
     case 12: p = "@GNUPG@"; break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = ("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -200,7 +200,7 @@ my_strusage( int level )
 static void
 wrong_args (const char *text)
 {
-  es_fprintf (es_stderr, "usage: %s [options] %s\n", strusage (11), text);
+  es_fprintf (es_stderr, "usage: %s [options] %s\n", gpgrt_strusage (11), text);
   exit (2);
 }
 
@@ -208,12 +208,12 @@ wrong_args (const char *text)
 
 /* Command line parsing.  */
 static enum cmd_and_opt_values
-parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
+parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
 {
   enum cmd_and_opt_values cmd = 0;
   int no_more_options = 0;
 
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, popts))
+  while (!no_more_options && gpgrt_argparse (NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -262,7 +262,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           cmd = pargs->r_opt;
           break;
 
-        default: pargs->err = 2; break;
+        default: pargs->err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
 
@@ -276,11 +276,11 @@ int
 main (int argc, char **argv)
 {
   gpg_error_t err, firsterr;
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   enum cmd_and_opt_values cmd;
 
   gnupg_reopen_std ("gpg-wks-server");
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix ("gpg-wks-server", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
@@ -291,6 +291,7 @@ main (int argc, char **argv)
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
   cmd = parse_arguments (&pargs, opts);
+  gpgrt_argparse (NULL, &pargs, NULL);
 
   if (log_get_errorcount (0))
     exit (2);
@@ -420,7 +421,7 @@ main (int argc, char **argv)
       break;
 
     default:
-      usage (1);
+      gpgrt_usage (1);
       err = gpg_error (GPG_ERR_BUG);
       break;
     }

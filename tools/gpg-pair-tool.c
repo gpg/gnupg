@@ -15,6 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 /* Protocol:
@@ -120,9 +121,7 @@
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -138,8 +137,6 @@
 #include "../common/sysutils.h"
 #include "../common/init.h"
 #include "../common/name-value.h"
-#include "../common/argparse.h" /* temporary hack.  */
-
 
 /* Constants to identify the commands and options. */
 enum cmd_and_opt_values
@@ -292,7 +289,8 @@ my_strusage( int level )
 static void
 wrong_args (const char *text)
 {
-  es_fprintf (es_stderr, _("usage: %s [options] %s\n"), strusage (11), text);
+  es_fprintf (es_stderr, _("usage: %s [options] %s\n"),
+              gpgrt_strusage (11), text);
   exit (2);
 }
 
@@ -416,6 +414,7 @@ main (int argc, char **argv)
         default: pargs.err = ARGPARSE_PRINT_WARNING; break;
 	}
     }
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))

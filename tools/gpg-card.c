@@ -19,9 +19,6 @@
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,7 +41,6 @@
 #include "../common/ttyio.h"
 #include "../common/server-help.h"
 #include "../common/openpgpdefs.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 #include "gpg-card.h"
 
@@ -82,7 +78,7 @@ enum opt_values
 
 
 /* The list of commands and options. */
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
   ARGPARSE_s_n (oVerbose, "verbose", ("verbose")),
@@ -154,9 +150,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "gpg-card"; break;
     case 12: p = "@GNUPG@"; break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = ("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -193,9 +191,9 @@ set_opt_session_env (const char *name, const char *value)
 
 /* Command line parsing.  */
 static void
-parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
+parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
 {
-  while (optfile_parse (NULL, NULL, NULL, pargs, popts))
+  while (gpgrt_argparse (NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -242,13 +240,13 @@ int
 main (int argc, char **argv)
 {
   gpg_error_t err;
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   char **command_list = NULL;
   int cmdidx;
   char *command;
 
   gnupg_reopen_std ("gpg-card");
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   gnupg_rl_initialize ();
   log_set_prefix ("gpg-card", GPGRT_LOG_WITH_PREFIX);
 
@@ -272,6 +270,7 @@ main (int argc, char **argv)
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
   parse_arguments (&pargs, opts);
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (log_get_errorcount (0))
     exit (2);

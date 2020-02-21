@@ -15,12 +15,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +41,6 @@
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "../common/util.h"
 #include "../common/openpgpdefs.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 #ifdef HAVE_BZIP2
 # include <bzlib.h>
@@ -70,7 +68,7 @@ enum cmd_and_opt_values {
 };
 
 
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
 
     { 301, NULL, 0, "@Options:\n " },
 
@@ -90,9 +88,11 @@ my_strusage (int level)
   const char *p;
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "gpgsplit (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = "Please report bugs to <@EMAIL@>.\n"; break;
 
@@ -115,19 +115,22 @@ my_strusage (int level)
 int
 main (int argc, char **argv)
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
 
 #ifdef HAVE_DOSISH_SYSTEM
   setmode( fileno(stdin), O_BINARY );
   setmode( fileno(stdout), O_BINARY );
 #endif
   log_set_prefix ("gpgsplit", GPGRT_LOG_WITH_PREFIX);
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
+  /* Register our string mapper with gpgrt.  Usually done in
+   * init_common_subsystems, but we don't need that here.  */
+  gpgrt_set_fixed_string_mapper (map_static_macro_string);
 
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* do not remove the args */
-  while (optfile_parse( NULL, NULL, NULL, &pargs, opts))
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -139,6 +142,7 @@ main (int argc, char **argv)
         default : pargs.err = 2; break;
 	}
     }
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (log_get_errorcount(0))
     g10_exit (2);

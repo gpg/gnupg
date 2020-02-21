@@ -15,6 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 /* GnuPG comes with a shell script gpg-zip which creates archive files
@@ -27,9 +28,7 @@
    gpg.  So here we go.  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -44,7 +43,6 @@
 #include "../common/openpgpdefs.h"
 #include "../common/init.h"
 #include "../common/strlist.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 #include "gpgtar.h"
 
@@ -88,7 +86,7 @@ enum cmd_and_opt_values
 
 
 /* The list of commands and options. */
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
   ARGPARSE_c (aCreate,    "create",  N_("create an archive")),
@@ -130,7 +128,7 @@ static ARGPARSE_OPTS opts[] = {
 
 
 /* The list of commands and options for tar that we understand. */
-static ARGPARSE_OPTS tar_opts[] = {
+static gpgrt_opt_t tar_opts[] = {
   ARGPARSE_s_s (oDirectory, "directory",
                 N_("|DIRECTORY|extract files into DIRECTORY")),
   ARGPARSE_s_s (oFilesFrom, "files-from",
@@ -158,9 +156,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@GPGTAR@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -307,11 +307,11 @@ shell_parse_argv (const char *s, int *r_argc, char ***r_argv)
 
 /* Command line parsing.  */
 static void
-parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
+parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
 {
   int no_more_options = 0;
 
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, popts))
+  while (!no_more_options && gpgrt_argparse (NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -381,7 +381,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           }
           break;
 
-        case oTarArgs:;
+        case oTarArgs:
           {
             int tar_argc;
             char **tar_argv;
@@ -391,11 +391,12 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
                          pargs->r.ret_str);
             else
               {
-                ARGPARSE_ARGS tar_args;
+                gpgrt_argparse_t tar_args;
                 tar_args.argc = &tar_argc;
                 tar_args.argv = &tar_argv;
                 tar_args.flags = ARGPARSE_FLAG_ARG0;
                 parse_arguments (&tar_args, tar_opts);
+                gpgrt_argparse (NULL, &tar_args, NULL);
                 if (tar_args.err)
                   log_error ("unsupported tar arguments '%s'\n",
                              pargs->r.ret_str);
@@ -420,23 +421,24 @@ main (int argc, char **argv)
 {
   gpg_error_t err;
   const char *fname;
-  ARGPARSE_ARGS pargs;
-
-  assert (sizeof (struct ustar_raw_header) == 512);
+  gpgrt_argparse_t pargs;
 
   gnupg_reopen_std (GPGTAR_NAME);
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix (GPGTAR_NAME, GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();
   init_common_subsystems (&argc, &argv);
 
+  log_assert (sizeof (struct ustar_raw_header) == 512);
+
   /* Parse the command line. */
   pargs.argc  = &argc;
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
   parse_arguments (&pargs, opts);
+  gpgrt_argparse (NULL, &pargs, NULL);
 
   if ((files_from && !null_names) || (!files_from && null_names))
     log_error ("--files-from and --null may only be used in conjunction\n");
@@ -466,7 +468,7 @@ main (int argc, char **argv)
     {
     case aList:
       if (argc > 1)
-        usage (1);
+        gpgrt_usage (1);
       fname = argc ? *argv : NULL;
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
@@ -482,7 +484,7 @@ main (int argc, char **argv)
     case aSignEncrypt:
       if ((!argc && !null_names)
           || (argc && null_names))
-        usage (1);
+        gpgrt_usage (1);
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
       err = gpgtar_create (null_names? NULL :argv,
@@ -495,7 +497,7 @@ main (int argc, char **argv)
 
     case aDecrypt:
       if (argc != 1)
-        usage (1);
+        gpgrt_usage (1);
       if (opt.outfile)
         log_info ("note: ignoring option --output\n");
       if (files_from)

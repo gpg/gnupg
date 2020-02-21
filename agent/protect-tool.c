@@ -15,12 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,7 +44,6 @@
 #include "../common/get-passphrase.h"
 #include "../common/sysutils.h"
 #include "../common/init.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 
 enum cmd_and_opt_values
@@ -106,7 +103,7 @@ static char *get_passphrase (int promptno);
 static void release_passphrase (char *pw);
 
 
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
   ARGPARSE_c (oProtect,   "protect",   "protect a private key"),
@@ -148,9 +145,11 @@ my_strusage (int level)
   const char *p;
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "gpg-protect-tool (" GNUPG_NAME ")";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -556,13 +555,13 @@ show_keygrip (const char *fname)
 int
 main (int argc, char **argv )
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   int cmd = 0;
   const char *fname;
   ctrl_t ctrl;
 
   early_system_init ();
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   log_set_prefix ("gpg-protect-tool", GPGRT_LOG_WITH_PREFIX);
 
@@ -575,8 +574,8 @@ main (int argc, char **argv )
 
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* (do not remove the args) */
-  while (arg_parse (&pargs, opts) )
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -606,6 +605,8 @@ main (int argc, char **argv )
         default: pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+
   if (log_get_errorcount (0))
     exit (2);
 
@@ -613,7 +614,7 @@ main (int argc, char **argv )
   if (argc == 1)
     fname = *argv;
   else if (argc > 1)
-    usage (1);
+    gpgrt_usage (1);
 
   /* Allocate an CTRL object.  An empty object should be sufficient.  */
   ctrl = xtrycalloc (1, sizeof *ctrl);
