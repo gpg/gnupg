@@ -16,12 +16,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,7 +46,6 @@
 
 #include <assuan.h> /* malloc hooks */
 
-#include "../common/argparse.h" /* temporary hack.  */
 #include "../common/i18n.h"
 #include "../common/sysutils.h"
 #include "iso7816.h"
@@ -109,7 +106,7 @@ enum cmd_and_opt_values
 
 
 
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
 
@@ -123,7 +120,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet, "quiet", N_("be somewhat more quiet")),
   ARGPARSE_s_n (oSh,    "sh", N_("sh-style command output")),
   ARGPARSE_s_n (oCsh,   "csh", N_("csh-style command output")),
-  ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
+  ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level" ,
@@ -165,6 +162,7 @@ static ARGPARSE_OPTS opts[] = {
                 N_("use variable length input for pinpad")),
   ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
+  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
 
   ARGPARSE_end ()
 };
@@ -289,9 +287,11 @@ my_strusage (int level)
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@SCDAEMON@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -420,16 +420,14 @@ setup_signal_mask (void)
 int
 main (int argc, char **argv )
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   int orig_argc;
   char **orig_argv;
-  FILE *configfp = NULL;
-  char *configname = NULL;
+  char *last_configname = NULL;
+  const char *configname = NULL;
   const char *shell;
-  unsigned int configlineno;
-  int parse_debug = 0;
+  int debug_argparser = 0;
   const char *debug_level = NULL;
-  int default_config =1;
   int greeting = 0;
   int nogreeting = 0;
   int multi_server = 0;
@@ -439,7 +437,7 @@ main (int argc, char **argv )
   char *logfile = NULL;
   int debug_wait = 0;
   int gpgconf_list = 0;
-  const char *config_filename = NULL;
+  char *config_filename = NULL;
   int allow_coredump = 0;
   struct assuan_malloc_hooks malloc_hooks;
   int res;
@@ -447,7 +445,7 @@ main (int argc, char **argv )
   const char *application_priority = NULL;
 
   early_system_init ();
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to INIT_SECMEM()
@@ -487,22 +485,22 @@ main (int argc, char **argv )
   orig_argv = argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
-  while (arg_parse( &pargs, opts))
+  pargs.flags= (ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
-      if (pargs.r_opt == oDebug || pargs.r_opt == oDebugAll)
-        parse_debug++;
-      else if (pargs.r_opt == oOptions)
-        { /* yes there is one, so we do not try the default one, but
-             read the option file when it is encountered at the
-             commandline */
-          default_config = 0;
-        }
-        else if (pargs.r_opt == oNoOptions)
-          default_config = 0; /* --no-options */
-        else if (pargs.r_opt == oHomedir)
+      switch (pargs.r_opt)
+        {
+        case oDebug:
+        case oDebugAll:
+          debug_argparser++;
+          break;
+        case oHomedir:
           gnupg_set_homedir (pargs.r.ret_str);
+          break;
+        }
     }
+  /* Reset the flags.  */
+  pargs.flags &= ~(ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
 
   /* initialize the secure memory. */
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
@@ -512,48 +510,38 @@ main (int argc, char **argv )
      Now we are working under our real uid
   */
 
+  /* The configuraton directories for use by gpgrt_argparser.  */
+  gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
+  gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 
-  if (default_config)
-    configname = make_filename (gnupg_homedir (), SCDAEMON_NAME EXTSEP_S "conf",
-                                NULL );
-
-
+  /* We are re-using the struct, thus the reset flag.  We OR the
+   * flags so that the internal intialized flag won't be cleared. */
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* do not remove the args */
- next_pass:
-  if (configname)
-    {
-      configlineno = 0;
-      configfp = fopen (configname, "r");
-      if (!configfp)
-        {
-          if (default_config)
-            {
-              if( parse_debug )
-                log_info (_("Note: no default option file '%s'\n"),
-                          configname );
-            }
-          else
-            {
-              log_error (_("option file '%s': %s\n"),
-                         configname, strerror(errno) );
-              exit(2);
-            }
-          xfree (configname);
-          configname = NULL;
-        }
-      if (parse_debug && configname )
-        log_info (_("reading options from '%s'\n"), configname );
-      default_config = 0;
-    }
-
-  while (optfile_parse( configfp, configname, &configlineno, &pargs, opts) )
+  pargs.flags |=  (ARGPARSE_FLAG_RESET
+                   | ARGPARSE_FLAG_KEEP
+                   | ARGPARSE_FLAG_SYS
+                   | ARGPARSE_FLAG_USER);
+  while (gpgrt_argparser (&pargs, opts, SCDAEMON_NAME EXTSEP_S "conf"))
     {
       switch (pargs.r_opt)
         {
+        case ARGPARSE_CONFFILE:
+          if (debug_argparser)
+            log_info (_("reading options from '%s'\n"),
+                      pargs.r_type? pargs.r.ret_str: "[cmdline]");
+          if (pargs.r_type)
+            {
+              xfree (last_configname);
+              last_configname = xstrdup (pargs.r.ret_str);
+              configname = last_configname;
+            }
+          else
+            configname = NULL;
+          break;
+
         case aGPGConfList: gpgconf_list = 1; break;
         case aGPGConfTest: gpgconf_list = 2; break;
         case oQuiet: opt.quiet = 1; break;
@@ -586,18 +574,8 @@ main (int argc, char **argv )
           set_libassuan_log_cats (pargs.r.ret_ulong);
           break;
 
-        case oOptions:
-          /* config files may not be nested (silently ignore them) */
-          if (!configfp)
-            {
-                xfree(configname);
-                configname = xstrdup(pargs.r.ret_str);
-                goto next_pass;
-            }
-          break;
         case oNoGreeting: nogreeting = 1; break;
         case oNoVerbose: opt.verbose = 0; break;
-        case oNoOptions: break; /* no-options */
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oNoDetach: nodetach = 1; break;
         case oLogFile: logfile = pargs.r.ret_str; break;
@@ -636,21 +614,26 @@ main (int argc, char **argv )
           break;
 
         default:
-          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
+          if (configname)
+            pargs.err = ARGPARSE_PRINT_WARNING;
+          else
+            pargs.err = ARGPARSE_PRINT_ERROR;
           break;
         }
     }
-  if (configfp)
+
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+
+  if (!last_configname)
+    config_filename = gpgrt_fnameconcat (gnupg_homedir (),
+                                         SCDAEMON_NAME EXTSEP_S "conf",
+                                         NULL);
+  else
     {
-      fclose( configfp );
-      configfp = NULL;
-      /* Keep a copy of the config name for use by --gpgconf-list. */
-      config_filename = configname;
-      configname = NULL;
-      goto next_pass;
+      config_filename = last_configname;
+      last_configname = NULL;
     }
-  xfree (configname);
-  configname = NULL;
+
   if (log_get_errorcount(0))
     exit(2);
   if (nogreeting )
@@ -659,8 +642,8 @@ main (int argc, char **argv )
   if (greeting)
     {
       es_fprintf (es_stderr, "%s %s; %s\n",
-                  strusage(11), strusage(13), strusage(14) );
-      es_fprintf (es_stderr, "%s\n", strusage(15) );
+                  gpgrt_strusage (11),gpgrt_strusage (13),gpgrt_strusage (14));
+      es_fprintf (es_stderr, "%s\n", gpgrt_strusage (15));
     }
 #ifdef IS_DEVELOPMENT_VERSION
   log_info ("NOTE: this is a development version!\n");
@@ -697,21 +680,14 @@ main (int argc, char **argv )
   if (gpgconf_list)
     {
       /* List options and default values in the GPG Conf format.  */
-      char *filename = NULL;
       char *filename_esc;
 
-      if (config_filename)
-        filename = xstrdup (config_filename);
-      else
-        filename = make_filename (gnupg_homedir (),
-                                  SCDAEMON_NAME EXTSEP_S "conf", NULL);
-      filename_esc = percent_escape (filename, NULL);
+      filename_esc = percent_escape (config_filename, NULL);
 
       es_printf ("%s-%s.conf:%lu:\"%s\n",
                  GPGCONF_NAME, SCDAEMON_NAME,
                  GC_OPT_FLAG_DEFAULT, filename_esc);
       xfree (filename_esc);
-      xfree (filename);
 
       es_printf ("verbose:%lu:\n"
                  "quiet:%lu:\n"
@@ -969,6 +945,7 @@ main (int argc, char **argv )
       close (fd);
     }
 
+  xfree (config_filename);
   return 0;
 }
 
@@ -1063,7 +1040,7 @@ handle_signal (int signo)
       if (shutdown_pending > 2)
         {
           log_info ("shutdown forced\n");
-          log_info ("%s %s stopped\n", strusage(11), strusage(13) );
+          log_info ("%s %s stopped\n", gpgrt_strusage(11), gpgrt_strusage(13));
           cleanup ();
           scd_exit (0);
         }
@@ -1071,7 +1048,7 @@ handle_signal (int signo)
 
     case SIGINT:
       log_info ("SIGINT received - immediate shutdown\n");
-      log_info( "%s %s stopped\n", strusage(11), strusage(13));
+      log_info( "%s %s stopped\n", gpgrt_strusage(11), gpgrt_strusage(13));
       cleanup ();
       scd_exit (0);
       break;
@@ -1455,7 +1432,7 @@ handle_connections (int listen_fd)
   close (pipe_fd[1]);
 #endif
   cleanup ();
-  log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
+  log_info (_("%s %s stopped\n"), gpgrt_strusage(11), gpgrt_strusage(13));
   npth_attr_destroy (&tattr);
 }
 

@@ -16,12 +16,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,7 +33,6 @@
 #include <assuan.h>
 
 #include "../common/logging.h"
-#include "../common/argparse.h"
 #include "../common/stringhelp.h"
 #include "../common/mischelp.h"
 #include "../common/strlist.h"
@@ -44,7 +41,6 @@
 #include "../common/i18n.h"
 #include "../common/util.h"
 #include "../common/init.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 
 /* Constants for the options.  */
@@ -69,7 +65,7 @@ enum
 
 
 /* The list of options as used by the argparse.c code.  */
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   { oVerbose,  "verbose",   0, N_("verbose") },
   { oQuiet,    "quiet",     0, N_("be somewhat more quiet") },
   { oOCSP,     "ocsp",      0, N_("use OCSP instead of CRLs") },
@@ -162,9 +158,11 @@ my_strusage (int level)
 
   switch(level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "dirmngr-client (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
     case 49: p = PACKAGE_BUGREPORT; break;
@@ -190,7 +188,7 @@ my_strusage (int level)
 int
 main (int argc, char **argv )
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   assuan_context_t ctx;
   gpg_error_t err;
   unsigned char *certbuf;
@@ -203,9 +201,12 @@ main (int argc, char **argv )
   int cmd_squid_mode = 0;
 
   early_system_init ();
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix ("dirmngr-client",
                   GPGRT_LOG_WITH_PREFIX);
+  /* Register our string mapper with gpgrt.  Usually done in
+   * init_common_subsystems, but we don't need that here.  */
+  gpgrt_set_fixed_string_mapper (map_static_macro_string);
 
   /* For W32 we need to initialize the socket subsystem.  Because we
      don't use Pth we need to do this explicit. */
@@ -227,8 +228,8 @@ main (int argc, char **argv )
   /* Parse the command line.  */
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1;  /* Do not remove the args. */
-  while (arg_parse (&pargs, opts) )
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -251,9 +252,11 @@ main (int argc, char **argv )
           break;
         case oForceDefaultResponder: opt.force_default_responder = 1; break;
 
-        default : pargs.err = 2; break;
+        default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
+  gpgrt_argparse (NULL, &pargs, NULL);
+
   if (log_get_errorcount (0))
     exit (2);
 
@@ -262,14 +265,14 @@ main (int argc, char **argv )
   else if (cmd_lookup || cmd_loadcrl)
     {
       if (!argc)
-        usage (1);
+        gpgrt_usage (1);
       err = 0;
     }
   else if (cmd_squid_mode)
     {
       err = 0;
       if (argc)
-        usage (1);
+        gpgrt_usage (1);
     }
   else if (!argc)
     {
@@ -288,7 +291,7 @@ main (int argc, char **argv )
   else
     {
       err = 0;
-      usage (1);
+      gpgrt_usage (1);
     }
 
   if (log_get_errorcount (0))

@@ -15,12 +15,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +44,6 @@
 #include "../common/asshelp.h"
 #include "../common/init.h"
 #include "keyblob.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 
 enum cmd_and_opt_values {
@@ -93,7 +91,7 @@ enum cmd_and_opt_values {
  };
 
 
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
 
   ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
 
@@ -149,9 +147,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@G13@-syshelp (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <" PACKAGE_BUGREPORT ">.\n");
       break;
@@ -221,20 +221,18 @@ set_debug (void)
 
 
 int
-main ( int argc, char **argv)
+main (int argc, char **argv)
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   int orig_argc;
   char **orig_argv;
   gpg_error_t err = 0;
   /* const char *fname; */
   int may_coredump;
-  FILE *configfp = NULL;
-  char *configname = NULL;
-  unsigned configlineno;
-  int parse_debug = 0;
+  char *last_configname = NULL;
+  const char *configname = NULL;
+  int debug_argparser = 0;
   int no_more_options = 0;
-  int default_config =1;
   char *logfile = NULL;
   /* int debug_wait = 0; */
   int use_random_seed = 1;
@@ -246,7 +244,7 @@ main ( int argc, char **argv)
 
   early_system_init ();
   gnupg_reopen_std (G13_NAME "-syshelp");
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
 
   log_set_prefix (G13_NAME "-syshelp", GPGRT_LOG_WITH_PREFIX);
@@ -269,22 +267,24 @@ main ( int argc, char **argv)
     log_fatal ("error allocating session environment block: %s\n",
                strerror (errno));
 
-  /* Fixme: We enable verbose mode here because there is currently no
-     way to do this when starting g13-syshelp.  To fix that we should
-     add a g13-syshelp.conf file in /etc/gnupg.  */
-  opt.verbose = 1;
-
   /* First check whether we have a debug option on the commandline.  */
   orig_argc = argc;
   orig_argv = argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
   pargs.flags= (ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
-  while (arg_parse( &pargs, opts))
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
-      if (pargs.r_opt == oDebug || pargs.r_opt == oDebugAll)
-        parse_debug++;
+      switch (pargs.r_opt)
+        {
+        case oDebug:
+        case oDebugAll:
+          debug_argparser++;
+          break;
+        }
     }
+  /* Reset the flags.  */
+  pargs.flags &= ~(ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
 
   /* Initialize the secure memory. */
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
@@ -315,47 +315,40 @@ main ( int argc, char **argv)
   ctrl.no_server = 1;
   ctrl.status_fd = -1; /* No status output. */
 
-  if (default_config )
-    configname = make_filename (gnupg_sysconfdir (),
-                                G13_NAME"-syshelp.conf", NULL);
+  /* The configuraton directories for use by gpgrt_argparser.  */
+  gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
+  gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 
   argc        = orig_argc;
   argv        = orig_argv;
   pargs.argc  = &argc;
   pargs.argv  = &argv;
-  pargs.flags =  1;  /* Do not remove the args.  */
-
- next_pass:
-  if (configname)
-    {
-      configlineno = 0;
-      configfp = fopen (configname, "r");
-      if (!configfp)
-        {
-          if (default_config)
-            {
-              if (parse_debug)
-                log_info (_("NOTE: no default option file '%s'\n"), configname);
-            }
-          else
-            {
-              log_error (_("option file '%s': %s\n"),
-                         configname, strerror(errno));
-              g13_exit(2);
-            }
-          xfree (configname);
-          configname = NULL;
-        }
-      if (parse_debug && configname)
-        log_info (_("reading options from '%s'\n"), configname);
-      default_config = 0;
-    }
+  pargs.flags |=  (ARGPARSE_FLAG_RESET
+                   | ARGPARSE_FLAG_KEEP
+                   | ARGPARSE_FLAG_SYS
+                   | ARGPARSE_FLAG_USER);
 
   while (!no_more_options
-         && optfile_parse (configfp, configname, &configlineno, &pargs, opts))
+         && gpgrt_argparser (&pargs, opts, G13_NAME"-syshelp" EXTSEP_S "conf"))
     {
       switch (pargs.r_opt)
         {
+        case ARGPARSE_CONFFILE:
+          {
+            if (debug_argparser)
+              log_info (_("reading options from '%s'\n"),
+                        pargs.r_type? pargs.r.ret_str: "[cmdline]");
+            if (pargs.r_type)
+              {
+                xfree (last_configname);
+                last_configname = xstrdup (pargs.r.ret_str);
+                configname = last_configname;
+              }
+            else
+              configname = NULL;
+          }
+          break;
+
         case oQuiet: opt.quiet = 1; break;
 
         case oDryRun: opt.dry_run = 1; break;
@@ -408,26 +401,22 @@ main ( int argc, char **argv)
         case oNoRandomSeedFile: use_random_seed = 0; break;
 
         default:
-          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
+          pargs.err = configname? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
           break;
 	}
     }
+  gpgrt_argparse (NULL, &pargs, NULL);
 
-  if (configfp)
+
+  if (!last_configname)
+    opt.config_filename = gpgrt_fnameconcat (gnupg_homedir (),
+                                             G13_NAME"-syshelp" EXTSEP_S "conf",
+                                             NULL);
+  else
     {
-      fclose (configfp);
-      configfp = NULL;
-      /* Keep a copy of the config filename. */
-      opt.config_filename = configname;
-      configname = NULL;
-      goto next_pass;
+      opt.config_filename = last_configname;
+      last_configname = NULL;
     }
-  xfree (configname);
-  configname = NULL;
-
-  if (!opt.config_filename)
-    opt.config_filename = make_filename (gnupg_homedir (),
-                                         G13_NAME".conf", NULL);
 
   if (log_get_errorcount(0))
     g13_exit(2);

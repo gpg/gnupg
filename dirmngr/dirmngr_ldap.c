@@ -16,12 +16,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,7 +49,6 @@
 
 #include <gpg-error.h>
 #include "../common/logging.h"
-#include "../common/argparse.h"
 #include "../common/stringhelp.h"
 #include "../common/mischelp.h"
 #include "../common/strlist.h"
@@ -58,7 +56,6 @@
 #include "../common/i18n.h"
 #include "../common/util.h"
 #include "../common/init.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 /* There is no need for the npth_unprotect and leave functions here;
  * thus we redefine them to nops.  We keep them in the code just for
@@ -101,7 +98,7 @@ enum
 
 
 /* The list of options as used by the argparse.c code.  */
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   { oVerbose,  "verbose",   0, N_("verbose") },
   { oQuiet,    "quiet",     0, N_("be somewhat more quiet") },
   { oTimeout,  "timeout",   1, N_("|N|set LDAP timeout to N seconds")},
@@ -167,11 +164,13 @@ my_strusage (int level)
 {
   const char *p;
 
-  switch(level)
+  switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "dirmngr_ldap (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
     case 49: p = PACKAGE_BUGREPORT; break;
@@ -194,7 +193,7 @@ my_strusage (int level)
 int
 main (int argc, char **argv)
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   int any_err = 0;
   char *p;
   int only_search_timeout = 0;
@@ -206,7 +205,7 @@ main (int argc, char **argv)
 
   early_system_init ();
 
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix ("dirmngr_ldap", GPGRT_LOG_WITH_PREFIX);
 
   /* Setup I18N and common subsystems. */
@@ -225,8 +224,8 @@ main (int argc, char **argv)
   /* Parse the command line.  */
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1;  /* Do not remove the args. */
-  while (arg_parse (&pargs, opts) )
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -264,6 +263,7 @@ main (int argc, char **argv)
           break;
 	}
     }
+  gpgrt_argparse (NULL, &pargs, NULL);
 
   if (only_search_timeout)
     myopt->alarm_timeout = 0;
@@ -293,7 +293,7 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
   if (argc < 1)
-    usage (1);
+    gpgrt_usage (1);
 
   if (myopt->alarm_timeout)
     {
