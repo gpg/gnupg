@@ -25,7 +25,6 @@ common/helpfile.c
 common/gettime.c
 common/ksba-io-support.c
 
-common/argparse.c
 common/utf8conv.c
 common/dotlock.c
 common/init.c

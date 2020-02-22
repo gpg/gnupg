@@ -48,7 +48,6 @@ common_sources = \
 	mapstrings.c stringhelp.c stringhelp.h \
 	strlist.c strlist.h \
 	utf8conv.c utf8conv.h \
-	argparse.c argparse.h \
 	logging.h  \
 	dotlock.c dotlock.h  \
         mischelp.c mischelp.h \

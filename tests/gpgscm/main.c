@@ -16,12 +16,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
-/* We don't want to have the macros from gpgrt here until we have
- * completely replaced this module by the one from gpgrt.  */
-#undef GPGRT_ENABLE_ARGPARSE_MACROS
 
 #include <assert.h>
 #include <ctype.h>
@@ -45,13 +43,11 @@
 #include "scheme-private.h"
 #include "ffi.h"
 #include "../common/i18n.h"
-#include "../../common/argparse.h"
 #include "../../common/init.h"
 #include "../../common/logging.h"
 #include "../../common/strlist.h"
 #include "../../common/sysutils.h"
 #include "../../common/util.h"
-#include "../common/argparse.h" /* temporary hack.  */
 
 /* The TinyScheme banner.  Unfortunately, it isn't in the header
    file.  */
@@ -69,7 +65,7 @@ enum cmd_and_opt_values
   };
 
 /* The list of commands and options. */
-static ARGPARSE_OPTS opts[] =
+static gpgrt_opt_t opts[] =
   {
     ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
     ARGPARSE_end (),
@@ -80,11 +76,9 @@ size_t scmpath_len = 0;
 
 /* Command line parsing.  */
 static void
-parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
+parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
 {
-  int no_more_options = 0;
-
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, popts))
+  while (gpgrt_argparse (NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -93,7 +87,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           break;
 
         default:
-	  pargs->err = 2;
+	  pargs->err = ARGPARSE_PRINT_ERROR;
 	  break;
 	}
     }
@@ -107,9 +101,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "gpgscm (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -256,7 +252,7 @@ main (int argc, char **argv)
   int retcode;
   gpg_error_t err;
   char *argv0;
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   scheme *sc;
   char *p;
 #if _WIN32
@@ -283,7 +279,7 @@ main (int argc, char **argv)
     if (*p == pathsep)
       *p = 0, scmpath_len++;
 
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix ("gpgscm", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
@@ -301,6 +297,7 @@ main (int argc, char **argv)
   pargs.argv  = &argv;
   pargs.flags = 0;
   parse_arguments (&pargs, opts);
+  gpgrt_argparse (NULL, &pargs, NULL);
 
   if (log_get_errorcount (0))
     exit (2);
