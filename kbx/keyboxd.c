@@ -1,6 +1,7 @@
 /* keyboxd.c  -  The GnuPG Keybox Daemon
- * Copyright (C) 2000-2007, 2009-2010 Free Software Foundation, Inc.
- * Copyright (C) 2000-2018 Werner Koch
+ * Copyright (C) 2000-2020 Free Software Foundation, Inc.
+ * Copyright (C) 2000-2019 Werner Koch
+ * Copyright (C) 2015-2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -94,7 +95,7 @@ enum cmd_and_opt_values
   };
 
 
-static ARGPARSE_OPTS opts[] = {
+static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
 
@@ -104,7 +105,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oServer,  "server", N_("run in server mode (foreground)")),
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	  "quiet",     N_("be somewhat more quiet")),
-  ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
+  ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
 
   ARGPARSE_s_s (oDebug,	    "debug",      "@"),
   ARGPARSE_s_n (oDebugAll,  "debug-all",  "@"),
@@ -274,8 +275,8 @@ make_libversion (const char *libname, const char *(*getfnc)(const char*))
 
 
 /* Return strings describing this program.  The case values are
- * described in common/argparse.c:strusage.  The values here override
- * the default values given by strusage.  */
+ * described in Libgpg-error.  The values here override the default
+ * values given by strusage.  */
 static const char *
 my_strusage (int level)
 {
@@ -284,9 +285,11 @@ my_strusage (int level)
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "keyboxd (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
       /* TRANSLATORS: @EMAIL@ will get replaced by the actual bug
          reporting address.  This is so that we can change the
@@ -368,7 +371,7 @@ cleanup (void)
  * PARGS, resets the options to the default.  REREAD should be set
  * true if it is not the initial option parsing. */
 static int
-parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
+parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
 {
   if (!pargs)
     { /* reset mode */
@@ -450,14 +453,12 @@ initialize_modules (void)
 int
 main (int argc, char **argv )
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   int orig_argc;
   char **orig_argv;
-  FILE *configfp = NULL;
+  char *last_configname = NULL;
   char *configname = NULL;
-  unsigned configlineno;
-  int parse_debug = 0;
-  int default_config =1;
+  int debug_argparser = 0;
   int pipe_server = 0;
   int is_daemon = 0;
   int nodetach = 0;
@@ -480,7 +481,7 @@ main (int argc, char **argv )
 #endif /*HAVE_SIGPROCMASK*/
 
   /* Set program name etc.  */
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix ("keyboxd", GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_WITH_PID);
 
   /* Make sure that our subsystems are ready.  */
@@ -508,66 +509,54 @@ main (int argc, char **argv )
   orig_argv = argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
-  while (arg_parse( &pargs, opts))
+  pargs.flags= (ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
-      if (pargs.r_opt == oDebug || pargs.r_opt == oDebugAll)
-        parse_debug++;
-      else if (pargs.r_opt == oOptions)
-        { /* Yes, a config file was given so we do not try the default
-	   * one.  Instead we read the config file when it is
-	   * encountered during main parsing of the command line.  */
-          default_config = 0;
-	}
-	else if (pargs.r_opt == oNoOptions)
-          default_config = 0; /* --no-options */
-	else if (pargs.r_opt == oHomedir)
-          gnupg_set_homedir (pargs.r.ret_str);
-    }
+      switch (pargs.r_opt)
+        {
+        case oDebug:
+        case oDebugAll:
+          debug_argparser++;
+          break;
 
-  if (default_config)
-    configname = make_filename (gnupg_homedir (),
-                                "keyboxd" EXTSEP_S "conf", NULL);
+        case oHomedir:
+          gnupg_set_homedir (pargs.r.ret_str);
+          break;
+        }
+    }
+  /* Reset the flags.  */
+  pargs.flags &= ~(ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
+
+  /* The configuraton directories for use by gpgrt_argparser.  */
+  gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
+  gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* do not remove the args */
- next_pass:
-  if (configname)
-    {
-      configlineno = 0;
-      configfp = fopen (configname, "r");
-      if (!configfp)
-        {
-          if (default_config)
-            {
-              if (parse_debug)
-                log_info (_("Note: no default option file '%s'\n"), configname);
-              /* Save the default confif file name so that
-               * reread_configuration is able to test whether the
-               * config file has been created in the meantime.  */
-              xfree (config_filename);
-              config_filename = configname;
-              configname = NULL;
-	    }
-          else
-            {
-              log_error (_("option file '%s': %s\n"),
-                         configname, strerror (errno));
-              exit (2);
-	    }
-          xfree (configname);
-          configname = NULL;
-	}
-      if (parse_debug && configname )
-        log_info (_("reading options from '%s'\n"), configname);
-      default_config = 0;
-    }
+  pargs.flags |=  (ARGPARSE_FLAG_RESET
+                   | ARGPARSE_FLAG_KEEP
+                   | ARGPARSE_FLAG_SYS
+                   | ARGPARSE_FLAG_USER);
 
-  while (optfile_parse (configfp, configname, &configlineno, &pargs, opts))
+  while (gpgrt_argparser (&pargs, opts, "keyboxd" EXTSEP_S "conf"))
     {
+      if (pargs.r_opt == ARGPARSE_CONFFILE)
+        {
+          if (debug_argparser)
+            log_info (_("reading options from '%s'\n"),
+                      pargs.r_type? pargs.r.ret_str: "[cmdline]");
+          if (pargs.r_type)
+            {
+              xfree (last_configname);
+              last_configname = xstrdup (pargs.r.ret_str);
+              configname = last_configname;
+            }
+          else
+            configname = NULL;
+          continue;
+        }
       if (parse_rereadable_options (&pargs, 0))
         continue; /* Already handled */
       switch (pargs.r_opt)
@@ -576,15 +565,6 @@ main (int argc, char **argv )
         case aGPGConfTest: gpgconf_list = 2; break;
         case oBatch: opt.batch=1; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
-        case oOptions:
-          /* Config files may not be nested (silently ignore them). */
-          if (!configfp)
-            {
-              xfree (configname);
-              configname = xstrdup (pargs.r.ret_str);
-              goto next_pass;
-	    }
-          break;
         case oNoGreeting: /* Dummy option.  */ break;
         case oNoVerbose: opt.verbose = 0; break;
         case oNoOptions: break; /* no-options */
@@ -606,25 +586,27 @@ main (int argc, char **argv )
           listen_backlog = pargs.r.ret_int;
           break;
 
-        default : pargs.err = configfp? 1:2; break;
+        default:
+          if (configname)
+            pargs.err = ARGPARSE_PRINT_WARNING;
+          else
+            pargs.err = ARGPARSE_PRINT_ERROR;
+          break;
 	}
     }
-  if (configfp)
+  gpgrt_argparse (NULL, &pargs, NULL);
+
+  if (!last_configname)
+    config_filename = gpgrt_fnameconcat (gnupg_homedir (),
+                                             "keyboxd" EXTSEP_S "conf",
+                                             NULL);
+  else
     {
-      fclose (configfp);
-      configfp = NULL;
-      /* Keep a copy of the name so that it can be read on SIGHUP. */
-      if (config_filename != configname)
-        {
-          xfree (config_filename);
-          config_filename = configname;
-        }
-      configname = NULL;
-      goto next_pass;
+      config_filename = last_configname;
+      last_configname = NULL;
     }
 
-  xfree (configname);
-  configname = NULL;
+
   if (log_get_errorcount(0))
     exit (2);
 
@@ -878,7 +860,7 @@ main (int argc, char **argv )
         xfree (ctrl);
       }
 
-      log_info ("%s %s started\n", strusage(11), strusage(13) );
+      log_info ("%s %s started\n", gpgrt_strusage(11), gpgrt_strusage(13));
       handle_connections (fd);
       assuan_sock_close (fd);
     }
@@ -1023,36 +1005,40 @@ kbxd_deinit_default_ctrl (ctrl_t ctrl)
 static void
 reread_configuration (void)
 {
-  ARGPARSE_ARGS pargs;
-  FILE *fp;
-  unsigned int configlineno = 0;
+  gpgrt_argparse_t pargs;
+  char *twopart;
   int dummy;
 
   if (!config_filename)
     return; /* No config file. */
 
-  fp = fopen (config_filename, "r");
-  if (!fp)
-    {
-      log_info (_("option file '%s': %s\n"),
-                config_filename, strerror(errno) );
-      return;
-    }
+  twopart = strconcat ("keyboxd" EXTSEP_S "conf" PATHSEP_S,
+                       config_filename, NULL);
+  if (!twopart)
+    return;  /* Out of core.  */
 
   parse_rereadable_options (NULL, 1); /* Start from the default values. */
 
   memset (&pargs, 0, sizeof pargs);
   dummy = 0;
   pargs.argc = &dummy;
-  pargs.flags = 1;  /* do not remove the args */
-  while (optfile_parse (fp, config_filename, &configlineno, &pargs, opts) )
+  pargs.flags = (ARGPARSE_FLAG_KEEP
+                 |ARGPARSE_FLAG_SYS
+                 |ARGPARSE_FLAG_USER);
+  while (gpgrt_argparser (&pargs, opts, twopart))
     {
-      if (pargs.r_opt < -1)
-        pargs.err = 1; /* Print a warning. */
+      if (pargs.r_opt == ARGPARSE_CONFFILE)
+        {
+          log_info (_("reading options from '%s'\n"),
+                    pargs.r_type? pargs.r.ret_str: "[cmdline]");
+        }
+      else if (pargs.r_opt < -1)
+        pargs.err = ARGPARSE_PRINT_WARNING;
       else /* Try to parse this option - ignore unchangeable ones. */
         parse_rereadable_options (&pargs, 1);
     }
-  fclose (fp);
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+  xfree (twopart);
   finalize_rereadable_options ();
   set_debug ();
 }
@@ -1370,7 +1356,7 @@ handle_signal (int signo)
       if (shutdown_pending > 2)
         {
           log_info ("shutdown forced\n");
-          log_info ("%s %s stopped\n", strusage(11), strusage(13) );
+          log_info ("%s %s stopped\n", gpgrt_strusage(11), gpgrt_strusage(13) );
           cleanup ();
           kbxd_exit (0);
 	}
@@ -1378,7 +1364,7 @@ handle_signal (int signo)
 
     case SIGINT:
       log_info ("SIGINT received - immediate shutdown\n");
-      log_info( "%s %s stopped\n", strusage(11), strusage(13));
+      log_info( "%s %s stopped\n", gpgrt_strusage(11), gpgrt_strusage(13));
       cleanup ();
       kbxd_exit (0);
       break;
@@ -1695,7 +1681,7 @@ handle_connections (gnupg_fd_t listen_fd)
   if (home_inotify_fd != -1)
     close (home_inotify_fd);
   cleanup ();
-  log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
+  log_info (_("%s %s stopped\n"), gpgrt_strusage(11), gpgrt_strusage(13));
   npth_attr_destroy (&tattr);
 }
 
