@@ -1812,10 +1812,16 @@ static void
 reread_configuration (void)
 {
   gpgrt_argparse_t pargs;
+  char *twopart;
   int dummy;
 
   if (!opt.config_filename)
     return; /* No config file. */
+
+  twopart = strconcat (DIRMNGR_NAME EXTSEP_S "conf" PATHSEP_S,
+                       opt.config_filename, NULL);
+  if (!twopart)
+    return;  /* Out of core.  */
 
   parse_rereadable_options (NULL, 1); /* Start from the default values. */
 
@@ -1825,7 +1831,7 @@ reread_configuration (void)
   pargs.flags = (ARGPARSE_FLAG_KEEP
                  |ARGPARSE_FLAG_SYS
                  |ARGPARSE_FLAG_USER);
-  while (gpgrt_argparser (&pargs, opts, DIRMNGR_NAME EXTSEP_S "conf") )
+  while (gpgrt_argparser (&pargs, opts, twopart))
     {
       if (pargs.r_opt == ARGPARSE_CONFFILE)
         {
@@ -1838,7 +1844,7 @@ reread_configuration (void)
         parse_rereadable_options (&pargs, 1);
     }
   gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
-
+  xfree (twopart);
   post_option_parsing ();
 }
 
