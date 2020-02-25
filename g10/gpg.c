@@ -2513,8 +2513,8 @@ main (int argc, char **argv)
     pargs.flags |= (ARGPARSE_FLAG_RESET
                     | ARGPARSE_FLAG_KEEP
                     | ARGPARSE_FLAG_SYS
-                    | ARGPARSE_FLAG_USER);
-    /* FIXME: Add an option to allow for version specific config files.  */
+                    | ARGPARSE_FLAG_USER
+                    | ARGPARSE_FLAG_USERVERS);
 
     /* By this point we have a homedir, and cannot change it. */
     check_permissions (gnupg_homedir (), 0);
