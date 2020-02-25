@@ -2272,64 +2272,6 @@ gpg_deinit_default_ctrl (ctrl_t ctrl)
 }
 
 
-char *
-get_default_configname (void)
-{
-  char *configname = NULL;
-  char *name = xstrdup (GPG_NAME EXTSEP_S "conf-" SAFE_VERSION);
-  char *ver = &name[strlen (GPG_NAME EXTSEP_S "conf-")];
-
-  do
-    {
-      if (configname)
-	{
-	  char *tok;
-
-	  xfree (configname);
-	  configname = NULL;
-
-	  if ((tok = strrchr (ver, SAFE_VERSION_DASH)))
-	    *tok='\0';
-	  else if ((tok = strrchr (ver, SAFE_VERSION_DOT)))
-	    *tok='\0';
-	  else
-	    break;
-	}
-
-      configname = make_filename (gnupg_homedir (), name, NULL);
-    }
-  while (access (configname, R_OK));
-
-  xfree(name);
-
-  if (! configname)
-    configname = make_filename (gnupg_homedir (),
-                                GPG_NAME EXTSEP_S "conf", NULL);
-  if (! access (configname, R_OK))
-    {
-      /* Print a warning when both config files are present.  */
-      char *p = make_filename (gnupg_homedir (), "options", NULL);
-      if (! access (p, R_OK))
-	log_info (_("Note: old default options file '%s' ignored\n"), p);
-      xfree (p);
-    }
-  else
-    {
-      /* Use the old default only if it exists.  */
-      char *p = make_filename (gnupg_homedir (), "options", NULL);
-      if (!access (p, R_OK))
-	{
-	  xfree (configname);
-	  configname = p;
-	}
-      else
-	xfree (p);
-    }
-
-  return configname;
-}
-
-
 int
 main (int argc, char **argv)
 {
@@ -2581,46 +2523,6 @@ main (int argc, char **argv)
     gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
     gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 
-
-    /* if( configname ) { */
-    /* FIXME: Add callback to check config file permissions.  */
-    /*   if(check_permissions(configname,1)) */
-    /*     { */
-    /*       /\* If any options file is unsafe, then disable any external */
-    /*          programs for keyserver calls or photo IDs.  Since the */
-    /*          external program to call is set in the options file, a */
-    /*          unsafe options file can lead to an arbitrary program */
-    /*          being run. *\/ */
-
-    /*       opt.exec_disable=1; */
-    /*     } */
-
-    /*     configlineno = 0; */
-    /*     configfp = fopen( configname, "r" ); */
-    /*     if (configfp && is_secured_file (fileno (configfp))) */
-    /*       { */
-    /*         fclose (configfp); */
-    /*         configfp = NULL; */
-    /*         gpg_err_set_errno (EPERM); */
-    /*       } */
-    /*     if( !configfp ) { */
-    /*         if( default_config ) { */
-    /*     	if( parse_debug ) */
-    /*     	    log_info(_("Note: no default option file '%s'\n"), */
-    /*     						    configname ); */
-    /*         } */
-    /*         else { */
-    /*     	log_error(_("option file '%s': %s\n"), */
-    /*     			    configname, strerror(errno) ); */
-    /*     	g10_exit(2); */
-    /*         } */
-    /*         xfree(configname); configname = NULL; */
-    /*     } */
-    /*     if( parse_debug && configname ) */
-    /*         log_info(_("reading options from '%s'\n"), configname ); */
-    /*     default_config = 0; */
-    /* } */
-
     while (gpgrt_argparser (&pargs, opts, GPG_NAME EXTSEP_S "conf" ))
       {
 	switch (pargs.r_opt)
@@ -2634,6 +2536,24 @@ main (int argc, char **argv)
                 xfree (last_configname);
                 last_configname = xstrdup (pargs.r.ret_str);
                 configname = last_configname;
+                if (is_secured_filename (configname))
+                  {
+                    pargs.r_opt = ARGPARSE_PERMISSION_ERROR;
+                    pargs.err = ARGPARSE_PRINT_ERROR;
+                  }
+                else if (strncmp (configname, gnupg_sysconfdir (),
+                                  strlen (gnupg_sysconfdir ())))
+                  {
+                    /* This is not the global config file and thus we
+                     * need to check the permissions: If the file is
+                     * unsafe, then disable any external programs for
+                     * keyserver calls or photo IDs.  Since the
+                     * external program to call is set in the options
+                     * file, a unsafe options file can lead to an
+                     * arbitrary program being run. */
+                    if (check_permissions (configname, 1))
+                      opt.exec_disable=1;
+                  }
               }
             else
               configname = NULL;

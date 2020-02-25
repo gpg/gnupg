@@ -495,14 +495,6 @@ AH_BOTTOM([
 #define EXEEXT_S ""
 #endif
 
-/* This is the same as VERSION, but should be overridden if the
-   platform cannot handle things like dots '.' in filenames. Set
-   SAFE_VERSION_DOT and SAFE_VERSION_DASH to whatever SAFE_VERSION
-   uses for dots and dashes. */
-#define SAFE_VERSION VERSION
-#define SAFE_VERSION_DOT  '.'
-#define SAFE_VERSION_DASH '-'
-
 /* Some global constants.
  * Note that the homedir must not end in a slash.  */
 #ifdef HAVE_DOSISH_SYSTEM
