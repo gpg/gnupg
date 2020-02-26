@@ -205,21 +205,33 @@ tdb_register_trusted_keyid (u32 *keyid)
   user_utk_list = k;
 }
 
+
 void
-tdb_register_trusted_key( const char *string )
+tdb_register_trusted_key (const char *string)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
+  u32 kid[2];
 
   err = classify_user_id (string, &desc, 1);
-  if (err || desc.mode != KEYDB_SEARCH_MODE_LONG_KID )
+  if (!err)
     {
-      log_error(_("'%s' is not a valid long keyID\n"), string );
-      return;
+      if (desc.mode == KEYDB_SEARCH_MODE_LONG_KID)
+        {
+          register_trusted_keyid (desc.u.kid);
+          return;
+        }
+      if (desc.mode == KEYDB_SEARCH_MODE_FPR)
+        {
+          kid[0] = buf32_to_u32 (desc.u.fpr+12);
+          kid[1] = buf32_to_u32 (desc.u.fpr+16);
+          register_trusted_keyid (kid);
+          return;
+        }
     }
-
-  register_trusted_keyid(desc.u.kid);
+  log_error (_("'%s' is not a valid long keyID\n"), string );
 }
+
 
 /*
  * Helper to add a key to the global list of ultimately trusted keys.

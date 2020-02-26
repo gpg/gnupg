@@ -1642,10 +1642,10 @@ certification level below this as invalid. Defaults to 2, which
 disregards level 1 signatures. Note that level 0 "no particular
 claim" signatures are always accepted.
 
-@item --trusted-key @var{long key ID}
+@item --trusted-key @var{long key ID or fingerprint}
 @opindex trusted-key
 Assume that the specified key (which must be given
-as a full 8 byte key ID) is as trustworthy as one of
+as a full 8 byte key ID or 20 byte fingerprint) is as trustworthy as one of
 your own secret keys. This option is useful if you
 don't want to keep your secret keys (or one of them)
 online but still want to be able to check the validity of a given
