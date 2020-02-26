@@ -210,15 +210,20 @@ tdb_register_trusted_key( const char *string )
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
+  u32 kid[2];
 
   err = classify_user_id (string, &desc, 1);
-  if (err || desc.mode != KEYDB_SEARCH_MODE_LONG_KID )
+  if (!err)
     {
-      log_error(_("'%s' is not a valid long keyID\n"), string );
-      return;
+      if (desc.mode == KEYDB_SEARCH_MODE_LONG_KID)
+        return register_trusted_keyid(desc.u.kid);
+      if (desc.mode == KEYDB_SEARCH_MODE_FPR && desc.fprlen == 20) {
+        kid[0] = buf32_to_u32 (desc.u.fpr+12);
+        kid[1] = buf32_to_u32 (desc.u.fpr+16);
+        return register_trusted_keyid(kid);
+      }
     }
-
-  register_trusted_keyid(desc.u.kid);
+  log_error(_("'%s' is not a valid long keyID or fingerprint\n"), string );
 }
 
 /*
