@@ -1172,6 +1172,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
             app->app_local->pinpad.disabled = 1;
           else
             app->app_local->pinpad.disabled = 0;
+
+          send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
         }
       else
         send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
