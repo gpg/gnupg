@@ -2716,7 +2716,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     { "UIF-1",        0x00D6, 0,      3, 5, 1 },
     { "UIF-2",        0x00D7, 0,      3, 5, 1 },
     { "UIF-3",        0x00D8, 0,      3, 5, 1 },
-    { "KDF",          0x00F9, 0,      3, 4, 1 },
+    { "KDF",          0x00F9, 0,      0, 4, 1 },
     { NULL, 0 }
   };
   int exmode;
@@ -2762,6 +2762,69 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     exmode = -254; /* Command chaining with max. 254 bytes.  */
   else
     exmode = 0;
+
+  if (table[idx].special == 4)
+    {
+      if (valuelen == KDF_DATA_LENGTH_MIN)
+        {
+          /* Single user KDF of Gnuk */
+          rc = verify_chv3 (app, ctrl, pincb, pincb_arg);
+          if (rc)
+            return rc;
+        }
+      else if (valuelen == KDF_DATA_LENGTH_MAX)
+        {
+          char *oldpinvalue = NULL;
+          char *buffer1 = NULL;
+          size_t bufferlen1;
+          const char *u, *a;
+
+          u = (const char *)value + 44;
+          a = u + 34;
+
+          if (!pin_from_cache (app, ctrl, 3, &oldpinvalue))
+            {
+              char *prompt;
+
+              rc = build_enter_admin_pin_prompt (app, &prompt, NULL);
+              if (rc)
+                return rc;
+
+              rc = pincb (pincb_arg, prompt, &oldpinvalue);
+              if (rc)
+                {
+                  log_info (_("PIN callback returned error: %s\n"),
+                            gpg_strerror (rc));
+                  return rc;
+                }
+            }
+
+          rc = pin2hash_if_kdf (app, 3, oldpinvalue, &buffer1, &bufferlen1);
+          if (!rc)
+            rc = iso7816_change_reference_data (app_get_slot (app),
+                                                0x83,
+                                                buffer1, bufferlen1,
+                                                a, 32);
+          if (!rc)
+            rc = iso7816_verify (app_get_slot (app), 0x83, a, 32);
+          if (!rc)
+            cache_pin (app, ctrl, 3, "12345678");
+
+          if (!rc)
+            rc = iso7816_reset_retry_counter (app_get_slot (app), 0x81, u, 32);
+          if (!rc)
+            cache_pin (app, ctrl, 1, "123456");
+
+          if (!rc)
+            rc = iso7816_put_data (app_get_slot (app), 0, 0xD3, NULL, 0);
+
+          wipe_and_free (buffer1, bufferlen1);
+          wipe_and_free_string (oldpinvalue);
+        }
+      else
+        return gpg_error (GPG_ERR_INV_OBJ);
+    }
+
   rc = iso7816_put_data (app_get_slot (app),
                          exmode, table[idx].tag, value, valuelen);
   if (rc)
