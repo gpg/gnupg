@@ -109,6 +109,8 @@ log_get_errorcount( int clear)
 void
 log_inc_errorcount()
 {
+  /* Protect agains overflow.  */
+  if (errorcount < 30000)
     errorcount++;
 }
 
@@ -135,7 +137,7 @@ g10_log_print_prefix(const char *text)
     if (!logfp )
       {
         FILE *ttyfp_local;
-        
+
         init_ttyfp();
         ttyfp_local = ttyfp_is ();
         if (isatty (fileno (stderr)) && isatty (fileno (ttyfp_local)))
@@ -179,7 +181,7 @@ g10_log_warning( const char *fmt, ... )
 
     if(strict)
       {
-	errorcount++;
+	log_inc_errorcount ();
 	g10_log_print_prefix(_("ERROR: "));
       }
     else
@@ -203,7 +205,7 @@ g10_log_error( const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
-    errorcount++;
+    log_inc_errorcount ();
 #ifdef __riscos__
     fflush( logfp );
 #endif /* __riscos__ */
@@ -285,6 +287,3 @@ g10_log_hexdump( const char *text, const char *buf, size_t len )
     fflush( logfp );
 #endif /* __riscos__ */
 }
-
-
-
