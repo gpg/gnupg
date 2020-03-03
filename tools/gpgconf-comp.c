@@ -27,7 +27,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <assert.h>
 #include <errno.h>
 #include <time.h>
 #include <stdarg.h>
@@ -1336,7 +1335,7 @@ gc_component_kill (int component)
     }
   else
     {
-      assert (component < GC_COMPONENT_NR);
+      log_assert (component < GC_COMPONENT_NR);
       option = gc_component[component].options;
       for (; option && option->name; option++)
         runtime[option->backend] = 1;
@@ -1374,7 +1373,7 @@ gc_component_reload (int component)
     }
   else
     {
-      assert (component < GC_COMPONENT_NR);
+      log_assert (component < GC_COMPONENT_NR);
       option = gc_component[component].options;
       for (; option && option->name; option++)
         runtime[option->backend] = 1;
@@ -1467,9 +1466,7 @@ gc_percent_escape (const char *src)
 
   if (esc_str_len < new_len)
     {
-      char *new_esc_str = realloc (esc_str, new_len);
-      if (!new_esc_str)
-	gc_error (1, errno, "can not escape string");
+      char *new_esc_str = xrealloc (esc_str, new_len);
       esc_str = new_esc_str;
       esc_str_len = new_len;
     }
@@ -1526,9 +1523,7 @@ percent_deescape (const char *src)
 
   if (str_len < new_len)
     {
-      char *new_str = realloc (str, new_len);
-      if (!new_str)
-	gc_error (1, errno, "can not deescape string");
+      char *new_str = xrealloc (str, new_len);
       str = new_str;
       str_len = new_len;
     }
@@ -1582,7 +1577,7 @@ gc_component_list_components (estream_t out)
               if (backend_seen[backend])
                 continue;
               backend_seen[backend] = 1;
-              assert (backend != GC_BACKEND_ANY);
+              log_assert (backend != GC_BACKEND_ANY);
               if (gc_backend[backend].program
                   && !gc_backend[backend].module_name)
                 continue;
@@ -1725,7 +1720,7 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
       if (backend_seen[backend])
 	continue;
       backend_seen[backend] = 1;
-      assert (backend != GC_BACKEND_ANY);
+      log_assert (backend != GC_BACKEND_ANY);
       if (!gc_backend[backend].program)
 	continue;
       if (!gc_backend[backend].module_name)
@@ -2034,9 +2029,9 @@ get_config_filename (gc_component_t component, gc_backend_t backend)
   char *filename = NULL;
   gc_option_t *option = find_option
     (component, gc_backend[backend].option_config_filename, GC_BACKEND_ANY);
-  assert (option);
-  assert (option->arg_type == GC_ARG_TYPE_FILENAME);
-  assert (!(option->flags & GC_OPT_FLAG_LIST));
+  log_assert (option);
+  log_assert (option->arg_type == GC_ARG_TYPE_FILENAME);
+  log_assert (!(option->flags & GC_OPT_FLAG_LIST));
 
   if (!option->active || !option->default_value)
     gc_error (1, 0, "Option %s, needed by backend %s, was not initialized",
@@ -2196,7 +2191,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend,
   if (!config)
     {
       if (errno != ENOENT)
-        gc_error (0, errno, "warning: can not open config file %s",
+        gc_error (0, errno, "warning: can't open config file %s",
                   config_filename);
     }
   else
@@ -2307,13 +2302,13 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 
   list_option = find_option (component,
 			     gc_backend[backend].option_name, GC_BACKEND_ANY);
-  assert (list_option);
-  assert (!list_option->active);
+  log_assert (list_option);
+  log_assert (!list_option->active);
 
   list_filename = get_config_filename (component, backend);
   list_file = gpgrt_fopen (list_filename, "r");
   if (!list_file)
-    gc_error (0, errno, "warning: can not open list file %s", list_filename);
+    gc_error (0, errno, "warning: can't open list file %s", list_filename);
   else
     {
 
@@ -2351,7 +2346,7 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 	    list = xasprintf ("\"%s", gc_percent_escape (start));
 	}
       if (length < 0 || gpgrt_ferror (list_file))
-	gc_error (1, errno, "can not read list file %s", list_filename);
+	gc_error (1, errno, "can' read list file %s", list_filename);
     }
 
   list_option->active = 1;
@@ -2387,7 +2382,7 @@ gc_component_retrieve_options (int component)
     {
       process_all = 1;
       component = 0;
-      assert (component < GC_COMPONENT_NR);
+      log_assert (component < GC_COMPONENT_NR);
     }
 
   do
@@ -2410,7 +2405,7 @@ gc_component_retrieve_options (int component)
                 }
               backend_seen[backend] = 1;
 
-              assert (backend != GC_BACKEND_ANY);
+              log_assert (backend != GC_BACKEND_ANY);
 
               if (gc_backend[backend].program)
                 retrieve_options_from_program (component, backend,
@@ -2645,9 +2640,9 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 
   option = find_option (component,
 			gc_backend[backend].option_name, GC_BACKEND_ANY);
-  assert (option);
-  assert (option->active);
-  assert (gc_arg_type[option->arg_type].fallback != GC_ARG_TYPE_NONE);
+  log_assert (option);
+  log_assert (option->active);
+  log_assert (gc_arg_type[option->arg_type].fallback != GC_ARG_TYPE_NONE);
 
   /* FIXME.  Throughout the function, do better error reporting.  */
   /* Note that get_config_filename() calls percent_deescape(), so we
@@ -3127,7 +3122,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 	      else if (gc_arg_type[option->arg_type].fallback
 		       == GC_ARG_TYPE_NONE)
 		{
-		  assert (*arg == '1');
+		  log_assert (*arg == '1');
 		  gpgrt_fprintf (src_file, "%s\n", option->name);
 		  if (gpgrt_ferror (src_file))
 		    goto change_one_err;
@@ -3177,7 +3172,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 		  arg = end;
 		}
 
-	      assert (arg == NULL || *arg == '\0' || *arg == ',');
+	      log_assert (arg == NULL || *arg == '\0' || *arg == ',');
 	      if (arg && *arg == ',')
 		arg++;
 	    }
@@ -3276,7 +3271,7 @@ change_one_value (gc_option_t *option, int *runtime,
 
           /* We convert the number to a list of 1's for convenient
              list handling.  */
-          assert (new_value_nr > 0);
+          log_assert (new_value_nr > 0);
           option->new_value = xmalloc ((2 * (new_value_nr - 1) + 1) + 1);
           str = option->new_value;
           *(str++) = '1';
@@ -3459,7 +3454,7 @@ gc_component_change_options (int component, estream_t in, estream_t out,
 	    {
 	      /* FIXME: Make a verification here.  */
 
-	      assert (dest_filename[i]);
+	      log_assert (dest_filename[i]);
 
 	      if (orig_filename[i])
 		err = gnupg_rename_file (src_filename[i], dest_filename[i], NULL);
@@ -3534,7 +3529,7 @@ gc_component_change_options (int component, estream_t in, estream_t out,
       {
 	char *backup_filename;
 
-	assert (dest_filename[backend]);
+	log_assert (dest_filename[backend]);
 
 	backup_filename = xasprintf ("%s.%s.bak",
                                      dest_filename[backend], GPGCONF_NAME);
@@ -3703,7 +3698,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
          when running in syntax check mode.  */
       if (errno != ENOENT || !update)
         {
-          gc_error (0, errno, "can not open global config file '%s'", fname);
+          gc_error (0, errno, "can't open global config file '%s'", fname);
           result = -1;
         }
       xfree (fname);
