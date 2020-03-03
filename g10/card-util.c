@@ -220,6 +220,7 @@ get_manufacturer (unsigned int no)
     case 0x63AF: return "Trustica";
     case 0xBD0E: return "Paranoidlabs";
     case 0xF517: return "FSIJ";
+    case 0xF5EC: return "F-Secure";
 
       /* 0x0000 and 0xFFFF are defined as test cards per spec,
          0xFF00 to 0xFFFE are assigned for use with randomly created
