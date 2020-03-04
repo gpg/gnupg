@@ -117,6 +117,17 @@ xoutofcore (void)
 }
 
 
+/* Wrapper around gpgrt_reallocarray.   */
+void *
+xreallocarray (void *a, size_t oldnmemb, size_t nmemb, size_t size)
+{
+  void *p = gpgrt_reallocarray (a, oldnmemb, nmemb, size);
+  if (!p)
+    xoutofcore ();
+  return p;
+}
+
+
 /* A wrapper around gcry_cipher_algo_name to return the string
    "AES-128" instead of "AES".  Given that we have an alias in
    libgcrypt for it, it does not harm to too much to return this other

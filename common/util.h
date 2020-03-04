@@ -99,6 +99,7 @@ typedef char **rl_completion_func_t (const char *, int, int);
 #define xtrycalloc(a,b)  gcry_calloc ((a),(b))
 #define xtrycalloc_secure(a,b)  gcry_calloc_secure ((a),(b))
 #define xtryrealloc(a,b) gcry_realloc ((a),(b))
+#define xtryreallocarray(a,b,c,d) gpgrt_reallocarray ((a),(b),(c),(d))
 #define xtrystrdup(a)    gcry_strdup ((a))
 #define xfree(a)         gcry_free ((a))
 #define xfree_fnc        gcry_free
@@ -109,6 +110,7 @@ typedef char **rl_completion_func_t (const char *, int, int);
 #define xcalloc_secure(a,b) gcry_xcalloc_secure ((a),(b))
 #define xrealloc(a,b)    gcry_xrealloc ((a),(b))
 #define xstrdup(a)       gcry_xstrdup ((a))
+/* See also the xreallocarray prototype below.  */
 
 /* For compatibility with gpg 1.4 we also define these: */
 #define xmalloc_clear(a) gcry_xcalloc (1, (a))
@@ -305,6 +307,12 @@ void setup_libgcrypt_logging (void);
 
 /* Print an out of core message and die.  */
 void xoutofcore (void);
+
+/* Wrapper aroung gpgrt_reallocarray.  Uses the gpgrt alloc function
+ * which are redirect to the Libgcrypt versions via
+ * init_common_subsystems.  Thus they can be used interchangeable with
+ * the other alloc functions. */
+void *xreallocarray (void *a, size_t oldnmemb, size_t nmemb, size_t size);
 
 /* Same as estream_asprintf but die on memory failure.  */
 char *xasprintf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
