@@ -1,6 +1,7 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
  * Copyright (C) 2004, 2007-2011 Free Software Foundation, Inc.
  * Copyright (C) 2016 Werner Koch
+ * Copyright (C) 2030 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -169,10 +170,7 @@ static const struct
      is killed and not just reloaded.  */
   void (*runtime_change) (int killflag);
 
-  /* The option name for the configuration filename of this backend.
-     This must be an absolute filename.  It can be an option from a
-     different backend (but then ordering of the options might
-     matter).  Note: This must be unique among all components.  */
+  /* The name for the configuration filename of this backend.  */
   const char *option_config_filename;
 
   /* If this is a file backend rather than a program backend, then
@@ -182,19 +180,19 @@ static const struct
   {
     { NULL },		/* GC_BACKEND_ANY dummy entry.  */
     { GPG_DISP_NAME, GPGNAME, GNUPG_MODULE_NAME_GPG,
-      NULL, GPGCONF_NAME "-" GPG_NAME ".conf" },
+      NULL, GPG_NAME ".conf" },
     { GPGSM_DISP_NAME, GPGSM_NAME, GNUPG_MODULE_NAME_GPGSM,
-      NULL, GPGCONF_NAME "-" GPGSM_NAME ".conf" },
+      NULL, GPGSM_NAME ".conf" },
     { GPG_AGENT_DISP_NAME, GPG_AGENT_NAME, GNUPG_MODULE_NAME_AGENT,
-      gpg_agent_runtime_change, GPGCONF_NAME"-" GPG_AGENT_NAME ".conf" },
+      gpg_agent_runtime_change, GPG_AGENT_NAME ".conf" },
     { SCDAEMON_DISP_NAME, SCDAEMON_NAME, GNUPG_MODULE_NAME_SCDAEMON,
-      scdaemon_runtime_change, GPGCONF_NAME"-" SCDAEMON_NAME ".conf" },
+      scdaemon_runtime_change, SCDAEMON_NAME ".conf" },
     { DIRMNGR_DISP_NAME, DIRMNGR_NAME, GNUPG_MODULE_NAME_DIRMNGR,
-      dirmngr_runtime_change, GPGCONF_NAME "-" DIRMNGR_NAME ".conf" },
+      dirmngr_runtime_change, DIRMNGR_NAME ".conf" },
     { DIRMNGR_DISP_NAME " LDAP Server List", NULL, 0,
       NULL, "ldapserverlist-file", "LDAP Server" },
     { "Pinentry", "pinentry", GNUPG_MODULE_NAME_PINENTRY,
-      NULL, GPGCONF_NAME "-pinentry.conf" },
+      NULL, "pinentry.conf" },
   };
 
 
@@ -432,6 +430,11 @@ struct gc_option
      option's are declared as static variables).  They are at the end
      of the list so that they can be omitted from the option
      declarations.  */
+
+  struct {
+    unsigned int ignore:1;  /* The ARGPARSE_ATTR_IGNORE.  */
+    unsigned int force:1;   /* The ARGPARSE_ATTR_FORCE.  */
+  } attr;
 
   /* This is true if the option is supported by this version of the
      backend.  */
@@ -2078,23 +2081,113 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend,
   estream_t outfp;
   int exitcode;
   pid_t pid;
+  gc_option_t *option;
   char *line = NULL;
   size_t line_len = 0;
   ssize_t length;
-  estream_t config;
-  char *config_filename;
+  const char *config_name;
+  gpgrt_argparse_t pargs;
+  int dummy_argc;
+  gpgrt_opt_t *opt_table = NULL;      /* A malloced option table.  */
+  size_t opt_table_used = 0;          /* Its current length.       */
+  size_t opt_table_size = 0;          /* Its allocated length.     */
+  char  **string_array = NULL;        /* An allocated array with
+                                       * malloced strings.  */
+  size_t string_array_used = 0;       /* Current number of items in
+                                       * the array.  */
+  size_t string_array_size = 0;       /* Allocated number of slots in
+                                       * the array.  */
+  size_t n;
+  int i;
 
   pgmname = (gc_backend[backend].module_name
              ? gnupg_module_name (gc_backend[backend].module_name)
              : gc_backend[backend].program );
-  argv[0] = "--gpgconf-list";
-  argv[1] = NULL;
 
   if (only_installed && access (pgmname, X_OK))
     {
       return;  /* The component is not installed.  */
     }
 
+
+  /* First we need to read the option table from the program.  */
+  argv[0] = "--dump-option-table";
+  argv[1] = NULL;
+  err = gnupg_spawn_process (pgmname, argv, NULL, NULL, 0,
+                             NULL, &outfp, NULL, &pid);
+  if (err)
+    {
+      gc_error (1, 0, "could not gather option table from '%s': %s",
+                pgmname, gpg_strerror (err));
+    }
+
+  while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
+    {
+      char *fields[4];
+      char *optname, *optdesc;
+
+      /* Strip newline and carriage return, if present.  */
+      while (length > 0
+	     && (line[length - 1] == '\n' || line[length - 1] == '\r'))
+	line[--length] = '\0';
+
+      log_debug ("line='%s'\n", line);
+      if (split_fields_colon (line, fields, DIM (fields)) < 4)
+        {
+          gc_error (0,0, "WARNING: invalid line in option table of '%s'\n",
+                    pgmname);
+          continue;
+        }
+
+      /* The +1 here is to make sure that we will have a zero item at
+       * the end of the table.  */
+      if (opt_table_used + 1 >= opt_table_size)
+        {
+          /* Note that this also does the initial allocation.  */
+          opt_table_size += 128;
+          opt_table = xreallocarray (opt_table,
+                                     opt_table_used,
+                                     opt_table_size,
+                                     sizeof *opt_table);
+        }
+      /* The +1 here accounts for the two items we add below.  */
+      if (string_array_used + 1 >= string_array_size)
+        {
+          string_array_size += 256;
+          string_array = xreallocarray (string_array,
+                                        string_array_used,
+                                        string_array_size,
+                                        sizeof *string_array);
+        }
+      string_array[string_array_used++] = optname = xstrdup (fields[0]);
+      string_array[string_array_used++] = optdesc = xstrdup (fields[3]);
+
+      opt_table[opt_table_used].long_opt = optname;
+      opt_table[opt_table_used].short_opt = atoi (fields[1]);
+      opt_table[opt_table_used].description = optdesc;
+      opt_table[opt_table_used].flags = strtoul (fields[2], NULL, 10);
+      opt_table_used++;
+
+      /* Put the description into our table.  */
+      option = find_option (component, optname, backend);
+      if (option && !option->desc)
+        option->desc = xstrdup (optdesc);
+    }
+  if (length < 0 || es_ferror (outfp))
+    gc_error (1, errno, "error reading from %s", pgmname);
+  if (es_fclose (outfp))
+    gc_error (1, errno, "error closing %s", pgmname);
+
+  err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
+  if (err)
+    gc_error (1, 0, "running %s failed (exitcode=%d): %s",
+              pgmname, exitcode, gpg_strerror (err));
+  gnupg_release_process (pid);
+
+
+  /* Now read the default options.  */
+  argv[0] = "--gpgconf-list";
+  argv[1] = NULL;
   err = gnupg_spawn_process (pgmname, argv, NULL, NULL, 0,
                              NULL, &outfp, NULL, &pid);
   if (err)
@@ -2105,7 +2198,6 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend,
 
   while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
     {
-      gc_option_t *option;
       char *linep;
       unsigned long flags = 0;
       char *default_value = NULL;
@@ -2185,104 +2277,95 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend,
 
 
   /* At this point, we can parse the configuration file.  */
-  config_filename = get_config_filename (component, backend);
+  config_name = gc_backend[backend].option_config_filename;
+  if (!config_name)
+    gc_error (1, 0, "name of config file for %s is not known\n", pgmname);
 
-  config = es_fopen (config_filename, "r");
-  if (!config)
+  memset (&pargs, 0, sizeof pargs);
+  dummy_argc = 0;
+  pargs.argc = &dummy_argc;
+  pargs.flags = (ARGPARSE_FLAG_KEEP
+                 | ARGPARSE_FLAG_SYS
+                 | ARGPARSE_FLAG_USER
+                 | ARGPARSE_FLAG_WITHATTR
+                 | ARGPARSE_FLAG_VERBOSE);
+
+  while (gpgrt_argparser (&pargs, opt_table, config_name))
     {
-      if (errno != ENOENT)
-        gc_error (0, errno, "warning: can't open config file %s",
-                  config_filename);
-    }
-  else
-    {
-      while ((length = es_read_line (config, &line, &line_len, NULL)) > 0)
-	{
-	  char *name;
-	  char *value;
-	  gc_option_t *option;
+      char *opt_value;
 
-	  name = line;
-	  while (*name == ' ' || *name == '\t')
-	    name++;
-	  if (!*name || *name == '#' || *name == '\r' || *name == '\n')
-	    continue;
+      if (pargs.r_type & ARGPARSE_OPT_IGNORE)
+        {
+          log_debug ("ignored\n");
+          continue;
+        }
+      if (pargs.r_opt == ARGPARSE_CONFFILE)
+        {
+          log_debug ("current conffile='%s'\n",
+                     pargs.r_type? pargs.r.ret_str: "[cmdline]");
+          continue;
+        }
 
-	  value = name;
-	  while (*value && *value != ' ' && *value != '\t'
-		 && *value != '#' && *value != '\r' && *value != '\n')
-	    value++;
-	  if (*value == ' ' || *value == '\t')
-	    {
-	      char *end;
+      /* We only have the short option.  Search in the option table
+       * for the long option name.  */
+      for (i=0; opt_table[i].short_opt; i++)
+        if (opt_table[i].short_opt == pargs.r_opt)
+          break;
+      if (!opt_table[i].short_opt || !opt_table[i].long_opt)
+        continue;  /* No or only a short option - ignore.  */
 
-	      *(value++) = '\0';
-	      while (*value == ' ' || *value == '\t')
-		value++;
+      /* Look up the option from the config file in our fixed list of
+       * options which are handled by us.  */
+      option = find_option (component, opt_table[i].long_opt, backend);
+      if (!option)
+        continue;  /* We don't want to handle this option.  */
 
-	      end = value;
-	      while (*end && *end != '#' && *end != '\r' && *end != '\n')
-		end++;
-	      while (end > value && (end[-1] == ' ' || end[-1] == '\t'))
-		end--;
-	      *end = '\0';
-	    }
-	  else
-	    *value = '\0';
+      option->attr.ignore = !!(pargs.r_type & ARGPARSE_ATTR_IGNORE);
+      option->attr.force  = !!(pargs.r_type & ARGPARSE_ATTR_FORCE);
 
-	  /* Look up the option in the component and install the
-	     configuration data.  */
-	  option = find_option (component, line, backend);
-	  if (option)
-	    {
-	      char *opt_value;
+      switch ((pargs.r_type & ARGPARSE_TYPE_MASK))
+        {
+        case ARGPARSE_TYPE_INT:
+          opt_value = xasprintf ("%d", pargs.r.ret_int);
+          break;
+        case ARGPARSE_TYPE_LONG:
+          opt_value = xasprintf ("%ld", pargs.r.ret_long);
+          break;
+        case ARGPARSE_TYPE_ULONG:
+          opt_value = xasprintf ("%lu", pargs.r.ret_ulong);
+          break;
+        case ARGPARSE_TYPE_STRING:
+          opt_value = xasprintf ("\"%s", gc_percent_escape (pargs.r.ret_str));
+          break;
+        default: /* ARGPARSE_TYPE_NONE or any unknown type.  */
+          opt_value = xstrdup ("1");  /* Make sure we have some value.  */
+          break;
+        }
 
-	      if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE)
-		{
-		  if (*value)
-		    gc_error (0, 0,
-			      "warning: ignoring argument %s for option %s",
-			      value, name);
-		  opt_value = xstrdup ("1");
-		}
-	      else if (gc_arg_type[option->arg_type].fallback
-		       == GC_ARG_TYPE_STRING)
-		opt_value = xasprintf ("\"%s", gc_percent_escape (value));
-	      else
-		{
-		  /* FIXME: Verify that the number is sane.  */
-		  opt_value = xstrdup (value);
-		}
-
-	      /* Now enter the option into the table.  */
-	      if (!(option->flags & GC_OPT_FLAG_LIST))
-		{
-		  if (option->value)
-		    xfree (option->value);
-		  option->value = opt_value;
-		}
-	      else
-		{
-		  if (!option->value)
-		    option->value = opt_value;
-		  else
-		    {
-		      char *old = option->value;
-		      option->value = xasprintf ("%s,%s", old, opt_value);
-		      xfree (old);
-		      xfree (opt_value);
-		    }
-		}
-	    }
-	}
-
-      if (length < 0 || es_ferror (config))
-	gc_error (1, errno, "error reading from %s", config_filename);
-      if (es_fclose (config))
-	gc_error (1, errno, "error closing %s", config_filename);
+      /* Now enter the value read form the config file into the table.  */
+      if (!(option->flags & GC_OPT_FLAG_LIST))
+        {
+          xfree (option->value);
+          option->value = opt_value;
+        }
+      else if (!option->value)
+        option->value = opt_value;
+      else
+        {
+          char *old = option->value;
+          option->value = xstrconcat (old, ",", opt_value, NULL);
+          xfree (old);
+          xfree (opt_value);
+        }
     }
 
   xfree (line);
+  xfree (opt_table);
+  /* Note that we release the string array after the option table
+   * because the option table has pointers into tye string array.  */
+  for (n=0; n < string_array_used; n++)
+    xfree (string_array[n]);
+  xfree (string_array);
 }
 
 
