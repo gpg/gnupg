@@ -314,6 +314,10 @@ void setup_libgcrypt_logging (void);
 /* Print an out of core message and die.  */
 void xoutofcore (void);
 
+/* Array allocation.  */
+void *gnupg_reallocarray (void *a, size_t oldnmemb, size_t nmemb, size_t size);
+void *xreallocarray (void *a, size_t oldnmemb, size_t nmemb, size_t size);
+
 /* Same as estream_asprintf but die on memory failure.  */
 char *xasprintf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 /* This is now an alias to estream_asprintf.  */

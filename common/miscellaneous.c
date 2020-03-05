@@ -117,6 +117,65 @@ xoutofcore (void)
 }
 
 
+/* This is safe version of realloc useful for reallocing a calloced
+ * array.  There are two ways to call it:  The first example
+ * reallocates the array A to N elements each of SIZE but does not
+ * clear the newly allocated elements:
+ *
+ *  p = gpgrt_reallocarray (a, n, n, nsize);
+ *
+ * Note that when NOLD is larger than N no cleaning is needed anyway.
+ * The second example reallocates an array of size NOLD to N elements
+ * each of SIZE but clear the newly allocated elements:
+ *
+ *  p = gpgrt_reallocarray (a, nold, n, nsize);
+ *
+ * Note that gnupg_reallocarray (NULL, 0, n, nsize) is equivalent to
+ * gcry_calloc (n, nsize).
+ */
+void *
+gnupg_reallocarray (void *a, size_t oldnmemb, size_t nmemb, size_t size)
+{
+  size_t oldbytes, bytes;
+  char *p;
+
+  bytes = nmemb * size; /* size_t is unsigned so the behavior on overflow
+                         * is defined. */
+  if (size && bytes / size != nmemb)
+    {
+      gpg_err_set_errno (ENOMEM);
+      return NULL;
+    }
+
+  p = gcry_realloc (a, bytes);
+  if (p && oldnmemb < nmemb)
+    {
+      /* OLDNMEMBS is lower than NMEMB thus the user asked for a
+         calloc.  Clear all newly allocated members.  */
+      oldbytes = oldnmemb * size;
+      if (size && oldbytes / size != oldnmemb)
+        {
+          xfree (p);
+          gpg_err_set_errno (ENOMEM);
+          return NULL;
+        }
+      memset (p + oldbytes, 0, bytes - oldbytes);
+    }
+  return p;
+}
+
+
+/* Die-on-error version of gnupg_reallocarray.   */
+void *
+xreallocarray (void *a, size_t oldnmemb, size_t nmemb, size_t size)
+{
+  void *p = gnupg_reallocarray (a, oldnmemb, nmemb, size);
+  if (!p)
+    xoutofcore ();
+  return p;
+}
+
+
 /* A wrapper around gcry_cipher_algo_name to return the string
    "AES-128" instead of "AES".  Given that we have an alias in
    libgcrypt for it, it does not harm to too much to return this other
