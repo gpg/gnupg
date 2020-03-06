@@ -251,102 +251,14 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aDumpSecretKeys, "dump-secret-keys", "@"),
   ARGPARSE_c (aKeydbClearSomeCertFlags, "keydb-clear-some-cert-flags", "@"),
 
-  ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
-  ARGPARSE_s_n (oArmor, "armor", N_("create ascii armored output")),
-  ARGPARSE_s_n (oArmor, "armour", "@"),
-  ARGPARSE_s_n (oBase64, "base64", N_("create base-64 encoded output")),
+  ARGPARSE_header ("Monitor", N_("Options controlling the diagnostic output")),
 
-  ARGPARSE_s_s (oP12Charset, "p12-charset",
-                N_("|NAME|use encoding NAME for PKCS#12 passphrases")),
-
-  ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
-  ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
-  ARGPARSE_s_s (oRequestOrigin,   "request-origin", "@"),
-
-  ARGPARSE_s_n (oAssumeArmor, "assume-armor",
-                N_("assume input is in PEM format")),
-  ARGPARSE_s_n (oAssumeBase64, "assume-base64",
-                N_("assume input is in base-64 format")),
-  ARGPARSE_s_n (oAssumeBinary, "assume-binary",
-                N_("assume input is in binary format")),
-
-  ARGPARSE_s_s (oRecipient, "recipient", N_("|USER-ID|encrypt for USER-ID")),
-
-  ARGPARSE_s_n (oPreferSystemDirmngr,"prefer-system-dirmngr", "@"),
-
-  ARGPARSE_s_n (oDisableCRLChecks, "disable-crl-checks",
-                N_("never consult a CRL")),
-  ARGPARSE_s_n (oEnableCRLChecks, "enable-crl-checks", "@"),
-  ARGPARSE_s_n (oDisableTrustedCertCRLCheck,
-                "disable-trusted-cert-crl-check",
-                N_("do not check CRLs for root certificates")),
-  ARGPARSE_s_n (oEnableTrustedCertCRLCheck,
-                "enable-trusted-cert-crl-check", "@"),
-
-  ARGPARSE_s_n (oForceCRLRefresh, "force-crl-refresh", "@"),
-
-  ARGPARSE_s_n (oDisableOCSP, "disable-ocsp", "@"),
-  ARGPARSE_s_n (oEnableOCSP,  "enable-ocsp", N_("check validity using OCSP")),
-
-  ARGPARSE_s_s (oValidationModel, "validation-model", "@"),
-
-  ARGPARSE_s_i (oIncludeCerts, "include-certs",
-                N_("|N|number of certificates to include") ),
-
-  ARGPARSE_s_s (oPolicyFile, "policy-file",
-                N_("|FILE|take policy information from FILE")),
-
-  ARGPARSE_s_n (oDisablePolicyChecks, "disable-policy-checks",
-                N_("do not check certificate policies")),
-  ARGPARSE_s_n (oEnablePolicyChecks, "enable-policy-checks", "@"),
-
-  ARGPARSE_s_n (oAutoIssuerKeyRetrieve, "auto-issuer-key-retrieve",
-                N_("fetch missing issuer certificates")),
-
-  ARGPARSE_s_s (oEncryptTo, "encrypt-to",
-                N_("|NAME|encrypt to user ID NAME as well")),
-  ARGPARSE_s_n (oNoEncryptTo, "no-encrypt-to", "@"),
-
-  ARGPARSE_s_s (oUser, "local-user",
-                N_("|USER-ID|use USER-ID to sign or decrypt")),
-
-  ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
   ARGPARSE_s_n (oNoTTY, "no-tty", N_("don't use the terminal at all")),
-  ARGPARSE_s_s (oLogFile, "log-file",
-                N_("|FILE|write server mode logs to FILE")),
-  ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
-  ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
-
-  ARGPARSE_s_s (oAuditLog, "audit-log",
-                N_("|FILE|write an audit log to FILE")),
-  ARGPARSE_s_s (oHtmlAuditLog, "html-audit-log", "@"),
-  ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
-  ARGPARSE_s_n (oBatch, "batch", N_("batch mode: never ask")),
-  ARGPARSE_s_n (oAnswerYes, "yes", N_("assume yes on most questions")),
-  ARGPARSE_s_n (oAnswerNo,  "no",  N_("assume no on most questions")),
-
-  ARGPARSE_s_s (oKeyring, "keyring",
-                N_("|FILE|add keyring to the list of keyrings")),
-
-  ARGPARSE_s_s (oDefaultKey, "default-key",
-                N_("|USER-ID|use USER-ID as default secret key")),
-
-  /* Not yet used: */
-  /*   ARGPARSE_s_s (oDefRecipient, "default-recipient", */
-  /*                  N_("|NAME|use NAME as default recipient")), */
-  /*   ARGPARSE_s_n (oDefRecipientSelf, "default-recipient-self", */
-  /*                  N_("use the default key as default recipient")), */
-  /*   ARGPARSE_s_n (oNoDefRecipient, "no-default-recipient", "@"), */
-
-  ARGPARSE_s_s (oKeyServer, "ldapserver",
-                N_("|SPEC|use this keyserver to lookup keys")),
-  ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
-
-  ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
-
+  ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level",
                 N_("|LEVEL|set the debugging level to LEVEL")),
@@ -356,46 +268,90 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugAllowCoreDump, "debug-allow-core-dump", "@"),
   ARGPARSE_s_n (oDebugNoChainValidation, "debug-no-chain-validation", "@"),
   ARGPARSE_s_n (oDebugIgnoreExpiration,  "debug-ignore-expiration", "@"),
-
-  ARGPARSE_s_i (oStatusFD, "status-fd",
-                N_("|FD|write status info to this FD")),
-
-  ARGPARSE_s_s (oCipherAlgo, "cipher-algo",
-                N_("|NAME|use cipher algorithm NAME")),
-  ARGPARSE_s_s (oDigestAlgo, "digest-algo",
-                N_("|NAME|use message digest algorithm NAME")),
-  ARGPARSE_s_s (oExtraDigestAlgo, "extra-digest-algo", "@"),
-
-
-  ARGPARSE_group (302, N_(
-  "@\n(See the man page for a complete listing of all commands and options)\n"
-  )),
-
-
-  /* Hidden options. */
-  ARGPARSE_s_s (oCompliance, "compliance",   "@"),
-  ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
-  ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
+  ARGPARSE_s_s (oLogFile, "log-file",
+                N_("|FILE|write server mode logs to FILE")),
+  ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
+  ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
   ARGPARSE_s_n (oNoSecmemWarn, "no-secmem-warning", "@"),
+
+
+  ARGPARSE_header ("Configuration",
+                   N_("Options controlling the configuration")),
+
+  ARGPARSE_s_s (oHomedir, "homedir", "@"),
+  ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
+  ARGPARSE_s_n (oPreferSystemDirmngr,"prefer-system-dirmngr", "@"),
+  ARGPARSE_s_s (oValidationModel, "validation-model", "@"),
+  ARGPARSE_s_i (oIncludeCerts, "include-certs",
+                N_("|N|number of certificates to include") ),
+  ARGPARSE_s_s (oPolicyFile, "policy-file",
+                N_("|FILE|take policy information from FILE")),
+  ARGPARSE_s_s (oCompliance, "compliance",   "@"),
+  ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
+  ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
+  ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
+  ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+  ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
+  ARGPARSE_s_s (oProtectToolProgram, "protect-tool-program", "@"),
+
+
+  ARGPARSE_header ("Input", N_("Options controlling the input")),
+
+  ARGPARSE_s_n (oAssumeArmor, "assume-armor",
+                N_("assume input is in PEM format")),
+  ARGPARSE_s_n (oAssumeBase64, "assume-base64",
+                N_("assume input is in base-64 format")),
+  ARGPARSE_s_n (oAssumeBinary, "assume-binary",
+                N_("assume input is in binary format")),
+
+
+  ARGPARSE_header ("Output", N_("Options controlling the output")),
+
+  ARGPARSE_s_n (oArmor, "armor", N_("create ascii armored output")),
+  ARGPARSE_s_n (oArmor, "armour", "@"),
   ARGPARSE_s_n (oNoArmor, "no-armor", "@"),
   ARGPARSE_s_n (oNoArmor, "no-armour", "@"),
+  ARGPARSE_s_n (oBase64, "base64", N_("create base-64 encoded output")),
+  ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
+
+
+  ARGPARSE_header (NULL, N_("Options to specify keys")),
+
+  ARGPARSE_s_s (oRecipient, "recipient", N_("|USER-ID|encrypt for USER-ID")),
+  ARGPARSE_s_s (oUser, "local-user",
+                N_("|USER-ID|use USER-ID to sign or decrypt")),
+  ARGPARSE_s_s (oDefaultKey, "default-key",
+                N_("|USER-ID|use USER-ID as default secret key")),
+  ARGPARSE_s_s (oEncryptTo, "encrypt-to",
+                N_("|NAME|encrypt to user ID NAME as well")),
+  ARGPARSE_s_n (oNoEncryptTo, "no-encrypt-to", "@"),
+  /* Not yet used: */
+  /*   ARGPARSE_s_s (oDefRecipient, "default-recipient", */
+  /*                  N_("|NAME|use NAME as default recipient")), */
+  /*   ARGPARSE_s_n (oDefRecipientSelf, "default-recipient-self", */
+  /*                  N_("use the default key as default recipient")), */
+  /*   ARGPARSE_s_n (oNoDefRecipient, "no-default-recipient", "@"), */
+  ARGPARSE_s_s (oKeyring, "keyring",
+                N_("|FILE|add keyring to the list of keyrings")),
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
-  ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
-  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
-  ARGPARSE_s_s (oHomedir, "homedir", "@"),
-  ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
-  ARGPARSE_s_s (oDisplay,    "display", "@"),
-  ARGPARSE_s_s (oTTYname,    "ttyname", "@"),
-  ARGPARSE_s_s (oTTYtype,    "ttytype", "@"),
-  ARGPARSE_s_s (oLCctype,    "lc-ctype", "@"),
-  ARGPARSE_s_s (oLCmessages, "lc-messages", "@"),
-  ARGPARSE_s_s (oXauthority, "xauthority", "@"),
-  ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
+  ARGPARSE_s_s (oKeyServer, "ldapserver",
+                N_("|SPEC|use this keyserver to lookup keys")),
+  ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
+
+
+  ARGPARSE_header ("ImportExport",
+                   N_("Options controlling key import and export")),
+
   ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr",
                 N_("disable all access to the dirmngr")),
-  ARGPARSE_s_s (oProtectToolProgram, "protect-tool-program", "@"),
-  ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
-  ARGPARSE_s_n (oNoBatch, "no-batch", "@"),
+  ARGPARSE_s_n (oAutoIssuerKeyRetrieve, "auto-issuer-key-retrieve",
+                N_("fetch missing issuer certificates")),
+  ARGPARSE_s_s (oP12Charset, "p12-charset",
+                N_("|NAME|use encoding NAME for PKCS#12 passphrases")),
+
+
+  ARGPARSE_header ("Keylist", N_("Options controlling key listings")),
+
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
   ARGPARSE_s_n (oWithKeyData,"with-key-data", "@"),
   ARGPARSE_s_n (oWithValidation, "with-validation", "@"),
@@ -405,18 +361,68 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oWithFingerprint, "with-fingerprint", "@"),
   ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
   ARGPARSE_s_n (oWithSecret,      "with-secret", "@"),
+
+  ARGPARSE_header ("Security", N_("Options controlling the security")),
+
+  ARGPARSE_s_n (oDisableCRLChecks, "disable-crl-checks",
+                N_("never consult a CRL")),
+  ARGPARSE_s_n (oEnableCRLChecks, "enable-crl-checks", "@"),
+  ARGPARSE_s_n (oDisableTrustedCertCRLCheck,
+                "disable-trusted-cert-crl-check",
+                N_("do not check CRLs for root certificates")),
+  ARGPARSE_s_n (oEnableTrustedCertCRLCheck,
+                "enable-trusted-cert-crl-check", "@"),
+  ARGPARSE_s_n (oDisableOCSP, "disable-ocsp", "@"),
+  ARGPARSE_s_n (oEnableOCSP,  "enable-ocsp", N_("check validity using OCSP")),
+  ARGPARSE_s_n (oDisablePolicyChecks, "disable-policy-checks",
+                N_("do not check certificate policies")),
+  ARGPARSE_s_n (oEnablePolicyChecks, "enable-policy-checks", "@"),
+  ARGPARSE_s_s (oCipherAlgo, "cipher-algo",
+                N_("|NAME|use cipher algorithm NAME")),
+  ARGPARSE_s_s (oDigestAlgo, "digest-algo",
+                N_("|NAME|use message digest algorithm NAME")),
+  ARGPARSE_s_s (oExtraDigestAlgo, "extra-digest-algo", "@"),
   ARGPARSE_s_s (oDisableCipherAlgo,  "disable-cipher-algo", "@"),
   ARGPARSE_s_s (oDisablePubkeyAlgo,  "disable-pubkey-algo", "@"),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
   ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
-
   ARGPARSE_p_u (oMinRSALength, "min-rsa-length", "@"),
 
-  ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
-  ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
-  ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
+
+  ARGPARSE_header (NULL, N_("Options for unattended use")),
+
+  ARGPARSE_s_n (oBatch, "batch", N_("batch mode: never ask")),
+  ARGPARSE_s_n (oNoBatch, "no-batch", "@"),
+  ARGPARSE_s_n (oAnswerYes, "yes", N_("assume yes on most questions")),
+  ARGPARSE_s_n (oAnswerNo,  "no",  N_("assume no on most questions")),
+  ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
+  ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
+  ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
+  ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
+
+
+  ARGPARSE_header (NULL, N_("Other options")),
+
+  ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
+  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
+  ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
+  ARGPARSE_s_s (oRequestOrigin,   "request-origin", "@"),
+  ARGPARSE_s_n (oForceCRLRefresh, "force-crl-refresh", "@"),
   ARGPARSE_s_n (oEnableIssuerBasedCRLCheck, "enable-issuer-based-crl-check",
                 "@"),
+  ARGPARSE_s_s (oAuditLog, "audit-log",
+                N_("|FILE|write an audit log to FILE")),
+  ARGPARSE_s_s (oHtmlAuditLog, "html-audit-log", "@"),
+  ARGPARSE_s_s (oDisplay,    "display", "@"),
+  ARGPARSE_s_s (oTTYname,    "ttyname", "@"),
+  ARGPARSE_s_s (oTTYtype,    "ttytype", "@"),
+  ARGPARSE_s_s (oLCctype,    "lc-ctype", "@"),
+  ARGPARSE_s_s (oLCmessages, "lc-messages", "@"),
+  ARGPARSE_s_s (oXauthority, "xauthority", "@"),
+
+
+  ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
+
 
   /* Command aliases.  */
   ARGPARSE_c (aListKeys, "list-key", "@"),
@@ -425,6 +431,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aListChain, "check-signatures", "@"),
   ARGPARSE_c (aListChain, "check-sigs", "@"),
   ARGPARSE_c (aDeleteKey, "delete-key", "@"),
+
+  ARGPARSE_group (302, N_(
+  "@\n(See the man page for a complete listing of all commands and options)\n"
+  )),
 
   ARGPARSE_end ()
 };
