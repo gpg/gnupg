@@ -1,6 +1,6 @@
 /* dirmngr.c - Keyserver and X.509 LDAP access
  * Copyright (C) 2002 Klarälvdalens Datakonsult AB
- * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2010, 2011, 2020 g10 Code GmbH
+ * Copyright (C) 2003-2004, 2006-2007, 2008, 2010-2011, 2020-2021 g10 Code GmbH
  * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
@@ -163,6 +163,10 @@ enum cmd_and_opt_values {
 
 static ARGPARSE_OPTS opts[] = {
 
+  ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
+  ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
+  ARGPARSE_c (aGPGConfVersions, "gpgconf-versions", "@"),
+
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
   ARGPARSE_c (aServer,   "server",  N_("run in server mode (foreground)") ),
@@ -171,48 +175,96 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aSupervised,  "supervised", N_("run in supervised mode")),
 #endif
   ARGPARSE_c (aListCRLs, "list-crls", N_("list the contents of the CRL cache")),
-  ARGPARSE_c (aLoadCRL,  "load-crl",  N_("|FILE|load CRL from FILE into cache")),
+  ARGPARSE_c (aLoadCRL,  "load-crl", N_("|FILE|load CRL from FILE into cache")),
   ARGPARSE_c (aFetchCRL, "fetch-crl", N_("|URL|fetch a CRL from URL")),
   ARGPARSE_c (aShutdown, "shutdown",  N_("shutdown the dirmngr")),
   ARGPARSE_c (aFlush,    "flush",     N_("flush the cache")),
-  ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
-  ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
-  ARGPARSE_c (aGPGConfVersions, "gpgconf-versions", "@"),
 
-  ARGPARSE_group (301, N_("@\nOptions:\n ")),
+
+  ARGPARSE_header (NULL, N_("Options used for startup")),
+
+  ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
+  ARGPARSE_s_n (oSh,       "sh",        N_("sh-style command output")),
+  ARGPARSE_s_n (oCsh,      "csh",       N_("csh-style command output")),
+  ARGPARSE_s_n (oStealSocket, "steal-socket", "@"),
+  ARGPARSE_s_s (oHomedir, "homedir", "@"),
+  ARGPARSE_conffile (oOptions,  "options", N_("|FILE|read options from FILE")),
+  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
+
+
+  ARGPARSE_header ("Monitor", N_("Options controlling the diagnostic output")),
 
   ARGPARSE_s_n (oVerbose,  "verbose",   N_("verbose")),
   ARGPARSE_s_n (oQuiet,    "quiet",     N_("be somewhat more quiet")),
-  ARGPARSE_s_n (oSh,       "sh",        N_("sh-style command output")),
-  ARGPARSE_s_n (oCsh,      "csh",       N_("csh-style command output")),
-  ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
+  ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level",
                 N_("|LEVEL|set the debugging level to LEVEL")),
-  ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
-  ARGPARSE_s_n (oStealSocket, "steal-socket", "@"),
+  ARGPARSE_s_s (oDebug,    "debug", "@"),
+  ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
+  ARGPARSE_s_i (oGnutlsDebug, "gnutls-debug", "@"),
+  ARGPARSE_s_i (oGnutlsDebug, "tls-debug", "@"),
+  ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
   ARGPARSE_s_s (oLogFile,  "log-file",
                 N_("|FILE|write server mode logs to FILE")),
-  ARGPARSE_s_n (oBatch,    "batch",       N_("run without asking a user")),
-  ARGPARSE_s_n (oForce,    "force",       N_("force loading of outdated CRLs")),
-  ARGPARSE_s_n (oAllowOCSP, "allow-ocsp", N_("allow sending OCSP requests")),
+
+
+  ARGPARSE_header ("Configuration",
+                   N_("Options controlling the configuration")),
+
   ARGPARSE_s_n (oAllowVersionCheck, "allow-version-check",
                 N_("allow online software version check")),
+  ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
+  ARGPARSE_s_i (oMaxReplies, "max-replies",
+                N_("|N|do not return more than N items in one query")),
+  ARGPARSE_s_u (oFakedSystemTime, "faked-system-time", "@"), /*(epoch time)*/
+  ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
+  ARGPARSE_s_s (oIgnoreCert,"ignore-cert", "@"),
+  ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
+
+
+  ARGPARSE_header ("Network", N_("Network related options")),
+
+  ARGPARSE_s_n (oUseTor, "use-tor", N_("route all network traffic via Tor")),
+  ARGPARSE_s_n (oNoUseTor, "no-use-tor", "@"),
+  ARGPARSE_s_n (oDisableIPv4, "disable-ipv4", "@"),
+  ARGPARSE_s_n (oDisableIPv6, "disable-ipv6", "@"),
+  ARGPARSE_s_n (oStandardResolver, "standard-resolver", "@"),
+  ARGPARSE_s_n (oRecursiveResolver, "recursive-resolver", "@"),
+  ARGPARSE_s_i (oResolverTimeout, "resolver-timeout", "@"),
+  ARGPARSE_s_s (oNameServer, "nameserver", "@"),
+  ARGPARSE_s_i (oConnectTimeout, "connect-timeout", "@"),
+  ARGPARSE_s_i (oConnectQuickTimeout, "connect-quick-timeout", "@"),
+
+
+  ARGPARSE_header ("Keyserver", N_("Configuration for Keyservers")),
+
+  ARGPARSE_s_s (oKeyServer, "keyserver",
+                N_("|URL|use keyserver at URL")),
+  ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
+                N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
+
+
+  ARGPARSE_header ("HTTP", N_("Configuration for HTTP servers")),
+
   ARGPARSE_s_n (oDisableHTTP, "disable-http", N_("inhibit the use of HTTP")),
-  ARGPARSE_s_n (oDisableLDAP, "disable-ldap", N_("inhibit the use of LDAP")),
   ARGPARSE_s_n (oIgnoreHTTPDP,"ignore-http-dp",
                 N_("ignore HTTP CRL distribution points")),
-  ARGPARSE_s_n (oIgnoreLDAPDP,"ignore-ldap-dp",
-                N_("ignore LDAP CRL distribution points")),
-  ARGPARSE_s_n (oIgnoreOCSPSvcUrl, "ignore-ocsp-service-url",
-                N_("ignore certificate contained OCSP service URLs")),
-
   ARGPARSE_s_s (oHTTPProxy,  "http-proxy",
                 N_("|URL|redirect all HTTP requests to URL")),
+  ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy",
+                N_("use system's HTTP proxy setting")),
+  ARGPARSE_s_s (oLDAPWrapperProgram, "ldap-wrapper-program", "@"),
+
+
+  ARGPARSE_header ("LDAP", N_("Configuration of LDAP servers to use")),
+
+  ARGPARSE_s_n (oDisableLDAP, "disable-ldap", N_("inhibit the use of LDAP")),
+  ARGPARSE_s_n (oIgnoreLDAPDP,"ignore-ldap-dp",
+                N_("ignore LDAP CRL distribution points")),
   ARGPARSE_s_s (oLDAPProxy,  "ldap-proxy",
                 N_("|HOST|use HOST for LDAP queries")),
   ARGPARSE_s_n (oOnlyLDAPProxy, "only-ldap-proxy",
                 N_("do not use fallback hosts with --ldap-proxy")),
-
   ARGPARSE_s_s (oLDAPServer, "ldapserver",
                 N_("|SPEC|use this keyserver to lookup keys")),
   ARGPARSE_s_s (oLDAPFile, "ldapserverlist-file",
@@ -223,6 +275,12 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oLDAPTimeout, "ldaptimeout",
                 N_("|N|set LDAP timeout to N seconds")),
 
+
+  ARGPARSE_header ("OCSP", N_("Configuration for OCSP")),
+
+  ARGPARSE_s_n (oAllowOCSP, "allow-ocsp", N_("allow sending OCSP requests")),
+  ARGPARSE_s_n (oIgnoreOCSPSvcUrl, "ignore-ocsp-service-url",
+                N_("ignore certificate contained OCSP service URLs")),
   ARGPARSE_s_s (oOCSPResponder, "ocsp-responder",
                 N_("|URL|use OCSP responder at URL")),
   ARGPARSE_s_s (oOCSPSigner, "ocsp-signer",
@@ -231,45 +289,19 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oOCSPMaxPeriod,    "ocsp-max-period", "@"),
   ARGPARSE_s_i (oOCSPCurrentPeriod, "ocsp-current-period", "@"),
 
-  ARGPARSE_s_i (oMaxReplies, "max-replies",
-                N_("|N|do not return more than N items in one query")),
 
-  ARGPARSE_s_s (oNameServer, "nameserver", "@"),
-  ARGPARSE_s_s (oKeyServer, "keyserver",
-                N_("|URL|use keyserver at URL")),
-  ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
-                N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
+  ARGPARSE_header (NULL, N_("Other options")),
 
-  ARGPARSE_s_n (oUseTor, "use-tor", N_("route all network traffic via Tor")),
-  ARGPARSE_s_n (oNoUseTor, "no-use-tor", "@"),
-
-  ARGPARSE_s_n (oDisableIPv4, "disable-ipv4", "@"),
-  ARGPARSE_s_n (oDisableIPv6, "disable-ipv6", "@"),
-
+  ARGPARSE_s_n (oForce,    "force",    N_("force loading of outdated CRLs")),
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
 
-  ARGPARSE_s_u (oFakedSystemTime, "faked-system-time", "@"), /*(epoch time)*/
-  ARGPARSE_s_s (oDebug,    "debug", "@"),
-  ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
-  ARGPARSE_s_i (oGnutlsDebug, "gnutls-debug", "@"),
-  ARGPARSE_s_i (oGnutlsDebug, "tls-debug", "@"),
-  ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
-  ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
-  ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
-  ARGPARSE_s_s (oHomedir, "homedir", "@"),
-  ARGPARSE_s_s (oLDAPWrapperProgram, "ldap-wrapper-program", "@"),
+
+  ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
+
+  /* Not yet used options.  */
+  ARGPARSE_s_n (oBatch,    "batch",       "@"),
   ARGPARSE_s_s (oHTTPWrapperProgram, "http-wrapper-program", "@"),
-  ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy",
-                N_("use system's HTTP proxy setting")),
-  ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
-  ARGPARSE_s_s (oIgnoreCert,"ignore-cert", "@"),
-  ARGPARSE_s_n (oStandardResolver, "standard-resolver", "@"),
-  ARGPARSE_s_n (oRecursiveResolver, "recursive-resolver", "@"),
-  ARGPARSE_s_i (oResolverTimeout, "resolver-timeout", "@"),
-  ARGPARSE_s_i (oConnectTimeout, "connect-timeout", "@"),
-  ARGPARSE_s_i (oConnectQuickTimeout, "connect-quick-timeout", "@"),
-  ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
-  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
+
 
   ARGPARSE_group (302,N_("@\n(See the \"info\" manual for a complete listing "
                          "of all commands and options)\n")),
