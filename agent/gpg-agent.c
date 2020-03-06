@@ -223,6 +223,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oEnableExtendedKeyFormat, "enable-extended-key-format", "@"),
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
   ARGPARSE_op_u (oAutoExpandSecmem, "auto-expand-secmem", "@"),
+  ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
 
 
   ARGPARSE_header ("Security", N_("Options controlling the security")),
