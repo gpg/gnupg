@@ -113,17 +113,24 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
 
-  ARGPARSE_group (301, N_("@Options:\n ")),
+  ARGPARSE_header (NULL, N_("Options used for startup")),
 
   ARGPARSE_s_n (oServer,"server", N_("run in server mode (foreground)")),
   ARGPARSE_s_n (oMultiServer, "multi-server",
                 N_("run in multi server mode (foreground)")),
   ARGPARSE_s_n (oDaemon, "daemon", N_("run in daemon mode (background)")),
-  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
-  ARGPARSE_s_n (oQuiet, "quiet", N_("be somewhat more quiet")),
+  ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_n (oSh,    "sh", N_("sh-style command output")),
   ARGPARSE_s_n (oCsh,   "csh", N_("csh-style command output")),
+  ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
+  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
+
+
+  ARGPARSE_header ("Monitor", N_("Options controlling the diagnostic output")),
+
+  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n (oQuiet, "quiet", N_("be somewhat more quiet")),
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level" ,
@@ -133,8 +140,12 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugCCIDDriver, "debug-ccid-driver", "@"),
   ARGPARSE_s_n (oDebugLogTid, "debug-log-tid", "@"),
   ARGPARSE_p_u (oDebugAssuanLogCats, "debug-assuan-log-cats", "@"),
-  ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_s (oLogFile,  "log-file", N_("|FILE|write a log to FILE")),
+
+
+  ARGPARSE_header ("Configuration",
+                   N_("Options controlling the configuration")),
+
   ARGPARSE_s_s (oReaderPort, "reader-port",
                 N_("|N|connect to reader at port N")),
   ARGPARSE_s_s (octapiDriver, "ctapi-driver",
@@ -155,16 +166,17 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDisablePinpad, "disable-pinpad",
                 N_("do not use a reader's pinpad")),
   ARGPARSE_ignore (300, "disable-keypad"),
+  ARGPARSE_s_n (oEnablePinpadVarlen, "enable-pinpad-varlen",
+                N_("use variable length input for pinpad")),
+  ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
+  ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
+
+
+  ARGPARSE_header("Security", N_("Options controlling the security")),
 
   ARGPARSE_s_n (oAllowAdmin, "allow-admin", "@"),
   ARGPARSE_s_n (oDenyAdmin, "deny-admin",
                 N_("deny the use of admin card commands")),
-  ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
-  ARGPARSE_s_n (oEnablePinpadVarlen, "enable-pinpad-varlen",
-                N_("use variable length input for pinpad")),
-  ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
-  ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
-  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
 
   /* Stubs for options which are implemented by 2.3 or later.  */
   ARGPARSE_s_s (oNoop, "application-priority", "@"),
