@@ -567,7 +567,8 @@ static gpgrt_opt_t opts[] = {
 
   ARGPARSE_s_s (oTempDir,  "temp-directory", "@"),
   ARGPARSE_s_s (oExecPath, "exec-path", "@"),
-  ARGPARSE_s_s (oEncryptTo,      "encrypt-to", "@"),
+  ARGPARSE_s_s (oEncryptTo,      "encrypt-to",
+                N_("|NAME|encrypt to user ID NAME as well")),
   ARGPARSE_s_n (oNoEncryptTo, "no-encrypt-to", "@"),
   ARGPARSE_s_s (oHiddenEncryptTo, "hidden-encrypt-to", "@"),
   ARGPARSE_s_n (oEncryptToDefaultKey, "encrypt-to-default-key", "@"),
@@ -608,7 +609,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oChunkSize, "chunk-size", "@"),
 
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
-  ARGPARSE_s_n (oQuiet,	  "quiet",   "@"),
+  ARGPARSE_s_n (oQuiet,	  "quiet",   N_("be somewhat more quiet")),
   ARGPARSE_s_n (oNoTTY,   "no-tty",  "@"),
 
   ARGPARSE_s_n (oForceAEAD, "force-aead", "@"),
@@ -625,9 +626,10 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oPrimaryKeyring, "primary-keyring", "@"),
   ARGPARSE_s_s (oSecretKeyring, "secret-keyring", "@"),
   ARGPARSE_s_n (oShowKeyring, "show-keyring", "@"),
-  ARGPARSE_s_s (oDefaultKey, "default-key", "@"),
+  ARGPARSE_s_s (oDefaultKey, "default-key",
+                N_("|NAME|use NAME as default secret key")),
 
-  ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
+  ARGPARSE_s_s (oKeyServer, "keyserver", "@"), /* Deprecated.  */
   ARGPARSE_s_s (oKeyServerOptions, "keyserver-options", "@"),
   ARGPARSE_s_s (oKeyOrigin, "key-origin", "@"),
   ARGPARSE_s_s (oImportOptions, "import-options", "@"),
@@ -639,7 +641,7 @@ static gpgrt_opt_t opts[] = {
 
   ARGPARSE_s_s (oDisplayCharset, "display-charset", "@"),
   ARGPARSE_s_s (oDisplayCharset, "charset", "@"),
-  ARGPARSE_conffile (oOptions, "options", "@"),
+  ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
 
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
@@ -790,7 +792,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oLockMultiple, "lock-multiple", "@"),
   ARGPARSE_s_n (oLockNever,    "lock-never", "@"),
   ARGPARSE_s_i (oLoggerFD,   "logger-fd", "@"),
-  ARGPARSE_s_s (oLoggerFile, "log-file", "@"),
+  ARGPARSE_s_s (oLoggerFile, "log-file",
+                N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_s (oLoggerFile, "logger-file", "@"),  /* 1.4 compatibility.  */
   ARGPARSE_s_n (oUseEmbeddedFilename,      "use-embedded-filename", "@"),
   ARGPARSE_s_n (oNoUseEmbeddedFilename, "no-use-embedded-filename", "@"),
@@ -858,14 +861,16 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
-  ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr", "@"),
+  ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr",
+                N_("disable all access to the dirmngr")),
   ARGPARSE_s_s (oDisplay,    "display",    "@"),
   ARGPARSE_s_s (oTTYname,    "ttyname",    "@"),
   ARGPARSE_s_s (oTTYtype,    "ttytype",    "@"),
   ARGPARSE_s_s (oLCctype,    "lc-ctype",   "@"),
   ARGPARSE_s_s (oLCmessages, "lc-messages","@"),
   ARGPARSE_s_s (oXauthority, "xauthority", "@"),
-  ARGPARSE_s_s (oGroup,      "group",      "@"),
+  ARGPARSE_s_s (oGroup,      "group",
+                N_("|SPEC|set up email aliases")),
   ARGPARSE_s_s (oUnGroup,    "ungroup",    "@"),
   ARGPARSE_s_n (oNoGroups,   "no-groups",  "@"),
   ARGPARSE_s_n (oStrict,     "strict",     "@"),
@@ -899,7 +904,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoRequireCrossCert, "no-require-cross-certification", "@"),
 
   /* New options.  Fixme: Should go more to the top.  */
-  ARGPARSE_s_s (oAutoKeyLocate, "auto-key-locate", "@"),
+  ARGPARSE_s_s (oAutoKeyLocate, "auto-key-locate",
+              N_("|MECHANISMS|use MECHANISMS to locate keys by mail address")),
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
