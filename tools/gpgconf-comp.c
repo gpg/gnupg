@@ -717,7 +717,8 @@ static gc_option_t gc_options_gpg[] =
    { "default-new-key-algo", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      NULL, NULL,
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
-   { "default_pubkey_algo",
+   { "default_pubkey_algo",  /*FIXME: This is a pseudo option which we
+                              * read using --gpgconf-list */
      (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE,
      NULL, NULL,
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
