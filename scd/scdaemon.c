@@ -1,6 +1,7 @@
 /* scdaemon.c  -  The GnuPG Smartcard Daemon
- * Copyright (C) 2001-2002, 2004-2005, 2007-2009 Free Software Foundation, Inc.
- * Copyright (C) 2001-2002, 2004-2005, 2007-2014 Werner Koch
+ * Copyright (C) 2001-2002, 2004-2005, 2007-2020 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2002, 2004-2005, 2007-2019 Werner Koch
+ * Copyright (C) 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *

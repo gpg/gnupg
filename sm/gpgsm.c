@@ -257,7 +257,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oArmor, "armour", "@"),
   ARGPARSE_s_n (oBase64, "base64", N_("create base-64 encoded output")),
 
-  ARGPARSE_s_s (oP12Charset, "p12-charset", "@"),
+  ARGPARSE_s_s (oP12Charset, "p12-charset",
+                N_("|NAME|use encoding NAME for PKCS#12 passphrases")),
 
   ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
@@ -278,7 +279,8 @@ static ARGPARSE_OPTS opts[] = {
                 N_("never consult a CRL")),
   ARGPARSE_s_n (oEnableCRLChecks, "enable-crl-checks", "@"),
   ARGPARSE_s_n (oDisableTrustedCertCRLCheck,
-                "disable-trusted-cert-crl-check", "@"),
+                "disable-trusted-cert-crl-check",
+                N_("do not check CRLs for root certificates")),
   ARGPARSE_s_n (oEnableTrustedCertCRLCheck,
                 "enable-trusted-cert-crl-check", "@"),
 
@@ -302,7 +304,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oAutoIssuerKeyRetrieve, "auto-issuer-key-retrieve",
                 N_("fetch missing issuer certificates")),
 
-  ARGPARSE_s_s (oEncryptTo, "encrypt-to", "@"),
+  ARGPARSE_s_s (oEncryptTo, "encrypt-to",
+                N_("|NAME|encrypt to user ID NAME as well")),
   ARGPARSE_s_n (oNoEncryptTo, "no-encrypt-to", "@"),
 
   ARGPARSE_s_s (oUser, "local-user",
@@ -313,7 +316,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
   ARGPARSE_s_n (oNoTTY, "no-tty", N_("don't use the terminal at all")),
   ARGPARSE_s_s (oLogFile, "log-file",
-                N_("|FILE|write a server mode log to FILE")),
+                N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
   ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
 
@@ -388,7 +391,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oLCmessages, "lc-messages", "@"),
   ARGPARSE_s_s (oXauthority, "xauthority", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
-  ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr", "@"),
+  ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr",
+                N_("disable all access to the dirmngr")),
   ARGPARSE_s_s (oProtectToolProgram, "protect-tool-program", "@"),
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
   ARGPARSE_s_n (oNoBatch, "no-batch", "@"),

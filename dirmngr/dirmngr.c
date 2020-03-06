@@ -235,7 +235,8 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|N|do not return more than N items in one query")),
 
   ARGPARSE_s_s (oNameServer, "nameserver", "@"),
-  ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
+  ARGPARSE_s_s (oKeyServer, "keyserver",
+                N_("|URL|use keyserver at URL")),
   ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
                 N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
 
@@ -258,7 +259,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oLDAPWrapperProgram, "ldap-wrapper-program", "@"),
   ARGPARSE_s_s (oHTTPWrapperProgram, "http-wrapper-program", "@"),
-  ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy", "@"),
+  ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy",
+                N_("use system's HTTP proxy setting")),
   ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
   ARGPARSE_s_s (oIgnoreCert,"ignore-cert", "@"),
   ARGPARSE_s_n (oStandardResolver, "standard-resolver", "@"),
