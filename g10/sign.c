@@ -293,10 +293,15 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig,
           gcry_md_write (md, buf, 6);
         }
     }
-  /* Add some magic.  */
+  /* Add some magic aka known as postscript.  The idea was to make it
+   * impossible to make up a document with a v3 signature and then
+   * turn this into a v4 signature for another document.  The last
+   * hashed 5 bytes of a v4 signature should never look like a the
+   * last 5 bytes of a v3 signature.  The length can be used to parse
+   * from the end. */
   i = 0;
-  buf[i++] = sig->version;
-  buf[i++] = 0xff;
+  buf[i++] = sig->version;  /* Hash convention version.  */
+  buf[i++] = 0xff;          /* Not any sig type value.   */
   if (sig->version >= 5)
     {
       /* Note: We don't hashed any data larger than 2^32 and thus we
