@@ -2195,6 +2195,10 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
             }
         }
 
+      p = parse_sig_subpkt (sig, 1, SIGSUBPKT_KEY_BLOCK, NULL);
+      if (p)
+        sig->flags.key_block = 1;
+
       p = parse_sig_subpkt (sig, 1, SIGSUBPKT_NOTATION, NULL);
       if (p)
 	sig->flags.notation = 1;

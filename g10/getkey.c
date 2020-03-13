@@ -309,12 +309,20 @@ pk_from_block (PKT_public_key *pk, kbnode_t keyblock, kbnode_t found_key)
 
 
 /* Specialized version of get_pubkey which retrieves the key based on
- * information in SIG.  In contrast to get_pubkey PK is required.  */
+ * information in SIG.  In contrast to get_pubkey PK is required.  IF
+ * FORCED_PK is not NULL, this public key is used and copied to PK. */
 gpg_error_t
-get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig)
+get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
+                    PKT_public_key *forced_pk)
 {
   const byte *fpr;
   size_t fprlen;
+
+  if (forced_pk)
+    {
+      copy_public_key (pk, forced_pk);
+      return 0;
+    }
 
   /* First try the new ISSUER_FPR info.  */
   fpr = issuer_fpr_raw (sig, &fprlen);
@@ -1594,7 +1602,7 @@ get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
   kbnode_t found_key;
   unsigned int infoflags;
 
-  err = read_key_from_file (ctrl, fname, &keyblock);
+  err = read_key_from_file_or_buffer (ctrl, fname, NULL, 0, &keyblock);
   if (!err)
     {
       /* Warning: node flag bits 0 and 1 should be preserved by
@@ -1609,6 +1617,56 @@ get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
     }
 
   release_kbnode (keyblock);
+  return err;
+}
+
+
+/* Return a public key from the buffer (BUFFER, BUFLEN).  The key is
+ * onlyretruned if it matches the keyid given in WANT_KEYID. On
+ * success the key is stored at the caller provided PKBUF structure.
+ * The caller must release the content of PK by calling
+ * release_public_key_parts (or, if PKBUF was malloced, using
+ * free_public_key).  If R_KEYBLOCK is not NULL the full keyblock is
+ * also stored there.  */
+gpg_error_t
+get_pubkey_from_buffer (ctrl_t ctrl, PKT_public_key *pkbuf,
+                        const void *buffer, size_t buflen, u32 *want_keyid,
+                        kbnode_t *r_keyblock)
+{
+  gpg_error_t err;
+  kbnode_t keyblock;
+  kbnode_t node;
+  PKT_public_key *pk;
+
+  if (r_keyblock)
+    *r_keyblock = NULL;
+
+  err = read_key_from_file_or_buffer (ctrl, NULL, buffer, buflen, &keyblock);
+  if (!err)
+    {
+      merge_selfsigs (ctrl, keyblock);
+      for (node = keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_PUBLIC_KEY
+              || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+            {
+              pk = node->pkt->pkt.public_key;
+              keyid_from_pk (pk, NULL);
+              if (pk->keyid[0] == want_keyid[0]
+                  && pk->keyid[1] == want_keyid[1])
+                break;
+            }
+        }
+      if (node)
+        copy_public_key (pkbuf, pk);
+      else
+        err = gpg_error (GPG_ERR_NO_PUBKEY);
+    }
+
+  if (!err && r_keyblock)
+    *r_keyblock = keyblock;
+  else
+    release_kbnode (keyblock);
   return err;
 }
 

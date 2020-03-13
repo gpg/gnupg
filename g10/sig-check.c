@@ -72,7 +72,8 @@ sig_check_dump_stats (void)
 int
 check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
 {
-  return check_signature2 (ctrl, sig, digest, NULL, 0, NULL, NULL, NULL, NULL);
+  return check_signature2 (ctrl, sig, digest, NULL, 0, NULL,
+                           NULL, NULL, NULL, NULL);
 }
 
 
@@ -101,6 +102,9 @@ check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
  * EXTRAHASH and EXTRAHASHLEN is additional data which is hashed with
  * v5 signatures.  They may be NULL to use the default.
  *
+ * If FORCED_PK is not NULL this public key is used to verify the
+ * signature and no other public key is looked up.
+ *
  * If R_EXPIREDATE is not NULL, R_EXPIREDATE is set to the key's
  * expiry.
  *
@@ -120,6 +124,7 @@ gpg_error_t
 check_signature2 (ctrl_t ctrl,
                   PKT_signature *sig, gcry_md_hd_t digest,
                   const void *extrahash, size_t extrahashlen,
+                  PKT_public_key *forced_pk,
                   u32 *r_expiredate,
 		  int *r_expired, int *r_revoked, PKT_public_key **r_pk)
 {
@@ -164,7 +169,7 @@ check_signature2 (ctrl_t ctrl,
       log_info(_("WARNING: signature digest conflict in message\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
     }
-  else if (get_pubkey_for_sig (ctrl, pk, sig))
+  else if (get_pubkey_for_sig (ctrl, pk, sig, forced_pk))
     rc = gpg_error (GPG_ERR_NO_PUBKEY);
   else if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
                                  pk->pubkey_algo, pk->pkey,
@@ -970,7 +975,7 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
               if (IS_CERT (sig))
                 signer->req_usage = PUBKEY_USAGE_CERT;
 
-              rc = get_pubkey_for_sig (ctrl, signer, sig);
+              rc = get_pubkey_for_sig (ctrl, signer, sig, NULL);
               if (rc)
                 {
                   xfree (signer);

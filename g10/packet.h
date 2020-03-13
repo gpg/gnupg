@@ -224,6 +224,7 @@ typedef struct
     unsigned policy_url:1;  /* At least one policy URL is present */
     unsigned notation:1;    /* At least one notation is present */
     unsigned pref_ks:1;     /* At least one preferred keyserver is present */
+    unsigned key_block:1;   /* A key block subpacket is present.  */
     unsigned expired:1;
     unsigned pka_tried:1;   /* Set if we tried to retrieve the PKA record. */
   } flags;
@@ -909,10 +910,11 @@ int check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest);
  * R_PK is not NULL, it is stored at RET_PK.)  DIGEST contains a
  * valid hash context that already includes the signed data.  This
  * function adds the relevant meta-data to the hash before finalizing
- * it and verifying the signature.  */
+ * it and verifying the signature.  FOCRED_PK is usually NULL. */
 gpg_error_t check_signature2 (ctrl_t ctrl,
                               PKT_signature *sig, gcry_md_hd_t digest,
                               const void *extrahash, size_t extrahashlen,
+                              PKT_public_key *forced_pk,
                               u32 *r_expiredate, int *r_expired, int *r_revoked,
                               PKT_public_key **r_pk);
 

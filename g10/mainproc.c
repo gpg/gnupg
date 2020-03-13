@@ -1,6 +1,7 @@
 /* mainproc.c - handle packets
  * Copyright (C) 1998-2009 Free Software Foundation, Inc.
  * Copyright (C) 2013-2014 Werner Koch
+ * Copyright (C) 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -1050,11 +1051,13 @@ proc_compressed (CTX c, PACKET *pkt)
 /*
  * Check the signature.  If R_PK is not NULL a copy of the public key
  * used to verify the signature will be stored there, or NULL if not
- * found.  Returns: 0 = valid signature or an error code
+ * found.  If FORCED_PK is not NULL, this public key is used to verify
+ * _data signatures_ and no key lookup is done.  Returns: 0 = valid
+ * signature or an error code
  */
 static int
 do_check_sig (CTX c, kbnode_t node, const void *extrahash, size_t extrahashlen,
-              int *is_selfsig,
+              PKT_public_key *forced_pk, int *is_selfsig,
 	      int *is_expkey, int *is_revkey, PKT_public_key **r_pk)
 {
   PKT_signature *sig;
@@ -1141,6 +1144,7 @@ do_check_sig (CTX c, kbnode_t node, const void *extrahash, size_t extrahashlen,
   /* We only get here if we are checking the signature of a binary
      (0x00) or text document (0x01).  */
   rc = check_signature2 (c->ctrl, sig, md, extrahash, extrahashlen,
+                         forced_pk,
                          NULL, is_expkey, is_revkey, r_pk);
   if (! rc)
     md_good = md;
@@ -1149,6 +1153,7 @@ do_check_sig (CTX c, kbnode_t node, const void *extrahash, size_t extrahashlen,
       PKT_public_key *pk2;
 
       rc = check_signature2 (c->ctrl, sig, md2, extrahash, extrahashlen,
+                             forced_pk,
                              NULL, is_expkey, is_revkey,
                              r_pk? &pk2 : NULL);
       if (!rc)
@@ -1312,7 +1317,8 @@ list_node (CTX c, kbnode_t node)
       if (opt.check_sigs)
         {
           fflush (stdout);
-          rc2 = do_check_sig (c, node, NULL, 0, &is_selfsig, NULL, NULL, NULL);
+          rc2 = do_check_sig (c, node, NULL, 0, NULL,
+                              &is_selfsig, NULL, NULL, NULL);
           switch (gpg_err_code (rc2))
             {
             case 0:		          sigrc = '!'; break;
@@ -1849,6 +1855,7 @@ check_sig_and_print (CTX c, kbnode_t node)
   PKT_public_key *pk = NULL;  /* The public key for the signature or NULL. */
   const void *extrahash = NULL;
   size_t extrahashlen = 0;
+  kbnode_t included_keyblock = NULL;
 
   if (opt.skip_verify)
     {
@@ -2002,8 +2009,42 @@ check_sig_and_print (CTX c, kbnode_t node)
   if (sig->signers_uid)
     log_info (_("               issuer \"%s\"\n"), sig->signers_uid);
 
-  rc = do_check_sig (c, node, extrahash, extrahashlen,
+  rc = do_check_sig (c, node, extrahash, extrahashlen, NULL,
                      NULL, &is_expkey, &is_revkey, &pk);
+
+  /* If the key is not found but the signaure includes a key bnlock we
+   * import that key block and trry again.  We keep this key block
+   * only if the signature verifies.  */
+  /* FIXME: Shall we add an option to disable it or use it only if
+   * --auto-key-retriueve is set?  */
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
+      && sig->flags.key_block)
+      /* && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)) */
+    {
+      PKT_public_key *included_pk;
+      const byte *kblock;
+      size_t kblock_len;
+
+      included_pk = xcalloc (1, sizeof *included_pk);
+      kblock = parse_sig_subpkt (sig, 1, SIGSUBPKT_KEY_BLOCK, &kblock_len);
+      if (kblock && kblock_len > 1
+          && !get_pubkey_from_buffer (c->ctrl, included_pk,
+                                      kblock+1, kblock_len-1,
+                                      sig->keyid, &included_keyblock))
+        {
+          rc = do_check_sig (c, node, extrahash, extrahashlen, included_pk,
+                             NULL, &is_expkey, &is_revkey, &pk);
+          log_debug ("checked signature using included key block: %s\n",
+                     gpg_strerror (rc));
+          if (!rc)
+            {
+              /* The keyblock has been verified, we now import it.  */
+              rc = import_included_key_block (c->ctrl, included_keyblock);
+            }
+
+        }
+      free_public_key (included_pk);
+    }
 
   /* If the key isn't found, check for a preferred keyserver.  Note
    * that this is only done if honor-keyserver-url has been set.  We
@@ -2048,7 +2089,7 @@ check_sig_and_print (CTX c, kbnode_t node)
                   res = keyserver_import_keyid (c->ctrl, sig->keyid,spec, 1);
                   glo_ctrl.in_auto_key_retrieve--;
                   if (!res)
-                    rc = do_check_sig (c, node, extrahash, extrahashlen,
+                    rc = do_check_sig (c, node, extrahash, extrahashlen, NULL,
                                        NULL, &is_expkey, &is_revkey, &pk);
                   else if (DBG_LOOKUP)
                     log_debug ("lookup via %s failed: %s\n", "Pref-KS",
@@ -2089,7 +2130,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       /* Fixme: If the fingerprint is embedded in the signature,
        * compare it to the fingerprint of the returned key.  */
       if (!res)
-        rc = do_check_sig (c, node, extrahash, extrahashlen,
+        rc = do_check_sig (c, node, extrahash, extrahashlen, NULL,
                            NULL, &is_expkey, &is_revkey, &pk);
       else if (DBG_LOOKUP)
         log_debug ("lookup via %s failed: %s\n", "WKD", gpg_strerror (res));
@@ -2124,7 +2165,7 @@ check_sig_and_print (CTX c, kbnode_t node)
               glo_ctrl.in_auto_key_retrieve--;
               free_keyserver_spec (spec);
               if (!res)
-                rc = do_check_sig (c, node, extrahash, extrahashlen,
+                rc = do_check_sig (c, node, extrahash, extrahashlen, NULL,
                                    NULL, &is_expkey, &is_revkey, &pk);
               else if (DBG_LOOKUP)
                 log_debug ("lookup via %s failed: %s\n", "PKA",
@@ -2157,7 +2198,7 @@ check_sig_and_print (CTX c, kbnode_t node)
           res = keyserver_import_fprint (c->ctrl, p, n, opt.keyserver, 1);
           glo_ctrl.in_auto_key_retrieve--;
           if (!res)
-            rc = do_check_sig (c, node, extrahash, extrahashlen,
+            rc = do_check_sig (c, node, extrahash, extrahashlen, NULL,
                                NULL, &is_expkey, &is_revkey, &pk);
           else if (DBG_LOOKUP)
             log_debug ("lookup via %s failed: %s\n", "KS", gpg_strerror (res));
@@ -2187,7 +2228,13 @@ check_sig_and_print (CTX c, kbnode_t node)
        * keyblock has already been fetched.  Thus we could use the
        * fingerprint or PK itself to lookup the entire keyblock.  That
        * would best be done with a cache.  */
-      keyblock = get_pubkeyblock_for_sig (c->ctrl, sig);
+      if (included_keyblock)
+        {
+          keyblock = included_keyblock;
+          included_keyblock = NULL;
+        }
+      else
+        keyblock = get_pubkeyblock_for_sig (c->ctrl, sig);
 
       snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX [uncertain] ",
                 (ulong)sig->keyid[0], (ulong)sig->keyid[1]);
@@ -2500,6 +2547,7 @@ check_sig_and_print (CTX c, kbnode_t node)
     }
 
   free_public_key (pk);
+  release_kbnode (included_keyblock);
   xfree (issuer_fpr);
   return rc;
 }
