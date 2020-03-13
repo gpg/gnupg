@@ -424,6 +424,7 @@ enum cmd_and_opt_values
     oRequestOrigin,
     oNoSymkeyCache,
     oUseOnlyOpenPGPCard,
+    oIncludeKeyBlock,
 
     oNoop
   };
@@ -888,6 +889,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
+  ARGPARSE_s_n (oIncludeKeyBlock, "include-key-block", "@"),
 
   /* Options to override new security defaults.  */
   ARGPARSE_s_n (oAllowWeakKeySignatures, "allow-weak-key-signatures", "@"),
@@ -2990,6 +2992,7 @@ main (int argc, char **argv)
 	  case oPhotoViewer: opt.photo_viewer = pargs.r.ret_str; break;
 
           case oDisableSignerUID: opt.flags.disable_signer_uid = 1; break;
+          case oIncludeKeyBlock:  opt.flags.include_key_block = 1; break;
 
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = xstrdup(pargs.r.ret_str); break;

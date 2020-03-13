@@ -115,7 +115,10 @@ typedef enum
     SIGSUBPKT_FEATURES      = 30, /* Feature flags. */
 
     SIGSUBPKT_SIGNATURE     = 32, /* Embedded signature. */
-    SIGSUBPKT_ISSUER_FPR    = 33, /* EXPERIMENTAL: Issuer fingerprint. */
+    SIGSUBPKT_ISSUER_FPR    = 33, /* Issuer fingerprint. */
+    SIGSUBPKT_PREF_AEAD     = 34, /* Preferred AEAD algorithms. */
+
+    SIGSUBPKT_KEY_BLOCK     = 38, /* Entire key used.          */
 
     SIGSUBPKT_FLAG_CRITICAL = 128
   }

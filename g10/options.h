@@ -232,6 +232,7 @@ struct
     unsigned int allow_weak_key_signatures:1;
     unsigned int large_rsa:1;
     unsigned int disable_signer_uid:1;
+    unsigned int include_key_block:1;
     /* Flag to enable experimental features from RFC4880bis.  */
     unsigned int rfc4880bis:1;
     /* Hack: --output is not given but OUTFILE was temporary set to "-".  */

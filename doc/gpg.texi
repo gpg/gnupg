@@ -2664,6 +2664,16 @@ As of now this is only done if the signing key has been specified with
 information can be helpful for verifier to locate the key; see option
 @option{--auto-key-retrieve}.
 
+@item --include-key-block
+@opindex include-key-block
+This option is used to embed the actual signing key into a data
+signature.  The embedded key is stripped down to a single user id and
+includes only the signing subkey used to create the signature as well
+as as valid encryption subkeys.  All other info is removed from the
+key to keep it and thus the signature small.  This option is the
+OpenPGP counterpart to the @command{gpgsm} option
+@option{--include-certs}.
+
 @item --personal-cipher-preferences @var{string}
 @opindex personal-cipher-preferences
 Set the list of personal cipher preferences to @var{string}.  Use
