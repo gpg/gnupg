@@ -89,12 +89,14 @@ struct server_local_s
 
   /* True if the card has been removed and a reset is required to
      continue operation. */
-  int card_removed;
+  unsigned int card_removed:1;
 
   /* If set to true we will be terminate ourself at the end of the
      this session.  */
-  int stopme;
+  unsigned int stopme:1;
 
+  /* If set to true, status change will be reported. */
+  unsigned int watching_status:1;
 };
 
 
@@ -2127,6 +2129,44 @@ send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
 }
 
 
+static const char hlp_list_device[] =
+  "LIST_DEVICE [count]\n"
+  "\n"
+  "Return information about devices.  When no device is available,\n"
+  "GPG_ERR_NOT_FOUND is returned.  If the option --watch is geven,\n"
+  "it keeps reporting status change until it detects no device is\n"
+  " available."
+  "The information is returned as a status line using the format:\n"
+  "\n"
+  "  DEVICE <serialno> <keygrip> <idstr>\n"
+  "\n"
+  "SERIALNO is an ASCII string with the serial number of the\n"
+  "         smartcard.  If the serial number is not known a single\n"
+  "         dash '-' is used instead.\n"
+  "\n"
+  "KEYGRIP is the keygrip.\n"
+  "\n"
+  "IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it\n"
+  "      is not known a dash is used instead.\n"
+  "\n"
+  "More information may be added in the future.";
+static gpg_error_t
+cmd_list_device (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  int watch = 0;
+
+  if (has_option (line, "--watch"))
+    watch = 0;
+
+  if ((err = open_card (ctrl)))
+    return err;
+
+  /* XXX: Actively try to open devices available.  */
+  return gpg_error (GPG_ERR_NOT_FOUND);
+  return 0;
+}
 
 /* Return true if the command CMD implements the option OPT.  */
 static int
@@ -2179,6 +2219,7 @@ register_commands (assuan_context_t ctx)
     { "APDU",         cmd_apdu,     hlp_apdu },
     { "KILLSCD",      cmd_killscd,  hlp_killscd },
     { "KEYINFO",      cmd_keyinfo,  hlp_keyinfo },
+    { "LIST_DEVICE",  cmd_list_device,hlp_list_device },
     { NULL }
   };
   int i, rc;
