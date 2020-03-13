@@ -371,6 +371,7 @@ struct impex_filter_parm_s
 {
   ctrl_t ctrl;
   kbnode_t node;
+  char hexfpr[2*MAX_FINGERPRINT_LEN + 1];
 };
 
 const char *impex_filter_getval (void *cookie, const char *propname);
@@ -394,6 +395,8 @@ void export_print_stats (export_stats_t stats);
 
 int parse_export_options(char *str,unsigned int *options,int noisy);
 gpg_error_t parse_and_set_export_filter (const char *string);
+void push_export_filters (void);
+void pop_export_filters (void);
 
 int exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, kbnode_t node);
 
@@ -406,6 +409,7 @@ int export_secsubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
 
 gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
                                   unsigned int options,
+                                  const void *prefix, size_t prefixlen,
                                   export_stats_t stats,
                                   kbnode_t *r_keyblock,
                                   void **r_data, size_t *r_datalen);

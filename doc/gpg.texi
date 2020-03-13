@@ -2448,6 +2448,10 @@ The available properties are:
   created.  The second is the same but given as an ISO string,
   e.g. "2016-08-17". (drop-subkey)
 
+  @item fpr
+  The hexified fingerprint of the current subkey or primary key.
+  (drop-subkey)
+
   @item primary
   Boolean indicating whether the user id is the primary one.  (keep-uid)
 
