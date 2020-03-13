@@ -2163,6 +2163,27 @@ cmd_list_device (assuan_context_t ctx, char *line)
   if ((err = open_card (ctrl)))
     return err;
 
+  if (watch)
+    {
+      ctrl->server_local->watching_status = 1;
+      while (1)
+        {
+          sigset_t sigmask;
+          int sig;
+
+          /* FIXME: sigwait OK?, what about Windows? */
+          sigemptyset (&sigmask);
+          sigaddset (&sigmask, SIGCONT);
+          npth_sigwait (&sigmask, &sig);
+          /**/
+          if (ctrl->server_local->card_removed)
+            {
+              ctrl->server_local->watching_status = 0;
+              return 0;
+            }
+        }
+    }
+
   /* XXX: Actively try to open devices available.  */
   return gpg_error (GPG_ERR_NOT_FOUND);
   return 0;
@@ -2728,6 +2749,9 @@ send_client_notifications (card_t card, int removal)
             sl->card_removed = 1;
             card_unref_locked (card);
           }
+
+        if (sl->watching_status)
+          assuan_write_status (sl->assuan_ctx, "FIXME: change", "something");
 
         if (!sl->event_signal || !sl->assuan_ctx)
           continue;
