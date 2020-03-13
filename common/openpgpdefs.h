@@ -120,6 +120,7 @@ typedef enum
     SIGSUBPKT_PREF_AEAD     = 34, /* Preferred AEAD algorithms. */
 
     SIGSUBPKT_ATTST_SIGS    = 37, /* Attested Certifications.  */
+    SIGSUBPKT_KEY_BLOCK     = 38, /* Entire key used.          */
 
     SIGSUBPKT_FLAG_CRITICAL = 128
   }

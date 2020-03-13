@@ -433,6 +433,7 @@ enum cmd_and_opt_values
     oNoSymkeyCache,
     oUseOnlyOpenPGPCard,
     oFullTimestrings,
+    oIncludeKeyBlock,
 
     oNoop
   };
@@ -748,7 +749,9 @@ static gpgrt_opt_t opts[] = {
                 N_("|N|set compress level to N (0 disables)")),
   ARGPARSE_s_i (oCompressLevel, "compress-level", "@"),
   ARGPARSE_s_i (oBZ2CompressLevel, "bzip2-compress-level", "@"),
-
+  ARGPARSE_s_n (oDisableSignerUID, "disable-signer-uid", "@"),
+  ARGPARSE_s_n (oIncludeKeyBlock, "include-key-block",
+                N_("include the public key in the signature")),
 
   ARGPARSE_header ("ImportExport",
                    N_("Options controlling key import and export")),
@@ -826,7 +829,6 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
   ARGPARSE_s_s (oOverrideSessionKey, "override-session-key", "@"),
   ARGPARSE_s_i (oOverrideSessionKeyFD, "override-session-key-fd", "@"),
-  ARGPARSE_s_n (oDisableSignerUID, "disable-signer-uid", "@"),
 
 
   ARGPARSE_header ("Security", N_("Options controlling the security")),
@@ -3032,6 +3034,7 @@ main (int argc, char **argv)
 	  case oForceAEAD: opt.force_aead = 1; break;
 
           case oDisableSignerUID: opt.flags.disable_signer_uid = 1; break;
+          case oIncludeKeyBlock:  opt.flags.include_key_block = 1; break;
 
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = xstrdup(pargs.r.ret_str); break;

@@ -1615,6 +1615,23 @@ dump_sig_subpkt (int hashed, int type, int critical,
       }
       break;
 
+    case SIGSUBPKT_KEY_BLOCK:
+      es_fputs ("key-block: ", listfp);
+      if (length && buffer[0])
+        p = "[unknown reserved octet]";
+      else if (length < 50)  /* 50 is an arbitrary min. length.  */
+        p = "[invalid subpacket]";
+      else
+        {
+          /* estream_t fp; */
+          /* fp = es_fopen ("a.key-block", "wb"); */
+          /* log_assert (fp); */
+          /* es_fwrite ( buffer+1, length-1, 1, fp); */
+          /* es_fclose (fp); */
+          es_fprintf (listfp, "[%u octets]", (unsigned int)length-1);
+        }
+      break;
+
 
     default:
       if (type >= 100 && type <= 110)
@@ -1692,6 +1709,12 @@ parse_one_sig_subpkt (const byte * buffer, size_t n, int type)
       if (n != 2)
 	break;
       return 0;
+    case SIGSUBPKT_KEY_BLOCK:
+      if (n && buffer[0])
+        return -1; /* Unknown version - ignore.  */
+      if (n < 50)
+	break;  /* Definitely too short to carry a key block.  */
+      return 0;
     default:
       return 0;
     }
@@ -1759,6 +1782,12 @@ can_handle_critical (const byte * buffer, size_t n, int type)
     case SIGSUBPKT_PREF_KS:
     case SIGSUBPKT_REVOC_REASON: /* At least we know about it.  */
       return 1;
+
+    case SIGSUBPKT_KEY_BLOCK:
+      if (n && !buffer[0])
+        return 1;
+      else
+        return 0;
 
     default:
       return 0;

@@ -202,6 +202,91 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
 }
 
 
+
+/*
+ * Put the Key Block subpakcet into SIG for key PKSK.  Returns an
+ * error code on failure.
+ */
+static gpg_error_t
+mk_sig_subpkt_key_block (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pksk)
+{
+  gpg_error_t err;
+  char *mbox;
+  char *filterexp = NULL;
+  int save_opt_armor = opt.armor;
+  int save_opt_verbose = opt.verbose;
+  char hexfpr[2*MAX_FINGERPRINT_LEN + 1];
+  void *data = NULL;
+  size_t datalen;
+  kbnode_t keyblock = NULL;
+
+  push_export_filters ();
+  opt.armor = 0;
+
+  hexfingerprint (pksk, hexfpr, sizeof hexfpr);
+
+  /* Get the user id so that we know which one to insert into the
+   * key.  */
+  if (pksk->user_id
+      && (mbox = mailbox_from_userid (pksk->user_id->name, 0)))
+    {
+      if (DBG_LOOKUP)
+        log_debug ("including key with UID '%s' (specified)\n", mbox);
+      filterexp = xasprintf ("keep-uid= -- mbox = %s", mbox);
+      xfree (mbox);
+    }
+  else if (opt.sender_list)
+    {
+      /* If --sender was given we use the first one from that list.  */
+      if (DBG_LOOKUP)
+        log_debug ("including key with UID '%s' (--sender)\n",
+                   opt.sender_list->d);
+      filterexp = xasprintf ("keep-uid= -- mbox = %s", opt.sender_list->d);
+    }
+  else  /* Use the primary user id.  */
+    {
+      if (DBG_LOOKUP)
+        log_debug ("including key with primary UID\n");
+      filterexp = xstrdup ("keep-uid= primary -t");
+    }
+
+  if (DBG_LOOKUP)
+    log_debug ("export filter expression: %s\n", filterexp);
+  err = parse_and_set_export_filter (filterexp);
+  if (err)
+    goto leave;
+  xfree (filterexp);
+  filterexp = xasprintf ("drop-subkey= fpr <> %s && usage !~ e", hexfpr);
+  if (DBG_LOOKUP)
+    log_debug ("export filter expression: %s\n", filterexp);
+  err = parse_and_set_export_filter (filterexp);
+  if (err)
+    goto leave;
+
+
+  opt.verbose = 0;
+  err = export_pubkey_buffer (ctrl, hexfpr, EXPORT_MINIMAL|EXPORT_CLEAN,
+                              "", 1, /* Prefix with the reserved byte. */
+                              NULL, &keyblock, &data, &datalen);
+  opt.verbose = save_opt_verbose;
+  if (err)
+    {
+      log_error ("failed to get to be included key: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  build_sig_subpkt (sig, SIGSUBPKT_KEY_BLOCK, data, datalen);
+
+ leave:
+  xfree (data);
+  release_kbnode (keyblock);
+  xfree (filterexp);
+  opt.armor = save_opt_armor;
+  pop_export_filters ();
+  return err;
+}
+
+
 /*
  * Helper to hash a user ID packet.
  */
@@ -835,7 +920,7 @@ write_signature_packets (ctrl_t ctrl,
       PKT_public_key *pk;
       PKT_signature *sig;
       gcry_md_hd_t md;
-      int rc;
+      gpg_error_t err;
 
       pk = sk_rover->pk;
 
@@ -865,12 +950,17 @@ write_signature_packets (ctrl_t ctrl,
 
       build_sig_subpkt_from_sig (sig, pk);
       mk_notation_policy_etc (ctrl, sig, NULL, pk);
+      if (opt.flags.include_key_block && IS_SIG (sig))
+        err = mk_sig_subpkt_key_block (ctrl, sig, pk);
+      else
+        err = 0;
       hash_sigversion_to_magic (md, sig, extrahash);
       gcry_md_final (md);
 
-      rc = do_sign (ctrl, pk, sig, md, hash_for (pk), cache_nonce, 0);
+      if (!err)
+        err = do_sign (ctrl, pk, sig, md, hash_for (pk), cache_nonce, 0);
       gcry_md_close (md);
-      if (!rc)
+      if (!err)
         {
           /* Write the packet.  */
           PACKET pkt;
@@ -878,19 +968,19 @@ write_signature_packets (ctrl_t ctrl,
           init_packet (&pkt);
           pkt.pkttype = PKT_SIGNATURE;
           pkt.pkt.signature = sig;
-          rc = build_packet (out, &pkt);
-          if (!rc && is_status_enabled())
+          err = build_packet (out, &pkt);
+          if (!err && is_status_enabled())
             print_status_sig_created (pk, sig, status_letter);
           free_packet (&pkt, NULL);
-          if (rc)
+          if (err)
             log_error ("build signature packet failed: %s\n",
-                       gpg_strerror (rc));
+                       gpg_strerror (err));
 	}
       else
         free_seckey_enc (sig);
 
-      if (rc)
-        return rc;
+      if (err)
+        return err;
     }
 
   return 0;
