@@ -73,6 +73,17 @@ static recsel_expr_t export_keep_uid;
 static recsel_expr_t export_drop_subkey;
 
 
+/* An object used for a linked list to implement the
+ * push_export_filter/pop_export_filters functions.  */
+struct export_filter_attic_s
+{
+  struct export_filter_attic_s *next;
+  recsel_expr_t export_keep_uid;
+  recsel_expr_t export_drop_subkey;
+};
+static struct export_filter_attic_s *export_filter_attic;
+
+
 
 /* Local prototypes.  */
 static int do_export (ctrl_t ctrl, strlist_t users, int secret,
@@ -198,6 +209,41 @@ parse_and_set_export_filter (const char *string)
 }
 
 
+/* Push the current export filters onto a stack so that new export
+ * filters can be defined which will be active until the next
+ * pop_export_filters or another push_export_filters.  */
+void
+push_export_filters (void)
+{
+  struct export_filter_attic_s *item;
+
+  item = xcalloc (1, sizeof *item);
+  item->export_keep_uid = export_keep_uid;
+  export_keep_uid = NULL;
+  item->export_drop_subkey = export_drop_subkey;
+  export_drop_subkey = NULL;
+  item->next = export_filter_attic;
+  export_filter_attic = item;
+}
+
+
+/* Revert the last push_export_filters.  */
+void
+pop_export_filters (void)
+{
+  struct export_filter_attic_s *item;
+
+  item = export_filter_attic;
+  if (!item)
+    BUG (); /* No corresponding push.  */
+  export_filter_attic = item->next;
+  cleanup_export_globals ();
+  export_keep_uid = item->export_keep_uid;
+  export_drop_subkey = item->export_drop_subkey;
+}
+
+
+
 /* Create a new export stats object initialized to zero.  On error
    returns NULL and sets ERRNO.  */
 export_stats_t
@@ -292,10 +338,12 @@ export_secsubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
 
 /*
  * Export a single key into a memory buffer.  STATS is either an
- * export stats object for update or NULL.
+ * export stats object for update or NULL.  If PREFIX is not NULL
+ * PREFIXLEN bytes from PREFIX are prepended to the R_DATA.
  */
 gpg_error_t
 export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
+                      const void *prefix, size_t prefixlen,
                       export_stats_t stats,
                       kbnode_t *r_keyblock, void **r_data, size_t *r_datalen)
 {
@@ -313,6 +361,8 @@ export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
     return gpg_error_from_syserror ();
 
   iobuf = iobuf_temp ();
+  if (prefix && prefixlen)
+    iobuf_write (iobuf, prefix, prefixlen);
   err = do_export_stream (ctrl, iobuf, helplist, 0, r_keyblock, options,
                           stats, &any);
   if (!err && !any)

@@ -1806,7 +1806,7 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs)
 
       err = export_pubkey_buffer (ctrl, kspec->d,
                                   opt.keyserver_options.export_options,
-                                  NULL,
+                                  NULL, 0, NULL,
                                   &keyblock, &data, &datalen);
       if (err)
         log_error (_("skipped \"%s\": %s\n"), kspec->d, gpg_strerror (err));

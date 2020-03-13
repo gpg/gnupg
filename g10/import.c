@@ -1478,6 +1478,11 @@ impex_filter_getval (void *cookie, const char *propname)
                     (pk->pubkey_usage & PUBKEY_USAGE_UNKNOWN)?"?":"");
           result = numbuf;
         }
+      else if (!strcmp (propname, "fpr"))
+        {
+          hexfingerprint (pk, parm->hexfpr, sizeof parm->hexfpr);
+          result = parm->hexfpr;
+        }
       else
         result = NULL;
     }
