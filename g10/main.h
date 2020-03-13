@@ -351,8 +351,10 @@ gpg_error_t parse_and_set_import_filter (const char *string);
 import_filter_t save_and_clear_import_filter (void);
 void            restore_import_filter (import_filter_t filt);
 
-gpg_error_t read_key_from_file (ctrl_t ctrl, const char *fname,
-                                kbnode_t *r_keyblock);
+gpg_error_t read_key_from_file_or_buffer (ctrl_t ctrl, const char *fname,
+                                          const void *buffer, size_t buflen,
+                                          kbnode_t *r_keyblock);
+gpg_error_t import_included_key_block (ctrl_t ctrl, kbnode_t keyblock);
 void import_keys (ctrl_t ctrl, char **fnames, int nnames,
 		  import_stats_t stats_hd, unsigned int options,
                   int origin, const char *url);

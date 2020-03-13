@@ -477,11 +477,23 @@ keyserver_import_ldap (const char *name)
 
 
 gpg_error_t
-read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
+read_key_from_file_or_buffer (ctrl_t ctrl, const char *fname,
+                              const void *buffer, size_t buflen,
+                              kbnode_t *r_keyblock)
 {
   (void)ctrl;
   (void)fname;
+  (void)buffer;
+  (void)buflen;
   (void)r_keyblock;
+  return -1;
+}
+
+gpg_error_t
+import_included_key_block (ctrl_t ctrl, kbnode_t keyblock)
+{
+  (void)ctrl;
+  (void)keyblock;
   return -1;
 }
 

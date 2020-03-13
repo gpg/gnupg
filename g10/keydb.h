@@ -315,7 +315,8 @@ void getkey_disable_caches(void);
 
 /* Return the public key used for signature SIG and store it at PK.  */
 gpg_error_t get_pubkey_for_sig (ctrl_t ctrl,
-                                PKT_public_key *pk, PKT_signature *sig);
+                                PKT_public_key *pk, PKT_signature *sig,
+                                PKT_public_key *forced_pk);
 
 /* Return the public key with the key id KEYID and store it at PK.  */
 int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
@@ -371,6 +372,11 @@ gpg_error_t get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 /* Get a public key directly from file FNAME.  */
 gpg_error_t get_pubkey_fromfile (ctrl_t ctrl,
                                  PKT_public_key *pk, const char *fname);
+
+/* Get a public key from a buffer.  */
+gpg_error_t get_pubkey_from_buffer (ctrl_t ctrl, PKT_public_key *pkbuf,
+                                    const void *buffer, size_t buflen,
+                                    u32 *want_keyid, kbnode_t *r_keyblock);
 
 /* Return the public key with the key id KEYID iff the secret key is
  * available and store it at PK.  */

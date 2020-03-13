@@ -316,7 +316,9 @@ import_release_stats_handle (import_stats_t p)
  * file.
  */
 gpg_error_t
-read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
+read_key_from_file_or_buffer (ctrl_t ctrl, const char *fname,
+                              const void *buffer, size_t buflen,
+                              kbnode_t *r_keyblock)
 {
   gpg_error_t err;
   iobuf_t inp;
@@ -330,35 +332,45 @@ read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
 
   *r_keyblock = NULL;
 
-  inp = iobuf_open (fname);
-  if (!inp)
-    err = gpg_error_from_syserror ();
-  else if (is_secured_file (iobuf_get_fd (inp)))
-    {
-      iobuf_close (inp);
-      inp = NULL;
-      err = gpg_error (GPG_ERR_EPERM);
-    }
-  else
-    err = 0;
-  if (err)
-    {
-      log_error (_("can't open '%s': %s\n"),
-                 iobuf_is_pipe_filename (fname)? "[stdin]": fname,
-                 gpg_strerror (err));
-      if (gpg_err_code (err) == GPG_ERR_ENOENT)
-        err = gpg_error (GPG_ERR_NO_PUBKEY);
-      goto leave;
-    }
+  log_assert (!!fname ^ !!buffer);
 
-  /* Push the armor filter.  */
-  {
-    armor_filter_context_t *afx;
-    afx = new_armor_context ();
-    afx->only_keyblocks = 1;
-    push_armor_filter (afx, inp);
-    release_armor_context (afx);
-  }
+  if (fname)
+    {
+      inp = iobuf_open (fname);
+      if (!inp)
+        err = gpg_error_from_syserror ();
+      else if (is_secured_file (iobuf_get_fd (inp)))
+        {
+          iobuf_close (inp);
+          inp = NULL;
+          err = gpg_error (GPG_ERR_EPERM);
+        }
+      else
+        err = 0;
+      if (err)
+        {
+          log_error (_("can't open '%s': %s\n"),
+                     iobuf_is_pipe_filename (fname)? "[stdin]": fname,
+                     gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_ENOENT)
+            err = gpg_error (GPG_ERR_NO_PUBKEY);
+          goto leave;
+        }
+
+      /* Push the armor filter.  */
+      {
+        armor_filter_context_t *afx;
+        afx = new_armor_context ();
+        afx->only_keyblocks = 1;
+        push_armor_filter (afx, inp);
+        release_armor_context (afx);
+      }
+
+    }
+  else  /* Read from buffer (No armor expected).  */
+    {
+      inp = iobuf_temp_with_content (buffer, buflen);
+    }
 
   /* Read the first non-v3 keyblock.  */
   while (!(err = read_block (inp, 0, &pending_pkt, &keyblock, &v3keys)))
@@ -373,7 +385,8 @@ read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
     {
       if (gpg_err_code (err) != GPG_ERR_INV_KEYRING)
         log_error (_("error reading '%s': %s\n"),
-                   iobuf_is_pipe_filename (fname)? "[stdin]": fname,
+                   fname? (iobuf_is_pipe_filename (fname)? "[stdin]": fname)
+                   /* */ : "[buffer]",
                    gpg_strerror (err));
       goto leave;
     }
@@ -409,10 +422,43 @@ read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
     {
       iobuf_close (inp);
       /* Must invalidate that ugly cache to actually close the file. */
-      iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
+      if (fname)
+        iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
     }
   release_kbnode (keyblock);
   /* FIXME: Do we need to free PENDING_PKT ? */
+  return err;
+}
+
+
+/* Import an already checked public key which was included in a
+ * signature and the signature verified out using this key.  */
+gpg_error_t
+import_included_key_block (ctrl_t ctrl, kbnode_t keyblock)
+{
+  gpg_error_t err;
+  struct import_stats_s *stats;
+  import_filter_t save_filt;
+  int save_armor = opt.armor;
+
+  opt.armor = 0;
+  stats = import_new_stats_handle ();
+  save_filt = save_and_clear_import_filter ();
+  if (!save_filt)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* FIXME: Should we introduce a dedicated KEYORG ? */
+  err = import_one (ctrl, keyblock,
+                    stats, NULL, 0, 0, 0, 0,
+                    NULL, NULL, KEYORG_UNKNOWN, NULL, NULL);
+
+ leave:
+  restore_import_filter (save_filt);
+  import_release_stats_handle (stats);
+  opt.armor = save_armor;
   return err;
 }
 

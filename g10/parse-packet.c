@@ -2109,6 +2109,10 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       if (p)
 	sig->flags.notation = 1;
 
+      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_BLOCK, NULL);
+      if (p)
+        sig->flags.key_block = 1;
+
       p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_REVOCABLE, NULL);
       if (p && *p == 0)
 	sig->flags.revocable = 0;
