@@ -1860,33 +1860,16 @@ main ( int argc, char **argv)
   switch (cmd)
     {
     case aGPGConfList:
-      { /* List options and default values in the GPG Conf format.  */
-	char *config_filename_esc = percent_escape (opt.config_filename, NULL);
+      { /* List default option values in the GPG Conf format.  */
 
-        es_printf ("%s-%s.conf:%lu:\"%s\n",
-                   GPGCONF_NAME, GPGSM_NAME,
-                   GC_OPT_FLAG_DEFAULT, config_filename_esc);
-        xfree (config_filename_esc);
-
-        es_printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
-	es_printf ("quiet:%lu:\n", GC_OPT_FLAG_NONE);
 	es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
-	es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
-        es_printf ("disable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
-        es_printf ("enable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
-        es_printf ("disable-trusted-cert-crl-check:%lu:\n", GC_OPT_FLAG_NONE);
-        es_printf ("enable-ocsp:%lu:\n", GC_OPT_FLAG_NONE);
         es_printf ("include-certs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
                    DEFAULT_INCLUDE_CERTS);
-        es_printf ("disable-policy-checks:%lu:\n", GC_OPT_FLAG_NONE);
-        es_printf ("auto-issuer-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
-        es_printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
         es_printf ("cipher-algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
                    DEFAULT_CIPHER_ALGO);
         es_printf ("p12-charset:%lu:\n", GC_OPT_FLAG_DEFAULT);
         es_printf ("default-key:%lu:\n", GC_OPT_FLAG_DEFAULT);
         es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_DEFAULT);
-	es_printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
 
         /* The next one is an info only item and should match what
            proc_parameters actually implements.  */

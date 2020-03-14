@@ -20,10 +20,6 @@
 
 #define GC_OPT_FLAG_NONE	0UL
 
-/* The RUNTIME flag for an option indicates that the option can be
-   changed at runtime.  */
-#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
-
 /* The DEFAULT flag for an option indicates that the option has a
    default value.  */
 #define GC_OPT_FLAG_DEFAULT	(1UL << 4)

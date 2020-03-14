@@ -1399,70 +1399,27 @@ main (int argc, char **argv)
     agent_exit (0);
   else if (gpgconf_list)
     {
-      char *filename_esc;
-
-      /* List options and default values in the GPG Conf format.  */
-      filename_esc = percent_escape (config_filename, NULL);
-
-      es_printf ("%s-%s.conf:%lu:\"%s\n",
-                 GPGCONF_NAME, GPG_AGENT_NAME,
-                 GC_OPT_FLAG_DEFAULT, filename_esc);
-      xfree (filename_esc);
-
-      es_printf ("verbose:%lu:\n"
-              "quiet:%lu:\n"
-              "debug-level:%lu:\"none:\n"
-              "log-file:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME );
+      /* Note: If an option is runtime changeable, please set the
+       * respective flag in the gpgconf-comp.c table.  */
+      es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
       es_printf ("default-cache-ttl:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, DEFAULT_CACHE_TTL );
+                 GC_OPT_FLAG_DEFAULT, DEFAULT_CACHE_TTL );
       es_printf ("default-cache-ttl-ssh:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, DEFAULT_CACHE_TTL_SSH );
+                 GC_OPT_FLAG_DEFAULT, DEFAULT_CACHE_TTL_SSH );
       es_printf ("max-cache-ttl:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL );
+                 GC_OPT_FLAG_DEFAULT, MAX_CACHE_TTL );
       es_printf ("max-cache-ttl-ssh:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL_SSH );
-      es_printf ("enforce-passphrase-constraints:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+                 GC_OPT_FLAG_DEFAULT, MAX_CACHE_TTL_SSH );
       es_printf ("min-passphrase-len:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MIN_PASSPHRASE_LEN );
+                 GC_OPT_FLAG_DEFAULT, MIN_PASSPHRASE_LEN );
       es_printf ("min-passphrase-nonalpha:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
-              MIN_PASSPHRASE_NONALPHA);
+                 GC_OPT_FLAG_DEFAULT, MIN_PASSPHRASE_NONALPHA);
       es_printf ("check-passphrase-pattern:%lu:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
+                 GC_OPT_FLAG_DEFAULT);
       es_printf ("max-passphrase-days:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
-              MAX_PASSPHRASE_DAYS);
-      es_printf ("enable-passphrase-history:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("no-grab:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("ignore-cache-for-signing:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("no-allow-external-cache:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("no-allow-mark-trusted:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("disable-scdaemon:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("enable-ssh-support:%lu:\n", GC_OPT_FLAG_NONE);
+                 GC_OPT_FLAG_DEFAULT, MAX_PASSPHRASE_DAYS);
       es_printf ("ssh-fingerprint-digest:%lu:\"%s:\n",
-                 GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, "md5");
-#ifdef HAVE_W32_SYSTEM
-      es_printf ("enable-putty-support:%lu:\n", GC_OPT_FLAG_NONE);
-#endif
-      es_printf ("no-allow-loopback-pinentry:%lu:\n",
-              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("allow-emacs-pinentry:%lu:\n",
-                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("pinentry-timeout:%lu:0:\n",
-                 GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
-      es_printf ("grab:%lu:\n",
-                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+                 GC_OPT_FLAG_DEFAULT, "md5");
 
       agent_exit (0);
     }

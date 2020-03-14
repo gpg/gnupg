@@ -694,36 +694,10 @@ main (int argc, char **argv )
   if (gpgconf_list)
     {
       /* List options and default values in the GPG Conf format.  */
-      char *filename_esc;
-
-      filename_esc = percent_escape (config_filename, NULL);
-
-      es_printf ("%s-%s.conf:%lu:\"%s\n",
-                 GPGCONF_NAME, SCDAEMON_NAME,
-                 GC_OPT_FLAG_DEFAULT, filename_esc);
-      xfree (filename_esc);
-
-      es_printf ("verbose:%lu:\n"
-                 "quiet:%lu:\n"
-                 "debug-level:%lu:\"none:\n"
-                 "log-file:%lu:\n",
-                 GC_OPT_FLAG_NONE,
-                 GC_OPT_FLAG_NONE,
-                 GC_OPT_FLAG_DEFAULT,
-                 GC_OPT_FLAG_NONE );
-
-      es_printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE );
-      es_printf ("ctapi-driver:%lu:\n", GC_OPT_FLAG_NONE );
+      es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
       es_printf ("pcsc-driver:%lu:\"%s:\n",
-              GC_OPT_FLAG_DEFAULT, DEFAULT_PCSC_DRIVER );
-#ifdef HAVE_LIBUSB
-      es_printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );
-#endif
-      es_printf ("deny-admin:%lu:\n", GC_OPT_FLAG_NONE );
-      es_printf ("disable-pinpad:%lu:\n", GC_OPT_FLAG_NONE );
+                 GC_OPT_FLAG_DEFAULT, DEFAULT_PCSC_DRIVER );
       es_printf ("card-timeout:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, 0);
-      es_printf ("enable-pinpad-varlen:%lu:\n", GC_OPT_FLAG_NONE );
-      es_printf ("application-priority:%lu:\n", GC_OPT_FLAG_NONE );
 
       scd_exit (0);
     }
@@ -732,7 +706,9 @@ main (int argc, char **argv )
   if (logfile)
     {
       log_set_file (logfile);
-      log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_TIME | GPGRT_LOG_WITH_PID);
+      log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX
+                             | GPGRT_LOG_WITH_TIME
+                             | GPGRT_LOG_WITH_PID));
     }
 
   if (debug_wait && pipe_server)

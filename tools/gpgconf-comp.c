@@ -278,6 +278,9 @@ static const struct
    several times.  A comma separated list of arguments is used as the
    argument value.  */
 #define GC_OPT_FLAG_LIST	(1UL << 2)
+/* The RUNTIME flag for an option indicates that the option can be
+   changed at runtime.  */
+#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
 
 
 /* A human-readable description for each flag.  */
@@ -366,8 +369,6 @@ static known_option_t known_options_scdaemon[] =
    { "verbose", GC_OPT_FLAG_LIST|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "no-greeting", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
-   { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
-   GC_ARG_TYPE_FILENAME },
    { "reader-port",  GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "ctapi-driver", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },
    { "pcsc-driver",  GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },
@@ -395,8 +396,6 @@ static known_option_t known_options_gpg[] =
    { "encrypt-to",           GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "group",                GC_OPT_FLAG_LIST, GC_LEVEL_ADVANCED,
      GC_ARG_TYPE_ALIAS_LIST},
-   { "options",              GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
-     GC_ARG_TYPE_FILENAME },
    { "compliance",           GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
    { "default-new-key-algo", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "trust-model",          GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
@@ -428,8 +427,6 @@ static known_option_t known_options_gpgsm[] =
    { "no-greeting",       GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "default-key",       GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "encrypt-to",        GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
-   { "options",           GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
-                          GC_ARG_TYPE_FILENAME },
    { "disable-dirmngr",   GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
    { "p12-charset",       GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "keyserver",         GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
@@ -462,8 +459,6 @@ static known_option_t known_options_dirmngr[] =
    { "verbose",           GC_OPT_FLAG_LIST, GC_LEVEL_BASIC },
    { "quiet",             GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "no-greeting",       GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
-   { "options",           GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
-                          GC_ARG_TYPE_FILENAME },
    { "resolver-timeout",  GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "nameserver",        GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "debug-level",       GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED },
@@ -516,7 +511,7 @@ struct gc_option_s
   unsigned int opt_arg:1;      /* The option's argument is optional.    */
   unsigned int runtime:1;      /* The option is runtime changeable.  */
 
-  unsigned int active:1;       /* Has been announced in gpgconf-list.  */
+  unsigned int gpgconf_list:1; /* Mentioned by --gpgconf-list.  */
 
   unsigned int has_default:1;  /* The option has a default value.  */
   unsigned int def_in_desc:1;  /* The default is in the descrition.  */
@@ -1426,7 +1421,7 @@ gc_component_list_options (int component, estream_t out)
     {
       /* Do not output unknown or internal options.  */
       if (!option->is_header
-	  && (!option->active || option->level == GC_LEVEL_INTERNAL))
+	  && option->level == GC_LEVEL_INTERNAL)
 	  continue;
 
       if (option->is_header)
@@ -1477,7 +1472,7 @@ is_known_option (gc_component_id_t component, const char *name)
         if (!strcmp (option->name, name))
           break;
     }
-  return option;
+  return (option && option->name)? option : NULL;
 }
 
 
@@ -1669,7 +1664,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
            * We need to check the code whether both specifications match.  */
           if ((known_option->flags & GC_OPT_FLAG_ARG_OPT))
             opt_info[opt_info_used].opt_arg = 1;
-          /* Same here.  */
+
           if ((known_option->flags & GC_OPT_FLAG_RUNTIME))
             opt_info[opt_info_used].runtime = 1;
 
@@ -1766,18 +1761,20 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
       option = find_option (component, line);
       if (option)
 	{
-	  if (option->active)
+	  if (option->gpgconf_list)
 	    gc_error (1, errno,
                       "option %s returned twice from \"%s --gpgconf-list\"",
 		      line, pgmname);
-	  option->active = 1;
+	  option->gpgconf_list = 1;
 
-          /* Runtime is duplicated - see above.  */
-          option->runtime     = !!(flags & GC_OPT_FLAG_RUNTIME);
-          option->has_default = !!(flags & GC_OPT_FLAG_DEFAULT);
-          option->def_in_desc = !!(flags & GC_OPT_FLAG_DEF_DESC);
-          option->no_arg_desc = !!(flags & GC_OPT_FLAG_NO_ARG_DESC);
-          option->no_change   = !!(flags & GC_OPT_FLAG_NO_CHANGE);
+          if ((flags & GC_OPT_FLAG_DEFAULT))
+            option->has_default = 1;
+          if ((flags & GC_OPT_FLAG_DEF_DESC))
+            option->def_in_desc = 1;
+          if ((flags & GC_OPT_FLAG_NO_ARG_DESC))
+            option->no_arg_desc = 1;
+          if ((flags & GC_OPT_FLAG_NO_CHANGE))
+            option->no_change = 1;
 
 	  if (default_value && *default_value)
 	    option->default_value = xstrdup (default_value);
@@ -1923,9 +1920,7 @@ option_check_validity (gc_component_id_t component,
 {
   char *arg;
 
-  if (!option->active)
-    gc_error (1, 0, "option %s not supported by component %s",
-              option->name, gc_component[component].name);
+  (void)component;
 
   if (option->new_flags || option->new_value)
     gc_error (1, 0, "option %s already changed", option->name);

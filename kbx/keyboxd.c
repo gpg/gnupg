@@ -670,26 +670,6 @@ main (int argc, char **argv )
     kbxd_exit (0);
   else if (gpgconf_list)
     {
-      char *filename;
-      char *filename_esc;
-
-      /* List options and default values in the gpgconf format.  */
-      filename = make_filename (gnupg_homedir (),
-                                "keyboxd" EXTSEP_S "conf", NULL);
-      filename_esc = percent_escape (filename, NULL);
-
-      es_printf ("%s-%s.conf:%lu:\"%s\n",
-                 GPGCONF_NAME, "keyboxd", GC_OPT_FLAG_DEFAULT, filename_esc);
-      xfree (filename);
-      xfree (filename_esc);
-
-      es_printf ("verbose:%lu:\n"
-                 "quiet:%lu:\n"
-                 "log-file:%lu:\n",
-                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
-                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
-                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME );
-
       kbxd_exit (0);
     }
 

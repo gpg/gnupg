@@ -1502,71 +1502,19 @@ main (int argc, char **argv)
   else if (cmd == aGPGConfList)
     {
       unsigned long flags = 0;
-      char *filename;
       char *filename_esc;
 
-      /* First the configuration file.  This is not an option, but it
-	 is vital information for GPG Conf.  */
-      filename = percent_escape (opt.config_filename, NULL);
-      es_printf ("gpgconf-dirmngr.conf:%lu:\"%s\n",
-              GC_OPT_FLAG_DEFAULT, filename);
-      xfree (filename);
-
-      es_printf ("verbose:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("quiet:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("debug-level:%lu:\"none\n", flags | GC_OPT_FLAG_DEFAULT);
-      es_printf ("log-file:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("force:%lu:\n", flags | GC_OPT_FLAG_NONE);
-
-      /* --csh and --sh are mutually exclusive, something we can not
-         express in GPG Conf.  --options is only usable from the
-         command line, really.  --debug-all interacts with --debug,
-         and having both of them is thus problematic.  --no-detach is
-         also only usable on the command line.  --batch is unused.  */
-
-      filename = make_filename (gnupg_homedir (),
-                                "dirmngr_ldapservers.conf",
-                                NULL);
-      filename_esc = percent_escape (filename, NULL);
-      es_printf ("ldapserverlist-file:%lu:\"%s\n", flags | GC_OPT_FLAG_DEFAULT,
-	      filename_esc);
-      xfree (filename_esc);
-      xfree (filename);
-
       es_printf ("ldaptimeout:%lu:%u\n",
-              flags | GC_OPT_FLAG_DEFAULT, DEFAULT_LDAP_TIMEOUT);
+                 flags | GC_OPT_FLAG_DEFAULT, DEFAULT_LDAP_TIMEOUT);
       es_printf ("max-replies:%lu:%u\n",
-              flags | GC_OPT_FLAG_DEFAULT, DEFAULT_MAX_REPLIES);
-      es_printf ("allow-ocsp:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("allow-version-check:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("ocsp-responder:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("ocsp-signer:%lu:\n", flags | GC_OPT_FLAG_NONE);
-
-      es_printf ("faked-system-time:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("no-greeting:%lu:\n", flags | GC_OPT_FLAG_NONE);
-
-      es_printf ("disable-http:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("disable-ldap:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("honor-http-proxy:%lu\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("http-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("ldap-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("only-ldap-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("ignore-ldap-dp:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("ignore-http-dp:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("ignore-ocsp-service-url:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      /* Note: The next one is to fix a typo in gpgconf - should be
-         removed eventually. */
-      es_printf ("ignore-ocsp-servic-url:%lu:\n", flags | GC_OPT_FLAG_NONE);
-
-      es_printf ("use-tor:%lu:\n", flags | GC_OPT_FLAG_NONE);
+                 flags | GC_OPT_FLAG_DEFAULT, DEFAULT_MAX_REPLIES);
 
       filename_esc = percent_escape (get_default_keyserver (0), NULL);
       es_printf ("keyserver:%lu:\"%s:\n", flags | GC_OPT_FLAG_DEFAULT,
                  filename_esc);
       xfree (filename_esc);
 
-
-      es_printf ("nameserver:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("resolver-timeout:%lu:%u\n",
                  flags | GC_OPT_FLAG_DEFAULT, 0);
     }
