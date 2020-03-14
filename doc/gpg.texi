@@ -1766,6 +1766,19 @@ Set what trust model GnuPG should follow. The models are:
   must be enabled explicitly.
 @end table
 
+@item --include-key-block
+@itemx --no-include-key-block
+@opindex include-key-block
+@opindex no-include-key-block
+Include a minimized version of the public parts of the signing key as
+a “Key Block subpacket” into data signatures.  The Key Block contains
+the signing key or subkey as well as an encryption subkey.  This
+allows the recipient of a signed message to reply encrypted to the
+sender without using any online directories to lookup the key.  The
+default is @option{--no-innclude-key-block}.  See also the option
+@option{--auto-key-import}.
+
+
 @item --auto-key-locate @var{mechanisms}
 @itemx --no-auto-key-locate
 @opindex auto-key-locate
@@ -1827,6 +1840,20 @@ list.  The default is "local,wkd".
 @end table
 
 
+@item --auto-key-import
+@itemx --no-auto-key-import
+@opindex auto-key-import
+@opindex no-auto-key-import
+This is an offline mechanism to get a missing key for signature
+verification and for later encryption to this key.  If this option is
+enabled and a signature includes a “Key Block subpacket”, that key is
+used to verify the signature and on verification success that key is
+imported. The default is @option{--no-auto-key-import}.
+
+On the sender (signing) site the option @option{--include-key-block}
+needs to be used to put the public part of the signing key as “Key
+Block subpacket” into the signature.
+
 @item --auto-key-retrieve
 @itemx --no-auto-key-retrieve
 @opindex auto-key-retrieve
@@ -1837,22 +1864,26 @@ local keyring.  The default is @option{--no-auto-key-retrieve}.
 
 The order of methods tried to lookup the key is:
 
-1. If a preferred keyserver is specified in the signature and the
+1. If the option @option{--auto-key-import} is set and the signatures
+includes a “Key Block subpacket”, that key is used to verify the
+signature and on verification success that key is imported.
+
+2. If a preferred keyserver is specified in the signature and the
 option @option{honor-keyserver-url} is active (which is not the
 default), that keyserver is tried.  Note that the creator of the
 signature uses the option @option{--sig-keyserver-url} to specify the
 preferred keyserver for data signatures.
 
-2. If the signature has the Signer's UID set (e.g. using
+3. If the signature has the Signer's UID set (e.g. using
 @option{--sender} while creating the signature) a Web Key Directory
 (WKD) lookup is done.  This is the default configuration but can be
 disabled by removing WKD from the auto-key-locate list or by using the
 option @option{--disable-signer-uid}.
 
-3. If the option @option{honor-pka-record} is active, the legacy PKA
+4. If the option @option{honor-pka-record} is active, the legacy PKA
 method is used.
 
-4. If any keyserver is configured and the Issuer Fingerprint is part
+5. If any keyserver is configured and the Issuer Fingerprint is part
 of the signature (since GnuPG 2.1.16), the configured keyservers are
 tried.
 

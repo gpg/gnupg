@@ -2012,14 +2012,11 @@ check_sig_and_print (CTX c, kbnode_t node)
   rc = do_check_sig (c, node, extrahash, extrahashlen, NULL,
                      NULL, &is_expkey, &is_revkey, &pk);
 
-  /* If the key is not found but the signaure includes a key bnlock we
-   * import that key block and trry again.  We keep this key block
-   * only if the signature verifies.  */
-  /* FIXME: Shall we add an option to disable it or use it only if
-   * --auto-key-retriueve is set?  */
+  /* If the key is not found but the signature includes a key block we
+   * use that key block for verification and on success import it.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
-      && sig->flags.key_block)
-      /* && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)) */
+      && sig->flags.key_block
+      && opt.flags.auto_key_import)
     {
       PKT_public_key *included_pk;
       const byte *kblock;

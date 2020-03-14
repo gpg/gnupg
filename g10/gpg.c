@@ -360,6 +360,8 @@ enum cmd_and_opt_values
     oNoRandomSeedFile,
     oAutoKeyRetrieve,
     oNoAutoKeyRetrieve,
+    oAutoKeyImport,
+    oNoAutoKeyImport,
     oUseAgent,
     oNoUseAgent,
     oGpgAgentInfo,
@@ -434,6 +436,7 @@ enum cmd_and_opt_values
     oUseOnlyOpenPGPCard,
     oFullTimestrings,
     oIncludeKeyBlock,
+    oNoIncludeKeyBlock,
 
     oNoop
   };
@@ -750,8 +753,6 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oCompressLevel, "compress-level", "@"),
   ARGPARSE_s_i (oBZ2CompressLevel, "bzip2-compress-level", "@"),
   ARGPARSE_s_n (oDisableSignerUID, "disable-signer-uid", "@"),
-  ARGPARSE_s_n (oIncludeKeyBlock, "include-key-block",
-                N_("include the public key in the signature")),
 
   ARGPARSE_header ("ImportExport",
                    N_("Options controlling key import and export")),
@@ -759,8 +760,14 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oAutoKeyLocate, "auto-key-locate",
               N_("|MECHANISMS|use MECHANISMS to locate keys by mail address")),
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
+  ARGPARSE_s_n (oAutoKeyImport,   "auto-key-import",
+                N_("import missing key from a signature")),
+  ARGPARSE_s_n (oNoAutoKeyImport, "no-auto-key-import", "@"),
   ARGPARSE_s_n (oAutoKeyRetrieve, "auto-key-retrieve", "@"),
   ARGPARSE_s_n (oNoAutoKeyRetrieve, "no-auto-key-retrieve", "@"),
+  ARGPARSE_s_n (oIncludeKeyBlock, "include-key-block",
+                N_("include the public key in signatures")),
+  ARGPARSE_s_n (oNoIncludeKeyBlock, "no-include-key-block", "@"),
   ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr",
                 N_("disable all access to the dirmngr")),
   ARGPARSE_s_s (oKeyServer, "keyserver", "@"), /* Deprecated.  */
@@ -1943,6 +1950,8 @@ gpgconf_list (const char *configfile)
   es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("try-secret-key:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("auto-key-import:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("include-key-block:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("auto-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
@@ -3035,6 +3044,7 @@ main (int argc, char **argv)
 
           case oDisableSignerUID: opt.flags.disable_signer_uid = 1; break;
           case oIncludeKeyBlock:  opt.flags.include_key_block = 1; break;
+          case oNoIncludeKeyBlock: opt.flags.include_key_block = 0; break;
 
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = xstrdup(pargs.r.ret_str); break;
@@ -3419,6 +3429,9 @@ main (int argc, char **argv)
 	  case oIgnoreCrcError: opt.ignore_crc_error = 1; break;
 	  case oIgnoreMDCError: opt.ignore_mdc_error = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
+
+          case oAutoKeyImport: opt.flags.auto_key_import = 1; break;
+          case oNoAutoKeyImport: opt.flags.auto_key_import = 0; break;
 
 	  case oAutoKeyRetrieve:
             opt.keyserver_options.options |= KEYSERVER_AUTO_KEY_RETRIEVE;
