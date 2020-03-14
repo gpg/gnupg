@@ -352,6 +352,8 @@ enum cmd_and_opt_values
     oNoRandomSeedFile,
     oAutoKeyRetrieve,
     oNoAutoKeyRetrieve,
+    oAutoKeyImport,
+    oNoAutoKeyImport,
     oUseAgent,
     oNoUseAgent,
     oGpgAgentInfo,
@@ -425,6 +427,7 @@ enum cmd_and_opt_values
     oNoSymkeyCache,
     oUseOnlyOpenPGPCard,
     oIncludeKeyBlock,
+    oNoIncludeKeyBlock,
 
     oNoop
   };
@@ -890,6 +893,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
   ARGPARSE_s_n (oIncludeKeyBlock, "include-key-block", "@"),
+  ARGPARSE_s_n (oAutoKeyImport,   "auto-key-import", "@"),
+  ARGPARSE_s_n (oNoAutoKeyImport, "no-auto-key-import", "@"),
 
   /* Options to override new security defaults.  */
   ARGPARSE_s_n (oAllowWeakKeySignatures, "allow-weak-key-signatures", "@"),
@@ -1873,6 +1878,8 @@ gpgconf_list (const char *configfile)
   es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("try-secret-key:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("auto-key-import:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("include-key-block:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("auto-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
@@ -2993,6 +3000,7 @@ main (int argc, char **argv)
 
           case oDisableSignerUID: opt.flags.disable_signer_uid = 1; break;
           case oIncludeKeyBlock:  opt.flags.include_key_block = 1; break;
+          case oNoIncludeKeyBlock: opt.flags.include_key_block = 0; break;
 
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = xstrdup(pargs.r.ret_str); break;
@@ -3374,6 +3382,9 @@ main (int argc, char **argv)
 	  case oIgnoreCrcError: opt.ignore_crc_error = 1; break;
 	  case oIgnoreMDCError: opt.ignore_mdc_error = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
+
+          case oAutoKeyImport: opt.flags.auto_key_import = 1; break;
+          case oNoAutoKeyImport: opt.flags.auto_key_import = 0; break;
 
 	  case oAutoKeyRetrieve:
             opt.keyserver_options.options |= KEYSERVER_AUTO_KEY_RETRIEVE;
