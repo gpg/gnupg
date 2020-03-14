@@ -1766,18 +1766,6 @@ Set what trust model GnuPG should follow. The models are:
   must be enabled explicitly.
 @end table
 
-@item --include-key-block
-@itemx --no-include-key-block
-@opindex include-key-block
-@opindex no-include-key-block
-Include a minimized version of the public parts of the signing key as
-a “Key Block subpacket” into data signatures.  The Key Block contains
-the signing key or subkey as well as an encryption subkey.  This
-allows the recipient of a signed message to reply encrypted to the
-sender without using any online directories to lookup the key.  The
-default is @option{--no-innclude-key-block}.  See also the option
-@option{--auto-key-import}.
-
 
 @item --auto-key-locate @var{mechanisms}
 @itemx --no-auto-key-locate
@@ -1846,8 +1834,8 @@ list.  The default is "local,wkd".
 @opindex no-auto-key-import
 This is an offline mechanism to get a missing key for signature
 verification and for later encryption to this key.  If this option is
-enabled and a signature includes a “Key Block subpacket”, that key is
-used to verify the signature and on verification success that key is
+enabled and a signature includes an embedded key, that key is
+used to verify the signature and on verification success the key is
 imported. The default is @option{--no-auto-key-import}.
 
 On the sender (signing) site the option @option{--include-key-block}
@@ -1865,8 +1853,8 @@ local keyring.  The default is @option{--no-auto-key-retrieve}.
 The order of methods tried to lookup the key is:
 
 1. If the option @option{--auto-key-import} is set and the signatures
-includes a “Key Block subpacket”, that key is used to verify the
-signature and on verification success that key is imported.
+includes an embedded key, that key is used to verify the signature and
+on verification success that key is imported.
 
 2. If a preferred keyserver is specified in the signature and the
 option @option{honor-keyserver-url} is active (which is not the
@@ -2732,14 +2720,19 @@ information can be helpful for verifier to locate the key; see option
 @option{--auto-key-retrieve}.
 
 @item --include-key-block
+@itemx --no-include-key-block
 @opindex include-key-block
+@opindex no-include-key-block
 This option is used to embed the actual signing key into a data
 signature.  The embedded key is stripped down to a single user id and
 includes only the signing subkey used to create the signature as well
 as as valid encryption subkeys.  All other info is removed from the
 key to keep it and thus the signature small.  This option is the
 OpenPGP counterpart to the @command{gpgsm} option
-@option{--include-certs}.
+@option{--include-certs} and allows the recipient of a signed message
+to reply encrypted to the sender without using any online directories
+to lookup the key.  The default is @option{--no-include-key-block}.
+See also the option @option{--auto-key-import}.
 
 @item --personal-cipher-preferences @var{string}
 @opindex personal-cipher-preferences
