@@ -2158,7 +2158,7 @@ cmd_list_device (assuan_context_t ctx, char *line)
   int watch = 0;
 
   if (has_option (line, "--watch"))
-    watch = 0;
+    watch = 1;
 
   if ((err = open_card (ctrl)))
     return err;
@@ -2168,14 +2168,14 @@ cmd_list_device (assuan_context_t ctx, char *line)
       ctrl->server_local->watching_status = 1;
       while (1)
         {
-          sigset_t sigmask;
           int sig;
 
-          /* FIXME: sigwait OK?, what about Windows? */
-          sigemptyset (&sigmask);
-          sigaddset (&sigmask, SIGCONT);
-          npth_sigwait (&sigmask, &sig);
-          /**/
+          npth_unprotect ();
+          sigwait (npth_sigev_sigmask (), &sig);
+          npth_protect ();
+
+          assuan_write_status (ctx, "signal", "");
+
           if (ctrl->server_local->card_removed)
             {
               ctrl->server_local->watching_status = 0;
@@ -2733,79 +2733,81 @@ send_client_notifications (card_t card, int removal)
   struct server_local_s *sl;
 
   for (sl=session_list; sl; sl = sl->next_session)
-    if (sl->ctrl_backlink && sl->ctrl_backlink->card_ctx == card)
-      {
-        pid_t pid;
+    {
+      if (sl->watching_status)
+        assuan_write_status (sl->assuan_ctx, "FIXME: change", "something");
+
+      if (sl->ctrl_backlink && sl->ctrl_backlink->card_ctx == card)
+        {
+          pid_t pid;
 #ifdef HAVE_W32_SYSTEM
-        HANDLE handle;
+          HANDLE handle;
 #else
-        int signo;
+          int signo;
 #endif
 
-        if (removal)
-          {
-            sl->ctrl_backlink->card_ctx = NULL;
-            sl->ctrl_backlink->current_apptype = APPTYPE_NONE;
-            sl->card_removed = 1;
-            card_unref_locked (card);
-          }
+          if (removal)
+            {
+              sl->ctrl_backlink->card_ctx = NULL;
+              sl->ctrl_backlink->current_apptype = APPTYPE_NONE;
+              sl->card_removed = 1;
+              card_unref_locked (card);
+            }
 
-        if (sl->watching_status)
-          assuan_write_status (sl->assuan_ctx, "FIXME: change", "something");
+          if (!sl->event_signal || !sl->assuan_ctx)
+            continue;
 
-        if (!sl->event_signal || !sl->assuan_ctx)
-          continue;
-
-        pid = assuan_get_pid (sl->assuan_ctx);
+          pid = assuan_get_pid (sl->assuan_ctx);
 
 #ifdef HAVE_W32_SYSTEM
-        handle = sl->event_signal;
-        for (kidx=0; kidx < killidx; kidx++)
-          if (killed[kidx].pid == pid
-              && killed[kidx].handle == handle)
-            break;
-        if (kidx < killidx)
-          log_info ("event %p (%p) already triggered for client %d\n",
-                    sl->event_signal, handle, (int)pid);
-        else
-          {
-            log_info ("triggering event %p (%p) for client %d\n",
+          handle = sl->event_signal;
+          for (kidx=0; kidx < killidx; kidx++)
+            if (killed[kidx].pid == pid
+                && killed[kidx].handle == handle)
+              break;
+          if (kidx < killidx)
+            log_info ("event %p (%p) already triggered for client %d\n",
                       sl->event_signal, handle, (int)pid);
-            if (!SetEvent (handle))
-              log_error ("SetEvent(%p) failed: %s\n",
-                         sl->event_signal, w32_strerror (-1));
-            if (killidx < DIM (killed))
-              {
-                killed[killidx].pid = pid;
-                killed[killidx].handle = handle;
-                killidx++;
-              }
-          }
+          else
+            {
+              log_info ("triggering event %p (%p) for client %d\n",
+                        sl->event_signal, handle, (int)pid);
+              if (!SetEvent (handle))
+                log_error ("SetEvent(%p) failed: %s\n",
+                           sl->event_signal, w32_strerror (-1));
+              if (killidx < DIM (killed))
+                {
+                  killed[killidx].pid = pid;
+                  killed[killidx].handle = handle;
+                  killidx++;
+                }
+            }
 #else /*!HAVE_W32_SYSTEM*/
-        signo = sl->event_signal;
+          signo = sl->event_signal;
 
-        if (pid != (pid_t)(-1) && pid && signo > 0)
-          {
-            for (kidx=0; kidx < killidx; kidx++)
-              if (killed[kidx].pid == pid
-                  && killed[kidx].signo == signo)
-                break;
-            if (kidx < killidx)
-              log_info ("signal %d already sent to client %d\n",
-                        signo, (int)pid);
-            else
-              {
-                log_info ("sending signal %d to client %d\n",
+          if (pid != (pid_t)(-1) && pid && signo > 0)
+            {
+              for (kidx=0; kidx < killidx; kidx++)
+                if (killed[kidx].pid == pid
+                    && killed[kidx].signo == signo)
+                  break;
+              if (kidx < killidx)
+                log_info ("signal %d already sent to client %d\n",
                           signo, (int)pid);
-                kill (pid, signo);
-                if (killidx < DIM (killed))
-                  {
-                    killed[killidx].pid = pid;
-                    killed[killidx].signo = signo;
-                    killidx++;
-                  }
-              }
-          }
+              else
+                {
+                  log_info ("sending signal %d to client %d\n",
+                            signo, (int)pid);
+                  kill (pid, signo);
+                  if (killidx < DIM (killed))
+                    {
+                      killed[killidx].pid = pid;
+                      killed[killidx].signo = signo;
+                      killidx++;
+                    }
+                }
+            }
 #endif /*!HAVE_W32_SYSTEM*/
-      }
+        }
+    }
 }
