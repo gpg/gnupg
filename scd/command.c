@@ -2158,35 +2158,35 @@ cmd_list_device (assuan_context_t ctx, char *line)
   int watch = 0;
 
   if (has_option (line, "--watch"))
-    watch = 1;
+    {
+      watch = 1;
+      ctrl->server_local->watching_status = 1;
+    }
 
+  /* Clear the remove flag so that the open_card is able to reread it.  */
+  if (ctrl->server_local->card_removed)
+    ctrl->server_local->card_removed = 0;
+
+  /* Then, actively try to open device(s) available.  */
   if ((err = open_card (ctrl)))
     return err;
 
+  /* Remove reference(s) to the card.  */
+  ctrl->card_ctx = NULL;
+  ctrl->current_apptype = APPTYPE_NONE;
+  card_unref (ctrl->card_ctx);
+
   if (watch)
-    {
-      ctrl->server_local->watching_status = 1;
-      while (1)
+    while (1)
+      if (app_wait ())
         {
-          int sig;
-
-          npth_unprotect ();
-          sigwait (npth_sigev_sigmask (), &sig);
-          npth_protect ();
-
-          assuan_write_status (ctx, "signal", "");
-
-          if (ctrl->server_local->card_removed)
-            {
-              ctrl->server_local->watching_status = 0;
-              return 0;
-            }
+          ctrl->server_local->watching_status = 0;
+          return 0;
         }
-    }
+      else
+        assuan_write_status (ctx, "app_wait", "... returns");
 
-  /* XXX: Actively try to open devices available.  */
   return gpg_error (GPG_ERR_NOT_FOUND);
-  return 0;
 }
 
 /* Return true if the command CMD implements the option OPT.  */

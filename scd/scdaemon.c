@@ -1220,6 +1220,9 @@ scd_kick_the_loop (void)
     log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
                gpg_strerror (gpg_error_from_syserror ()));
 #endif
+
+  /* Also, notify watching threads.  */
+  app_notify ();
 }
 
 /* Connection handler loop.  Wait for connection requests and spawn a

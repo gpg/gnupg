@@ -42,6 +42,9 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl);
  * applications.  */
 static npth_mutex_t card_list_lock;
 
+/* Notification to threads which keep watching the status change.  */
+static npth_cond_t notify_cond;
+
 /* A list of card contexts.  A card is a collection of applications
  * (described by app_t) on the same physical token. */
 static card_t card_top;
@@ -2013,8 +2016,17 @@ initialize_module_command (void)
       return err;
     }
 
+  err = npth_cond_init (&notify_cond, NULL);
+  if (err)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("npth_cond_init failed: %s\n", gpg_strerror (err));
+      return;
+    }
+
   return apdu_init ();
 }
+
 
 
 /* Sort helper for app_send_card_list.  */
@@ -2278,4 +2290,23 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
     }
   npth_mutex_unlock (&card_list_lock);
   return c;
+}
+
+void
+app_notify (void)
+{
+  npth_cond_broadcast (&notify_cond);
+}
+
+int
+app_wait (void)
+{
+  int ret;
+
+  npth_mutex_lock (&card_list_lock);
+  npth_cond_wait (&notify_cond, &card_list_lock);
+  ret = (card_top == NULL);
+  npth_mutex_unlock (&card_list_lock);
+
+  return ret;
 }
