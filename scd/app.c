@@ -1937,6 +1937,7 @@ scd_update_reader_status_file (void)
 {
   card_t card, card_next;
   int periodical_check_needed = 0;
+  int reported = 0;
 
   npth_mutex_lock (&card_list_lock);
   for (card = card_top; card; card = card_next)
@@ -1971,6 +1972,7 @@ scd_update_reader_status_file (void)
         {
           report_change (card->slot, card->card_status, status);
           send_client_notifications (card, status == 0);
+          reported++;
 
           if (status == 0)
             {
@@ -1994,6 +1996,9 @@ scd_update_reader_status_file (void)
           unlock_card (card);
         }
     }
+
+  if (reported)
+    npth_cond_broadcast (&notify_cond);
 
   npth_mutex_unlock (&card_list_lock);
 
@@ -2290,12 +2295,6 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
     }
   npth_mutex_unlock (&card_list_lock);
   return c;
-}
-
-void
-app_notify (void)
-{
-  npth_cond_broadcast (&notify_cond);
 }
 
 int
