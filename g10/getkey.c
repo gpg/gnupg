@@ -2402,7 +2402,7 @@ parse_key_usage (PKT_signature * sig)
 
 /* Apply information from SIGNODE (which is the valid self-signature
  * associated with that UID) to the UIDNODE:
- * - weather the UID has been revoked
+ * - wether the UID has been revoked
  * - assumed creation date of the UID
  * - temporary store the keyflags here
  * - temporary store the key expiration time here
@@ -2565,7 +2565,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
   KBNODE signode, uidnode, uidnode2;
   u32 curtime = make_timestamp ();
   unsigned int key_usage = 0;
-  u32 keytimestamp = 0;
+  u32 keytimestamp = 0;  /* Creation time of the key.  */
   u32 key_expire = 0;
   int key_expire_seen = 0;
   byte sigversion = 0;
@@ -2596,7 +2596,9 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
     {
       /* Before v4 the key packet itself contains the expiration date
        * and there was no way to change it, so we start with the one
-       * from the key packet.  */
+       * from the key packet.  We do not support v3 keys anymore but
+       * we keep the code in case a future key versions introduces a
+       * hadr expire time again. */
       key_expire = pk->max_expiredate;
       key_expire_seen = 1;
     }
@@ -2724,8 +2726,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 			       sizeof (struct revocation_key));
     }
 
-  /* SIGNODE is the 1F signature packet with the latest creation time.
-   * Extract some information from it.  */
+  /* SIGNODE is the direct key signature packet (sigclass 0x1f) with
+   * the latest creation time.  Extract some information from it.  */
   if (signode)
     {
       /* Some information from a direct key signature take precedence
@@ -2926,7 +2928,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	    {
 	      PKT_user_id *uid = k->pkt->pkt.user_id;
 
-	      if (uid->help_key_usage && uid->created > uiddate)
+	      if (uid->help_key_usage
+                  && (uid->created > uiddate || (!uid->created && !uiddate)))
 		{
 		  key_usage = uid->help_key_usage;
 		  uiddate = uid->created;
@@ -2953,9 +2956,9 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 
   if (!key_expire_seen)
     {
-      /* Find the latest valid user ID with a key expiration set
-       * Note, that this may be a different one from the above because
-       * some user IDs may have no expiration date set.  */
+      /* Find the latest valid user ID with a key expiration set.
+       * This may be a different one than from usage computation above
+       * because some user IDs may have no expiration date set.  */
       uiddate = 0;
       for (k = keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
 	   k = k->next)
@@ -2963,7 +2966,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	  if (k->pkt->pkttype == PKT_USER_ID)
 	    {
 	      PKT_user_id *uid = k->pkt->pkt.user_id;
-	      if (uid->help_key_expire && uid->created > uiddate)
+	      if (uid->help_key_expire
+                  && (uid->created > uiddate || (!uid->created && !uiddate)))
 		{
 		  key_expire = uid->help_key_expire;
 		  uiddate = uid->created;
@@ -2972,8 +2976,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	}
     }
 
-  /* Currently only v3 keys have a maximum expiration date, but I'll
-   * bet v5 keys get this feature again. */
+  /* Currently only the not anymore supported v3 keys have a maximum
+   * expiration date, but future key versions may get this feature again. */
   if (key_expire == 0
       || (pk->max_expiredate && key_expire > pk->max_expiredate))
     key_expire = pk->max_expiredate;
