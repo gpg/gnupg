@@ -228,6 +228,13 @@ tdb_register_trusted_key (const char *string)
           register_trusted_keyid (kid);
           return;
         }
+      if (desc.mode == KEYDB_SEARCH_MODE_FPR && desc.fprlen == 32)
+        {
+          kid[0] = buf32_to_u32 (desc.u.fpr);
+          kid[1] = buf32_to_u32 (desc.u.fpr+4);
+          register_trusted_keyid (kid);
+          return;
+        }
     }
   log_error (_("'%s' is not a valid long keyID\n"), string );
 }
