@@ -38,6 +38,7 @@
 #include "filter.h"
 #include "../common/ttyio.h"
 #include "../common/i18n.h"
+#include "../common/shareddefs.h"
 #include "call-agent.h"
 
 
@@ -368,6 +369,11 @@ delete_keys (ctrl_t ctrl, strlist_t names, int secret, int allow_both)
         {
           log_error ("%s: delete key failed: %s\n",
                      names->d, gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_NO_PIN_ENTRY
+              && opt.batch && secret
+              && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
+            log_info ("(try option \"--yes\" to delete anyway)\n");
+
           return err;
         }
     }
