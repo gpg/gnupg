@@ -2130,7 +2130,7 @@ send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
 
 
 static const char hlp_list_device[] =
-  "LIST_DEVICE [count]\n"
+  "LIST_DEVICE [--watch] [--scan]\n"
   "\n"
   "Return information about devices.  When no device is available,\n"
   "GPG_ERR_NOT_FOUND is returned.  If the option --watch is geven,\n"
@@ -2156,6 +2156,7 @@ cmd_list_device (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   int watch = 0;
+  int scan = 0;
 
   if (has_option (line, "--watch"))
     {
@@ -2163,12 +2164,17 @@ cmd_list_device (assuan_context_t ctx, char *line)
       ctrl->server_local->watching_status = 1;
     }
 
+  if (has_option (line, "--scan"))
+    scan = 1;
+
+  assuan_write_status (ctx, "LIST_DEVICE", "... show status of all devices");
+
   /* Clear the remove flag so that the open_card is able to reread it.  */
   if (ctrl->server_local->card_removed)
     ctrl->server_local->card_removed = 0;
 
-  /* Then, actively try to open device(s) available.  */
-  if ((err = open_card (ctrl)))
+  /* Then, with --scan, try to open device(s) available.  */
+  if (scan && (err = open_card (ctrl)))
     return err;
 
   /* Remove reference(s) to the card.  */
@@ -2183,8 +2189,6 @@ cmd_list_device (assuan_context_t ctx, char *line)
           ctrl->server_local->watching_status = 0;
           return 0;
         }
-      else
-        assuan_write_status (ctx, "app_wait", "... returns");
 
   return gpg_error (GPG_ERR_NOT_FOUND);
 }
@@ -2735,7 +2739,12 @@ send_client_notifications (card_t card, int removal)
   for (sl=session_list; sl; sl = sl->next_session)
     {
       if (sl->watching_status)
-        assuan_write_status (sl->assuan_ctx, "FIXME: change", "something");
+        {
+          if (removal)
+            assuan_write_status (sl->assuan_ctx, "LIST_DEVICE", "removal");
+          else
+            assuan_write_status (sl->assuan_ctx, "LIST_DEVICE", "new device");
+        }
 
       if (sl->ctrl_backlink && sl->ctrl_backlink->card_ctx == card)
         {
