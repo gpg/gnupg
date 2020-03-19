@@ -681,7 +681,6 @@ gpg_agent_runtime_change (int killflag)
   const char *pgmname;
   const char *argv[5];
   pid_t pid = (pid_t)(-1);
-  char *abs_homedir = NULL;
   int i = 0;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
@@ -702,7 +701,6 @@ gpg_agent_runtime_change (int killflag)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[1], gpg_strerror (err));
   gnupg_release_process (pid);
-  xfree (abs_homedir);
 }
 
 
@@ -713,7 +711,6 @@ scdaemon_runtime_change (int killflag)
   const char *pgmname;
   const char *argv[9];
   pid_t pid = (pid_t)(-1);
-  char *abs_homedir = NULL;
   int i = 0;
 
   (void)killflag;  /* For scdaemon kill and reload are synonyms.  */
@@ -745,7 +742,6 @@ scdaemon_runtime_change (int killflag)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[4], gpg_strerror (err));
   gnupg_release_process (pid);
-  xfree (abs_homedir);
 }
 
 
@@ -1536,6 +1532,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   const char *config_name;
   gnupg_argparse_t pargs;
   int dummy_argc;
+  char *twopartconfig_name = NULL;
   gpgrt_opt_t *opt_table = NULL;      /* A malloced option table.    */
   size_t opt_table_used = 0;          /* Its current length.         */
   size_t opt_table_size = 0;          /* Its allocated length.       */
@@ -1814,6 +1811,17 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   if (!config_name)
     gc_error (1, 0, "name of config file for %s is not known\n", pgmname);
 
+  if (!gnupg_default_homedir_p ())
+    {
+      /* This is not the default homedir.  We need to take an absolute
+       * config name for the user config file; gpgrt_argparser
+       * fortunately supports this.  */
+      char *tmp = make_filename (gnupg_homedir (), config_name, NULL);
+      twopartconfig_name = xstrconcat (config_name, PATHSEP_S, tmp, NULL);
+      xfree (tmp);
+      config_name = twopartconfig_name;
+    }
+
   memset (&pargs, 0, sizeof pargs);
   dummy_argc = 0;
   pargs.argc = &dummy_argc;
@@ -1893,6 +1901,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
     }
 
   xfree (line);
+  xfree (twopartconfig_name);
 }
 
 
