@@ -1,6 +1,7 @@
-# configure.ac - for GnuPG 2.1
+# configure.ac - for GnuPG 2.2
 # Copyright (C) 1998-2019 Free Software Foundation, Inc.
 # Copyright (C) 1998-2019 Werner Koch
+# Copyright (C) 2003-2020 g10 Code GmbH
 #
 # This file is part of GnuPG.
 #
