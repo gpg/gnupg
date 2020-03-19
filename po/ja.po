@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.2.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-01-15 15:48+0900\n"
+"PO-Revision-Date: 2020-03-19 09:27+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1239,6 +1239,7 @@ msgstr "%sは%sモードに準拠しません\n"
 msgid "no dirmngr running in this session\n"
 msgstr "このセッションでdirmngrは実行されていません\n"
 
+#, c-format
 msgid "keyserver option \"%s\" may not be used in %s mode\n"
 msgstr "鍵サーバのオプション\"%s\"を%sモードで使うことはできません\n"
 
@@ -1263,6 +1264,7 @@ msgstr "サーバからの受け容れることのできないHTTPりダイレ�
 msgid "server uses an invalid certificate"
 msgstr "サーバは無効な証明書を使っています"
 
+#, c-format
 msgid "Note: %s\n"
 msgstr "注意: %s\n"
 
@@ -8389,6 +8391,12 @@ msgstr "PKA検索(DNS要求)を認める"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|メールアドレスによって鍵を特定する際、MECHANISMSを使用する"
+
+msgid "import missing key from a signature"
+msgstr "署名から手元にない鍵をインポートする"
+
+msgid "include the public key in signatures"
+msgstr "署名に公開鍵を含める"
 
 msgid "disable all access to the dirmngr"
 msgstr "dirmngrへのすべてのアクセスを無効とする"
