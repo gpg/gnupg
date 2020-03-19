@@ -1708,7 +1708,7 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
   gc_backend_t backend;
   gc_option_t *option;
   const char *pgmname;
-  const char *argv[4];
+  const char *argv[6];
   int i;
   pid_t pid;
   int exitcode;
@@ -1740,6 +1740,14 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
 
   pgmname = gnupg_module_name (gc_backend[backend].module_name);
   i = 0;
+  if (!gnupg_default_homedir_p ()
+      && backend != GC_BACKEND_ANY
+      && backend != GC_BACKEND_DIRMNGR_LDAP_SERVER_LIST
+      && backend != GC_BACKEND_PINENTRY)
+    {
+      argv[i++] = "--homedir";
+      argv[i++] = gnupg_homedir ();
+    }
   if (conf_file)
     {
       argv[i++] = "--options";
@@ -2081,7 +2089,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend,
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[2];
+  const char *argv[4];
   estream_t outfp;
   int exitcode;
   pid_t pid;
@@ -2090,12 +2098,22 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend,
   ssize_t length;
   estream_t config;
   char *config_filename;
+  int i;
 
   pgmname = (gc_backend[backend].module_name
              ? gnupg_module_name (gc_backend[backend].module_name)
              : gc_backend[backend].program );
-  argv[0] = "--gpgconf-list";
-  argv[1] = NULL;
+  i = 0;
+  if (!gnupg_default_homedir_p ()
+      && backend != GC_BACKEND_ANY
+      && backend != GC_BACKEND_DIRMNGR_LDAP_SERVER_LIST
+      && backend != GC_BACKEND_PINENTRY)
+    {
+      argv[i++] = "--homedir";
+      argv[i++] = gnupg_homedir ();
+    }
+  argv[i++] = "--gpgconf-list";
+  argv[i++] = NULL;
 
   if (only_installed && access (pgmname, X_OK))
     {
