@@ -283,6 +283,34 @@ app_dump_state (void)
 }
 
 
+void
+app_show_list (ctrl_t ctrl)
+{
+  card_t c;
+  app_t a;
+
+  send_status_direct (ctrl, "LIST_DEVICE", "show status of all devices");
+
+  npth_mutex_lock (&card_list_lock);
+  for (c = card_top; c; c = c->next)
+    {
+      char card_info[50];
+
+      snprintf (card_info, sizeof card_info, "card=%p slot=%d type=%s",
+                c, c->slot, strcardtype (c->cardtype));
+
+      for (a = c->app; a; a = a->next)
+        {
+          char app_info[50];
+
+          snprintf (app_info, sizeof app_info, "app=%p type=%s",
+                    a, strapptype (a->apptype));
+          send_status_direct (ctrl, card_info, app_info);
+        }
+    }
+  npth_mutex_unlock (&card_list_lock);
+}
+
 /* Check whether the application NAME is allowed.  This does not mean
    we have support for it though.  */
 static int
@@ -2026,7 +2054,7 @@ initialize_module_command (void)
     {
       err = gpg_error_from_syserror ();
       log_error ("npth_cond_init failed: %s\n", gpg_strerror (err));
-      return;
+      return err;
     }
 
   return apdu_init ();

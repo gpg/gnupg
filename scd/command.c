@@ -2167,7 +2167,7 @@ cmd_list_device (assuan_context_t ctx, char *line)
   if (has_option (line, "--scan"))
     scan = 1;
 
-  assuan_write_status (ctx, "LIST_DEVICE", "... show status of all devices");
+  app_show_list (ctrl);
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
   if (ctrl->server_local->card_removed)

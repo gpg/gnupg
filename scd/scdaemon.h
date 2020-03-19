@@ -154,5 +154,6 @@ int get_active_connection_count (void);
 /*-- app.c --*/
 int scd_update_reader_status_file (void);
 int app_wait (void);
+void app_show_list (ctrl_t ctrl);
 
 #endif /*SCDAEMON_H*/
