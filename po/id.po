@@ -8887,6 +8887,15 @@ msgstr ""
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "impor kunci dari keyserver"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "periksa signature kunci"
+
 msgid "disable all access to the dirmngr"
 msgstr ""
 

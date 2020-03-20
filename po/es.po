@@ -8628,6 +8628,16 @@ msgstr "permitir búsquedas PKA (peticiones DNS)"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|usa MECANISMOS para encontrar claves por emails"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importa claves desde un servidor de claves"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "lista y comprueba firmas de las claves"
+
 msgid "disable all access to the dirmngr"
 msgstr "prohibir todo acceso al dirmngr"
 

@@ -9118,6 +9118,16 @@ msgstr ""
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importa claus d'un servidor de claus"
+
+# «de les claus» o «de la clau»?  ivb
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "comprova les signatures de la claus"
+
 msgid "disable all access to the dirmngr"
 msgstr ""
 

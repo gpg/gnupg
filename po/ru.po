@@ -8659,6 +8659,16 @@ msgstr ""
 "|MECHANISMS|использовать механизмы MECHANISMS для поиска ключей по адресу "
 "электронной почты"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "импортировать ключи с сервера ключей"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "вывести и проверить подписи ключей"
+
 msgid "disable all access to the dirmngr"
 msgstr "полностью запретить доступ к dirmngr"
 

@@ -8346,6 +8346,16 @@ msgstr "允许 PKA 查询（DNS 请求）"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|通过邮件地址定位密钥时使用机制 MECHANISMS"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "从公钥服务器上导入密钥"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "列出并检查密钥签名"
+
 msgid "disable all access to the dirmngr"
 msgstr "禁用对 dirmngr 的所有访问"
 

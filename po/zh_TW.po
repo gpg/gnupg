@@ -8544,6 +8544,16 @@ msgstr "允許 PKA 查找 (DNS 請求)"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|使用 MECHANISMS 機制來從郵件地址找出金鑰"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "從金鑰伺服器匯入金鑰"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "列出並檢查金鑰簽章"
+
 msgid "disable all access to the dirmngr"
 msgstr "停用所有的 dirmngr 存取"
 

@@ -8545,6 +8545,16 @@ msgstr "tillat PKA-oppslag (DNS-forespørsler)"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MEKANISMER|bruk valgte MEKANISME til å finne nøkler med e-postadresse"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importer nøkler fra nøkkeltjener"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "vis og kontroller nøkkelsignaturer"
+
 msgid "disable all access to the dirmngr"
 msgstr "slå av all tilgang til dirmngr"
 

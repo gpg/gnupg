@@ -8997,6 +8997,16 @@ msgstr "permettre les recherches PKA (requêtes DNS)"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MÉCANISMES|utiliser les MÉCANISMES pour localiser les clefs"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importer les clefs d'un serveur de clefs"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "afficher et vérifier les signatures de clefs"
+
 msgid "disable all access to the dirmngr"
 msgstr "désactiver tous les accès au dirmngr"
 

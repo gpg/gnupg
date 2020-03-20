@@ -8679,6 +8679,16 @@ msgstr ""
 "|MECHANIZMY|wykorzystaj MECHANIZMY do wyszukiwania kluczy na podstawie "
 "adresów e-mail"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "import kluczy z serwera kluczy"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "wypisanie i sprawdzenie podpisów kluczy"
+
 msgid "disable all access to the dirmngr"
 msgstr "zablokuj dostęp do dirmngr"
 

@@ -8886,6 +8886,15 @@ msgstr ""
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importar chaves de um servidor de chaves"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "verificar as assinaturas das chaves"
+
 msgid "disable all access to the dirmngr"
 msgstr ""
 

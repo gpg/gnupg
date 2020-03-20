@@ -9228,6 +9228,16 @@ msgstr "tillad PKA-opslag (DNS-forespørgsler)"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|brug MEKANISMER til at finde nøgler efter postadresser"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importer nøgler fra en nøgleserver"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "vis og kontroller nøgleunderskrifter"
+
 msgid "disable all access to the dirmngr"
 msgstr "deaktiver al adgang til dirmngr"
 

@@ -8636,6 +8636,16 @@ msgstr "povolit dohledávání PKA (dotazy na DNS)"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|METODA|používat METODU pro dohledávání klíčů podle e-mailové adresy"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importovat klíče ze serveru klíčů"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "vypsat a zkontrolovat podpisy klíčů"
+
 msgid "disable all access to the dirmngr"
 msgstr "zakázat veškerý přístup k dirmngr"
 

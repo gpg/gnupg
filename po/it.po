@@ -8928,6 +8928,15 @@ msgstr ""
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importa le chiavi da un keyserver"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "controlla le firme delle chiavi"
+
 msgid "disable all access to the dirmngr"
 msgstr ""
 

@@ -9370,6 +9370,16 @@ msgstr "tillåt PKA-uppslag (DNS-förfrågningar)"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MEKANISMER|använd MEKANISMER för att hitta nycklar efter e-postadress"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importera nycklar från en nyckelserver"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "lista och kontrollera nyckelsignaturer"
+
 msgid "disable all access to the dirmngr"
 msgstr "inaktivera all åtkomst till dirmngr"
 

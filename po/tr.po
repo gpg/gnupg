@@ -9272,6 +9272,16 @@ msgstr ""
 "|MEKANİZMALAR|anahtarları eposta adreslerine göre konumlamak için "
 "MEKANİZMALAR kullanılır"
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "anahtarları bir anahtar sunucusundan indirir"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "anahtar imzalarını listeler ve sınar"
+
 msgid "disable all access to the dirmngr"
 msgstr "dirmngr'a tüm erişim iptal edilir"
 
