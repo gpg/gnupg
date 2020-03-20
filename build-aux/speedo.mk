@@ -1438,7 +1438,7 @@ sign-installer:
 	 cd $(INST_NAME)-$(INST_VERSION); \
 	 reldate="$$(date -u +%Y-%m-%d)" ;\
 	 exefile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ;\
-	 msifile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib ;\
+	 msifile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib" ;\
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Signing installer" ;\
 	 echo "speedo:  */" ;\
