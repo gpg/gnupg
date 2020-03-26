@@ -74,6 +74,7 @@ enum para_name
     pKEYTYPE,
     pKEYLENGTH,
     pKEYGRIP,
+    pKEYCURVE,
     pKEYUSAGE,
     pNAMEDN,
     pNAMEEMAIL,
@@ -236,6 +237,7 @@ read_parameters (ctrl_t ctrl, estream_t fp, estream_t out_fp)
     { "Key-Type",       pKEYTYPE},
     { "Key-Length",     pKEYLENGTH },
     { "Key-Grip",       pKEYGRIP },
+    { "Key-Curve",      pKEYCURVE },
     { "Key-Usage",      pKEYUSAGE },
     { "Name-DN",        pNAMEDN },
     { "Name-Email",     pNAMEEMAIL, 1 },
@@ -462,7 +464,10 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
   if (algo < 1 && !cardkeyid)
     {
       r = get_parameter (para, pKEYTYPE, 0);
-      log_error (_("line %d: invalid algorithm\n"), r ? r->lnr: -1);
+      if (r)
+        log_error (_("line %d: invalid algorithm\n"), r->lnr);
+      else
+        log_error ("No Key-Type specified\n");
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
 
@@ -719,10 +724,37 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
     }
   else if (!outctrl->dryrun) /* Generate new key.  */
     {
-      sprintf (numbuf, "%u", nbits);
-      snprintf ((char*)keyparms, DIM (keyparms),
-                "(6:genkey(3:rsa(5:nbits%d:%s)))",
-                (int)strlen (numbuf), numbuf);
+      if (algo == GCRY_PK_RSA)
+        {
+          sprintf (numbuf, "%u", nbits);
+          snprintf ((char*)keyparms, DIM (keyparms),
+                    "(6:genkey(3:rsa(5:nbits%d:%s)))",
+                    (int)strlen (numbuf), numbuf);
+        }
+      else if (algo == GCRY_PK_ECC || algo == GCRY_PK_EDDSA)
+        {
+          const char *curve = get_parameter_value (para, pKEYCURVE, 0);
+          const char *flags;
+
+          if (algo == GCRY_PK_EDDSA)
+            flags = "(flags eddsa)";
+          else if (!strcmp (curve, "Curve25519"))
+            flags = "(flags djb-tweak)";
+          else
+            flags = "";
+
+          snprintf ((char*)keyparms, DIM (keyparms),
+                    "(genkey(ecc(curve %zu:%s)%s))",
+                    strlen (curve), curve, flags);
+        }
+      else
+        {
+          r = get_parameter (para, pKEYTYPE, 0);
+          log_error (_("line %d: invalid algorithm\n"), r->lnr);
+          xfree (sigkey);
+          xfree (cardkeyid);
+          return gpg_error (GPG_ERR_INV_PARAMETER);
+        }
       rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
       if (rc)
         {
