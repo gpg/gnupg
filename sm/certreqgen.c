@@ -433,6 +433,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
   struct para_data_s *r;
   const char *s, *string;
   int i;
+  int algo;
   unsigned int nbits;
   char numbuf[20];
   unsigned char keyparms[100];
@@ -446,22 +447,22 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
   /* Check that we have all required parameters; */
   assert (get_parameter (para, pKEYTYPE, 0));
 
-  /* We can only use RSA for now.  There is a problem with pkcs-10 on
-     how to use ElGamal because it is expected that a PK algorithm can
-     always be used for signing. Another problem is that on-card
-     generated encryption keys may not be used for signing.  */
-  i = get_parameter_algo (para, pKEYTYPE);
-  if (!i && (s = get_parameter_value (para, pKEYTYPE, 0)) && *s)
+  /* There is a problem with pkcs-10 on how to use ElGamal because it
+     is expected that a PK algorithm can always be used for
+     signing.  Another problem is that on-card generated encryption
+     keys may not be used for signing.  */
+  algo = get_parameter_algo (para, pKEYTYPE);
+  if (!algo && (s = get_parameter_value (para, pKEYTYPE, 0)) && *s)
     {
       /* Hack to allow creation of certificates directly from a smart
          card.  For example: "Key-Type: card:OPENPGP.3".  */
       if (!strncmp (s, "card:", 5) && s[5])
         cardkeyid = xtrystrdup (s+5);
     }
-  if ( (i < 1 || i != GCRY_PK_RSA) && !cardkeyid )
+  if (algo < 1 && !cardkeyid)
     {
       r = get_parameter (para, pKEYTYPE, 0);
-      log_error (_("line %d: invalid algorithm\n"), r->lnr);
+      log_error (_("line %d: invalid algorithm\n"), r ? r->lnr: -1);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
 
