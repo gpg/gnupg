@@ -127,6 +127,7 @@ struct
   int no_crl_check;         /* Don't do a CRL check */
   int no_trusted_cert_crl_check; /* Don't run a CRL check for trusted certs. */
   int force_crl_refresh;    /* Force refreshing the CRL. */
+  int enable_issuer_based_crl_check; /* Backward compatibility hack.  */
   int enable_ocsp;          /* Default to use OCSP checks. */
 
   char *policy_file;        /* full pathname of policy file */

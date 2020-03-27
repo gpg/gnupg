@@ -469,6 +469,14 @@ hold in the keybox.  The suggested way of doing this is by using it
 along with the option @option{--with-validation} for a key listing
 command.  This option should not be used in a configuration file.
 
+@item --enable-issuer-based-crl-check
+@opindex enable-issuer-based-crl-check
+Run a CRL check even for certificates which do not have any CRL
+distribution point.  This requires that a suitable LDAP server has
+been configured in Dirmngr and that the CRL can be found using the
+issuer.  This option reverts to what GnuPG did up to version 2.2.20.
+This option is in general not useful.
+
 @item  --enable-ocsp
 @itemx --disable-ocsp
 @opindex enable-ocsp

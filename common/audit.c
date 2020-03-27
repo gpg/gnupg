@@ -1105,6 +1105,7 @@ proc_type_verify (audit_ctx_t ctx)
           switch (gpg_err_code (item->err))
             {
             case 0:                    ok = "good"; break;
+            case GPG_ERR_TRUE:         ok = "n/a";  break;
             case GPG_ERR_CERT_REVOKED: ok = "bad"; break;
             case GPG_ERR_NOT_ENABLED:  ok = "disabled"; break;
             case GPG_ERR_NO_CRL_KNOWN:

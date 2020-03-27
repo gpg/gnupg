@@ -146,6 +146,7 @@ enum cmd_and_opt_values {
   oDisableTrustedCertCRLCheck,
   oEnableTrustedCertCRLCheck,
   oForceCRLRefresh,
+  oEnableIssuerBasedCRLCheck,
 
   oDisableOCSP,
   oEnableOCSP,
@@ -412,6 +413,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
   ARGPARSE_s_s (oRequestOrigin,   "request-origin", "@"),
   ARGPARSE_s_n (oForceCRLRefresh, "force-crl-refresh", "@"),
+  ARGPARSE_s_n (oEnableIssuerBasedCRLCheck, "enable-issuer-based-crl-check",
+                "@"),
   ARGPARSE_s_s (oAuditLog, "audit-log",
                 N_("|FILE|write an audit log to FILE")),
   ARGPARSE_s_s (oHtmlAuditLog, "html-audit-log", "@"),
@@ -1267,6 +1270,9 @@ main ( int argc, char **argv)
           break;
         case oForceCRLRefresh:
           opt.force_crl_refresh = 1;
+          break;
+        case oEnableIssuerBasedCRLCheck:
+          opt.enable_issuer_based_crl_check = 1;
           break;
 
         case oDisableOCSP:
