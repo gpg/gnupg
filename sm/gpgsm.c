@@ -144,6 +144,7 @@ enum cmd_and_opt_values {
   oDisableTrustedCertCRLCheck,
   oEnableTrustedCertCRLCheck,
   oForceCRLRefresh,
+  oEnableIssuerBasedCRLCheck,
 
   oDisableOCSP,
   oEnableOCSP,
@@ -402,6 +403,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
+  ARGPARSE_s_n (oEnableIssuerBasedCRLCheck, "enable-issuer-based-crl-check",
+                "@"),
 
   /* Command aliases.  */
   ARGPARSE_c (aListKeys, "list-key", "@"),
@@ -1201,6 +1204,9 @@ main ( int argc, char **argv)
           break;
         case oForceCRLRefresh:
           opt.force_crl_refresh = 1;
+          break;
+        case oEnableIssuerBasedCRLCheck:
+          opt.enable_issuer_based_crl_check = 1;
           break;
 
         case oDisableOCSP:

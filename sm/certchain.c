@@ -1054,6 +1054,24 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
       return 0;
     }
 
+
+  if (!(force_ocsp || ctrl->use_ocsp)
+      && !opt.enable_issuer_based_crl_check)
+    {
+      err = ksba_cert_get_crl_dist_point (subject_cert, 0, NULL, NULL, NULL);
+      if (gpg_err_code (err) == GPG_ERR_EOF)
+        {
+          /* No DP specified in the certificate.  Thus the CA does not
+           * consider a CRL useful and the user of the certificate
+           * also does not consider this to be a critical thing.  In
+           * this case we can conclude that the certificate shall not
+           * be revocable.  Note that we reach this point here only if
+           * no OCSP responder shall be used.  */
+          audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK, gpg_error (GPG_ERR_TRUE));
+          return 0;
+        }
+    }
+
   err = gpgsm_dirmngr_isvalid (ctrl,
                                subject_cert, issuer_cert,
                                force_ocsp? 2 : !!ctrl->use_ocsp);
