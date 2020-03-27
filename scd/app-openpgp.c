@@ -4755,15 +4755,21 @@ check_against_given_fingerprint (app_t app, const char *fpr, int key)
 
    When KEYNO is 0 and KEYIDSTR is for a keygrip, the keygrip should
    be to be compared is the first one (keygrip for signing).
+   When KEYNO is 1, KEYIDSTR is for a keygrip, and R_USE_AUTH is not
+   NULL, OpenPGP.1 is first tested and then OpenPGP.3.  In the latter
+   case 1 is stored at R_USE_AUTH
  */
 static int
-check_keyidstr (app_t app, const char *keyidstr, int keyno)
+check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
 {
   int rc;
   const char *s;
   int n;
   const char *fpr = NULL;
   unsigned char tmp_sn[20]; /* Actually 16 bytes but also for the fpr. */
+
+  if (r_use_auth)
+    *r_use_auth = 0;
 
   if (strlen (keyidstr) < 32)
     return gpg_error (GPG_ERR_INV_ID);
@@ -4780,6 +4786,13 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno)
           keygrip_str = app->app_local->pk[keyno?keyno-1:0].keygrip_str;
           if (!strncmp (keygrip_str, keyidstr, 40))
             return 0;
+          else if (keyno == 1 && r_use_auth
+                   && !strncmp (app->app_local->pk[2].keygrip_str,
+                                keyidstr, 40))
+            {
+              *r_use_auth = 1;
+              return 0;
+            }
           else
             return gpg_error (GPG_ERR_INV_ID);
         }
@@ -4902,7 +4915,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     use_auth = 1;
   else
     {
-      rc = check_keyidstr (app, keyidstr, 1);
+      rc = check_keyidstr (app, keyidstr, 1, &use_auth);
       if (rc)
         return rc;
     }
@@ -5057,7 +5070,7 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
     ;
   else
     {
-      rc = check_keyidstr (app, keyidstr, 3);
+      rc = check_keyidstr (app, keyidstr, 3, NULL);
       if (rc)
         return rc;
     }
@@ -5112,7 +5125,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     ;
   else
     {
-      rc = check_keyidstr (app, keyidstr, 2);
+      rc = check_keyidstr (app, keyidstr, 2, NULL);
       if (rc)
         return rc;
     }
@@ -5338,7 +5351,7 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  rc = check_keyidstr (app, keyidstr, 0);
+  rc = check_keyidstr (app, keyidstr, 0, NULL);
   if (rc)
     return rc;
 
