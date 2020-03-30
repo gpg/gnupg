@@ -318,6 +318,11 @@ read_key (const char *fname)
   buf = read_file (fname, &buflen);
   if (!buf)
     return NULL;
+  if (buflen >= 4 && !memcmp (buf, "Key:", 4))
+    {
+      log_error ("Extended key format is not supported by this tool\n");
+      return NULL;
+    }
   key = make_canonical (fname, buf, buflen);
   xfree (buf);
   return key;
