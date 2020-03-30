@@ -1,5 +1,6 @@
 /* app-p15.c - The pkcs#15 card application.
  *	Copyright (C) 2005 Free Software Foundation, Inc.
+ *	Copyright (C) 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -15,6 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 /* Information pertaining to the BELPIC developer card samples:
@@ -48,6 +50,7 @@ typedef enum
     CARD_TYPE_UNKNOWN,
     CARD_TYPE_TCOS,
     CARD_TYPE_MICARDO,
+    CARD_TYPE_CARDOS_50,
     CARD_TYPE_BELPIC   /* Belgian eID card specs. */
   }
 card_type_t;
@@ -78,7 +81,8 @@ static struct
   { 26, X("\x3B\xFE\x94\x00\xFF\x80\xB1\xFA\x45\x1F\x03\x45\x73\x74\x45\x49"
           "\x44\x20\x76\x65\x72\x20\x31\x2E\x30\x43"),
     CARD_TYPE_MICARDO }, /* EstEID (Estonian Big Brother card) */
-
+  { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x01\x14"),
+    CARD_TYPE_CARDOS_50 }, /* CardOS 5.0 */
   { 0 }
 };
 #undef X
@@ -595,9 +599,9 @@ prkdf_object_from_keyidstr (app_t app, const char *keyidstr,
 
    A0 06 30 04 04 02 60 34  = Private Keys
    A4 06 30 04 04 02 60 35  = Certificates
-   A5 06 30 04 04 02 60 36  = TrustedCertificates
-   A7 06 30 04 04 02 60 37  = DataObjects
-   A8 06 30 04 04 02 60 38  = AuthObjects
+   A5 06 30 04 04 02 60 36  = Trusted Certificates
+   A7 06 30 04 04 02 60 37  = Data Objects
+   A8 06 30 04 04 02 60 38  = Auth Objects
 
    These are all PathOrObjects using the path CHOICE element.  The
    paths are octet strings of length 2.  Using this Path CHOICE
@@ -608,9 +612,10 @@ read_ef_odf (app_t app, unsigned short odf_fid)
 {
   gpg_error_t err;
   unsigned char *buffer, *p;
-  size_t buflen;
+  size_t buflen, n;
   unsigned short value;
   size_t offset;
+  unsigned short home_df = 0;
 
   err = select_and_read_binary (app_get_slot (app), odf_fid, "ODF",
                                 &buffer, &buflen);
@@ -623,6 +628,8 @@ read_ef_odf (app_t app, unsigned short odf_fid)
       xfree (buffer);
       return gpg_error (GPG_ERR_INV_OBJ);
     }
+
+  home_df = app->app_local->home_df;
   p = buffer;
   while (buflen && *p && *p != 0xff)
     {
@@ -635,17 +642,33 @@ read_ef_odf (app_t app, unsigned short odf_fid)
       else if ( buflen >= 12
                 && (p[0] & 0xf0) == 0xA0
                 && !memcmp (p+1, "\x0a\x30\x08\x04\x06\x3F\x00", 7)
-                && app->app_local->home_df == ((p[8]<<8)|p[9]) )
+                && (!home_df || home_df == ((p[8]<<8)|p[9])) )
         {
+          /* If we do not know the home DF, we take it from the first
+           * ODF object.  Here are sample values:
+           * a0 0a 30 08 0406 3f00 5015 4401
+           * a1 0a 30 08 0406 3f00 5015 4411
+           * a4 0a 30 08 0406 3f00 5015 4441
+           * a5 0a 30 08 0406 3f00 5015 4451
+           * a8 0a 30 08 0406 3f00 5015 4481
+           * 00000000 */
+          if (!home_df)
+            {
+              home_df = ((p[8]<<8)|p[9]);
+              app->app_local->home_df = home_df;
+              log_info ("pkcs#15 application directory detected as 0x%04hX\n",
+                        home_df);
+            }
+
           /* We only allow a full path if all files are at the same
-             level and below the home directory.  The extend this we
+             level and below the home directory.  To extend this we
              would need to make use of new data type capable of
              keeping a full path. */
           offset = 10;
         }
       else
         {
-          log_error ("ODF format is not supported by us\n");
+          log_printhex (p, buflen, "ODF format is not supported by us:");
           xfree (buffer);
           return gpg_error (GPG_ERR_INV_OBJ);
         }
@@ -691,8 +714,16 @@ read_ef_odf (app_t app, unsigned short odf_fid)
     }
 
   if (buflen)
-    log_info ("warning: %u bytes of garbage detected at end of ODF\n",
-              (unsigned int)buflen);
+    {
+      /* Print a warning if non-null garbage is left over.  */
+      for (n=0; n < buflen && !p[n]; n++)
+        ;
+      if (n < buflen)
+        {
+          log_info ("warning: garbage detected at end of ODF: ");
+          log_printhex (p, buflen, "");
+        }
+    }
 
   xfree (buffer);
   return 0;
@@ -2157,6 +2188,62 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
 }
 
 
+/* Print the BIT STRING with the tokenflags from the TokenInfo.  */
+static void
+print_tokeninfo_tokenflags (const unsigned char *der, size_t derlen)
+{
+  unsigned int bits, mask;
+  int i, unused, full;
+  int other = 0;
+
+  if (!derlen)
+    {
+      log_printf (" [invalid object]");
+      return;
+    }
+
+  unused = *der++; derlen--;
+  if ((!derlen && unused) || unused/8 > derlen)
+    {
+      log_printf (" [wrong encoding]");
+      return;
+    }
+  full = derlen - (unused+7)/8;
+  unused %= 8;
+  mask = 0;
+  for (i=1; unused; i <<= 1, unused--)
+    mask |= i;
+
+  /* First octet */
+  if (derlen)
+    {
+      bits = *der++; derlen--;
+      if (full)
+        full--;
+      else
+        {
+          bits &= ~mask;
+          mask = 0;
+        }
+    }
+  else
+    bits = 0;
+  if ((bits & 0x80)) log_printf (" readonly");
+  if ((bits & 0x40)) log_printf (" loginRequired");
+  if ((bits & 0x20)) log_printf (" prnGeneration");
+  if ((bits & 0x10)) log_printf (" eidCompliant");
+  if ((bits & 0x08)) other = 1;
+  if ((bits & 0x04)) other = 1;
+  if ((bits & 0x02)) other = 1;
+  if ((bits & 0x01)) other = 1;
+
+  /* Next octet.  */
+  if (derlen)
+    other = 1;
+
+  if (other)
+    log_printf (" [unknown]");
+}
 
 
 
@@ -2261,6 +2348,7 @@ read_ef_tokeninfo (app_t app)
       goto leave;
     }
 
+  log_info ("TokenInfo:\n");
   /* serialNumber.  */
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
@@ -2278,7 +2366,54 @@ read_ef_tokeninfo (app_t app)
     }
   memcpy (app->app_local->serialno, p, objlen);
   app->app_local->serialnolen = objlen;
-  log_printhex (p, objlen, "Serialnumber from EF(TokenInfo) is:");
+  /* *We  use a separate log_info to avoid the "DBG:" prefix.)  */
+  log_info ("  serialNumber .: ");
+  log_printhex (p, objlen, "");
+  p += objlen;
+  n -= objlen;
+
+  /* Is there an optional manufacturerID?  */
+  err = parse_ber_header (&p, &n, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > n || !objlen))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+  if (class == CLASS_UNIVERSAL && tag == TAG_UTF8_STRING)
+    {
+      log_info ("  manufacturerID: %.*s\n", (int)objlen, p);
+      p += objlen;
+      n -= objlen;
+      /* Get next TLV.  */
+      err = parse_ber_header (&p, &n, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && (objlen > n || !objlen))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (class == CLASS_CONTEXT && tag == 0)
+    {
+      log_info ("  label ........: %.*s\n", (int)objlen, p);
+      p += objlen;
+      n -= objlen;
+      /* Get next TLV.  */
+      err = parse_ber_header (&p, &n, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && (objlen > n || !objlen))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  /* The next is the mandatory tokenflags object.  */
+  if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
+    {
+      log_info ("  tokenflags ...:");
+      print_tokeninfo_tokenflags (p, objlen);
+      log_printf ("\n");
+      p += objlen;
+      n -= objlen;
+    }
 
  leave:
   xfree (buffer);
@@ -3307,11 +3442,11 @@ app_select_p15 (app_t app)
          does only allow for that.  Many other cards supports this
          selection method too.  Note, that we don't use
          select_application above for the Belgian card - the call
-         works but it seems that it did not switch to the correct DF.
+         works but it seems that it does not switch to the correct DF.
          Using the 2f02 just works. */
       unsigned short path[1] = { 0x2f00 };
 
-      rc = iso7816_select_path (app_get_slot (app), path, 1);
+      rc = iso7816_select_path (slot, path, 1);
       if (!rc)
         {
           direct = 1;
@@ -3319,7 +3454,7 @@ app_select_p15 (app_t app)
           if (def_home_df)
             {
               path[0] = def_home_df;
-              rc = iso7816_select_path (app_get_slot (app), path, 1);
+              rc = iso7816_select_path (slot, path, 1);
             }
         }
     }
