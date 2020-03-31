@@ -1354,7 +1354,7 @@ keygripstr_from_prkdf (app_t app, prkdf_object_t prkdf, char *r_gripstr)
     err = ksba_cert_init_from_mem (cert, der, derlen);
   xfree (der);
   if (!err)
-    err = app_help_get_keygrip_string (cert, r_gripstr);
+    err = app_help_get_keygrip_string (cert, r_gripstr, NULL);
   ksba_cert_release (cert);
 
   return err;
