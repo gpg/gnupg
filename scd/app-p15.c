@@ -138,7 +138,9 @@ struct cdf_object_s
   /* Link to next item when used in a linked list. */
   struct cdf_object_s *next;
 
-  /* Length and allocated buffer with the Id of this object. */
+  /* Length and allocated buffer with the Id of this object.
+   * This field is used for X.509 in PKCS#11 to make it easier to
+   * match a private key with a certificate.  */
   size_t objidlen;
   unsigned char *objid;
 
@@ -415,14 +417,14 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
   err = iso7816_select_file (slot, efid, 0);
   if (err)
     {
-      log_error ("error selecting %s (0x%04X): %s\n",
+      log_error ("p15: error selecting %s (0x%04X): %s\n",
                  efid_desc, efid, gpg_strerror (err));
       return err;
     }
   err = iso7816_read_binary (slot, 0, 0, buffer, buflen);
   if (err)
     {
-      log_error ("error reading %s (0x%04X): %s\n",
+      log_error ("p15: error reading %s (0x%04X): %s\n",
                  efid_desc, efid, gpg_strerror (err));
       return err;
     }
@@ -442,14 +444,14 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (pathlen && *path != 0x3f00 )
-    log_debug ("WARNING: relative path selection not yet implemented\n");
+    log_error ("p15: warning: relative path selection not yet implemented\n");
 
   if (app->app_local->direct_path_selection)
     {
       err = iso7816_select_path (app_get_slot (app), path+1, pathlen-1);
       if (err)
         {
-          log_error ("error selecting path ");
+          log_error ("p15: error selecting path ");
           for (j=0; j < pathlen; j++)
             log_printf ("%04hX", path[j]);
           log_printf (": %s\n", gpg_strerror (err));
@@ -468,7 +470,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
                                      path[i], !(i+1 == pathlen));
           if (err)
             {
-              log_error ("error selecting part %d from path ", i);
+              log_error ("p15: error selecting part %d from path ", i);
               for (j=0; j < pathlen; j++)
                 log_printf ("%04hX", path[j]);
               log_printf (": %s\n", gpg_strerror (err));
@@ -624,7 +626,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
 
   if (buflen < 8)
     {
-      log_error ("error: ODF too short\n");
+      log_error ("p15: error: ODF too short\n");
       xfree (buffer);
       return gpg_error (GPG_ERR_INV_OBJ);
     }
@@ -656,7 +658,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
             {
               home_df = ((p[8]<<8)|p[9]);
               app->app_local->home_df = home_df;
-              log_info ("pkcs#15 application directory detected as 0x%04hX\n",
+              log_info ("p15: application directory detected as 0x%04hX\n",
                         home_df);
             }
 
@@ -668,7 +670,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
         }
       else
         {
-          log_printhex (p, buflen, "ODF format is not supported by us:");
+          log_printhex (p, buflen, "p15: ODF format not supported:");
           xfree (buffer);
           return gpg_error (GPG_ERR_INV_OBJ);
         }
@@ -687,7 +689,8 @@ read_ef_odf (app_t app, unsigned short odf_fid)
         }
       if (value)
         {
-          log_error ("duplicate object type %d in ODF ignored\n",(p[0]&0x0f));
+          log_error ("p15: duplicate object type %d in ODF ignored\n",
+                     (p[0]&0x0f));
           continue;
         }
       value = ((p[offset] << 8) | p[offset+1]);
@@ -703,7 +706,8 @@ read_ef_odf (app_t app, unsigned short odf_fid)
         case 7: app->app_local->odf.data_objects = value; break;
         case 8: app->app_local->odf.auth_objects = value; break;
         default:
-          log_error ("unknown object type %d in ODF ignored\n", (p[0]&0x0f));
+          log_error ("p15: unknown object type %d in ODF ignored\n",
+                     (p[0]&0x0f));
         }
       offset += 2;
 
@@ -720,7 +724,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
         ;
       if (n < buflen)
         {
-          log_info ("warning: garbage detected at end of ODF: ");
+          log_info ("p15: warning: garbage detected at end of ODF: ");
           log_printhex (p, buflen, "");
         }
     }
@@ -894,7 +898,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
         {
-          log_error ("error parsing PrKDF record: %s\n", gpg_strerror (err));
+          log_error ("p15: error parsing PrKDF record: %s\n",
+                     gpg_strerror (err));
           goto leave;
         }
       pp = p;
@@ -1235,38 +1240,41 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
         }
 
 
-      log_debug ("PrKDF %04hX: id=", fid);
-      for (i=0; i < prkdf->objidlen; i++)
-        log_printf ("%02X", prkdf->objid[i]);
-      log_printf (" path=");
-      for (i=0; i < prkdf->pathlen; i++)
-        log_printf ("%04hX", prkdf->path[i]);
-      if (prkdf->have_off)
-        log_printf ("[%lu/%lu]", prkdf->off, prkdf->len);
-      if (prkdf->authid)
+      if (opt.verbose)
         {
-          log_printf (" authid=");
-          for (i=0; i < prkdf->authidlen; i++)
-            log_printf ("%02X", prkdf->authid[i]);
+          log_info ("p15: PrKDF %04hX: id=", fid);
+          for (i=0; i < prkdf->objidlen; i++)
+            log_printf ("%02X", prkdf->objid[i]);
+          log_printf (" path=");
+          for (i=0; i < prkdf->pathlen; i++)
+            log_printf ("%s%04hX", i?"/":"",prkdf->path[i]);
+          if (prkdf->have_off)
+            log_printf ("[%lu/%lu]", prkdf->off, prkdf->len);
+          if (prkdf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < prkdf->authidlen; i++)
+                log_printf ("%02X", prkdf->authid[i]);
+            }
+          if (prkdf->key_reference_valid)
+            log_printf (" keyref=0x%02lX", prkdf->key_reference);
+          log_info ("p15:             usage=");
+          s = "";
+          if (prkdf->usageflags.encrypt) log_printf ("%sencrypt", s), s = ",";
+          if (prkdf->usageflags.decrypt) log_printf ("%sdecrypt", s), s = ",";
+          if (prkdf->usageflags.sign   ) log_printf ("%ssign", s), s = ",";
+          if (prkdf->usageflags.sign_recover)
+            log_printf ("%ssign_recover", s), s = ",";
+          if (prkdf->usageflags.wrap   ) log_printf ("%swrap", s), s = ",";
+          if (prkdf->usageflags.unwrap ) log_printf ("%sunwrap", s), s = ",";
+          if (prkdf->usageflags.verify ) log_printf ("%sverify", s), s = ",";
+          if (prkdf->usageflags.verify_recover)
+            log_printf ("%sverify_recover", s), s = ",";
+          if (prkdf->usageflags.derive ) log_printf ("%sderive", s), s = ",";
+          if (prkdf->usageflags.non_repudiation)
+            log_printf ("%snon_repudiation", s), s = ",";
+          log_printf ("\n");
         }
-      if (prkdf->key_reference_valid)
-        log_printf (" keyref=0x%02lX", prkdf->key_reference);
-      log_printf (" usage=");
-      s = "";
-      if (prkdf->usageflags.encrypt) log_printf ("%sencrypt", s), s = ",";
-      if (prkdf->usageflags.decrypt) log_printf ("%sdecrypt", s), s = ",";
-      if (prkdf->usageflags.sign   ) log_printf ("%ssign", s), s = ",";
-      if (prkdf->usageflags.sign_recover)
-        log_printf ("%ssign_recover", s), s = ",";
-      if (prkdf->usageflags.wrap   ) log_printf ("%swrap", s), s = ",";
-      if (prkdf->usageflags.unwrap ) log_printf ("%sunwrap", s), s = ",";
-      if (prkdf->usageflags.verify ) log_printf ("%sverify", s), s = ",";
-      if (prkdf->usageflags.verify_recover)
-        log_printf ("%sverify_recover", s), s = ",";
-      if (prkdf->usageflags.derive ) log_printf ("%sderive", s), s = ",";
-      if (prkdf->usageflags.non_repudiation)
-        log_printf ("%snon_repudiation", s), s = ",";
-      log_printf ("\n");
 
       /* Put it into the list. */
       prkdf->next = prkdflist;
@@ -1275,7 +1283,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       continue; /* Ready. */
 
     parse_error:
-      log_error ("error parsing PrKDF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing PrKDF record (%d): %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       if (prkdf)
         {
@@ -1343,7 +1351,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
         {
-          log_error ("error parsing CDF record: %s\n", gpg_strerror (err));
+          log_error ("p15: error parsing CDF record: %s\n", gpg_strerror (err));
           goto leave;
         }
       pp = p;
@@ -1504,15 +1512,18 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
           cdf->len = ul;
         }
 
-      log_debug ("CDF %04hX: id=", fid);
-      for (i=0; i < cdf->objidlen; i++)
-        log_printf ("%02X", cdf->objid[i]);
-      log_printf (" path=");
-      for (i=0; i < cdf->pathlen; i++)
-        log_printf ("%04hX", cdf->path[i]);
-      if (cdf->have_off)
-        log_printf ("[%lu/%lu]", cdf->off, cdf->len);
-      log_printf ("\n");
+      if (opt.verbose)
+        {
+          log_info ("p15: CDF %04hX: id=", fid);
+          for (i=0; i < cdf->objidlen; i++)
+            log_printf ("%02X", cdf->objid[i]);
+          log_printf (" path=");
+          for (i=0; i < cdf->pathlen; i++)
+            log_printf ("%s%04hX", i?"/":"", cdf->path[i]);
+          if (cdf->have_off)
+            log_printf ("[%lu/%lu]", cdf->off, cdf->len);
+          log_printf ("\n");
+        }
 
       /* Put it into the list. */
       cdf->next = cdflist;
@@ -1521,7 +1532,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       continue; /* Ready. */
 
     parse_error:
-      log_error ("error parsing CDF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing CDF record (%d): %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       xfree (cdf);
       err = 0;
@@ -1618,7 +1629,8 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
         {
-          log_error ("error parsing AODF record: %s\n", gpg_strerror (err));
+          log_error ("p15: error parsing AODF record: %s\n",
+                     gpg_strerror (err));
           goto leave;
         }
       pp = p;
@@ -2092,73 +2104,77 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
          extensions of pkcs#15. */
 
     ready:
-      log_debug ("AODF %04hX: id=", fid);
-      for (i=0; i < aodf->objidlen; i++)
-        log_printf ("%02X", aodf->objid[i]);
-      if (aodf->authid)
+      if (opt.verbose)
         {
-          log_printf (" authid=");
-          for (i=0; i < aodf->authidlen; i++)
-            log_printf ("%02X", aodf->authid[i]);
-        }
-      log_printf (" flags=");
-      s = "";
-      if (aodf->pinflags.case_sensitive)
-        log_printf ("%scase_sensitive", s), s = ",";
-      if (aodf->pinflags.local)
-        log_printf ("%slocal", s), s = ",";
-      if (aodf->pinflags.change_disabled)
-        log_printf ("%schange_disabled", s), s = ",";
-      if (aodf->pinflags.unblock_disabled)
-        log_printf ("%sunblock_disabled", s), s = ",";
-      if (aodf->pinflags.initialized)
-        log_printf ("%sinitialized", s), s = ",";
-      if (aodf->pinflags.needs_padding)
-        log_printf ("%sneeds_padding", s), s = ",";
-      if (aodf->pinflags.unblocking_pin)
-        log_printf ("%sunblocking_pin", s), s = ",";
-      if (aodf->pinflags.so_pin)
-        log_printf ("%sso_pin", s), s = ",";
-      if (aodf->pinflags.disable_allowed)
-        log_printf ("%sdisable_allowed", s), s = ",";
-      if (aodf->pinflags.integrity_protected)
-        log_printf ("%sintegrity_protected", s), s = ",";
-      if (aodf->pinflags.confidentiality_protected)
-        log_printf ("%sconfidentiality_protected", s), s = ",";
-      if (aodf->pinflags.exchange_ref_data)
-        log_printf ("%sexchange_ref_data", s), s = ",";
-      {
-        char numbuf[50];
-        switch (aodf->pintype)
+          log_info ("p15: AODF %04hX: id=", fid);
+          for (i=0; i < aodf->objidlen; i++)
+            log_printf ("%02X", aodf->objid[i]);
+          if (aodf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < aodf->authidlen; i++)
+                log_printf ("%02X", aodf->authid[i]);
+            }
+          if (aodf->pin_reference_valid)
+            log_printf (" pinref=0x%02lX", aodf->pin_reference);
+          if (aodf->pathlen)
+            {
+              log_printf (" path=");
+              for (i=0; i < aodf->pathlen; i++)
+                log_printf ("%s%04hX", i?"/":"",aodf->path[i]);
+              if (aodf->have_off)
+                log_printf ("[%lu/%lu]", aodf->off, aodf->len);
+            }
+          log_printf (" min=%lu", aodf->min_length);
+          log_printf (" stored=%lu", aodf->stored_length);
+          if (aodf->max_length_valid)
+            log_printf (" max=%lu", aodf->max_length);
+          if (aodf->pad_char_valid)
+            log_printf (" pad=0x%02x", aodf->pad_char);
+
+          log_info ("p15:            flags=");
+          s = "";
+          if (aodf->pinflags.case_sensitive)
+            log_printf ("%scase_sensitive", s), s = ",";
+          if (aodf->pinflags.local)
+            log_printf ("%slocal", s), s = ",";
+          if (aodf->pinflags.change_disabled)
+            log_printf ("%schange_disabled", s), s = ",";
+          if (aodf->pinflags.unblock_disabled)
+            log_printf ("%sunblock_disabled", s), s = ",";
+          if (aodf->pinflags.initialized)
+            log_printf ("%sinitialized", s), s = ",";
+          if (aodf->pinflags.needs_padding)
+            log_printf ("%sneeds_padding", s), s = ",";
+          if (aodf->pinflags.unblocking_pin)
+            log_printf ("%sunblocking_pin", s), s = ",";
+          if (aodf->pinflags.so_pin)
+            log_printf ("%sso_pin", s), s = ",";
+          if (aodf->pinflags.disable_allowed)
+            log_printf ("%sdisable_allowed", s), s = ",";
+          if (aodf->pinflags.integrity_protected)
+            log_printf ("%sintegrity_protected", s), s = ",";
+          if (aodf->pinflags.confidentiality_protected)
+            log_printf ("%sconfidentiality_protected", s), s = ",";
+          if (aodf->pinflags.exchange_ref_data)
+            log_printf ("%sexchange_ref_data", s), s = ",";
           {
-          case PIN_TYPE_BCD: s = "bcd"; break;
-          case PIN_TYPE_ASCII_NUMERIC: s = "ascii-numeric"; break;
-          case PIN_TYPE_UTF8: s = "utf8"; break;
-          case PIN_TYPE_HALF_NIBBLE_BCD: s = "half-nibble-bcd"; break;
-          case PIN_TYPE_ISO9564_1: s = "iso9564-1"; break;
-          default:
-            sprintf (numbuf, "%lu", (unsigned long)aodf->pintype);
-            s = numbuf;
+            char numbuf[50];
+            switch (aodf->pintype)
+              {
+              case PIN_TYPE_BCD: s = "bcd"; break;
+              case PIN_TYPE_ASCII_NUMERIC: s = "ascii-numeric"; break;
+              case PIN_TYPE_UTF8: s = "utf8"; break;
+              case PIN_TYPE_HALF_NIBBLE_BCD: s = "half-nibble-bcd"; break;
+              case PIN_TYPE_ISO9564_1: s = "iso9564-1"; break;
+              default:
+                sprintf (numbuf, "%lu", (unsigned long)aodf->pintype);
+                s = numbuf;
+              }
+            log_printf (" type=%s", s);
           }
-        log_printf (" type=%s", s);
-      }
-      log_printf (" min=%lu", aodf->min_length);
-      log_printf (" stored=%lu", aodf->stored_length);
-      if (aodf->max_length_valid)
-        log_printf (" max=%lu", aodf->max_length);
-      if (aodf->pad_char_valid)
-        log_printf (" pad=0x%02x", aodf->pad_char);
-      if (aodf->pin_reference_valid)
-        log_printf (" pinref=0x%02lX", aodf->pin_reference);
-      if (aodf->pathlen)
-        {
-          log_printf (" path=");
-          for (i=0; i < aodf->pathlen; i++)
-            log_printf ("%04hX", aodf->path[i]);
-          if (aodf->have_off)
-            log_printf ("[%lu/%lu]", aodf->off, aodf->len);
+          log_printf ("\n");
         }
-      log_printf ("\n");
 
       /* Put it into the list. */
       aodf->next = aodflist;
@@ -2172,7 +2188,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       goto leave;
 
     parse_error:
-      log_error ("error parsing AODF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing AODF record (%d): %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       err = 0;
       release_aodf_object (aodf);
@@ -2321,7 +2337,7 @@ read_ef_tokeninfo (app_t app)
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     {
-      log_error ("error parsing TokenInfo: %s\n", gpg_strerror (err));
+      log_error ("p15: error parsing TokenInfo: %s\n", gpg_strerror (err));
       goto leave;
     }
 
@@ -2343,12 +2359,13 @@ read_ef_tokeninfo (app_t app)
     }
   if (ul)
     {
-      log_error ("invalid version %lu in TokenInfo\n", ul);
+      log_error ("p15: invalid version %lu in TokenInfo\n", ul);
       err = gpg_error (GPG_ERR_INV_OBJ);
       goto leave;
     }
 
-  log_info ("TokenInfo:\n");
+  if (opt.verbose)
+    log_info ("p15: TokenInfo:\n");
   /* serialNumber.  */
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
@@ -2366,9 +2383,12 @@ read_ef_tokeninfo (app_t app)
     }
   memcpy (app->app_local->serialno, p, objlen);
   app->app_local->serialnolen = objlen;
-  /* *We  use a separate log_info to avoid the "DBG:" prefix.)  */
-  log_info ("  serialNumber .: ");
-  log_printhex (p, objlen, "");
+  if (opt.verbose)
+    {
+      /* (We use a separate log_info to avoid the "DBG:" prefix.)  */
+      log_info ("p15:  serialNumber .: ");
+      log_printhex (p, objlen, "");
+    }
   p += objlen;
   n -= objlen;
 
@@ -2381,7 +2401,8 @@ read_ef_tokeninfo (app_t app)
     goto leave;
   if (class == CLASS_UNIVERSAL && tag == TAG_UTF8_STRING)
     {
-      log_info ("  manufacturerID: %.*s\n", (int)objlen, p);
+      if (opt.verbose)
+        log_info ("p15:  manufacturerID: %.*s\n", (int)objlen, p);
       p += objlen;
       n -= objlen;
       /* Get next TLV.  */
@@ -2394,7 +2415,8 @@ read_ef_tokeninfo (app_t app)
     }
   if (class == CLASS_CONTEXT && tag == 0)
     {
-      log_info ("  label ........: %.*s\n", (int)objlen, p);
+      if (opt.verbose)
+        log_info ("p15:  label ........: %.*s\n", (int)objlen, p);
       p += objlen;
       n -= objlen;
       /* Get next TLV.  */
@@ -2408,9 +2430,12 @@ read_ef_tokeninfo (app_t app)
   /* The next is the mandatory tokenflags object.  */
   if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
     {
-      log_info ("  tokenflags ...:");
-      print_tokeninfo_tokenflags (p, objlen);
-      log_printf ("\n");
+      if (opt.verbose)
+        {
+          log_info ("p15:  tokenflags ...:");
+          print_tokeninfo_tokenflags (p, objlen);
+          log_printf ("\n");
+        }
       p += objlen;
       n -= objlen;
     }
@@ -2609,7 +2634,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
       err = keygripstr_from_prkdf (app, keyinfo, gripstr);
       if (err)
         {
-          log_error ("can't get keygrip from ");
+          log_error ("p15: error getting keygrip from ");
           for (j=0; j < keyinfo->pathlen; j++)
             log_printf ("%04hX", keyinfo->path[j]);
           log_printf (": %s\n", gpg_strerror (err));
@@ -2698,9 +2723,12 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
     err = gpg_error (GPG_ERR_NOT_FOUND);
   if (err)
     {
-      log_error ("error reading certificate with Id ");
+      log_error ("p15: error reading certificate id=");
       for (i=0; i < cdf->objidlen; i++)
         log_printf ("%02X", cdf->objid[i]);
+      log_printf (" at ");
+      for (i=0; i < cdf->pathlen; i++)
+        log_printf ("%s%04hX", i? "/":"", cdf->path[i]);
       log_printf (": %s\n", gpg_strerror (err));
       goto leave;
     }
@@ -2857,7 +2885,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                                        &buffer, &buflen);
           if (err)
             {
-              log_error ("error accessing EF(ID): %s\n", gpg_strerror (err));
+              log_error ("p15: error accessing EF(ID): %s\n",
+                         gpg_strerror (err));
               return err;
             }
 
@@ -2902,7 +2931,7 @@ micardo_mse (app_t app, unsigned short fid)
   err = iso7816_select_file (app_get_slot (app), 0x0013, 0);
   if (err)
     {
-      log_error ("error reading EF_keyD: %s\n", gpg_strerror (err));
+      log_error ("p15: error reading EF_keyD: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -2919,11 +2948,15 @@ micardo_mse (app_t app, unsigned short fid)
         break; /* ready */
       if (err)
         {
-          log_error ("error reading EF_keyD record: %s\n",
+          log_error ("p15: error reading EF_keyD record: %s\n",
                      gpg_strerror (err));
           return err;
         }
-      log_printhex (buffer, buflen, "keyD record:");
+      if (opt.verbose)
+        {
+          log_info (buffer, buflen, "p15: keyD record: ");
+          log_printhex (buffer, buflen, "");
+        }
       p = find_tlv (buffer, buflen, 0x83, &n);
       if (p && n == 4 && ((p[2]<<8)|p[3]) == fid)
         {
@@ -2945,7 +2978,7 @@ micardo_mse (app_t app, unsigned short fid)
     }
   if (se_num == -1)
     {
-      log_error ("CRT for keyfile %04hX not found\n", fid);
+      log_error ("p15: CRT for keyfile %04hX not found\n", fid);
       return gpg_error (GPG_ERR_NOT_FOUND);
     }
 
@@ -2957,7 +2990,7 @@ micardo_mse (app_t app, unsigned short fid)
                                          0xf3, se_num, NULL, 0);
       if (err)
         {
-          log_error ("restoring SE to %d failed: %s\n",
+          log_error ("p15: restoring SE to %d failed: %s\n",
                      se_num, gpg_strerror (err));
           return err;
         }
@@ -2972,7 +3005,7 @@ micardo_mse (app_t app, unsigned short fid)
   err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xb6, msebuf, 5);
   if (err)
     {
-      log_error ("setting SE to reference file %04hX failed: %s\n",
+      log_error ("p15: setting SE to reference file %04hX failed: %s\n",
                  refdata, gpg_strerror (err));
       return err;
     }
@@ -3024,13 +3057,13 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover
         ||prkdf->usageflags.non_repudiation))
     {
-      log_error ("key %s may not be used for signing\n", keyidstr);
+      log_error ("p15: key %s may not be used for signing\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
   if (!prkdf->authid)
     {
-      log_error ("no authentication object defined for %s\n", keyidstr);
+      log_error ("p15: no authentication object defined for %s\n", keyidstr);
       /* fixme: we might want to go ahead and do without PIN
          verification. */
       return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -3043,24 +3076,26 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       break;
   if (!aodf)
     {
-      log_error ("authentication object for %s missing\n", keyidstr);
+      log_error ("p15: authentication object for %s missing\n", keyidstr);
       return gpg_error (GPG_ERR_INV_CARD);
     }
   if (aodf->authid)
     {
-      log_error ("PIN verification is protected by an "
+      log_error ("p15: PIN verification is protected by an "
                  "additional authentication token\n");
       return gpg_error (GPG_ERR_BAD_PIN_METHOD);
     }
   if (aodf->pinflags.integrity_protected
       || aodf->pinflags.confidentiality_protected)
     {
-      log_error ("PIN verification requires unsupported protection method\n");
+      log_error ("p15: "
+                 "PIN verification requires unsupported protection method\n");
       return gpg_error (GPG_ERR_BAD_PIN_METHOD);
     }
   if (!aodf->stored_length && aodf->pinflags.needs_padding)
     {
-      log_error ("PIN verification requires padding but no length known\n");
+      log_error ("p15: "
+                 "PIN verification requires padding but no length known\n");
       return gpg_error (GPG_ERR_INV_CARD);
     }
 
@@ -3069,7 +3104,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   err = select_ef_by_path (app, prkdf->path, prkdf->pathlen);
   if (err)
     {
-      log_error ("error selecting file for key %s: %s\n",
+      log_error ("p15: error selecting file for key %s: %s\n",
                  keyidstr, gpg_strerror (errno));
       return err;
     }
@@ -3101,7 +3136,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
   if (err)
     {
-      log_error ("MSE failed: %s\n", gpg_strerror (err));
+      log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -3122,7 +3157,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         err = pincb (pincb_arg, "PIN", &pinvalue);
       if (err)
         {
-          log_info ("PIN callback returned error: %s\n", gpg_strerror (err));
+          log_info ("p15: PIN callback returned error: %s\n",
+                    gpg_strerror (err));
           return err;
         }
 
@@ -3132,20 +3168,20 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
       if (strlen (pinvalue) < aodf->min_length)
         {
-          log_error ("PIN is too short; minimum length is %lu\n",
+          log_error ("p15: PIN is too short; minimum length is %lu\n",
                      aodf->min_length);
           err = gpg_error (GPG_ERR_BAD_PIN);
         }
       else if (aodf->stored_length && strlen (pinvalue) > aodf->stored_length)
         {
           /* This would otherwise truncate the PIN silently. */
-          log_error ("PIN is too large; maximum length is %lu\n",
+          log_error ("p15: PIN is too large; maximum length is %lu\n",
                      aodf->stored_length);
           err = gpg_error (GPG_ERR_BAD_PIN);
         }
       else if (aodf->max_length_valid && strlen (pinvalue) > aodf->max_length)
         {
-          log_error ("PIN is too large; maximum length is %lu\n",
+          log_error ("p15: PIN is too large; maximum length is %lu\n",
                      aodf->max_length);
           err = gpg_error (GPG_ERR_BAD_PIN);
         }
@@ -3184,7 +3220,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         }
       if (errstr)
         {
-          log_error ("can't verify PIN: %s\n", errstr);
+          log_error ("p15: can't verify PIN: %s\n", errstr);
           xfree (pinvalue);
           return err? err : gpg_error (GPG_ERR_BAD_PIN_METHOD);
         }
@@ -3252,10 +3288,11 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       xfree (pinvalue);
       if (err)
         {
-          log_error ("PIN verification failed: %s\n", gpg_strerror (err));
+          log_error ("p15: PIN verification failed: %s\n", gpg_strerror (err));
           return err;
         }
-      log_debug ("PIN verification succeeded\n");
+      if (opt.verbose)
+        log_info ("p15: PIN verification succeeded\n");
     }
 
   /* Prepare the DER object from INDATA. */
@@ -3321,7 +3358,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
   if (err)
     {
-      log_error ("MSE failed: %s\n", gpg_strerror (err));
+      log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -3363,7 +3400,7 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
     return err;
   if (!prkdf->usageflags.sign)
     {
-      log_error ("key %s may not be used for authentication\n", keyidstr);
+      log_error ("p15: key %s may not be used for authentication\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
@@ -3392,7 +3429,7 @@ read_home_df (int slot, int *r_belpic)
   err = iso7816_read_binary (slot, 0, 0, &buffer, &buflen);
   if (err)
     {
-      log_error ("error reading EF{DIR}: %s\n", gpg_strerror (err));
+      log_error ("p15: error reading EF(DIR): %s\n", gpg_strerror (err));
       return 0;
     }
 
@@ -3406,14 +3443,15 @@ read_home_df (int slot, int *r_belpic)
                                   && !memcmp (pp, pkcs15be_aid, nn)))))
         {
           pp = find_tlv (p, n, 0x50, &nn);
-          if (pp) /* fixme: Filter log value? */
-            log_info ("pkcs#15 application label from EF(DIR) is '%.*s'\n",
+          if (pp && opt.verbose)
+            log_info ("p15: application label from EF(DIR) is '%.*s'\n",
                       (int)nn, pp);
           pp = find_tlv (p, n, 0x51, &nn);
           if (pp && nn == 4 && *pp == 0x3f && !pp[1])
             {
               result = ((pp[2] << 8) | pp[3]);
-              log_info ("pkcs#15 application directory is 0x%04hX\n", result);
+              if (opt.verbose)
+                log_info ("p15: application directory is 0x%04hX\n", result);
             }
         }
     }
