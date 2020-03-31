@@ -129,6 +129,9 @@ gpg_error_t iso7816_read_public_key (int slot, int extended_mode,
 gpg_error_t iso7816_get_challenge (int slot,
                                    int length, unsigned char *buffer);
 
+gpg_error_t iso7816_read_binary_ext (int slot, int extended_mode,
+                                     size_t offset, size_t nmax,
+                                     unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_read_binary (int slot, size_t offset, size_t nmax,
                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_read_record (int slot, int recno, int reccount,
