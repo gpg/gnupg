@@ -722,8 +722,9 @@ iso7816_get_challenge (int slot, int length, unsigned char *buffer)
    stored in a newly allocated buffer at the address passed by RESULT.
    Returns the length of this data at the address of RESULTLEN. */
 gpg_error_t
-iso7816_read_binary (int slot, size_t offset, size_t nmax,
-                     unsigned char **result, size_t *resultlen)
+iso7816_read_binary_ext (int slot, int extended_mode,
+                         size_t offset, size_t nmax,
+                         unsigned char **result, size_t *resultlen)
 {
   int sw;
   unsigned char *buffer;
@@ -746,13 +747,13 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
       buffer = NULL;
       bufferlen = 0;
       n = read_all? 0 : nmax;
-      sw = apdu_send_le (slot, 0, 0x00, CMD_READ_BINARY,
+      sw = apdu_send_le (slot, extended_mode, 0x00, CMD_READ_BINARY,
                          ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                          n, &buffer, &bufferlen);
       if ( SW_EXACT_LENGTH_P(sw) )
         {
           n = (sw & 0x00ff);
-          sw = apdu_send_le (slot, 0, 0x00, CMD_READ_BINARY,
+          sw = apdu_send_le (slot, extended_mode, 0x00, CMD_READ_BINARY,
                              ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                              n, &buffer, &bufferlen);
         }
@@ -810,6 +811,15 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
 
   return 0;
 }
+
+
+gpg_error_t
+iso7816_read_binary (int slot, size_t offset, size_t nmax,
+                     unsigned char **result, size_t *resultlen)
+{
+  return iso7816_read_binary_ext (slot, 0, offset, nmax, result, resultlen);
+}
+
 
 /* Perform a READ RECORD command. RECNO gives the record number to
    read with 0 indicating the current record.  RECCOUNT must be 1 (not
