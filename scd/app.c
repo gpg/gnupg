@@ -2251,7 +2251,7 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
             log_debug ("slot %d, app %s: calling with_keygrip(%s)\n",
                        c->slot, xstrapptype (a),
                        action == KEYGRIP_ACTION_SEND_DATA? "send_data":
-                       action == KEYGRIP_ACTION_WRITE_STATUS? "write_data":
+                       action == KEYGRIP_ACTION_WRITE_STATUS? "status":
                        action == KEYGRIP_ACTION_LOOKUP? "lookup":"?");
           if (!a->fnc.with_keygrip (a, ctrl, action, keygrip_str, capability))
             goto leave_the_loop; /* ACTION_LOOKUP succeeded.  */

@@ -648,7 +648,8 @@ do_readkey (card_t card, ctrl_t ctrl, const char *line,
         {
           char keygripstr[KEYGRIP_LEN*2+1];
 
-          rc = app_help_get_keygrip_string_pk (*pk_p, *pklen_p, keygripstr);
+          rc = app_help_get_keygrip_string_pk (*pk_p, *pklen_p,
+                                               keygripstr, NULL);
           if (rc)
             {
               log_error ("app_help_get_keygrip_string failed: %s\n",

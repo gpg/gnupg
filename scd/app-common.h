@@ -216,8 +216,10 @@ app_get_slot (app_t app)
 /*-- app-help.c --*/
 unsigned int app_help_count_bits (const unsigned char *a, size_t len);
 gpg_error_t app_help_get_keygrip_string_pk (const void *pk, size_t pklen,
-                                            char *hexkeygrip);
-gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip);
+                                            char *hexkeygrip,
+                                            gcry_sexp_t *r_pkey);
+gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip,
+                                         gcry_sexp_t *r_pkey);
 gpg_error_t app_help_pubkey_from_cert (const void *cert, size_t certlen,
                                        unsigned char **r_pk, size_t *r_pklen);
 size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);

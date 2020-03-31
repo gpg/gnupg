@@ -138,6 +138,9 @@ struct cdf_object_s
   /* Link to next item when used in a linked list. */
   struct cdf_object_s *next;
 
+  /* Flags to indicate whether fields are valid.  */
+  unsigned int have_off:1;
+
   /* Length and allocated buffer with the Id of this object.
    * This field is used for X.509 in PKCS#11 to make it easier to
    * match a private key with a certificate.  */
@@ -149,8 +152,6 @@ struct cdf_object_s
   size_t imagelen;
   unsigned char *image;
 
-  /* Set to true if a length and offset is available. */
-  int have_off;
   /* The offset and length of the object.  They are only valid if
      HAVE_OFF is true and set to 0 if HAVE_OFF is false. */
   unsigned long off, len;
@@ -174,6 +175,25 @@ struct prkdf_object_s
   /* Link to next item when used in a linked list. */
   struct prkdf_object_s *next;
 
+  /* Flags to indicate whether fields are valid.  */
+  unsigned int keygrip_valid:1;
+  unsigned int key_reference_valid:1;
+  unsigned int have_off:1;
+
+  /* The key's usage flags. */
+  keyusage_flags_t usageflags;
+
+  /* The keygrip of the key.  This is used as a cache.  */
+  char keygrip[2*KEYGRIP_LEN+1];
+
+  /* The Gcrypt algo identifier for the key.  It is valid if the
+   * keygrip is also valid.  */
+  int keyalgo;
+
+  /* The length of the key in bits (e.g. for RSA the length of the
+   * modulus).  It is valid if the keygrip is also valid.  */
+  unsigned int keynbits;
+
   /* Length and allocated buffer with the Id of this object. */
   size_t objidlen;
   unsigned char *objid;
@@ -183,17 +203,11 @@ struct prkdf_object_s
   size_t authidlen;
   unsigned char *authid;
 
-  /* The key's usage flags. */
-  keyusage_flags_t usageflags;
-
   /* The keyReference and a flag telling whether it is valid. */
   unsigned long key_reference;
-  int key_reference_valid;
 
-  /* Set to true if a length and offset is available. */
-  int have_off;
   /* The offset and length of the object.  They are only valid if
-     HAVE_OFF is true and set to 0 if HAVE_OFF is false. */
+   * HAVE_OFF is true otherwise they are set to 0. */
   unsigned long off, len;
 
   /* The length of the path as given in the PrKDF and the path itself.
@@ -214,6 +228,9 @@ struct aodf_object_s
   /* Link to next item when used in a linked list. */
   struct aodf_object_s *next;
 
+  /* Flags to indicate whether fields are valid.  */
+  unsigned int have_off:1;
+
   /* Length and allocated buffer with the Id of this object. */
   size_t objidlen;
   unsigned char *objid;
@@ -222,6 +239,9 @@ struct aodf_object_s
      NULL if no authID is known. */
   size_t authidlen;
   unsigned char *authid;
+
+  /* The file ID of this AODF.  */
+  unsigned short fid;
 
   /* The PIN Flags. */
   struct
@@ -261,9 +281,6 @@ struct aodf_object_s
   char pad_char;
   int pad_char_valid;
 
-
-  /* Set to true if a length and offset is available. */
-  int have_off;
   /* The offset and length of the object.  They are only valid if
      HAVE_OFF is true and set to 0 if HAVE_OFF is false. */
   unsigned long off, len;
@@ -326,6 +343,7 @@ struct app_local_s
 
 
 /*** Local prototypes.  ***/
+static gpg_error_t keygrip_from_prkdf (app_t app, prkdf_object_t prkdf);
 static gpg_error_t readcert_by_cdf (app_t app, cdf_object_t cdf,
                                     unsigned char **r_cert, size_t *r_certlen);
 
@@ -498,35 +516,55 @@ parse_certid (app_t app, const char *certid,
   *r_objid = NULL;
   *r_objidlen = 0;
 
-  if (app->app_local->home_df)
-    snprintf (tmpbuf, sizeof tmpbuf,
-              "P15-%04X.", (unsigned int)(app->app_local->home_df & 0xffff));
-  else
-    strcpy (tmpbuf, "P15.");
-  if (strncmp (certid, tmpbuf, strlen (tmpbuf)) )
+  if (certid[0] != 'P' && strlen (certid) == 40)  /* This is a keygrip.  */
     {
-      if (!strncmp (certid, "P15.", 4)
-          || (!strncmp (certid, "P15-", 4)
-              && hexdigitp (certid+4)
-              && hexdigitp (certid+5)
-              && hexdigitp (certid+6)
-              && hexdigitp (certid+7)
-              && certid[8] == '.'))
-        return gpg_error (GPG_ERR_NOT_FOUND);
-      return gpg_error (GPG_ERR_INV_ID);
-    }
-  certid += strlen (tmpbuf);
+      prkdf_object_t keyinfo;
 
-  for (s=certid, objidlen=0; hexdigitp (s); s++, objidlen++)
-    ;
-  if (*s || !objidlen || (objidlen%2))
-    return gpg_error (GPG_ERR_INV_ID);
-  objidlen /= 2;
-  objid = xtrymalloc (objidlen);
-  if (!objid)
-    return gpg_error_from_syserror ();
-  for (s=certid, i=0; i < objidlen; i++, s+=2)
-    objid[i] = xtoi_2 (s);
+      for (keyinfo = app->app_local->private_key_info;
+           keyinfo; keyinfo = keyinfo->next)
+        if (!keygrip_from_prkdf (app, keyinfo)
+            && !strcmp (certid, keyinfo->keygrip))
+          break;
+      if (!keyinfo || !keyinfo->objidlen || !keyinfo->objid)
+        return gpg_error (GPG_ERR_NOT_FOUND);
+      objidlen = keyinfo->objidlen;
+      objid = xtrymalloc (objidlen);
+      if (!objid)
+        return gpg_error_from_syserror ();
+      memcpy (objid, keyinfo->objid, keyinfo->objidlen);
+    }
+  else /* This is a usual keyref.  */
+    {
+      if (app->app_local->home_df)
+        snprintf (tmpbuf, sizeof tmpbuf, "P15-%04X.",
+                  (unsigned int)(app->app_local->home_df & 0xffff));
+      else
+        strcpy (tmpbuf, "P15.");
+      if (strncmp (certid, tmpbuf, strlen (tmpbuf)) )
+        {
+          if (!strncmp (certid, "P15.", 4)
+              || (!strncmp (certid, "P15-", 4)
+                  && hexdigitp (certid+4)
+                  && hexdigitp (certid+5)
+                  && hexdigitp (certid+6)
+                  && hexdigitp (certid+7)
+                  && certid[8] == '.'))
+            return gpg_error (GPG_ERR_NOT_FOUND);
+          return gpg_error (GPG_ERR_INV_ID);
+        }
+      certid += strlen (tmpbuf);
+      for (s=certid, objidlen=0; hexdigitp (s); s++, objidlen++)
+        ;
+      if (*s || !objidlen || (objidlen%2))
+        return gpg_error (GPG_ERR_INV_ID);
+      objidlen /= 2;
+      objid = xtrymalloc (objidlen);
+      if (!objid)
+        return gpg_error_from_syserror ();
+      for (s=certid, i=0; i < objidlen; i++, s+=2)
+        objid[i] = xtoi_2 (s);
+    }
+
   *r_objid = objid;
   *r_objidlen = objidlen;
   return 0;
@@ -1644,6 +1682,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       aodf = xtrycalloc (1, sizeof *aodf);
       if (!aodf)
         goto no_core;
+      aodf->fid = fid;
 
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
@@ -2552,21 +2591,26 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
 
 
 /* Get the keygrip of the private key object PRKDF.  On success the
-   keygrip gets returned in the caller provided 41 byte buffer
-   R_GRIPSTR. */
+ * keygrip, the algo and the length are stored in the KEYGRIP,
+ * KEYALFO, and KEYNBITS fields of the PRKDF object.  */
 static gpg_error_t
-keygripstr_from_prkdf (app_t app, prkdf_object_t prkdf, char *r_gripstr)
+keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
 {
   gpg_error_t err;
   cdf_object_t cdf;
   unsigned char *der;
   size_t derlen;
   ksba_cert_t cert;
+  gcry_sexp_t s_pkey = NULL;
+
+  /* Easy if we got a cached version.  */
+  if (prkdf->keygrip_valid)
+    return 0;
 
   /* FIXME: We should check whether a public key directory file and a
      matching public key for PRKDF is available.  This should make
      extraction of the key much easier.  My current test card doesn't
-     have one, so we can only use the fallback solution bu looking for
+     have one, so we can only use the fallback solution by looking for
      a matching certificate and extract the key from there. */
 
   /* Look for a matching certificate. A certificate matches if the Id
@@ -2586,24 +2630,68 @@ keygripstr_from_prkdf (app_t app, prkdf_object_t prkdf, char *r_gripstr)
           && !memcmp (cdf->objid, prkdf->objid, prkdf->objidlen))
         break;
   if (!cdf)
-    return gpg_error (GPG_ERR_NOT_FOUND);
+    {
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
 
   err = readcert_by_cdf (app, cdf, &der, &derlen);
   if (err)
-    return err;
+    goto leave;
 
   err = ksba_cert_new (&cert);
   if (!err)
     err = ksba_cert_init_from_mem (cert, der, derlen);
   xfree (der);
   if (!err)
-    err = app_help_get_keygrip_string (cert, r_gripstr);
+    err = app_help_get_keygrip_string (cert, prkdf->keygrip, &s_pkey);
   ksba_cert_release (cert);
+  if (err)
+    goto leave;
 
+  prkdf->keyalgo = get_pk_algo_from_key (s_pkey);
+  if (!prkdf->keyalgo)
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      goto leave;
+    }
+
+  prkdf->keynbits = gcry_pk_get_nbits (s_pkey);
+  if (!prkdf->keynbits)
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      goto leave;
+    }
+
+  prkdf->keygrip_valid = 1;  /* Yeah, got everything.  */
+
+ leave:
+  gcry_sexp_release (s_pkey);
   return err;
 }
 
 
+/* Return a malloced keyref string for KEYINFO.  Returns NULL on
+ * malloc failure.  */
+static char *
+keyref_from_keyinfo (app_t app, prkdf_object_t keyinfo)
+{
+  char *buf, *p;
+
+  buf = xtrymalloc (4 + 5 + keyinfo->objidlen*2 + 1);
+  if (!buf)
+    return NULL;
+  p = stpcpy (buf, "P15");
+  if (app->app_local->home_df)
+    {
+      snprintf (p, 6, "-%04X",
+                (unsigned int)(app->app_local->home_df & 0xffff));
+      p += 5;
+    }
+  p = stpcpy (p, ".");
+  bin2hex (keyinfo->objid, keyinfo->objidlen, p);
+  return buf;
+}
 
 
 /* Helper to do_learn_status: Send information about all known
@@ -2616,36 +2704,26 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
 
   for (; keyinfo; keyinfo = keyinfo->next)
     {
-      char gripstr[40+1];
-      char *buf, *p;
+      char *buf;
       int j;
 
-      buf = xtrymalloc (9 + keyinfo->objidlen*2 + 1);
+      buf = keyref_from_keyinfo (app, keyinfo);
       if (!buf)
         return gpg_error_from_syserror ();
-      p = stpcpy (buf, "P15");
-      if (app->app_local->home_df)
-        {
-          snprintf (p, 6, "-%04X",
-                    (unsigned int)(app->app_local->home_df & 0xffff));
-          p += 5;
-        }
-      p = stpcpy (p, ".");
-      bin2hex (keyinfo->objid, keyinfo->objidlen, p);
 
-      err = keygripstr_from_prkdf (app, keyinfo, gripstr);
+      err = keygrip_from_prkdf (app, keyinfo);
       if (err)
         {
           log_error ("p15: error getting keygrip from ");
           for (j=0; j < keyinfo->pathlen; j++)
-            log_printf ("%04hX", keyinfo->path[j]);
+            log_printf ("%s%04hX", j?"/":"", keyinfo->path[j]);
           log_printf (": %s\n", gpg_strerror (err));
         }
       else
         {
-          assert (strlen (gripstr) == 40);
+          log_assert (strlen (keyinfo->keygrip) == 40);
           send_status_info (ctrl, "KEYPAIRINFO",
-                            gripstr, 40,
+                            keyinfo->keygrip, 2*KEYGRIP_LEN,
                             buf, strlen (buf),
                             NULL, (size_t)0);
         }
@@ -3029,6 +3107,9 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
+  static unsigned char sha256_prefix[19] = /* OID: 2.16.840.1.101.3.4.2.1 */
+    { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48,
+      0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20 };
   static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
     { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
       0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
@@ -3038,19 +3119,26 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
   gpg_error_t err;
   int i;
-  unsigned char data[36];   /* Must be large enough for a SHA-1 digest
-                               + the largest OID prefix above and also
-                               fit the 36 bytes of md5sha1.  */
+  unsigned char data[32+19]; /* Must be large enough for a SHA-256 digest
+                              * + the largest OID prefix above and also
+                              * fit the 36 bytes of md5sha1.  */
   prkdf_object_t prkdf;    /* The private key object. */
   aodf_object_t aodf;      /* The associated authentication object. */
   int no_data_padding = 0; /* True if the card want the data without padding.*/
   int mse_done = 0;        /* Set to true if the MSE has been done. */
+  unsigned int hashlen;    /* Length of the hash.  */
+  unsigned int datalen;    /* Length of the data to sign (prefix+hash).  */
+  unsigned char *dataptr;
+  int exmode, le_value;
 
   (void)ctrl;
 
+  log_debug ("p15:sign: keyidstr='%s' indatalen=%zu\n", keyidstr, indatalen);
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen != 20 && indatalen != 16 && indatalen != 35 && indatalen != 36)
+  if (indatalen != 20 && indatalen != 16
+      && indatalen != 35 && indatalen != 36
+      && indatalen != (32+19))
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
@@ -3081,12 +3169,19 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       log_error ("p15: authentication object for %s missing\n", keyidstr);
       return gpg_error (GPG_ERR_INV_CARD);
     }
-  if (aodf->authid)
+
+
+  if (opt.verbose)
     {
-      log_error ("p15: PIN verification is protected by an "
-                 "additional authentication token\n");
-      return gpg_error (GPG_ERR_BAD_PIN_METHOD);
+      log_info ("p15: using AODF %04hX id=", aodf->fid);
+      for (i=0; i < aodf->objidlen; i++)
+        log_printf ("%02X", aodf->objid[i]);
+      log_printf ("\n");
     }
+
+  if (aodf->authid && opt.verbose)
+    log_info ("p15: PIN is controlled by another authentication token\n");
+
   if (aodf->pinflags.integrity_protected
       || aodf->pinflags.confidentiality_protected)
     {
@@ -3284,6 +3379,9 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       else
         pinvaluelen = strlen (pinvalue);
 
+      log_printhex (pinvalue, pinvaluelen,
+                    "about to verify with ref %lu pin:",
+                    aodf->pin_reference_valid? aodf->pin_reference : 0);
       err = iso7816_verify (app_get_slot (app),
                             aodf->pin_reference_valid? aodf->pin_reference : 0,
                             pinvalue, pinvaluelen);
@@ -3304,6 +3402,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       if (hashalgo != MD_USER_TLS_MD5SHA1)
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data, indata, indatalen);
+      datalen = hashlen = 36;
     }
   else if (indatalen == 35)
     {
@@ -3318,17 +3417,56 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       else
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data, indata, indatalen);
+      datalen = 35;
+      hashlen = 20;
+    }
+  else if (indatalen == 32 + 19)
+    {
+      /* Seems to be a prepared SHA256 DER object.  */
+      if (hashalgo == GCRY_MD_SHA256 && !memcmp (indata, sha256_prefix, 19))
+        ;
+      else
+        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+      memcpy (data, indata, indatalen);
+      datalen = 51;
+      hashlen = 32;
     }
   else
     {
       /* Need to prepend the prefix. */
-      if (hashalgo == GCRY_MD_SHA1)
-        memcpy (data, sha1_prefix, 15);
+      if (hashalgo == GCRY_MD_SHA256)
+        {
+          memcpy (data, sha256_prefix, 19);
+          memcpy (data+19, indata, indatalen);
+          datalen = 51;
+          hashlen = 32;
+        }
+      else if (hashalgo == GCRY_MD_SHA1)
+        {
+          memcpy (data, sha1_prefix, 15);
+          memcpy (data+15, indata, indatalen);
+          datalen = 35;
+          hashlen = 20;
+        }
       else if (hashalgo == GCRY_MD_RMD160)
-        memcpy (data, rmd160_prefix, 15);
+        {
+          memcpy (data, rmd160_prefix, 15);
+          memcpy (data+15, indata, indatalen);
+          datalen = 35;
+          hashlen = 20;
+        }
       else
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data+15, indata, indatalen);
+    }
+
+
+  /* We need some more info about the key - get the keygrip to
+   * populate these fields.  */
+  err = keygrip_from_prkdf (app, prkdf);
+  if (err)
+    {
+      log_error ("p15: keygrip_from_prkdf failed: %s\n", gpg_strerror (err));
+      return err;
     }
 
   /* Manage security environment needs to be weaked for certain cards. */
@@ -3364,15 +3502,32 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       return err;
     }
 
-  if (hashalgo == MD_USER_TLS_MD5SHA1)
-    err = iso7816_compute_ds (app_get_slot (app),
-                              0, data, 36, 0, outdata, outdatalen);
-  else if (no_data_padding)
-    err = iso7816_compute_ds (app_get_slot (app),
-                              0, data+15, 20, 0,outdata,outdatalen);
+
+  dataptr = data;
+  if (no_data_padding)
+    {
+      dataptr += datalen - hashlen;
+      datalen = hashlen;
+    }
+
+  if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits > 2048)
+    {
+      exmode = 1;
+      le_value = prkdf->keynbits / 8;
+    }
   else
-    err = iso7816_compute_ds (app_get_slot (app),
-                              0, data, 35, 0, outdata, outdatalen);
+    {
+      exmode = 0;
+      le_value = 0;
+    }
+
+  err = iso7816_compute_ds (app_get_slot (app),
+                            exmode, dataptr, datalen,
+                            le_value, outdata, outdatalen);
+
+  if (!err)
+    log_printhex (*outdata, *outdatalen, "sign output:");
+
   return err;
 }
 
@@ -3409,6 +3564,100 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
   algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
   return do_sign (app, ctrl, keyidstr, algo, pincb, pincb_arg,
                   indata, indatalen, outdata, outdatalen);
+}
+
+
+/* Process the various keygrip based info requests.  */
+static gpg_error_t
+do_with_keygrip (app_t app, ctrl_t ctrl, int action,
+                 const char *want_keygripstr, int capability)
+{
+  gpg_error_t err;
+  char *serialno = NULL;
+  int as_data = 0;
+  prkdf_object_t keyinfo;
+
+  /* First a quick check for valid parameters.  */
+  switch (action)
+    {
+    case KEYGRIP_ACTION_LOOKUP:
+      if (!want_keygripstr)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      break;
+    case KEYGRIP_ACTION_SEND_DATA:
+      as_data = 1;
+      break;
+    case KEYGRIP_ACTION_WRITE_STATUS:
+      break;
+    default:
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  /* Allocate the s/n string if needed.  */
+  if (action != KEYGRIP_ACTION_LOOKUP)
+    {
+      serialno = app_get_serialno (app);
+      if (!serialno)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  for (keyinfo = app->app_local->private_key_info;
+       keyinfo; keyinfo = keyinfo->next)
+    {
+
+      if (keygrip_from_prkdf (app, keyinfo))
+        continue;
+
+      if (action == KEYGRIP_ACTION_LOOKUP)
+        {
+          if (!strcmp (keyinfo->keygrip, want_keygripstr))
+            {
+              err = 0; /* Found */
+              goto leave;
+            }
+        }
+      else if (!want_keygripstr || !strcmp (keyinfo->keygrip, want_keygripstr))
+        {
+          char *keyref;
+
+          /* FIXME: Consider ...  */
+          (void)capability;
+
+          keyref = keyref_from_keyinfo (app, keyinfo);
+          if (!keyref)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+
+          send_keyinfo (ctrl, as_data, keyinfo->keygrip, serialno, keyref);
+          if (want_keygripstr)
+            {
+              err = 0; /* Found */
+              goto leave;
+            }
+        }
+    }
+
+  /* Return an error so that the dispatcher keeps on looping over the
+   * other applications.  For clarity we use a different error code
+   * when listing all keys.  Note that in lookup mode WANT_KEYGRIPSTR
+   * is not NULL.  */
+  if (!want_keygripstr)
+    err = gpg_error (GPG_ERR_TRUE);
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+
+ leave:
+  xfree (serialno);
+  return err;
 }
 
 
@@ -3604,6 +3853,7 @@ app_select_p15 (app_t app)
       app->fnc.decipher = NULL;
       app->fnc.change_pin = NULL;
       app->fnc.check_pin = NULL;
+      app->fnc.with_keygrip = do_with_keygrip;
 
     leave:
       if (rc)

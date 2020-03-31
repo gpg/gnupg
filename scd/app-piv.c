@@ -1356,7 +1356,7 @@ get_keygrip_by_tag (app_t app, unsigned int tag,
       err = ksba_cert_init_from_mem (cert, certbuf, certbuflen);
       if (err)
         goto leave;
-      err = app_help_get_keygrip_string (cert, *r_keygripstr);
+      err = app_help_get_keygrip_string (cert, *r_keygripstr, NULL);
     }
 
  leave:
@@ -1564,7 +1564,7 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
       char idbuf[50];
       const char *usage;
 
-      err = app_help_get_keygrip_string_pk (pk, pklen, keygripstr);
+      err = app_help_get_keygrip_string_pk (pk, pklen, keygripstr, NULL);
       if (err)
         {
           log_error ("app_help_get_keygrip_string_pk failed: %s\n",

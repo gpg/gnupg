@@ -53,13 +53,20 @@ app_help_count_bits (const unsigned char *a, size_t len)
 
 /* Return the KEYGRIP for the canonical encoded public key (PK,PKLEN)
  * as an hex encoded string in the user provided buffer HEXKEYGRIP
- * which must be of at least 41 bytes. */
+ * which must be of at least 41 bytes.  If R_PKEY is not NULL and the
+ * function succeeded, the S-expression representing the key is
+ * stored there.  The caller needs to call gcry_sexp_release on
+ * that.  */
 gpg_error_t
-app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip)
+app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip,
+                                gcry_sexp_t *r_pkey)
 {
   gpg_error_t err;
   gcry_sexp_t s_pkey;
   unsigned char array[KEYGRIP_LEN];
+
+  if (r_pkey)
+    *r_pkey = NULL;
 
   err = gcry_sexp_sscan (&s_pkey, NULL, pk, pklen);
   if (err)
@@ -69,7 +76,11 @@ app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip)
       gcry_sexp_release (s_pkey);
       return gpg_error (GPG_ERR_GENERAL); /* Failed to calculate the keygrip.*/
     }
-  gcry_sexp_release (s_pkey);
+
+  if (r_pkey)
+    *r_pkey = s_pkey;
+  else
+    gcry_sexp_release (s_pkey);
 
   bin2hex (array, KEYGRIP_LEN, hexkeygrip);
 
@@ -78,14 +89,20 @@ app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip)
 
 
 /* Return the KEYGRIP for the certificate CERT as an hex encoded
-   string in the user provided buffer HEXKEYGRIP which must be of at
-   least 41 bytes. */
+ * string in the user provided buffer HEXKEYGRIP which must be of at
+ * least 41 bytes.  If R_PKEY is not NULL and the function succeeded,
+ * the S-expression representing the key is stored there.  The caller
+ * needs to call gcry_sexp_release on that. */
 gpg_error_t
-app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip)
+app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip,
+                             gcry_sexp_t *r_pkey)
 {
   gpg_error_t err;
   ksba_sexp_t p;
   size_t n;
+
+  if (r_pkey)
+    *r_pkey = NULL;
 
   p = ksba_cert_get_public_key (cert);
   if (!p)
@@ -93,7 +110,7 @@ app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip)
   n = gcry_sexp_canon_len (p, 0, NULL, NULL);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
-  err = app_help_get_keygrip_string_pk ((void*)p, n, hexkeygrip);
+  err = app_help_get_keygrip_string_pk ((void*)p, n, hexkeygrip, r_pkey);
   ksba_free (p);
   return err;
 }
