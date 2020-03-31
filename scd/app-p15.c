@@ -660,6 +660,8 @@ read_ef_odf (app_t app, unsigned short odf_fid)
               app->app_local->home_df = home_df;
               log_info ("p15: application directory detected as 0x%04hX\n",
                         home_df);
+              /* We assume that direct path selection is possible.  */
+              app->app_local->direct_path_selection = 1;
             }
 
           /* We only allow a full path if all files are at the same
@@ -2717,8 +2719,8 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
   if (err)
     goto leave;
 
-  err = iso7816_read_binary (app_get_slot (app), cdf->off, cdf->len,
-                             &buffer, &buflen);
+  err = iso7816_read_binary_ext (app_get_slot (app), 1, cdf->off, cdf->len,
+                                 &buffer, &buflen);
   if (!err && (!buflen || *buffer == 0xff))
     err = gpg_error (GPG_ERR_NOT_FOUND);
   if (err)
