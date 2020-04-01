@@ -1,0 +1,366 @@
+# DO NOT create top level (global) keys like env, arch, os, compiler.
+# The top level/global keys invoke [unwanted] matrix expansion. Also
+# see https://stackoverflow.com/q/58473000/608639 and
+# https://docs.travis-ci.com/user/reference/overview/ and
+# https://docs.travis-ci.com/user/multi-cpu-architectures and
+# https://github.com/travis-ci/travis-yml/blob/master/schema.json.
+
+language: c
+
+git:
+  depth: 5
+
+addons:
+  apt:
+    update: true
+    packages:
+      - clang-8
+      - wget
+      - pkg-config
+      - gettext
+      - texinfo
+      - fig2dev
+      - ghostscript
+      - imagemagick
+      - ttf-ubuntu-font-family
+  homebrew:
+    update: true
+    packages:
+      - llvm@8
+      - wget
+      - pkg-config
+      - gettext
+      - texinfo
+      - fig2dev
+      - ghostscript
+      - imagemagick
+      - flex
+      - bison
+
+# Use jobs rather than matrix since we are precisely
+# specifiying our test cases. Do not move any of the
+# keys (env, os, arch, compiler, etc) into global.
+# Putting them in global invokes the matrix expansion.
+jobs:
+  include:
+      # Standard AMD64 build on current images
+    - name: Bionic, GCC (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: gcc
+      env:
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Bionic, Clang (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: clang
+      env:
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: High Sierra, Clang (AMD64)
+      os: osx
+      osx_image: xcode11.1
+      arch: amd64
+      compiler: clang
+      env:
+        - PATH="/usr/local/opt/gettext/bin:/usr/local/opt/texinfo/bin:$PATH"
+        - PATH="/usr/local/opt/fig2dev/bin:/usr/local/opt/ghostscript/bin:$PATH"
+        - PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH"
+        - PATH="/usr/local/opt/imagemagick/bin:$PATH"
+        - LDFLAGS="-Wl,-rpath,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # https://support.apple.com/en-us/HT208436
+    - name: Sierra (32-bit), Clang (AMD64)
+      os: osx
+      osx_image: Xcode 9.2
+      arch: amd64
+      compiler: clang
+      env:
+        - PATH="/usr/local/opt/gettext/bin:/usr/local/opt/texinfo/bin:$PATH"
+        - PATH="/usr/local/opt/fig2dev/bin:/usr/local/opt/ghostscript/bin:$PATH"
+        - PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH"
+        - PATH="/usr/local/opt/imagemagick/bin:$PATH"
+        - CFLAGS="-arch i386"
+        - CXXFLAGS="-arch i386"
+        - LDFLAGS="-Wl,-rpath,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # https://support.apple.com/en-us/HT208436
+    - name: Sierra (64-bit), Clang (AMD64)
+      os: osx
+      osx_image: Xcode 9.2
+      arch: amd64
+      compiler: clang
+      env:
+        - PATH="/usr/local/opt/gettext/bin:/usr/local/opt/texinfo/bin:$PATH"
+        - PATH="/usr/local/opt/fig2dev/bin:/usr/local/opt/ghostscript/bin:$PATH"
+        - PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH"
+        - PATH="/usr/local/opt/imagemagick/bin:$PATH"
+        - CFLAGS="-arch x86_64"
+        - CXXFLAGS="-arch x86_64"
+        - LDFLAGS="-Wl,-rpath,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # Standard Aarch64 build on current images
+    - name: Bionic, GCC (Aarch64)
+      os: linux
+      dist: bionic
+      arch: aarch64
+      compiler: gcc
+      env:
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Bionic, Clang (Aarch64)
+      os: linux
+      dist: bionic
+      arch: aarch64
+      compiler: clang
+      env:
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # Standard PPC64 build on current images
+    - name: Bionic, GCC (PPC64)
+      os: linux
+      dist: bionic
+      arch: ppc64le
+      compiler: gcc
+      env:
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Bionic, Clang (PPC64)
+      os: linux
+      dist: bionic
+      arch: ppc64le
+      compiler: clang
+      env:
+        - CC=clang-8
+        - CXX=clang++-8
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # Standard s390x build on current images
+    - name: Bionic, GCC (s390x)
+      os: linux
+      dist: bionic
+      arch: s390x
+      compiler: gcc
+      env:
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Bionic, Clang (s390x)
+      os: linux
+      dist: bionic
+      arch: s390x
+      compiler: clang
+      env:
+        - CC=clang-8
+        - CXX=clang++-8
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # Debug build on current images
+    - name: Debug, Bionic, GCC (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: gcc
+      env:
+        - CPPFLAGS="-DDEBUG"
+        - CFLAGS="-g3 -O1"
+        - CXXFLAGS="-g3 -O1"
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Debug, Bionic, Clang (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: clang
+      env:
+        - CPPFLAGS="-DDEBUG"
+        - CFLAGS="-g3 -O1"
+        - CXXFLAGS="-g3 -O1"
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Debug, High Sierra, Clang (AMD64)
+      os: osx
+      osx_image: xcode11.1
+      arch: amd64
+      compiler: clang
+      env:
+        - PATH="/usr/local/opt/gettext/bin:/usr/local/opt/texinfo/bin:$PATH"
+        - PATH="/usr/local/opt/fig2dev/bin:/usr/local/opt/ghostscript/bin:$PATH"
+        - PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH"
+        - PATH="/usr/local/opt/imagemagick/bin:$PATH"
+        - CPPFLAGS="-DDEBUG"
+        - CFLAGS="-g3 -O1"
+        - CXXFLAGS="-g3 -O1"
+        - LDFLAGS="-Wl,-rpath,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # Release build on current images
+    - name: Release, Bionic, GCC (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: gcc
+      env:
+        - CPPFLAGS="-DNDEBUG"
+        - CFLAGS="-g3 -O1"
+        - CXXFLAGS="-g3 -O1"
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Release, Bionic, Clang (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: clang
+      env:
+        - CPPFLAGS="-DNDEBUG"
+        - CFLAGS="-g3 -O1"
+        - CXXFLAGS="-g3 -O1"
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Release, High Sierra, Clang (AMD64)
+      os: osx
+      osx_image: xcode11.1
+      arch: amd64
+      compiler: clang
+      env:
+        - PATH="/usr/local/opt/gettext/bin:/usr/local/opt/texinfo/bin:$PATH"
+        - PATH="/usr/local/opt/fig2dev/bin:/usr/local/opt/ghostscript/bin:$PATH"
+        - PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH"
+        - PATH="/usr/local/opt/imagemagick/bin:$PATH"
+        - CPPFLAGS="-DNDEBUG"
+        - CFLAGS="-g3 -O1"
+        - CXXFLAGS="-g3 -O1"
+        - LDFLAGS="-Wl,-rpath,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # Older operating system versions
+    - name: Xenial, GCC (AMD64)
+      os: linux
+      dist: xenial
+      arch: amd64
+      compiler: gcc
+      env:
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Xenial, Clang (AMD64)
+      os: linux
+      dist: xenial
+      arch: amd64
+      compiler: clang
+      env:
+        - LDFLAGS="-Wl,-R,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: El Capitan, Clang (AMD64)
+      os: osx
+      osx_image: xcode7.3
+      arch: amd64
+      compiler: clang
+      env:
+        - PATH="/usr/local/opt/gettext/bin:/usr/local/opt/texinfo/bin:$PATH"
+        - PATH="/usr/local/opt/fig2dev/bin:/usr/local/opt/ghostscript/bin:$PATH"
+        - PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH"
+        - PATH="/usr/local/opt/imagemagick/bin:$PATH"
+        - LDFLAGS="-Wl,-rpath,/usr/local/lib"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # Undefined behavior sanitizer on current images
+    - name: UBsan, Bionic, GCC (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: gcc
+      env:
+        - CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - LDFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - LDFLAGS="-Wl,-R,/usr/local/lib $LDFLAGS"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: UBsan, Bionic, Clang (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: clang
+      env:
+        - CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - LDFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - LDFLAGS="-Wl,-R,/usr/local/lib $LDFLAGS"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: UBsan, High Sierra, Clang (AMD64)
+      os: osx
+      osx_image: xcode11.1
+      arch: amd64
+      compiler: clang
+      env:
+        - PATH="/usr/local/opt/gettext/bin:/usr/local/opt/texinfo/bin:$PATH"
+        - PATH="/usr/local/opt/fig2dev/bin:/usr/local/opt/ghostscript/bin:$PATH"
+        - PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH"
+        - PATH="/usr/local/opt/imagemagick/bin:$PATH"
+        - CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - LDFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+        - LDFLAGS="-Wl,-rpath,/usr/local/lib $LDFLAGS"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+      # Address sanitizer on current images
+    - name: Asan, Bionic, GCC (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: gcc
+      env:
+        - CFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - CXXFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - LDFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - LDFLAGS="-Wl,-R,/usr/local/lib $LDFLAGS"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Asan, Bionic, Clang (AMD64)
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler: clang
+      env:
+        - CFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - CXXFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - LDFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - LDFLAGS="-Wl,-R,/usr/local/lib $LDFLAGS"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+    - name: Asan, High Sierra, Clang (AMD64)
+      os: osx
+      osx_image: xcode11.1
+      arch: amd64
+      compiler: clang
+      env:
+        - PATH="/usr/local/opt/gettext/bin:/usr/local/opt/texinfo/bin:$PATH"
+        - PATH="/usr/local/opt/fig2dev/bin:/usr/local/opt/ghostscript/bin:$PATH"
+        - PATH="/usr/local/opt/flex/bin:/usr/local/opt/bison/bin:$PATH"
+        - PATH="/usr/local/opt/imagemagick/bin:$PATH"
+        - CFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - CXXFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - LDFLAGS="-fsanitize=address -fno-sanitize-recover"
+        - LDFLAGS="-Wl,-rpath,/usr/local/lib $LDFLAGS"
+        - PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+
+  allow_failures:
+    - name: Bionic, Clang (PPC64)
+    - name: Bionic, Clang (s390x)
+
+before_script:
+  - sudo fc-cache || true
+  - bash travis/install_libgpg-error.sh
+  - bash travis/install_libgcrypt.sh
+  - bash travis/install_libassuan.sh
+  - bash travis/install_libksba.sh
+  - bash travis/install_npth.sh
+  - bash travis/install_ntbtls.sh
+
+script:
+  - ./autogen.sh
+  - ./configure -enable-maintainer-mode
+  - make -j 3
+  - make check
+
+notifications:
+  email:
+    recipients:
+      - gnupg-build@example.com
+    on_success: always # default: change
+    on_failure: always # default: always
