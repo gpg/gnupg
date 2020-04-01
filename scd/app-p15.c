@@ -3637,6 +3637,14 @@ do_decipher (app_t app, const char *keyidstr,
       return gpg_error (GPG_ERR_INV_CARD);
     }
 
+  /* We need some more info about the key - get the keygrip to
+   * populate these fields.  */
+  err = keygrip_from_prkdf (app, prkdf);
+  if (err)
+    {
+      log_error ("p15: keygrip_from_prkdf failed: %s\n", gpg_strerror (err));
+      return err;
+    }
 
   /* Verify the PIN.  */
   err = prepare_verify_pin (app, keyidstr, prkdf, aodf);
