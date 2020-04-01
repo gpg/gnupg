@@ -3087,6 +3087,220 @@ micardo_mse (app_t app, unsigned short fid)
 
 
 
+/* Prepare the verification of the PIN for the key PRKDF by checking
+ * the AODF and selecting the key file.  KEYREF is used for error
+ * messages.  */
+static gpg_error_t
+prepare_verify_pin (app_t app, const char *keyref,
+                    prkdf_object_t prkdf, aodf_object_t aodf)
+{
+  gpg_error_t err;
+  int i;
+
+  if (opt.verbose)
+    {
+      log_info ("p15: using AODF %04hX id=", aodf->fid);
+      for (i=0; i < aodf->objidlen; i++)
+        log_printf ("%02X", aodf->objid[i]);
+      log_printf ("\n");
+    }
+
+  if (aodf->authid && opt.verbose)
+    log_info ("p15: PIN is controlled by another authentication token\n");
+
+  if (aodf->pinflags.integrity_protected
+      || aodf->pinflags.confidentiality_protected)
+    {
+      log_error ("p15: "
+                 "PIN verification requires unsupported protection method\n");
+      return gpg_error (GPG_ERR_BAD_PIN_METHOD);
+    }
+  if (!aodf->stored_length && aodf->pinflags.needs_padding)
+    {
+      log_error ("p15: "
+                 "PIN verification requires padding but no length known\n");
+      return gpg_error (GPG_ERR_INV_CARD);
+    }
+
+  /* Select the key file.  Note that this may change the security
+   * environment thus we need to do it before PIN verification. */
+  err = select_ef_by_path (app, prkdf->path, prkdf->pathlen);
+  if (err)
+    log_error ("p15: error selecting file for key %s: %s\n",
+               keyref, gpg_strerror (err));
+
+  return err;
+}
+
+
+/* Given the private key object PRKDF and its authentication object
+ * AODF ask for the PIN and verify that PIN.  */
+static gpg_error_t
+verify_pin (app_t app,
+            gpg_error_t (*pincb)(void*, const char *, char **), void *pincb_arg,
+            prkdf_object_t prkdf, aodf_object_t aodf)
+{
+  gpg_error_t err;
+  char *pinvalue;
+  size_t pinvaluelen;
+  const char *errstr;
+  const char *s;
+  int i;
+
+  if (prkdf->usageflags.non_repudiation
+      && app->app_local->card_type == CARD_TYPE_BELPIC)
+    err = pincb (pincb_arg, "PIN (qualified signature!)", &pinvalue);
+  else
+    err = pincb (pincb_arg, "PIN", &pinvalue);
+  if (err)
+    {
+      log_info ("p15: PIN callback returned error: %s\n",
+                gpg_strerror (err));
+      return err;
+    }
+
+  /* We might need to cope with UTF8 things here.  Not sure how
+     min_length etc. are exactly defined, for now we take them as
+     a plain octet count. */
+  if (strlen (pinvalue) < aodf->min_length)
+    {
+      log_error ("p15: PIN is too short; minimum length is %lu\n",
+                 aodf->min_length);
+      err = gpg_error (GPG_ERR_BAD_PIN);
+    }
+  else if (aodf->stored_length && strlen (pinvalue) > aodf->stored_length)
+    {
+      /* This would otherwise truncate the PIN silently. */
+      log_error ("p15: PIN is too large; maximum length is %lu\n",
+                 aodf->stored_length);
+      err = gpg_error (GPG_ERR_BAD_PIN);
+    }
+  else if (aodf->max_length_valid && strlen (pinvalue) > aodf->max_length)
+    {
+      log_error ("p15: PIN is too large; maximum length is %lu\n",
+                 aodf->max_length);
+      err = gpg_error (GPG_ERR_BAD_PIN);
+    }
+
+  if (err)
+    {
+      xfree (pinvalue);
+      return err;
+    }
+
+  errstr = NULL;
+  err = 0;
+  switch (aodf->pintype)
+    {
+    case PIN_TYPE_BCD:
+    case PIN_TYPE_ASCII_NUMERIC:
+      for (s=pinvalue; digitp (s); s++)
+        ;
+      if (*s)
+        {
+          errstr = "Non-numeric digits found in PIN";
+          err = gpg_error (GPG_ERR_BAD_PIN);
+        }
+      break;
+    case PIN_TYPE_UTF8:
+      break;
+    case PIN_TYPE_HALF_NIBBLE_BCD:
+      errstr = "PIN type Half-Nibble-BCD is not supported";
+      break;
+    case PIN_TYPE_ISO9564_1:
+      errstr = "PIN type ISO9564-1 is not supported";
+      break;
+    default:
+      errstr = "Unknown PIN type";
+      break;
+    }
+  if (errstr)
+    {
+      log_error ("p15: can't verify PIN: %s\n", errstr);
+      xfree (pinvalue);
+      return err? err : gpg_error (GPG_ERR_BAD_PIN_METHOD);
+    }
+
+
+  if (aodf->pintype == PIN_TYPE_BCD )
+    {
+      char *paddedpin;
+      int ndigits;
+
+      for (ndigits=0, s=pinvalue; *s; ndigits++, s++)
+        ;
+      paddedpin = xtrymalloc (aodf->stored_length+1);
+      if (!paddedpin)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (pinvalue);
+          return err;
+        }
+
+      i = 0;
+      paddedpin[i++] = 0x20 | (ndigits & 0x0f);
+      for (s=pinvalue; i < aodf->stored_length && *s && s[1]; s = s+2 )
+        paddedpin[i++] = (((*s - '0') << 4) | ((s[1] - '0') & 0x0f));
+      if (i < aodf->stored_length && *s)
+        paddedpin[i++] = (((*s - '0') << 4)
+                          |((aodf->pad_char_valid?aodf->pad_char:0)&0x0f));
+
+      if (aodf->pinflags.needs_padding)
+        {
+          while (i < aodf->stored_length)
+            paddedpin[i++] = aodf->pad_char_valid? aodf->pad_char : 0;
+        }
+
+      xfree (pinvalue);
+      pinvalue = paddedpin;
+      pinvaluelen = i;
+    }
+  else if (aodf->pinflags.needs_padding)
+    {
+      char *paddedpin;
+
+      paddedpin = xtrymalloc (aodf->stored_length+1);
+      if (!paddedpin)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (pinvalue);
+          return err;
+        }
+      for (i=0, s=pinvalue; i < aodf->stored_length && *s; i++, s++)
+        paddedpin[i] = *s;
+      /* Not sure what padding char to use if none has been set.
+         For now we use 0x00; maybe a space would be better. */
+      for (; i < aodf->stored_length; i++)
+        paddedpin[i] = aodf->pad_char_valid? aodf->pad_char : 0;
+      paddedpin[i] = 0;
+      pinvaluelen = i;
+      xfree (pinvalue);
+      pinvalue = paddedpin;
+    }
+  else
+    pinvaluelen = strlen (pinvalue);
+
+  /* log_printhex (pinvalue, pinvaluelen, */
+  /*               "about to verify with ref %lu pin:", */
+  /*               aodf->pin_reference_valid? aodf->pin_reference : 0); */
+  err = iso7816_verify (app_get_slot (app),
+                        aodf->pin_reference_valid? aodf->pin_reference : 0,
+                        pinvalue, pinvaluelen);
+  xfree (pinvalue);
+  if (err)
+    {
+      log_error ("p15: PIN verification failed: %s\n", gpg_strerror (err));
+      return err;
+    }
+  if (opt.verbose)
+    log_info ("p15: PIN verification succeeded\n");
+
+  return 0;
+}
+
+
+
+
 /* Handler for the PKSIGN command.
 
    Create the signature and return the allocated result in OUTDATA.
@@ -3111,7 +3325,6 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
 
   gpg_error_t err;
-  int i;
   unsigned char data[32+19]; /* Must be large enough for a SHA-256 digest
                               * + the largest OID prefix above and also
                               * fit the 36 bytes of md5sha1.  */
@@ -3125,7 +3338,6 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   int exmode, le_value;
 
 
-  log_debug ("p15:sign: keyidstr='%s' indatalen=%zu\n", keyidstr, indatalen);
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (indatalen != 20 && indatalen != 16
@@ -3171,41 +3383,12 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       return err;
     }
 
-  if (opt.verbose)
-    {
-      log_info ("p15: using AODF %04hX id=", aodf->fid);
-      for (i=0; i < aodf->objidlen; i++)
-        log_printf ("%02X", aodf->objid[i]);
-      log_printf ("\n");
-    }
-
-  if (aodf->authid && opt.verbose)
-    log_info ("p15: PIN is controlled by another authentication token\n");
-
-  if (aodf->pinflags.integrity_protected
-      || aodf->pinflags.confidentiality_protected)
-    {
-      log_error ("p15: "
-                 "PIN verification requires unsupported protection method\n");
-      return gpg_error (GPG_ERR_BAD_PIN_METHOD);
-    }
-  if (!aodf->stored_length && aodf->pinflags.needs_padding)
-    {
-      log_error ("p15: "
-                 "PIN verification requires padding but no length known\n");
-      return gpg_error (GPG_ERR_INV_CARD);
-    }
-
-  /* Select the key file.  Note that this may change the security
-     environment thus we do it before PIN verification. */
-  err = select_ef_by_path (app, prkdf->path, prkdf->pathlen);
+  /* Prepare PIN verification.  This is split so that we can do
+   * MSE operation for some task after having selected the key file but
+   * before sending the verify APDU.  */
+  err = prepare_verify_pin (app, keyidstr, prkdf, aodf);
   if (err)
-    {
-      log_error ("p15: error selecting file for key %s: %s\n",
-                 keyidstr, gpg_strerror (errno));
-      return err;
-    }
-
+    return err;
 
   /* Due to the fact that the non-repudiation signature on a BELPIC
      card requires a verify immediately before the DSO we set the
@@ -3237,160 +3420,12 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       return err;
     }
 
+  /* Now that we have all the information available run the actual PIN
+   * verification.*/
+  err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
+  if (err)
+    return err;
 
-  /* Now that we have all the information available, prepare and run
-     the PIN verification.*/
-  if (1)
-    {
-      char *pinvalue;
-      size_t pinvaluelen;
-      const char *errstr;
-      const char *s;
-
-      if (prkdf->usageflags.non_repudiation
-          && app->app_local->card_type == CARD_TYPE_BELPIC)
-        err = pincb (pincb_arg, "PIN (qualified signature!)", &pinvalue);
-      else
-        err = pincb (pincb_arg, "PIN", &pinvalue);
-      if (err)
-        {
-          log_info ("p15: PIN callback returned error: %s\n",
-                    gpg_strerror (err));
-          return err;
-        }
-
-      /* We might need to cope with UTF8 things here.  Not sure how
-         min_length etc. are exactly defined, for now we take them as
-         a plain octet count. */
-
-      if (strlen (pinvalue) < aodf->min_length)
-        {
-          log_error ("p15: PIN is too short; minimum length is %lu\n",
-                     aodf->min_length);
-          err = gpg_error (GPG_ERR_BAD_PIN);
-        }
-      else if (aodf->stored_length && strlen (pinvalue) > aodf->stored_length)
-        {
-          /* This would otherwise truncate the PIN silently. */
-          log_error ("p15: PIN is too large; maximum length is %lu\n",
-                     aodf->stored_length);
-          err = gpg_error (GPG_ERR_BAD_PIN);
-        }
-      else if (aodf->max_length_valid && strlen (pinvalue) > aodf->max_length)
-        {
-          log_error ("p15: PIN is too large; maximum length is %lu\n",
-                     aodf->max_length);
-          err = gpg_error (GPG_ERR_BAD_PIN);
-        }
-
-      if (err)
-        {
-          xfree (pinvalue);
-          return err;
-        }
-
-      errstr = NULL;
-      err = 0;
-      switch (aodf->pintype)
-        {
-        case PIN_TYPE_BCD:
-        case PIN_TYPE_ASCII_NUMERIC:
-          for (s=pinvalue; digitp (s); s++)
-            ;
-          if (*s)
-            {
-              errstr = "Non-numeric digits found in PIN";
-              err = gpg_error (GPG_ERR_BAD_PIN);
-            }
-          break;
-        case PIN_TYPE_UTF8:
-          break;
-        case PIN_TYPE_HALF_NIBBLE_BCD:
-          errstr = "PIN type Half-Nibble-BCD is not supported";
-          break;
-        case PIN_TYPE_ISO9564_1:
-          errstr = "PIN type ISO9564-1 is not supported";
-          break;
-        default:
-          errstr = "Unknown PIN type";
-          break;
-        }
-      if (errstr)
-        {
-          log_error ("p15: can't verify PIN: %s\n", errstr);
-          xfree (pinvalue);
-          return err? err : gpg_error (GPG_ERR_BAD_PIN_METHOD);
-        }
-
-
-      if (aodf->pintype == PIN_TYPE_BCD )
-        {
-          char *paddedpin;
-          int ndigits;
-
-          for (ndigits=0, s=pinvalue; *s; ndigits++, s++)
-            ;
-          paddedpin = xtrymalloc (aodf->stored_length+1);
-          if (!paddedpin)
-            {
-              err = gpg_error_from_syserror ();
-              xfree (pinvalue);
-              return err;
-            }
-
-          i = 0;
-          paddedpin[i++] = 0x20 | (ndigits & 0x0f);
-          for (s=pinvalue; i < aodf->stored_length && *s && s[1]; s = s+2 )
-            paddedpin[i++] = (((*s - '0') << 4) | ((s[1] - '0') & 0x0f));
-          if (i < aodf->stored_length && *s)
-            paddedpin[i++] = (((*s - '0') << 4)
-                              |((aodf->pad_char_valid?aodf->pad_char:0)&0x0f));
-
-          if (aodf->pinflags.needs_padding)
-            while (i < aodf->stored_length)
-              paddedpin[i++] = aodf->pad_char_valid? aodf->pad_char : 0;
-
-          xfree (pinvalue);
-          pinvalue = paddedpin;
-          pinvaluelen = i;
-        }
-      else if (aodf->pinflags.needs_padding)
-        {
-          char *paddedpin;
-
-          paddedpin = xtrymalloc (aodf->stored_length+1);
-          if (!paddedpin)
-            {
-              err = gpg_error_from_syserror ();
-              xfree (pinvalue);
-              return err;
-            }
-          for (i=0, s=pinvalue; i < aodf->stored_length && *s; i++, s++)
-            paddedpin[i] = *s;
-          /* Not sure what padding char to use if none has been set.
-             For now we use 0x00; maybe a space would be better. */
-          for (; i < aodf->stored_length; i++)
-            paddedpin[i] = aodf->pad_char_valid? aodf->pad_char : 0;
-          paddedpin[i] = 0;
-          pinvaluelen = i;
-          xfree (pinvalue);
-          pinvalue = paddedpin;
-        }
-      else
-        pinvaluelen = strlen (pinvalue);
-
-      err = iso7816_verify (app_get_slot (app),
-                            aodf->pin_reference_valid? aodf->pin_reference : 0,
-                            pinvalue, pinvaluelen);
-      xfree (pinvalue);
-      if (err)
-        {
-          log_error ("p15: PIN verification failed: %s\n", gpg_strerror (err));
-          return err;
-        }
-      if (opt.verbose)
-        log_info ("p15: PIN verification succeeded\n");
-    }
 
   /* Prepare the DER object from INDATA. */
   if (indatalen == 36)
