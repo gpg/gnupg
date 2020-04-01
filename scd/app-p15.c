@@ -3492,7 +3492,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
 
 
-  /* Manage security environment needs to be weaked for certain cards. */
+  /* Manage security environment needs to be tweaked for certain cards. */
   if (mse_done)
     err = 0;
   else if (app->app_local->card_type == CARD_TYPE_TCOS)
@@ -3583,6 +3583,103 @@ do_auth (app_t app, const char *keyidstr,
   algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
   return do_sign (app, keyidstr, algo, pincb, pincb_arg,
                   indata, indatalen, outdata, outdatalen);
+}
+
+
+/* Handler for the PKDECRYPT command.  Decrypt the data in INDATA and
+ * return the allocated result in OUTDATA.  If a PIN is required the
+ * PINCB will be used to ask for the PIN; it should return the PIN in
+ * an allocated buffer and put it into PIN.  */
+static gpg_error_t
+do_decipher (app_t app, const char *keyidstr,
+             gpg_error_t (*pincb)(void*, const char *, char **),
+             void *pincb_arg,
+             const void *indata, size_t indatalen,
+             unsigned char **outdata, size_t *outdatalen,
+             unsigned int *r_info)
+{
+  gpg_error_t err;
+  prkdf_object_t prkdf;    /* The private key object. */
+  aodf_object_t aodf;      /* The associated authentication object. */
+  int exmode, le_value, padind;
+
+  (void)r_info;
+
+  if (!keyidstr || !*keyidstr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!indatalen || !indata || !outdatalen || !outdata)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
+  if (err)
+    return err;
+  if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap))
+    {
+      log_error ("p15: key %s may not be used for decruption\n", keyidstr);
+      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+    }
+
+  /* Find the authentication object to this private key object. */
+  if (!prkdf->authid)
+    {
+      log_error ("p15: no authentication object defined for %s\n", keyidstr);
+      /* fixme: we might want to go ahead and do without PIN
+         verification. */
+      return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+    }
+  for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+    if (aodf->objidlen == prkdf->authidlen
+        && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
+      break;
+  if (!aodf)
+    {
+      log_error ("p15: authentication object for %s missing\n", keyidstr);
+      return gpg_error (GPG_ERR_INV_CARD);
+    }
+
+
+  /* Verify the PIN.  */
+  err = prepare_verify_pin (app, keyidstr, prkdf, aodf);
+  if (!err)
+    err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
+  if (err)
+    return err;
+
+
+  /* The next is guess work for CardOS.  */
+  if (prkdf->key_reference_valid)
+    {
+      unsigned char mse[6];
+
+      mse[0] = 0x80; /* Algorithm reference.  */
+      mse[1] = 1;
+      mse[2] = 0x0a; /* RSA, no padding.  */
+      mse[3] = 0x84;
+      mse[4] = 1;
+      mse[5] = prkdf->key_reference;
+      err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB8,
+                                         mse, sizeof mse);
+      if (err)
+        {
+          log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
+          return err;
+        }
+    }
+
+
+  exmode = le_value = 0;
+  padind = 0;
+  if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits > 2048)
+    {
+      exmode = 1;   /* Extended length w/o a limit.  */
+      le_value = prkdf->keynbits / 8;
+    }
+
+  err = iso7816_decipher (app_get_slot (app), exmode,
+                          indata, indatalen,
+                          le_value, padind,
+                          outdata, outdatalen);
+  return err;
 }
 
 
@@ -3773,7 +3870,7 @@ app_select_p15 (app_t app)
       app->fnc.genkey = NULL;
       app->fnc.sign = do_sign;
       app->fnc.auth = do_auth;
-      app->fnc.decipher = NULL;
+      app->fnc.decipher = do_decipher;
       app->fnc.change_pin = NULL;
       app->fnc.check_pin = NULL;
 
