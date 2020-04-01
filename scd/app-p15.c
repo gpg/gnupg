@@ -3382,6 +3382,15 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       return gpg_error (GPG_ERR_INV_CARD);
     }
 
+  /* We need some more info about the key - get the keygrip to
+   * populate these fields.  */
+  err = keygrip_from_prkdf (app, prkdf);
+  if (err)
+    {
+      log_error ("p15: keygrip_from_prkdf failed: %s\n", gpg_strerror (err));
+      return err;
+    }
+
 
   /* Prepare PIN verification.  This is split so that we can do
    * MSE operation for some task after having selected the key file but
@@ -3491,15 +3500,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }
 
-
-  /* We need some more info about the key - get the keygrip to
-   * populate these fields.  */
-  err = keygrip_from_prkdf (app, prkdf);
-  if (err)
-    {
-      log_error ("p15: keygrip_from_prkdf failed: %s\n", gpg_strerror (err));
-      return err;
-    }
 
   /* Manage security environment needs to be tweaked for certain cards. */
   if (mse_done)
@@ -3649,6 +3649,15 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     {
       log_error ("p15: authentication object for %s missing\n", keyidstr);
       return gpg_error (GPG_ERR_INV_CARD);
+    }
+
+  /* We need some more info about the key - get the keygrip to
+   * populate these fields.  */
+  err = keygrip_from_prkdf (app, prkdf);
+  if (err)
+    {
+      log_error ("p15: keygrip_from_prkdf failed: %s\n", gpg_strerror (err));
+      return err;
     }
 
 
