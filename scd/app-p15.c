@@ -181,6 +181,10 @@ struct prkdf_object_s
   unsigned int key_reference_valid:1;
   unsigned int have_off:1;
 
+  /* Flag indicating that the corresponding PIN has already been
+   * verified. */
+  unsigned int pin_verified:1;
+
   /* The key's usage flags. */
   keyusage_flags_t usageflags;
 
@@ -3147,6 +3151,9 @@ verify_pin (app_t app,
   const char *s;
   int i;
 
+  if (prkdf->pin_verified)
+    return 0;  /* Already done.  */
+
   if (prkdf->usageflags.non_repudiation
       && app->app_local->card_type == CARD_TYPE_BELPIC)
     err = pincb (pincb_arg, "PIN (qualified signature!)", &pinvalue);
@@ -3294,6 +3301,7 @@ verify_pin (app_t app,
     }
   if (opt.verbose)
     log_info ("p15: PIN verification succeeded\n");
+  prkdf->pin_verified = 1;
 
   return 0;
 }
