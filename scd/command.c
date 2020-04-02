@@ -2077,11 +2077,11 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   if (has_option (line, "--list"))
     cap = 0;
   else if (has_option (line, "--list=sign"))
-    cap = 1;
+    cap = GCRY_PK_USAGE_SIGN;
   else if (has_option (line, "--list=encr"))
-    cap = 2;
+    cap = GCRY_PK_USAGE_ENCR;
   else if (has_option (line, "--list=auth"))
-    cap = 3;
+    cap = GCRY_PK_USAGE_AUTH;
   else
     keygrip_str = line;
 

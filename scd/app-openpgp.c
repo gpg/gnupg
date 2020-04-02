@@ -5454,8 +5454,16 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str,
             }
           else
             {
-              i = capability - 1;
-              send_keyinfo_if_available (app, ctrl, buf, data, i);
+              if (capability == GCRY_PK_USAGE_SIGN)
+                i = 0;
+              else if (capability == GCRY_PK_USAGE_ENCR)
+                i = 1;
+              else if (capability == GCRY_PK_USAGE_AUTH)
+                i = 2;
+              else
+                i = -1;
+              if (i >= 0)
+                send_keyinfo_if_available (app, ctrl, buf, data, i);
             }
 
           /* Return an error so that the dispatcher keeps on looping
@@ -5476,6 +5484,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str,
 
   return gpg_error (GPG_ERR_NOT_FOUND);
 }
+
 
 /* Show information about card capabilities.  */
 static void

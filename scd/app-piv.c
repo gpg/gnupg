@@ -3513,17 +3513,17 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
         }
       else if (!want_keygripstr || !strcmp (keygripstr, want_keygripstr))
         {
-          if (capability == 1)
+          if (capability == GCRY_PK_USAGE_SIGN)
             {
               if (strcmp (data_objects[i].keyref, "9C"))
                 continue;
             }
-          if (capability == 2)
+          if (capability == GCRY_PK_USAGE_ENCR)
             {
               if (strcmp (data_objects[i].keyref, "9D"))
                 continue;
             }
-          if (capability == 3)
+          if (capability == GCRY_PK_USAGE_AUTH)
             {
               if (strcmp (data_objects[i].keyref, "9A"))
                 continue;
