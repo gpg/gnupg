@@ -42,6 +42,9 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl);
  * applications.  */
 static npth_mutex_t card_list_lock;
 
+/* Notification to threads which keep watching the status change.  */
+static npth_cond_t notify_cond;
+
 /* A list of card contexts.  A card is a collection of applications
  * (described by app_t) on the same physical token. */
 static card_t card_top;
@@ -279,6 +282,37 @@ app_dump_state (void)
   npth_mutex_unlock (&card_list_lock);
 }
 
+
+gpg_error_t
+app_send_devinfo (ctrl_t ctrl)
+{
+  card_t c;
+  app_t a;
+  int no_device;
+
+  send_status_direct (ctrl, "DEVINFO_START", "");
+
+  npth_mutex_lock (&card_list_lock);
+  no_device = (card_top == NULL);
+  for (c = card_top; c; c = c->next)
+    {
+      char *serialno;
+      char card_info[80];
+
+      serialno = card_get_serialno (c);
+      snprintf (card_info, sizeof card_info, "DEVICE %s %s",
+                strcardtype (c->cardtype), serialno);
+      xfree (serialno);
+
+      for (a = c->app; a; a = a->next)
+        send_status_direct (ctrl, card_info, strapptype (a->apptype));
+    }
+  npth_mutex_unlock (&card_list_lock);
+
+  send_status_direct (ctrl, "DEVINFO_END", "");
+
+  return no_device ? gpg_error (GPG_ERR_NOT_FOUND): 0;
+}
 
 /* Check whether the application NAME is allowed.  This does not mean
    we have support for it though.  */
@@ -1934,6 +1968,7 @@ scd_update_reader_status_file (void)
 {
   card_t card, card_next;
   int periodical_check_needed = 0;
+  int reported = 0;
 
   npth_mutex_lock (&card_list_lock);
   for (card = card_top; card; card = card_next)
@@ -1968,6 +2003,7 @@ scd_update_reader_status_file (void)
         {
           report_change (card->slot, card->card_status, status);
           send_client_notifications (card, status == 0);
+          reported++;
 
           if (status == 0)
             {
@@ -1992,6 +2028,9 @@ scd_update_reader_status_file (void)
         }
     }
 
+  if (reported)
+    npth_cond_broadcast (&notify_cond);
+
   npth_mutex_unlock (&card_list_lock);
 
   return periodical_check_needed;
@@ -2010,6 +2049,14 @@ initialize_module_command (void)
     {
       err = gpg_error_from_syserror ();
       log_error ("app: error initializing mutex: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  err = npth_cond_init (&notify_cond, NULL);
+  if (err)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("npth_cond_init failed: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -2278,4 +2325,12 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
     }
   npth_mutex_unlock (&card_list_lock);
   return c;
+}
+
+void
+app_wait (void)
+{
+  npth_mutex_lock (&card_list_lock);
+  npth_cond_wait (&notify_cond, &card_list_lock);
+  npth_mutex_unlock (&card_list_lock);
 }
