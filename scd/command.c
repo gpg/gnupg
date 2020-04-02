@@ -2129,34 +2129,31 @@ send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
 }
 
 
-static const char hlp_list_device[] =
-  "LIST_DEVICE [--watch] [--scan]\n"
+static const char hlp_devinfo[] =
+  "DEVINFO [--watch]\n"
   "\n"
-  "Return information about devices.  When no device is available,\n"
-  "GPG_ERR_NOT_FOUND is returned.  If the option --watch is geven,\n"
+  "Return information about devices.  If the option --watch is given,\n"
   "it keeps reporting status change until it detects no device is\n"
-  " available."
+  "available."
   "The information is returned as a status line using the format:\n"
   "\n"
-  "  DEVICE <serialno> <keygrip> <idstr>\n"
+  "  DEVICE <card_type> <serialno> <app_type>\n"
+  "\n"
+  "CARD_TYPE is the type of the card.\n"
   "\n"
   "SERIALNO is an ASCII string with the serial number of the\n"
   "         smartcard.  If the serial number is not known a single\n"
   "         dash '-' is used instead.\n"
   "\n"
-  "KEYGRIP is the keygrip.\n"
-  "\n"
-  "IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it\n"
-  "      is not known a dash is used instead.\n"
+  "APP_TYPE is the type of the application.\n"
   "\n"
   "More information may be added in the future.";
 static gpg_error_t
-cmd_list_device (assuan_context_t ctx, char *line)
+cmd_devinfo (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   int watch = 0;
-  int scan = 0;
 
   if (has_option (line, "--watch"))
     {
@@ -2164,33 +2161,44 @@ cmd_list_device (assuan_context_t ctx, char *line)
       ctrl->server_local->watching_status = 1;
     }
 
-  if (has_option (line, "--scan"))
-    scan = 1;
+  /* Firstly, send information of available devices.  */
+  err = app_send_devinfo (ctrl);
 
-  app_show_list (ctrl);
+  /* If not watching, that's all.  */
+  if (!watch)
+    return err;
+
+  if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+    return err;
+
+  /* Secondly, try to open device(s) available.  */
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
   if (ctrl->server_local->card_removed)
     ctrl->server_local->card_removed = 0;
 
-  /* Then, with --scan, try to open device(s) available.  */
-  if (scan && (err = open_card (ctrl)))
+  if ((err = open_card (ctrl))
+      && gpg_err_code (err) != GPG_ERR_ENODEV)
     return err;
+
+  err = 0;
 
   /* Remove reference(s) to the card.  */
   ctrl->card_ctx = NULL;
   ctrl->current_apptype = APPTYPE_NONE;
   card_unref (ctrl->card_ctx);
 
-  if (watch)
-    while (1)
-      if (app_wait ())
-        {
-          ctrl->server_local->watching_status = 0;
-          return 0;
-        }
+  /* Then, keep watching the status change.  */
+  while (!err)
+    {
+      app_wait ();
 
-  return gpg_error (GPG_ERR_NOT_FOUND);
+      /* Send information of available devices.  */
+      err = app_send_devinfo (ctrl);
+    }
+
+  ctrl->server_local->watching_status = 0;
+  return 0;
 }
 
 /* Return true if the command CMD implements the option OPT.  */
@@ -2244,7 +2252,7 @@ register_commands (assuan_context_t ctx)
     { "APDU",         cmd_apdu,     hlp_apdu },
     { "KILLSCD",      cmd_killscd,  hlp_killscd },
     { "KEYINFO",      cmd_keyinfo,  hlp_keyinfo },
-    { "LIST_DEVICE",  cmd_list_device,hlp_list_device },
+    { "DEVINFO",      cmd_devinfo,  hlp_devinfo },
     { NULL }
   };
   int i, rc;
@@ -2741,9 +2749,9 @@ send_client_notifications (card_t card, int removal)
       if (sl->watching_status)
         {
           if (removal)
-            assuan_write_status (sl->assuan_ctx, "LIST_DEVICE", "removal");
+            assuan_write_status (sl->assuan_ctx, "DEVINFO_STATUS", "removal");
           else
-            assuan_write_status (sl->assuan_ctx, "LIST_DEVICE", "new device");
+            assuan_write_status (sl->assuan_ctx, "DEVINFO_STATUS", "new");
         }
 
       if (sl->ctrl_backlink && sl->ctrl_backlink->card_ctx == card)

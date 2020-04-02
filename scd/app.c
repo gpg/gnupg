@@ -283,32 +283,35 @@ app_dump_state (void)
 }
 
 
-void
-app_show_list (ctrl_t ctrl)
+gpg_error_t
+app_send_devinfo (ctrl_t ctrl)
 {
   card_t c;
   app_t a;
+  int no_device;
 
-  send_status_direct (ctrl, "LIST_DEVICE", "show status of all devices");
+  send_status_direct (ctrl, "DEVINFO_START", "");
 
   npth_mutex_lock (&card_list_lock);
+  no_device = (card_top == NULL);
   for (c = card_top; c; c = c->next)
     {
-      char card_info[50];
+      char *serialno;
+      char card_info[80];
 
-      snprintf (card_info, sizeof card_info, "card=%p slot=%d type=%s",
-                c, c->slot, strcardtype (c->cardtype));
+      serialno = card_get_serialno (c);
+      snprintf (card_info, sizeof card_info, "DEVICE %s %s",
+                strcardtype (c->cardtype), serialno);
+      xfree (serialno);
 
       for (a = c->app; a; a = a->next)
-        {
-          char app_info[50];
-
-          snprintf (app_info, sizeof app_info, "app=%p type=%s",
-                    a, strapptype (a->apptype));
-          send_status_direct (ctrl, card_info, app_info);
-        }
+        send_status_direct (ctrl, card_info, strapptype (a->apptype));
     }
   npth_mutex_unlock (&card_list_lock);
+
+  send_status_direct (ctrl, "DEVINFO_END", "");
+
+  return no_device ? gpg_error (GPG_ERR_NOT_FOUND): 0;
 }
 
 /* Check whether the application NAME is allowed.  This does not mean
@@ -2061,7 +2064,6 @@ initialize_module_command (void)
 }
 
 
-
 /* Sort helper for app_send_card_list.  */
 static int
 compare_card_list_items (const void *arg_a, const void *arg_b)
@@ -2325,15 +2327,10 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
   return c;
 }
 
-int
+void
 app_wait (void)
 {
-  int ret;
-
   npth_mutex_lock (&card_list_lock);
   npth_cond_wait (&notify_cond, &card_list_lock);
-  ret = (card_top == NULL);
   npth_mutex_unlock (&card_list_lock);
-
-  return ret;
 }
