@@ -522,20 +522,20 @@ parse_certid (app_t app, const char *certid,
 
   if (certid[0] != 'P' && strlen (certid) == 40)  /* This is a keygrip.  */
     {
-      prkdf_object_t keyinfo;
+      prkdf_object_t prkdf;
 
-      for (keyinfo = app->app_local->private_key_info;
-           keyinfo; keyinfo = keyinfo->next)
-        if (!keygrip_from_prkdf (app, keyinfo)
-            && !strcmp (certid, keyinfo->keygrip))
+      for (prkdf = app->app_local->private_key_info;
+           prkdf; prkdf = prkdf->next)
+        if (!keygrip_from_prkdf (app, prkdf)
+            && !strcmp (certid, prkdf->keygrip))
           break;
-      if (!keyinfo || !keyinfo->objidlen || !keyinfo->objid)
+      if (!prkdf || !prkdf->objidlen || !prkdf->objid)
         return gpg_error (GPG_ERR_NOT_FOUND);
-      objidlen = keyinfo->objidlen;
+      objidlen = prkdf->objidlen;
       objid = xtrymalloc (objidlen);
       if (!objid)
         return gpg_error_from_syserror ();
-      memcpy (objid, keyinfo->objid, keyinfo->objidlen);
+      memcpy (objid, prkdf->objid, prkdf->objidlen);
     }
   else /* This is a usual keyref.  */
     {
@@ -2671,14 +2671,14 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
 }
 
 
-/* Return a malloced keyref string for KEYINFO.  Returns NULL on
+/* Return a malloced keyref string for PRKDF.  Returns NULL on
  * malloc failure.  */
 static char *
-keyref_from_keyinfo (app_t app, prkdf_object_t keyinfo)
+keyref_from_prkdf (app_t app, prkdf_object_t prkdf)
 {
   char *buf, *p;
 
-  buf = xtrymalloc (4 + 5 + keyinfo->objidlen*2 + 1);
+  buf = xtrymalloc (4 + 5 + prkdf->objidlen*2 + 1);
   if (!buf)
     return NULL;
   p = stpcpy (buf, "P15");
@@ -2689,7 +2689,7 @@ keyref_from_keyinfo (app_t app, prkdf_object_t keyinfo)
       p += 5;
     }
   p = stpcpy (p, ".");
-  bin2hex (keyinfo->objid, keyinfo->objidlen, p);
+  bin2hex (prkdf->objid, prkdf->objidlen, p);
   return buf;
 }
 
@@ -2698,32 +2698,32 @@ keyref_from_keyinfo (app_t app, prkdf_object_t keyinfo)
    keypairs back.  FIXME: much code duplication from
    send_certinfo(). */
 static gpg_error_t
-send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
+send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
 {
   gpg_error_t err;
 
-  for (; keyinfo; keyinfo = keyinfo->next)
+  for (; prkdf; prkdf = prkdf->next)
     {
       char *buf;
       int j;
 
-      buf = keyref_from_keyinfo (app, keyinfo);
+      buf = keyref_from_prkdf (app, prkdf);
       if (!buf)
         return gpg_error_from_syserror ();
 
-      err = keygrip_from_prkdf (app, keyinfo);
+      err = keygrip_from_prkdf (app, prkdf);
       if (err)
         {
           log_error ("p15: error getting keygrip from ");
-          for (j=0; j < keyinfo->pathlen; j++)
-            log_printf ("%s%04hX", j?"/":"", keyinfo->path[j]);
+          for (j=0; j < prkdf->pathlen; j++)
+            log_printf ("%s%04hX", j?"/":"", prkdf->path[j]);
           log_printf (": %s\n", gpg_strerror (err));
         }
       else
         {
-          log_assert (strlen (keyinfo->keygrip) == 40);
+          log_assert (strlen (prkdf->keygrip) == 40);
           send_status_info (ctrl, "KEYPAIRINFO",
-                            keyinfo->keygrip, 2*KEYGRIP_LEN,
+                            prkdf->keygrip, 2*KEYGRIP_LEN,
                             buf, strlen (buf),
                             NULL, (size_t)0);
         }
