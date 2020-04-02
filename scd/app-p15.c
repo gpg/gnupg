@@ -3100,7 +3100,7 @@ micardo_mse (app_t app, unsigned short fid)
 
 /* Prepare the verification of the PIN for the key PRKDF by checking
  * the AODF and selecting the key file.  KEYREF is used for error
- * messages.  */
+ * messages.  AODF may be NULL if no verification needs to be done. */
 static gpg_error_t
 prepare_verify_pin (app_t app, const char *keyref,
                     prkdf_object_t prkdf, aodf_object_t aodf)
@@ -3108,29 +3108,32 @@ prepare_verify_pin (app_t app, const char *keyref,
   gpg_error_t err;
   int i;
 
-  if (opt.verbose)
+  if (aodf)
     {
-      log_info ("p15: using AODF %04hX id=", aodf->fid);
-      for (i=0; i < aodf->objidlen; i++)
-        log_printf ("%02X", aodf->objid[i]);
-      log_printf ("\n");
-    }
+      if (opt.verbose)
+        {
+          log_info ("p15: using AODF %04hX id=", aodf->fid);
+          for (i=0; i < aodf->objidlen; i++)
+            log_printf ("%02X", aodf->objid[i]);
+          log_printf ("\n");
+        }
 
-  if (aodf->authid && opt.verbose)
-    log_info ("p15: PIN is controlled by another authentication token\n");
+      if (aodf->authid && opt.verbose)
+        log_info ("p15: PIN is controlled by another authentication token\n");
 
-  if (aodf->pinflags.integrity_protected
-      || aodf->pinflags.confidentiality_protected)
-    {
-      log_error ("p15: "
-                 "PIN verification requires unsupported protection method\n");
-      return gpg_error (GPG_ERR_BAD_PIN_METHOD);
-    }
-  if (!aodf->stored_length && aodf->pinflags.needs_padding)
-    {
-      log_error ("p15: "
-                 "PIN verification requires padding but no length known\n");
-      return gpg_error (GPG_ERR_INV_CARD);
+      if (aodf->pinflags.integrity_protected
+          || aodf->pinflags.confidentiality_protected)
+        {
+          log_error ("p15: PIN verification requires"
+                     " unsupported protection method\n");
+          return gpg_error (GPG_ERR_BAD_PIN_METHOD);
+        }
+      if (!aodf->stored_length && aodf->pinflags.needs_padding)
+        {
+          log_error ("p15: PIN verification requires"
+                     " padding but no length known\n");
+          return gpg_error (GPG_ERR_INV_CARD);
+        }
     }
 
   /* Select the key file.  Note that this may change the security
@@ -3145,7 +3148,8 @@ prepare_verify_pin (app_t app, const char *keyref,
 
 
 /* Given the private key object PRKDF and its authentication object
- * AODF ask for the PIN and verify that PIN.  */
+ * AODF ask for the PIN and verify that PIN.  IF AODF is NULL, no
+ * authentication is done.  */
 static gpg_error_t
 verify_pin (app_t app,
             gpg_error_t (*pincb)(void*, const char *, char **), void *pincb_arg,
@@ -3157,6 +3161,9 @@ verify_pin (app_t app,
   const char *errstr;
   const char *s;
   int i;
+
+  if (!aodf)
+    return 0;
 
   if (prkdf->pin_verified)
     return 0;  /* Already done.  */
@@ -3385,10 +3392,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
       break;
   if (!aodf)
-    {
-      log_error ("p15: authentication object for %s missing\n", keyidstr);
-      return gpg_error (GPG_ERR_INV_CARD);
-    }
+    log_info ("p15: no authentication for %s needed\n", keyidstr);
 
   /* We need some more info about the key - get the keygrip to
    * populate these fields.  */
@@ -3398,7 +3402,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       log_error ("p15: keygrip_from_prkdf failed: %s\n", gpg_strerror (err));
       return err;
     }
-
 
   /* Prepare PIN verification.  This is split so that we can do
    * MSE operation for some task after having selected the key file but
@@ -3654,10 +3657,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
         && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
       break;
   if (!aodf)
-    {
-      log_error ("p15: authentication object for %s missing\n", keyidstr);
-      return gpg_error (GPG_ERR_INV_CARD);
-    }
+    log_info ("p15: no authentication for %s needed\n", keyidstr);
 
   /* We need some more info about the key - get the keygrip to
    * populate these fields.  */
@@ -3758,7 +3758,6 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
   for (prkdf = app->app_local->private_key_info;
        prkdf; prkdf = prkdf->next)
     {
-
       if (keygrip_from_prkdf (app, prkdf))
         continue;
 
@@ -3774,8 +3773,22 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
         {
           char *keyref;
 
-          /* FIXME: Consider ...  */
-          (void)capability;
+          if (capability == GCRY_PK_USAGE_SIGN)
+            {
+              if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover
+                    || prkdf->usageflags.non_repudiation))
+                continue;
+            }
+          else if (capability == GCRY_PK_USAGE_ENCR)
+            {
+              if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap))
+                continue;
+            }
+          else if (capability == GCRY_PK_USAGE_AUTH)
+            {
+              if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover))
+                continue;
+            }
 
           keyref = keyref_from_prkdf (app, prkdf);
           if (!keyref)
@@ -3785,6 +3798,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
             }
 
           send_keyinfo (ctrl, as_data, prkdf->keygrip, serialno, keyref);
+          xfree (keyref);
           if (want_keygripstr)
             {
               err = 0; /* Found */
