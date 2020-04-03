@@ -259,6 +259,8 @@ The DNS resolver code is libdns by William Ahern; see COPYING.other.
 The test driver is based on TinySCHEME by Dimitrios Souflis and
 available under a permissive license; see COPYING.other.
 
+Regular expression implementation is taken from Jim Tcl, originally
+by Henry Spencer, and modified by others; see COPYING.other.
 
 License
 ========
