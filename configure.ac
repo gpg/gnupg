@@ -1452,62 +1452,6 @@ AC_CHECK_FUNCS([getpeerucred])
 #
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
 
-#
-# Sanity check regex.  Tests adapted from mutt.
-#
-AC_MSG_CHECKING([whether regular expression support is requested])
-AC_ARG_ENABLE(regex,
-  AC_HELP_STRING([--disable-regex],
-    [do not handle regular expressions in trust signatures]),
-  use_regex=$enableval, use_regex=yes)
-AC_MSG_RESULT($use_regex)
-
-if test "$use_regex" = yes ; then
-  _cppflags="${CPPFLAGS}"
-  _ldflags="${LDFLAGS}"
-  AC_ARG_WITH(regex,
-     AC_HELP_STRING([--with-regex=DIR],[look for regex in DIR]),
-      [
-      if test -d "$withval" ; then
-        CPPFLAGS="${CPPFLAGS} -I$withval/include"
-        LDFLAGS="${LDFLAGS} -L$withval/lib"
-      fi
-      ],withval="")
-
-  # Does the system have regex functions at all?
-  AC_SEARCH_LIBS([regcomp], [regex])
-  AC_CHECK_FUNC(regcomp, gnupg_cv_have_regex=yes, gnupg_cv_have_regex=no)
-
-  if test $gnupg_cv_have_regex = no; then
-    use_regex=no
-  else
-    if test x"$cross_compiling" = xyes; then
-      AC_MSG_WARN([cross compiling; assuming regexp libray is not broken])
-    else
-      AC_CACHE_CHECK([whether your system's regexp library is broken],
-       [gnupg_cv_regex_broken],
-       AC_TRY_RUN([
-#include <unistd.h>
-#include <regex.h>
-main() { regex_t blah ; regmatch_t p; p.rm_eo = p.rm_eo; return regcomp(&blah, "foo.*bar", REG_NOSUB) || regexec (&blah, "foobar", 0, NULL, 0); }],
-       gnupg_cv_regex_broken=no, gnupg_cv_regex_broken=yes, gnupg_cv_regex_broken=yes))
-
-      if test $gnupg_cv_regex_broken = yes; then
-        AC_MSG_WARN([your regex is broken - disabling regex use])
-        use_regex=no
-      fi
-    fi
-  fi
-  CPPFLAGS="${_cppflags}"
-  LDFLAGS="${_ldflags}"
-fi
-
-if test "$use_regex" != yes ; then
-  AC_DEFINE(DISABLE_REGEX,1, [Define to disable regular expression support])
-fi
-AM_CONDITIONAL(DISABLE_REGEX, test x"$use_regex" != xyes)
-
-
 
 #
 # Do we have zlib? Must do it here because Solaris failed
@@ -2024,6 +1968,7 @@ Makefile
 po/Makefile.in
 common/Makefile
 common/w32info-rc.h
+regexp/Makefile
 kbx/Makefile
 g10/Makefile
 sm/Makefile
@@ -2077,13 +2022,6 @@ echo "
         TOFU support:        $use_tofu
         Tor support:         $show_tor_support
 "
-if test x"$use_regex" != xyes ; then
-echo "
-        Warning: No regular expression support available.
-                 OpenPGP trust signatures won't work.
-                 gpg-check-pattern will not be built.
-"
-fi
 if test "x${gpg_config_script_warn}" != x; then
 cat <<G10EOF
         Warning: Mismatches between the target platform and the

@@ -101,7 +101,7 @@ else
 doc =
 endif
 
-SUBDIRS = m4 common kbx \
+SUBDIRS = m4 common regexp kbx \
           ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
           tools po ${doc} tests
 

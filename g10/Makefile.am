@@ -31,7 +31,7 @@ include $(top_srcdir)/am/cmacros.am
 AM_CFLAGS = $(SQLITE3_CFLAGS) $(LIBGCRYPT_CFLAGS) \
             $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
-needed_libs = ../kbx/libkeybox.a $(libcommon)
+needed_libs = ../kbx/libkeybox.a $(libcommon) ../regexp/libregexp.a
 
 # Because there are no program specific transform macros we need to
 # work around that to allow installing gpg as gpg2.
