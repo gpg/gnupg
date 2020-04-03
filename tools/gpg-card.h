@@ -145,6 +145,8 @@ struct card_info_s
   char *apptypestr;  /* Malloced application type string.  */
   app_type_t apptype;/* Translated from APPTYPESTR.  */
   unsigned int appversion; /* Version of the application.  */
+  unsigned int manufacturer_id;
+  char *manufacturer_name; /* malloced. */
   char *serialno;    /* malloced hex string. */
   char *dispserialno;/* malloced string. */
   char *disp_name;   /* malloced. */

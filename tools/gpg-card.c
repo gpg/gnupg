@@ -493,47 +493,6 @@ print_help (const char *text, ...)
 }
 
 
-/* Return the OpenPGP card manufacturer name.  */
-static const char *
-get_manufacturer (unsigned int no)
-{
-  /* Note:  Make sure that there is no colon or linefeed in the string. */
-  switch (no)
-    {
-    case 0x0001: return "PPC Card Systems";
-    case 0x0002: return "Prism";
-    case 0x0003: return "OpenFortress";
-    case 0x0004: return "Wewid";
-    case 0x0005: return "ZeitControl";
-    case 0x0006: return "Yubico";
-    case 0x0007: return "OpenKMS";
-    case 0x0008: return "LogoEmail";
-    case 0x0009: return "Fidesmo";
-    case 0x000A: return "Dangerous Things";
-    case 0x000B: return "Feitian Technologies";
-
-    case 0x002A: return "Magrathea";
-    case 0x0042: return "GnuPG e.V.";
-
-    case 0x1337: return "Warsaw Hackerspace";
-    case 0x2342: return "warpzone"; /* hackerspace Muenster.  */
-    case 0x4354: return "Confidential Technologies";   /* cotech.de */
-    case 0x5443: return "TIF-IT e.V.";
-    case 0x63AF: return "Trustica";
-    case 0xBA53: return "c-base e.V.";
-    case 0xBD0E: return "Paranoidlabs";
-    case 0xF517: return "FSIJ";
-    case 0xF5EC: return "F-Secure";
-
-      /* 0x0000 and 0xFFFF are defined as test cards per spec,
-       * 0xFF00 to 0xFFFE are assigned for use with randomly created
-       * serial numbers.  */
-    case 0x0000:
-    case 0xffff: return "test card";
-    default: return (no & 0xff00) == 0xff00? "unmanaged S/N range":"unknown";
-    }
-}
-
 /* Print an (OpenPGP) fingerprint.  */
 static void
 print_shax_fpr (estream_t fp, const unsigned char *fpr, unsigned int fprlen)
@@ -841,9 +800,6 @@ list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
       return;
     }
 
-  tty_fprintf (fp, "Manufacturer .....: %s\n",
-               get_manufacturer (xtoi_2(info->serialno+16)*256
-                                 + xtoi_2 (info->serialno+18)));
   tty_fprintf (fp, "Name of cardholder: ");
   print_isoname (fp, info->disp_name);
 
@@ -1005,6 +961,14 @@ list_card (card_info_t info, int no_key_lookup)
   if (info->serialno && info->dispserialno
       && strcmp (info->serialno, info->dispserialno))
     tty_fprintf (fp, "Displayed s/n ....: %s\n", info->dispserialno);
+
+  if (info->manufacturer_name && info->manufacturer_id)
+    tty_fprintf (fp, "Manufacturer .....: %s (%x)\n",
+                 info->manufacturer_name, info->manufacturer_id);
+  else if (info->manufacturer_name && !info->manufacturer_id)
+    tty_fprintf (fp, "Manufacturer .....: %s\n", info->manufacturer_name);
+  else if (info->manufacturer_id)
+    tty_fprintf (fp, "Manufacturer .....: (%x)\n", info->manufacturer_id);
 
   switch (info->apptype)
     {

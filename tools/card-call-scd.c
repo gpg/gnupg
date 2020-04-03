@@ -139,6 +139,7 @@ release_card_info (card_info_t info)
 
   xfree (info->reader); info->reader = NULL;
   xfree (info->cardtype); info->cardtype = NULL;
+  xfree (info->manufacturer_name); info->manufacturer_name = NULL;
   xfree (info->serialno); info->serialno = NULL;
   xfree (info->dispserialno); info->dispserialno = NULL;
   xfree (info->apptypestr); info->apptypestr = NULL;
@@ -648,7 +649,7 @@ learn_status_cb (void *opaque, const char *line)
   const char *keyword = line;
   int keywordlen;
   char *line_buffer = NULL; /* In case we need a copy.  */
-  char *pline;
+  char *pline, *endp;
   key_info_t kinfo;
   const char *keyref;
   int i;
@@ -1011,6 +1012,16 @@ learn_status_cb (void *opaque, const char *line)
           log_assert (no >= 0 && no <= 3);
           xfree (parm->private_do[no]);
           parm->private_do[no] = unescape_status_string (line);
+        }
+      else if (!memcmp (keyword, "MANUFACTURER", 12))
+        {
+          xfree (parm->manufacturer_name);
+          parm->manufacturer_name = NULL;
+          parm->manufacturer_id = strtoul (line, &endp, 0);
+          while (endp && spacep (endp))
+            endp++;
+          if (endp && *endp)
+            parm->manufacturer_name = xstrdup (endp);
         }
       break;
 

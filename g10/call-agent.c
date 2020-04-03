@@ -517,6 +517,7 @@ agent_release_card_info (struct agent_card_info_s *info)
     return;
 
   xfree (info->reader); info->reader = NULL;
+  xfree (info->manufacturer_name); info->manufacturer_name = NULL;
   xfree (info->serialno); info->serialno = NULL;
   xfree (info->apptype); info->apptype = NULL;
   xfree (info->disp_name); info->disp_name = NULL;
@@ -540,6 +541,7 @@ learn_status_cb (void *opaque, const char *line)
   const char *keyword = line;
   int keywordlen;
   int i;
+  char *endp;
 
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
@@ -740,6 +742,16 @@ learn_status_cb (void *opaque, const char *line)
       log_assert (no >= 0 && no <= 3);
       xfree (parm->private_do[no]);
       parm->private_do[no] = unescape_status_string (line);
+    }
+  else if (keywordlen == 12 && !memcmp (keyword, "MANUFACTURER", 12))
+    {
+      xfree (parm->manufacturer_name);
+      parm->manufacturer_name = NULL;
+      parm->manufacturer_id = strtoul (line, &endp, 0);
+      while (endp && spacep (endp))
+        endp++;
+      if (endp && *endp)
+        parm->manufacturer_name = xstrdup (endp);
     }
   else if (keywordlen == 3 && !memcmp (keyword, "KDF", 3))
     {
