@@ -331,6 +331,9 @@ struct app_local_s
   unsigned char *serialno;
   size_t serialnolen;
 
+  /* The manufacturerID from the TokenInfo EF.  Malloced. */
+  char *manufacturer_id;
+
   /* Information on all certificates. */
   cdf_object_t certificate_info;
   /* Information on all trusted certificates. */
@@ -351,6 +354,7 @@ struct app_local_s
 static gpg_error_t keygrip_from_prkdf (app_t app, prkdf_object_t prkdf);
 static gpg_error_t readcert_by_cdf (app_t app, cdf_object_t cdf,
                                     unsigned char **r_cert, size_t *r_certlen);
+static gpg_error_t do_getattr (app_t app, ctrl_t ctrl, const char *name);
 
 
 
@@ -419,6 +423,7 @@ do_deinit (app_t app)
       release_cdflist (app->app_local->useful_certificate_info);
       release_prkdflist (app->app_local->private_key_info);
       release_aodflist (app->app_local->auth_object_info);
+      xfree (app->app_local->manufacturer_id);
       xfree (app->app_local->serialno);
       xfree (app->app_local);
       app->app_local = NULL;
@@ -2364,8 +2369,10 @@ read_ef_tokeninfo (app_t app)
   int class, tag, constructed, ndef;
   unsigned long ul;
 
+  xfree (app->app_local->manufacturer_id);
+  app->app_local->manufacturer_id = NULL;
+
   err = select_and_read_binary (app->slot, 0x5032, "TokenInfo",
-                                &buffer, &buflen);
   if (err)
     return err;
 
@@ -2444,6 +2451,8 @@ read_ef_tokeninfo (app_t app)
     {
       if (opt.verbose)
         log_info ("p15:  manufacturerID: %.*s\n", (int)objlen, p);
+      app->app_local->manufacturer_id = percent_data_escape (0, NULL,
+                                                             p, objlen);
       p += objlen;
       n -= objlen;
       /* Get next TLV.  */
@@ -2721,10 +2730,28 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
         }
       else
         {
+          char usage[5];
+          size_t usagelen = 0;
+
+          if (prkdf->usageflags.sign
+              || prkdf->usageflags.sign_recover
+              || prkdf->usageflags.non_repudiation)
+            usage[usagelen++] = 's';
+          if (prkdf->usageflags.sign
+              || prkdf->usageflags.sign_recover)
+            usage[usagelen++] = 'c';
+          if (prkdf->usageflags.decrypt
+              || prkdf->usageflags.unwrap)
+            usage[usagelen++] = 'e';
+          if (prkdf->usageflags.sign
+              || prkdf->usageflags.sign_recover)
+            usage[usagelen++] = 'a';
+
           log_assert (strlen (prkdf->keygrip) == 40);
           send_status_info (ctrl, "KEYPAIRINFO",
                             prkdf->keygrip, 2*KEYGRIP_LEN,
                             buf, strlen (buf),
+                            usage, usagelen,
                             NULL, (size_t)0);
         }
       xfree (buf);
@@ -2744,7 +2771,10 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
     err = 0;
   else
     {
-      err = send_certinfo (app, ctrl, "100", app->app_local->certificate_info);
+      err = do_getattr (app, ctrl, "MANUFACTURER");
+      if (!err)
+        err = send_certinfo (app, ctrl, "100",
+                             app->app_local->certificate_info);
       if (!err)
         err = send_certinfo (app, ctrl, "101",
                              app->app_local->trusted_certificate_info);
@@ -2915,36 +2945,41 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
 
-  if (!strcmp (name, "$AUTHKEYID"))
+  if (!strcmp (name, "$AUTHKEYID")
+      || !strcmp (name, "$ENCRKEYID")
+      || !strcmp (name, "$SIGNKEYID"))
     {
-      char *buf, *p;
+      char *buf;
       prkdf_object_t prkdf;
 
-      /* We return the ID of the first private keycapable of
-         signing. */
+      /* We return the ID of the first private key capable of the
+       * requested action.  Note that we do not yet return
+       * non_repudiation keys for $SIGNKEYID because our D-Trust
+       * testcard uses rsaPSS, which is not supported by gpgsm and not
+       * covered by the VS-NfD approval.  */
       for (prkdf = app->app_local->private_key_info; prkdf;
            prkdf = prkdf->next)
-        if (prkdf->usageflags.sign)
-          break;
+        {
+          if (name[1] == 'A' && (prkdf->usageflags.sign
+                                 || prkdf->usageflags.sign_recover))
+            break;
+          else if (name[1] == 'E' && (prkdf->usageflags.decrypt
+                                      || prkdf->usageflags.unwrap))
+            break;
+          else if (name[1] == 'S' && (prkdf->usageflags.sign
+                                      || prkdf->usageflags.sign_recover))
+            break;
+        }
       if (prkdf)
         {
-          buf = xtrymalloc (9 + prkdf->objidlen*2 + 1);
+          buf = keyref_from_prkdf (app, prkdf);
           if (!buf)
             return gpg_error_from_syserror ();
-          p = stpcpy (buf, "P15");
-          if (app->app_local->home_df)
-            {
-              snprintf (p, 6, "-%04X",
-                        (unsigned int)(app->app_local->home_df & 0xffff));
-              p += 5;
-            }
-          p = stpcpy (p, ".");
-          bin2hex (prkdf->objid, prkdf->objidlen, p);
 
           send_status_info (ctrl, name, buf, strlen (buf), NULL, 0);
           xfree (buf);
-          return 0;
         }
+      return 0;
     }
   else if (!strcmp (name, "$DISPSERIALNO"))
     {
@@ -2986,6 +3021,14 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           xfree (buffer);
         }
 
+    }
+  else if (!strcmp (name, "MANUFACTURER"))
+    {
+      if (app->app_local->manufacturer_id)
+        return send_status_printf (ctrl, "MANUFACTURER", "0 %s",
+                                   app->app_local->manufacturer_id);
+      else
+        return 0;
     }
   return gpg_error (GPG_ERR_INV_NAME);
 }
