@@ -1158,6 +1158,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     key using the <ubid> prefixed with a caret (^).
 
 *** KEYPAIRINFO <grip> <keyref> [<usage>] [<keytime>]
+
     This status is emitted by scdaemon and gpg-agent to convey brief
     information about keypairs stored on tokens.  <grip> is the
     hexified keygrip of the key or, if no key is stored, an "X".
@@ -1170,6 +1171,12 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     by OpenPGP cards for the stored key creation time.  A '-' means no
     info available.  The format is the usual ISO string are a number
     with the seconds since Epoch.
+*** MANUFACTORER <n> [<string>]
+
+    This status returns the Manufactorer ID as the unsigned number N.
+    For OpenPGP this is weel defined; for other cards this is 0.  The
+    name of the manufacturer is also given as <string>; spaces are not
+    escaped.  For PKCS#15 cards <string> is TokenInfo.manufactorerID.
 
 * Format of the --attribute-fd output
 
