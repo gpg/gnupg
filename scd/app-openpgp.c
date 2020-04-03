@@ -268,6 +268,47 @@ static gpg_error_t change_keyattr_from_string
                             void *pincb_arg,
                             const void *value, size_t valuelen);
 
+
+/* Return the OpenPGP card manufacturer name. */
+static const char *
+get_manufacturer (unsigned int no)
+{
+  /* Note:  Make sure that there is no colon or linefeed in the string. */
+  switch (no)
+    {
+    case 0x0001: return "PPC Card Systems";
+    case 0x0002: return "Prism";
+    case 0x0003: return "OpenFortress";
+    case 0x0004: return "Wewid";
+    case 0x0005: return "ZeitControl";
+    case 0x0006: return "Yubico";
+    case 0x0007: return "OpenKMS";
+    case 0x0008: return "LogoEmail";
+    case 0x0009: return "Fidesmo";
+    case 0x000A: return "Dangerous Things";
+    case 0x000B: return "Feitian Technologies";
+
+    case 0x002A: return "Magrathea";
+    case 0x0042: return "GnuPG e.V.";
+
+    case 0x1337: return "Warsaw Hackerspace";
+    case 0x2342: return "warpzone"; /* hackerspace Muenster.  */
+    case 0x4354: return "Confidential Technologies";   /* cotech.de */
+    case 0x5443: return "TIF-IT e.V.";
+    case 0x63AF: return "Trustica";
+    case 0xBA53: return "c-base e.V.";
+    case 0xBD0E: return "Paranoidlabs";
+    case 0xF517: return "FSIJ";
+    case 0xF5EC: return "F-Secure";
+
+      /* 0x0000 and 0xFFFF are defined as test cards per spec,
+       * 0xFF00 to 0xFFFE are assigned for use with randomly created
+       * serial numbers.  */
+    case 0x0000:
+    case 0xffff: return "test card";
+    default: return (no & 0xff00) == 0xff00? "unmanaged S/N range":"unknown";
+    }
+}
 
 
 
@@ -992,6 +1033,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "$SIGNKEYID",   0x0000, -7 },
     { "$DISPSERIALNO",0x0000, -4 },
     { "KDF",          0x00F9, 5 },
+    { "MANUFACTURER", 0x0000, -8 },
     { NULL, 0 }
   };
   int idx, i, rc;
@@ -1082,6 +1124,13 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       char const tmp[] = "OPENPGP.1";
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
+    }
+  if (table[idx].special == -8)
+    {
+      return send_status_printf
+        (ctrl, table[idx].name, "%u %s",
+         app->app_local->manufacturer,
+         get_manufacturer (app->app_local->manufacturer));
     }
 
   relptr = get_one_do (app, table[idx].tag, &value, &valuelen, &rc);
@@ -1860,6 +1909,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   (void)flags;
 
   do_getattr (app, ctrl, "EXTCAP");
+  do_getattr (app, ctrl, "MANUFACTURER");
   do_getattr (app, ctrl, "DISP-NAME");
   do_getattr (app, ctrl, "DISP-LANG");
   do_getattr (app, ctrl, "DISP-SEX");
