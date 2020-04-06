@@ -37,13 +37,13 @@
 #endif
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <regex.h>
 #include <ctype.h>
 
 #include "../common/util.h"
 #include "../common/i18n.h"
 #include "../common/sysutils.h"
 #include "../common/init.h"
+#include "../regexp/jimregexp.h"
 
 
 enum cmd_and_opt_values
@@ -369,7 +369,7 @@ parse_pattern_file (char *data, size_t datalen)
             p[strlen(p)-1] = 0;  /* Remove optional delimiter.  */
           array[arrayidx].u.r.regex = xcalloc (1, sizeof (regex_t));
           rerr = regcomp (array[arrayidx].u.r.regex, p,
-                          REG_ICASE|REG_NOSUB|REG_EXTENDED);
+                          REG_ICASE|REG_EXTENDED);
           if (rerr)
             {
               char *rerrbuf = get_regerror (rerr, array[arrayidx].u.r.regex);
