@@ -2699,7 +2699,7 @@ gc_component_change_options (int component, estream_t in, estream_t out,
 }
 
 
-/* Check whether USER matches the current user of one of its group.
+/* Check whether USER matches the current user or one of its group.
    This function may change USER.  Returns true is there is a
    match.  */
 static int
