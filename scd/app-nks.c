@@ -249,53 +249,17 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
 
 
 /* TCOS responds to a verify with empty data (i.e. without the Lc
-   byte) with the status of the PIN.  PWID is the PIN ID, If SIGG is
-   true, the application is switched into SigG mode.
-   Returns:
-            -1 = Error retrieving the data,
-            -2 = No such PIN,
-            -3 = PIN blocked,
-            -4 = NullPIN active,
-        n >= 0 = Number of verification attempts left.  */
+ * byte) with the status of the PIN.  PWID is the PIN ID, If SIGG is
+ * true, the application is switched into SigG mode.  Returns:
+ * ISO7816_VERIFY_* codes or non-negative number of verification
+ * attempts left.  */
 static int
 get_chv_status (app_t app, int sigg, int pwid)
 {
-  unsigned char *result = NULL;
-  size_t resultlen;
-  char command[4];
-  int rc;
-
   if (switch_application (app, sigg))
     return sigg? -2 : -1; /* No such PIN / General error.  */
 
-  command[0] = 0x00;
-  command[1] = 0x20;
-  command[2] = 0x00;
-  command[3] = pwid;
-
-  if (apdu_send_direct (app_get_slot (app), 0, (unsigned char *)command,
-                        4, 0, NULL, &result, &resultlen))
-    rc = -1; /* Error. */
-  else if (resultlen < 2)
-    rc = -1; /* Error. */
-  else
-    {
-      unsigned int sw = buf16_to_uint (result+resultlen-2);
-
-      if (sw == 0x6a88)
-        rc = -2; /* No such PIN.  */
-      else if (sw == 0x6983)
-        rc = -3; /* PIN is blocked.  */
-      else if (sw == 0x6985)
-        rc = -4; /* NullPIN is active.  */
-      else if ((sw & 0xfff0) == 0x63C0)
-        rc = (sw & 0x000f); /* PIN has N tries left.  */
-      else
-        rc = -1; /* Other error.  */
-    }
-  xfree (result);
-
-  return rc;
+  return iso7816_verify_status (app_get_slot (app), pwid);
 }
 
 

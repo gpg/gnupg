@@ -780,42 +780,17 @@ get_dispserialno (app_t app, int failmode)
 
 /* The verify command can be used to retrieve the security status of
  * the card.  Given the PIN name (e.g. "PIV.80" for the application
- * pin, a status is returned:
- *
- *        -1 = Error retrieving the data,
- *        -2 = No such PIN,
- *        -3 = PIN blocked,
- *        -5 = Verified and still valid,
- *    n >= 0 = Number of verification attempts left.
- */
+ * pin, a ISO7817_VERIFY_* code is returned or a non-negative number
+ * of verification attempts left.  */
 static int
 get_chv_status (app_t app, const char *keyrefstr)
 {
-  unsigned char apdu[4];
-  unsigned int sw;
-  int result;
   int keyref;
 
   keyref = parse_chv_keyref (keyrefstr);
   if (!keyrefstr)
-    return -1;
-
-  apdu[0] = 0x00;
-  apdu[1] = ISO7816_VERIFY;
-  apdu[2] = 0x00;
-  apdu[3] = keyref;
-  if (!iso7816_apdu_direct (app_get_slot (app), apdu, 4, 0, &sw, NULL, NULL))
-    result = -5; /* No need to verification.  */
-  else if (sw == 0x6a88 || sw == 0x6a80)
-    result = -2; /* No such PIN.  */
-  else if (sw == 0x6983)
-    result = -3; /* PIN is blocked.  */
-  else if ((sw & 0xfff0) == 0x63C0)
-    result = (sw & 0x000f);
-  else
-    result = -1; /* Error.  */
-
-  return result;
+    return ISO7816_VERIFY_ERROR;
+  return iso7816_verify_status (app_get_slot (app), keyref);
 }
 
 
@@ -1999,28 +1974,21 @@ verify_chv (app_t app, ctrl_t ctrl, int keyref, int force,
             gpg_error_t (*pincb)(void*,const char *,char **), void *pincb_arg)
 {
   gpg_error_t err;
-  unsigned char apdu[4];
-  unsigned int sw;
   int remaining;
   char *pin = NULL;
   unsigned int pinlen, unpaddedpinlen;
 
-  /* First check whether a verify is at all needed.  This is done with
-   * P1 being 0 and no Lc and command data send.  */
-  apdu[0] = 0x00;
-  apdu[1] = ISO7816_VERIFY;
-  apdu[2] = 0x00;
-  apdu[3] = keyref;
-  if (!iso7816_apdu_direct (app_get_slot (app), apdu, 4, 0, &sw, NULL, NULL))
+  /* First check whether a verify is at all needed.  */
+  remaining = iso7816_verify_status (app_get_slot (app), keyref);
+  if (remaining == ISO7816_VERIFY_NOT_NEEDED)
     {
       if (!force) /* No need to verification.  */
         return 0;  /* All fine.  */
       remaining = -1;
     }
-  else if ((sw & 0xfff0) == 0x63C0)
-    remaining = (sw & 0x000f); /* PIN has REMAINING tries left.  */
-  else
+  else if (remaining < 0)  /* We don't care about other errors. */
     remaining = -1;
+
 
   err = ask_and_prepare_chv (app, ctrl, keyref, 0, remaining, force,
                              pincb, pincb_arg,

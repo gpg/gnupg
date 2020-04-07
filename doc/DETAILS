@@ -1171,7 +1171,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     by OpenPGP cards for the stored key creation time.  A '-' means no
     info available.  The format is the usual ISO string are a number
     with the seconds since Epoch.
-*** MANUFACTORER <n> [<string>]
+*** MANUFACTURER <n> [<string>]
 
     This status returns the Manufactorer ID as the unsigned number N.
     For OpenPGP this is weel defined; for other cards this is 0.  The
