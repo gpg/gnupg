@@ -139,6 +139,32 @@ iso7816_select_application (int slot, const char *aid, size_t aidlen,
 }
 
 
+/* This is the same as iso7816_select_application but may return data
+ * at RESULT,RESULTLEN).  */
+gpg_error_t
+iso7816_select_application_ext (int slot, const char *aid, size_t aidlen,
+                                unsigned int flags,
+                                unsigned char **result, size_t *resultlen)
+{
+  int sw;
+  sw = apdu_send (slot, 0, 0x00, CMD_SELECT_FILE, 4,
+                  (flags&1)? 0:0x0c, aidlen, aid,
+                  result, resultlen);
+  return map_sw (sw);
+}
+
+
+/* Simple MF selection as supported by some cards.  */
+gpg_error_t
+iso7816_select_mf (int slot)
+{
+  int sw;
+
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE, 0x000, 0x0c, -1, NULL);
+  return map_sw (sw);
+}
+
+
 gpg_error_t
 iso7816_select_file (int slot, int tag, int is_dir)
 {

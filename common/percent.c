@@ -87,6 +87,89 @@ percent_plus_escape (const char *string)
 }
 
 
+/* Create a newly malloced string from (DATA,DATALEN) with embedded
+ * nuls quoted as %00.  The standard percent unescaping can be used to
+ * reverse this encoding.  With PLUS_ESCAPE set plus-escaping (spaces
+ * are replaced by a '+') and escaping of characters with values less
+ * than 0x20 is used.  If PREFIX is not NULL it will be prepended to
+ * the output in standard escape format; that is PLUS_ESCAPING is
+ * ignored for PREFIX. */
+char *
+percent_data_escape (int plus_escape, const char *prefix,
+                     const void *data, size_t datalen)
+{
+  char *buffer, *p;
+  const unsigned char *s;
+  size_t n;
+  size_t length = 1;
+
+  if (prefix)
+    {
+      for (s = prefix; *s; s++)
+        {
+          if (*s == '%' || *s < 0x20)
+            length += 3;
+          else
+            length++;
+        }
+    }
+
+  for (s=data, n=datalen; n; s++, n--)
+    {
+      if (!*s || *s == '%' || (plus_escape && (*s < ' ' || *s == '+')))
+        length += 3;
+      else
+        length++;
+    }
+
+  buffer = p = xtrymalloc (length);
+  if (!buffer)
+    return NULL;
+
+  if (prefix)
+    {
+      for (s = prefix; *s; s++)
+        {
+          if (*s == '%' || *s < 0x20)
+            {
+              snprintf (p, 4, "%%%02X", *s);
+              p += 3;
+            }
+          else
+            *p++ = *s;
+        }
+    }
+
+  for (s=data, n=datalen; n; s++, n--)
+    {
+      if (!*s)
+        {
+          memcpy (p, "%00", 3);
+          p += 3;
+        }
+      else if (*s == '%')
+        {
+          memcpy (p, "%25", 3);
+          p += 3;
+        }
+      else if (plus_escape && *s == ' ')
+        {
+          *p++ = '+';
+        }
+      else if (plus_escape && (*s < ' ' || *s == '+'))
+        {
+          snprintf (p, 4, "%%%02X", *s);
+          p += 3;
+        }
+      else
+        *p++ = *s;
+    }
+  *p = 0;
+
+  return buffer;
+}
+
+
 /* Do the percent and plus/space unescaping from STRING to BUFFER and
    return the length of the valid buffer.  Plus unescaping is only
    done if WITHPLUS is true.  An escaped Nul character will be

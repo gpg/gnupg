@@ -51,6 +51,12 @@ gpg_error_t iso7816_map_sw (int sw);
 gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen,
                                         unsigned int flags);
+gpg_error_t iso7816_select_application_ext (int slot,
+                                            const char *aid, size_t aidlen,
+                                            unsigned int flags,
+                                            unsigned char **result,
+                                            size_t *resultlen);
+gpg_error_t iso7816_select_mf (int slot);
 gpg_error_t iso7816_select_file (int slot, int tag, int is_dir);
 gpg_error_t iso7816_select_path (int slot,
                                  const unsigned short *path, size_t pathlen);

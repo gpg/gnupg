@@ -56,6 +56,17 @@ typedef enum
   }
 card_type_t;
 
+/* The OS of card as specified by card_type_t is not always
+ * sufficient.  Thus we also distinguish the actual product build upon
+ * the given OS.  */
+typedef enum
+  {
+    CARD_PRODUCT_UNKNOWN,
+    CARD_PRODUCT_DTRUST    /* D-Trust GmbH (bundesdruckerei.de) */
+  }
+card_product_t;
+
+
 /* A list card types with ATRs noticed with these cards. */
 #define X(a) ((unsigned char const *)(a))
 static struct
@@ -306,8 +317,11 @@ struct app_local_s
      hierarchy.  Thus we assume this is directly below the MF.  */
   unsigned short home_df;
 
-  /* The type of the card. */
+  /* The type of the card's OS. */
   card_type_t card_type;
+
+  /* The vendor's product.  */
+  card_product_t card_product;
 
   /* Flag indicating whether we may use direct path selection. */
   int direct_path_selection;
@@ -2371,8 +2385,10 @@ read_ef_tokeninfo (app_t app)
 
   xfree (app->app_local->manufacturer_id);
   app->app_local->manufacturer_id = NULL;
+  app->app_local->card_product = CARD_PRODUCT_UNKNOWN;
 
   err = select_and_read_binary (app->slot, 0x5032, "TokenInfo",
+                                &buffer, &buflen);
   if (err)
     return err;
 
@@ -2467,6 +2483,10 @@ read_ef_tokeninfo (app_t app)
     {
       if (opt.verbose)
         log_info ("p15:  label ........: %.*s\n", (int)objlen, p);
+      if (objlen > 15 && !memcmp (p, "D-TRUST Card V3", 15)
+          && app->app_local->card_type == CARD_TYPE_CARDOS_50)
+        app->app_local->card_product = CARD_PRODUCT_DTRUST;
+
       p += objlen;
       n -= objlen;
       /* Get next TLV.  */
@@ -3169,12 +3189,33 @@ prepare_verify_pin (app_t app, const char *keyref,
       return gpg_error (GPG_ERR_INV_CARD);
     }
 
-  /* Select the key file.  Note that this may change the security
-   * environment thus we need to do it before PIN verification. */
-  err = select_ef_by_path (app, prkdf->path, prkdf->pathlen);
-  if (err)
-    log_error ("p15: error selecting file for key %s: %s\n",
-               keyref, gpg_strerror (err));
+
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+    {
+      /* According to our protocol analysis we need to select a
+       * special AID here.  Before that the master file needs to be
+       * selected.  (RID A000000167 is assigned to IBM) */
+      static char const dtrust_aid[] =
+        { 0xA0, 0x00, 0x00, 0x01, 0x67, 0x45, 0x53, 0x49, 0x47, 0x4E };
+
+      err = iso7816_select_mf (app_get_slot (app));
+      if (!err)
+        err = iso7816_select_application (app_get_slot (app),
+                                          dtrust_aid, sizeof dtrust_aid, 0);
+      if (err)
+        log_error ("p15: error selecting D-TRUST's AID for key %s: %s\n",
+                   keyref, gpg_strerror (err));
+    }
+  else
+    {
+      /* Standard case: Select the key file.  Note that this may
+       * change the security environment thus we need to do it before
+       * PIN verification. */
+      err = select_ef_by_path (app, prkdf->path, prkdf->pathlen);
+      if (err)
+        log_error ("p15: error selecting file for key %s: %s\n",
+                   keyref, gpg_strerror (err));
+    }
 
   return err;
 }
@@ -3706,9 +3747,29 @@ do_decipher (app_t app, const char *keyidstr,
 
 
   /* The next is guess work for CardOS.  */
-  if (prkdf->key_reference_valid)
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+    {
+      /* From analyzing an USB trace of a Windows signing application
+       * we see that the SE is simply reset to 0x14.  It seems to be
+       * sufficient to do this for decryption; signing still works
+       * with the standard code despite that our trace showed that
+       * there the SE is restored to 0x09.  Note that the special
+       * D-Trust AID is in any case select by prepare_verify_pin.
+       *
+       * Hey, D-Trust please hand over the specs so that you can
+       * actually sell your cards and we can properly implement it;
+       * other vendors understand this and do not demand ridiculous
+       * paper work or complicated procedures to get samples.  */
+      err = iso7816_manage_security_env (app_get_slot (app),
+                                         0xF3, 0x14, NULL, 0);
+
+    }
+  else if (prkdf->key_reference_valid)
     {
       unsigned char mse[6];
+
+      /* Note: This works with CardOS but the D-Trust card has the
+       * problem that the next created signature would be broken.  */
 
       mse[0] = 0x80; /* Algorithm reference.  */
       mse[1] = 1;
@@ -3718,13 +3779,13 @@ do_decipher (app_t app, const char *keyidstr,
       mse[5] = prkdf->key_reference;
       err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB8,
                                          mse, sizeof mse);
-      if (err)
-        {
-          log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
-          return err;
-        }
     }
-
+  /* Check for MSE error.  */
+  if (err)
+    {
+      log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
+      return err;
+    }
 
   exmode = le_value = 0;
   padind = 0;
@@ -3733,6 +3794,9 @@ do_decipher (app_t app, const char *keyidstr,
       exmode = 1;   /* Extended length w/o a limit.  */
       le_value = prkdf->keynbits / 8;
     }
+
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+    padind = 0x81;
 
   err = iso7816_decipher (app_get_slot (app), exmode,
                           indata, indatalen,
@@ -3885,6 +3949,8 @@ app_select_p15 (app_t app)
       /* Store the card type.  FIXME: We might want to put this into
          the common APP structure. */
       app->app_local->card_type = card_type;
+
+      app->app_local->card_product = CARD_PRODUCT_UNKNOWN;
 
       /* Store whether we may and should use direct path selection. */
       app->app_local->direct_path_selection = direct;
