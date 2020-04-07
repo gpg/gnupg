@@ -79,6 +79,7 @@ g10/verify.c
 
 kbx/kbxutil.c
 
+scd/app-p15.c
 scd/app-nks.c
 scd/app-openpgp.c
 scd/app-dinsig.c

@@ -103,6 +103,8 @@ map_sw (int sw)
         ec = GPG_ERR_GENERAL; /* Should not happen. */
       else if ((sw & 0xff00) == SW_MORE_DATA)
         ec = 0; /* This should actually never been seen here. */
+      else if ((sw & 0xfff0) == 0x63C0)
+        ec = GPG_ERR_BAD_PIN;
       else
         ec = GPG_ERR_CARD;
     }
