@@ -78,6 +78,8 @@ g10/cipher-aead.c
 
 kbx/kbxutil.c
 
+scd/app-piv.c
+scd/app-p15.c
 scd/app-nks.c
 scd/app-openpgp.c
 scd/app-dinsig.c
