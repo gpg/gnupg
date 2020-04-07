@@ -41,6 +41,7 @@
 
 #include "iso7816.h"
 #include "app-common.h"
+#include "../common/i18n.h"
 #include "../common/tlv.h"
 #include "apdu.h" /* fixme: we should move the card detection to a
                      separate file */
@@ -209,6 +210,14 @@ struct prkdf_object_s
   /* The length of the key in bits (e.g. for RSA the length of the
    * modulus).  It is valid if the keygrip is also valid.  */
   unsigned int keynbits;
+
+  /* Malloced CN from the Subject-DN of the corresponding certificate
+   * or NULL if not known.  */
+  char *common_name;
+
+  /* Malloced SerialNumber from the Subject-DN of the corresponding
+   * certificate or NULL if not known.  */
+  char *serial_number;
 
   /* Length and allocated buffer with the Id of this object. */
   size_t objidlen;
@@ -393,6 +402,8 @@ release_prkdflist (prkdf_object_t a)
   while (a)
     {
       prkdf_object_t tmp = a->next;
+      xfree (a->common_name);
+      xfree (a->serial_number);
       xfree (a->objid);
       xfree (a->authid);
       xfree (a);
@@ -2621,7 +2632,7 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
 
 /* Get the keygrip of the private key object PRKDF.  On success the
  * keygrip, the algo and the length are stored in the KEYGRIP,
- * KEYALFO, and KEYNBITS fields of the PRKDF object.  */
+ * KEYALGO, and KEYNBITS fields of the PRKDF object.  */
 static gpg_error_t
 keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
 {
@@ -2635,6 +2646,11 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
   /* Easy if we got a cached version.  */
   if (prkdf->keygrip_valid)
     return 0;
+
+  xfree (prkdf->common_name);
+  prkdf->common_name = NULL;
+  xfree (prkdf->serial_number);
+  prkdf->serial_number = NULL;
 
   /* FIXME: We should check whether a public key directory file and a
      matching public key for PRKDF is available.  This should make
@@ -2674,6 +2690,59 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
   xfree (der);
   if (!err)
     err = app_help_get_keygrip_string (cert, prkdf->keygrip, &s_pkey);
+  if (!err)
+    {
+      /* Try to get the CN and the SerialNumber from the certificate;
+       * we use a very simple approach here which should work in many
+       * cases.  Eventually we should add a rfc-2253 parser into
+       * libksba to make it easier to parse such a string.
+       *
+       * First example string:
+       *   "CN=Otto Schily,O=Miniluv,C=DE"
+       * Second example string:
+       *   "2.5.4.5=#445452323030303236333531,2.5.4.4=#4B6F6368,"
+       *   "2.5.4.42=#5765726E6572,CN=Werner Koch,OU=For testing"
+       *   " purposes only!,O=Testorganisation,C=DE"
+       */
+      char *dn = ksba_cert_get_subject (cert, 0);
+      if (dn)
+        {
+          char *p, *pend, *buf;
+
+          p = strstr (dn, "CN=");
+          if (p && (p==dn || p[-1] == ','))
+            {
+              p += 3;
+              if (!(pend = strchr (p, ',')))
+                pend = p + strlen (p);
+              if (pend && pend > p
+                  && (prkdf->common_name = xtrymalloc ((pend - p) + 1)))
+                {
+                  memcpy (prkdf->common_name, p, pend-p);
+                  prkdf->common_name[pend-p] = 0;
+                }
+            }
+          p = strstr (dn, "2.5.4.5=#"); /* OID of the SerialNumber */
+          if (p && (p==dn || p[-1] == ','))
+            {
+              p += 9;
+              if (!(pend = strchr (p, ',')))
+                pend = p + strlen (p);
+              if (pend && pend > p
+                  && (buf = xtrymalloc ((pend - p) + 1)))
+                {
+                  memcpy (buf, p, pend-p);
+                  buf[pend-p] = 0;
+                  if (!hex2str (buf, buf, strlen (buf)+1, NULL))
+                    xfree (buf);  /* Invalid hex encoding.  */
+                  else
+                    prkdf->serial_number = buf;
+                }
+            }
+          ksba_free (dn);
+        }
+    }
+
   ksba_cert_release (cert);
   if (err)
     goto leave;
@@ -3221,6 +3290,90 @@ prepare_verify_pin (app_t app, const char *keyref,
 }
 
 
+static int
+any_control_or_space (const char *string)
+{
+  const unsigned char *s;
+
+  for (s = string; *string; string++)
+    if (*s <= 0x20 || *s >= 0x7f)
+      return 1;
+  return 0;
+}
+
+
+/* Return an allocated string to be used as prompt.  Returns NULL on
+ * malloc error.  */
+static char *
+make_pin_prompt (app_t app, int remaining, const char *firstline,
+                 const char *common_name, const char *serial_number)
+{
+  char *serial, *tmpbuf, *result;
+  const char *dispsn;
+
+  /* We prefer the SerialNumber RDN from the Subject-DN but we don't
+   * use it if it features a percent sign (special character in pin
+   * prompts) or has any control character.  */
+  if (serial_number && *serial_number
+      && !strchr (serial_number, '%')
+      && !any_control_or_space (serial_number))
+    {
+      serial = NULL;
+      dispsn = serial_number;
+    }
+  else
+    {
+      serial = app_get_serialno (app);
+      if (!serial)
+        return NULL;  /* Ooops.  */
+      dispsn = serial;
+    }
+
+  /* TRANSLATORS: Put a \x1f right before a colon.  This can be
+   * used by pinentry to nicely align the names and values.  Keep
+   * the %s at the start and end of the string.  */
+  result = xtryasprintf (_("%s"
+                           "Number\x1f: %s%%0A"
+                           "Holder\x1f: %s"
+                           "%s"),
+                         "\x1e",
+                         dispsn,
+                         common_name? common_name: "",
+                         "");
+  if (!result)
+    return NULL; /* Out of core.  */
+  xfree (serial);
+
+  /* Append a "remaining attempts" info if needed.  */
+  if (remaining != -1 && remaining < 3)
+    {
+      char *rembuf;
+
+      /* TRANSLATORS: This is the number of remaining attempts to
+       * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed. */
+      rembuf = xtryasprintf (_("Remaining attempts: %d"), remaining);
+      if (rembuf)
+        {
+          tmpbuf = strconcat (firstline, "%0A%0A", result,
+                              "%0A%0A", rembuf, NULL);
+          xfree (rembuf);
+        }
+      else
+        tmpbuf = NULL;
+      xfree (result);
+      result = tmpbuf;
+    }
+  else
+    {
+      tmpbuf = strconcat (firstline, "%0A%0A", result, NULL);
+      xfree (result);
+      result = tmpbuf;
+    }
+
+  return result;
+}
+
+
 /* Given the private key object PRKDF and its authentication object
  * AODF ask for the PIN and verify that PIN.  */
 static gpg_error_t
@@ -3231,22 +3384,61 @@ verify_pin (app_t app,
   gpg_error_t err;
   char *pinvalue;
   size_t pinvaluelen;
+  const char *label;
   const char *errstr;
   const char *s;
+  int remaining;
+  int pin_reference;
   int i;
 
+  if (!aodf)
+    return 0;
+
+  pin_reference = aodf->pin_reference_valid? aodf->pin_reference : 0;
+
+  if (app->app_local->card_type == CARD_TYPE_CARDOS_50)
+    {
+      /* We know that this card supports a verify status check.  Note
+       * that in contrast to PIV cards ISO7816_VERIFY_NOT_NEEDED is
+       * not supported.  */
+      remaining = iso7816_verify_status (app_get_slot (app), pin_reference);
+      if (remaining < 0)
+        remaining = -1; /* We don't care about the concrete error.  */
+      if (remaining < 3)
+        {
+          if (remaining >= 0)
+            log_info ("p15: PIN has %d attempts left\n", remaining);
+          /* On error or if less than 3 better ask. */
+          prkdf->pin_verified = 0;
+        }
+    }
+  else
+    remaining = -1;  /* Unknown.  */
+
+  /* Check whether we already verified it.  */
   if (prkdf->pin_verified)
     return 0;  /* Already done.  */
 
   if (prkdf->usageflags.non_repudiation
-      && app->app_local->card_type == CARD_TYPE_BELPIC)
-    err = pincb (pincb_arg, "PIN (qualified signature!)", &pinvalue);
+      && (app->app_local->card_type == CARD_TYPE_BELPIC
+          || app->app_local->card_product == CARD_PRODUCT_DTRUST))
+    label = _("||Please enter the PIN for the key to create "
+              "qualified signatures.");
   else
-    err = pincb (pincb_arg, "PIN", &pinvalue);
+    label = _("||Please enter the PIN for the standard keys.");
+
+  {
+    char *prompt = make_pin_prompt (app, remaining, label,
+                                    prkdf->common_name, prkdf->serial_number);
+    if (!prompt)
+      err = gpg_error_from_syserror ();
+    else
+      err = pincb (pincb_arg, prompt, &pinvalue);
+    xfree (prompt);
+  }
   if (err)
     {
-      log_info ("p15: PIN callback returned error: %s\n",
-                gpg_strerror (err));
+      log_info ("p15: PIN callback returned error: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -3372,10 +3564,8 @@ verify_pin (app_t app,
     pinvaluelen = strlen (pinvalue);
 
   /* log_printhex (pinvalue, pinvaluelen, */
-  /*               "about to verify with ref %lu pin:", */
-  /*               aodf->pin_reference_valid? aodf->pin_reference : 0); */
-  err = iso7816_verify (app_get_slot (app),
-                        aodf->pin_reference_valid? aodf->pin_reference : 0,
+  /*               "about to verify with ref %lu pin:", pin_reference); */
+  err = iso7816_verify (app_get_slot (app), pin_reference,
                         pinvalue, pinvaluelen);
   xfree (pinvalue);
   if (err)
