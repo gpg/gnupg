@@ -376,6 +376,7 @@ struct app_local_s
 static gpg_error_t keygrip_from_prkdf (app_t app, prkdf_object_t prkdf);
 static gpg_error_t readcert_by_cdf (app_t app, cdf_object_t cdf,
                                     unsigned char **r_cert, size_t *r_certlen);
+static char *get_dispserialno (app_t app, prkdf_object_t prkdf);
 static gpg_error_t do_getattr (app_t app, ctrl_t ctrl, const char *name);
 
 
@@ -3037,13 +3038,13 @@ static gpg_error_t
 do_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
+  prkdf_object_t prkdf;
 
   if (!strcmp (name, "$AUTHKEYID")
       || !strcmp (name, "$ENCRKEYID")
       || !strcmp (name, "$SIGNKEYID"))
     {
       char *buf;
-      prkdf_object_t prkdf;
 
       /* We return the ID of the first private key capable of the
        * requested action.  Note that we do not yet return
@@ -3114,7 +3115,33 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
             }
           xfree (buffer);
         }
-
+      else
+        {
+          /* We use the first private key object which has a serial
+           * number set.  If none was found, we parse the first
+           * object and see whether this has then a serial number.  */
+          for (prkdf = app->app_local->private_key_info; prkdf;
+               prkdf = prkdf->next)
+            if (prkdf->serial_number)
+              break;
+          if (!prkdf && app->app_local->private_key_info)
+            {
+              prkdf = app->app_local->private_key_info;
+              keygrip_from_prkdf (app, prkdf);
+              if (!prkdf->serial_number)
+                prkdf = NULL;
+            }
+          if (prkdf)
+            {
+              char *sn = get_dispserialno (app, prkdf);
+              /* Unless there is a bogus S/N in the cert we should
+               * have a suitable one from the cert here now.  */
+              err = send_status_printf (ctrl, name, "%s", sn);
+              xfree (sn);
+              return err;
+            }
+        }
+      /* No abbreviated serial number. */
     }
   else if (!strcmp (name, "MANUFACTURER"))
     {
@@ -3312,32 +3339,39 @@ any_control_or_space (const char *string)
 }
 
 
-/* Return an allocated string to be used as prompt.  Returns NULL on
- * malloc error.  */
+/* Return a malloced serial number to be shown to the user.  PRKDF is
+ * used to get it from a certificate; PRKDF may be NULL.  */
 static char *
-make_pin_prompt (app_t app, int remaining, const char *firstline,
-                 const char *common_name, const char *serial_number)
+get_dispserialno (app_t app, prkdf_object_t prkdf)
 {
-  char *serial, *tmpbuf, *result;
-  const char *dispsn;
+  char *serial;
 
   /* We prefer the SerialNumber RDN from the Subject-DN but we don't
    * use it if it features a percent sign (special character in pin
    * prompts) or has any control character.  */
-  if (serial_number && *serial_number
-      && !strchr (serial_number, '%')
-      && !any_control_or_space (serial_number))
+  if (prkdf && prkdf->serial_number && *prkdf->serial_number
+      && !strchr (prkdf->serial_number, '%')
+      && !any_control_or_space (prkdf->serial_number))
     {
-      serial = NULL;
-      dispsn = serial_number;
+      serial = xtrystrdup (prkdf->serial_number);
     }
   else
     {
       serial = app_get_serialno (app);
-      if (!serial)
-        return NULL;  /* Ooops.  */
-      dispsn = serial;
     }
+  return serial;
+}
+
+
+/* Return an allocated string to be used as prompt.  Returns NULL on
+ * malloc error.  */
+static char *
+make_pin_prompt (app_t app, int remaining, const char *firstline,
+                 prkdf_object_t prkdf)
+{
+  char *serial, *tmpbuf, *result;
+
+  serial = get_dispserialno (app, prkdf);
 
   /* TRANSLATORS: Put a \x1f right before a colon.  This can be
    * used by pinentry to nicely align the names and values.  Keep
@@ -3347,12 +3381,12 @@ make_pin_prompt (app_t app, int remaining, const char *firstline,
                            "Holder\x1f: %s"
                            "%s"),
                          "\x1e",
-                         dispsn,
-                         common_name? common_name: "",
+                         serial,
+                         prkdf->common_name? prkdf->common_name: "",
                          "");
+  xfree (serial);
   if (!result)
     return NULL; /* Out of core.  */
-  xfree (serial);
 
   /* Append a "remaining attempts" info if needed.  */
   if (remaining != -1 && remaining < 3)
@@ -3439,8 +3473,7 @@ verify_pin (app_t app,
     label = _("||Please enter the PIN for the standard keys.");
 
   {
-    char *prompt = make_pin_prompt (app, remaining, label,
-                                    prkdf->common_name, prkdf->serial_number);
+    char *prompt = make_pin_prompt (app, remaining, label, prkdf);
     if (!prompt)
       err = gpg_error_from_syserror ();
     else
