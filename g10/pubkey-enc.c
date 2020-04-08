@@ -302,10 +302,7 @@ get_it (ctrl_t ctrl,
         goto leave;
 
       /* Now the frame are the bytes decrypted but padded session key.  */
-
-      /* Allow double padding for the benefit of DEK size concealment.
-         Higher than this is wasteful. */
-      if (!nframe || frame[nframe-1] > 8*2 || nframe <= 8
+      if (!nframe || nframe <= 8
           || frame[nframe-1] > nframe)
         {
           err = gpg_error (GPG_ERR_WRONG_SECKEY);
