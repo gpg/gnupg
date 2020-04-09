@@ -888,6 +888,53 @@ pk_algo_from_sexp (gcry_sexp_t pkey)
 }
 
 
+/* Return the hash algorithm's algo id from its name given in the
+ * non-null termnated string in (buffer,buflen).  Returns 0 on failure
+ * or if the algo is not known.  */
+static int
+hash_algo_from_buffer (const void *buffer, size_t buflen)
+{
+  char *string;
+  int algo;
+
+  string = xtrymalloc (buflen + 1);
+  if (!string)
+    {
+      log_error (_("out of core\n"));
+      return 0;
+    }
+  memcpy (string, buffer, buflen);
+  string[buflen] = 0;
+  algo = gcry_md_map_name (string);
+  if (!algo)
+    log_error ("unknown digest algorithm '%s' used in certificate\n", string);
+  xfree (string);
+  return algo;
+}
+
+
+/* Return an unsigned integer from the non-null termnated string
+ * (buffer,buflen).  Returns 0 on failure.  */
+static unsigned int
+uint_from_buffer (const void *buffer, size_t buflen)
+{
+  char *string;
+  unsigned int val;
+
+  string = xtrymalloc (buflen + 1);
+  if (!string)
+    {
+      log_error (_("out of core\n"));
+      return 0;
+    }
+  memcpy (string, buffer, buflen);
+  string[buflen] = 0;
+  val = strtoul (string, NULL, 10);
+  xfree (string);
+  return val;
+}
+
+
 /* Check the signature on CERT using the ISSUER_CERT.  This function
  * does only test the cryptographic signature and nothing else.  It is
  * assumed that the ISSUER_CERT is valid.  */
@@ -897,32 +944,85 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   gpg_error_t err;
   const char *algoid;
   gcry_md_hd_t md;
-  int i, algo;
+  int algo;
   ksba_sexp_t p;
   size_t n;
   gcry_sexp_t s_sig, s_hash, s_pkey;
-  const char *s;
-  char algo_name[16+1]; /* hash algorithm name converted to lower case. */
+  const char *algo_name; /* hash algorithm name converted to lower case. */
   int digestlen;
   unsigned char *digest;
+  int use_pss = 0;
+  unsigned int saltlen;
 
   /* Hash the target certificate using the algorithm from that certificate.  */
   algoid = ksba_cert_get_digest_algo (cert);
   algo = gcry_md_map_name (algoid);
-  if (!algo)
+  if (!algo && algoid && !strcmp (algoid, "1.2.840.113549.1.1.10"))
+    use_pss = 1;
+  else if (!algo)
     {
       log_error (_("unknown hash algorithm '%s'\n"), algoid? algoid:"?");
       return gpg_error (GPG_ERR_GENERAL);
     }
-  s = gcry_md_algo_name (algo);
-  for (i=0; *s && i < sizeof algo_name - 1; s++, i++)
-    algo_name[i] = tolower (*s);
-  algo_name[i] = 0;
 
+  /* Get the signature value out of the target certificate.  */
+  p = ksba_cert_get_sig_val (cert);
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    {
+      log_error ("libksba did not return a proper S-Exp\n");
+      ksba_free (p);
+      return gpg_error (GPG_ERR_BUG);
+    }
+  err = gcry_sexp_sscan ( &s_sig, NULL, p, n);
+  ksba_free (p);
+  if (err)
+    {
+      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (err));
+      return err;
+    }
+  if (DBG_CRYPTO)
+    gcry_log_debugsxp ("sigval", s_sig);
+
+  if (use_pss)
+    {
+      /* Extract the hash algorithm and the salt length from the sigval.  */
+      gcry_buffer_t ioarray[2] = { {0}, {0} };
+
+      err = gcry_sexp_extract_param (s_sig, "sig-val",
+                                    "&'hash-algo''salt-length'",
+                                    ioarray+0, ioarray+1, NULL);
+      if (err)
+        {
+          gcry_sexp_release (s_sig);
+          log_error ("extracting params from PSS failed: %s\n",
+                     gpg_strerror (err));
+          return err;
+        }
+      algo = hash_algo_from_buffer (ioarray[0].data, ioarray[0].len);
+      saltlen = uint_from_buffer (ioarray[1].data, ioarray[1].len);
+      xfree (ioarray[0].data);
+      xfree (ioarray[1].data);
+      if (saltlen < 20)
+        {
+          log_error ("length of PSS salt too short\n");
+          gcry_sexp_release (s_sig);
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
+      if (!algo)
+        {
+          gcry_sexp_release (s_sig);
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
+      /* log_debug ("PSS hash=%d saltlen=%u\n", algo, saltlen); */
+    }
+
+  algo_name = hash_algo_to_string (algo);
   err = gcry_md_open (&md, algo, 0);
   if (err)
     {
       log_error ("md_open failed: %s\n", gpg_strerror (err));
+      gcry_sexp_release (s_sig);
       return err;
     }
   if (DBG_HASHING)
@@ -933,37 +1033,10 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
     {
       log_error ("ksba_cert_hash failed: %s\n", gpg_strerror (err));
       gcry_md_close (md);
+      gcry_sexp_release (s_sig);
       return err;
     }
   gcry_md_final (md);
-
-  /* Get the signature value out of the target certificate.  */
-  p = ksba_cert_get_sig_val (cert);
-  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
-  if (!n)
-    {
-      log_error ("libksba did not return a proper S-Exp\n");
-      gcry_md_close (md);
-      ksba_free (p);
-      return gpg_error (GPG_ERR_BUG);
-    }
-  if (DBG_CRYPTO)
-    {
-      int j;
-      log_debug ("signature value:");
-      for (j=0; j < n; j++)
-        log_printf (" %02X", p[j]);
-      log_printf ("\n");
-    }
-
-  err = gcry_sexp_sscan ( &s_sig, NULL, p, n);
-  ksba_free (p);
-  if (err)
-    {
-      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (err));
-      gcry_md_close (md);
-      return err;
-    }
 
   /* Get the public key from the issuer certificate.  */
   p = ksba_cert_get_public_key (issuer_cert);
@@ -994,10 +1067,22 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
    * S_SIG     - Signature value as given in the certificate.
    * MD        - Finalized hash context with hash of the certificate.
    * ALGO_NAME - Lowercase hash algorithm name
+   * SALTLEN   - Salt length for rsaPSS.
    */
   digestlen = gcry_md_get_algo_dlen (algo);
   digest = gcry_md_read (md, algo);
-  if (pk_algo_from_sexp (s_pkey) == GCRY_PK_DSA)
+  if (use_pss)
+    {
+      err = gcry_sexp_build (&s_hash, NULL,
+                             "(data (flags pss)"
+                             "(hash %s %b)"
+                             "(salt-length %u))",
+                             algo_name,
+                             (int)digestlen,
+                             digest,
+                             saltlen);
+    }
+  else if (pk_algo_from_sexp (s_pkey) == GCRY_PK_DSA)
     {
       /* NB.: We support only SHA-1 here because we had problems back
        * then to get test data for DSA-2.  Meanwhile DSA has been
@@ -1010,19 +1095,17 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
           gcry_sexp_release (s_pkey);
           return gpg_error (GPG_ERR_INTERNAL);
         }
-      if ( gcry_sexp_build (&s_hash, NULL, "(data(flags raw)(value %b))",
-                            (int)digestlen, digest) )
-        BUG ();
+      err = gcry_sexp_build (&s_hash, NULL, "(data(flags raw)(value %b))",
+                             (int)digestlen, digest);
     }
   else /* Not DSA - we assume RSA  */
     {
-      if ( gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
-                            algo_name, (int)digestlen, digest) )
-        BUG ();
-
+      err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
+                             algo_name, (int)digestlen, digest);
     }
 
-  err = gcry_pk_verify (s_sig, s_hash, s_pkey);
+  if (!err)
+    err = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_X509)
     log_debug ("gcry_pk_verify: %s\n", gpg_strerror (err));
   gcry_md_close (md);
