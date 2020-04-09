@@ -1531,17 +1531,104 @@ crl_cache_cert_isvalid (ctrl_t ctrl, ksba_cert_t cert,
 }
 
 
+/* Return the hash algorithm's algo id from its name given in the
+ * non-null termnated string in (buffer,buflen).  Returns 0 on failure
+ * or if the algo is not known.  */
+static int
+hash_algo_from_buffer (const void *buffer, size_t buflen)
+{
+  char *string;
+  int algo;
+
+  string = xtrymalloc (buflen + 1);
+  if (!string)
+    {
+      log_error (_("out of core\n"));
+      return 0;
+    }
+  memcpy (string, buffer, buflen);
+  string[buflen] = 0;
+  algo = gcry_md_map_name (string);
+  if (!algo)
+    log_error ("unknown digest algorithm '%s' used in certificate\n", string);
+  xfree (string);
+  return algo;
+}
+
+
+/* Return an unsigned integer from the non-null termnated string
+ * (buffer,buflen).  Returns 0 on failure.  */
+static unsigned int
+uint_from_buffer (const void *buffer, size_t buflen)
+{
+  char *string;
+  unsigned int val;
+
+  string = xtrymalloc (buflen + 1);
+  if (!string)
+    {
+      log_error (_("out of core\n"));
+      return 0;
+    }
+  memcpy (string, buffer, buflen);
+  string[buflen] = 0;
+  val = strtoul (string, NULL, 10);
+  xfree (string);
+  return val;
+}
+
+
 /* Prepare a hash context for the signature verification.  Input is
    the CRL and the output is the hash context MD as well as the uses
    algorithm identifier ALGO. */
 static gpg_error_t
-start_sig_check (ksba_crl_t crl, gcry_md_hd_t *md, int *algo)
+start_sig_check (ksba_crl_t crl, gcry_md_hd_t *md, int *algo, int *use_pss)
 {
   gpg_error_t err;
   const char *algoid;
 
+  *use_pss = 0;
   algoid = ksba_crl_get_digest_algo (crl);
-  *algo = gcry_md_map_name (algoid);
+  if (algoid && !strcmp (algoid, "1.2.840.113549.1.1.10"))
+    {
+      /* Parse rsaPSS parameter.  */
+      gcry_buffer_t ioarray[1] = { {0} };
+      ksba_sexp_t pssparam;
+      size_t n;
+      gcry_sexp_t psssexp;
+
+      pssparam = ksba_crl_get_sig_val (crl);
+      n = gcry_sexp_canon_len (pssparam, 0, NULL, NULL);
+      if (!n)
+        {
+          ksba_free (pssparam);
+          log_error (_("got an invalid S-expression from libksba\n"));
+          return gpg_error (GPG_ERR_INV_SEXP);
+        }
+      err = gcry_sexp_sscan (&psssexp, NULL, pssparam, n);
+      ksba_free (pssparam);
+      if (err)
+        {
+          log_error (_("converting S-expression failed: %s\n"),
+                     gcry_strerror (err));
+          return err;
+        }
+
+      err = gcry_sexp_extract_param (psssexp, "sig-val",
+                                    "&'hash-algo'", ioarray, NULL);
+      gcry_sexp_release (psssexp);
+      if (err)
+        {
+          log_error ("extracting params from PSS failed: %s\n",
+                     gpg_strerror (err));
+          return err;
+        }
+      *algo = hash_algo_from_buffer (ioarray[0].data, ioarray[0].len);
+      xfree (ioarray[0].data);
+      *use_pss = 1;
+    }
+  else
+    *algo = gcry_md_map_name (algoid);
   if (!*algo)
     {
       log_error (_("unknown hash algorithm '%s'\n"), algoid? algoid:"?");
@@ -1570,15 +1657,13 @@ start_sig_check (ksba_crl_t crl, gcry_md_hd_t *md, int *algo)
    certificate of the CRL issuer.  This function takes ownership of MD.  */
 static gpg_error_t
 finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
-                  ksba_cert_t issuer_cert)
+                  ksba_cert_t issuer_cert, int use_pss)
 {
   gpg_error_t err;
   ksba_sexp_t sigval = NULL, pubkey = NULL;
-  const char *s;
-  char algoname[50];
   size_t n;
   gcry_sexp_t s_sig = NULL, s_hash = NULL, s_pkey = NULL;
-  unsigned int i;
+  unsigned int saltlen = 0;  /* (used only with use_pss)  */
 
   /* This also stops debugging on the MD.  */
   gcry_md_final (md);
@@ -1600,6 +1685,55 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
       goto leave;
     }
 
+  if (use_pss)
+    {
+      /* Parse rsaPSS parameter which we should find in S_SIG.  */
+      gcry_buffer_t ioarray[2] = { {0}, {0} };
+      ksba_sexp_t pssparam;
+      gcry_sexp_t psssexp;
+      int hashalgo;
+
+      pssparam = ksba_crl_get_sig_val (crl);
+      n = gcry_sexp_canon_len (pssparam, 0, NULL, NULL);
+      if (!n)
+        {
+          ksba_free (pssparam);
+          log_error (_("got an invalid S-expression from libksba\n"));
+          err = gpg_error (GPG_ERR_INV_SEXP);
+          goto leave;
+        }
+      err = gcry_sexp_sscan (&psssexp, NULL, pssparam, n);
+      ksba_free (pssparam);
+      if (err)
+        {
+          log_error (_("converting S-expression failed: %s\n"),
+                     gcry_strerror (err));
+          goto leave;
+        }
+
+      err = gcry_sexp_extract_param (psssexp, "sig-val",
+                                    "&'hash-algo''salt-length'",
+                                     ioarray+0, ioarray+1, NULL);
+      gcry_sexp_release (psssexp);
+      if (err)
+        {
+          log_error ("extracting params from PSS failed: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      hashalgo = hash_algo_from_buffer (ioarray[0].data, ioarray[0].len);
+      saltlen = uint_from_buffer (ioarray[1].data, ioarray[1].len);
+      xfree (ioarray[0].data);
+      xfree (ioarray[1].data);
+      if (hashalgo != algo)
+        {
+          log_error ("hash algo mismatch: %d announced but %d used\n",
+                     algo, hashalgo);
+          return gpg_error (GPG_ERR_INV_CRL);
+        }
+    }
+
+
   /* Get and convert the public key for the issuer certificate. */
   if (DBG_X509)
     dump_cert ("crl_issuer_cert", issuer_cert);
@@ -1620,13 +1754,25 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
     }
 
   /* Create an S-expression with the actual hash value. */
-  s = gcry_md_algo_name (algo);
-  for (i = 0; *s && i < sizeof(algoname) - 1; s++, i++)
-    algoname[i] = ascii_tolower (*s);
-  algoname[i] = 0;
-  err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
-                         algoname,
-                         gcry_md_get_algo_dlen (algo), gcry_md_read (md, algo));
+  if (use_pss)
+    {
+      err = gcry_sexp_build (&s_hash, NULL,
+                             "(data (flags pss)"
+                             "(hash %s %b)"
+                             "(salt-length %u))",
+                             hash_algo_to_string (algo),
+                             (int)gcry_md_get_algo_dlen (algo),
+                             gcry_md_read (md, algo),
+                             saltlen);
+    }
+  else
+    {
+      err = gcry_sexp_build (&s_hash, NULL,
+                             "(data(flags pkcs1)(hash %s %b))",
+                             hash_algo_to_string (algo),
+                             (int)gcry_md_get_algo_dlen (algo),
+                             gcry_md_read (md, algo));
+    }
   if (err)
     {
       log_error (_("creating S-expression failed: %s\n"), gcry_strerror (err));
@@ -1688,6 +1834,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
   ksba_cert_t crlissuer_cert = NULL;
   gcry_md_hd_t md = NULL;
   int algo = 0;
+  int use_pss = 0;
   size_t n;
 
   (void)fname;
@@ -1710,7 +1857,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
         {
         case KSBA_SR_BEGIN_ITEMS:
           {
-            err = start_sig_check (crl, &md, &algo);
+            err = start_sig_check (crl, &md, &algo, &use_pss);
             if (err)
               goto failure;
 
@@ -1847,7 +1994,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
                 goto failure;
               }
 
-            err = finish_sig_check (crl, md, algo, crlissuer_cert);
+            err = finish_sig_check (crl, md, algo, crlissuer_cert, use_pss);
             md = NULL; /* Closed.  */
             if (err)
               {
