@@ -340,10 +340,14 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       if (saltlen < 20)
         {
           log_error ("length of PSS salt too short\n");
+          gcry_sexp_release (s_sig);
           return gpg_error (GPG_ERR_DIGEST_ALGO);
         }
       if (!algo)
-        return gpg_error (GPG_ERR_DIGEST_ALGO);
+        {
+          gcry_sexp_release (s_sig);
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
       /* log_debug ("PSS hash=%d saltlen=%u\n", algo, saltlen); */
     }
 
