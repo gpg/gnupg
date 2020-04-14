@@ -412,8 +412,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
         {
           log_debug ("signer %d - signature available (sigval hash=%d)",
                      signer, sigval_hash_algo);
-/*           log_printhex ("sigval    ", sigval, */
-/*                         gcry_sexp_canon_len (sigval, 0, NULL, NULL)); */
+          /*log_printhex(sigval, gcry_sexp_canon_len (sigval, 0, NULL, NULL),*/
+          /*             "sigval    "); */
         }
       if (!sigval_hash_algo)
         sigval_hash_algo = algo; /* Fallback used e.g. with old libksba. */

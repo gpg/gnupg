@@ -305,7 +305,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp,
       if (opt.verbose)
         log_info (_("OCSP responder at '%s' status: %s\n"), url, t);
 
-      /* Get the signature value now because we can all this function
+      /* Get the signature value now because we can call this function
        * only once.  */
       *r_sigval = ksba_ocsp_get_sig_val (ocsp, r_produced_at);
 
