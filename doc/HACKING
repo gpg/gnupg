@@ -182,12 +182,11 @@ Note that such a comment will be removed if the git commit option
 ** Variable names
 
   Follow the GNU standards.  Here are some conventions you may want to
-  stick to (do not rename existing "wrong" uses without a goog
-  reason).
+  stick to (do not rename existing "wrong" uses without a good reason).
 
   - err :: This conveys an error code of type =gpg_error_t= which is
            compatible to an =int=.  To compare such a variable to a
-           GPG_ERR_ constant, it is necessary to map the value like
+           GPG_ERR_ constant, it is necessary to access the value like
            this: =gpg_err_code(err)=.
   - ec  :: This is used for a gpg-error code which has no source part
            (=gpg_err_code_t=) and will eventually be used as input to
@@ -425,5 +424,3 @@ plaintext packets and so on.  The file g10/encode.c might be a good
 starting point to see how it is used - actually this is the other way:
 constructing messages using pushed filters but it may be easier to
 understand.
-
-

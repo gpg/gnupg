@@ -956,7 +956,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 
   /* We add a marker control packet instead of the plaintext packet.
    * This is so that we can later detect invalid packet sequences.
-   * The apcket is further used to convey extra data from the
+   * The packet is further used to convey extra data from the
    * plaintext packet to the signature verification. */
   extrahash = xtrymalloc (6 + pt->namelen);
   if (!extrahash)

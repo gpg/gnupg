@@ -1243,7 +1243,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
         {
           /* To compute the size of the session key we need to know
            * the size of the AEAD nonce which we may not know.  Thus
-           * we show only the seize of the entire encrypted session
+           * we show only the size of the entire encrypted session
            * key.  */
           if (aead_algo)
             es_fprintf (listfp, ", encrypted seskey %d bytes", seskeylen);

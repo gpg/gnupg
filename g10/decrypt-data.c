@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -42,7 +43,7 @@ static int decode_filter ( void *opaque, int control, IOBUF a,
 /* Our context object.  */
 struct decode_filter_context_s
 {
-  /* Recounter (max value is 2).  We need it because we do not know
+  /* Redcounter (max value is 2).  We need it because we do not know
    * whether the iobuf or the outer control code frees this object
    * first.  */
   int  refcount;
@@ -57,7 +58,8 @@ struct decode_filter_context_s
   byte startiv[16];
 
   /* The holdback buffer and its used length.  For AEAD we need 32+1
-   * bytes but we use 48 byte.  For MDC we need 22 bytes.  */
+   * bytes but we use 48 byte.  For MDC we need 22 bytes; here
+   * holdbacklen will either 0 or 22.  */
   char holdback[48];
   unsigned int holdbacklen;
 
@@ -66,7 +68,7 @@ struct decode_filter_context_s
 
   /* EOF indicator with these true values:
    *   1 = normal EOF
-   *   2 = premature EOF (tag incomplete)
+   *   2 = premature EOF (tag or hash incomplete)
    *   3 = premature EOF (general)       */
   unsigned int eof_seen : 2;
 
@@ -118,7 +120,7 @@ release_dfx_context (decode_filter_ctx_t dfx)
 
 
 /* Set the nonce and the additional data for the current chunk.  This
- * also reset the decryption machinery * so that the handle can be
+ * also reset the decryption machinery so that the handle can be
  * used for a new chunk.  If FINAL is set the final AEAD chunk is
  * processed.  */
 static gpg_error_t
@@ -281,6 +283,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   blocksize = openpgp_cipher_get_algo_blklen (dek->algo);
   if ( !blocksize || blocksize > 16 )
     log_fatal ("unsupported blocksize %u\n", blocksize );
+
   if (ed->aead_algo)
     {
       enum gcry_cipher_modes ciphermode;
@@ -375,7 +378,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       if ( ed->len && ed->len < (nprefix+2) )
         {
           /* An invalid message.  We can't check that during parsing
-             because we may not know the used cipher then.  */
+           * because we may not know the used cipher then.  */
           rc = gpg_error (GPG_ERR_INV_PACKET);
           goto leave;
         }
@@ -405,19 +408,19 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       rc = gcry_cipher_setkey (dfx->cipher_hd, dek->key, dek->keylen);
       if ( gpg_err_code (rc) == GPG_ERR_WEAK_KEY )
         {
-          log_info(_("WARNING: message was encrypted with"
-                     " a weak key in the symmetric cipher.\n"));
+          log_info (_("WARNING: message was encrypted with"
+                      " a weak key in the symmetric cipher.\n"));
           rc=0;
         }
-      else if( rc )
+      else if (rc)
         {
-          log_error("key setup failed: %s\n", gpg_strerror (rc) );
+          log_error ("key setup failed: %s\n", gpg_strerror (rc) );
           goto leave;
         }
 
       if (!ed->buf)
         {
-          log_error(_("problem handling encrypted packet\n"));
+          log_error (_("problem handling encrypted packet\n"));
           goto leave;
         }
 
@@ -534,7 +537,6 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       /* log_printhex("MDC message:", dfx->holdback, 22); */
       /* log_printhex("MDC calc:", gcry_md_read (dfx->mdc_hash,0), datalen); */
     }
-
 
  leave:
   release_dfx_context (dfx);
