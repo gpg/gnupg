@@ -32,17 +32,17 @@ BEGIN {
 }
 
 {
-    code = strtonum(("0x" $1))
+    code = int("0x" $1)
     name = $2
     class = $3
     upper = $13
     lower = $14
     title = $15
 
-    if (code <= 0x7f) {
+    if (code <= 127) {
 	next
     }
-    if (code > 0xffff) {
+    if (code > 65535) {
 	next
     }
     if ($3 !~ /^L.*/) {

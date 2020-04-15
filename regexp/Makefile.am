@@ -34,5 +34,6 @@ BUILT_SOURCES = _unicode_mapping.c
 MAINTAINERCLEANFILES = _unicode_mapping.c
 
 _unicode_mapping.c: parse-unidata.awk UnicodeData.txt
-	$(AWK) -f $(srcdir)/parse-unidata.awk $(srcdir)/UnicodeData.txt >$@
+	$(AWK) $(AWK_HEX_NUMBER_OPTION) -f $(srcdir)/parse-unidata.awk \
+	       $(srcdir)/UnicodeData.txt >$@
 endif
