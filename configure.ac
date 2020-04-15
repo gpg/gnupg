@@ -633,6 +633,16 @@ AC_ISC_POSIX
 AC_SYS_LARGEFILE
 
 
+# GNU AWK requires -n option to interpret "0xHH" as a number
+if $AWK 'BEGIN { if (PROCINFO@<:@"version"@:>@) exit 1 }'; then
+  AWK_HEX_NUMBER_OPTION=''
+  AC_MSG_NOTICE([awk with no option for hexadecimal])
+else
+  AWK_HEX_NUMBER_OPTION='-n'
+  AC_MSG_NOTICE([awk with an option -n for hexadecimal])
+fi
+AC_SUBST(AWK_HEX_NUMBER_OPTION)
+
 # We need to compile and run a program on the build machine.  A
 # comment in libgpg-error says that the AC_PROG_CC_FOR_BUILD macro in
 # the AC archive is broken for autoconf 2.57.  Given that there is no
