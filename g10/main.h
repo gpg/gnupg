@@ -41,13 +41,7 @@
 # define DEFAULT_CIPHER_ALGO     CIPHER_ALGO_3DES
 #endif
 
-/* We will start using OCB mode by default only if the yet to be
- * released libgcrypt 1.9 is used.  */
-#if GCRYPT_VERSION_NUMBER < 0x010900
-# define DEFAULT_AEAD_ALGO  AEAD_ALGO_OCB
-#else
-# define DEFAULT_AEAD_ALGO  AEAD_ALGO_EAX
-#endif
+#define DEFAULT_AEAD_ALGO  AEAD_ALGO_OCB
 
 #define DEFAULT_DIGEST_ALGO     ((GNUPG)? DIGEST_ALGO_SHA256:DIGEST_ALGO_SHA1)
 #define DEFAULT_S2K_DIGEST_ALGO DIGEST_ALGO_SHA1
