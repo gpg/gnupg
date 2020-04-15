@@ -1,6 +1,7 @@
 /* decrypt-data.c - Decrypt an encrypted data packet
- * Copyright (C) 1998, 1999, 2000, 2001, 2005,
- *               2006, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2001, 2005-2006, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2001, 2005-2006, 2009, 2018 Werner Koch
+ * Copyright (C) 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -37,17 +39,40 @@ static int mdc_decode_filter ( void *opaque, int control, IOBUF a,
 static int decode_filter ( void *opaque, int control, IOBUF a,
 					byte *buf, size_t *ret_len);
 
-typedef struct decode_filter_context_s
+/* Our context object.  */
+struct decode_filter_context_s
 {
-  gcry_cipher_hd_t cipher_hd;
-  gcry_md_hd_t mdc_hash;
-  char defer[22];
-  int  defer_filled;
-  int  eof_seen;
+  /* Recounter (max value is 2).  We need it because we do not know
+   * whether the iobuf or the outer control code frees this object
+   * first.  */
   int  refcount;
-  int  partial;   /* Working on a partial length packet.  */
-  size_t length;  /* If !partial: Remaining bytes in the packet.  */
-} *decode_filter_ctx_t;
+
+  /* The cipher handle.  */
+  gcry_cipher_hd_t cipher_hd;
+
+  /* The hash handle for use in MDC mode.  */
+  gcry_md_hd_t mdc_hash;
+
+  /* The holdback buffer and its used length.  For AEAD we need 32+1
+   * bytes but we use 48 byte.  For MDC we need 22 bytes; here
+   * holdbacklen will either 0 or 22.  */
+  char holdback[48];
+  unsigned int holdbacklen;
+
+  /* Working on a partial length packet.  */
+  unsigned int partial : 1;
+
+  /* EOF indicator with these true values:
+   *   1 = normal EOF
+   *   2 = premature EOF (tag or hash incomplete)
+   *   3 = premature EOF (general)       */
+  unsigned int eof_seen : 2;
+
+  /* Remaining bytes in the packet according to the packet header.
+   * Not used if PARTIAL is true.  */
+  size_t length;
+};
+typedef struct decode_filter_context_s *decode_filter_ctx_t;
 
 
 /* Helper to release the decode context.  */
@@ -109,12 +134,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       goto leave;
     }
 
-  {
-    char buf[20];
-
-    snprintf (buf, sizeof buf, "%d %d", ed->mdc_method, dek->algo);
-    write_status_text (STATUS_DECRYPTION_INFO, buf);
-  }
+  write_status_printf (STATUS_DECRYPTION_INFO, "%d %d %d",
+                       ed->mdc_method, dek->algo, 0);
 
   if (opt.show_session_key)
     {
@@ -139,90 +160,93 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   blocksize = openpgp_cipher_get_algo_blklen (dek->algo);
   if ( !blocksize || blocksize > 16 )
     log_fatal ("unsupported blocksize %u\n", blocksize );
-  nprefix = blocksize;
-  if ( ed->len && ed->len < (nprefix+2) )
+  if (1)
     {
-       /* An invalid message.  We can't check that during parsing
-          because we may not know the used cipher then.  */
-      rc = gpg_error (GPG_ERR_INV_PACKET);
-      goto leave;
-    }
-
-  if ( ed->mdc_method )
-    {
-      if (gcry_md_open (&dfx->mdc_hash, ed->mdc_method, 0 ))
-        BUG ();
-      if ( DBG_HASHING )
-        gcry_md_debug (dfx->mdc_hash, "checkmdc");
-    }
-
-  rc = openpgp_cipher_open (&dfx->cipher_hd, dek->algo,
-			    GCRY_CIPHER_MODE_CFB,
-			    (GCRY_CIPHER_SECURE
-			     | ((ed->mdc_method || dek->algo >= 100)?
-				0 : GCRY_CIPHER_ENABLE_SYNC)));
-  if (rc)
-    {
-      /* We should never get an error here cause we already checked
-       * that the algorithm is available.  */
-      BUG();
-    }
-
-
-  /* log_hexdump( "thekey", dek->key, dek->keylen );*/
-  rc = gcry_cipher_setkey (dfx->cipher_hd, dek->key, dek->keylen);
-  if ( gpg_err_code (rc) == GPG_ERR_WEAK_KEY )
-    {
-      log_info(_("WARNING: message was encrypted with"
-                 " a weak key in the symmetric cipher.\n"));
-      rc=0;
-    }
-  else if( rc )
-    {
-      log_error("key setup failed: %s\n", gpg_strerror (rc) );
-      goto leave;
-    }
-
-  if (!ed->buf)
-    {
-      log_error(_("problem handling encrypted packet\n"));
-      goto leave;
-    }
-
-  gcry_cipher_setiv (dfx->cipher_hd, NULL, 0);
-
-  if ( ed->len )
-    {
-      for (i=0; i < (nprefix+2) && ed->len; i++, ed->len-- )
+      nprefix = blocksize;
+      if ( ed->len && ed->len < (nprefix+2) )
         {
-          if ( (c=iobuf_get(ed->buf)) == -1 )
-            break;
-          else
-            temp[i] = c;
+          /* An invalid message.  We can't check that during parsing
+           * because we may not know the used cipher then.  */
+          rc = gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
         }
-    }
-  else
-    {
-      for (i=0; i < (nprefix+2); i++ )
-        if ( (c=iobuf_get(ed->buf)) == -1 )
-          break;
-        else
-          temp[i] = c;
-    }
 
-  gcry_cipher_decrypt (dfx->cipher_hd, temp, nprefix+2, NULL, 0);
-  gcry_cipher_sync (dfx->cipher_hd);
-  p = temp;
-  /* log_hexdump( "prefix", temp, nprefix+2 ); */
-  if (dek->symmetric
-      && (p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1]) )
-    {
-      rc = gpg_error (GPG_ERR_BAD_KEY);
-      goto leave;
-    }
+      if ( ed->mdc_method )
+        {
+          if (gcry_md_open (&dfx->mdc_hash, ed->mdc_method, 0 ))
+            BUG ();
+          if ( DBG_HASHING )
+            gcry_md_debug (dfx->mdc_hash, "checkmdc");
+        }
 
-  if ( dfx->mdc_hash )
-    gcry_md_write (dfx->mdc_hash, temp, nprefix+2);
+      rc = openpgp_cipher_open (&dfx->cipher_hd, dek->algo,
+                                GCRY_CIPHER_MODE_CFB,
+                                (GCRY_CIPHER_SECURE
+                                 | ((ed->mdc_method || dek->algo >= 100)?
+                                    0 : GCRY_CIPHER_ENABLE_SYNC)));
+      if (rc)
+        {
+          /* We should never get an error here cause we already checked
+           * that the algorithm is available.  */
+          BUG();
+        }
+
+
+      /* log_hexdump( "thekey", dek->key, dek->keylen );*/
+      rc = gcry_cipher_setkey (dfx->cipher_hd, dek->key, dek->keylen);
+      if ( gpg_err_code (rc) == GPG_ERR_WEAK_KEY )
+        {
+          log_info (_("WARNING: message was encrypted with"
+                      " a weak key in the symmetric cipher.\n"));
+          rc = 0;
+        }
+      else if (rc)
+        {
+          log_error("key setup failed: %s\n", gpg_strerror (rc) );
+          goto leave;
+        }
+
+      if (!ed->buf)
+        {
+          log_error (_("problem handling encrypted packet\n"));
+          goto leave;
+        }
+
+      gcry_cipher_setiv (dfx->cipher_hd, NULL, 0);
+
+      if ( ed->len )
+        {
+          for (i=0; i < (nprefix+2) && ed->len; i++, ed->len-- )
+            {
+              if ( (c=iobuf_get(ed->buf)) == -1 )
+                break;
+              else
+                temp[i] = c;
+            }
+        }
+      else
+        {
+          for (i=0; i < (nprefix+2); i++ )
+            if ( (c=iobuf_get(ed->buf)) == -1 )
+              break;
+            else
+              temp[i] = c;
+        }
+
+      gcry_cipher_decrypt (dfx->cipher_hd, temp, nprefix+2, NULL, 0);
+      gcry_cipher_sync (dfx->cipher_hd);
+      p = temp;
+      /* log_hexdump( "prefix", temp, nprefix+2 ); */
+      if (dek->symmetric
+          && (p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1]) )
+        {
+          rc = gpg_error (GPG_ERR_BAD_KEY);
+          goto leave;
+        }
+
+      if ( dfx->mdc_hash )
+        gcry_md_write (dfx->mdc_hash, temp, nprefix+2);
+    }
 
   dfx->refcount++;
   dfx->partial = ed->is_partial;
@@ -287,16 +311,16 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 
       log_assert (dfx->cipher_hd);
       log_assert (dfx->mdc_hash);
-      gcry_cipher_decrypt (dfx->cipher_hd, dfx->defer, 22, NULL, 0);
-      gcry_md_write (dfx->mdc_hash, dfx->defer, 2);
+      gcry_cipher_decrypt (dfx->cipher_hd, dfx->holdback, 22, NULL, 0);
+      gcry_md_write (dfx->mdc_hash, dfx->holdback, 2);
       gcry_md_final (dfx->mdc_hash);
 
-      if (   dfx->defer[0] != '\xd3'
-          || dfx->defer[1] != '\x14'
+      if (   dfx->holdback[0] != '\xd3'
+          || dfx->holdback[1] != '\x14'
           || datalen != 20
-          || memcmp (gcry_md_read (dfx->mdc_hash, 0), dfx->defer+2, datalen))
+          || memcmp (gcry_md_read (dfx->mdc_hash, 0), dfx->holdback+2, datalen))
         rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
-      /* log_printhex("MDC message:", dfx->defer, 22); */
+      /* log_printhex("MDC message:", dfx->holdback, 22); */
       /* log_printhex("MDC calc:", gcry_md_read (dfx->mdc_hash,0), datalen); */
     }
 
@@ -358,14 +382,14 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
       if (n == 44)
         {
           /* We have enough stuff - flush the deferred stuff.  */
-          if ( !dfx->defer_filled )  /* First time. */
+          if ( !dfx->holdbacklen )  /* First time. */
             {
               memcpy (buf, buf+22, 22);
               n = 22;
 	    }
           else
             {
-              memcpy (buf, dfx->defer, 22);
+              memcpy (buf, dfx->holdback, 22);
 	    }
           /* Fill up the buffer. */
           if (dfx->partial)
@@ -399,10 +423,10 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
           /* Move the trailing 22 bytes back to the defer buffer.  We
              have at least 44 bytes thus a memmove is not needed.  */
           n -= 22;
-          memcpy (dfx->defer, buf+n, 22 );
-          dfx->defer_filled = 1;
+          memcpy (dfx->holdback, buf+n, 22 );
+          dfx->holdbacklen = 22;
 	}
-      else if ( !dfx->defer_filled )  /* EOF seen but empty defer buffer. */
+      else if ( !dfx->holdbacklen )  /* EOF seen but empty holdback buffer. */
         {
           /* This is bad because it means an incomplete hash. */
           n -= 22;
@@ -411,9 +435,9 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
 	}
       else  /* EOF seen (i.e. read less than 22 bytes). */
         {
-          memcpy (buf, dfx->defer, 22 );
+          memcpy (buf, dfx->holdback, 22 );
           n -= 22;
-          memcpy (dfx->defer, buf+n, 22 );
+          memcpy (dfx->holdback, buf+n, 22 );
           dfx->eof_seen = 1; /* Normal EOF. */
 	}
 
