@@ -1014,7 +1014,31 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
           gcry_sexp_release (s_sig);
           return gpg_error (GPG_ERR_DIGEST_ALGO);
         }
-      /* log_debug ("PSS hash=%d saltlen=%u\n", algo, saltlen); */
+      /* Add some restrictions; see ../sm/certcheck.c for details.  */
+      switch (algo)
+        {
+        case GCRY_MD_SHA1:
+        case GCRY_MD_SHA256:
+        case GCRY_MD_SHA384:
+        case GCRY_MD_SHA512:
+        case GCRY_MD_SHA3_256:
+        case GCRY_MD_SHA3_384:
+        case GCRY_MD_SHA3_512:
+          break;
+        default:
+          log_error ("PSS hash algorithm '%s' rejected\n",
+                     gcry_md_algo_name (algo));
+          gcry_sexp_release (s_sig);
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
+
+      if (gcry_md_get_algo_dlen (algo) != saltlen)
+        {
+          log_error ("PSS hash algorithm '%s' rejected due to salt length %u\n",
+                     gcry_md_algo_name (algo), saltlen);
+          gcry_sexp_release (s_sig);
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
     }
 
   algo_name = hash_algo_to_string (algo);

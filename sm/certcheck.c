@@ -300,7 +300,45 @@ extract_pss_params (gcry_sexp_t s_sig, int *r_algo, unsigned int *r_saltlen)
     {
       return gpg_error (GPG_ERR_DIGEST_ALGO);
     }
-  /* log_debug ("PSS hash=%d saltlen=%u\n", *r_algo, *r_saltlen); */
+
+  /* PSS has no hash function firewall like PKCS#1 and thus offers
+   * a path for hash algorithm replacement.  To avoid this it makes
+   * sense to restrict the allowed hash algorithms and also allow only
+   * matching salt lengths.  According to Peter Gutmann:
+   *  "Beware of bugs in the above signature scheme;
+   *   I have only proved it secure, not implemented it"
+   *   - Apologies to Donald Knuth.
+   * https://www.metzdowd.com/pipermail/cryptography/2019-November/035449.html
+   *
+   * Given the set of supported algorithms currently available in
+   * Libgcrypt and the extra hash checks we have in some compliance
+   * modes, it would be hard to trick gpgsm to verify a forged
+   * signature.  However, if eventually someone adds the xor256 hash
+   * algorithm (1.3.6.1.4.1.3029.3.2) to Libgcrypt we would be doomed.
+   */
+  switch (*r_algo)
+    {
+    case GCRY_MD_SHA1:
+    case GCRY_MD_SHA256:
+    case GCRY_MD_SHA384:
+    case GCRY_MD_SHA512:
+    case GCRY_MD_SHA3_256:
+    case GCRY_MD_SHA3_384:
+    case GCRY_MD_SHA3_512:
+      break;
+    default:
+      log_error ("PSS hash algorithm '%s' rejected\n",
+                 gcry_md_algo_name (*r_algo));
+      return gpg_error (GPG_ERR_DIGEST_ALGO);
+    }
+
+  if (gcry_md_get_algo_dlen (*r_algo) != *r_saltlen)
+    {
+      log_error ("PSS hash algorithm '%s' rejected due to salt length %u\n",
+                 gcry_md_algo_name (*r_algo), *r_saltlen);
+      return gpg_error (GPG_ERR_DIGEST_ALGO);
+    }
+
   return 0;
 }
 
