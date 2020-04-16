@@ -440,9 +440,14 @@ change it.
 @itemx --disable-crl-checks
 @opindex enable-crl-checks
 @opindex disable-crl-checks
-By default the @acronym{CRL} checks are enabled and the DirMngr is used
-to check for revoked certificates.  The disable option is most useful
-with an off-line network connection to suppress this check.
+By default the @acronym{CRL} checks are enabled and the DirMngr is
+used to check for revoked certificates.  The disable option is most
+useful with an off-line network connection to suppress this check and
+also to avoid that new certificates introduce a web bug by including a
+certificate specific CRL DP.  The disable option also disables an
+issuer certificate lookup via the authorityInfoAccess property of the
+certificate; the @option{--enable-issuer-key-retrieve} can be used
+to make use of that property anyway.
 
 @item  --enable-trusted-cert-crl-check
 @itemx --disable-trusted-cert-crl-check
