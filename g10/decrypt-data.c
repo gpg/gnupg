@@ -220,6 +220,8 @@ int
 decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 {
   decode_filter_ctx_t dfx;
+  enum gcry_cipher_modes ciphermode;
+  unsigned int startivlen;
   byte *p;
   int rc=0, c, i;
   byte temp[32];
@@ -243,9 +245,18 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       dek->algo_info_printed = 1;
     }
 
+  if (ed->aead_algo)
+    {
+      rc = openpgp_aead_algo_info (ed->aead_algo, &ciphermode, &startivlen);
+      if (rc)
+        goto leave;
+      log_assert (startivlen <= sizeof dfx->startiv);
+    }
+  else
+    ciphermode = GCRY_CIPHER_MODE_CFB;
+
   /* Check compliance.  */
-  if (! gnupg_cipher_is_allowed (opt.compliance, 0, dek->algo,
-                                 GCRY_CIPHER_MODE_CFB))
+  if (!gnupg_cipher_is_allowed (opt.compliance, 0, dek->algo, ciphermode))
     {
       log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
 		 openpgp_cipher_algo_name (dek->algo),
@@ -286,19 +297,11 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 
   if (ed->aead_algo)
     {
-      enum gcry_cipher_modes ciphermode;
-      unsigned int startivlen;
-
       if (blocksize != 16)
         {
           rc = gpg_error (GPG_ERR_CIPHER_ALGO);
           goto leave;
         }
-
-      rc = openpgp_aead_algo_info (ed->aead_algo, &ciphermode, &startivlen);
-      if (rc)
-        goto leave;
-      log_assert (startivlen <= sizeof dfx->startiv);
 
       if (ed->chunkbyte > 56)
         {
