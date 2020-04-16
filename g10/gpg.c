@@ -893,6 +893,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
   ARGPARSE_s_n (oIncludeKeyBlock, "include-key-block", "@"),
+  ARGPARSE_s_n (oNoIncludeKeyBlock, "no-include-key-block", "@"),
   ARGPARSE_s_n (oAutoKeyImport,   "auto-key-import", "@"),
   ARGPARSE_s_n (oNoAutoKeyImport, "no-auto-key-import", "@"),
 
