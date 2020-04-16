@@ -77,7 +77,8 @@ typedef enum {
     PREFTYPE_NONE = 0,
     PREFTYPE_SYM = 1,
     PREFTYPE_HASH = 2,
-    PREFTYPE_ZIP = 3
+    PREFTYPE_ZIP = 3,
+    PREFTYPE_AEAD = 4
 } preftype_t;
 
 typedef struct {

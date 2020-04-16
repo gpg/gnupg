@@ -3069,6 +3069,23 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	  tty_printf ("%s", openpgp_cipher_algo_name (CIPHER_ALGO_3DES));
 	}
       tty_printf ("\n     ");
+      tty_printf (_("AEAD: "));
+      for (i = any = 0; prefs[i].type; i++)
+	{
+	  if (prefs[i].type == PREFTYPE_AEAD)
+	    {
+	      if (any)
+		tty_printf (", ");
+	      any = 1;
+	      /* We don't want to display strings for experimental algos */
+	      if (!openpgp_aead_test_algo (prefs[i].value)
+		  && prefs[i].value < 100)
+		tty_printf ("%s", openpgp_aead_algo_name (prefs[i].value));
+	      else
+		tty_printf ("[%d]", prefs[i].value);
+	    }
+	}
+      tty_printf ("\n     ");
       tty_printf (_("Digest: "));
       for (i = any = 0; prefs[i].type; i++)
 	{
@@ -3123,7 +3140,7 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	    }
 	  tty_printf ("%s", compress_algo_to_string (COMPRESS_ALGO_NONE));
 	}
-      if (uid->flags.mdc || !uid->flags.ks_modify)
+      if (uid->flags.mdc || uid->flags.aead || !uid->flags.ks_modify)
 	{
 	  tty_printf ("\n     ");
 	  tty_printf (_("Features: "));
@@ -3132,6 +3149,12 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	    {
 	      tty_printf ("MDC");
 	      any = 1;
+	    }
+	  if (!uid->flags.aead)
+	    {
+	      if (any)
+		tty_printf (", ");
+	      tty_printf ("AEAD");
 	    }
 	  if (!uid->flags.ks_modify)
 	    {
@@ -3171,12 +3194,15 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
       for (i = 0; prefs[i].type; i++)
 	{
 	  tty_printf (" %c%d", prefs[i].type == PREFTYPE_SYM ? 'S' :
+		      prefs[i].type == PREFTYPE_AEAD ? 'A' :
 		      prefs[i].type == PREFTYPE_HASH ? 'H' :
 		      prefs[i].type == PREFTYPE_ZIP ? 'Z' : '?',
 		      prefs[i].value);
 	}
       if (uid->flags.mdc)
 	tty_printf (" [mdc]");
+      if (uid->flags.aead)
+	tty_printf (" [aead]");
       if (!uid->flags.ks_modify)
 	tty_printf (" [no-ks-modify]");
       tty_printf ("\n");
