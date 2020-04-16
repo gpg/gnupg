@@ -122,6 +122,12 @@ int openpgp_cipher_blocklen (cipher_algo_t algo);
 int openpgp_cipher_test_algo(cipher_algo_t algo);
 const char *openpgp_cipher_algo_name (cipher_algo_t algo);
 
+gpg_error_t openpgp_aead_test_algo (aead_algo_t algo);
+const char *openpgp_aead_algo_name (aead_algo_t algo);
+gpg_error_t openpgp_aead_algo_info (aead_algo_t algo,
+                                    enum gcry_cipher_modes *r_mode,
+                                    unsigned int *r_noncelen);
+
 pubkey_algo_t map_pk_gcry_to_openpgp (enum gcry_pk_algos algo);
 int openpgp_pk_test_algo (pubkey_algo_t algo);
 int openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use);

@@ -81,6 +81,9 @@ static int parse_compressed (IOBUF inp, int pkttype, unsigned long pktlen,
 			     PACKET * packet, int new_ctb);
 static int parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
 			    PACKET * packet, int new_ctb, int partial);
+static gpg_error_t parse_encrypted_aead (IOBUF inp, int pkttype,
+                                         unsigned long pktlen, PACKET *packet,
+                                         int partial);
 static int parse_mdc (IOBUF inp, int pkttype, unsigned long pktlen,
 		      PACKET * packet, int new_ctb);
 static int parse_gpg_control (IOBUF inp, int pkttype, unsigned long pktlen,
@@ -665,6 +668,7 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
             case PKT_PLAINTEXT:
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
+            case PKT_ENCRYPTED_AEAD:
             case PKT_COMPRESSED:
               iobuf_set_partial_body_length_mode (inp, c & 0xff);
               pktlen = 0;	/* To indicate partial length.  */
@@ -851,6 +855,9 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
       break;
     case PKT_MDC:
       rc = parse_mdc (inp, pkttype, pktlen, pkt, new_ctb);
+      break;
+    case PKT_ENCRYPTED_AEAD:
+      rc = parse_encrypted_aead (inp, pkttype, pktlen, pkt, partial);
       break;
     case PKT_GPG_CONTROL:
       rc = parse_gpg_control (inp, pkttype, pktlen, pkt, partial);
@@ -1127,19 +1134,17 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 {
   PKT_symkey_enc *k;
   int rc = 0;
-  int i, version, s2kmode, cipher_algo, hash_algo, seskeylen, minlen;
+  int i, version, s2kmode, cipher_algo, aead_algo, hash_algo, seskeylen, minlen;
 
   if (pktlen < 4)
-    {
-      log_error ("packet(%d) too short\n", pkttype);
-      if (list_mode)
-        es_fprintf (listfp, ":symkey enc packet: [too short]\n");
-      rc = gpg_error (GPG_ERR_INV_PACKET);
-      goto leave;
-    }
+    goto too_short;
   version = iobuf_get_noeof (inp);
   pktlen--;
-  if (version != 4)
+  if (version == 4)
+    ;
+  else if (version == 5)
+    ;
+  else
     {
       log_error ("packet(%d) with unknown version %d\n", pkttype, version);
       if (list_mode)
@@ -1157,6 +1162,15 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   cipher_algo = iobuf_get_noeof (inp);
   pktlen--;
+  if (version == 5)
+    {
+      aead_algo = iobuf_get_noeof (inp);
+      pktlen--;
+    }
+  else
+    aead_algo = 0;
+  if (pktlen < 2)
+    goto too_short;
   s2kmode = iobuf_get_noeof (inp);
   pktlen--;
   hash_algo = iobuf_get_noeof (inp);
@@ -1191,6 +1205,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 					      + seskeylen - 1);
   k->version = version;
   k->cipher_algo = cipher_algo;
+  k->aead_algo = aead_algo;
   k->s2k.mode = s2kmode;
   k->s2k.hash_algo = hash_algo;
   if (s2kmode == 1 || s2kmode == 3)
@@ -1221,10 +1236,20 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   if (list_mode)
     {
       es_fprintf (listfp,
-                  ":symkey enc packet: version %d, cipher %d, s2k %d, hash %d",
-                  version, cipher_algo, s2kmode, hash_algo);
+                  ":symkey enc packet: version %d, cipher %d, aead %d,"
+                  "s2k %d, hash %d",
+                  version, cipher_algo, aead_algo, s2kmode, hash_algo);
       if (seskeylen)
-	es_fprintf (listfp, ", seskey %d bits", (seskeylen - 1) * 8);
+        {
+          /* To compute the size of the session key we need to know
+           * the size of the AEAD nonce which we may not know.  Thus
+           * we show only the size of the entire encrypted session
+           * key.  */
+          if (aead_algo)
+            es_fprintf (listfp, ", encrypted seskey %d bytes", seskeylen);
+          else
+            es_fprintf (listfp, ", seskey %d bits", (seskeylen - 1) * 8);
+        }
       es_fprintf (listfp, "\n");
       if (s2kmode == 1 || s2kmode == 3)
 	{
@@ -1241,6 +1266,13 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
  leave:
   iobuf_skip_rest (inp, pktlen, 0);
   return rc;
+
+ too_short:
+  log_error ("packet(%d) too short\n", pkttype);
+  if (list_mode)
+    es_fprintf (listfp, ":symkey enc packet: [too short]\n");
+  rc = gpg_error (GPG_ERR_INV_PACKET);
+  goto leave;
 }
 
 
@@ -1420,6 +1452,11 @@ dump_sig_subpkt (int hashed, int type, int critical,
       es_fputs ("pref-sym-algos:", listfp);
       for (i = 0; i < length; i++)
 	es_fprintf (listfp, " %d", buffer[i]);
+      break;
+    case SIGSUBPKT_PREF_AEAD:
+      es_fputs ("pref-aead-algos:", listfp);
+      for (i = 0; i < length; i++)
+        es_fprintf (listfp, " %d", buffer[i]);
       break;
     case SIGSUBPKT_REV_KEY:
       es_fputs ("revocation key: ", listfp);
@@ -1601,6 +1638,7 @@ parse_one_sig_subpkt (const byte * buffer, size_t n, int type)
     case SIGSUBPKT_KEY_FLAGS:
     case SIGSUBPKT_KS_FLAGS:
     case SIGSUBPKT_PREF_SYM:
+    case SIGSUBPKT_PREF_AEAD:
     case SIGSUBPKT_PREF_HASH:
     case SIGSUBPKT_PREF_COMPR:
     case SIGSUBPKT_POLICY:
@@ -3253,6 +3291,9 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
   ed->buf = NULL;
   ed->new_ctb = new_ctb;
   ed->is_partial = partial;
+  ed->aead_algo = 0;
+  ed->cipher_algo = 0; /* Only used with AEAD.  */
+  ed->chunkbyte = 0;   /* Only used with AEAD.  */
   if (pkttype == PKT_ENCRYPTED_MDC)
     {
       /* Fixme: add some pktlen sanity checks.  */
@@ -3338,6 +3379,81 @@ parse_mdc (IOBUF inp, int pkttype, unsigned long pktlen,
   p = mdc->hash;
   for (; pktlen; pktlen--, p++)
     *p = iobuf_get_noeof (inp);
+
+ leave:
+  return rc;
+}
+
+
+static gpg_error_t
+parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
+                      PACKET *pkt, int partial)
+{
+  int rc = 0;
+  PKT_encrypted *ed;
+  unsigned long orig_pktlen = pktlen;
+  int version;
+
+  ed = pkt->pkt.encrypted = xtrymalloc (sizeof *pkt->pkt.encrypted);
+  if (!ed)
+    return gpg_error_from_syserror ();
+  ed->len = 0;
+  ed->extralen = 0;  /* (only used in build_packet.)  */
+  ed->buf = NULL;
+  ed->new_ctb = 1;   /* (packet number requires a new CTB anyway.)  */
+  ed->is_partial = partial;
+  ed->mdc_method = 0;
+  /* A basic sanity check.  We need one version byte, one algo byte,
+   * one aead algo byte, one chunkbyte, at least 15 byte IV.  */
+  if (orig_pktlen && pktlen < 19)
+    {
+      log_error ("packet(%d) too short\n", pkttype);
+      if (list_mode)
+        es_fputs (":aead encrypted packet: [too short]\n", listfp);
+      rc = gpg_error (GPG_ERR_INV_PACKET);
+      iobuf_skip_rest (inp, pktlen, partial);
+      goto leave;
+    }
+
+  version = iobuf_get_noeof (inp);
+  if (orig_pktlen)
+    pktlen--;
+  if (version != 1)
+    {
+      log_error ("aead encrypted packet with unknown version %d\n",
+                 version);
+      if (list_mode)
+        es_fputs (":aead encrypted packet: [unknown version]\n", listfp);
+      /*skip_rest(inp, pktlen); should we really do this? */
+      rc = gpg_error (GPG_ERR_INV_PACKET);
+      goto leave;
+    }
+
+  ed->cipher_algo = iobuf_get_noeof (inp);
+  if (orig_pktlen)
+    pktlen--;
+  ed->aead_algo = iobuf_get_noeof (inp);
+  if (orig_pktlen)
+    pktlen--;
+  ed->chunkbyte = iobuf_get_noeof (inp);
+  if (orig_pktlen)
+    pktlen--;
+
+  /* Store the remaining length of the encrypted data.  We read the
+   * rest during decryption.  */
+  ed->len = pktlen;
+
+  if (list_mode)
+    {
+      es_fprintf (listfp, ":aead encrypted packet: cipher=%u aead=%u cb=%u\n",
+                  ed->cipher_algo, ed->aead_algo, ed->chunkbyte);
+      if (orig_pktlen)
+	es_fprintf (listfp, "\tlength: %lu\n", orig_pktlen);
+      else
+	es_fprintf (listfp, "\tlength: unknown\n");
+    }
+
+  ed->buf = inp;
 
  leave:
   return rc;

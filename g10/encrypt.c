@@ -110,7 +110,7 @@ encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
 
 
 /* Shall we use the MDC?  Yes - unless rfc-2440 compatibility is
- * requested. */
+ * requested.  Must return 1 or 0. */
 int
 use_mdc (pk_list_t pk_list,int algo)
 {
