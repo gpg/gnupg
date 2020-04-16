@@ -408,40 +408,124 @@ end_cert_fetch (cert_fetch_context_t context)
 }
 
 
+/* Read a certificate from an HTTP URL and return it as an estream
+ * memory buffer at R_FP.  */
+static gpg_error_t
+read_cert_via_http (ctrl_t ctrl, const char *url, estream_t *r_fp)
+{
+  gpg_error_t err;
+  estream_t fp = NULL;
+  estream_t httpfp = NULL;
+  size_t nread, nwritten;
+  char buffer[1024];
+
+  if ((err = ks_http_fetch (ctrl, url, KS_HTTP_FETCH_TRUST_CFG, &httpfp)))
+    goto leave;
+
+  /* We now read the data from the web server into a memory buffer.
+   * To DOS we limit the certificate length to 32k.  */
+  fp = es_fopenmem (32*1024, "rw");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  for (;;)
+    {
+      if (es_read (httpfp, buffer, sizeof buffer, &nread))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error reading '%s': %s\n",
+                     es_fname_get (httpfp), gpg_strerror (err));
+          goto leave;
+        }
+
+      if (!nread)
+        break; /* Ready.  */
+      if (es_write (fp, buffer, nread, &nwritten))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error writing '%s': %s\n",
+                     es_fname_get (fp), gpg_strerror (err));
+          goto leave;
+        }
+      else if (nread != nwritten)
+        {
+          err = gpg_error (GPG_ERR_EIO);
+          log_error ("error writing '%s': %s\n",
+                     es_fname_get (fp), "short write");
+          goto leave;
+        }
+    }
+
+  es_rewind (fp);
+  *r_fp = fp;
+  fp = NULL;
+
+ leave:
+  es_fclose (httpfp);
+  es_fclose (fp);
+  return err;
+}
+
+
 /* Lookup a cert by it's URL.  */
 gpg_error_t
 fetch_cert_by_url (ctrl_t ctrl, const char *url,
 		   unsigned char **value, size_t *valuelen)
 {
-  const unsigned char *cert_image;
+  const unsigned char *cert_image = NULL;
   size_t cert_image_n;
-  ksba_reader_t reader;
-  ksba_cert_t cert;
+  ksba_reader_t reader = NULL;
+  ksba_cert_t cert = NULL;
   gpg_error_t err;
 
   *value = NULL;
   *valuelen = 0;
-  cert_image = NULL;
-  reader = NULL;
-  cert = NULL;
-
-#if USE_LDAP
-  err = url_fetch_ldap (ctrl, url, NULL, 0, &reader);
-#else
-  (void)ctrl;
-  (void)url;
-  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif /*USE_LDAP*/
-  if (err)
-    goto leave;
 
   err = ksba_cert_new (&cert);
   if (err)
     goto leave;
 
-  err = ksba_cert_read_der (cert, reader);
-  if (err)
-    goto leave;
+  if (url && (!strncmp (url, "http:", 5) || !strncmp (url, "https:", 6)))
+    {
+      estream_t stream;
+      void *der;
+      size_t derlen;
+
+      err = read_cert_via_http (ctrl, url, &stream);
+      if (err)
+        goto leave;
+
+      if (es_fclose_snatch (stream, &der, &derlen))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      err = ksba_cert_init_from_mem (cert, der, derlen);
+      xfree (der);
+      if (err)
+        goto leave;
+    }
+  else /* Assume LDAP.  */
+    {
+#if USE_LDAP
+      err = url_fetch_ldap (ctrl, url, NULL, 0, &reader);
+#else
+      (void)ctrl;
+      (void)url;
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif /*USE_LDAP*/
+      if (err)
+        goto leave;
+
+      err = ksba_cert_read_der (cert, reader);
+      if (err)
+        goto leave;
+    }
 
   cert_image = ksba_cert_get_image (cert, &cert_image_n);
   if (!cert_image || !cert_image_n)
@@ -461,7 +545,6 @@ fetch_cert_by_url (ctrl_t ctrl, const char *url,
   *valuelen = cert_image_n;
 
  leave:
-
   ksba_cert_release (cert);
 #if USE_LDAP
   ldap_wrapper_release_context (reader);
