@@ -928,15 +928,19 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
         }
 
       /* If we still didn't found it, try an external lookup.  */
-      if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
+      if (rc == -1 && !find_next && !ctrl->offline)
         {
-          if (!find_up_via_auth_info_access (ctrl, kh, cert))
+          /* We allow AIA also if CRLs are enabled; both can be used
+           * as a web bug so it does not make sense to not use AIA if
+           * CRL checks are enabled.  */
+          if ((opt.auto_issuer_key_retrieve || !opt.no_crl_check)
+              && !find_up_via_auth_info_access (ctrl, kh, cert))
             {
               if (DBG_X509)
                 log_debug ("  found via authorityInfoAccess.caIssuers\n");
               rc = 0;
             }
-          else
+          else if (opt.auto_issuer_key_retrieve)
             {
               rc = find_up_external (ctrl, kh, issuer, keyid);
               if (!rc && DBG_X509)
@@ -1000,15 +1004,16 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
     }
 
   /* Still not found.  If enabled, try an external lookup.  */
-  if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
+  if (rc == -1 && !find_next && !ctrl->offline)
     {
-      if (!find_up_via_auth_info_access (ctrl, kh, cert))
+      if ((opt.auto_issuer_key_retrieve || !opt.no_crl_check)
+          && !find_up_via_auth_info_access (ctrl, kh, cert))
         {
           if (DBG_X509)
             log_debug ("  found via authorityInfoAccess.caIssuers\n");
           rc = 0;
         }
-      else
+      else if (opt.auto_issuer_key_retrieve)
         {
           rc = find_up_external (ctrl, kh, issuer, NULL);
           if (!rc && DBG_X509)
