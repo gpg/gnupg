@@ -2142,6 +2142,11 @@ send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
   npth_mutex_lock (&card_list_lock);
   for (n=0, c = card_top; c; c = c->next)
     n++;
+  if (!n)
+    {
+      err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+      goto leave;
+    }
   cardlist = xtrycalloc (n, sizeof *cardlist);
   if (!cardlist)
     {
