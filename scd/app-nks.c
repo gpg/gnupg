@@ -1,5 +1,6 @@
 /* app-nks.c - The Telesec NKS card application.
- * Copyright (C) 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007-2009 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007-2009, 2013-2015, 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -22,17 +23,19 @@
   - We are now targeting TCOS 3 cards and it may happen that there is
     a regression towards TCOS 2 cards.  Please report.
 
-  - The TKS3 AUT key is not used.  It seems that it is only useful for
+  - The NKS3 AUT key is not used.  It seems that it is only useful for
     the internal authentication command and not accessible by other
     applications.  The key itself is in the encryption class but the
     corresponding certificate has only the digitalSignature
     capability.
+    Update: This changed for the Signature Card V2 (nks version 15)
 
   - If required, we automagically switch between the NKS application
-    and the SigG application.  This avoids to use the DINSIG
+    and the SigG or eSign application.  This avoids to use the DINSIG
     application which is somewhat limited, has no support for Secure
     Messaging as required by TCOS 3 and has no way to change the PIN
-    or even set the NullPIN.
+    or even set the NullPIN.  With the Signature Card v2 (nks version
+    15) the Esign application is used instead of the SigG.
 
   - We use the prefix NKS-DF01 for TCOS 2 cards and NKS-NKS3 for newer
     cards.  This is because the NKS application has moved to DF02 with
@@ -47,7 +50,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #include "scdaemon.h"
@@ -59,37 +61,76 @@
 
 static char const aid_nks[]  = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x01, 0x02 };
 static char const aid_sigg[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };
+static char const aid_esign[] =
+  { 0xA0, 0x00, 0x00, 0x01, 0x67, 0x45, 0x53, 0x49, 0x47, 0x4E };
+
+/* The 3 ids of the different apps on our Netkey cards.  */
+#define NKS_APP_NKS   0
+#define NKS_APP_SIGG  1
+#define NKS_APP_ESIGN 2
 
 
 static struct
 {
-  int is_sigg;   /* Valid for SigG application.  */
+  int nks_app_id;/* One of the NKS_APP_ constants.  */
   int fid;       /* File ID. */
-  int nks_ver;   /* 0 for NKS version 2, 3 for version 3. */
+  int nks_ver;   /* 0 for NKS version 2, 3 for version 3, etc.  */
   int certtype;  /* Type of certificate or 0 if it is not a certificate. */
   int iskeypair; /* If true has the FID of the corresponding certificate. */
+  int isauthkey; /* True if file is a key usable for authentication. */
   int issignkey; /* True if file is a key usable for signing. */
-  int isenckey;  /* True if file is a key usable for decryption. */
+  int isencrkey; /* True if file is a key usable for decryption. */
   unsigned char kid;  /* Corresponding key references.  */
 } filelist[] = {
-  { 0, 0x4531, 0, 0,  0xC000, 1, 0, 0x80 }, /* EF_PK.NKS.SIG */
+  { 0, 0x4531, 0, 0,  0xC000, 1,1,0, 0x80}, /* EF_PK.NKS.SIG */
+  /* */                              /* nks15: EF.PK.NKS.ADS */
   { 0, 0xC000, 0, 101 },                    /* EF_C.NKS.SIG  */
-  { 0, 0x4331, 0, 100 },
+  /* */                              /* nks15: EF.C.ICC.ADS  (sign key)  */
+
+  { 0, 0x4331, 0, 100 },                    /* Unnamed.                  */
+  /* */                              /* nks15: EF.C.ICC.RFU1             */
+  /* */                              /* (second cert for sign key)       */
+
   { 0, 0x4332, 0, 100 },
-  { 0, 0xB000, 0, 110 },                    /* EF_PK.RCA.NKS */
-  { 0, 0x45B1, 0, 0,  0xC200, 0, 1, 0x81 }, /* EF_PK.NKS.ENC */
-  { 0, 0xC200, 0, 101 },                    /* EF_C.NKS.ENC  */
-  { 0, 0x43B1, 0, 100 },
+  { 0, 0xB000, 0, 110 },                    /* EF_PK.RCA.NKS             */
+
+  { 0, 0x45B1, 0, 0,  0xC200, 0,0,1, 0x81}, /* EF_PK.NKS.ENC             */
+  /* */                              /* nks15: EF.PK.ICC.ENC1            */
+  { 0, 0xC200, 0, 101 },                    /* EF_C.NKS.ENC              */
+                                     /* nks15: EF.C.ICC.ENC1 (Cert-encr) */
+
+  { 0, 0x43B1, 0, 100 },                    /* Unnamed */
+  /* */                              /* nks15: EF.C.ICC.RFU2             */
+  /* */                              /* (second cert for enc1 key)       */
+
   { 0, 0x43B2, 0, 100 },
-/* The authentication key is not used.  */
-/*   { 0, 0x4571, 3, 0,  0xC500, 0, 0, 0x82 }, /\* EF_PK.NKS.AUT *\/ */
-/*   { 0, 0xC500, 3, 101 },                    /\* EF_C.NKS.AUT  *\/ */
-  { 0, 0x45B2, 3, 0,  0xC201, 0, 1, 0x83 }, /* EF_PK.NKS.ENC1024 */
+  { 0, 0x4371,15, 100 },                    /* EF.C.ICC.RFU3             */
+  /* */                              /* (second cert for auth key)       */
+
+  { 0, 0x45B2, 3, 0,  0xC201, 0,0,1, 0x83}, /* EF_PK.NKS.ENC1024         */
+  /* */                              /* nks15: EF.PK.ICC.ENC2            */
   { 0, 0xC201, 3, 101 },                    /* EF_C.NKS.ENC1024  */
-  { 1, 0x4531, 3, 0,  0xC000, 1, 1, 0x84 }, /* EF_PK.CH.SIG  */
+
+  { 0, 0xC20E,15, 111 },                    /* EF.C.CSP.RCA1 (RootCA 1) */
+  { 0, 0xC208,15, 101 },                    /* EF.C.CSP.SCA1 (SubCA 1) */
+  { 0, 0xC10E,15, 111 },                    /* EF.C.CSP.RCA2 (RootCA 2) */
+  { 0, 0xC108,15, 101 },                    /* EF.C.CSP.SCA2 (SubCA 2) */
+
+  { 0, 0x4571,15, 0,  0xC500, 1,0,0, 0x82}, /* EF.PK.ICC.AUT */
+  { 0, 0xC500,15, 101 },                    /* EF.C.ICC.AUT  (Cert-auth) */
+
+  { 0, 0xC201,15, 101 },                    /* EF.C.ICC.ENC2 (Cert-encr) */
+                                            /* (empty on delivery) */
+
+  { 1, 0x4531, 3, 0,  0xC000, 0,1,1, 0x84}, /* EF_PK.CH.SIG  */
   { 1, 0xC000, 0, 101 },                    /* EF_C.CH.SIG  */
+
   { 1, 0xC008, 3, 101 },                    /* EF_C.CA.SIG  */
   { 1, 0xC00E, 3, 111 },                    /* EF_C.RCA.SIG  */
+
+  { 2, 0xC000, 15,101 },                    /* EF.C.SCA.QES (SubCA) */
+  { 2, 0xC001, 15,100 },                    /* EF.C.ICC.QES (Cert)  */
+  { 2, 0xC00E, 15,111 },                    /* EF.C.RCA.QES (RootCA */
   { 0, 0 }
 };
 
@@ -99,17 +140,22 @@ static struct
 struct app_local_s {
   int nks_version;  /* NKS version.  */
 
-  int sigg_active;  /* True if switched to the SigG application.  */
-  int sigg_msig_checked;/*  True if we checked for a mass signature card.  */
-  int sigg_is_msig; /* True if this is a mass signature card.  */
+  int active_nks_app;   /* One of the NKS_APP_ constants.  */
 
-  int need_app_select; /* Need to re-select the application.  */
+  int qes_app_id;       /* Either NKS_APP_SIGG or NKS_APP_ESIGN.  */
+
+  int sigg_msig_checked;/*  True if we checked for a mass signature card.  */
+  int sigg_is_msig;     /* True if this is a mass signature card.  */
+
+  int need_app_select;  /* Need to re-select the application.  */
 
 };
 
 
 
-static gpg_error_t switch_application (app_t app, int enable_sigg);
+static gpg_error_t readcert_from_ef (app_t app, int fid,
+                                     unsigned char **cert, size_t *certlen);
+static gpg_error_t switch_application (app_t app, int nks_app_id);
 
 
 
@@ -137,10 +183,15 @@ all_zero_p (void *buffer, size_t length)
 }
 
 
-/* Read the file with FID, assume it contains a public key and return
-   its keygrip in the caller provided 41 byte buffer R_GRIPSTR. */
+/* Read the file with PKFID, assume it contains a public key and
+ * return its keygrip in the caller provided 41 byte buffer R_GRIPSTR.
+ * This works only for RSA card.  For the Signature Card v2 ECC is
+ * used and Read Record needs to be replaced by read binary.  Given
+ * all the ECC parameters required, we don't do that but rely that the
+ * corresponding certificate at CFID is already available and get the
+ * public key from there. */
 static gpg_error_t
-keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
+keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
 {
   gpg_error_t err;
   unsigned char grip[20];
@@ -150,7 +201,41 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
   int i;
   int offset[2] = { 0, 0 };
 
-  err = iso7816_select_file (app->slot, fid, 0);
+  if (app->app_local->nks_version == 15)
+    {
+      /* Signature Card v2 - get keygrip from the certificate.  */
+      unsigned char *cert, *pk;
+      size_t certlen, pklen;
+
+      /* Fall back to certificate reading.  */
+      err = readcert_from_ef (app, cfid, &cert, &certlen);
+      if (err)
+        {
+          log_error ("nks: error reading certificate %04X: %s\n",
+                     cfid, gpg_strerror (err));
+          return err;
+        }
+
+      err = app_help_pubkey_from_cert (cert, certlen, &pk, &pklen);
+      xfree (cert);
+      if (err)
+        {
+          log_error ("nks: error parsing certificate %04X: %s\n",
+                     cfid, gpg_strerror (err));
+          return err;
+        }
+
+      err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL,
+                                            NULL, NULL);
+      xfree (pk);
+      if (err)
+        log_error ("nks: error getting keygrip for certificate %04X: %s\n",
+                   cfid, gpg_strerror (err));
+
+      return err;
+    }
+
+  err = iso7816_select_file (app_get_slot (app), pkfid, 0);
   if (err)
     return err;
   err = iso7816_read_record (app->slot, 1, 1, 0, &buffer[0], &buflen[0]);
@@ -247,15 +332,17 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
 
 
 /* TCOS responds to a verify with empty data (i.e. without the Lc
- * byte) with the status of the PIN.  PWID is the PIN ID, If SIGG is
- * true, the application is switched into SigG mode.  Returns:
+ * byte) with the status of the PIN.  PWID is the PIN ID. NKS_APP_ID
+ * gives the application to first switch to.  Returns:
  * ISO7816_VERIFY_* codes or non-negative number of verification
  * attempts left.  */
 static int
-get_chv_status (app_t app, int sigg, int pwid)
+get_chv_status (app_t app, int nks_app_id, int pwid)
 {
-  if (switch_application (app, sigg))
-    return sigg? -2 : -1; /* No such PIN / General error.  */
+  if (switch_application (app, nks_app_id))
+    return (nks_app_id == NKS_APP_NKS
+            ? ISO7816_VERIFY_ERROR
+            : ISO7816_VERIFY_NO_PIN);
 
   return iso7816_verify_status (app_get_slot (app), pwid);
 }
@@ -280,8 +367,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   gpg_error_t err = 0;
   int idx;
   char buffer[100];
+  int nksver = app->app_local->nks_version;
 
-  err = switch_application (app, 0);
+  err = switch_application (app, NKS_APP_NKS);
   if (err)
     return err;
 
@@ -298,8 +386,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
            to the specs this key is only usable for encryption and not
            signing.  it might work anyway but it has not yet been
            tested - fixme.  Thus for now we use the NKS signature key
-           for authentication.  */
-        char const tmp[] = "NKS-NKS3.4531";
+           for authentication for netkey 3.  For the Signature Card
+           V2.0 the auth key is defined and thus we use it. */
+        const char *tmp = nksver == 15? "NKS-NKS3.4571" : "NKS-NKS3.4531";
         send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       }
       break;
@@ -329,6 +418,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
         /* Returns: PW1.CH PW2.CH PW1.CH.SIG PW2.CH.SIG That are the
            two global passwords followed by the two SigG passwords.
            For the values, see the function get_chv_status.  */
+        /* FIXME: Check this for the NKS15!! */
         int tmp[4];
 
         /* We use a helper array so that we can control that there is
@@ -337,8 +427,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
            expect.  */
         tmp[0] = get_chv_status (app, 0, 0x00);
         tmp[1] = get_chv_status (app, 0, 0x01);
-        tmp[2] = get_chv_status (app, 1, 0x81);
-        tmp[3] = get_chv_status (app, 1, 0x83);
+        tmp[2] = get_chv_status (app, app->app_local->qes_app_id, 0x81);
+        tmp[3] = get_chv_status (app, app->app_local->qes_app_id, 0x83);
         snprintf (buffer, sizeof buffer,
                   "%d %d %d %d", tmp[0], tmp[1], tmp[2], tmp[3]);
         send_status_info (ctrl, table[idx].name,
@@ -358,15 +448,17 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
 
 static void
-do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
+do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
+                      int nks_app_id)
 {
   gpg_error_t err;
   char ct_buf[100], id_buf[100];
   int i;
   const char *tag;
-  const char *usage;
 
-  if (is_sigg)
+  if (nks_app_id == NKS_APP_ESIGN)
+    tag = "ESIGN";
+  else if (nks_app_id == NKS_APP_SIGG)
     tag = "SIGG";
   else if (app->app_local->nks_version < 3)
     tag = "DF01";
@@ -379,7 +471,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
       if (filelist[i].nks_ver > app->app_local->nks_version)
         continue;
 
-      if (!!filelist[i].is_sigg != !!is_sigg)
+      if (filelist[i].nks_app_id != nks_app_id)
         continue;
 
       if (filelist[i].certtype && !(flags &1))
@@ -405,8 +497,11 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
       else if (filelist[i].iskeypair)
         {
           char gripstr[40+1];
+          char usagebuf[5];
+          int usageidx = 0;
 
-          err = keygripstr_from_pk_file (app, filelist[i].fid, gripstr);
+          err = keygripstr_from_pk_file (app, filelist[i].fid,
+                                         filelist[i].iskeypair, gripstr);
           if (err)
             log_error ("can't get keygrip from FID 0x%04X: %s\n",
                        filelist[i].fid, gpg_strerror (err));
@@ -414,25 +509,21 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
             {
               snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X",
                         tag, filelist[i].fid);
-              if (filelist[i].issignkey && filelist[i].isenckey)
-                usage = "sae";
-              else if (filelist[i].issignkey)
-                usage = "sa";
-              else if (filelist[i].isenckey)
-                usage = "e";
-              else
-                usage = "";
-
+              if (filelist[i].issignkey)
+                usagebuf[usageidx++] = 's';
+              if (filelist[i].isauthkey)
+                usagebuf[usageidx++] = 'a';
+              if (filelist[i].isencrkey)
+                usagebuf[usageidx++] = 'e';
+              usagebuf[usageidx] = 0;
               send_status_info (ctrl, "KEYPAIRINFO",
                                 gripstr, 40,
                                 id_buf, strlen (id_buf),
-                                usage, strlen (usage),
+                                usagebuf, strlen (usagebuf),
                                 NULL, (size_t)0);
             }
         }
     }
-
-
 }
 
 
@@ -441,33 +532,28 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
 
-  err = switch_application (app, 0);
+  err = switch_application (app, NKS_APP_NKS);
   if (err)
     return err;
 
-  do_learn_status_core (app, ctrl, flags, 0);
+  do_learn_status_core (app, ctrl, flags, NKS_APP_NKS);
 
-  err = switch_application (app, 1);
+  err = switch_application (app, app->app_local->qes_app_id);
   if (err)
     return 0;  /* Silently ignore if we can't switch to SigG.  */
 
-  do_learn_status_core (app, ctrl, flags, 1);
+  do_learn_status_core (app, ctrl, flags, app->app_local->qes_app_id);
 
   return 0;
 }
 
 
 
-
-/* Read the certificate with id CERTID (as returned by learn_status in
-   the CERTINFO status lines) and return it in the freshly allocated
-   buffer put into CERT and the length of the certificate put into
-   CERTLEN. */
+/* Helper to read a certificate from the file FID.  The function
+ * assumes that the the application has already been selected.  */
 static gpg_error_t
-do_readcert (app_t app, const char *certid,
-             unsigned char **cert, size_t *certlen)
+readcert_from_ef (app_t app, int fid, unsigned char **cert, size_t *certlen)
 {
-  int i, fid;
   gpg_error_t err;
   unsigned char *buffer;
   const unsigned char *p;
@@ -475,45 +561,9 @@ do_readcert (app_t app, const char *certid,
   int class, tag, constructed, ndef;
   size_t totobjlen, objlen, hdrlen;
   int rootca = 0;
-  int is_sigg = 0;
 
   *cert = NULL;
   *certlen = 0;
-
-  if (!strncmp (certid, "NKS-NKS3.", 9))
-    ;
-  else if (!strncmp (certid, "NKS-DF01.", 9))
-    ;
-  else if (!strncmp (certid, "NKS-SIGG.", 9))
-    is_sigg = 1;
-  else
-    return gpg_error (GPG_ERR_INV_ID);
-
-  err = switch_application (app, is_sigg);
-  if (err)
-    return err;
-
-  certid += 9;
-  if (!hexdigitp (certid) || !hexdigitp (certid+1)
-      || !hexdigitp (certid+2) || !hexdigitp (certid+3)
-      || certid[4])
-    return gpg_error (GPG_ERR_INV_ID);
-  fid = xtoi_4 (certid);
-  for (i=0; filelist[i].fid; i++)
-    if ((filelist[i].certtype || filelist[i].iskeypair)
-        && filelist[i].fid == fid)
-      break;
-  if (!filelist[i].fid)
-    return gpg_error (GPG_ERR_NOT_FOUND);
-
-  /* If the requested objects is a plain public key, redirect it to
-     the corresponding certificate.  The whole system is a bit messy
-     because we sometime use the key directly or let the caller
-     retrieve the key from the certificate.  The rationale for
-     that is to support not-yet stored certificates. */
-  if (filelist[i].iskeypair)
-    fid = filelist[i].iskeypair;
-
 
   /* Read the entire file.  fixme: This could be optimized by first
      reading the header to figure out how long the certificate
@@ -521,21 +571,22 @@ do_readcert (app_t app, const char *certid,
   err = iso7816_select_file (app->slot, fid, 0);
   if (err)
     {
-      log_error ("error selecting FID 0x%04X: %s\n", fid, gpg_strerror (err));
+      log_error ("nks: error selecting FID 0x%04X: %s\n",
+                 fid, gpg_strerror (err));
       return err;
     }
 
   err = iso7816_read_binary (app->slot, 0, 0, &buffer, &buflen);
   if (err)
     {
-      log_error ("error reading certificate from FID 0x%04X: %s\n",
+      log_error ("nks: error reading certificate from FID 0x%04X: %s\n",
                  fid, gpg_strerror (err));
       return err;
     }
 
   if (!buflen || *buffer == 0xff)
     {
-      log_info ("no certificate contained in FID 0x%04X\n", fid);
+      log_info ("nks: no certificate contained in FID 0x%04X\n", fid);
       err = gpg_error (GPG_ERR_NOT_FOUND);
       goto leave;
     }
@@ -554,7 +605,7 @@ do_readcert (app_t app, const char *certid,
   else
     return gpg_error (GPG_ERR_INV_OBJ);
   totobjlen = objlen + hdrlen;
-  assert (totobjlen <= buflen);
+  log_assert (totobjlen <= buflen);
 
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
@@ -585,7 +636,7 @@ do_readcert (app_t app, const char *certid,
       if ( !(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && constructed) )
         return gpg_error (GPG_ERR_INV_OBJ);
       totobjlen = objlen + hdrlen;
-      assert (save_p + totobjlen <= buffer + buflen);
+      log_assert (save_p + totobjlen <= buffer + buflen);
       memmove (buffer, save_p, totobjlen);
     }
 
@@ -599,12 +650,67 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+/* Read the certificate with id CERTID (as returned by learn_status in
+   the CERTINFO status lines) and return it in the freshly allocated
+   buffer put into CERT and the length of the certificate put into
+   CERTLEN. */
+static gpg_error_t
+do_readcert (app_t app, const char *certid,
+             unsigned char **cert, size_t *certlen)
+{
+  int i, fid;
+  gpg_error_t err;
+  int nks_app_id;
+
+  *cert = NULL;
+  *certlen = 0;
+
+  if (!strncmp (certid, "NKS-NKS3.", 9))
+    nks_app_id = NKS_APP_NKS;
+  else if (!strncmp (certid, "NKS-ESIGN.", 10))
+    nks_app_id = NKS_APP_ESIGN;
+  else if (!strncmp (certid, "NKS-SIGG.", 9))
+    nks_app_id = NKS_APP_SIGG;
+  else if (!strncmp (certid, "NKS-DF01.", 9))
+    nks_app_id = NKS_APP_NKS;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+  certid += nks_app_id == NKS_APP_ESIGN? 10 : 9;
+
+  err = switch_application (app, nks_app_id);
+  if (err)
+    return err;
+
+  if (!hexdigitp (certid) || !hexdigitp (certid+1)
+      || !hexdigitp (certid+2) || !hexdigitp (certid+3)
+      || certid[4])
+    return gpg_error (GPG_ERR_INV_ID);
+  fid = xtoi_4 (certid);
+  for (i=0; filelist[i].fid; i++)
+    if ((filelist[i].certtype || filelist[i].iskeypair)
+        && filelist[i].fid == fid)
+      break;
+  if (!filelist[i].fid)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  /* If the requested objects is a plain public key, redirect it to
+     the corresponding certificate.  The whole system is a bit messy
+     because we sometime use the key directly or let the caller
+     retrieve the key from the certificate.  The rationale for
+     that is to support not-yet stored certificates. */
+  if (filelist[i].iskeypair)
+    fid = filelist[i].iskeypair;
+
+  return readcert_from_ef (app, fid, cert, certlen);
+}
+
+
 /* Handle the READKEY command. On success a canonical encoded
    S-expression with the public key will get stored at PK and its
    length at PKLEN; the caller must release that buffer.  On error PK
    and PKLEN are not changed and an error code is returned.  As of now
    this function is only useful for the internal authentication key.
-   Other keys are automagically retrieved via by means of the
+   Other keys are automagically retrieved by means of the
    certificate parsing code in commands.c:cmd_readkey.  For internal
    use PK and PKLEN may be NULL to just check for an existing key.  */
 static gpg_error_t
@@ -855,7 +961,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
       0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
   int rc, i;
-  int is_sigg = 0;
+  int nks_app_id;
   int fid;
   unsigned char kid;
   unsigned char data[83];   /* Must be large enough for a SHA-1 digest
@@ -874,21 +980,23 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
   /* Check that the provided ID is valid.  This is not really needed
      but we do it to enforce correct usage by the caller. */
-  if (!strncmp (keyidstr, "NKS-NKS3.", 9) )
-    ;
-  else if (!strncmp (keyidstr, "NKS-DF01.", 9) )
-    ;
-  else if (!strncmp (keyidstr, "NKS-SIGG.", 9) )
-    is_sigg = 1;
+  if (!strncmp (keyidstr, "NKS-NKS3.", 9))
+    nks_app_id = NKS_APP_NKS;
+  else if (!strncmp (keyidstr, "NKS-ESIGN.", 10))
+    nks_app_id = NKS_APP_ESIGN;
+  else if (!strncmp (keyidstr, "NKS-SIGG.", 9))
+    nks_app_id = NKS_APP_SIGG;
+  else if (!strncmp (keyidstr, "NKS-DF01.", 9))
+    nks_app_id = NKS_APP_NKS;
   else
     return gpg_error (GPG_ERR_INV_ID);
-  keyidstr += 9;
+  keyidstr += nks_app_id == NKS_APP_ESIGN? 10 : 9;
 
-  rc = switch_application (app, is_sigg);
+  rc = switch_application (app, nks_app_id);
   if (rc)
     return rc;
 
-  if (is_sigg && app->app_local->sigg_is_msig)
+  if (nks_app_id == NKS_APP_SIGG && app->app_local->sigg_is_msig)
     {
       log_info ("mass signature cards are not allowed\n");
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
@@ -917,7 +1025,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     {
       /* The caller send data matching the length of the ASN.1 encoded
          hash for SHA-{1,224,256,384,512}.  Assume that is okay.  */
-      assert (indatalen <= sizeof data);
+      log_assert (indatalen <= sizeof data);
       memcpy (data, indata, indatalen);
       datalen = indatalen;
     }
@@ -987,7 +1095,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
              unsigned int *r_info)
 {
   int rc, i;
-  int is_sigg = 0;
+  int nks_app_id;
   int fid;
   int kid;
 
@@ -999,17 +1107,19 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   /* Check that the provided ID is valid.  This is not really needed
      but we do it to enforce correct usage by the caller. */
-  if (!strncmp (keyidstr, "NKS-NKS3.", 9) )
-    ;
-  else if (!strncmp (keyidstr, "NKS-DF01.", 9) )
-    ;
-  else if (!strncmp (keyidstr, "NKS-SIGG.", 9) )
-    is_sigg = 1;
+  if (!strncmp (keyidstr, "NKS-NKS3.", 9))
+    nks_app_id = NKS_APP_NKS;
+  else if (!strncmp (keyidstr, "NKS-ESIGN.", 10))
+    nks_app_id = NKS_APP_ESIGN;
+  else if (!strncmp (keyidstr, "NKS-SIGG.", 9))
+    nks_app_id = NKS_APP_SIGG;
+  else if (!strncmp (keyidstr, "NKS-DF01.", 9))
+    nks_app_id = NKS_APP_NKS;
   else
     return gpg_error (GPG_ERR_INV_ID);
-  keyidstr += 9;
+  keyidstr += nks_app_id == NKS_APP_ESIGN? 10 : 9;
 
-  rc = switch_application (app, is_sigg);
+  rc = switch_application (app, nks_app_id);
   if (rc)
     return rc;
 
@@ -1023,7 +1133,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       break;
   if (!filelist[i].fid)
     return gpg_error (GPG_ERR_NOT_FOUND);
-  if (!filelist[i].isenckey)
+  if (!filelist[i].isencrkey)
     return gpg_error (GPG_ERR_INV_ID);
   kid = filelist[i].kid;
 
@@ -1076,9 +1186,11 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
      PW2.CH       - Global password 2
      PW1.CH.SIG   - SigG password 1
      PW2.CH.SIG   - SigG password 2
+     FIXME: What about the ESIGN passwords?
  */
 static const char *
-parse_pwidstr (const char *pwidstr, int new_mode, int *r_sigg, int *r_pwid)
+parse_pwidstr (const char *pwidstr, int new_mode
+               , int *r_nks_app_id, int *r_pwid)
 {
   const char *desc;
 
@@ -1086,7 +1198,7 @@ parse_pwidstr (const char *pwidstr, int new_mode, int *r_sigg, int *r_pwid)
     desc = NULL;
   else if (!strcmp (pwidstr, "PW1.CH"))
     {
-      *r_sigg = 0;
+      *r_nks_app_id = NKS_APP_NKS;
       *r_pwid = 0x00;
       /* TRANSLATORS: Do not translate the "|*|" prefixes but keep
          them verbatim at the start of the string.  */
@@ -1096,6 +1208,7 @@ parse_pwidstr (const char *pwidstr, int new_mode, int *r_sigg, int *r_pwid)
     }
   else if (!strcmp (pwidstr, "PW2.CH"))
     {
+      *r_nks_app_id = NKS_APP_NKS;
       *r_pwid = 0x01;
       desc = (new_mode
               ? _("|NP|Please enter a new PIN Unblocking Code (PUK) "
@@ -1105,8 +1218,8 @@ parse_pwidstr (const char *pwidstr, int new_mode, int *r_sigg, int *r_pwid)
     }
   else if (!strcmp (pwidstr, "PW1.CH.SIG"))
     {
+      *r_nks_app_id = NKS_APP_SIGG;
       *r_pwid = 0x81;
-      *r_sigg = 1;
       desc = (new_mode
               ? _("|N|Please enter a new PIN for the key to create "
                   "qualified signatures.")
@@ -1115,8 +1228,8 @@ parse_pwidstr (const char *pwidstr, int new_mode, int *r_sigg, int *r_pwid)
     }
   else if (!strcmp (pwidstr, "PW2.CH.SIG"))
     {
+      *r_nks_app_id = NKS_APP_SIGG;
       *r_pwid = 0x83;  /* Yes, that is 83 and not 82.  */
-      *r_sigg = 1;
       desc = (new_mode
               ? _("|NP|Please enter a new PIN Unblocking Code (PUK) "
                   "for the key to create qualified signatures.")
@@ -1146,7 +1259,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   char *oldpin = NULL;
   size_t newpinlen;
   size_t oldpinlen;
-  int is_sigg;
+  int nks_app_id;
   const char *newdesc;
   int pwid;
   pininfo_t pininfo;
@@ -1159,14 +1272,14 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   pininfo.minlen = 6;
   pininfo.maxlen = 16;
 
-  newdesc = parse_pwidstr (pwidstr, 1, &is_sigg, &pwid);
+  newdesc = parse_pwidstr (pwidstr, 1, &nks_app_id, &pwid);
   if (!newdesc)
     return gpg_error (GPG_ERR_INV_ID);
 
   if ((flags & APP_CHANGE_FLAG_CLEAR))
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
-  err = switch_application (app, is_sigg);
+  err = switch_application (app, nks_app_id);
   if (err)
     return err;
 
@@ -1273,16 +1386,16 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
 {
   gpg_error_t err;
   int pwid;
-  int is_sigg;
+  int nks_app_id;
   const char *desc;
 
   (void)ctrl;
 
-  desc = parse_pwidstr (pwidstr, 0, &is_sigg, &pwid);
+  desc = parse_pwidstr (pwidstr, 0, &nks_app_id, &pwid);
   if (!desc)
     return gpg_error (GPG_ERR_INV_ID);
 
-  err = switch_application (app, is_sigg);
+  err = switch_application (app, nks_app_id);
   if (err)
     return err;
 
@@ -1301,18 +1414,30 @@ get_nks_version (int slot)
   if (iso7816_apdu_direct (slot, "\x80\xaa\x06\x00\x00", 5, 0,
                            NULL, &result, &resultlen))
     return 2; /* NKS 2 does not support this command.  */
-
-  /* Example value:    04 11 19 22 21 6A 20 80 03 03 01 01 01 00 00 00
-                       vv tt ccccccccccccccccc aa bb cc vvvvvvvvvvv xx
-     vendor (Philips) -+  |  |                 |  |  |  |           |
-     chip type -----------+  |                 |  |  |  |           |
-     chip id ----------------+                 |  |  |  |           |
-     card type (3 - tcos 3) -------------------+  |  |  |           |
-     OS version of card type ---------------------+  |  |           |
-     OS release of card type ------------------------+  |           |
-     OS vendor internal version ------------------------+           |
-     RFU -----------------------------------------------------------+
-  */
+  /* Example values:   04 11 19 22 21 6A 20 80 03 03 01 01 01 00 00 00
+   *                   05 a0 22 3e c8 0c 04 20 0f 01 b6 01 01 00 00 02
+   *                   vv tt ccccccccccccccccc aa bb cc vv ff rr rr xx
+   * vendor -----------+  |  |                 |  |  |  |  |  |  |  |
+   * chip type -----------+  |                 |  |  |  |  |  |  |  |
+   * chip id ----------------+                 |  |  |  |  |  |  |  |
+   * card type --------------------------------+  |  |  |  |  |  |  |
+   * OS version of card type ---------------------+  |  |  |  |  |  |
+   * OS release of card type ------------------------+  |  |  |  |  |
+   * Completion code version number --------------------+  |  |  |  |
+   * File system version ----------------------------------+  |  |  |
+   * RFU (00) ------------------------------------------------+  |  |
+   * RFU (00) ---------------------------------------------------+  |
+   * Authentication key identifier ---------------------------------+
+   *
+   * vendor    4 := Philips
+   *           5 := Infinion
+   * card type 3 := TCOS 3
+   *          15 := TCOS Signature Card
+   * Completion code version number Bit 7..5 := pre-completion code version
+   *                                Bit 4..0 := completion code version
+   *                                (pre-completion by chip vendor)
+   *                                (completion by OS developer)
+   */
   if (resultlen < 16)
     type = 0;  /* Invalid data returned.  */
   else
@@ -1323,26 +1448,32 @@ get_nks_version (int slot)
 }
 
 
-/* If ENABLE_SIGG is true switch to the SigG application if not yet
-   active.  If false switch to the NKS application if not yet active.
-   Returns 0 on success.  */
+/* Switch to the NKS app identified by NKS_APP_ID if not yet done.
+ * Returns 0 on success.  */
 static gpg_error_t
-switch_application (app_t app, int enable_sigg)
+switch_application (app_t app, int nks_app_id)
 {
   gpg_error_t err;
 
-  if (((app->app_local->sigg_active && enable_sigg)
-       || (!app->app_local->sigg_active && !enable_sigg))
+  if (app->app_local->active_nks_app == nks_app_id
       && !app->app_local->need_app_select)
     return 0;  /* Already switched.  */
 
-  log_info ("app-nks: switching to %s\n", enable_sigg? "SigG":"NKS");
-  if (enable_sigg)
-    err = iso7816_select_application (app->slot, aid_sigg, sizeof aid_sigg, 0);
+  log_info ("nks: switching to %s\n",
+            nks_app_id == NKS_APP_ESIGN? "eSign" :
+            nks_app_id == NKS_APP_SIGG?  "SigG"  : "NKS");
+
+  if (nks_app_id == NKS_APP_ESIGN)
+    err = iso7816_select_application (app_get_slot (app),
+                                      aid_esign, sizeof aid_esign, 0);
+  else if (nks_app_id == NKS_APP_SIGG)
+    err = iso7816_select_application (app_get_slot (app),
+                                      aid_sigg, sizeof aid_sigg, 0);
   else
     err = iso7816_select_application (app->slot, aid_nks, sizeof aid_nks, 0);
 
-  if (!err && enable_sigg && app->app_local->nks_version >= 3
+  if (!err && nks_app_id == NKS_APP_SIGG
+      && app->app_local->nks_version >= 3
       && !app->app_local->sigg_msig_checked)
     {
       /* Check whether this card is a mass signature card.  */
@@ -1367,17 +1498,19 @@ switch_application (app_t app, int enable_sigg)
           xfree (buffer);
         }
       if (app->app_local->sigg_is_msig)
-        log_info ("This is a mass signature card\n");
+        log_info ("nks: This is a mass signature card\n");
     }
 
   if (!err)
     {
       app->app_local->need_app_select = 0;
-      app->app_local->sigg_active = enable_sigg;
+      app->app_local->active_nks_app = nks_app_id;
     }
   else
-    log_error ("app-nks: error switching to %s: %s\n",
-               enable_sigg? "SigG":"NKS", gpg_strerror (err));
+    log_error ("nks: error switching to %s: %s\n",
+               nks_app_id == NKS_APP_ESIGN? "eSign" :
+               nks_app_id == NKS_APP_SIGG?  "SigG"  : "NKS",
+               gpg_strerror (err));
 
   return err;
 }
@@ -1405,6 +1538,10 @@ app_select_nks (app_t app)
       app->app_local->nks_version = get_nks_version (slot);
       if (opt.verbose)
         log_info ("Detected NKS version: %d\n", app->app_local->nks_version);
+      if (app->app_local->nks_version == 15)
+        app->app_local->qes_app_id = NKS_APP_ESIGN;
+      else
+        app->app_local->qes_app_id = NKS_APP_SIGG;
 
       app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
