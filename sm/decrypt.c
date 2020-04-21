@@ -303,7 +303,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
   rc = ksba_cms_set_reader_writer (cms, reader, writer);
   if (rc)
     {
-      log_debug ("ksba_cms_set_reader_writer failed: %s\n",
+      log_error ("ksba_cms_set_reader_writer failed: %s\n",
                  gpg_strerror (rc));
       goto leave;
     }
@@ -316,7 +316,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
       rc = ksba_cms_parse (cms, &stopreason);
       if (rc)
         {
-          log_debug ("ksba_cms_parse failed: %s\n", gpg_strerror (rc));
+          log_error ("ksba_cms_parse failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
 
@@ -412,11 +412,14 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                 {
                   ksba_cert_t cert = NULL;
 
-                  log_debug ("recp %d - issuer: '%s'\n",
-                             recp, issuer? issuer:"[NONE]");
-                  log_debug ("recp %d - serial: ", recp);
-                  gpgsm_dump_serial (serial);
-                  log_printf ("\n");
+                  if (opt.verbose)
+                    {
+                      log_info ("recp %d - issuer: '%s'\n",
+                                 recp, issuer? issuer:"[NONE]");
+                      log_info ("recp %d - serial: ", recp);
+                      gpgsm_dump_serial (serial);
+                      log_printf ("\n");
+                    }
 
                   if (ctrl->audit)
                     {

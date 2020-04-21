@@ -255,7 +255,6 @@ add_certificate_list (ctrl_t ctrl, ksba_cms_t cms, ksba_cert_t cert)
   ksba_cert_ref (cert);
 
   n = ctrl->include_certs;
-  log_debug ("adding certificates at level %d\n", n);
   if (n == -2)
     {
       not_root = 1;
