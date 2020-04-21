@@ -33,6 +33,8 @@
 #include <unistd.h>
 #endif
 
+#include <ksba.h>
+
 #include "../common/logging.h"
 #include "../common/utf8conv.h"
 #include "minip12.h"
@@ -114,7 +116,8 @@ static unsigned char const oid_aes128_CBC[9] = {
 
 static unsigned char const oid_rsaEncryption[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };
-
+static unsigned char const oid_pcPublicKey[7] = {
+  0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01 };
 
 static unsigned char const data_3desiter2048[30] = {
   0x30, 0x1C, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86,
@@ -642,7 +645,7 @@ bag_decrypted_data_p (const void *plaintext, size_t length)
 
   /*   { */
   /* #  warning debug code is enabled */
-  /*     FILE *fp = fopen ("tmp-rc2-plain.der", "wb"); */
+  /*     FILE *fp = fopen ("tmp-minip12-plain.der", "wb"); */
   /*     if (!fp || fwrite (p, n, 1, fp) != 1) */
   /*       exit (2); */
   /*     fclose (fp); */
@@ -1158,7 +1161,7 @@ bag_data_p (const void *plaintext, size_t length)
 
 /*   { */
 /* #  warning debug code is enabled */
-/*     FILE *fp = fopen ("tmp-3des-plain-key.der", "wb"); */
+/*     FILE *fp = fopen ("tmp-minip12-plain-key.der", "wb"); */
 /*     if (!fp || fwrite (p, n, 1, fp) != 1) */
 /*       exit (2); */
 /*     fclose (fp); */
@@ -1176,7 +1179,7 @@ bag_data_p (const void *plaintext, size_t length)
 
 static gcry_mpi_t *
 parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
-                size_t *r_consumed, const char *pw)
+                size_t *r_consumed, char **r_curve, const char *pw)
 {
   int rc;
   struct tag_info ti;
@@ -1195,6 +1198,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   unsigned char *cram_buffer = NULL;
   size_t consumed = 0; /* Number of bytes consumed from the original buffer. */
   int is_pbes2 = 0;
+  char *curve = NULL;
 
   where = "start";
   if (parse_tag (&p, &n, &ti))
@@ -1409,13 +1413,43 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   if (len < ti.nhdr)
     goto bailout;
   len -= ti.nhdr;
-  if (ti.class || ti.tag != TAG_OBJECT_ID
-      || ti.length != DIM(oid_rsaEncryption)
-      || memcmp (p, oid_rsaEncryption,
-                 DIM(oid_rsaEncryption)))
+  if (ti.class || ti.tag != TAG_OBJECT_ID)
     goto bailout;
-  p += DIM (oid_rsaEncryption);
-  n -= DIM (oid_rsaEncryption);
+  /* gpgrt_log_printhex (p, ti.length, "OID:"); */
+  if (ti.length == DIM(oid_rsaEncryption)
+      && !memcmp (p, oid_rsaEncryption, DIM(oid_rsaEncryption)))
+    {
+      p += DIM (oid_rsaEncryption);
+      n -= DIM (oid_rsaEncryption);
+    }
+  else if (ti.length == DIM(oid_pcPublicKey)
+           && !memcmp (p, oid_pcPublicKey, DIM(oid_pcPublicKey)))
+    {
+      /* See RFC-5915 for the format.  */
+      p += DIM (oid_pcPublicKey);
+      n -= DIM (oid_pcPublicKey);
+      if (len < ti.length)
+        goto bailout;
+      len -= ti.length;
+      if (n < len)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      /* gpgrt_log_debug ("ti=%d/%lu len=%lu\n",ti.class,ti.tag,ti.length); */
+      if (len < ti.nhdr)
+        goto bailout;
+      len -= ti.nhdr;
+      if (ti.class || ti.tag != TAG_OBJECT_ID)
+        goto bailout;
+      curve = ksba_oid_to_str (p, ti.length);
+      if (!curve)
+        goto bailout;
+      /* log_debug ("OID of curve is: %s\n", curve); */
+      p += ti.length;
+      n -= ti.length;
+    }
+  else
+    goto bailout;
   if (len < ti.length)
     goto bailout;
   len -= ti.length;
@@ -1438,7 +1472,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   result_count = 0;
 
   where = "reading.key-parameters";
-  for (result_count=0; len && result_count < 9;)
+  if (curve)  /* ECC case.  */
     {
       if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_INTEGER)
         goto bailout;
@@ -1448,30 +1482,68 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
       if (len < ti.length)
         goto bailout;
       len -= ti.length;
-      if (!result_count && ti.length == 1 && !*p)
-        ; /* ignore the very first one if it is a 0 */
-      else
+      if (ti.length != 1 && *p != 1)
         {
-          rc = gcry_mpi_scan (result+result_count, GCRYMPI_FMT_USG, p,
-                              ti.length, NULL);
-          if (rc)
-            {
-              log_error ("error parsing key parameter: %s\n",
-                         gpg_strerror (rc));
-              goto bailout;
-            }
-          result_count++;
+          log_error ("error parsing private ecPublicKey parameter: %s\n",
+                     "bad version");
+          goto bailout;
         }
       p += ti.length;
       n -= ti.length;
+      if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_OCTET_STRING)
+        goto bailout;
+      if (len < ti.nhdr)
+        goto bailout;
+      len -= ti.nhdr;
+      if (len < ti.length)
+        goto bailout;
+      len -= ti.length;
+      /* log_printhex (p, ti.length, "ecc q="); */
+      rc = gcry_mpi_scan (result, GCRYMPI_FMT_USG, p, ti.length, NULL);
+      if (rc)
+        {
+          log_error ("error parsing key parameter: %s\n", gpg_strerror (rc));
+          goto bailout;
+        }
+      p += ti.length;
+      n -= ti.length;
+
+      len = 0;  /* Skip the rest.  */
+    }
+  else  /* RSA case */
+    {
+      for (result_count=0; len && result_count < 9;)
+        {
+          if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_INTEGER)
+            goto bailout;
+          if (len < ti.nhdr)
+            goto bailout;
+          len -= ti.nhdr;
+          if (len < ti.length)
+            goto bailout;
+          len -= ti.length;
+          if (!result_count && ti.length == 1 && !*p)
+            ; /* ignore the very first one if it is a 0 */
+          else
+            {
+              rc = gcry_mpi_scan (result+result_count, GCRYMPI_FMT_USG, p,
+                                  ti.length, NULL);
+              if (rc)
+                {
+                  log_error ("error parsing key parameter: %s\n",
+                             gpg_strerror (rc));
+                  goto bailout;
+                }
+              result_count++;
+            }
+          p += ti.length;
+          n -= ti.length;
+        }
     }
   if (len)
     goto bailout;
 
-  gcry_free (cram_buffer);
-  if (r_consumed)
-    *r_consumed = consumed;
-  return result;
+  goto leave;
 
  bailout:
   gcry_free (plain);
@@ -1481,12 +1553,23 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
         gcry_mpi_release (result[i]);
       gcry_free (result);
     }
-  gcry_free (cram_buffer);
   log_error ( "data error at \"%s\", offset %u\n",
               where, (unsigned int)((p - buffer) + startoffset));
+  result = NULL;
+
+ leave:
+  if (r_curve && result)
+    {
+      *r_curve = curve;
+      curve = NULL;
+    }
+  else if (r_curve)
+    *r_curve = NULL;
+  ksba_free (curve);
+  gcry_free (cram_buffer);
   if (r_consumed)
     *r_consumed = consumed;
-  return NULL;
+  return result;
 }
 
 
@@ -1499,7 +1582,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
 gcry_mpi_t *
 p12_parse (const unsigned char *buffer, size_t length, const char *pw,
            void (*certcb)(void*, const unsigned char*, size_t),
-           void *certcbarg, int *r_badpass)
+           void *certcbarg, int *r_badpass, char **r_curve)
 {
   struct tag_info ti;
   const unsigned char *p = buffer;
@@ -1510,6 +1593,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   int bagseqndef, lenndef;
   gcry_mpi_t *result = NULL;
   unsigned char *cram_buffer = NULL;
+  char *curve = NULL;
 
   *r_badpass = 0;
   where = "pfx";
@@ -1629,7 +1713,8 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
               n -= DIM(oid_data);
               if (!lenndef)
                 len -= DIM(oid_data);
-              result = parse_bag_data (p, n, (p - p_start), &consumed, pw);
+              result = parse_bag_data (p, n, (p - p_start),
+                                       &consumed, &curve, pw);
               if (!result)
                 goto bailout;
               if (lenndef)
@@ -1658,7 +1743,9 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     }
 
   gcry_free (cram_buffer);
+  *r_curve = curve;
   return result;
+
  bailout:
   log_error ("error at \"%s\", offset %u\n",
              where, (unsigned int)(p - p_start));
@@ -1671,6 +1758,8 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
       gcry_free (result);
     }
   gcry_free (cram_buffer);
+  gcry_free (curve);
+  *r_curve = NULL;
   return NULL;
 }
 
