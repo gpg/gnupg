@@ -196,7 +196,7 @@ gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array)
       return NULL;
     }
   if (DBG_X509)
-    log_printhex (array, 20, "keygrip=");
+    log_printhex (array, 20, "keygrip:");
 
   return array;
 }

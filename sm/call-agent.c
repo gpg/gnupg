@@ -533,7 +533,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   buf = get_membuf (&data, &len);
   if (!buf)
     return gpg_error (GPG_ERR_ENOMEM);
-  assert (len); /* (we forced Nul termination.)  */
+  log_assert (len); /* (we forced Nul termination.)  */
 
   if (*buf == '(')
     {
