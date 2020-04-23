@@ -30,6 +30,7 @@
 #ifndef SCD_TLV_H
 #define SCD_TLV_H 1
 
+#include "membuf.h"
 
 enum tlv_tag_class {
   CLASS_UNIVERSAL = 0,
@@ -86,13 +87,20 @@ const unsigned char *find_tlv_unchecked (const unsigned char *buffer,
                                          size_t length,
                                          int tag, size_t *nbytes);
 
+/* Wite a TLV header to MEMBUF.  */
+void put_tlv_to_membuf (membuf_t *membuf, int class, int tag,
+                        int constructed, size_t length);
+
+/* Count the length of a to be constructed TLV.  */
+size_t get_tlv_length (int class, int tag, int constructed, size_t length);
+
 
 /* ASN.1 BER parser: Parse BUFFER of length SIZE and return the tag
    and the length part from the TLV triplet.  Update BUFFER and SIZE
    on success. */
 gpg_error_t parse_ber_header (unsigned char const **buffer, size_t *size,
-                               int *r_class, int *r_tag,
-                               int *r_constructed,
+                              int *r_class, int *r_tag,
+                              int *r_constructed,
                               int *r_ndef, size_t *r_length, size_t *r_nhdr);
 
 

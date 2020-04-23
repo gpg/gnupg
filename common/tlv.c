@@ -157,6 +157,107 @@ find_tlv_unchecked (const unsigned char *buffer, size_t length,
 }
 
 
+/* Write TAG of CLASS to MEMBUF.  CONSTRUCTED is a flag telling
+ * whether the value is constructed.  LENGTH gives the length of the
+ * value, if it is 0 undefinite length is assumed.  LENGTH is ignored
+ * for the NULL tag.  TAG must be less that 0x1f.  */
+void
+put_tlv_to_membuf (membuf_t *membuf, int class, int tag,
+                   int constructed, size_t length)
+{
+  unsigned char buf[20];
+  int buflen = 0;
+  int i;
+
+  if (tag < 0x1f)
+    {
+      *buf = (class << 6) | tag;
+      if (constructed)
+        *buf |= 0x20;
+      buflen++;
+    }
+  else
+    BUG ();
+
+  if (!tag && !class)
+    buf[buflen++] = 0; /* end tag */
+  else if (tag == TAG_NULL && !class)
+    buf[buflen++] = 0; /* NULL tag */
+  else if (!length)
+    buf[buflen++] = 0x80; /* indefinite length */
+  else if (length < 128)
+    buf[buflen++] = length;
+  else
+    {
+      /* If we know the sizeof a size_t we could support larger
+       * objects - however this is pretty ridiculous */
+      i = (length <= 0xff ? 1:
+           length <= 0xffff ? 2:
+           length <= 0xffffff ? 3: 4);
+
+      buf[buflen++] = (0x80 | i);
+      if (i > 3)
+        buf[buflen++] = length >> 24;
+      if (i > 2)
+        buf[buflen++] = length >> 16;
+      if (i > 1)
+        buf[buflen++] = length >> 8;
+      buf[buflen++] = length;
+    }
+
+  put_membuf (membuf, buf, buflen);
+}
+
+
+/* Return the length of the to be constructed TLV.  CONSTRUCTED is a
+ * flag telling whether the value is constructed.  LENGTH gives the
+ * length of the value, if it is 0 undefinite length is assumed.
+ * LENGTH is ignored for the NULL tag.  TAG must be less that 0x1f.  */
+size_t
+get_tlv_length (int class, int tag, int constructed, size_t length)
+{
+  size_t buflen = 0;
+  int i;
+
+  (void)constructed;  /* Not used, but passed for uniformity of such calls.  */
+
+  if (tag < 0x1f)
+    {
+      buflen++;
+    }
+  else
+    {
+      buflen++; /* assume one and let the actual write function bail out */
+    }
+
+  if (!tag && !class)
+    buflen++; /* end tag */
+  else if (tag == TAG_NULL && !class)
+    buflen++; /* NULL tag */
+  else if (!length)
+    buflen++; /* indefinite length */
+  else if (length < 128)
+    buflen++;
+  else
+    {
+      i = (length <= 0xff ? 1:
+           length <= 0xffff ? 2:
+           length <= 0xffffff ? 3: 4);
+
+      buflen++;
+      if (i > 3)
+        buflen++;
+      if (i > 2)
+        buflen++;
+      if (i > 1)
+        buflen++;
+      buflen++;
+    }
+
+  return buflen + length;
+}
+
+
 /* ASN.1 BER parser: Parse BUFFER of length SIZE and return the tag
    and the length part from the TLV triplet.  Update BUFFER and SIZE
    on success. */
