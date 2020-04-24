@@ -73,6 +73,11 @@ enum tlv_tag_type {
 };
 
 
+struct tlv_builder_s;
+typedef struct tlv_builder_s *tlv_builder_t;
+
+/*-- tlv.c --*/
+
 /* Locate a TLV encoded data object in BUFFER of LENGTH and return a
    pointer to value as well as its length in NBYTES.  Return NULL if
    it was not found or if the object does not fit into the buffer. */
@@ -87,7 +92,6 @@ const unsigned char *find_tlv (const unsigned char *buffer, size_t length,
 const unsigned char *find_tlv_unchecked (const unsigned char *buffer,
                                          size_t length,
                                          int tag, size_t *nbytes);
-
 
 /* ASN.1 BER parser: Parse BUFFER of length SIZE and return the tag
    and the length part from the TLV triplet.  Update BUFFER and SIZE
@@ -112,6 +116,27 @@ gpg_error_t parse_ber_header (unsigned char const **buffer, size_t *size,
    successful return. */
 gpg_error_t parse_sexp (unsigned char const **buf, size_t *buflen,
                         int *depth, unsigned char const **tok, size_t *toklen);
+
+
+/*-- tlv-builder.c --*/
+
+tlv_builder_t tlv_builder_new (int use_secure);
+void tlv_builder_add_ptr (tlv_builder_t tb, int class, int tag,
+                          void *value, size_t valuelen);
+void tlv_builder_add_val (tlv_builder_t tb, int class, int tag,
+                          const void *value, size_t valuelen);
+void tlv_builder_add_tag (tlv_builder_t tb, int class, int tag);
+void tlv_builder_add_end (tlv_builder_t tb);
+gpg_error_t tlv_builder_finalize (tlv_builder_t tb,
+                                  void **r_obj, size_t *r_objlen);
+
+/* Wite a TLV header to MEMBUF.  */
+void put_tlv_to_membuf (membuf_t *membuf, int class, int tag,
+                        int constructed, size_t length);
+
+/* Count the length of a to be constructed TLV.  */
+size_t get_tlv_length (int class, int tag, int constructed, size_t length);
+
 
 
 
