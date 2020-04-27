@@ -428,8 +428,11 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
                   opt.p12_charset);
     }
 
+
   if (rawmode == 0)
     ctrl->pem_name = "PKCS12";
+  else if (gpgsm_get_key_algo_info (cert, NULL) == GCRY_PK_ECC)
+    ctrl->pem_name = "EC PRIVATE KEY";
   else if (rawmode == 1)
     ctrl->pem_name = "PRIVATE KEY";
   else
@@ -551,7 +554,6 @@ sexp_to_kparms (gcry_sexp_t sexp)
   const char *s;
   size_t n;
   int idx;
-  const char *elems;
   gcry_mpi_t *array;
 
   list = gcry_sexp_find_token (sexp, "private-key", 0 );
@@ -561,49 +563,67 @@ sexp_to_kparms (gcry_sexp_t sexp)
   gcry_sexp_release (list);
   list = l2;
   name = gcry_sexp_nth_data (list, 0, &n);
-  if(!name || n != 3 || memcmp (name, "rsa", 3))
+  if (name && n == 3 && !memcmp (name, "rsa", 3))
     {
-      gcry_sexp_release (list);
-      return NULL;
-    }
+      /* Parameter names used with RSA in the pkcs#12 order. */
+      const char *elems = "nedqp--u";
 
-  /* Parameter names used with RSA in the pkcs#12 order. */
-  elems = "nedqp--u";
-  array = xtrycalloc (strlen(elems) + 1, sizeof *array);
-  if (!array)
-    {
-      gcry_sexp_release (list);
-      return NULL;
-    }
-  for (idx=0, s=elems; *s; s++, idx++ )
-    {
-      if (*s == '-')
-        continue; /* Computed below  */
-      l2 = gcry_sexp_find_token (list, s, 1);
-      if (l2)
+      array = xtrycalloc (strlen(elems) + 1, sizeof *array);
+      if (!array)
         {
-          array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
-          gcry_sexp_release (l2);
-        }
-      if (!array[idx]) /* Required parameter not found or invalid.  */
-        {
-          for (idx=0; array[idx]; idx++)
-            gcry_mpi_release (array[idx]);
-          xfree (array);
           gcry_sexp_release (list);
           return NULL;
         }
+      for (idx=0, s=elems; *s; s++, idx++ )
+        {
+          if (*s == '-')
+            continue; /* Computed below  */
+          l2 = gcry_sexp_find_token (list, s, 1);
+          if (l2)
+            {
+              array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+              gcry_sexp_release (l2);
+            }
+          if (!array[idx]) /* Required parameter not found or invalid.  */
+            {
+              for (idx=0; array[idx]; idx++)
+                gcry_mpi_release (array[idx]);
+              xfree (array);
+              gcry_sexp_release (list);
+              return NULL;
+            }
+        }
+
+      array[5] = gcry_mpi_snew (0);  /* compute d mod (q-1) */
+      gcry_mpi_sub_ui (array[5], array[3], 1);
+      gcry_mpi_mod (array[5], array[2], array[5]);
+
+      array[6] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
+      gcry_mpi_sub_ui (array[6], array[4], 1);
+      gcry_mpi_mod (array[6], array[2], array[6]);
     }
+  else if (name && n == 3 && !memcmp (name, "ecc", 3))
+    {
+      array = xtrycalloc (3 + 1, sizeof *array);
+      if (!array)
+        {
+          gcry_sexp_release (list);
+          return NULL;
+        }
+
+      if (gcry_sexp_extract_param (list, NULL,  "/'curve'qd",
+                                   array+0, array+1, array+2, NULL))
+        {
+          xfree (array);
+          array = NULL;  /* Error.  */
+        }
+    }
+  else
+    {
+      array = NULL;
+    }
+
   gcry_sexp_release (list);
-
-  array[5] = gcry_mpi_snew (0);  /* compute d mod (q-1) */
-  gcry_mpi_sub_ui (array[5], array[3], 1);
-  gcry_mpi_mod (array[5], array[2], array[5]);
-
-  array[6] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
-  gcry_mpi_sub_ui (array[6], array[4], 1);
-  gcry_mpi_mod (array[6], array[2], array[6]);
-
   return array;
 }
 

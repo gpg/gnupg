@@ -20,6 +20,9 @@
 EXTRA_DIST = ChangeLog-2011 gpgsm-w32info.rc
 
 bin_PROGRAMS = gpgsm
+noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
+
+TESTS = $(module_tests)
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
 
@@ -64,6 +67,22 @@ gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) \
 	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpgsm_LDFLAGS = $(extra_bin_ldflags)
+
+
+module_tests =
+module_maint_tests = t-minip12
+
+t_common_src =
+t_common_ldadd = $(libcommon) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) \
+                 $(GPG_ERROR_LIBS) $(LIBINTL)
+
+
+t_minip12_CFLAGS = -DWITHOUT_NPTH=1 \
+	           $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
+t_minip12_SOURCES = $(t_common_src) t-minip12.c minip12.c
+t_minip12_LDADD   = $(t_common_ldadd)
+
+
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
