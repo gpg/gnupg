@@ -1,7 +1,7 @@
 /* decrypt.c - Decrypt a message
  * Copyright (C) 2001, 2003, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2001-2019 Werner Koch
- * Copyright (C) 2015-2021 g10 Code GmbH
+ * Copyright (C) 2015-2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -88,7 +88,7 @@ string_from_gcry_buffer (gcry_buffer_t *buffer)
  *      entityUInfo [0] EXPLICIT OCTET STRING OPTIONAL,
  *      suppPubInfo [2] EXPLICIT OCTET STRING  }
  * as described in RFC-5753, 7.2.  */
-static gpg_error_t
+gpg_error_t
 hash_ecc_cms_shared_info (gcry_md_hd_t hash_hd, const char *wrap_algo_str,
                           unsigned int keylen,
                           const void *ukm, unsigned int ukmlen)
