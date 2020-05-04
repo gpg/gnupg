@@ -306,6 +306,7 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
       p = gcry_mpi_get_opaque (a, &nbits);
       if (p)
         {
+          nbits = ((nbits + 7)/8)*8;
           /* Strip leading zero bits.  */
           for (; nbits >= 8 && !*p; p++, nbits -= 8)
             ;
