@@ -389,6 +389,10 @@ int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist,
                    int in_fd, estream_t out_fp);
 
 /*-- decrypt.c --*/
+gpg_error_t hash_ecc_cms_shared_info (gcry_md_hd_t hash_hd,
+                                      const char *wrap_algo_str,
+                                      unsigned int keylen,
+                                      const void *ukm, unsigned int ukmlen);
 int gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp);
 
 /*-- certreqgen.c --*/
