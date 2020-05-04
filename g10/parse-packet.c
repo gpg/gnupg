@@ -2591,7 +2591,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           else
             {
               unsigned int n = pktlen;
-              pk->pkey[i] = mpi_read (inp, &n, 0);
+              if (algorithm == PUBKEY_ALGO_EDDSA
+                  || algorithm == PUBKEY_ALGO_ECDH)
+                pk->pkey[i] = sos_read (inp, &n, 0);
+              else
+                pk->pkey[i] = mpi_read (inp, &n, 0);
               pktlen -= n;
               if (!pk->pkey[i])
                 err = gpg_error (GPG_ERR_INV_PACKET);
