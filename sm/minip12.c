@@ -168,7 +168,7 @@ builder_add_oid (tlv_builder_t tb, int class, const char *oid)
 }
 
 
-/* Wrapper around tlv_builder_add_ptr to add an MPI.  TAG May either
+/* Wrapper around tlv_builder_add_ptr to add an MPI.  TAG may either
  * be OCTET_STRING or BIT_STRING.  When we eventually put the whole
  * tlv_builder stuff into Libksba, we can add such a function there.
  * Right now we don't do this to avoid a dependency on Libksba.

@@ -113,7 +113,7 @@ log_printcanon (const char *text, const unsigned char *sexp, size_t sexplen)
 }
 
 
-/* Print the gcryp S-expression in SEXP in advanced format.  With TEXT
+/* Print the gcrypt S-expression SEXP in advanced format.  With TEXT
    of NULL print just the raw S-expression, with TEXT just an empty
    string, print a trailing linefeed, otherwise print an entire debug
    line. */

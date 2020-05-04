@@ -1444,8 +1444,8 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
       if (rc)
         log_error ("error computing a keygrip: %s\n", gpg_strerror (rc));
       /* In the error case we print an empty string so that we have a
-       * "grp" record for each and subkey - even if it is empty.  This
-       * may help to prevent sync problems.  */
+       * "grp" record for each primary and subkey - even if it is
+       * empty.  This may help to prevent sync problems.  */
       hexgrip = hexgrip_buffer? hexgrip_buffer : "";
     }
   stubkey = 0;
