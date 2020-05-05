@@ -137,7 +137,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
       ksba_cert_release (cert);
       return err;
     }
-  err = app_help_get_keygrip_string (cert, hexkeygrip, NULL);
+  err = app_help_get_keygrip_string (cert, hexkeygrip, NULL, NULL);
   if (err)
     {
       log_error ("failed to calculate the keygrip for FID 0x%04X\n", fid);

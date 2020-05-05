@@ -251,7 +251,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
           return err;
         }
 
-      err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL);
+      err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL, NULL);
       xfree (pk);
       if (err)
         log_error ("nks: error getting keygrip for certificate %04X: %s\n",

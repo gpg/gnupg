@@ -526,7 +526,7 @@ add_tlv (unsigned char *buffer, unsigned int tag, size_t length)
 }
 
 
-/* Function to build a list of TLV and return the result in a mallcoed
+/* Function to build a list of TLV and return the result in a malloced
  * buffer.  The varargs are tuples of (int,size_t,void) each with the
  * tag, the length and the actual data.  A (0,0,NULL) tuple terminates
  * the list.  Up to 10 tuples are supported.  If SECMEM is true the
@@ -1331,7 +1331,7 @@ get_keygrip_by_tag (app_t app, unsigned int tag,
       err = ksba_cert_init_from_mem (cert, certbuf, certbuflen);
       if (err)
         goto leave;
-      err = app_help_get_keygrip_string (cert, *r_keygripstr, NULL);
+      err = app_help_get_keygrip_string (cert, *r_keygripstr, NULL, NULL);
     }
 
  leave:
@@ -1539,7 +1539,7 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
       char idbuf[50];
       const char *usage;
 
-      err = app_help_get_keygrip_string_pk (pk, pklen, keygripstr, NULL);
+      err = app_help_get_keygrip_string_pk (pk, pklen, keygripstr, NULL, NULL);
       if (err)
         {
           log_error ("app_help_get_keygrip_string_pk failed: %s\n",
