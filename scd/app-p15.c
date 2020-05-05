@@ -2689,7 +2689,7 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
     err = ksba_cert_init_from_mem (cert, der, derlen);
   xfree (der);
   if (!err)
-    err = app_help_get_keygrip_string (cert, prkdf->keygrip, &s_pkey);
+    err = app_help_get_keygrip_string (cert, prkdf->keygrip, &s_pkey, NULL);
   if (!err)
     {
       /* Try to get the CN and the SerialNumber from the certificate;
