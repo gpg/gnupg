@@ -752,7 +752,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         goto leave;
   }
 #else
-  log_info ("Note: option --attribute is ignored by this version\n");
+  if (opt.attributes)
+    log_info ("Note: option --attribute is ignored by this version\n");
 #endif /*ksba >= 1.4.0  */
 
 
