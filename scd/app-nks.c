@@ -19,30 +19,53 @@
  */
 
 /* Notes:
-
-  - We are now targeting TCOS 3 cards and it may happen that there is
-    a regression towards TCOS 2 cards.  Please report.
-
-  - The NKS3 AUT key is not used.  It seems that it is only useful for
-    the internal authentication command and not accessible by other
-    applications.  The key itself is in the encryption class but the
-    corresponding certificate has only the digitalSignature
-    capability.
-    Update: This changed for the Signature Card V2 (nks version 15)
-
-  - If required, we automagically switch between the NKS application
-    and the SigG or eSign application.  This avoids to use the DINSIG
-    application which is somewhat limited, has no support for Secure
-    Messaging as required by TCOS 3 and has no way to change the PIN
-    or even set the NullPIN.  With the Signature Card v2 (nks version
-    15) the Esign application is used instead of the SigG.
-
-  - We use the prefix NKS-DF01 for TCOS 2 cards and NKS-NKS3 for newer
-    cards.  This is because the NKS application has moved to DF02 with
-    TCOS 3 and thus we better use a DF independent tag.
-
-  - We use only the global PINs for the NKS application.
-
+ *
+ * - We are now targeting TCOS 3 cards and it may happen that there is
+ *   a regression towards TCOS 2 cards.  Please report.
+ *
+ * - The NKS3 AUT key is not used.  It seems that it is only useful for
+ *   the internal authentication command and not accessible by other
+ *   applications.  The key itself is in the encryption class but the
+ *   corresponding certificate has only the digitalSignature
+ *   capability.
+ *   Update: This changed for the Signature Card V2 (nks version 15)
+ *
+ * - If required, we automagically switch between the NKS application
+ *   and the SigG or eSign application.  This avoids to use the DINSIG
+ *   application which is somewhat limited, has no support for Secure
+ *   Messaging as required by TCOS 3 and has no way to change the PIN
+ *   or even set the NullPIN.  With the Signature Card v2 (nks version
+ *   15) the Esign application is used instead of the SigG.
+ *
+ * - We use the prefix NKS-DF01 for TCOS 2 cards and NKS-NKS3 for newer
+ *   cards.  This is because the NKS application has moved to DF02 with
+ *   TCOS 3 and thus we better use a DF independent tag.
+ *
+ * - We use only the global PINs for the NKS application.
+ *
+ *
+ *
+ * Here is a table with PIN stati collected from 3 cards.
+ *
+ *  | app | pwid | NKS3      | SIG_B     | SIG_N     |
+ *  |-----+------+-----------+-----------+-----------|
+ *  | NKS | 0x00 | null -    | -    -    | -    -    |
+ *  |     | 0x01 | 0    3    | -    -    | -    -    |
+ *  |     | 0x02 | 3    null | 15   3    | 15   null |
+ *  |     | 0x03 | -    3    | null -    | null -    |
+ *  | SIG | 0x00 | null -    | -    -    | -    -    |
+ *  |     | 0x01 | 0    null | -    null | -    null |
+ *  |     | 0x02 | 3    null | 15   0    | 15   0    |
+ *  |     | 0x03 | -    0    | null null | null null |
+ *  - SIG is either SIGG or ESIGN.
+ *  - "-" indicates reference not found (SW 6A88).
+ *  - "null" indicates a NULLPIN (SW 6985).
+ *  - The first value in each cell is the global PIN;
+ *    the second is the local PIN (high bit of pwid set).
+ *  - The NKS3 card is some older test card.
+ *  - The SIG_B is a Signature Card V2.0 with Brainpool curves.
+ *    Here the PIN 0x82 has been changed from the NULLPIN.
+ *  - The SIG_N is a Signature Card V2.0 with NIST curves.
  */
 
 #include <config.h>
@@ -139,7 +162,8 @@ static struct
 struct fid_cache_s {
   struct fid_cache_s *next;
   int fid;                          /* Zero for an unused slot.  */
-  unsigned int  got_keygrip:1;      /* The keygrip is valid.  */
+  unsigned int  got_keygrip:1;      /* The keygrip and algo are valid.  */
+  int algo;
   char keygripstr[2*KEYGRIP_LEN+1];
 };
 
@@ -205,15 +229,18 @@ all_zero_p (void *buffer, size_t length)
  * used and Read Record needs to be replaced by read binary.  Given
  * all the ECC parameters required, we don't do that but rely that the
  * corresponding certificate at CFID is already available and get the
- * public key from there. */
+ * public key from there.  If R_ALGO is not NULL the public key
+ * algorithm for the returned KEYGRIP is stored there.  */
 static gpg_error_t
-keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
+keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
+                         int *r_algo)
 {
   gpg_error_t err;
   unsigned char grip[20];
   unsigned char *buffer[2];
   size_t buflen[2];
   gcry_sexp_t sexp = NULL;
+  int algo = 0;  /* Public key algo.  */
   int i;
   int offset[2] = { 0, 0 };
   struct fid_cache_s *ci;
@@ -224,6 +251,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
         if (!ci->got_keygrip)
           return gpg_error (GPG_ERR_NOT_FOUND);
         memcpy (r_gripstr, ci->keygripstr, 2*KEYGRIP_LEN+1);
+        if (r_algo)
+          *r_algo = ci->algo;
         return 0;  /* Found in cache.  */
       }
 
@@ -251,7 +280,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
           return err;
         }
 
-      err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL, NULL);
+      err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL, &algo);
       xfree (pk);
       if (err)
         log_error ("nks: error getting keygrip for certificate %04X: %s\n",
@@ -333,6 +362,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
         }
     }
 
+  algo = GCRY_PK_RSA;
   if (!err)
     err = gcry_sexp_build (&sexp, NULL,
                            "(public-key (rsa (n %b) (e %b)))",
@@ -352,6 +382,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
   else
     {
       bin2hex (grip, 20, r_gripstr);
+      if (r_algo)
+        *r_algo = algo;
     }
 
 
@@ -363,8 +395,9 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
         if (ci->fid && ci->fid == pkfid)
           {
             /* Update the keygrip.  */
-            ci->got_keygrip = 1;
             memcpy (ci->keygripstr, r_gripstr, 2*KEYGRIP_LEN+1);
+            ci->algo = algo;
+            ci->got_keygrip = 1;
             break;
           }
       if (!ci)
@@ -380,6 +413,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
             {
               ci->fid = pkfid;
               memcpy (ci->keygripstr, r_gripstr, 2*KEYGRIP_LEN+1);
+              ci->algo = algo;
               ci->got_keygrip = 1;
               ci->next = app->app_local->fid_cache;
               app->app_local->fid_cache = ci;
@@ -392,9 +426,10 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr)
 
 
 /* Parse KEYREF and return the index into the FILELIST at R_IDX.
- * Returns 0 on success and switches to the requested application.  */
+ * Returns 0 on success and switches to the requested application.
+ * The public key algo is stored at R_ALGO unless it is NULL.  */
 static gpg_error_t
-find_fid_by_keyref (app_t app, const char *keyref, int *r_idx)
+find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
 {
   gpg_error_t err;
   int idx, fid, nks_app_id;
@@ -407,7 +442,7 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx)
       struct fid_cache_s *ci;
 
       for (ci = app->app_local->fid_cache; ci; ci = ci->next)
-        if (ci->fid && ci->got_keygrip && !strcmp (ci->keygripstr, keygripstr))
+        if (ci->fid && ci->got_keygrip && !strcmp (ci->keygripstr, keyref))
           break;
       if (ci) /* Cached */
         {
@@ -423,6 +458,8 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx)
           err = switch_application (app, filelist[idx].nks_app_id);
           if (err)
             goto leave;
+          if (r_algo)
+            *r_algo = ci->algo;
         }
       else  /* Not cached.  */
         {
@@ -440,10 +477,10 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx)
 
               err = keygripstr_from_pk_file (app, filelist[idx].fid,
                                              filelist[idx].iskeypair,
-                                             keygripstr);
+                                             keygripstr, r_algo);
               if (err)
                 {
-                  log_info ("nks: no keygrip for FID 0x%04X: %s\n",
+                  log_info ("nks: no keygrip for FID 0x%04X: %s - ignored\n",
                             filelist[idx].fid, gpg_strerror (err));
                   continue;
                 }
@@ -502,6 +539,16 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx)
       err = switch_application (app, nks_app_id);
       if (err)
         goto leave;
+      if (r_algo)
+        {
+          /* We need to get the public key algo.  */
+          err = keygripstr_from_pk_file (app, filelist[idx].fid,
+                                         filelist[idx].iskeypair,
+                                         keygripstr, r_algo);
+          if (err)
+            log_error ("nks: no keygrip for FID 0x%04X: %s\n",
+                       filelist[idx].fid, gpg_strerror (err));
+        }
     }
 
  leave:
@@ -679,7 +726,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
           int usageidx = 0;
 
           err = keygripstr_from_pk_file (app, filelist[i].fid,
-                                         filelist[i].iskeypair, gripstr);
+                                         filelist[i].iskeypair, gripstr, NULL);
           if (err)
             log_error ("can't get keygrip from FID 0x%04X: %s\n",
                        filelist[i].fid, gpg_strerror (err));
@@ -1045,6 +1092,79 @@ do_writekey (app_t app, ctrl_t ctrl,
 }
 
 
+/* Return an allocated string with the serial number in a format to be
+ * show to the user.  May return NULL on malloc problem.  */
+static char *
+get_dispserialno (app_t app)
+{
+  char *result;
+
+  /* We only need to strip the last zero which is not printed on the
+   * card.  */
+  result = app_get_serialno (app);
+  if (result && *result && result[strlen(result)-1] == '0')
+    result[strlen(result)-1] = 0;
+  return result;
+}
+
+
+/* Return an allocated string to be used as prompt.  Returns NULL on
+ * malloc error.  */
+static char *
+make_prompt (app_t app, int remaining, const char *firstline,
+             const char *extraline)
+{
+  char *serial, *tmpbuf, *result;
+
+  serial = get_dispserialno (app);
+
+  /* TRANSLATORS: Put a \x1f right before a colon.  This can be
+   * used by pinentry to nicely align the names and values.  Keep
+   * the %s at the start and end of the string.  */
+  result = xtryasprintf (_("%s"
+                           "Number\x1f: %s%%0A"
+                           "Holder\x1f: %s"
+                           "%s"),
+                         "\x1e",
+                         serial,
+                         "",
+                         "");
+  xfree (serial);
+  if (!result)
+    return NULL; /* Out of core.  */
+
+  /* Append a "remaining attempts" info if needed.  */
+  if (remaining != -1 && remaining < 3)
+    {
+      char *rembuf;
+
+      /* TRANSLATORS: This is the number of remaining attempts to
+       * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed. */
+      rembuf = xtryasprintf (_("Remaining attempts: %d"), remaining);
+      if (rembuf)
+        {
+          tmpbuf = strconcat (firstline, "%0A%0A", result,
+                              "%0A%0A", rembuf, NULL);
+          xfree (rembuf);
+        }
+      else
+        tmpbuf = NULL;
+      xfree (result);
+      result = tmpbuf;
+    }
+  else
+    {
+      tmpbuf = strconcat (firstline, "%0A%0A", result,
+                          extraline? "%0A%0A":"", extraline,
+                          NULL);
+      xfree (result);
+      result = tmpbuf;
+    }
+
+  return result;
+}
+
+
 static gpg_error_t
 basic_pin_checks (const char *pinvalue, int minlen, int maxlen)
 {
@@ -1068,21 +1188,43 @@ verify_pin (app_t app, int pwid, const char *desc,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
-  pininfo_t pininfo;
   int rc;
+  pininfo_t pininfo;
+  char *prompt;
+  const char *extrapromptline = NULL;
+  int remaining, nullpin;
 
   if (!desc)
-    desc = "PIN";
+    desc = "||PIN";
 
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.fixedlen = -1;
   pininfo.minlen = 6;
   pininfo.maxlen = 16;
 
+  remaining = iso7816_verify_status (app_get_slot (app), pwid);
+  nullpin = (remaining == ISO7816_VERIFY_NULLPIN);
+  if (remaining < 0)
+    remaining = -1; /* We don't care about the concrete error.  */
+  if (remaining < 3)
+    {
+      if (remaining >= 0)
+        log_info ("nks: PIN has %d attempts left\n", remaining);
+    }
+
+  if (nullpin)
+    {
+      log_info ("nks: The NullPIN for PIN 0x%02x has not yet been changed\n",
+                pwid);
+      extrapromptline = _("Note: You need to change the PIN first!");
+    }
+
   if (!opt.disable_pinpad
       && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
-      rc = pincb (pincb_arg, desc, NULL);
+      prompt = make_prompt (app, remaining, desc, extrapromptline);
+      rc = pincb (pincb_arg, prompt, NULL);
+      xfree (prompt);
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"),
@@ -1097,7 +1239,9 @@ verify_pin (app_t app, int pwid, const char *desc,
     {
       char *pinvalue;
 
-      rc = pincb (pincb_arg, desc, &pinvalue);
+      prompt = make_prompt (app, remaining, desc, extrapromptline);
+      rc = pincb (pincb_arg, prompt, &pinvalue);
+      xfree (prompt);
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -1161,7 +1305,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     default: return gpg_error (GPG_ERR_INV_VALUE);
     }
 
-  err = find_fid_by_keyref (app, keyidstr, &idx);
+  err = find_fid_by_keyref (app, keyidstr, &idx, NULL);
   if (err)
     return err;
 
@@ -1258,6 +1402,10 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   gpg_error_t err;
   int idx;
   int kid;
+  int algo;
+  int pwid;
+  int padind;
+  int extended_mode;
 
   (void)ctrl;
   (void)r_info;
@@ -1265,7 +1413,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   if (!indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  err = find_fid_by_keyref (app, keyidstr, &idx);
+  err = find_fid_by_keyref (app, keyidstr, &idx, &algo);
   if (err)
     return err;
 
@@ -1274,7 +1422,30 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   kid = filelist[idx].kid;
 
-  if (app->app_local->nks_version > 2)
+  if (app->app_local->nks_version <= 2)
+    {
+      static const unsigned char mse[] =
+        {
+          0x80, 1, 0x10, /* Select algorithm RSA. */
+          0x84, 1, 0x81  /* Select local secret key 1 for decryption. */
+        };
+      err = iso7816_manage_security_env (app_get_slot (app), 0xC1, 0xB8,
+                                         mse, sizeof mse);
+      extended_mode = 0;
+      padind = 0x81;
+    }
+  else if (algo == GCRY_PK_ECC)
+    {
+      unsigned char mse[3];
+      mse[0] = 0x84; /* Private key reference.  */
+      mse[1] = 1;
+      mse[2] = kid;
+      err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB8,
+                                         mse, sizeof mse);
+      extended_mode = 0;
+      padind = 0x00;
+    }
+  else
     {
       unsigned char mse[6];
       mse[0] = 0x80; /* Algorithm reference.  */
@@ -1285,46 +1456,52 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       mse[5] = kid;
       err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB8,
                                          mse, sizeof mse);
+      extended_mode = 1;
+      padind = 0x81;
     }
-  else
+  if (err)
     {
-      static const unsigned char mse[] =
-        {
-          0x80, 1, 0x10, /* Select algorithm RSA. */
-          0x84, 1, 0x81  /* Select local secret key 1 for decryption. */
-        };
-      err = iso7816_manage_security_env (app_get_slot (app), 0xC1, 0xB8,
-                                         mse, sizeof mse);
-
+      log_error ("nks: MSE failed: %s\n", gpg_strerror (err));
+      goto leave;
     }
 
-  if (!err)
-    err = verify_pin (app, 0, NULL, pincb, pincb_arg);
+  if (app->app_local->nks_version == 15)
+    pwid = 0x03;
+  else
+    pwid = 0x00;
 
-  /* Note that we need to use extended length APDUs for TCOS 3 cards.
-     Command chaining does not work.  */
-  if (!err)
-    err = iso7816_decipher (app_get_slot (app),
-                            app->app_local->nks_version > 2? 1:0,
-                            indata, indatalen, 0, 0x81,
-                            outdata, outdatalen);
+  err = verify_pin (app, pwid, NULL, pincb, pincb_arg);
+  if (err)
+    goto leave;
+
+  err = iso7816_decipher (app_get_slot (app), extended_mode,
+                          indata, indatalen, 0, padind,
+                          outdata, outdatalen);
+
+ leave:
   return err;
 }
 
 
 
 /* Parse a password ID string.  Returns NULL on error or a string
-   suitable as passphrase prompt on success.  On success stores the
-   reference value for the password at R_PWID and a flag indicating
-   that the SigG application is to be used at R_SIGG.  If NEW_MODE is
-   true, the returned description is suitable for a new Password.
-   Supported values for PWIDSTR are:
-
-     PW1.CH       - Global password 1
-     PW2.CH       - Global password 2
-     PW1.CH.SIG   - SigG password 1
-     PW2.CH.SIG   - SigG password 2
-     FIXME: What about the ESIGN passwords?
+ * suitable as passphrase prompt on success.  On success stores the
+ * reference value for the password at R_PWID and a flag indicating
+ * which app is to be used at R_NKS_APP_ID.  If NEW_MODE is true, the
+ * returned description is suitable for a new Password.  Supported
+ * values for PWIDSTR are:
+ *
+ *   PW1.CH     - id 0x00 - Global password 1
+ *   PW2.CH     - id 0x01 - Global password 2
+ *   PW1.CH.SIG - id 0x81 - SigG password 1
+ *   PW2.CH.SIG - id 0x83 - SigG password 2
+ *
+ * It is also possible to specify the PIN id directly but the prompts
+ * are then not very descriptive (Use this for testing):
+ *
+ *   NKS.0xnn   - Switch to NKS and select id 0xnn
+ *   SIGG.0xnn  - Switch to SigG and select id 0xnn
+ *   ESIGN.0xnn - Switch to ESIGN and select id 0xnn
  */
 static const char *
 parse_pwidstr (const char *pwidstr, int new_mode
@@ -1374,6 +1551,36 @@ parse_pwidstr (const char *pwidstr, int new_mode
               : _("|P|Please enter the PIN Unblocking Code (PUK) "
                   "for the key to create qualified signatures."));
     }
+  else if (!strncmp (pwidstr, "NKS.0x", 6)
+           && hexdigitp (pwidstr+6) && hexdigitp (pwidstr+7) && !pwidstr[8])
+    {
+      /* Hack to help debugging.  */
+      *r_nks_app_id = NKS_APP_NKS;
+      *r_pwid = xtoi_2 (pwidstr+6);
+      desc = (new_mode
+              ? "|N|Please enter a new PIN for the given NKS pwid"
+              : "||Please enter the PIN for the given NKS pwid" );
+    }
+  else if (!strncmp (pwidstr, "SIGG.0x", 7)
+           && hexdigitp (pwidstr+7) && hexdigitp (pwidstr+8) && !pwidstr[9])
+    {
+      /* Hack to help debugging.  */
+      *r_nks_app_id = NKS_APP_SIGG;
+      *r_pwid = xtoi_2 (pwidstr+7);
+      desc = (new_mode
+              ? "|N|Please enter a new PIN for the given SIGG pwid"
+              : "||Please enter the PIN for the given SIGG pwid" );
+    }
+  else if (!strncmp (pwidstr, "ESIGN.0x", 8)
+           && hexdigitp (pwidstr+8) && hexdigitp (pwidstr+9) && !pwidstr[10])
+    {
+      /* Hack to help debugging.  */
+      *r_nks_app_id = NKS_APP_ESIGN;
+      *r_pwid = xtoi_2 (pwidstr+8);
+      desc = (new_mode
+              ? "|N|Please enter a new PIN for the given ESIGN pwid"
+              : "||Please enter the PIN for the given ESIGN pwid" );
+    }
   else
     {
       *r_pwid = 0; /* Only to avoid gcc warning in calling function.  */
@@ -1401,6 +1608,8 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   const char *newdesc;
   int pwid;
   pininfo_t pininfo;
+  int remaining;
+  char *prompt;
 
   (void)ctrl;
 
@@ -1421,6 +1630,15 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   if (err)
     return err;
 
+  remaining = iso7816_verify_status (app_get_slot (app), pwid);
+  if (remaining < 0)
+    remaining = -1; /* We don't care about the concrete error.  */
+  if (remaining < 3)
+    {
+      if (remaining >= 0)
+        log_info ("nks: PIN has %d attempts left\n", remaining);
+    }
+
   if ((flags & APP_CHANGE_FLAG_NULLPIN))
     {
       /* With the nullpin flag, we do not verify the PIN - it would
@@ -1431,7 +1649,15 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      oldpinlen = 6;
+      if (app->app_local->nks_version == 15)
+        {
+          memset (oldpin, '0', 5);
+          oldpinlen = 5;  /* 5 ascii zeroes.  */
+        }
+      else
+        {
+          oldpinlen = 6;  /* 6 binary Nuls.  */
+        }
     }
   else
     {
@@ -1463,7 +1689,10 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
           /* Regular change mode:  Ask for the old PIN.  */
           desc = parse_pwidstr (pwidstr, 0, &dummy1, &dummy2);
         }
-      err = pincb (pincb_arg, desc, &oldpin);
+
+      prompt = make_prompt (app, remaining, desc, NULL);
+      err = pincb (pincb_arg, prompt, &oldpin);
+      xfree (prompt);
       if (err)
         {
           log_error ("error getting old PIN: %s\n", gpg_strerror (err));
@@ -1475,7 +1704,10 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
         goto leave;
     }
 
-  err = pincb (pincb_arg, newdesc, &newpin);
+
+  prompt = make_prompt (app, -1, newdesc, NULL);
+  err = pincb (pincb_arg, prompt, &newpin);
+  xfree (prompt);
   if (err)
     {
       log_error (_("error getting new PIN: %s\n"), gpg_strerror (err));
@@ -1602,7 +1834,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
         goto leave;
 
       err = keygripstr_from_pk_file (app, filelist[idx].fid,
-                                     filelist[idx].iskeypair, keygripstr);
+                                     filelist[idx].iskeypair, keygripstr, NULL);
       if (err)
         {
           log_error ("can't get keygrip from FID 0x%04X: %s\n",
