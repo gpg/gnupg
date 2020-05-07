@@ -88,11 +88,14 @@ static char const aid_nks[]  = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x01, 0x02 };
 static char const aid_sigg[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };
 static char const aid_esign[] =
   { 0xA0, 0x00, 0x00, 0x01, 0x67, 0x45, 0x53, 0x49, 0x47, 0x4E };
+static char const aid_idlm[] = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x0c, 0x01 };
 
-/* The 3 ids of the different apps on our Netkey cards.  */
+
+/* The ids of the different apps on our TCOS cards.  */
 #define NKS_APP_NKS   0
 #define NKS_APP_SIGG  1
 #define NKS_APP_ESIGN 2
+#define NKS_APP_IDLM  3
 
 
 static struct
@@ -156,6 +159,14 @@ static struct
   { 2, 0xC000, 15,101 },                    /* EF.C.SCA.QES (SubCA) */
   { 2, 0xC001, 15,100 },                    /* EF.C.ICC.QES (Cert)  */
   { 2, 0xC00E, 15,111 },                    /* EF.C.RCA.QES (RootCA */
+
+  { 3, 0x4E03,  3, 100 },                   /* EK_PK_03 */
+  { 3, 0x4E04,  3, 100 },                   /* EK_PK_04 */
+  { 3, 0x4E05,  3, 100 },                   /* EK_PK_05 */
+  { 3, 0x4E06,  3, 100 },                   /* EK_PK_06 */
+  { 3, 0x4E07,  3, 100 },                   /* EK_PK_07 */
+  { 3, 0x4E08,  3, 100 },                   /* EK_PK_08 */
+
   { 0, 0 }
 };
 
@@ -172,13 +183,12 @@ struct fid_cache_s {
 
 /* Object with application (i.e. NKS) specific data.  */
 struct app_local_s {
-  int nks_version;  /* NKS version.  */
-
   int active_nks_app;   /* One of the NKS_APP_ constants.  */
 
+  int only_idlm;        /* The application is fixed to IDLM (IDKey card).  */
   int qes_app_id;       /* Either NKS_APP_SIGG or NKS_APP_ESIGN.  */
 
-  int sigg_msig_checked;/*  True if we checked for a mass signature card.  */
+  int sigg_msig_checked;/* True if we checked for a mass signature card.  */
   int sigg_is_msig;     /* True if this is a mass signature card.  */
 
   int need_app_select;  /* Need to re-select the application.  */
@@ -274,7 +284,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
         return 0;  /* Found in cache.  */
       }
 
-  if (app->app_local->nks_version == 15)
+  if (app->appversion == 15)
     {
       /* Signature Card v2 - get keygrip from the certificate.  */
       unsigned char *cert, *pk;
@@ -322,7 +332,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
       return err;
     }
 
-  if (app->app_local->nks_version < 3)
+  if (app->appversion < 3)
     {
       /* Old versions of NKS store the values in a TLV encoded format.
          We need to do some checks.  */
@@ -485,13 +495,22 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
             {
               if (!filelist[idx].iskeypair)
                 continue;
-              if (filelist[idx].nks_app_id != NKS_APP_NKS
-                  && filelist[idx].nks_app_id != app->app_local->qes_app_id)
-                continue;
 
-              err = switch_application (app, filelist[idx].nks_app_id);
-              if (err)
-                goto leave;
+              if (app->app_local->only_idlm)
+                {
+                  if (filelist[idx].nks_app_id != NKS_APP_IDLM)
+                    continue;
+                }
+              else
+                {
+                  if (filelist[idx].nks_app_id != NKS_APP_NKS
+                      && filelist[idx].nks_app_id != app->app_local->qes_app_id)
+                    continue;
+
+                  err = switch_application (app, filelist[idx].nks_app_id);
+                  if (err)
+                    goto leave;
+                }
 
               err = keygripstr_from_pk_file (app, filelist[idx].fid,
                                              filelist[idx].iskeypair,
@@ -526,6 +545,8 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
       else if (!ascii_strncasecmp (keyref, "NKS-SIGG.", 9)
                && app->app_local->qes_app_id == NKS_APP_SIGG)
         nks_app_id = NKS_APP_SIGG;
+      else if (!ascii_strncasecmp (keyref, "NKS-IDLM.", 9))
+        nks_app_id = NKS_APP_IDLM;
       else if (!ascii_strncasecmp (keyref, "NKS-DF01.", 9))
         nks_app_id = NKS_APP_NKS;
       else
@@ -603,7 +624,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "$AUTHKEYID",   1 },
     { "$ENCRKEYID",   2 },
     { "$SIGNKEYID",   3 },
-    { "NKS-VERSION",  4 },
+    { "NKS-VERSION",  4 },  /* Legacy (printed decimal)  */
     { "CHV-STATUS",   5 },
     { "$DISPSERIALNO",6 },
     { "SERIALNO",     0 }
@@ -612,7 +633,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   int idx;
   char *p, *p2;
   char buffer[100];
-  int nksver = app->app_local->nks_version;
+  int nksver = app->appversion;
 
   err = switch_application (app, NKS_APP_NKS);
   if (err)
@@ -665,7 +686,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       break;
 
     case 4: /* NKS-VERSION */
-      snprintf (buffer, sizeof buffer, "%d", app->app_local->nks_version);
+      snprintf (buffer, sizeof buffer, "%d", app->appversion);
       send_status_info (ctrl, table[idx].name,
                         buffer, strlen (buffer), NULL, 0);
       break;
@@ -689,7 +710,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
         /* We use a helper array so that we can control that there is
          * no superfluous application switches.  */
-        if (app->app_local->nks_version == 15)
+        if (app->appversion == 15)
           {
             tmp[0] = get_chv_status (app, 0, 0x03);
             tmp[1] = get_chv_status (app, 0, 0x04);
@@ -700,7 +721,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
             tmp[1] = get_chv_status (app, 0, 0x01);
           }
         tmp[2] = get_chv_status (app, app->app_local->qes_app_id, 0x81);
-        if (app->app_local->nks_version == 15)
+        if (app->appversion == 15)
           tmp[3] = get_chv_status (app, app->app_local->qes_app_id, 0x82);
         else
           tmp[3] = get_chv_status (app, app->app_local->qes_app_id, 0x83);
@@ -748,7 +769,9 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
     tag = "ESIGN";
   else if (nks_app_id == NKS_APP_SIGG)
     tag = "SIGG";
-  else if (app->app_local->nks_version < 3)
+  else if (nks_app_id == NKS_APP_IDLM)
+    tag = "IDLM";
+  else if (app->appversion < 3)
     tag = "DF01";
   else
     tag = "NKS3";
@@ -756,7 +779,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
   /* Output information about all useful objects in the NKS application. */
   for (i=0; filelist[i].fid; i++)
     {
-      if (filelist[i].nks_ver > app->app_local->nks_version)
+      if (filelist[i].nks_ver > app->appversion)
         continue;
 
       if (filelist[i].nks_app_id != nks_app_id)
@@ -820,11 +843,16 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
 
+  do_getattr (app, ctrl, "CHV-STATUS");
+
   err = switch_application (app, NKS_APP_NKS);
   if (err)
     return err;
 
-  do_learn_status_core (app, ctrl, flags, NKS_APP_NKS);
+  do_learn_status_core (app, ctrl, flags, app->app_local->active_nks_app);
+
+  if (app->app_local->only_idlm)
+    return 0;  /* ready.  */
 
   err = switch_application (app, app->app_local->qes_app_id);
   if (err)
@@ -961,6 +989,8 @@ do_readcert (app_t app, const char *certid,
     nks_app_id = NKS_APP_SIGG;
   else if (!strncmp (certid, "NKS-DF01.", 9))
     nks_app_id = NKS_APP_NKS;
+  else if (!strncmp (certid, "NKS-IDLM.", 9))
+    nks_app_id = NKS_APP_IDLM;
   else
     return gpg_error (GPG_ERR_INV_ID);
   certid += nks_app_id == NKS_APP_ESIGN? 10 : 9;
@@ -1011,7 +1041,7 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
   unsigned short path[1] = { 0x4500 };
 
   /* We use a generic name to retrieve PK.AUT.IFD-SPK.  */
-  if (!strcmp (keyid, "$IFDAUTHKEY") && app->app_local->nks_version >= 3)
+  if (!strcmp (keyid, "$IFDAUTHKEY") && app->appversion >= 3)
     ;
   else /* Return the error code expected by cmd_readkey.  */
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -1088,7 +1118,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   (void)pincb;
   (void)pincb_arg;
 
-  if (!strcmp (keyid, "$IFDAUTHKEY") && app->app_local->nks_version >= 3)
+  if (!strcmp (keyid, "$IFDAUTHKEY") && app->appversion >= 3)
     ;
   else
     return gpg_error (GPG_ERR_INV_ID);
@@ -1248,11 +1278,19 @@ verify_pin (app_t app, int pwid, const char *desc,
   pininfo.fixedlen = -1;
 
   /* FIXME: TCOS allows to read the min. and max. values - do this.  */
-  if (app->app_local->nks_version == 15)
+  if (app->appversion == 15)
     {
       if (app->app_local->active_nks_app == NKS_APP_NKS && pwid == 0x03)
         pininfo.minlen = 6;
       else if (app->app_local->active_nks_app == NKS_APP_ESIGN && pwid == 0x81)
+        pininfo.minlen = 6;
+      else
+        pininfo.minlen = 8;
+      pininfo.maxlen = 24;
+    }
+  else if (app->app_local->active_nks_app == NKS_APP_IDLM)
+    {
+      if (pwid == 0x00)
         pininfo.minlen = 6;
       else
         pininfo.minlen = 8;
@@ -1386,11 +1424,11 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   kid = filelist[idx].kid;
 
   /* Prepare the DER object from INDATA.  */
-  if (app->app_local->nks_version > 2 && (indatalen == 35
-                                          || indatalen == 47
-                                          || indatalen == 51
-                                          || indatalen == 67
-                                          || indatalen == 83))
+  if (app->appversion > 2 && (indatalen == 35
+                              || indatalen == 47
+                              || indatalen == 51
+                              || indatalen == 67
+                              || indatalen == 83))
     {
       /* The caller send data matching the length of the ASN.1 encoded
          hash for SHA-{1,224,256,384,512}.  Assume that is okay.  */
@@ -1427,7 +1465,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
 
   /* Send an MSE for PSO:Computer_Signature.  */
-  if (app->app_local->nks_version > 2)
+  if (app->appversion > 2)
     {
       unsigned char mse[6];
 
@@ -1442,7 +1480,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
 
   /* We use the Global PIN 1 */
-  if (app->app_local->nks_version == 15)
+  if (app->appversion == 15)
     pwid = 0x03;
   else
     pwid = 0x00;
@@ -1492,7 +1530,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   kid = filelist[idx].kid;
 
-  if (app->app_local->nks_version <= 2)
+  if (app->appversion <= 2)
     {
       static const unsigned char mse[] =
         {
@@ -1536,7 +1574,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     }
 
   /* We use the Global PIN 1 */
-  if (app->app_local->nks_version == 15)
+  if (app->appversion == 15)
     pwid = 0x03;
   else
     pwid = 0x00;
@@ -1587,7 +1625,7 @@ parse_pwidstr (app_t app, const char *pwidstr, int new_mode,
                int *r_nks_app_id, int *r_pwid)
 {
   const char *desc;
-  int nks15 = app->app_local->nks_version == 15;
+  int nks15 = app->appversion == 15;
 
   if (!pwidstr)
     desc = NULL;
@@ -1611,7 +1649,7 @@ parse_pwidstr (app_t app, const char *pwidstr, int new_mode,
               : _("|P|Please enter the PIN Unblocking Code (PUK) "
                   "for the standard keys."));
     }
-  else if (!strcmp (pwidstr, "PW1.CH.SIG"))
+  else if (!strcmp (pwidstr, "PW1.CH.SIG") && !app->app_local->only_idlm)
     {
       *r_nks_app_id = app->app_local->qes_app_id;
       *r_pwid = 0x81;
@@ -1621,7 +1659,7 @@ parse_pwidstr (app_t app, const char *pwidstr, int new_mode,
               : _("||Please enter the PIN for the key to create "
                   "qualified signatures."));
     }
-  else if (!strcmp (pwidstr, "PW2.CH.SIG"))
+  else if (!strcmp (pwidstr, "PW2.CH.SIG") && !app->app_local->only_idlm)
     {
       *r_nks_app_id = app->app_local->qes_app_id;
       *r_pwid = nks15? 0x82 : 0x83;
@@ -1660,6 +1698,16 @@ parse_pwidstr (app_t app, const char *pwidstr, int new_mode,
       desc = (new_mode
               ? "|N|Please enter a new PIN for the given ESIGN pwid"
               : "||Please enter the PIN for the given ESIGN pwid" );
+    }
+  else if (!strncmp (pwidstr, "IDLM.0x", 7)
+           && hexdigitp (pwidstr+7) && hexdigitp (pwidstr+8) && !pwidstr[9])
+    {
+      /* Hack to help debugging.  */
+      *r_nks_app_id = NKS_APP_IDLM;
+      *r_pwid = xtoi_2 (pwidstr+7);
+      desc = (new_mode
+              ? "|N|Please enter a new PIN for the given IDLM pwid"
+              : "||Please enter the PIN for the given IDLM pwid" );
     }
   else
     {
@@ -1729,7 +1777,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      if (app->app_local->nks_version == 15)
+      if (app->appversion == 15)
         {
           memset (oldpin, '0', 5);
           oldpinlen = 5;  /* 5 ascii zeroes.  */
@@ -1899,19 +1947,26 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
 
   for (idx=0; filelist[idx].fid; idx++)
     {
-      if (filelist[idx].nks_ver > app->app_local->nks_version)
+      if (filelist[idx].nks_ver > app->appversion)
         continue;
 
       if (!filelist[idx].iskeypair)
         continue;
 
-      if (filelist[idx].nks_app_id != NKS_APP_NKS
-          && filelist[idx].nks_app_id != app->app_local->qes_app_id)
-        continue;
-
-      err = switch_application (app, filelist[idx].nks_app_id);
-      if (err)
-        goto leave;
+      if (app->app_local->only_idlm)
+        {
+          if (filelist[idx].nks_app_id != NKS_APP_IDLM)
+            continue;
+        }
+      else
+        {
+          if (filelist[idx].nks_app_id != NKS_APP_NKS
+              && filelist[idx].nks_app_id != app->app_local->qes_app_id)
+            continue;
+          err = switch_application (app, filelist[idx].nks_app_id);
+          if (err)
+            goto leave;
+        }
 
       err = keygripstr_from_pk_file (app, filelist[idx].fid,
                                      filelist[idx].iskeypair, keygripstr, NULL);
@@ -1952,7 +2007,9 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
             tagstr = "ESIGN";
           else if (app->app_local->active_nks_app == NKS_APP_SIGG)
             tagstr = "SIGG";
-          else if (app->app_local->nks_version < 3)
+          else if (app->app_local->active_nks_app == NKS_APP_IDLM)
+            tagstr = "IDLM";
+          else if (app->appversion < 3)
             tagstr = "DF01";
           else
             tagstr = "NKS3";
@@ -2011,7 +2068,7 @@ get_nks_version (int slot)
    * vendor    4 := Philips
    *           5 := Infinion
    * card type 3 := TCOS 3
-   *          15 := TCOS Signature Card
+   *          15 := TCOS Signature Card (bb,cc is the ROM mask version)
    * Completion code version number Bit 7..5 := pre-completion code version
    *                                Bit 4..0 := completion code version
    *                                (pre-completion by chip vendor)
@@ -2022,7 +2079,6 @@ get_nks_version (int slot)
   else
     type = result[8];
   xfree (result);
-
   return type;
 }
 
@@ -2034,6 +2090,8 @@ switch_application (app_t app, int nks_app_id)
 {
   gpg_error_t err;
 
+  if (app->app_local->only_idlm)
+    return 0;  /* No switching at all */
   if (app->app_local->active_nks_app == nks_app_id
       && !app->app_local->need_app_select)
     return 0;  /* Already switched.  */
@@ -2053,7 +2111,7 @@ switch_application (app_t app, int nks_app_id)
                                       aid_nks, sizeof aid_nks, 0);
 
   if (!err && nks_app_id == NKS_APP_SIGG
-      && app->app_local->nks_version >= 3
+      && app->appversion >= 3
       && !app->app_local->sigg_msig_checked)
     {
       /* Check whether this card is a mass signature card.  */
@@ -2103,8 +2161,14 @@ app_select_nks (app_t app)
 {
   int slot = app_get_slot (app);
   int rc;
+  int is_idlm = 0;
 
   rc = iso7816_select_application (slot, aid_nks, sizeof aid_nks, 0);
+  if (rc)
+    {
+      is_idlm = 1;
+      rc = iso7816_select_application (slot, aid_idlm, sizeof aid_idlm, 0);
+    }
   if (!rc)
     {
       app->apptype = APPTYPE_NKS;
@@ -2116,10 +2180,19 @@ app_select_nks (app_t app)
           goto leave;
         }
 
-      app->app_local->nks_version = get_nks_version (slot);
+      app->appversion = get_nks_version (slot);
+      app->app_local->only_idlm = is_idlm;
+      if (is_idlm) /* Set it once, there won't be any switching.  */
+        app->app_local->active_nks_app = NKS_APP_IDLM;
+
       if (opt.verbose)
-        log_info ("Detected NKS version: %d\n", app->app_local->nks_version);
-      if (app->app_local->nks_version == 15)
+        {
+          log_info ("Detected NKS version: %d\n", app->appversion);
+          if (is_idlm)
+            log_info ("Using only the IDLM application\n");
+        }
+
+      if (app->appversion == 15)
         app->app_local->qes_app_id = NKS_APP_ESIGN;
       else
         app->app_local->qes_app_id = NKS_APP_SIGG;
