@@ -916,6 +916,41 @@ list_piv (card_info_t info, estream_t fp, int no_key_lookup)
 
 
 
+/* List Netkey card specific data.  */
+static void
+list_nks (card_info_t info, estream_t fp, int no_key_lookup)
+{
+  static struct keyinfolabel_s keyinfolabels[] = {
+    { NULL, NULL }
+  };
+  const char *s;
+  int i;
+
+  tty_fprintf (fp, "PIN retry counter :");
+  for (i=0; i < DIM (info->chvinfo); i++)
+    {
+      if (info->chvinfo[i] >= 0)
+        tty_fprintf (fp, " %d", info->chvinfo[i]);
+      else
+        {
+          switch (info->chvinfo[i])
+            {
+            case -1: s = "[error]"; break;
+            case -2: s = "-"; break;  /* No such PIN or info not available. */
+            case -3: s = "[blocked]"; break;
+            case -4: s = "[nullpin]"; break;
+            case -5: s = "[verified]"; break;
+            default: s = "[?]"; break;
+            }
+          tty_fprintf (fp, " %s", s);
+        }
+    }
+  tty_fprintf (fp, "\n");
+  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
+}
+
+
+
 static void
 print_a_version (estream_t fp, const char *prefix, unsigned int value)
 {
@@ -929,8 +964,10 @@ print_a_version (estream_t fp, const char *prefix, unsigned int value)
     tty_fprintf (fp, "%s %u.%u.%u.%u\n", prefix, a, b, c, d);
   else if (b)
     tty_fprintf (fp, "%s %u.%u.%u\n", prefix, b, c, d);
-  else
+  else if (c)
     tty_fprintf (fp, "%s %u.%u\n", prefix, c, d);
+  else
+    tty_fprintf (fp, "%s %u\n", prefix, d);
 }
 
 
@@ -974,6 +1011,7 @@ list_card (card_info_t info, int no_key_lookup)
     {
     case APP_TYPE_OPENPGP: list_openpgp (info, fp, no_key_lookup); break;
     case APP_TYPE_PIV:     list_piv (info, fp, no_key_lookup); break;
+    case APP_TYPE_NKS:     list_nks (info, fp, no_key_lookup); break;
     default: break;
     }
 }

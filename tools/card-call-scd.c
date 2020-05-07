@@ -913,7 +913,7 @@ learn_status_cb (void *opaque, const char *line)
                     p++;
                 }
             }
-          else if (parm->apptype == APP_TYPE_PIV)
+          else
             {
               for (i=0; *p && i < DIM (parm->chvinfo); i++)
                 {
