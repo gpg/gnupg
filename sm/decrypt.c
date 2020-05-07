@@ -135,10 +135,11 @@ hash_ecc_cms_shared_info (gcry_md_hd_t hash_hd, const char *wrap_algo_str,
 }
 
 
-/* This function will modify SECRET.  */
+/* This function will modify SECRET.  NBITS is the size of the curve
+ * which which we took from the certificate.  */
 static gpg_error_t
 ecdh_decrypt (unsigned char *secret, size_t secretlen,
-              gcry_sexp_t enc_val,
+              unsigned int nbits, gcry_sexp_t enc_val,
               unsigned char **r_result, unsigned int *r_resultlen)
 {
   gpg_error_t err;
@@ -159,8 +160,8 @@ ecdh_decrypt (unsigned char *secret, size_t secretlen,
   *r_resultlen = 0;
   *r_result = NULL;
 
-  /* Extract X from SECRET; this is the actual secret.  It must be in
-   * the format of:
+  /* Extract X from SECRET; this is the actual secret.  Unless a
+   * smartcard diretcly returns X, it must be in the format of:
    *
    *   04 || X || Y
    *   40 || X
@@ -168,7 +169,9 @@ ecdh_decrypt (unsigned char *secret, size_t secretlen,
    */
   if (secretlen < 2)
     return gpg_error (GPG_ERR_BAD_DATA);
-  if (*secret == 0x04)
+  if (secretlen == (nbits+7)/8)
+    ; /* Matches curve length - this is already the X coordinate.  */
+  else if (*secret == 0x04)
     {
       secretlen--;
       memmove (secret, secret+1, secretlen);
@@ -367,7 +370,7 @@ ecdh_decrypt (unsigned char *secret, size_t secretlen,
    algo and the IV is expected to be already in PARM. */
 static int
 prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
-                    int pk_algo, const char *desc,
+                    int pk_algo, unsigned int nbits, const char *desc,
                     ksba_const_sexp_t enc_val,
                     struct decrypt_filter_parm_s *parm)
 {
@@ -400,7 +403,7 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
       if (rc)
         goto leave;
 
-      rc = ecdh_decrypt (seskey, seskeylen, s_enc_val,
+      rc = ecdh_decrypt (seskey, seskeylen, nbits, s_enc_val,
                          &decrypted, &decryptedlen);
       gcry_sexp_release (s_enc_val);
       if (rc)
@@ -859,7 +862,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                            recp);
               else
                 {
-                  rc = prepare_decryption (ctrl, hexkeygrip, pk_algo,
+                  rc = prepare_decryption (ctrl, hexkeygrip, pk_algo, nbits,
                                            desc, enc_val, &dfparm);
                   xfree (enc_val);
                   if (rc)
