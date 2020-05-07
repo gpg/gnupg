@@ -52,7 +52,8 @@
  *  | NKS | 0x00 | null -    | -    -    | -    -    |
  *  |     | 0x01 | 0    3    | -    -    | -    -    |
  *  |     | 0x02 | 3    null | 15   3    | 15   null |
- *  |     | 0x03 | -    3    | null -    | null -    |
+ *  |     | 0x03 | -    3    | null -    | 3    -    |
+ *  |     | 0x04 |           | null 0    | 3    3    |
  *  | SIG | 0x00 | null -    | -    -    | -    -    |
  *  |     | 0x01 | 0    null | -    null | -    null |
  *  |     | 0x02 | 3    null | 15   0    | 15   0    |
@@ -66,6 +67,7 @@
  *  - The SIG_B is a Signature Card V2.0 with Brainpool curves.
  *    Here the PIN 0x82 has been changed from the NULLPIN.
  *  - The SIG_N is a Signature Card V2.0 with NIST curves.
+ *    The PIN was enabled using the TCOS Windows tool.
  */
 
 #include <config.h>
@@ -220,6 +222,22 @@ all_zero_p (void *buffer, size_t length)
     if (*p)
       return 0;
   return 1;
+}
+
+
+/* Return an allocated string with the serial number in a format to be
+ * show to the user.  May return NULL on malloc problem.  */
+static char *
+get_dispserialno (app_t app)
+{
+  char *result;
+
+  /* We only need to strip the last zero which is not printed on the
+   * card.  */
+  result = app_get_serialno (app);
+  if (result && *result && result[strlen(result)-1] == '0')
+    result[strlen(result)-1] = 0;
+  return result;
 }
 
 
@@ -586,10 +604,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "$SIGNKEYID",   3 },
     { "NKS-VERSION",  4 },
     { "CHV-STATUS",   5 },
-    { NULL, 0 }
+    { "$DISPSERIALNO",6 },
+    { "SERIALNO",     0 }
   };
   gpg_error_t err = 0;
   int idx;
+  char *p, *p2;
   char buffer[100];
   int nksver = app->app_local->nks_version;
 
@@ -597,13 +617,25 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   if (err)
     return err;
 
-  for (idx=0; table[idx].name && strcmp (table[idx].name, name); idx++)
+  for (idx=0; (idx < DIM(table)
+               && ascii_strcasecmp (table[idx].name, name)); idx++)
     ;
-  if (!table[idx].name)
+  if (!(idx < DIM (table)))
     return gpg_error (GPG_ERR_INV_NAME);
 
   switch (table[idx].special)
     {
+    case 0: /* SERIALNO */
+      {
+        p = app_get_serialno (app);
+        if (p)
+          {
+            send_status_direct (ctrl, "SERIALNO", p);
+            xfree (p);
+          }
+      }
+      break;
+
     case 1: /* $AUTHKEYID */
       {
         /* NetKey 3.0 cards define an authentication key but according
@@ -639,27 +671,58 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
     case 5: /* CHV-STATUS */
       {
-        /* Returns: PW1.CH PW2.CH PW1.CH.SIG PW2.CH.SIG That are the
-           two global passwords followed by the two SigG passwords.
-           For the values, see the function get_chv_status.  */
-        /* FIXME: Check this for the NKS15!! */
+        /* Return the status for the the PINs as described in the
+         * table below.  See the macros ISO7816_VERIFY_* for a list
+         * for each slot.  The order is
+         *
+         * | idx | name       |
+         * |-----+------------|
+         * |   0 | PW1.CH     |
+         * |   1 | PW2.CH     |
+         * |   2 | PW1.CH.SIG |
+         * |   3 | PW2.CH.SIG |
+         *
+         * See parse_pwidstr for details of the mapping.
+         */
         int tmp[4];
 
         /* We use a helper array so that we can control that there is
-           no superfluous application switch.  Note that PW2.CH.SIG
-           really has the identifier 0x83 and not 0x82 as one would
-           expect.  */
-        tmp[0] = get_chv_status (app, 0, 0x00);
-        tmp[1] = get_chv_status (app, 0, 0x01);
+         * no superfluous application switches.  */
+        if (app->app_local->nks_version == 15)
+          {
+            tmp[0] = get_chv_status (app, 0, 0x03);
+            tmp[1] = get_chv_status (app, 0, 0x04);
+          }
+        else
+          {
+            tmp[0] = get_chv_status (app, 0, 0x00);
+            tmp[1] = get_chv_status (app, 0, 0x01);
+          }
         tmp[2] = get_chv_status (app, app->app_local->qes_app_id, 0x81);
-        tmp[3] = get_chv_status (app, app->app_local->qes_app_id, 0x83);
-        snprintf (buffer, sizeof buffer,
-                  "%d %d %d %d", tmp[0], tmp[1], tmp[2], tmp[3]);
+        if (app->app_local->nks_version == 15)
+          tmp[3] = get_chv_status (app, app->app_local->qes_app_id, 0x82);
+        else
+          tmp[3] = get_chv_status (app, app->app_local->qes_app_id, 0x83);
+        snprintf (buffer, sizeof buffer, "%d %d %d %d",
+                  tmp[0], tmp[1], tmp[2], tmp[3]);
         send_status_info (ctrl, table[idx].name,
                           buffer, strlen (buffer), NULL, 0);
       }
       break;
 
+    case 6: /* $DISPSERIALNO */
+      {
+        p = app_get_serialno (app);
+        p2 = get_dispserialno (app);
+        if (p && p2 && strcmp (p, p2))
+          send_status_info (ctrl, table[idx].name, p2, strlen (p2),
+                            NULL, (size_t)0);
+        else /* No abbreviated S/N or identical to the full full S/N.  */
+          err = gpg_error (GPG_ERR_INV_NAME);  /* No Abbreviated S/N.  */
+        xfree (p);
+        xfree (p2);
+      }
+      break;
 
     default:
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
@@ -1085,22 +1148,6 @@ do_writekey (app_t app, ctrl_t ctrl,
 }
 
 
-/* Return an allocated string with the serial number in a format to be
- * show to the user.  May return NULL on malloc problem.  */
-static char *
-get_dispserialno (app_t app)
-{
-  char *result;
-
-  /* We only need to strip the last zero which is not printed on the
-   * card.  */
-  result = app_get_serialno (app);
-  if (result && *result && result[strlen(result)-1] == '0')
-    result[strlen(result)-1] = 0;
-  return result;
-}
-
-
 /* Return an allocated string to be used as prompt.  Returns NULL on
  * malloc error.  */
 static char *
@@ -1192,8 +1239,24 @@ verify_pin (app_t app, int pwid, const char *desc,
 
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.fixedlen = -1;
-  pininfo.minlen = 6;
-  pininfo.maxlen = 16;
+
+  /* FIXME: TCOS allows to read the min. and max. values - do this.  */
+  if (app->app_local->nks_version == 15)
+    {
+      if (app->app_local->active_nks_app == NKS_APP_NKS && pwid == 0x03)
+        pininfo.minlen = 6;
+      else if (app->app_local->active_nks_app == NKS_APP_ESIGN && pwid == 0x81)
+        pininfo.minlen = 6;
+      else
+        pininfo.minlen = 8;
+      pininfo.maxlen = 24;
+    }
+  else
+    {
+      /* For NKS3 we used these fixed values; let's keep this.  */
+      pininfo.minlen = 6;
+      pininfo.maxlen = 16;
+    }
 
   remaining = iso7816_verify_status (app_get_slot (app), pwid);
   nullpin = (remaining == ISO7816_VERIFY_NULLPIN);
@@ -1209,7 +1272,7 @@ verify_pin (app_t app, int pwid, const char *desc,
     {
       log_info ("nks: The NullPIN for PIN 0x%02x has not yet been changed\n",
                 pwid);
-      extrapromptline = _("Note: You need to change the PIN first!");
+      extrapromptline = _("Note: PIN has not yet been enabled.");
     }
 
   if (!opt.disable_pinpad
@@ -1284,6 +1347,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
   gpg_error_t err;
   int idx;
+  int pwid;
   unsigned char kid;
   unsigned char data[83];   /* Must be large enough for a SHA-1 digest
                                + the largest OID prefix. */
@@ -1368,9 +1432,15 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB6,
                                          mse, sizeof mse);
     }
-  /* Verify using PW1.CH.  */
+
+  /* We use the Global PIN 1 */
+  if (app->app_local->nks_version == 15)
+    pwid = 0x03;
+  else
+    pwid = 0x00;
+
   if (!err)
-    err = verify_pin (app, 0, NULL, pincb, pincb_arg);
+    err = verify_pin (app, pwid, NULL, pincb, pincb_arg);
   /* Compute the signature.  */
   if (!err)
     err = iso7816_compute_ds (app_get_slot (app), 0, data, datalen, 0,
@@ -1457,6 +1527,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       goto leave;
     }
 
+  /* We use the Global PIN 1 */
   if (app->app_local->nks_version == 15)
     pwid = 0x03;
   else
@@ -1480,33 +1551,42 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
  * suitable as passphrase prompt on success.  On success stores the
  * reference value for the password at R_PWID and a flag indicating
  * which app is to be used at R_NKS_APP_ID.  If NEW_MODE is true, the
- * returned description is suitable for a new Password.  Supported
- * values for PWIDSTR are:
+ * returned description is suitable for a new password.  Here is a
+ * take mapping the PWIDSTR to the used PWIDs:
  *
- *   PW1.CH     - id 0x00 - Global password 1
- *   PW2.CH     - id 0x01 - Global password 2
- *   PW1.CH.SIG - id 0x81 - SigG password 1
- *   PW2.CH.SIG - id 0x83 - SigG password 2
+ *  | pwidstr    |              | NKS3 | NKS15 | IDKEY1 |
+ *  |------------+--------------+------+-------+--------|
+ *  | PW1.CH     | Global PIN 1 | 0x00 |  0x03 | 0x00   |
+ *  | PW2.CH     | Global PIN 2 | 0x01 |  0x04 | 0x01   |
+ *  | PW1.CH.SIG | SigG PIN 1   | 0x81 |  0x81 | -      |
+ *  | PW2.CH.SIG | SigG PIN 2   | 0x83 |  0x82 | -      |
  *
- * It is also possible to specify the PIN id directly but the prompts
- * are then not very descriptive (Use this for testing):
+ * The names for PWIDSTR are taken from the NKS3 specs; the specs of
+ * other cards use different names but we keep using the.  PIN1 can be
+ * used to unlock PIN2 and vice versa; for consistence with other
+ * cards we name PIN2 a "PUK".  The IDKEY card also features a Card
+ * Reset Key (CR Key 0x01) which can also be used to reset PIN1.
+ *
+ * For testing it is possible to specify the PWID directly; the
+ * prompts are then not very descriptive:
  *
  *   NKS.0xnn   - Switch to NKS and select id 0xnn
  *   SIGG.0xnn  - Switch to SigG and select id 0xnn
  *   ESIGN.0xnn - Switch to ESIGN and select id 0xnn
  */
 static const char *
-parse_pwidstr (const char *pwidstr, int new_mode
-               , int *r_nks_app_id, int *r_pwid)
+parse_pwidstr (app_t app, const char *pwidstr, int new_mode,
+               int *r_nks_app_id, int *r_pwid)
 {
   const char *desc;
+  int nks15 = app->app_local->nks_version == 15;
 
   if (!pwidstr)
     desc = NULL;
   else if (!strcmp (pwidstr, "PW1.CH"))
     {
       *r_nks_app_id = NKS_APP_NKS;
-      *r_pwid = 0x00;
+      *r_pwid = nks15? 0x03 : 0x00;
       /* TRANSLATORS: Do not translate the "|*|" prefixes but keep
          them verbatim at the start of the string.  */
       desc = (new_mode
@@ -1516,7 +1596,7 @@ parse_pwidstr (const char *pwidstr, int new_mode
   else if (!strcmp (pwidstr, "PW2.CH"))
     {
       *r_nks_app_id = NKS_APP_NKS;
-      *r_pwid = 0x01;
+      *r_pwid = nks15? 0x04 : 0x01;
       desc = (new_mode
               ? _("|NP|Please enter a new PIN Unblocking Code (PUK) "
                   "for the standard keys.")
@@ -1525,7 +1605,7 @@ parse_pwidstr (const char *pwidstr, int new_mode
     }
   else if (!strcmp (pwidstr, "PW1.CH.SIG"))
     {
-      *r_nks_app_id = NKS_APP_SIGG;
+      *r_nks_app_id = app->app_local->qes_app_id;
       *r_pwid = 0x81;
       desc = (new_mode
               ? _("|N|Please enter a new PIN for the key to create "
@@ -1535,8 +1615,8 @@ parse_pwidstr (const char *pwidstr, int new_mode
     }
   else if (!strcmp (pwidstr, "PW2.CH.SIG"))
     {
-      *r_nks_app_id = NKS_APP_SIGG;
-      *r_pwid = 0x83;  /* Yes, that is 83 and not 82.  */
+      *r_nks_app_id = app->app_local->qes_app_id;
+      *r_pwid = nks15? 0x82 : 0x83;
       desc = (new_mode
               ? _("|NP|Please enter a new PIN Unblocking Code (PUK) "
                   "for the key to create qualified signatures.")
@@ -1611,7 +1691,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   pininfo.minlen = 6;
   pininfo.maxlen = 16;
 
-  newdesc = parse_pwidstr (pwidstr, 1, &nks_app_id, &pwid);
+  newdesc = parse_pwidstr (app, pwidstr, 1, &nks_app_id, &pwid);
   if (!newdesc)
     return gpg_error (GPG_ERR_INV_ID);
 
@@ -1674,12 +1754,12 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
               err = gpg_error (GPG_ERR_BUG);
               goto leave;
             }
-          desc = parse_pwidstr (altpwidstr, 0, &dummy1, &dummy2);
+          desc = parse_pwidstr (app, altpwidstr, 0, &dummy1, &dummy2);
         }
       else
         {
           /* Regular change mode:  Ask for the old PIN.  */
-          desc = parse_pwidstr (pwidstr, 0, &dummy1, &dummy2);
+          desc = parse_pwidstr (app, pwidstr, 0, &dummy1, &dummy2);
         }
 
       prompt = make_prompt (app, remaining, desc, NULL);
@@ -1753,7 +1833,7 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
 
   (void)ctrl;
 
-  desc = parse_pwidstr (pwidstr, 0, &nks_app_id, &pwid);
+  desc = parse_pwidstr (app, pwidstr, 0, &nks_app_id, &pwid);
   if (!desc)
     return gpg_error (GPG_ERR_INV_ID);
 
