@@ -408,6 +408,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   gpg_error_t valerr;
   int algo;
   unsigned int nbits;
+  char *curve = NULL;
   const char *chain_id;
   char *chain_id_buffer = NULL;
   int is_root = 0;
@@ -499,7 +500,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   if (*truststring)
     es_fputs (truststring, fp);
 
-  algo = gpgsm_get_key_algo_info (cert, &nbits);
+  algo = gpgsm_get_key_algo_info2 (cert, &nbits, &curve);
   es_fprintf (fp, ":%u:%d:%s:", nbits, algo, fpr+24);
 
   ksba_cert_get_validity (cert, 0, t);
@@ -563,6 +564,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     }
   es_putc (':', fp);  /* End of field 15. */
   es_putc (':', fp);  /* End of field 16. */
+  if (curve)
+    es_fputs (curve, fp);
   es_putc (':', fp);  /* End of field 17. */
   print_compliance_flags (cert, algo, nbits, fp);
   es_putc (':', fp);  /* End of field 18. */
@@ -626,6 +629,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
       xfree (p);
     }
   xfree (kludge_uid);
+  xfree (curve);
 }
 
 
@@ -829,12 +833,11 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   es_fprintf (fp, "     hashAlgo: %s%s%s%s\n", oid, s?" (":"",s?s:"",s?")":"");
 
   {
-    const char *algoname;
-    unsigned int nbits;
+    char *algostr;
 
-    algoname = gcry_pk_algo_name (gpgsm_get_key_algo_info (cert, &nbits));
-    es_fprintf (fp, "      keyType: %u bit %s\n",
-                nbits, algoname? algoname:"?");
+    algostr = gpgsm_pubkey_algo_string (cert, NULL);
+    es_fprintf (fp, "      keyType: %s\n", algostr? algostr : "[error]");
+    xfree (algostr);
   }
 
   /* subjectKeyIdentifier */
@@ -1192,14 +1195,12 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
 
 
   {
-    const char *algoname;
-    unsigned int nbits;
+    char *algostr;
 
-    algoname = gcry_pk_algo_name (gpgsm_get_key_algo_info (cert, &nbits));
-    es_fprintf (fp, "     key type: %u bit %s\n",
-                nbits, algoname? algoname:"?");
+    algostr = gpgsm_pubkey_algo_string (cert, NULL);
+    es_fprintf (fp, "     key type: %s\n", algostr? algostr : "[error]");
+    xfree (algostr);
   }
-
 
   err = ksba_cert_get_key_usage (cert, &kusage);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
