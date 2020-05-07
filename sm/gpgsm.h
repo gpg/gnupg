@@ -286,6 +286,9 @@ unsigned long gpgsm_get_short_fingerprint (ksba_cert_t cert,
 unsigned char *gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array);
 char *gpgsm_get_keygrip_hexstring (ksba_cert_t cert);
 int  gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits);
+int  gpgsm_get_key_algo_info2 (ksba_cert_t cert, unsigned int *nbits,
+                               char **r_curve);
+char *gpgsm_pubkey_algo_string (ksba_cert_t cert, int *r_algoid);
 gcry_mpi_t gpgsm_get_rsa_modulus (ksba_cert_t cert);
 char *gpgsm_get_certid (ksba_cert_t cert);
 

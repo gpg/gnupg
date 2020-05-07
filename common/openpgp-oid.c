@@ -540,9 +540,9 @@ map_openpgp_pk_to_gcry (pubkey_algo_t algo)
 /* Return a string describing the public key algorithm and the
  * keysize.  For elliptic curves the function prints the name of the
  * curve because the keysize is a property of the curve.  ALGO is the
- * Gcrypt algorithmj number, curve is either NULL or give the PID of
- * the curve, NBITS is either 0 or the size of the algorithms for RSA
- * etc.  The returned string is taken from permanent table.  Examples
+ * Gcrypt algorithm number, CURVE is either NULL or gives the OID of
+ * the curve, NBITS is either 0 or the size for algorithms like RSA.
+ * The returned string is taken from permanent table.  Examples
  * for the output are:
  *
  * "rsa3072"    - RSA with 3072 bit

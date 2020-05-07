@@ -238,8 +238,8 @@ described here.
 
 *** Field 17 - Curve name
 
-    For pub, sub, sec, and ssb records this field is used for the ECC
-    curve name.
+    For pub, sub, sec, ssb, crt, and crs records this field is used
+    for the ECC curve name.
 
 *** Field 18 - Compliance flags
 

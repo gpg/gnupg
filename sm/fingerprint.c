@@ -219,20 +219,25 @@ gpgsm_get_keygrip_hexstring (ksba_cert_t cert)
 
 
 /* Return the PK algorithm used by CERT as well as the length in bits
-   of the public key at NBITS. */
+ * of the public key at NBITS.  If R_CURVE is not NULL and an ECC
+ * algorithm is used the name or OID of the curve is stored there; the
+ * caller needs to free this value.  */
 int
-gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
+gpgsm_get_key_algo_info2 (ksba_cert_t cert, unsigned int *nbits, char **r_curve)
 {
   gcry_sexp_t s_pkey;
   int rc;
   ksba_sexp_t p;
   size_t n;
   gcry_sexp_t l1, l2;
+  const char *curve;
   const char *name;
   char namebuf[128];
 
   if (nbits)
     *nbits = 0;
+  if (r_curve)
+    *r_curve = NULL;
 
   p = ksba_cert_get_public_key (cert);
   if (!p)
@@ -258,6 +263,24 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
       gcry_sexp_release (s_pkey);
       return 0;
     }
+
+  if (r_curve)
+    {
+      curve = gcry_pk_get_curve (l1, 0, NULL);
+      if (curve)
+        {
+          name = openpgp_oid_to_curve (openpgp_curve_to_oid (curve,
+                                                             NULL, NULL), 0);
+          *r_curve = xtrystrdup (name? name : curve);
+          if (!*r_curve)
+            {
+              gcry_sexp_release (l1);
+              gcry_sexp_release (s_pkey);
+              return 0;  /* Out of core.  */
+            }
+        }
+    }
+
   l2 = gcry_sexp_cadr (l1);
   gcry_sexp_release (l1);
   l1 = l2;
@@ -274,6 +297,49 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
   gcry_sexp_release (l1);
   gcry_sexp_release (s_pkey);
   return gcry_pk_map_name (namebuf);
+}
+
+
+int
+gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
+{
+  return gpgsm_get_key_algo_info2 (cert, nbits, NULL);
+}
+
+
+/* This is a wrapper around pubkey_algo_string which takesa KSA
+ * certitificate instead of a Gcrypt public key.  Note that this
+ * function may return NULL on error.  */
+char *
+gpgsm_pubkey_algo_string (ksba_cert_t cert, int *r_algoid)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_pkey;
+  ksba_sexp_t p;
+  size_t n;
+  enum gcry_pk_algos algoid;
+  char *algostr;
+
+  p = ksba_cert_get_public_key (cert);
+  if (!p)
+    return NULL;
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    {
+      xfree (p);
+      return NULL;
+    }
+  err = gcry_sexp_sscan (&s_pkey, NULL, (char *)p, n);
+  xfree (p);
+  if (err)
+    return NULL;
+
+  algostr = pubkey_algo_string (s_pkey, r_algoid? &algoid : NULL);
+  if (algostr && r_algoid)
+    *r_algoid = algoid;
+
+  gcry_sexp_release (s_pkey);
+  return algostr;
 }
 
 
