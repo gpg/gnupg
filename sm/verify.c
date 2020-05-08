@@ -459,6 +459,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       pkfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
       pkalgostr = gpgsm_pubkey_algo_string (cert, NULL);
       pkalgo = gpgsm_get_key_algo_info (cert, &nbits);
+      /* Remap the ECC algo to the algo we use.  Note that EdDSA has
+       * already been mapped.  */
+      if (pkalgo == GCRY_PK_ECC)
+        pkalgo = GCRY_PK_ECDSA;
 
       log_info (_("Signature made "));
       if (*sigtime)
