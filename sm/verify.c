@@ -294,6 +294,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       char *ctattr;
       int sigval_hash_algo;
       int info_pkalgo;
+      unsigned int nbits;
+      int pkalgo;
+      char *pkalgostr = NULL;
+      char *pkfpr = NULL;
       unsigned int verifyflags;
 
       rc = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
@@ -450,49 +454,68 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           goto next_signer;
         }
 
-      /* Check compliance.  */
-      {
-        unsigned int nbits;
-        int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
+      pkfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+      pkalgostr = gpgsm_pubkey_algo_string (cert, NULL);
+      pkalgo = gpgsm_get_key_algo_info (cert, &nbits);
 
-        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
-                                   pk_algo, NULL, nbits, NULL))
-          {
-            char  kidstr[10+1];
-
-            snprintf (kidstr, sizeof kidstr, "0x%08lX",
-                      gpgsm_get_short_fingerprint (cert, NULL));
-            log_error (_("key %s may not be used for signing in %s mode\n"),
-                       kidstr,
-                       gnupg_compliance_option_string (opt.compliance));
-            goto next_signer;
-          }
-
-        if (! gnupg_digest_is_allowed (opt.compliance, 0, sigval_hash_algo))
-          {
-            log_error (_("digest algorithm '%s' may not be used in %s mode\n"),
-                       gcry_md_algo_name (sigval_hash_algo),
-                       gnupg_compliance_option_string (opt.compliance));
-            goto next_signer;
-          }
-
-        /* Check compliance with CO_DE_VS.  */
-        if (gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL, nbits, NULL)
-            && gnupg_digest_is_compliant (CO_DE_VS, sigval_hash_algo))
-          gpgsm_status (ctrl, STATUS_VERIFICATION_COMPLIANCE_MODE,
-                        gnupg_status_compliance_flag (CO_DE_VS));
-      }
-
+      /* Print infos about the signature.  */
       log_info (_("Signature made "));
       if (*sigtime)
-        dump_isotime (sigtime);
+        {
+          /* We take the freedom as noted in RFC3339 to use a space
+           * instead of the :T" delimiter between date and time..  We
+           * also append a separate UTC instead of a "Z" or "+00:00"
+           * suffix because that makes it clear to everyone what kind
+           * of time this is.  */
+          dump_isotime (sigtime);
+          log_printf (" UTC");
+        }
       else
         log_printf (_("[date not given]"));
-      log_printf (_(" using certificate ID 0x%08lX\n"),
-                  gpgsm_get_short_fingerprint (cert, NULL));
+      log_info (_("               using %s key %s\n"), pkalgostr, pkfpr);
+      if (opt.verbose)
+        {
+          log_info (_("algorithm:"));
+          log_printf (" %s + %s",
+                      gcry_pk_algo_name (pkalgo),
+                      gcry_md_algo_name (sigval_hash_algo));
+          if (algo != sigval_hash_algo)
+            log_printf (" (%s)", gcry_md_algo_name (algo));
+          log_printf ("\n");
+        }
 
       audit_log_i (ctrl->audit, AUDIT_DATA_HASH_ALGO, algo);
 
+      /* Check compliance.  */
+      if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
+                                 pkalgo, NULL, nbits, NULL))
+        {
+          char  kidstr[10+1];
+
+          snprintf (kidstr, sizeof kidstr, "0x%08lX",
+                    gpgsm_get_short_fingerprint (cert, NULL));
+          log_error (_("key %s may not be used for signing in %s mode\n"),
+                     kidstr,
+                     gnupg_compliance_option_string (opt.compliance));
+          goto next_signer;
+        }
+
+      if (! gnupg_digest_is_allowed (opt.compliance, 0, sigval_hash_algo))
+        {
+          log_error (_("digest algorithm '%s' may not be used in %s mode\n"),
+                     gcry_md_algo_name (sigval_hash_algo),
+                     gnupg_compliance_option_string (opt.compliance));
+          goto next_signer;
+        }
+
+      /* Check compliance with CO_DE_VS.  */
+      if (gnupg_pk_is_compliant (CO_DE_VS, pkalgo, NULL, nbits, NULL)
+          && gnupg_digest_is_compliant (CO_DE_VS, sigval_hash_algo))
+        gpgsm_status (ctrl, STATUS_VERIFICATION_COMPLIANCE_MODE,
+                      gnupg_status_compliance_flag (CO_DE_VS));
+
+
+      /* Now we can check the signature.  */
       if (msgdigest)
         { /* Signed attributes are available. */
           gcry_md_hd_t md;
@@ -595,6 +618,11 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
         xfree (fpr);
 
+        /* FIXME: INFO_PKALGO correctly shows ECDSA but PKALGO is then
+         * ECC.  We should use the ECDS here and need to find a way to
+         * figure this oult without using the bodus assumtion in
+         * gpgsm_check_cms_signature that ECC is alwas ECDSA.  */
+
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
         tstr = strtimestamp_r (sigtime);
         buf = xasprintf ("%s %s %s %s 0 0 %d %d 00", fpr, tstr,
@@ -636,6 +664,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           ksba_free (p);
         }
 
+
       /* Print a note if this is a qualified signature.  */
       {
         size_t qualbuflen;
@@ -671,6 +700,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       xfree (serial);
       xfree (sigval);
       xfree (msgdigest);
+      xfree (pkalgostr);
+      xfree (pkfpr);
       ksba_cert_release (cert);
       cert = NULL;
     }
