@@ -185,7 +185,7 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
   const char *encr_algo_str;
   const char *wrap_algo_str;
   int hash_algo, cipher_algo;
-  unsigned int keylen, hashlen;
+  unsigned int keylen;
   unsigned char key[32];
   gcry_sexp_t s_data = NULL;
   gcry_sexp_t s_encr = NULL;
@@ -230,12 +230,21 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
   curvebuf = NULL;
 
   /* Our mapping matches the recommended algorithms from RFC-5753 but
-   * not supporing the short curves which would require 3DES.  */
+   * not supporting the short curves which would require 3DES.  */
   if (curvebits < 255)
     {
       err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
       log_error ("%s: curve '%s' is not supported\n", __func__, curve);
       goto leave;
+    }
+  else if (opt.force_ecdh_sha1kdf)
+    {
+      /* dhSinglePass-stdDH-sha1kdf-scheme */
+      encr_algo_str = "1.3.133.16.840.63.0.2";
+      wrap_algo_str = "2.16.840.1.101.3.4.1.45";
+      hash_algo     = GCRY_MD_SHA1;
+      cipher_algo   = GCRY_CIPHER_AES256;
+      keylen        = 32;
     }
   else if (curvebits <= 256)
     {
@@ -243,7 +252,6 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
       encr_algo_str = "1.3.132.1.11.1";
       wrap_algo_str = "2.16.840.1.101.3.4.1.5";
       hash_algo     = GCRY_MD_SHA256;
-      hashlen       = 32;
       cipher_algo   = GCRY_CIPHER_AES128;
       keylen        = 16;
     }
@@ -253,7 +261,6 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
       encr_algo_str = "1.3.132.1.11.2";
       wrap_algo_str = "2.16.840.1.101.3.4.1.25";
       hash_algo     = GCRY_MD_SHA384;
-      hashlen       = 48;
       cipher_algo   = GCRY_CIPHER_AES256;
       keylen        = 24;
     }
@@ -263,7 +270,6 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
       encr_algo_str = "1.3.132.1.11.3";
       wrap_algo_str = "2.16.840.1.101.3.4.1.45";
       hash_algo     = GCRY_MD_SHA512;
-      hashlen       = 64;
       cipher_algo   = GCRY_CIPHER_AES256;
       keylen        = 32;
     }
@@ -338,32 +344,10 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
   if (DBG_CRYPTO)
     log_printhex (secret, secretlen, "ECDH X ..:");
 
-  /* Derive a KEK (key wrapping key) using MESSAGE and SECRET_X.
-   * According to SEC1 3.6.1 we should check that
-   *   SECRETLEN + UKMLEN + 4 < maxhashlen
-   * However, we have no practical limit on the hash length and thus
-   * there is no point in checking this.  The second check that
-   *   KEYLEN < hashlen*(2^32-1)
-   * is obviously also not needed.  Because with our allowed
-   * parameters KEYLEN is always less or equal to HASHLEN so that we
-   * do not need to iterate at all.
-   */
-  log_assert (gcry_md_get_algo_dlen (hash_algo) == hashlen);
-  {
-    gcry_md_hd_t hash_hd;
-    err = gcry_md_open (&hash_hd, hash_algo, 0);
-    if (err)
-      goto leave;
-    gcry_md_write(hash_hd, secret, secretlen);
-    gcry_md_write(hash_hd, "\x00\x00\x00\x01", 4);  /* counter */
-    err = hash_ecc_cms_shared_info (hash_hd, wrap_algo_str, keylen, NULL, 0);
-    gcry_md_final (hash_hd);
-    log_assert (keylen <= sizeof key && keylen <= hashlen);
-    memcpy (key, gcry_md_read (hash_hd, 0), keylen);
-    gcry_md_close (hash_hd);
-    if (err)
-      goto leave;
-  }
+  err = ecdh_derive_kek (key, keylen, hash_algo, wrap_algo_str,
+                         secret, secretlen, NULL, 0);
+  if (err)
+    goto leave;
 
   if (DBG_CRYPTO)
     log_printhex (key, keylen, "KEK .....:");

@@ -106,6 +106,8 @@ struct
 
   int forced_digest_algo; /* User forced hash algorithm. */
 
+  int force_ecdh_sha1kdf; /* Only for debugging and testing.  */
+
   char *def_recipient;    /* userID of the default recipient */
   int def_recipient_self; /* The default recipient is the default key */
 
@@ -392,10 +394,10 @@ int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist,
                    int in_fd, estream_t out_fp);
 
 /*-- decrypt.c --*/
-gpg_error_t hash_ecc_cms_shared_info (gcry_md_hd_t hash_hd,
-                                      const char *wrap_algo_str,
-                                      unsigned int keylen,
-                                      const void *ukm, unsigned int ukmlen);
+gpg_error_t ecdh_derive_kek (unsigned char *key, unsigned int keylen,
+                             int hash_algo, const char *wrap_algo_str,
+                             const void *secret, unsigned int secretlen,
+                             const void *ukm, unsigned int ukmlen);
 int gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp);
 
 /*-- certreqgen.c --*/

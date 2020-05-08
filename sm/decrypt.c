@@ -78,7 +78,7 @@ string_from_gcry_buffer (gcry_buffer_t *buffer)
  *      entityUInfo [0] EXPLICIT OCTET STRING OPTIONAL,
  *      suppPubInfo [2] EXPLICIT OCTET STRING  }
  * as described in RFC-5753, 7.2.  */
-gpg_error_t
+static gpg_error_t
 hash_ecc_cms_shared_info (gcry_md_hd_t hash_hd, const char *wrap_algo_str,
                           unsigned int keylen,
                           const void *ukm, unsigned int ukmlen)
@@ -135,6 +135,63 @@ hash_ecc_cms_shared_info (gcry_md_hd_t hash_hd, const char *wrap_algo_str,
 }
 
 
+
+/* Derive a KEK (key wrapping key) using (SECRET,SECRETLEN), an
+ * optional (UKM,ULMLEN), the wrap algorithm WRAP_ALGO_STR in decimal
+ * dotted form, and the hash algorithm HASH_ALGO.  On success a key of
+ * length KEYLEN is stored at KEY.  */
+gpg_error_t
+ecdh_derive_kek (unsigned char *key, unsigned int keylen,
+                 int hash_algo, const char *wrap_algo_str,
+                 const void *secret, unsigned int secretlen,
+                 const void *ukm, unsigned int ukmlen)
+{
+  gpg_error_t err = 0;
+  unsigned int hashlen;
+  gcry_md_hd_t hash_hd;
+  unsigned char counter;
+  unsigned int n, ncopy;
+
+  hashlen = gcry_md_get_algo_dlen (hash_algo);
+  if (!hashlen)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  err = gcry_md_open (&hash_hd, hash_algo, 0);
+  if (err)
+    return err;
+
+  /* According to SEC1 3.6.1 we should check that
+   *   SECRETLEN + UKMLEN + 4 < maxhashlen
+   * However, we have no practical limit on the hash length and thus
+   * there is no point in checking this.  The second check that
+   *   KEYLEN < hashlen*(2^32-1)
+   * is obviously also not needed.
+   */
+  for (n=0, counter=1; n < keylen; counter++)
+    {
+      if (counter > 1)
+        gcry_md_reset (hash_hd);
+      gcry_md_write (hash_hd, secret, secretlen);
+      gcry_md_write (hash_hd, "\x00\x00\x00", 3);  /* MSBs of counter */
+      gcry_md_write (hash_hd, &counter, 1);
+      err = hash_ecc_cms_shared_info (hash_hd, wrap_algo_str, keylen,
+                                      ukm, ukmlen);
+      if (err)
+        break;
+      gcry_md_final (hash_hd);
+      if (n + hashlen > keylen)
+        ncopy = keylen - n;
+      else
+        ncopy = hashlen;
+      memcpy (key+n, gcry_md_read (hash_hd, 0), ncopy);
+      n += ncopy;
+    }
+
+  gcry_md_close (hash_hd);
+  return err;
+}
+
+
 /* This function will modify SECRET.  NBITS is the size of the curve
  * which which we took from the certificate.  */
 static gpg_error_t
@@ -151,7 +208,7 @@ ecdh_decrypt (unsigned char *secret, size_t secretlen,
   unsigned int ukmlen;
   const unsigned char *data;  /* Alias for ioarray[3].  */
   unsigned int datalen;
-  unsigned int keylen, hashlen;
+  unsigned int keylen;
   unsigned char key[32];
   gcry_cipher_hd_t cipher_hd = NULL;
   unsigned char *result = NULL;
@@ -234,19 +291,21 @@ ecdh_decrypt (unsigned char *secret, size_t secretlen,
     {
       /* dhSinglePass-stdDH-sha256kdf-scheme */
       hash_algo = GCRY_MD_SHA256;
-      hashlen = 32;
     }
   else if (!strcmp (encr_algo_str, "1.3.132.1.11.2"))
     {
       /* dhSinglePass-stdDH-sha384kdf-scheme */
       hash_algo = GCRY_MD_SHA384;
-      hashlen = 48;
     }
   else if (!strcmp (encr_algo_str, "1.3.132.1.11.3"))
     {
       /* dhSinglePass-stdDH-sha512kdf-scheme */
       hash_algo = GCRY_MD_SHA512;
-      hashlen = 64;
+    }
+  else if (!strcmp (encr_algo_str, "1.3.133.16.840.63.0.2"))
+    {
+      /* dhSinglePass-stdDH-sha1kdf-scheme */
+      hash_algo = GCRY_MD_SHA1;
     }
   else
     {
@@ -275,33 +334,10 @@ ecdh_decrypt (unsigned char *secret, size_t secretlen,
       goto leave;
     }
 
-  /* Derive a KEK (key wrapping key) using MESSAGE and SECRET_X.
-   * According to SEC1 3.6.1 we should check that
-   *   SECRETLEN + UKMLEN + 4 < maxhashlen
-   * However, we have no practical limit on the hash length and thus
-   * there is no point in checking this.  The second check that
-   *   KEYLEN < hashlen*(2^32-1)
-   * is obviously also not needed.  Because with our allowed
-   * parameters KEYLEN is always less or equal to HASHLEN so that we
-   * do not need to iterate at all.
-   */
-  log_assert (gcry_md_get_algo_dlen (hash_algo) == hashlen);
-  {
-    gcry_md_hd_t hash_hd;
-    err = gcry_md_open (&hash_hd, hash_algo, 0);
-    if (err)
-      goto leave;
-    gcry_md_write(hash_hd, secret, secretlen);
-    gcry_md_write(hash_hd, "\x00\x00\x00\x01", 4);  /* counter */
-    err = hash_ecc_cms_shared_info (hash_hd, wrap_algo_str, keylen,
-                                    ukm, ukmlen);
-    gcry_md_final (hash_hd);
-    log_assert (keylen <= sizeof key && keylen <= hashlen);
-    memcpy (key, gcry_md_read (hash_hd, 0), keylen);
-    gcry_md_close (hash_hd);
-    if (err)
-      goto leave;
-  }
+  err = ecdh_derive_kek (key, keylen, hash_algo, wrap_algo_str,
+                         secret, secretlen, ukm, ukmlen);
+  if (err)
+    goto leave;
 
   if (DBG_CRYPTO)
     log_printhex (key, keylen, "KEK .....:");

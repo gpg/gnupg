@@ -106,6 +106,7 @@ enum cmd_and_opt_values {
   oDebugAllowCoreDump,
   oDebugNoChainValidation,
   oDebugIgnoreExpiration,
+  oDebugForceECDHSHA1KDF,
   oLogFile,
   oNoLogFile,
   oAuditLog,
@@ -270,6 +271,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDebugAllowCoreDump, "debug-allow-core-dump", "@"),
   ARGPARSE_s_n (oDebugNoChainValidation, "debug-no-chain-validation", "@"),
   ARGPARSE_s_n (oDebugIgnoreExpiration,  "debug-ignore-expiration", "@"),
+  ARGPARSE_s_n (oDebugForceECDHSHA1KDF,  "debug-force-ecdh-sha1kdf", "@"),
   ARGPARSE_s_s (oLogFile, "log-file",
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
@@ -1355,6 +1357,7 @@ main ( int argc, char **argv)
           break;
         case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
         case oDebugIgnoreExpiration: opt.ignore_expiration = 1; break;
+        case oDebugForceECDHSHA1KDF: opt.force_ecdh_sha1kdf = 1; break;
 
         case oStatusFD:
             ctrl.status_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 1);
