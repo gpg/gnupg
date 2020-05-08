@@ -455,6 +455,11 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
   if (DBG_CRYPTO)
     log_printhex (seskey+n, seskeylen-n, "CEK .....:");
 
+  if (opt.verbose)
+    log_info (_("%s.%s encrypted data\n"),
+              gcry_cipher_algo_name (parm->algo),
+              cipher_mode_to_string (parm->mode));
+
   rc = gcry_cipher_open (&parm->hd, parm->algo, parm->mode, 0);
   if (rc)
     {
@@ -733,6 +738,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
               ksba_sexp_t serial;
               ksba_sexp_t enc_val;
               char *hexkeygrip = NULL;
+              char *pkalgostr = NULL;
+              char *pkfpr = NULL;
               char *desc = NULL;
               char kidbuf[16+1];
               int tmp_rc;
@@ -819,7 +826,11 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
                   desc = gpgsm_format_keydesc (cert);
 
+                  pkfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+                  pkalgostr = gpgsm_pubkey_algo_string (cert, NULL);
                   pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
+                  if (!opt.quiet)
+                    log_info (_("encrypted to %s key %s\n"), pkalgostr, pkfpr);
 
                   /* Check compliance.  */
                   if (!gnupg_pk_is_allowed (opt.compliance,
@@ -886,6 +897,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                     }
                   audit_log_ok (ctrl->audit, AUDIT_RECP_RESULT, rc);
                 }
+              xfree (pkalgostr);
+              xfree (pkfpr);
               xfree (hexkeygrip);
               xfree (desc);
             }
