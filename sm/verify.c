@@ -457,13 +457,17 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       pkfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
       pkalgostr = gpgsm_pubkey_algo_string (cert, NULL);
       pkalgo = gpgsm_get_key_algo_info (cert, &nbits);
+      /* Remap the ECC algo to the algo we use.  Note that EdDSA has
+       * already been mapped.  */
+      if (pkalgo == GCRY_PK_ECC)
+        pkalgo = GCRY_PK_ECDSA;
 
       /* Print infos about the signature.  */
       log_info (_("Signature made "));
       if (*sigtime)
         {
           /* We take the freedom as noted in RFC3339 to use a space
-           * instead of the :T" delimiter between date and time..  We
+           * instead of the "T" delimiter between date and time.  We
            * also append a separate UTC instead of a "Z" or "+00:00"
            * suffix because that makes it clear to everyone what kind
            * of time this is.  */
@@ -477,7 +481,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
         {
           log_info (_("algorithm:"));
           log_printf (" %s + %s",
-                      gcry_pk_algo_name (pkalgo),
+                      pubkey_algo_to_string (pkalgo),
                       gcry_md_algo_name (sigval_hash_algo));
           if (algo != sigval_hash_algo)
             log_printf (" (%s)", gcry_md_algo_name (algo));

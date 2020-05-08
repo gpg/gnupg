@@ -642,6 +642,23 @@ pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid)
 }
 
 
+/* Map a pubkey algo id from gcrypt to a string.  This is the same as
+ * gcry_pk_algo_name but makes sure that the ECC algo identifiers are
+ * not all mapped to "ECC".  */
+const char *
+pubkey_algo_to_string (int algo)
+{
+  if (algo == GCRY_PK_ECDSA)
+    return "ECDSA";
+  else if (algo == GCRY_PK_ECDH)
+    return "ECDH";
+  else if (algo == GCRY_PK_EDDSA)
+    return "EdDSA";
+  else
+    return gcry_pk_algo_name (algo);
+}
+
+
 /* Map a hash algo id from gcrypt to a string.  This is the same as
  * gcry_md_algo_name but the returned string is lower case, as
  * expected by libksba and it avoids some overhead.  */

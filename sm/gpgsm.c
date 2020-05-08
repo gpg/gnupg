@@ -510,6 +510,7 @@ our_pk_test_algo (int algo)
     {
     case GCRY_PK_RSA:
     case GCRY_PK_ECDSA:
+    case GCRY_PK_EDDSA:
       return gcry_pk_test_algo (algo);
     default:
       return 1;
