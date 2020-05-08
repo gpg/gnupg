@@ -63,16 +63,6 @@
 #define is_ELGAMAL(a) ((a)==PUBKEY_ALGO_ELGAMAL_E)
 #define is_DSA(a)     ((a)==PUBKEY_ALGO_DSA)
 
-#define CALC_NBITS(nbits,p)  if (nbits >= 8 && !(*p & 0x80))                 \
-                               if (--nbits >= 7 && !(*p & 0x40))             \
-                                 if (--nbits >= 6 && !(*p & 0x20))           \
-                                   if (--nbits >= 5 && !(*p & 0x10))         \
-                                     if (--nbits >= 4 && !(*p & 0x08))       \
-                                       if (--nbits >= 3 && !(*p & 0x04))     \
-                                         if (--nbits >= 2 && !(*p & 0x02))   \
-                                           if (--nbits >= 1 && !(*p & 0x01)) \
-                                             --nbits
-
 /* A pointer to the packet object.  */
 typedef struct packet_struct PACKET;
 

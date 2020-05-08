@@ -304,14 +304,6 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
 
       /* gcry_log_debugmpi ("a", a); */
       p = gcry_mpi_get_opaque (a, &nbits);
-      if (p)
-        {
-          nbits = ((nbits + 7)/8)*8;
-          /* Strip leading zero bits.  */
-          for (; nbits >= 8 && !*p; p++, nbits -= 8)
-            ;
-          CALC_NBITS (nbits, p);
-        }
       /* gcry_log_debug ("   [%u bit]\n", nbits); */
       /* gcry_log_debughex (" ", p, (nbits+7)/8); */
       lenhdr[0] = nbits >> 8;
