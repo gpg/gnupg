@@ -529,6 +529,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       release_signerlist = 1;
     }
 
+
   /* Figure out the hash algorithm to use. We do not want to use the
      one for the certificate but if possible an OID for the plain
      algorithm.  */
@@ -537,6 +538,11 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   for (i=0, cl=signerlist; cl; cl = cl->next, i++)
     {
       const char *oid;
+      unsigned int nbits;
+      int pk_algo;
+
+      pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
+      cl->pk_algo = pk_algo;
 
       if (opt.forced_digest_algo)
         {
@@ -545,7 +551,21 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         }
       else
         {
-          oid = ksba_cert_get_digest_algo (cl->cert);
+          if (pk_algo == GCRY_PK_ECC)
+            {
+              /* Map the Curve to a corresponding hash algo.  */
+              if (nbits <= 256)
+                oid = "2.16.840.1.101.3.4.2.1"; /* sha256 */
+              else if (nbits <= 384)
+                oid = "2.16.840.1.101.3.4.2.2"; /* sha384 */
+              else
+                oid = "2.16.840.1.101.3.4.2.3"; /* sha512 */
+            }
+          else
+            {
+              /* For RSA we reuse the hash algo used by the certificate.  */
+              oid = ksba_cert_get_digest_algo (cl->cert);
+            }
           cl->hash_algo = oid ? gcry_md_map_name (oid) : 0;
         }
       switch (cl->hash_algo)
@@ -581,27 +601,23 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           goto leave;
         }
 
-      {
-        unsigned int nbits;
-        int pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
+      if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo,
+                                 NULL, nbits, NULL))
+        {
+          char  kidstr[10+1];
 
-        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo,
-                                   NULL, nbits, NULL))
-          {
-            char  kidstr[10+1];
+          snprintf (kidstr, sizeof kidstr, "0x%08lX",
+                    gpgsm_get_short_fingerprint (cl->cert, NULL));
+          log_error (_("key %s may not be used for signing in %s mode\n"),
+                     kidstr,
+                     gnupg_compliance_option_string (opt.compliance));
+          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+          goto leave;
+        }
 
-            snprintf (kidstr, sizeof kidstr, "0x%08lX",
-                      gpgsm_get_short_fingerprint (cl->cert, NULL));
-            log_error (_("key %s may not be used for signing in %s mode\n"),
-                       kidstr,
-                       gnupg_compliance_option_string (opt.compliance));
-            err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-            goto leave;
-          }
-      }
     }
 
-  if (opt.verbose)
+  if (opt.verbose > 1 || opt.debug)
     {
       for (i=0, cl=signerlist; cl; cl = cl->next, i++)
         log_info (_("hash algorithm used for signer %d: %s (%s)\n"),
@@ -891,17 +907,23 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                   goto leave;
                 }
               rc = 0;
-              {
-                int pkalgo = gpgsm_get_key_algo_info (cl->cert, NULL);
-                buf = xtryasprintf ("%c %d %d 00 %s %s",
-                                    detached? 'D':'S',
-                                    pkalgo,
-                                    cl->hash_algo,
-                                    signed_at,
-                                    fpr);
-                if (!buf)
-                  rc = gpg_error_from_syserror ();
-              }
+              if (opt.verbose)
+                {
+                  char *pkalgostr = gpgsm_pubkey_algo_string (cl->cert, NULL);
+                  log_info (_("%s/%s signature using %s key %s\n"),
+                            pubkey_algo_to_string (cl->pk_algo),
+                            gcry_md_algo_name (cl->hash_algo),
+                            pkalgostr, fpr);
+                  xfree (pkalgostr);
+                }
+              buf = xtryasprintf ("%c %d %d 00 %s %s",
+                                  detached? 'D':'S',
+                                  cl->pk_algo,
+                                  cl->hash_algo,
+                                  signed_at,
+                                  fpr);
+              if (!buf)
+                rc = gpg_error_from_syserror ();
               xfree (fpr);
               if (rc)
                 {
@@ -926,7 +948,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
   audit_log (ctrl->audit, AUDIT_SIGNING_DONE);
   log_info ("signature created\n");
-
 
  leave:
   if (rc)

@@ -245,6 +245,7 @@ struct certlist_s
   ksba_cert_t cert;
   int is_encrypt_to; /* True if the certificate has been set through
                         the --encrypto-to option. */
+  int pk_algo;       /* The PK_ALGO from CERT or 0 if not yet known.  */
   int hash_algo;     /* Used to track the hash algorithm to use.  */
   const char *hash_algo_oid;  /* And the corresponding OID.  */
 };
