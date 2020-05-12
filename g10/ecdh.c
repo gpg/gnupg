@@ -98,7 +98,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   gpg_error_t err;
   byte *secret_x;
   int secret_x_size;
-  unsigned int nbits, nbits1;
+  unsigned int nbits;
   const unsigned char *kek_params;
   size_t kek_params_size;
   int kdf_hash_algo;
@@ -118,7 +118,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     /* Extract x component of the shared point: this is the actual
        shared secret. */
     nbytes = (mpi_get_nbits (pkey[1] /* public point */)+7)/8;
-    secret_x = gcry_mpi_get_opaque (shared_mpi, &nbits1);
+    secret_x = gcry_mpi_get_opaque (shared_mpi, NULL);
 
     /* Expected size of the x component */
     secret_x_size = (nbits+7)/8;
