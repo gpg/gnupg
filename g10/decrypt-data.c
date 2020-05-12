@@ -157,7 +157,7 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
   nonce[i++] ^= dfx->chunkindex;
 
   if (DBG_CRYPTO)
-    log_printhex ("nonce:", nonce, i);
+    log_printhex (nonce, i, "nonce:");
   err = gcry_cipher_setiv (dfx->cipher_hd, nonce, i);
   if (err)
     return err;
@@ -187,7 +187,7 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
       ad[20] = dfx->total;
     }
   if (DBG_CRYPTO)
-    log_printhex ("authdata:", ad, final? 21 : 13);
+    log_printhex (ad, final? 21 : 13, "authdata:");
   return gcry_cipher_authenticate (dfx->cipher_hd, ad, final? 21 : 13);
 }
 
@@ -200,7 +200,7 @@ aead_checktag (decode_filter_ctx_t dfx, int final, const void *tagbuf)
   gpg_error_t err;
 
   if (DBG_FILTER)
-    log_printhex ("tag:", tagbuf, 16);
+    log_printhex (tagbuf, 16, "tag:");
   err = gcry_cipher_checktag (dfx->cipher_hd, tagbuf, 16);
   if (err)
     {
@@ -350,7 +350,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
         goto leave; /* Should never happen.  */
 
       if (DBG_CRYPTO)
-        log_printhex ("thekey:", dek->key, dek->keylen);
+        log_printhex (dek->key, dek->keylen, "thekey:");
       rc = gcry_cipher_setkey (dfx->cipher_hd, dek->key, dek->keylen);
       if (gpg_err_code (rc) == GPG_ERR_WEAK_KEY)
         {
@@ -533,8 +533,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
           || datalen != 20
           || memcmp (gcry_md_read (dfx->mdc_hash, 0), dfx->holdback+2, datalen))
         rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
-      /* log_printhex("MDC message:", dfx->holdback, 22); */
-      /* log_printhex("MDC calc:", gcry_md_read (dfx->mdc_hash,0), datalen); */
+      /* log_printhex(dfx->holdback, 22, "MDC message:"); */
+      /* log_printhex(gcry_md_read (dfx->mdc_hash,0), datalen, "MDC calc:"); */
     }
 
  leave:

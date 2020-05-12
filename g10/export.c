@@ -1028,11 +1028,11 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   /* log_debug ("XXX pubkey_algo=%d\n", pubkey_algo); */
   /* log_debug ("XXX is_protected=%d\n", is_protected); */
   /* log_debug ("XXX protect_algo=%d\n", protect_algo); */
-  /* log_printhex ("XXX iv", iv, ivlen); */
+  /* log_printhex (iv, ivlen, "XXX iv"); */
   /* log_debug ("XXX ivlen=%d\n", ivlen); */
   /* log_debug ("XXX s2k_mode=%d\n", s2k_mode); */
   /* log_debug ("XXX s2k_algo=%d\n", s2k_algo); */
-  /* log_printhex ("XXX s2k_salt", s2k_salt, sizeof s2k_salt); */
+  /* log_printhex (s2k_salt, sizeof s2k_salt, "XXX s2k_salt"); */
   /* log_debug ("XXX s2k_count=%lu\n", (unsigned long)s2k_count); */
   /* for (idx=0; skey[idx]; idx++) */
   /*   { */
@@ -1043,7 +1043,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   /*         void *p; */
   /*         unsigned int nbits; */
   /*         p = gcry_mpi_get_opaque (skey[idx], &nbits); */
-  /*         log_printhex (NULL, p, (nbits+7)/8); */
+  /*         log_printhex ( p, (nbits+7)/8, NULL); */
   /*       } */
   /*     else */
   /*       gcry_mpi_dump (skey[idx]); */
@@ -1110,7 +1110,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
       /*         void *p; */
       /*         unsigned int nbits; */
       /*         p = gcry_mpi_get_opaque (skey[idx], &nbits); */
-      /*         log_printhex (NULL, p, (nbits+7)/8); */
+      /*         log_printhex (p, (nbits+7)/8, NULL); */
       /*       } */
       /*     else */
       /*       gcry_mpi_dump (skey[idx]); */

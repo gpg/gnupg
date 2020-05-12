@@ -878,11 +878,11 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   log_debug ("XXX pubkey_algo=%d\n", pubkey_algo);
   log_debug ("XXX is_protected=%d\n", is_protected);
   log_debug ("XXX protect_algo=%d\n", protect_algo);
-  log_printhex ("XXX iv", iv, ivlen);
+  log_printhex (iv, ivlen, "XXX iv");
   log_debug ("XXX ivlen=%d\n", ivlen);
   log_debug ("XXX s2k_mode=%d\n", s2k_mode);
   log_debug ("XXX s2k_algo=%d\n", s2k_algo);
-  log_printhex ("XXX s2k_salt", s2k_salt, sizeof s2k_salt);
+  log_printhex (s2k_salt, sizeof s2k_salt, "XXX s2k_salt");
   log_debug ("XXX s2k_count=%lu\n", (unsigned long)s2k_count);
   log_debug ("XXX curve='%s'\n", curve);
   for (idx=0; skey[idx]; idx++)

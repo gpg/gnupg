@@ -76,7 +76,7 @@ pk_ecdh_default_params (unsigned int qbits)
     }
   log_assert (i < DIM (kek_params_table));
   if (DBG_CRYPTO)
-    log_printhex ("ECDH KEK params are", kek_params, sizeof(kek_params) );
+    log_printhex (kek_params, sizeof(kek_params), "ECDH KEK params are");
 
   return gcry_mpi_set_opaque (NULL, kek_params, 4 * 8);
 }
@@ -159,7 +159,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
 
     if (DBG_CRYPTO)
-      log_printhex ("ECDH shared secret X is:", secret_x, secret_x_size );
+      log_printhex (secret_x, secret_x_size, "ECDH shared secret X is:");
   }
 
   /*** We have now the shared secret bytes in secret_x. ***/
@@ -179,7 +179,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   kek_params_size = (nbits+7)/8;
 
   if (DBG_CRYPTO)
-    log_printhex ("ecdh KDF params:", kek_params, kek_params_size);
+    log_printhex (kek_params, kek_params_size, "ecdh KDF params:");
 
   /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
   if (kek_params_size != 4 || kek_params[0] != 3 || kek_params[1] != 1)
@@ -236,7 +236,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       }
 
     if(DBG_CRYPTO)
-      log_printhex ("ecdh KDF message params are:", message, message_size);
+      log_printhex (message, message_size, "ecdh KDF message params are:");
   }
 
   /* Derive a KEK (key wrapping key) using MESSAGE and SECRET_X. */
@@ -272,7 +272,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     /* We could have allocated more, so clean the tail before returning.  */
     memset (secret_x+secret_x_size, 0, old_size - secret_x_size);
     if (DBG_CRYPTO)
-      log_printhex ("ecdh KEK is:", secret_x, secret_x_size );
+      log_printhex (secret_x, secret_x_size, "ecdh KEK is:");
   }
 
   /* And, finally, aeswrap with key secret_x.  */
@@ -338,7 +338,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
           }
 
         if (DBG_CRYPTO)
-          log_printhex ("ecdh encrypting  :", in, data_buf_size );
+          log_printhex (in, data_buf_size, "ecdh encrypting  :");
 
         err = gcry_cipher_encrypt (hd, data_buf+1, data_buf_size+8,
                                    in, data_buf_size);
@@ -354,7 +354,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         data_buf[0] = data_buf_size+8;
 
         if (DBG_CRYPTO)
-          log_printhex ("ecdh encrypted to:", data_buf+1, data_buf[0] );
+          log_printhex (data_buf+1, data_buf[0], "ecdh encrypted to:");
 
         result = gcry_mpi_set_opaque (NULL, data_buf, 8 * (1+data_buf[0]));
         if (!result)
@@ -391,7 +391,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         data_buf_size = data_buf[0];
 
         if (DBG_CRYPTO)
-          log_printhex ("ecdh decrypting :", data_buf+1, data_buf_size);
+          log_printhex (data_buf+1, data_buf_size, "ecdh decrypting :");
 
         err = gcry_cipher_decrypt (hd, in, data_buf_size, data_buf+1,
                                    data_buf_size);
@@ -407,7 +407,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         data_buf_size -= 8;
 
         if (DBG_CRYPTO)
-          log_printhex ("ecdh decrypted to :", in, data_buf_size);
+          log_printhex (in, data_buf_size, "ecdh decrypted to :");
 
         /* Padding is removed later.  */
         /* if (in[data_buf_size-1] > 8 ) */

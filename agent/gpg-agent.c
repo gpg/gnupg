@@ -2618,7 +2618,7 @@ putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   if (!data)
     goto leave;
 
-  /* log_printhex ("request:", data, 20); */
+  /* log_printhex (data, 20, "request:"); */
 
   ctrl = xtrycalloc (1, sizeof *ctrl);
   if (!ctrl)
@@ -2639,7 +2639,7 @@ putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   if (!serve_mmapped_ssh_request (ctrl, data, PUTTY_IPC_MAXLEN))
     ret = 1; /* Valid ssh message has been constructed.  */
   agent_deinit_default_ctrl (ctrl);
-  /* log_printhex ("  reply:", data, 20); */
+  /* log_printhex (data, 20, "  reply:"); */
 
  leave:
   xfree (ctrl);

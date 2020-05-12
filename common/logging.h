@@ -103,11 +103,12 @@ void log_debug_with_string (const char *string, const char *fmt,
 void log_printf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 void log_flush (void);
 
-/* Print a hexdump of BUFFER.  With TEXT passes as NULL print just the
-   raw dump, with TEXT being an empty string, print a trailing
-   linefeed, otherwise print an entire debug line with TEXT followed
-   by the hexdump and a final LF.  */
-void log_printhex (const char *text, const void *buffer, size_t length);
+/* Print a hexdump of BUFFER.  With FMT passed as NULL print just the
+ * raw dump, with FMT being an empty string, print a trailing
+ * linefeed, otherwise print an entire debug line with expanded FMT
+ * followed by the hexdump and a final LF.  */
+void log_printhex (const void *buffer, size_t length,
+                   const char *fmt, ...) GPGRT_ATTR_PRINTF(3,4);
 
 void log_clock (const char *string);
 

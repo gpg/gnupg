@@ -284,7 +284,7 @@ dump_string (const char *string)
       else
         {
           log_printf ( "[ ");
-          log_printhex (NULL, string, strlen (string));
+          log_printhex (string, strlen (string), NULL);
           log_printf ( " ]");
         }
     }

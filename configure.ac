@@ -1640,7 +1640,7 @@ if test "$GCC" = yes; then
           AC_MSG_RESULT($_gcc_wopt)
         fi
         if test x"$_gcc_wopt" = xyes ; then
-          mycflags="$mycflags -W -Wno-sign-compare"
+          mycflags="$mycflags -W -Wno-sign-compare -Wno-format-zero-length"
           mycflags="$mycflags -Wno-missing-field-initializers"
         fi
 

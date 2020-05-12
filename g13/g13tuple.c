@@ -318,7 +318,7 @@ dump_tupledesc (tupledesc_t tuples)
               if (n < 100 && all_printable (value, n))
                 log_printf ("%.*s\n", (int)n, (const char*)value);
               else
-                log_printhex ("", value, n);
+                log_printhex (value, n, "");
               break;
 
             case KEYBLOB_TAG_CONT_NSEC:
@@ -327,11 +327,11 @@ dump_tupledesc (tupledesc_t tuples)
               if (!convert_uint (value, n, &uint))
                 log_printf ("%llu\n", uint);
               else
-                log_printhex ("", value, n);
+                log_printhex (value, n, "");
               break;
 
             default:
-              log_printhex ("", value, n);
+              log_printhex (value, n, "");
               break;
             }
         }

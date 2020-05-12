@@ -512,10 +512,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
               if (DBG_X509)
                 {
                   if (msgdigest)
-                    log_printhex ("message:  ", msgdigest, msgdigestlen);
+                    log_printhex (msgdigest, msgdigestlen, "message:  ");
                   if (s)
-                    log_printhex ("computed: ",
-                                  s, gcry_md_get_algo_dlen (algo));
+                    log_printhex (s, gcry_md_get_algo_dlen (algo),
+                                  "computed: ");
                 }
               fpr = gpgsm_fpr_and_name_for_status (cert);
               gpgsm_status (ctrl, STATUS_BADSIG, fpr);

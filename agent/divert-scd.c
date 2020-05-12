@@ -169,7 +169,7 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
   memcpy (frame, asn, asnlen);
   memcpy (frame+asnlen, digest, digestlen);
   if (DBG_CRYPTO)
-    log_printhex ("encoded hash:", frame, asnlen+digestlen);
+    log_printhex (frame, asnlen+digestlen, "encoded hash:");
 
   *r_val = frame;
   *r_len = asnlen+digestlen;

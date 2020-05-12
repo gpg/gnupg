@@ -64,8 +64,8 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
 
   if (DBG_CRYPTO)
     {
-      log_printhex ("keygrip:", ctrl->keygrip, 20);
-      log_printhex ("cipher: ", ciphertext, ciphertextlen);
+      log_printhex (ctrl->keygrip, 20, "keygrip:");
+      log_printhex (ciphertext, ciphertextlen, "cipher: ");
     }
   rc = agent_key_from_file (ctrl, NULL, desc_text,
                             ctrl->keygrip, &shadow_info,

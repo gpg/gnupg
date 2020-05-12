@@ -259,7 +259,7 @@ get_it (ctrl_t ctrl,
    * CSUM
    */
   if (DBG_CRYPTO)
-    log_printhex ("DEK frame:", frame, nframe);
+    log_printhex (frame, nframe, "DEK frame:");
   n = 0;
 
   if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
@@ -372,7 +372,7 @@ get_it (ctrl_t ctrl,
   if (DBG_CLOCK)
     log_clock ("decryption ready");
   if (DBG_CRYPTO)
-    log_printhex ("DEK is:", dek->key, dek->keylen);
+    log_printhex (dek->key, dek->keylen, "DEK is:");
 
   /* Check that the algo is in the preferences and whether it has
    * expired.  Also print a status line with the key's fingerprint.  */

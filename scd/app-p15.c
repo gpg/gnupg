@@ -744,7 +744,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
         }
       else
         {
-          log_printhex ("p15: ODF format not supported:", p, buflen);
+          log_printhex (p, buflen, "p15: ODF format not supported:");
           xfree (buffer);
           return gpg_error (GPG_ERR_INV_OBJ);
         }
@@ -799,7 +799,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
       if (n < buflen)
         {
           log_info ("p15: warning: garbage detected at end of ODF: ");
-          log_printhex ("", p, buflen);
+          log_printhex (p, buflen, "");
         }
     }
 
@@ -2463,7 +2463,7 @@ read_ef_tokeninfo (app_t app)
     {
       /* (We use a separate log_info to avoid the "DBG:" prefix.)  */
       log_info ("p15:  serialNumber .: ");
-      log_printhex ("", p, objlen);
+      log_printhex (p, objlen, "");
     }
   p += objlen;
   n -= objlen;
@@ -3192,7 +3192,7 @@ micardo_mse (app_t app, unsigned short fid)
       if (opt.verbose)
         {
           log_info (buffer, buflen, "p15: keyD record: ");
-          log_printhex ("", buffer, buflen);
+          log_printhex (buffer, buflen, "");
         }
       p = find_tlv (buffer, buflen, 0x83, &n);
       if (p && n == 4 && ((p[2]<<8)|p[3]) == fid)
