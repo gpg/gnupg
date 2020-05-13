@@ -1,6 +1,37 @@
 Noteworthy changes in version 2.2.21 (unreleased)
 -------------------------------------------------
 
+  * gpg: Improve symmetric decryption speed by about 25%.
+    See commit 144b95cc9d.
+
+  * gpg: Support decryption of AEAD encrypted data packets.
+
+  * gpg: Add option --no-include-key-block. [#4856]
+
+  * gpg: Allow for extra padding in ECDH.  [#4908]
+
+  * gpgsm: Certificates without a CRL distribution point are now
+    considered valid without looking up a CRL.  The new option
+    --enable-issuer-based-crl-check can be used to revert to the
+    former behaviour.
+
+  * gpgsm: Support rsaPSS signature verification.  [#4538]
+
+  * gpgsm: Unless CRL checking is disabled lookup a missing issuer
+    certificate using the certificate's authorityInfoAccess.  [#4898]
+
+  * gpgsm: Fix possible NULL-deref in messages of --gen-key.  [#4895]
+
+  * scd: Support the CardOS 5 based D-Trust Card 3.1.
+
+  * dirmngr: Allow http URLs with "LOOKUP --url".
+
+  * wkd: Take name of sendmail from configure.  Fixes an OpenBSD
+    specific bug.  [#4886]
+
+  Release-info: https://dev.gnupg.org/T4897
+  See-also: gnupg-announce/2020q2/00044?.html
+
 
 Noteworthy changes in version 2.2.20 (2020-03-20)
 -------------------------------------------------
