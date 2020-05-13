@@ -297,6 +297,7 @@ char *gpgsm_get_certid (ksba_cert_t cert);
 
 
 /*-- certdump.c --*/
+const void *gpgsm_get_serial (ksba_const_sexp_t sn, size_t *r_length);
 void gpgsm_print_serial (estream_t fp, ksba_const_sexp_t p);
 void gpgsm_print_time (estream_t fp, ksba_isotime_t t);
 void gpgsm_print_name2 (FILE *fp, const char *string, int translate);

@@ -35,6 +35,7 @@
 
 #include "keydb.h"
 #include "../common/i18n.h"
+#include "../common/membuf.h"
 
 
 /* Return the number of bits of the Q parameter from the DSA key
@@ -348,20 +349,27 @@ int
 gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 {
   const char *algoid;
-  gcry_md_hd_t md;
+  gcry_md_hd_t md = NULL;
+  void *certder = NULL;
+  size_t certderlen;
   int rc, algo;
   ksba_sexp_t p;
   size_t n;
   gcry_sexp_t s_sig, s_data, s_pkey;
   int use_pss = 0;
+  int use_eddsa = 0;
   unsigned int saltlen;
 
   algo = gcry_md_map_name ( (algoid=ksba_cert_get_digest_algo (cert)));
   if (!algo && algoid && !strcmp (algoid, "1.2.840.113549.1.1.10"))
     use_pss = 1;
+  else if (algoid && !strcmp (algoid, "1.3.101.112"))
+    use_eddsa = 1;
+  else if (algoid && !strcmp (algoid, "1.3.101.113"))
+    use_eddsa = 2;
   else if (!algo)
     {
-      log_error ("unknown digest algorithm '%s' used certificate\n",
+      log_error ("unknown digest algorithm '%s' used in certificate\n",
                  algoid? algoid:"?");
       if (algoid
           && (  !strcmp (algoid, "1.2.840.113549.1.1.2")
@@ -400,24 +408,50 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
     }
 
 
-  /* Hash the to-be-signed parts of the certificate.  */
-  rc = gcry_md_open (&md, algo, 0);
-  if (rc)
+  /* Hash the to-be-signed parts of the certificate or but them into a
+   * buffer for the EdDSA algorithms.  */
+  if (use_eddsa)
     {
-      log_error ("md_open failed: %s\n", gpg_strerror (rc));
-      return rc;
-    }
-  if (DBG_HASHING)
-    gcry_md_debug (md, "hash.cert");
+      membuf_t mb;
 
-  rc = ksba_cert_hash (cert, 1, HASH_FNC, md);
-  if (rc)
-    {
-      log_error ("ksba_cert_hash failed: %s\n", gpg_strerror (rc));
-      gcry_md_close (md);
-      return rc;
+      init_membuf (&mb, 2048);
+      rc = ksba_cert_hash (cert, 1,
+                           (void (*)(void *, const void*,size_t))put_membuf,
+                           &mb);
+      if (rc)
+        {
+          log_error ("ksba_cert_hash failed: %s\n", gpg_strerror (rc));
+          xfree (get_membuf (&mb, NULL));
+          return rc;
+        }
+      certder = get_membuf (&mb, &certderlen);
+      if (!certder)
+        {
+          rc = gpg_error_from_syserror ();
+          log_error ("getting tbsCertificate failed: %s\n", gpg_strerror (rc));
+          return rc;
+        }
     }
-  gcry_md_final (md);
+  else
+    {
+      rc = gcry_md_open (&md, algo, 0);
+      if (rc)
+        {
+          log_error ("md_open failed: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+      if (DBG_HASHING)
+        gcry_md_debug (md, "hash.cert");
+
+      rc = ksba_cert_hash (cert, 1, HASH_FNC, md);
+      if (rc)
+        {
+          log_error ("ksba_cert_hash failed: %s\n", gpg_strerror (rc));
+          gcry_md_close (md);
+          return rc;
+        }
+      gcry_md_final (md);
+    }
 
   /* Get the public key from the certificate.  */
   p = ksba_cert_get_public_key (issuer_cert);
@@ -428,6 +462,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       gcry_md_close (md);
       ksba_free (p);
       gcry_sexp_release (s_sig);
+      xfree (certder);
       return gpg_error (GPG_ERR_BUG);
     }
   rc = gcry_sexp_sscan ( &s_pkey, NULL, (char*)p, n);
@@ -437,6 +472,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
       gcry_md_close (md);
       gcry_sexp_release (s_sig);
+      xfree (certder);
       return rc;
     }
   if (DBG_CRYPTO)
@@ -454,6 +490,21 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
                             saltlen);
       if (rc)
         BUG ();
+    }
+  else if (use_eddsa)
+    {
+      rc = gcry_sexp_build (&s_data, NULL,
+                            "(data(flags eddsa)(hash-algo %s)(value %b))",
+                            use_eddsa == 1? "sha512":"shake256",
+                            (int)certderlen, certder);
+      xfree (certder);
+      certder = NULL;
+      if (rc)
+        {
+          log_error ("building data for eddsa failed: %s\n", gpg_strerror (rc));
+          gcry_sexp_release (s_sig);
+          return rc;
+        }
     }
   else
     {
@@ -479,7 +530,59 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   /* Verify.  */
   rc = gcry_pk_verify (s_sig, s_data, s_pkey);
   if (DBG_X509)
-      log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
+    log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
+  if (use_eddsa && (gpg_err_code (rc) == GPG_ERR_INTERNAL
+                    || gpg_err_code (rc) == GPG_ERR_INV_CURVE))
+    {
+      /* Let's assume that this is a certificate for an ECDH key
+       * signed using EdDSA.  This won't work.  We should have located
+       * the public key using subjectKeyIdentifier (SKI) to not run
+       * into this problem.  However, we don't do this for self-signed
+       * certificates and we don't have a way to search for arbitrary
+       * keys based on the SKI.  Note: The sample certificate from
+       * RFC-8410 uses a SHA-1 hash of the public key for the SKI; so
+       * we are not able to verify it.
+       */
+      ksba_sexp_t ski;
+      const unsigned char *skider;
+      size_t skiderlen;
+
+      if (DBG_X509)
+        log_debug ("retrying using the ski\n");
+      if (!ksba_cert_get_subj_key_id (issuer_cert, NULL, &ski))
+        {
+          skider = gpgsm_get_serial (ski, &skiderlen);
+          if (!skider)
+            ;
+          else if (skiderlen == (use_eddsa==1? 32:57))
+            {
+              /* Here we assume that the SKI is actually the public key.  */
+              gcry_sexp_release (s_pkey);
+              rc = gcry_sexp_build (&s_pkey, NULL,
+                                     "(public-key(ecc(curve%s)(q%b)))",
+                                     use_eddsa==1? "1.3.101.112":"1.3.101.113",
+                                     (int)skiderlen, skider);
+              if (rc)
+                log_error ("building pubkey from SKI failed: %s\n",
+                           gpg_strerror (rc));
+              else
+                rc = gcry_pk_verify (s_sig, s_data, s_pkey);
+              if (DBG_X509)
+                log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
+            }
+          else if (skiderlen == 20)
+            {
+              log_printhex (skider, skiderlen, "ski might be the SHA-1:");
+            }
+          else
+            {
+              if (DBG_X509)
+                log_debug(skider, skiderlen, "ski is:");
+            }
+          ksba_free (ski);
+        }
+    }
+
   gcry_md_close (md);
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_data);

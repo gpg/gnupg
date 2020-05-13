@@ -48,6 +48,28 @@ struct dn_array_s {
 };
 
 
+/* Get the first first element from the s-expression SN and return a
+ * pointer to it.  Stores the length at R_LENGTH.  Returns NULL for no
+ * value or an invalid expression.  */
+const void *
+gpgsm_get_serial (ksba_const_sexp_t sn, size_t *r_length)
+{
+  const char *p = (const char *)sn;
+  unsigned long n;
+  char *endp;
+
+  if (!p || *p != '(')
+    return NULL;
+  p++;
+  n = strtoul (p, &endp, 10);
+  p = endp;
+  if (*p++ != ':')
+    return NULL;
+  *r_length = n;
+  return p;
+}
+
+
 /* Print the first element of an S-Expression. */
 void
 gpgsm_print_serial (estream_t fp, ksba_const_sexp_t sn)
