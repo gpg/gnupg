@@ -1199,7 +1199,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   gpg_error_t err;
   gcry_sexp_t list, l2;
   char *name;
-  const char *algoname, *format;
+  const char *algoname, *format, *elems;
   int npkey, nskey;
   gcry_sexp_t curve = NULL;
   gcry_sexp_t flags = NULL;
@@ -1244,7 +1244,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   if (!strcmp (name, "rsa"))
     {
       algoname = "rsa";
-      format = "ned?p?q?u?";
+      format = elems = "ned?p?q?u?";
       npkey = 2;
       nskey = 6;
       err = gcry_sexp_extract_param (list, NULL, format,
@@ -1254,7 +1254,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "elg"))
     {
       algoname = "elg";
-      format = "pgyx?";
+      format = elems = "pgyx?";
       npkey = 3;
       nskey = 4;
       err = gcry_sexp_extract_param (list, NULL, format,
@@ -1264,7 +1264,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "dsa"))
     {
       algoname = "dsa";
-      format = "pqgyx?";
+      format = elems = "pqgyx?";
       npkey = 4;
       nskey = 5;
       err = gcry_sexp_extract_param (list, NULL, format,
@@ -1274,7 +1274,8 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "ecc") || !strcmp (name, "ecdsa"))
     {
       algoname = "ecc";
-      format = "q/d?";
+      format = "/qd?";
+      elems = "qd?";
       npkey = 1;
       nskey = 2;
       curve = gcry_sexp_find_token (list, "curve", 0);
@@ -1298,7 +1299,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
     {
       *r_algoname = algoname;
       if (r_elems)
-        *r_elems = format;
+        *r_elems = elems;
       *r_npkey = npkey;
       if (r_nskey)
         *r_nskey = nskey;
