@@ -354,8 +354,8 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
  * stored there.  To only get the number of bytes which would be
  * written, NULL may be passed for OUT.
  */
-gpg_error_t
-gpg_sos_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
+static gpg_error_t
+sos_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
 {
   gpg_error_t err;
   unsigned int nwritten = 0;
@@ -609,7 +609,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           || (pk->pubkey_algo == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2)))
         err = gpg_mpi_write_nohdr (a, pk->pkey[i]);
       else if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
-        err = gpg_sos_write (a, pk->pkey[i], NULL);
+        err = sos_write (a, pk->pkey[i], NULL);
       else
         err = gpg_mpi_write (a, pk->pkey[i], NULL);
       if (err)
@@ -729,7 +729,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
                   if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
                       || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
                     {
-                      if ((err = gpg_sos_write (NULL, pk->pkey[j], &n)))
+                      if ((err = sos_write (NULL, pk->pkey[j], &n)))
                         goto leave;
                     }
                   else
@@ -747,7 +747,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
             if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
                 || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
               {
-                if ( (err = gpg_sos_write (a, pk->pkey[i], NULL)))
+                if ( (err = sos_write (a, pk->pkey[i], NULL)))
                   goto leave;
               }
             else
@@ -869,7 +869,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
       if (enc->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
         rc = gpg_mpi_write_nohdr (a, enc->data[i]);
       else if (enc->pubkey_algo == PUBKEY_ALGO_ECDH)
-        rc = gpg_sos_write (a, enc->data[i], NULL);
+        rc = sos_write (a, enc->data[i], NULL);
       else
         rc = gpg_mpi_write (a, enc->data[i], NULL);
     }
@@ -1751,13 +1751,10 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     write_fake_data( a, sig->data[0] );
   if (sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
     for (i=0; i < n && !rc ; i++ )
-      rc = gpg_sos_write (a, sig->data[i], NULL);
+      rc = sos_write (a, sig->data[i], NULL);
   else
     for (i=0; i < n && !rc ; i++ )
-      if (sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
-        rc = gpg_sos_write (a, sig->data[i], NULL);
-      else
-        rc = gpg_mpi_write (a, sig->data[i], NULL);
+      rc = gpg_mpi_write (a, sig->data[i], NULL);
 
   if (!rc)
     {
