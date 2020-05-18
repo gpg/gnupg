@@ -374,6 +374,38 @@ prepare_unprotect (int pubkey_algo, gcry_mpi_t *skey, size_t skeysize,
 }
 
 
+/* Scan octet string in the PGP format (length-in-two-octet octets) */
+static int
+scan_pgp_format (gcry_mpi_t *r_mpi, int pubkey_algo,
+                 const unsigned char *buffer,
+                 size_t buflen, size_t *r_nbytes)
+{
+  /* Using gcry_mpi_scan with GCRYMPI_FLAG_PGP can be used if it is
+     MPI, but it will be "normalized" removing leading zeros.  */
+  unsigned int nbits, nbytes;
+
+  if (pubkey_algo != GCRY_PK_ECC)
+    return gcry_mpi_scan (r_mpi, GCRYMPI_FMT_PGP, buffer, buflen, r_nbytes);
+
+  /* It's ECC, where we use "simply, octet string" */
+
+  if (buflen < 2)
+    return GPG_ERR_INV_OBJ;
+
+  nbits = (buffer[0] << 8) | buffer[1];
+  if (nbits >= 16384)
+    return GPG_ERR_INV_OBJ;
+
+  nbytes = (nbits + 7) / 8;
+  if (buflen < nbytes + 2)
+    return GPG_ERR_INV_OBJ;
+
+  *r_nbytes = nbytes + 2;
+  *r_mpi = gcry_mpi_set_opaque_copy (NULL, buffer+2, nbits);
+  return 0;
+}
+
+
 /* Note that this function modifies SKEY.  SKEYSIZE is the allocated
    size of the array including the NULL item; this is used for a
    bounds check.  On success a converted key is stored at R_KEY.  */
@@ -407,29 +439,42 @@ do_unprotect (const char *passphrase,
       actual_csum = 0;
       for (i=npkey; i < nskey; i++)
         {
+          unsigned char *buffer;
+
           if (!skey[i] || gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_USER1))
             return gpg_error (GPG_ERR_BAD_SECKEY);
 
           if (gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_OPAQUE))
             {
               unsigned int nbits;
-              const unsigned char *buffer;
               buffer = gcry_mpi_get_opaque (skey[i], &nbits);
               nbytes = (nbits+7)/8;
+
+              nbits = nbytes * 8;
+              if (nbits >= 8 && !(*buffer & 0x80))
+                if (--nbits >= 7 && !(*buffer & 0x40))
+                  if (--nbits >= 6 && !(*buffer & 0x20))
+                    if (--nbits >= 5 && !(*buffer & 0x10))
+                      if (--nbits >= 4 && !(*buffer & 0x08))
+                        if (--nbits >= 3 && !(*buffer & 0x04))
+                          if (--nbits >= 2 && !(*buffer & 0x02))
+                            if (--nbits >= 1 && !(*buffer & 0x01))
+                              --nbits;
+
+              actual_csum += (nbits >> 8);
+              actual_csum += (nbits & 0xff);
               actual_csum += checksum (buffer, nbytes);
             }
           else
             {
-              unsigned char *buffer;
-
               err = gcry_mpi_aprint (GCRYMPI_FMT_PGP, &buffer, &nbytes,
                                      skey[i]);
-              if (!err)
-                actual_csum += checksum (buffer, nbytes);
+              if (err)
+                return err;
+
+              actual_csum += checksum (buffer, nbytes);
               xfree (buffer);
             }
-          if (err)
-            return err;
         }
 
       if (actual_csum != desired_csum)
@@ -487,7 +532,7 @@ do_unprotect (const char *passphrase,
       unsigned char *data;
       u16 csum_pgp7 = 0;
 
-      if (!gcry_mpi_get_flag (skey[npkey], GCRYMPI_FLAG_OPAQUE ))
+      if (!gcry_mpi_get_flag (skey[npkey], GCRYMPI_FLAG_USER1))
         {
           gcry_cipher_close (cipher_hd);
           return gpg_error (GPG_ERR_BAD_SECKEY);
@@ -556,7 +601,7 @@ do_unprotect (const char *passphrase,
         {
           for (i=npkey; i < nskey; i++ )
             {
-              if (gcry_mpi_scan (&tmpmpi, GCRYMPI_FMT_PGP, p, ndata, &nbytes))
+              if (scan_pgp_format (&tmpmpi, pubkey_algo, p, ndata, &nbytes))
                 {
                   /* Checksum was okay, but not correctly decrypted.  */
                   desired_csum = 0;
@@ -587,7 +632,7 @@ do_unprotect (const char *passphrase,
           size_t ndata;
           unsigned int ndatabits;
 
-          if (!skey[i] || !gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_OPAQUE))
+          if (!skey[i] || !gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_USER1))
             {
               gcry_cipher_close (cipher_hd);
               return gpg_error (GPG_ERR_BAD_SECKEY);
@@ -614,7 +659,7 @@ do_unprotect (const char *passphrase,
           buffer[1] = p[1];
           gcry_cipher_decrypt (cipher_hd, buffer+2, ndata-2, p+2, ndata-2);
           actual_csum += checksum (buffer, ndata);
-          err = gcry_mpi_scan (&tmpmpi, GCRYMPI_FMT_PGP, buffer, ndata, &ndata);
+          err = scan_pgp_format (&tmpmpi, pubkey_algo, buffer, ndata, &nbytes);
           xfree (buffer);
           if (err)
             {
@@ -837,20 +882,12 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
       value = gcry_sexp_nth_data (list, ++idx, &valuelen);
       if (!value || !valuelen)
         goto bad_seckey;
+      skey[skeyidx] = gcry_mpi_set_opaque_copy (NULL, value, valuelen*8);
+      if (!skey[skeyidx])
+        goto outofmem;
       if (is_enc)
-        {
-          /* Encrypted parameters need to be stored as opaque.  */
-          skey[skeyidx] = gcry_mpi_set_opaque_copy (NULL, value, valuelen*8);
-          if (!skey[skeyidx])
-            goto outofmem;
-          gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER1);
-        }
-      else
-        {
-          if (gcry_mpi_scan (skey + skeyidx, GCRYMPI_FMT_STD,
-                             value, valuelen, NULL))
-            goto bad_seckey;
-        }
+        /* Encrypted parameters need to have a USER1 flag.  */
+        gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER1);
       skeyidx++;
     }
   skey[skeyidx++] = NULL;
@@ -1171,6 +1208,7 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
       array[i] = NULL;
     }
   array[npkey] = gcry_mpi_set_opaque (NULL, data, ndata*8);
+  gcry_mpi_set_flag (array[npkey], GCRYMPI_FLAG_USER1);
   return 0;
 }
 
@@ -1366,7 +1404,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       put_membuf_str (&mbuf, "(skey");
       for (i=j=0; i < npkey; i++)
         {
-          if (gcry_mpi_get_flag (array[i], GCRYMPI_FLAG_OPAQUE))
+          if (gcry_mpi_get_flag (array[i], GCRYMPI_FLAG_USER1))
             put_membuf_str (&mbuf, " e %m");
           else
             put_membuf_str (&mbuf, " _ %m");
