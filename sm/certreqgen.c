@@ -67,6 +67,7 @@
 
 #include "keydb.h"
 #include "../common/i18n.h"
+#include "../common/membuf.h"
 
 
 enum para_name
@@ -835,6 +836,8 @@ create_request (ctrl_t ctrl,
   ksba_isotime_t atime;
   int certmode = 0;
   int mdalgo;
+  membuf_t tbsbuffer;
+  membuf_t *tbsmb = NULL;
 
   err = ksba_certreq_new (&cr);
   if (err)
@@ -842,21 +845,31 @@ create_request (ctrl_t ctrl,
 
   len = gcry_sexp_canon_len (public, 0, NULL, NULL);
   if (get_pk_algo_from_canon_sexp (public, len) == GCRY_PK_EDDSA)
-    mdalgo = GCRY_MD_SHA512;
-  else if ((string = get_parameter_value (para, pHASHALGO, 0)))
-    mdalgo = gcry_md_map_name (string);
-  else
-    mdalgo = GCRY_MD_SHA256;
-  rc = gcry_md_open (&md, mdalgo, 0);
-  if (rc)
     {
-      log_error ("md_open failed: %s\n", gpg_strerror (rc));
-      goto leave;
+      mdalgo = GCRY_MD_SHA512;
+      md = NULL;  /* We sign the data and not a hash.  */
+      init_membuf (&tbsbuffer, 2048);
+      tbsmb = &tbsbuffer;
+      ksba_certreq_set_hash_function
+        (cr, (void (*)(void *, const void*,size_t))put_membuf, tbsmb);
     }
-  if (DBG_HASHING)
-    gcry_md_debug (md, "cr.cri");
+  else
+    {
+      if ((string = get_parameter_value (para, pHASHALGO, 0)))
+        mdalgo = gcry_md_map_name (string);
+      else
+        mdalgo = GCRY_MD_SHA256;
+      rc = gcry_md_open (&md, mdalgo, 0);
+      if (rc)
+        {
+          log_error ("md_open failed: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+      if (DBG_HASHING)
+        gcry_md_debug (md, "cr.cri");
+      ksba_certreq_set_hash_function (cr, HASH_FNC, md);
+    }
 
-  ksba_certreq_set_hash_function (cr, HASH_FNC, md);
   ksba_certreq_set_writer (cr, writer);
 
   err = ksba_certreq_add_subject (cr, get_parameter_value (para, pNAMEDN, 0));
@@ -1150,6 +1163,7 @@ create_request (ctrl_t ctrl,
       {
         unsigned char *siginfo;
 
+
         err = transform_sigval (sigkey,
                                 gcry_sexp_canon_len (sigkey, 0, NULL, NULL),
                                 mdalgo, &siginfo, NULL);
@@ -1320,6 +1334,8 @@ create_request (ctrl_t ctrl,
           char hexgrip[41];
           unsigned char *sigval, *newsigval;
           size_t siglen;
+          void *tbsdata;
+          size_t tbsdatalen;
 
           n = gcry_sexp_canon_len (sigkey, 0, NULL, NULL);
           if (!n)
@@ -1348,11 +1364,26 @@ create_request (ctrl_t ctrl,
                     certmode? "certificate":"CSR", hexgrip);
 
           if (carddirect && !certmode)
-            rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
-                                   gcry_md_read (md, mdalgo),
-                                   gcry_md_get_algo_dlen (mdalgo),
-                                   mdalgo,
-                                   &sigval, &siglen);
+            {
+              if (tbsmb)
+                {
+                  tbsdata = get_membuf (tbsmb, &tbsdatalen);
+                  tbsmb = NULL;
+                  if (!tbsdata)
+                    rc = gpg_error_from_syserror ();
+                  else
+                    rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
+                                           tbsdata, tbsdatalen, 0,
+                                           &sigval, &siglen);
+                  xfree (tbsdata);
+                }
+              else
+                rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
+                                       gcry_md_read (md, mdalgo),
+                                       gcry_md_get_algo_dlen (mdalgo),
+                                       mdalgo,
+                                       &sigval, &siglen);
+            }
           else
             {
               char *orig_codeset;
@@ -1364,11 +1395,25 @@ create_request (ctrl_t ctrl,
                    " the passphrase for the key you just created once"
                    " more.\n"));
               i18n_switchback (orig_codeset);
-              rc = gpgsm_agent_pksign (ctrl, hexgrip, desc,
-                                       gcry_md_read(md, mdalgo),
-                                       gcry_md_get_algo_dlen (mdalgo),
-                                       mdalgo,
-                                       &sigval, &siglen);
+              if (tbsmb)
+                {
+                  tbsdata = get_membuf (tbsmb, &tbsdatalen);
+                  tbsmb = NULL;
+                  if (!tbsdata)
+                    rc = gpg_error_from_syserror ();
+                  else
+                    rc = gpgsm_agent_pksign (ctrl, hexgrip, desc,
+                                             tbsdata, tbsdatalen, 0,
+
+                                             &sigval, &siglen);
+                  xfree (tbsdata);
+                }
+              else
+                rc = gpgsm_agent_pksign (ctrl, hexgrip, desc,
+                                         gcry_md_read(md, mdalgo),
+                                         gcry_md_get_algo_dlen (mdalgo),
+                                         mdalgo,
+                                         &sigval, &siglen);
               xfree (desc);
             }
           if (rc)
@@ -1398,6 +1443,8 @@ create_request (ctrl_t ctrl,
 
 
  leave:
+  if (tbsmb)
+    xfree (get_membuf (tbsmb, NULL));
   gcry_md_close (md);
   ksba_certreq_release (cr);
   return rc;

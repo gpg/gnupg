@@ -101,7 +101,7 @@ setup_pinentry_env (void)
    function ignores missing parameters so that it can also be used to
    create an siginfo value as expected by ksba_certreq_set_siginfo.
    To create a siginfo s-expression a public-key s-expression may be
-   used instead of a sig-val.  We only support RSA for now.  */
+   used instead of a sig-val.  */
 gpg_error_t
 transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
                   unsigned char **r_newsigval, size_t *r_newsigvallen)
@@ -115,6 +115,7 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
   size_t rsa_s_len, ecc_r_len, ecc_s_len;
   const char *oid;
   gcry_sexp_t sexp;
+  const char *eddsa_curve = NULL;
 
   rsa_s = ecc_r = ecc_s = NULL;
   rsa_s_len = ecc_r_len = ecc_s_len = 0;
@@ -144,6 +145,8 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
     return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
   if (toklen == 3 && !memcmp ("rsa", tok, 3))
     pkalgo = GCRY_PK_RSA;
+  else if (toklen == 3 && !memcmp ("ecc", tok, 3))
+    pkalgo = GCRY_PK_ECC;
   else if (toklen == 5 && !memcmp ("ecdsa", tok, 5))
     pkalgo = GCRY_PK_ECC;
   else if (toklen == 5 && !memcmp ("eddsa", tok, 5))
@@ -191,6 +194,18 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
               *mpi_len = toklen;
             }
         }
+      else if (toklen == 5 && !memcmp (tok, "curve", 5))
+        {
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            return err;
+          if ((toklen == 7 && !memcmp (tok, "Ed25519", 7))
+              || (toklen == 22 && !memcmp (tok, "1.3.6.1.4.1.11591.15.1", 22))
+              || (toklen == 11 && !memcmp (tok, "1.3.101.112", 11)))
+            eddsa_curve = "1.3.101.112";
+          else if ((toklen == 5 && !memcmp (tok, "Ed448", 5))
+                   || (toklen == 11 && !memcmp (tok, "1.3.101.113", 11)))
+            eddsa_curve = "1.3.101.113";
+        }
 
       /* Skip to the end of the list. */
       last_depth2 = depth;
@@ -203,50 +218,55 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
   if (err)
     return err;
 
-  /* Map the hash algorithm to an OID.  */
-  if (mdalgo < 0 || mdalgo > (1<<15) || pkalgo < 0 || pkalgo > (1<<15))
-    return gpg_error (GPG_ERR_DIGEST_ALGO);
-
-  switch (mdalgo | (pkalgo << 16))
+  if (eddsa_curve)
+    oid = eddsa_curve;
+  else
     {
-    case GCRY_MD_SHA1 | (GCRY_PK_RSA << 16):
-      oid = "1.2.840.113549.1.1.5";  /* sha1WithRSAEncryption */
-      break;
+      /* Map the hash algorithm to an OID.  */
+      if (mdalgo < 0 || mdalgo > (1<<15) || pkalgo < 0 || pkalgo > (1<<15))
+        return gpg_error (GPG_ERR_DIGEST_ALGO);
 
-    case GCRY_MD_SHA256 | (GCRY_PK_RSA << 16):
-      oid = "1.2.840.113549.1.1.11"; /* sha256WithRSAEncryption */
-      break;
+      switch (mdalgo | (pkalgo << 16))
+        {
+        case GCRY_MD_SHA1 | (GCRY_PK_RSA << 16):
+          oid = "1.2.840.113549.1.1.5";  /* sha1WithRSAEncryption */
+          break;
 
-    case GCRY_MD_SHA384 | (GCRY_PK_RSA << 16):
-      oid = "1.2.840.113549.1.1.12"; /* sha384WithRSAEncryption */
-      break;
+        case GCRY_MD_SHA256 | (GCRY_PK_RSA << 16):
+          oid = "1.2.840.113549.1.1.11"; /* sha256WithRSAEncryption */
+          break;
 
-    case GCRY_MD_SHA512 | (GCRY_PK_RSA << 16):
-      oid = "1.2.840.113549.1.1.13"; /* sha512WithRSAEncryption */
-      break;
+        case GCRY_MD_SHA384 | (GCRY_PK_RSA << 16):
+          oid = "1.2.840.113549.1.1.12"; /* sha384WithRSAEncryption */
+          break;
 
-    case GCRY_MD_SHA224 | (GCRY_PK_ECC << 16):
-      oid = "1.2.840.10045.4.3.1"; /* ecdsa-with-sha224 */
-      break;
+        case GCRY_MD_SHA512 | (GCRY_PK_RSA << 16):
+          oid = "1.2.840.113549.1.1.13"; /* sha512WithRSAEncryption */
+          break;
 
-    case GCRY_MD_SHA256 | (GCRY_PK_ECC << 16):
-      oid = "1.2.840.10045.4.3.2"; /* ecdsa-with-sha256 */
-      break;
+        case GCRY_MD_SHA224 | (GCRY_PK_ECC << 16):
+          oid = "1.2.840.10045.4.3.1"; /* ecdsa-with-sha224 */
+          break;
 
-    case GCRY_MD_SHA384 | (GCRY_PK_ECC << 16):
-      oid = "1.2.840.10045.4.3.3"; /* ecdsa-with-sha384 */
-      break;
+        case GCRY_MD_SHA256 | (GCRY_PK_ECC << 16):
+          oid = "1.2.840.10045.4.3.2"; /* ecdsa-with-sha256 */
+          break;
 
-    case GCRY_MD_SHA512 | (GCRY_PK_ECC << 16):
-      oid = "1.2.840.10045.4.3.4"; /* ecdsa-with-sha512 */
-      break;
+        case GCRY_MD_SHA384 | (GCRY_PK_ECC << 16):
+          oid = "1.2.840.10045.4.3.3"; /* ecdsa-with-sha384 */
+          break;
 
-    case GCRY_MD_SHA512 | (GCRY_PK_EDDSA << 16):
-      oid = "1.3.101.112"; /* ed25519 */
-      break;
+        case GCRY_MD_SHA512 | (GCRY_PK_ECC << 16):
+          oid = "1.2.840.10045.4.3.4"; /* ecdsa-with-sha512 */
+          break;
 
-    default:
-      return gpg_error (GPG_ERR_DIGEST_ALGO);
+        case GCRY_MD_SHA512 | (GCRY_PK_EDDSA << 16):
+          oid = "1.3.101.112"; /* ed25519 */
+          break;
+
+        default:
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
     }
 
   if (is_pubkey)

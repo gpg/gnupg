@@ -360,6 +360,8 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   int use_eddsa = 0;
   unsigned int saltlen;
 
+  /* Note that we map the 4 algos which current Libgcrypt versions are
+   * not aware of the OID.  */
   algo = gcry_md_map_name ( (algoid=ksba_cert_get_digest_algo (cert)));
   if (!algo && algoid && !strcmp (algoid, "1.2.840.113549.1.1.10"))
     use_pss = 1;
@@ -367,6 +369,14 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
     use_eddsa = 1;
   else if (algoid && !strcmp (algoid, "1.3.101.113"))
     use_eddsa = 2;
+  else if (!algo && algoid && !strcmp (algoid, "1.2.840.10045.4.3.1"))
+    algo = GCRY_MD_SHA224; /* ecdsa-with-sha224 */
+  else if (!algo && algoid && !strcmp (algoid, "1.2.840.10045.4.3.2"))
+    algo = GCRY_MD_SHA256; /* ecdsa-with-sha256 */
+  else if (!algo && algoid && !strcmp (algoid, "1.2.840.10045.4.3.3"))
+    algo = GCRY_MD_SHA384; /* ecdsa-with-sha384 */
+  else if (!algo && algoid && !strcmp (algoid, "1.2.840.10045.4.3.4"))
+    algo = GCRY_MD_SHA512; /* ecdsa-with-sha512 */
   else if (!algo)
     {
       log_error ("unknown digest algorithm '%s' used in certificate\n",

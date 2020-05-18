@@ -76,6 +76,13 @@ struct import_key_parm_s
   size_t keylen;
 };
 
+struct sethash_inq_parm_s
+{
+  assuan_context_t ctx;
+  const void *data;
+  size_t datalen;
+};
+
 struct default_inq_parm_s
 {
   ctrl_t ctrl;
@@ -257,8 +264,29 @@ default_inq_cb (void *opaque, const char *line)
 
 
 
+/* This is the inquiry callback required by the SETHASH command.  */
+static gpg_error_t
+sethash_inq_cb (void *opaque, const char *line)
+{
+  gpg_error_t err = 0;
+  struct sethash_inq_parm_s *parm = opaque;
+
+  if (has_leading_keyword (line, "TBSDATA"))
+    {
+      err = assuan_send_data (parm->ctx, parm->data, parm->datalen);
+    }
+  else
+    log_error ("ignoring gpg-agent inquiry '%s'\n", line);
+
+  return err;
+}
+
+
 /* Call the agent to do a sign operation using the key identified by
-   the hex string KEYGRIP. */
+ * the hex string KEYGRIP.  If DIGESTALGO is given (DIGEST,DIGESTLEN)
+ * gives the to be signed hash created using the given algo.  If
+ * DIGESTALGO is not given (i.e. zero) (DIGEST,DIGESTALGO) give the
+ * entire data to-be-signed. */
 int
 gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
                     unsigned char *digest, size_t digestlen, int digestalgo,
@@ -277,7 +305,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
   inq_parm.ctrl = ctrl;
   inq_parm.ctx = agent_ctx;
 
-  if (digestlen*2 + 50 > DIM(line))
+  if (digestalgo && digestlen*2 + 50 > DIM(line))
     return gpg_error (GPG_ERR_GENERAL);
 
   rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
@@ -298,11 +326,26 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
         return rc;
     }
 
-  sprintf (line, "SETHASH %d ", digestalgo);
-  p = line + strlen (line);
-  for (i=0; i < digestlen ; i++, p += 2 )
-    sprintf (p, "%02X", digest[i]);
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (!digestalgo)
+    {
+      struct sethash_inq_parm_s sethash_inq_parm;
+
+      sethash_inq_parm.ctx = agent_ctx;
+      sethash_inq_parm.data = digest;
+      sethash_inq_parm.datalen = digestlen;
+      rc = assuan_transact (agent_ctx, "SETHASH --inquire",
+                            NULL, NULL, sethash_inq_cb, &sethash_inq_parm,
+                            NULL, NULL);
+    }
+  else
+    {
+      snprintf (line, sizeof line, "SETHASH %d ", digestalgo);
+      p = line + strlen (line);
+      for (i=0; i < digestlen ; i++, p += 2 )
+        sprintf (p, "%02X", digest[i]);
+      rc = assuan_transact (agent_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+    }
   if (rc)
     return rc;
 
