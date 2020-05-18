@@ -243,6 +243,8 @@ reset_notify (assuan_context_t ctx, char *line)
   memset (ctrl->keygrip, 0, 20);
   ctrl->have_keygrip = 0;
   ctrl->digest.valuelen = 0;
+  xfree (ctrl->digest.data);
+  ctrl->digest.data = NULL;
 
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
@@ -704,20 +706,23 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
 
 
 static const char hlp_sethash[] =
-  "SETHASH (--hash=<name>)|(<algonumber>) <hexstring>\n"
+  "SETHASH (--hash=<name>)|(<algonumber>) <hexstring>]\n"
+  "SETHASH --inquire\n"
   "\n"
   "The client can use this command to tell the server about the data\n"
-  "(which usually is a hash) to be signed.";
+  "(which usually is a hash) to be signed.  The option --inquire is\n"
+  "used to ask back for to-be-signed data in case of PureEdDSA";
 static gpg_error_t
 cmd_sethash (assuan_context_t ctx, char *line)
 {
-  int rc;
+  gpg_error_t err;
   size_t n;
   char *p;
   ctrl_t ctrl = assuan_get_pointer (ctx);
   unsigned char *buf;
   char *endp;
   int algo;
+  int opt_inquire;
 
   /* Parse the alternative hash options which may be used instead of
      the algo number.  */
@@ -740,47 +745,89 @@ cmd_sethash (assuan_context_t ctx, char *line)
       else if (has_option (line, "--hash=tls-md5sha1"))
         algo = MD_USER_TLS_MD5SHA1;
       else
-        return set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
+        {
+          err = set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
+          goto leave;
+        }
     }
   else
     algo = 0;
 
+  opt_inquire = has_option (line, "--inquire");
   line = skip_options (line);
 
-  if (!algo)
+  if (!algo && !opt_inquire)
     {
       /* No hash option has been given: require an algo number instead  */
       algo = (int)strtoul (line, &endp, 10);
       for (line = endp; *line == ' ' || *line == '\t'; line++)
         ;
       if (!algo || gcry_md_test_algo (algo))
-        return set_error (GPG_ERR_UNSUPPORTED_ALGORITHM, NULL);
+        {
+          err = set_error (GPG_ERR_UNSUPPORTED_ALGORITHM, NULL);
+          goto leave;
+        }
     }
+  xfree (ctrl->digest.data);
+  ctrl->digest.data = NULL;
   ctrl->digest.algo = algo;
   ctrl->digest.raw_value = 0;
 
-  /* Parse the hash value. */
-  n = 0;
-  rc = parse_hexstring (ctx, line, &n);
-  if (rc)
-    return rc;
-  n /= 2;
-  if (algo == MD_USER_TLS_MD5SHA1 && n == 36)
-    ;
-  else if (n != 16 && n != 20 && n != 24
-           && n != 28 && n != 32 && n != 48 && n != 64)
-    return set_error (GPG_ERR_ASS_PARAMETER, "unsupported length of hash");
+  if (opt_inquire)
+    {
+      /* We limit the to-be-signed data to some reasonable size which
+       * may eventually allow us to pass that even to smartcards.  */
+      size_t maxlen = 2048;
 
-  if (n > MAX_DIGEST_LEN)
-    return set_error (GPG_ERR_ASS_PARAMETER, "hash value to long");
+      if (algo)
+        {
+	  err = set_error (GPG_ERR_ASS_PARAMETER,
+                          "both --inquire and an algo are specified");
+	  goto leave;
+        }
 
-  buf = ctrl->digest.value;
-  ctrl->digest.valuelen = n;
-  for (p=line, n=0; n < ctrl->digest.valuelen; p += 2, n++)
-    buf[n] = xtoi_2 (p);
-  for (; n < ctrl->digest.valuelen; n++)
-    buf[n] = 0;
-  return 0;
+      err = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%zu", maxlen);
+      if (!err)
+	err = assuan_inquire (ctx, "TBSDATA", &buf, &n, maxlen);
+      if (err)
+        goto leave;
+
+      ctrl->digest.data = buf;
+      ctrl->digest.valuelen = n;
+    }
+  else
+    {
+      /* Parse the hash value. */
+      n = 0;
+      err = parse_hexstring (ctx, line, &n);
+      if (err)
+        goto leave;
+      n /= 2;
+      if (algo == MD_USER_TLS_MD5SHA1 && n == 36)
+        ;
+      else if (n != 16 && n != 20 && n != 24
+               && n != 28 && n != 32 && n != 48 && n != 64)
+        {
+          err = set_error (GPG_ERR_ASS_PARAMETER, "unsupported length of hash");
+          goto leave;
+        }
+
+      if (n > MAX_DIGEST_LEN)
+        {
+          err = set_error (GPG_ERR_ASS_PARAMETER, "hash value to long");
+          goto leave;
+        }
+
+      buf = ctrl->digest.value;
+      ctrl->digest.valuelen = n;
+      for (p=line, n=0; n < ctrl->digest.valuelen; p += 2, n++)
+        buf[n] = xtoi_2 (p);
+      for (; n < ctrl->digest.valuelen; n++)
+        buf[n] = 0;
+    }
+
+ leave:
+  return leave_cmd (ctx, err);
 }
 
 
@@ -3627,6 +3674,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   ctrl->server_local->assuan_ctx = ctx;
   ctrl->server_local->use_cache_for_signing = 1;
 
+  ctrl->digest.data = NULL;
   ctrl->digest.raw_value = 0;
 
   assuan_set_io_monitor (ctx, io_monitor, NULL);

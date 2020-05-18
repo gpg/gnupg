@@ -437,7 +437,14 @@ divert_pksign (ctrl_t ctrl, const char *desc_text, const unsigned char *grip,
   /* Note that the KID may be an keyref or a keygrip.  The signing
    * functions handle both.  */
 
-  if (algo == MD_USER_TLS_MD5SHA1)
+  if (!algo)
+    {
+      /* This is the PureEdDSA case.  (DIGEST,DIGESTLEN) this the
+       * entire data which will be signed.  */
+      rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, NULL,
+                              0, digest, digestlen, &sigval, &siglen);
+    }
+  else if (algo == MD_USER_TLS_MD5SHA1)
     {
       int save = ctrl->use_auth_call;
       ctrl->use_auth_call = 1;

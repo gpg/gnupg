@@ -304,6 +304,11 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       data = overridedata;
       datalen = overridedatalen;
     }
+  else if (ctrl->digest.data)
+    {
+      data = ctrl->digest.data;
+      datalen = ctrl->digest.valuelen;
+    }
   else
     {
       data = ctrl->digest.value;

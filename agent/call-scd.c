@@ -1001,6 +1001,11 @@ agent_card_pksign (ctrl_t ctrl,
   if (rc)
     return rc;
 
+  /* FIXME: In the mdalgo case (INDATA,INDATALEN) might be long and
+   * thus we can't convey it on a single Assuan line.  */
+  if (!mdalgo)
+    gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
   if (indatalen*2 + 50 > DIM(line))
     return unlock_scd (ctrl, gpg_error (GPG_ERR_GENERAL));
 

@@ -1937,6 +1937,8 @@ agent_deinit_default_ctrl (ctrl_t ctrl)
   unregister_progress_cb ();
   session_env_release (ctrl->session_env);
 
+  xfree (ctrl->digest.data);
+  ctrl->digest.data = NULL;
   if (ctrl->lc_ctype)
     xfree (ctrl->lc_ctype);
   if (ctrl->lc_messages)
