@@ -1099,10 +1099,12 @@ General Parameters:
 @item Key-Type: @var{algo}
 Starts a new parameter block by giving the type of the primary
 key. The algorithm must be capable of signing.  This is a required
-parameter.  The only supported value for @var{algo} is @samp{rsa}.
+parameter.  The supported values for @var{algo} are @samp{rsa},
+@samp{ecdsa}, and @samp{eddsa}.
 
 @item Key-Length: @var{nbits}
-The requested length of a generated key in bits.  Defaults to 3072.
+The requested length of a generated key in bits.  Defaults to
+3072. The value is ignored for ECC algorithms.
 
 @item Key-Grip: @var{hexstring}
 This is optional and used to generate a CSR or certificate for an
@@ -1174,6 +1176,20 @@ Use @var{hash-algo} for this CSR or certificate.  The supported hash
 algorithms are: @samp{sha1}, @samp{sha256}, @samp{sha384} and
 @samp{sha512}; they may also be specified with uppercase letters.  The
 default is @samp{sha256}.
+
+@item Authority-Key-Id: @var{hexstring}
+Insert the decoded value of @var{hexstring} as authorityKeyIdentifier.
+If this is not given and an ECC algorithm is used the public part of
+the certified public key is used as authorityKeyIdentifier.  To
+inhibit any authorityKeyIdentifier use the special value @code{none}
+for @var{hexstring}.
+
+@item Subject-Key-Id: @var{hexstring}
+Insert the decoded value of @var{hexstring} as subjectKeyIdentifier.
+If this is not given and an ECC algorithm is used the public part of
+the signing key is used as authorityKeyIdentifier.  To inhibit any
+subjectKeyIdentifier use the special value @code{none} for
+@var{hexstring}.
 
 @end table
 
