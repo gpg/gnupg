@@ -199,7 +199,7 @@ make_canon_sexp_pad (gcry_sexp_t sexp, int secure,
 }
 
 /* Return the so called "keygrip" which is the SHA-1 hash of the
-   public key parameters expressed in a way depended on the algorithm.
+   public key parameters expressed in a way dependend on the algorithm.
 
    KEY is expected to be an canonical encoded S-expression with a
    public or private key. KEYLEN is the length of that buffer.
@@ -508,6 +508,94 @@ get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
   *r_nlen = rsa_n_len;
   *r_e = rsa_e;
   *r_elen = rsa_e_len;
+  return 0;
+}
+
+
+/* Return the public key parameter Q of a public RSA or ECC key
+ * expressed as an canonical encoded S-expression.  */
+gpg_error_t
+get_ecc_q_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
+                           unsigned char const **r_q, size_t *r_qlen)
+{
+  gpg_error_t err;
+  const unsigned char *buf, *tok;
+  size_t buflen, toklen;
+  int depth, last_depth1, last_depth2;
+  const unsigned char *ecc_q = NULL;
+  size_t ecc_q_len;
+
+  *r_q = NULL;
+  *r_qlen = 0;
+
+  buf = keydata;
+  buflen = keydatalen;
+  depth = 0;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (!tok || toklen != 10 || memcmp ("public-key", tok, toklen))
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (tok && toklen == 3 && !memcmp ("ecc", tok, toklen))
+    ;
+  else if (tok && toklen == 5 && (!memcmp ("ecdsa", tok, toklen)
+                                  || !memcmp ("eddsa", tok, toklen)))
+    ;
+  else
+    return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+
+  last_depth1 = depth;
+  while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+         && depth && depth >= last_depth1)
+    {
+      if (tok)
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+        return err;
+      if (tok && toklen == 1)
+        {
+          const unsigned char **mpi;
+          size_t *mpi_len;
+
+          switch (*tok)
+            {
+            case 'q': mpi = &ecc_q; mpi_len = &ecc_q_len; break;
+            default:  mpi = NULL;   mpi_len = NULL; break;
+            }
+          if (mpi && *mpi)
+            return gpg_error (GPG_ERR_DUP_VALUE);
+
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            return err;
+          if (tok && mpi)
+            {
+              *mpi = tok;
+              *mpi_len = toklen;
+            }
+        }
+
+      /* Skip to the end of the list. */
+      last_depth2 = depth;
+      while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+             && depth && depth >= last_depth2)
+        ;
+      if (err)
+        return err;
+    }
+
+  if (err)
+    return err;
+
+  if (!ecc_q || !ecc_q_len)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  *r_q = ecc_q;
+  *r_qlen = ecc_q_len;
   return 0;
 }
 
