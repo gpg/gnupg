@@ -272,15 +272,15 @@ enum dns_rcode {
  */
 #define DNS_STRMAXLEN 47 /* "QUESTION|ANSWER|AUTHORITY|ADDITIONAL" */
 
-DNS_PUBLIC const char *dns_strsection(enum dns_section);
+DNS_PUBLIC const char *dns_strsection(enum dns_section, char *);
 
 DNS_PUBLIC enum dns_section dns_isection(const char *);
 
-DNS_PUBLIC const char *dns_strclass(enum dns_class);
+DNS_PUBLIC const char *dns_strclass(enum dns_class, char *);
 
 DNS_PUBLIC enum dns_class dns_iclass(const char *);
 
-DNS_PUBLIC const char *dns_strtype(enum dns_type);
+DNS_PUBLIC const char *dns_strtype(enum dns_type, char *);
 
 DNS_PUBLIC enum dns_type dns_itype(const char *);
 
