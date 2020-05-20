@@ -133,10 +133,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
        returns X with no prefix of 40, so, nbytes == secret_x_size
        is allowed.  */
     if (nbytes < secret_x_size)
-      {
-        xfree (secret_x);
-        return gpg_error (GPG_ERR_BAD_DATA);
-      }
+      return gpg_error (GPG_ERR_BAD_DATA);
 
     /* Remove the prefix.  */
     if ((nbytes & 1))
@@ -159,10 +156,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
    * a KEK.
    */
   if (!gcry_mpi_get_flag (pkey[2], GCRYMPI_FLAG_OPAQUE))
-    {
-      xfree (secret_x);
-      return gpg_error (GPG_ERR_BUG);
-    }
+    return gpg_error (GPG_ERR_BUG);
   kek_params = gcry_mpi_get_opaque (pkey[2], &nbits);
   kek_params_size = (nbits+7)/8;
 
