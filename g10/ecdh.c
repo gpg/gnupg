@@ -83,16 +83,18 @@ pk_ecdh_default_params (unsigned int qbits)
 
 
 /* Encrypts/decrypts DATA using a key derived from the ECC shared
-   point SHARED_MPI using the FIPS SP 800-56A compliant method
+   point SHARED using the FIPS SP 800-56A compliant method
    key_derivation+key_wrapping.  If IS_ENCRYPT is true the function
    encrypts; if false, it decrypts.  PKEY is the public key and PK_FP
    the fingerprint of this public key.  On success the result is
    stored at R_RESULT; on failure NULL is stored at R_RESULT and an
    error code returned.  */
 gpg_error_t
-pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
+pk_ecdh_encrypt_with_shared_point (int is_encrypt,
+                                   const char *shared, size_t nshared,
                                    const byte pk_fp[MAX_FINGERPRINT_LEN],
-                                   gcry_mpi_t data, gcry_mpi_t *pkey,
+                                   const byte *data, size_t ndata,
+                                   gcry_mpi_t *pkey,
                                    gcry_mpi_t *r_result)
 {
   gpg_error_t err;
@@ -118,7 +120,10 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     /* Extract x component of the shared point: this is the actual
        shared secret. */
     nbytes = (mpi_get_nbits (pkey[1] /* public point */)+7)/8;
-    secret_x = gcry_mpi_get_opaque (shared_mpi, NULL);
+    secret_x = xtrymalloc_secure (nshared);
+    if (!secret_x)
+      return gpg_error_from_syserror ();
+    memcpy (secret_x, shared, nshared);
 
     /* Expected size of the x component */
     secret_x_size = (nbits+7)/8;
@@ -133,7 +138,10 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
        returns X with no prefix of 40, so, nbytes == secret_x_size
        is allowed.  */
     if (nbytes < secret_x_size)
-      return gpg_error (GPG_ERR_BAD_DATA);
+      {
+        xfree (secret_x);
+        return gpg_error (GPG_ERR_BAD_DATA);
+      }
 
     /* Remove the prefix.  */
     if ((nbytes & 1))
@@ -166,6 +174,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
   if (kek_params_size != 4 || kek_params[0] != 3 || kek_params[1] != 1)
     {
+      xfree (secret_x);
       return gpg_error (GPG_ERR_BAD_PUBKEY);
     }
 
@@ -181,12 +190,14 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       && kdf_hash_algo != GCRY_MD_SHA384
       && kdf_hash_algo != GCRY_MD_SHA512)
     {
+      xfree (secret_x);
       return gpg_error (GPG_ERR_BAD_PUBKEY);
     }
   if (kdf_encr_algo != CIPHER_ALGO_AES
       && kdf_encr_algo != CIPHER_ALGO_AES192
       && kdf_encr_algo != CIPHER_ALGO_AES256)
     {
+      xfree (secret_x);
       return gpg_error (GPG_ERR_BAD_PUBKEY);
     }
 
@@ -210,6 +221,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     iobuf_close (obuf);
     if (err)
       {
+        xfree (secret_x);
         return err;
       }
 
@@ -227,6 +239,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       {
         log_error ("gcry_md_open failed for kdf_hash_algo %d: %s",
                    kdf_hash_algo, gpg_strerror (err));
+        xfree (secret_x);
         return err;
       }
     gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
@@ -255,7 +268,6 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   /* And, finally, aeswrap with key secret_x.  */
   {
     gcry_cipher_hd_t hd;
-    size_t nbytes;
 
     byte *data_buf;
     int data_buf_size;
@@ -267,10 +279,13 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       {
         log_error ("ecdh failed to initialize AESWRAP: %s\n",
                    gpg_strerror (err));
+        xfree (secret_x);
         return err;
       }
 
     err = gcry_cipher_setkey (hd, secret_x, secret_x_size);
+    secret_x = NULL;
+    xfree (secret_x);
     if (err)
       {
         gcry_cipher_close (hd);
@@ -279,7 +294,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         return err;
       }
 
-    data_buf_size = (gcry_mpi_get_nbits(data)+7)/8;
+    data_buf_size = ndata;
     if ((data_buf_size & 7) != (is_encrypt ? 0 : 1))
       {
         log_error ("can't use a shared secret of %d bytes for ecdh\n",
@@ -301,15 +316,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
 
         /* Write data MPI into the end of data_buf. data_buf is size
            aeswrap data.  */
-        err = gcry_mpi_print (GCRYMPI_FMT_USG, in,
-                             data_buf_size, &nbytes, data/*in*/);
-        if (err)
-          {
-            log_error ("ecdh failed to export DEK: %s\n", gpg_strerror (err));
-            gcry_cipher_close (hd);
-            xfree (data_buf);
-            return err;
-          }
+        memcpy (in, data, ndata);
 
         if (DBG_CRYPTO)
           log_printhex (in, data_buf_size, "ecdh encrypting  :");
@@ -345,17 +352,14 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     else
       {
         byte *in;
-        const void *p;
 
-        p = gcry_mpi_get_opaque (data, &nbits);
-        nbytes = (nbits+7)/8;
-        if (!p || nbytes > data_buf_size || !nbytes)
+        if (!data || ndata > data_buf_size || !ndata)
           {
             xfree (data_buf);
             return gpg_error (GPG_ERR_BAD_MPI);
           }
-        memcpy (data_buf, p, nbytes);
-        if (data_buf[0] != nbytes-1)
+        memcpy (data_buf, data, ndata);
+        if (data_buf[0] != ndata-1)
           {
             log_error ("ecdh inconsistent size\n");
             xfree (data_buf);
@@ -459,11 +463,20 @@ pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k)
 /* Perform ECDH decryption.   */
 int
 pk_ecdh_decrypt (gcry_mpi_t * result, const byte sk_fp[MAX_FINGERPRINT_LEN],
-                 gcry_mpi_t data, gcry_mpi_t shared, gcry_mpi_t * skey)
+                 gcry_mpi_t data,
+                 const byte *frame, size_t nframe, gcry_mpi_t * skey)
 {
+  int r;
+  byte *p;
+  unsigned int nbits;
+
   if (!data)
     return gpg_error (GPG_ERR_BAD_MPI);
-  return pk_ecdh_encrypt_with_shared_point (0 /*=decryption*/, shared,
-                                            sk_fp, data/*encr data as an MPI*/,
-                                            skey, result);
+
+  p = gcry_mpi_get_opaque (data, &nbits);/*encr data as an MPI*/
+
+  r = pk_ecdh_encrypt_with_shared_point (0 /*=decryption*/, frame, nframe,
+                                         sk_fp, p, (nbits+7)/8,
+                                         skey, result);
+  return r;
 }

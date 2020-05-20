@@ -278,14 +278,11 @@ get_it (ctrl_t ctrl,
 
   if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
-      gcry_mpi_t shared_mpi;
       gcry_mpi_t decoded;
 
       /* At the beginning the frame are the bytes of shared point MPI.  */
-      shared_mpi = gcry_mpi_set_opaque_copy (NULL, frame, nframe * 8);
       err = pk_ecdh_decrypt (&decoded, fp, enc->data[1]/*encr data as an MPI*/,
-                             shared_mpi, sk->pkey);
-      mpi_release (shared_mpi);
+                             frame, nframe, sk->pkey);
       if(err)
         goto leave;
 
