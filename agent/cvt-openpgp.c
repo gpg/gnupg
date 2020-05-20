@@ -451,15 +451,16 @@ do_unprotect (const char *passphrase,
               nbytes = (nbits+7)/8;
 
               nbits = nbytes * 8;
-              if (nbits >= 8 && !(*buffer & 0x80))
-                if (--nbits >= 7 && !(*buffer & 0x40))
-                  if (--nbits >= 6 && !(*buffer & 0x20))
-                    if (--nbits >= 5 && !(*buffer & 0x10))
-                      if (--nbits >= 4 && !(*buffer & 0x08))
-                        if (--nbits >= 3 && !(*buffer & 0x04))
-                          if (--nbits >= 2 && !(*buffer & 0x02))
-                            if (--nbits >= 1 && !(*buffer & 0x01))
-                              --nbits;
+              if (*buffer)
+                if (nbits >= 8 && !(*buffer & 0x80))
+                  if (--nbits >= 7 && !(*buffer & 0x40))
+                    if (--nbits >= 6 && !(*buffer & 0x20))
+                      if (--nbits >= 5 && !(*buffer & 0x10))
+                        if (--nbits >= 4 && !(*buffer & 0x08))
+                          if (--nbits >= 3 && !(*buffer & 0x04))
+                            if (--nbits >= 2 && !(*buffer & 0x02))
+                              if (--nbits >= 1 && !(*buffer & 0x01))
+                                --nbits;
 
               actual_csum += (nbits >> 8);
               actual_csum += (nbits & 0xff);
