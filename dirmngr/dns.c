@@ -2150,6 +2150,7 @@ static size_t dns_p_lines_fmt(void *dst, size_t lim, dns_error_t *_error, const 
 static size_t dns_p_lines(void *dst, size_t lim, dns_error_t *_error, struct dns_packet *P, struct dns_rr_i *I, struct dns_p_lines_i *state) {
 	int error, pc;
 	size_t len;
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 
 	*_error = 0;
 
@@ -2168,7 +2169,7 @@ static size_t dns_p_lines(void *dst, size_t lim, dns_error_t *_error, struct dns
 	while (dns_rr_grep(&state->rr, 1, I, P, &error)) {
 		if (state->section != state->rr.section) {
 			DNS_P_LINE("\n");
-			DNS_P_LINE(";; [%s:%d]\n", dns_strsection(state->rr.section), dns_p_count(P, state->rr.section));
+			DNS_P_LINE(";; [%s:%d]\n", dns_strsection(state->rr.section, __dst), dns_p_count(P, state->rr.section));
 		}
 
 		if (!(len = dns_rr_print(dst, lim, &state->rr, P, &error)))
@@ -3274,6 +3275,7 @@ size_t dns_rr_print(void *_dst, size_t lim, struct dns_rr *rr, struct dns_packet
 	union dns_any any;
 	size_t n;
 	int error;
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 
 	if (rr->section == DNS_S_QD)
 		dns_b_putc(&dst, ';');
@@ -3288,9 +3290,9 @@ size_t dns_rr_print(void *_dst, size_t lim, struct dns_rr *rr, struct dns_packet
 	}
 
 	dns_b_putc(&dst, ' ');
-	dns_b_puts(&dst, dns_strclass(rr->class));
+	dns_b_puts(&dst, dns_strclass(rr->class, __dst));
 	dns_b_putc(&dst, ' ');
-	dns_b_puts(&dst, dns_strtype(rr->type));
+	dns_b_puts(&dst, dns_strtype(rr->type, __dst));
 
 	if (rr->section == DNS_S_QD)
 		goto epilog;
@@ -4864,6 +4866,7 @@ dns_error_t dns_trace_dump(struct dns_trace *trace, FILE *fp) {
 		dns_microseconds_t begin, elapsed;
 	} state = { 0 };
 	int error;
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 
 	if (!trace || !trace->fp)
 		return EINVAL;
@@ -4886,8 +4889,8 @@ dns_error_t dns_trace_dump(struct dns_trace *trace, FILE *fp) {
 			fprintf(fp, "dns_res_submit:\n");
 			dns_trace_dump_meta(trace, "  ", te, state.elapsed, fp);
 			fprintf(fp, "  qname: %s\n", te->res_submit.qname);
-			fprintf(fp, "  qtype: %s\n", dns_strtype(te->res_submit.qtype));
-			fprintf(fp, "  qclass: %s\n", dns_strclass(te->res_submit.qclass));
+			fprintf(fp, "  qtype: %s\n", dns_strtype(te->res_submit.qtype, __dst));
+			fprintf(fp, "  qclass: %s\n", dns_strclass(te->res_submit.qclass, __dst));
 			dns_trace_dump_error(trace, "  error: ", te->res_submit.error, fp);
 			break;
 		case DNS_TE_RES_FETCH:
@@ -10010,16 +10013,17 @@ int dns_ai_poll(struct dns_addrinfo *ai, int timeout) {
 size_t dns_ai_print(void *_dst, size_t lim, struct addrinfo *ent, struct dns_addrinfo *ai) {
 	struct dns_buf dst = DNS_B_INTO(_dst, lim);
 	char addr[DNS_PP_MAX(INET_ADDRSTRLEN, INET6_ADDRSTRLEN) + 1];
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 
 	dns_b_puts(&dst, "[ ");
 	dns_b_puts(&dst, ai->qname);
 	dns_b_puts(&dst, " IN ");
 	if (ai->qtype) {
-		dns_b_puts(&dst, dns_strtype(ai->qtype));
+		dns_b_puts(&dst, dns_strtype(ai->qtype, __dst));
 	} else if (ent->ai_family == AF_INET) {
-		dns_b_puts(&dst, dns_strtype(DNS_T_A));
+		dns_b_puts(&dst, dns_strtype(DNS_T_A, __dst));
 	} else if (ent->ai_family == AF_INET6) {
-		dns_b_puts(&dst, dns_strtype(DNS_T_AAAA));
+		dns_b_puts(&dst, dns_strtype(DNS_T_AAAA, __dst));
 	} else {
 		dns_b_puts(&dst, "0");
 	}
@@ -10106,9 +10110,8 @@ static const struct {
 	{ "AR",         DNS_S_ADDITIONAL },
 };
 
-const char *(dns_strsection)(enum dns_section section) {
-	char _dst[DNS_STRMAXLEN + 1] = { 0 };
-	struct dns_buf dst = DNS_B_INTO(_dst, sizeof _dst);
+const char *(dns_strsection)(enum dns_section section, char *_dst) {
+	struct dns_buf dst = DNS_B_INTO(_dst, DNS_STRMAXLEN + 1);
 	unsigned i;
 
 	for (i = 0; i < lengthof(dns_sections); i++) {
@@ -10156,9 +10159,8 @@ static const struct {
 	{ "IN", DNS_C_IN },
 };
 
-const char *(dns_strclass)(enum dns_class type) {
-	char _dst[DNS_STRMAXLEN + 1] = { 0 };
-	struct dns_buf dst = DNS_B_INTO(_dst, sizeof _dst);
+const char *(dns_strclass)(enum dns_class type, char *_dst) {
+	struct dns_buf dst = DNS_B_INTO(_dst, DNS_STRMAXLEN + 1);
 	unsigned i;
 
 	for (i = 0; i < lengthof(dns_classes); i++) {
@@ -10193,9 +10195,8 @@ enum dns_class dns_iclass(const char *name) {
 } /* dns_iclass() */
 
 
-const char *(dns_strtype)(enum dns_type type) {
-	char _dst[DNS_STRMAXLEN + 1] = { 0 };
-	struct dns_buf dst = DNS_B_INTO(_dst, sizeof _dst);
+const char *(dns_strtype)(enum dns_type type, char *_dst) {
+	struct dns_buf dst = DNS_B_INTO(_dst, DNS_STRMAXLEN + 1);
 	unsigned i;
 
 	for (i = 0; i < lengthof(dns_rrtypes); i++) {
@@ -10618,6 +10619,7 @@ static int parse_packet(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 	union dns_any any;
 	char pretty[sizeof any * 2];
 	size_t len;
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 
 	P->end	= fread(P->data, 1, P->size, stdin);
 
@@ -10634,7 +10636,7 @@ static int parse_packet(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 
 	dns_rr_foreach(&rr, P, .sort = MAIN.sort) {
 		if (section != rr.section)
-			fprintf(stdout, "\n;; [%s:%d]\n", dns_strsection(rr.section), dns_p_count(P, rr.section));
+			fprintf(stdout, "\n;; [%s:%d]\n", dns_strsection(rr.section, __dst), dns_p_count(P, rr.section));
 
 		if ((len = dns_rr_print(pretty, sizeof pretty, &rr, P, &error)))
 			fprintf(stdout, "%s\n", pretty);
@@ -10665,7 +10667,7 @@ static int parse_packet(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 		rr	= rrset[i];
 #endif
 		if (section != rr.section)
-			fprintf(stdout, "\n;; [%s:%d]\n", dns_strsection(rr.section), dns_p_count(Q, rr.section));
+			fprintf(stdout, "\n;; [%s:%d]\n", dns_strsection(rr.section, __dst), dns_p_count(Q, rr.section));
 
 		if ((len = dns_rr_print(pretty, sizeof pretty, &rr, Q, &error)))
 			fprintf(stdout, "%s\n", pretty);
@@ -10944,6 +10946,7 @@ static int send_query(int argc, char *argv[]) {
 	struct dns_socket *so;
 	int error, type;
 	struct dns_options opts = { 0 };
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 
 	memset(&ss, 0, sizeof ss);
 	if (argc > 1) {
@@ -10976,7 +10979,7 @@ static int send_query(int argc, char *argv[]) {
 	else
 		type	= dns_res_tcp2type(resconf()->options.tcp);
 
-	fprintf(stderr, "querying %s for %s IN %s\n", host, MAIN.qname, dns_strtype(MAIN.qtype));
+	fprintf(stderr, "querying %s for %s IN %s\n", host, MAIN.qname, dns_strtype(MAIN.qtype, __dst));
 
 	if (!(so = dns_so_open((struct sockaddr *)&resconf()->iface, type, &opts, &error)))
 		panic("dns_so_open: %s", dns_strerror(error));
@@ -11227,11 +11230,12 @@ static int echo_port(int argc DNS_NOTUSED, char *argv[] DNS_NOTUSED) {
 
 
 static int isection(int argc, char *argv[]) {
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 	const char *name = (argc > 1)? argv[1] : "";
 	int type;
 
 	type = dns_isection(name);
-	name = dns_strsection(type);
+	name = dns_strsection(type, __dst);
 
 	printf("%s (%d)\n", name, type);
 
@@ -11240,11 +11244,12 @@ static int isection(int argc, char *argv[]) {
 
 
 static int iclass(int argc, char *argv[]) {
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 	const char *name = (argc > 1)? argv[1] : "";
 	int type;
 
 	type = dns_iclass(name);
-	name = dns_strclass(type);
+	name = dns_strclass(type, __dst);
 
 	printf("%s (%d)\n", name, type);
 
@@ -11253,11 +11258,12 @@ static int iclass(int argc, char *argv[]) {
 
 
 static int itype(int argc, char *argv[]) {
+	char __dst[DNS_STRMAXLEN + 1] = { 0 };
 	const char *name = (argc > 1)? argv[1] : "";
 	int type;
 
 	type = dns_itype(name);
-	name = dns_strtype(type);
+	name = dns_strtype(type, __dst);
 
 	printf("%s (%d)\n", name, type);
 
