@@ -330,7 +330,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       if (fpn != 20)
         rc = gpg_error (GPG_ERR_INV_LENGTH);
       else
-        rc = pk_ecdh_encrypt_with_shared_point (1 /*=encrypton*/, shared,
+        rc = pk_ecdh_encrypt_with_shared_point (shared,
                                                 fp, data, pkey, &result);
       gcry_mpi_release (shared);
       if (!rc)

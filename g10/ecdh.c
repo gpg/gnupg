@@ -330,15 +330,14 @@ prepare_ecdh_with_shared_point (gcry_mpi_t shared_mpi,
   return err;
 }
 
-/* Encrypts/decrypts DATA using a key derived from the ECC shared
-   point SHARED_MPI using the FIPS SP 800-56A compliant method
-   key_derivation+key_wrapping.  If IS_ENCRYPT is true the function
-   encrypts; if false, it decrypts.  PKEY is the public key and PK_FP
-   the fingerprint of this public key.  On success the result is
-   stored at R_RESULT; on failure NULL is stored at R_RESULT and an
-   error code returned.  */
+/* Encrypts DATA using a key derived from the ECC shared point
+   SHARED_MPI using the FIPS SP 800-56A compliant method
+   key_derivation+key_wrapping.  PKEY is the public key and PK_FP the
+   fingerprint of this public key.  On success the result is stored at
+   R_RESULT; on failure NULL is stored at R_RESULT and an error code
+   returned.  */
 gpg_error_t
-pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
+pk_ecdh_encrypt_with_shared_point (gcry_mpi_t shared_mpi,
                                    const byte pk_fp[MAX_FINGERPRINT_LEN],
                                    gcry_mpi_t data, gcry_mpi_t *pkey,
                                    gcry_mpi_t *r_result)
@@ -349,6 +348,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   byte *data_buf;
   int data_buf_size;
   gcry_mpi_t result;
+  byte *in;
 
   *r_result = NULL;
 
@@ -357,7 +357,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     return err;
 
   data_buf_size = (gcry_mpi_get_nbits(data)+7)/8;
-  if ((data_buf_size & 7) != (is_encrypt ? 0 : 1))
+  if ((data_buf_size & 7) != 0)
     {
       log_error ("can't use a shared secret of %d bytes for ecdh\n",
                  data_buf_size);
@@ -373,117 +373,50 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       return err;
     }
 
-  if (is_encrypt)
+  in = data_buf+1+data_buf_size+8;
+
+  /* Write data MPI into the end of data_buf. data_buf is size
+     aeswrap data.  */
+  err = gcry_mpi_print (GCRYMPI_FMT_USG, in,
+                        data_buf_size, &nbytes, data/*in*/);
+  if (err)
     {
-      byte *in = data_buf+1+data_buf_size+8;
-
-      /* Write data MPI into the end of data_buf. data_buf is size
-         aeswrap data.  */
-      err = gcry_mpi_print (GCRYMPI_FMT_USG, in,
-                            data_buf_size, &nbytes, data/*in*/);
-      if (err)
-        {
-          log_error ("ecdh failed to export DEK: %s\n", gpg_strerror (err));
-          gcry_cipher_close (hd);
-          xfree (data_buf);
-          return err;
-        }
-
-      if (DBG_CRYPTO)
-        log_printhex (in, data_buf_size, "ecdh encrypting  :");
-
-      err = gcry_cipher_encrypt (hd, data_buf+1, data_buf_size+8,
-                                 in, data_buf_size);
-      memset (in, 0, data_buf_size);
+      log_error ("ecdh failed to export DEK: %s\n", gpg_strerror (err));
       gcry_cipher_close (hd);
-      if (err)
-        {
-          log_error ("ecdh failed in gcry_cipher_encrypt: %s\n",
-                     gpg_strerror (err));
-          xfree (data_buf);
-          return err;
-        }
-      data_buf[0] = data_buf_size+8;
-
-      if (DBG_CRYPTO)
-        log_printhex (data_buf+1, data_buf[0], "ecdh encrypted to:");
-
-      result = gcry_mpi_set_opaque (NULL, data_buf, 8 * (1+data_buf[0]));
-      if (!result)
-        {
-          err = gpg_error_from_syserror ();
-          xfree (data_buf);
-          log_error ("ecdh failed to create an MPI: %s\n",
-                     gpg_strerror (err));
-          return err;
-        }
-
-      *r_result = result;
-    }
-  else
-    {
-      byte *in;
-      const void *p;
-      unsigned int nbits;
-
-      p = gcry_mpi_get_opaque (data, &nbits);
-      nbytes = (nbits+7)/8;
-      if (!p || nbytes > data_buf_size || !nbytes)
-        {
-          xfree (data_buf);
-          gcry_cipher_close (hd);
-          return gpg_error (GPG_ERR_BAD_MPI);
-        }
-      memcpy (data_buf, p, nbytes);
-      if (data_buf[0] != nbytes-1)
-        {
-          log_error ("ecdh inconsistent size\n");
-          xfree (data_buf);
-          gcry_cipher_close (hd);
-          return gpg_error (GPG_ERR_BAD_MPI);
-        }
-      in = data_buf+data_buf_size;
-      data_buf_size = data_buf[0];
-
-      if (DBG_CRYPTO)
-        log_printhex (data_buf+1, data_buf_size, "ecdh decrypting :");
-
-      err = gcry_cipher_decrypt (hd, in, data_buf_size, data_buf+1,
-                                 data_buf_size);
-      gcry_cipher_close (hd);
-      if (err)
-        {
-          log_error ("ecdh failed in gcry_cipher_decrypt: %s\n",
-                     gpg_strerror (err));
-          xfree (data_buf);
-          return err;
-        }
-
-      data_buf_size -= 8;
-
-      if (DBG_CRYPTO)
-        log_printhex (in, data_buf_size, "ecdh decrypted to :");
-
-      /* Padding is removed later.  */
-      /* if (in[data_buf_size-1] > 8 ) */
-      /*   { */
-      /*     log_error ("ecdh failed at decryption: invalid padding." */
-      /*                " 0x%02x > 8\n", in[data_buf_size-1] ); */
-      /*     return gpg_error (GPG_ERR_BAD_KEY); */
-      /*   } */
-
-      err = gcry_mpi_scan (&result, GCRYMPI_FMT_USG, in, data_buf_size, NULL);
       xfree (data_buf);
-      if (err)
-        {
-          log_error ("ecdh failed to create a plain text MPI: %s\n",
-                     gpg_strerror (err));
-          return err;
-        }
-
-      *r_result = result;
+      return err;
     }
 
+  if (DBG_CRYPTO)
+    log_printhex (in, data_buf_size, "ecdh encrypting  :");
+
+  err = gcry_cipher_encrypt (hd, data_buf+1, data_buf_size+8,
+                             in, data_buf_size);
+  memset (in, 0, data_buf_size);
+  gcry_cipher_close (hd);
+  if (err)
+    {
+      log_error ("ecdh failed in gcry_cipher_encrypt: %s\n",
+                 gpg_strerror (err));
+      xfree (data_buf);
+      return err;
+    }
+  data_buf[0] = data_buf_size+8;
+
+  if (DBG_CRYPTO)
+    log_printhex (data_buf+1, data_buf[0], "ecdh encrypted to:");
+
+  result = gcry_mpi_set_opaque (NULL, data_buf, 8 * (1+data_buf[0]));
+  if (!result)
+    {
+      err = gpg_error_from_syserror ();
+      xfree (data_buf);
+      log_error ("ecdh failed to create an MPI: %s\n",
+                 gpg_strerror (err));
+      return err;
+    }
+
+  *r_result = result;
   return err;
 }
 
@@ -538,12 +471,98 @@ pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k)
 
 /* Perform ECDH decryption.   */
 int
-pk_ecdh_decrypt (gcry_mpi_t * result, const byte sk_fp[MAX_FINGERPRINT_LEN],
-                 gcry_mpi_t data, gcry_mpi_t shared, gcry_mpi_t * skey)
+pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
+                 gcry_mpi_t data, gcry_mpi_t shared_mpi, gcry_mpi_t * skey)
 {
+  gpg_error_t err;
+  gcry_cipher_hd_t hd;
+  size_t nbytes;
+  byte *data_buf;
+  int data_buf_size;
+  byte *in;
+  const void *p;
+  unsigned int nbits;
+
   if (!data)
     return gpg_error (GPG_ERR_BAD_MPI);
-  return pk_ecdh_encrypt_with_shared_point (0 /*=decryption*/, shared,
-                                            sk_fp, data/*encr data as an MPI*/,
-                                            skey, result);
+
+  *r_result = NULL;
+
+  err = prepare_ecdh_with_shared_point (shared_mpi, sk_fp, skey, &hd);
+  if (err)
+    return err;
+
+  data_buf_size = (gcry_mpi_get_nbits(data)+7)/8;
+  if ((data_buf_size & 7) != 1)
+    {
+      log_error ("can't use a shared secret of %d bytes for ecdh\n",
+                 data_buf_size);
+      gcry_cipher_close (hd);
+      return gpg_error (GPG_ERR_BAD_DATA);
+    }
+
+  data_buf = xtrymalloc_secure( 1 + 2*data_buf_size + 8);
+  if (!data_buf)
+    {
+      err = gpg_error_from_syserror ();
+      gcry_cipher_close (hd);
+      return err;
+    }
+
+  p = gcry_mpi_get_opaque (data, &nbits);
+  nbytes = (nbits+7)/8;
+  if (!p || nbytes > data_buf_size || !nbytes)
+    {
+      xfree (data_buf);
+      gcry_cipher_close (hd);
+      return gpg_error (GPG_ERR_BAD_MPI);
+    }
+  memcpy (data_buf, p, nbytes);
+  if (data_buf[0] != nbytes-1)
+    {
+      log_error ("ecdh inconsistent size\n");
+      xfree (data_buf);
+      gcry_cipher_close (hd);
+      return gpg_error (GPG_ERR_BAD_MPI);
+    }
+  in = data_buf+data_buf_size;
+  data_buf_size = data_buf[0];
+
+  if (DBG_CRYPTO)
+    log_printhex (data_buf+1, data_buf_size, "ecdh decrypting :");
+
+  err = gcry_cipher_decrypt (hd, in, data_buf_size, data_buf+1,
+                             data_buf_size);
+  gcry_cipher_close (hd);
+  if (err)
+    {
+      log_error ("ecdh failed in gcry_cipher_decrypt: %s\n",
+                 gpg_strerror (err));
+      xfree (data_buf);
+      return err;
+    }
+
+  data_buf_size -= 8;
+
+  if (DBG_CRYPTO)
+    log_printhex (in, data_buf_size, "ecdh decrypted to :");
+
+  /* Padding is removed later.  */
+  /* if (in[data_buf_size-1] > 8 ) */
+  /*   { */
+  /*     log_error ("ecdh failed at decryption: invalid padding." */
+  /*                " 0x%02x > 8\n", in[data_buf_size-1] ); */
+  /*     return gpg_error (GPG_ERR_BAD_KEY); */
+  /*   } */
+
+  err = gcry_mpi_scan (r_result, GCRYMPI_FMT_USG, in, data_buf_size, NULL);
+  xfree (data_buf);
+  if (err)
+    {
+      log_error ("ecdh failed to create a plain text MPI: %s\n",
+                 gpg_strerror (err));
+      return err;
+    }
+
+  return err;
 }
