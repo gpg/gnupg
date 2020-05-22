@@ -82,6 +82,60 @@ pk_ecdh_default_params (unsigned int qbits)
 }
 
 
+/* Extract xcomponent from the point SHARED_MPI.  POINT_NBYTES is the
+   size to represent an EC point which is determined by the public
+   key.  SECRET_X_SIZE is the size of x component to represent an
+   integer which is determined by the curve. */
+static gpg_error_t
+extract_secret_x (byte **r_secret_x, gcry_mpi_t shared_mpi,
+                  size_t point_nbytes, size_t secret_x_size)
+{
+  gpg_error_t err;
+  byte *secret_x;
+
+  *r_secret_x = NULL;
+
+  /* Extract X from the result.  It must be in the format of:
+     04 || X || Y
+     40 || X
+     41 || X
+
+     Since it may come with the prefix, the size of point is larger
+     than or equals to the size of an integer X.  */
+  if (point_nbytes < secret_x_size)
+    return gpg_error (GPG_ERR_BAD_DATA);
+
+  /* Extract x component of the shared point: this is the actual
+     shared secret. */
+  secret_x = xtrymalloc_secure (point_nbytes);
+  if (!secret_x)
+    return gpg_error_from_syserror ();
+
+  err = gcry_mpi_print (GCRYMPI_FMT_USG, secret_x, point_nbytes,
+                        &point_nbytes, shared_mpi);
+  if (err)
+    {
+      xfree (secret_x);
+      log_error ("ECDH ephemeral export of shared point failed: %s\n",
+                 gpg_strerror (err));
+      return err;
+    }
+
+  /* Remove the prefix.  */
+  if ((point_nbytes & 1))
+    memmove (secret_x, secret_x+1, secret_x_size);
+
+  /* Clear the rest of data.  */
+  if (point_nbytes - secret_x_size)
+    memset (secret_x+secret_x_size, 0, point_nbytes-secret_x_size);
+
+  if (DBG_CRYPTO)
+    log_printhex (secret_x, secret_x_size, "ECDH shared secret X is:");
+
+  *r_secret_x = secret_x;
+  return err;
+}
+
 /* Encrypts/decrypts DATA using a key derived from the ECC shared
    point SHARED_MPI using the FIPS SP 800-56A compliant method
    key_derivation+key_wrapping.  If IS_ENCRYPT is true the function
@@ -112,55 +166,13 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   if (!nbits)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
-  {
-    size_t nbytes;
-
-    /* Extract x component of the shared point: this is the actual
-       shared secret. */
-    nbytes = (mpi_get_nbits (pkey[1] /* public point */)+7)/8;
-    secret_x = xtrymalloc_secure (nbytes);
-    if (!secret_x)
-      return gpg_error_from_syserror ();
-
-    err = gcry_mpi_print (GCRYMPI_FMT_USG, secret_x, nbytes,
-                          &nbytes, shared_mpi);
-    if (err)
-      {
-        xfree (secret_x);
-        log_error ("ECDH ephemeral export of shared point failed: %s\n",
-                   gpg_strerror (err));
-        return err;
-      }
-
-    /* Expected size of the x component */
-    secret_x_size = (nbits+7)/8;
-
-    /* Extract X from the result.  It must be in the format of:
-           04 || X || Y
-           40 || X
-           41 || X
-
-       Since it always comes with the prefix, it's larger than X.  In
-       old experimental version of libgcrypt, there is a case where it
-       returns X with no prefix of 40, so, nbytes == secret_x_size
-       is allowed.  */
-    if (nbytes < secret_x_size)
-      {
-        xfree (secret_x);
-        return gpg_error (GPG_ERR_BAD_DATA);
-      }
-
-    /* Remove the prefix.  */
-    if ((nbytes & 1))
-      memmove (secret_x, secret_x+1, secret_x_size);
-
-    /* Clear the rest of data.  */
-    if (nbytes - secret_x_size)
-      memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
-
-    if (DBG_CRYPTO)
-      log_printhex (secret_x, secret_x_size, "ECDH shared secret X is:");
-  }
+  secret_x_size = (nbits+7)/8;
+  err = extract_secret_x (&secret_x, shared_mpi,
+                          /* pkey[1] is the public point */
+                          (mpi_get_nbits (pkey[1])+7)/8,
+                          secret_x_size);
+  if (err)
+    return err;
 
   /*** We have now the shared secret bytes in secret_x. ***/
 
