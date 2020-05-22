@@ -136,6 +136,45 @@ extract_secret_x (byte **r_secret_x, gcry_mpi_t shared_mpi,
   return err;
 }
 
+
+static gpg_error_t
+build_kdf_params (unsigned char kdf_params[256], size_t *r_size,
+                  gcry_mpi_t *pkey, const byte pk_fp[MAX_FINGERPRINT_LEN])
+{
+  IOBUF obuf;
+  gpg_error_t err;
+
+  *r_size = 0;
+
+  obuf = iobuf_temp();
+  if (!obuf)
+    return gpg_error_from_syserror ();
+
+  /* variable-length field 1, curve name OID */
+  err = gpg_mpi_write_nohdr (obuf, pkey[0]);
+  /* fixed-length field 2 */
+  iobuf_put (obuf, PUBKEY_ALGO_ECDH);
+  /* variable-length field 3, KDF params */
+  err = (err ? err : gpg_mpi_write_nohdr (obuf, pkey[2]));
+  /* fixed-length field 4 */
+  iobuf_write (obuf, "Anonymous Sender    ", 20);
+  /* fixed-length field 5, recipient fp */
+  iobuf_write (obuf, pk_fp, 20);
+
+  if (!err)
+    *r_size = iobuf_temp_to_buffer (obuf, kdf_params, 256);
+
+  iobuf_close (obuf);
+
+  if (!err)
+    {
+      if (DBG_CRYPTO)
+        log_printhex (kdf_params, *r_size, "ecdh KDF message params are:");
+    }
+
+  return err;
+}
+
 /* Encrypts/decrypts DATA using a key derived from the ECC shared
    point SHARED_MPI using the FIPS SP 800-56A compliant method
    key_derivation+key_wrapping.  If IS_ENCRYPT is true the function
@@ -157,10 +196,46 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   size_t kek_params_size;
   int kdf_hash_algo;
   int kdf_encr_algo;
-  unsigned char message[256];
-  size_t message_size;
+  unsigned char kdf_params[256];
+  size_t kdf_params_size;
 
   *r_result = NULL;
+
+  if (!gcry_mpi_get_flag (pkey[2], GCRYMPI_FLAG_OPAQUE))
+    return gpg_error (GPG_ERR_BUG);
+
+  kek_params = gcry_mpi_get_opaque (pkey[2], &nbits);
+  kek_params_size = (nbits+7)/8;
+
+  if (DBG_CRYPTO)
+    log_printhex (kek_params, kek_params_size, "ecdh KDF params:");
+
+  /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
+  if (kek_params_size != 4 || kek_params[0] != 3 || kek_params[1] != 1)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  kdf_hash_algo = kek_params[2];
+  kdf_encr_algo = kek_params[3];
+
+  if (DBG_CRYPTO)
+    log_debug ("ecdh KDF algorithms %s+%s with aeswrap\n",
+               openpgp_md_algo_name (kdf_hash_algo),
+               openpgp_cipher_algo_name (kdf_encr_algo));
+
+  if (kdf_hash_algo != GCRY_MD_SHA256
+      && kdf_hash_algo != GCRY_MD_SHA384
+      && kdf_hash_algo != GCRY_MD_SHA512)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  if (kdf_encr_algo != CIPHER_ALGO_AES
+      && kdf_encr_algo != CIPHER_ALGO_AES192
+      && kdf_encr_algo != CIPHER_ALGO_AES256)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  /* Build kdf_params.  */
+  err = build_kdf_params (kdf_params, &kdf_params_size, pkey, pk_fp);
+  if (err)
+    return err;
 
   nbits = pubkey_nbits (PUBKEY_ALGO_ECDH, pkey);
   if (!nbits)
@@ -182,76 +257,8 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
    * current secret_x with a value derived from it.  This will become
    * a KEK.
    */
-  if (!gcry_mpi_get_flag (pkey[2], GCRYMPI_FLAG_OPAQUE))
-    {
-      xfree (secret_x);
-      return gpg_error (GPG_ERR_BUG);
-    }
-  kek_params = gcry_mpi_get_opaque (pkey[2], &nbits);
-  kek_params_size = (nbits+7)/8;
 
-  if (DBG_CRYPTO)
-    log_printhex (kek_params, kek_params_size, "ecdh KDF params:");
-
-  /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
-  if (kek_params_size != 4 || kek_params[0] != 3 || kek_params[1] != 1)
-    {
-      xfree (secret_x);
-      return gpg_error (GPG_ERR_BAD_PUBKEY);
-    }
-
-  kdf_hash_algo = kek_params[2];
-  kdf_encr_algo = kek_params[3];
-
-  if (DBG_CRYPTO)
-    log_debug ("ecdh KDF algorithms %s+%s with aeswrap\n",
-               openpgp_md_algo_name (kdf_hash_algo),
-               openpgp_cipher_algo_name (kdf_encr_algo));
-
-  if (kdf_hash_algo != GCRY_MD_SHA256
-      && kdf_hash_algo != GCRY_MD_SHA384
-      && kdf_hash_algo != GCRY_MD_SHA512)
-    {
-      xfree (secret_x);
-      return gpg_error (GPG_ERR_BAD_PUBKEY);
-    }
-  if (kdf_encr_algo != CIPHER_ALGO_AES
-      && kdf_encr_algo != CIPHER_ALGO_AES192
-      && kdf_encr_algo != CIPHER_ALGO_AES256)
-    {
-      xfree (secret_x);
-      return gpg_error (GPG_ERR_BAD_PUBKEY);
-    }
-
-  /* Build kdf_params.  */
-  {
-    IOBUF obuf;
-
-    obuf = iobuf_temp();
-    /* variable-length field 1, curve name OID */
-    err = gpg_mpi_write_nohdr (obuf, pkey[0]);
-    /* fixed-length field 2 */
-    iobuf_put (obuf, PUBKEY_ALGO_ECDH);
-    /* variable-length field 3, KDF params */
-    err = (err ? err : gpg_mpi_write_nohdr (obuf, pkey[2]));
-    /* fixed-length field 4 */
-    iobuf_write (obuf, "Anonymous Sender    ", 20);
-    /* fixed-length field 5, recipient fp */
-    iobuf_write (obuf, pk_fp, 20);
-
-    message_size = iobuf_temp_to_buffer (obuf, message, sizeof message);
-    iobuf_close (obuf);
-    if (err)
-      {
-        xfree (secret_x);
-        return err;
-      }
-
-    if(DBG_CRYPTO)
-      log_printhex (message, message_size, "ecdh KDF message params are:");
-  }
-
-  /* Derive a KEK (key wrapping key) using MESSAGE and SECRET_X. */
+  /* Derive a KEK (key wrapping key) using KDF_PARAMS and SECRET_X. */
   {
     gcry_md_hd_t h;
     int old_size;
@@ -266,7 +273,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       }
     gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
     gcry_md_write(h, secret_x, secret_x_size);    /* x of the point X */
-    gcry_md_write(h, message, message_size);      /* KDF parameters */
+    gcry_md_write(h, kdf_params, kdf_params_size);      /* KDF parameters */
 
     gcry_md_final (h);
 
