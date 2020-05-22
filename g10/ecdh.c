@@ -175,6 +175,41 @@ build_kdf_params (unsigned char kdf_params[256], size_t *r_size,
   return err;
 }
 
+
+/* Derive KEK with KEK_SIZE into the memory at SECRET_X.  */
+static gpg_error_t
+derive_kek (size_t kek_size,
+            int kdf_hash_algo,
+            byte *secret_x, int secret_x_size,
+            const unsigned char *kdf_params, size_t kdf_params_size)
+{
+  gpg_error_t err;
+  gcry_md_hd_t h;
+
+  log_assert( gcry_md_get_algo_dlen (kdf_hash_algo) >= 32 );
+
+  err = gcry_md_open (&h, kdf_hash_algo, 0);
+  if (err)
+    {
+      log_error ("gcry_md_open failed for kdf_hash_algo %d: %s",
+                 kdf_hash_algo, gpg_strerror (err));
+      return err;
+    }
+  gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
+  gcry_md_write(h, secret_x, secret_x_size);    /* x of the point X */
+  gcry_md_write(h, kdf_params, kdf_params_size);      /* KDF parameters */
+  gcry_md_final (h);
+  memcpy (secret_x, gcry_md_read (h, kdf_hash_algo), kek_size);
+  gcry_md_close (h);
+  /* Clean the tail before returning.  */
+  memset (secret_x+kek_size, 0, secret_x_size - kek_size);
+  if (DBG_CRYPTO)
+    log_printhex (secret_x, kek_size, "ecdh KEK is:");
+  return err;
+}
+
+
+
 /* Encrypts/decrypts DATA using a key derived from the ECC shared
    point SHARED_MPI using the FIPS SP 800-56A compliant method
    key_derivation+key_wrapping.  If IS_ENCRYPT is true the function
@@ -198,6 +233,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   int kdf_encr_algo;
   unsigned char kdf_params[256];
   size_t kdf_params_size;
+  size_t kek_size;
 
   *r_result = NULL;
 
@@ -232,6 +268,10 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       && kdf_encr_algo != CIPHER_ALGO_AES256)
     return gpg_error (GPG_ERR_BAD_PUBKEY);
 
+  kek_size = gcry_cipher_get_algo_keylen (kdf_encr_algo);
+  if (kek_size > gcry_md_get_algo_dlen (kdf_hash_algo))
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
   /* Build kdf_params.  */
   err = build_kdf_params (kdf_params, &kdf_params_size, pkey, pk_fp);
   if (err)
@@ -242,6 +282,9 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     return gpg_error (GPG_ERR_TOO_SHORT);
 
   secret_x_size = (nbits+7)/8;
+  if (kek_size > secret_x_size)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
   err = extract_secret_x (&secret_x, shared_mpi,
                           /* pkey[1] is the public point */
                           (mpi_get_nbits (pkey[1])+7)/8,
@@ -258,41 +301,14 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
    * a KEK.
    */
 
-  /* Derive a KEK (key wrapping key) using KDF_PARAMS and SECRET_X. */
-  {
-    gcry_md_hd_t h;
-    int old_size;
-
-    err = gcry_md_open (&h, kdf_hash_algo, 0);
-    if (err)
-      {
-        log_error ("gcry_md_open failed for kdf_hash_algo %d: %s",
-                   kdf_hash_algo, gpg_strerror (err));
-        xfree (secret_x);
-        return err;
-      }
-    gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
-    gcry_md_write(h, secret_x, secret_x_size);    /* x of the point X */
-    gcry_md_write(h, kdf_params, kdf_params_size);      /* KDF parameters */
-
-    gcry_md_final (h);
-
-    log_assert( gcry_md_get_algo_dlen (kdf_hash_algo) >= 32 );
-
-    memcpy (secret_x, gcry_md_read (h, kdf_hash_algo),
-            gcry_md_get_algo_dlen (kdf_hash_algo));
-    gcry_md_close (h);
-
-    old_size = secret_x_size;
-    log_assert( old_size >= gcry_cipher_get_algo_keylen( kdf_encr_algo ) );
-    secret_x_size = gcry_cipher_get_algo_keylen( kdf_encr_algo );
-    log_assert( secret_x_size <= gcry_md_get_algo_dlen (kdf_hash_algo) );
-
-    /* We could have allocated more, so clean the tail before returning.  */
-    memset (secret_x+secret_x_size, 0, old_size - secret_x_size);
-    if (DBG_CRYPTO)
-      log_printhex (secret_x, secret_x_size, "ecdh KEK is:");
-  }
+  /* Derive a KEK (key wrapping key) using SECRET_X and KDF_PARAMS. */
+  err = derive_kek (kek_size, kdf_hash_algo, secret_x,
+                    secret_x_size, kdf_params, kdf_params_size);
+  if (err)
+    {
+      xfree (secret_x);
+      return err;
+    }
 
   /* And, finally, aeswrap with key secret_x.  */
   {
@@ -313,7 +329,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         return err;
       }
 
-    err = gcry_cipher_setkey (hd, secret_x, secret_x_size);
+    err = gcry_cipher_setkey (hd, secret_x, kek_size);
     xfree (secret_x);
     secret_x = NULL;
     if (err)
