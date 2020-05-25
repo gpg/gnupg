@@ -36,7 +36,7 @@ int pk_check_secret_key (pubkey_algo_t algo, gcry_mpi_t *skey);
 gcry_mpi_t  pk_ecdh_default_params (unsigned int qbits);
 gpg_error_t pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k);
 gpg_error_t pk_ecdh_encrypt_with_shared_point
-/*         */  (int is_encrypt, const char *shared, size_t nshared,
+/*         */  (const char *shared, size_t nshared,
                 const byte pk_fp[MAX_FINGERPRINT_LEN],
                 const byte *data, size_t ndata,
                 gcry_mpi_t *pkey,

@@ -376,8 +376,8 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
         {
           unsigned int nbits;
           byte *p = gcry_mpi_get_opaque (data, &nbits);
-          rc = pk_ecdh_encrypt_with_shared_point (1 /*=encrypton*/, shared, nshared,
-                                                  fp, p, (nbits+7)/8, pkey, &result);
+          rc = pk_ecdh_encrypt_with_shared_point (shared, nshared, fp, p,
+                                                  (nbits+7)/8, pkey, &result);
         }
       xfree (shared);
       if (!rc)
