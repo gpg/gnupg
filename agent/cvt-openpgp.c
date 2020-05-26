@@ -451,15 +451,16 @@ do_unprotect (const char *passphrase,
               nbytes = (nbits+7)/8;
 
               nbits = nbytes * 8;
-              if (nbits >= 8 && !(*buffer & 0x80))
-                if (--nbits >= 7 && !(*buffer & 0x40))
-                  if (--nbits >= 6 && !(*buffer & 0x20))
-                    if (--nbits >= 5 && !(*buffer & 0x10))
-                      if (--nbits >= 4 && !(*buffer & 0x08))
-                        if (--nbits >= 3 && !(*buffer & 0x04))
-                          if (--nbits >= 2 && !(*buffer & 0x02))
-                            if (--nbits >= 1 && !(*buffer & 0x01))
-                              --nbits;
+              if (*buffer)
+                if (nbits >= 8 && !(*buffer & 0x80))
+                  if (--nbits >= 7 && !(*buffer & 0x40))
+                    if (--nbits >= 6 && !(*buffer & 0x20))
+                      if (--nbits >= 5 && !(*buffer & 0x10))
+                        if (--nbits >= 4 && !(*buffer & 0x08))
+                          if (--nbits >= 3 && !(*buffer & 0x04))
+                            if (--nbits >= 2 && !(*buffer & 0x02))
+                              if (--nbits >= 1 && !(*buffer & 0x01))
+                                --nbits;
 
               actual_csum += (nbits >> 8);
               actual_csum += (nbits & 0xff);
@@ -882,12 +883,21 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
       value = gcry_sexp_nth_data (list, ++idx, &valuelen);
       if (!value || !valuelen)
         goto bad_seckey;
-      skey[skeyidx] = gcry_mpi_set_opaque_copy (NULL, value, valuelen*8);
-      if (!skey[skeyidx])
-        goto outofmem;
-      if (is_enc)
-        /* Encrypted parameters need to have a USER1 flag.  */
-        gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER1);
+      if (is_enc || npkey == 1 /* This is ECC */)
+        {
+          skey[skeyidx] = gcry_mpi_set_opaque_copy (NULL, value, valuelen*8);
+          if (!skey[skeyidx])
+            goto outofmem;
+          if (is_enc)
+            /* Encrypted parameters need to have a USER1 flag.  */
+            gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER1);
+        }
+      else
+        {
+          if (gcry_mpi_scan (skey + skeyidx, GCRYMPI_FMT_STD,
+                             value, valuelen, NULL))
+            goto bad_seckey;
+        }
       skeyidx++;
     }
   skey[skeyidx++] = NULL;
