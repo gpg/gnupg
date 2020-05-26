@@ -37,6 +37,7 @@ static gpg_error_t
 select_additional_application_internal (card_t card, apptype_t req_apptype);
 static gpg_error_t
 send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl);
+static gpg_error_t run_reselect (ctrl_t ctrl, card_t c, app_t a, app_t a_prev);
 
 /* Lock to protect the list of cards and its associated
  * applications.  */
@@ -880,11 +881,12 @@ select_additional_application_internal (card_t card, apptype_t req_apptype)
 /* Add all possible additional applications to the card context but do
  * not change the current one.  This currently works only for Yubikeys. */
 static gpg_error_t
-select_all_additional_applications_internal (card_t card)
+select_all_additional_applications_internal (ctrl_t ctrl, card_t card)
 {
   gpg_error_t err = 0;
   apptype_t candidates[3];
   int i, j;
+  int any_new = 0;
 
   if (card->cardtype == CARDTYPE_YUBIKEY)
     {
@@ -940,8 +942,14 @@ select_all_additional_applications_internal (card_t card)
           app_prev->next = app;
           log_info ("added app '%s' to the card context\n",
                     strapptype (app->apptype));
+          any_new = 1;
         }
     }
+
+  /* If we found a new application we need to reselect the original
+   * application so that we are in a well defined state.  */
+  if (!err && any_new && card->app && card->app->fnc.reselect)
+    err = run_reselect (ctrl, card, card->app, NULL);
 
  leave:
   return err;
@@ -988,7 +996,7 @@ select_additional_application (ctrl_t ctrl, const char *name)
     }
   else
     {
-      err = select_all_additional_applications_internal (card);
+      err = select_all_additional_applications_internal (ctrl, card);
     }
 
   unlock_card (card);
@@ -2095,7 +2103,7 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
       /* Note that in case the additional applications have not yet been
        * added to the card context (which is commonly done by means of
        * "SERIALNO --all", we do that here.  */
-      err = select_all_additional_applications_internal (card);
+      err = select_all_additional_applications_internal (ctrl, card);
       if (err)
         return err;
 
@@ -2210,7 +2218,7 @@ app_switch_active_app (card_t card, ctrl_t ctrl, const char *appname)
   /* Note that in case the additional applications have not yet been
    * added to the card context (which is commonly done by means of
    * "SERIALNO --all", we do that here.  */
-  err = select_all_additional_applications_internal (card);
+  err = select_all_additional_applications_internal (ctrl, card);
   if (err)
     goto leave;
 
