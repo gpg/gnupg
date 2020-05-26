@@ -1807,7 +1807,7 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
 
       for (i = 0; i < elems_n; i++)
         {
-          es_fprintf (format, "(%c%%m)", elems[i]);
+          es_fprintf (format, "(%c%%M)", elems[i]);
           if (secret)
             {
               for (j = 0; j < elems_n; j++)
