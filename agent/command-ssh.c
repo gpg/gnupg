@@ -1975,9 +1975,7 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
         {
           gcry_mpi_t mpi;
 
-          /* Note that we need to use STD format; i.e. prepend a 0x00
-             to indicate a positive number if the high bit is set. */
-          mpi = gcry_sexp_nth_mpi (value_pair, 1, GCRYMPI_FMT_STD);
+          mpi = gcry_sexp_nth_mpi (value_pair, 1, GCRYMPI_FMT_USG);
           if (!mpi)
             {
               err = gpg_error (GPG_ERR_INV_SEXP);
