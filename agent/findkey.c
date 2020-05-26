@@ -1439,7 +1439,7 @@ agent_public_key_from_file (ctrl_t ctrl,
     {
       *p++ = '(';
       *p++ = *s++;
-      p = stpcpy (p, " %m)");
+      p = stpcpy (p, " %M)");
       log_assert (argidx < DIM (args));
       args[argidx++] = &array[idx];
     }
