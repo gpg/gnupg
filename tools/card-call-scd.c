@@ -677,7 +677,10 @@ learn_status_cb (void *opaque, const char *line)
 
           log_assert (no >= 0 && no <= 2);
           data = unescape_status_string (line);
-          parm->uif[no] = (data[0] != 0xff);
+          /* I am not sure why we test for 0xff but we better keep
+           * that in case of bogus card versions which did not
+           * initialize that DO correctly.  */
+          parm->uif[no] = (data[0] == 0xff)? 0 : data[0];
           xfree (data);
         }
       break;
@@ -692,6 +695,7 @@ learn_status_cb (void *opaque, const char *line)
         {
           char *p, *p2, *buf;
           int abool;
+          unsigned long number;
 
           buf = p = unescape_status_string (line);
           if (buf)
@@ -713,6 +717,39 @@ learn_status_cb (void *opaque, const char *line)
                         parm->extcap.kdf = abool;
                       else if (!strcmp (p, "si"))
                         parm->status_indicator = strtoul (p2, NULL, 10);
+                      else if (!strcmp (p, "pd"))
+                        parm->extcap.private_dos = abool;
+                      else if (!strcmp (p, "mcl3"))
+                        parm->extcap.mcl3 = strtoul (p2, NULL, 10);
+                      else if (!strcmp (p, "sm"))
+                        {
+                          /* Unfortunately this uses OpenPGP algorithm
+                           * ids so that we need to map them to Gcrypt
+                           * ids.  The mapping is limited to what
+                           * OpenPGP cards support.  Other cards
+                           * should use a different tag than "sm". */
+                          parm->extcap.sm = 1;
+                          number = strtoul (p2, NULL, 10);
+                          switch (number)
+                            {
+                            case CIPHER_ALGO_3DES:
+                              parm->extcap.smalgo = GCRY_CIPHER_3DES;
+                              break;
+                            case CIPHER_ALGO_AES:
+                              parm->extcap.smalgo = GCRY_CIPHER_AES;
+                              break;
+                            case CIPHER_ALGO_AES192:
+                              parm->extcap.smalgo = GCRY_CIPHER_AES192;
+                              break;
+                            case CIPHER_ALGO_AES256:
+                              parm->extcap.smalgo = GCRY_CIPHER_AES256;
+                              break;
+                            default:
+                              /* Unknown algorithm; dont claim SM support.  */
+                              parm->extcap.sm = 0;
+                              break;
+                            }
+                        }
                     }
                 }
               xfree (buf);

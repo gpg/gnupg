@@ -839,6 +839,18 @@ list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
   tty_fprintf (fp, "PIN retry counter : %d %d %d\n",
                info->chvinfo[0], info->chvinfo[1], info->chvinfo[2]);
   tty_fprintf (fp, "Signature counter : %lu\n", info->sig_counter);
+  tty_fprintf (fp, "Capabilities .....:");
+  if (info->extcap.ki)
+    tty_fprintf (fp, " key-import");
+  if (info->extcap.aac)
+    tty_fprintf (fp, " algo-change");
+  if (info->extcap.bt)
+    tty_fprintf (fp, " button");
+  if (info->extcap.sm)
+    tty_fprintf (fp, " sm(%s)", gcry_cipher_algo_name (info->extcap.smalgo));
+  if (info->extcap.private_dos)
+    tty_fprintf (fp, " priv-data");
+  tty_fprintf (fp, "\n");
   if (info->extcap.kdf)
     {
       tty_fprintf (fp, "KDF setting ......: %s\n",
@@ -847,8 +859,9 @@ list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
   if (info->extcap.bt)
     {
       tty_fprintf (fp, "UIF setting ......: Sign=%s Decrypt=%s Auth=%s\n",
-                   info->uif[0] ? "on" : "off", info->uif[1] ? "on" : "off",
-                   info->uif[2] ? "on" : "off");
+                   info->uif[0] ? (info->uif[0]==2? "permanent": "on") : "off",
+                   info->uif[1] ? (info->uif[0]==2? "permanent": "on") : "off",
+                   info->uif[2] ? (info->uif[0]==2? "permanent": "on") : "off");
     }
 
   list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
@@ -2956,6 +2969,10 @@ cmd_uif (card_info_t info, char *argstr)
 {
   gpg_error_t err;
   int keyno;
+  char name[50];
+  unsigned char data[2];
+  char *answer = NULL;
+  int opt_yes;
 
   if (!info)
     return print_help
@@ -2963,6 +2980,14 @@ cmd_uif (card_info_t info, char *argstr)
        "Change the User Interaction Flag.  N must in the range 1 to 3.",
        APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
+  if (!info->extcap.bt)
+    {
+      log_error (_("This command is not supported by this card\n"));
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+    }
+
+  opt_yes = has_leading_option (argstr, "--yes");
   argstr = skip_options (argstr);
 
   if (digitp (argstr))
@@ -2982,10 +3007,68 @@ cmd_uif (card_info_t info, char *argstr)
       goto leave;
     }
 
+  if ( !strcmp (argstr, "off") )
+    data[0] = 0x00;
+  else if ( !strcmp (argstr, "on") )
+    data[0] = 0x01;
+  else if ( !strcmp (argstr, "permanent") )
+    data[0] = 0x02;
+  else
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+  data[1] = 0x20;
 
-  err = GPG_ERR_NOT_IMPLEMENTED;
+
+  log_assert (keyno - 1 < DIM(info->uif));
+  if (info->uif[keyno-1] == 2)
+    {
+      log_info (_("User Interaction Flag is set to \"%s\" - can't change\n"),
+                "permanent");
+      err = gpg_error (GPG_ERR_INV_STATE);
+      goto leave;
+    }
+
+  if (data[0] == 0x02)
+    {
+      if (opt.interactive)
+        {
+          tty_printf (_("Warning: Setting the User Interaction Flag to \"%s\"\n"
+                        "         can only be reverted using a factory reset!\n"
+                        ), "permanent");
+          answer = tty_get (_("Continue? (y/N) "));
+          tty_kill_prompt ();
+          if (*answer == CONTROL_D)
+            err = gpg_error (GPG_ERR_CANCELED);
+          else if (!answer_is_yes_no_default (answer, 0/*(default to No)*/))
+            err = gpg_error (GPG_ERR_CANCELED);
+          else
+            err = 0;
+        }
+      else if (!opt_yes)
+        {
+          log_info (_("Warning: Setting the User Interaction Flag to \"%s\"\n"
+                      "         can only be reverted using a factory reset!\n"
+                      ), "permanent");
+          log_info (_("Please use \"uif --yes %d %s\"\n"),
+                    keyno, "permanent");
+          err = gpg_error (GPG_ERR_CANCELED);
+        }
+      else
+        err = 0;
+
+      if (err)
+        goto leave;
+    }
+
+  snprintf (name, sizeof name, "UIF-%d", keyno);
+  err = scd_setattr (name, data, 2);
+  if (!err) /* Read all UIF attributes again.  */
+    err = scd_getattr ("UIF", info);
 
  leave:
+  xfree (answer);
   return err;
 }
 

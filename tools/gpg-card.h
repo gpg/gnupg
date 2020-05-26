@@ -174,11 +174,16 @@ struct card_info_s
     unsigned int ki:1;     /* Key import available.  */
     unsigned int aac:1;    /* Algorithm attributes are changeable.  */
     unsigned int kdf:1;    /* KDF object to support PIN hashing available.  */
-    unsigned int bt:1;     /* Button for confirmation available.  */
+    unsigned int bt:1;     /* Button for confirmation available.     */
+    unsigned int sm:1;     /* Secure messaging available.            */
+    unsigned int smalgo:15;/* Secure messaging cipher algorithm.     */
+    unsigned int private_dos:1;/* Support fpr private use DOs.       */
+    unsigned int mcl3:16;  /* Max. length for a OpenPGP card cert.3  */
   } extcap;
   unsigned int status_indicator;
   int kdf_do_enabled;      /* True if card has a KDF object.  */
-  int uif[3];              /* True if User Interaction Flag is on.  */
+  int uif[3];              /* True if User Interaction Flag is on.   */
+                           /* 1 = on, 2 = permanent on.              */
 };
 typedef struct card_info_s *card_info_t;
 
