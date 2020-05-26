@@ -2123,6 +2123,9 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
        * we only want the real 32 byte private key - Libgcrypt expects
        * this.
        */
+      /* For now, it's only ed25519 */
+      curve_name = "Ed25519";
+
       mpi_list = xtrycalloc (3, sizeof *mpi_list);
       if (!mpi_list)
         {
@@ -2229,38 +2232,14 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
 	goto out;
     }
 
-  if ((spec.flags & SPEC_FLAG_IS_EdDSA))
+  err = sexp_key_construct (&key, spec, secret, curve_name, mpi_list,
+                            comment? comment:"");
+  if (!err)
     {
-      if (secret)
-        {
-          err = gcry_sexp_build (&key, NULL,
-                                 "(private-key(ecc(curve \"Ed25519\")"
-                                 "(flags eddsa)(q %m)(d %m))"
-                                 "(comment%s))",
-                                 mpi_list[0], mpi_list[1],
-                                 comment? comment:"");
-        }
-      else
-        {
-          err = gcry_sexp_build (&key, NULL,
-                                 "(public-key(ecc(curve \"Ed25519\")"
-                                 "(flags eddsa)(q %m))"
-                                 "(comment%s))",
-                                 mpi_list[0],
-                                 comment? comment:"");
-        }
+      if (key_spec)
+        *key_spec = spec;
+      *key_new = key;
     }
-  else
-    {
-      err = sexp_key_construct (&key, spec, secret, curve_name, mpi_list,
-                                comment? comment:"");
-      if (err)
-        goto out;
-    }
-
-  if (key_spec)
-    *key_spec = spec;
-  *key_new = key;
 
  out:
   es_fclose (cert);
