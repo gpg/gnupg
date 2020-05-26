@@ -1080,6 +1080,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "UIF-1",        0x00D6, 0 },
     { "UIF-2",        0x00D7, 0 },
     { "UIF-3",        0x00D8, 0 },
+    { "UIF",          0x0000, -9 },  /* Shortcut for all UIF */
     { "KDF",          0x00F9, 5 },
     { "MANUFACTURER", 0x0000, -8 },
     { NULL, 0 }
@@ -1179,6 +1180,15 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
         (ctrl, table[idx].name, "%u %s",
          app->app_local->manufacturer,
          get_manufacturer (app->app_local->manufacturer));
+    }
+  if (table[idx].special == -9)
+    {
+      rc = do_getattr (app, ctrl, "UIF-1");
+      if (!rc)
+        rc = do_getattr (app, ctrl, "UIF-2");
+      if (!rc)
+        rc = do_getattr (app, ctrl, "UIF-3");
+      return rc;
     }
 
   relptr = get_one_do (app, table[idx].tag, &value, &valuelen, &rc);
@@ -2002,11 +2012,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   if (app->app_local->extcap.kdf_do)
     do_getattr (app, ctrl, "KDF");
   if (app->app_local->extcap.has_button)
-    {
-      do_getattr (app, ctrl, "UIF-1");
-      do_getattr (app, ctrl, "UIF-2");
-      do_getattr (app, ctrl, "UIF-3");
-    }
+    do_getattr (app, ctrl, "UIF");
   if (app->app_local->extcap.private_dos)
     {
       do_getattr (app, ctrl, "PRIVATE-DO-1");
