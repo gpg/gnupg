@@ -3152,6 +3152,7 @@ static struct
 } cmds[] = {
   { "quit"    ,  cmdQUIT,       N_("quit this menu")},
   { "q"       ,  cmdQUIT,       NULL },
+  { "bye"     ,  cmdQUIT,       NULL },
   { "help"    ,  cmdHELP,       N_("show this help")},
   { "?"       ,  cmdHELP,       NULL },
   { "list"    ,  cmdLIST,       N_("list all available data")},

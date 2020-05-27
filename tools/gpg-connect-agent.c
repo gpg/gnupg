@@ -1809,7 +1809,7 @@ main (int argc, char **argv)
                     }
                 }
             }
-          else if (!strcmp (cmd, "bye"))
+          else if (!strcmp (cmd, "bye") || !strcmp (cmd, "quit"))
             {
               break;
             }
