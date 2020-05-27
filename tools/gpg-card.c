@@ -2387,6 +2387,7 @@ cmd_generate (card_info_t info, char *argstr)
                     log_printf (" %s%s",
                                 valid_algos[i], valid_algos[i+1]?",":".");
                 }
+              log_printf ("\n");
               show_keysize_warning ();
               goto leave;
             }
@@ -2435,6 +2436,13 @@ cmd_generate (card_info_t info, char *argstr)
     }
   else
     err = generate_key (info, keyref, opt_force, opt_algo? opt_algo[0]:NULL);
+
+  if (!err)
+    {
+      err = scd_learn (info);
+      if (err)
+        log_error ("Error re-reading card: %s\n", gpg_strerror (err));
+    }
 
  leave:
   xfree (opt_algo);
