@@ -1073,9 +1073,10 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "UIF-1",        0x00D6, 0 },
     { "UIF-2",        0x00D7, 0 },
     { "UIF-3",        0x00D8, 0 },
-    { "UIF",          0x0000, -9 },  /* Shortcut for all UIF */
     { "KDF",          0x00F9, 5 },
     { "MANUFACTURER", 0x0000, -8 },
+    { "UIF",          0x0000, -9 },  /* Shortcut for all UIF */
+    { "KEY-STATUS",   0x00DE,  6 },
     { NULL, 0 }
   };
   int idx, i, rc;
