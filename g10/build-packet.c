@@ -349,13 +349,13 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
 
 
 /*
- * Write the mpi A to the output stream OUT as "SOS" (Simply Octet
+ * Write the mpi A to the output stream OUT as "SOS" (Strange Octet
  * String).  If R_NWRITTEN is not NULL the number of bytes written is
  * stored there.  To only get the number of bytes which would be
  * written, NULL may be passed for OUT.
  */
 static gpg_error_t
-sos_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten, int compat)
+sos_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
 {
   gpg_error_t err;
   unsigned int nwritten = 0;
@@ -371,7 +371,7 @@ sos_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten, int compat)
       /* gcry_log_debug ("   [%u bit]\n", nbits); */
       /* gcry_log_debughex (" ", p, (nbits+7)/8); */
 
-      if (p && *p && compat)
+      if (p && *p)
         {
           nbits = ((nbits + 7) / 8) * 8;
 
@@ -620,13 +620,12 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
   for (i=0; i < npkey; i++ )
     {
-      /* FIXME: For newer curve, sos_write should be called with COMPAT=0. */
       if (   (pk->pubkey_algo == PUBKEY_ALGO_ECDSA && (i == 0))
           || (pk->pubkey_algo == PUBKEY_ALGO_EDDSA && (i == 0))
           || (pk->pubkey_algo == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2)))
         err = gpg_mpi_write_nohdr (a, pk->pkey[i]);
       else if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
-        err = sos_write (a, pk->pkey[i], NULL, 1);
+        err = sos_write (a, pk->pkey[i], NULL);
       else
         err = gpg_mpi_write (a, pk->pkey[i], NULL);
       if (err)
@@ -741,13 +740,12 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
               unsigned int n;
               int j;
 
-              /* FIXME: For newer curve, sos_write should be called with COMPAT=0. */
               for (j=i; j < nskey; j++ )
                 {
                   if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
                       || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
                     {
-                      if ((err = sos_write (NULL, pk->pkey[j], &n, 1)))
+                      if ((err = sos_write (NULL, pk->pkey[j], &n)))
                         goto leave;
                     }
                   else
@@ -765,12 +763,11 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
             if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
                 || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
               {
-                /* FIXME: For newer curve, sos_write should be called with COMPAT=0. */
-                if ( (err = sos_write (a, pk->pkey[i], NULL, 1)))
+                if ((err = sos_write (a, pk->pkey[i], NULL)))
                   goto leave;
               }
             else
-              if ( (err = gpg_mpi_write (a, pk->pkey[i], NULL)))
+              if ((err = gpg_mpi_write (a, pk->pkey[i], NULL)))
                 goto leave;
 
           write_16 (a, ski->csum );
@@ -888,8 +885,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
       if (enc->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
         rc = gpg_mpi_write_nohdr (a, enc->data[i]);
       else if (enc->pubkey_algo == PUBKEY_ALGO_ECDH)
-        /* FIXME: For newer curve, sos_write should be called with COMPAT=0. */
-        rc = sos_write (a, enc->data[i], NULL, 1);
+        rc = sos_write (a, enc->data[i], NULL);
       else
         rc = gpg_mpi_write (a, enc->data[i], NULL);
     }
@@ -1769,10 +1765,9 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   n = pubkey_get_nsig( sig->pubkey_algo );
   if ( !n )
     write_fake_data( a, sig->data[0] );
-  /* FIXME: For newer curve, sos_write should be called with COMPAT=0. */
   if (sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
     for (i=0; i < n && !rc ; i++ )
-      rc = sos_write (a, sig->data[i], NULL, 1);
+      rc = sos_write (a, sig->data[i], NULL);
   else
     for (i=0; i < n && !rc ; i++ )
       rc = gpg_mpi_write (a, sig->data[i], NULL);
