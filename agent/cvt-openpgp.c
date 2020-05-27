@@ -1247,7 +1247,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   gpg_error_t err;
   gcry_sexp_t list, l2;
   char *name;
-  const char *algoname, *format, *elems;
+  const char *algoname, *format;
   int npkey, nskey;
   gcry_sexp_t curve = NULL;
   gcry_sexp_t flags = NULL;
@@ -1292,7 +1292,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   if (!strcmp (name, "rsa"))
     {
       algoname = "rsa";
-      format = elems = "ned?p?q?u?";
+      format = "ned?p?q?u?";
       npkey = 2;
       nskey = 6;
       err = gcry_sexp_extract_param (list, NULL, format,
@@ -1302,7 +1302,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "elg"))
     {
       algoname = "elg";
-      format = elems = "pgyx?";
+      format = "pgyx?";
       npkey = 3;
       nskey = 4;
       err = gcry_sexp_extract_param (list, NULL, format,
@@ -1312,7 +1312,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "dsa"))
     {
       algoname = "dsa";
-      format = elems = "pqgyx?";
+      format = "pqgyx?";
       npkey = 4;
       nskey = 5;
       err = gcry_sexp_extract_param (list, NULL, format,
@@ -1322,14 +1322,46 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "ecc") || !strcmp (name, "ecdsa"))
     {
       algoname = "ecc";
-      format = "/qd?";
-      elems = "qd?";
+      format = "qd?";
       npkey = 1;
       nskey = 2;
       curve = gcry_sexp_find_token (list, "curve", 0);
       flags = gcry_sexp_find_token (list, "flags", 0);
-      err = gcry_sexp_extract_param (list, NULL, format,
-                                     array+0, array+1, NULL);
+      l2 = gcry_sexp_find_token (list, "q", 0);
+      if (l2)
+        {
+          err = 0;
+
+          array[0] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_OPAQUE);
+          gcry_sexp_release (l2);
+
+          array[1] = NULL;
+          l2 = gcry_sexp_find_token (list, "d", 0);
+          if (l2)
+            {
+              size_t n;
+              char *p = gcry_sexp_nth_buffer (l2, 1, &n);
+
+              if (p)
+                {
+                  const char *p1 = p;
+
+                  /* Remove leading zero octet, if any.  */
+                  if ((n & 1) && !*p)
+                    {
+                      n--;
+                      p1++;
+                    }
+
+                  array[1] = gcry_mpi_set_opaque_copy (NULL, p1, n*8);
+                  xfree (p);
+                }
+
+              gcry_sexp_release (l2);
+            }
+        }
+      else
+        err = gpg_error (GPG_ERR_NO_OBJ);
     }
   else
     {
@@ -1347,7 +1379,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
     {
       *r_algoname = algoname;
       if (r_elems)
-        *r_elems = elems;
+        *r_elems = format;
       *r_npkey = npkey;
       if (r_nskey)
         *r_nskey = nskey;
