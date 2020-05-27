@@ -138,6 +138,7 @@ typedef struct key_info_s *key_info_t;
 struct card_info_s
 {
   int initialized;   /* True if a learn command was successful. */
+  int need_sn_cmd;   /* The SERIALNO command needs to be issued.  */
   int error;         /* private. */
   char *reader;      /* Reader information.  */
   char *cardtype;    /* NULL or type of the card.  */

@@ -1141,13 +1141,15 @@ cmd_list (card_info_t info, char *argstr)
       goto leave;
     }
 
-  if (!info->serialno)
+  if (!info->serialno || info->need_sn_cmd)
     {
-      /* This is probably the first call.  We need to send a SERIALNO
-       * command to scd so that our session knows all cards.  */
+      /* This is probably the first call or was explictly requested.
+       * We need to send a SERIALNO command to scdaemon so that our
+       * session knows all cards.  */
       err = scd_serialno (NULL, NULL);
       if (err)
         goto leave;
+      info->need_sn_cmd = 0;
       need_learn = 1;
     }
 
@@ -2807,6 +2809,8 @@ cmd_factoryreset (card_info_t info)
 
   /* Then, connect the card again.  */
   err = scd_serialno (NULL, NULL);
+  if (!err)
+    info->need_sn_cmd = 0;
 
  leave:
   if (err && any_apdu && !is_yubikey)
@@ -3272,6 +3276,8 @@ dispatch_command (card_info_t info, const char *orig_command)
         {
           flush_keyblock_cache ();
           err = scd_apdu (NULL, NULL, NULL, NULL);
+          if (!err)
+            info->need_sn_cmd = 1;
         }
       break;
 
@@ -3318,7 +3324,11 @@ dispatch_command (card_info_t info, const char *orig_command)
           err = 0;
         }
       else
-        log_error ("Command '%s' failed: %s\n", command, gpg_strerror (err));
+        {
+          log_error ("Command '%s' failed: %s\n", command, gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
+            info->need_sn_cmd = 1;
+        }
     }
   xfree (command);
 
@@ -3485,6 +3495,8 @@ interactive_loop (void)
             {
               flush_keyblock_cache ();
               err = scd_apdu (NULL, NULL, NULL, NULL);
+              if (!err)
+                info->need_sn_cmd = 1;
             }
           break;
 
@@ -3538,6 +3550,8 @@ interactive_loop (void)
                 break;
               }
           log_error ("Command '%s' failed: %s\n", s, gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
+            info->need_sn_cmd = 1;
         }
 
     } /* End of main menu loop. */
