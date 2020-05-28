@@ -3137,6 +3137,99 @@ cmd_yubikey (card_info_t info, char *argstr)
   return err;
 }
 
+
+static gpg_error_t
+cmd_apdu (card_info_t info, char *argstr)
+{
+  gpg_error_t err;
+  estream_t fp = opt.interactive? NULL : es_stdout;
+  int with_atr;
+  int handle_more;
+  const char *s;
+  const char  *exlenstr;
+  int exlenstrlen;
+  char *options = NULL;
+  unsigned int sw;
+  unsigned char *result = NULL;
+  size_t i, j, resultlen;
+
+  if (!info)
+    return print_help
+      ("APDU [--more] [--exlen[=N]] <hexstring>\n"
+       "\n"
+       "Send an APDU to the current card.  This command bypasses the high\n"
+       "level functions and sends the data directly to the card.  HEXSTRING\n"
+       "is expected to be a proper APDU.\n"
+       "\n"
+       "Using the option \"--more\" handles the card status word MORE_DATA\n"
+       "(61xx) and concatenates all responses to one block.\n"
+       "\n"
+       "Using the option \"--exlen\" the returned APDU may use extended\n"
+       "length up to N bytes.  If N is not given a default value is used.\n",
+       0);
+
+  if (has_option (argstr, "--dump-atr"))
+    with_atr = 2;
+  else
+    with_atr = has_option (argstr, "--atr");
+  handle_more = has_option (argstr, "--more");
+
+  exlenstr = has_option_name (argstr, "--exlen");
+  exlenstrlen = 0;
+  if (exlenstr)
+    {
+      for (s=exlenstr; *s && !spacep (s); s++)
+        exlenstrlen++;
+    }
+
+  argstr = skip_options (argstr);
+
+  if (with_atr || handle_more || exlenstr)
+    options = xasprintf ("%s%s%s%.*s",
+                         with_atr == 2? " --dump-atr": with_atr? " --atr":"",
+                         handle_more?" --more":"",
+                         exlenstr?" ":"", exlenstrlen, exlenstr?exlenstr:"");
+
+  err = scd_apdu (argstr, options, &sw, &result, &resultlen);
+  if (err)
+    goto leave;
+  log_info ("Statusword: 0x%04x\n", sw);
+  for (i=0; i < resultlen; )
+    {
+      size_t save_i = i;
+
+      tty_fprintf (fp, "D[%04X] ", (unsigned int)i);
+      for (j=0; j < 16 ; j++, i++)
+        {
+          if (j == 8)
+            tty_fprintf (fp, " ");
+          if (i < resultlen)
+            tty_fprintf (fp, " %02X", result[i]);
+          else
+            tty_fprintf (fp, "   ");
+        }
+      tty_fprintf (fp, "   ");
+      i = save_i;
+      for (j=0; j < 16; j++, i++)
+        {
+          unsigned int c = result[i];
+          if ( i >= resultlen )
+            tty_fprintf (fp, " ");
+          else if (isascii (c) && isprint (c) && !iscntrl (c))
+            tty_fprintf (fp, "%c", c);
+          else
+            tty_fprintf (fp, ".");
+        }
+      tty_fprintf (fp, "\n");
+    }
+
+ leave:
+  xfree (result);
+  xfree (options);
+  return err;
+}
+
+
 
 
 /* Data used by the command parser.  This needs to be outside of the
@@ -3148,7 +3241,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdWRITEKEY,  cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
-    cmdUIF, cmdAUTH, cmdYUBIKEY,
+    cmdUIF, cmdAUTH, cmdYUBIKEY, cmdAPDU,
     cmdINVCMD
   };
 
@@ -3189,6 +3282,7 @@ static struct
   { "writecert", cmdWRITECERT,  N_("store a certificate to a data object")},
   { "writekey",  cmdWRITEKEY,   N_("store a private key to a data object")},
   { "yubikey",   cmdYUBIKEY,    N_("Yubikey management commands")},
+  { "apdu",      cmdAPDU,       NULL},
   { NULL, cmdINVCMD, NULL }
 };
 
@@ -3284,7 +3378,7 @@ dispatch_command (card_info_t info, const char *orig_command)
       else
         {
           flush_keyblock_cache ();
-          err = scd_apdu (NULL, NULL, NULL, NULL);
+          err = scd_apdu (NULL, NULL, NULL, NULL, NULL);
           if (!err)
             info->need_sn_cmd = 1;
         }
@@ -3312,6 +3406,7 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdKDFSETUP:     err = cmd_kdfsetup (info, argstr); break;
     case cmdUIF:          err = cmd_uif (info, argstr); break;
     case cmdYUBIKEY:      err = cmd_yubikey (info, argstr); break;
+    case cmdAPDU:         err = cmd_apdu (info, argstr); break;
 
     case cmdINVCMD:
     default:
@@ -3503,7 +3598,7 @@ interactive_loop (void)
           else
             {
               flush_keyblock_cache ();
-              err = scd_apdu (NULL, NULL, NULL, NULL);
+              err = scd_apdu (NULL, NULL, NULL, NULL, NULL);
               if (!err)
                 info->need_sn_cmd = 1;
             }
@@ -3539,6 +3634,7 @@ interactive_loop (void)
         case cmdKDFSETUP:  err = cmd_kdfsetup (info, argstr); break;
         case cmdUIF:       err = cmd_uif (info, argstr); break;
         case cmdYUBIKEY:   err = cmd_yubikey (info, argstr); break;
+        case cmdAPDU:      err = cmd_apdu (info, argstr); break;
 
         case cmdINVCMD:
         default:

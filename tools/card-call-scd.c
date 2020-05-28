@@ -450,10 +450,11 @@ store_serialno (const char *line)
  * stored at R_SW inless R_SW is NULL.  With HEXAPDU being NULL only a
  * RESET command is send to scd.  With HEXAPDU being the string
  * "undefined" the command "SERIALNO undefined" is send to scd.  If
- * R_DATA is not NULL the data is without the status code is stored
- * there.  Caller must release it.  */
+ * R_DATA is not NULL the data without the status code is stored
+ * there.  Caller must release it.  If OPTIONS is not NULL, this will
+ * be passed verbatim to the SCDaemon's APDU command.  */
 gpg_error_t
-scd_apdu (const char *hexapdu, unsigned int *r_sw,
+scd_apdu (const char *hexapdu, const char *options, unsigned int *r_sw,
           unsigned char **r_data, size_t *r_datalen)
 {
   gpg_error_t err;
@@ -487,7 +488,8 @@ scd_apdu (const char *hexapdu, unsigned int *r_sw,
 
       init_membuf (&mb, 256);
 
-      snprintf (line, DIM(line), "SCD APDU %s", hexapdu);
+      snprintf (line, DIM(line), "SCD APDU %s%s%s",
+                options?options:"", options?" -- ":"", hexapdu);
       err = assuan_transact (agent_ctx, line,
                              put_membuf_cb, &mb, NULL, NULL, NULL, NULL);
       if (!err)

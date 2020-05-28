@@ -208,7 +208,8 @@ gpg_error_t send_apdu (const char *hexapdu, const char *desc,
 void release_card_info (card_info_t info);
 const char *app_type_string (app_type_t app_type);
 
-gpg_error_t scd_apdu (const char *hexapdu, unsigned int *r_sw,
+gpg_error_t scd_apdu (const char *hexapdu, const char *options,
+                      unsigned int *r_sw,
                       unsigned char **r_data, size_t *r_datalen);
 
 gpg_error_t scd_switchcard (const char *serialno);

@@ -88,7 +88,7 @@ send_apdu (const char *hexapdu, const char *desc, unsigned int ignore,
   gpg_error_t err;
   unsigned int sw;
 
-  err = scd_apdu (hexapdu, &sw, r_data, r_datalen);
+  err = scd_apdu (hexapdu, NULL, &sw, r_data, r_datalen);
   if (err)
     log_error ("sending card command %s failed: %s\n", desc,
                gpg_strerror (err));
