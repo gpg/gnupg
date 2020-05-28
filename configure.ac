@@ -1631,7 +1631,7 @@ if test "$GCC" = yes; then
         fi
 
         AC_MSG_CHECKING([if gcc supports -Wlogical-op])
-        CFLAGS="-Wlogical-op -Werror"
+        CFLAGS="-Wlogical-op"
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
         AC_MSG_RESULT($_gcc_wopt)
         if test x"$_gcc_wopt" = xyes ; then
