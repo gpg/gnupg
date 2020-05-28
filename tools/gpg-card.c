@@ -41,6 +41,7 @@
 #include "../common/ttyio.h"
 #include "../common/server-help.h"
 #include "../common/openpgpdefs.h"
+#include "../common/tlv.h"
 
 #include "gpg-card.h"
 
@@ -1847,20 +1848,24 @@ cmd_writecert (card_info_t info, char *argstr)
 {
   gpg_error_t err;
   int opt_clear;
+  int opt_openpgp;
   char *certref_buffer = NULL;
   char *certref;
   char *data = NULL;
   size_t datalen;
 
+
   if (!info)
     return print_help
-      ("WRITECERT [--clear] CERTREF < FILE\n\n"
+      ("WRITECERT [--clear] [--openpgp] CERTREF < FILE\n\n"
        "Write a certificate for key 3.  Unless --clear is given\n"
        "the file argument is mandatory.  The option --clear removes\n"
-       "the certificate from the card.",
+       "the certificate from the card.  The option --openpgp expects\n"
+       "a keyblock and stores it encapsulated in a CMS container.",
        APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
   opt_clear = has_leading_option (argstr, "--clear");
+  opt_openpgp = has_leading_option (argstr, "--openpgp");
   argstr = skip_options (argstr);
 
   certref = argstr;
@@ -1927,6 +1932,36 @@ cmd_writecert (card_info_t info, char *argstr)
       goto leave;
     }
 
+  if (opt_openpgp && !opt_clear)
+    {
+      tlv_builder_t tb;
+      void *tmpder;
+      size_t tmpderlen;
+
+      tb = tlv_builder_new (0);
+      if (!tb)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+      tlv_builder_add_ptr (tb, 0, TAG_OBJECT_ID,
+                           "\x2B\x06\x01\x04\x01\xDA\x47\x02\x03\x01", 10);
+      tlv_builder_add_tag (tb, CLASS_CONTEXT, 0);
+      tlv_builder_add_ptr (tb, 0, TAG_OCTET_STRING, data, datalen);
+      tlv_builder_add_end (tb);
+      tlv_builder_add_end (tb);
+
+      err = tlv_builder_finalize (tb, &tmpder, &tmpderlen);
+      if (err)
+        goto leave;
+      xfree (data);
+      data = tmpder;
+      datalen = tmpderlen;
+    }
+
+
   err = scd_writecert (certref, data, datalen);
 
  leave:
@@ -1943,15 +1978,19 @@ cmd_readcert (card_info_t info, char *argstr)
   char *certref_buffer = NULL;
   char *certref;
   void *data = NULL;
-  size_t datalen;
+  size_t datalen, dataoff;
   const char *fname;
+  int opt_openpgp;
 
   if (!info)
     return print_help
-      ("READCERT CERTREF > FILE\n\n"
-       "Read the certificate for key CERTREF and store it in FILE.",
+      ("READCERT [--openpgp] CERTREF > FILE\n\n"
+       "Read the certificate for key CERTREF and store it in FILE.\n"
+       "With option \"--openpgp\" an OpenPGP keyblock is expected\n"
+       "and stored in FILE.\n",
        APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
+  opt_openpgp = has_leading_option (argstr, "--openpgp");
   argstr = skip_options (argstr);
 
   certref = argstr;
@@ -1987,11 +2026,56 @@ cmd_readcert (card_info_t info, char *argstr)
       goto leave;
     }
 
+  dataoff = 0;
   err = scd_readcert (certref, &data, &datalen);
   if (err)
     goto leave;
 
-  err = put_data_to_file (fname, data, datalen);
+  if (opt_openpgp)
+    {
+      /* Check whether DATA contains an OpenPGP keyblock and put only
+       * this into FILE.  If the data is something different, return
+       * an error.  */
+      const unsigned char *p;
+      size_t n, objlen, hdrlen;
+      int class, tag, cons, ndef;
+
+      p = data;
+      n = datalen;
+      if (parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen))
+        goto not_openpgp;
+      if (!(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && cons))
+        goto not_openpgp; /* Does not start with a sequence.  */
+      if (parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen))
+        goto not_openpgp;
+      if (!(class == CLASS_UNIVERSAL && tag == TAG_OBJECT_ID && !cons))
+        goto not_openpgp; /* No Object ID.  */
+      if (objlen > n)
+        goto not_openpgp; /* Inconsistent lengths.  */
+      if (objlen != 10
+          || memcmp (p, "\x2B\x06\x01\x04\x01\xDA\x47\x02\x03\x01", objlen))
+        goto not_openpgp; /* Wrong Object ID.  */
+      p += objlen;
+      n -= objlen;
+      if (parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen))
+        goto not_openpgp;
+      if (!(class == CLASS_CONTEXT && tag == 0 && cons))
+        goto not_openpgp; /* Not a [0] context tag.  */
+      if (parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen))
+        goto not_openpgp;
+      if (!(class == CLASS_UNIVERSAL && tag == TAG_OCTET_STRING && !cons))
+        goto not_openpgp; /* Not an octet string.  */
+      if (objlen > n)
+        goto not_openpgp; /* Inconsistent lengths.  */
+      dataoff = p - (const unsigned char*)data;
+      datalen = objlen;
+    }
+
+  err = put_data_to_file (fname, (unsigned char*)data+dataoff, datalen);
+  goto leave;
+
+ not_openpgp:
+  err = gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
 
  leave:
   xfree (data);

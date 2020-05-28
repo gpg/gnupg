@@ -1509,6 +1509,8 @@ Status codes are:
   1.3.6.1.4.1.11591.2.2          X.509 extensions
   1.3.6.1.4.1.11591.2.2.1          standaloneCertificate
   1.3.6.1.4.1.11591.2.2.2          wellKnownPrivateKey
+  1.3.6.1.4.1.11591.2.3          CMS contentType
+  1.3.6.1.4.1.11591.2.3.1          OpenPGP keyblock (as octet string)
   1.3.6.1.4.1.11591.2.12242973   invalid encoded OID
 #+end_example
 
