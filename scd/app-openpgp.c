@@ -4763,7 +4763,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
       return gpg_error (GPG_ERR_GENERAL);
     }
   fpr = find_tlv (buffer, buflen, 0x00C5, &n);
-  if (!fpr || n != 60)
+  if (!fpr || n < 60)
     {
       xfree (buffer);
       log_error (_("error reading fingerprint DO\n"));
