@@ -42,6 +42,7 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t buflen)
   if (*s != '(')
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   s++;
+  n = snext (&s);
   if (!smatch (&s, n, "ecc"))
     return buflen;
 
@@ -54,12 +55,13 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t buflen)
         return gpg_error (GPG_ERR_INV_SEXP);
       if (n == 1 && *s == 'd')
         {
-          const unsigned char *s0;
-          size_t n0 = n;
+          unsigned char *s0;
+          size_t n0;
 
           s += n;
-          s0 = s;
+          s0 = (unsigned char *)s;
           n = snext (&s);
+	  n0 = s - s0;
 
           if (!n)
             return gpg_error (GPG_ERR_INV_SEXP);
@@ -72,8 +74,9 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t buflen)
 
               n--;
               buflen--;
-              numsize = snprintf (s0, s-s0, "%u:", (unsigned int)n);
-              memmove (s0+numsize, s+1, buflen - (s - buf) - 1);
+              numsize = snprintf (s0, s-s0+1, "%u:", (unsigned int)n);
+              memmove (s0+numsize, s+1, buflen - (s - buf));
+	      memset (s0+numsize+buflen - (s - buf), 0, (n0 - numsize) + 1);
               buflen -= (n0 - numsize);
               s = s0+numsize+n;
             }
