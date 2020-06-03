@@ -195,6 +195,7 @@ void flush_keyblock_cache (void);
 gpg_error_t get_matching_keys (const unsigned char *keygrip, int protocol,
                                keyblock_t *r_keyblock);
 gpg_error_t test_get_matching_keys (const char *hexgrip);
+gpg_error_t get_minimal_openpgp_key (estream_t *r_key, const char *fingerprint);
 
 
 /*-- card-misc.c --*/

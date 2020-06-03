@@ -1853,15 +1853,18 @@ cmd_writecert (card_info_t info, char *argstr)
   char *certref;
   char *data = NULL;
   size_t datalen;
+  estream_t key = NULL;
 
 
   if (!info)
     return print_help
-      ("WRITECERT [--clear] [--openpgp] CERTREF < FILE\n\n"
-       "Write a certificate for key 3.  Unless --clear is given\n"
-       "the file argument is mandatory.  The option --clear removes\n"
+      ("WRITECERT CERTREF '<' FILE\n"
+       "WRITECERT --openpgp CERTREF ['<' FILE|FPR]\n"
+       "WRITECERT --clear CERTREF\n\n"
+       "Write a certificate for key 3. The option --clear removes\n"
        "the certificate from the card.  The option --openpgp expects\n"
-       "a keyblock and stores it encapsulated in a CMS container.",
+       "a keyblock and stores it encapsulated in a CMS container; the\n"
+       "keyblock is taken from FILE or directly from the key with FPR",
        APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
   opt_clear = has_leading_option (argstr, "--clear");
@@ -1926,6 +1929,18 @@ cmd_writecert (card_info_t info, char *argstr)
             goto leave;
         }
     }
+  else if (opt_openpgp && *argstr)
+    {
+      err = get_minimal_openpgp_key (&key, argstr);
+      if (err)
+        goto leave;
+      if (es_fclose_snatch (key, (void*)&data, &datalen))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      key = NULL;
+    }
   else
     {
       err = gpg_error (GPG_ERR_INV_ARG);
@@ -1965,6 +1980,7 @@ cmd_writecert (card_info_t info, char *argstr)
   err = scd_writecert (certref, data, datalen);
 
  leave:
+  es_fclose (key);
   xfree (data);
   xfree (certref_buffer);
   return err;

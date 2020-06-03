@@ -557,3 +557,96 @@ test_get_matching_keys (const char *hexgrip)
   release_keyblock (keyblock);
   return 0;
 }
+
+
+
+
+struct export_key_status_parm_s
+{
+  const char *fpr;
+  int found;
+  int count;
+};
+
+
+static void
+export_key_status_cb (void *opaque, const char *keyword, char *args)
+{
+  struct export_key_status_parm_s *parm = opaque;
+
+  if (!strcmp (keyword, "EXPORTED"))
+    {
+      parm->count++;
+      if (!ascii_strcasecmp (args, parm->fpr))
+        parm->found = 1;
+    }
+}
+
+
+/* Get a key by fingerprint from gpg's keyring.  The binary key is
+ * returned as a new memory stream at R_KEY.  */
+gpg_error_t
+get_minimal_openpgp_key (estream_t *r_key, const char *fingerprint)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv = NULL;
+  estream_t key = NULL;
+  struct export_key_status_parm_s parm = { NULL };
+
+  *r_key = NULL;
+
+  key = es_fopenmem (0, "w+b");
+  if (!key)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--no-armor");
+  ccparray_put (&ccp, "--export-options=export-minimal");
+  ccparray_put (&ccp, "--export");
+  ccparray_put (&ccp, "--");
+  ccparray_put (&ccp, fingerprint);
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  parm.fpr = fingerprint;
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
+                                NULL, key,
+                                export_key_status_cb, &parm);
+  if (!err && parm.count > 1)
+    err = gpg_error (GPG_ERR_TOO_MANY);
+  else if (!err && !parm.found)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  if (err)
+    {
+      log_error ("export failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  es_rewind (key);
+  *r_key = key;
+  key = NULL;
+
+ leave:
+  es_fclose (key);
+  xfree (argv);
+  return err;
+}
