@@ -1929,8 +1929,14 @@ ask_key_flags_with_mask (int algo, int subkey, unsigned int current,
     }
 
   /* Mask the possible usage flags.  This is for example used for a
-   * card based key.  */
+   * card based key.  For ECDH we need to allows additional usages if
+   * they are provided. */
   possible = (openpgp_pk_algo_usage (algo) & mask);
+  if (algo == PUBKEY_ALGO_ECDH)
+    possible |= (current & (PUBKEY_USAGE_ENC
+                            |PUBKEY_USAGE_CERT
+                            |PUBKEY_USAGE_SIG
+                            |PUBKEY_USAGE_AUTH));
 
   /* However, only primary keys may certify. */
   if (subkey)
@@ -1948,9 +1954,10 @@ ask_key_flags_with_mask (int algo, int subkey, unsigned int current,
     {
       tty_printf("\n");
       tty_printf(_("Possible actions for this %s key: "),
-                 (algo == PUBKEY_ALGO_ECDSA
+                 (algo == PUBKEY_ALGO_ECDH
+                  || algo == PUBKEY_ALGO_ECDSA
                   || algo == PUBKEY_ALGO_EDDSA)
-                 ? "ECDSA/EdDSA" : openpgp_pk_algo_name (algo));
+                 ? "ECC" : openpgp_pk_algo_name (algo));
       print_key_flags(possible);
       tty_printf("\n");
       tty_printf(_("Current allowed actions: "));
@@ -2076,7 +2083,7 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
  * keygrip is then stored at this address.  The caller needs to free
  * it.  If R_CARDKEY is not NULL and the keygrip has been taken from
  * an active card, true is stored there; if R_KEYTIME is not NULL the
- * cretion time of that key is then stored there.  */
+ * creation time of that key is then stored there.  */
 static int
 ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           char **r_keygrip, int *r_cardkey, u32 *r_keytime)
@@ -2308,18 +2315,24 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                       gcry_sexp_release (s_pkey);
                     }
 
-                  /* We need to tweak the algo in case
-                   * GCRY_PK_ECC is returned because pubkey_algo_string
-                   * is not aware of the OpenPGP algo mapping.
-                   * FIXME: This is an ugly hack. */
-                  if (algoid == GCRY_PK_ECC
-                      && algostr && !strncmp (algostr, "nistp", 5)
-                      && !(kpi->usage & GCRY_PK_USAGE_ENCR))
-                    kpi->algo = PUBKEY_ALGO_ECDSA;
-                  else if (algoid == GCRY_PK_ECC
-                           && algostr && !strcmp (algostr, "ed25519")
-                           && !(kpi->usage & GCRY_PK_USAGE_ENCR))
-                    kpi->algo = PUBKEY_ALGO_EDDSA;
+                  /* We need to tweak the algo in case GCRY_PK_ECC is
+                   * returned because pubkey_algo_string is not aware
+                   * of the OpenPGP algo mapping.  We need to
+                   * distinguish between ECDH and ECDSA but we can do
+                   * that only if we got usage flags.
+                   * Note: Keep this in sync with parse_key_parameter_part.
+                   */
+                  if (algoid == GCRY_PK_ECC && algostr)
+                    {
+                      if (!strcmp (algostr, "ed25519"))
+                        kpi->algo = PUBKEY_ALGO_EDDSA;
+                      else if (!strcmp (algostr, "cv25519"))
+                        kpi->algo = PUBKEY_ALGO_ECDH;
+                      else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
+                        kpi->algo = PUBKEY_ALGO_ECDH;
+                      else
+                        kpi->algo = PUBKEY_ALGO_ECDSA;
+                    }
                   else
                     kpi->algo = map_gcry_pk_to_openpgp (algoid);
 
@@ -3456,17 +3469,23 @@ parse_key_parameter_part (ctrl_t ctrl,
           gcry_sexp_release (s_pkey);
 
           /* Map to OpenPGP algo number.
-           * We need to tweak the algo in case GCRY_PK_ECC is returned
-           * because pubkey_algo_string is not aware of the OpenPGP
-           * algo mapping.  FIXME: This is an ugly hack. */
-          if (algoid == GCRY_PK_ECC
-              && algostr && !strncmp (algostr, "nistp", 5)
-              && !(kpi->usage & GCRY_PK_USAGE_ENCR))
-            algo = PUBKEY_ALGO_ECDSA;
-          else if (algoid == GCRY_PK_ECC
-                   && algostr && !strcmp (algostr, "ed25519")
-                   && !(kpi->usage & GCRY_PK_USAGE_ENCR))
-            algo = PUBKEY_ALGO_EDDSA;
+           * We need to tweak the algo in case GCRY_PK_ECC is
+           * returned because pubkey_algo_string is not aware
+           * of the OpenPGP algo mapping.  We need to
+           * distinguish between ECDH and ECDSA but we can do
+           * that only if we got usage flags.
+           * Note: Keep this in sync with ask_algo.  */
+          if (algoid == GCRY_PK_ECC && algostr)
+            {
+              if (!strcmp (algostr, "ed25519"))
+                algo = PUBKEY_ALGO_EDDSA;
+              else if (!strcmp (algostr, "cv25519"))
+                algo = PUBKEY_ALGO_ECDH;
+              else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
+                algo = PUBKEY_ALGO_ECDH;
+              else
+                algo = PUBKEY_ALGO_ECDSA;
+            }
           else
             algo = map_gcry_pk_to_openpgp (algoid);
 
@@ -5777,7 +5796,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
 
   if (interactive)
     {
-      algo = ask_algo (ctrl, 1, NULL, &use, &key_from_hexgrip, &cardkey, NULL);
+      algo = ask_algo (ctrl, 1, NULL, &use, &key_from_hexgrip, &cardkey,
+                       &keytime);
       log_assert (algo);
 
       if (key_from_hexgrip)
