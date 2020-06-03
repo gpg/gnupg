@@ -35,10 +35,19 @@
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t and estream. */
 
-/* These error codes are used but not defined in the required
+/* These error codes might be used but not defined in the required
  * libgpg-error version.  Define them here.
  * Example: (#if GPG_ERROR_VERSION_NUMBER < 0x011500 // 1.21)
  */
+#if GPG_ERROR_VERSION_NUMBER < 0x012400 /* 1.36 */
+# define GPG_ERR_NO_AUTH          314
+# define GPG_ERR_BAD_AUTH         315
+#endif
+
+#if GPG_ERROR_VERSION_NUMBER < 0x011b00 /* 1.27 */
+# define GPG_ERR_WRONG_NAME       313
+#endif
+
 #if GPG_ERROR_VERSION_NUMBER < 0x011a00 /* 1.26 */
 # define GPG_ERR_UNKNOWN_FLAG     309
 # define GPG_ERR_INV_ORDER	  310
