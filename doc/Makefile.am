@@ -182,6 +182,8 @@ defsincdate: $(gnupg_TEXINFOS)
 	if test -e $(top_srcdir)/.git; then \
 	  (cd $(srcdir) && git log -1 --format='%ct' \
                -- $(gnupg_TEXINFOS) 2>/dev/null) >>defsincdate; \
+        elif test x"$SOURCE_DATE_EPOCH" != x; then   \
+	   echo "$SOURCE_DATE_EPOCH" >>defsincdate ; \
 	fi
 
 defs.inc : defsincdate Makefile mkdefsinc
