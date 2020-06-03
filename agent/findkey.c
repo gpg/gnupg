@@ -1117,10 +1117,10 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
       return err;
     }
 
-  buflen = gcry_sexp_canon_len (buf, 0, NULL, NULL);
-  err = gcry_sexp_sscan (&s_skey, &erroff, (char*)buf, buflen);
-  wipememory (buf, buflen);
+  err = sexp_sscan_private_key (result, &erroff, buf);
   xfree (buf);
+  nvc_release (keymeta);
+  xfree (desc_text_buffer);
   if (err)
     {
       log_error ("failed to build S-Exp (off=%u): %s\n",
@@ -1130,15 +1130,9 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           xfree (*r_passphrase);
           *r_passphrase = NULL;
         }
-      nvc_release (keymeta);
-      xfree (desc_text_buffer);
-      return err;
     }
 
-  *result = s_skey;
-  nvc_release (keymeta);
-  xfree (desc_text_buffer);
-  return 0;
+  return err;
 }
 
 

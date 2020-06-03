@@ -404,6 +404,7 @@ read_and_unprotect (ctrl_t ctrl, const char *fname)
         log_info ("key protection done at [unknown]\n");
     }
 
+  resultlen = fixup_when_ecc_private_key (result, resultlen);
   if (opt_armor)
     {
       char *p = make_advanced (result, resultlen);

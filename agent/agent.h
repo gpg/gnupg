@@ -639,4 +639,10 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
                      gcry_mpi_t *mpi_array, int arraysize,
                      gcry_sexp_t *r_curve, gcry_sexp_t *r_flags);
 
+/*-- sexp-secret.c --*/
+size_t fixup_when_ecc_private_key (unsigned char *buf, size_t buflen);
+
+gpg_error_t sexp_sscan_private_key (gcry_sexp_t *result, size_t *r_erroff,
+                                    unsigned char *buf);
+
 #endif /*AGENT_H*/
