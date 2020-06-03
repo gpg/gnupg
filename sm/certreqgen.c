@@ -1419,7 +1419,11 @@ create_request (ctrl_t ctrl,
         }
     }
   else
-    sigkey = public;
+    {
+      sigkey = public;
+      sigkeylen = publiclen;
+      sigkeypkalgo = publicpkalgo;
+    }
 
   do
     {
