@@ -2591,7 +2591,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           else
             {
               unsigned int n = pktlen;
-              if (algorithm == PUBKEY_ALGO_EDDSA
+              if (algorithm == PUBKEY_ALGO_ECDSA
+                  || algorithm == PUBKEY_ALGO_EDDSA
                   || algorithm == PUBKEY_ALGO_ECDH)
                 pk->pkey[i] = sos_read (inp, &n, 0);
               else
@@ -2907,7 +2908,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                   goto leave;
                 }
               n = pktlen;
-              if (algorithm == PUBKEY_ALGO_EDDSA
+              if (algorithm == PUBKEY_ALGO_ECDSA
+                  || algorithm == PUBKEY_ALGO_EDDSA
                   || algorithm == PUBKEY_ALGO_ECDH)
                 pk->pkey[i] = sos_read (inp, &n, 0);
               else

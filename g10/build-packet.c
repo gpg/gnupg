@@ -624,7 +624,9 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           || (pk->pubkey_algo == PUBKEY_ALGO_EDDSA && (i == 0))
           || (pk->pubkey_algo == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2)))
         err = gpg_mpi_write_nohdr (a, pk->pkey[i]);
-      else if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+      else if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+               || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
+               || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
         err = sos_write (a, pk->pkey[i], NULL);
       else
         err = gpg_mpi_write (a, pk->pkey[i], NULL);
@@ -742,7 +744,8 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
               for (j=i; j < nskey; j++ )
                 {
-                  if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
+                  if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+                      || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
                       || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
                     {
                       if ((err = sos_write (NULL, pk->pkey[j], &n)))
@@ -760,7 +763,8 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
             }
 
           for ( ; i < nskey; i++ )
-            if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
+            if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+                || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
                 || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
               {
                 if ((err = sos_write (a, pk->pkey[i], NULL)))

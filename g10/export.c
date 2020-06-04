@@ -1024,6 +1024,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
       if (!value || !valuelen)
         goto bad_seckey;
       if (is_enc
+          || pk->pubkey_algo == PUBKEY_ALGO_ECDSA
           || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
           || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
         {
