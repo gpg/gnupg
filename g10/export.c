@@ -627,6 +627,55 @@ canon_pk_algo (enum gcry_pk_algos algo)
 }
 
 
+static gpg_error_t
+sexp_extract_param_sos (gcry_sexp_t sexp, const char *param, gcry_mpi_t *r_sos)
+{
+  gpg_error_t err;
+  gcry_sexp_t l2 = gcry_sexp_find_token (sexp, param, 0);
+
+  *r_sos = NULL;
+  if (!l2)
+    err = gpg_error (GPG_ERR_NO_OBJ);
+  else
+    {
+      size_t buflen;
+      void *p0 = gcry_sexp_nth_buffer (l2, 1, &buflen);
+
+      if (!p0)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          gcry_mpi_t sos;
+          unsigned int nbits = buflen*8;
+          unsigned char *p = p0;
+
+          if (nbits >= 8 && !(*p & 0x80))
+            if (--nbits >= 7 && !(*p & 0x40))
+              if (--nbits >= 6 && !(*p & 0x20))
+                if (--nbits >= 5 && !(*p & 0x10))
+                  if (--nbits >= 4 && !(*p & 0x08))
+                    if (--nbits >= 3 && !(*p & 0x04))
+                      if (--nbits >= 2 && !(*p & 0x02))
+                        if (--nbits >= 1 && !(*p & 0x01))
+                          --nbits;
+
+          sos = gcry_mpi_set_opaque (NULL, p0, nbits);
+          if (sos)
+            {
+              gcry_mpi_set_flag (sos, GCRYMPI_FLAG_USER2);
+              *r_sos = sos;
+              err = 0;
+            }
+          else
+            err = gpg_error_from_syserror ();
+        }
+      gcry_sexp_release (l2);
+    }
+
+  return err;
+}
+
+
 /* Take a cleartext dump of a secret key in PK and change the
  * parameter array in PK to include the secret parameters.  */
 static gpg_error_t
@@ -750,10 +799,8 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
       err = match_curve_skey_pk (key, pk);
       if (err)
         goto leave;
-      if (!err)
-        err = gcry_sexp_extract_param (key, NULL, "/q",
-                                       &pub_params[0],
-                                       NULL);
+      else
+        err = sexp_extract_param_sos (key, "q", &pub_params[0]);
       if (!err && (gcry_mpi_cmp(pk->pkey[1], pub_params[0])))
         err = gpg_error (GPG_ERR_BAD_PUBKEY);
 
@@ -764,9 +811,7 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
         {
           gcry_mpi_release (pk->pkey[sec_start]);
           pk->pkey[sec_start] = NULL;
-          err = gcry_sexp_extract_param (key, NULL, "/d",
-                                         &pk->pkey[sec_start],
-                                         NULL);
+          err = sexp_extract_param_sos (key, "d", &pk->pkey[sec_start]);
         }
 
       if (!err)
