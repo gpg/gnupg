@@ -2352,7 +2352,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       for (i = 0; i < ndata; i++)
 	{
 	  n = pktlen;
-          if (sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
+          if (sig->pubkey_algo == PUBKEY_ALGO_ECDSA
+              || sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
             sig->data[i] = sos_read (inp, &n, 0);
           else
             sig->data[i] = mpi_read (inp, &n, 0);

@@ -24,6 +24,8 @@
 
 /*-- pkglue.c --*/
 gcry_mpi_t get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt);
+gcry_mpi_t get_sos_from_sexp (gcry_sexp_t sexp, const char *item);
+
 
 int pk_verify (pubkey_algo_t algo, gcry_mpi_t hash, gcry_mpi_t *data,
                gcry_mpi_t *pkey);

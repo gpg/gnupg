@@ -47,6 +47,41 @@ get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
 }
 
 
+gcry_mpi_t
+get_sos_from_sexp (gcry_sexp_t sexp, const char *item)
+{
+  gcry_sexp_t list;
+  size_t buflen;
+  void *p0;
+  gcry_mpi_t sos;
+  unsigned int nbits;
+  unsigned char *p;
+
+  list = gcry_sexp_find_token (sexp, item, 0);
+  log_assert (list);
+  p0 = gcry_sexp_nth_buffer (list, 1, &buflen);
+  log_assert (p0);
+  nbits = buflen*8;
+  p = p0;
+
+  if (nbits >= 8 && !(*p & 0x80))
+    if (--nbits >= 7 && !(*p & 0x40))
+      if (--nbits >= 6 && !(*p & 0x20))
+        if (--nbits >= 5 && !(*p & 0x10))
+          if (--nbits >= 4 && !(*p & 0x08))
+            if (--nbits >= 3 && !(*p & 0x04))
+              if (--nbits >= 2 && !(*p & 0x02))
+                if (--nbits >= 1 && !(*p & 0x01))
+                  --nbits;
+
+  sos = gcry_mpi_set_opaque (NULL, p0, nbits);
+  log_assert (sos);
+  gcry_sexp_release (list);
+  gcry_mpi_set_flag (sos, GCRYMPI_FLAG_USER2);
+  return sos;
+}
+
+
 static byte *
 get_data_from_sexp (gcry_sexp_t sexp, const char *item, size_t *r_size)
 {
@@ -360,7 +395,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
 
       /* Get the shared point and the ephemeral public key.  */
       shared = get_data_from_sexp (s_ciph, "s", &nshared);
-      public = get_mpi_from_sexp (s_ciph, "e", GCRYMPI_FMT_OPAQUE);
+      public = get_sos_from_sexp (s_ciph, "e");
       if (DBG_CRYPTO)
         {
           log_debug ("ECDH ephemeral key:");
