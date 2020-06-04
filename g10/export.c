@@ -627,7 +627,7 @@ canon_pk_algo (enum gcry_pk_algos algo)
 }
 
 
-static gpg_error_t
+gpg_error_t
 sexp_extract_param_sos (gcry_sexp_t sexp, const char *param, gcry_mpi_t *r_sos)
 {
   gpg_error_t err;

@@ -1329,19 +1329,10 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
   if (err)
     goto leave;
 
-  l2 = gcry_sexp_find_token (list, "q", 0);
-  if (!l2)
-    {
-      err = gpg_error (GPG_ERR_NO_OBJ);
-      goto leave;
-    }
-  array[1] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_OPAQUE);
-  gcry_sexp_release (l2);
-  if (!array[1])
-    {
-      err = gpg_error (GPG_ERR_INV_OBJ);
-      goto leave;
-    }
+  err = sexp_extract_param_sos (list, "q", &array[1])
+  if (err)
+    goto leave;
+
   gcry_sexp_release (list);
 
   if (algo == PUBKEY_ALGO_ECDH)

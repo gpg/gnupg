@@ -63,7 +63,7 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
           s += n;
           s0 = (unsigned char *)s;
           n = snext (&s);
-	  n0 = s - s0;
+          n0 = s - s0;
 
           if (!n)
             return gpg_error (GPG_ERR_INV_SEXP);
@@ -78,7 +78,7 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
               buflen--;
               numsize = snprintf (s0, s-s0+1, "%u:", (unsigned int)n);
               memmove (s0+numsize, s+1, buflen - (s - buf));
-	      memset (s0+numsize+buflen - (s - buf), 0, (n0 - numsize) + 1);
+              memset (s0+numsize+buflen - (s - buf), 0, (n0 - numsize) + 1);
               buflen -= (n0 - numsize);
               s = s0+numsize+n;
               *buflen_p = buflen;

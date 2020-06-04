@@ -415,6 +415,9 @@ void pop_export_filters (void);
 
 int exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, kbnode_t node);
 
+gpg_error_t sexp_extract_param_sos (gcry_sexp_t sexp, const char *param,
+                                    gcry_mpi_t *r_sos);
+
 int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
                     export_stats_t stats);
 int export_seckeys (ctrl_t ctrl, strlist_t users, unsigned int options,
