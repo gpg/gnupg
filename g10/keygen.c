@@ -1329,7 +1329,7 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
   if (err)
     goto leave;
 
-  err = sexp_extract_param_sos (list, "q", &array[1])
+  err = sexp_extract_param_sos (list, "q", &array[1]);
   if (err)
     goto leave;
 
