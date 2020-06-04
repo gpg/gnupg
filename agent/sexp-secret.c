@@ -22,13 +22,15 @@
 #include "../common/sexp-parse.h"
 
 /*
- * Fixup private key part in the cannonical SEXP.
+ * When it's for ECC, fixup private key part in the cannonical SEXP
+ * representation in BUF.
  */
-size_t
-fixup_when_ecc_private_key (unsigned char *buf, size_t buflen)
+gpg_error_t
+fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
 {
   const unsigned char *s;
   size_t n;
+  size_t buflen = *buflen_p;
 
   s = buf;
   if (*s != '(')
@@ -44,7 +46,7 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t buflen)
   s++;
   n = snext (&s);
   if (!smatch (&s, n, "ecc"))
-    return buflen;
+    return 0;
 
   /* It's ECC */
   while (*s == '(')
@@ -79,6 +81,7 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t buflen)
 	      memset (s0+numsize+buflen - (s - buf), 0, (n0 - numsize) + 1);
               buflen -= (n0 - numsize);
               s = s0+numsize+n;
+              *buflen_p = buflen;
             }
           else
             s += n;
@@ -99,7 +102,7 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t buflen)
     return gpg_error (GPG_ERR_INV_SEXP);
   s++;
 
-  return buflen;
+  return 0;
 }
 
 gpg_error_t
@@ -107,12 +110,13 @@ sexp_sscan_private_key (gcry_sexp_t *result, size_t *r_erroff,
                         unsigned char *buf)
 {
   gpg_error_t err;
-  size_t buflen, buflen1;
+  size_t buflen, buflen0;
 
-  buflen = gcry_sexp_canon_len (buf, 0, NULL, NULL);
-  buflen1 = fixup_when_ecc_private_key (buf, buflen);
-  err = gcry_sexp_sscan (result, r_erroff, (char*)buf, buflen1);
-  wipememory (buf, buflen);
+  buflen = buflen0 = gcry_sexp_canon_len (buf, 0, NULL, NULL);
+  err = fixup_when_ecc_private_key (buf, &buflen);
+  if (!err)
+    err = gcry_sexp_sscan (result, r_erroff, (char*)buf, buflen0);
+  wipememory (buf, buflen0);
 
   return err;
 }

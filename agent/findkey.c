@@ -968,7 +968,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
 {
   gpg_error_t err;
   unsigned char *buf;
-  size_t len, buflen, erroff;
+  size_t len, erroff;
   gcry_sexp_t s_skey;
   nvc_t keymeta = NULL;
   char *desc_text_buffer = NULL;  /* Used in case we extend DESC_TEXT.  */
