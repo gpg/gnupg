@@ -1955,14 +1955,13 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
 	}
       if ((key_spec.flags & SPEC_FLAG_IS_EdDSA))
         {
-
           data = gcry_sexp_nth_data (value_pair, 1, &datalen);
           if (!data)
             {
               err = gpg_error (GPG_ERR_INV_SEXP);
               goto out;
             }
-          if (*p_elems == 'q' && datalen)
+          if (*p_elems == 'q' && (datalen & 1) && *data == 0x40)
             { /* Remove the prefix 0x40.  */
               data++;
               datalen--;
