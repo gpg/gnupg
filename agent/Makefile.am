@@ -45,6 +45,7 @@ gpg_agent_SOURCES = \
 	cache.c \
 	trans.c \
 	findkey.c \
+	sexp-secret.c \
 	pksign.c \
 	pkdecrypt.c \
 	genkey.c \
@@ -75,6 +76,7 @@ gpg_agent_DEPENDENCIES = $(resource_objs)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
+	sexp-secret.c \
 	protect.c cvt-openpgp.c
 
 gpg_protect_tool_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) \
