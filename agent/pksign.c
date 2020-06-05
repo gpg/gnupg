@@ -62,19 +62,9 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
     }
   else
     {
-      gcry_mpi_t mpi;
-
-      rc = gcry_mpi_scan (&mpi, GCRYMPI_FMT_USG, md, mdlen, NULL);
-      if (!rc)
-	{
-	  rc = gcry_sexp_build (&hash, NULL,
-				"(data (flags raw) (value %m))",
-				mpi);
-	  gcry_mpi_release (mpi);
-	}
-      else
-        hash = NULL;
-
+      rc = gcry_sexp_build (&hash, NULL,
+                            "(data (flags raw) (value %b))",
+                            (int)mdlen, md);
     }
 
   *r_hash = hash;
