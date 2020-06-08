@@ -29,6 +29,7 @@ gpg_error_t
 fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
 {
   const unsigned char *s;
+  char curve_name[256];
   size_t n;
   size_t buflen = *buflen_p;
 
@@ -55,7 +56,18 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
       n = snext (&s);
       if (!n)
         return gpg_error (GPG_ERR_INV_SEXP);
-      if (n == 1 && *s == 'd')
+      if (n == 5 && !memcmp (s, "curve", 5))
+        {
+          s += n;
+          n = snext (&s);
+          if (!n || n >= sizeof curve_name)
+            return gpg_error (GPG_ERR_INV_SEXP);
+
+          memcpy (curve_name, s, n);
+          curve_name[n] = 0;
+          s += n;
+        }
+      else if (n == 1 && *s == 'd')
         {
           unsigned char *s0;
           size_t n0;
@@ -67,10 +79,9 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
 
           if (!n)
             return gpg_error (GPG_ERR_INV_SEXP);
-          else if ((n & 1) && !*s)
-            /* Detect wrongly added 0x00.  */
-            /* For all existing curves in libgcrypt-1.9 (so far), the
-               size of private part should be even.  */
+          else if (!*s /* Leading 0x00 added at the front for classic curve */
+                   && strcmp (curve_name, "Ed25519")
+                   && strcmp (curve_name, "X448"))
             {
               size_t numsize;
 
