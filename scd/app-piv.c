@@ -1180,7 +1180,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
  * R_CERT and the length of the certificate stored at R_CERTLEN.  If
  * on success a non-zero value is stored at R_MECHANISM, the returned
  * data is not a certificate but a public key (in the format used by the
- * container '7f49'.  */
+ * container '7f49').  */
 static gpg_error_t
 readcert_by_tag (app_t app, unsigned int tag,
                  unsigned char **r_cert, size_t *r_certlen, int *r_mechanism)

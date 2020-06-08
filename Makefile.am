@@ -20,7 +20,7 @@
 
 # Location of the released tarball archives.  Note that this is an
 # internal archive and before uploading this to the public server,
-# manual tests should be run and the git release tat set and pushed.
+# manual tests should be run and the git release tag set and pushed.
 # Adjust as needed.
 RELEASE_ARCHIVE_DIR  = wk@vigenere:tarballs/gnupg/v2.2
 
