@@ -2243,11 +2243,32 @@ Use @var{name} as the key to sign with. Note that this option overrides
 @item --sender @var{mbox}
 @opindex sender
 This option has two purposes.  @var{mbox} must either be a complete
-user id with a proper mail address or just a mail address.  When
-creating a signature this option tells gpg the user id of a key used
-to make a signature if the key was not directly specified by a user
-id.  When verifying a signature the @var{mbox} is used to restrict the
-information printed by the TOFU code to matching user ids.
+user ID containing a proper mail address or just a plain mail address.
+The option can be given multiple times.
+
+When creating a signature this option tells gpg the signing key's user
+id used to make the signature and embeds that user ID into the created
+signature (using OpenPGP's ``Signer's User ID'' subpacket).  If the
+option is given multiple times a suitable user ID is picked.  However,
+if the signing key was specified directly by using a mail address
+(i.e. not by using a fingerprint or key ID) this option is used and
+the mail address is embedded in the created signature.
+
+When verifying a signature @var{mbox} is used to restrict the
+information printed by the TOFU code to matching user IDs.  If the
+option is used and the signature contains a ``Signer's User ID''
+subpacket that information is is also used to restrict the printed
+information.  Note that GnuPG considers only the mail address part of
+a User ID.
+
+If this option or the said subpacket is available the TRUST lines as
+printed by option @option{status-fd} correspond to the corresponding
+User ID; if no User ID is known the TRUST lines are computed directly
+on the key and do not give any information about the User ID.  In the
+latter case it his highly recommended to scripts and other frontends
+to evaluate the VALIDSIG line, retrieve the key and print all User IDs
+along with their validity (trust) information.
+
 
 @item --try-secret-key @var{name}
 @opindex try-secret-key

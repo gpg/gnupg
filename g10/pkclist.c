@@ -1,6 +1,7 @@
 /* pkclist.c - create a list of public keys
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2020 Free Software Foundation, Inc.
+ * Copyright (C) 1997-2019 Werner Koch
+ * Copyright (C) 2015-2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -36,6 +38,7 @@
 #include "../common/status.h"
 #include "photoid.h"
 #include "../common/i18n.h"
+#include "../common/mbox-util.h"
 #include "tofu.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
@@ -537,44 +540,139 @@ write_trust_status (int statuscode, int trustlevel)
 }
 
 
-/****************
- * Check whether we can trust this signature.
- * Returns an error code if we should not trust this signature.
- */
-int
-check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
+/* Return true if MBOX matches one of the names in opt.sender_list.  */
+static int
+is_in_sender_list (const char *mbox)
 {
-  PKT_public_key *pk = xmalloc_clear( sizeof *pk );
+  strlist_t sl;
+
+  for (sl = opt.sender_list; sl; sl = sl->next)
+    if (!strcmp (mbox, sl->d))
+      return 1;
+  return 0;
+}
+
+
+/* Check whether we can trust this signature.  KEYBLOCK contains the
+ * key PK used to check the signature SIG.  We need PK here in
+ * addition to KEYBLOCK so that we know the subkey used for
+ * verification.  Returns an error code if we should not trust this
+ * signature (i.e. done by an not trusted key).  */
+gpg_error_t
+check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
+                        PKT_signature *sig)
+{
+  gpg_error_t err = 0;
+  int uidbased = 0;  /* 1 = signer's UID, 2 = use --sender option.  */
   unsigned int trustlevel = TRUST_UNKNOWN;
-  int rc=0;
+  PKT_public_key *mainpk;
+  PKT_user_id *targetuid;
+  const char *testedtarget = NULL;
+  kbnode_t n;
 
-  rc = get_pubkey_for_sig (ctrl, pk, sig, NULL);
-  if (rc)
-    { /* this should not happen */
-      log_error("Ooops; the key vanished  - can't check the trust\n");
-      rc = GPG_ERR_NO_PUBKEY;
-      goto leave;
-    }
-
-  if ( opt.trust_model==TM_ALWAYS )
+  if (opt.trust_model == TM_ALWAYS)
     {
-      if( !opt.quiet )
+      if (!opt.quiet)
         log_info(_("WARNING: Using untrusted key!\n"));
       if (opt.with_fingerprint)
         print_fingerprint (ctrl, NULL, pk, 1);
       goto leave;
     }
 
-  if(pk->flags.maybe_revoked && !pk->flags.revoked)
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  mainpk = keyblock->pkt->pkt.public_key;
+
+  if ((pk->flags.maybe_revoked && !pk->flags.revoked)
+      || (mainpk->flags.maybe_revoked && !mainpk->flags.revoked))
     log_info(_("WARNING: this key might be revoked (revocation key"
 	       " not present)\n"));
 
-  trustlevel = get_validity (ctrl, NULL, pk, NULL, sig, 1);
+  /* Figure out the user ID which was used to create the signature.
+   * Note that the Signer's UID may be not a valid addr-spec but the
+   * plain value from the sub-packet; thus we need to check this
+   * before looking for the matching User ID (our parser makes sure
+   * that signers_uid has only the mbox if there is an mbox).  */
+  if (is_valid_mailbox (sig->signers_uid))
+    uidbased = 1; /* We got the signer's UID and it is an addr-spec.  */
+  else if (opt.sender_list)
+    uidbased = 2;
+  else
+    uidbased = 0;
+  targetuid = NULL;
+  if (uidbased)
+    {
+      u32 tmpcreated = 0; /* Helper to find the lates user ID.  */
+      PKT_user_id *tmpuid;
+
+      for (n=keyblock; n; n = n->next)
+        if (n->pkt->pkttype == PKT_USER_ID
+            && !(tmpuid = n->pkt->pkt.user_id)->attrib_data
+            && tmpuid->created  /* (is valid)  */
+            && !tmpuid->flags.revoked
+            && !tmpuid->flags.expired)
+          {
+            if (!tmpuid->mbox)
+              tmpuid->mbox = mailbox_from_userid (tmpuid->name, 0);
+            if (!tmpuid->mbox)
+              continue;
+
+            if (uidbased == 1)
+              {
+                if (!strcmp (tmpuid->mbox, sig->signers_uid)
+                    && tmpuid->created > tmpcreated)
+                  {
+                    tmpcreated = tmpuid->created;
+                    targetuid = tmpuid;
+                  }
+              }
+            else
+              {
+                if (is_in_sender_list (tmpuid->mbox)
+                    && tmpuid->created > tmpcreated)
+                  {
+                    tmpcreated = tmpuid->created;
+                    targetuid = tmpuid;
+                  }
+              }
+          }
+
+      /* In addition restrict based on --sender.  */
+      if (uidbased == 1 && opt.sender_list
+          && targetuid && !is_in_sender_list (targetuid->mbox))
+        {
+          testedtarget = targetuid->mbox;
+          targetuid = NULL;
+        }
+
+      if (opt.verbose && targetuid)
+        log_info (_("checking User ID \"%s\"\n"), targetuid->mbox);
+    }
+
+  trustlevel = get_validity (ctrl, NULL, pk, targetuid, sig, 1);
+  if (uidbased && !targetuid)
+    {
+      /* No user ID given but requested - force an undefined
+       * trustlevel but keep the trust flags.  */
+      trustlevel &= ~TRUST_MASK;
+      trustlevel |= TRUST_UNDEFINED;
+      if (!opt.quiet)
+        {
+          if (testedtarget)
+            log_info (_("option %s given but issuer \"%s\" does not match\n"),
+                      "--sender", testedtarget);
+          else if (uidbased == 1)
+            log_info (_("issuer \"%s\" does not match any User ID\n"),
+                      sig->signers_uid);
+          else if (opt.sender_list)
+            log_info (_("option %s given but no matching User ID found\n"),
+                      "--sender");
+        }
+    }
 
   if ( (trustlevel & TRUST_FLAG_REVOKED) )
     {
-      write_status( STATUS_KEYREVOKED );
-      if(pk->flags.revoked == 2)
+      write_status (STATUS_KEYREVOKED);
+      if (pk->flags.revoked == 2 || mainpk->flags.revoked == 2)
 	log_info(_("WARNING: This key has been revoked by its"
 		   " designated revoker!\n"));
       else
@@ -593,13 +691,12 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
     log_info (_("Note: This key has been disabled.\n"));
 
   /* If we have PKA information adjust the trustlevel. */
-  if (sig->pka_info && sig->pka_info->valid)
+  if (sig->pka_info && sig->pka_info->valid && !(uidbased && !targetuid))
     {
       unsigned char fpr[MAX_FINGERPRINT_LEN];
       PKT_public_key *primary_pk;
       size_t fprlen;
       int okay;
-
 
       primary_pk = xmalloc_clear (sizeof *primary_pk);
       get_pubkey (ctrl, primary_pk, pk->main_keyid);
@@ -659,8 +756,12 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
     case TRUST_UNKNOWN:
     case TRUST_UNDEFINED:
       write_trust_status (STATUS_TRUST_UNDEFINED, trustlevel);
-      log_info(_("WARNING: This key is not certified with"
-                 " a trusted signature!\n"));
+      if (uidbased)
+        log_info(_("WARNING: The key's User ID is not certified with"
+                   " a trusted signature!\n"));
+      else
+        log_info(_("WARNING: This key is not certified with"
+                   " a trusted signature!\n"));
       log_info(_("         There is no indication that the "
                  "signature belongs to the owner.\n" ));
       print_fingerprint (ctrl, NULL, pk, 1);
@@ -674,12 +775,16 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
       log_info(_("         The signature is probably a FORGERY.\n"));
       if (opt.with_fingerprint)
         print_fingerprint (ctrl, NULL, pk, 1);
-      rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
+      err = gpg_error (GPG_ERR_BAD_SIGNATURE);
       break;
 
     case TRUST_MARGINAL:
       write_trust_status (STATUS_TRUST_MARGINAL, trustlevel);
-      log_info(_("WARNING: This key is not certified with"
+      if (uidbased)
+        log_info(_("WARNING: The key's User ID is not certified with"
+                 " sufficiently trusted signatures!\n"));
+      else
+        log_info(_("WARNING: This key is not certified with"
                  " sufficiently trusted signatures!\n"));
       log_info(_("         It is not certain that the"
                  " signature belongs to the owner.\n" ));
@@ -700,8 +805,7 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
     }
 
  leave:
-  free_public_key( pk );
-  return rc;
+  return err;
 }
 
 

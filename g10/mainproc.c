@@ -1848,7 +1848,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 {
   PKT_signature *sig = node->pkt->pkt.signature;
   const char *astr;
-  int rc;
+  gpg_error_t rc;
   int is_expkey = 0;
   int is_revkey = 0;
   char *issuer_fpr = NULL;
@@ -2031,8 +2031,9 @@ check_sig_and_print (CTX c, kbnode_t node)
         {
           rc = do_check_sig (c, node, extrahash, extrahashlen, included_pk,
                              NULL, &is_expkey, &is_revkey, &pk);
-          log_debug ("checked signature using included key block: %s\n",
-                     gpg_strerror (rc));
+          if (opt.verbose)
+            log_debug ("checked signature using included key block: %s\n",
+                       gpg_strerror (rc));
           if (!rc)
             {
               /* The keyblock has been verified, we now import it.  */
@@ -2202,10 +2203,14 @@ check_sig_and_print (CTX c, kbnode_t node)
         }
     }
 
+  /* Do do something with the result of the signature checking.  */
   if (!rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE)
     {
+      /* We have checked the signature and the result is either a good
+       * signature or a bad signature.  Further examination follows.  */
       kbnode_t un, keyblock;
       int count = 0;
+      int keyblock_has_pk = 0;  /* For failsafe check.  */
       int statno;
       char keyid_str[50];
       PKT_public_key *mainpk = NULL;
@@ -2242,7 +2247,14 @@ check_sig_and_print (CTX c, kbnode_t node)
         {
           int valid;
 
-          if (un->pkt->pkttype==PKT_PUBLIC_KEY)
+          if (!keyblock_has_pk
+              && (un->pkt->pkttype == PKT_PUBLIC_KEY
+                  || un->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+              && !cmp_public_keys (un->pkt->pkt.public_key, pk))
+            {
+              keyblock_has_pk = 1;
+            }
+          if (un->pkt->pkttype == PKT_PUBLIC_KEY)
             {
               mainpk = un->pkt->pkt.public_key;
               continue;
@@ -2284,9 +2296,19 @@ check_sig_and_print (CTX c, kbnode_t node)
             log_printf ("\n");
 
           count++;
+          /* At this point we could in theory stop because the primary
+           * UID flag is never set for more than one User ID per
+           * keyblock.  However, we use this loop also for a failsafe
+           * check that the public key used to create the signature is
+           * contained in the keyring.*/
 	}
 
       log_assert (mainpk);
+      if (!keyblock_has_pk)
+        {
+          log_error ("signature key lost from keyblock\n");
+          rc = gpg_error (GPG_ERR_INTERNAL);
+        }
 
       /* In case we did not found a valid textual userid above
          we print the first user id packet or a "[?]" instead along
@@ -2442,14 +2464,15 @@ check_sig_and_print (CTX c, kbnode_t node)
         {
           if ((opt.verify_options & VERIFY_PKA_LOOKUPS))
             pka_uri_from_sig (c, sig); /* Make sure PKA info is available. */
-          rc = check_signatures_trust (c->ctrl, sig);
+          rc = check_signatures_trust (c->ctrl, keyblock, pk, sig);
         }
 
       /* Print extra information about the signature.  */
       if (sig->flags.expired)
         {
           log_info (_("Signature expired %s\n"), asctimestamp(sig->expiredate));
-          rc = GPG_ERR_GENERAL; /* Need a better error here?  */
+          if (!rc)
+            rc = gpg_error (GPG_ERR_GENERAL); /* Need a better error here?  */
         }
       else if (sig->expiredate)
         log_info (_("Signature expires %s\n"), asctimestamp(sig->expiredate));
@@ -2526,7 +2549,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       if (opt.batch && rc)
         g10_exit (1);
     }
-  else
+  else  /* Error checking the signature. (neither Good nor Bad).  */
     {
       write_status_printf (STATUS_ERRSIG, "%08lX%08lX %d %d %02x %lu %d %s",
                            (ulong)sig->keyid[0], (ulong)sig->keyid[1],

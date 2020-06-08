@@ -57,10 +57,13 @@ g10_exit( int rc )
  * We have to override the trustcheck from pkclist.c because
  * this utility assumes that all keys in the keyring are trustworthy
  */
-int
-check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
+gpg_error_t
+check_signatures_trust (ctrl_t ctrl, kbnode_t kblock,
+                        PKT_public_key *pk, PKT_signature *sig)
 {
   (void)ctrl;
+  (void)kblock;
+  (void)pk;
   (void)sig;
   return 0;
 }

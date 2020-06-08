@@ -263,7 +263,8 @@ gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr, size_t fprlen);
 
 /*-- pkclist.c --*/
 void show_revocation_reason (ctrl_t ctrl, PKT_public_key *pk, int mode );
-int  check_signatures_trust (ctrl_t ctrl, PKT_signature *sig);
+gpg_error_t check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock,
+                                    PKT_public_key *pk, PKT_signature *sig);
 
 void release_pk_list (PK_LIST pk_list);
 int expand_id (const char *id, strlist_t *into, unsigned int flags);
