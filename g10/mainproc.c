@@ -1976,7 +1976,7 @@ check_sig_and_print (CTX c, kbnode_t node)
         log_error(_("can't handle this ambiguous signature data\n"));
         return 0;
       }
-  }
+  } /* End checking signature packet composition.  */
 
   if (sig->signers_uid)
     write_status_buffer (STATUS_NEWSIG,

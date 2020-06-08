@@ -318,6 +318,9 @@ typedef struct
     unsigned int ks_modify:1;
     unsigned int compacted:1;
     unsigned int primary:2; /* 2 if set via the primary flag, 1 if calculated */
+                            /* Note that this flag is set in a
+                             * keyblock at max for one User ID and for
+                             * one User Attribute per keyblock.  */
     unsigned int revoked:1;
     unsigned int expired:1;
   } flags;

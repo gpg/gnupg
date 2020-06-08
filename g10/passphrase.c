@@ -249,7 +249,7 @@ passphrase_clear_cache (const char *cacheid)
  * Returns NULL if the user canceled the passphrase entry and if
  * CANCELED is not NULL, sets it to true.
  *
- * If CREATE is true a new passphrase sll be created.  If NOCACHE is
+ * If CREATE is true a new passphrase will be created.  If NOCACHE is
  * true the symmetric key caching will not be used.  */
 DEK *
 passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,

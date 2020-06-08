@@ -204,7 +204,7 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
 
 
 /*
- * Put the Key Block subpakcet into SIG for key PKSK.  Returns an
+ * Put the Key Block subpacket into SIG for key PKSK.  Returns an
  * error code on failure.
  */
 static gpg_error_t

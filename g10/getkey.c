@@ -324,7 +324,7 @@ get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
       return 0;
     }
 
-  /* First try the new ISSUER_FPR info.  */
+  /* First try the ISSUER_FPR info.  */
   fpr = issuer_fpr_raw (sig, &fprlen);
   if (fpr && !get_pubkey_byfprint (ctrl, pk, NULL, fpr, fprlen))
     return 0;
@@ -533,7 +533,7 @@ get_pubkeyblock_for_sig (ctrl_t ctrl, PKT_signature *sig)
   size_t fprlen;
   kbnode_t keyblock;
 
-  /* First try the new ISSUER_FPR info.  */
+  /* First try the ISSUER_FPR info.  */
   fpr = issuer_fpr_raw (sig, &fprlen);
   if (fpr && !get_pubkey_byfprint (ctrl, NULL, &keyblock, fpr, fprlen))
     return keyblock;
