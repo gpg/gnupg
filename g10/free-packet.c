@@ -30,6 +30,22 @@
 #include "options.h"
 
 
+/* Run time check to see whether mpi_copy does not copy the flags
+ * properly.   This was fixed in version 1.8.6.  */
+static int
+is_mpi_copy_broken (void)
+{
+  static char result;
+
+  if (!result)
+    {
+      result = !gcry_check_version ("1.8.6");
+      result |= 0x80;
+    }
+  return (result & 1);
+}
+
+
 /* This is mpi_copy with a fix for opaque MPIs which store a NULL
    pointer.  This will also be fixed in Libggcrypt 1.7.0.  */
 static gcry_mpi_t
@@ -39,6 +55,17 @@ my_mpi_copy (gcry_mpi_t a)
       && gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE)
       && !gcry_mpi_get_opaque (a, NULL))
     return NULL;
+
+  if (is_mpi_copy_broken ())
+    {
+      int flag_user2 = a? gcry_mpi_get_flag (a, GCRYMPI_FLAG_USER2) : 0;
+      gcry_mpi_t b;
+
+      b = gcry_mpi_copy (a);
+      if (b && flag_user2)
+        gcry_mpi_set_flag (b, GCRYMPI_FLAG_USER2);
+      return b;
+    }
 
   return gcry_mpi_copy (a);
 }
