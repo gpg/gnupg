@@ -520,9 +520,10 @@ do_we_trust_pre (ctrl_t ctrl, PKT_public_key *pk, unsigned int trustlevel )
 }
 
 
-/* Write a TRUST_foo status line inclduing the validation model.  */
+/* Write a TRUST_foo status line including the validation model and if
+ * MBOX is not NULL the targeted User ID's mbox.  */
 static void
-write_trust_status (int statuscode, int trustlevel)
+write_trust_status (int statuscode, int trustlevel, const char *mbox)
 {
 #ifdef NO_TRUST_MODELS
   write_status (statuscode);
@@ -535,7 +536,18 @@ write_trust_status (int statuscode, int trustlevel)
     tm = (trustlevel & TRUST_FLAG_TOFU_BASED)? TM_TOFU : TM_PGP;
   else
     tm = opt.trust_model;
-  write_status_strings (statuscode, "0 ", trust_model_string (tm), NULL);
+
+  if (mbox)
+    {
+      char *escmbox = percent_escape (mbox, NULL);
+
+      write_status_strings (statuscode, "0 ", trust_model_string (tm),
+                            " ", escmbox? escmbox : "?", NULL);
+      xfree (escmbox);
+    }
+  else
+    write_status_strings (statuscode, "0 ", trust_model_string (tm), NULL);
+
 #endif /* NO_TRUST_MODELS */
 }
 
@@ -568,6 +580,7 @@ check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
   PKT_public_key *mainpk;
   PKT_user_id *targetuid;
   const char *testedtarget = NULL;
+  const char *statusmbox = NULL;
   kbnode_t n;
 
   if (opt.trust_model == TM_ALWAYS)
@@ -643,10 +656,17 @@ check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
           testedtarget = targetuid->mbox;
           targetuid = NULL;
         }
-
-      if (opt.verbose && targetuid)
-        log_info (_("checking User ID \"%s\"\n"), targetuid->mbox);
     }
+
+  if (uidbased && !targetuid)
+    statusmbox = testedtarget? testedtarget : sig->signers_uid;
+  else if (uidbased)
+    statusmbox = targetuid->mbox;
+  else
+    statusmbox = NULL;
+
+  if (opt.verbose && statusmbox)
+    log_info (_("checking User ID \"%s\"\n"), statusmbox);
 
   trustlevel = get_validity (ctrl, NULL, pk, targetuid, sig, 1);
   if (uidbased && !targetuid)
@@ -755,7 +775,7 @@ check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
       /* fall through */
     case TRUST_UNKNOWN:
     case TRUST_UNDEFINED:
-      write_trust_status (STATUS_TRUST_UNDEFINED, trustlevel);
+      write_trust_status (STATUS_TRUST_UNDEFINED, trustlevel, statusmbox);
       if (uidbased)
         log_info(_("WARNING: The key's User ID is not certified with"
                    " a trusted signature!\n"));
@@ -770,7 +790,7 @@ check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
     case TRUST_NEVER:
       /* This level can be returned by TOFU, which supports negative
        * assertions.  */
-      write_trust_status (STATUS_TRUST_NEVER, trustlevel);
+      write_trust_status (STATUS_TRUST_NEVER, trustlevel, statusmbox);
       log_info(_("WARNING: We do NOT trust this key!\n"));
       log_info(_("         The signature is probably a FORGERY.\n"));
       if (opt.with_fingerprint)
@@ -779,7 +799,7 @@ check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
       break;
 
     case TRUST_MARGINAL:
-      write_trust_status (STATUS_TRUST_MARGINAL, trustlevel);
+      write_trust_status (STATUS_TRUST_MARGINAL, trustlevel, statusmbox);
       if (uidbased)
         log_info(_("WARNING: The key's User ID is not certified with"
                  " sufficiently trusted signatures!\n"));
@@ -792,13 +812,13 @@ check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
       break;
 
     case TRUST_FULLY:
-      write_trust_status (STATUS_TRUST_FULLY, trustlevel);
+      write_trust_status (STATUS_TRUST_FULLY, trustlevel, statusmbox);
       if (opt.with_fingerprint)
         print_fingerprint (ctrl, NULL, pk, 1);
       break;
 
     case TRUST_ULTIMATE:
-      write_trust_status (STATUS_TRUST_ULTIMATE, trustlevel);
+      write_trust_status (STATUS_TRUST_ULTIMATE, trustlevel, statusmbox);
       if (opt.with_fingerprint)
         print_fingerprint (ctrl, NULL, pk, 1);
       break;

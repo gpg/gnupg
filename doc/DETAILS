@@ -778,29 +778,50 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** TRUST_
     These are several similar status codes:
 
-    - TRUST_UNDEFINED <error_token>
-    - TRUST_NEVER     <error_token>
-    - TRUST_MARGINAL  [0  [<validation_model>]]
-    - TRUST_FULLY     [0  [<validation_model>]]
-    - TRUST_ULTIMATE  [0  [<validation_model>]]
+#+begin_src
+    - TRUST_UNDEFINED <error_token> [<validation_model> [<mbox>]]
+    - TRUST_NEVER     <error_token> [<validation_model> [<mbox>]]
+    - TRUST_MARGINAL  0  [<validation_model> [<mbox>]]
+    - TRUST_FULLY     0  [<validation_model> [<mbox>]]
+    - TRUST_ULTIMATE  0  [<validation_model> [<mbox>]]
+#+end_src
 
     For good signatures one of these status lines are emitted to
     indicate the validity of the key used to create the signature.
-    The error token values are currently only emitted by gpgsm.
+    <error_token> values other that a literal zero are currently only
+    emitted by gpgsm.
 
     VALIDATION_MODEL describes the algorithm used to check the
     validity of the key.  The defaults are the standard Web of Trust
     model for gpg and the standard X.509 model for gpgsm.  The
     defined values are
 
-       - pgp   :: The standard PGP WoT.
-       - shell :: The standard X.509 model.
-       - chain :: The chain model.
-       - steed :: The STEED model.
-       - tofu  :: The TOFU model
+       - classic  :: The classic PGP WoT model.
+       - pgp      :: The standard PGP WoT.
+       - external :: The external PGP trust model.
+       - tofu     :: The GPG Trust-On-First-Use model.
+       - tofu+pgp :: Ditto but combined with mopdel "pgp".
+       - always   :: The Always trust model.
+       - direct   :: The Direct Trust model.
+       - shell    :: The Standard X.509 model.
+       - chain    :: The Chain model.
+       - steed    :: The STEED model.
+       - unknown  :: An unknown trust model.
 
     Note that the term =TRUST_= in the status names is used for
     historic reasons; we now speak of validity.
+
+    MBOX is the UTF-8 encoded and percent escaped addr-spec of the
+    User ID used to compute the validity of a signature.  If this is
+    not known the validity is computed on the key with no specific
+    User ID.  Note that MBOX is always the addr-spec of the User ID;
+    for User IDs without a proper addr-spec a dash is used to
+    distinguish this from the case that no User ID at all is known.
+    The MBOX is either taken from the Signer's User ID signature
+    sub-packet or from the addr-spec passed to gpg using the --sender
+    option.  If both are available and they don't match
+    TRUST_UNDEFINED along with an error code is emitted.  MBOX is not
+    used by gpgsm.
 
 *** TOFU_USER <fingerprint_in_hex> <mbox>
 
