@@ -1748,6 +1748,8 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
     curve = "Curve25519";
   else if (!ascii_strcasecmp (curve, "ed25519"))
     curve = "Ed25519";
+  else if (!ascii_strcasecmp (curve, "x448"))
+    curve = "X448";
 
   /* Note that we use the "comp" flag with EdDSA to request the use of
      a 0x40 compression prefix octet.  */
@@ -1761,6 +1763,13 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
   else if (algo == PUBKEY_ALGO_ECDH && !strcmp (curve, "Curve25519"))
     keyparms = xtryasprintf
       ("(genkey(ecc(curve %zu:%s)(flags djb-tweak comp%s)))",
+       strlen (curve), curve,
+       (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+         && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+        " transient-key" : ""));
+  else if (algo == PUBKEY_ALGO_ECDH && !strcmp (curve, "X448"))
+    keyparms = xtryasprintf
+      ("(genkey(ecc(curve %zu:%s)(flags comp%s)))",
        strlen (curve), curve,
        (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
          && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
@@ -2318,6 +2327,8 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                       if (!strcmp (algostr, "ed25519"))
                         kpi->algo = PUBKEY_ALGO_EDDSA;
                       else if (!strcmp (algostr, "cv25519"))
+                        kpi->algo = PUBKEY_ALGO_ECDH;
+                      else if (!strcmp (algostr, "x448"))
                         kpi->algo = PUBKEY_ALGO_ECDH;
                       else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
                         kpi->algo = PUBKEY_ALGO_ECDH;
@@ -3472,6 +3483,8 @@ parse_key_parameter_part (ctrl_t ctrl,
                 algo = PUBKEY_ALGO_EDDSA;
               else if (!strcmp (algostr, "cv25519"))
                 algo = PUBKEY_ALGO_ECDH;
+              else if (!strcmp (algostr, "x448"))
+                algo = PUBKEY_ALGO_ECDH;
               else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
                 algo = PUBKEY_ALGO_ECDH;
               else
@@ -3599,6 +3612,7 @@ parse_key_parameter_part (ctrl_t ctrl,
  *   elg2048 := Elgamal with 2048 bit.
  *   ed25519 := EDDSA using curve Ed25519.
  *   cv25519 := ECDH using curve Curve25519.
+ *   x448    := ECDH using curve X448.
  *   nistp256:= ECDSA or ECDH using curve NIST P-256
  *
  * All strings with an unknown prefix are considered an elliptic

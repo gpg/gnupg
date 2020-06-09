@@ -422,9 +422,26 @@ pk_ecdh_encrypt_with_shared_point (gcry_mpi_t shared_mpi,
 
 
 static gcry_mpi_t
-gen_k (unsigned nbits)
+gen_k (unsigned nbits, int little_endian, int is_opaque)
 {
   gcry_mpi_t k;
+
+  if (is_opaque)
+    {
+      unsigned char *p;
+      size_t nbytes = (nbits+7)/8;
+
+      p = gcry_random_bytes_secure (nbytes, GCRY_STRONG_RANDOM);
+      if ((nbits % 8))
+        {
+          if (little_endian)
+            p[nbytes-1] &= ((1 << (nbits % 8)) - 1);
+          else
+            p[0] &= ((1 << (nbits % 8)) - 1);
+        }
+      k = gcry_mpi_set_opaque (NULL, p, nbits);
+      return k;
+    }
 
   k = gcry_mpi_snew (nbits);
   if (DBG_CRYPTO)
@@ -453,13 +470,21 @@ pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k)
 {
   unsigned int nbits;
   gcry_mpi_t k;
+  int is_little_endian = 0;
+  int require_opaque = 0;
+
+  if (openpgp_oid_is_x448 (pkey[0]))
+    {
+      is_little_endian = 1;
+      require_opaque = 1;
+    }
 
   *r_k = NULL;
 
   nbits = pubkey_nbits (PUBKEY_ALGO_ECDH, pkey);
   if (!nbits)
     return gpg_error (GPG_ERR_TOO_SHORT);
-  k = gen_k (nbits);
+  k = gen_k (nbits, is_little_endian, require_opaque);
   if (!k)
     BUG ();
 
