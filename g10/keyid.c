@@ -181,14 +181,23 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
           else if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
             {
               const void *p;
+              int is_sos = 0;
+
+              if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_USER2))
+                is_sos = 2;
 
               p = gcry_mpi_get_opaque (pk->pkey[i], &nbits);
-              pp[i] = xmalloc ((nbits+7)/8);
+              pp[i] = xmalloc ((nbits+7)/8 + is_sos);
               if (p)
-                memcpy (pp[i], p, (nbits+7)/8);
+                memcpy (pp[i] + is_sos, p, (nbits+7)/8);
               else
                 pp[i] = NULL;
-              nn[i] = (nbits+7)/8;
+              if (is_sos)
+                {
+                  pp[i][0] = (nbits >> 8);
+                  pp[i][1] = nbits;
+                }
+              nn[i] = (nbits+7)/8 + is_sos;
               n += nn[i];
             }
           else

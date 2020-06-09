@@ -82,7 +82,6 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   byte *frame;
   int i,n;
   u16 csum;
-  gcry_mpi_t a;
 
   if (DBG_CRYPTO)
     log_debug ("encode_session_key: encoding %d byte DEK", dek->keylen);
@@ -124,10 +123,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
                    (int) nframe, frame[0], frame[1], frame[2],
                    frame[nframe-3], frame[nframe-2], frame[nframe-1]);
 
-      if (gcry_mpi_scan (&a, GCRYMPI_FMT_USG, frame, nframe, &nframe))
-        BUG();
-      xfree(frame);
-      return a;
+      return gcry_mpi_set_opaque (NULL, frame, 8*nframe);
     }
 
   /* The current limitation is that we can only use a session key
@@ -195,10 +191,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   frame[n++] = csum >>8;
   frame[n++] = csum;
   log_assert (n == nframe);
-  if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, n, &nframe))
-    BUG();
-  xfree (frame);
-  return a;
+  return gcry_mpi_set_opaque (NULL, frame, 8*n);
 }
 
 

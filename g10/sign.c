@@ -505,10 +505,12 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
       else if (pksk->pubkey_algo == GCRY_PK_RSA
                || pksk->pubkey_algo == GCRY_PK_RSA_S)
         sig->data[0] = get_mpi_from_sexp (s_sigval, "s", GCRYMPI_FMT_USG);
-      else if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
+      else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
+               || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
         {
-          sig->data[0] = get_mpi_from_sexp (s_sigval, "r", GCRYMPI_FMT_OPAQUE);
-          sig->data[1] = get_mpi_from_sexp (s_sigval, "s", GCRYMPI_FMT_OPAQUE);
+          err = sexp_extract_param_sos (s_sigval, "r", &sig->data[0]);
+          if (!err)
+            err = sexp_extract_param_sos (s_sigval, "s", &sig->data[1]);
         }
       else
         {

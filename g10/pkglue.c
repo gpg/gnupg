@@ -47,6 +47,56 @@ get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
 }
 
 
+/* Extract SOS representation from SEXP for PARAM, return the result
+   in R_SOS.  */
+gpg_error_t
+sexp_extract_param_sos (gcry_sexp_t sexp, const char *param, gcry_mpi_t *r_sos)
+{
+  gpg_error_t err;
+  gcry_sexp_t l2 = gcry_sexp_find_token (sexp, param, 0);
+
+  *r_sos = NULL;
+  if (!l2)
+    err = gpg_error (GPG_ERR_NO_OBJ);
+  else
+    {
+      size_t buflen;
+      void *p0 = gcry_sexp_nth_buffer (l2, 1, &buflen);
+
+      if (!p0)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          gcry_mpi_t sos;
+          unsigned int nbits = buflen*8;
+          unsigned char *p = p0;
+
+          if (nbits >= 8 && !(*p & 0x80))
+            if (--nbits >= 7 && !(*p & 0x40))
+              if (--nbits >= 6 && !(*p & 0x20))
+                if (--nbits >= 5 && !(*p & 0x10))
+                  if (--nbits >= 4 && !(*p & 0x08))
+                    if (--nbits >= 3 && !(*p & 0x04))
+                      if (--nbits >= 2 && !(*p & 0x02))
+                        if (--nbits >= 1 && !(*p & 0x01))
+                          --nbits;
+
+          sos = gcry_mpi_set_opaque (NULL, p0, nbits);
+          if (sos)
+            {
+              gcry_mpi_set_flag (sos, GCRYMPI_FLAG_USER2);
+              *r_sos = sos;
+              err = 0;
+            }
+          else
+            err = gpg_error_from_syserror ();
+        }
+      gcry_sexp_release (l2);
+    }
+
+  return err;
+}
+
 
 /****************
  * Emulate our old PK interface here - sometime in the future we might
@@ -152,6 +202,7 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
       gcry_mpi_t s = data[1];
       size_t rlen, slen, n;  /* (bytes) */
       char buf[64];
+      unsigned int nbits;
 
       log_assert (neededfixedlen <= sizeof buf);
 
@@ -182,6 +233,17 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
               memset (buf, 0, neededfixedlen - n);
               r = gcry_mpi_set_opaque_copy (NULL, buf, neededfixedlen * 8);
             }
+          else if (rlen < neededfixedlen
+                   && gcry_mpi_get_flag (r, GCRYMPI_FLAG_OPAQUE))
+            {
+              const unsigned char *p;
+
+              p = gcry_mpi_get_opaque (r, &nbits);
+              n = (nbits+7)/8;
+              memcpy (buf + (neededfixedlen - n), p, n);
+              memset (buf, 0, neededfixedlen - n);
+              gcry_mpi_set_opaque_copy (r, buf, neededfixedlen * 8);
+            }
           if (slen < neededfixedlen
               && !gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE)
               && !(rc=gcry_mpi_print (GCRYMPI_FMT_USG, buf, sizeof buf, &n, s)))
@@ -190,6 +252,17 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
               memmove (buf + (neededfixedlen - n), buf, n);
               memset (buf, 0, neededfixedlen - n);
               s = gcry_mpi_set_opaque_copy (NULL, buf, neededfixedlen * 8);
+            }
+          else if (slen < neededfixedlen
+                   && gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE))
+            {
+              const unsigned char *p;
+
+              p = gcry_mpi_get_opaque (s, &nbits);
+              n = (nbits+7)/8;
+              memcpy (buf + (neededfixedlen - n), p, n);
+              memset (buf, 0, neededfixedlen - n);
+              gcry_mpi_set_opaque_copy (s, buf, neededfixedlen * 8);
             }
 
           if (!rc)
@@ -315,7 +388,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
 
       /* Get the shared point and the ephemeral public key.  */
       shared = get_mpi_from_sexp (s_ciph, "s", GCRYMPI_FMT_USG);
-      public = get_mpi_from_sexp (s_ciph, "e", GCRYMPI_FMT_USG);
+      rc = sexp_extract_param_sos (s_ciph, "e", &public);
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
       if (DBG_CRYPTO)
@@ -329,7 +402,8 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       fingerprint_from_pk (pk, fp, &fpn);
       if (fpn != 20)
         rc = gpg_error (GPG_ERR_INV_LENGTH);
-      else
+
+      if (!rc)
         rc = pk_ecdh_encrypt_with_shared_point (shared,
                                                 fp, data, pkey, &result);
       gcry_mpi_release (shared);
