@@ -98,6 +98,28 @@ sexp_extract_param_sos (gcry_sexp_t sexp, const char *param, gcry_mpi_t *r_sos)
 }
 
 
+static byte *
+get_data_from_sexp (gcry_sexp_t sexp, const char *item, size_t *r_size)
+{
+  gcry_sexp_t list;
+  size_t valuelen;
+  const char *value;
+  byte *v;
+
+  log_printsexp ("get_data_from_sexp:", sexp);
+
+  list = gcry_sexp_find_token (sexp, item, 0);
+  log_assert (list);
+  value = gcry_sexp_nth_data (list, 1, &valuelen);
+  log_assert (value);
+  v = xtrymalloc (valuelen);
+  memcpy (v, value, valuelen);
+  gcry_sexp_release (list);
+  *r_size = valuelen;
+  return v;
+}
+
+
 /****************
  * Emulate our old PK interface here - sometime in the future we might
  * change the internal design to directly fit to libgcrypt.
@@ -382,12 +404,14 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
     ;
   else if (algo == PUBKEY_ALGO_ECDH)
     {
-      gcry_mpi_t shared, public, result;
+      gcry_mpi_t public, result;
       byte fp[MAX_FINGERPRINT_LEN];
       size_t fpn;
+      byte *shared;
+      size_t nshared;
 
       /* Get the shared point and the ephemeral public key.  */
-      shared = get_mpi_from_sexp (s_ciph, "s", GCRYMPI_FMT_USG);
+      shared = get_data_from_sexp (s_ciph, "s", &nshared);
       rc = sexp_extract_param_sos (s_ciph, "e", &public);
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
@@ -404,9 +428,13 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
         rc = gpg_error (GPG_ERR_INV_LENGTH);
 
       if (!rc)
-        rc = pk_ecdh_encrypt_with_shared_point (shared,
-                                                fp, data, pkey, &result);
-      gcry_mpi_release (shared);
+        {
+          unsigned int nbits;
+          byte *p = gcry_mpi_get_opaque (data, &nbits);
+          rc = pk_ecdh_encrypt_with_shared_point (shared, nshared, fp, p,
+                                                  (nbits+7)/8, pkey, &result);
+        }
+      xfree (shared);
       if (!rc)
         {
           resarr[0] = public;

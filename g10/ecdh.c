@@ -82,15 +82,15 @@ pk_ecdh_default_params (unsigned int qbits)
 }
 
 
-/* Extract xcomponent from the point SHARED_MPI.  POINT_NBYTES is the
+/* Extract xcomponent from the point SHARED.  POINT_NBYTES is the
    size to represent an EC point which is determined by the public
    key.  SECRET_X_SIZE is the size of x component to represent an
    integer which is determined by the curve. */
 static gpg_error_t
-extract_secret_x (byte **r_secret_x, gcry_mpi_t shared_mpi,
+extract_secret_x (byte **r_secret_x,
+                  const char *shared, size_t nshared,
                   size_t point_nbytes, size_t secret_x_size)
 {
-  gpg_error_t err;
   byte *secret_x;
 
   *r_secret_x = NULL;
@@ -111,15 +111,7 @@ extract_secret_x (byte **r_secret_x, gcry_mpi_t shared_mpi,
   if (!secret_x)
     return gpg_error_from_syserror ();
 
-  err = gcry_mpi_print (GCRYMPI_FMT_USG, secret_x, point_nbytes,
-                        &point_nbytes, shared_mpi);
-  if (err)
-    {
-      xfree (secret_x);
-      log_error ("ECDH ephemeral export of shared point failed: %s\n",
-                 gpg_strerror (err));
-      return err;
-    }
+  memcpy (secret_x, shared, nshared);
 
   /* Remove the prefix.  */
   if ((point_nbytes & 1))
@@ -133,7 +125,7 @@ extract_secret_x (byte **r_secret_x, gcry_mpi_t shared_mpi,
     log_printhex (secret_x, secret_x_size, "ECDH shared secret X is:");
 
   *r_secret_x = secret_x;
-  return err;
+  return 0;
 }
 
 
@@ -209,11 +201,11 @@ derive_kek (size_t kek_size,
 }
 
 
-/* Prepare ECDH using SHARED_MPI, PK_FP fingerprint, and PKEY array.
+/* Prepare ECDH using SHARED, PK_FP fingerprint, and PKEY array.
    Returns the cipher handle in R_HD, which needs to be closed by
    the caller.  */
 static gpg_error_t
-prepare_ecdh_with_shared_point (gcry_mpi_t shared_mpi,
+prepare_ecdh_with_shared_point (const char *shared, size_t nshared,
                                 const byte pk_fp[MAX_FINGERPRINT_LEN],
                                 gcry_mpi_t *pkey, gcry_cipher_hd_t *r_hd)
 {
@@ -280,7 +272,7 @@ prepare_ecdh_with_shared_point (gcry_mpi_t shared_mpi,
   if (kek_size > secret_x_size)
     return gpg_error (GPG_ERR_BAD_PUBKEY);
 
-  err = extract_secret_x (&secret_x, shared_mpi,
+  err = extract_secret_x (&secret_x, shared, nshared,
                           /* pkey[1] is the public point */
                           (mpi_get_nbits (pkey[1])+7)/8,
                           secret_x_size);
@@ -330,21 +322,20 @@ prepare_ecdh_with_shared_point (gcry_mpi_t shared_mpi,
   return err;
 }
 
-/* Encrypts DATA using a key derived from the ECC shared point
-   SHARED_MPI using the FIPS SP 800-56A compliant method
+/* Encrypts DATA using a key derived from the ECC shared point SHARED
+   using the FIPS SP 800-56A compliant method
    key_derivation+key_wrapping.  PKEY is the public key and PK_FP the
    fingerprint of this public key.  On success the result is stored at
    R_RESULT; on failure NULL is stored at R_RESULT and an error code
    returned.  */
 gpg_error_t
-pk_ecdh_encrypt_with_shared_point (gcry_mpi_t shared_mpi,
+pk_ecdh_encrypt_with_shared_point (const char *shared, size_t nshared,
                                    const byte pk_fp[MAX_FINGERPRINT_LEN],
-                                   gcry_mpi_t data, gcry_mpi_t *pkey,
-                                   gcry_mpi_t *r_result)
+                                   const byte *data, size_t ndata,
+                                   gcry_mpi_t *pkey, gcry_mpi_t *r_result)
 {
   gpg_error_t err;
   gcry_cipher_hd_t hd;
-  size_t nbytes;
   byte *data_buf;
   int data_buf_size;
   gcry_mpi_t result;
@@ -352,11 +343,11 @@ pk_ecdh_encrypt_with_shared_point (gcry_mpi_t shared_mpi,
 
   *r_result = NULL;
 
-  err = prepare_ecdh_with_shared_point (shared_mpi, pk_fp, pkey, &hd);
+  err = prepare_ecdh_with_shared_point (shared, nshared, pk_fp, pkey, &hd);
   if (err)
     return err;
 
-  data_buf_size = (gcry_mpi_get_nbits(data)+7)/8;
+  data_buf_size = ndata;
   if ((data_buf_size & 7) != 0)
     {
       log_error ("can't use a shared secret of %d bytes for ecdh\n",
@@ -377,15 +368,7 @@ pk_ecdh_encrypt_with_shared_point (gcry_mpi_t shared_mpi,
 
   /* Write data MPI into the end of data_buf. data_buf is size
      aeswrap data.  */
-  err = gcry_mpi_print (GCRYMPI_FMT_USG, in,
-                        data_buf_size, &nbytes, data/*in*/);
-  if (err)
-    {
-      log_error ("ecdh failed to export DEK: %s\n", gpg_strerror (err));
-      gcry_cipher_close (hd);
-      xfree (data_buf);
-      return err;
-    }
+  memcpy (in, data, ndata);
 
   if (DBG_CRYPTO)
     log_printhex (in, data_buf_size, "ecdh encrypting  :");
@@ -497,7 +480,8 @@ pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k)
 /* Perform ECDH decryption.   */
 int
 pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
-                 gcry_mpi_t data, gcry_mpi_t shared_mpi, gcry_mpi_t * skey)
+                 gcry_mpi_t data,
+                 const byte *shared, size_t nshared, gcry_mpi_t * skey)
 {
   gpg_error_t err;
   gcry_cipher_hd_t hd;
@@ -508,16 +492,16 @@ pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
   const void *p;
   unsigned int nbits;
 
-  if (!data)
-    return gpg_error (GPG_ERR_BAD_MPI);
-
   *r_result = NULL;
 
-  err = prepare_ecdh_with_shared_point (shared_mpi, sk_fp, skey, &hd);
+  err = prepare_ecdh_with_shared_point (shared, nshared, sk_fp, skey, &hd);
   if (err)
     return err;
 
-  data_buf_size = (gcry_mpi_get_nbits(data)+7)/8;
+  p = gcry_mpi_get_opaque (data, &nbits);
+  nbytes = (nbits+7)/8;
+
+  data_buf_size = nbytes;
   if ((data_buf_size & 7) != 1)
     {
       log_error ("can't use a shared secret of %d bytes for ecdh\n",
@@ -534,9 +518,7 @@ pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
       return err;
     }
 
-  p = gcry_mpi_get_opaque (data, &nbits);
-  nbytes = (nbits+7)/8;
-  if (!p || nbytes > data_buf_size || !nbytes)
+  if (!p)
     {
       xfree (data_buf);
       gcry_cipher_close (hd);
