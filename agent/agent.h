@@ -451,7 +451,8 @@ int agent_pk_get_algo (gcry_sexp_t s_key);
 int agent_key_available (const unsigned char *grip);
 gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
                                       int *r_keytype,
-                                      unsigned char **r_shadow_info);
+                                      unsigned char **r_shadow_info,
+                                      unsigned char **r_shadow_info_type);
 gpg_error_t agent_delete_key (ctrl_t ctrl, const char *desc_text,
                               const unsigned char *grip,
                               int force, int only_stubs);
@@ -535,8 +536,15 @@ unsigned char *make_shadow_info (const char *serialno, const char *idstring);
 int agent_shadow_key (const unsigned char *pubkey,
                       const unsigned char *shadow_info,
                       unsigned char **result);
+int agent_shadow_key_type (const unsigned char *pubkey,
+                           const unsigned char *shadow_info,
+                           const unsigned char *type,
+                           unsigned char **result);
 gpg_error_t agent_get_shadow_info (const unsigned char *shadowkey,
                                    unsigned char const **shadow_info);
+gpg_error_t agent_get_shadow_info_type (const unsigned char *shadowkey,
+                                        unsigned char const **shadow_info,
+                                        unsigned char **shadow_type);
 gpg_error_t parse_shadow_info (const unsigned char *shadow_info,
                                char **r_hexsn, char **r_idstr, int *r_pinlen);
 gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,
