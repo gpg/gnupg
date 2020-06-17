@@ -40,6 +40,8 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
+  if (smatch (&s, n, "shadowed-private-key"))
+    return 0;  /* Nothing to do.  */
   if (!smatch (&s, n, "private-key"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   if (*s != '(')
