@@ -320,7 +320,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       goto leave;
     }
 
-  algo = agent_pk_get_algo (s_skey);
+  algo = get_pk_algo_from_key (s_skey);
 
   if (shadow_info || no_shadow_info)
     {
