@@ -447,8 +447,7 @@ gpg_error_t agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
-int agent_is_dsa_key (gcry_sexp_t s_key);
-int agent_is_eddsa_key (gcry_sexp_t s_key);
+int agent_pk_get_algo (gcry_sexp_t s_key);
 int agent_key_available (const unsigned char *grip);
 gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
                                       int *r_keytype,

@@ -1258,10 +1258,10 @@ is_eddsa (gcry_sexp_t keyparms)
 }
 
 
-/* Return the public key algorithm number if S_KEY is a DSA style key.
-   If it is not a DSA style key, return 0.  */
+/* Return the public key algorithm number of S_KEY.  For ECC, returns
+   GCRY_PK_ECC (generic), even if it is known specifically for ECDSA.  */
 int
-agent_is_dsa_key (gcry_sexp_t s_key)
+agent_pk_get_algo (gcry_sexp_t s_key)
 {
   int result;
   gcry_sexp_t list;
@@ -1271,43 +1271,21 @@ agent_is_dsa_key (gcry_sexp_t s_key)
     return 0;
 
   if (key_parms_from_sexp (s_key, &list, algoname, sizeof algoname, NULL, 0))
-    return 0; /* Error - assume it is not an DSA key.  */
+    return 0;
 
-  if (!strcmp (algoname, "dsa"))
+  if (!strcmp (algoname, "rsa"))
+    result = GCRY_PK_RSA;
+  else if (!strcmp (algoname, "dsa"))
     result = GCRY_PK_DSA;
   else if (!strcmp (algoname, "ecc"))
     {
       if (is_eddsa (list))
-        result = 0;
+        result = GCRY_PK_EDDSA;
       else
-        result = GCRY_PK_ECDSA;
+        result = GCRY_PK_ECC;
     }
   else if (!strcmp (algoname, "ecdsa"))
-    result = GCRY_PK_ECDSA;
-  else
-    result = 0;
-
-  gcry_sexp_release (list);
-  return result;
-}
-
-
-/* Return true if S_KEY is an EdDSA key as used with curve Ed25519.  */
-int
-agent_is_eddsa_key (gcry_sexp_t s_key)
-{
-  int result;
-  gcry_sexp_t list;
-  char algoname[6];
-
-  if (!s_key)
-    return 0;
-
-  if (key_parms_from_sexp (s_key, &list, algoname, sizeof algoname, NULL, 0))
-    return 0; /* Error - assume it is not an EdDSA key.  */
-
-  if (!strcmp (algoname, "ecc") && is_eddsa (list))
-    result = 1;
+    result = GCRY_PK_ECC;
   else
     result = 0;
 

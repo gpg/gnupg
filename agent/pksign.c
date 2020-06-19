@@ -155,7 +155,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int pkalgo, gcry_sexp_t pkey,
 
   *r_hash = NULL;
 
-  if (pkalgo == GCRY_PK_ECDSA)
+  if (pkalgo == GCRY_PK_ECC)
     qbits = gcry_pk_get_nbits (pkey);
   else if (pkalgo == GCRY_PK_DSA)
     qbits = get_dsa_qbits (pkey);
@@ -185,7 +185,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int pkalgo, gcry_sexp_t pkey,
   /* ECDSA 521 is special has it is larger than the largest hash
      we have (SHA-512).  Thus we change the size for further
      processing to 512.  */
-  if (pkalgo == GCRY_PK_ECDSA && qbits > 512)
+  if (pkalgo == GCRY_PK_ECC && qbits > 512)
     qbits = 512;
 
   /* Check if we're too short.  Too long is safe as we'll
@@ -288,6 +288,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   const unsigned char *data;
   int datalen;
   int check_signature = 0;
+  int algo;
 
   if (overridedata)
     {
@@ -319,6 +320,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       goto leave;
     }
 
+  algo = agent_pk_get_algo (s_skey);
+
   if (shadow_info || no_shadow_info)
     {
       /* Divert operation to the smartcard.  With NO_SHADOW_INFO set
@@ -326,10 +329,6 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
        * is on the active card.  */
       size_t len;
       unsigned char *buf = NULL;
-      int key_type;
-      int is_RSA = 0;
-      int is_ECDSA = 0;
-      int is_EdDSA = 0;
 
       if (no_shadow_info)
         {
@@ -385,17 +384,6 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
             }
         }
 
-      if (agent_is_eddsa_key (s_pkey))
-        is_EdDSA = 1;
-      else
-        {
-          key_type = agent_is_dsa_key (s_pkey);
-          if (key_type == 0)
-            is_RSA = 1;
-          else if (key_type == GCRY_PK_ECDSA)
-            is_ECDSA = 1;
-        }
-
       {
         char *desc2 = NULL;
 
@@ -415,7 +403,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
           goto leave;
         }
 
-      if (is_RSA)
+      if (algo == GCRY_PK_RSA)
         {
           unsigned char *p = buf;
 
@@ -441,12 +429,12 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
           err = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%b)))",
                                  (int)len, p);
         }
-      else if (is_EdDSA)
+      else if (algo == GCRY_PK_EDDSA)
         {
           err = gcry_sexp_build (&s_sig, NULL, "(sig-val(eddsa(r%b)(s%b)))",
                                  (int)len/2, buf, (int)len/2, buf + len/2);
         }
-      else if (is_ECDSA)
+      else if (algo == GCRY_PK_ECC)
         {
           unsigned char *r_buf, *s_buf;
           int r_buflen, s_buflen;
@@ -491,19 +479,18 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   else
     {
       /* No smartcard, but a private key (in S_SKEY). */
-      int dsaalgo = 0;
 
       /* Put the hash into a sexp */
-      if (agent_is_eddsa_key (s_skey))
+      if (algo == GCRY_PK_EDDSA)
         err = do_encode_eddsa (data, datalen,
                                &s_hash);
       else if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
         err = do_encode_raw_pkcs1 (data, datalen,
                                    gcry_pk_get_nbits (s_skey),
                                    &s_hash);
-      else if ( (dsaalgo = agent_is_dsa_key (s_skey)) )
+      else if (algo == GCRY_PK_DSA || algo == GCRY_PK_ECC)
         err = do_encode_dsa (data, datalen,
-                             dsaalgo, s_skey,
+                             algo, s_skey,
                              &s_hash);
       else
         err = do_encode_md (data, datalen,
@@ -513,7 +500,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       if (err)
         goto leave;
 
-      if (dsaalgo == 0 && GCRYPT_VERSION_NUMBER < 0x010700)
+      if (algo == GCRY_PK_RSA && GCRYPT_VERSION_NUMBER < 0x010700)
         {
           /* It's RSA and Libgcrypt < 1.7 */
           check_signature = 1;
