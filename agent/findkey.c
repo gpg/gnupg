@@ -1308,8 +1308,6 @@ agent_is_eddsa_key (gcry_sexp_t s_key)
 
   if (!strcmp (algoname, "ecc") && is_eddsa (list))
     result = 1;
-  else if (!strcmp (algoname, "eddsa")) /* backward compatibility.  */
-    result = 1;
   else
     result = 0;
 
