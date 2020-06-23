@@ -106,7 +106,8 @@ get_data_from_sexp (gcry_sexp_t sexp, const char *item, size_t *r_size)
   const char *value;
   byte *v;
 
-  log_printsexp ("get_data_from_sexp:", sexp);
+  if (DBG_CRYPTO)
+    log_printsexp ("get_data_from_sexp:", sexp);
 
   list = gcry_sexp_find_token (sexp, item, 0);
   log_assert (list);

@@ -456,7 +456,7 @@ pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k)
   int is_little_endian = 0;
   int require_opaque = 0;
 
-  if (openpgp_oid_is_x448 (pkey[0]))
+  if (openpgp_oid_is_cv448 (pkey[0]))
     {
       is_little_endian = 1;
       require_opaque = 1;

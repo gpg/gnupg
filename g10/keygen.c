@@ -1748,7 +1748,7 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
     curve = "Curve25519";
   else if (!ascii_strcasecmp (curve, "ed25519"))
     curve = "Ed25519";
-  else if (!ascii_strcasecmp (curve, "x448"))
+  else if (!ascii_strcasecmp (curve, "cv448"))
     curve = "X448";
 
   /* Note that we use the "comp" flag with EdDSA to request the use of
@@ -2328,7 +2328,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                         kpi->algo = PUBKEY_ALGO_EDDSA;
                       else if (!strcmp (algostr, "cv25519"))
                         kpi->algo = PUBKEY_ALGO_ECDH;
-                      else if (!strcmp (algostr, "x448"))
+                      else if (!strcmp (algostr, "cv448"))
                         kpi->algo = PUBKEY_ALGO_ECDH;
                       else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
                         kpi->algo = PUBKEY_ALGO_ECDH;
@@ -3483,7 +3483,7 @@ parse_key_parameter_part (ctrl_t ctrl,
                 algo = PUBKEY_ALGO_EDDSA;
               else if (!strcmp (algostr, "cv25519"))
                 algo = PUBKEY_ALGO_ECDH;
-              else if (!strcmp (algostr, "x448"))
+              else if (!strcmp (algostr, "cv448"))
                 algo = PUBKEY_ALGO_ECDH;
               else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
                 algo = PUBKEY_ALGO_ECDH;
@@ -3612,7 +3612,7 @@ parse_key_parameter_part (ctrl_t ctrl,
  *   elg2048 := Elgamal with 2048 bit.
  *   ed25519 := EDDSA using curve Ed25519.
  *   cv25519 := ECDH using curve Curve25519.
- *   x448    := ECDH using curve X448.
+ *   cv448   := ECDH using curve X448.
  *   nistp256:= ECDSA or ECDH using curve NIST P-256
  *
  * All strings with an unknown prefix are considered an elliptic

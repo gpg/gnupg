@@ -48,7 +48,7 @@ static struct {
 
   { "Curve25519", "1.3.6.1.4.1.3029.1.5.1", 255, "cv25519", PUBKEY_ALGO_ECDH },
   { "Ed25519",    "1.3.6.1.4.1.11591.15.1", 255, "ed25519", PUBKEY_ALGO_EDDSA },
-  { "X448",       "1.3.101.111",            448, "x448",    PUBKEY_ALGO_ECDH },
+  { "X448",       "1.3.101.111",            448, "cv448",   PUBKEY_ALGO_ECDH },
 
   { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256" },
   { "NIST P-384",      "1.3.132.0.34",           384, "nistp384" },
@@ -72,8 +72,15 @@ static const char oid_ed25519[] =
 static const char oid_cv25519[] =
   { 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x97, 0x55, 0x01, 0x05, 0x01 };
 
-/* The OID for X448 in OpenPGP format.  */
-static const char oid_x448[] = { 0x03, 0x2b, 0x65, 0x6f };
+/* The OID for X448 in OpenPGP format. */
+/*
+ * Here, we have a little semantic discrepancy.  X448 is the name of
+ * the ECDH computation and the OID is assigned to the algorithm in
+ * RFC 8410.  Note that this OID is not the one which is assigned to
+ * the curve itself (originally in 8410).  Nevertheless, we use "X448"
+ * for the curve in libgcrypt.
+ */
+static const char oid_cv448[] = { 0x03, 0x2b, 0x65, 0x6f };
 
 /* A table to store keyalgo strings like "rsa2048 or "ed25519" so that
  * we do not need to allocate them.  This is currently a simple array
@@ -340,10 +347,10 @@ openpgp_oidbuf_is_cv25519 (const void *buf, size_t len)
 
 /* Return true if (BUF,LEN) represents the OID for X448.  */
 static int
-openpgp_oidbuf_is_x448 (const void *buf, size_t len)
+openpgp_oidbuf_is_cv448 (const void *buf, size_t len)
 {
-  return (buf && len == DIM (oid_x448)
-          && !memcmp (buf, oid_x448, DIM (oid_x448)));
+  return (buf && len == DIM (oid_cv448)
+          && !memcmp (buf, oid_cv448, DIM (oid_cv448)));
 }
 
 
@@ -364,7 +371,7 @@ openpgp_oid_is_cv25519 (gcry_mpi_t a)
 
 /* Return true if the MPI A represents the OID for X448.  */
 int
-openpgp_oid_is_x448 (gcry_mpi_t a)
+openpgp_oid_is_cv448 (gcry_mpi_t a)
 {
   const unsigned char *buf;
   unsigned int nbits;
@@ -373,7 +380,7 @@ openpgp_oid_is_x448 (gcry_mpi_t a)
     return 0;
 
   buf = gcry_mpi_get_opaque (a, &nbits);
-  return openpgp_oidbuf_is_x448 (buf, (nbits+7)/8);
+  return openpgp_oidbuf_is_cv448 (buf, (nbits+7)/8);
 }
 
 
