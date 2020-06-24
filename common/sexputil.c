@@ -624,9 +624,10 @@ get_pk_algo_from_key (gcry_sexp_t key)
   algo = gcry_pk_map_name (algoname);
   if (algo == GCRY_PK_ECC)
     {
-      gcry_sexp_t l1 = gcry_sexp_find_token (list, "flags", 0);
+      gcry_sexp_t l1;
       int i;
 
+      l1 = gcry_sexp_find_token (list, "flags", 0);
       for (i = l1 ? gcry_sexp_length (l1)-1 : 0; i > 0; i--)
 	{
 	  s = gcry_sexp_nth_data (l1, i, &n);
@@ -639,6 +640,12 @@ get_pk_algo_from_key (gcry_sexp_t key)
 	      break;
 	    }
 	}
+      gcry_sexp_release (l1);
+
+      l1 = gcry_sexp_find_token (list, "curve", 0);
+      s = gcry_sexp_nth_data (l1, 1, &n);
+      if (n == 5 && !memcmp (s, "Ed448", 5))
+        algo = GCRY_PK_EDDSA;
       gcry_sexp_release (l1);
     }
 

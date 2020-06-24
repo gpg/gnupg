@@ -630,7 +630,7 @@ match_dsa_hash (unsigned int qbytes)
   usable for the pubkey algorithm.  If --personal-digest-prefs isn't
   set, then take the OpenPGP default (i.e. SHA-1).
 
-  Note that Ed25519+EdDSA takes an input of arbitrary length and thus
+  Note that EdDSA takes an input of arbitrary length and thus
   we don't enforce any particular algorithm like we do for standard
   ECDSA. However, we use SHA256 as the default algorithm.
 
@@ -649,13 +649,15 @@ hash_for (PKT_public_key *pk)
     {
       return recipient_digest_algo;
     }
-  else if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
-           && openpgp_oid_is_ed25519 (pk->pkey[0]))
+  else if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA)
     {
       if (opt.personal_digest_prefs)
         return opt.personal_digest_prefs[0].value;
       else
-        return DIGEST_ALGO_SHA256;
+        if (gcry_mpi_get_nbits (pk->pkey[1]) > 256)
+          return DIGEST_ALGO_SHA512;
+        else
+          return DIGEST_ALGO_SHA256;
     }
   else if (pk->pubkey_algo == PUBKEY_ALGO_DSA
            || pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
@@ -1742,14 +1744,15 @@ make_keysig_packet (ctrl_t ctrl,
     digest_algo = opt.cert_digest_algo;
   else if (pksk->pubkey_algo == PUBKEY_ALGO_DSA) /* Meet DSA requirements.  */
     digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
-  else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA /* Meet ECDSA requirements. */
-           || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
+  else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA) /* Meet ECDSA requirements. */
+    digest_algo = match_dsa_hash
+      (ecdsa_qbits_from_Q (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
+  else if (pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
     {
-      if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
-        digest_algo = DIGEST_ALGO_SHA256;
+      if (gcry_mpi_get_nbits (pksk->pkey[1]) > 256)
+        digest_algo = DIGEST_ALGO_SHA512;
       else
-        digest_algo = match_dsa_hash
-          (ecdsa_qbits_from_Q (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
+        digest_algo = DIGEST_ALGO_SHA256;
     }
   else /* Use the default.  */
     digest_algo = DEFAULT_DIGEST_ALGO;

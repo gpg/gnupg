@@ -1750,12 +1750,21 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
     curve = "Ed25519";
   else if (!ascii_strcasecmp (curve, "cv448"))
     curve = "X448";
+  else if (!ascii_strcasecmp (curve, "ed448"))
+    curve = "Ed448";
 
   /* Note that we use the "comp" flag with EdDSA to request the use of
      a 0x40 compression prefix octet.  */
-  if (algo == PUBKEY_ALGO_EDDSA)
+  if (algo == PUBKEY_ALGO_EDDSA && !strcmp (curve, "Ed25519"))
     keyparms = xtryasprintf
       ("(genkey(ecc(curve %zu:%s)(flags eddsa comp%s)))",
+       strlen (curve), curve,
+       (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+         && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+        " transient-key" : ""));
+  else if (algo == PUBKEY_ALGO_EDDSA && !strcmp (curve, "Ed448"))
+    keyparms = xtryasprintf
+      ("(genkey(ecc(curve %zu:%s)(flags comp%s)))",
        strlen (curve), curve,
        (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
          && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
@@ -2325,6 +2334,8 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                   if (algoid == GCRY_PK_ECC && algostr)
                     {
                       if (!strcmp (algostr, "ed25519"))
+                        kpi->algo = PUBKEY_ALGO_EDDSA;
+                      else if (!strcmp (algostr, "ed448"))
                         kpi->algo = PUBKEY_ALGO_EDDSA;
                       else if (!strcmp (algostr, "cv25519"))
                         kpi->algo = PUBKEY_ALGO_ECDH;
@@ -3481,6 +3492,8 @@ parse_key_parameter_part (ctrl_t ctrl,
             {
               if (!strcmp (algostr, "ed25519"))
                 algo = PUBKEY_ALGO_EDDSA;
+              else if (!strcmp (algostr, "ed448"))
+                kpi->algo = PUBKEY_ALGO_EDDSA;
               else if (!strcmp (algostr, "cv25519"))
                 algo = PUBKEY_ALGO_ECDH;
               else if (!strcmp (algostr, "cv448"))
@@ -3611,6 +3624,7 @@ parse_key_parameter_part (ctrl_t ctrl,
  *   dsa2048 := DSA with 2048 bit.
  *   elg2048 := Elgamal with 2048 bit.
  *   ed25519 := EDDSA using curve Ed25519.
+ *   ed448   := EDDSA using curve Ed448.
  *   cv25519 := ECDH using curve Curve25519.
  *   cv448   := ECDH using curve X448.
  *   nistp256:= ECDSA or ECDH using curve NIST P-256

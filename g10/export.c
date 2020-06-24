@@ -568,6 +568,8 @@ match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk)
       log_error ("no curve name\n");
       return gpg_error (GPG_ERR_UNKNOWN_CURVE);
     }
+  if (!strcmp (curve_str, "Ed448"))
+    is_eddsa = 1;
   oidstr = openpgp_curve_to_oid (curve_str, NULL, NULL);
   if (!oidstr)
     {

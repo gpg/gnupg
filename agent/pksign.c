@@ -129,15 +129,20 @@ rfc6979_hash_algo_string (size_t mdlen)
 /* Encode a message digest for use with the EdDSA algorithm
    (i.e. curve Ed25519). */
 static gpg_error_t
-do_encode_eddsa (const byte *md, size_t mdlen, gcry_sexp_t *r_hash)
+do_encode_eddsa (size_t nbits, const byte *md, size_t mdlen,
+                 gcry_sexp_t *r_hash)
 {
   gpg_error_t err;
   gcry_sexp_t hash;
+  const char *fmt;
+
+  if (nbits == 448)
+    fmt = "(data(value %b))";
+  else
+    fmt = "(data(flags eddsa)(hash-algo sha512)(value %b))";
 
   *r_hash = NULL;
-  err = gcry_sexp_build (&hash, NULL,
-                         "(data(flags eddsa)(hash-algo sha512)(value %b))",
-                         (int)mdlen, md);
+  err = gcry_sexp_build (&hash, NULL, fmt, (int)mdlen, md);
   if (!err)
     *r_hash = hash;
   return err;
@@ -482,7 +487,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
       /* Put the hash into a sexp */
       if (algo == GCRY_PK_EDDSA)
-        err = do_encode_eddsa (data, datalen,
+        err = do_encode_eddsa (gcry_pk_get_nbits (s_skey), data, datalen,
                                &s_hash);
       else if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
         err = do_encode_raw_pkcs1 (data, datalen,

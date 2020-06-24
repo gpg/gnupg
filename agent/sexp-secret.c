@@ -83,6 +83,7 @@ fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
             return gpg_error (GPG_ERR_INV_SEXP);
           else if (!*s /* Leading 0x00 added at the front for classic curve */
                    && strcmp (curve_name, "Ed25519")
+                   && strcmp (curve_name, "Ed448")
                    && strcmp (curve_name, "X448"))
             {
               size_t numsize;
