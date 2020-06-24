@@ -54,6 +54,7 @@ gpg_agent_SOURCES = \
 	divert-scd.c \
 	cvt-openpgp.c cvt-openpgp.h \
 	call-scd.c \
+	call-daemon.c \
 	learncard.c
 
 common_libs = $(libcommon)

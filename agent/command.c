@@ -3257,7 +3257,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "scd_running"))
     {
-      rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_FALSE);
+      rc = agent_daemon_check_running (DAEMON_SCD)? 0:gpg_error (GPG_ERR_FALSE);
     }
   else if (!strcmp (line, "std_env_names"))
     {
@@ -3747,7 +3747,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   clear_nonce_cache (ctrl);
 
   /* Reset the SCD if needed. */
-  agent_reset_scd (ctrl);
+  agent_reset_daemon (ctrl);
 
   /* Reset the pinentry (in case of popup messages). */
   agent_reset_query (ctrl);

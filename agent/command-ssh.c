@@ -2476,7 +2476,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
      reader - this should be allowed even without being listed in
      sshcontrol. */
 
-  if (!opt.disable_scdaemon)
+  if (!opt.disable_daemon[DAEMON_SCD])
     {
       char *serialno;
       struct card_key_info_s *keyinfo_list;
@@ -3610,8 +3610,8 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
       es_ungetc (c, stream_sock);
     }
 
-  /* Reset the SCD in case it has been used. */
-  agent_reset_scd (ctrl);
+  /* Reset the daemon in case it has been used. */
+  agent_reset_daemon (ctrl);
 
 
  out:
@@ -3758,8 +3758,8 @@ serve_mmapped_ssh_request (ctrl_t ctrl,
       valid_response = 1;
     }
 
-  /* Reset the SCD in case it has been used. */
-  agent_reset_scd (ctrl);
+  /* Reset the daemon in case it has been used. */
+  agent_reset_daemon (ctrl);
 
   return valid_response? 0 : -1;
 }

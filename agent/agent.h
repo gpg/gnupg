@@ -29,6 +29,7 @@
 #define map_assuan_err(a) \
         map_assuan_err_with_source (GPG_ERR_SOURCE_DEFAULT, (a))
 #include <errno.h>
+#include <assuan.h>
 
 #include <gcrypt.h>
 #include "../common/util.h"
@@ -53,6 +54,13 @@
    this shouldn't be a problem in practice.  */
 #define MAX_PASSPHRASE_LEN 255
 
+/* The daemons we support.  When you add a new daemon, add to
+   both the daemon_type and the daemon_modules array in call-daemon.c */
+enum daemon_type
+  {
+   DAEMON_SCD,
+   DAEMON_MAX_TYPE
+  };
 
 /* A large struct name "opt" to keep global flags */
 EXTERN_UNLESS_MAIN_MODULE
@@ -79,10 +87,10 @@ struct
   /* Filename of the program to start as pinentry.  */
   const char *pinentry_program;
 
-  /* Filename of the program to handle smartcard tasks.  */
-  const char *scdaemon_program;
+  /* Filename of the program to handle daemon tasks.  */
+  const char *daemon_program[DAEMON_MAX_TYPE];
 
-  int disable_scdaemon;         /* Never use the SCdaemon. */
+  int disable_daemon[DAEMON_MAX_TYPE];         /* Never use the daemon. */
 
   int no_grab;         /* Don't let the pinentry grab the keyboard */
 
@@ -207,7 +215,7 @@ struct ssh_control_file_s;
 typedef struct ssh_control_file_s *ssh_control_file_t;
 
 /* Forward reference for local definitions in call-scd.c.  */
-struct scd_local_s;
+struct daemon_local_s;
 
 /* Collection of data per session (aka connection). */
 struct server_control_s
@@ -227,8 +235,8 @@ struct server_control_s
   /* Private data of the server (command.c). */
   struct server_local_s *server_local;
 
-  /* Private data of the SCdaemon (call-scd.c). */
-  struct scd_local_s *scd_local;
+  /* Private data of the daemon (call-XXX.c). */
+  struct daemon_local_s *d_local[DAEMON_MAX_TYPE];
 
   /* Environment settings for the connection.  */
   session_env_t session_env;
@@ -386,7 +394,7 @@ const char *get_agent_socket_name (void);
 const char *get_agent_ssh_socket_name (void);
 int get_agent_active_connection_count (void);
 #ifdef HAVE_W32_SYSTEM
-void *get_agent_scd_notify_event (void);
+void *get_agent_daemon_notify_event (void);
 #endif
 void agent_sighup_action (void);
 int map_pk_openpgp_to_gcry (int openpgp_algo);
@@ -583,12 +591,18 @@ gpg_error_t divert_writekey (ctrl_t ctrl, int force, const char *serialno,
                              const char *keyref,
                              const char *keydata, size_t keydatalen);
 
+/*-- call-daemon.c --*/
+gpg_error_t daemon_start (enum daemon_type type, ctrl_t ctrl);
+assuan_context_t daemon_type_ctx (enum daemon_type type, ctrl_t ctrl);
+gpg_error_t daemon_unlock (enum daemon_type type, ctrl_t ctrl, gpg_error_t rc);
+void initialize_module_daemon (void);
+void agent_daemon_dump_state (void);
+int agent_daemon_check_running (enum daemon_type type);
+void agent_daemon_check_aliveness (void);
+void agent_reset_daemon (ctrl_t ctrl);
+void agent_kill_daemon (enum daemon_type type);
 
 /*-- call-scd.c --*/
-void initialize_module_call_scd (void);
-void agent_scd_dump_state (void);
-int agent_scd_check_running (void);
-int agent_reset_scd (ctrl_t ctrl);
 int agent_card_learn (ctrl_t ctrl,
                       void (*kpinfo_cb)(void*, const char *),
                       void *kpinfo_cb_arg,
@@ -631,10 +645,10 @@ int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *,
                                      const char *, char*, size_t),
                     void *getpin_cb_arg, void *assuan_context);
+
 void agent_card_free_keyinfo (struct card_key_info_s *l);
 gpg_error_t agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
                                 int cap, struct card_key_info_s **result);
-void agent_card_killscd (void);
 
 
 /*-- learncard.c --*/

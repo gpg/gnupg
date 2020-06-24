@@ -845,7 +845,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       xfree (opt.pinentry_invisible_char);
       opt.pinentry_invisible_char = NULL;
       opt.pinentry_timeout = 0;
-      opt.scdaemon_program = NULL;
+      memset (opt.daemon_program, 0, sizeof opt.daemon_program);
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
       opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL_SSH;
       opt.max_cache_ttl = MAX_CACHE_TTL;
@@ -862,7 +862,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.allow_external_cache = 1;
       opt.allow_loopback_pinentry = 1;
       opt.allow_emacs_pinentry = 0;
-      opt.disable_scdaemon = 0;
+      memset (opt.disable_daemon, 0, sizeof opt.disable_daemon);
       disable_check_own_socket = 0;
       /* Note: When changing the next line, change also gpgconf_list.  */
       opt.ssh_fingerprint_digest = GCRY_MD_MD5;
@@ -905,8 +905,8 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.pinentry_invisible_char = xtrystrdup (pargs->r.ret_str); break;
       break;
     case oPinentryTimeout: opt.pinentry_timeout = pargs->r.ret_ulong; break;
-    case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
-    case oDisableScdaemon: opt.disable_scdaemon = 1; break;
+    case oScdaemonProgram: opt.daemon_program[DAEMON_SCD] = pargs->r.ret_str; break;
+    case oDisableScdaemon: opt.disable_daemon[DAEMON_SCD] = 1; break;
     case oDisableCheckOwnSocket: disable_check_own_socket = 1; break;
 
     case oDefCacheTTL: opt.def_cache_ttl = pargs->r.ret_ulong; break;
@@ -1020,7 +1020,7 @@ initialize_modules (void)
   assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   initialize_module_cache ();
   initialize_module_call_pinentry ();
-  initialize_module_call_scd ();
+  initialize_module_daemon ();
   initialize_module_trustlist ();
 }
 
@@ -2064,7 +2064,7 @@ get_agent_active_connection_count (void)
    event.  */
 #if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
 void *
-get_agent_scd_notify_event (void)
+get_agent_daemon_notify_event (void)
 {
   static HANDLE the_event = INVALID_HANDLE_VALUE;
 
@@ -2403,8 +2403,8 @@ agent_sighup_action (void)
      "pinentry-basic" fallback was in use.  */
   gnupg_module_name_flush_some ();
 
-  if (opt.disable_scdaemon)
-    agent_card_killscd ();
+  if (opt.disable_daemon[DAEMON_SCD])
+    agent_kill_daemon (DAEMON_SCD);
 }
 
 
@@ -2438,7 +2438,7 @@ handle_signal (int signo)
          logging system.  */
       /* pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ()); */
       agent_query_dump_state ();
-      agent_scd_dump_state ();
+      agent_daemon_dump_state ();
       break;
 
     case SIGUSR2:
@@ -2841,7 +2841,7 @@ handle_connections (gnupg_fd_t listen_fd,
   sigs = 0;
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 # else
-  events[0] = get_agent_scd_notify_event ();
+  events[0] = get_agent_daemon_notify_event ();
   events[1] = INVALID_HANDLE_VALUE;
 # endif
 #endif
