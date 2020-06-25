@@ -82,7 +82,7 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
       if ( pkalgo == GCRY_PK_ECC )
         {
           qbits0 = gcry_pk_get_nbits (pkey);
-          qbits = qbits0 == 521? 512 : qbits;
+          qbits = qbits0 == 521? 512 : qbits0;
         }
       else
         qbits0 = qbits = get_dsa_qbits (pkey);
