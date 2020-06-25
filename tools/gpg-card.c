@@ -2564,11 +2564,12 @@ cmd_passwd (card_info_t info, char *argstr)
 
   if (!info)
     return print_help
-      ("PASSWD [PINREF]\n\n"
+      ("PASSWD [--reset] [PINREF]\n\n"
        "Change or unblock the PINs.  Note that in interactive mode\n"
        "and without a PINREF a menu is presented for certain cards;\n"
        "in non-interactive and without a PINREF a default value is\n"
-       "used for these cards.",
+       "used for these cards.  The option --reset is used with TCOS\n"
+       "cards to reset the PIN using the PUK or vice versa.\n",
        0);
 
   if (opt.interactive || opt.verbose)
@@ -2576,8 +2577,21 @@ cmd_passwd (card_info_t info, char *argstr)
               app_type_string (info->apptype),
               info->dispserialno? info->dispserialno : info->serialno);
 
-  if (*argstr)
-    pinref = argstr;
+
+  if (has_option (argstr, "--reset"))
+    reset_mode = 1;
+  argstr = skip_options (argstr);
+
+  /* If --reset has been given we force non-interactive mode.  */
+  if (*argstr || reset_mode)
+    {
+      pinref = argstr;
+      if (!*pinref)
+        {
+          err = gpg_error (GPG_ERR_MISSING_VALUE);
+          goto leave;
+        }
+    }
   else if (opt.interactive && info->apptype == APP_TYPE_OPENPGP)
     {
       menu_used = 1;
@@ -2627,6 +2641,36 @@ cmd_passwd (card_info_t info, char *argstr)
             pinref = "PIV.00";
         }
     }
+  else if (opt.interactive && info->apptype == APP_TYPE_NKS)
+    {
+      menu_used = 1;
+      while (!pinref)
+        {
+          xfree (answer);
+          answer = get_selection (" 1 - change Global PIN 1\n"
+                                  " 2 - change Global PUK\n"
+                                  " 3 - change SigG PIN 1\n"
+                                  " 4 - change SigG PUK\n"
+                                  "11 - reset Global PIN 1\n"
+                                  "12 - reset Global PUK\n"
+                                  "13 - reset Sig PIN\n"
+                                  "14 - reset Sig PUK\n"
+                                  " Q - quit\n");
+          if (!ascii_strcasecmp (answer, "q"))
+            goto leave;
+          else if (!strcmp (answer, "1") || !strcmp (answer, "11"))
+            pinref = "PW1.CH";
+          else if (!strcmp (answer, "2") || !strcmp (answer, "12"))
+            pinref = "PW2.CH";
+          else if (!strcmp (answer, "3") || !strcmp (answer, "13"))
+            pinref = "PW1.CH.SIG";
+          else if (!strcmp (answer, "4") || !strcmp (answer, "14"))
+            pinref = "PW2.CH.SIG";
+          /* Set reset mode for 11 to 14.  */
+          if (pinref && strlen (answer) == 2)
+            reset_mode = 1;
+        }
+    }
   else if (info->apptype == APP_TYPE_PIV)
     pinref = "PIV.80";
   else
@@ -2648,6 +2692,8 @@ cmd_passwd (card_info_t info, char *argstr)
         log_error ("Error setting the Reset Code.\n");
       else if (!ascii_strcasecmp (pinref, "OPENPGP.3"))
         log_error ("Error changing the Admin PIN.\n");
+      else if (reset_mode)
+        log_error ("Error resetting the PIN.\n");
       else
         log_error ("Error changing the PIN.\n");
     }
@@ -2663,6 +2709,8 @@ cmd_passwd (card_info_t info, char *argstr)
         log_info ("Reset Code set.\n");
       else if (!ascii_strcasecmp (pinref, "OPENPGP.3"))
         log_info ("Admin PIN changed.\n");
+      else if (reset_mode)
+        log_info ("PIN resetted.\n");
       else
         log_info ("PIN changed.\n");
     }
