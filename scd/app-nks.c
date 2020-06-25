@@ -1758,15 +1758,6 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   if (err)
     return err;
 
-  remaining = iso7816_verify_status (app_get_slot (app), pwid);
-  if (remaining < 0)
-    remaining = -1; /* We don't care about the concrete error.  */
-  if (remaining < 3)
-    {
-      if (remaining >= 0)
-        log_info ("nks: PIN has %d attempts left\n", remaining);
-    }
-
   if ((flags & APP_CHANGE_FLAG_NULLPIN))
     {
       /* With the nullpin flag, we do not verify the PIN - it would
@@ -1811,11 +1802,21 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
               goto leave;
             }
           desc = parse_pwidstr (app, altpwidstr, 0, &dummy1, &dummy2);
+          remaining = iso7816_verify_status (app_get_slot (app), dummy2);
         }
       else
         {
           /* Regular change mode:  Ask for the old PIN.  */
           desc = parse_pwidstr (app, pwidstr, 0, &dummy1, &dummy2);
+          remaining = iso7816_verify_status (app_get_slot (app), pwid);
+        }
+
+      if (remaining < 0)
+        remaining = -1; /* We don't care about the concrete error.  */
+      if (remaining < 3)
+        {
+          if (remaining >= 0)
+            log_info ("nks: PIN has %d attempts left\n", remaining);
         }
 
       prompt = make_prompt (app, remaining, desc, NULL);
