@@ -953,6 +953,7 @@ parse_keyserver_line (char *line,
 int
 main ( int argc, char **argv)
 {
+  gpg_error_t err;
   gpgrt_argparse_t pargs;
   int orig_argc;
   char **orig_argv;
@@ -1929,7 +1930,15 @@ main ( int argc, char **argv)
         else
           wrong_args ("--encrypt [datafile]");
 
+#if GPGRT_VERSION_NUMBER >= 0x012700 /* >= 1.39 */
+        if (err)
+          gpgrt_fcancel (fp);
+        else
+          es_fclose (fp);
+#else
+        (void)err;
         es_fclose (fp);
+#endif
       }
       break;
 
@@ -1941,14 +1950,22 @@ main ( int argc, char **argv)
            signing because that is what gpg does.*/
         set_binary (stdin);
         if (!argc) /* Create from stdin. */
-          gpgsm_sign (&ctrl, signerlist, 0, detached_sig, fp);
+          err = gpgsm_sign (&ctrl, signerlist, 0, detached_sig, fp);
         else if (argc == 1) /* From file. */
-          gpgsm_sign (&ctrl, signerlist,
+          err = gpgsm_sign (&ctrl, signerlist,
                       open_read (*argv), detached_sig, fp);
         else
           wrong_args ("--sign [datafile]");
 
+#if GPGRT_VERSION_NUMBER >= 0x012700 /* >= 1.39 */
+        if (err)
+          gpgrt_fcancel (fp);
+        else
+          es_fclose (fp);
+#else
+        (void)err;
         es_fclose (fp);
+#endif
       }
       break;
 
