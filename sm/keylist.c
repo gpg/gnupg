@@ -780,8 +780,11 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   sexp = ksba_cert_get_serial (cert);
   es_fputs ("          S/N: ", fp);
   gpgsm_print_serial (fp, sexp);
-  ksba_free (sexp);
   es_putc ('\n', fp);
+  es_fputs ("        (dec): ", fp);
+  gpgsm_print_serial_decimal (fp, sexp);
+  es_putc ('\n', fp);
+  ksba_free (sexp);
 
   dn = ksba_cert_get_issuer (cert, 0);
   es_fputs ("       Issuer: ", fp);
@@ -1159,8 +1162,11 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   sexp = ksba_cert_get_serial (cert);
   es_fputs ("          S/N: ", fp);
   gpgsm_print_serial (fp, sexp);
-  ksba_free (sexp);
   es_putc ('\n', fp);
+  es_fputs ("        (dec): ", fp);
+  gpgsm_print_serial_decimal (fp, sexp);
+  es_putc ('\n', fp);
+  ksba_free (sexp);
 
   dn = ksba_cert_get_issuer (cert, 0);
   es_fputs ("       Issuer: ", fp);
