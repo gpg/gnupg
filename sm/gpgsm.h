@@ -269,6 +269,7 @@ char *gpgsm_get_certid (ksba_cert_t cert);
 
 /*-- certdump.c --*/
 void gpgsm_print_serial (estream_t fp, ksba_const_sexp_t p);
+void gpgsm_print_serial_decimal (estream_t fp, ksba_const_sexp_t sn);
 void gpgsm_print_time (estream_t fp, ksba_isotime_t t);
 void gpgsm_print_name2 (FILE *fp, const char *string, int translate);
 void gpgsm_print_name (FILE *fp, const char *string);

@@ -20,6 +20,9 @@ Noteworthy changes in version 2.2.21 (unreleased)
   * gpgsm: Unless CRL checking is disabled lookup a missing issuer
     certificate using the certificate's authorityInfoAccess.  [#4898]
 
+  * gpgsm: Print the certificate's serial number also in decimal
+    notation.
+
   * gpgsm: Fix possible NULL-deref in messages of --gen-key.  [#4895]
 
   * scd: Support the CardOS 5 based D-Trust Card 3.1.
