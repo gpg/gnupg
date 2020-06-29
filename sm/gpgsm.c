@@ -1924,9 +1924,9 @@ main ( int argc, char **argv)
         set_binary (stdin);
 
         if (!argc) /* Source is stdin. */
-          gpgsm_encrypt (&ctrl, recplist, 0, fp);
+          err = gpgsm_encrypt (&ctrl, recplist, 0, fp);
         else if (argc == 1)  /* Source is the given file. */
-          gpgsm_encrypt (&ctrl, recplist, open_read (*argv), fp);
+          err = gpgsm_encrypt (&ctrl, recplist, open_read (*argv), fp);
         else
           wrong_args ("--encrypt [datafile]");
 
