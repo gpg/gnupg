@@ -363,8 +363,22 @@ static int pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
 
 
 /*
-      Helper
+ *    Helper
  */
+
+/* Return true if (BUFFER,LENGTH) consists of only binary zeroes.  */
+static int
+all_zero_p (const void *buffer, size_t length)
+{
+  const unsigned char *p;
+
+  for (p=buffer; length; p++, length--)
+    if (*p)
+      return 0;
+  return 1;
+}
+
+
 
 static int
 lock_slot (int slot)
@@ -2925,7 +2939,12 @@ send_le (int slot, int class, int ins, int p0, int p1,
       log_debug (" response: sw=%04X  datalen=%d\n",
                  sw, (unsigned int)resultlen);
       if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
-        log_printhex (result, resultlen, "    dump: ");
+        {
+          if (all_zero_p (result, resultlen))
+            log_debug ("     dump: [all zero]\n");
+          else
+            log_printhex (result, resultlen, "     dump:");
+        }
     }
 
   if (sw == SW_SUCCESS || sw == SW_EOF_REACHED)
@@ -2998,7 +3017,12 @@ send_le (int slot, int class, int ins, int p0, int p1,
               log_debug ("     more: sw=%04X  datalen=%d\n",
                          sw, (unsigned int)resultlen);
               if (!retbuf && (sw==SW_SUCCESS || (sw&0xff00)==SW_MORE_DATA))
-                log_printhex (result, resultlen, "     dump: ");
+                {
+                  if (all_zero_p (result, resultlen))
+                    log_debug ( "    dump: [all zero]\n");
+                  else
+                    log_printhex (result, resultlen, "      dump:");
+                }
             }
 
           if ((sw & 0xff00) == SW_MORE_DATA
@@ -3044,7 +3068,12 @@ send_le (int slot, int class, int ins, int p0, int p1,
   xfree (result_buffer);
 
   if (DBG_CARD_IO && retbuf && sw == SW_SUCCESS)
-    log_printhex (*retbuf, *retbuflen, "      dump: ");
+    {
+      if (all_zero_p (*retbuf, *retbuflen))
+        log_debug ("     dump: [all zero]\n");
+      else
+        log_printhex (*retbuf, *retbuflen, "     dump:");
+    }
 
   return sw;
 }
