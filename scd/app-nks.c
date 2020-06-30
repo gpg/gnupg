@@ -156,6 +156,7 @@ static struct
   { 1, 0xC008, 3, 101 },                    /* EF_C.CA.SIG  */
   { 1, 0xC00E, 3, 111 },                    /* EF_C.RCA.SIG  */
 
+  { 2, 0x4531, 15, 0, 0xC001, 0,1,1, 0x84}, /* EF_PK.CH.SIG  */
   { 2, 0xC000, 15,101 },                    /* EF.C.SCA.QES (SubCA) */
   { 2, 0xC001, 15,100 },                    /* EF.C.ICC.QES (Cert)  */
   { 2, 0xC00E, 15,111 },                    /* EF.C.RCA.QES (RootCA */
@@ -1005,6 +1006,7 @@ do_readcert (app_t app, const char *certid,
   fid = xtoi_4 (certid);
   for (i=0; filelist[i].fid; i++)
     if ((filelist[i].certtype || filelist[i].iskeypair)
+        && filelist[i].nks_app_id == nks_app_id
         && filelist[i].fid == fid)
       break;
   if (!filelist[i].fid)
