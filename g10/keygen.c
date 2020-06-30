@@ -2612,7 +2612,7 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
 # define MY_USE_ECDSADH 0
 #endif
     { "Curve25519",      "Ed25519", "Curve 25519", !!GPG_USE_EDDSA, 0, 0, 0 },
-    { "Curve448",        "Ed448",   "Curve 448",   0/*reserved*/  , 0, 1, 0 },
+    { "X448",            "Ed448",   "Curve 448",   !!GPG_USE_EDDSA, 0, 1, 0 },
     { "NIST P-256",      NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
     { "NIST P-384",      NULL, NULL,               MY_USE_ECDSADH,  0, 0, 0 },
     { "NIST P-521",      NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
@@ -4972,7 +4972,10 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                     {
                       /* Need to switch to a different curve for the
                          encryption key.  */
-                      curve = "Curve25519";
+                      if (!strcmp (curve, "Ed25519"))
+                        curve = "Curve25519";
+                      else
+                        curve = "X448";
                     }
                   r = xmalloc_clear (sizeof *r + strlen (curve));
                   r->key = pSUBKEYCURVE;
