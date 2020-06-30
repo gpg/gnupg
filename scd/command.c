@@ -307,6 +307,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
   char *serial;
   const char *demand;
   int opt_all = has_option (line, "--all");
+  int thisslot;
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -327,22 +328,22 @@ cmd_serialno (assuan_context_t ctx, char *line)
   line = skip_options (line);
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
-  if (ctrl->server_local->card_removed)
-    ctrl->server_local->card_removed = 0;
-
-  if ((rc = open_card_with_request (ctrl, *line? line:NULL, demand, opt_all)))
-    {
-      ctrl->server_local->card_removed = 1;
-      return rc;
-    }
-
-  /* Success, clear the card_removed flag for all sessions.  */
+  ctrl->server_local->card_removed = 0;
+  rc = open_card_with_request (ctrl, *line? line:NULL, demand, opt_all);
+  /* Now clear or set the card_removed flag for all sessions using the
+   * current slot.  In the error case make sure that the flag is set
+   * for the current session. */
+  thisslot = ctrl->card_ctx? ctrl->card_ctx->slot : -1;
   for (sl=session_list; sl; sl = sl->next_session)
     {
       ctrl_t c = sl->ctrl_backlink;
-
-      if (c != ctrl)
-        c->server_local->card_removed = 0;
+      if (c && c->card_ctx && c->card_ctx->slot == thisslot)
+        c->server_local->card_removed = rc? 1 : 0;
+    }
+  if (rc)
+    {
+      ctrl->server_local->card_removed = 1;
+      return rc;
     }
 
   serial = card_get_serialno (ctrl->card_ctx);
