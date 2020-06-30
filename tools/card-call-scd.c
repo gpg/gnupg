@@ -1586,17 +1586,10 @@ scd_applist (strlist_t *result, int all)
 
 
 
-/* Change the PIN of an OpenPGP card or reset the retry counter.
- * CHVNO 1: Change the PIN
- *       2: For v1 cards: Same as 1.
- *          For v2 cards: Reset the PIN using the Reset Code.
- *       3: Change the admin PIN
- *     101: Set a new PIN and reset the retry counter
- *     102: For v1 cars: Same as 101.
- *          For v2 cards: Set a new Reset Code.
- */
+/* Change the PIN of a card or reset the retry counter.  If NULLPIN is
+ * set the TCOS specific NullPIN is changed.  */
 gpg_error_t
-scd_change_pin (const char *pinref, int reset_mode)
+scd_change_pin (const char *pinref, int reset_mode, int nullpin)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
@@ -1610,7 +1603,7 @@ scd_change_pin (const char *pinref, int reset_mode)
   dfltparm.ctx = agent_ctx;
 
   snprintf (line, sizeof line, "SCD PASSWD%s %s",
-            reset_mode? " --reset":"", pinref);
+            nullpin? " --nullpin": reset_mode? " --reset":"", pinref);
   err = assuan_transact (agent_ctx, line,
                          NULL, NULL,
                          default_inq_cb, &dfltparm,

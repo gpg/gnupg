@@ -139,6 +139,7 @@ struct card_info_s
 {
   int initialized;   /* True if a learn command was successful. */
   int need_sn_cmd;   /* The SERIALNO command needs to be issued.  */
+  int card_removed;  /* Helper flag set by some listing functions.  */
   int error;         /* private. */
   char *reader;      /* Reader information.  */
   char *cardtype;    /* NULL or type of the card.  */
@@ -232,7 +233,7 @@ gpg_error_t scd_readcert (const char *certidstr,
 gpg_error_t scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result);
 gpg_error_t scd_cardlist (strlist_t *result);
 gpg_error_t scd_applist (strlist_t *result, int all);
-gpg_error_t scd_change_pin (const char *pinref, int reset_mode);
+gpg_error_t scd_change_pin (const char *pinref, int reset_mode, int nullpin);
 gpg_error_t scd_checkpin (const char *serialno);
 
 unsigned long agent_get_s2k_count (void);

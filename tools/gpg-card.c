@@ -409,6 +409,34 @@ get_data_from_file (const char *fname, char **r_buffer, size_t *r_buflen)
 }
 
 
+/* Fixup the ENODEV error from scdaemon which we may see after
+ * removing a card due to scdaemon scanning for readers with cards.
+ * We also map the CAERD REMOVED error to the more useful CARD_NOT
+ * PRESENT.  */
+static gpg_error_t
+fixup_scd_errors (gpg_error_t err)
+{
+  if ((gpg_err_code (err) == GPG_ERR_ENODEV
+       || gpg_err_code (err) == GPG_ERR_CARD_REMOVED)
+      && gpg_err_source (err) == GPG_ERR_SOURCE_SCD)
+    err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+  return err;
+}
+
+
+/* Set the card removed flag from INFO depending on ERR.  This does
+ * not clear the flag.  */
+static gpg_error_t
+maybe_set_card_removed (card_info_t info, gpg_error_t err)
+{
+  if ((gpg_err_code (err) == GPG_ERR_ENODEV
+       || gpg_err_code (err) == GPG_ERR_CARD_REMOVED)
+      && gpg_err_source (err) == GPG_ERR_SOURCE_SCD)
+    info->card_removed = 1;
+  return err;
+}
+
+
 /* Write LENGTH bytes from BUFFER to file FNAME.  Return 0 on
  * success.  */
 static gpg_error_t
@@ -601,10 +629,11 @@ mem_is_zero (const char *mem, unsigned int memlen)
 /* Helper to list a single keyref.  LABEL_KEYREF is a fallback key
  * reference if no info is available; it may be NULL.  */
 static void
-list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
+list_one_kinfo (card_info_t info, key_info_t kinfo,
                 const char *label_keyref, estream_t fp, int no_key_lookup)
 {
   gpg_error_t err;
+  key_info_t firstkinfo = info->kinfo;
   keyblock_t keyblock = NULL;
   keyblock_t kb;
   pubkey_t pubkey;
@@ -643,7 +672,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
         }
       tty_fprintf (fp, "\n");
 
-      if (!scd_readkey (kinfo->keyref, &s_pkey))
+      if (!(err = scd_readkey (kinfo->keyref, &s_pkey)))
         {
           char *tmp = pubkey_algo_string (s_pkey, NULL);
           tty_fprintf (fp, "      algorithm ..: %s\n", tmp);
@@ -653,6 +682,7 @@ list_one_kinfo (key_info_t firstkinfo, key_info_t kinfo,
         }
       else
         {
+          maybe_set_card_removed (info, err);
           tty_fprintf (fp, "      algorithm ..: %s\n", kinfo->keyalgo);
         }
 
@@ -751,7 +781,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
                 int no_key_lookup)
 {
   key_info_t kinfo;
-  int idx, i;
+  int idx, i, j;
 
   /* Print the keyinfo.  We first print those we known and then all
    * remaining item.  */
@@ -763,7 +793,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
         {
           tty_fprintf (fp, "%s", labels[idx].label);
           kinfo = find_kinfo (info, labels[idx].keyref);
-          list_one_kinfo (info->kinfo, kinfo, labels[idx].keyref,
+          list_one_kinfo (info, kinfo, labels[idx].keyref,
                           fp, no_key_lookup);
           if (kinfo)
             kinfo->xflag = 1;
@@ -773,11 +803,11 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
     {
       if (kinfo->xflag)
         continue;
-      tty_fprintf (fp, "Key %s ", kinfo->keyref);
-      for (i=5+strlen (kinfo->keyref); i < 18; i++)
-        tty_fprintf (fp, ".");
+      tty_fprintf (fp, "Key %s", kinfo->keyref);
+      for (i=4+strlen (kinfo->keyref), j=0; i < 18; i++, j=1)
+        tty_fprintf (fp, j? ".":" ");
       tty_fprintf (fp, ":");
-      list_one_kinfo (info->kinfo, kinfo, NULL, fp, no_key_lookup);
+      list_one_kinfo (info, kinfo, NULL, fp, no_key_lookup);
     }
 }
 
@@ -1206,7 +1236,7 @@ cmd_list (card_info_t info, char *argstr)
           err = scd_switchcard (sl->d);
           need_learn = 1;
         }
-      else /* --info with not args - show app list.  */
+      else /* show app list.  */
         {
           err = scd_applist (&cards, 1);
           if (err)
@@ -1232,7 +1262,43 @@ cmd_list (card_info_t info, char *argstr)
       else if (opt_info)
         print_card_list (fp, info, cards, 1);
       else
-        list_card (info, opt_no_key_lookup);
+        {
+          size_t snlen;
+          const char *s;
+
+          /* First get the list of active cards and check whether the
+           * current card is still in the list.  If not the card has
+           * been removed.  Note that during the listing the card
+           * remove state might also be detected but only if an access
+           * to the scdaemon is required; it is anyway better to test
+           * that before starting a listing.  */
+          free_strlist (cards);
+          err = scd_cardlist (&cards);
+          if (err)
+            goto leave;
+          for (sl = cards; sl; sl = sl->next)
+            {
+              if (info && info->serialno)
+                {
+                  s = strchr (sl->d, ' ');
+                  if (s)
+                    snlen = s - sl->d;
+                  else
+                    snlen = strlen (sl->d);
+                  if (strlen (info->serialno) == snlen
+                      && !memcmp (info->serialno, sl->d, snlen))
+                    break;
+                }
+            }
+          if (!sl)
+            {
+              info->need_sn_cmd = 1;
+              err = gpg_error (GPG_ERR_CARD_REMOVED);
+              goto leave;
+            }
+
+          list_card (info, opt_no_key_lookup);
+        }
     }
 
  leave:
@@ -2560,16 +2626,18 @@ cmd_passwd (card_info_t info, char *argstr)
   char *answer = NULL;
   const char *pinref = NULL;
   int reset_mode = 0;
+  int nullpin = 0;
   int menu_used = 0;
 
   if (!info)
     return print_help
-      ("PASSWD [--reset] [PINREF]\n\n"
+      ("PASSWD [--reset|--nullpin] [PINREF]\n\n"
        "Change or unblock the PINs.  Note that in interactive mode\n"
        "and without a PINREF a menu is presented for certain cards;\n"
        "in non-interactive and without a PINREF a default value is\n"
        "used for these cards.  The option --reset is used with TCOS\n"
-       "cards to reset the PIN using the PUK or vice versa.\n",
+       "cards to reset the PIN using the PUK or vice versa; --nullpin\n"
+       "is used for these cards to set the intial PIN.",
        0);
 
   if (opt.interactive || opt.verbose)
@@ -2580,10 +2648,12 @@ cmd_passwd (card_info_t info, char *argstr)
 
   if (has_option (argstr, "--reset"))
     reset_mode = 1;
+  else if (has_option (argstr, "--nullpin"))
+    nullpin = 1;
   argstr = skip_options (argstr);
 
-  /* If --reset has been given we force non-interactive mode.  */
-  if (*argstr || reset_mode)
+  /* If --reset or --nullpin has been given we force non-interactive mode.  */
+  if (*argstr || reset_mode || nullpin)
     {
       pinref = argstr;
       if (!*pinref)
@@ -2643,32 +2713,79 @@ cmd_passwd (card_info_t info, char *argstr)
     }
   else if (opt.interactive && info->apptype == APP_TYPE_NKS)
     {
+      int for_qualified = 0;
+
       menu_used = 1;
-      while (!pinref)
+
+      for (;;)
         {
           xfree (answer);
-          answer = get_selection (" 1 - change Global PIN 1\n"
-                                  " 2 - change Global PUK\n"
-                                  " 3 - change SigG PIN 1\n"
-                                  " 4 - change SigG PUK\n"
-                                  "11 - reset Global PIN 1\n"
-                                  "12 - reset Global PUK\n"
-                                  "13 - reset Sig PIN\n"
-                                  "14 - reset Sig PUK\n"
+          answer = get_selection (" 1 - Standard PIN/PUK\n"
+                                  " 2 - PIN/PUK for qualified signature\n"
                                   " Q - quit\n");
           if (!ascii_strcasecmp (answer, "q"))
             goto leave;
-          else if (!strcmp (answer, "1") || !strcmp (answer, "11"))
-            pinref = "PW1.CH";
-          else if (!strcmp (answer, "2") || !strcmp (answer, "12"))
-            pinref = "PW2.CH";
-          else if (!strcmp (answer, "3") || !strcmp (answer, "13"))
-            pinref = "PW1.CH.SIG";
-          else if (!strcmp (answer, "4") || !strcmp (answer, "14"))
-            pinref = "PW2.CH.SIG";
-          /* Set reset mode for 11 to 14.  */
-          if (pinref && strlen (answer) == 2)
-            reset_mode = 1;
+          else if (!strcmp (answer, "1"))
+            break;
+          else if (!strcmp (answer, "2"))
+            {
+              for_qualified = 1;
+              break;
+            }
+        }
+
+      log_assert (DIM (info->chvinfo) >= 4);
+      if (info->chvinfo[for_qualified? 2 : 0] == -4)
+        {
+          while (!pinref)
+            {
+              xfree (answer);
+              answer = get_selection
+                ("The NullPIN is still active on this card.\n"
+                 "You need to choose and set a PIN first.\n"
+                 "\n"
+                 " 1 - Set your PIN\n"
+                 " Q - quit\n");
+              if (!ascii_strcasecmp (answer, "q"))
+                goto leave;
+              else if (!strcmp (answer, "1"))
+                {
+                  pinref = for_qualified? "PW1.CH.SIG" : "PW1.CH";
+                  nullpin = 1;
+                }
+            }
+        }
+      else
+        {
+          while (!pinref)
+            {
+              xfree (answer);
+              answer = get_selection (" 1 - change PIN\n"
+                                      " 2 - reset PIN\n"
+                                      " 3 - change PUK\n"
+                                      " 4 - reset PUK\n"
+                                      " Q - quit\n");
+              if (!ascii_strcasecmp (answer, "q"))
+                goto leave;
+              else if (!strcmp (answer, "1"))
+                {
+                  pinref = for_qualified? "PW1.CH.SIG" : "PW1.CH";
+                }
+              else if (!strcmp (answer, "2"))
+                {
+                  pinref = for_qualified? "PW1.CH.SIG" : "PW1.CH";
+                  reset_mode = 1;
+                }
+              else if (!strcmp (answer, "3"))
+                {
+                  pinref = for_qualified? "PW2.CH.SIG" : "PW2.CH";
+                }
+              else if (!strcmp (answer, "4"))
+                {
+                  pinref = for_qualified? "PW2.CH.SIG" : "PW2.CH";
+                  reset_mode = 1;
+                }
+            }
         }
     }
   else if (info->apptype == APP_TYPE_PIV)
@@ -2679,7 +2796,7 @@ cmd_passwd (card_info_t info, char *argstr)
       goto leave;
     }
 
-  err = scd_change_pin (pinref, reset_mode);
+  err = scd_change_pin (pinref, reset_mode, nullpin);
   if (err)
     {
       if (!opt.interactive && !menu_used && !opt.verbose)
@@ -2713,6 +2830,9 @@ cmd_passwd (card_info_t info, char *argstr)
         log_info ("PIN resetted.\n");
       else
         log_info ("PIN changed.\n");
+
+      /* Update the CHV status.  */
+      err = scd_getattr ("CHV-STATUS", info);
     }
 
  leave:
@@ -2753,7 +2873,7 @@ cmd_unblock (card_info_t info)
         }
       else
         {
-          err = scd_change_pin ("OPENPGP.2", 0);
+          err = scd_change_pin ("OPENPGP.2", 0, 0);
           if (!err)
             log_info ("PIN changed.\n");
         }
@@ -2761,7 +2881,7 @@ cmd_unblock (card_info_t info)
   else if (info->apptype == APP_TYPE_PIV)
     {
       /* Unblock the Application PIN.  */
-      err = scd_change_pin ("PIV.80", 1);
+      err = scd_change_pin ("PIV.80", 1, 0);
       if (!err)
         log_info ("PIN unblocked and changed.\n");
     }
@@ -3477,10 +3597,14 @@ dispatch_command (card_info_t info, const char *orig_command)
       err = scd_learn (info);
       if (err)
         {
+          err = fixup_scd_errors (err);
           log_error ("Error reading card: %s\n", gpg_strerror (err));
           goto leave;
         }
     }
+
+  if (info)
+    info->card_removed = 0;
 
   switch (cmd)
     {
@@ -3568,8 +3692,17 @@ dispatch_command (card_info_t info, const char *orig_command)
   es_fflush (es_stdout);
   if (gpg_err_code (err) == GPG_ERR_EOF && cmd != cmdQUIT)
     err = gpg_error (GPG_ERR_GENERAL);
+
+  if (!err && info && info->card_removed)
+    {
+      info->card_removed = 0;
+      info->need_sn_cmd = 1;
+      err = gpg_error (GPG_ERR_CARD_REMOVED);
+    }
+
   if (err && gpg_err_code (err) != GPG_ERR_EOF)
     {
+      err = fixup_scd_errors (err);
       if (ignore_error)
         {
           log_info ("Command '%s' failed: %s\n", command, gpg_strerror (err));
@@ -3624,7 +3757,10 @@ interactive_loop (void)
         {
           err = cmd_list (info, "");
           if (err)
-            log_error ("Error reading card: %s\n", gpg_strerror (err));
+            {
+              err = fixup_scd_errors (err);
+              log_error ("Error reading card: %s\n", gpg_strerror (err));
+            }
           else
             {
               tty_printf("\n");
@@ -3696,12 +3832,19 @@ interactive_loop (void)
             {
               /* Without a serial number most commands won't work.
                * Catch it here.  */
-              tty_printf ("\n");
-              tty_printf ("Serial number missing\n");
-              continue;
+              if (cmd == cmdRESET || cmd == cmdLIST)
+                info->need_sn_cmd = 1;
+              else
+                {
+                  tty_printf ("\n");
+                  tty_printf ("Serial number missing\n");
+                  continue;
+                }
             }
         }
 
+      if (info)
+        info->card_removed = 0;
       err = 0;
       switch (cmd)
         {
@@ -3791,6 +3934,13 @@ interactive_loop (void)
           break;
         } /* End command switch. */
 
+      if (!err && info && info->card_removed)
+        {
+          info->card_removed = 0;
+          info->need_sn_cmd = 1;
+          err = gpg_error (GPG_ERR_CARD_REMOVED);
+        }
+
       if (gpg_err_code (err) == GPG_ERR_CANCELED)
         tty_fprintf (NULL, "\n");
       else if (err)
@@ -3802,6 +3952,8 @@ interactive_loop (void)
                 s = cmds[i].name;
                 break;
               }
+
+          err = fixup_scd_errors (err);
           log_error ("Command '%s' failed: %s\n", s, gpg_strerror (err));
           if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
             info->need_sn_cmd = 1;
