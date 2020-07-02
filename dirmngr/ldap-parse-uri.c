@@ -54,7 +54,7 @@ ldap_uri_p (const char *url)
 	      && (url[3] == 'p' || url[3] == 'P')
 	      && (url[4] == ':'
 		  || ((url[4] == 's' || url[4] == 'S'
-		       || url[4] == 'i' || url[4] == 'i')
+		       || url[4] == 'i' || url[4] == 'I')
 		      && url[5] == ':'))))
 	return 1;
       return 0;
