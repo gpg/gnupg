@@ -56,6 +56,7 @@
 #define CMD_GET_CHALLENGE         0x84
 #define CMD_READ_BINARY 0xB0
 #define CMD_READ_RECORD 0xB2
+#define CMD_UPDATE_BINARY 0xD6
 
 static gpg_error_t
 map_sw (int sw)
@@ -1025,10 +1026,31 @@ iso7816_read_record_ext (int slot, int recno, int reccount, int short_ef,
   return 0;
 }
 
+
 gpg_error_t
 iso7816_read_record (int slot, int recno, int reccount, int short_ef,
                      unsigned char **result, size_t *resultlen)
 {
   return iso7816_read_record_ext (slot, recno, reccount, short_ef,
                                   result, resultlen, NULL);
+}
+
+
+/* Perform an UPDATE BINARY command on card in SLOT.  Write DATA of
+ * length DATALEN to a transparent file at OFFSET.  */
+gpg_error_t
+iso7816_update_binary (int slot, int extended_mode, size_t offset,
+                       const void *data, size_t datalen)
+{
+  int sw;
+
+  /* We can only encode 15 bits in p0,p1 to indicate an offset. Thus
+   * we check for this limit. */
+  if (offset > 32767)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  sw = apdu_send_simple (slot, extended_mode, 0x00, CMD_UPDATE_BINARY,
+                         ((offset>>8) & 0xff), (offset & 0xff),
+                         datalen, (const char*)data);
+  return map_sw (sw);
 }

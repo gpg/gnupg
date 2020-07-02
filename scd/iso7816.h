@@ -150,5 +150,7 @@ gpg_error_t iso7816_read_record_ext (int slot, int recno, int reccount,
 gpg_error_t iso7816_read_record (int slot, int recno, int reccount,
                                  int short_ef,
                                  unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_update_binary (int slot, int extended_mode, size_t offset,
+                                   const void *data, size_t datalen);
 
 #endif /*ISO7816_H*/
