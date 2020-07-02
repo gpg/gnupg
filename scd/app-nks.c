@@ -172,7 +172,7 @@ static struct
 };
 
 
-/* Object to cache information gathred from FIDs. */
+/* Object to cache information gathered from FIDs. */
 struct fid_cache_s {
   struct fid_cache_s *next;
   int fid;                          /* Zero for an unused slot.  */
@@ -202,22 +202,33 @@ struct app_local_s {
 static gpg_error_t readcert_from_ef (app_t app, int fid,
                                      unsigned char **cert, size_t *certlen);
 static gpg_error_t switch_application (app_t app, int nks_app_id);
+static const char *parse_pwidstr (app_t app, const char *pwidstr, int new_mode,
+                                  int *r_nks_app_id, int *r_pwid);
+static gpg_error_t verify_pin (app_t app, int pwid, const char *desc,
+                               gpg_error_t (*pincb)(void*, const char *,
+                                                    char **),
+                               void *pincb_arg);
 
 
 
+static void
+flush_fid_cache (app_t app)
+{
+  while (app->app_local->fid_cache)
+    {
+      struct fid_cache_s *next = app->app_local->fid_cache->next;
+      xfree (app->app_local->fid_cache);
+      app->app_local->fid_cache = next;
+    }
+}
+
 /* Release local data. */
 static void
 do_deinit (app_t app)
 {
   if (app && app->app_local)
     {
-      while (app->app_local->fid_cache)
-        {
-          struct fid_cache_s *next = app->app_local->fid_cache->next;
-          xfree (app->app_local->fid_cache);
-          app->app_local->fid_cache = next;
-        }
-
+      flush_fid_cache (app);
       xfree (app->app_local);
       app->app_local = NULL;
     }
@@ -1092,6 +1103,96 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
   xfree (buffer[0]);
   xfree (buffer[1]);
   return err;
+}
+
+
+/* Write the certificate (CERT,CERTLEN) to the card at CERTREFSTR.
+ * CERTREFSTR is of the form "NKS_<yyy>.<four_hexdigit_keyref>". */
+static gpg_error_t
+do_writecert (app_t app, ctrl_t ctrl,
+              const char *certid,
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg,
+              const unsigned char *cert, size_t certlen)
+{
+  gpg_error_t err;
+  int i, fid, pwid;
+  int nks_app_id, tmp_app_id;
+  const char *desc;
+
+  (void)ctrl;
+
+  if (!strncmp (certid, "NKS-NKS3.", 9))
+    nks_app_id = NKS_APP_NKS;
+  else if (!strncmp (certid, "NKS-ESIGN.", 10))
+    nks_app_id = NKS_APP_ESIGN;
+  else if (!strncmp (certid, "NKS-SIGG.", 9))
+    nks_app_id = NKS_APP_SIGG;
+  else if (!strncmp (certid, "NKS-DF01.", 9))
+    nks_app_id = NKS_APP_NKS;
+  else if (!strncmp (certid, "NKS-IDLM.", 9))
+    nks_app_id = NKS_APP_IDLM;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+  certid += nks_app_id == NKS_APP_ESIGN? 10 : 9;
+
+  err = switch_application (app, nks_app_id);
+  if (err)
+    return err;
+
+  if (!hexdigitp (certid) || !hexdigitp (certid+1)
+      || !hexdigitp (certid+2) || !hexdigitp (certid+3)
+      || certid[4])
+    return gpg_error (GPG_ERR_INV_ID);
+  fid = xtoi_4 (certid);
+  for (i=0; filelist[i].fid; i++)
+    if ((filelist[i].certtype || filelist[i].iskeypair)
+        && filelist[i].nks_app_id == nks_app_id
+        && filelist[i].fid == fid)
+      break;
+  if (!filelist[i].fid)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  /* If the requested objects is a plain public key, redirect it to
+   * the corresponding certificate.  This makes it easier for the user
+   * to figure out which CERTID to use.  For example gpg-card shows
+   * the id of the key and not of the certificate.  */
+  if (filelist[i].iskeypair)
+    fid = filelist[i].iskeypair;
+
+  /* We have no selective flush mechanism and given the rare use of
+   * writecert it won't harm to flush the entire cache.  */
+  flush_fid_cache (app);
+
+
+  /* The certificates we support all require PW1.CH.  Note that we
+   * check that the nks_app_id matches which sorts out CERTID values
+   * which are subkecy to a different nks_app_id.  */
+  desc = parse_pwidstr (app, "PW1.CH", 0, &tmp_app_id, &pwid);
+  if (!desc || tmp_app_id != nks_app_id)
+    return gpg_error (GPG_ERR_INV_ID);
+  err = verify_pin (app, pwid, desc, pincb, pincb_arg);
+  if (err)
+    return err;
+
+    /* Select the file and write the certificate.  */
+  err = iso7816_select_file (app_get_slot (app), fid, 0);
+  if (err)
+    {
+      log_error ("nks: error selecting FID 0x%04X: %s\n",
+                 fid, gpg_strerror (err));
+      return err;
+    }
+
+  err = iso7816_update_binary (app_get_slot (app), 1, 0, cert, certlen);
+  if (err)
+    {
+      log_error ("nks: error updating certificate at FID 0x%04X: %s\n",
+                 fid, gpg_strerror (err));
+      return err;
+    }
+
+  return 0;
 }
 
 
@@ -2208,6 +2309,7 @@ app_select_nks (app_t app)
       app->fnc.readkey = do_readkey;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = NULL;
+      app->fnc.writecert = do_writecert;
       app->fnc.writekey = do_writekey;
       app->fnc.genkey = NULL;
       app->fnc.sign = do_sign;
