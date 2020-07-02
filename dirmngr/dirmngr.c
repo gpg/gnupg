@@ -373,7 +373,7 @@ static npth_key_t my_tlskey_current_fd;
 /* Prototypes. */
 static void cleanup (void);
 #if USE_LDAP
-static ldap_server_t parse_ldapserver_file (const char* filename);
+static ldap_server_t parse_ldapserver_file (const char* filename, int ienoent);
 #endif /*USE_LDAP*/
 static fingerprint_list_t parse_ocsp_signer (const char *string);
 static void netactivity_action (void);
@@ -1100,11 +1100,11 @@ main (int argc, char **argv)
       ldapfile = make_filename (gnupg_homedir (),
                                 "dirmngr_ldapservers.conf",
                                 NULL);
-      opt.ldapservers = parse_ldapserver_file (ldapfile);
+      opt.ldapservers = parse_ldapserver_file (ldapfile, 1);
       xfree (ldapfile);
     }
   else
-      opt.ldapservers = parse_ldapserver_file (ldapfile);
+    opt.ldapservers = parse_ldapserver_file (ldapfile, 0);
 #endif /*USE_LDAP*/
 
 #ifndef HAVE_W32_SYSTEM
@@ -1618,7 +1618,7 @@ dirmngr_deinit_default_ctrl (ctrl_t ctrl)
 */
 #if USE_LDAP
 static ldap_server_t
-parse_ldapserver_file (const char* filename)
+parse_ldapserver_file (const char* filename, int ignore_enoent)
 {
   char buffer[1024];
   char *p;
@@ -1631,7 +1631,10 @@ parse_ldapserver_file (const char* filename)
   if (!fp)
     {
       if (errno == ENOENT)
-        log_info ("No ldapserver file at: '%s'\n", filename);
+        {
+          if (!ignore_enoent)
+            log_info ("No ldapserver file at: '%s'\n", filename);
+        }
       else
         log_error (_("error opening '%s': %s\n"), filename,
                    strerror (errno));
