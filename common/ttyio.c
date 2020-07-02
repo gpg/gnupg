@@ -101,7 +101,7 @@ static void (*my_rl_cleanup_after_signal) (void);
 static void (*my_rl_init_stream) (FILE *);
 static char *(*my_rl_readline) (const char*);
 static void (*my_rl_add_history) (const char*);
-
+static int (*my_rl_rw_history)(const char *, int, int);
 
 /* This is a wrapper around ttyname so that we can use it even when
    the standard streams are redirected.  It figures the name out the
@@ -703,7 +703,8 @@ tty_private_set_rl_hooks (void (*init_stream) (FILE *),
                           void (*inhibit_completion) (int),
                           void (*cleanup_after_signal) (void),
                           char *(*readline_fun) (const char*),
-                          void (*add_history_fun) (const char*))
+                          void (*add_history_fun) (const char*),
+                          int (*rw_history_fun)(const char *, int, int))
 {
   my_rl_init_stream = init_stream;
   my_rl_set_completer = set_completer;
@@ -711,6 +712,40 @@ tty_private_set_rl_hooks (void (*init_stream) (FILE *),
   my_rl_cleanup_after_signal = cleanup_after_signal;
   my_rl_readline = readline_fun;
   my_rl_add_history = add_history_fun;
+  my_rl_rw_history = rw_history_fun;
+}
+
+
+/* Read the history from FILENAME or limit the size of the history.
+ * If FILENAME is NULL and NLINES is zero the current history is
+ * cleared.  Returns 0 on success or -1 on error and sets ERRNO.  No
+ * error is return if readline support is not available.  */
+int
+tty_read_history (const char *filename, int nlines)
+{
+  int rc;
+
+  if (!my_rl_rw_history)
+    return 0;
+
+  rc = my_rl_rw_history (filename, 0, nlines);
+  if (rc && gpg_err_code_from_syserror () == GPG_ERR_ENOENT)
+    rc = 0;
+
+  return rc;
+}
+
+
+/* Write the current history to the file FILENAME.  Returns 0 on
+ * success or -1 on error and sets ERRNO.  No error is return if
+ * readline support is not available.  */
+int
+tty_write_history (const char *filename)
+{
+  if (!my_rl_rw_history)
+    return 0;
+
+  return my_rl_rw_history (filename, 1, 0);
 }
 
 

@@ -105,6 +105,12 @@ Do not start the gpg-agent if it has not yet been started and its
 service is required.  This option is mostly useful on machines where
 the connection to gpg-agent has been redirected to another machines.
 
+@item --no-history
+@opindex --no-history
+In interactive mode the command line history is usually saved and
+restored to and from a file below the GnuPG home directory.  This
+option inhibits the use of that file.
+
 @item --agent-program @var{file}
 @opindex agent-program
 Specify the agent program to be started if none is running.  The

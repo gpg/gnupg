@@ -77,11 +77,77 @@ init_stream (FILE *fp)
   rl_inhibit_completion = 1;
 }
 
+
+/* Read or write the history to or from the file FILENAME.  The
+ * behaviour depends on the flag WRITE_MODE:
+ *
+ * In read mode (WRITE_MODE is false) these semantics are used:
+ *
+ *   If NLINES is positive only this number of lines are read from the
+ *   history and the history is always limited to that number of
+ *   lines.  A negative value for NLINES is undefined.
+ *
+ *   If FILENAME is NULL the current history is cleared.  If NLINES is
+ *   positive the number of lines stored in the history is limited to
+ *   that number.  A negative value for NLINES is undefined.
+ *
+ * If WRITE_MODE is true these semantics are used:
+ *
+ *   If NLINES is negative the history and the history file are
+ *   cleared; if it is zero the entire history is written to the file;
+ *   if it is positive the history is written to the file and the file
+ *   is truncated to this number of lines.
+ *
+ *   If FILENAME is NULL no file operations are done but if NLINES is
+ *   negative the entire history is cleared.
+ *
+ * On success 0 is returned; on error -1 is returned and ERRNO is set.
+ */
+static int
+read_write_history (const char *filename, int write_mode, int nlines)
+{
+  int rc;
+
+  if (write_mode)
+    {
+      if (nlines < 0)
+        clear_history ();
+      rc = filename? write_history (filename) : 0;
+      if (!rc && filename && nlines > 0)
+        rc = history_truncate_file (filename, nlines);
+      if (rc)
+        {
+          gpg_err_set_errno (rc);
+          return -1;
+        }
+    }
+  else
+    {
+      clear_history ();
+      if (filename)
+        {
+          if (nlines)
+            rc = read_history_range (filename, 0, nlines);
+          else
+            rc = read_history (filename);
+          if (rc)
+            {
+              gpg_err_set_errno (rc);
+              return -1;
+            }
+        }
+      if (nlines > 0)
+        stifle_history (nlines);
+    }
+
+  return 0;
+}
+
 #endif /*HAVE_LIBREADLINE*/
 
 
 /* Initialize our readline code.  This should be called as early as
-   possible as it is actually a constructur.  */
+ * possible as it is actually a constructor.  */
 void
 gnupg_rl_initialize (void)
 {
@@ -91,7 +157,8 @@ gnupg_rl_initialize (void)
                             inhibit_completion,
                             cleanup_after_signal,
                             readline,
-                            add_history);
+                            add_history,
+                            read_write_history);
   rl_readline_name = GNUPG_NAME;
 #endif
 }

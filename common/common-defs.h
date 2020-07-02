@@ -47,7 +47,8 @@ void tty_private_set_rl_hooks (void (*init_stream) (FILE *),
                                void (*inhibit_completion) (int),
                                void (*cleanup_after_signal) (void),
                                char *(*readline_fun) (const char*),
-                               void (*add_history_fun) (const char*));
+                               void (*add_history_fun) (const char*),
+                               int (*rw_history_fun)(const char *, int, int));
 
 
 

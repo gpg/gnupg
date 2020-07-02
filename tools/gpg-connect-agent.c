@@ -44,6 +44,9 @@
 #define CONTROL_D ('D' - 'A' + 1)
 #define octdigitp(p) (*(p) >= '0' && *(p) <= '7')
 
+#define HISTORYNAME ".gpg-connect_history"
+
+
 /* Constants to identify the commands and options. */
 enum cmd_and_opt_values
   {
@@ -67,6 +70,7 @@ enum cmd_and_opt_values
     oDirmngr,
     oKeyboxd,
     oUIServer,
+    oNoHistory,
     oNoAutostart
 
   };
@@ -97,6 +101,8 @@ static gpgrt_opt_t opts[] = {
 
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
+  ARGPARSE_s_n (oNoHistory,"no-history",
+                "do not use the command history file"),
   ARGPARSE_s_s (oHomedir, "homedir", "@" ),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
@@ -127,6 +133,7 @@ struct
   unsigned int connect_flags;    /* Flags used for connecting. */
   int enable_varsubst;  /* Set if variable substitution is enabled.  */
   int trim_leading_spaces;
+  int no_history;
 } opt;
 
 
@@ -1178,6 +1185,7 @@ main (int argc, char **argv)
   } loopstack[20];
   int        loopidx;
   char **cmdline_commands = NULL;
+  char *historyname = NULL;
 
   early_system_init ();
   gnupg_rl_initialize ();
@@ -1210,6 +1218,7 @@ main (int argc, char **argv)
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
         case oKeyboxdProgram: opt.keyboxd_program = pargs.r.ret_str;  break;
         case oNoAutostart:    opt.autostart = 0; break;
+        case oNoHistory: opt.no_history = 1; break;
         case oHex:       opt.hex = 1; break;
         case oDecode:    opt.decode = 1; break;
         case oDirmngr:   opt.use_dirmngr = 1; break;
@@ -1422,6 +1431,15 @@ main (int argc, char **argv)
         {
           keep_line = 0;
           xfree (line);
+          if (!historyname && !opt.no_history)
+            {
+              historyname = make_filename (gnupg_homedir (), HISTORYNAME, NULL);
+              if (tty_read_history (historyname, 500))
+                log_info ("error reading '%s': %s\n",
+                          historyname,
+                          gpg_strerror (gpg_error_from_syserror ()));
+            }
+
           line = tty_get ("> ");
           n = strlen (line);
           if (n==1 && *line == CONTROL_D)
@@ -1817,6 +1835,15 @@ main (int argc, char **argv)
             {
               gnupg_sleep (1);
             }
+          else if (!strcmp (cmd, "history"))
+            {
+              if (!strcmp (p, "--clear"))
+                {
+                  tty_read_history (NULL, 0);
+                }
+              else
+                log_error ("Only \"/history --clear\" is supported\n");
+            }
           else if (!strcmp (cmd, "help"))
             {
               puts (
@@ -1843,6 +1870,7 @@ main (int argc, char **argv)
 "/if VAR                Begin conditional block controlled by VAR.\n"
 "/while VAR             Begin loop controlled by VAR.\n"
 "/end                   End loop or condition\n"
+"/history               Manage the history\n"
 "/bye                   Terminate gpg-connect-agent.\n"
 "/help                  Print this help.");
             }
@@ -1895,6 +1923,12 @@ main (int argc, char **argv)
               opt.use_keyboxd? "keyboxd" :
               "agent");
 
+
+  if (historyname && tty_write_history (historyname))
+    log_info ("error writing '%s': %s\n",
+              historyname, gpg_strerror (gpg_error_from_syserror ()));
+
+
   /* XXX: We would like to release the context here, but libassuan
      nicely says good bye to the server, which results in a SIGPIPE if
      the server died.  Unfortunately, libassuan does not ignore
@@ -1904,6 +1938,7 @@ main (int argc, char **argv)
     assuan_release (ctx);
   else
     gpgrt_annotate_leaked_object (ctx);
+  xfree (historyname);
   xfree (line);
   return 0;
 }

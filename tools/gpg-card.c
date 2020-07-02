@@ -48,6 +48,8 @@
 
 #define CONTROL_D ('D' - 'A' + 1)
 
+#define HISTORYNAME ".gpg-card_history"
+
 /* Constants to identify the commands and options. */
 enum opt_values
   {
@@ -73,6 +75,7 @@ enum opt_values
     oLCmessages,
 
     oNoKeyLookup,
+    oNoHistory,
 
     oDummy
   };
@@ -99,6 +102,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLCmessages, "lc-messages","@"),
   ARGPARSE_s_n (oNoKeyLookup,"no-key-lookup",
                 "use --no-key-lookup for \"list\""),
+  ARGPARSE_s_n (oNoHistory,"no-history",
+                "do not use the command history file"),
 
   ARGPARSE_end ()
 };
@@ -228,6 +233,7 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
         case oLCmessages:  opt.lc_messages = pargs->r.ret_str; break;
 
         case oNoKeyLookup: opt.no_key_lookup = 1; break;
+        case oNoHistory:   opt.no_history = 1; break;
 
         default: pargs->err = 2; break;
 	}
@@ -314,6 +320,9 @@ main (int argc, char **argv)
         }
     }
   opt.interactive = !cmdidx;
+
+  if (!opt.interactive)
+    opt.no_history = 1;
 
   if (opt.interactive)
     {
@@ -3498,6 +3507,32 @@ cmd_apdu (card_info_t info, char *argstr)
 }
 
 
+static gpg_error_t
+cmd_history (card_info_t info, char *argstr)
+{
+  int opt_list, opt_clear;
+
+  opt_list  = has_option (argstr, "--list");
+  opt_clear = has_option (argstr, "--clear");
+
+  if (!info || !(opt_list || opt_clear))
+    return print_help
+      ("HISTORY --list\n"
+       "   List the command history\n"
+       "HISTORY --clear\n"
+       "   Clear the command history",
+       0);
+
+  if (opt_list)
+    tty_printf ("Sorry, history listing not yet possible\n");
+
+  if (opt_clear)
+    tty_read_history (NULL, 0);
+
+  return 0;
+}
+
+
 
 
 /* Data used by the command parser.  This needs to be outside of the
@@ -3509,7 +3544,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdWRITEKEY,  cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
-    cmdUIF, cmdAUTH, cmdYUBIKEY, cmdAPDU,
+    cmdUIF, cmdAUTH, cmdYUBIKEY, cmdAPDU, cmdHISTORY,
     cmdINVCMD
   };
 
@@ -3551,6 +3586,7 @@ static struct
   { "writekey",  cmdWRITEKEY,   N_("store a private key to a data object")},
   { "yubikey",   cmdYUBIKEY,    N_("Yubikey management commands")},
   { "apdu",      cmdAPDU,       NULL},
+  { "history",   cmdHISTORY,    N_("manage the command history")},
   { NULL, cmdINVCMD, NULL }
 };
 
@@ -3679,6 +3715,7 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdUIF:          err = cmd_uif (info, argstr); break;
     case cmdYUBIKEY:      err = cmd_yubikey (info, argstr); break;
     case cmdAPDU:         err = cmd_apdu (info, argstr); break;
+    case cmdHISTORY:      err = 0; break; /* Only used in interactive mode.  */
 
     case cmdINVCMD:
     default:
@@ -3735,9 +3772,18 @@ interactive_loop (void)
   card_info_t info = &info_buffer;
   char *p;
   int i;
+  const char *historyname = NULL;
 
   /* In the interactive mode we do not want to print the program prefix.  */
   log_set_prefix (NULL, 0);
+
+  if (!opt.no_history)
+    {
+      historyname = make_filename (gnupg_homedir (), HISTORYNAME, NULL);
+      if (tty_read_history (historyname, 500))
+        log_info ("error reading '%s': %s\n",
+                  historyname, gpg_strerror (gpg_error_from_syserror ()));
+    }
 
   for (;;)
     {
@@ -3818,7 +3864,7 @@ interactive_loop (void)
         argstr = answer + strlen (answer);
 
       if (!(cmd == cmdNOP || cmd == cmdQUIT || cmd == cmdHELP
-            || cmd == cmdINVCMD))
+            || cmd == cmdHISTORY || cmd == cmdINVCMD))
         {
           /* If redisplay is set we know that there was an error reading
            * the card.  In this case we force a LIST command to retry.  */
@@ -3926,6 +3972,7 @@ interactive_loop (void)
         case cmdUIF:       err = cmd_uif (info, argstr); break;
         case cmdYUBIKEY:   err = cmd_yubikey (info, argstr); break;
         case cmdAPDU:      err = cmd_apdu (info, argstr); break;
+        case cmdHISTORY:   err = cmd_history (info, argstr); break;
 
         case cmdINVCMD:
         default:
@@ -3962,7 +4009,12 @@ interactive_loop (void)
     } /* End of main menu loop. */
 
  leave:
+  if (historyname && tty_write_history (historyname))
+    log_info ("error writing '%s': %s\n",
+              historyname, gpg_strerror (gpg_error_from_syserror ()));
+
   release_card_info (info);
+  xfree (historyname);
   xfree (answer);
 }
 

@@ -66,6 +66,8 @@ void tty_disable_completion (void);
 #define tty_enable_completion(x)
 #define tty_disable_completion()
 #endif
+int tty_read_history (const char *filename, int nlines);
+int tty_write_history (const char *filename);
 void tty_cleanup_after_signal (void);
 void tty_cleanup_rl_after_signal (void);
 

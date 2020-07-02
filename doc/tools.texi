@@ -1391,6 +1391,12 @@ passing.  This option makes it use the old mode.
 Do not start the gpg-agent or the dirmngr if it has not yet been
 started.
 
+@item --no-history
+@opindex --no-history
+In interactive mode the command line history is usually saved and
+restored to and from a file below the GnuPG home directory.  This
+option inhibits the use of that file.
+
 @item -r @var{file}
 @itemx --run @var{file}
 @opindex run
@@ -1610,6 +1616,9 @@ string @code{true} or @code{yes}.  The evaluation is done by passing
 
 @item /run @var{file}
 Run commands from @var{file}.
+
+@item /history --clear
+Clear the command history.
 
 @item /bye
 Terminate the connection and the program.
