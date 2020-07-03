@@ -284,3 +284,93 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
 
   return err;
 }
+
+
+/* Wrapper around ksba_cms_get_sig_val to return a gcrypt object
+ * instaed of ksba's canonical s-expression.  On errror NULL is return
+ * and in some cases an error message is printed.  */
+gcry_sexp_t
+gpgsm_ksba_cms_get_sig_val (ksba_cms_t cms, int idx)
+{
+  gpg_error_t err;
+  ksba_sexp_t sigval;
+  gcry_sexp_t s_sigval;
+  size_t n;
+
+  sigval = ksba_cms_get_sig_val (cms, idx);
+  if (!sigval)
+    return NULL;
+  n = gcry_sexp_canon_len (sigval, 0, NULL, NULL);
+  if (!n)
+    {
+      log_error ("%s: libksba did not return a proper S-Exp\n", __func__);
+      ksba_free (sigval);
+      return NULL;
+    }
+  err = gcry_sexp_sscan (&s_sigval, NULL, (char*)sigval, n);
+  ksba_free (sigval);
+  if (err)
+    {
+      log_error ("%s: gcry_sexp_scan failed: %s\n",
+                 __func__, gpg_strerror (err));
+      s_sigval = NULL;
+    }
+
+  return s_sigval;
+}
+
+
+/* Return the hash algorithm from the S-expression SIGVAL.  Returns 0
+ * if the hash algorithm is not encoded in SIGVAL or it is not
+ * supported by libgcrypt.  It further stores flag values for the
+ * public key algorithm at R_PKALGO_FLAGS; the only flag we currently
+ * support is PK_ALGO_FLAG_RSAPSS.  */
+int
+gpgsm_get_hash_algo_from_sigval (gcry_sexp_t sigval_arg,
+                                 unsigned int *r_pkalgo_flags)
+{
+  gcry_sexp_t sigval, l1;
+  size_t n;
+  const char *s;
+  char *string;
+  int hashalgo;
+  int i;
+
+  *r_pkalgo_flags = 0;
+
+  sigval = gcry_sexp_find_token (sigval_arg, "sig-val", 0);
+  if (!sigval)
+    return 0;   /* Not a sig-val.  */
+
+  /* First check whether this is a rsaPSS signature and return that as
+   * additional info.  */
+  l1 = gcry_sexp_find_token (sigval, "flags", 0);
+  if (l1)
+    {
+      /* Note that the flag parser assumes that the list of flags
+       * contains only strings and in particular not a sub-list.  This
+       * is always the case for the current libksba. */
+      for (i=1; (s = gcry_sexp_nth_data (l1, i, &n)); i++)
+        if (n == 3 && !memcmp (s, "pss", 3))
+          {
+            *r_pkalgo_flags |= PK_ALGO_FLAG_RSAPSS;
+            break;
+          }
+      gcry_sexp_release (l1);
+    }
+
+  l1 = gcry_sexp_find_token (sigval, "hash", 0);
+  if (!l1)
+    {
+      gcry_sexp_release (sigval);
+      return 0; /* hash algorithm not given in sigval. */
+    }
+  string = gcry_sexp_nth_string (l1, 1);
+  gcry_sexp_release (sigval);
+  if (!string)
+    return 0; /* hash algorithm has no value. */
+  hashalgo = gcry_md_map_name (string);
+  gcry_free (string);
+
+  return hashalgo;
+}

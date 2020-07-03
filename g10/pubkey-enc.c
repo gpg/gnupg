@@ -96,7 +96,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
 
       /* Check compliance.  */
       if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_DECRYPTION,
-                                 sk->pubkey_algo,
+                                 sk->pubkey_algo, 0,
                                  sk->pkey, nbits_from_pk (sk), NULL))
         {
           log_info (_("key %s is not suitable for decryption"

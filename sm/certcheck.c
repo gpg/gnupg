@@ -606,69 +606,40 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 
 
 int
-gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
-                           gcry_md_hd_t md, int mdalgo, int *r_pkalgo)
+gpgsm_check_cms_signature (ksba_cert_t cert, gcry_sexp_t s_sig,
+                           gcry_md_hd_t md, int mdalgo,
+                           unsigned int pkalgoflags, int *r_pkalgo)
 {
   int rc;
   ksba_sexp_t p;
-  gcry_sexp_t s_sig, s_hash, s_pkey, l1;
+  gcry_sexp_t s_hash, s_pkey;
   size_t n;
-  const char *s;
-  int i;
   int pkalgo;
   int use_pss;
   unsigned int saltlen = 0;
 
-
   if (r_pkalgo)
     *r_pkalgo = 0;
 
-  n = gcry_sexp_canon_len (sigval, 0, NULL, NULL);
-  if (!n)
+  /* Check whether rsaPSS is needed.  This information is indicated in
+   * the SIG-VAL and already provided to us by the caller so that we
+   * do not need to parse this out. */
+  use_pss = !!(pkalgoflags & PK_ALGO_FLAG_RSAPSS);
+  if (use_pss)
     {
-      log_error ("libksba did not return a proper S-Exp\n");
-      return gpg_error (GPG_ERR_BUG);
-    }
-  rc = gcry_sexp_sscan (&s_sig, NULL, (char*)sigval, n);
-  if (rc)
-    {
-      log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
-      return rc;
-    }
+      int algo;
 
-  /* Check whether rsaPSS is needed.  This is indicated in the SIG-VAL
-   * using a flag.  Only if we found that flag, we extract the PSS
-   * parameters for SIG-VAL.  */
-  use_pss = 0;
-  l1 = gcry_sexp_find_token (s_sig, "flags", 0);
-  if (l1)
-    {
-      /* Note that the flag parser assumes that the list of flags
-       * contains only strings and in particular not sublist.  This is
-       * always the case or current libksba. */
-      for (i=1; (s = gcry_sexp_nth_data (l1, i, &n)); i++)
-        if (n == 3 && !memcmp (s, "pss", 3))
-          {
-            use_pss = 1;
-            break;
-          }
-      gcry_sexp_release (l1);
-      if (use_pss)
+      rc = extract_pss_params (s_sig, &algo, &saltlen);
+      if (rc)
         {
-          int algo;
-
-          rc = extract_pss_params (s_sig, &algo, &saltlen);
-          if (rc)
-            {
-              gcry_sexp_release (s_sig);
-              return rc;
-            }
-          if (algo != mdalgo)
-            {
-              log_error ("PSS hash algo mismatch (%d/%d)\n", mdalgo, algo);
-              gcry_sexp_release (s_sig);
-              return gpg_error (GPG_ERR_DIGEST_ALGO);
-            }
+          gcry_sexp_release (s_sig);
+          return rc;
+        }
+      if (algo != mdalgo)
+        {
+          log_error ("PSS hash algo mismatch (%d/%d)\n", mdalgo, algo);
+          gcry_sexp_release (s_sig);
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
         }
     }
 
@@ -678,7 +649,6 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
     {
       log_error ("libksba did not return a proper S-Exp\n");
       ksba_free (p);
-      gcry_sexp_release (s_sig);
       return gpg_error (GPG_ERR_BUG);
     }
   if (DBG_CRYPTO)
@@ -689,7 +659,6 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
-      gcry_sexp_release (s_sig);
       return rc;
     }
 
@@ -719,7 +688,6 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
                          gcry_pk_get_nbits (s_pkey), s_pkey, &frame);
       if (rc)
         {
-          gcry_sexp_release (s_sig);
           gcry_sexp_release (s_pkey);
           return rc;
         }
@@ -732,7 +700,6 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_X509)
     log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
-  gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);
   gcry_sexp_release (s_pkey);
   return rc;

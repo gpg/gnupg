@@ -702,8 +702,8 @@ proc_encrypted (CTX c, PACKET *pkt)
           memset (pk, 0, sizeof *pk);
           pk->pubkey_algo = i->pubkey_algo;
           if (get_pubkey (c->ctrl, pk, i->keyid) != 0
-              || ! gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
-                                          nbits_from_pk (pk), NULL))
+              || ! gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0,
+                                          pk->pkey, nbits_from_pk (pk), NULL))
             compliant = 0;
           release_public_key_parts (pk);
         }
@@ -2449,7 +2449,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 
       /* Print compliance warning for Good signatures.  */
       if (!rc && pk && !opt.quiet
-          && !gnupg_pk_is_compliant (opt.compliance, pk->pubkey_algo,
+          && !gnupg_pk_is_compliant (opt.compliance, pk->pubkey_algo, 0,
                                      pk->pkey, nbits_from_pk (pk), NULL))
         {
           log_info (_("WARNING: This key is not suitable for signing"
@@ -2534,7 +2534,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 
       /* Compute compliance with CO_DE_VS.  */
       if (pk && is_status_enabled ()
-          && gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
+          && gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0, pk->pkey,
                                     nbits_from_pk (pk), NULL)
           && gnupg_digest_is_compliant (CO_DE_VS, sig->digest_algo))
         write_status_strings (STATUS_VERIFICATION_COMPLIANCE_MODE,

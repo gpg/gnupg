@@ -395,7 +395,10 @@ print_compliance_flags (ksba_cert_t cert, int algo, unsigned int nbits,
   int indent = 0;
   int hashalgo;
 
-  if (gnupg_pk_is_compliant (CO_DE_VS, algo, NULL, nbits, NULL))
+  /* Note that we do not need to test for PK_ALGO_FLAG_RSAPSS because
+   * that is not a property of the key but one of the created
+   * signature.  */
+  if (gnupg_pk_is_compliant (CO_DE_VS, algo, 0, NULL, nbits, NULL))
     {
       hashalgo = gcry_md_map_name (ksba_cert_get_digest_algo (cert));
       if (gnupg_digest_is_compliant (CO_DE_VS, hashalgo))

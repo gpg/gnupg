@@ -785,15 +785,15 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
         PKT_public_key *pk = pkr->pk;
         unsigned int nbits = nbits_from_pk (pk);
 
-        if (!gnupg_pk_is_compliant (opt.compliance,
-                                    pk->pubkey_algo, pk->pkey, nbits, NULL))
+        if (!gnupg_pk_is_compliant (opt.compliance, pk->pubkey_algo, 0,
+                                    pk->pkey, nbits, NULL))
           log_info (_("WARNING: key %s is not suitable for encryption"
                       " in %s mode\n"),
                     keystr_from_pk (pk),
                     gnupg_compliance_option_string (opt.compliance));
 
         if (compliant
-            && !gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
+            && !gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0, pk->pkey,
                                        nbits, NULL))
           compliant = 0;
       }

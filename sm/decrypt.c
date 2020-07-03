@@ -871,7 +871,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   /* Check compliance.  */
                   if (!gnupg_pk_is_allowed (opt.compliance,
                                             PK_USE_DECRYPTION,
-                                            pk_algo, NULL, nbits, NULL))
+                                            pk_algo, 0, NULL, nbits, NULL))
                     {
                       char  kidstr[10+1];
 
@@ -887,7 +887,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 
                   /* Check that all certs are compliant with CO_DE_VS.  */
                   is_de_vs = (is_de_vs
-                              && gnupg_pk_is_compliant (CO_DE_VS, pk_algo,
+                              && gnupg_pk_is_compliant (CO_DE_VS, pk_algo, 0,
                                                         NULL, nbits, NULL));
 
                 oops:

@@ -1,6 +1,8 @@
 /* verify.c - Verify a messages signature
  * Copyright (C) 2001, 2002, 2003, 2007,
  *               2010 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2019 Werner Koch
+ * Copyright (C) 2015-2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -286,7 +289,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
   for (signer=0; ; signer++)
     {
       char *issuer = NULL;
-      ksba_sexp_t sigval = NULL;
+      gcry_sexp_t sigval = NULL;
       ksba_isotime_t sigtime, keyexptime;
       ksba_sexp_t serial;
       char *msgdigest = NULL;
@@ -298,7 +301,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       int pkalgo;
       char *pkalgostr = NULL;
       char *pkfpr = NULL;
-      unsigned int verifyflags;
+      unsigned int pkalgoflags, verifyflags;
 
       rc = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
       if (!signer && gpg_err_code (rc) == GPG_ERR_NO_DATA
@@ -404,20 +407,19 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       rc = 0;
 
 
-      sigval = ksba_cms_get_sig_val (cms, signer);
+      sigval = gpgsm_ksba_cms_get_sig_val (cms, signer);
       if (!sigval)
         {
           log_error ("no signature value available\n");
           audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
           goto next_signer;
         }
-      sigval_hash_algo = hash_algo_from_sigval (sigval);
+
+      sigval_hash_algo = gpgsm_get_hash_algo_from_sigval (sigval, &pkalgoflags);
       if (DBG_X509)
         {
-          log_debug ("signer %d - signature available (sigval hash=%d)",
-                     signer, sigval_hash_algo);
-          /*log_printhex(sigval, gcry_sexp_canon_len (sigval, 0, NULL, NULL),*/
-          /*             "sigval    "); */
+          log_debug ("signer %d - signature available (sigval hash=%d pkaf=%u)",
+                     signer, sigval_hash_algo, pkalgoflags);
         }
       if (!sigval_hash_algo)
         sigval_hash_algo = algo; /* Fallback used e.g. with old libksba. */
@@ -492,7 +494,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
       /* Check compliance.  */
       if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
-                                 pkalgo, NULL, nbits, NULL))
+                                 pkalgo, pkalgoflags, NULL, nbits, NULL))
         {
           char  kidstr[10+1];
 
@@ -513,7 +515,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
         }
 
       /* Check compliance with CO_DE_VS.  */
-      if (gnupg_pk_is_compliant (CO_DE_VS, pkalgo, NULL, nbits, NULL)
+      if (gnupg_pk_is_compliant (CO_DE_VS, pkalgo, pkalgoflags,
+                                 NULL, nbits, NULL)
           && gnupg_digest_is_compliant (CO_DE_VS, sigval_hash_algo))
         gpgsm_status (ctrl, STATUS_VERIFICATION_COMPLIANCE_MODE,
                       gnupg_status_compliance_flag (CO_DE_VS));
@@ -572,14 +575,14 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
               audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "error");
               goto next_signer;
             }
-          rc = gpgsm_check_cms_signature (cert, sigval, md,
-                                          sigval_hash_algo, &info_pkalgo);
+          rc = gpgsm_check_cms_signature (cert, sigval, md, sigval_hash_algo,
+                                          pkalgoflags, &info_pkalgo);
           gcry_md_close (md);
         }
       else
         {
           rc = gpgsm_check_cms_signature (cert, sigval, data_md,
-                                          algo, &info_pkalgo);
+                                          algo, pkalgoflags, &info_pkalgo);
         }
 
       if (rc)
@@ -623,7 +626,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
         xfree (fpr);
 
         /* FIXME: INFO_PKALGO correctly shows ECDSA but PKALGO is then
-         * ECC.  We should use the ECDS here and need to find a way to
+         * ECC.  We should use the ECDSA here and need to find a way to
          * figure this oult without using the bodus assumtion in
          * gpgsm_check_cms_signature that ECC is alwas ECDSA.  */
 
@@ -702,7 +705,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       rc = 0;
       xfree (issuer);
       xfree (serial);
-      xfree (sigval);
+      gcry_sexp_release (sigval);
       xfree (msgdigest);
       xfree (pkalgostr);
       xfree (pkfpr);

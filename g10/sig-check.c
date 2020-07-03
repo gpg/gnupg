@@ -173,7 +173,7 @@ check_signature2 (ctrl_t ctrl,
   else if (get_pubkey_for_sig (ctrl, pk, sig, forced_pk))
     rc = gpg_error (GPG_ERR_NO_PUBKEY);
   else if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
-                                 pk->pubkey_algo, pk->pkey,
+                                 pk->pubkey_algo, 0, pk->pkey,
                                  nbits_from_pk (pk),
                                  NULL))
     {

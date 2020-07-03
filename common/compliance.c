@@ -96,6 +96,7 @@ gnupg_initialize_compliance (int gnupg_module_name)
  * both are compatible from the point of view of this function.  */
 int
 gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
+                       unsigned int algo_flags,
 		       gcry_mpi_t key[], unsigned int keylength,
                        const char *curvename)
 {
@@ -148,6 +149,10 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
           result = (keylength == 2048
                     || keylength == 3072
                     || keylength == 4096);
+          /* rsaPSS was not part of the evaluation and thus we don't
+           * claim compliance.  */
+          if ((algo_flags & PK_ALGO_FLAG_RSAPSS))
+            result = 0;
           break;
 
 	case is_dsa:
@@ -197,7 +202,8 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
  * they produce, and liberal in what they accept.  */
 int
 gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
-		     enum pk_use_case use, int algo, gcry_mpi_t key[],
+		     enum pk_use_case use, int algo,
+                     unsigned int algo_flags, gcry_mpi_t key[],
 		     unsigned int keylength, const char *curvename)
 {
   int result = 0;
@@ -228,6 +234,10 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 	    default:
 	      log_assert (!"reached");
 	    }
+          /* rsaPSS was not part of the evaluation and thus we don't
+           * claim compliance.  */
+          if ((algo_flags & PK_ALGO_FLAG_RSAPSS))
+            result = 0;
 	  break;
 
 	case PUBKEY_ALGO_DSA:

@@ -601,7 +601,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           goto leave;
         }
 
-      if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo,
+      if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo, 0,
                                  NULL, nbits, NULL))
         {
           char  kidstr[10+1];
