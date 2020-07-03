@@ -395,7 +395,8 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
       goto leave;
     }
 
-  if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pksk->pubkey_algo,
+  if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING,
+                             pksk->pubkey_algo, 0,
                              pksk->pkey, nbits_from_pk (pksk), NULL))
     {
       log_error (_("key %s may not be used for signing in %s mode\n"),

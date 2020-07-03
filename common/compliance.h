@@ -48,11 +48,17 @@ enum pk_use_case
     PK_USE_SIGNING, PK_USE_VERIFICATION,
   };
 
+/* Flags to distinguish public key algorithm variants.  */
+#define PK_ALGO_FLAG_RSAPSS 1    /* Use rsaPSS padding. */
+
+
 int gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
+                           unsigned int algo_flags,
                            gcry_mpi_t key[], unsigned int keylength,
                            const char *curvename);
 int gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
-                         enum pk_use_case use, int algo, gcry_mpi_t key[],
+                         enum pk_use_case use, int algo,
+                         unsigned int algo_flags, gcry_mpi_t key[],
                          unsigned int keylength, const char *curvename);
 int gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
                                cipher_algo_t cipher,

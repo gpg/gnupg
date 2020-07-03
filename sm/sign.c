@@ -486,7 +486,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         unsigned int nbits;
         int pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
 
-        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo,
+        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo, 0,
                                    NULL, nbits, NULL))
           {
             char  kidstr[10+1];

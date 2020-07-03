@@ -264,6 +264,7 @@ unsigned long gpgsm_get_short_fingerprint (ksba_cert_t cert,
 unsigned char *gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array);
 char *gpgsm_get_keygrip_hexstring (ksba_cert_t cert);
 int  gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits);
+char *gpgsm_pubkey_algo_string (ksba_cert_t cert, int *r_algoid);
 char *gpgsm_get_certid (ksba_cert_t cert);
 
 
@@ -295,8 +296,10 @@ char *gpgsm_format_keydesc (ksba_cert_t cert);
 
 /*-- certcheck.c --*/
 int gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert);
-int gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
-                               gcry_md_hd_t md, int hash_algo, int *r_pkalgo);
+int gpgsm_check_cms_signature (ksba_cert_t cert, gcry_sexp_t sigval,
+                               gcry_md_hd_t md,
+                               int hash_algo, unsigned int pkalgoflags,
+                               int *r_pkalgo);
 /* fixme: move create functions to another file */
 int gpgsm_create_cms_signature (ctrl_t ctrl,
                                 ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
@@ -438,6 +441,9 @@ gpg_error_t transform_sigval (const unsigned char *sigval, size_t sigvallen,
                               int mdalgo,
                               unsigned char **r_newsigval,
                               size_t *r_newsigvallen);
+gcry_sexp_t gpgsm_ksba_cms_get_sig_val (ksba_cms_t cms, int idx);
+int gpgsm_get_hash_algo_from_sigval (gcry_sexp_t sigval,
+                                     unsigned int *r_pkalgo_flags);
 
 
 

@@ -1340,7 +1340,7 @@ print_compliance_flags (PKT_public_key *pk,
       es_fputs (gnupg_status_compliance_flag (CO_GNUPG), es_stdout);
       any++;
     }
-  if (gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
+  if (gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0, pk->pkey,
 			     keylength, curvename))
     {
       es_fprintf (es_stdout, any ? " %s" : "%s",
