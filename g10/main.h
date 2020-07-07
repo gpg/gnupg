@@ -234,7 +234,7 @@ int  cpr_get_answer_okay_cancel (const char *keyword,
 void display_online_help( const char *keyword );
 
 /*-- encode.c --*/
-int setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
+gpg_error_t setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
 gpg_error_t encrypt_seskey (DEK *dek, aead_algo_t aead_algo, DEK **r_seskey,
                             void **r_enckey, size_t *r_enckeylen);
 aead_algo_t use_aead (pk_list_t pk_list, int algo);

@@ -268,7 +268,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
   *canceled = 0;
 
   if (opt.no_symkey_cache)
-    nocache = 1;  /* Force no symmtric key caching.  */
+    nocache = 1;  /* Force no symmetric key caching.  */
 
   if ( !s2k )
     {
