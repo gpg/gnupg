@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.2.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-03-19 09:27+0900\n"
+"PO-Revision-Date: 2020-07-07 09:37+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -3423,6 +3423,9 @@ msgstr "\"%s\"は正しいフィンガープリントではありません\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "副鍵\"%s\"が見つかりません\n"
 
+msgid "AEAD: "
+msgstr "AEAD: "
+
 msgid "Digest: "
 msgstr "ダイジェスト: "
 
@@ -5998,6 +6001,25 @@ msgstr ""
 "形式:  kbxutil [オプション] [ファイル]\n"
 "Keyboxデータを一覧、エクスポート、インポート\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr "%s番号: %s%%0A保持者: %s%s"
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr "残された試行回数: %d"
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr "||新しいPINを認定署名を生成する鍵のために入力してください。"
+
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||PINを標準の鍵のために入力してください。"
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "RSAのモジュラスがないか、%dビットのものではありません\n"
@@ -6017,9 +6039,6 @@ msgstr "NullPINが変更されていません\n"
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "|N|新しいPINを標準の鍵のために入力してください。"
 
-msgid "||Please enter the PIN for the standard keys."
-msgstr "||PINを標準の鍵のために入力してください。"
-
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|標準の鍵の新しいPIN Unblocking Code (PUK)を入力してください。"
 
@@ -6028,9 +6047,6 @@ msgstr "|P|標準の鍵のPIN Unblocking Code (PUK)を入力してください�
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|新しいPINを認定署名を生成する鍵のために入力してください。"
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr "||新しいPINを認定署名を生成する鍵のために入力してください。"
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
@@ -6086,16 +6102,6 @@ msgstr "公開鍵の読み込みに失敗しました: %s\n"
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
 msgstr "%s番号: %s%%0A保持者: %s%%0Aカウンタ: %lu%s"
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr "%s番号: %s%%0A保持者: %s%s"
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
-msgstr "残された試行回数: %d"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -6343,12 +6349,20 @@ msgid "certificate policy not allowed"
 msgstr "証明書ポリシーは認められません"
 
 #, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "フィンガープリントの取得に失敗しました\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "発行者の外部ロケーションを調べています\n"
 
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "マッチする発行者の数: %d\n"
+
+#, c-format
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "authorityInfoAccessを取得できません: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -6933,10 +6947,6 @@ msgid "error reading input: %s\n"
 msgstr "入力読み込みエラー: %s\n"
 
 #, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "フィンガープリントの取得に失敗しました\n"
-
-#, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "既存の証明書の検索の問題: %s\n"
 
@@ -7028,8 +7038,8 @@ msgid "[date not given]"
 msgstr "[日時指定なし]"
 
 #, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr " 証明書 ID 0x%08lXを用います\n"
+msgid "algorithm:"
+msgstr "アルゴリズム:"
 
 #, c-format
 msgid ""
@@ -7353,20 +7363,20 @@ msgid "error getting data from cache file: %s\n"
 msgstr "キャッシュ・ファイルからデータの取得エラー: %s\n"
 
 #, c-format
-msgid "unknown hash algorithm '%s'\n"
-msgstr "不明なハッシュ・アルゴリズム'%s'\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr "アルゴリズム%dのgcry_md_openが失敗: %s\n"
-
-#, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr "libksbaから無効なS-式を取得しました\n"
 
 #, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "S式の変換に失敗しました: %s\n"
+
+#, c-format
+msgid "unknown hash algorithm '%s'\n"
+msgstr "不明なハッシュ・アルゴリズム'%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr "アルゴリズム%dのgcry_md_openが失敗: %s\n"
 
 #, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8119,10 +8129,6 @@ msgid "failed to allocate OCSP context: %s\n"
 msgstr "OCSPコンテクストの確保に失敗しました: %s\n"
 
 #, c-format
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "authorityInfoAccessを取得できません: %s\n"
-
-#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr "デフォルトOCSPレスポンダが定義されていません\n"
 
@@ -8690,6 +8696,9 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " 証明書 ID 0x%08lXを用います\n"
 
 #~ msgid "male"
 #~ msgstr "男"
