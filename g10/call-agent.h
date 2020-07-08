@@ -159,6 +159,7 @@ gpg_error_t agent_get_passphrase (const char *cache_id,
                                   const char *err_msg,
                                   const char *prompt,
                                   const char *desc_msg,
+                                  int newsymkey,
                                   int repeat,
                                   int check,
                                   char **r_passphrase);

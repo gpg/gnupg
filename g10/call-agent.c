@@ -1879,13 +1879,15 @@ agent_scd_checkpin  (const char *serialno)
 
 /* Note: All strings shall be UTF-8. On success the caller needs to
    free the string stored at R_PASSPHRASE. On error NULL will be
-   stored at R_PASSPHRASE and an appropriate fpf error code
-   returned. */
+   stored at R_PASSPHRASE and an appropriate error code returned.
+   Only called from passphrase.c:passphrase_get - see there for more
+   comments on this ugly API. */
 gpg_error_t
 agent_get_passphrase (const char *cache_id,
                       const char *err_msg,
                       const char *prompt,
                       const char *desc_msg,
+                      int newsymkey,
                       int repeat,
                       int check,
                       char **r_passphrase)
@@ -1898,6 +1900,7 @@ agent_get_passphrase (const char *cache_id,
   char *arg4 = NULL;
   membuf_t data;
   struct default_inq_parm_s dfltparm;
+  int have_newsymkey;
 
   memset (&dfltparm, 0, sizeof dfltparm);
 
@@ -1913,6 +1916,10 @@ agent_get_passphrase (const char *cache_id,
                        "GETINFO cmd_has_option GET_PASSPHRASE repeat",
                        NULL, NULL, NULL, NULL, NULL, NULL))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
+  have_newsymkey = !(assuan_transact
+                     (agent_ctx,
+                      "GETINFO cmd_has_option GET_PASSPHRASE newsymkey",
+                      NULL, NULL, NULL, NULL, NULL, NULL));
 
   if (cache_id && *cache_id)
     if (!(arg1 = percent_plus_escape (cache_id)))
@@ -1927,10 +1934,14 @@ agent_get_passphrase (const char *cache_id,
     if (!(arg4 = percent_plus_escape (desc_msg)))
       goto no_mem;
 
+  /* CHECK && REPEAT or NEWSYMKEY is here an indication that a new
+   * passphrase for symmetric encryption is requested; if the agent
+   * supports this we enable the modern API by also passing --newsymkey.  */
   snprintf (line, DIM(line),
-            "GET_PASSPHRASE --data --repeat=%d%s -- %s %s %s %s",
+            "GET_PASSPHRASE --data --repeat=%d%s%s -- %s %s %s %s",
             repeat,
-            check? " --check --qualitybar":"",
+            ((repeat && check) || newsymkey)? " --check --qualitybar":"",
+            (have_newsymkey && newsymkey)? " --newsymkey":"",
             arg1? arg1:"X",
             arg2? arg2:"X",
             arg3? arg3:"X",
