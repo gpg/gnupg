@@ -368,7 +368,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
     }
   pi->max_length = MAX_PASSPHRASE_LEN + 1;
   pi->max_tries = 3;
-  pi->with_qualitybar = 1;
+  pi->with_qualitybar = 0;
   pi->with_repeat = 1;
   pi2->max_length = MAX_PASSPHRASE_LEN + 1;
   pi2->max_tries = 3;

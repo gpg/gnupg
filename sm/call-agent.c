@@ -1322,7 +1322,7 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
     return gpg_error_from_syserror ();
 
   snprintf (line, DIM(line), "GET_PASSPHRASE --data%s -- X X X %s",
-            repeat? " --repeat=1 --check --qualitybar":"",
+            repeat? " --repeat=1 --check":"",
             arg4);
   xfree (arg4);
 
