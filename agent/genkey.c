@@ -161,7 +161,7 @@ take_this_one_anyway (ctrl_t ctrl, const char *desc, const char *anyway_btn)
    message describing the problem is returned in
    *FAILED_CONSTRAINT.  */
 int
-check_passphrase_constraints (ctrl_t ctrl, const char *pw,
+check_passphrase_constraints (ctrl_t ctrl, const char *pw, int no_empty,
 			      char **failed_constraint)
 {
   gpg_error_t err = 0;
@@ -180,7 +180,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
   /* The first check is to warn about an empty passphrase. */
   if (!*pw)
     {
-      const char *desc = (opt.enforce_passphrase_constraints?
+      const char *desc = (opt.enforce_passphrase_constraints || no_empty?
                           L_("You have not entered a passphrase!%0A"
                              "An empty passphrase is not allowed.") :
                           L_("You have not entered a passphrase - "
@@ -191,7 +191,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
       err = 1;
       if (failed_constraint)
 	{
-	  if (opt.enforce_passphrase_constraints)
+	  if (opt.enforce_passphrase_constraints || no_empty)
 	    *failed_constraint = xstrdup (desc);
 	  else
 	    err = take_this_one_anyway (ctrl, desc,
@@ -381,7 +381,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   initial_errtext = NULL;
   if (!err)
     {
-      if (check_passphrase_constraints (ctrl, pi->pin, &initial_errtext))
+      if (check_passphrase_constraints (ctrl, pi->pin, 0, &initial_errtext))
         {
           pi->failed_tries = 0;
           pi2->failed_tries = 0;

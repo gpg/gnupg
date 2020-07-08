@@ -1543,9 +1543,22 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 }
 
 
+/* Callback function to compare the first entered PIN with the one
+   currently being entered. */
+static gpg_error_t
+reenter_passphrase_cmp_cb (struct pin_entry_info_s *pi)
+{
+  const char *pin1 = pi->check_cb_arg;
+
+  if (!strcmp (pin1, pi->pin))
+    return 0; /* okay */
+  return gpg_error (GPG_ERR_BAD_PASSPHRASE);
+}
+
+
 static const char hlp_get_passphrase[] =
   "GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]]\n"
-  "               [--qualitybar] <cache_id>\n"
+  "               [--qualitybar] [--newsymkey] <cache_id>\n"
   "               [<error_message> <prompt> <description>]\n"
   "\n"
   "This function is usually used to ask for a passphrase to be used\n"
@@ -1567,6 +1580,9 @@ static const char hlp_get_passphrase[] =
   "cache the user will not be asked to enter a passphrase but the error\n"
   "code GPG_ERR_NO_DATA is returned.  \n"
   "\n"
+  "If the option\"--newsymkey\" is used the agent asks for a new passphrase\n"
+  "to be used in symmetric-only encryption.  This must not be empty.\n"
+  "\n"
   "If the option \"--qualitybar\" is used a visual indication of the\n"
   "entered passphrase quality is shown.  (Unless no minimum passphrase\n"
   "length has been configured.)";
@@ -1576,13 +1592,19 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *pw;
-  char *response;
-  char *cacheid = NULL, *desc = NULL, *prompt = NULL, *errtext = NULL;
+  char *response = NULL;
+  char *response2 = NULL;
+  char *cacheid = NULL;  /* May point into LINE.  */
+  char *desc = NULL;     /* Ditto  */
+  char *prompt = NULL;   /* Ditto  */
+  char *errtext = NULL;  /* Ditto  */
   const char *desc2 = _("Please re-enter this passphrase");
   char *p;
-  int opt_data, opt_check, opt_no_ask, opt_qualbar;
+  int opt_data, opt_check, opt_no_ask, opt_qualbar, opt_newsymkey;
   int opt_repeat = 0;
   char *entry_errtext = NULL;
+  struct pin_entry_info_s *pi = NULL;
+  struct pin_entry_info_s *pi2 = NULL;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -1599,6 +1621,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
 	opt_repeat = 1;
     }
   opt_qualbar = has_option (line, "--qualitybar");
+  opt_newsymkey = has_option (line, "--newsymkey");
   line = skip_options (line);
 
   cacheid = line;
@@ -1648,26 +1671,116 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
     {
       rc = send_back_passphrase (ctx, opt_data, pw);
       xfree (pw);
+      goto leave;
     }
   else if (opt_no_ask)
-    rc = gpg_error (GPG_ERR_NO_DATA);
+    {
+      rc = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+
+  /* Note, that we only need to replace the + characters and should
+   * leave the other escaping in place because the escaped string is
+   * send verbatim to the pinentry which does the unescaping (but not
+   * the + replacing) */
+  if (errtext)
+    plus_to_blank (errtext);
+  if (prompt)
+    plus_to_blank (prompt);
+  if (desc)
+    plus_to_blank (desc);
+
+  if (opt_newsymkey)
+    {
+      /* We do not want to break any existing usage of this command
+       * and thus we introduced the option --newsymkey to make this
+       * command more useful to query the passphrase for symmetric
+       * encryption.  */
+      pi = gcry_calloc_secure (1, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
+      if (!pi)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+      pi2 = gcry_calloc_secure (1, sizeof (*pi2) + MAX_PASSPHRASE_LEN + 1);
+      if (!pi2)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+      pi->max_length = MAX_PASSPHRASE_LEN + 1;
+      pi->max_tries = 3;
+      pi->with_qualitybar = opt_qualbar;
+      pi->with_repeat = opt_repeat;
+      pi2->max_length = MAX_PASSPHRASE_LEN + 1;
+      pi2->max_tries = 3;
+      pi2->check_cb = reenter_passphrase_cmp_cb;
+      pi2->check_cb_arg = pi->pin;
+
+      for (;;) /* (degenerated for-loop) */
+        {
+          xfree (response);
+          response = NULL;
+          rc = agent_get_passphrase (ctrl, &response,
+                                     desc,
+                                     prompt,
+                                     entry_errtext? entry_errtext:errtext,
+                                     opt_qualbar, cacheid, CACHE_MODE_USER,
+                                     pi);
+          if (rc)
+            goto leave;
+          xfree (entry_errtext);
+          entry_errtext = NULL;
+          /* We don't allow an empty passpharse in this mode.  */
+          if (check_passphrase_constraints (ctrl, pi->pin, 1, &entry_errtext))
+            {
+              pi->failed_tries = 0;
+              pi2->failed_tries = 0;
+              continue;
+            }
+          if (*pi->pin && !pi->repeat_okay)
+            {
+              /* The passphrase is empty and the pinentry did not
+               * already run the repetition check, do it here.  This
+               * is only called when using an old and  simple pinentry. */
+              xfree (response);
+              response = NULL;
+              rc = agent_get_passphrase (ctrl, &response,
+                                         L_("Please re-enter this passphrase"),
+                                         prompt,
+                                         entry_errtext? entry_errtext:errtext,
+                                         opt_qualbar, cacheid, CACHE_MODE_USER,
+                                         pi2);
+              if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE)
+                { /* The re-entered passphrase one did not match and
+                   * the user did not hit cancel. */
+                  entry_errtext = xtrystrdup (L_("does not match - try again"));
+                  if (!entry_errtext)
+                    {
+                      rc = gpg_error_from_syserror ();
+                      goto leave;
+                    }
+                  continue;
+                }
+            }
+          break;
+        }
+      if (!rc && *pi->pin)
+        {
+          /* Return the passphrase. */
+          if (cacheid)
+            agent_put_cache (ctrl, cacheid, CACHE_MODE_USER, pi->pin, 0);
+          rc = send_back_passphrase (ctx, opt_data, pi->pin);
+        }
+    }
   else
     {
-      /* Note, that we only need to replace the + characters and
-         should leave the other escaping in place because the escaped
-         string is send verbatim to the pinentry which does the
-         unescaping (but not the + replacing) */
-      if (errtext)
-        plus_to_blank (errtext);
-      if (prompt)
-        plus_to_blank (prompt);
-      if (desc)
-        plus_to_blank (desc);
-
     next_try:
+      xfree (response);
+      response = NULL;
       rc = agent_get_passphrase (ctrl, &response, desc, prompt,
                                  entry_errtext? entry_errtext:errtext,
-                                 opt_qualbar, cacheid, CACHE_MODE_USER);
+                                 opt_qualbar, cacheid, CACHE_MODE_USER, NULL);
       xfree (entry_errtext);
       entry_errtext = NULL;
       if (!rc)
@@ -1675,27 +1788,24 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
           int i;
 
           if (opt_check
-	      && check_passphrase_constraints (ctrl, response, &entry_errtext))
+	      && check_passphrase_constraints (ctrl, response,0,&entry_errtext))
             {
-              xfree (response);
               goto next_try;
             }
           for (i = 0; i < opt_repeat; i++)
             {
-              char *response2;
-
               if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
                 break;
 
+              xfree (response2);
+              response2 = NULL;
               rc = agent_get_passphrase (ctrl, &response2, desc2, prompt,
                                          errtext, 0,
-					 cacheid, CACHE_MODE_USER);
+					 cacheid, CACHE_MODE_USER, NULL);
               if (rc)
                 break;
               if (strcmp (response2, response))
                 {
-                  xfree (response2);
-                  xfree (response);
                   entry_errtext = try_percent_escape
                     (_("does not match - try again"), NULL);
                   if (!entry_errtext)
@@ -1705,7 +1815,6 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
                     }
                   goto next_try;
                 }
-              xfree (response2);
             }
           if (!rc)
             {
@@ -1713,10 +1822,15 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
                 agent_put_cache (ctrl, cacheid, CACHE_MODE_USER, response, 0);
               rc = send_back_passphrase (ctx, opt_data, response);
             }
-          xfree (response);
         }
     }
 
+ leave:
+  xfree (response);
+  xfree (response2);
+  xfree (entry_errtext);
+  xfree (pi2);
+  xfree (pi);
   return leave_cmd (ctx, rc);
 }
 
@@ -3555,7 +3669,9 @@ command_has_option (const char *cmd, const char *cmdopt)
   if (!strcmp (cmd, "GET_PASSPHRASE"))
     {
       if (!strcmp (cmdopt, "repeat"))
-          return 1;
+        return 1;
+      if (!strcmp (cmdopt, "newsymkey"))
+        return 1;
     }
 
   return 0;
