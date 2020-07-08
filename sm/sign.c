@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -808,7 +807,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           unsigned char *digest;
           size_t digest_len;
 
-          assert (!detached);
+          log_assert (!detached);
 
           rc = hash_and_copy_data (data_fd, data_md, writer);
           if (rc)

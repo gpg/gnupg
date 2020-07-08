@@ -24,7 +24,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -654,7 +653,7 @@ pretty_es_print_sexp (estream_t fp, const unsigned char *buf, size_t buflen)
       return;
     }
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
-  assert (len);
+  log_assert (len);
   result = xtrymalloc (len);
   if (!result)
     {
@@ -663,7 +662,7 @@ pretty_es_print_sexp (estream_t fp, const unsigned char *buf, size_t buflen)
       return;
     }
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, result, len);
-  assert (len);
+  log_assert (len);
   for (p = result; len; len--, p++)
     {
       if (*p == '\n')

@@ -24,7 +24,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>

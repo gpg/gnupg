@@ -24,7 +24,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 
 
 #include "gpgsm.h"
@@ -55,7 +54,7 @@ gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
     algo = GCRY_MD_SHA1;
 
   len = gcry_md_get_algo_dlen (algo);
-  assert (len);
+  log_assert (len);
   if (!array)
     array = xmalloc (len);
 
@@ -67,7 +66,7 @@ gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
     {
       size_t buflen;
 
-      assert (len >= 20);
+      log_assert (len >= 20);
       if (!ksba_cert_get_user_data (cert, "sha1-fingerprint",
                                     array, len, &buflen)
           && buflen == 20)
@@ -115,7 +114,7 @@ gpgsm_get_fingerprint_string (ksba_cert_t cert, int algo)
     algo = GCRY_MD_SHA1;
 
   len = gcry_md_get_algo_dlen (algo);
-  assert (len <= MAX_DIGEST_LEN );
+  log_assert (len <= MAX_DIGEST_LEN );
   gpgsm_get_fingerprint (cert, algo, digest, NULL);
   buf = xmalloc (len*3+1);
   bin2hexcolon (digest, len, buf);
@@ -135,7 +134,7 @@ gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo)
     algo = GCRY_MD_SHA1;
 
   len = gcry_md_get_algo_dlen (algo);
-  assert (len <= MAX_DIGEST_LEN );
+  log_assert (len <= MAX_DIGEST_LEN );
   gpgsm_get_fingerprint (cert, algo, digest, NULL);
   buf = xmalloc (len*2+1);
   bin2hex (digest, len, buf);
@@ -307,8 +306,8 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
 }
 
 
-/* This is a wrapper around pubkey_algo_string which takesa KSA
- * certitificate instead of a Gcrypt public key.  Note that this
+/* This is a wrapper around pubkey_algo_string which takes a KSBA
+ * certificate instead of a Gcrypt public key.  Note that this
  * function may return NULL on error.  */
 char *
 gpgsm_pubkey_algo_string (ksba_cert_t cert, int *r_algoid)

@@ -28,7 +28,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -363,7 +362,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
         }
       else if (gpg_err_code (rc) == GPG_ERR_NO_DATA)
         {
-          assert (!msgdigest);
+          log_assert (!msgdigest);
           rc = 0;
           algoid = NULL;
           algo = 0;

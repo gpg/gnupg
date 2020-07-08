@@ -59,7 +59,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -448,7 +447,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
   char *cardkeyid = NULL;
 
   /* Check that we have all required parameters; */
-  assert (get_parameter (para, pKEYTYPE, 0));
+  log_assert (get_parameter (para, pKEYTYPE, 0));
 
   /* There is a problem with pkcs-10 on how to use ElGamal because it
      is expected that a PK algorithm can always be used for
@@ -915,7 +914,7 @@ create_request (ctrl_t ctrl,
   for (seq=0; (s = get_parameter_value (para, pNAMEDNS, seq)); seq++)
     {
       len = strlen (s);
-      assert (len);
+      log_assert (len);
       snprintf (numbuf, DIM(numbuf), "%u:", (unsigned int)len);
       buf = p = xtrymalloc (11 + strlen (numbuf) + len + 3);
       if (!buf)
@@ -942,7 +941,7 @@ create_request (ctrl_t ctrl,
   for (seq=0; (s = get_parameter_value (para, pNAMEURI, seq)); seq++)
     {
       len = strlen (s);
-      assert (len);
+      log_assert (len);
       snprintf (numbuf, DIM(numbuf), "%u:", (unsigned int)len);
       buf = p = xtrymalloc (6 + strlen (numbuf) + len + 3);
       if (!buf)
@@ -1322,6 +1321,10 @@ create_request (ctrl_t ctrl,
           size_t qlen, derlen;
           unsigned char *der;
 
+          /* FIXME: This assumes that the to-be-certified key uses the
+           * same algorithm as the certification key - this is not
+           * always the case; in fact it is common that they
+           * differ.  */
           err = get_ecc_q_from_canon_sexp (sigkey, sigkeylen, &q, &qlen);
           if (err)
             {

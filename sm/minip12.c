@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <gcrypt.h>
 #include <errno.h>
 
@@ -491,7 +490,7 @@ set_key_iv (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
   unsigned char keybuf[24];
   int rc;
 
-  assert (keybytes == 5 || keybytes == 24);
+  log_assert (keybytes == 5 || keybytes == 24);
   if (string_to_key (1, salt, saltlen, iter, pw, keybytes, keybuf))
     return -1;
   rc = gcry_cipher_setkey (chd, keybuf, keybytes);
@@ -2163,7 +2162,7 @@ build_rsa_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
     }
 
   plainlen = p - plain;
-  assert (needed == plainlen);
+  log_assert (needed == plainlen);
 
   if (!mode)
     {
@@ -2567,7 +2566,7 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
   size_t certseqlen;
   int i;
 
-  assert (strlen (keyidstr) == 8);
+  log_assert (strlen (keyidstr) == 8);
 
   /* Walk 8 steps down to collect the info: */
 

@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 #include <ctype.h>
 
 #include "gpgsm.h"
@@ -283,7 +282,7 @@ start_dirmngr (ctrl_t ctrl)
 {
   gpg_error_t err;
 
-  assert (! dirmngr_ctx_locked);
+  log_assert (! dirmngr_ctx_locked);
   dirmngr_ctx_locked = 1;
 
   err = start_dirmngr_ext (ctrl, &dirmngr_ctx);
@@ -313,7 +312,7 @@ start_dirmngr2 (ctrl_t ctrl)
 {
   gpg_error_t err;
 
-  assert (! dirmngr2_ctx_locked);
+  log_assert (! dirmngr2_ctx_locked);
   dirmngr2_ctx_locked = 1;
 
   err = start_dirmngr_ext (ctrl, &dirmngr2_ctx);

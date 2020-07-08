@@ -27,7 +27,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -594,7 +593,7 @@ decrypt_filter (void *arg,
   *inused = inlen + parm->helpblocklen;
   if (inlen)
     {
-      assert (inlen >= blklen);
+      log_assert (inlen >= blklen);
       if (parm->any_data)
         {
           gcry_cipher_decrypt (parm->hd, (char*)outbuf+blklen, inlen,

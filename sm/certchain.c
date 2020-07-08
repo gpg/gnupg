@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdarg.h>
-#include <assert.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>

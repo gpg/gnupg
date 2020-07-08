@@ -23,7 +23,6 @@
 #include <string.h>
 #include <errno.h>
 #include <time.h>
-#include <assert.h>
 #include <unistd.h>
 
 #include "gpgsm.h"

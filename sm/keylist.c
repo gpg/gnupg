@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 
 #include "gpgsm.h"
 
@@ -1282,7 +1281,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
         {
           if (!cert_der)
             cert_der = ksba_cert_get_image (cert, NULL);
-          assert (cert_der);
+          log_assert (cert_der);
           es_fputs ("  restriction: ", fp);
           print_utf8_extn (fp, 15, cert_der+off, len);
         }

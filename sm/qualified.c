@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <assert.h>
 #include <errno.h>
 
 #include "gpgsm.h"
@@ -106,7 +105,7 @@ read_list (char *key, char *country, int *lnr)
                  listname, *lnr);
       return gpg_error (GPG_ERR_BAD_DATA);
     }
-  assert (p[i]);
+  log_assert (p[i]);
   i++;
   while (spacep (p+i))
     i++;

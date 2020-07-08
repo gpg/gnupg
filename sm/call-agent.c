@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -480,7 +479,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   if (rc)
     return rc;
 
-  assert (gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL));
+  log_assert (gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL));
   return  0;
 }
 
@@ -542,7 +541,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   if (rc)
     return rc;
 
-  assert ( DIM(line) >= 50 );
+  log_assert ( DIM(line) >= 50 );
   snprintf (line, DIM(line), "SETKEY %s", keygrip);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)

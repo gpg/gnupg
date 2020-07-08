@@ -27,7 +27,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -169,12 +168,12 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
       frame[n++] = 0;
       frame[n++] = 1; /* block type */
       i = nframe - len - asnlen -3 ;
-      assert ( i > 1 );
+      log_assert ( i > 1 );
       memset ( frame+n, 0xff, i ); n += i;
       frame[n++] = 0;
       memcpy ( frame+n, asn, asnlen ); n += asnlen;
       memcpy ( frame+n, gcry_md_read(md, algo), len ); n += len;
-      assert ( n == nframe );
+      log_assert ( n == nframe );
     }
   if (DBG_CRYPTO)
     {
