@@ -447,7 +447,8 @@ gpg_error_t agent_askpin (ctrl_t ctrl,
 int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext, int with_qualitybar,
-			  const char *keyinfo, cache_mode_t cache_mode);
+			  const char *keyinfo, cache_mode_t cache_mode,
+                          struct pin_entry_info_s *pininfo);
 int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
 			    const char *notokay, int with_cancel);
 int agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn);
@@ -484,7 +485,7 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                      membuf_t *outbuf, int *r_padding);
 
 /*-- genkey.c --*/
-int check_passphrase_constraints (ctrl_t ctrl, const char *pw,
+int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int no_empty,
 				  char **failed_constraint);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
                                       char **r_passphrase);

@@ -85,6 +85,7 @@ struct entry_parm_s
   int lines;
   size_t size;
   unsigned char *buffer;
+  int status;
 };
 
 
@@ -836,7 +837,7 @@ inq_quality (void *opaque, const char *line)
       else
         {
           percent = estimate_passphrase_quality (pin);
-          if (check_passphrase_constraints (NULL, pin, NULL))
+          if (check_passphrase_constraints (NULL, pin, 0, NULL))
             percent = -percent;
           snprintf (numbuf, sizeof numbuf, "%d", percent);
           rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
@@ -953,6 +954,36 @@ build_cmd_setdesc (char *line, size_t linelen, const char *desc)
 }
 
 
+/* Ask pinentry to get a pin by "GETPIN" command, spawning a thread
+ * detecting the socket's EOF.   */
+static gpg_error_t
+do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
+{
+  gpg_error_t rc;
+  int saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
+
+  (void)ctrl;
+
+  assuan_begin_confidential (entry_ctx);
+  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, parm,
+                        inq_quality, entry_ctx,
+                        pinentry_status_cb, &parm->status);
+  assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
+  /* Most pinentries out in the wild return the old Assuan error code
+     for canceled which gets translated to an assuan Cancel error and
+     not to the code for a user cancel.  Fix this here. */
+  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+  /* Change error code in case the window close button was clicked
+     to cancel the operation.  */
+  if ((parm->status & PINENTRY_STATUS_CLOSE_BUTTON)
+      && gpg_err_code (rc) == GPG_ERR_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
+
+  return rc;
+}
+
+
 
 /* Call the Entry and ask for the PIN.  We do check for a valid PIN
    number here and repeat it as long as we have invalid formed
@@ -970,7 +1001,6 @@ agent_askpin (ctrl_t ctrl,
   struct entry_parm_s parm;
   const char *errtext = NULL;
   int is_pin = 0;
-  int saveflag;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -1114,25 +1144,8 @@ agent_askpin (ctrl_t ctrl,
             return unlock_pinentry (ctrl, rc);
         }
 
-      saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
-      assuan_begin_confidential (entry_ctx);
-      rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
-                            inq_quality, entry_ctx,
-                            pinentry_status_cb, &pininfo->status);
-      assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
-      /* Most pinentries out in the wild return the old Assuan error code
-         for canceled which gets translated to an assuan Cancel error and
-         not to the code for a user cancel.  Fix this here. */
-      if (rc && gpg_err_source (rc)
-          && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
-        rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
-
-
-      /* Change error code in case the window close button was clicked
-         to cancel the operation.  */
-      if ((pininfo->status & PINENTRY_STATUS_CLOSE_BUTTON)
-	  && gpg_err_code (rc) == GPG_ERR_CANCELED)
-        rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
+      rc = do_getpin (ctrl, &parm);
+      pininfo->status = parm.status;
 
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
         errtext = is_pin? L_("PIN too long")
@@ -1183,9 +1196,11 @@ agent_askpin (ctrl_t ctrl,
         }
 
       if ((pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
-	/* The password was read from the cache.  Don't count this
-	   against the retry count.  */
-	pininfo->failed_tries --;
+        {
+          /* The password was read from the cache.  Don't count this
+             against the retry count.  */
+          pininfo->failed_tries --;
+        }
     }
 
   return unlock_pinentry (ctrl, gpg_error (pininfo->min_digits? GPG_ERR_BAD_PIN
@@ -1195,19 +1210,22 @@ agent_askpin (ctrl_t ctrl,
 
 
 /* Ask for the passphrase using the supplied arguments.  The returned
-   passphrase needs to be freed by the caller. */
+   passphrase needs to be freed by the caller.  PININFO is optional
+   and can be used to have constraints checinkg while the pinentry
+   dialog is open (like what we do in agent_askpin).  This is very
+   similar to agent_akpin and we should eventually merge the two
+   functions. */
 int
 agent_get_passphrase (ctrl_t ctrl,
                       char **retpass, const char *desc, const char *prompt,
                       const char *errtext, int with_qualitybar,
-		      const char *keyinfo, cache_mode_t cache_mode)
+		      const char *keyinfo, cache_mode_t cache_mode,
+                      struct pin_entry_info_s *pininfo)
 {
-
   int rc;
+  int is_pin;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
-  int saveflag;
-  unsigned int pinentry_status;
 
   *retpass = NULL;
   if (opt.batch)
@@ -1215,17 +1233,42 @@ agent_get_passphrase (ctrl_t ctrl,
 
   if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
     {
+      unsigned char *passphrase;
+      size_t size;
+
       if (ctrl->pinentry_mode == PINENTRY_MODE_CANCEL)
         return gpg_error (GPG_ERR_CANCELED);
 
-      if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+      if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK && pininfo)
         {
-	  size_t size;
+	  *pininfo->pin = 0; /* Reset the PIN. */
+	  rc = pinentry_loopback (ctrl, "PASSPHRASE",
+                                  &passphrase, &size,
+                                  pininfo->max_length - 1);
+          if (rc)
+            return rc;
 
+	  memcpy (&pininfo->pin, passphrase, size);
+          wipememory (passphrase, size);
+	  xfree (passphrase);
+	  pininfo->pin[size] = 0;
+	  if (pininfo->check_cb)
+	    {
+	      /* More checks by utilizing the optional callback. */
+	      pininfo->cb_errtext = NULL;
+	      rc = pininfo->check_cb (pininfo);
+	    }
+	  return rc;
+
+        }
+      else if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+        {
+          /* Legacy variant w/o PININFO.  */
 	  return pinentry_loopback (ctrl, "PASSPHRASE",
 				    (unsigned char **)retpass, &size,
                                     MAX_PASSPHRASE_LEN);
         }
+
       return gpg_error (GPG_ERR_NO_PIN_ENTRY);
     }
 
@@ -1233,9 +1276,14 @@ agent_get_passphrase (ctrl_t ctrl,
   if (rc)
     return rc;
 
-  if (!prompt)
-    prompt = desc && strstr (desc, "PIN")? L_("PIN:"): L_("Passphrase:");
-
+  /* Set IS_PIN and if needed a default prompt.  */
+  if (prompt)
+    is_pin = !!strstr (prompt, "PIN");
+  else
+    {
+      is_pin = desc && strstr (desc, "PIN");
+      prompt = is_pin? L_("PIN:"): L_("Passphrase:");
+    }
 
   /* If we have a KEYINFO string and are normal, user, or ssh cache
      mode, we tell that the Pinentry so it may use it for own caching
@@ -1256,7 +1304,6 @@ agent_get_passphrase (ctrl_t ctrl,
   if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
     return unlock_pinentry (ctrl, rc);
 
-
   if (desc)
     build_cmd_setdesc (line, DIM(line), desc);
   else
@@ -1270,7 +1317,8 @@ agent_get_passphrase (ctrl_t ctrl,
   if (rc)
     return unlock_pinentry (ctrl, rc);
 
-  if (with_qualitybar && opt.min_passphrase_len)
+  if ((with_qualitybar || (pininfo && pininfo->with_qualitybar))
+       && opt.min_passphrase_len)
     {
       rc = setup_qualitybar (ctrl);
       if (rc)
@@ -1280,40 +1328,132 @@ agent_get_passphrase (ctrl_t ctrl,
   if (errtext)
     {
       snprintf (line, DIM(line), "SETERROR %s", errtext);
-      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      rc = assuan_transact (entry_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         return unlock_pinentry (ctrl, rc);
     }
 
-  memset (&parm, 0, sizeof parm);
-  parm.size = ASSUAN_LINELENGTH/2 - 5;
-  parm.buffer = gcry_malloc_secure (parm.size+10);
-  if (!parm.buffer)
-    return unlock_pinentry (ctrl, out_of_core ());
+  if (!pininfo)
+    {
+      /* Legacy method without PININFO.  */
+      memset (&parm, 0, sizeof parm);
+      parm.size = ASSUAN_LINELENGTH/2 - 5;
+      parm.buffer = gcry_malloc_secure (parm.size+10);
+      if (!parm.buffer)
+        return unlock_pinentry (ctrl, out_of_core ());
 
-  saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
-  assuan_begin_confidential (entry_ctx);
-  pinentry_status = 0;
-  rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
-                        inq_quality, entry_ctx,
-                        pinentry_status_cb, &pinentry_status);
-  assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
-  /* Most pinentries out in the wild return the old Assuan error code
-     for canceled which gets translated to an assuan Cancel error and
-     not to the code for a user cancel.  Fix this here. */
-  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
-    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
-  /* Change error code in case the window close button was clicked
-     to cancel the operation.  */
-  if ((pinentry_status & PINENTRY_STATUS_CLOSE_BUTTON)
-      && gpg_err_code (rc) == GPG_ERR_CANCELED)
-    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
+      rc = do_getpin (ctrl, &parm);
+      if (rc)
+        xfree (parm.buffer);
+      else
+        *retpass = parm.buffer;
+      return unlock_pinentry (ctrl, rc);
+    }
 
-  if (rc)
-    xfree (parm.buffer);
-  else
-    *retpass = parm.buffer;
-  return unlock_pinentry (ctrl, rc);
+  /* We got PININFO.  */
+
+  if (pininfo->with_repeat)
+    {
+      snprintf (line, DIM(line), "SETREPEATERROR %s",
+                L_("does not match - try again"));
+      rc = assuan_transact (entry_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        pininfo->with_repeat = 0; /* Pinentry does not support it.  */
+    }
+  pininfo->repeat_okay = 0;
+  pininfo->status = 0;
+
+  for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
+    {
+      memset (&parm, 0, sizeof parm);
+      parm.size = pininfo->max_length;
+      parm.buffer = (unsigned char*)pininfo->pin;
+      *pininfo->pin = 0; /* Reset the PIN. */
+
+      if (errtext)
+        {
+          /* TRANSLATORS: The string is appended to an error message in
+             the pinentry.  The %s is the actual error message, the
+             two %d give the current and maximum number of tries. */
+          snprintf (line, DIM(line), L_("SETERROR %s (try %d of %d)"),
+                    errtext, pininfo->failed_tries+1, pininfo->max_tries);
+          rc = assuan_transact (entry_ctx, line,
+                                NULL, NULL, NULL, NULL, NULL, NULL);
+          if (rc)
+            return unlock_pinentry (ctrl, rc);
+          errtext = NULL;
+        }
+
+      if (pininfo->with_repeat)
+        {
+          snprintf (line, DIM(line), "SETREPEAT %s", L_("Repeat:"));
+          rc = assuan_transact (entry_ctx, line,
+                                NULL, NULL, NULL, NULL, NULL, NULL);
+          if (rc)
+            return unlock_pinentry (ctrl, rc);
+        }
+
+      rc = do_getpin (ctrl, &parm);
+      pininfo->status = parm.status;
+      if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
+        errtext = is_pin? L_("PIN too long")
+                        : L_("Passphrase too long");
+      else if (rc)
+        return unlock_pinentry (ctrl, rc);
+
+      if (!errtext && pininfo->min_digits)
+        {
+          /* do some basic checks on the entered PIN. */
+          if (!all_digitsp (pininfo->pin))
+            errtext = L_("Invalid characters in PIN");
+          else if (pininfo->max_digits
+                   && strlen (pininfo->pin) > pininfo->max_digits)
+            errtext = L_("PIN too long");
+          else if (strlen (pininfo->pin) < pininfo->min_digits)
+            errtext = L_("PIN too short");
+        }
+
+      if (!errtext && pininfo->check_cb)
+        {
+          /* More checks by utilizing the optional callback. */
+          pininfo->cb_errtext = NULL;
+          rc = pininfo->check_cb (pininfo);
+          /* When pinentry cache causes an error, return now.  */
+          if (rc && (pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+            return unlock_pinentry (ctrl, rc);
+
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE)
+            {
+              if (pininfo->cb_errtext)
+                errtext = pininfo->cb_errtext;
+              else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+                       || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+                errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
+            }
+          else if (rc)
+            return unlock_pinentry (ctrl, rc);
+        }
+
+      if (!errtext)
+        {
+          if (pininfo->with_repeat
+              && (pininfo->status & PINENTRY_STATUS_PIN_REPEATED))
+            pininfo->repeat_okay = 1;
+          return unlock_pinentry (ctrl, 0); /* okay, got a PIN or passphrase */
+        }
+
+      if ((pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+        {
+          /* The password was read from the Pinentry's own cache.
+             Don't count this against the retry count.  */
+          pininfo->failed_tries--;
+        }
+    }
+
+  return unlock_pinentry (ctrl, gpg_error (pininfo->min_digits? GPG_ERR_BAD_PIN
+                          : GPG_ERR_BAD_PASSPHRASE));
 }
 
 
