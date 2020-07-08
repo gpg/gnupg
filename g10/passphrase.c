@@ -212,6 +212,10 @@ read_passphrase_from_fd( int fd )
  * Ask the GPG Agent for the passphrase.
  * If NOCACHE is set the symmetric passpharse caching will not be used.
  *
+ * If REPEAT is positive, a new passphrase is requested and the agent
+ * shall require REPEAT times repetitions of the entered passphrase.
+ * This is used for symmetric encryption.
+ *
  * Note that TRYAGAIN_TEXT must not be translated.  If CANCELED is not
  * NULL, the function does set it to 1 if the user canceled the
  * operation.  If CACHEID is not NULL, it will be used as the cacheID
@@ -219,7 +223,7 @@ read_passphrase_from_fd( int fd )
  * computed, this will be used as the cacheid.
  */
 static char *
-passphrase_get (int nocache, const char *cacheid, int repeat,
+passphrase_get (int newsymkey, int nocache, const char *cacheid, int repeat,
                 const char *tryagain_text, int *canceled)
 {
   int rc;
@@ -240,9 +244,19 @@ passphrase_get (int nocache, const char *cacheid, int repeat,
   if (tryagain_text)
     tryagain_text = _(tryagain_text);
 
+  /* Here we have:
+   * REPEAT is set in create mode and if opt.passphrase_repeat is set.
+   * (Thus it is not a clean indication that we want a new passphrase).
+   * NOCACHE is set in create mode or if --no-symkey-cache is used.
+   * CACHEID is only set if caching shall be used.
+   * NEWSYMKEY has been added latter to make it clear that a new key
+   * is requested.  The whole chain of API is a bit too complex since
+   * we we stripped things out over time; however, there is no time
+   * for a full state analysis and thus this new parameter.
+   */
   rc = agent_get_passphrase (my_cacheid, tryagain_text, NULL,
                              _("Enter passphrase\n"),
-                             repeat, nocache, &pw);
+                             newsymkey, repeat, nocache, &pw);
 
   i18n_switchback (orig_codeset);
 
@@ -389,7 +403,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
         }
 
       /* Divert to the gpg-agent. */
-      pw = passphrase_get (create && nocache, s2k_cacheid,
+      pw = passphrase_get (create, create && nocache, s2k_cacheid,
                            create? opt.passphrase_repeat : 0,
                            tryagain_text, canceled);
       if (*canceled)
