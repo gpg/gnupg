@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.21 (unreleased)
+Noteworthy changes in version 2.2.21 (2020-07-09)
 -------------------------------------------------
 
   * gpg: Improve symmetric decryption speed by about 25%.
@@ -9,6 +9,14 @@ Noteworthy changes in version 2.2.21 (unreleased)
   * gpg: Add option --no-include-key-block. [#4856]
 
   * gpg: Allow for extra padding in ECDH.  [#4908]
+
+  * gpg: Only a single pinentry is shown for symmetric encryption if
+    the pinentry supports this.  [#4971]
+
+  * gpg: Print a note if no keys are given to --delete-key.  [#4959]
+
+  * gpg,gpgsm: The ridiculous passphrase quality bar is not anymore
+    shown.  [#2103]
 
   * gpgsm: Certificates without a CRL distribution point are now
     considered valid without looking up a CRL.  The new option
@@ -33,7 +41,7 @@ Noteworthy changes in version 2.2.21 (unreleased)
     specific bug.  [#4886]
 
   Release-info: https://dev.gnupg.org/T4897
-  See-also: gnupg-announce/2020q2/00044?.html
+  See-also: gnupg-announce/2020q3/000446.html
 
 
 Noteworthy changes in version 2.2.20 (2020-03-20)
