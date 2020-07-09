@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-03-19 14:27+0100\n"
+"PO-Revision-Date: 2020-07-09 11:31+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -101,6 +101,9 @@ msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (Versuch %d von %d)"
@@ -3544,6 +3547,9 @@ msgstr "\"%s\" ist kein gültiger Fingerabdruck\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "Unterschlüssel \"%s\" nicht gefunden\n"
 
+msgid "AEAD: "
+msgstr "AEAD: "
+
 msgid "Digest: "
 msgstr "Digest: "
 
@@ -6300,6 +6306,27 @@ msgstr ""
 "Syntax: kbxutil [Optionen] [Dateien]\n"
 "Anlisten exportieren und Importieren von KeyBox Dateien\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr "%sNummer: %s%%0ABesitzer: %s%s"
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr "Verbliebene Versuche: %d"
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+"||Bitte geben Sie die PIN für den Schlüssel zur Erstellung qualifizierter "
+"Signaturen ein."
+
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||Bitte die PIN für den Standard-Schlüssel eingeben."
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "Der RSA Modulus fehlt oder ist nicht %d Bits lang\n"
@@ -6319,9 +6346,6 @@ msgstr "Die Nullpin wurde noch nicht geändert\n"
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "|N|Bitte eine neue PIN für den Standard-Schlüssel eingeben."
 
-msgid "||Please enter the PIN for the standard keys."
-msgstr "||Bitte die PIN für den Standard-Schlüssel eingeben."
-
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr ""
 "|NP|Bitte geben Sie einen neuen PIN Entsperrcode (PUK) für den Standard-"
@@ -6335,11 +6359,6 @@ msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
 "|N|Bitte geben Sie eine neue PIN für den Schlüssel zur Erstellung "
 "qualifizierter Signaturen ein."
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr ""
-"||Bitte geben Sie die PIN für den Schlüssel zur Erstellung qualifizierter "
-"Signaturen ein."
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
@@ -6397,16 +6416,6 @@ msgstr "Lesen des öffentlichen Schlüssels fehlgeschlagen: %s\n"
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
 msgstr "%sNummer: %s%%0ABesitzer: %s%%0AAnzahl: %lu%s"
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr "%sNummer: %s%%0ABesitzer: %s%s"
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
-msgstr "Verbliebene Versuche: %d"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -6658,12 +6667,20 @@ msgid "certificate policy not allowed"
 msgstr "Die Zertifikatsrichtlinie ist nicht erlaubt"
 
 #, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "Kann den Fingerprint nicht ermitteln\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "Der Herausgeber wird von einer externen Stelle gesucht\n"
 
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "Anzahl der übereinstimmenden Herausgeber: %d\n"
+
+#, c-format
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "authorityInfoAccess kann nicht geholt werden: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7261,10 +7278,6 @@ msgid "error reading input: %s\n"
 msgstr "Fehler beim Lesen der Eingabe: %s\n"
 
 #, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "Kann den Fingerprint nicht ermitteln\n"
-
-#, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "Problem bei der Suche nach vorhandenem Zertifikat: %s\n"
 
@@ -7359,8 +7372,8 @@ msgid "[date not given]"
 msgstr "[Datum nicht vorhanden]"
 
 #, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr " mittels Zertifikat ID 0x%08lX\n"
+msgid "algorithm:"
+msgstr "Verfahren:"
 
 #, c-format
 msgid ""
@@ -7708,20 +7721,20 @@ msgid "error getting data from cache file: %s\n"
 msgstr "Fehler beim Holen der Daten aus der Zwischenspeicherdatei: %s\n"
 
 #, c-format
-msgid "unknown hash algorithm '%s'\n"
-msgstr "Ungültige Hashmethode `%s'\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr "gcry_md_open für Methode %d fehlgeschlagen: %s\n"
-
-#, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr "Ungültige S-Expression von Libksba erhalten\n"
 
 #, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "Konvertierung der S-Expression fehlgeschlagen: %s\n"
+
+#, c-format
+msgid "unknown hash algorithm '%s'\n"
+msgstr "Ungültige Hashmethode `%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr "gcry_md_open für Methode %d fehlgeschlagen: %s\n"
 
 #, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8488,10 +8501,6 @@ msgid "failed to allocate OCSP context: %s\n"
 msgstr "Fehler beim Bereitstellen eines OCSP Kontext: %s\n"
 
 #, c-format
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "authorityInfoAccess kann nicht geholt werden: %s\n"
-
-#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr "Kein  voreingestellter OCSP Responder definiert\n"
 
@@ -9063,6 +9072,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " mittels Zertifikat ID 0x%08lX\n"
 
 #, fuzzy
 #~ msgid ""
