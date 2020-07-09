@@ -125,6 +125,9 @@ msgstr "stämmer inte överens - försök igen"
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (försök %d av %d)"
@@ -3833,6 +3836,9 @@ msgstr "ogiltigt fingeravtryck"
 msgid "subkey \"%s\" not found\n"
 msgstr "nyckeln \"%s\" hittades inte: %s\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "Sammandrag: "
 
@@ -6678,6 +6684,25 @@ msgstr ""
 "Syntax: kbxutil [flaggor] [filer]\n"
 "lista, exportera, importera nyckelskåpsdata\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr "||Ange PIN-koden för nyckeln att skapa kvalificerade signaturer med."
+
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||Ange PIN-koden för standardnycklarna."
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "RSA modulus saknas eller är inte %d bitar stor\n"
@@ -6697,9 +6722,6 @@ msgstr "NullPIN har ännu inte ändrats\n"
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "|N|Ange en ny PIN-kod för standardnycklarna."
 
-msgid "||Please enter the PIN for the standard keys."
-msgstr "||Ange PIN-koden för standardnycklarna."
-
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|Ange en ny upplåsningskod (PUK-kod) för standardnycklarna."
 
@@ -6709,9 +6731,6 @@ msgstr "|P|Ange upplåsningskoden (PUK-kod) för standardnycklarna."
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
 "|N|Ange en ny PIN-kod för nyckeln att skapa kvalificerade signaturer med."
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr "||Ange PIN-koden för nyckeln att skapa kvalificerade signaturer med."
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
@@ -6769,16 +6788,6 @@ msgstr "läsning av publik nyckel misslyckades: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -7054,12 +7063,21 @@ msgid "certificate policy not allowed"
 msgstr "certifikatpolicy tillåts inte"
 
 #, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "misslyckades med att få fingeravtrycket\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "slår upp utfärdare på extern plats\n"
 
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "antal utfärdare som matchar: %d\n"
+
+#, fuzzy, c-format
+#| msgid "can't access `%s': %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "kan inte komma åt \"%s\": %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7687,10 +7705,6 @@ msgid "error reading input: %s\n"
 msgstr "fel vid läsning av indata: %s\n"
 
 #, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "misslyckades med att få fingeravtrycket\n"
-
-#, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "problem vid sökandet efter befintligt certifikat: %s\n"
 
@@ -7783,9 +7797,10 @@ msgstr "Signatur gjord "
 msgid "[date not given]"
 msgstr "[datum inte angivet]"
 
-#, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr " använder certifikat-id 0x%08lX\n"
+#, fuzzy, c-format
+#| msgid "algorithm: %s"
+msgid "algorithm:"
+msgstr "algoritm: %s"
 
 #, c-format
 msgid ""
@@ -8157,15 +8172,6 @@ msgstr ""
 msgid "error getting data from cache file: %s\n"
 msgstr "fel vid hämtning av lagrade flaggor: %s\n"
 
-#, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
-msgid "unknown hash algorithm '%s'\n"
-msgstr "ogiltig kontrollsummealgoritm \"%s\"\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
-
 #, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr ""
@@ -8174,6 +8180,15 @@ msgstr ""
 #| msgid "iconv_open failed: %s\n"
 msgid "converting S-expression failed: %s\n"
 msgstr "iconv_open misslyckades: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "ogiltig kontrollsummealgoritm \"%s\"\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "receiving line failed: %s\n"
@@ -9058,11 +9073,6 @@ msgstr "fel vid lagring av certifikat\n"
 msgid "failed to allocate OCSP context: %s\n"
 msgstr "misslyckades med att allokera keyDB-hanterare\n"
 
-#, fuzzy, c-format
-#| msgid "can't access `%s': %s\n"
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "kan inte komma åt \"%s\": %s\n"
-
 #, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
@@ -9703,6 +9713,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " använder certifikat-id 0x%08lX\n"
 
 #, fuzzy
 #~| msgid "you may not use %s while in %s mode\n"

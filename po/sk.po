@@ -96,6 +96,9 @@ msgstr ""
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -3712,6 +3715,9 @@ msgstr "chyba: neplatný odtlačok\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "kľúč `%s' nebol nájdený: %s\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "Digest: "
 
@@ -6446,6 +6452,26 @@ msgid ""
 "List, export, import Keybox data\n"
 msgstr "Použitie: gpg [možnosti] [súbory] (-h pre pomoc)"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN for the standard keys."
+msgstr "zmeniť heslo"
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
@@ -6467,10 +6493,6 @@ msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "zmeniť heslo"
 
 #, fuzzy
-msgid "||Please enter the PIN for the standard keys."
-msgstr "zmeniť heslo"
-
-#, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Prosím výberte dôvod na revokáciu:\n"
 
@@ -6479,9 +6501,6 @@ msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Prosím výberte dôvod na revokáciu:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
 msgid ""
@@ -6536,16 +6555,6 @@ msgstr "zmazanie bloku kľúča sa nepodarilo:  %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6804,6 +6813,10 @@ msgstr "zapisujem tajný kľúč do `%s'\n"
 msgid "certificate policy not allowed"
 msgstr "zapisujem tajný kľúč do `%s'\n"
 
+#, fuzzy, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "nemôžem inicializovať databázu dôvery: %s\n"
+
 #, c-format
 msgid "looking up issuer at external location\n"
 msgstr ""
@@ -6811,6 +6824,11 @@ msgstr ""
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: nemôžem pristupovať k: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7422,10 +7440,6 @@ msgstr "chyba pri vytváraní hesla: %s\n"
 msgid "error reading input: %s\n"
 msgstr "chyba pri čítaní `%s': %s\n"
 
-#, fuzzy, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "nemôžem inicializovať databázu dôvery: %s\n"
-
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr ""
@@ -7505,8 +7519,8 @@ msgid "[date not given]"
 msgstr ""
 
 #, fuzzy, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr "chyba pri vytváraní hesla: %s\n"
+msgid "algorithm:"
+msgstr "ASCII kódovanie: %s\n"
 
 #, c-format
 msgid ""
@@ -7836,15 +7850,6 @@ msgid "error getting data from cache file: %s\n"
 msgstr "chyba pri vytváraní hesla: %s\n"
 
 #, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
-msgid "unknown hash algorithm '%s'\n"
-msgstr "neplatný hashovací algoritmus `%s'\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
 #| msgid "invalid response from agent\n"
 msgid "got an invalid S-expression from libksba\n"
 msgstr "neplatná reakcia od agenta\n"
@@ -7852,6 +7857,15 @@ msgstr "neplatná reakcia od agenta\n"
 #, fuzzy, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "nemožno otvoriť súbor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "neplatný hashovací algoritmus `%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8635,11 +8649,6 @@ msgstr "vytvoriť revokačný certifikát"
 msgid "failed to allocate OCSP context: %s\n"
 msgstr "nemôžem inicializovať databázu dôvery: %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s: can't access: %s\n"
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "%s: nemôžem pristupovať k: %s\n"
-
 #, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
@@ -9232,6 +9241,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr "chyba pri vytváraní hesla: %s\n"
 
 #, fuzzy
 #~| msgid "you may not use %s while in %s mode\n"

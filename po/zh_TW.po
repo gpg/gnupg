@@ -106,6 +106,9 @@ msgstr "前後不一致 - 請再試一次"
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (第 %d 次嘗試, 最多 %d 次)"
@@ -3516,6 +3519,9 @@ msgstr "\"%s\" 不是指紋\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "找不到金鑰 \"%s\": %s\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "摘要: "
 
@@ -6165,6 +6171,25 @@ msgstr ""
 "語法: kbxutil [選項] [檔案]\n"
 "列出, 匯出, 匯入金鑰鑰匙盒資料\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr "||請輸入金鑰的個人識別碼 (PIN) 以建立完善的簽章."
+
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||請輸入標準金鑰的個人識別碼 (PIN)."
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "RSA 模組缺漏或者並非 %d 位元大\n"
@@ -6184,9 +6209,6 @@ msgstr "NullPIN 還沒有變更過\n"
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "|N|請輸入標準金鑰將採用的新個人識別碼 (PIN)."
 
-msgid "||Please enter the PIN for the standard keys."
-msgstr "||請輸入標準金鑰的個人識別碼 (PIN)."
-
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|請輸入標準金鑰將採用的 PIN 重設碼 (PUK)."
 
@@ -6195,9 +6217,6 @@ msgstr "|P|請輸入標準金鑰的 PIN 重設碼 (PUK)."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|請輸入金鑰的新個人識別碼 (PIN) 以建立完善的簽章."
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr "||請輸入金鑰的個人識別碼 (PIN) 以建立完善的簽章."
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
@@ -6251,16 +6270,6 @@ msgstr "讀取公鑰時失敗: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6510,12 +6519,20 @@ msgid "certificate policy not allowed"
 msgstr "未允許憑證原則"
 
 #, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "取得指紋失敗\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "從外部位置尋找發行者\n"
 
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "吻合的發行者數量: %d\n"
+
+#, c-format
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "無法取得 authorityInfoAccess: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7094,10 +7111,6 @@ msgid "error reading input: %s\n"
 msgstr "讀取輸入時出錯: %s\n"
 
 #, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "取得指紋失敗\n"
-
-#, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "查找既有憑證的問題: %s\n"
 
@@ -7183,9 +7196,10 @@ msgstr "簽章建立於 "
 msgid "[date not given]"
 msgstr "[   未給定日期  ]"
 
-#, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr " 以憑證 ID 0x%08lX\n"
+#, fuzzy, c-format
+#| msgid "algorithm: %s"
+msgid "algorithm:"
+msgstr "演算法: %s"
 
 #, c-format
 msgid ""
@@ -7506,20 +7520,20 @@ msgid "error getting data from cache file: %s\n"
 msgstr "從快取檔案取得資料時出錯: %s\n"
 
 #, c-format
-msgid "unknown hash algorithm '%s'\n"
-msgstr "未知的雜湊演算法 '%s'\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr "演算法 %d 的 gcry_md_open 失敗: %s\n"
-
-#, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr "從 libksba 得到無效的 S-表示式\n"
 
 #, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "轉換 S-表示式時失敗: %s\n"
+
+#, c-format
+msgid "unknown hash algorithm '%s'\n"
+msgstr "未知的雜湊演算法 '%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr "演算法 %d 的 gcry_md_open 失敗: %s\n"
 
 #, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8270,10 +8284,6 @@ msgid "failed to allocate OCSP context: %s\n"
 msgstr "配置 OCSP 脈絡失敗: %s\n"
 
 #, c-format
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "無法取得 authorityInfoAccess: %s\n"
-
-#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr "無定義預設 OCSP 回應程式\n"
 
@@ -8864,6 +8874,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " 以憑證 ID 0x%08lX\n"
 
 #, fuzzy
 #~| msgid "you may not use %s while in %s mode\n"

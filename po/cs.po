@@ -125,6 +125,9 @@ msgstr "neshodují se – zkuste to znovu"
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (pokus %d z %d)"
@@ -3510,6 +3513,9 @@ msgstr "„%s“ není řádný otisk\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "podklíč „%s“ nenalezen\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "Hash: "
 
@@ -6214,6 +6220,26 @@ msgstr ""
 "Syntaxe: kbxutil [volby] [soubory]\n"
 "Vypisuje, exportuje, importuje schránku na klíče (keybox).\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr "%sČíslo: %s%%0ADržitel: %s%s"
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr "Zbývá pokusů: %d"
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+"||Prosím, zadejte PIN klíče určeného na tvorbu kvalifikovaných podpisů."
+
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||Prosím, zadejte PIN pro standardní klíče."
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "schází RSA modulus nebo nemá velikost %d bitů\n"
@@ -6235,9 +6261,6 @@ msgstr "NullPIN ještě nebyl změněn\n"
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "|N|Prosím, zadejte nový PIN pro standardní klíče."
 
-msgid "||Please enter the PIN for the standard keys."
-msgstr "||Prosím, zadejte PIN pro standardní klíče."
-
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|Prosím, zadejte nový kód pro odblokování (PUK) standardních klíčů."
 
@@ -6247,10 +6270,6 @@ msgstr "|P|Prosím, zadejte kód pro odblokování (PUK) standardních klíčů.
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
 "|N|Prosím, zadejte nový PIN klíče určeného na tvorbu kvalifikovaných podpisů."
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr ""
-"||Prosím, zadejte PIN klíče určeného na tvorbu kvalifikovaných podpisů."
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
@@ -6308,16 +6327,6 @@ msgstr "čtení veřejného klíče se nezdařilo: %s\n"
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
 msgstr "%sČíslo: %s%%0ADržitel: %s%%0APočítadlo: %lu%s"
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr "%sČíslo: %s%%0ADržitel: %s%s"
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
-msgstr "Zbývá pokusů: %d"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -6570,12 +6579,20 @@ msgid "certificate policy not allowed"
 msgstr "certifikační politika není dovolena"
 
 #, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "otisk se nepodařilo získat\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "hledám vydavatele na jiném místě\n"
 
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "počet odpovídajících vydavatelů: %d\n"
+
+#, c-format
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "authorityInfoAccess nelze získat: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7162,10 +7179,6 @@ msgid "error reading input: %s\n"
 msgstr "chyba při čtení vstupu: %s\n"
 
 #, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "otisk se nepodařilo získat\n"
-
-#, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "problém při hledání existujícího certifikátu: %s\n"
 
@@ -7255,9 +7268,10 @@ msgstr "Podpis vytvořen "
 msgid "[date not given]"
 msgstr "[datum neudáno]"
 
-#, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr " pomocí certifikátu s ID 0x%08lX\n"
+#, fuzzy, c-format
+#| msgid "algorithm: %s"
+msgid "algorithm:"
+msgstr "algoritmus: %s"
 
 #, c-format
 msgid ""
@@ -7594,20 +7608,20 @@ msgid "error getting data from cache file: %s\n"
 msgstr "chyba při získávání dat ze souboru keše: %s\n"
 
 #, c-format
-msgid "unknown hash algorithm '%s'\n"
-msgstr "neznámý hašovací algoritmus „%s“\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr "gcry_md_open selhalo na algoritmu %d: %s\n"
-
-#, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr "z libksba obdržen neplatný S-výraz\n"
 
 #, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "převod S-výrazu se nezdařil: %s\n"
+
+#, c-format
+msgid "unknown hash algorithm '%s'\n"
+msgstr "neznámý hašovací algoritmus „%s“\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr "gcry_md_open selhalo na algoritmu %d: %s\n"
 
 #, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8363,10 +8377,6 @@ msgid "failed to allocate OCSP context: %s\n"
 msgstr "alokace OCSP kontextu selhala: %s\n"
 
 #, c-format
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "authorityInfoAccess nelze získat: %s\n"
-
-#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr "žádný výchozí OCSP odpovídač nedefinován\n"
 
@@ -8938,6 +8948,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " pomocí certifikátu s ID 0x%08lX\n"
 
 #, fuzzy
 #~| msgid "option '%s' may not be used in %s mode\n"

@@ -99,6 +99,9 @@ msgstr "aynı değiller - tekrar deneyin"
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (%d/%d dene)"
@@ -3776,6 +3779,9 @@ msgstr "parmakizi geçersiz"
 msgid "subkey \"%s\" not found\n"
 msgstr "anahtar \"%s\" yok: %s\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "Özet: "
 
@@ -6588,6 +6594,26 @@ msgstr ""
 "Sözdizimi: kbxutil [seçenekler] [dosyalar]\n"
 "Anahtar kutusu verisini listeler, ithal ve ihraç eder\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN for the standard keys."
+msgstr "|A|Lütfen Yönetici PIN'ini okuyucu tuştakımından giriniz"
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "RSA modülü ya eksik ya da %d bitlik değil\n"
@@ -6609,10 +6635,6 @@ msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "||Lütfen PIN'inizi okuyucunun tuştakımından giriniz"
 
 #, fuzzy
-msgid "||Please enter the PIN for the standard keys."
-msgstr "|A|Lütfen Yönetici PIN'ini okuyucu tuştakımından giriniz"
-
-#, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "||Lütfen kart için Sıfırlama Kodunu giriniz"
 
@@ -6621,9 +6643,6 @@ msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "||Lütfen kart için Sıfırlama Kodunu giriniz"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
 msgid ""
@@ -6678,16 +6697,6 @@ msgstr "genel anahtar okuması başarısız: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6964,12 +6973,21 @@ msgid "certificate policy not allowed"
 msgstr "sertifika poliçesine izin verilmiyor"
 
 #, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "parmakizinin alınması başarısız oldu\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "harici bir sertifikacı arar\n"
 
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "eşleşen sertifikacı sayısı: %d\n"
+
+#, fuzzy, c-format
+#| msgid "can't access `%s': %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "'%s' erişilemiyor: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7595,10 +7613,6 @@ msgid "error reading input: %s\n"
 msgstr "girdi okunurken hata: %s\n"
 
 #, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "parmakizinin alınması başarısız oldu\n"
-
-#, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "mevcut sertifika aranırken sorun çıktı: %s\n"
 
@@ -7689,9 +7703,10 @@ msgstr "İmza "
 msgid "[date not given]"
 msgstr "[belirtilmeyen tarihte]"
 
-#, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr " sertifika kimliği 0x%08lX kullanılarak yapıldı\n"
+#, fuzzy, c-format
+#| msgid "algorithm: %s"
+msgid "algorithm:"
+msgstr "algoritma: %s"
 
 #, c-format
 msgid ""
@@ -8062,15 +8077,6 @@ msgstr ""
 msgid "error getting data from cache file: %s\n"
 msgstr "saklanmış bayraklar alınırken hata: %s\n"
 
-#, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
-msgid "unknown hash algorithm '%s'\n"
-msgstr "`%s' çittirim algoritması geçersiz\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
-
 #, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr ""
@@ -8079,6 +8085,15 @@ msgstr ""
 #| msgid "iconv_open failed: %s\n"
 msgid "converting S-expression failed: %s\n"
 msgstr "iconv_open başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "`%s' çittirim algoritması geçersiz\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "receiving line failed: %s\n"
@@ -8958,11 +8973,6 @@ msgstr "sertifika saklanırken hata\n"
 msgid "failed to allocate OCSP context: %s\n"
 msgstr "anahtar veritabanı eylemcisine yer ayrılması başarısız oldu\n"
 
-#, fuzzy, c-format
-#| msgid "can't access `%s': %s\n"
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "'%s' erişilemiyor: %s\n"
-
 #, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
@@ -9605,6 +9615,9 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " sertifika kimliği 0x%08lX kullanılarak yapıldı\n"
 
 #, fuzzy
 #~| msgid "you may not use %s while in %s mode\n"

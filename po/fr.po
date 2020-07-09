@@ -108,6 +108,9 @@ msgstr "ne correspond pas — veuillez réessayer"
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (essai %d sur %d)"
@@ -3650,6 +3653,9 @@ msgstr "« %s » n’est pas une empreinte\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "clef « %s » introuvable : %s\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "Hachage : "
 
@@ -6469,6 +6475,27 @@ msgstr ""
 "Syntaxe : kbxutil [options] [fichiers]\n"
 "Afficher, exporter, importer les données de trousseau local\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+"||Veuillez entrer le code personnel pour permettre à la clef de créer des "
+"signatures qualifiées."
+
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||Veuillez entrer le code personnel pour les clefs standards."
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "le module RSA est manquant ou sa taille n'est pas de %d bits\n"
@@ -6488,9 +6515,6 @@ msgstr "le code personnel nul n'a pas encore été modifié\n"
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "|N|Veuillez entrer un nouveau code personnel pour les clefs standards."
 
-msgid "||Please enter the PIN for the standard keys."
-msgstr "||Veuillez entrer le code personnel pour les clefs standards."
-
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr ""
 "|NP|Veuillez entrer un nouveau code de déblocage personnel (CDP) pour les "
@@ -6505,11 +6529,6 @@ msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
 "|N|Veuillez entrer un nouveau code personnel pour permettre à la clef de "
 "créer des signatures qualifiées."
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr ""
-"||Veuillez entrer le code personnel pour permettre à la clef de créer des "
-"signatures qualifiées."
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
@@ -6567,16 +6586,6 @@ msgstr "échec de lecture de clef publique : %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6849,12 +6858,20 @@ msgid "certificate policy not allowed"
 msgstr "politique de certificat non autorisée"
 
 #, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "impossible d'obtenir l'empreinte\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "recherche d'émetteur à l'extérieur\n"
 
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "nombre d'émetteurs correspondants : %d\n"
+
+#, c-format
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "impossible d'obtenir authorityInfoAccess : %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7452,10 +7469,6 @@ msgid "error reading input: %s\n"
 msgstr "erreur de lecture de l'entrée : %s\n"
 
 #, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "impossible d'obtenir l'empreinte\n"
-
-#, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "problème de recherche de certificat existant : %s\n"
 
@@ -7550,9 +7563,10 @@ msgstr "Signature faite le "
 msgid "[date not given]"
 msgstr "[date non donnée]"
 
-#, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr " en utilisant le certificat d'identifiant 0x%08lX\n"
+#, fuzzy, c-format
+#| msgid "algorithm: %s"
+msgid "algorithm:"
+msgstr "algorithme : %s"
 
 #, c-format
 msgid ""
@@ -7898,20 +7912,20 @@ msgid "error getting data from cache file: %s\n"
 msgstr "erreur de lecture des données du fichier de cache : %s\n"
 
 #, c-format
-msgid "unknown hash algorithm '%s'\n"
-msgstr "algorithme de hachage « %s » inconnu\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr "échec de gcry_md_open pour l'algorithme %d : %s\n"
-
-#, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr "expression symbolique incorrecte obtenue de libksba\n"
 
 #, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "échec de conversion d'expression symbolique : %s\n"
+
+#, c-format
+msgid "unknown hash algorithm '%s'\n"
+msgstr "algorithme de hachage « %s » inconnu\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr "échec de gcry_md_open pour l'algorithme %d : %s\n"
 
 #, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8712,10 +8726,6 @@ msgid "failed to allocate OCSP context: %s\n"
 msgstr "échec d'allocation du contexte OCSP : %s\n"
 
 #, c-format
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "impossible d'obtenir authorityInfoAccess : %s\n"
-
-#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr "aucun répondeur OCSP par défaut défini\n"
 
@@ -9320,6 +9330,9 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " en utilisant le certificat d'identifiant 0x%08lX\n"
 
 #, fuzzy
 #~| msgid "you may not use %s while in %s mode\n"

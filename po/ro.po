@@ -100,6 +100,9 @@ msgstr ""
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -3736,6 +3739,9 @@ msgstr "amprentă invalidă"
 msgid "subkey \"%s\" not found\n"
 msgstr "cheia \"%s\" nu a fost găsită: %s\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "Rezumat: "
 
@@ -6502,6 +6508,26 @@ msgid ""
 "List, export, import Keybox data\n"
 msgstr "Folosire: gpg [opţiuni] [fişiere] (-h pentru ajutor)"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "modulus-ul RSA lipseşte sau nu are %d biţi\n"
@@ -6523,10 +6549,6 @@ msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy
-msgid "||Please enter the PIN for the standard keys."
-msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
-
-#, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
@@ -6535,9 +6557,6 @@ msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
 msgid ""
@@ -6592,16 +6611,6 @@ msgstr "citirea cheii publice a eşuat: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6866,6 +6875,10 @@ msgstr "exportul cheilor secrete nu este permis\n"
 msgid "certificate policy not allowed"
 msgstr "exportul cheilor secrete nu este permis\n"
 
+#, fuzzy, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "am eşuat să stochez amprenta: %s\n"
+
 #, c-format
 msgid "looking up issuer at external location\n"
 msgstr ""
@@ -6873,6 +6886,11 @@ msgstr ""
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: nu pot accesa: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7486,10 +7504,6 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 msgid "error reading input: %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
-#, fuzzy, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "am eşuat să stochez amprenta: %s\n"
-
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr ""
@@ -7569,8 +7583,8 @@ msgid "[date not given]"
 msgstr ""
 
 #, fuzzy, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr "eroare la obţinerea numărului serial: %s\n"
+msgid "algorithm:"
+msgstr "validitate: %s"
 
 #, c-format
 msgid ""
@@ -7904,15 +7918,6 @@ msgid "error getting data from cache file: %s\n"
 msgstr "eroare la obţinere noului PIN: %s\n"
 
 #, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
-msgid "unknown hash algorithm '%s'\n"
-msgstr "algoritm hash invalid `%s'\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
 #| msgid "invalid response from agent\n"
 msgid "got an invalid S-expression from libksba\n"
 msgstr "răspuns invalid de la agent\n"
@@ -7920,6 +7925,15 @@ msgstr "răspuns invalid de la agent\n"
 #, fuzzy, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "nu pot deschide fişierul: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "algoritm hash invalid `%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8724,11 +8738,6 @@ msgstr "generează un certificat de revocare"
 msgid "failed to allocate OCSP context: %s\n"
 msgstr "am eşuat să stochez cheia: %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s: can't access: %s\n"
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "%s: nu pot accesa: %s\n"
-
 #, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
@@ -9325,6 +9334,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr "eroare la obţinerea numărului serial: %s\n"
 
 #, fuzzy
 #~| msgid "you may not use %s while in %s mode\n"

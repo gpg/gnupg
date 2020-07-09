@@ -95,6 +95,9 @@ msgstr "nie pasują - proszę spróbować jeszcze raz"
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (próba %d z %d)"
@@ -3500,6 +3503,9 @@ msgstr ",,%s'' nie jest właściwym odciskiem\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "podklucz ,,%s'' nie został odnaleziony\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "Skrót: "
 
@@ -6249,6 +6255,26 @@ msgstr ""
 "Składnia: kbxutil [opcje] [pliki]\n"
 "Wypisywanie, eksport, import danych Keybox\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr "%sNumer: %s%%0AWłaściciel: %s%s"
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr "Pozostało prób: %d"
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+"||Proszę wprowadzić PIN PIN dla klucza do tworzenia podpisów kwalifikowanych."
+
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||Proszę wprowadzić PIN dla zwykłych kluczy."
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "reszta RSA brakująca lub o rozmiarze innym niż %d bity\n"
@@ -6268,9 +6294,6 @@ msgstr "NullPIN nie został jeszcze zmieniony\n"
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "|N|Proszę wprowadzić nowy PIN dla zwykłych kluczy."
 
-msgid "||Please enter the PIN for the standard keys."
-msgstr "||Proszę wprowadzić PIN dla zwykłych kluczy."
-
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr ""
 "|NP|Proszę wprowadzić nowy kod oblokowujący PIN (PUK) dla zwykłych kluczy."
@@ -6282,10 +6305,6 @@ msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
 "|N|Proszę wprowadzić nowy PIN dla klucza do tworzenia podpisów "
 "kwalifikowanych."
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr ""
-"||Proszę wprowadzić PIN PIN dla klucza do tworzenia podpisów kwalifikowanych."
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
@@ -6343,16 +6362,6 @@ msgstr "odczyt klucza publicznego nie powiódł się: %s\n"
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
 msgstr "%sNumer: %s%%0AWłaściciel: %s%%0ALicznik: %lu%s"
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr "%sNumer: %s%%0AWłaściciel: %s%s"
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
-msgstr "Pozostało prób: %d"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -6607,12 +6616,20 @@ msgid "certificate policy not allowed"
 msgstr "polityka certyfikatu niedozwolona"
 
 #, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "nie udało się pobrać odcisku\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "poszukiwanie wystawcy na zewnątrz\n"
 
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "liczba pasujących wystawców: %d\n"
+
+#, c-format
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "nie można uzyskać authorityInfoAccess: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7198,10 +7215,6 @@ msgid "error reading input: %s\n"
 msgstr "błąd odczytu wejścia: %s\n"
 
 #, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "nie udało się pobrać odcisku\n"
-
-#, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "problem odszukaniem istniejącego certyfikatu: %s\n"
 
@@ -7292,9 +7305,10 @@ msgstr "Podpisano w "
 msgid "[date not given]"
 msgstr "[nie podano daty]"
 
-#, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr " przy użyciu certyfikatu o ID 0x%08lX\n"
+#, fuzzy, c-format
+#| msgid "algorithm: %s"
+msgid "algorithm:"
+msgstr "algorytm: %s"
 
 #, c-format
 msgid ""
@@ -7628,20 +7642,20 @@ msgid "error getting data from cache file: %s\n"
 msgstr "błąd pobierania danych z pliku pamięci podręcznej: %s\n"
 
 #, c-format
-msgid "unknown hash algorithm '%s'\n"
-msgstr "niewłaściwy algorytm skrótu ,,%s''\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr "gcry_md_open dla algorytmu %d nie powiodło się: %s\n"
-
-#, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr "odebrano błędne S-wyrażenie z libksba\n"
 
 #, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "konwersja S-wyrażenia nie powiodła się: %s\n"
+
+#, c-format
+msgid "unknown hash algorithm '%s'\n"
+msgstr "niewłaściwy algorytm skrótu ,,%s''\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr "gcry_md_open dla algorytmu %d nie powiodło się: %s\n"
 
 #, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8404,10 +8418,6 @@ msgid "failed to allocate OCSP context: %s\n"
 msgstr "nie udało się przydzielić kontekstu OCSP: %s\n"
 
 #, c-format
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "nie można uzyskać authorityInfoAccess: %s\n"
-
-#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr "nie zdefiniowano domyślnego respondera OCSP\n"
 
@@ -8982,6 +8992,9 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " przy użyciu certyfikatu o ID 0x%08lX\n"
 
 #, fuzzy
 #~| msgid "option '%s' may not be used in %s mode\n"

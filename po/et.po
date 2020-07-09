@@ -93,6 +93,9 @@ msgstr ""
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -3687,6 +3690,9 @@ msgstr "viga: vigane sõrmejälg\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
+msgid "AEAD: "
+msgstr ""
+
 msgid "Digest: "
 msgstr "Teatelühend: "
 
@@ -6395,6 +6401,26 @@ msgid ""
 "List, export, import Keybox data\n"
 msgstr "Kasuta: gpg [võtmed] [failid] (-h näitab abiinfot)"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN for the standard keys."
+msgstr "muuda parooli"
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
@@ -6416,10 +6442,6 @@ msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "muuda parooli"
 
 #, fuzzy
-msgid "||Please enter the PIN for the standard keys."
-msgstr "muuda parooli"
-
-#, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Palun valige tühistamise põhjus:\n"
 
@@ -6428,9 +6450,6 @@ msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Palun valige tühistamise põhjus:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
 msgid ""
@@ -6485,16 +6504,6 @@ msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6753,6 +6762,10 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 msgid "certificate policy not allowed"
 msgstr "kirjutan salajase võtme faili `%s'\n"
 
+#, fuzzy, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
+
 #, c-format
 msgid "looking up issuer at external location\n"
 msgstr ""
@@ -6760,6 +6773,11 @@ msgstr ""
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: ei õnnestu kasutada: %s\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7367,10 +7385,6 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "error reading input: %s\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
-#, fuzzy, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
-
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr ""
@@ -7450,8 +7464,8 @@ msgid "[date not given]"
 msgstr ""
 
 #, fuzzy, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr "viga parooli loomisel: %s\n"
+msgid "algorithm:"
+msgstr "pakend: %s\n"
 
 #, c-format
 msgid ""
@@ -7781,15 +7795,6 @@ msgid "error getting data from cache file: %s\n"
 msgstr "viga parooli loomisel: %s\n"
 
 #, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
-msgid "unknown hash algorithm '%s'\n"
-msgstr "vigane räsialgoritm `%s'\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
 #| msgid "invalid response from agent\n"
 msgid "got an invalid S-expression from libksba\n"
 msgstr "vigane vastus agendilt\n"
@@ -7797,6 +7802,15 @@ msgstr "vigane vastus agendilt\n"
 #, fuzzy, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "faili ei õnnestu avada: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "vigane räsialgoritm `%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8579,11 +8593,6 @@ msgstr "genereeri tühistamise sertifikaat"
 msgid "failed to allocate OCSP context: %s\n"
 msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s: can't access: %s\n"
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "%s: ei õnnestu kasutada: %s\n"
-
 #, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
@@ -9176,6 +9185,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr "viga parooli loomisel: %s\n"
 
 #, fuzzy
 #~| msgid "you may not use %s while in %s mode\n"
