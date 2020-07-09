@@ -4437,7 +4437,10 @@ main (int argc, char **argv)
       case aDeleteSecretKeys:
       case aDeleteSecretAndPublicKeys:
 	sl = NULL;
-	/* I'm adding these in reverse order as add_to_strlist2
+        /* Print a note if the user did not specify any key.  */
+        if (!argc && !opt.quiet)
+          log_info (_("Note: %s\n"), gpg_strerror (GPG_ERR_NO_KEY));
+        /* I'm adding these in reverse order as add_to_strlist2
            reverses them again, and it's easier to understand in the
            proper order :) */
 	for( ; argc; argc-- )
