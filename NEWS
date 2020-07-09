@@ -1,6 +1,79 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.2.21:
+
+  * gpg: Add option --no-include-key-block. [#4856]
+
+  * gpg: Allow for extra padding in ECDH.  [#4908]
+
+  * gpg: Only a single pinentry is shown for symmetric encryption if
+    the pinentry supports this.  [#4971]
+
+  * gpg: Print a note if no keys are given to --delete-key.  [#4959]
+
+  * gpg,gpgsm: The ridiculous passphrase quality bar is not anymore
+    shown.  [#2103]
+
+  * gpgsm: Certificates without a CRL distribution point are now
+    considered valid without looking up a CRL.  The new option
+    --enable-issuer-based-crl-check can be used to revert to the
+    former behaviour.
+
+  * gpgsm: Support rsaPSS signature verification.  [#4538]
+
+  * gpgsm: Unless CRL checking is disabled lookup a missing issuer
+    certificate using the certificate's authorityInfoAccess.  [#4898]
+
+  * gpgsm: Print the certificate's serial number also in decimal
+    notation.
+
+  * gpgsm: Fix possible NULL-deref in messages of --gen-key.  [#4895]
+
+  * scd: Support the CardOS 5 based D-Trust Card 3.1.
+
+  * dirmngr: Allow http URLs with "LOOKUP --url".
+
+  * wkd: Take name of sendmail from configure.  Fixes an OpenBSD
+    specific bug.  [#4886]
+
+  Release-info: https://dev.gnupg.org/T4897
+  See-also: gnupg-announce/2020q3/000446.html
+
+  Changes also found in 2.2.20:
+
+  * In constrast to 2.2 no explicit protection against overflow of the
+    error counter is needed because libgpg-error takes care of this.
+
+  * gpg: Make really sure that --verify-files always returns an error.
+
+  * gpg: Fix key listing --with-secret if a pattern is given.  [#4061]
+
+  * gpg: Fix detection of certain keys used as default-key.  [#4810]
+
+  * gpg: Fix default-key selection when a card is available.  [#4850]
+
+  * gpg: Fix key expiration and key usage for keys created with a
+    creation date of zero.  [4670]
+
+  * gpgsm: Fix import of some CR,LF terminated certificates.  [#4847]
+
+  * gpg: New options --include-key-block and --auto-key-import to
+    allow encrypted replies after an initial signed message.  [#4856]
+
+  * gpg: Allow the use of a fingerprint with --trusted-key. [#4855]
+
+  * gpg: New property "fpr" for use by --export-filter.
+
+  * scdaemon: Disable the pinpad if a KDF DO is used.  [#4832]
+
+  * dirmngr: Improve finding OCSP certificates.  [#4536]
+
+  * Avoid build problems with LTO or gcc-10. [#4831]
+
+  Release-info: https://dev.gnupg.org/T4860
+  See-also: gnupg-announce/2020q1/000444.html
+
   Changes also found in 2.2.19:
 
   * gpg: Only in 2.2.19; not requird in master: Fix double free when
@@ -692,6 +765,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
   Version 2.2.17 (2019-07-09)
   Version 2.2.18 (2019-11-25)
   Version 2.2.19 (2019-12-07)
+  Version 2.2.20 (2020-03-20)
+  Version 2.2.21 (2020-07-09)
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
 ------------------------------------------------
