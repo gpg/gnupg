@@ -1,12 +1,12 @@
 # GnuPG Hungarian translation.
-# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
-# Nagy Ferenc László <nfl@nfllab.com>, 2003, 2004.
+# Copyright (C) 2003, 2004, 2020 Free Software Foundation, Inc.
+# Nagy Ferenc László <nfl@nfllab.com>, 2003, 2004, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.2.5\n"
+"Project-Id-Version: gnupg 2.2.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2004-06-19 21:53+0200\n"
+"PO-Revision-Date: 2020-06-09 23:10+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
 "Language: hu\n"
@@ -4397,16 +4397,12 @@ msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr ""
 "(N)év, (M)egjegyzés, (E)-mail megváltoztatása vagy (R)endben/(K)ilépés? "
 
-#, fuzzy
-#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgid "Change (N)ame, (E)mail, or (Q)uit? "
-msgstr "(N)év, (M)egjegyzés, (E)-mail megváltoztatása vagy (K)ilépés? "
+msgstr "(N)év, (E)-mail megváltoztatása vagy (K)ilépés? "
 
-#, fuzzy
-#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
 msgstr ""
-"(N)év, (M)egjegyzés, (E)-mail megváltoztatása vagy (R)endben/(K)ilépés? "
+"(N)év, (E)-mail megváltoztatása vagy (R)endben/(K)ilépés? "
 
 msgid "Please correct the error first\n"
 msgstr "Kérem, előbb javítsa ki a hibát!\n"
