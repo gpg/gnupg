@@ -91,9 +91,6 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
       if (err)
         break;
 
-      if (!(sk->pubkey_usage & PUBKEY_USAGE_ENC))
-        continue;
-
       /* Check compliance.  */
       if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_DECRYPTION,
                                  sk->pubkey_algo, 0,
@@ -144,7 +141,10 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
             }
           else if (opt.try_all_secrets
                    || (k->keyid[0] == keyid[0] && k->keyid[1] == keyid[1]))
-            ;
+            {
+              if (!opt.quiet && !(sk->pubkey_usage & PUBKEY_USAGE_ENC))
+                log_info (_("using the key with no 'encrypt' usage.\n"));
+            }
           else
             continue;
 
@@ -153,7 +153,11 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           if (!err)
             {
               if (!opt.quiet && !k->keyid[0] && !k->keyid[1])
-                log_info (_("okay, we are the anonymous recipient.\n"));
+                {
+                  log_info (_("okay, we are the anonymous recipient.\n"));
+                  if (!(sk->pubkey_usage & PUBKEY_USAGE_ENC))
+                    log_info (_("using the key with no 'encrypt' usage.\n"));
+                }
               search_for_secret_keys = 0;
               break;
             }
