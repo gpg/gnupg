@@ -3005,6 +3005,15 @@ connect_server (ctrl_t ctrl, const char *server, unsigned short port,
           sock = my_sock_new_for_addr (ai->addr, ai->socktype, ai->protocol);
           if (sock == ASSUAN_INVALID_FD)
             {
+              if (errno == EAFNOSUPPORT)
+                {
+                  if (ai->family == AF_INET)
+                    v4_valid = 0;
+                  if (ai->family == AF_INET6)
+                    v6_valid = 0;
+                  continue;
+                }
+
               err = gpg_err_make (default_errsource,
                                   gpg_err_code_from_syserror ());
               log_error ("error creating socket: %s\n", gpg_strerror (err));
