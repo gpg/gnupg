@@ -1595,11 +1595,14 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
               pi2->failed_tries = 0;
               continue;
             }
-          if (*pi->pin && !pi->repeat_okay)
+          if (*pi->pin && !pi->repeat_okay
+              && ctrl->pinentry_mode != PINENTRY_MODE_LOOPBACK)
             {
               /* The passphrase is empty and the pinentry did not
                * already run the repetition check, do it here.  This
-               * is only called when using an old and  simple pinentry. */
+               * is only called when using an old and simple pinentry.
+               * It is neither called in loopback mode because the
+               * caller does any passphrase repetition by herself. */
               xfree (response);
               response = NULL;
               rc = agent_get_passphrase (ctrl, &response,
