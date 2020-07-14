@@ -143,7 +143,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
                    || (k->keyid[0] == keyid[0] && k->keyid[1] == keyid[1]))
             {
               if (!opt.quiet && !(sk->pubkey_usage & PUBKEY_USAGE_ENC))
-                log_info (_("using the key with no 'encrypt' usage.\n"));
+                log_info (_("used key is not marked for encryption use.\n"));
             }
           else
             continue;
@@ -156,7 +156,8 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
                 {
                   log_info (_("okay, we are the anonymous recipient.\n"));
                   if (!(sk->pubkey_usage & PUBKEY_USAGE_ENC))
-                    log_info (_("using the key with no 'encrypt' usage.\n"));
+                    log_info (_("used key is not marked for encryption use.\n")
+                              );
                 }
               search_for_secret_keys = 0;
               break;
