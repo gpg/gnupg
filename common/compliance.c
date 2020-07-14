@@ -149,10 +149,9 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
           result = (keylength == 2048
                     || keylength == 3072
                     || keylength == 4096);
-          /* rsaPSS was not part of the evaluation and thus we don't
-           * claim compliance.  */
-          if ((algo_flags & PK_ALGO_FLAG_RSAPSS))
-            result = 0;
+          /* Although rsaPSS was not part of the original evaluation
+           * we got word that we can claim compliance.  */
+          (void)algo_flags;
           break;
 
 	case is_dsa:
@@ -234,10 +233,7 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 	    default:
 	      log_assert (!"reached");
 	    }
-          /* rsaPSS was not part of the evaluation and thus we don't
-           * claim compliance.  */
-          if ((algo_flags & PK_ALGO_FLAG_RSAPSS))
-            result = 0;
+          (void)algo_flags;
 	  break;
 
 	case PUBKEY_ALGO_DSA:
