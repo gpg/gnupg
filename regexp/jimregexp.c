@@ -723,7 +723,7 @@ static int regatom(regex_t *preg, int *flagp)
 				pattern++;
 			}
 
-			while (*pattern && *pattern != ']') {
+			while (*pattern != ']') {
 				/* Is this a range? a-z */
 				int start;
 				int end;
@@ -734,6 +734,11 @@ static int regatom(regex_t *preg, int *flagp)
 					CC_NUM
 				};
 				int cc;
+
+				if (!*pattern) {
+					preg->err = REG_ERR_UNMATCHED_BRACKET;
+					return 0;
+				}
 
 				pattern += reg_utf8_tounicode_case(pattern, &start, nocase);
 				if (start == '\\') {
@@ -758,6 +763,10 @@ static int regatom(regex_t *preg, int *flagp)
 						preg->err = REG_ERR_NULL_CHAR;
 						return 0;
 					}
+					if (start == '\\' && *pattern == 0) {
+						preg->err = REG_ERR_INVALID_ESCAPE;
+						return 0;
+					}
 				}
 				if (pattern[0] == '-' && pattern[1] && pattern[1] != ']') {
 					/* skip '-' */
@@ -767,6 +776,10 @@ static int regatom(regex_t *preg, int *flagp)
 						pattern += reg_decode_escape(pattern, &end);
 						if (end == 0) {
 							preg->err = REG_ERR_NULL_CHAR;
+							return 0;
+						}
+						if (start == '\\' && *pattern == 0) {
+							preg->err = REG_ERR_INVALID_ESCAPE;
 							return 0;
 						}
 					}
@@ -873,7 +886,7 @@ cc_switch:
 		ch = *preg->regparse++;
 		switch (ch) {
 		case '\0':
-			preg->err = REG_ERR_TRAILING_BACKSLASH;
+			preg->err = REG_ERR_INVALID_ESCAPE;
 			return 0;
 		case 'A':
 			ret = regnode(preg, BOLX);
@@ -1883,9 +1896,10 @@ size_t regerror(int errcode, const regex_t *preg, char *errbuf,  size_t errbuf_s
 		"nested count",
 		"internal error",
 		"count follows nothing",
-		"trailing backslash",
+		"invalid escape \\ sequence",
 		"corrupted program",
 		"contains null char",
+		"brackets [] not balanced",
 	};
 	const char *err;
 
