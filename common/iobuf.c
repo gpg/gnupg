@@ -909,16 +909,22 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 		    }
 		  else if (c == 255)
 		    {
-		      a->size = iobuf_get_noeof (chain) << 24;
-		      a->size |= iobuf_get_noeof (chain) << 16;
-		      a->size |= iobuf_get_noeof (chain) << 8;
-		      if ((c = iobuf_get (chain)) == -1)
+                      size_t len = 0;
+                      int i;
+
+                      for (i = 0; i < 4; i++)
+                        if ((c = iobuf_get (chain)) == -1)
+                          break;
+                        else
+                          len = ((len << 8) | c);
+
+                      if (i < 4)
 			{
 			  log_error ("block_filter: invalid 4 byte length\n");
 			  rc = GPG_ERR_BAD_DATA;
 			  break;
 			}
-		      a->size |= c;
+                      a->size = len;
                       a->partial = 2;
                       if (!a->size)
                         {
