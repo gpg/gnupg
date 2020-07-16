@@ -2458,7 +2458,7 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
     err = gpg_error_from_syserror ();
   else
     {
-      if (es_fclose (fp))
+      if (fp != es_stdout && es_fclose (fp))
         err = gpg_error_from_syserror ();
       fp = NULL;
     }
@@ -2467,7 +2467,8 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
     log_error (_("error writing '%s': %s\n"), fname, gpg_strerror (err));
 
  leave:
-  es_fclose (fp);
+  if (fp != es_stdout)
+    es_fclose (fp);
   xfree (get_membuf (&mb, NULL));
   release_kbnode (keyblock);
   return err;
