@@ -3772,7 +3772,7 @@ interactive_loop (void)
   card_info_t info = &info_buffer;
   char *p;
   int i;
-  const char *historyname = NULL;
+  char *historyname = NULL;
 
   /* In the interactive mode we do not want to print the program prefix.  */
   log_set_prefix (NULL, 0);
