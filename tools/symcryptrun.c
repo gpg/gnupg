@@ -161,32 +161,32 @@ enum cmd_and_opt_values
 
 
 /* The list of commands and options.  */
-static ARGPARSE_OPTS opts[] =
-  {
-    { 301, NULL, 0, N_("@\nCommands:\n ") },
+static gpgrt_opt_t opts[] = {
 
-    { oDecrypt, "decrypt", 0, N_("decryption modus") },
-    { oEncrypt, "encrypt", 0, N_("encryption modus") },
+  ARGPARSE_group(300, N_("@\nCommands:\n ")),
 
-    { 302, NULL, 0, N_("@\nOptions:\n ") },
+  ARGPARSE_c(oDecrypt, "decrypt", N_("decryption modus")),
+  ARGPARSE_c(oEncrypt, "encrypt", N_("encryption modus")),
 
-    { oClass, "class", 2, N_("tool class (confucius)") },
-    { oProgram, "program", 2, N_("program filename") },
+  ARGPARSE_group(301, N_("@\nOptions:\n ")),
 
-    { oKeyfile, "keyfile", 2, N_("secret key file (required)") },
-    { oInput, "inputfile", 2, N_("input file name (default stdin)") },
-    { oVerbose, "verbose",  0, N_("verbose") },
-    { oQuiet, "quiet",      0, N_("quiet") },
-    { oLogFile, "log-file", 2, N_("use a log file for the server") },
-    { oOptions,  "options"  , 2, N_("|FILE|read options from FILE") },
+  ARGPARSE_s_s(oClass, "class", N_("tool class (confucius)")),
+  ARGPARSE_s_s(oProgram, "program", N_("program filename")),
 
-    /* Hidden options.  */
-    { oNoVerbose, "no-verbose",  0, "@" },
-    { oHomedir, "homedir", 2, "@" },
-    { oNoOptions, "no-options", 0, "@" },/* shortcut for --options /dev/null */
+  ARGPARSE_s_s(oKeyfile, "keyfile", N_("secret key file (required)")),
+  ARGPARSE_s_s(oInput, "inputfile", N_("input file name (default stdin)")),
+  ARGPARSE_s_n(oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n(oQuiet, "quiet",     N_("quiet")),
+  ARGPARSE_s_s(oLogFile, "log-file", N_("use a log file for the server")),
+  ARGPARSE_conffile(oOptions, "options", N_("|FILE|read options from FILE")),
 
-    ARGPARSE_end ()
-  };
+   /* Hidden options.  */
+  ARGPARSE_s_n(oNoVerbose, "no-verbose", "@"),
+  ARGPARSE_s_s(oHomedir, "homedir", "@"),
+  ARGPARSE_noconffile(oNoOptions, "no-options", "@"),
+
+  ARGPARSE_end ()
+};
 
 
 /* We keep all global options in the structure OPT.  */
@@ -211,9 +211,11 @@ my_strusage (int level)
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "symcryptrun (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -885,19 +887,17 @@ confucius_main (int mode, int argc, char *argv[])
 int
 main (int argc, char **argv)
 {
-  ARGPARSE_ARGS pargs;
+  gpgrt_argparse_t pargs;
   int orig_argc;
   char **orig_argv;
-  FILE *configfp = NULL;
-  char *configname = NULL;
-  unsigned configlineno;
+  char *last_configname = NULL;
+  const char *configname = NULL;
   int mode = 0;
   int res;
   char *logfile = NULL;
-  int default_config = 1;
 
   early_system_init ();
-  set_strusage (my_strusage);
+  gpgrt_set_strusage (my_strusage);
   log_set_prefix ("symcryptrun", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
@@ -909,53 +909,48 @@ main (int argc, char **argv)
   orig_argv = argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
-  while (arg_parse( &pargs, opts))
+  pargs.flags= ARGPARSE_FLAG_KEEP|ARGPARSE_FLAG_NOVERSION;
+  while (gpgrt_argparse (NULL, &pargs, opts))
     {
-      if (pargs.r_opt == oOptions)
-        { /* Yes there is one, so we do not try the default one, but
-	     read the option file when it is encountered at the
-	     commandline */
-          default_config = 0;
-	}
-      else if (pargs.r_opt == oNoOptions)
-        default_config = 0; /* --no-options */
-      else if (pargs.r_opt == oHomedir)
+      if (pargs.r_opt == oHomedir)
 	gnupg_set_homedir (pargs.r.ret_str);
     }
+  /* Reset the flags.  */
+  pargs.flags &= ~(ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
 
-  if (default_config)
-    configname = make_filename (gnupg_homedir (), "symcryptrun.conf", NULL );
+  /* The configuraton directories for use by gpgrt_argparser.  */
+  gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
+  gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1;  /* do not remove the args */
- next_pass:
-  if (configname)
-    {
-      configlineno = 0;
-      configfp = fopen (configname, "r");
-      if (!configfp)
-        {
-          if (!default_config)
-            {
-              log_error (_("option file '%s': %s\n"),
-                         configname, strerror(errno) );
-              exit(1);
-	    }
-          xfree (configname);
-          configname = NULL;
-	}
-      default_config = 0;
-    }
+  /* We are re-using the struct, thus the reset flag.  We OR the
+   * flags so that the internal intialized flag won't be cleared. */
+  pargs.flags |=  (ARGPARSE_FLAG_RESET
+                   | ARGPARSE_FLAG_KEEP
+                   | ARGPARSE_FLAG_SYS
+                   | ARGPARSE_FLAG_USER);
 
   /* Parse the command line. */
-  while (optfile_parse (configfp, configname, &configlineno, &pargs, opts))
+  while (gpgrt_argparser (&pargs, opts, "symcryptrun.conf"))
     {
       switch (pargs.r_opt)
         {
+        case ARGPARSE_CONFFILE:
+          {
+            if (pargs.r_type)
+              {
+                xfree (last_configname);
+                last_configname = xstrdup (pargs.r.ret_str);
+                configname = last_configname;
+              }
+            else
+              configname = NULL;
+          }
+          break;
+
         case oDecrypt:   mode = oDecrypt; break;
         case oEncrypt:   mode = oEncrypt; break;
 
@@ -970,30 +965,19 @@ main (int argc, char **argv)
 
         case oLogFile:  logfile = pargs.r.ret_str; break;
 
-        case oOptions:
-          /* Config files may not be nested (silently ignore them) */
-          if (!configfp)
-            {
-		xfree(configname);
-		configname = xstrdup(pargs.r.ret_str);
-		goto next_pass;
-	    }
-          break;
-        case oNoOptions: break; /* no-options */
         case oHomedir: /* Ignore this option here. */; break;
 
-        default : pargs.err = configfp? 1:2; break;
+        default:
+          if (configname)
+            pargs.err = ARGPARSE_PRINT_WARNING;
+          else
+            pargs.err = ARGPARSE_PRINT_ERROR;
+          break;
 	}
     }
-  if (configfp)
-    {
-      fclose( configfp );
-      configfp = NULL;
-      configname = NULL;
-      goto next_pass;
-    }
-  xfree (configname);
-  configname = NULL;
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+
+  xfree (last_configname);
 
   if (!mode)
     log_error (_("either %s or %s must be given\n"),
