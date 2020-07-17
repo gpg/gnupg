@@ -821,6 +821,7 @@ close_pcsc_reader (int slot)
       pcsc.context = 0;
       for (i = 0; i < MAX_READER; i++)
         pcsc.rdrname[i] = NULL;
+      npth_mutex_unlock (&reader_table_lock);
     }
   return 0;
 }
@@ -2061,6 +2062,12 @@ apdu_dev_list_finish (struct dev_list *dl)
       xfree (dl->table);
       for (i = 0; i < MAX_READER; i++)
         pcsc.rdrname[i] = NULL;
+
+      if (pcsc.count == 0)
+        {
+          pcsc_release_context (pcsc.context);
+          pcsc.context = 0;
+        }
     }
   xfree (dl);
   npth_mutex_unlock (&reader_table_lock);
