@@ -813,7 +813,7 @@ static int
 close_pcsc_reader (int slot)
 {
   (void)slot;
-  if (--pcsc.count == 0)
+  if (--pcsc.count == 0 && npth_mutex_trylock (&reader_table_lock) == 0)
     {
       int i;
 

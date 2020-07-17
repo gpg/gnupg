@@ -161,17 +161,6 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
   /* Try to auto set the character set.  */
   set_native_charset (NULL);
 
-#ifdef HAVE_W32_SYSTEM
-  /* For W32 we need to initialize the socket layer.  This is because
-     we use recv and send in libassuan as well as at some other
-     places.  */
-  {
-    WSADATA wsadat;
-
-    WSAStartup (0x202, &wsadat);
-  }
-#endif
-
 #ifdef HAVE_W32CE_SYSTEM
   /* Register the sleep exit function before the estream init so that
      the sleep will be called after the estream registered atexit
