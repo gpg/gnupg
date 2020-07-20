@@ -1,17 +1,17 @@
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2020 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GnuPG package.
 # Maxim Britov <maxim.britov@gmail.com>, 2006.
 #              !-- no such user (2011-01-11)
 # Thanks Pawel I. Shajdo <pshajdo@gmail.com>.
 # Thanks Cmecb for the inspiration.
-# Ineiev <ineiev@gnu.org>, 2014, 2015, 2016, 2017, 2018, 2019
+# Ineiev <ineiev@gnu.org>, 2014, 2015, 2016, 2017, 2018, 2019, 2020
 #
 # Designated-Translator: none
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-05-29 17:41+0100\n"
+"PO-Revision-Date: 2020-07-20 17:41+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -1252,42 +1252,34 @@ msgstr "%s не совместим с режимом %s\n"
 msgid "no dirmngr running in this session\n"
 msgstr "в этом сеансе dirmngr не работает\n"
 
-#, fuzzy, c-format
-#| msgid "option '%s' may not be used in %s mode\n"
+#, c-format
 msgid "keyserver option \"%s\" may not be used in %s mode\n"
-msgstr "параметр '%s' нельзя использовать в режиме %s\n"
+msgstr "параметр сервера ключей \"%s\" нельзя использовать в режиме %s\n"
 
 msgid "WKD uses a cached result"
-msgstr ""
+msgstr "WKD пользуется сохраненным результатом"
 
 msgid "Tor is not running"
-msgstr ""
+msgstr "Tor не работает"
 
-#, fuzzy
-#| msgid "\"%s\" is not a proper fingerprint\n"
 msgid "Tor is not properly configured"
-msgstr "\"%s\" - не правильный отпечаток\n"
+msgstr "Tor не настроен должным образом"
 
-#, fuzzy
-#| msgid "\"%s\" is not a proper fingerprint\n"
 msgid "DNS is not properly configured"
-msgstr "\"%s\" - не правильный отпечаток\n"
+msgstr "DNS не настроен должным образом"
 
 msgid "unacceptable HTTP redirect from server"
-msgstr ""
+msgstr "недопустимое перенаправление HTTP с сервера"
 
 msgid "unacceptable HTTP redirect from server was cleaned up"
-msgstr ""
+msgstr "недопустимое перенаправление HTTP с сервера сброшено"
 
-#, fuzzy
-#| msgid "generate a revocation certificate"
 msgid "server uses an invalid certificate"
-msgstr "создать сертификат отзыва"
+msgstr "на сервере применяется непригодный сертификат"
 
-#, fuzzy, c-format
-#| msgid "armor: %s\n"
+#, c-format
 msgid "Note: %s\n"
-msgstr "текстовый формат: %s\n"
+msgstr "Замечание: %s\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1316,10 +1308,10 @@ msgid "[not set]"
 msgstr "[не установлено]"
 
 msgid "Mr."
-msgstr ""
+msgstr "Уважаемый"
 
 msgid "Ms."
-msgstr ""
+msgstr "Уважаемая"
 
 msgid "not forced"
 msgstr "не требуется"
@@ -1373,7 +1365,7 @@ msgid "Error: invalid characters in preference string.\n"
 msgstr "Ошибка: недопустимые символы в строке предпочтений.\n"
 
 msgid "Salutation (M = Mr., F = Ms., or space): "
-msgstr ""
+msgstr "Приветствие (M = Уважаемый, F = Уважаемая, пробел - не задано): "
 
 msgid "Error: invalid response.\n"
 msgstr "Ошибка: недопустимый ответ.\n"
@@ -1545,10 +1537,8 @@ msgstr "изменить имя учетной записи"
 msgid "change the language preferences"
 msgstr "изменить языковые предпочтения"
 
-#, fuzzy
-#| msgid "change card holder's sex"
 msgid "change card holder's salutation"
-msgstr "изменить пол держателя карты"
+msgstr "изменить приветствие для держателя карты"
 
 msgid "change a CA fingerprint"
 msgstr "сменить отпечаток удостоверяющего центра"
@@ -2589,7 +2579,7 @@ msgid "remove as much as possible from key after import"
 msgstr "удалить после импорта из ключа как можно больше"
 
 msgid "ignore key-signatures which are not self-signatures"
-msgstr ""
+msgstr "игнорировать подписи ключей, кроме самоподписей"
 
 msgid "run import filters and export key immediately"
 msgstr "применить фильтры импорта и немедленно экспортировать ключ"
@@ -3499,7 +3489,7 @@ msgid "subkey \"%s\" not found\n"
 msgstr "подключ \"%s\" не найден\n"
 
 msgid "AEAD: "
-msgstr ""
+msgstr "AEAD: "
 
 msgid "Digest: "
 msgstr "Хеш: "
@@ -3990,10 +3980,9 @@ msgstr "  (%d) ECC (только для шифрования)\n"
 msgid "  (%d) Existing key\n"
 msgstr "  (%d) Имеющийся ключ\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) Existing key from card\n"
+#, c-format
 msgid "  (%d) Existing key from card\n"
-msgstr "   (%d) Имеющийся на карте ключ\n"
+msgstr "  (%d) Имеющийся на карте ключ\n"
 
 msgid "Enter the keygrip: "
 msgstr "Введите код ключа:"
@@ -4643,7 +4632,7 @@ msgstr "Ключ доступен на: "
 
 #, c-format
 msgid "Note: Use '%s' to make use of this info\n"
-msgstr ""
+msgstr "Замечание: Параметр '%s' включает использование этой информации\n"
 
 msgid "[uncertain]"
 msgstr "[сомнительно]"
@@ -4740,12 +4729,11 @@ msgstr "Внимание: хеш-функция %s не рекомендуетс
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "Замечание: подписи с хеш-функцией %s игнорируются\n"
+msgstr "Замечание: подписи с алгоритмом %s игнорируются\n"
 
-#, fuzzy, c-format
-#| msgid "Note: signatures using the %s algorithm are rejected\n"
+#, c-format
 msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
-msgstr "Замечание: подписи с хеш-функцией %s игнорируются\n"
+msgstr "Замечание: подписи третьих сторон с алгоритмом %s игнорируются\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -7266,10 +7254,9 @@ msgstr "Подпись сделана "
 msgid "[date not given]"
 msgstr "[дата не указана]"
 
-#, fuzzy, c-format
-#| msgid "algorithm: %s"
+#, c-format
 msgid "algorithm:"
-msgstr "алгоритм: %s"
+msgstr "алгоритм:"
 
 #, c-format
 msgid ""
@@ -8669,15 +8656,11 @@ msgstr ""
 "|MECHANISMS|использовать механизмы MECHANISMS для поиска ключей по адресу "
 "электронной почты"
 
-#, fuzzy
-#| msgid "import keys from a keyserver"
 msgid "import missing key from a signature"
-msgstr "импортировать ключи с сервера ключей"
+msgstr "импортировать недостающий ключ из подписи"
 
-#, fuzzy
-#| msgid "list and check key signatures"
 msgid "include the public key in signatures"
-msgstr "вывести и проверить подписи ключей"
+msgstr "вносить открытый ключ в подписи"
 
 msgid "disable all access to the dirmngr"
 msgstr "полностью запретить доступ к dirmngr"
@@ -8974,12 +8957,6 @@ msgstr ""
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " с помощью сертификата с идентификатором 0x%08lX\n"
-
-#, fuzzy
-#~| msgid "option '%s' may not be used in %s mode\n"
-#~ msgid ""
-#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-#~ msgstr "параметр '%s' нельзя использовать в режиме %s\n"
 
 #~ msgid "male"
 #~ msgstr "мужской"
