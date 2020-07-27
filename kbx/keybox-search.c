@@ -313,7 +313,7 @@ blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
         storedfprlen = (get16 (buffer + off + 32) & 0x80)? 32:20;
       else
         storedfprlen = 20;
-      if (storedfprlen == fproff + fprlen
+      if ((fpr32 || storedfprlen == fproff + fprlen)
           && !memcmp (buffer + off + fproff, fpr, fprlen))
         return idx+1; /* found */
     }
