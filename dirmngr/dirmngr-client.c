@@ -208,6 +208,16 @@ main (int argc, char **argv )
    * init_common_subsystems, but we don't need that here.  */
   gpgrt_set_fixed_string_mapper (map_static_macro_string);
 
+  /* For W32 we need to initialize the socket subsystem.  Because we
+     don't use Pth we need to do this explicit. */
+#ifdef HAVE_W32_SYSTEM
+ {
+   WSADATA wsadat;
+
+   WSAStartup (0x202, &wsadat);
+ }
+#endif /*HAVE_W32_SYSTEM*/
+
   /* Init Assuan.  */
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
