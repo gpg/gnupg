@@ -185,7 +185,7 @@ gpg_wks_client_SOURCES = \
 gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_client_LDADD = $(libcommon) \
 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-		       $(LIBINTL) $(LIBICONV)
+		       $(LIBINTL) $(LIBICONV) $(NETLIBS)
 
 if HAVE_NEWER_LIBGCRYPT
 libexec_PROGRAMS += gpg-pair-tool
