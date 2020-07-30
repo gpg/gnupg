@@ -86,7 +86,7 @@ endif
 dirmngr_LDADD = $(libcommonpth) \
         $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) \
-	$(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV)
+	$(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
 if USE_LDAP
 dirmngr_LDADD += $(ldaplibs)
 endif
