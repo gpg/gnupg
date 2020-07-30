@@ -80,7 +80,7 @@ t_common_ldadd = $(libcommon) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) \
 t_minip12_CFLAGS = -DWITHOUT_NPTH=1 \
 	           $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 t_minip12_SOURCES = $(t_common_src) t-minip12.c minip12.c
-t_minip12_LDADD   = $(t_common_ldadd)
+t_minip12_LDADD   = $(t_common_ldadd) $(NETLIBS)
 
 
 
