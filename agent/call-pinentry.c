@@ -682,7 +682,7 @@ start_pinentry (ctrl_t ctrl)
       log_info ("You may want to update to a newer pinentry\n");
       rc = 0;
     }
-  else if (!rc && (pid_t)pinentry_pid == (pid_t)(-1))
+  else if (!rc && pinentry_pid == (unsigned long)(-1L))
     log_error ("pinentry did not return a PID\n");
   else
     {
