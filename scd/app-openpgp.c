@@ -3573,11 +3573,11 @@ build_ecc_privkey_template (app_t app, int keyno,
                             const unsigned char *ecc_q, size_t ecc_q_len,
                             unsigned char **result, size_t *resultlen)
 {
-  unsigned char privkey[2+2];
+  unsigned char privkey[2*(1+3)];
   size_t privkey_len;
-  unsigned char exthdr[2+2+1];
+  unsigned char exthdr[2+2+3];
   size_t exthdr_len;
-  unsigned char suffix[2+1];
+  unsigned char suffix[2+3];
   size_t suffix_len;
   unsigned char *tp;
   size_t datalen;
