@@ -396,7 +396,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
          create a copy of the array.  */
 #ifdef HAVE_W32_SYSTEM
       snprintf (extrafdbuf, sizeof extrafdbuf, "-&%lu",
-                (unsigned long)(void*)_get_osfhandle (extrapipe[0]));
+                (unsigned long)_get_osfhandle (extrapipe[0]));
 #else
       snprintf (extrafdbuf, sizeof extrafdbuf, "-&%d", extrapipe[0]);
 #endif
