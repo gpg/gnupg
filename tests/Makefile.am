@@ -26,7 +26,7 @@ GPGSM = ../sm/gpgsm
 # if the shell used for inittests would uses an internal version of
 # pwd which handles symlinks differently.
 TESTS_ENVIRONMENT = GNUPGHOME=`/bin/pwd` GPG_AGENT_INFO= LC_ALL=C \
-                    GPGSM=$(GPGSM) $(srcdir)/runtest
+                    GPGSM="$(GPGSM)" "$(srcdir)/runtest"
 
 testscripts = sm-sign+verify sm-verify
 
