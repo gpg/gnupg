@@ -35,10 +35,10 @@ fake_pinentry_SOURCES = fake-pinentry.c
 
 TESTS_ENVIRONMENT = LC_ALL=C \
 	EXEEXT=$(EXEEXT) \
-	PATH=../gpgscm:$(PATH) \
-	abs_top_srcdir=$(abs_top_srcdir) \
-	objdir=$(abs_top_builddir) \
-	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
+	PATH="../gpgscm:$(PATH)" \
+	abs_top_srcdir="$(abs_top_srcdir)" \
+	objdir="$(abs_top_builddir)" \
+	GPGSCM_PATH="$(abs_top_srcdir)/tests/gpgscm"
 
 XTESTS = \
 	version.scm \
