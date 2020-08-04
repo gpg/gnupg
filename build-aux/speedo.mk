@@ -362,9 +362,9 @@ npth_ver  := $(shell awk '$$1=="npth_ver" {print $$2}' swdb.lst)
 npth_sha1 := $(shell awk '$$1=="npth_sha1" {print $$2}' swdb.lst)
 npth_sha2 := $(shell awk '$$1=="npth_sha2" {print $$2}' swdb.lst)
 
-libgcrypt_ver  := $(shell awk '$$1=="libgcrypt_ver" {print $$2}' swdb.lst)
-libgcrypt_sha1 := $(shell awk '$$1=="libgcrypt_sha1" {print $$2}' swdb.lst)
-libgcrypt_sha2 := $(shell awk '$$1=="libgcrypt_sha2" {print $$2}' swdb.lst)
+libgcrypt_ver  := $(shell awk '$$1=="libgcrypt18_ver" {print $$2}' swdb.lst)
+libgcrypt_sha1 := $(shell awk '$$1=="libgcrypt18_sha1" {print $$2}' swdb.lst)
+libgcrypt_sha2 := $(shell awk '$$1=="libgcrypt18_sha2" {print $$2}' swdb.lst)
 
 libassuan_ver  := $(shell awk '$$1=="libassuan_ver" {print $$2}' swdb.lst)
 libassuan_sha1 := $(shell awk '$$1=="libassuan_sha1" {print $$2}' swdb.lst)
