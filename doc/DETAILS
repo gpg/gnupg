@@ -61,6 +61,7 @@ described here.
     - rev :: Revocation signature
     - rvs :: Recocation signature (standalone) [since 2.2.9]
     - fpr :: Fingerprint (fingerprint is in field 10)
+    - fp2 :: SHA-256 fingerprint (fingerprint is in field 10)
     - pkd :: Public key data [*]
     - grp :: Keygrip
     - rvk :: Revocation key
@@ -168,8 +169,8 @@ described here.
     (the colon is quoted =\x3a=).  For a "pub" record this field is
     not used on --fixed-list-mode.  A UAT record puts the attribute
     subpacket count here, a space, and then the total attribute
-    subpacket size.  In gpgsm the issuer name comes here.  A FPR
-    record stores the fingerprint here.  The fingerprint of a
+    subpacket size.  In gpgsm the issuer name comes here.  The FPR and FP2
+    records store the fingerprints here.  The fingerprint of a
     revocation key is stored here.
 
 *** Field 11 - Signature class

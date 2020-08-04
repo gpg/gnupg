@@ -559,6 +559,10 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   es_putc ('\n', fp);
   xfree (fpr); fpr = NULL; chain_id = NULL;
   xfree (chain_id_buffer); chain_id_buffer = NULL;
+  /* SHA256 FPR record */
+  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA256);
+  es_fprintf (fp, "fp2:::::::::%s::::\n", fpr);
+  xfree (fpr); fpr = NULL;
 
   /* Always print the keygrip.  */
   if ( (p = gpgsm_get_keygrip_hexstring (cert)))
@@ -772,6 +776,10 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
       ksba_free (dn);
       es_putc ('\n', fp);
     }
+
+  dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA256);
+  es_fprintf (fp, "     sha2_fpr: %s\n", dn?dn:"error");
+  xfree (dn);
 
   dn = gpgsm_get_fingerprint_string (cert, 0);
   es_fprintf (fp, "     sha1_fpr: %s\n", dn?dn:"error");
@@ -1293,6 +1301,10 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
 
   dn = gpgsm_get_fingerprint_string (cert, 0);
   es_fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
+  xfree (dn);
+
+  dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA256);
+  es_fprintf (fp, "     sha2 fpr: %s\n", dn?dn:"error");
   xfree (dn);
 
   if (opt.with_keygrip)
