@@ -4902,42 +4902,55 @@ main (int argc, char **argv)
 
       case aGenRandom:
 	{
-	    int level = argc ? atoi(*argv):0;
-	    int count = argc > 1 ? atoi(argv[1]): 0;
-	    int endless = !count;
+          int level = argc ? atoi(*argv):0;
+          int count = argc > 1 ? atoi(argv[1]): 0;
+          int endless = !count;
+          int hexhack = (level == 16);
 
-	    if( argc < 1 || argc > 2 || level < 0 || level > 2 || count < 0 )
-		wrong_args("--gen-random 0|1|2 [count]");
+          if (hexhack)
+            level = 1;
 
-	    while( endless || count ) {
-		byte *p;
-                /* Wee need a multiple of 3, so that in case of
-                   armored output we get a correct string.  No
-                   linefolding is done, as it is best to levae this to
-                   other tools */
-		size_t n = !endless && count < 99? count : 99;
+          if (argc < 1 || argc > 2 || level < 0 || level > 2 || count < 0)
+            wrong_args ("--gen-random 0|1|2 [count]");
 
-		p = gcry_random_bytes (n, level);
+          while (endless || count)
+            {
+              byte *p;
+              /* We need a multiple of 3, so that in case of armored
+               * output we get a correct string.  No linefolding is
+               * done, as it is best to leave this to other tools */
+              size_t n = !endless && count < 99? count : 99;
+              size_t nn;
+
+              p = gcry_random_bytes (n, level);
 #ifdef HAVE_DOSISH_SYSTEM
-		setmode ( fileno(stdout), O_BINARY );
+              setmode ( fileno(stdout), O_BINARY );
 #endif
-                if (opt.armor) {
-                    char *tmp = make_radix64_string (p, n);
-                    es_fputs (tmp, es_stdout);
-                    xfree (tmp);
-                    if (n%3 == 1)
-                      es_putc ('=', es_stdout);
-                    if (n%3)
-                      es_putc ('=', es_stdout);
-                } else {
-                    es_fwrite( p, n, 1, es_stdout );
+              if (hexhack)
+                {
+                  for (nn = 0; nn < n; nn++)
+                    es_fprintf (es_stdout, "%02x", p[nn]);
                 }
-		xfree(p);
-		if( !endless )
-		    count -= n;
+              else if (opt.armor)
+                {
+                  char *tmp = make_radix64_string (p, n);
+                  es_fputs (tmp, es_stdout);
+                  xfree (tmp);
+                  if (n%3 == 1)
+                    es_putc ('=', es_stdout);
+                  if (n%3)
+                    es_putc ('=', es_stdout);
+                }
+              else
+                {
+                  es_fwrite( p, n, 1, es_stdout );
+                }
+              xfree(p);
+              if (!endless)
+                count -= n;
 	    }
-            if (opt.armor)
-              es_putc ('\n', es_stdout);
+          if (opt.armor || hexhack)
+            es_putc ('\n', es_stdout);
 	}
 	break;
 
