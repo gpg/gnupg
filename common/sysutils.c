@@ -40,6 +40,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <limits.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
 #ifdef HAVE_STAT
@@ -54,6 +56,10 @@
 # include <sys/time.h>
 # include <sys/resource.h>
 #endif
+#ifdef HAVE_PWD_H
+# include <pwd.h>
+# include <grp.h>
+#endif /*HAVE_PWD_H*/
 #ifdef HAVE_W32_SYSTEM
 # if WINVER < 0x0500
 #   define WINVER 0x0500  /* Required for AllowSetForegroundWindow.  */
@@ -1051,6 +1057,98 @@ gnupg_getcwd (void)
       size *= 2;
 #endif
     }
+}
+
+
+/* Try to set an envvar.  Print only a notice on error.  */
+static void
+try_set_envvar (const char *name, const char *value, int silent)
+{
+  if (gnupg_setenv (name, value, 1))
+    if (!silent)
+      log_info ("error setting envvar %s to '%s': %s\n", name, value,
+                gpg_strerror (my_error_from_syserror ()));
+}
+
+
+/* Switch to USER which is either a name or an UID.  This is a nop
+ * under Windows.  Note that in general it is only possible to switch
+ * to another user id if the process is running under root.  if silent
+ * is set no diagnostics are printed.  */
+gpg_error_t
+gnupg_chuid (const char *user, int silent)
+{
+#ifdef HAVE_W32_SYSTEM
+  (void)user;  /* Not implemented for Windows - ignore.  */
+  (void)silent;
+  return 0;
+
+#elif HAVE_PWD_H /* A proper Unix  */
+  unsigned long ul;
+  struct passwd *pw;
+  struct stat st;
+  char *endp;
+  gpg_error_t err;
+
+  gpg_err_set_errno (0);
+  ul = strtoul (user, &endp, 10);
+  if (errno || endp == user || *endp)
+    pw = getpwnam (user);  /* Not a number; assume USER is a name.  */
+  else
+    pw = getpwuid ((uid_t)ul);
+
+  if (!pw)
+    {
+      if (!silent)
+        log_error ("user '%s' not found\n", user);
+      return my_error (GPG_ERR_NOT_FOUND);
+    }
+
+  /* Try to set some envvars even if we are already that user.  */
+  if (!stat (pw->pw_dir, &st))
+    try_set_envvar ("HOME", pw->pw_dir, silent);
+
+  try_set_envvar ("USER", pw->pw_name, silent);
+  try_set_envvar ("LOGNAME", pw->pw_name, silent);
+#ifdef _AIX
+  try_set_envvar ("LOGIN", pw->pw_name, silent);
+#endif
+
+  if (getuid () == pw->pw_uid)
+    return 0;  /* We are already this user.  */
+
+  /* If we need to switch set PATH to a standard value and make sure
+   * GNUPGHOME is not set. */
+  try_set_envvar ("PATH", "/usr/local/bin:/usr/bin:/bin", silent);
+  if (gnupg_unsetenv ("GNUPGHOME"))
+    if (!silent)
+      log_info ("error unsetting envvar %s: %s\n", "GNUPGHOME",
+                gpg_strerror (gpg_error_from_syserror ()));
+
+  if (initgroups (pw->pw_name, pw->pw_gid))
+    {
+      err = my_error_from_syserror ();
+      if (!silent)
+        log_error ("error setting supplementary groups for '%s': %s\n",
+                   pw->pw_name, gpg_strerror (err));
+      return err;
+    }
+
+  if (setuid (pw->pw_uid))
+    {
+      err = my_error_from_syserror ();
+      log_error ("error switching to user '%s': %s\n",
+                 pw->pw_name, gpg_strerror (err));
+      return err;
+    }
+
+  return 0;
+
+#else /*!HAVE_PWD_H */
+  if (!silent)
+    log_info ("system is missing passwd querying functions\n");
+  return my_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
 
 
