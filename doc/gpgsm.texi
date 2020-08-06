@@ -675,6 +675,17 @@ interoperability problems.
 
 @table @gnupgtabopt
 
+@item --chuid @var{uid}
+@opindex chuid
+Change the current user to @var{uid} which may either be a number or a
+name.  This can be used from the root account to run gpgsm for
+another user.  If @var{uid} is not the current UID a standard PATH is
+set and the envvar GNUPGHOME is unset.  To override the latter the
+option @option{--homedir} can be used.  This option has only an effect
+when used on the command line.  This option has currently no effect at
+all on Windows.
+
+
 @item --extra-digest-algo @var{name}
 @opindex extra-digest-algo
 Sometimes signatures are broken in that they announce a different digest

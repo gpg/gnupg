@@ -200,6 +200,7 @@ enum cmd_and_opt_values {
   oIgnoreCertExtension,
   oAuthenticode,
   oAttribute,
+  oChUid,
   oNoAutostart
  };
 
@@ -426,6 +427,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLCctype,    "lc-ctype", "@"),
   ARGPARSE_s_s (oLCmessages, "lc-messages", "@"),
   ARGPARSE_s_s (oXauthority, "xauthority", "@"),
+  ARGPARSE_s_s (oChUid, "chuid", "@"),
 
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
@@ -990,6 +992,7 @@ main ( int argc, char **argv)
   estream_t htmlauditfp = NULL;
   struct assuan_malloc_hooks malloc_hooks;
   int pwfd = -1;
+  const char *changeuser = NULL;
   /*mtrace();*/
 
   early_system_init ();
@@ -1062,6 +1065,10 @@ main ( int argc, char **argv)
           gnupg_set_homedir (pargs.r.ret_str);
           break;
 
+        case oChUid:
+          changeuser = pargs.r.ret_str;
+          break;
+
         case aCallProtectTool:
           /* Make sure that --version and --help are passed to the
            * protect-tool. */
@@ -1078,7 +1085,7 @@ main ( int argc, char **argv)
 
   /*
      Now we are now working under our real uid
-  */
+   */
 
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
 
@@ -1095,6 +1102,9 @@ main ( int argc, char **argv)
   ctrl.no_server = 1;
   ctrl.status_fd = -1; /* No status output. */
   ctrl.autodetect_encoding = 1;
+
+  if (changeuser && gnupg_chuid (changeuser, 0))
+    log_inc_errorcount (); /* Force later termination.  */
 
   /* Set the default policy file */
   opt.policy_file = make_filename (gnupg_homedir (), "policies.txt", NULL);
@@ -1383,6 +1393,7 @@ main ( int argc, char **argv)
           break;
 
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
+        case oChUid: break;  /* Command line only (see above).  */
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
 
         case oDisplay:
