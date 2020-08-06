@@ -685,18 +685,44 @@ blob_x509_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
 static inline int
 has_short_kid (KEYBOXBLOB blob, u32 lkid)
 {
+  const unsigned char *buffer;
+  size_t length;
+  int fpr32;
   unsigned char buf[4];
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 48)
+    return 0; /* blob too short */
+  fpr32 = buffer[5] == 2;
+  if (fpr32 && length < 56)
+    return 0; /* blob to short */
+
   buf[0] = lkid >> 24;
   buf[1] = lkid >> 16;
   buf[2] = lkid >> 8;
   buf[3] = lkid;
-  return blob_cmp_fpr_part (blob, buf, 16, 4);
+
+  if (fpr32)
+    return blob_cmp_fpr_part (blob, buf, 0, 4);
+  else
+    return blob_cmp_fpr_part (blob, buf, 16, 4);
 }
 
 static inline int
 has_long_kid (KEYBOXBLOB blob, u32 mkid, u32 lkid)
 {
+  const unsigned char *buffer;
+  size_t length;
+  int fpr32;
   unsigned char buf[8];
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 48)
+    return 0; /* blob too short */
+  fpr32 = buffer[5] == 2;
+  if (fpr32 && length < 56)
+    return 0; /* blob to short */
+
   buf[0] = mkid >> 24;
   buf[1] = mkid >> 16;
   buf[2] = mkid >> 8;
@@ -705,7 +731,11 @@ has_long_kid (KEYBOXBLOB blob, u32 mkid, u32 lkid)
   buf[5] = lkid >> 16;
   buf[6] = lkid >> 8;
   buf[7] = lkid;
-  return blob_cmp_fpr_part (blob, buf, 12, 8);
+
+  if (fpr32)
+    return blob_cmp_fpr_part (blob, buf, 0, 8);
+  else
+    return blob_cmp_fpr_part (blob, buf, 12, 8);
 }
 
 static inline int
