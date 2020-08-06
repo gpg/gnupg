@@ -415,6 +415,16 @@ Try to be as quiet as possible.
 
 @include opt-homedir.texi
 
+@item --chuid @var{uid}
+@opindex chuid
+Change the current user to @var{uid} which may either be a number or a
+name.  This can be used from the root account to get information on
+the GnuPG environment of the specified user or to start or kill
+daemons.  If @var{uid} is not the current UID a standard PATH is set
+and the envvar GNUPGHOME is unset.  To override the latter the option
+@option{--homedir} can be used.  This option has currently no effect
+on Windows.
+
 @item -n
 @itemx --dry-run
 Do not actually change anything.  This is currently only implemented

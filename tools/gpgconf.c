@@ -51,6 +51,7 @@ enum cmd_and_opt_values
     oBuilddir,
     oStatusFD,
     oShowSocket,
+    oChUid,
 
     aListComponents,
     aCheckPrograms,
@@ -113,6 +114,7 @@ static gpgrt_opt_t opts[] =
     { oNull, "null", 0, "@" },
     { oNoVerbose, "no-verbose",  0, "@"},
     ARGPARSE_s_n (oShowSocket, "show-socket", "@"),
+    ARGPARSE_s_s (oChUid, "chuid", "@"),
 
     ARGPARSE_end(),
   };
@@ -547,6 +549,7 @@ main (int argc, char **argv)
   enum cmd_and_opt_values cmd = 0;
   estream_t outfp = NULL;
   int show_socket = 0;
+  const char *changeuser = NULL;
 
   early_system_init ();
   gnupg_reopen_std (GPGCONF_NAME);
@@ -579,6 +582,7 @@ main (int argc, char **argv)
           set_status_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
           break;
         case oShowSocket: show_socket = 1; break;
+        case oChUid:      changeuser = pargs.r.ret_str; break;
 
 	case aListDirs:
         case aListComponents:
@@ -619,6 +623,10 @@ main (int argc, char **argv)
     }
 
   fname = argc ? *argv : NULL;
+
+  /* If requested switch to the requested user or die.  */
+  if (changeuser && (err = gnupg_chuid (changeuser, 0)))
+    gpgconf_failure (err);
 
   /* Set the configuraton directories for use by gpgrt_argparser.  We
    * don't have a configuration file for this program but we have code
