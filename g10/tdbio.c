@@ -1909,12 +1909,9 @@ tdbio_search_trust_byfpr (ctrl_t ctrl, const byte *fingerprint, TRUSTREC *rec)
 gpg_error_t
 tdbio_search_trust_bypk (ctrl_t ctrl, PKT_public_key *pk, TRUSTREC *rec)
 {
-  byte fingerprint[MAX_FINGERPRINT_LEN];
-  size_t fingerlen;
+  byte fingerprint[20];
 
-  fingerprint_from_pk( pk, fingerprint, &fingerlen );
-  for (; fingerlen < 20; fingerlen++)
-    fingerprint[fingerlen] = 0;
+  fpr20_from_pk (pk, fingerprint);
   return tdbio_search_trust_byfpr (ctrl, fingerprint, rec);
 }
 

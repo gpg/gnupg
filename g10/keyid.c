@@ -867,6 +867,38 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 }
 
 
+/*
+ * Get FPR20 for the given PK/SK into ARRAY.
+ *
+ * FPR20 is special form of fingerprint of length 20 for the record of
+ * trustdb.  For v4key, having fingerprint with SHA-1, FPR20 is the
+ * same one.  For v5key, FPR20 is constructed from its fingerprint
+ * with SHA-2, so that its kid of last 8-byte can be as same as
+ * kid of v5key fingerprint.
+ *
+ */
+void
+fpr20_from_pk (PKT_public_key *pk, byte array[20])
+{
+  if (!pk->fprlen)
+    compute_fingerprint (pk);
+
+  if (!array)
+    array = xmalloc (pk->fprlen);
+
+  if (pk->fprlen == 32)         /* v5 fingerprint */
+    {
+      memcpy (array +  0, pk->fpr + 20, 4);
+      memcpy (array +  4, pk->fpr + 24, 4);
+      memcpy (array +  8, pk->fpr + 28, 4);
+      memcpy (array + 12, pk->fpr +  0, 4); /* kid[0] */
+      memcpy (array + 16, pk->fpr +  4, 4); /* kid[1] */
+    }
+  else                          /* v4 fingerprint */
+    memcpy (array, pk->fpr, 20);
+}
+
+
 /* Return an allocated buffer with the fingerprint of PK formatted as
  * a plain hexstring.  If BUFFER is NULL the result is a malloc'd
  * string.  If BUFFER is not NULL the result will be copied into this

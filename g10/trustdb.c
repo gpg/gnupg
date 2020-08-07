@@ -39,6 +39,49 @@
 #include "tofu.h"
 #include "key-clean.h"
 
+static u32
+keyid_from_fpr20 (ctrl_t ctrl, const byte *fpr, u32 *keyid)
+{
+  u32 dummy_keyid[2];
+  int fprlen;
+
+  if( !keyid )
+    keyid = dummy_keyid;
+
+  /* Problem: We do only use fingerprints in the trustdb but
+   * we need the keyID here to indetify the key; we can only
+   * use that ugly hack to distinguish between 16 and 20
+   * bytes fpr - it does not work always so we better change
+   * the whole validation code to only work with
+   * fingerprints */
+  fprlen = (!fpr[16] && !fpr[17] && !fpr[18] && !fpr[19])? 16:20;
+
+  if (fprlen != 20)
+    {
+      /* This is special as we have to lookup the key first.  */
+      PKT_public_key pk;
+      int rc;
+
+      memset (&pk, 0, sizeof pk);
+      rc = get_pubkey_byfprint (ctrl, &pk, NULL, fpr, fprlen);
+      if (rc)
+        {
+          log_printhex (fpr, fprlen,
+                        "Oops: keyid_from_fingerprint: no pubkey; fpr:");
+          keyid[0] = 0;
+          keyid[1] = 0;
+        }
+      else
+        keyid_from_pk (&pk, keyid);
+    }
+  else
+    {
+      keyid[0] = buf32_to_u32 (fpr+12);
+      keyid[1] = buf32_to_u32 (fpr+16);
+    }
+
+  return keyid[1];
+}
 
 typedef struct key_item **KeyHashTable; /* see new_key_hash_table() */
 
@@ -277,24 +320,15 @@ verify_own_keys (ctrl_t ctrl)
   /* scan the trustdb to find all ultimately trusted keys */
   for (recnum=1; !tdbio_read_record (recnum, &rec, 0); recnum++ )
     {
-      if ( rec.rectype == RECTYPE_TRUST
-           && (rec.r.trust.ownertrust & TRUST_MASK) == TRUST_ULTIMATE)
+      if (rec.rectype == RECTYPE_TRUST
+          && (rec.r.trust.ownertrust & TRUST_MASK) == TRUST_ULTIMATE)
         {
-            byte *fpr = rec.r.trust.fingerprint;
-            int fprlen;
-            u32 kid[2];
+          u32 kid[2];
 
-            /* Problem: We do only use fingerprints in the trustdb but
-             * we need the keyID here to indetify the key; we can only
-             * use that ugly hack to distinguish between 16 and 20
-             * butes fpr - it does not work always so we better change
-             * the whole validation code to only work with
-             * fingerprints */
-            fprlen = (!fpr[16] && !fpr[17] && !fpr[18] && !fpr[19])? 16:20;
-            keyid_from_fingerprint (ctrl, fpr, fprlen, kid);
-            if (!add_utk (kid))
-	      log_info(_("key %s occurs more than once in the trustdb\n"),
-		       keystr(kid));
+          keyid_from_fpr20 (ctrl, rec.r.trust.fingerprint, kid);
+          if (!add_utk (kid))
+            log_info (_("key %s occurs more than once in the trustdb\n"),
+                      keystr(kid));
         }
     }
 
@@ -779,15 +813,13 @@ tdb_update_ownertrust (ctrl_t ctrl, PKT_public_key *pk, unsigned int new_trust )
     }
   else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     { /* no record yet - create a new one */
-      size_t dummy;
-
       if (DBG_TRUST)
         log_debug ("insert ownertrust %u\n", new_trust );
 
       memset (&rec, 0, sizeof rec);
       rec.recnum = tdbio_new_recnum (ctrl);
       rec.rectype = RECTYPE_TRUST;
-      fingerprint_from_pk (pk, rec.r.trust.fingerprint, &dummy);
+      fpr20_from_pk (pk, rec.r.trust.fingerprint);
       rec.r.trust.ownertrust = new_trust;
       write_record (ctrl, &rec);
       tdb_revalidation_mark (ctrl);
@@ -837,15 +869,13 @@ update_min_ownertrust (ctrl_t ctrl, u32 *kid, unsigned int new_trust)
     }
   else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     { /* no record yet - create a new one */
-      size_t dummy;
-
       if (DBG_TRUST)
         log_debug ("insert min_ownertrust %u\n", new_trust );
 
       memset (&rec, 0, sizeof rec);
       rec.recnum = tdbio_new_recnum (ctrl);
       rec.rectype = RECTYPE_TRUST;
-      fingerprint_from_pk (pk, rec.r.trust.fingerprint, &dummy);
+      fpr20_from_pk (pk, rec.r.trust.fingerprint);
       rec.r.trust.min_ownertrust = new_trust;
       write_record (ctrl, &rec);
       tdb_revalidation_mark (ctrl);
@@ -925,12 +955,10 @@ update_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
   if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     {
       /* No record yet - create a new one. */
-      size_t dummy;
-
       memset (&trec, 0, sizeof trec);
       trec.recnum = tdbio_new_recnum (ctrl);
       trec.rectype = RECTYPE_TRUST;
-      fingerprint_from_pk (pk, trec.r.trust.fingerprint, &dummy);
+      fpr20_from_pk (pk, trec.r.trust.fingerprint);
       trec.r.trust.ownertrust = 0;
       }
 
