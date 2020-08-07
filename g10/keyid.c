@@ -567,7 +567,10 @@ keyid_from_pk (PKT_public_key *pk, u32 *keyid)
   keyid[0] = pk->keyid[0];
   keyid[1] = pk->keyid[1];
 
-  return keyid[1]; /*FIXME:shortkeyid is different for v5*/
+  if (pk->fprlen == 32)
+    return keyid[0];
+  else
+    return keyid[1];
 }
 
 

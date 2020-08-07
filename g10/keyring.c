@@ -1174,8 +1174,10 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
             break;
 
           case KEYDB_SEARCH_MODE_SHORT_KID:
-            if (pk && desc[n].u.kid[1] == aki[1])
-              goto found;
+            if (pk
+               && ((pk->fprlen == 32 && desc[n].u.kid[1] == aki[0])
+                   || (pk->fprlen != 32 && desc[n].u.kid[1] == aki[1])))
+                goto found;
             break;
           case KEYDB_SEARCH_MODE_LONG_KID:
             if (pk && desc[n].u.kid[0] == aki[0]
