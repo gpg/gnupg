@@ -2284,6 +2284,14 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           indatalen -= oidbuflen;
         }
     }
+  else if (mechanism == PIV_ALGORITHM_RSA
+           && indatalen == 2048/8 && indata[indatalen-1] == 0xBC)
+    {
+      /* If the provided data length matches the supported RSA
+       * framelen and the last octet of the data is 0xBC, we assume
+       * this is PSS formatted data and we use it verbatim; PIV cards
+       * accept PSS as well as PKCS#1.  */
+    }
   else if (mechanism == PIV_ALGORITHM_RSA)
     {
       /* PIV requires 2048 bit RSA.  */
@@ -2471,7 +2479,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
  * between AUTH and SIGN is that AUTH expects that pkcs#1.5 padding
  * for RSA has already been done (digestInfo part w/o the padding)
  * whereas SIGN may accept a plain digest and does the padding if
- * needed.  This is also the reason why SIGN takes a hashalgo. */
+ * needed.  This is also the reason why SIGN takes a hashalgo.  For
+ * both it is also acceptable to receive fully prepared PSS data.  */
 static gpg_error_t
 do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
          gpg_error_t (*pincb)(void*, const char *, char **),
