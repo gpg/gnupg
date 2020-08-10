@@ -497,6 +497,12 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         err = do_encode_dsa (data, datalen,
                              algo, s_skey,
                              &s_hash);
+      else if (ctrl->digest.is_pss)
+        {
+          log_info ("signing with rsaPSS is currently only supported"
+                    " for (some) smartcards\n");
+          err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+        }
       else
         err = do_encode_md (data, datalen,
                             ctrl->digest.algo,
@@ -540,7 +546,13 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
       if (s_hash == NULL)
         {
-          if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
+          if (ctrl->digest.is_pss)
+            {
+              err = gcry_sexp_build (&s_hash, NULL,
+                                     "(data (flags raw) (value %b))",
+                                     (int)datalen, data);
+            }
+          else if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
             err = do_encode_raw_pkcs1 (data, datalen,
                                        gcry_pk_get_nbits (sexp_key), &s_hash);
           else

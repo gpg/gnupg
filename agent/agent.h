@@ -254,12 +254,14 @@ struct server_control_s
   /* Information on the currently used digest (for signing commands).  */
   struct {
     char *data;    /* NULL or malloced data of length VALUELEN.  If
-                      this is set The other fields are ignored.  Used
-                      for PureEdDSA. */
+                      this is set the other fields are ignored.  Used
+                      for PureEdDSA and RSA with PSS (in which case
+                      data_is_pss is also set).  */
     int valuelen;
     int algo;
     unsigned char value[MAX_DIGEST_LEN];
-    int raw_value: 1;
+    unsigned int raw_value: 1;
+    unsigned int is_pss: 1;    /* DATA holds PSS formated data.  */
   } digest;
   unsigned char keygrip[20];
   int have_keygrip;

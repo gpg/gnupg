@@ -707,11 +707,12 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
 
 static const char hlp_sethash[] =
   "SETHASH (--hash=<name>)|(<algonumber>) <hexstring>]\n"
-  "SETHASH --inquire\n"
+  "SETHASH [--pss] --inquire\n"
   "\n"
   "The client can use this command to tell the server about the data\n"
   "(which usually is a hash) to be signed.  The option --inquire is\n"
-  "used to ask back for to-be-signed data in case of PureEdDSA";
+  "used to ask back for to-be-signed data in case of PureEdDSA or\n"
+  "with --pss for pre-formatted rsaPSS.";
 static gpg_error_t
 cmd_sethash (assuan_context_t ctx, char *line)
 {
@@ -722,7 +723,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
   unsigned char *buf;
   char *endp;
   int algo;
-  int opt_inquire;
+  int opt_inquire, opt_pss;
 
   /* Parse the alternative hash options which may be used instead of
      the algo number.  */
@@ -744,6 +745,8 @@ cmd_sethash (assuan_context_t ctx, char *line)
         algo = GCRY_MD_MD5;
       else if (has_option (line, "--hash=tls-md5sha1"))
         algo = MD_USER_TLS_MD5SHA1;
+      else if (has_option (line, "--hash=none"))
+        algo = 0;
       else
         {
           err = set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
@@ -753,6 +756,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
   else
     algo = 0;
 
+  opt_pss = has_option (line, "--pss");
   opt_inquire = has_option (line, "--inquire");
   line = skip_options (line);
 
@@ -772,6 +776,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
   ctrl->digest.data = NULL;
   ctrl->digest.algo = algo;
   ctrl->digest.raw_value = 0;
+  ctrl->digest.is_pss = opt_pss;
 
   if (opt_inquire)
     {
@@ -3807,6 +3812,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 
   ctrl->digest.data = NULL;
   ctrl->digest.raw_value = 0;
+  ctrl->digest.is_pss = 0;
 
   assuan_set_io_monitor (ctx, io_monitor, NULL);
   agent_set_progress_cb (progress_cb, ctrl);

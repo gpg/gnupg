@@ -891,7 +891,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
 
 
 static const char hlp_pksign[] =
-  "PKSIGN [--hash=[rmd160|sha{1,224,256,384,512}|md5]] <hexified_id>\n"
+  "PKSIGN [--hash=[rmd160|sha{1,224,256,384,512}|md5|none]] <hexified_id>\n"
   "\n"
   "The --hash option is optional; the default is SHA1.";
 static gpg_error_t
@@ -920,6 +920,8 @@ cmd_pksign (assuan_context_t ctx, char *line)
     hash_algo = GCRY_MD_SHA512;
   else if (has_option (line, "--hash=md5"))
     hash_algo = GCRY_MD_MD5;
+  else if (has_option (line, "--hash=none"))  /* For raw RSA.  */
+    hash_algo = 0;
   else if (!strstr (line, "--"))
     hash_algo = GCRY_MD_SHA1;
   else

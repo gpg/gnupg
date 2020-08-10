@@ -2790,6 +2790,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   ctrl->digest.algo = hash_algo;
   xfree (ctrl->digest.data);
   ctrl->digest.data = NULL;
+  ctrl->digest.is_pss = 0;
   if ((spec.flags & SPEC_FLAG_USE_PKCS1V2))
     ctrl->digest.raw_value = 0;
   else
