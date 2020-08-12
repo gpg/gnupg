@@ -97,6 +97,13 @@ map_sw (int sw)
     case SW_HOST_ABORTED:        ec = GPG_ERR_INV_RESPONSE; break;
     case SW_HOST_NO_PINPAD:      ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_HOST_CANCELLED:      ec = GPG_ERR_CANCELED; break;
+    case SW_HOST_USB_OTHER:      ec = GPG_ERR_EIO; break;
+    case SW_HOST_USB_IO:         ec = GPG_ERR_EIO; break;
+    case SW_HOST_USB_ACCESS:     ec = GPG_ERR_EACCES; break;
+    case SW_HOST_USB_NO_DEVICE:  ec = GPG_ERR_ENODEV; break;
+    case SW_HOST_USB_BUSY:       ec = GPG_ERR_EBUSY; break;
+    case SW_HOST_USB_TIMEOUT:    ec = GPG_ERR_TIMEOUT; break;
+    case SW_HOST_USB_OVERFLOW:   ec = GPG_ERR_EOVERFLOW; break;
 
     default:
       if ((sw & 0x010000))
