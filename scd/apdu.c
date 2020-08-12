@@ -1584,12 +1584,14 @@ ccid_pinpad_operation (int slot, int class, int ins, int p0, int p1,
 
 /* Open the reader and try to read an ATR.  */
 static int
-open_ccid_reader (struct dev_list *dl)
+open_ccid_reader (struct dev_list *dl, int *r_cciderr)
 {
   int err;
   int slot;
   int require_get_status;
   reader_table_t slotp;
+
+  *r_cciderr = 0;
 
   slot = new_reader_slot ();
   if (slot == -1)
@@ -1610,6 +1612,7 @@ open_ccid_reader (struct dev_list *dl)
     {
       slotp->used = 0;
       unlock_slot (slot);
+      *r_cciderr = err;
       return -1;
     }
 
@@ -2110,9 +2113,11 @@ apdu_open_reader (struct dev_list *dl)
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
     { /* CCID readers.  */
+      int cciderr;
+
       if (readerno > 0)
         { /* Use single, the specific reader.  */
-          slot = open_ccid_reader (dl);
+          slot = open_ccid_reader (dl, &cciderr);
           /* And stick the reader and no scan.  */
           dl->idx = dl->idx_max;
           return slot;
@@ -2137,7 +2142,7 @@ apdu_open_reader (struct dev_list *dl)
               if (DBG_READER)
                 log_debug ("apdu_open_reader: new device=%x\n", bai);
 
-              slot = open_ccid_reader (dl);
+              slot = open_ccid_reader (dl, &cciderr);
 
               dl->idx++;
               if (slot >= 0)
@@ -2146,6 +2151,11 @@ apdu_open_reader (struct dev_list *dl)
                 {
                   /* Skip this reader.  */
                   log_error ("ccid open error: skip\n");
+                  if (cciderr == CCID_DRIVER_ERR_USB_ACCESS)
+                    log_info ("check permission of USB device at"
+                              " Bus %03d Device %03d\n",
+                              ((bai >> 16) & 0xff),
+                              ((bai >> 8) & 0xff));
                   continue;
                 }
             }
