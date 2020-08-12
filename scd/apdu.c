@@ -521,6 +521,13 @@ host_sw_string (long err)
     case SW_HOST_NO_PINPAD: return "no pinpad";
     case SW_HOST_ALREADY_CONNECTED: return "already connected";
     case SW_HOST_CANCELLED: return "cancelled";
+    case SW_HOST_USB_OTHER:    return "USB general error";
+    case SW_HOST_USB_IO:       return "USB I/O error";
+    case SW_HOST_USB_ACCESS:   return "USB permission denied";
+    case SW_HOST_USB_NO_DEVICE:return "USB no device";
+    case SW_HOST_USB_BUSY:     return "USB busy";
+    case SW_HOST_USB_TIMEOUT:  return "USB timeout";
+    case SW_HOST_USB_OVERFLOW: return "USB overflow";
     default: return "unknown host status error";
     }
 }

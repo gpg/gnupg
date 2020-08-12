@@ -108,6 +108,13 @@ enum {
 #define CCID_DRIVER_ERR_NO_READER      0x1000c
 #define CCID_DRIVER_ERR_ABORTED        0x1000d
 #define CCID_DRIVER_ERR_NO_PINPAD      0x1000e
+#define CCID_DRIVER_ERR_USB_OTHER      0x10020
+#define CCID_DRIVER_ERR_USB_IO         0x10021
+#define CCID_DRIVER_ERR_USB_ACCESS     0x10023
+#define CCID_DRIVER_ERR_USB_NO_DEVICE  0x10024
+#define CCID_DRIVER_ERR_USB_BUSY       0x10026
+#define CCID_DRIVER_ERR_USB_TIMEOUT    0x10027
+#define CCID_DRIVER_ERR_USB_OVERFLOW   0x10028
 
 struct ccid_driver_s;
 typedef struct ccid_driver_s *ccid_driver_t;

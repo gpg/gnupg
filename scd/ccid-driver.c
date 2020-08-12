@@ -271,6 +271,24 @@ static int send_escape_cmd (ccid_driver_t handle, const unsigned char *data,
                             size_t datalen, unsigned char *result,
                             size_t resultmax, size_t *resultlen);
 
+
+static int
+map_libusb_error (int usberr)
+{
+  switch (usberr)
+    {
+    case 0:                     return 0;
+    case LIBUSB_ERROR_IO:       return CCID_DRIVER_ERR_USB_IO;
+    case LIBUSB_ERROR_ACCESS:   return CCID_DRIVER_ERR_USB_ACCESS;
+    case LIBUSB_ERROR_NO_DEVICE:return CCID_DRIVER_ERR_USB_NO_DEVICE;
+    case LIBUSB_ERROR_BUSY:     return CCID_DRIVER_ERR_USB_BUSY;
+    case LIBUSB_ERROR_TIMEOUT:  return CCID_DRIVER_ERR_USB_TIMEOUT;
+    case LIBUSB_ERROR_OVERFLOW: return CCID_DRIVER_ERR_USB_OVERFLOW;
+    }
+  return CCID_DRIVER_ERR_USB_OTHER;
+}
+
+
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
 static unsigned int
@@ -1568,7 +1586,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
       DEBUGOUT_1 ("usb_open failed: %s\n", libusb_error_name (rc));
       free (*handle);
       *handle = NULL;
-      return rc;
+      return map_libusb_error (rc);
     }
 
   if (ccid_usb_thread_is_alive++ == 0)
@@ -1603,6 +1621,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
   if (rc)
     {
       DEBUGOUT ("get_device_descripor failed\n");
+      rc = map_libusb_error (rc);
       goto leave;
     }
 
@@ -1642,7 +1661,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
   if (rc)
     {
       DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
-      rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
+      rc = map_libusb_error (rc);
       goto leave;
     }
 
@@ -1651,7 +1670,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
   if (rc)
     {
       DEBUGOUT_1 ("usb_set_interface_alt_setting failed: %d\n", rc);
-      rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
+      rc = map_libusb_error (rc);
       goto leave;
     }
 
@@ -1964,12 +1983,9 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
     {
       DEBUGOUT_1 ("usb_bulk_read error: %s\n", libusb_error_name (rc));
       if (rc == LIBUSB_ERROR_NO_DEVICE)
-        {
-          handle->enodev_seen = 1;
-          return CCID_DRIVER_ERR_NO_READER;
-        }
+        handle->enodev_seen = 1;
 
-      return CCID_DRIVER_ERR_CARD_IO_ERROR;
+      return map_libusb_error (rc);
     }
   if (msglen < 0)
     return CCID_DRIVER_ERR_INV_VALUE;  /* Faulty libusb.  */
@@ -2122,7 +2138,7 @@ abort_cmd (ccid_driver_t handle, int seqno)
   if (rc)
     {
       DEBUGOUT_1 ("usb_control_msg error: %s\n", libusb_error_name (rc));
-      return CCID_DRIVER_ERR_CARD_IO_ERROR;
+      return map_libusb_error (rc);
     }
 
   /* Now send the abort command to the bulk out pipe using the same
@@ -2159,7 +2175,7 @@ abort_cmd (ccid_driver_t handle, int seqno)
                     libusb_error_name (rc));
 
       if (rc)
-        return rc;
+        return map_libusb_error (rc);
 
 #ifdef USE_NPTH
       npth_unprotect ();
@@ -2174,7 +2190,7 @@ abort_cmd (ccid_driver_t handle, int seqno)
         {
           DEBUGOUT_1 ("usb_bulk_read error in abort_cmd: %s\n",
                       libusb_error_name (rc));
-          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+          return map_libusb_error (rc);
         }
 
       if (msglen < 10)
