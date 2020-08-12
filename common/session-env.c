@@ -70,6 +70,7 @@ static struct
   { "XAUTHORITY","xauthority"},  /* Xlib Authentication.  */
   { "XMODIFIERS" },              /* Used by Xlib to select X input
                                       modules (eg "@im=SCIM").  */
+  { "WAYLAND_DISPLAY" },         /* For the Wayland display engine.  */
   { "GTK_IM_MODULE" },           /* Used by gtk to select gtk input
                                     modules (eg "scim-bridge").  */
   { "DBUS_SESSION_BUS_ADDRESS" },/* Used by GNOME3 to talk to gcr over
