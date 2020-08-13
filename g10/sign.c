@@ -597,7 +597,7 @@ openpgp_card_v1_p (PKT_public_key *pk)
 }
 
 
-
+/* Get a matching hash algorithm for DSA and ECDSA.  */
 static int
 match_dsa_hash (unsigned int qbytes)
 {
@@ -674,9 +674,13 @@ hash_for (PKT_public_key *pk)
 	 160-bit hash unless --enable-dsa2 is set, in which case act
 	 like a new DSA key that just happens to have a 160-bit q
 	 (i.e. allow truncation).  If q is not 160, by definition it
-	 must be a new DSA key. */
+	 must be a new DSA key.  We ignore the personal_digest_prefs
+	 for ECDSA because they should always macth the curve and
+	 truncated hashes are not useful either.  Even worse,
+	 smartcards may reject non matching hash lengths for curves
+	 (e.g. using SHA-512 with brainpooolP385r1 on a Yubikey).  */
 
-      if (opt.personal_digest_prefs)
+      if (pk->pubkey_algo == PUBKEY_ALGO_DSA && opt.personal_digest_prefs)
 	{
 	  prefitem_t *prefs;
 
