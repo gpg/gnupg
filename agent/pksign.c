@@ -187,7 +187,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int pkalgo, gcry_sexp_t pkey,
       return gpg_error (GPG_ERR_INV_LENGTH);
     }
 
-  /* ECDSA 521 is special has it is larger than the largest hash
+  /* ECDSA 521 is special as it is larger than the largest hash
      we have (SHA-512).  Thus we change the size for further
      processing to 512.  */
   if (pkalgo == GCRY_PK_ECC && qbits > 512)

@@ -1576,6 +1576,19 @@ Description of some debug flags:
 
 
 * Miscellaneous notes
+** List of useful RFCs
+  - RFC-3447 :: PKCS  #1: RSA Cryptography Specifications Version 2.1
+  - RFC-4880 :: OpenPGP
+  - RFC-5280 :: X.509 PKI Certificate and CRL Profile
+  - RFC-6818 :: Updates to the X.509 PKI Certificate and CRL Profile
+  - RFC-8398 :: Internationalized Email Addresses in X.509 Certificates.
+  - RFC-8399 :: Internationalization Updates to RFC 5280
+  - RFC-5480 :: ECC Subject Public Key Information
+  - RFC-8813 :: Clarifications for ECC Subject Public Key
+  - RFC-5915 :: Elliptic Curve Private Key Structure
+  - RFC-5958 :: Asymmetric Key Packages
+  - RFC-7292 :: PKCS #12: Personal Information Exchange Syntax v1.1
+  - RFC-8351 :: The PKCS #8 EncryptedPrivateKeyInfo Media Type
 
 ** v3 fingerprints
    For packet version 3 we calculate the keyids this way:
