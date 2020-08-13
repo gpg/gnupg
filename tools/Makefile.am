@@ -55,13 +55,13 @@ libexec_PROGRAMS = gpg-wks-client
 
 bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
-bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server}
+bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit
 endif
 
 libexec_PROGRAMS += gpg-check-pattern
 
 if !HAVE_W32CE_SYSTEM
-noinst_PROGRAMS = clean-sat make-dns-cert gpgsplit
+noinst_PROGRAMS = clean-sat make-dns-cert
 endif
 
 if !HAVE_W32CE_SYSTEM
