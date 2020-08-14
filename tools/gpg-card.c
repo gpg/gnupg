@@ -76,6 +76,7 @@ enum opt_values
 
     oNoKeyLookup,
     oNoHistory,
+    oChUid,
 
     oDummy
   };
@@ -104,6 +105,7 @@ static gpgrt_opt_t opts[] = {
                 "use --no-key-lookup for \"list\""),
   ARGPARSE_s_n (oNoHistory,"no-history",
                 "do not use the command history file"),
+  ARGPARSE_s_s (oChUid,      "chuid",      "@"),
 
   ARGPARSE_end ()
 };
@@ -125,6 +127,8 @@ struct keyinfolabel_s
 };
 typedef struct keyinfolabel_s *keyinfolabel_t;
 
+/* Helper for --chuid.  */
+static const char *changeuser;
 
 /* Limit of size of data we read from a file for certain commands.  */
 #define MAX_GET_DATA_FROM_FILE 16384
@@ -235,6 +239,8 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
         case oNoKeyLookup: opt.no_key_lookup = 1; break;
         case oNoHistory:   opt.no_history = 1; break;
 
+        case oChUid:       changeuser = pargs->r.ret_str; break;
+
         default: pargs->err = 2; break;
 	}
     }
@@ -278,6 +284,9 @@ main (int argc, char **argv)
   pargs.flags = ARGPARSE_FLAG_KEEP;
   parse_arguments (&pargs, opts);
   gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+
+  if (changeuser && gnupg_chuid (changeuser, 0))
+    log_inc_errorcount (); /* Force later termination.  */
 
   if (log_get_errorcount (0))
     exit (2);

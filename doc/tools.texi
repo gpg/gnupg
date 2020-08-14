@@ -1330,39 +1330,6 @@ gpg-connect-agent [options] [commands]
 The following options may be used:
 
 @table @gnupgtabopt
-@item -v
-@itemx --verbose
-@opindex verbose
-Output additional information while running.
-
-@item -q
-@item --quiet
-@opindex q
-@opindex quiet
-Try to be as quiet as possible.
-
-@include opt-homedir.texi
-
-@item --agent-program @var{file}
-@opindex agent-program
-Specify the agent program to be started if none is running.  The
-default value is determined by running @command{gpgconf} with the
-option @option{--list-dirs}.  Note that the pipe symbol (@code{|}) is
-used for a regression test suite hack and may thus not be used in the
-file name.
-
-@item --dirmngr-program @var{file}
-@opindex dirmngr-program
-Specify the directory manager (keyserver client) program to be started
-if none is running.  This has only an effect if used together with the
-option @option{--dirmngr}.
-
-@item --keyboxd-program @var{file}
-@opindex keyboxd-program
-Specify the keybox daemon program to be started if none is running.
-This has only an effect if used together with the option
-@option{--keyboxd}.
-
 @item --dirmngr
 @opindex dirmngr
 Connect to a running directory manager (keyserver client) instead of
@@ -1390,6 +1357,29 @@ execute it as an Assuan server. Here is how you would run @command{gpgsm}:
 @end smallexample
 Note that you may not use options on the command line in this case.
 
+@item -v
+@itemx --verbose
+@opindex verbose
+Output additional information while running.
+
+@item -q
+@item --quiet
+@opindex q
+@opindex quiet
+Try to be as quiet as possible.
+
+@include opt-homedir.texi
+
+@item --chuid @var{uid}
+@opindex chuid
+Change the current user to @var{uid} which may either be a number or a
+name.  This can be used from the root account to run gpg-connect-agent
+for another user.  If @var{uid} is not the current UID a standard PATH
+is set and the envvar GNUPGHOME is unset.  To override the latter the
+option @option{--homedir} can be used.  This option has only an effect
+when used on the command line.  This option has currently no effect at
+all on Windows.
+
 @item --no-ext-connect
 @opindex no-ext-connect
 When using @option{-S} or @option{--exec}, @command{gpg-connect-agent}
@@ -1406,6 +1396,26 @@ started.
 In interactive mode the command line history is usually saved and
 restored to and from a file below the GnuPG home directory.  This
 option inhibits the use of that file.
+
+@item --agent-program @var{file}
+@opindex agent-program
+Specify the agent program to be started if none is running.  The
+default value is determined by running @command{gpgconf} with the
+option @option{--list-dirs}.  Note that the pipe symbol (@code{|}) is
+used for a regression test suite hack and may thus not be used in the
+file name.
+
+@item --dirmngr-program @var{file}
+@opindex dirmngr-program
+Specify the directory manager (keyserver client) program to be started
+if none is running.  This has only an effect if used together with the
+option @option{--dirmngr}.
+
+@item --keyboxd-program @var{file}
+@opindex keyboxd-program
+Specify the keybox daemon program to be started if none is running.
+This has only an effect if used together with the option
+@option{--keyboxd}.
 
 @item -r @var{file}
 @itemx --run @var{file}

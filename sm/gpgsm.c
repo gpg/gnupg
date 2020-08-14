@@ -992,8 +992,10 @@ main ( int argc, char **argv)
   estream_t htmlauditfp = NULL;
   struct assuan_malloc_hooks malloc_hooks;
   int pwfd = -1;
-  const char *changeuser = NULL;
-  /*mtrace();*/
+
+  static const char *homedirvalue;
+  static const char *changeuser;
+
 
   early_system_init ();
   gnupg_reopen_std (GPGSM_NAME);
@@ -1062,7 +1064,7 @@ main ( int argc, char **argv)
           break;
 
         case oHomedir:
-          gnupg_set_homedir (pargs.r.ret_str);
+          homedirvalue = pargs.r.ret_str;
           break;
 
         case oChUid:
@@ -1096,15 +1098,17 @@ main ( int argc, char **argv)
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   setup_libassuan_logging (&opt.debug, NULL);
 
+  /* Change UID and then set homedir.  */
+  if (changeuser && gnupg_chuid (changeuser, 0))
+    log_inc_errorcount (); /* Force later termination.  */
+  gnupg_set_homedir (homedirvalue);
+
   /* Setup a default control structure for command line mode */
   memset (&ctrl, 0, sizeof ctrl);
   gpgsm_init_default_ctrl (&ctrl);
   ctrl.no_server = 1;
   ctrl.status_fd = -1; /* No status output. */
   ctrl.autodetect_encoding = 1;
-
-  if (changeuser && gnupg_chuid (changeuser, 0))
-    log_inc_errorcount (); /* Force later termination.  */
 
   /* Set the default policy file */
   opt.policy_file = make_filename (gnupg_homedir (), "policies.txt", NULL);

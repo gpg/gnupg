@@ -125,6 +125,16 @@ Specify a non-default gpg binary to be used by certain commands.
 @opindex gpgsm-program
 Specify a non-default gpgsm binary to be used by certain commands.
 
+@item --chuid @var{uid}
+@opindex chuid
+Change the current user to @var{uid} which may either be a number or a
+name.  This can be used from the root account to run gpg-card for
+another user.  If @var{uid} is not the current UID a standard PATH is
+set and the envvar GNUPGHOME is unset.  To override the latter the
+option @option{--homedir} can be used.  This option has only an effect
+when used on the command line.  This option has currently no effect at
+all on Windows.
+
 @end table
 
 @mansect notes (OpenPGP)

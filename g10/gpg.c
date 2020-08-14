@@ -437,6 +437,7 @@ enum cmd_and_opt_values
     oFullTimestrings,
     oIncludeKeyBlock,
     oNoIncludeKeyBlock,
+    oChUid,
 
     oNoop
   };
@@ -897,6 +898,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLCctype,    "lc-ctype",   "@"),
   ARGPARSE_s_s (oLCmessages, "lc-messages","@"),
   ARGPARSE_s_s (oXauthority, "xauthority", "@"),
+  ARGPARSE_s_s (oChUid,      "chuid",      "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oUseKeyboxd,    "use-keyboxd", "@"),
   /* Options which can be used in special circumstances. They are not
@@ -2328,6 +2330,8 @@ main (int argc, char **argv)
     static int print_dane_records;
     static int print_pka_records;
     static int allow_large_chunks;
+    static const char *homedirvalue;
+    static const char *changeuser;
 
 
 #ifdef __riscos__
@@ -2413,7 +2417,6 @@ main (int argc, char **argv)
     opt.keyid_format = KF_NONE;
     opt.def_sig_expire = "0";
     opt.def_cert_expire = "0";
-    gnupg_set_homedir (NULL);
     opt.passphrase_repeat = 1;
     opt.emit_version = 0;
     opt.weak_digests = NULL;
@@ -2446,7 +2449,11 @@ main (int argc, char **argv)
             break;
 
           case oHomedir:
-            gnupg_set_homedir (pargs.r.ret_str);
+            homedirvalue = pargs.r.ret_str;
+            break;
+
+          case oChUid:
+            changeuser = pargs.r.ret_str;
             break;
 
           case oNoPermissionWarn:
@@ -2497,6 +2504,11 @@ main (int argc, char **argv)
     assuan_set_malloc_hooks (&malloc_hooks);
     assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
     setup_libassuan_logging (&opt.debug, NULL);
+
+    /* Change UID and then set the homedir.  */
+    if (changeuser && gnupg_chuid (changeuser, 0))
+      log_inc_errorcount (); /* Force later termination.  */
+    gnupg_set_homedir (homedirvalue);
 
     /* Set default options which require that malloc stuff is ready.  */
     additional_weak_digest ("MD5");
@@ -2872,6 +2884,7 @@ main (int argc, char **argv)
             opt.def_recipient_self = 0;
             break;
 	  case oHomedir: break;
+          case oChUid: break;  /* Command line only (see above).  */
 	  case oNoBatch: opt.batch = 0; break;
 
           case oWithTofuInfo: opt.with_tofu_info = 1; break;

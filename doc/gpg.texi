@@ -3617,6 +3617,16 @@ on the configuration file.
 @c OpenPGP card while several cards are available.  This option might be
 @c removed if it turns out that nobody requires it.
 
+@item --chuid @var{uid}
+@opindex chuid
+Change the current user to @var{uid} which may either be a number or a
+name.  This can be used from the root account to run gpg for
+another user.  If @var{uid} is not the current UID a standard PATH is
+set and the envvar GNUPGHOME is unset.  To override the latter the
+option @option{--homedir} can be used.  This option has only an effect
+when used on the command line.  This option has currently no effect at
+all on Windows.
+
 @end table
 
 @c *******************************

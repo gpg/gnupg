@@ -71,8 +71,10 @@ enum cmd_and_opt_values
     oKeyboxd,
     oUIServer,
     oNoHistory,
-    oNoAutostart
+    oNoAutostart,
+    oChUid,
 
+    oNoop
   };
 
 
@@ -107,6 +109,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
   ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
+  ARGPARSE_s_s (oChUid,          "chuid",           "@"),
 
   ARGPARSE_end ()
 };
@@ -1187,6 +1190,9 @@ main (int argc, char **argv)
   char **cmdline_commands = NULL;
   char *historyname = NULL;
 
+  static const char *changeuser;
+
+
   early_system_init ();
   gnupg_rl_initialize ();
   gpgrt_set_strusage (my_strusage);
@@ -1233,11 +1239,15 @@ main (int argc, char **argv)
           opt.enable_varsubst = 1;
           opt.trim_leading_spaces = 1;
           break;
+        case oChUid:     changeuser = pargs.r.ret_str; break;
 
         default: pargs.err = 2; break;
 	}
     }
   gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+
+  if (changeuser && gnupg_chuid (changeuser, 0))
+    log_inc_errorcount (); /* Force later termination.  */
 
   if (log_get_errorcount (0))
     exit (2);
