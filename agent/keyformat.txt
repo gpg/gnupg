@@ -86,6 +86,11 @@ Format' (GCRYSEXP_FMT_ADVANCED) that avoids non-printable characters
 so that the file can be easily inspected and edited.  See section
 'Private Key Format' below for details.
 
+*** Created
+The UTC time the key was created in ISO compressed format
+(yyyymmddThhmmss).  This informarion can be used to re-create an
+OpenPGP key.
+
 *** Label
 This is a short human readable description for the key which can be
 used by the software to describe the key in a user interface.  For

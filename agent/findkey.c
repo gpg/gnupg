@@ -82,9 +82,10 @@ linefeed_to_percent0A (const char *string)
 
 /* Note: Ownership of FNAME and FP are moved to this function.  */
 static gpg_error_t
-write_extended_private_key (char *fname, estream_t fp, int update,
+write_extended_private_key (char *fname, estream_t fp, int update, int newkey,
                             const void *buf, size_t len,
-                            const char *serialno, const char *keyref)
+                            const char *serialno, const char *keyref,
+                            time_t timestamp)
 {
   gpg_error_t err;
   nvc_t pk = NULL;
@@ -153,6 +154,19 @@ write_extended_private_key (char *fname, estream_t fp, int update,
         }
     }
 
+  /* If a timestamp has been supplied and the key is new write a
+   * creation timestamp.  (We douple check that there is no Created
+   * item yet.)*/
+  if (timestamp && newkey && !nvc_lookup (pk, "Created:"))
+    {
+      gnupg_isotime_t timebuf;
+
+      epoch2isotime (timebuf, timestamp);
+      err = nvc_add (pk, "Created:", timebuf);
+      if (err)
+        goto leave;
+    }
+
 
   err = es_fseek (fp, 0, SEEK_SET);
   if (err)
@@ -199,12 +213,15 @@ write_extended_private_key (char *fname, estream_t fp, int update,
 
 /* Write an S-expression formatted key to our key storage.  With FORCE
  * passed as true an existing key with the given GRIP will get
- * overwritten.  If SERIALNO and KEYREF are given a Token line is added to
- * the key if the extended format is used.  */
+ * overwritten.  If SERIALNO and KEYREF are given a Token line is
+ * added to the key if the extended format is used.  If TIMESTAMP is
+ * not zero and the key doies not yet exists it will be recorded as
+ * creation date.  */
 int
 agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length, int force,
-                         const char *serialno, const char *keyref)
+                         const char *serialno, const char *keyref,
+                         time_t timestamp)
 {
   char *fname;
   estream_t fp;
@@ -272,20 +289,20 @@ agent_write_private_key (const unsigned char *grip,
       if (first != '(')
         {
           /* Key is already in the extended format.  */
-          return write_extended_private_key (fname, fp, 1, buffer, length,
-                                             serialno, keyref);
+          return write_extended_private_key (fname, fp, 1, 0, buffer, length,
+                                             serialno, keyref, timestamp);
         }
       if (first == '(' && opt.enable_extended_key_format)
         {
           /* Key is in the old format - but we want the extended format.  */
-          return write_extended_private_key (fname, fp, 0, buffer, length,
-                                             serialno, keyref);
+          return write_extended_private_key (fname, fp, 0, 0, buffer, length,
+                                             serialno, keyref, timestamp);
         }
     }
 
   if (opt.enable_extended_key_format)
-    return write_extended_private_key (fname, fp, 0, buffer, length,
-                                       serialno, keyref);
+    return write_extended_private_key (fname, fp, 0, 1, buffer, length,
+                                       serialno, keyref, timestamp);
 
   if (es_fwrite (buffer, length, 1, fp) != 1)
     {
@@ -1552,7 +1569,7 @@ agent_write_shadow_key (const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, len, force, serialno, keyid);
+  err = agent_write_private_key (grip, shdkey, len, force, serialno, keyid, 0);
   xfree (shdkey);
   if (err)
     log_error ("error writing key: %s\n", gpg_strerror (err));
