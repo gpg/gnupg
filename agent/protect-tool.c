@@ -805,12 +805,14 @@ agent_askpin (ctrl_t ctrl,
  * to stdout. */
 int
 agent_write_private_key (const unsigned char *grip,
-                         const void *buffer, size_t length, int force)
+                         const void *buffer, size_t length, int force,
+                         time_t timestamp)
 {
   char hexgrip[40+4+1];
   char *p;
 
   (void)force;
+  (void)timestamp;
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");

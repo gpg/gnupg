@@ -3136,8 +3136,9 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   if (err)
     goto out;
 
-  /* Store this key to our key storage.  */
-  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0);
+  /* Store this key to our key storage.  We do not store a creation
+   * timestamp because we simply do not know.  */
+  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0, 0);
   if (err)
     goto out;
 

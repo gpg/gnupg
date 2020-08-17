@@ -79,6 +79,42 @@ of a continuation line encodes a newline.
 Lines containing only whitespace, and lines starting with whitespace
 followed by '#' are considered to be comments and are ignored.
 
+** Well defined names
+
+*** Description
+This is a human readable string describing the key.
+
+*** Key
+The name "Key" is special in that it is mandatory and must occur only
+once.  The associated value holds the actual S-expression with the
+cryptographic key.  The S-expression is formatted using the 'Advanced
+Format' (GCRYSEXP_FMT_ADVANCED) that avoids non-printable characters
+so that the file can be easily inspected and edited.  See section
+'Private Key Format' below for details.
+
+*** Created
+The UTC time the key was created in ISO compressed format
+(yyyymmddThhmmss).  This informarion can be used to re-create an
+OpenPGP key.
+
+*** Label
+This is a short human readable description for the key which can be
+used by the software to describe the key in a user interface.  For
+example as part of the description in a prompt for a PIN or
+passphrase.  It is often used instead of a comment element as present
+in the S-expression of the "Key" item.
+
+*** OpenSSH-cert
+This takes a base64 encoded string wrapped so that this
+key file can be easily edited with a standard editor.  Several of such
+items can be used.
+
+*** Use-for-ssh
+If given and the value is "yes" or "1" the key is allowed for use by
+gpg-agent's ssh-agent implementation.  This is thus the same as
+putting the keygrip into the 'sshcontrol' file.  Only one such item
+should exist.
+
 * Private Key Format
 ** Unprotected Private Key Format
 

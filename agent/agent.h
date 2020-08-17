@@ -413,7 +413,8 @@ void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 gpg_error_t agent_modify_description (const char *in, const char *comment,
                                       const gcry_sexp_t key, char **result);
 int agent_write_private_key (const unsigned char *grip,
-                             const void *buffer, size_t length, int force);
+                             const void *buffer, size_t length, int force,
+                             time_t timestamp);
 gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  const char *cache_nonce,
                                  const char *desc_text,
@@ -493,7 +494,7 @@ int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int no_empty,
 				  char **failed_constraint);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
                                       char **r_passphrase);
-int agent_genkey (ctrl_t ctrl, const char *cache_nonce,
+int agent_genkey (ctrl_t ctrl, const char *cache_nonce, time_t timestamp,
                   const char *keyparam, size_t keyparmlen,
                   int no_protection, const char *override_passphrase,
                   int preset, membuf_t *outbuf);

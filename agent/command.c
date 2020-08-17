@@ -835,8 +835,8 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] =
-  "GENKEY [--no-protection] [--preset] [--inq-passwd]\n"
-  "       [--passwd-nonce=<s>] [<cache_nonce>]\n"
+  "GENKEY [--no-protection] [--preset] [--timestamp=<isodate>]\n"
+  "       [--inq-passwd] [--passwd-nonce=<s>] [<cache_nonce>]\n"
   "\n"
   "Generate a new key, store the secret part and return the public\n"
   "part.  Here is an example transaction:\n"
@@ -849,11 +849,13 @@ static const char hlp_genkey[] =
   "  S: D   (rsa (n 326487324683264) (e 10001)))\n"
   "  S: OK key created\n"
   "\n"
-  "When the --preset option is used the passphrase for the generated\n"
-  "key will be added to the cache.  When --inq-passwd is used an inquire\n"
+  "If the --preset option is used the passphrase for the generated\n"
+  "key will be added to the cache.  If --inq-passwd is used an inquire\n"
   "with the keyword NEWPASSWD is used to request the passphrase for the\n"
-  "new key.  When a --passwd-nonce is used, the corresponding cached\n"
-  "passphrase is used to protect the new key.";
+  "new key.  If a --passwd-nonce is used, the corresponding cached\n"
+  "passphrase is used to protect the new key.  If --timestamp is given\n"
+  "its value is recorded as the key's creation time; the value is\n"
+  "expected in ISO format (e.g. \"20030316T120000\").";
 static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
@@ -870,6 +872,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   int opt_inq_passwd;
   size_t n;
   char *p, *pend;
+  const char *s;
+  time_t opt_timestamp;
   int c;
 
   if (ctrl->restricted)
@@ -893,6 +897,22 @@ cmd_genkey (assuan_context_t ctx, char *line)
           goto leave;
         }
     }
+  if ((s=has_option_name (line, "--timestamp")))
+    {
+      if (*s != '=')
+        {
+          rc = set_error (GPG_ERR_ASS_PARAMETER, "missing value for option");
+          goto leave;
+        }
+      opt_timestamp = isotime2epoch (s+1);
+      if (opt_timestamp < 1)
+        {
+          rc = set_error (GPG_ERR_ASS_PARAMETER, "invalid time value");
+          goto leave;
+        }
+    }
+  else
+    opt_timestamp = 0;
   line = skip_options (line);
 
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
@@ -932,7 +952,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   else if (passwd_nonce)
     newpasswd = agent_get_cache (ctrl, passwd_nonce, CACHE_MODE_NONCE);
 
-  rc = agent_genkey (ctrl, cache_nonce, (char*)value, valuelen, no_protection,
+  rc = agent_genkey (ctrl, cache_nonce, opt_timestamp,
+                     (char*)value, valuelen, no_protection,
                      newpasswd, opt_preset, &outbuf);
 
  leave:
@@ -2176,7 +2197,8 @@ cmd_keywrap_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_import_key[] =
-  "IMPORT_KEY [--unattended] [--force] [<cache_nonce>]\n"
+  "IMPORT_KEY [--unattended] [--force] [--timestamp=<isodate>]\n"
+  "           [<cache_nonce>]\n"
   "\n"
   "Import a secret key into the key store.  The key is expected to be\n"
   "encrypted using the current session's key wrapping key (cf. command\n"
@@ -2184,13 +2206,16 @@ static const char hlp_import_key[] =
   "no arguments but uses the inquiry \"KEYDATA\" to ask for the actual\n"
   "key data.  The unwrapped key must be a canonical S-expression.  The\n"
   "option --unattended tries to import the key as-is without any\n"
-  "re-encryption.  Existing key can be overwritten with --force.";
+  "re-encryption.  An existing key can be overwritten with --force.\n"
+  "If --timestamp is given its value is recorded as the key's creation\n"
+  "time; the value is expected in ISO format (e.g. \"20030316T120000\").";
 static gpg_error_t
 cmd_import_key (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
   int opt_unattended;
+  time_t opt_timestamp;
   int force;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
@@ -2204,6 +2229,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
   gcry_sexp_t openpgp_sexp = NULL;
   char *cache_nonce = NULL;
   char *p;
+  const char *s;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -2216,6 +2242,22 @@ cmd_import_key (assuan_context_t ctx, char *line)
 
   opt_unattended = has_option (line, "--unattended");
   force = has_option (line, "--force");
+  if ((s=has_option_name (line, "--timestamp")))
+    {
+      if (*s != '=')
+        {
+          err = set_error (GPG_ERR_ASS_PARAMETER, "missing value for option");
+          goto leave;
+        }
+      opt_timestamp = isotime2epoch (s+1);
+      if (opt_timestamp < 1)
+        {
+          err = set_error (GPG_ERR_ASS_PARAMETER, "invalid time value");
+          goto leave;
+        }
+    }
+  else
+    opt_timestamp = 0;
   line = skip_options (line);
 
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
@@ -2287,7 +2329,6 @@ cmd_import_key (assuan_context_t ctx, char *line)
         goto leave; /* Note that ERR is still set.  */
     }
 
-
   if (openpgp_sexp)
     {
       /* In most cases the key is encrypted and thus the conversion
@@ -2351,10 +2392,12 @@ cmd_import_key (assuan_context_t ctx, char *line)
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
                            ctrl->s2k_count, -1);
       if (!err)
-        err = agent_write_private_key (grip, finalkey, finalkeylen, force);
+        err = agent_write_private_key (grip, finalkey, finalkeylen, force,
+                                       opt_timestamp);
     }
   else
-    err = agent_write_private_key (grip, key, realkeylen, force);
+    err = agent_write_private_key (grip, key, realkeylen, force,
+                                   opt_timestamp);
 
  leave:
   gcry_sexp_release (openpgp_sexp);
