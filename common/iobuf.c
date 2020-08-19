@@ -1267,7 +1267,7 @@ iobuf_cancel (iobuf_t a)
   /* send a cancel message to all filters */
   for (a2 = a; a2; a2 = a2->chain)
     {
-      size_t dummy;
+      size_t dummy = 0;
       if (a2->filter)
 	a2->filter (a2->filter_ov, IOBUFCTRL_CANCEL, a2->chain, NULL, &dummy);
     }
@@ -1413,7 +1413,7 @@ do_iobuf_fdopen (int fd, const char *mode, int keep_open)
   iobuf_t a;
   gnupg_fd_t fp;
   file_filter_ctx_t *fcx;
-  size_t len;
+  size_t len = 0;
 
   fp = INT2FD (fd);
 
@@ -2708,7 +2708,7 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 	    /* We reached the buffer's size limit!  */
 	    {
 	      /* Skip the rest of the line.  */
-	      while (c != '\n' && (c = iobuf_get (a)) != -1)
+	      while ((c = iobuf_get (a)) != -1 && c != '\n')
 		;
 
 	      /* p is pointing at the last byte in the buffer.  We
