@@ -3214,7 +3214,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       char *result1 = NULL;
       char *result2 = NULL;
       char *buffer = NULL;
-      size_t resultlen1, resultlen2, bufferlen=0;
+      size_t resultlen1, resultlen2=0, bufferlen=0;
 
       rc = pin2hash_if_kdf (app, 0, resetcode, &result1, &resultlen1);
       if (!rc)
@@ -3240,9 +3240,6 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     }
   else if (set_resetcode)
     {
-      char *buffer = NULL;
-      size_t bufferlen;
-
       if (strlen (pinvalue) < 8)
         {
           log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
@@ -3250,13 +3247,16 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         }
       else
         {
+          char *buffer = NULL;
+          size_t bufferlen;
+
           rc = pin2hash_if_kdf (app, 0, pinvalue, &buffer, &bufferlen);
           if (!rc)
             rc = iso7816_put_data (app_get_slot (app),
                                    0, 0xD3, buffer, bufferlen);
-        }
 
-      wipe_and_free (buffer, bufferlen);
+          wipe_and_free (buffer, bufferlen);
+        }
     }
   else if (reset_mode)
     {
@@ -3319,7 +3319,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         {
           char *buffer1 = NULL;
           char *buffer2 = NULL;
-          size_t bufferlen1, bufferlen2;
+          size_t bufferlen1, bufferlen2 = 0;
 
           rc = pin2hash_if_kdf (app, chvno, oldpinvalue, &buffer1, &bufferlen1);
           if (!rc)

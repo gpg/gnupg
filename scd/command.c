@@ -2497,7 +2497,7 @@ void
 pincache_put (ctrl_t ctrl, int slot, const char *appname, const char *pinref,
               const char *pin, unsigned int pinlen)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   assuan_context_t ctx;
   char line[950];
   gcry_cipher_hd_t cipherhd = NULL;
