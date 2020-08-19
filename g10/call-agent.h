@@ -190,7 +190,7 @@ gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
 gpg_error_t agent_genkey (ctrl_t ctrl,
                           char **cache_nonce_addr, char **passwd_nonce_addr,
                           const char *keyparms, int no_protection,
-                          const char *passphrase,
+                          const char *passphrase, time_t timestamp,
                           gcry_sexp_t *r_pubkey);
 
 /* Read a public key.  FROMCARD may be 0, 1, or 2. */
@@ -220,7 +220,8 @@ gpg_error_t agent_keywrap_key (ctrl_t ctrl, int forexport,
 gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
                               char **cache_nonce_addr, const void *key,
                               size_t keylen, int unattended, int force,
-                              u32 *keyid, u32 *mainkeyid, int pubkey_algo);
+                              u32 *keyid, u32 *mainkeyid, int pubkey_algo,
+                              u32 timestamp);
 
 /* Receive a key from the agent.  */
 gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,

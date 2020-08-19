@@ -639,7 +639,7 @@ inq_genkey_parms (void *opaque, const char *line)
 
 
 
-/* Call the agent to generate a newkey */
+/* Call the agent to generate a new key */
 int
 gpgsm_agent_genkey (ctrl_t ctrl,
                     ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey)
@@ -649,6 +649,8 @@ gpgsm_agent_genkey (ctrl_t ctrl,
   membuf_t data;
   size_t len;
   unsigned char *buf;
+  gnupg_isotime_t timebuf;
+  char line[ASSUAN_LINELENGTH];
 
   *r_pubkey = NULL;
   rc = start_agent (ctrl);
@@ -666,7 +668,9 @@ gpgsm_agent_genkey (ctrl_t ctrl,
   gk_parm.sexplen = gcry_sexp_canon_len (keyparms, 0, NULL, NULL);
   if (!gk_parm.sexplen)
     return gpg_error (GPG_ERR_INV_VALUE);
-  rc = assuan_transact (agent_ctx, "GENKEY",
+  gnupg_get_isotime (timebuf);
+  snprintf (line, sizeof line, "GENKEY --timestamp=%s", timebuf);
+  rc = assuan_transact (agent_ctx, line,
                         put_membuf_cb, &data,
                         inq_genkey_parms, &gk_parm, NULL, NULL);
   if (rc)
@@ -1418,6 +1422,8 @@ gpgsm_agent_import_key (ctrl_t ctrl, const void *key, size_t keylen)
 {
   gpg_error_t err;
   struct import_key_parm_s parm;
+  gnupg_isotime_t timebuf;
+  char line[ASSUAN_LINELENGTH];
 
   err = start_agent (ctrl);
   if (err)
@@ -1428,7 +1434,9 @@ gpgsm_agent_import_key (ctrl_t ctrl, const void *key, size_t keylen)
   parm.key    = key;
   parm.keylen = keylen;
 
-  err = assuan_transact (agent_ctx, "IMPORT_KEY",
+  gnupg_get_isotime (timebuf);
+  snprintf (line, sizeof line, "IMPORT_KEY --timestamp=%s", timebuf);
+  err = assuan_transact (agent_ctx, line,
                          NULL, NULL, inq_import_key_parms, &parm, NULL, NULL);
   return err;
 }

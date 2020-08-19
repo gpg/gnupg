@@ -2667,7 +2667,8 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
         char *desc = gpg_format_keydesc (ctrl, pk, FORMAT_KEYDESC_IMPORT, 1);
         err = agent_import_key (ctrl, desc, &cache_nonce,
                                 wrappedkey, wrappedkeylen, batch, force,
-				pk->keyid, pk->main_keyid, pk->pubkey_algo);
+				pk->keyid, pk->main_keyid, pk->pubkey_algo,
+                                pk->timestamp);
         xfree (desc);
       }
       if (!err)
