@@ -1946,11 +1946,12 @@ inq_genkey_parms (void *opaque, const char *line)
    gcry_pk_genkey.  If NO_PROTECTION is true the agent is advised not
    to protect the generated key.  If NO_PROTECTION is not set and
    PASSPHRASE is not NULL the agent is requested to protect the key
-   with that passphrase instead of asking for one.  */
+   with that passphrase instead of asking for one.  TIMESTAMP is the
+   creation time of the key or zero.  */
 gpg_error_t
 agent_genkey (ctrl_t ctrl, char **cache_nonce_addr, char **passwd_nonce_addr,
               const char *keyparms, int no_protection,
-              const char *passphrase, gcry_sexp_t *r_pubkey)
+              const char *passphrase, time_t timestamp, gcry_sexp_t *r_pubkey)
 {
   gpg_error_t err;
   struct genkey_parm_s gk_parm;
@@ -1959,6 +1960,7 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr, char **passwd_nonce_addr,
   membuf_t data;
   size_t len;
   unsigned char *buf;
+  char timestamparg[16 + 16];  /* The 2nd 16 is sizeof(gnupg_isotime_t) */
   char line[ASSUAN_LINELENGTH];
 
   memset (&dfltparm, 0, sizeof dfltparm);
@@ -1969,6 +1971,14 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr, char **passwd_nonce_addr,
   if (err)
     return err;
   dfltparm.ctx = agent_ctx;
+
+  if (timestamp)
+    {
+      strcpy (timestamparg, " --timestamp=");
+      epoch2isotime (timestamparg+13, timestamp);
+    }
+  else
+    *timestamparg = 0;
 
   if (passwd_nonce_addr && *passwd_nonce_addr)
     ; /* A RESET would flush the passwd nonce cache.  */
@@ -1984,7 +1994,8 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr, char **passwd_nonce_addr,
   gk_parm.dflt     = &dfltparm;
   gk_parm.keyparms = keyparms;
   gk_parm.passphrase = passphrase;
-  snprintf (line, sizeof line, "GENKEY%s%s%s%s%s",
+  snprintf (line, sizeof line, "GENKEY%s%s%s%s%s%s",
+            *timestamparg? timestamparg : "",
             no_protection? " --no-protection" :
             passphrase   ? " --inq-passwd" :
             /*          */ "",
@@ -2388,11 +2399,12 @@ inq_import_key_parms (void *opaque, const char *line)
 gpg_error_t
 agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
                   const void *key, size_t keylen, int unattended, int force,
-		  u32 *keyid, u32 *mainkeyid, int pubkey_algo)
+		  u32 *keyid, u32 *mainkeyid, int pubkey_algo, u32 timestamp)
 {
   gpg_error_t err;
   struct import_key_parm_s parm;
   struct cache_nonce_parm_s cn_parm;
+  char timestamparg[16 + 16];  /* The 2nd 16 is sizeof(gnupg_isotime_t) */
   char line[ASSUAN_LINELENGTH];
   struct default_inq_parm_s dfltparm;
 
@@ -2407,6 +2419,14 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
     return err;
   dfltparm.ctx = agent_ctx;
 
+  if (timestamp)
+    {
+      strcpy (timestamparg, " --timestamp=");
+      epoch2isotime (timestamparg+13, timestamp);
+    }
+  else
+    *timestamparg = 0;
+
   if (desc)
     {
       snprintf (line, DIM(line), "SETKEYDESC %s", desc);
@@ -2420,7 +2440,8 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
   parm.key    = key;
   parm.keylen = keylen;
 
-  snprintf (line, sizeof line, "IMPORT_KEY%s%s%s%s",
+  snprintf (line, sizeof line, "IMPORT_KEY%s%s%s%s%s",
+            *timestamparg? timestamparg : "",
             unattended? " --unattended":"",
             force? " --force":"",
             cache_nonce_addr && *cache_nonce_addr? " ":"",

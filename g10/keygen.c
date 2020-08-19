@@ -1367,7 +1367,7 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
 
   err = agent_genkey (NULL, cache_nonce_addr, passwd_nonce_addr, keyparms,
                       !!(keygen_flags & KEYGEN_FLAG_NO_PROTECTION),
-                      passphrase,
+                      passphrase, timestamp,
                       &s_key);
   if (err)
     {
