@@ -8301,8 +8301,14 @@ struct dns_resolver *dns_res_stub(const struct dns_options *opts, int *error) {
 	if (!(hints = dns_hints_local(resconf, error)))
 		goto epilog;
 
+        /* RESCONF is closed by dns_hints_local, so, get it again.  */
+	if (!(resconf = dns_resconf_local(error)))
+		goto epilog;
+
 	if (!(res = dns_res_open(resconf, hosts, hints, NULL, opts, error)))
 		goto epilog;
+        else
+		return res;
 
 epilog:
 	dns_resconf_close(resconf);
