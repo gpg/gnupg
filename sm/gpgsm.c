@@ -955,7 +955,7 @@ parse_keyserver_line (char *line,
 int
 main ( int argc, char **argv)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   gpgrt_argparse_t pargs;
   int orig_argc;
   char **orig_argv;

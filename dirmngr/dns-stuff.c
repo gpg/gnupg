@@ -2196,7 +2196,7 @@ get_dns_srv (ctrl_t ctrl,
           (*list)[j].run_count=prio_count;
         }
 
-      chose=prio_count*rand()/RAND_MAX;
+      chose=prio_count*rand()/(float)RAND_MAX;
 
       for (j=i;j<srvcount && (*list)[i].priority==(*list)[j].priority;j++)
         {
