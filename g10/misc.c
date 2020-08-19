@@ -1216,7 +1216,7 @@ string_to_aead_algo (const char *string)
 
   if (!string)
     result = 0;
-  if (!ascii_strcasecmp (string, "EAX"))
+  else if (!ascii_strcasecmp (string, "EAX"))
     result = 1;
   else if (!ascii_strcasecmp (string, "OCB"))
     result = 2;
