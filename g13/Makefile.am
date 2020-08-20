@@ -24,7 +24,11 @@ bin_PROGRAMS = g13
 sbin_PROGRAMS = g13-syshelp
 
 noinst_PROGRAMS = $(module_tests)
+if DISABLE_TESTS
+TESTS =
+else
 TESTS = $(module_tests)
+endif
 
 AM_CPPFLAGS =
 

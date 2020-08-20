@@ -31,7 +31,11 @@ libexec_PROGRAMS = dirmngr_ldap
 endif
 
 noinst_PROGRAMS = $(module_tests) $(module_net_tests) $(module_maint_tests)
+if DISABLE_TESTS
+TESTS =
+else
 TESTS = $(module_tests) $(module_net_tests)
+endif
 
 AM_CPPFLAGS =
 

@@ -1,4 +1,4 @@
-# Makefile.am -tests makefile for libxtime
+# Makefile.am
 #     	Copyright (C) 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.

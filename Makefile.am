@@ -100,10 +100,15 @@ doc = doc
 else
 doc =
 endif
+if DISABLE_TESTS
+tests =
+else
+tests = tests
+endif
 
 SUBDIRS = m4 common regexp kbx \
           ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
-          tools po ${doc} tests
+          tools po ${doc} ${tests}
 
 dist_doc_DATA = README
 
