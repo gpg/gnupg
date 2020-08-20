@@ -28,7 +28,11 @@ if !HAVE_W32CE_SYSTEM
 noinst_LIBRARIES += libsimple-pwquery.a
 endif
 noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
+if DISABLE_TESTS
+TESTS =
+else
 TESTS = $(module_tests)
+endif
 
 BUILT_SOURCES = audit-events.h status-codes.h
 

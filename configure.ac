@@ -1731,6 +1731,16 @@ if test "$run_all_tests" = "yes"; then
 fi
 
 #
+# Configure option --disable-tests
+#
+AC_MSG_CHECKING([whether tests should be run])
+AC_ARG_ENABLE(tests,
+              AC_HELP_STRING([--disable-tests],
+                             [do not run any tests]),
+              run_tests=$enableval, run_tests=yes)
+AC_MSG_RESULT($run_tests)
+
+#
 # We do not want support for the GNUPG_BUILDDIR environment variable
 # in a released version.  However, our regression tests suite requires
 # this and thus we build with support for it during "make distcheck".
@@ -1791,6 +1801,7 @@ AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 AM_CONDITIONAL(BUILD_WKS_TOOLS,   test "$build_wks_tools" = "yes")
 
+AM_CONDITIONAL(DISABLE_TESTS,       test "$run_tests" != yes)
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 AM_CONDITIONAL(NO_TRUST_MODELS,     test "$use_trust_models" = no)
 AM_CONDITIONAL(USE_TOFU,            test "$use_tofu" = yes)
@@ -2086,6 +2097,21 @@ cat <<G10EOF
                  to be used libraries have been detected for:
                   ${gpg_config_script_warn}
                  Please check above for more warning messages.
+
+G10EOF
+fi
+if test "${build_gpg}" != "yes"; then
+cat <<G10EOF
+        Warning: The component "gpg" is used by other components as
+                 well as for the test suite.  You have disabled
+                 this component and thus other things won't work.
+
+G10EOF
+fi
+if test "${run_tests}" != "yes"; then
+cat <<G10EOF
+        Warning: The use of the test suite has been disabled!
+                 This is in almost all cases a bad idea.  Take care.
 
 G10EOF
 fi

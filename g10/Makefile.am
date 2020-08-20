@@ -54,7 +54,11 @@ endif
 #noinst_PROGRAMS += gpgcompose
 #endif
 noinst_PROGRAMS += $(module_tests)
+if DISABLE_TESTS
+TESTS =
+else
 TESTS = $(module_tests)
+endif
 TESTS_ENVIRONMENT = \
 	abs_top_srcdir=$(abs_top_srcdir)
 

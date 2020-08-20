@@ -22,7 +22,11 @@ EXTRA_DIST = ChangeLog-2011 gpgsm-w32info.rc
 bin_PROGRAMS = gpgsm
 noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
 
+if DISABLE_TESTS
+TESTS =
+else
 TESTS = $(module_tests)
+endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
 
