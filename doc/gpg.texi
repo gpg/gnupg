@@ -3268,7 +3268,10 @@ default. @option{--no-escape-from-lines} disables this option.
 @opindex passphrase-repeat
 Specify how many times @command{@gpgname} will request a new
 passphrase be repeated.  This is useful for helping memorize a
-passphrase.  Defaults to 1 repetition.
+passphrase.  Defaults to 1 repetition; can be set to 0 to disable any
+passphrase repetition.  Note that a @var{n} greater than 1 will pop up
+the pinentry window @var{n}+1 times even if a modern pinentry with
+two entry fields is used.
 
 @item --passphrase-fd @var{n}
 @opindex passphrase-fd

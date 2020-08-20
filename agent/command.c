@@ -1716,7 +1716,11 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   if (desc)
     plus_to_blank (desc);
 
-  if (opt_newsymkey)
+  /* If opt_repeat is 2 or higher we can't use our pin_entry_info_s
+   * based method but fallback to the old simple method.  It is
+   * anyway questionable whether this extra repeat count makes any
+   * real sense.  */
+  if (opt_newsymkey && opt_repeat < 2)
     {
       /* We do not want to break any existing usage of this command
        * and thus we introduced the option --newsymkey to make this
@@ -1765,13 +1769,15 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
               continue;
             }
           if (*pi->pin && !pi->repeat_okay
-              && ctrl->pinentry_mode != PINENTRY_MODE_LOOPBACK)
+              && ctrl->pinentry_mode != PINENTRY_MODE_LOOPBACK
+              && opt_repeat)
             {
               /* The passphrase is empty and the pinentry did not
                * already run the repetition check, do it here.  This
                * is only called when using an old and simple pinentry.
                * It is neither called in loopback mode because the
-               * caller does any passphrase repetition by herself. */
+               * caller does any passphrase repetition by herself nor if
+               * no repetition was requested. */
               xfree (response);
               response = NULL;
               rc = agent_get_passphrase (ctrl, &response,
