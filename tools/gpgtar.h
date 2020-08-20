@@ -130,7 +130,8 @@ gpg_error_t read_record (estream_t stream, void *record);
 gpg_error_t write_record (estream_t stream, const void *record);
 
 /*-- gpgtar-create.c --*/
-gpg_error_t gpgtar_create (char **inpattern, int encrypt, int sign);
+gpg_error_t gpgtar_create (char **inpattern, const char *files_from,
+                           int null_names, int encrypt, int sign);
 
 /*-- gpgtar-extract.c --*/
 gpg_error_t gpgtar_extract (const char *filename, int decrypt);

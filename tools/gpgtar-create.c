@@ -744,20 +744,39 @@ write_eof_mark (estream_t stream)
 
 /* Create a new tarball using the names in the array INPATTERN.  If
    INPATTERN is NULL take the pattern as null terminated strings from
-   stdin.  */
+   stdin or from the file specified by FILES_FROM.  If NULL_NAMES is
+   set the filenames in such a file are delimited by a binary Nul and
+   not by a LF.  */
 gpg_error_t
-gpgtar_create (char **inpattern, int encrypt, int sign)
+gpgtar_create (char **inpattern, const char *files_from, int null_names,
+               int encrypt, int sign)
 {
   gpg_error_t err = 0;
   struct scanctrl_s scanctrl_buffer;
   scanctrl_t scanctrl = &scanctrl_buffer;
   tar_header_t hdr, *start_tail;
+  estream_t files_from_stream = NULL;
   estream_t outstream = NULL;
   estream_t cipher_stream = NULL;
   int eof_seen = 0;
 
   if (!inpattern)
-    es_set_binary (es_stdin);
+    {
+      if (!files_from || !strcmp (files_from, "-"))
+        {
+          files_from = "-";
+          files_from_stream = es_stdin;
+          if (null_names)
+            es_set_binary (es_stdin);
+        }
+      else if (!(files_from_stream=es_fopen (files_from, null_names? "rb":"r")))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error opening '%s': %s\n",
+                     files_from, gpg_strerror (err));
+          return err;
+        }
+    }
 
   memset (scanctrl, 0, sizeof *scanctrl);
   scanctrl->flist_tail = &scanctrl->flist;
@@ -788,7 +807,7 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
 
           pat = xtrystrdup (pattern);
         }
-      else /* Read null delimited pattern from stdin.  */
+      else /* Read Nul or LF delimited pattern from files_from_stream.  */
         {
           int c;
           char namebuf[4096];
@@ -796,17 +815,16 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
 
           for (;;)
             {
-              if ((c = es_getc (es_stdin)) == EOF)
+              if ((c = es_getc (files_from_stream)) == EOF)
                 {
-                  if (es_ferror (es_stdin))
+                  if (es_ferror (files_from_stream))
                     {
                       err = gpg_error_from_syserror ();
                       log_error ("error reading '%s': %s\n",
-                                 "[stdin]", strerror (errno));
+                                 files_from, gpg_strerror (err));
                       goto leave;
                     }
-                  /* Note: The Nul is a delimiter and not a terminator.  */
-                  c = 0;
+                  c = null_names ? 0 : '\n';
                   eof_seen = 1;
                 }
               if (n >= sizeof namebuf - 1)
@@ -815,15 +833,38 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
                     {
                       skip_this = 1;
                       log_error ("error reading '%s': %s\n",
-                                 "[stdin]", "filename too long");
+                                 files_from, "filename too long");
                     }
                 }
               else
                 namebuf[n++] = c;
-              if (!c)
+
+              if (null_names)
                 {
-                  namebuf[n] = 0;
-                  break;
+                  if (!c)
+                    {
+                      namebuf[n] = 0;
+                      break;
+                    }
+                }
+              else /* Shall be LF delimited.  */
+                {
+                  if (!c)
+                    {
+                      if (!skip_this)
+                        {
+                          skip_this = 1;
+                          log_error ("error reading '%s': %s\n",
+                                     files_from, "filename with embedded Nul");
+                        }
+                    }
+                  else if ( c == '\n' )
+                    {
+                      namebuf[n] = 0;
+                      ascii_trim_spaces (namebuf);
+                      n = strlen (namebuf);
+                      break;
+                    }
                 }
             }
 
@@ -855,6 +896,9 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
 
       xfree (pat);
     }
+
+  if (files_from_stream && files_from_stream != es_stdin)
+    es_fclose (files_from_stream);
 
   if (opt.outfile)
     {

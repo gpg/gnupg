@@ -803,7 +803,7 @@ wchar_to_native (const wchar_t *string)
 }
 
 
-/* Return a malloced wide char string from an UTF-8 encoded input
+/* Return a malloced wide char string from native encoded input
  * string STRING.  Caller must free this value.  Returns NULL and sets
  * ERRNO on failure.  Calling this function with STRING set to NULL is
  * not defined.  */
