@@ -2127,6 +2127,11 @@ and parse them.  The only supported tar options are "--directory",
 "--files-from", and "--null" This is an obsolete options because those
 supported tar options can also be given directly.
 
+@item --tar @var{command}
+@opindex tar
+This is a dummy option for backward compatibility.
+@c ... to the gpg-zip script we provided in the past
+
 @item --version
 @opindex version
 Print version of the program and exit.

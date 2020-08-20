@@ -79,6 +79,7 @@ enum cmd_and_opt_values
     /* Compatibility with gpg-zip.  */
     oGpgArgs,
     oTarArgs,
+    oTarProgram,
 
     /* Debugging.  */
     oDryRun,
@@ -122,6 +123,7 @@ static gpgrt_opt_t opts[] = {
 
   ARGPARSE_s_s (oGpgArgs, "gpg-args", "@"),
   ARGPARSE_s_s (oTarArgs, "tar-args", "@"),
+  ARGPARSE_s_s (oTarProgram, "tar", "@"),
 
   ARGPARSE_end ()
 };
@@ -381,6 +383,9 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           }
           break;
 
+        case oTarProgram:  /* Dummy option.  */
+          break;
+
         case oTarArgs:
           {
             int tar_argc;
@@ -413,6 +418,7 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
 	}
     }
 }
+
 
 
 /* gpgtar main. */
