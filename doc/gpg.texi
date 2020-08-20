@@ -3615,26 +3615,54 @@ files; They all live in the current home directory (@pxref{option
 
   @item ~/.gnupg/pubring.gpg
   @efindex pubring.gpg
-  The public keyring.  You should backup this file.
+  The public keyring using a legacy format.  You should backup this file.
+
+  If this file is not available, @command{gpg} defaults to the new
+  keybox format and creates a file @file{pubring.kbx} unless that file
+  already exists in which case that file will also be used for OpenPGP
+  keys.
+
+  Note that in the case that both files, @file{pubring.gpg} and
+  @file{pubring.kbx} exists but the latter has no OpenPGP keys, the
+  legacy file @file{pubring.gpg} will be used.  Take care: GnuPG
+  versions before 2.1 will always use the file @file{pubring.gpg}
+  because they do not know about the new keybox format. In the case
+  that you have to use GnuPG 1.4 to decrypt archived data you should
+  keep this file.
 
   @item ~/.gnupg/pubring.gpg.lock
   The lock file for the public keyring.
 
   @item ~/.gnupg/pubring.kbx
   @efindex pubring.kbx
-  The public keyring using a different format.  This file is shared
-  with @command{gpgsm}.  You should backup this file.
+  The public keyring using the new keybox format.  This file is shared
+  with @command{gpgsm}.  You should backup this file.  See above for
+  the relation between this file and it predecessor.
+
+  To convert an existing @file{pubring.gpg} file to the keybox format, you
+  first backup the ownertrust values, then rename @file{pubring.gpg} to
+  @file{publickeys.backup}, so it won’t be recognized by any GnuPG version,
+  run import, and finally restore the ownertrust values:
+
+  @example
+  $ cd ~/.gnupg
+  $ gpg --export-ownertrust >otrust.lst
+  $ mv pubring.gpg publickeys.backup
+  $ gpg --import-options restore --import publickeys.backups
+  $ gpg --import-ownertrust otrust.lst
+  @end example
 
   @item ~/.gnupg/pubring.kbx.lock
   The lock file for @file{pubring.kbx}.
 
   @item ~/.gnupg/secring.gpg
   @efindex secring.gpg
-  A secret keyring as used by GnuPG versions before 2.1.  It is not
-  used by GnuPG 2.1 and later.
+  The legacy secret keyring as used by GnuPG versions before 2.1.  It is not
+  used by GnuPG 2.1 and later.  You may want to keep it in case you
+  have to use GnuPG 1.4 to decrypt archived data.
 
   @item ~/.gnupg/secring.gpg.lock
-  The lock file for the secret keyring.
+  The lock file for the legacy secret keyring.
 
   @item ~/.gnupg/.gpg-v21-migrated
   @efindex .gpg-v21-migrated
