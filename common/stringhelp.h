@@ -42,6 +42,7 @@ char *has_leading_keyword (const char *string, const char *keyword);
 const char *memistr (const void *buf, size_t buflen, const char *sub);
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
+char *ascii_trim_spaces (char *string);
 char *trim_trailing_spaces( char *string );
 unsigned int trim_trailing_chars( unsigned char *line, unsigned len,
 					      const char *trimchars);

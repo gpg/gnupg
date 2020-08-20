@@ -213,6 +213,36 @@ trim_spaces( char *str )
     return str ;
 }
 
+
+/* Same as trim_spaces but only condider, space, tab, cr and lf as space.  */
+char *
+ascii_trim_spaces (char *str)
+{
+  char *string, *p, *mark;
+
+  string = str;
+
+  /* Find first non-ascii space character.  */
+  for (p=string; *p && ascii_isspace (*p); p++)
+    ;
+  /* Move characters.  */
+  for (mark=NULL; (*string = *p); string++, p++ )
+    {
+      if (ascii_isspace (*p))
+        {
+          if (!mark)
+            mark = string;
+        }
+      else
+        mark = NULL ;
+    }
+  if (mark)
+    *mark = '\0' ;  /* Remove trailing spaces. */
+
+  return str ;
+}
+
+
 /****************
  * remove trailing white spaces
  */

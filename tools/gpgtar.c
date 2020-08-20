@@ -140,10 +140,10 @@ static gpgrt_opt_t tar_opts[] = {
 
 
 /* Global flags.  */
-enum cmd_and_opt_values cmd = 0;
-int skip_crypto = 0;
-const char *files_from = NULL;
-int null_names = 0;
+static enum cmd_and_opt_values cmd = 0;
+static int skip_crypto = 0;
+static const char *files_from = NULL;
+static int null_names = 0;
 
 
 
@@ -440,11 +440,6 @@ main (int argc, char **argv)
   parse_arguments (&pargs, opts);
   gpgrt_argparse (NULL, &pargs, NULL);
 
-  if ((files_from && !null_names) || (!files_from && null_names))
-    log_error ("--files-from and --null may only be used in conjunction\n");
-  if (files_from && strcmp (files_from, "-"))
-    log_error ("--files-from only supports argument \"-\"\n");
-
   if (log_get_errorcount (0))
     exit (2);
 
@@ -482,12 +477,14 @@ main (int argc, char **argv)
     case aEncrypt:
     case aSign:
     case aSignEncrypt:
-      if ((!argc && !null_names)
-          || (argc && null_names))
+      if ((!argc && !files_from)
+          || (argc && files_from))
         gpgrt_usage (1);
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
-      err = gpgtar_create (null_names? NULL :argv,
+      err = gpgtar_create (files_from? NULL : argv,
+                           files_from,
+                           null_names,
                            !skip_crypto
                            && (cmd == aEncrypt || cmd == aSignEncrypt),
                            cmd == aSign || cmd == aSignEncrypt);
