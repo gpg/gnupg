@@ -792,6 +792,25 @@ cp_to_wchar (const char *string, unsigned int codepage)
 }
 
 
+/* Get the current codepage as used by wchar_to_native and
+ * native_to_char.  Note that these functions intentionally do not use
+ * iconv based conversion machinery.  */
+static unsigned int
+get_w32_codepage (void)
+{
+  static unsigned int cp;
+
+  if (!cp)
+    {
+#ifndef HAVE_W32CE_SYSTEM
+      cp = GetConsoleOutputCP ();
+      if (!cp)
+#endif
+        cp = GetACP ();
+    }
+  return cp;
+}
+
 /* Return a malloced string encoded in the active code page from the
  * wide char input string STRING.  Caller must free this value.
  * Returns NULL and sets ERRNO on failure.  Calling this function with
@@ -799,7 +818,7 @@ cp_to_wchar (const char *string, unsigned int codepage)
 char *
 wchar_to_native (const wchar_t *string)
 {
-  return wchar_to_cp (string, CP_ACP);
+  return wchar_to_cp (string, get_w32_codepage ());
 }
 
 
@@ -810,7 +829,7 @@ wchar_to_native (const wchar_t *string)
 wchar_t *
 native_to_wchar (const char *string)
 {
-  return cp_to_wchar (string, CP_ACP);
+  return cp_to_wchar (string, get_w32_codepage ());
 }
 
 
