@@ -795,29 +795,9 @@ modestr_to_mode (const char *modestr)
 int
 gnupg_mkdir (const char *name, const char *modestr)
 {
-#ifdef HAVE_W32CE_SYSTEM
-  wchar_t *wname;
-  (void)modestr;
-
-  wname = utf8_to_wchar (name);
-  if (!wname)
-    return -1;
-  if (!CreateDirectoryW (wname, NULL))
-    {
-      xfree (wname);
-      return -1;  /* ERRNO is automagically provided by gpg-error.h.  */
-    }
-  xfree (wname);
-  return 0;
-#elif MKDIR_TAKES_ONE_ARG
-  (void)modestr;
-  /* Note: In the case of W32 we better use CreateDirectory and try to
-     set appropriate permissions.  However using mkdir is easier
-     because this sets ERRNO.  */
-  return mkdir (name);
-#else
-  return mkdir (name, modestr_to_mode (modestr));
-#endif
+  /* Note that gpgrt_mkdir also sets ERRNO in addition to returing an
+   * gpg-error style error code.  */
+  return gpgrt_mkdir (name, modestr);
 }
 
 
@@ -826,7 +806,9 @@ gnupg_mkdir (const char *name, const char *modestr)
 int
 gnupg_chdir (const char *name)
 {
-  return chdir (name);
+  /* Note that gpgrt_chdir also sets ERRNO in addition to returing an
+   * gpg-error style error code.  */
+  return gpgrt_chdir (name);
 }
 
 
