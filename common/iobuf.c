@@ -2420,7 +2420,7 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
 	  return size;
       }
     log_error ("GetFileSize for handle %p failed: %s\n",
-	       fp, w32_strerror (0));
+	       fp, w32_strerror (-1));
 #else /*!HAVE_W32_SYSTEM*/
     {
       struct stat st;
