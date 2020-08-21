@@ -2093,6 +2093,12 @@ line.
 Modify option @option{--files-from} to use a binary nul instead of a
 linefeed to separate file names.
 
+@item --utf8-strings
+@opindex utf8-strings
+Assume that the file names read by @option{--files-from} are UTF-8
+encoded.  This option has an effect only on Windows where the active
+code page is otherwise assumed.
+
 @item --openpgp
 @opindex openpgp
 This option has no effect because OpenPGP encryption and signing is

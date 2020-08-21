@@ -58,6 +58,38 @@ struct scanctrl_s
 
 
 
+/* On Windows convert name to UTF8 and return it; caller must release
+ * the result.  On Unix or if ALREADY_UTF8 is set, this function is a
+ * mere xtrystrcopy.  On failure NULL is returned and ERRNO set. */
+static char *
+name_to_utf8 (const char *name, int already_utf8)
+{
+#ifdef HAVE_W32_SYSTEM
+  wchar_t *wstring;
+  char *result;
+
+  if (already_utf8)
+    result = xtrystrdup (name);
+  else
+    {
+      wstring = native_to_wchar (name);
+      if (!wstring)
+        return NULL;
+      result = wchar_to_utf8 (wstring);
+      xfree (wstring);
+    }
+  return result;
+
+#else /*!HAVE_W32_SYSTEM */
+
+  (void)already_utf8;
+  return xtrystrdup (name);
+
+#endif /*!HAVE_W32_SYSTEM */
+}
+
+
+
 
 /* Given a fresh header object HDR with only the name field set, try
    to gather all available info.  This is the W32 version.  */
@@ -73,7 +105,7 @@ fillup_entry_w32 (tar_header_t hdr)
   for (p=hdr->name; *p; p++)
     if (*p == '/')
       *p = '\\';
-  wfname = native_to_wchar (hdr->name);
+  wfname = utf8_to_wchar (hdr->name);
   for (p=hdr->name; *p; p++)
     if (*p == '\\')
       *p = '/';
@@ -213,7 +245,7 @@ fillup_entry_posix (tar_header_t hdr)
 #endif /*!HAVE_W32_SYSTEM*/
 
 
-/* Add a new entry.  The name of a director entry is ENTRYNAME; if
+/* Add a new entry.  The name of a directory entry is ENTRYNAME; if
    that is NULL, DNAME is the name of the directory itself.  Under
    Windows ENTRYNAME shall have backslashes replaced by standard
    slashes.  */
@@ -225,7 +257,7 @@ add_entry (const char *dname, const char *entryname, scanctrl_t scanctrl)
   char *p;
   size_t dnamelen = strlen (dname);
 
-  assert (dnamelen);
+  log_assert (dnamelen);
 
   hdr = xtrycalloc (1, sizeof *hdr + dnamelen + 1
                     + (entryname? strlen (entryname) : 0) + 1);
@@ -300,7 +332,7 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
     for (p=fname; *p; p++)
       if (*p == '/')
         *p = '\\';
-    wfname = native_to_wchar (fname);
+    wfname = utf8_to_wchar (fname);
     xfree (fname);
     if (!wfname)
       {
@@ -323,7 +355,7 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
 
   do
     {
-      char *fname = wchar_to_native (fi.cFileName);
+      char *fname = wchar_to_utf8 (fi.cFileName);
       if (!fname)
         {
           err = gpg_error_from_syserror ();
@@ -760,6 +792,19 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
   estream_t cipher_stream = NULL;
   int eof_seen = 0;
 
+  memset (scanctrl, 0, sizeof *scanctrl);
+  scanctrl->flist_tail = &scanctrl->flist;
+
+  /* { unsigned int cpno, cpno2, cpno3; */
+
+  /*   cpno = GetConsoleOutputCP (); */
+  /*   cpno2 = GetACP (); */
+  /*   cpno3 = GetOEMCP (); */
+  /*   log_debug ("Codepages: Console: %u  ANSI: %u  OEM: %u\n", */
+  /*              cpno, cpno2, cpno3); */
+  /* } */
+
+
   if (!inpattern)
     {
       if (!files_from || !strcmp (files_from, "-"))
@@ -778,8 +823,6 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
         }
     }
 
-  memset (scanctrl, 0, sizeof *scanctrl);
-  scanctrl->flist_tail = &scanctrl->flist;
 
   if (opt.directory && gnupg_chdir (opt.directory))
     {
@@ -805,7 +848,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
           if (!*pattern)
             continue;
 
-          pat = xtrystrdup (pattern);
+          pat = name_to_utf8 (pattern, 0);
         }
       else /* Read Nul or LF delimited pattern from files_from_stream.  */
         {
@@ -871,7 +914,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
           if (skip_this || n < 2)
             continue;
 
-          pat = xtrystrdup (namebuf);
+          pat = name_to_utf8 (namebuf, opt.utf8strings);
         }
 
       if (!pat)

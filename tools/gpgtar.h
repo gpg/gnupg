@@ -32,6 +32,7 @@ struct
   unsigned int debug_level;
   int quiet;
   int dry_run;
+  int utf8strings;
   const char *gpg_program;
   strlist_t gpg_arguments;
   const char *outfile;
@@ -121,7 +122,7 @@ struct tar_header_s
 
   unsigned long long nrecords; /* Number of data records.  */
 
-  char name[1];             /* Filename (dynamically extended).  */
+  char name[1];             /* Filename (UTF-8, dynamically extended).  */
 };
 
 

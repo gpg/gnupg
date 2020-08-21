@@ -75,6 +75,7 @@ enum cmd_and_opt_values
     oCMS,
     oSetFilename,
     oNull,
+    oUtf8Strings,
 
     /* Compatibility with gpg-zip.  */
     oGpgArgs,
@@ -120,6 +121,12 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oFilesFrom, "files-from",
                 N_("|FILE|get names to create from FILE")),
   ARGPARSE_s_n (oNull, "null", N_("-T reads null-terminated names")),
+#ifdef HAVE_W32_SYSTEM
+  ARGPARSE_s_n (oUtf8Strings, "utf8-strings",
+                N_("-T reads UTF-8 encoded names")),
+#else
+  ARGPARSE_s_n (oUtf8Strings, "utf8-strings", "@"),
+#endif
 
   ARGPARSE_s_s (oGpgArgs, "gpg-args", "@"),
   ARGPARSE_s_s (oTarArgs, "tar-args", "@"),
@@ -325,6 +332,7 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
         case oNoVerbose: opt.verbose = 0; break;
         case oFilesFrom: files_from = pargs->r.ret_str; break;
         case oNull: null_names = 1; break;
+        case oUtf8Strings: opt.utf8strings = 1; break;
 
 	case aList:
         case aDecrypt:
