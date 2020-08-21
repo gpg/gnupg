@@ -789,6 +789,12 @@ w32_strerror (int ec)
   FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, DIM (strerr)-1, NULL);
+  {
+    /* Strip the CR,LF - we want just the string.  */
+    size_t n = strlen (strerr);
+    if (n > 2 && strerr[n-2] == '\r' && strerr[n-1] == '\n' )
+      strerr[n-2] = 0;
+  }
 #endif
   return strerr;
 }
