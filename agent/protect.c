@@ -625,7 +625,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   int have_curve = 0;
 
   if (use_ocb == -1)
-    use_ocb = opt.enable_extended_key_format;
+    use_ocb = !!opt.enable_extended_key_format;
 
   /* Create an S-expression with the protected-at timestamp.  */
   memcpy (timestamp_exp, "(12:protected-at15:", 19);
