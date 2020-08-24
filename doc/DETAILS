@@ -1462,7 +1462,7 @@ CREATE TABLE signatures (
                - 5 :: Import from a trusted URL.
                - 6 :: Import from a trusted file.
                - 7 :: Self generated.
-  - 4 octets :: Time of last update.  This is a a four-octet scalar
+  - 4 octets :: Time of last update.  This is a four-octet scalar
                 with the seconds since Epoch.
   - 1 octet  :: Scalar with the length of the following field.
   - N octets :: String with the URL of the source.  This may be a
