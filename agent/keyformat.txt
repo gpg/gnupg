@@ -88,7 +88,7 @@ so that the file can be easily inspected and edited.  See section
 
 *** Created
 The UTC time the key was created in ISO compressed format
-(yyyymmddThhmmss).  This informarion can be used to re-create an
+(yyyymmddThhmmss).  This information can be used to re-create an
 OpenPGP key.
 
 *** Label

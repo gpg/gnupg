@@ -1044,7 +1044,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
         /* Note, that we will take the comment as a C string for
          * display purposes; i.e. all stuff beyond a Nul character is
          * ignored.  If a "Label" entry is available in the meta data
-         * this is used instead of the s-ecpression comment.  */
+         * this is used instead of the s-expression comment.  */
         if (keymeta && (comment = nvc_get_string (keymeta, "Label:")))
           {
             if (strchr (comment, '\n')
