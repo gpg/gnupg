@@ -795,16 +795,6 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
   memset (scanctrl, 0, sizeof *scanctrl);
   scanctrl->flist_tail = &scanctrl->flist;
 
-  /* { unsigned int cpno, cpno2, cpno3; */
-
-  /*   cpno = GetConsoleOutputCP (); */
-  /*   cpno2 = GetACP (); */
-  /*   cpno3 = GetOEMCP (); */
-  /*   log_debug ("Codepages: Console: %u  ANSI: %u  OEM: %u\n", */
-  /*              cpno, cpno2, cpno3); */
-  /* } */
-
-
   if (!inpattern)
     {
       if (!files_from || !strcmp (files_from, "-"))

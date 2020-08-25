@@ -68,7 +68,8 @@ enum cmd_and_opt_values
     aCreateSocketDir,
     aRemoveSocketDir,
     aApplyProfile,
-    aReload
+    aReload,
+    aShowCodepages
   };
 
 
@@ -99,6 +100,7 @@ static gpgrt_opt_t opts[] =
     { aKill,          "kill", 256,   N_("kill a given component")},
     { aCreateSocketDir, "create-socketdir", 256, "@"},
     { aRemoveSocketDir, "remove-socketdir", 256, "@"},
+    ARGPARSE_c (aShowCodepages, "show-codepages", "@"),
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -107,7 +109,8 @@ static gpgrt_opt_t opts[] =
     { oQuiet, "quiet",      0, N_("quiet") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
     { oRuntime, "runtime",  0, N_("activate changes at runtime, if possible") },
-  ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
+    ARGPARSE_s_i (oStatusFD, "status-fd",
+                  N_("|FD|write status info to this FD")),
     /* hidden options */
     { oHomedir, "homedir", 2, "@" },
     { oBuilddir, "build-prefix", 2, "@" },
@@ -600,6 +603,7 @@ main (int argc, char **argv)
         case aKill:
         case aCreateSocketDir:
         case aRemoveSocketDir:
+        case aShowCodepages:
 	  cmd = pargs.r_opt;
 	  break;
 
@@ -914,6 +918,18 @@ main (int argc, char **argv)
         xfree (socketdir);
       }
       break;
+
+    case aShowCodepages:
+#ifdef HAVE_W32_SYSTEM
+      {
+        get_outfp (&outfp);
+        es_fprintf (outfp, "Console: CP%u\n", GetConsoleOutputCP ());
+        es_fprintf (outfp, "ANSI: CP%u\n", GetACP ());
+        es_fprintf (outfp, "OEM: CP%u\n", GetOEMCP ());
+      }
+#endif
+      break;
+
 
     }
 
