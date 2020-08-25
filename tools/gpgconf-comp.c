@@ -1819,8 +1819,9 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   pargs.flags = (ARGPARSE_FLAG_KEEP
                  | ARGPARSE_FLAG_SYS
                  | ARGPARSE_FLAG_USER
-                 | ARGPARSE_FLAG_WITHATTR
-                 | ARGPARSE_FLAG_VERBOSE);
+                 | ARGPARSE_FLAG_WITHATTR);
+  if (opt.verbose)
+    pargs.flags |= ARGPARSE_FLAG_VERBOSE;
 
   while (gpgrt_argparser (&pargs, opt_table, config_name))
     {
