@@ -1378,7 +1378,8 @@ main (int argc, char **argv)
     }
 
   /* Try to create missing directories. */
-  create_directories ();
+  if (!gpgconf_list)
+    create_directories ();
 
   if (debug_wait && pipe_server)
     {
