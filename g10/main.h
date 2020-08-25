@@ -394,7 +394,8 @@ gpg_error_t transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
                                   kbnode_t sec_keyblock, int batch, int force,
                                   int only_marked);
 
-int collapse_uids( KBNODE *keyblock );
+int collapse_uids (kbnode_t *keyblock);
+int collapse_subkeys (kbnode_t *keyblock);
 
 int get_revocation_reason (PKT_signature *sig, char **r_reason,
                            char **r_comment, size_t *r_commentlen);

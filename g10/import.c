@@ -210,6 +210,11 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"show-only", (IMPORT_SHOW | IMPORT_DRY_RUN), NULL,
        NULL},
 
+      /* Hidden options which are enabled by default and are provided
+       * in case of problems with the respective implementation.  */
+      {"collapse-uids", IMPORT_COLLAPSE_UIDS, NULL, NULL},
+      {"collapse-subkeys", IMPORT_COLLAPSE_SUBKEYS, NULL, NULL},
+
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -403,7 +408,10 @@ read_key_from_file_or_buffer (ctrl_t ctrl, const char *fname,
       goto leave;
     }
 
+  /* We do the collapsing unconditionally although it is expected that
+   * clean keys are provided here.  */
   collapse_uids (&keyblock);
+  collapse_subkeys (&keyblock);
 
   clear_kbnode_flags (keyblock);
   if (chk_self_sigs (ctrl, keyblock, keyid, &non_self))
@@ -1947,8 +1955,11 @@ import_one_real (ctrl_t ctrl,
   /* Remove or collapse the user ids.  */
   if ((options & IMPORT_DROP_UIDS))
     remove_all_uids (&keyblock);
-  else
+  else if ((options & IMPORT_COLLAPSE_UIDS))
     collapse_uids (&keyblock);
+
+  if ((options & IMPORT_COLLAPSE_SUBKEYS))
+    collapse_subkeys (&keyblock);
 
   /* Clean the key that we're about to import, to cut down on things
      that we have to clean later.  This has no practical impact on the
@@ -3010,7 +3021,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                  _("rejected by import screener"));
       release_kbnode (keyblock);
       return 0;
-  }
+    }
 
   if (opt.verbose && !for_migration)
     {
@@ -4094,6 +4105,115 @@ collapse_uids (kbnode_t *keyblock)
 	key = keystr_from_pk (uid1->pkt->pkt.public_key);
 
       log_info (_("key %s: duplicated user ID detected - merged\n"), key);
+    }
+
+  return any;
+}
+
+
+/*
+ * It may happen that the imported keyblock has duplicated subkeys.
+ * We check this here and collapse those subkeys along with their
+ * binding self-signatures.
+ * Returns: True if the keyblock has changed.
+ */
+int
+collapse_subkeys (kbnode_t *keyblock)
+{
+  kbnode_t kb1, kb2, sig1, sig2, last;
+  int any = 0;
+
+  log_debug ("enter collapse_subkeys\n");
+  for (kb1 = *keyblock; kb1; kb1 = kb1->next)
+    {
+      if (is_deleted_kbnode (kb1))
+	continue;
+
+      if (kb1->pkt->pkttype != PKT_PUBLIC_SUBKEY
+          && kb1->pkt->pkttype != PKT_SECRET_SUBKEY)
+	continue;
+
+      /* We assume just a few duplicates and use a straightforward
+       * algorithm.  */
+      for (kb2 = kb1->next; kb2; kb2 = kb2->next)
+	{
+	  if (is_deleted_kbnode (kb2))
+	    continue;
+
+          if (kb2->pkt->pkttype != PKT_PUBLIC_SUBKEY
+              && kb2->pkt->pkttype != PKT_SECRET_SUBKEY)
+	    continue;
+
+          if (cmp_public_keys (kb1->pkt->pkt.public_key,
+                               kb2->pkt->pkt.public_key))
+            continue;
+
+          /* We have a duplicated subkey. */
+          any = 1;
+
+          /* Take subkey-2's signatures, and attach them to subkey-1. */
+          for (last = kb2; last->next; last = last->next)
+            {
+              if (is_deleted_kbnode (last))
+                continue;
+
+              if (last->next->pkt->pkttype != PKT_SIGNATURE)
+                break;
+            }
+
+          /* Snip out subkye-2 */
+          find_prev_kbnode (*keyblock, kb2, 0)->next = last->next;
+
+	  /* Put subkey-2 in place as part of subkey-1 */
+          last->next = kb1->next;
+          kb1->next = kb2;
+          delete_kbnode (kb2);
+
+          /* Now dedupe kb1 */
+          for (sig1 = kb1->next; sig1; sig1 = sig1->next)
+            {
+              if (is_deleted_kbnode (sig1))
+                continue;
+
+              if (sig1->pkt->pkttype != PKT_SIGNATURE)
+                break;
+
+              for (sig2 = sig1->next, last = sig1;
+                   sig2;
+                   last = sig2, sig2 = sig2->next)
+                {
+                  if (is_deleted_kbnode (sig2))
+                    continue;
+
+                  if (sig2->pkt->pkttype != PKT_SIGNATURE)
+                    break;
+
+                  if (!cmp_signatures (sig1->pkt->pkt.signature,
+                                       sig2->pkt->pkt.signature))
+                    {
+                      /* We have a match, so delete the second
+                         signature */
+                      delete_kbnode (sig2);
+                      sig2 = last;
+                    }
+                }
+            }
+        }
+    }
+
+  commit_kbnode (keyblock);
+
+  log_debug ("leave collapse_subkeys (any=%d)\n", any);
+  if (any && !opt.quiet)
+    {
+      const char *key="???";
+
+      if ((kb1 = find_kbnode (*keyblock, PKT_PUBLIC_KEY)) )
+	key = keystr_from_pk (kb1->pkt->pkt.public_key);
+      else if ((kb1 = find_kbnode (*keyblock, PKT_SECRET_KEY)) )
+	key = keystr_from_pk (kb1->pkt->pkt.public_key);
+
+      log_info (_("key %s: duplicated subkeys detected - merged\n"), key);
     }
 
   return any;

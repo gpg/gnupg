@@ -1174,6 +1174,8 @@ fix_keyblock (ctrl_t ctrl, kbnode_t *keyblockp)
 
   if (collapse_uids (keyblockp))
     changed++;
+  if (collapse_subkeys (keyblockp))
+    changed++;
   if (key_check_all_keysigs (ctrl, 1, *keyblockp, 0, 1))
     changed++;
   reorder_keyblock (*keyblockp);

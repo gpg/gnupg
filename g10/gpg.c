@@ -2391,11 +2391,15 @@ main (int argc, char **argv)
     opt.max_cert_depth = 5;
     opt.escape_from = 1;
     opt.flags.require_cross_cert = 1;
-    opt.import_options = IMPORT_REPAIR_KEYS;
+    opt.import_options = (IMPORT_REPAIR_KEYS
+                          | IMPORT_COLLAPSE_UIDS
+                          | IMPORT_COLLAPSE_SUBKEYS);
     opt.export_options = EXPORT_ATTRIBUTES;
     opt.keyserver_options.import_options = (IMPORT_REPAIR_KEYS
 					    | IMPORT_REPAIR_PKS_SUBKEY_BUG
                                             | IMPORT_SELF_SIGS_ONLY
+                                            | IMPORT_COLLAPSE_UIDS
+                                            | IMPORT_COLLAPSE_SUBKEYS
                                             | IMPORT_CLEAN);
     opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
     opt.keyserver_options.options = KEYSERVER_HONOR_PKA_RECORD;
