@@ -4123,7 +4123,6 @@ collapse_subkeys (kbnode_t *keyblock)
   kbnode_t kb1, kb2, sig1, sig2, last;
   int any = 0;
 
-  log_debug ("enter collapse_subkeys\n");
   for (kb1 = *keyblock; kb1; kb1 = kb1->next)
     {
       if (is_deleted_kbnode (kb1))
@@ -4203,7 +4202,6 @@ collapse_subkeys (kbnode_t *keyblock)
 
   commit_kbnode (keyblock);
 
-  log_debug ("leave collapse_subkeys (any=%d)\n", any);
   if (any && !opt.quiet)
     {
       const char *key="???";
