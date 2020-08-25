@@ -6,7 +6,6 @@
 
 [gpg]
 compliance de-vs
-default-new-key-algo rsa3072/cert,sign+rsa3072/encr
 
 [gpgsm]
 compliance de-vs
