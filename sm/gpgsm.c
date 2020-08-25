@@ -1067,6 +1067,7 @@ main ( int argc, char **argv)
 	case aGPGConfTest:
           set_cmd (&cmd, pargs.r_opt);
           do_not_setup_keys = 1;
+          default_keyring = 0;
           nogreeting = 1;
           break;
 
