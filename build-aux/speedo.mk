@@ -41,6 +41,47 @@
 #
 # Lists packages and versions.
 #
+# The information reyured to sign the tarballs and binaries
+# are expected in the developer specific file ~/.gnupg-autogen.rc".
+# Here is an example:
+#--8<---------------cut here---------------start------------->8---
+# # Location of the released tarball archives.  Note that this is an
+# # internal archive and before uploading this to the public server,
+# # manual tests should be run and the git release tagged and pushed.
+# # This is greped by the Makefile.
+# RELEASE_ARCHIVE=foo@somehost:tarball-archive
+#
+# # The key used to sign the released sources.
+# # This is greped by the Makefile.
+# RELEASE_SIGNKEY=6DAA6E64A76D2840571B4902528897B826403ADA
+#
+# # For signing Windows binaries we need to employ a Windows machine.
+# # We connect to this machine via ssh and take the connection
+# # parameters via .ssh/config. For example a VM could be specified
+# # like this:
+# #
+# #   Host authenticode-signhost
+# #        HostName localhost
+# #        Port 27042
+# #        User gpgsign
+# #
+# # Depending on the used token it might be necessary to allow single
+# # signon and unlock the token before running the make.  The following
+# # variable references this entry.  This is greped by the Makefile.
+# AUTHENTICODE_SIGNHOST=authenticode-signhost
+#
+# # The name of the signtool as used on Windows.
+# # This is greped by the Makefile.
+# AUTHENTICODE_TOOL="C:\Program Files (x86)\Windows Kits\10\bin\signtool.exe"
+#
+# # To use osslsigncode the follwing entries are required and
+# # an empty string must be given for AUTHENTICODE_SIGNHOST.
+# # They are greped by the Makefile.
+# AUTHENTICODE_KEY=/home/foo/.gnupg/my-authenticode-key.p12
+# AUTHENTICODE_CERTS=/home/foo/.gnupg/my-authenticode-certs.pem
+#
+#--8<---------------cut here---------------end--------------->8---
+
 
 # We need to know our own name.
 SPEEDO_MK := $(realpath $(lastword $(MAKEFILE_LIST)))
@@ -172,17 +213,17 @@ INSTALL_PREFIX=none
 # Set this to the location of wixtools
 WIXPREFIX=
 
-# The Authenticode key and cert chain used to sign the Windows
-# installer If AUTHENTICODE_SIGNHOST is specified, signing is done on
-# that host using the Windows signtool.  The signhost is usually an
-# entry in .ssh/config.  Depending on the used token it might be
-# necessary to allow single signon and unlock the token before running
-# this makefile.  All files given in AUTHENTICODE_FILES are signed
-# before they are put into the installer.
-AUTHENTICODE_SIGNHOST=authenticode-signhost
-AUTHENTICODE_TOOL='"C:\Program Files (x86)\Windows Kits\10\bin\signtool.exe"'
-AUTHENTICODE_KEY=${HOME}/.gnupg/g10code-authenticode-key.p12
-AUTHENTICODE_CERTS=${HOME}/.gnupg/g10code-authenticode-certs.pem
+# Read signing information from ~/.gnupg-autogen.rc
+define READ_AUTOGEN_template
+$(1) = $$(shell grep '^$(1)=' $$$$HOME/.gnupg-autogen.rc|cut -d= -f2)
+endef
+$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_SIGNHOST))
+$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_TOOL))
+$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_KEY))
+$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_CERTS))
+
+# All files given in AUTHENTICODE_FILES are signed before
+# they are put into the installer.
 AUTHENTICODE_FILES= \
                     dirmngr.exe               \
                     dirmngr_ldap.exe          \
@@ -1362,7 +1403,7 @@ define AUTHENTICODE_sign
    if [ -n "$(AUTHENTICODE_SIGNHOST)" ]; then \
      echo "speedo: Signing via host $(AUTHENTICODE_SIGNHOST)";\
      scp $(1) "$(AUTHENTICODE_SIGNHOST):a.exe" ;\
-     ssh "$(AUTHENTICODE_SIGNHOST)" $(AUTHENTICODE_TOOL) sign \
+     ssh "$(AUTHENTICODE_SIGNHOST)" '$(AUTHENTICODE_TOOL)' sign \
         /n '"g10 Code GmbH"' \
         /tr 'http://rfc3161timestamp.globalsign.com/advanced' /td sha256 \
         /fd sha256 /du https://gnupg.org a.exe ;\
