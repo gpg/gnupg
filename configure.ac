@@ -1620,6 +1620,7 @@ if test "$GCC" = yes; then
         if test x"$_gcc_wopt" = xyes ; then
           mycflags="$mycflags -W -Wno-sign-compare -Wno-format-zero-length"
           mycflags="$mycflags -Wno-missing-field-initializers"
+          mycflags="$mycflags -Wno-format-zero-length"
         fi
 
         AC_MSG_CHECKING([if gcc supports -Wdeclaration-after-statement])
