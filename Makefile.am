@@ -18,14 +18,13 @@
 
 ## Process this file with automake to produce Makefile.in
 
-# Location of the released tarball archives.  Note that this is an
-# internal archive and before uploading this to the public server,
-# manual tests should be run and the git release tat set and pushed.
-# Adjust as needed.
-RELEASE_ARCHIVE_DIR  = wk@vigenere:tarballs/gnupg/v2.2
-
-# The key used to sign the released sources.  Adjust as needed.
-RELEASE_SIGNING_KEY  = D8692123C4065DEA5E0F3AB5249B39D24F25E3B6
+# Location of the released tarball archives.  This is prefixed by
+# the variable RELEASE_ARCHIVE in ~/.gnupg-autogen.rc.  For example:
+# RELEASE_ARCHIVE=user@host:archive/tarballs
+RELEASE_ARCHIVE_SUFFIX  = gnupg/v2.2
+# The variable RELEASE_SIGNKEY in ~/.gnupg-autogen.rc is used
+# to specify the key for signing.  For example:
+# RELEASE_SIGNKEY=D8692123C4065DEA5E0F3AB5249B39D24F25E3B6
 
 
 # Autoconf flags.
@@ -204,6 +203,18 @@ release:
 sign-release:
 	 +(set -e; \
 	  cd dist; \
+	  x=$$(grep '^RELEASE_ARCHIVE=' $$HOME/.gnupg-autogen.rc|cut -d= -f2);\
+          if [ -z "$$x" ]; then \
+             echo "error: RELEASE_ARCHIVE missing in ~/.gnupg-autogen.rc">&2; \
+             exit 2;\
+          fi;\
+          myarchive="$$x/$(RELEASE_ARCHIVE_SUFFIX)";\
+	  x=$$(grep '^RELEASE_SIGNKEY=' $$HOME/.gnupg-autogen.rc|cut -d= -f2);\
+          if [ -z "$$x" ]; then \
+             echo "error: RELEASE_SIGNKEY missing in ~/.gnupg-autogen.rc">&2; \
+             exit 2;\
+          fi;\
+	  mysignkey="$$x";\
 	  release_w32_name="$(RELEASE_W32_STEM_NAME)_$$(date -u +%Y%m%d)" ;\
 	  files1="$(RELEASE_NAME).tar.bz2 \
                   $${release_w32_name}.tar.xz \
@@ -217,11 +228,11 @@ sign-release:
 	  files3="$${release_w32_name}.wixlib"; \
 	  $(MAKE) -f $(RELEASE_NAME)/build-aux/speedo.mk w32-sign-installer ;\
 	  echo "/* Signing the source tarball ..." ;\
-	  gpg -sbu $(RELEASE_SIGNING_KEY) $(RELEASE_NAME).tar.bz2 ;\
+	  gpg -sbu $$mysignkey $(RELEASE_NAME).tar.bz2 ;\
 	  echo "/* Signing the W32 source tarball ..." ;\
-	  gpg -sbu $(RELEASE_SIGNING_KEY) $${release_w32_name}.tar.xz ;\
+	  gpg -sbu $$mysignkey $${release_w32_name}.tar.xz ;\
 	  echo "/* Signing the W32 installer ..." ;\
-	  gpg -sbu $(RELEASE_SIGNING_KEY) $${release_w32_name}.exe ;\
+	  gpg -sbu $$mysignkey $${release_w32_name}.exe ;\
 	  cat $(RELEASE_NAME).swdb >swdb.snippet;\
 	  echo '#+macro: gnupg22_branch  STABLE-BRANCH-2-2' >>swdb.snippet;\
 	  cat  $${release_w32_name}.exe.swdb >>swdb.snippet;\
@@ -229,8 +240,8 @@ sign-release:
 	  sha1sum $${files1} >>swdb.snippet ;\
           cat "../$(RELEASE_NAME).buildlog" swdb.snippet \
                | gzip >$(RELEASE_NAME).buildlog ;\
-          echo "Release created - copying it to the local archive ..." ;\
-	  scp -p $${files1} $${files2} $${files3} $(RELEASE_ARCHIVE_DIR)/ || true;\
+          echo "Release created - copying it to the archive ..." ;\
+	  scp -p $${files1} $${files2} $${files3} $$myarchive/ || true;\
 	  echo '/*' ;\
 	  echo ' * All done; for checksums see dist/swdb.snippet' ;\
 	  echo ' */' ;\
