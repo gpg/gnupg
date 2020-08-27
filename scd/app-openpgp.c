@@ -2565,10 +2565,15 @@ verify_chv2 (app_t app, ctrl_t ctrl,
   if (app->did_chv2)
     return 0;  /* We already verified CHV2.  */
 
-  rc = verify_a_chv (app, ctrl, pincb, pincb_arg, 2, 0, &pinvalue, &pinlen);
-  if (rc)
-    return rc;
-  app->did_chv2 = 1;
+  if (app->app_local->pk[1].key || app->app_local->pk[2].key)
+    {
+      rc = verify_a_chv (app, ctrl, pincb, pincb_arg, 2, 0, &pinvalue, &pinlen);
+      if (rc)
+        return rc;
+      app->did_chv2 = 1;
+    }
+  else
+    rc = 0;
 
   if (!app->did_chv1 && !app->force_chv1 && pinvalue)
     {
