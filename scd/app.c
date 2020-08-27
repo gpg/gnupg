@@ -548,7 +548,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
           size_t atrlen;
 
           /* This is heuristics to identify different implementations.  */
-          atr = apdu_get_atr (app_get_slot (app), &atrlen);
+          atr = apdu_get_atr (slot, &atrlen);
           if (atr)
             {
               if (atrlen == 21 && atr[2] == 0x11)
