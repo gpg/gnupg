@@ -2056,6 +2056,14 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
 
       while ((err = ntbtls_handshake (hd->session->tls_session)))
         {
+#if NTBTLS_VERSION_NUMBER >= 0x000200
+          unsigned int tlevel, ttype;
+          const char *s = ntbtls_get_last_alert (hd->session->tls_session,
+                                                 &tlevel, &ttype);
+          if (s)
+            log_info ("TLS alert: %s (%u.%u)\n", s, tlevel, ttype);
+#endif
+
           switch (err)
             {
             default:
