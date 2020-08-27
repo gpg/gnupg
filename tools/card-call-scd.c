@@ -485,8 +485,12 @@ scd_apdu (const char *hexapdu, const char *options, unsigned int *r_sw,
       membuf_t mb;
       unsigned char *data;
       size_t datalen;
+      int no_sw;
 
       init_membuf (&mb, 256);
+
+      no_sw = (options && (strstr (options, "--dump-atr")
+                           || strstr (options, "--data-atr")));
 
       snprintf (line, DIM(line), "SCD APDU %s%s%s",
                 options?options:"", options?" -- ":"", hexapdu);
@@ -497,16 +501,16 @@ scd_apdu (const char *hexapdu, const char *options, unsigned int *r_sw,
           data = get_membuf (&mb, &datalen);
           if (!data)
             err = gpg_error_from_syserror ();
-          else if (datalen < 2) /* Ooops */
+          else if (datalen < (no_sw?1:2)) /* Ooops */
             err = gpg_error (GPG_ERR_CARD);
           else
             {
               if (r_sw)
-                *r_sw = buf16_to_uint (data+datalen-2);
+                *r_sw = no_sw? 0 : buf16_to_uint (data+datalen-2);
               if (r_data && r_datalen)
                 {
                   *r_data = data;
-                  *r_datalen = datalen - 2;
+                  *r_datalen = datalen - (no_sw?0:2);
                   data = NULL;
                 }
             }

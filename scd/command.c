@@ -1933,6 +1933,8 @@ cmd_apdu (assuan_context_t ctx, char *line)
   size_t exlen;
 
   if (has_option (line, "--dump-atr"))
+    with_atr = 3;
+  else if (has_option (line, "--data-atr"))
     with_atr = 2;
   else
     with_atr = has_option (line, "--atr");
@@ -1969,7 +1971,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
           rc = gpg_error (GPG_ERR_INV_CARD);
           goto leave;
         }
-      if (with_atr == 2)
+      if (with_atr == 3)
         {
           char *string, *p, *pend;
 
@@ -1986,7 +1988,19 @@ cmd_apdu (assuan_context_t ctx, char *line)
                 rc = assuan_send_data (ctx, p, strlen (p));
               es_free (string);
               if (rc)
-                goto leave;
+                {
+                  xfree (atr);
+                  goto leave;
+                }
+            }
+        }
+      else if (with_atr == 2)
+        {
+          rc = assuan_send_data (ctx, atr, atrlen);
+          if (rc)
+            {
+              xfree (atr);
+              goto leave;
             }
         }
       else

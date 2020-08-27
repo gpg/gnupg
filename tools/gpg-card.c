@@ -3472,14 +3472,17 @@ cmd_apdu (card_info_t info, char *argstr)
 
   if (with_atr || handle_more || exlenstr)
     options = xasprintf ("%s%s%s%.*s",
-                         with_atr == 2? " --dump-atr": with_atr? " --atr":"",
+                         with_atr == 2? " --dump-atr":
+                         with_atr? " --data-atr":"",
                          handle_more?" --more":"",
-                         exlenstr?" ":"", exlenstrlen, exlenstr?exlenstr:"");
+                         exlenstr?" --exlen=":"",
+                         exlenstrlen, exlenstr?exlenstr:"");
 
   err = scd_apdu (argstr, options, &sw, &result, &resultlen);
   if (err)
     goto leave;
-  log_info ("Statusword: 0x%04x\n", sw);
+  if (!with_atr)
+    log_info ("Statusword: 0x%04x\n", sw);
   for (i=0; i < resultlen; )
     {
       size_t save_i = i;
