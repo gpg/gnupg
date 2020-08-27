@@ -53,7 +53,9 @@
 typedef enum
   {
    CARDTYPE_GENERIC = 0,
-   CARDTYPE_YUBIKEY
+   CARDTYPE_GNUK,
+   CARDTYPE_YUBIKEY,
+   CARDTYPE_ZEITCONTROL
 
   } cardtype_t;
 

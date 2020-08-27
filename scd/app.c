@@ -83,8 +83,10 @@ strcardtype (cardtype_t t)
 {
   switch (t)
     {
-    case CARDTYPE_GENERIC: return "generic";
-    case CARDTYPE_YUBIKEY: return "yubikey";
+    case CARDTYPE_GENERIC:     return "generic";
+    case CARDTYPE_GNUK:        return "gnuk";
+    case CARDTYPE_YUBIKEY:     return "yubikey";
+    case CARDTYPE_ZEITCONTROL: return "zeitcontrol";
     }
   return "?";
 }
@@ -538,6 +540,22 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                     }
                 }
               xfree (buf);
+            }
+        }
+      else
+        {
+          unsigned char *atr;
+          size_t atrlen;
+
+          /* This is heuristics to identify different implementations.  */
+          atr = apdu_get_atr (app_get_slot (app), &atrlen);
+          if (atr)
+            {
+              if (atrlen == 21 && atr[2] == 0x11)
+                card->cardtype = CARDTYPE_GNUK;
+              else if (atrlen == 21 && atr[7] == 0x75)
+                card->cardtype = CARDTYPE_ZEITCONTROL;
+              xfree (atr);
             }
         }
 
