@@ -453,6 +453,11 @@ Don't send your complete keyring to a keyserver --- select
 only those keys which are new or changed by you.  If no @var{keyIDs}
 are given, @command{@gpgname} does nothing.
 
+Take care: Keyservers are by design write only systems and thus it is
+not possible to ever delete keys once they have been send to a
+keyserver.
+
+
 @item --export-secret-keys
 @itemx --export-secret-subkeys
 @opindex export-secret-keys
