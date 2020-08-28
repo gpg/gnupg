@@ -138,7 +138,7 @@ handle_iconv_error (const char *to, const char *from, int use_fallback)
          native encoding.  Nowadays this seems to be the best bet in
          case of errors from iconv or nl_langinfo.  */
       active_charset_name = "utf-8";
-      no_translation = 0;
+      no_translation = 1;
       use_iconv = 0;
     }
 }
