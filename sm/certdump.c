@@ -427,7 +427,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
     { /* hexstring */
       string++;
       for (s=string; hexdigitp (s); s++)
-        s++;
+        ;
       n = s - string;
       if (!n || (n & 1))
         return NULL; /* Empty or odd number of digits. */
