@@ -89,6 +89,16 @@ start_new_dirmngr (assuan_context_t *r_ctx,
 gpg_error_t get_assuan_server_version (assuan_context_t ctx,
                                        int mode, char **r_version);
 
+/* Print a server version mismatch warning.  */
+gpg_error_t warn_server_version_mismatch (assuan_context_t ctx,
+                                          const char *servername, int mode,
+                                          gpg_error_t (*status_fnc)
+                                                           (ctrl_t ctrl,
+                                                            int status_id,
+                                                            ...),
+                                          void *status_func_ctrl,
+                                          int print_hints);
+
 
 /*-- asshelp2.c --*/
 

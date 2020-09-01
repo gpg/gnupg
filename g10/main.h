@@ -208,6 +208,8 @@ void write_status_printf (int no, const char *format,
                           ...) GPGRT_ATTR_PRINTF(2,3);
 void write_status_strings (int no, const char *text,
                            ...) GPGRT_ATTR_SENTINEL(0);
+gpg_error_t write_status_strings2 (ctrl_t dummy, int no,
+                                   ...) GPGRT_ATTR_SENTINEL(0);
 void write_status_buffer ( int no,
                            const char *buffer, size_t len, int wrap );
 void write_status_text_and_buffer ( int no, const char *text,

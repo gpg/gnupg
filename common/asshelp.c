@@ -696,3 +696,57 @@ get_assuan_server_version (assuan_context_t ctx, int mode, char **r_version)
     }
   return err;
 }
+
+
+/* Print a warning if the server's version number is less than our
+ * version number.  Returns an error code on a connection problem.
+ * CTX is the Assuan context, SERVERNAME is the name of teh server,
+ * STATUS_FUNC and STATUS_FUNC_DATA is a callback to emit status
+ * messages.  If PRINT_HINTS is set additional hints are printed.  For
+ * MODE see get_assuan_server_version.  */
+gpg_error_t
+warn_server_version_mismatch (assuan_context_t ctx,
+                              const char *servername, int mode,
+                              gpg_error_t (*status_func)(ctrl_t ctrl,
+                                                         int status_no,
+                                                         ...),
+                              void *status_func_ctrl,
+                              int print_hints)
+{
+  gpg_error_t err;
+  char *serverversion;
+  const char *myversion = gpgrt_strusage (13);
+
+  err = get_assuan_server_version (ctx, mode, &serverversion);
+  if (err)
+    log_log (gpg_err_code (err) == GPG_ERR_NOT_SUPPORTED?
+             GPGRT_LOGLVL_INFO : GPGRT_LOGLVL_ERROR,
+             _("error getting version from '%s': %s\n"),
+             servername, gpg_strerror (err));
+  else if (compare_version_strings (serverversion, myversion) < 0)
+    {
+      char *warn;
+
+      warn = xtryasprintf (_("server '%s' is older than us (%s < %s)"),
+                           servername, serverversion, myversion);
+      if (!warn)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          log_info (_("WARNING: %s\n"), warn);
+          if (print_hints)
+            {
+              log_info (_("Note: Outdated servers may lack important"
+                          " security fixes.\n"));
+              log_info (_("Note: Use the command \"%s\" to restart them.\n"),
+                        "gpgconf --kill all");
+            }
+          if (status_func)
+            status_func (status_func_ctrl, STATUS_WARNING,
+                         "server_version_mismatch 0", warn, NULL);
+          xfree (warn);
+        }
+    }
+  xfree (serverversion);
+  return err;
+}

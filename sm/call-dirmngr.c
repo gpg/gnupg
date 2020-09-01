@@ -155,39 +155,9 @@ static gpg_error_t
 warn_version_mismatch (ctrl_t ctrl, assuan_context_t ctx,
                        const char *servername, int mode)
 {
-  gpg_error_t err;
-  char *serverversion;
-  const char *myversion = gpgrt_strusage (13);
-
-  err = get_assuan_server_version (ctx, mode, &serverversion);
-  if (err)
-    log_error (_("error getting version from '%s': %s\n"),
-               servername, gpg_strerror (err));
-  else if (compare_version_strings (serverversion, myversion) < 0)
-    {
-      char *warn;
-
-      warn = xtryasprintf (_("server '%s' is older than us (%s < %s)"),
-                           servername, serverversion, myversion);
-      if (!warn)
-        err = gpg_error_from_syserror ();
-      else
-        {
-          log_info (_("WARNING: %s\n"), warn);
-          if (!opt.quiet)
-            {
-              log_info (_("Note: Outdated servers may lack important"
-                          " security fixes.\n"));
-              log_info (_("Note: Use the command \"%s\" to restart them.\n"),
-                        "gpgconf --kill all");
-            }
-          gpgsm_status2 (ctrl, STATUS_WARNING, "server_version_mismatch 0",
-                         warn, NULL);
-          xfree (warn);
-        }
-    }
-  xfree (serverversion);
-  return err;
+  return warn_server_version_mismatch (ctx, servername, mode,
+                                       gpgsm_status2, ctrl,
+                                       !opt.quiet);
 }
 
 

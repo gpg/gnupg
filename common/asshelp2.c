@@ -173,7 +173,7 @@ status_printf (ctrl_t ctrl, const char *keyword, const char *format, ...)
 }
 
 
-/* Same as sytus_printf but takes a status number instead of a
+/* Same as status_printf but takes a status number instead of a
  * keyword.  */
 gpg_error_t
 status_no_printf (ctrl_t ctrl, int no, const char *format, ...)

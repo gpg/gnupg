@@ -181,6 +181,50 @@ write_status_strings (int no, const char *text, ...)
 }
 
 
+/* Write a status line with code NO followed by the remaining
+ * arguments which must be a list of strings terminated by a NULL.
+ * Embedded CR and LFs in the strings are C-style escaped.  All
+ * strings are printed with a space as delimiter.  */
+gpg_error_t
+write_status_strings2 (ctrl_t dummy, int no, ...)
+{
+  va_list arg_ptr;
+  const char *s;
+
+  (void)dummy;
+
+  if (!statusfp || !status_currently_allowed (no) )
+    return 0;  /* Not enabled or allowed. */
+
+  va_start (arg_ptr, no);
+
+  es_fputs ("[GNUPG:] ", statusfp);
+  es_fputs (get_status_string (no), statusfp);
+  while ((s = va_arg (arg_ptr, const char*)))
+    {
+      if (*s)
+        es_putc (' ', statusfp);
+      for (; *s; s++)
+        {
+          if (*s == '\n')
+            es_fputs ("\\n", statusfp);
+          else if (*s == '\r')
+            es_fputs ("\\r", statusfp);
+          else
+            es_fputc (*(const byte *)s, statusfp);
+        }
+    }
+  es_putc ('\n', statusfp);
+
+  va_end (arg_ptr);
+
+  if (es_fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
+
+  return 0;
+}
+
+
 void
 write_status_text (int no, const char *text)
 {
