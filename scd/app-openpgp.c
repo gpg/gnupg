@@ -2357,9 +2357,14 @@ verify_chv2 (app_t app,
   int rc;
   char *pinvalue;
   int pinlen;
+  int i;
 
   if (app->did_chv2)
     return 0;  /* We already verified CHV2.  */
+
+  /* Make sure we have load the public keys.  */
+  for (i = 0; i < 3; i++)
+    get_public_key (app, i);
 
   if (app->app_local->pk[1].key || app->app_local->pk[2].key)
     {
