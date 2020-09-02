@@ -154,6 +154,10 @@ struct keydb_handle_s
 
 /*-- keydb.c --*/
 
+
+gpg_error_t keydb_parse_keyblock (iobuf_t iobuf, int pk_no, int uid_no,
+                                  kbnode_t *r_keyblock);
+
 /* These are the functions call-keyboxd diverts to if the keyboxd is
  * not used.  */
 

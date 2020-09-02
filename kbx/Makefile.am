@@ -57,9 +57,13 @@ common_sources = \
 	keybox-openpgp.c \
 	keybox-dump.c
 
+client_sources = \
+        kbx-client-util.h \
+        kbx-client-util.c
 
-libkeybox_a_SOURCES = $(common_sources)
-libkeybox509_a_SOURCES = $(common_sources)
+
+libkeybox_a_SOURCES = $(common_sources) $(client_sources)
+libkeybox509_a_SOURCES = $(common_sources) $(client_sources)
 
 libkeybox_a_CFLAGS = $(AM_CFLAGS)
 libkeybox509_a_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1
