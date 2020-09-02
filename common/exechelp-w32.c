@@ -397,6 +397,15 @@ gnupg_create_pipe (int filedes[2])
 }
 
 
+/* Close the end of a pipe.  */
+void
+gnupg_close_pipe (int fd)
+{
+  if (fd != -1)
+    close (fd);
+}
+
+
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],

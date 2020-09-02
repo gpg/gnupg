@@ -69,6 +69,9 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2],
    inheritable.  */
 gpg_error_t gnupg_create_pipe (int filedes[2]);
 
+/* Close the end of a pipe.  */
+void gnupg_close_pipe (int fd);
+
 
 #define GNUPG_SPAWN_NONBLOCK   16
 #define GNUPG_SPAWN_RUN_ASFW   64
