@@ -696,7 +696,7 @@ run_select_statement (be_sqlite_local_t ctx,
       if (!ctx->select_stmt)
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, userid as u"
-                               " WHERE u.uid = ?1",
+                               " WHERE p.ubid = u.ubid AND u.uid = ?1",
                                &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1, desc[descidx].u.name);
@@ -706,7 +706,7 @@ run_select_statement (be_sqlite_local_t ctx,
       if (!ctx->select_stmt)
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, userid as u"
-                               " WHERE u.addrspec = ?1",
+                               " WHERE p.ubid = u.ubid AND u.addrspec = ?1",
                                &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1, desc[descidx].u.name);
@@ -716,7 +716,7 @@ run_select_statement (be_sqlite_local_t ctx,
       if (!ctx->select_stmt)
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, userid as u"
-                               " WHERE u.addrspec LIKE ?1",
+                               " WHERE p.ubid = u.ubid AND u.addrspec LIKE ?1",
                                &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text_like (ctx->select_stmt, 1,
@@ -727,7 +727,7 @@ run_select_statement (be_sqlite_local_t ctx,
       if (!ctx->select_stmt)
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, userid as u"
-                               " WHERE u.uid LIKE ?1",
+                               " WHERE p.ubid = u.ubid AND u.uid LIKE ?1",
                                &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text_like (ctx->select_stmt, 1,
