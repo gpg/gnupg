@@ -140,7 +140,7 @@ gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
   int rc;
   char *p;
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     return gpg_error (GPG_ERR_GENERAL);
   rc = keydb_search_first (ctrl, hd);
@@ -217,7 +217,7 @@ get_default_signer (ctrl_t ctrl)
       return NULL;
     }
 
-  kh = keydb_new ();
+  kh = keydb_new (ctrl);
   if (!kh)
     return NULL;
 
@@ -422,7 +422,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
   audit_set_type (ctrl->audit, AUDIT_TYPE_SIGN);
 
-  kh = keydb_new ();
+  kh = keydb_new (ctrl);
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));

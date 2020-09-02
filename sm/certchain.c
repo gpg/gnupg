@@ -1033,7 +1033,7 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
   int rc = 0;
   char *issuer = NULL;
   char *subject = NULL;
-  KEYDB_HANDLE kh = keydb_new ();
+  KEYDB_HANDLE kh = keydb_new (ctrl);
 
   *r_next = NULL;
   if (!kh)
@@ -1548,7 +1548,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       return 0;
     }
 
-  kh = keydb_new ();
+  kh = keydb_new (ctrl);
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
@@ -2186,7 +2186,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
       return 0;
     }
 
-  kh = keydb_new ();
+  kh = keydb_new (ctrl);
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));

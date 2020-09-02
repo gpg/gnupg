@@ -53,7 +53,7 @@ delete_one (ctrl_t ctrl, const char *username)
       goto leave;
     }
 
-  kh = keydb_new ();
+  kh = keydb_new (ctrl);
   if (!kh)
     {
       log_error ("keydb_new failed\n");

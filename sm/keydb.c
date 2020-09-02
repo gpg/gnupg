@@ -398,10 +398,12 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
 
 
 KEYDB_HANDLE
-keydb_new (void)
+keydb_new (ctrl_t ctrl)
 {
   KEYDB_HANDLE hd;
   int i, j;
+
+  (void)ctrl;
 
   if (DBG_CLOCK)
     log_clock ("%s: enter\n", __func__);
@@ -1305,7 +1307,7 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  kh = keydb_new ();
+  kh = keydb_new (ctrl);
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
@@ -1391,7 +1393,7 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  kh = keydb_new ();
+  kh = keydb_new (ctrl);
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
@@ -1462,7 +1464,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
 
   (void)ctrl;
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     {
       log_error ("keydb_new failed\n");

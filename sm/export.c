@@ -149,7 +149,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
       goto leave;
     }
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     {
       log_error ("keydb_new failed\n");
@@ -338,7 +338,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
   void *data;
   size_t datalen;
 
-  hd = keydb_new ();
+  hd = keydb_new (ctrl);
   if (!hd)
     {
       log_error ("keydb_new failed\n");

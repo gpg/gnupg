@@ -407,7 +407,7 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
   ksba_cert_t cert = NULL;
   unsigned int flags;
 
-  kh = keydb_new ();
+  kh = keydb_new (ctrl);
   if (!kh)
     {
       err = gpg_error (GPG_ERR_ENOMEM);;
