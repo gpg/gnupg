@@ -367,8 +367,11 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
               if (only_selfsigs)
                 continue;
 
-              issuer = xmalloc (sizeof (*issuer));
-              err = get_pubkey (ctrl, issuer, sig->keyid);
+              issuer = xtrycalloc (1, sizeof *issuer);
+              if (!issuer)
+                err = gpg_error_from_syserror ();
+              else
+                err = get_pubkey (ctrl, issuer, sig->keyid);
               if (err)
                 {
                   xfree (issuer);
