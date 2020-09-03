@@ -121,6 +121,7 @@ static struct {
   { 0x00D7, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Decryption"},
   { 0x00D8, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Authentication"},
   { 0x00F9, 0,    0, 1, 0, 0, 0, 0, "KDF data object"},
+  { 0x00FA, 0,    0, 0, 0, 0, 0, 0, "Algorithm Information"},
   { 0 }
 };
 
@@ -1084,6 +1085,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "MANUFACTURER", 0x0000, -8 },
     { "UIF",          0x0000, -9 },  /* Shortcut for all UIF */
     { "KEY-STATUS",   0x00DE,  6 },
+    { "KEY-ATTR-INFO", 0x00FA,  7 },
     { NULL, 0 }
   };
   int idx, i, rc;
