@@ -2,13 +2,13 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002,
 #               2007 Free Software Foundation, Inc.
 # Janusz A. Urbanowicz <alex@bofh.net.pl>, 1999, 2000, 2001, 2002, 2003-2004
-# Jakub Bogusz <qboosh@pld-linux.org>, 2003-2019.
+# Jakub Bogusz <qboosh@pld-linux.org>, 2003-2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.2.16\n"
+"Project-Id-Version: gnupg-2.2.21\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-05-29 17:45+0200\n"
+"PO-Revision-Date: 2020-08-16 07:45+0200\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -1242,42 +1242,34 @@ msgstr "%s nie jest zgodny z trybem %s\n"
 msgid "no dirmngr running in this session\n"
 msgstr "brak działającego dirmngr w tej sesji\n"
 
-#, fuzzy, c-format
-#| msgid "option '%s' may not be used in %s mode\n"
+#, c-format
 msgid "keyserver option \"%s\" may not be used in %s mode\n"
-msgstr "opcja ,,%s'' nie może być używana w trybie %s\n"
+msgstr "opcja serwera kluczy ,,%s'' nie może być używana w trybie %s\n"
 
 msgid "WKD uses a cached result"
-msgstr ""
+msgstr "WKD używa zapamiętanego wyniku"
 
 msgid "Tor is not running"
-msgstr ""
+msgstr "Tor nie działa"
 
-#, fuzzy
-#| msgid "\"%s\" is not a proper fingerprint\n"
 msgid "Tor is not properly configured"
-msgstr ",,%s'' nie jest właściwym odciskiem\n"
+msgstr "Tor nie jest właściwie skonfigurowany"
 
-#, fuzzy
-#| msgid "\"%s\" is not a proper fingerprint\n"
 msgid "DNS is not properly configured"
-msgstr ",,%s'' nie jest właściwym odciskiem\n"
+msgstr "DNS nie jest właściwie skonfigurowany"
 
 msgid "unacceptable HTTP redirect from server"
-msgstr ""
+msgstr "niedopuszczalne przekierowanie HTTP z serwera"
 
 msgid "unacceptable HTTP redirect from server was cleaned up"
-msgstr ""
+msgstr "niedopuszczalne przekierowanie HTTP z serwera zostało wyczyszczone"
 
-#, fuzzy
-#| msgid "generate a revocation certificate"
 msgid "server uses an invalid certificate"
-msgstr "tworzenie certyfikatu unieważnienia klucza"
+msgstr "serwer używa błędnego certyfikatu"
 
-#, fuzzy, c-format
-#| msgid "armor: %s\n"
+#, c-format
 msgid "Note: %s\n"
-msgstr "opakowanie: %s\n"
+msgstr "Uwaga: %s\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1306,10 +1298,10 @@ msgid "[not set]"
 msgstr "[nie ustawiono]"
 
 msgid "Mr."
-msgstr ""
+msgstr "Pan"
 
 msgid "Ms."
-msgstr ""
+msgstr "Pani"
 
 msgid "not forced"
 msgstr "nie wymuszono"
@@ -1363,7 +1355,7 @@ msgid "Error: invalid characters in preference string.\n"
 msgstr "Błąd: niewłaściwe znaki w tekście preferencji.\n"
 
 msgid "Salutation (M = Mr., F = Ms., or space): "
-msgstr ""
+msgstr "Tutuł (M = Pan, F = Pani lub spacja): "
 
 msgid "Error: invalid response.\n"
 msgstr "Błąd: niewłaściwa odpowiedź.\n"
@@ -1535,10 +1527,8 @@ msgstr "zmiana nazwy logowania"
 msgid "change the language preferences"
 msgstr "zmiana preferowanych języków"
 
-#, fuzzy
-#| msgid "change card holder's sex"
 msgid "change card holder's salutation"
-msgstr "zmiana płci posiadacza karty"
+msgstr "zmiana tytułu posiadacza karty"
 
 msgid "change a CA fingerprint"
 msgstr "zmiana odcisku CA"
@@ -2583,7 +2573,7 @@ msgid "remove as much as possible from key after import"
 msgstr "usuwanie jak największej części kluczy po imporcie"
 
 msgid "ignore key-signatures which are not self-signatures"
-msgstr ""
+msgstr "ignorowanie podpisów kluczy nie będących podpisami własnymi"
 
 msgid "run import filters and export key immediately"
 msgstr "natychmiastowe uruchomienie filtrów importu i eksport klucza"
@@ -3504,7 +3494,7 @@ msgid "subkey \"%s\" not found\n"
 msgstr "podklucz ,,%s'' nie został odnaleziony\n"
 
 msgid "AEAD: "
-msgstr ""
+msgstr "AEAD: "
 
 msgid "Digest: "
 msgstr "Skrót: "
@@ -3993,10 +3983,9 @@ msgstr "   (%d) ECC (tylko do szyfrowania)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (%d) Istniejący klucz\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) Existing key from card\n"
+#, c-format
 msgid "  (%d) Existing key from card\n"
-msgstr "   (%d) Istniejący klucz z karty\n"
+msgstr "  (%d) Istniejący klucz z karty\n"
 
 msgid "Enter the keygrip: "
 msgstr "Uchwyt klucza: "
@@ -4658,7 +4647,7 @@ msgstr "Klucz dostępny w: "
 
 #, c-format
 msgid "Note: Use '%s' to make use of this info\n"
-msgstr ""
+msgstr "Uwaga: aby wykorzystać tę informację, należy użyć ,,%s''\n"
 
 msgid "[uncertain]"
 msgstr "[niepewne]"
@@ -4757,10 +4746,9 @@ msgstr "OSTRZEŻENIE: algorytm skrótu %s jest odradzany\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "Uwaga: podpisy wykorzystujące algorytm %s są odrzucane\n"
 
-#, fuzzy, c-format
-#| msgid "Note: signatures using the %s algorithm are rejected\n"
+#, c-format
 msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
-msgstr "Uwaga: podpisy wykorzystujące algorytm %s są odrzucane\n"
+msgstr "Uwaga: podpisy kluczami osób trzecich wykorzystujące algorytm %s są odrzucane\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -7305,10 +7293,9 @@ msgstr "Podpisano w "
 msgid "[date not given]"
 msgstr "[nie podano daty]"
 
-#, fuzzy, c-format
-#| msgid "algorithm: %s"
+#, c-format
 msgid "algorithm:"
-msgstr "algorytm: %s"
+msgstr "algorytm:"
 
 #, c-format
 msgid ""
@@ -8689,15 +8676,11 @@ msgstr ""
 "|MECHANIZMY|wykorzystaj MECHANIZMY do wyszukiwania kluczy na podstawie "
 "adresów e-mail"
 
-#, fuzzy
-#| msgid "import keys from a keyserver"
 msgid "import missing key from a signature"
-msgstr "import kluczy z serwera kluczy"
+msgstr "import brakującego klucza z podpisu"
 
-#, fuzzy
-#| msgid "list and check key signatures"
 msgid "include the public key in signatures"
-msgstr "wypisanie i sprawdzenie podpisów kluczy"
+msgstr "włączanie klucza publicznego do podpisów"
 
 msgid "disable all access to the dirmngr"
 msgstr "zablokuj dostęp do dirmngr"
@@ -8992,24 +8975,3 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
-
-#~ msgid " using certificate ID 0x%08lX\n"
-#~ msgstr " przy użyciu certyfikatu o ID 0x%08lX\n"
-
-#, fuzzy
-#~| msgid "option '%s' may not be used in %s mode\n"
-#~ msgid ""
-#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-#~ msgstr "opcja ,,%s'' nie może być używana w trybie %s\n"
-
-#~ msgid "male"
-#~ msgstr "mężczyzna"
-
-#~ msgid "female"
-#~ msgstr "kobieta"
-
-#~ msgid "unspecified"
-#~ msgstr "nie podano"
-
-#~ msgid "Sex ((M)ale, (F)emale or space): "
-#~ msgstr "Płeć (M - mężczyzna, F - kobieta lub spacja): "
