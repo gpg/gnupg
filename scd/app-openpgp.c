@@ -1077,6 +1077,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "MANUFACTURER", 0x0000, -8 },
     { "UIF",          0x0000, -9 },  /* Shortcut for all UIF */
     { "KEY-STATUS",   0x00DE,  6 },
+    { "KEY-ATTR-INFO", 0x00FA,  7 },
     { NULL, 0 }
   };
   int idx, i, rc;
