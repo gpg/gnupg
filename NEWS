@@ -1,5 +1,21 @@
-Noteworthy changes in version 2.2.23 (unreleased)
+Noteworthy changes in version 2.2.23 (2020-09-03)
 -------------------------------------------------
+
+  * gpg: Fix AEAD preference list overflow.  [#5050]
+
+  * gpg: Fix a possible segv in the key cleaning code.
+
+  * gpgsm: Fix a minor RFC2253 parser bug.  [#5037]
+
+  * scdaemon: Fix a PIN verify failure on certain OpenPGP card
+    implementations.  Regression in 2.2.22.  [#5039]
+
+  * po: Fix bug in the Hungarian translation.  Updates for the Czech,
+    Polish, and Ukrainian translations.
+
+  Release-info: https://dev.gnupg.org/T5045
+  See-also: gnupg-announce/2020q3/000448.html
+
 
 Noteworthy changes in version 2.2.22 (2020-08-27)
 -------------------------------------------------
