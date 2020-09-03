@@ -4,7 +4,7 @@
 # Magda Procházková <magda@math.muni.cz> 2001,
 # Roman Pavlik <rp@tns.cz> 2001, 2002, 2003, 2004, 2005.
 # Petr Pisar <petr.pisar@atlas.cz>, 2009, 2010, 2011, 2013, 2014, 2015, 2016.
-# Petr Pisar <petr.pisar@atlas.cz>, 2017, 2018, 2019.
+# Petr Pisar <petr.pisar@atlas.cz>, 2017, 2018, 2019, 2020.
 #
 # A "%%0A" is used by Pinentry to insert a line break. The double percent
 # sign is actually needed because it is also a printf format string. If you
@@ -36,9 +36,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.2.16\n"
+"Project-Id-Version: gnupg2 2.2.22\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2019-07-05 20:26+02:00\n"
+"PO-Revision-Date: 2020-08-31 18:53+02:00\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <gnupg-i18n@gnupg.org>\n"
 "Language: cs\n"
@@ -1278,42 +1278,34 @@ msgstr "%s není v souladu s režimem %s\n"
 msgid "no dirmngr running in this session\n"
 msgstr "v této relaci neběží žádný dirmngr\n"
 
-#, fuzzy, c-format
-#| msgid "option '%s' may not be used in %s mode\n"
+#, c-format
 msgid "keyserver option \"%s\" may not be used in %s mode\n"
-msgstr "volba „%s“ se nesmí používat v režimu %s\n"
+msgstr "volba serveru s klíči „%s“ se nesmí používat v režimu %s\n"
 
 msgid "WKD uses a cached result"
-msgstr ""
+msgstr "WKD používá zapamatované výsledky"
 
 msgid "Tor is not running"
-msgstr ""
+msgstr "To neběží"
 
-#, fuzzy
-#| msgid "\"%s\" is not a proper fingerprint\n"
 msgid "Tor is not properly configured"
-msgstr "„%s“ není řádný otisk\n"
+msgstr "Tor není řádně nastaven"
 
-#, fuzzy
-#| msgid "\"%s\" is not a proper fingerprint\n"
 msgid "DNS is not properly configured"
-msgstr "„%s“ není řádný otisk\n"
+msgstr "DNS není řádně nastaveno"
 
 msgid "unacceptable HTTP redirect from server"
-msgstr ""
+msgstr "nepřijatelné přesměrování HTTP serverem"
 
 msgid "unacceptable HTTP redirect from server was cleaned up"
-msgstr ""
+msgstr "nepřijatelné přesměrování HTTP serverem bylo odklizeno"
 
-#, fuzzy
-#| msgid "generate a revocation certificate"
 msgid "server uses an invalid certificate"
-msgstr "vytvořit revokační certifikát"
+msgstr "server používá neplatný certifikát"
 
-#, fuzzy, c-format
-#| msgid "armor: %s\n"
+#, c-format
 msgid "Note: %s\n"
-msgstr "ASCII kódování: %s\n"
+msgstr "Poznámka: %s\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1342,10 +1334,10 @@ msgid "[not set]"
 msgstr "[není nastaveno]"
 
 msgid "Mr."
-msgstr ""
+msgstr "Pan"
 
 msgid "Ms."
-msgstr ""
+msgstr "Paní"
 
 msgid "not forced"
 msgstr "není vyžadováno"
@@ -1399,7 +1391,7 @@ msgid "Error: invalid characters in preference string.\n"
 msgstr "Chyba: neplatný znak v řetězci s předvolbami\n"
 
 msgid "Salutation (M = Mr., F = Ms., or space): "
-msgstr ""
+msgstr "Oslovení (M = Pan, F = Paní, nebo mezera): "
 
 msgid "Error: invalid response.\n"
 msgstr "Chyba: neplatná odpověď.\n"
@@ -1573,10 +1565,8 @@ msgstr "změnit login name"
 msgid "change the language preferences"
 msgstr "změnit jazykové předvolby"
 
-#, fuzzy
-#| msgid "change card holder's sex"
 msgid "change card holder's salutation"
-msgstr "změní pohlaví držitele karty"
+msgstr "změní oslovení držitele karty"
 
 msgid "change a CA fingerprint"
 msgstr "vypsat otisk certifikační autority"
@@ -2618,7 +2608,7 @@ msgid "remove as much as possible from key after import"
 msgstr "odstranit po importu z klíče vše, co lze"
 
 msgid "ignore key-signatures which are not self-signatures"
-msgstr ""
+msgstr "ignorovat podpisy klíče, které nepodepisují samy sebe"
 
 msgid "run import filters and export key immediately"
 msgstr "spustit importní filtry a exportovat klíč okamžitě"
@@ -3514,7 +3504,7 @@ msgid "subkey \"%s\" not found\n"
 msgstr "podklíč „%s“ nenalezen\n"
 
 msgid "AEAD: "
-msgstr ""
+msgstr "AEAD: "
 
 msgid "Digest: "
 msgstr "Hash: "
@@ -3818,7 +3808,7 @@ msgstr "neexistuje tajný klíč\n"
 
 #, c-format
 msgid "tried to revoke a non-user ID: %s\n"
-msgstr "pokud odvolat ID neuživatele: %s\n"
+msgstr "pokus odvolat ID neuživatele: %s\n"
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -3995,10 +3985,9 @@ msgstr "  (%d) ECC (pouze pro šifrování)\n"
 msgid "  (%d) Existing key\n"
 msgstr "  (%d) Existující klíč\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) Existing key from card\n"
+#, c-format
 msgid "  (%d) Existing key from card\n"
-msgstr "   (%d) Klíč existující na kartě\n"
+msgstr "  (%d) Klíč existující na kartě\n"
 
 msgid "Enter the keygrip: "
 msgstr "Vložte keygrip: "
@@ -4656,7 +4645,7 @@ msgstr "Klíč k dispozici na: "
 
 #, c-format
 msgid "Note: Use '%s' to make use of this info\n"
-msgstr ""
+msgstr "Poznámka: Použijte „%s“ pro využití těchto údajů\n"
 
 msgid "[uncertain]"
 msgstr "[nejistý]"
@@ -4750,10 +4739,9 @@ msgstr "VAROVÁNÍ: vyžádaný algoritmus %s není doporučen\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "Poznámka: podpisy používající algoritmus %s jsou zamítány\n"
 
-#, fuzzy, c-format
-#| msgid "Note: signatures using the %s algorithm are rejected\n"
+#, c-format
 msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
-msgstr "Poznámka: podpisy používající algoritmus %s jsou zamítány\n"
+msgstr "Poznámka: podpisy klíče třetí strany používající algoritmus %s jsou zamítány\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -7268,10 +7256,9 @@ msgstr "Podpis vytvořen "
 msgid "[date not given]"
 msgstr "[datum neudáno]"
 
-#, fuzzy, c-format
-#| msgid "algorithm: %s"
+#, c-format
 msgid "algorithm:"
-msgstr "algoritmus: %s"
+msgstr "algoritmus:"
 
 #, c-format
 msgid ""
@@ -7346,17 +7333,17 @@ msgstr "chyba při zavádění certifikátu „%s“: %s\n"
 # XXX: Align with msgid "runtime cached certificates:"
 #, c-format
 msgid "permanently loaded certificates: %u\n"
-msgstr "   trvale zavedených certifikátů: %u\n"
+msgstr "     trvale zavedených certifikátů: %u\n"
 
 # XXX: Align with msgid "permanently loaded certificates:"
 #, c-format
 msgid "    runtime cached certificates: %u\n"
-msgstr "za běhu nakešovaných certifikátů: %u\n"
+msgstr "za běhu zapamatovaných certifikátů: %u\n"
 
 # XXX: Align with msgid "permanently loaded certificates:"
 #, c-format
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
-msgstr "       důvěryhodných certifikátů: %u (%u,%u,%u,%u)\n"
+msgstr "         důvěryhodných certifikátů: %u (%u,%u,%u,%u)\n"
 
 #, c-format
 msgid "certificate already cached\n"
@@ -7557,7 +7544,7 @@ msgstr "pro vydavatele s ID %s není dostupný žádný CRL\n"
 #, c-format
 msgid "cached CRL for issuer id %s too old; update required\n"
 msgstr ""
-"nakešovaný CRL pro vydavatele s ID %s příliš starý; aktualizace vyžadována\n"
+"zapamatovaný CRL pro vydavatele s ID %s příliš starý; aktualizace vyžadována\n"
 
 # TODO: plural
 #, c-format
@@ -7583,7 +7570,7 @@ msgstr "dostupný CRL pro vydavatele ID %s nemůže být použit\n"
 #, c-format
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
 msgstr ""
-"nakešovaný CRL pro vydavatele ID %s je pozměněný, je třeba jej aktualizovat\n"
+"zapamatovaný CRL pro vydavatele ID %s je pozměněný, je třeba jej aktualizovat\n"
 
 # XXX: The message is followed by the serial number
 # TODO: Use c-format
@@ -7751,7 +7738,7 @@ msgid " ERROR: The CRL will not be used\n"
 msgstr " CHYBA: CRL nebude použit\n"
 
 msgid " ERROR: This cached CRL may have been tampered with!\n"
-msgstr " CHYBA: Tento nakešovaný CRL byl možná pozměněn!\n"
+msgstr " CHYBA: Tento zapamatovaný CRL byl možná pozměněn!\n"
 
 #, c-format
 msgid " WARNING: invalid cache record length\n"
@@ -8646,15 +8633,11 @@ msgstr "povolit dohledávání PKA (dotazy na DNS)"
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|METODA|používat METODU pro dohledávání klíčů podle e-mailové adresy"
 
-#, fuzzy
-#| msgid "import keys from a keyserver"
 msgid "import missing key from a signature"
-msgstr "importovat klíče ze serveru klíčů"
+msgstr "importovat chybějící klíč z podpisu"
 
-#, fuzzy
-#| msgid "list and check key signatures"
 msgid "include the public key in signatures"
-msgstr "vypsat a zkontrolovat podpisy klíčů"
+msgstr "zahrnovat veřejný klíč do podpisů"
 
 msgid "disable all access to the dirmngr"
 msgstr "zakázat veškerý přístup k dirmngr"
@@ -8949,15 +8932,6 @@ msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
 
-#~ msgid " using certificate ID 0x%08lX\n"
-#~ msgstr " pomocí certifikátu s ID 0x%08lX\n"
-
-#, fuzzy
-#~| msgid "option '%s' may not be used in %s mode\n"
-#~ msgid ""
-#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-#~ msgstr "volba „%s“ se nesmí používat v režimu %s\n"
-
 #~ msgid "male"
 #~ msgstr "muž"
 
@@ -8969,6 +8943,10 @@ msgstr ""
 
 #~ msgid "Sex ((M)ale, (F)emale or space): "
 #~ msgstr "Zadejte pohlaví: M – mužské, F – ženské, nebo stiskněte mezerník: "
+
+#, c-format
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr " pomocí certifikátu s ID 0x%08lX\n"
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "žádný server klíčů není znám (použijte volbu --keyserver)\n"
@@ -9495,7 +9473,7 @@ msgstr ""
 #~ msgstr "problém s přejmenováním „%s“ na „%s“: %s\n"
 
 #~ msgid " ERROR: This cached CRL may has been tampered with!\n"
-#~ msgstr " CHYBA: Tento nakešovaný CRL byl možná pozměněn!\n"
+#~ msgstr " CHYBA: Tento zapamatovaný CRL byl možná pozměněn!\n"
 
 #~ msgid "URL `%s' redirected to `%s' (%u)\n"
 #~ msgstr "URL „%s“ přesměrováno na „%s“ (%u)\n"
