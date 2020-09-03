@@ -2970,6 +2970,62 @@ msgid "key %s: direct key signature added\n"
 msgstr "nøkkel %s: direkte nøkkelsignatur lagt til\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "feil under minnetildeling: %s\n"
+
+#, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr ""
+"klarte ikke å kontrollere signatur på grunn av ustøttet algoritme for "
+"offentlig nøkkel (%d): %s.\n"
+
+#, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr ""
+"klarte ikke å kontrollere signatur på grunn av ustøttet algoritme for "
+"meldingssum (%d): %s.\n"
+
+msgid " (reordered signatures follow)"
+msgstr " (omsorterte signaturer følger)"
+
+#, c-format
+msgid "key %s:\n"
+msgstr "nøkkel %s:\n"
+
+#, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "%d duplikatsignatur fjernet\n"
+msgstr[1] "%d duplikatsignaturer fjernet\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "%d signatur ble ikke kontrollert på grunn av manglende nøkkel\n"
+msgstr[1] "%d signaturer ble ikke kontrollert på grunn av manglende nøkkel\n"
+
+#, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d ubrukelig signatur\n"
+msgstr[1] "%d ubrukelige signaturer\n"
+
+#, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "%d signatur omsortert\n"
+msgstr[1] "%d signaturer omsortert\n"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+"Advarsel: fant feil og kontrollerte bare selvsignaturer. Kjør «%s» for å "
+"kontrollere alle signaturer.\n"
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "feil under opprettelse av nøkkelskrin «%s»: %s\n"
 
@@ -4318,18 +4374,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d gyldig signatur\n"
 msgstr[1] "%d gyldige signaturer\n"
-
-#, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d ubrukelig signatur\n"
-msgstr[1] "%d ubrukelige signaturer\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "%d signatur ble ikke kontrollert på grunn av manglende nøkkel\n"
-msgstr[1] "%d signaturer ble ikke kontrollert på grunn av manglende nøkkel\n"
 
 #, c-format
 msgid "%d signature not checked due to an error\n"
@@ -8138,10 +8182,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "skriver til «%s»\n"
 
 #, c-format
-msgid "error allocating memory: %s\n"
-msgstr "feil under minnetildeling: %s\n"
-
-#, c-format
 msgid "error printing log line: %s\n"
 msgstr "feil under utskrift av logglinje: %s\n"
 
@@ -8988,41 +9028,6 @@ msgstr ""
 #~ msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 #~ msgstr ""
 #~ "du kan ikke velge «--symmtric», «--sign» og «--encrypt» i «%s»-modus\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr ""
-#~ "klarte ikke å kontrollere signatur på grunn av ustøttet algoritme for "
-#~ "offentlig nøkkel (%d): %s.\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr ""
-#~ "klarte ikke å kontrollere signatur på grunn av ustøttet algoritme for "
-#~ "meldingssum (%d): %s.\n"
-
-#~ msgid " (reordered signatures follow)"
-#~ msgstr " (omsorterte signaturer følger)"
-
-#~ msgid "key %s:\n"
-#~ msgstr "nøkkel %s:\n"
-
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "%d duplikatsignatur fjernet\n"
-#~ msgstr[1] "%d duplikatsignaturer fjernet\n"
-
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "%d signatur omsortert\n"
-#~ msgstr[1] "%d signaturer omsortert\n"
-
-#~ msgid ""
-#~ "Warning: errors found and only checked self-signatures, run '%s' to check "
-#~ "all signatures.\n"
-#~ msgstr ""
-#~ "Advarsel: fant feil og kontrollerte bare selvsignaturer. Kjør «%s» for å "
-#~ "kontrollere alle signaturer.\n"
 
 #~ msgid "User ID revocation failed: %s\n"
 #~ msgstr "oppheving av bruker-ID mislyktes: %s\n"

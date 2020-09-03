@@ -3209,6 +3209,66 @@ msgid "key %s: direct key signature added\n"
 msgstr "nøgle %s: direkte nøgleunderskrift tilføjet\n"
 
 #, fuzzy, c-format
+#| msgid "error allocating enough memory: %s\n"
+msgid "error allocating memory: %s\n"
+msgstr "fejl ved allokering af nok hukommelse: %s\n"
+
+#, fuzzy, c-format
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "nøgle %s: ikke understøttet offentlig nøglealgoritme\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "kort understøtter ikke sammendragsalgoritme %s\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "God underskrift fra"
+
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s:\n"
+msgstr "udelod »%s«: %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Bruger-id »%s«: %d underskrift fjernet\n"
+msgstr[1] "Bruger-id »%s«: %d underskrift fjernet\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
+msgstr[1] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d ugyldige underskrifter\n"
+msgstr[1] "%d ugyldige underskrifter\n"
+
+#, fuzzy, c-format
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "God underskrift fra"
+msgstr[1] "God underskrift fra"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 #| msgid "error creating keybox `%s': %s\n"
 msgid "error creating keybox '%s': %s\n"
 msgstr "fejl ved oprettelse af nøgleboks »%s«: %s\n"
@@ -4637,20 +4697,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d ugyldige underskrifter\n"
 msgstr[1] "%d ugyldige underskrifter\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d ugyldige underskrifter\n"
-msgstr[1] "%d ugyldige underskrifter\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
-msgstr[1] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8760,11 +8806,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "skriver til »%s«\n"
 
 #, fuzzy, c-format
-#| msgid "error allocating enough memory: %s\n"
-msgid "error allocating memory: %s\n"
-msgstr "fejl ved allokering af nok hukommelse: %s\n"
-
-#, fuzzy, c-format
 #| msgid "error writing to %s: %s\n"
 msgid "error printing log line: %s\n"
 msgstr "fejl ved skrivning til »%s«: %s\n"
@@ -9686,42 +9727,6 @@ msgstr ""
 
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr "Fejl: Privat DO er for lang (begrænsningen er %d tegn).\n"
-
-#, fuzzy
-#~| msgid "key %s: unsupported public key algorithm\n"
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "nøgle %s: ikke understøttet offentlig nøglealgoritme\n"
-
-#, fuzzy
-#~| msgid "card does not support digest algorithm %s\n"
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "kort understøtter ikke sammendragsalgoritme %s\n"
-
-#, fuzzy
-#~| msgid "Good signature from"
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "God underskrift fra"
-
-#, fuzzy
-#~| msgid "skipped \"%s\": %s\n"
-#~ msgid "key %s:\n"
-#~ msgstr "udelod »%s«: %s\n"
-
-#, fuzzy
-#~| msgid "User ID \"%s\": %d signature removed\n"
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Bruger-id »%s«: %d underskrift fjernet\n"
-#~ msgstr[1] "Bruger-id »%s«: %d underskrift fjernet\n"
-
-#, fuzzy
-#~| msgid "Good signature from"
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "God underskrift fra"
-#~ msgstr[1] "God underskrift fra"
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

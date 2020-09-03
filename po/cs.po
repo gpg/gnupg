@@ -2993,6 +2993,68 @@ msgid "key %s: direct key signature added\n"
 msgstr "klíč %s: podpis klíče jím samým (direct key signature) přidán\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "chyba při alokování paměti: %s\n"
+
+#, fuzzy, c-format
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "klíč %s: nepodporovaný algoritmus veřejného klíče\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "karta nepodporuje hashovací algoritmus %s\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "Dobrý podpis od"
+
+#, fuzzy, c-format
+#| msgid "key %s: %s\n"
+msgid "key %s:\n"
+msgstr "klíč %s: %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+#| msgid_plural "User ID \"%s\": %d signatures removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Uživatelské ID „%s“: odstraněn %d podpis\n"
+msgstr[1] "Uživatelské ID „%s“: odstraněny %d podpisy\n"
+msgstr[2] "Uživatelské ID „%s“: odstraněno %d podpisů\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "%d podpis neověřen, protože chybí klíč\n"
+msgstr[1] "%d podpisy neověřeny, protože chybí klíče\n"
+msgstr[2] "%d podpisů neověřeno, protože chybí klíče\n"
+
+#, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d špatný podpis\n"
+msgstr[1] "%d špatné podpisy\n"
+msgstr[2] "%d špatných podpisů\n"
+
+#, fuzzy, c-format
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Dobrý podpis od"
+msgstr[1] "Dobrý podpis od"
+msgstr[2] "Dobrý podpis od"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "chyba při vytváření schránky na klíče (keybox) „%s“: %s\n"
 
@@ -4330,20 +4392,6 @@ msgstr[1] "%d dobré podpisy\n"
 msgstr[2] "%d dobrých podpisů\n"
 
 #, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d špatný podpis\n"
-msgstr[1] "%d špatné podpisy\n"
-msgstr[2] "%d špatných podpisů\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "%d podpis neověřen, protože chybí klíč\n"
-msgstr[1] "%d podpisy neověřeny, protože chybí klíče\n"
-msgstr[2] "%d podpisů neověřeno, protože chybí klíče\n"
-
-#, c-format
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
 msgstr[0] "%d podpis neověřen, protože došlo k chybě\n"
@@ -4741,7 +4789,9 @@ msgstr "Poznámka: podpisy používající algoritmus %s jsou zamítány\n"
 
 #, c-format
 msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
-msgstr "Poznámka: podpisy klíče třetí strany používající algoritmus %s jsou zamítány\n"
+msgstr ""
+"Poznámka: podpisy klíče třetí strany používající algoritmus %s jsou "
+"zamítány\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -7544,7 +7594,8 @@ msgstr "pro vydavatele s ID %s není dostupný žádný CRL\n"
 #, c-format
 msgid "cached CRL for issuer id %s too old; update required\n"
 msgstr ""
-"zapamatovaný CRL pro vydavatele s ID %s příliš starý; aktualizace vyžadována\n"
+"zapamatovaný CRL pro vydavatele s ID %s příliš starý; aktualizace "
+"vyžadována\n"
 
 # TODO: plural
 #, c-format
@@ -7570,7 +7621,8 @@ msgstr "dostupný CRL pro vydavatele ID %s nemůže být použit\n"
 #, c-format
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
 msgstr ""
-"zapamatovaný CRL pro vydavatele ID %s je pozměněný, je třeba jej aktualizovat\n"
+"zapamatovaný CRL pro vydavatele ID %s je pozměněný, je třeba jej "
+"aktualizovat\n"
 
 # XXX: The message is followed by the serial number
 # TODO: Use c-format
@@ -8214,10 +8266,6 @@ msgstr "příliš mnoho přesměrování\n"
 #, c-format
 msgid "redirection changed to '%s'\n"
 msgstr "přesměrování změněno na „%s“\n"
-
-#, c-format
-msgid "error allocating memory: %s\n"
-msgstr "chyba při alokování paměti: %s\n"
 
 #, c-format
 msgid "error printing log line: %s\n"
@@ -8944,7 +8992,6 @@ msgstr ""
 #~ msgid "Sex ((M)ale, (F)emale or space): "
 #~ msgstr "Zadejte pohlaví: M – mužské, F – ženské, nebo stiskněte mezerník: "
 
-#, c-format
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " pomocí certifikátu s ID 0x%08lX\n"
 

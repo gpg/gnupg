@@ -3117,6 +3117,59 @@ msgid "key %s: direct key signature added\n"
 msgstr "võti %08lX: lisatud vahetu võtme allkiri\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "viga võtmehoidla `%s' loomisel: %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "võti %08lX: mittetoetatud avaliku võtme algoritm\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Korrektne allkiri kasutajalt \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "`%s' jätsin vahele: %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Kasutaja ID \"%s\" on tühistatud."
+msgstr[1] "Kasutaja ID \"%s\" on tühistatud."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 allkiri jäi testimata, kuna võti puudub\n"
+msgstr[1] "1 allkiri jäi testimata, kuna võti puudub\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d halba allkirja\n"
+msgstr[1] "%d halba allkirja\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Korrektne allkiri kasutajalt \""
+msgstr[1] "Korrektne allkiri kasutajalt \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "viga võtmehoidla `%s' loomisel: %s\n"
 
@@ -4542,20 +4595,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d halba allkirja\n"
 msgstr[1] "%d halba allkirja\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d halba allkirja\n"
-msgstr[1] "%d halba allkirja\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 allkiri jäi testimata, kuna võti puudub\n"
-msgstr[1] "1 allkiri jäi testimata, kuna võti puudub\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8444,10 +8483,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "kirjutan faili `%s'\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "viga võtmehoidla `%s' loomisel: %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "viga võtmehoidlasse `%s' kirjutamisel: %s\n"
 
@@ -9277,36 +9312,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "uuendamine ebaõnnestus: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "võti %08lX: mittetoetatud avaliku võtme algoritm\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Korrektne allkiri kasutajalt \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "`%s' jätsin vahele: %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Kasutaja ID \"%s\" on tühistatud."
-#~ msgstr[1] "Kasutaja ID \"%s\" on tühistatud."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Korrektne allkiri kasutajalt \""
-#~ msgstr[1] "Korrektne allkiri kasutajalt \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

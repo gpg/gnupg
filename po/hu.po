@@ -93,6 +93,9 @@ msgstr ""
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -3115,6 +3118,59 @@ msgid "key %s: direct key signature added\n"
 msgstr "%08lX kulcs: Kulcsaláírást hozzáadtam.\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "%08lX kulcs: Nem támogatott nyilvános kulcsú algoritmus!\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Jó aláírás a következőtől: \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "Kihagytam \"%s\"-t: %s.\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "\"%s\" felhasználói azonosítót visszavonták."
+msgstr[1] "\"%s\" felhasználói azonosítót visszavonták."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 aláírást nem ellenőriztem hiányzó kulcs miatt.\n"
+msgstr[1] "1 aláírást nem ellenőriztem hiányzó kulcs miatt.\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d rossz aláírás.\n"
+msgstr[1] "%d rossz aláírás.\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Jó aláírás a következőtől: \""
+msgstr[1] "Jó aláírás a következőtől: \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
 
@@ -3685,6 +3741,9 @@ msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 #, fuzzy, c-format
 msgid "subkey \"%s\" not found\n"
 msgstr "\"%s\" kulcs nem található: %s\n"
+
+msgid "AEAD: "
+msgstr ""
 
 msgid "Digest: "
 msgstr "Kivonat: "
@@ -4401,8 +4460,7 @@ msgid "Change (N)ame, (E)mail, or (Q)uit? "
 msgstr "(N)év, (E)-mail megváltoztatása vagy (K)ilépés? "
 
 msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
-msgstr ""
-"(N)év, (E)-mail megváltoztatása vagy (R)endben/(K)ilépés? "
+msgstr "(N)év, (E)-mail megváltoztatása vagy (R)endben/(K)ilépés? "
 
 msgid "Please correct the error first\n"
 msgstr "Kérem, előbb javítsa ki a hibát!\n"
@@ -4542,20 +4600,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d rossz aláírás.\n"
 msgstr[1] "%d rossz aláírás.\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d rossz aláírás.\n"
-msgstr[1] "%d rossz aláírás.\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 aláírást nem ellenőriztem hiányzó kulcs miatt.\n"
-msgstr[1] "1 aláírást nem ellenőriztem hiányzó kulcs miatt.\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -6420,6 +6464,26 @@ msgid ""
 "List, export, import Keybox data\n"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN for the standard keys."
+msgstr "jelszóváltoztatás"
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
@@ -6441,10 +6505,6 @@ msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "jelszóváltoztatás"
 
 #, fuzzy
-msgid "||Please enter the PIN for the standard keys."
-msgstr "jelszóváltoztatás"
-
-#, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Kérem, válassza ki a visszavonás okát:\n"
 
@@ -6453,9 +6513,6 @@ msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Kérem, válassza ki a visszavonás okát:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
 msgid ""
@@ -6510,16 +6567,6 @@ msgstr "A kulcsblokk törlése sikertelen: %s.\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6778,6 +6825,10 @@ msgstr "Írom a titkos kulcsot a %s állományba.\n"
 msgid "certificate policy not allowed"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
+#, fuzzy, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
+
 #, c-format
 msgid "looking up issuer at external location\n"
 msgstr ""
@@ -6785,6 +6836,11 @@ msgstr ""
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: Nem tudom elérni: %s.\n"
 
 #, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
@@ -7393,10 +7449,6 @@ msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 msgid "error reading input: %s\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
-#, fuzzy, c-format
-msgid "failed to get the fingerprint\n"
-msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
-
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr ""
@@ -7476,8 +7528,8 @@ msgid "[date not given]"
 msgstr ""
 
 #, fuzzy, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+msgid "algorithm:"
+msgstr "Páncél: %s\n"
 
 #, c-format
 msgid ""
@@ -7807,15 +7859,6 @@ msgid "error getting data from cache file: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
 #, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
-msgid "unknown hash algorithm '%s'\n"
-msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
 #| msgid "invalid response from agent\n"
 msgid "got an invalid S-expression from libksba\n"
 msgstr "Érvénytelen válasz az ügynöktől!\n"
@@ -7823,6 +7866,15 @@ msgstr "Érvénytelen válasz az ügynöktől!\n"
 #, fuzzy, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "Nem tudom megnyitni az állományt: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "creating S-expression failed: %s\n"
@@ -8456,10 +8508,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "Írok a \"%s\" állományba.\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
@@ -8604,11 +8652,6 @@ msgstr "visszavonási igazolás készítése"
 #, fuzzy, c-format
 msgid "failed to allocate OCSP context: %s\n"
 msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
-
-#, fuzzy, c-format
-#| msgid "%s: can't access: %s\n"
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "%s: Nem tudom elérni: %s.\n"
 
 #, c-format
 msgid "no default OCSP responder defined\n"
@@ -9204,6 +9247,10 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy
 #~| msgid "you may not use %s while in %s mode\n"
 #~ msgid ""
 #~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
@@ -9290,36 +9337,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "Frissítés sikertelen: %s.\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "%08lX kulcs: Nem támogatott nyilvános kulcsú algoritmus!\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Jó aláírás a következőtől: \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "Kihagytam \"%s\"-t: %s.\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "\"%s\" felhasználói azonosítót visszavonták."
-#~ msgstr[1] "\"%s\" felhasználói azonosítót visszavonták."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Jó aláírás a következőtől: \""
-#~ msgstr[1] "Jó aláírás a következőtől: \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

@@ -2968,6 +2968,64 @@ msgid "key %s: direct key signature added\n"
 msgstr "ключ %s: добавлена прямая подпись ключа\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "ошибка выделения памяти: %s\n"
+
+#, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr ""
+"не удалось проверить подпись: алгоритм с открытым ключом %d не "
+"поддерживается: %s.\n"
+
+#, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "не удалось проверить подпись: хеш-функция %d не поддерживается: %s.\n"
+
+msgid " (reordered signatures follow)"
+msgstr "(порядок подписей изменен)"
+
+#, c-format
+msgid "key %s:\n"
+msgstr "ключ %s:\n"
+
+#, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "%d повторная подпись удалена\n"
+msgstr[1] "%d повторные подписи удалены\n"
+msgstr[2] "%d повторных подписей удалено\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "%d подпись не проверена за отсутствием ключа\n"
+msgstr[1] "%d подписи не проверены за отсутствием ключа\n"
+msgstr[2] "%d подписей не проверено за отсутствием ключа\n"
+
+#, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d плохая подпись\n"
+msgstr[1] "%d плохих подписи\n"
+msgstr[2] "%d плохих подписей\n"
+
+#, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Порядок %d подписи изменен\n"
+msgstr[1] "Порядок %d подписей изменен\n"
+msgstr[2] "Порядок %d подписей изменен\n"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+"Внимание: обнаружены ошибки, проверялись только самоподписи; для проверки "
+"всех подписей выполните '%s'.\n"
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "ошибка создания щита с ключами '%s': %s\n"
 
@@ -4322,20 +4380,6 @@ msgid_plural "%d good signatures\n"
 msgstr[0] "%d хорошая подпись\n"
 msgstr[1] "%d хороших подписи\n"
 msgstr[2] "%d хороших подписей\n"
-
-#, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d плохая подпись\n"
-msgstr[1] "%d плохих подписи\n"
-msgstr[2] "%d плохих подписей\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "%d подпись не проверена за отсутствием ключа\n"
-msgstr[1] "%d подписи не проверены за отсутствием ключа\n"
-msgstr[2] "%d подписей не проверено за отсутствием ключа\n"
 
 #, c-format
 msgid "%d signature not checked due to an error\n"
@@ -8235,10 +8279,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "перенаправление изменилось на '%s'\n"
 
 #, c-format
-msgid "error allocating memory: %s\n"
-msgstr "ошибка выделения памяти: %s\n"
-
-#, c-format
 msgid "error printing log line: %s\n"
 msgstr "ошибка вывода строки журнала: %s\n"
 
@@ -9048,42 +9088,6 @@ msgstr ""
 
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr "Ошибка: Слишком много секретных данных DO (предел - %d символов).\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr ""
-#~ "не удалось проверить подпись: алгоритм с открытым ключом %d не "
-#~ "поддерживается: %s.\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr ""
-#~ "не удалось проверить подпись: хеш-функция %d не поддерживается: %s.\n"
-
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "(порядок подписей изменен)"
-
-#~ msgid "key %s:\n"
-#~ msgstr "ключ %s:\n"
-
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "%d повторная подпись удалена\n"
-#~ msgstr[1] "%d повторные подписи удалены\n"
-#~ msgstr[2] "%d повторных подписей удалено\n"
-
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Порядок %d подписи изменен\n"
-#~ msgstr[1] "Порядок %d подписей изменен\n"
-#~ msgstr[2] "Порядок %d подписей изменен\n"
-
-#~ msgid ""
-#~ "Warning: errors found and only checked self-signatures, run '%s' to check "
-#~ "all signatures.\n"
-#~ msgstr ""
-#~ "Внимание: обнаружены ошибки, проверялись только самоподписи; для проверки "
-#~ "всех подписей выполните '%s'.\n"
 
 #~ msgid ", "
 #~ msgstr ", "

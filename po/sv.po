@@ -3280,6 +3280,66 @@ msgid "key %s: direct key signature added\n"
 msgstr "nyckel %s: lade till direkt nyckelsignatur\n"
 
 #, fuzzy, c-format
+#| msgid "error allocating enough memory: %s\n"
+msgid "error allocating memory: %s\n"
+msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
+
+#, fuzzy, c-format
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "nyckel %s: algoritmen för publika nycklar stöds inte\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "kortet har inte stöd för sammandragsalgoritmen %s\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "Korrekt signatur från"
+
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s:\n"
+msgstr "hoppade över \"%s\": %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Användaridentitet \"%s\": %d signaturer borttagna\n"
+msgstr[1] "Användaridentitet \"%s\": %d signaturer borttagna\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 signatur validerades inte eftersom nyckeln saknades\n"
+msgstr[1] "1 signatur validerades inte eftersom nyckeln saknades\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d felaktiga signaturer\n"
+msgstr[1] "%d felaktiga signaturer\n"
+
+#, fuzzy, c-format
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Korrekt signatur från"
+msgstr[1] "Korrekt signatur från"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 #| msgid "error creating keybox `%s': %s\n"
 msgid "error creating keybox '%s': %s\n"
 msgstr "fel när nyckelskåpet \"%s\" skapades: %s\n"
@@ -4716,20 +4776,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d felaktiga signaturer\n"
 msgstr[1] "%d felaktiga signaturer\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d felaktiga signaturer\n"
-msgstr[1] "%d felaktiga signaturer\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 signatur validerades inte eftersom nyckeln saknades\n"
-msgstr[1] "1 signatur validerades inte eftersom nyckeln saknades\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8901,11 +8947,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "skriver till \"%s\"\n"
 
 #, fuzzy, c-format
-#| msgid "error allocating enough memory: %s\n"
-msgid "error allocating memory: %s\n"
-msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
-
-#, fuzzy, c-format
 #| msgid "error writing to %s: %s\n"
 msgid "error printing log line: %s\n"
 msgstr "fel vid skrivning till %s: %s\n"
@@ -9831,42 +9872,6 @@ msgstr ""
 
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr "Fel: Privat DO för långt (gränsen är %d tecken).\n"
-
-#, fuzzy
-#~| msgid "key %s: unsupported public key algorithm\n"
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "nyckel %s: algoritmen för publika nycklar stöds inte\n"
-
-#, fuzzy
-#~| msgid "card does not support digest algorithm %s\n"
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "kortet har inte stöd för sammandragsalgoritmen %s\n"
-
-#, fuzzy
-#~| msgid "Good signature from"
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Korrekt signatur från"
-
-#, fuzzy
-#~| msgid "skipped \"%s\": %s\n"
-#~ msgid "key %s:\n"
-#~ msgstr "hoppade över \"%s\": %s\n"
-
-#, fuzzy
-#~| msgid "User ID \"%s\": %d signature removed\n"
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Användaridentitet \"%s\": %d signaturer borttagna\n"
-#~ msgstr[1] "Användaridentitet \"%s\": %d signaturer borttagna\n"
-
-#, fuzzy
-#~| msgid "Good signature from"
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Korrekt signatur från"
-#~ msgstr[1] "Korrekt signatur från"
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

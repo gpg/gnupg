@@ -3139,6 +3139,59 @@ msgid "key %s: direct key signature added\n"
 msgstr "κλειδί %08lX: άμεση υπογραφή κλειδιού προστέθηκε\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Καλή υπογραφή από \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "παραλείφθηκε `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Το user ID \"%s\" ανακαλείτε."
+msgstr[1] "Το user ID \"%s\" ανακαλείτε."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 υπογραφή δεν ελέγχθηκε λόγω χαμένου κλειδιού\n"
+msgstr[1] "1 υπογραφή δεν ελέγχθηκε λόγω χαμένου κλειδιού\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d κακές υπογραφές\n"
+msgstr[1] "%d κακές υπογραφές\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Καλή υπογραφή από \""
+msgstr[1] "Καλή υπογραφή από \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
 
@@ -4590,20 +4643,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d κακές υπογραφές\n"
 msgstr[1] "%d κακές υπογραφές\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d κακές υπογραφές\n"
-msgstr[1] "%d κακές υπογραφές\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 υπογραφή δεν ελέγχθηκε λόγω χαμένου κλειδιού\n"
-msgstr[1] "1 υπογραφή δεν ελέγχθηκε λόγω χαμένου κλειδιού\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8528,10 +8567,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "εγγραφή στο  `%s'\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
@@ -9361,36 +9396,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "η ενημέρωση απέτυχε: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Καλή υπογραφή από \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "παραλείφθηκε `%s': %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Το user ID \"%s\" ανακαλείτε."
-#~ msgstr[1] "Το user ID \"%s\" ανακαλείτε."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Καλή υπογραφή από \""
-#~ msgstr[1] "Καλή υπογραφή από \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

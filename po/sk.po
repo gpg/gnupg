@@ -3140,6 +3140,59 @@ msgid "key %s: direct key signature added\n"
 msgstr "kľúč %08lX: podpis kľúča ním samým (direct key signature)\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "chyba pri vytváraní súboru kľúčov (keyring)`%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "kľúč %08lX: nepodporovaný algoritmus verejného kľúča\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%s podpis, hashovací algoritmus %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Dobrý podpis od \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "preskočený `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Užívateľské ID \"%s\" je revokované."
+msgstr[1] "Užívateľské ID \"%s\" je revokované."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 podpis neoverený, pretože chýba kľúč\n"
+msgstr[1] "1 podpis neoverený, pretože chýba kľúč\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d zlých podpisov\n"
+msgstr[1] "%d zlých podpisov\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Dobrý podpis od \""
+msgstr[1] "Dobrý podpis od \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "chyba pri vytváraní súboru kľúčov (keyring)`%s': %s\n"
 
@@ -4570,20 +4623,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d zlých podpisov\n"
 msgstr[1] "%d zlých podpisov\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d zlých podpisov\n"
-msgstr[1] "%d zlých podpisov\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 podpis neoverený, pretože chýba kľúč\n"
-msgstr[1] "1 podpis neoverený, pretože chýba kľúč\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8500,10 +8539,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "zapisujem do '%s'\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "chyba pri vytváraní súboru kľúčov (keyring)`%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
 
@@ -9335,36 +9370,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "aktualizácia zlyhala: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "kľúč %08lX: nepodporovaný algoritmus verejného kľúča\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "%s podpis, hashovací algoritmus %s\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Dobrý podpis od \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "preskočený `%s': %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Užívateľské ID \"%s\" je revokované."
-#~ msgstr[1] "Užívateľské ID \"%s\" je revokované."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Dobrý podpis od \""
-#~ msgstr[1] "Dobrý podpis od \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

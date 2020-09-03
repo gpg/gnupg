@@ -2925,6 +2925,55 @@ msgid "key %s: direct key signature added\n"
 msgstr "鍵%s: 直接鍵署名を追加\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "メモリの確保のエラー: %s\n"
+
+#, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "サポートしていない公開鍵アルゴリズム(%d)の署名は確認できません: %s.\n"
+
+#, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr ""
+"サポートしていないメッセージ・ダイジェスト(%d)の署名は確認できません: %s.\n"
+
+msgid " (reordered signatures follow)"
+msgstr "(順番を変えた署名が続きます)"
+
+#, c-format
+msgid "key %s:\n"
+msgstr "鍵  %s:\n"
+
+#, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "%d個の重複した署名が除去されました\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "鍵がないため%d個の署名は検査しません\n"
+
+#, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d個の不正な署名\n"
+
+#, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "%d個の正しい署名\n"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+"警告: エラーがあり、自己署名だけ確認しました。'%s'を実行してすべての署名を確"
+"認ください。\n"
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "keybox'%s'の作成エラー: %s\n"
 
@@ -4236,16 +4285,6 @@ msgstr "署名注釈: "
 msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "正しい署名%d個\n"
-
-#, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d個の不正な署名\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "鍵がないため%d個の署名は検査しません\n"
 
 #, c-format
 msgid "%d signature not checked due to an error\n"
@@ -7984,10 +8023,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "リダイレクトが'%s'に変更されました\n"
 
 #, c-format
-msgid "error allocating memory: %s\n"
-msgstr "メモリの確保のエラー: %s\n"
-
-#, c-format
 msgid "error printing log line: %s\n"
 msgstr "log出力エラー: %s\n"
 
@@ -8803,38 +8838,6 @@ msgstr ""
 
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr "エラー: プライベート DOが長すぎます (上限%d文字)。\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr ""
-#~ "サポートしていない公開鍵アルゴリズム(%d)の署名は確認できません: %s.\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr ""
-#~ "サポートしていないメッセージ・ダイジェスト(%d)の署名は確認できません: "
-#~ "%s.\n"
-
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "(順番を変えた署名が続きます)"
-
-#~ msgid "key %s:\n"
-#~ msgstr "鍵  %s:\n"
-
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "%d個の重複した署名が除去されました\n"
-
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "%d個の正しい署名\n"
-
-#~ msgid ""
-#~ "Warning: errors found and only checked self-signatures, run '%s' to check "
-#~ "all signatures.\n"
-#~ msgstr ""
-#~ "警告: エラーがあり、自己署名だけ確認しました。'%s'を実行してすべての署名を"
-#~ "確認ください。\n"
 
 #~ msgid ", "
 #~ msgstr ", "

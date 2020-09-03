@@ -156,7 +156,6 @@ msgid "no suitable card key found: %s\n"
 msgstr "не виявлено відповідних ключів картки: %s\n"
 
 #, c-format
-#| msgid "error getting stored flags: %s\n"
 msgid "error getting list of cards: %s\n"
 msgstr "помилка під час спроби отримання списку карток: %s\n"
 
@@ -1246,15 +1245,14 @@ msgstr "УВАГА: %s\n"
 #, c-format
 msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
-"Зауваження: на застарілих серверах може не бути важливих виправлено захисту.\n"
+"Зауваження: на застарілих серверах може не бути важливих виправлено "
+"захисту.\n"
 
 #, c-format
-#| msgid "Please use the command \"toggle\" first.\n"
 msgid "Note: Use the command \"%s\" to restart them.\n"
 msgstr "Зауваження: скористайтеся командою «%s» для їхнього перезапуску.\n"
 
 #, c-format
-#| msgid "%s does not yet work with %s\n"
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s не є сумісним із режимом %s\n"
 
@@ -1434,15 +1432,12 @@ msgstr "Розміри ключів %s мають перебувати у діа
 msgid "Changing card key attribute for: "
 msgstr "Зміна атрибута ключа картки для: "
 
-#| msgid "   (1) Signature key\n"
 msgid "Signature key\n"
 msgstr "Ключ підписування\n"
 
-#| msgid "   (2) Encryption key\n"
 msgid "Encryption key\n"
 msgstr "Ключ шифрування\n"
 
-#| msgid "   (3) Authentication key\n"
 msgid "Authentication key\n"
 msgstr "Ключ розпізнавання\n"
 
@@ -1466,17 +1461,14 @@ msgstr ""
 "Зараз налаштування картки буде змінено для створення %u-бітового ключа\n"
 
 #, c-format
-#| msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgid "The card will now be re-configured to generate a key of type: %s\n"
 msgstr "Зараз налаштування картки буде змінено для створення ключа типу %s\n"
 
 #, c-format
-#| msgid "error changing size of key %d to %u bits: %s\n"
 msgid "error changing key attribute for key %d: %s\n"
 msgstr "помилка під час спроби змінити атрибут ключа %d: %s\n"
 
 #, c-format
-#| msgid "error getting current key info: %s\n"
 msgid "error getting card info: %s\n"
 msgstr "помилка під час спроби отримання даних щодо картки: %s\n"
 
@@ -1537,7 +1529,6 @@ msgstr ""
 "Справді хочете скинути усе до типових налаштувань? (введіть «yes» («так»)) "
 
 #, c-format
-#| msgid "error looking up: %s\n"
 msgid "error for setup KDF: %s\n"
 msgstr "помилка налаштування KDF: %s\n"
 
@@ -1594,11 +1585,9 @@ msgstr "розблокувати під коду за допомогою код�
 msgid "destroy all keys and data"
 msgstr "знищити усі ключі і дані"
 
-#| msgid "|NAME|use user NAME for authentication"
 msgid "setup KDF for PIN authentication"
 msgstr "налаштування KDF для розпізнавання за PIN"
 
-#| msgid "change the ownertrust"
 msgid "change the key attribute"
 msgstr "змінити атрибут ключа"
 
@@ -1726,12 +1715,10 @@ msgstr ""
 "параметрам отримувача\n"
 
 #, c-format
-#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
 msgid "cipher algorithm '%s' may not be used in %s mode\n"
 msgstr "алгоритм шифрування «%s» не можна використовувати у режимі %s\n"
 
 #, c-format
-#| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "УВАГА: ключ %s не можна використовувати для шифрування у режимі %s\n"
 
@@ -1754,7 +1741,6 @@ msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s зашифровано для «%s»\n"
 
 #, c-format
-#| msgid "you may not use %s while in %s mode\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "параметр «%s» не можна використовувати у режимі %s\n"
 
@@ -2280,7 +2266,6 @@ msgid "invalid pinentry mode '%s'\n"
 msgstr "некоректний режим pinentry, «%s»\n"
 
 #, c-format
-#| msgid "invalid value for option '%s'\n"
 msgid "invalid request origin '%s'\n"
 msgstr "некоректне походження запиту «%s»\n"
 
@@ -2474,13 +2459,12 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s ще не може працювати разом з %s\n"
 
 #, c-format
-#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr ""
-"алгоритм створення контрольних сум «%s» не можна використовувати у режимі %s\n"
+"алгоритм створення контрольних сум «%s» не можна використовувати у режимі "
+"%s\n"
 
 #, c-format
-#| msgid "you may not use compression algorithm '%s' while in %s mode\n"
 msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "алгоритм стискання «%s» не можна використовувати у режимі %s\n"
 
@@ -2505,7 +2489,6 @@ msgstr ""
 "mode 0\n"
 
 #, c-format
-#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr ""
 "не можна використовувати комбінацію --symmetric --encrypt у режимі %s\n"
@@ -2517,7 +2500,6 @@ msgstr ""
 "s2k-mode 0\n"
 
 #, c-format
-#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr ""
 "не можна використовувати комбінацію --symmetric --encrypt у режимі %s\n"
@@ -2648,7 +2630,6 @@ msgstr "запустити фільтри імпортування та експ
 msgid "assume the GnuPG key backup format"
 msgstr "припускати формат резервних копій ключів GnuPG"
 
-#| msgid "show key during import"
 msgid "repair keys on import"
 msgstr "відновлювати ключі при імпортуванні"
 
@@ -3032,6 +3013,66 @@ msgid "key %s: direct key signature added\n"
 msgstr "ключ %s: додано безпосередній підпис ключа\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "помилка під час спроби отримання області пам’яті: %s\n"
+
+#, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr ""
+"неможливо перевірити підпис із непідтримуваним алгоритмом створення "
+"відкритого ключа (%d): %s.\n"
+
+#, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr ""
+"неможливо перевірити підпис із непідтримуваним алгоритмом створення "
+"контрольної суми %d: %s.\n"
+
+msgid " (reordered signatures follow)"
+msgstr " (нижче наведено перевпорядковані підписи)"
+
+#, c-format
+msgid "key %s:\n"
+msgstr "ключ %s:\n"
+
+#, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "вилучено %d дублікат підпису\n"
+msgstr[1] "вилучено %d дублікати підписів\n"
+msgstr[2] "вилучено %d дублікатів підписів\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "%d підпис не перевірено через те, що немає ключа\n"
+msgstr[1] "%d підписи не перевірено через те, що немає ключа\n"
+msgstr[2] "%d підписів не перевірено через те, що немає ключа\n"
+
+#, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d помилкових підпис\n"
+msgstr[1] "%d помилкових підписи\n"
+msgstr[2] "%d помилкових підписів\n"
+
+#, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "перевпорядковано %d підпис\n"
+msgstr[1] "перевпорядковано %d підписи\n"
+msgstr[2] "перевпорядковано %d підписів\n"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+"Попередження: виявлено помилки, перевірка виконувалася лише для "
+"самопідписування, віддайте команду «%s», щоб перевірити усі підписи.\n"
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
 
@@ -3389,7 +3430,6 @@ msgstr ""
 msgid "Secret key is available.\n"
 msgstr "Доступний закритий ключ.\n"
 
-#| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Доступні закриті підключі.\n"
 
@@ -3548,12 +3588,10 @@ msgid "'%s' is not a valid expiration time\n"
 msgstr "«%s» не є коректним записом завершення строку дії\n"
 
 #, c-format
-#| msgid "\"%s\" is not a fingerprint\n"
 msgid "\"%s\" is not a proper fingerprint\n"
 msgstr "«%s» не є належним відбитком\n"
 
 #, c-format
-#| msgid "key \"%s\" not found\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "не знайдено підключ «%s»\n"
 
@@ -3771,11 +3809,9 @@ msgstr "Зміна часу завершення строку дії для ос
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Не можна змінювати дату завершення строку дії ключа v3\n"
 
-#| msgid "Changing expiration time for a subkey.\n"
 msgid "Changing usage of a subkey.\n"
 msgstr "Змінюємо використання підключа.\n"
 
-#| msgid "Changing expiration time for the primary key.\n"
 msgid "Changing usage of the primary key.\n"
 msgstr "Змінюємо використання основного підключа.\n"
 
@@ -4404,20 +4440,6 @@ msgstr[1] "%d добрих підписи\n"
 msgstr[2] "%d добрих підписів\n"
 
 #, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d помилкових підпис\n"
-msgstr[1] "%d помилкових підписи\n"
-msgstr[2] "%d помилкових підписів\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "%d підпис не перевірено через те, що немає ключа\n"
-msgstr[1] "%d підписи не перевірено через те, що немає ключа\n"
-msgstr[2] "%d підписів не перевірено через те, що немає ключа\n"
-
-#, c-format
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
 msgstr[0] "%d підпис не перевірено через помилку\n"
@@ -4728,7 +4750,6 @@ msgid "                aka \"%s\""
 msgstr "                або «%s»"
 
 #, c-format
-#| msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgid "WARNING: This key is not suitable for signing in %s mode\n"
 msgstr ""
 "УВАГА: цей ключ не можна використовувати для підписування у режимі %s\n"
@@ -5299,7 +5320,6 @@ msgid "can't open signed data fd=%d: %s\n"
 msgstr "не вдалося відкрити підписані дані fd=%d: %s\n"
 
 #, c-format
-#| msgid "certificate is not usable for encryption\n"
 msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "ключ %s не можна використовувати для розшифровування у режимі %s\n"
 
@@ -5492,7 +5512,6 @@ msgid "WARNING: signature digest conflict in message\n"
 msgstr "УВАГА: конфлікт контрольних сум підписів у повідомленні\n"
 
 #, c-format
-#| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "ключ %s не можна використовувати для підписування у режимі %s\n"
 
@@ -5561,7 +5580,6 @@ msgid "Note: signature key %s has been revoked\n"
 msgstr "ЗАУВАЖЕННЯ: ключ підпису %s було відкликано\n"
 
 #, c-format
-#| msgid "standalone signature of class 0x%02x\n"
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "помилковий підпис з ключа %s: %s (0x%02x, 0x%x)\n"
 
@@ -5992,7 +6010,6 @@ msgstr ""
 "(G)Добрий, (A)Прийняти одноразово, (U)Невідомий, (R)Відкинути одноразово, "
 "(B)Поганий? "
 
-#| msgid "Defaulting to unknown."
 msgid "Defaulting to unknown.\n"
 msgstr "Типовим значенням є «невідомий».\n"
 
@@ -6130,7 +6147,6 @@ msgid "error opening TOFU database: %s\n"
 msgstr "помилка під час спроби відкрити бази даних TOFU: %s\n"
 
 #, c-format
-#| msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 "ПОПЕРЕДЖЕННЯ: шифруємо до %s, для якого не виявлено не відкликаних "
@@ -6454,7 +6470,6 @@ msgstr ""
 "не вдалося використати типовий пінкод як %s: %s — вимикаємо подальше типове "
 "використання\n"
 
-#| msgid "||Please enter the PIN"
 msgid "||Please unlock the card"
 msgstr "||Будь ласка, розблокуйте картку"
 
@@ -7482,7 +7497,6 @@ msgid "    runtime cached certificates: %u\n"
 msgstr "    динамічно кешовані сертифікати: %u\n"
 
 #, c-format
-#| msgid "    runtime cached certificates: %u\n"
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "           довірені сертифікати: %u (%u,%u,%u,%u)\n"
 
@@ -8363,10 +8377,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "записуємо до «%s»\n"
 
 #, c-format
-msgid "error allocating memory: %s\n"
-msgstr "помилка під час спроби отримання області пам’яті: %s\n"
-
-#, c-format
 msgid "error printing log line: %s\n"
 msgstr "помилка під час спроби виводу рядка журналу: %s\n"
 
@@ -9209,43 +9219,6 @@ msgstr ""
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr ""
 #~ "Помилка: особисті дані D0 є занадто довгими (максимум — %d символів).\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr ""
-#~ "неможливо перевірити підпис із непідтримуваним алгоритмом створення "
-#~ "відкритого ключа (%d): %s.\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr ""
-#~ "неможливо перевірити підпис із непідтримуваним алгоритмом створення "
-#~ "контрольної суми %d: %s.\n"
-
-#~ msgid " (reordered signatures follow)"
-#~ msgstr " (нижче наведено перевпорядковані підписи)"
-
-#~ msgid "key %s:\n"
-#~ msgstr "ключ %s:\n"
-
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "вилучено %d дублікат підпису\n"
-#~ msgstr[1] "вилучено %d дублікати підписів\n"
-#~ msgstr[2] "вилучено %d дублікатів підписів\n"
-
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "перевпорядковано %d підпис\n"
-#~ msgstr[1] "перевпорядковано %d підписи\n"
-#~ msgstr[2] "перевпорядковано %d підписів\n"
-
-#~ msgid ""
-#~ "Warning: errors found and only checked self-signatures, run '%s' to check "
-#~ "all signatures.\n"
-#~ msgstr ""
-#~ "Попередження: виявлено помилки, перевірка виконувалася лише для "
-#~ "самопідписування, віддайте команду «%s», щоб перевірити усі підписи.\n"
 
 #~ msgid ", "
 #~ msgstr ", "

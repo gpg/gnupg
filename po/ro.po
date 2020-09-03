@@ -3189,6 +3189,62 @@ msgid "key %s: direct key signature added\n"
 msgstr "cheia %s: am adăugat semnătura de cheie directă\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "eroare la crearea inelului de chei `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "cheia %s: algoritm cu cheie publică nesuportat\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "semnătură %s, algoritm rezumat %s\n"
+
+#, fuzzy
+#| msgid "revoke signatures"
+msgid " (reordered signatures follow)"
+msgstr "revocă semnături"
+
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s:\n"
+msgstr "sărită \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "ID utilizator \"%s\" a fost revocat."
+msgstr[1] "ID utilizator \"%s\" a fost revocat."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
+msgstr[1] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d semnături incorecte\n"
+msgstr[1] "%d semnături incorecte\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Semnătură bună din \"%s\""
+msgstr[1] "Semnătură bună din \"%s\""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "eroare la crearea inelului de chei `%s': %s\n"
 
@@ -4603,20 +4659,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d semnături incorecte\n"
 msgstr[1] "%d semnături incorecte\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d semnături incorecte\n"
-msgstr[1] "%d semnături incorecte\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
-msgstr[1] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8586,10 +8628,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "scriu în `%s'\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "eroare la crearea inelului de chei `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
@@ -9439,39 +9477,6 @@ msgstr ""
 
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr "Eroare DO personal pre lung (limita este de %d caractere).\n"
-
-#, fuzzy
-#~| msgid "key %s: unsupported public key algorithm\n"
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "cheia %s: algoritm cu cheie publică nesuportat\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "semnătură %s, algoritm rezumat %s\n"
-
-#, fuzzy
-#~| msgid "revoke signatures"
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "revocă semnături"
-
-#, fuzzy
-#~| msgid "skipped \"%s\": %s\n"
-#~ msgid "key %s:\n"
-#~ msgstr "sărită \"%s\": %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "ID utilizator \"%s\" a fost revocat."
-#~ msgstr[1] "ID utilizator \"%s\" a fost revocat."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Semnătură bună din \"%s\""
-#~ msgstr[1] "Semnătură bună din \"%s\""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

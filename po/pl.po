@@ -2965,6 +2965,68 @@ msgid "key %s: direct key signature added\n"
 msgstr "klucz %s: dodano bezpośredni podpis\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "błąd przydzielania pamięci: %s\n"
+
+#, fuzzy, c-format
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "klucz %s: nieobsługiwany algorytm asymetryczny\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "karta nie obsługuje algorytmu skrótu %s\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "Poprawny podpis złożony przez"
+
+#, fuzzy, c-format
+#| msgid "key %s: %s\n"
+msgid "key %s:\n"
+msgstr "klucz %s: %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+#| msgid_plural "User ID \"%s\": %d signatures removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Identyfikator użytkownika ,,%s'': %d podpis usunięty\n"
+msgstr[1] "Identyfikator użytkownika ,,%s'': %d podpisy usunięte\n"
+msgstr[2] "Identyfikator użytkownika ,,%s'': %d podpisów usuniętych\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "%d podpis nie został sprawdzony z powodu braku klucza\n"
+msgstr[1] "%d podpisy nie zostały sprawdzone z powodu braku klucza\n"
+msgstr[2] "%d podpisów nie zostało sprawdzonych z powodu braku klucza\n"
+
+#, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d niepoprawny podpis\n"
+msgstr[1] "%d niepoprawne podpisy\n"
+msgstr[2] "%d niepoprawnych podpisów\n"
+
+#, fuzzy, c-format
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Poprawny podpis złożony przez"
+msgstr[1] "Poprawny podpis złożony przez"
+msgstr[2] "Poprawny podpis złożony przez"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "błąd tworzenia keyboksa ,,%s'': %s\n"
 
@@ -4337,20 +4399,6 @@ msgstr[1] "%d poprawne podpisy\n"
 msgstr[2] "%d poprawnych podpisów\n"
 
 #, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d niepoprawny podpis\n"
-msgstr[1] "%d niepoprawne podpisy\n"
-msgstr[2] "%d niepoprawnych podpisów\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "%d podpis nie został sprawdzony z powodu braku klucza\n"
-msgstr[1] "%d podpisy nie zostały sprawdzone z powodu braku klucza\n"
-msgstr[2] "%d podpisów nie zostało sprawdzonych z powodu braku klucza\n"
-
-#, c-format
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
 msgstr[0] "%d podpis nie został sprawdzony z powodu błędu\n"
@@ -4748,7 +4796,9 @@ msgstr "Uwaga: podpisy wykorzystujące algorytm %s są odrzucane\n"
 
 #, c-format
 msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
-msgstr "Uwaga: podpisy kluczami osób trzecich wykorzystujące algorytm %s są odrzucane\n"
+msgstr ""
+"Uwaga: podpisy kluczami osób trzecich wykorzystujące algorytm %s są "
+"odrzucane\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -8254,10 +8304,6 @@ msgstr "za dużo przekierowań\n"
 #, c-format
 msgid "redirection changed to '%s'\n"
 msgstr "przekierowanie zmienione na ,,%s''\n"
-
-#, c-format
-msgid "error allocating memory: %s\n"
-msgstr "błąd przydzielania pamięci: %s\n"
 
 #, c-format
 msgid "error printing log line: %s\n"

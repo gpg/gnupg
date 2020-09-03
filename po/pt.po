@@ -3120,6 +3120,59 @@ msgid "key %s: direct key signature added\n"
 msgstr "chave %08lX: assinatura directa de chave adicionada\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "erro ao criar porta-chaves `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "chave %08lX: algoritmo de chave pública não suportado\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "assinatura %s de: \"%s\"\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Assinatura correcta de \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "ignorado `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Utilizador \"%s\" está revocado."
+msgstr[1] "Utilizador \"%s\" está revocado."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 assinatura não verificada por falta de chave\n"
+msgstr[1] "1 assinatura não verificada por falta de chave\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d assinaturas incorrectas\n"
+msgstr[1] "%d assinaturas incorrectas\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Assinatura correcta de \""
+msgstr[1] "Assinatura correcta de \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "erro ao criar porta-chaves `%s': %s\n"
 
@@ -4559,20 +4612,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d assinaturas incorrectas\n"
 msgstr[1] "%d assinaturas incorrectas\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d assinaturas incorrectas\n"
-msgstr[1] "%d assinaturas incorrectas\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 assinatura não verificada por falta de chave\n"
-msgstr[1] "1 assinatura não verificada por falta de chave\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8467,10 +8506,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "a escrever para `%s'\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "erro ao criar porta-chaves `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "erro na escrita do porta-chaves `%s': %s\n"
 
@@ -9301,36 +9336,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "actualização falhou: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "chave %08lX: algoritmo de chave pública não suportado\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "assinatura %s de: \"%s\"\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Assinatura correcta de \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "ignorado `%s': %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Utilizador \"%s\" está revocado."
-#~ msgstr[1] "Utilizador \"%s\" está revocado."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Assinatura correcta de \""
-#~ msgstr[1] "Assinatura correcta de \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

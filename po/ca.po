@@ -3227,6 +3227,59 @@ msgid "key %s: direct key signature added\n"
 msgstr "clau %08lX: s'ha afegit la signatura de clau directa\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "error en crear l'anell «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "clau %08lX: l'algoritme de clau pública no és suportat\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "signatura %s, algorisme de resum %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Signatura correcta de \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "es descarta «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "L'ID d'usuari «%s» està revocat."
+msgstr[1] "L'ID d'usuari «%s» està revocat."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 signatura no comprovada per falta de clau\n"
+msgstr[1] "1 signatura no comprovada per falta de clau\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d signatures errònies\n"
+msgstr[1] "%d signatures errònies\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Signatura correcta de \""
+msgstr[1] "Signatura correcta de \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "error en crear l'anell «%s»: %s\n"
 
@@ -4695,20 +4748,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d signatures errònies\n"
 msgstr[1] "%d signatures errònies\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d signatures errònies\n"
-msgstr[1] "%d signatures errònies\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 signatura no comprovada per falta de clau\n"
-msgstr[1] "1 signatura no comprovada per falta de clau\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8698,10 +8737,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "s'està escrivint en «%s»\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "error en crear l'anell «%s»: %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
@@ -9532,36 +9567,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "ha fallat l'actualització: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "clau %08lX: l'algoritme de clau pública no és suportat\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "signatura %s, algorisme de resum %s\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Signatura correcta de \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "es descarta «%s»: %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "L'ID d'usuari «%s» està revocat."
-#~ msgstr[1] "L'ID d'usuari «%s» està revocat."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Signatura correcta de \""
-#~ msgstr[1] "Signatura correcta de \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

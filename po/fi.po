@@ -3136,6 +3136,60 @@ msgid "key %s: direct key signature added\n"
 msgstr "avain %08lX: lisättiin suora avainallekirjoitus\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "avain %08lX: julkisen avaimen algoritmia ei tueta\n"
+
+# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Allekirjoitus täsmää lähettäjään \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "ohitetaan \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Käyttäjätunnus \"%s\" on mitätöity."
+msgstr[1] "Käyttäjätunnus \"%s\" on mitätöity."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
+msgstr[1] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d väärää allekirjoitusta\n"
+msgstr[1] "%d väärää allekirjoitusta\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Allekirjoitus täsmää lähettäjään \""
+msgstr[1] "Allekirjoitus täsmää lähettäjään \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
 
@@ -4572,20 +4626,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d väärää allekirjoitusta\n"
 msgstr[1] "%d väärää allekirjoitusta\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d väärää allekirjoitusta\n"
-msgstr[1] "%d väärää allekirjoitusta\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
-msgstr[1] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8507,10 +8547,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "kirjoitetaan kohteeseen \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
 
@@ -9340,37 +9376,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "päivitys epäonnistui: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "avain %08lX: julkisen avaimen algoritmia ei tueta\n"
-
-# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Allekirjoitus täsmää lähettäjään \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "ohitetaan \"%s\": %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Käyttäjätunnus \"%s\" on mitätöity."
-#~ msgstr[1] "Käyttäjätunnus \"%s\" on mitätöity."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Allekirjoitus täsmää lähettäjään \""
-#~ msgstr[1] "Allekirjoitus täsmää lähettäjään \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

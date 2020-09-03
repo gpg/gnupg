@@ -3121,6 +3121,65 @@ msgid "key %s: direct key signature added\n"
 msgstr "clef %s : ajout de la signature directe de clef\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "erreur d'allocation de mémoire : %s\n"
+
+#, fuzzy, c-format
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "clef %s : algorithme à clef publique non pris en charge\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "la carte ne gère pas l'algorithme de hachage %s\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "Bonne signature de"
+
+#, fuzzy, c-format
+#| msgid "key %s: %s\n"
+msgid "key %s:\n"
+msgstr "clef %s : %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Identité « %s » : %d signature supprimée\n"
+msgstr[1] "Identité « %s » : %d signature supprimée\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 signature non vérifiée à cause d'une clef manquante\n"
+msgstr[1] "1 signature non vérifiée à cause d'une clef manquante\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d mauvaises signatures\n"
+msgstr[1] "%d mauvaises signatures\n"
+
+#, fuzzy, c-format
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Bonne signature de"
+msgstr[1] "Bonne signature de"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "erreur de création du trousseau local « %s » : %s\n"
 
@@ -4514,20 +4573,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d mauvaises signatures\n"
 msgstr[1] "%d mauvaises signatures\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d mauvaises signatures\n"
-msgstr[1] "%d mauvaises signatures\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 signature non vérifiée à cause d'une clef manquante\n"
-msgstr[1] "1 signature non vérifiée à cause d'une clef manquante\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8576,10 +8621,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "écriture de « %s »\n"
 
 #, c-format
-msgid "error allocating memory: %s\n"
-msgstr "erreur d'allocation de mémoire : %s\n"
-
-#, c-format
 msgid "error printing log line: %s\n"
 msgstr "erreur d'affichage de ligne du journal : %s\n"
 
@@ -9457,42 +9498,6 @@ msgstr ""
 
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr "Erreur : DO privé trop long (limité à %d caractères).\n"
-
-#, fuzzy
-#~| msgid "key %s: unsupported public key algorithm\n"
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "clef %s : algorithme à clef publique non pris en charge\n"
-
-#, fuzzy
-#~| msgid "card does not support digest algorithm %s\n"
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "la carte ne gère pas l'algorithme de hachage %s\n"
-
-#, fuzzy
-#~| msgid "Good signature from"
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Bonne signature de"
-
-#, fuzzy
-#~| msgid "key %s: %s\n"
-#~ msgid "key %s:\n"
-#~ msgstr "clef %s : %s\n"
-
-#, fuzzy
-#~| msgid "User ID \"%s\": %d signature removed\n"
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Identité « %s » : %d signature supprimée\n"
-#~ msgstr[1] "Identité « %s » : %d signature supprimée\n"
-
-#, fuzzy
-#~| msgid "Good signature from"
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Bonne signature de"
-#~ msgstr[1] "Bonne signature de"
 
 #~ msgid "new configuration file '%s' created\n"
 #~ msgstr "nouveau fichier de configuration « %s » créé\n"

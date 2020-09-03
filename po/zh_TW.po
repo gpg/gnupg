@@ -3007,6 +3007,61 @@ msgid "key %s: direct key signature added\n"
 msgstr "金鑰 %s: 已新增直接金鑰簽章\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "配置記憶體時出錯: %s\n"
+
+#, fuzzy, c-format
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "金鑰 %s: 未支援的公鑰演算法\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "卡片不支援 %s 摘要演算法\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "完好的簽章來自於"
+
+#, fuzzy, c-format
+#| msgid "key %s: %s\n"
+msgid "key %s:\n"
+msgstr "金鑰 %s: %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "使用者 ID \"%s\": 已移除 %d 份簽章\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "有 1 份簽章因為遺失金鑰而未被檢查\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d 份損壞的簽章\n"
+
+#, fuzzy, c-format
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "完好的簽章來自於"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "建立金鑰鑰匙盒 '%s' 時出錯: %s\n"
 
@@ -4343,18 +4398,6 @@ msgstr "簽章註記: "
 msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d 份損壞的簽章\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d 份損壞的簽章\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "有 1 份簽章因為遺失金鑰而未被檢查\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8135,10 +8178,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "正在寫入 '%s'\n"
 
 #, c-format
-msgid "error allocating memory: %s\n"
-msgstr "配置記憶體時出錯: %s\n"
-
-#, c-format
 msgid "error printing log line: %s\n"
 msgstr "印出日誌記錄列時出錯: %s\n"
 
@@ -8993,40 +9032,6 @@ msgstr ""
 
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr "錯誤: 私人的 DO 太長 (上限是 %d 個字符).\n"
-
-#, fuzzy
-#~| msgid "key %s: unsupported public key algorithm\n"
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "金鑰 %s: 未支援的公鑰演算法\n"
-
-#, fuzzy
-#~| msgid "card does not support digest algorithm %s\n"
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "卡片不支援 %s 摘要演算法\n"
-
-#, fuzzy
-#~| msgid "Good signature from"
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "完好的簽章來自於"
-
-#, fuzzy
-#~| msgid "key %s: %s\n"
-#~ msgid "key %s:\n"
-#~ msgstr "金鑰 %s: %s\n"
-
-#, fuzzy
-#~| msgid "User ID \"%s\": %d signature removed\n"
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "使用者 ID \"%s\": 已移除 %d 份簽章\n"
-
-#, fuzzy
-#~| msgid "Good signature from"
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "完好的簽章來自於"
 
 #~ msgid "new configuration file '%s' created\n"
 #~ msgstr "新的組態檔案 '%s' 已建立\n"

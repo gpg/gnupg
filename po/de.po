@@ -3023,6 +3023,62 @@ msgid "key %s: direct key signature added\n"
 msgstr "Schlüssel %s: \"direct-key\"-Signaturen hinzugefügt\n"
 
 #, c-format
+msgid "error allocating memory: %s\n"
+msgstr "Fehler beim Allozieren von Speicher: %s\n"
+
+#, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr ""
+"Die Signatur mit den nicht unterstützten Public-Key-Verfahren (%d) kann "
+"nicht geprüft werden: %s\n"
+
+#, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr ""
+"Die Signatur mit der nicht unterstützten Hashmethode (%d) kann nicht\n"
+"geprüft werden: %s.\n"
+
+msgid " (reordered signatures follow)"
+msgstr " (neu geordnete Signaturen folgen)"
+
+#, c-format
+msgid "key %s:\n"
+msgstr "Schlüssel %s:\n"
+
+#, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "%d doppelte Signatur entfernt\n"
+msgstr[1] "%d doppelte Signaturen entfernt\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "%d Beglaubigung wegen fehlendem Schlüssel nicht geprüft\n"
+msgstr[1] "%d Beglaubigungen wegen fehlender Schlüssel nicht geprüft\n"
+
+#, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d falsche Beglaubigung\n"
+msgstr[1] "%d falsche Beglaubigungen\n"
+
+#, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "%d Signatur neu eingeordnet\n"
+msgstr[1] "%d Signaturen neu eingeordnet\n"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+"WARNUNG: Es wurden Fehler gefunden aber nur Eigenbeglaubigungen geprüft; um "
+"alle Beglaubigungen zu prüfen das Kommando '%s' verwenden.\n"
+
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "Die \"Keybox\" `%s' konnte nicht erstellt werden: %s\n"
 
@@ -4378,18 +4434,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d korrekte Signatur\n"
 msgstr[1] "%d korrekte Signaturen\n"
-
-#, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d falsche Beglaubigung\n"
-msgstr[1] "%d falsche Beglaubigungen\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "%d Beglaubigung wegen fehlendem Schlüssel nicht geprüft\n"
-msgstr[1] "%d Beglaubigungen wegen fehlender Schlüssel nicht geprüft\n"
 
 #, c-format
 msgid "%d signature not checked due to an error\n"
@@ -8352,10 +8396,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "\"Redirection\" geändert auf '%s'\n"
 
 #, c-format
-msgid "error allocating memory: %s\n"
-msgstr "Fehler beim Allozieren von Speicher: %s\n"
-
-#, c-format
 msgid "error printing log line: %s\n"
 msgstr "Fehler beim Schreiben einer Logzeile: %s\n"
 
@@ -9216,41 +9256,6 @@ msgstr ""
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr ""
 #~ "Fehler: Geheime DO-Daten sind zu lang (Grenze beträgt %d Zeichen).\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr ""
-#~ "Die Signatur mit den nicht unterstützten Public-Key-Verfahren (%d) kann "
-#~ "nicht geprüft werden: %s\n"
-
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr ""
-#~ "Die Signatur mit der nicht unterstützten Hashmethode (%d) kann nicht\n"
-#~ "geprüft werden: %s.\n"
-
-#~ msgid " (reordered signatures follow)"
-#~ msgstr " (neu geordnete Signaturen folgen)"
-
-#~ msgid "key %s:\n"
-#~ msgstr "Schlüssel %s:\n"
-
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "%d doppelte Signatur entfernt\n"
-#~ msgstr[1] "%d doppelte Signaturen entfernt\n"
-
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "%d Signatur neu eingeordnet\n"
-#~ msgstr[1] "%d Signaturen neu eingeordnet\n"
-
-#~ msgid ""
-#~ "Warning: errors found and only checked self-signatures, run '%s' to check "
-#~ "all signatures.\n"
-#~ msgstr ""
-#~ "WARNUNG: Es wurden Fehler gefunden aber nur Eigenbeglaubigungen geprüft; "
-#~ "um alle Beglaubigungen zu prüfen das Kommando '%s' verwenden.\n"
 
 #~ msgid "new configuration file '%s' created\n"
 #~ msgstr "Neue Konfigurationsdatei `%s' erstellt\n"

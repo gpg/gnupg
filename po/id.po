@@ -3120,6 +3120,59 @@ msgid "key %s: direct key signature added\n"
 msgstr "kunci %08lX: signature kunci langsung ditambahkan\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "kunci %08lX: algoritma publik key tidak didukung\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%s signature, algoritma digest %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Signature baik dari \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "melewati `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "User ID \"%s\" dibatalkan."
+msgstr[1] "User ID \"%s\" dibatalkan."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 signature tidak diperiksa karena tidak ada kunci\n"
+msgstr[1] "1 signature tidak diperiksa karena tidak ada kunci\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d signature yang buruk\n"
+msgstr[1] "%d signature yang buruk\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Signature baik dari \""
+msgstr[1] "Signature baik dari \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "kesalahan menulis keyring `%s': %s\n"
 
@@ -4556,20 +4609,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d signature yang buruk\n"
 msgstr[1] "%d signature yang buruk\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d signature yang buruk\n"
-msgstr[1] "%d signature yang buruk\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 signature tidak diperiksa karena tidak ada kunci\n"
-msgstr[1] "1 signature tidak diperiksa karena tidak ada kunci\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8467,10 +8506,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "menulis ke `%s'\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "kesalahan menulis keyring `%s': %s\n"
 
@@ -9300,36 +9335,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "gagal memperbarui: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "kunci %08lX: algoritma publik key tidak didukung\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "%s signature, algoritma digest %s\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Signature baik dari \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "melewati `%s': %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "User ID \"%s\" dibatalkan."
-#~ msgstr[1] "User ID \"%s\" dibatalkan."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Signature baik dari \""
-#~ msgstr[1] "Signature baik dari \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

@@ -3099,6 +3099,59 @@ msgid "key %s: direct key signature added\n"
 msgstr "ŝlosilo %08lX: rekta ŝlosilsubskribo aldonita\n"
 
 #, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "eraro dum kreado de ŝlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "ŝlosilo %08lX: nerealigita publikŝlosila metodo\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%s-subskribo de: %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Bona subskribo de \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "ignoris '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Uzantidentigilo \"%s\" estas revokita.\n"
+msgstr[1] "Uzantidentigilo \"%s\" estas revokita.\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 subskribo ne kontrolita pro manko de ŝlosilo\n"
+msgstr[1] "1 subskribo ne kontrolita pro manko de ŝlosilo\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d malbonaj subskriboj\n"
+msgstr[1] "%d malbonaj subskriboj\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Bona subskribo de \""
+msgstr[1] "Bona subskribo de \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "eraro dum kreado de ŝlosilaro '%s': %s\n"
 
@@ -4547,20 +4600,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d malbonaj subskriboj\n"
 msgstr[1] "%d malbonaj subskriboj\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d malbonaj subskriboj\n"
-msgstr[1] "%d malbonaj subskriboj\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 subskribo ne kontrolita pro manko de ŝlosilo\n"
-msgstr[1] "1 subskribo ne kontrolita pro manko de ŝlosilo\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -8442,10 +8481,6 @@ msgid "redirection changed to '%s'\n"
 msgstr "skribas al '%s'\n"
 
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "eraro dum kreado de ŝlosilaro '%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
 
@@ -9277,36 +9312,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "aktualigo malsukcesis: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "ŝlosilo %08lX: nerealigita publikŝlosila metodo\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "%s-subskribo de: %s\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Bona subskribo de \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "ignoris '%s': %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "Uzantidentigilo \"%s\" estas revokita.\n"
-#~ msgstr[1] "Uzantidentigilo \"%s\" estas revokita.\n"
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Bona subskribo de \""
-#~ msgstr[1] "Bona subskribo de \""
 
 #, fuzzy
 #~ msgid "new configuration file '%s' created\n"
