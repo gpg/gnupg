@@ -48,6 +48,7 @@ g10/gpg.c
 g10/gpgv.c
 g10/helptext.c
 g10/import.c
+g10/key-check.c
 g10/keydb.c
 g10/keyedit.c
 g10/keygen.c
