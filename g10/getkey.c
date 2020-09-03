@@ -2481,7 +2481,7 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   nzip = p ? n : 0;
   if (uid->prefs)
     xfree (uid->prefs);
-  n = nsym + nhash + nzip;
+  n = nsym + naead + nhash + nzip;
   if (!n)
     uid->prefs = NULL;
   else
