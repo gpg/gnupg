@@ -64,9 +64,12 @@ struct
   int answer_no;    /* assume no on most questions */
   int dry_run;      /* don't change any persistent data */
   int no_homedir_creation;
+  int use_keyboxd;  /* Use the external keyboxd as storage backend.  */
 
   const char *config_filename; /* Name of the used config file. */
   const char *agent_program;
+
+  const char *keyboxd_program;
 
   session_env_t session_env;
   char *lc_ctype;
@@ -195,6 +198,11 @@ struct
 /* Forward declaration for an object defined in server.c */
 struct server_local_s;
 
+/* Object used to keep state locally in keydb.c  */
+struct keydb_local_s;
+typedef struct keydb_local_s *keydb_local_t;
+
+
 /* Session control object.  This object is passed down to most
    functions.  Note that the default values for it are set by
    gpgsm_init_default_ctrl(). */
@@ -203,6 +211,8 @@ struct server_control_s
   int no_server;      /* We are not running under server control */
   int  status_fd;     /* Only for non-server mode */
   struct server_local_s *server_local;
+
+  keydb_local_t keydb_local;  /* Local data for call-keyboxd.c  */
 
   audit_ctx_t audit;  /* NULL or a context for the audit subsystem.  */
   int agent_seen;     /* Flag indicating that the gpg-agent has been
@@ -266,6 +276,7 @@ struct rootca_flags_s
 /*-- gpgsm.c --*/
 void gpgsm_exit (int rc);
 void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
+void gpgsm_deinit_default_ctrl (ctrl_t ctrl);
 int  gpgsm_parse_validation_model (const char *model);
 
 /*-- server.c --*/

@@ -28,11 +28,13 @@
 #include <unistd.h>
 
 #include "gpgsm.h"
+#include <assuan.h>
 #include "../kbx/keybox.h"
 #include "keydb.h"
 #include "../common/i18n.h"
+#include "../common/asshelp.h"
+#include "../kbx/kbx-client-util.h"
 
-static int active_handles;
 
 typedef enum {
     KEYDB_RESOURCE_TYPE_NONE = 0,
@@ -48,14 +50,70 @@ struct resource_item {
   void *token;
 };
 
+
+/* Data used to keep track of keybox daemon sessions.  This allows us
+ * to use several sessions with the keyboxd and also to re-use already
+ * established sessions.  Note that gpgdm.h defines the type
+ * keydb_local_t for this structure.  */
+struct keydb_local_s
+{
+  /* Link to other keyboxd contexts which are used simultaneously.  */
+  struct keydb_local_s *next;
+
+  /* The active Assuan context. */
+  assuan_context_t ctx;
+
+  /* The client data helper context.  */
+  kbx_client_data_t kcd;
+
+  /* I/O buffer with the last search result or NULL.  Used if
+   * D-lines are used to convey the keyblocks. */
+  iobuf_t search_result;
+
+  /* This flag set while an operation is running on this context.  */
+  unsigned int is_active : 1;
+
+  /* Flag indicating that a search reset is required.  */
+  unsigned int need_search_reset : 1;
+};
+
+
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
 static int used_resources;
 
 /* Whether we have successfully registered any resource.  */
 static int any_registered;
 
+/* Number of active handles.  */
+static int active_handles;
+
+
 
 struct keydb_handle {
+
+  /* CTRL object passed to keydb_new.  */
+  ctrl_t ctrl;
+
+  /* If set the keyboxdd is used instead of the local files.  */
+  int use_keyboxd;
+
+  /* BEGIN USE_KEYBOXD */
+  /* (These fields are only valid if USE_KEYBOXD is set.) */
+
+  /* Connection info which also keeps the local state.  (This points
+   * into the CTRL->keybox_local list.) */
+  keydb_local_t kbl;
+
+  /* Various flags.  */
+  unsigned int last_ubid_valid:1;
+
+  /* The UBID of the last returned keyblock.  */
+  unsigned char last_ubid[UBID_LEN];
+
+  /* END USE_KEYBOXD */
+
+  /* BEGIN !USE_KEYBOXD */
+  /* (The remaining fields are only valid if USE_KEYBOXD is cleared.)  */
 
   /* If this flag is set the resources is locked.  */
   int locked;
@@ -70,11 +128,37 @@ struct keydb_handle {
   int is_ephemeral;
   int used; /* items in active */
   struct resource_item active[MAX_KEYDB_RESOURCES];
+
+  /* END !USE_KEYBOXD */
 };
 
 
 static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
+
+
+
+/* Deinitialize all session resources pertaining to the keyboxd.  */
+void
+gpgsm_keydb_deinit_session_data (ctrl_t ctrl)
+{
+  keydb_local_t kbl;
+
+  while ((kbl = ctrl->keydb_local))
+    {
+      ctrl->keydb_local = kbl->next;
+      if (kbl->is_active)
+        log_error ("oops: trying to cleanup an active keydb context\n");
+      else
+        {
+          kbx_client_data_release (kbl->kcd);
+          kbl->kcd = NULL;
+          assuan_release (kbl->ctx);
+          kbl->ctx = NULL;
+        }
+      xfree (kbl);
+    }
+}
 
 
 static void
@@ -397,13 +481,118 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
 }
 
 
+/* Print a warning if the server's version number is less than our
+   version number.  Returns an error code on a connection problem.  */
+static gpg_error_t
+warn_version_mismatch (assuan_context_t ctx, const char *servername)
+{
+  return warn_server_version_mismatch (ctx, servername, 0,
+                                       gpgsm_status2, NULL,
+                                       !opt.quiet);
+}
+
+
+/* Connect to the keybox daemon and launch it if necessary.  Handle
+ * the server's initial greeting and set global options.  Returns a
+ * new assuan context or an error.  */
+static gpg_error_t
+create_new_context (ctrl_t ctrl, assuan_context_t *r_ctx)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+
+  *r_ctx = NULL;
+
+  err = start_new_keyboxd (&ctx,
+                           GPG_ERR_SOURCE_DEFAULT,
+                           opt.keyboxd_program,
+                           opt.autostart, opt.verbose, DBG_IPC,
+                           NULL, ctrl);
+  if (!opt.autostart && gpg_err_code (err) == GPG_ERR_NO_KEYBOXD)
+    {
+      static int shown;
+
+      if (!shown)
+        {
+          shown = 1;
+          log_info (_("no keyboxd running in this session\n"));
+        }
+    }
+  else if (!err && !(err = warn_version_mismatch (ctx, KEYBOXD_NAME)))
+    {
+      /* Place to emit global options.  */
+    }
+
+  if (err)
+    assuan_release (ctx);
+  else
+    *r_ctx = ctx;
+
+  return err;
+}
+
+
+/* Get a context for accessing keyboxd.  If no context is available a
+ * new one is created and if necessary keyboxd is started.  R_KBL
+ * receives a pointer to the local context object.  */
+static gpg_error_t
+open_context (ctrl_t ctrl, keydb_local_t *r_kbl)
+{
+  gpg_error_t err;
+  keydb_local_t kbl;
+
+  *r_kbl = NULL;
+  for (;;)
+    {
+      for (kbl = ctrl->keydb_local; kbl && kbl->is_active; kbl = kbl->next)
+        ;
+      if (kbl)
+        {
+          /* Found an inactive keyboxd session - return that.  */
+          log_assert (!kbl->is_active);
+
+          kbl->is_active = 1;
+          kbl->need_search_reset = 1;
+
+          *r_kbl = kbl;
+          return 0;
+        }
+
+      /* None found.  Create a new session and retry.  */
+      kbl = xtrycalloc (1, sizeof *kbl);
+      if (!kbl)
+        return gpg_error_from_syserror ();
+
+      err = create_new_context (ctrl, &kbl->ctx);
+      if (err)
+        {
+          xfree (kbl);
+          return err;
+        }
+
+      err = kbx_client_data_new (&kbl->kcd, kbl->ctx);
+      if (err)
+        {
+          assuan_release (kbl->ctx);
+          xfree (kbl);
+          return err;
+        }
+
+      /* For thread-saftey we add it to the list and retry; this is
+       * easier than to employ a lock.  */
+      kbl->next = ctrl->keydb_local;
+      ctrl->keydb_local = kbl;
+    }
+  /*NOTREACHED*/
+}
+
+
 KEYDB_HANDLE
 keydb_new (ctrl_t ctrl)
 {
+  gpg_error_t err;
   KEYDB_HANDLE hd;
-  int i, j;
-
-  (void)ctrl;
+  int rc, i, j;
 
   if (DBG_CLOCK)
     log_clock ("%s: enter\n", __func__);
@@ -411,30 +600,50 @@ keydb_new (ctrl_t ctrl)
   hd = xcalloc (1, sizeof *hd);
   hd->found = -1;
   hd->saved_found = -1;
-
-  log_assert (used_resources <= MAX_KEYDB_RESOURCES);
-  for (i=j=0; i < used_resources; i++)
+  hd->use_keyboxd = opt.use_keyboxd;
+  hd->ctrl = ctrl;
+  if (hd->use_keyboxd)
     {
-      switch (all_resources[i].type)
+      err = open_context (ctrl, &hd->kbl);
+      if (err)
         {
-        case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
-          break;
-        case KEYDB_RESOURCE_TYPE_KEYBOX:
-          hd->active[j].type   = all_resources[i].type;
-          hd->active[j].token  = all_resources[i].token;
-          hd->active[j].u.kr = keybox_new_x509 (all_resources[i].token, 0);
-          if (!hd->active[j].u.kr)
-            {
-              xfree (hd);
-              return NULL; /* fixme: release all previously allocated handles*/
-            }
-          j++;
-          break;
+          log_error (_("error opening key DB: %s\n"), gpg_strerror (err));
+          xfree (hd);
+          hd = NULL;
+          if (!(rc = gpg_err_code_to_errno (err)))
+            rc = gpg_err_code_to_errno (GPG_ERR_EIO);
+          gpg_err_set_errno (rc);
+          goto leave;
         }
     }
-  hd->used = j;
+  else /* Use the local keybox.  */
+    {
+      log_assert (used_resources <= MAX_KEYDB_RESOURCES);
+      for (i=j=0; i < used_resources; i++)
+        {
+          switch (all_resources[i].type)
+            {
+            case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
+              break;
+            case KEYDB_RESOURCE_TYPE_KEYBOX:
+              hd->active[j].type   = all_resources[i].type;
+              hd->active[j].token  = all_resources[i].token;
+              hd->active[j].u.kr = keybox_new_x509 (all_resources[i].token, 0);
+              if (!hd->active[j].u.kr)
+                {
+                  xfree (hd);
+                  return NULL; /* fixme: free all previously allocated handles*/
+                }
+              j++;
+              break;
+            }
+        }
+      hd->used = j;
+    }
 
   active_handles++;
+
+ leave:
   if (DBG_CLOCK)
     log_clock ("%s: leave (hd=%p)\n", __func__, hd);
   return hd;
@@ -443,6 +652,7 @@ keydb_new (ctrl_t ctrl)
 void
 keydb_release (KEYDB_HANDLE hd)
 {
+  keydb_local_t kbl;
   int i;
 
   if (!hd)
@@ -454,17 +664,30 @@ keydb_release (KEYDB_HANDLE hd)
   log_assert (active_handles > 0);
   active_handles--;
 
-  hd->keep_lock = 0;
-  unlock_all (hd);
-  for (i=0; i < hd->used; i++)
+  if (hd->use_keyboxd)
     {
-      switch (hd->active[i].type)
+      kbl = hd->kbl;
+      if (DBG_CLOCK)
+        log_clock ("close_context (found)");
+      if (!kbl->is_active)
+        log_fatal ("closing inactive keyboxd context %p\n", kbl);
+      kbl->is_active = 0;
+      hd->kbl = NULL;
+    }
+  else
+    {
+      hd->keep_lock = 0;
+      unlock_all (hd);
+      for (i=0; i < hd->used; i++)
         {
-        case KEYDB_RESOURCE_TYPE_NONE:
+          switch (hd->active[i].type)
+            {
+            case KEYDB_RESOURCE_TYPE_NONE:
           break;
-        case KEYDB_RESOURCE_TYPE_KEYBOX:
-          keybox_release (hd->active[i].u.kr);
-          break;
+            case KEYDB_RESOURCE_TYPE_KEYBOX:
+              keybox_release (hd->active[i].u.kr);
+              break;
+            }
         }
     }
 
@@ -488,6 +711,9 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
 
   if (!hd)
     return NULL;
+
+  if (hd->use_keyboxd)
+    return "[keyboxd]";
 
   if ( hd->found >= 0 && hd->found < hd->used)
     idx = hd->found;
@@ -517,6 +743,10 @@ keydb_set_ephemeral (KEYDB_HANDLE hd, int yes)
 
   if (!hd)
     return 0;
+
+  if (hd->use_keyboxd)
+    return 0; /* FIXME: No support yet.  */
+
 
   yes = !!yes;
   if (hd->is_ephemeral != yes)
@@ -551,6 +781,8 @@ keydb_lock (KEYDB_HANDLE hd)
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_HANDLE);
+  if (hd->use_keyboxd)
+    return 0;
 
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
@@ -569,6 +801,9 @@ static int
 lock_all (KEYDB_HANDLE hd)
 {
   int i, rc = 0;
+
+  if (hd->use_keyboxd)
+    return 0;
 
   /* Fixme: This locking scheme may lead to deadlock if the resources
      are not added in the same order by all processes.  We are
@@ -613,6 +848,9 @@ unlock_all (KEYDB_HANDLE hd)
 {
   int i;
 
+  if (hd->use_keyboxd)
+    return;
+
   if (!hd->locked || hd->keep_lock)
     return;
 
@@ -638,6 +876,9 @@ keydb_push_found_state (KEYDB_HANDLE hd)
 {
   if (!hd)
     return;
+
+  if (hd->use_keyboxd)
+    return; /* FIXME: Do we need this? */
 
   if (hd->found < 0 || hd->found >= hd->used)
     {
@@ -667,6 +908,9 @@ keydb_pop_found_state (KEYDB_HANDLE hd)
 {
   if (!hd)
     return;
+
+  if (hd->use_keyboxd)
+    return; /* FIXME: Do we need this? */
 
   hd->found = hd->saved_found;
   hd->saved_found = -1;
@@ -702,6 +946,12 @@ keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
 
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
+  if (hd->use_keyboxd)
+    {
+      /* FIXME */
+      goto leave;
+    }
 
   if ( hd->found < 0 || hd->found >= hd->used)
     {
@@ -741,6 +991,12 @@ keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
 
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
+  if (hd->use_keyboxd)
+    {
+      /* FIXME */
+      goto leave;
+    }
 
   if ( hd->found < 0 || hd->found >= hd->used)
     {
@@ -782,6 +1038,12 @@ keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
 
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
+  if (hd->use_keyboxd)
+    {
+      /* FIXME */
+      goto leave;
+    }
 
   if ( hd->found < 0 || hd->found >= hd->used)
     {
@@ -829,6 +1091,12 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
+
+  if (hd->use_keyboxd)
+    {
+      /* FIXME */
+      goto leave;
+    }
 
   if ( hd->found >= 0 && hd->found < hd->used)
     idx = hd->found;
@@ -889,6 +1157,12 @@ keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
 
+  if (hd->use_keyboxd)
+    {
+      /* FIXME */
+      goto leave;
+    }
+
   err = lock_all (hd);
   if (err)
     goto leave;
@@ -934,6 +1208,12 @@ keydb_delete (KEYDB_HANDLE hd)
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
 
+  if (hd->use_keyboxd)
+    {
+      /* FIXME */
+      goto leave;
+    }
+
   if (!hd->locked)
     {
       err = gpg_error (GPG_ERR_NOT_LOCKED);
@@ -976,6 +1256,9 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if (hd->use_keyboxd)
+    return 0;  /* Not required.  */
+
   rc = keydb_search_reset (hd); /* this does reset hd->current */
   if (rc)
     return rc;
@@ -1004,6 +1287,9 @@ void
 keydb_rebuild_caches (void)
 {
   int i;
+
+  /* This function does nothing and thus we don't need to handle keyboxd in a
+   * special way.  */
 
   for (i=0; i < used_resources; i++)
     {
@@ -1040,16 +1326,23 @@ keydb_search_reset (KEYDB_HANDLE hd)
 
   hd->current = 0;
   hd->found = -1;
-  /* and reset all resources */
-  for (i=0; !err && i < hd->used; i++)
+  if (hd->use_keyboxd)
     {
-      switch (hd->active[i].type)
+      /* FIXME */
+    }
+  else
+    {
+      /* and reset all resources */
+      for (i=0; !err && i < hd->used; i++)
         {
-        case KEYDB_RESOURCE_TYPE_NONE:
-          break;
-        case KEYDB_RESOURCE_TYPE_KEYBOX:
-          err = keybox_search_reset (hd->active[i].u.kr);
-          break;
+          switch (hd->active[i].type)
+            {
+            case KEYDB_RESOURCE_TYPE_NONE:
+              break;
+            case KEYDB_RESOURCE_TYPE_KEYBOX:
+              err = keybox_search_reset (hd->active[i].u.kr);
+              break;
+            }
         }
     }
 
@@ -1130,7 +1423,7 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (!any_registered)
+  if (!any_registered && !hd->use_keyboxd)
     {
       gpgsm_status_with_error (ctrl, STATUS_ERROR, "keydb_search",
                                gpg_error (GPG_ERR_KEYRING_OPEN));
@@ -1151,37 +1444,43 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
         }
     }
 
-  while ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
-         && hd->current >= 0 && hd->current < hd->used)
+  if (hd->use_keyboxd)
     {
-      switch (hd->active[hd->current].type)
-        {
-        case KEYDB_RESOURCE_TYPE_NONE:
-          BUG(); /* we should never see it here */
-          break;
-        case KEYDB_RESOURCE_TYPE_KEYBOX:
-          rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc,
-                              KEYBOX_BLOBTYPE_X509,
-                              NULL, &skipped);
-          break;
-        }
-
-      if (DBG_LOOKUP)
-        log_debug ("%s: searched %s (resource %d of %d) => %s\n",
-                   __func__,
-                   hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYBOX
-                      ? "keybox" : "unknown type",
-                   hd->current, hd->used,
-                   rc == -1 ? "EOF" : gpg_strerror (rc));
-
-      if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
-        { /* EOF -> switch to next resource */
-          hd->current++;
-        }
-      else if (!rc)
-        hd->found = hd->current;
+      /* FIXME */
     }
+  else
+    {
+      while ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+             && hd->current >= 0 && hd->current < hd->used)
+        {
+          switch (hd->active[hd->current].type)
+            {
+            case KEYDB_RESOURCE_TYPE_NONE:
+              BUG(); /* we should never see it here */
+              break;
+            case KEYDB_RESOURCE_TYPE_KEYBOX:
+              rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc,
+                                  KEYBOX_BLOBTYPE_X509,
+                                  NULL, &skipped);
+              break;
+            }
 
+          if (DBG_LOOKUP)
+            log_debug ("%s: searched %s (resource %d of %d) => %s\n",
+                       __func__,
+                       hd->active[hd->current].type==KEYDB_RESOURCE_TYPE_KEYBOX
+                       ? "keybox" : "unknown type",
+                       hd->current, hd->used,
+                       rc == -1 ? "EOF" : gpg_strerror (rc));
+
+          if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+            { /* EOF -> switch to next resource */
+              hd->current++;
+            }
+          else if (!rc)
+            hd->found = hd->current;
+        }
+    }
 
   if (DBG_CLOCK)
     log_clock ("%s: leave (rc=%d)\n", __func__, rc);
@@ -1318,9 +1617,12 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
      records.  */
   keydb_set_ephemeral (kh, 1);
 
-  rc = lock_all (kh);
-  if (rc)
-    return rc;
+  if (!kh->use_keyboxd)
+    {
+      rc = lock_all (kh);
+      if (rc)
+        return rc;
+    }
 
   rc = keydb_search_fpr (ctrl, kh, fpr);
   if (rc != -1)
@@ -1403,12 +1705,15 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
   if (ephemeral)
     keydb_set_ephemeral (kh, 1);
 
-  err = keydb_lock (kh);
-  if (err)
+  if (!kh->use_keyboxd)
     {
-      log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
-      keydb_release (kh);
-      return err;
+      err = keydb_lock (kh);
+      if (err)
+        {
+          log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
+          keydb_release (kh);
+          return err;
+        }
     }
 
   err = keydb_search_fpr (ctrl, kh, fpr);
@@ -1501,11 +1806,14 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
         }
     }
 
-  err = keydb_lock (hd);
-  if (err)
+  if (!hd->use_keyboxd)
     {
-      log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
-      goto leave;
+      err = keydb_lock (hd);
+      if (err)
+        {
+          log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
     }
 
   while (!(rc = keydb_search (ctrl, hd, desc, ndesc)))

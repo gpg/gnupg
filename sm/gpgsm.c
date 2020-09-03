@@ -201,6 +201,8 @@ enum cmd_and_opt_values {
   oAuthenticode,
   oAttribute,
   oChUid,
+  oUseKeyboxd,
+  oKeyboxdProgram,
   oNoAutostart
  };
 
@@ -296,6 +298,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+  ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
   ARGPARSE_s_s (oProtectToolProgram, "protect-tool-program", "@"),
 
@@ -343,6 +346,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
   ARGPARSE_s_s (oKeyServer, "keyserver",
                 N_("|SPEC|use this keyserver to lookup keys")),
+  ARGPARSE_s_n (oUseKeyboxd,    "use-keyboxd", "@"),
 
 
   ARGPARSE_header ("ImportExport",
@@ -1356,6 +1360,7 @@ main ( int argc, char **argv)
         case oAnswerNo: opt.answer_no = 1; break;
 
         case oKeyring: append_to_strlist (&nrings, pargs.r.ret_str); break;
+        case oUseKeyboxd: opt.use_keyboxd = 1; break;
 
         case oDebug:
           if (parse_debug_flag (pargs.r.ret_str, &debug_value, debug_flags))
@@ -1400,6 +1405,7 @@ main ( int argc, char **argv)
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oChUid: break;  /* Command line only (see above).  */
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
+        case oKeyboxdProgram: opt.keyboxd_program = pargs.r.ret_str;  break;
 
         case oDisplay:
           set_opt_session_env ("DISPLAY", pargs.r.ret_str);
@@ -1789,7 +1795,7 @@ main ( int argc, char **argv)
     }
 
   /* Add default keybox. */
-  if (!nrings && default_keyring)
+  if (!nrings && default_keyring && !opt.use_keyboxd)
     {
       int created;
 
@@ -1810,8 +1816,11 @@ main ( int argc, char **argv)
           xfree (filelist[0]);
         }
     }
-  for (sl = nrings; sl; sl = sl->next)
-    keydb_add_resource (&ctrl, sl->d, 0, NULL);
+  if (!opt.use_keyboxd)
+    {
+      for (sl = nrings; sl; sl = sl->next)
+        keydb_add_resource (&ctrl, sl->d, 0, NULL);
+    }
   FREE_STRLIST(nrings);
 
 
@@ -2229,6 +2238,7 @@ main ( int argc, char **argv)
     }
 
   /* cleanup */
+  gpgsm_deinit_default_ctrl (&ctrl);
   keyserver_list_free (opt.keyserver);
   opt.keyserver = NULL;
   gpgsm_release_certlist (recplist);
@@ -2271,6 +2281,15 @@ gpgsm_init_default_ctrl (struct server_control_s *ctrl)
   ctrl->use_ocsp = opt.enable_ocsp;
   ctrl->validation_model = default_validation_model;
   ctrl->offline = opt.disable_dirmngr;
+}
+
+
+/* This function is called to deinitialize a control object.  The
+ * control object is is not released, though.  */
+void
+gpgsm_deinit_default_ctrl (ctrl_t ctrl)
+{
+  gpgsm_keydb_deinit_session_data (ctrl);
 }
 
 

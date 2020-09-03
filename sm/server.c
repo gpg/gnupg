@@ -1450,6 +1450,8 @@ gpgsm_server (certlist_t default_recplist)
   audit_release (ctrl.audit);
   ctrl.audit = NULL;
 
+  gpgsm_deinit_default_ctrl (&ctrl);
+
   assuan_release (ctx);
 }
 

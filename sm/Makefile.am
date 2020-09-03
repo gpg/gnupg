@@ -28,7 +28,8 @@ else
 TESTS = $(module_tests)
 endif
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) \
+            $(NPTH_CFLAGS) $(GPG_ERROR_CFLAGS)
 
 AM_CPPFLAGS = -DKEYBOX_WITH_X509=1
 include $(top_srcdir)/am/cmacros.am
@@ -64,11 +65,11 @@ gpgsm_SOURCES = \
 	passphrase.c passphrase.h
 
 
-common_libs = ../kbx/libkeybox509.a $(libcommon)
+common_libs = ../kbx/libkeybox509.a $(libcommonpth)
 
 gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-              $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) \
+              $(NPTH_LIBS) $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) \
 	      $(LIBICONV) $(resource_objs) $(extra_sys_libs) $(NETLIBS)
 gpgsm_LDFLAGS = $(extra_bin_ldflags)
 

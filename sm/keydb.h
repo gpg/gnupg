@@ -31,6 +31,7 @@ typedef struct keydb_handle *KEYDB_HANDLE;
 
 
 /*-- keydb.c --*/
+void gpgsm_keydb_deinit_session_data (ctrl_t ctrl);
 gpg_error_t keydb_add_resource (ctrl_t ctrl, const char *url,
                                 int force, int *auto_created);
 KEYDB_HANDLE keydb_new (ctrl_t ctrl);
