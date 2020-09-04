@@ -123,6 +123,7 @@
 
 (define bin-prefix (getenv "BIN_PREFIX"))
 (define installed? (not (string=? "" bin-prefix)))
+(define with-valgrind? (not (string=? (getenv "with_valgrind") "")))
 
 (define (tool-hardcoded which)
   (let ((t (assoc which tools)))
@@ -138,7 +139,8 @@
 ;; (set! gpg `(,@valgrind ,@gpg))
 ;;
 (define valgrind
-  '("/usr/bin/valgrind" --leak-check=full --error-exitcode=154))
+  '("/usr/bin/valgrind" -q --leak-check=no --track-origins=yes
+                        --error-exitcode=154 --exit-on-first-error=yes))
 
 (unless installed?
 	(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t))
@@ -494,6 +496,14 @@
     (unless (string=? trust expected-trust)
 	    (fail keyid ": Expected trust to be" expected-trust
 		   "but got" trust))))
+
+
+;;
+;; Enable checking with valgrind if the envvar "with_valgrind" is set
+;;
+(when with-valgrind?
+  (set! gpg `(,@valgrind ,@gpg)))
+
 
 
 ;; end
