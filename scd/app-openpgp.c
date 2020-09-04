@@ -1256,36 +1256,39 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           if (valuelen < 2)
             return gpg_error (GPG_ERR_INV_OBJ);
 
-          tag = *p++;
-          len = *p++;
+          tag = p[0];
+          len = p[1];
 
-          if (tag != 0x00FA)
-            return gpg_error (GPG_ERR_INV_OBJ);
-
-          if (len == 0x81)
+          /* Does it comes tag+len at the head?  */
+          if (tag == 0x00FA)
             {
-              if (valuelen < 3)
-                return gpg_error (GPG_ERR_INV_OBJ);
-              len = *p++;
-            }
-          else if (len == 0x82)
-            {
-              if (valuelen < 4)
-                return gpg_error (GPG_ERR_INV_OBJ);
-              len = *p++;
-              len = (len << 8) | *p++;
-            }
+              p += 2;
 
-          valuelen -= (p - value);
-          value = p;
+              if (len == 0x81)
+                {
+                  if (valuelen < 3)
+                    return gpg_error (GPG_ERR_INV_OBJ);
+                  len = *p++;
+                }
+              else if (len == 0x82)
+                {
+                  if (valuelen < 4)
+                    return gpg_error (GPG_ERR_INV_OBJ);
+                  len = *p++;
+                  len = (len << 8) | *p++;
+                }
 
-          if (valuelen != len)
-            {
-              if (opt.verbose)
-                log_info ("Yubikey bug: length %zu != %zu", valuelen, len);
+              valuelen -= (p - value);
+              value = (unsigned char *)p;
 
-              if (app->card->cardtype != CARDTYPE_YUBIKEY)
-                return gpg_error (GPG_ERR_INV_OBJ);
+              if (valuelen != len)
+                {
+                  if (opt.verbose)
+                    log_info ("Yubikey bug: length %zu != %zu", valuelen, len);
+
+                  if (app->card->cardtype != CARDTYPE_YUBIKEY)
+                    return gpg_error (GPG_ERR_INV_OBJ);
+                }
             }
 
           for (; p < value + valuelen; p += len)
