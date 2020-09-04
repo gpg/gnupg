@@ -25,6 +25,9 @@ spawned programs to their standard error stream, verbose=2 to see what
 programs are executed, or verbose=3 to see even more program output
 and exit codes.
 
+If you want to run gpg under valgrind add with_valgrind=1.
+
+
 ** Inspecting the test environment
 
 To inspect the environment in which tests are running, or to quickly
