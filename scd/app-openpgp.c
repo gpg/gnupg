@@ -121,7 +121,7 @@ static struct {
   { 0x00D7, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Decryption"},
   { 0x00D8, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Authentication"},
   { 0x00F9, 0,    0, 1, 0, 0, 0, 0, "KDF data object"},
-  { 0x00FA, 0,    0, 0, 0, 0, 0, 0, "Algorithm Information"},
+  { 0x00FA, 0,    0, 1, 0, 0, 0, 0, "Algorithm Information"},
   { 0 }
 };
 
@@ -273,6 +273,8 @@ static gpg_error_t do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
                             void *pincb_arg,
                             const void *indata, size_t indatalen,
                             unsigned char **outdata, size_t *outdatalen);
+static const char *get_algorithm_attribute_string (const unsigned char *buffer,
+                                                   size_t buflen);
 static void parse_algorithm_attribute (app_t app, int keyno);
 static gpg_error_t change_keyattr_from_string
                            (app_t app, ctrl_t ctrl,
@@ -1244,6 +1246,75 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                                      value[i], value[i+1]);
           if (gpg_err_code (rc) == GPG_ERR_NO_OBJ)
             rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+        }
+      else if (table[idx].special == 7)
+        {
+          const unsigned char *p = value;
+          int tag;
+          size_t len;
+
+          if (valuelen < 2)
+            return gpg_error (GPG_ERR_INV_OBJ);
+
+          tag = *p++;
+          len = *p++;
+
+          if (tag != 0x00FA)
+            return gpg_error (GPG_ERR_INV_OBJ);
+
+          if (len == 0x81)
+            {
+              if (valuelen < 3)
+                return gpg_error (GPG_ERR_INV_OBJ);
+              len = *p++;
+            }
+          else if (len == 0x82)
+            {
+              if (valuelen < 4)
+                return gpg_error (GPG_ERR_INV_OBJ);
+              len = *p++;
+              len = (len << 8) | *p++;
+            }
+
+          valuelen -= (p - value);
+          value = p;
+
+          if (valuelen != len)
+            {
+              if (opt.verbose)
+                log_info ("Yubikey bug: length %zu != %zu", valuelen, len);
+
+              if (app->card->cardtype != CARDTYPE_YUBIKEY)
+                return gpg_error (GPG_ERR_INV_OBJ);
+            }
+
+          for (; p < value + valuelen; p += len)
+            {
+              const char *key_algo_str;
+              int keyrefno;
+
+              if (p + 2 > value + valuelen)
+                break;
+
+              tag = *p++;
+              len = *p++;
+
+              if (tag < 0xc1)
+                continue;
+
+              if (tag == 0xda)
+                keyrefno = 0x81;
+              else
+                keyrefno = tag - 0xc1 + 1;
+
+              if (p + len > value + valuelen)
+                break;
+
+              key_algo_str = get_algorithm_attribute_string (p, len);
+
+              send_status_printf (ctrl, table[idx].name, "OPENPGP.%u %s",
+                                  keyrefno, key_algo_str);
+            }
         }
       else
         send_status_info (ctrl, table[idx].name, value, valuelen, NULL, 0);
@@ -5651,7 +5722,7 @@ parse_historical (struct app_local_s *apploc,
  * The constant string is not allocated dynamically, never free it.
  */
 static const char *
-ecc_curve (unsigned char *buf, size_t buflen)
+ecc_curve (const unsigned char *buf, size_t buflen)
 {
   gcry_mpi_t oid;
   char *oidstr;
@@ -5679,6 +5750,39 @@ ecc_curve (unsigned char *buf, size_t buflen)
   result = openpgp_oid_to_curve (oidstr, 1);
   xfree (oidstr);
   return result;
+}
+
+
+static const char *
+get_algorithm_attribute_string (const unsigned char *buffer,
+                                size_t buflen)
+{
+  enum gcry_pk_algos galgo;
+  const char *curve;
+  unsigned int nbits = 0;
+
+  galgo = map_openpgp_pk_to_gcry (*buffer);
+  nbits = 0;
+  curve = NULL;
+
+  if (*buffer == PUBKEY_ALGO_RSA && (buflen == 5 || buflen == 6))
+    nbits = (buffer[1]<<8 | buffer[2]);
+  else if (*buffer == PUBKEY_ALGO_ECDH || *buffer == PUBKEY_ALGO_ECDSA
+           || *buffer == PUBKEY_ALGO_EDDSA)
+    {
+      int oidlen = buflen - 1;
+
+      if (buffer[buflen-1] == 0x00 || buffer[buflen-1] == 0xff)
+        { /* Found "pubkey required"-byte for private key template.  */
+          oidlen--;
+        }
+
+      curve = ecc_curve (buffer + 1, oidlen);
+    }
+  else if (opt.verbose)
+    log_printhex (buffer, buflen, "");
+
+  return get_keyalgo_string (galgo, nbits, curve);
 }
 
 

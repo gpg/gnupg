@@ -1208,6 +1208,12 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     key imported.  See section 4.4.3.8 of the OpenPGP Smart Card
     Application V3.4.
 
+*** KEY-ATTR-INFO <keyref> <string>
+    This is the response from scdaemon on GETATTR KEY-ATTR-INFO for
+    OpenPGP cards.  <keyref> is the usual keyref (e.g. OPENPGP.1 or
+    OPENPGP.129) and <string> is the algoritm or curve name, which
+    is available for the key.
+
 * Format of the --attribute-fd output
 
   When --attribute-fd is set, during key listings (--list-keys,
