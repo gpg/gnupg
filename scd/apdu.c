@@ -61,7 +61,8 @@ struct dev_list {
   int idx_max;
 };
 
-#define MAX_READER 4 /* Number of readers we support concurrently. */
+#define MAX_READER 16 /* Number of readers we support concurrently. */
+                      /* See also MAX_DEVICE in ccid-driver.c.  */
 
 
 #if defined(_WIN32) || defined(__CYGWIN__)

@@ -1277,7 +1277,7 @@ ccid_vendor_specific_init (ccid_driver_t handle)
 }
 
 
-#define MAX_DEVICE 4 /* See MAX_READER in apdu.c.  */
+#define MAX_DEVICE 16 /* See MAX_READER in apdu.c.  */
 
 struct ccid_dev_table {
   int n;                        /* Index to ccid_usb_dev_list */
