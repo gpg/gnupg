@@ -4308,6 +4308,7 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
     para = NULL;
     maxlen = 1024;
     line = NULL;
+    nline = 0;
     while ( iobuf_read_line (fp, &line, &nline, &maxlen) ) {
 	char *keyword, *value;
 

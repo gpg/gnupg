@@ -163,8 +163,8 @@ copy_clearsig_text( IOBUF out, IOBUF inp, gcry_md_hd_t md,
 		    int escape_dash, int escape_from)
 {
     unsigned int maxlen;
-    byte *buffer = NULL;    /* malloced buffer */
-    unsigned int bufsize;   /* and size of this buffer */
+    byte *buffer = NULL;      /* malloced buffer */
+    unsigned int bufsize = 0; /* and size of this buffer */
     unsigned int n;
     int truncated = 0;
     int pending_lf = 0;
