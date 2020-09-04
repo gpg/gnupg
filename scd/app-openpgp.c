@@ -1213,8 +1213,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           if (valuelen < 2)
             return gpg_error (GPG_ERR_INV_OBJ);
 
-          tag = *p++;
-          len = *p++;
+          tag = p[0];
+          len = p[1];
 
           /* Does it comes tag+len at the head?  */
           if (tag == 0x00FA)
