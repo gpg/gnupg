@@ -22,6 +22,7 @@
 #define GNUPG_GPG_CARD_H
 
 #include "../common/session-env.h"
+#include "../common/strlist.h"
 
 
 /* We keep all global options in the structure OPT.  */
@@ -188,6 +189,7 @@ struct card_info_s
   int kdf_do_enabled;      /* True if card has a KDF object.  */
   int uif[3];              /* True if User Interaction Flag is on.   */
                            /* 1 = on, 2 = permanent on.              */
+  strlist_t supported_keyalgo[3];
 };
 typedef struct card_info_s *card_info_t;
 

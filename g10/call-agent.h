@@ -76,6 +76,7 @@ struct agent_card_info_s
   unsigned int status_indicator;
   int kdf_do_enabled;      /* Non-zero if card has a KDF object, 0 if not.  */
   int uif[3];              /* True if User Interaction Flag is on.  */
+  strlist_t supported_keyalgo[3];
 };
 
 

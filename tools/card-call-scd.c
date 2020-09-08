@@ -161,6 +161,11 @@ release_card_info (card_info_t info)
       info->kinfo = kinfo;
     }
   info->chvusage[0] = info->chvusage[1] = 0;
+  for (i=0; i < DIM(info->supported_keyalgo); i++)
+    {
+      free_strlist (info->supported_keyalgo[i]);
+      info->supported_keyalgo[i] = NULL;
+    }
 }
 
 
@@ -1041,6 +1046,26 @@ learn_status_cb (void *opaque, const char *line)
         {
           xfree (parm->dispserialno);
           parm->dispserialno = unescape_status_string (line);
+        }
+      else if (!memcmp (keyword, "KEY-ATTR-INFO", keywordlen))
+        {
+          if (!strncmp (line, "OPENPGP.", 8))
+            {
+              int no;
+
+              line += 8;
+              no = atoi (line);
+              if (no >= 1 && no <= 3)
+                {
+                  no--;
+                  line++;
+                  while (spacep (line))
+                    line++;
+                  append_to_strlist (&parm->supported_keyalgo[no],
+                                     xstrdup (line));
+                }
+            }
+          /* Skip when it's not "OPENPGP.[123]".  */
         }
       break;
 

@@ -499,6 +499,11 @@ agent_release_card_info (struct agent_card_info_s *info)
       xfree (info->private_do[i]);
       info->private_do[i] = NULL;
     }
+  for (i=0; i < DIM(info->supported_keyalgo); i++)
+    {
+      free_strlist (info->supported_keyalgo[i]);
+      info->supported_keyalgo[i] = NULL;
+    }
 }
 
 
@@ -743,6 +748,25 @@ learn_status_cb (void *opaque, const char *line)
       data = unescape_status_string (line);
       parm->uif[no] = (data[0] != 0xff);
       xfree (data);
+    }
+  else if (keywordlen == 13 && !memcmp (keyword, "KEY-ATTR-INFO", 13))
+    {
+      if (!strncmp (line, "OPENPGP.", 8))
+        {
+          int no;
+
+          line += 8;
+          no = atoi (line);
+          if (no >= 1 && no <= 3)
+            {
+              no--;
+              line++;
+              while (spacep (line))
+                line++;
+              append_to_strlist (&parm->supported_keyalgo[no], xstrdup (line));
+            }
+        }
+        /* Skip when it's not "OPENPGP.[123]".  */
     }
 
   return 0;
