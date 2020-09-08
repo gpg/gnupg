@@ -982,7 +982,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 	}
       if (desc[n].skipfnc)
         any_skip = 1;
-      if (desc[n].snlen == -1 && !sn_array)
+      if (desc[n].snhex && !sn_array)
         {
           sn_array = xtrycalloc (ndesc, sizeof *sn_array);
           if (!sn_array)
@@ -1042,12 +1042,12 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
         {
           if (!desc[n].sn)
             ;
-          else if (desc[n].snlen == -1)
+          else if (desc[n].snhex)
             {
               unsigned char *sn;
 
               s = desc[n].sn;
-              for (i=0; *s && *s != '/'; s++, i++)
+              for (i=0; *s && *s != '/' && i < desc[n].snlen; s++, i++)
                 ;
               odd = (i & 1);
               snlen = (i+1)/2;

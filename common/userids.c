@@ -192,7 +192,8 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                   }
               }
             desc->sn = (const unsigned char*)s;
-            desc->snlen = -1;
+            desc->snlen = si - s;
+            desc->snhex = 1;
             if (!*si)
               mode = KEYDB_SEARCH_MODE_SN;
             else

@@ -75,7 +75,7 @@ struct keydb_search_desc
   int (*skipfnc)(void *, u32 *, int);
   void *skipfncvalue;
   const unsigned char *sn;
-  int snlen;  /* -1 := sn is a hex string */
+  unsigned short snlen;
   union {
     const char *name;
     unsigned char fpr[32];
@@ -83,6 +83,7 @@ struct keydb_search_desc
     unsigned char grip[KEYGRIP_LEN];
     unsigned char ubid[UBID_LEN];
   } u;
+  byte snhex;   /* SN above is a hexstring and not binary.  */
   byte fprlen;  /* Only used with KEYDB_SEARCH_MODE_FPR.  */
   int exact;    /* Use exactly this key ('!' suffix in gpg).  */
 };
