@@ -1943,6 +1943,9 @@ get_public_key (app_t app, int keyno)
                                      2, le_value, &buffer, &buflen);
       if (err)
         {
+          /* Yubikey returns wrong code.  Fix it up.  */
+          if (app->card->cardtype == CARDTYPE_YUBIKEY)
+            err = gpg_error (GPG_ERR_NO_OBJ);
           log_error (_("reading public key failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
