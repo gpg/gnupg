@@ -722,32 +722,37 @@ gnupg_rename_file (const char *oldname, const char *newname, int *block_signals)
 
 #ifndef HAVE_W32_SYSTEM
 static mode_t
-modestr_to_mode (const char *modestr)
+modestr_to_mode (const char *modestr, mode_t oldmode)
 {
+  static struct {
+    char letter;
+    mode_t value;
+  } table[] = { { '-', 0 },
+                { 'r', S_IRUSR }, { 'w', S_IWUSR }, { 'x', S_IXUSR },
+                { 'r', S_IRGRP }, { 'w', S_IWGRP }, { 'x', S_IXGRP },
+                { 'r', S_IROTH }, { 'w', S_IWOTH }, { 'x', S_IXOTH } };
+  int idx;
   mode_t mode = 0;
 
-  if (modestr && *modestr)
+  /* For now we only support a string as used by ls(1) and no octal
+   * numbers.  The first character must be a dash.  */
+  for (idx=0; idx < 10 && *modestr; idx++, modestr++)
     {
-      modestr++;
-      if (*modestr && *modestr++ == 'r')
-        mode |= S_IRUSR;
-      if (*modestr && *modestr++ == 'w')
-        mode |= S_IWUSR;
-      if (*modestr && *modestr++ == 'x')
-        mode |= S_IXUSR;
-      if (*modestr && *modestr++ == 'r')
-        mode |= S_IRGRP;
-      if (*modestr && *modestr++ == 'w')
-        mode |= S_IWGRP;
-      if (*modestr && *modestr++ == 'x')
-        mode |= S_IXGRP;
-      if (*modestr && *modestr++ == 'r')
-        mode |= S_IROTH;
-      if (*modestr && *modestr++ == 'w')
-        mode |= S_IWOTH;
-      if (*modestr && *modestr++ == 'x')
-        mode |= S_IXOTH;
+      if (*modestr == table[idx].letter)
+        mode |= table[idx].value;
+      else if (*modestr == '.')
+        {
+          if (!idx)
+            ;  /* Skip the dummy.  */
+          else if ((oldmode & table[idx].value))
+            mode |= (oldmode & table[idx].value);
+          else
+            mode &= ~(oldmode & table[idx].value);
+        }
+      else if (*modestr != '-')
+        break;
     }
+
 
   return mode;
 }
@@ -790,7 +795,7 @@ gnupg_mkdir (const char *name, const char *modestr)
      because this sets ERRNO.  */
   return mkdir (name);
  #else
-  return mkdir (name, modestr_to_mode (modestr));
+  return mkdir (name, modestr_to_mode (modestr, 0));
  #endif
 #else
   /* Note that gpgrt_mkdir also sets ERRNO in addition to returing an
@@ -818,7 +823,8 @@ gnupg_chdir (const char *name)
 /* A wrapper around chmod which takes a string for the mode argument.
    This makes it easier to handle the mode argument which is not
    defined on all systems.  The format of the modestring is the same
-   as for gnupg_mkdir.  */
+   as for gnupg_mkdir with extra feature that a '.' keeps the original
+   mode bit.  */
 int
 gnupg_chmod (const char *name, const char *modestr)
 {
@@ -827,7 +833,19 @@ gnupg_chmod (const char *name, const char *modestr)
   (void)modestr;
   return 0;
 #else
-  return chmod (name, modestr_to_mode (modestr));
+  mode_t oldmode;
+  if (strchr (modestr, '.'))
+    {
+      /* Get the old mode so that a '.' can copy that bit.  */
+      struct stat st;
+
+      if (stat (name, &st))
+        return -1;
+      oldmode = st.st_mode;
+    }
+  else
+    oldmode = 0;
+  return chmod (name, modestr_to_mode (modestr, oldmode));
 #endif
 }
 

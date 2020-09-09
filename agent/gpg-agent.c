@@ -2314,10 +2314,20 @@ create_private_keys_directory (const char *home)
                    fname, strerror (errno) );
       else if (!opt.quiet)
         log_info (_("directory '%s' created\n"), fname);
+
+      if (gnupg_chmod (fname, "-rwx"))
+        log_error (_("can't set permissions of '%s': %s\n"),
+                   fname, strerror (errno));
     }
-  if (gnupg_chmod (fname, "-rwx"))
-    log_error (_("can't set permissions of '%s': %s\n"),
-               fname, strerror (errno));
+  else
+    {
+      /* The file exists or another error.  Make sure we have sensible
+       * permissions.  We enforce rwx for user but keep existing group
+       * permissions.  Permissions for other are always cleared.  */
+      if (gnupg_chmod (fname, "-rwx...---"))
+        log_error (_("can't set permissions of '%s': %s\n"),
+                   fname, strerror (errno));
+    }
   xfree (fname);
 }
 
