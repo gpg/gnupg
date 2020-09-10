@@ -841,12 +841,10 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
 }
 
 
-#ifdef KEYBOX_WITH_X509
-
 /* Return an allocated string with the email address extracted from a
    DN.  Note hat we use this code also in ../sm/keylist.c.  */
-static char *
-x509_email_kludge (const char *name)
+char *
+_keybox_x509_email_kludge (const char *name)
 {
   const char *p, *string;
   unsigned char *buf;
@@ -886,6 +884,8 @@ x509_email_kludge (const char *name)
 }
 
 
+
+#ifdef KEYBOX_WITH_X509
 
 /* Note: We should move calculation of the digest into libksba and
    remove that parameter */
@@ -965,7 +965,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
           names = tmp;
         }
       names[blob->nuids++] = p;
-      if (!i && (p=x509_email_kludge (p)))
+      if (!i && (p=_keybox_x509_email_kludge (p)))
         names[blob->nuids++] = p; /* due to !i we don't need to check bounds*/
     }
 

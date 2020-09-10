@@ -20,6 +20,7 @@
 #ifndef KBX_BACKEND_H
 #define KBX_BACKEND_H
 
+#include <ksba.h>
 #include "keybox-search-desc.h"
 
 /* Forward declaration of the keybox handle type.  */
@@ -118,6 +119,8 @@ gpg_error_t be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
 int be_is_x509_blob (const unsigned char *blob, size_t bloblen);
 gpg_error_t be_ubid_from_blob (const void *blob, size_t bloblen,
                                enum pubkey_types *r_pktype, char *r_ubid);
+char *be_get_x509_serial (ksba_cert_t cert);
+gpg_error_t be_get_x509_keygrip (ksba_cert_t cert, unsigned char *keygrip);
 
 
 /*-- backend-cache.c --*/

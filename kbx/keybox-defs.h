@@ -149,6 +149,8 @@ gpg_error_t _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
                                          const unsigned char *image,
                                          size_t imagelen,
                                          int as_ephemeral);
+char *_keybox_x509_email_kludge (const char *name);
+
 #ifdef KEYBOX_WITH_X509
 int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
                               unsigned char *sha1_digest, int as_ephemeral);

@@ -282,3 +282,73 @@ be_ubid_from_blob (const void *blob, size_t bloblen,
 
   return err;
 }
+
+
+
+/* Return a certificates serial number in hex encoding.  Caller must
+ * free the returned string.  NULL is returned on error but ERRNO
+ * might not be set if the certificate and thus Libksba is broken.  */
+char *
+be_get_x509_serial (ksba_cert_t cert)
+{
+  const char *p;
+  unsigned long n;
+  char *endp;
+
+  p = (const char *)ksba_cert_get_serial (cert);
+  if (!p)
+    {
+      log_debug ("oops: Libksba returned a certificate w/o a serial\n");
+      return NULL;
+    }
+
+  if (*p != '(')
+    {
+      log_debug ("oops: Libksba returned an invalid s-expression\n");
+      return NULL;
+    }
+
+  p++;
+  n = strtoul (p, &endp, 10);
+  p = endp;
+  if (*p != ':')
+    {
+      log_debug ("oops: Libksba returned an invalid s-expression\n");
+      return NULL;
+    }
+  p++;
+
+  return bin2hex (p, n, NULL);
+}
+
+
+/* Return the keygrip for the X.509 certificate CERT.  The grip is
+ * stored at KEYGRIP which must have been allocated by the caller
+ * with a size of KEYGRIP_LEN.  */
+gpg_error_t
+be_get_x509_keygrip (ksba_cert_t cert, unsigned char *keygrip)
+{
+  gpg_error_t err;
+  size_t n;
+  ksba_sexp_t p;
+  gcry_sexp_t s_pkey;
+
+  p = ksba_cert_get_public_key (cert);
+  if (!p)
+    return gpg_error (GPG_ERR_NO_PUBKEY);
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    {
+      ksba_free (p);
+      return gpg_error (GPG_ERR_NO_PUBKEY);
+    }
+  err = gcry_sexp_sscan (&s_pkey, NULL, (char*)p, n);
+  ksba_free (p);
+  if (err)
+    return err;
+
+  if (!gcry_pk_get_keygrip (s_pkey, keygrip))
+    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+  gcry_sexp_release (s_pkey);
+  return err;
+}

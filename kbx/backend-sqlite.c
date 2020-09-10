@@ -123,12 +123,14 @@ static struct
     * It is also used for the primary key and the X.509 fingerprint
     * because we want to be able to use the keyid and keygrip.  */
    { "CREATE TABLE IF NOT EXISTS fingerprint ("
+     /* The fingerprint, for OpenPGP either 20 octets or 32 octets;
+      * for X.509 it is the same as the UBID.  */
      "fpr  BLOB NOT NULL PRIMARY KEY,"
      /* The long keyid as 64 bit integer.  */
      "kid  INTEGER NOT NULL,"
      /* The keygrip for this key.  */
      "keygrip BLOB NOT NULL,"
-     /* 0 = primary, > 0 = subkey.  */
+     /* 0 = primary or X.509, > 0 = subkey. */
      "subkey INTEGER NOT NULL,"
      /* The Unique Blob ID (possibly truncated fingerprint).  */
      "ubid BLOB NOT NULL REFERENCES pubkey"
@@ -139,10 +141,9 @@ static struct
    { "CREATE INDEX IF NOT EXISTS fingerprintidx1 on fingerprint (fpr)"     },
    { "CREATE INDEX IF NOT EXISTS fingerprintidx2 on fingerprint (keygrip)" },
 
-
    /* Table to allow fast access via user ids or mail addresses.  */
    { "CREATE TABLE IF NOT EXISTS userid ("
-     /* The full user id.  */
+     /* The full user id - for X.509 the Subject or altSubject.  */
      "uid  TEXT NOT NULL,"
      /* The mail address if available or NULL.  */
      "addrspec TEXT,"
@@ -155,7 +156,18 @@ static struct
    /* Indices for the userid table.  */
    { "CREATE INDEX IF NOT EXISTS userididx0 on userid (ubid)"     },
    { "CREATE INDEX IF NOT EXISTS userididx1 on userid (uid)"      },
-   { "CREATE INDEX IF NOT EXISTS userididx3 on userid (addrspec)" }
+   { "CREATE INDEX IF NOT EXISTS userididx3 on userid (addrspec)" },
+
+   /* Table to allow fast access via s/n + issuer DN  (X.509 only).  */
+   { "CREATE TABLE IF NOT EXISTS issuer ("
+     /* The hex encoded S/N.  */
+     "sn TEXT NOT NULL,"
+     /* The RFC2253 issuer DN.  */
+     "dn TEXT NOT NULL,"
+     /* The Unique Blob ID (usually the truncated fingerprint).  */
+     "ubid BLOB NOT NULL REFERENCES pubkey"
+     ")"  },
+   { "CREATE INDEX IF NOT EXISTS issueridx1 on issuer (dn)" }
 
   };
 
@@ -786,28 +798,57 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
       break;
 
     case KEYDB_SEARCH_MODE_ISSUER:
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
-      /* if (has_issuer (blob, desc[n].u.name)) */
-      /*   goto found; */
+      if (!ctx->select_stmt)
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+                               " FROM pubkey as p, issuer as i"
+                               " WHERE p.ubid = i.ubid"
+                               " AND i.dn = $1",
+                               extra, &ctx->select_stmt);
+      if (!err)
+        err = run_sql_bind_text (ctx->select_stmt, 1,
+                                 desc[descidx].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_ISSUER_SN:
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
-      /* if (has_issuer_sn (blob, desc[n].u.name, */
-      /*                    sn_array? sn_array[n].sn : desc[n].sn, */
-      /*                    sn_array? sn_array[n].snlen : desc[n].snlen)) */
-      /*   goto found; */
+      if (!desc[descidx].snhex)
+        {
+          /* We should never get a binary S/N here.  */
+          log_debug ("%s: issuer_sn with binary s/n\n", __func__);
+          err = gpg_error (GPG_ERR_INTERNAL);
+        }
+      else
+        {
+          if (!ctx->select_stmt)
+            err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+                                   " FROM pubkey as p, issuer as i"
+                                   " WHERE p.ubid = i.ubid"
+                                   " AND i.sn = $1 AND i.dn = $2",
+                                   extra, &ctx->select_stmt);
+          if (!err)
+            err = run_sql_bind_ntext (ctx->select_stmt, 1,
+                                      desc[descidx].sn, desc[descidx].snlen);
+          if (!err)
+            err = run_sql_bind_text (ctx->select_stmt, 2,
+                                     desc[descidx].u.name);
+        }
       break;
+
     case KEYDB_SEARCH_MODE_SN:
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
       /* if (has_sn (blob, sn_array? sn_array[n].sn : desc[n].sn, */
       /*             sn_array? sn_array[n].snlen : desc[n].snlen)) */
       /*   goto found; */
       break;
+
     case KEYDB_SEARCH_MODE_SUBJECT:
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
-      /* if (has_subject (blob, desc[n].u.name)) */
-      /*   goto found; */
+      err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+                             " FROM pubkey as p, userid as u"
+                             " WHERE p.ubid = u.ubid"
+                             " AND u.uid = $1",
+                             extra, &ctx->select_stmt);
+      if (!err)
+        err = run_sql_bind_text (ctx->select_stmt, 1,
+                                 desc[descidx].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_SHORT_KID:
@@ -1101,11 +1142,12 @@ store_into_fingerprint (const unsigned char *ubid, int subkey,
 }
 
 
-/* Helper for be_sqlite_store to update or insert a row in the
- * userid table.  */
+/* Helper for be_sqlite_store to update or insert a row in the userid
+ * table.  If OVERRIDE_MBOX is set, that value is used instead of a
+ * value extracted from UID. */
 static gpg_error_t
 store_into_userid (const unsigned char *ubid, enum pubkey_types pktype,
-                   const char *uid)
+                   const char *uid, const char *override_mbox)
 {
   gpg_error_t err;
   const char *sqlstr;
@@ -1121,14 +1163,58 @@ store_into_userid (const unsigned char *ubid, enum pubkey_types pktype,
   err = run_sql_bind_text (stmt, 1, uid);
   if (err)
     goto leave;
-  addrspec = mailbox_from_userid (uid, 0);
-  err = run_sql_bind_text (stmt, 2, addrspec);
+
+  if (override_mbox)
+    err = run_sql_bind_text (stmt, 2, override_mbox);
+  else
+    {
+      addrspec = mailbox_from_userid (uid, 0);
+      err = run_sql_bind_text (stmt, 2, addrspec);
+    }
   if (err)
     goto leave;
+
   err = run_sql_bind_int (stmt, 3, pktype);
   if (err)
     goto leave;
   err = run_sql_bind_blob (stmt, 4, ubid, UBID_LEN);
+  if (err)
+    goto leave;
+
+  err = run_sql_step (stmt);
+
+ leave:
+  if (stmt)
+    sqlite3_finalize (stmt);
+  xfree (addrspec);
+  return err;
+}
+
+
+/* Helper for be_sqlite_store to update or insert a row in the
+ * issuer table.  */
+static gpg_error_t
+store_into_issuer (const unsigned char *ubid,
+                   const char *sn, const char *issuer)
+{
+  gpg_error_t err;
+  const char *sqlstr;
+  sqlite3_stmt *stmt = NULL;
+  char *addrspec = NULL;
+
+  sqlstr = ("INSERT OR REPLACE INTO issuer(sn,dn,ubid)"
+            " VALUES(:1,:2,:3)");
+  err = run_sql_prepare (sqlstr, NULL, &stmt);
+  if (err)
+    goto leave;
+
+  err = run_sql_bind_text (stmt, 1, sn);
+  if (err)
+    goto leave;
+  err = run_sql_bind_text (stmt, 2, issuer);
+  if (err)
+    goto leave;
+  err = run_sql_bind_blob (stmt, 3, ubid, UBID_LEN);
   if (err)
     goto leave;
 
@@ -1159,7 +1245,10 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
   int in_transaction = 0;
   int info_valid = 0;
   struct _keybox_openpgp_info info;
-  struct _keybox_openpgp_key_info *kinfo;
+  ksba_cert_t cert = NULL;
+  char *sn = NULL;
+  char *dn = NULL;
+  char *kludge_mbox = NULL;
 
   (void)ctrl;
 
@@ -1172,10 +1261,14 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
 
   if (be_is_x509_blob (blob, bloblen))
     {
-      /* The UBID is also our fingerprint.  */
-      /* FIXME: Extract keygrip and KID.  */
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-      goto leave;
+      log_assert (pktype == PUBKEY_TYPE_X509);
+
+      err = ksba_cert_new (&cert);
+      if (err)
+        goto leave;
+      err = ksba_cert_init_from_mem (cert, blob, bloblen);
+      if (err)
+        goto leave;
     }
   else
     {
@@ -1221,56 +1314,127 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
     ("DELETE FROM userid WHERE ubid = :1", ubid);
   if (err)
     goto leave;
-
-  kinfo = &info.primary;
-  err = store_into_fingerprint (ubid, 0, kinfo->grip,
-                                kid_from_mem (kinfo->keyid),
-                                kinfo->fpr, kinfo->fprlen);
-  if (err)
-    goto leave;
-
-  if (info.nsubkeys)
+  if (cert)
     {
-      int subkey = 1;
-      for (kinfo = &info.subkeys; kinfo; kinfo = kinfo->next, subkey++)
-        {
-          err = store_into_fingerprint (ubid, subkey, kinfo->grip,
-                                        kid_from_mem (kinfo->keyid),
-                                        kinfo->fpr, kinfo->fprlen);
-          if (err)
-            goto leave;
-        }
+      err = run_sql_statement_bind_ubid
+        ("DELETE FROM issuer WHERE ubid = :1", ubid);
+      if (err)
+        goto leave;
     }
 
-  if (info.nuids)
+  if (cert)  /* X.509 */
     {
-      struct _keybox_openpgp_uid_info *u;
+      unsigned char grip[KEYGRIP_LEN];
+      int idx;
 
-      u = &info.uids;
-      do
+      err = be_get_x509_keygrip (cert, grip);
+      if (err)
+        goto leave;
+
+      /* Note that for X.509 the UBID is also the fingerprint.  */
+      err = store_into_fingerprint (ubid, 0, grip,
+                                    kid_from_mem (ubid+12),
+                                    ubid, UBID_LEN);
+      if (err)
+        goto leave;
+
+      /* Now the issuer.  */
+      sn = be_get_x509_serial (cert);
+      if (!sn)
         {
-          log_assert (u->off <= bloblen);
-          log_assert (u->off + u->len <= bloblen);
-          {
-            char *uid = xtrymalloc (u->len + 1);
-            if (!uid)
-              {
-                err = gpg_error_from_syserror ();
-                goto leave;
-              }
-            memcpy (uid, (const unsigned char *)blob + u->off, u->len);
-            uid[u->len] = 0;
-            /* Note that we ignore embedded zeros in the user id; this
-             * is what we do all over the place.  */
-            err = store_into_userid (ubid, pktype, uid);
-            xfree (uid);
-          }
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      dn = ksba_cert_get_issuer (cert, 0);
+      if (!dn)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      err = store_into_issuer (ubid, sn, dn);
+      if (err)
+        goto leave;
+
+      /* Loop over the subject and alternate subjects. */
+      for (idx=0; (xfree (dn), dn = ksba_cert_get_subject (cert, idx)); idx++)
+        {
+          /* In the case that the same email address is in the
+           * subject DN as well as in an alternate subject name
+           * we avoid printing it a second time. */
+          if (kludge_mbox && !strcmp (kludge_mbox, dn))
+            continue;
+
+          err = store_into_userid (ubid, PUBKEY_TYPE_X509, dn, NULL);
           if (err)
             goto leave;
 
-          u = u->next;
+          if (!idx)
+            {
+              kludge_mbox = _keybox_x509_email_kludge (dn);
+              if (kludge_mbox)
+                {
+                  err = store_into_userid (ubid, PUBKEY_TYPE_X509,
+                                           dn, kludge_mbox);
+                  if (err)
+                    goto leave;
+                }
+            }
+        } /* end loop over the subjects.  */
+    }
+  else /* OpenPGP */
+    {
+      struct _keybox_openpgp_key_info *kinfo;
+
+      kinfo = &info.primary;
+      err = store_into_fingerprint (ubid, 0, kinfo->grip,
+                                    kid_from_mem (kinfo->keyid),
+                                    kinfo->fpr, kinfo->fprlen);
+      if (err)
+        goto leave;
+
+      if (info.nsubkeys)
+        {
+          int subkey = 1;
+          for (kinfo = &info.subkeys; kinfo; kinfo = kinfo->next, subkey++)
+            {
+              err = store_into_fingerprint (ubid, subkey, kinfo->grip,
+                                            kid_from_mem (kinfo->keyid),
+                                            kinfo->fpr, kinfo->fprlen);
+              if (err)
+                goto leave;
+            }
         }
-      while (u);
+
+      if (info.nuids)
+        {
+          struct _keybox_openpgp_uid_info *u;
+
+          u = &info.uids;
+          do
+            {
+              log_assert (u->off <= bloblen);
+              log_assert (u->off + u->len <= bloblen);
+              {
+                char *uid = xtrymalloc (u->len + 1);
+                if (!uid)
+                  {
+                    err = gpg_error_from_syserror ();
+                    goto leave;
+                  }
+                memcpy (uid, (const unsigned char *)blob + u->off, u->len);
+                uid[u->len] = 0;
+                /* Note that we ignore embedded zeros in the user id;
+                 * this is what we do all over the place.  */
+                err = store_into_userid (ubid, pktype, uid, NULL);
+                xfree (uid);
+              }
+              if (err)
+                goto leave;
+
+              u = u->next;
+            }
+          while (u);
+        }
     }
 
  leave:
@@ -1285,6 +1449,11 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
     release_mutex ();
   if (info_valid)
     _keybox_destroy_openpgp_info (&info);
+  if (cert)
+    ksba_cert_release (cert);
+  ksba_free (dn);
+  xfree (sn);
+  xfree (kludge_mbox);
   return err;
 }
 
