@@ -2718,7 +2718,7 @@ cmd_killdirmngr (assuan_context_t ctx, char *line)
 
   ctrl->server_local->stopme = 1;
   assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
-  return gpg_error (GPG_ERR_EOF);
+  return 0;
 }
 
 
