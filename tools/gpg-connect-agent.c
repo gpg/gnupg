@@ -1182,6 +1182,7 @@ main (int argc, char **argv)
 
   assuan_set_gpg_err_source (0);
 
+  gnupg_init_signals (0, NULL);
 
   opt.autostart = 1;
   opt.connect_flags = 1;
