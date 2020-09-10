@@ -115,7 +115,8 @@ gpg_error_t be_find_request_part (backend_handle_t backend_hd,
                                   db_request_part_t *r_part);
 gpg_error_t be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
                               enum pubkey_types pubkey_type,
-                              const unsigned char *ubid);
+                              const unsigned char *ubid,
+                              int is_ephemeral, int is_revoked);
 int be_is_x509_blob (const unsigned char *blob, size_t bloblen);
 gpg_error_t be_ubid_from_blob (const void *blob, size_t bloblen,
                                enum pubkey_types *r_pktype, char *r_ubid);

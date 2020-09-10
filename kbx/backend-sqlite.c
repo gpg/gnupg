@@ -115,6 +115,10 @@ static struct
      "ubid     BLOB NOT NULL PRIMARY KEY,"
      /* The type of the public key: 1 = openpgp, 2 = X.509.  */
      "type  INTEGER NOT NULL,"
+     /* The Ephemeral flag as used by gpgsm. Values: 0 or 1. */
+     "ephemeral INTEGER NOT NULL DEFAULT 0,"
+     /* The Revoked flag as set by gpgsm. Values: 0 or 1. */
+     "revoked INTEGER NOT NULL DEFAULT 0,"
      /* The OpenPGP keyblock or X.509 certificate.  */
      "keyblob BLOB NOT NULL"
      ")"  },
@@ -752,17 +756,18 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_EXACT:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral, p.revoked,"
+                               " p.keyblob"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.uid = ?1",
                                extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1, desc[descidx].u.name);
       break;
-
     case KEYDB_SEARCH_MODE_MAIL:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral, p.revoked,"
+                               " p.keyblob"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.addrspec = ?1",
                                extra, &ctx->select_stmt);
@@ -772,7 +777,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_MAILSUB:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral, p.revoked,"
+                               " p.keyblob"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.addrspec LIKE ?1",
                                extra, &ctx->select_stmt);
@@ -783,7 +789,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_SUBSTR:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral, p.revoked,"
+                               " p.keyblob"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.uid LIKE ?1",
                                extra, &ctx->select_stmt);
@@ -799,7 +806,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_ISSUER:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral, p.revoked,"
+                               " p.keyblob"
                                " FROM pubkey as p, issuer as i"
                                " WHERE p.ubid = i.ubid"
                                " AND i.dn = $1",
@@ -819,7 +827,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
       else
         {
           if (!ctx->select_stmt)
-            err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+            err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral,"
+                                   " p.revoked, p.keyblob"
                                    " FROM pubkey as p, issuer as i"
                                    " WHERE p.ubid = i.ubid"
                                    " AND i.sn = $1 AND i.dn = $2",
@@ -841,7 +850,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
       break;
 
     case KEYDB_SEARCH_MODE_SUBJECT:
-      err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+      err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral, p.revoked,"
+                             " p.keyblob"
                              " FROM pubkey as p, userid as u"
                              " WHERE p.ubid = u.ubid"
                              " AND u.uid = $1",
@@ -860,7 +870,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_LONG_KID:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral,"
+                               " p.revoked, p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.kid = ?1",
                                extra, &ctx->select_stmt);
@@ -871,7 +882,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_FPR:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral,"
+                               " p.revoked, p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.fpr = ?1",
                                extra, &ctx->select_stmt);
@@ -882,7 +894,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_KEYGRIP:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral, p.revoked,"
+                               " p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.keygrip = ?1",
                                extra, &ctx->select_stmt);
@@ -893,7 +906,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_UBID:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT ubid, type, keyblob"
+        err = run_sql_prepare ("SELECT ubid, type, ephemeral, revoked, keyblob"
                                " FROM pubkey as p"
                                " WHERE ubid = ?1",
                                extra, &ctx->select_stmt);
@@ -914,7 +927,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
           else
             extra = " ORDER by ubid";
 
-          err = run_sql_prepare ("SELECT ubid, type, keyblob"
+          err = run_sql_prepare ("SELECT ubid, type, ephemeral, keyblob"
                                  " FROM pubkey as p",
                                  extra, &ctx->select_stmt);
         }
@@ -992,6 +1005,7 @@ be_sqlite_search (ctrl_t ctrl,
       const void *ubid, *keyblob;
       size_t keybloblen;
       enum pubkey_types pubkey_type;
+      int is_ephemeral, is_revoked;
 
       ubid = sqlite3_column_blob (ctx->select_stmt, 0);
       n = sqlite3_column_bytes (ctx->select_stmt, 0);
@@ -1024,8 +1038,30 @@ be_sqlite_search (ctrl_t ctrl,
         }
       pubkey_type = n;
 
-      keyblob = sqlite3_column_blob (ctx->select_stmt, 2);
-      n = sqlite3_column_bytes (ctx->select_stmt, 2);
+      n = sqlite3_column_int (ctx->select_stmt, 2);
+      if (!n && sqlite3_errcode (database_hd) == SQLITE_NOMEM)
+        {
+          err = gpg_error (gpg_err_code_from_sqlite (SQLITE_NOMEM));
+          show_sqlstmt (ctx->select_stmt);
+          log_error ("error in returned SQL column EPHEMERAL: %s)\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      is_ephemeral = !!n;
+
+      n = sqlite3_column_int (ctx->select_stmt, 3);
+      if (!n && sqlite3_errcode (database_hd) == SQLITE_NOMEM)
+        {
+          err = gpg_error (gpg_err_code_from_sqlite (SQLITE_NOMEM));
+          show_sqlstmt (ctx->select_stmt);
+          log_error ("error in returned SQL column REVOKED: %s)\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      is_revoked = !!n;
+
+      keyblob = sqlite3_column_blob (ctx->select_stmt, 4);
+      n = sqlite3_column_bytes (ctx->select_stmt, 4);
       if (!keyblob || n < 0)
         {
           if (!keyblob && sqlite3_errcode (database_hd) == SQLITE_NOMEM)
@@ -1039,7 +1075,8 @@ be_sqlite_search (ctrl_t ctrl,
         }
       keybloblen = n;
 
-      err = be_return_pubkey (ctrl, keyblob, keybloblen, pubkey_type, ubid);
+      err = be_return_pubkey (ctrl, keyblob, keybloblen, pubkey_type,
+                              ubid, is_ephemeral, is_revoked);
       if (!err)
         be_cache_pubkey (ctrl, ubid, keyblob, keybloblen, pubkey_type);
     }

@@ -166,13 +166,17 @@ be_find_request_part (backend_handle_t backend_hd, db_request_t request,
  * PUBKEY_TYPE to the caller.  */
 gpg_error_t
 be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
-                  enum pubkey_types pubkey_type, const unsigned char *ubid)
+                  enum pubkey_types pubkey_type, const unsigned char *ubid,
+                  int is_ephemeral, int is_revoked)
 {
   gpg_error_t err;
   char hexubid[2*UBID_LEN+1];
 
   bin2hex (ubid, UBID_LEN, hexubid);
-  err = status_printf (ctrl, "PUBKEY_INFO", "%d %s", pubkey_type, hexubid);
+  err = status_printf (ctrl, "PUBKEY_INFO", "%d %s %c%c",
+                       pubkey_type, hexubid,
+                       is_ephemeral? 'e':'-',
+                       is_revoked?   'r':'-' );
   if (err)
     goto leave;
 
