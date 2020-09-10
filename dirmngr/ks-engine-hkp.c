@@ -476,7 +476,20 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
   if (!name || !*name)
     {
       *r_host = xtrystrdup ("localhost");
-      return *r_host? 0 : gpg_error_from_syserror ();
+      if (!*r_host)
+        return gpg_error_from_syserror ();
+      if (r_httphost)
+        {
+          *r_httphost = xtrystrdup (*r_host);
+          if (!*r_httphost)
+            {
+              err = gpg_error_from_syserror ();
+              xfree (*r_host);
+              *r_host = NULL;
+              return err;
+            }
+        }
+      return 0;
     }
 
   /* See whether the host is in our table.  */
@@ -647,6 +660,12 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
             }
         }
       free_dns_addrinfo (aibuf);
+    }
+  else if (r_httphost)
+    {
+      *r_httphost = xtrystrdup (hi->name);
+      if (!*r_httphost)
+        return gpg_error_from_syserror ();
     }
 
   if (hi->dead)
