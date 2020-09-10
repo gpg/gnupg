@@ -376,7 +376,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
 
             next_ambigious:
               rc = keydb_search (ctrl, kh, &desc, 1);
-              if (rc == -1)
+              if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
                 rc = 0;
               else if (!rc)
                 {
@@ -450,7 +450,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                 {
                   certlist_t cl = xtrycalloc (1, sizeof *cl);
                   if (!cl)
-                    rc = out_of_core ();
+                    rc = gpg_error_from_syserror ();
                   else
                     {
                       cl->cert = cert; cert = NULL;
@@ -465,7 +465,8 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
 
   keydb_release (kh);
   ksba_cert_release (cert);
-  return rc == -1? gpg_error (GPG_ERR_NO_PUBKEY): rc;
+  return (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
+          ? gpg_error (GPG_ERR_NO_PUBKEY): rc);
 }
 
 
@@ -549,7 +550,7 @@ gpgsm_find_cert (ctrl_t ctrl,
                 }
             next_ambiguous:
               rc = keydb_search (ctrl, kh, &desc, 1);
-              if (rc == -1)
+              if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
                 rc = 0;
               else
                 {
@@ -603,5 +604,6 @@ gpgsm_find_cert (ctrl_t ctrl,
     }
 
   keydb_release (kh);
-  return rc == -1? gpg_error (GPG_ERR_NO_PUBKEY): rc;
+  return (gpg_err_code (rc) == GPG_ERR_NOT_FOUND?
+          gpg_error (GPG_ERR_NO_PUBKEY): rc);
 }

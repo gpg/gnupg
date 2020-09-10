@@ -52,11 +52,10 @@ gpg_error_t keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
 
 gpg_error_t keydb_delete (KEYDB_HANDLE hd);
 
-int keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
 void keydb_rebuild_caches (void);
 
 gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
-int keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
+gpg_error_t keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
                   KEYDB_SEARCH_DESC *desc, size_t ndesc);
 int keydb_search_first (ctrl_t ctrl, KEYDB_HANDLE hd);
 int keydb_search_next (ctrl_t ctrl, KEYDB_HANDLE hd);

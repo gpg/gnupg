@@ -68,7 +68,10 @@ struct keydb_local_s
 
   /* I/O buffer with the last search result or NULL.  Used if
    * D-lines are used to convey the keyblocks. */
-  iobuf_t search_result;
+  struct {
+    char *buf;
+    size_t len;
+  } search_result;
 
   /* This flag set while an operation is running on this context.  */
   unsigned int is_active : 1;
@@ -931,15 +934,11 @@ keydb_pop_found_state (KEYDB_HANDLE hd)
 
 
 
-/*
-  Return the last found object.  Caller must free it.  The returned
-  keyblock has the kbode flag bit 0 set for the node with the public
-  key used to locate the keyblock or flag bit 1 set for the user ID
-  node.  */
+/* Return the last found certificate.  Caller must free it.  */
 int
 keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
 {
-  int rc = 0;
+  int err = 0;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -949,31 +948,62 @@ keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
 
   if (hd->use_keyboxd)
     {
-      /* FIXME */
+      ksba_cert_t cert;
+
+      /* Fixme: We should clear that also in non-keyboxd mode but we
+       * did not in the past and thus all code should be checked
+       * whether this is okay.  If we run into error in keyboxd mode,
+       * this is a not as severe because keyboxd is currently
+       * experimental.  */
+      *r_cert = NULL;
+
+      if (!hd->kbl->search_result.buf || !hd->kbl->search_result.len)
+        {
+          err = gpg_error (GPG_ERR_VALUE_NOT_FOUND);
+          goto leave;
+        }
+      err = ksba_cert_new (&cert);
+      if (err)
+        goto leave;
+      err = ksba_cert_init_from_mem (cert,
+                                     hd->kbl->search_result.buf,
+                                     hd->kbl->search_result.len);
+      if (err)
+        {
+          ksba_cert_release (cert);
+          goto leave;
+        }
+      xfree (hd->kbl->search_result.buf);
+      hd->kbl->search_result.buf = NULL;
+      hd->kbl->search_result.len = 0;
+      *r_cert = cert;
       goto leave;
     }
 
   if ( hd->found < 0 || hd->found >= hd->used)
     {
-      rc = -1; /* nothing found */
+      /* Fixme: It would be better to use GPG_ERR_VALUE_NOT_FOUND here
+       * but for now we use NOT_FOUND because that is our standard
+       * replacement for the formerly used (-1).  */
+      err = gpg_error (GPG_ERR_NOT_FOUND); /* nothing found */
       goto leave;
     }
 
-  rc = GPG_ERR_BUG;
+  err = GPG_ERR_BUG;
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = gpg_error (GPG_ERR_GENERAL); /* oops */
+      err = gpg_error (GPG_ERR_GENERAL); /* oops */
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
-      rc = keybox_get_cert (hd->active[hd->found].u.kr, r_cert);
+      err = keybox_get_cert (hd->active[hd->found].u.kr, r_cert);
       break;
     }
 
  leave:
   if (DBG_CLOCK)
-    log_clock ("%s: leave (rc=%d)\n", __func__, rc);
-  return rc;
+    log_clock ("%s: leave (rc=%d)\n", __func__, err);
+  return err;
 }
 
 
@@ -995,6 +1025,8 @@ keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
   if (hd->use_keyboxd)
     {
       /* FIXME */
+      *value = 0;
+      err = 0;
       goto leave;
     }
 
@@ -1073,6 +1105,36 @@ keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
   return err;
 }
 
+
+
+/* Communication object for Keyboxd STORE commands.  */
+struct store_parm_s
+{
+  assuan_context_t ctx;
+  const void *data;   /* The certificate in X.509 binary format.  */
+  size_t datalen;     /* The length of DATA.  */
+};
+
+
+/* Handle the inquiries from the STORE command.  */
+static gpg_error_t
+store_inq_cb (void *opaque, const char *line)
+{
+  struct store_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+
+  if (has_leading_keyword (line, "BLOB"))
+    {
+      if (parm->data)
+        err = assuan_send_data (parm->ctx, parm->data, parm->datalen);
+    }
+  else
+    return gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
+
+  return err;
+}
+
+
 /*
  * Insert a new Certificate into one of the resources.
  */
@@ -1094,7 +1156,20 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 
   if (hd->use_keyboxd)
     {
-      /* FIXME */
+      struct store_parm_s parm;
+
+      parm.ctx = hd->kbl->ctx;
+      parm.data = ksba_cert_get_image (cert, &parm.datalen);
+      if (!parm.data)
+        {
+          log_debug ("broken ksba cert object\n");
+          err = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
+        }
+      err = assuan_transact (hd->kbl->ctx, "STORE --insert",
+                             NULL, NULL,
+                             store_inq_cb, &parm,
+                             NULL, NULL);
       goto leave;
     }
 
@@ -1246,7 +1321,7 @@ keydb_delete (KEYDB_HANDLE hd)
  * operation (which is only relevant for inserts) will be done on this
  * resource.
  */
-int
+static gpg_error_t
 keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
 {
   int rc;
@@ -1277,7 +1352,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
         }
     }
 
-  return -1;
+  return gpg_error (GPG_ERR_NOT_FOUND);
 }
 
 /*
@@ -1328,11 +1403,16 @@ keydb_search_reset (KEYDB_HANDLE hd)
   hd->found = -1;
   if (hd->use_keyboxd)
     {
-      /* FIXME */
-    }
+      /* All we need is to tell search that a reset is pending.  Note that
+       * keydb_new sets this flag as well.  To comply with the
+       * specification of keydb_delete_keyblock we also need to clear the
+       * ubid flag so that after a reset a delete can't be performed.  */
+      hd->kbl->need_search_reset = 1;
+      hd->last_ubid_valid = 0;
+   }
   else
     {
-      /* and reset all resources */
+      /* Reset all resources */
       for (i=0; !err && i < hd->used; i++)
         {
           switch (hd->active[i].type)
@@ -1404,15 +1484,59 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
 }
 
 
-/*
- * Search through all keydb resources, starting at the current position,
- * for a keyblock which contains one of the keys described in the DESC array.
- */
-int
+
+/* Status callback for SEARCH and NEXT operaions.  */
+static gpg_error_t
+search_status_cb (void *opaque, const char *line)
+{
+  KEYDB_HANDLE hd = opaque;
+  gpg_error_t err = 0;
+  const char *s;
+
+  if ((s = has_leading_keyword (line, "PUBKEY_INFO")))
+    {
+      if (atoi (s) != PUBKEY_TYPE_X509)
+        err = gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
+      else
+        {
+          hd->last_ubid_valid = 0;
+          while (*s && !spacep (s))
+            s++;
+          if (hex2fixedbuf (s, hd->last_ubid, sizeof hd->last_ubid))
+            hd->last_ubid_valid = 1;
+          else
+            err = gpg_error (GPG_ERR_INV_VALUE);
+        }
+    }
+
+  return err;
+}
+
+/* Search through all keydb resources, starting at the current
+ * position, for a keyblock which contains one of the keys described
+ * in the DESC array.  In keyboxd mode the search is instead delegated
+ * to the keyboxd.
+ *
+ * DESC is an array of search terms with NDESC entries.  The search
+ * terms are or'd together.  That is, the next entry in the DB that
+ * matches any of the descriptions will be returned.
+ *
+ * Note: this function resumes searching where the last search left
+ * off (i.e., at the current file position).  If you want to search
+ * from the start of the database, then you need to first call
+ * keydb_search_reset().
+ *
+ * If no key matches the search description, the error code
+ * GPG_ERR_NOT_FOUND is retruned.  If there was a match, 0 is
+ * returned.  If an error occurred, that error code is returned.
+ *
+ * The returned key is considered to be selected and the certificate
+ * can be detched via keydb_get_cert.  */
+gpg_error_t
 keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
               KEYDB_SEARCH_DESC *desc, size_t ndesc)
 {
-  int rc = -1;
+  gpg_error_t err = gpg_error (GPG_ERR_EOF);
   unsigned long skipped;
   int i;
 
@@ -1442,11 +1566,164 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
 
   if (hd->use_keyboxd)
     {
-      /* FIXME */
+      char line[ASSUAN_LINELENGTH];
+
+      /* Clear the result objects.  */
+      if (hd->kbl->search_result.buf)
+        {
+          xfree (hd->kbl->search_result.buf);
+          hd->kbl->search_result.buf = NULL;
+          hd->kbl->search_result.len = 0;
+        }
+
+      /* Check whether this is a NEXT search.  */
+      if (!hd->kbl->need_search_reset)
+        {
+          /* A reset was not requested thus continue the search.  The
+           * keyboxd keeps the context of the search and thus the NEXT
+           * operates on the last search pattern.  This is the way how
+           * we always used the keydb functions.  In theory we were
+           * able to modify the search pattern between searches but
+           * that is not anymore supported by keyboxd and a cursory
+           * check does not show that we actually made use of that
+           * misfeature.  */
+          snprintf (line, sizeof line, "NEXT --x509");
+          goto do_search;
+        }
+
+      hd->kbl->need_search_reset = 0;
+
+      if (!ndesc)
+        {
+          err = gpg_error (GPG_ERR_INV_ARG);
+          goto leave;
+        }
+
+      /* FIXME: Implement --multi */
+      switch (desc->mode)
+        {
+        case KEYDB_SEARCH_MODE_EXACT:
+          snprintf (line, sizeof line, "SEARCH --x509 =%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_SUBSTR:
+          snprintf (line, sizeof line, "SEARCH --x509 *%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_MAIL:
+          snprintf (line, sizeof line, "SEARCH --x509 <%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_MAILSUB:
+          snprintf (line, sizeof line, "SEARCH --x509 @%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_MAILEND:
+          snprintf (line, sizeof line, "SEARCH --x509 .%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_WORDS:
+          snprintf (line, sizeof line, "SEARCH --x509 +%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_SHORT_KID:
+          snprintf (line, sizeof line, "SEARCH --x509 0x%08lX",
+                    (ulong)desc->u.kid[1]);
+          break;
+
+        case KEYDB_SEARCH_MODE_LONG_KID:
+          snprintf (line, sizeof line, "SEARCH --x509 0x%08lX%08lX",
+                    (ulong)desc->u.kid[0], (ulong)desc->u.kid[1]);
+          break;
+
+        case KEYDB_SEARCH_MODE_FPR:
+          {
+            unsigned char hexfpr[MAX_FINGERPRINT_LEN * 2 + 1];
+            log_assert (desc[0].fprlen <= MAX_FINGERPRINT_LEN);
+            bin2hex (desc[0].u.fpr, desc[0].fprlen, hexfpr);
+            snprintf (line, sizeof line, "SEARCH --x509 0x%s", hexfpr);
+          }
+          break;
+
+        case KEYDB_SEARCH_MODE_ISSUER:
+          snprintf (line, sizeof line, "SEARCH --x509 #/%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_ISSUER_SN:
+          if (desc[0].snhex)
+            snprintf (line, sizeof line, "SEARCH --x509 #%.*s/%s",
+                      (int)desc[0].snlen, desc[0].sn, desc[0].u.name);
+          else
+            {
+              char *hexsn = bin2hex (desc[0].sn, desc[0].snlen, NULL);
+              if (!hexsn)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              snprintf (line, sizeof line, "SEARCH --x509 #%s/%s",
+                        hexsn, desc[0].u.name);
+              xfree (hexsn);
+            }
+          break;
+
+        case KEYDB_SEARCH_MODE_SN:
+          snprintf (line, sizeof line, "SEARCH --x509 #%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_SUBJECT:
+          snprintf (line, sizeof line, "SEARCH --x509 /%s", desc[0].u.name);
+          break;
+
+        case KEYDB_SEARCH_MODE_KEYGRIP:
+          {
+            unsigned char hexgrip[KEYGRIP_LEN * 2 + 1];
+            bin2hex (desc[0].u.grip, KEYGRIP_LEN, hexgrip);
+            snprintf (line, sizeof line, "SEARCH --x509 &%s", hexgrip);
+          }
+          break;
+
+        case KEYDB_SEARCH_MODE_UBID:
+          {
+            unsigned char hexubid[UBID_LEN * 2 + 1];
+            bin2hex (desc[0].u.ubid, UBID_LEN, hexubid);
+            snprintf (line, sizeof line, "SEARCH --x509 ^%s", hexubid);
+          }
+          break;
+
+        case KEYDB_SEARCH_MODE_FIRST:
+          snprintf (line, sizeof line, "SEARCH --x509");
+          break;
+
+        case KEYDB_SEARCH_MODE_NEXT:
+          log_debug ("%s: mode next - we should not get to here!\n", __func__);
+          snprintf (line, sizeof line, "NEXT --x509");
+          break;
+
+        default:
+          err = gpg_error (GPG_ERR_INV_ARG);
+          goto leave;
+        }
+
+    do_search:
+      hd->last_ubid_valid = 0;
+      /* To avoid silent truncation we error out on a too long line.  */
+      if (strlen (line) + 5 >= sizeof line)
+        err = gpg_error (GPG_ERR_ASS_LINE_TOO_LONG);
+      else
+        err = kbx_client_data_cmd (hd->kbl->kcd, line, search_status_cb, hd);
+      if (!err && !(err = kbx_client_data_wait (hd->kbl->kcd,
+                                                &hd->kbl->search_result.buf,
+                                                &hd->kbl->search_result.len)))
+        {
+          /* if (hd->last_ubid_valid) */
+          /*   log_printhex (hd->last_ubid, 20, "found UBID:"); */
+        }
+
     }
-  else
+  else /* Local keyring search.  */
     {
-      while ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+      while (gpg_err_code (err) == GPG_ERR_EOF
              && hd->current >= 0 && hd->current < hd->used)
         {
           switch (hd->active[hd->current].type)
@@ -1455,9 +1732,11 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
               BUG(); /* we should never see it here */
               break;
             case KEYDB_RESOURCE_TYPE_KEYBOX:
-              rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc,
-                                  KEYBOX_BLOBTYPE_X509,
-                                  NULL, &skipped);
+              err = keybox_search (hd->active[hd->current].u.kr, desc, ndesc,
+                                   KEYBOX_BLOBTYPE_X509,
+                                   NULL, &skipped);
+              if (err == -1) /* Map legacy code.  */
+                err = gpg_error (GPG_ERR_EOF);
               break;
             }
 
@@ -1466,21 +1745,25 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
                        __func__,
                        hd->active[hd->current].type==KEYDB_RESOURCE_TYPE_KEYBOX
                        ? "keybox" : "unknown type",
-                       hd->current, hd->used,
-                       rc == -1 ? "EOF" : gpg_strerror (rc));
+                       hd->current, hd->used, gpg_strerror (err));
 
-          if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+          if (gpg_err_code (err) == GPG_ERR_EOF)
             { /* EOF -> switch to next resource */
               hd->current++;
             }
-          else if (!rc)
+          else if (!err)
             hd->found = hd->current;
         }
     }
 
+ leave:
+  /* The NOTHING_FOUND error is triggered by a NEXT command.  */
+  if (gpg_err_code (err) == GPG_ERR_EOF
+      || gpg_err_code (err) == GPG_ERR_NOTHING_FOUND)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
   if (DBG_CLOCK)
-    log_clock ("%s: leave (rc=%d)\n", __func__, rc);
-  return rc;
+    log_clock ("%s: leave (%s)\n", __func__, gpg_strerror (err));
+  return err;
 }
 
 
@@ -1621,7 +1904,7 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
     }
 
   rc = keydb_search_fpr (ctrl, kh, fpr);
-  if (rc != -1)
+  if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     {
       keydb_release (kh);
       if (!rc)
@@ -1715,9 +1998,7 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
   err = keydb_search_fpr (ctrl, kh, fpr);
   if (err)
     {
-      if (err == -1)
-        err = gpg_error (GPG_ERR_NOT_FOUND);
-      else
+      if (gpg_err_code (err) != gpg_error (GPG_ERR_NOT_FOUND))
         log_error (_("problem re-searching certificate: %s\n"),
                    gpg_strerror (err));
       keydb_release (kh);
@@ -1836,7 +2117,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
             }
         }
     }
-  if (rc && rc != -1)
+  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
 
  leave:

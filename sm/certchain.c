@@ -440,7 +440,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
 
 /* Helper function for find_up.  This resets the key handle and search
    for an issuer ISSUER with a subjectKeyIdentifier of KEYID.  Returns
-   0 on success or -1 when not found. */
+   0 on success or GPG_ERR_NOT_FOUND when not found. */
 static int
 find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
                          const char *issuer, ksba_sexp_t keyid)
@@ -460,7 +460,7 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
       if (rc)
         {
           log_error ("keydb_get_cert() failed: rc=%d\n", rc);
-          rc = -1;
+          rc = gpg_error (GPG_ERR_NOT_FOUND);
           goto leave;
         }
       xfree (subj);
@@ -475,7 +475,7 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
               if (rc)
                 {
                   log_error ("keydb_get_validity() failed: rc=%d\n", rc);
-                  rc = -1;
+                  rc = gpg_error (GPG_ERR_NOT_FOUND);
                   goto leave;
                 }
 
@@ -544,7 +544,7 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
   if (rc)
     {
       log_error ("keydb_get_validity() failed: rc=%d\n", rc);
-      rc = -1;
+      rc = gpg_error (GPG_ERR_NOT_FOUND);
       goto leave;
     }
   if (*not_after && strcmp (ctrl->current_time, not_after) > 0 )
@@ -558,7 +558,7 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
       if (rc)
         {
           log_error ("keydb_search_fpr() failed: rc=%d\n", rc);
-          rc = -1;
+          rc = gpg_error (GPG_ERR_NOT_FOUND);
           goto leave;
         }
       /* Ready.  The NE_FOUND_CERT is available via keydb_get_cert.  */
@@ -569,7 +569,7 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
   ksba_cert_release (ne_found_cert);
   ksba_cert_release (cert);
   xfree (subj);
-  return rc? -1:0;
+  return rc? gpg_error (GPG_ERR_NOT_FOUND) : 0;
 }
 
 
@@ -646,10 +646,10 @@ find_up_external (ctrl_t ctrl, KEYDB_HANDLE kh,
   if (rc)
     {
       log_error ("external key lookup failed: %s\n", gpg_strerror (rc));
-      rc = -1;
+      rc = gpg_error (GPG_ERR_NOT_FOUND);
     }
   else if (!find_up_store_certs_parm.count)
-    rc = -1;
+    rc = gpg_err_code (rc) == GPG_ERR_NOT_FOUND;
   else
     {
       int old;
@@ -818,7 +818,8 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
   if (rc && !opt.quiet)
     log_info (_("dirmngr cache-only key lookup failed: %s\n"),
               gpg_strerror (rc));
-  return (!rc && find_up_store_certs_parm.count)? 0 : -1;
+  return ((!rc && find_up_store_certs_parm.count)
+          ? 0 : gpg_error (GPG_ERR_NOT_FOUND));
 }
 
 
@@ -828,7 +829,7 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
    FIND_NEXT is true, the function shall return the next possible
    issuer.  The certificate itself is not directly returned but a
    keydb_get_cert on the keydb context KH will return it.  Returns 0
-   on success, -1 if not found or an error code.  */
+   on success, GPG_ERR_NOT_FOUND if not found or another error code.  */
 static int
 find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
          ksba_cert_t cert, const char *issuer, int find_next)
@@ -857,13 +858,13 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
              into the ephemeral DB and let the code below do the
              actual retrieve.  Thus there is no error checking.
              Skipped in find_next mode as usual. */
-          if (rc == -1 && !find_next)
+          if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && !find_next)
             find_up_dirmngr (ctrl, kh, authidno, s, 0);
 
           /* In case of an error try the ephemeral DB.  We can't do
              that in find_next mode because we can't keep the search
              state then. */
-          if (rc == -1 && !find_next)
+          if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && !find_next)
             {
               int old = keydb_set_ephemeral (kh, 1);
               if (!old)
@@ -877,11 +878,11 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
                 }
               keydb_set_ephemeral (kh, old);
             }
-          if (rc)
-            rc = -1; /* Need to make sure to have this error code. */
+          if (rc) /* Need to make sure to have this error code. */
+            rc = gpg_error (GPG_ERR_NOT_FOUND);
         }
 
-      if (rc == -1 && keyid && !find_next)
+      if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && keyid && !find_next)
         {
           /* Not found by AKI.issuer_sn.  Lets try the AKI.ki
              instead. Loop over all certificates with that issuer as
@@ -900,13 +901,13 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
                 log_debug ("  found via authid and keyid (ephem)\n");
               keydb_set_ephemeral (kh, old);
             }
-          if (rc)
-            rc = -1; /* Need to make sure to have this error code. */
+          if (rc) /* Need to make sure to have this error code. */
+            rc = gpg_error (GPG_ERR_NOT_FOUND);
         }
 
       /* If we still didn't found it, try to find it via the subject
          from the dirmngr-cache.  */
-      if (rc == -1 && !find_next)
+      if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && !find_next)
         {
           if (!find_up_dirmngr (ctrl, kh, NULL, issuer, 1))
             {
@@ -920,15 +921,16 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
                 }
               keydb_set_ephemeral (kh, old);
             }
-          if (rc)
-            rc = -1; /* Need to make sure to have this error code. */
+          if (rc) /* Need to make sure to have this error code. */
+            rc = gpg_error (GPG_ERR_NOT_FOUND);
 
           if (!rc && DBG_X509)
             log_debug ("  found via authid and issuer from dirmngr cache\n");
         }
 
       /* If we still didn't found it, try an external lookup.  */
-      if (rc == -1 && !find_next && !ctrl->offline)
+      if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
+          && !find_next && !ctrl->offline)
         {
           /* We allow AIA also if CRLs are enabled; both can be used
            * as a web bug so it does not make sense to not use AIA if
@@ -952,9 +954,9 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
       /* Print a note so that the user does not feel too helpless when
          an issuer certificate was found and gpgsm prints BAD
          signature because it is not the correct one. */
-      if (rc == -1 && opt.quiet)
+      if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && opt.quiet)
         ;
-      else if (rc == -1)
+      else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
         {
           log_info ("%sissuer certificate ", find_next?"next ":"");
           if (keyid)
@@ -982,7 +984,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
 
   if (rc) /* Not found via authorithyKeyIdentifier, try regular issuer name. */
     rc = keydb_search_subject (ctrl, kh, issuer);
-  if (rc == -1 && !find_next)
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && !find_next)
     {
       int old;
 
@@ -1004,7 +1006,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
     }
 
   /* Still not found.  If enabled, try an external lookup.  */
-  if (rc == -1 && !find_next && !ctrl->offline)
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && !find_next && !ctrl->offline)
     {
       if ((opt.auto_issuer_key_retrieve || !opt.no_crl_check)
           && !find_up_via_auth_info_access (ctrl, kh, cert))
@@ -1026,8 +1028,8 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
 
 
 /* Return the next certificate up in the chain starting at START.
-   Returns -1 when there are no more certificates. */
-int
+   Returns GPG_ERR_NOT_FOUND when there are no more certificates. */
+gpg_error_t
 gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
 {
   int rc = 0;
@@ -1060,7 +1062,7 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
 
   if (is_root_cert (start, issuer, subject))
     {
-      rc = -1; /* we are at the root */
+      rc = gpg_error (GPG_ERR_NOT_FOUND); /* we are at the root */
       goto leave;
     }
 
@@ -1069,7 +1071,7 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
     {
       /* It is quite common not to have a certificate, so better don't
          print an error here.  */
-      if (rc != -1 && opt.verbose > 1)
+      if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND && opt.verbose > 1)
         log_error ("failed to find issuer's certificate: rc=%d\n", rc);
       rc = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
       goto leave;
@@ -2340,7 +2342,7 @@ get_regtp_ca_info (ctrl_t ctrl, ksba_cert_t cert, int *chainlen)
       cert = next;
     }
   ksba_cert_release (cert);
-  if (rc != -1 || !depth || depth == DIM(array) )
+  if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND || !depth || depth == DIM(array) )
     {
       /* We did not reached the root. */
       goto leave;

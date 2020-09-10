@@ -36,8 +36,14 @@
 #include "../common/ksba-io-support.h"
 #include "../common/compliance.h"
 
+/* The maximum length of a binary fingerprints.  This is used to
+ * provide a static buffer and will be increased if we need to support
+ * longer fingerprints.  */
+#define MAX_FINGERPRINT_LEN 32
 
-#define MAX_DIGEST_LEN 64
+/* The maximum length of a binary digest.  */
+#define MAX_DIGEST_LEN 64     /* Fits for SHA-512 */
+
 
 struct keyserver_spec
 {
@@ -353,8 +359,8 @@ int gpgsm_create_cms_signature (ctrl_t ctrl,
 #define VALIDATE_FLAG_CHAIN_MODEL 2
 #define VALIDATE_FLAG_STEED       4
 
-int gpgsm_walk_cert_chain (ctrl_t ctrl,
-                           ksba_cert_t start, ksba_cert_t *r_next);
+gpg_error_t gpgsm_walk_cert_chain (ctrl_t ctrl,
+                                   ksba_cert_t start, ksba_cert_t *r_next);
 int gpgsm_is_root_cert (ksba_cert_t cert);
 int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
                           ksba_isotime_t checktime,
