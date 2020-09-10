@@ -2967,14 +2967,14 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
           if (!rc)
             rc = iso7816_put_data (app_get_slot (app), 0, 0xD3, NULL, 0);
 
-          /* Flush the cache again, because pin2hash_if_kdf uses the DO.  */
-          flush_cache_item (app, 0xF9);
-
           wipe_and_free (buffer1, bufferlen1);
           wipe_and_free_string (oldpinvalue);
         }
       else
         return gpg_error (GPG_ERR_INV_OBJ);
+
+      /* Flush the cache again, because pin2hash_if_kdf uses the DO.  */
+      flush_cache_item (app, 0xF9);
     }
 
   rc = iso7816_put_data (app_get_slot (app),
