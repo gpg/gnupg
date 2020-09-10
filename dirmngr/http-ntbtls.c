@@ -77,8 +77,10 @@ gnupg_http_tls_verify_cb (void *opaque,
 
   validate_flags = VALIDATE_FLAG_TLS;
 
-  /* If we are using the standard hkps:// pool use the dedicated
-   * root certificate.  */
+  /* If we are using the standard hkps:// pool use the dedicated root
+   * certificate.  Note that this differes from the GnuTLS
+   * implementation which uses this special certificate only if no
+   * other certificates are configured. */
   hostname = ntbtls_get_hostname (tls);
   if (hostname
       && !ascii_strcasecmp (hostname, get_default_keyserver (1)))

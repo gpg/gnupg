@@ -721,6 +721,9 @@ cert_cache_init (strlist_t hkp_cacerts)
     load_certs_from_dir (fname, 0);
   xfree (fname);
 
+  /* Put the special pool certificate into our store.  This is
+   * currently only used with ntbtls.  For GnuTLS http_session_new
+   * unfortunately loads that certificate directly from the file.  */
   fname = make_filename_try (gnupg_datadir (),
                              "sks-keyservers.netCA.pem", NULL);
   if (fname)
