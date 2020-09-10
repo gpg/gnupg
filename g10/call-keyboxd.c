@@ -190,7 +190,7 @@ open_context (ctrl_t ctrl, keyboxd_local_t *r_kbl)
           return err;
         }
 
-      err = kbx_client_data_new (&kbl->kcd, kbl->ctx);
+      err = kbx_client_data_new (&kbl->kcd, kbl->ctx, 1);
       if (err)
         {
           assuan_release (kbl->ctx);

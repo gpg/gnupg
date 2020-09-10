@@ -26,7 +26,7 @@ struct kbx_client_data_s;
 typedef struct kbx_client_data_s *kbx_client_data_t;
 
 gpg_error_t kbx_client_data_new (kbx_client_data_t *r_kcd,
-                                 assuan_context_t ctx);
+                                 assuan_context_t ctx, int dlines);
 void kbx_client_data_release (kbx_client_data_t kcd);
 gpg_error_t kbx_client_data_cmd (kbx_client_data_t kcd, const char *command,
                                  gpg_error_t (*status_cb)(void *opaque,

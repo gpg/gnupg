@@ -270,10 +270,12 @@ datastream_thread (void *arg)
 
 
 /* Create a new keyboxd client data object and return it at R_KCD.
- * CTX is the assuan context to be used for connecting the
- * keyboxd.  */
+ * CTX is the assuan context to be used for connecting the keyboxd.
+ * If dlines is set, communication is done without fd passing via
+ * D-lines.  */
 gpg_error_t
-kbx_client_data_new (kbx_client_data_t *r_kcd, assuan_context_t ctx)
+kbx_client_data_new (kbx_client_data_t *r_kcd, assuan_context_t ctx,
+                     int dlines)
 {
   kbx_client_data_t kcd;
   int rc;
@@ -284,6 +286,9 @@ kbx_client_data_new (kbx_client_data_t *r_kcd, assuan_context_t ctx)
     return gpg_error_from_syserror ();
 
   kcd->ctx = ctx;
+
+  if (dlines)
+    goto leave;
 
   rc = npth_mutex_init (&kcd->mutex, NULL);
   if (rc)
@@ -312,6 +317,7 @@ kbx_client_data_new (kbx_client_data_t *r_kcd, assuan_context_t ctx)
       return err;
     }
 
+ leave:
   *r_kcd = kcd;
   return 0;
 }
