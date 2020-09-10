@@ -11,7 +11,7 @@
    height="744.09448"
    id="svg5013"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="gnupg-module-overview.svg">
   <sodipodi:namedview
      pagecolor="#ffffff"
@@ -22,26 +22,31 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1672"
-     inkscape:window-height="978"
+     inkscape:window-width="1920"
+     inkscape:window-height="993"
      id="namedview5247"
-     showgrid="false"
-     inkscape:zoom="1.0964545"
-     inkscape:cx="549.42213"
-     inkscape:cy="371.37197"
+     showgrid="true"
+     inkscape:zoom="1"
+     inkscape:cx="709.79323"
+     inkscape:cy="380.94022"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg5013"
+     inkscape:current-layer="g5086"
      showguides="true"
-     inkscape:guide-bbox="true">
+     inkscape:guide-bbox="true"
+     inkscape:snap-midpoints="true">
     <inkscape:grid
        id="grid3097"
        type="xygrid"
        empspacing="5"
-       visible="true"
+       visible="false"
        enabled="true"
        snapvisiblegridlinesonly="true" />
+    <inkscape:grid
+       type="xygrid"
+       id="grid1421"
+       visible="false" />
   </sodipodi:namedview>
   <metadata
      id="metadata5249">
@@ -51,7 +56,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -264,11 +269,11 @@
   <text
      y="662.4939"
      x="409.48114"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      id="text3354">
     <tspan
        id="tspan3356"
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans">Keyserver</tspan>
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'">Keyserver</tspan>
   </text>
   <path
      inkscape:connector-curvature="0"
@@ -318,12 +323,11 @@
   <text
      id="text5121"
      transform="scale(1.0507543,0.95169727)"
-     style="font-size:13.02898884px;line-height:125%;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.02898884px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      x="674.47369"
-     y="315.29083"
-     sodipodi:linespacing="125%">
+     y="315.29083">
     <tspan
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;line-height:125%;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';text-align:start;writing-mode:lr-tb;text-anchor:start"
        id="tspan4497">gpg-agent</tspan>
   </text>
   <rect
@@ -399,12 +403,12 @@
      d="m 129.94217,317.56143 0,119.95753"
      style="fill:#0093dd;fill-opacity:1;fill-rule:evenodd;stroke:#0093dd;stroke-width:2.75242877;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:none" />
   <rect
-     style="fill:#f0f0fc;fill-opacity:1;stroke:#0093dd;stroke-width:2.06634402;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+     style="fill:#f0f0fc;fill-opacity:1;stroke:#0093dd;stroke-width:4.70740366;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      id="rect5612"
-     width="403.86743"
-     height="39.392567"
-     x="225.40582"
-     y="130.97597" />
+     width="610"
+     height="135.35706"
+     x="60"
+     y="34.094482" />
   <path
      style="fill:none;stroke:#524646;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:0.5,0.5;stroke-dashoffset:0"
      d="m 58.463573,227.2185 928.110467,0 0,382.29175 -928.110467,0 0,-382.29175 z"
@@ -413,8 +417,8 @@
   <text
      id="text5061"
      transform="scale(1.0507332,0.95171638)"
-     style="font-size:13.0976572px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
-     x="518.80000"
+     style="font-size:13.0976572px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
+     x="518.79999"
      y="315.28461">
     <tspan
        style="font-size:13.76214409px"
@@ -423,39 +427,39 @@
   <text
      id="text5073"
      transform="scale(1.0507333,0.95171629)"
-     style="font-size:13.02924919px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.02924919px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      x="395.6857"
      y="315.28461">
     <tspan
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan4515">gpg</tspan>
   </text>
   <rect
-     rx="13.673332"
-     ry="12.771004"
-     y="548.32782"
-     x="673.75952"
-     height="40.571972"
-     width="133.86456"
+     rx="15.316881"
+     ry="12.760957"
+     y="548.34375"
+     x="673.77545"
+     height="40.540054"
+     width="149.95522"
      id="rect6095"
-     style="fill:#ffa44f;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.55048579;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+     style="fill:#ffa44f;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.58240247;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   <text
      id="text5105"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      x="680.94543"
      y="573.11676">
     <tspan
-       style="font-size:12.38593006px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.38593006px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan4529">CRL/Certificate Cache</tspan>
   </text>
   <text
      id="text5129"
      transform="scale(1.0507438,0.95170678)"
-     style="font-size:13.02911949px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.02911949px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      x="830.64813"
      y="317.11887">
     <tspan
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan4509">scdaemon</tspan>
   </text>
   <rect
@@ -472,10 +476,10 @@
      y="142.0016"
      x="875.88068"
      id="text5135"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica">
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none">
     <tspan
        id="tspan4507"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans">Smartcard</tspan>
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'">Smartcard</tspan>
   </text>
   <g
      id="g5153"
@@ -487,40 +491,40 @@
        style="fill:#feff66;fill-rule:evenodd;stroke:#000000;stroke-width:0.283465" />
     <text
        id="text5157"
-       style="font-size:9.94777203px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+       style="font-size:9.94777203px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
        x="21.563971"
        y="247.59825">
       <tspan
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
          id="tspan4517">watchgnupg</tspan>
     </text>
   </g>
   <text
      id="text5181"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      x="702.94672"
      y="457.17776">
     <tspan
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan4527">Private Keys</tspan>
   </text>
   <text
      id="text5199"
      transform="scale(1.0230018,0.97751538)"
-     style="font-size:15.83039284px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
-     x="317.46622"
-     y="158.42787">
+     style="font-size:15.83039284px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
+     x="221.6701"
+     y="160.47388">
     <tspan
-       style="font-size:16.51457214px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.51457214px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan5886">GPGME aware Applications</tspan>
   </text>
   <text
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      id="text5632"
      x="710.88654"
      y="153.50237">
     <tspan
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan5634">Pinentry</tspan>
   </text>
   <path
@@ -540,20 +544,20 @@
      style="fill:#ffa44f;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.55048579;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
   <text
      id="text5175"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      x="463.25439"
      y="457.33569">
     <tspan
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan4521">Public Keys</tspan>
   </text>
   <text
      id="text5089"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      x="472.05396"
      y="572.03088">
     <tspan
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan4523">dirmngr</tspan>
   </text>
   <rect
@@ -568,11 +572,11 @@
   <text
      y="457.33569"
      x="96.524628"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      id="text5163">
     <tspan
        id="tspan4519"
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans">Log Socket</tspan>
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'">Log Socket</tspan>
   </text>
   <path
      sodipodi:nodetypes="cc"
@@ -604,7 +608,7 @@
       <text
          y="258.88663"
          x="393.02432"
-         style="font-size:9.46736145px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+         style="font-size:9.46736145px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
          transform="scale(1.0507438,0.95170677)"
          id="text6209">
         <tspan
@@ -625,11 +629,11 @@
   <text
      y="457.37265"
      x="252.14281"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      id="text6219">
     <tspan
        id="tspan6221"
-       style="font-size:13.76214409px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans">Config Files</tspan>
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.76214409px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'">Config Files</tspan>
   </text>
   <path
      inkscape:connector-curvature="0"
@@ -638,21 +642,21 @@
      style="fill:#0093dd;fill-opacity:1;fill-rule:evenodd;stroke:#0093dd;stroke-width:2.75242877;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:5.50485762, 2.75242881;stroke-dashoffset:0;marker-end:url(#marker6214)"
      sodipodi:nodetypes="cc" />
   <rect
-     rx="13.673332"
-     ry="13.673332"
-     y="636.94879"
-     x="507.69662"
-     height="40.571972"
-     width="97.554695"
+     rx="15.737471"
+     ry="14.935314"
+     y="634.09448"
+     x="507.71835"
+     height="44.316566"
+     width="112.28165"
      id="rect3358"
-     style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.55048579;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+     style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.6172291;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   <text
      id="text3360"
-     style="font-size:13.69026756px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+     style="font-size:13.69026756px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
      x="509.57916"
      y="661.91278">
     <tspan
-       style="font-size:12.38593006px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.38593006px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans'"
        id="tspan3362">CRLs/Certificates</tspan>
   </text>
   <path
@@ -685,16 +689,15 @@
        y="454.11374" />
     <text
        xml:space="preserve"
-       style="font-size:18.12819099px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
        x="913.58813"
        y="498.23856"
-       id="text3759"
-       sodipodi:linespacing="125%"><tspan
+       id="text3759"><tspan
          sodipodi:role="line"
          id="tspan3761"
          x="913.58813"
          y="498.23856"
-         style="font-size:23.30767632px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto;-inkscape-font-specification:Roboto">GnuPG</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.30767632px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:Roboto">GnuPG</tspan></text>
     <g
        id="g6169"
        transform="matrix(0.49007212,0,0,0.49007212,836.80821,295.5608)">
@@ -739,12 +742,12 @@
     </g>
     <text
        id="text5079"
-       style="font-size:10.04583168px;fill:#4d4d4d;fill-rule:evenodd;stroke:none;font-family:Palatino-Roman"
-       x="958.4126"
-       y="672.75244">
+       style="font-size:10.04583168px;line-height:0%;font-family:Palatino-Roman;fill:#4d4d4d;fill-rule:evenodd;stroke:none"
+       x="954.4126"
+       y="674.75244">
       <tspan
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#4d4d4d;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
-         id="tspan4550">2016-02-16</tspan>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';fill:#4d4d4d"
+         id="tspan4550">2020-09-10</tspan>
     </text>
     <path
        inkscape:connector-curvature="0"
@@ -764,11 +767,11 @@
     <text
        id="text5219"
        transform="scale(1.0657564,0.93830074)"
-       style="font-size:7.41257px;fill:#4d4d4d;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+       style="font-size:7.41257px;line-height:0%;font-family:Helvetica;fill:#4d4d4d;fill-rule:evenodd;stroke:none"
        x="811.75702"
        y="581.03601">
       <tspan
-         style="font-size:11.00971508px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#4d4d4d;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.00971508px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';fill:#4d4d4d"
          id="tspan4544">closely linked</tspan>
     </text>
     <g
@@ -777,12 +780,12 @@
       <text
          y="611.05994"
          x="812.3645"
-         style="font-size:7.41257px;fill:#4d4d4d;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+         style="font-size:7.41257px;line-height:0%;font-family:Helvetica;fill:#4d4d4d;fill-rule:evenodd;stroke:none"
          transform="scale(1.0657564,0.93830074)"
          id="text5221">
         <tspan
            id="tspan4546"
-           style="font-size:11.00971508px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#4d4d4d;font-family:Droid Sans;-inkscape-font-specification:Droid Sans">Assuan protocol</tspan>
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.00971508px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';fill:#4d4d4d">Assuan protocol</tspan>
       </text>
       <path
          inkscape:connector-curvature="0"
@@ -800,11 +803,11 @@
     <text
        y="510.38229"
        x="915.55554"
-       style="font-size:10.04583168px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Palatino-Roman"
+       style="font-size:10.04583168px;line-height:0%;font-family:Palatino-Roman;fill:#000000;fill-rule:evenodd;stroke:none"
        id="text6327">
       <tspan
          id="tspan6329"
-         style="font-size:11.00971508px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#4d4d4d;font-family:Droid Sans;-inkscape-font-specification:Droid Sans">architecture</tspan>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.00971508px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';fill:#4d4d4d">architecture</tspan>
     </text>
     <g
        transform="translate(0,-2)"
@@ -812,12 +815,12 @@
       <text
          y="640.84277"
          x="811.75702"
-         style="font-size:7.41257px;fill:#4d4d4d;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+         style="font-size:7.41257px;line-height:0%;font-family:Helvetica;fill:#4d4d4d;fill-rule:evenodd;stroke:none"
          transform="scale(1.0657564,0.93830073)"
          id="text5217">
         <tspan
            id="tspan4548"
-           style="font-size:11.00971508px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#4d4d4d;font-family:Droid Sans;-inkscape-font-specification:Droid Sans">execute/access</tspan>
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.00971508px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';fill:#4d4d4d">execute/access</tspan>
       </text>
       <path
          inkscape:connector-curvature="0"
@@ -841,11 +844,11 @@
       <text
          id="text6350"
          transform="scale(1.0657564,0.93830074)"
-         style="font-size:7.41257px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+         style="font-size:7.41257px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
          x="832.3197"
          y="664.93915">
         <tspan
-           style="font-size:11.00971508px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.00971508px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';fill:#000000"
            id="tspan6352">process</tspan>
       </text>
       <rect
@@ -860,12 +863,12 @@
       <text
          y="691.21802"
          x="837.2547"
-         style="font-size:7.41257px;fill:#000000;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+         style="font-size:7.41257px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
          transform="scale(1.0657564,0.93830074)"
          id="text6358">
         <tspan
            id="tspan6360"
-           style="font-size:11.00971508px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;font-family:Droid Sans;-inkscape-font-specification:Droid Sans">object</tspan>
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.00971508px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';fill:#000000">object</tspan>
       </text>
     </g>
     <g
@@ -880,13 +883,194 @@
       <text
          id="text5065"
          transform="scale(1.0657564,0.93830073)"
-         style="font-size:7.41257px;fill:#4d4d4d;fill-rule:evenodd;stroke:none;font-family:Helvetica"
+         style="font-size:7.41257px;line-height:0%;font-family:Helvetica;fill:#4d4d4d;fill-rule:evenodd;stroke:none"
          x="811.75702"
          y="666.24689">
         <tspan
-           style="font-size:11.00971508px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#4d4d4d;font-family:Droid Sans;-inkscape-font-specification:Droid Sans"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.00971508px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans';fill:#4d4d4d"
            id="tspan5067">configure</tspan>
       </text>
     </g>
   </g>
+  <g
+     id="g6225-9"
+     transform="matrix(1.3762144,0,0,1.3762144,276.44855,-270.70587)">
+    <rect
+       style="fill:#feff66;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect6205-9"
+       width="89.450874"
+       height="29.450878"
+       x="78.150215"
+       y="228.74368"
+       ry="3.1429582"
+       rx="3.1429582" />
+    <g
+       id="g6207-0"
+       transform="matrix(1,0,0,1.0478715,-315.61694,-12.101961)">
+      <text
+         y="258.88663"
+         x="393.02432"
+         style="font-size:9.46736145px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
+         transform="scale(1.0507438,0.95170677)"
+         id="text6209-8">
+        <tspan
+           id="tspan6211-1"
+           style="font-size:10px">Kleopatra</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     id="g6225-9-5"
+     transform="matrix(1.3762144,0,0,1.3762144,131.34497,-269.70587)">
+    <rect
+       style="fill:#feff66;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect6205-9-7"
+       width="89.450874"
+       height="29.450878"
+       x="78.150215"
+       y="228.74368"
+       ry="3.1429582"
+       rx="3.1429582" />
+    <g
+       id="g6207-0-1"
+       transform="matrix(1,0,0,1.0478715,-311.25716,-12.101961)">
+      <text
+         y="258.88663"
+         x="393.02432"
+         style="font-size:9.46736145px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
+         transform="scale(1.0507438,0.95170677)"
+         id="text6209-8-6">
+        <tspan
+           id="tspan6211-1-9"
+           style="font-size:10px">GpgOL</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     id="g6225-9-5-5"
+     transform="matrix(1.3762144,0,0,1.3762144,425.34497,-270.70587)">
+    <rect
+       style="fill:#feff66;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect6205-9-7-0"
+       width="89.450874"
+       height="29.450878"
+       x="78.150215"
+       y="228.74368"
+       ry="3.1429582"
+       rx="3.1429582" />
+    <g
+       id="g6207-0-1-5"
+       transform="matrix(1,0,0,1.0478715,-314.16368,-12.101961)">
+      <text
+         y="259.82642"
+         x="400.15994"
+         style="font-size:9.46736145px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
+         transform="scale(1.0507438,0.95170678)"
+         id="text6209-8-6-7">
+        <tspan
+           id="tspan6211-1-9-3"
+           style="font-size:10px">KMail</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     id="g6225-9-7"
+     transform="matrix(1.3762144,0,0,3.3098144,-17.844235,-713.00465)">
+    <rect
+       style="fill:#feff66;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect6205-9-76"
+       width="89.450874"
+       height="29.450878"
+       x="78.150215"
+       y="228.74368"
+       ry="3.1429582"
+       rx="3.1429582" />
+  </g>
+  <g
+     id="g6225-9-9"
+     transform="matrix(1.3762144,0,0,1.3762144,269.34497,-220.70587)">
+    <rect
+       style="fill:#feff66;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect6205-9-5"
+       width="89.450874"
+       height="29.450878"
+       x="83.963264"
+       y="231.65021"
+       ry="3.1429582"
+       rx="3.1429582" />
+    <g
+       id="g6207-0-17"
+       transform="matrix(1,0,0,1.0478715,-312.71042,-9.1954371)">
+      <text
+         y="258.88663"
+         x="391.64124"
+         style="font-size:9.46736145px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
+         transform="scale(1.0507438,0.95170678)"
+         id="text6209-8-3">
+        <tspan
+           id="tspan6211-1-0"
+           style="font-size:10px">libkleopatra</tspan>
+      </text>
+    </g>
+  </g>
+  <path
+     sodipodi:nodetypes="cc"
+     inkscape:connector-curvature="0"
+     id="path6047-9-4-7"
+     d="m 385.00002,124.09448 -50.22805,-0.004"
+     style="fill:#0093dd;fill-opacity:1;fill-rule:evenodd;stroke:#0093dd;stroke-width:1.7813257;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:none" />
+  <path
+     style="fill:none;stroke:#0093dd;stroke-width:1.59686565;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 335.57277,85.890043 V 124.09448"
+     id="path5123-7"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;stroke:#0093dd;stroke-width:1.59918046;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 565,84.890044 V 123.20532"
+     id="path5123-7-9"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <path
+     sodipodi:nodetypes="cc"
+     inkscape:connector-curvature="0"
+     id="path6047-9-4-7-5"
+     d="m 565.79705,124.09848 -57.53899,-0.004"
+     style="fill:#0093dd;fill-opacity:1;fill-rule:evenodd;stroke:#0093dd;stroke-width:1.90656352;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:none" />
+  <path
+     style="fill:none;stroke:#0093dd;stroke-width:5.901;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 445.32482,84.89917 V 97.821045"
+     id="path5123-7-1"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <g
+     id="g6207-0-1-3"
+     transform="matrix(1.3762144,0,0,1.4420958,-443.76161,-266.61075)">
+    <text
+       y="258.88663"
+       x="393.02432"
+       style="font-size:9.46736145px;line-height:0%;font-family:Helvetica;fill:#000000;fill-rule:evenodd;stroke:none"
+       transform="scale(1.0507438,0.95170677)"
+       id="text6209-8-6-9">
+      <tspan
+         id="tspan6211-1-9-8"
+         style="font-size:10px" />
+    </text>
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:20.31048965px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.50776219"
+     x="149.51515"
+     y="86.156746"
+     id="text1651"><tspan
+       sodipodi:role="line"
+       id="tspan1649"
+       x="149.51515"
+       y="86.156746"
+       style="text-align:center;text-anchor:middle;stroke-width:0.50776219">Many</tspan><tspan
+       sodipodi:role="line"
+       x="149.51515"
+       y="111.54486"
+       id="tspan1653"
+       style="text-align:center;text-anchor:middle;stroke-width:0.50776219">Others</tspan></text>
 </svg>
