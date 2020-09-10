@@ -167,10 +167,8 @@ kbxd_release_session_info (ctrl_t ctrl)
 {
   if (!ctrl)
     return;
-  be_release_request (ctrl->opgp_req);
-  ctrl->opgp_req = NULL;
-  be_release_request (ctrl->x509_req);
-  ctrl->x509_req = NULL;
+  be_release_request (ctrl->db_req);
+  ctrl->db_req = NULL;
 }
 
 
@@ -204,16 +202,16 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
   take_read_lock (ctrl);
 
   /* Allocate a handle object if none exists for this context.  */
-  if (!ctrl->opgp_req)
+  if (!ctrl->db_req)
     {
-      ctrl->opgp_req = xtrycalloc (1, sizeof *ctrl->opgp_req);
-      if (!ctrl->opgp_req)
+      ctrl->db_req = xtrycalloc (1, sizeof *ctrl->db_req);
+      if (!ctrl->db_req)
         {
           err = gpg_error_from_syserror ();
           goto leave;
         }
     }
-  request = ctrl->opgp_req;
+  request = ctrl->db_req;
 
   if (!the_database.db_type)
     {
@@ -341,16 +339,16 @@ kbxd_store (ctrl_t ctrl, const void *blob, size_t bloblen,
   take_read_write_lock (ctrl);
 
   /* Allocate a handle object if none exists for this context.  */
-  if (!ctrl->opgp_req)
+  if (!ctrl->db_req)
     {
-      ctrl->opgp_req = xtrycalloc (1, sizeof *ctrl->opgp_req);
-      if (!ctrl->opgp_req)
+      ctrl->db_req = xtrycalloc (1, sizeof *ctrl->db_req);
+      if (!ctrl->db_req)
         {
           err = gpg_error_from_syserror ();
           goto leave;
         }
     }
-  request = ctrl->opgp_req;
+  request = ctrl->db_req;
 
   if (!the_database.db_type)
     {
@@ -431,16 +429,16 @@ kbxd_delete (ctrl_t ctrl, const unsigned char *ubid)
   take_read_write_lock (ctrl);
 
   /* Allocate a handle object if none exists for this context.  */
-  if (!ctrl->opgp_req)
+  if (!ctrl->db_req)
     {
-      ctrl->opgp_req = xtrycalloc (1, sizeof *ctrl->opgp_req);
-      if (!ctrl->opgp_req)
+      ctrl->db_req = xtrycalloc (1, sizeof *ctrl->db_req);
+      if (!ctrl->db_req)
         {
           err = gpg_error_from_syserror ();
           goto leave;
         }
     }
-  request = ctrl->opgp_req;
+  request = ctrl->db_req;
 
   if (!the_database.db_type)
     {

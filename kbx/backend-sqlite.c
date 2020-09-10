@@ -70,6 +70,10 @@ struct be_sqlite_local_s
   /* The search mode represented by the current select command.  */
   KeydbSearchMode select_mode;
 
+  /* The flags active when the select was first done.  */
+  unsigned int filter_opgp : 1;
+  unsigned int filter_x509 : 1;
+
   /* The select statement has been executed with success.  */
   int select_done;
 
@@ -288,18 +292,29 @@ run_sql_reset (sqlite3_stmt *stmt)
 }
 
 
-/* Run an SQL prepare for SQLSTR and return a statement at R_STMT.  */
+/* Run an SQL prepare for SQLSTR and return a statement at R_STMT.  If
+ * EXTRA is not NULL that part is appended to the SQL statement.  */
 static gpg_error_t
-run_sql_prepare (const char *sqlstr, sqlite3_stmt **r_stmt)
+run_sql_prepare (const char *sqlstr, const char *extra, sqlite3_stmt **r_stmt)
 {
   gpg_error_t err;
   int res;
+  char *buffer = NULL;
+
+  if (extra)
+    {
+      buffer = strconcat (sqlstr, extra, NULL);
+      if (!buffer)
+        return gpg_error_from_syserror ();
+      sqlstr = buffer;
+    }
 
   res = sqlite3_prepare_v2 (database_hd, sqlstr, -1, r_stmt, NULL);
   if (res)
     err = diag_prepare_err (res, sqlstr);
   else
     err = 0;
+  xfree (buffer);
   return err;
 }
 
@@ -356,18 +371,28 @@ run_sql_bind_int64 (sqlite3_stmt *stmt, int no, sqlite3_int64 value)
 /* Helper to bind a string parameter to a statement.  VALUE is allowed
  * to be NULL to bind NULL.  */
 static gpg_error_t
-run_sql_bind_text (sqlite3_stmt *stmt, int no, const char *value)
+run_sql_bind_ntext (sqlite3_stmt *stmt, int no,
+                    const char *value, size_t valuelen)
 {
   gpg_error_t err;
   int res;
 
-  res = sqlite3_bind_text (stmt, no, value, value? strlen (value):0,
+  res = sqlite3_bind_text (stmt, no, value, value? valuelen:0,
                            SQLITE_TRANSIENT);
   if (res)
     err = diag_bind_err (res, stmt);
   else
     err = 0;
   return err;
+}
+
+
+/* Helper to bind a string parameter to a statement.  VALUE is allowed
+ * to be NULL to bind NULL.  */
+static gpg_error_t
+run_sql_bind_text (sqlite3_stmt *stmt, int no, const char *value)
+{
+  return run_sql_bind_ntext (stmt, no, value, value? strlen (value):0);
 }
 
 
@@ -457,7 +482,7 @@ run_sql_statement_bind_ubid (const char *sqlstr, const unsigned char *ubid)
   gpg_error_t err;
   sqlite3_stmt *stmt;
 
-  err = run_sql_prepare (sqlstr, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, &stmt);
   if (err)
     goto leave;
   if (ubid)
@@ -651,11 +676,13 @@ be_sqlite_release_local (be_sqlite_local_t ctx)
 /* Run a select for the search given by (DESC,NDESC).  The data is not
  * returned but stored in the request item.  */
 static gpg_error_t
-run_select_statement (be_sqlite_local_t ctx,
+run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                       KEYDB_SEARCH_DESC *desc, unsigned int ndesc)
 {
   gpg_error_t err = 0;
   unsigned int descidx;
+  const char *extra = NULL;
+
 
   descidx = 0; /* Fixme: take from context.  */
   if (descidx >= ndesc)
@@ -672,8 +699,17 @@ run_select_statement (be_sqlite_local_t ctx,
       sqlite3_finalize (ctx->select_stmt);
       ctx->select_stmt = NULL;
     }
+  else if (ctx->filter_opgp != ctrl->filter_opgp
+           || ctx->filter_x509 != ctrl->filter_x509)
+    {
+      /* The filter flags changed, thus we can't reuse the statement.  */
+      sqlite3_finalize (ctx->select_stmt);
+      ctx->select_stmt = NULL;
+    }
 
   ctx->select_mode = desc[descidx].mode;
+  ctx->filter_opgp = ctrl->filter_opgp;
+  ctx->filter_x509 = ctrl->filter_x509;
 
   /* Prepare the select and bind the parameters.  */
   if (ctx->select_stmt)
@@ -683,7 +719,17 @@ run_select_statement (be_sqlite_local_t ctx,
         goto leave;
     }
   else
-    err = 0;
+    {
+      if (ctx->filter_opgp && ctx->filter_x509)
+        extra = " AND ( p.type = 1 OR p.type = 2 )";
+      else if (ctx->filter_opgp && !ctx->filter_x509)
+        extra = " AND p.type = 1";
+      else if (!ctx->filter_opgp && ctx->filter_x509)
+        extra = " AND p.type = 2";
+
+      err = 0;
+    }
+
 
   switch (desc[descidx].mode)
     {
@@ -697,7 +743,7 @@ run_select_statement (be_sqlite_local_t ctx,
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.uid = ?1",
-                               &ctx->select_stmt);
+                               extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1, desc[descidx].u.name);
       break;
@@ -707,7 +753,7 @@ run_select_statement (be_sqlite_local_t ctx,
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.addrspec = ?1",
-                               &ctx->select_stmt);
+                               extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1, desc[descidx].u.name);
       break;
@@ -717,7 +763,7 @@ run_select_statement (be_sqlite_local_t ctx,
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.addrspec LIKE ?1",
-                               &ctx->select_stmt);
+                               extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text_like (ctx->select_stmt, 1,
                                       desc[descidx].u.name);
@@ -728,7 +774,7 @@ run_select_statement (be_sqlite_local_t ctx,
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.uid LIKE ?1",
-                               &ctx->select_stmt);
+                               extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text_like (ctx->select_stmt, 1,
                                       desc[descidx].u.name);
@@ -776,7 +822,7 @@ run_select_statement (be_sqlite_local_t ctx,
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.kid = ?1",
-                               &ctx->select_stmt);
+                               extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_int64 (ctx->select_stmt, 1,
                                   kid_from_u32 (desc[descidx].u.kid));
@@ -787,7 +833,7 @@ run_select_statement (be_sqlite_local_t ctx,
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.fpr = ?1",
-                               &ctx->select_stmt);
+                               extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
                                  desc[descidx].u.fpr, desc[descidx].fprlen);
@@ -798,7 +844,7 @@ run_select_statement (be_sqlite_local_t ctx,
         err = run_sql_prepare ("SELECT p.ubid, p.type, p.keyblob"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.keygrip = ?1",
-                               &ctx->select_stmt);
+                               extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
                                  desc[descidx].u.grip, KEYGRIP_LEN);
@@ -807,9 +853,9 @@ run_select_statement (be_sqlite_local_t ctx,
     case KEYDB_SEARCH_MODE_UBID:
       if (!ctx->select_stmt)
         err = run_sql_prepare ("SELECT ubid, type, keyblob"
-                               " FROM pubkey"
+                               " FROM pubkey as p"
                                " WHERE ubid = ?1",
-                               &ctx->select_stmt);
+                               extra, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
                                  desc[descidx].u.ubid, UBID_LEN);
@@ -817,9 +863,20 @@ run_select_statement (be_sqlite_local_t ctx,
 
     case KEYDB_SEARCH_MODE_FIRST:
       if (!ctx->select_stmt)
-        err = run_sql_prepare ("SELECT ubid, type, keyblob"
-                               " FROM pubkey ORDER by ubid",
-                               &ctx->select_stmt);
+        {
+          if (ctx->filter_opgp && ctx->filter_x509)
+            extra = " WHERE ( p.type = 1 OR p.type = 2 ) ORDER by ubid";
+          else if (ctx->filter_opgp && !ctx->filter_x509)
+            extra = " WHERE p.type = 1 ORDER by ubid";
+          else if (!ctx->filter_opgp && ctx->filter_x509)
+            extra = " WHERE p.type = 2 ORDER by ubid";
+          else
+            extra = " ORDER by ubid";
+
+          err = run_sql_prepare ("SELECT ubid, type, keyblob"
+                                 " FROM pubkey as p",
+                                 extra, &ctx->select_stmt);
+        }
       break;
 
     case KEYDB_SEARCH_MODE_NEXT:
@@ -878,7 +935,7 @@ be_sqlite_search (ctrl_t ctrl,
   if (!ctx->select_done)
     {
       /* Initial search - run the select.  */
-      err = run_select_statement (ctx, desc, ndesc);
+      err = run_select_statement (ctrl, ctx, desc, ndesc);
       if (err)
         goto leave;
       ctx->select_done = 1;
@@ -981,7 +1038,7 @@ store_into_pubkey (enum kbxd_store_modes mode,
   else /* Auto */
     sqlstr = ("INSERT OR REPLACE INTO pubkey(ubid,type,keyblob)"
               " VALUES(:1,:2,:3)");
-  err = run_sql_prepare (sqlstr, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, &stmt);
   if (err)
     goto leave;
   err = run_sql_bind_blob (stmt, 1, ubid, UBID_LEN);
@@ -1016,7 +1073,7 @@ store_into_fingerprint (const unsigned char *ubid, int subkey,
 
   sqlstr = ("INSERT OR REPLACE INTO fingerprint(fpr,kid,keygrip,subkey,ubid)"
             " VALUES(:1,:2,:3,:4,:5)");
-  err = run_sql_prepare (sqlstr, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, &stmt);
   if (err)
     goto leave;
   err = run_sql_bind_blob (stmt, 1, fpr, fprlen);
@@ -1057,7 +1114,7 @@ store_into_userid (const unsigned char *ubid, enum pubkey_types pktype,
 
   sqlstr = ("INSERT OR REPLACE INTO userid(uid,addrspec,type,ubid)"
             " VALUES(:1,:2,:3,:4)");
-  err = run_sql_prepare (sqlstr, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, &stmt);
   if (err)
     goto leave;
 

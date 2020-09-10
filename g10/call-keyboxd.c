@@ -687,36 +687,36 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   switch (desc->mode)
     {
     case KEYDB_SEARCH_MODE_EXACT:
-      snprintf (line, sizeof line, "SEARCH =%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- =%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_SUBSTR:
-      snprintf (line, sizeof line, "SEARCH *%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- *%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_MAIL:
-      snprintf (line, sizeof line, "SEARCH <%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- <%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_MAILSUB:
-      snprintf (line, sizeof line, "SEARCH @%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- @%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_MAILEND:
-      snprintf (line, sizeof line, "SEARCH .%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- .%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_WORDS:
-      snprintf (line, sizeof line, "SEARCH +%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- +%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_SHORT_KID:
-      snprintf (line, sizeof line, "SEARCH 0x%08lX",
+      snprintf (line, sizeof line, "SEARCH --openpgp -- 0x%08lX",
                 (ulong)desc->u.kid[1]);
       break;
 
     case KEYDB_SEARCH_MODE_LONG_KID:
-      snprintf (line, sizeof line, "SEARCH 0x%08lX%08lX",
+      snprintf (line, sizeof line, "SEARCH --openpgp -- 0x%08lX%08lX",
                 (ulong)desc->u.kid[0], (ulong)desc->u.kid[1]);
       break;
 
@@ -725,28 +725,28 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         unsigned char hexfpr[MAX_FINGERPRINT_LEN * 2 + 1];
         log_assert (desc[0].fprlen <= MAX_FINGERPRINT_LEN);
         bin2hex (desc[0].u.fpr, desc[0].fprlen, hexfpr);
-        snprintf (line, sizeof line, "SEARCH 0x%s", hexfpr);
+        snprintf (line, sizeof line, "SEARCH --openpgp -- 0x%s", hexfpr);
       }
       break;
 
     case KEYDB_SEARCH_MODE_ISSUER:
-      snprintf (line, sizeof line, "SEARCH #/%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- #/%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_ISSUER_SN:
     case KEYDB_SEARCH_MODE_SN:
-      snprintf (line, sizeof line, "SEARCH #%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- #%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_SUBJECT:
-      snprintf (line, sizeof line, "SEARCH /%s", desc[0].u.name);
+      snprintf (line, sizeof line, "SEARCH --openpgp -- /%s", desc[0].u.name);
       break;
 
     case KEYDB_SEARCH_MODE_KEYGRIP:
       {
         unsigned char hexgrip[KEYGRIP_LEN * 2 + 1];
         bin2hex (desc[0].u.grip, KEYGRIP_LEN, hexgrip);
-        snprintf (line, sizeof line, "SEARCH &%s", hexgrip);
+        snprintf (line, sizeof line, "SEARCH --openpgp -- &%s", hexgrip);
       }
       break;
 
@@ -754,12 +754,12 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       {
         unsigned char hexubid[UBID_LEN * 2 + 1];
         bin2hex (desc[0].u.ubid, UBID_LEN, hexubid);
-        snprintf (line, sizeof line, "SEARCH ^%s", hexubid);
+        snprintf (line, sizeof line, "SEARCH --openpgp -- ^%s", hexubid);
       }
       break;
 
     case KEYDB_SEARCH_MODE_FIRST:
-      snprintf (line, sizeof line, "SEARCH");
+      snprintf (line, sizeof line, "SEARCH --openpgp");
       break;
 
     case KEYDB_SEARCH_MODE_NEXT:

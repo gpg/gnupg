@@ -277,22 +277,25 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 
 
 static const char hlp_search[] =
-  "SEARCH [--no-data] [[--more] PATTERN]\n"
+  "SEARCH [--no-data] [--openpgp|--x509] [[--more] PATTERN]\n"
   "\n"
   "Search for the keys identified by PATTERN.  With --more more\n"
   "patterns to be used for the search are expected with the next\n"
   "command.  With --no-data only the search status is returned but\n"
-  "not the actual data.  See also \"NEXT\".";
+  "not the actual data.  With --openpgp or --x509 only the respective\n"
+  "keys are returned.  See also \"NEXT\".";
 static gpg_error_t
 cmd_search (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int opt_more, opt_no_data;
+  int opt_more, opt_no_data, opt_openpgp, opt_x509;
   gpg_error_t err;
   unsigned int n, k;
 
   opt_no_data = has_option (line, "--no-data");
   opt_more = has_option (line, "--more");
+  opt_openpgp = has_option (line, "--openpgp");
+  opt_x509 = has_option (line, "--x509");
   line = skip_options (line);
 
   ctrl->server_local->search_any_found = 0;
@@ -380,6 +383,8 @@ cmd_search (assuan_context_t ctx, char *line)
   ctrl->server_local->inhibit_data_logging_now = 0;
   ctrl->server_local->inhibit_data_logging_count = 0;
   ctrl->no_data_return = opt_no_data;
+  ctrl->filter_opgp = opt_openpgp;
+  ctrl->filter_x509 = opt_x509;
   err = prepare_outstream (ctrl);
   if (err)
     ;
@@ -643,7 +648,7 @@ cmd_killkeyboxd (assuan_context_t ctx, char *line)
 
   ctrl->server_local->stopme = 1;
   assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
-  return gpg_error (GPG_ERR_EOF);
+  return 0;
 }
 
 

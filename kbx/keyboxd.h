@@ -106,13 +106,18 @@ struct server_control_s
   unsigned long client_pid;
   int client_uid;
 
-  /* Two database request objects used with a connection.  They are
+  /* The database request object used with a connection.  It is
    * auto-created as needed.  */
-  db_request_t opgp_req;
-  db_request_t x509_req;
+  db_request_t db_req;
 
   /* Flags for the current request.  */
-  unsigned int no_data_return : 1;  /* Used by SEARCH and NEXT.  */
+
+  /* If the any of the filter flags are set a search returns only
+   * results with a blob type matching one of these filter flags.  */
+  unsigned int filter_opgp : 1;
+  unsigned int filter_x509 : 1;
+  /* Used by SEARCH and NEXT.  */
+  unsigned int no_data_return : 1;
 };
 
 
