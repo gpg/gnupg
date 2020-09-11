@@ -178,6 +178,107 @@ test_make_canon_sexp_from_rsa_pk (void)
 }
 
 
+
+/* Communiacation object for tcmp.  */
+struct tcmp_parm_s {
+  int curve_seen;
+};
+
+/* Helper for test_cmp_canon_sexp.  */
+static int
+tcmp1 (void *opaque, int depth,
+       const unsigned char *aval, size_t alen,
+       const unsigned char *bval, size_t blen)
+{
+  struct tcmp_parm_s *parm = opaque;
+
+  (void)depth;
+
+  if (parm->curve_seen)
+    {
+      /* Last token was "curve", canonicalize its argument.  */
+      parm->curve_seen = 0;
+
+      if (alen == 8 && !memcmp (aval, "nistp256", alen))
+        {
+          alen = 19;
+          aval = "1.2.840.10045.3.1.7";
+        }
+
+      if (blen == 8 && !memcmp (bval, "nistp256", blen))
+        {
+          blen = 19;
+          bval = "1.2.840.10045.3.1.7";
+        }
+    }
+  else if (alen == 5 && !memcmp (aval, "curve", 5))
+    parm->curve_seen = 1;
+  else
+    parm->curve_seen = 0;
+
+  if (alen > blen)
+    return 1;
+  else if (alen < blen)
+    return -1;
+  else
+    return memcmp (aval, bval, alen);
+}
+
+
+static void
+test_cmp_canon_sexp (void)
+{
+  struct {
+    unsigned char *a;
+    unsigned char *b;
+    int expected0;  /* Expected result without compare function.    */
+    int expected1;  /* Expected result with compare function tcmp1. */
+  }
+  tests[] = {
+  {
+   "(10:public-key(3:ecc(5:curve8:nistp256)(1:q10:qqqqqqqqqq)))",
+   "(10:public-key(3:ecc(5:curve8:nistp256)(1:q10:qqqqqqqqqq)))",
+   0, 0
+  },
+  {
+   "(10:public-key(3:ecc(5:curve19:1.2.840.10045.3.1.7)(1:q10:qqqqqqqqqq)))",
+   "(10:public-key(3:ecc(5:curve19:1.2.840.10045.3.1.7)(1:q10:qqqqqqqqqq)))",
+   0, 0
+  },
+  {
+   "(10:public-key(3:ecc(5:curve8:nistp256)(1:q10:qqqqqqqqqq)))",
+   "(10:public-key(3:ecc(5:curve19:1.2.840.10045.3.1.7)(1:q10:qqqqqqqqqq)))",
+   -1, 0
+  },
+  {
+   "(10:public-key(3:ecc(5:curve19:1.2.840.10045.3.1.7)(1:q10:qqqqqqqqqq)))",
+   "(10:public-key(3:ecc(5:curve8:nistp256)(1:q10:qqqqqqqqqq)))",
+   1, 0
+  },
+  {
+   NULL
+  }
+  };
+  struct tcmp_parm_s parm = {0};
+  int idx;
+  int res;
+
+  for (idx=0; tests[idx].a; idx++)
+    {
+      res = cmp_canon_sexp (tests[idx].a, strlen (tests[idx].a),
+                            tests[idx].b, strlen (tests[idx].b),
+                            NULL, NULL);
+      if (res != tests[idx].expected0)
+        fail (idx);
+      res = cmp_canon_sexp (tests[idx].a, strlen (tests[idx].a),
+                            tests[idx].b, strlen (tests[idx].b),
+                            tcmp1, &parm);
+      if (res != tests[idx].expected1)
+        fail (idx);
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -186,6 +287,7 @@ main (int argc, char **argv)
 
   test_hash_algo_from_sigval ();
   test_make_canon_sexp_from_rsa_pk ();
+  test_cmp_canon_sexp ();
 
   return 0;
 }

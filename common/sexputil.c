@@ -263,6 +263,96 @@ cmp_simple_canon_sexp (const unsigned char *a_orig,
 }
 
 
+
+/* Helper for cmp_canon_sexp.  */
+static int
+cmp_canon_sexp_def_tcmp (void *ctx, int depth,
+                         const unsigned char *aval, size_t alen,
+                         const unsigned char *bval, size_t blen)
+{
+  (void)ctx;
+  (void)depth;
+
+  if (alen > blen)
+    return 1;
+  else if (alen < blen)
+    return -1;
+  else
+    return memcmp (aval, bval, alen);
+}
+
+
+/* Compare the two canonical encoded s-expressions A with maximum
+ * length ALEN and B with maximum length BLEN.
+ *
+ * Returns 0 if they match.
+ *
+ * If TCMP is NULL, this is not different really different from a
+ * memcmp but does not consider any garbage after the last closing
+ * parentheses.
+ *
+ * If TCMP is not NULL, it is expected to be a function to compare the
+ * values of each token.  TCMP is called for each token while parsing
+ * the s-expressions until TCMP return a non-zero value.  Here the CTX
+ * receives the provided value TCMPCTX, DEPTH is the number of
+ * currently open parentheses and (AVAL,ALEN) and (BVAL,BLEN) the
+ * values of the current token.  TCMP needs to return zero to indicate
+ * that the tokens match.  */
+int
+cmp_canon_sexp (const unsigned char *a, size_t alen,
+                const unsigned char *b, size_t blen,
+                int (*tcmp)(void *ctx, int depth,
+                            const unsigned char *aval, size_t avallen,
+                            const unsigned char *bval, size_t bvallen),
+                void *tcmpctx)
+{
+  const unsigned char *a_buf, *a_tok;
+  const unsigned char *b_buf, *b_tok;
+  size_t a_buflen, a_toklen;
+  size_t b_buflen, b_toklen;
+  int a_depth, b_depth, ret;
+
+  if ((!a && !b) || (!alen && !blen))
+    return 0; /* Both are NULL, they are identical. */
+  if (!a || !b)
+    return !!a - !!b; /* One is NULL, they are not identical. */
+  if (*a != '(' || *b != '(')
+    log_bug ("invalid S-exp in %s\n", __func__);
+
+  if (!tcmp)
+    tcmp = cmp_canon_sexp_def_tcmp;
+
+  a_depth = 0;
+  a_buf = a;
+  a_buflen = alen;
+  b_depth = 0;
+  b_buf = b;
+  b_buflen = blen;
+
+  for (;;)
+    {
+      if (parse_sexp (&a_buf, &a_buflen, &a_depth, &a_tok, &a_toklen))
+        return -1;  /* A is invalid.  */
+      if (parse_sexp (&b_buf, &b_buflen, &b_depth, &b_tok, &b_toklen))
+        return -1;  /* B is invalid.  */
+      if (!a_depth && !b_depth)
+        return 0; /* End of both expressions - they match.  */
+      if (a_depth != b_depth)
+        return a_depth - b_depth; /* Not the same structure   */
+      if (!a_tok && !b_tok)
+        ; /* parens */
+      else if (a_tok && b_tok)
+        {
+          ret = tcmp (tcmpctx, a_depth, a_tok, a_toklen, b_tok, b_toklen);
+          if (ret)
+            return ret;  /* Mismatch */
+        }
+      else /* One has a paren other has not.  */
+        return !!a_tok - !!b_tok;
+    }
+}
+
+
 /* Create a simple S-expression from the hex string at LINE.  Returns
    a newly allocated buffer with that canonical encoded S-expression
    or NULL in case of an error.  On return the number of characters

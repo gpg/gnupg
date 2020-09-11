@@ -242,8 +242,8 @@ parse_ber_header (unsigned char const **buffer, size_t *size,
    returned as a pointer into the original buffer at TOK and TOKLEN.
    If a parentheses is the next token, TOK will be set to NULL.
    TOKLEN is checked to be within the bounds.  On error an error code
-   is returned and no pointer is not guaranteed to point to
-   a meaningful value.  DEPTH should be initialized to 0 and will
+   is returned and pointers are not guaranteed to point to
+   meaningful values.  DEPTH should be initialized to 0 and will
    reflect on return the actual depth of the tree. To detect the end
    of the S-expression it is advisable to check DEPTH after a
    successful return.
