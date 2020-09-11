@@ -1,5 +1,5 @@
 /* backend-sqlite.c - SQLite based backend for keyboxd
- * Copyright (C) 2019 g10 Code GmbH
+ * Copyright (C) 2019, 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -130,8 +130,8 @@ static struct
      /* The fingerprint, for OpenPGP either 20 octets or 32 octets;
       * for X.509 it is the same as the UBID.  */
      "fpr  BLOB NOT NULL PRIMARY KEY,"
-     /* The long keyid as 64 bit integer.  */
-     "kid  INTEGER NOT NULL,"
+     /* The long keyid as a 64 bit blob.  */
+     "kid  BLOB NOT NULL,"
      /* The keygrip for this key.  */
      "keygrip BLOB NOT NULL,"
      /* 0 = primary or X.509, > 0 = subkey. */
@@ -262,29 +262,23 @@ diag_step_err (int res, sqlite3_stmt *stmt)
 }
 
 
-/* We store the keyid in the database as an integer - this function
- * converts it from a memory buffer.  */
-static GPGRT_INLINE sqlite3_int64
-kid_from_mem (const unsigned char *keyid)
+/* We store the keyid in the database as an 8 byte blob.  This
+ * function converts it from the usual u32[2] array.  BUFFER is a
+ * caller provided buffer of at least 8 bytes; a pointer to that
+ * buffer is the return value.  */
+static GPGRT_INLINE unsigned char *
+kid_from_u32 (u32 *keyid, unsigned char *buffer)
 {
-  return (  ((uint64_t)keyid[0] << 56)
-          | ((uint64_t)keyid[1] << 48)
-          | ((uint64_t)keyid[2] << 40)
-          | ((uint64_t)keyid[3] << 32)
-          | ((uint64_t)keyid[4] << 24)
-          | ((uint64_t)keyid[5] << 16)
-          | ((uint64_t)keyid[6] << 8)
-          | ((uint64_t)keyid[7])
-          );
-}
+  buffer[0] = keyid[0] >> 24;
+  buffer[1] = keyid[0] >> 16;
+  buffer[2] = keyid[0] >> 8;
+  buffer[3] = keyid[0];
+  buffer[4] = keyid[1] >> 24;
+  buffer[5] = keyid[1] >> 16;
+  buffer[6] = keyid[1] >> 8;
+  buffer[7] = keyid[1];
 
-
-/* We store the keyid in the database as an integer - this function
- * converts it from the usual u32[2] array.  */
-static GPGRT_INLINE sqlite3_int64
-kid_from_u32 (u32 *keyid)
-{
-  return (((uint64_t)keyid[0] << 32) | ((uint64_t)keyid[1]) );
+  return buffer;
 }
 
 
@@ -360,22 +354,6 @@ run_sql_bind_int (sqlite3_stmt *stmt, int no, int value)
   int res;
 
   res = sqlite3_bind_int (stmt, no, value);
-  if (res)
-    err = diag_bind_err (res, stmt);
-  else
-    err = 0;
-  return err;
-}
-
-
-/* Helper to bind an INTEGER64 parameter to a statement.  */
-static gpg_error_t
-run_sql_bind_int64 (sqlite3_stmt *stmt, int no, sqlite3_int64 value)
-{
-  gpg_error_t err;
-  int res;
-
-  res = sqlite3_bind_int64 (stmt, no, value);
   if (res)
     err = diag_bind_err (res, stmt);
   else
@@ -698,6 +676,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
   gpg_error_t err = 0;
   unsigned int descidx;
   const char *extra = NULL;
+  unsigned char kidbuf[8];
 
 
   descidx = 0; /* Fixme: take from context.  */
@@ -862,10 +841,17 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
       break;
 
     case KEYDB_SEARCH_MODE_SHORT_KID:
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
-      /* pk_no = has_short_kid (blob, desc[n].u.kid[1]); */
-      /* if (pk_no) */
-      /*   goto found; */
+      if (!ctx->select_stmt)
+        err = run_sql_prepare ("SELECT p.ubid, p.type, p.ephemeral,"
+                               " p.revoked, p.keyblob"
+                               " FROM pubkey as p, fingerprint as f"
+                               " WHERE p.ubid = f.ubid AND"
+                               " substr(f.kid,5) = ?1",
+                               extra, &ctx->select_stmt);
+      if (!err)
+        err = run_sql_bind_blob (ctx->select_stmt, 1,
+                                 kid_from_u32 (desc[descidx].u.kid, kidbuf)+4,
+                                 4);
       break;
 
     case KEYDB_SEARCH_MODE_LONG_KID:
@@ -876,8 +862,9 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " WHERE p.ubid = f.ubid AND f.kid = ?1",
                                extra, &ctx->select_stmt);
       if (!err)
-        err = run_sql_bind_int64 (ctx->select_stmt, 1,
-                                  kid_from_u32 (desc[descidx].u.kid));
+        err = run_sql_bind_blob (ctx->select_stmt, 1,
+                                 kid_from_u32 (desc[descidx].u.kid, kidbuf),
+                                 8);
       break;
 
     case KEYDB_SEARCH_MODE_FPR:
@@ -927,7 +914,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
           else
             extra = " ORDER by ubid";
 
-          err = run_sql_prepare ("SELECT ubid, type, ephemeral, keyblob"
+          err = run_sql_prepare ("SELECT ubid, type, ephemeral, revoked,"
+                                 " keyblob"
                                  " FROM pubkey as p",
                                  extra, &ctx->select_stmt);
         }
@@ -1142,7 +1130,8 @@ store_into_pubkey (enum kbxd_store_modes mode,
  * fingerprint table.  */
 static gpg_error_t
 store_into_fingerprint (const unsigned char *ubid, int subkey,
-                        const unsigned char *keygrip, sqlite3_int64 kid,
+                        const unsigned char *keygrip,
+                        const unsigned char *kid,
                         const unsigned char *fpr, int fprlen)
 {
   gpg_error_t err;
@@ -1157,7 +1146,7 @@ store_into_fingerprint (const unsigned char *ubid, int subkey,
   err = run_sql_bind_blob (stmt, 1, fpr, fprlen);
   if (err)
     goto leave;
-  err = run_sql_bind_int64 (stmt, 2, kid);
+  err = run_sql_bind_blob (stmt, 2, kid, 8);
   if (err)
     goto leave;
   err = run_sql_bind_blob (stmt, 3, keygrip, KEYGRIP_LEN);
@@ -1370,7 +1359,7 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
 
       /* Note that for X.509 the UBID is also the fingerprint.  */
       err = store_into_fingerprint (ubid, 0, grip,
-                                    kid_from_mem (ubid+12),
+                                    ubid+12,
                                     ubid, UBID_LEN);
       if (err)
         goto leave;
@@ -1424,7 +1413,7 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
 
       kinfo = &info.primary;
       err = store_into_fingerprint (ubid, 0, kinfo->grip,
-                                    kid_from_mem (kinfo->keyid),
+                                    kinfo->keyid,
                                     kinfo->fpr, kinfo->fprlen);
       if (err)
         goto leave;
@@ -1435,7 +1424,7 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
           for (kinfo = &info.subkeys; kinfo; kinfo = kinfo->next, subkey++)
             {
               err = store_into_fingerprint (ubid, subkey, kinfo->grip,
-                                            kid_from_mem (kinfo->keyid),
+                                            kinfo->keyid,
                                             kinfo->fpr, kinfo->fprlen);
               if (err)
                 goto leave;
