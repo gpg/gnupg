@@ -183,6 +183,12 @@ gpg_error_t make_canon_sexp_pad (gcry_sexp_t sexp, int secure,
 gpg_error_t keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,
                                      unsigned char *grip);
 int cmp_simple_canon_sexp (const unsigned char *a, const unsigned char *b);
+int cmp_canon_sexp (const unsigned char *a, size_t alen,
+                    const unsigned char *b, size_t blen,
+                    int (*tcmp)(void *ctx, int depth,
+                                const unsigned char *aval, size_t avallen,
+                                const unsigned char *bval, size_t bvallen),
+                    void *tcmpctx);
 unsigned char *make_simple_sexp_from_hexstr (const char *line,
                                              size_t *nscanned);
 int hash_algo_from_sigval (const unsigned char *sigval);
