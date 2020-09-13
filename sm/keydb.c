@@ -1,6 +1,6 @@
 /* keydb.c - key database dispatcher
  * Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
- * Copyright (C) 2014 g10 Code GmbH
+ * Copyright (C) 2014, 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -109,6 +109,7 @@ struct keydb_handle {
 
   /* Various flags.  */
   unsigned int last_ubid_valid:1;
+  unsigned int last_is_ephemeral;  /* Last found key is ephemeral.  */
 
   /* The UBID of the last returned keyblock.  */
   unsigned char last_ubid[UBID_LEN];
@@ -1217,6 +1218,10 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 gpg_error_t
 keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
+  (void)hd;
+  (void)cert;
+  return GPG_ERR_BUG;
+#if 0
   gpg_error_t err;
   unsigned char digest[20];
 
@@ -1260,6 +1265,7 @@ keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
   if (DBG_CLOCK)
     log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
   return err;
+#endif /*0*/
 }
 
 
@@ -1274,7 +1280,7 @@ keydb_delete (KEYDB_HANDLE hd)
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if ( hd->found < 0 || hd->found >= hd->used)
+  if (!hd->use_keyboxd && (hd->found < 0 || hd->found >= hd->used))
     return gpg_error (GPG_ERR_NOT_FOUND);
 
   if (opt.dry_run)
@@ -1285,7 +1291,21 @@ keydb_delete (KEYDB_HANDLE hd)
 
   if (hd->use_keyboxd)
     {
-      /* FIXME */
+      unsigned char hexubid[UBID_LEN * 2 + 1];
+      char line[ASSUAN_LINELENGTH];
+
+      if (!hd->last_ubid_valid)
+        {
+          err = gpg_error (GPG_ERR_VALUE_NOT_FOUND);
+          goto leave;
+        }
+
+      bin2hex (hd->last_ubid, UBID_LEN, hexubid);
+      snprintf (line, sizeof line, "DELETE %s", hexubid);
+      err = assuan_transact (hd->kbl->ctx, line,
+                             NULL, NULL,
+                             NULL, NULL,
+                             NULL, NULL);
       goto leave;
     }
 
@@ -1506,6 +1526,9 @@ search_status_cb (void *opaque, const char *line)
             hd->last_ubid_valid = 1;
           else
             err = gpg_error (GPG_ERR_INV_VALUE);
+          while (spacep (s))
+            s++;
+          hd->last_is_ephemeral = (*s == 'e');
         }
     }
 
@@ -1717,7 +1740,8 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
                                                 &hd->kbl->search_result.len)))
         {
           /* if (hd->last_ubid_valid) */
-          /*   log_printhex (hd->last_ubid, 20, "found UBID:"); */
+          /*   log_printhex (hd->last_ubid, 20, "found UBID%s:", */
+          /*                 hd->last_is_ephemeral? "(ephemeral)":""); */
         }
 
     }

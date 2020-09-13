@@ -112,7 +112,7 @@ delete_one (ctrl_t ctrl, const char *username)
       goto leave;
     }
 
-  /* We need to search again to get back to the right position.  Neo
+  /* We need to search again to get back to the right position.  Note
    * that the lock is kept until the KH is released.  */
   rc = keydb_lock (kh);
   if (rc)

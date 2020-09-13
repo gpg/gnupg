@@ -1522,6 +1522,9 @@ be_sqlite_delete (ctrl_t ctrl, backend_handle_t backend_hd,
       ("DELETE from fingerprint WHERE ubid = :1", ubid);
   if (!err)
     err = run_sql_statement_bind_ubid
+      ("DELETE from issuer WHERE ubid = :1", ubid);
+  if (!err)
+    err = run_sql_statement_bind_ubid
       ("DELETE from pubkey WHERE ubid = :1", ubid);
 
 
