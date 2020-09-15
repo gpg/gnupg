@@ -2650,31 +2650,35 @@ verify_chv2 (app_t app, ctrl_t ctrl,
       if (rc)
         return rc;
       app->did_chv2 = 1;
+
+      if (!app->did_chv1 && !app->force_chv1 && pinvalue)
+        {
+          /* For convenience we verify CHV1 here too.  We do this only if
+             the card is not configured to require a verification before
+             each CHV1 controlled operation (force_chv1) and if we are not
+             using the pinpad (PINVALUE == NULL). */
+          rc = iso7816_verify (app_get_slot (app), 0x81, pinvalue, pinlen);
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+            rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+          if (rc)
+            {
+              log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
+              flush_cache_after_error (app);
+            }
+          else
+            {
+              app->did_chv1 = 1;
+              /* Note that we are not able to cache the CHV 1 here because
+               * it is possible that due to the use of a KDF-DO PINVALUE
+               * has the hashed binary PIN of length PINLEN.  */
+            }
+        }
     }
   else
-    rc = 0;
-
-  if (!app->did_chv1 && !app->force_chv1 && pinvalue)
     {
-      /* For convenience we verify CHV1 here too.  We do this only if
-         the card is not configured to require a verification before
-         each CHV1 controlled operation (force_chv1) and if we are not
-         using the pinpad (PINVALUE == NULL). */
-      rc = iso7816_verify (app_get_slot (app), 0x81, pinvalue, pinlen);
-      if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-        rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+      rc = verify_a_chv (app, ctrl, pincb, pincb_arg, 1, 0, &pinvalue, &pinlen);
       if (rc)
-        {
-          log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
-          flush_cache_after_error (app);
-        }
-      else
-        {
-          app->did_chv1 = 1;
-          /* Note that we are not able to cache the CHV 1 here because
-           * it is possible that due to the use of a KDF-DO PINVALUE
-           * has the hashed binary PIN of length PINLEN.  */
-        }
+        return rc;
     }
 
   wipe_and_free (pinvalue, pinlen);
