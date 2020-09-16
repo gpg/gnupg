@@ -3767,7 +3767,7 @@ build_ecc_privkey_template (app_t app, int keyno,
 }
 
 
-/* Helper for do_writekley to change the size of a key.  Not ethat
+/* Helper for do_writekey to change the size of a key.  Not ethat
    this deletes the entire key without asking.  */
 static gpg_error_t
 change_keyattr (app_t app, ctrl_t ctrl,
@@ -3796,6 +3796,9 @@ change_keyattr (app_t app, ctrl_t ctrl,
   app->did_chv1 = 0;
   app->did_chv2 = 0;
   app->did_chv3 = 0;
+  cache_pin (app, ctrl, 1, NULL);
+  cache_pin (app, ctrl, 2, NULL);
+  cache_pin (app, ctrl, 3, NULL);
   return err;
 }
 
