@@ -250,7 +250,7 @@ The currently defined protection modes are:
   they can easily be stripped by looking for the end of the list.
 
   The associated data required for this protection mode is the list
-  formiing the public key parameters.  For the above example this is
+  forming the public key parameters.  For the above example this is
   is this canonical encoded S-expression:
 
   (rsa

@@ -1271,9 +1271,9 @@ last file descriptor passed to the application.
 @xref{fun-assuan_sendfd, ,the assuan_sendfd function,assuan,the Libassuan
 manual}, on how to do descriptor passing.
 
-The @code{--armor} option may be used to advice the server that the
-input data is in @acronym{PEM} format, @code{--base64} advices that a
-raw base-64 encoding is used, @code{--binary} advices of raw binary
+The @code{--armor} option may be used to advise the server that the
+input data is in @acronym{PEM} format, @code{--base64} advises that a
+raw base-64 encoding is used, @code{--binary} advises of raw binary
 input (@acronym{BER}).  If none of these options is used, the server
 tries to figure out the used encoding, but this may not always be
 correct.
