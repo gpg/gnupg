@@ -2931,6 +2931,10 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
               value = NULL;
               valuelen = 0;
             }
+
+          cache_pin (app, ctrl, 1, NULL);
+          cache_pin (app, ctrl, 2, NULL);
+          cache_pin (app, ctrl, 3, NULL);
         }
       else
         {
