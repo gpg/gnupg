@@ -2924,6 +2924,13 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
           rc = verify_chv3 (app, ctrl, pincb, pincb_arg);
           if (rc)
             return rc;
+
+          if (valuelen == 3
+              && app->card->cardtype == CARDTYPE_GNUK)
+            {
+              value = NULL;
+              valuelen = 0;
+            }
         }
       else
         {
