@@ -2918,22 +2918,36 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
 
   if (table[idx].special == 4)
     {
-      if (valuelen == KDF_DATA_LENGTH_MIN)
+      if (app->card->cardtype == CARDTYPE_YUBIKEY
+          || app->card->cardtype == CARDTYPE_GNUK)
         {
-          /* Single user KDF of Gnuk */
           rc = verify_chv3 (app, ctrl, pincb, pincb_arg);
           if (rc)
             return rc;
         }
-      else if (valuelen == KDF_DATA_LENGTH_MAX)
+      else
         {
           char *oldpinvalue = NULL;
           char *buffer1 = NULL;
           size_t bufferlen1;
           const char *u, *a;
+          size_t ulen, alen;
 
-          u = (const char *)value + 44;
-          a = u + 34;
+          if (valuelen == 3)
+            {
+              u = "123456";
+              a = "12345678";
+              ulen = 6;
+              alen = 8;
+            }
+          else if (valuelen == KDF_DATA_LENGTH_MAX)
+            {
+              u = (const char *)value + 44;
+              a = u + 34;
+              ulen = alen = 32;
+            }
+          else
+            return gpg_error (GPG_ERR_INV_OBJ);
 
           if (!pin_from_cache (app, ctrl, 3, &oldpinvalue))
             {
@@ -2957,14 +2971,14 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
             rc = iso7816_change_reference_data (app_get_slot (app),
                                                 0x83,
                                                 buffer1, bufferlen1,
-                                                a, 32);
+                                                a, alen);
           if (!rc)
-            rc = iso7816_verify (app_get_slot (app), 0x83, a, 32);
+            rc = iso7816_verify (app_get_slot (app), 0x83, a, alen);
           if (!rc)
             cache_pin (app, ctrl, 3, "12345678");
 
           if (!rc)
-            rc = iso7816_reset_retry_counter (app_get_slot (app), 0x81, u, 32);
+            rc = iso7816_reset_retry_counter (app_get_slot (app), 0x81, u, ulen);
           if (!rc)
             cache_pin (app, ctrl, 1, "123456");
 
@@ -2974,11 +2988,9 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
           wipe_and_free (buffer1, bufferlen1);
           wipe_and_free_string (oldpinvalue);
         }
-      else
-        return gpg_error (GPG_ERR_INV_OBJ);
 
       /* Flush the cache again, because pin2hash_if_kdf uses the DO.  */
-      flush_cache_item (app, 0xF9);
+      flush_cache_item (app, 0x00F9);
     }
 
   rc = iso7816_put_data (app_get_slot (app),

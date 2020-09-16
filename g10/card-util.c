@@ -2107,8 +2107,8 @@ kdf_setup (const char *args)
 
   if (!strcmp (args, "off"))
     {
-      len = 5;
-      memcpy (kdf_data, "\xF9\x03\x81\x01\x00", len);
+      len = 3;
+      memcpy (kdf_data, "\x81\x01\x00", len);
     }
   else
     {
