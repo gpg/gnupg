@@ -421,7 +421,7 @@ fingerprint of the primary key the entire public key is deleted.
 @opindex delete-secret-keys
 Remove key from the secret keyring. In batch mode the key must be
 specified by fingerprint.  The option @option{--yes} can be used to
-advice gpg-agent not to request a confirmation.  This extra
+advise gpg-agent not to request a confirmation.  This extra
 pre-caution is done because @command{@gpgname} can't be sure that the
 secret key (as controlled by gpg-agent) is only used for the given
 OpenPGP public key.  If the exclamation mark syntax is used with the
@@ -434,7 +434,7 @@ primary key only the secret part of the primary key is deleted.
 @opindex delete-secret-and-public-key
 Same as @option{--delete-key}, but if a secret key exists, it will be
 removed first. In batch mode the key must be specified by fingerprint.
-The option @option{--yes} can be used to advice gpg-agent not to
+The option @option{--yes} can be used to advise gpg-agent not to
 request a confirmation.
 
 @item --export
