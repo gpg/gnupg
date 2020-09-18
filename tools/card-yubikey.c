@@ -310,7 +310,7 @@ yk_enable_disable (struct ykapps_s *yk, struct iface_s *iface,
  * stream to output information.  This function must only be called on
  * Yubikeys. */
 gpg_error_t
-yubikey_commands (card_info_t info, estream_t fp, int argc, char *argv[])
+yubikey_commands (card_info_t info, estream_t fp, int argc, const char *argv[])
 {
   gpg_error_t err;
   enum {ykLIST, ykENABLE, ykDISABLE } cmd;

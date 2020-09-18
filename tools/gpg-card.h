@@ -244,7 +244,7 @@ unsigned long agent_get_s2k_count (void);
 
 /*-- card-yubikey.c --*/
 gpg_error_t yubikey_commands (card_info_t info,
-                              estream_t fp, int argc, char *argv[]);
+                              estream_t fp, int argc, const char *argv[]);
 
 
 #endif /*GNUPG_GPG_CARD_H*/

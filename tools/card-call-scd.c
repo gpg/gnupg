@@ -962,7 +962,7 @@ learn_status_cb (void *opaque, const char *line)
           /* The format of such a line is:
            *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime]
            */
-          char *fields[4];
+          const char *fields[4];
           int nfields;
           const char *hexgrp, *usage;
           time_t keytime;

@@ -953,7 +953,7 @@ install_key_from_spec_file (const char *fname)
   char *line = NULL;
   size_t linelen = 0;
   size_t maxlen = 2048;
-  char *fields[2];
+  const char *fields[2];
   unsigned int lnr = 0;
 
   if (!fname || !strcmp (fname, ""))

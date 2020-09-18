@@ -842,7 +842,7 @@ scd_keypairinfo_status_cb (void *opaque, const char *line)
       /* The format of such a line is:
        *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime]
        */
-      char *fields[4];
+      const char *fields[4];
       int nfields;
       const char *hexgrp, *keyref, *usage;
       time_t atime;
@@ -1467,7 +1467,7 @@ readkey_status_cb (void *opaque, const char *line)
        * Note that we use only the first valid KEYPAIRINFO line.  More
        * lines are possible if a second card carries the same key.
        */
-      char *fields[4];
+      const char *fields[4];
       int nfields;
       time_t atime;
 
@@ -2099,7 +2099,7 @@ keyinfo_status_cb (void *opaque, const char *line)
        *      6        7        8
        *   <sshfpr>  <ttl>  <flags>
        */
-      char *fields[9];
+      const char *fields[9];
 
       if (split_fields (s, fields, DIM (fields)) == 9)
         {

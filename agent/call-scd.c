@@ -682,7 +682,7 @@ readkey_status_cb (void *opaque, const char *line)
        * Here we only need the keyref.  We use only the first received
        * KEYPAIRINFO; it is possible to receive several if there are
        * two or more active cards with the same key.  */
-      char *fields[2];
+      const char *fields[2];
       int nfields;
 
       line_buffer = xtrystrdup (line);

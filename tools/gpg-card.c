@@ -2189,11 +2189,11 @@ cmd_writekey (card_info_t info, char *argstr)
 {
   gpg_error_t err;
   int opt_force;
-  char *argv[2];
+  const char *argv[2];
   int argc;
   char *keyref_buffer = NULL;
-  char *keyref;
-  char *keygrip;
+  const char *keyref;
+  const char *keygrip;
 
   if (!info)
     return print_help
@@ -3376,7 +3376,7 @@ cmd_yubikey (card_info_t info, char *argstr)
 {
   gpg_error_t err, err2;
   estream_t fp = opt.interactive? NULL : es_stdout;
-  char *words[20];
+  const char *words[20];
   int nwords;
 
   if (!info)

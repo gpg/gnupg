@@ -558,7 +558,7 @@ decrypt_stream_status_cb (void *opaque, const char *keyword, char *args)
     log_debug ("gpg status: %s %s\n", keyword, args);
   if (!strcmp (keyword, "DECRYPTION_KEY") && !decinfo->fpr)
     {
-      char *fields[3];
+      const char *fields[3];
 
       if (split_fields (args, fields, DIM (fields)) >= 3)
         {
@@ -1199,7 +1199,7 @@ static void
 encrypt_response_status_cb (void *opaque, const char *keyword, char *args)
 {
   gpg_error_t *failure = opaque;
-  char *fields[2];
+  const char *fields[2];
 
   if (DBG_CRYPTO)
     log_debug ("gpg status: %s %s\n", keyword, args);

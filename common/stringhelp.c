@@ -1363,10 +1363,11 @@ strtokenize (const char *string, const char *delim)
  *   foo (fields[1]);
  */
 int
-split_fields (char *string, char **array, int arraysize)
+split_fields (char *string, const char **array, int arraysize)
 {
   int n = 0;
-  char *p, *pend;
+  const char *p;
+  char *pend;
 
   for (p = string; *p == ' '; p++)
     ;
@@ -1401,10 +1402,11 @@ split_fields (char *string, char **array, int arraysize)
  *   foo (fields[1]);
  */
 int
-split_fields_colon (char *string, char **array, int arraysize)
+split_fields_colon (char *string, const char **array, int arraysize)
 {
   int n = 0;
-  char *p, *pend;
+  const char *p;
+  char *pend;
 
   p = string;
   do

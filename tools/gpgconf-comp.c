@@ -1553,8 +1553,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
 
   while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
     {
-      char *fields[4];
-      char *optname, *optdesc;
+      const char *fields[4];
+      const char *optname, *optdesc;
       unsigned int optflags;
       int short_opt;
       gc_arg_type_t arg_type;
@@ -1621,8 +1621,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
                                         string_array_size,
                                         sizeof *string_array);
         }
-      string_array[string_array_used++] = optname = xstrdup (fields[0]);
-      string_array[string_array_used++] = optdesc = xstrdup (fields[3]);
+      optname = string_array[string_array_used++] = xstrdup (fields[0]);
+      optdesc = string_array[string_array_used++] = xstrdup (fields[3]);
 
       /* Create an option table which can then be supplied to
        * gpgrt_parser.  Unfortunately there is no private pointer in

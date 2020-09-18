@@ -2804,7 +2804,7 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int force;
   gpg_error_t err = 0;
-  char *argv[5];
+  const char *argv[5];
   int argc;
   unsigned char grip[20];
   const char *serialno, *timestamp_str, *keyref;
@@ -3501,7 +3501,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
 #if GCRYPT_VERSION_NUMBER >= 0x010800
       char *buf;
-      char *fields[5];
+      const char *fields[5];
 
       buf = gcry_get_config (0, "rng-type");
       if (buf

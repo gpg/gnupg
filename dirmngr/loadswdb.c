@@ -43,7 +43,7 @@ time_of_saved_swdb (const char *fname, time_t *r_filedate, time_t *r_verified)
   size_t length_of_line = 0;
   size_t  maxlen;
   ssize_t len;
-  char *fields[2];
+  const char *fields[2];
   gnupg_isotime_t isot;
   time_t filedate = (time_t)(-1);
   time_t verified = (time_t)(-1);
@@ -198,7 +198,7 @@ verify_status_cb (void *opaque, const char *keyword, char *args)
   /* We care only about the first valid signature.  */
   if (!strcmp (keyword, "VALIDSIG") && !parm->anyvalid)
     {
-      char *fields[3];
+      const char *fields[3];
 
       parm->anyvalid = 1;
       if (split_fields (args, fields, DIM (fields)) >= 3)

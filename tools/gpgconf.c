@@ -361,7 +361,7 @@ query_swdb (estream_t out, const char *name, const char *current_version)
   size_t length_of_line = 0;
   size_t  maxlen;
   ssize_t len;
-  char *fields[2];
+  const char *fields[2];
   char *p;
   gnupg_isotime_t filedate = {0};
   gnupg_isotime_t verified = {0};

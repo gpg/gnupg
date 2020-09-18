@@ -717,7 +717,7 @@ test_split_fields (void)
   };
 
   int tidx;
-  char *fields[10];
+  const char *fields[10];
   int field_count_expected, nfields, field_count, i;
   char *s2;
 
@@ -792,7 +792,7 @@ test_split_fields_colon (void)
   };
 
   int tidx;
-  char *fields[10];
+  const char *fields[10];
   int field_count_expected, nfields, field_count, i;
   char *s2;
 
