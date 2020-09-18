@@ -1380,9 +1380,6 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   struct card_key_info_s *l;
   int on_card;
 
-  if (ctrl->restricted)
-    return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
-
   if (has_option (line, "--ssh-list"))
     list_mode = 2;
   else
@@ -1430,6 +1427,9 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
 
   if (list_mode == 2)
     {
+      if (ctrl->restricted)
+        return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+
       if (cf)
         {
           while (!ssh_read_control_file (cf, hexgrip,
@@ -1455,6 +1455,9 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
     {
       char *dirname;
       struct dirent *dir_entry;
+
+      if (ctrl->restricted)
+        return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
       dirname = make_filename_try (gnupg_homedir (),
                                    GNUPG_PRIVATE_KEYS_DIR, NULL);
@@ -2272,8 +2275,37 @@ cmd_scd (assuan_context_t ctx, char *line)
   int rc;
 #ifdef BUILD_WITH_SCDAEMON
   ctrl_t ctrl = assuan_get_pointer (ctx);
+
   if (ctrl->restricted)
-    return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+    {
+      const char *argv[5];
+      int argc;
+      char *l;
+
+      l = xtrystrdup (line);
+      if (!l)
+        return gpg_error_from_syserror ();
+
+      argc = split_fields (l, argv, DIM (argv));
+
+      /* These commands are allowed.  */
+      if ((argc == 1 && !strcmp (argv[0], "SERIALNO"))
+          || (argc == 2
+              && !strcmp (argv[0], "GETINFO")
+              && !strcmp (argv[1], "version"))
+          || (argc == 2
+              && !strcmp (argv[0], "GETATTR")
+              && !strcmp (argv[1], "KEY-FPR"))
+          || (argc == 2
+              && !strcmp (argv[0], "KEYINFO")
+              && !strcmp (argv[1], "--list=encr")))
+        xfree (l);
+      else
+        {
+          xfree (l);
+          return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+        }
+    }
 
   /* All  SCD prefixed commands may change a key.  */
   eventcounter.maybe_key_change++;
