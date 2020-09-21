@@ -1271,7 +1271,7 @@ subkey_is_ok (const PKT_public_key *sub)
   return ! sub->flags.revoked && sub->flags.valid && ! sub->flags.disabled;
 }
 
-/* Return true if KEYBLOCK has only expired encryption subkyes.  Note
+/* Return true if KEYBLOCK has only expired encryption subkeys.  Note
  * that the function returns false if the key has no encryption
  * subkeys at all or the subkeys are revoked.  */
 static int

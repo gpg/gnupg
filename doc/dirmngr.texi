@@ -539,7 +539,7 @@ certificate for that pool.  Otherwise, it will use the system CAs.
 @section Configuration
 
 Dirmngr makes use of several directories when running in daemon mode:
-There are a few configuration files whih control the operation of
+There are a few configuration files to control the operation of
 dirmngr.  By default they may all be found in the current home
 directory (@pxref{option --homedir}).
 
@@ -589,14 +589,67 @@ part will be created by dirmngr if it does not exists but you need to
 make sure that the upper directory exists.
 
 @end table
-@manpause
 
-To be able to see what's going on you should create the configure file
-@file{~/gnupg/dirmngr.conf} with at least one line:
+Several options control the use of trusted certificates for TLS and
+CRLs.  Here is an Overview on the use and origin of those Root CA
+certificates:
+@table @asis
+
+@item System
+
+These System root certificates are used by:  FIXME
+
+The origin of the system provided certificates depends on the
+platform.  On Windows all certificates from the Windows System Stores
+@code{ROOT} and @code{CA} are used.
+
+On other platforms the certificates are read from the first file found
+form this list: @file{/etc/ssl/ca-bundle.pem},
+@file{/etc/ssl/certs/ca-certificates.crt},
+@file{/etc/pki/tls/cert.pem},
+@file{/usr/local/share/certs/ca-root-nss.crt},
+@file{/etc/ssl/cert.pem}.
+
+@item GnuPG
+
+The GnuPG specific certificates stored in the directory
+@file{/etc/gnupg/trusted-certs} are only used to validate CRLs.
+
+@c Note that dirmngr's VALIDATE command also uses them but that
+@c command is anyway only intended for debugging.
+
+@item OpenPGP keyserver
+
+For accessing the OpenPGP keyservers the only certificates used are
+those set with the configuration option @option{hkp-cacert}.
+
+@item OpenPGP keyserver pool
+
+This is usually only one certificate read from the file
+@file{@value{DATADIR}/gnupg/sks-keyservers.netCA.pem}.  If this
+certificate exists it is used to access the special keyservers
+@code{hkps.pool.sks-keyservers.net} (or @file{hkps://keys.gnupg.net}).
+
+@end table
+
+Please note that @command{gpgsm} accepts Root CA certificates for its
+own purposes only if they are listed in its file @file{trustlist.txt}.
+@command{dirmngr} does not make use of this list - except FIXME.
+
+
+@mansect notes
+
+To be able to see diagnostics it is often useful to put at least the
+following lines into the configuration file
+@file{~/gnupg/dirmngr.conf}:
 
 @example
 log-file ~/dirmngr.log
+verbose
 @end example
+
+You may want to check the log file to see whether all desired root CA
+certificates are correctly loaded.
 
 To be able to perform OCSP requests you probably want to add the line:
 
@@ -604,16 +657,24 @@ To be able to perform OCSP requests you probably want to add the line:
 allow-ocsp
 @end example
 
-To make sure that new options are read and that after the installation
-of a new GnuPG versions the installed dirmngr is running, you may want
-to kill an existing dirmngr first:
+To make sure that new options are read or that after the installation
+of a new GnuPG versions the right dirmngr version is running, you
+should kill an existing dirmngr so that a new instance is started as
+needed by the otehr components:
 
 @example
 gpgconf --kill dirmngr
 @end example
 
-You may check the log file to see whether all desired root
-certificates have been loaded correctly.
+Direct interfaction with the dirmngr is possible by using the command
+
+@example
+gpg-connect-agent --dirmngr
+@end example
+
+Enter @code{HELP} at the prompt to see a list of commands and enter
+@code{HELP} followed by a command name to get help on that command.
+
 
 
 @c

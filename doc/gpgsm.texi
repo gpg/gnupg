@@ -364,7 +364,7 @@ are ignored.
 
 Note that all parts of that string are expected to be UTF-8 encoded.
 This may lead to problems if the @sc{password} has originally been
-encoded as Latin-1; in such a case better configure tsuch an LDAP server
+encoded as Latin-1; in such a case better configure such an LDAP server
 using the global configuration of @command{dirmngr}.
 
 Here is an example which uses the default port, no username, no
