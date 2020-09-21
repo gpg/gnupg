@@ -2049,6 +2049,7 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
   gpg_error_t err = 0;
   const char *usage;
   u32 fprtime;
+  char *algostr = NULL;
 
   err = get_public_key (app, keyno);
   if (err)
@@ -2069,11 +2070,29 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
   if (retrieve_fprtime_from_card (app, keyno, &fprtime))
     fprtime = 0;
 
-  err = send_status_printf (ctrl, "KEYPAIRINFO", "%s OPENPGP.%d %s %lu",
+  {
+    gcry_sexp_t s_pkey;
+    if (gcry_sexp_new (&s_pkey, app->app_local->pk[keyno].key,
+                       app->app_local->pk[keyno].keylen, 0))
+      algostr = xtrystrdup ("?");
+    else
+      {
+        algostr = pubkey_algo_string (s_pkey, NULL);
+        gcry_sexp_release (s_pkey);
+      }
+  }
+  if (!algostr)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = send_status_printf (ctrl, "KEYPAIRINFO", "%s OPENPGP.%d %s %lu %s",
                             app->app_local->pk[keyno].keygrip_str,
-                            keyno+1, usage, (unsigned long)fprtime);
+                            keyno+1, usage, (unsigned long)fprtime, algostr);
 
  leave:
+  xfree (algostr);
   return err;
 }
 

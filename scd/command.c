@@ -433,7 +433,7 @@ static const char hlp_learn[] =
   "or a \"CANCEL\" to force the function to terminate with a Cancel\n"
   "error message.\n"
   "\n"
-  "With the option --keypairinfo only KEYPARIINFO status lines are\n"
+  "With the option --keypairinfo only KEYPAIRINFO status lines are\n"
   "returned.\n"
   "\n"
   "The response of this command is a list of status lines formatted as\n"
@@ -650,9 +650,11 @@ do_readkey (card_t card, ctrl_t ctrl, const char *line,
       if (opt_info)
         {
           char keygripstr[KEYGRIP_LEN*2+1];
+          char *algostr;
 
           rc = app_help_get_keygrip_string_pk (*pk_p, *pklen_p,
-                                               keygripstr, NULL, NULL);
+                                               keygripstr, NULL, NULL,
+                                               &algostr);
           if (rc)
             {
               log_error ("app_help_get_keygrip_string failed: %s\n",
@@ -665,7 +667,11 @@ do_readkey (card_t card, ctrl_t ctrl, const char *line,
           send_status_info (ctrl, "KEYPAIRINFO",
                             keygripstr, strlen (keygripstr),
                             line, strlen (line),
+                            "-", (size_t)1,
+                            "-", (size_t)1,
+                            algostr, strlen (algostr),
                             NULL, (size_t)0);
+          xfree (algostr);
         }
     }
   else

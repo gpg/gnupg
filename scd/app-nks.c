@@ -178,6 +178,7 @@ struct fid_cache_s {
   int fid;                          /* Zero for an unused slot.  */
   unsigned int  got_keygrip:1;      /* The keygrip and algo are valid.  */
   int algo;
+  char *algostr;                    /* malloced.  */
   char keygripstr[2*KEYGRIP_LEN+1];
 };
 
@@ -217,6 +218,8 @@ flush_fid_cache (app_t app)
   while (app->app_local->fid_cache)
     {
       struct fid_cache_s *next = app->app_local->fid_cache->next;
+      if (app->app_local->fid_cache)
+        xfree (app->app_local->fid_cache->algostr);
       xfree (app->app_local->fid_cache);
       app->app_local->fid_cache = next;
     }
@@ -270,10 +273,12 @@ get_dispserialno (app_t app)
  * all the ECC parameters required, we don't do that but rely that the
  * corresponding certificate at CFID is already available and get the
  * public key from there.  If R_ALGO is not NULL the public key
- * algorithm for the returned KEYGRIP is stored there.  */
+ * algorithm for the returned KEYGRIP is stored there.  If R_ALGOSTR
+ * is not NULL the public key algo string (e.g. "rsa2048") is stored
+ * there.  */
 static gpg_error_t
 keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
-                         int *r_algo)
+                         int *r_algo, char **r_algostr)
 {
   gpg_error_t err;
   unsigned char grip[20];
@@ -281,6 +286,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
   size_t buflen[2];
   gcry_sexp_t sexp = NULL;
   int algo = 0;  /* Public key algo.  */
+  char *algostr = NULL; /* Public key algo string.  */
   int i;
   int offset[2] = { 0, 0 };
   struct fid_cache_s *ci;
@@ -290,9 +296,17 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
       {
         if (!ci->got_keygrip)
           return gpg_error (GPG_ERR_NOT_FOUND);
+        if (r_algostr && !ci->algostr)
+          break;  /* Not in the cache - try w/o cache.  */
         memcpy (r_gripstr, ci->keygripstr, 2*KEYGRIP_LEN+1);
         if (r_algo)
           *r_algo = ci->algo;
+        if (r_algostr)
+          {
+            *r_algostr = xtrystrdup (ci->algostr);
+            if (!*r_algostr)
+              return gpg_error_from_syserror ();
+          }
         return 0;  /* Found in cache.  */
       }
 
@@ -308,7 +322,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
         {
           log_error ("nks: error reading certificate %04X: %s\n",
                      cfid, gpg_strerror (err));
-          return err;
+          goto leave;
         }
 
       err = app_help_pubkey_from_cert (cert, certlen, &pk, &pklen);
@@ -317,10 +331,11 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
         {
           log_error ("nks: error parsing certificate %04X: %s\n",
                      cfid, gpg_strerror (err));
-          return err;
+          goto leave;
         }
 
-      err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL, &algo);
+      err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL,
+                                            &algo, &algostr);
       xfree (pk);
       if (err)
         log_error ("nks: error getting keygrip for certificate %04X: %s\n",
@@ -331,17 +346,17 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
 
   err = iso7816_select_file (app_get_slot (app), pkfid, 0);
   if (err)
-    return err;
+    goto leave;
   err = iso7816_read_record (app_get_slot (app), 1, 1, 0,
                              &buffer[0], &buflen[0]);
   if (err)
-    return err;
+    goto leave;
   err = iso7816_read_record (app_get_slot (app), 2, 1, 0,
                              &buffer[1], &buflen[1]);
   if (err)
     {
       xfree (buffer[0]);
-      return err;
+      goto leave;
     }
 
   if (app->appversion < 3)
@@ -391,7 +406,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
             {
               xfree (buffer[0]);
               xfree (buffer[1]);
-              return gpg_error_from_syserror ();
+              err = gpg_error_from_syserror ();
+              goto leave;
             }
           newbuf[0] = 0;
           memcpy (newbuf+1, buffer[i]+offset[i], buflen[i] - offset[i]);
@@ -430,6 +446,12 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
  leave:
   if (!err)
     {
+      if (r_algostr)
+        {
+          *r_algostr = algostr;
+          algostr = NULL;
+        }
+
       /* FIXME: We need to implement not_found caching.  */
       for (ci = app->app_local->fid_cache; ci; ci = ci->next)
         if (ci->fid && ci->fid == pkfid)
@@ -437,6 +459,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
             /* Update the keygrip.  */
             memcpy (ci->keygripstr, r_gripstr, 2*KEYGRIP_LEN+1);
             ci->algo = algo;
+            xfree (ci->algostr);
+            ci->algostr = algostr? xtrystrdup (algostr) : NULL;
             ci->got_keygrip = 1;
             break;
           }
@@ -461,6 +485,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
         }
     }
   gcry_sexp_release (sexp);
+  xfree (algostr);
   return err;
 }
 
@@ -526,7 +551,7 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
 
               err = keygripstr_from_pk_file (app, filelist[idx].fid,
                                              filelist[idx].iskeypair,
-                                             keygripstr, r_algo);
+                                             keygripstr, r_algo, NULL);
               if (err)
                 {
                   log_info ("nks: no keygrip for FID 0x%04X: %s - ignored\n",
@@ -595,7 +620,7 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
           /* We need to get the public key algo.  */
           err = keygripstr_from_pk_file (app, filelist[idx].fid,
                                          filelist[idx].iskeypair,
-                                         keygripstr, r_algo);
+                                         keygripstr, r_algo, NULL);
           if (err)
             log_error ("nks: no keygrip for FID 0x%04X: %s\n",
                        filelist[idx].fid, gpg_strerror (err));
@@ -822,9 +847,11 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
           char gripstr[40+1];
           char usagebuf[5];
           int usageidx = 0;
+          char *algostr = NULL;
 
           err = keygripstr_from_pk_file (app, filelist[i].fid,
-                                         filelist[i].iskeypair, gripstr, NULL);
+                                         filelist[i].iskeypair, gripstr,
+                                         NULL, &algostr);
           if (err)
             log_error ("can't get keygrip from FID 0x%04X: %s\n",
                        filelist[i].fid, gpg_strerror (err));
@@ -843,8 +870,11 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
                                 gripstr, 40,
                                 id_buf, strlen (id_buf),
                                 usagebuf, strlen (usagebuf),
+                                "-", (size_t)1,
+                                algostr, strlen (algostr),
                                 NULL, (size_t)0);
             }
+          xfree (algostr);
         }
     }
 }
@@ -2073,7 +2103,8 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
         }
 
       err = keygripstr_from_pk_file (app, filelist[idx].fid,
-                                     filelist[idx].iskeypair, keygripstr, NULL);
+                                     filelist[idx].iskeypair, keygripstr,
+                                     NULL, NULL);
       if (err)
         {
           log_error ("can't get keygrip from FID 0x%04X: %s\n",

@@ -2,7 +2,7 @@
 #+TITLE: GnuPG Details
 # Globally disable superscripts and subscripts:
 #+OPTIONS: ^:{}
-#
+#+STARTUP: showall
 
 # Note: This file uses org-mode; it should be easy to read as plain
 # text but be aware of some markup peculiarities: Verbatim code is
@@ -1183,7 +1183,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     byte is either '-' for standard key or 'e' for an ephemeral key.
     The second byte is either '-' or 'r' for a known revoked key.
 
-*** KEYPAIRINFO <grip> <keyref> [<usage>] [<keytime>]
+*** KEYPAIRINFO <grip> <keyref> [<usage>] [<keytime>] [<algostr>]
 
     This status is emitted by scdaemon and gpg-agent to convey brief
     information about keypairs stored on tokens.  <grip> is the
@@ -1195,8 +1195,9 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     encryption, 's' for signing, 'a' for authentication). A '-' can be
     used to tell that usage flags are not conveyed.  <keytime> is used
     by OpenPGP cards for the stored key creation time.  A '-' means no
-    info available.  The format is the usual ISO string are a number
-    with the seconds since Epoch.
+    info available.  The format is the usual ISO string or a number
+    with the seconds since Epoch.  <algostr> is the algorithm or curve
+    this key uses (e.g. "rsa2048") or a "-" if not known.
 *** MANUFACTURER <n> [<string>]
 
     This status returns the Manufactorer ID as the unsigned number N.

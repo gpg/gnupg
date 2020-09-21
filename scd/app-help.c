@@ -57,10 +57,12 @@ app_help_count_bits (const unsigned char *a, size_t len)
  * function succeeded, the S-expression representing the key is stored
  * there.  The caller needs to call gcry_sexp_release on that.  If
  * R_ALGO is not NULL the public key algorithm id of Libgcrypt is
- * stored there.  */
+ * stored there.  If R_ALGOSTR is not NULL and the function succeeds a
+ * newly allocated algo string (e.g. "rsa2048") is stored there. */
 gpg_error_t
 app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip,
-                                gcry_sexp_t *r_pkey, int *r_algo)
+                                gcry_sexp_t *r_pkey, int *r_algo,
+                                char **r_algostr)
 {
   gpg_error_t err;
   gcry_sexp_t s_pkey;
@@ -68,6 +70,8 @@ app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip,
 
   if (r_pkey)
     *r_pkey = NULL;
+  if (r_algostr)
+    *r_algostr = NULL;
 
   err = gcry_sexp_sscan (&s_pkey, NULL, pk, pklen);
   if (err)
@@ -80,6 +84,17 @@ app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip,
 
   if (r_algo)
     *r_algo = get_pk_algo_from_key (s_pkey);
+
+  if (r_algostr)
+    {
+      *r_algostr = pubkey_algo_string (s_pkey, NULL);
+      if (!*r_algostr)
+        {
+          err = gpg_error_from_syserror ();
+          gcry_sexp_release (s_pkey);
+          return err;
+        }
+    }
 
   if (r_pkey)
     *r_pkey = s_pkey;
@@ -116,7 +131,7 @@ app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip,
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
   err = app_help_get_keygrip_string_pk ((void*)p, n, hexkeygrip,
-                                        r_pkey, r_algo);
+                                        r_pkey, r_algo, NULL);
   ksba_free (p);
   return err;
 }

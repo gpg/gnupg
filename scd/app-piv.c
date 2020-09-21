@@ -1538,8 +1538,10 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
       char keygripstr[KEYGRIP_LEN*2+1];
       char idbuf[50];
       const char *usage;
+      char *algostr;
 
-      err = app_help_get_keygrip_string_pk (pk, pklen, keygripstr, NULL, NULL);
+      err = app_help_get_keygrip_string_pk (pk, pklen, keygripstr,
+                                            NULL, NULL, &algostr);
       if (err)
         {
           log_error ("app_help_get_keygrip_string_pk failed: %s\n",
@@ -1553,7 +1555,10 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
                         keygripstr, strlen (keygripstr),
                         idbuf, strlen (idbuf),
                         usage, strlen (usage),
+                        "-", (size_t)1,
+                        algostr, strlen (algostr),
                         NULL, (size_t)0);
+      xfree (algostr);
     }
 
   if (r_pk && r_pklen)
