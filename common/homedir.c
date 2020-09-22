@@ -1122,7 +1122,7 @@ gnupg_module_name (int which)
 #ifdef GNUPG_DEFAULT_KEYBOXD
       return GNUPG_DEFAULT_KEYBOXD;
 #else
-      X(bindir, "keyboxd", KEYBOXD_NAME);
+      X(bindir, "kbx", KEYBOXD_NAME);
 #endif
 
     case GNUPG_MODULE_NAME_PROTECT_TOOL:
