@@ -1512,6 +1512,7 @@ search_status_cb (void *opaque, const char *line)
   KEYDB_HANDLE hd = opaque;
   gpg_error_t err = 0;
   const char *s;
+  unsigned int n;
 
   if ((s = has_leading_keyword (line, "PUBKEY_INFO")))
     {
@@ -1522,13 +1523,14 @@ search_status_cb (void *opaque, const char *line)
           hd->last_ubid_valid = 0;
           while (*s && !spacep (s))
             s++;
-          if (hex2fixedbuf (s, hd->last_ubid, sizeof hd->last_ubid))
-            hd->last_ubid_valid = 1;
-          else
+          if (!(n=hex2fixedbuf (s, hd->last_ubid, sizeof hd->last_ubid)))
             err = gpg_error (GPG_ERR_INV_VALUE);
-          while (spacep (s))
-            s++;
-          hd->last_is_ephemeral = (*s == 'e');
+          else
+            {
+              hd->last_ubid_valid = 1;
+              s += n;
+              hd->last_is_ephemeral = (*s == 'e');
+            }
         }
     }
 
