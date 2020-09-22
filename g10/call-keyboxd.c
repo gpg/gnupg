@@ -313,7 +313,6 @@ gpg_error_t
 keydb_get_keyblock (KEYDB_HANDLE hd, kbnode_t *ret_kb)
 {
   gpg_error_t err;
-  int pk_no, uid_no;
 
   *ret_kb = NULL;
 
@@ -331,8 +330,9 @@ keydb_get_keyblock (KEYDB_HANDLE hd, kbnode_t *ret_kb)
 
   if (hd->kbl->search_result)
     {
-      pk_no = uid_no = 0;  /*FIXME: Get this from the keyboxd.  */
-      err = keydb_parse_keyblock (hd->kbl->search_result, pk_no, uid_no,
+      err = keydb_parse_keyblock (hd->kbl->search_result,
+                                  hd->last_ubid_valid? hd->last_pk_no  : 0,
+                                  hd->last_ubid_valid? hd->last_uid_no : 0,
                                   ret_kb);
       /* In contrast to the old code we close the iobuf here and thus
        * this function may be called only once to get a keyblock.  */
@@ -579,6 +579,7 @@ search_status_cb (void *opaque, const char *line)
   KEYDB_HANDLE hd = opaque;
   gpg_error_t err = 0;
   const char *s;
+  unsigned int n;
 
   if ((s = has_leading_keyword (line, "PUBKEY_INFO")))
     {
@@ -589,10 +590,29 @@ search_status_cb (void *opaque, const char *line)
           hd->last_ubid_valid = 0;
           while (*s && !spacep (s))
             s++;
-          if (hex2fixedbuf (s, hd->last_ubid, sizeof hd->last_ubid))
-            hd->last_ubid_valid = 1;
-          else
+          if (!(n=hex2fixedbuf (s, hd->last_ubid, sizeof hd->last_ubid)))
             err = gpg_error (GPG_ERR_INV_VALUE);
+          else
+            {
+              hd->last_ubid_valid = 1;
+              hd->last_uid_no = 0;
+              hd->last_pk_no = 0;
+              s += n;
+              while (*s && !spacep (s))
+                s++;
+              while (spacep (s))
+                s++;
+              if (*s)
+                {
+                  hd->last_uid_no = atoi (s);
+                  while (*s && !spacep (s))
+                    s++;
+                  while (spacep (s))
+                    s++;
+                  if (*s)
+                    hd->last_pk_no = atoi (s);
+                }
+            }
         }
     }
 
@@ -779,8 +799,9 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     {
       hd->kbl->search_result = iobuf_temp_with_content (buffer, len);
       xfree (buffer);
-      /* if (hd->last_ubid_valid) */
-      /*   log_printhex (hd->last_ubid, 20, "found UBID:"); */
+      if (DBG_LOOKUP && hd->last_ubid_valid)
+        log_printhex (hd->last_ubid, 20, "found UBID (%d,%d):",
+                      hd->last_uid_no, hd->last_pk_no);
     }
 
  leave:

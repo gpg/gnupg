@@ -102,6 +102,11 @@ struct keydb_handle_s
   /* The UBID of the last returned keyblock.  */
   unsigned char last_ubid[UBID_LEN];
 
+  /* The ordinals from the last search operations; valid if
+   * last_ubid_valid is set.  */
+  int last_uid_no;
+  int last_pk_no;
+
   /* END USE_KEYBOXD */
 
   /* BEGIN !USE_KEYBOXD */
