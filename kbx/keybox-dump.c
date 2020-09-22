@@ -84,6 +84,7 @@ print_checksum (const byte *buffer, size_t length, size_t unhashed, FILE *fp)
     }
   else
     hashlen = 20;
+
   if (length < 5+unhashed)
     {
       fputs ("[blob too short for a checksum]\n", fp);
@@ -170,6 +171,8 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   ulong nserial;
   ulong unhashed;
   const byte *p;
+  const byte *pend;
+  int is_fpr32;  /* blob version 2 */
 
   buffer = _keybox_get_blob_image (blob, &length);
 
@@ -207,7 +210,9 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       fprintf (fp, "[can't dump this blob type]\n");
       return 0;
     }
+  /* Here we have either BLOGTYPE_X509 or BLOBTYPE_OPENPGP */
   fprintf (fp, "Version: %d\n", buffer[5]);
+  is_fpr32 = buffer[5] == 2;
 
   if (length < 40)
     {
@@ -247,7 +252,18 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       || rawdata_off+rawdata_len > length
       || rawdata_len + 4 > length
       || rawdata_off+rawdata_len + 4 > length)
-    fprintf (fp, "[Error: raw data larger than blob]\n");
+    {
+      fprintf (fp, "[Error: raw data larger than blob]\n");
+      return -1;
+    }
+
+  if (rawdata_off > length
+      || rawdata_len > length
+      || rawdata_off + rawdata_len > length)
+    {
+      fprintf (fp, "[Error: unhashed data larger than blob]\n");
+      return -1;
+    }
   unhashed = length - rawdata_off - rawdata_len;
   fprintf (fp, "Unhashed: %lu\n", unhashed);
 
@@ -260,26 +276,66 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
 
   keyinfolen = get16 (buffer + 18 );
   fprintf (fp, "Key-Info-Length: %lu\n", keyinfolen);
-  /* fixme: check bounds */
   p = buffer + 20;
+  pend = buffer + length;
   for (n=0; n < nkeys; n++, p += keyinfolen)
     {
       ulong kidoff, kflags;
 
+      if (p + keyinfolen >= pend)
+        {
+          fprintf (fp, "[Error: key data larger than blob]\n");
+          return -1;
+        }
+
       fprintf (fp, "Key-Fpr[%lu]: ", n );
-      for (i=0; i < 20; i++ )
-        fprintf (fp, "%02X", p[i]);
-      kidoff = get32 (p + 20);
-      fprintf (fp, "\nKey-Kid-Off[%lu]: %lu\n", n, kidoff );
-      fprintf (fp, "Key-Kid[%lu]: ", n );
-      /* fixme: check bounds */
-      for (i=0; i < 8; i++ )
-        fprintf (fp, "%02X", buffer[kidoff+i] );
-      kflags = get16 (p + 24 );
+      if (is_fpr32)
+        {
+          if (p + 32 + 2 >= pend)
+            {
+              fprintf (fp, "[Error: fingerprint data larger than blob]\n");
+              return -1;
+            }
+          kflags = get16 (p + 32 );
+          for (i=0; i < ((kflags & 0x80)?32:20); i++ )
+            fprintf (fp, "%02X", p[i]);
+        }
+      else
+        {
+          if (p + 20 + 4 >= pend)
+            {
+              fprintf (fp, "[Error: fingerprint data larger than blob]\n");
+              return -1;
+            }
+          for (i=0; i < 20; i++ )
+            fprintf (fp, "%02X", p[i]);
+          kidoff = get32 (p + 20);
+          fprintf (fp, "\nKey-Kid-Off[%lu]: %lu\n", n, kidoff );
+          fprintf (fp, "Key-Kid[%lu]: ", n );
+
+          if (p + kidoff + 8 >= pend)
+            {
+              fprintf (fp, "[Error: fingerprint data larger than blob]\n");
+              return -1;
+            }
+          for (i=0; i < 8; i++ )
+            fprintf (fp, "%02X", buffer[kidoff+i] );
+          if (p + 24 >= pend)
+            {
+              fprintf (fp, "[Error: fingerprint data larger than blob]\n");
+              return -1;
+            }
+          kflags = get16 (p + 24);
+        }
       fprintf( fp, "\nKey-Flags[%lu]: %04lX\n", n, kflags);
     }
 
   /* serial number */
+  if (p + 2 >= pend)
+    {
+      fprintf (fp, "[Error: data larger than blob]\n");
+      return -1;
+    }
   fputs ("Serial-No: ", fp);
   nserial = get16 (p);
   p += 2;
@@ -287,21 +343,36 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
     fputs ("none", fp);
   else
     {
+      if (p + nserial >= pend)
+        {
+          fprintf (fp, "[Error: data larger than blob]\n");
+          return -1;
+        }
       for (; nserial; nserial--, p++)
         fprintf (fp, "%02X", *p);
     }
   putc ('\n', fp);
 
   /* user IDs */
+  if (p + 4 >= pend)
+    {
+      fprintf (fp, "[Error: data larger than blob]\n");
+      return -1;
+    }
   nuids = get16 (p);
   fprintf (fp, "Uid-Count: %lu\n", nuids );
   uidinfolen = get16  (p + 2);
   fprintf (fp, "Uid-Info-Length: %lu\n", uidinfolen);
-  /* fixme: check bounds */
   p += 4;
   for (n=0; n < nuids; n++, p += uidinfolen)
     {
       ulong uidoff, uidlen, uflags;
+
+      if (p + uidinfolen >= pend || uidinfolen < 8)
+        {
+          fprintf (fp, "[Error: data larger than blob]\n");
+          return -1;
+        }
 
       uidoff = get32( p );
       uidlen = get32( p+4 );
@@ -323,8 +394,21 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
           fprintf (fp, "Uid-Len[%lu]: %lu\n", n, uidlen );
           fprintf (fp, "Uid[%lu]: \"", n );
         }
+
+      if (uidoff + uidlen > length
+          || uidoff + uidlen < uidoff
+          || uidoff + uidlen < uidlen)
+        {
+          fprintf (fp, "[Error: data larger than blob]\n");
+          return -1;
+        }
       print_string (fp, buffer+uidoff, uidlen, '\"');
       fputs ("\"\n", fp);
+      if (p + 8 + 2 + 1 >= pend)
+        {
+          fprintf (fp, "[Error: data larger than blob]\n");
+          return -1;
+        }
       uflags = get16 (p + 8);
       if (type == KEYBOX_BLOBTYPE_X509 && !n)
         {
@@ -343,11 +427,15 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
         }
     }
 
+  if (p + 2 + 2 >= pend)
+    {
+      fprintf (fp, "[Error: data larger than blob]\n");
+      return -1;
+    }
   nsigs = get16 (p);
   fprintf (fp, "Sig-Count: %lu\n", nsigs );
   siginfolen = get16 (p + 2);
   fprintf (fp, "Sig-Info-Length: %lu\n", siginfolen );
-  /* fixme: check bounds  */
   p += 4;
   {
     int in_range = 0;
@@ -357,6 +445,11 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       {
         ulong sflags;
 
+        if (p + siginfolen >= pend || siginfolen < 4)
+          {
+            fprintf (fp, "[Error: data larger than blob]\n");
+            return -1;
+          }
         sflags = get32 (p);
         if (!in_range && !sflags)
           {
@@ -390,6 +483,12 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
     if (in_range)
       fprintf (fp, "Sig-Expire[%lu-%lu]: [not checked]\n", first, n-1);
   }
+
+  if (p + 16 >= pend)
+    {
+      fprintf (fp, "[Error: data larger than blob]\n");
+      return -1;
+    }
   fprintf (fp, "Ownertrust: %d\n", p[0] );
   fprintf (fp, "All-Validity: %d\n", p[1] );
   p += 4;
@@ -402,6 +501,12 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   n = get32 (p );
   p += 4;
   fprintf (fp, "Created-At: %lu\n", n );
+
+  if (p + 4 >= pend)
+    {
+      fprintf (fp, "[Error: data larger than blob]\n");
+      return -1;
+    }
   n = get32 (p );
   fprintf (fp, "Reserved-Space: %lu\n", n );
 
