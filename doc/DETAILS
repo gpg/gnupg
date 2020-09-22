@@ -1171,7 +1171,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
    Status codes are also used between the components of the GnuPG
    system via the Assuan S lines.  Some of them are documented here:
 
-*** PUBKEY_INFO <n> <ubid> <flags>
+*** PUBKEY_INFO <n> <ubid> <flags> <uidno> <pkno>
     The type of the public key in the following D-lines or
     communicated via a pipe.  <n> is the value of =enum pubkey_types=
     and <ubid> the Unique Blob ID (UBID) which is the fingerprint of
@@ -1182,6 +1182,10 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     <flags> is a string extra information about the blob.  The first
     byte is either '-' for standard key or 'e' for an ephemeral key.
     The second byte is either '-' or 'r' for a known revoked key.
+
+    <uidno> and <pkno> are the ordinal numbers for the the user id or
+    public key which matches the search criteria.  A value of 0 means
+    not known.
 
 *** KEYPAIRINFO <grip> <keyref> [<usage>] [<keytime>] [<algostr>]
 

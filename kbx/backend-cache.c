@@ -1016,7 +1016,8 @@ be_cache_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
               if (b)
                 {
                   err = be_return_pubkey (ctrl, b->data, b->datalen,
-                                          b->pktype, desc[n].u.ubid, 0, 0);
+                                          b->pktype, desc[n].u.ubid,
+                                          0, 0, 0, 0);
                   blob_unref (b);
                   reqpart->cache_seqno.ubid++;
                 }
@@ -1058,7 +1059,7 @@ be_cache_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
           if (b)
             {
               err = be_return_pubkey (ctrl, b->data, b->datalen,
-                                      PUBKEY_TYPE_OPGP, bl->ubid, 0, 0);
+                                      PUBKEY_TYPE_OPGP, bl->ubid, 0, 0, 0, 0);
               blob_unref (b);
             }
           else

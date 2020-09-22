@@ -278,7 +278,8 @@ be_kbx_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
       if (err)
         goto leave;
       /* FIXME: Return the ephemeral flag.  */
-      err = be_return_pubkey (ctrl, buffer, buflen, pubkey_type, ubid, 0, 0);
+      err = be_return_pubkey (ctrl, buffer, buflen, pubkey_type, ubid,
+                              0, 0, 0, 0);
       if (!err)
         be_cache_pubkey (ctrl, ubid, buffer, buflen, pubkey_type);
       xfree (buffer);
