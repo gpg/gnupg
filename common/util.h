@@ -273,6 +273,7 @@ const char *gnupg_localedir (void);
 const char *gnupg_cachedir (void);
 const char *gpg_agent_socket_name (void);
 const char *dirmngr_socket_name (void);
+const char *keyboxd_socket_name (void);
 
 char *_gnupg_socketdir_internal (int skip_checks, unsigned *r_info);
 

@@ -278,6 +278,7 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
     (homedir,
      !strcmp (name, "agent")?   "gnupg_spawn_agent_sentinel":
      !strcmp (name, "dirmngr")? "gnupg_spawn_dirmngr_sentinel":
+     !strcmp (name, "keyboxd")? "gnupg_spawn_keyboxd_sentinel":
      /*                    */   "gnupg_spawn_unknown_sentinel",
      NULL);
   if (!fname)

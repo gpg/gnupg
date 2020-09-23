@@ -971,6 +971,18 @@ dirmngr_socket_name (void)
 }
 
 
+/* Return the user socket name used by Keyboxd.  */
+const char *
+keyboxd_socket_name (void)
+{
+  static char *name;
+
+  if (!name)
+    name = make_filename (gnupg_socketdir (), KEYBOXD_SOCK_NAME, NULL);
+  return name;
+}
+
+
 /* Return the default pinentry name.  If RESET is true the internal
    cache is first flushed.  */
 static const char *
@@ -1122,7 +1134,7 @@ gnupg_module_name (int which)
 #ifdef GNUPG_DEFAULT_KEYBOXD
       return GNUPG_DEFAULT_KEYBOXD;
 #else
-      X(bindir, "kbx", KEYBOXD_NAME);
+      X(libexecdir, "kbx", KEYBOXD_NAME);
 #endif
 
     case GNUPG_MODULE_NAME_PROTECT_TOOL:

@@ -249,6 +249,7 @@ list_dirs (estream_t fp, char **names)
     { "localedir",          gnupg_localedir,  NULL },
     { "socketdir",          gnupg_socketdir,  NULL },
     { "dirmngr-socket",     dirmngr_socket_name, NULL,},
+    { "keyboxd-socket",     keyboxd_socket_name, NULL,},
     { "agent-ssh-socket",   gnupg_socketdir,  GPG_AGENT_SSH_SOCK_NAME },
     { "agent-extra-socket", gnupg_socketdir,  GPG_AGENT_EXTRA_SOCK_NAME },
     { "agent-browser-socket",gnupg_socketdir, GPG_AGENT_BROWSER_SOCK_NAME },
@@ -732,6 +733,8 @@ main (int argc, char **argv)
                     names[0] = "agent-socket";
                   else if (idx == GC_COMPONENT_DIRMNGR)
                     names[0] = "dirmngr-socket";
+                  else if (idx == GC_COMPONENT_KEYBOXD)
+                    names[0] = "keyboxd-socket";
                   else
                     names[0] = NULL;
                   names[1] = NULL;
@@ -891,6 +894,7 @@ main (int argc, char **argv)
                   GPG_AGENT_BROWSER_SOCK_NAME,
                   GPG_AGENT_SSH_SOCK_NAME,
                   SCDAEMON_SOCK_NAME,
+                  KEYBOXD_SOCK_NAME,
                   DIRMNGR_SOCK_NAME
                 };
                 int i;
