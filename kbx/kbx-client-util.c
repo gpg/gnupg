@@ -176,7 +176,6 @@ datastream_thread (void *arg)
   int rc;
   unsigned char lenbuf[4];
   size_t nread, datalen;
-  int pk_no, uid_no;
   char *data, *tmpdata;
 
   /* log_debug ("%s: started\n", __func__); */
@@ -240,7 +239,6 @@ datastream_thread (void *arg)
       else
         {
           /* log_debug ("parsing datastream succeeded\n"); */
-          pk_no = uid_no = 0;  /* FIXME: Get this from the keyboxd.  */
         }
 
       /* Thread-safe assignment to the result var:  */
