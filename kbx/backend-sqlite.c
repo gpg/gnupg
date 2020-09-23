@@ -441,6 +441,7 @@ run_sql_step (sqlite3_stmt *stmt)
   gpg_error_t err;
   int res;
 
+  show_sqlstmt (stmt);
   res = sqlite3_step (stmt);
   if (res != SQLITE_DONE)
     err = diag_step_err (res, stmt);
@@ -478,7 +479,7 @@ run_sql_step_for_select (sqlite3_stmt *stmt)
 
 
 /* Run the simple SQL statement in SQLSTR.  If UBID is not NULL this
- * will be bound to :1 in SQLSTR.  This command may not be used for
+ * will be bound to ?1 in SQLSTR.  This command may not be used for
  * select or other command which return rows.  */
 static gpg_error_t
 run_sql_statement_bind_ubid (const char *sqlstr, const unsigned char *ubid)
@@ -1158,12 +1159,12 @@ store_into_pubkey (enum kbxd_store_modes mode,
   sqlite3_stmt *stmt = NULL;
 
   if (mode == KBXD_STORE_UPDATE)
-    sqlstr = ("UPDATE pubkey set keyblob = :3, type = :2 WHERE ubid = :1");
+    sqlstr = ("UPDATE pubkey set keyblob = ?3, type = ?2 WHERE ubid = ?1");
   else if (mode == KBXD_STORE_INSERT)
-    sqlstr = ("INSERT INTO pubkey(ubid,type,keyblob) VALUES(:1,:2,:3)");
+    sqlstr = ("INSERT INTO pubkey(ubid,type,keyblob) VALUES(?1,?2,?3)");
   else /* Auto */
     sqlstr = ("INSERT OR REPLACE INTO pubkey(ubid,type,keyblob)"
-              " VALUES(:1,:2,:3)");
+              " VALUES(?1,?2,?3)");
   err = run_sql_prepare (sqlstr, NULL, &stmt);
   if (err)
     goto leave;
@@ -1199,7 +1200,7 @@ store_into_fingerprint (const unsigned char *ubid, int subkey,
   sqlite3_stmt *stmt = NULL;
 
   sqlstr = ("INSERT OR REPLACE INTO fingerprint(fpr,kid,keygrip,subkey,ubid)"
-            " VALUES(:1,:2,:3,:4,:5)");
+            " VALUES(?1,?2,?3,?4,?5)");
   err = run_sql_prepare (sqlstr, NULL, &stmt);
   if (err)
     goto leave;
@@ -1241,7 +1242,7 @@ store_into_userid (const unsigned char *ubid, enum pubkey_types pktype,
   char *addrspec = NULL;
 
   sqlstr = ("INSERT OR REPLACE INTO userid(uid,addrspec,type,ubid,uidno)"
-            " VALUES(:1,:2,:3,:4,:5)");
+            " VALUES(?1,?2,?3,?4,?5)");
   err = run_sql_prepare (sqlstr, NULL, &stmt);
   if (err)
     goto leave;
@@ -1292,7 +1293,7 @@ store_into_issuer (const unsigned char *ubid,
   char *addrspec = NULL;
 
   sqlstr = ("INSERT OR REPLACE INTO issuer(sn,dn,ubid)"
-            " VALUES(:1,:2,:3)");
+            " VALUES(?1,?2,?3)");
   err = run_sql_prepare (sqlstr, NULL, &stmt);
   if (err)
     goto leave;
@@ -1397,17 +1398,17 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
   /* Delete all related rows so that we can freshly add possibly added
    * or changed user ids and subkeys.  */
   err = run_sql_statement_bind_ubid
-    ("DELETE FROM fingerprint WHERE ubid = :1", ubid);
+    ("DELETE FROM fingerprint WHERE ubid = ?1", ubid);
   if (err)
     goto leave;
   err = run_sql_statement_bind_ubid
-    ("DELETE FROM userid WHERE ubid = :1", ubid);
+    ("DELETE FROM userid WHERE ubid = ?1", ubid);
   if (err)
     goto leave;
   if (cert)
     {
       err = run_sql_statement_bind_ubid
-        ("DELETE FROM issuer WHERE ubid = :1", ubid);
+        ("DELETE FROM issuer WHERE ubid = ?1", ubid);
       if (err)
         goto leave;
     }
@@ -1582,16 +1583,16 @@ be_sqlite_delete (ctrl_t ctrl, backend_handle_t backend_hd,
   in_transaction = 1;
 
   err = run_sql_statement_bind_ubid
-    ("DELETE from userid WHERE ubid = :1", ubid);
+    ("DELETE from userid WHERE ubid = ?1", ubid);
   if (!err)
     err = run_sql_statement_bind_ubid
-      ("DELETE from fingerprint WHERE ubid = :1", ubid);
+      ("DELETE from fingerprint WHERE ubid = ?1", ubid);
   if (!err)
     err = run_sql_statement_bind_ubid
-      ("DELETE from issuer WHERE ubid = :1", ubid);
+      ("DELETE from issuer WHERE ubid = ?1", ubid);
   if (!err)
     err = run_sql_statement_bind_ubid
-      ("DELETE from pubkey WHERE ubid = :1", ubid);
+      ("DELETE from pubkey WHERE ubid = ?1", ubid);
 
 
  leave:
