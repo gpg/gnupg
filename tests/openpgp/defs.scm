@@ -216,7 +216,7 @@
   (tr:spawn input `(,@GPG --output **out** ,@args **in**)))
 
 (define (pipe:gpg args)
-  (pipe:spawn `(,@GPG --output - ,@args -)))
+  (pipe:spawn `(,@GPG --output - ,@args)))
 
 (define (gpg-with-colons args)
   (let ((s (call-popen `(,@GPG --with-colons ,@args) "")))
