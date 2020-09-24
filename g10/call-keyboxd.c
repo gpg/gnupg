@@ -70,8 +70,12 @@ struct keyboxd_local_s
 
   /* Flag indicating that a search reset is required.  */
   unsigned int need_search_reset : 1;
+
 };
 
+
+/* Flag indicating that for example bulk import is enabled.  */
+static unsigned int in_transaction;
 
 
 
@@ -81,6 +85,7 @@ void
 gpg_keyboxd_deinit_session_data (ctrl_t ctrl)
 {
   keyboxd_local_t kbl;
+  gpg_error_t err;
 
   while ((kbl = ctrl->keyboxd_local))
     {
@@ -91,6 +96,20 @@ gpg_keyboxd_deinit_session_data (ctrl_t ctrl)
         {
           kbx_client_data_release (kbl->kcd);
           kbl->kcd = NULL;
+          if (kbl->ctx && in_transaction)
+            {
+              /* This is our hack to commit the changes done during a
+               * bulk import.  If we won't do that the loss of the
+               * connection would trigger a rollback in keyboxd.  Note
+               * that transactions are not associated with a
+               * connection. */
+              err = assuan_transact (kbl->ctx, "TRANSACTION commit",
+                                     NULL, NULL, NULL, NULL, NULL, NULL);
+              if (err)
+                log_error ("error commiting last transaction: %s\n",
+                            gpg_strerror (err));
+              in_transaction = 0;
+            }
           assuan_release (kbl->ctx);
           kbl->ctx = NULL;
         }
@@ -139,6 +158,20 @@ create_new_context (ctrl_t ctrl, assuan_context_t *r_ctx)
   else if (!err && !(err = warn_version_mismatch (ctx, KEYBOXD_NAME)))
     {
       /* Place to emit global options.  */
+
+      if ((opt.import_options & IMPORT_BULK) && !in_transaction)
+        {
+          err = assuan_transact (ctx, "TRANSACTION begin",
+                                 NULL, NULL, NULL, NULL, NULL, NULL);
+          if (err)
+            {
+              log_error ("error enabling bulk import option: %s\n",
+                         gpg_strerror (err));
+            }
+          else
+            in_transaction = 1;
+        }
+
     }
 
   if (err)

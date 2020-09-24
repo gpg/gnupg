@@ -178,8 +178,14 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"fast-import",IMPORT_FAST,NULL,
        N_("do not update the trustdb after import")},
 
+      {"bulk-import",IMPORT_BULK, NULL,
+       N_("enable bulk import mode")},
+
       {"import-show",IMPORT_SHOW,NULL,
        N_("show key during import")},
+
+      {"show-only", (IMPORT_SHOW | IMPORT_DRY_RUN), NULL,
+       N_("show key but do not actually import") },
 
       {"merge-only",IMPORT_MERGE_ONLY,NULL,
        N_("only accept updates to existing keys")},
@@ -205,10 +211,6 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 
       {"repair-keys", IMPORT_REPAIR_KEYS, NULL,
        N_("repair keys on import")},
-
-      /* No description to avoid string change: Fixme for 2.3 */
-      {"show-only", (IMPORT_SHOW | IMPORT_DRY_RUN), NULL,
-       NULL},
 
       /* Hidden options which are enabled by default and are provided
        * in case of problems with the respective implementation.  */

@@ -2449,6 +2449,10 @@ opposite meaning. The options are:
   keys.  For example, this reorders signatures, and strips duplicate
   signatures.  Defaults to yes.
 
+  @item bulk-import
+  When used with --use-keyboxd do the import within a single
+  transaction.  This is an experimental feature.
+
   @item import-minimal
   Import the smallest key possible. This removes all signatures except
   the most recent self-signature on each user ID. This option is the
