@@ -172,6 +172,21 @@ kbxd_release_session_info (ctrl_t ctrl)
 }
 
 
+
+gpg_error_t
+kbxd_rollback (void)
+{
+  return be_sqlite_rollback ();
+}
+
+
+gpg_error_t
+kbxd_commit (void)
+{
+  return be_sqlite_commit ();
+}
+
+
 
 /* Search for the keys described by (DESC,NDESC) and return them to
  * the caller.  If RESET is set, the search state is first reset.

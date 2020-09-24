@@ -28,6 +28,8 @@ gpg_error_t kbxd_set_database (ctrl_t ctrl,
 
 void kbxd_release_session_info (ctrl_t ctrl);
 
+gpg_error_t kbxd_rollback (void);
+gpg_error_t kbxd_commit (void);
 gpg_error_t kbxd_search (ctrl_t ctrl,
                          KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
                          int reset);

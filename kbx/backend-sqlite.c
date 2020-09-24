@@ -681,6 +681,42 @@ be_sqlite_release_local (be_sqlite_local_t ctx)
 }
 
 
+gpg_error_t
+be_sqlite_rollback (void)
+{
+  opt.in_transaction = 0;
+  if (!opt.active_transaction)
+    return 0;  /* Nothing to do.  */
+
+  if (!database_hd)
+    {
+      log_error ("Warning: No database handle for global rollback\n");
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
+
+  opt.active_transaction = 0;
+  return run_sql_statement ("rollback");
+}
+
+
+gpg_error_t
+be_sqlite_commit (void)
+{
+  opt.in_transaction = 0;
+  if (!opt.active_transaction)
+    return 0;  /* Nothing to do.  */
+
+  if (!database_hd)
+    {
+      log_error ("Warning: No database handle for global commit\n");
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
+
+  opt.active_transaction = 0;
+  return run_sql_statement ("commit");
+}
+
+
 /* Run a select for the search given by (DESC,NDESC).  The data is not
  * returned but stored in the request item.  */
 static gpg_error_t
@@ -999,6 +1035,16 @@ be_sqlite_search (ctrl_t ctrl,
       err = gpg_error (GPG_ERR_EOF);
       goto leave;
     }
+
+  /* Start a global transaction if needed.  */
+  if (!opt.active_transaction && opt.in_transaction)
+    {
+      err = run_sql_statement ("begin transaction");
+      if (err)
+        goto leave;
+      opt.active_transaction = 1;
+    }
+
 
  again:
   if (!ctx->select_done)
@@ -1395,9 +1441,14 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
     goto leave;
   /* ctx = part->besqlite; */
 
-  err = run_sql_statement ("begin transaction");
-  if (err)
-    goto leave;
+  if (!opt.active_transaction)
+    {
+      err = run_sql_statement ("begin transaction");
+      if (err)
+        goto leave;
+      if (opt.in_transaction)
+        opt.active_transaction = 1;
+    }
   in_transaction = 1;
 
   err = store_into_pubkey (mode, pktype, ubid, blob, bloblen);
@@ -1541,10 +1592,17 @@ be_sqlite_store (ctrl_t ctrl, backend_handle_t backend_hd,
 
  leave:
   if (in_transaction && !err)
-    err = run_sql_statement ("commit");
+    {
+      if (opt.active_transaction)
+        ; /* We are in a global transaction.  */
+      else
+        err = run_sql_statement ("commit");
+    }
   else if (in_transaction)
     {
-      if (run_sql_statement ("rollback"))
+      if (opt.active_transaction)
+        ; /* We are in a global transaction.  */
+      else if (run_sql_statement ("rollback"))
         log_error ("Warning: database rollback failed - should not happen!\n");
     }
   if (got_mutex)
@@ -1586,9 +1644,14 @@ be_sqlite_delete (ctrl_t ctrl, backend_handle_t backend_hd,
     goto leave;
   /* ctx = part->besqlite; */
 
-  err = run_sql_statement ("begin transaction");
-  if (err)
-    goto leave;
+  if (!opt.active_transaction)
+    {
+      err = run_sql_statement ("begin transaction");
+      if (err)
+        goto leave;
+      if (opt.in_transaction)
+        opt.active_transaction = 1;
+    }
   in_transaction = 1;
 
   err = run_sql_statement_bind_ubid
@@ -1607,11 +1670,19 @@ be_sqlite_delete (ctrl_t ctrl, backend_handle_t backend_hd,
  leave:
   if (stmt)
     sqlite3_finalize (stmt);
+
   if (in_transaction && !err)
-    err = run_sql_statement ("commit");
+    {
+      if (opt.active_transaction)
+        ; /* We are in a global transaction.  */
+      else
+        err = run_sql_statement ("commit");
+    }
   else if (in_transaction)
     {
-      if (run_sql_statement ("rollback"))
+      if (opt.active_transaction)
+        ; /* We are in a global transaction.  */
+      else if (run_sql_statement ("rollback"))
         log_error ("Warning: database rollback failed - should not happen!\n");
     }
   release_mutex ();

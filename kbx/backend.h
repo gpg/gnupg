@@ -171,6 +171,8 @@ void be_sqlite_release_resource (ctrl_t ctrl, backend_handle_t hd);
 gpg_error_t be_sqlite_init_local (backend_handle_t backend_hd,
                                   db_request_part_t part);
 void be_sqlite_release_local (be_sqlite_local_t ctx);
+gpg_error_t be_sqlite_rollback (void);
+gpg_error_t be_sqlite_commit (void);
 gpg_error_t be_sqlite_search (ctrl_t ctrl, backend_handle_t hd,
                               db_request_t request,
                               KEYDB_SEARCH_DESC *desc, unsigned int ndesc);

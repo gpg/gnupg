@@ -45,6 +45,15 @@ struct
   /* True if we are running detached from the tty. */
   int running_detached;
 
+  /*
+   * Global state variables.
+   */
+
+  /* Whether a global transaction has been requested along with the
+   * caller's pid and whether a transaction is active.  */
+  pid_t transaction_pid;
+  unsigned int in_transaction : 1;
+  unsigned int active_transaction : 1;
 } opt;
 
 
@@ -118,6 +127,7 @@ struct server_control_s
   unsigned int filter_x509 : 1;
   /* Used by SEARCH and NEXT.  */
   unsigned int no_data_return : 1;
+
 };
 
 

@@ -50,6 +50,13 @@
 /* Control structure per connection. */
 struct server_local_s
 {
+  /* We keep a list of all active sessions with the anchor at
+   * SESSION_LIST (see below).  This field is used for linking. */
+  struct server_local_s *next_session;
+
+  /* The pid of the client.  */
+  pid_t client_pid;
+
   /* Data used to associate an Assuan context with local server data */
   assuan_context_t assuan_ctx;
 
@@ -87,6 +94,12 @@ struct server_local_s
   /* If not NULL write output to this stream instead of using D lines.  */
   estream_t outstream;
 };
+
+
+/* To keep track of all running sessions, we link all active server
+ * contexts and anchor them at this variable.  */
+static struct server_local_s *session_list;
+
 
 
 
@@ -569,6 +582,75 @@ cmd_delete (assuan_context_t ctx, char *line)
 
 
 
+static const char hlp_transaction[] =
+  "TRANSACTION [begin|commit|rollback]\n"
+  "\n"
+  "For bulk import of data it is often useful to run everything\n"
+  "in one transaction.  This can be achieved with this command.\n"
+  "If the last connection of client is closed before a commit\n"
+  "or rollback an implicit rollback is done.  With no argument\n"
+  "the status of the current transaction is returned.";
+static gpg_error_t
+cmd_transaction (assuan_context_t ctx, char *line)
+{
+  gpg_error_t err = 0;
+
+  line = skip_options (line);
+
+  if (!strcmp (line, "begin"))
+    {
+      /* Note that we delay the actual transaction until we have to
+       * use SQL. */
+      if (opt.in_transaction)
+        err = set_error (GPG_ERR_CONFLICT, "already in a transaction");
+      else
+        {
+          opt.in_transaction = 1;
+          opt.transaction_pid = assuan_get_pid (ctx);
+        }
+    }
+  else if (!strcmp (line, "commit"))
+    {
+      if (!opt.in_transaction)
+        err = set_error (GPG_ERR_CONFLICT, "not in a transaction");
+      else if (opt.transaction_pid != assuan_get_pid (ctx))
+        err = set_error (GPG_ERR_CONFLICT, "other client is in a transaction");
+      else
+        err = kbxd_commit ();
+    }
+  else if (!strcmp (line, "rollback"))
+    {
+      if (!opt.in_transaction)
+        err = set_error (GPG_ERR_CONFLICT, "not in a transaction");
+      else if (opt.transaction_pid != assuan_get_pid (ctx))
+        err = set_error (GPG_ERR_CONFLICT, "other client is in a transaction");
+      else
+        err = kbxd_rollback ();
+    }
+  else if (!*line)
+    {
+      if (opt.in_transaction && opt.transaction_pid == assuan_get_pid (ctx))
+        err = assuan_set_okay_line (ctx, opt.active_transaction?
+                                    "active transaction" :
+                                    "pending transaction");
+      else if (opt.in_transaction)
+        err = assuan_set_okay_line (ctx, opt.active_transaction?
+                                    "active transaction on other client" :
+                                    "pending transaction on other client");
+      else
+        err = set_error (GPG_ERR_FALSE, "no transaction");
+    }
+  else
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER, "unknown transaction command");
+    }
+
+
+  return leave_cmd (ctx, err);
+}
+
+
+
 static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
@@ -689,6 +771,7 @@ register_commands (assuan_context_t ctx)
     { "NEXT",       cmd_next,       hlp_next   },
     { "STORE",      cmd_store,      hlp_store  },
     { "DELETE",     cmd_delete,     hlp_delete  },
+    { "TRANSACTION",cmd_transaction,hlp_transaction },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "OUTPUT",     NULL,           hlp_output },
     { "KILLKEYBOXD",cmd_killkeyboxd,hlp_killkeyboxd },
@@ -764,6 +847,7 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
       xfree (ctrl);
       return;
     }
+  ctrl->server_local->client_pid = ASSUAN_INVALID_PID;
 
   rc = assuan_new (&ctx);
   if (rc)
@@ -825,6 +909,11 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
 
   ctrl->server_local->session_id = session_id;
 
+  /* Put the session int a list.  */
+  ctrl->server_local->next_session = session_list;
+  session_list = ctrl->server_local;
+
+
   /* The next call enable the use of status_printf.  */
   set_assuan_context_func (get_assuan_ctx_from_ctrl);
 
@@ -850,6 +939,7 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
 		      (long)peercred->gid);
         }
 #endif
+      ctrl->server_local->client_pid = assuan_get_pid (ctx);
 
       rc = assuan_process (ctx);
       if (rc)
@@ -857,6 +947,22 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
           log_info (_("Assuan processing failed: %s\n"), gpg_strerror (rc));
           continue;
         }
+    }
+
+  if (opt.in_transaction
+      && opt.transaction_pid == ctrl->server_local->client_pid)
+    {
+      struct server_local_s *sl;
+      pid_t thispid = ctrl->server_local->client_pid;
+      int npids = 0;
+
+      /* Only if this is the last connection rollback the transaction.  */
+      for (sl = session_list; sl; sl = sl->next_session)
+        if (sl->client_pid == thispid)
+          npids++;
+
+      if (npids == 1)
+        kbxd_rollback ();
     }
 
   assuan_close_output_fd (ctx);
@@ -873,6 +979,20 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
                ctrl->refcount);
   else
     {
+      if (session_list == ctrl->server_local)
+        session_list = ctrl->server_local->next_session;
+      else
+        {
+          struct server_local_s *sl;
+
+          for (sl=session_list; sl->next_session; sl = sl->next_session)
+            if (sl->next_session == ctrl->server_local)
+              break;
+          if (!sl->next_session)
+            BUG ();
+          sl->next_session = ctrl->server_local->next_session;
+        }
+
       xfree (ctrl->server_local->multi_search_desc);
       xfree (ctrl->server_local);
       ctrl->server_local = NULL;
