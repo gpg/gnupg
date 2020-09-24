@@ -21,7 +21,16 @@
 (load (in-srcdir "tests" "openpgp" "signed-messages.scm"))
 (setup-legacy-environment)
 
-(define keyring (if (file-exists? "pubring.kbx") "pubring.kbx" "pubring.gpg"))
+;; In keyboxd mode we need to export all keys first
+(if (flag "--use-keyboxd" *args*)
+    (call-check `(,@GPG --quiet --yes
+                        --export --yes --batch -o mytrustedkeys.gpg)))
+
+(define keyring (if (flag "--use-keyboxd" *args*)
+                    "mytrustedkeys.gpg"
+                    (if (file-exists? "pubring.kbx")
+                        "pubring.kbx"
+                        "pubring.gpg")))
 
 ;;
 ;; Two simple tests to check that verify fails for bad input data
@@ -66,6 +75,9 @@
 ;; Need to import the ed25519 sample key used for the next two tests.
 (call-check `(,@gpg --quiet --yes
 		    --import ,(in-srcdir "tests" "openpgp" key-file2)))
+(if (flag "--use-keyboxd" *args*)
+    (call-check `(,@GPG --quiet --yes
+                        --export --yes --batch -o mytrustedkeys.gpg)))
 (for-each-p
  "Checking that a valid Ed25519 signature is verified as such"
  (lambda (armored-file)

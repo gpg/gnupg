@@ -336,6 +336,8 @@
       (create-file "pubring.gpg"))
 
   (create-file "gpg.conf"
+               ;;"log-file socket:///tmp/S.wklog"
+               ;;"verbose"
 	       "no-greeting"
 	       "no-secmem-warning"
 	       "no-permission-warning"
@@ -349,14 +351,20 @@
 	       (string-append "agent-program "
 			      (tool 'gpg-agent)
 			      "|--debug-quick-random\n")
+	       (if (flag "--use-keyboxd" *args*)
+		   "use-keyboxd" "#use-keyboxd")
 	       )
+  (create-file "keyboxd.conf"
+               ;;"log-file socket:///tmp/S.wklog"
+               ;;"verbose"
+               ;;"debug ipc"
+	       )
+
   (create-file "gpg-agent.conf"
 	       "allow-preset-passphrase"
 	       "no-grab"
 	       "enable-ssh-support"
                "s2k-count 65536"
-	       (if (flag "--extended-key-format" *args*)
-		   "enable-extended-key-format" "#enable-extended-key-format")
 	       (string-append "pinentry-program " (tool 'pinentry))
 	       "disable-scdaemon"))
 
@@ -504,6 +512,8 @@
 (when with-valgrind?
   (set! gpg `(,@valgrind ,@gpg)))
 
+
+;;(set! *args* (append *args* (list "--use-keyboxd")))
 
 
 ;; end

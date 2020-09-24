@@ -45,7 +45,7 @@
      (string-append "--" variant))))
 
  (define setup-use-keyring (setup* "use-keyring"))
- (define setup-extended-key-format (setup* "extended-key-format"))
+ (define setup-use-keyboxd (setup* "use-keyboxd"))
 
  (define all-tests
    (parse-makefile-expand "Makefile"
@@ -55,24 +55,27 @@
  (define tests
    (map (lambda (name)
 	  (test::scm setup
-		     (path-join "tests" "openpgp" name)
+		     (qualify (path-join "tests" "openpgp" name) "standard")
 		     (in-srcdir "tests" "openpgp" name))) all-tests))
 
  (when *run-all-tests*
        (set! tests
 	     (append
 	      tests
+              ;; The second pass uses the keyboxd
+	      (map (lambda (name)
+		     (test::scm setup-use-keyboxd
+				(qualify (path-join "tests" "openpgp" name)
+					 "keyboxd")
+				(in-srcdir "tests" "openpgp" name)
+				"--use-keyboxd")) all-tests)
+              ;; The third pass uses the legact pubring.gpg
 	      (map (lambda (name)
 		     (test::scm setup-use-keyring
 				(qualify (path-join "tests" "openpgp" name)
-					 "use-keyring")
+					 "keyring")
 				(in-srcdir "tests" "openpgp" name)
 				"--use-keyring")) all-tests)
-	      (map (lambda (name)
-		     (test::scm setup-extended-key-format
-				(qualify (path-join "tests" "openpgp" name)
-					 "extended-key-format")
-				(in-srcdir "tests" "openpgp" name)
-				"--extended-key-format")) all-tests))))
+              )))
 
  tests)

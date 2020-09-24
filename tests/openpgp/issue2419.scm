@@ -25,5 +25,5 @@
  (onebyte)
  (dearmor (in-srcdir "tests" "openpgp" "samplemsgs/issue2419.asc") onebyte)
  (catch (assert (string-contains? (car *error*) "invalid packet"))
-	(call-popen `(,@GPG --list-packets ,onebyte) "")
+	(call-popen `(,@GPG --log-file - --list-packets ,onebyte) "")
 	(fail "Expected an error but got none")))
