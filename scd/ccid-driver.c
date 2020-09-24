@@ -1490,9 +1490,42 @@ intr_cb (struct libusb_transfer *transfer)
     }
   else if (transfer->status == LIBUSB_TRANSFER_COMPLETED)
     {
-      if (transfer->actual_length == 2
-          && transfer->buffer[0] == 0x50
-          && (transfer->buffer[1] & 1) == 0)
+      size_t len = transfer->actual_length;
+      unsigned char *p = transfer->buffer;
+      int card_removed = 0;
+
+      while (len)
+        {
+          if (*p == RDR_to_PC_NotifySlotChange)
+            {
+              if (len < 2)
+                break;
+
+              if ((p[1] & 1))
+                card_removed = 0;
+              else
+                card_removed = 1;
+
+              p += 2;
+              len -= 2;
+            }
+          else if (*p == RDR_to_PC_HardwareError)
+            {
+              if (len < 4)
+                break;
+
+              DEBUGOUT_1 ("CCID: hardware error detected: %02x\n", p[3]);
+              p += 4;
+              len -= 4;
+            }
+          else
+            {
+              DEBUGOUT_1 ("CCID: unknown intr: %02x\n", p[0]);
+              break;
+            }
+        }
+
+      if (card_removed)
         {
           DEBUGOUT ("CCID: card removed\n");
           handle->powered_off = 1;
