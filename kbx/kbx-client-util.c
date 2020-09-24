@@ -339,6 +339,16 @@ kbx_client_data_release (kbx_client_data_t kcd)
 }
 
 
+/* Send a simple Assuan command to the server.  */
+gpg_error_t
+kbx_client_data_simple (kbx_client_data_t kcd, const char *command)
+{
+  /* log_debug ("%s: sending command '%s'\n", __func__, command); */
+  return assuan_transact (kcd->ctx, command,
+                          NULL, NULL, NULL, NULL, NULL, NULL);
+}
+
+
 /* Send the COMMAND down to the keyboxd associated with KCD.
  * STATUS_CB and STATUS_CB_VALUE are the usual status callback as used
  * by assuan_transact.  After this function has returned success

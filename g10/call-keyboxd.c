@@ -702,95 +702,115 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       err = gpg_error (GPG_ERR_INV_ARG);
       goto leave;
     }
+  for (i = 0; i < ndesc; i++)
+    if (desc->mode == KEYDB_SEARCH_MODE_FIRST)
+      {
+        /* If any description has mode FIRST, this item trumps all
+         * other descriptions.  */
+        snprintf (line, sizeof line, "SEARCH --openpgp");
+        goto do_search;
+      }
 
-  /* FIXME: Implement --multi */
-  switch (desc->mode)
+  for ( ; ndesc; desc++, ndesc--)
     {
-    case KEYDB_SEARCH_MODE_EXACT:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- =%s", desc[0].u.name);
-      break;
+      const char *more = ndesc > 1 ? "--openpgp --more" : "--openpgp";
 
-    case KEYDB_SEARCH_MODE_SUBSTR:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- *%s", desc[0].u.name);
-      break;
+      switch (desc->mode)
+        {
+        case KEYDB_SEARCH_MODE_EXACT:
+          snprintf (line, sizeof line, "SEARCH %s -- =%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_MAIL:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- <%s", desc[0].u.name);
-      break;
+        case KEYDB_SEARCH_MODE_SUBSTR:
+          snprintf (line, sizeof line, "SEARCH %s -- *%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_MAILSUB:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- @%s", desc[0].u.name);
-      break;
+        case KEYDB_SEARCH_MODE_MAIL:
+          snprintf (line, sizeof line, "SEARCH %s -- <%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_MAILEND:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- .%s", desc[0].u.name);
-      break;
+        case KEYDB_SEARCH_MODE_MAILSUB:
+          snprintf (line, sizeof line, "SEARCH %s -- @%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_WORDS:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- +%s", desc[0].u.name);
-      break;
+        case KEYDB_SEARCH_MODE_MAILEND:
+          snprintf (line, sizeof line, "SEARCH %s -- .%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_SHORT_KID:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- 0x%08lX",
-                (ulong)desc->u.kid[1]);
-      break;
+        case KEYDB_SEARCH_MODE_WORDS:
+          snprintf (line, sizeof line, "SEARCH %s -- +%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_LONG_KID:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- 0x%08lX%08lX",
-                (ulong)desc->u.kid[0], (ulong)desc->u.kid[1]);
-      break;
+        case KEYDB_SEARCH_MODE_SHORT_KID:
+          snprintf (line, sizeof line, "SEARCH %s -- 0x%08lX", more,
+                    (ulong)desc->u.kid[1]);
+          break;
 
-    case KEYDB_SEARCH_MODE_FPR:
-      {
-        unsigned char hexfpr[MAX_FINGERPRINT_LEN * 2 + 1];
-        log_assert (desc[0].fprlen <= MAX_FINGERPRINT_LEN);
-        bin2hex (desc[0].u.fpr, desc[0].fprlen, hexfpr);
-        snprintf (line, sizeof line, "SEARCH --openpgp -- 0x%s", hexfpr);
-      }
-      break;
+        case KEYDB_SEARCH_MODE_LONG_KID:
+          snprintf (line, sizeof line, "SEARCH %s -- 0x%08lX%08lX", more,
+                    (ulong)desc->u.kid[0], (ulong)desc->u.kid[1]);
+          break;
 
-    case KEYDB_SEARCH_MODE_ISSUER:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- #/%s", desc[0].u.name);
-      break;
+        case KEYDB_SEARCH_MODE_FPR:
+          {
+            unsigned char hexfpr[MAX_FINGERPRINT_LEN * 2 + 1];
+            log_assert (desc->fprlen <= MAX_FINGERPRINT_LEN);
+            bin2hex (desc->u.fpr, desc->fprlen, hexfpr);
+            snprintf (line, sizeof line, "SEARCH %s -- 0x%s", more, hexfpr);
+          }
+          break;
 
-    case KEYDB_SEARCH_MODE_ISSUER_SN:
-    case KEYDB_SEARCH_MODE_SN:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- #%s", desc[0].u.name);
-      break;
+        case KEYDB_SEARCH_MODE_ISSUER:
+          snprintf (line, sizeof line, "SEARCH %s -- #/%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_SUBJECT:
-      snprintf (line, sizeof line, "SEARCH --openpgp -- /%s", desc[0].u.name);
-      break;
+        case KEYDB_SEARCH_MODE_ISSUER_SN:
+        case KEYDB_SEARCH_MODE_SN:
+          snprintf (line, sizeof line, "SEARCH %s -- #%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_KEYGRIP:
-      {
-        unsigned char hexgrip[KEYGRIP_LEN * 2 + 1];
-        bin2hex (desc[0].u.grip, KEYGRIP_LEN, hexgrip);
-        snprintf (line, sizeof line, "SEARCH --openpgp -- &%s", hexgrip);
-      }
-      break;
+        case KEYDB_SEARCH_MODE_SUBJECT:
+          snprintf (line, sizeof line, "SEARCH %s -- /%s", more, desc->u.name);
+          break;
 
-    case KEYDB_SEARCH_MODE_UBID:
-      {
-        unsigned char hexubid[UBID_LEN * 2 + 1];
-        bin2hex (desc[0].u.ubid, UBID_LEN, hexubid);
-        snprintf (line, sizeof line, "SEARCH --openpgp -- ^%s", hexubid);
-      }
-      break;
+        case KEYDB_SEARCH_MODE_KEYGRIP:
+          {
+            unsigned char hexgrip[KEYGRIP_LEN * 2 + 1];
+            bin2hex (desc->u.grip, KEYGRIP_LEN, hexgrip);
+            snprintf (line, sizeof line, "SEARCH %s -- &%s", more, hexgrip);
+          }
+          break;
 
-    case KEYDB_SEARCH_MODE_FIRST:
-      snprintf (line, sizeof line, "SEARCH --openpgp");
-      break;
+        case KEYDB_SEARCH_MODE_UBID:
+          {
+            unsigned char hexubid[UBID_LEN * 2 + 1];
+            bin2hex (desc->u.ubid, UBID_LEN, hexubid);
+            snprintf (line, sizeof line, "SEARCH %s -- ^%s", more, hexubid);
+          }
+          break;
 
-    case KEYDB_SEARCH_MODE_NEXT:
-      log_debug ("%s: mode next - we should not get to here!\n", __func__);
-      snprintf (line, sizeof line, "NEXT");
-      break;
+        case KEYDB_SEARCH_MODE_NEXT:
+          log_debug ("%s: mode next - we should not get to here!\n", __func__);
+          snprintf (line, sizeof line, "NEXT");
+          break;
 
-    default:
-      err = gpg_error (GPG_ERR_INV_ARG);
-      goto leave;
+        case KEYDB_SEARCH_MODE_FIRST:
+          log_debug ("%s: mode first - we should not get to here!\n", __func__);
+          /*fallthru*/
+        default:
+          err = gpg_error (GPG_ERR_INV_ARG);
+          goto leave;
+        }
+
+      if (ndesc > 1)
+        {
+          err = kbx_client_data_simple (hd->kbl->kcd, line);
+          if (err)
+            goto leave;
+        }
     }
+  while (ndesc);
+
 
  do_search:
   hd->last_ubid_valid = 0;

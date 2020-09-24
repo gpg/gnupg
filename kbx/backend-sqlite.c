@@ -78,6 +78,9 @@ struct be_sqlite_local_s
   unsigned int filter_opgp : 1;
   unsigned int filter_x509 : 1;
 
+  /* The current description index.  */
+  unsigned int descidx;
+
   /* The select statement has been executed with success.  */
   int select_done;
 
@@ -690,7 +693,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
   unsigned char kidbuf[8];
 
 
-  descidx = 0; /* Fixme: take from context.  */
+  descidx = ctx->descidx;
   if (descidx >= ndesc)
     {
       err = gpg_error (GPG_ERR_EOF);
@@ -985,6 +988,7 @@ be_sqlite_search (ctrl_t ctrl,
       /* Reset */
       ctx->select_done = 0;
       ctx->select_eof = 0;
+      ctx->descidx = 0;
       err = 0;
       goto leave;
     }
@@ -996,6 +1000,7 @@ be_sqlite_search (ctrl_t ctrl,
       goto leave;
     }
 
+ again:
   if (!ctx->select_done)
     {
       /* Initial search - run the select.  */
@@ -1131,7 +1136,11 @@ be_sqlite_search (ctrl_t ctrl,
     }
   else if (gpg_err_code (err) == GPG_ERR_SQL_DONE)
     {
-      /* FIXME: Move on to the next description index.  */
+      if (++ctx->descidx < ndesc)
+        {
+          ctx->select_done = 0;
+          goto again;
+        }
       err = gpg_error (GPG_ERR_EOF);
       ctx->select_eof = 1;
     }
