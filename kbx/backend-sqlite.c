@@ -96,7 +96,10 @@ static sqlite3 *database_hd;
 /* A lockfile used make sure only we are accessing the database.  */
 static dotlock_t database_lock;
 
+/* The version of our current database schema.  */
+#define DATABASE_VERSION 1
 
+/* Table definitions for the database.  */
 static struct
 {
   const char *sql;
@@ -111,7 +114,7 @@ static struct
     *   created = <ISO time string>
     */
    { "CREATE TABLE IF NOT EXISTS config ("
-     "name  TEXT NOT NULL,"
+     "name  TEXT NOT NULL UNIQUE,"
      "value TEXT NOT NULL "
      ")", 1 },
 
@@ -189,8 +192,12 @@ static struct
   };
 
 
+/*-- prototypes --*/
+static gpg_error_t get_config_value (const char *name, char **r_value);
+static gpg_error_t set_config_value (const char *name, const char *value);
 
 
+
 /* Take a lock for accessing SQLite.  */
 static void
 acquire_mutex (void)
@@ -528,6 +535,9 @@ create_or_open_database (const char *filename)
   gpg_error_t err;
   int res;
   int idx;
+  char *value;
+  int dbversion;
+  int setdbversion = 0;
 
   if (database_hd)
     return 0;  /* Already initialized.  */
@@ -588,12 +598,52 @@ create_or_open_database (const char *filename)
       if (table_definitions[idx].special == 1)
         {
           /* Check and create dbversion etc entries.  */
-          // FIXME
+          err = get_config_value ("dbversion", &value);
+          if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+            {
+              dbversion = 0;
+              setdbversion = 1;
+            }
+          else if (err)
+            {
+              log_error ("error reading database version: %s\n",
+                         gpg_strerror (err));
+              err = 0;
+              dbversion = 0;
+            }
+          else if ((dbversion = atoi (value)) < 1)
+            {
+              log_error ("database version %d is not valid\n", dbversion);
+              dbversion = 0;
+            }
+          log_info ("database version: %d\n", dbversion);
+
+          xfree (value);
+          err = get_config_value ("created", &value);
+          if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+            log_info ("database created: %.50s\n", "[unknown]");
+          else if (err)
+            log_error ("error getting database creation date: %s\n",
+                       gpg_strerror (err));
+          else
+            log_info ("database created: %.50s\n", value);
+
+          xfree (value);
+          value = NULL;
         }
     }
 
   if (!opt.quiet)
     log_info (_("database '%s' created\n"), filename);
+
+  if (setdbversion)
+    {
+      err = set_config_value ("dbversion", STR2(DATABASE_VERSION));
+      if (!err)
+        err = set_config_value ("created", isotimestamp (gnupg_get_time ()));
+    }
+
+
   err = 0;
 
  leave:
@@ -714,6 +764,73 @@ be_sqlite_commit (void)
 
   opt.active_transaction = 0;
   return run_sql_statement ("commit");
+}
+
+
+/* Return a value from the config table.  NAME most not have quotes
+ * etc.  If no error is returned the caller must xfree the value
+ * stored at R_VALUE.  On error NULL is stored there.  */
+static gpg_error_t
+get_config_value (const char *name, char **r_value)
+{
+  gpg_error_t err;
+  sqlite3_stmt *stmt;
+  char *sqlstr;
+  const char *s;
+
+  *r_value = NULL;
+
+  sqlstr = strconcat ("SELECT value FROM config WHERE name='", name, "'", NULL);
+  if (!sqlstr)
+    return gpg_error_from_syserror ();
+
+  err = run_sql_prepare (sqlstr, NULL, &stmt);
+  xfree (sqlstr);
+  if (err)
+    return err;
+
+  err = run_sql_step_for_select (stmt);
+  if (gpg_err_code (err) == GPG_ERR_SQL_ROW)
+    {
+      s = sqlite3_column_text (stmt, 0);
+      *r_value = xtrystrdup (s? s : "");
+      if (!*r_value)
+        err = gpg_error_from_syserror ();
+      else
+        err = 0;
+    }
+  else if (gpg_err_code (err) == GPG_ERR_SQL_DONE)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  else
+    log_assert (err);  /* We'll never see 0 here.  */
+
+  sqlite3_finalize (stmt);
+
+  return err;
+}
+
+
+/* Insert or update a value in the config table.  */
+static gpg_error_t
+set_config_value (const char *name, const char *value)
+{
+  gpg_error_t err;
+  sqlite3_stmt *stmt;
+
+  err = run_sql_prepare ("INSERT OR REPLACE INTO config(name,value)"
+                         " VALUES(?1,?2)", NULL, &stmt);
+  if (err)
+    return err;
+
+  err = run_sql_bind_text (stmt, 1, name);
+  if (!err)
+    err = run_sql_bind_text (stmt, 2, value);
+  if (!err)
+    err = run_sql_step (stmt);
+
+  sqlite3_finalize (stmt);
+
+  return err;
 }
 
 
