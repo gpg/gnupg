@@ -130,7 +130,6 @@ struct reader_table_s {
 #endif /*USE_G10CODE_RAPDU*/
   char *rdrname;     /* Name of the connected reader or NULL if unknown. */
   unsigned int is_t0:1;     /* True if we know that we are running T=0. */
-  unsigned int is_spr532:1; /* True if we know that the reader is a SPR532.  */
   unsigned int pinpad_varlen_supported:1;  /* True if we know that the reader
                                               supports variable length pinpad
                                               input.  */
@@ -470,7 +469,6 @@ new_reader_slot (void)
   reader_table[reader].pinpad_modify = pcsc_pinpad_modify;
 
   reader_table[reader].is_t0 = 1;
-  reader_table[reader].is_spr532 = 0;
   reader_table[reader].pinpad_varlen_supported = 0;
   reader_table[reader].require_get_status = 1;
   reader_table[reader].pcsc.verify_ioctl = 0;
@@ -991,7 +989,16 @@ pcsc_vendor_specific_init (int slot)
         {
           if (strstr (reader_table[slot].rdrname, "SPRx32"))
             {
-              reader_table[slot].is_spr532 = 1;
+              const unsigned char cmd[] = { '\x80', '\x02', '\x00' };
+              sw = control_pcsc (slot, CM_IOCTL_VENDOR_IFD_EXCHANGE,
+                                 cmd, sizeof (cmd), NULL, 0);
+
+              /* Even though it's control at IFD level (request to the
+               * reader, not card), it returns an error when card is
+               * not active.  Just ignore the error.
+               */
+              if (sw)
+                log_debug ("Ignore control_pcsc failure.\n");
               reader_table[slot].pinpad_varlen_supported = 1;
             }
           else if (strstr (reader_table[slot].rdrname, "ST-2xxx"))
@@ -1060,12 +1067,21 @@ pcsc_vendor_specific_init (int slot)
       if (sw)
         return SW_NOT_SUPPORTED;
     }
-  else if (vendor == VENDOR_SCM && product == SCM_SPR532) /* SCM SPR532 */
+  else if (vendor == VENDOR_SCM && product == SCM_SPR532)
     {
-      reader_table[slot].is_spr532 = 1;
+      const unsigned char cmd[] = { '\x80', '\x02', '\x00' };
+
+      sw = control_pcsc (slot, CM_IOCTL_VENDOR_IFD_EXCHANGE,
+                         cmd, sizeof (cmd), NULL, 0);
+      /* Even though it's control at IFD level (request to the
+       * reader, not card), it returns an error when card is
+       * not active.  Just ignore the error.
+       */
+      if (sw)
+        log_debug ("Ignore control_pcsc failure.\n");
       reader_table[slot].pinpad_varlen_supported = 1;
     }
-  else if (vendor == 0x046a)
+  else if (vendor == VENDOR_CHERRY)
     {
       /* Cherry ST-2xxx (product == 0x003e) supports TPDU level
        * exchange.  Other products which only support short APDU level
@@ -1074,11 +1090,12 @@ pcsc_vendor_specific_init (int slot)
       reader_table[slot].pcsc.pinmax = 15;
       reader_table[slot].pinpad_varlen_supported = 1;
     }
-  else if (vendor == 0x0c4b /* Tested with Reiner cyberJack GO */
-           || vendor == 0x1a44 /* Tested with Vasco DIGIPASS 920 */
-           || vendor == 0x234b /* Tested with FSIJ Gnuk Token */
-           || vendor == 0x0d46 /* Tested with KAAN Advanced??? */
-           || (vendor == 0x1fc9 && product == 0x81e6) /* Tested with Trustica Cryptoucan */)
+  else if (vendor == VENDOR_REINER /* Tested with Reiner cyberJack GO */
+           || vendor == VENDOR_VASCO /* Tested with Vasco DIGIPASS 920 */
+           || vendor == VENDOR_FSIJ /* Tested with FSIJ Gnuk Token */
+           || vendor == VENDOR_KAAN /* Tested with KAAN Advanced??? */
+           || (vendor == VENDOR_NXP
+               && product == CRYPTOUCAN) /* Tested with Trustica Cryptoucan */)
     reader_table[slot].pinpad_varlen_supported = 1;
 
   return 0;
@@ -1278,7 +1295,6 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
    */
   unsigned char result[6];
   pcsc_dword_t resultlen = 6;
-  int no_lc;
 
   if (!reader_table[slot].atrlen
       && (sw = reset_pcsc_reader (slot)))
@@ -1290,8 +1306,6 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify = xtrymalloc (len);
   if (!pin_verify)
     return SW_HOST_OUT_OF_CORE;
-
-  no_lc = (!pininfo->fixedlen && reader_table[slot].is_spr532);
 
   pin_verify[0] = 0x00; /* bTimeOut */
   pin_verify[1] = 0x00; /* bTimeOut2 */
@@ -1309,8 +1323,8 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[11] = 0x00; /* bMsgIndex */
   pin_verify[12] = 0x00; /* bTeoPrologue[0] */
   pin_verify[13] = 0x00; /* bTeoPrologue[1] */
-  pin_verify[14] = pininfo->fixedlen + 0x05 - no_lc; /* bTeoPrologue[2] */
-  pin_verify[15] = pininfo->fixedlen + 0x05 - no_lc; /* ulDataLength */
+  pin_verify[14] = pininfo->fixedlen + 0x05; /* bTeoPrologue[2] */
+  pin_verify[15] = pininfo->fixedlen + 0x05; /* ulDataLength */
   pin_verify[16] = 0x00; /* ulDataLength */
   pin_verify[17] = 0x00; /* ulDataLength */
   pin_verify[18] = 0x00; /* ulDataLength */
@@ -1321,8 +1335,6 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[23] = pininfo->fixedlen; /* abData[4] */
   if (pininfo->fixedlen)
     memset (&pin_verify[24], 0xff, pininfo->fixedlen);
-  else if (no_lc)
-    len--;
 
   if (DBG_CARD_IO)
     log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
@@ -1353,7 +1365,6 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   int len = PIN_MODIFY_STRUCTURE_SIZE + 2 * pininfo->fixedlen;
   unsigned char result[6];      /* See the comment at pinpad_verify.  */
   pcsc_dword_t resultlen = 6;
-  int no_lc;
 
   if (!reader_table[slot].atrlen
       && (sw = reset_pcsc_reader (slot)))
@@ -1365,8 +1376,6 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify = xtrymalloc (len);
   if (!pin_modify)
     return SW_HOST_OUT_OF_CORE;
-
-  no_lc = (!pininfo->fixedlen && reader_table[slot].is_spr532);
 
   pin_modify[0] = 0x00; /* bTimeOut */
   pin_modify[1] = 0x00; /* bTimeOut2 */
@@ -1395,8 +1404,8 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[16] = 0x02; /* bMsgIndex3 */
   pin_modify[17] = 0x00; /* bTeoPrologue[0] */
   pin_modify[18] = 0x00; /* bTeoPrologue[1] */
-  pin_modify[19] = 2 * pininfo->fixedlen + 0x05 - no_lc; /* bTeoPrologue[2] */
-  pin_modify[20] = 2 * pininfo->fixedlen + 0x05 - no_lc; /* ulDataLength */
+  pin_modify[19] = 2 * pininfo->fixedlen + 0x05; /* bTeoPrologue[2] */
+  pin_modify[20] = 2 * pininfo->fixedlen + 0x05; /* ulDataLength */
   pin_modify[21] = 0x00; /* ulDataLength */
   pin_modify[22] = 0x00; /* ulDataLength */
   pin_modify[23] = 0x00; /* ulDataLength */
@@ -1407,8 +1416,6 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[28] = 2 * pininfo->fixedlen; /* abData[4] */
   if (pininfo->fixedlen)
     memset (&pin_modify[29], 0xff, 2 * pininfo->fixedlen);
-  else if (no_lc)
-    len--;
 
   if (DBG_CARD_IO)
     log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
