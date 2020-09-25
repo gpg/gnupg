@@ -1254,9 +1254,10 @@ ccid_get_reader_list (void)
 static int
 ccid_vendor_specific_init (ccid_driver_t handle)
 {
+  int r = 0;
+
   if (handle->id_vendor == VENDOR_VEGA && handle->id_product == VEGA_ALPHA)
     {
-      int r;
       /*
        * Vega alpha has a feature to show retry counter on the pinpad
        * display.  But it assumes that the card returns the value of
@@ -1268,12 +1269,19 @@ ccid_vendor_specific_init (ccid_driver_t handle)
       const unsigned char cmd[] = { '\xb5', '\x01', '\x00', '\x03', '\x00' };
 
       r = send_escape_cmd (handle, cmd, sizeof (cmd), NULL, 0, NULL);
-      if (r != 0 && r != CCID_DRIVER_ERR_CARD_INACTIVE
-          && r != CCID_DRIVER_ERR_NO_CARD)
-        return r;
+    }
+  else if (handle->id_vendor == VENDOR_SCM)
+    {
+      DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
+      r = send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
+                           NULL, 0, NULL);
     }
 
-  return 0;
+  if (r != 0 && r != CCID_DRIVER_ERR_CARD_INACTIVE
+      && r != CCID_DRIVER_ERR_NO_CARD)
+    return r;
+  else
+    return 0;
 }
 
 
@@ -3528,15 +3536,6 @@ ccid_transceive_secure (ccid_driver_t handle,
     return CCID_DRIVER_ERR_NOT_SUPPORTED;
 
   msg = send_buffer;
-  if (handle->id_vendor == VENDOR_SCM)
-    {
-      DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
-      rc = send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
-                            NULL, 0, NULL);
-      if (rc)
-        return rc;
-    }
-
   msg[0] = cherry_mode? 0x89 : PC_to_RDR_Secure;
   msg[5] = 0; /* slot */
   msg[6] = seqno = handle->seqno++;
