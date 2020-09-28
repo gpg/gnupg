@@ -1272,9 +1272,14 @@ ccid_vendor_specific_init (ccid_driver_t handle)
     }
   else if (handle->id_vendor == VENDOR_SCM)
     {
-      DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
-      r = send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
-                           NULL, 0, NULL);
+      /*
+       * It seems that SEQ may be out of sync between host and the card reader,
+       * and SET_INTERFACE doesn't reset it.  Make sure it works at the init.
+       */
+      abort_cmd (handle, 0);
+      r = libusb_clear_halt (handle->idev, handle->ep_intr);
+      DEBUGOUT_1 ("libusb_clear_halt intr: %s\n", libusb_error_name (r));
+      r = 0;
     }
 
   if (r != 0 && r != CCID_DRIVER_ERR_CARD_INACTIVE
@@ -2407,7 +2412,15 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
       /* Setup interrupt transfer at the initial call of slot_status
          with ON_WIRE == 0 */
       if (handle->transfer == NULL && handle->ep_intr >= 0)
-        ccid_setup_intr (handle);
+        {
+          ccid_setup_intr (handle);
+          if (handle->id_vendor == VENDOR_SCM)
+            {
+              DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
+              send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
+                               NULL, 0, NULL);
+            }
+        }
 
       *statusbits = 0;
       return 0;
