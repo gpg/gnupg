@@ -1727,6 +1727,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
     {
       --ccid_usb_thread_is_alive;
       free (rid);
+      libusb_release_interface (idev, ifc_no);
       libusb_close (idev);
       free (*handle);
       *handle = NULL;
