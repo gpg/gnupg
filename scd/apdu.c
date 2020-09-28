@@ -1451,6 +1451,7 @@ static int
 close_ccid_reader (int slot)
 {
   ccid_close_reader (reader_table[slot].ccid.handle);
+  reader_table[slot].ccid.handle = NULL;
   return 0;
 }
 
@@ -1613,7 +1614,10 @@ open_ccid_reader (struct dev_list *dl, int *r_cciderr)
       err = ccid_get_atr (slotp->ccid.handle,
                           slotp->atr, sizeof slotp->atr, &slotp->atrlen);
       if (err)
-        ccid_close_reader (slotp->ccid.handle);
+        {
+          ccid_close_reader (slotp->ccid.handle);
+          slotp->ccid.handle = NULL;
+        }
     }
 
   if (err)
