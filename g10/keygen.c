@@ -3493,7 +3493,7 @@ parse_key_parameter_part (ctrl_t ctrl,
               if (!strcmp (algostr, "ed25519"))
                 algo = PUBKEY_ALGO_EDDSA;
               else if (!strcmp (algostr, "ed448"))
-                kpi->algo = PUBKEY_ALGO_EDDSA;
+                algo = PUBKEY_ALGO_EDDSA;
               else if (!strcmp (algostr, "cv25519"))
                 algo = PUBKEY_ALGO_ECDH;
               else if (!strcmp (algostr, "cv448"))
