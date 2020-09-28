@@ -2455,7 +2455,8 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
      status and debugging enabled. */
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,
                 seqno, retries? 1000 : 200, 1);
-  if (rc == CCID_DRIVER_ERR_CARD_IO_ERROR && retries < 3)
+  if ((rc == CCID_DRIVER_ERR_CARD_IO_ERROR || rc == CCID_DRIVER_ERR_USB_TIMEOUT)
+      && retries < 3)
     {
       if (!retries)
         {
