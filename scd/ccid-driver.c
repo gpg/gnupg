@@ -1289,9 +1289,6 @@ ccid_vendor_specific_init (ccid_driver_t handle)
        * and SET_INTERFACE doesn't reset it.  Make sure it works at the init.
        */
       abort_cmd (handle, 0);
-      r = libusb_clear_halt (handle->idev, handle->ep_intr);
-      DEBUGOUT_1 ("libusb_clear_halt intr: %s\n", libusb_error_name (r));
-      r = 0;
     }
 
   if (r != 0 && r != CCID_DRIVER_ERR_CARD_INACTIVE
@@ -1583,6 +1580,7 @@ ccid_setup_intr  (ccid_driver_t handle)
   struct libusb_transfer *transfer;
   int err;
 
+  libusb_clear_halt (handle->idev, handle->ep_intr);
   transfer = libusb_alloc_transfer (0);
   handle->transfer = transfer;
   libusb_fill_interrupt_transfer (transfer, handle->idev, handle->ep_intr,
