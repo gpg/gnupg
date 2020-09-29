@@ -1484,7 +1484,8 @@ intr_cb (struct libusb_transfer *transfer)
 {
   ccid_driver_t handle = transfer->user_data;
 
-  DEBUGOUT_1 ("CCID: interrupt callback %d\n", transfer->status);
+  DEBUGOUT_2 ("CCID: interrupt callback %d (%d)\n",
+              transfer->status, transfer->actual_length);
 
   if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT)
     {
@@ -1510,6 +1511,8 @@ intr_cb (struct libusb_transfer *transfer)
             {
               if (len < 2)
                 break;
+
+              DEBUGOUT_1 ("CCID: NotifySlotChange: %02x\n", p[1]);
 
               if ((p[1] & 1))
                 card_removed = 0;
@@ -2410,7 +2413,7 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
     {
       /* Setup interrupt transfer at the initial call of slot_status
          with ON_WIRE == 0 */
-      if (handle->transfer == NULL && handle->ep_intr >= 0)
+      if (handle->transfer == NULL)
         {
           ccid_setup_intr (handle);
           if (handle->id_vendor == VENDOR_SCM)
