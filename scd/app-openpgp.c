@@ -1906,38 +1906,73 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
 static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
+  gpg_error_t err = 0;
+
   (void)flags;
 
-  do_getattr (app, ctrl, "EXTCAP");
-  do_getattr (app, ctrl, "MANUFACTURER");
-  do_getattr (app, ctrl, "DISP-NAME");
-  do_getattr (app, ctrl, "DISP-LANG");
-  do_getattr (app, ctrl, "DISP-SEX");
-  do_getattr (app, ctrl, "PUBKEY-URL");
-  do_getattr (app, ctrl, "LOGIN-DATA");
-  do_getattr (app, ctrl, "KEY-FPR");
-  if (app->card_version > 0x0100)
-    do_getattr (app, ctrl, "KEY-TIME");
-  do_getattr (app, ctrl, "CA-FPR");
-  do_getattr (app, ctrl, "CHV-STATUS");
-  do_getattr (app, ctrl, "SIG-COUNTER");
-  if (app->app_local->extcap.kdf_do)
-    do_getattr (app, ctrl, "KDF");
-  if (app->app_local->extcap.private_dos)
+  err = do_getattr (app, ctrl, "EXTCAP");
+  if (!err)
+    err = do_getattr (app, ctrl, "MANUFACTURER");
+  if (!err)
+    err = do_getattr (app, ctrl, "DISP-NAME");
+  if (!err)
+    err = do_getattr (app, ctrl, "DISP-LANG");
+  if (!err)
+    err = do_getattr (app, ctrl, "DISP-SEX");
+  if (!err)
+    err = do_getattr (app, ctrl, "PUBKEY-URL");
+  if (!err)
+    err = do_getattr (app, ctrl, "LOGIN-DATA");
+  if (!err)
+    err = do_getattr (app, ctrl, "KEY-FPR");
+  if (!err && app->card_version > 0x0100)
+    err = do_getattr (app, ctrl, "KEY-TIME");
+  if (!err)
+    err = do_getattr (app, ctrl, "CA-FPR");
+  if (!err)
+    err = do_getattr (app, ctrl, "CHV-STATUS");
+  if (!err)
+    err = do_getattr (app, ctrl, "SIG-COUNTER");
+  if (!err && app->app_local->extcap.kdf_do)
     {
-      do_getattr (app, ctrl, "PRIVATE-DO-1");
-      do_getattr (app, ctrl, "PRIVATE-DO-2");
-      if (app->did_chv2)
-        do_getattr (app, ctrl, "PRIVATE-DO-3");
-      if (app->did_chv3)
-        do_getattr (app, ctrl, "PRIVATE-DO-4");
+      err = do_getattr (app, ctrl, "KDF");
+      if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+        err = 0;
     }
-  send_keypair_info (app, ctrl, 1);
-  send_keypair_info (app, ctrl, 2);
-  send_keypair_info (app, ctrl, 3);
+  if (!err && app->app_local->extcap.private_dos)
+    {
+      if (!err)
+        err = do_getattr (app, ctrl, "PRIVATE-DO-1");
+      if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+        err = 0;
+      if (!err)
+        err = do_getattr (app, ctrl, "PRIVATE-DO-2");
+      if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+        err = 0;
+      if (!err && app->did_chv2)
+        err = do_getattr (app, ctrl, "PRIVATE-DO-3");
+      if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+        err = 0;
+      if (!err && app->did_chv3)
+        err = do_getattr (app, ctrl, "PRIVATE-DO-4");
+      if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+        err = 0;
+    }
+  if (!err)
+    err = send_keypair_info (app, ctrl, 1);
+  if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+    err = 0;
+  if (!err)
+    err = send_keypair_info (app, ctrl, 2);
+  if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+    err = 0;
+  if (!err)
+    err = send_keypair_info (app, ctrl, 3);
+  if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+    err = 0;
   /* Note: We do not send the Cardholder Certificate, because that is
      relatively long and for OpenPGP applications not really needed.  */
-  return 0;
+  return err;
 }
 
 
