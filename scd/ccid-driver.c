@@ -2148,11 +2148,11 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
        * Communication failure by device side.
        * Possibly, it was forcibly suspended and resumed.
        *
-       * Only detect this kind of failure when interrupt transfer is
-       * not supported.  For card reader with interrupt transfer
-       * support removal is detected by intr_cb.
+       * For card reader with interrupt transfer support, ideally,
+       * removal is detected by intr_cb, but some card reader
+       * (e.g. SPR532) has a case of missing report to intr_cb.
        */
-      if (handle->ep_intr < 0)
+      if (handle->ep_intr < 0 || handle->id_vendor == VENDOR_SCM)
         {
           DEBUGOUT ("CCID: card inactive/removed\n");
           handle->powered_off = 1;
