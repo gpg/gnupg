@@ -12,7 +12,6 @@ compliance de-vs
 enable-crl-checks
 
 [gpg-agent]
-enable-extended-key-format
 default-cache-ttl 900
 max-cache-ttl 3600
 no-allow-mark-trusted
