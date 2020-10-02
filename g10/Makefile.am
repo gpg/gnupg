@@ -19,8 +19,10 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = distsigkey.gpg \
-	     ChangeLog-2011 gpg-w32info.rc \
-	     gpg.w32-manifest.in test.c t-keydb-keyring.kbx \
+	     ChangeLog-2011 \
+             gpg-w32info.rc gpg.w32-manifest.in \
+             gpgv-w32info.rc gpgv.w32-manifest.in \
+	     test.c t-keydb-keyring.kbx \
 	     t-keydb-get-keyblock.gpg t-stutter-data.asc \
 	     all-tests.scm
 
@@ -88,10 +90,13 @@ endif
 
 
 if HAVE_W32_SYSTEM
-resource_objs += gpg-w32info.o
-
+gpg_robjs = $(resource_objs) gpg-w32info.o
+gpgv_robjs = $(resource_objs) gpgv-w32info.o
 gpg-w32info.o : gpg.w32-manifest
-
+gpgv-w32info.o : gpgv.w32-manifest
+else
+gpg_robjs =
+gpgv_robjs =
 endif
 
 common_source =  \
@@ -178,16 +183,16 @@ LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS)
 gpg_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
-	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
+	     $(LIBICONV) $(gpg_robjs) $(extra_sys_libs)
 gpg_LDFLAGS = $(extra_bin_ldflags)
 gpgv_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
               $(GPG_ERROR_LIBS) \
-	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
+	      $(LIBICONV) $(gpgv_robjs) $(extra_sys_libs)
 gpgv_LDFLAGS = $(extra_bin_ldflags)
 
 gpgcompose_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
-	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
+	     $(LIBICONV) $(extra_sys_libs)
 gpgcompose_LDFLAGS = $(extra_bin_ldflags)
 
 t_common_ldadd =

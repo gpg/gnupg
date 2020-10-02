@@ -2008,8 +2008,17 @@ tests/migrations/Makefile
 tests/gpgsm/Makefile
 tests/gpgme/Makefile
 tests/pkits/Makefile
+agent/gpg-agent.w32-manifest
 g10/gpg.w32-manifest
+g10/gpgv.w32-manifest
+sm/gpgsm.w32-manifest
+scd/scdaemon.w32-manifest
+dirmngr/dirmngr.w32-manifest
 tools/gpgconf.w32-manifest
+tools/gpgtar.w32-manifest
+tools/gpg-connect-agent.w32-manifest
+tools/gpg-check-pattern.w32-manifest
+tools/gpg-wks-client.w32-manifest
 ])
 
 

@@ -20,20 +20,35 @@ EXTRA_DIST = \
 	Manifest watchgnupg.c no-libgcrypt.c \
 	addgnupghome applygnupgdefaults \
 	lspgpot mail-signed-keys convert-from-106 sockprox.c \
-	ccidmon.c ChangeLog-2011 gpg-connect-agent-w32info.rc \
-	gpgconf-w32info.rc gpgconf.w32-manifest
+	ccidmon.c ChangeLog-2011 \
+	gpgconf-w32info.rc           gpgconf.w32-manifest.in \
+	gpgtar-w32info.rc            gpgtar.w32-manifest.in \
+        gpg-connect-agent-w32info.rc gpg-connect-agent.w32-manifest.in \
+	gpg-check-pattern-w32info.rc gpg-check-pattern.w32-manifest.in \
+	gpg-wks-client-w32info.rc    gpg-wks-client.w32-manifest.in
 
 
 AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
+gpgconf_robjs =           $(resource_objs) gpgconf-w32info.o
+gpgtar_robjs =            $(resource_objs) gpgtar-w32info.o
 gpg_connect_agent_robjs = $(resource_objs) gpg-connect-agent-w32info.o
-gpgconf_robjs = $(resource_objs) gpgconf-w32info.o
-gpgconf-w32info.o: gpgconf.w32-manifest
+gpg_check_pattern_robjs = $(resource_objs) gpg-check-pattern-w32info.o
+gpg_wks_client_robjs =    $(resource_objs) gpg-wks-client-w32info.o
+
+gpgconf-w32info.o:           gpgconf.w32-manifest
+gpgtar-w32info.o:            gpgtar.w32-manifest
+gpg-connect-agent-w32info.o: gpg-connect-agent.w32-manifest
+gpg-check-pattern-w32info.o: gpg-check-pattern.w32-manifest
+gpg-wks-client-w32info.o:    gpg-wks-client.w32-manifest
 else
 gpg_connect_agent_robjs =
 gpgconf_robjs =
+gpg_check_pattern_robjs =
+gpgtar_robjs =
+gpg_wks_client_robjs =
 endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
@@ -138,7 +153,7 @@ gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_check_pattern_LDADD = $(common_libs) $(regexp_libs) $(LIBGCRYPT_LIBS) \
 			  $(GPG_ERROR_LIBS) \
 			  $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS) \
-			  $(LIBICONV)
+			  $(LIBICONV) $(gpg_check_pattern_robjs)
 
 gpgtar_SOURCES = \
 	gpgtar.c gpgtar.h \
@@ -147,7 +162,8 @@ gpgtar_SOURCES = \
 	gpgtar-list.c
 gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS)
 gpgtar_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-               $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
+               $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS) \
+	       $(gpgtar_robjs)
 
 gpg_wks_server_SOURCES = \
 	gpg-wks-server.c \
@@ -177,7 +193,8 @@ gpg_wks_client_SOURCES = \
 gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_client_LDADD = $(libcommon) \
 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-		       $(LIBINTL) $(LIBICONV) $(NETLIBS)
+		       $(LIBINTL) $(LIBICONV) $(NETLIBS) \
+		       $(gpg_wks_client_robjs)
 
 
 # Make sure that all libs are build before we use them.  This is

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-<description>GNU Privacy Guard (OpenPGP tool)</description>
+<description>GNU Privacy Guard (Pattern checker)</description>
 <assemblyIdentity
     type="win32"
-    name="GnuPG.gpg"
+    name="GnuPG.gpg-check-pattern"
     version="@BUILD_VERSION@"
     />
 <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">

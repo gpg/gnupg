@@ -1,5 +1,5 @@
-/* gpg-connect-agent-w32info.rc                               -*- c -*-
- * Copyright (C) 2013 g10 Code GmbH
+/* gpgv-w32info.rc                                           -*- c -*-
+ * Copyright (C) 2020 g10 Code GmbH
  *
  * This file is free software; as a special exception the author gives
  * unlimited permission to copy and/or distribute it, with or without
@@ -32,9 +32,9 @@
     BEGIN
         BLOCK "040904b0"  /* US English (0409), Unicode (04b0) */
         BEGIN
-            VALUE "FileDescription", L"GnuPG\x2019s IPC tool\0"
-            VALUE "InternalName", "gpg-connect-agent\0"
-            VALUE "OriginalFilename", "gpg-connect-agent.exe\0"
+            VALUE "FileDescription", L"GnuPG\x2019s OpenPGP verify tool\0"
+            VALUE "InternalName", "gpgv\0"
+            VALUE "OriginalFilename", "gpgv.exe\0"
             VALUE "ProductName",    W32INFO_PRODUCTNAME
             VALUE "ProductVersion", W32INFO_PRODUCTVERSION
             VALUE "CompanyName", W32INFO_COMPANYNAME
@@ -49,4 +49,4 @@
     END
   END
 
-1 RT_MANIFEST "gpg-connect-agent.w32-manifest"
+1 RT_MANIFEST "gpgv.w32-manifest"

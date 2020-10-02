@@ -21,7 +21,10 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = OAUTHORS ONEWS ChangeLog-2011 tls-ca.pem
+EXTRA_DIST = OAUTHORS ONEWS ChangeLog-2011 tls-ca.pem \
+             dirmngr-w32info.rc dirmngr.w32-manifest.in
+
+
 dist_pkgdata_DATA = sks-keyservers.netCA.pem
 
 bin_PROGRAMS = dirmngr dirmngr-client
@@ -86,11 +89,19 @@ else
 ldaplibs =
 endif
 
+if HAVE_W32_SYSTEM
+dirmngr_robjs = $(resource_objs) dirmngr-w32info.o
+dirmngr-w32info.o : dirmngr.w32-manifest
+else
+dirmngr_robjs =
+endif
+
 
 dirmngr_LDADD = $(libcommonpth) \
         $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) \
-	$(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
+	$(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS) \
+        $(dirmngr_robj)
 if USE_LDAP
 dirmngr_LDADD += $(ldaplibs)
 endif
