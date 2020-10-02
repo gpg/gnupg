@@ -70,8 +70,22 @@
 
 #else /* Used by GnuPG  */
 
+/* GnuPG has always been a part of the GNU project and thus we have
+ * shown the FSF as holder of the copyright.  We continue to do so for
+ * the reason that without the FSF the free software used all over the
+ * world would not have come into existence.  However, under Windows
+ * we print a different copyright string with --version because the
+ * copyright assignments of g10 Code and Werner Koch were terminated
+ * many years ago, g10 Code is still the major contributor to the
+ * code, and Windows is not an FSF endorsed platform.  Note that the
+ * list of copyright holders can be found in the AUTHORS file.  */
+
 # define ARGPARSE_GPL_VERSION      3
+# ifdef HAVE_W32_SYSTEM
+# define ARGPARSE_CRIGHT_STR "Copyright (C) 2020 g10 Code GmbH"
+# else
 # define ARGPARSE_CRIGHT_STR "Copyright (C) 2020 Free Software Foundation, Inc."
+# endif
 
 #endif /*GNUPG_MAJOR_VERSION*/
 
