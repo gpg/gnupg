@@ -100,6 +100,7 @@ enum cmd_and_opt_values {
   aFlush,
   aGPGConfList,
   aGPGConfTest,
+  aGPGConfVersions,
 
   oOptions,
   oDebug,
@@ -174,6 +175,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aFlush,    "flush",     N_("flush the cache")),
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
+  ARGPARSE_c (aGPGConfVersions, "gpgconf-versions", "@"),
 
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
@@ -378,6 +380,8 @@ static ldap_server_t parse_ldapserver_file (const char* filename, int ienoent);
 static fingerprint_list_t parse_ocsp_signer (const char *string);
 static void netactivity_action (void);
 static void handle_connections (assuan_fd_t listen_fd);
+static void gpgconf_versions (void);
+
 
 /* NPth wrapper function definitions. */
 ASSUAN_SYSTEM_NPTH_IMPL;
@@ -982,6 +986,7 @@ main (int argc, char **argv)
         case aFetchCRL:
 	case aGPGConfList:
 	case aGPGConfTest:
+	case aGPGConfVersions:
           cmd = pargs.r_opt;
           break;
 
@@ -1543,6 +1548,9 @@ main (int argc, char **argv)
       es_printf ("resolver-timeout:%lu:%u\n",
                  flags | GC_OPT_FLAG_DEFAULT, 0);
     }
+  else if (cmd == aGPGConfVersions)
+    gpgconf_versions ();
+
   cleanup ();
   return !!rc;
 }
@@ -2346,4 +2354,62 @@ dirmngr_get_current_socket_name (void)
     return socket_name;
   else
     return dirmngr_socket_name ();
+}
+
+
+
+/* Parse the revision part from the extended version blurb.  */
+static const char *
+get_revision_from_blurb (const char *blurb, int *r_len)
+{
+  const char *s = blurb? blurb : "";
+  int n;
+
+  for (; *s; s++)
+    if (*s == '\n' && s[1] == '(')
+      break;
+  if (s)
+    {
+      s += 2;
+      for (n=0; s[n] && s[n] != ' '; n++)
+        ;
+    }
+  else
+    {
+      s = "?";
+      n = 1;
+    }
+  *r_len = n;
+  return s;
+}
+
+
+/* Print versions of dirmngr and used libraries.  This is used by
+ * "gpgconf --show-versions" so that there is no need to link gpgconf
+ * against all these libraries.  This is an internal API and should
+ * not be relied upon.  */
+static void
+gpgconf_versions (void)
+{
+  const char *s;
+  int n;
+
+  /* Unfortunately Npth has no way to get the version.  */
+
+  s = get_revision_from_blurb (assuan_check_version ("\x01\x01"), &n);
+  es_fprintf (es_stdout, "* Libassuan %s (%.*s)\n\n",
+              assuan_check_version (NULL), n, s);
+
+  es_fprintf (es_stdout, "* KSBA %s \n\n",
+              ksba_check_version (NULL));
+
+#ifdef HTTP_USE_NTBTLS
+  s = get_revision_from_blurb (ntbtls_check_version ("\x01\x01"), &n);
+  es_fprintf (es_stdout, "* NTBTLS %s (%.*s)\n\n",
+              ntbtls_check_version (NULL), n, s);
+#elif HTTP_USE_GNUTLS
+  es_fprintf (es_stdout, "* GNUTLS %s\n\n",
+              gnutls_check_version (NULL));
+#endif
+
 }

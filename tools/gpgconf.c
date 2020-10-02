@@ -31,6 +31,7 @@
 #include "../common/sysutils.h"
 #include "../common/init.h"
 #include "../common/status.h"
+#include "../common/exechelp.h"
 
 
 /* Constants to identify the commands and options. */
@@ -65,7 +66,8 @@ enum cmd_and_opt_values
     aCreateSocketDir,
     aRemoveSocketDir,
     aApplyProfile,
-    aReload
+    aReload,
+    aShowVersions
   };
 
 
@@ -96,6 +98,8 @@ static ARGPARSE_OPTS opts[] =
     { aKill,          "kill", 256,   N_("kill a given component")},
     { aCreateSocketDir, "create-socketdir", 256, "@"},
     { aRemoveSocketDir, "remove-socketdir", 256, "@"},
+    ARGPARSE_c (aShowVersions, "show-versions", "@"),
+
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -119,6 +123,9 @@ static ARGPARSE_OPTS opts[] =
 /* The stream to output the status information.  Status Output is disabled if
  * this is NULL.  */
 static estream_t statusfp;
+
+static void show_versions (estream_t fp);
+
 
 
 /* Print usage information and provide strings for help. */
@@ -594,6 +601,7 @@ main (int argc, char **argv)
         case aKill:
         case aCreateSocketDir:
         case aRemoveSocketDir:
+        case aShowVersions:
 	  cmd = pargs.r_opt;
 	  break;
 
@@ -897,6 +905,13 @@ main (int argc, char **argv)
       }
       break;
 
+    case aShowVersions:
+      {
+        get_outfp (&outfp);
+        show_versions (outfp);
+      }
+      break;
+
     }
 
   if (outfp != es_stdout)
@@ -922,4 +937,158 @@ gpgconf_failure (gpg_error_t err)
     (STATUS_FAILURE, "- %u",
      gpg_err_code (err) == GPG_ERR_USER_2? GPG_ERR_EINVAL : err);
   exit (gpg_err_code (err) == GPG_ERR_USER_2? 2 : 1);
+}
+
+
+
+/* Parse the revision part from the extended version blurb.  */
+static const char *
+get_revision_from_blurb (const char *blurb, int *r_len)
+{
+  const char *s = blurb? blurb : "";
+  int n;
+
+  for (; *s; s++)
+    if (*s == '\n' && s[1] == '(')
+      break;
+  if (s)
+    {
+      s += 2;
+      for (n=0; s[n] && s[n] != ' '; n++)
+        ;
+    }
+  else
+    {
+      s = "?";
+      n = 1;
+    }
+  *r_len = n;
+  return s;
+}
+
+
+static void
+show_version_gnupg (estream_t fp)
+{
+  es_fprintf (fp, "* GnuPG %s (%s)\n%s\n",
+              strusage (13), BUILD_REVISION, strusage (17));
+#ifdef HAVE_W32_SYSTEM
+  {
+    OSVERSIONINFO osvi = { sizeof (osvi) };
+
+    GetVersionEx (&osvi);
+    es_fprintf (fp, "Windows %lu.%lu build %lu%s%s%s\n",
+                (unsigned long)osvi.dwMajorVersion,
+                (unsigned long)osvi.dwMinorVersion,
+                (unsigned long)osvi.dwBuildNumber,
+                *osvi.szCSDVersion? " (":"",
+                osvi.szCSDVersion,
+                *osvi.szCSDVersion? ")":""
+                );
+  }
+#endif /*HAVE_W32_SYSTEM*/
+}
+
+
+static void
+show_version_libgcrypt (estream_t fp)
+{
+  const char *s;
+  int n;
+
+  s = get_revision_from_blurb (gcry_check_version ("\x01\x01"), &n);
+  es_fprintf (fp, "* Libgcrypt %s (%.*s)\n",
+              gcry_check_version (NULL), n, s);
+#if GCRYPT_VERSION_NUMBER >= 0x010800
+  s = gcry_get_config (0, NULL);
+  if (s)
+    es_fputs (s, fp);
+#endif
+}
+
+
+static void
+show_version_gpgrt (estream_t fp)
+{
+  const char *s;
+  int n;
+
+  s = get_revision_from_blurb (gpg_error_check_version ("\x01\x01"), &n);
+  es_fprintf (fp, "* GpgRT %s (%.*s)\n",
+              gpg_error_check_version (NULL), n, s);
+}
+
+
+/* Printing version information for other libraries is problematic
+ * because we don't want to link gpgconf to all these libraries.  The
+ * best solution is delegating this to dirmngr which uses libassuan,
+ * libksba, libnpth and ntbtls anyway.  */
+static void
+show_versions_via_dirmngr (estream_t fp)
+{
+  gpg_error_t err;
+  const char *pgmname;
+  const char *argv[2];
+  estream_t outfp;
+  pid_t pid;
+  char *line = NULL;
+  size_t line_len = 0;
+  ssize_t length;
+  int exitcode;
+
+  pgmname = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
+  argv[0] = "--gpgconf-versions";
+  argv[1] = NULL;
+  err = gnupg_spawn_process (pgmname, argv, NULL, NULL, 0,
+                             NULL, &outfp, NULL, &pid);
+  if (err)
+    {
+      log_error ("error spawning %s: %s", pgmname, gpg_strerror (err));
+      es_fprintf (fp, "[error: can't get further info]\n");
+      return;
+    }
+
+  while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
+    {
+      /* Strip newline and carriage return, if present.  */
+      while (length > 0
+	     && (line[length - 1] == '\n' || line[length - 1] == '\r'))
+	line[--length] = '\0';
+      es_fprintf (fp, "%s\n", line);
+    }
+  if (length < 0 || es_ferror (outfp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading from %s: %s\n", pgmname, gpg_strerror (err));
+    }
+  if (es_fclose (outfp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error closing output stream of %s: %s\n",
+                 pgmname, gpg_strerror (err));
+    }
+
+  err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
+  if (err)
+    {
+      log_error ("running %s failed (exitcode=%d): %s\n",
+                 pgmname, exitcode, gpg_strerror (err));
+      es_fprintf (fp, "[error: can't get further info]\n");
+    }
+  gnupg_release_process (pid);
+  xfree (line);
+}
+
+
+/* Show all kind of version information.  */
+static void
+show_versions (estream_t fp)
+{
+  show_version_gnupg (fp);
+  es_fputc ('\n', fp);
+  show_version_libgcrypt (fp);
+  es_fputc ('\n', fp);
+  show_version_gpgrt (fp);
+  es_fputc ('\n', fp);
+  show_versions_via_dirmngr (fp);
 }
