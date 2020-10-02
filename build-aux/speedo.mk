@@ -110,7 +110,7 @@ help:
 	@echo 'Use CUSTOM_SWDB=1 for an already downloaded swdb.lst.'
 	@echo 'Use WIXPREFIX to provide the WIX binaries for the MSI package.'
 	@echo '    Using WIX also requires wine with installed wine mono.'
-	@echo '    Seee help-wixlib for more information'
+	@echo '    See help-wixlib for more information'
 
 help-wixlib:
 	@echo 'The buildsystem can create a wixlib to build MSI packages.'

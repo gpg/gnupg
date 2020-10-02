@@ -1262,7 +1262,7 @@ static const char hlp_checkpin[] =
   "   entry system, only the regular CHV will get blocked and not the\n"
   "   dangerous CHV3.  IDSTR is the usual card's serial number in hex\n"
   "   notation; an optional fingerprint part will get ignored.  There\n"
-  "   is however a special mode if the IDSTR is sffixed with the\n"
+  "   is however a special mode if the IDSTR is suffixed with the\n"
   "   literal string \"[CHV3]\": In this case the Admin PIN is checked\n"
   "   if and only if the retry counter is still at 3.\n"
   "\n"
