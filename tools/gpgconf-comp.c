@@ -52,14 +52,6 @@
 #include "../common/gc-opt-flags.h"
 #include "gpgconf.h"
 
-/* There is a problem with gpg 1.4 under Windows: --gpgconf-list
-   returns a plain filename without escaping.  As long as we have not
-   fixed that we need to use gpg2.  */
-#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
-#define GPGNAME "gpg2"
-#else
-#define GPGNAME GPG_NAME
-#endif
 
 
 
