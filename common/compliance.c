@@ -501,7 +501,7 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
 #ifdef HAVE_W32_SYSTEM
 # if GCRYPT_VERSION_NUMBER >= 0x010800
       char *buf;
-      char *fields[5];
+      const char *fields[5];
 
       buf = gcry_get_config (0, "rng-type");
       if (buf
