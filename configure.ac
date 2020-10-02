@@ -2009,6 +2009,7 @@ tests/gpgsm/Makefile
 tests/gpgme/Makefile
 tests/pkits/Makefile
 g10/gpg.w32-manifest
+tools/gpgconf.w32-manifest
 ])
 
 

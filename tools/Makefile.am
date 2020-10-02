@@ -20,14 +20,20 @@ EXTRA_DIST = \
 	Manifest watchgnupg.c no-libgcrypt.c \
 	addgnupghome applygnupgdefaults \
 	lspgpot mail-signed-keys convert-from-106 sockprox.c \
-	ccidmon.c ChangeLog-2011 gpg-connect-agent-w32info.rc
+	ccidmon.c ChangeLog-2011 gpg-connect-agent-w32info.rc \
+	gpgconf-w32info.rc gpgconf.w32-manifest
 
 
 AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
-resource_objs += gpg-connect-agent-w32info.o
+gpg_connect_agent_robjs = $(resource_objs) gpg-connect-agent-w32info.o
+gpgconf_robjs = $(resource_objs) gpgconf-w32info.o
+gpgconf-w32info.o: gpgconf.w32-manifest
+else
+gpg_connect_agent_robjs =
+gpgconf_robjs =
 endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
@@ -105,7 +111,8 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
                 $(LIBINTL) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
-	        $(LIBICONV) $(W32SOCKLIBS)
+	        $(LIBICONV) $(W32SOCKLIBS) \
+	        $(gpgconf_robjs)
 gpgconf_LDFLAGS = $(extra_bin_ldflags)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
@@ -124,8 +131,7 @@ gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
 	                  $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
                           $(GPG_ERROR_LIBS) \
                           $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
-                          $(resource_objs)
-
+                          $(gpg_connect_agent_robjs)
 
 gpg_check_pattern_SOURCES = gpg-check-pattern.c
 gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
