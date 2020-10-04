@@ -1224,7 +1224,7 @@ AC_ARG_WITH(mailprog,
                      [use "NAME -t" for mail transport]),
              ,with_mailprog=yes)
 if test x"$with_mailprog" = xyes ; then
-    AC_PATH_PROG(SENDMAIL,sendmail,,$PATH:/usr/sbin:/usr/libexec:/usr/lib)
+    AC_PATH_PROG(SENDMAIL,sendmail,,"$PATH":/usr/sbin:/usr/libexec:/usr/lib)
 elif test x"$with_mailprog" != xno ; then
     AC_MSG_CHECKING([for a mail transport program])
     AC_SUBST(SENDMAIL,$with_mailprog)
