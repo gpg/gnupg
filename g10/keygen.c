@@ -47,10 +47,11 @@
 #include "../common/mbox-util.h"
 
 
-/* The default algorithms.  If you change them, you should ensure the value
-   is inside the bounds enforced by ask_keysize and gen_xxx.  See also
-   get_keysize_range which encodes the allowed ranges.  */
-#define DEFAULT_STD_KEY_PARAM  "rsa3072/cert,sign+rsa3072/encr"
+/* The default algorithms.  If you change them, you should ensure the
+   value is inside the bounds enforced by ask_keysize and gen_xxx.
+   See also get_keysize_range which encodes the allowed ranges.  The
+   default answer in ask_algo also needs to be adjusted.  */
+#define DEFAULT_STD_KEY_PARAM  "ed25519/cert,sign+cv25519/encr"
 #define FUTURE_STD_KEY_PARAM   "ed25519/cert,sign+cv25519/encr"
 
 /* When generating keys using the streamlined key generation dialog,
@@ -2112,50 +2113,49 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 
 #if GPG_USE_RSA
   if (!addmode)
-    tty_printf (_("   (%d) RSA and RSA (default)\n"), 1 );
+    tty_printf (_("   (%d) RSA and RSA%s\n"), 1, "");
 #endif
 
   if (!addmode && opt.compliance != CO_DE_VS)
-    tty_printf (_("   (%d) DSA and Elgamal\n"), 2 );
+    tty_printf (_("   (%d) DSA and Elgamal%s\n"), 2, "");
 
   if (opt.compliance != CO_DE_VS)
-    tty_printf (_("   (%d) DSA (sign only)\n"), 3 );
+    tty_printf (_("   (%d) DSA (sign only)%s\n"), 3, "");
 #if GPG_USE_RSA
-  tty_printf (_("   (%d) RSA (sign only)\n"), 4 );
+  tty_printf (_("   (%d) RSA (sign only)%s\n"), 4, "");
 #endif
 
   if (addmode)
     {
       if (opt.compliance != CO_DE_VS)
-        tty_printf (_("   (%d) Elgamal (encrypt only)\n"), 5 );
+        tty_printf (_("   (%d) Elgamal (encrypt only)%s\n"), 5, "");
 #if GPG_USE_RSA
-      tty_printf (_("   (%d) RSA (encrypt only)\n"), 6 );
+      tty_printf (_("   (%d) RSA (encrypt only)%s\n"), 6, "");
 #endif
     }
   if (opt.expert)
     {
       if (opt.compliance != CO_DE_VS)
-        tty_printf (_("   (%d) DSA (set your own capabilities)\n"), 7 );
+        tty_printf (_("   (%d) DSA (set your own capabilities)%s\n"), 7, "");
 #if GPG_USE_RSA
-      tty_printf (_("   (%d) RSA (set your own capabilities)\n"), 8 );
+      tty_printf (_("   (%d) RSA (set your own capabilities)%s\n"), 8, "");
 #endif
     }
 
 #if GPG_USE_ECDSA || GPG_USE_ECDH || GPG_USE_EDDSA
-  if (opt.expert && !addmode)
-    tty_printf (_("   (%d) ECC and ECC\n"), 9 );
+  if (!addmode)
+    tty_printf (_("   (%d) ECC (sign and encrypt)%s\n"), 9, _(" *default*") );
+  tty_printf (_("  (%d) ECC (sign only)\n"), 10 );
   if (opt.expert)
-    tty_printf (_("  (%d) ECC (sign only)\n"), 10 );
-  if (opt.expert)
-    tty_printf (_("  (%d) ECC (set your own capabilities)\n"), 11 );
-  if (opt.expert && addmode)
-    tty_printf (_("  (%d) ECC (encrypt only)\n"), 12 );
+    tty_printf (_("  (%d) ECC (set your own capabilities)%s\n"), 11, "");
+  if (addmode)
+    tty_printf (_("  (%d) ECC (encrypt only)%s\n"), 12, "");
 #endif
 
   if (opt.expert && r_keygrip)
-    tty_printf (_("  (%d) Existing key\n"), 13 );
+    tty_printf (_("  (%d) Existing key%s\n"), 13, "");
   if (r_keygrip)
-    tty_printf (_("  (%d) Existing key from card\n"), 14 );
+    tty_printf (_("  (%d) Existing key from card%s\n"), 14, "");
 
   for (;;)
     {
@@ -2164,7 +2164,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
       xfree (answer);
       answer = cpr_get ("keygen.algo", _("Your selection? "));
       cpr_kill_prompt ();
-      algo = *answer? atoi (answer) : 1;
+      algo = *answer? atoi (answer) : 9;  /* Default algo is 9 */
 
       if (opt.compliance == CO_DE_VS
           && (algo == 2 || algo == 3 || algo == 5 || algo == 7))
@@ -2220,13 +2220,13 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           break;
 	}
       else if ((algo == 9 || !strcmp (answer, "ecc+ecc"))
-               && opt.expert && !addmode)
+               && !addmode)
         {
           algo = PUBKEY_ALGO_ECDSA;
           *r_subkey_algo = PUBKEY_ALGO_ECDH;
           break;
 	}
-      else if ((algo == 10 || !strcmp (answer, "ecc/s")) && opt.expert)
+      else if ((algo == 10 || !strcmp (answer, "ecc/s")))
         {
           algo = PUBKEY_ALGO_ECDSA;
           *r_usage = PUBKEY_USAGE_SIG;
@@ -2239,7 +2239,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           break;
 	}
       else if ((algo == 12 || !strcmp (answer, "ecc/e"))
-               && opt.expert && addmode)
+               && addmode)
         {
           algo = PUBKEY_ALGO_ECDH;
           *r_usage = PUBKEY_USAGE_ENC;
@@ -2616,7 +2616,7 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
     { "NIST P-256",      NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
     { "NIST P-384",      NULL, NULL,               MY_USE_ECDSADH,  0, 0, 0 },
     { "NIST P-521",      NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
-    { "brainpoolP256r1", NULL, "Brainpool P-256",  MY_USE_ECDSADH,  1, 1, 0 },
+    { "brainpoolP256r1", NULL, "Brainpool P-256",  MY_USE_ECDSADH,  1, 0, 0 },
     { "brainpoolP384r1", NULL, "Brainpool P-384",  MY_USE_ECDSADH,  1, 1, 0 },
     { "brainpoolP512r1", NULL, "Brainpool P-512",  MY_USE_ECDSADH,  1, 1, 0 },
     { "secp256k1",       NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
@@ -2672,9 +2672,10 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
         }
 
       curves[idx].available = 1;
-      tty_printf ("   (%d) %s\n", idx + 1,
+      tty_printf ("   (%d) %s%s\n", idx + 1,
                   curves[idx].pretty_name?
-                  curves[idx].pretty_name:curves[idx].name);
+                  curves[idx].pretty_name:curves[idx].name,
+                  idx == 0? _(" *default*"):"");
     }
   gcry_sexp_release (keyparms);
 
