@@ -302,7 +302,7 @@ ca_cert_fetch (ctrl_t ctrl, cert_fetch_context_t *context, const char *dn)
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 #if USE_LDAP
-  return start_default_fetch_ldap (ctrl, context, dn, "cACertificate");
+  return start_cacert_fetch_ldap (ctrl, context, dn);
 #else
   (void)ctrl;
   (void)context;
