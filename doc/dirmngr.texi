@@ -434,17 +434,22 @@ out.  The default are 15 seconds.  0 will never timeout.
 @opindex add-servers
 This option makes dirmngr add any servers it discovers when validating
 certificates against CRLs to the internal list of servers to consult for
-certificates and CRLs.
+certificates and CRLs.  This option should in general not be used.
 
-This option is useful when trying to validate a certificate that has
-a CRL distribution point that points to a server that is not already
-listed in the ldapserverlist. Dirmngr will always go to this server and
-try to download the CRL, but chances are high that the certificate used
-to sign the CRL is located on the same server. So if dirmngr doesn't add
-that new server to list, it will often not be able to verify the
-signature of the CRL unless the @code{--add-servers} option is used.
+This option might be useful when trying to validate a certificate that
+has a CRL distribution point that points to a server that is not
+already listed in the ldapserverlist.  Dirmngr will always go to this
+server and try to download the CRL, but chances are high that the
+certificate used to sign the CRL is located on the same server. So if
+dirmngr doesn't add that new server to list, it will often not be able
+to verify the signature of the CRL unless the @code{--add-servers}
+option is used.
 
-Note: The current version of dirmngr has this option disabled by default.
+Caveat emptor: Using this option may enable denial-of-service attacks
+and leak search requests to unknown third parties.  This is because
+arbitrary servers are added to the internal list of LDAP servers which
+in turn is used for all unspecific LDAP queries as well as a fallback
+for queries which did not return a result.
 
 
 @item --allow-ocsp

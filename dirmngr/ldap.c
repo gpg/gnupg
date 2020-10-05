@@ -433,7 +433,12 @@ make_url (char **url, const char *dn, const char *filter)
   gpg_error_t err;
   char *u_dn, *u_filter;
   char const attrs[] = (USERCERTIFICATE ","
-/*                         USERSMIMECERTIFICATE "," */
+                        /* In 2005 wk mentioned in the changelog that
+                         * work on the userSMIMECertificate has
+                         * started but it seems that no further
+                         * progress was made or the whole thing was
+                         * simply forgotten.  */
+                        /* USERSMIMECERTIFICATE "," */
                         CACERTIFICATE ","
                         X509CACERT );
 

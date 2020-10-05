@@ -470,7 +470,7 @@ static known_option_t known_options_dirmngr[] =
    { "ignore-ldap-dp",    GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "ldap-proxy",        GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "only-ldap-proxy",   GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
-   { "add-servers",       GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
+   { "add-servers",       GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
    { "ldaptimeout",       GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "max-replies",       GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "allow-ocsp",        GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
