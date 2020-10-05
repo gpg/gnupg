@@ -69,9 +69,9 @@ gpg_error_t attr_fetch_ldap (ctrl_t ctrl,
                              ksba_reader_t *reader);
 
 
-gpg_error_t start_default_fetch_ldap (ctrl_t ctrl,
-                                      cert_fetch_context_t *context,
-                                      const char *dn, const char *attr);
+gpg_error_t start_cacert_fetch_ldap (ctrl_t ctrl,
+                                     cert_fetch_context_t *context,
+                                     const char *dn);
 gpg_error_t start_cert_fetch_ldap( ctrl_t ctrl,
                                    cert_fetch_context_t *context,
                                    strlist_t patterns,
