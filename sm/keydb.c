@@ -488,10 +488,11 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
 /* Print a warning if the server's version number is less than our
    version number.  Returns an error code on a connection problem.  */
 static gpg_error_t
-warn_version_mismatch (assuan_context_t ctx, const char *servername)
+warn_version_mismatch (ctrl_t ctrl, assuan_context_t ctx,
+                       const char *servername)
 {
   return warn_server_version_mismatch (ctx, servername, 0,
-                                       gpgsm_status2, NULL,
+                                       gpgsm_status2, ctrl,
                                        !opt.quiet);
 }
 
@@ -522,7 +523,7 @@ create_new_context (ctrl_t ctrl, assuan_context_t *r_ctx)
           log_info (_("no keyboxd running in this session\n"));
         }
     }
-  else if (!err && !(err = warn_version_mismatch (ctx, KEYBOXD_NAME)))
+  else if (!err && !(err = warn_version_mismatch (ctrl, ctx, KEYBOXD_NAME)))
     {
       /* Place to emit global options.  */
     }
