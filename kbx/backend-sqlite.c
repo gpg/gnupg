@@ -78,6 +78,9 @@ struct be_sqlite_local_s
   unsigned int filter_opgp : 1;
   unsigned int filter_x509 : 1;
 
+  /* Flag indicating that LASTUBID has a value.  */
+  unsigned int lastubid_valid : 1;
+
   /* The current description index.  */
   unsigned int descidx;
 
@@ -86,6 +89,12 @@ struct be_sqlite_local_s
 
   /* The last row has already been reached.  */
   int select_eof;
+
+  /* The last UBID found by a select; only valid if LASTUBID_VALID is
+   * set.  This is required to return only one blob in case a search
+   * is done over the user id and the same user id occurs several
+   * times in a blob.  */
+  unsigned char lastubid[UBID_LEN];
 };
 
 
@@ -323,17 +332,19 @@ run_sql_reset (sqlite3_stmt *stmt)
 
 
 /* Run an SQL prepare for SQLSTR and return a statement at R_STMT.  If
- * EXTRA is not NULL that part is appended to the SQL statement.  */
+ * EXTRA or EXTRA2 are not NULL these parts are appended to the SQL
+ * statement.  */
 static gpg_error_t
-run_sql_prepare (const char *sqlstr, const char *extra, sqlite3_stmt **r_stmt)
+run_sql_prepare (const char *sqlstr, const char *extra, const char *extra2,
+                 sqlite3_stmt **r_stmt)
 {
   gpg_error_t err;
   int res;
   char *buffer = NULL;
 
-  if (extra)
+  if (extra || extra2)
     {
-      buffer = strconcat (sqlstr, extra, NULL);
+      buffer = strconcat (sqlstr, extra?extra:"", extra2, NULL);
       if (!buffer)
         return gpg_error_from_syserror ();
       sqlstr = buffer;
@@ -497,7 +508,7 @@ run_sql_statement_bind_ubid (const char *sqlstr, const unsigned char *ubid)
   gpg_error_t err;
   sqlite3_stmt *stmt;
 
-  err = run_sql_prepare (sqlstr, NULL, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, NULL, &stmt);
   if (err)
     goto leave;
   if (ubid)
@@ -784,7 +795,7 @@ get_config_value (const char *name, char **r_value)
   if (!sqlstr)
     return gpg_error_from_syserror ();
 
-  err = run_sql_prepare (sqlstr, NULL, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, NULL, &stmt);
   xfree (sqlstr);
   if (err)
     return err;
@@ -818,7 +829,7 @@ set_config_value (const char *name, const char *value)
   sqlite3_stmt *stmt;
 
   err = run_sql_prepare ("INSERT OR REPLACE INTO config(name,value)"
-                         " VALUES(?1,?2)", NULL, &stmt);
+                         " VALUES(?1,?2)", NULL, NULL, &stmt);
   if (err)
     return err;
 
@@ -908,7 +919,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " p.keyblob, u.uidno"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.uid = ?1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1, desc[descidx].u.name);
       break;
@@ -919,7 +930,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " p.keyblob, u.uidno"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.addrspec = ?1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1, desc[descidx].u.name);
       break;
@@ -931,7 +942,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " p.keyblob, u.uidno"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.addrspec LIKE ?1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text_like (ctx->select_stmt, 1,
                                       desc[descidx].u.name);
@@ -944,7 +955,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " p.keyblob, u.uidno"
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid AND u.uid LIKE ?1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text_like (ctx->select_stmt, 1,
                                       desc[descidx].u.name);
@@ -962,7 +973,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " FROM pubkey as p, issuer as i"
                                " WHERE p.ubid = i.ubid"
                                " AND i.dn = $1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1,
                                  desc[descidx].u.name);
@@ -983,7 +994,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                    " FROM pubkey as p, issuer as i"
                                    " WHERE p.ubid = i.ubid"
                                    " AND i.sn = $1 AND i.dn = $2",
-                                   extra, &ctx->select_stmt);
+                                   extra, " ORDER BY p.ubid",
+                                   &ctx->select_stmt);
           if (!err)
             err = run_sql_bind_ntext (ctx->select_stmt, 1,
                                       desc[descidx].sn, desc[descidx].snlen);
@@ -1008,7 +1020,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " FROM pubkey as p, userid as u"
                                " WHERE p.ubid = u.ubid"
                                " AND u.uid = $1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_text (ctx->select_stmt, 1,
                                  desc[descidx].u.name);
@@ -1022,7 +1034,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND"
                                " substr(f.kid,5) = ?1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
                                  kid_from_u32 (desc[descidx].u.kid, kidbuf)+4,
@@ -1036,7 +1048,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " p.revoked, p.keyblob, f.subkey"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.kid = ?1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
                                  kid_from_u32 (desc[descidx].u.kid, kidbuf),
@@ -1050,7 +1062,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " p.revoked, p.keyblob, f.subkey"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.fpr = ?1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
                                  desc[descidx].u.fpr, desc[descidx].fprlen);
@@ -1063,7 +1075,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " p.keyblob, f.subkey"
                                " FROM pubkey as p, fingerprint as f"
                                " WHERE p.ubid = f.ubid AND f.keygrip = ?1",
-                               extra, &ctx->select_stmt);
+                               extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
                                  desc[descidx].u.grip, KEYGRIP_LEN);
@@ -1074,7 +1086,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
         err = run_sql_prepare ("SELECT ubid, type, ephemeral, revoked, keyblob"
                                " FROM pubkey as p"
                                " WHERE ubid = ?1",
-                               extra, &ctx->select_stmt);
+                               extra, NULL, &ctx->select_stmt);
       if (!err)
         err = run_sql_bind_blob (ctx->select_stmt, 1,
                                  desc[descidx].u.ubid, UBID_LEN);
@@ -1095,7 +1107,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
           err = run_sql_prepare ("SELECT ubid, type, ephemeral, revoked,"
                                  " keyblob"
                                  " FROM pubkey as p",
-                                 extra, &ctx->select_stmt);
+                                 extra, NULL, &ctx->select_stmt);
         }
       break;
 
@@ -1142,6 +1154,7 @@ be_sqlite_search (ctrl_t ctrl,
       ctx->select_done = 0;
       ctx->select_eof = 0;
       ctx->descidx = 0;
+      ctx->lastubid_valid = 0;
       err = 0;
       goto leave;
     }
@@ -1205,6 +1218,22 @@ be_sqlite_search (ctrl_t ctrl,
           err = gpg_error (GPG_ERR_INV_VALUE);
           goto leave;
         }
+
+      if (ctx->lastubid_valid && !memcmp (ctx->lastubid, ubid, UBID_LEN))
+        {
+          /* The search has already returned this blob and thus we may
+           * not return this again.  Consider the case that we are
+           * searching for user id "foo" and a keyblock or certificate
+           * has several userids with "foo" in it (or with even a full
+           * mail address in it but with other extra parts).  The code
+           * in gpg and gpgsm expects to see only a single block and
+           * not several of them.  Whether the UIDNO makes any sense
+           * in this case is questionable and we ignore that because
+           * we currently are not able to return several UIDNOs.  */
+          goto again;
+        }
+      memcpy (ctx->lastubid, ubid, UBID_LEN);
+      ctx->lastubid_valid = 1;
 
       n = sqlite3_column_int (ctx->select_stmt, 1);
       if (!n && sqlite3_errcode (database_hd) == SQLITE_NOMEM)
@@ -1337,7 +1366,7 @@ store_into_pubkey (enum kbxd_store_modes mode,
   else /* Auto */
     sqlstr = ("INSERT OR REPLACE INTO pubkey(ubid,type,keyblob)"
               " VALUES(?1,?2,?3)");
-  err = run_sql_prepare (sqlstr, NULL, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, NULL, &stmt);
   if (err)
     goto leave;
   err = run_sql_bind_blob (stmt, 1, ubid, UBID_LEN);
@@ -1373,7 +1402,7 @@ store_into_fingerprint (const unsigned char *ubid, int subkey,
 
   sqlstr = ("INSERT OR REPLACE INTO fingerprint(fpr,kid,keygrip,subkey,ubid)"
             " VALUES(?1,?2,?3,?4,?5)");
-  err = run_sql_prepare (sqlstr, NULL, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, NULL, &stmt);
   if (err)
     goto leave;
   err = run_sql_bind_blob (stmt, 1, fpr, fprlen);
@@ -1415,7 +1444,7 @@ store_into_userid (const unsigned char *ubid, enum pubkey_types pktype,
 
   sqlstr = ("INSERT OR REPLACE INTO userid(uid,addrspec,type,ubid,uidno)"
             " VALUES(?1,?2,?3,?4,?5)");
-  err = run_sql_prepare (sqlstr, NULL, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, NULL, &stmt);
   if (err)
     goto leave;
 
@@ -1466,7 +1495,7 @@ store_into_issuer (const unsigned char *ubid,
 
   sqlstr = ("INSERT OR REPLACE INTO issuer(sn,dn,ubid)"
             " VALUES(?1,?2,?3)");
-  err = run_sql_prepare (sqlstr, NULL, &stmt);
+  err = run_sql_prepare (sqlstr, NULL, NULL, &stmt);
   if (err)
     goto leave;
 
