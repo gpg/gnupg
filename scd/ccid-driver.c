@@ -3698,7 +3698,7 @@ print_error (int err)
 
   switch (err)
     {
-    case 0: p = "success";
+    case 0: p = "success"; break;
     case CCID_DRIVER_ERR_OUT_OF_CORE: p = "out of core"; break;
     case CCID_DRIVER_ERR_INV_VALUE: p = "invalid value"; break;
     case CCID_DRIVER_ERR_NO_DRIVER: p = "no driver"; break;
