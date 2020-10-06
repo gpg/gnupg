@@ -100,10 +100,10 @@
 /* Max length of buffer with out CCID message header of 10-byte
    Sending: 547 for RSA-4096 key import
         APDU size = 540 (24+4+256+256)
-        commnd + lc + le = 4 + 3 + 0
+        command + lc + le = 4 + 3 + 0
    Sending: write data object of cardholder certificate
         APDU size = 2048
-        commnd + lc + le = 4 + 3 + 0
+        command + lc + le = 4 + 3 + 0
    Receiving: 2048 for cardholder certificate
 */
 #define CCID_MAX_BUF (2048+7+10)
