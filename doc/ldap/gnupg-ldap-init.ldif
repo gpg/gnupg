@@ -1,0 +1,27 @@
+# gnupg-ldap-init.ldif                                 -*- conf -*-
+#
+# Entries connecting the schema specified in gnupg-ldap-schema.ldif.
+# Revision: 2020-10-07
+
+dn: cn=PGPServerInfo,dc=example,dc=com
+objectClass: pgpServerInfo
+cn: PGPServerInfo
+# Note that we suggest the use of ou=GnuPG keys instead of the often
+# used PGP Keys.  This makes it easy to spot this is a new schema.
+pgpBaseKeySpaceDN: ou=GnuPG Keys,dc=example,dc=com
+# Using the value GnuPG here indicates that pgpVersion below has a
+# well-defined meaning.
+pgpSoftware: GnuPG
+# Currently used values:
+#  1 :: Classic PGP schema
+#  2 :: The attributes gpgFingerprint, gpgSubFingerprint,
+#       gpgSubCertID, and gpgMailbox are part of the schema.
+pgpVersion: 2
+
+dn: ou=GnuPG Keys,dc=example,dc=com
+objectClass: organizationalUnit
+ou: GnuPG Keys
+
+dn: ou=GnuPG Users,dc=example,dc=com
+objectclass: organizationalUnit
+ou: GnuPG Users

@@ -162,3 +162,6 @@ x.parm
 /VERSION
 /swdb.lst
 /swdb.lst.sig
+/doc/ldap/gnupg-and-ldap.pdf
+/doc/ldap/gnupg-and-ldap.tex
+/doc/ldap/gnupg-and-ldap.txt
