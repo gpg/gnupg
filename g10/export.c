@@ -982,11 +982,26 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
           || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
           || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
         {
-          skey[skeyidx] = gcry_mpi_set_opaque_copy (NULL, value, valuelen*8);
+          unsigned int nbits = valuelen*8;
+          const unsigned char *p = value;
+
+          if (nbits >= 8 && !(*p & 0x80))
+            if (--nbits >= 7 && !(*p & 0x40))
+              if (--nbits >= 6 && !(*p & 0x20))
+                if (--nbits >= 5 && !(*p & 0x10))
+                  if (--nbits >= 4 && !(*p & 0x08))
+                    if (--nbits >= 3 && !(*p & 0x04))
+                      if (--nbits >= 2 && !(*p & 0x02))
+                        if (--nbits >= 1 && !(*p & 0x01))
+                          --nbits;
+
+          skey[skeyidx] = gcry_mpi_set_opaque_copy (NULL, value, nbits);
           if (!skey[skeyidx])
             goto outofmem;
           if (is_enc)
             gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER1);
+          else
+            gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER2);
         }
       else
         {
