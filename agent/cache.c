@@ -476,7 +476,7 @@ agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
 
   if (DBG_CACHE)
     log_debug ("agent_get_cache '%s'.%d (mode %d)%s ...\n",
-               key, ctrl->restricted, cache_mode,
+               key, restricted, cache_mode,
                last_stored? " (stored cache key)":"");
   housekeeping ();
 
