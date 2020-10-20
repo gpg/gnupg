@@ -471,6 +471,21 @@ map_w32_to_errno (DWORD w32_err)
 }
 #endif /*HAVE_DOSISH_SYSTEM*/
 
+
+#ifdef HAVE_W32_SYSTEM
+static int
+any8bitchar (const char *string)
+{
+  if (string)
+    for ( ; *string; string++)
+      if ((*string & 0x80))
+        return 1;
+  return 0;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+
 
 /* Entirely disable all locking.  This function should be called
    before any locking is done.  It may be called right at startup of
@@ -794,7 +809,7 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
   h->next = all_lockfiles;
   all_lockfiles = h;
 
-  h->lockname = xtrymalloc ( strlen (file_to_lock) + 6 );
+  h->lockname = strconcat (file_to_lock, EXTSEP_S "lock", NULL);
   if (!h->lockname)
     {
       all_lockfiles = h->next;
@@ -802,7 +817,6 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
       xfree (h);
       return NULL;
     }
-  strcpy (stpcpy(h->lockname, file_to_lock), EXTSEP_S "lock");
 
   /* If would be nice if we would use the FILE_FLAG_DELETE_ON_CLOSE
      along with FILE_SHARE_DELETE but that does not work due to a race
@@ -812,25 +826,24 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
      reasons why a lock file can't be created and thus the process
      would not stop as expected but spin until Windows crashes.  Our
      solution is to keep the lock file open; that does not harm. */
-  {
-#ifdef HAVE_W32CE_SYSTEM
-    wchar_t *wname = utf8_to_wchar (h->lockname);
+  if (any8bitchar (h->lockname))
+    {
+      wchar_t *wname = utf8_to_wchar (h->lockname);
 
-    if (wname)
-      h->lockhd = CreateFile (wname,
-                              GENERIC_READ|GENERIC_WRITE,
-                              FILE_SHARE_READ|FILE_SHARE_WRITE,
-                              NULL, OPEN_ALWAYS, 0, NULL);
-    else
-      h->lockhd = INVALID_HANDLE_VALUE;
-    xfree (wname);
-#else
-    h->lockhd = CreateFile (h->lockname,
-                            GENERIC_READ|GENERIC_WRITE,
-                            FILE_SHARE_READ|FILE_SHARE_WRITE,
-                            NULL, OPEN_ALWAYS, 0, NULL);
-#endif
-  }
+      if (wname)
+        h->lockhd = CreateFileW (wname,
+                                 GENERIC_READ|GENERIC_WRITE,
+                                 FILE_SHARE_READ|FILE_SHARE_WRITE,
+                                 NULL, OPEN_ALWAYS, 0, NULL);
+      else
+        h->lockhd = INVALID_HANDLE_VALUE;
+      xfree (wname);
+    }
+  else
+    h->lockhd = CreateFileA (h->lockname,
+                             GENERIC_READ|GENERIC_WRITE,
+                             FILE_SHARE_READ|FILE_SHARE_WRITE,
+                             NULL, OPEN_ALWAYS, 0, NULL);
   if (h->lockhd == INVALID_HANDLE_VALUE)
     {
       int saveerrno = map_w32_to_errno (GetLastError ());
