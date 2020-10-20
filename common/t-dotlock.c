@@ -41,21 +41,165 @@
 #include <errno.h>
 #include <signal.h>
 #include <unistd.h>
+#ifdef HAVE_W32_SYSTEM
+# include "windows.h"
+#endif
 
 #include "dotlock.h"
 
+#ifdef HAVE_W32_SYSTEM
+#define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
+
+const char *
+w32_strerror (int ec)
+{
+  static char strerr[256];
+
+  if (ec == -1)
+    ec = (int)GetLastError ();
+#ifdef HAVE_W32CE_SYSTEM
+  /* There is only a wchar_t FormatMessage.  It does not make much
+     sense to play the conversion game; we print only the code.  */
+  snprintf (strerr, sizeof strerr, "ec=%d", (int)GetLastError ());
+#else
+  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
+                 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+                 strerr, DIM (strerr)-1, NULL);
+  {
+    /* Strip the CR,LF - we want just the string.  */
+    size_t n = strlen (strerr);
+    if (n > 2 && strerr[n-2] == '\r' && strerr[n-1] == '\n' )
+      strerr[n-2] = 0;
+  }
+#endif
+  return strerr;
+}
+
+static wchar_t *
+cp_to_wchar (const char *string, unsigned int codepage)
+{
+  int n;
+  size_t nbytes;
+  wchar_t *result;
+
+  n = MultiByteToWideChar (codepage, 0, string, -1, NULL, 0);
+  if (n < 0)
+    {
+      return NULL;
+    }
+
+  nbytes = (size_t)(n+1) * sizeof(*result);
+  if (nbytes / sizeof(*result) != (n+1))
+    {
+      return NULL;
+    }
+  result = malloc (nbytes);
+  if (!result)
+    return NULL;
+
+  n = MultiByteToWideChar (codepage, 0, string, -1, result, n);
+  if (n < 0)
+    {
+      free (result);
+      result = NULL;
+    }
+  return result;
+}
+
+wchar_t *
+utf8_to_wchar (const char *string)
+{
+  return cp_to_wchar (string, CP_UTF8);
+}
+
+char *
+stpcpy(char *a,const char *b)
+{
+    while( *b )
+	*a++ = *b++;
+    *a = 0;
+
+    return (char*)a;
+}
+
+static char *
+do_strconcat (const char *s1, va_list arg_ptr)
+{
+  const char *argv[48];
+  size_t argc;
+  size_t needed;
+  char *buffer, *p;
+
+  argc = 0;
+  argv[argc++] = s1;
+  needed = strlen (s1);
+  while (((argv[argc] = va_arg (arg_ptr, const char *))))
+    {
+      needed += strlen (argv[argc]);
+      if (argc >= DIM (argv)-1)
+        {
+          return NULL;
+        }
+      argc++;
+    }
+  needed++;
+  buffer = malloc (needed);
+  if (buffer)
+    {
+      for (p = buffer, argc=0; argv[argc]; argc++)
+        p = stpcpy (p, argv[argc]);
+    }
+  return buffer;
+}
+
+/* Concatenate the string S1 with all the following strings up to a
+   NULL.  Returns a malloced buffer with the new string or NULL on a
+   malloc error or if too many arguments are given.  */
+char *
+strconcat (const char *s1, ...)
+{
+  va_list arg_ptr;
+  char *result;
+
+  if (!s1)
+    result = calloc (1, 1);
+  else
+    {
+      va_start (arg_ptr, s1);
+      result = do_strconcat (s1, arg_ptr);
+      va_end (arg_ptr);
+    }
+  return result;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+#include "dotlock.c"
+
 #define PGM "t-dotlock"
 
-
-static volatile int ctrl_c_pending;
-
+#ifndef HAVE_W32_SYSTEM
+static volatile int ctrl_c_pending_flag;
 static void
 control_c_handler (int signo)
 {
   (void)signo;
-  ctrl_c_pending = 1;
+  ctrl_c_pending_flag = 1;
 }
+#endif
 
+
+static int
+ctrl_c_pending (void)
+{
+#if HAVE_W32_SYSTEM
+  static int count;
+
+  return (++count > 9);
+#else
+  return ctrl_c_pending_flag;
+#endif
+}
 
 
 static void
@@ -95,7 +239,7 @@ lock_and_unlock (const char *fname)
     die ("error creating lock file for '%s': %s", fname, strerror (errno));
   inf ("lock created");
 
-  while (!ctrl_c_pending)
+  while (!ctrl_c_pending ())
     {
       if (dotlock_take (h, -1))
         die ("error taking lock");
@@ -119,8 +263,15 @@ main (int argc, char **argv)
   if (argc > 1)
     fname = argv[1];
   else
-    fname = "t-dotlock.tmp";
+    {
+#ifdef HAVE_W32_SYSTEM
+      fname = "t-dotⒶlock.tmp";
+#else
+      fname = "t-dotlock.tmp";
+#endif
+    }
 
+#ifndef HAVE_W32_SYSTEM
   {
     struct sigaction nact;
 
@@ -128,6 +279,7 @@ main (int argc, char **argv)
     nact.sa_flags = 0;
     sigaction (SIGINT, &nact, NULL);
   }
+#endif
 
   dotlock_create (NULL, 0);  /* Initialize (optional).  */
 
@@ -140,6 +292,6 @@ main (int argc, char **argv)
 
 /*
 Local Variables:
-compile-command: "cc -Wall -O2 -D_FILE_OFFSET_BITS=64 -o t-dotlock t-dotlock.c dotlock.c"
+compile-command: "cc -Wall -O2 -D_FILE_OFFSET_BITS=64 -o t-dotlock t-dotlock.c"
 End:
 */
