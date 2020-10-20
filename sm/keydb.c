@@ -208,7 +208,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
 {
   gpg_err_code_t ec;
   dotlock_t lockhd = NULL;
-  FILE *fp;
+  estream_t fp;
   int rc;
   mode_t oldmask;
   char *last_slash_in_filename;
@@ -299,7 +299,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
 
   /* The file does not yet exist, create it now. */
   oldmask = umask (077);
-  fp = fopen (filename, "wb");
+  fp = es_fopen (filename, "wb");
   if (!fp)
     {
       rc = gpg_error_from_syserror ();
@@ -313,10 +313,10 @@ maybe_create_keybox (char *filename, int force, int *r_created)
   /* Make sure that at least one record is in a new keybox file, so
      that the detection magic for OpenPGP keyboxes works the next time
      it is used.  */
-  rc = _keybox_write_header_blob (fp, NULL, 0);
+  rc = _keybox_write_header_blob (fp, 0);
   if (rc)
     {
-      fclose (fp);
+      es_fclose (fp);
       log_error (_("error creating keybox '%s': %s\n"),
                  filename, gpg_strerror (rc));
       goto leave;
@@ -327,7 +327,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
   if (r_created)
     *r_created = 1;
 
-  fclose (fp);
+  es_fclose (fp);
   rc = 0;
 
  leave:
@@ -394,14 +394,15 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
   /* see whether we can determine the filetype */
   if (rt == KEYDB_RESOURCE_TYPE_NONE)
     {
-      FILE *fp = fopen( filename, "rb" );
+      estream_t fp;
 
+      fp = es_fopen( filename, "rb" );
       if (fp)
         {
           u32 magic;
 
           /* FIXME: check for the keybox magic */
-          if (fread (&magic, 4, 1, fp) == 1 )
+          if (es_fread (&magic, 4, 1, fp) == 1 )
             {
               if (magic == 0x13579ace || magic == 0xce9a5713)
                 ; /* GDBM magic - no more support */
@@ -410,7 +411,8 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
             }
           else /* maybe empty: assume keybox */
             rt = KEYDB_RESOURCE_TYPE_KEYBOX;
-          fclose (fp);
+
+          es_fclose (fp);
         }
       else /* no file yet: create keybox */
         rt = KEYDB_RESOURCE_TYPE_KEYBOX;

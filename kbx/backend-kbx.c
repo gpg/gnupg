@@ -126,7 +126,7 @@ create_keybox (const char *filename)
                  filename, gpg_strerror (err));
       goto leave;
     }
-  err = _keybox_write_header_blob (NULL, fp, 1);
+  err = _keybox_write_header_blob (fp, 1);
   es_fclose (fp);
   if (err)
     {

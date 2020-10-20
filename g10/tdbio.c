@@ -725,7 +725,7 @@ tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
       || stat (fname, &statbuf)
       || statbuf.st_size == 0)
     {
-      FILE *fp;
+      estream_t fp;
       TRUSTREC rec;
       int rc;
       mode_t oldmask;
@@ -747,11 +747,11 @@ tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
           gpg_err_set_errno (EPERM);
         }
       else
-        fp = fopen (fname, "wb");
+        fp = es_fopen (fname, "wb");
       umask(oldmask);
       if (!fp)
         log_fatal (_("can't create '%s': %s\n"), fname, strerror (errno));
-      fclose (fp);
+      es_fclose (fp);
 
       db_fd = open (db_name, O_RDWR | MY_O_BINARY);
       if (db_fd == -1)

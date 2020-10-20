@@ -880,7 +880,7 @@ static gpg_error_t
 open_file (KEYBOX_HANDLE hd)
 {
 
-  hd->fp = fopen (hd->kb->fname, "rb");
+  hd->fp = es_fopen (hd->kb->fname, "rb");
   if (!hd->fp)
     {
       hd->error = gpg_error_from_syserror ();
@@ -912,11 +912,11 @@ keybox_search_reset (KEYBOX_HANDLE hd)
 
   if (hd->fp)
     {
-      if (fseeko (hd->fp, 0, SEEK_SET))
+      if (es_fseeko (hd->fp, 0, SEEK_SET))
         {
           /* Ooops.  Seek did not work.  Close so that the search will
            * open the file again.  */
-          fclose (hd->fp);
+          es_fclose (hd->fp);
           hd->fp = NULL;
         }
     }
@@ -1007,7 +1007,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
            * returned a blob which also was not the first one.  We now
            * need to skip over that blob and hope that the file has
            * not changed.  */
-          if (fseeko (hd->fp, lastfoundoff, SEEK_SET))
+          if (es_fseeko (hd->fp, lastfoundoff, SEEK_SET))
             {
               rc = gpg_error_from_syserror ();
               log_debug ("%s: seeking to last found offset failed: %s\n",
@@ -1462,7 +1462,7 @@ keybox_offset (KEYBOX_HANDLE hd)
 {
   if (!hd->fp)
     return 0;
-  return ftello (hd->fp);
+  return es_ftello (hd->fp);
 }
 
 gpg_error_t
@@ -1487,7 +1487,7 @@ keybox_seek (KEYBOX_HANDLE hd, off_t offset)
         return err;
     }
 
-  err = fseeko (hd->fp, offset, SEEK_SET);
+  err = es_fseeko (hd->fp, offset, SEEK_SET);
   hd->error = gpg_error_from_errno (err);
 
   return hd->error;

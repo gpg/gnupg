@@ -48,7 +48,7 @@ ftello (FILE *stream)
 /* Read a block at the current position and return it in R_BLOB.
    R_BLOB may be NULL to simply skip the current block.  */
 int
-_keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
+_keybox_read_blob (KEYBOXBLOB *r_blob, estream_t fp, int *skipped_deleted)
 {
   unsigned char *image;
   size_t imagelen = 0;
@@ -61,19 +61,19 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
  again:
   if (r_blob)
     *r_blob = NULL;
-  off = ftello (fp);
+  off = es_ftello (fp);
   if (off == (off_t)-1)
     return gpg_error_from_syserror ();
 
-  if ((c1 = getc (fp)) == EOF
-      || (c2 = getc (fp)) == EOF
-      || (c3 = getc (fp)) == EOF
-      || (c4 = getc (fp)) == EOF
-      || (type = getc (fp)) == EOF)
+  if ((c1 = es_getc (fp)) == EOF
+      || (c2 = es_getc (fp)) == EOF
+      || (c3 = es_getc (fp)) == EOF
+      || (c4 = es_getc (fp)) == EOF
+      || (type = es_getc (fp)) == EOF)
     {
-      if ( c1 == EOF && !ferror (fp) )
+      if ( c1 == EOF && !es_ferror (fp) )
         return -1; /* eof */
-      if (!ferror (fp))
+      if (!es_ferror (fp))
         return gpg_error (GPG_ERR_TOO_SHORT);
       return gpg_error_from_syserror ();
     }
@@ -85,7 +85,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
   if (!type)
     {
       /* Special treatment for empty blobs. */
-      if (fseek (fp, imagelen-5, SEEK_CUR))
+      if (es_fseek (fp, imagelen-5, SEEK_CUR))
         return gpg_error_from_syserror ();
       if (skipped_deleted)
         *skipped_deleted = 1;
@@ -96,7 +96,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
     {
       /* Seek forward so that the caller may choose to ignore this
          record.  */
-      if (fseek (fp, imagelen-5, SEEK_CUR))
+      if (es_fseek (fp, imagelen-5, SEEK_CUR))
         return gpg_error_from_syserror ();
       return gpg_error (GPG_ERR_TOO_LARGE);
     }
@@ -104,7 +104,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
   if (!r_blob)
     {
       /* This blob shall be skipped.  */
-      if (fseek (fp, imagelen-5, SEEK_CUR))
+      if (es_fseek (fp, imagelen-5, SEEK_CUR))
         return gpg_error_from_syserror ();
       return 0;
     }
@@ -114,7 +114,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
     return gpg_error_from_syserror ();
 
   image[0] = c1; image[1] = c2; image[2] = c3; image[3] = c4; image[4] = type;
-  if (fread (image+5, imagelen-5, 1, fp) != 1)
+  if (es_fread (image+5, imagelen-5, 1, fp) != 1)
     {
       gpg_error_t tmperr = gpg_error_from_syserror ();
       xfree (image);
@@ -130,7 +130,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
 
 /* Write the block to the current file position */
 int
-_keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
+_keybox_write_blob (KEYBOXBLOB blob, estream_t fp, FILE *outfp)
 {
   const unsigned char *image;
   size_t length;
@@ -140,15 +140,24 @@ _keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
   if (length > IMAGELEN_LIMIT)
     return gpg_error (GPG_ERR_TOO_LARGE);
 
-  if (fwrite (image, length, 1, fp) != 1)
-    return gpg_error_from_syserror ();
+  if (fp)
+    {
+      if (es_fwrite (image, length, 1, fp) != 1)
+        return gpg_error_from_syserror ();
+    }
+  else
+    {
+      if (fwrite (image, length, 1, outfp) != 1)
+        return gpg_error_from_syserror ();
+    }
+
   return 0;
 }
 
 
-/* Write a fresh header type blob.  Either FP or STREAM must be used. */
+/* Write a fresh header type blob. */
 gpg_error_t
-_keybox_write_header_blob (FILE *fp, estream_t stream, int for_openpgp)
+_keybox_write_header_blob (estream_t fp, int for_openpgp)
 {
   unsigned char image[32];
   u32 val;
@@ -174,15 +183,8 @@ _keybox_write_header_blob (FILE *fp, estream_t stream, int for_openpgp)
   image[20+2] = (val >>  8);
   image[20+3] = (val      );
 
-  if (fp)
-    {
-      if (fwrite (image, 32, 1, fp) != 1)
-        return gpg_error_from_syserror ();
-    }
-  else
-    {
-      if (es_fwrite (image, 32, 1, stream) != 1)
-        return gpg_error_from_syserror ();
-    }
+  if (es_fwrite (image, 32, 1, fp) != 1)
+    return gpg_error_from_syserror ();
+
   return 0;
 }

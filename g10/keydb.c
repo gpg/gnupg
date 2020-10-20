@@ -362,13 +362,13 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
      that the detection magic will work the next time it is used.  */
   if (is_box)
     {
-      FILE *fp = fopen (filename, "wb");
+      estream_t fp = es_fopen (filename, "wb");
       if (!fp)
         rc = gpg_error_from_syserror ();
       else
         {
-          rc = _keybox_write_header_blob (fp, NULL, 1);
-          fclose (fp);
+          rc = _keybox_write_header_blob (fp, 1);
+          es_fclose (fp);
         }
       if (rc)
         {

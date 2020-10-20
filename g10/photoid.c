@@ -531,12 +531,12 @@ create_temp_file (struct spawn_info *info, const void *ptr, u32 len)
     }
   else
     {
-      FILE *fp = fopen (info->tempfile, "wb");
+      estream_t fp = es_fopen (info->tempfile, "wb");
 
       if (fp)
         {
-          fwrite (ptr, len, 1, fp);
-          fclose (fp);
+          es_fwrite (ptr, len, 1, fp);
+          es_fclose (fp);
           return 0;
         }
       else

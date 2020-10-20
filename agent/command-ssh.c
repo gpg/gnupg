@@ -215,7 +215,7 @@ struct ssh_key_type_spec
 struct ssh_control_file_s
 {
   char *fname;  /* Name of the file.  */
-  FILE *fp;     /* This is never NULL. */
+  estream_t fp; /* This is never NULL. */
   int lnr;      /* The current line number.  */
   struct {
     int valid;           /* True if the data of this structure is valid.  */
@@ -856,7 +856,7 @@ open_control_file (ssh_control_file_t *r_cf, int append)
     }
   /* FIXME: With "a+" we are not able to check whether this will
      be created and thus the blurb needs to be written first.  */
-  cf->fp = fopen (cf->fname, append? "a+":"r");
+  cf->fp = es_fopen (cf->fname, append? "a+":"r");
   if (!cf->fp && errno == ENOENT)
     {
       estream_t stream = es_fopen (cf->fname, "wx,mode=-rw-r");
@@ -869,7 +869,7 @@ open_control_file (ssh_control_file_t *r_cf, int append)
         }
       es_fputs (sshcontrolblurb, stream);
       es_fclose (stream);
-      cf->fp = fopen (cf->fname, append? "a+":"r");
+      cf->fp = es_fopen (cf->fname, append? "a+":"r");
     }
 
   if (!cf->fp)
@@ -886,7 +886,7 @@ open_control_file (ssh_control_file_t *r_cf, int append)
   if (err && cf)
     {
       if (cf->fp)
-        fclose (cf->fp);
+        es_fclose (cf->fp);
       xfree (cf->fname);
       xfree (cf);
     }
@@ -900,9 +900,9 @@ open_control_file (ssh_control_file_t *r_cf, int append)
 static void
 rewind_control_file (ssh_control_file_t cf)
 {
-  fseek (cf->fp, 0, SEEK_SET);
+  es_fseek (cf->fp, 0, SEEK_SET);
   cf->lnr = 0;
-  clearerr (cf->fp);
+  es_clearerr (cf->fp);
 }
 
 
@@ -911,7 +911,7 @@ close_control_file (ssh_control_file_t cf)
 {
   if (!cf)
     return;
-  fclose (cf->fp);
+  es_fclose (cf->fp);
   xfree (cf->fname);
   xfree (cf);
 }
@@ -928,13 +928,13 @@ read_control_file_item (ssh_control_file_t cf)
   long ttl = 0;
 
   cf->item.valid = 0;
-  clearerr (cf->fp);
+  es_clearerr (cf->fp);
 
   do
     {
-      if (!fgets (line, DIM(line)-1, cf->fp) )
+      if (!es_fgets (line, DIM(line)-1, cf->fp) )
         {
-          if (feof (cf->fp))
+          if (es_feof (cf->fp))
             return gpg_error (GPG_ERR_EOF);
           return gpg_error_from_syserror ();
         }
@@ -943,7 +943,7 @@ read_control_file_item (ssh_control_file_t cf)
       if (!*line || line[strlen(line)-1] != '\n')
         {
           /* Eat until end of line */
-          while ( (c=getc (cf->fp)) != EOF && c != '\n')
+          while ((c = es_getc (cf->fp)) != EOF && c != '\n')
             ;
           return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                                  : GPG_ERR_INCOMPLETE_LINE);
@@ -1099,7 +1099,7 @@ add_control_entry (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       /* Not yet in the file - add it. Because the file has been
          opened in append mode, we simply need to write to it.  */
       tp = localtime (&atime);
-      fprintf (cf->fp,
+      es_fprintf (cf->fp,
                ("# %s key added on: %04d-%02d-%02d %02d:%02d:%02d\n"
                 "# Fingerprints:  %s\n"
                 "#                %s\n"

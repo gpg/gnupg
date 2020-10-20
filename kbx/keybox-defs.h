@@ -80,7 +80,7 @@ struct keybox_found_s
 struct keybox_handle {
   KB_NAME kb;
   int secret;             /* this is for a secret keybox */
-  FILE *fp;
+  estream_t fp;
   int eof;
   int error;
   int ephemeral;
@@ -172,8 +172,8 @@ void _keybox_destroy_openpgp_info (keybox_openpgp_info_t info);
 
 
 /*-- keybox-file.c --*/
-int _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted);
-int _keybox_write_blob (KEYBOXBLOB blob, FILE *fp);
+int _keybox_read_blob (KEYBOXBLOB *r_blob, estream_t fp, int *skipped_deleted);
+int _keybox_write_blob (KEYBOXBLOB blob, estream_t fp, FILE *outfp);
 
 /*-- keybox-search.c --*/
 gpg_err_code_t _keybox_get_flag_location (const unsigned char *buffer,

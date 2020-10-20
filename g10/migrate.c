@@ -99,8 +99,8 @@ migrate_secring (ctrl_t ctrl)
   log_info ("porting secret keys from '%s' to gpg-agent\n", secring);
   if (!import_old_secring (ctrl, secring))
     {
-      FILE *fp = fopen (flagfile, "w");
-      if (!fp || fclose (fp))
+      estream_t fp = es_fopen (flagfile, "w");
+      if (!fp || es_fclose (fp))
         log_error ("error creating flag file '%s': %s\n",
                    flagfile, gpg_strerror (gpg_error_from_syserror ()));
       else

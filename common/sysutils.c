@@ -1068,6 +1068,7 @@ gnupg_access (const char *name, int mode)
 
 
 /* Try to set an envvar.  Print only a notice on error.  */
+#ifndef HAVE_W32_SYSTEM
 static void
 try_set_envvar (const char *name, const char *value, int silent)
 {
@@ -1076,6 +1077,7 @@ try_set_envvar (const char *name, const char *value, int silent)
       log_info ("error setting envvar %s to '%s': %s\n", name, value,
                 gpg_strerror (my_error_from_syserror ()));
 }
+#endif /*!HAVE_W32_SYSTEM*/
 
 
 /* Switch to USER which is either a name or an UID.  This is a nop

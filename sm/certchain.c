@@ -308,7 +308,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
 {
   gpg_error_t err;
   char *policies;
-  FILE *fp;
+  estream_t fp;
   int any_critical;
 
   err = ksba_cert_get_cert_policies (cert, &policies);
@@ -340,7 +340,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
       return 0;
     }
 
-  fp = fopen (opt.policy_file, "r");
+  fp = es_fopen (opt.policy_file, "r");
   if (!fp)
     {
       if (opt.verbose || errno != ENOENT)
@@ -369,14 +369,14 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
       /* read line */
       do
         {
-          if (!fgets (line, DIM(line)-1, fp) )
+          if (!es_fgets (line, DIM(line)-1, fp) )
             {
-              gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+              gpg_error_t tmperr = gpg_error_from_syserror ();
 
               xfree (policies);
-              if (feof (fp))
+              if (es_feof (fp))
                 {
-                  fclose (fp);
+                  es_fclose (fp);
                   /* With no critical policies this is only a warning */
                   if (!any_critical)
                     {
@@ -388,16 +388,16 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
                            _("certificate policy not allowed"));
                   return gpg_error (GPG_ERR_NO_POLICY_MATCH);
                 }
-              fclose (fp);
+              es_fclose (fp);
               return tmperr;
             }
 
           if (!*line || line[strlen(line)-1] != '\n')
             {
               /* eat until end of line */
-              while ( (c=getc (fp)) != EOF && c != '\n')
+              while ((c = es_getc (fp)) != EOF && c != '\n')
                 ;
-              fclose (fp);
+              es_fclose (fp);
               xfree (policies);
               return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                                      : GPG_ERR_INCOMPLETE_LINE);
@@ -417,7 +417,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
       p = strpbrk (allowed, " :\n");
       if (!*p || p == allowed)
         {
-          fclose (fp);
+          es_fclose (fp);
           xfree (policies);
           return gpg_error (GPG_ERR_CONFIGURATION);
         }
@@ -430,7 +430,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
           if (p[strlen (allowed)] != ':')
             continue; /* The length does not match. */
           /* Yep - it does match so return okay. */
-          fclose (fp);
+          es_fclose (fp);
           xfree (policies);
           return 0;
         }

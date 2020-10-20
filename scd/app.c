@@ -1935,18 +1935,18 @@ report_change (int slot, int old_status, int cur_status)
   char *homestr, *envstr;
   char *fname;
   char templ[50];
-  FILE *fp;
+  estream_t fp;
 
   snprintf (templ, sizeof templ, "reader_%d.status", slot);
   fname = make_filename (gnupg_homedir (), templ, NULL );
-  fp = fopen (fname, "w");
+  fp = es_fopen (fname, "w");
   if (fp)
     {
-      fprintf (fp, "%s\n",
+      es_fprintf (fp, "%s\n",
                (cur_status & 1)? "USABLE":
                (cur_status & 4)? "ACTIVE":
                (cur_status & 2)? "PRESENT": "NOCARD");
-      fclose (fp);
+      es_fclose (fp);
     }
   xfree (fname);
 
