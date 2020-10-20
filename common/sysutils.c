@@ -182,6 +182,18 @@ enable_core_dumps (void)
 #endif
 }
 
+#ifdef HAVE_W32_SYSTEM
+static int
+any8bitchar (const char *string)
+{
+  if (string)
+    for ( ; *string; string++)
+      if ((*string & 0x80))
+        return 1;
+  return 0;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
 
 /* Allow the use of special "-&nnn" style file names.  */
 void
@@ -1063,6 +1075,30 @@ gnupg_access (const char *name, int mode)
 # endif
 #else
   return gpgrt_access (name, mode);
+#endif
+}
+
+/* A wrapper around open to handle Unicode file names under Windows.  */
+int
+gnupg_open (const char *name, int flags, unsigned int mode)
+{
+#ifdef HAVE_W32_SYSTEM
+  if (any8bitchar (name))
+    {
+      wchar_t *wname;
+      int ret;
+
+      wname = utf8_to_wchar (name);
+      if (!wname)
+        return -1;
+      ret = _wopen (wname, flags, mode);
+      xfree (wname);
+      return ret;
+    }
+  else
+    return open (name, flags, mode);
+#else
+  return open (name, flags, mode);
 #endif
 }
 

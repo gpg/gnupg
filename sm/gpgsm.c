@@ -2324,7 +2324,7 @@ open_read (const char *filename)
   fd = check_special_filename (filename, 0, 0);
   if (fd != -1)
     return fd;
-  fd = open (filename, O_RDONLY | O_BINARY);
+  fd = gnupg_open (filename, O_RDONLY | O_BINARY, 0);
   if (fd == -1)
     {
       log_error (_("can't open '%s': %s\n"), filename, strerror (errno));

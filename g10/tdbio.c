@@ -753,7 +753,7 @@ tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
         log_fatal (_("can't create '%s': %s\n"), fname, strerror (errno));
       es_fclose (fp);
 
-      db_fd = open (db_name, O_RDWR | MY_O_BINARY);
+      db_fd = gnupg_open (db_name, O_RDWR | MY_O_BINARY, 0);
       if (db_fd == -1)
         log_fatal (_("can't open '%s': %s\n"), db_name, strerror (errno));
 
@@ -813,7 +813,7 @@ open_db ()
                  (int)prevrc, (int)GetLastError ());
   }
 #else /*!HAVE_W32CE_SYSTEM*/
-  db_fd = open (db_name, O_RDWR | MY_O_BINARY );
+  db_fd = gnupg_open (db_name, O_RDWR | MY_O_BINARY, 0);
   if (db_fd == -1 && (errno == EACCES
 #ifdef EROFS
                       || errno == EROFS
@@ -821,7 +821,7 @@ open_db ()
                       )
       ) {
       /* Take care of read-only trustdbs.  */
-      db_fd = open (db_name, O_RDONLY | MY_O_BINARY );
+      db_fd = gnupg_open (db_name, O_RDONLY | MY_O_BINARY, 0);
       if (db_fd != -1 && !opt.quiet)
           log_info (_("Note: trustdb not writable\n"));
   }

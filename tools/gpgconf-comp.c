@@ -2226,8 +2226,9 @@ change_options_program (gc_component_id_t component,
   *dest_filenamep = dest_filename;
   *orig_filenamep = orig_filename;
 
-  /* Use open() so that we can use O_EXCL.  */
-  fd = open (src_filename, O_CREAT | O_EXCL | O_WRONLY, 0644);
+  /* Use open() so that we can use O_EXCL.
+   * FIXME: gpgrt has an x flag for quite some time now - use that.  */
+  fd = gnupg_open (src_filename, O_CREAT | O_EXCL | O_WRONLY, 0644);
   if (fd < 0)
     return -1;
   src_file = gpgrt_fdopen (fd, "w");
