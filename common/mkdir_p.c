@@ -78,7 +78,7 @@ gnupg_amkdir_p (const char **directory_components)
 
       /* log_debug ("%s: stat(%s)\n", __func__, dirs[i]); */
 
-      if (!stat (dirs[i], &s))
+      if (!gnupg_stat (dirs[i], &s))
         {
           if ( ! S_ISDIR (s.st_mode))
             {

@@ -409,7 +409,7 @@ get_openpgp_revocdir (const char *home)
   struct stat statbuf;
 
   fname = make_filename (home, GNUPG_OPENPGP_REVOC_DIR, NULL);
-  if (stat (fname, &statbuf) && errno == ENOENT)
+  if (gnupg_stat (fname, &statbuf) && errno == ENOENT)
     {
       if (gnupg_mkdir (fname, "-rwx"))
         log_error (_("can't create directory '%s': %s\n"),

@@ -332,7 +332,7 @@ main (int argc, char **argv)
   {
     struct stat sb;
 
-    if (stat (opt.directory, &sb))
+    if (gnupg_stat (opt.directory, &sb))
       {
         err = gpg_error_from_syserror ();
         log_error ("error accessing directory '%s': %s\n",
@@ -1640,7 +1640,7 @@ get_domain_list (strlist_t *r_list)
           goto leave;
         }
 
-      if (stat (fname, &sb))
+      if (gnupg_stat (fname, &sb))
         {
           err = gpg_error_from_syserror ();
           log_error ("error accessing '%s': %s\n", fname, gpg_strerror (err));
@@ -1718,7 +1718,7 @@ expire_one_domain (const char *top_dirname, const char *domain)
           log_info ("garbage file '%s' ignored\n", fname);
           continue;
         }
-      if (stat (fname, &sb))
+      if (gnupg_stat (fname, &sb))
         {
           err = gpg_error_from_syserror ();
           log_error ("error accessing '%s': %s\n", fname, gpg_strerror (err));

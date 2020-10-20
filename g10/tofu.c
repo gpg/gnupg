@@ -197,7 +197,7 @@ begin_transaction (ctrl_t ctrl, int only_batch)
       /* Check if another process wants to run.  (We just ignore any
        * stat failure.  A waiter might have to wait a bit longer, but
        * otherwise there should be no impact.)  */
-      if (stat (dbs->want_lock_file, &statbuf) == 0
+      if (gnupg_stat (dbs->want_lock_file, &statbuf) == 0
           && statbuf.st_ctime != dbs->want_lock_file_ctime)
         {
           end_transaction (ctrl, 2);
@@ -237,7 +237,7 @@ begin_transaction (ctrl_t ctrl, int only_batch)
       dbs->in_batch_transaction = 1;
       dbs->batch_update_started = gnupg_get_time ();
 
-      if (stat (dbs->want_lock_file, &statbuf) == 0)
+      if (gnupg_stat (dbs->want_lock_file, &statbuf) == 0)
         dbs->want_lock_file_ctime = statbuf.st_ctime;
     }
 

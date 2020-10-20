@@ -121,7 +121,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
     {
       struct stat sb;
 
-      if (stat (filename, &sb))
+      if (gnupg_stat (filename, &sb))
         {
           err = gpg_error_from_syserror ();
           goto leave;

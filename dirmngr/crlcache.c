@@ -271,7 +271,7 @@ cleanup_cache_dir (int force)
           if (force)
             okay = 1;
           else
-            okay = (!stat (cdbname, &sbuf) && S_ISREG (sbuf.st_mode));
+            okay = (!gnupg_stat (cdbname, &sbuf) && S_ISREG (sbuf.st_mode));
 
           if (okay)
             {

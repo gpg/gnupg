@@ -681,7 +681,7 @@ tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
    * trustdb.gpg.  This check is not required in theory, but it helps
    * in practice avoiding costly operations of preparing and taking
    * the lock.  */
-  if (!stat (fname, &statbuf) && statbuf.st_size > 0)
+  if (!gnupg_stat (fname, &statbuf) && statbuf.st_size > 0)
     {
       /* OK, we have the valid trustdb.gpg already.  */
       return 0;
@@ -722,7 +722,7 @@ tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
   take_write_lock ();
 
   if (gnupg_access (fname, R_OK)
-      || stat (fname, &statbuf)
+      || gnupg_stat (fname, &statbuf)
       || statbuf.st_size == 0)
     {
       estream_t fp;

@@ -46,6 +46,9 @@ typedef int gnupg_fd_t;
 #define FD2INT(h) (h)
 #endif
 
+#ifdef HAVE_STAT
+# include <sys/stat.h>
+#endif
 
 void trap_unaligned (void);
 int  disable_core_dumps (void);
@@ -73,6 +76,9 @@ int  gnupg_setenv (const char *name, const char *value, int overwrite);
 int  gnupg_unsetenv (const char *name);
 char *gnupg_getcwd (void);
 gpg_err_code_t gnupg_access (const char *name, int mode);
+#ifdef HAVE_STAT
+int gnupg_stat (const char *name, struct stat *statbuf);
+#endif /*HAVE_STAT*/
 int gnupg_open (const char *name, int flags, unsigned int mode);
 char *gnupg_get_socket_name (int fd);
 int gnupg_fd_valid (int fd);

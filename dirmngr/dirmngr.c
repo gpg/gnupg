@@ -2044,7 +2044,7 @@ handle_tick (void)
 
   /* Check whether the homedir is still available.  */
   if (!shutdown_pending
-      && stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
+      && gnupg_stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
     {
       shutdown_pending = 1;
       log_info ("homedir has been removed - shutting down\n");
