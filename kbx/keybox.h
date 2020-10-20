@@ -81,7 +81,7 @@ gpg_error_t keybox_lock (KEYBOX_HANDLE hd, int yes, long timeout);
 /*-- keybox-file.c --*/
 /* Fixme: This function does not belong here: Provide a better
    interface to create a new keybox file.  */
-int _keybox_write_header_blob (FILE *fp, int openpgp_flag);
+int _keybox_write_header_blob (estream_t fp, int openpgp_flag);
 
 /*-- keybox-search.c --*/
 gpg_error_t keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,

@@ -180,7 +180,7 @@ keybox_release (KEYBOX_HANDLE hd)
   _keybox_release_blob (hd->saved_found.blob);
   if (hd->fp)
     {
-      fclose (hd->fp);
+      es_fclose (hd->fp);
       hd->fp = NULL;
     }
   xfree (hd->word_match.name);
@@ -253,11 +253,11 @@ _keybox_close_file (KEYBOX_HANDLE hd)
       {
         if (roverhd->fp)
           {
-            fclose (roverhd->fp);
+            es_fclose (roverhd->fp);
             roverhd->fp = NULL;
           }
       }
-  assert (!hd->fp);
+  log_assert (!hd->fp);
 }
 
 

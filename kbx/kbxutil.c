@@ -418,7 +418,7 @@ import_openpgp (const char *filename, int dryrun)
             }
           else
             {
-              fflush (stdout);
+              es_fflush (es_stdout);
               log_info ("%s: failed to parse OpenPGP keyblock: %s\n",
                         filename, gpg_strerror (err));
             }
@@ -432,17 +432,17 @@ import_openpgp (const char *filename, int dryrun)
               err = _keybox_create_openpgp_blob (&blob, &info, p, nparsed, 0);
               if (err)
                 {
-                  fflush (stdout);
+                  es_fflush (es_stdout);
                   log_error ("%s: failed to create OpenPGP keyblock: %s\n",
                              filename, gpg_strerror (err));
                 }
               else
                 {
-                  err = _keybox_write_blob (blob, stdout);
+                  err = _keybox_write_blob (blob, es_stdout, NULL);
                   _keybox_release_blob (blob);
                   if (err)
                     {
-                      fflush (stdout);
+                      es_fflush (es_stdout);
                       log_error ("%s: failed to write OpenPGP keyblock: %s\n",
                                  filename, gpg_strerror (err));
                     }

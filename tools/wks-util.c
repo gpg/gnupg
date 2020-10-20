@@ -912,7 +912,7 @@ ensure_policy_file (const char *addrspec)
     {
       err = gpg_error_from_syserror ();
       if (gpg_err_code (err) == GPG_ERR_EEXIST)
-        err = 0; /* Was created between the access() and fopen().  */
+        err = 0; /* Was created between the gnupg_access() and es_fopen().  */
       else
         log_error ("domain %s: error creating '%s': %s\n",
                    domain, fname, gpg_strerror (err));

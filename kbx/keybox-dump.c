@@ -647,18 +647,18 @@ update_stats (KEYBOXBLOB blob, struct file_stats_s *s)
 
 
 
-static FILE *
+static estream_t
 open_file (const char **filename, FILE *outfp)
 {
-  FILE *fp;
+  estream_t fp;
 
   if (!*filename)
     {
       *filename = "-";
-      fp = stdin;
+      fp = es_stdin;
     }
   else
-    fp = fopen (*filename, "rb");
+    fp = es_fopen (*filename, "rb");
   if (!fp)
     {
       int save_errno = errno;
@@ -673,7 +673,7 @@ open_file (const char **filename, FILE *outfp)
 int
 _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
 {
-  FILE *fp;
+  estream_t fp;
   KEYBOXBLOB blob;
   int rc;
   unsigned long count = 0;
@@ -726,8 +726,8 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
   if (rc)
     fprintf (outfp, "# error reading '%s': %s\n", filename, gpg_strerror (rc));
 
-  if (fp != stdin)
-    fclose (fp);
+  if (fp != es_stdin)
+    es_fclose (fp);
 
   if (stats_only)
     {
@@ -787,7 +787,7 @@ cmp_dupitems (const void *arg_a, const void *arg_b)
 int
 _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
 {
-  FILE *fp;
+  estream_t fp;
   KEYBOXBLOB blob;
   int rc;
   unsigned long recno = 0;
@@ -849,8 +849,8 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
     rc = 0;
   if (rc)
     fprintf (outfp, "error reading '%s': %s\n", filename, gpg_strerror (rc));
-  if (fp != stdin)
-    fclose (fp);
+  if (fp != es_stdin)
+    es_fclose (fp);
 
   qsort (dupitems, dupitems_count, sizeof *dupitems, cmp_dupitems);
 
@@ -880,7 +880,7 @@ int
 _keybox_dump_cut_records (const char *filename, unsigned long from,
                           unsigned long to, FILE *outfp)
 {
-  FILE *fp;
+  estream_t fp;
   KEYBOXBLOB blob;
   int rc;
   unsigned long recno = 0;
@@ -894,7 +894,7 @@ _keybox_dump_cut_records (const char *filename, unsigned long from,
         break; /* Ready.  */
       if (recno >= from)
         {
-          if ((rc = _keybox_write_blob (blob, outfp)))
+          if ((rc = _keybox_write_blob (blob, NULL, outfp)))
             {
               fprintf (stderr, "error writing output: %s\n",
                        gpg_strerror (rc));
@@ -909,7 +909,7 @@ _keybox_dump_cut_records (const char *filename, unsigned long from,
   if (rc)
     fprintf (stderr, "error reading '%s': %s\n", filename, gpg_strerror (rc));
  leave:
-  if (fp != stdin)
-    fclose (fp);
+  if (fp != es_stdin)
+    es_fclose (fp);
   return rc;
 }

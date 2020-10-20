@@ -166,7 +166,7 @@ typedef struct loopline_s *loopline_t;
 static pid_t server_pid = (pid_t)(-1);
 
 /* The current datasink file or NULL.  */
-static FILE *current_datasink;
+static estream_t current_datasink;
 
 /* A list of open file descriptors. */
 static struct
@@ -874,7 +874,7 @@ clear_definq (void)
 static void
 do_sendfd (assuan_context_t ctx, char *line)
 {
-  FILE *fp;
+  estream_t fp;
   char *name, *mode, *p;
   int rc, fd;
 
@@ -900,14 +900,14 @@ do_sendfd (assuan_context_t ctx, char *line)
     }
 
   /* Open and send. */
-  fp = fopen (name, mode);
+  fp = es_fopen (name, mode);
   if (!fp)
     {
       log_error ("can't open '%s' in \"%s\" mode: %s\n",
                  name, mode, strerror (errno));
       return;
     }
-  fd = fileno (fp);
+  fd = es_fileno (fp);
 
   if (opt.verbose)
     log_error ("file '%s' opened in \"%s\" mode, fd=%d\n",
@@ -916,7 +916,7 @@ do_sendfd (assuan_context_t ctx, char *line)
   rc = assuan_sendfd (ctx, INT2FD (fd) );
   if (rc)
     log_error ("sending descriptor %d failed: %s\n", fd, gpg_strerror (rc));
-  fclose (fp);
+  es_fclose (fp);
 }
 
 
@@ -932,7 +932,7 @@ do_recvfd (assuan_context_t ctx, char *line)
 static void
 do_open (char *line)
 {
-  FILE *fp;
+  estream_t fp;
   char *varname, *name, *mode, *p;
   int fd;
 
@@ -976,14 +976,14 @@ do_open (char *line)
     }
 
   /* Open and send. */
-  fp = fopen (name, mode);
+  fp = es_fopen (name, mode);
   if (!fp)
     {
       log_error ("can't open '%s' in \"%s\" mode: %s\n",
                  name, mode, strerror (errno));
       return;
     }
-  fd = dup (fileno (fp));
+  fd = dup (es_fileno (fp));
   if (fd >= 0 && fd < DIM (open_fd_table))
     {
       open_fd_table[fd].inuse = 1;
@@ -1033,7 +1033,7 @@ do_open (char *line)
       if (fd != -1)
         close (fd); /* Table was full.  */
     }
-  fclose (fp);
+  es_fclose (fp);
 }
 
 
@@ -1566,17 +1566,17 @@ main (int argc, char **argv)
 
               if (current_datasink)
                 {
-                  if (current_datasink != stdout)
-                    fclose (current_datasink);
+                  if (current_datasink != es_stdout)
+                    es_fclose (current_datasink);
                   current_datasink = NULL;
                 }
               tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
               fname = tmpline? tmpline : p;
               if (fname && !strcmp (fname, "-"))
-                current_datasink = stdout;
+                current_datasink = es_stdout;
               else if (fname && *fname)
                 {
-                  current_datasink = fopen (fname, "wb");
+                  current_datasink = es_fopen (fname, "wb");
                   if (!current_datasink)
                     log_error ("can't open '%s': %s\n",
                                fname, strerror (errno));
@@ -1905,6 +1905,7 @@ handle_inquire (assuan_context_t ctx, char *line)
 {
   const char *name;
   definq_t d;
+  /* FIXME: Due to the use of popen we can't easily switch to estream.  */
   FILE *fp = NULL;
   char buffer[1024];
   int rc, n;
@@ -2056,7 +2057,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
                     }
                   else
                     c = *s;
-                  putc (c, current_datasink);
+                  es_putc (c, current_datasink);
                 }
             }
           else if (opt.hex)
@@ -2127,7 +2128,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
         {
           if (need_lf)
             {
-              if (!current_datasink || current_datasink != stdout)
+              if (!current_datasink || current_datasink != es_stdout)
                 putchar ('\n');
               need_lf = 0;
             }
@@ -2136,7 +2137,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
               && line[0] == 'S'
               && (line[1] == '\0' || line[1] == ' '))
             {
-              if (!current_datasink || current_datasink != stdout)
+              if (!current_datasink || current_datasink != es_stdout)
                 {
                   fwrite (line, linelen, 1, stdout);
                   putchar ('\n');
@@ -2146,7 +2147,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
                    && line[0] == 'O' && line[1] == 'K'
                    && (line[2] == '\0' || line[2] == ' '))
             {
-              if (!current_datasink || current_datasink != stdout)
+              if (!current_datasink || current_datasink != es_stdout)
                 {
                   fwrite (line, linelen, 1, stdout);
                   putchar ('\n');
@@ -2164,7 +2165,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
               if (!errval)
                 errval = -1;
               set_int_var ("?", errval);
-              if (!current_datasink || current_datasink != stdout)
+              if (!current_datasink || current_datasink != es_stdout)
                 {
                   fwrite (line, linelen, 1, stdout);
                   putchar ('\n');
@@ -2178,7 +2179,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
                    && line[6] == 'E'
                    && (line[7] == '\0' || line[7] == ' '))
             {
-              if (!current_datasink || current_datasink != stdout)
+              if (!current_datasink || current_datasink != es_stdout)
                 {
                   fwrite (line, linelen, 1, stdout);
                   putchar ('\n');
@@ -2190,7 +2191,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
                    && line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
                    && (line[3] == '\0' || line[3] == ' '))
             {
-              if (!current_datasink || current_datasink != stdout)
+              if (!current_datasink || current_datasink != es_stdout)
                 {
                   fwrite (line, linelen, 1, stdout);
                   putchar ('\n');
