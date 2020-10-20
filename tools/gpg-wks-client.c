@@ -313,7 +313,7 @@ main (int argc, char **argv)
     {
       struct stat sb;
 
-      if (stat (opt.directory, &sb))
+      if (gnupg_stat (opt.directory, &sb))
         {
           err = gpg_error_from_syserror ();
           log_error ("error accessing directory '%s': %s\n",

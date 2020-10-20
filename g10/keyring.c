@@ -1368,7 +1368,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
 
     statbuf.st_mode=S_IRUSR | S_IWUSR;
 
-    if (!stat (bakfname, &statbuf) && !chmod (fname, statbuf.st_mode))
+    if (!gnupg_stat (bakfname, &statbuf) && !chmod (fname, statbuf.st_mode))
       ;
     else
       log_error ("WARNING: unable to restore permissions to '%s': %s",

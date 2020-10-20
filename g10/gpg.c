@@ -1574,7 +1574,7 @@ check_permissions (const char *path, int item)
     }
 
   /* It's okay if the file or directory doesn't exist */
-  if(stat(tmppath,&statbuf)!=0)
+  if (gnupg_stat (tmppath,&statbuf))
     {
       ret=0;
       goto end;
@@ -1585,7 +1585,7 @@ check_permissions (const char *path, int item)
      I'm stopping at one level down. */
   dir=make_dirname(tmppath);
 
-  if(stat(dir,&dirbuf)!=0 || !S_ISDIR(dirbuf.st_mode))
+  if (gnupg_stat (dir,&dirbuf) || !S_ISDIR (dirbuf.st_mode))
     {
       /* Weird error */
       ret=1;

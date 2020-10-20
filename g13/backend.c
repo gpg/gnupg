@@ -139,7 +139,7 @@ be_take_lock_for_create (ctrl_t ctrl, const char *fname, dotlock_t *r_lock)
     }
 
   /* Check again that the file does not exist.  */
-  err = stat (fname, &sb)? 0 : gpg_error (GPG_ERR_EEXIST);
+  err = gnupg_stat (fname, &sb)? 0 : gpg_error (GPG_ERR_EEXIST);
 
  leave:
   if (!err)

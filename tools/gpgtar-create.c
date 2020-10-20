@@ -42,7 +42,7 @@
 #include "gpgtar.h"
 
 #ifndef HAVE_LSTAT
-#define lstat(a,b) stat ((a), (b))
+#define lstat(a,b) gnupg_stat ((a), (b))
 #endif
 
 

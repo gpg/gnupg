@@ -103,7 +103,7 @@ register_secured_file (const char *fname)
   struct secured_file_item *sf;
 
   /* Note that we stop immediately if something goes wrong here. */
-  if (stat (fname, &buf))
+  if (gnupg_stat (fname, &buf))
     log_fatal (_("fstat of '%s' failed in %s: %s\n"), fname,
                "register_secured_file", strerror (errno));
 /*   log_debug ("registering '%s' i=%lu.%lu\n", fname, */
@@ -132,7 +132,7 @@ unregister_secured_file (const char *fname)
   struct stat buf;
   struct secured_file_item *sf, *sfprev;
 
-  if (stat (fname, &buf))
+  if (gnupg_stat (fname, &buf))
     {
       log_error (_("fstat of '%s' failed in %s: %s\n"), fname,
                  "unregister_secured_file", strerror (errno));
@@ -206,7 +206,7 @@ is_secured_filename (const char *fname)
 
   /* Note that we print out a error here and claim that a file is
      secure if something went wrong. */
-  if (stat (fname, &buf))
+  if (gnupg_stat (fname, &buf))
     {
       if (errno == ENOENT || errno == EPERM || errno == EACCES)
         return 0;

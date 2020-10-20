@@ -1078,6 +1078,49 @@ gnupg_access (const char *name, int mode)
 #endif
 }
 
+
+/* A wrapper around stat to handle Unicode file names under Windows.  */
+#ifdef HAVE_STAT
+int
+gnupg_stat (const char *name, struct stat *statbuf)
+{
+# ifdef HAVE_W32_SYSTEM
+  if (any8bitchar (name))
+    {
+      wchar_t *wname;
+      struct _stat32 st32;
+      int ret;
+
+      wname = utf8_to_wchar (name);
+      if (!wname)
+        return -1;
+      ret = _wstat (wname, &st32);
+      xfree (wname);
+      if (!ret)
+        {
+          statbuf->st_dev   = st32.st_dev;
+          statbuf->st_ino   = st32.st_ino;
+          statbuf->st_mode  = st32.st_mode;
+          statbuf->st_nlink = st32.st_nlink;
+          statbuf->st_uid   = st32.st_uid;
+          statbuf->st_gid   = st32.st_gid;
+          statbuf->st_rdev  = st32.st_rdev;
+          statbuf->st_size  = st32.st_size;
+          statbuf->st_atime = st32.st_atime;
+          statbuf->st_mtime = st32.st_mtime;
+          statbuf->st_ctime = st32.st_ctime;
+        }
+      return ret;
+    }
+  else
+    return stat (name, statbuf);
+# else
+  return stat (name, statbuf);
+# endif
+}
+#endif /*HAVE_STAT*/
+
+
 /* A wrapper around open to handle Unicode file names under Windows.  */
 int
 gnupg_open (const char *name, int flags, unsigned int mode)

@@ -1178,7 +1178,7 @@ create_public_keys_directory (const char *home)
   struct stat statbuf;
 
   fname = make_filename (home, GNUPG_PUBLIC_KEYS_DIR, NULL);
-  if (stat (fname, &statbuf) && errno == ENOENT)
+  if (gnupg_stat (fname, &statbuf) && errno == ENOENT)
     {
       if (gnupg_mkdir (fname, "-rwxr-x"))
         log_error (_("can't create directory '%s': %s\n"),
@@ -1207,7 +1207,7 @@ create_directories (void)
   char *home;
 
   home = make_filename (gnupg_homedir (), NULL);
-  if (stat (home, &statbuf))
+  if (gnupg_stat (home, &statbuf))
     {
       if (errno == ENOENT)
         {
@@ -1273,7 +1273,7 @@ handle_tick (void)
   /* Check whether the homedir is still available.  */
   if (!shutdown_pending
       && (!have_homedir_inotify || !reliable_homedir_inotify)
-      && stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
+      && gnupg_stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
     {
       shutdown_pending = 1;
       log_info ("homedir has been removed - shutting down\n");

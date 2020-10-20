@@ -636,7 +636,7 @@ get_pairing_statedir (void)
     return fname;
 
   fname = make_filename (gnupg_homedir (), GNUPG_CACHE_DIR, NULL);
-  if (stat (fname, &statbuf) && errno == ENOENT)
+  if (gnupg_stat (fname, &statbuf) && errno == ENOENT)
     {
       if (gnupg_mkdir (fname, "-rwx"))
         {
@@ -651,7 +651,7 @@ get_pairing_statedir (void)
   tmpstr = make_filename (fname, PAIRING_STATE_DIR, NULL);
   xfree (fname);
   fname = tmpstr;
-  if (stat (fname, &statbuf) && errno == ENOENT)
+  if (gnupg_stat (fname, &statbuf) && errno == ENOENT)
     {
       if (gnupg_mkdir (fname, "-rwx"))
         {
