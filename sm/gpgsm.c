@@ -1807,7 +1807,7 @@ main ( int argc, char **argv)
 
           filelist[0] = make_filename (gnupg_datadir (),"com-certs.pem", NULL);
           filelist[1] = NULL;
-          if (!access (filelist[0], F_OK))
+          if (!gnupg_access (filelist[0], F_OK))
             {
               log_info (_("importing common certificates '%s'\n"),
                         filelist[0]);

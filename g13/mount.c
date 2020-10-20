@@ -76,7 +76,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   else
     {
       /* A quick check to see whether we can the container exists.  */
-      if (access (filename, R_OK))
+      if (gnupg_access (filename, R_OK))
         return gpg_error_from_syserror ();
     }
 

@@ -1099,7 +1099,7 @@ main (int argc, char **argv)
           log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
     }
 
-  if (!access ("/etc/"DIRMNGR_NAME, F_OK)
+  if (!gnupg_access ("/etc/"DIRMNGR_NAME, F_OK)
       && !strncmp (gnupg_homedir (), "/etc/", 5))
     log_info
       ("NOTE: DirMngr is now a proper part of %s.  The configuration and"

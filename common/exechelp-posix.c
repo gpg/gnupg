@@ -845,14 +845,15 @@ gpg_error_t
 gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
                               const char *envp[] )
 {
+  gpg_err_code_t ec;
   pid_t pid;
   int i;
 
   if (getuid() != geteuid())
     return my_error (GPG_ERR_BUG);
 
-  if (access (pgmname, X_OK))
-    return my_error_from_syserror ();
+  if ((ec = gnupg_access (pgmname, X_OK)))
+    return gpg_err_make (default_errsource, ec);
 
   pid = fork ();
   if (pid == (pid_t)(-1))

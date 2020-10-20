@@ -866,13 +866,14 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   int cr_flags;
   char *cmdline;
   BOOL in_job = FALSE;
+  gpg_err_code_t ec;
 
 
   /* We don't use ENVP.  */
   (void)envp;
 
-  if (access (pgmname, X_OK))
-    return my_error_from_syserror ();
+  if ((ec = gnupg_access (pgmname, X_OK)))
+    return gpg_err_make (default_errsource, ec);
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );

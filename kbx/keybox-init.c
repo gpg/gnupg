@@ -25,6 +25,7 @@
 #include <assert.h>
 
 #include "keybox-defs.h"
+#include "../common/sysutils.h"
 #include "../common/mischelp.h"
 
 static KB_NAME kb_names;
@@ -80,7 +81,7 @@ keybox_is_writable (void *token)
 {
   KB_NAME r = token;
 
-  return r? !access (r->fname, W_OK) : 0;
+  return r? !gnupg_access (r->fname, W_OK) : 0;
 }
 
 

@@ -28,6 +28,7 @@
 
 #include "g13.h"
 #include "../common/i18n.h"
+#include "../common/sysutils.h"
 #include "suspend.h"
 
 #include "keyblob.h"
@@ -45,7 +46,7 @@ g13_suspend_container (ctrl_t ctrl, const char *filename)
   int needs_syshelp;
 
   /* A quick check to see whether the container exists.  */
-  if (access (filename, R_OK))
+  if (gnupg_access (filename, R_OK))
     return gpg_error_from_syserror ();
 
   /* Decide whether we need to use the g13-syshelp because we can't
@@ -80,7 +81,7 @@ g13_resume_container (ctrl_t ctrl, const char *filename)
   char *mountpoint_buffer = NULL;
 
   /* A quick check to see whether the container exists.  */
-  if (access (filename, R_OK))
+  if (gnupg_access (filename, R_OK))
     return gpg_error_from_syserror ();
 
   /* Decide whether we need to use the g13-syshelp because we can't

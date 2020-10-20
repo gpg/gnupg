@@ -873,6 +873,7 @@ wks_compute_hu_fname (char **r_fname, const char *addrspec)
 static gpg_error_t
 ensure_policy_file (const char *addrspec)
 {
+  gpg_err_code_t ec;
   gpg_error_t err;
   const char *domain;
   char *fname;
@@ -890,12 +891,12 @@ ensure_policy_file (const char *addrspec)
     goto leave;
 
   /* First a quick check whether it already exists.  */
-  if (!access (fname, F_OK))
+  if (!(ec = gnupg_access (fname, F_OK)))
     {
       err = 0; /* File already exists.  */
       goto leave;
     }
-  err = gpg_error_from_syserror ();
+  err = gpg_error (ec);
   if (gpg_err_code (err) == GPG_ERR_ENOENT)
     err = 0;
   else

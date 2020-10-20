@@ -236,7 +236,7 @@ agent_write_private_key (const unsigned char *grip,
   /* FIXME: Write to a temp file first so that write failures during
      key updates won't lead to a key loss.  */
 
-  if (!force && !access (fname, F_OK))
+  if (!force && !gnupg_access (fname, F_OK))
     {
       log_error ("secret key file '%s' already exists\n", fname);
       xfree (fname);
@@ -1324,7 +1324,7 @@ agent_key_available (const unsigned char *grip)
 
   fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
                          hexgrip, NULL);
-  result = !access (fname, R_OK)? 0 : -1;
+  result = !gnupg_access (fname, R_OK)? 0 : -1;
   xfree (fname);
   return result;
 }

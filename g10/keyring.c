@@ -228,7 +228,7 @@ keyring_is_writable (void *token)
 {
   KR_RESOURCE r = token;
 
-  return r? (r->read_only || !access (r->fname, W_OK)) : 0;
+  return r? (r->read_only || !gnupg_access (r->fname, W_OK)) : 0;
 }
 
 
@@ -1601,6 +1601,7 @@ static int
 do_copy (int mode, const char *fname, KBNODE root,
          off_t start_offset, unsigned int n_packets )
 {
+    gpg_err_code_t ec;
     IOBUF fp, newfp;
     int rc=0;
     char *bakfname = NULL;
@@ -1608,8 +1609,8 @@ do_copy (int mode, const char *fname, KBNODE root,
 
     /* Open the source file. Because we do a rename, we have to check the
        permissions of the file */
-    if (access (fname, W_OK))
-      return gpg_error_from_syserror ();
+    if ((ec = gnupg_access (fname, W_OK)))
+      return gpg_error (ec);
 
     fp = iobuf_open (fname);
     if (mode == 1 && !fp && errno == ENOENT) {

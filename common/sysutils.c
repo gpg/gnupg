@@ -811,7 +811,7 @@ gnupg_mkdir (const char *name, const char *modestr)
 int
 gnupg_chdir (const char *name)
 {
-  /* Note that gpgrt_chdir also sets ERRNO in addition to returing an
+  /* Note that gpgrt_chdir also sets ERRNO in addition to returning an
    * gpg-error style error code.  */
   return gpgrt_chdir (name);
 }
@@ -1033,30 +1033,37 @@ gnupg_unsetenv (const char *name)
 
 
 /* Return the current working directory as a malloced string.  Return
-   NULL and sets ERRNo on error.  */
+   NULL and sets ERRNO on error.  */
 char *
 gnupg_getcwd (void)
 {
-  char *buffer;
-  size_t size = 100;
+  return gpgrt_getcwd ();
+}
 
-  for (;;)
+
+/* A simple wrapper around access.  NAME is expected to be utf8
+ * encoded.  This function returns an error code and sets ERRNO. */
+gpg_err_code_t
+gnupg_access (const char *name, int mode)
+{
+#if GPGRT_VERSION_NUMBER < 0x012800 /* 1.39 */
+# ifdef HAVE_W32_SYSTEM
+  wchar_t *wfname;
+
+  wfname = utf8_to_wchar (fname);
+  if (!wfname)
+    ec = gpg_err_code_from_syserror ();
+  else
     {
-      buffer = xtrymalloc (size+1);
-      if (!buffer)
-        return NULL;
-#ifdef HAVE_W32CE_SYSTEM
-      strcpy (buffer, "/");  /* Always "/".  */
-      return buffer;
-#else
-      if (getcwd (buffer, size) == buffer)
-        return buffer;
-      xfree (buffer);
-      if (errno != ERANGE)
-        return NULL;
-      size *= 2;
-#endif
+      ec = _waccess (wfname, mode)? gpg_err_code_from_syserror () : 0;
+      xfree (wfname);
     }
+# else
+  return access (name, mode)? gpg_err_code_from_syserror () : 0;
+# endif
+#else
+  return gpgrt_access (name, mode);
+#endif
 }
 
 
