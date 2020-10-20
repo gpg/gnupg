@@ -193,6 +193,19 @@ fd_cache_strcmp (const char *a, const char *b)
 #endif
 }
 
+
+#ifdef HAVE_W32_SYSTEM
+static int
+any8bitchar (const char *string)
+{
+  if (string)
+    for ( ; *string; string++)
+      if ((*string & 0x80))
+        return 1;
+  return 0;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
 /*
  * Invalidate (i.e. close) a cached iobuf
  */
@@ -294,21 +307,23 @@ direct_open (const char *fname, const char *mode, int mode700)
       sm = FILE_SHARE_READ;
     }
 
-#ifdef HAVE_W32CE_SYSTEM
-  {
-    wchar_t *wfname = utf8_to_wchar (fname);
-    if (wfname)
-      {
-        hfile = CreateFile (wfname, da, sm, NULL, cd,
-                            FILE_ATTRIBUTE_NORMAL, NULL);
-        xfree (wfname);
-      }
-    else
-      hfile = INVALID_HANDLE_VALUE;
-  }
-#else
-  hfile = CreateFile (fname, da, sm, NULL, cd, FILE_ATTRIBUTE_NORMAL, NULL);
-#endif
+  /* We use the Unicode version of the function only if needed to
+   * avoid an extra conversion step.  */
+  if (any8bitchar (fname))
+    {
+      wchar_t *wfname = utf8_to_wchar (fname);
+      if (wfname)
+        {
+          hfile = CreateFileW (wfname, da, sm, NULL, cd,
+                               FILE_ATTRIBUTE_NORMAL, NULL);
+          xfree (wfname);
+        }
+      else
+        hfile = INVALID_HANDLE_VALUE;
+    }
+  else
+    hfile = CreateFileA (fname, da, sm, NULL, cd, FILE_ATTRIBUTE_NORMAL, NULL);
+
   return hfile;
 
 #else /*!HAVE_W32_SYSTEM*/

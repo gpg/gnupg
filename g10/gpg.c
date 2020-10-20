@@ -1334,10 +1334,10 @@ open_info_file (const char *fname, int for_write, int binary)
       do
         {
           if (for_write)
-            fd = open (fname, O_CREAT | O_TRUNC | O_WRONLY | binary,
-                        S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+            fd = gnupg_open (fname, O_CREAT | O_TRUNC | O_WRONLY | binary,
+                             S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
           else
-            fd = open (fname, O_RDONLY | binary);
+            fd = gnupg_open (fname, O_RDONLY | binary, 0);
         }
       while (fd == -1 && errno == EINTR);
 /*     } */
