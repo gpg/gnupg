@@ -1177,7 +1177,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
           goto leave;
         }
 
-      if (access (dname, W_OK))
+      if (gnupg_access (dname, W_OK))
         {
           log_info ("skipping address '%s': Domain not configured\n", sl->mbox);
           continue;
@@ -1454,7 +1454,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  if (!access (fnewname, W_OK))
+  if (!gnupg_access (fnewname, W_OK))
     {
       /* Yes, we have a dane directory.  */
       s = strchr (address, '@');
@@ -1790,7 +1790,7 @@ command_list_domains (void)
     { "pending", "-rwx" },
     { "hu",      "-rwxr-xr-x" }
   };
-
+  gpg_err_code_t ec;
   gpg_error_t err;
   strlist_t domaindirs;
   strlist_t sl;
@@ -1827,9 +1827,9 @@ command_list_domains (void)
               err = gpg_error_from_syserror ();
               goto leave;
             }
-          if (access (fname, W_OK))
+          if ((ec = gnupg_access (fname, W_OK)))
             {
-              err = gpg_error_from_syserror ();
+              err = gpg_error (ec);
               if (gpg_err_code (err) == GPG_ERR_ENOENT)
                 {
                   if (gnupg_mkdir (fname, requireddirs[i].perm))
@@ -1857,9 +1857,9 @@ command_list_domains (void)
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      if (access (fname, F_OK))
+      if ((ec = gnupg_access (fname, F_OK)))
         {
-          err = gpg_error_from_syserror ();
+          err = gpg_error (ec);
           if (gpg_err_code (err) == GPG_ERR_ENOENT)
             log_error ("domain %s: submission address not configured\n",
                        domain);
@@ -1936,6 +1936,7 @@ command_cron (void)
 static gpg_error_t
 command_check_key (const char *userid)
 {
+  gpg_err_code_t ec;
   gpg_error_t err;
   char *addrspec = NULL;
   char *fname = NULL;
@@ -1944,9 +1945,9 @@ command_check_key (const char *userid)
   if (err)
     goto leave;
 
-  if (access (fname, R_OK))
+  if ((ec = gnupg_access (fname, R_OK)))
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error (ec);
       if (opt_with_file)
         es_printf ("%s n %s\n", addrspec, fname);
       if (gpg_err_code (err) == GPG_ERR_ENOENT)

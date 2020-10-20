@@ -588,7 +588,7 @@ g13_syshelp_i_know_what_i_am_doing (void)
   char *fname;
 
   fname = make_filename (gnupg_sysconfdir (), yesfile, NULL);
-  if (access (fname, F_OK))
+  if (gnupg_access (fname, F_OK))
     {
       log_info ("*******************************************************\n");
       log_info ("* The G13 support for DM-Crypt is new and not matured.\n");

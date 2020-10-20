@@ -685,7 +685,7 @@ load_certs_from_system (void)
   gpg_error_t err = 0;
 
   for (idx=0; idx < DIM (table); idx++)
-    if (!access (table[idx].name, F_OK))
+    if (!gnupg_access (table[idx].name, F_OK))
       {
         /* Take the first available bundle.  */
         err = load_certs_from_file (table[idx].name, CERTTRUST_CLASS_SYSTEM, 0);

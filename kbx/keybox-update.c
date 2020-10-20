@@ -161,6 +161,7 @@ static int
 blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
                int secret, int for_openpgp, off_t start_offset)
 {
+  gpg_err_code_t ec;
   FILE *fp, *newfp;
   int rc=0;
   char *bakfname = NULL;
@@ -170,8 +171,8 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
 
   /* Open the source file. Because we do a rename, we have to check the
      permissions of the file */
-  if (access (fname, W_OK))
-    return gpg_error_from_syserror ();
+  if ((ec = gnupg_access (fname, W_OK)))
+    return gpg_error (ec);
 
   fp = fopen (fname, "rb");
   if (mode == FILECOPY_INSERT && !fp && errno == ENOENT)
@@ -626,6 +627,7 @@ keybox_delete (KEYBOX_HANDLE hd)
 int
 keybox_compress (KEYBOX_HANDLE hd)
 {
+  gpg_err_code_t ec;
   int read_rc, rc;
   const char *fname;
   FILE *fp, *newfp;
@@ -651,8 +653,8 @@ keybox_compress (KEYBOX_HANDLE hd)
 
   /* Open the source file. Because we do a rename, we have to check the
      permissions of the file */
-  if (access (fname, W_OK))
-    return gpg_error_from_syserror ();
+  if ((ec = gnupg_access (fname, W_OK)))
+    return gpg_error (ec);
 
   fp = fopen (fname, "rb");
   if (!fp && errno == ENOENT)

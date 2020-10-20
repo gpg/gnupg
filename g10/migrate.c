@@ -50,10 +50,10 @@ migrate_secring (ctrl_t ctrl)
   char *agent_version = NULL;
 
   secring = make_filename (gnupg_homedir (), "secring" EXTSEP_S "gpg", NULL);
-  if (access (secring, F_OK))
+  if (gnupg_access (secring, F_OK))
     goto leave; /* Does not exist or is not readable.  */
   flagfile = make_filename (gnupg_homedir (), V21_MIGRATION_FNAME, NULL);
-  if (!access (flagfile, F_OK))
+  if (!gnupg_access (flagfile, F_OK))
     goto leave; /* Does exist - fine.  */
 
   log_info ("starting migration from earlier GnuPG versions\n");

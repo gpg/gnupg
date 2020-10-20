@@ -4021,13 +4021,14 @@ main (int argc, char **argv)
       }
 
     /* Set the random seed file. */
-    if( use_random_seed ) {
-      char *p = make_filename (gnupg_homedir (), "random_seed", NULL );
-	gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
-        if (!access (p, F_OK))
+    if (use_random_seed)
+      {
+        char *p = make_filename (gnupg_homedir (), "random_seed", NULL );
+        gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
+        if (!gnupg_access (p, F_OK))
           register_secured_file (p);
 	xfree(p);
-    }
+      }
 
     /* If there is no command but the --fingerprint is given, default
        to the --list-keys command.  */

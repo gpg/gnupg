@@ -2115,7 +2115,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend,
   argv[i++] = "--gpgconf-list";
   argv[i++] = NULL;
 
-  if (only_installed && access (pgmname, X_OK))
+  if (only_installed && gnupg_access (pgmname, X_OK))
     {
       return;  /* The component is not installed.  */
     }
@@ -4055,7 +4055,7 @@ gc_apply_profile (const char *fname)
        * is installed and use that instead of the given file name.  */
       fname_buffer = xstrconcat (gnupg_datadir (), DIRSEP_S,
                                  fname, ".prf", NULL);
-      if (!access (fname_buffer, F_OK))
+      if (!gnupg_access (fname_buffer, F_OK))
         fname = fname_buffer;
     }
 

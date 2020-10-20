@@ -27,6 +27,7 @@
 
 #include "g13.h"
 #include "../common/i18n.h"
+#include "../common/sysutils.h"
 #include "keyblob.h"
 #include "backend.h"
 #include "be-encfs.h"
@@ -116,7 +117,7 @@ be_take_lock_for_create (ctrl_t ctrl, const char *fname, dotlock_t *r_lock)
 
   /* A quick check to see that no container with that name already
      exists.  */
-  if (!access (fname, F_OK))
+  if (!gnupg_access (fname, F_OK))
     {
       err = gpg_error (GPG_ERR_EEXIST);
       goto leave;

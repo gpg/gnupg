@@ -324,7 +324,7 @@ get_matching_datafile (const char *sigfilename)
 
       fname = xstrdup (sigfilename);
       fname[len-(fname[len-1]=='n'?5:4)] = 0 ;
-      if (access (fname, R_OK ))
+      if (gnupg_access (fname, R_OK ))
         {
           /* Not found or other error.  */
           xfree (fname);

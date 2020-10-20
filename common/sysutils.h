@@ -72,6 +72,7 @@ char *gnupg_mkdtemp (char *template);
 int  gnupg_setenv (const char *name, const char *value, int overwrite);
 int  gnupg_unsetenv (const char *name);
 char *gnupg_getcwd (void);
+gpg_err_code_t gnupg_access (const char *name, int mode);
 char *gnupg_get_socket_name (int fd);
 int gnupg_fd_valid (int fd);
 

@@ -186,6 +186,7 @@ read_one_trustfile (const char *fname, int allow_include,
         {
           char *etcname;
           gpg_error_t err2;
+          gpg_err_code_t ec;
 
           if (!allow_include)
             {
@@ -199,7 +200,7 @@ read_one_trustfile (const char *fname, int allow_include,
           if ( !strcmp (etcname, fname) ) /* Same file. */
             log_info (_("statement \"%s\" ignored in '%s', line %d\n"),
                       "include-default", fname, lnr);
-          else if ( access (etcname, F_OK) && errno == ENOENT )
+          else if ((ec=gnupg_access (etcname, F_OK)) && ec == GPG_ERR_ENOENT)
             {
               /* A non existent system trustlist is not an error.
                  Just print a note. */
@@ -337,6 +338,7 @@ read_trustfiles (void)
   size_t tablesize;
   char *fname;
   int allow_include = 1;
+  gpg_err_code_t ec;
 
   tablesize = 20;
   table = xtrycalloc (tablesize, sizeof *table);
@@ -352,13 +354,13 @@ read_trustfiles (void)
       return err;
     }
 
-  if ( access (fname, F_OK) )
+  if ((ec = gnupg_access (fname, F_OK)))
     {
-      if ( errno == ENOENT )
+      if ( ec == GPG_ERR_ENOENT )
         ; /* Silently ignore a non-existing trustfile.  */
       else
         {
-          err = gpg_error_from_syserror ();
+          err = gpg_error (ec);
           log_error (_("error opening '%s': %s\n"), fname, gpg_strerror (err));
         }
       xfree (fname);
@@ -602,6 +604,7 @@ gpg_error_t
 agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 {
   gpg_error_t err = 0;
+  gpg_err_code_t ec;
   char *desc;
   char *fname;
   estream_t fp;
@@ -619,7 +622,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   if (!fname)
     return gpg_error_from_syserror ();
 
-  if ( access (fname, W_OK) && errno != ENOENT)
+  if ((ec = access (fname, W_OK)) && ec != GPG_ERR_ENOENT)
     {
       xfree (fname);
       return gpg_error (GPG_ERR_EPERM);
@@ -752,12 +755,12 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       xfree (nameformatted);
       return err;
     }
-  if ( access (fname, F_OK) && errno == ENOENT)
+  if ((ec = access (fname, F_OK)) && ec == GPG_ERR_ENOENT)
     {
       fp = es_fopen (fname, "wx,mode=-rw-r");
       if (!fp)
         {
-          err = gpg_error_from_syserror ();
+          err = gpg_error (ec);
           log_error ("can't create '%s': %s\n", fname, gpg_strerror (err));
           xfree (fname);
           unlock_trusttable ();

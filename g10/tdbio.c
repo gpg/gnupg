@@ -711,17 +711,19 @@ tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
   log_assert (p);
   save_slash = *p;
   *p = 0;
-  if (access (fname, F_OK))
+  if (gnupg_access (fname, F_OK))
     {
       try_make_homedir (fname);
-      if (access (fname, F_OK))
+      if (gnupg_access (fname, F_OK))
         log_fatal (_("%s: directory does not exist!\n"), fname);
     }
   *p = save_slash;
 
   take_write_lock ();
 
-  if (access (fname, R_OK) || stat (fname, &statbuf) || statbuf.st_size == 0)
+  if (gnupg_access (fname, R_OK)
+      || stat (fname, &statbuf)
+      || statbuf.st_size == 0)
     {
       FILE *fp;
       TRUSTREC rec;

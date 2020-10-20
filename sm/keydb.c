@@ -113,6 +113,7 @@ try_make_homedir (const char *fname)
 static gpg_error_t
 maybe_create_keybox (char *filename, int force, int *r_created)
 {
+  gpg_err_code_t ec;
   dotlock_t lockhd = NULL;
   FILE *fp;
   int rc;
@@ -124,8 +125,8 @@ maybe_create_keybox (char *filename, int force, int *r_created)
     *r_created = 0;
 
   /* A quick test whether the filename already exists. */
-  if (!access (filename, F_OK))
-    return !access (filename, R_OK)? 0 : gpg_error (GPG_ERR_EACCES);
+  if (!gnupg_access (filename, F_OK))
+    return !gnupg_access (filename, R_OK)? 0 : gpg_error (GPG_ERR_EACCES);
 
   /* If we don't want to create a new file at all, there is no need to
      go any further - bail out right here.  */
@@ -160,9 +161,9 @@ maybe_create_keybox (char *filename, int force, int *r_created)
           tried = 1;
           try_make_homedir (filename);
         }
-      if (access (filename, F_OK))
+      if ((ec = gnupg_access (filename, F_OK)))
         {
-          rc = gpg_error_from_syserror ();
+          rc = gpg_error (ec);
           *last_slash_in_filename = save_slash;
           goto leave;
         }

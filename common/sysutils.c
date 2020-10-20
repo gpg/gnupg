@@ -813,7 +813,7 @@ gnupg_chdir (const char *name)
 #if GPG_ERROR_VERSION_NUMBER < 0x011c00 /* 1.28 */
   return chdir (name);
 #else /* Use the improved version from libgpg_error.  */
-  /* Note that gpgrt_chdir also sets ERRNO in addition to returing a
+  /* Note that gpgrt_chdir also sets ERRNO in addition to returning a
    * gpg-error style error code.  */
   return gpgrt_chdir (name);
 #endif
@@ -1036,10 +1036,14 @@ gnupg_unsetenv (const char *name)
 
 
 /* Return the current working directory as a malloced string.  Return
-   NULL and sets ERRNo on error.  */
+   NULL and sets ERRNO on error.  */
 char *
 gnupg_getcwd (void)
 {
+#if GPGRT_VERSION_NUMBER < 0x012800 /* 1.40 */
+  /* We use the old code which is okay despite that it does not
+   * support Unicode on Windows.  For Windows this doesn't matter
+   * because we use the latest gpgrt anyway.  */
   char *buffer;
   size_t size = 100;
 
@@ -1048,18 +1052,47 @@ gnupg_getcwd (void)
       buffer = xtrymalloc (size+1);
       if (!buffer)
         return NULL;
-#ifdef HAVE_W32CE_SYSTEM
+# ifdef HAVE_W32CE_SYSTEM
       strcpy (buffer, "/");  /* Always "/".  */
       return buffer;
-#else
+# else
       if (getcwd (buffer, size) == buffer)
         return buffer;
       xfree (buffer);
       if (errno != ERANGE)
         return NULL;
       size *= 2;
-#endif
+# endif
     }
+#else
+  return gpgrt_getcwd ();
+#endif
+}
+
+
+/* A simple wrapper around access.  NAME is expected to be utf8
+ * encoded.  This function returns an error code and sets ERRNO. */
+gpg_err_code_t
+gnupg_access (const char *name, int mode)
+{
+#if GPGRT_VERSION_NUMBER < 0x012800 /* 1.40 */
+# ifdef HAVE_W32_SYSTEM
+  wchar_t *wfname;
+
+  wfname = utf8_to_wchar (fname);
+  if (!wfname)
+    ec = gpg_err_code_from_syserror ();
+  else
+    {
+      ec = _waccess (wfname, mode)? gpg_err_code_from_syserror () : 0;
+      xfree (wfname);
+    }
+# else
+  return access (name, mode)? gpg_err_code_from_syserror () : 0;
+# endif
+#else /* gpgrt 1.40 or newer.  */
+  return gpgrt_access (name, mode);
+#endif
 }
 
 
