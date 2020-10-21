@@ -668,7 +668,7 @@ gnupg_allow_set_foregound_window (pid_t pid)
 int
 gnupg_remove (const char *fname)
 {
-#ifdef HAVE_W32CE_SYSTEM
+#ifdef HAVE_W32_SYSTEM
   int rc;
   wchar_t *wfname;
 
@@ -677,7 +677,7 @@ gnupg_remove (const char *fname)
     rc = 0;
   else
     {
-      rc = DeleteFile (wfname);
+      rc = DeleteFileW (wfname);
       xfree (wfname);
     }
   if (!rc)
@@ -687,6 +687,36 @@ gnupg_remove (const char *fname)
   return remove (fname);
 #endif
 }
+
+
+/* Helper for gnupg_rename_file.  */
+#ifdef HAVE_W32_SYSTEM
+static int
+w32_rename (const char *oldname, const char *newname)
+{
+  if (any8bitchar (oldname) || any8bitchar (newname))
+    {
+      wchar_t *woldname, *wnewname;
+      int ret;
+
+      woldname = utf8_to_wchar (oldname);
+      if (!woldname)
+        return -1;
+      wnewname = utf8_to_wchar (newname);
+      if (!wnewname)
+        {
+          xfree (wnewname);
+          return -1;
+        }
+      ret = _wrename (woldname, wnewname);
+      xfree (wnewname);
+      xfree (woldname);
+      return ret;
+    }
+  else
+    return rename (oldname, newname);
+}
+#endif /*HAVE_W32_SYSTEM*/
 
 
 /* Wrapper for rename(2) to handle Windows peculiarities.  If
@@ -708,7 +738,7 @@ gnupg_rename_file (const char *oldname, const char *newname, int *block_signals)
 
     gnupg_remove (newname);
   again:
-    if (rename (oldname, newname))
+    if (w32_rename (oldname, newname))
       {
         if (GetLastError () == ERROR_SHARING_VIOLATION)
           {
