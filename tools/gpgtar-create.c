@@ -301,6 +301,8 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
   gpg_error_t err = 0;
 
 #ifdef HAVE_W32_SYSTEM
+  /* Note that we introduced gnupg_opendir only after we had deployed
+   * this code and thus we don't change it for now.  */
   WIN32_FIND_DATAW fi;
   HANDLE hd = INVALID_HANDLE_VALUE;
   char *p;

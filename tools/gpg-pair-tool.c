@@ -1701,8 +1701,8 @@ expire_old_states (void)
 {
   gpg_error_t err = 0;
   const char *dirname;
-  DIR *dir = NULL;
-  struct dirent *dir_entry;
+  gnupg_dir_t dir = NULL;
+  gnupg_dirent_t dir_entry;
   char *fname = NULL;
   estream_t fp = NULL;
   nvc_t nvc = NULL;
@@ -1712,14 +1712,14 @@ expire_old_states (void)
   unsigned long now = gnupg_get_time ();
 
   dirname = get_pairing_statedir ();
-  dir = opendir (dirname);
+  dir = gnupg_opendir (dirname);
   if (!dir)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
 
-  while ((dir_entry = readdir (dir)))
+  while ((dir_entry = gnupg_readdir (dir)))
     {
       if (strlen (dir_entry->d_name) != 16+4
           || strcmp (dir_entry->d_name + 16, ".pa1"))
@@ -1781,8 +1781,7 @@ expire_old_states (void)
   if (err)
     log_error ("expiring old states in '%s' failed: %s\n",
                dirname, gpg_strerror (err));
-  if (dir)
-    closedir (dir);
+  gnupg_closedir (dir);
   es_fclose (fp);
   xfree (fname);
 }

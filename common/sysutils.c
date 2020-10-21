@@ -79,6 +79,7 @@
 # include <npth.h>
 #endif
 #include <fcntl.h>
+#include <dirent.h>
 
 #include <assuan.h>
 
@@ -88,6 +89,22 @@
 #include "sysutils.h"
 
 #define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
+
+
+/* The object used with our opendir functions.  We need to define our
+ * own so that we can properly handle Unicode on Windows.  */
+struct gnupg_dir_s
+{
+#ifdef HAVE_W32_SYSTEM
+  _WDIR *dir;                    /* The system's DIR pointer.  */
+#else
+  DIR *dir;                      /* The system's DIR pointer.  */
+#endif
+  struct gnupg_dirent_s dirent;  /* The current dirent.  */
+  size_t namesize;  /* If not 0 the allocated size of dirent.d_name.  */
+  char name[256];   /* Only used if NAMESIZE is 0.  */
+};
+
 
 /* Flag to tell whether special file names are enabled.  See gpg.c for
  * an explanation of these file names.  */
@@ -1172,6 +1189,151 @@ gnupg_open (const char *name, int flags, unsigned int mode)
     return open (name, flags, mode);
 #else
   return open (name, flags, mode);
+#endif
+}
+
+
+/* A wrapper around opendir to handle Unicode file names under
+ * Windows.  This assumes the mingw toolchain.  */
+gnupg_dir_t
+gnupg_opendir (const char *name)
+{
+#ifdef HAVE_W32_SYSTEM
+  _WDIR *dir;
+  wchar_t *wname;
+#else
+  DIR *dir;
+#endif
+  gnupg_dir_t gdir;
+
+#ifdef HAVE_W32_SYSTEM
+  /* Note: See gpgtar-create for an alternative implementation which
+   * could be used here to avoid a mingw dependency.  */
+  wname = utf8_to_wchar (name);
+  if (!wname)
+    return NULL;
+  dir = _wopendir (wname);
+  xfree (wname);
+#else
+  dir = opendir (name);
+#endif
+
+  if (!dir)
+    return NULL;
+
+  gdir = xtrymalloc (sizeof *gdir);
+  if (!gdir)
+    {
+      int save_errno = errno;
+#ifdef HAVE_W32_SYSTEM
+      _wclosedir (dir);
+#else
+      closedir (dir);
+#endif
+      gpg_err_set_errno (save_errno);
+      return NULL;
+    }
+  gdir->dir = dir;
+  gdir->namesize = 0;
+  gdir->dirent.d_name = gdir->name;
+
+  return gdir;
+}
+
+
+gnupg_dirent_t
+gnupg_readdir (gnupg_dir_t gdir)
+{
+#ifdef HAVE_W32_SYSTEM
+  char *namebuffer = NULL;
+  struct _wdirent *de;
+#else
+  struct dirent *de;
+#endif
+  size_t n;
+  gnupg_dirent_t gde;
+  const char *name;
+
+  if (!gdir)
+    {
+      gpg_err_set_errno (EINVAL);
+      return 0;
+    }
+
+#ifdef HAVE_W32_SYSTEM
+  de = _wreaddir (gdir->dir);
+  if (!de)
+    return NULL;
+  namebuffer = wchar_to_utf8 (de->d_name);
+  if (!namebuffer)
+    return NULL;
+  name = namebuffer;
+#else
+  de = readdir (gdir->dir);
+  if (!de)
+    return NULL;
+  name = de->d_name;
+#endif
+
+  gde = &gdir->dirent;
+  n = strlen (name);
+  if (gdir->namesize)
+    {
+      /* Use allocated buffer.  */
+      if (n+1 >= gdir->namesize || !gde->d_name)
+        {
+          gdir->namesize = n + 256;
+          xfree (gde->d_name);
+          gde->d_name = xtrymalloc (gdir->namesize);
+          if (!gde->d_name)
+            return NULL;  /* ERRNO is already set.  */
+        }
+      strcpy (gde->d_name, name);
+    }
+  else if (n+1 >= sizeof (gdir->name))
+    {
+      /* Switch to allocated buffer.  */
+      gdir->namesize = n + 256;
+      gde->d_name = xtrymalloc (gdir->namesize);
+      if (!gde->d_name)
+        return NULL;  /* ERRNO is already set.  */
+      strcpy (gde->d_name, name);
+    }
+  else
+    {
+      /* Use static buffer.  */
+      gde->d_name = gdir->name;
+      strcpy (gde->d_name, name);
+    }
+
+#ifdef HAVE_W32_SYSTEM
+  xfree (namebuffer);
+#endif
+
+  return gde;
+}
+
+
+int
+gnupg_closedir (gnupg_dir_t gdir)
+{
+#ifdef HAVE_W32_SYSTEM
+  _WDIR *dir;
+#else
+  DIR *dir;
+#endif
+
+  if (!gdir)
+    return 0;
+  dir = gdir->dir;
+  if (gdir->namesize)
+    xfree (gdir->dirent.d_name);
+  xfree (gdir);
+
+#ifdef HAVE_W32_SYSTEM
+  return _wclosedir (dir);
+#else
+  return closedir (dir);
 #endif
 }
 
