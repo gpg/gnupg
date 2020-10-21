@@ -1277,7 +1277,7 @@ main (int argc, char **argv)
         {
           log_error (_("error binding socket to '%s': %s\n"),
                      serv_addr.sun_path,
-                     gpg_strerror (gpg_error_from_errno (errno)));
+                     gpg_strerror (gpg_error_from_syserror ()));
           assuan_sock_close (fd);
           dirmngr_exit (1);
         }

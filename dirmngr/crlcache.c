@@ -101,10 +101,6 @@
 #ifndef HAVE_W32_SYSTEM
 #include <sys/utsname.h>
 #endif
-#ifdef MKDIR_TAKES_ONE_ARG
-#undef mkdir
-#define mkdir(a,b) mkdir(a)
-#endif
 
 #include "dirmngr.h"
 #include "validate.h"
@@ -206,15 +202,15 @@ get_current_cache (void)
 static int
 create_directory_if_needed (const char *name)
 {
-  DIR *dir;
+  gnupg_dir_t dir;
   char *fname;
 
   fname = make_filename (opt.homedir_cache, name, NULL);
-  dir = opendir (fname);
+  dir = gnupg_opendir (fname);
   if (!dir)
     {
       log_info (_("creating directory '%s'\n"), fname);
-      if (mkdir (fname, S_IRUSR|S_IWUSR|S_IXUSR) )
+      if (gnupg_mkdir (fname, "-rwx"))
         {
           int save_errno = errno;
           log_error (_("error creating directory '%s': %s\n"),
@@ -225,7 +221,7 @@ create_directory_if_needed (const char *name)
         }
     }
   else
-    closedir (dir);
+    gnupg_closedir (dir);
   xfree (fname);
   return 0;
 }
@@ -237,8 +233,8 @@ static int
 cleanup_cache_dir (int force)
 {
   char *dname = make_filename (opt.homedir_cache, DBDIR_D, NULL);
-  DIR *dir;
-  struct dirent *de;
+  gnupg_dir_t dir;
+  gnupg_dirent_t de;
   int problem = 0;
 
   if (!force)
@@ -251,7 +247,7 @@ cleanup_cache_dir (int force)
         }
     }
 
-  dir = opendir (dname);
+  dir = gnupg_opendir (dname);
   if (!dir)
     {
       log_error (_("error reading directory '%s': %s\n"),
@@ -260,7 +256,7 @@ cleanup_cache_dir (int force)
       return -1;
     }
 
-  while ((de = readdir (dir)))
+  while ((de = gnupg_readdir (dir)))
     {
       if (strcmp (de->d_name, "." ) && strcmp (de->d_name, ".."))
         {
@@ -289,7 +285,7 @@ cleanup_cache_dir (int force)
         }
     }
   xfree (dname);
-  closedir (dir);
+  gnupg_closedir (dir);
   return problem;
 }
 

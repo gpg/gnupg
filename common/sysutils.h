@@ -50,6 +50,19 @@ typedef int gnupg_fd_t;
 # include <sys/stat.h>
 #endif
 
+struct gnupg_dir_s;
+typedef struct gnupg_dir_s *gnupg_dir_t;
+struct gnupg_dirent_s
+{
+  /* We don't have a d_ino because that can't be used on Windows
+   * anyway.  D_NAME is a pointer into the gnupg_dir_s which has a
+   * static buffer or allocates sufficient space as needed.  This is
+   * only valid after gnupg_readdir. */
+  char *d_name;
+};
+typedef struct gnupg_dirent_s *gnupg_dirent_t;
+
+
 void trap_unaligned (void);
 int  disable_core_dumps (void);
 int  enable_core_dumps (void);
@@ -80,6 +93,9 @@ gpg_err_code_t gnupg_access (const char *name, int mode);
 int gnupg_stat (const char *name, struct stat *statbuf);
 #endif /*HAVE_STAT*/
 int gnupg_open (const char *name, int flags, unsigned int mode);
+gnupg_dir_t gnupg_opendir (const char *name);
+gnupg_dirent_t gnupg_readdir (gnupg_dir_t gdir);
+int gnupg_closedir (gnupg_dir_t gdir);
 char *gnupg_get_socket_name (int fd);
 int gnupg_fd_valid (int fd);
 

@@ -1260,7 +1260,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int err;
   unsigned char grip[20];
-  DIR *dir = NULL;
+  gnupg_dir_t dir = NULL;
   int list_mode;
   int opt_data, opt_ssh_fpr, opt_with_ssh;
   ssh_control_file_t cf = NULL;
@@ -1316,7 +1316,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else if (list_mode)
     {
       char *dirname;
-      struct dirent *dir_entry;
+      gnupg_dirent_t dir_entry;
 
       dirname = make_filename_try (gnupg_homedir (),
                                    GNUPG_PRIVATE_KEYS_DIR, NULL);
@@ -1325,7 +1325,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      dir = opendir (dirname);
+      dir = gnupg_opendir (dirname);
       if (!dir)
         {
           err = gpg_error_from_syserror ();
@@ -1334,7 +1334,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
         }
       xfree (dirname);
 
-      while ( (dir_entry = readdir (dir)) )
+      while ( (dir_entry = gnupg_readdir (dir)) )
         {
           if (strlen (dir_entry->d_name) != 44
               || strcmp (dir_entry->d_name + 40, ".key"))
@@ -1385,8 +1385,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
 
  leave:
   ssh_close_control_file (cf);
-  if (dir)
-    closedir (dir);
+  gnupg_closedir (dir);
   if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
     leave_cmd (ctx, err);
   return err;

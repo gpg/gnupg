@@ -364,8 +364,8 @@ static gpg_error_t
 load_certs_from_dir (const char *dirname, unsigned int trustclass)
 {
   gpg_error_t err;
-  DIR *dir;
-  struct dirent *ep;
+  gnupg_dir_t dir;
+  gnupg_dirent_t ep;
   char *p;
   size_t n;
   estream_t fp;
@@ -373,13 +373,13 @@ load_certs_from_dir (const char *dirname, unsigned int trustclass)
   ksba_cert_t cert;
   char *fname = NULL;
 
-  dir = opendir (dirname);
+  dir = gnupg_opendir (dirname);
   if (!dir)
     {
       return 0; /* We do not consider this a severe error.  */
     }
 
-  while ( (ep=readdir (dir)) )
+  while ( (ep = gnupg_readdir (dir)) )
     {
       p = ep->d_name;
       if (*p == '.' || !*p)
@@ -447,7 +447,7 @@ load_certs_from_dir (const char *dirname, unsigned int trustclass)
     }
 
   xfree (fname);
-  closedir (dir);
+  gnupg_closedir (dir);
   return 0;
 }
 

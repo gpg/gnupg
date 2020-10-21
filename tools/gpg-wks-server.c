@@ -1608,22 +1608,22 @@ static gpg_error_t
 get_domain_list (strlist_t *r_list)
 {
   gpg_error_t err;
-  DIR *dir = NULL;
+  gnupg_dir_t dir = NULL;
   char *fname = NULL;
-  struct dirent *dentry;
+  gnupg_dirent_t dentry;
   struct stat sb;
   strlist_t list = NULL;
 
   *r_list = NULL;
 
-  dir = opendir (opt.directory);
+  dir = gnupg_opendir (opt.directory);
   if (!dir)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
 
-  while ((dentry = readdir (dir)))
+  while ((dentry = gnupg_readdir (dir)))
     {
       if (*dentry->d_name == '.')
         continue;
@@ -1663,8 +1663,7 @@ get_domain_list (strlist_t *r_list)
 
  leave:
   free_strlist (list);
-  if (dir)
-    closedir (dir);
+  gnupg_closedir (dir);
   xfree (fname);
   return err;
 }
@@ -1677,8 +1676,8 @@ expire_one_domain (const char *top_dirname, const char *domain)
   gpg_error_t err;
   char *dirname;
   char *fname = NULL;
-  DIR *dir = NULL;
-  struct dirent *dentry;
+  gnupg_dir_t dir = NULL;
+  gnupg_dirent_t dentry;
   struct stat sb;
   time_t now = gnupg_get_time ();
 
@@ -1691,7 +1690,7 @@ expire_one_domain (const char *top_dirname, const char *domain)
       goto leave;
     }
 
-  dir = opendir (dirname);
+  dir = gnupg_opendir (dirname);
   if (!dir)
     {
       err = gpg_error_from_syserror ();
@@ -1700,7 +1699,7 @@ expire_one_domain (const char *top_dirname, const char *domain)
       goto leave;
     }
 
-  while ((dentry = readdir (dir)))
+  while ((dentry = gnupg_readdir (dir)))
     {
       if (*dentry->d_name == '.')
         continue;
@@ -1749,8 +1748,7 @@ expire_one_domain (const char *top_dirname, const char *domain)
   err = 0;
 
  leave:
-  if (dir)
-    closedir (dir);
+  gnupg_closedir (dir);
   xfree (dirname);
   xfree (fname);
   return err;
