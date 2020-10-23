@@ -237,6 +237,7 @@ gpg_error_t app_send_card_list (ctrl_t ctrl);
 gpg_error_t app_send_active_apps (card_t card, ctrl_t ctrl);
 char *card_get_serialno (card_t card);
 char *app_get_serialno (app_t app);
+char *yubikey_get_serialno (app_t app);
 
 void app_dump_state (void);
 void application_notify_card_reset (int slot);

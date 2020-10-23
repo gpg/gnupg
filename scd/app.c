@@ -1191,7 +1191,30 @@ card_get_serialno (card_t card)
 
   if (!card->serialnolen)
     serial = xtrystrdup ("FF7F00");
+  else if (card->cardtype == CARDTYPE_YUBIKEY)
+    {
+      app_t a;
+
+      for (a = card->app; a; a = a->next)
+        if (a->apptype == APPTYPE_OPENPGP)
+          break;
+
+      /* Found the OpenPGP app */
+      if (a->apptype == APPTYPE_OPENPGP)
+        {
+          if (card->app != a)
+            run_reselect (NULL, card, a, card->app);
+
+          serial = yubikey_get_serialno (a);
+
+          if (card->app != a)
+            run_reselect (NULL, card, card->app, a);
+        }
+      else
+        goto other;
+    }
   else
+  other:
     serial = bin2hex (card->serialno, card->serialnolen, NULL);
 
   return serial;
@@ -2107,15 +2130,15 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
 {
   gpg_error_t err;
   app_t a;
-  char buf[65];
+  char *serial;
   char *p;
   membuf_t mb;
   int any = 0;
 
-  if (DIM (buf) < 2 * card->serialnolen + 1)
+  serial = card_get_serialno (card);
+  if (!serial)
     return 0; /* Oops.  */
 
-  bin2hex (card->serialno, card->serialnolen, buf);
   if (with_apps)
     {
       /* Note that in case the additional applications have not yet been
@@ -2123,10 +2146,13 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
        * "SERIALNO --all", we do that here.  */
       err = select_all_additional_applications_internal (ctrl, card);
       if (err)
-        return err;
+        {
+          xfree (serial);
+          return err;
+        }
 
       init_membuf (&mb, 256);
-      put_membuf_str (&mb, buf);
+      put_membuf_str (&mb, serial);
       for (a = card->app; a; a = a->next)
         {
           if (!a->fnc.with_keygrip)
@@ -2145,13 +2171,18 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
       put_membuf (&mb, "", 1);
       p = get_membuf (&mb, NULL);
       if (!p)
-        return gpg_error_from_syserror ();
+        {
+          err = gpg_error_from_syserror ();
+          xfree (serial);
+          return err;
+        }
       send_status_direct (ctrl, "SERIALNO", p);
       xfree (p);
     }
   else
-    send_status_direct (ctrl, "SERIALNO", buf);
+    send_status_direct (ctrl, "SERIALNO", serial);
 
+  xfree (serial);
   return 0;
 }
 

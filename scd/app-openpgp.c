@@ -1383,6 +1383,39 @@ get_disp_name (app_t app)
 }
 
 
+/*
+ * Yubikey has its own serial number at app->serialno.  When Yubikey
+ * is used for OpenPGP card app, we get the serial number for OpenPGP
+ * card from its AID data object.
+ */
+char *
+yubikey_get_serialno (app_t app)
+{
+  void *relptr;
+  unsigned char *buffer;
+  size_t buflen;
+  char *serial;
+
+  relptr = get_one_do (app, 0x004F, &buffer, &buflen, NULL);
+  if (!relptr)
+    return NULL;
+  if (buflen != 16)
+    {
+      xfree (relptr);
+      return NULL;
+    }
+
+  serial = xtrymalloc (32 + 1);
+  if (!serial)
+    return NULL;
+
+  serial[32] = 0;
+  bin2hex (buffer, buflen, serial);
+  xfree (relptr);
+  return serial;
+}
+
+
 /* Return the pretty formatted serialnumber.  On error NULL is
  * returned.  */
 static char *
