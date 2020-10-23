@@ -227,7 +227,8 @@ Note that such a comment will be removed if the git commit option
   - Some-comments-by :: Name or mail address of the author of
                         additional comments (commit log or code).
   - Proofread-by :: Sometimes used by translation commits.
-  - Signed-off-by :: Name or mail address of the developer
+  - Signed-off-by :: Name or mail address of the developer.
+  - Backported-from-master :: Value is the commit id of the original patch.
 
 * Windows
 ** How to build an installer for Windows

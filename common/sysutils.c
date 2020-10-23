@@ -1105,22 +1105,24 @@ gnupg_getcwd (void)
 gpg_err_code_t
 gnupg_access (const char *name, int mode)
 {
-#if GPGRT_VERSION_NUMBER < 0x012800 /* 1.39 */
+#if GPGRT_VERSION_NUMBER < 0x012800 /* 1.40 */
 # ifdef HAVE_W32_SYSTEM
-  wchar_t *wfname;
+  wchar_t *wname;
+  gpg_err_code_t ec;
 
-  wfname = utf8_to_wchar (fname);
-  if (!wfname)
+  wname = utf8_to_wchar (name);
+  if (!wname)
     ec = gpg_err_code_from_syserror ();
   else
     {
-      ec = _waccess (wfname, mode)? gpg_err_code_from_syserror () : 0;
-      xfree (wfname);
+      ec = _waccess (wname, mode)? gpg_err_code_from_syserror () : 0;
+      xfree (wname);
     }
+  return ec;
 # else
   return access (name, mode)? gpg_err_code_from_syserror () : 0;
 # endif
-#else
+#else /* gpgrt 1.40 or newer.  */
   return gpgrt_access (name, mode);
 #endif
 }

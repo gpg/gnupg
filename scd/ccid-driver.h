@@ -77,6 +77,7 @@ enum {
 #define SCM_SCR331      0xe001
 #define SCM_SCR331DI    0x5111
 #define SCM_SCR335      0x5115
+#define SCM_SCR3310     0x5116    /* @MAXX Basic */
 #define SCM_SCR3320     0x5117
 #define SCM_SPR532      0xe003    /* Also used succeeding model SPR332. */
 #define CHERRY_ST2000   0x003e
