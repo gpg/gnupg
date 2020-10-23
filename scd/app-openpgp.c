@@ -5001,7 +5001,6 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
   const char *s;
   int n;
   const char *fpr = NULL;
-  unsigned char tmp_sn[20]; /* Actually 16 bytes but also for the fpr. */
 
   if (r_use_auth)
     *r_use_auth = 0;
@@ -5010,6 +5009,8 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
     return gpg_error (GPG_ERR_INV_ID);
   else
     {
+      char *serial;
+
       for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
         ;
 
@@ -5039,13 +5040,14 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
       else if (*s == '/')
         fpr = s + 1;
 
-      for (s=keyidstr, n=0; n < 16; s += 2, n++)
-        tmp_sn[n] = xtoi_2 (s);
+      serial = app_get_serialno (app);
+      if (strncmp (serial, keyidstr, 32))
+        {
+          xfree (serial);
+          return gpg_error (GPG_ERR_WRONG_CARD);
+        }
 
-      if (app->card->serialnolen != 16)
-        return gpg_error (GPG_ERR_INV_CARD);
-      if (memcmp (app->card->serialno, tmp_sn, 16))
-        return gpg_error (GPG_ERR_WRONG_CARD);
+      xfree (serial);
     }
 
   /* If a fingerprint has been specified check it against the one on
@@ -5672,20 +5674,15 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str,
     }
   else
     {
-      char buf[65];
       int data = (action == KEYGRIP_ACTION_SEND_DATA);
-
-      if (DIM (buf) < 2 * app->card->serialnolen + 1)
-        return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
-
-      bin2hex (app->card->serialno, app->card->serialnolen, buf);
+      char *serial = app_get_serialno (app);
 
       if (keygrip_str == NULL)
         {
           if (capability == 0)
             {
               for (i = 0; i < 3; i++)
-                send_keyinfo_if_available (app, ctrl, buf, data, i);
+                send_keyinfo_if_available (app, ctrl, serial, data, i);
             }
           else
             {
@@ -5698,8 +5695,10 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str,
               else
                 i = -1;
               if (i >= 0)
-                send_keyinfo_if_available (app, ctrl, buf, data, i);
+                send_keyinfo_if_available (app, ctrl, serial, data, i);
             }
+
+          xfree (serial);
 
           /* Return an error so that the dispatcher keeps on looping
            * over the other applications.  Only for clarity we use a
@@ -5711,9 +5710,11 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action, const char *keygrip_str,
           for (i = 0; i < 3; i++)
             if (!strcmp (keygrip_str, app->app_local->pk[i].keygrip_str))
               {
-                send_keyinfo_if_available (app, ctrl, buf, data, i);
+                send_keyinfo_if_available (app, ctrl, serial, data, i);
+                xfree (serial);
                 return 0;
               }
+          xfree (serial);
         }
     }
 
