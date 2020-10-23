@@ -6080,9 +6080,16 @@ app_select_openpgp (app_t app)
       app->appversion |= buffer[7];
       manufacturer = (buffer[8]<<8 | buffer[9]);
 
-      xfree (app->card->serialno);
-      app->card->serialno = buffer;
-      app->card->serialnolen = buflen;
+      /* For Yubikey, serialno is set in app.c, already.  */
+      if (app->card->cardtype == CARDTYPE_YUBIKEY)
+        xfree (buffer);
+      else
+        {
+          xfree (app->card->serialno);
+          app->card->serialno = buffer;
+          app->card->serialnolen = buflen;
+        }
+
       buffer = NULL;
       app->app_local = xtrycalloc (1, sizeof *app->app_local);
       if (!app->app_local)
