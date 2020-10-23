@@ -1544,7 +1544,7 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
     {
       char *serial;
 
-      serial = card_get_serialno (card);
+      serial = app_get_serialno (card->app);
       if (!serial)
         err = gpg_error (GPG_ERR_INV_VALUE);
       else
