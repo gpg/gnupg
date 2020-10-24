@@ -1270,7 +1270,7 @@ ccid_vendor_specific_init (ccid_driver_t handle)
 
       r = send_escape_cmd (handle, cmd, sizeof (cmd), NULL, 0, NULL);
     }
-  else if (handle->id_vendor == VENDOR_SCM)
+  else if (handle->id_vendor == VENDOR_SCM && handle->id_product == SCM_SPR532)
     {
       /*
        * It seems that SEQ may be out of sync between host and the card reader,
