@@ -3476,6 +3476,7 @@ do_writecert (app_t app, ctrl_t ctrl,
       goto leave;
     }
 
+  flush_cached_data (app, dobj->tag);
   err = put_data (app_get_slot (app), dobj->tag,
                   (int)0x70, (size_t)certlen, cert,/* Certificate */
                   (int)0x71, (size_t)1,       "",  /* No compress */
