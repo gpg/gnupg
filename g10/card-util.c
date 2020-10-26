@@ -688,7 +688,8 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 {
   int err;
   strlist_t card_list, sl;
-  char *serialno0, *serialno1;
+  char *serialno0 = NULL;
+  char *serialno1 = NULL;
   int all_cards = 0;
   int any_card = 0;
 
@@ -733,6 +734,7 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 
       current_card_status (ctrl, fp, NULL, 0);
       xfree (serialno1);
+      serialno1 = NULL;
 
       if (!all_cards)
         goto leave;
@@ -740,11 +742,10 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 
   /* Select the original card again.  */
   err = agent_scd_serialno (&serialno1, serialno0);
-  if (!err)
-    xfree (serialno1);
 
  leave:
   xfree (serialno0);
+  xfree (serialno1);
   free_strlist (card_list);
 }
 
@@ -2000,8 +2001,7 @@ factory_reset (void)
       char *serialno0;
 
       err = agent_scd_serialno (&serialno0, NULL);
-      if (!err)
-        xfree (serialno0);
+      xfree (serialno0);
     }
 
  leave:
