@@ -332,7 +332,7 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
                                            not happen though.  */
   save_slash = *last_slash_in_filename;
   *last_slash_in_filename = 0;
-  if (access(filename, F_OK))
+  if (gnupg_access(filename, F_OK))
     {
       static int tried;
 

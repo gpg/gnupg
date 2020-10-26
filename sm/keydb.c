@@ -152,7 +152,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
                                            not happen though.  */
   save_slash = *last_slash_in_filename;
   *last_slash_in_filename = 0;
-  if (access(filename, F_OK))
+  if (gnupg_access(filename, F_OK))
     {
       static int tried;
 
