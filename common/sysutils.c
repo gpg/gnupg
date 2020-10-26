@@ -1137,8 +1137,9 @@ gnupg_access (const char *name, int mode)
 #if GPGRT_VERSION_NUMBER < 0x012800 /* 1.40 */
 # ifdef HAVE_W32_SYSTEM
   wchar_t *wfname;
+  gpg_err_code_t ec;
 
-  wfname = utf8_to_wchar (fname);
+  wfname = utf8_to_wchar (name);
   if (!wfname)
     ec = gpg_err_code_from_syserror ();
   else
@@ -1146,6 +1147,7 @@ gnupg_access (const char *name, int mode)
       ec = _waccess (wfname, mode)? gpg_err_code_from_syserror () : 0;
       xfree (wfname);
     }
+  return ec;
 # else
   return access (name, mode)? gpg_err_code_from_syserror () : 0;
 # endif
