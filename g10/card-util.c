@@ -740,7 +740,8 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 
   /* Select the original card again.  */
   err = agent_scd_serialno (&serialno1, serialno0);
-  xfree (serialno1);
+  if (!err)
+    xfree (serialno1);
 
  leave:
   xfree (serialno0);
