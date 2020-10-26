@@ -841,9 +841,7 @@ list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
     { NULL, NULL }
   };
 
-  if (!info->serialno
-      || strncmp (info->serialno, "D27600012401", 12)
-      || strlen (info->serialno) != 32 )
+  if (info->apptype != APP_TYPE_OPENPGP)
     {
       tty_fprintf (fp, "invalid OpenPGP card\n");
       return;
