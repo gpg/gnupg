@@ -1299,6 +1299,19 @@ ccid_vendor_specific_init (ccid_driver_t handle)
 }
 
 
+static int
+ccid_vendor_specific_setup (ccid_driver_t handle)
+{
+  if (handle->id_vendor == VENDOR_SCM && handle->id_product == SCM_SPR532)
+    {
+      DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
+      send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
+                       NULL, 0, NULL);
+    }
+  return 0;
+}
+
+
 #define MAX_DEVICE 4 /* See MAX_READER in apdu.c.  */
 
 struct ccid_dev_table {
@@ -2428,12 +2441,7 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
       if (handle->transfer == NULL)
         {
           ccid_setup_intr (handle);
-          if (handle->id_vendor == VENDOR_SCM)
-            {
-              DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
-              send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
-                               NULL, 0, NULL);
-            }
+          ccid_vendor_specific_setup (handle);
         }
 
       *statusbits = 0;
