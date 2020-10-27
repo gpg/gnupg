@@ -302,7 +302,7 @@ app_send_devinfo (ctrl_t ctrl)
       char *serialno;
       char card_info[80];
 
-      serialno = card_get_serialno (c);
+      serialno = card_get_serialno (c, 0);
       snprintf (card_info, sizeof card_info, "DEVICE %s %s",
                 strcardtype (c->cardtype), serialno);
       xfree (serialno);
@@ -1182,7 +1182,7 @@ app_munge_serialno (card_t card)
    returned as a malloced string (hex encoded) in SERIAL.  Caller must
    free SERIAL unless the function returns an error.  */
 char *
-card_get_serialno (card_t card)
+card_get_serialno (card_t card, int is_canonical)
 {
   char *serial;
 
@@ -1191,7 +1191,8 @@ card_get_serialno (card_t card)
 
   if (!card->serialnolen)
     serial = xtrystrdup ("FF7F00");
-  else if (card->cardtype == CARDTYPE_YUBIKEY)
+  else if (card->cardtype == CARDTYPE_YUBIKEY && !is_canonical
+           && card->app && card->app->apptype == APPTYPE_OPENPGP)
     {
       app_t a;
 
@@ -1226,7 +1227,7 @@ app_get_serialno (app_t app)
 {
   if (!app || !app->card)
     return NULL;
-  return card_get_serialno (app->card);
+  return card_get_serialno (app->card, 0);
 }
 
 
@@ -2135,7 +2136,7 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
   membuf_t mb;
   int any = 0;
 
-  serial = card_get_serialno (card);
+  serial = card_get_serialno (card, 1);
   if (!serial)
     return 0; /* Oops.  */
 
