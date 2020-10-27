@@ -1366,6 +1366,14 @@ give the opposite meaning.  The options are:
   @opindex list-options:show-only-fpr-mbox
   For each user-id which has a valid mail address print
   only the fingerprint followed by the mail address.
+
+  @item sort-sigs
+  @opindex list-options:sort-sigs
+  With --list-sigs and --check-sigs sort the signatures by keyID and
+  creation time to make it easier to view the history of these
+  signatures.  The self-signature is also listed before other
+  signatures. Defaults to yes.
+
 @end table
 
 @item --verify-options @var{parameters}

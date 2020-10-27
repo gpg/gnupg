@@ -938,14 +938,213 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 }
 
 
+/* Order two signatures.  We first order by keyid and then by creation
+ * time.  */
+static int
+cmp_signodes (const void *av, const void *bv)
+{
+  const kbnode_t an = *(const kbnode_t *)av;
+  const kbnode_t bn = *(const kbnode_t *)bv;
+  const PKT_signature *a;
+  const PKT_signature *b;
+  int i;
+
+  /* log_assert (an->pkt->pkttype == PKT_SIGNATURE); */
+  /* log_assert (bn->pkt->pkttype == PKT_SIGNATURE); */
+
+  a = an->pkt->pkt.signature;
+  b = bn->pkt->pkt.signature;
+
+  /* Self-signatures are ordered first.  */
+  if ((an->flag & NODFLG_MARK_B) && !(bn->flag & NODFLG_MARK_B))
+    return -1;
+  if (!(an->flag & NODFLG_MARK_B) && (bn->flag & NODFLG_MARK_B))
+    return 1;
+
+  /* then the keyids.  (which are or course the same for self-sigs). */
+  i = keyid_cmp (a->keyid, b->keyid);
+  if (i)
+    return i;
+
+  /* Followed by creation time */
+  if (a->timestamp > b->timestamp)
+    return 1;
+  if (a->timestamp < b->timestamp)
+    return -1;
+
+  /* followed by the class in a way that a rev comes first.  */
+  if (a->sig_class > b->sig_class)
+    return 1;
+  if (a->sig_class < b->sig_class)
+    return -1;
+
+  /* To make the sort stable we compare the entire structure as last resort.  */
+  return memcmp (a, b, sizeof *a);
+}
+
+
+/* Helper for list_keyblock_print.  */
+static void
+list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
+                      struct keylist_context *listctx)
+{
+          /* (extra indentation to keep the diff history short)  */
+	  PKT_signature *sig = node->pkt->pkt.signature;
+	  int rc, sigrc;
+	  char *sigstr;
+          char *reason_text = NULL;
+          char *reason_comment = NULL;
+          size_t reason_commentlen;
+          int reason_code = 0;
+
+	  if (listctx->check_sigs)
+	    {
+	      rc = check_key_signature (ctrl, keyblock, node, NULL);
+	      switch (gpg_err_code (rc))
+		{
+		case 0:
+		  listctx->good_sigs++;
+		  sigrc = '!';
+		  break;
+		case GPG_ERR_BAD_SIGNATURE:
+		  listctx->inv_sigs++;
+		  sigrc = '-';
+		  break;
+		case GPG_ERR_NO_PUBKEY:
+		case GPG_ERR_UNUSABLE_PUBKEY:
+		  listctx->no_key++;
+		  return;
+		default:
+		  listctx->oth_err++;
+		  sigrc = '%';
+		  break;
+		}
+
+	      /* TODO: Make sure a cached sig record here still has
+	         the pk that issued it.  See also
+	         keyedit.c:print_and_check_one_sig */
+	    }
+	  else
+	    {
+	      rc = 0;
+	      sigrc = ' ';
+	    }
+
+	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
+	      || sig->sig_class == 0x30)
+            {
+              sigstr = "rev";
+              reason_code = get_revocation_reason (sig, &reason_text,
+                                                   &reason_comment,
+                                                   &reason_commentlen);
+            }
+	  else if ((sig->sig_class & ~3) == 0x10)
+	    sigstr = "sig";
+	  else if (sig->sig_class == 0x18)
+	    sigstr = "sig";
+	  else if (sig->sig_class == 0x1F)
+	    sigstr = "sig";
+	  else
+	    {
+	      es_fprintf (es_stdout, "sig                             "
+		      "[unexpected signature class 0x%02x]\n",
+		      sig->sig_class);
+	      return;
+	    }
+
+	  es_fputs (sigstr, es_stdout);
+	  es_fprintf (es_stdout, "%c%c %c%c%c%c%c%c %s %s",
+		  sigrc, (sig->sig_class - 0x10 > 0 &&
+			  sig->sig_class - 0x10 <
+			  4) ? '0' + sig->sig_class - 0x10 : ' ',
+		  sig->flags.exportable ? ' ' : 'L',
+		  sig->flags.revocable ? ' ' : 'R',
+		  sig->flags.policy_url ? 'P' : ' ',
+		  sig->flags.notation ? 'N' : ' ',
+		  sig->flags.expired ? 'X' : ' ',
+		  (sig->trust_depth > 9) ? 'T' : (sig->trust_depth >
+						  0) ? '0' +
+		  sig->trust_depth : ' ', keystr (sig->keyid),
+		  datestr_from_sig (sig));
+	  if (opt.list_options & LIST_SHOW_SIG_EXPIRE)
+	    es_fprintf (es_stdout, " %s", expirestr_from_sig (sig));
+	  es_fprintf (es_stdout, "  ");
+	  if (sigrc == '%')
+	    es_fprintf (es_stdout, "[%s] ", gpg_strerror (rc));
+	  else if (sigrc == '?')
+	    ;
+	  else if (!opt.fast_list_mode)
+	    {
+	      size_t n;
+	      char *p = get_user_id (ctrl, sig->keyid, &n, NULL);
+	      print_utf8_buffer (es_stdout, p, n);
+	      xfree (p);
+	    }
+	  es_putc ('\n', es_stdout);
+
+	  if (sig->flags.policy_url
+	      && (opt.list_options & LIST_SHOW_POLICY_URLS))
+	    show_policy_url (sig, 3, 0);
+
+	  if (sig->flags.notation && (opt.list_options & LIST_SHOW_NOTATIONS))
+	    show_notation (sig, 3, 0,
+			   ((opt.
+			     list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
+			   +
+			   ((opt.
+			     list_options & LIST_SHOW_USER_NOTATIONS) ? 2 :
+			    0));
+
+	  if (sig->flags.pref_ks
+	      && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))
+	    show_keyserver_url (sig, 3, 0);
+
+          if (reason_text && (reason_code || reason_comment))
+            {
+              es_fprintf (es_stdout, "      %s%s\n",
+                          _("reason for revocation: "), reason_text);
+              if (reason_comment)
+                {
+                  const byte *s, *s_lf;
+                  size_t n, n_lf;
+
+                  s = reason_comment;
+                  n = reason_commentlen;
+                  s_lf = NULL;
+                  do
+                    {
+                      /* We don't want any empty lines, so we skip them.  */
+                      for (;n && *s == '\n'; s++, n--)
+                        ;
+                      if (n)
+                        {
+                          s_lf = memchr (s, '\n', n);
+                          n_lf = s_lf? s_lf - s : n;
+                          es_fprintf (es_stdout, "         %s",
+                                      _("revocation comment: "));
+                          es_write_sanitized (es_stdout, s, n_lf, NULL, NULL);
+                          es_putc ('\n', es_stdout);
+                          s += n_lf; n -= n_lf;
+                        }
+                    } while (s_lf);
+                }
+            }
+
+          xfree (reason_text);
+          xfree (reason_comment);
+
+	  /* fixme: check or list other sigs here */
+}
+
+
 static void
 list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
                      struct keylist_context *listctx)
 {
   int rc;
-  KBNODE kbctx;
-  KBNODE node;
+  kbnode_t node;
   PKT_public_key *pk;
+  u32 *mainkid;
   int skip_sigs = 0;
   char *hexgrip = NULL;
   char *serialno = NULL;
@@ -960,6 +1159,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
     }
 
   pk = node->pkt->pkt.public_key;
+  mainkid = pk_keyid (pk);
 
   if (secret || opt.with_keygrip)
     {
@@ -1012,9 +1212,11 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
       es_putc ('\n', es_stdout);
     }
 
-
-  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+  for (node = keyblock; node; node = node->next)
     {
+      if (is_deleted_kbnode (node))
+        continue;
+
       if (node->pkt->pkttype == PKT_USER_ID)
 	{
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
@@ -1145,149 +1347,37 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
       else if (opt.list_sigs
 	       && node->pkt->pkttype == PKT_SIGNATURE && !skip_sigs)
 	{
-	  PKT_signature *sig = node->pkt->pkt.signature;
-	  int sigrc;
-	  char *sigstr;
-          char *reason_text = NULL;
-          char *reason_comment = NULL;
-          size_t reason_commentlen;
-
-	  if (listctx->check_sigs)
-	    {
-	      rc = check_key_signature (ctrl, keyblock, node, NULL);
-	      switch (gpg_err_code (rc))
-		{
-		case 0:
-		  listctx->good_sigs++;
-		  sigrc = '!';
-		  break;
-		case GPG_ERR_BAD_SIGNATURE:
-		  listctx->inv_sigs++;
-		  sigrc = '-';
-		  break;
-		case GPG_ERR_NO_PUBKEY:
-		case GPG_ERR_UNUSABLE_PUBKEY:
-		  listctx->no_key++;
-		  continue;
-		default:
-		  listctx->oth_err++;
-		  sigrc = '%';
-		  break;
-		}
-
-	      /* TODO: Make sure a cached sig record here still has
-	         the pk that issued it.  See also
-	         keyedit.c:print_and_check_one_sig */
-	    }
-	  else
-	    {
-	      rc = 0;
-	      sigrc = ' ';
-	    }
-
-	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
-	      || sig->sig_class == 0x30)
+          if ((opt.list_options & LIST_SORT_SIGS))
             {
-              sigstr = "rev";
-              get_revocation_reason (sig, &reason_text,
-                                     &reason_comment, &reason_commentlen);
-            }
-	  else if ((sig->sig_class & ~3) == 0x10)
-	    sigstr = "sig";
-	  else if (sig->sig_class == 0x18)
-	    sigstr = "sig";
-	  else if (sig->sig_class == 0x1F)
-	    sigstr = "sig";
-	  else
-	    {
-	      es_fprintf (es_stdout, "sig                             "
-		      "[unexpected signature class 0x%02x]\n",
-		      sig->sig_class);
-	      continue;
-	    }
+              kbnode_t n;
+              unsigned int sigcount = 0;
+              kbnode_t *sigarray;
+              unsigned int idx;
 
-	  es_fputs (sigstr, es_stdout);
-	  es_fprintf (es_stdout, "%c%c %c%c%c%c%c%c %s %s",
-		  sigrc, (sig->sig_class - 0x10 > 0 &&
-			  sig->sig_class - 0x10 <
-			  4) ? '0' + sig->sig_class - 0x10 : ' ',
-		  sig->flags.exportable ? ' ' : 'L',
-		  sig->flags.revocable ? ' ' : 'R',
-		  sig->flags.policy_url ? 'P' : ' ',
-		  sig->flags.notation ? 'N' : ' ',
-		  sig->flags.expired ? 'X' : ' ',
-		  (sig->trust_depth > 9) ? 'T' : (sig->trust_depth >
-						  0) ? '0' +
-		  sig->trust_depth : ' ', keystr (sig->keyid),
-		  datestr_from_sig (sig));
-	  if (opt.list_options & LIST_SHOW_SIG_EXPIRE)
-	    es_fprintf (es_stdout, " %s", expirestr_from_sig (sig));
-	  es_fprintf (es_stdout, "  ");
-	  if (sigrc == '%')
-	    es_fprintf (es_stdout, "[%s] ", gpg_strerror (rc));
-	  else if (sigrc == '?')
-	    ;
-	  else if (!opt.fast_list_mode)
-	    {
-	      size_t n;
-	      char *p = get_user_id (ctrl, sig->keyid, &n, NULL);
-	      print_utf8_buffer (es_stdout, p, n);
-	      xfree (p);
-	    }
-	  es_putc ('\n', es_stdout);
+              for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
+                sigcount++;
+              sigarray = xcalloc (sigcount, sizeof *sigarray);
 
-	  if (sig->flags.policy_url
-	      && (opt.list_options & LIST_SHOW_POLICY_URLS))
-	    show_policy_url (sig, 3, 0);
-
-	  if (sig->flags.notation && (opt.list_options & LIST_SHOW_NOTATIONS))
-	    show_notation (sig, 3, 0,
-			   ((opt.
-			     list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
-			   +
-			   ((opt.
-			     list_options & LIST_SHOW_USER_NOTATIONS) ? 2 :
-			    0));
-
-	  if (sig->flags.pref_ks
-	      && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))
-	    show_keyserver_url (sig, 3, 0);
-
-          if (reason_text)
-            {
-              es_fprintf (es_stdout, "      %s%s\n",
-                          _("reason for revocation: "), reason_text);
-              if (reason_comment)
+              sigcount = 0;
+              for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
                 {
-                  const byte *s, *s_lf;
-                  size_t n, n_lf;
+                  if (!keyid_cmp (mainkid, n->pkt->pkt.signature->keyid))
+                    n->flag |= NODFLG_MARK_B;  /* Is a self-sig.  */
+                  else
+                    n->flag &= ~NODFLG_MARK_B;
 
-                  s = reason_comment;
-                  n = reason_commentlen;
-                  s_lf = NULL;
-                  do
-                    {
-                      /* We don't want any empty lines, so we skip them.  */
-                      for (;n && *s == '\n'; s++, n--)
-                        ;
-                      if (n)
-                        {
-                          s_lf = memchr (s, '\n', n);
-                          n_lf = s_lf? s_lf - s : n;
-                          es_fprintf (es_stdout, "         %s",
-                                      _("revocation comment: "));
-                          es_write_sanitized (es_stdout, s, n_lf, NULL, NULL);
-                          es_putc ('\n', es_stdout);
-                          s += n_lf; n -= n_lf;
-                        }
-                    } while (s_lf);
+                  sigarray[sigcount++] = node = n;
                 }
+              /* Note that NODE is now at the last signature.  */
+
+              qsort (sigarray, sigcount, sizeof *sigarray, cmp_signodes);
+
+              for (idx=0; idx < sigcount; idx++)
+                list_signature_print (ctrl, keyblock, sigarray[idx], listctx);
+              xfree (sigarray);
             }
-
-          xfree (reason_text);
-          xfree (reason_comment);
-
-	  /* fixme: check or list other sigs here */
+          else
+            list_signature_print (ctrl, keyblock, node, listctx);
 	}
     }
   es_putc ('\n', es_stdout);

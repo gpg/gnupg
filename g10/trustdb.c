@@ -1834,7 +1834,7 @@ search_skipfnc (void *opaque, u32 *kid, int dummy_uid_no)
 
 /*
  * Scan all keys and return a key_array of all suitable keys from
- * kllist.  The caller has to pass keydb handle so that we don't use
+ * klist.  The caller has to pass keydb handle so that we don't use
  * to create our own.  Returns either a key_array or NULL in case of
  * an error.  No results found are indicated by an empty array.
  * Caller hast to release the returned array.

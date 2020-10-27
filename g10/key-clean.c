@@ -37,8 +37,8 @@
 
 /*
  * Mark the signature of the given UID which are used to certify it.
- * To do this, we first revmove all signatures which are not valid and
- * from the remain ones we look for the latest one.  If this is not a
+ * To do this, we first remove all signatures which are not valid and
+ * from the remaining we look for the latest one.  If this is not a
  * certification revocation signature we mark the signature by setting
  * node flag bit 8.  Revocations are marked with flag 11, and sigs
  * from unavailable keys are marked with flag 12.  Note that flag bits

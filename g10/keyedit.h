@@ -33,6 +33,9 @@
 #define NODFLG_SELKEY (1<<9)	/* Indicate the selected key.  */
 #define NODFLG_SELSIG (1<<10)	/* Indicate a selected signature.  */
 
+#define NODFLG_MARK_B (1<<11)   /* Temporary mark in key listing code.  */
+
+
 /*-- keyedit.c --*/
 void keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		   strlist_t commands, int quiet, int seckey_check );

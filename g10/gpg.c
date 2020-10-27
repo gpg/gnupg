@@ -2040,6 +2040,8 @@ parse_list_options(char *str)
        NULL},
       {"show-only-fpr-mbox",LIST_SHOW_ONLY_FPR_MBOX, NULL,
        NULL},
+      {"sort-sigs", LIST_SORT_SIGS, NULL,
+       NULL},
       {NULL,0,NULL,NULL}
     };
 
@@ -2408,6 +2410,7 @@ main (int argc, char **argv)
                           | VERIFY_SHOW_STD_NOTATIONS
                           | VERIFY_SHOW_KEYSERVER_URLS);
     opt.list_options   = (LIST_SHOW_UID_VALIDITY
+                          | LIST_SORT_SIGS
                           | LIST_SHOW_USAGE);
 #ifdef NO_TRUST_MODELS
     opt.trust_model = TM_ALWAYS;
