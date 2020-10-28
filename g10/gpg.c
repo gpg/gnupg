@@ -129,6 +129,7 @@ enum cmd_and_opt_values
     aLSignKey,
     aQuickSignKey,
     aQuickLSignKey,
+    aQuickRevSig,
     aQuickAddUid,
     aQuickAddKey,
     aQuickRevUid,
@@ -499,6 +500,8 @@ static gpgrt_opt_t opts[] = {
               N_("quickly sign a key")),
   ARGPARSE_c (aQuickLSignKey, "quick-lsign-key",
               N_("quickly sign a key locally")),
+  ARGPARSE_c (aQuickRevSig,   "quick-revoke-sig" ,
+              N_("quickly revoke a key signature")),
   ARGPARSE_c (aSignKey,  "sign-key"   ,N_("sign a key")),
   ARGPARSE_c (aLSignKey, "lsign-key"  ,N_("sign a key locally")),
   ARGPARSE_c (aEditKey,  "edit-key"   ,N_("sign or edit a key")),
@@ -2631,6 +2634,7 @@ main (int argc, char **argv)
 	  case aSign:
 	  case aQuickSignKey:
 	  case aQuickLSignKey:
+	  case aQuickRevSig:
 	  case aSignKey:
 	  case aLSignKey:
 	  case aStore:
@@ -4442,6 +4446,22 @@ main (int argc, char **argv)
           for( ; argc; argc--, argv++)
 	    append_to_strlist2 (&sl, *argv, utf8_strings);
           keyedit_quick_sign (ctrl, fpr, sl, locusr, (cmd == aQuickLSignKey));
+          free_strlist (sl);
+        }
+	break;
+
+      case aQuickRevSig:
+        {
+          const char *userid, *siguserid;
+
+          if (argc < 2)
+            wrong_args ("--quick-revoke-sig USER-ID SIG-USER-ID [userids]");
+          userid = *argv++; argc--;
+          siguserid = *argv++; argc--;
+          sl = NULL;
+          for( ; argc; argc--, argv++)
+	    append_to_strlist2 (&sl, *argv, utf8_strings);
+          keyedit_quick_revsig (ctrl, userid, siguserid, sl);
           free_strlist (sl);
         }
 	break;

@@ -940,7 +940,7 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 
 /* Order two signatures.  We first order by keyid and then by creation
  * time.  */
-static int
+int
 cmp_signodes (const void *av, const void *bv)
 {
   const kbnode_t an = *(const kbnode_t *)av;

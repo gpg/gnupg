@@ -889,6 +889,16 @@ get_default_uid_revocation_reason(void)
   return reason;
 }
 
+struct revocation_reason_info *
+get_default_sig_revocation_reason(void)
+{
+  struct revocation_reason_info *reason;
+  reason = xmalloc( sizeof *reason );
+  reason->code = 0; /* No specific reason given. */
+  reason->desc = strdup(""); /* no text */
+  return reason;
+}
+
 void
 release_revocation_reason_info( struct revocation_reason_info *reason )
 {

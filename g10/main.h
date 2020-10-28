@@ -457,8 +457,9 @@ int gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr);
 int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
 struct revocation_reason_info *
 		ask_revocation_reason( int key_rev, int cert_rev, int hint );
-struct revocation_reason_info * get_default_uid_revocation_reason(void);
-void release_revocation_reason_info( struct revocation_reason_info *reason );
+struct revocation_reason_info * get_default_uid_revocation_reason (void);
+struct revocation_reason_info * get_default_sig_revocation_reason (void);
+void release_revocation_reason_info (struct revocation_reason_info *reason);
 
 /*-- keylist.c --*/
 void public_key_list (ctrl_t ctrl, strlist_t list,
@@ -468,6 +469,7 @@ void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
 void list_keyblock_direct (ctrl_t ctrl, kbnode_t keyblock, int secret,
                            int has_secret, int fpr, int no_validity);
+int  cmp_signodes (const void *av, const void *bv);
 void print_fingerprint (ctrl_t ctrl, estream_t fp,
                         PKT_public_key *pk, int mode);
 void print_revokers (estream_t fp, PKT_public_key *pk);

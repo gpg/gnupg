@@ -1147,6 +1147,17 @@ you want to specify a different revocation reason, or to supply
 supplementary revocation text, you should use the interactive
 sub-command @code{revuid} of @option{--edit-key}.
 
+@item --quick-revoke-sig  @var{fpr} @var{signing-fpr} [@var{names}]
+@opindex quick-revoke-sig
+This command revokes the key signatures made by @var{signing-fpr} from
+the key specified by the fingerprint @var{fpr}.  With @var{names}
+given only the signatures on user ids of the key matching any of the
+given names are affected (see @option{--quick-sign-key}).  If a
+revocation already exists a notice is printed instead of creating a
+new revocation; no error is returned in this case.  Note that key
+signature revocations may be superseded by a newer key signature and
+in turn again revoked.
+
 @item --quick-set-primary-uid  @var{user-id} @var{primary-user-id}
 @opindex quick-set-primary-uid
 This command sets or updates the primary user ID flag on an existing

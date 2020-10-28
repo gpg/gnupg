@@ -2278,7 +2278,7 @@ leave:
  * Returns on success the key database handle at R_KDBHD and the
  * keyblock at R_KEYBLOCK.  */
 static gpg_error_t
-quick_find_keyblock (ctrl_t ctrl, const char *username,
+quick_find_keyblock (ctrl_t ctrl, const char *username, int want_secret,
                      KEYDB_HANDLE *r_kdbhd, kbnode_t *r_keyblock)
 {
   gpg_error_t err;
@@ -2321,7 +2321,7 @@ quick_find_keyblock (ctrl_t ctrl, const char *username,
         err = 0;
       keydb_pop_found_state (kdbhd);
 
-      if (!err)
+      if (!err && want_secret)
         {
           /* We require the secret primary key to set the primary UID.  */
           node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -2379,7 +2379,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 #endif
 
   /* Search the key; we don't want the whole getkey stuff here.  */
-  err = quick_find_keyblock (ctrl, username, &kdbhd, &keyblock);
+  err = quick_find_keyblock (ctrl, username, 1, &kdbhd, &keyblock);
   if (err)
     goto leave;
 
@@ -2422,7 +2422,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
 #endif
 
   /* Search the key; we don't want the whole getkey stuff here.  */
-  err = quick_find_keyblock (ctrl, username, &kdbhd, &keyblock);
+  err = quick_find_keyblock (ctrl, username, 1, &kdbhd, &keyblock);
   if (err)
     goto leave;
 
@@ -2502,7 +2502,7 @@ keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
   check_trustdb_stale (ctrl);
 #endif
 
-  err = quick_find_keyblock (ctrl, username, &kdbhd, &keyblock);
+  err = quick_find_keyblock (ctrl, username, 1, &kdbhd, &keyblock);
   if (err)
     goto leave;
 
@@ -2758,6 +2758,240 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
 
 
  leave:
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+}
+
+
+/* Unattended revocation of a key signatures.  USERNAME specifies the
+ * key; this should best be a fingerprint. SIGTOREV is the user-id of
+ * the key for which the key signature shall be removed.  Only
+ * non-self-signatures can be removed with this functions.  If
+ * AFFECTED_UIDS is not NULL only the key signatures on these user-ids
+ * are revoked. */
+void
+keyedit_quick_revsig (ctrl_t ctrl, const char *username, const char *sigtorev,
+                      strlist_t affected_uids)
+{
+  gpg_error_t err;
+  int no_signing_key = 0;
+  KEYDB_HANDLE kdbhd = NULL;
+  kbnode_t keyblock = NULL;
+  PKT_public_key *primarypk;  /* Points into KEYBLOCK.  */
+  u32 *primarykid;
+  PKT_public_key *pksigtorev = NULL;
+  u32 *pksigtorevkid;
+  kbnode_t node, n;
+  int skip_remaining;
+  int consider_sig;
+  strlist_t sl;
+  struct sign_attrib attrib = { 0 };
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale (ctrl);
+#endif
+
+  /* Search the key; we don't want the whole getkey stuff here.  Noet
+   * that we are looking for the public key here.  */
+  err = quick_find_keyblock (ctrl, username, 0, &kdbhd, &keyblock);
+  if (err)
+    goto leave;
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
+              || keyblock->pkt->pkttype == PKT_SECRET_KEY);
+  primarypk = keyblock->pkt->pkt.public_key;
+  primarykid = pk_keyid (primarypk);
+
+  /* Get the signing key we want to revoke.  This must be one of our
+   * signing keys.  We will compare only the keyid because we don't
+   * assume that we have duplicated keyids on our own secret keys.  If
+   * a there is a duplicated one we will notice this when creating the
+   * revocation.  */
+  pksigtorev = xtrycalloc (1, sizeof *pksigtorev);
+  if (!pksigtorev)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  pksigtorev->req_usage = PUBKEY_USAGE_CERT;
+  err = getkey_byname (ctrl, NULL, pksigtorev, sigtorev, 1, NULL);
+  if (err)
+    {
+      no_signing_key = 1;
+      goto leave;
+    }
+  pksigtorevkid = pk_keyid (pksigtorev);
+
+  /* Find the signatures we want to revoke and set a mark.  */
+  skip_remaining = consider_sig = 0;
+  for (node = keyblock; node; node = node->next)
+    {
+      node->flag &= ~NODFLG_MARK_A;
+      if (skip_remaining)
+        ;
+      else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        skip_remaining = 1;
+      else if (node->pkt->pkttype == PKT_USER_ID)
+	{
+          PKT_user_id *uid = node->pkt->pkt.user_id;
+
+          consider_sig = !affected_uids;
+          for (sl = affected_uids; !consider_sig && sl; sl = sl->next)
+            {
+              const char *name = sl->d;
+
+              if (uid->attrib_data)
+                ;
+              else if (*name == '='
+                       && strlen (name+1) == uid->len
+                       && !memcmp (uid->name, name + 1, uid->len))
+                { /* Exact match.  */
+                  consider_sig = 1;
+                }
+              else if (ascii_memistr (uid->name, uid->len,
+                                      *name == '*'? name+1:name))
+                { /* Case-insensitive substring match.  */
+                  consider_sig = 1;
+                }
+            }
+	}
+      else if (node->pkt->pkttype == PKT_SIGNATURE)
+	{
+          /* We need to sort the signatures so that we can figure out
+           * whether the key signature has been revoked or the
+           * revocation has been superseded by a new key
+           * signature.  */
+          PKT_signature *sig;
+          unsigned int sigcount = 0;
+          kbnode_t *sigarray;
+
+          /* Allocate an array large enogh for all signatures.  */
+          for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
+            sigcount++;
+          sigarray = xtrycalloc (sigcount, sizeof *sigarray);
+          if (!sigarray)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+
+          /* Now fill the array with signatures we are interested in.
+           * We also move NODE forward to the end.  */
+          sigcount = 0;
+          for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; node=n, n=n->next)
+            {
+              sig = node->pkt->pkt.signature;
+              if (!keyid_cmp (primarykid, sig->keyid))
+                continue;  /* Ignore self-signatures.  */
+
+              if (keyid_cmp (pksigtorevkid, sig->keyid))
+                continue; /* Ignore non-matching signatures.  */
+
+              n->flag &= ~NODFLG_MARK_B; /* Clear flag used by cm_signode. */
+              sigarray[sigcount++] = n;
+            }
+
+          if (sigcount)
+            {
+              qsort (sigarray, sigcount, sizeof *sigarray, cmp_signodes);
+
+              /* log_debug ("Sorted signatures:\n"); */
+              /* for (idx=0; idx < sigcount; idx++) */
+              /*   { */
+              /*     sig = sigarray[idx]->pkt->pkt.signature; */
+              /*     log_debug ("%s 0x%02x %s\n", keystr (sig->keyid), */
+              /*                sig->sig_class, datestr_from_sig (sig)); */
+              /*   } */
+              sig = sigarray[sigcount-1]->pkt->pkt.signature;
+              if ((consider_sig || !affected_uids) && IS_UID_REV (sig))
+                {
+                  if (!opt.quiet)
+                    log_info ("sig by %s already revoked at %s\n",
+                              keystr (sig->keyid), datestr_from_sig (sig));
+                }
+              else if ((consider_sig && IS_UID_SIG (sig))
+                       || (!affected_uids && IS_KEY_SIG (sig)))
+                node->flag |= NODFLG_MARK_A;  /* Select signature.  */
+            }
+
+          xfree (sigarray);
+	}
+    }
+
+  /* Check whether any signatures were done by the given key.  We do
+   * not return an error if none were found.  */
+  for (node = keyblock; node; node = node->next)
+    if ((node->flag & NODFLG_MARK_A))
+      break;
+  if (!node)
+    {
+      if (opt.verbose)
+        log_info (_("Not signed by you.\n"));
+      err = 0;
+      goto leave;
+    }
+
+  /* Revoke all marked signatures.  */
+  attrib.reason = get_default_sig_revocation_reason ();
+
+ reloop: /* (we must repeat because we are modifying the list) */
+  for (node = keyblock; node; node = node->next)
+    {
+      kbnode_t unode;
+      PKT_signature *sig;
+      PACKET *pkt;
+
+      if (!(node->flag & NODFLG_MARK_A))
+	continue;
+      node->flag &= ~NODFLG_MARK_A;
+
+      if (IS_KEY_SIG (node->pkt->pkt.signature))
+        unode = NULL;
+      else
+        {
+          unode = find_prev_kbnode (keyblock, node, PKT_USER_ID);
+          log_assert (unode);
+        }
+
+      attrib.non_exportable = !node->pkt->pkt.signature->flags.exportable;
+
+      err = make_keysig_packet (ctrl, &sig, primarypk,
+                                unode? unode->pkt->pkt.user_id : NULL,
+                                NULL, pksigtorev, 0x30, 0, 0,
+                                sign_mk_attrib, &attrib, NULL);
+      if (err)
+        {
+          log_error ("signing failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+
+      pkt = xmalloc_clear (sizeof *pkt);
+      pkt->pkttype = PKT_SIGNATURE;
+      pkt->pkt.signature = sig;
+      if (unode)
+        insert_kbnode (unode, new_kbnode (pkt), 0);
+      goto reloop;
+    }
+
+  err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
+  if (err)
+    {
+      log_error (_("update failed: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+  revalidation_mark (ctrl);
+
+ leave:
+  if (err)
+    {
+      log_error (_("revoking the key signature failed: %s\n"),
+                 gpg_strerror (err));
+      if (no_signing_key)
+        print_further_info ("error getting key used to make the key signature");
+      write_status_error ("keyedit.revoke.sig", err);
+    }
+  release_revocation_reason_info (attrib.reason);
+  free_public_key (pksigtorev);
   release_kbnode (keyblock);
   keydb_release (kdbhd);
 }
@@ -5984,7 +6218,7 @@ core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
           memset (&attrib, 0, sizeof attrib);
           /* should not need to cast away const here; but
              revocation_reason_build_cb needs to take a non-const
-             void* in order to meet the function signutare for the
+             void* in order to meet the function signature for the
              mksubpkt argument to make_keysig_packet */
           attrib.reason = (struct revocation_reason_info *)reason;
 
