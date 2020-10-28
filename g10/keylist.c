@@ -893,6 +893,51 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 }
 
 
+/* Order two signatures.  We first order by keyid and then by creation
+ * time.  This is currently only used in keyedit.c  */
+int
+cmp_signodes (const void *av, const void *bv)
+{
+  const kbnode_t an = *(const kbnode_t *)av;
+  const kbnode_t bn = *(const kbnode_t *)bv;
+  const PKT_signature *a;
+  const PKT_signature *b;
+  int i;
+
+  /* log_assert (an->pkt->pkttype == PKT_SIGNATURE); */
+  /* log_assert (bn->pkt->pkttype == PKT_SIGNATURE); */
+
+  a = an->pkt->pkt.signature;
+  b = bn->pkt->pkt.signature;
+
+  /* Self-signatures are ordered first.  */
+  if ((an->flag & NODFLG_MARK_B) && !(bn->flag & NODFLG_MARK_B))
+    return -1;
+  if (!(an->flag & NODFLG_MARK_B) && (bn->flag & NODFLG_MARK_B))
+    return 1;
+
+  /* then the keyids.  (which are or course the same for self-sigs). */
+  i = keyid_cmp (a->keyid, b->keyid);
+  if (i)
+    return i;
+
+  /* Followed by creation time */
+  if (a->timestamp > b->timestamp)
+    return 1;
+  if (a->timestamp < b->timestamp)
+    return -1;
+
+  /* followed by the class in a way that a rev comes first.  */
+  if (a->sig_class > b->sig_class)
+    return 1;
+  if (a->sig_class < b->sig_class)
+    return -1;
+
+  /* To make the sort stable we compare the entire structure as last resort.  */
+  return memcmp (a, b, sizeof *a);
+}
+
+
 static void
 list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
                      struct keylist_context *listctx)
