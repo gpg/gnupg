@@ -257,6 +257,25 @@ checksum_mpi (gcry_mpi_t a)
   byte *buffer;
   size_t nbytes;
 
+  /*
+   * This code can be skipped when gcry_mpi_print
+   * supports opaque MPI.
+   */
+  if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    {
+      const byte *p;
+      unsigned int nbits;
+
+      p = gcry_mpi_get_opaque (a, &nbits);
+      if (!p)
+        return 0;
+
+      csum = nbits >> 8;
+      csum += (nbits & 0xff);
+      csum += checksum (p, (nbits+7)/8);
+      return csum;
+    }
+
   if ( gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, a) )
     BUG ();
   /* Fixme: For numbers not in secure memory we should use a stack
