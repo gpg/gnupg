@@ -2880,7 +2880,7 @@ keyedit_quick_revsig (ctrl_t ctrl, const char *username, const char *sigtorev,
           sigcount = 0;
           for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; node=n, n=n->next)
             {
-              sig = node->pkt->pkt.signature;
+              sig = n->pkt->pkt.signature;
               if (!keyid_cmp (primarykid, sig->keyid))
                 continue;  /* Ignore self-signatures.  */
 
