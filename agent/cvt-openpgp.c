@@ -158,7 +158,7 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
           if (!strcmp (curve, "Ed25519"))
             /* Do not store the OID as name but the real name and the
                EdDSA flag.  */
-            format = "(private-key(ecc(curve %s)(flags eddsa)(q%m)(d%m)))";
+            format = "(private-key(ecc(curve %s)(flags eddsa)(q%m)(d%M)))";
           else if (!strcmp (curve, "Curve25519"))
             format = "(private-key(ecc(curve %s)(flags djb-tweak)(q%m)(d%m)))";
           else
