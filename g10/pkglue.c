@@ -71,7 +71,7 @@ sexp_extract_param_sos (gcry_sexp_t sexp, const char *param, gcry_mpi_t *r_sos)
           unsigned int nbits = buflen*8;
           unsigned char *p = p0;
 
-          if (nbits >= 8 && !(*p & 0x80))
+          if (*p && nbits >= 8 && !(*p & 0x80))
             if (--nbits >= 7 && !(*p & 0x40))
               if (--nbits >= 6 && !(*p & 0x20))
                 if (--nbits >= 5 && !(*p & 0x10))

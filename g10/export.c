@@ -985,7 +985,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
           unsigned int nbits = valuelen*8;
           const unsigned char *p = value;
 
-          if (nbits >= 8 && !(*p & 0x80))
+          if (*p && nbits >= 8 && !(*p & 0x80))
             if (--nbits >= 7 && !(*p & 0x40))
               if (--nbits >= 6 && !(*p & 0x20))
                 if (--nbits >= 5 && !(*p & 0x10))
