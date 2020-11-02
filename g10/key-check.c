@@ -587,9 +587,19 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
                   char buffer[1024];
                   size_t len;
                   char *printable;
-                  gcry_mpi_print (GCRYMPI_FMT_USG,
-                                  buffer, sizeof (buffer), &len,
-                                  sig->data[i]);
+                  if (gcry_mpi_get_flag (sig->data[i], GCRYMPI_FLAG_OPAQUE))
+                    {
+                      const byte *sigdata;
+                      unsigned int nbits;
+
+                      sigdata = gcry_mpi_get_opaque (sig->data[i], &nbits);
+                      len = (nbits+7)/8;
+                      memcpy (buffer, sigdata, len);
+                    }
+                  else
+                    gcry_mpi_print (GCRYMPI_FMT_USG,
+                                    buffer, sizeof (buffer), &len,
+                                    sig->data[i]);
                   printable = bin2hex (buffer, len, NULL);
                   log_debug ("        %d: %s\n", i, printable);
                   xfree (printable);
