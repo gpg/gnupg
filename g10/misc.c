@@ -917,6 +917,11 @@ pct_expando(const char *string,struct expando_args *args)
   u32 pk_keyid[2]={0,0},sk_keyid[2]={0,0};
   char *ret=NULL;
 
+  /* The parser below would return NULL for an empty string, thus we
+   * catch it here.  Also catch NULL here. */
+  if (!string || !*string)
+    return xstrdup ("");
+
   if(args->pk)
     keyid_from_pk(args->pk,pk_keyid);
 
