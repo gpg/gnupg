@@ -646,7 +646,7 @@ hash_for (PKT_public_key *pk)
     {
       return opt.def_digest_algo;
     }
-  else if (recipient_digest_algo)
+  else if (recipient_digest_algo && !is_weak_digest (recipient_digest_algo))
     {
       return recipient_digest_algo;
     }
@@ -1204,6 +1204,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
               && ((algo = select_algo_from_prefs (pk_list, PREFTYPE_HASH,
                                                   -1, &hint)) > 0))
             {
+              /* Note that we later check that the algo is not weak.  */
               recipient_digest_algo = algo;
             }
         }
