@@ -255,7 +255,7 @@ check_signature2 (ctrl_t ctrl,
       nbytes = 6;
       for (i=0; i < nsig; i++ )
         {
-          if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0, &n, sig->data[i]))
+          if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &n, sig->data[i]))
             BUG();
           nbytes += n;
         }
