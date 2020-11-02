@@ -311,12 +311,11 @@ print_cipher_algo_note (cipher_algo_t algo)
 void
 print_digest_algo_note (digest_algo_t algo)
 {
-  const enum gcry_md_algos galgo = map_md_openpgp_to_gcry (algo);
-  const struct weakhash *weak;
-
   if(algo >= 100 && algo <= 110)
     {
       static int warn=0;
+      const enum gcry_md_algos galgo = map_md_openpgp_to_gcry (algo);
+
       if(!warn)
 	{
 	  warn=1;
@@ -325,14 +324,13 @@ print_digest_algo_note (digest_algo_t algo)
                     gcry_md_algo_name (galgo));
 	}
     }
-  else
-      for (weak = opt.weak_digests; weak != NULL; weak = weak->next)
-        if (weak->algo == galgo)
-          {
-            es_fflush (es_stdout);
-            log_info (_("WARNING: digest algorithm %s is deprecated\n"),
-                      gcry_md_algo_name (galgo));
-          }
+  else if (is_weak_digest (algo))
+    {
+      const enum gcry_md_algos galgo = map_md_openpgp_to_gcry (algo);
+      es_fflush (es_stdout);
+      log_info (_("WARNING: digest algorithm %s is deprecated\n"),
+                gcry_md_algo_name (galgo));
+    }
 }
 
 
@@ -1859,4 +1857,18 @@ additional_weak_digest (const char* digestname)
   weak->rejection_shown = 0;
   weak->next = opt.weak_digests;
   opt.weak_digests = weak;
+}
+
+
+/* Return true if ALGO is in the list of weak digests.  */
+int
+is_weak_digest (digest_algo_t algo)
+{
+  const enum gcry_md_algos galgo = map_md_openpgp_to_gcry (algo);
+  const struct weakhash *weak;
+
+  for (weak = opt.weak_digests; weak; weak = weak->next)
+    if (weak->algo == galgo)
+      return 1;
+  return 0;
 }

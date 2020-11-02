@@ -95,6 +95,7 @@ void print_sha1_keysig_rejected_note (void);
 void print_reported_error (gpg_error_t err, gpg_err_code_t skip_if_ec);
 void print_further_info (const char *format, ...) GPGRT_ATTR_PRINTF(1,2);
 void additional_weak_digest (const char* digestname);
+int  is_weak_digest (digest_algo_t algo);
 
 /*-- armor.c --*/
 char *make_radix64_string( const byte *data, size_t len );
