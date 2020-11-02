@@ -1448,7 +1448,6 @@ AC_CHECK_FUNCS([getpeerucred])
 #
 # W32 specific test
 #
-GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
 
 
 #
