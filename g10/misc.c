@@ -241,7 +241,7 @@ checksum_u16( unsigned n )
 
 
 u16
-checksum( byte *p, unsigned n )
+checksum (const byte *p, unsigned n)
 {
     u16 a;
 

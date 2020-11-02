@@ -110,7 +110,7 @@ void unregister_secured_file (const char *fname);
 int  is_secured_file (int fd);
 int  is_secured_filename (const char *fname);
 u16 checksum_u16( unsigned n );
-u16 checksum( byte *p, unsigned n );
+u16 checksum( const byte *p, unsigned n );
 u16 checksum_mpi( gcry_mpi_t a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
