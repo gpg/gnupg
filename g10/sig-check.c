@@ -255,7 +255,14 @@ check_signature2 (ctrl_t ctrl,
       nbytes = 6;
       for (i=0; i < nsig; i++ )
         {
-          if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &n, sig->data[i]))
+          if (gcry_mpi_get_flag (sig->data[i], GCRYMPI_FLAG_OPAQUE))
+            {
+              unsigned int nbits;
+
+              gcry_mpi_get_opaque (sig->data[i], &nbits);
+              n = (nbits+7)/8 + 2;
+            }
+          else if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &n, sig->data[i]))
             BUG();
           nbytes += n;
         }
@@ -276,7 +283,19 @@ check_signature2 (ctrl_t ctrl,
       nbytes -= 6;
       for (i=0; i < nsig; i++ )
         {
-          if (gcry_mpi_print (GCRYMPI_FMT_PGP, p, nbytes, &n, sig->data[i]))
+          if (gcry_mpi_get_flag (sig->data[i], GCRYMPI_FLAG_OPAQUE))
+            {
+              const byte *sigdata;
+              unsigned int nbits;
+
+              sigdata = gcry_mpi_get_opaque (sig->data[i], &nbits);
+              n = (nbits+7)/8;
+              p[0] = nbits >> 8;
+              p[1] = (nbits & 0xff);
+              memcpy (p+2, sigdata, n);
+              n += 2;
+            }
+          else if (gcry_mpi_print (GCRYMPI_FMT_PGP, p, nbytes, &n, sig->data[i]))
             BUG();
           p += n;
           nbytes -= n;
