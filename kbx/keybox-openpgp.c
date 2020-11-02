@@ -369,23 +369,24 @@ parse_key (const unsigned char *data, size_t datalen,
 
   /* Note: Starting here we need to jump to leave on error. */
 
-  /* Make sure the MPIs are unsigned.  */
-  for (i=0; i < npkey; i++)
-    {
-      if (!keyparm[i].len || (keyparm[i].mpi[0] & 0x80))
-        {
-          helpmpibuf[i] = xtrymalloc (1+keyparm[i].len);
-          if (!helpmpibuf[i])
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          helpmpibuf[i][0] = 0;
-          memcpy (helpmpibuf[i]+1, keyparm[i].mpi, keyparm[i].len);
-          keyparm[i].mpi = helpmpibuf[i];
-          keyparm[i].len++;
-        }
-    }
+  /* For non-ECC, make sure the MPIs are unsigned.  */
+  if (!is_ecc)
+    for (i=0; i < npkey; i++)
+      {
+        if (!keyparm[i].len || (keyparm[i].mpi[0] & 0x80))
+          {
+            helpmpibuf[i] = xtrymalloc (1+keyparm[i].len);
+            if (!helpmpibuf[i])
+              {
+                err = gpg_error_from_syserror ();
+                goto leave;
+              }
+            helpmpibuf[i][0] = 0;
+            memcpy (helpmpibuf[i]+1, keyparm[i].mpi, keyparm[i].len);
+            keyparm[i].mpi = helpmpibuf[i];
+            keyparm[i].len++;
+          }
+      }
 
   err = keygrip_from_keyparm (algorithm, keyparm, ki->grip);
   if (err)
