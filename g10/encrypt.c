@@ -195,7 +195,11 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       if (rc)
         {
           iobuf_close (inp);
-          log_error (_("error creating passphrase: %s\n"), gpg_strerror (rc));
+          if (gpg_err_code (rc) == GPG_ERR_CIPHER_ALGO
+              || gpg_err_code (rc) == GPG_ERR_DIGEST_ALGO)
+            ; /* Error has already been printed.  */
+          else
+            log_error (_("error creating passphrase: %s\n"), gpg_strerror (rc));
           release_progress_context (pfx);
           return rc;
         }
@@ -373,12 +377,33 @@ gpg_error_t
 setup_symkey (STRING2KEY **symkey_s2k, DEK **symkey_dek)
 {
   int canceled;
+  int defcipher;
+  int s2kdigest;
+
+  defcipher = default_cipher_algo ();
+  if (!gnupg_cipher_is_allowed (opt.compliance, 1, defcipher,
+                                GCRY_CIPHER_MODE_CFB))
+    {
+      log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
+		 openpgp_cipher_algo_name (defcipher),
+		 gnupg_compliance_option_string (opt.compliance));
+      return gpg_error (GPG_ERR_CIPHER_ALGO);
+    }
+
+  s2kdigest = S2K_DIGEST_ALGO;
+  if (!gnupg_digest_is_allowed (opt.compliance, 1, s2kdigest))
+    {
+      log_error (_("digest algorithm '%s' may not be used in %s mode\n"),
+		 gcry_md_algo_name (s2kdigest),
+		 gnupg_compliance_option_string (opt.compliance));
+      return gpg_error (GPG_ERR_DIGEST_ALGO);
+    }
 
   *symkey_s2k = xmalloc_clear (sizeof **symkey_s2k);
   (*symkey_s2k)->mode = opt.s2k_mode;
-  (*symkey_s2k)->hash_algo = S2K_DIGEST_ALGO;
+  (*symkey_s2k)->hash_algo = s2kdigest;
 
-  *symkey_dek = passphrase_to_dek (default_cipher_algo (),
+  *symkey_dek = passphrase_to_dek (defcipher,
                                    *symkey_s2k, 1, 0, NULL, &canceled);
   if (!*symkey_dek || !(*symkey_dek)->keylen)
     {
