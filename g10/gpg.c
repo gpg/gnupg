@@ -2239,7 +2239,9 @@ set_compliance_option (enum cmd_and_opt_values option)
       set_compliance_option (oOpenPGP);
       opt.compliance = CO_DE_VS;
       opt.def_aead_algo = 0;
-      /* Fixme: Change other options.  */
+      /* We divert here from the backward compatible rfc4880 algos.  */
+      opt.s2k_digest_algo = DIGEST_ALGO_SHA256;
+      opt.s2k_cipher_algo = CIPHER_ALGO_AES256;
       break;
 
     default:
