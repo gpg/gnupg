@@ -31,6 +31,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
@@ -679,9 +682,9 @@ isotimestamp (u32 stamp)
 const char *
 asctimestamp (u32 stamp)
 {
-  static char buffer[50];
+  static char buffer[80];
 #if defined (HAVE_STRFTIME) && defined (HAVE_NL_LANGINFO)
-  static char fmt[50];
+  static char fmt[80];
 #endif
   struct tm *tp;
   time_t atime = stamp;
@@ -707,6 +710,32 @@ asctimestamp (u32 stamp)
      zone at all.  */
   strftime (buffer, DIM(buffer)-1, "%c", tp);
 # else
+#  if HAVE_W32_SYSTEM
+  {
+    static int done;
+
+    if (!done)
+      {
+        /* The locale names as used by Windows are in the form
+         * "German_Germany.1252" or "German_Austria.1252" with
+         * alternate names similar to Unix, e.g. "de-DE".  However
+         * that is the theory.  On current Windows and Mingw the
+         * alternate names do not work.  We would need a table to map
+         * them from the short names as provided by gpgrt to the long
+         * names and append some code page.  For now we use "" and
+         * take the locale from the user's system settings.  Thus the
+         * standard Unix envvars don't work for time and may mismatch
+         * with the string translations.  The new UCRT available since
+         * 2018 has a lot of additional support but that will for sure
+         * break other things.  We should move to ISO strings to get
+         * rid of such problems.  */
+        setlocale (LC_TIME, "");
+        done = 1;
+        /* log_debug ("LC_ALL  now '%s'\n", setlocale (LC_ALL, NULL)); */
+        /* log_debug ("LC_TIME now '%s'\n", setlocale (LC_TIME, NULL)); */
+      }
+  }
+#  endif
    /* FIXME: we should check whether the locale appends a " %Z" These
     * locales from glibc don't put the " %Z": fi_FI hr_HR ja_JP lt_LT
     * lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN.  */
