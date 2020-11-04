@@ -73,6 +73,9 @@ and then manually edited:
       <Component Id="cmpAF601EA2DF4EFD403CBF65A0D5162912" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="28A7D50E-4BC0-4A38-8420-52C5D1EB3F55">
         <File Id="fil00B1F6AD370147577D6F7C998ACE6121" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgconf.exe"/>
       </Component>
+      <Component Id="cmpAF601EA2DF4EFD403CBF65A0D5162922" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="EEF227D9-1FA3-4A96-AF86-12D1FDC12925">
+        <File Id="fil00B1F6AD370147577D6F7C998ACE6122" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgconf-w32.exe"/>
+      </Component>
       <Component Id="cmp3BA8A06E4085F542FDAA78BAFB507AD4" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="E026569F-F37A-49FC-A529-68BDE3097218">
         <File Id="fil1A596ECA8DC19F8EC626168033269CFE" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpgme-w32spawn.exe"/>
       </Component>
