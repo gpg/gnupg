@@ -41,6 +41,7 @@
 #include "../common/i18n.h"
 #include "g13tuple.h"
 #include "../common/exectool.h"
+#include "../common/sysutils.h"
 #include "keyblob.h"
 
 /* The standard disk block size (logical).  */

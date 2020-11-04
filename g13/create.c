@@ -33,6 +33,7 @@
 #include "keyblob.h"
 #include "backend.h"
 #include "g13tuple.h"
+#include "../common/sysutils.h"
 #include "../common/call-gpg.h"
 
 /* Create a new blob with all the session keys and other meta
