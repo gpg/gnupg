@@ -971,6 +971,8 @@ get_default_pinentry_name (int reset)
     /* Try Gpg4win directory (with bin and without.) */
     { w32_rootdir, "\\..\\Gpg4win\\bin\\pinentry.exe" },
     { w32_rootdir, "\\..\\Gpg4win\\pinentry.exe" },
+    /* Try a pinentry in a dir above us */
+    { w32_rootdir, "\\..\\bin\\pinentry.exe" },
     /* Try old Gpgwin directory.  */
     { w32_rootdir, "\\..\\GNU\\GnuPG\\pinentry.exe" },
     /* Try a Pinentry from the common GNU dir.  */
