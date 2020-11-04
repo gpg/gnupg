@@ -77,6 +77,8 @@ libexec_PROGRAMS = gpg-wks-client
 bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit
+else
+bin_PROGRAMS += gpgconf-w32
 endif
 
 libexec_PROGRAMS += gpg-check-pattern
@@ -129,6 +131,10 @@ gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
 	        $(LIBICONV) $(W32SOCKLIBS) \
 	        $(gpgconf_robjs)
 gpgconf_LDFLAGS = $(extra_bin_ldflags)
+
+gpgconf_w32_SOURCES = $(gpgconf_SOURCES)
+gpgconf_w32_LDADD = $(gpgconf_LDADD)
+gpgconf_w32_LDFLAGS = $(gpgconf_LDFLAGS) -Wl,-subsystem,windows
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD =
