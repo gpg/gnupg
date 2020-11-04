@@ -64,6 +64,9 @@ and then manually edited:
       <Component Id="cmp6C1FB70721B208E33DB24296B93AB93F" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FE29D2AA-3151-4421-B8C0-355F69F267A1">
         <File Id="fil563D2C0464DCE7ECADE6E15C0FC65821" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-preset-passphrase.exe"/>
       </Component>
+      <Component Id="cmp6C1FB70721B208E33DB24296B93AB940" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FE29D2AA-3151-4421-B8C0-355F69F267A2">
+        <File Id="fil563D2C0464DCE7ECADE6E15C0FC65822" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-check-pattern.exe"/>
+      </Component>
       <Component Id="cmpB87CCF9DDCB6D9B36B92B0F9FA24FDC9" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="9BB809F3-C09B-4A1E-B52D-B68CBE59AE3B">
         <File Id="fil8A3F9D3F6E36120B183DDF4981D84C1B" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-wks-client.exe"/>
       </Component>
@@ -155,7 +158,13 @@ and then manually edited:
         <File Id="fil0615847C26E386E0B892124531F2ABBC" KeyPath="yes" Source="$(var.SourceDir)\lib\libnpth.dll.a" Name="libnpth.imp"/>
       </Component>
       <Component Id="cmp909B0412FDFCFD5092D93932AF982A72" Directory="dirC2E6BF1CC65903EA3A1AD83349586122" Guid="D30E7138-0D1C-48F4-8F53-E1EC6333F610">
-        <File Id="fil322067E40CE41C36574A7CC520D75876" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\vsnfd.prf" Name="VS-NfD.prf"/>
+        <File Id="fil322067E40CE41C36574A7CC520D75876" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\VS-NfD.prf" Name="VS-NfD.prf"/>
+      </Component>
+      <Component Id="cmp909B0412FDFCFD5092D93932AF982A73" Directory="dirC2E6BF1CC65903EA3A1AD83349586122" Guid="D30E7138-0D1C-48F4-8F53-E1EC6333F611">
+        <File Id="fil322067E40CE41C36574A7CC520D75877" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\Automatic.prf" Name="Automatic.prf"/>
+      </Component>
+      <Component Id="cmp909B0412FDFCFD5092D93932AF982A74" Directory="dirC2E6BF1CC65903EA3A1AD83349586122" Guid="D30E7138-0D1C-48F4-8F53-E1EC6333F612">
+        <File Id="fil322067E40CE41C36574A7CC520D75878" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\pwpattern.list" Name="pwpattern.list"/>
       </Component>
       <Component Id="cmp59D652F2B6BBFD90563BF58D6CE6BE7B" Directory="dirF4B1502A83344E3C92AB58989653B465" Guid="1C51D4AF-B308-40A3-B8D8-CEDA5AB2A383">
         <File Id="filCB1BD20C87EE88A17D7502E26268DA65" KeyPath="yes" Source="$(var.SourceDir)\share\gnupg\distsigkey.gpg"/>

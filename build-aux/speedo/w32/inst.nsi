@@ -627,6 +627,7 @@ Section "GnuPG" SEC_gnupg
   File "bin/gpgtar.exe"
   File "libexec/dirmngr_ldap.exe"
   File "libexec/gpg-preset-passphrase.exe"
+  File "libexec/gpg-check-pattern.exe"
   File "libexec/gpg-wks-client.exe"
 
   ClearErrors
@@ -656,6 +657,11 @@ Section "GnuPG" SEC_gnupg
   SetOutPath "$INSTDIR\share\gnupg"
   File "share/gnupg/distsigkey.gpg"
   File "share/gnupg/sks-keyservers.netCA.pem"
+
+  SetOutPath "$INSTDIR\share\doc\gnupg\examples"
+  File "share/doc/gnupg/examples/VS-NfD.prf"
+  File "share/doc/gnupg/examples/Automatic.prf"
+  File "share/doc/gnupg/examples/pwpattern.list"
 
   SetOutPath "$INSTDIR\share\locale\ca\LC_MESSAGES"
   File share/locale/ca/LC_MESSAGES/gnupg2.mo
@@ -1315,7 +1321,13 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpgtar.exe"
   Delete "$INSTDIR\bin\dirmngr_ldap.exe"
   Delete "$INSTDIR\bin\gpg-preset-passphrase.exe"
+  Delete "$INSTDIR\bin\gpg-check-pattern.exe"
   Delete "$INSTDIR\bin\gpg-wks-client.exe"
+
+  Delete "$INSTDIR\share\doc\gnupg\examples\VS-NfD.prf"
+  Delete "$INSTDIR\share\doc\gnupg\examples\Automatic.prf"
+  Delete "$INSTDIR\share\doc\gnupg\examples\pwpattern.list"
+  RMDir  "$INSTDIR\share\doc\gnupg\examples"
 
   Delete "$INSTDIR\share\gnupg\sks-keyservers.netCA.pem"
   Delete "$INSTDIR\share\gnupg\dirmngr-conf.skel"
