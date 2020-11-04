@@ -367,36 +367,18 @@ open_sigfile (const char *sigfilename, progress_filter_context_t *pfx)
 }
 
 
+/* Create the directory only if the supplied directory name is the
+   same as the default one.  This way we avoid to create arbitrary
+   directories when a non-default home directory is used.  To cope
+   with HOME, we do compare only the suffix if we see that the default
+   homedir does start with a tilde.  */
 void
 try_make_homedir (const char *fname)
 {
-  const char *defhome = standard_homedir ();
-
-  /* Create the directory only if the supplied directory name is the
-     same as the default one.  This way we avoid to create arbitrary
-     directories when a non-default home directory is used.  To cope
-     with HOME, we do compare only the suffix if we see that the
-     default homedir does start with a tilde.  */
   if ( opt.dry_run || opt.no_homedir_creation )
     return;
 
-  if (
-#ifdef HAVE_W32_SYSTEM
-      ( !compare_filenames (fname, defhome) )
-#else
-      ( *defhome == '~'
-        && (strlen(fname) >= strlen (defhome+1)
-            && !strcmp(fname+strlen(fname)-strlen(defhome+1), defhome+1 ) ))
-      || (*defhome != '~'  && !compare_filenames( fname, defhome ) )
-#endif
-      )
-    {
-      if (gnupg_mkdir (fname, "-rwx"))
-        log_fatal ( _("can't create directory '%s': %s\n"),
-                    fname, strerror(errno) );
-      else if (!opt.quiet )
-        log_info ( _("directory '%s' created\n"), fname );
-    }
+  gnupg_maybe_make_homedir (fname, opt.quiet);
 }
 
 

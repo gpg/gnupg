@@ -262,6 +262,7 @@ const char *openpgp_is_curve_supported (const char *name,
 const char *standard_homedir (void);
 const char *default_homedir (void);
 void gnupg_set_homedir (const char *newdir);
+void gnupg_maybe_make_homedir (const char *fname, int quiet);
 const char *gnupg_homedir (void);
 int gnupg_default_homedir_p (void);
 const char *gnupg_daemon_rootdir (void);

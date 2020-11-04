@@ -61,6 +61,7 @@
 
 #include "util.h"
 #include "sysutils.h"
+#include "i18n.h"
 #include "zb32.h"
 
 /* The GnuPG homedir.  This is only accessed by the functions
@@ -486,6 +487,38 @@ gnupg_set_homedir (const char *newdir)
   xfree (the_gnupg_homedir);
   the_gnupg_homedir = make_absfilename (newdir, NULL);;
   xfree (tmp);
+}
+
+
+/* Create the homedir directory only if the supplied directory name is
+ * the same as the default one.  This way we avoid to create arbitrary
+ * directories when a non-default home directory is used.  To cope
+ * with HOME, we do compare only the suffix if we see that the default
+ * homedir does start with a tilde.  If the mkdir fails the function
+ * terminates the process.  If QUIET is set not diagnostic is printed
+ * on homedir creation.  */
+void
+gnupg_maybe_make_homedir (const char *fname, int quiet)
+{
+  const char *defhome = standard_homedir ();
+
+  if (
+#ifdef HAVE_W32_SYSTEM
+      ( !compare_filenames (fname, defhome) )
+#else
+      ( *defhome == '~'
+        && (strlen(fname) >= strlen (defhome+1)
+            && !strcmp(fname+strlen(fname)-strlen(defhome+1), defhome+1 ) ))
+      || (*defhome != '~'  && !compare_filenames( fname, defhome ) )
+#endif
+      )
+    {
+      if (gnupg_mkdir (fname, "-rwx"))
+        log_fatal ( _("can't create directory '%s': %s\n"),
+                    fname, strerror(errno) );
+      else if (!quiet )
+        log_info ( _("directory '%s' created\n"), fname );
+    }
 }
 
 

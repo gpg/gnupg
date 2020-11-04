@@ -30,6 +30,7 @@ common/logging.c
 common/utf8conv.c
 common/dotlock.c
 common/init.c
+common/homedir.c
 
 g10/armor.c
 g10/build-packet.c
