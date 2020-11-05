@@ -1787,7 +1787,25 @@ ccid_require_get_status (ccid_driver_t handle)
      detect removal of a card and can detect removal of a reader.
   */
   if (handle->ep_intr >= 0)
-    return 0;
+    {
+      if (handle->id_vendor != VENDOR_SCM)
+        return 0;
+
+      /*
+       * For card reader with interrupt transfer support, ideally,
+       * removal is detected by intr_cb, but some card reader
+       * (e.g. SPR532) has a possible case of missing report to
+       * intr_cb, and another case of valid report to intr_cb.
+       *
+       * For such a reader, the removal should be able to be detected
+       * by PC_to_RDR_GetSlotStatus, too.  Thus, calls to
+       * ccid_slot_status should go on wire even if "on_wire" is not
+       * requested.
+       *
+       */
+      if (handle->transfer == NULL)
+        return 0;
+    }
 
   /* Libusb actually detects the removal of USB device in use.
      However, there is no good API to handle the removal (yet),
@@ -2148,19 +2166,16 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       /*
        * Communication failure by device side.
        * Possibly, it was forcibly suspended and resumed.
-       *
-       * For card reader with interrupt transfer support, ideally,
-       * removal is detected by intr_cb, but some card reader
-       * (e.g. SPR532) has a case of missing report to intr_cb.
        */
-      if (handle->ep_intr < 0 || handle->id_vendor == VENDOR_SCM)
+      if (handle->ep_intr < 0)
         {
           DEBUGOUT ("CCID: card inactive/removed\n");
           handle->powered_off = 1;
-#if defined(GNUPG_MAJOR_VERSION)
-          scd_kick_the_loop ();
-#endif
         }
+
+#if defined(GNUPG_MAJOR_VERSION)
+      scd_kick_the_loop ();
+#endif
     }
 
   return rc;
@@ -2427,10 +2442,7 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
       /* Setup interrupt transfer at the initial call of slot_status
          with ON_WIRE == 0 */
       if (handle->transfer == NULL)
-        {
-          ccid_setup_intr (handle);
-          ccid_vendor_specific_setup (handle);
-        }
+        ccid_setup_intr (handle);
 
       *statusbits = 0;
       return 0;
@@ -2899,6 +2911,7 @@ ccid_get_atr (ccid_driver_t handle,
       DEBUGOUT_1 ("IFSD has been set to %d\n", tpdu[3]);
     }
 
+  ccid_vendor_specific_setup (handle);
   return 0;
 }
 
