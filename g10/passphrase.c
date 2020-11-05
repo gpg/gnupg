@@ -409,7 +409,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
       if (*canceled)
         {
           xfree (pw);
-	  write_status( STATUS_MISSING_PASSPHRASE );
+	  write_status( STATUS_CANCELED_BY_USER );
           return NULL;
         }
     }
