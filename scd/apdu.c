@@ -3248,7 +3248,7 @@ apdu_send_direct (int slot, size_t extended_length,
     }
 #undef SHORT_RESULT_BUFFER_SIZE
 
-  if ((sw = trylock_slot (slot)))
+  if ((sw = lock_slot (slot)))
     {
       xfree (apdu_buffer);
       xfree (result_buffer);
