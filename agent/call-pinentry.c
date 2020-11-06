@@ -38,6 +38,7 @@
 #include <assuan.h>
 #include "../common/sysutils.h"
 #include "../common/i18n.h"
+#include "../common/zb32.h"
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX
@@ -51,6 +52,11 @@
    requests after some time.  1 minute seem to be a reasonable
    time. */
 #define LOCK_TIMEOUT  (1*60)
+
+/* Define the maximum tries to generate a pin for the GENPIN inquire */
+#define MAX_GENPIN_TRIES 10
+/* Define the number of characters to use for a generated pin */
+#define DEFAULT_GENPIN_BYTES (128 / 8)
 
 /* The assuan context of the current pinentry. */
 static assuan_context_t entry_ctx;
@@ -829,20 +835,40 @@ estimate_passphrase_quality (const char *pw)
   return ((length*10) / goodlength)*10;
 }
 
+static char *
+generate_pin (void)
+{
+  size_t nbytes = opt.min_passphrase_len;
+  void *rand = NULL;
+  char *generated = NULL;
+  if (nbytes < 8)
+    {
+      nbytes = DEFAULT_GENPIN_BYTES;
+    }
+  rand = gcry_random_bytes_secure (nbytes, GCRY_VERY_STRONG_RANDOM);
+  if (!rand)
+    {
+      log_error ("Failed to generate random pin\n");
+      return NULL;
+    }
+  generated = zb32_encode (rand, nbytes * 8);
+  gcry_free (rand);
+  return generated;
+}
 
-/* Handle the QUALITY inquiry. */
+/* Handle inquiries. */
 static gpg_error_t
-inq_quality (void *opaque, const char *line)
+inq_cb (void *opaque, const char *line)
 {
   assuan_context_t ctx = opaque;
   const char *s;
-  char *pin;
   int rc;
-  int percent;
-  char numbuf[20];
 
   if ((s = has_leading_keyword (line, "QUALITY")))
     {
+      char numbuf[20];
+      int percent;
+      char *pin;
       pin = unescape_passphrase_string (s);
       if (!pin)
         rc = gpg_error_from_syserror ();
@@ -856,6 +882,35 @@ inq_quality (void *opaque, const char *line)
           xfree (pin);
         }
     }
+  else if ((s = has_leading_keyword (line, "GENPIN")))
+    {
+      int tries;
+      char *pin;
+      for (tries = 0; tries < MAX_GENPIN_TRIES; tries ++)
+        {
+          pin = generate_pin ();
+          if (!pin)
+            {
+              log_error ("Failed to generate a pin \n");
+              rc = gpg_error (GPG_ERR_GENERAL);
+              break;
+            }
+          if (!check_passphrase_constraints (NULL, pin, 0, NULL))
+            {
+              rc = assuan_send_data (ctx, pin, strlen (pin));
+              xfree (pin);
+              break;
+            }
+          xfree (pin);
+          pin = NULL;
+        }
+      if (!pin)
+        {
+          log_error ("Failed to generate a pin after %i tries\n",
+                     MAX_GENPIN_TRIES);
+          rc = gpg_error (GPG_ERR_GENERAL);
+        }
+    }
   else
     {
       log_error ("unsupported inquiry '%s' from pinentry\n", line);
@@ -865,6 +920,57 @@ inq_quality (void *opaque, const char *line)
   return rc;
 }
 
+/* Helper to setup pinentry for genpin action. */
+static gpg_error_t
+setup_genpin (ctrl_t ctrl)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  char *tmpstr, *tmpstr2;
+  const char *tooltip;
+
+  (void)ctrl;
+
+  /* TRANSLATORS: This string is displayed by Pinentry as the label
+     for generating a passphrase.  */
+  tmpstr = try_percent_escape (L_("Generate"), "\t\r\n\f\v");
+  snprintf (line, DIM(line), "SETGENPIN %s", tmpstr? tmpstr:"");
+  xfree (tmpstr);
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc == 103 /*(Old assuan error code)*/
+      || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+    ; /* Ignore Unknown Command from old Pinentry versions.  */
+  else if (rc)
+    return rc;
+
+  tmpstr2 = gnupg_get_help_string ("pinentry.genpin.tooltip", 0);
+  if (tmpstr2)
+    tooltip = tmpstr2;
+  else
+    {
+      /* TRANSLATORS: This string is a tooltip, shown by pinentry when
+         hovering over the quality bar.  Please use an appropriate
+         string to describe what this is about.  The length of the
+         tooltip is limited to about 900 characters.  If you do not
+         translate this entry, a default english text (see source)
+         will be used. */
+      tooltip =  L_("pinentry.genpin.tooltip");
+      if (!strcmp ("pinentry.genpin.tooltip", tooltip))
+        tooltip = ("Generate a random passphrase.");
+    }
+  tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
+  xfree (tmpstr2);
+  snprintf (line, DIM(line), "SETGENPIN_TT %s", tmpstr? tmpstr:"");
+  xfree (tmpstr);
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc == 103 /*(Old assuan error code)*/
+          || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+    ; /* Ignore Unknown Command from old pinentry versions.  */
+  else if (rc)
+    return rc;
+
+  return 0;
+}
 
 /* Helper for agent_askpin and agent_get_passphrase.  */
 static gpg_error_t
@@ -1073,7 +1179,7 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
 
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, parm,
-                        inq_quality, entry_ctx,
+                        inq_cb, entry_ctx,
                         pinentry_status_cb, &parm->status);
   assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
   /* Most pinentries out in the wild return the old Assuan error code
@@ -1316,9 +1422,9 @@ agent_askpin (ctrl_t ctrl,
 
 /* Ask for the passphrase using the supplied arguments.  The returned
    passphrase needs to be freed by the caller.  PININFO is optional
-   and can be used to have constraints checinkg while the pinentry
+   and can be used to have constraints checking while the pinentry
    dialog is open (like what we do in agent_askpin).  This is very
-   similar to agent_akpin and we should eventually merge the two
+   similar to agent_askpin and we should eventually merge the two
    functions. */
 int
 agent_get_passphrase (ctrl_t ctrl,
@@ -1466,6 +1572,8 @@ agent_get_passphrase (ctrl_t ctrl,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
+
+      setup_genpin (ctrl);
     }
   pininfo->repeat_okay = 0;
   pininfo->status = 0;
