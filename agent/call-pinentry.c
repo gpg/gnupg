@@ -835,96 +835,104 @@ estimate_passphrase_quality (const char *pw)
   return ((length*10) / goodlength)*10;
 }
 
+
+/* Generate a random passphrase in zBase32 encoding (RFC-6189) to be
+ * used by pinetry to suggest a passphrase.  */
 static char *
 generate_pin (void)
 {
   size_t nbytes = opt.min_passphrase_len;
-  void *rand = NULL;
-  char *generated = NULL;
+  void *rand;
+  char *generated;
+
   if (nbytes < 8)
     {
       nbytes = DEFAULT_GENPIN_BYTES;
     }
-  rand = gcry_random_bytes_secure (nbytes, GCRY_VERY_STRONG_RANDOM);
+
+  rand = gcry_random_bytes_secure (nbytes, GCRY_STRONG_RANDOM);
   if (!rand)
     {
-      log_error ("Failed to generate random pin\n");
+      log_error ("failed to generate random pin\n");
       return NULL;
     }
+
   generated = zb32_encode (rand, nbytes * 8);
   gcry_free (rand);
   return generated;
 }
+
 
 /* Handle inquiries. */
 static gpg_error_t
 inq_cb (void *opaque, const char *line)
 {
   assuan_context_t ctx = opaque;
+  gpg_error_t err;
   const char *s;
-  int rc;
+  char *pin;
 
   if ((s = has_leading_keyword (line, "QUALITY")))
     {
       char numbuf[20];
       int percent;
-      char *pin;
+
       pin = unescape_passphrase_string (s);
       if (!pin)
-        rc = gpg_error_from_syserror ();
+        err = gpg_error_from_syserror ();
       else
         {
           percent = estimate_passphrase_quality (pin);
           if (check_passphrase_constraints (NULL, pin, 0, NULL))
             percent = -percent;
           snprintf (numbuf, sizeof numbuf, "%d", percent);
-          rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+          err = assuan_send_data (ctx, numbuf, strlen (numbuf));
           xfree (pin);
         }
     }
   else if ((s = has_leading_keyword (line, "GENPIN")))
     {
       int tries;
-      char *pin;
+
       for (tries = 0; tries < MAX_GENPIN_TRIES; tries ++)
         {
           pin = generate_pin ();
           if (!pin)
             {
-              log_error ("Failed to generate a pin \n");
-              rc = gpg_error (GPG_ERR_GENERAL);
-              break;
+              log_error ("failed to generate a passphrase\n");
+              err = gpg_error (GPG_ERR_GENERAL);
+              goto leave;
             }
           if (!check_passphrase_constraints (NULL, pin, 0, NULL))
             {
-              rc = assuan_send_data (ctx, pin, strlen (pin));
+              assuan_begin_confidential (ctx);
+              err = assuan_send_data (ctx, pin, strlen (pin));
+              assuan_end_confidential (ctx);
               xfree (pin);
-              break;
+              goto leave;
             }
           xfree (pin);
-          pin = NULL;
         }
-      if (!pin)
-        {
-          log_error ("Failed to generate a pin after %i tries\n",
-                     MAX_GENPIN_TRIES);
-          rc = gpg_error (GPG_ERR_GENERAL);
-        }
+      log_error ("failed to generate a passphrase after %i tries\n",
+                 MAX_GENPIN_TRIES);
+      err = gpg_error (GPG_ERR_GENERAL);
     }
   else
     {
       log_error ("unsupported inquiry '%s' from pinentry\n", line);
-      rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
+      err = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
-  return rc;
+ leave:
+  return err;
 }
+
 
 /* Helper to setup pinentry for genpin action. */
 static gpg_error_t
 setup_genpin (ctrl_t ctrl)
 {
-  int rc;
+  gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
   char *tmpstr, *tmpstr2;
   const char *tooltip;
@@ -933,15 +941,15 @@ setup_genpin (ctrl_t ctrl)
 
   /* TRANSLATORS: This string is displayed by Pinentry as the label
      for generating a passphrase.  */
-  tmpstr = try_percent_escape (L_("Generate"), "\t\r\n\f\v");
+  tmpstr = try_percent_escape (L_("Suggest"), "\t\r\n\f\v");
   snprintf (line, DIM(line), "SETGENPIN %s", tmpstr? tmpstr:"");
   xfree (tmpstr);
-  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc == 103 /*(Old assuan error code)*/
-      || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+  err = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (gpg_err_code (err) == 103 /*(Old assuan error code)*/
+      || gpg_err_code (err) == GPG_ERR_ASS_UNKNOWN_CMD)
     ; /* Ignore Unknown Command from old Pinentry versions.  */
-  else if (rc)
-    return rc;
+  else if (err)
+    return err;
 
   tmpstr2 = gnupg_get_help_string ("pinentry.genpin.tooltip", 0);
   if (tmpstr2)
@@ -949,28 +957,30 @@ setup_genpin (ctrl_t ctrl)
   else
     {
       /* TRANSLATORS: This string is a tooltip, shown by pinentry when
-         hovering over the quality bar.  Please use an appropriate
+         hovering over the generate button.  Please use an appropriate
          string to describe what this is about.  The length of the
          tooltip is limited to about 900 characters.  If you do not
          translate this entry, a default english text (see source)
-         will be used. */
-      tooltip =  L_("pinentry.genpin.tooltip");
+         will be used.  The strcmp th8ingy is tehre to dected a
+         non-translated string.  */
+      tooltip = L_("pinentry.genpin.tooltip");
       if (!strcmp ("pinentry.genpin.tooltip", tooltip))
-        tooltip = ("Generate a random passphrase.");
+        tooltip = L_("Suggest a random passphrase.");
     }
   tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
   xfree (tmpstr2);
   snprintf (line, DIM(line), "SETGENPIN_TT %s", tmpstr? tmpstr:"");
   xfree (tmpstr);
-  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc == 103 /*(Old assuan error code)*/
-          || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+  err = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (gpg_err_code (err) == 103 /*(Old assuan error code)*/
+          || gpg_err_code (err) == GPG_ERR_ASS_UNKNOWN_CMD)
     ; /* Ignore Unknown Command from old pinentry versions.  */
-  else if (rc)
-    return rc;
+  else if (err)
+    return err;
 
   return 0;
 }
+
 
 /* Helper for agent_askpin and agent_get_passphrase.  */
 static gpg_error_t
@@ -1008,9 +1018,9 @@ setup_qualitybar (ctrl_t ctrl)
          will be used. */
       tooltip =  L_("pinentry.qualitybar.tooltip");
       if (!strcmp ("pinentry.qualitybar.tooltip", tooltip))
-        tooltip = ("The quality of the text entered above.\n"
-                   "Please ask your administrator for "
-                   "details about the criteria.");
+        tooltip = L_("The quality of the text entered above.\n"
+                     "Please ask your administrator for "
+                     "details about the criteria.");
     }
   tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
   xfree (tmpstr2);
@@ -1573,7 +1583,7 @@ agent_get_passphrase (ctrl_t ctrl,
       if (rc)
         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
 
-      setup_genpin (ctrl);
+      (void)setup_genpin (ctrl);
     }
   pininfo->repeat_okay = 0;
   pininfo->status = 0;
