@@ -866,8 +866,14 @@ agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
 
 /* Send an APDU to the current card.  On success the status word is
  * stored at R_SW.  With HEXAPDU being NULL only a RESET command is
- * send to scd.  With HEXAPDU being the string "undefined" the command
- * "SERIALNO undefined" is send to scd.
+ * send to scd.  HEXAPDU may also be one of these special strings:
+ *
+ *   "undefined"       :: Send the command "SCD SERIALNO undefined"
+ *   "lock"            :: Send the command "SCD LOCK --wait"
+ *   "trylock"         :: Send the command "SCD LOCK"
+ *   "unlock"          :: Send the command "SCD UNLOCK"
+ *   "reset-keep-lock" :: Send the command "SCD RESET --keep-lock"
+ *
  * Used by:
  *  card-util.c
  */
@@ -887,6 +893,26 @@ agent_scd_apdu (const char *hexapdu, unsigned int *r_sw)
       err = assuan_transact (agent_ctx, "SCD RESET",
                              NULL, NULL, NULL, NULL, NULL, NULL);
 
+    }
+  else if (!strcmp (hexapdu, "reset-keep-lock"))
+    {
+      err = assuan_transact (agent_ctx, "SCD RESET --keep-lock",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+  else if (!strcmp (hexapdu, "lock"))
+    {
+      err = assuan_transact (agent_ctx, "SCD LOCK --wait",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+  else if (!strcmp (hexapdu, "trylock"))
+    {
+      err = assuan_transact (agent_ctx, "SCD LOCK",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+  else if (!strcmp (hexapdu, "unlock"))
+    {
+      err = assuan_transact (agent_ctx, "SCD UNLOCK",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
     }
   else if (!strcmp (hexapdu, "undefined"))
     {
