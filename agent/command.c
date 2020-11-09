@@ -3172,7 +3172,6 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "jent_active"))
     {
-#if GCRYPT_VERSION_NUMBER >= 0x010800
       char *buf;
       char *fields[5];
 
@@ -3184,9 +3183,6 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       else
         rc = gpg_error (GPG_ERR_FALSE);
       gcry_free (buf);
-#else
-      rc = gpg_error (GPG_ERR_FALSE);
-#endif
     }
   else if (!strcmp (line, "s2k_count_cal"))
     {

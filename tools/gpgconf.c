@@ -1003,11 +1003,9 @@ show_version_libgcrypt (estream_t fp)
   s = get_revision_from_blurb (gcry_check_version ("\x01\x01"), &n);
   es_fprintf (fp, "* Libgcrypt %s (%.*s)\n",
               gcry_check_version (NULL), n, s);
-#if GCRYPT_VERSION_NUMBER >= 0x010800
   s = gcry_get_config (0, NULL);
   if (s)
     es_fputs (s, fp);
-#endif
 }
 
 
