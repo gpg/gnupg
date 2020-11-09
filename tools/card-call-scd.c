@@ -421,9 +421,16 @@ store_serialno (const char *line)
 
 /* Send an APDU to the current card.  On success the status word is
  * stored at R_SW inless R_SW is NULL.  With HEXAPDU being NULL only a
- * RESET command is send to scd.  With HEXAPDU being the string
- * "undefined" the command "SERIALNO undefined" is send to scd.  If
- * R_DATA is not NULL the data without the status code is stored
+ * RESET command is send to scd.  HEXAPDU may also be one of theseo
+ * special strings:
+ *
+ *   "undefined"       :: Send the command "SCD SERIALNO undefined"
+ *   "lock"            :: Send the command "SCD LOCK --wait"
+ *   "trylock"         :: Send the command "SCD LOCK"
+ *   "unlock"          :: Send the command "SCD UNLOCK"
+ *   "reset-keep-lock" :: Send the command "SCD RESET --keep-lock"
+ *
+ * If R_DATA is not NULL the data without the status code is stored
  * there.  Caller must release it.  If OPTIONS is not NULL, this will
  * be passed verbatim to the SCDaemon's APDU command.  */
 gpg_error_t
@@ -446,6 +453,26 @@ scd_apdu (const char *hexapdu, const char *options, unsigned int *r_sw,
       err = assuan_transact (agent_ctx, "SCD RESET",
                              NULL, NULL, NULL, NULL, NULL, NULL);
 
+    }
+  else if (!strcmp (hexapdu, "reset-keep-lock"))
+    {
+      err = assuan_transact (agent_ctx, "SCD RESET --keep-lock",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+  else if (!strcmp (hexapdu, "lock"))
+    {
+      err = assuan_transact (agent_ctx, "SCD LOCK --wait",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+  else if (!strcmp (hexapdu, "trylock"))
+    {
+      err = assuan_transact (agent_ctx, "SCD LOCK",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+  else if (!strcmp (hexapdu, "unlock"))
+    {
+      err = assuan_transact (agent_ctx, "SCD UNLOCK",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
     }
   else if (!strcmp (hexapdu, "undefined"))
     {

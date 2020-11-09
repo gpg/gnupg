@@ -974,8 +974,9 @@ agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref, keypair_info_t *r_list)
 
 
 /* Send an APDU to the current card.  On success the status word is
- * stored at R_SW.  With HEXAPDU being NULL only a RESET command is
- * send to scd.  HEXAPDU may also be one of these special strings:
+ * stored at R_SW unless R_SQ is NULL.  With HEXAPDU being NULL only a
+ * RESET command is send to scd.  HEXAPDU may also be one of theseo
+ * special strings:
  *
  *   "undefined"       :: Send the command "SCD SERIALNO undefined"
  *   "lock"            :: Send the command "SCD LOCK --wait"

@@ -2922,6 +2922,7 @@ cmd_factoryreset (card_info_t info)
   int termstate = 0;
   int any_apdu = 0;
   int is_yubikey = 0;
+  int locked = 0;
   int i;
 
 
@@ -3026,7 +3027,7 @@ cmd_factoryreset (card_info_t info)
 
       if (is_yubikey)
         {
-          /* The PIV application si already selected, we only need to
+          /* If the PIV application is already selected, we only need to
            * send the special reset APDU after having blocked PIN and
            * PUK.  Note that blocking the PUK is done using the
            * unblock PIN command.  */
@@ -3044,9 +3045,15 @@ cmd_factoryreset (card_info_t info)
       else /* OpenPGP card.  */
         {
           any_apdu = 1;
-          /* We need to select a card application before we can send APDUs
-           * to the card without scdaemon doing anything on its own.  */
-          err = send_apdu (NULL, "RESET", 0, NULL, NULL);
+          /* We need to select a card application before we can send
+           * APDUs to the card without scdaemon doing anything on its
+           * own.  We then lock the connection so that other tools
+           * (e.g. Kleopatra) don't try a new select.  */
+          err = send_apdu ("lock", "locking connection ", 0, NULL, NULL);
+          if (err)
+            goto leave;
+          locked = 1;
+          err = send_apdu ("reset-keep-lock", "reset", 0, NULL, NULL);
           if (err)
             goto leave;
           err = send_apdu ("undefined", "dummy select ", 0, NULL, NULL);
@@ -3095,7 +3102,10 @@ cmd_factoryreset (card_info_t info)
     }
 
   /* Finally we reset the card reader once more.  */
-  err = send_apdu (NULL, "RESET", 0, NULL, NULL);
+  if (locked)
+    err = send_apdu ("reset-keep-lock", "reset", 0, NULL, NULL);
+  else
+    err = send_apdu (NULL, "RESET", 0, NULL, NULL);
   if (err)
     goto leave;
 
@@ -3123,6 +3133,8 @@ cmd_factoryreset (card_info_t info)
        *   scd serialno openpgp
        */
     }
+  if (locked)
+    send_apdu ("unlock", "unlocking connection ", 0, NULL, NULL);
   xfree (answer);
   return err;
 }

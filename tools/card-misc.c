@@ -92,8 +92,13 @@ send_apdu (const char *hexapdu, const char *desc, unsigned int ignore,
   if (err)
     log_error ("sending card command %s failed: %s\n", desc,
                gpg_strerror (err));
-  else if (!hexapdu || !strcmp (hexapdu, "undefined"))
-    ;
+  else if (!hexapdu
+           || !strcmp (hexapdu, "undefined")
+           || !strcmp (hexapdu, "reset-keep-lock")
+           || !strcmp (hexapdu, "lock")
+           || !strcmp (hexapdu, "trylock")
+           || !strcmp (hexapdu, "unlock"))
+    ; /* Ignore pseudo APDUs.  */
   else if (ignore == 0xffff)
     ; /* Ignore all status words.  */
   else if (sw != 0x9000)
