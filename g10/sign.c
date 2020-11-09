@@ -1095,7 +1095,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	       single hash for all signatures.  All this may well have
 	       to change as the cards add algorithms. */
 
-	    if (!smartcard || (smartcard && hint.digest_length==20)
+	    if ((!smartcard || (smartcard && hint.digest_length==20))
                 && (algo = select_algo_from_prefs(pk_list,PREFTYPE_HASH,
                                                   -1,&hint)) > 0)
                 {
