@@ -1,8 +1,55 @@
 Noteworthy changes in version 2.2.24 (unreleased)
 -------------------------------------------------
 
+  * Allow Unicode file names on Windows almost everywhere.  Note that
+    it is still not possible to use Unicode strings on the command
+    line.  This change also fixes a regression in 2.2.22 related to
+    non-ascii file names.  [#5098]
+
+  * Fix localized time printing on Windows.  [#5073]
+
+  * gpg: New command --quick-revoke-sig.  [#5093]
+
+  * gpg: Do not use weak digest algos if selected by recipient
+    preference during sign+encrypt.  [4c181d51a6]
+
+  * gpg: Switch to AES256 for symmetric encryption in de-vs mode.
+    [166e779634]
+
+  * gpg: Silence weak digest warnings with --quiet.  [#4893]
+
+  * gpg: Print new status line CANCELED_BY_USER for a cancel during
+    symmetric encryption.  [f05d1772c4]
+
+  * agent: Fix secret key import of GnuPG 2.3 generated Ed25519 keys.
+    [#5114]
+
+  * agent: Keep some permissions of private-keys-v1.d.  [#2312]
+
+  * dirmngr: Align sks-keyservers.netCA.pem use between ntbtls and
+    gnutls builds.  [e4f3b74c91]
+
+  * dirmngr: Fix the pool keyserver case for a single host in the
+    pool.  [72e04b03b1a7]
+
+  * scd: Fix the use case of verify_chv2 by CHECKPIN.  [61aea64b3c]
+
+  * scd: Various improvements to the ccid-driver.  [#4616,#5065]
+
+  * scd: Minor fixes for Yubikey [25bec16d0b]
+
+  * gpgconf: New option --show-versions.
+
+  * w32: Install gpg-check-pattern and example profiles.  Install
+    Windows subsystem variant of gpgconf (gpgconf-w32).
+
+  * i18n: Complete overhaul and completion of the Italian translation.
+    Thanks to Denis Renzi.
+
+  * Require Libgcrypt 1.8 because 1.7 has long reached end-of-life.
+
   Release-info: https://dev.gnupg.org/T5052
-  See-also: gnupg-announce/
+  See-also: gnupg-announce/2020q4/000449.html
 
 
 Noteworthy changes in version 2.2.23 (2020-09-03)
@@ -672,11 +719,16 @@ Noteworthy changes in version 2.2.6 (2018-04-09)
 
   * gpg: Print the keygrips in the --card-status.
 
+  * gpg: Improve the OpenPGP card's factory-reset.  [7f765a98fd]
+
   * scd: Support KDF DO setup.  [#3823]
 
   * scd: Fix some issues with PC/SC on Windows.  [#3825]
 
   * scd: Fix suspend/resume handling in the CCID driver.
+
+  * scd: Fix a race condition in the CCID driver leading to a segv for
+    some readers.  [#5121]
 
   * agent: Evict cached passphrases also via a timer.  [#3829]
 
