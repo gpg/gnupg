@@ -1159,14 +1159,31 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
   ndata = 20; /* Space for the SHA-1 checksum.  */
   for (i = npkey, j = 0; i < nskey; i++, j++ )
     {
-      err = gcry_mpi_aprint (GCRYMPI_FMT_USG, bufarr+j, narr+j, array[i]);
+      if (gcry_mpi_get_flag (array[i], GCRYMPI_FLAG_OPAQUE))
+        {
+          p = gcry_mpi_get_opaque (array[i], &nbits[j]);
+          narr[j] = (nbits[j] + 7)/8;
+          data = xtrymalloc_secure (narr[j]);
+          if (!data)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              memcpy (data, p, narr[j]);
+              bufarr[j] = data;
+              err = 0;
+            }
+        }
+      else
+        {
+          err = gcry_mpi_aprint (GCRYMPI_FMT_USG, bufarr+j, narr+j, array[i]);
+          nbits[j] = gcry_mpi_get_nbits (array[i]);
+        }
       if (err)
         {
           for (i = 0; i < j; i++)
             xfree (bufarr[i]);
           return err;
         }
-      nbits[j] = gcry_mpi_get_nbits (array[i]);
       ndata += 2 + narr[j];
     }
 
