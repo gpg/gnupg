@@ -149,9 +149,10 @@ hex_to_buffer (const char *string, size_t *r_length)
 
 /* Reset the card and free the application context.  With SEND_RESET
    set to true actually send a RESET to the reader; this is the normal
-   way of calling the function.  */
+   way of calling the function.  If KEEP_LOCK is set and the session
+   is locked that lock wil not be released.  */
 static void
-do_reset (ctrl_t ctrl, int send_reset)
+do_reset (ctrl_t ctrl, int send_reset, int keep_lock)
 {
   card_t card = ctrl->card_ctx;
 
@@ -159,7 +160,7 @@ do_reset (ctrl_t ctrl, int send_reset)
     card_reset (card, ctrl, IS_LOCKED (ctrl)? 0: send_reset);
 
   /* If we hold a lock, unlock now. */
-  if (locked_session && ctrl->server_local == locked_session)
+  if (!keep_lock && locked_session && ctrl->server_local == locked_session)
     {
       locked_session = NULL;
       log_info ("implicitly unlocking due to RESET\n");
@@ -173,9 +174,7 @@ reset_notify (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
-  (void) line;
-
-  do_reset (ctrl, 1);
+  do_reset (ctrl, 1, has_option (line, "--keep-lock"));
   return 0;
 }
 
@@ -1656,9 +1655,10 @@ cmd_lock (assuan_context_t ctx, char *line)
       npth_sleep (1); /* Better implement an event mechanism. However,
                          for card operations this should be
                          sufficient. */
-      /* FIXME: Need to check that the connection is still alive.
-         This can be done by issuing status messages. */
-      goto retry;
+      /* Send a progress so that we can detect a connection loss.  */
+      rc = send_status_printf (ctrl, "PROGRESS", "scd_locked . 0 0");
+      if (!rc)
+        goto retry;
     }
 #endif /*USE_NPTH*/
 
@@ -2372,7 +2372,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
     }
 
   /* Cleanup.  We don't send an explicit reset to the card.  */
-  do_reset (ctrl, 0);
+  do_reset (ctrl, 0, 0);
 
   /* Release the server object.  */
   if (session_list == ctrl->server_local)

@@ -1859,8 +1859,13 @@ send_apdu (const char *hexapdu, const char *desc, unsigned int ignore)
   if (err)
     tty_printf ("sending card command %s failed: %s\n", desc,
                 gpg_strerror (err));
-  else if (!hexapdu || !strcmp (hexapdu, "undefined"))
-    ;
+  else if (!hexapdu
+           || !strcmp (hexapdu, "undefined")
+           || !strcmp (hexapdu, "reset-keep-lock")
+           || !strcmp (hexapdu, "lock")
+           || !strcmp (hexapdu, "trylock")
+           || !strcmp (hexapdu, "unlock"))
+    ; /* Ignore pseudo APDUs.  */
   else if (ignore == 0xffff)
     ; /* Ignore all status words.  */
   else if (sw != 0x9000)
@@ -1889,6 +1894,7 @@ factory_reset (void)
   char *answer = NULL;
   int termstate = 0;
   int i;
+  int locked = 0;
 
   /*  The code below basically does the same what this
       gpg-connect-agent script does:
@@ -1950,8 +1956,14 @@ factory_reset (void)
         goto leave;
 
       /* We need to select a card application before we can send APDUs
-         to the card without scdaemon doing anything on its own.  */
-      err = send_apdu (NULL, "RESET", 0);
+         to the card without scdaemon doing anything on its own.  We
+         then lock the connection so that other tools (e.g. Kleopatra)
+         don't try a new select.  */
+      err = send_apdu ("lock", "locking connection ", 0);
+      if (err)
+        goto leave;
+      locked = 1;
+      err = send_apdu ("reset-keep-lock", "reset", 0);
       if (err)
         goto leave;
       err = send_apdu ("undefined", "dummy select ", 0);
@@ -1993,7 +2005,7 @@ factory_reset (void)
     goto leave;
 
   /* Finally we reset the card reader once more.  */
-  err = send_apdu (NULL, "RESET", 0);
+  err = send_apdu ("reset-keep-lock", "reset", 0);
 
   /* Then, connect the card again.  */
   if (!err)
@@ -2005,6 +2017,8 @@ factory_reset (void)
     }
 
  leave:
+  if (locked)
+    send_apdu ("unlock", "unlocking connection ", 0);
   xfree (answer);
   agent_release_card_info (&info);
 }
