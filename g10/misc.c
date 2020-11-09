@@ -339,6 +339,10 @@ print_digest_rejected_note (enum gcry_md_algos algo)
 {
   struct weakhash* weak;
   int show = 1;
+
+  if (opt.quiet)
+    return;
+
   for (weak = opt.weak_digests; weak; weak = weak->next)
     if (weak->algo == algo)
       {
@@ -364,7 +368,7 @@ print_sha1_keysig_rejected_note (void)
 {
   static int shown;
 
-  if (shown)
+  if (shown || opt.quiet)
     return;
 
   shown = 1;
