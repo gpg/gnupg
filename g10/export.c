@@ -2189,19 +2189,44 @@ key_to_sshblob (membuf_t *mb, const char *identifier, ...)
   va_start (arg_ptr, identifier);
   while ((a = va_arg (arg_ptr, gcry_mpi_t)))
     {
-      err = gcry_mpi_aprint (GCRYMPI_FMT_SSH, &buf, &buflen, a);
-      if (err)
-        break;
-      if (!strcmp (identifier, "ssh-ed25519")
-          && buflen > 5 && buf[4] == 0x40)
+      if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
         {
-          /* We need to strip our 0x40 prefix.  */
-          put_membuf (mb, "\x00\x00\x00\x20", 4);
-          put_membuf (mb, buf+5, buflen-5);
+          unsigned int nbits;
+          const unsigned char *p;
+
+          p = gcry_mpi_get_opaque (a, &nbits);
+          buflen = (nbits + 7) / 8;
+
+          if (!strcmp (identifier, "ssh-ed25519")
+              && buflen > 1 && p[0] == 0x40)
+            {
+              /* We need to strip our 0x40 prefix.  */
+              put_membuf (mb, "\x00\x00\x00\x20", 4);
+              put_membuf (mb, p+1, buflen-1);
+            }
+          else
+            {
+              unsigned char c;
+
+              c = buflen >> 24;
+              put_membuf (mb, &c, 1);
+              c = buflen >> 16;
+              put_membuf (mb, &c, 1);
+              c = buflen >> 8;
+              put_membuf (mb, &c, 1);
+              c = buflen;
+              put_membuf (mb, &c, 1);
+              put_membuf (mb, p, buflen);
+            }
         }
       else
-        put_membuf (mb, buf, buflen);
-      gcry_free (buf);
+        {
+          err = gcry_mpi_aprint (GCRYMPI_FMT_SSH, &buf, &buflen, a);
+          if (err)
+            break;
+          put_membuf (mb, buf, buflen);
+          gcry_free (buf);
+        }
     }
   va_end (arg_ptr);
   return err;
