@@ -2993,6 +2993,7 @@ agent_delete_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
   err = start_agent (ctrl, 0);
   if (err)
     return err;
+  dfltparm.ctx = agent_ctx;
 
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
