@@ -1100,9 +1100,33 @@ char *
 gnupg_getcwd (void)
 {
 #if GPGRT_VERSION_NUMBER < 0x012800 /* 1.40 */
-  /* We use the old code which is okay despite that it does not
-   * support Unicode on Windows.  For Windows this doesn't matter
-   * because we use the latest gpgrt anyway.  */
+# ifdef HAVE_W32_SYSTEM
+  wchar_t wbuffer[MAX_PATH + sizeof(wchar_t)];
+  DWORD wlen;
+  char *buf, *p;
+
+  wlen = GetCurrentDirectoryW (MAX_PATH, wbuffer);
+  if (!wlen)
+    {
+      gpg_err_set_errno (EINVAL);
+      return NULL;
+
+    }
+  else if (wlen > MAX_PATH)
+    {
+      gpg_err_set_errno (ENAMETOOLONG);
+      return NULL;
+    }
+  buf = wchar_to_utf8 (wbuffer);
+  if (buf)
+    {
+      for (p=buf; *p; p++)
+        if (*p == '\\')
+          *p = '/';
+    }
+  return buf;
+
+# else /*Unix*/
   char *buffer;
   size_t size = 100;
 
@@ -1111,18 +1135,14 @@ gnupg_getcwd (void)
       buffer = xtrymalloc (size+1);
       if (!buffer)
         return NULL;
-# ifdef HAVE_W32CE_SYSTEM
-      strcpy (buffer, "/");  /* Always "/".  */
-      return buffer;
-# else
       if (getcwd (buffer, size) == buffer)
         return buffer;
       xfree (buffer);
       if (errno != ERANGE)
         return NULL;
       size *= 2;
-# endif
     }
+# endif /*Unix*/
 #else
   return gpgrt_getcwd ();
 #endif
