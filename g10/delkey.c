@@ -151,7 +151,12 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
 
 
   if (opt.batch && exactmatch)
-    okay++;
+    {
+      if (!opt.answer_yes && secret)
+        log_error(_("can't do this in batch mode without \"--yes\"\n"));
+      else
+        okay++;
+    }
   else if (opt.batch && secret)
     {
       log_error(_("can't do this in batch mode\n"));
