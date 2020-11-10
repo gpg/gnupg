@@ -1967,7 +1967,7 @@ handle_inquire (assuan_context_t ctx, char *line)
         }
       else
         {
-          fp = fopen (d->file, "rb");
+          fp = gnupg_fopen (d->file, "rb");
           if (!fp)
             log_error ("error opening '%s': %s\n", d->file, strerror (errno));
           else if (opt.verbose)

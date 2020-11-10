@@ -524,7 +524,7 @@ main (int argc, char **argv )
   if (configname)
     {
       configlineno = 0;
-      configfp = fopen (configname, "r");
+      configfp = gnupg_fopen (configname, "r");
       if (!configfp)
         {
           if (default_config)

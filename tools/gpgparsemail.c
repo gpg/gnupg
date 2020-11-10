@@ -796,7 +796,7 @@ main (int argc, char **argv)
 
   if (argc && strcmp (*argv, "-"))
     {
-      FILE *fp = fopen (*argv, "rb");
+      FILE *fp = gnupg_fopen (*argv, "rb");
       if (!fp)
         die ("can't open '%s': %s", *argv, strerror (errno));
       parse_message (fp);

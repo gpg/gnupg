@@ -552,7 +552,7 @@ write_part (FILE *fpin, unsigned long pktlen,
     {
       if (opt_verbose)
         log_info ("writing '%s'\n", outname);
-      fpout = fopen (outname, "wb");
+      fpout = gnupg_fopen (outname, "wb");
       if (!fpout)
         {
           log_error ("error creating '%s': %s\n", outname, strerror(errno));
@@ -873,7 +873,7 @@ split_packets (const char *fname)
       fp = stdin;
       fname = "-";
     }
-  else if ( !(fp = fopen (fname,"rb")) )
+  else if ( !(fp = gnupg_fopen (fname,"rb")) )
     {
       log_error ("can't open '%s': %s\n", fname, strerror (errno));
       return;

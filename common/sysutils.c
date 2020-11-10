@@ -1219,6 +1219,55 @@ gnupg_stat (const char *name, struct stat *statbuf)
 #endif /*HAVE_STAT*/
 
 
+/* Wrapper around fopen for the cases where we have not yet switched
+ * to es_fopen.  Note that for convenience the prototype is in util.h */
+FILE *
+gnupg_fopen (const char *fname, const char *mode)
+{
+#ifdef HAVE_W32_SYSTEM
+  if (any8bitchar (fname))
+    {
+      wchar_t *wfname;
+      const wchar_t *wmode;
+      wchar_t *wmodebuf = NULL;
+      FILE *ret;
+
+      wfname = utf8_to_wchar (fname);
+      if (!wfname)
+        return NULL;
+      if (!strcmp (mode, "r"))
+        wmode = L"r";
+      else if (!strcmp (mode, "rb"))
+        wmode = L"rb";
+      else if (!strcmp (mode, "w"))
+        wmode = L"w";
+      else if (!strcmp (mode, "wb"))
+        wmode = L"wb";
+      else
+        {
+          wmodebuf = utf8_to_wchar (mode);
+          if (!wmodebuf)
+            {
+              xfree (wfname);
+              return NULL;
+            }
+          wmode = wmodebuf;
+        }
+      ret = _wfopen (wfname, wmode);
+      xfree (wfname);
+      xfree (wmodebuf);
+      return ret;
+    }
+  else
+    return fopen (fname, mode);
+
+#else /*Unix*/
+  return fopen (fname, mode);
+#endif /*Unix*/
+}
+
+
+
 /* A wrapper around open to handle Unicode file names under Windows.  */
 int
 gnupg_open (const char *name, int flags, unsigned int mode)

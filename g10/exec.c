@@ -539,7 +539,7 @@ exec_write(struct exec_info **info,const char *program,
       gpg_err_set_errno (EPERM);
     }
   else
-    (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
+    (*info)->tochild = gnupg_fopen ((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
       ret = gpg_error_from_syserror ();

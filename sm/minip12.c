@@ -2565,7 +2565,7 @@ main (int argc, char **argv)
   gcry_control (GCRYCTL_DISABLE_SECMEM, NULL);
   gcry_control (GCRYCTL_INITIALIZATION_FINISHED, NULL);
 
-  fp = fopen (argv[1], "rb");
+  fp = gnupg_fopen (argv[1], "rb");
   if (!fp)
     {
       fprintf (stderr, "can't open '%s': %s\n", argv[1], strerror (errno));

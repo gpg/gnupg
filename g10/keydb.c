@@ -504,7 +504,7 @@ rt_from_file (const char *filename, int *r_found, int *r_openpgp)
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
 
   *r_found = *r_openpgp = 0;
-  fp = fopen (filename, "rb");
+  fp = gnupg_fopen (filename, "rb");
   if (fp)
     {
       *r_found = 1;

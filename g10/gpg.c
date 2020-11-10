@@ -2536,7 +2536,7 @@ main (int argc, char **argv)
 	}
 
 	configlineno = 0;
-	configfp = fopen( configname, "r" );
+	configfp = gnupg_fopen( configname, "r" );
         if (configfp && is_secured_file (fileno (configfp)))
           {
             fclose (configfp);

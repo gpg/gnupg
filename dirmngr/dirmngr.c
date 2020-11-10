@@ -947,7 +947,7 @@ main (int argc, char **argv)
   if (configname)
     {
       configlineno = 0;
-      configfp = fopen (configname, "r");
+      configfp = gnupg_fopen (configname, "r");
       if (!configfp)
         {
           if (default_config)
@@ -1840,7 +1840,7 @@ reread_configuration (void)
   if (!opt.config_filename)
     return; /* No config file. */
 
-  fp = fopen (opt.config_filename, "r");
+  fp = gnupg_fopen (opt.config_filename, "r");
   if (!fp)
     {
       log_error (_("option file '%s': %s\n"),

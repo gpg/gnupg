@@ -142,7 +142,6 @@ ssize_t read_line (FILE *fp,
                    char **addr_of_buffer, size_t *length_of_buffer,
                    size_t *max_length);
 
-
 /*-- b64enc.c and b64dec.c --*/
 struct b64state
 {
@@ -286,6 +285,9 @@ char *gnupg_get_help_string (const char *key, int only_current_locale);
 
 /*-- localename.c --*/
 const char *gnupg_messages_locale_name (void);
+
+/*-- sysutils.c --*/
+FILE *gnupg_fopen (const char *fname, const char *mode);
 
 /*-- miscellaneous.c --*/
 

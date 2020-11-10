@@ -363,7 +363,7 @@ confucius_copy_file (char *infile, char *outfile, int plain)
     }
   else
     {
-      in = fopen (infile, "rb");
+      in = gnupg_fopen (infile, "rb");
       if (!in)
 	{
 	  log_error (_("could not open %s for writing: %s\n"),
@@ -380,7 +380,7 @@ confucius_copy_file (char *infile, char *outfile, int plain)
     }
   else
     {
-      out = fopen (outfile, "wb");
+      out = gnupg_fopen (outfile, "wb");
       if (!out)
 	{
 	  log_error (_("could not open %s for writing: %s\n"),
@@ -936,7 +936,7 @@ main (int argc, char **argv)
   if (configname)
     {
       configlineno = 0;
-      configfp = fopen (configname, "r");
+      configfp = gnupg_fopen (configname, "r");
       if (!configfp)
         {
           if (!default_config)

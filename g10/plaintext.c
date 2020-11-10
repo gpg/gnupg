@@ -185,7 +185,7 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
          want to port it again to riscos we should do most of the suff
          in estream.  FIXME: Consider to remove all riscos special
          cases.  */
-      fp = fopen (fname, "wb");
+      fp = gnupg_fopen (fname, "wb");
       if (!fp)
 	{
 	  log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));

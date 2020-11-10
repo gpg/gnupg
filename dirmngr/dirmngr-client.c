@@ -468,7 +468,7 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
 
   init_asctobin ();
 
-  fp = fname? fopen (fname, "r") : stdin;
+  fp = fname? gnupg_fopen (fname, "r") : stdin;
   if (!fp)
     return gpg_error_from_errno (errno);
 
@@ -629,7 +629,7 @@ read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
         return 0;
     }
 
-  fp = fname? fopen (fname, "rb") : stdin;
+  fp = fname? gnupg_fopen (fname, "rb") : stdin;
   if (!fp)
     return gpg_error_from_errno (errno);
 
