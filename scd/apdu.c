@@ -682,7 +682,7 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
     reader_table[slot].pcsc.current_state =
       (rdrstates[0].event_state & ~PCSC_STATE_CHANGED);
 
-  if (DBG_CARD_IO)
+  if (DBG_READER)
     log_debug
       ("pcsc_get_status_change: %s%s%s%s%s%s%s%s%s%s\n",
        (rdrstates[0].event_state & PCSC_STATE_IGNORE)? " ignore":"",
