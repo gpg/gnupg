@@ -38,6 +38,7 @@
 #include "filter.h"
 #include "../common/ttyio.h"
 #include "../common/i18n.h"
+#include "../common/shareddefs.h"
 #include "call-agent.h"
 
 
@@ -152,7 +153,8 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
 
   if (opt.batch && exactmatch)
     {
-      if (!opt.answer_yes && secret)
+      if (secret && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK
+          && !opt.answer_yes)
         log_error(_("can't do this in batch mode without \"--yes\"\n"));
       else
         okay++;
