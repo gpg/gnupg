@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-07-09 11:31+0200\n"
+"PO-Revision-Date: 2020-11-11 14:57+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1721,6 +1721,15 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"Das Verschlüsselungsverfahren %s darf im %s Modus nicht verwendet werden.\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "Die Benutzung der Hashmethode %s ist im %s Modus nicht erlaubt.\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "Lesen von '%s'\n"
 
@@ -1730,11 +1739,6 @@ msgid ""
 msgstr ""
 "WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren "
 "%s (%d) verletzt die Empfängervoreinstellungen\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"Das Verschlüsselungsverfahren %s darf im %s Modus nicht verwendet werden.\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1998,6 +2002,9 @@ msgstr "Schlüssel schnell signieren"
 
 msgid "quickly sign a key locally"
 msgstr "Schlüssel schnell nur für diesen Rechner signieren"
+
+msgid "quickly revoke a key signature"
+msgstr "Schnell eine Schlüsselsignatur widerrufen"
 
 msgid "sign a key"
 msgstr "Schlüssel signieren"
@@ -2462,10 +2469,6 @@ msgstr "ungültige private Komprimierungsvoreinstellungen\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s arbeitet noch nicht mit %s zusammen\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "Die Benutzung der Hashmethode %s ist im %s Modus nicht erlaubt.\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3592,6 +3595,14 @@ msgid "Nothing to sign.\n"
 msgstr "Nichts zu beglaubigen\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "Nicht von Ihnen signiert.\n"
+
+#, c-format
+msgid "revoking the key signature failed: %s\n"
+msgstr "Fehler beim Widerruf der Schlüsselsignatur: %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s' ist kein gültiges Ablaufdatum\n"
 
@@ -3891,9 +3902,6 @@ msgstr "Wollen Sie ihn immer noch widerrufen? (j/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Ein Widerrufszertifikat für diese Signatur erzeugen (j/N)"
-
-msgid "Not signed by you.\n"
-msgstr "Nicht von Ihnen signiert.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
