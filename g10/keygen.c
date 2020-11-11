@@ -2147,6 +2147,10 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                       && !(sl->flags & GCRY_PK_USAGE_ENCR))
                     sl->flags |= (PUBKEY_ALGO_ECDSA << 8);
                   else if (algoid == GCRY_PK_ECC
+                      && algostr && !strncmp (algostr, "brainpool", 9)
+                      && !(sl->flags & GCRY_PK_USAGE_ENCR))
+                    sl->flags |= (PUBKEY_ALGO_ECDSA << 8);
+                  else if (algoid == GCRY_PK_ECC
                            && algostr && !strcmp (algostr, "ed25519")
                            && !(sl->flags & GCRY_PK_USAGE_ENCR))
                     sl->flags = (PUBKEY_ALGO_EDDSA << 8);
