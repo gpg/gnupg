@@ -146,7 +146,6 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
 	}
     }
 
-#ifndef __riscos__
   if (opt.outfp && is_secured_file (es_fileno (opt.outfp)))
     {
       err = gpg_error (GPG_ERR_EPERM);
@@ -168,44 +167,6 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
       log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
-#else /* __riscos__ */
-  /* If no output filename was given, i.e. we constructed it, convert
-     all '.' in fname to '/' but not vice versa as we don't create
-     directories! */
-  if (!opt.outfile)
-    for (c = 0; fname[c]; ++c)
-      if (fname[c] == '.')
-	fname[c] = '/';
-
-  if (fp || nooutput)
-    ;
-  else
-    {
-      /* Note: riscos stuff is not expected to work anymore.  If we
-         want to port it again to riscos we should do most of the suff
-         in estream.  FIXME: Consider to remove all riscos special
-         cases.  */
-      fp = fopen (fname, "wb");
-      if (!fp)
-	{
-	  log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
-	  err = GPG_ERR_CREATE_FILE;
-	  if (errno == 106)
-	    log_info ("Do output file and input file have the same name?\n");
-	  goto leave;
-	}
-
-      /* If there's a ,xxx extension in the embedded filename,
-         use that, else check whether the user input (in fname)
-         has a ,xxx appended, then use that in preference */
-      if ((c = riscos_get_filetype_from_string (embedded_name,
-                                                embedded_namelen)) != -1)
-	filetype = c;
-      if ((c = riscos_get_filetype_from_string (fname, strlen (fname))) != -1)
-	filetype = c;
-      riscos_set_filetype_by_number (fname, filetype);
-    }
-#endif /* __riscos__ */
 
  leave:
   if (err)

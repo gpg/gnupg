@@ -418,22 +418,22 @@ rt_from_file (const char *filename, int *r_found, int *r_openpgp)
 {
   u32 magic;
   unsigned char verbuf[4];
-  FILE *fp;
+  estream_t fp;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
 
   *r_found = *r_openpgp = 0;
-  fp = fopen (filename, "rb");
+  fp = es_fopen (filename, "rb");
   if (fp)
     {
       *r_found = 1;
 
-      if (fread (&magic, 4, 1, fp) == 1 )
+      if (es_fread (&magic, 4, 1, fp) == 1 )
         {
           if (magic == 0x13579ace || magic == 0xce9a5713)
             ; /* GDBM magic - not anymore supported. */
-          else if (fread (&verbuf, 4, 1, fp) == 1
+          else if (es_fread (&verbuf, 4, 1, fp) == 1
                    && verbuf[0] == 1
-                   && fread (&magic, 4, 1, fp) == 1
+                   && es_fread (&magic, 4, 1, fp) == 1
                    && !memcmp (&magic, "KBXf", 4))
             {
               if ((verbuf[3] & 0x02))
@@ -446,7 +446,7 @@ rt_from_file (const char *filename, int *r_found, int *r_openpgp)
       else /* Maybe empty: assume keyring. */
         rt = KEYDB_RESOURCE_TYPE_KEYRING;
 
-      fclose (fp);
+      es_fclose (fp);
     }
 
   return rt;

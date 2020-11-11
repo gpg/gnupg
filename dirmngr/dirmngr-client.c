@@ -461,7 +461,7 @@ data_cb (void *opaque, const void *buffer, size_t length)
 static gpg_error_t
 read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
 {
-  FILE *fp;
+  estream_t fp;
   int c;
   int pos;
   int value;
@@ -475,16 +475,16 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
 
   init_asctobin ();
 
-  fp = fname? fopen (fname, "r") : stdin;
+  fp = fname? es_fopen (fname, "r") : es_stdin;
   if (!fp)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   pos = 0;
   value = 0;
   bufsize = 8192;
   buf = xmalloc (bufsize);
   buflen = 0;
-  while ((c=getc (fp)) != EOF)
+  while ((c=es_getc (fp)) != EOF)
     {
       int escaped_c = 0;
 
@@ -493,10 +493,10 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
           if (c == '%')
             {
               char tmp[2];
-              if ((c = getc(fp)) == EOF)
+              if ((c = es_getc(fp)) == EOF)
                 break;
               tmp[0] = c;
-              if ((c = getc(fp)) == EOF)
+              if ((c = es_getc(fp)) == EOF)
                 break;
               tmp[1] = c;
               if (!hexdigitp (tmp) || !hexdigitp (tmp+1))
@@ -504,7 +504,7 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
                   log_error ("invalid percent escape sequence\n");
                   state = s_idle; /* Force an error. */
                   /* Skip to end of line.  */
-                  while ( (c=getc (fp)) != EOF && c != '\n')
+                  while ( (c=es_getc (fp)) != EOF && c != '\n')
                     ;
                   goto ready;
                 }
@@ -593,7 +593,7 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
     }
  ready:
   if (fname)
-    fclose (fp);
+    es_fclose (fp);
 
   if (state == s_init && c == EOF)
     {
@@ -620,7 +620,7 @@ static gpg_error_t
 read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
 {
   gpg_error_t err;
-  FILE *fp;
+  estream_t fp;
   unsigned char *buf;
   size_t nread, bufsize, buflen;
 
@@ -636,9 +636,9 @@ read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
         return 0;
     }
 
-  fp = fname? fopen (fname, "rb") : stdin;
+  fp = fname? es_fopen (fname, "rb") : es_stdin;
   if (!fp)
-    return gpg_error_from_errno (errno);
+    return gpg_error_from_syserror ();
 
   buf = NULL;
   bufsize = buflen = 0;
@@ -651,13 +651,13 @@ read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
       else
         buf = xrealloc (buf, bufsize);
 
-      nread = fread (buf+buflen, 1, NCHUNK, fp);
-      if (nread < NCHUNK && ferror (fp))
+      nread = es_fread (buf+buflen, 1, NCHUNK, fp);
+      if (nread < NCHUNK && es_ferror (fp))
         {
-          err = gpg_error_from_errno (errno);
+          err = gpg_error_from_syserror ();
           xfree (buf);
           if (fname)
-            fclose (fp);
+            es_fclose (fp);
           return err;
         }
       buflen += nread;
@@ -665,7 +665,7 @@ read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
   while (nread == NCHUNK);
 #undef NCHUNK
   if (fname)
-    fclose (fp);
+    es_fclose (fp);
   *rbuf = buf;
   *rbuflen = buflen;
   return 0;

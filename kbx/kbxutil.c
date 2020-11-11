@@ -238,7 +238,7 @@ format_keyid ( const char *s, u32 *kid )
 static char *
 read_file (const char *fname, size_t *r_length)
 {
-  FILE *fp;
+  estream_t fp;
   char *buf;
   size_t buflen;
 
@@ -246,7 +246,7 @@ read_file (const char *fname, size_t *r_length)
     {
       size_t nread, bufsize = 0;
 
-      fp = stdin;
+      fp = es_stdin;
       buf = NULL;
       buflen = 0;
 #define NCHUNK 8192
@@ -260,8 +260,8 @@ read_file (const char *fname, size_t *r_length)
           if (!buf)
             log_fatal ("can't allocate buffer: %s\n", strerror (errno));
 
-          nread = fread (buf+buflen, 1, NCHUNK, fp);
-          if (nread < NCHUNK && ferror (fp))
+          nread = es_fread (buf+buflen, 1, NCHUNK, fp);
+          if (nread < NCHUNK && es_ferror (fp))
             {
               log_error ("error reading '[stdin]': %s\n", strerror (errno));
               xfree (buf);
@@ -277,17 +277,17 @@ read_file (const char *fname, size_t *r_length)
     {
       struct stat st;
 
-      fp = fopen (fname, "rb");
+      fp = es_fopen (fname, "rb");
       if (!fp)
         {
           log_error ("can't open '%s': %s\n", fname, strerror (errno));
           return NULL;
         }
 
-      if (fstat (fileno(fp), &st))
+      if (fstat (es_fileno(fp), &st))
         {
           log_error ("can't stat '%s': %s\n", fname, strerror (errno));
-          fclose (fp);
+          es_fclose (fp);
           return NULL;
         }
 
@@ -295,14 +295,14 @@ read_file (const char *fname, size_t *r_length)
       buf = xtrymalloc (buflen+1);
       if (!buf)
         log_fatal ("can't allocate buffer: %s\n", strerror (errno));
-      if (fread (buf, buflen, 1, fp) != 1)
+      if (es_fread (buf, buflen, 1, fp) != 1)
         {
           log_error ("error reading '%s': %s\n", fname, strerror (errno));
-          fclose (fp);
+          es_fclose (fp);
           xfree (buf);
           return NULL;
         }
-      fclose (fp);
+      es_fclose (fp);
     }
 
   *r_length = buflen;

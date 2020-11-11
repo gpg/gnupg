@@ -237,7 +237,7 @@ make_advanced (const unsigned char *buf, size_t buflen)
 static char *
 read_file (const char *fname, size_t *r_length)
 {
-  FILE *fp;
+  estream_t fp;
   char *buf;
   size_t buflen;
 
@@ -245,10 +245,8 @@ read_file (const char *fname, size_t *r_length)
     {
       size_t nread, bufsize = 0;
 
-      fp = stdin;
-#ifdef HAVE_DOSISH_SYSTEM
-      setmode ( fileno(fp) , O_BINARY );
-#endif
+      fp = es_stdin;
+      es_set_binary (fp);
       buf = NULL;
       buflen = 0;
 #define NCHUNK 8192
@@ -260,8 +258,8 @@ read_file (const char *fname, size_t *r_length)
           else
             buf = xrealloc (buf, bufsize);
 
-          nread = fread (buf+buflen, 1, NCHUNK, fp);
-          if (nread < NCHUNK && ferror (fp))
+          nread = es_fread (buf+buflen, 1, NCHUNK, fp);
+          if (nread < NCHUNK && es_ferror (fp))
             {
               log_error ("error reading '[stdin]': %s\n", strerror (errno));
               xfree (buf);
@@ -277,30 +275,30 @@ read_file (const char *fname, size_t *r_length)
     {
       struct stat st;
 
-      fp = fopen (fname, "rb");
+      fp = es_fopen (fname, "rb");
       if (!fp)
         {
           log_error ("can't open '%s': %s\n", fname, strerror (errno));
           return NULL;
         }
 
-      if (fstat (fileno(fp), &st))
+      if (fstat (es_fileno (fp), &st))
         {
           log_error ("can't stat '%s': %s\n", fname, strerror (errno));
-          fclose (fp);
+          es_fclose (fp);
           return NULL;
         }
 
       buflen = st.st_size;
       buf = xmalloc (buflen+1);
-      if (fread (buf, buflen, 1, fp) != 1)
+      if (es_fread (buf, buflen, 1, fp) != 1)
         {
           log_error ("error reading '%s': %s\n", fname, strerror (errno));
-          fclose (fp);
+          es_fclose (fp);
           xfree (buf);
           return NULL;
         }
-      fclose (fp);
+      es_fclose (fp);
     }
 
   *r_length = buflen;
