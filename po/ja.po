@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.20\n"
+"Project-Id-Version: gnupg 2.2.23\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-07-07 09:37+0900\n"
+"PO-Revision-Date: 2020-11-12 12:59+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1670,6 +1670,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "*警告*: '%s'は空のファイルです\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うことはできません\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "'%s'から読み込み\n"
 
@@ -1678,10 +1686,6 @@ msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
 "*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1930,10 +1934,13 @@ msgid "remove keys from the secret keyring"
 msgstr "秘密鍵リングから鍵を削除"
 
 msgid "quickly sign a key"
-msgstr "鍵にすばやく署名"
+msgstr "すばやく鍵に署名"
 
 msgid "quickly sign a key locally"
-msgstr "鍵へすばやくローカルに署名"
+msgstr "すばやく鍵へローカルに署名"
+
+msgid "quickly revoke a key signature"
+msgstr "すばやく鍵への署名を失効"
 
 msgid "sign a key"
 msgstr "鍵に署名"
@@ -2386,10 +2393,6 @@ msgstr "無効な個人用圧縮の優先指定\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%sは%sではまだ機能しません\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うことはできません\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3464,6 +3467,13 @@ msgid "Nothing to sign.\n"
 msgstr "署名するものがありません。\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "あなたによって署名されていません。\n"
+
+msgid "revoking the key signature failed: %s\n"
+msgstr "鍵の署名の失効に失敗しました: %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s'は、有効な有効期限ではありません\n"
 
@@ -3749,9 +3759,6 @@ msgstr "それでも本当に失効したいですか? (y/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "この署名に対する失効証明書を作成しますか? (y/N) "
-
-msgid "Not signed by you.\n"
-msgstr "あなたによって署名されていません。\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
