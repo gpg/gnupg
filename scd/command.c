@@ -290,6 +290,8 @@ cmd_serialno (assuan_context_t ctx, char *line)
   else
     demand = NULL;
 
+  line = skip_options (line);
+
   /* Clear the remove flag so that the open_card is able to reread it.  */
   if (ctrl->server_local->card_removed)
     ctrl->server_local->card_removed = 0;
