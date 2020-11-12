@@ -805,16 +805,16 @@ main (int argc, char **argv)
 	  es_putc ('\n', es_stderr);
 	  gpgconf_failure (GPG_ERR_USER_2);
 	}
-      if (!opt.dry_run)
-        gnupg_maybe_make_homedir (default_homedir (), opt.quiet);
+      if (!opt.dry_run && gnupg_access (gnupg_homedir (), F_OK))
+        gnupg_maybe_make_homedir (gnupg_homedir (), opt.quiet);
       gc_component_retrieve_options (-1);
       if (gc_process_gpgconf_conf (NULL, 1, 1, NULL))
         gpgconf_failure (0);
       break;
 
     case aApplyProfile:
-      if (!opt.dry_run)
-        gnupg_maybe_make_homedir (default_homedir (), opt.quiet);
+      if (!opt.dry_run && gnupg_access (gnupg_homedir (), F_OK))
+        gnupg_maybe_make_homedir (gnupg_homedir (), opt.quiet);
       gc_component_retrieve_options (-1);
       if (gc_apply_profile (fname))
         gpgconf_failure (0);
