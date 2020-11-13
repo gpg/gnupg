@@ -134,9 +134,10 @@ struct pubkey_find_info {
 
 
 /* Helper type for preference functions. */
-union pref_hint
+struct pref_hint
 {
-  int digest_length;
+  int digest_length;  /* We want at least this digest length.  */
+  int exact;          /* We need to use exactly this length.   */
 };
 
 
@@ -276,9 +277,9 @@ gpg_error_t find_and_check_key (ctrl_t ctrl,
                                 pk_list_t *pk_list_addr);
 
 int  algo_available( preftype_t preftype, int algo,
-		     const union pref_hint *hint );
+		     const struct pref_hint *hint );
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype,
-			     int request, const union pref_hint *hint);
+			     int request, const struct pref_hint *hint);
 int  select_mdc_from_pklist (PK_LIST pk_list);
 aead_algo_t select_aead_from_pklist (pk_list_t pk_list);
 void warn_missing_aead_from_pklist (PK_LIST pk_list);
