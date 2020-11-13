@@ -462,7 +462,12 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
 
  leave:
   if (err)
-    log_error (_("signing failed: %s\n"), gpg_strerror (err));
+    {
+      log_error (_("signing failed: %s\n"), gpg_strerror (err));
+      if (gpg_err_source (err) == GPG_ERR_SOURCE_SCD
+          && gpg_err_code (err) == GPG_ERR_INV_ID)
+        print_further_info ("a reason might be a card with replaced keys");
+    }
   else
     {
       if (opt.verbose)

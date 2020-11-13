@@ -618,6 +618,9 @@ print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list, int failed)
         {
           log_info (_("public key decryption failed: %s\n"),
                     gpg_strerror (list->reason));
+          if (gpg_err_source (list->reason) == GPG_ERR_SOURCE_SCD
+              && gpg_err_code (list->reason) == GPG_ERR_INV_ID)
+            print_further_info ("a reason might be a card with replaced keys");
           write_status_error ("pkdecrypt_failed", list->reason);
         }
     }

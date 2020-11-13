@@ -79,7 +79,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
       rc = agent_card_serialno (ctrl, &serialno, want_sn);
       if (!rc)
         {
-          log_debug ("detected card with S/N %s\n", serialno);
+          log_info ("detected card with S/N %s\n", serialno);
           i = strcmp (serialno, want_sn);
           xfree (serialno);
           serialno = NULL;
@@ -93,13 +93,13 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
         }
       else if (gpg_err_code (rc) == GPG_ERR_ENODEV)
         {
-          log_debug ("no device present\n");
+          log_info ("no device present\n");
           rc = 0;
           no_card = 1;
         }
       else if (gpg_err_code (rc) == GPG_ERR_CARD_NOT_PRESENT)
         {
-          log_debug ("no card present\n");
+          log_info ("no card present\n");
           rc = 0;
           no_card = 2;
         }
@@ -436,6 +436,7 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
 int
 divert_pksign (ctrl_t ctrl, const char *desc_text,
                const unsigned char *digest, size_t digestlen, int algo,
+               const unsigned char *grip,
                const unsigned char *shadow_info, unsigned char **r_sig,
                size_t *r_siglen)
 {
@@ -449,6 +450,22 @@ divert_pksign (ctrl_t ctrl, const char *desc_text,
   rc = ask_for_card (ctrl, shadow_info, &kid);
   if (rc)
     return rc;
+
+  /* For OpenPGP cards we better use the keygrip as key reference.
+   * This has the advantage that app-openpgp can check that the stored
+   * key matches our expectation.  This is important in case new keys
+   * have been created on the same card but the sub file has not been
+   * updated.  In that case we would get a error from our final
+   * signature checking code or, if the pubkey algo is different,
+   * weird errors from the card (Conditions of use not satisfied).  */
+  if (kid && grip && !strncmp (kid, "OPENPGP.", 8))
+    {
+      xfree (kid);
+      kid = bin2hex (grip, KEYGRIP_LEN, NULL);
+      if (!kid)
+        return gpg_error_from_syserror ();
+    }
+
 
   if (algo == MD_USER_TLS_MD5SHA1)
     {
@@ -491,6 +508,7 @@ divert_pksign (ctrl_t ctrl, const char *desc_text,
 int
 divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                   const unsigned char *cipher,
+                  const unsigned char *grip,
                   const unsigned char *shadow_info,
                   char **r_buf, size_t *r_len, int *r_padding)
 {
@@ -584,6 +602,21 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   rc = ask_for_card (ctrl, shadow_info, &kid);
   if (rc)
     return rc;
+
+  /* For OpenPGP cards we better use the keygrip as key reference.
+   * This has the advantage that app-openpgp can check that the stored
+   * key matches our expectation.  This is important in case new keys
+   * have been created on the same card but the sub file has not been
+   * updated.  In that case we would get a error from our final
+   * signature checking code or, if the pubkey algo is different,
+   * weird errors from the card (Conditions of use not satisfied).  */
+  if (kid && grip && !strncmp (kid, "OPENPGP.", 8))
+    {
+      xfree (kid);
+      kid = bin2hex (grip, KEYGRIP_LEN, NULL);
+      if (!kid)
+        return gpg_error_from_syserror ();
+    }
 
   rc = agent_card_pkdecrypt (ctrl, kid, getpin_cb, ctrl, NULL,
                              ciphertext, ciphertextlen,

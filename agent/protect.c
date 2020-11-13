@@ -1725,6 +1725,7 @@ parse_shadow_info (const unsigned char *shadow_info,
         }
       memcpy (*r_idstr, s, n);
       (*r_idstr)[n] = 0;
+      trim_spaces (*r_idstr);
     }
 
   /* Parse the optional PINLEN.  */

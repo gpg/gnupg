@@ -86,7 +86,8 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
           goto leave;
         }
 
-      rc = divert_pkdecrypt (ctrl, desc_text, ciphertext, shadow_info,
+      rc = divert_pkdecrypt (ctrl, desc_text, ciphertext,
+                             ctrl->keygrip, shadow_info,
                              &buf, &len, r_padding);
       if (rc)
         {

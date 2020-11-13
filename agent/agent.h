@@ -545,10 +545,12 @@ void agent_reload_trustlist (void);
 /*-- divert-scd.c --*/
 int divert_pksign (ctrl_t ctrl, const char *desc_text,
                    const unsigned char *digest, size_t digestlen, int algo,
+                   const unsigned char *grip,
                    const unsigned char *shadow_info, unsigned char **r_sig,
                    size_t *r_siglen);
 int divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                       const unsigned char *cipher,
+                      const unsigned char *grip,
                       const unsigned char *shadow_info,
                       char **r_buf, size_t *r_len, int *r_padding);
 int divert_generic_cmd (ctrl_t ctrl,
