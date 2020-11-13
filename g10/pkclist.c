@@ -1369,7 +1369,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
    preference list, so I'm including it. -dms */
 
 int
-algo_available( preftype_t preftype, int algo, const union pref_hint *hint)
+algo_available( preftype_t preftype, int algo, const struct pref_hint *hint)
 {
   if( preftype == PREFTYPE_SYM )
     {
@@ -1395,16 +1395,26 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint)
     {
       if (hint && hint->digest_length)
 	{
-	  if (hint->digest_length!=20 || opt.flags.dsa2)
+          unsigned int n = gcry_md_get_algo_dlen (algo);
+
+          if (hint->exact)
+            {
+              /* For example ECDSA requires an exact hash value so
+               * that we do not truncate.  For DSA we allow truncation
+               * and thus exact is not set.  */
+              if (hint->digest_length != n)
+                return 0;
+            }
+	  else if (hint->digest_length!=20 || opt.flags.dsa2)
 	    {
 	      /* If --enable-dsa2 is set or the hash isn't 160 bits
 		 (which implies DSA2), then we'll accept a hash that
 		 is larger than we need.  Otherwise we won't accept
 		 any hash that isn't exactly the right size. */
-	      if (hint->digest_length > gcry_md_get_algo_dlen (algo))
+	      if (hint->digest_length > n)
 		return 0;
 	    }
-	  else if (hint->digest_length != gcry_md_get_algo_dlen (algo))
+	  else if (hint->digest_length != n)
 	    return 0;
 	}
 
@@ -1441,7 +1451,7 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint)
  */
 int
 select_algo_from_prefs(PK_LIST pk_list, int preftype,
-		       int request, const union pref_hint *hint)
+		       int request, const struct pref_hint *hint)
 {
   PK_LIST pkr;
   u32 bits[8];
