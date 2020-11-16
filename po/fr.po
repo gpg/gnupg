@@ -1771,6 +1771,16 @@ msgstr "« %s » est déjà compressé\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "Attention : « %s » est un fichier vide\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "impossible d'utiliser l'algorithme de chiffrement « %s » en mode %s.\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "impossible d'utiliser l'algorithme de hachage « %s » en mode %s.\n"
+
 #, c-format
 msgid "reading from '%s'\n"
 msgstr "lecture de « %s »\n"
@@ -1781,11 +1791,6 @@ msgid ""
 msgstr ""
 "Attention : forcer le chiffrement symétrique %s (%d) est en\n"
 "            désaccord avec les préférences du destinataire\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "impossible d'utiliser l'algorithme de chiffrement « %s » en mode %s.\n"
 
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
@@ -2064,6 +2069,11 @@ msgstr "signer rapidement une clef"
 
 msgid "quickly sign a key locally"
 msgstr "signer rapidement une clef localement"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "générer rapidement une nouvelle paire de clefs"
 
 msgid "sign a key"
 msgstr "signer une clef"
@@ -2559,11 +2569,6 @@ msgstr "préférences personnelles de compression incorrectes\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ne fonctionne pas encore avec %s\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "impossible d'utiliser l'algorithme de hachage « %s » en mode %s.\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm '%s' while in %s mode\n"
@@ -3697,6 +3702,15 @@ msgstr "Pas d’identités correspondantes."
 msgid "Nothing to sign.\n"
 msgstr "Rien à signer.\n"
 
+#, c-format
+msgid "Not signed by you.\n"
+msgstr "Non signée par vous.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "échec de vérification de la signature créée : %s\n"
+
 #, fuzzy, c-format
 #| msgid "'%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid expiration time\n"
@@ -4009,9 +4023,6 @@ msgstr "Voulez-vous vraiment toujours la révoquer ? (o/N) "
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr ""
 "Faut-il créer un certificat de révocation pour cette signature ? (o/N) "
-
-msgid "Not signed by you.\n"
-msgstr "Non signée par vous.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

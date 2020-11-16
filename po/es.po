@@ -1720,6 +1720,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "ATENCIÓN '%s' es un fichero vacío\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "no se puede usar el cifrado '%s' en modo %s\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "no puede usar el resumen '%s' en modo %s\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "leyendo desde '%s'\n"
 
@@ -1729,10 +1737,6 @@ msgid ""
 msgstr ""
 "AVISO: forzar el cifrado simétrico %s (%d) viola las preferencias\n"
 "del destinatario\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "no se puede usar el cifrado '%s' en modo %s\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1992,6 +1996,11 @@ msgstr "firma una clave en modo rápido"
 
 msgid "quickly sign a key locally"
 msgstr "firma una clave localmente en modo rápido"
+
+#, fuzzy
+#| msgid "quickly revoke a user-id"
+msgid "quickly revoke a key signature"
+msgstr "revoca una id de usuario en modo rápido"
 
 msgid "sign a key"
 msgstr "firma la clave"
@@ -2452,10 +2461,6 @@ msgstr "preferencias personales de compresión inválidas\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s aún no funciona con %s\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "no puede usar el resumen '%s' en modo %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3558,6 +3563,15 @@ msgid "Nothing to sign.\n"
 msgstr "Nada que firmar.\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "No está firmado por usted.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "la comprobación de la firma creada falló: %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s' no es una fecha de caducidad válida\n"
 
@@ -3847,9 +3861,6 @@ msgstr "¿De verdad quiere revocarla? (s/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "¿Crear un certificado de revocación para esta clave? (s/N) "
-
-msgid "Not signed by you.\n"
-msgstr "No está firmado por usted.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

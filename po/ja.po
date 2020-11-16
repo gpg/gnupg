@@ -3470,6 +3470,7 @@ msgstr "署名するものがありません。\n"
 msgid "Not signed by you.\n"
 msgstr "あなたによって署名されていません。\n"
 
+#, c-format
 msgid "revoking the key signature failed: %s\n"
 msgstr "鍵の署名の失効に失敗しました: %s\n"
 

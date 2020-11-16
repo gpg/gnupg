@@ -1716,6 +1716,16 @@ msgstr "'%s' 已經被壓縮了\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "警告: '%s' 是個空檔案\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "你不該將 '%s' 摘要演算法用於 %s 模式\n"
+
 #, c-format
 msgid "reading from '%s'\n"
 msgstr "正在從 '%s' 讀取\n"
@@ -1724,11 +1734,6 @@ msgstr "正在從 '%s' 讀取\n"
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
 
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
@@ -1989,6 +1994,11 @@ msgstr "快速簽署金鑰"
 
 msgid "quickly sign a key locally"
 msgstr "快速在本機簽署金鑰"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "快速產生新的金鑰對"
 
 msgid "sign a key"
 msgstr "簽署金鑰"
@@ -2453,11 +2463,6 @@ msgstr "無效的個人壓縮偏好\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s 還沒辦法跟 %s 一起運作\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "你不該將 '%s' 摘要演算法用於 %s 模式\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm '%s' while in %s mode\n"
@@ -3559,6 +3564,15 @@ msgstr "沒有相符的使用者 ID."
 msgid "Nothing to sign.\n"
 msgstr "沒有東西可以簽署.\n"
 
+#, c-format
+msgid "Not signed by you.\n"
+msgstr "並非由你所簽署.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "檢查已建立的簽章時出錯: %s\n"
+
 #, fuzzy, c-format
 #| msgid "'%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid expiration time\n"
@@ -3861,9 +3875,6 @@ msgstr "你確定仍然想要撤銷它嗎? (y/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "要為這份簽章建立一份撤銷憑證嗎? (y/N) "
-
-msgid "Not signed by you.\n"
-msgstr "並非由你所簽署.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

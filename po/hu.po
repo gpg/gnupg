@@ -1777,6 +1777,16 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "FIGYELEM: A(z) \"%s\" állomány üres.\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"Lehet, hogy nem használhatja \"%s\" rejtjelező algoritmust %s módban!\n"
+
+#, fuzzy, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"Lehet, hogy nem használhatja \"%s\" kivonatoló algoritmust %s módban!\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "Olvasok a \"%s\" állományból.\n"
@@ -1785,11 +1795,6 @@ msgstr "Olvasok a \"%s\" állományból.\n"
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"Lehet, hogy nem használhatja \"%s\" rejtjelező algoritmust %s módban!\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -2076,6 +2081,11 @@ msgstr "kulcs aláírása"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "kulcs aláírása helyileg"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "új kulcspár létrehozása"
 
 msgid "sign a key"
 msgstr "kulcs aláírása"
@@ -2561,11 +2571,6 @@ msgstr "Érvénytelen személyes tömörítőpreferenciák!\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s és %s egyelőre nem használható együtt!\n"
-
-#, fuzzy, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"Lehet, hogy nem használhatja \"%s\" kivonatoló algoritmust %s módban!\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3731,6 +3736,15 @@ msgid "Nothing to sign.\n"
 msgstr "Nincs mit aláírni a %08lX kulccsal!\n"
 
 #, fuzzy, c-format
+msgid "Not signed by you.\n"
+msgstr "   aláírva %08lX által %s%s időpontban.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "A létrehozott aláírás ellenőrzése sikertelen: %s.\n"
+
+#, fuzzy, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s nem érvényes karakterkiosztás!\n"
 
@@ -4037,10 +4051,6 @@ msgstr "Biztos benne, hogy mégis visszavonja? (i/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Csináljunk egy visszavonó igazolást ehhez az aláíráshoz? (i/N) "
-
-#, fuzzy
-msgid "Not signed by you.\n"
-msgstr "   aláírva %08lX által %s%s időpontban.\n"
 
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"

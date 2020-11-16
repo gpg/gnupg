@@ -1713,6 +1713,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "VAROVÁNÍ: soubor „%s“ je prázdný\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "šifrovací algoritmus „%s“ se nesmí používat v režimu %s\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "hashovací algoritmus „%s“ se nesmí používat v režimu %s\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "čte se z „%s“\n"
 
@@ -1721,10 +1729,6 @@ msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
 "VAROVÁNÍ: vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "šifrovací algoritmus „%s“ se nesmí používat v režimu %s\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1981,6 +1985,11 @@ msgstr "rychle podepsat klíč"
 
 msgid "quickly sign a key locally"
 msgstr "rychle lokálně podepsat klíč"
+
+#, fuzzy
+#| msgid "quickly revoke a user-id"
+msgid "quickly revoke a key signature"
+msgstr "rychle odvolat identitu uživatele"
 
 msgid "sign a key"
 msgstr "podepsat klíč"
@@ -2452,10 +2461,6 @@ msgstr "neplatné uživatelské předvolby pro komprimaci\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s dosud není funkční s %s\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "hashovací algoritmus „%s“ se nesmí používat v režimu %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3554,6 +3559,15 @@ msgid "Nothing to sign.\n"
 msgstr "Nic na podepsání.\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "Nepodepsáno vámi.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "kontrola vytvořeného podpisu se nepodařila: %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "„%s“ není platná doba expirace\n"
 
@@ -3843,9 +3857,6 @@ msgstr "Jste si jisti, že jej chcete stále odvolat? (a/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Vytvořit pro tento podpis odvolací certifikát? (a/N)"
-
-msgid "Not signed by you.\n"
-msgstr "Nepodepsáno vámi.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

@@ -1842,6 +1842,16 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "ADVARSEL: »%s« er en tom fil\n"
 
 #, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "du må ikke bruge chifferalgoritmen »%s« i tilstanden %s\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "du må ikke bruge sammendragsalgoritmen »%s« i tilstanden %s\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "læser fra »%s«\n"
@@ -1852,11 +1862,6 @@ msgid ""
 msgstr ""
 "ADVARSEL: Tvang for symmetrisk chiffer %s (%d) overtræder modtagerens "
 "præferencer\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "du må ikke bruge chifferalgoritmen »%s« i tilstanden %s\n"
 
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
@@ -2141,6 +2146,11 @@ msgstr "underskriv en nøgle"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "underskriv en nøgle lokalt"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "opret et nyt nøglepar"
 
 msgid "sign a key"
 msgstr "underskriv en nøgle"
@@ -2641,11 +2651,6 @@ msgstr "ugyldige præferencer for personlig komprimering\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s virker endnu ikke med %s\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "du må ikke bruge sammendragsalgoritmen »%s« i tilstanden %s\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -3815,6 +3820,15 @@ msgstr "Ingen sådan bruger-id.\n"
 msgid "Nothing to sign.\n"
 msgstr "Intet at underskrive med nøgle %s\n"
 
+#, c-format
+msgid "Not signed by you.\n"
+msgstr "Ikke underskrevet af dig.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "kontrol af oprettet underskrift mislykkedes: %s\n"
+
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid expiration time\n"
@@ -4125,9 +4139,6 @@ msgstr "Er du sikker på, at du ønsker at tilbagekalde den? (j/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Opret et tilbagekaldscertifikat for denne underskrift? (j/N) "
-
-msgid "Not signed by you.\n"
-msgstr "Ikke underskrevet af dig.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

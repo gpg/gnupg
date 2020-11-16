@@ -1682,6 +1682,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "Внимание: файл '%s' пуст\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "алгоритм шифрования '%s' нельзя использовать в режиме %s\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "хеш-функцию '%s' нельзя использовать в режиме %s\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "чтение из '%s'\n"
 
@@ -1691,10 +1699,6 @@ msgid ""
 msgstr ""
 "Внимание: принудительное использование симметричного шифра %s (%d)\n"
 "          нарушает предпочтения получателя\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "алгоритм шифрования '%s' нельзя использовать в режиме %s\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1954,6 +1958,11 @@ msgstr "быстро подписать ключ"
 
 msgid "quickly sign a key locally"
 msgstr "быстро подписать ключ локально"
+
+#, fuzzy
+#| msgid "quickly revoke a user-id"
+msgid "quickly revoke a key signature"
+msgstr "быстро отозвать идентификатор пользователя"
 
 msgid "sign a key"
 msgstr "подписать ключ"
@@ -2421,10 +2430,6 @@ msgstr "недопустимые личные предпочтения алго�
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s пока не работает совместно с %s!\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "хеш-функцию '%s' нельзя использовать в режиме %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3535,6 +3540,15 @@ msgid "Nothing to sign.\n"
 msgstr "Подписывать нечего.\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "Вами не подписано.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "сбой проверки созданной подписи: %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s' - не допустимый срок действия\n"
 
@@ -3830,9 +3844,6 @@ msgstr "Вы уверены, что хотите отозвать? (y/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Создать сертификат отзыва для данной подписи? (y/N) "
-
-msgid "Not signed by you.\n"
-msgstr "Вами не подписано.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

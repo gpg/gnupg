@@ -1779,6 +1779,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
+
+#, fuzzy, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "legas el '%s'\n"
@@ -1787,10 +1795,6 @@ msgstr "legas el '%s'\n"
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -2067,6 +2071,11 @@ msgstr "subskribi ŝlosilon"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "subskribi ŝlosilon loke"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "krei novan ŝlosilparon"
 
 msgid "sign a key"
 msgstr "subskribi ŝlosilon"
@@ -2552,10 +2561,6 @@ msgstr "nevalidaj preferoj\n"
 #, fuzzy, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ne havas sencon kun %s!\n"
-
-#, fuzzy, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3732,6 +3737,15 @@ msgid "Nothing to sign.\n"
 msgstr "Nenio por subskribi per ŝlosilo %08lX\n"
 
 #, fuzzy, c-format
+msgid "Not signed by you.\n"
+msgstr "   subskribita per %08lX je %s%s\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
+
+#, fuzzy, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s ne estas valida signaro\n"
 
@@ -4035,10 +4049,6 @@ msgstr "Ĉu vi estas certa, ke vi ankoraŭ volas aldoni ĝin? (j/n) "
 #, fuzzy
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Ĉu krei revokatestilon por ĉi tiu subskribo? (j/N)"
-
-#, fuzzy
-msgid "Not signed by you.\n"
-msgstr "   subskribita per %08lX je %s%s\n"
 
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"

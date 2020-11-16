@@ -1672,6 +1672,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "OSTRZEŻENIE: plik ,,%s'' jest pusty\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "algorytm skrótu ,,%s'' nie może być używany w trybie %s\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "odczyt z ,,%s''\n"
 
@@ -1681,10 +1689,6 @@ msgid ""
 msgstr ""
 "OSTRZEŻENIE: wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami "
 "adresata\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1941,6 +1945,11 @@ msgstr "szybkie złożenie podpisu na kluczu"
 
 msgid "quickly sign a key locally"
 msgstr "szybkie złożenie prywatnego podpisu na kluczu"
+
+#, fuzzy
+#| msgid "quickly revoke a user-id"
+msgid "quickly revoke a key signature"
+msgstr "szybkie unieważnienie identyfikatora użytkownika"
 
 msgid "sign a key"
 msgstr "złożenie podpisu na kluczu"
@@ -2417,10 +2426,6 @@ msgstr "niewłaściwe ustawienia algorytmów kompresji\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s jeszcze nie działa z %s!\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "algorytm skrótu ,,%s'' nie może być używany w trybie %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3544,6 +3549,15 @@ msgid "Nothing to sign.\n"
 msgstr "Nie ma nic do podpisania.\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "Nie podpisane przez ciebie.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "sprawdzenie złożonego podpisu nie powiodło się: %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr ",,%s'' nie jest poprawnym czasem wygaśnięcia\n"
 
@@ -3835,9 +3849,6 @@ msgstr "Czy dalej chcesz go unieważnić? (t/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Stworzyć certyfikat unieważnienia tego podpisu? (t/N) "
-
-msgid "Not signed by you.\n"
-msgstr "Nie podpisane przez ciebie.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

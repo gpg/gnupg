@@ -1825,6 +1825,16 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "UYARI: \"%s\" dosyası boş\n"
 
 #, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "%2$s kipindeyken '%1$s' şifreleme algoritması kullanılamaz\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "%2$s kipindeyken '%1$s' özet algoritması kullanılamaz\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "`%s'den okunuyor\n"
@@ -1835,11 +1845,6 @@ msgid ""
 msgstr ""
 "UYARI: alıcının tercihleriyle çelişen %s (%d) simetrik şifre kullanımı "
 "zorlanıyor\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "%2$s kipindeyken '%1$s' şifreleme algoritması kullanılamaz\n"
 
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
@@ -2124,6 +2129,11 @@ msgstr "bir anahtarı imzalar"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "bir anahtarı yerel olarak imzalar"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "yeni bir anahtar çifti üretir"
 
 msgid "sign a key"
 msgstr "bir anahtarı imzalar"
@@ -2632,11 +2642,6 @@ msgstr "kişisel sıkıştırma tercihleri geçersiz\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s, %s ile henüz çalışmıyor\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "%2$s kipindeyken '%1$s' özet algoritması kullanılamaz\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -3824,6 +3829,15 @@ msgstr "Böyle bir kullanıcı kimliği yok.\n"
 msgid "Nothing to sign.\n"
 msgstr "%s anahtarı ile imzalanacak hiçbir şey yok\n"
 
+#, c-format
+msgid "Not signed by you.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "oluşturulan imzanın denetimi başarısız: %s\n"
+
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid expiration time\n"
@@ -4146,9 +4160,6 @@ msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr ""
 "Bu imza için bir yürürlükten kaldırma sertifikası oluşturulsun mu? (e/H veya "
 "y/N) "
-
-msgid "Not signed by you.\n"
-msgstr ""
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

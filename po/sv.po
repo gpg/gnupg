@@ -1878,6 +1878,17 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "VARNING: \"%s\" är en tom fil\n"
 
 #, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"du får inte använda sammandragsalgoritmen \"%s\" när du är i %s-läget\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "läser från \"%s\"\n"
@@ -1888,11 +1899,6 @@ msgid ""
 msgstr ""
 "VARNING: tvinga symmetriskt chiffer med %s (%d) strider mot "
 "mottagarinställningarna\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
@@ -2180,6 +2186,11 @@ msgstr "signera en nyckel"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "signera en nyckel lokalt"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "generera ett nytt nyckelpar"
 
 msgid "sign a key"
 msgstr "signera en nyckel"
@@ -2699,12 +2710,6 @@ msgstr "ogiltig inställning av föredragna kompressionsalgoritmer\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s fungerar ännu inte med  %s\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"du får inte använda sammandragsalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -3881,6 +3886,15 @@ msgstr "Ingen sådan användaridentitet.\n"
 msgid "Nothing to sign.\n"
 msgstr "Det finns inget att signera med nyckeln %s\n"
 
+#, c-format
+msgid "Not signed by you.\n"
+msgstr "Inte signerad av dig.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "kontroll av den skapade signaturen misslyckades: %s\n"
+
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid expiration time\n"
@@ -4194,9 +4208,6 @@ msgstr "Är du säker på att du fortfarande vill spärra den? (j/N)"
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Vill du skapa ett spärrcertifikat för denna signatur? (j/N)"
-
-msgid "Not signed by you.\n"
-msgstr "Inte signerad av dig.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

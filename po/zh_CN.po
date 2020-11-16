@@ -1679,6 +1679,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "警告：‘%s’是一个空文件\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "密文算法 ‘%s’ 可能不能被用于 %s 模式\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "摘要算法‘%s’不能在 %s 模式下使用\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "正在从‘%s’读取\n"
 
@@ -1686,10 +1694,6 @@ msgstr "正在从‘%s’读取\n"
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "警告： 强制对称密文 %s (%d) 与接收者的偏好设置冲突\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "密文算法 ‘%s’ 可能不能被用于 %s 模式\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1940,6 +1944,11 @@ msgstr "快速签名一个密钥"
 
 msgid "quickly sign a key locally"
 msgstr "快速本地签名一个密钥"
+
+#, fuzzy
+#| msgid "quickly revoke a user-id"
+msgid "quickly revoke a key signature"
+msgstr "快速吊销一个用户标识"
 
 msgid "sign a key"
 msgstr "签名一个密钥"
@@ -2390,10 +2399,6 @@ msgstr "无效的个人压缩算法首选项\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s 尚不能和 %s 并用\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "摘要算法‘%s’不能在 %s 模式下使用\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3464,6 +3469,15 @@ msgid "Nothing to sign.\n"
 msgstr "没有可被签名的东西。\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "并非由您签名。\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "检查已建立的签名时发生错误： %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "‘%s’不是一个有效的过期时间\n"
 
@@ -3745,9 +3759,6 @@ msgstr "您确定您仍然想要吊销它吗？(y/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "要为这份签名生成一份吊销证书吗？(y/N) "
-
-msgid "Not signed by you.\n"
-msgstr "并非由您签名。\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

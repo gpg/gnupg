@@ -1787,6 +1787,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVISO: `%s' é un ficheiro baleiro\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "non se pode empregar o algoritmo de cifrado \"%s\" no modo %s\n"
+
+#, fuzzy, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "non se pode empregar o algoritmo de resumo \"%s\" no modo %s\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "lendo de `%s'\n"
@@ -1796,10 +1804,6 @@ msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
 "forza-la cifra simétrica %s (%d) viola as preferencias do destinatario\n"
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "non se pode empregar o algoritmo de cifrado \"%s\" no modo %s\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -2087,6 +2091,11 @@ msgstr "asinar unha chave"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "asinar unha chave localmente"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "xerar un novo par de chaves"
 
 msgid "sign a key"
 msgstr "asinar unha chave"
@@ -2572,10 +2581,6 @@ msgstr "preferencias de compresión personais non válidas\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "¡%s aínda non traballa con %s!\n"
-
-#, fuzzy, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "non se pode empregar o algoritmo de resumo \"%s\" no modo %s\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3756,6 +3761,15 @@ msgid "Nothing to sign.\n"
 msgstr "Nada que asinar coa chave %08lX\n"
 
 #, fuzzy, c-format
+msgid "Not signed by you.\n"
+msgstr "   asinada por %08lX no %s%s\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "fallou a comprobación da sinatura creada: %s\n"
+
+#, fuzzy, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s non é un xogo de caracteres válido\n"
 
@@ -4069,10 +4083,6 @@ msgstr "¿Está seguro de que quere revocala? (s/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "¿Crear un certificado de revocación para esta sinatura? (s/N) "
-
-#, fuzzy
-msgid "Not signed by you.\n"
-msgstr "   asinada por %08lX no %s%s\n"
 
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"

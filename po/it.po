@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: GNU gnupg 2.2.23\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2020-10-10 19:54+0200\n"
+"Last-Translator: Denis <student@alice.it>\n"
 "Language-Team: \n"
+"Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.4.1\n"
-"Last-Translator: Denis <student@alice.it>\n"
-"Language: it_IT\n"
 
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
@@ -1695,6 +1695,15 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVVISO: '%s' è un file vuoto\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"l'algoritmo di crittografia '%s' non può essere utilizzato in modalità %s\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "l'algoritmo digest '%s' non può essere utilizzato in modalità %s\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "lettura da '%s'\n"
 
@@ -1704,11 +1713,6 @@ msgid ""
 msgstr ""
 "AVVISO: l'imposizione della crittografia simmetrica %s (%d) viola le "
 "preferenze del destinatario\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"l'algoritmo di crittografia '%s' non può essere utilizzato in modalità %s\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1968,6 +1972,11 @@ msgstr "firmare rapidamente un tasto"
 
 msgid "quickly sign a key locally"
 msgstr "firmare rapidamente una chiave localmente"
+
+#, fuzzy
+#| msgid "quickly revoke a user-id"
+msgid "quickly revoke a key signature"
+msgstr "revocare rapidamente un id utente"
 
 msgid "sign a key"
 msgstr "firma una chiave"
@@ -2432,10 +2441,6 @@ msgstr "preferenze personali di compressione non valide\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s non funziona ancora con %s\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "l'algoritmo digest '%s' non può essere utilizzato in modalità %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3551,6 +3556,15 @@ msgid "Nothing to sign.\n"
 msgstr "Niente da firmare.\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "Non firmato da te.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "controllo della firma creata fallito: %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s' non è un'ora di scadenza valida\n"
 
@@ -3848,9 +3862,6 @@ msgstr "Sei ancora sicuro di volerlo aggiungere? (s/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Creare un certificato di revoca per questa firma? (s/N) "
-
-msgid "Not signed by you.\n"
-msgstr "Non firmato da te.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

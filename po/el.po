@@ -1782,6 +1782,15 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: `%s' είναι ένα άδειο αρχείο\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "απαγορεύετε η χρήση του κρυπταλγόριθμου \"%s\" στην κατάσταση %s\n"
+
+#, fuzzy, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"απαγορεύετε η χρήση του αλγόριθμου περίληψης \"%s\" στην κατάσταση %s\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "ανάγνωση από `%s'\n"
@@ -1792,10 +1801,6 @@ msgid ""
 msgstr ""
 "ο εξαναγκασμός συμμετρικού αλγόριθμου %s (%d) παραβιάζει τις\n"
 "επιλογές του παραλήπτη\n"
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "απαγορεύετε η χρήση του κρυπταλγόριθμου \"%s\" στην κατάσταση %s\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -2087,6 +2092,11 @@ msgstr "υπογραφή ενός κλειδιού"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "υπογραφή ενός κλειδιού τοπικά"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
 
 msgid "sign a key"
 msgstr "υπογραφή ενός κλειδιού"
@@ -2577,11 +2587,6 @@ msgstr "μη έγκυρες προεπιλογές προσωπικού αλγό
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "το %s ακόμα δε λειτουργεί μαζί με το %s\n"
-
-#, fuzzy, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"απαγορεύετε η χρήση του αλγόριθμου περίληψης \"%s\" στην κατάσταση %s\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3760,6 +3765,15 @@ msgid "Nothing to sign.\n"
 msgstr "Τίποτα για να υπογραφεί με το κλειδί  %08lX\n"
 
 #, fuzzy, c-format
+msgid "Not signed by you.\n"
+msgstr "   υπογράφθηκε από %08lX στις %s%s\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+#, fuzzy, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "το %s δεν είναι έγκυρο σετ χαρακτήρων\n"
 
@@ -4075,10 +4089,6 @@ msgstr "Σίγουρα θέλετε να ανακληθεί αυτό το κλε
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Δημιουργία ενός πιστοποιητικού ανάκλησης για αυτή την υπογραφή; (y/N)"
-
-#, fuzzy
-msgid "Not signed by you.\n"
-msgstr "   υπογράφθηκε από %08lX στις %s%s\n"
 
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"

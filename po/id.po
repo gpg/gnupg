@@ -1783,6 +1783,16 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "PERINGATAN: `%s' adalah file kosong\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
+
+#, fuzzy, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"anda tidak boleh menggunakan algoritma digest \"%s\" saat dalam mode %s.\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "Membaca dari `%s'\n"
@@ -1791,11 +1801,6 @@ msgstr "Membaca dari `%s'\n"
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -2079,6 +2084,11 @@ msgstr "tandai kunci"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "tandai kunci secara lokal"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "buat sepasang kunci baru"
 
 msgid "sign a key"
 msgstr "tandai kunci"
@@ -2564,11 +2574,6 @@ msgstr "preferensi kompresi personal tidak valid\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s belum dapat dipakai dengan %s\n"
-
-#, fuzzy, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"anda tidak boleh menggunakan algoritma digest \"%s\" saat dalam mode %s.\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3736,6 +3741,15 @@ msgid "Nothing to sign.\n"
 msgstr "Tidak ada yang ditandai dengan kunci %08lX\n"
 
 #, fuzzy, c-format
+msgid "Not signed by you.\n"
+msgstr "   ditandai oleh %08lX pada %s%s\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "Gagal memeriksa signature yang dibuat: %s\n"
+
+#, fuzzy, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s bukanlah set karakter yang valid\n"
 
@@ -4047,10 +4061,6 @@ msgstr "Anda tetap ingin membatalkannya? (y/n) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Membuat sertifikat pembatalan untuk signature ini? (y/N)"
-
-#, fuzzy
-msgid "Not signed by you.\n"
-msgstr "   ditandai oleh %08lX pada %s%s\n"
 
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"

@@ -1785,6 +1785,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "VAROVANIE: súbor `%s' je prázdny\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "nemôžete použiť šifrovací algoritmus \"%s\" v móde %s\n"
+
+#, fuzzy, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "nemôžete použiť hashovací algoritmus \"%s\" v móde %s\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "čítam z `%s'\n"
@@ -1793,10 +1801,6 @@ msgstr "čítam z `%s'\n"
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu\n"
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "nemôžete použiť šifrovací algoritmus \"%s\" v móde %s\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -2085,6 +2089,11 @@ msgstr "podpísať kľúč"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "podpísať kľúč lokálne"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "vytvoriť nový pár kľúčov"
 
 msgid "sign a key"
 msgstr "podpísať kľúč"
@@ -2578,10 +2587,6 @@ msgstr "neplatné užívateľské predvoľby pre kompresiu\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ešte nepracuje s %s\n"
-
-#, fuzzy, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "nemôžete použiť hashovací algoritmus \"%s\" v móde %s\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3757,6 +3762,15 @@ msgid "Nothing to sign.\n"
 msgstr "Nič na podpísanie kľúčom %08lX\n"
 
 #, fuzzy, c-format
+msgid "Not signed by you.\n"
+msgstr "   podpísané %08lX v %s%s\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
+
+#, fuzzy, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s nie je platná znaková sada\n"
 
@@ -4059,10 +4073,6 @@ msgstr "Ste si istý, že ho chcete stále revokovať? (a/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Vytvoriť pre tento podpis revokačný certifikát? (a/N)"
-
-#, fuzzy
-msgid "Not signed by you.\n"
-msgstr "   podpísané %08lX v %s%s\n"
 
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"

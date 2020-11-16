@@ -1800,6 +1800,16 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVERTISMENT: `%s' este un fişier gol\n"
 
 #, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "nu puteţi folosi algorimul de rezumat `%s' câtă vreme în modul %s\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "citesc din `%s'\n"
@@ -1810,11 +1820,6 @@ msgid ""
 msgstr ""
 "AVERTISMENT: forţând cifrul simetric %s (%d) violaţi preferinţele "
 "destinatarului\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -2099,6 +2104,11 @@ msgstr "semnează o cheie"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "semnează o cheie local"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "generează o nouă perechi de chei"
 
 msgid "sign a key"
 msgstr "semnează o cheie"
@@ -2622,11 +2632,6 @@ msgstr "preferinţe compresie personale invalide\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s nu merge încă cu %s!\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "nu puteţi folosi algorimul de rezumat `%s' câtă vreme în modul %s\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -3780,6 +3785,15 @@ msgstr "Nu există acest ID utilizator.\n"
 msgid "Nothing to sign.\n"
 msgstr "Nimic de semnat cu cheia %s\n"
 
+#, c-format
+msgid "Not signed by you.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "verificarea semnăturii create a eşuat: %s\n"
+
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid expiration time\n"
@@ -4093,9 +4107,6 @@ msgstr "Sunteţi încă sigur(ă) că doriţi să o revocaţi? (d/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Creaţi un certificat de revocare pentru această semnătură? (d/N) "
-
-msgid "Not signed by you.\n"
-msgstr ""
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"

@@ -1703,6 +1703,14 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "ADVARSEL: «%s» er en tom fil\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
+
+#, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
+
+#, c-format
 msgid "reading from '%s'\n"
 msgstr "leser fra «%s»\n"
 
@@ -1712,10 +1720,6 @@ msgid ""
 msgstr ""
 "ADVARSEL: tvungen bruk av symmetrisk krypt.metode %s (%d) bryter med "
 "mottakers oppsett\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1971,6 +1975,11 @@ msgstr "hurtigsigner nøkkel"
 
 msgid "quickly sign a key locally"
 msgstr "hurtigsigner nøkkel lokalt"
+
+#, fuzzy
+#| msgid "quickly revoke a user-id"
+msgid "quickly revoke a key signature"
+msgstr "opphev bruker-ID raskt"
 
 msgid "sign a key"
 msgstr "signer nøkkel"
@@ -2422,10 +2431,6 @@ msgstr "ugyldig personlig oppsett av komprimeringsmetode\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s virker ikke enda med %s\n"
-
-#, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3530,6 +3535,15 @@ msgid "Nothing to sign.\n"
 msgstr "Ingenting å signere.\n"
 
 #, c-format
+msgid "Not signed by you.\n"
+msgstr "Ikke signert av deg.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "kontroll av opprettet signatur mislyktes: %s\n"
+
+#, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "«%s» er en ugyldig utløpstid\n"
 
@@ -3824,9 +3838,6 @@ msgstr "Er du sikker på at du vil oppheve den? (j/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Vil du lage et opphevelsessertifikat for denne signaturen? (j/N) "
-
-msgid "Not signed by you.\n"
-msgstr "Ikke signert av deg.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
