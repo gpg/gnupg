@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.24 (unreleased)
+Noteworthy changes in version 2.2.24 (2020-11-17)
 -------------------------------------------------
 
   * Allow Unicode file names on Windows almost everywhere.  Note that
@@ -20,6 +20,10 @@ Noteworthy changes in version 2.2.24 (unreleased)
 
   * gpg: Print new status line CANCELED_BY_USER for a cancel during
     symmetric encryption.  [f05d1772c4]
+
+  * gpg: Fix the encrypt+sign hash algo preference selection for
+    ECDSA.  This is in particular needed for keys created from
+    existing smartcard based keys.  [aeed0b93ff]
 
   * agent: Fix secret key import of GnuPG 2.3 generated Ed25519 keys.
     [#5114]
