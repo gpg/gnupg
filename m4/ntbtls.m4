@@ -9,7 +9,7 @@ dnl This file is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 dnl
-dnl Last-changed: 2018-11-13
+dnl Last-changed: 2020-11-18
 
 
 dnl AM_PATH_NTBTLS([MINIMUM-VERSION,
@@ -26,7 +26,7 @@ dnl
 AC_DEFUN([AM_PATH_NTBTLS],
 [ AC_REQUIRE([AC_CANONICAL_HOST])
   AC_ARG_WITH(ntbtls-prefix,
-            AC_HELP_STRING([--with-ntbtls-prefix=PFX],
+            AS_HELP_STRING([--with-ntbtls-prefix=PFX],
                            [prefix where NTBTLS is installed (optional)]),
      ntbtls_config_prefix="$withval", ntbtls_config_prefix="")
   if test x"${NTBTLS_CONFIG}" = x ; then

@@ -9,9 +9,11 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+# Last-changed: 2020-11-17
+
 AC_DEFUN([_AM_PATH_NPTH_CONFIG],
 [ AC_ARG_WITH(npth-prefix,
-            AC_HELP_STRING([--with-npth-prefix=PFX],
+            AS_HELP_STRING([--with-npth-prefix=PFX],
                            [prefix where NPTH is installed (optional)]),
      npth_config_prefix="$withval", npth_config_prefix="")
   if test "x$npth_config_prefix" != x ; then

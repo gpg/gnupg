@@ -9,6 +9,7 @@ dnl This file is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 dnl SPDX-License-Identifier: FSFULLR
+# Last-changed: 2020-11-17
 
 dnl
 dnl Common code used for libassuan detection [internal]
@@ -17,7 +18,7 @@ dnl
 AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
 [ AC_REQUIRE([AC_CANONICAL_HOST])
   AC_ARG_WITH(libassuan-prefix,
-              AC_HELP_STRING([--with-libassuan-prefix=PFX],
+              AS_HELP_STRING([--with-libassuan-prefix=PFX],
                              [prefix where LIBASSUAN is installed (optional)]),
      libassuan_config_prefix="$withval", libassuan_config_prefix="")
   if test x$libassuan_config_prefix != x ; then

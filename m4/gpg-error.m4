@@ -1,5 +1,5 @@
 # gpg-error.m4 - autoconf macro to detect libgpg-error.
-# Copyright (C) 2002, 2003, 2004, 2011, 2014, 2018 g10 Code GmbH
+# Copyright (C) 2002, 2003, 2004, 2011, 2014, 2018, 2020 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2018-11-02
+# Last-changed: 2020-11-17
 
 
 dnl AM_PATH_GPG_ERROR([MINIMUM-VERSION,
@@ -31,7 +31,7 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
   dnl since that is consistent with how our three siblings use the directory/
   dnl package name in --with-$dir_name-prefix=PFX.
   AC_ARG_WITH(libgpg-error-prefix,
-              AC_HELP_STRING([--with-libgpg-error-prefix=PFX],
+              AS_HELP_STRING([--with-libgpg-error-prefix=PFX],
                              [prefix where GPG Error is installed (optional)]),
               [gpg_error_config_prefix="$withval"])
 

@@ -19,7 +19,7 @@ AC_DEFUN([GNUPG_CHECK_LDAP],
 # something like ./configure LDAPLIBS="-Lfoo -lbar"
 gnupg_have_ldap=no
 AC_ARG_WITH(ldap,
-  AC_HELP_STRING([--with-ldap=DIR],[look for the LDAP library in DIR]),
+  AS_HELP_STRING([--with-ldap=DIR],[look for the LDAP library in DIR]),
   [_ldap_with=$withval])
 
 if test x$_ldap_with != xno ; then
@@ -38,22 +38,22 @@ if test x$_ldap_with != xno ; then
     _ldap_save_libs=$LIBS
     LIBS="$MY_LDAPLIBS $1 $LIBS"
 
-    AC_MSG_CHECKING([whether LDAP via \"$MY_LDAPLIBS\" is present and sane])
-    AC_TRY_LINK([
+    AC_MSG_CHECKING([whether LDAP via "$MY_LDAPLIBS" is present and sane])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #ifdef _WIN32
 #include <winsock2.h>
 #include <winldap.h>
 #else
 #include <ldap.h>
 #endif
-],[ldap_open("foobar",1234);],
+]],[[ldap_open("foobar",1234);]])],
                 [gnupg_cv_func_ldap_init=yes],[gnupg_cv_func_ldap_init=no])
     AC_MSG_RESULT([$gnupg_cv_func_ldap_init])
 
     if test $gnupg_cv_func_ldap_init = no; then
       AC_MSG_CHECKING([whether I can make LDAP be sane with lber.h])
-      AC_TRY_LINK([#include <lber.h>
-#include <ldap.h>],[ldap_open("foobar",1234);],
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <lber.h>
+#include <ldap.h>]],[[ldap_open("foobar",1234);]])],
          [gnupg_cv_func_ldaplber_init=yes],[gnupg_cv_func_ldaplber_init=no])
       AC_MSG_RESULT([$gnupg_cv_func_ldaplber_init])
     fi
@@ -75,7 +75,8 @@ if test x$_ldap_with != xno ; then
 
        if test "$ac_cv_func_ldap_get_option" != yes ; then
           AC_MSG_CHECKING([whether LDAP supports ld_errno])
-	  AC_TRY_LINK([#include <ldap.h>],[LDAP *ldap; ldap->ld_errno;],
+	  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <ldap.h>]],
+             [[LDAP *ldap; ldap->ld_errno;]])],
 	     [gnupg_cv_func_ldap_ld_errno=yes],
 	     [gnupg_cv_func_ldap_ld_errno=no])
           AC_MSG_RESULT([$gnupg_cv_func_ldap_ld_errno])

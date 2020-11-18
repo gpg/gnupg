@@ -8,7 +8,8 @@
 # This file is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+#
+# Last-changed: 2020-11-18
 
 dnl AM_PATH_KSBA([MINIMUM-VERSION,
 dnl              [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
@@ -26,7 +27,7 @@ AC_DEFUN([AM_PATH_KSBA],
   dnl since that is consistent with how our three siblings use the directory/
   dnl package name in --with-$dir_name-prefix=PFX.
   AC_ARG_WITH(libksba-prefix,
-              AC_HELP_STRING([--with-libksba-prefix=PFX],
+              AS_HELP_STRING([--with-libksba-prefix=PFX],
                              [prefix where KSBA is installed (optional)]),
      ksba_config_prefix="$withval", ksba_config_prefix="")
 
