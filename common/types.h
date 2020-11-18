@@ -67,29 +67,29 @@
      Windows typedefs byte in the RPC headers but we need to avoid a
      warning about a double definition.
  */
-#ifndef HAVE_BYTE_TYPEDEF
+#ifndef HAVE_TYPE_BYTE
 #  undef byte	    /* There might be a macro with this name.  */
 #  ifdef __riscos__
      typedef char byte;
 #  elif !(defined(_WIN32) && defined(cbNDRContext))
      typedef unsigned char byte;
 #  endif
-#  define HAVE_BYTE_TYPEDEF
-#endif /*!HAVE_BYTE_TYPEDEF*/
+#  define HAVE_TYPE_BYTE
+#endif /*!HAVE_TYPE_BYTE*/
 
-#ifndef HAVE_USHORT_TYPEDEF
+#ifndef HAVE_TYPE_USHORT
 #  undef ushort     /* There might be a macro with this name.  */
    typedef unsigned short ushort;
-#  define HAVE_USHORT_TYPEDEF
+#  define HAVE_TYPE_USHORT
 #endif
 
-#ifndef HAVE_ULONG_TYPEDEF
+#ifndef HAVE_TYPE_ULONG
 #  undef ulong	    /* There might be a macro with this name.  */
    typedef unsigned long ulong;
-#  define HAVE_ULONG_TYPEDEF
+#  define HAVE_TYPE_ULONG
 #endif
 
-#ifndef HAVE_U16_TYPEDEF
+#ifndef HAVE_TYPE_U16
 #  undef u16	    /* There might be a macro with this name.  */
 #  if SIZEOF_UNSIGNED_INT == 2
      typedef unsigned int   u16;
@@ -98,10 +98,10 @@
 #  else
 #    error no typedef for u16
 #  endif
-#  define HAVE_U16_TYPEDEF
+#  define HAVE_TYPE_U16
 #endif
 
-#ifndef HAVE_U32_TYPEDEF
+#ifndef HAVE_TYPE_U32
 #  undef u32        /* There might be a macro with this name.  */
 #  if SIZEOF_UNSIGNED_INT == 4
      typedef unsigned int u32;
@@ -110,7 +110,7 @@
 #  else
 #    error no typedef for u32
 #  endif
-#  define HAVE_U32_TYPEDEF
+#  define HAVE_TYPE_U32
 #endif
 
 #endif /*GNUPG_COMMON_TYPES_H*/
