@@ -51,7 +51,7 @@ static void (*cleanup_fnc)(void);
 
 #ifndef HAVE_DOSISH_SYSTEM
 static void
-init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
+init_one_signal (int sig, void (*handler)(int), int check_ign )
 {
 # ifdef HAVE_SIGACTION
   struct sigaction oact, nact;
@@ -69,7 +69,7 @@ init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
   nact.sa_flags = 0;
   sigaction ( sig, &nact, NULL);
 # else
-  RETSIGTYPE (*ohandler)(int);
+  void (*ohandler)(int);
 
   ohandler = signal (sig, handler);
   if (check_ign && ohandler == SIG_IGN)
@@ -98,7 +98,7 @@ get_signal_name( int signum )
 #endif /*!HAVE_DOSISH_SYSTEM*/
 
 #ifndef HAVE_DOSISH_SYSTEM
-static RETSIGTYPE
+static void
 got_fatal_signal (int sig)
 {
   const char *s;
@@ -157,7 +157,7 @@ got_fatal_signal (int sig)
 #endif /*!HAVE_DOSISH_SYSTEM*/
 
 #ifndef HAVE_DOSISH_SYSTEM
-static RETSIGTYPE
+static void
 got_usr_signal (int sig)
 {
   (void)sig;
