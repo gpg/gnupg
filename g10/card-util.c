@@ -1257,7 +1257,8 @@ get_info_for_key_operation (struct agent_card_info_s *info)
 
   memset (info, 0, sizeof *info);
   rc = agent_scd_getattr ("SERIALNO", info);
-  if (rc || !info->apptype || strcmp (info->apptype, "openpgp"))
+  if (rc || !info->serialno || strncmp (info->serialno, "D27600012401", 12)
+      || strlen (info->serialno) != 32 )
     {
       log_error (_("key operation not possible: %s\n"),
                  rc ? gpg_strerror (rc) : _("not an OpenPGP card"));
