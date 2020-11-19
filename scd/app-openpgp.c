@@ -4392,9 +4392,14 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
   const char *s;
   int n;
   const char *fpr = NULL;
+  int i;
 
   if (r_use_auth)
     *r_use_auth = 0;
+
+  /* Make sure we have load the public keys.  */
+  for (i = 0; i < 3; i++)
+    get_public_key (app, i);
 
   if (strlen (keyidstr) < 32)
     return gpg_error (GPG_ERR_INV_ID);
