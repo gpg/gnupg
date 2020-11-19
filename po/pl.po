@@ -6,9 +6,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.2.21\n"
+"Project-Id-Version: gnupg-2.2.24\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-08-16 07:45+0200\n"
+"PO-Revision-Date: 2020-11-18 17:35+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -1946,10 +1946,8 @@ msgstr "szybkie złożenie podpisu na kluczu"
 msgid "quickly sign a key locally"
 msgstr "szybkie złożenie prywatnego podpisu na kluczu"
 
-#, fuzzy
-#| msgid "quickly revoke a user-id"
 msgid "quickly revoke a key signature"
-msgstr "szybkie unieważnienie identyfikatora użytkownika"
+msgstr "szybkie unieważnienie podpisu klucza"
 
 msgid "sign a key"
 msgstr "złożenie podpisu na kluczu"
@@ -2973,35 +2971,28 @@ msgstr "klucz %s: dodano bezpośredni podpis\n"
 msgid "error allocating memory: %s\n"
 msgstr "błąd przydzielania pamięci: %s\n"
 
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
+#, c-format
 msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "klucz %s: nieobsługiwany algorytm asymetryczny\n"
+msgstr "nie można sprawdzić podpisu z nieobsługiwanym algorytmem klucza publicznego (%d): %s.\n"
 
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
+#, c-format
 msgid ""
 "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "karta nie obsługuje algorytmu skrótu %s\n"
+msgstr "nie można sprawdzić podpisu z nieobsługiwanym algorytmem skrótu %d: %s.\n"
 
-#, fuzzy
-#| msgid "Good signature from"
 msgid " (reordered signatures follow)"
-msgstr "Poprawny podpis złożony przez"
+msgstr " (poniżej uporządkowane podpisy)"
 
-#, fuzzy, c-format
-#| msgid "key %s: %s\n"
+#, c-format
 msgid "key %s:\n"
-msgstr "klucz %s: %s\n"
+msgstr "klucz %s:\n"
 
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
-#| msgid_plural "User ID \"%s\": %d signatures removed\n"
+#, c-format
 msgid "%d duplicate signature removed\n"
 msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "Identyfikator użytkownika ,,%s'': %d podpis usunięty\n"
-msgstr[1] "Identyfikator użytkownika ,,%s'': %d podpisy usunięte\n"
-msgstr[2] "Identyfikator użytkownika ,,%s'': %d podpisów usuniętych\n"
+msgstr[0] "%d powtórzony podpis usunięty\n"
+msgstr[1] "%d powtórzone podpisy usunięte\n"
+msgstr[2] "%d powtórzonych podpisów usuniętych\n"
 
 #, c-format
 msgid "%d signature not checked due to a missing key\n"
@@ -3017,19 +3008,19 @@ msgstr[0] "%d niepoprawny podpis\n"
 msgstr[1] "%d niepoprawne podpisy\n"
 msgstr[2] "%d niepoprawnych podpisów\n"
 
-#, fuzzy, c-format
-#| msgid "Good signature from"
+#, c-format
 msgid "%d signature reordered\n"
 msgid_plural "%d signatures reordered\n"
-msgstr[0] "Poprawny podpis złożony przez"
-msgstr[1] "Poprawny podpis złożony przez"
-msgstr[2] "Poprawny podpis złożony przez"
+msgstr[0] "%d podpis uporządkowany\n"
+msgstr[1] "%d podpisy uporządkowane\n"
+msgstr[2] "%d podpisów uporządkowanych\n"
 
 #, c-format
 msgid ""
 "Warning: errors found and only checked self-signatures, run '%s' to check "
 "all signatures.\n"
 msgstr ""
+"Uwaga: znaleziono błędy, a sprawdzono tylko podpisy własne; uruchomienie '%s' sprawdzi wszystkie podpisy.\n"
 
 #, c-format
 msgid "error creating keybox '%s': %s\n"
@@ -3552,10 +3543,9 @@ msgstr "Nie ma nic do podpisania.\n"
 msgid "Not signed by you.\n"
 msgstr "Nie podpisane przez ciebie.\n"
 
-#, fuzzy, c-format
-#| msgid "checking created signature failed: %s\n"
+#, c-format
 msgid "revoking the key signature failed: %s\n"
-msgstr "sprawdzenie złożonego podpisu nie powiodło się: %s\n"
+msgstr "unieważnienie podpisu klucza nie powiodło się: %s\n"
 
 #, c-format
 msgid "'%s' is not a valid expiration time\n"
