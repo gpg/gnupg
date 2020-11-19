@@ -2368,7 +2368,7 @@ get_revision_from_blurb (const char *blurb, int *r_len)
   for (; *s; s++)
     if (*s == '\n' && s[1] == '(')
       break;
-  if (s)
+  if (*s)
     {
       s += 2;
       for (n=0; s[n] && s[n] != ' '; n++)
@@ -2400,8 +2400,9 @@ gpgconf_versions (void)
   es_fprintf (es_stdout, "* Libassuan %s (%.*s)\n\n",
               assuan_check_version (NULL), n, s);
 
-  es_fprintf (es_stdout, "* KSBA %s \n\n",
-              ksba_check_version (NULL));
+  s = get_revision_from_blurb (ksba_check_version ("\x01\x01"), &n);
+  es_fprintf (es_stdout, "* KSBA %s (%.*s)\n\n",
+              ksba_check_version (NULL), n, s);
 
 #ifdef HTTP_USE_NTBTLS
   s = get_revision_from_blurb (ntbtls_check_version ("\x01\x01"), &n);
