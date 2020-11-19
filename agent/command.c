@@ -1088,17 +1088,17 @@ cmd_readkey (assuan_context_t ctx, char *line)
   unsigned char *pkbuf = NULL;
   char *serialno = NULL;
   size_t pkbuflen;
-  const char *opt_card;
+  int opt_card;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  opt_card = has_option_name (line, "--card");
+  opt_card = has_option (line, "--card");
   line = skip_options (line);
 
   if (opt_card)
     {
-      const char *keyid = opt_card;
+      const char *keyid = line;
 
       rc = agent_card_getattr (ctrl, "SERIALNO", &serialno, NULL);
       if (rc)
