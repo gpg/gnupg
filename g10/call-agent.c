@@ -840,7 +840,7 @@ scd_keypairinfo_status_cb (void *opaque, const char *line)
   if (keywordlen == 11 && !memcmp (keyword, "KEYPAIRINFO", keywordlen))
     {
       /* The format of such a line is:
-       *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime]
+       *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime] [fprtime] [algostr]
        */
       const char *fields[4];
       int nfields;
