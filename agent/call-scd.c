@@ -677,7 +677,7 @@ readkey_status_cb (void *opaque, const char *line)
       && !parm->keyref)
     {
       /* The format of such a line is:
-       *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime] [fprtime] [algostr]
+       *   KEYPAIRINFO <hexgrip> <keyref> [usage] [keytime] [algostr]
        *
        * Here we only need the keyref.  We use only the first received
        * KEYPAIRINFO; it is possible to receive several if there are

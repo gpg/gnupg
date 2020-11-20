@@ -451,7 +451,7 @@ static const char hlp_learn[] =
   "are implemented.  These strings are aliases for the AID.  With option\n"
   "--multi information for all switchable apps are returned.\n"
   "\n"
-  "  S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id> [<usage>]\n"
+  "  S KEYPAIRINFO <hexgrip> <keyref> [<usage>] [<keytime>] [<algo>]\n"
   "\n"
   "If there is no certificate yet stored on the card a single 'X' is\n"
   "returned as the keygrip.  For more info see doc/DETAILS.  In addition\n"
