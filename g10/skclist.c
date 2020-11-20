@@ -131,17 +131,15 @@ build_sk_list (ctrl_t ctrl,
     {
       struct agent_card_info_s info;
       PKT_public_key *pk;
-      char *serialno;
 
       memset (&info, 0, sizeof(info));
       pk = xmalloc_clear (sizeof *pk);
       pk->req_usage = use;
 
       /* Check if a card is available.  If any, use the key as a hint.  */
-      err = agent_scd_serialno (&serialno, NULL);
+      err = agent_scd_serialno (NULL, NULL);
       if (!err)
         {
-          xfree (serialno);
           err = agent_scd_getattr ("KEY-FPR", &info);
           if (err)
             log_error ("error retrieving key fingerprint from card: %s\n",
@@ -382,8 +380,6 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
           /* Loop over the list of secret keys.  */
           do
             {
-              char *serialno;
-
               name = NULL;
               keyblock = NULL;
               switch (c->state)
@@ -410,10 +406,9 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 
                 case 3: /* Init list of card keys to try.  */
                   c->card_keyinfo_list = NULL;
-                  err = agent_scd_serialno (&serialno, NULL);
+                  err = agent_scd_serialno (NULL, NULL);
                   if (!err)
                     {
-                      xfree (serialno);
                       err = agent_scd_keyinfo (NULL, GCRY_PK_USAGE_ENCR,
                                                &c->card_keyinfo_list);
                     }

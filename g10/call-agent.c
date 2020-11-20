@@ -1408,7 +1408,9 @@ agent_scd_serialno (char **r_serialno, const char *demand)
   char *serialno = NULL;
   char line[ASSUAN_LINELENGTH];
 
-  *r_serialno = NULL;
+  if (r_serialno)
+    *r_serialno = NULL;
+
   err = start_agent (NULL, (1 | FLAG_FOR_CARD_SUPPRESS_ERRORS));
   if (err)
     return err;
@@ -1427,7 +1429,11 @@ agent_scd_serialno (char **r_serialno, const char *demand)
       return err;
     }
 
-  *r_serialno = serialno;
+  if (r_serialno)
+    *r_serialno = serialno;
+  else
+    xfree (serialno);
+
   return 0;
 }
 

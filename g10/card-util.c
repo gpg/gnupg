@@ -689,7 +689,6 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
   int err;
   strlist_t card_list, sl;
   char *serialno0 = NULL;
-  char *serialno1 = NULL;
   int all_cards = 0;
   int any_card = 0;
 
@@ -723,7 +722,7 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
         tty_fprintf (fp, "\n");
       any_card = 1;
 
-      err = agent_scd_serialno (&serialno1, sl->d);
+      err = agent_scd_serialno (NULL, sl->d);
       if (err)
         {
           if (opt.verbose)
@@ -733,19 +732,16 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
         }
 
       current_card_status (ctrl, fp, NULL, 0);
-      xfree (serialno1);
-      serialno1 = NULL;
 
       if (!all_cards)
         goto leave;
     }
 
   /* Select the original card again.  */
-  err = agent_scd_serialno (&serialno1, serialno0);
+  err = agent_scd_serialno (NULL, serialno0);
 
  leave:
   xfree (serialno0);
-  xfree (serialno1);
   free_strlist (card_list);
 }
 
@@ -2010,12 +2006,7 @@ factory_reset (void)
 
   /* Then, connect the card again.  */
   if (!err)
-    {
-      char *serialno0;
-
-      err = agent_scd_serialno (&serialno0, NULL);
-      xfree (serialno0);
-    }
+    err = agent_scd_serialno (NULL, NULL);
 
  leave:
   if (locked)
