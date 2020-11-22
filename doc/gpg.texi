@@ -4330,6 +4330,11 @@ for @samp{Subkey-Type}.
 @item Key-Length: @var{nbits}
 The requested length of the generated key in bits.  The default is
 returned by running the command @samp{@gpgname --gpgconf-list}.
+For ECC keys this parameter is ignored.
+
+@item Key-Curve: @var{curve}
+The requested elliptic curve of the generated key.  This is a required
+parameter for ECC keys.  It is ignored for non-ECC keys.
 
 @item Key-Grip: @var{hexstring}
 This is optional and used to generate a CSR or certificate for an
@@ -4353,6 +4358,9 @@ can be handled.  See also @samp{Key-Type} above.
 @item Subkey-Length: @var{nbits}
 Length of the secondary key (subkey) in bits.  The default is returned
 by running the command @samp{@gpgname --gpgconf-list}.
+
+@item Subkey-Curve: @var{curve}
+Key curve for a subkey; similar to @samp{Key-Curve}.
 
 @item Subkey-Usage: @var{usage-list}
 Key usage lists for a subkey; similar to @samp{Key-Usage}.
