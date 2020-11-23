@@ -1,8 +1,14 @@
-Noteworthy changes in version 2.2.25 (unreleased)
+Noteworthy changes in version 2.2.25 (2020-11-23)
 -------------------------------------------------
 
+  * scd: Fix regression in 2.2.24 requiring gpg --card-status before
+    signing or decrypting.  [#5065]
+
+  * gpgsm: Using Libksba 1.5.0 signatures with a rarely used
+    combination of attributes can now be verified.  [#5146]
+
   Release-info: https://dev.gnupg.org/T5140
-  See-also: gnupg-announce/
+  See-also: gnupg-announce/2020q4/000450.html
 
 
 Noteworthy changes in version 2.2.24 (2020-11-17)
