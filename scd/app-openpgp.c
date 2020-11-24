@@ -1102,9 +1102,10 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
   if (table[idx].special == -1)
     {
-      /* The serial number is very special.  We could have used the
-         AID DO to retrieve it.  The AID DO is available anyway but
-         not hex formatted. */
+      /* The serial number is very special.  We can't use the the AID
+         DO (0x4f) becuase this is the serialno per specs with the
+         correct appversion.  We might however use a serialno with the
+         version set to 0.0 and that is what we need to return.  */
       char *serial = app_get_serialno (app);
 
       if (serial)
@@ -1147,17 +1148,14 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   if (table[idx].special == -4)
     {
-      char *serial = app_get_serialno (app);
+      char *serial;
 
-      if (serial)
+      if ((serial = app_get_dispserialno (app, 0)))
         {
-          if (strlen (serial) > 16+12)
-            {
-              send_status_info (ctrl, table[idx].name, serial+16, 12, NULL, 0);
-              xfree (serial);
-              return 0;
-            }
+          send_status_info (ctrl, table[idx].name,
+                            serial, strlen (serial), NULL, 0);
           xfree (serial);
+          return 0;
         }
       return gpg_error (GPG_ERR_INV_NAME);
     }
@@ -1380,39 +1378,6 @@ get_disp_name (app_t app)
 
   xfree (string);
   return result;
-}
-
-
-/*
- * Yubikey has its own serial number at app->serialno.  When Yubikey
- * is used for OpenPGP card app, we get the serial number for OpenPGP
- * card from its AID data object.
- */
-char *
-yubikey_get_serialno (app_t app)
-{
-  void *relptr;
-  unsigned char *buffer;
-  size_t buflen;
-  char *serial;
-
-  relptr = get_one_do (app, 0x004F, &buffer, &buflen, NULL);
-  if (!relptr)
-    return NULL;
-  if (buflen != 16)
-    {
-      xfree (relptr);
-      return NULL;
-    }
-
-  serial = xtrymalloc (32 + 1);
-  if (!serial)
-    return NULL;
-
-  serial[32] = 0;
-  bin2hex (buffer, buflen, serial);
-  xfree (relptr);
-  return serial;
 }
 
 
@@ -6113,7 +6078,15 @@ app_select_openpgp (app_t app)
       app->appversion |= buffer[7];
       manufacturer = (buffer[8]<<8 | buffer[9]);
 
-      /* For Yubikey, serialno is set in app.c, already.  */
+      /* For Yubikey, serialno is set in app.c, already.  The problem
+       * is that the OpenPGP appversion has been set to 0.0 because we
+       * are not able to deduce this if the OpenPGP app has not been
+       * enabled.  Thus we here to to use the appversion from DO 0x4f
+       * but return a serialno with a version 0.0 as set by app.c.
+       * Users of scdaemon taking the version from the serialno won't
+       * work anymore and need to be modified.  Recall that our
+       * architecture requires exactly one serilano per card.
+       */
       if (app->card->cardtype == CARDTYPE_YUBIKEY)
         xfree (buffer);
       else

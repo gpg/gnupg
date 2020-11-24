@@ -345,7 +345,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
       return rc;
     }
 
-  serial = card_get_serialno (ctrl->card_ctx, 0);
+  serial = card_get_serialno (ctrl->card_ctx);
   if (!serial)
     return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -521,7 +521,7 @@ cmd_learn (assuan_context_t ctx, char *line)
       send_status_direct (ctrl, "READER", reader);
       /* No need to free the string of READER.  */
 
-      serial = card_get_serialno (ctrl->card_ctx, 1);
+      serial = card_get_serialno (ctrl->card_ctx);
       if (!serial)
         return gpg_error (GPG_ERR_INV_VALUE);
 

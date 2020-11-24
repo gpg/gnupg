@@ -302,7 +302,7 @@ app_send_devinfo (ctrl_t ctrl)
       char *serialno;
       char card_info[80];
 
-      serialno = card_get_serialno (c, 0);
+      serialno = card_get_serialno (c);
       snprintf (card_info, sizeof card_info, "DEVICE %s %s",
                 strcardtype (c->cardtype), serialno);
       xfree (serialno);
@@ -514,10 +514,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                           card->serialno[2] = 0x0;
                           card->serialno[3] = formfactor;
                           memcpy (card->serialno + 4, s0, n);
-                          /* Note that we do not clear the error
-                           * so that no further serial number
-                           * testing is done.  After all we just
-                           * set the serial number.  */
+                          err = app_munge_serialno (card);
                         }
                     }
 
@@ -559,11 +556,11 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
             }
         }
 
-      if (!err)
+      if (!err && card->cardtype != CARDTYPE_YUBIKEY)
         err = iso7816_select_file (slot, 0x2F02, 0);
-      if (!err)
+      if (!err && card->cardtype != CARDTYPE_YUBIKEY)
         err = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
-      if (!err)
+      if (!err && card->cardtype != CARDTYPE_YUBIKEY)
         {
           size_t n;
           const unsigned char *p;
@@ -1142,7 +1139,9 @@ card_unref_locked (card_t card)
      FF 00 00 = For serial numbers starting with an FF
      FF 01 00 = Some german p15 cards return an empty serial number so the
                 serial number from the EF(TokenInfo) is used instead.
-     FF 02 00 = Serial number from Yubikey config
+     FF 02 00 = Serial number from Yubikey config.
+                This is normally not seen because we modify this here
+                to an OpenPGP Card s/n.
      FF 7F 00 = No serialno.
 
      All other serial numbers not starting with FF are used as they are.
@@ -1150,7 +1149,48 @@ card_unref_locked (card_t card)
 gpg_error_t
 app_munge_serialno (card_t card)
 {
-  if (card->serialnolen && card->serialno[0] == 0xff)
+  if (card->cardtype == CARDTYPE_YUBIKEY
+      && card->serialnolen == 3 + 1 + 4
+      && !memcmp (card->serialno, "\xff\x02\x00", 3))
+    {
+      /* An example for a serial number is
+       *   FF020001008A77C1
+       *   ~~~~~~--~~~~~~~~
+       *   !     ! !--------- 4 byte s/n
+       *   !     !----------- Form factor
+       *   !----------------- Our prefix
+       * Yubico seems to use the decimalized version of their S/N
+       * as the OpenPGP card S/N.  Thus in theory we can contruct the
+       * number from this information so that we do not rely on having
+       * the OpenPGP app enabled.
+       */
+      unsigned long sn;
+      sn  = card->serialno[4] * 16777216;
+      sn += card->serialno[5] * 65536;
+      sn += card->serialno[6] * 256;
+      sn += card->serialno[7];
+      if (sn <= 99999999ul)
+        {
+          char *buf = xtrymalloc (16);
+          if (!buf)
+            return gpg_error_from_syserror ();
+          memcpy (buf, "\xD2\x76\x00\x01\x24\x01", 6);
+          buf[6] = 0; /* Application version which we don't know  */
+          buf[7] = 0; /* thus we use 0.0 and don't use this directly.  */
+          buf[8] = 0; /* Manufacturer: Yubico (0x0006).  */
+          buf[9] = 6;
+          buf[10] = (sn >> 24);
+          buf[11] = (sn >> 16);
+          buf[12] = (sn >>  8);
+          buf[13] = sn;
+          buf[14] = 0; /* Last two bytes are RFU.  */
+          buf[15] = 0;
+          xfree (card->serialno);
+          card->serialno = buf;
+          card->serialnolen = 16;
+        }
+    }
+  else if (card->serialnolen && card->serialno[0] == 0xff)
     {
       /* The serial number starts with our special prefix.  This
          requires that we put our default prefix "FF0000" in front. */
@@ -1182,7 +1222,7 @@ app_munge_serialno (card_t card)
    returned as a malloced string (hex encoded) in SERIAL.  Caller must
    free SERIAL unless the function returns an error.  */
 char *
-card_get_serialno (card_t card, int is_canonical)
+card_get_serialno (card_t card)
 {
   char *serial;
 
@@ -1191,31 +1231,7 @@ card_get_serialno (card_t card, int is_canonical)
 
   if (!card->serialnolen)
     serial = xtrystrdup ("FF7F00");
-  else if (card->cardtype == CARDTYPE_YUBIKEY && !is_canonical
-           && card->app && card->app->apptype == APPTYPE_OPENPGP)
-    {
-      app_t a;
-
-      for (a = card->app; a; a = a->next)
-        if (a->apptype == APPTYPE_OPENPGP)
-          break;
-
-      /* Found the OpenPGP app */
-      if (a->apptype == APPTYPE_OPENPGP)
-        {
-          if (card->app != a)
-            run_reselect (NULL, card, a, card->app);
-
-          serial = yubikey_get_serialno (a);
-
-          if (card->app != a)
-            run_reselect (NULL, card, card->app, a);
-        }
-      else
-        goto other;
-    }
   else
-  other:
     serial = bin2hex (card->serialno, card->serialnolen, NULL);
 
   return serial;
@@ -1226,8 +1242,109 @@ char *
 app_get_serialno (app_t app)
 {
   if (!app || !app->card)
-    return NULL;
-  return card_get_serialno (app->card, 0);
+    {
+      gpg_err_set_errno (0);
+      return NULL;
+    }
+  return card_get_serialno (app->card);
+}
+
+
+/* Return an allocated string with the serial number in a format to be
+ * show to the user.  With NOFALLBACK set to true return NULL if such an
+ * abbreviated S/N is not available, else return the full serial
+ * number as a hex string.  May return NULL on malloc problem.  */
+char *
+card_get_dispserialno (card_t card, int nofallback)
+{
+  char *result, *p;
+  unsigned long sn;
+
+  if (card && card->serialno && card->serialnolen == 3+1+4
+      && !memcmp (card->serialno, "\xff\x02\x00", 3))
+    {
+      /* This is a 4 byte S/N of a Yubikey which seems to be printed
+       * on the token in decimal.  Maybe they will print larger S/N
+       * also in decimal but we can't be sure, thus do it only for
+       * these 32 bit numbers.  */
+      sn  = card->serialno[4] * 16777216;
+      sn += card->serialno[5] * 65536;
+      sn += card->serialno[6] * 256;
+      sn += card->serialno[7];
+      if ((card->cardversion >> 16) >= 5)
+        result = xtryasprintf ("%lu %03lu %03lu",
+                               (sn/1000000ul),
+                               (sn/1000ul % 1000ul),
+                               (sn % 1000ul));
+      else
+        result = xtryasprintf ("%lu", sn);
+    }
+  else if (card && card->cardtype == CARDTYPE_YUBIKEY)
+    {
+      /* Get back the printed Yubikey number from the OpenPGP AID
+       * Example: D2760001240100000006008A77C10000
+       */
+      result = card_get_serialno (card);
+      if (result && strlen (result) >= 28 && !strncmp (result+16, "0006", 4))
+        {
+          sn  = xtoi_2 (result+20) * 16777216;
+          sn += xtoi_2 (result+22) * 65536;
+          sn += xtoi_2 (result+24) * 256;
+          sn += xtoi_2 (result+26);
+          if ((card->cardversion >> 16) >= 5)
+            p = xtryasprintf ("%lu %03lu %03lu",
+                              (sn/1000000ul),
+                              (sn/1000ul % 1000ul),
+                              (sn % 1000ul));
+          else
+            p = xtryasprintf ("%lu", sn);
+          if (p)
+            {
+              xfree (result);
+              result = p;
+            }
+        }
+      else if (nofallback)
+        {
+          xfree (result);
+          result = NULL;
+        }
+    }
+  else if (card && card->app && card->app->apptype == APPTYPE_OPENPGP)
+    {
+      /* Extract number from standard OpenPGP AID.  */
+      result = card_get_serialno (card);
+      if (result && strlen (result) > 16+12)
+        {
+          memcpy (result, result+16, 4);
+          result[4] = ' ';
+          memcpy (result+5, result+20, 8);
+          result[13] = 0;
+        }
+      else if (nofallback)
+        {
+          xfree (result);
+          result = NULL;
+        }
+    }
+  else if (nofallback)
+    result = NULL;  /* No Abbreviated S/N.  */
+  else
+    result = card_get_serialno (card);
+
+  return result;
+}
+
+/* Same as card_get_dispserialno but takes an APP object.  */
+char *
+app_get_dispserialno (app_t app, int nofallback)
+{
+  if (!app || !app->card)
+    {
+      gpg_err_set_errno (0);
+      return NULL;
+    }
+  return card_get_dispserialno (app->card, nofallback);
 }
 
 
@@ -2136,7 +2253,7 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
   membuf_t mb;
   int any = 0;
 
-  serial = card_get_serialno (card, 1);
+  serial = card_get_serialno (card);
   if (!serial)
     return 0; /* Oops.  */
 

@@ -746,38 +746,6 @@ parse_chv_keyref (const char *keyrefstr)
 }
 
 
-/* Return an allocated string with the serial number in a format to be
- * show to the user.  With FAILMODE is true return NULL if such an
- * abbreviated S/N is not available, else return the full serial
- * number as a hex string.  May return NULL on malloc problem.  */
-static char *
-get_dispserialno (app_t app, int failmode)
-{
-  char *result;
-
-  if (app->card && app->card->serialno && app->card->serialnolen == 3+1+4
-      && !memcmp (app->card->serialno, "\xff\x02\x00", 3))
-    {
-      /* This is a 4 byte S/N of a Yubikey which seems to be printed
-       * on the token in decimal.  Maybe they will print larger S/N
-       * also in decimal but we can't be sure, thus do it only for
-       * these 32 bit numbers.  */
-      unsigned long sn;
-      sn  = app->card->serialno[4] * 16777216;
-      sn += app->card->serialno[5] * 65536;
-      sn += app->card->serialno[6] * 256;
-      sn += app->card->serialno[7];
-      result = xtryasprintf ("yk-%lu", sn);
-    }
-  else if (failmode)
-    result = NULL;  /* No Abbreviated S/N.  */
-  else
-    result = app_get_serialno (app);
-
-  return result;
-}
-
-
 /* The verify command can be used to retrieve the security status of
  * the card.  Given the PIN name (e.g. "PIV.80" for the application
  * pin, a ISO7817_VERIFY_* code is returned or a non-negative number
@@ -842,7 +810,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   else if (table[idx].special == -3)
     {
-      char *tmp = get_dispserialno (app, 1);
+      char *tmp = app_get_dispserialno (app, 1);
 
       if (tmp)
         {
@@ -1789,7 +1757,7 @@ make_prompt (app_t app, int remaining, const char *firstline)
 {
   char *serial, *tmpbuf, *result;
 
-  serial = get_dispserialno (app, 0);
+  serial = app_get_dispserialno (app, 0);
   if (!serial)
     return NULL;
 
