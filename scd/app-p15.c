@@ -466,6 +466,7 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
                         unsigned char **buffer, size_t *buflen)
 {
   gpg_error_t err;
+  int sw;
 
   err = iso7816_select_file (slot, efid, 0);
   if (err)
@@ -474,11 +475,33 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
                  efid_desc, efid, gpg_strerror (err));
       return err;
     }
-  err = iso7816_read_binary (slot, 0, 0, buffer, buflen);
-  if (err)
+
+  err = iso7816_read_binary_ext (slot, 0, 0, 0, buffer, buflen, &sw);
+  if (err && sw == 0x6981)
     {
-      log_error ("p15: error reading %s (0x%04X): %s\n",
-                 efid_desc, efid, gpg_strerror (err));
+      /* Command was not possible for file structure.  Try to read the
+       * first record instead.  */
+      err = iso7816_read_record_ext (slot, 1, 1, 0, buffer, buflen, &sw);
+      if (err)
+        {
+          log_error ("p15: error reading %s (0x%04X)"
+                     " after fallback to record mode: %s (sw=%04X)\n",
+                     efid_desc, efid, gpg_strerror (err), sw);
+          return err;
+        }
+      /* On a CardOS based card I noticed that the record started with
+       * a byte 0x01 followed by another byte with the length of the
+       * record.  Detect this here and remove this prefix.  */
+      if (*buflen > 2 && (*buffer)[0] == 1 && (*buffer)[1] == *buflen - 2)
+        {
+          memmove (*buffer, *buffer + 2, *buflen - 2);
+          *buflen = *buflen - 2;
+        }
+    }
+  else if (err)
+    {
+      log_error ("p15: error reading %s (0x%04X): %s (sw=%04X)\n",
+                 efid_desc, efid, gpg_strerror (err), sw);
       return err;
     }
   return 0;
@@ -2180,6 +2203,8 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
          extensions of pkcs#15. */
 
     ready:
+      if (gpg_err_code (err) == GPG_ERR_EOF)
+        err = 0;
       if (opt.verbose)
         {
           log_info ("p15: AODF %04hX: id=", fid);
@@ -2922,7 +2947,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
     goto leave;
 
   err = iso7816_read_binary_ext (app_get_slot (app), 1, cdf->off, cdf->len,
-                                 &buffer, &buflen);
+                                 &buffer, &buflen, NULL);
   if (!err && (!buflen || *buffer == 0xff))
     err = gpg_error (GPG_ERR_NOT_FOUND);
   if (err)
