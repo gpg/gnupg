@@ -2551,6 +2551,14 @@ read_ef_tokeninfo (app_t app)
       n -= objlen;
     }
 
+  if (opt.verbose)
+    {
+      log_info ("p15:  cardtype .....: %d.%d\n",
+                app->app_local->card_type,
+                app->app_local->card_product);
+    }
+
+
  leave:
   xfree (buffer);
   return err;
