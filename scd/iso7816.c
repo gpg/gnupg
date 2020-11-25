@@ -786,19 +786,24 @@ iso7816_get_challenge (int slot, int length, unsigned char *buffer)
 }
 
 /* Perform a READ BINARY command requesting a maximum of NMAX bytes
-   from OFFSET.  With NMAX = 0 the entire file is read. The result is
-   stored in a newly allocated buffer at the address passed by RESULT.
-   Returns the length of this data at the address of RESULTLEN. */
+ * from OFFSET.  With NMAX = 0 the entire file is read. The result is
+ * stored in a newly allocated buffer at the address passed by RESULT.
+ * Returns the length of this data at the address of RESULTLEN.  If
+ * R_SW is not NULL the last status word is stored there. */
 gpg_error_t
 iso7816_read_binary_ext (int slot, int extended_mode,
                          size_t offset, size_t nmax,
-                         unsigned char **result, size_t *resultlen)
+                         unsigned char **result, size_t *resultlen,
+                         int *r_sw)
 {
   int sw;
   unsigned char *buffer;
   size_t bufferlen;
   int read_all = !nmax;
   size_t n;
+
+  if (r_sw)
+    *r_sw = 0;
 
   if (!result || !resultlen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -825,6 +830,8 @@ iso7816_read_binary_ext (int slot, int extended_mode,
                              ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                              n, &buffer, &bufferlen);
         }
+      if (r_sw)
+        *r_sw = sw;
 
       if (*result && sw == SW_BAD_P0_P1)
         {
@@ -885,7 +892,8 @@ gpg_error_t
 iso7816_read_binary (int slot, size_t offset, size_t nmax,
                      unsigned char **result, size_t *resultlen)
 {
-  return iso7816_read_binary_ext (slot, 0, offset, nmax, result, resultlen);
+  return iso7816_read_binary_ext (slot, 0, offset, nmax,
+                                  result, resultlen, NULL);
 }
 
 
@@ -895,14 +903,19 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
    should be 0 to read the current EF or contain a short EF. The
    result is stored in a newly allocated buffer at the address passed
    by RESULT.  Returns the length of this data at the address of
-   RESULTLEN. */
+   RESULTLEN.  If R_SW is not NULL the last status word is stored
+   there.  */
 gpg_error_t
-iso7816_read_record (int slot, int recno, int reccount, int short_ef,
-                     unsigned char **result, size_t *resultlen)
+iso7816_read_record_ext (int slot, int recno, int reccount, int short_ef,
+                         unsigned char **result, size_t *resultlen,
+                         int *r_sw)
 {
   int sw;
   unsigned char *buffer;
   size_t bufferlen;
+
+  if (r_sw)
+    *r_sw = 0;
 
   if (!result || !resultlen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -922,6 +935,8 @@ iso7816_read_record (int slot, int recno, int reccount, int short_ef,
                      short_ef? short_ef : 0x04,
                      -1, NULL,
                      0, &buffer, &bufferlen);
+  if (r_sw)
+    *r_sw = sw;
 
   if (sw != SW_SUCCESS && sw != SW_EOF_REACHED)
     {
@@ -936,4 +951,12 @@ iso7816_read_record (int slot, int recno, int reccount, int short_ef,
   *resultlen = bufferlen;
 
   return 0;
+}
+
+gpg_error_t
+iso7816_read_record (int slot, int recno, int reccount, int short_ef,
+                     unsigned char **result, size_t *resultlen)
+{
+  return iso7816_read_record_ext (slot, recno, reccount, short_ef,
+                                  result, resultlen, NULL);
 }

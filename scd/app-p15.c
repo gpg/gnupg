@@ -2917,7 +2917,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
     goto leave;
 
   err = iso7816_read_binary_ext (app_get_slot (app), 1, cdf->off, cdf->len,
-                                 &buffer, &buflen);
+                                 &buffer, &buflen, NULL);
   if (!err && (!buflen || *buffer == 0xff))
     err = gpg_error (GPG_ERR_NOT_FOUND);
   if (err)
