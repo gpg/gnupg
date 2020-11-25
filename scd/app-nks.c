@@ -440,6 +440,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
       bin2hex (grip, 20, r_gripstr);
       if (r_algo)
         *r_algo = algo;
+      algostr = pubkey_algo_string (sexp, NULL);
     }
 
 
