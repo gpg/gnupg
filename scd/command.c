@@ -736,6 +736,9 @@ cmd_readkey (assuan_context_t ctx, char *line)
   else
     rc = gpg_error (GPG_ERR_NO_SECKEY);
 
+  if (rc)
+    goto leave;
+
   if (opt_nokey)
     ;
   else if (advanced)
