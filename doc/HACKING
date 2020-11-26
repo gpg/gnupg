@@ -220,6 +220,7 @@ Note that such a comment will be removed if the git commit option
   - Regression-due-to :: Commit id of the regression fixed by this commit.
   - Fixes-commit :: Commit id this commit fixes.
   - Updates-commit :: Commit id this commit updates.
+  - See-commit :: Commit id of a related commit.
   - Reported-by :: Value is a name or mail address of a bug reporte.
   - Suggested-by :: Value is a name or mail address of someone how
                     suggested this change.

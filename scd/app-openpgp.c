@@ -1102,8 +1102,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
   if (table[idx].special == -1)
     {
-      /* The serial number is very special.  We can't use the the AID
-         DO (0x4f) becuase this is the serialno per specs with the
+      /* The serial number is very special.  We can't use the AID
+         DO (0x4f) because this is the serialno per specs with the
          correct appversion.  We might however use a serialno with the
          version set to 0.0 and that is what we need to return.  */
       char *serial = app_get_serialno (app);
@@ -5031,7 +5031,10 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
             return gpg_error (GPG_ERR_INV_ID);
         }
 
-      if (n != 32 || strncmp (keyidstr, "D27600012401", 12))
+      /* For a description of the serialno compare function see
+       * is_same_serialno.  We don't use that function because here we
+       * are working on a hex string.  */
+      if (n != 32 || ascii_strncasecmp (keyidstr, "D27600012401", 12))
         return gpg_error (GPG_ERR_INV_ID);
       else if (!*s)
         ; /* no fingerprint given: we allow this for now. */
@@ -5039,7 +5042,9 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
         fpr = s + 1;
 
       serial = app_get_serialno (app);
-      if (strncmp (serial, keyidstr, 32))
+      if (!serial || strlen (serial) != 32
+          || ascii_memcasecmp (serial, "D27600012401", 12)
+          || ascii_memcasecmp (serial+16, keyidstr+16, 16))
         {
           xfree (serial);
           return gpg_error (GPG_ERR_WRONG_CARD);

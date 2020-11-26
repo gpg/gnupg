@@ -155,6 +155,35 @@ apptype_from_keyref (const char *keyref)
 }
 
 
+/* Return true if both serilanumbers are the same.  This function
+ * takes care of some peculiarities.  */
+static int
+is_same_serialno (const unsigned char *sna, size_t snalen,
+                  const unsigned char *snb, size_t snblen)
+{
+  if ((!sna && !snb) || (!snalen && !snblen))
+    return 1;
+  if (!sna || !snb)
+    return 0;  /* One of them is NULL.  (Both NULL tested above).  */
+
+  if (snalen != snblen)
+    return 0;  /* (No special cases for this below).  */
+
+  /* The special case for OpenPGP cards where we ignore the version
+   * bytes (vvvv).  Example: D276000124010304000500009D8A0000
+   *                         ^^^^^^^^^^^^vvvvmmmmssssssssrrrr  */
+  if (snalen == 16 && !memcmp (sna, "\xD2\x76\x00\x01\x24\x01", 6))
+    {
+      if (memcmp (snb, "\xD2\x76\x00\x01\x24\x01", 6))
+        return 0;  /* No */
+      return !memcmp (sna + 8, snb + 8, 8);
+    }
+
+  return !memcmp (sna, snb, snalen);
+}
+
+
+
 /* Initialization function to change the default app_priority_list.
  * LIST is a list of comma or space separated strings with application
  * names.  Unknown names will only result in warning message.
@@ -357,8 +386,8 @@ check_application_conflict (card_t card, const char *name,
 
   if (serialno_bin && card->serialno)
     {
-      if (serialno_bin_len != card->serialnolen
-          || memcmp (serialno_bin, card->serialno, card->serialnolen))
+      if (!is_same_serialno (card->serialno,  card->serialnolen,
+                             serialno_bin, serialno_bin_len))
         return 0; /* The card does not match the requested S/N.  */
     }
 
@@ -734,8 +763,8 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
       lock_card (card, ctrl);
       if (serialno_bin == NULL)
         break;
-      if (card->serialnolen == serialno_bin_len
-          && !memcmp (card->serialno, serialno_bin, card->serialnolen))
+      if (is_same_serialno (card->serialno, card->serialnolen,
+                            serialno_bin, serialno_bin_len))
         break;
       unlock_card (card);
       card_prev = card;
@@ -805,8 +834,8 @@ app_switch_current_card (ctrl_t ctrl,
     {
       for (card = card_top; card; card = card->next)
         {
-          if (card->serialnolen == serialnolen
-              && !memcmp (card->serialno, serialno, card->serialnolen))
+          if (is_same_serialno (card->serialno, card->serialnolen,
+                                serialno, serialnolen))
             break;
         }
       if (!card)
