@@ -1208,10 +1208,22 @@ app_munge_serialno (card_t card)
           buf[7] = 0; /* thus we use 0.0 and don't use this directly.  */
           buf[8] = 0; /* Manufacturer: Yubico (0x0006).  */
           buf[9] = 6;
-          buf[10] = (sn >> 24);
-          buf[11] = (sn >> 16);
-          buf[12] = (sn >>  8);
-          buf[13] = sn;
+          buf[13] = (sn % 10);
+          sn /= 10;
+          buf[13] |= (sn % 10) << 4;
+          sn /= 10;
+          buf[12] = (sn % 10);
+          sn /= 10;
+          buf[12] |= (sn % 10) << 4;
+          sn /= 10;
+          buf[11] = (sn % 10);
+          sn /= 10;
+          buf[11] |= (sn % 10) << 4;
+          sn /= 10;
+          buf[10] = (sn % 10);
+          sn /= 10;
+          buf[10] |= (sn % 10) << 4;
+          sn /= 10;
           buf[14] = 0; /* Last two bytes are RFU.  */
           buf[15] = 0;
           xfree (card->serialno);
@@ -1311,15 +1323,13 @@ card_get_dispserialno (card_t card, int nofallback)
   else if (card && card->cardtype == CARDTYPE_YUBIKEY)
     {
       /* Get back the printed Yubikey number from the OpenPGP AID
-       * Example: D2760001240100000006008A77C10000
+       * Example: D2760001240100000006120808620000
        */
       result = card_get_serialno (card);
       if (result && strlen (result) >= 28 && !strncmp (result+16, "0006", 4))
         {
-          sn  = xtoi_2 (result+20) * 16777216;
-          sn += xtoi_2 (result+22) * 65536;
-          sn += xtoi_2 (result+24) * 256;
-          sn += xtoi_2 (result+26);
+          sn  = atoi_4 (result+20) * 10000;
+          sn += atoi_4 (result+24);
           if ((card->cardversion >> 16) >= 5)
             p = xtryasprintf ("%lu %03lu %03lu",
                               (sn/1000000ul),

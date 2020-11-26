@@ -59,10 +59,25 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
   if (len == 32 && !strncmp (want_sn, "D27600012401", 12))
     {
       /* This is an OpenPGP card - reformat  */
-      memmove (want_sn, want_sn+16, 4);
-      want_sn[4] = ' ';
-      memmove (want_sn+5, want_sn+20, 8);
-      want_sn[13] = 0;
+      if (!strncmp (want_sn+16, "0006", 4))
+        {
+          /* This is a Yubikey.  Print the s/n as it would be printed
+           * on Yubikey 5. Example: D2760001240100000006120808620000
+           *                                        mmmm^^^^^^^^      */
+          unsigned long sn;
+
+          sn  = atoi_4 (want_sn+20) * 10000;
+          sn += atoi_4 (want_sn+24);
+          snprintf (want_sn, 32, "%lu %03lu %03lu",
+                    (sn/1000000ul), (sn/1000ul % 1000ul), (sn % 1000ul));
+        }
+      else  /* Default is the Zeitcontrol card print format.  */
+        {
+          memmove (want_sn, want_sn+16, 4);
+          want_sn[4] = ' ';
+          memmove (want_sn+5, want_sn+20, 8);
+          want_sn[13] = 0;
+        }
     }
   else if (len == 20 && want_sn[19] == '0')
     {

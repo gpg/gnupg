@@ -1381,30 +1381,6 @@ get_disp_name (app_t app)
 }
 
 
-/* Return the pretty formatted serialnumber.  On error NULL is
- * returned.  */
-static char *
-get_disp_serialno (app_t app)
-{
-  char *serial = app_get_serialno (app);
-
-  /* For our OpenPGP cards we do not want to show the entire serial
-   * number but a nicely reformatted actual serial number.  */
-  if (serial && strlen (serial) > 16+12)
-    {
-      memmove (serial, serial+16, 4);
-      serial[4] = ' ';
-      /* memmove (serial+5, serial+20, 4); */
-      /* serial[9] = ' '; */
-      /* memmove (serial+10, serial+24, 4); */
-      /* serial[14] = 0; */
-      memmove (serial+5, serial+20, 8);
-      serial[13] = 0;
-    }
-  return serial;
-}
-
-
 /* Return the number of remaining tries for the standard or the admin
  * pw.  Returns -1 on card error.  */
 static int
@@ -2324,7 +2300,7 @@ get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
 {
   char *serial, *disp_name, *rembuf, *tmpbuf, *result;
 
-  serial = get_disp_serialno (app);
+  serial = app_get_dispserialno (app, 0);
   if (!serial)
     return NULL;
 
