@@ -304,8 +304,8 @@ app_dump_state (void)
   npth_mutex_lock (&card_list_lock);
   for (c = card_top; c; c = c->next)
     {
-      log_info ("app_dump_state: card=%p slot=%d type=%s\n",
-                c, c->slot, strcardtype (c->cardtype));
+      log_info ("app_dump_state: card=%p slot=%d type=%s refcount=%u\n",
+                c, c->slot, strcardtype (c->cardtype), c->ref_count);
       /* FIXME The use of log_info risks a race!  */
       for (a=c->app; a; a = a->next)
         log_info ("app_dump_state:   app=%p type='%s'\n",
@@ -1435,6 +1435,23 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
     {
       /* For whatever reasons the current apptype has not been set -
        * fix that and use the current app.  */
+      if (DBG_APP)
+        log_debug ("slot %d: no current app switching to %s\n",
+                   card->slot, strapptype (card->app->apptype));
+      ctrl->current_apptype = card->app->apptype;
+      return 0;
+    }
+  for (app = card->app; app; app = app->next)
+    if (app->apptype == ctrl->current_apptype)
+      break;
+  if (!app)
+    {
+      /* The current app is not supported by this card.  Set the first
+       * app of the card as current.  */
+      if (DBG_APP)
+        log_debug ("slot %d: current app %s not available switching to %s\n",
+                   card->slot, strapptype (ctrl->current_apptype),
+                   strapptype (card->app->apptype));
       ctrl->current_apptype = card->app->apptype;
       return 0;
     }
