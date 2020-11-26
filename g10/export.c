@@ -1842,6 +1842,7 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                 {
                   if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
                     goto leave;
+                  write_status_error ("export_keys.secret", err);
                   skip_until_subkey = 1;
                   err = 0;
                 }
