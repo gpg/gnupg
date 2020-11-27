@@ -96,6 +96,8 @@ map_sw (int sw)
     case SW_HOST_USB_BUSY:       ec = GPG_ERR_EBUSY; break;
     case SW_HOST_USB_TIMEOUT:    ec = GPG_ERR_TIMEOUT; break;
     case SW_HOST_USB_OVERFLOW:   ec = GPG_ERR_EOVERFLOW; break;
+    case SW_HOST_UI_CANCELLED:   ec = GPG_ERR_CANCELED; break;
+    case SW_HOST_UI_TIMEOUT:     ec = GPG_ERR_TIMEOUT; break;
 
     default:
       if ((sw & 0x010000))

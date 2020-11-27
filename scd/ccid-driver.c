@@ -2148,7 +2148,16 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
         }
     }
   if (CCID_COMMAND_FAILED (buffer))
-    print_command_failed (buffer);
+    {
+      int ec;
+
+      ec = CCID_ERROR_CODE (buffer);
+      print_command_failed (buffer);
+      if (ec == 0xEF)
+        return CCID_DRIVER_ERR_UI_CANCELLED;
+      else if (ec == 0xF0)
+        return CCID_DRIVER_ERR_UI_TIMEOUT;
+    }
 
   /* Check whether a card is at all available.  Note: If you add new
      error codes here, check whether they need to be ignored in

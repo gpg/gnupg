@@ -116,6 +116,8 @@ enum {
 #define CCID_DRIVER_ERR_USB_BUSY       0x10026
 #define CCID_DRIVER_ERR_USB_TIMEOUT    0x10027
 #define CCID_DRIVER_ERR_USB_OVERFLOW   0x10028
+#define CCID_DRIVER_ERR_UI_CANCELLED   0x10030
+#define CCID_DRIVER_ERR_UI_TIMEOUT     0x10031
 
 struct ccid_driver_s;
 typedef struct ccid_driver_s *ccid_driver_t;
