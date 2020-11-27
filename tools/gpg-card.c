@@ -2733,24 +2733,30 @@ cmd_passwd (card_info_t info, char *argstr)
 
       menu_used = 1;
 
-      for (;;)
+      log_assert (DIM (info->chvinfo) >= 4);
+
+      /* If there is a qualified signature use a a menu to select
+       * between standard PIN and QES PINs.  */
+      if (info->chvinfo[2] != -2 || info->chvinfo[3] != -2)
         {
-          xfree (answer);
-          answer = get_selection (" 1 - Standard PIN/PUK\n"
-                                  " 2 - PIN/PUK for qualified signature\n"
-                                  " Q - quit\n");
-          if (!ascii_strcasecmp (answer, "q"))
-            goto leave;
-          else if (!strcmp (answer, "1"))
-            break;
-          else if (!strcmp (answer, "2"))
+          for (;;)
             {
-              for_qualified = 1;
-              break;
+              xfree (answer);
+              answer = get_selection (" 1 - Standard PIN/PUK\n"
+                                      " 2 - PIN/PUK for qualified signature\n"
+                                  " Q - quit\n");
+              if (!ascii_strcasecmp (answer, "q"))
+                goto leave;
+              else if (!strcmp (answer, "1"))
+                break;
+              else if (!strcmp (answer, "2"))
+                {
+                  for_qualified = 1;
+                  break;
+                }
             }
         }
 
-      log_assert (DIM (info->chvinfo) >= 4);
       if (info->chvinfo[for_qualified? 2 : 0] == -4)
         {
           while (!pinref)
@@ -2817,6 +2823,9 @@ cmd_passwd (card_info_t info, char *argstr)
     {
       if (!opt.interactive && !menu_used && !opt.verbose)
         ;
+      else if (gpg_err_code (err) == GPG_ERR_CANCELED
+               && gpg_err_source (err) == GPG_ERR_SOURCE_PINENTRY)
+        log_info ("%s\n", gpg_strerror (err));
       else if (!ascii_strcasecmp (pinref, "PIV.81"))
         log_error ("Error changing the PUK.\n");
       else if (!ascii_strcasecmp (pinref, "OPENPGP.1") && reset_mode)
