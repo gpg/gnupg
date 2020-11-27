@@ -1709,3 +1709,33 @@ agent_get_s2k_count (void)
 
   return count;
 }
+
+
+/* Return a malloced string describing the statusword SW.  On error
+ * NULL is returned.  */
+char *
+scd_apdu_strerror (unsigned int sw)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  char *buf;
+
+  err = start_agent (0);
+  if (err)
+    return NULL;
+
+  init_membuf (&data, 64);
+  snprintf (line, sizeof line, "SCD GETINFO apdu_strerror 0x%x", sw);
+  err = assuan_transact (agent_ctx, line, put_membuf_cb, &data,
+                         NULL, NULL, NULL, NULL);
+  if (err)
+    {
+      xfree (get_membuf (&data, NULL));
+      return NULL;
+    }
+
+  put_membuf (&data, "", 1);
+  buf = get_membuf (&data, NULL);
+  return buf;
+}

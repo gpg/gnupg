@@ -3501,7 +3501,16 @@ cmd_apdu (card_info_t info, char *argstr)
   if (err)
     goto leave;
   if (!with_atr)
-    log_info ("Statusword: 0x%04x\n", sw);
+    {
+      if (opt.interactive || opt.verbose)
+        {
+          char *p = scd_apdu_strerror (sw);
+          log_info ("Statusword: 0x%04x (%s)\n", sw, p? p: "?");
+          xfree (p);
+        }
+      else
+        log_info ("Statusword: 0x%04x\n", sw);
+    }
   for (i=0; i < resultlen; )
     {
       size_t save_i = i;

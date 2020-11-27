@@ -242,6 +242,9 @@ gpg_error_t scd_checkpin (const char *serialno);
 
 unsigned long agent_get_s2k_count (void);
 
+char *scd_apdu_strerror (unsigned int sw);
+
+
 /*-- card-yubikey.c --*/
 gpg_error_t yubikey_commands (card_info_t info,
                               estream_t fp, int argc, const char *argv[]);
