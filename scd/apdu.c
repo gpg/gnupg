@@ -538,8 +538,12 @@ apdu_strerror (int rc)
   switch (rc)
     {
     case SW_EOF_REACHED    : return "eof reached";
+    case SW_TERM_STATE     : return "termination state";
     case SW_EEPROM_FAILURE : return "eeprom failure";
+    case SW_ACK_TIMEOUT    : return "ACK timeout";
     case SW_WRONG_LENGTH   : return "wrong length";
+    case SW_SM_NOT_SUP     : return "secure messaging not supported";
+    case SW_CC_NOT_SUP     : return "command chaining not supported";
     case SW_CHV_WRONG      : return "CHV wrong";
     case SW_CHV_BLOCKED    : return "CHV blocked";
     case SW_REF_DATA_INV   : return "referenced data invalidated";
@@ -548,12 +552,13 @@ apdu_strerror (int rc)
     case SW_NOT_SUPPORTED  : return "not supported";
     case SW_FILE_NOT_FOUND : return "file not found";
     case SW_RECORD_NOT_FOUND:return "record not found";
-    case SW_REF_NOT_FOUND  : return "reference not found";
     case SW_NOT_ENOUGH_MEMORY: return "not enough memory space in the file";
-    case SW_INCONSISTENT_LC: return "Lc inconsistent with TLV structure.";
+    case SW_INCONSISTENT_LC: return "Lc inconsistent with TLV structure";
     case SW_INCORRECT_P0_P1: return "incorrect parameters P0,P1";
     case SW_BAD_LC         : return "Lc inconsistent with P0,P1";
+    case SW_REF_NOT_FOUND  : return "reference not found";
     case SW_BAD_P0_P1      : return "bad P0,P1";
+    case SW_EXACT_LENGTH   : return "exact length";
     case SW_INS_NOT_SUP    : return "instruction not supported";
     case SW_CLA_NOT_SUP    : return "class not supported";
     case SW_SUCCESS        : return "success";

@@ -1728,15 +1728,18 @@ static const char hlp_getinfo[] =
   "  all_active_apps\n"
   "              - Return a list of active apps on all inserted cards.\n"
   "  cmd_has_option CMD OPT\n"
-  "               - Returns OK if command CMD has option OPT.\n";
+  "              - Returns OK if command CMD has option OPT.\n"
+  "  apdu_strerror NUMBER\n"
+  "              - Return a string for a status word.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc = 0;
+  const char *s;
 
   if (!strcmp (line, "version"))
     {
-      const char *s = VERSION;
+      s = VERSION;
       rc = assuan_send_data (ctx, s, strlen (s));
     }
   else if (!strcmp (line, "pid"))
@@ -1780,8 +1783,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "socket_name"))
     {
-      const char *s = scd_get_socket_name ();
-
+      s = scd_get_socket_name ();
       if (s)
         rc = assuan_send_data (ctx, s, strlen (s));
       else
@@ -1809,27 +1811,27 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "reader_list"))
     {
 #ifdef HAVE_LIBUSB
-      char *s = ccid_get_reader_list ();
+      char *p = ccid_get_reader_list ();
 #else
-      char *s = NULL;
+      char *p = NULL;
 #endif
 
-      if (s)
-        rc = assuan_send_data (ctx, s, strlen (s));
+      if (p)
+        rc = assuan_send_data (ctx, p, strlen (p));
       else
         rc = gpg_error (GPG_ERR_NO_DATA);
-      xfree (s);
+      xfree (p);
     }
   else if (!strcmp (line, "deny_admin"))
     rc = opt.allow_admin? gpg_error (GPG_ERR_GENERAL) : 0;
   else if (!strcmp (line, "app_list"))
     {
-      char *s = get_supported_applications ();
-      if (s)
-        rc = assuan_send_data (ctx, s, strlen (s));
+      char *p = get_supported_applications ();
+      if (p)
+        rc = assuan_send_data (ctx, p, strlen (p));
       else
         rc = 0;
-      xfree (s);
+      xfree (p);
     }
   else if (!strcmp (line, "card_list"))
     {
@@ -1849,6 +1851,12 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
       ctrl_t ctrl = assuan_get_pointer (ctx);
       rc = app_send_active_apps (NULL, ctrl);
+    }
+  else if ((s=has_leading_keyword (line, "apdu_strerror")))
+    {
+      unsigned long ul = strtoul (s, NULL, 0);
+      s = apdu_strerror (ul);
+      rc = assuan_send_data (ctx, s, strlen (s));
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
