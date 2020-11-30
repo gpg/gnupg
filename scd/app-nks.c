@@ -104,7 +104,8 @@ static struct
   int fid;       /* File ID. */
   int nks_ver;   /* 0 for NKS version 2, 3 for version 3, etc.  */
   int certtype;  /* Type of certificate or 0 if it is not a certificate. */
-  int iskeypair; /* If true has the FID of the corresponding certificate. */
+  int iskeypair; /* If true has the FID of the corresponding certificate.
+                  * If no certificate is known a value of -1 is used. */
   int isauthkey; /* True if file is a key usable for authentication. */
   int issignkey; /* True if file is a key usable for signing. */
   int isencrkey; /* True if file is a key usable for decryption. */
@@ -161,12 +162,12 @@ static struct
   { 2, 0xC001, 15,100 },                    /* EF.C.ICC.QES (Cert)  */
   { 2, 0xC00E, 15,111 },                    /* EF.C.RCA.QES (RootCA */
 
-  { 3, 0x4E03,  3, 100 },                   /* EK_PK_03 */
-  { 3, 0x4E04,  3, 100 },                   /* EK_PK_04 */
-  { 3, 0x4E05,  3, 100 },                   /* EK_PK_05 */
-  { 3, 0x4E06,  3, 100 },                   /* EK_PK_06 */
-  { 3, 0x4E07,  3, 100 },                   /* EK_PK_07 */
-  { 3, 0x4E08,  3, 100 },                   /* EK_PK_08 */
+  { 3, 0x4E03,  3, 0, -1 },                 /* EK_PK_03 */
+  { 3, 0x4E04,  3, 0, -1 },                 /* EK_PK_04 */
+  { 3, 0x4E05,  3, 0, -1 },                 /* EK_PK_05 */
+  { 3, 0x4E06,  3, 0, -1 },                 /* EK_PK_06 */
+  { 3, 0x4E07,  3, 0, -1 },                 /* EK_PK_07 */
+  { 3, 0x4E08,  3, 0, -1 },                 /* EK_PK_08 */
 
   { 0, 0 }
 };
@@ -272,7 +273,8 @@ get_dispserialno (app_t app)
  * used and Read Record needs to be replaced by read binary.  Given
  * all the ECC parameters required, we don't do that but rely that the
  * corresponding certificate at CFID is already available and get the
- * public key from there.  If R_ALGO is not NULL the public key
+ * public key from there.  Note that a CFID of 1 is indicates that a
+ * certificate is not known.  If R_ALGO is not NULL the public key
  * algorithm for the returned KEYGRIP is stored there.  If R_ALGOSTR
  * is not NULL the public key algo string (e.g. "rsa2048") is stored
  * there.  */
@@ -292,7 +294,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
   struct fid_cache_s *ci;
 
   for (ci = app->app_local->fid_cache; ci; ci = ci->next)
-    if (ci->fid && ((cfid && ci->fid == cfid) || (!cfid && ci->fid == pkfid)))
+    if (ci->fid && ((cfid > 0 && ci->fid == cfid)
+                    || (!(cfid > 0) && ci->fid == pkfid)))
       {
         if (!ci->got_keygrip)
           return gpg_error (GPG_ERR_NOT_FOUND);
@@ -315,6 +318,12 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
       /* Signature Card v2 - get keygrip from the certificate.  */
       unsigned char *cert, *pk;
       size_t certlen, pklen;
+
+      if (cfid == -1)
+        {
+          err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+          goto leave;
+        }
 
       /* Fall back to certificate reading.  */
       err = readcert_from_ef (app, cfid, &cert, &certlen);
@@ -456,7 +465,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
       /* FIXME: We need to implement not_found caching.  */
       for (ci = app->app_local->fid_cache; ci; ci = ci->next)
         if (ci->fid
-            && ((cfid && ci->fid == cfid) || (!cfid && ci->fid == pkfid)))
+            && ((cfid > 0 && ci->fid == cfid)
+                || (!(cfid > 0) && ci->fid == pkfid)))
           {
             /* Update the keygrip.  */
             memcpy (ci->keygripstr, r_gripstr, 2*KEYGRIP_LEN+1);
@@ -477,7 +487,7 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
             ; /* Out of memory - it is a cache, so we ignore it.  */
           else
             {
-              ci->fid = cfid? cfid : pkfid;
+              ci->fid = (cfid > 0)? cfid : pkfid;
               memcpy (ci->keygripstr, r_gripstr, 2*KEYGRIP_LEN+1);
               ci->algo = algo;
               ci->got_keygrip = 1;
@@ -1049,7 +1059,7 @@ do_readcert (app_t app, const char *certid,
     return gpg_error (GPG_ERR_INV_ID);
   fid = xtoi_4 (certid);
   for (i=0; filelist[i].fid; i++)
-    if ((filelist[i].certtype || filelist[i].iskeypair)
+    if ((filelist[i].certtype || filelist[i].iskeypair > 0)
         && filelist[i].nks_app_id == nks_app_id
         && filelist[i].fid == fid)
       break;
@@ -1061,7 +1071,7 @@ do_readcert (app_t app, const char *certid,
      because we sometime use the key directly or let the caller
      retrieve the key from the certificate.  The rationale for
      that is to support not-yet stored certificates. */
-  if (filelist[i].iskeypair)
+  if (filelist[i].iskeypair > 0)
     fid = filelist[i].iskeypair;
 
   return readcert_from_ef (app, fid, cert, certlen);
@@ -1173,7 +1183,7 @@ do_writecert (app_t app, ctrl_t ctrl,
     return gpg_error (GPG_ERR_INV_ID);
   fid = xtoi_4 (certid);
   for (i=0; filelist[i].fid; i++)
-    if ((filelist[i].certtype || filelist[i].iskeypair)
+    if ((filelist[i].certtype || filelist[i].iskeypair > 0)
         && filelist[i].nks_app_id == nks_app_id
         && filelist[i].fid == fid)
       break;
@@ -1184,7 +1194,7 @@ do_writecert (app_t app, ctrl_t ctrl,
    * the corresponding certificate.  This makes it easier for the user
    * to figure out which CERTID to use.  For example gpg-card shows
    * the id of the key and not of the certificate.  */
-  if (filelist[i].iskeypair)
+  if (filelist[i].iskeypair > 0)
     fid = filelist[i].iskeypair;
 
   /* We have no selective flush mechanism and given the rare use of
