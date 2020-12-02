@@ -240,8 +240,16 @@ keygrip_from_keyparm (int algo, struct keyparm_s *kp, unsigned char *grip)
 
   if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
     {
-      log_info ("kbx: error computing keygrip\n");
-      err = gpg_error (GPG_ERR_GENERAL);
+      /* Some Linux distributions remove certain curves from Libgcrypt
+       * but not from GnuPG and thus the keygrip can't be computed.
+       * Emit a better error message for this case.  */
+      if (!gcry_pk_get_curve (s_pkey, 0, NULL))
+        err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      else
+        {
+          log_info ("kbx: error computing keygrip\n");
+          err = gpg_error (GPG_ERR_GENERAL);
+        }
     }
 
   gcry_sexp_release (s_pkey);
