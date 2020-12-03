@@ -176,6 +176,7 @@ static struct
 /* Object to cache information gathered from FIDs. */
 struct fid_cache_s {
   struct fid_cache_s *next;
+  int nks_app_id;
   int fid;                          /* Zero for an unused slot.  */
   unsigned int  got_keygrip:1;      /* The keygrip and algo are valid.  */
   int algo;
@@ -294,8 +295,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
   struct fid_cache_s *ci;
 
   for (ci = app->app_local->fid_cache; ci; ci = ci->next)
-    if (ci->fid && ((cfid > 0 && ci->fid == cfid)
-                    || (!(cfid > 0) && ci->fid == pkfid)))
+    if (ci->fid && ci->nks_app_id == app->app_local->active_nks_app
+        && ci->fid == pkfid)
       {
         if (!ci->got_keygrip)
           return gpg_error (GPG_ERR_NOT_FOUND);
@@ -465,8 +466,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
       /* FIXME: We need to implement not_found caching.  */
       for (ci = app->app_local->fid_cache; ci; ci = ci->next)
         if (ci->fid
-            && ((cfid > 0 && ci->fid == cfid)
-                || (!(cfid > 0) && ci->fid == pkfid)))
+            && ci->nks_app_id == app->app_local->active_nks_app
+            && ci->fid == pkfid)
           {
             /* Update the keygrip.  */
             memcpy (ci->keygripstr, r_gripstr, 2*KEYGRIP_LEN+1);
@@ -487,7 +488,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
             ; /* Out of memory - it is a cache, so we ignore it.  */
           else
             {
-              ci->fid = (cfid > 0)? cfid : pkfid;
+              ci->nks_app_id = app->app_local->active_nks_app;
+              ci->fid = pkfid;
               memcpy (ci->keygripstr, r_gripstr, 2*KEYGRIP_LEN+1);
               ci->algo = algo;
               ci->got_keygrip = 1;
