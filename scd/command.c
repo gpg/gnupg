@@ -2106,6 +2106,8 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   card_t card;
 
+  opt_data = has_option (line, "--data");
+
   cap = 0;
   keygrip_str = NULL;
   if (has_option (line, "--list"))
@@ -2117,10 +2119,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else if (has_option (line, "--list=auth"))
     cap = GCRY_PK_USAGE_AUTH;
   else
-    keygrip_str = line;
-
-  opt_data = has_option (line, "--data");
-  line = skip_options (line);
+    keygrip_str = skip_options (line);
 
   if (opt_data)
     action = KEYGRIP_ACTION_SEND_DATA;
