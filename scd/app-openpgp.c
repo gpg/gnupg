@@ -3711,6 +3711,7 @@ build_privkey_template (app_t app, int keyno,
 static gpg_error_t
 build_ecc_privkey_template (app_t app, int keyno,
                             const unsigned char *ecc_d, size_t ecc_d_len,
+                            size_t ecc_d_fixed_len,
                             const unsigned char *ecc_q, size_t ecc_q_len,
                             unsigned char **result, size_t *resultlen)
 {
@@ -3726,6 +3727,18 @@ build_ecc_privkey_template (app_t app, int keyno,
   size_t template_size;
   int pubkey_required;
 
+  /* This case doesn't occur in GnuPG 2.3 or later, because
+     agent/sexp-secret.c does the fixup.  */
+  if (ecc_d_fixed_len < ecc_d_len)
+    {
+      if (ecc_d_fixed_len != ecc_d_len - 1 || *ecc_d)
+        return gpg_error (GPG_ERR_INV_OBJ);
+
+      /* Remove the additional zero.  */
+      ecc_d_len--;
+      ecc_d++;
+    }
+
   pubkey_required = !!(app->app_local->keyattr[keyno].ecc.flags
                        & ECC_FLAG_PUBKEY);
 
@@ -3736,8 +3749,8 @@ build_ecc_privkey_template (app_t app, int keyno,
   datalen = 0;
   tp = privkey;
 
-  tp += add_tlv (tp, 0x92, ecc_d_len);
-  datalen += ecc_d_len;
+  tp += add_tlv (tp, 0x92, ecc_d_fixed_len);
+  datalen += ecc_d_fixed_len;
 
   if (pubkey_required)
     {
@@ -3780,8 +3793,14 @@ build_ecc_privkey_template (app_t app, int keyno,
   memcpy (tp, suffix, suffix_len);
   tp += suffix_len;
 
-  memcpy (tp, ecc_d, ecc_d_len);
-  tp += ecc_d_len;
+  if (ecc_d_fixed_len > ecc_d_len)
+    {
+      memset (tp, 0, ecc_d_fixed_len - ecc_d_len);
+      memcpy (tp + ecc_d_fixed_len - ecc_d_len, ecc_d, ecc_d_len);
+    }
+  else
+    memcpy (tp, ecc_d, ecc_d_len);
+  tp += ecc_d_fixed_len;
 
   if (pubkey_required)
     {
@@ -4406,6 +4425,7 @@ ecc_writekey (app_t app, ctrl_t ctrl,
   unsigned int n;
   size_t oid_len;
   unsigned char fprbuf[20];
+  size_t ecc_d_fixed_len;
 
   /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
      curve = "NIST P-256" */
@@ -4548,7 +4568,8 @@ ecc_writekey (app_t app, ctrl_t ctrl,
   else
     algo = PUBKEY_ALGO_ECDSA;
 
-  oidstr = openpgp_curve_to_oid (curve, NULL, NULL);
+  oidstr = openpgp_curve_to_oid (curve, &n, NULL);
+  ecc_d_fixed_len = (n+7)/8;
   err = openpgp_oid_from_str (oidstr, &oid);
   if (err)
     goto leave;
@@ -4614,7 +4635,7 @@ ecc_writekey (app_t app, ctrl_t ctrl,
       int exmode;
 
       err = build_ecc_privkey_template (app, keyno,
-                                        ecc_d, ecc_d_len,
+                                        ecc_d, ecc_d_len, ecc_d_fixed_len,
                                         ecc_q, ecc_q_len,
                                         &template, &template_len);
       if (err)
