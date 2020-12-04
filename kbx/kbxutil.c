@@ -465,7 +465,8 @@ main( int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   enum cmd_and_opt_values cmd = 0;
-  unsigned long from = 0, to = ULONG_MAX;
+  unsigned long from = 0;
+  unsigned long to = ULONG_MAX;
   int dry_run = 0;
 
   early_system_init ();
@@ -487,8 +488,8 @@ main( int argc, char **argv )
 
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* do not remove the args */
-  while (arg_parse( &pargs, opts) )
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gnupg_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -523,6 +524,8 @@ main( int argc, char **argv )
           break;
 	}
     }
+
+  gnupg_argparse (NULL, &pargs, NULL);
 
   if (to < from)
     log_error ("record number of \"--to\" is lower than \"--from\" one\n");

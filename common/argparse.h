@@ -32,7 +32,15 @@
 #define GNUPG_COMMON_ARGPARSE_H
 
 #include <stdio.h>
+#include <gpg-error.h>
 
+#if GPGRT_VERSION_NUMBER < 0x012600 /* 1.38 */
+
+#define USE_INTERNAL_ARGPARSE 1
+
+/* We use a copy of the code from the new gpgrt parser.  */
+
+struct _argparse_internal_s;
 typedef struct
 {
   int  *argc;	      /* Pointer to ARGC (value subject to change). */
@@ -42,7 +50,7 @@ typedef struct
   int err;            /* Print error description for last option.
                          Either 0,  ARGPARSE_PRINT_WARNING or
                          ARGPARSE_PRINT_ERROR.  */
-
+  unsigned int lineno;/* The current line number.  */
   int r_opt; 	      /* Returns option code. */
   int r_type;	      /* Returns type of option value.  */
   union {
@@ -52,16 +60,9 @@ typedef struct
     char *ret_str;
   } r;		      /* Return values */
 
-  struct {
-    int idx;
-    int inarg;
-    int stopped;
-    const char *last;
-    void *aliases;
-    const void *cur_alias;
-    void *iio_list;
-  } internal;	    /* Private - do not change. */
-} ARGPARSE_ARGS;
+  struct _argparse_internal_s *internal;
+} gnupg_argparse_t;
+
 
 typedef struct
 {
@@ -69,7 +70,11 @@ typedef struct
   const char  *long_opt;
   unsigned int flags;
   const char  *description; /* Optional option description. */
-} ARGPARSE_OPTS;
+} gnupg_opt_t;
+
+
+typedef gnupg_argparse_t ARGPARSE_ARGS;
+typedef gnupg_opt_t      ARGPARSE_OPTS;
 
 /* Short options.  */
 #define ARGPARSE_SHORTOPT_HELP 32768
@@ -87,8 +92,14 @@ typedef struct
 #define ARGPARSE_FLAG_ARG0      16   /* Do not skip the first arg.           */
 #define ARGPARSE_FLAG_ONEDASH   32   /* Allow long options with one dash.    */
 #define ARGPARSE_FLAG_NOVERSION 64   /* No output for "--version".           */
-
+#define ARGPARSE_FLAG_RESET     128  /* Request to reset the internal state. */
 #define ARGPARSE_FLAG_STOP_SEEN 256  /* Set to true if a "--" has been seen. */
+#define ARGPARSE_FLAG_NOLINENO  512  /* Do not zero the lineno field.        */
+#define ARGPARSE_FLAG_SYS      1024  /* Use system config file.              */
+#define ARGPARSE_FLAG_USER     2048  /* Use user config file.                */
+#define ARGPARSE_FLAG_VERBOSE  4096  /* Print additional argparser info.     */
+#define ARGPARSE_FLAG_USERVERS 8192  /* Try version-ed user config files.    */
+#define ARGPARSE_FLAG_WITHATTR 16384 /* Return attribute bits.               */
 
 /* Flags for each option (ARGPARSE_OPTS).  The type code may be
    ORed with the OPT flags.  */
@@ -101,6 +112,11 @@ typedef struct
 #define ARGPARSE_OPT_PREFIX   (1<<4) /* Allow 0x etc. prefixed values.    */
 #define ARGPARSE_OPT_IGNORE   (1<<6) /* Ignore command or option.         */
 #define ARGPARSE_OPT_COMMAND  (1<<7) /* The argument is a command.        */
+#define ARGPARSE_OPT_CONFFILE (1<<8) /* The value is a conffile.          */
+#define ARGPARSE_OPT_HEADER   (1<<9) /* The value is printed as a header. */
+#define ARGPARSE_OPT_VERBATIM (1<<10)/* The value is printed verbatim.    */
+#define ARGPARSE_ATTR_FORCE   (1<<14)/* Attribute force is set.           */
+#define ARGPARSE_ATTR_IGNORE  (1<<15)/* Attribute ignore is set.          */
 
 #define ARGPARSE_TYPE_MASK  7  /* Mask for the type values (internal).  */
 
@@ -169,19 +185,32 @@ typedef struct
 #define ARGPARSE_c(s,l,d) \
      { (s), (l), (ARGPARSE_TYPE_NONE | ARGPARSE_OPT_COMMAND), (d) }
 
+#define ARGPARSE_conffile(s,l,d) \
+  { (s), (l), (ARGPARSE_TYPE_STRING|ARGPARSE_OPT_CONFFILE), (d) }
+
+#define ARGPARSE_noconffile(s,l,d) \
+  { (s), (l), (ARGPARSE_TYPE_NONE|ARGPARSE_OPT_CONFFILE), (d) }
+
 #define ARGPARSE_ignore(s,l) \
      { (s), (l), (ARGPARSE_OPT_IGNORE), "@" }
 
 #define ARGPARSE_group(s,d) \
      { (s), NULL, 0, (d) }
 
-/* Placeholder options for help, version, warranty and dump-options.  See arg_parse(). */
+/* Verbatim print the string D in the help output.  It does not make
+ * use of the "@" hack as ARGPARSE_group does.  */
+#define ARGPARSE_verbatim(d) \
+  { 1, NULL, (ARGPARSE_OPT_VERBATIM), (d) }
+
+/* Same as ARGPARSE_verbatim but also print a colon and a LF.  N can
+ * be used give a symbolic name to the header.  Nothing is printed if
+ * D is the empty string.  */
+#define ARGPARSE_header(n,d) \
+  { 1, (n), (ARGPARSE_OPT_HEADER), (d) }
+
+/* Mark the end of the list (mandatory).  */
 #define ARGPARSE_end() \
-     { 0, NULL, 0, NULL }, \
-     { 0, NULL, 0, NULL }, \
-     { 0, NULL, 0, NULL }, \
-     { 0, NULL, 0, NULL }, \
-     { 0, NULL, 0, NULL }
+  { 0, NULL, 0, NULL }
 
 
 /* Other constants.  */
@@ -202,14 +231,51 @@ typedef struct
 #define ARGPARSE_INVALID_ALIAS     (-10)
 #define ARGPARSE_OUT_OF_CORE       (-11)
 #define ARGPARSE_INVALID_ARG       (-12)
+#define ARGPARSE_PERMISSION_ERROR  (-13)
+#define ARGPARSE_NO_CONFFILE       (-14)
+#define ARGPARSE_CONFFILE          (-15)
+#define ARGPARSE_INVALID_META      (-16)
+#define ARGPARSE_UNKNOWN_META      (-17)
+#define ARGPARSE_UNEXPECTED_META   (-18)
 
+/* Values used for gnupg_set_confdir.  */
+#define GNUPG_CONFDIR_USER 1   /* The user's configuration dir.    */
+#define GNUPG_CONFDIR_SYS  2   /* The systems's configuration dir. */
 
-int arg_parse (ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
-int optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
-		   ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
-void usage (int level);
+/* Take care: gpgrt_argparse keeps state in ARG and requires that
+ * either ARGPARSE_FLAG_RESET is used after OPTS has been changed or
+ * gpgrt_argparse (NULL, ARG, NULL) is called first.  */
+int gnupg_argparse (gpgrt_stream_t fp,
+                    gnupg_argparse_t *arg, gnupg_opt_t *opts);
+int gnupg_argparser (gnupg_argparse_t *arg, gnupg_opt_t *opts,
+                     const char *confname);
+
 const char *strusage (int level);
 void set_strusage (const char *(*f)( int ));
-void argparse_register_outfnc (int (*fnc)(int, const char *));
+void gnupg_set_usage_outfnc (int (*f)(int, const char *));
+void gnupg_set_fixed_string_mapper (const char *(*f)(const char*));
+void gnupg_set_confdir (int what, const char *name);
+
+#else /* !USE_INTERNAL_ARGPARSE */
+
+#define GNUPG_CONFDIR_USER GPGRT_CONFDIR_USER
+#define GNUPG_CONFDIR_SYS  GPGRT_CONFDIR_SYS
+
+typedef gpgrt_argparse_t gnupg_argparse_t;
+typedef gpgrt_opt_t      gnupg_opt_t;
+typedef gpgrt_argparse_t ARGPARSE_ARGS;
+typedef gpgrt_opt_t      ARGPARSE_OPTS;
+
+#define gnupg_argparse(a,b,c)            gpgrt_argparse ((a),(b),(c))
+#define gnupg_argparser(a,b,c)           gpgrt_argparser ((a),(b),(c))
+#define strusage(a)                      gpgrt_strusage (a)
+#define set_strusage(a)                  gpgrt_set_strusage (a)
+#define gnupg_set_usage_outfnc(a)        gpgrt_set_usage_outfnc ((a))
+#define gnupg_set_fixed_string_mapper(a) gpgrt_set_fixed_string_mapper ((a))
+#define gnupg_set_confdir(a,b)           gpgrt_set_confdir ((a),(b))
+
+#endif /* !USE_INTERNAL_ARGPARSE */
+
+void usage (int level);
 
 #endif /*GNUPG_COMMON_ARGPARSE_H*/

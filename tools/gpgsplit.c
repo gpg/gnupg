@@ -15,6 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -86,9 +87,11 @@ my_strusage (int level)
   const char *p;
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "gpgsplit (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = "Please report bugs to <@EMAIL@>.\n"; break;
 
@@ -122,8 +125,8 @@ main (int argc, char **argv)
 
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags=  1;  /* do not remove the args */
-  while (optfile_parse( NULL, NULL, NULL, &pargs, opts))
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gnupg_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -132,9 +135,10 @@ main (int argc, char **argv)
         case oUncompress: opt_uncompress = 1; break;
         case oSecretToPublic: opt_secret_to_public = 1; break;
         case oNoSplit: opt_no_split = 1; break;
-        default : pargs.err = 2; break;
+        default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
+  gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (log_get_errorcount(0))
     g10_exit (2);

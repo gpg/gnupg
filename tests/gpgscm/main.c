@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -78,9 +79,8 @@ size_t scmpath_len = 0;
 static void
 parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 {
-  int no_more_options = 0;
 
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, popts))
+  while (gnupg_argparse (NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -89,7 +89,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           break;
 
         default:
-	  pargs->err = 2;
+	  pargs->err = ARGPARSE_PRINT_ERROR;
 	  break;
 	}
     }
@@ -103,9 +103,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "gpgscm (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -297,6 +299,7 @@ main (int argc, char **argv)
   pargs.argv  = &argv;
   pargs.flags = 0;
   parse_arguments (&pargs, opts);
+  gnupg_argparse (NULL, &pargs, NULL);
 
   if (log_get_errorcount (0))
     exit (2);

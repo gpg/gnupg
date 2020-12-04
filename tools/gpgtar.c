@@ -1,5 +1,6 @@
 /* gpgtar.c - A simple TAR implementation mainly useful for Windows.
  * Copyright (C) 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -15,6 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 /* GnuPG comes with a shell script gpg-zip which creates archive files
@@ -161,9 +163,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@GPGTAR@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -314,7 +318,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 {
   int no_more_options = 0;
 
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, popts))
+  while (!no_more_options && gnupg_argparse (NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -385,7 +389,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           }
           break;
 
-        case oTarArgs:;
+        case oTarArgs:
           {
             int tar_argc;
             char **tar_argv;
@@ -400,6 +404,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
                 tar_args.argv = &tar_argv;
                 tar_args.flags = ARGPARSE_FLAG_ARG0;
                 parse_arguments (&tar_args, tar_opts);
+                gnupg_argparse (NULL, &tar_args, NULL);
                 if (tar_args.err)
                   log_error ("unsupported tar arguments '%s'\n",
                              pargs->r.ret_str);
@@ -426,8 +431,6 @@ main (int argc, char **argv)
   const char *fname;
   ARGPARSE_ARGS pargs;
 
-  assert (sizeof (struct ustar_raw_header) == 512);
-
   gnupg_reopen_std (GPGTAR_NAME);
   set_strusage (my_strusage);
   log_set_prefix (GPGTAR_NAME, GPGRT_LOG_WITH_PREFIX);
@@ -436,11 +439,14 @@ main (int argc, char **argv)
   i18n_init();
   init_common_subsystems (&argc, &argv);
 
+  log_assert (sizeof (struct ustar_raw_header) == 512);
+
   /* Parse the command line. */
   pargs.argc  = &argc;
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
   parse_arguments (&pargs, opts);
+  gnupg_argparse (NULL, &pargs, NULL);
 
   if (log_get_errorcount (0))
     exit (2);
