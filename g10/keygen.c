@@ -4548,7 +4548,6 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
   struct para_data_s *r;
   struct output_control_s outctrl;
   int use_tty;
-  u32 keytime = 0;
 
   memset (&outctrl, 0, sizeof outctrl);
 
@@ -4631,7 +4630,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       unsigned int keyuse, subkeyuse;
       const char *curve, *subcurve;
       char *keygrip, *subkeygrip;
-      u32 subkeytime;
+      u32 keytime, subkeytime;
 
       err = parse_key_parameter_string (ctrl, algostr, -1, 0,
                                         &algo, &size, &keyuse, &curve, &version,
@@ -4681,6 +4680,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       unsigned int nbits;
       const char *curve;
       char *keygrip;
+      u32 keytime;
 
       err = parse_algo_usage_expire (ctrl, 0, algostr, usagestr, expirestr,
                                      &algo, &use, &expire, &nbits, &curve,
@@ -4717,10 +4717,8 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       para = r;
     }
 
-
-  /* If KEYTIME is set we know that the key has been taken from the
-   * card.  Store that flag in the parameters.  */
-  if (keytime)
+  if (!ascii_strcasecmp (algostr, "card")
+      || !ascii_strncasecmp (algostr, "card/", 5))
     {
       r = xmalloc_clear (sizeof *r);
       r->key = pCARDKEY;
