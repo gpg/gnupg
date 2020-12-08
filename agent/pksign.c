@@ -324,8 +324,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       log_error ("failed to read the secret key\n");
       goto leave;
     }
-
-  algo = get_pk_algo_from_key (s_skey);
+  else
+    algo = get_pk_algo_from_key (s_skey);
 
   if (shadow_info || no_shadow_info)
     {
@@ -373,6 +373,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
           if (keyref)
             agent_write_shadow_key (ctrl->keygrip, serialno, keyref, pkbuf, 0);
+
+          algo = get_pk_algo_from_key (s_pkey);
 
           xfree (serialno);
           xfree (pkbuf);
