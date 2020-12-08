@@ -514,9 +514,9 @@ gpg_error_t agent_pksign (ctrl_t ctrl, const char *cache_nonce,
                           membuf_t *outbuf, cache_mode_t cache_mode);
 
 /*-- pkdecrypt.c --*/
-int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
-                     const unsigned char *ciphertext, size_t ciphertextlen,
-                     membuf_t *outbuf, int *r_padding);
+gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+                             const unsigned char *ciphertext, size_t ciphertextlen,
+                             membuf_t *outbuf, int *r_padding);
 
 /*-- genkey.c --*/
 int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int no_empty,
