@@ -278,7 +278,7 @@ static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
 static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                     size_t *nread, int expected_type, int seqno, int timeout,
                     int no_debug);
-static int abort_cmd (ccid_driver_t handle, int seqno);
+static int abort_cmd (ccid_driver_t handle, int seqno, int init);
 static int send_escape_cmd (ccid_driver_t handle, const unsigned char *data,
                             size_t datalen, unsigned char *result,
                             size_t resultmax, size_t *resultlen);
@@ -1288,7 +1288,7 @@ ccid_vendor_specific_init (ccid_driver_t handle)
        * It seems that SEQ may be out of sync between host and the card reader,
        * and SET_INTERFACE doesn't reset it.  Make sure it works at the init.
        */
-      abort_cmd (handle, 0);
+      abort_cmd (handle, 0, 1);
     }
 
   if (r != 0 && r != CCID_DRIVER_ERR_CARD_INACTIVE
@@ -1902,6 +1902,8 @@ do_close_reader (ccid_driver_t handle)
       libusb_free_transfer (handle->transfer);
       handle->transfer = NULL;
     }
+
+  DEBUGOUT ("libusb_release_interface and libusb_close\n");
   libusb_release_interface (handle->idev, handle->ifc_no);
   --ccid_usb_thread_is_alive;
   libusb_close (handle->idev);
@@ -2095,7 +2097,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (msglen < 10)
     {
       DEBUGOUT_1 ("bulk-in msg too short (%u)\n", (unsigned int)msglen);
-      abort_cmd (handle, seqno);
+      abort_cmd (handle, seqno, 0);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
   if (buffer[5] != 0)
@@ -2141,7 +2143,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (buffer[0] != expected_type && buffer[0] != RDR_to_PC_SlotStatus)
     {
       DEBUGOUT_1 ("unexpected bulk-in msg type (%02x)\n", buffer[0]);
-      abort_cmd (handle, seqno);
+      abort_cmd (handle, seqno, 0);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
 
@@ -2207,7 +2209,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
 
 /* Send an abort sequence and wait until everything settled.  */
 static int
-abort_cmd (ccid_driver_t handle, int seqno)
+abort_cmd (ccid_driver_t handle, int seqno, int init)
 {
   int rc;
   unsigned char dummybuf[8];
@@ -2236,7 +2238,8 @@ abort_cmd (ccid_driver_t handle, int seqno)
   if (rc)
     {
       DEBUGOUT_1 ("usb_control_msg error: %s\n", libusb_error_name (rc));
-      return map_libusb_error (rc);
+      if (!init)
+        return map_libusb_error (rc);
     }
 
   /* Now send the abort command to the bulk out pipe using the same
@@ -2262,7 +2265,7 @@ abort_cmd (ccid_driver_t handle, int seqno)
 #endif
       rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
                                  msg, msglen, &transferred,
-                                 5000 /* ms timeout */);
+                                 init? 100: 5000 /* ms timeout */);
 #ifdef USE_NPTH
       npth_protect ();
 #endif
@@ -2280,7 +2283,7 @@ abort_cmd (ccid_driver_t handle, int seqno)
 #endif
       rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
                                  msg, sizeof msg, &msglen,
-                                 5000 /*ms timeout*/);
+                                 init? 100: 5000 /*ms timeout*/);
 #ifdef USE_NPTH
       npth_protect ();
 #endif
@@ -2288,7 +2291,10 @@ abort_cmd (ccid_driver_t handle, int seqno)
         {
           DEBUGOUT_1 ("usb_bulk_read error in abort_cmd: %s\n",
                       libusb_error_name (rc));
-          return map_libusb_error (rc);
+          if (init && rc == LIBUSB_ERROR_TIMEOUT)
+            continue;
+          else
+            return map_libusb_error (rc);
         }
 
       if (msglen < 10)
@@ -2308,7 +2314,8 @@ abort_cmd (ccid_driver_t handle, int seqno)
       if (CCID_COMMAND_FAILED (msg))
         print_command_failed (msg);
     }
-  while (msg[0] != RDR_to_PC_SlotStatus && msg[5] != 0 && msg[6] != seqno);
+  while (rc == LIBUSB_ERROR_TIMEOUT
+         || (msg[0] != RDR_to_PC_SlotStatus && msg[5] != 0 && msg[6] != seqno));
 
   handle->seqno = ((seqno + 1) & 0xff);
   DEBUGOUT ("sending abort sequence succeeded\n");
@@ -2503,7 +2510,7 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
 #endif
         }
       else
-          DEBUGOUT ("USB: RETRYING bulk_in AGAIN\n");
+        DEBUGOUT ("USB: RETRYING bulk_in AGAIN\n");
       retries++;
       goto retry;
     }
