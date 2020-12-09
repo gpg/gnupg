@@ -1596,7 +1596,6 @@ ccid_setup_intr  (ccid_driver_t handle)
   struct libusb_transfer *transfer;
   int err;
 
-  libusb_clear_halt (handle->idev, handle->ep_intr);
   transfer = libusb_alloc_transfer (0);
   handle->transfer = transfer;
   libusb_fill_interrupt_transfer (transfer, handle->idev, handle->ep_intr,
