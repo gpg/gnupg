@@ -1295,6 +1295,7 @@ ccid_vendor_specific_setup (ccid_driver_t handle)
       DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
       send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
                        NULL, 0, NULL);
+      libusb_clear_halt (handle->idev, handle->ep_intr);
     }
   return 0;
 }
