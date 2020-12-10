@@ -1022,6 +1022,105 @@ readcert_from_ef (app_t app, int fid, unsigned char **cert, size_t *certlen)
 }
 
 
+/*
+ * Iterate over FILELIST, supporting two use cases:
+ *
+ * (1) With WANT_KEYGRIPSTR=<GRIP>, finding matching entry.
+ * (2) With WANT_KEYGRIPSTR=NULL, listing entries
+ *     by CAPABILITY (possibly == 0, for all entries).
+ *
+ * Caller supplies an array KEYGRIPSTR.
+ * Caller should start *IDX_P == -1, and keep the index value in IDX_P.
+ *
+ * Returns 0 on success, otherwise returns error value.
+ *
+ * When all entries are tried, returns GPG_ERR_NOT_FOUND for the use
+ * case of (1).  Returns GPG_ERR_TRUE for the use case of (2).
+ */
+static gpg_error_t
+iterate_over_filelist (app_t app, const char *want_keygripstr, int capability,
+                       char keygripstr[2*KEYGRIP_LEN+1], int *idx_p)
+{
+  gpg_error_t err;
+  int idx = *idx_p;
+
+  for (idx++; filelist[idx].fid; idx++)
+    {
+      if (filelist[idx].nks_ver > app->appversion)
+        continue;
+
+      if (!filelist[idx].iskeypair)
+        continue;
+
+      if (app->app_local->only_idlm)
+        {
+          if (filelist[idx].nks_app_id != NKS_APP_IDLM)
+            continue;
+        }
+      else
+        {
+          if (filelist[idx].nks_app_id != NKS_APP_NKS
+              && filelist[idx].nks_app_id != app->app_local->qes_app_id)
+            continue;
+          err = switch_application (app, filelist[idx].nks_app_id);
+          if (err)
+            {
+              *idx_p = idx;
+              return err;
+            }
+        }
+
+      err = keygripstr_from_pk_file (app, filelist[idx].fid,
+                                     filelist[idx].iskeypair, keygripstr,
+                                     NULL, NULL);
+      if (err)
+        {
+          log_error ("can't get keygrip from FID 0x%04X: %s\n",
+                     filelist[idx].fid, gpg_strerror (err));
+          continue;
+        }
+
+      if (want_keygripstr)
+        {
+          if (!strcmp (keygripstr, want_keygripstr))
+            {
+              /* Found */
+              *idx_p = idx;
+              return 0;
+            }
+        }
+      else
+        {
+          if (capability == GCRY_PK_USAGE_SIGN)
+            {
+              if (!filelist[idx].issignkey)
+                continue;
+            }
+          if (capability == GCRY_PK_USAGE_ENCR)
+            {
+              if (!filelist[idx].isencrkey)
+                continue;
+            }
+          if (capability == GCRY_PK_USAGE_AUTH)
+            {
+              if (!filelist[idx].isauthkey)
+                continue;
+            }
+
+          /* Found */
+          *idx_p = idx;
+          return 0;
+        }
+    }
+
+  if (!want_keygripstr)
+    err = gpg_error (GPG_ERR_TRUE);
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+
+  return err;
+}
+
 /* Read the certificate with id CERTID (as returned by learn_status in
    the CERTINFO status lines) and return it in the freshly allocated
    buffer put into CERT and the length of the certificate put into
@@ -2057,10 +2156,8 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
   gpg_error_t err;
   char keygripstr[2*KEYGRIP_LEN+1];
   char *serialno = NULL;
-  char idbuf[20];
   int data = 0;
-  int idx;
-  const char *tagstr;
+  int idx = -1;
 
   /* First a quick check for valid parameters.  */
   switch (action)
@@ -2068,8 +2165,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
     case KEYGRIP_ACTION_LOOKUP:
       if (!want_keygripstr)
         {
-          err = gpg_error (GPG_ERR_NOT_FOUND);
-          goto leave;
+          return gpg_error (GPG_ERR_NOT_FOUND);
         }
       break;
     case KEYGRIP_ACTION_SEND_DATA:
@@ -2078,8 +2174,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
     case KEYGRIP_ACTION_WRITE_STATUS:
       break;
     default:
-      err = gpg_error (GPG_ERR_INV_ARG);
-      goto leave;
+      return gpg_error (GPG_ERR_INV_ARG);
     }
 
   /* Allocate the S/N string if needed.  */
@@ -2087,70 +2182,25 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
     {
       serialno = app_get_serialno (app);
       if (!serialno)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
+        return gpg_error_from_syserror ();
     }
 
-  for (idx=0; filelist[idx].fid; idx++)
+  while (1)
     {
-      if (filelist[idx].nks_ver > app->appversion)
-        continue;
+      err = iterate_over_filelist (app, want_keygripstr, capability,
+                                   keygripstr, &idx);
+      if (err)
+        break;
 
-      if (!filelist[idx].iskeypair)
-        continue;
-
-      if (app->app_local->only_idlm)
+      if (want_keygripstr)
         {
-          if (filelist[idx].nks_app_id != NKS_APP_IDLM)
-            continue;
+          if (!err)
+            break;
         }
       else
         {
-          if (filelist[idx].nks_app_id != NKS_APP_NKS
-              && filelist[idx].nks_app_id != app->app_local->qes_app_id)
-            continue;
-          err = switch_application (app, filelist[idx].nks_app_id);
-          if (err)
-            goto leave;
-        }
-
-      err = keygripstr_from_pk_file (app, filelist[idx].fid,
-                                     filelist[idx].iskeypair, keygripstr,
-                                     NULL, NULL);
-      if (err)
-        {
-          log_error ("can't get keygrip from FID 0x%04X: %s\n",
-                     filelist[idx].fid, gpg_strerror (err));
-          continue;
-        }
-
-      if (action == KEYGRIP_ACTION_LOOKUP)
-        {
-          if (!strcmp (keygripstr, want_keygripstr))
-            {
-              err = 0; /* Found */
-              goto leave;
-            }
-        }
-      else if (!want_keygripstr || !strcmp (keygripstr, want_keygripstr))
-        {
-          if (capability == GCRY_PK_USAGE_SIGN)
-            {
-              if (!filelist[idx].issignkey)
-                continue;
-            }
-          if (capability == GCRY_PK_USAGE_ENCR)
-            {
-              if (!filelist[idx].isencrkey)
-                continue;
-            }
-          if (capability == GCRY_PK_USAGE_AUTH)
-            {
-              if (!filelist[idx].isauthkey)
-                continue;
-            }
+          char idbuf[20];
+          const char *tagstr;
 
           if (app->app_local->active_nks_app == NKS_APP_ESIGN)
             tagstr = "ESIGN";
@@ -2162,27 +2212,13 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
             tagstr = "DF01";
           else
             tagstr = "NKS3";
+
           snprintf (idbuf, sizeof idbuf, "NKS-%s.%04X",
                     tagstr, filelist[idx].fid);
           send_keyinfo (ctrl, data, keygripstr, serialno, idbuf);
-          if (want_keygripstr)
-            {
-              err = 0; /* Found */
-              goto leave;
-            }
         }
     }
 
-  /* Return an error so that the dispatcher keeps on looping over the
-   * other applications.  For clarity we use a different error code
-   * when listing all keys.  Note that in lookup mode WANT_KEYGRIPSTR
-   * is not NULL.  */
-  if (!want_keygripstr)
-    err = gpg_error (GPG_ERR_TRUE);
-  else
-    err = gpg_error (GPG_ERR_NOT_FOUND);
-
- leave:
   xfree (serialno);
   return err;
 }
