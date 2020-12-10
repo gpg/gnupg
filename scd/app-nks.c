@@ -1136,6 +1136,24 @@ do_readcert (app_t app, const char *certid,
   *cert = NULL;
   *certlen = 0;
 
+  /* Handle the case with KEYGRIP.  */
+  if (strlen (certid) == 40)
+    {
+      char keygripstr[2*KEYGRIP_LEN+1];
+
+      i = -1;
+      err = iterate_over_filelist (app, certid, 0, keygripstr, &i);
+      if (err)
+        return err;
+
+      if (filelist[i].iskeypair > 0)
+        fid = filelist[i].iskeypair;
+      else
+        fid = filelist[i].fid;
+
+      return readcert_from_ef (app, fid, cert, certlen);
+    }
+
   if (!strncmp (certid, "NKS-NKS3.", 9))
     nks_app_id = NKS_APP_NKS;
   else if (!strncmp (certid, "NKS-ESIGN.", 10))
