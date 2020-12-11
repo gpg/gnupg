@@ -1210,6 +1210,28 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
   /* We use a generic name to retrieve PK.AUT.IFD-SPK.  */
   if (!strcmp (keyid, "$IFDAUTHKEY") && app->appversion >= 3)
     ;
+  else if (strlen (keyid) == 40)
+    {
+      char keygripstr[2*KEYGRIP_LEN+1];
+      int i = -1;
+
+      err = iterate_over_filelist (app, keyid, 0, keygripstr, &i);
+      if (err)
+        return err;
+
+      return pubkey_from_pk_file (app, filelist[i].fid, filelist[i].iskeypair,
+                                  pk, pklen);
+    }
+  else if (!strncmp (keyid, "NKS-IDLM.", 9))
+    {
+      keyid += 9;
+      if (!hexdigitp (keyid) || !hexdigitp (keyid+1)
+          || !hexdigitp (keyid+2) || !hexdigitp (keyid+3)
+          || keyid[4])
+        return gpg_error (GPG_ERR_INV_ID);
+
+      return pubkey_from_pk_file (app, xtoi_4 (keyid), -1, pk, pklen);
+    }
   else /* Return the error code expected by cmd_readkey.  */
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
