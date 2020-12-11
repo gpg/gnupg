@@ -268,63 +268,27 @@ get_dispserialno (app_t app)
 }
 
 
-/* Read the file with PKFID, assume it contains a public key and
- * return its keygrip in the caller provided 41 byte buffer R_GRIPSTR.
- * This works only for RSA card.  For the Signature Card v2 ECC is
- * used and Read Record needs to be replaced by read binary.  Given
- * all the ECC parameters required, we don't do that but rely that the
- * corresponding certificate at CFID is already available and get the
- * public key from there.  Note that a CFID of 1 is indicates that a
- * certificate is not known.  If R_ALGO is not NULL the public key
- * algorithm for the returned KEYGRIP is stored there.  If R_ALGOSTR
- * is not NULL the public key algo string (e.g. "rsa2048") is stored
- * there.  */
 static gpg_error_t
-keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
-                         int *r_algo, char **r_algostr)
+pubkey_from_pk_file (app_t app, int pkfid, int cfid,
+                     unsigned char **r_pk, size_t *r_pklen)
 {
   gpg_error_t err;
-  unsigned char grip[20];
   unsigned char *buffer[2];
   size_t buflen[2];
-  gcry_sexp_t sexp = NULL;
-  int algo = 0;  /* Public key algo.  */
-  char *algostr = NULL; /* Public key algo string.  */
   int i;
   int offset[2] = { 0, 0 };
-  struct fid_cache_s *ci;
 
-  for (ci = app->app_local->fid_cache; ci; ci = ci->next)
-    if (ci->fid && ci->nks_app_id == app->app_local->active_nks_app
-        && ci->fid == pkfid)
-      {
-        if (!ci->got_keygrip)
-          return gpg_error (GPG_ERR_NOT_FOUND);
-        if (r_algostr && !ci->algostr)
-          break;  /* Not in the cache - try w/o cache.  */
-        memcpy (r_gripstr, ci->keygripstr, 2*KEYGRIP_LEN+1);
-        if (r_algo)
-          *r_algo = ci->algo;
-        if (r_algostr)
-          {
-            *r_algostr = xtrystrdup (ci->algostr);
-            if (!*r_algostr)
-              return gpg_error_from_syserror ();
-          }
-        return 0;  /* Found in cache.  */
-      }
+  *r_pk = NULL;
+  *r_pklen = 0;
 
   if (app->appversion == 15)
     {
       /* Signature Card v2 - get keygrip from the certificate.  */
-      unsigned char *cert, *pk;
-      size_t certlen, pklen;
+      unsigned char *cert;
+      size_t certlen;
 
       if (cfid == -1)
-        {
-          err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-          goto leave;
-        }
+        return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
       /* Fall back to certificate reading.  */
       err = readcert_from_ef (app, cfid, &cert, &certlen);
@@ -332,41 +296,31 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
         {
           log_error ("nks: error reading certificate %04X: %s\n",
                      cfid, gpg_strerror (err));
-          goto leave;
+          return err;
         }
 
-      err = app_help_pubkey_from_cert (cert, certlen, &pk, &pklen);
+      err = app_help_pubkey_from_cert (cert, certlen, r_pk, r_pklen);
       xfree (cert);
       if (err)
-        {
-          log_error ("nks: error parsing certificate %04X: %s\n",
-                     cfid, gpg_strerror (err));
-          goto leave;
-        }
-
-      err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL,
-                                            &algo, &algostr);
-      xfree (pk);
-      if (err)
-        log_error ("nks: error getting keygrip for certificate %04X: %s\n",
+        log_error ("nks: error parsing certificate %04X: %s\n",
                    cfid, gpg_strerror (err));
 
-      goto leave;
+      return err;
     }
 
   err = iso7816_select_file (app_get_slot (app), pkfid, 0);
   if (err)
-    goto leave;
+    return err;
   err = iso7816_read_record (app_get_slot (app), 1, 1, 0,
                              &buffer[0], &buflen[0]);
   if (err)
-    goto leave;
+    return err;
   err = iso7816_read_record (app_get_slot (app), 2, 1, 0,
                              &buffer[1], &buflen[1]);
   if (err)
     {
       xfree (buffer[0]);
-      goto leave;
+      return err;
     }
 
   if (app->appversion < 3)
@@ -385,6 +339,12 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
             err = gpg_error (GPG_ERR_INV_OBJ);
           else
             offset[i] = 2;
+          if (err)
+            {
+              xfree (buffer[0]);
+              xfree (buffer[1]);
+              return err;
+            }
         }
     }
   else
@@ -414,10 +374,10 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
           newbuf = xtrymalloc (newlen);
           if (!newlen)
             {
+              err = gpg_error_from_syserror ();
               xfree (buffer[0]);
               xfree (buffer[1]);
-              err = gpg_error_from_syserror ();
-              goto leave;
+              return err;
             }
           newbuf[0] = 0;
           memcpy (newbuf+1, buffer[i]+offset[i], buflen[i] - offset[i]);
@@ -428,33 +388,62 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
         }
     }
 
-  algo = GCRY_PK_RSA;
-  if (!err)
-    err = gcry_sexp_build (&sexp, NULL,
-                           "(public-key (rsa (n %b) (e %b)))",
-                           (int)buflen[0]-offset[0], buffer[0]+offset[0],
-                           (int)buflen[1]-offset[1], buffer[1]+offset[1]);
+  *r_pk = make_canon_sexp_from_rsa_pk (buffer[0]+offset[0], buflen[0]-offset[0],
+                                       buffer[1]+offset[1], buflen[1]-offset[1],
+                                       r_pklen);
 
   xfree (buffer[0]);
   xfree (buffer[1]);
-  if (err)
-    return err;
+  return err;
+}
 
-  if (!gcry_pk_get_keygrip (sexp, grip))
-    {
-      err = gpg_error (GPG_ERR_INTERNAL); /* i.e. RSA not supported by
-                                             libgcrypt. */
-    }
-  else
-    {
-      bin2hex (grip, 20, r_gripstr);
-      if (r_algo)
-        *r_algo = algo;
-      algostr = pubkey_algo_string (sexp, NULL);
-    }
+/* Read the file with PKFID, assume it contains a public key and
+ * return its keygrip in the caller provided 41 byte buffer R_GRIPSTR.
+ * This works only for RSA card.  For the Signature Card v2 ECC is
+ * used and Read Record needs to be replaced by read binary.  Given
+ * all the ECC parameters required, we don't do that but rely that the
+ * corresponding certificate at CFID is already available and get the
+ * public key from there.  Note that a CFID of 1 is indicates that a
+ * certificate is not known.  If R_ALGO is not NULL the public key
+ * algorithm for the returned KEYGRIP is stored there.  If R_ALGOSTR
+ * is not NULL the public key algo string (e.g. "rsa2048") is stored
+ * there.  */
+static gpg_error_t
+keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
+                         int *r_algo, char **r_algostr)
+{
+  gpg_error_t err;
+  int algo = 0;  /* Public key algo.  */
+  char *algostr = NULL; /* Public key algo string.  */
+  struct fid_cache_s *ci;
+  unsigned char *pk;
+  size_t pklen;
 
+  for (ci = app->app_local->fid_cache; ci; ci = ci->next)
+    if (ci->fid && ci->nks_app_id == app->app_local->active_nks_app
+        && ci->fid == pkfid)
+      {
+        if (!ci->got_keygrip)
+          return gpg_error (GPG_ERR_NOT_FOUND);
+        if (r_algostr && !ci->algostr)
+          break;  /* Not in the cache - try w/o cache.  */
+        memcpy (r_gripstr, ci->keygripstr, 2*KEYGRIP_LEN+1);
+        if (r_algo)
+          *r_algo = ci->algo;
+        if (r_algostr)
+          {
+            *r_algostr = xtrystrdup (ci->algostr);
+            if (!*r_algostr)
+              return gpg_error_from_syserror ();
+          }
+        return 0;  /* Found in cache.  */
+      }
 
- leave:
+  err = pubkey_from_pk_file (app, pkfid, cfid, &pk, &pklen);
+  err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL,
+                                        &algo, &algostr);
+  xfree (pk);
+
   if (!err)
     {
       if (r_algostr)
@@ -498,7 +487,6 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
             }
         }
     }
-  gcry_sexp_release (sexp);
   xfree (algostr);
   return err;
 }
