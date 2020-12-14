@@ -1015,21 +1015,6 @@ ks_put_inq_cb (void *opaque, const char *line)
               }
               break;
 
-              /* This bit is really for the benefit of people who
-                 store their keys in LDAP servers.  It makes it easy
-                 to do queries for things like "all keys signed by
-                 Isabella".  */
-            case PKT_SIGNATURE:
-              {
-                PKT_signature *sig = node->pkt->pkt.signature;
-
-                if (IS_UID_SIG (sig))
-		  record_output (fp, node->pkt->pkttype, NULL,
-				 -1, -1, sig->keyid,
-				 sig->timestamp, sig->expiredate, NULL);
-              }
-              break;
-
             default:
               continue;
             }
