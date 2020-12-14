@@ -12,10 +12,18 @@ pgpBaseKeySpaceDN: ou=GnuPG Keys,dc=example,dc=com
 # Using the value GnuPG here indicates that pgpVersion below has a
 # well-defined meaning.
 pgpSoftware: GnuPG
-# Currently used values:
-#  1 :: Classic PGP schema
-#  2 :: The attributes gpgFingerprint, gpgSubFingerprint,
-#       gpgSubCertID, and gpgMailbox are part of the schema.
+# pgpVersion is a string with space delimited items:
+#
+# Item 1 - Implemented schema version.  This is an integer with one
+#          of these values:
+#          1 = Classic PGP schema (default)
+#          2 = The attributes gpgFingerprint, gpgSubFingerprint,
+#              gpgSubCertID, and gpgMailbox are part of the schema.
+# Item 2 - A string with the used LDAP server
+#          "-"        = Unknown (default)
+#          "ntds"     = Windows Directory Service (AD DS)
+#          "openldap" = OpenLDAP
+#
 pgpVersion: 2
 
 dn: ou=GnuPG Keys,dc=example,dc=com

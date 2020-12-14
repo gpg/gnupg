@@ -1,0 +1,17 @@
+# gnupg-ldap-ad-init.ldif                                 -*- conf -*-
+#
+# Entries connecting the schema specified in gnupg-ldap-ad-schema.ldif.
+# Revision: 2020-12-08
+
+dn: cn=GnuPG Keys,dc=w32demo,dc=g10code,dc=de
+changetype: add
+objectClass: container
+cn: GnuPG Keys
+
+dn: cn=PGPServerInfo,dc=w32demo,dc=g10code,dc=de
+changetype: add
+objectClass: pgpServerInfo
+cn: PGPServerInfo
+pgpBaseKeySpaceDN: cn=GnuPG Keys,dc=w32demo,dc=g10code,dc=de
+pgpSoftware: GnuPG
+pgpVersion: 2 ntds
