@@ -1995,7 +1995,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 
       *newline = '\0';
 
-      extract_attributes (&modlist, info);
+      extract_attributes (&addlist, info);
 
       infolen = infolen - ((uintptr_t) newline - (uintptr_t) info + 1);
       info = newline + 1;
@@ -2042,7 +2042,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
     char **certid;
     char *dn;
 
-    certid = modlist_lookup (modlist, "pgpCertID");
+    certid = modlist_lookup (addlist, "pgpCertID");
     if (/* We should have a value.  */
 	! certid
 	/* Exactly one.  */
