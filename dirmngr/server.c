@@ -2526,7 +2526,7 @@ static const char hlp_ks_put[] =
   "  INQUIRE KEYBLOCK_INFO\n"
   "\n"
   "The client shall respond with a colon delimited info lines (the output\n"
-  "of 'for x in keys sigs; do gpg --list-$x --with-colons KEYID; done').\n";
+  "of 'gpg --list-keys --with-colons KEYID').\n";
 static gpg_error_t
 cmd_ks_put (assuan_context_t ctx, char *line)
 {
@@ -2559,8 +2559,7 @@ cmd_ks_put (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  /* Ask for the key meta data. Not actually needed for HKP servers
-     but we do it anyway to test the client implementation.  */
+  /* Ask for the key meta data.  */
   err = assuan_inquire (ctx, "KEYBLOCK_INFO",
                         &info, &infolen, MAX_KEYBLOCK_LENGTH);
   if (err)

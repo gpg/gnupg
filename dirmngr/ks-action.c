@@ -357,9 +357,9 @@ ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
 /* Send an OpenPGP key to all keyservers.  The key in {DATA,DATALEN}
    is expected to be in OpenPGP binary transport format.  The metadata
    in {INFO,INFOLEN} is in colon-separated format (concretely, it is
-   the output of 'for x in keys sigs; do gpg --list-$x --with-colons
-   KEYID; done'.  This function may modify DATA and INFO.  If this is
-   a problem, then the caller should create a copy.  */
+   the output of 'gpg --list-keys --with-colons KEYID').  This function
+   may modify DATA and INFO.  If this is a problem, then the caller
+   should create a copy.  */
 gpg_error_t
 ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
 	       void *data, size_t datalen,

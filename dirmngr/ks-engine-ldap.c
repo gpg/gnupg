@@ -1739,9 +1739,6 @@ extract_attributes (LDAPMod ***modlist, char *line)
 
       if (is_sub)
 	modlist_add (modlist, "pgpSubKeyID", keyid);
-
-      if (is_sig)
-	modlist_add (modlist, "pgpSignerID", keyid);
     }
 
   if (is_pub)
@@ -1969,7 +1966,6 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   modlist_add (&modlist, "pgpKeyType", NULL);
   modlist_add (&modlist, "pgpUserID", NULL);
   modlist_add (&modlist, "pgpKeyCreateTime", NULL);
-  modlist_add (&modlist, "pgpSignerID", NULL);
   modlist_add (&modlist, "pgpRevoked", NULL);
   modlist_add (&modlist, "pgpSubKeyID", NULL);
   modlist_add (&modlist, "pgpKeySize", NULL);
