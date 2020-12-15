@@ -931,6 +931,7 @@ ks_put_inq_cb (void *opaque, const char *line)
     {
       kbnode_t node;
       estream_t fp;
+      char hexfpr[2*MAX_FINGERPRINT_LEN+1];
 
       /* Parse the keyblock and send info lines back to the server.  */
       fp = es_fopenmem (0, "rw,samethread");
@@ -988,6 +989,8 @@ ks_put_inq_cb (void *opaque, const char *line)
 			       nbits_from_pk (pk), pk->pubkey_algo,
 			       pk->keyid, pk->timestamp, pk->expiredate,
 			       NULL);
+                es_fprintf (fp, "fpr:::::::::%s:\n",
+                            hexfingerprint (pk, hexfpr, sizeof hexfpr));
               }
               break;
 
