@@ -3,7 +3,7 @@
 # Schema for an OpenPGP LDAP keyserver.  This is a slighly enhanced
 # version of the original LDAP schema used for PGP keyservers as
 # installed at quite some sites.
-# Revision: 2020-12-08
+# Revision: 2020-12-15
 
 # Some notes:
 # - Backup your AD! It is not possible to revert changes of the schema.
@@ -181,7 +181,7 @@ oMSyntax: 64
 isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYCw==
 
-# The Subkey key ids
+# The Subkey key ids (16 hex digits)
 dn: CN=pgpSubKeyID,CN=Schema,CN=Configuration,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
@@ -254,18 +254,6 @@ oMSyntax: 64
 isSingleValued: FALSE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYEQ==
 
-# A list of hex encoded long keyids of all subkeys.
-dn: CN=gpgSubCertID,CN=Schema,CN=Configuration,DC=EXAMPLEDC
-changetype: ntdsSchemaAdd
-objectClass: attributeSchema
-attributeID: 1.3.6.1.4.1.11591.2.4.1.4
-lDAPDisplayName: gpgSubCertID
-description: OpenPGP long subkey id
-attributeSyntax: 2.5.5.12
-oMSyntax: 64
-isSingleValued: FALSE
-schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYEg==
-
 # Unused GUIDs:
 #  9AbnpaXqQR6d3S5OZomYEw==
 #  9AbnpaXqQR6d3S5OZomYFA==
@@ -335,7 +323,6 @@ mayContain: pgpKeySize
 mayContain: pgpKeyExpireTime
 mayContain: gpgFingerprint
 mayContain: gpgSubFingerprint
-mayContain: gpgSubCertID
 mayContain: gpgMailbox
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYIQ==
 
