@@ -46,6 +46,7 @@
 #include "dirmngr.h"
 #include "misc.h"
 #include "../common/userids.h"
+#include "../common/mbox-util.h"
 #include "ks-engine.h"
 #include "ldap-parse-uri.h"
 
@@ -1631,15 +1632,16 @@ uncescape (char *str)
 
 /* Given one line from an info block (`gpg --list-{keys,sigs}
    --with-colons KEYID'), pull it apart and fill in the modlist with
-   the relevant (for the LDAP schema) attributes.  */
+   the relevant (for the LDAP schema) attributes.  EXTRACT_STATE
+   should initally be set to 0 by the caller.  SCHEMAV2 is set if the
+   server supports the version 2 schema.  */
 static void
-extract_attributes (LDAPMod ***modlist, char *line)
+extract_attributes (LDAPMod ***modlist, int *extract_state,
+                    char *line, int schemav2)
 {
   int field_count;
   char **fields;
-
   char *keyid;
-
   int is_pub, is_sub, is_uid, is_sig;
 
   /* Remove trailing whitespace */
@@ -1654,24 +1656,42 @@ extract_attributes (LDAPMod ***modlist, char *line)
   if (field_count < 7)
     goto out;
 
-  is_pub = strcasecmp ("pub", fields[0]) == 0;
-  is_sub = strcasecmp ("sub", fields[0]) == 0;
-  is_uid = strcasecmp ("uid", fields[0]) == 0;
-  is_sig = strcasecmp ("sig", fields[0]) == 0;
+  is_pub = !ascii_strcasecmp ("pub", fields[0]);
+  is_sub = !ascii_strcasecmp ("sub", fields[0]);
+  is_uid = !ascii_strcasecmp ("uid", fields[0]);
+  is_sig = !ascii_strcasecmp ("sig", fields[0]);
+  if (!ascii_strcasecmp ("fpr", fields[0]))
+    {
+      /* Special treatment for a fingerprint.  */
+      if (!(*extract_state & 1))
+        goto out;  /* Stray fingerprint line - ignore.  */
+      *extract_state &= ~1;
+      if (field_count >= 10 && schemav2)
+        {
+          if ((*extract_state & 2))
+            modlist_add (modlist, "gpgFingerprint", fields[9]);
+          else
+            modlist_add (modlist, "gpgSubFingerprint", fields[9]);
+        }
+      goto out;
+    }
+
+  *extract_state &= ~(1|2);
+  if (is_pub)
+    *extract_state |= (1|2);
+  else if (is_sub)
+    *extract_state |= 1;
 
   if (!is_pub && !is_sub && !is_uid && !is_sig)
-    /* Not a relevant line.  */
-    goto out;
+    goto out; /* Not a relevant line.  */
 
   keyid = fields[4];
 
   if (is_uid && strlen (keyid) == 0)
-    /* The uid record type can have an empty keyid.  */
-    ;
+    ; /* The uid record type can have an empty keyid.  */
   else if (strlen (keyid) == 16
 	   && strspn (keyid, "0123456789aAbBcCdDeEfF") == 16)
-    /* Otherwise, we expect exactly 16 hex characters.  */
-    ;
+    ; /* Otherwise, we expect exactly 16 hex characters.  */
   else
     {
       log_error ("malformed record!\n");
@@ -1750,12 +1770,12 @@ extract_attributes (LDAPMod ***modlist, char *line)
     {
       if (is_pub)
 	{
-	  modlist_add (modlist, "pgpCertID", keyid);
-	  modlist_add (modlist, "pgpKeyID", &keyid[8]);
+	  modlist_add (modlist, "pgpCertID", keyid);    /* Long keyid(!) */
+	  modlist_add (modlist, "pgpKeyID", &keyid[8]); /* Short keyid   */
 	}
 
       if (is_sub)
-	modlist_add (modlist, "pgpSubKeyID", keyid);
+        modlist_add (modlist, "pgpSubKeyID", keyid);    /* Long keyid(!)  */
     }
 
   if (is_pub)
@@ -1853,25 +1873,22 @@ extract_attributes (LDAPMod ***modlist, char *line)
 	}
     }
 
-  if ((is_uid || is_pub) && field_count >= 10)
+  if (is_uid && field_count >= 10)
     {
       char *uid = fields[9];
+      char *mbox;
 
-      if (is_pub && strlen (uid) == 0)
-	/* When using gpg --list-keys, the uid is included.  When
-	   passed via gpg, it is not.  It is important to process it
-	   when it is present, because gpg 1 won't print a UID record
-	   if there is only one key.  */
-	;
-      else
-	{
-	  uncescape (uid);
-	  modlist_add (modlist, "pgpUserID", uid);
-	}
+      uncescape (uid);
+      modlist_add (modlist, "pgpUserID", uid);
+      if (schemav2 && (mbox = mailbox_from_userid (uid)))
+        {
+          modlist_add (modlist, "gpgMailbox", mbox);
+          xfree (mbox);
+        }
     }
 
  out:
-  free (fields);
+  xfree (fields);
 }
 
 /* Send the key in {KEY,KEYLEN} with the metadata {INFO,INFOLEN} to
@@ -1890,6 +1907,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   LDAPMod **modlist = NULL;
   LDAPMod **addlist = NULL;
   char *data_armored = NULL;
+  int extract_state;
 
   /* The last byte of the info block.  */
   const char *infoend = (const char *) info + infolen - 1;
@@ -1997,9 +2015,15 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   modlist_add (&modlist, "pgpKeySize", NULL);
   modlist_add (&modlist, "pgpKeyExpireTime", NULL);
   modlist_add (&modlist, "pgpCertID", NULL);
+  if ((serverinfo & SERVERINFO_SCHEMAV2))
+    {
+      modlist_add (&modlist, "gpgFingerprint", NULL);
+      modlist_add (&modlist, "gpgSubFingerprint", NULL);
+      modlist_add (&modlist, "gpgMailbox", NULL);
+    }
 
   /* Assemble the INFO stuff into LDAP attributes */
-
+  extract_state = 0;
   while (infolen > 0)
     {
       char *temp = NULL;
@@ -2017,7 +2041,8 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 
       *newline = '\0';
 
-      extract_attributes (&addlist, info);
+      extract_attributes (&addlist, &extract_state, info,
+                          (serverinfo & SERVERINFO_SCHEMAV2));
 
       infolen = infolen - ((uintptr_t) newline - (uintptr_t) info + 1);
       info = newline + 1;
@@ -2063,22 +2088,37 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
      keyserver) this does NOT merge signatures, but replaces the whole
      key.  This should make some people very happy. */
   {
-    char **certid;
+    char **attrval;
     char *dn;
 
-    certid = modlist_lookup (addlist, "pgpCertID");
-    /* We should have exactly one value.  */
-    if (!certid	|| !(certid[0] && !certid[1]))
-      {
-	log_error ("ks-ldap: bad pgpCertID provided\n");
-	err = GPG_ERR_GENERAL;
-	goto out;
-      }
-
     if ((serverinfo & SERVERINFO_NTDS))
-      dn = xtryasprintf ("CN=%s,%s", certid[0], basedn);
-    else
-      dn = xtryasprintf ("pgpCertID=%s,%s", certid[0], basedn);
+      {
+        /* The modern way using a CN RDN with the fingerprint.  This
+         * has the advantage that we won't have duplicate 64 bit
+         * keyids in the store.  In particular NTDS requires the
+         * DN to be unique.  */
+        attrval = modlist_lookup (addlist, "gpgFingerprint");
+        /* We should have exactly one value.  */
+        if (!attrval || !(attrval[0] && !attrval[1]))
+          {
+            log_error ("ks-ldap: bad gpgFingerprint provided\n");
+            err = GPG_ERR_GENERAL;
+            goto out;
+          }
+        dn = xtryasprintf ("CN=%s,%s", attrval[0], basedn);
+      }
+    else  /* The old style way.  */
+      {
+        attrval = modlist_lookup (addlist, "pgpCertID");
+        /* We should have exactly one value.  */
+        if (!attrval || !(attrval[0] && !attrval[1]))
+          {
+            log_error ("ks-ldap: bad pgpCertID provided\n");
+            err = GPG_ERR_GENERAL;
+            goto out;
+          }
+        dn = xtryasprintf ("pgpCertID=%s,%s", attrval[0], basedn);
+      }
     if (!dn)
       {
         err = gpg_error_from_syserror ();
