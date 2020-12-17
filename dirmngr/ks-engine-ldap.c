@@ -343,6 +343,7 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
   KEYDB_SEARCH_DESC desc;
   char *f = NULL;
   char *freeme = NULL;
+  char *p;
 
   gpg_error_t err = classify_user_id (keyspec, &desc, 1);
   if (err)
@@ -362,14 +363,24 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
       break;
 
     case KEYDB_SEARCH_MODE_MAIL:
-      if (only_exact)
+      freeme = ldap_escape_filter (desc.u.name);
+      if (!freeme)
         break;
-      if ((serverinfo & SERVERINFO_SCHEMAV2))
-        f = xasprintf ("(gpgMailbox=%s)",
-                       (freeme = ldap_escape_filter (desc.u.name)));
+      if (*freeme == '<' && freeme[1] && freeme[2])
+        {
+          /* Strip angle brackets.  Note that it is does not
+           * matter whether we work on the plan or LDAP escaped
+           * version of the mailbox.  */
+          p = freeme + 1;
+          if (p[strlen(p)-1] == '>')
+            p[strlen(p)-1] = 0;
+        }
       else
-        f = xasprintf ("(pgpUserID=*<%s>*)",
-                       (freeme = ldap_escape_filter (desc.u.name)));
+        p = freeme;
+      if ((serverinfo & SERVERINFO_SCHEMAV2))
+        f = xasprintf ("(gpgMailbox=%s)", p);
+      else if (!only_exact)
+        f = xasprintf ("(pgpUserID=*<%s>*)", p);
       break;
 
     case KEYDB_SEARCH_MODE_MAILSUB:
@@ -934,6 +945,8 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
   if (err)
     goto out;
 
+  if (opt.debug)
+    log_debug ("ks-ldap: using filter: %s\n", filter);
 
   {
     /* The ordering is significant.  Specifically, "pgpcertid" needs

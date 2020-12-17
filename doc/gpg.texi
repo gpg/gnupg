@@ -1825,6 +1825,9 @@ list.  The default is "local,wkd".
   keyservers to use.  If this fails, attempt to locate the key using the
   PGP Universal method of checking @samp{ldap://keys.(thedomain)}.
 
+  @item ntds
+  Locate the key using the Active Directory (Windows only).
+
   @item keyserver
   Locate a key using a keyserver.
 

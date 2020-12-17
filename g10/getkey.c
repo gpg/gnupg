@@ -1107,6 +1107,13 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
+	    case AKL_NTDS:
+	      mechanism_string = "NTDS";
+	      glo_ctrl.in_auto_key_retrieve++;
+	      rc = keyserver_import_ntds (ctrl, name, &fpr, &fpr_len);
+	      glo_ctrl.in_auto_key_retrieve--;
+	      break;
+
 	    case AKL_KEYSERVER:
 	      /* Strictly speaking, we don't need to only use a valid
 	       * mailbox for the getname search, but it helps cut down
@@ -4152,6 +4159,8 @@ parse_auto_key_locate (const char *options_arg)
 	akl->type = AKL_DANE;
       else if (ascii_strcasecmp (tok, "wkd") == 0)
 	akl->type = AKL_WKD;
+      else if (ascii_strcasecmp (tok, "ntds") == 0)
+	akl->type = AKL_NTDS;
       else if ((akl->spec = parse_keyserver_uri (tok, 1)))
 	akl->type = AKL_SPEC;
       else

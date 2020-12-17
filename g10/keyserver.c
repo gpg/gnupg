@@ -1141,6 +1141,21 @@ keyserver_import_name (ctrl_t ctrl, const char *name,
 }
 
 
+/* Import the keys that match exactly MBOX */
+int
+keyserver_import_ntds (ctrl_t ctrl, const char *mbox,
+                       unsigned char **fpr, size_t *fprlen)
+{
+  KEYDB_SEARCH_DESC desc = { 0 };
+  struct keyserver_spec keyserver = { NULL, "ldap:///" };
+
+  desc.mode = KEYDB_SEARCH_MODE_MAIL;
+  desc.u.name = mbox;
+
+  return keyserver_get (ctrl, &desc, 1, &keyserver, 0, fpr, fprlen);
+}
+
+
 int
 keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
 			 struct keyserver_spec *keyserver, int quick)
@@ -1661,6 +1676,25 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
           linelen += n;
 
           pattern[npat] = strconcat ("=", desc[idx].u.name, NULL);
+          if (!pattern[npat])
+            err = gpg_error_from_syserror ();
+          else
+            {
+              npat++;
+              quiet = 1;
+            }
+        }
+      else if(desc[idx].mode == KEYDB_SEARCH_MODE_MAIL)
+        {
+          n = 1 + strlen (desc[idx].u.name) + 1 + 1;
+          if (idx && linelen + n > MAX_KS_GET_LINELEN)
+            break; /* Declare end of this chunk.  */
+          linelen += n;
+
+          if (desc[idx].u.name[0] == '<')
+            pattern[npat] = xtrystrdup (desc[idx].u.name);
+          else
+            pattern[npat] = strconcat ("<", desc[idx].u.name, ">", NULL);
           if (!pattern[npat])
             err = gpg_error_from_syserror ();
           else
