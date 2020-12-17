@@ -57,6 +57,7 @@ struct parsed_uri_s
   unsigned int v6lit:1;   /* Host was given as a literal v6 address.  */
   unsigned int onion:1;   /* .onion address given.  */
   unsigned int explicit_port :1; /* The port was explicitly specified.  */
+  unsigned int ad_current:1;    /* Use Active Directory's current user.  */
   char *auth;           /* username/password for basic auth.  */
   char *host; 	        /* Host (converted to lowercase). */
   unsigned short port;  /* Port (always set if the host is set). */
