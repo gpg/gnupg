@@ -294,6 +294,7 @@ mustContain: cn
 mustContain: pgpBaseKeySpaceDN
 mayContain: pgpSoftware
 mayContain: pgpVersion
+systemPossSuperiors: domainDNS
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYIA==
 
 # The original PGP key object extended with a few extra attributes.
@@ -324,6 +325,7 @@ mayContain: pgpKeyExpireTime
 mayContain: gpgFingerprint
 mayContain: gpgSubFingerprint
 mayContain: gpgMailbox
+systemPossSuperiors: container
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYIQ==
 
 

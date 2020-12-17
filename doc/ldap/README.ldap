@@ -379,7 +379,7 @@ To list the entire DIT for the domain "example.com" use this command:
 : ldapsearch -Q -Y EXTERNAL -LLL -H ldapi:/// -b dc=example,dc=com dn
 
 This lists just the DNs.  If you need the entire content of the DIT
-leave our the "dn" argument.  The option "-LLL" selects a useful
+leave out the "dn" argument.  The option "-LLL" selects useful
 formatting options for the output.
 
 ** Insert X.509 Certficate
