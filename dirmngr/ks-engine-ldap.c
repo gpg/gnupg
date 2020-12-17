@@ -487,13 +487,15 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   password = password_param ? password_param->value : NULL;
 
   if (opt.debug)
-    log_debug ("my_ldap_connect(%s:%d/%s????%s%s%s%s%s)\n",
+    log_debug ("my_ldap_connect(%s:%d/%s????%s%s%s%s%s%s)\n",
                uri->host, uri->port,
-               uri->path ?: "",
-               uri->auth ? "bindname=" : "", uri->auth ?: "",
+               uri->path ? uri->path : "",
+               uri->auth ? "bindname=" : "",
+               uri->auth ? uri->auth : "",
                uri->auth && password ? "," : "",
                password ? "password=" : "",
-               password ? ">not shown<": "");
+               password ? ">not shown<": "",
+               uri->ad_current? " auth=>current_user<":"");
 
   /* If the uri specifies a secure connection and we don't support
      TLS, then fail; don't silently revert to an insecure
@@ -507,12 +509,18 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 #endif
     }
 
-  ldap_conn = ldap_init (uri->host, uri->port);
-  if (! ldap_conn)
+  if (uri->ad_current)
+    ldap_conn = ldap_init (NULL, uri->port);
+  else
+    ldap_conn = ldap_init (uri->host, uri->port);
+  if (!ldap_conn)
     {
       err = gpg_err_code_from_syserror ();
-      log_error ("Failed to open connection to LDAP server (%s://%s:%d)\n",
-		 uri->scheme, uri->host, uri->port);
+      if (uri->ad_current)
+        log_error ("error initializing LDAP for current user\n");
+      else
+        log_error ("error initializing LDAP for (%s://%s:%d)\n",
+                   uri->scheme, uri->host, uri->port);
       goto out;
     }
 
@@ -557,7 +565,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 			     LDAP_OPT_X_TLS_REQUIRE_CERT, &check_cert);
       if (err)
 	{
-	  log_error ("Failed to set TLS option on LDAP connection.\n");
+	  log_error ("error setting TLS option on LDAP connection\n");
 	  goto out;
 	}
 #else
@@ -577,14 +585,29 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 			      NULL, NULL);
       if (err)
 	{
-	  log_error ("Failed to connect to LDAP server with TLS.\n");
+	  log_error ("error connecting to LDAP server with TLS\n");
 	  goto out;
 	}
     }
 #endif
 
-  /* By default we don't bind as there is usually no need to.  */
-  if (uri->auth)
+  if (uri->ad_current)
+    {
+      if (opt.debug)
+        log_debug ("LDAP bind to current user via AD\n");
+#ifdef HAVE_W32_SYSTEM
+      err = ldap_bind_s (ldap_conn, NULL, NULL, LDAP_AUTH_NEGOTIATE);
+#else
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+#endif
+      if (err != LDAP_SUCCESS)
+	{
+	  log_error ("error binding to LDAP via AD: %s\n",
+                     ldap_err2string (err));
+	  goto out;
+	}
+    }
+  else if (uri->auth)
     {
       if (opt.debug)
         log_debug ("LDAP bind to %s, password %s\n",
@@ -593,10 +616,13 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       err = ldap_simple_bind_s (ldap_conn, user, password);
       if (err != LDAP_SUCCESS)
 	{
-	  log_error ("Internal LDAP bind error: %s\n",
-		     ldap_err2string (err));
+	  log_error ("error binding to LDAP: %s\n", ldap_err2string (err));
 	  goto out;
 	}
+    }
+  else
+    {
+      /* By default we don't bind as there is usually no need to.  */
     }
 
   if (uri->path && *uri->path)
