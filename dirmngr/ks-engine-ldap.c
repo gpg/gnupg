@@ -333,7 +333,8 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
    *filter.  It is the caller's responsibility to free *filter.
    *filter is only set if this function returns success (i.e., 0).  */
 static gpg_error_t
-keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
+keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
+                        unsigned int serverinfo)
 {
   /* Remove search type indicator and adjust PATTERN accordingly.
      Note: don't include a preceding 0x when searching by keyid.  */
@@ -361,9 +362,14 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
       break;
 
     case KEYDB_SEARCH_MODE_MAIL:
-      if (! only_exact)
-	f = xasprintf ("(pgpUserID=*<%s>*)",
-		       (freeme = ldap_escape_filter (desc.u.name)));
+      if (only_exact)
+        break;
+      if ((serverinfo & SERVERINFO_SCHEMAV2))
+        f = xasprintf ("(gpgMailbox=%s)",
+                       (freeme = ldap_escape_filter (desc.u.name)));
+      else
+        f = xasprintf ("(pgpUserID=*<%s>*)",
+                       (freeme = ldap_escape_filter (desc.u.name)));
       break;
 
     case KEYDB_SEARCH_MODE_MAILSUB:
@@ -387,6 +393,19 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
       break;
 
     case KEYDB_SEARCH_MODE_FPR:
+      if ((serverinfo & SERVERINFO_SCHEMAV2))
+        {
+          freeme = bin2hex (desc.u.fpr, desc.fprlen, NULL);
+          if (!freeme)
+            return gpg_error_from_syserror ();
+          f = xasprintf ("(|(gpgFingerprint=%s)(gpgSubFingerprint=%s))",
+                         freeme, freeme);
+          /* FIXME: For an exact search and in case of a match on
+           * gpgSubFingerprint we need to check that there is only one
+           * matching value.  */
+        }
+      break;
+
     case KEYDB_SEARCH_MODE_ISSUER:
     case KEYDB_SEARCH_MODE_ISSUER_SN:
     case KEYDB_SEARCH_MODE_SN:
@@ -872,13 +891,6 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 
-  /* Before connecting to the server, make sure we have a sane
-     keyspec.  If not, there is no need to establish a network
-     connection.  */
-  err = keyspec_to_ldap_filter (keyspec, &filter, 1);
-  if (err)
-    return (err);
-
   /* Make sure we are talking to an OpenPGP LDAP server.  */
   ldap_err = my_ldap_connect (uri, &ldap_conn, &basedn, &serverinfo);
   if (ldap_err || !basedn)
@@ -886,9 +898,16 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       if (ldap_err)
 	err = ldap_err_to_gpg_err (ldap_err);
       else
-	err = GPG_ERR_GENERAL;
+	err = gpg_error (GPG_ERR_GENERAL);
       goto out;
     }
+
+  /* Now that we have information about the server we can construct a
+   * query best suited for the capabilities of the server.  */
+  err = keyspec_to_ldap_filter (keyspec, &filter, 1, serverinfo);
+  if (err)
+    goto out;
+
 
   {
     /* The ordering is significant.  Specifically, "pgpcertid" needs
@@ -1054,16 +1073,6 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 
-  /* Before connecting to the server, make sure we have a sane
-     keyspec.  If not, there is no need to establish a network
-     connection.  */
-  err = keyspec_to_ldap_filter (pattern, &filter, 0);
-  if (err)
-    {
-      log_error ("Bad search pattern: '%s'\n", pattern);
-      return (err);
-    }
-
   /* Make sure we are talking to an OpenPGP LDAP server.  */
   ldap_err = my_ldap_connect (uri, &ldap_conn, &basedn, &serverinfo);
   if (ldap_err || !basedn)
@@ -1072,6 +1081,15 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 	err = ldap_err_to_gpg_err (ldap_err);
       else
 	err = GPG_ERR_GENERAL;
+      goto out;
+    }
+
+  /* Now that we have information about the server we can construct a
+   * query best suited for the capabilities of the server.  */
+  err = keyspec_to_ldap_filter (pattern, &filter, 0, serverinfo);
+  if (err)
+    {
+      log_error ("Bad search pattern: '%s'\n", pattern);
       goto out;
     }
 
@@ -1911,7 +1929,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   const char *infoend = (const char *) info + infolen - 1;
 
   /* Enable this code to dump the modlist to /tmp/modlist.txt.  */
-#if 1
+#if 0
 # warning Disable debug code before checking in.
   const int dump_modlist = 1;
 #else
