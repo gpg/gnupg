@@ -255,6 +255,7 @@ struct
       AKL_DANE,
       AKL_WKD,
       AKL_LDAP,
+      AKL_NTDS,
       AKL_KEYSERVER,
       AKL_SPEC
     } type;

@@ -234,6 +234,17 @@ keyserver_import_name (const char *name,struct keyserver_spec *spec)
 }
 
 int
+keyserver_import_ntds (ctrl_t ctrl, const char *mbox,
+                       unsigned char **fpr, size_t *fprlen)
+{
+  (void)ctrl;
+  (void)mbox;
+  (void)fpr;
+  (void)fprlen;
+  return -1;
+}
+
+int
 keyserver_import_ldap (const char *name)
 {
   (void)name;
