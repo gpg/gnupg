@@ -1468,6 +1468,11 @@ main (int argc, char **argv)
       char *filename;
       char *filename_esc;
 
+      filename = percent_escape (opt.config_filename, NULL);
+      es_printf ("gpgconf-dirmngr.conf:%lu:\"%s\n",
+              GC_OPT_FLAG_DEFAULT, filename);
+      xfree (filename);
+
       es_printf ("verbose:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("quiet:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("debug-level:%lu:\"none\n", flags | GC_OPT_FLAG_DEFAULT);
