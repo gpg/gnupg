@@ -217,7 +217,8 @@ tdb_register_trusted_key (const char *string)
           register_trusted_keyid (desc.u.kid);
           return;
         }
-      if (desc.mode == KEYDB_SEARCH_MODE_FPR)
+      if (desc.mode == KEYDB_SEARCH_MODE_FPR
+          || desc.mode == KEYDB_SEARCH_MODE_FPR20)
         {
           kid[0] = buf32_to_u32 (desc.u.fpr+12);
           kid[1] = buf32_to_u32 (desc.u.fpr+16);
