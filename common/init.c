@@ -210,7 +210,10 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
   }
 
   /* --version et al shall use estream as well.  */
-  argparse_register_outfnc (writestring_via_estream);
+  gnupg_set_usage_outfnc (writestring_via_estream);
+
+  /* Register our string mapper with gpgrt.  */
+  gnupg_set_fixed_string_mapper (map_static_macro_string);
 
   /* Logging shall use the standard socket directory as fallback.  */
   log_set_socket_dir_cb (gnupg_socketdir);

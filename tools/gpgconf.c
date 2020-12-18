@@ -1,6 +1,6 @@
 /* gpgconf.c - Configuration utility for GnuPG
  * Copyright (C) 2003, 2007, 2009, 2011 Free Software Foundation, Inc.
- * Copyright (C) 2016 g10 Code GmbH.
+ * Copyright (C) 2016, 2020 g10 Code GmbH.
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -136,9 +137,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@GPGCONF@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -564,17 +567,15 @@ main (int argc, char **argv)
   /* Parse the command line. */
   pargs.argc  = &argc;
   pargs.argv  = &argv;
-  pargs.flags =  1;  /* Do not remove the args.  */
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, &pargs, opts))
+  pargs.flags = ARGPARSE_FLAG_KEEP;
+  while (!no_more_options && gnupg_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
         case oOutput:    opt.outfile = pargs.r.ret_str; break;
 	case oQuiet:     opt.quiet = 1; break;
         case oDryRun:    opt.dry_run = 1; break;
-        case oRuntime:
-	  opt.runtime = 1;
-	  break;
+        case oRuntime:   opt.runtime = 1; break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir:   gnupg_set_homedir (pargs.r.ret_str); break;
@@ -605,9 +606,10 @@ main (int argc, char **argv)
 	  cmd = pargs.r_opt;
 	  break;
 
-        default: pargs.err = 2; break;
+        default: pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
+  gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (log_get_errorcount (0))
     gpgconf_failure (GPG_ERR_USER_2);

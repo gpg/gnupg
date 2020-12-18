@@ -1,6 +1,7 @@
 /* gpgsm.c - GnuPG for S/MIME
- * Copyright (C) 2001-2008, 2010  Free Software Foundation, Inc.
- * Copyright (C) 2001-2008, 2010  Werner Koch
+ * Copyright (C) 2001-2020 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2019 Werner Koch
+ * Copyright (C) 2015-2020 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -26,7 +28,6 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
-/*#include <mcheck.h>*/
 
 #define INCLUDED_BY_MAIN_MODULE 1
 
@@ -337,7 +338,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oKeyServer, "keyserver",
                 N_("|SPEC|use this keyserver to lookup keys")),
-  ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
+  ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
 
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level",
@@ -373,7 +374,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoArmor, "no-armour", "@"),
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
-  ARGPARSE_s_n (oNoOptions, "no-options", "@"),
+  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oDisplay,    "display", "@"),
@@ -557,9 +558,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@GPGSM@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -893,12 +896,12 @@ main ( int argc, char **argv)
   strlist_t sl, remusr= NULL, locusr=NULL;
   strlist_t nrings=NULL;
   int detached_sig = 0;
-  FILE *configfp = NULL;
-  char *configname = NULL;
-  unsigned configlineno;
-  int parse_debug = 0;
+  char *last_configname = NULL;
+  const char *configname = NULL; /* NULL or points to last_configname.
+                                  * NULL also indicates that we are
+                                  * processing options from the cmdline.  */
+  int debug_argparser = 0;
   int no_more_options = 0;
-  int default_config =1;
   int default_keyring = 1;
   char *logfile = NULL;
   char *auditlog = NULL;
@@ -921,7 +924,8 @@ main ( int argc, char **argv)
   estream_t htmlauditfp = NULL;
   struct assuan_malloc_hooks malloc_hooks;
   int pwfd = -1;
-  /*mtrace();*/
+
+  static const char *homedirvalue;
 
   early_system_init ();
   gnupg_reopen_std (GPGSM_NAME);
@@ -973,28 +977,35 @@ main ( int argc, char **argv)
   orig_argv = argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
-  while (arg_parse( &pargs, opts))
+  pargs.flags= (ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
+  while (gnupg_argparse (NULL, &pargs, opts))
     {
-      if (pargs.r_opt == oDebug || pargs.r_opt == oDebugAll)
-        parse_debug++;
-      else if (pargs.r_opt == oOptions)
-        { /* yes there is one, so we do not try the default one but
-             read the config file when it is encountered at the
-             commandline */
-          default_config = 0;
-	}
-      else if (pargs.r_opt == oNoOptions)
+      switch (pargs.r_opt)
         {
-          default_config = 0; /* --no-options */
+        case oDebug:
+        case oDebugAll:
+          debug_argparser++;
+          break;
+
+        case oNoOptions:
+          /* Set here here because the homedir would otherwise be
+           * created before main option parsing starts.  */
           opt.no_homedir_creation = 1;
+          break;
+
+        case oHomedir:
+          homedirvalue = pargs.r.ret_str;
+          break;
+
+        case aCallProtectTool:
+          /* Make sure that --version and --help are passed to the
+           * protect-tool. */
+          goto leave_cmdline_parser;
         }
-      else if (pargs.r_opt == oHomedir)
-        gnupg_set_homedir (pargs.r.ret_str);
-      else if (pargs.r_opt == aCallProtectTool)
-        break; /* This break makes sure that --version and --help are
-                  passed to the protect-tool. */
     }
+ leave_cmdline_parser:
+  /* Reset the flags.  */
+  pargs.flags &= ~(ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
 
 
   /* Initialize the secure memory. */
@@ -1002,8 +1013,8 @@ main ( int argc, char **argv)
   maybe_setuid = 0;
 
   /*
-     Now we are now working under our real uid
-  */
+   * Now we are now working under our real uid
+   */
 
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
 
@@ -1014,6 +1025,9 @@ main ( int argc, char **argv)
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   setup_libassuan_logging (&opt.debug, NULL);
 
+  /* Set homedir.  */
+  gnupg_set_homedir (homedirvalue);
+
   /* Setup a default control structure for command line mode */
   memset (&ctrl, 0, sizeof ctrl);
   gpgsm_init_default_ctrl (&ctrl);
@@ -1021,48 +1035,43 @@ main ( int argc, char **argv)
   ctrl.status_fd = -1; /* No status output. */
   ctrl.autodetect_encoding = 1;
 
-  /* Set the default option file */
-  if (default_config )
-    configname = make_filename (gnupg_homedir (),
-                                GPGSM_NAME EXTSEP_S "conf", NULL);
   /* Set the default policy file */
   opt.policy_file = make_filename (gnupg_homedir (), "policies.txt", NULL);
 
+  /* The configuraton directories for use by gpgrt_argparser.  */
+  gnupg_set_confdir (GNUPG_CONFDIR_SYS, gnupg_sysconfdir ());
+  gnupg_set_confdir (GNUPG_CONFDIR_USER, gnupg_homedir ());
+
+  /* We are re-using the struct, thus the reset flag.  We OR the
+   * flags so that the internal intialized flag won't be cleared. */
   argc        = orig_argc;
   argv        = orig_argv;
   pargs.argc  = &argc;
   pargs.argv  = &argv;
-  pargs.flags =  1;  /* do not remove the args */
-
- next_pass:
-  if (configname) {
-    configlineno = 0;
-    configfp = gnupg_fopen (configname, "r");
-    if (!configfp)
-      {
-        if (default_config)
-          {
-            if (parse_debug)
-              log_info (_("Note: no default option file '%s'\n"), configname);
-          }
-        else
-          {
-            log_error (_("option file '%s': %s\n"), configname, strerror(errno));
-            gpgsm_exit(2);
-          }
-        xfree(configname);
-        configname = NULL;
-      }
-    if (parse_debug && configname)
-      log_info (_("reading options from '%s'\n"), configname);
-    default_config = 0;
-  }
+  pargs.flags |=  (ARGPARSE_FLAG_RESET
+                   | ARGPARSE_FLAG_KEEP
+                   | ARGPARSE_FLAG_SYS
+                   | ARGPARSE_FLAG_USER);
 
   while (!no_more_options
-         && optfile_parse (configfp, configname, &configlineno, &pargs, opts))
+         && gnupg_argparser (&pargs, opts, GPGSM_NAME EXTSEP_S "conf"))
     {
       switch (pargs.r_opt)
         {
+        case ARGPARSE_CONFFILE:
+          if (debug_argparser)
+            log_info (_("reading options from '%s'\n"),
+                      pargs.r_type? pargs.r.ret_str: "[cmdline]");
+          if (pargs.r_type)
+            {
+              xfree (last_configname);
+              last_configname = xstrdup (pargs.r.ret_str);
+              configname = last_configname;
+            }
+          else
+            configname = NULL;
+          break;
+
 	case aGPGConfList:
 	case aGPGConfTest:
           set_cmd (&cmd, pargs.r_opt);
@@ -1308,16 +1317,6 @@ main ( int argc, char **argv)
           opt.with_keygrip = 1;
           break;
 
-        case oOptions:
-          /* config files may not be nested (silently ignore them) */
-          if (!configfp)
-            {
-              xfree(configname);
-              configname = xstrdup (pargs.r.ret_str);
-              goto next_pass;
-	    }
-          break;
-        case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
 
@@ -1445,7 +1444,7 @@ main ( int argc, char **argv)
 	  {
 	    struct keyserver_spec *keyserver;
 	    keyserver = parse_keyserver_line (pargs.r.ret_str,
-					      configname, configlineno);
+					      configname, pargs.lineno);
 	    if (! keyserver)
 	      log_error (_("could not parse keyserver\n"));
 	    else
@@ -1483,27 +1482,28 @@ main ( int argc, char **argv)
           break;
 
         default:
-          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
+          if (configname)
+            pargs.err = ARGPARSE_PRINT_WARNING;
+          else
+            {
+              pargs.err = ARGPARSE_PRINT_ERROR;
+              /* The argparse function calls a plain exit and thus we
+               * need to print a status here.  */
+              gpgsm_status_with_error (&ctrl, STATUS_FAILURE, "option-parser",
+                                       gpg_error (GPG_ERR_GENERAL));
+            }
           break;
 	}
     }
 
-  if (configfp)
-    {
-      fclose (configfp);
-      configfp = NULL;
-      /* Keep a copy of the config filename. */
-      opt.config_filename = configname;
-      configname = NULL;
-      goto next_pass;
-    }
-  xfree (configname);
-  configname = NULL;
+  gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
-  if (!opt.config_filename)
+  if (!last_configname)
     opt.config_filename = make_filename (gnupg_homedir (),
                                          GPGSM_NAME EXTSEP_S "conf",
                                          NULL);
+  else
+    opt.config_filename = last_configname;
 
   if (log_get_errorcount(0))
     {

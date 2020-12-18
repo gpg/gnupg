@@ -1,6 +1,6 @@
 /* dirmngr.c - Keyserver and X.509 LDAP access
  * Copyright (C) 2002 Klarälvdalens Datakonsult AB
- * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2010, 2011 g10 Code GmbH
+ * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2010, 2011, 2020 g10 Code GmbH
  * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
@@ -17,8 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
- *
- * SPDX-License-Identifier: GPL-3.0+
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -183,7 +182,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,    "quiet",     N_("be somewhat more quiet")),
   ARGPARSE_s_n (oSh,       "sh",        N_("sh-style command output")),
   ARGPARSE_s_n (oCsh,      "csh",       N_("csh-style command output")),
-  ARGPARSE_s_s (oOptions,  "options",   N_("|FILE|read options from FILE")),
+  ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
   ARGPARSE_s_s (oDebugLevel, "debug-level",
                 N_("|LEVEL|set the debugging level to LEVEL")),
   ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
@@ -261,6 +260,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oConnectTimeout, "connect-timeout", "@"),
   ARGPARSE_s_i (oConnectQuickTimeout, "connect-quick-timeout", "@"),
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
+  ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
 
   ARGPARSE_group (302,N_("@\n(See the \"info\" manual for a complete listing "
                          "of all commands and options)\n")),
@@ -392,9 +392,11 @@ my_strusage( int level )
   const char *p;
   switch ( level )
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "@DIRMNGR@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
       /* TRANSLATORS: @EMAIL@ will get replaced by the actual bug
          reporting address.  This is so that we can change the
@@ -828,12 +830,10 @@ main (int argc, char **argv)
   ARGPARSE_ARGS pargs;
   int orig_argc;
   char **orig_argv;
-  FILE *configfp = NULL;
-  char *configname = NULL;
+  char *last_configname = NULL;
+  const char *configname = NULL;
   const char *shell;
-  unsigned configlineno;
-  int parse_debug = 0;
-  int default_config =1;
+  int debug_argparser = 0;
   int greeting = 0;
   int nogreeting = 0;
   int nodetach = 0;
@@ -915,63 +915,56 @@ main (int argc, char **argv)
   orig_argv = argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
-  while (arg_parse( &pargs, opts))
+  pargs.flags= (ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
+  while (gnupg_argparse (NULL, &pargs, opts))
     {
-      if (pargs.r_opt == oDebug || pargs.r_opt == oDebugAll)
-        parse_debug++;
-      else if (pargs.r_opt == oOptions)
-        { /* Yes there is one, so we do not try the default one, but
-	     read the option file when it is encountered at the
-	     commandline */
-          default_config = 0;
-	}
-      else if (pargs.r_opt == oNoOptions)
-        default_config = 0; /* --no-options */
-      else if (pargs.r_opt == oHomedir)
+      switch (pargs.r_opt)
         {
+        case oDebug:
+        case oDebugAll:
+          debug_argparser++;
+          break;
+        case oHomedir:
           gnupg_set_homedir (pargs.r.ret_str);
+          break;
         }
     }
+  /* Reset the flags.  */
+  pargs.flags &= ~(ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
 
   socket_name = dirmngr_socket_name ();
-  if (default_config)
-    configname = make_filename (gnupg_homedir (), DIRMNGR_NAME".conf", NULL );
 
+  /* The configuraton directories for use by gpgrt_argparser.  */
+  gnupg_set_confdir (GNUPG_CONFDIR_SYS, gnupg_sysconfdir ());
+  gnupg_set_confdir (GNUPG_CONFDIR_USER, gnupg_homedir ());
+
+  /* We are re-using the struct, thus the reset flag.  We OR the
+   * flags so that the internal intialized flag won't be cleared. */
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1;  /* do not remove the args */
- next_pass:
-  if (configname)
+  pargs.flags |=  (ARGPARSE_FLAG_RESET
+                   | ARGPARSE_FLAG_KEEP
+                   | ARGPARSE_FLAG_SYS
+                   | ARGPARSE_FLAG_USER);
+  while (gnupg_argparser (&pargs, opts, DIRMNGR_NAME EXTSEP_S "conf"))
     {
-      configlineno = 0;
-      configfp = gnupg_fopen (configname, "r");
-      if (!configfp)
+      if (pargs.r_opt == ARGPARSE_CONFFILE)
         {
-          if (default_config)
+          if (debug_argparser)
+            log_info (_("reading options from '%s'\n"),
+                      pargs.r_type? pargs.r.ret_str: "[cmdline]");
+          if (pargs.r_type)
             {
-              if( parse_debug )
-                log_info (_("Note: no default option file '%s'\n"),
-                          configname );
-	    }
+              xfree (last_configname);
+              last_configname = xstrdup (pargs.r.ret_str);
+              configname = last_configname;
+            }
           else
-            {
-              log_error (_("option file '%s': %s\n"),
-                         configname, strerror(errno) );
-              exit(2);
-	    }
-          xfree (configname);
-          configname = NULL;
-	}
-      if (parse_debug && configname )
-        log_info (_("reading options from '%s'\n"), configname );
-      default_config = 0;
-    }
-
-  while (optfile_parse( configfp, configname, &configlineno, &pargs, opts) )
-    {
+            configname = NULL;
+          continue;
+        }
       if (parse_rereadable_options (&pargs, 0))
         continue; /* Already handled */
       switch (pargs.r_opt)
@@ -996,18 +989,8 @@ main (int argc, char **argv)
 
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
 
-        case oOptions:
-          /* Config files may not be nested (silently ignore them) */
-          if (!configfp)
-            {
-		xfree(configname);
-		configname = xstrdup(pargs.r.ret_str);
-		goto next_pass;
-	    }
-          break;
         case oNoGreeting: nogreeting = 1; break;
         case oNoVerbose: opt.verbose = 0; break;
-        case oNoOptions: break; /* no-options */
         case oHomedir: /* Ignore this option here. */; break;
         case oNoDetach: nodetach = 1; break;
         case oLogFile: logfile = pargs.r.ret_str; break;
@@ -1035,20 +1018,26 @@ main (int argc, char **argv)
           listen_backlog = pargs.r.ret_int;
           break;
 
-        default : pargs.err = configfp? 1:2; break;
+        default:
+          if (configname)
+            pargs.err = ARGPARSE_PRINT_WARNING;
+          else
+            pargs.err = ARGPARSE_PRINT_ERROR;
+          break;
 	}
     }
-  if (configfp)
+  gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+
+  if (!last_configname)
+    opt.config_filename = make_filename (gnupg_homedir (),
+                                         DIRMNGR_NAME EXTSEP_S "conf",
+                                         NULL);
+  else
     {
-      fclose (configfp);
-      configfp = NULL;
-      /* Keep a copy of the name so that it can be read on SIGHUP. */
-      opt.config_filename = configname;
-      configname = NULL;
-      goto next_pass;
+      opt.config_filename = last_configname;
+      last_configname = NULL;
     }
-  xfree (configname);
-  configname = NULL;
+
   if (log_get_errorcount(0))
     exit(2);
   if (nogreeting )
@@ -1479,12 +1468,6 @@ main (int argc, char **argv)
       char *filename;
       char *filename_esc;
 
-      /* First the configuration file.  This is not an option, but it
-	 is vital information for GPG Conf.  */
-      if (!opt.config_filename)
-        opt.config_filename = make_filename (gnupg_homedir (),
-                                             "dirmngr.conf", NULL );
-
       filename = percent_escape (opt.config_filename, NULL);
       es_printf ("gpgconf-dirmngr.conf:%lu:\"%s\n",
               GC_OPT_FLAG_DEFAULT, filename);
@@ -1542,7 +1525,6 @@ main (int argc, char **argv)
       es_printf ("keyserver:%lu:\"%s:\n", flags | GC_OPT_FLAG_DEFAULT,
                  filename_esc);
       xfree (filename_esc);
-
 
       es_printf ("nameserver:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("resolver-timeout:%lu:%u\n",
@@ -1833,36 +1815,39 @@ static void
 reread_configuration (void)
 {
   ARGPARSE_ARGS pargs;
-  FILE *fp;
-  unsigned int configlineno = 0;
+  char *twopart;
   int dummy;
 
   if (!opt.config_filename)
     return; /* No config file. */
 
-  fp = gnupg_fopen (opt.config_filename, "r");
-  if (!fp)
-    {
-      log_error (_("option file '%s': %s\n"),
-                 opt.config_filename, strerror(errno) );
-      return;
-    }
+  twopart = strconcat (DIRMNGR_NAME EXTSEP_S "conf" PATHSEP_S,
+                       opt.config_filename, NULL);
+  if (!twopart)
+    return;  /* Out of core.  */
 
   parse_rereadable_options (NULL, 1); /* Start from the default values. */
 
   memset (&pargs, 0, sizeof pargs);
   dummy = 0;
   pargs.argc = &dummy;
-  pargs.flags = 1;  /* do not remove the args */
-  while (optfile_parse (fp, opt.config_filename, &configlineno, &pargs, opts) )
+  pargs.flags = (ARGPARSE_FLAG_KEEP
+                 |ARGPARSE_FLAG_SYS
+                 |ARGPARSE_FLAG_USER);
+  while (gnupg_argparser (&pargs, opts, twopart))
     {
-      if (pargs.r_opt < -1)
-        pargs.err = 1; /* Print a warning. */
+      if (pargs.r_opt == ARGPARSE_CONFFILE)
+        {
+          log_info (_("reading options from '%s'\n"),
+                    pargs.r_type? pargs.r.ret_str: "[cmdline]");
+        }
+      else if (pargs.r_opt < -1)
+        pargs.err = ARGPARSE_PRINT_WARNING;
       else /* Try to parse this option - ignore unchangeable ones. */
         parse_rereadable_options (&pargs, 1);
     }
-  fclose (fp);
-
+  gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+  xfree (twopart);
   post_option_parsing ();
 }
 

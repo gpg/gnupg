@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #include <config.h>
@@ -159,9 +160,11 @@ my_strusage( int level )
 
   switch (level)
     {
+    case  9: p = "LGPL-2.1-or-later"; break;
     case 11: p = "gpg-wks-client"; break;
     case 12: p = "@GNUPG@"; break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = ("Please report bugs to <@EMAIL@>.\n"); break;
 
@@ -196,7 +199,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
   enum cmd_and_opt_values cmd = 0;
   int no_more_options = 0;
 
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, popts))
+  while (!no_more_options && gnupg_argparse (NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -244,7 +247,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           cmd = pargs->r_opt;
           break;
 
-        default: pargs->err = 2; break;
+        default: pargs->err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
 
@@ -277,6 +280,7 @@ main (int argc, char **argv)
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
   cmd = parse_arguments (&pargs, opts);
+  gnupg_argparse (NULL, &pargs, NULL);
 
   if (log_get_errorcount (0))
     exit (2);

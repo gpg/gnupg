@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -197,9 +198,11 @@ my_strusage (int level)
 
   switch(level)
     {
+    case  9: p = "GPL-3.0-or-later"; break;
     case 11: p = "dirmngr_ldap (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
+    case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
     case 49: p = PACKAGE_BUGREPORT; break;
@@ -267,8 +270,8 @@ ldap_wrapper_main (char **argv, estream_t outstream)
   /* Parse the command line.  */
   pargs.argc = &argc;
   pargs.argv = &argv;
-  pargs.flags= 1;  /* Do not remove the args. */
-  while (arg_parse (&pargs, opts) )
+  pargs.flags= ARGPARSE_FLAG_KEEP;
+  while (gnupg_argparse (NULL, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -309,6 +312,7 @@ ldap_wrapper_main (char **argv, estream_t outstream)
           break;
 	}
     }
+  gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (only_search_timeout)
     myopt->alarm_timeout = 0;
