@@ -42,6 +42,7 @@
 # define LDAP_DEPRECATED 1
 # include <ldap.h>
 #endif
+#include <npth.h>
 
 #include "dirmngr.h"
 #include "misc.h"
@@ -587,6 +588,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 	 LDAP_OPT_SERVER_CERTIFICATE, ..); */
 #endif
 
+      npth_unprotect ();
       err = ldap_start_tls_s (ldap_conn,
 #ifdef HAVE_W32_SYSTEM
 			      /* ServerReturnValue, result */
@@ -594,6 +596,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 #endif
 			      /* ServerControls, ClientControls */
 			      NULL, NULL);
+      npth_protect ();
       if (err)
 	{
 	  log_error ("error connecting to LDAP server with TLS\n");
@@ -607,7 +610,9 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       if (opt.debug)
         log_debug ("LDAP bind to current user via AD\n");
 #ifdef HAVE_W32_SYSTEM
+      npth_unprotect ();
       err = ldap_bind_s (ldap_conn, NULL, NULL, LDAP_AUTH_NEGOTIATE);
+      npth_protect ();
 #else
       err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif
@@ -624,7 +629,9 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
         log_debug ("LDAP bind to %s, password %s\n",
                    user, password ? ">not shown<" : ">none<");
 
+      npth_unprotect ();
       err = ldap_simple_bind_s (ldap_conn, user, password);
+      npth_protect ();
       if (err != LDAP_SUCCESS)
 	{
 	  log_error ("error binding to LDAP: %s\n", ldap_err2string (err));
@@ -650,11 +657,18 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       LDAPMessage *res = NULL;
       char *attr[] = { "namingContexts", NULL };
 
+      npth_unprotect ();
       err = ldap_search_s (ldap_conn, "", LDAP_SCOPE_BASE,
 			   "(objectClass=*)", attr, 0, &res);
+      npth_protect ();
+
       if (err == LDAP_SUCCESS)
 	{
-	  char **context = ldap_get_values (ldap_conn, res, "namingContexts");
+	  char **context;
+
+          npth_unprotect ();
+          context = ldap_get_values (ldap_conn, res, "namingContexts");
+          npth_protect ();
 	  if (context)
 	    {
               /* We found some, so try each namingContext as the
@@ -676,8 +690,10 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
                   {
                     char *object = xasprintf ("cn=pgpServerInfo,%s",
                                               context[i]);
+                    npth_unprotect ();
                     err = ldap_search_s (ldap_conn, object, LDAP_SCOPE_BASE,
                                          "(objectClass=*)", attr2, 0, &si_res);
+                    npth_protect ();
                     xfree (object);
                   }
 
@@ -743,8 +759,10 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 
 	  char *attr2[] = { "pgpBaseKeySpaceDN", "version", "software", NULL };
 
+          npth_unprotect ();
 	  err = ldap_search_s (ldap_conn, "cn=pgpServerInfo", LDAP_SCOPE_BASE,
 			       "(objectClass=*)", attr2, 0, &si_res);
+          npth_protect ();
 	  if (err == LDAP_SUCCESS)
 	    {
 	      /* For the PGP LDAP keyserver, this is always
@@ -838,7 +856,7 @@ extract_keys (estream_t output,
   es_fprintf (output, "INFO %s BEGIN\n", certid);
   es_fprintf (output, "pub:%s:", certid);
 
-  /* Note: ldap_get_values returns a NULL terminates array of
+  /* Note: ldap_get_values returns a NULL terminated array of
      strings.  */
   vals = ldap_get_values (ldap_conn, message, "pgpkeytype");
   if (vals && vals[0])
@@ -969,8 +987,10 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
     /* Replace "dummy".  */
     attrs[0] = (serverinfo & SERVERINFO_PGPKEYV2)? "pgpKeyV2" : "pgpKey";
 
+    npth_unprotect ();
     ldap_err = ldap_search_s (ldap_conn, basedn, LDAP_SCOPE_SUBTREE,
 			      filter, attrs, attrsonly, &message);
+    npth_protect ();
     if (ldap_err)
       {
 	err = ldap_err_to_gpg_err (ldap_err);
@@ -1002,9 +1022,13 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       strlist_t seen = NULL;
       LDAPMessage *each;
 
-      for (each = ldap_first_entry (ldap_conn, message);
+      for (npth_unprotect (),
+             each = ldap_first_entry (ldap_conn, message),
+             npth_protect ();
 	   each;
-	   each = ldap_next_entry (ldap_conn, each))
+           npth_unprotect (),
+             each = ldap_next_entry (ldap_conn, each),
+             npth_protect ())
 	{
 	  char **vals;
 	  char **certid;
@@ -1160,8 +1184,10 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
     if (opt.debug)
       log_debug ("SEARCH '%s' => '%s' BEGIN\n", pattern, filter);
 
+    npth_unprotect ();
     ldap_err = ldap_search_s (ldap_conn, basedn,
 			      LDAP_SCOPE_SUBTREE, filter, attrs, 0, &res);
+    npth_protect ();
 
     xfree (filter);
     filter = NULL;
@@ -1178,9 +1204,13 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
     /* The LDAP server doesn't return a real count of unique keys, so we
        can't use ldap_count_entries here. */
-    for (each = ldap_first_entry (ldap_conn, res);
+    for (npth_unprotect (),
+           each = ldap_first_entry (ldap_conn, res),
+           npth_protect ();
 	 each;
-	 each = ldap_next_entry (ldap_conn, each))
+         npth_unprotect (),
+           each = ldap_next_entry (ldap_conn, each),
+           npth_protect ())
       {
 	char **certid = ldap_get_values (ldap_conn, each, "pgpcertid");
 	if (certid && certid[0] && ! strlist_find (dupelist, certid[0]))
@@ -2184,9 +2214,11 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
     if (opt.debug)
       log_debug ("ks-ldap: using DN: %s\n", dn);
 
+    npth_unprotect ();
     err = ldap_modify_s (ldap_conn, dn, modlist);
     if (err == LDAP_NO_SUCH_OBJECT)
       err = ldap_add_s (ldap_conn, dn, addlist);
+    npth_protect ();
 
     xfree (dn);
 
