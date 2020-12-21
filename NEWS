@@ -1,7 +1,33 @@
-Noteworthy changes in version 2.2.26 (unreleased)
+Noteworthy changes in version 2.2.26 (2020-12-21)
 -------------------------------------------------
 
+  * gpg: New AKL method "ntds".  [559efd23e9]
+
+  * gpg: Fix --trusted-key with fingerprint arg.  [8a2e5025eb]
+
+  * scd: Fix writing of ECC keys to an OpenPGP card.  [#5163]
+
+  * scd: Make an USB error fix specific to SPR532 readers.  [#5167]
+
+  * dirmngr: With new LDAP keyservers store the new attributes.  Never
+    store the useless pgpSignerID.  Fix a long standing bug storing
+    some keys on an ldap server.  [0e88c73bc9,e47de85382]
+
+  * dirmngr: Support the new Active Direcory LDAP schema for
+    keyservers.  [ac8ece9266]
+
+  * dirmngr: Allow LDAP OpenPGP searches via fingerprint.
+    [c75fd75532]
+
+  * dirmngr: Do not block other threads during keyserver LDAP calls.
+    [15bfd189c0]
+
+  * Support global configuration files.  [#4788,a028f24136]
+
+  * Fix the iconv fallback handling to UTF-8.  [#5038]
+
   Release-info: https://dev.gnupg.org/T5153
+  See-also: gnupg-announce/2020q4/000451.html
 
 
 Noteworthy changes in version 2.2.25 (2020-11-23)

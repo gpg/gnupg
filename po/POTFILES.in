@@ -128,5 +128,4 @@ tools/gpg-connect-agent.c
 tools/gpgconf-comp.c
 tools/gpgconf.c
 tools/no-libgcrypt.c
-tools/symcryptrun.c
 tools/gpg-check-pattern.c
