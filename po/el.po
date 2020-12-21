@@ -430,16 +430,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "ο επιλεγμένος αλγόριθμος περίληψης δεν είναι έγκυρος\n"
 
 #, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "ΣΗΜΕΙΩΣΗ: μη προκαθορισμένο αρχείο επιλογών `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "αρχείο επιλογών `%s': %s\n"
-
-#, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "ανάγνωση επιλογών από `%s'\n"
@@ -1077,9 +1067,25 @@ msgstr "συγκρουόμενες εντολές\n"
 msgid "invalid alias definition"
 msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
 
+msgid "permission error"
+msgstr ""
+
 #, fuzzy
 msgid "out of core"
 msgstr "μη επεξεργασμένο"
+
+#, fuzzy
+msgid "invalid meta command"
+msgstr "συγκρουόμενες εντολές\n"
+
+#, fuzzy
+msgid "unknown meta command"
+msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "μη αναμενόμενα δεδομένα"
 
 #, fuzzy
 msgid "invalid option"
@@ -1110,12 +1116,22 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "out of core\n"
-msgstr "μη επεξεργασμένο"
-
-#, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "ΣΗΜΕΙΩΣΗ: μη προκαθορισμένο αρχείο επιλογών `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "αρχείο επιλογών `%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -7074,6 +7090,10 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "out of core\n"
+msgstr "μη επεξεργασμένο"
+
 #, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
@@ -9167,146 +9187,6 @@ msgid "No argument allowed"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
 #, fuzzy
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Εντολές:\n"
-" "
-
-#, fuzzy
-msgid "decryption modus"
-msgstr "αποκρυπτογράφηση OK\n"
-
-#, fuzzy
-msgid "encryption modus"
-msgstr "αποκρυπτογράφηση OK\n"
-
-msgid "tool class (confucius)"
-msgstr ""
-
-#, fuzzy
-msgid "program filename"
-msgstr "--store [όνομα αρχείου]"
-
-msgid "secret key file (required)"
-msgstr ""
-
-msgid "input file name (default stdin)"
-msgstr ""
-
-#, fuzzy
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "το %s δεν επιτρέπεται με το %s!\n"
-
-#, fuzzy, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
-
-#, fuzzy, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "αδυναμία πρόσβασης του %s: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to %s: %s\n"
-msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error reading from %s: %s\n"
-msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error closing %s: %s\n"
-msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "no --program option provided\n"
-msgstr "δεν υποστηρίζετε η απομακρυσμένη εκτέλεση προγράμματος\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr ""
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "could not create pipe: %s\n"
-msgstr "αδυναμία δημιουργίας του %s: %s\n"
-
-#, fuzzy, c-format
-msgid "could not create pty: %s\n"
-msgstr "αδυναμία δημιουργίας του %s: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "execv failed: %s\n"
-msgstr "η ενημέρωση απέτυχε: %s\n"
-
-#, fuzzy, c-format
-msgid "select failed: %s\n"
-msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
-
-#, fuzzy, c-format
-msgid "read failed: %s\n"
-msgstr "η ενημέρωση απέτυχε: %s\n"
-
-#, fuzzy, c-format
-msgid "pty read failed: %s\n"
-msgstr "η ενημέρωση απέτυχε: %s\n"
-
-#, fuzzy, c-format
-msgid "waitpid failed: %s\n"
-msgstr "η ενημέρωση απέτυχε: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "αδυναμία δημιουργίας του `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "αδυναμία δημιουργίας του `%s': %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr ""
-
-#, c-format
-msgid "no class provided\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "class %s is not supported\n"
-msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
-
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
@@ -9314,6 +9194,103 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Εντολές:\n"
+#~ " "
+
+#, fuzzy
+#~ msgid "decryption modus"
+#~ msgstr "αποκρυπτογράφηση OK\n"
+
+#, fuzzy
+#~ msgid "encryption modus"
+#~ msgstr "αποκρυπτογράφηση OK\n"
+
+#, fuzzy
+#~ msgid "program filename"
+#~ msgstr "--store [όνομα αρχείου]"
+
+#, fuzzy
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
+
+#, fuzzy
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "το %s δεν επιτρέπεται με το %s!\n"
+
+#, fuzzy
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
+
+#, fuzzy
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+
+#, fuzzy
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "αδυναμία πρόσβασης του %s: %s\n"
+
+#, fuzzy
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy
+#~ msgid "no --program option provided\n"
+#~ msgstr "δεν υποστηρίζετε η απομακρυσμένη εκτέλεση προγράμματος\n"
+
+#, fuzzy
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "αδυναμία δημιουργίας του %s: %s\n"
+
+#, fuzzy
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "αδυναμία δημιουργίας του %s: %s\n"
+
+#, fuzzy
+#~ msgid "execv failed: %s\n"
+#~ msgstr "η ενημέρωση απέτυχε: %s\n"
+
+#, fuzzy
+#~ msgid "select failed: %s\n"
+#~ msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy
+#~ msgid "read failed: %s\n"
+#~ msgstr "η ενημέρωση απέτυχε: %s\n"
+
+#, fuzzy
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "η ενημέρωση απέτυχε: %s\n"
+
+#, fuzzy
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "η ενημέρωση απέτυχε: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "αδυναμία δημιουργίας του `%s': %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "αδυναμία δημιουργίας του `%s': %s\n"
+
+#, fuzzy
+#~ msgid "class %s is not supported\n"
+#~ msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
 
 #, fuzzy
 #~ msgid " using certificate ID 0x%08lX\n"
@@ -10531,9 +10508,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "σφάλμα διαγραφής αρχείου"
-
-#~ msgid "unexpected data"
-#~ msgstr "μη αναμενόμενα δεδομένα"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "σύγκρουση ώρας (timestamp)"

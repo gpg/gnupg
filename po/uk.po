@@ -410,14 +410,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "вибраний алгоритм побудови контрольних сум є некоректним\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "ЗАУВАЖЕННЯ: не виявлено файла типових параметрів «%s»\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "файл параметрів «%s»: %s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "прочитати параметри з «%s»\n"
 
@@ -1031,8 +1023,26 @@ msgstr "некоректна команда"
 msgid "invalid alias definition"
 msgstr "некоректне визначення замінника"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "вихід за межі області пам’яті"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "некоректна команда"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "невідома команда «%s»\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "неочікуваний формат ASCII: "
 
 msgid "invalid option"
 msgstr "некоректний параметр"
@@ -1062,12 +1072,20 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "команда «%.50s» є неоднозначною\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "вихід за межі області пам’яті\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "некоректний параметр «%.50s»\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "ЗАУВАЖЕННЯ: не виявлено файла типових параметрів «%s»\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "файл параметрів «%s»: %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6907,6 +6925,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "%u-бітовий хеш не є коректним для %u-бітового ключа %s\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "вихід за межі області пам’яті\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(це алгоритм MD2)\n"
 
@@ -8960,145 +8982,6 @@ msgstr "Компонент не знайдено"
 msgid "No argument allowed"
 msgstr "Не можна вказувати аргументів"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"Команди:\n"
-" "
-
-msgid "decryption modus"
-msgstr "спосіб розшифрування"
-
-msgid "encryption modus"
-msgstr "спосіб шифрування"
-
-msgid "tool class (confucius)"
-msgstr "клас інструмента (confucius)"
-
-msgid "program filename"
-msgstr "назва файла програми"
-
-msgid "secret key file (required)"
-msgstr "файл закритого ключа (обов’язковий)"
-
-msgid "input file name (default stdin)"
-msgstr "назва файла виведених даних (типово stdin)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Використання: symcryptrun [параметри] (-h — довідка)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Синтаксис: symcryptrun --class КЛАС --program ПРОГРАМА --keyfile ФАЙЛ_КЛЮЧА "
-"[параметри...] КОМАНДА [файл_вхідних_даних]\n"
-"Виклик інструмента простого симетричного шифрування\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "перервано спробу виконання %s для %s зі станом %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "невдала спроба виконання %s для %s зі станом %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "не вдалося створити тимчасовий каталог «%s»: %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "не вдалося відкрити %s для запису: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "помилка під час запису до %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "помилка читання з %s: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "помилка під час спроби закрити %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "не вказано параметра --program\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "передбачено підтримку лише --decrypt і --encrypt\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "параметра --keyfile не передбачено\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "не вдалося розмістити у пам’яті вектор аргументів\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "не вдалося створити канал: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "не вдалося створити pty: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "не вдалося створити відгалуження: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "помилка execv: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "помилка select: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "помилка читання: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "помилка читання з pty: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "помилка waitpid: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "дочірня підпрограма завершила роботу зі станом %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "не вдалося розмістити у пам’яті рядок infile: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "не вдалося розмістити у пам’яті рядок outfile: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "має бути вказано %s або %s\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "не вказано клас\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "підтримки класу %s не передбачено\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr ""
 "Використання: gpg-check-pattern [параметри] файл_шаблонів (-h — довідка)\n"
@@ -9109,6 +8992,120 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "Команди:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "спосіб розшифрування"
+
+#~ msgid "encryption modus"
+#~ msgstr "спосіб шифрування"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "клас інструмента (confucius)"
+
+#~ msgid "program filename"
+#~ msgstr "назва файла програми"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "файл закритого ключа (обов’язковий)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "назва файла виведених даних (типово stdin)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Використання: symcryptrun [параметри] (-h — довідка)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Синтаксис: symcryptrun --class КЛАС --program ПРОГРАМА --keyfile "
+#~ "ФАЙЛ_КЛЮЧА [параметри...] КОМАНДА [файл_вхідних_даних]\n"
+#~ "Виклик інструмента простого симетричного шифрування\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "перервано спробу виконання %s для %s зі станом %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "невдала спроба виконання %s для %s зі станом %i\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "не вдалося створити тимчасовий каталог «%s»: %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "не вдалося відкрити %s для запису: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "помилка під час запису до %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "помилка читання з %s: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "помилка під час спроби закрити %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "не вказано параметра --program\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "передбачено підтримку лише --decrypt і --encrypt\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "параметра --keyfile не передбачено\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "не вдалося розмістити у пам’яті вектор аргументів\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "не вдалося створити канал: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "не вдалося створити pty: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "не вдалося створити відгалуження: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "помилка execv: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "помилка select: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "помилка читання: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "помилка читання з pty: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "помилка waitpid: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "дочірня підпрограма завершила роботу зі станом %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "не вдалося розмістити у пам’яті рядок infile: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "не вдалося розмістити у пам’яті рядок outfile: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "має бути вказано %s або %s\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "не вказано клас\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "підтримки класу %s не передбачено\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " використовуємо ідентифікатор сертифіката 0x%08lX\n"

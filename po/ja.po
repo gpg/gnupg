@@ -403,14 +403,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "選択されたダイジェスト・アルゴリズムは、無効です\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "注意: デフォルトのオプション・ファイル '%s' がありません\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "オプション・ファイル '%s': %s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "'%s' からオプションを読み込みます\n"
 
@@ -1015,8 +1007,26 @@ msgstr "無効なコマンド"
 msgid "invalid alias definition"
 msgstr "無効なエイリアス定義です"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "メモリがありません"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "無効なコマンド"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "不明のコマンド'%s'\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "予期せぬ外装: "
 
 msgid "invalid option"
 msgstr "無効なオプション"
@@ -1046,12 +1056,20 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "コマンド\"%.50s\"はあいまいです\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "メモリがありません\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "無効なオプション \"%.50s\"\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "注意: デフォルトのオプション・ファイル '%s' がありません\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "オプション・ファイル '%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6579,6 +6597,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "%uビットハッシュは%uビットの%s鍵には無効です\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "メモリがありません\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(これはMD2アルゴリズムです)\n"
 
@@ -8594,145 +8616,6 @@ msgstr "コンポーネントが見つかりません"
 msgid "No argument allowed"
 msgstr "引数は許可されていません"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"@コマンド:\n"
-" "
-
-msgid "decryption modus"
-msgstr "復号方式"
-
-msgid "encryption modus"
-msgstr "暗号方式"
-
-msgid "tool class (confucius)"
-msgstr "ツール・クラス (confucius)"
-
-msgid "program filename"
-msgstr "program [ファイル名]"
-
-msgid "secret key file (required)"
-msgstr "秘密鍵ファイル (必須)"
-
-msgid "input file name (default stdin)"
-msgstr "入力ファイル名 (デフォルト stdin)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "使い方: symcryption [オプション] (ヘルプは -h)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"形式: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE [オプショ"
-"ン...] COMMAND [入力ファイル]\n"
-"シンプルな共通鍵暗号ツールを呼び出す\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s (%s の)がステイタス%iで中止されました\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s (%s の)がステイタス%iで失敗しました\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "一時ディレクトリ'%s'が作成できません: %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "%sを書き込みでオープンできませんでした: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "'%s'の書き込みエラー: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "'%s'の読み込みエラー: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "'%s'でクローズのエラー: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "--programオプションが指定されていません\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "--decryptと--encryptだけがサポートされています\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "--keyfileオプションが与えられていません\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "引数ベクタが確保できません\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "パイプが作成できませんでした: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "ptyが作成できませんでした: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "fork できませんでした: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "execv が失敗しました: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "select が失敗しました: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "read が失敗しました: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "pty read が失敗しました: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "waitpid が失敗しました: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "子プロセスがステイタス %i で中止されました\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "infileの文字列が確保できません: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "outfileの文字列を確保できません: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "%s か %s のどちらかが与えられる必要があります\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "クラスが与えられていません\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "クラス%sはサポートされていません\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "使い方: gpg-check-pattern [オプション] patternfile (ヘルプは -h)\n"
 
@@ -8742,6 +8625,120 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "@コマンド:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "復号方式"
+
+#~ msgid "encryption modus"
+#~ msgstr "暗号方式"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "ツール・クラス (confucius)"
+
+#~ msgid "program filename"
+#~ msgstr "program [ファイル名]"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "秘密鍵ファイル (必須)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "入力ファイル名 (デフォルト stdin)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "使い方: symcryption [オプション] (ヘルプは -h)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "形式: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE [オプ"
+#~ "ション...] COMMAND [入力ファイル]\n"
+#~ "シンプルな共通鍵暗号ツールを呼び出す\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s (%s の)がステイタス%iで中止されました\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s (%s の)がステイタス%iで失敗しました\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "一時ディレクトリ'%s'が作成できません: %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "%sを書き込みでオープンできませんでした: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "'%s'の書き込みエラー: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "'%s'の読み込みエラー: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "'%s'でクローズのエラー: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "--programオプションが指定されていません\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "--decryptと--encryptだけがサポートされています\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "--keyfileオプションが与えられていません\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "引数ベクタが確保できません\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "パイプが作成できませんでした: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "ptyが作成できませんでした: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "fork できませんでした: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "execv が失敗しました: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "select が失敗しました: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "read が失敗しました: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "pty read が失敗しました: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "waitpid が失敗しました: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "子プロセスがステイタス %i で中止されました\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "infileの文字列が確保できません: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "outfileの文字列を確保できません: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "%s か %s のどちらかが与えられる必要があります\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "クラスが与えられていません\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "クラス%sはサポートされていません\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " 証明書 ID 0x%08lXを用います\n"

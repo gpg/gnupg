@@ -431,16 +431,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "o algoritmo de resumo seleccionado non é válido\n"
 
 #, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTA: non existe o ficheiro de opcións por defecto `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "ficheiro de opcións `%s': %s\n"
-
-#, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "lendo as opcións de `%s'\n"
@@ -1082,9 +1072,25 @@ msgstr "comandos conflictivos\n"
 msgid "invalid alias definition"
 msgstr "opcións de importación non válidas\n"
 
+msgid "permission error"
+msgstr ""
+
 #, fuzzy
 msgid "out of core"
 msgstr "non procesado"
+
+#, fuzzy
+msgid "invalid meta command"
+msgstr "comandos conflictivos\n"
+
+#, fuzzy
+msgid "unknown meta command"
+msgstr "destinatario por defecto `%s' descoñecido\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "datos inesperados"
 
 #, fuzzy
 msgid "invalid option"
@@ -1115,12 +1121,22 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "out of core\n"
-msgstr "non procesado"
-
-#, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "opcións de importación non válidas\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "NOTA: non existe o ficheiro de opcións por defecto `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "ficheiro de opcións `%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -7066,6 +7082,10 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "out of core\n"
+msgstr "non procesado"
+
 #, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
@@ -9162,148 +9182,6 @@ msgid "No argument allowed"
 msgstr "gravando a chave secreta en `%s'\n"
 
 #, fuzzy
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Comandos:\n"
-" "
-
-#, fuzzy
-msgid "decryption modus"
-msgstr "descifrado correcto\n"
-
-#, fuzzy
-msgid "encryption modus"
-msgstr "descifrado correcto\n"
-
-msgid "tool class (confucius)"
-msgstr ""
-
-#, fuzzy
-msgid "program filename"
-msgstr "--store [ficheiro]"
-
-msgid "secret key file (required)"
-msgstr ""
-
-msgid "input file name (default stdin)"
-msgstr ""
-
-#, fuzzy
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "¡%s non se admite con %s!\n"
-
-#, fuzzy, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr ""
-"a actualización da base de datos de confianza fallou:\n"
-"%s\n"
-
-#, fuzzy, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "non se pode crea-lo directorio `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "non se puido abrir %s: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to %s: %s\n"
-msgstr "erro escribindo no chaveiro `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error reading from %s: %s\n"
-msgstr "erro lendo `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error closing %s: %s\n"
-msgstr "erro lendo `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "no --program option provided\n"
-msgstr "non se soporta a execución remota de programas\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr ""
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "could not create pipe: %s\n"
-msgstr "non foi posible crear %s: %s\n"
-
-#, fuzzy, c-format
-msgid "could not create pty: %s\n"
-msgstr "non foi posible crear %s: %s\n"
-
-#, fuzzy, c-format
-msgid "could not fork: %s\n"
-msgstr "%s: non se atopou o usuario: %s\n"
-
-#, fuzzy, c-format
-msgid "execv failed: %s\n"
-msgstr "a actualización fallou: %s\n"
-
-#, fuzzy, c-format
-msgid "select failed: %s\n"
-msgstr "fallou o borrado do bloque de chaves: %s\n"
-
-#, fuzzy, c-format
-msgid "read failed: %s\n"
-msgstr "a actualización fallou: %s\n"
-
-#, fuzzy, c-format
-msgid "pty read failed: %s\n"
-msgstr "a actualización fallou: %s\n"
-
-#, fuzzy, c-format
-msgid "waitpid failed: %s\n"
-msgstr "a actualización fallou: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "non se pode crear `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "non se pode crear `%s': %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr ""
-
-#, c-format
-msgid "no class provided\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "class %s is not supported\n"
-msgstr "o algoritmo de protección %d%s non está soportado\n"
-
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
 
@@ -9311,6 +9189,109 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Comandos:\n"
+#~ " "
+
+#, fuzzy
+#~ msgid "decryption modus"
+#~ msgstr "descifrado correcto\n"
+
+#, fuzzy
+#~ msgid "encryption modus"
+#~ msgstr "descifrado correcto\n"
+
+#, fuzzy
+#~ msgid "program filename"
+#~ msgstr "--store [ficheiro]"
+
+#, fuzzy
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
+
+#, fuzzy
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "¡%s non se admite con %s!\n"
+
+#, fuzzy
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr ""
+#~ "a actualización da base de datos de confianza fallou:\n"
+#~ "%s\n"
+
+#, fuzzy
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "non se pode crea-lo directorio `%s': %s\n"
+
+#, fuzzy
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "non se puido abrir %s: %s\n"
+
+#, fuzzy
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "erro escribindo no chaveiro `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "erro lendo `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "erro lendo `%s': %s\n"
+
+#, fuzzy
+#~ msgid "no --program option provided\n"
+#~ msgstr "non se soporta a execución remota de programas\n"
+
+#, fuzzy
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "non foi posible crear %s: %s\n"
+
+#, fuzzy
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "non foi posible crear %s: %s\n"
+
+#, fuzzy
+#~ msgid "could not fork: %s\n"
+#~ msgstr "%s: non se atopou o usuario: %s\n"
+
+#, fuzzy
+#~ msgid "execv failed: %s\n"
+#~ msgstr "a actualización fallou: %s\n"
+
+#, fuzzy
+#~ msgid "select failed: %s\n"
+#~ msgstr "fallou o borrado do bloque de chaves: %s\n"
+
+#, fuzzy
+#~ msgid "read failed: %s\n"
+#~ msgstr "a actualización fallou: %s\n"
+
+#, fuzzy
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "a actualización fallou: %s\n"
+
+#, fuzzy
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "a actualización fallou: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "non se pode crear `%s': %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "non se pode crear `%s': %s\n"
+
+#, fuzzy
+#~ msgid "class %s is not supported\n"
+#~ msgstr "o algoritmo de protección %d%s non está soportado\n"
 
 #, fuzzy
 #~ msgid " using certificate ID 0x%08lX\n"
@@ -10527,9 +10508,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "erro de borrado de ficheiro"
-
-#~ msgid "unexpected data"
-#~ msgstr "datos inesperados"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "conflicto de selo de data"

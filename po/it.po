@@ -405,14 +405,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "l'algoritmo di digest selezionato non è valido\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Nota: nessun file di opzioni predefinito '%s'\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "file di opzioni '%s': %s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "opzioni di lettura da '%s'\n"
 
@@ -1023,8 +1015,26 @@ msgstr "comando non valido"
 msgid "invalid alias definition"
 msgstr "definizione di alias non valida"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "fuori dal nucleo"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "comando non valido"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "comando sconosciuto '%s'\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "armatura inaspettata: "
 
 msgid "invalid option"
 msgstr "opzione non valida"
@@ -1054,12 +1064,20 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "il comando \"%.50s\" è ambiguo\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "fuori dal nucleo\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "opzione non valida \"%.50s\"\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "Nota: nessun file di opzioni predefinito '%s'\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "file di opzioni '%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6822,6 +6840,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "un hash di bit %u non è valido per una chiave %u bit %s\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "fuori dal nucleo\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(questo è l'algoritmo MD2)\n"
 
@@ -8888,144 +8910,6 @@ msgstr "Componente non trovato"
 msgid "No argument allowed"
 msgstr "Nessun argomento consentito"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Comandi:\n"
-" "
-
-msgid "decryption modus"
-msgstr "modus di decrittazione"
-
-msgid "encryption modus"
-msgstr "modus di crittografia"
-
-msgid "tool class (confucius)"
-msgstr "classe di utensili (confucio)"
-
-msgid "program filename"
-msgstr "nome file del programma"
-
-msgid "secret key file (required)"
-msgstr "file di chiave segreta (obbligatorio)"
-
-msgid "input file name (default stdin)"
-msgstr "nome del file di input (stdin predefinito)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Utilizzo: symcryptrun [opzioni] (-h per assistenza)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Sintassi: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[opzioni...] COMANDO [file di input]\n"
-"Chiamare un semplice strumento di crittografia simmetrica\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s su %s interrotto con stato %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s su %s non riuscito con stato %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "impossibile creare la directory temporanea '%s': %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "impossibile aprire %s per la scrittura: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "errore durante la scrittura in %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "errore durante la lettura da %s: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "errore durante la chiusura di %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "no --opzione di programma fornita\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "solo --decrypt e --encrypt sono supportati\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "nessuna opzione --keyfile fornita\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "impossibile allocare il vettore args\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "impossibile creare la pipe: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "impossibile creare pty: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "non poteva dividere: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "execv non riuscito: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "selezione non riuscita: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "lettura non riuscita: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "lettura pty non riuscita: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "waitpid non riuscito: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "figlio interrotto con stato %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "impossibile allocare la stringa nel file: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "non può allocare la stringa del file di uscita: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "e' necessario specificare %s o %s\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "nessuna classe fornita\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "la classe %s non è supportata\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr ""
 "Utilizzo: gpg-check-pattern [opzioni] patternfile (-h per assistenza)\n"
@@ -9036,3 +8920,116 @@ msgid ""
 msgstr ""
 "Sintassi: gpg-check-pattern [opzioni] patternfile\n"
 "Controllare una passphrase data su stdin rispetto al patternfile\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Comandi:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "modus di decrittazione"
+
+#~ msgid "encryption modus"
+#~ msgstr "modus di crittografia"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "classe di utensili (confucio)"
+
+#~ msgid "program filename"
+#~ msgstr "nome file del programma"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "file di chiave segreta (obbligatorio)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "nome del file di input (stdin predefinito)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Utilizzo: symcryptrun [opzioni] (-h per assistenza)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Sintassi: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[opzioni...] COMANDO [file di input]\n"
+#~ "Chiamare un semplice strumento di crittografia simmetrica\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s su %s interrotto con stato %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s su %s non riuscito con stato %i\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "impossibile creare la directory temporanea '%s': %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "impossibile aprire %s per la scrittura: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "errore durante la scrittura in %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "errore durante la lettura da %s: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "errore durante la chiusura di %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "no --opzione di programma fornita\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "solo --decrypt e --encrypt sono supportati\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "nessuna opzione --keyfile fornita\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "impossibile allocare il vettore args\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "impossibile creare la pipe: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "impossibile creare pty: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "non poteva dividere: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "execv non riuscito: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "selezione non riuscita: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "lettura non riuscita: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "lettura pty non riuscita: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "waitpid non riuscito: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "figlio interrotto con stato %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "impossibile allocare la stringa nel file: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "non può allocare la stringa del file di uscita: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "e' necessario specificare %s o %s\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "nessuna classe fornita\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "la classe %s non è supportata\n"

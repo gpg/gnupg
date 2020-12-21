@@ -485,16 +485,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "vald sammandragsalgoritm är ogiltig\n"
 
 #, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "OBS: inställningsfilen \"%s\" saknas\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "inställningsfil \"%s\": %s\n"
-
-#, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "läser inställningar från \"%s\"\n"
@@ -1146,8 +1136,26 @@ msgstr "ogiltigt kommando"
 msgid "invalid alias definition"
 msgstr "ogiltig aliasdefinition"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "slut på minne"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "ogiltigt kommando"
+
+#, fuzzy
+#| msgid "unknown command `%s'\n"
+msgid "unknown meta command"
+msgstr "okänt kommando \"%s\"\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "oväntat skal: "
 
 msgid "invalid option"
 msgstr "ogiltig flagga"
@@ -1178,12 +1186,22 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "kommandot \"%.50s\" är tvetydigt\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "slut på minne\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "ogiltig flagga \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "OBS: inställningsfilen \"%s\" saknas\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "inställningsfil \"%s\": %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "conversion from `%s' to `%s' not available\n"
@@ -7299,6 +7317,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "en %u-bitars hash är inte giltig för en %u-bitars %s-nyckel\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "slut på minne\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(det här är MD2-algoritmen)\n"
 
@@ -9614,148 +9636,6 @@ msgstr "Komponenten hittades inte"
 msgid "No argument allowed"
 msgstr "Inget argument tillåts"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"Kommandon:\n"
-" "
-
-msgid "decryption modus"
-msgstr "dekrypteringsmodus"
-
-msgid "encryption modus"
-msgstr "krypteringsmodus"
-
-msgid "tool class (confucius)"
-msgstr "verktygsklass (confucius)"
-
-msgid "program filename"
-msgstr "programfilnamn"
-
-msgid "secret key file (required)"
-msgstr "hemlig nyckelfil (krävs)"
-
-msgid "input file name (default stdin)"
-msgstr "filnamn för inmatning (standardvärde är standard in)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Användning: symcryptrun [flaggor] (-h för hjälp)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Syntax: symcryptrun --class KLASS --program PROGRAM --keyfile NYCKELFIL "
-"[flaggor...] KOMMANDO [inmatningsfil]\n"
-"Anropa ett enkelt symmetriskt krypteringsverktyg\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s på %s avbröts med status %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s på %s misslyckades med status %i\n"
-
-#, fuzzy, c-format
-#| msgid "can't create temporary directory `%s': %s\n"
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "kan inte skapa temporärkatalogen \"%s\": %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "kunde inte öppna %s för skrivning: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "fel vid skrivning till %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "fel vid läsning från %s: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "fel vid stängning av %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "flaggan --program angavs inte\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "endast --decrypt och --encrypt stöds\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "flaggan --keyfile angavs inte\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "kan inte allokera argumentvektor\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "kunde inte skapa rör: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "kunde inte skapa pty: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "kunde inte grena process: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "execv misslyckades: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "val misslyckades: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "läsning misslyckades: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "pty-läsning misslyckades: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "waitpid misslyckades: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "barnprocess avbröts med status %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "kan inte allokera infilssträng: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "kan inte allokera utfilssträng: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "antingen %s eller %s måste anges\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "ingen klass tillhandahölls\n"
-
-# Skyddssammandraget låter underligt
-# Kontrollsumma?
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "klassen %s stöds inte\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Användning: gpg-check-pattern [flaggor] mönsterfil (-h för hjälp)\n"
 
@@ -9765,6 +9645,124 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "Kommandon:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "dekrypteringsmodus"
+
+#~ msgid "encryption modus"
+#~ msgstr "krypteringsmodus"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "verktygsklass (confucius)"
+
+#~ msgid "program filename"
+#~ msgstr "programfilnamn"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "hemlig nyckelfil (krävs)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "filnamn för inmatning (standardvärde är standard in)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Användning: symcryptrun [flaggor] (-h för hjälp)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Syntax: symcryptrun --class KLASS --program PROGRAM --keyfile NYCKELFIL "
+#~ "[flaggor...] KOMMANDO [inmatningsfil]\n"
+#~ "Anropa ett enkelt symmetriskt krypteringsverktyg\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s på %s avbröts med status %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s på %s misslyckades med status %i\n"
+
+#, fuzzy
+#~| msgid "can't create temporary directory `%s': %s\n"
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "kan inte skapa temporärkatalogen \"%s\": %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "kunde inte öppna %s för skrivning: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "fel vid skrivning till %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "fel vid läsning från %s: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "fel vid stängning av %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "flaggan --program angavs inte\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "endast --decrypt och --encrypt stöds\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "flaggan --keyfile angavs inte\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "kan inte allokera argumentvektor\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "kunde inte skapa rör: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "kunde inte skapa pty: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "kunde inte grena process: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "execv misslyckades: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "val misslyckades: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "läsning misslyckades: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "pty-läsning misslyckades: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "waitpid misslyckades: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "barnprocess avbröts med status %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "kan inte allokera infilssträng: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "kan inte allokera utfilssträng: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "antingen %s eller %s måste anges\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "ingen klass tillhandahölls\n"
+
+# Skyddssammandraget låter underligt
+# Kontrollsumma?
+#~ msgid "class %s is not supported\n"
+#~ msgstr "klassen %s stöds inte\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " använder certifikat-id 0x%08lX\n"

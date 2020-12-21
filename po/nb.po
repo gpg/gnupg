@@ -409,14 +409,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "valg kontrollsum-algoritme er ugyldig\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Merk: standardvalg-fil «%s» finnes ikke\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "valgfil «%s»: %s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "leser valg fra «%s»\n"
 
@@ -1023,8 +1015,26 @@ msgstr "ugyldig kommando"
 msgid "invalid alias definition"
 msgstr "ugyldig aliasdefinisjon"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "kjernen er full"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "ugyldig kommando"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "«%s» er en ukjent kommando\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "uforventet armering: "
 
 msgid "invalid option"
 msgstr "ugyldig valg"
@@ -1054,12 +1064,20 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "kommandoen «%.50s» er flertydig\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "kjernen er full\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "valget «%.50s» er ugyldig\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "Merk: standardvalg-fil «%s» finnes ikke\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "valgfil «%s»: %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6734,6 +6752,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "kontrollsum på %u bit er ugyldig for en %u-bit %s-nøkkel\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "kjernen er full\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(dette er algortime MD2)\n"
 
@@ -8762,145 +8784,6 @@ msgstr "Fant ikke komponent"
 msgid "No argument allowed"
 msgstr "Ingen argumenter tillatt"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"Kommandoer:\n"
-" "
-
-msgid "decryption modus"
-msgstr "dekrypteringsmodus"
-
-msgid "encryption modus"
-msgstr "krypteringsmodus"
-
-msgid "tool class (confucius)"
-msgstr "verktøyklasse (confucius)"
-
-msgid "program filename"
-msgstr "programfil-navn"
-
-msgid "secret key file (required)"
-msgstr "hemmelig nøkkelfil (påkrevet)"
-
-msgid "input file name (default stdin)"
-msgstr "inndata-filnavn (forvalgt: standard innkanal)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Bruk: symcryptrun [valg] (-h for hjelp)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Syntaks: symcryptrun --class KLASSE --program PROGRAM --keyfile NØKKELFIL "
-"[valg …] KOMMANDO [inndatafil]\n"
-"Bruk et enkelt symmetrisk krypteringsverktøy\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s på %s avbrøt med status %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s på %s mislyktes med status %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "klarte ikke å lage midlertidig mappe «%s»: %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "klarte ikke å åpne %s for skriving: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "feil under skriving til %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "feil under lesing fra %s: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "feil under lukking av %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "valget «--program» er ikke brukt\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "programmet støtter bare «--decrypt» og «--encrypt»\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "valget «--keyfile» mangler\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "klarte ikke å tildele argumentvektor\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "klarte ikke å lage datarør: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "klarte ikke å lage pty: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "klarte ikke å lage underprosess: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "«execv» mislyktes: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "«select» mislyktes: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "«read» mislyktes: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "«pty»-lesing mislyktes: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "«waitpid» mislyktes: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "underprosess ble avbrutt med status %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "klarte ikke å tildele inndatafil-streng: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "klarte ikke å tildele utdatafil-streng: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "du må velge enten %s eller %s\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "ingen klasse valgt\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "klassen %s støttes ikke\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Bruk: gpg-check-pattern [valg] mønsterfil (-h for hjelp)\n"
 
@@ -8910,6 +8793,120 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "Kommandoer:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "dekrypteringsmodus"
+
+#~ msgid "encryption modus"
+#~ msgstr "krypteringsmodus"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "verktøyklasse (confucius)"
+
+#~ msgid "program filename"
+#~ msgstr "programfil-navn"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "hemmelig nøkkelfil (påkrevet)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "inndata-filnavn (forvalgt: standard innkanal)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Bruk: symcryptrun [valg] (-h for hjelp)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Syntaks: symcryptrun --class KLASSE --program PROGRAM --keyfile NØKKELFIL "
+#~ "[valg …] KOMMANDO [inndatafil]\n"
+#~ "Bruk et enkelt symmetrisk krypteringsverktøy\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s på %s avbrøt med status %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s på %s mislyktes med status %i\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "klarte ikke å lage midlertidig mappe «%s»: %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "klarte ikke å åpne %s for skriving: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "feil under skriving til %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "feil under lesing fra %s: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "feil under lukking av %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "valget «--program» er ikke brukt\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "programmet støtter bare «--decrypt» og «--encrypt»\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "valget «--keyfile» mangler\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "klarte ikke å tildele argumentvektor\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "klarte ikke å lage datarør: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "klarte ikke å lage pty: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "klarte ikke å lage underprosess: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "«execv» mislyktes: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "«select» mislyktes: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "«read» mislyktes: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "«pty»-lesing mislyktes: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "«waitpid» mislyktes: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "underprosess ble avbrutt med status %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "klarte ikke å tildele inndatafil-streng: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "klarte ikke å tildele utdatafil-streng: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "du må velge enten %s eller %s\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "ingen klasse valgt\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "klassen %s støttes ikke\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " ved bruk av sertifikat-ID 0x%08lX\n"

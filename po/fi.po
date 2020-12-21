@@ -444,16 +444,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "valittu tiivistealgoritmi ei kelpaa\n"
 
 #, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "HUOM: Ei oletusasetustiedostoa \"%s\"\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "asetustiedosto \"%s\": %s\n"
-
-#, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "luetaan asetukset tiedostosta \"%s\"\n"
@@ -1091,9 +1081,25 @@ msgstr "ristiriitainen komento\n"
 msgid "invalid alias definition"
 msgstr "virheelliset tuontivalitsimet\n"
 
+msgid "permission error"
+msgstr ""
+
 #, fuzzy
 msgid "out of core"
 msgstr "ei käsitelty"
+
+#, fuzzy
+msgid "invalid meta command"
+msgstr "ristiriitainen komento\n"
+
+#, fuzzy
+msgid "unknown meta command"
+msgstr "tuntematon oletusvastaanottaja \"%s\"\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "odottamatonta dataa"
 
 #, fuzzy
 msgid "invalid option"
@@ -1124,12 +1130,22 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "out of core\n"
-msgstr "ei käsitelty"
-
-#, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "virheelliset tuontivalitsimet\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "HUOM: Ei oletusasetustiedostoa \"%s\"\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "asetustiedosto \"%s\": %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -7056,6 +7072,10 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "out of core\n"
+msgstr "ei käsitelty"
+
 #, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
@@ -9147,146 +9167,6 @@ msgid "No argument allowed"
 msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 
 #, fuzzy
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Komennot:\n"
-" "
-
-#, fuzzy
-msgid "decryption modus"
-msgstr "avaus onnistui\n"
-
-#, fuzzy
-msgid "encryption modus"
-msgstr "avaus onnistui\n"
-
-msgid "tool class (confucius)"
-msgstr ""
-
-#, fuzzy
-msgid "program filename"
-msgstr "--store [tiedostonimi]"
-
-msgid "secret key file (required)"
-msgstr ""
-
-msgid "input file name (default stdin)"
-msgstr ""
-
-#, fuzzy
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Käyttö: gpg [valitsimet] [tiedostot] (-h näyttää ohjeen)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s ja %s eivät ole sallittuja yhdessä!\n"
-
-#, fuzzy, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "ei voi avata tiedostoa: %s\n"
-
-#, fuzzy, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "hakemiston \"%s\" luominen ei onnistu: %s\n"
-
-#, fuzzy, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "tiedostoa %s ei voi avata: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to %s: %s\n"
-msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
-
-#, fuzzy, c-format
-msgid "error reading from %s: %s\n"
-msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
-
-#, fuzzy, c-format
-msgid "error closing %s: %s\n"
-msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
-
-#, fuzzy, c-format
-msgid "no --program option provided\n"
-msgstr "etäohjelman suorittamista ei tueta\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr ""
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "could not create pipe: %s\n"
-msgstr "ei voida luoda kohdetta %s: %s\n"
-
-#, fuzzy, c-format
-msgid "could not create pty: %s\n"
-msgstr "ei voida luoda kohdetta %s: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "execv failed: %s\n"
-msgstr "päivitys epäonnistui: %s\n"
-
-#, fuzzy, c-format
-msgid "select failed: %s\n"
-msgstr "avainlohkojen poisto epäonnistui: %s\n"
-
-#, fuzzy, c-format
-msgid "read failed: %s\n"
-msgstr "päivitys epäonnistui: %s\n"
-
-#, fuzzy, c-format
-msgid "pty read failed: %s\n"
-msgstr "päivitys epäonnistui: %s\n"
-
-#, fuzzy, c-format
-msgid "waitpid failed: %s\n"
-msgstr "päivitys epäonnistui: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
-
-#, fuzzy, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr ""
-
-#, c-format
-msgid "no class provided\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "class %s is not supported\n"
-msgstr "suojausalgoritmi %d%s ei ole käytettävissä\n"
-
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Käyttö: gpg [valitsimet] [tiedostot] (-h näyttää ohjeen)"
 
@@ -9294,6 +9174,103 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Komennot:\n"
+#~ " "
+
+#, fuzzy
+#~ msgid "decryption modus"
+#~ msgstr "avaus onnistui\n"
+
+#, fuzzy
+#~ msgid "encryption modus"
+#~ msgstr "avaus onnistui\n"
+
+#, fuzzy
+#~ msgid "program filename"
+#~ msgstr "--store [tiedostonimi]"
+
+#, fuzzy
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Käyttö: gpg [valitsimet] [tiedostot] (-h näyttää ohjeen)"
+
+#, fuzzy
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s ja %s eivät ole sallittuja yhdessä!\n"
+
+#, fuzzy
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "ei voi avata tiedostoa: %s\n"
+
+#, fuzzy
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "hakemiston \"%s\" luominen ei onnistu: %s\n"
+
+#, fuzzy
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "tiedostoa %s ei voi avata: %s\n"
+
+#, fuzzy
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
+
+#, fuzzy
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
+
+#, fuzzy
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
+
+#, fuzzy
+#~ msgid "no --program option provided\n"
+#~ msgstr "etäohjelman suorittamista ei tueta\n"
+
+#, fuzzy
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "ei voida luoda kohdetta %s: %s\n"
+
+#, fuzzy
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "ei voida luoda kohdetta %s: %s\n"
+
+#, fuzzy
+#~ msgid "execv failed: %s\n"
+#~ msgstr "päivitys epäonnistui: %s\n"
+
+#, fuzzy
+#~ msgid "select failed: %s\n"
+#~ msgstr "avainlohkojen poisto epäonnistui: %s\n"
+
+#, fuzzy
+#~ msgid "read failed: %s\n"
+#~ msgstr "päivitys epäonnistui: %s\n"
+
+#, fuzzy
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "päivitys epäonnistui: %s\n"
+
+#, fuzzy
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "päivitys epäonnistui: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
+
+#, fuzzy
+#~ msgid "class %s is not supported\n"
+#~ msgstr "suojausalgoritmi %d%s ei ole käytettävissä\n"
 
 #, fuzzy
 #~ msgid " using certificate ID 0x%08lX\n"
@@ -10508,9 +10485,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "virhe tiedostoa poistettaessa"
-
-#~ msgid "unexpected data"
-#~ msgstr "odottamatonta dataa"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "aikaleima ei täsmää"

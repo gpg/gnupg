@@ -459,16 +459,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "l'algorisme de resum seleccionat no és vàlid\n"
 
 #, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTA: no existeix el fitxer d'opcions predeterminades «%s»\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "fitxer d'opcions «%s»: %s\n"
-
-#, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "s'estan llegint opcions de «%s»\n"
@@ -1128,6 +1118,9 @@ msgstr "les ordres entren en conflicte\n"
 msgid "invalid alias definition"
 msgstr "opcions d'importació no vàlides\n"
 
+msgid "permission error"
+msgstr ""
+
 # Gènere?  Nombre?  Passat, futur?  ivb
 # Probablement és una clau, femení. jm
 # Werner FIXME: please add translator comment saying *what* is
@@ -1135,6 +1128,19 @@ msgstr "opcions d'importació no vàlides\n"
 #, fuzzy
 msgid "out of core"
 msgstr "no forçat"
+
+#, fuzzy
+msgid "invalid meta command"
+msgstr "les ordres entren en conflicte\n"
+
+#, fuzzy
+msgid "unknown meta command"
+msgstr "el destinatari predeterminat és desconegut «%s»\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "dades inesperades"
 
 #, fuzzy
 msgid "invalid option"
@@ -1164,17 +1170,23 @@ msgstr ""
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
-# Gènere?  Nombre?  Passat, futur?  ivb
-# Probablement és una clau, femení. jm
-# Werner FIXME: please add translator comment saying *what* is
-# uncompressed so we know the gender. jm
-#, fuzzy, c-format
-msgid "out of core\n"
-msgstr "no forçat"
-
 #, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "opcions d'importació no vàlides\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "NOTA: no existeix el fitxer d'opcions predeterminades «%s»\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "fitxer d'opcions «%s»: %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -7217,6 +7229,14 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+# Gènere?  Nombre?  Passat, futur?  ivb
+# Probablement és una clau, femení. jm
+# Werner FIXME: please add translator comment saying *what* is
+# uncompressed so we know the gender. jm
+#, fuzzy, c-format
+msgid "out of core\n"
+msgstr "no forçat"
+
 #, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
@@ -9338,147 +9358,6 @@ msgid "No argument allowed"
 msgstr ""
 
 #, fuzzy
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Ordres:\n"
-" "
-
-#, fuzzy
-msgid "decryption modus"
-msgstr "desxifratge correcte\n"
-
-#, fuzzy
-msgid "encryption modus"
-msgstr "desxifratge correcte\n"
-
-msgid "tool class (confucius)"
-msgstr ""
-
-#, fuzzy
-msgid "program filename"
-msgstr "--store [nom_del_fitxer]"
-
-msgid "secret key file (required)"
-msgstr ""
-
-msgid "input file name (default stdin)"
-msgstr ""
-
-#, fuzzy
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Forma d'ús: gpg [opcions] [fitxers] (-h per a veure l'ajuda)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s no és permés amb %s!\n"
-
-#, fuzzy, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "ha fallat l'actualització de la base de dades de confiança: %s\n"
-
-#, fuzzy, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "no es pot crear el directori «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "no s'ha pogut obrir %s: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to %s: %s\n"
-msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "error reading from %s: %s\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "error closing %s: %s\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
-# Execució de programes remots, o execució remota de programes? jm
-#, fuzzy, c-format
-msgid "no --program option provided\n"
-msgstr "no hi ha suport per a l'execució remota de programes\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr ""
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "could not create pipe: %s\n"
-msgstr "no s'ha pogut crear «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "could not create pty: %s\n"
-msgstr "no s'ha pogut crear «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "could not fork: %s\n"
-msgstr "%s: no s'ha trobat l'usuari: %s\n"
-
-#, fuzzy, c-format
-msgid "execv failed: %s\n"
-msgstr "ha fallat l'actualització: %s\n"
-
-#, fuzzy, c-format
-msgid "select failed: %s\n"
-msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
-
-#, fuzzy, c-format
-msgid "read failed: %s\n"
-msgstr "ha fallat l'actualització: %s\n"
-
-#, fuzzy, c-format
-msgid "pty read failed: %s\n"
-msgstr "ha fallat l'actualització: %s\n"
-
-#, fuzzy, c-format
-msgid "waitpid failed: %s\n"
-msgstr "ha fallat l'actualització: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "%s: no s'ha creat l'anell: %s\n"
-
-#, fuzzy, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "no s'ha pogut crear «%s»: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr ""
-
-#, c-format
-msgid "no class provided\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "class %s is not supported\n"
-msgstr "l'algoritme de protecció %d%s no està suportat\n"
-
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Forma d'ús: gpg [opcions] [fitxers] (-h per a veure l'ajuda)"
 
@@ -9486,6 +9365,108 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Ordres:\n"
+#~ " "
+
+#, fuzzy
+#~ msgid "decryption modus"
+#~ msgstr "desxifratge correcte\n"
+
+#, fuzzy
+#~ msgid "encryption modus"
+#~ msgstr "desxifratge correcte\n"
+
+#, fuzzy
+#~ msgid "program filename"
+#~ msgstr "--store [nom_del_fitxer]"
+
+#, fuzzy
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Forma d'ús: gpg [opcions] [fitxers] (-h per a veure l'ajuda)"
+
+#, fuzzy
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s no és permés amb %s!\n"
+
+#, fuzzy
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "ha fallat l'actualització de la base de dades de confiança: %s\n"
+
+#, fuzzy
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "no es pot crear el directori «%s»: %s\n"
+
+#, fuzzy
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "no s'ha pogut obrir %s: %s\n"
+
+#, fuzzy
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
+
+#, fuzzy
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "error en la lectura de «%s»: %s\n"
+
+#, fuzzy
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "error en la lectura de «%s»: %s\n"
+
+# Execució de programes remots, o execució remota de programes? jm
+#, fuzzy
+#~ msgid "no --program option provided\n"
+#~ msgstr "no hi ha suport per a l'execució remota de programes\n"
+
+#, fuzzy
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "no s'ha pogut crear «%s»: %s\n"
+
+#, fuzzy
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "no s'ha pogut crear «%s»: %s\n"
+
+#, fuzzy
+#~ msgid "could not fork: %s\n"
+#~ msgstr "%s: no s'ha trobat l'usuari: %s\n"
+
+#, fuzzy
+#~ msgid "execv failed: %s\n"
+#~ msgstr "ha fallat l'actualització: %s\n"
+
+#, fuzzy
+#~ msgid "select failed: %s\n"
+#~ msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
+
+#, fuzzy
+#~ msgid "read failed: %s\n"
+#~ msgstr "ha fallat l'actualització: %s\n"
+
+#, fuzzy
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "ha fallat l'actualització: %s\n"
+
+#, fuzzy
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "ha fallat l'actualització: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "%s: no s'ha creat l'anell: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "no s'ha pogut crear «%s»: %s\n"
+
+#, fuzzy
+#~ msgid "class %s is not supported\n"
+#~ msgstr "l'algoritme de protecció %d%s no està suportat\n"
 
 #, fuzzy
 #~ msgid " using certificate ID 0x%08lX\n"
@@ -10725,9 +10706,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "error en l'eliminació del fitxer"
-
-#~ msgid "unexpected data"
-#~ msgstr "dades inesperades"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "conflicte de data"

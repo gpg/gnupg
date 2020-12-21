@@ -414,14 +414,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "выбрана недопустимая хеш-функция\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Замечание: основной файл параметров '%s' не обнаружен\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "файл параметров '%s': %s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "чтение параметров из '%s'\n"
 
@@ -1023,8 +1015,26 @@ msgstr "недопустимая команда"
 msgid "invalid alias definition"
 msgstr "недопустимое определение синонима"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "нехватка выделенной памяти"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "недопустимая команда"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "неизвестная команда '%s'\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "неожиданный текстовый формат: "
 
 msgid "invalid option"
 msgstr "недопустимый параметр"
@@ -1054,12 +1064,20 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "команда \"%.50s\" неоднозначна\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "нехватка выделенной памяти\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "недопустимый параметр \"%.50s\"\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "Замечание: основной файл параметров '%s' не обнаружен\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "файл параметров '%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6800,6 +6818,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "%u-битный хеш недопустим для %u-битного ключа %s\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "нехватка выделенной памяти\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(это алгоритм MD2)\n"
 
@@ -8857,145 +8879,6 @@ msgstr "Компонент не найден"
 msgid "No argument allowed"
 msgstr "Аргументы не разрешены"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"Команды:\n"
-" "
-
-msgid "decryption modus"
-msgstr "режим расшифровки"
-
-msgid "encryption modus"
-msgstr "режим зашифровывания"
-
-msgid "tool class (confucius)"
-msgstr "класс средства (confucius)"
-
-msgid "program filename"
-msgstr "имя файла программы"
-
-msgid "secret key file (required)"
-msgstr "файл секретного ключа (обязателен)"
-
-msgid "input file name (default stdin)"
-msgstr "имя входного файла (по умолчанию stdin)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Вызов: symcryptrun [параметры] (-h - подсказка)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Синтаксис: symcryptrun --class КЛАСС --program ПРОГРАММА --keyfile "
-"ФАЙЛ_КЛЮЧА [параметры...] КОМАНДА [входной файл]\n"
-"Вызывает простое средство шифрования\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s над %s прервано, статус %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "сбой %s над %s, статус %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "не могу создать временный каталог '%s': %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "невозможно открыть %s на запись: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "ошибка записи в %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "ошибка чтения из %s: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "ошибка закрытия %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "не задан параметр --program\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "поддерживаются только параметры --decrypt и --encrypt\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "не задан параметр --keyfile\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "невозможно выделить память под вектор аргументов\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "сбой при создании канала конвейера: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "сбой при создании псевдотерминала: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "сбой при дублировании процесса: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "сбой execv: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "сбой select: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "сбой чтения: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "сбой чтения из псевдотерминала: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "сбой waitpid: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "потомок завершился, статус %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "сбой при выделении памяти под имя входного файла: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "сбой при выделении памяти под имя выходного файла: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "следует задать %s либо %s\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "не задан класс\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "класс %s не поддерживается\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Вызов: gpg-check-pattern [параметры] файл_образцов (-h - подсказка)\n"
 
@@ -9005,6 +8888,120 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "Команды:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "режим расшифровки"
+
+#~ msgid "encryption modus"
+#~ msgstr "режим зашифровывания"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "класс средства (confucius)"
+
+#~ msgid "program filename"
+#~ msgstr "имя файла программы"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "файл секретного ключа (обязателен)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "имя входного файла (по умолчанию stdin)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Вызов: symcryptrun [параметры] (-h - подсказка)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Синтаксис: symcryptrun --class КЛАСС --program ПРОГРАММА --keyfile "
+#~ "ФАЙЛ_КЛЮЧА [параметры...] КОМАНДА [входной файл]\n"
+#~ "Вызывает простое средство шифрования\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s над %s прервано, статус %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "сбой %s над %s, статус %i\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "не могу создать временный каталог '%s': %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "невозможно открыть %s на запись: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "ошибка записи в %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "ошибка чтения из %s: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "ошибка закрытия %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "не задан параметр --program\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "поддерживаются только параметры --decrypt и --encrypt\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "не задан параметр --keyfile\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "невозможно выделить память под вектор аргументов\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "сбой при создании канала конвейера: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "сбой при создании псевдотерминала: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "сбой при дублировании процесса: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "сбой execv: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "сбой select: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "сбой чтения: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "сбой чтения из псевдотерминала: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "сбой waitpid: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "потомок завершился, статус %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "сбой при выделении памяти под имя входного файла: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "сбой при выделении памяти под имя выходного файла: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "следует задать %s либо %s\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "не задан класс\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "класс %s не поддерживается\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " с помощью сертификата с идентификатором 0x%08lX\n"

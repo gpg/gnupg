@@ -8989,145 +8989,6 @@ msgstr "Komponente nicht gefunden"
 msgid "No argument allowed"
 msgstr "Argumente sind nicht erlaubt"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"@KBefehle:\n"
-" "
-
-msgid "decryption modus"
-msgstr "Entschlüsselungsmodus"
-
-msgid "encryption modus"
-msgstr "Verschlüsselungsmodus"
-
-msgid "tool class (confucius)"
-msgstr "Toolklasse (Konfuzius)"
-
-msgid "program filename"
-msgstr "Programmdateiname"
-
-msgid "secret key file (required)"
-msgstr "Dateiname des geheimen Schlüssels (erforderlich)"
-
-msgid "input file name (default stdin)"
-msgstr "Eingabedateiname (Standardeingabe ist voreingestellt)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Aufruf: symcryptrun [Optionen] (-h für Hilfe)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Syntax: symcryptrun --class KLASSE --program PROGRAMM --keyfile "
-"SCHLUESSELDATEI [Optionen...] KOMMANDO [Eingabedatei]\n"
-"Aufruf eines einfachen symmetrischen Verschlüsselungstool\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s auf %s brach mit Status %i ab\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s auf %s schlug mit Status %i fehl\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "Das temporäre Verzeichnis `%s' kann nicht erstellt werden: %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "%s kann nicht zum Schreiben geöffnet werden: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "Fehler beim Schreiben von %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "Fehler beim Lesen von %s: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "Fehler beim Schließen von %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "Option --program nicht angegeben\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "nur --decrypt und --encrypt sind vorhanden\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "keine --keyfile -Option angegeben\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "Kann \"args-vector\" nicht zuteilen\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "Pipe kann nicht erzeugt werden: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "Pty kann nicht erzeugt werden: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "Kann nicht fork()en: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "Der execv()-Aufruf ist fehlgeschlagen: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "Der select()-Aufruf ist fehlgeschlagen: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "Lesen schlug fehl: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "\"pty read\"-Aufruf ist fehlgeschlagen: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "Der waitpid()-Aufruf ist fehlgeschlagen: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "Kind brach mit Status %i ab\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "Kann In-Datei-Zeichenkette keinen Speicher zuteilen: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "Kann Out-Datei-Zeichenkette keinen Speicher zuteilen: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "entweder %s oder %s muß angegeben sein\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "keine Klasse angegeben\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "Klasse %s wird nicht unterstützt\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Aufruf: gpg-check-pattern [Optionen] Musterdatei  (-h für Hilfe)\n"
 
@@ -9137,6 +8998,120 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "@KBefehle:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "Entschlüsselungsmodus"
+
+#~ msgid "encryption modus"
+#~ msgstr "Verschlüsselungsmodus"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "Toolklasse (Konfuzius)"
+
+#~ msgid "program filename"
+#~ msgstr "Programmdateiname"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "Dateiname des geheimen Schlüssels (erforderlich)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "Eingabedateiname (Standardeingabe ist voreingestellt)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Aufruf: symcryptrun [Optionen] (-h für Hilfe)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Syntax: symcryptrun --class KLASSE --program PROGRAMM --keyfile "
+#~ "SCHLUESSELDATEI [Optionen...] KOMMANDO [Eingabedatei]\n"
+#~ "Aufruf eines einfachen symmetrischen Verschlüsselungstool\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s auf %s brach mit Status %i ab\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s auf %s schlug mit Status %i fehl\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "Das temporäre Verzeichnis `%s' kann nicht erstellt werden: %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "%s kann nicht zum Schreiben geöffnet werden: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "Fehler beim Schreiben von %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "Fehler beim Lesen von %s: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "Fehler beim Schließen von %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "Option --program nicht angegeben\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "nur --decrypt und --encrypt sind vorhanden\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "keine --keyfile -Option angegeben\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "Kann \"args-vector\" nicht zuteilen\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "Pipe kann nicht erzeugt werden: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "Pty kann nicht erzeugt werden: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "Kann nicht fork()en: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "Der execv()-Aufruf ist fehlgeschlagen: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "Der select()-Aufruf ist fehlgeschlagen: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "Lesen schlug fehl: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "\"pty read\"-Aufruf ist fehlgeschlagen: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "Der waitpid()-Aufruf ist fehlgeschlagen: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "Kind brach mit Status %i ab\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "Kann In-Datei-Zeichenkette keinen Speicher zuteilen: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "Kann Out-Datei-Zeichenkette keinen Speicher zuteilen: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "entweder %s oder %s muß angegeben sein\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "keine Klasse angegeben\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "Klasse %s wird nicht unterstützt\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " mittels Zertifikat ID 0x%08lX\n"

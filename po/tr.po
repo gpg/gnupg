@@ -454,16 +454,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "seçilen özet algoritması geçersiz\n"
 
 #, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "BİLGİ: \"%s\" öntanımlı seçenek dosyası yok\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "seçenek dosyası \"%s\": %s\n"
-
-#, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "\"%s\"den seçenekler okunuyor\n"
@@ -1118,8 +1108,26 @@ msgstr "geçersiz komut"
 msgid "invalid alias definition"
 msgstr "geçersiz rumuz tanımı"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "nüve dışı"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "geçersiz komut"
+
+#, fuzzy
+#| msgid "unknown command `%s'\n"
+msgid "unknown meta command"
+msgstr "komut `%s' bilinmiyor\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "beklenmeyen zırh: "
 
 msgid "invalid option"
 msgstr "geçersiz seçenek"
@@ -1150,12 +1158,22 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "\"%.50s\" komutu belirsiz\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "nüve dışında\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "geçersiz seçenekler \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "BİLGİ: \"%s\" öntanımlı seçenek dosyası yok\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "seçenek dosyası \"%s\": %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "conversion from `%s' to `%s' not available\n"
@@ -7209,6 +7227,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "%u bitlik çittirim %u bitlik %s anahtarı için geçersiz\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "nüve dışında\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(bu, MD2 algoritmasıdır)\n"
 
@@ -9516,146 +9538,6 @@ msgstr "Bileşen yok"
 msgid "No argument allowed"
 msgstr "Değiştirgeye izin verilmez"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"Komutlar:\n"
-" "
-
-msgid "decryption modus"
-msgstr "şifre çözme kipi"
-
-msgid "encryption modus"
-msgstr "şifreleme kipi"
-
-msgid "tool class (confucius)"
-msgstr "araç sınıfı (Konfüçyüs)"
-
-msgid "program filename"
-msgstr "program dosyaismi"
-
-msgid "secret key file (required)"
-msgstr "gizli anahtar dosyası (gerekli)"
-
-msgid "input file name (default stdin)"
-msgstr "girdi dosyası ismi (std girdi öntanımlı)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Kullanımı: symcryptrun [seçenekler] (yardım için -h)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Sözdizimi: symcryptrun --class SINIF --program PROGRAM --keyfile ANHDOSYA "
-"[seçenekler...] KOMUT [girdi-dosyası]\n"
-"Basit bir simetrik şifreleme aracı çalıştırır\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%2$s üzerindeki %1$s %3$i durumuyla çıktı\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%2$s üzerindeki %1$s %3$i durumuyla başarısız oldu\n"
-
-#, fuzzy, c-format
-#| msgid "can't create temporary directory `%s': %s\n"
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "`%s' geçici dizini oluşturulamıyor: %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "%s yazmak için açılamadı: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "%s yazılırken hata: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "%s okunurken hata: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "%s kapanırken hata: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "--program diye bir seçenek yok\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "sadece --decrypt ve --encrypt destekleniyor\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "--keyfile diye bir seçenek yok\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "argüman dizgeleri dizisi ayrılamıyor\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "boru oluşturulamadı: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "pty oluşturulamadı: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "çatallanamadı: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "execv başarısız: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "select başarısız: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "read başarısız: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "pty okuması başarısız: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "waitpid başarısız: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "alt süreç %i durumu ile çıktı\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "dosya içi dizge ayrılamıyor: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "dosya dışı dizge ayrılamıyor: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "ya %s verilmeli ya da %s\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "hiç sınıf sağlanmamış\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "%s sınıfı desteklenmiyor\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası (yardım için -h)\n"
@@ -9667,6 +9549,122 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "Komutlar:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "şifre çözme kipi"
+
+#~ msgid "encryption modus"
+#~ msgstr "şifreleme kipi"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "araç sınıfı (Konfüçyüs)"
+
+#~ msgid "program filename"
+#~ msgstr "program dosyaismi"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "gizli anahtar dosyası (gerekli)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "girdi dosyası ismi (std girdi öntanımlı)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Kullanımı: symcryptrun [seçenekler] (yardım için -h)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Sözdizimi: symcryptrun --class SINIF --program PROGRAM --keyfile ANHDOSYA "
+#~ "[seçenekler...] KOMUT [girdi-dosyası]\n"
+#~ "Basit bir simetrik şifreleme aracı çalıştırır\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%2$s üzerindeki %1$s %3$i durumuyla çıktı\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%2$s üzerindeki %1$s %3$i durumuyla başarısız oldu\n"
+
+#, fuzzy
+#~| msgid "can't create temporary directory `%s': %s\n"
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "`%s' geçici dizini oluşturulamıyor: %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "%s yazmak için açılamadı: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "%s yazılırken hata: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "%s okunurken hata: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "%s kapanırken hata: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "--program diye bir seçenek yok\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "sadece --decrypt ve --encrypt destekleniyor\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "--keyfile diye bir seçenek yok\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "argüman dizgeleri dizisi ayrılamıyor\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "boru oluşturulamadı: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "pty oluşturulamadı: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "çatallanamadı: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "execv başarısız: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "select başarısız: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "read başarısız: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "pty okuması başarısız: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "waitpid başarısız: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "alt süreç %i durumu ile çıktı\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "dosya içi dizge ayrılamıyor: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "dosya dışı dizge ayrılamıyor: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "ya %s verilmeli ya da %s\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "hiç sınıf sağlanmamış\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "%s sınıfı desteklenmiyor\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " sertifika kimliği 0x%08lX kullanılarak yapıldı\n"

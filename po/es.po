@@ -431,14 +431,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "el algoritmo de resumen seleccionado no inválido\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTA: no existe el fichero de opciones predeterminado '%s'\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "fichero de opciones '%s': %s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "leyendo opciones de '%s'\n"
 
@@ -1051,8 +1043,26 @@ msgstr "orden inválida"
 msgid "invalid alias definition"
 msgstr "definición de alias inválida"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "memoria desbordada"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "orden inválida"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "orden desconocida '%s'\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "datos inesperados"
 
 msgid "invalid option"
 msgstr "opción inválida"
@@ -1082,12 +1092,20 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "la orden \"%.50s\" es ambigua\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "memoria desbordada\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "opción inválida \"%.50s\"\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "NOTA: no existe el fichero de opciones predeterminado '%s'\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "fichero de opciones '%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6796,6 +6814,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "un hash de %u bits no vale para %u bits de la clave %s\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "memoria desbordada\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(es el algoritmo MD2)\n"
 
@@ -8855,149 +8877,6 @@ msgstr "Componente no encontrado"
 msgid "No argument allowed"
 msgstr "No se permiten parámetros"
 
-# Órdenes, please...
-# Sí, este no he podido ser yo :-) Por cierto, ¿por qué la O no se
-# puede acentuar? ¿demasiado alta?
-# ¿Quién dice que no se puede? :-)
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"Órdenes:\n"
-" "
-
-msgid "decryption modus"
-msgstr "modo de descifrado"
-
-msgid "encryption modus"
-msgstr "modo de cifrado"
-
-msgid "tool class (confucius)"
-msgstr "clase de herramienta (confucius)"
-
-msgid "program filename"
-msgstr "nombre del programa"
-
-msgid "secret key file (required)"
-msgstr "fichero de clave secreta (requerido)"
-
-msgid "input file name (default stdin)"
-msgstr "nombre del fichero de entrada (por defecto stdin)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Uso: symcryptrun [opciones] (-h para ayuda)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Sintaxis: symcryptrun --class CLASE --program PROGRAMA --keyfile FICHERO "
-"[opciones...] ORDEN [fichero entrada]\n"
-"Invocar una herramienta simple de cifrado simétrico\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s en %s abortó con estado %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s en %s falló con estado %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "no se puede crear el directorio temporal '%s': %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "no se puede abrir %s para escribir: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "error escribiendo en %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "error al leer de %s: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "error cerrando %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "falta la opción --program\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "sólo pueden usarse --decrypt y --encrypt\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "falta la opción --keyfile\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "no puedo reservar espacio para el vector de parámetros\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "no se pudo crear la tubería: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "no se pudo crear pty: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "no se puede bifurcar: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "execv fallido: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "select fallido: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "lectura fallida: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "lectura de pty fallida: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "waitpid fallido: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "proceso hijo abortado con estado %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "no puedo reservar espacio para la cadena de entrada: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "no puedo reservar espacio para la cadena de salida: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "debe darse %s o bien %s\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "se necesita una clase\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "la clase %s no puede usarse\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr ""
 "Uso: gpg-check-pattern [opciones] [fichero_de_patrones] (-h para ayuda)\n"
@@ -9009,6 +8888,124 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+# Órdenes, please...
+# Sí, este no he podido ser yo :-) Por cierto, ¿por qué la O no se
+# puede acentuar? ¿demasiado alta?
+# ¿Quién dice que no se puede? :-)
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "Órdenes:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "modo de descifrado"
+
+#~ msgid "encryption modus"
+#~ msgstr "modo de cifrado"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "clase de herramienta (confucius)"
+
+#~ msgid "program filename"
+#~ msgstr "nombre del programa"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "fichero de clave secreta (requerido)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "nombre del fichero de entrada (por defecto stdin)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Uso: symcryptrun [opciones] (-h para ayuda)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Sintaxis: symcryptrun --class CLASE --program PROGRAMA --keyfile FICHERO "
+#~ "[opciones...] ORDEN [fichero entrada]\n"
+#~ "Invocar una herramienta simple de cifrado simétrico\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s en %s abortó con estado %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s en %s falló con estado %i\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "no se puede crear el directorio temporal '%s': %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "no se puede abrir %s para escribir: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "error escribiendo en %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "error al leer de %s: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "error cerrando %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "falta la opción --program\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "sólo pueden usarse --decrypt y --encrypt\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "falta la opción --keyfile\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "no puedo reservar espacio para el vector de parámetros\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "no se pudo crear la tubería: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "no se pudo crear pty: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "no se puede bifurcar: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "execv fallido: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "select fallido: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "lectura fallida: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "lectura de pty fallida: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "waitpid fallido: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "proceso hijo abortado con estado %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "no puedo reservar espacio para la cadena de entrada: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "no puedo reservar espacio para la cadena de salida: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "debe darse %s o bien %s\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "se necesita una clase\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "la clase %s no puede usarse\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " usando el certificado ID 0x%08lX\n"
@@ -10368,9 +10365,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "error al borrar fichero"
-
-#~ msgid "unexpected data"
-#~ msgstr "datos inesperados"
 
 # o tal vez "en el sello..."
 # Creo que es mejor "con el sello de fecha", no es un conflicto

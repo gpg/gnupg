@@ -403,14 +403,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "wybrany algorytm skrótów wiadomości jest niepoprawny\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Uwaga: brak domyślnego pliku opcji ,,%s''\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "plik opcji ,,%s'': %s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "odczyt opcji z ,,%s''\n"
 
@@ -1014,8 +1006,26 @@ msgstr "błędne polecenie"
 msgid "invalid alias definition"
 msgstr "błędna definicja aliasu"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "brak pamięci"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "błędne polecenie"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "nieznane polecenie ,,%s''\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "nieoczekiwane opakowanie: "
 
 msgid "invalid option"
 msgstr "błędna opcja"
@@ -1045,12 +1055,20 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "polecenie ,,%.50s'' jest niejednoznaczne\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "brak pamięci\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "błędna opcja ,,%.50s''\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "Uwaga: brak domyślnego pliku opcji ,,%s''\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "plik opcji ,,%s'': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -2973,12 +2991,15 @@ msgstr "błąd przydzielania pamięci: %s\n"
 
 #, c-format
 msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "nie można sprawdzić podpisu z nieobsługiwanym algorytmem klucza publicznego (%d): %s.\n"
+msgstr ""
+"nie można sprawdzić podpisu z nieobsługiwanym algorytmem klucza publicznego "
+"(%d): %s.\n"
 
 #, c-format
 msgid ""
 "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "nie można sprawdzić podpisu z nieobsługiwanym algorytmem skrótu %d: %s.\n"
+msgstr ""
+"nie można sprawdzić podpisu z nieobsługiwanym algorytmem skrótu %d: %s.\n"
 
 msgid " (reordered signatures follow)"
 msgstr " (poniżej uporządkowane podpisy)"
@@ -3020,7 +3041,8 @@ msgid ""
 "Warning: errors found and only checked self-signatures, run '%s' to check "
 "all signatures.\n"
 msgstr ""
-"Uwaga: znaleziono błędy, a sprawdzono tylko podpisy własne; uruchomienie '%s' sprawdzi wszystkie podpisy.\n"
+"Uwaga: znaleziono błędy, a sprawdzono tylko podpisy własne; uruchomienie "
+"'%s' sprawdzi wszystkie podpisy.\n"
 
 #, c-format
 msgid "error creating keybox '%s': %s\n"
@@ -6834,6 +6856,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "skrót %u-bitowy nie jest poprawny dla %u-bitowego klucza %s\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "brak pamięci\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(to jest algorytm MD2)\n"
 
@@ -8873,145 +8899,6 @@ msgstr "Nie znaleziono komponentu"
 msgid "No argument allowed"
 msgstr "Argument nie jest dozwolony"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"Polecenia:\n"
-" "
-
-msgid "decryption modus"
-msgstr "tryb rozszyfrowywania"
-
-msgid "encryption modus"
-msgstr "tryb szyfrowania"
-
-msgid "tool class (confucius)"
-msgstr "klasa narzędzia (confucius)"
-
-msgid "program filename"
-msgstr "nazwa programu"
-
-msgid "secret key file (required)"
-msgstr "plik klucza tajnego (wymagany)"
-
-msgid "input file name (default stdin)"
-msgstr "nazwa pliku wejściowego (domyślnie standardowe wejście)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Składnia: symcryptrun [opcje] (-h wyświetla pomoc)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Składnia: symcryptrun --class KLASA --program PROGRAM --keyfile PLIK_KLUCZA "
-"[opcje...] POLECENIE [plik-weściowy]\n"
-"Wywołanie prostego narzędzia do szyfrowania symetrycznego\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s na %s przerwany ze stanem %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s na %s nie powiódł się ze stanem %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "nie można utworzyć katalogu tymczasowego ,,%s'': %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "nie udało się otworzyć %s do zapisu: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "błąd zapisu do %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "błąd odczytu z %s: %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "błąd zamykania %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "nie podano opcji --program\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "obsługiwane są tylko --decrypt i --encrypt\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "nie podano opcji --keyfile\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "nie można przydzielić wektora args\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "nie udało się utworzyć potoku: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "nie udało się utworzyć pty: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "nie udało się wykonać fork: %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "execv nie powiodło się: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "select nie powiodło się: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "odczyt nie powiódł się: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "odczyt pty nie powiódł się: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "waitpid nie powiodło się: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "potomek został przerwany ze stanem %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "nie można przydzielić łańcucha pliku wejściowego: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "nie można przydzielić łańcucha pliku wyjściowego: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "musi być podane %s lub %s\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "nie podano klasy\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "klasa %s nie jest obsługiwana\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców (-h wyświetla pomoc)\n"
@@ -9022,3 +8909,117 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "Polecenia:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "tryb rozszyfrowywania"
+
+#~ msgid "encryption modus"
+#~ msgstr "tryb szyfrowania"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "klasa narzędzia (confucius)"
+
+#~ msgid "program filename"
+#~ msgstr "nazwa programu"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "plik klucza tajnego (wymagany)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "nazwa pliku wejściowego (domyślnie standardowe wejście)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Składnia: symcryptrun [opcje] (-h wyświetla pomoc)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Składnia: symcryptrun --class KLASA --program PROGRAM --keyfile "
+#~ "PLIK_KLUCZA [opcje...] POLECENIE [plik-weściowy]\n"
+#~ "Wywołanie prostego narzędzia do szyfrowania symetrycznego\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s na %s przerwany ze stanem %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s na %s nie powiódł się ze stanem %i\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "nie można utworzyć katalogu tymczasowego ,,%s'': %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "nie udało się otworzyć %s do zapisu: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "błąd zapisu do %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "błąd odczytu z %s: %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "błąd zamykania %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "nie podano opcji --program\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "obsługiwane są tylko --decrypt i --encrypt\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "nie podano opcji --keyfile\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "nie można przydzielić wektora args\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "nie udało się utworzyć potoku: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "nie udało się utworzyć pty: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "nie udało się wykonać fork: %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "execv nie powiodło się: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "select nie powiodło się: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "odczyt nie powiódł się: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "odczyt pty nie powiódł się: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "waitpid nie powiodło się: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "potomek został przerwany ze stanem %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "nie można przydzielić łańcucha pliku wejściowego: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "nie można przydzielić łańcucha pliku wyjściowego: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "musi być podane %s lub %s\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "nie podano klasy\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "klasa %s nie jest obsługiwana\n"

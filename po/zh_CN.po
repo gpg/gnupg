@@ -398,14 +398,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "所选的散列算法无效\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "注意：没有默认配置文件‘%s’\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "选项文件‘%s’：%s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "从‘%s’读取选项\n"
 
@@ -1006,8 +998,26 @@ msgstr "无效的命令"
 msgid "invalid alias definition"
 msgstr "无效的别名定义"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "out of core"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "无效的命令"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "未知命令‘%s’\n"
+
+#, fuzzy
+#| msgid "unexpected armor: "
+msgid "unexpected meta command"
+msgstr "与预期不符的字符封装： "
 
 msgid "invalid option"
 msgstr "无效的选项"
@@ -1037,12 +1047,20 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "命令 “%.50s” 含义模糊\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "out of core\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "无效的选项 “%.50s”\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "注意：没有默认配置文件‘%s’\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "选项文件‘%s’：%s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6549,6 +6567,10 @@ msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "一个 %u 位的散列对于一个 %u 位的 %s 密钥是无效的\n"
 
 #, c-format
+msgid "out of core\n"
+msgstr "out of core\n"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "（这是 MD2 算法）\n"
 
@@ -8563,146 +8585,6 @@ msgstr "组件未找到"
 msgid "No argument allowed"
 msgstr "没有参数被允许"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"命令：\n"
-" "
-
-msgid "decryption modus"
-msgstr "解密模式"
-
-msgid "encryption modus"
-msgstr "加密模式"
-
-#, fuzzy
-msgid "tool class (confucius)"
-msgstr "工具类（confucius）"
-
-msgid "program filename"
-msgstr "程序文件名"
-
-msgid "secret key file (required)"
-msgstr "私钥文件（必须）"
-
-msgid "input file name (default stdin)"
-msgstr "输入文件名（默认为标准输入 stdin）"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "用法：symcryptrun [选项] (-h 获取帮助)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"语法：symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"调用一个简单的对称加密工具\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s 在 %s 上被取消，返回状态 %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s 在 %s 上失败，返回状态 %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "无法创建临时目录‘%s’：%s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "不能为写入打开 %s ：%s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "写入 %s 时出现错误：%s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "读取 %s 时出现错误：%s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "关闭 %s 时出现错误：%s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "未提供 --program 选项\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "只要 --decrypt 和 --encrypt 被支持\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "没有提供 --keyfile 选项\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "无法分配 args 向量\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "无法创建管道：%s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "无法创建 pty：%s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "无法执行 fork 方法：%s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "execv 方法失败：%s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "select 失败：%s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "read 失败：%s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "pty 读取失败：%s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "waitpid 方法失败：%s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "子进程被终止，返回状态为 %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "无法分配 infile 字符串：%s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "无法分配 outfile 字符串：%s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "必须给定 %s 或 %s 中的任意一个\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "没有给定类\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "类 %s 不被支持\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "用法：gpg-check-pattern [选项] patternfile （-h 获取帮助）\n"
 
@@ -8712,6 +8594,121 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "命令：\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "解密模式"
+
+#~ msgid "encryption modus"
+#~ msgstr "加密模式"
+
+#, fuzzy
+#~ msgid "tool class (confucius)"
+#~ msgstr "工具类（confucius）"
+
+#~ msgid "program filename"
+#~ msgstr "程序文件名"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "私钥文件（必须）"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "输入文件名（默认为标准输入 stdin）"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "用法：symcryptrun [选项] (-h 获取帮助)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "语法：symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "调用一个简单的对称加密工具\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s 在 %s 上被取消，返回状态 %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s 在 %s 上失败，返回状态 %i\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "无法创建临时目录‘%s’：%s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "不能为写入打开 %s ：%s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "写入 %s 时出现错误：%s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "读取 %s 时出现错误：%s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "关闭 %s 时出现错误：%s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "未提供 --program 选项\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "只要 --decrypt 和 --encrypt 被支持\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "没有提供 --keyfile 选项\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "无法分配 args 向量\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "无法创建管道：%s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "无法创建 pty：%s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "无法执行 fork 方法：%s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "execv 方法失败：%s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "select 失败：%s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "read 失败：%s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "pty 读取失败：%s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "waitpid 方法失败：%s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "子进程被终止，返回状态为 %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "无法分配 infile 字符串：%s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "无法分配 outfile 字符串：%s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "必须给定 %s 或 %s 中的任意一个\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "没有给定类\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "类 %s 不被支持\n"
 
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " 正在使用的证书标识 0x%08lX\n"

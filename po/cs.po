@@ -436,14 +436,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "vybraný hashovací algoritmus je neplatný\n"
 
 #, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Poznámka: neexistuje implicitní soubor s možnostmi „%s“\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "soubor s možnostmi „%s“: %s\n"
-
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "čtou se možnosti z „%s“\n"
 
@@ -1047,8 +1039,26 @@ msgstr "neplatný příkaz"
 msgid "invalid alias definition"
 msgstr "neplatný definice aliasu"
 
+msgid "permission error"
+msgstr ""
+
 msgid "out of core"
 msgstr "nedostatek paměti"
+
+#, fuzzy
+#| msgid "invalid command"
+msgid "invalid meta command"
+msgstr "neplatný příkaz"
+
+#, fuzzy
+#| msgid "unknown command '%s'\n"
+msgid "unknown meta command"
+msgstr "neznámý příkaz „%s“\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "neočekávaná data"
 
 msgid "invalid option"
 msgstr "neplatný parametr"
@@ -1077,14 +1087,21 @@ msgstr "volba „%.50s“ není jednoznačná\n"
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr "příkaz „%.50s“ není jednoznačný\n"
 
-# Yet another expression for `not enough memory' :)
-#, c-format
-msgid "out of core\n"
-msgstr "nedostatek paměti\n"
-
 #, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "neplatný parametr „%.50s“\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "Poznámka: neexistuje implicitní soubor s možnostmi „%s“\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "soubor s možnostmi „%s“: %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6804,6 +6821,11 @@ msgstr "použit ověřovací model: %s"
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "%ubitový hash není platná pro %ubitový %s klíč\n"
 
+# Yet another expression for `not enough memory' :)
+#, c-format
+msgid "out of core\n"
+msgstr "nedostatek paměti\n"
+
 #, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(toto je algoritmus MD2)\n"
@@ -8842,144 +8864,6 @@ msgstr "Komponenta nenalezena"
 msgid "No argument allowed"
 msgstr "Žádné argumenty nejsou povoleny"
 
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@\n"
-"Příkazy:\n"
-" "
-
-msgid "decryption modus"
-msgstr "dešifrovací modus"
-
-msgid "encryption modus"
-msgstr "šifrovací modus"
-
-msgid "tool class (confucius)"
-msgstr "třída nástrojů (Konfucius)"
-
-msgid "program filename"
-msgstr "název souboru s programem"
-
-msgid "secret key file (required)"
-msgstr "soubor s tajným klíčem (nezbytné)"
-
-msgid "input file name (default stdin)"
-msgstr "název vstupního souboru (implicitně standardní vstup)"
-
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Použití: symcryptrun [volby]  (-h pro nápovědu)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-"Syntaxe: symcryptrun --class TŘÍDA --program PROGRAM --keyfile SOUBOR "
-"[VOLBY…] PŘÍKAZ [VSTUPNÍ_SOUBOR]\n"
-
-#, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s nad %s byl ukončen s kódem %i\n"
-
-#, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "%s nad %s selhal s kódem %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "nelze vytvořit dočasný adresář „%s“: %s\n"
-
-#, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "%s nelze otevřít pro zápis: %s\n"
-
-#, c-format
-msgid "error writing to %s: %s\n"
-msgstr "chyba při zápisu do %s: %s\n"
-
-#, c-format
-msgid "error reading from %s: %s\n"
-msgstr "chyba při čtení z %s': %s\n"
-
-#, c-format
-msgid "error closing %s: %s\n"
-msgstr "chyba při zavírání chyba %s: %s\n"
-
-#, c-format
-msgid "no --program option provided\n"
-msgstr "nebyla zadána volba --program\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr "pouze --decrypt a --encrypt jsou podporovány\n"
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr "nebyla zadána volba --keyfile\n"
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr "nelze alokovat pole argumentů\n"
-
-#, c-format
-msgid "could not create pipe: %s\n"
-msgstr "nelze vytvořit rouru: %s\n"
-
-#, c-format
-msgid "could not create pty: %s\n"
-msgstr "nelze vytvořit PTY: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr "nelze se rozdvojit (fork): %s\n"
-
-#, c-format
-msgid "execv failed: %s\n"
-msgstr "execv selhalo: %s\n"
-
-#, c-format
-msgid "select failed: %s\n"
-msgstr "služba select() selhala: %s\n"
-
-#, c-format
-msgid "read failed: %s\n"
-msgstr "čtení selhalo: %s\n"
-
-#, c-format
-msgid "pty read failed: %s\n"
-msgstr "čtení z PTY selhalo: %s\n"
-
-#, c-format
-msgid "waitpid failed: %s\n"
-msgstr "služba waitpid() selhala: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr "potomek byl ukončen s kódem %i\n"
-
-#, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "nelze alokovat řetězec infile: %s\n"
-
-#, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "nelze alokovat řetězec outfile: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr "musí být zadáno buď %s, nebo %s\n"
-
-#, c-format
-msgid "no class provided\n"
-msgstr "nezadána žádná třída\n"
-
-#, c-format
-msgid "class %s is not supported\n"
-msgstr "třída %s není podporována\n"
-
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr ""
 "Použití: gpg-check-pattern [volby] soubor_se_vzorem (-h pro nápovědu)\n"
@@ -8990,6 +8874,119 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@\n"
+#~ "Příkazy:\n"
+#~ " "
+
+#~ msgid "decryption modus"
+#~ msgstr "dešifrovací modus"
+
+#~ msgid "encryption modus"
+#~ msgstr "šifrovací modus"
+
+#~ msgid "tool class (confucius)"
+#~ msgstr "třída nástrojů (Konfucius)"
+
+#~ msgid "program filename"
+#~ msgstr "název souboru s programem"
+
+#~ msgid "secret key file (required)"
+#~ msgstr "soubor s tajným klíčem (nezbytné)"
+
+#~ msgid "input file name (default stdin)"
+#~ msgstr "název vstupního souboru (implicitně standardní vstup)"
+
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Použití: symcryptrun [volby]  (-h pro nápovědu)"
+
+#~ msgid ""
+#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+#~ "[options...] COMMAND [inputfile]\n"
+#~ "Call a simple symmetric encryption tool\n"
+#~ msgstr ""
+#~ "Syntaxe: symcryptrun --class TŘÍDA --program PROGRAM --keyfile SOUBOR "
+#~ "[VOLBY…] PŘÍKAZ [VSTUPNÍ_SOUBOR]\n"
+
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s nad %s byl ukončen s kódem %i\n"
+
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "%s nad %s selhal s kódem %i\n"
+
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "nelze vytvořit dočasný adresář „%s“: %s\n"
+
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "%s nelze otevřít pro zápis: %s\n"
+
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "chyba při zápisu do %s: %s\n"
+
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "chyba při čtení z %s': %s\n"
+
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "chyba při zavírání chyba %s: %s\n"
+
+#~ msgid "no --program option provided\n"
+#~ msgstr "nebyla zadána volba --program\n"
+
+#~ msgid "only --decrypt and --encrypt are supported\n"
+#~ msgstr "pouze --decrypt a --encrypt jsou podporovány\n"
+
+#~ msgid "no --keyfile option provided\n"
+#~ msgstr "nebyla zadána volba --keyfile\n"
+
+#~ msgid "cannot allocate args vector\n"
+#~ msgstr "nelze alokovat pole argumentů\n"
+
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "nelze vytvořit rouru: %s\n"
+
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "nelze vytvořit PTY: %s\n"
+
+#~ msgid "could not fork: %s\n"
+#~ msgstr "nelze se rozdvojit (fork): %s\n"
+
+#~ msgid "execv failed: %s\n"
+#~ msgstr "execv selhalo: %s\n"
+
+#~ msgid "select failed: %s\n"
+#~ msgstr "služba select() selhala: %s\n"
+
+#~ msgid "read failed: %s\n"
+#~ msgstr "čtení selhalo: %s\n"
+
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "čtení z PTY selhalo: %s\n"
+
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "služba waitpid() selhala: %s\n"
+
+#~ msgid "child aborted with status %i\n"
+#~ msgstr "potomek byl ukončen s kódem %i\n"
+
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "nelze alokovat řetězec infile: %s\n"
+
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "nelze alokovat řetězec outfile: %s\n"
+
+#~ msgid "either %s or %s must be given\n"
+#~ msgstr "musí být zadáno buď %s, nebo %s\n"
+
+#~ msgid "no class provided\n"
+#~ msgstr "nezadána žádná třída\n"
+
+#~ msgid "class %s is not supported\n"
+#~ msgstr "třída %s není podporována\n"
 
 #~ msgid "male"
 #~ msgstr "muž"
@@ -10576,9 +10573,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "chyba při mazání souboru"
-
-#~ msgid "unexpected data"
-#~ msgstr "neočekávaná data"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "konflikt časového razítka"

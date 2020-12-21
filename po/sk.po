@@ -432,16 +432,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "vybraný hashovací algoritmus je neplatný\n"
 
 #, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "POZNÁMKA: neexistuje implicitný súbor s možnosťami `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "súbor s možnosťami `%s': %s\n"
-
-#, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "čítam možnosti z `%s'\n"
@@ -1079,9 +1069,25 @@ msgstr "konfliktné príkazy\n"
 msgid "invalid alias definition"
 msgstr "neplatný parameter pre import\n"
 
+msgid "permission error"
+msgstr ""
+
 #, fuzzy
 msgid "out of core"
 msgstr "nespracované"
+
+#, fuzzy
+msgid "invalid meta command"
+msgstr "konfliktné príkazy\n"
+
+#, fuzzy
+msgid "unknown meta command"
+msgstr "neznámy implicitný adresát `%s'\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "neočakávané dáta"
 
 #, fuzzy
 msgid "invalid option"
@@ -1112,12 +1118,22 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "out of core\n"
-msgstr "nespracované"
-
-#, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "neplatný parameter pre import\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "POZNÁMKA: neexistuje implicitný súbor s možnosťami `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "súbor s možnosťami `%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -7046,6 +7062,10 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "out of core\n"
+msgstr "nespracované"
+
 #, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
@@ -9139,146 +9159,6 @@ msgid "No argument allowed"
 msgstr "zapisujem tajný kľúč do `%s'\n"
 
 #, fuzzy
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Príkazy:\n"
-" "
-
-#, fuzzy
-msgid "decryption modus"
-msgstr "dešifrovanie o.k.\n"
-
-#, fuzzy
-msgid "encryption modus"
-msgstr "dešifrovanie o.k.\n"
-
-msgid "tool class (confucius)"
-msgstr ""
-
-#, fuzzy
-msgid "program filename"
-msgstr "--store [meno súboru]"
-
-msgid "secret key file (required)"
-msgstr ""
-
-msgid "input file name (default stdin)"
-msgstr ""
-
-#, fuzzy
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Použitie: gpg [možnosti] [súbory] (-h pre pomoc)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "Nie je dovolené používať %s s %s!\n"
-
-#, fuzzy, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "nemožno otvoriť súbor: %s\n"
-
-#, fuzzy, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "nemôžem vytvoriť adresár `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "nemožno otvoriť %s: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to %s: %s\n"
-msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error reading from %s: %s\n"
-msgstr "chyba pri čítaní `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error closing %s: %s\n"
-msgstr "chyba pri čítaní `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "no --program option provided\n"
-msgstr "žiadne vzialené vykonávanie programu nie je podporované\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr ""
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "could not create pipe: %s\n"
-msgstr "%s: nemôžem vytvoriť: %s\n"
-
-#, fuzzy, c-format
-msgid "could not create pty: %s\n"
-msgstr "%s: nemôžem vytvoriť: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "execv failed: %s\n"
-msgstr "aktualizácia zlyhala: %s\n"
-
-#, fuzzy, c-format
-msgid "select failed: %s\n"
-msgstr "zmazanie bloku kľúča sa nepodarilo:  %s\n"
-
-#, fuzzy, c-format
-msgid "read failed: %s\n"
-msgstr "aktualizácia zlyhala: %s\n"
-
-#, fuzzy, c-format
-msgid "pty read failed: %s\n"
-msgstr "aktualizácia zlyhala: %s\n"
-
-#, fuzzy, c-format
-msgid "waitpid failed: %s\n"
-msgstr "aktualizácia zlyhala: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "nemôžem vytvoriť `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "nemôžem vytvoriť `%s': %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr ""
-
-#, c-format
-msgid "no class provided\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "class %s is not supported\n"
-msgstr "ochranný algoritmus %d%s nie je podporováný\n"
-
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Použitie: gpg [možnosti] [súbory] (-h pre pomoc)"
 
@@ -9286,6 +9166,103 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Príkazy:\n"
+#~ " "
+
+#, fuzzy
+#~ msgid "decryption modus"
+#~ msgstr "dešifrovanie o.k.\n"
+
+#, fuzzy
+#~ msgid "encryption modus"
+#~ msgstr "dešifrovanie o.k.\n"
+
+#, fuzzy
+#~ msgid "program filename"
+#~ msgstr "--store [meno súboru]"
+
+#, fuzzy
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Použitie: gpg [možnosti] [súbory] (-h pre pomoc)"
+
+#, fuzzy
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "Nie je dovolené používať %s s %s!\n"
+
+#, fuzzy
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "nemožno otvoriť súbor: %s\n"
+
+#, fuzzy
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "nemôžem vytvoriť adresár `%s': %s\n"
+
+#, fuzzy
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "nemožno otvoriť %s: %s\n"
+
+#, fuzzy
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "chyba pri čítaní `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "chyba pri čítaní `%s': %s\n"
+
+#, fuzzy
+#~ msgid "no --program option provided\n"
+#~ msgstr "žiadne vzialené vykonávanie programu nie je podporované\n"
+
+#, fuzzy
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "%s: nemôžem vytvoriť: %s\n"
+
+#, fuzzy
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "%s: nemôžem vytvoriť: %s\n"
+
+#, fuzzy
+#~ msgid "execv failed: %s\n"
+#~ msgstr "aktualizácia zlyhala: %s\n"
+
+#, fuzzy
+#~ msgid "select failed: %s\n"
+#~ msgstr "zmazanie bloku kľúča sa nepodarilo:  %s\n"
+
+#, fuzzy
+#~ msgid "read failed: %s\n"
+#~ msgstr "aktualizácia zlyhala: %s\n"
+
+#, fuzzy
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "aktualizácia zlyhala: %s\n"
+
+#, fuzzy
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "aktualizácia zlyhala: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "nemôžem vytvoriť `%s': %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "nemôžem vytvoriť `%s': %s\n"
+
+#, fuzzy
+#~ msgid "class %s is not supported\n"
+#~ msgstr "ochranný algoritmus %d%s nie je podporováný\n"
 
 #, fuzzy
 #~ msgid " using certificate ID 0x%08lX\n"
@@ -10488,9 +10465,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "chyba pri mazaní súboru"
-
-#~ msgid "unexpected data"
-#~ msgstr "neočakávané dáta"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "konflikt časového razítka"

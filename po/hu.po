@@ -427,16 +427,6 @@ msgid "selected digest algorithm is invalid\n"
 msgstr "A kiválasztott kivonatoló algoritmus érvénytelen!\n"
 
 #, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "MEGJEGYZÉS: Nincs alapértelmezett opciós fájl (%s).\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "\"%s\" opciós fájl: %s\n"
-
-#, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "Az opciókat a \"%s\" állományból olvasom.\n"
@@ -1074,9 +1064,25 @@ msgstr "Egymásnak ellentmondó parancsok!\n"
 msgid "invalid alias definition"
 msgstr "Érvénytelen import opciók!\n"
 
+msgid "permission error"
+msgstr ""
+
 #, fuzzy
 msgid "out of core"
 msgstr "nem feldolgozott"
+
+#, fuzzy
+msgid "invalid meta command"
+msgstr "Egymásnak ellentmondó parancsok!\n"
+
+#, fuzzy
+msgid "unknown meta command"
+msgstr "Ismeretlen alapértelmezett címzett: \"%s\"\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "nem várt adat"
 
 #, fuzzy
 msgid "invalid option"
@@ -1107,12 +1113,22 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "out of core\n"
-msgstr "nem feldolgozott"
-
-#, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "Érvénytelen import opciók!\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "MEGJEGYZÉS: Nincs alapértelmezett opciós fájl (%s).\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "\"%s\" opciós fájl: %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -7019,6 +7035,10 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "out of core\n"
+msgstr "nem feldolgozott"
+
 #, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
@@ -9108,146 +9128,6 @@ msgid "No argument allowed"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
 #, fuzzy
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Parancsok:\n"
-" "
-
-#, fuzzy
-msgid "decryption modus"
-msgstr "Visszafejtés rendben.\n"
-
-#, fuzzy
-msgid "encryption modus"
-msgstr "Visszafejtés rendben.\n"
-
-msgid "tool class (confucius)"
-msgstr ""
-
-#, fuzzy
-msgid "program filename"
-msgstr "--store [fájlnév]"
-
-msgid "secret key file (required)"
-msgstr ""
-
-msgid "input file name (default stdin)"
-msgstr ""
-
-#, fuzzy
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s és %s nem használható együtt!\n"
-
-#, fuzzy, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "Nem tudom megnyitni az állományt: %s.\n"
-
-#, fuzzy, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
-
-#, fuzzy, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "Nem tudom megnyitni %s-t: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to %s: %s\n"
-msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
-
-#, fuzzy, c-format
-msgid "error reading from %s: %s\n"
-msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, fuzzy, c-format
-msgid "error closing %s: %s\n"
-msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, fuzzy, c-format
-msgid "no --program option provided\n"
-msgstr "Külső program meghívása nem támogatott.\n"
-
-#, c-format
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
-
-#, c-format
-msgid "no --keyfile option provided\n"
-msgstr ""
-
-#, c-format
-msgid "cannot allocate args vector\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "could not create pipe: %s\n"
-msgstr "%s nem hozható létre: %s\n"
-
-#, fuzzy, c-format
-msgid "could not create pty: %s\n"
-msgstr "%s nem hozható létre: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "execv failed: %s\n"
-msgstr "Frissítés sikertelen: %s.\n"
-
-#, fuzzy, c-format
-msgid "select failed: %s\n"
-msgstr "A kulcsblokk törlése sikertelen: %s.\n"
-
-#, fuzzy, c-format
-msgid "read failed: %s\n"
-msgstr "Frissítés sikertelen: %s.\n"
-
-#, fuzzy, c-format
-msgid "pty read failed: %s\n"
-msgstr "Frissítés sikertelen: %s.\n"
-
-#, fuzzy, c-format
-msgid "waitpid failed: %s\n"
-msgstr "Frissítés sikertelen: %s.\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
-
-#, fuzzy, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr ""
-
-#, c-format
-msgid "no class provided\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "class %s is not supported\n"
-msgstr "%d%s védő algoritmus nem támogatott.\n"
-
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
@@ -9255,6 +9135,103 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Parancsok:\n"
+#~ " "
+
+#, fuzzy
+#~ msgid "decryption modus"
+#~ msgstr "Visszafejtés rendben.\n"
+
+#, fuzzy
+#~ msgid "encryption modus"
+#~ msgstr "Visszafejtés rendben.\n"
+
+#, fuzzy
+#~ msgid "program filename"
+#~ msgstr "--store [fájlnév]"
+
+#, fuzzy
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
+
+#, fuzzy
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s és %s nem használható együtt!\n"
+
+#, fuzzy
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "Nem tudom megnyitni az állományt: %s.\n"
+
+#, fuzzy
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+
+#, fuzzy
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "Nem tudom megnyitni %s-t: %s\n"
+
+#, fuzzy
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
+
+#, fuzzy
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy
+#~ msgid "no --program option provided\n"
+#~ msgstr "Külső program meghívása nem támogatott.\n"
+
+#, fuzzy
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "%s nem hozható létre: %s\n"
+
+#, fuzzy
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "%s nem hozható létre: %s\n"
+
+#, fuzzy
+#~ msgid "execv failed: %s\n"
+#~ msgstr "Frissítés sikertelen: %s.\n"
+
+#, fuzzy
+#~ msgid "select failed: %s\n"
+#~ msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy
+#~ msgid "read failed: %s\n"
+#~ msgstr "Frissítés sikertelen: %s.\n"
+
+#, fuzzy
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "Frissítés sikertelen: %s.\n"
+
+#, fuzzy
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "Frissítés sikertelen: %s.\n"
+
+#, fuzzy
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy
+#~ msgid "class %s is not supported\n"
+#~ msgstr "%d%s védő algoritmus nem támogatott.\n"
 
 #, fuzzy
 #~ msgid " using certificate ID 0x%08lX\n"
@@ -10461,9 +10438,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "állománytörlési hiba"
-
-#~ msgid "unexpected data"
-#~ msgstr "nem várt adat"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "időbélyeg-konfliktus"
