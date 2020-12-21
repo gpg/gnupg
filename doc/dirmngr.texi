@@ -328,7 +328,26 @@ whether Tor is locally running or not.  The check for a running Tor is
 done for each new connection.
 
 If no keyserver is explicitly configured, dirmngr will use the
-built-in default of hkps://hkps.pool.sks-keyservers.net.
+built-in default of @code{hkps://hkps.pool.sks-keyservers.net}.
+
+Windows users with a keyserver running on their Active Directory
+should use @code{ldap:///} for @var{name} to access this directory.
+
+For accessing anonymous LDAP keyservers @var{name} is in general just
+a @code{ldaps://ldap.example.com}.  A BaseDN parameter should never be
+specified.  If authentication is required the value of @var{name} is
+for example:
+
+@example
+       keyserver ldaps://ldap.example.com/????bindname=uid=USERNAME
+       %2Cou=GnuPG%20Users%2Cdc=example%2Cdc=com,password=PASSWORD
+@end example
+
+       Put this all on one line without any spaces and keep the '%2C' as given.
+       Replace USERNAME, PASSWORD, and the 'dc' parts according to the
+       instructions received from the LDAP administrator.  Note that only
+       simple authentication (i.e. cleartext passwords) is supported and thus
+       using ldaps is strongly suggested.
 
 @item --nameserver @var{ipaddr}
 @opindex nameserver
