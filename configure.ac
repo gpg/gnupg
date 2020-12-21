@@ -125,7 +125,6 @@ GNUPG_BUILD_PROGRAM(scdaemon, yes)
 GNUPG_BUILD_PROGRAM(g13, no)
 GNUPG_BUILD_PROGRAM(dirmngr, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
-GNUPG_BUILD_PROGRAM(symcryptrun, no)
 # We use gpgtar to unpack test data, hence we always build it.  If the
 # user opts out, we simply don't install it.
 GNUPG_BUILD_PROGRAM(gpgtar, yes)
@@ -975,7 +974,7 @@ AC_DEFINE_UNQUOTED(FUSERMOUNT,
 
 
 #
-# Checks for symcryptrun:
+# Checks formerly used for symcryptrun.
 #
 
 # libutil has openpty() and login_tty().
@@ -1779,7 +1778,6 @@ AM_CONDITIONAL(BUILD_SCDAEMON,    test "$build_scdaemon" = "yes")
 AM_CONDITIONAL(BUILD_G13,         test "$build_g13" = "yes")
 AM_CONDITIONAL(BUILD_DIRMNGR,     test "$build_dirmngr" = "yes")
 AM_CONDITIONAL(BUILD_DOC,         test "$build_doc" = "yes")
-AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 AM_CONDITIONAL(BUILD_WKS_TOOLS,   test "$build_wks_tools" = "yes")
 
