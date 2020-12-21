@@ -773,8 +773,6 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
     }
   strcpy (stpcpy (h->lockname, file_to_lock), EXTSEP_S "lock");
   UNLOCK_all_lockfiles ();
-  if (h->use_o_excl)
-    my_debug_1 ("locking for '%s' done via O_EXCL\n", h->lockname);
 
   return h;
 
