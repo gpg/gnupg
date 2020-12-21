@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-11-11 14:57+0100\n"
+"PO-Revision-Date: 2020-12-21 15:31+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -420,14 +420,6 @@ msgstr "ungültige Debugebene `%s' angegeben\n"
 #, c-format
 msgid "selected digest algorithm is invalid\n"
 msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "Optionendatei '%s': %s\n"
 
 #, c-format
 msgid "reading options from '%s'\n"
@@ -1045,8 +1037,20 @@ msgstr "Ungültiger Befehl"
 msgid "invalid alias definition"
 msgstr "Ungültige Alias-Definition"
 
+msgid "permission error"
+msgstr "Zugriffsrechte nicht ausreichend"
+
 msgid "out of core"
 msgstr "Nicht genügend Speicher"
+
+msgid "invalid meta command"
+msgstr "Ungültige Meta-Anweisung"
+
+msgid "unknown meta command"
+msgstr "Unbekannte Meta-Anweisung"
+
+msgid "unexpected meta command"
+msgstr "Unerwartete Meta-Anweisung"
 
 msgid "invalid option"
 msgstr "Ungültige Option"
@@ -1076,12 +1080,21 @@ msgid "command \"%.50s\" is ambiguous\n"
 msgstr "Befehl \"%.50s\" ist mehrdeutig\n"
 
 #, c-format
-msgid "out of core\n"
-msgstr "Nicht genügend Speicher\n"
-
-#, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "Ungültige Option \"%.50s\"\n"
+
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
+
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "Optionendatei '%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
+"Hinweis: Option \\\"--%s\\\" aufgrund der globalen Konfiguration ignoriert\n"
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -6906,6 +6919,10 @@ msgstr "Benutztes Gültigkeitsmodell: %s"
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 "Ein %u-Bit Hashverfahren ist für einen %u-Bit %s Schlüssel nicht möglich\n"
+
+#, c-format
+msgid "out of core\n"
+msgstr "Nicht genügend Speicher\n"
 
 #, c-format
 msgid "(this is the MD2 algorithm)\n"
