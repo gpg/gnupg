@@ -40,6 +40,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#ifdef HAVE_PWD_H
+# include <pwd.h>
+#endif
 #include <unistd.h>
 #include <errno.h>
 #ifdef HAVE_STAT
@@ -1740,4 +1743,50 @@ gnupg_fd_valid (int fd)
     return 0;
   close (d);
   return 1;
+}
+
+
+/* Return a malloced copy of the current user's account name; this may
+ * return NULL on memory failure.  Note that this should eventually be
+ * replaced by a gpgrt function. */
+char *
+gnupg_getusername (void)
+{
+  char *result = NULL;
+
+#ifdef HAVE_W32_SYSTEM
+  wchar_t wtmp[1];
+  wchar_t *wbuf;
+  DWORD wsize = 1;
+
+  GetUserNameW (wtmp, &wsize);
+  wbuf = xtrymalloc (wsize * sizeof *wbuf);
+  if (!wbuf)
+    {
+      gpg_err_set_errno (ENOMEM);
+      return NULL;
+    }
+  if (!GetUserNameW (wbuf, &wsize))
+    {
+      gpg_err_set_errno (EINVAL);
+      xfree (wbuf);
+      return NULL;
+    }
+  result= wchar_to_utf8 (wbuf);
+  xfree (wbuf);
+
+#else /* !HAVE_W32_SYSTEM */
+
+# if defined(HAVE_PWD_H) && defined(HAVE_GETPWUID)
+  struct passwd *pwd;
+
+  pwd = getpwuid (getuid());
+  if (pwd)
+    result = xtrystrdup (pwd->pw_name);
+
+# endif /*HAVE_PWD_H*/
+
+#endif /* !HAVE_W32_SYSTEM */
+
+  return result;
 }

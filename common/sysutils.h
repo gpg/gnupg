@@ -98,6 +98,7 @@ gnupg_dirent_t gnupg_readdir (gnupg_dir_t gdir);
 int gnupg_closedir (gnupg_dir_t gdir);
 char *gnupg_get_socket_name (int fd);
 int gnupg_fd_valid (int fd);
+char *gnupg_getusername (void);
 
 gpg_error_t gnupg_inotify_watch_delete_self (int *r_fd, const char *fname);
 gpg_error_t gnupg_inotify_watch_socket (int *r_fd, const char *socket_name);
