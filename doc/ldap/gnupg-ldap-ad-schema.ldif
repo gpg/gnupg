@@ -1,4 +1,4 @@
-# gnupg-ldap-scheme.ldif                                 -*- conf -*-
+# gnupg-ldap-ad-scheme.ldif                               -*- conf -*-
 #
 # Schema for an OpenPGP LDAP keyserver.  This is a slighly enhanced
 # version of the original LDAP schema used for PGP keyservers as
@@ -9,7 +9,7 @@
 # - Backup your AD! It is not possible to revert changes of the schema.
 # - Try it first on a test system.
 # - To import the new attributes and classes use:
-#      ldifde -i -vv -f gnupg-ldap-ad-schema.ldif
+#      ldifde -i -v -f gnupg-ldap-ad-schema.ldif
 #             -c "DC=EXAMPLEDC" "DC=example,DC=org"
 #   (the above command is given as one line)
 # - The schema does not get its own distingished name as done with OpenLDAP.

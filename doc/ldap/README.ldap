@@ -1,7 +1,7 @@
 # README.ldap                                             -*- org -*-
 #+TITLE: How to use LDAP with GnuPG
 #+AUTHOR:    GnuPG.com
-#+DATE:      2020-10-07
+#+DATE:      2020-12-23
 #
 # The following comment lines are for use by Org-mode.
 #+EXPORT_FILE_NAME: gnupg-and-ldap
@@ -48,7 +48,6 @@ terms used with LDAP:
           human readable data exchange format used with LDAP.
 
 
-
 ** OpenPGP
 
 To serve OpenPGP certificates via LDAP a dedicated schema needs to be
@@ -71,12 +70,15 @@ them.  An example for such an DN is:
 
 : pgpCertID=63113AE866587D0A,ou=GnuPG Keys,dc=example,dc=com
 
+or for Active Directory
+
+: cn=C312[...]0A,cn=GnuPG Keys,dc=example,dc=com
+
 This design means that entries stored under "GnuPG Keys" are not
 connected to the users commonly found on an LDAP server.  This allows
 to store arbitrary OpenPGP certificates in the directory and is
 commonly used to make the certificates of external communication
 partners easily available.
-
 
 ** S/MIME
 
@@ -110,7 +112,6 @@ a different although similar syntax.  Take care: This is not an UTF-8
 encoded mail address and in theory GnuPG should use IDN mapping here.
 However, it is questionable whether any real world installation
 would be able to handle such a mapping.
-
 
 * How to install OpenLDAP
 
@@ -299,9 +300,10 @@ Now all users have read access and the user LordPrivySeal has write
 access.  In case you want to give several users  permissions to update the
 keys replace the regex line in =grantaccess.ldif= with
 
-:  by dn.regex="^uid=([^,]+),ou=GnuPG Users,dc=example,dc=com" write
+:   by dn.regex="^uid=([^,]+),ou=GnuPG Users,dc=example,dc=com" write
 
-and create those users below the RDN "ou=GnuPG Users".
+(take care to insert two spaces at the begin of the line.)  Then
+create those users below the RDN "ou=GnuPG Users".
 
 That's all you need to do at the server.
 
@@ -370,7 +372,7 @@ keyserver ldaps://ldap.example.com
 This assumes that you have a valid TLS server certificate for that
 domain and ldaps is enabled on the server.
 
-* Useful LDAP Commands
+* Useful OpenLDAP Commands
 
 ** List the entire DIT
 
@@ -443,3 +445,81 @@ To debug access problems, it is useful to change the log level:
 :   modify olcLogLevel olcLogLevel ACL | ldapadd -Q -Y EXTERNAL -H ldapi:///
 
 to revert replace "ACL" by "none".
+* How to use with Active Directory
+** Extending the AD Schema
+The Active Directory on Windows is actually an LDAP server but
+configuration differs from OpenLDAP.  The used schema is the same but
+the data objects are slighly different.  To extend the schema the
+LDIF format is used but with variants of the files used for OpenLDAP.
+Thus please download these two files:
+
+- [[https://gnupg.org/misc/gnupg-ldap-ad-schema.ldif]]
+- [[https://gnupg.org/misc/gnupg-ldap-ad-init.ldif]].
+
+*Important*: Backup your Active Directory before you extend the
+schema.  There are *no ways to revert changes* made to a schema.  You
+should also first try this all on a test system and not on a
+production system.
+
+To extend the schema become Adminstrator on your Primary Domain
+Controller and open a shell (Command Prompt).  Copy the above
+mentioned ldif files to your working directory and run the following
+command:
+
+: ldifde -i -v -f gnupg-ldap-ad-schema.ldif
+:   -c "DC=EXAMPLEDC" "DC=example,DC=org"
+
+This is one line and the last string (="DC=example,DC=org"=) needs to
+be replaced with your actual domain.  If the command succeeds you have
+extended the schema to store OpenPGP keys at a well known location.
+The next step is to provide information and space in the tree.  This
+is done similar to the above, namely:
+
+: ldifde -i -v -f gnupg-ldap-ad-init.ldif
+:   -c "DC=EXAMPLEDC" "DC=example,DC=org"
+
+You may now check your work with ADSI (enter "adsiedit").  Compare
+with this [[https://gnupg.org/blog/img/ad-with-gnupg-schema.png][screenshot]] and notice the two marked entries.
+
+The last step is to setup permissions.  This depends on your
+policy.  Here we assume that all authenticated users get read access
+to all OpenPGP keys and only certain users may insert or update those
+keys.
+
+What you need to do in all cases is to give the group /Everyone/ read
+access to the =CN=PGPServerInfo= object.  This allows the
+clients to notice that the schema has been installed and where to look
+further.
+
+The actual keys will be stored under =CN=GnuPG Keys=.  Thus give all
+users of the /AuthenticatedUsers/ group read access and use the
+Advanced button to set /Applies to/ to /This object and all descendant
+objects/.
+
+To insert and update keys, use a group or users and give them
+permissions for =CN=GnuPG Keys= to /Read/, /Write/, /Create all child
+objects/, and /Delete all child objects/.  As above make sure
+that these permissions apply to /This object and all descendant
+objects/.
+
+In case you want to access the keys also from non-Windows boxes, it is
+probably best to created a dedicated guest user for read access.
+
+** Using GnuPG with AD
+
+Using the Active Directory is really easy since GnuPG 2.2.26: You only
+need to put
+
+: keyserver ldap:///
+
+into =dirmngr.conf= and Windows takes care of authentication.  Note
+that we use 3 slashes and not ldaps because AD takes care of
+protecting the traffic.
+
+GnuPG can be advised to consult the local AD similar to a Web Key
+Directory.  For this put
+
+: auto-key-locate local,ntds,wkd
+
+into =gpg.conf= so that a missing key is first looked up in the AD
+before a WKD query is done.
