@@ -870,6 +870,8 @@ write_signature_packets (ctrl_t ctrl,
           else
             err = 0;
         }
+      else
+        err = 0;  /* Actually never reached.  */
       hash_sigversion_to_magic (md, sig);
       gcry_md_final (md);
 
