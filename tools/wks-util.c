@@ -931,7 +931,7 @@ ensure_policy_file (const char *addrspec)
     log_info ("policy file '%s' created\n", fname);
 
   /* Make sure the policy file world readable.  */
-  if (gnupg_chmod (fname, "-rw-rw-r--"))
+  if (gnupg_chmod (fname, "-rw-r--r--"))
     {
       err = gpg_error_from_syserror ();
       log_error ("can't set permissions of '%s': %s\n",
@@ -1131,7 +1131,7 @@ wks_cmd_install_key (const char *fname, const char *userid)
     }
 
   /* Make sure it is world readable.  */
-  if (gnupg_chmod (huname, "-rwxr--r--"))
+  if (gnupg_chmod (huname, "-rw-r--r--"))
     log_error ("can't set permissions of '%s': %s\n",
                huname, gpg_strerror (gpg_err_code_from_syserror()));
 
