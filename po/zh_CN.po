@@ -97,7 +97,7 @@ msgstr "不匹配——请重试"
 #. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
-msgstr "设置错误 %s（尝试第%d个，共%d个）"
+msgstr "SETERROR %s（尝试第%d个，共%d个）"
 
 msgid "Repeat:"
 msgstr "重复："
@@ -605,7 +605,7 @@ msgstr "否"
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
-msgstr "请确认标识为：%%0A  “%s”的证书的指纹为：%%0A  %s"
+msgstr "请确认标识为：%%0A  “%s”%%0A的证书的指纹为：%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
 #. to be hit if the fingerprint matches the one of the CA.  The
