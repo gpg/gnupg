@@ -5660,7 +5660,7 @@ msgstr "绝对"
 #. essentially a comment and need not be translated.  Either key and
 #. uid are both NULL, or neither are NULL.
 msgid "10 translator see trust.c:uid_trust_string_fixed"
-msgstr "10 translator see trustdb.c:uid_trust_string_fixed"
+msgstr "8 translator see trustdb.c:uid_trust_string_fixed"
 
 msgid "[ revoked]"
 msgstr "[已吊销]"
@@ -6373,7 +6373,7 @@ msgid "Invalid subject name '%s'\n"
 msgstr "无效的主题名称‘%s’\n"
 
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
-msgstr "22 翻译器：请见 certreg-ui.c:gpgsm_gencertreq_tty"
+msgstr "15 翻译者：请见 certreg-ui.c:gpgsm_gencertreq_tty"
 
 msgid "Enter email addresses"
 msgstr "输入电子邮件地址"
