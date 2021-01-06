@@ -1665,6 +1665,22 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   static unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
     { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
       0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
+  static unsigned char sha224_prefix[19] = /* (2.16.840.1.101.3.4.2.4) */
+    { 0x30, 0x2D, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48,
+      0x01, 0x65, 0x03, 0x04, 0x02, 0x04, 0x05, 0x00, 0x04,
+      0x1C  };
+  static unsigned char sha256_prefix[19] = /* (2.16.840.1.101.3.4.2.1) */
+    { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
+      0x00, 0x04, 0x20  };
+  static unsigned char sha384_prefix[19] = /* (2.16.840.1.101.3.4.2.2) */
+    { 0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02, 0x05,
+      0x00, 0x04, 0x30  };
+  static unsigned char sha512_prefix[19] = /* (2.16.840.1.101.3.4.2.3) */
+    { 0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, 0x05,
+      0x00, 0x04, 0x40  };
   gpg_error_t err;
   int idx;
   int pwid;
@@ -1677,8 +1693,20 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
   switch (indatalen)
     {
-    case 16: case 20: case 35: case 47: case 51: case 67: case 83: break;
-    default: return gpg_error (GPG_ERR_INV_VALUE);
+    case 20: // plain SHA-1 or RMD160 digest
+    case 28: // plain SHA-224 digest
+    case 32: // plain SHA-256 digest
+    case 48: // plain SHA-384 digest
+    case 64: // plain SHA-512 digest
+    case 35: // ASN.1 encoded SHA-1 or RMD160 digest
+    case 47: // ASN.1 encoded SHA-224 digest
+    case 51: // ASN.1 encoded SHA-256 digest
+    case 67: // ASN.1 encoded SHA-384 digest
+    case 83: // ASN.1 encoded SHA-512 digest
+        break;
+    default:
+      log_debug ("invalid length of input data: %zu\n", indatalen);
+      return gpg_error (GPG_ERR_INV_VALUE);
     }
 
   err = find_fid_by_keyref (app, keyidstr, &idx, NULL);
@@ -1693,7 +1721,10 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
 
   if (!filelist[idx].issignkey)
-    return gpg_error (GPG_ERR_INV_ID);
+    {
+      log_debug ("key %s is not a signing key\n", keyidstr);
+      return gpg_error (GPG_ERR_INV_ID);
+    }
 
   kid = filelist[idx].kid;
 
@@ -1704,8 +1735,23 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
                               || indatalen == 67
                               || indatalen == 83))
     {
-      /* The caller send data matching the length of the ASN.1 encoded
-         hash for SHA-{1,224,256,384,512}.  Assume that is okay.  */
+      /* Verify that the caller has sent a proper ASN.1 encoded hash
+         for RMD160 or SHA-{1,224,256,384,512}. */
+#define X(algo,prefix,plaindigestlen)                      \
+      if (hashalgo == (algo)                               \
+          && indatalen == sizeof prefix + (plaindigestlen) \
+          && !memcmp (indata, prefix, sizeof prefix))      \
+        ;
+      X(GCRY_MD_RMD160, rmd160_prefix, 20)
+      else X(GCRY_MD_SHA1, sha1_prefix, 20)
+      else X(GCRY_MD_SHA224, sha224_prefix, 28)
+      else X(GCRY_MD_SHA256, sha256_prefix, 32)
+      else X(GCRY_MD_SHA384, sha384_prefix, 48)
+      else X(GCRY_MD_SHA512, sha512_prefix, 64)
+      else
+        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+#undef X
+
       log_assert (indatalen <= sizeof data);
       memcpy (data, indata, indatalen);
       datalen = indatalen;
@@ -1723,20 +1769,24 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       memcpy (data, indata, indatalen);
       datalen = 35;
     }
-  else if (indatalen == 20)
-    {
-      if (hashalgo == GCRY_MD_SHA1)
-        memcpy (data, sha1_prefix, 15);
-      else if (hashalgo == GCRY_MD_RMD160)
-        memcpy (data, rmd160_prefix, 15);
-      else
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data+15, indata, indatalen);
-      datalen = 35;
+  /* Concatenate prefix and digest.  */
+#define X(algo,prefix,plaindigestlen) \
+  if ((hashalgo == (algo)) && (indatalen == (plaindigestlen))) \
+    {                                                          \
+      datalen = sizeof prefix + indatalen;                     \
+      log_assert (datalen <= sizeof data);                     \
+      memcpy (data, prefix, sizeof prefix);                    \
+      memcpy (data + sizeof prefix, indata, indatalen);        \
     }
+  else X(GCRY_MD_RMD160, rmd160_prefix, 20)
+  else X(GCRY_MD_SHA1, sha1_prefix, 20)
+  else X(GCRY_MD_SHA224, sha224_prefix, 28)
+  else X(GCRY_MD_SHA256, sha256_prefix, 32)
+  else X(GCRY_MD_SHA384, sha384_prefix, 48)
+  else X(GCRY_MD_SHA512, sha512_prefix, 64)
   else
     return gpg_error (GPG_ERR_INV_VALUE);
-
+#undef X
 
   /* Send an MSE for PSO:Computer_Signature.  */
   if (app->appversion > 2)
