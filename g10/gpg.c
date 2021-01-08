@@ -2231,63 +2231,6 @@ gpg_deinit_default_ctrl (ctrl_t ctrl)
 }
 
 
-char *
-get_default_configname (void)
-{
-  char *configname = NULL;
-  char *name = xstrdup (GPG_NAME EXTSEP_S "conf-" SAFE_VERSION);
-  char *ver = &name[strlen (GPG_NAME EXTSEP_S "conf-")];
-
-  do
-    {
-      if (configname)
-	{
-	  char *tok;
-
-	  xfree (configname);
-	  configname = NULL;
-
-	  if ((tok = strrchr (ver, SAFE_VERSION_DASH)))
-	    *tok='\0';
-	  else if ((tok = strrchr (ver, SAFE_VERSION_DOT)))
-	    *tok='\0';
-	  else
-	    break;
-	}
-
-      configname = make_filename (gnupg_homedir (), name, NULL);
-    }
-  while (access (configname, R_OK));
-
-  xfree(name);
-
-  if (! configname)
-    configname = make_filename (gnupg_homedir (),
-                                GPG_NAME EXTSEP_S "conf", NULL);
-  if (! access (configname, R_OK))
-    {
-      /* Print a warning when both config files are present.  */
-      char *p = make_filename (gnupg_homedir (), "options", NULL);
-      if (! access (p, R_OK))
-	log_info (_("Note: old default options file '%s' ignored\n"), p);
-      xfree (p);
-    }
-  else
-    {
-      /* Use the old default only if it exists.  */
-      char *p = make_filename (gnupg_homedir (), "options", NULL);
-      if (!access (p, R_OK))
-	{
-	  xfree (configname);
-	  configname = p;
-	}
-      else
-	xfree (p);
-    }
-
-  return configname;
-}
-
 int
 main (int argc, char **argv)
 {
@@ -3643,7 +3586,13 @@ main (int argc, char **argv)
        directly after the option parsing. */
     if (cmd == aGPGConfList)
       {
-        gpgconf_list (last_configname ? last_configname : "UNKNOWN");
+        /* Note: Here in gpg 2.2 we need to provide a proper config
+         * file even if that file does not exist.  This is because
+         * gpgconf checks that an absolute filename is provided.  */
+        if (!last_configname)
+          last_configname= make_filename (gnupg_homedir (),
+                                          GPG_NAME EXTSEP_S "conf", NULL);
+        gpgconf_list (last_configname);
         g10_exit (0);
       }
     xfree (last_configname);
