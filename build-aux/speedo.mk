@@ -610,8 +610,7 @@ speedo_pkg_ntbtls_configure = --disable-shared
 
 ifeq ($(TARGETOS),w32)
 speedo_pkg_gnupg_configure = \
-        --disable-g13 --enable-ntbtls \
-        --enable-build-timestamp
+        --disable-g13 --enable-ntbtls
 else
 speedo_pkg_gnupg_configure = --disable-g13 --enable-wks-tools
 endif
