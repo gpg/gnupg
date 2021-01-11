@@ -8,8 +8,8 @@ Noteworthy changes in version 2.2.27 (2021-01-11)
 
  * gpgconf: Fix description of two new options.  [#5221]
 
- * Build Windows installer without timestamps in the code.  Note that
-   the Authenticode signatures still carry a timestamp.
+ * Build Windows installer without timestamps.  Note that the
+   Authenticode signatures still carry a timestamp.
 
   Release-info: https://dev.gnupg.org/T5234
   See-also: gnupg-announce/2021q1/000452.html
