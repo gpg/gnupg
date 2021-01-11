@@ -2255,10 +2255,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(utilizzare \"help\" per elencare le scelte)\n"
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "Nota: il vecchio file di opzioni predefinito '%s' è stato ignorato\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Nota: %s non è per uso normale!\n"
 
@@ -8920,6 +8916,10 @@ msgid ""
 msgstr ""
 "Sintassi: gpg-check-pattern [opzioni] patternfile\n"
 "Controllare una passphrase data su stdin rispetto al patternfile\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr ""
+#~ "Nota: il vecchio file di opzioni predefinito '%s' è stato ignorato\n"
 
 #~ msgid ""
 #~ "@\n"

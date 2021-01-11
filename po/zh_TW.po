@@ -2275,10 +2275,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "請注意: 已忽略舊有的預設選項檔 '%s'\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "請注意: 一般情況下不採用 %s!\n"
 
@@ -8807,6 +8803,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "請注意: 已忽略舊有的預設選項檔 '%s'\n"
 
 #~ msgid ""
 #~ "@\n"

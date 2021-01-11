@@ -2234,10 +2234,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(,,help'' wyświetli listę wyborów)\n"
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "Uwaga: stary domyślny plik opcji ,,%s'' został zignorowany\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Uwaga: %s nie jest do normalnego użytku!\n"
 
@@ -8909,6 +8905,9 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "Uwaga: stary domyślny plik opcji ,,%s'' został zignorowany\n"
 
 #~ msgid ""
 #~ "@\n"

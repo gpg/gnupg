@@ -2214,10 +2214,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "（使用“help”来列出选择）\n"
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "注意：旧的默认配置文件‘%s’已被忽略\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "注意：%s 不适用于一般使用！\n"
 
@@ -8594,6 +8590,9 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "注意：旧的默认配置文件‘%s’已被忽略\n"
 
 #~ msgid ""
 #~ "@\n"

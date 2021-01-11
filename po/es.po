@@ -2276,10 +2276,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(usa \"ayuda\" para listar las opciones)\n"
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "NOTA: se ignora el antiguo fichero de opciones predefinidas '%s'\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "NOTA: ¡%s no es para uso normal!\n"
 
@@ -8888,6 +8884,9 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "NOTA: se ignora el antiguo fichero de opciones predefinidas '%s'\n"
 
 # Órdenes, please...
 # Sí, este no he podido ser yo :-) Por cierto, ¿por qué la O no se

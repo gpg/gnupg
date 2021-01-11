@@ -2393,11 +2393,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "NOTE: old default options file `%s' ignored\n"
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "POZNÁMKA: starý implicitný súbor s možnosťami `%s ignorovaný'\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
 msgid "Note: %s is not for normal use!\n"
 msgstr "POZNÁMKA: %s nie je pre normálne použitie!\n"
@@ -9166,6 +9161,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "NOTE: old default options file `%s' ignored\n"
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "POZNÁMKA: starý implicitný súbor s možnosťami `%s ignorovaný'\n"
 
 #, fuzzy
 #~ msgid ""

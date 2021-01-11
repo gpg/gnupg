@@ -2245,10 +2245,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(bruk «help» for å vise valg)\n"
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "Merk: gammel standardvalgfil «%s» ble ignorert\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Merk: %s er ikke ment for vanlig bruk.\n"
 
@@ -8793,6 +8789,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "Merk: gammel standardvalgfil «%s» ble ignorert\n"
 
 #~ msgid ""
 #~ "@\n"

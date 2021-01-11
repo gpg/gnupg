@@ -2378,10 +2378,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "Remarque : l'ancien fichier d'options par défaut « %s » a été ignoré\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Remarque : %s n'est pas pour une utilisation normale.\n"
 
@@ -9265,6 +9261,10 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr ""
+#~ "Remarque : l'ancien fichier d'options par défaut « %s » a été ignoré\n"
 
 #~ msgid ""
 #~ "@\n"

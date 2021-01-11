@@ -2275,10 +2275,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(команда «help» виводить список можливих варіантів)\n"
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "ЗАУВАЖЕННЯ: застарілий файл типових параметрів «%s» проігноровано\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайного використання!\n"
 
@@ -8992,6 +8988,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "ЗАУВАЖЕННЯ: застарілий файл типових параметрів «%s» проігноровано\n"
 
 #~ msgid ""
 #~ "@\n"

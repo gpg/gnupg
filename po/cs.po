@@ -2271,10 +2271,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(možnosti lze vypsat příkazem „help“)\n"
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "Poznámka: starý implicitní soubor s možnostmi „%s“ ignorován\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Poznámka: %s není pro normální použití!\n"
 
@@ -8874,6 +8870,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "Poznámka: starý implicitní soubor s možnostmi „%s“ ignorován\n"
 
 #~ msgid ""
 #~ "@\n"

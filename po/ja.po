@@ -2208,10 +2208,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(選択肢の一覧には\"help\"を使ってください)\n"
 
 #, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "注意: 以前デフォルトだったオプション・ファイル'%s'は、無視されます\n"
-
-#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "注意: 普通%sは使いません!\n"
 
@@ -8625,6 +8621,10 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr ""
+#~ "注意: 以前デフォルトだったオプション・ファイル'%s'は、無視されます\n"
 
 #~ msgid ""
 #~ "@\n"

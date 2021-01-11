@@ -2368,10 +2368,6 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "NOTO: mankas implicita opcio-dosiero '%s'\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
 msgid "Note: %s is not for normal use!\n"
 msgstr "NOTO: %s ne estas por normala uzado!\n"
@@ -9108,6 +9104,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "NOTO: mankas implicita opcio-dosiero '%s'\n"
 
 #, fuzzy
 #~ msgid ""
