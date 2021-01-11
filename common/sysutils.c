@@ -212,6 +212,132 @@ any8bitchar (const char *string)
 #endif /*HAVE_W32_SYSTEM*/
 
 
+/* Helper for gnupg_w32_set_errno.  */
+#ifdef HAVE_W32_SYSTEM
+static int
+map_w32_to_errno (DWORD w32_err)
+{
+  switch (w32_err)
+    {
+    case 0:
+      return 0;
+
+    case ERROR_FILE_NOT_FOUND:
+      return ENOENT;
+
+    case ERROR_PATH_NOT_FOUND:
+      return ENOENT;
+
+    case ERROR_ACCESS_DENIED:
+      return EPERM;  /* ReactOS uses EACCES ("Permission denied") and
+                      * is likely right because they used an
+                      * undocumented function to associate the error
+                      * codes.  However we have always used EPERM
+                      * ("Operation not permitted", e.g. function is
+                      * required to be called by root) and we better
+                      * stick to that to avoid surprising bugs. */
+
+    case ERROR_INVALID_HANDLE:
+      return EBADF;
+
+    case ERROR_INVALID_BLOCK:
+      return ENOMEM;
+
+    case ERROR_NOT_ENOUGH_MEMORY:
+      return ENOMEM;
+
+    case ERROR_NO_DATA:
+      return EPIPE;
+
+    case ERROR_ALREADY_EXISTS:
+      return EEXIST;
+
+      /* This mapping has been taken from reactOS.  */
+    case ERROR_TOO_MANY_OPEN_FILES: return EMFILE;
+    case ERROR_ARENA_TRASHED: return ENOMEM;
+    case ERROR_BAD_ENVIRONMENT: return E2BIG;
+    case ERROR_BAD_FORMAT: return ENOEXEC;
+    case ERROR_INVALID_DRIVE: return ENOENT;
+    case ERROR_CURRENT_DIRECTORY: return EACCES;
+    case ERROR_NOT_SAME_DEVICE: return EXDEV;
+    case ERROR_NO_MORE_FILES: return ENOENT;
+    case ERROR_WRITE_PROTECT: return EACCES;
+    case ERROR_BAD_UNIT: return EACCES;
+    case ERROR_NOT_READY: return EACCES;
+    case ERROR_BAD_COMMAND: return EACCES;
+    case ERROR_CRC: return EACCES;
+    case ERROR_BAD_LENGTH: return EACCES;
+    case ERROR_SEEK: return EACCES;
+    case ERROR_NOT_DOS_DISK: return EACCES;
+    case ERROR_SECTOR_NOT_FOUND: return EACCES;
+    case ERROR_OUT_OF_PAPER: return EACCES;
+    case ERROR_WRITE_FAULT: return EACCES;
+    case ERROR_READ_FAULT: return EACCES;
+    case ERROR_GEN_FAILURE: return EACCES;
+    case ERROR_SHARING_VIOLATION: return EACCES;
+    case ERROR_LOCK_VIOLATION: return EACCES;
+    case ERROR_WRONG_DISK: return EACCES;
+    case ERROR_SHARING_BUFFER_EXCEEDED: return EACCES;
+    case ERROR_BAD_NETPATH: return ENOENT;
+    case ERROR_NETWORK_ACCESS_DENIED: return EACCES;
+    case ERROR_BAD_NET_NAME: return ENOENT;
+    case ERROR_FILE_EXISTS: return EEXIST;
+    case ERROR_CANNOT_MAKE: return EACCES;
+    case ERROR_FAIL_I24: return EACCES;
+    case ERROR_NO_PROC_SLOTS: return EAGAIN;
+    case ERROR_DRIVE_LOCKED: return EACCES;
+    case ERROR_BROKEN_PIPE: return EPIPE;
+    case ERROR_DISK_FULL: return ENOSPC;
+    case ERROR_INVALID_TARGET_HANDLE: return EBADF;
+    case ERROR_WAIT_NO_CHILDREN: return ECHILD;
+    case ERROR_CHILD_NOT_COMPLETE: return ECHILD;
+    case ERROR_DIRECT_ACCESS_HANDLE: return EBADF;
+    case ERROR_SEEK_ON_DEVICE: return EACCES;
+    case ERROR_DIR_NOT_EMPTY: return ENOTEMPTY;
+    case ERROR_NOT_LOCKED: return EACCES;
+    case ERROR_BAD_PATHNAME: return ENOENT;
+    case ERROR_MAX_THRDS_REACHED: return EAGAIN;
+    case ERROR_LOCK_FAILED: return EACCES;
+    case ERROR_INVALID_STARTING_CODESEG: return ENOEXEC;
+    case ERROR_INVALID_STACKSEG: return ENOEXEC;
+    case ERROR_INVALID_MODULETYPE: return ENOEXEC;
+    case ERROR_INVALID_EXE_SIGNATURE: return ENOEXEC;
+    case ERROR_EXE_MARKED_INVALID: return ENOEXEC;
+    case ERROR_BAD_EXE_FORMAT: return ENOEXEC;
+    case ERROR_ITERATED_DATA_EXCEEDS_64k: return ENOEXEC;
+    case ERROR_INVALID_MINALLOCSIZE: return ENOEXEC;
+    case ERROR_DYNLINK_FROM_INVALID_RING: return ENOEXEC;
+    case ERROR_IOPL_NOT_ENABLED: return ENOEXEC;
+    case ERROR_INVALID_SEGDPL: return ENOEXEC;
+    case ERROR_AUTODATASEG_EXCEEDS_64k: return ENOEXEC;
+    case ERROR_RING2SEG_MUST_BE_MOVABLE: return ENOEXEC;
+    case ERROR_RELOC_CHAIN_XEEDS_SEGLIM: return ENOEXEC;
+    case ERROR_INFLOOP_IN_RELOC_CHAIN: return ENOEXEC;
+    case ERROR_FILENAME_EXCED_RANGE: return ENOENT;
+    case ERROR_NESTING_NOT_ALLOWED: return EAGAIN;
+    case ERROR_NOT_ENOUGH_QUOTA: return ENOMEM;
+
+    default:
+      return EIO;
+    }
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* Set ERRNO from the Windows error.  EC may be -1 to use the last error.  */
+#ifdef HAVE_W32_SYSTEM
+void
+gnupg_w32_set_errno (int ec)
+{
+  /* FIXME: Replace by gpgrt_w32_set_errno.  */
+  if (ec == -1)
+    ec = GetLastError ();
+  _set_errno (map_w32_to_errno (ec));
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+
 /* Allow the use of special "-&nnn" style file names.  */
 void
 enable_special_filenames (void)
@@ -695,10 +821,12 @@ gnupg_remove (const char *fname)
   else
     {
       rc = DeleteFileW (wfname);
+      if (!rc)
+        gnupg_w32_set_errno (-1);
       xfree (wfname);
     }
   if (!rc)
-    return -1; /* ERRNO is automagically provided by gpg-error.h.  */
+    return -1;
   return 0;
 #else
   return remove (fname);

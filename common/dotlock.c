@@ -437,6 +437,8 @@ static int never_lock;
 
 
 #ifdef HAVE_DOSISH_SYSTEM
+/* FIXME: For use in GnuPG this can be replaced by
+ *        gnupg_w32_set_errno.  */
 static int
 map_w32_to_errno (DWORD w32_err)
 {
