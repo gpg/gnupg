@@ -1,5 +1,18 @@
-Noteworthy changes in version 2.2.27 (unreleased)
+Noteworthy changes in version 2.2.27 (2021-01-11)
 -------------------------------------------------
+
+ * gpg: Fix regression in 2.2.24 for gnupg_remove function under
+   Windows.  [#5230]
+
+ * gpgconf: Fix case with neither local nor global gpg.conf.  [9f37d3e6f3]
+
+ * gpgconf: Fix description of two new options.  [#5221]
+
+ * Build Windows installer without timestamps in the code.  Note that
+   the Authenticode signatures still carry a timestamp.
+
+  Release-info: https://dev.gnupg.org/T5234
+  See-also: gnupg-announce/2021q1/000452.html
 
 
 Noteworthy changes in version 2.2.26 (2020-12-21)
