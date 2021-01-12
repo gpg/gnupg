@@ -143,8 +143,29 @@ static void
 print_fd_and_time (int fd)
 {
   struct tm *tp;
-  time_t atime = time (NULL);
+  time_t atime;
 
+#ifdef ENABLE_LOG_CLOCK
+  if (time_only == 2)
+    {
+      struct timespec tv;
+      unsigned long long now;
+
+      if (clock_gettime (CLOCK_REALTIME, &tv))
+        now = 0;  /* Error getting clock.  */
+      else
+        {
+          now = tv.tv_sec * 1000000000ull;
+          now += tv.tv_nsec;
+          now /= 1000000;
+        }
+
+      printf ("%3d - %6llu ", fd, now);
+      return;
+    }
+#endif /* ENABLE_LOG_CLOCK */
+
+  atime = time (NULL);
   tp = localtime (&atime);
   if (time_only)
     printf ("%3d - %02d:%02d:%02d ",
@@ -359,6 +380,7 @@ print_version (int with_help)
        "  --force       delete an already existing socket file\n"
        "  --verbose     enable extra informational output\n"
        "  --time-only   print only the time; not a full timestamp\n"
+       "  --clock       print only a millisecond timestamp\n"
        "  --homedir DIR use DIR for gpgconf's --homedir option\n"
        "  --version     print version of the program and exit\n"
        "  --help        display this help and exit\n"
@@ -409,6 +431,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--time-only"))
         {
           time_only = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--clock"))
+        {
+          time_only = 2;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--force"))
