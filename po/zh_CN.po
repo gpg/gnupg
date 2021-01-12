@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-12-31 00:52+0800\n"
+"PO-Revision-Date: 2021-01-06 15:52+0800\n"
 "Last-Translator: bobwxc <bobwxc@yeah.net>\n"
 "Language-Team: None\n"
 "Language: zh_CN\n"
@@ -311,7 +311,7 @@ msgid "|FILE|read options from FILE"
 msgstr "|FILE|从 FILE 中读取选项"
 
 msgid "do not detach from the console"
-msgstr "请勿离开控制台"
+msgstr "不与控制台分离"
 
 msgid "use a log file for the server"
 msgstr "在服务器上使用日志文件"
@@ -1130,7 +1130,7 @@ msgstr "无效的封装：一行超过 %d 个字符\n"
 
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
-msgstr "封装里出现括上的可打印字符――可能是有缺陷的邮件传输程序（MTA）造成的\n"
+msgstr "封装里出现括上的可打印字符――可能由于邮件传输程序（MTA）有缺陷\n"
 
 #, c-format
 msgid "[ not human readable (%zu bytes: %s%s) ]"
@@ -1926,7 +1926,7 @@ msgstr ""
 "\n"
 " -se -r 某人 [文件名]         为某人签名及加密\n"
 " --clear-sign [文件名]        作明文签名\n"
-" --detach-sign [文件名]       作独立式签名\n"
+" --detach-sign [文件名]       作分离式签名\n"
 " --list-keys [某人]           显示密钥\n"
 " --fingerprint [某人]         显示指纹\n"
 
@@ -1998,29 +1998,29 @@ msgstr "警告：扩展模块‘%s’权限不安全\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
-msgstr "警告：用户目录‘%s’的包围目录所有权不安全\n"
+msgstr "警告：用户目录‘%s’的封闭目录所有权不安全\n"
 
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
-msgstr "警告：配置文件‘%s’的包围目录所有权不安全\n"
+msgstr "警告：配置文件‘%s’的封闭目录所有权不安全\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
-msgstr "警告：扩展模块‘%s’的包围目录所有权不安全\n"
+msgstr "警告：扩展模块‘%s’的封闭目录所有权不安全\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
-msgstr "警告：用户目录‘%s’的包围目录权限不安全\n"
+msgstr "警告：用户目录‘%s’的封闭目录权限不安全\n"
 
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
-msgstr "警告：配置文件‘%s’的包围目录权限不安全\n"
+msgstr "警告：配置文件‘%s’的封闭目录权限不安全\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
-msgstr "警告：扩展模块‘%s’的包围目录权限不安全\n"
+msgstr "警告：扩展模块‘%s’的封闭目录权限不安全\n"
 
 #, c-format
 msgid "unknown configuration item '%s'\n"
@@ -2522,14 +2522,14 @@ msgstr "密钥 %s：PKS 子钥破损已修复\n"
 
 #, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
-msgstr "密钥 %s：已接受不含自身签名的用户标识“%s”\n"
+msgstr "密钥 %s：已接受不含自签名的用户标识“%s”\n"
 
 #, c-format
 msgid "key %s: no valid user IDs\n"
 msgstr "密钥 %s：没有有效的用户标识\n"
 
 msgid "this may be caused by a missing self-signature\n"
-msgstr "这可能由于遗失自身签名所致\n"
+msgstr "这可能由于遗失自签名所致\n"
 
 #, c-format
 msgid "key %s: public key not found: %s\n"
@@ -2666,7 +2666,7 @@ msgstr "密钥 %s：用户标识“%s”使用了不支持的公钥算法\n"
 
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
-msgstr "密钥 %s：用户标识“%s”自身签名无效\n"
+msgstr "密钥 %s：用户标识“%s”自签名无效\n"
 
 #, c-format
 msgid "key %s: unsupported public key algorithm\n"
@@ -2781,10 +2781,10 @@ msgid "failed to rebuild keyring cache: %s\n"
 msgstr "重新建立钥匙环缓存失败： %s\n"
 
 msgid "[revocation]"
-msgstr "[吊销]"
+msgstr "[ 吊销 ]"
 
 msgid "[self-signature]"
-msgstr "[自身签名]"
+msgstr "[自签名]"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -2792,9 +2792,8 @@ msgid ""
 "(by looking at passports, checking fingerprints from different sources, "
 "etc.)\n"
 msgstr ""
-"您是否相信这位用户有能力验证其他用户密钥的有效性(查对身份证、通过不同的渠道检"
-"查\n"
-"指纹等)？\n"
+"您是否相信这位用户有能力验证其他用户密钥的有效性？（查对身份证、通过不同的渠"
+"道检查密钥指纹等)\n"
 
 #, c-format
 msgid "  %d = I trust marginally\n"
@@ -2835,7 +2834,7 @@ msgstr "用户标识“%s”已过期。"
 
 #, c-format
 msgid "User ID \"%s\" is not self-signed."
-msgstr "警告：用户标识“%s”非自身签名。"
+msgstr "用户标识“%s”未自签名。"
 
 #, c-format
 msgid "User ID \"%s\" is signable.  "
@@ -2849,11 +2848,11 @@ msgid ""
 "The self-signature on \"%s\"\n"
 "is a PGP 2.x-style signature.\n"
 msgstr ""
-"“%s”的自身签名是 PGP 2.x 样\n"
+"“%s”的自签名是 PGP 2.x 样\n"
 "式的签名。\n"
 
 msgid "Do you want to promote it to an OpenPGP self-signature? (y/N) "
-msgstr "您是否想要将它升级成 OpenPGP 的自身签名？(y/N) "
+msgstr "您是否想要将它升级成 OpenPGP 的自签名？(y/N) "
 
 #, c-format
 msgid ""
@@ -2934,7 +2933,7 @@ msgstr ""
 "“%s”(%s)\n"
 
 msgid "This will be a self-signature.\n"
-msgstr "这将是一个自身签名。\n"
+msgstr "这将是一个自签名。\n"
 
 msgid "WARNING: the signature will not be marked as non-exportable.\n"
 msgstr "警告：这份签名不会被标记为不可导出。\n"
@@ -3363,7 +3362,7 @@ msgid "Delete this unknown signature? (y/N/q)"
 msgstr "删除这个未知的签名吗？(y/N/q)"
 
 msgid "Really delete this self-signature? (y/N)"
-msgstr "真的要删除这个自身签名吗？(y/N)"
+msgstr "真的要删除这个自签名吗？(y/N)"
 
 #, c-format
 msgid "Deleted %d signature.\n"
@@ -3462,7 +3461,7 @@ msgstr "请精确地选择一个用户标识。\n"
 
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
-msgstr "跳过用户标识“%s”的 v3 自身签名\n"
+msgstr "跳过用户标识“%s”的 v3 自签名\n"
 
 msgid "Enter your preferred keyserver URL: "
 msgstr "输入您首选的公钥服务器的 URL："
@@ -3591,7 +3590,7 @@ msgid "writing direct signature\n"
 msgstr "正在写入直接签名\n"
 
 msgid "writing self signature\n"
-msgstr "正在写入自身签名\n"
+msgstr "正在写入自签名\n"
 
 msgid "writing key binding signature\n"
 msgstr "正在写入密钥绑定签名\n"
@@ -3822,8 +3821,8 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"您需要一个用户标识来辨识您的密钥；本软件会用真实姓名、注释和电子邮件地址组"
-"合成用户标识，如下所示：\n"
+"您需要一个用户标识来辨识您的密钥；本软件会用真实姓名、注释和电子邮件地址组合"
+"成用户标识，如下所示：\n"
 "    “Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>”\n"
 "\n"
 
@@ -4037,7 +4036,7 @@ msgstr[0] "有 %d 份签名由于错误而未被检查\n"
 #, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
 msgid_plural "Warning: %lu keys skipped due to their large sizes\n"
-msgstr[0] "警告：%lu 密钥由于长度过大而被跳过\n"
+msgstr[0] "警告：%lu 把密钥由于长度过大而被跳过\n"
 
 msgid "Keyring"
 msgstr "钥匙环"
@@ -4080,7 +4079,7 @@ msgstr[0] "%lu 密钥已缓存"
 #, c-format
 msgid " (%lu signature)\n"
 msgid_plural " (%lu signatures)\n"
-msgstr[0] "（%lu 签名）\n"
+msgstr[0] "（%lu 份签名）\n"
 
 #, c-format
 msgid "%s: keyring created\n"
@@ -4322,7 +4321,7 @@ msgstr "，密钥算法 "
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr "警告：非独立式签名；未验证文件‘%s’的内容！\n"
+msgstr "警告：非分离式签名；未验证文件‘%s’的内容！\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4657,9 +4656,8 @@ msgid ""
 "question with yes.\n"
 msgstr ""
 "此密钥有问题！它已经被标记为不受信任！\n"
-"只有你【真的】清楚\\你在做什么，\n"
-"才可\n"
-"以在下个问题回答 yes。\n"
+"只有你【真的】清楚你在做什么，\n"
+"才可以在下个问题回答 yes。\n"
 
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
@@ -5207,7 +5205,7 @@ msgstr "信任度数据库：lseek 失败：%s\n"
 
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
-msgstr "信任度数据库：读取失败(n=%d)：%s\n"
+msgstr "信任度数据库：读取失败 (n=%d)：%s\n"
 
 #, c-format
 msgid "%s: not a trustdb file\n"
@@ -5215,7 +5213,7 @@ msgstr "%s：不是一个信任度数据库文件\n"
 
 #, c-format
 msgid "%s: version record with recnum %lu\n"
-msgstr "%s：记录编号为%lu的版本记录\n"
+msgstr "%s：记录编号为 %lu 的版本记录\n"
 
 #, c-format
 msgid "%s: invalid file version %d\n"
@@ -5967,13 +5965,13 @@ msgid "|NAME|use NAME as PC/SC driver"
 msgstr "|NAME|使用 NAME 作为 PC/SC 驱动程序"
 
 msgid "do not use the internal CCID driver"
-msgstr "请勿使用内部 CCID 驱动程序"
+msgstr "不使用内部 CCID 驱动程序"
 
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|N 秒不活动后断开与卡的连接"
 
 msgid "do not use a reader's pinpad"
-msgstr "请勿使用读卡器 pinpad密码板"
+msgstr "不使用读卡器 pinpad密码板"
 
 msgid "deny the use of admin card commands"
 msgstr "拒绝使用管理员卡命令"
@@ -6373,7 +6371,7 @@ msgid "Invalid subject name '%s'\n"
 msgstr "无效的主题名称‘%s’\n"
 
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
-msgstr "15 翻译者：请见 certreg-ui.c:gpgsm_gencertreq_tty"
+msgstr "15 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
 
 msgid "Enter email addresses"
 msgstr "输入电子邮件地址"
@@ -6489,7 +6487,7 @@ msgid "|FILE|take policy information from FILE"
 msgstr "|FILE|从 FILE 中加载策略信息"
 
 msgid "do not check certificate policies"
-msgstr "为检查证书策略"
+msgstr "不检查证书策略"
 
 msgid "fetch missing issuer certificates"
 msgstr "获取丢失的发布者证书"
@@ -6678,7 +6676,7 @@ msgid "Signature made "
 msgstr "签名完成 "
 
 msgid "[date not given]"
-msgstr "[未给出日期]"
+msgstr "[未给定日期]"
 
 #, c-format
 msgid " using certificate ID 0x%08lX\n"
@@ -7336,7 +7334,7 @@ msgid "|HOST|use HOST for LDAP queries"
 msgstr "|HOST|使用 HOST 进行 LDAP 查询"
 
 msgid "do not use fallback hosts with --ldap-proxy"
-msgstr "--ldap proxy 不可与 fallback hosts 回退主机一起使用"
+msgstr "不可将 --ldap proxy 与 fallback hosts回退主机 一起使用"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FILE|从 FILE 中加载 LDAP 服务器列表"
@@ -7869,7 +7867,7 @@ msgid "run the Assuan server given on the command line"
 msgstr "运行命令行给出的 Assuan 服务器"
 
 msgid "do not use extended connect mode"
-msgstr "不要使用扩展连接模式"
+msgstr "不使用扩展连接模式"
 
 msgid "|FILE|run commands from FILE on startup"
 msgstr "|FILE|启动时运行 FILE 中的命令"
@@ -7990,7 +7988,7 @@ msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr "|NAME|对 PKCS#12 密码使用 NAME 编码"
 
 msgid "do not check CRLs for root certificates"
-msgstr "未检查根证书的 CRL"
+msgstr "不检查根证书的 CRL"
 
 msgid "Options controlling the format of the output"
 msgstr "选项控制输出格式"
@@ -8209,7 +8207,7 @@ msgstr "无法建立 pty：%s\n"
 
 #, c-format
 msgid "could not fork: %s\n"
-msgstr "不能分支 fork ：%s\n"
+msgstr "不能 fork分支进程：%s\n"
 
 #, c-format
 msgid "execv failed: %s\n"
@@ -8318,7 +8316,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-#~ msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
+#~ msgstr "||请输入 PIN%%0A[剩余尝试次数：%d]"
 
 #~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
 #~ msgstr "DSA 要求使用 160 位的散列算法\n"
@@ -8435,7 +8433,7 @@ msgstr ""
 #~ msgstr "有 %d 份签名因为某些错误而未被检查\n"
 
 #~ msgid "1 user ID without valid self-signature detected\n"
-#~ msgstr "检测到 1 个没有有效自身签名的用户标识\n"
+#~ msgstr "检测到 1 个没有有效自签名的用户标识\n"
 
 #, fuzzy
 #~ msgid "User ID \"%s\": %d signatures removed\n"
@@ -9016,7 +9014,7 @@ msgstr ""
 #~ "      了密钥上的电子邮件地址确实属于密钥持有人。\n"
 #~ "\n"
 #~ "请注意上述关于验证级别 2 和 3 的说明仅是例子而已。最终还是由您自己决定\n"
-#~ "当您为其他密钥签名时，什么是“随意”，而什么是“大量而详尽”。\n"
+#~ "当您为其他密钥签名时，什么是“随意”，什么是“大量而详尽”。\n"
 #~ "\n"
 #~ "如果您不知道应该选什么答案的话，就选“0”。"
 
@@ -9066,7 +9064,7 @@ msgstr ""
 #~ msgstr ""
 #~ "这是一份将密钥与用户标识相联系的签名。通常不应删除这样的签名。\n"
 #~ "事实上，一旦删除，GnuPG可能从此就不能再使用这把密钥了。因此，\n"
-#~ "只有在这把密钥的第一个自身签名因某些原因失效，而有第二个自身签\n"
+#~ "只有在这把密钥的第一个自签名因某些原因失效，而有第二个自签\n"
 #~ "字可用的情况下才这么做。"
 
 #~ msgid ""
@@ -9074,7 +9072,7 @@ msgstr ""
 #~ "to the current list of preferences.  The timestamp of all affected\n"
 #~ "self-signatures will be advanced by one second.\n"
 #~ msgstr ""
-#~ "用现有的首选项更新所有(或选定的)用户标识的首选项。所有受影响的自身签\n"
+#~ "用现有的首选项更新所有(或选定的)用户标识的首选项。所有受影响的自签\n"
 #~ "字的时间戳都会增加一秒钟。\n"
 
 #~ msgid "Please enter the passphrase; this is a secret sentence \n"
