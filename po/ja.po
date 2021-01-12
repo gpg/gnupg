@@ -4,13 +4,14 @@
 # IIDA Yosiaki <iida@gnu.org>, 1999, 2000, 2002, 2003, 2004.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
-# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020.
+# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+# 2020, 2021.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.23\n"
+"Project-Id-Version: gnupg 2.2.27\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-11-12 12:59+0900\n"
+"PO-Revision-Date: 2021-01-12 13:50+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1008,25 +1009,19 @@ msgid "invalid alias definition"
 msgstr "無効なエイリアス定義です"
 
 msgid "permission error"
-msgstr ""
+msgstr "許可のエラー"
 
 msgid "out of core"
 msgstr "メモリがありません"
 
-#, fuzzy
-#| msgid "invalid command"
 msgid "invalid meta command"
-msgstr "無効なコマンド"
+msgstr "無効なメタコマンド"
 
-#, fuzzy
-#| msgid "unknown command '%s'\n"
 msgid "unknown meta command"
-msgstr "不明のコマンド'%s'\n"
+msgstr "不明のメタコマンド"
 
-#, fuzzy
-#| msgid "unexpected armor: "
 msgid "unexpected meta command"
-msgstr "予期せぬ外装: "
+msgstr "予期せぬメタコマンド"
 
 msgid "invalid option"
 msgstr "無効なオプション"
@@ -1069,7 +1064,7 @@ msgstr "オプション・ファイル '%s': %s\n"
 
 #, c-format
 msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
+msgstr "注意: オプション \"--%s\" をグローバルコンフィグのために無視してます\n"
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
