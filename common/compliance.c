@@ -499,7 +499,6 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
       /* In DE_VS mode under Windows we require that the JENT RNG
        * is active.  */
 #ifdef HAVE_W32_SYSTEM
-# if GCRYPT_VERSION_NUMBER >= 0x010800
       char *buf;
       const char *fields[5];
 
@@ -511,9 +510,6 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
       else
         result = 0;
       gcry_free (buf);
-# else
-      result = 0;  /* No JENT - can't be compliant.  */
-# endif
 #else /*!HAVE_W32_SYSTEM*/
       result = 1;  /* Not Windows - RNG is good.  */
 #endif /*!HAVE_W32_SYSTEM*/

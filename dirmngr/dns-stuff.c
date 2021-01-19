@@ -2461,15 +2461,27 @@ check_inet_support (int *r_v4, int *r_v6)
                   log_debug ("%s:     addr: %s\n", __func__, buffer);
               }
           }
+      }
+
+    for (ai = aibuf; ai; ai = ai->ai_next)
+      {
+        if (ai->ai_family == AF_INET)
+          *r_v4 = 1;
+      }
+    for (ai = aibuf; ai; ai = ai->ai_next)
+      {
         if (ai->ai_family == AF_INET6)
           {
             struct sockaddr_in6 *v6addr = (struct sockaddr_in6 *)ai->ai_addr;
-            if (!IN6_IS_ADDR_LINKLOCAL (&v6addr->sin6_addr))
-              *r_v6 = 1;
-          }
-        else if (ai->ai_family == AF_INET)
-          {
-            *r_v4 = 1;
+            if (!IN6_IS_ADDR_LINKLOCAL (&v6addr->sin6_addr)
+                && (!*r_v4 || !IN6_IS_ADDR_LOOPBACK (&v6addr->sin6_addr)))
+              {
+                /* We only assume v6 if we do not have a v4 address or
+                 * if the address is not ::1.  Linklocal never
+                 * indicates v6 support.  */
+                *r_v6 = 1;
+                break;
+              }
           }
       }
 

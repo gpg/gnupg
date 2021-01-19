@@ -871,9 +871,7 @@ hash_algo_to_string (int algo)
        { "md4",       GCRY_MD_MD4 },
        { "tiger",     GCRY_MD_TIGER },
        { "haval",     GCRY_MD_HAVAL },
-#if GCRYPT_VERSION_NUMBER >= 0x010900
        { "sm3",       GCRY_MD_SM3 },
-#endif
        { "md5",       GCRY_MD_MD5 }
       };
   int i;

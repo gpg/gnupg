@@ -103,11 +103,7 @@ gpgsm_print_serial_decimal (estream_t fp, ksba_const_sexp_t sn)
   unsigned long n, i;
   char *endp;
   gcry_mpi_t a, r, ten;
-#if GCRYPT_VERSION_NUMBER >= 0x010900 /* >= 1.9.0 */
   unsigned int dd;
-#else
-  unsigned char numbuf[10];
-#endif
 
   if (!p)
     es_fputs (_("none"), fp);
@@ -134,15 +130,8 @@ gpgsm_print_serial_decimal (estream_t fp, ksba_const_sexp_t sn)
           do
             {
               gcry_mpi_div (a, r, a, ten, 0);
-#if GCRYPT_VERSION_NUMBER >= 0x010900 /* >= 1.9.0 */
               gcry_mpi_get_ui (&dd, r);
               put_membuf_printf (&mb, "%u", dd);
-#else
-              *numbuf = 0;  /* Need to clear because USB format prints
-                             * an empty string for a value of 0.  */
-              gcry_mpi_print (GCRYMPI_FMT_USG, numbuf, 10, NULL, r);
-              put_membuf_printf (&mb, "%u", (unsigned int)*numbuf);
-#endif
             }
           while (gcry_mpi_cmp_ui (a, 0));
 

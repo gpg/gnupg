@@ -232,6 +232,9 @@ select_random_host (hostinfo_t hi)
   size_t tblsize;
   int pidx, idx;
 
+  /* CHECKTHIS();  See */
+  /*                 https://sources.debian.org/patches/gnupg2/2.2.20-1/dirmngr-idling/dirmngr-hkp-Avoid-potential-race-condition-when-some.patch/ */
+
   /* We create a new table so that we randomly select only from
      currently alive hosts.  */
   for (idx = 0, tblsize = 0;

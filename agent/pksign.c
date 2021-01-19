@@ -513,12 +513,6 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       if (err)
         goto leave;
 
-      if (algo == GCRY_PK_RSA && GCRYPT_VERSION_NUMBER < 0x010700)
-        {
-          /* It's RSA and Libgcrypt < 1.7 */
-          check_signature = 1;
-        }
-
       if (DBG_CRYPTO)
         {
           gcry_log_debugsxp ("skey", s_skey);
