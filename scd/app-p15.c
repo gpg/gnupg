@@ -2553,6 +2553,18 @@ read_ef_tokeninfo (app_t app)
 
   if (opt.verbose)
     {
+      unsigned char *atr;
+      size_t atrlen;
+
+      log_info ("p15:  atr ..........: ");
+      atr = apdu_get_atr (app_get_slot (app), &atrlen);
+      if (!atr)
+        log_printf ("[error]\n");
+      else
+        {
+          log_printhex (atr, atrlen, "");
+          xfree (atr);
+        }
       log_info ("p15:  cardtype .....: %d.%d\n",
                 app->app_local->card_type,
                 app->app_local->card_product);
