@@ -1439,6 +1439,20 @@ if test "$GCC" = yes; then
     if test x"$_gcc_psign" = xyes ; then
        CFLAGS="$CFLAGS -Wno-pointer-sign"
     fi
+
+    AC_MSG_CHECKING([if gcc supports -fcommon])
+
+    _gcc_cflags_save=$CFLAGS
+    CFLAGS="-fcommon"
+
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],_gcc_fcommon=yes,_gcc_fcommon=no)
+    AC_MSG_RESULT($_gcc_fcommon)
+
+    CFLAGS=$_gcc_cflags_save;
+
+    if test x"$_gcc_fcommon" = xyes ; then
+       CFLAGS="$CFLAGS -fcommon"
+    fi
 fi
 
 CL_AS_NOEXECSTACK
