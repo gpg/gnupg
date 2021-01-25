@@ -1,17 +1,19 @@
 # Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright (C) 2006 Maxim Britov
+# Copyright (C) 2014-2021 Ineiev
 # This file is distributed under the same license as the GnuPG package.
 # Maxim Britov <maxim.britov@gmail.com>, 2006.
 #              !-- no such user (2011-01-11)
 # Thanks Pawel I. Shajdo <pshajdo@gmail.com>.
 # Thanks Cmecb for the inspiration.
-# Ineiev <ineiev@gnu.org>, 2014, 2015, 2016, 2017, 2018, 2019, 2020
+# Ineiev <ineiev@gnu.org>, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
 #
 # Designated-Translator: none
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-07-20 17:41+0100\n"
+"PO-Revision-Date: 2021-01-25 17:41+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -1016,25 +1018,19 @@ msgid "invalid alias definition"
 msgstr "недопустимое определение синонима"
 
 msgid "permission error"
-msgstr ""
+msgstr "ошибка прав доступа"
 
 msgid "out of core"
 msgstr "нехватка выделенной памяти"
 
-#, fuzzy
-#| msgid "invalid command"
 msgid "invalid meta command"
-msgstr "недопустимая команда"
+msgstr "недопустимая метакоманда"
 
-#, fuzzy
-#| msgid "unknown command '%s'\n"
 msgid "unknown meta command"
-msgstr "неизвестная команда '%s'\n"
+msgstr "неизвестная метакоманда"
 
-#, fuzzy
-#| msgid "unexpected armor: "
 msgid "unexpected meta command"
-msgstr "неожиданный текстовый формат: "
+msgstr "неожиданная метакоманда"
 
 msgid "invalid option"
 msgstr "недопустимый параметр"
@@ -1078,6 +1074,7 @@ msgstr "файл параметров '%s': %s\n"
 #, c-format
 msgid "Note: ignoring option \"--%s\" due to global config\n"
 msgstr ""
+"Замечание: параметр \"--%s\" игнорируется согласно глобальным настройкам\n"
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1977,10 +1974,8 @@ msgstr "быстро подписать ключ"
 msgid "quickly sign a key locally"
 msgstr "быстро подписать ключ локально"
 
-#, fuzzy
-#| msgid "quickly revoke a user-id"
 msgid "quickly revoke a key signature"
-msgstr "быстро отозвать идентификатор пользователя"
+msgstr "быстро отозвать подпись с ключа"
 
 msgid "sign a key"
 msgstr "подписать ключ"
@@ -3557,10 +3552,9 @@ msgstr "Подписывать нечего.\n"
 msgid "Not signed by you.\n"
 msgstr "Вами не подписано.\n"
 
-#, fuzzy, c-format
-#| msgid "checking created signature failed: %s\n"
+#, c-format
 msgid "revoking the key signature failed: %s\n"
-msgstr "сбой проверки созданной подписи: %s\n"
+msgstr "сбой отзыва подписи с ключа подписи: %s\n"
 
 #, c-format
 msgid "'%s' is not a valid expiration time\n"
