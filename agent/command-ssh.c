@@ -70,6 +70,7 @@
 #define SSH_REQUEST_LOCK                  22
 #define SSH_REQUEST_UNLOCK                23
 #define SSH_REQUEST_ADD_ID_CONSTRAINED    25
+#define SSH_REQUEST_EXTENSION             27
 
 /* Options. */
 #define	SSH_OPT_CONSTRAIN_LIFETIME	   1
@@ -80,6 +81,7 @@
 #define SSH_RESPONSE_FAILURE               5
 #define SSH_RESPONSE_IDENTITIES_ANSWER    12
 #define SSH_RESPONSE_SIGN_RESPONSE        14
+#define SSH_RESPONSE_EXTENSION_FAILURE    28
 
 /* Other constants.  */
 #define SSH_DSA_SIGNATURE_PADDING 20
@@ -249,6 +251,9 @@ static gpg_error_t ssh_handler_lock (ctrl_t ctrl,
 static gpg_error_t ssh_handler_unlock (ctrl_t ctrl,
 				       estream_t request,
 				       estream_t response);
+static gpg_error_t ssh_handler_extension (ctrl_t ctrl,
+                                          estream_t request,
+                                          estream_t response);
 
 static gpg_error_t ssh_key_modifier_rsa (const char *elems, gcry_mpi_t *mpis);
 static gpg_error_t ssh_signature_encoder_rsa (ssh_key_type_spec_t *spec,
@@ -290,7 +295,8 @@ static const ssh_request_spec_t request_specs[] =
     REQUEST_SPEC_DEFINE (REMOVE_IDENTITY,       remove_identity,       0),
     REQUEST_SPEC_DEFINE (REMOVE_ALL_IDENTITIES, remove_all_identities, 0),
     REQUEST_SPEC_DEFINE (LOCK,                  lock,                  0),
-    REQUEST_SPEC_DEFINE (UNLOCK,                unlock,                0)
+    REQUEST_SPEC_DEFINE (UNLOCK,                unlock,                0),
+    REQUEST_SPEC_DEFINE (EXTENSION,             extension,             0)
 #undef REQUEST_SPEC_DEFINE
   };
 
@@ -3301,6 +3307,84 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
   else
     ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
 
+  return ret_err;
+}
+
+/* Handler for the "extension" command.  */
+static gpg_error_t
+ssh_handler_extension (ctrl_t ctrl, estream_t request, estream_t response)
+{
+  gpg_error_t ret_err;
+  gpg_error_t err;
+  char *exttype = NULL;
+  char *name = NULL;
+  char *value = NULL;
+
+  err = stream_read_cstring (request, &exttype);
+  if (err)
+    goto leave;
+
+  if (opt.verbose)
+    log_info ("ssh-agent extension '%s' received\n", exttype);
+  if (!strcmp (exttype, "ssh-env@gnupg.org"))
+    {
+      for (;;)
+        {
+          xfree (name); name = NULL;
+          err = stream_read_cstring (request, &name);
+          if (gpg_err_code (err) == GPG_ERR_EOF)
+            break;  /* ready.  */
+          if (err)
+            {
+              if (opt.verbose)
+                log_error ("error reading ssh-agent env name\n");
+              goto leave;
+            }
+          xfree (value); value = NULL;
+          err = stream_read_cstring (request, &value);
+          if (err)
+            {
+              if (opt.verbose)
+                log_error ("error reading ssh-agent env value\n");
+              goto leave;
+            }
+          if (opt.debug)
+            log_debug ("ssh-agent env '%s'='%s'\n", name, value);
+          err = session_env_setenv (ctrl->session_env, name,
+                                    *value? value : NULL);
+          if (err)
+            {
+              log_error ("error setting ssh-agent env value: %s\n",
+                         gpg_strerror (err));
+              goto leave;
+            }
+        }
+      err = 0;
+    }
+  else if (!strcmp (exttype, "ssh-envnames@gnupg.org"))
+    {
+      ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
+      if (!ret_err)
+        ret_err = stream_write_cstring
+          (response, session_env_list_stdenvnames (NULL, NULL));
+      goto finalleave;
+    }
+  else
+    {
+      if (opt.verbose)
+        log_info ("ssh-agent extension '%s' not supported\n", exttype);
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+
+ leave:
+  if (!err)
+    ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
+  else
+    ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
+ finalleave:
+  xfree (exttype);
+  xfree (name);
+  xfree (value);
   return ret_err;
 }
 
