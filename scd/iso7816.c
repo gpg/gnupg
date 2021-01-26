@@ -185,9 +185,12 @@ iso7816_select_file (int slot, int tag, int is_dir)
 }
 
 
-/* Do a select file command with a direct path. */
+/* Do a select file command with a direct path.  If FROM_CDF is set
+ * the starting point is the current direcory file (feature depends on
+ * the card). */
 gpg_error_t
-iso7816_select_path (int slot, const unsigned short *path, size_t pathlen)
+iso7816_select_path (int slot, const unsigned short *path, size_t pathlen,
+                     int from_cdf)
 {
   int sw, p0, p1;
   unsigned char buffer[100];
@@ -202,7 +205,7 @@ iso7816_select_path (int slot, const unsigned short *path, size_t pathlen)
       buffer[buflen++] = *path;
     }
 
-  p0 = 0x08;
+  p0 = from_cdf? 0x09 : 0x08;
   p1 = 0x0c; /* No FC return. */
   sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE,
                          p0, p1, buflen, (char*)buffer );

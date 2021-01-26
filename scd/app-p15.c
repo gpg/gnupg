@@ -52,6 +52,7 @@ typedef enum
     CARD_TYPE_TCOS,
     CARD_TYPE_MICARDO,
     CARD_TYPE_CARDOS_50,
+    CARD_TYPE_CARDOS_53,
     CARD_TYPE_BELPIC   /* Belgian eID card specs. */
   }
 card_type_t;
@@ -95,9 +96,16 @@ static struct
     CARD_TYPE_MICARDO }, /* EstEID (Estonian Big Brother card) */
   { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x01\x14"),
     CARD_TYPE_CARDOS_50 }, /* CardOS 5.0 */
+  { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x03\x16"),
+    CARD_TYPE_CARDOS_53 }, /* CardOS 5.3 */
   { 0 }
 };
 #undef X
+
+
+/* Macro to test for CardOS 5.0 and 5.3.  */
+#define IS_CARDOS_5(a) ((a)->app_local->card_type == CARD_TYPE_CARDOS_50 \
+                        || (a)->app_local->card_type == CARD_TYPE_CARDOS_53)
 
 
 /* The AID of PKCS15. */
@@ -477,33 +485,56 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
     }
 
   err = iso7816_read_binary_ext (slot, 0, 0, 0, buffer, buflen, &sw);
-  if (err && sw == 0x6981)
+  if (err)
+    log_error ("p15: error reading %s (0x%04X): %s (sw=%04X)\n",
+               efid_desc, efid, gpg_strerror (err), sw);
+  return err;
+}
+
+
+/* If EFID is not 0 do a select and then read the record RECNO.
+ * EFID_DESC is a description of the EF to be used with error
+ * messages.  On success BUFFER and BUFLEN contain the entire content
+ * of the EF.  The caller must free BUFFER only on success. */
+static gpg_error_t
+select_and_read_record (int slot, unsigned short efid, int recno,
+                        const char *efid_desc,
+                        unsigned char **buffer, size_t *buflen)
+{
+  gpg_error_t err;
+  int sw;
+
+  if (efid)
     {
-      /* Command was not possible for file structure.  Try to read the
-       * first record instead.  */
-      err = iso7816_read_record_ext (slot, 1, 1, 0, buffer, buflen, &sw);
+      err = iso7816_select_file (slot, efid, 0);
       if (err)
         {
-          log_error ("p15: error reading %s (0x%04X)"
-                     " after fallback to record mode: %s (sw=%04X)\n",
-                     efid_desc, efid, gpg_strerror (err), sw);
+          log_error ("p15: error selecting %s (0x%04X): %s\n",
+                     efid_desc, efid, gpg_strerror (err));
           return err;
         }
-      /* On a CardOS based card I noticed that the record started with
-       * a byte 0x01 followed by another byte with the length of the
-       * record.  Detect this here and remove this prefix.  */
-      if (*buflen > 2 && (*buffer)[0] == 1 && (*buffer)[1] == *buflen - 2)
-        {
-          memmove (*buffer, *buffer + 2, *buflen - 2);
-          *buflen = *buflen - 2;
-        }
     }
-  else if (err)
+
+  err = iso7816_read_record_ext (slot, recno, 1, 0, buffer, buflen, &sw);
+  if (err)
     {
-      log_error ("p15: error reading %s (0x%04X): %s (sw=%04X)\n",
-                 efid_desc, efid, gpg_strerror (err), sw);
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        log_info ("p15: reading %s (0x%04X) record %d: %s\n",
+                  efid_desc, efid, recno, gpg_strerror (err));
+      else
+        log_error ("p15: error reading %s (0x%04X) record %d: %s (sw=%04X)\n",
+                   efid_desc, efid, recno, gpg_strerror (err), sw);
       return err;
     }
+  /* On CardOS with a Linear TLV file structure the records starts
+   * with some tag (often the record number) followed by the length
+   * byte for this record.  Detect and remove this prefix.  */
+  if (*buflen > 2 && (*buffer)[0] != 0x30 && (*buffer)[1] == *buflen - 2)
+    {
+      memmove (*buffer, *buffer + 2, *buflen - 2);
+      *buflen = *buflen - 2;
+    }
+
   return 0;
 }
 
@@ -519,27 +550,28 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
   if (!pathlen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (pathlen && *path != 0x3f00 )
-    log_error ("p15: warning: relative path selection not yet implemented\n");
-
   if (app->app_local->direct_path_selection)
     {
-      err = iso7816_select_path (app_get_slot (app), path+1, pathlen-1);
+      if (pathlen && *path == 0x3f00 )
+        {
+          path++;
+          pathlen--;
+        }
+
+      /* CardOS 5 supports P0=0x09 to select stating at the CDF.  */
+      err = iso7816_select_path (app_get_slot (app), path, pathlen,
+                                 IS_CARDOS_5(app));
       if (err)
         {
           log_error ("p15: error selecting path ");
-          for (j=0; j < pathlen; j++)
-            log_printf ("%04hX", path[j]);
-          log_printf (": %s\n", gpg_strerror (err));
-          return err;
+          goto err_print_path;
         }
     }
   else
     {
-      /* FIXME: Need code to remember the last PATH so that we can decide
-         what select commands to send in case the path does not start off
-         with 3F00.  We might also want to use direct path selection if
-         supported by the card. */
+      if (pathlen && *path != 0x3f00 )
+        log_error ("p15: warning: relative path select not yet implemented\n");
+
       for (i=0; i < pathlen; i++)
         {
           err = iso7816_select_file (app_get_slot (app),
@@ -547,15 +579,19 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
           if (err)
             {
               log_error ("p15: error selecting part %d from path ", i);
-              for (j=0; j < pathlen; j++)
-                log_printf ("%04hX", path[j]);
-              log_printf (": %s\n", gpg_strerror (err));
-              return err;
+              goto err_print_path;
             }
         }
     }
   return 0;
+
+ err_print_path:
+  for (j=0; j < pathlen; j++)
+    log_printf ("%s%04hX", j? "/":"", path[j]);
+  log_printf (": %s\n", gpg_strerror (err));
+  return err;
 }
+
 
 /* Parse a cert Id string (or a key Id string) and return the binary
    object Id string in a newly allocated buffer stored at R_OBJID and
@@ -956,12 +992,17 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
   int class, tag, constructed, ndef;
   prkdf_object_t prkdflist = NULL;
   int i;
+  int recno = 1;
 
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No private keys. */
 
-  err = select_and_read_binary (app_get_slot (app), fid, "PrKDF",
-                                &buffer, &buflen);
+  if (IS_CARDOS_5 (app))
+    err = select_and_read_record (app_get_slot (app), fid, recno, "PrKDF",
+                                  &buffer, &buflen);
+  else
+    err = select_and_read_binary (app_get_slot (app), fid, "PrKDF",
+                                  &buffer, &buflen);
   if (err)
     return err;
 
@@ -972,7 +1013,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 
   /* Loop over the records.  We stop as soon as we detect a new record
      starting with 0x00 or 0xff as these values are commonly used to
-     pad data blocks and are no valid ASN.1 encoding. */
+     pad data blocks and are no valid ASN.1 encoding.  Note the
+     special handling for record mode at the end of the loop. */
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -992,8 +1034,17 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > n || tag != TAG_SEQUENCE))
+      if (err)
+        ;
+      else if (objlen > n)
         err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (tag == TAG_SEQUENCE)
+        ;
+      else if (class == CLASS_CONTEXT && tag == 0)
+        ; /* Seen with CardOS.  */
+      else
+        err = gpg_error (GPG_ERR_INV_OBJ);
+
       if (err)
         {
           log_error ("p15: error parsing PrKDF record: %s\n",
@@ -1378,7 +1429,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       prkdf->next = prkdflist;
       prkdflist = prkdf;
       prkdf = NULL;
-      continue; /* Ready. */
+      goto next_record; /* Ready with this record. */
 
     parse_error:
       log_error ("p15: error parsing PrKDF record (%d): %s - skipped\n",
@@ -1390,6 +1441,24 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           xfree (prkdf);
         }
       err = 0;
+
+    next_record:
+      /* If the card uses a record oriented file structure, read the
+       * next record.  Otherwise we keep on parsing the current buffer.  */
+      recno++;
+      if (IS_CARDOS_5 (app))
+        {
+          xfree (buffer); buffer = NULL;
+          err = select_and_read_record (app_get_slot (app), 0, recno, "PrKDF",
+                                        &buffer, &buflen);
+          if (err) {
+            if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+              err = 0;
+            goto leave;
+          }
+          p = buffer;
+          n = buflen;
+        }
     } /* End looping over all records. */
 
  leave:
@@ -1417,12 +1486,17 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
   int class, tag, constructed, ndef;
   cdf_object_t cdflist = NULL;
   int i;
+  int recno = 1;
 
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No certificates. */
 
-  err = select_and_read_binary (app_get_slot (app), fid, "CDF",
-                                &buffer, &buflen);
+  if (IS_CARDOS_5 (app))
+    err = select_and_read_record (app_get_slot (app), fid, recno, "CDF",
+                                  &buffer, &buflen);
+  else
+    err = select_and_read_binary (app_get_slot (app), fid, "CDF",
+                                  &buffer, &buflen);
   if (err)
     return err;
 
@@ -1431,7 +1505,8 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
 
   /* Loop over the records.  We stop as soon as we detect a new record
      starting with 0x00 or 0xff as these values are commonly used to
-     pad data blocks and are no valid ASN.1 encoding. */
+     pad data blocks and are no valid ASN.1 encoding.  Note the
+     special handling for record mode at the end of the loop. */
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -1627,14 +1702,32 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       cdf->next = cdflist;
       cdflist = cdf;
       cdf = NULL;
-      continue; /* Ready. */
+      goto next_record; /* Ready with this record. */
 
     parse_error:
       log_error ("p15: error parsing CDF record (%d): %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       xfree (cdf);
       err = 0;
-    } /* End looping over all records. */
+
+    next_record:
+      /* If the card uses a record oriented file structure, read the
+       * next record.  Otherwise we keep on parsing the current buffer.  */
+      recno++;
+      if (IS_CARDOS_5 (app))
+        {
+          xfree (buffer); buffer = NULL;
+          err = select_and_read_record (app_get_slot (app), 0, recno, "CDF",
+                                        &buffer, &buflen);
+          if (err) {
+            if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+              err = 0;
+            goto leave;
+          }
+          p = buffer;
+          n = buflen;
+        }
+    } /* End loop over all records. */
 
  leave:
   xfree (buffer);
@@ -1694,12 +1787,17 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
   int class, tag, constructed, ndef;
   aodf_object_t aodflist = NULL;
   int i;
+  int recno = 1;
 
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No authentication objects. */
 
-  err = select_and_read_binary (app_get_slot (app), fid, "AODF",
-                                &buffer, &buflen);
+  if (IS_CARDOS_5 (app))
+    err = select_and_read_record (app_get_slot (app), fid, recno, "AODF",
+                                  &buffer, &buflen);
+  else
+    err = select_and_read_binary (app_get_slot (app), fid, "AODF",
+                                  &buffer, &buflen);
   if (err)
     return err;
 
@@ -1710,7 +1808,8 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
 
   /* Loop over the records.  We stop as soon as we detect a new record
      starting with 0x00 or 0xff as these values are commonly used to
-     pad data blocks and are no valid ASN.1 encoding. */
+     pad data blocks and are no valid ASN.1 encoding.  Note the
+     special handling for record mode at the end of the loop.  */
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -1721,10 +1820,33 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       unsigned long ul;
       const char *s;
 
+      where = __LINE__;
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > n || tag != TAG_SEQUENCE))
+      if (err)
+        ;
+      else if (objlen > n)
         err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* PinAttributes */
+      else if (class == CLASS_CONTEXT)
+        {
+          switch (tag)
+            {
+            case 0: errstr = "biometric auth types are not supported"; break;
+            case 1: errstr = "authKey auth types are not supported"; break;
+            case 2: errstr = "external auth type are not supported"; break;
+            default: errstr = "unknown privateKeyObject"; break;
+            }
+          goto parse_error;
+        }
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_OBJ);
+          goto parse_error;
+        }
+
+
       if (err)
         {
           log_error ("p15: error parsing AODF record: %s\n",
@@ -1856,28 +1978,16 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       where = __LINE__;
       err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && objlen > nn)
+      if (err)
+        ;
+      else if (!err && objlen > nn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* A typeAttribute always starts with a sequence */
+      else
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
         goto parse_error;
-      if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
-        ; /* PinAttributes */
-      else if (class == CLASS_CONTEXT)
-        {
-          switch (tag)
-            {
-            case 0: errstr = "biometric auth types are not supported"; break;
-            case 1: errstr = "authKey auth types are not supported"; break;
-            case 2: errstr = "external auth type are not supported"; break;
-            default: errstr = "unknown privateKeyObject"; break;
-            }
-          goto parse_error;
-        }
-      else
-        {
-          err = gpg_error (GPG_ERR_INV_OBJ);
-          goto parse_error;
-        }
 
       nn = objlen;
 
@@ -2281,7 +2391,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       aodf->next = aodflist;
       aodflist = aodf;
       aodf = NULL;
-      continue; /* Ready. */
+      goto next_record; /* Ready with this record. */
 
     no_core:
       err = gpg_error_from_syserror ();
@@ -2293,6 +2403,24 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
                  where, errstr? errstr : gpg_strerror (err));
       err = 0;
       release_aodf_object (aodf);
+
+    next_record:
+      /* If the card uses a record oriented file structure, read the
+       * next record.  Otherwise we keep on parsing the current buffer.  */
+      recno++;
+      if (IS_CARDOS_5 (app))
+        {
+          xfree (buffer); buffer = NULL;
+          err = select_and_read_record (app_get_slot (app), 0, recno, "AODF",
+                                        &buffer, &buflen);
+          if (err) {
+            if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+              err = 0;
+            goto leave;
+          }
+          p = buffer;
+          n = buflen;
+        }
     } /* End looping over all records. */
 
  leave:
@@ -3486,7 +3614,7 @@ verify_pin (app_t app,
 
   pin_reference = aodf->pin_reference_valid? aodf->pin_reference : 0;
 
-  if (app->app_local->card_type == CARD_TYPE_CARDOS_50)
+  if (IS_CARDOS_5 (app))
     {
       /* We know that this card supports a verify status check.  Note
        * that in contrast to PIV cards ISO7816_VERIFY_NOT_NEEDED is
@@ -4265,7 +4393,7 @@ app_select_p15 (app_t app)
          Using the 2f02 just works. */
       unsigned short path[1] = { 0x2f00 };
 
-      rc = iso7816_select_path (slot, path, 1);
+      rc = iso7816_select_path (slot, path, 1, 0);
       if (!rc)
         {
           direct = 1;
@@ -4273,7 +4401,7 @@ app_select_p15 (app_t app)
           if (def_home_df)
             {
               path[0] = def_home_df;
-              rc = iso7816_select_path (slot, path, 1);
+              rc = iso7816_select_path (slot, path, 1, 0);
             }
         }
     }
@@ -4338,6 +4466,16 @@ app_select_p15 (app_t app)
       app->app_local->card_product = CARD_PRODUCT_UNKNOWN;
 
       /* Store whether we may and should use direct path selection. */
+      switch (card_type)
+        {
+        case CARD_TYPE_CARDOS_50:
+        case CARD_TYPE_CARDOS_53:
+          direct = 1;
+          break;
+        default:
+          /* Use whatever has been determined above.  */
+          break;
+        }
       app->app_local->direct_path_selection = direct;
 
       /* Read basic information and thus check whether this is a real
