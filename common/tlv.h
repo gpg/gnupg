@@ -30,6 +30,8 @@
 #ifndef SCD_TLV_H
 #define SCD_TLV_H 1
 
+#include "membuf.h"
+
 
 enum tlv_tag_class {
   CLASS_UNIVERSAL = 0,

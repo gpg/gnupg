@@ -501,7 +501,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
 
   if (app->app_local->direct_path_selection)
     {
-      err = iso7816_select_path (app->slot, path+1, pathlen-1);
+      err = iso7816_select_path (app->slot, path+1, pathlen-1, 0);
       if (err)
         {
           log_error ("p15: error selecting path ");
@@ -4104,7 +4104,7 @@ app_select_p15 (app_t app)
          Using the 2f02 just works. */
       unsigned short path[1] = { 0x2f00 };
 
-      rc = iso7816_select_path (slot, path, 1);
+      rc = iso7816_select_path (slot, path, 1, 0);
       if (!rc)
         {
           direct = 1;
@@ -4112,7 +4112,7 @@ app_select_p15 (app_t app)
           if (def_home_df)
             {
               path[0] = def_home_df;
-              rc = iso7816_select_path (slot, path, 1);
+              rc = iso7816_select_path (slot, path, 1, 0);
             }
         }
     }

@@ -193,18 +193,26 @@ iso7816_select_file (int slot, int tag, int is_dir)
 }
 
 
-/* Do a select file command with a direct path. */
+/* Do a select file command with a direct path.  If TOPDF is set, the
+ * actual used path is 3f00/<topdf>/<path>.  */
 gpg_error_t
-iso7816_select_path (int slot, const unsigned short *path, size_t pathlen)
+iso7816_select_path (int slot, const unsigned short *path, size_t pathlen,
+                     unsigned short topdf)
 {
   int sw, p0, p1;
   unsigned char buffer[100];
-  int buflen;
+  int buflen = 0;
 
-  if (pathlen/2 >= sizeof buffer)
+  if (pathlen*2 + 2 >= sizeof buffer)
     return gpg_error (GPG_ERR_TOO_LARGE);
 
-  for (buflen = 0; pathlen; pathlen--, path++)
+  if (topdf)
+    {
+      buffer[buflen++] = topdf >> 8;
+      buffer[buflen++] = topdf;
+    }
+
+  for (; pathlen; pathlen--, path++)
     {
       buffer[buflen++] = (*path >> 8);
       buffer[buflen++] = *path;

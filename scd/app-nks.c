@@ -628,7 +628,7 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   /* Access the KEYD file which is always in the master directory.  */
-  err = iso7816_select_path (app->slot, path, DIM (path));
+  err = iso7816_select_path (app_get_slot (app), path, DIM (path), 0);
   if (err)
     return err;
   /* Due to the above select we need to re-select our application.  */
