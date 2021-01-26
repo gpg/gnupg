@@ -932,6 +932,107 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
   return 0;
 }
 
+
+/* Parse the commonObjectAttributes and store a malloced authid at
+ * (r_authid,r_authidlen).  (NULL,0) is stored on error or if no
+ * authid is found.
+ *
+ * Example data:
+ *  2 30   17:   SEQUENCE { -- commonObjectAttributes
+ *  4 0C    8:     UTF8String 'SK.CH.DS'
+ * 14 03    2:     BIT STRING 6 unused bits
+ *           :       '01'B (bit 0)
+ * 18 04    1:     OCTET STRING --authid
+ *           :       07
+ *           :     }
+ */
+static gpg_error_t
+parse_common_obj_attr (unsigned char const **buffer, size_t *size,
+                       unsigned char **r_authid, size_t *r_authidlen)
+{
+  gpg_error_t err;
+  int where;
+  int class, tag, constructed, ndef;
+  size_t objlen, hdrlen, nnn;
+  const unsigned char *ppp;
+  int ignore_eof = 0;
+
+  *r_authid = NULL;
+  *r_authidlen = 0;
+
+  where = __LINE__;
+  err = parse_ber_header (buffer, size, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > *size || tag != TAG_SEQUENCE))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  ppp = *buffer;
+  nnn = objlen;
+  *buffer += objlen;
+  *size   -= objlen;
+
+  /* Search the optional AuthId.  We need to skip the optional Label
+     (UTF8STRING) and the optional CommonObjectFlags (BITSTRING). */
+  ignore_eof = 1;
+  where = __LINE__;
+  err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  if (tag == TAG_UTF8_STRING)
+    {
+      ppp += objlen; /* Skip the Label. */
+      nnn -= objlen;
+
+      where = __LINE__;
+      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (tag == TAG_BIT_STRING)
+    {
+      ppp += objlen; /* Skip the CommonObjectFlags.  */
+      nnn -= objlen;
+
+      where = __LINE__;
+      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (tag == TAG_OCTET_STRING && objlen)
+    {
+      *r_authid = xtrymalloc (objlen);
+      if (!*r_authid)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      memcpy (*r_authid, ppp, objlen);
+      *r_authidlen = objlen;
+    }
+
+ leave:
+  if (ignore_eof && gpg_err_code (err) == GPG_ERR_EOF)
+    err = 0;
+  else if (err)
+    log_error ("p15: error parsing commonObjectAttributes at %d: %s\n",
+               where, gpg_strerror (err));
+
+  return err;
+}
+
+
 /* Read and  parse the Private Key Directory Files. */
 /*
   6034 (privatekeys)
@@ -993,6 +1094,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
   prkdf_object_t prkdflist = NULL;
   int i;
   int recno = 1;
+  unsigned char *authid = NULL;
+  size_t authidlen = 0;
 
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No private keys. */
@@ -1025,8 +1128,6 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       unsigned long ul;
       const unsigned char *objid;
       size_t objidlen;
-      const unsigned char *authid = NULL;
-      size_t authidlen = 0;
       keyusage_flags_t usageflags;
       unsigned long key_reference = 0;
       int key_reference_valid = 0;
@@ -1058,69 +1159,10 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || tag != TAG_SEQUENCE))
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      xfree (authid);
+      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen);
       if (err)
         goto parse_error;
-      {
-        const unsigned char *ppp = pp;
-        size_t nnn = objlen;
-
-        pp += objlen;
-        nn -= objlen;
-
-        /* Search the optional AuthId.  We need to skip the optional
-           Label (UTF8STRING) and the optional CommonObjectFlags
-           (BITSTRING). */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                &ndef, &objlen, &hdrlen);
-        if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (gpg_err_code (err) == GPG_ERR_EOF)
-          goto no_authid;
-        if (err)
-          goto parse_error;
-        if (tag == TAG_UTF8_STRING)
-          {
-            ppp += objlen; /* Skip the Label. */
-            nnn -= objlen;
-
-            where = __LINE__;
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto no_authid;
-            if (err)
-              goto parse_error;
-          }
-        if (tag == TAG_BIT_STRING)
-          {
-            ppp += objlen; /* Skip the CommonObjectFlags.  */
-            nnn -= objlen;
-
-            where = __LINE__;
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto no_authid;
-            if (err)
-              goto parse_error;
-          }
-        if (tag == TAG_OCTET_STRING && objlen)
-          {
-            authid = ppp;
-            authidlen = objlen;
-          }
-      no_authid:
-        ;
-      }
 
       /* Parse the commonKeyAttributes.  */
       where = __LINE__;
@@ -1330,15 +1372,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       if (authid)
         {
           prkdf->authidlen = authidlen;
-          prkdf->authid = xtrymalloc (authidlen);
-          if (!prkdf->authid)
-            {
-              err = gpg_error_from_syserror ();
-              xfree (prkdf->objid);
-              xfree (prkdf);
-              goto leave;
-            }
-          memcpy (prkdf->authid, authid, authidlen);
+          prkdf->authid = authid;
+          authid = NULL;
         }
 
       prkdf->pathlen = objlen/2;
@@ -1432,7 +1467,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       goto next_record; /* Ready with this record. */
 
     parse_error:
-      log_error ("p15: error parsing PrKDF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing PrKDF record at %d: %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       if (prkdf)
         {
@@ -1462,6 +1497,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
     } /* End looping over all records. */
 
  leave:
+  xfree (authid);
   xfree (buffer);
   if (err)
     release_prkdflist (prkdflist);
@@ -1705,7 +1741,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       goto next_record; /* Ready with this record. */
 
     parse_error:
-      log_error ("p15: error parsing CDF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing CDF record at %d: %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       xfree (cdf);
       err = 0;
@@ -1866,72 +1902,9 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
 
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || tag != TAG_SEQUENCE))
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      err = parse_common_obj_attr (&pp, &nn, &aodf->authid, &aodf->authidlen);
       if (err)
         goto parse_error;
-      {
-        const unsigned char *ppp = pp;
-        size_t nnn = objlen;
-
-        pp += objlen;
-        nn -= objlen;
-
-        /* Search the optional AuthId.  We need to skip the optional
-           Label (UTF8STRING) and the optional CommonObjectFlags
-           (BITSTRING). */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                &ndef, &objlen, &hdrlen);
-        if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (gpg_err_code (err) == GPG_ERR_EOF)
-          goto no_authid;
-        if (err)
-          goto parse_error;
-        if (tag == TAG_UTF8_STRING)
-          {
-            ppp += objlen; /* Skip the Label. */
-            nnn -= objlen;
-
-            where = __LINE__;
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto no_authid;
-            if (err)
-              goto parse_error;
-          }
-        if (tag == TAG_BIT_STRING)
-          {
-            ppp += objlen; /* Skip the CommonObjectFlags.  */
-            nnn -= objlen;
-
-            where = __LINE__;
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto no_authid;
-            if (err)
-              goto parse_error;
-          }
-        if (tag == TAG_OCTET_STRING && objlen)
-          {
-            aodf->authidlen = objlen;
-            aodf->authid = xtrymalloc (objlen);
-            if (!aodf->authid)
-              goto no_core;
-            memcpy (aodf->authid, ppp, objlen);
-          }
-      no_authid:
-        ;
-      }
 
       /* Parse the CommonAuthenticationObjectAttributes.  */
       where = __LINE__;
@@ -2399,7 +2372,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       goto leave;
 
     parse_error:
-      log_error ("p15: error parsing AODF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing AODF record at %d: %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       err = 0;
       release_aodf_object (aodf);
