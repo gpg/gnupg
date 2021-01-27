@@ -69,7 +69,7 @@ gpg_error_t iso7816_select_mf (int slot);
 gpg_error_t iso7816_select_file (int slot, int tag, int is_dir);
 gpg_error_t iso7816_select_path (int slot,
                                  const unsigned short *path, size_t pathlen,
-                                 int from_cdf);
+                                 unsigned short topdf);
 gpg_error_t iso7816_list_directory (int slot, int list_dirs,
                                     unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_send_apdu (int slot, int extended_mode,

@@ -39,6 +39,7 @@ enum {
   SW_CHV_BLOCKED    = 0x6983,
   SW_REF_DATA_INV   = 0x6984, /* Referenced data invalidated. */
   SW_USE_CONDITIONS = 0x6985,
+  SW_NO_CURRENT_EF  = 0x6986, /* No current EF selected.  */
   SW_BAD_PARAMETER  = 0x6a80, /* (in the data field) */
   SW_NOT_SUPPORTED  = 0x6a81,
   SW_FILE_NOT_FOUND = 0x6a82,

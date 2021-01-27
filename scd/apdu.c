@@ -548,6 +548,7 @@ apdu_strerror (int rc)
     case SW_CHV_BLOCKED    : return "CHV blocked";
     case SW_REF_DATA_INV   : return "referenced data invalidated";
     case SW_USE_CONDITIONS : return "use conditions not satisfied";
+    case SW_NO_CURRENT_EF  : return "no current EF selected";
     case SW_BAD_PARAMETER  : return "bad parameter";
     case SW_NOT_SUPPORTED  : return "not supported";
     case SW_FILE_NOT_FOUND : return "file not found";

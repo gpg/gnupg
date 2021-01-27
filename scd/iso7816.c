@@ -63,6 +63,7 @@ map_sw (int sw)
     case SW_CHV_WRONG:      ec = GPG_ERR_BAD_PIN; break;
     case SW_CHV_BLOCKED:    ec = GPG_ERR_PIN_BLOCKED; break;
     case SW_USE_CONDITIONS: ec = GPG_ERR_USE_CONDITIONS; break;
+    case SW_NO_CURRENT_EF:  ec = GPG_ERR_ENOENT; break;
     case SW_NOT_SUPPORTED:  ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_BAD_PARAMETER:  ec = GPG_ERR_INV_VALUE; break;
     case SW_FILE_NOT_FOUND: ec = GPG_ERR_ENOENT; break;
@@ -185,27 +186,32 @@ iso7816_select_file (int slot, int tag, int is_dir)
 }
 
 
-/* Do a select file command with a direct path.  If FROM_CDF is set
- * the starting point is the current direcory file (feature depends on
- * the card). */
+/* Do a select file command with a direct path.  If TOPDF is set, the
+ * actual used path is 3f00/<topdf>/<path>.  */
 gpg_error_t
 iso7816_select_path (int slot, const unsigned short *path, size_t pathlen,
-                     int from_cdf)
+                     unsigned short topdf)
 {
   int sw, p0, p1;
   unsigned char buffer[100];
-  int buflen;
+  int buflen = 0;
 
-  if (pathlen/2 >= sizeof buffer)
+  if (pathlen*2 + 2 >= sizeof buffer)
     return gpg_error (GPG_ERR_TOO_LARGE);
 
-  for (buflen = 0; pathlen; pathlen--, path++)
+  if (topdf)
+    {
+      buffer[buflen++] = topdf >> 8;
+      buffer[buflen++] = topdf;
+    }
+
+  for (; pathlen; pathlen--, path++)
     {
       buffer[buflen++] = (*path >> 8);
       buffer[buflen++] = *path;
     }
 
-  p0 = from_cdf? 0x09 : 0x08;
+  p0 = 0x08;
   p1 = 0x0c; /* No FC return. */
   sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE,
                          p0, p1, buflen, (char*)buffer );
