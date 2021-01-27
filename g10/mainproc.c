@@ -381,7 +381,10 @@ proc_symkey_enc (CTX c, PACKET *pkt)
             }
         }
       else
-        log_error (_("encrypted with unknown algorithm %d.%s\n"), algo, a);
+        {
+          log_error (_("encrypted with unknown algorithm %d.%s\n"), algo, a);
+          s = NULL; /* Force a goto leave.  */
+        }
 
       if (openpgp_md_test_algo (enc->s2k.hash_algo))
         {
