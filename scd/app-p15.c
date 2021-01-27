@@ -42,6 +42,7 @@
 #include "iso7816.h"
 #include "../common/i18n.h"
 #include "../common/tlv.h"
+#include "../common/host2net.h"
 #include "apdu.h" /* fixme: we should move the card detection to a
                      separate file */
 
@@ -107,6 +108,8 @@ static struct
 #define IS_CARDOS_5(a) ((a)->app_local->card_type == CARD_TYPE_CARDOS_50 \
                         || (a)->app_local->card_type == CARD_TYPE_CARDOS_53)
 
+/* The default PKCS-15 home DF */
+#define DEFAULT_HOME_DF 0x5015
 
 /* The AID of PKCS15. */
 static char const pkcs15_aid[] = { 0xA0, 0, 0, 0, 0x63,
@@ -381,6 +384,8 @@ struct app_local_s
 
 
 /*** Local prototypes.  ***/
+static gpg_error_t select_ef_by_path (app_t app, const unsigned short *path,
+                                      size_t pathlen);
 static gpg_error_t keygrip_from_prkdf (app_t app, prkdf_object_t prkdf);
 static gpg_error_t readcert_by_cdf (app_t app, cdf_object_t cdf,
                                     unsigned char **r_cert, size_t *r_certlen);
@@ -470,13 +475,13 @@ do_deinit (app_t app)
    BUFFER and BUFLEN contain the entire content of the EF.  The caller
    must free BUFFER only on success. */
 static gpg_error_t
-select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
+select_and_read_binary (app_t app, unsigned short efid, const char *efid_desc,
                         unsigned char **buffer, size_t *buflen)
 {
   gpg_error_t err;
   int sw;
 
-  err = iso7816_select_file (slot, efid, 0);
+  err = select_ef_by_path (app, &efid, 1);
   if (err)
     {
       log_error ("p15: error selecting %s (0x%04X): %s\n",
@@ -484,7 +489,8 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
       return err;
     }
 
-  err = iso7816_read_binary_ext (slot, 0, 0, 0, buffer, buflen, &sw);
+  err = iso7816_read_binary_ext (app_get_slot (app),
+                                 0, 0, 0, buffer, buflen, &sw);
   if (err)
     log_error ("p15: error reading %s (0x%04X): %s (sw=%04X)\n",
                efid_desc, efid, gpg_strerror (err), sw);
@@ -497,7 +503,7 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
  * messages.  On success BUFFER and BUFLEN contain the entire content
  * of the EF.  The caller must free BUFFER only on success. */
 static gpg_error_t
-select_and_read_record (int slot, unsigned short efid, int recno,
+select_and_read_record (app_t app, unsigned short efid, int recno,
                         const char *efid_desc,
                         unsigned char **buffer, size_t *buflen)
 {
@@ -506,7 +512,7 @@ select_and_read_record (int slot, unsigned short efid, int recno,
 
   if (efid)
     {
-      err = iso7816_select_file (slot, efid, 0);
+      err = select_ef_by_path (app, &efid, 1);
       if (err)
         {
           log_error ("p15: error selecting %s (0x%04X): %s\n",
@@ -515,7 +521,8 @@ select_and_read_record (int slot, unsigned short efid, int recno,
         }
     }
 
-  err = iso7816_read_record_ext (slot, recno, 1, 0, buffer, buflen, &sw);
+  err = iso7816_read_record_ext (app_get_slot (app),
+                                 recno, 1, 0, buffer, buflen, &sw);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -554,13 +561,15 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
     {
       if (pathlen && *path == 0x3f00 )
         {
-          path++;
-          pathlen--;
+          if (pathlen == 1)
+            err = iso7816_select_mf (app_get_slot (app));
+          else
+            err = iso7816_select_path (app_get_slot (app), path+1, pathlen-1,
+                                       app->app_local->home_df);
         }
-
-      /* CardOS 5 supports P0=0x09 to select stating at the CDF.  */
-      err = iso7816_select_path (app_get_slot (app), path, pathlen,
-                                 IS_CARDOS_5(app));
+      else
+        err = iso7816_select_path (app_get_slot (app), path, pathlen,
+                                   app->app_local->home_df);
       if (err)
         {
           log_error ("p15: error selecting path ");
@@ -572,6 +581,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
       if (pathlen && *path != 0x3f00 )
         log_error ("p15: warning: relative path select not yet implemented\n");
 
+      /* FIXME: Use home_df.  */
       for (i=0; i < pathlen; i++)
         {
           err = iso7816_select_file (app_get_slot (app),
@@ -586,6 +596,10 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
   return 0;
 
  err_print_path:
+  if (pathlen && *path == 0x3f00 )
+    log_printf ("3F00/");
+  else
+    log_printf ("%04hX/", app->app_local->home_df);
   for (j=0; j < pathlen; j++)
     log_printf ("%s%04hX", j? "/":"", path[j]);
   log_printf (": %s\n", gpg_strerror (err));
@@ -629,7 +643,7 @@ parse_certid (app_t app, const char *certid,
     }
   else /* This is a usual keyref.  */
     {
-      if (app->app_local->home_df)
+      if (app->app_local->home_df != DEFAULT_HOME_DF)
         snprintf (tmpbuf, sizeof tmpbuf, "P15-%04X.",
                   (unsigned int)(app->app_local->home_df & 0xffff));
       else
@@ -751,7 +765,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
   size_t offset;
   unsigned short home_df = 0;
 
-  err = select_and_read_binary (app_get_slot (app), odf_fid, "ODF",
+  err = select_and_read_binary (app, odf_fid, "ODF",
                                 &buffer, &buflen);
   if (err)
     return err;
@@ -778,6 +792,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
                 && !memcmp (p+1, "\x0a\x30\x08\x04\x06\x3F\x00", 7)
                 && (!home_df || home_df == ((p[8]<<8)|p[9])) )
         {
+          /* FIXME: Is this hack still required?  */
           /* If we do not know the home DF, we take it from the first
            * ODF object.  Here are sample values:
            * a0 0a 30 08 0406 3f00 5015 4401
@@ -1270,10 +1285,10 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
     return gpg_error (GPG_ERR_NO_DATA); /* No private keys. */
 
   if (IS_CARDOS_5 (app))
-    err = select_and_read_record (app_get_slot (app), fid, recno, "PrKDF",
+    err = select_and_read_record (app, fid, recno, "PrKDF",
                                   &buffer, &buflen);
   else
-    err = select_and_read_binary (app_get_slot (app), fid, "PrKDF",
+    err = select_and_read_binary (app, fid, "PrKDF",
                                   &buffer, &buflen);
   if (err)
     return err;
@@ -1355,7 +1370,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
         goto parse_error;
       log_assert (objid);
 
-      /* Skip subClassAttributes.  */
+      /* Skip commonPrivateKeyAttributes.  */
       where = __LINE__;
       err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
@@ -1555,7 +1570,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       if (IS_CARDOS_5 (app))
         {
           xfree (buffer); buffer = NULL;
-          err = select_and_read_record (app_get_slot (app), 0, recno, "PrKDF",
+          err = select_and_read_record (app, 0, recno, "PrKDF",
                                         &buffer, &buflen);
           if (err) {
             if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -1600,10 +1615,10 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
     return gpg_error (GPG_ERR_NO_DATA); /* No certificates. */
 
   if (IS_CARDOS_5 (app))
-    err = select_and_read_record (app_get_slot (app), fid, recno, "CDF",
+    err = select_and_read_record (app, fid, recno, "CDF",
                                   &buffer, &buflen);
   else
-    err = select_and_read_binary (app_get_slot (app), fid, "CDF",
+    err = select_and_read_binary (app, fid, "CDF",
                                   &buffer, &buflen);
   if (err)
     return err;
@@ -1825,7 +1840,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       if (IS_CARDOS_5 (app))
         {
           xfree (buffer); buffer = NULL;
-          err = select_and_read_record (app_get_slot (app), 0, recno, "CDF",
+          err = select_and_read_record (app, 0, recno, "CDF",
                                         &buffer, &buflen);
           if (err) {
             if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -1901,18 +1916,16 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
     return gpg_error (GPG_ERR_NO_DATA); /* No authentication objects. */
 
   if (IS_CARDOS_5 (app))
-    err = select_and_read_record (app_get_slot (app), fid, recno, "AODF",
+    err = select_and_read_record (app, fid, recno, "AODF",
                                   &buffer, &buflen);
   else
-    err = select_and_read_binary (app_get_slot (app), fid, "AODF",
+    err = select_and_read_binary (app, fid, "AODF",
                                   &buffer, &buflen);
   if (err)
     return err;
 
   p = buffer;
   n = buflen;
-
-  /* FIXME: This shares a LOT of code with read_ef_prkdf! */
 
   /* Loop over the records.  We stop as soon as we detect a new record
      starting with 0x00 or 0xff as these values are commonly used to
@@ -2456,7 +2469,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       if (IS_CARDOS_5 (app))
         {
           xfree (buffer); buffer = NULL;
-          err = select_and_read_record (app_get_slot (app), 0, recno, "AODF",
+          err = select_and_read_record (app, 0, recno, "AODF",
                                         &buffer, &buflen);
           if (err) {
             if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -2601,8 +2614,7 @@ read_ef_tokeninfo (app_t app)
   app->app_local->manufacturer_id = NULL;
   app->app_local->card_product = CARD_PRODUCT_UNKNOWN;
 
-  err = select_and_read_binary (app_get_slot (app), 0x5032, "TokenInfo",
-                                &buffer, &buflen);
+  err = select_and_read_binary (app, 0x5032, "TokenInfo", &buffer, &buflen);
   if (err)
     return err;
 
@@ -2834,7 +2846,7 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
       if (!buf)
         return gpg_error_from_syserror ();
       p = stpcpy (buf, "P15");
-      if (app->app_local->home_df)
+      if (app->app_local->home_df != DEFAULT_HOME_DF)
         {
           snprintf (p, 6, "-%04X",
                     (unsigned int)(app->app_local->home_df & 0xffff));
@@ -3003,7 +3015,7 @@ keyref_from_prkdf (app_t app, prkdf_object_t prkdf)
   if (!buf)
     return NULL;
   p = stpcpy (buf, "P15");
-  if (app->app_local->home_df)
+  if (app->app_local->home_df != DEFAULT_HOME_DF)
     {
       snprintf (p, 6, "-%04X",
                 (unsigned int)(app->app_local->home_df & 0xffff));
@@ -4426,8 +4438,11 @@ app_select_p15 (app_t app)
   card_type_t card_type = CARD_TYPE_UNKNOWN;
   int direct = 0;
   int is_belpic = 0;
+  unsigned char *fci = NULL;
+  size_t fcilen;
 
-  rc = iso7816_select_application (slot, pkcs15_aid, sizeof pkcs15_aid, 0);
+  rc = iso7816_select_application_ext (slot, pkcs15_aid, sizeof pkcs15_aid, 1,
+                                       &fci, &fcilen);
   if (rc)
     { /* Not found: Try to locate it from 2F00.  We use direct path
          selection here because it seems that the Belgian eID card
@@ -4452,7 +4467,7 @@ app_select_p15 (app_t app)
     }
   if (rc)
     { /* Still not found:  Try the default DF. */
-      def_home_df = 0x5015;
+      def_home_df = DEFAULT_HOME_DF;
       rc = iso7816_select_file (slot, def_home_df, 1);
     }
   if (!rc)
@@ -4497,11 +4512,18 @@ app_select_p15 (app_t app)
           goto leave;
         }
 
-      /* Set the home DF.  Note that we currently can't do that if the
-         selection via application ID worked.  This will store 0 there
-         instead.  FIXME: We either need to figure the home_df via the
-         DIR file or using the return values from the select file
-         APDU. */
+      /* Set the home DF from the FCI returned by the select.  */
+      if (!def_home_df && fci)
+        {
+          const unsigned char *s;
+          size_t n;
+
+          s = find_tlv (fci, fcilen, 0x83, &n);
+          if (s && n == 2)
+            def_home_df = buf16_to_ushort (s);
+          else
+            log_error ("p15: select(AID) did not return the DF\n");
+        }
       app->app_local->home_df = def_home_df;
 
       /* Store the card type.  FIXME: We might want to put this into
@@ -4575,5 +4597,6 @@ app_select_p15 (app_t app)
         do_deinit (app);
    }
 
+  xfree (fci);
   return rc;
 }
