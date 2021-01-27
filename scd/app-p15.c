@@ -1033,6 +1033,173 @@ parse_common_obj_attr (unsigned char const **buffer, size_t *size,
 }
 
 
+/* Parse the commonKeyAttributes.  On success store the objid at
+ * (R_OBJID/R_OBJIDLEN), sets the key usage flags at USAGEFLAGS and
+ * the optiona key refrence at R_KEY_REFERENCE.  The latter is only
+ * valid if true is also stored at R_KEY_REFERENCE_VALID.
+ *
+ * Example data:
+ *
+ * 21 30   12:   SEQUENCE { -- commonKeyAttributes
+ * 23 04    1:     OCTET STRING
+ *           :       01
+ * 26 03    3:     BIT STRING 6 unused bits
+ *           :       '1000000000'B (bit 9)
+ * 31 02    2:     INTEGER 80  -- keyReference (optional)
+ *           :     }
+ */
+static gpg_error_t
+parse_common_key_attr (unsigned char const **buffer, size_t *size,
+                       unsigned char **r_objid, size_t *r_objidlen,
+                       keyusage_flags_t *usageflags,
+                       unsigned long *r_key_reference,
+                       int *r_key_reference_valid)
+{
+  gpg_error_t err;
+  int where;
+  int class, tag, constructed, ndef;
+  size_t objlen, hdrlen, nnn;
+  const unsigned char *ppp;
+  int ignore_eof = 0;
+  unsigned long ul;
+  const unsigned char *objid = NULL;
+  size_t objidlen;
+  unsigned long key_reference = 0;
+  int key_reference_valid = 0;
+
+  *r_objid = NULL;
+  *r_objidlen = 0;
+  memset (usageflags, 0, sizeof *usageflags);
+  *r_key_reference_valid = 0;
+
+  where = __LINE__;
+  err = parse_ber_header (buffer, size, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > *size || tag != TAG_SEQUENCE))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  ppp = *buffer;
+  nnn = objlen;
+  *buffer += objlen;
+  *size   -= objlen;
+
+  /* Get the Id. */
+  where = __LINE__;
+  err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > nnn
+               || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  objid = ppp;
+  objidlen = objlen;
+  ppp += objlen;
+  nnn -= objlen;
+
+  /* Get the KeyUsageFlags. */
+  where = __LINE__;
+  err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > nnn
+               || class != CLASS_UNIVERSAL || tag != TAG_BIT_STRING))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  err = parse_keyusage_flags (ppp, objlen, usageflags);
+  if (err)
+    goto leave;
+  ppp += objlen;
+  nnn -= objlen;
+
+  ignore_eof = 1; /* Remaining items are optional.  */
+
+  /* Find the keyReference */
+  where = __LINE__;
+  err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && objlen > nnn)
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  if (class == CLASS_UNIVERSAL && tag == TAG_BOOLEAN)
+    {
+      /* Skip the native element. */
+      ppp += objlen;
+      nnn -= objlen;
+
+      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && objlen > nnn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
+    {
+      /* Skip the accessFlags. */
+      ppp += objlen;
+      nnn -= objlen;
+
+      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && objlen > nnn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER)
+    {
+      /* This is the keyReference.  */
+      for (ul=0; objlen; objlen--)
+        {
+          ul <<= 8;
+          ul |= (*ppp++) & 0xff;
+          nnn--;
+        }
+      key_reference = ul;
+      key_reference_valid = 1;
+    }
+
+ leave:
+  if (ignore_eof && gpg_err_code (err) == GPG_ERR_EOF)
+    err = 0;
+
+  if (!err)
+    {
+      if (!objid || !objidlen)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      else
+        {
+          *r_objid = xtrymalloc (objidlen);
+          if (!*r_objid)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              memcpy (*r_objid, objid, objidlen);
+              *r_objidlen = objidlen;
+            }
+        }
+    }
+  if (!err && key_reference_valid)
+    {
+      *r_key_reference = key_reference;
+      *r_key_reference_valid = 1;
+    }
+
+  if (err)
+    log_error ("p15: error parsing commonKeyAttributes at %d: %s\n",
+               where, gpg_strerror (err));
+  return err;
+
+}
+
+
 /* Read and  parse the Private Key Directory Files. */
 /*
   6034 (privatekeys)
@@ -1096,6 +1263,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
   int recno = 1;
   unsigned char *authid = NULL;
   size_t authidlen = 0;
+  unsigned char *objid = NULL;
+  size_t objidlen = 0;
 
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No private keys. */
@@ -1112,8 +1281,6 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
   p = buffer;
   n = buflen;
 
-  /* FIXME: This shares a LOT of code with read_ef_cdf! */
-
   /* Loop over the records.  We stop as soon as we detect a new record
      starting with 0x00 or 0xff as these values are commonly used to
      pad data blocks and are no valid ASN.1 encoding.  Note the
@@ -1126,25 +1293,37 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       const char *errstr = NULL;
       prkdf_object_t prkdf = NULL;
       unsigned long ul;
-      const unsigned char *objid;
-      size_t objidlen;
       keyusage_flags_t usageflags;
       unsigned long key_reference = 0;
       int key_reference_valid = 0;
       const char *s;
 
+      where = __LINE__;
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
       if (err)
         ;
       else if (objlen > n)
         err = gpg_error (GPG_ERR_INV_OBJ);
-      else if (tag == TAG_SEQUENCE)
-        ;
-      else if (class == CLASS_CONTEXT && tag == 0)
-        ; /* Seen with CardOS.  */
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* PrivateRSAKeyAttributes  */
+      else if (class == CLASS_CONTEXT)
+        {
+          switch (tag)
+            {
+            case 0: errstr = "EC key objects are not supported"; break;
+            case 1: errstr = "DH key objects are not supported"; break;
+            case 2: errstr = "DSA key objects are not supported"; break;
+            case 3: errstr = "KEA key objects are not supported"; break;
+            default: errstr = "unknown privateKeyObject"; break;
+            }
+          goto parse_error;
+        }
       else
-        err = gpg_error (GPG_ERR_INV_OBJ);
+        {
+          err = gpg_error (GPG_ERR_INV_OBJ);
+          goto parse_error;
+        }
 
       if (err)
         {
@@ -1152,6 +1331,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
                      gpg_strerror (err));
           goto leave;
         }
+
       pp = p;
       nn = objlen;
       p += objlen;
@@ -1166,105 +1346,14 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 
       /* Parse the commonKeyAttributes.  */
       where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || tag != TAG_SEQUENCE))
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      xfree (objid);
+      err = parse_common_key_attr (&pp, &nn,
+                                   &objid, &objidlen,
+                                   &usageflags,
+                                   &key_reference, &key_reference_valid);
       if (err)
         goto parse_error;
-      {
-        const unsigned char *ppp = pp;
-        size_t nnn = objlen;
-
-        pp += objlen;
-        nn -= objlen;
-
-        /* Get the Id. */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-        if (!err && (objlen > nnn
-                     || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (err)
-          goto parse_error;
-        objid = ppp;
-        objidlen = objlen;
-        ppp += objlen;
-        nnn -= objlen;
-
-        /* Get the KeyUsageFlags. */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-        if (!err && (objlen > nnn
-                     || class != CLASS_UNIVERSAL || tag != TAG_BIT_STRING))
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (err)
-          goto parse_error;
-        err = parse_keyusage_flags (ppp, objlen, &usageflags);
-        if (err)
-          goto parse_error;
-        ppp += objlen;
-        nnn -= objlen;
-
-        /* Find the keyReference */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-        if (gpg_err_code (err) == GPG_ERR_EOF)
-          goto leave_cki;
-        if (!err && objlen > nnn)
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (err)
-          goto parse_error;
-        if (class == CLASS_UNIVERSAL && tag == TAG_BOOLEAN)
-          {
-            /* Skip the native element. */
-            ppp += objlen;
-            nnn -= objlen;
-
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto leave_cki;
-            if (!err && objlen > nnn)
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (err)
-              goto parse_error;
-          }
-        if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
-          {
-            /* Skip the accessFlags. */
-            ppp += objlen;
-            nnn -= objlen;
-
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto leave_cki;
-            if (!err && objlen > nnn)
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (err)
-              goto parse_error;
-          }
-        if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER)
-          {
-            /* Yep, this is the keyReference.  */
-            for (ul=0; objlen; objlen--)
-              {
-                ul <<= 8;
-                ul |= (*ppp++) & 0xff;
-                nnn--;
-            }
-            key_reference = ul;
-            key_reference_valid = 1;
-          }
-
-      leave_cki:
-        ;
-      }
-
+      log_assert (objid);
 
       /* Skip subClassAttributes.  */
       where = __LINE__;
@@ -1293,29 +1382,16 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       where = __LINE__;
       err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && objlen > nn)
+      if (err)
+        ;
+      else if (!err && objlen > nn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* A typeAttribute always starts with a sequence.  */
+      else
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
         goto parse_error;
-      if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
-        ; /* RSA */
-      else if (class == CLASS_CONTEXT)
-        {
-          switch (tag)
-            {
-            case 0: errstr = "EC key objects are not supported"; break;
-            case 1: errstr = "DH key objects are not supported"; break;
-            case 2: errstr = "DSA key objects are not supported"; break;
-            case 3: errstr = "KEA key objects are not supported"; break;
-            default: errstr = "unknown privateKeyObject"; break;
-            }
-          goto parse_error;
-        }
-      else
-        {
-          err = gpg_error (GPG_ERR_INV_OBJ);
-          goto parse_error;
-        }
 
       nn = objlen;
 
@@ -1351,6 +1427,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           errstr = "invalid path reference";
           goto parse_error;
         }
+
       /* Create a new PrKDF list item. */
       prkdf = xtrycalloc (1, (sizeof *prkdf
                               - sizeof(unsigned short)
@@ -1361,14 +1438,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           goto leave;
         }
       prkdf->objidlen = objidlen;
-      prkdf->objid = xtrymalloc (objidlen);
-      if (!prkdf->objid)
-        {
-          err = gpg_error_from_syserror ();
-          xfree (prkdf);
-          goto leave;
-        }
-      memcpy (prkdf->objid, objid, objidlen);
+      prkdf->objid = objid;
+      objid = NULL;
       if (authid)
         {
           prkdf->authidlen = authidlen;
@@ -1498,6 +1569,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 
  leave:
   xfree (authid);
+  xfree (objid);
   xfree (buffer);
   if (err)
     release_prkdflist (prkdflist);
