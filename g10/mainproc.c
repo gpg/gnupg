@@ -728,6 +728,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       /* Overriding session key voids compliance.  */
       && !opt.override_session_key
       /* Check symmetric cipher.  */
+      && gnupg_gcrypt_is_compliant (CO_DE_VS)
       && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo,
                                     GCRY_CIPHER_MODE_CFB))
     {
@@ -2519,6 +2520,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 
       /* Compute compliance with CO_DE_VS.  */
       if (pk && is_status_enabled ()
+          && gnupg_gcrypt_is_compliant (CO_DE_VS)
           && gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0, pk->pkey,
                                     nbits_from_pk (pk), NULL)
           && gnupg_digest_is_compliant (CO_DE_VS, sig->digest_algo))

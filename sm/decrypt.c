@@ -541,7 +541,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                                               decrypt_filter,
                                               &dfparm);
 
-                      if (is_de_vs)
+                      if (is_de_vs && gnupg_gcrypt_is_compliant (CO_DE_VS))
                         gpgsm_status (ctrl, STATUS_DECRYPTION_COMPLIANCE_MODE,
                                       gnupg_status_compliance_flag (CO_DE_VS));
 

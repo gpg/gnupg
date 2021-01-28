@@ -496,23 +496,71 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
     ; /* Use cached result.  */
   else if (compliance == CO_DE_VS)
     {
-      /* In DE_VS mode under Windows we require that the JENT RNG
-       * is active.  */
-#ifdef HAVE_W32_SYSTEM
-      char *buf;
-      char *fields[5];
+      /* We also check whether the library is at all compliant.  */
+      result = gnupg_gcrypt_is_compliant (compliance);
 
-      buf = gcry_get_config (0, "rng-type");
-      if (buf
-          && split_fields_colon (buf, fields, DIM (fields)) >= 5
-          && atoi (fields[4]) > 0)
-        result = 1;
+      /* In DE_VS mode under Windows we also require that the JENT RNG
+       * is active.  Check it here. */
+#ifdef HAVE_W32_SYSTEM
+      if (result == 1)
+        {
+          char *buf;
+          const char *fields[5];
+
+          buf = gcry_get_config (0, "rng-type");
+          if (buf
+              && split_fields_colon (buf, fields, DIM (fields)) >= 5
+              && atoi (fields[4]) > 0)
+            ; /* Field 5 > 0 := Jent is active.  */
+          else
+            result = 0;  /* Force non-compliance.  */
+          gcry_free (buf);
+        }
+#endif /*HAVE_W32_SYSTEM*/
+    }
+  else
+    result = 1;
+
+  return result;
+}
+
+
+/* Return true if the used Libgcrypt is compliant in COMPLIANCE
+ * mode.  */
+int
+gnupg_gcrypt_is_compliant (enum gnupg_compliance_mode compliance)
+{
+  static int result = -1;
+
+  if (result != -1)
+    ; /* Use cached result.  */
+  else if (compliance == CO_DE_VS)
+    {
+      int is19orlater = !!gcry_check_version ("1.9.0");
+
+      /* A compliant version of GnuPG requires Libgcrypt >= 1.8.1 and
+       * less than 1.9.0.  Version 1.9.0 requires a re-evaluation and
+       * can thus not be used for de-vs.  */
+      if (gcry_check_version ("1.8.1") && !is19orlater)
+        result = 1;  /* Compliant version of Libgcrypt.  */
+      else if (is19orlater)
+        {
+          /* Libgcrypt might be nice enough to tell us whether it is
+           * compliant.  */
+          char *buf;
+          char *fields[3];
+
+          buf = gcry_get_config (0, "compliance");
+          if (buf
+              && split_fields_colon (buf, fields, DIM (fields)) >= 2
+              && strstr (fields[1], "de-vs"))
+            result = 1;  /* Compliant.  */
+          else
+            result = 0;  /* Non-compliant.  */
+          gcry_free (buf);
+        }
       else
-        result = 0;
-      gcry_free (buf);
-#else /*!HAVE_W32_SYSTEM*/
-      result = 1;  /* Not Windows - RNG is good.  */
-#endif /*!HAVE_W32_SYSTEM*/
+        result = 0;  /* Non-compliant version of Libgcrypt.  */
     }
   else
     result = 1;
