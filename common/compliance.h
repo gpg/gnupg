@@ -73,6 +73,7 @@ int gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance,
                              int producer,
                              digest_algo_t digest);
 int gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance);
+int gnupg_gcrypt_is_compliant (enum gnupg_compliance_mode compliance);
 
 const char *gnupg_status_compliance_flag (enum gnupg_compliance_mode
                                           compliance);

@@ -807,7 +807,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
         }
     }
 
-  if (compliant)
+  if (compliant && gnupg_gcrypt_is_compliant (CO_DE_VS))
     gpgsm_status (ctrl, STATUS_ENCRYPTION_COMPLIANCE_MODE,
                   gnupg_status_compliance_flag (CO_DE_VS));
 
