@@ -49,36 +49,6 @@ struct list_external_parm_s
 };
 
 
-/* This table is to map Extended Key Usage OIDs to human readable
-   names.  */
-struct
-{
-  const char *oid;
-  const char *name;
-} key_purpose_map[] = {
-  { "1.3.6.1.5.5.7.3.1",  "serverAuth" },
-  { "1.3.6.1.5.5.7.3.2",  "clientAuth" },
-  { "1.3.6.1.5.5.7.3.3",  "codeSigning" },
-  { "1.3.6.1.5.5.7.3.4",  "emailProtection" },
-  { "1.3.6.1.5.5.7.3.5",  "ipsecEndSystem" },
-  { "1.3.6.1.5.5.7.3.6",  "ipsecTunnel" },
-  { "1.3.6.1.5.5.7.3.7",  "ipsecUser" },
-  { "1.3.6.1.5.5.7.3.8",  "timeStamping" },
-  { "1.3.6.1.5.5.7.3.9",  "ocspSigning" },
-  { "1.3.6.1.5.5.7.3.10", "dvcs" },
-  { "1.3.6.1.5.5.7.3.11", "sbgpCertAAServerAuth" },
-  { "1.3.6.1.5.5.7.3.13", "eapOverPPP" },
-  { "1.3.6.1.5.5.7.3.14", "wlanSSID" },
-
-  { "2.16.840.1.113730.4.1", "serverGatedCrypto.ns" }, /* Netscape. */
-  { "1.3.6.1.4.1.311.10.3.3", "serverGatedCrypto.ms"}, /* Microsoft. */
-
-  { "1.3.6.1.5.5.7.48.1.5", "ocspNoCheck" },
-
-  { NULL, NULL }
-};
-
-
 /* Do not print this extension in the list of extensions.  This is set
    for oids which are already available via ksba functions. */
 #define OID_FLAG_SKIP 1
@@ -86,6 +56,8 @@ struct
 #define OID_FLAG_UTF8 2
 /* The extension can be trnted as a hex string.  */
 #define OID_FLAG_HEX  4
+/* Define if this specififies a key purpose.  */
+#define OID_FLAG_KP   8
 
 /* A table mapping OIDs to a descriptive string. */
 static struct
@@ -143,7 +115,23 @@ static struct
   { "1.3.6.1.5.5.7.1.10", "acProxying" },
   { "1.3.6.1.5.5.7.1.11", "subjectInfoAccess" },
 
+  { "1.3.6.1.5.5.7.3.1",  "serverAuth", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.2",  "clientAuth", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.3",  "codeSigning", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.4",  "emailProtection", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.5",  "ipsecEndSystem", OID_FLAG_KP }, /* historic */
+  { "1.3.6.1.5.5.7.3.6",  "ipsecTunnel", OID_FLAG_KP },    /* historic */
+  { "1.3.6.1.5.5.7.3.7",  "ipsecUser", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.8",  "timeStamping", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.9",  "ocspSigning", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.10", "dvcs", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.11", "sbgpCertAAServerAuth", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.13", "eapOverPPP", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.14", "wlanSSID", OID_FLAG_KP },
+  { "1.3.6.1.5.5.7.3.17", "ipsecIKE", OID_FLAG_KP },       /* rfc-4945 */
+
   { "1.3.6.1.5.5.7.48.1", "ocsp" },
+  { "1.3.6.1.5.5.7.48.1.5", "ocspNoCheck", OID_FLAG_KP },
   { "1.3.6.1.5.5.7.48.2", "caIssuers" },
   { "1.3.6.1.5.5.7.48.3", "timeStamping" },
   { "1.3.6.1.5.5.7.48.5", "caRepository" },
@@ -186,6 +174,7 @@ static struct
   { "2.16.840.1.113730.1.11", "netscape-userPicture" },
   { "2.16.840.1.113730.1.12", "netscape-ssl-server-name" },
   { "2.16.840.1.113730.1.13", "netscape-comment" },
+  { "2.16.840.1.113730.4.1", "serverGatedCrypto.ns", OID_FLAG_KP },
 
   /* GnuPG extensions */
   { "1.3.6.1.4.1.11591.2.1.1", "pkaAddress" },
@@ -201,20 +190,29 @@ static struct
   { "1.3.6.1.4.1.41482.3.8", "yubikey-pin-touch-policy", OID_FLAG_HEX },
   { "1.3.6.1.4.1.41482.3.9", "yubikey-formfactor", OID_FLAG_HEX },
 
+  /* Microsoft extensions.  */
+  { "1.3.6.1.4.1.311.10.3.3", "serverGatedCrypto.ms", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.20.2.2", "microsoft-smartcard-logon" },
+
+  /* Oterh vendor extensions.  */
+  { "1.3.6.1.4.1.30205.13.1.1", "trusted-disk", OID_FLAG_KP },
+
   { NULL }
 };
 
 
-/* Return the description for OID; if no description is available
-   NULL is returned. */
+/* Return the description for OID; if no description is available NULL
+ * is returned.  If MATCHFLAG is set the flag of the OID must match
+ * MATCHFLAG; otherwise NULL is returned.  */
 static const char *
-get_oid_desc (const char *oid, unsigned int *flag)
+get_oid_desc (const char *oid, unsigned int matchflag, unsigned int *flag)
 {
   int i;
 
   if (oid)
     for (i=0; oidtranstbl[i].oid; i++)
-      if (!strcmp (oidtranstbl[i].oid, oid))
+      if (!strcmp (oidtranstbl[i].oid, oid)
+          && (!matchflag || (oidtranstbl[i].flag & matchflag)))
         {
           if (flag)
             *flag = oidtranstbl[i].flag;
@@ -849,7 +847,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   es_putc ('\n', fp);
 
   oid = ksba_cert_get_digest_algo (cert);
-  s = get_oid_desc (oid, NULL);
+  s = get_oid_desc (oid, 0, NULL);
   es_fprintf (fp, "     hashAlgo: %s%s%s%s\n", oid, s?" (":"",s?s:"",s?")":"");
 
   {
@@ -948,10 +946,8 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
           while (p && (pend=strchr (p, ':')))
             {
               *pend++ = 0;
-              for (i=0; key_purpose_map[i].oid; i++)
-                if ( !strcmp (key_purpose_map[i].oid, p) )
-                  break;
-              es_fputs (key_purpose_map[i].oid?key_purpose_map[i].name:p, fp);
+              s = get_oid_desc (p, OID_FLAG_KP, NULL);
+              es_fputs (s ? s : p, fp);
               p = pend;
               if (*p != 'C')
                 es_fputs (" (suggested)", fp);
@@ -981,10 +977,8 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
           while (p && (pend=strchr (p, ':')))
             {
               *pend++ = 0;
-              for (i=0; key_purpose_map[i].oid; i++)
-                if ( !strcmp (key_purpose_map[i].oid, p) )
-                  break;
-              es_fputs (p, fp);
+              s = get_oid_desc (p, OID_FLAG_KP, NULL);
+              es_fputs (s?s:p, fp);
               p = pend;
               if (*p == 'C')
                 es_fputs (" (critical)", fp);
@@ -1061,7 +1055,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
                                                          &name)); idx++)
     {
       es_fputs ("     authInfo: ", fp);
-      s = get_oid_desc (string, NULL);
+      s = get_oid_desc (string, 0, NULL);
       es_fprintf (fp, "%s%s%s%s\n", string, s?" (":"", s?s:"", s?")":"");
       print_names_raw (fp, -15, name);
       ksba_name_release (name);
@@ -1078,7 +1072,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
                                                          &name)); idx++)
     {
       es_fputs ("  subjectInfo: ", fp);
-      s = get_oid_desc (string, NULL);
+      s = get_oid_desc (string, 0, NULL);
       es_fprintf (fp, "%s%s%s%s\n", string, s?" (":"", s?s:"", s?")":"");
       print_names_raw (fp, -15, name);
       ksba_name_release (name);
@@ -1096,7 +1090,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
     {
       unsigned int flag;
 
-      s = get_oid_desc (oid, &flag);
+      s = get_oid_desc (oid, 0, &flag);
       if ((flag & OID_FLAG_SKIP))
         continue;
 
@@ -1158,12 +1152,12 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   ksba_sexp_t sexp;
   char *dn;
   ksba_isotime_t t;
-  int idx, i;
+  int idx;
   int is_ca, chainlen;
   unsigned int kusage;
   char *string, *p, *pend;
   size_t off, len;
-  const char *oid;
+  const char *oid, *s;
   const unsigned char *cert_der = NULL;
 
 
@@ -1264,10 +1258,8 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
           while (p && (pend=strchr (p, ':')))
             {
               *pend++ = 0;
-              for (i=0; key_purpose_map[i].oid; i++)
-                if ( !strcmp (key_purpose_map[i].oid, p) )
-                  break;
-              es_fputs (key_purpose_map[i].oid?key_purpose_map[i].name:p, fp);
+              s = get_oid_desc (p, OID_FLAG_KP, NULL);
+              es_fputs (s? s : p, fp);
               p = pend;
               if (*p != 'C')
                 es_fputs (" (suggested)", fp);
