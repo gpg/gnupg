@@ -1010,6 +1010,24 @@ list_nks (card_info_t info, estream_t fp, int no_key_lookup)
 }
 
 
+/* List PKCS#15 card specific data.  */
+static void
+list_p15 (card_info_t info, estream_t fp, int no_key_lookup)
+{
+  static struct keyinfolabel_s keyinfolabels[] = {
+    { NULL, NULL }
+  };
+  int i;
+
+  tty_fprintf (fp, "PIN retry counter :");
+  for (i=0; i < DIM (info->chvinfo); i++)
+    {
+      tty_fprintf (fp, " %d", info->chvinfo[i]);
+    }
+  tty_fprintf (fp, "\n");
+  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
+}
+
 
 static void
 print_a_version (estream_t fp, const char *prefix, unsigned int value)
@@ -1072,6 +1090,7 @@ list_card (card_info_t info, int no_key_lookup)
     case APP_TYPE_OPENPGP: list_openpgp (info, fp, no_key_lookup); break;
     case APP_TYPE_PIV:     list_piv (info, fp, no_key_lookup); break;
     case APP_TYPE_NKS:     list_nks (info, fp, no_key_lookup); break;
+    case APP_TYPE_P15:     list_p15 (info, fp, no_key_lookup); break;
     default: break;
     }
 }
