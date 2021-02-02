@@ -2451,11 +2451,6 @@ opposite meaning. The options are:
   on the keyring. This option is the same as running the @option{--edit-key}
   command "clean" after import. Defaults to no.
 
-  @item import-drop-uids
-  Do not import any user ids or their binding signatures.  This option
-  can be used to update only the subkeys or other non-user id related
-  information.
-
   @item self-sigs-only
   Accept only self-signatures while importing a key.  All other key
   signatures are skipped at an early import stage.  This option can be
@@ -2638,11 +2633,6 @@ opposite meaning.  The options are:
   most recent self-signature on each user ID. This option is the same as
   running the @option{--edit-key} command "minimize" before export except
   that the local copy of the key is not modified. Defaults to no.
-
-  @item export-drop-uids
-  Do no export any user id or attribute packets or their associates
-  signatures.  Note that due to missing user ids the resulting output is
-  not strictly RFC-4880 compliant.
 
   @item export-pka
   Instead of outputting the key material output PKA records suitable

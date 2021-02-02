@@ -128,7 +128,6 @@ static int chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 static int delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock,
                              u32 *keyid, unsigned int options);
 static int any_uid_left (kbnode_t keyblock);
-static int remove_all_uids (kbnode_t *keyblock);
 static void remove_all_non_self_sigs (kbnode_t *keyblock, u32 *keyid);
 static int merge_blocks (ctrl_t ctrl, unsigned int options,
                          kbnode_t keyblock_orig,
@@ -195,9 +194,6 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 
       {"import-minimal",IMPORT_MINIMAL|IMPORT_CLEAN,NULL,
        N_("remove as much as possible from key after import")},
-
-      {"import-drop-uids", IMPORT_DROP_UIDS, NULL,
-       N_("do not import user id or attribute packets")},
 
       {"self-sigs-only", IMPORT_SELF_SIGS_ONLY, NULL,
        N_("ignore key-signatures which are not self-signatures")},
@@ -1918,9 +1914,7 @@ import_one_real (ctrl_t ctrl,
     }
 
 
-  /* Unless import-drop-uids has been requested we don't allow import
-   * of a key without UIDs.  */
-  if (!uidnode && !(options & IMPORT_DROP_UIDS))
+  if (!uidnode)
     {
       if (!silent)
         log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
@@ -1955,9 +1949,7 @@ import_one_real (ctrl_t ctrl,
     remove_all_non_self_sigs (&keyblock, keyid);
 
   /* Remove or collapse the user ids.  */
-  if ((options & IMPORT_DROP_UIDS))
-    remove_all_uids (&keyblock);
-  else if ((options & IMPORT_COLLAPSE_UIDS))
+  if ((options & IMPORT_COLLAPSE_UIDS))
     collapse_uids (&keyblock);
 
   if ((options & IMPORT_COLLAPSE_SUBKEYS))
@@ -2008,15 +2000,13 @@ import_one_real (ctrl_t ctrl,
 	  }
     }
 
-  /* Delete invalid parts and without the drop option bail out if
-   * there are no user ids.  */
-  if (!delete_inv_parts (ctrl, keyblock, keyid, options)
-      && !(options & IMPORT_DROP_UIDS) )
+  /* Delete invalid parts and bail out if there are no user ids left.  */
+  if (!delete_inv_parts (ctrl, keyblock, keyid, options))
     {
       if (!silent)
         {
-          log_error( _("key %s: no valid user IDs\n"), keystr_from_pk(pk));
-          if (!opt.quiet )
+          log_error ( _("key %s: no valid user IDs\n"), keystr_from_pk(pk));
+          if (!opt.quiet)
             log_info(_("this may be caused by a missing self-signature\n"));
         }
       stats->no_user_id++;
@@ -3920,44 +3910,6 @@ any_uid_left (kbnode_t keyblock)
     if (node->pkt->pkttype == PKT_USER_ID)
       return 1;
   return 0;
-}
-
-
-
-/* Delete all user ids from KEYBLOCK.
- * Returns: True if the keyblock has changed.  */
-static int
-remove_all_uids (kbnode_t *keyblock)
-{
-  kbnode_t node;
-  int any = 0;
-
-  for (node = *keyblock; node; node = node->next)
-    {
-      if (is_deleted_kbnode (node))
-	continue;
-
-      if (node->pkt->pkttype != PKT_USER_ID)
-	continue;
-
-      /* We are at the first user id.  Delete everything up to the
-       * first subkey.  */
-      for (; node; node = node->next)
-	{
-	  if (is_deleted_kbnode (node))
-	    continue;
-
-	  if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-              || node->pkt->pkttype == PKT_SECRET_SUBKEY)
-	    break;
-          delete_kbnode (node);
-          any = 1;
-	}
-      break;  /* All done.  */
-    }
-
-  commit_kbnode (keyblock);
-  return any;
 }
 
 
