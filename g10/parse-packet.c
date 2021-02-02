@@ -268,9 +268,7 @@ register_known_notation (const char *string)
     {
       sl = add_to_strlist (&known_notations_list,
                            "preferred-email-encoding@pgp.com");
-      sl->flags = 32;
-      sl = add_to_strlist (&known_notations_list, "pka-address@gnupg.org");
-      sl->flags = 21;
+      sl->flags = 32;  /* Length of the string.  */
     }
   if (!string)
     return; /* Only initialized the default known notations.  */

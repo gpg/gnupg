@@ -379,7 +379,6 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define EXPORT_RESET_SUBKEY_PASSWD       (1<<3)
 #define EXPORT_MINIMAL                   (1<<4)
 #define EXPORT_CLEAN                     (1<<5)
-#define EXPORT_PKA_FORMAT                (1<<6)
 #define EXPORT_DANE_FORMAT               (1<<7)
 #define EXPORT_BACKUP                    (1<<10)
 
@@ -407,8 +406,6 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define VERIFY_SHOW_KEYSERVER_URLS       (1<<4)
 #define VERIFY_SHOW_UID_VALIDITY         (1<<5)
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
-#define VERIFY_PKA_LOOKUPS               (1<<7)
-#define VERIFY_PKA_TRUST_INCREASE        (1<<8)
 #define VERIFY_SHOW_PRIMARY_UID_ONLY     (1<<9)
 
 #define KEYSERVER_HTTP_PROXY             (1<<0)
@@ -416,7 +413,6 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define KEYSERVER_ADD_FAKE_V3            (1<<2)
 #define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<3)
 #define KEYSERVER_HONOR_KEYSERVER_URL    (1<<4)
-#define KEYSERVER_HONOR_PKA_RECORD       (1<<5)
 
 
 #endif /*G10_OPTIONS_H*/

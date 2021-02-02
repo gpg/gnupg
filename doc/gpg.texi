@@ -1434,18 +1434,6 @@ the opposite meaning. The options are:
   all the AKA lines as well as photo Ids are not shown with the signature
   verification status.
 
-  @item pka-lookups
-  @opindex verify-options:pka-lookups
-  Enable PKA lookups to verify sender addresses. Note that PKA is based
-  on DNS, and so enabling this option may disclose information on when
-  and what signatures are verified or to whom data is encrypted. This
-  is similar to the "web bug" described for the @option{--auto-key-retrieve}
-  option.
-
-  @item pka-trust-increase
-  @opindex verify-options:pka-trust-increase
-  Raise the trust in a signature to full if the signature passes PKA
-  validation. This option is only meaningful if pka-lookups is set.
 @end table
 
 @item --enable-large-rsa
@@ -1810,9 +1798,6 @@ list.  The default is "local,wkd".
   @item cert
   Locate a key using DNS CERT, as specified in RFC-4398.
 
-  @item pka
-  Locate a key using DNS PKA.
-
   @item dane
   Locate a key using DANE, as specified
   in draft-ietf-dane-openpgpkey-05.txt.
@@ -1896,10 +1881,7 @@ preferred keyserver for data signatures.
 disabled by removing WKD from the auto-key-locate list or by using the
 option @option{--disable-signer-uid}.
 
-4. If the option @option{honor-pka-record} is active, the legacy PKA
-method is used.
-
-5. If any keyserver is configured and the Issuer Fingerprint is part
+4. If any keyserver is configured and the Issuer Fingerprint is part
 of the signature (since GnuPG 2.1.16), the configured keyservers are
 tried.
 
@@ -1980,11 +1962,6 @@ are available for all keyserver types, some common options are:
   "web bug": The creator of the key can see when the keys is
   refreshed.  Thus this option is not enabled by default.
 
-  @item honor-pka-record
-  If @option{--auto-key-retrieve} is used, and the signature being
-  verified has a PKA record, then use the PKA information to fetch
-  the key. Defaults to "yes".
-
   @item include-subkeys
   When receiving a key, include subkeys as potential targets. Note that
   this option is not used with HKP keyservers, as they do not support
@@ -2002,8 +1979,7 @@ are available for all keyserver types, some common options are:
 @end table
 
 The default list of options is: "self-sigs-only, import-clean,
-repair-keys, repair-pks-subkey-bug, export-attributes,
-honor-pka-record".
+repair-keys, repair-pks-subkey-bug, export-attributes".
 
 
 @item --completes-needed @var{n}
@@ -2434,9 +2410,9 @@ opposite meaning. The options are:
 
   @item import-export
   Run the entire import code but instead of storing the key to the
-  local keyring write it to the output.  The export options
-  @option{export-pka} and @option{export-dane} affect the output.  This
-  option can be used to remove all invalid parts from a key without the
+  local keyring write it to the output.  The export option
+  @option{export-dane} affect the output.  This option can for example
+  be used to remove all invalid parts from a key without the
   need to store it.
 
   @item merge-only
@@ -2633,11 +2609,6 @@ opposite meaning.  The options are:
   most recent self-signature on each user ID. This option is the same as
   running the @option{--edit-key} command "minimize" before export except
   that the local copy of the key is not modified. Defaults to no.
-
-  @item export-pka
-  Instead of outputting the key material output PKA records suitable
-  to put into DNS zone files.  An ORIGIN line is printed before each
-  record to allow diverting the records to the corresponding zone file.
 
   @item export-dane
   Instead of outputting the key material output OpenPGP DANE records

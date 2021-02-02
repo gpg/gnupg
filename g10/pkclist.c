@@ -710,57 +710,6 @@ check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
   if ((trustlevel & TRUST_FLAG_DISABLED))
     log_info (_("Note: This key has been disabled.\n"));
 
-  /* If we have PKA information adjust the trustlevel. */
-  if (sig->pka_info && sig->pka_info->valid && !(uidbased && !targetuid))
-    {
-      unsigned char fpr[MAX_FINGERPRINT_LEN];
-      PKT_public_key *primary_pk;
-      size_t fprlen;
-      int okay;
-
-      primary_pk = xmalloc_clear (sizeof *primary_pk);
-      get_pubkey (ctrl, primary_pk, pk->main_keyid);
-      fingerprint_from_pk (primary_pk, fpr, &fprlen);
-      free_public_key (primary_pk);
-
-      if ( fprlen == 20 && !memcmp (sig->pka_info->fpr, fpr, 20) )
-        {
-          okay = 1;
-          write_status_text (STATUS_PKA_TRUST_GOOD, sig->pka_info->email);
-          log_info (_("Note: Verified signer's address is '%s'\n"),
-                    sig->pka_info->email);
-        }
-      else
-        {
-          okay = 0;
-          write_status_text (STATUS_PKA_TRUST_BAD, sig->pka_info->email);
-          log_info (_("Note: Signer's address '%s' "
-                      "does not match DNS entry\n"), sig->pka_info->email);
-        }
-
-      switch ( (trustlevel & TRUST_MASK) )
-        {
-        case TRUST_UNKNOWN:
-        case TRUST_UNDEFINED:
-        case TRUST_MARGINAL:
-          if (okay && opt.verify_options&VERIFY_PKA_TRUST_INCREASE)
-            {
-              trustlevel = ((trustlevel & ~TRUST_MASK) | TRUST_FULLY);
-              log_info (_("trustlevel adjusted to FULL"
-                          " due to valid PKA info\n"));
-            }
-          /* fall through */
-        case TRUST_FULLY:
-          if (!okay)
-            {
-              trustlevel = ((trustlevel & ~TRUST_MASK) | TRUST_NEVER);
-              log_info (_("trustlevel adjusted to NEVER"
-                          " due to bad PKA info\n"));
-            }
-          break;
-        }
-    }
-
   /* Now let the user know what up with the trustlevel. */
   switch ( (trustlevel & TRUST_MASK) )
     {

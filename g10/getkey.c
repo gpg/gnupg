@@ -1080,10 +1080,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	      break;
 
 	    case AKL_PKA:
-	      mechanism_string = "PKA";
-	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_pka (ctrl, name, &fpr, &fpr_len);
-	      glo_ctrl.in_auto_key_retrieve--;
+	      /* This is now obsolete.  */
 	      break;
 
 	    case AKL_DANE:
@@ -1151,7 +1148,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	  /* Use the fingerprint of the key that we actually fetched.
 	   * This helps prevent problems where the key that we fetched
 	   * doesn't have the same name that we used to fetch it.  In
-	   * the case of CERT and PKA, this is an actual security
+	   * the case of CERT, this is an actual security
 	   * requirement as the URL might point to a key put in by an
 	   * attacker.  By forcing the use of the fingerprint, we
 	   * won't use the attacker's key here. */

@@ -1695,83 +1695,6 @@ do_proc_packets (CTX c, iobuf_t a)
 }
 
 
-/* Helper for pka_uri_from_sig to parse the to-be-verified address out
-   of the notation data. */
-static pka_info_t *
-get_pka_address (PKT_signature *sig)
-{
-  pka_info_t *pka = NULL;
-  struct notation *nd,*notation;
-
-  notation=sig_to_notation(sig);
-
-  for(nd=notation;nd;nd=nd->next)
-    {
-      if(strcmp(nd->name,"pka-address@gnupg.org")!=0)
-        continue; /* Not the notation we want. */
-
-      /* For now we only use the first valid PKA notation. In future
-	 we might want to keep additional PKA notations in a linked
-	 list. */
-      if (is_valid_mailbox (nd->value))
-	{
-	  pka = xmalloc (sizeof *pka + strlen(nd->value));
-	  pka->valid = 0;
-	  pka->checked = 0;
-	  pka->uri = NULL;
-	  strcpy (pka->email, nd->value);
-	  break;
-	}
-    }
-
-  free_notation(notation);
-
-  return pka;
-}
-
-
-/* Return the URI from a DNS PKA record.  If this record has already
-   be retrieved for the signature we merely return it; if not we go
-   out and try to get that DNS record. */
-static const char *
-pka_uri_from_sig (CTX c, PKT_signature *sig)
-{
-  if (!sig->flags.pka_tried)
-    {
-      log_assert (!sig->pka_info);
-      sig->flags.pka_tried = 1;
-      sig->pka_info = get_pka_address (sig);
-      if (sig->pka_info)
-        {
-          char *url;
-          unsigned char *fpr;
-          size_t fprlen;
-
-          if (!gpg_dirmngr_get_pka (c->ctrl, sig->pka_info->email,
-                                    &fpr, &fprlen, &url))
-            {
-              if (fpr && fprlen == sizeof sig->pka_info->fpr)
-                {
-                  memcpy (sig->pka_info->fpr, fpr, fprlen);
-                  if (url)
-                    {
-                      sig->pka_info->valid = 1;
-                      if (!*url)
-                        xfree (url);
-                      else
-                        sig->pka_info->uri = url;
-                      url = NULL;
-                    }
-                }
-              xfree (fpr);
-              xfree (url);
-            }
-        }
-    }
-  return sig->pka_info? sig->pka_info->uri : NULL;
-}
-
-
 /* Return true if the AKL has the WKD method specified.  */
 static int
 akl_has_wkd_method (void)
@@ -2138,44 +2061,6 @@ check_sig_and_print (CTX c, kbnode_t node)
         log_debug ("lookup via %s failed: %s\n", "WKD", gpg_strerror (res));
     }
 
-  /* If the avove methods didn't work, our next try is to use the URI
-   * from a DNS PKA record.  This is a legacy method which will
-   * eventually be removed.  */
-  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
-      && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
-      && (opt.keyserver_options.options & KEYSERVER_HONOR_PKA_RECORD))
-    {
-      const char *uri = pka_uri_from_sig (c, sig);
-
-      if (uri)
-        {
-          /* FIXME: We might want to locate the key using the
-             fingerprint instead of the keyid. */
-          int res;
-          struct keyserver_spec *spec;
-
-          spec = parse_keyserver_uri (uri, 1);
-          if (spec)
-            {
-              if (DBG_LOOKUP)
-                log_debug ("trying auto-key-retrieve method %s\n", "PKA");
-
-              free_public_key (pk);
-              pk = NULL;
-              glo_ctrl.in_auto_key_retrieve++;
-              res = keyserver_import_keyid (c->ctrl, sig->keyid, spec, 1);
-              glo_ctrl.in_auto_key_retrieve--;
-              free_keyserver_spec (spec);
-              if (!res)
-                rc = do_check_sig (c, node, extrahash, extrahashlen, NULL,
-                                   NULL, &is_expkey, &is_revkey, &pk);
-              else if (DBG_LOOKUP)
-                log_debug ("lookup via %s failed: %s\n", "PKA",
-                           gpg_strerror (res));
-            }
-        }
-    }
-
   /* If the above methods didn't work, our next try is to locate
    * the key via its fingerprint from a keyserver.  This requires
    * that the signers fingerprint is encoded in the signature.  */
@@ -2466,8 +2351,6 @@ check_sig_and_print (CTX c, kbnode_t node)
          how to resolve a conflict.  */
       if (!rc)
         {
-          if ((opt.verify_options & VERIFY_PKA_LOOKUPS))
-            pka_uri_from_sig (c, sig); /* Make sure PKA info is available. */
           rc = check_signatures_trust (c->ctrl, keyblock, pk, sig);
         }
 

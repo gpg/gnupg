@@ -99,8 +99,6 @@ static struct parse_options keyserver_opts[]=
      N_("automatically retrieve keys when verifying signatures")},
     {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL,
      N_("honor the preferred keyserver URL set on the key")},
-    {"honor-pka-record",KEYSERVER_HONOR_PKA_RECORD,NULL,
-     N_("honor the PKA record set on a key when retrieving keys")},
     {NULL,0,NULL,NULL}
   };
 
@@ -2017,39 +2015,6 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
 
   xfree(url);
   xfree(look);
-
-  return err;
-}
-
-/* Import key pointed to by a PKA record. Return the requested
-   fingerprint in fpr. */
-gpg_error_t
-keyserver_import_pka (ctrl_t ctrl, const char *name,
-                      unsigned char **fpr, size_t *fpr_len)
-{
-  gpg_error_t err;
-  char *url;
-
-  err = gpg_dirmngr_get_pka (ctrl, name, fpr, fpr_len, &url);
-  if (url && *url && fpr && fpr_len)
-    {
-      /* An URL is available.  Lookup the key. */
-      struct keyserver_spec *spec;
-      spec = parse_keyserver_uri (url, 1);
-      if (spec)
-	{
-	  err = keyserver_import_fprint (ctrl, *fpr, *fpr_len, spec, 0);
-	  free_keyserver_spec (spec);
-	}
-    }
-  xfree (url);
-
-  if (err)
-    {
-      xfree(*fpr);
-      *fpr = NULL;
-      *fpr_len = 0;
-    }
 
   return err;
 }

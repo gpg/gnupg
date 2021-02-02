@@ -93,10 +93,9 @@ static int do_export_stream (ctrl_t ctrl, iobuf_t out,
                              strlist_t users, int secret,
                              kbnode_t *keyblock_out, unsigned int options,
 			     export_stats_t stats, int *any);
-static gpg_error_t print_pka_or_dane_records
+static gpg_error_t print_dane_records
 /**/                 (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
-                      const void *data, size_t datalen,
-                      int print_pka, int print_dane);
+                      const void *data, size_t datalen);
 
 
 static void
@@ -127,7 +126,6 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
        N_("remove as much as possible from key during export")},
 
-      {"export-pka", EXPORT_PKA_FORMAT, NULL, NULL },
       {"export-dane", EXPORT_DANE_FORMAT, NULL, NULL },
 
       {"backup", EXPORT_BACKUP, NULL,
@@ -157,7 +155,7 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       *options |= (EXPORT_LOCAL_SIGS | EXPORT_ATTRIBUTES
                    | EXPORT_SENSITIVE_REVKEYS);
       *options &= ~(EXPORT_CLEAN | EXPORT_MINIMAL
-                    | EXPORT_PKA_FORMAT | EXPORT_DANE_FORMAT);
+                    | EXPORT_DANE_FORMAT);
     }
 
   return rc;
@@ -413,7 +411,7 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options,
   if (rc)
     return rc;
 
-  if ( opt.armor && !(options & (EXPORT_PKA_FORMAT|EXPORT_DANE_FORMAT)) )
+  if ( opt.armor && !(options & EXPORT_DANE_FORMAT) )
     {
       afx = new_armor_context ();
       afx->what = secret? 5 : 1;
@@ -1334,7 +1332,7 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor,
   if (opt.verbose)
     log_info (_("writing to '%s'\n"), iobuf_get_fname_nonnull (out));
 
-  if ((options & (EXPORT_PKA_FORMAT|EXPORT_DANE_FORMAT)))
+  if ((options & EXPORT_DANE_FORMAT))
     {
       with_armor = 0;
       out_help = iobuf_temp ();
@@ -1371,7 +1369,7 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor,
     }
   err = 0;
 
-  if (out_help && pk)
+  if (out_help && pk && (options & EXPORT_DANE_FORMAT))
     {
       const void *data;
       size_t datalen;
@@ -1380,10 +1378,7 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor,
       data = iobuf_get_temp_buffer (out_help);
       datalen = iobuf_get_temp_length (out_help);
 
-      err = print_pka_or_dane_records (out,
-                                       keyblock, pk, data, datalen,
-                                       (options & EXPORT_PKA_FORMAT),
-                                       (options & EXPORT_DANE_FORMAT));
+      err = print_dane_records (out, keyblock, pk, data, datalen);
     }
 
  leave:
@@ -1474,13 +1469,12 @@ apply_drop_subkey_filter (ctrl_t ctrl, kbnode_t keyblock,
 }
 
 
-/* Print DANE or PKA records for all user IDs in KEYBLOCK to OUT.  The
- * data for the record is taken from (DATA,DATELEN).  PK is the public
- * key packet with the primary key. */
+/* Print DANErecords for all user IDs in KEYBLOCK to OUT.  The data
+ * for the record is taken from (DATA,DATELEN).  PK is the public key
+ * packet with the primary key. */
 static gpg_error_t
-print_pka_or_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
-                           const void *data, size_t datalen,
-                           int print_pka, int print_dane)
+print_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
+                    const void *data, size_t datalen)
 {
   gpg_error_t err = 0;
   kbnode_t kbctx, node;
@@ -1532,25 +1526,7 @@ print_pka_or_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
       domain = strchr (mbox, '@');
       *domain++ = 0;
 
-      if (print_pka)
-        {
-          es_fprintf (fp, "$ORIGIN _pka.%s.\n; %s\n; ", domain, hexfpr);
-          print_utf8_buffer (fp, uid->name, uid->len);
-          es_putc ('\n', fp);
-          gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
-          xfree (hash);
-          hash = zb32_encode (hashbuf, 8*20);
-          if (!hash)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          len = strlen (hexfpr)/2;
-          es_fprintf (fp, "%s TYPE37 \\# %u 0006 0000 00 %02X %s\n\n",
-                      hash, 6 + len, len, hexfpr);
-        }
-
-      if (print_dane && hexdata)
+      if (1)
         {
           es_fprintf (fp, "$ORIGIN _openpgpkey.%s.\n; %s\n; ", domain, hexfpr);
           print_utf8_buffer (fp, uid->name, uid->len);
@@ -1930,13 +1906,12 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   if (!kdbhd)
     return gpg_error_from_syserror ();
 
-  /* For the PKA and DANE format open a helper iobuf and for DANE
+  /* For the DANE format open a helper iobuf and
    * enforce some options.  */
-  if ((options & (EXPORT_PKA_FORMAT | EXPORT_DANE_FORMAT)))
+  if ((options & EXPORT_DANE_FORMAT))
     {
       out_help = iobuf_temp ();
-      if ((options & EXPORT_DANE_FORMAT))
-        options |= EXPORT_MINIMAL | EXPORT_CLEAN;
+      options |= EXPORT_MINIMAL | EXPORT_CLEAN;
     }
 
   if (!users)
@@ -2110,9 +2085,9 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
           break;
         }
 
-      if (out_help)
+      if (out_help && (options & EXPORT_DANE_FORMAT))
         {
-          /* We want to write PKA or DANE records.  OUT_HELP has the
+          /* We want to write DANE records.  OUT_HELP has the
            * keyblock and we print a record for each uid to OUT. */
           const void *data;
           size_t datalen;
@@ -2121,10 +2096,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
           data = iobuf_get_temp_buffer (out_help);
           datalen = iobuf_get_temp_length (out_help);
 
-          err = print_pka_or_dane_records (out,
-                                           keyblock, pk, data, datalen,
-                                           (options & EXPORT_PKA_FORMAT),
-                                           (options & EXPORT_DANE_FORMAT));
+          err = print_dane_records (out, keyblock, pk, data, datalen);
           if (err)
             goto leave;
 

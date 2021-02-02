@@ -208,14 +208,6 @@ keyserver_import_cert (const char *name)
   return -1;
 }
 
-int
-keyserver_import_pka (const char *name,unsigned char *fpr)
-{
-  (void)name;
-  (void)fpr;
-  return -1;
-}
-
 gpg_error_t
 keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
                       unsigned char **fpr, size_t *fpr_len)
@@ -478,22 +470,6 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
   (void)r_cleartext;
   *r_serialno = NULL;
   return gpg_error (GPG_ERR_NO_SECKEY);
-}
-
-gpg_error_t
-gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
-                     unsigned char **r_fpr, size_t *r_fprlen,
-                     char **r_url)
-{
-  (void)ctrl;
-  (void)userid;
-  if (r_fpr)
-    *r_fpr = NULL;
-  if (r_fprlen)
-    *r_fprlen = 0;
-  if (r_url)
-    *r_url = NULL;
-  return gpg_error (GPG_ERR_NOT_FOUND);
 }
 
 gpg_error_t

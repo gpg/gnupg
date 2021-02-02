@@ -421,7 +421,6 @@ enum cmd_and_opt_values
     oAllowWeakKeySignatures,
     oFakedSystemTime,
     oNoAutostart,
-    oPrintPKARecords,
     oPrintDANERecords,
     oTOFUDefaultPolicy,
     oTOFUDBFormat,
@@ -810,7 +809,6 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oFastListMode, "fast-list-mode", "@"),
   ARGPARSE_s_n (oFixedListMode, "fixed-list-mode", "@"),
   ARGPARSE_s_n (oLegacyListMode, "legacy-list-mode", "@"),
-  ARGPARSE_s_n (oPrintPKARecords, "print-pka-records", "@"),
   ARGPARSE_s_n (oPrintDANERecords, "print-dane-records", "@"),
   ARGPARSE_s_s (oKeyidFormat, "keyid-format", "@"),
   ARGPARSE_s_n (oShowKeyring, "show-keyring", "@"),
@@ -2335,7 +2333,6 @@ main (int argc, char **argv)
     ctrl_t ctrl;
 
     static int print_dane_records;
-    static int print_pka_records;
     static int allow_large_chunks;
     static const char *homedirvalue;
     static const char *changeuser;
@@ -2409,7 +2406,7 @@ main (int argc, char **argv)
                                             | IMPORT_COLLAPSE_SUBKEYS
                                             | IMPORT_CLEAN);
     opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
-    opt.keyserver_options.options = KEYSERVER_HONOR_PKA_RECORD;
+    opt.keyserver_options.options = 0;
     opt.verify_options = (LIST_SHOW_UID_VALIDITY
                           | VERIFY_SHOW_POLICY_URLS
                           | VERIFY_SHOW_STD_NOTATIONS
@@ -3345,10 +3342,6 @@ main (int argc, char **argv)
 		   N_("show revoked and expired user IDs in signature verification")},
 		  {"show-primary-uid-only",VERIFY_SHOW_PRIMARY_UID_ONLY,NULL,
 		   N_("show only the primary user ID in signature verification")},
-		  {"pka-lookups",VERIFY_PKA_LOOKUPS,NULL,
-		   N_("validate signatures with PKA data")},
-		  {"pka-trust-increase",VERIFY_PKA_TRUST_INCREASE,NULL,
-		   N_("elevate the trust of signatures with valid PKA data")},
 		  {NULL,0,NULL,NULL}
 		};
 
@@ -3416,7 +3409,6 @@ main (int argc, char **argv)
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: /* Dummy */ break;
           case oLegacyListMode: opt.legacy_list_mode = 1; break;
-	  case oPrintPKARecords: print_pka_records = 1; break;
 	  case oPrintDANERecords: print_dane_records = 1; break;
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
@@ -3684,10 +3676,6 @@ main (int argc, char **argv)
       log_error ("invalid option \"%s\"; use \"%s\" instead\n",
                  "--print-dane-records",
                  "--export-options export-dane");
-    if (print_pka_records)
-      log_error ("invalid option \"%s\"; use \"%s\" instead\n",
-                 "--print-pks-records",
-                 "--export-options export-pka");
     if (log_get_errorcount (0))
       {
         write_status_failure ("option-checking", gpg_error(GPG_ERR_GENERAL));

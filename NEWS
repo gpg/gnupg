@@ -1,6 +1,12 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  * The legacy key discovory method PKA is no longer supported.  The
+    command --print-pka-records and the PKA related import and export
+    options have been removed.
+
+
+
   Changes also found in 2.2.21:
 
   * gpg: Add option --no-include-key-block. [#4856]
@@ -742,6 +748,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
     certificates are configured.  If build with GNUTLS, this was
     already the case.
 
+  Release-info: https://dev.gnupg.org/T4702
   See-also: gnupg-announce/2017q3/000415.html
 
   Release dates of 2.2.x versions:
