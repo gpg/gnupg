@@ -1359,7 +1359,9 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
       if (! uid_is_ok (&old->key, old->uid) && uid_is_ok (&new->key, uid))
         return -1;	/* Validity of the NEW key is better.  */
 
-      if (old->validity < new->validity)
+      if (new->validity != TRUST_EXPIRED && old->validity < new->validity)
+        return -1;	/* Validity of the NEW key is better.  */
+      if (old->validity == TRUST_EXPIRED && new->validity != TRUST_EXPIRED)
         return -1;	/* Validity of the NEW key is better.  */
 
       if (old->validity == new->validity && uid_is_ok (&new->key, uid)
