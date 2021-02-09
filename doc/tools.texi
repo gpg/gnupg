@@ -19,7 +19,6 @@ GnuPG comes with a couple of smaller tools:
 * gpg-connect-agent::     Communicate with a running agent.
 * dirmngr-client::        How to use the Dirmngr client tool.
 * gpgparsemail::          Parse a mail message into an annotated format
-* symcryptrun::           Call a simple symmetric encryption tool.
 * gpgtar::                Encrypt or sign files into an archive.
 * gpg-check-pattern::     Check a passphrase on stdin against the patternfile.
 @end menu
@@ -1840,128 +1839,6 @@ Squid's @option{external_acl_type} option.
 @mansect description
 The @command{gpgparsemail} is a utility currently only useful for
 debugging.  Run it with @code{--help} for usage information.
-
-
-
-@c
-@c   SYMCRYPTRUN
-@c
-@node symcryptrun
-@section Call a simple symmetric encryption tool
-@manpage symcryptrun.1
-@ifset manverb
-.B symcryptrun
-\- Call a simple symmetric encryption tool
-@end ifset
-
-@mansect synopsis
-@ifset manverb
-.B  symcryptrun
-.B \-\-class
-.I class
-.B \-\-program
-.I program
-.B \-\-keyfile
-.I keyfile
-.RB [ --decrypt | --encrypt ]
-.RI [ inputfile ]
-@end ifset
-
-@mansect description
-Sometimes simple encryption tools are already in use for a long time
-and there might be a desire to integrate them into the GnuPG
-framework.  The protocols and encryption methods might be non-standard
-or not even properly documented, so that a full-fledged encryption
-tool with an interface like @command{gpg} is not doable.
-@command{symcryptrun} provides a solution: It operates by calling the
-external encryption/decryption module and provides a passphrase for a
-key using the standard @command{pinentry} based mechanism through
-@command{gpg-agent}.
-
-Note, that @command{symcryptrun} is only available if GnuPG has been
-configured with @samp{--enable-symcryptrun} at build time.
-
-@menu
-* Invoking symcryptrun::   List of all commands and options.
-@end menu
-
-@manpause
-@node Invoking symcryptrun
-@subsection List of all commands and options
-
-@noindent
-@command{symcryptrun} is invoked this way:
-
-@example
-symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE
-   [--decrypt | --encrypt] [inputfile]
-@end example
-@mancont
-
-For encryption, the plain text must be provided on STDIN or as the
-argument @var{inputfile}, and the ciphertext will be output to STDOUT.
-For decryption vice versa.
-
-@var{CLASS} describes the calling conventions of the external tool.
-Currently it must be given as @samp{confucius}.  @var{PROGRAM} is
-the full filename of that external tool.
-
-For the class @samp{confucius} the option @option{--keyfile} is
-required; @var{keyfile} is the name of a file containing the secret key,
-which may be protected by a passphrase.  For detailed calling
-conventions, see the source code.
-
-@noindent
-Note, that @command{gpg-agent} must be running before starting
-@command{symcryptrun}.
-
-@noindent
-The following additional options may be used:
-
-@table @gnupgtabopt
-@item -v
-@itemx --verbose
-@opindex verbose
-Output additional information while running.
-
-@item -q
-@item --quiet
-@opindex q
-@opindex quiet
-Try to be as quiet as possible.
-
-@include opt-homedir.texi
-
-
-@item --log-file @var{file}
-@opindex log-file
-Append all logging output to @var{file}.  Use @file{socket://} to log
-to socket.  Default is to write logging information to STDERR.
-
-@end table
-
-@noindent
-The possible exit status codes of @command{symcryptrun} are:
-
-@table @code
-@item 0
-        Success.
-@item 1
-        Some error occurred.
-@item 2
-        No valid passphrase was provided.
-@item 3
-        The operation was canceled by the user.
-
-@end table
-
-@mansect see also
-@ifset isman
-@command{gpg}(1),
-@command{gpgsm}(1),
-@command{gpg-agent}(1),
-@end ifset
-@include see-also-note.texi
 
 
 @c

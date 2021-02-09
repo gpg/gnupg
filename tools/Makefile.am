@@ -37,12 +37,6 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 sbin_SCRIPTS = addgnupghome applygnupgdefaults
 
-if BUILD_SYMCRYPTRUN
-  symcryptrun = symcryptrun
-else
-  symcryptrun =
-endif
-
 if BUILD_WKS_TOOLS
   gpg_wks_server = gpg-wks-server
 else
@@ -51,7 +45,7 @@ endif
 
 libexec_PROGRAMS = gpg-wks-client
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card ${symcryptrun}
+bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit
 else
@@ -114,11 +108,6 @@ gpgconf_w32_LDFLAGS = $(gpgconf_LDFLAGS) -Wl,-subsystem,windows
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD =
-
-symcryptrun_SOURCES = symcryptrun.c
-symcryptrun_LDADD = $(LIBUTIL_LIBS) $(common_libs) $(pwquery_libs) \
-                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) \
-                    $(LIBICONV) $(NETLIBS) $(W32SOCKLIBS) $(LIBASSUAN_LIBS)
 
 watchgnupg_SOURCES = watchgnupg.c
 watchgnupg_LDADD = $(NETLIBS)

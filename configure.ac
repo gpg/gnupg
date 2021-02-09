@@ -126,7 +126,6 @@ GNUPG_BUILD_PROGRAM(g13, no)
 GNUPG_BUILD_PROGRAM(dirmngr, yes)
 GNUPG_BUILD_PROGRAM(keyboxd, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
-GNUPG_BUILD_PROGRAM(symcryptrun, no)
 # We use gpgtar to unpack test data, hence we always build it.  If the
 # user opts out, we simply don't install it.
 GNUPG_BUILD_PROGRAM(gpgtar, yes)
@@ -982,26 +981,6 @@ AC_DEFINE_UNQUOTED(FUSERMOUNT,
 	"${FUSERMOUNT}", [defines the filename of the fusermount program])
 
 
-# Checks for dirmngr
-
-
-#
-# Checks for symcryptrun:
-#
-
-# libutil has openpty() and login_tty().
-AC_CHECK_LIB(util, openpty,
-              [ LIBUTIL_LIBS="$LIBUTIL_LIBS -lutil"
-                AC_DEFINE(HAVE_LIBUTIL,1,
-                         [defined if libutil is available])
-             ])
-AC_SUBST(LIBUTIL_LIBS)
-
-# shred is used to clean temporary plain text files.
-AC_PATH_PROG(SHRED, shred, /usr/bin/shred)
-AC_DEFINE_UNQUOTED(SHRED,
-	"${SHRED}", [defines the filename of the shred program])
-
 
 #
 # Check whether the nPth library is available
@@ -1798,7 +1777,6 @@ AM_CONDITIONAL(BUILD_G13,         test "$build_g13" = "yes")
 AM_CONDITIONAL(BUILD_DIRMNGR,     test "$build_dirmngr" = "yes")
 AM_CONDITIONAL(BUILD_KEYBOXD,     test "$build_keyboxd" = "yes")
 AM_CONDITIONAL(BUILD_DOC,         test "$build_doc" = "yes")
-AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 AM_CONDITIONAL(BUILD_WKS_TOOLS,   test "$build_wks_tools" = "yes")
 
