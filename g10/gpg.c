@@ -345,6 +345,7 @@ enum cmd_and_opt_values
     oAllowFreeformUID,
     oNoAllowFreeformUID,
     oAllowSecretKeyImport,
+    oAllowOldCipherAlgos,
     oEnableSpecialFilenames,
     oNoLiteral,
     oSetFilesize,
@@ -854,6 +855,7 @@ static gpgrt_opt_t opts[] = {
   /* Options to override new security defaults.  */
   ARGPARSE_s_n (oAllowWeakKeySignatures, "allow-weak-key-signatures", "@"),
   ARGPARSE_s_n (oAllowWeakDigestAlgos, "allow-weak-digest-algos", "@"),
+  ARGPARSE_s_n (oAllowOldCipherAlgos, "allow-old-cipher-algos", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest","@"),
   ARGPARSE_s_s (oVerifyOptions, "verify-options", "@"),
   ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
@@ -2186,7 +2188,23 @@ set_compliance_option (enum cmd_and_opt_values option)
     {
     case oRFC4880bis:
       opt.flags.rfc4880bis = 1;
-      /* fall through.  */
+      opt.compliance = CO_RFC4880;
+      opt.flags.dsa2 = 1;
+      opt.flags.require_cross_cert = 1;
+      opt.rfc2440_text = 0;
+      opt.allow_non_selfsigned_uid = 1;
+      opt.allow_freeform_uid = 1;
+      opt.escape_from = 1;
+      opt.not_dash_escaped = 0;
+      opt.def_cipher_algo = 0;
+      opt.def_aead_algo = 0;
+      opt.def_digest_algo = 0;
+      opt.cert_digest_algo = 0;
+      opt.compress_algo = -1;
+      opt.s2k_mode = 3; /* iterated+salted */
+      opt.s2k_digest_algo = DIGEST_ALGO_SHA256;
+      opt.s2k_cipher_algo = CIPHER_ALGO_AES256;
+      break;
     case oOpenPGP:
     case oRFC4880:
       /* This is effectively the same as RFC2440, but with
@@ -2208,6 +2226,7 @@ set_compliance_option (enum cmd_and_opt_values option)
       opt.s2k_mode = 3; /* iterated+salted */
       opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
       opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+      opt.flags.allow_old_cipher_algos = 1;
       break;
     case oRFC2440:
       opt.compliance = CO_RFC2440;
@@ -2225,6 +2244,7 @@ set_compliance_option (enum cmd_and_opt_values option)
       opt.s2k_mode = 3; /* iterated+salted */
       opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
       opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+      opt.flags.allow_old_cipher_algos = 1;
       break;
     case oPGP7:  opt.compliance = CO_PGP7;  break;
     case oPGP8:  opt.compliance = CO_PGP8;  break;
@@ -3602,6 +3622,10 @@ main (int argc, char **argv)
 
           case oAllowWeakKeySignatures:
             opt.flags.allow_weak_key_signatures = 1;
+            break;
+
+          case oAllowOldCipherAlgos:
+            opt.flags.allow_old_cipher_algos = 1;
             break;
 
           case oFakedSystemTime:

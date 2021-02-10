@@ -1397,6 +1397,10 @@ algo_available( preftype_t preftype, int algo, const struct pref_hint *hint)
 {
   if( preftype == PREFTYPE_SYM )
     {
+      if (!opt.flags.allow_old_cipher_algos
+          && openpgp_cipher_blocklen (algo) < 16)
+        return 0;  /* We don't want this one.  */
+
       if(PGP7 && (algo != CIPHER_ALGO_IDEA
 		  && algo != CIPHER_ALGO_3DES
 		  && algo != CIPHER_ALGO_CAST5
@@ -1494,12 +1498,15 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
       switch(preftype)
 	{
 	case PREFTYPE_SYM:
-	  /* IDEA is implicitly there for v3 keys with v3 selfsigs if
-	     --pgp2 mode is on.  This was a 2440 thing that was
-	     dropped from 4880 but is still relevant to GPG's 1991
-	     support.  All this doesn't mean IDEA is actually
-	     available, of course. */
-          implicit=CIPHER_ALGO_3DES;
+	  /* Historical note: IDEA is implicitly there for v3 keys
+	     with v3 selfsigs if --pgp2 mode is on.  This was a 2440
+	     thing that was dropped from 4880 but is still relevant to
+	     GPG's 1991 support.  All this doesn't mean IDEA is
+	     actually available, of course. */
+          if (opt.flags.allow_old_cipher_algos)
+            implicit = CIPHER_ALGO_3DES;
+          else
+            implicit = CIPHER_ALGO_AES;
 	  break;
 
 	case PREFTYPE_AEAD:

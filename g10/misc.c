@@ -396,8 +396,9 @@ print_sha1_keysig_rejected_note (void)
   log_info (_("Note: third-party key signatures using"
               " the %s algorithm are rejected\n"),
             gcry_md_algo_name (GCRY_MD_SHA1));
-  print_further_info ("use option \"%s\" to override",
-                      "--allow-weak-key-signatures");
+  if (!opt.quiet)
+    log_info (_("(use option \"%s\" to override)\n"),
+              "--allow-weak-key-signatures");
 }
 
 

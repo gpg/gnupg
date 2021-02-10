@@ -538,6 +538,17 @@ setup_symkey (STRING2KEY **symkey_s2k, DEK **symkey_dek)
   int s2kdigest;
 
   defcipher = default_cipher_algo ();
+  if (openpgp_cipher_blocklen (defcipher) < 16
+      && !opt.flags.allow_old_cipher_algos)
+    {
+      log_error (_("cipher algorithm '%s' may not be used for encryption\n"),
+		 openpgp_cipher_algo_name (defcipher));
+      if (!opt.quiet)
+        log_info (_("(use option \"%s\" to override)\n"),
+                  "--allow-old-cipher-algos");
+      return gpg_error (GPG_ERR_CIPHER_ALGO);
+    }
+
   if (!gnupg_cipher_is_allowed (opt.compliance, 1, defcipher,
                                 GCRY_CIPHER_MODE_CFB))
     {
@@ -741,10 +752,18 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
          entry for 3DES, and the pk_list cannot be empty.  In this
          case, use 3DES anyway as it's the safest choice - perhaps the
          v3 key is being used in an OpenPGP implementation and we know
-         that the implementation behind any v4 key can handle 3DES. */
+         that the implementation behind any v4 key can handle 3DES.
+         Note that we do not support v3 keys since version 2.2 so the
+         above description gives only historical background. */
       if (cfx.dek->algo == -1)
         {
-          cfx.dek->algo = CIPHER_ALGO_3DES;
+          /* If does not make sense to fallback to the rfc4880
+           * required 3DES if we will reject that algo later.  Thus we
+           * fallback to AES anticipating RFC4880bis rules.  */
+          if (opt.flags.allow_old_cipher_algos)
+            cfx.dek->algo = CIPHER_ALGO_3DES;
+          else
+            cfx.dek->algo = CIPHER_ALGO_AES;
         }
 
       /* In case 3DES has been selected, print a warning if any key
@@ -768,6 +787,18 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
         }
 
       cfx.dek->algo = opt.def_cipher_algo;
+    }
+
+  if (openpgp_cipher_blocklen (cfx.dek->algo) < 16
+      && !opt.flags.allow_old_cipher_algos)
+    {
+      log_error (_("cipher algorithm '%s' may not be used for encryption\n"),
+		 openpgp_cipher_algo_name (cfx.dek->algo));
+      if (!opt.quiet)
+        log_info (_("(use option \"%s\" to override)\n"),
+                  "--allow-old-cipher-algos");
+      rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+      goto leave;
     }
 
   /* Check compliance.  */
