@@ -53,7 +53,7 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 # build-aux/speedo.mk and Makefile.am
 AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
 
-NEED_GPG_ERROR_VERSION=1.38
+NEED_GPGRT_VERSION=1.41
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.9.0
@@ -802,10 +802,10 @@ AC_MSG_NOTICE([checking for libraries])
 
 
 #
-# libgpg-error is a library with error codes shared between GnuPG
-# related projects.
+# gpgrt (aka libgpg-error) is a library with error codes shared
+# between GnuPG related projects.
 #
-AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
+AM_PATH_GPG_ERROR("$NEED_GPGRT_VERSION",
                   have_gpg_error=yes,have_gpg_error=no)
 
 
@@ -1920,8 +1920,8 @@ if test "$have_gpg_error" = "no"; then
 ***
 *** You need libgpg-error to build this program.
 **  This library is for example available at
-***   https://gnupg.org/ftp/gcrypt/libgpg-error
-*** (at least version $NEED_GPG_ERROR_VERSION is required.)
+***   https://gnupg.org/ftp/gcrypt/gpgrt
+*** (at least version $NEED_GPGRT_VERSION is required.)
 ***]])
 fi
 if test "$have_libgcrypt" = "no"; then

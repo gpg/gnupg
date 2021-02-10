@@ -34,22 +34,6 @@
 #include "keybox-defs.h"  /* (for the openpgp parser) */
 
 
-/* Add replacement error codes; GPGRT provides SQL error codes from
- * version 1.37 on.  */
-#if GPGRT_VERSION_NUMBER < 0x012500 /* 1.37 */
-
-static GPGRT_INLINE gpg_error_t
-gpg_err_code_from_sqlite (int sqlres)
-{
-  return sqlres? 1500 + (sqlres & 0xff) : 0;
-}
-
-#define GPG_ERR_SQL_OK   1500
-#define GPG_ERR_SQL_ROW  1600
-#define GPG_ERR_SQL_DONE 1601
-
-#endif /*GPGRT_VERSION_NUMBER*/
-
 
 /* Our definition of the backend handle.  */
 struct backend_handle_s

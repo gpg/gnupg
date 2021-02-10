@@ -1955,15 +1955,10 @@ main ( int argc, char **argv)
         else
           wrong_args ("--encrypt [datafile]");
 
-#if GPGRT_VERSION_NUMBER >= 0x012700 /* >= 1.39 */
         if (err)
           gpgrt_fcancel (fp);
         else
           es_fclose (fp);
-#else
-        (void)err;
-        es_fclose (fp);
-#endif
       }
       break;
 
