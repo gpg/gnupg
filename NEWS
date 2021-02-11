@@ -1,11 +1,178 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
-  * The legacy key discovory method PKA is no longer supported.  The
+  * The legacy key discovery method PKA is no longer supported.  The
     command --print-pka-records and the PKA related import and export
     options have been removed.
 
+  * A new experimental key database daemon is provided.  To enable it
+    put "use-keyboxd" into gpg.conf and gpgsm.conf.  Keys are stored
+    in a SQLite database and make key lookup much faster.
 
+
+  Changes also found in 2.2.27:
+
+  * gpg: Fix regression in 2.2.24 for gnupg_remove function under
+    Windows.  [#5230]
+
+  * gpgconf: Fix case with neither local nor global gpg.conf.  [9f37d3e6f3]
+
+  * gpgconf: Fix description of two new options.  [#5221]
+
+  * Build Windows installer without timestamps.  Note that the
+    Authenticode signatures still carry a timestamp.
+
+  Release-info: https://dev.gnupg.org/T5234
+  See-also: gnupg-announce/2021q1/000452.html
+
+  Changes also found in 2.2.26:
+
+  * gpg: New AKL method "ntds".  [559efd23e9]
+
+  * gpg: Fix --trusted-key with fingerprint arg.  [8a2e5025eb]
+
+  * scd: Fix writing of ECC keys to an OpenPGP card.  [#5163]
+
+  * scd: Make an USB error fix specific to SPR532 readers.  [#5167]
+
+  * dirmngr: With new LDAP keyservers store the new attributes.  Never
+    store the useless pgpSignerID.  Fix a long standing bug storing
+    some keys on an ldap server.  [0e88c73bc9,e47de85382]
+
+  * dirmngr: Support the new Active Direcory LDAP schema for
+    keyservers.  [ac8ece9266]
+
+  * dirmngr: Allow LDAP OpenPGP searches via fingerprint.
+    [c75fd75532]
+
+  * dirmngr: Do not block other threads during keyserver LDAP calls.
+    [15bfd189c0]
+
+  * Support global configuration files.  [#4788,a028f24136]
+
+  * Fix the iconv fallback handling to UTF-8.  [#5038]
+
+  Release-info: https://dev.gnupg.org/T5153
+  See-also: gnupg-announce/2020q4/000451.html
+
+  Changes also found in 2.2.25:
+
+  * scd: Fix regression in 2.2.24 requiring gpg --card-status before
+    signing or decrypting.  [#5065]
+
+  * gpgsm: Using Libksba 1.5.0 signatures with a rarely used
+    combination of attributes can now be verified.  [#5146]
+
+  Release-info: https://dev.gnupg.org/T5140
+  See-also: gnupg-announce/2020q4/000450.html
+
+  Changes also found in 2.2.24:
+
+  * Allow Unicode file names on Windows almost everywhere.  Note that
+    it is still not possible to use Unicode strings on the command
+    line.  This change also fixes a regression in 2.2.22 related to
+    non-ascii file names.  [#5098]
+
+  * Fix localized time printing on Windows.  [#5073]
+
+  * gpg: New command --quick-revoke-sig.  [#5093]
+
+  * gpg: Do not use weak digest algos if selected by recipient
+    preference during sign+encrypt.  [4c181d51a6]
+
+  * gpg: Switch to AES256 for symmetric encryption in de-vs mode.
+    [166e779634]
+
+  * gpg: Silence weak digest warnings with --quiet.  [#4893]
+
+  * gpg: Print new status line CANCELED_BY_USER for a cancel during
+    symmetric encryption.  [f05d1772c4]
+
+  * gpg: Fix the encrypt+sign hash algo preference selection for
+    ECDSA.  This is in particular needed for keys created from
+    existing smartcard based keys.  [aeed0b93ff]
+
+  * agent: Keep some permissions of private-keys-v1.d.  [#2312]
+
+  * dirmngr: Align sks-keyservers.netCA.pem use between ntbtls and
+    gnutls builds.  [e4f3b74c91]
+
+  * dirmngr: Fix the pool keyserver case for a single host in the
+    pool.  [72e04b03b1a7]
+
+  * scd: Fix the use case of verify_chv2 by CHECKPIN.  [61aea64b3c]
+
+  * scd: Various improvements to the ccid-driver.  [#4616,#5065]
+
+  * scd: Minor fixes for Yubikey [25bec16d0b]
+
+  * gpgconf: New option --show-versions.
+
+  * w32: Install gpg-check-pattern and example profiles.  Install
+    Windows subsystem variant of gpgconf (gpgconf-w32).
+
+  Release-info: https://dev.gnupg.org/T5052
+  See-also: gnupg-announce/2020q4/000449.html
+
+  Changes also found in 2.2.23:
+
+  * gpg: Fix a possible segv in the key cleaning code.
+
+  * gpgsm: Fix a minor RFC2253 parser bug.  [#5037]
+
+  * scdaemon: Fix a PIN verify failure on certain OpenPGP card
+    implementations.  Regression in 2.2.22.  [#5039]
+
+  Release-info: https://dev.gnupg.org/T5045
+  See-also: gnupg-announce/2020q3/000448.html
+
+  Changes also found in 2.2.22:
+
+  * gpg: Change the default key algorithm to rsa3072.
+
+  * gpg: Add regular expression support for Trust Signatures on all
+    platforms.  [#4843]
+
+  * gpg: Fix regression in 2.2.21 with non-default --passphrase-repeat
+    option.  [#4991]
+
+  * gpg: Ignore --personal-digest-prefs for ECDSA keys.  [#5021]
+
+  * gpgsm: Make rsaPSS a de-vs compliant scheme.
+
+  * gpgsm: Show also the SHA256 fingerprint in key listings.
+
+  * gpgsm: Do not require a default keyring for --gpgconf-list.  [#4867]
+
+  * gpg-agent: Default to extended key format and record the creation
+    time of keys.  Add new option --disable-extended-key-format.
+
+  * gpg-agent: Support the WAYLAND_DISPLAY envvar.  [#5016]
+
+  * gpg-agent: Allow using --gpgconf-list even if HOME does not
+    exist.  [#4866]
+
+  * gpg-agent: Make the Pinentry work even if the envvar TERM is set
+    to the empty string.  [#4137]
+
+  * scdaemon: Add a workaround for Gnuk tokens <= 2.15 which wrongly
+    incremented the error counter when using the "verify" command of
+    "gpg --edit-key" with only the signature key being present.
+
+  * dirmngr: Better handle systems with disabled IPv6.  [#4977]
+
+  * gpgpslit: Install tool.  It was not installed in the past to avoid
+    conflicts with the version installed by GnuPG 1.4.  [#5023]
+
+  * gpgtar: Handle Unicode file names on Windows correctly. [#4083]
+
+  * gpgtar: Make --files-from and --null work as documented.  [#5027]
+
+  * Build the Windows installer with the new Ntbtls 0.2.0 so that TLS
+    connections succeed for servers demanding GCM.
+
+  Release-info: https://dev.gnupg.org/T5030
+  See-also: gnupg-announce/2020q3/000447.html
 
   Changes also found in 2.2.21:
 
@@ -774,6 +941,13 @@ Noteworthy changes in version 2.3.0 (unreleased)
   Version 2.2.19 (2019-12-07)
   Version 2.2.20 (2020-03-20)
   Version 2.2.21 (2020-07-09)
+  Version 2.2.22 (2020-08-27)
+  Version 2.2.23 (2020-09-03)
+  Version 2.2.24 (2020-11-17)
+  Version 2.2.25 (2020-11-23)
+  Version 2.2.26 (2020-12-21)
+  Version 2.2.27 (2021-01-11)
+
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
 ------------------------------------------------

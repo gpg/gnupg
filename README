@@ -32,7 +32,7 @@
 
 * BUILD INSTRUCTIONS
 
-  GnuPG 2.2 depends on the following GnuPG related packages:
+  GnuPG 2.3 depends on the following GnuPG related packages:
 
     npth         (https://gnupg.org/ftp/gcrypt/npth/)
     libgpg-error (https://gnupg.org/ftp/gcrypt/libgpg-error/)
@@ -43,9 +43,9 @@
   You should get the latest versions of course, the GnuPG configure
   script complains if a version is not sufficient.
 
-  For some advanced features several other libraries are required.
-  The configure script prints diagnostic messages if one of these
-  libraries is not available and a feature will not be available..
+  Several other standard libraries are also required.  The configure
+  script prints diagnostic messages if one of these libraries is not
+  available and a feature will not be available..
 
   You also need the Pinentry package for most functions of GnuPG;
   however it is not a build requirement.  Pinentry is available at
@@ -68,9 +68,7 @@
   Before running the "make install" you might need to become root.
 
   If everything succeeds, you have a working GnuPG with support for
-  OpenPGP, S/MIME, ssh-agent, and smartcards.  Note that there is no
-  binary gpg but a gpg2 so that this package won't conflict with a
-  GnuPG 1.4 installation.  gpg2 behaves just like gpg.
+  OpenPGP, S/MIME, ssh-agent, and smartcards.
 
   In case of problem please ask on the gnupg-users@gnupg.org mailing
   list for advise.
@@ -79,16 +77,11 @@
   doc/HACKING in the section "How to build an installer for Windows".
   This requires some experience as developer.
 
-  Note that the PKITS tests are always skipped unless you copy the
-  PKITS test data file into the tests/pkits directory.  There is no
-  need to run these test and some of them may even fail because the
-  test scripts are not yet complete.
-
   You may run
 
     gpgconf --list-dirs
 
-  to view the default directories used by GnuPG.
+  to view the directories used by GnuPG.
 
   To quickly build all required software without installing it, the
   Speedo method may be used:
@@ -122,28 +115,6 @@
   Add other options as needed.
 
 
-* MIGRATION from 1.4 or 2.0 to 2.2
-
-  The major change in 2.2 is gpg-agent taking care of the OpenPGP
-  secret keys (those managed by GPG).  The former file "secring.gpg"
-  will not be used anymore.  Newly generated keys are stored in the
-  agent's key store directory "~/.gnupg/private-keys-v1.d/".  The
-  first time gpg needs a secret key it checks whether a "secring.gpg"
-  exists and copies them to the new store.  The old secring.gpg is
-  kept for use by older versions of gpg.
-
-  Note that gpg-agent now uses a fixed socket.  All tools will start
-  the gpg-agent as needed.  The formerly used environment variable
-  GPG_AGENT_INFO is ignored by 2.2.  The SSH_AUTH_SOCK environment
-  variable should be set to a fixed value.
-
-  The Dirmngr is now part of GnuPG proper and also used to access
-  OpenPGP keyservers.  The directory layout of Dirmngr changed to make
-  use of the GnuPG directories.  Dirmngr is started by gpg or gpgsm as
-  needed. There is no more need to install a separate Dirmngr package.
-
-  All changes introduced with GnuPG 2.2 have been developed in the 2.1
-  series of releases.  See the respective entries in the file NEWS.
 
 * RECOMMENDATIONS
 
@@ -183,15 +154,14 @@
   is at [[https://gnupg.org/documentation/manuals/gnupg-devel/]] .
 
 
-* Installing GnuPG 2.2. and GnuPG 1.4
+* Unsing the legacy version GnuPG 1.4
 
-  GnuPG 2.2 is a current version of GnuPG with state of the art
-  security design and many more features.  To install both versions
-  alongside, it is suggested to rename the 1.4 version of "gpg" to
-  "gpg1" as well as the corresponding man page.  Newer releases of the
-  1.4 branch will likely do this by default.  In case this is not
-  possible, the 2.2 version can be installed under the name "gpg2"
-  using the configure option --enable-gpg-is-gpg2.
+  The 1.4 version of GnuPG is only intended to allow decryption of old
+  data material using legacy keys which are not anymore supported by
+  GnuPG 2.x.  To install both versions alongside, it is suggested to
+  rename the 1.4 version of "gpg" to "gpg1" as well as the
+  corresponding man page.  Newer releases of the 1.4 branch will
+  likely do this by default.
 
 
 * HOW TO GET MORE INFORMATION
@@ -201,7 +171,6 @@
   "https://gnupg.org/faq/whats-new-in-2.1.html" .
 
   The primary WWW page is "https://gnupg.org"
-             or using Tor "http://ic6au7wa3f6naxjq.onion"
   The primary FTP site is "https://gnupg.org/ftp/gcrypt/"
 
   See [[https://gnupg.org/download/mirrors.html]] for a list of
