@@ -1962,10 +1962,11 @@ cmd_writecert (card_info_t info, char *argstr)
       ("WRITECERT CERTREF '<' FILE\n"
        "WRITECERT --openpgp CERTREF ['<' FILE|FPR]\n"
        "WRITECERT --clear CERTREF\n\n"
-       "Write a certificate for key 3. The option --clear removes\n"
-       "the certificate from the card.  The option --openpgp expects\n"
-       "a keyblock and stores it encapsulated in a CMS container; the\n"
-       "keyblock is taken from FILE or directly from the key with FPR",
+       "Write a certificate to the card under the id CERTREF.\n"
+       "The option --clear removes the certificate from the card.\n"
+       "The option --openpgp expects an OpenPGP keyblock and stores\n"
+       "it encapsulated in a CMS container; the keyblock is taken\n"
+       "from FILE or directly from the OpenPGP key with FPR",
        APP_TYPE_OPENPGP, APP_TYPE_PIV, 0);
 
   opt_clear = has_leading_option (argstr, "--clear");

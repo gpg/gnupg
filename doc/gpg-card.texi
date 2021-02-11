@@ -60,8 +60,8 @@ those commands returns an error the remaining commands are not anymore
 run unless the command was prefixed with a single dash.
 
 A list of commands is available by using the command @code{help} and a
-detailed description of each command is printed by using @code{help
-COMMAND}.
+brief description of each command is printed by using @code{help CMD}.
+See the section COMMANDS for a full description.
 
 See the NOTES sections for instructions pertaining to specific cards
 or card applications.
@@ -134,6 +134,199 @@ set and the envvar GNUPGHOME is unset.  To override the latter the
 option @option{--homedir} can be used.  This option has only an effect
 when used on the command line.  This option has currently no effect at
 all on Windows.
+
+@end table
+
+@mansect commands
+@noindent
+@command{gpg-card} understands the following commands, which have
+options of their own.  The pseudo-option @samp{--} can be used to
+separate command options from arguments; if this pseudo option is used
+on the command line the entire command with options and arguments must
+be quoted, so that it is not mixed up with the @samp{--} as used on
+the command line to separate commands.  Note that a short online help
+is available for all commands by prefixing them with ``help''.
+Command completion in the interactive mode is also supported.
+
+@table @gnupgtabopt
+
+@item AUTHENTICATE [--setkey] [--raw] [< @var{file}]|@var{key}]
+@itemx AUTH
+@opindex authenticate
+Authenticate to the card.  Perform a mutual autentication either by
+reading the key from @var{file} or by taking it from the command line
+as @var{key}.  Without the option @option{--raw} the key is expected
+to be hex encoded.  To install a new administration key
+@option{--setkey} is used; this requires a prior authentication with
+the old key.  This is used with PIV cards.
+
+
+@item CAFPR [--clear] N
+@opindex cafpr
+Change the CA fingerprint number N of an OpenPGP card.  N must be in the
+range 1 to 3.  The option @option{--clear} clears the specified
+CA fingerprint N or all of them if N is 0 or not given.
+
+@item FACTORY-RESET
+@opindex factory-reset
+Do a complete reset of some OpenPGP and PIV cards.  This command
+deletes all data and keys and resets the PINs to their default.  Don't
+worry, you need to confirm before the command proceeds.
+
+@item FETCH
+@opindex fetch
+Retrieve a key using the URL data object of an OpenPGP card or if that
+is missing using the stored fingerprint.
+
+@item FORCESIG
+@opindex forcesig
+Toggle the forcesig flag of an OpenPGP card.
+
+@item GENERATE [--force] [--algo=@var{algo}@{+@var{algo2}@}] @var{keyref}
+@opindex generate
+Create a new key on a card.  Use @option{--force} to overwrite an
+existing key.  Use "help" for @var{algo} to get a list of known
+algorithms.  For OpenPGP cards several algos may be given.  Note that
+the OpenPGP key generation is done interactively unless
+@option{--algo} or @var{keyref} are given.
+
+@item KDF-SETUP
+@opindex kdf-setup
+Prepare the OpenPGP card KDF feature for this card.
+
+@item LANG [--clear]
+@opindex lang
+Change the language info for the card.  This info can be used by
+applications for a personalized greeting.  Up to 4 two-digit language
+identifiers can be entered as a preference.  The option
+@option{--clear} removes all identifiers.  GnuPG does not use this
+info.
+
+@item LIST [--cards] [--apps] [--info] [--no-key-lookup] [@var{n}] [@var{app}]
+@itemx L
+@opindex list
+This command reads all information from the current card and display
+them in a human readable format.  The first section shows generic
+information vaialable for all cards.  The next section shows
+information pertaining to keys which depend on the actual card and
+application.
+
+With @var{n} given select and list the n-th card;
+with @var{app} also given select that application.
+To select an @var{app} on the current card use "-" for @var{n}.
+The serial number of the card may be used instead of @var{n}.
+
+The option @option{--cards} lists the serial numbers of available
+cards.  The option @option{--apps} lists all card applications.  The
+option @option{--info} selects a card and prints its serial number.
+The option @option{--no-key-lookup} suppresses the listing of matching
+OpenPGP or X.509 keys.
+
+
+@item LOGIN [--clear] [< @var{file}]
+@opindex login
+Set the login data object of OpenPGP cards.  If @var{file} is given
+the data is is read from that file.  This allows to store binary data
+in the login field.  The option @option{--clear} deletes the login
+data object.
+
+@item NAME [--clear]
+@opindex name
+Set the name field of an OpenPGP card.  With option @option{--clear}
+the stored name is cleared off the card.
+
+@item PASSWD [--reset|--nullpin] [@var{pinref}]
+@opindex passwd
+Change or unblock the PINs.  Note that in interactive mode and without
+a @var{pinref} a menu is presented for certain cards."  In
+non-interactive mode and without a @var{pinref} a default value i used
+for these cards.  The option @option{--reset} is used with TCOS cards
+to reset the PIN using the PUK or vice versa; the option
+@var{--nullpin} is used for these cards to set the intial PIN.
+
+@item PRIVATEDO [--clear] @var{n} [< @var{file}]
+@opindex privatedo
+Change the private data object @var{n} of an OpenPGP card.  @var{n}
+must be in the range 1 to 4.  If @var{file} is given the data is is
+read from that file.  The option @option{--clear} clears the data.
+
+@item QUIT
+@itemx Q
+@opindex quit
+@opindex q
+Stop processing and terminate @command{gpg-card}.
+
+@item READCERT [--openpgp] @var{certref} > @var{file}
+@opindex readcert
+Read the certificate for key @var{certref} and store it in @var{file}.
+With option @option{--openpgp} an OpenPGP keyblock wrapped in a
+dedicated CMS content type (OID=1.3.6.1.4.1.11591.2.3.1) is expected
+and extracted to @var{file}.  Note that for current OpenPGP cards a
+certificate may only be available at the @var{certref} "OPENPGP.3".
+
+@item RESET
+@opindex reset
+Send a reset to the card daemon.
+
+@item SALUTATION [--clear]
+@itemx SALUT
+@opindex salutation
+@opindex salut
+Change the salutation info for the card.  This info can be used by
+applications for a personalized greeting.  The option @option{--clear}
+removes this data object.  GnuPG does not use this info.
+
+@item UIF @var{N} [on|off|permanent]
+@opindex uif
+Change the User Interaction Flag.  That flags tells whether the
+confirmation button of a token shall be used.  @var{n} must in the
+range 1 to 3.  "permanent" is the same as "on" but the flag can't be
+changed anmore.
+
+@item UNBLOCK
+@opindex unblock
+Unblock a PIN using a PUK or Reset Code.  Note that OpenPGP cards
+prior to version 2 can't use this; instead the @command{PASSWD} can be
+used to set a new PIN.
+
+@item URL [--clear]
+@opindex url
+Set the URL data object of an OpenPGP card.  That data object can be
+used by by @command{gpg}'s @option{--fetch} command to retrieve the
+full public key.  The option @option{--clear} deletes the content of
+that data object.
+
+@item VERIFY [@var{chvid}]
+@opindex verify
+Verify the PIN identified by @var{chvid} or the default PIN.
+
+@item WRITECERT @var{certref}  < @var{file}
+@itemx WRITECERT --openpgp @var{certref} [< @var{file}|@var{fpr}]
+@itemx WRITECERT --clear @var{certref}
+@opindex writecert
+Write a certificate to the card under the id @var{certref}.  The
+option @option{--clear} removes the certificate from the card.  The
+option @option{--openpgp} expects an OpenPGP keyblock and stores it
+encapsulated in a CMS container; the keyblock is taken from @var{file}
+or directly from the OpenPGP key identified by fingerprint @var{fpr}.
+
+@item WRITEKEY [--force] @var{keyref} @var{keygrip}
+@opindex writekey
+Write a private key object identified by @var{keygrip} to the card
+under the id @var{keyref}.  Option @option{--force} allows overwriting
+an existing key.
+
+@item YUBIKEY @var{cmd} @var{args}
+@opindex yubikey
+Various commands pertaining to Yubikey tokens with @var{cmd} being:
+@table @var
+@item LIST
+List supported and enabled Yubikey applications.
+@item ENABLE  usb|nfc|all [otp|u2f|opgp|piv|oath|fido2|all]
+@itemx DISABLE
+Enable or disable the specified or all applications on the
+given interface.
+@end table
 
 @end table
 
