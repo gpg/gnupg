@@ -74,7 +74,7 @@ g13_syshelp_LDADD = $(libcommon) \
 
 module_tests = t-g13tuple
 t_common_ldadd = $(libcommon) $(LIBGCRYPT_LIBS) \
-	         $(LIBASSUAN_LIBS) $(LIBICONV)
+	         $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBICONV)
 
 t_g13tuple_SOURCES = t-g13tuple.c g13tuple.c
 t_g13tuple_LDADD = $(t_common_ldadd)
