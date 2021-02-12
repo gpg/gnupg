@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2020-11-17
+# Last-changed: 2021-02-12
 
 
 dnl AM_PATH_GPG_ERROR([MINIMUM-VERSION,
@@ -64,43 +64,55 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
   min_gpg_error_version=ifelse([$1], ,1.33,$1)
   ok=no
 
-  if test "$prefix" = NONE ; then
-    prefix_option_expanded=/usr/local
+  AC_PATH_PROG(GPGRT_CONFIG, gpgrt-config, no)
+  if test "$GPGRT_CONFIG" == "no"; then
+    unset GPGRT_CONFIG
   else
-    prefix_option_expanded="$prefix"
-  fi
-  if test "$exec_prefix" = NONE ; then
-    exec_prefix_option_expanded=$prefix_option_expanded
-  else
-    exec_prefix_option_expanded=$(prefix=$prefix_option_expanded eval echo $exec_prefix)
-  fi
-  libdir_option_expanded=$(prefix=$prefix_option_expanded exec_prefix=$exec_prefix_option_expanded eval echo $libdir)
-
-  if test -f $libdir_option_expanded/pkgconfig/gpg-error.pc; then
-    gpgrt_libdir=$libdir_option_expanded
-  else
+    # Determine gpgrt_libdir
+    #
+    # Get the prefix of gpgrt-config assuming it's something like:
+    #   <PREFIX>/bin/gpgrt-config
+    gpgrt_prefix=${GPGRT_CONFIG%/*/*}
+    possible_libdir1=${gpgrt_prefix}/lib
+    # Determine by using system libdir-format with CC, it's like:
+    #   Normal style: /usr/lib
+    #   Debian style: /usr/lib/<multiarch-name>
+    #   Fedora/openSUSE style: /usr/lib, /usr/lib32 or /usr/lib64
     if crt1_path=$(${CC:-cc} -print-file-name=crt1.o 2>/dev/null); then
-      if possible_libdir=$(cd ${crt1_path%/*} && pwd 2>/dev/null); then
-        if test -f $possible_libdir/pkgconfig/gpg-error.pc; then
-          gpgrt_libdir=$possible_libdir
+      if possible_libdir0=$(cd ${crt1_path%/*} && pwd 2>/dev/null); then
+        # possible_libdir0:
+        #   Fallback candidate, the one of system-installed
+        #   (like /usr/lib/<multiarch-name> or /usr/lib32)
+        # possible_libdir1:
+        #   Another candidate, user-locally-installed
+        #   (like /usr/local/lib)
+        # possible_libdir2
+        #   Most preferred
+        #   (like <gpgrt_prefix>/lib/<multiarch-name> or <gpgrt_prefix>/lib32)
+        possible_prefix0=${possible_libdir0%%/lib*}
+        possible_libdir2=${gpgrt_prefix}${possible_libdir0#${possible_prefix0}}
+        if test -f ${possible_libdir2}/pkgconfig/gpg-error.pc; then
+          gpgrt_libdir=${possible_libdir2}
+        elif test -f ${possible_libdir1}/pkgconfig/gpg-error.pc; then
+          gpgrt_libdir=${possible_libdir1}
+        elif test -f ${possible_libdir0}/pkgconfig/gpg-error.pc; then
+          gpgrt_libdir=${possible_libdir0}
         fi
       fi
+    else
+      # When we cannot determine system libdir-format, use this:
+      gpgrt_libdir=${possible_libdir1}
     fi
   fi
 
-  if test "$GPG_ERROR_CONFIG" = "no" -a -n "$gpgrt_libdir"; then
-    AC_PATH_PROG(GPGRT_CONFIG, gpgrt-config, no)
-    if test "$GPGRT_CONFIG" = "no"; then
-      unset GPGRT_CONFIG
+  if test "$GPG_ERROR_CONFIG" = "no" -o -n "$gpgrt_libdir"; then
+    GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
+    if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
+      GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
+      AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
+      gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
     else
-      GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
-      if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
-        GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
-        AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
-        gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
-      else
-        unset GPGRT_CONFIG
-      fi
+      unset GPGRT_CONFIG
     fi
   else
     gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
@@ -122,22 +134,6 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
                ok=yes
             fi
         fi
-    fi
-    if test -z "$GPGRT_CONFIG" -a -n "$gpgrt_libdir"; then
-      if test "$major" -gt 1 -o "$major" -eq 1 -a "$minor" -ge 33; then
-        AC_PATH_PROG(GPGRT_CONFIG, gpgrt-config, no)
-        if test "$GPGRT_CONFIG" = "no"; then
-          unset GPGRT_CONFIG
-        else
-          GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
-          if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
-            GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
-            AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
-          else
-            unset GPGRT_CONFIG
-          fi
-        fi
-      fi
     fi
   fi
   AC_MSG_CHECKING(for GPG Error - version >= $min_gpg_error_version)
