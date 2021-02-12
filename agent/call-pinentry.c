@@ -960,8 +960,8 @@ setup_genpin (ctrl_t ctrl)
          hovering over the generate button.  Please use an appropriate
          string to describe what this is about.  The length of the
          tooltip is limited to about 900 characters.  If you do not
-         translate this entry, a default english text (see source)
-         will be used.  The strcmp th8ingy is tehre to dected a
+         translate this entry, a default English text (see source)
+         will be used.  The strcmp thingy is there to detect a
          non-translated string.  */
       tooltip = L_("pinentry.genpin.tooltip");
       if (!strcmp ("pinentry.genpin.tooltip", tooltip))
