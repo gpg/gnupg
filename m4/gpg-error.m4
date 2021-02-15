@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2021-02-12
+# Last-changed: 2021-02-15
 
 
 dnl AM_PATH_GPG_ERROR([MINIMUM-VERSION,
@@ -65,9 +65,7 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
   ok=no
 
   AC_PATH_PROG(GPGRT_CONFIG, gpgrt-config, no)
-  if test "$GPGRT_CONFIG" == "no"; then
-    unset GPGRT_CONFIG
-  else
+  if test "$GPGRT_CONFIG" != "no"; then
     # Determine gpgrt_libdir
     #
     # Get the prefix of gpgrt-config assuming it's something like:
@@ -103,9 +101,11 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
       # When we cannot determine system libdir-format, use this:
       gpgrt_libdir=${possible_libdir1}
     fi
+  else
+    unset GPGRT_CONFIG
   fi
 
-  if test "$GPG_ERROR_CONFIG" = "no" -o -n "$gpgrt_libdir"; then
+  if test -n "$gpgrt_libdir"; then
     GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
     if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
       GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
@@ -114,7 +114,7 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
     else
       unset GPGRT_CONFIG
     fi
-  else
+  elif test "$GPG_ERROR_CONFIG" != "no"; then
     gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
   fi
   if test "$GPG_ERROR_CONFIG" != "no"; then
