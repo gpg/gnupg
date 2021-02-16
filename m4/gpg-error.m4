@@ -1,5 +1,6 @@
 # gpg-error.m4 - autoconf macro to detect libgpg-error.
-# Copyright (C) 2002, 2003, 2004, 2011, 2014, 2018, 2020 g10 Code GmbH
+# Copyright (C) 2002, 2003, 2004, 2011, 2014, 2018, 2020, 2021
+#               g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -9,7 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2021-02-15
+# Last-changed: 2021-02-16
 
 
 dnl AM_PATH_GPG_ERROR([MINIMUM-VERSION,
@@ -74,21 +75,41 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
     possible_libdir1=${gpgrt_prefix}/lib
     # Determine by using system libdir-format with CC, it's like:
     #   Normal style: /usr/lib
+    #   GNU cross style: /usr/<triplet>/lib
     #   Debian style: /usr/lib/<multiarch-name>
     #   Fedora/openSUSE style: /usr/lib, /usr/lib32 or /usr/lib64
-    if crt1_path=$(${CC:-cc} -print-file-name=crt1.o 2>/dev/null); then
-      if possible_libdir0=$(cd ${crt1_path%/*} && pwd 2>/dev/null); then
+    # It is assumed that CC is specified to the one of host on cross build.
+    if libdir_candidates=$(${CC:-cc} -print-search-dirs | \
+          sed -n -e "/^libraries/{s/libraries: =//;s/:/\n/gp}"); then
+      # From the output of -print-search-dirs, select valid pkgconfig dirs.
+      libdir_candidates=$(for dir in $libdir_candidates; do
+        if p=$(cd $dir 2>/dev/null && pwd); then
+          test -d "$p/pkgconfig" && echo $p;
+        fi
+      done)
+
+      for possible_libdir0 in $libdir_candidates; do
         # possible_libdir0:
-        #   Fallback candidate, the one of system-installed
-        #   (like /usr/lib/<multiarch-name> or /usr/lib32)
+        #   Fallback candidate, the one of system-installed (by $CC)
+        #   (/usr/<triplet>/lib, /usr/lib/<multiarch-name> or /usr/lib32)
         # possible_libdir1:
         #   Another candidate, user-locally-installed
-        #   (like /usr/local/lib)
+        #   (<gpgrt_prefix>/lib)
         # possible_libdir2
         #   Most preferred
-        #   (like <gpgrt_prefix>/lib/<multiarch-name> or <gpgrt_prefix>/lib32)
-        possible_prefix0=${possible_libdir0%%/lib*}
-        possible_libdir2=${gpgrt_prefix}${possible_libdir0#${possible_prefix0}}
+        #   (<gpgrt_prefix>/<triplet>/lib,
+        #    <gpgrt_prefix>/lib/<multiarch-name> or <gpgrt_prefix>/lib32)
+        if test "${possible_libdir0##*/}" = "lib"; then
+          possible_prefix0=${possible_libdir0%/lib}
+          possible_prefix0_triplet=${possible_prefix0##*/}
+          if test -z "$possible_prefix0_triplet"; then
+            continue
+          fi
+          possible_libdir2=${gpgrt_prefix}/$possible_prefix0_triplet/lib
+        else
+          possible_prefix0=${possible_libdir0%%/lib*}
+          possible_libdir2=${gpgrt_prefix}${possible_libdir0#$possible_prefix0}
+        fi
         if test -f ${possible_libdir2}/pkgconfig/gpg-error.pc; then
           gpgrt_libdir=${possible_libdir2}
         elif test -f ${possible_libdir1}/pkgconfig/gpg-error.pc; then
@@ -96,7 +117,8 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
         elif test -f ${possible_libdir0}/pkgconfig/gpg-error.pc; then
           gpgrt_libdir=${possible_libdir0}
         fi
-      fi
+        if test -n "$gpgrt_libdir"; then break; fi
+      done
     else
       # When we cannot determine system libdir-format, use this:
       gpgrt_libdir=${possible_libdir1}
