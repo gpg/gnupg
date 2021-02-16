@@ -505,7 +505,7 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
       if (result == 1)
         {
           char *buf;
-          const char *fields[5];
+          char *fields[5];
 
           buf = gcry_get_config (0, "rng-type");
           if (buf
