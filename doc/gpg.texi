@@ -1910,13 +1910,13 @@ Use @var{name} as your keyserver. This is the server that
 will communicate with to receive keys from, send keys to, and search for
 keys on. The format of the @var{name} is a URI:
 `scheme:[//]keyservername[:port]' The scheme is the type of keyserver:
-"hkp" for the HTTP (or compatible) keyservers, "ldap" for the LDAP
-keyservers, or "mailto" for the Graff email keyserver. Note that your
-particular installation of GnuPG may have other keyserver types
-available as well. Keyserver schemes are case-insensitive. After the
-keyserver name, optional keyserver configuration options may be
-provided. These are the same as the global @option{--keyserver-options}
-from below, but apply only to this particular keyserver.
+"hkp"/"hkps" for the HTTP (or compatible) keyservers or "ldap"/"ldaps"
+for the LDAP keyservers.  Note that your particular installation of
+GnuPG may have other keyserver types available as well. Keyserver
+schemes are case-insensitive. After the keyserver name, optional
+keyserver configuration options may be provided. These are the same as
+the global @option{--keyserver-options} from below, but apply only to
+this particular keyserver.
 
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. The keyserver

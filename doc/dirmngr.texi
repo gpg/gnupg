@@ -332,6 +332,8 @@ built-in default of @code{hkps://hkps.pool.sks-keyservers.net}.
 
 Windows users with a keyserver running on their Active Directory
 should use @code{ldap:///} for @var{name} to access this directory.
+As an alternative it is also possible to add @code{gpgNtds=1} as
+extension (i.e. after the fourth question mark).
 
 For accessing anonymous LDAP keyservers @var{name} is in general just
 a @code{ldaps://ldap.example.com}.  A BaseDN parameter should never be
