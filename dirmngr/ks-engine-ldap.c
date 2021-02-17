@@ -519,18 +519,12 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 #endif
     }
 
-  if (uri->ad_current)
-    ldap_conn = ldap_init (NULL, uri->port);
-  else
-    ldap_conn = ldap_init (uri->host, uri->port);
+  ldap_conn = ldap_init (uri->host, uri->port);
   if (!ldap_conn)
     {
       err = gpg_err_code_from_syserror ();
-      if (uri->ad_current)
-        log_error ("error initializing LDAP for current user\n");
-      else
-        log_error ("error initializing LDAP for (%s://%s:%d)\n",
-                   uri->scheme, uri->host, uri->port);
+      log_error ("error initializing LDAP for (%s://%s:%d)\n",
+                 uri->scheme, uri->host, uri->port);
       goto out;
     }
 
@@ -611,15 +605,16 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       npth_unprotect ();
       err = ldap_bind_s (ldap_conn, NULL, NULL, LDAP_AUTH_NEGOTIATE);
       npth_protect ();
-#else
-      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-#endif
       if (err != LDAP_SUCCESS)
 	{
 	  log_error ("error binding to LDAP via AD: %s\n",
                      ldap_err2string (err));
 	  goto out;
 	}
+#else
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto out;
+#endif
     }
   else if (uri->auth)
     {

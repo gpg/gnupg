@@ -541,7 +541,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     Mark the start of the actual decryption process.  This is also
     emitted when in --list-only mode.
 *** END_DECRYPTION
-    Mark the end of the actual decryption process.  This are also
+    Mark the end of the actual decryption process.  This is also
     emitted when in --list-only mode.
 *** DECRYPTION_KEY <fpr> <fpr2> <otrust>
     This line is emitted when a public key decryption succeeded in
@@ -1167,6 +1167,11 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     These were used for the ancient shared memory based co-processing.
 *** BEGIN_STREAM, END_STREAM
     Used to issued by the experimental pipemode.
+*** GOODMDC
+    This is not anymore needed. Checking the DECRYPTION_OKAY status is
+    sufficient.
+*** BADMDC
+    This is not anymore needed.
 
 ** Inter-component codes
    Status codes are also used between the components of the GnuPG
@@ -1555,6 +1560,8 @@ Status codes are:
   1.3.6.1.4.1.11591.2.4.1.2          gpgSubFingerprint attribute
   1.3.6.1.4.1.11591.2.4.1.3          gpgMailbox attribute
   1.3.6.1.4.1.11591.2.4.1.4          gpgSubCertID attribute
+  1.3.6.1.4.1.11591.2.5          LDAP URL extensions
+  1.3.6.1.4.1.11591.2.5.1          gpgNtds=1 (auth. with current AD user)
   1.3.6.1.4.1.11591.2.12242973   invalid encoded OID
 #+end_example
 
