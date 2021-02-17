@@ -36,26 +36,16 @@ int
 ldap_uri_p (const char *url)
 {
   char *colon = strchr (url, ':');
-  if (! colon)
+
+  if (!colon)
     return 0;
   else
     {
       int offset = (uintptr_t) colon - (uintptr_t) url;
 
-      if (/* All lower case.  */
-	  (offset == 4 && memcmp (url, "ldap", 4) == 0)
-	  || (offset == 5
-	      && (memcmp (url, "ldaps", 5) == 0
-		  && memcmp (url, "ldapi", 5) == 0))
-	  /* Mixed case.  */
-	  || ((url[0] == 'l' || url[0] == 'L')
-	      && (url[1] == 'd' || url[1] == 'D')
-	      && (url[2] == 'a' || url[2] == 'A')
-	      && (url[3] == 'p' || url[3] == 'P')
-	      && (url[4] == ':'
-		  || ((url[4] == 's' || url[4] == 'S'
-		       || url[4] == 'i' || url[4] == 'I')
-		      && url[5] == ':'))))
+      if (   (offset == 4 && !ascii_memcasecmp (url, "ldap", 4))
+	  || (offset == 5 && (!ascii_memcasecmp (url, "ldaps", 5)
+                              || !ascii_memcasecmp (url, "ldapi", 5))))
 	return 1;
       return 0;
     }
