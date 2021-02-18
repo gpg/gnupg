@@ -99,6 +99,10 @@ msgstr ""
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -219,8 +223,10 @@ msgstr ""
 msgid "Reset Code"
 msgstr ""
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Push ACK button on card/token."
+msgstr ""
+
+msgid "Use the reader's pinpad for input."
 msgstr ""
 
 #, fuzzy
@@ -431,18 +437,9 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
+#, c-format
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritm rezumat selectat este invalid\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTĂ: nici un fişier opţiuni implicit `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "fişier opţiuni `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
@@ -462,11 +459,11 @@ msgstr "nu pot crea `%s': %s\n"
 msgid "socket name '%s' is too long\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent nu este disponibil în această sesiune\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "eroare la obţinere noului PIN: %s\n"
 
@@ -528,7 +525,7 @@ msgstr "actualizarea secretului a eşuat: %s\n"
 msgid "%s %s stopped\n"
 msgstr "%s: sărită: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent nu este disponibil în această sesiune\n"
 
@@ -588,7 +585,7 @@ msgid ""
 msgstr ""
 "Vă rugăm introduceţi fraza-parolă; aceasta este o propoziţie secretă \n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "cancelled\n"
 msgstr "anulată"
 
@@ -624,6 +621,7 @@ msgstr "Eroare: amprentă formatată invalid.\n"
 msgid "error reading '%s', line %d: %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
+#, c-format
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -705,6 +703,7 @@ msgid ""
 "Deleting the key might remove your ability to access remote machines."
 msgstr ""
 
+#, c-format
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr ""
 
@@ -720,6 +719,7 @@ msgstr ""
 msgid "checking created signature failed: %s\n"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
+#, c-format
 msgid "secret key parts are not available\n"
 msgstr "părţi ale cheii secrete nu sunt disponibile\n"
 
@@ -779,7 +779,7 @@ msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "nu mă pot conecta la `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "problem setting the gpg-agent options\n"
 msgstr "problemă cu agentul: agentul returnează 0x%lx\n"
 
@@ -863,31 +863,26 @@ msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "actualizarea a eşuat: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't do this in batch mode\n"
+msgid "connection to %s established\n"
+msgstr "nu pot face acest lucru în modul batch\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr ""
 
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr ""
-
-msgid "connection to agent established\n"
-msgstr ""
-
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "can't do this in batch mode\n"
 msgid "connection to agent is in restricted mode\n"
 msgstr "nu pot face acest lucru în modul batch\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr ""
-
-msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -1093,9 +1088,25 @@ msgstr "Comandă numai-administrare\n"
 msgid "invalid alias definition"
 msgstr "opţiuni enumerare invalide\n"
 
+msgid "permission error"
+msgstr ""
+
 #, fuzzy
 msgid "out of core"
 msgstr "neforţat(ă)"
+
+#, fuzzy
+msgid "invalid meta command"
+msgstr "Comandă numai-administrare\n"
+
+#, fuzzy
+msgid "unknown meta command"
+msgstr "opţiune necunoscută `%s'\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "date neaşteptate"
 
 #, fuzzy
 msgid "invalid option"
@@ -1125,13 +1136,23 @@ msgstr ""
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
-#, fuzzy
-msgid "out of core\n"
-msgstr "neforţat(ă)"
-
 #, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "opţiuni enumerare invalide\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "NOTĂ: nici un fişier opţiuni implicit `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "fişier opţiuni `%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1180,25 +1201,31 @@ msgstr ""
 msgid "armor: %s\n"
 msgstr "armură: %s\n"
 
+#, c-format
 msgid "invalid armor header: "
 msgstr "header armură invalid: "
 
+#, c-format
 msgid "armor header: "
 msgstr "header armură: "
 
+#, c-format
 msgid "invalid clearsig header\n"
 msgstr "header clearsig invalid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "unknown armor header: "
 msgstr "header armură: "
 
+#, c-format
 msgid "nested clear text signatures\n"
 msgstr "semnături text în clar încuibărite\n"
 
+#, c-format
 msgid "unexpected armor: "
 msgstr "armură neaşteptată: "
 
+#, c-format
 msgid "invalid dash escaped line: "
 msgstr "linie cu liniuţă escape invalidă: "
 
@@ -1206,12 +1233,15 @@ msgstr "linie cu liniuţă escape invalidă: "
 msgid "invalid radix64 character %02X skipped\n"
 msgstr "caracter radix64 invalid %02X sărit\n"
 
+#, c-format
 msgid "premature eof (no CRC)\n"
 msgstr "eof prematur (nici un CRC)\n"
 
+#, c-format
 msgid "premature eof (in CRC)\n"
 msgstr "eof prematur (în CRC)\n"
 
+#, c-format
 msgid "malformed CRC\n"
 msgstr "CRC anormal\n"
 
@@ -1219,12 +1249,15 @@ msgstr "CRC anormal\n"
 msgid "CRC error; %06lX - %06lX\n"
 msgstr "eroare CRC; %06lX - %06lX\n"
 
+#, c-format
 msgid "premature eof (in trailer)\n"
 msgstr "eof prematur (în trailer)\n"
 
+#, c-format
 msgid "error in trailer line\n"
 msgstr "eroare linia de trailer\n"
 
+#, c-format
 msgid "no valid OpenPGP data found.\n"
 msgstr "nici o dată OpenPGP validă găsită.\n"
 
@@ -1232,6 +1265,7 @@ msgstr "nici o dată OpenPGP validă găsită.\n"
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "armură invalidă: linie mai lungă de %d caractere\n"
 
+#, c-format
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1243,6 +1277,7 @@ msgstr ""
 msgid "[ not human readable (%zu bytes: %s%s) ]"
 msgstr "ilizibil"
 
+#, c-format
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1250,22 +1285,25 @@ msgstr ""
 "un nume de notaţie trebuie să conţină numai caractere imprimabile sau spaţii "
 "şi să se termine cu un '='\n"
 
+#, c-format
 msgid "a user notation name must contain the '@' character\n"
 msgstr "un nume de notaţie utilizator trebuie să conţină caracterul '@'\n"
 
+#, c-format
 msgid "a notation name must not contain more than one '@' character\n"
 msgstr "un nume de notaţie trebuie să nu conţină mai mult de un caracter '@'\n"
 
+#, c-format
 msgid "a notation value must not use any control characters\n"
 msgstr ""
 "o valoare de notaţie trebuie să nu folosească nici un caracter de control\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "a notation name must not contain more than one '@' character\n"
 msgid "a notation name may not contain an '=' character\n"
 msgstr "un nume de notaţie trebuie să nu conţină mai mult de un caracter '@'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid ""
 #| "a notation name must have only printable characters or spaces, and end "
 #| "with an '='\n"
@@ -1274,6 +1312,7 @@ msgstr ""
 "un nume de notaţie trebuie să conţină numai caractere imprimabile sau spaţii "
 "şi să se termine cu un '='\n"
 
+#, c-format
 msgid "WARNING: invalid notation data found\n"
 msgstr "AVERTISMENT: am găsit date de notare invalide\n"
 
@@ -1298,6 +1337,7 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "AVERTISMENT: "
 
+#, c-format
 msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
 
@@ -1311,6 +1351,47 @@ msgstr "Vă rugăm folosiţi mai întâi comanda \"toggle\".\n"
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s nu merge încă cu %s!\n"
 
+#, fuzzy, c-format
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent nu este disponibil în această sesiune\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "nu puteţi folosi %s câtă vreme în modul %s\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid fingerprint"
+msgid "Tor is not properly configured"
+msgstr "amprentă invalidă"
+
+#, fuzzy
+#| msgid "invalid fingerprint"
+msgid "DNS is not properly configured"
+msgstr "amprentă invalidă"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "generează un certificat de revocare"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "armură: %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "cardul OpenPGP nu e disponibil: %s\n"
@@ -1319,14 +1400,15 @@ msgstr "cardul OpenPGP nu e disponibil: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "cardul OpenPGP nr. %s detectat\n"
 
+#, c-format
 msgid "can't do this in batch mode\n"
 msgstr "nu pot face acest lucru în modul batch\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This command is only available for version 2 cards\n"
 msgstr "Această comandă nu este permisă în modul %s.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Reset Code not or not anymore available\n"
 msgstr "părţi ale cheii secrete nu sunt disponibile\n"
 
@@ -1336,14 +1418,11 @@ msgstr "Selecţia d-voastră? "
 msgid "[not set]"
 msgstr "[nesetat(ă)]"
 
-msgid "male"
-msgstr "masculin"
+msgid "Mr."
+msgstr ""
 
-msgid "female"
-msgstr "feminin"
-
-msgid "unspecified"
-msgstr "nespecificat(ă)"
+msgid "Ms."
+msgstr ""
 
 msgid "not forced"
 msgstr "neforţat(ă)"
@@ -1397,8 +1476,8 @@ msgstr "Eroare: lungime invalidă pentru şir preferinţe.\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Eroare: caractere invalide în şir preferinţe.\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
-msgstr "Sex ((M)asculin, (F)eminin sau spaţiu): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
+msgstr ""
 
 msgid "Error: invalid response.\n"
 msgstr "Eroare: răspuns invalid.\n"
@@ -1490,7 +1569,7 @@ msgstr "eroare trimitere la `%s': %s\n"
 msgid "error getting card info: %s\n"
 msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "This command is not allowed while in %s mode.\n"
 msgid "This command is not supported by this card\n"
 msgstr "Această comandă nu este permisă în modul %s.\n"
@@ -1498,7 +1577,7 @@ msgstr "Această comandă nu este permisă în modul %s.\n"
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Creez copie de rezervă a cheii de cifrare în afara cardului? (d/N) "
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: keys are already stored on the card!\n"
 msgstr "cheia secretă deja stocată pe un card\n"
 
@@ -1538,7 +1617,7 @@ msgstr "Vă rugăm selectaţi unde să fie stocată cheia:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "actualizarea a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr "cheia secretă deja stocată pe un card\n"
 
@@ -1581,7 +1660,9 @@ msgstr "schimbă numele de login"
 msgid "change the language preferences"
 msgstr "schimbă preferinţele de limbă"
 
-msgid "change card holder's sex"
+#, fuzzy
+#| msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr "schimbă sexul purtătorului cardului"
 
 msgid "change a CA fingerprint"
@@ -1630,6 +1711,7 @@ msgstr "Nu sunt permise comenzi administrare\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comandă invalidă  (încercaţi \"ajutor\")\n"
 
+#, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output nu merge pentru această comandă\n"
 
@@ -1651,11 +1733,25 @@ msgstr "eroare la citire keyblock: %s\n"
 msgid "key \"%s\" not found\n"
 msgstr "cheia \"%s\" nu a fost găsită: %s\n"
 
+#, c-format
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(dacă nu specificaţi cheia prin amprentă)\n"
 
+#, c-format
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "nu pot face acest lucru în mod batch fără \"--yes\"\n"
+
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
 
 msgid "Delete this key from the keyring? (y/N) "
 msgstr "Şterge această cheie din inelul de chei? (d/N) "
@@ -1676,9 +1772,14 @@ msgid "subkey"
 msgstr "Pubkey: "
 
 #, c-format
+msgid "update failed: %s\n"
+msgstr "actualizarea a eşuat: %s\n"
+
+#, c-format
 msgid "deleting keyblock failed: %s\n"
 msgstr "stergere keyblock a eşuat: %s\n"
 
+#, c-format
 msgid "ownertrust information cleared\n"
 msgstr "informaţii încredere-proprietar curăţate\n"
 
@@ -1686,6 +1787,7 @@ msgstr "informaţii încredere-proprietar curăţate\n"
 msgid "there is a secret key for public key \"%s\"!\n"
 msgstr "există o cheie secretă pentru cheia publică \"%s\"!\n"
 
+#, c-format
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr ""
 "folosiţi opţiunea \"--delete-secret-keys\" pentru a o şterge pe aceasta mai "
@@ -1695,6 +1797,7 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolă: %s\n"
 
+#, c-format
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "nu pot crea un pachet ESK simetric datorită modului S2K\n"
 
@@ -1713,6 +1816,16 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVERTISMENT: `%s' este un fişier gol\n"
 
 #, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "nu puteţi folosi algorimul de rezumat `%s' câtă vreme în modul %s\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "citesc din `%s'\n"
@@ -1723,11 +1836,6 @@ msgid ""
 msgstr ""
 "AVERTISMENT: forţând cifrul simetric %s (%d) violaţi preferinţele "
 "destinatarului\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1762,23 +1870,28 @@ msgstr "%s date cifrate\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "cifrat cu un algoritm necunoscut %d\n"
 
+#, c-format
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 "AVERTISMENT: mesajul a fost cifrat cu o cheie slabă din cifrul simetric.\n"
 
+#, c-format
 msgid "problem handling encrypted packet\n"
 msgstr "problemă cu mânuirea pachetului cifrat\n"
 
+#, c-format
 msgid "no remote program execution supported\n"
 msgstr "nu este suportată execuţia nici unui program la distanţă\n"
 
+#, c-format
 msgid ""
 "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
 "chemarea programelor externe sunt deactivate datorită opţiunilor nesigure "
 "pentru permisiunile fişierului\n"
 
+#, c-format
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
 "această platformă necesită fişiere temporare când sunt chemate programe "
@@ -1798,9 +1911,11 @@ msgstr "nu pot executa shell-ul `%s': %s\n"
 msgid "system error while calling external program: %s\n"
 msgstr "eroare de sistem la chemarea programului extern: %s\n"
 
+#, c-format
 msgid "unnatural exit of external program\n"
 msgstr "ieşire nenaturală a programului extern\n"
 
+#, c-format
 msgid "unable to execute external program\n"
 msgstr "nu pot executa programul extern\n"
 
@@ -1853,6 +1968,7 @@ msgstr "scriu în `%s'\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "cheia %s: semnătură subcheie într-un loc greşit - sărită\n"
 
+#, c-format
 msgid "exporting secret keys not allowed\n"
 msgstr "exportul cheilor secrete nu este permis\n"
 
@@ -1860,6 +1976,7 @@ msgstr "exportul cheilor secrete nu este permis\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "cheia %s: cheie stil PGP 2.x - sărită\n"
 
+#, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "AVERTISMENT: nimic exportat\n"
 
@@ -1870,23 +1987,6 @@ msgstr "eroare la creearea `%s': %s\n"
 
 msgid "[User ID not found]"
 msgstr "[ID utilizator nu a fost găsit]"
-
-#, fuzzy, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "opţiuni enumerare invalide\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error looking up: %s\n"
-msgstr "eroare în `%s': %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "eroare la crearea inelului de chei `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
@@ -1901,8 +2001,16 @@ msgid "No fingerprint"
 msgstr "Amprenta CA: "
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "cheia secretă \"%s\" nu a fost găsită: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "opţiuni enumerare invalide\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -2012,6 +2120,11 @@ msgstr "semnează o cheie"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "semnează o cheie local"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "generează o nouă perechi de chei"
 
 msgid "sign a key"
 msgstr "semnează o cheie"
@@ -2175,6 +2288,7 @@ msgstr "Compresie: "
 msgid "usage: %s [options] %s\n"
 msgstr "folosire: gpg [opţiuni] "
 
+#, c-format
 msgid "conflicting commands\n"
 msgstr "comenzi în conflict\n"
 
@@ -2315,13 +2429,9 @@ msgstr "Nici o semnătură corespunzătoare în inelul secret\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "opţiune necunoscută `%s'\n"
 
+#, c-format
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "NOTE: old default options file `%s' ignored\n"
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "NOTĂ: fisier opţiuni implicite vechi `%s' ignorat\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2351,6 +2461,7 @@ msgid "'%s' is not a valid character set\n"
 msgstr "`%s' nu este un set de carectere valid\n"
 
 #
+#, c-format
 msgid "could not parse keyserver URL\n"
 msgstr "nu am putut interpreta URL-ul serverului de chei\n"
 
@@ -2358,6 +2469,7 @@ msgstr "nu am putut interpreta URL-ul serverului de chei\n"
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: opţiuni server de chei invalide\n"
 
+#, c-format
 msgid "invalid keyserver options\n"
 msgstr "opţiuni server de chei invalide\n"
 
@@ -2365,6 +2477,7 @@ msgstr "opţiuni server de chei invalide\n"
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opţiuni import invalide\n"
 
+#, c-format
 msgid "invalid import options\n"
 msgstr "opţiuni import invalide\n"
 
@@ -2377,6 +2490,7 @@ msgstr "opţiuni enumerare invalide\n"
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: opţiuni export invalide\n"
 
+#, c-format
 msgid "invalid export options\n"
 msgstr "opţiuni export invalide\n"
 
@@ -2384,6 +2498,7 @@ msgstr "opţiuni export invalide\n"
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: opţiuni enumerare invalide\n"
 
+#, c-format
 msgid "invalid list options\n"
 msgstr "opţiuni enumerare invalide\n"
 
@@ -2428,6 +2543,7 @@ msgstr ""
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: opţiuni verificare invalide\n"
 
+#, c-format
 msgid "invalid verify options\n"
 msgstr "opţiuni verificare invalide\n"
 
@@ -2439,9 +2555,11 @@ msgstr "nu pot seta cale-execuţie ca %s\n"
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: opţiuni verificare invalide\n"
 
+#, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVERTISMENT: programul ar putea crea un fişier core!\n"
 
@@ -2457,6 +2575,7 @@ msgstr "%s nu este permis cu %s!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "%s nu are sens cu %s!\n"
 
+#, c-format
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
@@ -2464,58 +2583,66 @@ msgstr ""
 msgid "will not run with insecure memory due to %s\n"
 msgstr "nu va rula cu memorie neprotejată (insecure) pentru că %s\n"
 
+#, c-format
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritm cifrare selectat este invalid\n"
 
+#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "algoritm compresie selectat este invalid\n"
 
+#, c-format
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "algoritm rezumat certificare selectat este invalid\n"
 
+#, c-format
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed trebuie să fie mai mare decât 0\n"
 
+#, c-format
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed trebuie să fie mai mare decât 1\n"
 
+#, c-format
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth trebuie să fie în intervalul de la 1 la 255\n"
 
+#, c-format
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "default-cert-level invalid; trebuie să fie 0, 1, 2 sau 3\n"
 
+#, c-format
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "min-cert-level invalid; trebuie să fie 0, 1, 2 sau 3\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTĂ: modul S2K simplu (0) este contraindicat cu insistenţă\n"
 
+#, c-format
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "mod S2K invalid; trebuie să fie 0, 1 sau 3\n"
 
+#, c-format
 msgid "invalid default preferences\n"
 msgstr "preferinţe implicite invalide\n"
 
+#, c-format
 msgid "invalid personal cipher preferences\n"
 msgstr "preferinţe cifrare personale invalide\n"
 
+#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferinţe rezumat personale invalide\n"
 
+#, c-format
 msgid "invalid personal compress preferences\n"
 msgstr "preferinţe compresie personale invalide\n"
 
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s nu merge încă cu %s!\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "nu puteţi folosi algorimul de rezumat `%s' câtă vreme în modul %s\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -2526,6 +2653,7 @@ msgstr "nu puteţi folosi algoritmul de compresie `%s' câtă vreme în modul %s
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "am eşuat să iniţializez TrustDB:%s\n"
 
+#, c-format
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVERTISMENT: destinatari (-r) furnizaţi fără a folosi cifrare cu cheie "
@@ -2536,6 +2664,7 @@ msgstr ""
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "cifrarea simetrică a lui `%s' a eşuat: %s\n"
 
+#, c-format
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "nu puteţi folosi --symmetric --encrypt cu --s2k-mode 0\n"
 
@@ -2544,6 +2673,7 @@ msgstr "nu puteţi folosi --symmetric --encrypt cu --s2k-mode 0\n"
 msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "nu puteţi folosi --symmetric --encrypt câtă vreme în modul %s\n"
 
+#, c-format
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "nu puteţi folosi --symmetric --sign --encrypt cu --s2k-mode 0\n"
 
@@ -2598,18 +2728,23 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
+#, c-format
 msgid "Go ahead and type your message ...\n"
 msgstr "Daţi-i drumul şi scrieţi mesajul ...\n"
 
+#, c-format
 msgid "the given certification policy URL is invalid\n"
 msgstr "URL-ul politicii de certificare furnizat este invalid\n"
 
+#, c-format
 msgid "the given signature policy URL is invalid\n"
 msgstr "URL-ul politicii de semnături furnizat este invalid\n"
 
+#, c-format
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "URL-ul serverului de chei preferat furnizat este invalid\n"
 
@@ -2672,6 +2807,9 @@ msgid "remove unusable parts from key after import"
 msgstr "cheie secretă de nefolosit"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "ignore key-signatures which are not self-signatures"
 msgstr ""
 
 msgid "run import filters and export key immediately"
@@ -2776,10 +2914,12 @@ msgstr "         \"%s\": preferinţă pentru algoritm rezumat %s\n"
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr "         \"%s\": preferinţă pentru algoritm compresie %s\n"
 
+#, c-format
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr ""
 "este puternic sugerat să vă actualizaţi preferinţele şi re-distribuiţi\n"
 
+#, c-format
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 "această cheie pentru a avita probleme potenţiale de ne-potrivire de "
@@ -2813,6 +2953,7 @@ msgstr "cheia %s: am acceptat ID-ul utilizator ce nu e auto-semnat \"%s\"\n"
 msgid "key %s: no valid user IDs\n"
 msgstr "cheia %s: nici un ID utilizator valid\n"
 
+#, c-format
 msgid "this may be caused by a missing self-signature\n"
 msgstr "aceasta poate fi cauzată de o auto-semnătură ce lipseşte\n"
 
@@ -2898,11 +3039,24 @@ msgstr "sărită: cheia secretă deja prezentă\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
+#. TRANSLATORS: For a smartcard, each private key on host has a
+#. * reference (stub) to a smartcard and actual private key data
+#. * is stored on the card.  A single smartcard can have up to
+#. * three private key data.  Importing private key stub is always
+#. * skipped in 2.1, and it returns GPG_ERR_NOT_PROCESSED.
+#. * Instead, user should be suggested to run 'gpg --card-status',
+#. * then, references to a card will be automatically created
+#. * again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "secret key \"%s\" not found: %s\n"
 msgid "secret key %s: %s\n"
 msgstr "cheia secretă \"%s\" nu a fost găsită: %s\n"
 
+#, c-format
 msgid "importing secret keys not allowed\n"
 msgstr "importul de chei secrete nu este permis\n"
 
@@ -2910,19 +3064,28 @@ msgstr "importul de chei secrete nu este permis\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "cheia %s: cheie secretă cu cifru invalid %d - sărită\n"
 
-#. TRANSLATORS: For smartcard, each private key on
-#. host has a reference (stub) to a smartcard and
-#. actual private key data is stored on the card.  A
-#. single smartcard can have up to three private key
-#. data.  Importing private key stub is always
-#. skipped in 2.1, and it returns
-#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
-#. suggested to run 'gpg --card-status', then,
-#. references to a card will be automatically
-#. created again.
+msgid "No reason specified"
+msgstr "Nici un motiv specificat"
+
+msgid "Key is superseded"
+msgstr "Cheia este înlocuită"
+
+msgid "Key has been compromised"
+msgstr "Cheia a fost compromisă"
+
+msgid "Key is no longer used"
+msgstr "Cheia nu mai este folosită"
+
+msgid "User ID is no longer valid"
+msgstr "ID utilizator nu mai este valid"
+
 #, c-format
-msgid "To migrate '%s', with each smartcard, run: %s\n"
-msgstr ""
+msgid "reason for revocation: "
+msgstr "motiv pentru revocare: "
+
+#, c-format
+msgid "revocation comment: "
+msgstr "comentariu revocare: "
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -3040,6 +3203,62 @@ msgstr "cheia %s: am adăugat certificatul de revocare \"%s\"\n"
 #, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "cheia %s: am adăugat semnătura de cheie directă\n"
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "eroare la crearea inelului de chei `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "cheia %s: algoritm cu cheie publică nesuportat\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "semnătură %s, algoritm rezumat %s\n"
+
+#, fuzzy
+#| msgid "revoke signatures"
+msgid " (reordered signatures follow)"
+msgstr "revocă semnături"
+
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s:\n"
+msgstr "sărită \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "ID utilizator \"%s\" a fost revocat."
+msgstr[1] "ID utilizator \"%s\" a fost revocat."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
+msgstr[1] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d semnături incorecte\n"
+msgstr[1] "%d semnături incorecte\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Semnătură bună din \"%s\""
+msgstr[1] "Semnătură bună din \"%s\""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
@@ -3537,13 +3756,10 @@ msgid "Quit without saving? (y/N) "
 msgstr "Terminaţi fără a salva?  (d/N) "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "actualizarea a eşuat: %s\n"
-
 msgid "Key not changed so no update needed.\n"
 msgstr "Cheia nu a fost schimbată aşa că nici o actualizare a fost necesară.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "cannot revoke the last valid user ID.\n"
 msgstr "Nu puteţi şterge ultimul ID utilizator!\n"
@@ -3580,6 +3796,15 @@ msgstr "Nu există acest ID utilizator.\n"
 msgid "Nothing to sign.\n"
 msgstr "Nimic de semnat cu cheia %s\n"
 
+#, c-format
+msgid "Not signed by you.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "verificarea semnăturii create a eşuat: %s\n"
+
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid expiration time\n"
@@ -3594,6 +3819,9 @@ msgstr "amprentă invalidă"
 #| msgid "key \"%s\" not found: %s\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "cheia \"%s\" nu a fost găsită: %s\n"
+
+msgid "AEAD: "
+msgstr ""
 
 msgid "Digest: "
 msgstr "Rezumat: "
@@ -3673,6 +3901,7 @@ msgstr "revocată"
 msgid "expired"
 msgstr "expirată"
 
+#, c-format
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3681,10 +3910,11 @@ msgstr ""
 "              Această comandă poate cauza ca un alt ID utilizator\n"
 "              să devină ID-ul utilizator primar presupus.\n"
 
+#, c-format
 msgid "WARNING: Your encryption subkey expires soon.\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Nu puteţi schimba data de expirare a unei chei v3\n"
@@ -3764,12 +3994,15 @@ msgstr "Nu puteţi adăuga un revocator desemnat la o cheie stil PGP 2.x.\n"
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Introduceţi ID-ul utilizator al revocatorului desemnat: "
 
+#, c-format
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "nu pot desemna o cheie stil PGP 2.x ca un revocator desemnat\n"
 
+#, c-format
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "nu puteţi desemna o cheie ca propriul său revocator desemnat\n"
 
+#, c-format
 msgid "this key has already been designated as a revoker\n"
 msgstr "această cheie a fost deja desemnată ca un revocator\n"
 
@@ -3800,6 +4033,7 @@ msgstr "Schimb timpul de expirare pentru o subcheie.\n"
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Schimb timpul de expirare pentru cheia primară.\n"
 
+#, c-format
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Nu puteţi schimba data de expirare a unei chei v3\n"
 
@@ -3885,9 +4119,6 @@ msgstr "Sunteţi încă sigur(ă) că doriţi să o revocaţi? (d/N) "
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Creaţi un certificat de revocare pentru această semnătură? (d/N) "
 
-msgid "Not signed by you.\n"
-msgstr ""
-
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Aţi semnat aceste ID-uri utilizator pe cheia %s:\n"
@@ -3905,6 +4136,7 @@ msgstr "Sunteţi pe cale să revocaţi aceste semnături:\n"
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Doriţi într-adevăr să creaţi certificatele de revocare? (d/N) "
 
+#, c-format
 msgid "no secret key\n"
 msgstr "nici o cheie secretă\n"
 
@@ -3922,7 +4154,7 @@ msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "AVERTISMENT: o semnătură ID utilizator este datată %d secunde în viitor\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "Cannot revoke the last valid user ID.\n"
 msgstr "Nu puteţi şterge ultimul ID utilizator!\n"
@@ -3948,12 +4180,15 @@ msgstr "opţiuni enumerare invalide\n"
 msgid "preference '%s' duplicated\n"
 msgstr "preferinţa `%s' duplicată\n"
 
+#, c-format
 msgid "too many cipher preferences\n"
 msgstr "prea multe preferinţe de cifrare\n"
 
+#, c-format
 msgid "too many digest preferences\n"
 msgstr "prea multe preferinţe de rezumat\n"
 
+#, c-format
 msgid "too many compression preferences\n"
 msgstr "prea multe preferinţe de compresie\n"
 
@@ -3962,12 +4197,15 @@ msgstr "prea multe preferinţe de compresie\n"
 msgid "invalid item '%s' in preference string\n"
 msgstr "articol invalid `%s' în şirul de preferinţe\n"
 
+#, c-format
 msgid "writing direct signature\n"
 msgstr "scriu semnătură directă\n"
 
+#, c-format
 msgid "writing self signature\n"
 msgstr "scriu auto semnătură\n"
 
+#, c-format
 msgid "writing key binding signature\n"
 msgstr "scriu semnătură legată de cheie\n"
 
@@ -3979,6 +4217,7 @@ msgstr "lungime cheie invalidă; folosesc %u biţi\n"
 msgid "keysize rounded up to %u bits\n"
 msgstr "lungime cheie rotunjită la %u biţi\n"
 
+#, c-format
 msgid ""
 "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr ""
@@ -3996,14 +4235,14 @@ msgid "Authenticate"
 msgstr "Autentifică"
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr "SsCcAaTt"
@@ -4086,6 +4325,10 @@ msgstr "   (%d) RSA (numai cifrare)\n"
 msgid "  (%d) Existing key\n"
 msgstr "   (2) Cheie de cifrare\n"
 
+#, fuzzy, c-format
+msgid "  (%d) Existing key from card\n"
+msgstr "   (2) Cheie de cifrare\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notare semnătură: "
@@ -4096,6 +4339,18 @@ msgstr ""
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Nici o subcheie cu indicele %d\n"
+
+#, fuzzy, c-format
+msgid "error reading the card: %s\n"
+msgstr "%s: eroare citire înregistrare liberă: %s\n"
+
+#, fuzzy, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "eroare la obţinerea numărului serial: %s\n"
+
+#, fuzzy
+msgid "Available keys:\n"
+msgstr "deactivează cheia"
 
 #, fuzzy, c-format
 #| msgid "rounded up to %u bits\n"
@@ -4323,7 +4578,7 @@ msgstr "cheia există deja\n"
 msgid "Create anyway? (y/N) "
 msgstr "Creaţi oricum? "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "Create anyway? "
 msgid "creating anyway\n"
 msgstr "Creaţi oricum? "
@@ -4332,6 +4587,7 @@ msgstr "Creaţi oricum? "
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
 msgstr ""
 
+#, c-format
 msgid "Key generation canceled.\n"
 msgstr "Generarea cheii a fost anulată.\n"
 
@@ -4385,14 +4641,16 @@ msgstr ""
 "cheia a fost creată %lu secunde în viitor (warp în timp sau probleme cu "
 "ceasul)\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "NOTĂ: crearea de subchei pentru chei v3 nu este conform OpenPGP\n"
 
+#, c-format
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Părţile secrete ale cheii primare nu sunt disponibile.\n"
 
+#, c-format
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Părţi secrete ale cheii primare sunt stacate pe card.\n"
 
@@ -4423,20 +4681,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d semnături incorecte\n"
 msgstr[1] "%d semnături incorecte\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d semnături incorecte\n"
-msgstr[1] "%d semnături incorecte\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
-msgstr[1] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -4554,11 +4798,9 @@ msgstr "AVERTISMENT: nu pot reactualiza cheia %s via %s: %s\n"
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "cheia \"%s\" nu a fost găsită pe serverul de chei\n"
 
+#, c-format
 msgid "key not found on keyserver\n"
 msgstr "cheia nu a fost găsită pe serverul de chei\n"
-
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "nici un server de chei cunoscut (folosiţi opţiunea --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4568,7 +4810,7 @@ msgstr "cer cheia %s de la serverul %s %s\n"
 msgid "requesting key %s from %s\n"
 msgstr "cer cheia %s de la %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "nici o acţiune pentru serverul de chei!\n"
@@ -4606,6 +4848,7 @@ msgstr "fraza-parolă generată cu un algoritm rezumat necunoscut %d\n"
 msgid "public key is %s\n"
 msgstr "cheia publică este %s\n"
 
+#, c-format
 msgid "public key encrypted data: good DEK\n"
 msgstr "date cigrate cu cheie publică: DEK bun\n"
 
@@ -4626,9 +4869,14 @@ msgid "public key decryption failed: %s\n"
 msgstr "decriptarea cu cheie publică a eşuat: %s\n"
 
 #, c-format
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
+#, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "cifrată cu %lu fraze-parolă\n"
 
+#, c-format
 msgid "encrypted with 1 passphrase\n"
 msgstr "cifrată cu 1 frază-parolă\n"
 
@@ -4640,12 +4888,30 @@ msgstr "presupunem date cifrate %s\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "cifru IDEA indisponibil, vom încerca să folosim %s în loc\n"
 
+#, c-format
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVERTISMENT: mesajul nu a avut integritatea protejată\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "decriptarea a eşuat: %s\n"
+
+#, c-format
 msgid "decryption okay\n"
 msgstr "decriptare OK\n"
 
+#, c-format
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVERTISMENT: mesajul cifrat a fost manipulat!\n"
 
@@ -4653,7 +4919,7 @@ msgstr "AVERTISMENT: mesajul cifrat a fost manipulat!\n"
 msgid "decryption failed: %s\n"
 msgstr "decriptarea a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTĂ: expeditorul a cerut \"doar-pentru-ochii-d-voastră\"\n"
@@ -4662,13 +4928,11 @@ msgstr "NOTĂ: expeditorul a cerut \"doar-pentru-ochii-d-voastră\"\n"
 msgid "original file name='%.*s'\n"
 msgstr "nume fişier original='%.*s'\n"
 
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
-
+#, c-format
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocare standalone - folosiţi \"gpg --import\" pentru a aplica\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no signature found\n"
 msgstr "Semnătură bună din \"%s\""
 
@@ -4684,10 +4948,11 @@ msgstr "Semnătură expirată din \"%s\""
 msgid "Good signature from \"%s\""
 msgstr "Semnătură bună din \"%s\""
 
+#, c-format
 msgid "signature verification suppressed\n"
 msgstr "verificare semnătură eliminată\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't handle this ambiguous signature data\n"
 msgstr "nu pot mânui aceste semnături multiple\n"
 
@@ -4708,8 +4973,13 @@ msgstr "Semnătură făcută %s folosind cheia %s cu ID %s\n"
 msgid "               issuer \"%s\"\n"
 msgstr "                aka \"%s\""
 
+#, c-format
 msgid "Key available at: "
 msgstr "Cheie disponibilă la: "
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[nesigur]"
@@ -4759,9 +5029,11 @@ msgstr ""
 msgid "Can't check signature: %s\n"
 msgstr "Nu pot verifica semnătura: %s\n"
 
+#, c-format
 msgid "not a detached signature\n"
 msgstr "nu o semnătură detaşată\n"
 
+#, c-format
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
@@ -4771,6 +5043,7 @@ msgstr ""
 msgid "standalone signature of class 0x%02x\n"
 msgstr "semnătură de sine stătătoare (standalone) de clasă 0x%02x\n"
 
+#, c-format
 msgid "old style (PGP 2.x) signature\n"
 msgstr "semnătură de stil vechi (PGP 2.x)\n"
 
@@ -4787,7 +5060,7 @@ msgstr "fstat(%d) a eşuat în %s: %s\n"
 msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr "AVERTISMENT: folosesc algoritmul cu cheie publică experimental %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
 msgstr "AVERTISMENT: algoritmul rezumat %s este prea vechi (deprecated)\n"
 
@@ -4809,6 +5082,11 @@ msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "semnătură %s, algoritm rezumat %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
+msgstr "semnătură %s, algoritm rezumat %s\n"
+
+#, fuzzy, c-format
 #| msgid "read error in `%s': %s\n"
 msgid "(reported error: %s)\n"
 msgstr "eroare citire în `%s': %s\n"
@@ -4818,6 +5096,7 @@ msgstr "eroare citire în `%s': %s\n"
 msgid "(reported error: %s <%s>)\n"
 msgstr "eroare citire în `%s': %s\n"
 
+#, c-format
 msgid "(further info: "
 msgstr ""
 
@@ -4868,6 +5147,7 @@ msgstr "opţiune ambiguă `%s'\n"
 msgid "unknown option '%s'\n"
 msgstr "opţiune necunoscută `%s'\n"
 
+#, c-format
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
 
@@ -4891,6 +5171,7 @@ msgstr "%s: sufix necunoscut\n"
 msgid "Enter new filename"
 msgstr "Introduceţi un nou nume-fişier"
 
+#, c-format
 msgid "writing to stdout\n"
 msgstr "scriu la stdout\n"
 
@@ -4903,10 +5184,16 @@ msgstr "presupun date semnate în `%s'\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "nu pot mânui algoritmul cu cheie publică %d\n"
 
+#, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "AVERTISMENT: cheie de sesiune cifrată simetric potenţial nesigură "
 "(insecure)\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Notare semnătură critică: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -4919,6 +5206,7 @@ msgstr "problemă cu agentul: agentul returnează 0x%lx\n"
 msgid "Enter passphrase\n"
 msgstr "Introduceţi fraza-parolă\n"
 
+#, c-format
 msgid "cancelled by user\n"
 msgstr "anulată de utilizator\n"
 
@@ -5004,29 +5292,9 @@ msgstr "`%s' nu este un fişier JPEG\n"
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Este această poză corectă (d/N/t)? "
 
+#, c-format
 msgid "unable to display photo ID!\n"
 msgstr "nu pot afişa poza ID!\n"
-
-msgid "No reason specified"
-msgstr "Nici un motiv specificat"
-
-msgid "Key is superseded"
-msgstr "Cheia este înlocuită"
-
-msgid "Key has been compromised"
-msgstr "Cheia a fost compromisă"
-
-msgid "Key is no longer used"
-msgstr "Cheia nu mai este folosită"
-
-msgid "User ID is no longer valid"
-msgstr "ID utilizator nu mai este valid"
-
-msgid "reason for revocation: "
-msgstr "motiv pentru revocare: "
-
-msgid "revocation comment: "
-msgstr "comentariu revocare: "
 
 #. TRANSLATORS: These are the allowed answers in lower and
 #. uppercase.  Below you will find the matching strings which
@@ -5105,9 +5373,11 @@ msgstr ""
 "%s: Nu există nici o indicaţie că această cheie aparţine într-adevăr "
 "utilizatorului numit\n"
 
+#, c-format
 msgid "This key probably belongs to the named user\n"
 msgstr "Această cheie aparţine probabil utilizatorului numit\n"
 
+#, c-format
 msgid "This key belongs to us\n"
 msgstr "Această cheie ne aparţine\n"
 
@@ -5141,26 +5411,33 @@ msgstr ""
 msgid "Use this key anyway? (y/N) "
 msgstr "Folosiţi oricum această cheie? (d/N) "
 
+#, c-format
 msgid "WARNING: Using untrusted key!\n"
 msgstr "AVERTISMENT: Folosiţi o cheie fără încredere!\n"
 
+#, c-format
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
 msgstr ""
 "AVERTISMENT: această cheie poate fi revocată (cheia de revocare nu este "
 "prezentă)\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
 msgstr "AVERTISMENT: Această cheie a fost revocată revocatorul desemnat!\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "AVERTISMENT: Această cheie a fost revocată de proprietarul ei!\n"
 
+#, c-format
 msgid "         This could mean that the signature is forged.\n"
 msgstr "         Aceasta ar putea însemna că semnătura e falsificată.\n"
 
+#, c-format
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "AVERTISMENT: Această cheie a fost revocată de proprietarul ei!\n"
 
+#, c-format
 msgid "Note: This key has been disabled.\n"
 msgstr "Notă: Această cheie a fost deactivată.\n"
 
@@ -5172,36 +5449,45 @@ msgstr ""
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr ""
 
+#, c-format
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 msgstr ""
 
+#, c-format
 msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
 msgstr ""
 
+#, c-format
 msgid "Note: This key has expired!\n"
 msgstr "Notă: Această cheie a expirat!\n"
 
+#, c-format
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr ""
 "AVERTISMENT: Această cheie nu este certificată de o semnătură de încredere!\n"
 
+#, c-format
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr ""
 "         Nu există nici o indicaţie că semnătura aparţine proprietarului.\n"
 
+#, c-format
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "AVERTISMENT: Noi NU avem încredere în această cheie!\n"
 
+#, c-format
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         Semnătura este probabil un FALS.\n"
 
+#, c-format
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 "AVERTISMENT: Această cheie nu este certificată cu suficiente semnături de "
 "încredere!\n"
 
+#, c-format
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "         Nu este sigur că semnătura aparţine proprietarului.\n"
 
@@ -5246,12 +5532,14 @@ msgstr ""
 msgid "No such user ID.\n"
 msgstr "Nu există acest ID utilizator.\n"
 
+#, c-format
 msgid "skipped: public key already set as default recipient\n"
 msgstr "sărită: cheia publică setată deja ca destinatar implicit\n"
 
 msgid "Public key is disabled.\n"
 msgstr "Cheia publică este deactivată.\n"
 
+#, c-format
 msgid "skipped: public key already set\n"
 msgstr "sărită: cheia publică setată deja\n"
 
@@ -5259,6 +5547,7 @@ msgstr "sărită: cheia publică setată deja\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "destinatar implicit necunoscut \"%s\"\n"
 
+#, c-format
 msgid "no valid addressees\n"
 msgstr "nici un destinatar valid\n"
 
@@ -5270,6 +5559,7 @@ msgstr "cheia %s nu are nici un ID utilizator\n"
 msgid "Note: key %s has no preference for %s\n"
 msgstr "cheia %s nu are nici un ID utilizator\n"
 
+#, c-format
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "datele nu au fost salvate: folosiţi opţiunea \"--output\" pentru a le salva\n"
@@ -5280,9 +5570,11 @@ msgstr "Semnătură detaşată.\n"
 msgid "Please enter name of data file: "
 msgstr "Vă rugăm introduceţi numele fişierului de date: "
 
+#, c-format
 msgid "reading stdin ...\n"
 msgstr "citesc stdin ...\n"
 
+#, c-format
 msgid "no signed data\n"
 msgstr "nici o dată semnată\n"
 
@@ -5303,9 +5595,11 @@ msgstr "cheia %s nu are nici un ID utilizator\n"
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "destinator anonim; încerc cheia secretă %s ...\n"
 
+#, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "OK, noi suntem destinatarul anonim.\n"
 
+#, c-format
 msgid "old encoding of the DEK is not supported\n"
 msgstr "vechea encodare a lui DEK nu este suportată\n"
 
@@ -5324,7 +5618,7 @@ msgstr ""
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTĂ: cheia secretă %s a expirat la %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "NOTĂ: cheia a fost revocată"
@@ -5455,6 +5749,7 @@ msgstr "(Nici o descriere dată)\n"
 msgid "Is this okay? (y/N) "
 msgstr "Este aceasta OK? (d/N) "
 
+#, c-format
 msgid "weak key created - retrying\n"
 msgstr "cheie slabă creată - reîncerc\n"
 
@@ -5470,6 +5765,7 @@ msgstr ""
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "AVERTISMENT: conflict pentru rezumat semnătură în mesaj\n"
 
@@ -5549,6 +5845,11 @@ msgstr "NOTĂ: cheia a fost revocată"
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "semnătură de sine stătătoare (standalone) de clasă 0x%02x\n"
 
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "semnătură de sine stătătoare (standalone) de clasă 0x%02x\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -5594,6 +5895,7 @@ msgstr ""
 "AVERTISMENT: forţarea algoritmului rezumat %s (%d) violează preferinţele "
 "destinatarului\n"
 
+#, c-format
 msgid "signing:"
 msgstr "semnare:"
 
@@ -5601,6 +5903,7 @@ msgstr "semnare:"
 msgid "%s encryption will be used\n"
 msgstr "va fi folosită cifrarea %s\n"
 
+#, c-format
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr "cheia nu este marcată ca sigură - nu o pot folosi cu GNA falsificat!\n"
 
@@ -5608,6 +5911,7 @@ msgstr "cheia nu este marcată ca sigură - nu o pot folosi cu GNA falsificat!\n
 msgid "skipped \"%s\": duplicated\n"
 msgstr "sărită \"%s\": duplicată\n"
 
+#, c-format
 msgid "skipped: secret key already present\n"
 msgstr "sărită: cheia secretă deja prezentă\n"
 
@@ -5677,6 +5981,7 @@ msgstr "trustdb rec %lu: lseek a eşuat: %s\n"
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: scrierea a eşuat (n=%d): %s\n"
 
+#, c-format
 msgid "trustdb transaction too large\n"
 msgstr "tranzacţia trustdb prea mare\n"
 
@@ -5701,7 +6006,7 @@ msgstr "%s: a fost creat trustdb invalid\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: a fost creat trustdb\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: trustdb not writable\n"
 msgid "Note: trustdb not writable\n"
 msgstr "NOTĂ: nu poate fi scris în trustdb\n"
@@ -5762,7 +6067,7 @@ msgstr "%s: eroare setere la zero a înregistrării: %s\n"
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: adăugarea unei înregistrări a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: The trustdb is corrupted.\n"
 msgstr "%s: a fost creat trustdb\n"
 
@@ -5792,10 +6097,7 @@ msgstr ""
 "\n"
 "Algoritmuri suportate:\n"
 
-#, fuzzy, c-format
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "eroare la crearea frazei-parolă: %s\n"
-
+#, c-format
 msgid "TOFU DB error"
 msgstr ""
 
@@ -5812,14 +6114,6 @@ msgstr "eroare la scrierea inelului de chei secret `%s': %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s: eroare scriere înregistrare dir: %s\n"
-
-#, fuzzy, c-format
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "eroare trimitere la `%s': %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5970,16 +6264,9 @@ msgstr ""
 msgid "Defaulting to unknown.\n"
 msgstr ""
 
+#, c-format
 msgid "TOFU db corruption detected.\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "resetting keydb: %s\n"
-msgstr "eroare la scrierea inelului de chei `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "eroare la citire `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -6036,39 +6323,31 @@ msgstr ""
 msgid "%s: Verified 0 signatures."
 msgstr "Am şters %d semnături.\n"
 
-#, fuzzy, c-format
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
-msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
-
 #, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted 0 messages."
 msgstr "cifrată cu %lu fraze-parolă\n"
 
 #, fuzzy, c-format
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
-msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
-
-#, fuzzy, c-format
 #| msgid "Policy: "
 msgid "(policy: %s)"
 msgstr "Politica: "
 
+#, c-format
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
 
@@ -6095,11 +6374,6 @@ msgstr "eroare trimitere la `%s': %s\n"
 #, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing public keyring `%s': %s\n"
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "eroare la scrierea inelului de chei public `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid long keyID\n"
@@ -6130,9 +6404,11 @@ msgstr "înregistrare încredere %lu, tip req %d: citirea a eşuat: %s\n"
 msgid "trust record %lu is not of requested type %d\n"
 msgstr "înregistrare încredere %lu nu este de tipul cerut %d\n"
 
+#, c-format
 msgid "You may try to re-create the trustdb using the commands:\n"
 msgstr ""
 
+#, c-format
 msgid "If that does not work, please consult the manual\n"
 msgstr ""
 
@@ -6145,6 +6421,7 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr "folosesc model de încredere %s\n"
 
+#, c-format
 msgid "no need for a trustdb check\n"
 msgstr "nu e nevoie de o verificare trustdb\n"
 
@@ -6166,9 +6443,11 @@ msgstr "nu e nevoie de o actualizare trustdb cu modelul de încredere `%s'\n"
 msgid "public key %s not found: %s\n"
 msgstr "cheia publică %s nu a fost găsită: %s\n"
 
+#, c-format
 msgid "please do a --check-trustdb\n"
 msgstr "vă rugăm faceţi un --check-trustdb\n"
 
+#, c-format
 msgid "checking the trustdb\n"
 msgstr "verific trustdb\n"
 
@@ -6186,6 +6465,7 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d chei procesate (%d numărători valide anulate)\n"
 msgstr[1] "%d chei procesate (%d numărători valide anulate)\n"
 
+#, c-format
 msgid "no ultimately trusted keys found\n"
 msgstr "nu am găsit nici o cheie cu încredere supremă\n"
 
@@ -6258,6 +6538,7 @@ msgstr "[ deplină]"
 msgid "[ultimate]"
 msgstr "[ supremă]"
 
+#, c-format
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -6291,6 +6572,26 @@ msgid ""
 "List, export, import Keybox data\n"
 msgstr "Folosire: gpg [opţiuni] [fişiere] (-h pentru ajutor)"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN for the standard keys."
+msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "modulus-ul RSA lipseşte sau nu are %d biţi\n"
@@ -6303,15 +6604,12 @@ msgstr "exponentul public RSA lipseşte sau are mai mult de %d biţi\n"
 msgid "PIN callback returned error: %s\n"
 msgstr "apelul PIN a returnat eroare: %s\n"
 
+#, c-format
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
 #, fuzzy
 msgid "|N|Please enter a new PIN for the standard keys."
-msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
-
-#, fuzzy
-msgid "||Please enter the PIN for the standard keys."
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy
@@ -6323,9 +6621,6 @@ msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
 msgid ""
@@ -6350,20 +6645,24 @@ msgstr "am eşuat să stochez amprenta: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "am eşuat să stochez data creării: %s\n"
 
+#, c-format
 msgid "error retrieving CHV status from card\n"
 msgstr "eroare la recuperarea stării CHV de pe card\n"
 
+#, c-format
 msgid "response does not contain the RSA modulus\n"
 msgstr "răspunsul nu conţine modulul RSA\n"
 
+#, c-format
 msgid "response does not contain the RSA public exponent\n"
 msgstr "răspunsul nu conţine exponentul public RSA\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "response does not contain the RSA public exponent\n"
 msgid "response does not contain the EC public key\n"
 msgstr "răspunsul nu conţine exponentul public RSA\n"
 
+#, c-format
 msgid "response does not contain the public key data\n"
 msgstr "răspunsul nu conţine datele cheii publice\n"
 
@@ -6376,16 +6675,6 @@ msgstr "citirea cheii publice a eşuat: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6408,6 +6697,7 @@ msgstr "PIN-ul pentru CHV%d este prea scurt; lungimea minimă este %d\n"
 msgid "verify CHV%d failed: %s\n"
 msgstr "verificarea CHV%d a eşuat: %s\n"
 
+#, c-format
 msgid "card is permanently locked!\n"
 msgstr "cardul este încuiat permanent!\n"
 
@@ -6427,6 +6717,7 @@ msgstr[1] ""
 msgid "|A|Please enter the Admin PIN"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
+#, c-format
 msgid "access to admin commands is not configured\n"
 msgstr "accesul la comenzile de administrare nu este configurată\n"
 
@@ -6462,25 +6753,31 @@ msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 msgid "||Please enter the PIN and New PIN"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
+#, c-format
 msgid "error reading application data\n"
 msgstr "eroare la citirea datelor aplicaţiei\n"
 
+#, c-format
 msgid "error reading fingerprint DO\n"
 msgstr "eroare la citirea amprentei DO\n"
 
+#, c-format
 msgid "key already exists\n"
 msgstr "cheia există deja\n"
 
+#, c-format
 msgid "existing key will be replaced\n"
 msgstr "cheia existentă va fi înlocuită\n"
 
+#, c-format
 msgid "generating new key\n"
 msgstr "generez o nouă cheie\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "writing new key\n"
 msgstr "generez o nouă cheie\n"
 
+#, c-format
 msgid "creation timestamp missing\n"
 msgstr "timestamp-ul de creare lipseşte\n"
 
@@ -6492,14 +6789,16 @@ msgstr "prime-ul RSA %s lipseşte sau nu are %d biţi\n"
 msgid "failed to store the key: %s\n"
 msgstr "am eşuat să stochez cheia: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "unsupported URI"
 msgid "unsupported curve\n"
 msgstr "URI nesuportat"
 
+#, c-format
 msgid "please wait while key is being generated ...\n"
 msgstr "vă rugăm aşteptaţi câtă vreme este creată noua cheie ...\n"
 
+#, c-format
 msgid "generating key failed\n"
 msgstr "generarea cheii a eşuat\n"
 
@@ -6510,9 +6809,11 @@ msgid_plural "key generation completed (%d seconds)\n"
 msgstr[0] "generarea cheii este completă (%d secunde)\n"
 msgstr[1] "generarea cheii este completă (%d secunde)\n"
 
+#, c-format
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "structură invalidă a cardului OpenPGP (DO 0x93)\n"
 
+#, c-format
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
@@ -6524,6 +6825,7 @@ msgstr "semnătură %s, algoritm rezumat %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr "semnături create până acum: %lu\n"
 
+#, c-format
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
@@ -6591,6 +6893,7 @@ msgid ""
 "Smartcard daemon for @GNUPG@\n"
 msgstr ""
 
+#, c-format
 msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
 
@@ -6601,10 +6904,6 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
-
-#, fuzzy
-msgid "no dirmngr running in this session\n"
-msgstr "gpg-agent nu este disponibil în această sesiune\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -6621,6 +6920,7 @@ msgstr "ajutor"
 msgid "critical certificate extension %s is not supported"
 msgstr "gpg-agent versiune protocol %d nu este suportat\n"
 
+#, c-format
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
@@ -6631,14 +6931,19 @@ msgstr ""
 msgid "failed to open '%s': %s\n"
 msgstr "Nu pot deschide `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: non-critical certificate policy not allowed"
 msgstr "exportul cheilor secrete nu este permis\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate policy not allowed"
 msgstr "exportul cheilor secrete nu este permis\n"
 
+#, fuzzy, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "am eşuat să stochez amprenta: %s\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr ""
 
@@ -6646,6 +6951,12 @@ msgstr ""
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: nu pot accesa: %s\n"
+
+#, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
 msgstr ""
 
@@ -6657,7 +6968,7 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "citirea cheii publice a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "failed to allocate keyDB handle\n"
 msgstr "am eşuat să stochez cheia: %s\n"
 
@@ -6668,6 +6979,7 @@ msgstr "NOTĂ: cheia a fost revocată"
 msgid "the status of the certificate is unknown"
 msgstr ""
 
+#, c-format
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
@@ -6679,6 +6991,7 @@ msgstr "verificarea semnăturii create a eşuat: %s\n"
 msgid "certificate with invalid validity: %s"
 msgstr ""
 
+#, c-format
 msgid "certificate not yet valid"
 msgstr ""
 
@@ -6689,7 +7002,7 @@ msgstr "exportul cheilor secrete nu este permis\n"
 msgid "intermediate certificate not yet valid"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has expired"
 msgstr "Această cheie a expirat!"
 
@@ -6718,19 +7031,19 @@ msgstr ""
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (  signature created at "
 msgstr "semnături create până acum: %lu\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (certificate created at "
 msgstr "Certificat de revocare creat.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (certificate valid from "
 msgstr "certificat incorect"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (     issuer valid from "
 msgstr "      Card nr. serie ="
 
@@ -6738,12 +7051,15 @@ msgstr "      Card nr. serie ="
 msgid "fingerprint=%s\n"
 msgstr "Amprenta CA: "
 
+#, c-format
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 
+#, c-format
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr ""
 
+#, c-format
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr ""
 
@@ -6757,6 +7073,7 @@ msgstr "generează un certificat de revocare"
 msgid "self-signed certificate has a BAD signature"
 msgstr ""
 
+#, c-format
 msgid "root certificate is not marked trusted"
 msgstr ""
 
@@ -6764,13 +7081,15 @@ msgstr ""
 msgid "checking the trust list failed: %s\n"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
+#, c-format
 msgid "certificate chain too long\n"
 msgstr ""
 
+#, c-format
 msgid "issuer certificate not found"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has a BAD signature"
 msgstr "verifică o semnătură"
 
@@ -6781,15 +7100,15 @@ msgstr ""
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate is good\n"
 msgstr "preferinţa `%s' duplicată\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "intermediate certificate is good\n"
 msgstr "Certificat de revocare creat.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "root certificate is good\n"
 msgstr "certificat incorect"
 
@@ -6804,6 +7123,11 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "out of core\n"
+msgstr "neforţat(ă)"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
@@ -6838,6 +7162,7 @@ msgstr ""
 "\"%.*s\"\n"
 "cheia %u-bit %s, ID %s, creată %s%s\n"
 
+#, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 
@@ -6845,21 +7170,27 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
 
+#, c-format
 msgid "certificate should not have been used for certification\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for signing\n"
 msgstr ""
 
+#, c-format
 msgid "certificate is not usable for encryption\n"
 msgstr ""
 
+#, c-format
 msgid "certificate is not usable for signing\n"
 msgstr ""
 
@@ -6950,18 +7281,6 @@ msgid "   (%d) Existing key from card\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error reading the card: %s\n"
-msgstr "%s: eroare citire înregistrare liberă: %s\n"
-
-#, fuzzy, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "eroare la obţinerea numărului serial: %s\n"
-
-#, fuzzy
-msgid "Available keys:\n"
-msgstr "deactivează cheia"
-
-#, fuzzy, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Acţiuni posibile pentru o cheie %s: "
 
@@ -7047,12 +7366,15 @@ msgstr ""
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr ""
 
+#, c-format
 msgid "resource problem: out of core\n"
 msgstr ""
 
+#, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr ""
 
+#, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
 
@@ -7076,7 +7398,7 @@ msgstr "preferinţa `%s' duplicată\n"
 msgid "deleting certificate \"%s\" failed: %s\n"
 msgstr "stergere keyblock a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no valid recipients given\n"
 msgstr "(Nici o descriere dată)\n"
 
@@ -7210,7 +7532,7 @@ msgid "%s:%u: skipping this line\n"
 msgstr "  s = sări peste cheia asta\n"
 
 #
-#, fuzzy
+#, fuzzy, c-format
 msgid "could not parse keyserver\n"
 msgstr "nu am putut interpreta URL-ul serverului de chei\n"
 
@@ -7222,6 +7544,7 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 msgid "can't sign using '%s': %s\n"
 msgstr "nu pot accesa `%s': %s\n"
 
+#, c-format
 msgid "invalid command (there is no implicit command)\n"
 msgstr ""
 
@@ -7229,10 +7552,11 @@ msgstr ""
 msgid "total number processed: %lu\n"
 msgstr "Număr total procesate: %lu\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error storing certificate\n"
 msgstr "generează un certificat de revocare"
 
+#, c-format
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
@@ -7247,10 +7571,6 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "eroare la citire `%s': %s\n"
-
-#, fuzzy
-msgid "failed to get the fingerprint\n"
-msgstr "am eşuat să stochez amprenta: %s\n"
 
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
@@ -7275,6 +7595,7 @@ msgstr "eroare la citire `%s': %s\n"
 msgid "Error - "
 msgstr ""
 
+#, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr ""
 
@@ -7296,6 +7617,7 @@ msgid ""
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
 
+#, c-format
 msgid ""
 "Note, that this software is not officially approved to create or verify such "
 "signatures.\n"
@@ -7320,30 +7642,32 @@ msgstr ""
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Semnătură făcută %s\n"
 
+#, c-format
 msgid "[date not given]"
 msgstr ""
 
 #, fuzzy, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr "eroare la obţinerea numărului serial: %s\n"
+msgid "algorithm:"
+msgstr "validitate: %s"
 
+#, c-format
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Good signature from"
 msgstr "Semnătură bună din \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "                aka"
 msgstr "                aka \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This is a qualified signature\n"
 msgstr "Aceasta va fi o auto-semnătură.\n"
 
@@ -7410,11 +7734,11 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "eroare la obţinerea numărului serial: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate already cached\n"
 msgstr "Certificat de revocare creat.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate cached\n"
 msgstr "preferinţa `%s' duplicată\n"
 
@@ -7435,7 +7759,7 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 msgid "error fetching certificate by subject: %s\n"
 msgstr "eroare la obţinerea numărului serial: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no issuer found in certificate\n"
 msgstr "generează un certificat de revocare"
 
@@ -7503,9 +7827,11 @@ msgstr "nu pot crea directorul `%s': %s\n"
 msgid "first record of '%s' is not the version\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - cleaning up\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - giving up\n"
 msgstr ""
 
@@ -7544,9 +7870,11 @@ msgstr ""
 "AVERTISMENT: dimensiune invalidă pentru fişierul random_seed - nu va fi "
 "folosită\n"
 
+#, c-format
 msgid "detected errors in cache dir file\n"
 msgstr ""
 
+#, c-format
 msgid "please check the reason and manually delete that file\n"
 msgstr ""
 
@@ -7581,6 +7909,7 @@ msgstr "eroare în `%s': %s\n"
 msgid "invalid formatted checksum for '%s'\n"
 msgstr "Eroare: amprentă formatată invalid.\n"
 
+#, c-format
 msgid "too many open cache files; can't open anymore\n"
 msgstr ""
 
@@ -7596,9 +7925,11 @@ msgstr "eroare în `%s': %s\n"
 msgid "error initializing cache file '%s' for reading: %s\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on a closed file\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on an unlocked file\n"
 msgstr ""
 
@@ -7633,6 +7964,7 @@ msgstr ""
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: invalid cache record length for S/N "
 msgstr ""
 
@@ -7654,15 +7986,6 @@ msgid "error getting data from cache file: %s\n"
 msgstr "eroare la obţinere noului PIN: %s\n"
 
 #, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
-msgid "unknown hash algorithm '%s'\n"
-msgstr "algoritm hash invalid `%s'\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
-
-#, fuzzy
 #| msgid "invalid response from agent\n"
 msgid "got an invalid S-expression from libksba\n"
 msgstr "răspuns invalid de la agent\n"
@@ -7670,6 +7993,15 @@ msgstr "răspuns invalid de la agent\n"
 #, fuzzy, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "nu pot deschide fişierul: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "algoritm hash invalid `%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "creating S-expression failed: %s\n"
@@ -7688,6 +8020,7 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 msgid "update times of this CRL: this=%s next=%s\n"
 msgstr ""
 
+#, c-format
 msgid "nextUpdate not given; assuming a validity period of one day\n"
 msgstr ""
 
@@ -7704,6 +8037,7 @@ msgstr "%s: eroare scriere înregistrare dir: %s\n"
 msgid "no CRL issuer found in CRL: %s\n"
 msgstr "generează un certificat de revocare"
 
+#, c-format
 msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
 msgstr ""
 
@@ -7774,6 +8108,7 @@ msgstr "eroare la crearea frazei-parolă: %s\n"
 msgid "problem renaming '%s' to '%s': %s\n"
 msgstr "redenumirea `%s' ca `%s' a eşuat: %s\n"
 
+#, c-format
 msgid ""
 "updating the DIR file failed - cache entry will get lost with the next "
 "program start\n"
@@ -7798,7 +8133,7 @@ msgstr ""
 msgid " ERROR: This cached CRL may have been tampered with!\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: invalid size of random_seed file - not used\n"
 msgid " WARNING: invalid cache record length\n"
 msgstr ""
@@ -7832,6 +8167,7 @@ msgstr "verificarea semnăturii create a eşuat: %s\n"
 msgid "crl_cache_insert via issuer failed: %s\n"
 msgstr "citirea cheii publice a eşuat: %s\n"
 
+#, c-format
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
@@ -7848,7 +8184,7 @@ msgstr "eroare la creearea `%s': %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: eroare scriere înregistrare dir: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "cheia secretă \"%s\" nu a fost găsită: %s\n"
 
@@ -7916,6 +8252,7 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 msgid "error reading certificate from '%s': %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
+#, c-format
 msgid "certificate too large to make any sense\n"
 msgstr ""
 
@@ -7934,6 +8271,7 @@ msgstr "actualizarea a eşuat: %s\n"
 msgid "loading CRL '%s' failed: %s\n"
 msgstr "redenumirea `%s' ca `%s' a eşuat: %s\n"
 
+#, c-format
 msgid "a dirmngr daemon is up and running\n"
 msgstr ""
 
@@ -7941,11 +8279,11 @@ msgstr ""
 msgid "validation of certificate failed: %s\n"
 msgstr "stergere keyblock a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate is valid\n"
 msgstr "preferinţa `%s' duplicată\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has been revoked\n"
 msgstr "NOTĂ: cheia a fost revocată"
 
@@ -7969,6 +8307,7 @@ msgstr ""
 "\n"
 "Algoritmuri suportate:\n"
 
+#, c-format
 msgid "absolute file name expected\n"
 msgstr ""
 
@@ -8089,7 +8428,7 @@ msgstr ""
 msgid "usage: %s [options] "
 msgstr "folosire: gpg [opţiuni] "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s not allowed with %s!\n"
 msgid "colons are not allowed in the socket name\n"
 msgstr "%s nu este permis cu %s!\n"
@@ -8121,12 +8460,15 @@ msgstr "eroare citire în `%s': %s\n"
 msgid "%s:%u: garbage at end of line ignored\n"
 msgstr ""
 
+#, c-format
 msgid "SIGHUP received - re-reading configuration and flushing caches\n"
 msgstr ""
 
+#, c-format
 msgid "SIGUSR2 received - no action defined\n"
 msgstr ""
 
+#, c-format
 msgid "SIGTERM received - shutting down ...\n"
 msgstr ""
 
@@ -8134,11 +8476,12 @@ msgstr ""
 msgid "SIGTERM received - still %d active connections\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "not forced"
 msgid "shutdown forced\n"
 msgstr "neforţat(ă)"
 
+#, c-format
 msgid "SIGINT received - immediate shutdown\n"
 msgstr ""
 
@@ -8263,7 +8606,7 @@ msgstr "(Nici o descriere dată)\n"
 msgid "no attribute given for query '%s'\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: using insecure memory!\n"
 msgid "WARNING: using first attribute only\n"
 msgstr "AVERTISMENT: este folosită memorie neprotejată (insecure)!\n"
@@ -8296,9 +8639,19 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "eroare la citire `%s': %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "eroare la crearea inelului de chei `%s': %s\n"
+#| msgid "too many cipher preferences\n"
+msgid "too many redirections\n"
+msgstr "prea multe preferinţe de cifrare\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "scriu în `%s'\n"
 
 #, fuzzy, c-format
 msgid "error printing log line: %s\n"
@@ -8345,10 +8698,11 @@ msgstr "stergere keyblock a eşuat: %s\n"
 msgid "start_cert_fetch: invalid pattern '%s'\n"
 msgstr ""
 
+#, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
 msgid "invalid canonical S-expression found\n"
 msgstr "%s: versiune fişier invalidă %d\n"
@@ -8362,6 +8716,7 @@ msgstr "nu pot deschide fişierul: %s\n"
 msgid "oops: ksba_cert_hash failed: %s\n"
 msgstr "actualizarea secretului a eşuat: %s\n"
 
+#, c-format
 msgid "bad URL encoding detected\n"
 msgstr ""
 
@@ -8374,10 +8729,11 @@ msgstr "eroare la citire `%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Eroare DO personal pre lung (limita este de %d caractere).\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "OCSP request not possible due to Tor mode\n"
 msgstr "cheia secretă \"%s\" nu a fost găsită: %s\n"
 
+#, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
 
@@ -8397,15 +8753,6 @@ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy
-#| msgid "too many cipher preferences\n"
-msgid "too many redirections\n"
-msgstr "prea multe preferinţe de cifrare\n"
-
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
@@ -8414,14 +8761,16 @@ msgstr "eroare trimitere la `%s': %s\n"
 msgid "OCSP responder at '%s' status: %s\n"
 msgstr ""
 
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
+#, c-format
 msgid "not signed by a default OCSP signer's certificate"
-msgstr ""
-
-msgid "only SHA-1 is supported for OCSP responses\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8433,6 +8782,7 @@ msgstr "citirea cheii publice a eşuat: %s\n"
 msgid "error getting responder ID: %s\n"
 msgstr "eroare la obţinere noului PIN: %s\n"
 
+#, c-format
 msgid "no suitable certificate found to verify the OCSP response\n"
 msgstr ""
 
@@ -8440,10 +8790,11 @@ msgstr ""
 msgid "issuer certificate not found: %s\n"
 msgstr "cheia secretă \"%s\" nu a fost găsită: %s\n"
 
+#, c-format
 msgid "caller did not return the target certificate\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "caller did not return the issuing certificate\n"
 msgstr "generează un certificat de revocare"
 
@@ -8451,15 +8802,11 @@ msgstr "generează un certificat de revocare"
 msgid "failed to allocate OCSP context: %s\n"
 msgstr "am eşuat să stochez cheia: %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s: can't access: %s\n"
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "%s: nu pot accesa: %s\n"
-
+#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no default secret keyring: %s\n"
 msgid "no default OCSP signer defined\n"
 msgstr "nici un inel de chei secrete implicit: %s\n"
@@ -8472,10 +8819,6 @@ msgstr ""
 #| msgid "using cipher %s\n"
 msgid "using OCSP responder '%s'\n"
 msgstr "folosesc cifrul %s\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8492,12 +8835,15 @@ msgstr ""
 msgid "certificate has been revoked at: %s due to: %s\n"
 msgstr "NOTĂ: cheia a fost revocată"
 
+#, c-format
 msgid "OCSP responder returned a status in the future\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned a non-current status\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned an too old status\n"
 msgstr ""
 
@@ -8562,10 +8908,11 @@ msgstr ""
 msgid "Assuan processing failed: %s\n"
 msgstr "semnarea a eşuat: %s\n"
 
+#, c-format
 msgid "accepting root CA not marked as a CA"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "checking the trustdb\n"
 msgid "CRL checking too deeply nested\n"
 msgstr "verific trustdb\n"
@@ -8577,7 +8924,7 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "selfsigned certificate has a BAD signature"
 msgstr "verifică o semnătură"
 
@@ -8585,10 +8932,11 @@ msgstr "verifică o semnătură"
 msgid "checking trustworthiness of root certificate failed: %s\n"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate chain is good\n"
 msgstr "preferinţa `%s' duplicată\n"
 
+#, c-format
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 
@@ -8645,10 +8993,11 @@ msgstr ""
 msgid "receiving line failed: %s\n"
 msgstr "citirea cheii publice a eşuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "line too long - skipped\n"
 msgstr "linie prea lungă"
 
+#, c-format
 msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
@@ -8735,6 +9084,16 @@ msgstr ""
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importă chei de la un server de chei"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "enumeră şi verifică semnăturile cheii"
+
 msgid "disable all access to the dirmngr"
 msgstr ""
 
@@ -8793,6 +9152,15 @@ msgstr "frază-parolă incorectă"
 #, fuzzy
 msgid "Component not suitable for launching"
 msgstr "cheia publică nu a fost găsită"
+
+#, c-format
+msgid "Configuration file of component %s is broken\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Vă rugăm folosiţi mai întâi comanda \"toggle\".\n"
 
 #, c-format
 msgid "External verification of component %s failed"
@@ -8883,142 +9251,6 @@ msgid "No argument allowed"
 msgstr "Nu sunt permise comenzi administrare\n"
 
 #, fuzzy
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Comenzi:\n"
-" "
-
-#, fuzzy
-msgid "decryption modus"
-msgstr "decriptare OK\n"
-
-#, fuzzy
-msgid "encryption modus"
-msgstr "decriptare OK\n"
-
-msgid "tool class (confucius)"
-msgstr ""
-
-#, fuzzy
-msgid "program filename"
-msgstr "--store [nume_fişier]"
-
-msgid "secret key file (required)"
-msgstr ""
-
-msgid "input file name (default stdin)"
-msgstr ""
-
-#, fuzzy
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Folosire: gpg [opţiuni] [fişiere] (-h pentru ajutor)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s nu este permis cu %s!\n"
-
-#, fuzzy, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "fstat pentru `%s' a eşuat în %s: %s\n"
-
-#, fuzzy, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "nu pot crea directorul `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "nu pot deschide %s: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to %s: %s\n"
-msgstr "eroare la scrierea inelului de chei `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error reading from %s: %s\n"
-msgstr "eroare la citire `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error closing %s: %s\n"
-msgstr "eroare în `%s': %s\n"
-
-#, fuzzy
-msgid "no --program option provided\n"
-msgstr "nu este suportată execuţia nici unui program la distanţă\n"
-
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
-
-msgid "no --keyfile option provided\n"
-msgstr ""
-
-msgid "cannot allocate args vector\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "could not create pipe: %s\n"
-msgstr "nu pot crea `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "could not create pty: %s\n"
-msgstr "nu pot crea `%s': %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "execv failed: %s\n"
-msgstr "actualizarea a eşuat: %s\n"
-
-#, fuzzy, c-format
-msgid "select failed: %s\n"
-msgstr "stergere keyblock a eşuat: %s\n"
-
-#, fuzzy, c-format
-msgid "read failed: %s\n"
-msgstr "actualizarea a eşuat: %s\n"
-
-#, fuzzy, c-format
-msgid "pty read failed: %s\n"
-msgstr "actualizarea a eşuat: %s\n"
-
-#, fuzzy, c-format
-msgid "waitpid failed: %s\n"
-msgstr "actualizarea a eşuat: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "nu pot deschide fişierul: %s\n"
-
-#, fuzzy, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "nu pot crea fişier de rezervă `%s': %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr ""
-
-msgid "no class provided\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "class %s is not supported\n"
-msgstr "algoritm rezumat %d nu este suportat\n"
-
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Folosire: gpg [opţiuni] [fişiere] (-h pentru ajutor)"
 
@@ -9026,6 +9258,175 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "NOTE: old default options file `%s' ignored\n"
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "NOTĂ: fisier opţiuni implicite vechi `%s' ignorat\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Comenzi:\n"
+#~ " "
+
+#, fuzzy
+#~ msgid "decryption modus"
+#~ msgstr "decriptare OK\n"
+
+#, fuzzy
+#~ msgid "encryption modus"
+#~ msgstr "decriptare OK\n"
+
+#, fuzzy
+#~ msgid "program filename"
+#~ msgstr "--store [nume_fişier]"
+
+#, fuzzy
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Folosire: gpg [opţiuni] [fişiere] (-h pentru ajutor)"
+
+#, fuzzy
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s nu este permis cu %s!\n"
+
+#, fuzzy
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "fstat pentru `%s' a eşuat în %s: %s\n"
+
+#, fuzzy
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "nu pot crea directorul `%s': %s\n"
+
+#, fuzzy
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "nu pot deschide %s: %s\n"
+
+#, fuzzy
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "eroare la citire `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "eroare în `%s': %s\n"
+
+#, fuzzy
+#~ msgid "no --program option provided\n"
+#~ msgstr "nu este suportată execuţia nici unui program la distanţă\n"
+
+#, fuzzy
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "nu pot crea `%s': %s\n"
+
+#, fuzzy
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "nu pot crea `%s': %s\n"
+
+#, fuzzy
+#~ msgid "execv failed: %s\n"
+#~ msgstr "actualizarea a eşuat: %s\n"
+
+#, fuzzy
+#~ msgid "select failed: %s\n"
+#~ msgstr "stergere keyblock a eşuat: %s\n"
+
+#, fuzzy
+#~ msgid "read failed: %s\n"
+#~ msgstr "actualizarea a eşuat: %s\n"
+
+#, fuzzy
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "actualizarea a eşuat: %s\n"
+
+#, fuzzy
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "actualizarea a eşuat: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "nu pot deschide fişierul: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "nu pot crea fişier de rezervă `%s': %s\n"
+
+#, fuzzy
+#~ msgid "class %s is not supported\n"
+#~ msgstr "algoritm rezumat %d nu este suportat\n"
+
+#, fuzzy
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr "eroare la obţinerea numărului serial: %s\n"
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "nu puteţi folosi %s câtă vreme în modul %s\n"
+
+#~ msgid "male"
+#~ msgstr "masculin"
+
+#~ msgid "female"
+#~ msgstr "feminin"
+
+#~ msgid "unspecified"
+#~ msgstr "nespecificat(ă)"
+
+#~ msgid "Sex ((M)ale, (F)emale or space): "
+#~ msgstr "Sex ((M)asculin, (F)eminin sau spaţiu): "
+
+#~ msgid "no keyserver known (use option --keyserver)\n"
+#~ msgstr "nici un server de chei cunoscut (folosiţi opţiunea --keyserver)\n"
+
+#, fuzzy
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "eroare la crearea frazei-parolă: %s\n"
+
+#, fuzzy
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "eroare trimitere la `%s': %s\n"
+
+#, fuzzy
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "eroare la citire `%s': %s\n"
+
+#, fuzzy
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
+#~ msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
+
+#, fuzzy
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
+#~ msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
+
+#, fuzzy
+#~| msgid "error writing public keyring `%s': %s\n"
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "eroare la scrierea inelului de chei public `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error looking up: %s\n"
+#~ msgstr "eroare în `%s': %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "eroare la crearea inelului de chei `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error retrieving '%s': http status %u\n"
@@ -9064,39 +9465,6 @@ msgstr ""
 
 #~ msgid "Error: Private DO too long (limit is %d characters).\n"
 #~ msgstr "Eroare DO personal pre lung (limita este de %d caractere).\n"
-
-#, fuzzy
-#~| msgid "key %s: unsupported public key algorithm\n"
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "cheia %s: algoritm cu cheie publică nesuportat\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "semnătură %s, algoritm rezumat %s\n"
-
-#, fuzzy
-#~| msgid "revoke signatures"
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "revocă semnături"
-
-#, fuzzy
-#~| msgid "skipped \"%s\": %s\n"
-#~ msgid "key %s:\n"
-#~ msgstr "sărită \"%s\": %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "ID utilizator \"%s\" a fost revocat."
-#~ msgstr[1] "ID utilizator \"%s\" a fost revocat."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Semnătură bună din \"%s\""
-#~ msgstr[1] "Semnătură bună din \"%s\""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"
@@ -10255,9 +10623,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "eroare ştergere fişier"
-
-#~ msgid "unexpected data"
-#~ msgstr "date neaşteptate"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "conflict timestamp"

@@ -97,6 +97,10 @@ msgstr ""
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
+#. Do not translate the "SETERROR" keyword.
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -208,8 +212,10 @@ msgstr ""
 msgid "Reset Code"
 msgstr ""
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgid "Push ACK button on card/token."
+msgstr ""
+
+msgid "Use the reader's pinpad for input."
 msgstr ""
 
 #, fuzzy
@@ -421,18 +427,9 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
+#, c-format
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritma digest yang dipilih tidak valid\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "CATATAN: tidak ada file pilihan baku `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "file pilihan `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "reading options from `%s'\n"
@@ -452,11 +449,11 @@ msgstr "tidak dapat membuat %s: %s\n"
 msgid "socket name '%s' is too long\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent tidak tersedia untuk sesi ini\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
@@ -517,7 +514,7 @@ msgstr "gagal perbarui rahasia: %s\n"
 msgid "%s %s stopped\n"
 msgstr "%s: dilewati: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent tidak tersedia untuk sesi ini\n"
 
@@ -574,7 +571,7 @@ msgid ""
 "needed to complete this operation."
 msgstr "Silakan masukkan passphrase; ini kalimat rahasia\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "cancelled\n"
 msgstr "Batal"
 
@@ -610,6 +607,7 @@ msgstr "kesalahan: fingerprint tidak valid\n"
 msgid "error reading '%s', line %d: %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
+#, c-format
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -689,6 +687,7 @@ msgid ""
 "Deleting the key might remove your ability to access remote machines."
 msgstr ""
 
+#, c-format
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr ""
 
@@ -704,6 +703,7 @@ msgstr ""
 msgid "checking created signature failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
+#, c-format
 msgid "secret key parts are not available\n"
 msgstr "bagian kunci rahasia tidak tersedia\n"
 
@@ -763,7 +763,7 @@ msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "tidak dapat terkoneksi ke `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "problem setting the gpg-agent options\n"
 msgstr "masalah dengan agen: agen mengembalikan 0x%lx\n"
 
@@ -847,30 +847,24 @@ msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "gagal memperbarui: %s\n"
+
+#, fuzzy, c-format
+msgid "connection to %s established\n"
+msgstr "tidak dapat melakukan hal itu dalam mode batch\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr ""
 
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr ""
-
-msgid "connection to agent established\n"
-msgstr ""
-
-#, fuzzy
+#, fuzzy, c-format
 msgid "connection to agent is in restricted mode\n"
 msgstr "tidak dapat melakukan hal itu dalam mode batch\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr ""
-
-msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -1075,9 +1069,25 @@ msgstr "perintah saling konflik\n"
 msgid "invalid alias definition"
 msgstr "opsi impor tidak valid\n"
 
+msgid "permission error"
+msgstr ""
+
 #, fuzzy
 msgid "out of core"
 msgstr "tidak diproses"
+
+#, fuzzy
+msgid "invalid meta command"
+msgstr "perintah saling konflik\n"
+
+#, fuzzy
+msgid "unknown meta command"
+msgstr "penerima baku tidak dikenal `%s'\n"
+
+#, fuzzy
+#| msgid "unexpected data"
+msgid "unexpected meta command"
+msgstr "data tidak terduga"
 
 #, fuzzy
 msgid "invalid option"
@@ -1107,13 +1117,23 @@ msgstr ""
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
-#, fuzzy
-msgid "out of core\n"
-msgstr "tidak diproses"
-
 #, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "opsi impor tidak valid\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
+msgstr "CATATAN: tidak ada file pilihan baku `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
+msgstr "file pilihan `%s': %s\n"
+
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1162,26 +1182,31 @@ msgstr ""
 msgid "armor: %s\n"
 msgstr "armor: %s\n"
 
+#, c-format
 msgid "invalid armor header: "
 msgstr "header armor tidak valid: "
 
+#, c-format
 msgid "armor header: "
 msgstr "header armor: "
 
+#, c-format
 msgid "invalid clearsig header\n"
 msgstr "header clearsig tidak valid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "unknown armor header: "
 msgstr "header armor: "
 
+#, c-format
 msgid "nested clear text signatures\n"
 msgstr "signature teks bersarang\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "unexpected armor: "
 msgstr "armor tidak terduga:"
 
+#, c-format
 msgid "invalid dash escaped line: "
 msgstr "dash escaped line tidak valid: "
 
@@ -1189,12 +1214,15 @@ msgstr "dash escaped line tidak valid: "
 msgid "invalid radix64 character %02X skipped\n"
 msgstr "karakter radix64 tidak valid %02x dilewati\n"
 
+#, c-format
 msgid "premature eof (no CRC)\n"
 msgstr "eof prematur (tanpa CRC)\n"
 
+#, c-format
 msgid "premature eof (in CRC)\n"
 msgstr "eof prematur (dalam CRC)\n"
 
+#, c-format
 msgid "malformed CRC\n"
 msgstr "CRC tidak tepat\n"
 
@@ -1202,13 +1230,15 @@ msgstr "CRC tidak tepat\n"
 msgid "CRC error; %06lX - %06lX\n"
 msgstr "kesalahan CRC; %06lx - %06lx\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "premature eof (in trailer)\n"
 msgstr "eof prematur (dalam Trailer)\n"
 
+#, c-format
 msgid "error in trailer line\n"
 msgstr "kesalahan dalam garis trailer\n"
 
+#, c-format
 msgid "no valid OpenPGP data found.\n"
 msgstr "tidak ditemukan data OpenPGP yang valid.\n"
 
@@ -1216,6 +1246,7 @@ msgstr "tidak ditemukan data OpenPGP yang valid.\n"
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "armor tidak valid: baris melebihi %d karakter\n"
 
+#, c-format
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1227,6 +1258,7 @@ msgstr ""
 msgid "[ not human readable (%zu bytes: %s%s) ]"
 msgstr "tidak dapat dibaca manusia"
 
+#, c-format
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1234,21 +1266,23 @@ msgstr ""
 "nama notasi harus hanya terdiri dari karakter yang dapat dicetak atau spasi, "
 "dan diakhiri dengan sebuah '='\n"
 
+#, c-format
 msgid "a user notation name must contain the '@' character\n"
 msgstr "nama notasi pengguna tidak boleh mengandung karakter '@'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a notation name must not contain more than one '@' character\n"
 msgstr "nama notasi pengguna tidak boleh mengandung karakter '@'\n"
 
+#, c-format
 msgid "a notation value must not use any control characters\n"
 msgstr "nilai notasi tidak boleh menggunakan karakter kendali\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a notation name may not contain an '=' character\n"
 msgstr "nama notasi pengguna tidak boleh mengandung karakter '@'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid ""
 #| "a notation name must have only printable characters or spaces, and end "
 #| "with an '='\n"
@@ -1257,6 +1291,7 @@ msgstr ""
 "nama notasi harus hanya terdiri dari karakter yang dapat dicetak atau spasi, "
 "dan diakhiri dengan sebuah '='\n"
 
+#, c-format
 msgid "WARNING: invalid notation data found\n"
 msgstr "PERINGATAN: ditemukan notasi data tidak valid\n"
 
@@ -1281,6 +1316,7 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "PERINGATAN: %s menimpa %s\n"
 
+#, c-format
 msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
 
@@ -1295,6 +1331,45 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "%s belum dapat dipakai dengan %s\n"
 
 #, fuzzy, c-format
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent tidak tersedia untuk sesi ini\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgstr "anda tidak boleh menggunakan %s saat dalam mode %s.\n"
+
+msgid "WKD uses a cached result"
+msgstr ""
+
+msgid "Tor is not running"
+msgstr ""
+
+#, fuzzy
+msgid "Tor is not properly configured"
+msgstr "kesalahan: fingerprint tidak valid\n"
+
+#, fuzzy
+msgid "DNS is not properly configured"
+msgstr "kesalahan: fingerprint tidak valid\n"
+
+msgid "unacceptable HTTP redirect from server"
+msgstr ""
+
+msgid "unacceptable HTTP redirect from server was cleaned up"
+msgstr ""
+
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "server uses an invalid certificate"
+msgstr "buat sertifikat revokasi"
+
+#, fuzzy, c-format
+#| msgid "armor: %s\n"
+msgid "Note: %s\n"
+msgstr "armor: %s\n"
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "kunci rahasia tidak tersedia"
 
@@ -1302,15 +1377,15 @@ msgstr "kunci rahasia tidak tersedia"
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't do this in batch mode\n"
 msgstr "tidak dapat melakukan hal itu dalam mode batch\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This command is only available for version 2 cards\n"
 msgstr "Perintah ini tidak dibolehkan saat dalam mode %s.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Reset Code not or not anymore available\n"
 msgstr "bagian kunci rahasia tidak tersedia\n"
 
@@ -1320,17 +1395,11 @@ msgstr "Pilihan anda? "
 msgid "[not set]"
 msgstr ""
 
-#, fuzzy
-msgid "male"
-msgstr "enable"
+msgid "Mr."
+msgstr ""
 
-#, fuzzy
-msgid "female"
-msgstr "enable"
-
-#, fuzzy
-msgid "unspecified"
-msgstr "Tidak ada alasan diberikan"
+msgid "Ms."
+msgstr ""
 
 #, fuzzy
 msgid "not forced"
@@ -1389,7 +1458,7 @@ msgstr "Karakter tidak valid dalam string preferensi\n"
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Karakter tidak valid dalam string preferensi\n"
 
-msgid "Sex ((M)ale, (F)emale or space): "
+msgid "Salutation (M = Mr., F = Ms., or space): "
 msgstr ""
 
 #, fuzzy
@@ -1481,7 +1550,7 @@ msgstr "kesalahan mengirim ke `%s': %s\n"
 msgid "error getting card info: %s\n"
 msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "This command is not allowed while in %s mode.\n"
 msgid "This command is not supported by this card\n"
 msgstr "Perintah ini tidak dibolehkan saat dalam mode %s.\n"
@@ -1489,7 +1558,7 @@ msgstr "Perintah ini tidak dibolehkan saat dalam mode %s.\n"
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: keys are already stored on the card!\n"
 msgstr "dilewati: kunci pribadi telah ada\n"
 
@@ -1526,7 +1595,7 @@ msgstr "Silakan pilih alasan untuk pembatalan:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "gagal memperbarui: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr "dilewati: kunci pribadi telah ada\n"
 
@@ -1572,7 +1641,7 @@ msgstr "ubah tanggal kadaluarsa"
 msgid "change the language preferences"
 msgstr "ubah ownertrust"
 
-msgid "change card holder's sex"
+msgid "change card holder's salutation"
 msgstr ""
 
 #, fuzzy
@@ -1626,6 +1695,7 @@ msgstr "menulis kunci rahasia ke `%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Perintah tidak valid (coba \"help\")\n"
 
+#, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output tidak berfungsi untuk perintah ini\n"
 
@@ -1646,12 +1716,25 @@ msgstr "gagal membaca keyblock: %s\n"
 msgid "key \"%s\" not found\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
+#, c-format
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(kecuali anda menspesifikasikan kunci dengan fingerprint)\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "tidak dapat dilakukan dalam mode batch tanpa \"--yes\"\n"
+
+msgid "Note: The public primary key and all its subkeys will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the shown public subkey will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown primary key will be deleted.\n"
+msgstr ""
+
+msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgstr ""
 
 #, fuzzy
 msgid "Delete this key from the keyring? (y/N) "
@@ -1674,9 +1757,14 @@ msgid "subkey"
 msgstr "Pubkey: "
 
 #, c-format
+msgid "update failed: %s\n"
+msgstr "gagal memperbarui: %s\n"
+
+#, c-format
 msgid "deleting keyblock failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
+#, c-format
 msgid "ownertrust information cleared\n"
 msgstr "informasi ownertrust dihapus\n"
 
@@ -1684,6 +1772,7 @@ msgstr "informasi ownertrust dihapus\n"
 msgid "there is a secret key for public key \"%s\"!\n"
 msgstr "terdapat kunci rahasia untuk kunci publik \"%s\"!\n"
 
+#, c-format
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "gunakan pilihan \"--delete-secret-key\" untuk menghapusnya.\n"
 
@@ -1691,6 +1780,7 @@ msgstr "gunakan pilihan \"--delete-secret-key\" untuk menghapusnya.\n"
 msgid "error creating passphrase: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
+#, c-format
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "tidak dapat menggunakan paket simetri ESK karena mode S2K\n"
 
@@ -1709,6 +1799,16 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "PERINGATAN: `%s' adalah file kosong\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
+
+#, fuzzy, c-format
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"anda tidak boleh menggunakan algoritma digest \"%s\" saat dalam mode %s.\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "Membaca dari `%s'\n"
@@ -1717,11 +1817,6 @@ msgstr "Membaca dari `%s'\n"
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1754,24 +1849,28 @@ msgstr "%s data terenkripsi\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "dienkripsi dengan algoritma tidak dikenal %d\n"
 
+#, c-format
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 "PERINGATAN: pesan dienkripsi dengan kunci lemah dalam cipher simetrik.\n"
 
+#, c-format
 msgid "problem handling encrypted packet\n"
 msgstr "masalah menangani paket terenkripsi\n"
 
+#, c-format
 msgid "no remote program execution supported\n"
 msgstr "tidak ada eksekusi program remote yang didukung\n"
 
+#, c-format
 msgid ""
 "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
 "pemanggilan program eksternal ditiadakan karena permisi opsi file tidak "
 "aman\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
 "platform ini membutuhkan file temp ketika memanggil program eksternal\n"
@@ -1788,9 +1887,11 @@ msgstr "tidak dapat mengeksekusi %s \"%s\": %s\n"
 msgid "system error while calling external program: %s\n"
 msgstr "kesalahan sistem ketika memanggil program eksternal: %s\n"
 
+#, c-format
 msgid "unnatural exit of external program\n"
 msgstr "program eksternal berhenti secara tidak natual\n"
 
+#, c-format
 msgid "unable to execute external program\n"
 msgstr "tidak dapat mengeksekusi program eksternal\n"
 
@@ -1845,7 +1946,7 @@ msgstr "menulis ke `%s'\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "kunci %08lX: signature subkey di tempat yang salah - dilewati\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "exporting secret keys not allowed\n"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
@@ -1853,6 +1954,7 @@ msgstr "menulis kunci rahasia ke `%s'\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "kunci %08lX: kunci gaya PGP 2.x - dilewati\n"
 
+#, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "PERINGATAN: tidak ada yang diekspor\n"
 
@@ -1866,23 +1968,6 @@ msgid "[User ID not found]"
 msgstr "[User id tidak ditemukan]"
 
 #, fuzzy, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "opsi impor tidak valid\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error looking up: %s\n"
-msgstr "kesalahan membaca `%s': %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "kesalahan penciptaan : `%s': %s\n"
 
@@ -1894,9 +1979,17 @@ msgstr "kesalahan penciptaan : `%s': %s\n"
 msgid "No fingerprint"
 msgstr "tampilkan fingerprint"
 
+#, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "kunci rahasia `%s' tidak ditemukan: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "opsi impor tidak valid\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -2007,6 +2100,11 @@ msgstr "tandai kunci"
 #| msgid "sign a key locally"
 msgid "quickly sign a key locally"
 msgstr "tandai kunci secara lokal"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a key signature"
+msgstr "buat sepasang kunci baru"
 
 msgid "sign a key"
 msgstr "tandai kunci"
@@ -2170,6 +2268,7 @@ msgstr "Kompresi: "
 msgid "usage: %s [options] %s\n"
 msgstr "pemakaian: gpg [pilihan] "
 
+#, c-format
 msgid "conflicting commands\n"
 msgstr "perintah saling konflik\n"
 
@@ -2276,13 +2375,9 @@ msgstr "Tidak ada signature koresponden di ring rahasia\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
 
+#, c-format
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "NOTE: old default options file `%s' ignored\n"
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "CATATAN: file pilihan baku lama `%s' diabaikan\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2309,7 +2404,7 @@ msgstr "opsi impor tidak valid\n"
 msgid "'%s' is not a valid character set\n"
 msgstr "%s bukanlah set karakter yang valid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "could not parse keyserver URL\n"
 msgstr "tidak dapat memparsing URI keyserver\n"
 
@@ -2317,7 +2412,7 @@ msgstr "tidak dapat memparsing URI keyserver\n"
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: opsi ekspor tidak valid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid keyserver options\n"
 msgstr "opsi ekspor tidak valid\n"
 
@@ -2325,6 +2420,7 @@ msgstr "opsi ekspor tidak valid\n"
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opsi impor tidak valid\n"
 
+#, c-format
 msgid "invalid import options\n"
 msgstr "opsi impor tidak valid\n"
 
@@ -2336,6 +2432,7 @@ msgstr "opsi impor tidak valid\n"
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: opsi ekspor tidak valid\n"
 
+#, c-format
 msgid "invalid export options\n"
 msgstr "opsi ekspor tidak valid\n"
 
@@ -2343,7 +2440,7 @@ msgstr "opsi ekspor tidak valid\n"
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: opsi impor tidak valid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid list options\n"
 msgstr "opsi impor tidak valid\n"
 
@@ -2388,7 +2485,7 @@ msgstr ""
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: opsi ekspor tidak valid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid verify options\n"
 msgstr "opsi ekspor tidak valid\n"
 
@@ -2400,9 +2497,11 @@ msgstr "tidak dapat menset path exec ke %s\n"
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: opsi ekspor tidak valid\n"
 
+#, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "PERINGATAN: program mungkin membuat file core!\n"
 
@@ -2418,6 +2517,7 @@ msgstr "%s tidak dibolehkan dengan %s!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "%s tidak masuk akal dengan %s!\n"
 
+#, c-format
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
@@ -2425,60 +2525,66 @@ msgstr ""
 msgid "will not run with insecure memory due to %s\n"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
+#, c-format
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritma cipher yang dipilih tidak valid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "algoritma cipher yang dipilih tidak valid\n"
 
+#, c-format
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "algoritma sertifikasi digest yang dipilih tidak valid\n"
 
+#, c-format
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed harus lebih dari 0\n"
 
+#, c-format
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed harus lebih dari 1\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth harus di antara 1 hingga 255\n"
 
+#, c-format
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "level cert default tidak valid; harus 0, 1, 2, atau 3\n"
 
+#, c-format
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "level cert min tidak valid; harus 0, 1, 2, atau 3\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "CATATAN: mode S2K sederhana (0) tidak dianjurkan\n"
 
+#, c-format
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "mode S2K yang tidak valid; harus 0, 1 atau 3\n"
 
+#, c-format
 msgid "invalid default preferences\n"
 msgstr "preferensi baku tidak valid\n"
 
+#, c-format
 msgid "invalid personal cipher preferences\n"
 msgstr "preferensi cipher personal tidak valid\n"
 
+#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferensi digest personal tidak valid\n"
 
+#, c-format
 msgid "invalid personal compress preferences\n"
 msgstr "preferensi kompresi personal tidak valid\n"
 
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s belum dapat dipakai dengan %s\n"
-
-#, fuzzy, c-format
-msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"anda tidak boleh menggunakan algoritma digest \"%s\" saat dalam mode %s.\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -2489,6 +2595,7 @@ msgstr ""
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
+#, c-format
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "Peringatan: penerima yang disebutkan (-r) tanpa menggunakan enkripsi public "
@@ -2498,6 +2605,7 @@ msgstr ""
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "dekripsi gagal: %s\n"
 
+#, c-format
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
@@ -2505,6 +2613,7 @@ msgstr ""
 msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "anda tidak boleh menggunakan %s saat dalam mode %s.\n"
 
+#, c-format
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
@@ -2558,19 +2667,23 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
+#, c-format
 msgid "Go ahead and type your message ...\n"
 msgstr "Teruskan dan ketikkan pesan anda ....\n"
 
+#, c-format
 msgid "the given certification policy URL is invalid\n"
 msgstr "URL sertifikasi kebijakan yang diberikan tidak valid\n"
 
+#, c-format
 msgid "the given signature policy URL is invalid\n"
 msgstr "URL signature kebijakan yang diberikan tidak valid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "URL signature kebijakan yang diberikan tidak valid\n"
 
@@ -2632,6 +2745,9 @@ msgid "remove unusable parts from key after import"
 msgstr "kunci rahasia tidak dapat dipakai"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "ignore key-signatures which are not self-signatures"
 msgstr ""
 
 msgid "run import filters and export key immediately"
@@ -2735,9 +2851,11 @@ msgstr "%s signature, algoritma digest %s\n"
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr ""
 
+#, c-format
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr ""
 
+#, c-format
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 
@@ -2768,6 +2886,7 @@ msgstr "kunci %08lX: menerima ID user '%s' yang tidak self-signed\n"
 msgid "key %s: no valid user IDs\n"
 msgstr "kunci %08lX: tidak ada ID user yang valid\n"
 
+#, c-format
 msgid "this may be caused by a missing self-signature\n"
 msgstr "mungkin disebabkan oleh self-signature yang tidak ada\n"
 
@@ -2853,11 +2972,23 @@ msgstr "dilewati: kunci pribadi telah ada\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "kesalahan mengirim ke `%s': %s\n"
 
+#. TRANSLATORS: For a smartcard, each private key on host has a
+#. * reference (stub) to a smartcard and actual private key data
+#. * is stored on the card.  A single smartcard can have up to
+#. * three private key data.  Importing private key stub is always
+#. * skipped in 2.1, and it returns GPG_ERR_NOT_PROCESSED.
+#. * Instead, user should be suggested to run 'gpg --card-status',
+#. * then, references to a card will be automatically created
+#. * again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "secret key %s: %s\n"
 msgstr "kunci rahasia `%s' tidak ditemukan: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "importing secret keys not allowed\n"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
@@ -2865,19 +2996,28 @@ msgstr "menulis kunci rahasia ke `%s'\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "kunci %08lX: kunci rahasia dengan cipher tidak valid %d - dilewati\n"
 
-#. TRANSLATORS: For smartcard, each private key on
-#. host has a reference (stub) to a smartcard and
-#. actual private key data is stored on the card.  A
-#. single smartcard can have up to three private key
-#. data.  Importing private key stub is always
-#. skipped in 2.1, and it returns
-#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
-#. suggested to run 'gpg --card-status', then,
-#. references to a card will be automatically
-#. created again.
+msgid "No reason specified"
+msgstr "Tidak ada alasan diberikan"
+
+msgid "Key is superseded"
+msgstr "Kunci dilampaui"
+
+msgid "Key has been compromised"
+msgstr "Kunci ini telah dikompromikan"
+
+msgid "Key is no longer used"
+msgstr "Kunci tidak lagi digunakan"
+
+msgid "User ID is no longer valid"
+msgstr "ID User tidak lagi valid"
+
 #, c-format
-msgid "To migrate '%s', with each smartcard, run: %s\n"
-msgstr ""
+msgid "reason for revocation: "
+msgstr "Alasan pembatalan:"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "Komentar pembatalan:"
 
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -2994,6 +3134,59 @@ msgstr "kunci %08lX: \"%s\" penambahan sertifikat pembatalan\n"
 #, fuzzy, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "kunci %08lX: signature kunci langsung ditambahkan\n"
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "kunci %08lX: algoritma publik key tidak didukung\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%s signature, algoritma digest %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Signature baik dari \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "melewati `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "User ID \"%s\" dibatalkan."
+msgstr[1] "User ID \"%s\" dibatalkan."
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 signature tidak diperiksa karena tidak ada kunci\n"
+msgstr[1] "1 signature tidak diperiksa karena tidak ada kunci\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d signature yang buruk\n"
+msgstr[1] "%d signature yang buruk\n"
+
+#, fuzzy, c-format
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Signature baik dari \""
+msgstr[1] "Signature baik dari \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error creating keybox '%s': %s\n"
@@ -3520,13 +3713,10 @@ msgid "Quit without saving? (y/N) "
 msgstr "Berhenti tanpa menyimpan? "
 
 #, c-format
-msgid "update failed: %s\n"
-msgstr "gagal memperbarui: %s\n"
-
 msgid "Key not changed so no update needed.\n"
 msgstr "Kunci tidak berubah sehingga tidak perlu pembaharuan.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "cannot revoke the last valid user ID.\n"
 msgstr "Anda tidak dapat menghapus ID user terakhir!\n"
@@ -3562,6 +3752,15 @@ msgid "Nothing to sign.\n"
 msgstr "Tidak ada yang ditandai dengan kunci %08lX\n"
 
 #, fuzzy, c-format
+msgid "Not signed by you.\n"
+msgstr "   ditandai oleh %08lX pada %s%s\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "revoking the key signature failed: %s\n"
+msgstr "Gagal memeriksa signature yang dibuat: %s\n"
+
+#, fuzzy, c-format
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s bukanlah set karakter yang valid\n"
 
@@ -3572,6 +3771,9 @@ msgstr "kesalahan: fingerprint tidak valid\n"
 #, fuzzy, c-format
 msgid "subkey \"%s\" not found\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
+
+msgid "AEAD: "
+msgstr ""
 
 msgid "Digest: "
 msgstr "Digest: "
@@ -3653,6 +3855,7 @@ msgstr "[revoked] "
 msgid "expired"
 msgstr "expire"
 
+#, c-format
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3660,10 +3863,11 @@ msgstr ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 
+#, c-format
 msgid "WARNING: Your encryption subkey expires soon.\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Anda tidak dapat merubah batas waktu kunci v3\n"
@@ -3745,16 +3949,18 @@ msgstr "Anda tidak boleh revoker designated ke kunci bergaya PGP2.x.\n"
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Masukkan user ID pihak yang ingin dibatalkan: "
 
+#, c-format
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 "tidak dapat menunjuk kunci bergaya PGP 2.x sebagai pihak yang dibatalkan\n"
 
+#, c-format
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr ""
 "anda tidak dapat menunjuk sebuah kunci sebagai pihak yang dibatalkan "
 "sendiri\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "this key has already been designated as a revoker\n"
 msgstr "PERINGATAN: Kunci ini telah dibatalkan oleh pihak yang berwenang\n"
 
@@ -3783,6 +3989,7 @@ msgstr "Merubah batas waktu untuk kunci sekunder.\n"
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Merubah batas waktu untuk kunci primer.\n"
 
+#, c-format
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Anda tidak dapat merubah batas waktu kunci v3\n"
 
@@ -3866,10 +4073,6 @@ msgstr "Anda tetap ingin membatalkannya? (y/n) "
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Membuat sertifikat pembatalan untuk signature ini? (y/N)"
 
-#, fuzzy
-msgid "Not signed by you.\n"
-msgstr "   ditandai oleh %08lX pada %s%s\n"
-
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Anda telah menandai ID user ini:\n"
@@ -3888,6 +4091,7 @@ msgstr "Anda akan membatalkan signature ini:\n"
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Ingin membuat sertifikat pembatalan? (y/T)"
 
+#, c-format
 msgid "no secret key\n"
 msgstr "tidak ada kunci rahasia\n"
 
@@ -3903,7 +4107,7 @@ msgstr "User ID \"%s\" telah dibatalkan\n"
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "PERINGATAN: signature user ID bertanggal %d detik di masa depan\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "Cannot revoke the last valid user ID.\n"
 msgstr "Anda tidak dapat menghapus ID user terakhir!\n"
@@ -3928,15 +4132,15 @@ msgstr "opsi impor tidak valid\n"
 msgid "preference '%s' duplicated\n"
 msgstr "preferensi %c%lu ganda \n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many cipher preferences\n"
 msgstr "terlalu banyak preferensi `%c'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many digest preferences\n"
 msgstr "terlalu banyak preferensi `%c'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many compression preferences\n"
 msgstr "terlalu banyak preferensi `%c'\n"
 
@@ -3944,12 +4148,15 @@ msgstr "terlalu banyak preferensi `%c'\n"
 msgid "invalid item '%s' in preference string\n"
 msgstr "Karakter tidak valid dalam string preferensi\n"
 
+#, c-format
 msgid "writing direct signature\n"
 msgstr "menulis signature direct\n"
 
+#, c-format
 msgid "writing self signature\n"
 msgstr "menulis self signature\n"
 
+#, c-format
 msgid "writing key binding signature\n"
 msgstr "menulis key binding signature\n"
 
@@ -3961,6 +4168,7 @@ msgstr "keysize tidak valid; menggunakan %u bit\n"
 msgid "keysize rounded up to %u bits\n"
 msgstr "keysize dibulatkan hingga %u bit\n"
 
+#, c-format
 msgid ""
 "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr ""
@@ -3980,14 +4188,14 @@ msgid "Authenticate"
 msgstr ""
 
 #. TRANSLATORS: Please use only plain ASCII characters for the
-#. translation.  If this is not possible use single digits.  The
-#. string needs to 8 bytes long. Here is a description of the
-#. functions:
-#.
-#. s = Toggle signing capability
-#. e = Toggle encryption capability
-#. a = Toggle authentication capability
-#. q = Finish
+#. * translation.  If this is not possible use single digits.  The
+#. * string needs to 8 bytes long. Here is a description of the
+#. * functions:
+#. *
+#. *   s = Toggle signing capability
+#. *   e = Toggle encryption capability
+#. *   a = Toggle authentication capability
+#. *   q = Finish
 #.
 msgid "SsEeAaQq"
 msgstr ""
@@ -4069,6 +4277,10 @@ msgstr "  (%d) RSA (hanya enkripsi)\n"
 msgid "  (%d) Existing key\n"
 msgstr "  (%d) RSA (hanya enkripsi)\n"
 
+#, fuzzy, c-format
+msgid "  (%d) Existing key from card\n"
+msgstr "  (%d) RSA (hanya enkripsi)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notasi signature: "
@@ -4079,6 +4291,18 @@ msgstr ""
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Tidak ada ID user dengan index %d\n"
+
+#, fuzzy, c-format
+msgid "error reading the card: %s\n"
+msgstr "%s: kesalahan membaca record bebas: %s\n"
+
+#, fuzzy, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "kesalahan penciptaan passphrase: %s\n"
+
+#, fuzzy
+msgid "Available keys:\n"
+msgstr "tiadakan kunci"
 
 #, fuzzy, c-format
 #| msgid "rounded up to %u bits\n"
@@ -4306,7 +4530,7 @@ msgstr "`%s' sudah dikompresi\n"
 msgid "Create anyway? (y/N) "
 msgstr "Tetap dibuat? "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "Create anyway? "
 msgid "creating anyway\n"
 msgstr "Tetap dibuat? "
@@ -4315,6 +4539,7 @@ msgstr "Tetap dibuat? "
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
 msgstr ""
 
+#, c-format
 msgid "Key generation canceled.\n"
 msgstr "Pembuatan kunci dibatalkan.\n"
 
@@ -4364,15 +4589,16 @@ msgid ""
 msgstr ""
 "kunci telah diciptakan dalam %lu detik mendatang (masalah waktu atau jam)\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "CATATAN: membuat subkey bagi kunci-kunci v3 tidak OpenPGP compliant\n"
 
+#, c-format
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Bagian rahasia kunci primer tidak tersedia.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Bagian rahasia kunci primer tidak tersedia.\n"
 
@@ -4404,20 +4630,6 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d signature yang buruk\n"
 msgstr[1] "%d signature yang buruk\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d signature yang buruk\n"
-msgstr[1] "%d signature yang buruk\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 signature tidak diperiksa karena tidak ada kunci\n"
-msgstr[1] "1 signature tidak diperiksa karena tidak ada kunci\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
@@ -4534,12 +4746,9 @@ msgstr "PERINGATAN: tidak dapat menghapus file temp (%s) `%s': %s\n"
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "key not found on keyserver\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
-
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4549,7 +4758,7 @@ msgstr "meminta kunci %08lX dari %s\n"
 msgid "requesting key %s from %s\n"
 msgstr "meminta kunci %08lX dari %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no keyserver known\n"
 msgstr "opsi ekspor tidak valid\n"
 
@@ -4587,6 +4796,7 @@ msgstr "dienkripsi dengan algoritma tidak dikenal %d\n"
 msgid "public key is %s\n"
 msgstr "kunci publik adalah %08lX\n"
 
+#, c-format
 msgid "public key encrypted data: good DEK\n"
 msgstr "data terenkripsi dengan kunci publik: DEK baik\n"
 
@@ -4607,9 +4817,14 @@ msgid "public key decryption failed: %s\n"
 msgstr "gagal dekripsi kunci publik: %s\n"
 
 #, c-format
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
+#, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "dienkripsi dengan passphrase %lu\n"
 
+#, c-format
 msgid "encrypted with 1 passphrase\n"
 msgstr "dienkripsi dengan 1 passphrase\n"
 
@@ -4621,12 +4836,30 @@ msgstr "asumsikan %s data terenkripsi\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "Cipher IDEA tidak tersedia, secara optimis berusaha menggunakan %s\n"
 
+#, c-format
 msgid "WARNING: message was not integrity protected\n"
 msgstr "PERINGATAN: integritas pesan tidak terlindungi\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "dekripsi gagal: %s\n"
+
+#, c-format
 msgid "decryption okay\n"
 msgstr "dekripsi lancar\n"
 
+#, c-format
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "PERINGATAN: pesan terenkripsi telah dimanipulasi!\n"
 
@@ -4634,7 +4867,7 @@ msgstr "PERINGATAN: pesan terenkripsi telah dimanipulasi!\n"
 msgid "decryption failed: %s\n"
 msgstr "dekripsi gagal: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "CATATAN: pengirim meminta \"for-your-eyes-only\"\n"
@@ -4643,13 +4876,11 @@ msgstr "CATATAN: pengirim meminta \"for-your-eyes-only\"\n"
 msgid "original file name='%.*s'\n"
 msgstr "original file name='%.*s'\n"
 
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
-
+#, c-format
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "pembatalan mandiri - gunakan \"gpg --import\" untuk mengaplikasikan\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no signature found\n"
 msgstr "Signature baik dari \""
 
@@ -4665,10 +4896,11 @@ msgstr "Signature kadaluarsa dari \""
 msgid "Good signature from \"%s\""
 msgstr "Signature baik dari \""
 
+#, c-format
 msgid "signature verification suppressed\n"
 msgstr "verifikasi signature tidak diabaikan\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't handle this ambiguous signature data\n"
 msgstr "tidak dapat menangani banyak signature ini\n"
 
@@ -4688,8 +4920,13 @@ msgstr "Signature membuat %.*s menggunakan kunci %s ID %08lX\n"
 msgid "               issuer \"%s\"\n"
 msgstr "              alias \""
 
+#, c-format
 msgid "Key available at: "
 msgstr "Kunci tersedia di:"
+
+#, c-format
+msgid "Note: Use '%s' to make use of this info\n"
+msgstr ""
 
 msgid "[uncertain]"
 msgstr "[uncertain]"
@@ -4739,9 +4976,11 @@ msgstr ""
 msgid "Can't check signature: %s\n"
 msgstr "Tidak dapat memeriksa signature: %s\n"
 
+#, c-format
 msgid "not a detached signature\n"
 msgstr "bukan detached signature\n"
 
+#, c-format
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
@@ -4751,6 +4990,7 @@ msgstr ""
 msgid "standalone signature of class 0x%02x\n"
 msgstr "kelas signature mandiri 0x%02x\n"
 
+#, c-format
 msgid "old style (PGP 2.x) signature\n"
 msgstr "signature model lama (PGP 2.X)\n"
 
@@ -4766,7 +5006,7 @@ msgstr "trustdb: read failed (n=%d): %s\n"
 msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr "tidak dapat menangani algoritma kunci publik %d\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
 msgstr "memaksa algoritma digest %s (%d) melanggar preferensi penerima\n"
 
@@ -4788,6 +5028,11 @@ msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "%s signature, algoritma digest %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
+msgstr "%s signature, algoritma digest %s\n"
+
+#, fuzzy, c-format
 msgid "(reported error: %s)\n"
 msgstr "kesalahan pembacaan: %s\n"
 
@@ -4795,6 +5040,7 @@ msgstr "kesalahan pembacaan: %s\n"
 msgid "(reported error: %s <%s>)\n"
 msgstr "kesalahan pembacaan: %s\n"
 
+#, c-format
 msgid "(further info: "
 msgstr ""
 
@@ -4843,6 +5089,7 @@ msgstr "membaca pilihan dari `%s'\n"
 msgid "unknown option '%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
 
+#, c-format
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
 
@@ -4866,6 +5113,7 @@ msgstr "%s: suffix tidak dikenal\n"
 msgid "Enter new filename"
 msgstr "Masukkan nama file baru"
 
+#, c-format
 msgid "writing to stdout\n"
 msgstr "menulis ke stdout\n"
 
@@ -4878,8 +5126,14 @@ msgstr "mengasumsikan data bertanda dalam `%s'\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "tidak dapat menangani algoritma kunci publik %d\n"
 
+#, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "PERINGATAN: kunci sesi mungkin dienkripsi simetris secara tidak aman\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Notasi signature kritis: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -4892,6 +5146,7 @@ msgstr "masalah dengan agen: agen mengembalikan 0x%lx\n"
 msgid "Enter passphrase\n"
 msgstr "Masukkan passphrase\n"
 
+#, c-format
 msgid "cancelled by user\n"
 msgstr "dibatalkan oleh user\n"
 
@@ -4969,29 +5224,9 @@ msgstr "\"%s\" bukan sebuah file JPEG\n"
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Apakah foto ini benar (y/N/q)? "
 
+#, c-format
 msgid "unable to display photo ID!\n"
 msgstr "tidak dapat menampilkan photo ID!\n"
-
-msgid "No reason specified"
-msgstr "Tidak ada alasan diberikan"
-
-msgid "Key is superseded"
-msgstr "Kunci dilampaui"
-
-msgid "Key has been compromised"
-msgstr "Kunci ini telah dikompromikan"
-
-msgid "Key is no longer used"
-msgstr "Kunci tidak lagi digunakan"
-
-msgid "User ID is no longer valid"
-msgstr "ID User tidak lagi valid"
-
-msgid "reason for revocation: "
-msgstr "Alasan pembatalan:"
-
-msgid "revocation comment: "
-msgstr "Komentar pembatalan:"
 
 #. TRANSLATORS: These are the allowed answers in lower and
 #. uppercase.  Below you will find the matching strings which
@@ -5071,10 +5306,11 @@ msgid "%s: There is limited assurance this key belongs to the named user\n"
 msgstr ""
 "%08lX: Tidak ada indikasi bahwa kunci ini benar-benar milik pemiliknya\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This key probably belongs to the named user\n"
 msgstr "Kunci ini mungkin milik pemiliknya\n"
 
+#, c-format
 msgid "This key belongs to us\n"
 msgstr "Kunci ini milik kita\n"
 
@@ -5108,26 +5344,32 @@ msgstr ""
 msgid "Use this key anyway? (y/N) "
 msgstr "Tetap gunakan kunci ini? "
 
+#, c-format
 msgid "WARNING: Using untrusted key!\n"
 msgstr "PERINGATAN: Menggunakan kunci tidak dipercaya!\n"
 
+#, c-format
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
 msgstr ""
 "Peringatan: kunci ini mungkin dibatalkan:(kunci pembatalan tidak ada)\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
 msgstr "PERINGATAN: Kunci ini telah dibatalkan oleh pihak yang berwenang\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "PERINGATAN: Kunci ini telah dibatalkan oleh pemiliknya!\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "         This could mean that the signature is forged.\n"
 msgstr "        Hal ini dapat berarti bahwa signature adalah palsu.\n"
 
+#, c-format
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "PERINGATAN: Subkey ini telah dibatalkan oleh pemiliknya!\n"
 
+#, c-format
 msgid "Note: This key has been disabled.\n"
 msgstr "Catatan: Kunci ini telah ditiadakan\n"
 
@@ -5139,34 +5381,43 @@ msgstr ""
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr ""
 
+#, c-format
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 msgstr ""
 
+#, c-format
 msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
 msgstr ""
 
+#, c-format
 msgid "Note: This key has expired!\n"
 msgstr "Catatan: Kunci ini telah berakhir!\n"
 
+#, c-format
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr ""
 "PERINGATAN: Kunci ini tidak disertifikasi dengan sig yang terpercaya!\n"
 
+#, c-format
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr "  Tidak ada indikasi signature milik pemilik.\n"
 
+#, c-format
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "PERINGATAN: Kita tidak percaya kunci ini!\n"
 
+#, c-format
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "        Signature mungkin palsu.\n"
 
+#, c-format
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 "PERINGATAN: Kunci tdk disertifikasi dg signature terpercaya yg cukup!\n"
 
+#, c-format
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "        Tidak pasti signature milik pemilik.\n"
 
@@ -5211,12 +5462,14 @@ msgstr ""
 msgid "No such user ID.\n"
 msgstr "Tidak ada ID user tersebut.\n"
 
+#, c-format
 msgid "skipped: public key already set as default recipient\n"
 msgstr "dilewati: kunci publik telah diset sebagai penerima baku\n"
 
 msgid "Public key is disabled.\n"
 msgstr "Kunci publik dimatikan.\n"
 
+#, c-format
 msgid "skipped: public key already set\n"
 msgstr "dilewati: kunci publik telah diset\n"
 
@@ -5224,6 +5477,7 @@ msgstr "dilewati: kunci publik telah diset\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
 
+#, c-format
 msgid "no valid addressees\n"
 msgstr "tidak ada alamat yang valid\n"
 
@@ -5235,6 +5489,7 @@ msgstr "kunci %08lX: tidak ada ID user\n"
 msgid "Note: key %s has no preference for %s\n"
 msgstr "kunci %08lX: tidak ada ID user\n"
 
+#, c-format
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "data tidak disimpan; gunakan pilihan \"--output\" untuk menyimpannya\n"
 
@@ -5244,9 +5499,11 @@ msgstr "Menghapus signature.\n"
 msgid "Please enter name of data file: "
 msgstr "Silakan masukkan nama file data: "
 
+#, c-format
 msgid "reading stdin ...\n"
 msgstr "membaca stdin ...\n"
 
+#, c-format
 msgid "no signed data\n"
 msgstr "tidak ada data tertandai\n"
 
@@ -5267,9 +5524,11 @@ msgstr "kunci %08lX: tidak ada ID user\n"
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "penerima anonim; mencoba kunci rahasia %08lX ...\n"
 
+#, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "baik, kita adalah penerima anonim.\n"
 
+#, c-format
 msgid "old encoding of the DEK is not supported\n"
 msgstr "encoding lama DEK tidak didukung\n"
 
@@ -5285,7 +5544,7 @@ msgstr "CATATAN: algoritma cipher %d tidak ditemukan dalam preferensi\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "CATATAN: kunci pribadi %08lX berakhir pada %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "CATATAN: kunci telah dibatalkan"
@@ -5420,6 +5679,7 @@ msgstr "(Tidak diberikan deskripsi)\n"
 msgid "Is this okay? (y/N) "
 msgstr "Ini oke? "
 
+#, c-format
 msgid "weak key created - retrying\n"
 msgstr "kunci lemah tercipta - mengulang\n"
 
@@ -5436,6 +5696,7 @@ msgstr ""
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "Peringatan: konflik digest signature dalam pesan\n"
 
@@ -5503,6 +5764,11 @@ msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "kelas signature mandiri 0x%02x\n"
 
 #, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "kelas signature mandiri 0x%02x\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "mengasumsikan signature buruk dari kunci %08lX karena ada bit kritik tidak "
@@ -5546,6 +5812,7 @@ msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr "memaksa algoritma digest %s (%d) melanggar preferensi penerima\n"
 
+#, c-format
 msgid "signing:"
 msgstr "menandai:"
 
@@ -5553,6 +5820,7 @@ msgstr "menandai:"
 msgid "%s encryption will be used\n"
 msgstr "%s enkripsi akan digunakan\n"
 
+#, c-format
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
 "kunci tidak dianggap sebagai tidak aman - tidak dapat digunakan dengan RNG "
@@ -5562,6 +5830,7 @@ msgstr ""
 msgid "skipped \"%s\": duplicated\n"
 msgstr "lewati `%s': terduplikasi\n"
 
+#, c-format
 msgid "skipped: secret key already present\n"
 msgstr "dilewati: kunci pribadi telah ada\n"
 
@@ -5630,6 +5899,7 @@ msgstr "trustdb rec %lu: lseek gagal: %s\n"
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: write failed (n=%d): %s\n"
 
+#, c-format
 msgid "trustdb transaction too large\n"
 msgstr "transaksi trustdb terlalu besar\n"
 
@@ -5653,7 +5923,7 @@ msgstr "%s: tercipta trustdb tidak valid\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: tercipta trustdb\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: trustdb not writable\n"
 msgid "Note: trustdb not writable\n"
 msgstr "CATATAN: trustdb tidak dapat ditulisi\n"
@@ -5714,7 +5984,7 @@ msgstr "%s: gagal mengosongkan record: %s\n"
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: gagal menambahkan record: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: The trustdb is corrupted.\n"
 msgstr "%s: tercipta trustdb\n"
 
@@ -5744,10 +6014,7 @@ msgstr ""
 "\n"
 "Algoritma yang didukung:\n"
 
-#, fuzzy, c-format
-msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "kesalahan penciptaan passphrase: %s\n"
-
+#, c-format
 msgid "TOFU DB error"
 msgstr ""
 
@@ -5764,14 +6031,6 @@ msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s: kesalahan menulis dir record: %s\n"
-
-#, fuzzy, c-format
-msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "kesalahan mengirim ke `%s': %s\n"
-
-#, c-format
-msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5921,16 +6180,9 @@ msgstr ""
 msgid "Defaulting to unknown.\n"
 msgstr ""
 
+#, c-format
 msgid "TOFU db corruption detected.\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "resetting keydb: %s\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's policy to %s\n"
-msgstr "kesalahan membaca `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5987,39 +6239,31 @@ msgstr ""
 msgid "%s: Verified 0 signatures."
 msgstr "Menghapus %d signature.\n"
 
-#, fuzzy, c-format
-msgid "%s: Verified %ld~signature in the past %s."
-msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] "|algo [file]|cetak digest pesan"
-msgstr[1] "|algo [file]|cetak digest pesan"
-
 #, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted 0 messages."
 msgstr "dienkripsi dengan passphrase %lu\n"
 
 #, fuzzy, c-format
-msgid "Encrypted %ld~message in the past %s."
-msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] "|algo [file]|cetak digest pesan"
-msgstr[1] "|algo [file]|cetak digest pesan"
-
-#, fuzzy, c-format
 #| msgid "Policy: "
 msgid "(policy: %s)"
 msgstr "Kebijakan: "
 
+#, c-format
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
 
@@ -6046,11 +6290,6 @@ msgstr "kesalahan mengirim ke `%s': %s\n"
 #, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing public keyring `%s': %s\n"
-msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "kesalahan menulis keyring publik `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid long keyID\n"
@@ -6081,9 +6320,11 @@ msgstr "trust record %lu, req tipe %d: gagal baca: %s\n"
 msgid "trust record %lu is not of requested type %d\n"
 msgstr "trust record %lu tidak dalam jenis yang diminta %d\n"
 
+#, c-format
 msgid "You may try to re-create the trustdb using the commands:\n"
 msgstr ""
 
+#, c-format
 msgid "If that does not work, please consult the manual\n"
 msgstr ""
 
@@ -6095,6 +6336,7 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#, c-format
 msgid "no need for a trustdb check\n"
 msgstr "tidak perlu memeriksa trustdb\n"
 
@@ -6114,9 +6356,11 @@ msgstr "tidak perlu memeriksa trustdb\n"
 msgid "public key %s not found: %s\n"
 msgstr "kunci publik %08lX tidak ditemukan: %s\n"
 
+#, c-format
 msgid "please do a --check-trustdb\n"
 msgstr "lakukanlah --check-trustdb\n"
 
+#, c-format
 msgid "checking the trustdb\n"
 msgstr "memeriksa trustdb\n"
 
@@ -6133,6 +6377,7 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d kunci diproses (%d hitungan validitas dihapus)\n"
 msgstr[1] "%d kunci diproses (%d hitungan validitas dihapus)\n"
 
+#, c-format
 msgid "no ultimately trusted keys found\n"
 msgstr "tidak ditemukan kunci yang benar-benar terpercaya\n"
 
@@ -6204,6 +6449,7 @@ msgstr ""
 msgid "[ultimate]"
 msgstr ""
 
+#, c-format
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -6237,6 +6483,26 @@ msgid ""
 "List, export, import Keybox data\n"
 msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN for the standard keys."
+msgstr "ubah passphrase"
+
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
@@ -6249,15 +6515,12 @@ msgstr ""
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
+#, c-format
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
 #, fuzzy
 msgid "|N|Please enter a new PIN for the standard keys."
-msgstr "ubah passphrase"
-
-#, fuzzy
-msgid "||Please enter the PIN for the standard keys."
 msgstr "ubah passphrase"
 
 #, fuzzy
@@ -6269,9 +6532,6 @@ msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Silakan pilih alasan untuk pembatalan:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
-
-msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
 msgid ""
@@ -6296,20 +6556,24 @@ msgstr "gagal inisialisasi TrustDB: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "gagal membuat kembali cache keyring: %s\n"
 
+#, c-format
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
+#, c-format
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
+#, c-format
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "remove keys from the public keyring"
 msgid "response does not contain the EC public key\n"
 msgstr "hapus kunci dari keyring publik"
 
+#, c-format
 msgid "response does not contain the public key data\n"
 msgstr ""
 
@@ -6322,16 +6586,6 @@ msgstr "gagal menghapus keyblok: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
-
-#, c-format
-msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
-
-#. TRANSLATORS: This is the number of remaining attempts to
-#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
-#, c-format
-msgid "Remaining attempts: %d"
 msgstr ""
 
 #, c-format
@@ -6354,6 +6608,7 @@ msgstr ""
 msgid "verify CHV%d failed: %s\n"
 msgstr "Pengiriman keyserver gagal: %s\n"
 
+#, c-format
 msgid "card is permanently locked!\n"
 msgstr ""
 
@@ -6370,6 +6625,7 @@ msgstr[1] ""
 msgid "|A|Please enter the Admin PIN"
 msgstr "ubah passphrase"
 
+#, c-format
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
@@ -6405,29 +6661,31 @@ msgstr "ubah passphrase"
 msgid "||Please enter the PIN and New PIN"
 msgstr "ubah passphrase"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error reading application data\n"
 msgstr "gagal membaca keyblock: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error reading fingerprint DO\n"
 msgstr "%s: kesalahan membaca record bebas: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "key already exists\n"
 msgstr "`%s' sudah dikompresi\n"
 
+#, c-format
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "generating new key\n"
 msgstr "buat sepasang kunci baru"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "writing new key\n"
 msgstr "buat sepasang kunci baru"
 
+#, c-format
 msgid "creation timestamp missing\n"
 msgstr ""
 
@@ -6439,15 +6697,16 @@ msgstr ""
 msgid "failed to store the key: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "unsupported URI"
 msgid "unsupported curve\n"
 msgstr "URI tidak didukung"
 
+#, c-format
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "generating key failed\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
@@ -6457,9 +6716,11 @@ msgid_plural "key generation completed (%d seconds)\n"
 msgstr[0] "Pembuatan kunci gagal: %s\n"
 msgstr[1] "Pembuatan kunci gagal: %s\n"
 
+#, c-format
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
+#, c-format
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
@@ -6471,6 +6732,7 @@ msgstr "%s signature, algoritma digest %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
+#, c-format
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
@@ -6536,6 +6798,7 @@ msgid ""
 "Smartcard daemon for @GNUPG@\n"
 msgstr ""
 
+#, c-format
 msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
 
@@ -6546,10 +6809,6 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
-
-#, fuzzy
-msgid "no dirmngr running in this session\n"
-msgstr "gpg-agent tidak tersedia untuk sesi ini\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -6566,6 +6825,7 @@ msgstr "bantuan"
 msgid "critical certificate extension %s is not supported"
 msgstr "protokol gpg-agent versi %d tidak didukung\n"
 
+#, c-format
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
@@ -6576,14 +6836,19 @@ msgstr ""
 msgid "failed to open '%s': %s\n"
 msgstr "tidak dapat membuka `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: non-critical certificate policy not allowed"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate policy not allowed"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
+#, fuzzy, c-format
+msgid "failed to get the fingerprint\n"
+msgstr "gagal inisialisasi TrustDB: %s\n"
+
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr ""
 
@@ -6591,6 +6856,12 @@ msgstr ""
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: tidak dapat mengakses: %s\n"
+
+#, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
 msgstr ""
 
@@ -6602,7 +6873,7 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "failed to allocate keyDB handle\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
@@ -6613,6 +6884,7 @@ msgstr "CATATAN: kunci telah dibatalkan"
 msgid "the status of the certificate is unknown"
 msgstr ""
 
+#, c-format
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
@@ -6624,6 +6896,7 @@ msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 msgid "certificate with invalid validity: %s"
 msgstr ""
 
+#, c-format
 msgid "certificate not yet valid"
 msgstr ""
 
@@ -6634,7 +6907,7 @@ msgstr "menulis kunci rahasia ke `%s'\n"
 msgid "intermediate certificate not yet valid"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has expired"
 msgstr "Kunci ini telah berakhir!"
 
@@ -6663,18 +6936,19 @@ msgstr ""
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (  signature created at "
 msgstr "       signature baru: %lu\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (certificate created at "
 msgstr "Sertifikat pembatalan tercipta.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (certificate valid from "
 msgstr "sertifikat yang buruk"
 
+#, c-format
 msgid "  (     issuer valid from "
 msgstr ""
 
@@ -6682,12 +6956,15 @@ msgstr ""
 msgid "fingerprint=%s\n"
 msgstr "tampilkan fingerprint"
 
+#, c-format
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 
+#, c-format
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr ""
 
+#, c-format
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr ""
 
@@ -6701,6 +6978,7 @@ msgstr "buat sertifikat revokasi"
 msgid "self-signed certificate has a BAD signature"
 msgstr ""
 
+#, c-format
 msgid "root certificate is not marked trusted"
 msgstr ""
 
@@ -6708,13 +6986,15 @@ msgstr ""
 msgid "checking the trust list failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
+#, c-format
 msgid "certificate chain too long\n"
 msgstr ""
 
+#, c-format
 msgid "issuer certificate not found"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has a BAD signature"
 msgstr "verifikasi signature"
 
@@ -6725,15 +7005,15 @@ msgstr ""
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate is good\n"
 msgstr "preferensi %c%lu ganda \n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "intermediate certificate is good\n"
 msgstr "Sertifikat pembatalan tercipta.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "root certificate is good\n"
 msgstr "sertifikat yang buruk"
 
@@ -6748,6 +7028,11 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "out of core\n"
+msgstr "tidak diproses"
+
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
@@ -6781,6 +7066,7 @@ msgstr ""
 "\"%.*s\"\n"
 "%u-bit %s key, ID %08lX, tercipta %s%s\n"
 
+#, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 
@@ -6788,21 +7074,27 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 
+#, c-format
 msgid "certificate should not have been used for certification\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for signing\n"
 msgstr ""
 
+#, c-format
 msgid "certificate is not usable for encryption\n"
 msgstr ""
 
+#, c-format
 msgid "certificate is not usable for signing\n"
 msgstr ""
 
@@ -6891,18 +7183,6 @@ msgstr "  (%d) RSA (hanya enkripsi)\n"
 msgid "   (%d) Existing key from card\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "error reading the card: %s\n"
-msgstr "%s: kesalahan membaca record bebas: %s\n"
-
-#, fuzzy, c-format
-msgid "Serial number of the card: %s\n"
-msgstr "kesalahan penciptaan passphrase: %s\n"
-
-#, fuzzy
-msgid "Available keys:\n"
-msgstr "tiadakan kunci"
-
 #, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr ""
@@ -6988,12 +7268,15 @@ msgstr ""
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr ""
 
+#, c-format
 msgid "resource problem: out of core\n"
 msgstr ""
 
+#, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr ""
 
+#, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
 
@@ -7017,7 +7300,7 @@ msgstr "preferensi %c%lu ganda \n"
 msgid "deleting certificate \"%s\" failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no valid recipients given\n"
 msgstr "(Tidak diberikan deskripsi)\n"
 
@@ -7149,7 +7432,7 @@ msgstr ""
 msgid "%s:%u: skipping this line\n"
 msgstr " s = lewati kunci ini\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "could not parse keyserver\n"
 msgstr "tidak dapat memparsing URI keyserver\n"
 
@@ -7161,6 +7444,7 @@ msgstr "menulis ke `%s'\n"
 msgid "can't sign using '%s': %s\n"
 msgstr "tidak dapat menutup `%s': %s\n"
 
+#, c-format
 msgid "invalid command (there is no implicit command)\n"
 msgstr ""
 
@@ -7168,10 +7452,11 @@ msgstr ""
 msgid "total number processed: %lu\n"
 msgstr "Jumlah yang telah diproses: %lu\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error storing certificate\n"
 msgstr "buat sertifikat revokasi"
 
+#, c-format
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
@@ -7186,10 +7471,6 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
-
-#, fuzzy
-msgid "failed to get the fingerprint\n"
-msgstr "gagal inisialisasi TrustDB: %s\n"
 
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
@@ -7214,6 +7495,7 @@ msgstr "kesalahan membaca `%s': %s\n"
 msgid "Error - "
 msgstr ""
 
+#, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr ""
 
@@ -7235,6 +7517,7 @@ msgid ""
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
 
+#, c-format
 msgid ""
 "Note, that this software is not officially approved to create or verify such "
 "signatures.\n"
@@ -7259,30 +7542,32 @@ msgstr ""
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Signature kadaluwarsa %s\n"
 
+#, c-format
 msgid "[date not given]"
 msgstr ""
 
 #, fuzzy, c-format
-msgid " using certificate ID 0x%08lX\n"
-msgstr "kesalahan penciptaan passphrase: %s\n"
+msgid "algorithm:"
+msgstr "armor: %s\n"
 
+#, c-format
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Good signature from"
 msgstr "Signature baik dari \""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "                aka"
 msgstr "              alias \""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This is a qualified signature\n"
 msgstr ""
 "\n"
@@ -7351,11 +7636,11 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate already cached\n"
 msgstr "Sertifikat pembatalan tercipta.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate cached\n"
 msgstr "preferensi %c%lu ganda \n"
 
@@ -7375,7 +7660,7 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "error fetching certificate by subject: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no issuer found in certificate\n"
 msgstr "buat sertifikat revokasi"
 
@@ -7443,9 +7728,11 @@ msgstr "tidak dapat membuat direktori `%s': %s\n"
 msgid "first record of '%s' is not the version\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - cleaning up\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - giving up\n"
 msgstr ""
 
@@ -7482,9 +7769,11 @@ msgstr "kesalahan: fingerprint tidak valid\n"
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
 msgstr "peringatan: ukuran file random_seed tidak valid - tidak dipakai\n"
 
+#, c-format
 msgid "detected errors in cache dir file\n"
 msgstr ""
 
+#, c-format
 msgid "please check the reason and manually delete that file\n"
 msgstr ""
 
@@ -7517,6 +7806,7 @@ msgstr "kesalahan membaca `%s': %s\n"
 msgid "invalid formatted checksum for '%s'\n"
 msgstr "kesalahan: fingerprint tidak valid\n"
 
+#, c-format
 msgid "too many open cache files; can't open anymore\n"
 msgstr ""
 
@@ -7532,9 +7822,11 @@ msgstr "kesalahan membaca `%s': %s\n"
 msgid "error initializing cache file '%s' for reading: %s\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on a closed file\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on an unlocked file\n"
 msgstr ""
 
@@ -7569,6 +7861,7 @@ msgstr ""
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: invalid cache record length for S/N "
 msgstr ""
 
@@ -7589,15 +7882,6 @@ msgid "error getting data from cache file: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
 #, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
-msgid "unknown hash algorithm '%s'\n"
-msgstr "algoritma hash tidak valid `%s'\n"
-
-#, c-format
-msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
-
-#, fuzzy
 #| msgid "invalid response from agent\n"
 msgid "got an invalid S-expression from libksba\n"
 msgstr "respon tidak valid dari agen\n"
@@ -7605,6 +7889,15 @@ msgstr "respon tidak valid dari agen\n"
 #, fuzzy, c-format
 msgid "converting S-expression failed: %s\n"
 msgstr "tidak dapat membuka file: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "algoritma hash tidak valid `%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "creating S-expression failed: %s\n"
@@ -7623,6 +7916,7 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "update times of this CRL: this=%s next=%s\n"
 msgstr ""
 
+#, c-format
 msgid "nextUpdate not given; assuming a validity period of one day\n"
 msgstr ""
 
@@ -7638,6 +7932,7 @@ msgstr "menulis ke `%s'\n"
 msgid "no CRL issuer found in CRL: %s\n"
 msgstr "buat sertifikat revokasi"
 
+#, c-format
 msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
 msgstr ""
 
@@ -7707,6 +8002,7 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "problem renaming '%s' to '%s': %s\n"
 msgstr "gagal enarmoring: %s\n"
 
+#, c-format
 msgid ""
 "updating the DIR file failed - cache entry will get lost with the next "
 "program start\n"
@@ -7731,7 +8027,7 @@ msgstr ""
 msgid " ERROR: This cached CRL may have been tampered with!\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: invalid size of random_seed file - not used\n"
 msgid " WARNING: invalid cache record length\n"
 msgstr "peringatan: ukuran file random_seed tidak valid - tidak dipakai\n"
@@ -7763,6 +8059,7 @@ msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 msgid "crl_cache_insert via issuer failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
+#, c-format
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
@@ -7779,7 +8076,7 @@ msgstr "kesalahan penciptaan : `%s': %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: kesalahan menulis dir record: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
@@ -7847,6 +8144,7 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "error reading certificate from '%s': %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
+#, c-format
 msgid "certificate too large to make any sense\n"
 msgstr ""
 
@@ -7864,6 +8162,7 @@ msgstr "gagal memperbarui: %s\n"
 msgid "loading CRL '%s' failed: %s\n"
 msgstr "gagal enarmoring: %s\n"
 
+#, c-format
 msgid "a dirmngr daemon is up and running\n"
 msgstr ""
 
@@ -7871,11 +8170,11 @@ msgstr ""
 msgid "validation of certificate failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate is valid\n"
 msgstr "preferensi %c%lu ganda \n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has been revoked\n"
 msgstr "CATATAN: kunci telah dibatalkan"
 
@@ -7899,6 +8198,7 @@ msgstr ""
 "\n"
 "Algoritma yang didukung:\n"
 
+#, c-format
 msgid "absolute file name expected\n"
 msgstr ""
 
@@ -8017,7 +8317,7 @@ msgstr ""
 msgid "usage: %s [options] "
 msgstr "pemakaian: gpg [pilihan] "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s not allowed with %s!\n"
 msgid "colons are not allowed in the socket name\n"
 msgstr "%s tidak dibolehkan dengan %s!\n"
@@ -8046,12 +8346,15 @@ msgstr "kesalahan pembacaan: %s\n"
 msgid "%s:%u: garbage at end of line ignored\n"
 msgstr ""
 
+#, c-format
 msgid "SIGHUP received - re-reading configuration and flushing caches\n"
 msgstr ""
 
+#, c-format
 msgid "SIGUSR2 received - no action defined\n"
 msgstr ""
 
+#, c-format
 msgid "SIGTERM received - shutting down ...\n"
 msgstr ""
 
@@ -8059,10 +8362,11 @@ msgstr ""
 msgid "SIGTERM received - still %d active connections\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "shutdown forced\n"
 msgstr "tidak diproses"
 
+#, c-format
 msgid "SIGINT received - immediate shutdown\n"
 msgstr ""
 
@@ -8183,7 +8487,7 @@ msgstr "(Tidak diberikan deskripsi)\n"
 msgid "no attribute given for query '%s'\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: using insecure memory!\n"
 msgid "WARNING: using first attribute only\n"
 msgstr "Peringatan: menggunakan memori yang tidak aman!\n"
@@ -8213,9 +8517,18 @@ msgstr ""
 msgid "error accessing '%s': http status %u\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
+msgid "too many redirections\n"
+msgstr "terlalu banyak preferensi `%c'\n"
+
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "redirection changed to '%s'\n"
+msgstr "menulis ke `%s'\n"
 
 #, fuzzy, c-format
 msgid "error printing log line: %s\n"
@@ -8261,10 +8574,11 @@ msgstr "gagal menghapus keyblok: %s\n"
 msgid "start_cert_fetch: invalid pattern '%s'\n"
 msgstr ""
 
+#, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
 msgid "invalid canonical S-expression found\n"
 msgstr "%s: versi file %d tidak valid\n"
@@ -8278,6 +8592,7 @@ msgstr "tidak dapat membuka file: %s\n"
 msgid "oops: ksba_cert_hash failed: %s\n"
 msgstr "gagal perbarui rahasia: %s\n"
 
+#, c-format
 msgid "bad URL encoding detected\n"
 msgstr ""
 
@@ -8289,10 +8604,11 @@ msgstr "kesalahan membaca `%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "OCSP request not possible due to Tor mode\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
+#, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
 
@@ -8312,14 +8628,6 @@ msgstr "kesalahan menulis keyring `%s': %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy
-msgid "too many redirections\n"
-msgstr "terlalu banyak preferensi `%c'\n"
-
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
 msgstr "kesalahan mengirim ke `%s': %s\n"
@@ -8328,14 +8636,16 @@ msgstr "kesalahan mengirim ke `%s': %s\n"
 msgid "OCSP responder at '%s' status: %s\n"
 msgstr ""
 
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
+#, c-format
 msgid "not signed by a default OCSP signer's certificate"
-msgstr ""
-
-msgid "only SHA-1 is supported for OCSP responses\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8346,6 +8656,7 @@ msgstr "gagal menghapus keyblok: %s\n"
 msgid "error getting responder ID: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
+#, c-format
 msgid "no suitable certificate found to verify the OCSP response\n"
 msgstr ""
 
@@ -8353,10 +8664,11 @@ msgstr ""
 msgid "issuer certificate not found: %s\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
+#, c-format
 msgid "caller did not return the target certificate\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "caller did not return the issuing certificate\n"
 msgstr "buat sertifikat revokasi"
 
@@ -8364,15 +8676,11 @@ msgstr "buat sertifikat revokasi"
 msgid "failed to allocate OCSP context: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s: can't access: %s\n"
-msgid "can't get authorityInfoAccess: %s\n"
-msgstr "%s: tidak dapat mengakses: %s\n"
-
+#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no default secret keyring: %s\n"
 msgid "no default OCSP signer defined\n"
 msgstr "tidak ada keyring rahasia baku: %s\n"
@@ -8385,10 +8693,6 @@ msgstr ""
 #| msgid "using cipher %s\n"
 msgid "using OCSP responder '%s'\n"
 msgstr "menggunakan cipher %s\n"
-
-#, c-format
-msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8405,12 +8709,15 @@ msgstr ""
 msgid "certificate has been revoked at: %s due to: %s\n"
 msgstr "CATATAN: kunci telah dibatalkan"
 
+#, c-format
 msgid "OCSP responder returned a status in the future\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned a non-current status\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned an too old status\n"
 msgstr ""
 
@@ -8474,10 +8781,11 @@ msgstr ""
 msgid "Assuan processing failed: %s\n"
 msgstr "gagal menandai: %s\n"
 
+#, c-format
 msgid "accepting root CA not marked as a CA"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "checking the trustdb\n"
 msgid "CRL checking too deeply nested\n"
 msgstr "memeriksa trustdb\n"
@@ -8489,7 +8797,7 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "selfsigned certificate has a BAD signature"
 msgstr "verifikasi signature"
 
@@ -8497,10 +8805,11 @@ msgstr "verifikasi signature"
 msgid "checking trustworthiness of root certificate failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate chain is good\n"
 msgstr "preferensi %c%lu ganda \n"
 
+#, c-format
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 
@@ -8557,10 +8866,11 @@ msgstr ""
 msgid "receiving line failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "line too long - skipped\n"
 msgstr "baris terlalu panjang\n"
 
+#, c-format
 msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
@@ -8646,6 +8956,15 @@ msgstr ""
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "impor kunci dari keyserver"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "periksa signature kunci"
+
 msgid "disable all access to the dirmngr"
 msgstr ""
 
@@ -8704,6 +9023,15 @@ msgstr "passphrase yang buruk"
 #, fuzzy
 msgid "Component not suitable for launching"
 msgstr "kunci publik tidak ditemukan"
+
+#, c-format
+msgid "Configuration file of component %s is broken\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s%s\" to get details.\n"
+msgstr "Silakan gunakan dulu perintah \"toogle\".\n"
 
 #, c-format
 msgid "External verification of component %s failed"
@@ -8793,142 +9121,6 @@ msgid "No argument allowed"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
 #, fuzzy
-msgid ""
-"@\n"
-"Commands:\n"
-" "
-msgstr ""
-"@Perintah:\n"
-" "
-
-#, fuzzy
-msgid "decryption modus"
-msgstr "dekripsi lancar\n"
-
-#, fuzzy
-msgid "encryption modus"
-msgstr "dekripsi lancar\n"
-
-msgid "tool class (confucius)"
-msgstr ""
-
-#, fuzzy
-msgid "program filename"
-msgstr "--store [namafile]"
-
-msgid "secret key file (required)"
-msgstr ""
-
-msgid "input file name (default stdin)"
-msgstr ""
-
-#, fuzzy
-msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
-
-msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
-"Call a simple symmetric encryption tool\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s on %s aborted with status %i\n"
-msgstr "%s tidak dibolehkan dengan %s!\n"
-
-#, fuzzy, c-format
-msgid "%s on %s failed with status %i\n"
-msgstr "tidak dapat membuka file: %s\n"
-
-#, fuzzy, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "tidak dapat membuat direktori `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "could not open %s for writing: %s\n"
-msgstr "tidak dapat membuka %s: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to %s: %s\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error reading from %s: %s\n"
-msgstr "kesalahan membaca `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error closing %s: %s\n"
-msgstr "kesalahan membaca `%s': %s\n"
-
-#, fuzzy
-msgid "no --program option provided\n"
-msgstr "tidak ada eksekusi program remote yang didukung\n"
-
-msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
-
-msgid "no --keyfile option provided\n"
-msgstr ""
-
-msgid "cannot allocate args vector\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "could not create pipe: %s\n"
-msgstr "tidak dapat membuat %s: %s\n"
-
-#, fuzzy, c-format
-msgid "could not create pty: %s\n"
-msgstr "tidak dapat membuat %s: %s\n"
-
-#, c-format
-msgid "could not fork: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "execv failed: %s\n"
-msgstr "gagal memperbarui: %s\n"
-
-#, fuzzy, c-format
-msgid "select failed: %s\n"
-msgstr "gagal menghapus keyblok: %s\n"
-
-#, fuzzy, c-format
-msgid "read failed: %s\n"
-msgstr "gagal memperbarui: %s\n"
-
-#, fuzzy, c-format
-msgid "pty read failed: %s\n"
-msgstr "gagal memperbarui: %s\n"
-
-#, fuzzy, c-format
-msgid "waitpid failed: %s\n"
-msgstr "gagal memperbarui: %s\n"
-
-#, c-format
-msgid "child aborted with status %i\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cannot allocate infile string: %s\n"
-msgstr "tidak dapat membuat %s: %s\n"
-
-#, fuzzy, c-format
-msgid "cannot allocate outfile string: %s\n"
-msgstr "tidak dapat membuat %s: %s\n"
-
-#, c-format
-msgid "either %s or %s must be given\n"
-msgstr ""
-
-msgid "no class provided\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "class %s is not supported\n"
-msgstr "algoritma proteksi %d%s tidak didukung\n"
-
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
 
@@ -8936,6 +9128,172 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "NOTE: old default options file `%s' ignored\n"
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr "CATATAN: file pilihan baku lama `%s' diabaikan\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "@\n"
+#~ "Commands:\n"
+#~ " "
+#~ msgstr ""
+#~ "@Perintah:\n"
+#~ " "
+
+#, fuzzy
+#~ msgid "decryption modus"
+#~ msgstr "dekripsi lancar\n"
+
+#, fuzzy
+#~ msgid "encryption modus"
+#~ msgstr "dekripsi lancar\n"
+
+#, fuzzy
+#~ msgid "program filename"
+#~ msgstr "--store [namafile]"
+
+#, fuzzy
+#~ msgid "Usage: symcryptrun [options] (-h for help)"
+#~ msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
+
+#, fuzzy
+#~ msgid "%s on %s aborted with status %i\n"
+#~ msgstr "%s tidak dibolehkan dengan %s!\n"
+
+#, fuzzy
+#~ msgid "%s on %s failed with status %i\n"
+#~ msgstr "tidak dapat membuka file: %s\n"
+
+#, fuzzy
+#~ msgid "can't create temporary directory '%s': %s\n"
+#~ msgstr "tidak dapat membuat direktori `%s': %s\n"
+
+#, fuzzy
+#~ msgid "could not open %s for writing: %s\n"
+#~ msgstr "tidak dapat membuka %s: %s\n"
+
+#, fuzzy
+#~ msgid "error writing to %s: %s\n"
+#~ msgstr "kesalahan menulis keyring `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error reading from %s: %s\n"
+#~ msgstr "kesalahan membaca `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error closing %s: %s\n"
+#~ msgstr "kesalahan membaca `%s': %s\n"
+
+#, fuzzy
+#~ msgid "no --program option provided\n"
+#~ msgstr "tidak ada eksekusi program remote yang didukung\n"
+
+#, fuzzy
+#~ msgid "could not create pipe: %s\n"
+#~ msgstr "tidak dapat membuat %s: %s\n"
+
+#, fuzzy
+#~ msgid "could not create pty: %s\n"
+#~ msgstr "tidak dapat membuat %s: %s\n"
+
+#, fuzzy
+#~ msgid "execv failed: %s\n"
+#~ msgstr "gagal memperbarui: %s\n"
+
+#, fuzzy
+#~ msgid "select failed: %s\n"
+#~ msgstr "gagal menghapus keyblok: %s\n"
+
+#, fuzzy
+#~ msgid "read failed: %s\n"
+#~ msgstr "gagal memperbarui: %s\n"
+
+#, fuzzy
+#~ msgid "pty read failed: %s\n"
+#~ msgstr "gagal memperbarui: %s\n"
+
+#, fuzzy
+#~ msgid "waitpid failed: %s\n"
+#~ msgstr "gagal memperbarui: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate infile string: %s\n"
+#~ msgstr "tidak dapat membuat %s: %s\n"
+
+#, fuzzy
+#~ msgid "cannot allocate outfile string: %s\n"
+#~ msgstr "tidak dapat membuat %s: %s\n"
+
+#, fuzzy
+#~ msgid "class %s is not supported\n"
+#~ msgstr "algoritma proteksi %d%s tidak didukung\n"
+
+#, fuzzy
+#~ msgid " using certificate ID 0x%08lX\n"
+#~ msgstr "kesalahan penciptaan passphrase: %s\n"
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid ""
+#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
+#~ msgstr "anda tidak boleh menggunakan %s saat dalam mode %s.\n"
+
+#, fuzzy
+#~ msgid "male"
+#~ msgstr "enable"
+
+#, fuzzy
+#~ msgid "female"
+#~ msgstr "enable"
+
+#, fuzzy
+#~ msgid "unspecified"
+#~ msgstr "Tidak ada alasan diberikan"
+
+#, fuzzy
+#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+#~ msgstr "kesalahan penciptaan passphrase: %s\n"
+
+#, fuzzy
+#~ msgid "error creating 'encryptions' TOFU table: %s\n"
+#~ msgstr "kesalahan mengirim ke `%s': %s\n"
+
+#, fuzzy
+#~ msgid "resetting keydb: %s\n"
+#~ msgstr "kesalahan menulis keyring `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error setting TOFU binding's policy to %s\n"
+#~ msgstr "kesalahan membaca `%s': %s\n"
+
+#, fuzzy
+#~ msgid "%s: Verified %ld~signature in the past %s."
+#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
+#~ msgstr[0] "|algo [file]|cetak digest pesan"
+#~ msgstr[1] "|algo [file]|cetak digest pesan"
+
+#, fuzzy
+#~ msgid "Encrypted %ld~message in the past %s."
+#~ msgid_plural "Encrypted %ld~messages in the past %s."
+#~ msgstr[0] "|algo [file]|cetak digest pesan"
+#~ msgstr[1] "|algo [file]|cetak digest pesan"
+
+#, fuzzy
+#~| msgid "error writing public keyring `%s': %s\n"
+#~ msgid "error setting policy for key %s, user id \"%s\": %s"
+#~ msgstr "kesalahan menulis keyring publik `%s': %s\n"
+
+#, fuzzy
+#~ msgid "error looking up: %s\n"
+#~ msgstr "kesalahan membaca `%s': %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error retrieving '%s': http status %u\n"
@@ -8964,36 +9322,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "gagal memperbarui: %s\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-#~ msgstr "kunci %08lX: algoritma publik key tidak didukung\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-#~ msgstr "%s signature, algoritma digest %s\n"
-
-#, fuzzy
-#~ msgid " (reordered signatures follow)"
-#~ msgstr "Signature baik dari \""
-
-#, fuzzy
-#~ msgid "key %s:\n"
-#~ msgstr "melewati `%s': %s\n"
-
-#, fuzzy
-#~ msgid "%d duplicate signature removed\n"
-#~ msgid_plural "%d duplicate signatures removed\n"
-#~ msgstr[0] "User ID \"%s\" dibatalkan."
-#~ msgstr[1] "User ID \"%s\" dibatalkan."
-
-#, fuzzy
-#~ msgid "%d signature reordered\n"
-#~ msgid_plural "%d signatures reordered\n"
-#~ msgstr[0] "Signature baik dari \""
-#~ msgstr[1] "Signature baik dari \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"
@@ -10113,9 +10441,6 @@ msgstr ""
 
 #~ msgid "file delete error"
 #~ msgstr "kesalahan hapus file"
-
-#~ msgid "unexpected data"
-#~ msgstr "data tidak terduga"
 
 #~ msgid "timestamp conflict"
 #~ msgstr "konflik timestamp"
