@@ -1889,7 +1889,7 @@ ask_and_prepare_chv (app_t app, ctrl_t ctrl,
   pinlen = pinvalue? strlen (pinvalue) : 0;
   if (pinlen < minlen)
     {
-      log_error (_("PIN for is too short; minimum length is %d\n"), minlen);
+      log_error (_("PIN is too short; minimum length is %d\n"), minlen);
       if (pinvalue)
         wipememory (pinvalue, pinlen);
       xfree (pinvalue);
@@ -1897,7 +1897,7 @@ ask_and_prepare_chv (app_t app, ctrl_t ctrl,
     }
   if (pinlen > maxlen)
     {
-      log_error (_("PIN for is too long; maximum length is %d\n"), maxlen);
+      log_error (_("PIN is too long; maximum length is %d\n"), maxlen);
       wipememory (pinvalue, pinlen);
       xfree (pinvalue);
       return gpg_error (GPG_ERR_BAD_PIN);
