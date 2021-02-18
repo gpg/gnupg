@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-02-18 16:05+0100\n"
+"PO-Revision-Date: 2021-02-18 16:12+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -5633,7 +5633,7 @@ msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
-msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Nachricht\n"
+msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Botschaft\n"
 
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
@@ -6028,81 +6028,81 @@ msgstr "dieser Schlüssel"
 #, c-format
 msgid "Verified %d message."
 msgid_plural "Verified %d messages."
-msgstr[0] "%d überprüfte Nachricht."
-msgstr[1] "%d überprüfte Nachrichten."
+msgstr[0] "%d überprüfte Botschaft."
+msgstr[1] "%d überprüfte Botschaften."
 
 #, c-format
 msgid "Encrypted %d message."
 msgid_plural "Encrypted %d messages."
-msgstr[0] "%d Nachricht wurde verschlüsselt."
-msgstr[1] "%d Nachrichten wurden verschlüsselt."
+msgstr[0] "%d Botschaft wurde verschlüsselt."
+msgstr[1] "%d Botschaften wurden verschlüsselt."
 
 #, c-format
 msgid "Verified %d message in the future."
 msgid_plural "Verified %d messages in the future."
-msgstr[0] "%d Nachricht in der Zukunft signiert."
-msgstr[1] "%d Nachrichten in der Zukunf signiert."
+msgstr[0] "%d Botschaft in der Zukunft signiert."
+msgstr[1] "%d Botschaften in der Zukunft signiert."
 
 #, c-format
 msgid "Encrypted %d message in the future."
 msgid_plural "Encrypted %d messages in the future."
-msgstr[0] "%d Nachricht in der Zukunft verschlüsselt."
-msgstr[1] "%d Nachrichten in der Zukunft verschlüsselt."
+msgstr[0] "%d Botschaft in der Zukunft verschlüsselt."
+msgstr[1] "%d Botschaften in der Zukunft verschlüsselt."
 
 #, c-format
 msgid "Messages verified over the past %d day: %d."
 msgid_plural "Messages verified over the past %d days: %d."
 msgstr[0] ""
-"Nachrichten die innerhalb des letzten %d Tages überprüft wurden: %d."
-msgstr[1] "Nachrichten die innerhalb der letzten %d Tage überprüft wurden: %d."
+"Botschaften die innerhalb des letzten %d Tages überprüft wurden: %d."
+msgstr[1] "Botschaften die innerhalb der letzten %d Tage überprüft wurden: %d."
 
 #, c-format
 msgid "Messages encrypted over the past %d day: %d."
 msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] ""
-"Nachrichten die innerhalb des letzten %d Tages verschlüsselt wurden: %d."
+"Botschaften die innerhalb des letzten %d Tages verschlüsselt wurden: %d."
 msgstr[1] ""
-"Nachrichten die innerhalb der letzten %d Tage verschlüsselt wurden: %d."
+"Botschaften die innerhalb der letzten %d Tage verschlüsselt wurden: %d."
 
 #, c-format
 msgid "Messages verified over the past %d month: %d."
 msgid_plural "Messages verified over the past %d months: %d."
 msgstr[0] ""
-"Nachrichten die innerhalb des letzten %d Monats überprüft wurden: %d."
+"Botschaften die innerhalb des letzten %d Monats überprüft wurden: %d."
 msgstr[1] ""
-"Nachrichten die innerhalb der letzten %d Monate überprüft wurden: %d."
+"Botschaften die innerhalb der letzten %d Monate überprüft wurden: %d."
 
 #, c-format
 msgid "Messages encrypted over the past %d month: %d."
 msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] ""
-"Nachrichten die innerhalb des letzten %d Monats verschlüsselt wurden: %d."
+"Botschaften die innerhalb des letzten %d Monats verschlüsselt wurden: %d."
 msgstr[1] ""
-"Nachrichten die innerhalb der letzten %d Monate verschlüsselt wurden: %d."
+"Botschaften die innerhalb der letzten %d Monate verschlüsselt wurden: %d."
 
 #, c-format
 msgid "Messages verified over the past %d year: %d."
 msgid_plural "Messages verified over the past %d years: %d."
 msgstr[0] ""
-"Nachrichten die innerhalb des letzten %d Jahres überprüft wurden: %d."
+"Botschaften die innerhalb des letzten %d Jahres überprüft wurden: %d."
 msgstr[1] ""
-"Nachrichten die innerhalb der letzten %d Jahre überprüft wurden: %d."
+"Botschaften die innerhalb der letzten %d Jahre überprüft wurden: %d."
 
 #, c-format
 msgid "Messages encrypted over the past %d year: %d."
 msgid_plural "Messages encrypted over the past %d years: %d."
 msgstr[0] ""
-"Nachrichten die innerhalb des letzten %d Jahres verschlüsselt wurden: %d."
+"Botschaften die innerhalb des letzten %d Jahres verschlüsselt wurden: %d."
 msgstr[1] ""
-"Nachrichten die innerhalb der letzten %d Jahre verschlüsselt wurden: %d."
+"Botschaften die innerhalb der letzten %d Jahre verschlüsselt wurden: %d."
 
 #, c-format
 msgid "Messages verified in the past: %d."
-msgstr "Nachrichten die in der Vergangenheit überprüft wurden: %d."
+msgstr "Botschaften die in der Vergangenheit überprüft wurden: %d."
 
 #, c-format
 msgid "Messages encrypted in the past: %d."
-msgstr "Nachricht die in der Vergangenheit verschlüsselt wurden: %d."
+msgstr "Botschaften die in der Vergangenheit verschlüsselt wurden: %d."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -6181,14 +6181,14 @@ msgstr[1] "%lld~Sekunden"
 
 #, c-format
 msgid "%s: Verified 0~signatures and encrypted 0~messages."
-msgstr "%s: 0~Signaturen und 0~Nachrichten verschlüsselt."
+msgstr "%s: 0~Signaturen und 0~Botschaften verschlüsselt."
 
 #, c-format
 msgid "%s: Verified 0 signatures."
 msgstr "%s: 0~Signaturen überprüft."
 
 msgid "Encrypted 0 messages."
-msgstr "0 Nachrichten verschlüsselt."
+msgstr "0 Botschaften verschlüsselt."
 
 #, c-format
 msgid "(policy: %s)"
@@ -6199,25 +6199,25 @@ msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
 "WARNUNG: Wir müssen noch eine mit diesem Schlüssel und User-ID signierte "
-"Nachricht sehen.\n"
+"Botschaft sehen.\n"
 
 #, c-format
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
-"WARNUNG: Wir haben nur eine einzige mit diesem Schlüssel signierte Nachricht "
+"WARNUNG: Wir haben nur eine einzige mit diesem Schlüssel signierte Botschaft "
 "gesehen.\n"
 
 #, c-format
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr ""
-"WARNUNG: Sie müssen noch eine verschlüselte Nachricht an diesen Schlüssel "
+"WARNUNG: Sie müssen noch eine verschlüselte Botschaft an diesen Schlüssel "
 "senden!\n"
 
 #, c-format
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
-"WARNUNG: Sie haben nur eine verschlüsselte Nachricht an diesen Schlüssel "
+"WARNUNG: Sie haben nur eine verschlüsselte Botschaft an diesen Schlüssel "
 "erstellt!\n"
 
 #, c-format
@@ -6235,7 +6235,7 @@ msgid_plural ""
 "to mark it as being bad.\n"
 msgstr[0] ""
 "WARNUNG: Falls sie glauben, mehr mit diesem Schlüssel und dieser\n"
-"User-ID signierte Nachricht erhalten zu haben, so kann es sich bei\n"
+"User-ID signierte Botschaft erhalten zu haben, so kann es sich bei\n"
 "diesem Schlüssel um eine Fälschung handeln!  Prüfen Sie die\n"
 "Email-Adresse genau auf kleine Abweichungen.  Falls Ihnen der\n"
 "Schlüssel suspekt erscheint, benutzen Sie\n"
@@ -6243,7 +6243,7 @@ msgstr[0] ""
 "um den Schlüssel als Fälschung zu markieren.\n"
 msgstr[1] ""
 "WARNUNG: Falls sie glauben, mehr mit diesem Schlüssel und diesen\n"
-"User-IDs signierte Nachrichten erhalten zu haben, so kann es sich\n"
+"User-IDs signierte Botschaften erhalten zu haben, so kann es sich\n"
 "bei diesem Schlüssel um eine Fälschung handeln!  Prüfen Sie die\n"
 "Email-Adressen genau auf kleine Abweichungen.  Falls Ihnen der\n"
 "Schlüssel suspekt erscheint, benutzen Sie\n"
@@ -7297,7 +7297,7 @@ msgstr "(Dies ist der RC-2 Algorithmus)\n"
 
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
-msgstr "(dies ist wahrscheinlich keine verschlüsselte Nachricht)\n"
+msgstr "(dies ist wahrscheinlich keine verschlüsselte Botschaft)\n"
 
 # Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
 # [kw]
@@ -7605,8 +7605,8 @@ msgstr "Verfahren:"
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
 msgstr ""
-"Ungültige Signatur: Nachricht entspricht nicht dem Prüfwert in der "
-"Nachricht.\n"
+"Ungültige Signatur: Botschaft entspricht nicht dem Prüfwert in der "
+"Botschaft.\n"
 
 #, c-format
 msgid "Good signature from"
@@ -9464,10 +9464,10 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ msgid "%s: Verified %ld~signature in the past %s."
 #~ msgid_plural "%s: Verified %ld~signatures in the past %s."
 #~ msgstr[0] ""
-#~ "%ld überprüfte Nachricht von \"%s\"\n"
+#~ "%ld überprüfte Botschaft von \"%s\"\n"
 #~ "in den letzten %s."
 #~ msgstr[1] ""
-#~ "%ld überprüfte Nachrichten von \"%s\"\n"
+#~ "%ld überprüfte Botschaften von \"%s\"\n"
 #~ "in den letzten %s."
 
 #, fuzzy
@@ -9480,10 +9480,10 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ msgid "Encrypted %ld~message in the past %s."
 #~ msgid_plural "Encrypted %ld~messages in the past %s."
 #~ msgstr[0] ""
-#~ "%ld überprüfte Nachricht von \"%s\"\n"
+#~ "%ld überprüfte Botschaft von \"%s\"\n"
 #~ "in den letzten %s."
 #~ msgstr[1] ""
-#~ "%ld überprüfte Nachrichten von \"%s\"\n"
+#~ "%ld überprüfte Botschaften von \"%s\"\n"
 #~ "in den letzten %s."
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
@@ -9662,8 +9662,8 @@ msgstr "Verwaltung der Kommandohistorie"
 
 #~ msgid "%ld message signed"
 #~ msgid_plural "%ld messages signed"
-#~ msgstr[0] "%ld Nachricht signiert"
-#~ msgstr[1] "%ld Nachrichten signiert"
+#~ msgstr[0] "%ld Botschaft signiert"
+#~ msgstr[1] "%ld Botschaften signiert"
 
 #~ msgid " over the past %ld week."
 #~ msgid_plural " over the past %ld weeks."
@@ -9671,7 +9671,7 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ msgstr[1] " innerhalb der letzten %ld Wochen."
 
 #~ msgid "Have never verified a message signed by key %s!\n"
-#~ msgstr "Es wurde noch keine Nachricht mit dem Schlüssel %s überprüft!\n"
+#~ msgstr "Es wurde noch keine Botschaft mit dem Schlüssel %s überprüft!\n"
 
 #~ msgid ""
 #~ "Failed to collect signature statistics for \"%s\"\n"
@@ -9681,7 +9681,7 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ "werden\n"
 
 #~ msgid "The most recent message was verified %s ago."
-#~ msgstr "Die neueste Nachricht wurde vor %s überprüft."
+#~ msgstr "Die neueste Botschaft wurde vor %s überprüft."
 
 #~ msgid "GPG Agent"
 #~ msgstr "GPG Agent"
