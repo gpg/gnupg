@@ -61,6 +61,9 @@ and then manually edited:
       <Component Id="cmp74961776CCC7B203F500FE261DC12F92" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FBA2569C-554D-4C06-88FC-0FD6541B5B4B">
         <File Id="filB82A767EB9971018C006215A9FDE77EF" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg-connect-agent.exe"/>
       </Component>
+      <Component Id="cmp74961776CCC7B203F500FE261DC12F94" Directory="dirAA72FFDDFA224FB221D53750596B0144" Guid="FBA2569C-554D-4C06-88FC-0FD6541B5B4C">
+        <File Id="filB82A767EB9971018C006215A9FDE77F1" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg-card.exe"/>
+      </Component>
       <Component Id="cmp6C1FB70721B208E33DB24296B93AB93F" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FE29D2AA-3151-4421-B8C0-355F69F267A1">
         <File Id="fil563D2C0464DCE7ECADE6E15C0FC65821" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-preset-passphrase.exe"/>
       </Component>
@@ -164,7 +167,7 @@ and then manually edited:
         <File Id="fil322067E40CE41C36574A7CC520D75877" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\Automatic.prf" Name="Automatic.prf"/>
       </Component>
       <Component Id="cmp909B0412FDFCFD5092D93932AF982A74" Directory="dirC2E6BF1CC65903EA3A1AD83349586122" Guid="D30E7138-0D1C-48F4-8F53-E1EC6333F612">
-        <File Id="fil322067E40CE41C36574A7CC520D75878" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\pwpatter.txt" Name="pwpattern.txt"/>
+        <File Id="fil322067E40CE41C36574A7CC520D75878" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\pwpattern.list" Name="pwpattern.list"/>
       </Component>
       <Component Id="cmp59D652F2B6BBFD90563BF58D6CE6BE7B" Directory="dirF4B1502A83344E3C92AB58989653B465" Guid="1C51D4AF-B308-40A3-B8D8-CEDA5AB2A383">
         <File Id="filCB1BD20C87EE88A17D7502E26268DA65" KeyPath="yes" Source="$(var.SourceDir)\share\gnupg\distsigkey.gpg"/>

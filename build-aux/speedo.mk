@@ -41,7 +41,7 @@
 #
 # Lists packages and versions.
 #
-# The information reyured to sign the tarballs and binaries
+# The information required to sign the tarballs and binaries
 # are expected in the developer specific file ~/.gnupg-autogen.rc".
 # Here is an example:
 #--8<---------------cut here---------------start------------->8---
@@ -110,6 +110,28 @@ help:
 	@echo 'Use CUSTOM_SWDB=1 for an already downloaded swdb.lst.'
 	@echo 'Use WIXPREFIX to provide the WIX binaries for the MSI package.'
 	@echo '    Using WIX also requires wine with installed wine mono.'
+	@echo '    See help-wixlib for more information'
+
+help-wixlib:
+	@echo 'The buildsystem can create a wixlib to build MSI packages.'
+	@echo ''
+	@echo 'On debian install the packages "wine"'
+	@echo '  apt-get install wine'
+	@echo ''
+	@echo 'Download the wine-mono msi:'
+	@echo '  https://dl.winehq.org/wine/wine-mono/'
+	@echo ''
+	@echo 'Install it:'
+	@echo '  wine msiexec /i ~/Downloads/wine-mono-4.9.4.msi'
+	@echo ''
+	@echo 'Download the wix toolset binary zip from:'
+	@echo '  https://github.com/wixtoolset/wix3/releases'
+	@echo 'The default folder searches for ~/w32root/wixtools'
+	@echo 'Alternative locations can be passed by WIXPREFIX variable'
+	@echo '  unzip -d ~/w32root/wixtools ~/Downloads/wix311-binaries.zip'
+	@echo ''
+	@echo 'Afterwards w32-msi-release will also build a wixlib.'
+
 
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
 
@@ -164,6 +186,10 @@ w32-release: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
                                                    installer-from-source
 
+w32-msi-release: check-tools
+	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
+                                   WITH_WIXLIB=1   installer-from-source
+
 w32-sign-installer: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
                                                    sign-installer
@@ -211,7 +237,7 @@ INST_NAME=gnupg-w32
 INSTALL_PREFIX=none
 
 # Set this to the location of wixtools
-WIXPREFIX=
+WIXPREFIX=$(shell readlink -f ~/w32root/wixtools)
 
 # Read signing information from ~/.gnupg-autogen.rc
 define READ_AUTOGEN_template
@@ -588,8 +614,7 @@ speedo_pkg_ntbtls_configure = --disable-shared
 
 ifeq ($(TARGETOS),w32)
 speedo_pkg_gnupg_configure = \
-        --disable-g13 --enable-ntbtls \
-        --enable-build-timestamp
+        --disable-g13 --enable-ntbtls
 else
 speedo_pkg_gnupg_configure = --disable-g13 --enable-wks-tools
 endif
@@ -1259,7 +1284,7 @@ dist-source: installer
               --transform='s,^,$(INST_NAME)-$(INST_VERSION)/,' \
 	     PLAY/stamps/stamp-*-00-unpack PLAY/src swdb.lst swdb.lst.sig ;\
 	 [ -f "$$tarname".xz ] && rm "$$tarname".xz;\
-         xz "$$tarname" ;\
+         xz -T0 "$$tarname" ;\
 	)
 
 
@@ -1317,9 +1342,8 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
            done; \
          fi \
         )
-	(nsis3_args=$$(makensis -version | grep -q "^v3" && \
-                  echo "-INPUTCHARSET CP1252"); \
-	$(MAKENSIS) -V2 $$nsis3_args \
+	$(MAKENSIS) -V2 $$($(MAKENSIS) -version \
+                           | grep -q ^v3 && echo "-INPUTCHARSET CP1252 ") \
                     -DINST_DIR=$(idir) \
                     -DINST6_DIR=$(idir6) \
                     -DBUILD_DIR=$(bdir) \
@@ -1330,17 +1354,19 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 		    -DNAME=$(INST_NAME) \
 	            -DVERSION=$(INST_VERSION) \
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
-		    $(extra_installer_options) $(w32src)/inst.nsi)
+		    $(extra_installer_options) $(w32src)/inst.nsi
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe"
 
 # We use the installer target to ensure everything is done and signed
 wixlib: installer $(bdir)/README.txt $(w32src)/wixlib.wxs
 	if [ -z "$$(which $(WINE))" ]; then \
 		echo "ERROR: For the w32-wixlib wine needs to be installed."; \
+		echo "ERROR: see 'help-w32-wixlib'"; \
 		exit 1; \
 	fi;
-	if [ -z "$(WIXPREFIX)" ]; then \
+	if [ ! -d "$(WIXPREFIX)" ]; then \
 		echo "ERROR: You must set WIXPREFIX to an installation of wixtools."; \
+		echo "ERROR: see 'help-w32-wixlib'"; \
 		exit 1; \
 	fi;
 	(if [ -z "$$WINEPREFIX" ]; then \
@@ -1388,7 +1414,7 @@ wixlib: installer $(bdir)/README.txt $(w32src)/wixlib.wxs
 	)
 
 define MKSWDB_commands
- ( pref="#+macro: gnupg24_w32_" ;\
+ ( pref="#+macro: gnupg24_w32_$(3)" ;\
    echo "$${pref}ver  $(INST_VERSION)_$(BUILD_DATESTR)"  ;\
    echo "$${pref}date $(2)" ;\
    echo "$${pref}size $$(wc -c <$(1)|awk '{print int($$1/1024)}')k";\
@@ -1409,13 +1435,15 @@ define AUTHENTICODE_sign
         /fd sha256 /du https://gnupg.org a.exe ;\
      scp "$(AUTHENTICODE_SIGNHOST):a.exe" $(2);\
      echo "speedo: signed file is '$(2)'" ;\
-   else \
+   elif [ -e "$(AUTHENTICODE_KEY)" ]; then \
      echo "speedo: Signing using key $(AUTHENTICODE_KEY)";\
      osslsigncode sign -certs $(AUTHENTICODE_CERTS) \
        -pkcs12 $(AUTHENTICODE_KEY) -askpass \
        -ts "http://timestamp.globalsign.com/scripts/timstamp.dll" \
        -h sha256 -n GnuPG -i https://gnupg.org \
        -in $(1) -out $(2) ;\
+   else \
+     echo "speedo: WARNING: Binaries are not signed"; \
    fi
 endef
 
@@ -1428,9 +1456,8 @@ installer-from-source: dist-source
 	 cd PLAY-release; \
 	 tar xJf "../$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).tar.xz";\
 	 cd $(INST_NAME)-$(INST_VERSION); \
-         $(MAKE) -f build-aux/speedo.mk this-w32-installer SELFCHECK=0;\
-	 if [ -n "$(WIXPREFIX)" ]; then \
-		 cd $(INST_NAME)-$(INST_VERSION); \
+	 $(MAKE) -f build-aux/speedo.mk this-w32-installer SELFCHECK=0;\
+	 if [ -d "$(WIXPREFIX)" -a x"$(WITH_WIXLIB)" = x1 ]; then \
 		 $(MAKE) -f build-aux/speedo.mk this-w32-wixlib SELFCHECK=0;\
 	 fi; \
 	 reldate="$$(date -u +%Y-%m-%d)" ;\
@@ -1439,10 +1466,10 @@ installer-from-source: dist-source
 	 exefile="../../$$exefile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
 	 msifile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib"; \
-	 if [ -e "$${msifile}" ]; then \
+	 if [ -e "PLAY/inst/$${msifile}" ]; then \
 		 cp "PLAY/inst/$$msifile" ../..; \
 		 msifile="../../$$msifile" ; \
-		 $(call MKSWDB_commands,$${msifile},$${reldate}); \
+		 $(call MKSWDB_commands,$${msifile},$${reldate},"wixlib_"); \
 	 fi \
 	)
 
@@ -1455,7 +1482,7 @@ sign-installer:
 	 cd $(INST_NAME)-$(INST_VERSION); \
 	 reldate="$$(date -u +%Y-%m-%d)" ;\
 	 exefile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ;\
-	 msifile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib ;\
+	 msifile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).wixlib" ;\
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Signing installer" ;\
 	 echo "speedo:  */" ;\
@@ -1463,8 +1490,8 @@ sign-installer:
 	 exefile="../../$$exefile" ;\
 	 msifile="../../$$msifile" ;\
 	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
-	 if [ -e "$${msifile}" ]; then \
-	   $(call MKSWDB_commands,$${msifile},$${reldate}); \
+	 if [ -f "$${msifile}" ]; then \
+	   $(call MKSWDB_commands,$${msifile},$${reldate},"wixlib_"); \
 	 fi; \
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Verification result" ;\
@@ -1479,7 +1506,7 @@ endif
 
 
 #
-# Check availability of standard tools
+# Check availibility of standard tools
 #
 check-tools:
 

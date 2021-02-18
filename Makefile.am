@@ -18,6 +18,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
+# To include the wixlibs for building an MSI installer in a release use
+#   make release WITH_MSI=1
+
 # Location of the released tarball archives.  This is prefixed by
 # the variable RELEASE_ARCHIVE in ~/.gnupg-autogen.rc.  For example:
 # RELEASE_ARCHIVE=user@host:archive/tarballs
@@ -115,7 +118,7 @@ dist-hook: gen-ChangeLog
 
 distcheck-hook:
 	set -e; ( \
-	pref="#+macro: gnupg22_" ;\
+	pref="#+macro: gnupg24_" ;\
 	reldate="$$(date -u +%Y-%m-%d)" ;\
         echo "$${pref}ver  $(PACKAGE_VERSION)"  ;\
         echo "$${pref}date $${reldate}" ;\
@@ -184,16 +187,19 @@ release:
 	   exit 2;\
          fi ;\
 	 echo "/* Build started at $$(date -uIseconds) */" ;\
+	 [ -n "$(WITH_MSI)" ] && echo "/* (with MSI build support) */" ;\
 	 cd $(top_srcdir); \
 	 ./autogen.sh --force; \
 	 cd $(abs_top_builddir); \
 	 rm -rf dist; mkdir dist ; cd dist ; \
 	 $(abs_top_srcdir)/configure --enable-maintainer-mode; \
 	 $(MAKE) distcheck TESTFLAGS=--parallel; \
-	 $(TAR) xjf $(RELEASE_NAME).tar.bz2 ;\
-	 $(MAKE) -f  $(RELEASE_NAME)/build-aux/speedo.mk w32-release ;\
+	 $(AMTAR) xjf $(RELEASE_NAME).tar.bz2 ;\
+	 target=w32-release ;\
+	 [ -n "$(WITH_MSI)" ] && target=w32-msi-release ;\
+	 $(MAKE) -f  $(RELEASE_NAME)/build-aux/speedo.mk $${target} ;\
 	 echo "/* Build finished at $$(date -uIseconds) */" ;\
-         echo "/*" ;\
+	 echo "/*" ;\
 	 echo " * Please run the final step interactively:" ;\
 	 echo " *   make sign-release" ;\
 	 echo " */" ;\
@@ -224,6 +230,7 @@ sign-release:
 		  $${release_w32_name}.tar.xz.sig \
 		  $${release_w32_name}.exe.sig    \
 		  $${release_w32_name}.exe.swdb" ;\
+          wixlibfile="$${release_w32_name}.wixlib";\
 	  $(MAKE) -f $(RELEASE_NAME)/build-aux/speedo.mk w32-sign-installer ;\
 	  echo "/* Signing the source tarball ..." ;\
 	  gpg -sbu $$mysignkey $(RELEASE_NAME).tar.bz2 ;\
@@ -232,14 +239,19 @@ sign-release:
 	  echo "/* Signing the W32 installer ..." ;\
 	  gpg -sbu $$mysignkey $${release_w32_name}.exe ;\
 	  cat $(RELEASE_NAME).swdb >swdb.snippet;\
-	  echo '#+macro: gnupg22_branch  STABLE-BRANCH-2-2' >>swdb.snippet;\
+	  echo '#+macro: gnupg24_branch  STABLE-BRANCH-2-4' >>swdb.snippet;\
 	  cat  $${release_w32_name}.exe.swdb >>swdb.snippet;\
 	  echo >>swdb.snippet ;\
 	  sha1sum $${files1} >>swdb.snippet ;\
           cat "../$(RELEASE_NAME).buildlog" swdb.snippet \
                | gzip >$(RELEASE_NAME).buildlog ;\
           echo "Release created - copying it to the archive ..." ;\
-	  scp -p $${files1} $${files2} $$myarchive/ || true;\
+	  scp -p $${files1} $${files2} $$myarchive/ \
+	    || echo "/* Error copying files to the archive - ignored */" ;\
+	  if [ -e $${wixlibfile} ]; then\
+	    scp -p $${wixlibfile} $$myarchive/ \
+	      || echo "/* Error copying wixlib to the archive - ignored. */" ;\
+          fi ;\
 	  echo '/*' ;\
 	  echo ' * All done; for checksums see dist/swdb.snippet' ;\
 	  echo ' */' ;\
