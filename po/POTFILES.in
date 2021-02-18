@@ -33,6 +33,7 @@ common/homedir.c
 g10/armor.c
 g10/build-packet.c
 g10/call-agent.c
+g10/call-dirmngr.c
 g10/card-util.c
 g10/dearmor.c
 g10/decrypt.c
@@ -46,6 +47,7 @@ g10/gpg.c
 g10/gpgv.c
 g10/helptext.c
 g10/import.c
+g10/key-check.c
 g10/keydb.c
 g10/keyedit.c
 g10/keygen.c
