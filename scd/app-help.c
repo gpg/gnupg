@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include "scdaemon.h"
-#include "app-common.h"
 #include "iso7816.h"
 #include "../common/tlv.h"
 

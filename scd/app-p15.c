@@ -40,7 +40,6 @@
 #include "scdaemon.h"
 
 #include "iso7816.h"
-#include "app-common.h"
 #include "../common/i18n.h"
 #include "../common/tlv.h"
 #include "apdu.h" /* fixme: we should move the card detection to a

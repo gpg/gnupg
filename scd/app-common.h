@@ -33,11 +33,25 @@
 /* Flags used with app_genkey.  */
 #define APP_GENKEY_FLAG_FORCE    1  /* Force overwriting existing key.  */
 
+/* Flags used with app_writekey.  */
+#define APP_WRITEKEY_FLAG_FORCE  1  /* Force overwriting existing key.  */
+
+/* Flags used with app_readkey.  */
+#define APP_READKEY_FLAG_INFO    1  /* Send also a KEYPAIRINFO line.  */
+
 /* Bit flags set by the decipher function into R_INFO.  */
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
 
+/* Flags used by the app_write_learn_status.  */
+#define APP_LEARN_FLAG_KEYPAIRINFO  1 /* Return only keypair infos.  */
+#define APP_LEARN_FLAG_MULTI        2 /* Return info for all apps.  */
 
+
+/* Forward declarations.  */
+struct app_ctx_s;
 struct app_local_s;  /* Defined by all app-*.c.  */
+
+typedef struct app_ctx_s *app_t;
 
 struct app_ctx_s {
   struct app_ctx_s *next;
@@ -67,6 +81,11 @@ struct app_ctx_s {
   struct app_local_s *app_local;  /* Local to the application. */
   struct {
     void (*deinit) (app_t app);
+
+    /* prep_reselect and reselect are not used in this version of scd.  */
+    gpg_error_t (*prep_reselect) (app_t app, ctrl_t ctrl);
+    gpg_error_t (*reselect) (app_t app, ctrl_t ctrl);
+
     gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl, unsigned int flags);
     gpg_error_t (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
@@ -116,8 +135,22 @@ struct app_ctx_s {
     gpg_error_t (*check_pin) (app_t app, const char *keyidstr,
                       gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg);
+
+    /* with_keygrip is not used in this version of scd but having it
+     * makes back porting app-*.c from later versions easier.  */
+    gpg_error_t (*with_keygrip) (app_t app, ctrl_t ctrl, int action,
+                                 const char *keygrip_str, int capability);
   } fnc;
 };
+
+
+/* Action values for app_do_with_keygrip.  */
+enum
+ {
+  KEYGRIP_ACTION_SEND_DATA,
+  KEYGRIP_ACTION_WRITE_STATUS,
+  KEYGRIP_ACTION_LOOKUP
+ };
 
 
 /* Helper to get the slot from an APP object. */
@@ -130,6 +163,10 @@ app_get_slot (app_t app)
     return app->slot;
   return -1;
 }
+
+/* Macro to access members in app_t which are found in 2.3 in a linked
+ * card_t member.  */
+#define APP_CARD(a) (a)
 
 
 /*-- app-help.c --*/

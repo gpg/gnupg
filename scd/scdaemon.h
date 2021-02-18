@@ -30,6 +30,8 @@
 #include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/sysutils.h"
+#include "app-common.h"
+
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -112,7 +114,6 @@ struct server_control_s
   } in_data;
 };
 
-typedef struct app_ctx_s *app_t;
 
 /*-- scdaemon.c --*/
 void scd_exit (int rc);
