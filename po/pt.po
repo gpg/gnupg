@@ -21,12 +21,12 @@ msgstr ""
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "falha ao inicializar a base de dados de confiança: %s\n"
 
-#. TRANSLATORS: These are labels for buttons etc used in
-#. Pinentries.  An underscore indicates that the next letter
-#. should be used as an accelerator.  Double the underscore for
-#. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.  Note that gpg-agent has been set to
-#. utf-8 so that the strings are in the expected encoding.
+#. TRANSLATORS: These are labels for buttons etc as used in
+#. * Pinentries.  In your translation copy the text before the
+#. * second vertical bar verbatim; translate only the following
+#. * text.  An underscore indicates that the next letter should be
+#. * used as an accelerator.  Double the underscore to have
+#. * pinentry display a literal underscore.
 msgid "|pinentry-label|_OK"
 msgstr ""
 
@@ -56,6 +56,21 @@ msgstr ""
 #| msgid "invalid passphrase"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "frase-secreta inválida"
+
+#. TRANSLATORS: This string is displayed by Pinentry as the label
+#. for generating a passphrase.
+msgid "Suggest"
+msgstr ""
+
+#. TRANSLATORS: This string is a tooltip, shown by pinentry when
+#. hovering over the generate button.  Please use an appropriate
+#. string to describe what this is about.  The length of the
+#. tooltip is limited to about 900 characters.  If you do not
+#. translate this entry, a default English text (see source)
+#. will be used.  The strcmp thingy is there to detect a
+#. non-translated string.
+msgid "pinentry.genpin.tooltip"
+msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -92,10 +107,6 @@ msgstr "frase secreta incorrecta"
 msgid "does not match - try again"
 msgstr ""
 
-#. TRANSLATORS: The string is appended to an error message in
-#. the pinentry.  The %s is the actual error message, the
-#. two %d give the current and maximum number of tries.
-#. Do not translate the "SETERROR" keyword.
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -144,18 +155,6 @@ msgid "can't open '%s': %s\n"
 msgstr "impossível abrir `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "erro na criação da frase secreta: %s\n"
-
-#, c-format
-msgid "detected card with S/N: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "no authentication key for ssh on card: %s\n"
-msgstr "erro ao escrever no porta-chaves secreto `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "no suitable card key found: %s\n"
 msgstr "nenhum porta-chaves secreto com permissões de escrita encontrado: %s\n"
 
@@ -194,9 +193,6 @@ msgid "failed to create stream from socket: %s\n"
 msgstr "%s: falha ao criar tabela de dispersão: %s\n"
 
 msgid "Please insert the card with serial number"
-msgstr ""
-
-msgid "Please remove the current card and insert the one with serial number"
 msgstr ""
 
 msgid "Admin PIN"
@@ -256,10 +252,6 @@ msgstr "a escrever para `%s'\n"
 msgid "Enter new passphrase"
 msgstr "Insira a frase secreta\n"
 
-#, fuzzy
-msgid "Take this one anyway"
-msgstr "Usar esta chave de qualquer modo? "
-
 #, c-format
 msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
@@ -295,6 +287,10 @@ msgstr ""
 msgid "Warning: You have entered an insecure passphrase."
 msgstr ""
 
+#, fuzzy
+msgid "Take this one anyway"
+msgstr "Usar esta chave de qualquer modo? "
+
 #, fuzzy, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr ""
@@ -305,14 +301,8 @@ msgstr ""
 msgid "Please enter the new passphrase"
 msgstr "muda a frase secreta"
 
-#, fuzzy
-msgid ""
-"@Options:\n"
-" "
+msgid "Options used for startup"
 msgstr ""
-"@\n"
-"Opções:\n"
-" "
 
 msgid "run in daemon mode (background)"
 msgstr ""
@@ -325,11 +315,8 @@ msgstr ""
 msgid "run in supervised mode"
 msgstr "A chave foi substituída"
 
-msgid "verbose"
-msgstr "detalhado"
-
-msgid "be somewhat more quiet"
-msgstr "ser mais silencioso"
+msgid "do not detach from the console"
+msgstr ""
 
 msgid "sh-style command output"
 msgstr ""
@@ -341,22 +328,27 @@ msgstr ""
 msgid "|FILE|read options from FILE"
 msgstr "|FICHEIRO|carregar módulo de extensão FICHEIRO"
 
-msgid "do not detach from the console"
+msgid "Options controlling the diagnostic output"
 msgstr ""
 
-#, fuzzy
-msgid "use a log file for the server"
-msgstr "procurar chaves num servidor de chaves"
+msgid "verbose"
+msgstr "detalhado"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
+msgid "be somewhat more quiet"
+msgstr "ser mais silencioso"
+
+msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-msgid "|PGM|use PGM as the SCdaemon program"
+msgid "Options controlling the configuration"
 msgstr ""
 
 #, fuzzy
 msgid "do not use the SCdaemon"
 msgstr "actualizar a base de dados de confiança"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
 
 #, fuzzy
 #| msgid "|NAME|set terminal charset to NAME"
@@ -371,7 +363,32 @@ msgstr ""
 msgid "ignore requests to change the X display"
 msgstr ""
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "não suportado"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "não suportado"
+
+msgid "Options controlling the security"
+msgstr ""
+
 msgid "|N|expire cached PINs after N seconds"
+msgstr ""
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr ""
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr ""
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
 msgid "do not use the PIN cache when signing"
@@ -388,24 +405,51 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "erro na criação da frase secreta: %s\n"
 
+msgid "Options enforcing a passphrase policy"
+msgstr ""
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr ""
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr ""
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr ""
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr ""
+
+#, fuzzy
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|usar mode de frase secreta N"
+
+#, fuzzy
+msgid "do not allow the reuse of old passphrases"
+msgstr "erro na criação da frase secreta: %s\n"
+
+msgid "Options controlling the PIN-Entry"
+msgstr ""
+
+#, fuzzy
+#| msgid "use the gpg-agent"
+msgid "never use the PIN-entry"
+msgstr "utilizar o gpg-agent"
+
 msgid "disallow caller to override the pinentry"
+msgstr ""
+
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr ""
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr ""
+
+msgid "|N|set the Pinentry timeout to N seconds"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
 msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable ssh support"
-msgstr "não suportado"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable putty support"
-msgstr "não suportado"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -516,6 +560,15 @@ msgstr "%s: ignorado: %s\n"
 #, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "o gpg-agent não está disponível nesta sessão\n"
+
+#, fuzzy
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@\n"
+"Opções:\n"
+" "
 
 #, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
@@ -848,24 +901,59 @@ msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "waiting for the %s to come up ... (%ds)\n"
+msgid "waiting for the dirmngr to come up ... (%ds)\n"
 msgstr "actualização falhou: %s\n"
 
 #, fuzzy, c-format
-msgid "connection to %s established\n"
+msgid "waiting for the keyboxd to come up ... (%ds)\n"
+msgstr "actualização falhou: %s\n"
+
+#, fuzzy, c-format
+msgid "waiting for the agent to come up ... (%ds)\n"
+msgstr "actualização falhou: %s\n"
+
+#, fuzzy, c-format
+msgid "connection to the dirmngr established\n"
 msgstr "impossível fazer isso em modo não-interativo\n"
 
+#, fuzzy, c-format
+msgid "connection to the keyboxd established\n"
+msgstr "impossível fazer isso em modo não-interativo\n"
+
+#, fuzzy, c-format
+msgid "connection to the agent established\n"
+msgstr "impossível fazer isso em modo não-interativo\n"
+
+#, fuzzy, c-format
+msgid "no running %s - starting '%s'\n"
+msgstr "erro na leitura de `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "connection to the agent is in restricted mode\n"
+msgstr "impossível fazer isso em modo não-interativo\n"
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error getting version from '%s': %s\n"
+msgstr "erro ao criar porta-chaves `%s': %s\n"
+
 #, c-format
-msgid "no running gpg-agent - starting '%s'\n"
+msgid "server '%s' is older than us (%s < %s)"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "connection to agent is in restricted mode\n"
-msgstr "impossível fazer isso em modo não-interativo\n"
+#| msgid "WARNING: %s overrides %s\n"
+msgid "WARNING: %s\n"
+msgstr "AVISO: %s sobrepõe %s\n"
 
 #, c-format
-msgid "no running Dirmngr - starting '%s'\n"
+msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Por favor utilize o comando \"toggle\" primeiro.\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1040,101 +1128,6 @@ msgstr "versão desconhecida"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caracter radix64 inválido %02x ignorado\n"
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "a escrever chave privada para `%s'\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "erro de leitura"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "frase secreta demasiado longa\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "argumento inválido"
-
-#, fuzzy
-#| msgid "invalid armor"
-msgid "invalid argument"
-msgstr "armadura inválida"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "comandos em conflito\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "opções de importação inválidas\n"
-
-msgid "permission error"
-msgstr ""
-
-#, fuzzy
-msgid "out of core"
-msgstr "não processado"
-
-#, fuzzy
-msgid "invalid meta command"
-msgstr "comandos em conflito\n"
-
-#, fuzzy
-msgid "unknown meta command"
-msgstr "destinatário por omissão desconhecido `%s'\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "dados inesperados"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "opções de importação inválidas\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "opções de importação inválidas\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Comando inválido (tente \"help\")\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "opções de importação inválidas\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTA: ficheiro de opções por omissão `%s' inexistente\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "ficheiro de opções `%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "criação de armadura falhou: %s\n"
@@ -1303,31 +1296,12 @@ msgid "Enter passphrase: "
 msgstr "Digite a frase secreta: "
 
 #, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "error getting version from '%s': %s\n"
-msgstr "erro ao criar porta-chaves `%s': %s\n"
-
-#, c-format
-msgid "server '%s' is older than us (%s < %s)"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: %s overrides %s\n"
-msgid "WARNING: %s\n"
-msgstr "AVISO: %s sobrepõe %s\n"
-
-#, c-format
-msgid "Note: Outdated servers may lack important security fixes.\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "Please use the command \"toggle\" first.\n"
-msgid "Note: Use the command \"%s\" to restart them.\n"
-msgstr "Por favor utilize o comando \"toggle\" primeiro.\n"
-
-#, fuzzy, c-format
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s não faz sentido com %s!\n"
+
+#, fuzzy, c-format
+msgid "problem with the agent: %s\n"
+msgstr "problema com o agente: o agente returnou 0x%lx\n"
 
 #, fuzzy, c-format
 msgid "no dirmngr running in this session\n"
@@ -1335,7 +1309,7 @@ msgstr "o gpg-agent não está disponível nesta sessão\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
-msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgid "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 msgid "WKD uses a cached result"
@@ -1407,6 +1381,10 @@ msgstr "não processado"
 msgid "forced"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "erro na criação da frase secreta: %s\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 
@@ -1449,11 +1427,11 @@ msgstr ""
 msgid "Language preferences: "
 msgstr "preferências actualizadas"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: invalid length of preference string.\n"
 msgstr "caracter inválido na cadeia de caractéres da preferência\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: invalid characters in preference string.\n"
 msgstr "caracter inválido na cadeia de caractéres da preferência\n"
 
@@ -1468,7 +1446,7 @@ msgstr "%s: versão de ficheiro inválida %d\n"
 msgid "CA fingerprint: "
 msgstr "mostra impressão digital"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "%s: versão de ficheiro inválida %d\n"
 
@@ -1488,9 +1466,10 @@ msgid "Replace existing key? (y/N) "
 msgstr ""
 
 msgid ""
-"Note: There is no guarantee that the card supports the requested size.\n"
-"      If the key generation does not succeed, please check the\n"
-"      documentation of your card to see what sizes are allowed.\n"
+"Note: There is no guarantee that the card supports the requested\n"
+"      key type or size.  If the key generation does not succeed,\n"
+"      please check the documentation of your card to see which\n"
+"      key types and sizes are supported.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -1609,6 +1588,10 @@ msgstr ""
 msgid "error for setup KDF: %s\n"
 msgstr "erro na leitura de `%s': %s\n"
 
+#, fuzzy, c-format
+msgid "error for setup UIF: %s\n"
+msgstr "erro na leitura de `%s': %s\n"
+
 msgid "quit this menu"
 msgstr "sair deste menu"
 
@@ -1668,12 +1651,17 @@ msgstr ""
 
 #, fuzzy
 #| msgid "|NAME|use NAME as default recipient"
-msgid "setup KDF for PIN authentication"
+msgid "setup KDF for PIN authentication (on/single/off)"
 msgstr "|NOME|usar NOME como destinatário por omissão"
 
 #, fuzzy
 #| msgid "change the ownertrust"
 msgid "change the key attribute"
+msgstr "muda os valores de confiança"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the User Interaction Flag"
 msgstr "muda os valores de confiança"
 
 msgid "gpg/card> "
@@ -1691,6 +1679,7 @@ msgstr "comandos em conflito\n"
 msgid "Admin commands are not allowed\n"
 msgstr "a escrever chave privada para `%s'\n"
 
+#, c-format
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando inválido (tente \"help\")\n"
 
@@ -1715,13 +1704,13 @@ msgstr "erro na leitura do bloco de chave: %s\n"
 msgid "key \"%s\" not found\n"
 msgstr "chave `%s' não encontrada: %s\n"
 
-#, c-format
-msgid "(unless you specify the key by fingerprint)\n"
-msgstr "(a não ser que escolha a chave pela sua impressão digital)\n"
-
 #, fuzzy, c-format
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "impossível fazer isso em modo não-interactivo sem utilizar \"--yes\"\n"
+
+#, c-format
+msgid "(unless you specify the key by fingerprint)\n"
+msgstr "(a não ser que escolha a chave pela sua impressão digital)\n"
 
 msgid "Note: The public primary key and all its subkeys will be deleted.\n"
 msgstr ""
@@ -1784,7 +1773,7 @@ msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "não é possível utilizar o pacote ESK simétrico devido ao modo S2K\n"
 
 #, fuzzy, c-format
-msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "assinatura falhou: %s\n"
 
 #, fuzzy, c-format
@@ -1796,6 +1785,14 @@ msgstr "%s' já comprimido\n"
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVISO: `%s' é um ficheiro vazio\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "cipher algorithm '%s' may not be used in %s mode\n"
@@ -1833,8 +1830,9 @@ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
 "ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrado para: \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1842,8 +1840,9 @@ msgstr "%s/%s cifrado para: \"%s\"\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
-#, c-format
-msgid "%s encrypted data\n"
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
 msgstr "dados cifrados com %s\n"
 
 #, c-format
@@ -1859,51 +1858,6 @@ msgstr ""
 #, c-format
 msgid "problem handling encrypted packet\n"
 msgstr "problema ao tratar pacote cifrado\n"
-
-#, c-format
-msgid "no remote program execution supported\n"
-msgstr ""
-
-#, c-format
-msgid ""
-"external program calls are disabled due to unsafe options file permissions\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "this platform requires temporary files when calling external programs\n"
-msgstr "%s: erro ao ler registo de versão: %s\n"
-
-#, fuzzy, c-format
-msgid "unable to execute program '%s': %s\n"
-msgstr "não foi possível alterar o exec-path para %s\n"
-
-#, fuzzy, c-format
-msgid "unable to execute shell '%s': %s\n"
-msgstr "não foi possível alterar o exec-path para %s\n"
-
-#, fuzzy, c-format
-msgid "system error while calling external program: %s\n"
-msgstr "%s: erro ao ler registo de versão: %s\n"
-
-#, c-format
-msgid "unnatural exit of external program\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "unable to execute external program\n"
-msgstr "não foi possível alterar o exec-path para %s\n"
-
-#, fuzzy, c-format
-msgid "unable to read external program response: %s\n"
-msgstr "não foi possível alterar o exec-path para %s\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
-msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unable to remove temp directory '%s': %s\n"
-msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
 
 #, fuzzy
 msgid "export signatures that are marked as local-only"
@@ -2154,8 +2108,72 @@ msgstr ""
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NOME|usar NOME como chave secreta por omissão"
+
+#, fuzzy
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|NOME|cifrar para NOME"
+
+msgid "|SPEC|set up email aliases"
+msgstr ""
+
+msgid "use strict OpenPGP behavior"
+msgstr ""
+
+msgid "do not make any changes"
+msgstr "não fazer alterações"
+
+msgid "prompt before overwriting"
+msgstr "perguntar antes de sobrepôr"
+
+msgid "Options controlling the input"
+msgstr ""
+
+msgid "Options controlling the output"
+msgstr ""
+
 msgid "create ascii armored output"
 msgstr "criar saída com armadura ascii"
+
+#, fuzzy
+msgid "|FILE|write output to FILE"
+msgstr "|FICHEIRO|carregar módulo de extensão FICHEIRO"
+
+msgid "use canonical text mode"
+msgstr "usar modo de texto canônico"
+
+#, fuzzy
+msgid "|N|set compress level to N (0 disables)"
+msgstr ""
+"|N|estabelecer nível de compressão N\n"
+"(0 desactiva)"
+
+msgid "Options controlling key import and export"
+msgstr ""
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr ""
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importar chaves de um servidor de chaves"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "verificar as assinaturas das chaves"
+
+msgid "disable all access to the dirmngr"
+msgstr ""
+
+msgid "Options controlling key listings"
+msgstr ""
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "listar as chaves secretas"
 
 #, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
@@ -2167,26 +2185,10 @@ msgstr ""
 "usar este identificador de utilizador para\n"
 "assinar ou decifrar"
 
-#, fuzzy
-msgid "|N|set compress level to N (0 disables)"
+msgid "Options for unattended use"
 msgstr ""
-"|N|estabelecer nível de compressão N\n"
-"(0 desactiva)"
 
-msgid "use canonical text mode"
-msgstr "usar modo de texto canônico"
-
-#, fuzzy
-msgid "|FILE|write output to FILE"
-msgstr "|FICHEIRO|carregar módulo de extensão FICHEIRO"
-
-msgid "do not make any changes"
-msgstr "não fazer alterações"
-
-msgid "prompt before overwriting"
-msgstr "perguntar antes de sobrepôr"
-
-msgid "use strict OpenPGP behavior"
+msgid "Other options"
 msgstr ""
 
 msgid ""
@@ -2474,12 +2476,6 @@ msgstr ""
 msgid "show only the primary user ID in signature verification"
 msgstr "%s não é um conjunto de caracteres válido\n"
 
-msgid "validate signatures with PKA data"
-msgstr ""
-
-msgid "elevate the trust of signatures with valid PKA data"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: opções de exportação inválidas\n"
@@ -2499,6 +2495,10 @@ msgstr "%s:%d: opções de exportação inválidas\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opções de importação inválidas\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -2527,6 +2527,11 @@ msgstr "a escrever chave privada para `%s'\n"
 #, c-format
 msgid "selected cipher algorithm is invalid\n"
 msgstr "o algoritmo de cifragem selecionado é inválido\n"
+
+#, fuzzy, c-format
+#| msgid "selected digest algorithm is invalid\n"
+msgid "selected AEAD algorithm is invalid\n"
+msgstr "o algoritmo de \"digest\" selecionado é inválido\n"
 
 #, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
@@ -2573,6 +2578,11 @@ msgstr "preferências por omissão inválidas\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "preferências pessoais de cifra inválidas\n"
 
+#, fuzzy, c-format
+#| msgid "invalid personal cipher preferences\n"
+msgid "invalid personal AEAD preferences\n"
+msgstr "preferências pessoais de cifra inválidas\n"
+
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferências pessoais de 'digest' inválidas\n"
@@ -2582,8 +2592,17 @@ msgid "invalid personal compress preferences\n"
 msgstr "preferências pessoais de compressão inválidas\n"
 
 #, fuzzy, c-format
+#| msgid "keysize invalid; using %u bits\n"
+msgid "chunk size invalid - using %d\n"
+msgstr "tamanho de chave inválido; a utilizar %u bits\n"
+
+#, fuzzy, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s não faz sentido com %s!\n"
+
+#, fuzzy, c-format
+msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -2731,7 +2750,16 @@ msgid "do not update the trustdb after import"
 msgstr "actualizar a base de dados de confiança"
 
 #, fuzzy
+#| msgid "not supported"
+msgid "enable bulk import mode"
+msgstr "não suportado"
+
+#, fuzzy
 msgid "show key during import"
+msgstr "mostra impressão digital"
+
+#, fuzzy
+msgid "show key but do not actually import"
 msgstr "mostra impressão digital"
 
 msgid "only accept updates to existing keys"
@@ -2839,6 +2867,10 @@ msgstr ""
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "         \"%s\": preference for AEAD algorithm %s\n"
+msgstr "assinatura %s de: \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
@@ -3116,6 +3148,10 @@ msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "chave %08lX: detectado ID de utilizador duplicado - fundido\n"
 
 #, fuzzy, c-format
+msgid "key %s: duplicated subkeys detected - merged\n"
+msgstr "chave %08lX: detectado ID de utilizador duplicado - fundido\n"
+
+#, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
 "AVISO: a chave %08lX pode estar revocada: a transferir a chave de revocação "
@@ -3209,10 +3245,6 @@ msgstr "porta-chaves `%s' criado\n"
 #, fuzzy, c-format
 msgid "keyblock resource '%s': %s\n"
 msgstr "erro ao criar `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error opening key DB: %s\n"
-msgstr "erro na leitura de `%s': %s\n"
 
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
@@ -4142,6 +4174,10 @@ msgid "too many compression preferences\n"
 msgstr "demasiadas preferências `%c'\n"
 
 #, fuzzy, c-format
+msgid "too many AEAD preferences\n"
+msgstr "demasiadas preferências `%c'\n"
+
+#, fuzzy, c-format
 msgid "invalid item '%s' in preference string\n"
 msgstr "caracter inválido na cadeia de caractéres da preferência\n"
 
@@ -4198,7 +4234,7 @@ msgid "SsEeAaQq"
 msgstr ""
 
 #, c-format
-msgid "Possible actions for a %s key: "
+msgid "Possible actions for this %s key: "
 msgstr ""
 
 msgid "Current allowed actions: "
@@ -4221,40 +4257,49 @@ msgid "   (%c) Finished\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "   (%d) RSA and RSA (default)\n"
+msgid "   (%d) RSA and RSA%s\n"
 msgstr "   (%d) DSA e ElGamal (por omissão)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) DSA and Elgamal\n"
+msgid "   (%d) DSA and Elgamal%s\n"
 msgstr "   (%d) DSA e ElGamal (por omissão)\n"
 
-#, c-format
-msgid "   (%d) DSA (sign only)\n"
+#, fuzzy, c-format
+#| msgid "   (%d) DSA (sign only)\n"
+msgid "   (%d) DSA (sign only)%s\n"
 msgstr "   (%d) DSA (apenas assinatura)\n"
 
-#, c-format
-msgid "   (%d) RSA (sign only)\n"
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (sign only)\n"
+msgid "   (%d) RSA (sign only)%s\n"
 msgstr "   (%d) RSA (apenas assinatura)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) Elgamal (encrypt only)\n"
+msgid "   (%d) Elgamal (encrypt only)%s\n"
 msgstr "   (%d) ElGamal (apenas cifragem)\n"
 
-#, c-format
-msgid "   (%d) RSA (encrypt only)\n"
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "   (%d) RSA (encrypt only)%s\n"
 msgstr "   (%d) RSA (apenas cifragem)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) DSA (set your own capabilities)\n"
+msgid "   (%d) DSA (set your own capabilities)%s\n"
 msgstr "   (%d) RSA (apenas cifragem)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) RSA (set your own capabilities)\n"
+msgid "   (%d) RSA (set your own capabilities)%s\n"
 msgstr "   (%d) RSA (apenas cifragem)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) ECC and ECC\n"
-msgstr "   (%d) DSA e ElGamal (por omissão)\n"
+#| msgid "   (%d) ElGamal (sign and encrypt)\n"
+msgid "   (%d) ECC (sign and encrypt)%s\n"
+msgstr "   (%d) ElGamal (assinatura e cifragem)\n"
+
+#, fuzzy
+#| msgid " (default)"
+msgid " *default*"
+msgstr " (por omissão)"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
@@ -4262,26 +4307,27 @@ msgid "  (%d) ECC (sign only)\n"
 msgstr "   (%d) DSA (apenas assinatura)\n"
 
 #, fuzzy, c-format
-msgid "  (%d) ECC (set your own capabilities)\n"
+msgid "  (%d) ECC (set your own capabilities)%s\n"
 msgstr "   (%d) RSA (apenas cifragem)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
-msgid "  (%d) ECC (encrypt only)\n"
+msgid "  (%d) ECC (encrypt only)%s\n"
 msgstr "   (%d) RSA (apenas cifragem)\n"
 
 #, fuzzy, c-format
-msgid "  (%d) Existing key\n"
+msgid "  (%d) Existing key%s\n"
 msgstr "   (%d) RSA (apenas cifragem)\n"
 
 #, fuzzy, c-format
-msgid "  (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card%s\n"
 msgstr "   (%d) RSA (apenas cifragem)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notação de assinatura: "
 
+#, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr ""
 
@@ -4717,9 +4763,6 @@ msgstr ""
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "a URL de política de assinatura dada é inválida\n"
 
-msgid "honor the PKA record set on a key when retrieving keys"
-msgstr ""
-
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
@@ -4788,8 +4831,13 @@ msgid "weird size for an encrypted session key (%d)\n"
 msgstr "tamanho estranho para uma chave de sessão cifrada (%d)\n"
 
 #, fuzzy, c-format
-msgid "%s encrypted session key\n"
+msgid "%s.%s encrypted session key\n"
 msgstr "tamanho estranho para uma chave de sessão cifrada (%d)\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with unknown algorithm %d\n"
+msgid "encrypted with unknown algorithm %d.%s\n"
+msgstr "cifrado com algoritmo desconhecido %d\n"
 
 #, fuzzy, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
@@ -4799,12 +4847,8 @@ msgstr "cifrado com algoritmo desconhecido %d\n"
 msgid "public key is %s\n"
 msgstr "a chave pública é %08lX\n"
 
-#, c-format
-msgid "public key encrypted data: good DEK\n"
-msgstr "dados cifrados com chave pública: DEK válido\n"
-
 #, fuzzy, c-format
-msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
+msgid "encrypted with %s key, ID %s, created %s\n"
 msgstr "cifrado com chave %u-bit %s, ID %08lX, criada em %s\n"
 
 #, fuzzy, c-format
@@ -4814,10 +4858,6 @@ msgstr "                   ou \""
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "cifrado com chave %s, ID %08lX\n"
-
-#, c-format
-msgid "public key decryption failed: %s\n"
-msgstr "decifragem de chave pública falhou: %s\n"
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -4830,6 +4870,14 @@ msgstr "Repita a frase secreta\n"
 #, fuzzy, c-format
 msgid "encrypted with 1 passphrase\n"
 msgstr "Repita a frase secreta\n"
+
+#, c-format
+msgid "public key decryption failed: %s\n"
+msgstr "decifragem de chave pública falhou: %s\n"
+
+#, c-format
+msgid "public key encrypted data: good DEK\n"
+msgstr "dados cifrados com chave pública: DEK válido\n"
 
 #, c-format
 msgid "assuming %s encrypted data\n"
@@ -5145,10 +5193,6 @@ msgstr "Notação de assinatura crítica: "
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpacote do tipo %d tem bit crítico ligado\n"
 
-#, fuzzy, c-format
-msgid "problem with the agent: %s\n"
-msgstr "problema com o agente: o agente returnou 0x%lx\n"
-
 msgid "Enter passphrase\n"
 msgstr "Insira a frase secreta\n"
 
@@ -5223,6 +5267,39 @@ msgstr "%s: não é um base de dados de confiança\n"
 #, fuzzy
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Está correto (s/n)? "
+
+#, c-format
+msgid "no remote program execution supported\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "this platform requires temporary files when calling external programs\n"
+msgstr "%s: erro ao ler registo de versão: %s\n"
+
+#, fuzzy, c-format
+msgid "unable to execute shell '%s': %s\n"
+msgstr "não foi possível alterar o exec-path para %s\n"
+
+#, c-format
+msgid "unnatural exit of external program\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "system error while calling external program: %s\n"
+msgstr "%s: erro ao ler registo de versão: %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
+msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to remove temp directory '%s': %s\n"
+msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
+
+#, c-format
+msgid ""
+"external program calls are disabled due to unsafe options file permissions\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "unable to display photo ID!\n"
@@ -5355,6 +5432,22 @@ msgstr ""
 "presente.\n"
 
 #, fuzzy, c-format
+msgid "checking User ID \"%s\"\n"
+msgstr "ID de utilizador: \""
+
+#, fuzzy, c-format
+msgid "option %s given but issuer \"%s\" does not match\n"
+msgstr "algoritmo de dispersão inválido `%s'\n"
+
+#, fuzzy, c-format
+msgid "issuer \"%s\" does not match any User ID\n"
+msgstr "chave %08lX: não corresponde à nossa cópia\n"
+
+#, fuzzy, c-format
+msgid "option %s given but no matching User ID found\n"
+msgstr "algoritmo de dispersão inválido `%s'\n"
+
+#, fuzzy, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
 msgstr "AVISO: Esta chave foi revogada pelo seu dono!\n"
 
@@ -5375,24 +5468,13 @@ msgid "Note: This key has been disabled.\n"
 msgstr "Nota: Esta chave foi desactivada.\n"
 
 #, c-format
-msgid "Note: Verified signer's address is '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "Note: Signer's address '%s' does not match DNS entry\n"
-msgstr ""
-
-#, c-format
-msgid "trustlevel adjusted to FULL due to valid PKA info\n"
-msgstr ""
-
-#, c-format
-msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
-msgstr ""
-
-#, c-format
 msgid "Note: This key has expired!\n"
 msgstr "Nota: Esta chave expirou!\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: The key's User ID is not certified with a trusted signature!\n"
+msgstr "AVISO: Esta chave não está certificada com uma assinatura confiável!\n"
 
 #, c-format
 msgid "WARNING: This key is not certified with a trusted signature!\n"
@@ -5410,6 +5492,16 @@ msgstr "AVISO: Nós NÃO confiamos nesta chave!\n"
 #, c-format
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         A assinatura é provavelmente uma FALSIFICAÇÃO.\n"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "WARNING: This key is not certified with sufficiently trusted signatures!\n"
+msgid ""
+"WARNING: The key's User ID is not certified with sufficiently trusted "
+"signatures!\n"
+msgstr ""
+"AVISO: Esta chave não está certificada com assinaturas suficientemente\n"
+"       confiáveis!\n"
 
 #, c-format
 msgid ""
@@ -5524,6 +5616,10 @@ msgstr "chave %08lX: sem ID de utilizador\n"
 #, fuzzy, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "destinatário anónimo; a tentar chave secreta %08lX ...\n"
+
+#, fuzzy, c-format
+msgid "used key is not marked for encryption use.\n"
+msgstr "chave %08lX: sem ID de utilizador\n"
 
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
@@ -5816,8 +5912,9 @@ msgstr ""
 msgid "signing:"
 msgstr "a assinar:"
 
-#, c-format
-msgid "%s encryption will be used\n"
+#, fuzzy, c-format
+#| msgid "%s encryption will be used\n"
+msgid "%s.%s encryption will be used\n"
 msgstr "será utilizada a cifragem %s\n"
 
 #, c-format
@@ -6463,6 +6560,15 @@ msgstr "linha de entrada %u demasiado longa ou falta o LF\n"
 msgid "can't open fd %d: %s\n"
 msgstr "impossível abrir `%s': %s\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: message was not integrity protected\n"
+msgid "WARNING: encrypting without integrity protection is dangerous\n"
+msgstr "AVISO: a mensagem não tinha a sua integridade protegida\n"
+
+#, fuzzy, c-format
+msgid "Hint: Do not use option %s\n"
+msgstr "a ler opções de `%s'\n"
+
 msgid "set debugging flags"
 msgstr ""
 
@@ -6492,6 +6598,97 @@ msgstr ""
 msgid "Remaining attempts: %d"
 msgstr ""
 
+#, fuzzy
+msgid "|N|Please enter the new Global-PIN"
+msgstr "muda a frase secreta"
+
+#, fuzzy
+msgid "||Please enter the Global-PIN of your PIV card"
+msgstr "motivo da revocação: "
+
+#, fuzzy
+msgid "|N|Please enter the new PIN"
+msgstr "muda a frase secreta"
+
+#, fuzzy
+msgid "||Please enter the PIN of your PIV card"
+msgstr "motivo da revocação: "
+
+#, fuzzy
+msgid "|N|Please enter the new Unblocking Key"
+msgstr "muda a frase secreta"
+
+#, fuzzy
+msgid "||Please enter the Unblocking Key of your PIV card"
+msgstr "motivo da revocação: "
+
+#, c-format
+msgid "PIN callback returned error: %s\n"
+msgstr ""
+
+#, c-format
+msgid "PIN is too short; minimum length is %d\n"
+msgstr ""
+
+#, c-format
+msgid "PIN is too long; maximum length is %d\n"
+msgstr ""
+
+#, c-format
+msgid "PIN has invalid characters; only digits are allowed\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "key already exists\n"
+msgstr "%s' já comprimido\n"
+
+#, c-format
+msgid "existing key will be replaced\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "generating new key\n"
+msgstr "gerar um novo par de chaves"
+
+#, fuzzy, c-format
+msgid "writing new key\n"
+msgstr "gerar um novo par de chaves"
+
+#, fuzzy, c-format
+msgid "failed to store the key: %s\n"
+msgstr "falha ao inicializar a base de dados de confiança: %s\n"
+
+#, c-format
+msgid "response does not contain the RSA modulus\n"
+msgstr ""
+
+#, c-format
+msgid "response does not contain the RSA public exponent\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "remove keys from the public keyring"
+msgid "response does not contain the EC public key\n"
+msgstr "remover chaves do porta-chaves público"
+
+#, c-format
+msgid "please wait while key is being generated ...\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "generating key failed\n"
+msgstr "remoção do bloco de chave falhou: %s\n"
+
+#, fuzzy, c-format
+msgid "key generation completed (%d second)\n"
+msgid_plural "key generation completed (%d seconds)\n"
+msgstr[0] "A geração de chaves falhou: %s\n"
+msgstr[1] "A geração de chaves falhou: %s\n"
+
+#, c-format
+msgid "response does not contain the public key data\n"
+msgstr ""
+
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
@@ -6507,9 +6704,10 @@ msgstr ""
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 
-#, c-format
-msgid "PIN callback returned error: %s\n"
-msgstr ""
+#, fuzzy
+#| msgid "Note: This key has been disabled.\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "Nota: Esta chave foi desactivada.\n"
 
 #, c-format
 msgid "the NullPIN has not yet been changed\n"
@@ -6554,23 +6752,6 @@ msgstr "falha ao criar 'cache' do porta-chaves: %s\n"
 
 #, c-format
 msgid "error retrieving CHV status from card\n"
-msgstr ""
-
-#, c-format
-msgid "response does not contain the RSA modulus\n"
-msgstr ""
-
-#, c-format
-msgid "response does not contain the RSA public exponent\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "remove keys from the public keyring"
-msgid "response does not contain the EC public key\n"
-msgstr "remover chaves do porta-chaves público"
-
-#, c-format
-msgid "response does not contain the public key data\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6665,22 +6846,6 @@ msgstr "erro na leitura do bloco de chave: %s\n"
 msgid "error reading fingerprint DO\n"
 msgstr "%s: erro ao ler registo livre: %s\n"
 
-#, fuzzy, c-format
-msgid "key already exists\n"
-msgstr "%s' já comprimido\n"
-
-#, c-format
-msgid "existing key will be replaced\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "generating new key\n"
-msgstr "gerar um novo par de chaves"
-
-#, fuzzy, c-format
-msgid "writing new key\n"
-msgstr "gerar um novo par de chaves"
-
 #, c-format
 msgid "creation timestamp missing\n"
 msgstr ""
@@ -6690,27 +6855,9 @@ msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "failed to store the key: %s\n"
-msgstr "falha ao inicializar a base de dados de confiança: %s\n"
-
-#, fuzzy, c-format
 #| msgid "unsupported URI"
 msgid "unsupported curve\n"
 msgstr "URI não suportado"
-
-#, c-format
-msgid "please wait while key is being generated ...\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "generating key failed\n"
-msgstr "remoção do bloco de chave falhou: %s\n"
-
-#, fuzzy, c-format
-msgid "key generation completed (%d second)\n"
-msgid_plural "key generation completed (%d seconds)\n"
-msgstr[0] "A geração de chaves falhou: %s\n"
-msgstr[1] "A geração de chaves falhou: %s\n"
 
 #, c-format
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
@@ -6778,12 +6925,15 @@ msgstr ""
 msgid "do not use a reader's pinpad"
 msgstr ""
 
+msgid "use variable length input for pinpad"
+msgstr ""
+
+msgid "|LIST|change the application priority to LIST"
+msgstr ""
+
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "comandos em conflito\n"
-
-msgid "use variable length input for pinpad"
-msgstr ""
 
 #, fuzzy
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
@@ -7097,6 +7247,10 @@ msgid "certificate is not usable for signing\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "looking for another certificate\n"
+msgstr "certificado incorrecto"
+
+#, fuzzy, c-format
 msgid "line %d: invalid algorithm\n"
 msgstr "algoritmo de dispersão inválido `%s'\n"
 
@@ -7278,6 +7432,10 @@ msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "encrypted to %s key %s\n"
+msgstr "cifrado com chave %s, ID %08lX\n"
+
+#, fuzzy, c-format
 msgid "certificate '%s' not found: %s\n"
 msgstr "chave `%s' não encontrada: %s\n"
 
@@ -7326,9 +7484,14 @@ msgstr ""
 msgid "invoke gpg-protect-tool"
 msgstr ""
 
-#, fuzzy
-msgid "create base-64 encoded output"
-msgstr "criar saída com armadura ascii"
+msgid "don't use the terminal at all"
+msgstr "nunca usar o terminal"
+
+msgid "|N|number of certificates to include"
+msgstr ""
+
+msgid "|FILE|take policy information from FILE"
+msgstr ""
 
 msgid "assume input is in PEM format"
 msgstr ""
@@ -7339,33 +7502,50 @@ msgstr ""
 msgid "assume input is in binary format"
 msgstr ""
 
+#, fuzzy
+msgid "create base-64 encoded output"
+msgstr "criar saída com armadura ascii"
+
+#, fuzzy
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|NOME|usar NOME como chave secreta por omissão"
+
+#, fuzzy
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr ""
+"adicionar este porta-chaves\n"
+"à lista de porta-chaves"
+
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|ENDEREÇO|usar este servidor para buscar chaves"
+
+msgid "fetch missing issuer certificates"
+msgstr ""
+
+#, fuzzy
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr ""
+"|NOME|usar algoritmo de criptografia NOME para\n"
+"frases secretas"
+
 msgid "never consult a CRL"
+msgstr ""
+
+msgid "do not check CRLs for root certificates"
 msgstr ""
 
 msgid "check validity using OCSP"
 msgstr ""
 
-msgid "|N|number of certificates to include"
-msgstr ""
-
-msgid "|FILE|take policy information from FILE"
-msgstr ""
-
 msgid "do not check certificate policies"
 msgstr ""
 
-msgid "fetch missing issuer certificates"
-msgstr ""
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NOME|usar algoritmo de criptografia NOME"
 
-msgid "don't use the terminal at all"
-msgstr "nunca usar o terminal"
-
-msgid "|FILE|write a server mode log to FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|FILE|write an audit log to FILE"
-msgstr "|FICHEIRO|carregar módulo de extensão FICHEIRO"
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|NOME|usar algoritmo de \"digest\" de mensagens NOME"
 
 msgid "batch mode: never ask"
 msgstr "modo não-interactivo: nunca perguntar"
@@ -7377,24 +7557,8 @@ msgid "assume no on most questions"
 msgstr "assumir não para a maioria das perguntas"
 
 #, fuzzy
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr ""
-"adicionar este porta-chaves\n"
-"à lista de porta-chaves"
-
-#, fuzzy
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|NOME|usar NOME como chave secreta por omissão"
-
-#, fuzzy
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|ENDEREÇO|usar este servidor para buscar chaves"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NOME|usar algoritmo de criptografia NOME"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NOME|usar algoritmo de \"digest\" de mensagens NOME"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|FICHEIRO|carregar módulo de extensão FICHEIRO"
 
 #, fuzzy
 #| msgid "Usage: gpg [options] [files] (-h for help)"
@@ -7425,6 +7589,10 @@ msgstr ""
 
 #, c-format
 msgid "%s:%u: password given without user\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -7469,6 +7637,14 @@ msgstr "erro na criação da frase secreta: %s\n"
 
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
+msgstr "erro na leitura de `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "no keyboxd running in this session\n"
+msgstr "o gpg-agent não está disponível nesta sessão\n"
+
+#, fuzzy, c-format
+msgid "error opening key DB: %s\n"
 msgstr "erro na leitura de `%s': %s\n"
 
 #, c-format
@@ -7540,6 +7716,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "verificação da assinatura criada falhou: %s\n"
+
+#, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Assinatura feita em %.*s usando %s, ID da chave %08lX\n"
 
 #, fuzzy, c-format
 msgid "Signature made "
@@ -8220,38 +8400,50 @@ msgstr ""
 msgid "flush the cache"
 msgstr ""
 
-msgid "|FILE|write server mode logs to FILE"
+msgid "allow online software version check"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr ""
+
+msgid "Configuration for Keyservers"
 msgstr ""
 
 #, fuzzy
-msgid "run without asking a user"
-msgstr "Sair sem gravar? "
+msgid "|URL|use keyserver at URL"
+msgstr "não consegui processar a URI do servidor de chaves\n"
 
-msgid "force loading of outdated CRLs"
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "allow sending OCSP requests"
-msgstr ""
-
-msgid "allow online software version check"
+msgid "Configuration for HTTP servers"
 msgstr ""
 
 msgid "inhibit the use of HTTP"
 msgstr ""
 
-msgid "inhibit the use of LDAP"
-msgstr ""
-
 msgid "ignore HTTP CRL distribution points"
 msgstr ""
 
-msgid "ignore LDAP CRL distribution points"
-msgstr ""
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr ""
-
 msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "use system's HTTP proxy setting"
+msgstr ""
+
+msgid "Configuration of LDAP servers to use"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
 msgstr ""
 
 msgid "|HOST|use HOST for LDAP queries"
@@ -8270,6 +8462,15 @@ msgstr ""
 msgid "|N|set LDAP timeout to N seconds"
 msgstr ""
 
+msgid "Configuration for OCSP"
+msgstr ""
+
+msgid "allow sending OCSP requests"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
 #, fuzzy
 msgid "|URL|use OCSP responder at URL"
 msgstr "não consegui processar a URI do servidor de chaves\n"
@@ -8277,13 +8478,7 @@ msgstr "não consegui processar a URI do servidor de chaves\n"
 msgid "|FPR|OCSP response signed by FPR"
 msgstr ""
 
-msgid "|N|do not return more than N items in one query"
-msgstr ""
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
-msgid "route all network traffic via Tor"
+msgid "force loading of outdated CRLs"
 msgstr ""
 
 #, fuzzy
@@ -8376,6 +8571,9 @@ msgid "return all values in a record oriented format"
 msgstr ""
 
 msgid "|NAME|ignore host part and connect through NAME"
+msgstr ""
+
+msgid "force a TLS connection"
 msgstr ""
 
 #, fuzzy
@@ -8494,6 +8692,14 @@ msgstr "AVISO: a utilizar memória insegura!\n"
 
 #, fuzzy, c-format
 msgid "LDAP init to '%s:%d' failed: %s\n"
+msgstr "criação de armadura falhou: %s\n"
+
+#, fuzzy, c-format
+msgid "LDAP init to '%s' failed: %s\n"
+msgstr "criação de armadura falhou: %s\n"
+
+#, fuzzy, c-format
+msgid "LDAP init to '%s' done\n"
 msgstr "criação de armadura falhou: %s\n"
 
 #, fuzzy, c-format
@@ -8825,6 +9031,9 @@ msgstr ""
 msgid "connect to the dirmngr"
 msgstr ""
 
+msgid "connect to the keyboxd"
+msgstr ""
+
 msgid "|NAME|connect to Assuan socket NAME"
 msgstr ""
 
@@ -8882,134 +9091,27 @@ msgid "sending line failed: %s\n"
 msgstr "assinatura falhou: %s\n"
 
 #, fuzzy, c-format
+msgid "no keybox daemon running in this session\n"
+msgstr "o gpg-agent não está disponível nesta sessão\n"
+
+#, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "erro ao enviar para `%s': %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr ""
-
-msgid "Options controlling the configuration"
-msgstr ""
-
-msgid "Options useful for debugging"
-msgstr ""
-
-msgid "Options controlling the security"
-msgstr ""
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr ""
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr ""
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr ""
-
-msgid "Options enforcing a passphrase policy"
-msgstr ""
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr ""
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr ""
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr ""
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|usar mode de frase secreta N"
-
-#, fuzzy
-msgid "do not allow the reuse of old passphrases"
-msgstr "erro na criação da frase secreta: %s\n"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr ""
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NOME|usar NOME como chave secreta por omissão"
-
-#, fuzzy
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NOME|cifrar para NOME"
-
-msgid "|SPEC|set up email aliases"
-msgstr ""
-
-msgid "Configuration for Keyservers"
-msgstr ""
-
-#, fuzzy
-msgid "|URL|use keyserver at URL"
-msgstr "não consegui processar a URI do servidor de chaves\n"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr ""
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr ""
-
-#, fuzzy
-#| msgid "import keys from a keyserver"
-msgid "import missing key from a signature"
-msgstr "importar chaves de um servidor de chaves"
-
-#, fuzzy
-msgid "include the public key in signatures"
-msgstr "verificar as assinaturas das chaves"
-
-msgid "disable all access to the dirmngr"
-msgstr ""
-
-#, fuzzy
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr ""
-"|NOME|usar algoritmo de criptografia NOME para\n"
-"frases secretas"
-
-msgid "do not check CRLs for root certificates"
-msgstr ""
-
-msgid "Options controlling the format of the output"
-msgstr ""
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr ""
-
-msgid "Options controlling the use of Tor"
-msgstr ""
-
-msgid "Configuration for HTTP servers"
-msgstr ""
-
-msgid "use system's HTTP proxy setting"
-msgstr ""
-
-msgid "Configuration of LDAP servers to use"
-msgstr ""
-
-msgid "LDAP server list"
-msgstr ""
-
-msgid "Configuration for OCSP"
-msgstr ""
-
 msgid "OpenPGP"
 msgstr ""
+
+msgid "S/MIME"
+msgstr ""
+
+#, fuzzy
+msgid "Public Keys"
+msgstr "a chave pública é %08lX\n"
 
 msgid "Private Keys"
 msgstr ""
 
 msgid "Smartcards"
-msgstr ""
-
-msgid "S/MIME"
 msgstr ""
 
 #, fuzzy
@@ -9130,6 +9232,175 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Note: key %s is already stored on the card!\n"
+msgstr "ignorado: a chave secreta já está presente\n"
+
+#, fuzzy, c-format
+msgid "Note: Keys are already stored on the card!\n"
+msgstr "ignorado: a chave secreta já está presente\n"
+
+#, c-format
+msgid "Replace existing key %s ? (y/N) "
+msgstr ""
+
+#, c-format
+msgid "%s card no. %s detected\n"
+msgstr ""
+
+#, c-format
+msgid "User Interaction Flag is set to \"%s\" - can't change\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"Warning: Setting the User Interaction Flag to \"%s\"\n"
+"         can only be reverted using a factory reset!\n"
+msgstr ""
+
+#, c-format
+msgid "Please use \"uif --yes %d %s\"\n"
+msgstr ""
+
+#, fuzzy
+msgid "authenticate to the card"
+msgstr "chave %08lX: certificado de revogação \"%s\" adicionado\n"
+
+msgid "send a reset to the card daemon"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "setup KDF for PIN authentication"
+msgstr "|NOME|usar NOME como destinatário por omissão"
+
+#, fuzzy
+#| msgid "change the expire date"
+msgid "change a private data object"
+msgstr "muda a data de validade"
+
+#, fuzzy
+msgid "read a certificate from a data object"
+msgstr "chave %08lX: certificado de revogação \"%s\" adicionado\n"
+
+#, fuzzy
+msgid "store a certificate to a data object"
+msgstr "chave %08lX: certificado de revogação \"%s\" adicionado\n"
+
+msgid "store a private key to a data object"
+msgstr ""
+
+msgid "Yubikey management commands"
+msgstr ""
+
+msgid "manage the command history"
+msgstr ""
+
+#, fuzzy
+#~ msgid "Suggest a random passphrase."
+#~ msgstr "muda a frase secreta"
+
+#, fuzzy
+#~ msgid "no authentication key for ssh on card: %s\n"
+#~ msgstr "erro ao escrever no porta-chaves secreto `%s': %s\n"
+
+#, fuzzy
+#~ msgid "use a log file for the server"
+#~ msgstr "procurar chaves num servidor de chaves"
+
+#, fuzzy
+#~ msgid "argument not expected"
+#~ msgstr "a escrever chave privada para `%s'\n"
+
+#, fuzzy
+#~ msgid "read error"
+#~ msgstr "erro de leitura"
+
+#, fuzzy
+#~ msgid "keyword too long"
+#~ msgstr "frase secreta demasiado longa\n"
+
+#, fuzzy
+#~ msgid "missing argument"
+#~ msgstr "argumento inválido"
+
+#, fuzzy
+#~| msgid "invalid armor"
+#~ msgid "invalid argument"
+#~ msgstr "armadura inválida"
+
+#, fuzzy
+#~ msgid "invalid command"
+#~ msgstr "comandos em conflito\n"
+
+#, fuzzy
+#~ msgid "invalid alias definition"
+#~ msgstr "opções de importação inválidas\n"
+
+#, fuzzy
+#~ msgid "out of core"
+#~ msgstr "não processado"
+
+#, fuzzy
+#~ msgid "invalid meta command"
+#~ msgstr "comandos em conflito\n"
+
+#, fuzzy
+#~ msgid "unknown meta command"
+#~ msgstr "destinatário por omissão desconhecido `%s'\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "dados inesperados"
+
+#, fuzzy
+#~ msgid "invalid option"
+#~ msgstr "opções de importação inválidas\n"
+
+#, fuzzy
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "Comando inválido (tente \"help\")\n"
+
+#, fuzzy
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "opções de importação inválidas\n"
+
+#, fuzzy
+#~| msgid "NOTE: no default option file `%s'\n"
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "NOTA: ficheiro de opções por omissão `%s' inexistente\n"
+
+#, fuzzy
+#~| msgid "option file `%s': %s\n"
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "ficheiro de opções `%s': %s\n"
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid "keyserver option \"%s\" may not be used in %s mode\n"
+#~ msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
+
+#, fuzzy
+#~ msgid "unable to execute program '%s': %s\n"
+#~ msgstr "não foi possível alterar o exec-path para %s\n"
+
+#, fuzzy
+#~ msgid "unable to execute external program\n"
+#~ msgstr "não foi possível alterar o exec-path para %s\n"
+
+#, fuzzy
+#~ msgid "unable to read external program response: %s\n"
+#~ msgstr "não foi possível alterar o exec-path para %s\n"
+
+#, fuzzy
+#~ msgid "   (%d) ECC and ECC\n"
+#~ msgstr "   (%d) DSA e ElGamal (por omissão)\n"
+
+#, fuzzy
+#~ msgid "run without asking a user"
+#~ msgstr "Sair sem gravar? "
+
 #, fuzzy
 #~| msgid "NOTE: old default options file `%s' ignored\n"
 #~ msgid "Note: old default options file '%s' ignored\n"
@@ -9231,12 +9502,6 @@ msgstr ""
 #, fuzzy
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr "erro na criação da frase secreta: %s\n"
-
-#, fuzzy
-#~| msgid "you may not use %s while in %s mode\n"
-#~ msgid ""
-#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-#~ msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, fuzzy
 #~ msgid "male"
@@ -10500,9 +10765,6 @@ msgstr ""
 #~ msgid "delete signatures"
 #~ msgstr "remove assinaturas"
 
-#~ msgid "change the expire date"
-#~ msgstr "muda a data de validade"
-
 #~ msgid "set preference list"
 #~ msgstr "configurar lista de preferências"
 
@@ -10865,9 +11127,6 @@ msgstr ""
 #~ msgid "never use a MDC for encryption"
 #~ msgstr "nunca usar um MDC para cifrar"
 
-#~ msgid "use the gpg-agent"
-#~ msgstr "utilizar o gpg-agent"
-
 #~ msgid "|[file]|write status info to file"
 #~ msgstr "|[ficheiro]|escrever ifnroamções de estado para o ficheiro"
 
@@ -10929,9 +11188,6 @@ msgstr ""
 #~ msgstr ""
 #~ "NOTA: Chave primária Elgamal detectada - pode demorar algum tempo a "
 #~ "importar\n"
-
-#~ msgid " (default)"
-#~ msgstr " (por omissão)"
 
 #~ msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
 #~ msgstr "%s%c %4u%c/%08lX  criada: %s expira: %s"
@@ -11041,9 +11297,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "quit|quit"
 #~ msgstr "sair"
-
-#~ msgid "   (%d) ElGamal (sign and encrypt)\n"
-#~ msgstr "   (%d) ElGamal (assinatura e cifragem)\n"
 
 #~ msgid ""
 #~ "The use of this algorithm is only supported by GnuPG.  You will not be\n"

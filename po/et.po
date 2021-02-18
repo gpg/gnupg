@@ -18,12 +18,12 @@ msgstr ""
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
 
-#. TRANSLATORS: These are labels for buttons etc used in
-#. Pinentries.  An underscore indicates that the next letter
-#. should be used as an accelerator.  Double the underscore for
-#. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.  Note that gpg-agent has been set to
-#. utf-8 so that the strings are in the expected encoding.
+#. TRANSLATORS: These are labels for buttons etc as used in
+#. * Pinentries.  In your translation copy the text before the
+#. * second vertical bar verbatim; translate only the following
+#. * text.  An underscore indicates that the next letter should be
+#. * used as an accelerator.  Double the underscore to have
+#. * pinentry display a literal underscore.
 msgid "|pinentry-label|_OK"
 msgstr ""
 
@@ -53,6 +53,21 @@ msgstr ""
 #| msgid "invalid passphrase"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "vigane parool"
+
+#. TRANSLATORS: This string is displayed by Pinentry as the label
+#. for generating a passphrase.
+msgid "Suggest"
+msgstr ""
+
+#. TRANSLATORS: This string is a tooltip, shown by pinentry when
+#. hovering over the generate button.  Please use an appropriate
+#. string to describe what this is about.  The length of the
+#. tooltip is limited to about 900 characters.  If you do not
+#. translate this entry, a default English text (see source)
+#. will be used.  The strcmp thingy is there to detect a
+#. non-translated string.
+msgid "pinentry.genpin.tooltip"
+msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -89,10 +104,6 @@ msgstr "halb parool"
 msgid "does not match - try again"
 msgstr ""
 
-#. TRANSLATORS: The string is appended to an error message in
-#. the pinentry.  The %s is the actual error message, the
-#. two %d give the current and maximum number of tries.
-#. Do not translate the "SETERROR" keyword.
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -141,18 +152,6 @@ msgid "can't open '%s': %s\n"
 msgstr "`%s' ei õnnestu avada: %s\n"
 
 #, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "viga parooli loomisel: %s\n"
-
-#, c-format
-msgid "detected card with S/N: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "no authentication key for ssh on card: %s\n"
-msgstr "viga salajase võtme võtmehoidlasse `%s' kirjutamisel: %s\n"
-
-#, fuzzy, c-format
 msgid "no suitable card key found: %s\n"
 msgstr "kirjutatavat salajaste võtmete hoidlat pole: %s\n"
 
@@ -191,9 +190,6 @@ msgid "failed to create stream from socket: %s\n"
 msgstr "%s: paisktabeli loomine ebaõnnestus: %s\n"
 
 msgid "Please insert the card with serial number"
-msgstr ""
-
-msgid "Please remove the current card and insert the one with serial number"
 msgstr ""
 
 msgid "Admin PIN"
@@ -253,10 +249,6 @@ msgstr "kirjutan faili `%s'\n"
 msgid "Enter new passphrase"
 msgstr "Sisestage parool\n"
 
-#, fuzzy
-msgid "Take this one anyway"
-msgstr "Kasutan seda võtit ikka? "
-
 #, c-format
 msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
@@ -292,6 +284,10 @@ msgstr ""
 msgid "Warning: You have entered an insecure passphrase."
 msgstr ""
 
+#, fuzzy
+msgid "Take this one anyway"
+msgstr "Kasutan seda võtit ikka? "
+
 #, fuzzy, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr ""
@@ -302,14 +298,8 @@ msgstr ""
 msgid "Please enter the new passphrase"
 msgstr "muuda parooli"
 
-#, fuzzy
-msgid ""
-"@Options:\n"
-" "
+msgid "Options used for startup"
 msgstr ""
-"@\n"
-"Võtmed:\n"
-" "
 
 msgid "run in daemon mode (background)"
 msgstr ""
@@ -322,11 +312,8 @@ msgstr ""
 msgid "run in supervised mode"
 msgstr "Võti on asendatud"
 
-msgid "verbose"
-msgstr "ole jutukas"
-
-msgid "be somewhat more quiet"
-msgstr "ole mõnevõrra vaiksem"
+msgid "do not detach from the console"
+msgstr ""
 
 msgid "sh-style command output"
 msgstr ""
@@ -338,22 +325,27 @@ msgstr ""
 msgid "|FILE|read options from FILE"
 msgstr "|FAIL|lae laiendusmoodul FAIL"
 
-msgid "do not detach from the console"
+msgid "Options controlling the diagnostic output"
 msgstr ""
 
-#, fuzzy
-msgid "use a log file for the server"
-msgstr "otsi võtmeid võtmeserverist"
+msgid "verbose"
+msgstr "ole jutukas"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
+msgid "be somewhat more quiet"
+msgstr "ole mõnevõrra vaiksem"
+
+msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-msgid "|PGM|use PGM as the SCdaemon program"
+msgid "Options controlling the configuration"
 msgstr ""
 
 #, fuzzy
 msgid "do not use the SCdaemon"
 msgstr "uuenda usalduse andmebaasi"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
 
 #, fuzzy
 #| msgid "|NAME|set terminal charset to NAME"
@@ -366,7 +358,32 @@ msgstr ""
 msgid "ignore requests to change the X display"
 msgstr ""
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "ei ole toetatud"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "ei ole toetatud"
+
+msgid "Options controlling the security"
+msgstr ""
+
 msgid "|N|expire cached PINs after N seconds"
+msgstr ""
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr ""
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr ""
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
 msgid "do not use the PIN cache when signing"
@@ -383,24 +400,51 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "viga parooli loomisel: %s\n"
 
+msgid "Options enforcing a passphrase policy"
+msgstr ""
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr ""
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr ""
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr ""
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr ""
+
+#, fuzzy
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|kasuta parooli moodi N"
+
+#, fuzzy
+msgid "do not allow the reuse of old passphrases"
+msgstr "viga parooli loomisel: %s\n"
+
+msgid "Options controlling the PIN-Entry"
+msgstr ""
+
+#, fuzzy
+#| msgid "use the gpg-agent"
+msgid "never use the PIN-entry"
+msgstr "kasuta gpg-agenti"
+
 msgid "disallow caller to override the pinentry"
+msgstr ""
+
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr ""
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr ""
+
+msgid "|N|set the Pinentry timeout to N seconds"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
 msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable ssh support"
-msgstr "ei ole toetatud"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable putty support"
-msgstr "ei ole toetatud"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -512,6 +556,15 @@ msgstr "%s: jätsin vahele: %s\n"
 #, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent ei ole sesses sessioonis kasutatav\n"
+
+#, fuzzy
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@\n"
+"Võtmed:\n"
+" "
 
 #, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
@@ -843,24 +896,59 @@ msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "waiting for the %s to come up ... (%ds)\n"
+msgid "waiting for the dirmngr to come up ... (%ds)\n"
 msgstr "uuendamine ebaõnnestus: %s\n"
 
 #, fuzzy, c-format
-msgid "connection to %s established\n"
+msgid "waiting for the keyboxd to come up ... (%ds)\n"
+msgstr "uuendamine ebaõnnestus: %s\n"
+
+#, fuzzy, c-format
+msgid "waiting for the agent to come up ... (%ds)\n"
+msgstr "uuendamine ebaõnnestus: %s\n"
+
+#, fuzzy, c-format
+msgid "connection to the dirmngr established\n"
 msgstr "seda ei saa teha pakettmoodis\n"
 
+#, fuzzy, c-format
+msgid "connection to the keyboxd established\n"
+msgstr "seda ei saa teha pakettmoodis\n"
+
+#, fuzzy, c-format
+msgid "connection to the agent established\n"
+msgstr "seda ei saa teha pakettmoodis\n"
+
+#, fuzzy, c-format
+msgid "no running %s - starting '%s'\n"
+msgstr "viga `%s' lugemisel: %s\n"
+
+#, fuzzy, c-format
+msgid "connection to the agent is in restricted mode\n"
+msgstr "seda ei saa teha pakettmoodis\n"
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error getting version from '%s': %s\n"
+msgstr "viga võtmehoidla `%s' loomisel: %s\n"
+
 #, c-format
-msgid "no running gpg-agent - starting '%s'\n"
+msgid "server '%s' is older than us (%s < %s)"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "connection to agent is in restricted mode\n"
-msgstr "seda ei saa teha pakettmoodis\n"
+#| msgid "WARNING: %s overrides %s\n"
+msgid "WARNING: %s\n"
+msgstr "HOIATUS: %s määrab üle %s\n"
 
 #, c-format
-msgid "no running Dirmngr - starting '%s'\n"
+msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Palun kasutage kõigepealt käsku \"toggle\".\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1035,101 +1123,6 @@ msgstr "tundmatu"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "vigane radix64 sümbol %02x vahele jäetud\n"
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "kirjutan salajase võtme faili `%s'\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "viga faili lugemisel"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "rida on liiga pikk\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "vigane argument"
-
-#, fuzzy
-#| msgid "invalid armor"
-msgid "invalid argument"
-msgstr "vigane pakend"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "vastuolulised käsud\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "vigased impordi võtmed\n"
-
-msgid "permission error"
-msgstr ""
-
-#, fuzzy
-msgid "out of core"
-msgstr "ei töödeldud"
-
-#, fuzzy
-msgid "invalid meta command"
-msgstr "vastuolulised käsud\n"
-
-#, fuzzy
-msgid "unknown meta command"
-msgstr "tundmatu vaikimisi saaja `%s'\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "ootamatud andmed"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "vigased impordi võtmed\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "vigased impordi võtmed\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Vigane käsklus (proovige \"help\")\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "vigased impordi võtmed\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "MÄRKUS: vaikimisi võtmete fail `%s' puudub\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "võtmete fail `%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "pakendamine ebaõnnestus: %s\n"
@@ -1297,32 +1290,13 @@ msgid "Enter passphrase: "
 msgstr "Sisestage parool: "
 
 #, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "error getting version from '%s': %s\n"
-msgstr "viga võtmehoidla `%s' loomisel: %s\n"
-
-#, c-format
-msgid "server '%s' is older than us (%s < %s)"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: %s overrides %s\n"
-msgid "WARNING: %s\n"
-msgstr "HOIATUS: %s määrab üle %s\n"
-
-#, c-format
-msgid "Note: Outdated servers may lack important security fixes.\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "Please use the command \"toggle\" first.\n"
-msgid "Note: Use the command \"%s\" to restart them.\n"
-msgstr "Palun kasutage kõigepealt käsku \"toggle\".\n"
-
-#, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s ei tööta veel koos %s-ga\n"
+
+#, fuzzy, c-format
+msgid "problem with the agent: %s\n"
+msgstr "probleem agendiga: agent tagastas 0x%lx\n"
 
 #, fuzzy, c-format
 msgid "no dirmngr running in this session\n"
@@ -1330,7 +1304,7 @@ msgstr "gpg-agent ei ole sesses sessioonis kasutatav\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
-msgid "keyserver option \"%s\" may not be used in %s mode\n"
+msgid "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
 msgstr "%s ei ole moodis %s lubatud.\n"
 
 msgid "WKD uses a cached result"
@@ -1402,6 +1376,10 @@ msgstr "ei töödeldud"
 msgid "forced"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "viga parooli loomisel: %s\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 
@@ -1444,11 +1422,11 @@ msgstr ""
 msgid "Language preferences: "
 msgstr "uuendatud eelistused"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: invalid length of preference string.\n"
 msgstr "lubamatu sümbol eelistuste sõnes\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: invalid characters in preference string.\n"
 msgstr "lubamatu sümbol eelistuste sõnes\n"
 
@@ -1463,7 +1441,7 @@ msgstr "viga: vigane sõrmejälg\n"
 msgid "CA fingerprint: "
 msgstr "näita sõrmejälge"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "viga: vigane sõrmejälg\n"
 
@@ -1483,9 +1461,10 @@ msgid "Replace existing key? (y/N) "
 msgstr ""
 
 msgid ""
-"Note: There is no guarantee that the card supports the requested size.\n"
-"      If the key generation does not succeed, please check the\n"
-"      documentation of your card to see what sizes are allowed.\n"
+"Note: There is no guarantee that the card supports the requested\n"
+"      key type or size.  If the key generation does not succeed,\n"
+"      please check the documentation of your card to see which\n"
+"      key types and sizes are supported.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -1604,6 +1583,10 @@ msgstr ""
 msgid "error for setup KDF: %s\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
+#, fuzzy, c-format
+msgid "error for setup UIF: %s\n"
+msgstr "viga `%s' lugemisel: %s\n"
+
 msgid "quit this menu"
 msgstr "välju sellest menüüst"
 
@@ -1663,12 +1646,17 @@ msgstr ""
 
 #, fuzzy
 #| msgid "|NAME|use NAME as default recipient"
-msgid "setup KDF for PIN authentication"
+msgid "setup KDF for PIN authentication (on/single/off)"
 msgstr "|NIMI|kasuta NIME vaikimisi saajana"
 
 #, fuzzy
 #| msgid "change the ownertrust"
 msgid "change the key attribute"
+msgstr "muuda omaniku usaldust"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the User Interaction Flag"
 msgstr "muuda omaniku usaldust"
 
 msgid "gpg/card> "
@@ -1686,6 +1674,7 @@ msgstr "vastuolulised käsud\n"
 msgid "Admin commands are not allowed\n"
 msgstr "kirjutan salajase võtme faili `%s'\n"
 
+#, c-format
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Vigane käsklus (proovige \"help\")\n"
 
@@ -1710,13 +1699,13 @@ msgstr "viga võtmebloki lugemisel: %s\n"
 msgid "key \"%s\" not found\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
-#, c-format
-msgid "(unless you specify the key by fingerprint)\n"
-msgstr "(kui te just ei määra võtit sõrmejäljega)\n"
-
 #, fuzzy, c-format
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "pakettmoodis ei õnnestu seda teha võtmeta \"--yes\"\n"
+
+#, c-format
+msgid "(unless you specify the key by fingerprint)\n"
+msgstr "(kui te just ei määra võtit sõrmejäljega)\n"
 
 msgid "Note: The public primary key and all its subkeys will be deleted.\n"
 msgstr ""
@@ -1778,8 +1767,9 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "S2K moodi tõttu ei saa sümmeetrilist ESK paketti kasutada\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "kasutan šiffrit %s\n"
 
 #, fuzzy, c-format
@@ -1791,6 +1781,14 @@ msgstr "`%s' on juba pakitud\n"
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "HOIATUS: `%s' on tühi fail\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "šifri algoritm \"%s\" ei ole moodis %s lubatud\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "cipher algorithm '%s' may not be used in %s mode\n"
@@ -1827,8 +1825,9 @@ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
 "sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s krüptitud kasutajale: \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1836,8 +1835,9 @@ msgstr "%s/%s krüptitud kasutajale: \"%s\"\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "%s ei ole moodis %s lubatud.\n"
 
-#, c-format
-msgid "%s encrypted data\n"
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
 msgstr "%s krüpteeritud andmed\n"
 
 #, c-format
@@ -1852,57 +1852,6 @@ msgstr "HOIATUS: teade on krüptitud sümmeetrilise šifri nõrga võtmega.\n"
 #, c-format
 msgid "problem handling encrypted packet\n"
 msgstr "probleem krüptitud paketi käsitlemisel\n"
-
-#, c-format
-msgid "no remote program execution supported\n"
-msgstr "mittelokaalse programmi käivitamist ei toetata\n"
-
-#, c-format
-msgid ""
-"external program calls are disabled due to unsafe options file permissions\n"
-msgstr ""
-"väliste programmide käivitamine on blokeeritud, kuna seadete failil on\n"
-"ebaturvalised õigused\n"
-
-#, fuzzy, c-format
-msgid "this platform requires temporary files when calling external programs\n"
-msgstr ""
-"see platvorm nõuab väliste programmide käivitamiseks ajutiste failide "
-"kasutamist\n"
-
-#, fuzzy, c-format
-msgid "unable to execute program '%s': %s\n"
-msgstr "ei Õnnestu käivitada %s \"%s\": %s\n"
-
-#, fuzzy, c-format
-msgid "unable to execute shell '%s': %s\n"
-msgstr "ei Õnnestu käivitada %s \"%s\": %s\n"
-
-#, c-format
-msgid "system error while calling external program: %s\n"
-msgstr "süsteemi viga välise programmi kasutamisel: %s\n"
-
-#, c-format
-msgid "unnatural exit of external program\n"
-msgstr "väline programm lõpetas erandlikult\n"
-
-#, c-format
-msgid "unable to execute external program\n"
-msgstr "välist programmi ei õnnestu käivitada\n"
-
-#, c-format
-msgid "unable to read external program response: %s\n"
-msgstr "ei õnnestu lugeda välise programmi vastust: %s\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
-msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
-msgstr "HOIATUS: ei saa kustutada ajutist faili (%s) `%s': %s\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: unable to remove temp directory `%s': %s\n"
-msgid "WARNING: unable to remove temp directory '%s': %s\n"
-msgstr "HOIATUS: ei õnnestu eemaldada ajutist kataloogi `%s': %s\n"
 
 #, fuzzy
 msgid "export signatures that are marked as local-only"
@@ -2158,8 +2107,70 @@ msgstr ""
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NIMI|kasuta NIME vaikimisi salajase võtmena"
+
+#, fuzzy
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|NIMI|krüpti NIMEle"
+
+msgid "|SPEC|set up email aliases"
+msgstr ""
+
+msgid "use strict OpenPGP behavior"
+msgstr ""
+
+msgid "do not make any changes"
+msgstr "ära tee mingeid muutusi"
+
+msgid "prompt before overwriting"
+msgstr "küsi enne ülekirjutamist"
+
+msgid "Options controlling the input"
+msgstr ""
+
+msgid "Options controlling the output"
+msgstr ""
+
 msgid "create ascii armored output"
 msgstr "loo ascii pakendis väljund"
+
+#, fuzzy
+msgid "|FILE|write output to FILE"
+msgstr "|FAIL|lae laiendusmoodul FAIL"
+
+msgid "use canonical text mode"
+msgstr "kasuta kanoonilist tekstimoodi"
+
+#, fuzzy
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|määra pakkimise tase N (0 blokeerib)"
+
+msgid "Options controlling key import and export"
+msgstr ""
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr ""
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "impordi võtmed võtmeserverist"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "kontrolli võtmete allkirju"
+
+msgid "disable all access to the dirmngr"
+msgstr ""
+
+msgid "Options controlling key listings"
+msgstr ""
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "näita salajasi võtmeid"
 
 #, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
@@ -2169,24 +2180,10 @@ msgstr "|NIMI|krüpti NIMEle"
 msgid "|USER-ID|use USER-ID to sign or decrypt"
 msgstr "kasuta seda kasutaja IDd"
 
-#, fuzzy
-msgid "|N|set compress level to N (0 disables)"
-msgstr "|N|määra pakkimise tase N (0 blokeerib)"
+msgid "Options for unattended use"
+msgstr ""
 
-msgid "use canonical text mode"
-msgstr "kasuta kanoonilist tekstimoodi"
-
-#, fuzzy
-msgid "|FILE|write output to FILE"
-msgstr "|FAIL|lae laiendusmoodul FAIL"
-
-msgid "do not make any changes"
-msgstr "ära tee mingeid muutusi"
-
-msgid "prompt before overwriting"
-msgstr "küsi enne ülekirjutamist"
-
-msgid "use strict OpenPGP behavior"
+msgid "Other options"
 msgstr ""
 
 msgid ""
@@ -2474,12 +2471,6 @@ msgstr ""
 msgid "show only the primary user ID in signature verification"
 msgstr "%s ei ole lubatud kooditabel\n"
 
-msgid "validate signatures with PKA data"
-msgstr ""
-
-msgid "elevate the trust of signatures with valid PKA data"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: vigased ekspordi võtmed\n"
@@ -2499,6 +2490,10 @@ msgstr "%s:%d: vigased ekspordi võtmed\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "vigased impordi võtmed\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -2527,6 +2522,11 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 #, c-format
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valitud šifri algoritm ei ole lubatud\n"
+
+#, fuzzy, c-format
+#| msgid "selected digest algorithm is invalid\n"
+msgid "selected AEAD algorithm is invalid\n"
+msgstr "valitud lühendi algoritm ei ole lubatud\n"
 
 #, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
@@ -2573,6 +2573,11 @@ msgstr "vigased vaikimisi eelistused\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "vigased isikliku šifri eelistused\n"
 
+#, fuzzy, c-format
+#| msgid "invalid personal cipher preferences\n"
+msgid "invalid personal AEAD preferences\n"
+msgstr "vigased isikliku šifri eelistused\n"
+
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "vigased isikliku lühendi eelistused\n"
@@ -2581,9 +2586,18 @@ msgstr "vigased isikliku lühendi eelistused\n"
 msgid "invalid personal compress preferences\n"
 msgstr "vigased isikliku pakkimise eelistused\n"
 
+#, fuzzy, c-format
+#| msgid "keysize invalid; using %u bits\n"
+msgid "chunk size invalid - using %d\n"
+msgstr "vigane võtme suurus; kasutan %u bitti\n"
+
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ei tööta veel koos %s-ga\n"
+
+#, fuzzy, c-format
+msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+msgstr "šifri algoritm \"%s\" ei ole moodis %s lubatud\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -2731,7 +2745,16 @@ msgid "do not update the trustdb after import"
 msgstr "uuenda usalduse andmebaasi"
 
 #, fuzzy
+#| msgid "not supported"
+msgid "enable bulk import mode"
+msgstr "ei ole toetatud"
+
+#, fuzzy
 msgid "show key during import"
+msgstr "näita sõrmejälge"
+
+#, fuzzy
+msgid "show key but do not actually import"
 msgstr "näita sõrmejälge"
 
 msgid "only accept updates to existing keys"
@@ -2839,6 +2862,10 @@ msgstr ""
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "         \"%s\": preference for AEAD algorithm %s\n"
+msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
 
 #, fuzzy, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
@@ -3115,6 +3142,10 @@ msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "võti %08lX: tuvastasin dubleeritud kasutaja ID - mestisin\n"
 
 #, fuzzy, c-format
+msgid "key %s: duplicated subkeys detected - merged\n"
+msgstr "võti %08lX: tuvastasin dubleeritud kasutaja ID - mestisin\n"
+
+#, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
 "HOIATUS: võti %08lX võib olla tühistatud: laen tühistamise võtit %08lX\n"
@@ -3206,10 +3237,6 @@ msgstr "võtmehoidla `%s' on loodud\n"
 #, fuzzy, c-format
 msgid "keyblock resource '%s': %s\n"
 msgstr "viga `%s' loomisel: %s\n"
-
-#, fuzzy, c-format
-msgid "error opening key DB: %s\n"
-msgstr "viga `%s' lugemisel: %s\n"
 
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
@@ -4134,6 +4161,10 @@ msgid "too many compression preferences\n"
 msgstr "liiga palju `%c' eelistusi\n"
 
 #, fuzzy, c-format
+msgid "too many AEAD preferences\n"
+msgstr "liiga palju `%c' eelistusi\n"
+
+#, fuzzy, c-format
 msgid "invalid item '%s' in preference string\n"
 msgstr "lubamatu sümbol eelistuste sõnes\n"
 
@@ -4190,7 +4221,7 @@ msgid "SsEeAaQq"
 msgstr ""
 
 #, c-format
-msgid "Possible actions for a %s key: "
+msgid "Possible actions for this %s key: "
 msgstr ""
 
 msgid "Current allowed actions: "
@@ -4213,40 +4244,48 @@ msgid "   (%c) Finished\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "   (%d) RSA and RSA (default)\n"
+msgid "   (%d) RSA and RSA%s\n"
 msgstr "   (%d) DSA ja ElGamal (vaikimisi)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) DSA and Elgamal\n"
+msgid "   (%d) DSA and Elgamal%s\n"
 msgstr "   (%d) DSA ja ElGamal (vaikimisi)\n"
 
-#, c-format
-msgid "   (%d) DSA (sign only)\n"
+#, fuzzy, c-format
+#| msgid "   (%d) DSA (sign only)\n"
+msgid "   (%d) DSA (sign only)%s\n"
 msgstr "   (%d) DSA (ainult allkirjastamiseks)\n"
 
-#, c-format
-msgid "   (%d) RSA (sign only)\n"
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (sign only)\n"
+msgid "   (%d) RSA (sign only)%s\n"
 msgstr "   (%d) RSA (ainult allkirjastamiseks)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) Elgamal (encrypt only)\n"
+msgid "   (%d) Elgamal (encrypt only)%s\n"
 msgstr "   (%d) ElGamal (ainult krüptimiseks)\n"
 
-#, c-format
-msgid "   (%d) RSA (encrypt only)\n"
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "   (%d) RSA (encrypt only)%s\n"
 msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) DSA (set your own capabilities)\n"
+msgid "   (%d) DSA (set your own capabilities)%s\n"
 msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) RSA (set your own capabilities)\n"
+msgid "   (%d) RSA (set your own capabilities)%s\n"
 msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
-msgid "   (%d) ECC and ECC\n"
-msgstr "   (%d) DSA ja ElGamal (vaikimisi)\n"
+msgid "   (%d) ECC (sign and encrypt)%s\n"
+msgstr "   (%d) RSA (allkirjastamiseks ja krüptimiseks)\n"
+
+#, fuzzy
+#| msgid " (default)"
+msgid " *default*"
+msgstr " (vaikimisi)"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
@@ -4254,26 +4293,27 @@ msgid "  (%d) ECC (sign only)\n"
 msgstr "   (%d) DSA (ainult allkirjastamiseks)\n"
 
 #, fuzzy, c-format
-msgid "  (%d) ECC (set your own capabilities)\n"
+msgid "  (%d) ECC (set your own capabilities)%s\n"
 msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
-msgid "  (%d) ECC (encrypt only)\n"
+msgid "  (%d) ECC (encrypt only)%s\n"
 msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
-msgid "  (%d) Existing key\n"
+msgid "  (%d) Existing key%s\n"
 msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
-msgid "  (%d) Existing key from card\n"
+msgid "  (%d) Existing key from card%s\n"
 msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Allkirja noteerimine: "
 
+#, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr ""
 
@@ -4700,9 +4740,6 @@ msgstr ""
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "antud allkirja poliisi URL on vigane\n"
 
-msgid "honor the PKA record set on a key when retrieving keys"
-msgstr ""
-
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
@@ -4770,9 +4807,15 @@ msgstr "HOIATUS: ei saa kustutada ajutist faili (%s) `%s': %s\n"
 msgid "weird size for an encrypted session key (%d)\n"
 msgstr "veider suurus krüptitud sessiooni võtme jaoks (%d)\n"
 
-#, c-format
-msgid "%s encrypted session key\n"
+#, fuzzy, c-format
+#| msgid "%s encrypted session key\n"
+msgid "%s.%s encrypted session key\n"
 msgstr "%s krüpteeritud sessiooni võti\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with unknown algorithm %d\n"
+msgid "encrypted with unknown algorithm %d.%s\n"
+msgstr "krüpteeritud tundmatu algoritmiga %d\n"
 
 #, fuzzy, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
@@ -4782,12 +4825,8 @@ msgstr "krüpteeritud tundmatu algoritmiga %d\n"
 msgid "public key is %s\n"
 msgstr "avalik võti on %08lX\n"
 
-#, c-format
-msgid "public key encrypted data: good DEK\n"
-msgstr "avaliku võtmega krüpteeritud andmed: hea DEK\n"
-
 #, fuzzy, c-format
-msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
+msgid "encrypted with %s key, ID %s, created %s\n"
 msgstr "krüpteeritud %u-bitise %s võtmega, ID %08lX, loodud %s\n"
 
 #, fuzzy, c-format
@@ -4797,10 +4836,6 @@ msgstr "                 ka \""
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "krüpteeritud %s võtmega, ID %08lX\n"
-
-#, c-format
-msgid "public key decryption failed: %s\n"
-msgstr "avaliku võtmega lahtikrüpteerimine ebaõnnestus: %s\n"
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -4813,6 +4848,14 @@ msgstr "krüpteeritud kasutades %lu parooli\n"
 #, c-format
 msgid "encrypted with 1 passphrase\n"
 msgstr "krüpteeritud ühe parooliga\n"
+
+#, c-format
+msgid "public key decryption failed: %s\n"
+msgstr "avaliku võtmega lahtikrüpteerimine ebaõnnestus: %s\n"
+
+#, c-format
+msgid "public key encrypted data: good DEK\n"
+msgstr "avaliku võtmega krüpteeritud andmed: hea DEK\n"
 
 #, c-format
 msgid "assuming %s encrypted data\n"
@@ -5127,10 +5170,6 @@ msgstr "Kriitiline allkirja noteerimine: "
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "alampaketil tüübiga %d on kriitiline bitt seatud\n"
 
-#, fuzzy, c-format
-msgid "problem with the agent: %s\n"
-msgstr "probleem agendiga: agent tagastas 0x%lx\n"
-
 msgid "Enter passphrase\n"
 msgstr "Sisestage parool\n"
 
@@ -5209,6 +5248,45 @@ msgstr "\"%s\": ei ole JPEG fail\n"
 
 msgid "Is this photo correct (y/N/q)? "
 msgstr "On see foto õige (j/E/v)? "
+
+#, c-format
+msgid "no remote program execution supported\n"
+msgstr "mittelokaalse programmi käivitamist ei toetata\n"
+
+#, fuzzy, c-format
+msgid "this platform requires temporary files when calling external programs\n"
+msgstr ""
+"see platvorm nõuab väliste programmide käivitamiseks ajutiste failide "
+"kasutamist\n"
+
+#, fuzzy, c-format
+msgid "unable to execute shell '%s': %s\n"
+msgstr "ei Õnnestu käivitada %s \"%s\": %s\n"
+
+#, c-format
+msgid "unnatural exit of external program\n"
+msgstr "väline programm lõpetas erandlikult\n"
+
+#, c-format
+msgid "system error while calling external program: %s\n"
+msgstr "süsteemi viga välise programmi kasutamisel: %s\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
+msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
+msgstr "HOIATUS: ei saa kustutada ajutist faili (%s) `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: unable to remove temp directory `%s': %s\n"
+msgid "WARNING: unable to remove temp directory '%s': %s\n"
+msgstr "HOIATUS: ei õnnestu eemaldada ajutist kataloogi `%s': %s\n"
+
+#, c-format
+msgid ""
+"external program calls are disabled due to unsafe options file permissions\n"
+msgstr ""
+"väliste programmide käivitamine on blokeeritud, kuna seadete failil on\n"
+"ebaturvalised õigused\n"
 
 #, c-format
 msgid "unable to display photo ID!\n"
@@ -5336,6 +5414,22 @@ msgstr "HOIATUS: Kasutan mitteusaldatavat võtit!\n"
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
 msgstr "HOIATUS: see võti võib olla tühistatud (tühistamise võtit pole)\n"
 
+#, fuzzy, c-format
+msgid "checking User ID \"%s\"\n"
+msgstr "kasutaja ID: \""
+
+#, fuzzy, c-format
+msgid "option %s given but issuer \"%s\" does not match\n"
+msgstr "vigane räsialgoritm `%s'\n"
+
+#, fuzzy, c-format
+msgid "issuer \"%s\" does not match any User ID\n"
+msgstr "võti %08lX: ei sobi meie koopiaga\n"
+
+#, fuzzy, c-format
+msgid "option %s given but no matching User ID found\n"
+msgstr "vigane räsialgoritm `%s'\n"
+
 #, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
 msgstr "HOIATUS: See võti on määratud tühistaja poolt tühistatud!\n"
@@ -5357,24 +5451,13 @@ msgid "Note: This key has been disabled.\n"
 msgstr "Märkus: See võti on blokeeritud.\n"
 
 #, c-format
-msgid "Note: Verified signer's address is '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "Note: Signer's address '%s' does not match DNS entry\n"
-msgstr ""
-
-#, c-format
-msgid "trustlevel adjusted to FULL due to valid PKA info\n"
-msgstr ""
-
-#, c-format
-msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
-msgstr ""
-
-#, c-format
 msgid "Note: This key has expired!\n"
 msgstr "Märkus: See võti on aegunud!\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: The key's User ID is not certified with a trusted signature!\n"
+msgstr "HOIATUS: Seda võtit ei ole sertifitseeritud usaldatava allkirjaga!\n"
 
 #, c-format
 msgid "WARNING: This key is not certified with a trusted signature!\n"
@@ -5392,6 +5475,16 @@ msgstr "HOIATUS: Me EI usalda seda võtit!\n"
 #, c-format
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         Allkiri on tõenäoliselt VÕLTSING.\n"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "WARNING: This key is not certified with sufficiently trusted signatures!\n"
+msgid ""
+"WARNING: The key's User ID is not certified with sufficiently trusted "
+"signatures!\n"
+msgstr ""
+"HOIATUS: Seda võtit ei ole sertifitseeritud piisavalt usaldatava "
+"allkirjaga!\n"
 
 #, c-format
 msgid ""
@@ -5506,6 +5599,10 @@ msgstr "võti %08lX: kasutaja ID puudub\n"
 #, fuzzy, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "anonüümne saaja; proovin salajast võtit %08lX ...\n"
+
+#, fuzzy, c-format
+msgid "used key is not marked for encryption use.\n"
+msgstr "võti %08lX: kasutaja ID puudub\n"
 
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
@@ -5795,8 +5892,9 @@ msgstr ""
 msgid "signing:"
 msgstr "allkirjastan:"
 
-#, c-format
-msgid "%s encryption will be used\n"
+#, fuzzy, c-format
+#| msgid "%s encryption will be used\n"
+msgid "%s.%s encryption will be used\n"
 msgstr "kasutatakse %s krüpteerimist\n"
 
 #, c-format
@@ -6445,6 +6543,15 @@ msgstr "sisendrida %u on liiga pikk või seavahetus puudub\n"
 msgid "can't open fd %d: %s\n"
 msgstr "`%s' ei õnnestu avada: %s\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: message was not integrity protected\n"
+msgid "WARNING: encrypting without integrity protection is dangerous\n"
+msgstr "HOIATUS: teate kooskõlalisus ei ole tagatud\n"
+
+#, fuzzy, c-format
+msgid "Hint: Do not use option %s\n"
+msgstr "loen võtmeid failist `%s'\n"
+
 msgid "set debugging flags"
 msgstr ""
 
@@ -6474,6 +6581,97 @@ msgstr ""
 msgid "Remaining attempts: %d"
 msgstr ""
 
+#, fuzzy
+msgid "|N|Please enter the new Global-PIN"
+msgstr "muuda parooli"
+
+#, fuzzy
+msgid "||Please enter the Global-PIN of your PIV card"
+msgstr "Palun valige tühistamise põhjus:\n"
+
+#, fuzzy
+msgid "|N|Please enter the new PIN"
+msgstr "muuda parooli"
+
+#, fuzzy
+msgid "||Please enter the PIN of your PIV card"
+msgstr "Palun valige tühistamise põhjus:\n"
+
+#, fuzzy
+msgid "|N|Please enter the new Unblocking Key"
+msgstr "muuda parooli"
+
+#, fuzzy
+msgid "||Please enter the Unblocking Key of your PIV card"
+msgstr "Palun valige tühistamise põhjus:\n"
+
+#, c-format
+msgid "PIN callback returned error: %s\n"
+msgstr ""
+
+#, c-format
+msgid "PIN is too short; minimum length is %d\n"
+msgstr ""
+
+#, c-format
+msgid "PIN is too long; maximum length is %d\n"
+msgstr ""
+
+#, c-format
+msgid "PIN has invalid characters; only digits are allowed\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "key already exists\n"
+msgstr "`%s' on juba pakitud\n"
+
+#, c-format
+msgid "existing key will be replaced\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "generating new key\n"
+msgstr "genereeri uus võtmepaar"
+
+#, fuzzy, c-format
+msgid "writing new key\n"
+msgstr "genereeri uus võtmepaar"
+
+#, fuzzy, c-format
+msgid "failed to store the key: %s\n"
+msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
+
+#, c-format
+msgid "response does not contain the RSA modulus\n"
+msgstr ""
+
+#, c-format
+msgid "response does not contain the RSA public exponent\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "remove keys from the public keyring"
+msgid "response does not contain the EC public key\n"
+msgstr "eemalda võtmed avalike võtmete hoidlast"
+
+#, c-format
+msgid "please wait while key is being generated ...\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "generating key failed\n"
+msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
+
+#, fuzzy, c-format
+msgid "key generation completed (%d second)\n"
+msgid_plural "key generation completed (%d seconds)\n"
+msgstr[0] "Võtme genereerimine ebaõnnestus: %s\n"
+msgstr[1] "Võtme genereerimine ebaõnnestus: %s\n"
+
+#, c-format
+msgid "response does not contain the public key data\n"
+msgstr ""
+
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
@@ -6489,9 +6687,10 @@ msgstr ""
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 
-#, c-format
-msgid "PIN callback returned error: %s\n"
-msgstr ""
+#, fuzzy
+#| msgid "Note: This key has been disabled.\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "Märkus: See võti on blokeeritud.\n"
 
 #, c-format
 msgid "the NullPIN has not yet been changed\n"
@@ -6536,23 +6735,6 @@ msgstr "võtmehoidla vahemälu uuesti loomine ebaõnnestus: %s\n"
 
 #, c-format
 msgid "error retrieving CHV status from card\n"
-msgstr ""
-
-#, c-format
-msgid "response does not contain the RSA modulus\n"
-msgstr ""
-
-#, c-format
-msgid "response does not contain the RSA public exponent\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "remove keys from the public keyring"
-msgid "response does not contain the EC public key\n"
-msgstr "eemalda võtmed avalike võtmete hoidlast"
-
-#, c-format
-msgid "response does not contain the public key data\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6647,22 +6829,6 @@ msgstr "viga võtmebloki lugemisel: %s\n"
 msgid "error reading fingerprint DO\n"
 msgstr "%s: viga vaba kirje lugemisel: %s\n"
 
-#, fuzzy, c-format
-msgid "key already exists\n"
-msgstr "`%s' on juba pakitud\n"
-
-#, c-format
-msgid "existing key will be replaced\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "generating new key\n"
-msgstr "genereeri uus võtmepaar"
-
-#, fuzzy, c-format
-msgid "writing new key\n"
-msgstr "genereeri uus võtmepaar"
-
 #, c-format
 msgid "creation timestamp missing\n"
 msgstr ""
@@ -6672,27 +6838,9 @@ msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "failed to store the key: %s\n"
-msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
-
-#, fuzzy, c-format
 #| msgid "unsupported URI"
 msgid "unsupported curve\n"
 msgstr "mittetoetatud URI"
-
-#, c-format
-msgid "please wait while key is being generated ...\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "generating key failed\n"
-msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
-
-#, fuzzy, c-format
-msgid "key generation completed (%d second)\n"
-msgid_plural "key generation completed (%d seconds)\n"
-msgstr[0] "Võtme genereerimine ebaõnnestus: %s\n"
-msgstr[1] "Võtme genereerimine ebaõnnestus: %s\n"
 
 #, c-format
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
@@ -6760,12 +6908,15 @@ msgstr ""
 msgid "do not use a reader's pinpad"
 msgstr ""
 
+msgid "use variable length input for pinpad"
+msgstr ""
+
+msgid "|LIST|change the application priority to LIST"
+msgstr ""
+
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "vastuolulised käsud\n"
-
-msgid "use variable length input for pinpad"
-msgstr ""
 
 #, fuzzy
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
@@ -7077,6 +7228,10 @@ msgid "certificate is not usable for signing\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "looking for another certificate\n"
+msgstr "halb sertifikaat"
+
+#, fuzzy, c-format
 msgid "line %d: invalid algorithm\n"
 msgstr "vigane räsialgoritm `%s'\n"
 
@@ -7258,6 +7413,10 @@ msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "encrypted to %s key %s\n"
+msgstr "krüpteeritud %s võtmega, ID %08lX\n"
+
+#, fuzzy, c-format
 msgid "certificate '%s' not found: %s\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
@@ -7306,9 +7465,14 @@ msgstr ""
 msgid "invoke gpg-protect-tool"
 msgstr ""
 
-#, fuzzy
-msgid "create base-64 encoded output"
-msgstr "loo ascii pakendis väljund"
+msgid "don't use the terminal at all"
+msgstr "ära kasuta terminali"
+
+msgid "|N|number of certificates to include"
+msgstr ""
+
+msgid "|FILE|take policy information from FILE"
+msgstr ""
 
 msgid "assume input is in PEM format"
 msgstr ""
@@ -7319,33 +7483,46 @@ msgstr ""
 msgid "assume input is in binary format"
 msgstr ""
 
+#, fuzzy
+msgid "create base-64 encoded output"
+msgstr "loo ascii pakendis väljund"
+
+#, fuzzy
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|NIMI|kasuta NIME vaikimisi salajase võtmena"
+
+#, fuzzy
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "lisa see võtmehoidla võtmehoidlate nimekirja"
+
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|HOST|kasuta seda võtmeserverit"
+
+msgid "fetch missing issuer certificates"
+msgstr ""
+
+#, fuzzy
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|NIMI|kasuta paroolidega šifri algoritmi NIMI"
+
 msgid "never consult a CRL"
+msgstr ""
+
+msgid "do not check CRLs for root certificates"
 msgstr ""
 
 msgid "check validity using OCSP"
 msgstr ""
 
-msgid "|N|number of certificates to include"
-msgstr ""
-
-msgid "|FILE|take policy information from FILE"
-msgstr ""
-
 msgid "do not check certificate policies"
 msgstr ""
 
-msgid "fetch missing issuer certificates"
-msgstr ""
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NIMI|kasuta šifri algoritmi NIMI"
 
-msgid "don't use the terminal at all"
-msgstr "ära kasuta terminali"
-
-msgid "|FILE|write a server mode log to FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|FILE|write an audit log to FILE"
-msgstr "|FAIL|lae laiendusmoodul FAIL"
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|NIMI|kasuta teatelühendi algoritmi NIMI"
 
 msgid "batch mode: never ask"
 msgstr "pakettmood: ära küsi kunagi"
@@ -7357,22 +7534,8 @@ msgid "assume no on most questions"
 msgstr "eelda enamus küsimustele ei vastust"
 
 #, fuzzy
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr "lisa see võtmehoidla võtmehoidlate nimekirja"
-
-#, fuzzy
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|NIMI|kasuta NIME vaikimisi salajase võtmena"
-
-#, fuzzy
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|HOST|kasuta seda võtmeserverit"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NIMI|kasuta šifri algoritmi NIMI"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NIMI|kasuta teatelühendi algoritmi NIMI"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|FAIL|lae laiendusmoodul FAIL"
 
 #, fuzzy
 #| msgid "Usage: gpg [options] [files] (-h for help)"
@@ -7403,6 +7566,10 @@ msgstr "(Kirjeldust ei antud)\n"
 
 #, c-format
 msgid "%s:%u: password given without user\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -7447,6 +7614,14 @@ msgstr "viga parooli loomisel: %s\n"
 
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
+msgstr "viga `%s' lugemisel: %s\n"
+
+#, fuzzy, c-format
+msgid "no keyboxd running in this session\n"
+msgstr "gpg-agent ei ole sesses sessioonis kasutatav\n"
+
+#, fuzzy, c-format
+msgid "error opening key DB: %s\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
 #, c-format
@@ -7518,6 +7693,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
+
+#, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Allkirja lõi %.*s kasutades %s võtit ID %08lX\n"
 
 #, fuzzy, c-format
 msgid "Signature made "
@@ -8199,38 +8378,50 @@ msgstr ""
 msgid "flush the cache"
 msgstr ""
 
-msgid "|FILE|write server mode logs to FILE"
+msgid "allow online software version check"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr ""
+
+msgid "Configuration for Keyservers"
 msgstr ""
 
 #, fuzzy
-msgid "run without asking a user"
-msgstr "Väljun salvestamata? "
+msgid "|URL|use keyserver at URL"
+msgstr "ei saa parsida võtmeserveri URI\n"
 
-msgid "force loading of outdated CRLs"
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "allow sending OCSP requests"
-msgstr ""
-
-msgid "allow online software version check"
+msgid "Configuration for HTTP servers"
 msgstr ""
 
 msgid "inhibit the use of HTTP"
 msgstr ""
 
-msgid "inhibit the use of LDAP"
-msgstr ""
-
 msgid "ignore HTTP CRL distribution points"
 msgstr ""
 
-msgid "ignore LDAP CRL distribution points"
-msgstr ""
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr ""
-
 msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "use system's HTTP proxy setting"
+msgstr ""
+
+msgid "Configuration of LDAP servers to use"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
 msgstr ""
 
 msgid "|HOST|use HOST for LDAP queries"
@@ -8249,6 +8440,15 @@ msgstr ""
 msgid "|N|set LDAP timeout to N seconds"
 msgstr ""
 
+msgid "Configuration for OCSP"
+msgstr ""
+
+msgid "allow sending OCSP requests"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
 #, fuzzy
 msgid "|URL|use OCSP responder at URL"
 msgstr "ei saa parsida võtmeserveri URI\n"
@@ -8256,13 +8456,7 @@ msgstr "ei saa parsida võtmeserveri URI\n"
 msgid "|FPR|OCSP response signed by FPR"
 msgstr ""
 
-msgid "|N|do not return more than N items in one query"
-msgstr ""
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
-msgid "route all network traffic via Tor"
+msgid "force loading of outdated CRLs"
 msgstr ""
 
 #, fuzzy
@@ -8355,6 +8549,9 @@ msgid "return all values in a record oriented format"
 msgstr ""
 
 msgid "|NAME|ignore host part and connect through NAME"
+msgstr ""
+
+msgid "force a TLS connection"
 msgstr ""
 
 #, fuzzy
@@ -8471,6 +8668,14 @@ msgstr "HOIATUS: kasutan ebaturvalist mälu!\n"
 
 #, fuzzy, c-format
 msgid "LDAP init to '%s:%d' failed: %s\n"
+msgstr "pakendamine ebaõnnestus: %s\n"
+
+#, fuzzy, c-format
+msgid "LDAP init to '%s' failed: %s\n"
+msgstr "pakendamine ebaõnnestus: %s\n"
+
+#, fuzzy, c-format
+msgid "LDAP init to '%s' done\n"
 msgstr "pakendamine ebaõnnestus: %s\n"
 
 #, fuzzy, c-format
@@ -8803,6 +9008,9 @@ msgstr ""
 msgid "connect to the dirmngr"
 msgstr ""
 
+msgid "connect to the keyboxd"
+msgstr ""
+
 msgid "|NAME|connect to Assuan socket NAME"
 msgstr ""
 
@@ -8860,132 +9068,27 @@ msgid "sending line failed: %s\n"
 msgstr "allkirjastamine ebaõnnestus: %s\n"
 
 #, fuzzy, c-format
+msgid "no keybox daemon running in this session\n"
+msgstr "gpg-agent ei ole sesses sessioonis kasutatav\n"
+
+#, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "viga teate saatmisel serverile `%s': %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr ""
-
-msgid "Options controlling the configuration"
-msgstr ""
-
-msgid "Options useful for debugging"
-msgstr ""
-
-msgid "Options controlling the security"
-msgstr ""
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr ""
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr ""
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr ""
-
-msgid "Options enforcing a passphrase policy"
-msgstr ""
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr ""
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr ""
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr ""
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|kasuta parooli moodi N"
-
-#, fuzzy
-msgid "do not allow the reuse of old passphrases"
-msgstr "viga parooli loomisel: %s\n"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr ""
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NIMI|kasuta NIME vaikimisi salajase võtmena"
-
-#, fuzzy
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NIMI|krüpti NIMEle"
-
-msgid "|SPEC|set up email aliases"
-msgstr ""
-
-msgid "Configuration for Keyservers"
-msgstr ""
-
-#, fuzzy
-msgid "|URL|use keyserver at URL"
-msgstr "ei saa parsida võtmeserveri URI\n"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr ""
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr ""
-
-#, fuzzy
-#| msgid "import keys from a keyserver"
-msgid "import missing key from a signature"
-msgstr "impordi võtmed võtmeserverist"
-
-#, fuzzy
-msgid "include the public key in signatures"
-msgstr "kontrolli võtmete allkirju"
-
-msgid "disable all access to the dirmngr"
-msgstr ""
-
-#, fuzzy
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NIMI|kasuta paroolidega šifri algoritmi NIMI"
-
-msgid "do not check CRLs for root certificates"
-msgstr ""
-
-msgid "Options controlling the format of the output"
-msgstr ""
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr ""
-
-msgid "Options controlling the use of Tor"
-msgstr ""
-
-msgid "Configuration for HTTP servers"
-msgstr ""
-
-msgid "use system's HTTP proxy setting"
-msgstr ""
-
-msgid "Configuration of LDAP servers to use"
-msgstr ""
-
-msgid "LDAP server list"
-msgstr ""
-
-msgid "Configuration for OCSP"
-msgstr ""
-
 msgid "OpenPGP"
 msgstr ""
+
+msgid "S/MIME"
+msgstr ""
+
+#, fuzzy
+msgid "Public Keys"
+msgstr "avalik võti on %08lX\n"
 
 msgid "Private Keys"
 msgstr ""
 
 msgid "Smartcards"
-msgstr ""
-
-msgid "S/MIME"
 msgstr ""
 
 #, fuzzy
@@ -9106,6 +9209,173 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Note: key %s is already stored on the card!\n"
+msgstr "jätsin vahele: avalik võti on juba olemas\n"
+
+#, fuzzy, c-format
+msgid "Note: Keys are already stored on the card!\n"
+msgstr "jätsin vahele: avalik võti on juba olemas\n"
+
+#, c-format
+msgid "Replace existing key %s ? (y/N) "
+msgstr ""
+
+#, c-format
+msgid "%s card no. %s detected\n"
+msgstr ""
+
+#, c-format
+msgid "User Interaction Flag is set to \"%s\" - can't change\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"Warning: Setting the User Interaction Flag to \"%s\"\n"
+"         can only be reverted using a factory reset!\n"
+msgstr ""
+
+#, c-format
+msgid "Please use \"uif --yes %d %s\"\n"
+msgstr ""
+
+#, fuzzy
+msgid "authenticate to the card"
+msgstr "Tühistamise sertifikaat on loodud.\n"
+
+msgid "send a reset to the card daemon"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "setup KDF for PIN authentication"
+msgstr "|NIMI|kasuta NIME vaikimisi saajana"
+
+#, fuzzy
+#| msgid "change the expire date"
+msgid "change a private data object"
+msgstr "muuda aegumise kuupäeva"
+
+#, fuzzy
+msgid "read a certificate from a data object"
+msgstr "Tühistamise sertifikaat on loodud.\n"
+
+#, fuzzy
+msgid "store a certificate to a data object"
+msgstr "Tühistamise sertifikaat on loodud.\n"
+
+msgid "store a private key to a data object"
+msgstr ""
+
+msgid "Yubikey management commands"
+msgstr ""
+
+msgid "manage the command history"
+msgstr ""
+
+#, fuzzy
+#~ msgid "Suggest a random passphrase."
+#~ msgstr "muuda parooli"
+
+#, fuzzy
+#~ msgid "no authentication key for ssh on card: %s\n"
+#~ msgstr "viga salajase võtme võtmehoidlasse `%s' kirjutamisel: %s\n"
+
+#, fuzzy
+#~ msgid "use a log file for the server"
+#~ msgstr "otsi võtmeid võtmeserverist"
+
+#, fuzzy
+#~ msgid "argument not expected"
+#~ msgstr "kirjutan salajase võtme faili `%s'\n"
+
+#, fuzzy
+#~ msgid "read error"
+#~ msgstr "viga faili lugemisel"
+
+#, fuzzy
+#~ msgid "keyword too long"
+#~ msgstr "rida on liiga pikk\n"
+
+#, fuzzy
+#~ msgid "missing argument"
+#~ msgstr "vigane argument"
+
+#, fuzzy
+#~| msgid "invalid armor"
+#~ msgid "invalid argument"
+#~ msgstr "vigane pakend"
+
+#, fuzzy
+#~ msgid "invalid command"
+#~ msgstr "vastuolulised käsud\n"
+
+#, fuzzy
+#~ msgid "invalid alias definition"
+#~ msgstr "vigased impordi võtmed\n"
+
+#, fuzzy
+#~ msgid "out of core"
+#~ msgstr "ei töödeldud"
+
+#, fuzzy
+#~ msgid "invalid meta command"
+#~ msgstr "vastuolulised käsud\n"
+
+#, fuzzy
+#~ msgid "unknown meta command"
+#~ msgstr "tundmatu vaikimisi saaja `%s'\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "ootamatud andmed"
+
+#, fuzzy
+#~ msgid "invalid option"
+#~ msgstr "vigased impordi võtmed\n"
+
+#, fuzzy
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "Vigane käsklus (proovige \"help\")\n"
+
+#, fuzzy
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "vigased impordi võtmed\n"
+
+#, fuzzy
+#~| msgid "NOTE: no default option file `%s'\n"
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "MÄRKUS: vaikimisi võtmete fail `%s' puudub\n"
+
+#, fuzzy
+#~| msgid "option file `%s': %s\n"
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "võtmete fail `%s': %s\n"
+
+#, fuzzy
+#~| msgid "you may not use %s while in %s mode\n"
+#~ msgid "keyserver option \"%s\" may not be used in %s mode\n"
+#~ msgstr "%s ei ole moodis %s lubatud.\n"
+
+#, fuzzy
+#~ msgid "unable to execute program '%s': %s\n"
+#~ msgstr "ei Õnnestu käivitada %s \"%s\": %s\n"
+
+#~ msgid "unable to execute external program\n"
+#~ msgstr "välist programmi ei õnnestu käivitada\n"
+
+#~ msgid "unable to read external program response: %s\n"
+#~ msgstr "ei õnnestu lugeda välise programmi vastust: %s\n"
+
+#, fuzzy
+#~ msgid "   (%d) ECC and ECC\n"
+#~ msgstr "   (%d) DSA ja ElGamal (vaikimisi)\n"
+
+#, fuzzy
+#~ msgid "run without asking a user"
+#~ msgstr "Väljun salvestamata? "
+
 #, fuzzy
 #~| msgid "NOTE: old default options file `%s' ignored\n"
 #~ msgid "Note: old default options file '%s' ignored\n"
@@ -9211,12 +9481,6 @@ msgstr ""
 #, fuzzy
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr "viga parooli loomisel: %s\n"
-
-#, fuzzy
-#~| msgid "you may not use %s while in %s mode\n"
-#~ msgid ""
-#~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-#~ msgstr "%s ei ole moodis %s lubatud.\n"
 
 #, fuzzy
 #~ msgid "male"
@@ -10485,9 +10749,6 @@ msgstr ""
 #~ msgid "delete signatures"
 #~ msgstr "kustuta allkirjad"
 
-#~ msgid "change the expire date"
-#~ msgstr "muuda aegumise kuupäeva"
-
 #~ msgid "set preference list"
 #~ msgstr "sea eelistuste nimekiri"
 
@@ -10858,9 +11119,6 @@ msgstr ""
 #~ msgid "never use a MDC for encryption"
 #~ msgstr "krüptimisel ära kasuta kunagi MDC"
 
-#~ msgid "use the gpg-agent"
-#~ msgstr "kasuta gpg-agenti"
-
 #~ msgid "|[file]|write status info to file"
 #~ msgstr "|[fail]|kirjuta olekuinfo faili"
 
@@ -10916,9 +11174,6 @@ msgstr ""
 #~ msgstr ""
 #~ "MÄRKUS: Tuvastasin Elgamal primaarvõtme - importimine võib võtta mõne "
 #~ "aja\n"
-
-#~ msgid " (default)"
-#~ msgstr " (vaikimisi)"
 
 #~ msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
 #~ msgstr "%s%c %4u%c/%08lX  loodud: %s aegub: %s"
