@@ -965,7 +965,7 @@ setup_genpin (ctrl_t ctrl)
          non-translated string.  */
       tooltip = L_("pinentry.genpin.tooltip");
       if (!strcmp ("pinentry.genpin.tooltip", tooltip))
-        tooltip = L_("Suggest a random passphrase.");
+        tooltip = "Suggest a random passphrase.";
     }
   tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
   xfree (tmpstr2);
@@ -1018,9 +1018,9 @@ setup_qualitybar (ctrl_t ctrl)
          will be used. */
       tooltip =  L_("pinentry.qualitybar.tooltip");
       if (!strcmp ("pinentry.qualitybar.tooltip", tooltip))
-        tooltip = L_("The quality of the text entered above.\n"
-                     "Please ask your administrator for "
-                     "details about the criteria.");
+        tooltip = ("The quality of the text entered above.\n"
+                   "Please ask your administrator for "
+                   "details about the criteria.");
     }
   tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
   xfree (tmpstr2);
