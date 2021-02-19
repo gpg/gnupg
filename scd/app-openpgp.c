@@ -1977,7 +1977,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
    buffer. On error PK and PKLEN are not changed and an error code is
    returned.  */
 static gpg_error_t
-do_readkey (app_t app, ctrl_t ctrl, int advanced, const char *keyid,
+do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
             unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
@@ -2003,7 +2003,7 @@ do_readkey (app_t app, ctrl_t ctrl, int advanced, const char *keyid,
   if (!buf)
     return gpg_error (GPG_ERR_NO_PUBKEY);
 
-  if (advanced)
+  if ((flags & APP_READKEY_FLAG_ADVANCED))
     {
       gcry_sexp_t s_key;
 

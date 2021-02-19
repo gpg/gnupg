@@ -38,6 +38,7 @@
 
 /* Flags used with app_readkey.  */
 #define APP_READKEY_FLAG_INFO    1  /* Send also a KEYPAIRINFO line.  */
+#define APP_READKEY_FLAG_ADVANCED 2 /* (gnupg 2.2 only)  */
 
 /* Bit flags set by the decipher function into R_INFO.  */
 #define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
@@ -121,7 +122,7 @@ struct app_ctx_s {
     gpg_error_t (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
     gpg_error_t (*readkey) (app_t app, ctrl_t ctrl,
-                            int advanced, const char *certid,
+                            const char *certid, unsigned int flags,
                             unsigned char **pk, size_t *pklen);
     gpg_error_t (*getattr) (app_t app, ctrl_t ctrl, const char *name);
     gpg_error_t (*setattr) (app_t app, ctrl_t ctrl, const char *name,

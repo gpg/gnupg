@@ -865,7 +865,9 @@ app_readkey (app_t app, ctrl_t ctrl, int advanced, const char *keyid,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err= app->fnc.readkey (app, ctrl, advanced, keyid, pk, pklen);
+  err= app->fnc.readkey (app, ctrl, keyid,
+                         advanced? APP_READKEY_FLAG_ADVANCED : 0,
+                         pk, pklen);
   unlock_app (app);
   return err;
 }
