@@ -509,7 +509,7 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
   for (i=0; data_objects[i].tag && data_objects[i].tag != tag; i++)
     ;
 
-  if (app->card_version > 0x0100 && data_objects[i].get_immediate_in_v11)
+  if (app->appversion > 0x0100 && data_objects[i].get_immediate_in_v11)
     {
       exmode = 0;
       rc = iso7816_get_data (app->slot, exmode, tag, &buffer, &buflen);
@@ -849,7 +849,7 @@ store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
 
   xfree (buffer);
 
-  tag = (app->card_version > 0x0007? 0xC7 : 0xC6) + keynumber;
+  tag = (app->appversion > 0x0007? 0xC7 : 0xC6) + keynumber;
   flush_cache_item (app, 0xC5);
   tag2 = 0xCE + keynumber;
   flush_cache_item (app, 0xCD);
@@ -858,7 +858,7 @@ store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
   if (rc)
     log_error (_("failed to store the fingerprint: %s\n"),gpg_strerror (rc));
 
-  if (!rc && app->card_version > 0x0100)
+  if (!rc && app->appversion > 0x0100)
     {
       unsigned char buf[4];
 
@@ -1738,7 +1738,7 @@ get_public_key (app_t app, int keyno)
 
   m = e = NULL; /* (avoid cc warning) */
 
-  if (app->card_version > 0x0100)
+  if (app->appversion > 0x0100)
     {
       int exmode, le_value;
 
@@ -1923,7 +1923,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
     err = do_getattr (app, ctrl, "LOGIN-DATA");
   if (!err)
     err = do_getattr (app, ctrl, "KEY-FPR");
-  if (!err && app->card_version > 0x0100)
+  if (!err && app->appversion > 0x0100)
     err = do_getattr (app, ctrl, "KEY-TIME");
   if (!err)
     err = do_getattr (app, ctrl, "CA-FPR");
@@ -3818,7 +3818,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
       /* Store the key. */
       err = iso7816_put_data (app->slot, 0,
-                              (app->card_version > 0x0007? 0xE0:0xE9)+keyno,
+                              (app->appversion > 0x0007? 0xE0:0xE9)+keyno,
                               template, template_len);
     }
   if (err)
@@ -4962,7 +4962,7 @@ do_decipher (app_t app, const char *keyidstr,
 
   if (gpg_err_code (rc) == GPG_ERR_CARD /* actual SW is 0x640a */
       && app->app_local->manufacturer == 5
-      && app->card_version == 0x0200)
+      && app->appversion == 0x0200)
     log_info ("NOTE: Cards with manufacturer id 5 and s/n <= 346 (0x15a)"
               " do not work with encryption keys > 2048 bits\n");
 
@@ -5281,7 +5281,7 @@ app_select_openpgp (app_t app)
     {
       unsigned int manufacturer;
 
-      app->apptype = "OPENPGP";
+      app->apptype = APPTYPE_OPENPGP;
 
       app->did_chv1 = 0;
       app->did_chv2 = 0;
@@ -5302,8 +5302,8 @@ app_select_openpgp (app_t app)
           log_printhex (buffer, buflen, "");
         }
 
-      app->card_version = buffer[6] << 8;
-      app->card_version |= buffer[7];
+      app->appversion = buffer[6] << 8;
+      app->appversion |= buffer[7];
       manufacturer = (buffer[8]<<8 | buffer[9]);
 
       xfree (app->serialno);
@@ -5319,10 +5319,10 @@ app_select_openpgp (app_t app)
 
       app->app_local->manufacturer = manufacturer;
 
-      if (app->card_version >= 0x0200)
+      if (app->appversion >= 0x0200)
         app->app_local->extcap.is_v2 = 1;
 
-      if (app->card_version >= 0x0300)
+      if (app->appversion >= 0x0300)
         app->app_local->extcap.extcap_v3 = 1;
 
       /* Read the historical bytes.  */
@@ -5389,7 +5389,7 @@ app_select_openpgp (app_t app)
 
       /* Some of the first cards accidentally don't set the
          CHANGE_FORCE_CHV bit but allow it anyway. */
-      if (app->card_version <= 0x0100 && manufacturer == 1)
+      if (app->appversion <= 0x0100 && manufacturer == 1)
         app->app_local->extcap.change_force_chv = 1;
 
       /* Check optional DO of "General Feature Management" for button.  */

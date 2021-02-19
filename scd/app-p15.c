@@ -4152,7 +4152,7 @@ app_select_p15 (app_t app)
     }
   if (!rc)
     {
-      app->apptype = "P15";
+      app->apptype = APPTYPE_P15;
 
       app->app_local = xtrycalloc (1, sizeof *app->app_local);
       if (!app->app_local)

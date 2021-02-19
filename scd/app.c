@@ -32,6 +32,25 @@
 
 static npth_mutex_t app_list_lock;
 static app_t app_top;
+
+
+/* List of all supported apps.  */
+static struct
+{
+  apptype_t apptype;
+  char const *name;
+} supported_app_list[] =
+  {{ APPTYPE_OPENPGP  , "openpgp"   },
+   { APPTYPE_NKS      , "nks"       },
+   { APPTYPE_P15      , "p15"       },
+   { APPTYPE_GELDKARTE, "geldkarte" },
+   { APPTYPE_DINSIG   , "dinsig"    },
+   { APPTYPE_SC_HSM   , "sc-hsm"    },
+   { APPTYPE_NONE     , NULL        }
+   /* APPTYPE_UNDEFINED is special and not listed here.  */
+  };
+
+
 
 static void
 print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
@@ -44,6 +63,37 @@ print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
       snprintf (line, sizeof line, "%s %c %d %d", what, pc, cur, tot);
       send_status_direct (ctrl, "PROGRESS", line);
     }
+}
+
+
+/* Map an application type to a string.  Never returns NULL.  */
+const char *
+strapptype (apptype_t t)
+{
+  int i;
+
+  for (i=0; supported_app_list[i].apptype; i++)
+    if (supported_app_list[i].apptype == t)
+      return supported_app_list[i].name;
+  return t == APPTYPE_UNDEFINED? "undefined" : t? "?" : "none";
+}
+
+
+/* Return the apptype for NAME.  */
+static apptype_t
+apptype_from_name (const char *name)
+{
+  int i;
+
+  if (!name)
+    return APPTYPE_NONE;
+
+  for (i=0; supported_app_list[i].apptype; i++)
+    if (!ascii_strcasecmp (supported_app_list[i].name, name))
+      return supported_app_list[i].apptype;
+  if (!ascii_strcasecmp ("undefined", name))
+    return APPTYPE_UNDEFINED;
+  return APPTYPE_NONE;
 }
 
 
@@ -96,7 +146,7 @@ app_dump_state (void)
 
   npth_mutex_lock (&app_list_lock);
   for (a = app_top; a; a = a->next)
-    log_info ("app_dump_state: app=%p type='%s'\n", a, a->apptype);
+    log_info ("app_dump_state: app=%p type='%s'\n", a, strapptype (a->apptype));
   npth_mutex_unlock (&app_list_lock);
 }
 
@@ -117,14 +167,15 @@ is_app_allowed (const char *name)
 static gpg_error_t
 check_conflict (app_t app, const char *name)
 {
-  if (!app || !name || (app->apptype && !ascii_strcasecmp (app->apptype, name)))
+  if (!app || !name
+      || (app->apptype && app->apptype == apptype_from_name (name)))
     return 0;
 
-  if (app->apptype && !strcmp (app->apptype, "UNDEFINED"))
+  if (app->apptype && app->apptype == APPTYPE_UNDEFINED)
     return 0;
 
   log_info ("application '%s' in use - can't switch\n",
-            app->apptype? app->apptype : "<null>");
+            strapptype (app->apptype));
 
   return gpg_error (GPG_ERR_CONFLICT);
 }
@@ -263,7 +314,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
     {
       /* We switch to the "undefined" application only if explicitly
          requested.  */
-      app->apptype = "UNDEFINED";
+      app->apptype = APPTYPE_UNDEFINED;
       err = 0;
     }
   else
@@ -579,7 +630,7 @@ app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   /* We do not send APPTYPE if only keypairinfo is requested.  */
   if (app->apptype && !(flags & 1))
-    send_status_direct (ctrl, "APPTYPE", app->apptype);
+    send_status_direct (ctrl, "APPTYPE", strapptype (app->apptype));
   err = lock_app (app, ctrl);
   if (err)
     return err;
@@ -660,7 +711,7 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
 
   if (app->apptype && name && !strcmp (name, "APPTYPE"))
     {
-      send_status_direct (ctrl, "APPTYPE", app->apptype);
+      send_status_direct (ctrl, "APPTYPE", strapptype (app->apptype));
       return 0;
     }
   if (name && !strcmp (name, "SERIALNO"))

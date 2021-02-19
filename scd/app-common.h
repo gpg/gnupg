@@ -47,6 +47,35 @@
 #define APP_LEARN_FLAG_MULTI        2 /* Return info for all apps.  */
 
 
+/* List of supported card types.  Generic is the usual ISO7817-4
+ * compliant card.  More specific card or token versions can be given
+ * here.  Introduced in 2.2 for easier backporting from 2.3.  */
+typedef enum
+  {
+   CARDTYPE_GENERIC = 0,
+   CARDTYPE_GNUK,
+   CARDTYPE_YUBIKEY,
+   CARDTYPE_ZEITCONTROL
+  } cardtype_t;
+
+
+/* List of supported card applications.  The source code for each
+ * application can usually be found in an app-NAME.c file.  Introduced
+ * in 2.2 for easier backporting from 2.3.  */
+typedef enum
+  {
+   APPTYPE_NONE = 0,
+   APPTYPE_UNDEFINED,
+   APPTYPE_OPENPGP,
+   APPTYPE_PIV,
+   APPTYPE_NKS,
+   APPTYPE_P15,
+   APPTYPE_GELDKARTE,
+   APPTYPE_DINSIG,
+   APPTYPE_SC_HSM
+  } apptype_t;
+
+
 /* Forward declarations.  */
 struct app_ctx_s;
 struct app_local_s;  /* Defined by all app-*.c.  */
@@ -69,7 +98,9 @@ struct app_ctx_s {
 
   unsigned char *serialno; /* Serialnumber in raw form, allocated. */
   size_t serialnolen;      /* Length in octets of serialnumber. */
-  const char *apptype;
+  apptype_t apptype;
+  unsigned int appversion; /* Version of the application or 0.     */
+  cardtype_t cardtype;     /* The token's type.  */
   unsigned int card_version;
   unsigned int card_status;
   unsigned int reset_requested:1;

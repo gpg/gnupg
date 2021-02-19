@@ -1387,7 +1387,7 @@ app_select_nks (app_t app)
   rc = iso7816_select_application (slot, aid_nks, sizeof aid_nks, 0);
   if (!rc)
     {
-      app->apptype = "NKS";
+      app->apptype = APPTYPE_NKS;
 
       app->app_local = xtrycalloc (1, sizeof *app->app_local);
       if (!app->app_local)
