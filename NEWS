@@ -1,17 +1,67 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
-  * The legacy key discovery method PKA is no longer supported.  The
-    command --print-pka-records and the PKA related import and export
-    options have been removed.
-
   * A new experimental key database daemon is provided.  To enable it
     put "use-keyboxd" into gpg.conf and gpgsm.conf.  Keys are stored
     in a SQLite database and make key lookup much faster.
 
+  * New tool gpg-card as a flexible frontend for all types of
+    supported smartcards.
+
+  * New option --chuid for gpg, gpgsm, gpgconf, gpg-card, and
+    gpg-connect-agent.
+
   * The gpg-wks-client tool is now installed under bin; a wrapper for
     its old location at libexec is also installed.
 
+  * gpg: Switch to ed25519/cv25519 as default public key algorithms.
+
+  * gpg: Verification results now depend on the --sender option and
+    the signer's UID subpacket.  [T4735]
+
+  * gpg: Do not use any 64-bit block size cipher algorithm for
+    encryption.  Use AES as last resort cipher preference instead of
+    3DES.  This can be reverted using --allow-old-cipher-algos.
+
+  * gpg: Support AEAD encryption mode using OCB or EAX.
+
+  * gpg: Support v5 keys and signatures.
+
+  * gpg: Support curve X448 (ed448, cv448).
+
+  * gpg: Allow use of group names in key listings.  [e825aea2ba]
+
+  * gpg: New option --full-timestrings to print date and time.
+
+  * gpg: The legacy key discovery method PKA is no longer supported.
+    The command --print-pka-records and the PKA related import and
+    export options have been removed.
+
+  * gpgsm: Add basic ECC support.
+
+  * gpgsm: Support creation of EdDSA certificates.  [#4888]
+
+  * agent: Allow the use of "Label:" in a key file to customize the
+    pinentry prompt.  [5388537806]
+
+  * agent: Support ssh-agent extensions for environment variables.
+    With a patched version of OpenSSH this avoids the need for the
+    "updatestartuptty" kludge.  [224e26cf7b]
+
+  * scd: Improve support for multiple card readers and tokens.
+
+  * scd: Support PIV cards.
+
+  * scd: Support the Telesec Signature Card v2.0
+
+  * scd: Support multiple application on certain smartcard.
+
+  * scd: New option --application-priority.
+
+  * dirmngr: Support a gpgNtds parameter in LDAP keyserver URLs.
+
+  * The symcryptrun tool, a wrapper for the now obsolete external
+    Chiasmus tool, has been removed.
 
   Changes also found in 2.2.27:
 
@@ -212,6 +262,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * wkd: Take name of sendmail from configure.  Fixes an OpenBSD
     specific bug.  [#4886]
+
+  * Support a command history file in gpg-card and gpg-connect-agent.
 
   Release-info: https://dev.gnupg.org/T4897
   See-also: gnupg-announce/2020q3/000446.html
