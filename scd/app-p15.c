@@ -3124,13 +3124,13 @@ read_p15_info (app_t app)
     {
       /* If we don't have a serial number yet but the TokenInfo provides
          one, use that. */
-      if (!app->card->serialno && app->app_local->serialno)
+      if (!APP_CARD(app)->serialno && app->app_local->serialno)
         {
-          app->card->serialno = app->app_local->serialno;
-          app->card->serialnolen = app->app_local->serialnolen;
+          APP_CARD(app)->serialno = app->app_local->serialno;
+          APP_CARD(app)->serialnolen = app->app_local->serialnolen;
           app->app_local->serialno = NULL;
           app->app_local->serialnolen = 0;
-          err = app_munge_serialno (app->card);
+          err = app_munge_serialno (APP_CARD(app));
           if (err)
             return err;
         }
@@ -4917,8 +4917,9 @@ app_select_p15 (app_t app)
          prototype card right here because we need to access to
          EF(TokenInfo).  We mark such a serial number by the using a
          prefix of FF0100. */
-      if (app->card->serialnolen == 12
-          && !memcmp (app->card->serialno, "\xD2\x76\0\0\0\0\0\0\0\0\0\0", 12))
+      if (APP_CARD(app)->serialnolen == 12
+          && !memcmp (APP_CARD(app)->serialno,
+                      "\xD2\x76\0\0\0\0\0\0\0\0\0\0", 12))
         {
           /* This is a German card with a silly serial number.  Try to get
              the serial number from the EF(TokenInfo). . */
@@ -4926,16 +4927,16 @@ app_select_p15 (app_t app)
 
           /* FIXME: actually get it from EF(TokenInfo). */
 
-          p = xtrymalloc (3 + app->card->serialnolen);
+          p = xtrymalloc (3 + APP_CARD(app)->serialnolen);
           if (!p)
             rc = gpg_error (gpg_err_code_from_errno (errno));
           else
             {
               memcpy (p, "\xff\x01", 3);
-              memcpy (p+3, app->card->serialno, app->card->serialnolen);
-              app->card->serialnolen += 3;
-              xfree (app->card->serialno);
-              app->card->serialno = p;
+              memcpy (p+3, APP_CARD(app)->serialno, APP_CARD(app)->serialnolen);
+              APP_CARD(app)->serialnolen += 3;
+              xfree (APP_CARD(app)->serialno);
+              APP_CARD(app)->serialno = p;
             }
         }
 

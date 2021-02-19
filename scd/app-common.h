@@ -215,6 +215,12 @@ app_get_slot (app_t app)
 }
 
 
+/* Macro to access members in app->card.  We use this macro because in
+ * 2.2 many members are stored directly in app_t and this way we can
+ * easier backport stuff.  */
+#define APP_CARD(a) ((a)->card)
+
+
 /*-- app-help.c --*/
 unsigned int app_help_count_bits (const unsigned char *a, size_t len);
 gpg_error_t app_help_get_keygrip_string_pk (const void *pk, size_t pklen,

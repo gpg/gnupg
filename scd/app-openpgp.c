@@ -1284,7 +1284,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                   if (opt.verbose)
                     log_info ("Yubikey bug: length %zu != %zu", valuelen, len);
 
-                  if (app->card->cardtype != CARDTYPE_YUBIKEY)
+                  if (APP_CARD(app)->cardtype != CARDTYPE_YUBIKEY)
                     return gpg_error (GPG_ERR_INV_OBJ);
                 }
             }
@@ -1918,7 +1918,7 @@ get_public_key (app_t app, int keyno)
       if (err)
         {
           /* Yubikey returns wrong code.  Fix it up.  */
-          if (app->card->cardtype == CARDTYPE_YUBIKEY)
+          if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY)
             err = gpg_error (GPG_ERR_NO_OBJ);
 	  /* Yubikey NEO (!CARDTYPE_YUBIKEY) also returns wrong code.  Fix it up.  */
 	  else if (gpg_err_code (err) == GPG_ERR_CARD)
@@ -2464,7 +2464,7 @@ cache_pin (app_t app, ctrl_t ctrl, int chvno, const char *pin)
 
   if (!keyref)
     return;
-  switch (app->card->cardtype)
+  switch (APP_CARD(app)->cardtype)
     {
     case CARDTYPE_YUBIKEY: break;
     default: return;
@@ -2495,7 +2495,7 @@ pin_from_cache (app_t app, ctrl_t ctrl, int chvno, char **r_pin)
 
   if (!keyref)
     return 0;
-  switch (app->card->cardtype)
+  switch (APP_CARD(app)->cardtype)
     {
     case CARDTYPE_YUBIKEY: break;
     default: return 0;
@@ -2951,15 +2951,15 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
 
   if (table[idx].special == 4)
     {
-      if (app->card->cardtype == CARDTYPE_YUBIKEY
-          || app->card->cardtype == CARDTYPE_GNUK)
+      if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY
+          || APP_CARD(app)->cardtype == CARDTYPE_GNUK)
         {
           rc = verify_chv3 (app, ctrl, pincb, pincb_arg);
           if (rc)
             return rc;
 
           if (valuelen == 3
-              && app->card->cardtype == CARDTYPE_GNUK)
+              && APP_CARD(app)->cardtype == CARDTYPE_GNUK)
             {
               value = NULL;
               valuelen = 0;
@@ -6022,7 +6022,7 @@ do_reselect (app_t app, ctrl_t ctrl)
   /* An extra check which should not be necessary because the caller
    * should have made sure that a re-select is only called for
    * appropriate cards.  */
-  if (app->card->cardtype != CARDTYPE_YUBIKEY)
+  if (APP_CARD(app)->cardtype != CARDTYPE_YUBIKEY)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   /* Note that the card can't cope with P2=0xCO, thus we need to pass
@@ -6092,13 +6092,13 @@ app_select_openpgp (app_t app)
        * work anymore and need to be modified.  Recall that our
        * architecture requires exactly one serilano per card.
        */
-      if (app->card->cardtype == CARDTYPE_YUBIKEY)
+      if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY)
         xfree (buffer);
       else
         {
-          xfree (app->card->serialno);
-          app->card->serialno = buffer;
-          app->card->serialnolen = buflen;
+          xfree (APP_CARD(app)->serialno);
+          APP_CARD(app)->serialno = buffer;
+          APP_CARD(app)->serialnolen = buflen;
         }
 
       buffer = NULL;
