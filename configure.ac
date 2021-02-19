@@ -56,7 +56,7 @@ AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
 NEED_GPGRT_VERSION=1.41
 
 NEED_LIBGCRYPT_API=1
-NEED_LIBGCRYPT_VERSION=1.9.0
+NEED_LIBGCRYPT_VERSION=1.9.1
 
 NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.5.0
@@ -814,26 +814,29 @@ AM_PATH_GPG_ERROR("$NEED_GPGRT_VERSION",
 #
 AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_API:$NEED_LIBGCRYPT_VERSION",
         have_libgcrypt=yes,have_libgcrypt=no)
-# And, then, check if it's newer than 1.9.0.
-have_libgcrypt_newer=no
-if test $ok = yes; then
-    if test "$major" -gt 1; then
-        have_libgcrypt_newer=yes
-    else
-        if test "$major" -eq 1; then
-            if test "$minor" -gt 9; then
-               have_libgcrypt_newer=yes
-            else
-               if test "$minor" -eq 9; then
-                   if test "$micro" -ge 0; then
-                     have_libgcrypt_newer=yes
-                   fi
-               fi
-            fi
-        fi
-    fi
-fi
-AM_CONDITIONAL(HAVE_NEWER_LIBGCRYPT, [test $have_libgcrypt_newer = yes])
+# And, then, check if it's newer than 1.9.0 so that we can
+# conditionally build some programs.
+# Note: This is not anymore needed but keep the code commented in case
+# we need it again with some future libgcrypt.
+#have_libgcrypt_newer=no
+#if test $ok = yes; then
+#    if test "$major" -gt 1; then
+#        have_libgcrypt_newer=yes
+#    else
+#        if test "$major" -eq 1; then
+#            if test "$minor" -gt 9; then
+#               have_libgcrypt_newer=yes
+#            else
+#               if test "$minor" -eq 9; then
+#                   if test "$micro" -ge 0; then
+#                     have_libgcrypt_newer=yes
+#                   fi
+#               fi
+#            fi
+#        fi
+#    fiy
+#fi
+#AM_CONDITIONAL(HAVE_NEWER_LIBGCRYPT, [test $have_libgcrypt_newer = yes])
 
 #
 # libassuan is used for IPC

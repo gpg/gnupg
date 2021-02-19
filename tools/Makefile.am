@@ -53,6 +53,7 @@ bin_PROGRAMS += gpgconf-w32
 endif
 
 libexec_PROGRAMS += gpg-check-pattern
+libexec_PROGRAMS += gpg-pair-tool
 
 if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS = clean-sat make-dns-cert
@@ -182,8 +183,6 @@ gpg_wks_client_LDADD = $(libcommon) \
 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		       $(LIBINTL) $(LIBICONV) $(NETLIBS)
 
-if HAVE_NEWER_LIBGCRYPT
-libexec_PROGRAMS += gpg-pair-tool
 gpg_pair_tool_SOURCES = \
 	gpg-pair-tool.c
 
@@ -191,7 +190,6 @@ gpg_pair_tool_CFLAGS = $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_pair_tool_LDADD =  $(libcommon) \
 		       $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		       $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
-endif
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
