@@ -109,15 +109,6 @@ The command @option{--print-wkd-url} prints the URLs used to fetch the
 key for the given user-ids from WKD.  The meanwhile preferred format
 with sub-domains is used here.
 
-@command{gpg-wks-client} is not commonly invoked directly and thus it
-is not installed in the bin directory.  Here is an example how it can
-be invoked manually to check for a Web Key Directory entry for
-@file{foo@@example.org}:
-
-@example
-$(gpgconf --list-dirs libexecdir)/gpg-wks-client --check foo@@example.net
-@end example
-
 @mansect options
 @noindent
 @command{gpg-wks-client} understands these options:

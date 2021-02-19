@@ -626,10 +626,10 @@ Section "GnuPG" SEC_gnupg
   File "bin/gpg-connect-agent.exe"
   File "bin/gpg-card.exe"
   File "bin/gpgtar.exe"
+  File "bin/gpg-wks-client.exe"
   File "libexec/dirmngr_ldap.exe"
   File "libexec/gpg-preset-passphrase.exe"
   File "libexec/gpg-check-pattern.exe"
-  File "libexec/gpg-wks-client.exe"
 
   ClearErrors
   SetOverwrite try

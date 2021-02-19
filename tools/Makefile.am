@@ -43,17 +43,15 @@ else
   gpg_wks_server =
 endif
 
-libexec_PROGRAMS = gpg-wks-client
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card
+bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card gpg-wks-client
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit
 else
 bin_PROGRAMS += gpgconf-w32
 endif
 
-libexec_PROGRAMS += gpg-check-pattern
-libexec_PROGRAMS += gpg-pair-tool
+libexec_PROGRAMS = gpg-check-pattern gpg-pair-tool
 
 if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS = clean-sat make-dns-cert
@@ -190,6 +188,22 @@ gpg_pair_tool_CFLAGS = $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_pair_tool_LDADD =  $(libcommon) \
 		       $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		       $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
+
+# Instead of a symlink we install a simple wrapper script for the new
+# gpg-wks-client location.  We assume bin is a sibling of libexec.
+install-exec-local:
+	$(mkinstalldirs) $(DESTDIR)$(libexecdir)
+	(set -e ;\
+	 if [ "$(libexecdir)" != "$(bindir)" ]; then \
+	   printf '#!/bin/sh\nexec "$(bindir)/gpg-wks-client" "$$@"\n' \
+	          > $(DESTDIR)$(libexecdir)/gpg-wks-client ;\
+	   chmod +x $(DESTDIR)$(libexecdir)/gpg-wks-client ;\
+	 fi )
+
+uninstall-local:
+	(if [ "$(libexecdir)" != "$(bindir)" ]; then \
+	   rm $(DESTDIR)$(libexecdir)/gpg-wks-client || true ;\
+         fi )
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.

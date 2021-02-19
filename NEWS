@@ -9,6 +9,9 @@ Noteworthy changes in version 2.3.0 (unreleased)
     put "use-keyboxd" into gpg.conf and gpgsm.conf.  Keys are stored
     in a SQLite database and make key lookup much faster.
 
+  * The gpg-wks-client tool is now installed under bin; a wrapper for
+    its old location at libexec is also installed.
+
 
   Changes also found in 2.2.27:
 
