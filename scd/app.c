@@ -264,11 +264,99 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
   if (!want_undefined)
     {
       err = iso7816_select_file (slot, 0x3F00, 1);
-      if (!err)
+      if (gpg_err_code (err) == GPG_ERR_CARD)
+        {
+          /* Might be SW==0x7D00.  Let's test whether it is a Yubikey
+           * by selecting its manager application and then reading the
+           * config.  */
+          static char const yk_aid[] =
+            { 0xA0, 0x00, 0x00, 0x05, 0x27, 0x47, 0x11, 0x17 }; /*MGR*/
+          static char const otp_aid[] =
+            { 0xA0, 0x00, 0x00, 0x05, 0x27, 0x20, 0x01 }; /*OTP*/
+          unsigned char *buf;
+          size_t buflen;
+          const unsigned char *s0;
+          unsigned char formfactor;
+          size_t n;
+
+          if (!iso7816_select_application (slot, yk_aid, sizeof yk_aid,
+                                           0x0001)
+              && !iso7816_apdu_direct (slot, "\x00\x1d\x00\x00\x00", 5, 0,
+                                       NULL, &buf, &buflen))
+            {
+              app->cardtype = CARDTYPE_YUBIKEY;
+              if (opt.verbose)
+                {
+                  log_info ("Yubico: config=");
+                  log_printhex (buf, buflen, "");
+                }
+
+              /* We skip the first byte which seems to be the total
+               * length of the config data.  */
+              if (buflen > 1)
+                {
+                  s0 = find_tlv (buf+1, buflen-1, 0x04, &n);  /* Form factor */
+                  formfactor = (s0 && n == 1)? *s0 : 0;
+
+                  s0 = find_tlv (buf+1, buflen-1, 0x02, &n);  /* Serial */
+                  if (s0 && n >= 4)
+                    {
+                      app->serialno = xtrymalloc (3 + 1 + n);
+                      if (app->serialno)
+                        {
+                          app->serialnolen = 3 + 1 + n;
+                          app->serialno[0] = 0xff;
+                          app->serialno[1] = 0x02;
+                          app->serialno[2] = 0x0;
+                          app->serialno[3] = formfactor;
+                          memcpy (app->serialno + 4, s0, n);
+                          err = app_munge_serialno (app);
+                        }
+                    }
+
+                  s0 = find_tlv (buf+1, buflen-1, 0x05, &n);  /* version */
+                  if (s0 && n == 3)
+                    app->cardversion = ((s0[0]<<16)|(s0[1]<<8)|s0[2]);
+                  else if (!s0)
+                    {
+                      /* No version - this is not a Yubikey 5.  We now
+                       * switch to the OTP app and take the first
+                       * three bytes of the response as version
+                       * number.  */
+                      xfree (buf);
+                      buf = NULL;
+                      if (!iso7816_select_application_ext (slot,
+                                                       otp_aid, sizeof otp_aid,
+                                                       1, &buf, &buflen)
+                          && buflen > 3)
+                        app->cardversion = ((buf[0]<<16)|(buf[1]<<8)|buf[2]);
+                    }
+                }
+              xfree (buf);
+            }
+        }
+      else
+        {
+          unsigned char *atr;
+          size_t atrlen;
+
+          /* This is heuristics to identify different implementations.  */
+          atr = apdu_get_atr (slot, &atrlen);
+          if (atr)
+            {
+              if (atrlen == 21 && atr[2] == 0x11)
+                app->cardtype = CARDTYPE_GNUK;
+              else if (atrlen == 21 && atr[7] == 0x75)
+                app->cardtype = CARDTYPE_ZEITCONTROL;
+              xfree (atr);
+            }
+        }
+
+      if (!err && app->cardtype != CARDTYPE_YUBIKEY)
         err = iso7816_select_file (slot, 0x2F02, 0);
-      if (!err)
+      if (!err && app->cardtype != CARDTYPE_YUBIKEY)
         err = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
-      if (!err)
+      if (!err && app->cardtype != CARDTYPE_YUBIKEY)
         {
           size_t n;
           const unsigned char *p;
@@ -320,6 +408,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
   else
     err = gpg_error (GPG_ERR_NOT_FOUND);
 
+  /* Fixme: Use a table like we do in 2.3.  */
   if (err && is_app_allowed ("openpgp")
           && (!name || !strcmp (name, "openpgp")))
     err = app_select_openpgp (app);
@@ -613,6 +702,90 @@ app_get_serialno (app_t app)
     serial = bin2hex (app->serialno, app->serialnolen, NULL);
 
   return serial;
+}
+
+
+/* Return an allocated string with the serial number in a format to be
+ * show to the user.  With NOFALLBACK set to true return NULL if such an
+ * abbreviated S/N is not available, else return the full serial
+ * number as a hex string.  May return NULL on malloc problem.  */
+char *
+app_get_dispserialno (app_t app, int nofallback)
+{
+  char *result, *p;
+  unsigned long sn;
+
+  if (app && app->serialno && app->serialnolen == 3+1+4
+      && !memcmp (app->serialno, "\xff\x02\x00", 3))
+    {
+      /* This is a 4 byte S/N of a Yubikey which seems to be printed
+       * on the token in decimal.  Maybe they will print larger S/N
+       * also in decimal but we can't be sure, thus do it only for
+       * these 32 bit numbers.  */
+      sn  = app->serialno[4] * 16777216;
+      sn += app->serialno[5] * 65536;
+      sn += app->serialno[6] * 256;
+      sn += app->serialno[7];
+      if ((app->cardversion >> 16) >= 5)
+        result = xtryasprintf ("%lu %03lu %03lu",
+                               (sn/1000000ul),
+                               (sn/1000ul % 1000ul),
+                               (sn % 1000ul));
+      else
+        result = xtryasprintf ("%lu", sn);
+    }
+  else if (app && app->cardtype == CARDTYPE_YUBIKEY)
+    {
+      /* Get back the printed Yubikey number from the OpenPGP AID
+       * Example: D2760001240100000006120808620000
+       */
+      result = app_get_serialno (app);
+      if (result && strlen (result) >= 28 && !strncmp (result+16, "0006", 4))
+        {
+          sn  = atoi_4 (result+20) * 10000;
+          sn += atoi_4 (result+24);
+          if ((app->cardversion >> 16) >= 5)
+            p = xtryasprintf ("%lu %03lu %03lu",
+                              (sn/1000000ul),
+                              (sn/1000ul % 1000ul),
+                              (sn % 1000ul));
+          else
+            p = xtryasprintf ("%lu", sn);
+          if (p)
+            {
+              xfree (result);
+              result = p;
+            }
+        }
+      else if (nofallback)
+        {
+          xfree (result);
+          result = NULL;
+        }
+    }
+  else if (app && app->apptype == APPTYPE_OPENPGP)
+    {
+      /* Extract number from standard OpenPGP AID.  */
+      result = app_get_serialno (app);
+      if (result && strlen (result) > 16+12)
+        {
+          memcpy (result, result+16, 4);
+          result[4] = ' ';
+          memcpy (result+5, result+20, 8);
+          result[13] = 0;
+        }
+      else if (nofallback)
+        {
+          xfree (result);
+          result = NULL;
+        }
+    }
+  else if (nofallback)
+    result = NULL;  /* No Abbreviated S/N.  */
+  else
+    result = app_get_serialno (app);
+
+  return result;
 }
 
 

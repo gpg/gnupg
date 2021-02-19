@@ -101,7 +101,7 @@ struct app_ctx_s {
   apptype_t apptype;
   unsigned int appversion; /* Version of the application or 0.     */
   cardtype_t cardtype;     /* The token's type.  */
-  unsigned int card_version;
+  unsigned int cardversion;/* Firmware version of the token or 0.  */
   unsigned int card_status;
   unsigned int reset_requested:1;
   unsigned int periodical_check_needed:1;
@@ -213,6 +213,7 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 /*-- app.c --*/
 void app_send_card_list (ctrl_t ctrl);
 char *app_get_serialno (app_t app);
+char *app_get_dispserialno (app_t app, int nofallback);
 
 void app_dump_state (void);
 void application_notify_card_reset (int slot);

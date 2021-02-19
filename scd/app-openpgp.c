@@ -1084,17 +1084,14 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   if (table[idx].special == -4)
     {
-      char *serial = app_get_serialno (app);
+      char *serial = app_get_dispserialno (app, 0);
 
       if (serial)
         {
-          if (strlen (serial) > 16+12)
-            {
-              send_status_info (ctrl, table[idx].name, serial+16, 12, NULL, 0);
-              xfree (serial);
-              return 0;
-            }
+          send_status_info (ctrl, table[idx].name,
+                            serial, strlen (serial), NULL, 0);
           xfree (serial);
+          return 0;
         }
       return gpg_error (GPG_ERR_INV_NAME);
     }
