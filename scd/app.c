@@ -865,7 +865,7 @@ app_readkey (app_t app, ctrl_t ctrl, int advanced, const char *keyid,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err= app->fnc.readkey (app, advanced, keyid, pk, pklen);
+  err= app->fnc.readkey (app, ctrl, advanced, keyid, pk, pklen);
   unlock_app (app);
   return err;
 }
@@ -928,7 +928,7 @@ app_setattr (app_t app, ctrl_t ctrl, const char *name,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err = app->fnc.setattr (app, name, pincb, pincb_arg, value, valuelen);
+  err = app->fnc.setattr (app, ctrl, name, pincb, pincb_arg, value, valuelen);
   unlock_app (app);
   return err;
 }
@@ -954,7 +954,7 @@ app_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err = app->fnc.sign (app, keyidstr, hashalgo,
+  err = app->fnc.sign (app, ctrl, keyidstr, hashalgo,
                        pincb, pincb_arg,
                        indata, indatalen,
                        outdata, outdatalen);
@@ -986,7 +986,7 @@ app_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err = app->fnc.auth (app, keyidstr,
+  err = app->fnc.auth (app, ctrl, keyidstr,
                        pincb, pincb_arg,
                        indata, indatalen,
                        outdata, outdatalen);
@@ -1021,7 +1021,7 @@ app_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err = app->fnc.decipher (app, keyidstr,
+  err = app->fnc.decipher (app, ctrl, keyidstr,
                            pincb, pincb_arg,
                            indata, indatalen,
                            outdata, outdatalen,
@@ -1183,7 +1183,7 @@ app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
   err = lock_app (app, ctrl);
   if (err)
     return err;
-  err = app->fnc.check_pin (app, keyidstr, pincb, pincb_arg);
+  err = app->fnc.check_pin (app, ctrl, keyidstr, pincb, pincb_arg);
   unlock_app (app);
   if (opt.verbose)
     log_info ("operation check_pin result: %s\n", gpg_strerror (err));

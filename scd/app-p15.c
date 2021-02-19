@@ -3622,7 +3622,7 @@ verify_pin (app_t app,
    that callback should return the PIN in an allocated buffer and
    store that as the 3rd argument.  */
 static gpg_error_t
-do_sign (app_t app, const char *keyidstr, int hashalgo,
+do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -3651,6 +3651,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   unsigned char *dataptr;
   int exmode, le_value;
 
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -3872,7 +3873,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
    must match the criteria used for the attribute $AUTHKEYID.  See
    do_sign for calling conventions; there is no HASHALGO, though. */
 static gpg_error_t
-do_auth (app_t app, const char *keyidstr,
+do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -3895,7 +3896,7 @@ do_auth (app_t app, const char *keyidstr,
     }
 
   algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
-  return do_sign (app, keyidstr, algo, pincb, pincb_arg,
+  return do_sign (app, ctrl, keyidstr, algo, pincb, pincb_arg,
                   indata, indatalen, outdata, outdatalen);
 }
 
@@ -3905,7 +3906,7 @@ do_auth (app_t app, const char *keyidstr,
  * PINCB will be used to ask for the PIN; it should return the PIN in
  * an allocated buffer and put it into PIN.  */
 static gpg_error_t
-do_decipher (app_t app, const char *keyidstr,
+do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
@@ -3917,6 +3918,7 @@ do_decipher (app_t app, const char *keyidstr,
   aodf_object_t aodf;      /* The associated authentication object. */
   int exmode, le_value, padind;
 
+  (void)ctrl;
   (void)r_info;
 
   if (!keyidstr || !*keyidstr)

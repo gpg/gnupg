@@ -247,7 +247,7 @@ struct app_local_s {
 static unsigned long convert_sig_counter_value (const unsigned char *value,
                                                 size_t valuelen);
 static unsigned long get_sig_counter (app_t app);
-static gpg_error_t do_auth (app_t app, const char *keyidstr,
+static gpg_error_t do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
                             gpg_error_t (*pincb)(void*, const char *, char **),
                             void *pincb_arg,
                             const void *indata, size_t indatalen,
@@ -1977,12 +1977,14 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
    buffer. On error PK and PKLEN are not changed and an error code is
    returned.  */
 static gpg_error_t
-do_readkey (app_t app, int advanced, const char *keyid,
+do_readkey (app_t app, ctrl_t ctrl, int advanced, const char *keyid,
             unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
   int keyno;
   unsigned char *buf;
+
+  (void)ctrl;
 
   if (!strcmp (keyid, "OPENPGP.1"))
     keyno = 0;
@@ -2557,7 +2559,7 @@ verify_chv3 (app_t app,
 /* Handle the SETATTR operation. All arguments are already basically
    checked. */
 static gpg_error_t
-do_setattr (app_t app, const char *name,
+do_setattr (app_t app, ctrl_t ctrl, const char *name,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg,
             const unsigned char *value, size_t valuelen)
@@ -2594,6 +2596,8 @@ do_setattr (app_t app, const char *name,
     { NULL, 0 }
   };
   int exmode;
+
+  (void)ctrl;
 
   for (idx=0; table[idx].name && strcmp (table[idx].name, name); idx++)
     ;
@@ -2667,8 +2671,6 @@ do_writecert (app_t app, ctrl_t ctrl,
               void *pincb_arg,
               const unsigned char *certdata, size_t certdatalen)
 {
-  (void)ctrl;
-
   if (strcmp (certidstr, "OPENPGP.3"))
     return gpg_error (GPG_ERR_INV_ID);
   if (!certdata || !certdatalen)
@@ -2677,7 +2679,8 @@ do_writecert (app_t app, ctrl_t ctrl,
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
   if (certdatalen > app->app_local->extcap.max_certlen_3)
     return gpg_error (GPG_ERR_TOO_LARGE);
-  return do_setattr (app, "CERT-3", pincb, pincb_arg, certdata, certdatalen);
+  return do_setattr (app, ctrl, "CERT-3", pincb, pincb_arg,
+                     certdata, certdatalen);
 }
 
 
@@ -4488,7 +4491,7 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
    operation to the auth command.
 */
 static gpg_error_t
-do_sign (app_t app, const char *keyidstr, int hashalgo,
+do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -4602,7 +4605,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   /* Redirect to the AUTH command if asked to. */
   if (use_auth)
     {
-      return do_auth (app, "OPENPGP.3", pincb, pincb_arg,
+      return do_auth (app, ctrl, "OPENPGP.3", pincb, pincb_arg,
                       data, datalen,
                       outdata, outdatalen);
     }
@@ -4677,13 +4680,15 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
    not match the one required for the requested action (e.g. the
    serial number does not match). */
 static gpg_error_t
-do_auth (app_t app, const char *keyidstr,
+do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
   int rc;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -4744,7 +4749,7 @@ do_auth (app_t app, const char *keyidstr,
 
 
 static gpg_error_t
-do_decipher (app_t app, const char *keyidstr,
+do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
@@ -4757,6 +4762,8 @@ do_decipher (app_t app, const char *keyidstr,
   unsigned char *fixbuf = NULL;
   int padind = 0;
   int fixuplen = 0;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -4980,12 +4987,14 @@ do_decipher (app_t app, const char *keyidstr,
    the "[CHV3]" being a literal string:  The Admin Pin is checked if
    and only if the retry counter is still at 3. */
 static gpg_error_t
-do_check_pin (app_t app, const char *keyidstr,
+do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
   int rc;
   int admin_pin = 0;
+
+  (void)ctrl;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
