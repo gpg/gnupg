@@ -21,16 +21,29 @@ EXTRA_DIST = \
 	addgnupghome applygnupgdefaults \
 	lspgpot mail-signed-keys convert-from-106 sockprox.c \
 	ccidmon.c ChangeLog-2011 \
-	gpg-connect-agent-w32info.rc \
-	gpg-card-w32info.rc
+	gpg-connect-agent-w32info.rc gpg-connect-agent.w32-manifest.in \
+	gpgconf-w32info.rc           gpgconf.w32-manifest.in \
+	gpgtar-w32info.rc            gpgtar.w32-manifest.in \
+	gpg-check-pattern-w32info.rc gpg-check-pattern.w32-manifest.in \
+	gpg-wks-client-w32info.rc    gpg-wks-client.w32-manifest.in \
+	gpg-card-w32info.rc          gpg-card.w32-manifest.in
 
 AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
 gpg_connect_agent_rc_objs = gpg-connect-agent-w32info.o
-gpg_card_tool_rc_objs     = gpg-card-w32info.o
-resource_objs += $(gpg_connect_agent_rc_objs) $(gpg_card_tool_rc_objs)
+gpgconf_rc_objs           = gpgconf-w32info.o
+gpg_card_rc_objs          = gpg-card-w32info.o
+gpgtar_rc_objs            = gpgtar-w32info.o
+gpg_check_pattern_rc_objs = gpg-check-pattern-w32info.o
+gpg_wks_client_rc_objs    = gpg-wks-client-w32info.o
+resource_objs += $(gpg_connect_agent_rc_objs)
+resource_objs += $(gpgconf_rc_objs)
+resource_objs += $(gpg_card_tool_rc_objs)
+resource_objs += $(gpgtar_rc_objs)
+resource_objs += $(gpg_check_pattern_rc_objs)
+resource_objs += $(gpg_wks_client_rc_objs)
 endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
@@ -98,7 +111,8 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
                 $(LIBINTL) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
-	        $(LIBICONV) $(W32SOCKLIBS)
+	        $(LIBICONV) $(W32SOCKLIBS) \
+	        $(gpgconf_rc_objs)
 gpgconf_LDFLAGS = $(extra_bin_ldflags)
 
 gpgconf_w32_SOURCES = $(gpgconf_SOURCES)
@@ -132,7 +146,7 @@ gpg_card_LDADD = \
 	$(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
 	$(GPG_ERROR_LIBS) \
         $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
-        $(gpg_card_tool_rc_objs)
+        $(gpg_card_rc_objs)
 
 
 gpg_check_pattern_SOURCES = gpg-check-pattern.c
@@ -140,7 +154,8 @@ gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_check_pattern_LDADD = $(common_libs) $(regexp_libs) $(LIBGCRYPT_LIBS) \
 			  $(GPG_ERROR_LIBS) \
 			  $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS) \
-			  $(LIBICONV)
+			  $(LIBICONV) \
+		          $(gpg_check_pattern_rc_objs)
 
 gpgtar_SOURCES = \
 	gpgtar.c gpgtar.h \
@@ -149,7 +164,8 @@ gpgtar_SOURCES = \
 	gpgtar-list.c
 gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS)
 gpgtar_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-               $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
+               $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS) \
+	       $(gpgtar_rc_objs)
 
 gpg_wks_server_SOURCES = \
 	gpg-wks-server.c \
@@ -179,7 +195,8 @@ gpg_wks_client_SOURCES = \
 gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_client_LDADD = $(libcommon) \
 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-		       $(LIBINTL) $(LIBICONV) $(NETLIBS)
+		       $(LIBINTL) $(LIBICONV) $(NETLIBS) \
+	               $(gpg_wks_client_rc_objs)
 
 gpg_pair_tool_SOURCES = \
 	gpg-pair-tool.c

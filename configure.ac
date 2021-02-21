@@ -1,6 +1,7 @@
 # configure.ac - for GnuPG 2.1
-# Copyright (C) 1998-2018 Free Software Foundation, Inc.
-# Copyright (C) 1998-2018 Werner Koch
+# Copyright (C) 1998-2019 Werner Koch
+# Copyright (C) 1998-2021 Free Software Foundation, Inc.
+# Copyright (C) 2003-2021 g10 Code GmbH
 #
 # This file is part of GnuPG.
 #
@@ -512,8 +513,21 @@ AH_BOTTOM([
 #define GNUPG_OPENPGP_REVOC_DIR "openpgp-revocs.d"
 #define GNUPG_CACHE_DIR         "cache.d"
 
+/* GnuPG has always been a part of the GNU project and thus we have
+ * shown the FSF as holder of the copyright.  We continue to do so for
+ * the reason that without the FSF the free software used all over the
+ * world would not have come into existence.  However, under Windows
+ * we print a different copyright string with --version because the
+ * copyright assignments of g10 Code and Werner Koch were terminated
+ * many years ago, g10 Code is still the major contributor to the
+ * code, and Windows is not an FSF endorsed platform.  Note that the
+ * actual list of copyright holders can be found in the AUTHORS file.  */
+#ifdef HAVE_W32_SYSTEM
+#define GNUPG_DEF_COPYRIGHT_LINE "Copyright (C) 2021 g10 Code GmbH"
+#else
 #define GNUPG_DEF_COPYRIGHT_LINE \
-        "Copyright (C) 2020 Free Software Foundation, Inc."
+        "Copyright (C) 2021 Free Software Foundation, Inc."
+#endif
 
 /* For some systems (DOS currently), we hardcode the path here.  For
    POSIX systems the values are constructed by the Makefiles, so that
@@ -2038,6 +2052,12 @@ tests/gpgsm/Makefile
 tests/gpgme/Makefile
 tests/pkits/Makefile
 g10/gpg.w32-manifest
+tools/gpg-connect-agent.w32-manifest
+tools/gpgconf.w32-manifest
+tools/gpgtar.w32-manifest
+tools/gpg-check-pattern.w32-manifest
+tools/gpg-wks-client.w32-manifest
+tools/gpg-card.w32-manifest
 ])
 
 
