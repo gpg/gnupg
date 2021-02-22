@@ -46,6 +46,22 @@
 #include "apdu.h" /* fixme: we should move the card detection to a
                      separate file */
 
+
+static const char oid_kp_codeSigning[]    = "1.3.6.1.5.5.7.3.3";
+static const char oid_kp_timeStamping[]   = "1.3.6.1.5.5.7.3.8";
+static const char oid_kp_ocspSigning[]    = "1.3.6.1.5.5.7.3.9";
+static const char oid_kp_ms_documentSigning[] = "1.3.6.1.4.1.311.10.3.12";
+static const char oid_kp_ms_old_documentSigning[] = "1.3.6.1.4.1.311.3.10.3.12";
+
+static const char oid_kp_emailProtection[]= "1.3.6.1.5.5.7.3.4";
+
+static const char oid_kp_serverAuth[]     = "1.3.6.1.5.5.7.3.1";
+static const char oid_kp_clientAuth[]     = "1.3.6.1.5.5.7.3.2";
+static const char oid_kp_ms_smartcardLogon[] = "1.3.6.1.4.1.311.20.2.2";
+
+static const char oid_kp_anyExtendedKeyUsage[] = "2.5.29.37.0";
+
+
 /* Types of cards we know and which needs special treatment. */
 typedef enum
   {
@@ -170,10 +186,9 @@ struct cdf_object_s
   size_t objidlen;
   unsigned char *objid;
 
-  /* To avoid reading a certificate more than once, we cache it in an
-     allocated memory IMAGE of IMAGELEN. */
-  size_t imagelen;
-  unsigned char *image;
+  /* To avoid reading and parsing a certificate more than once, we
+   * cache the ksba object.  */
+  ksba_cert_t cert;
 
   /* The offset and length of the object.  They are only valid if
      HAVE_OFF is true and set to 0 if HAVE_OFF is false. */
@@ -209,6 +224,15 @@ struct prkdf_object_s
 
   /* The key's usage flags. */
   keyusage_flags_t usageflags;
+
+  /* Extended key usage flags.  Only used if .valid is set.  This
+   * information is computed from an associated certificate15.  */
+  struct {
+    unsigned int valid:1;
+    unsigned int sign:1;
+    unsigned int encr:1;
+    unsigned int auth:1;
+  } extusage;
 
   /* The keygrip of the key.  This is used as a cache.  */
   char keygrip[2*KEYGRIP_LEN+1];
@@ -420,7 +444,7 @@ release_cdflist (cdf_object_t a)
   while (a)
     {
       cdf_object_t tmp = a->next;
-      xfree (a->image);
+      ksba_free (a->cert);
       xfree (a->objid);
       xfree (a);
       a = tmp;
@@ -702,19 +726,13 @@ parse_certid (app_t app, const char *certid,
 }
 
 
-/* Find a certificate object by the certificate ID CERTID and store a
-   pointer to it at R_CDF. */
+/* Find a certificate object by its object ID and store a pointer to
+ * it at R_CDF. */
 static gpg_error_t
-cdf_object_from_certid (app_t app, const char *certid, cdf_object_t *r_cdf)
+cdf_object_from_objid (app_t app, size_t objidlen, const unsigned char *objid,
+                       cdf_object_t *r_cdf)
 {
-  gpg_error_t err;
-  size_t objidlen;
-  unsigned char *objid;
   cdf_object_t cdf;
-
-  err = parse_certid (app, certid, &objid, &objidlen);
-  if (err)
-    return err;
 
   for (cdf = app->app_local->certificate_info; cdf; cdf = cdf->next)
     if (cdf->objidlen == objidlen && !memcmp (cdf->objid, objid, objidlen))
@@ -727,6 +745,28 @@ cdf_object_from_certid (app_t app, const char *certid, cdf_object_t *r_cdf)
     for (cdf = app->app_local->useful_certificate_info; cdf; cdf = cdf->next)
       if (cdf->objidlen == objidlen && !memcmp (cdf->objid, objid, objidlen))
         break;
+  if (!cdf)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+  *r_cdf = cdf;
+  return 0;
+}
+
+
+/* Find a certificate object by the certificate ID CERTID and store a
+ * pointer to it at R_CDF. */
+static gpg_error_t
+cdf_object_from_certid (app_t app, const char *certid, cdf_object_t *r_cdf)
+{
+  gpg_error_t err;
+  size_t objidlen;
+  unsigned char *objid;
+  cdf_object_t cdf;
+
+  err = parse_certid (app, certid, &objid, &objidlen);
+  if (err)
+    return err;
+
+  err = cdf_object_from_objid (app, objidlen, objid, &cdf);
   xfree (objid);
   if (!cdf)
     return gpg_error (GPG_ERR_NOT_FOUND);
@@ -1355,7 +1395,6 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       keyusage_flags_t usageflags;
       unsigned long key_reference = 0;
       int key_reference_valid = 0;
-      const char *s;
 
       where = __LINE__;
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
@@ -1553,42 +1592,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           prkdf->len = ul;
         }
 
-
-      if (opt.verbose)
-        {
-          log_info ("p15: PrKDF %04hX: id=", fid);
-          for (i=0; i < prkdf->objidlen; i++)
-            log_printf ("%02X", prkdf->objid[i]);
-          log_printf (" path=");
-          for (i=0; i < prkdf->pathlen; i++)
-            log_printf ("%s%04hX", i?"/":"",prkdf->path[i]);
-          if (prkdf->have_off)
-            log_printf ("[%lu/%lu]", prkdf->off, prkdf->len);
-          if (prkdf->authid)
-            {
-              log_printf (" authid=");
-              for (i=0; i < prkdf->authidlen; i++)
-                log_printf ("%02X", prkdf->authid[i]);
-            }
-          if (prkdf->key_reference_valid)
-            log_printf (" keyref=0x%02lX", prkdf->key_reference);
-          log_info ("p15:             usage=");
-          s = "";
-          if (prkdf->usageflags.encrypt) log_printf ("%sencrypt", s), s = ",";
-          if (prkdf->usageflags.decrypt) log_printf ("%sdecrypt", s), s = ",";
-          if (prkdf->usageflags.sign   ) log_printf ("%ssign", s), s = ",";
-          if (prkdf->usageflags.sign_recover)
-            log_printf ("%ssign_recover", s), s = ",";
-          if (prkdf->usageflags.wrap   ) log_printf ("%swrap", s), s = ",";
-          if (prkdf->usageflags.unwrap ) log_printf ("%sunwrap", s), s = ",";
-          if (prkdf->usageflags.verify ) log_printf ("%sverify", s), s = ",";
-          if (prkdf->usageflags.verify_recover)
-            log_printf ("%sverify_recover", s), s = ",";
-          if (prkdf->usageflags.derive ) log_printf ("%sderive", s), s = ",";
-          if (prkdf->usageflags.non_repudiation)
-            log_printf ("%snon_repudiation", s), s = ",";
-          log_printf ("\n");
-        }
+      /* The info is printed later in read_p15_info because we also
+       * want to look at the certificates.  */
 
       /* Put it into the list. */
       prkdf->next = prkdflist;
@@ -3119,6 +3124,7 @@ static gpg_error_t
 read_p15_info (app_t app)
 {
   gpg_error_t err;
+  prkdf_object_t prkdf;
 
   if (!read_ef_tokeninfo (app))
     {
@@ -3188,6 +3194,117 @@ read_p15_info (app_t app)
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     err = 0;
 
+
+  /* See whether we can extend the private key information using
+   * information from certificates.  We use only the first matching
+   * certificate; if we want to change this strategy we should walk
+   * over the certificates and then find the corresponsing private key
+   * objects.  */
+  for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
+    {
+      cdf_object_t cdf;
+      char *extusage;
+      char *p, *pend;
+
+      if (opt.debug)
+        log_printhex (prkdf->objid, prkdf->objidlen, "p15: prkdf id=");
+      if (cdf_object_from_objid (app, prkdf->objidlen, prkdf->objid, &cdf))
+        continue; /* No matching certificate.  */
+      if (!cdf->cert)  /* Read and parse the certificate.  */
+        readcert_by_cdf (app, cdf, NULL, NULL);
+      if (!cdf->cert)
+        continue; /* Unsupported or broken certificate.  */
+
+      if (ksba_cert_get_ext_key_usages (cdf->cert, &extusage))
+        continue; /* No extended key usage attribute.  */
+
+      if (opt.debug)
+        log_debug ("p15: ExtKeyUsages: %s\n", extusage);
+      p = extusage;
+      while (p && (pend=strchr (p, ':')))
+        {
+          *pend++ = 0;
+          if ( *pend == 'C' ) /* Look only at critical usages.  */
+            {
+              prkdf->extusage.valid = 1;
+              if (!strcmp (p, oid_kp_codeSigning)
+                  || !strcmp (p, oid_kp_timeStamping)
+                  || !strcmp (p, oid_kp_ocspSigning)
+                  || !strcmp (p, oid_kp_ms_documentSigning)
+                  || !strcmp (p, oid_kp_ms_old_documentSigning))
+                prkdf->extusage.sign = 1;
+              else if (!strcmp (p, oid_kp_emailProtection))
+                prkdf->extusage.encr = 1;
+              else if (!strcmp (p, oid_kp_serverAuth)
+                       || !strcmp (p, oid_kp_clientAuth)
+                       || !strcmp (p, oid_kp_ms_smartcardLogon))
+                prkdf->extusage.auth = 1;
+              else if (!strcmp (p, oid_kp_anyExtendedKeyUsage))
+                {
+                  prkdf->extusage.sign = 1;
+                  prkdf->extusage.encr = 1;
+                  prkdf->extusage.auth = 1;
+                }
+            }
+
+          if ((p = strchr (pend, '\n')))
+            p++;
+        }
+      xfree (extusage);
+    }
+
+  /* Now print the info about the PrKDF.  */
+  if (opt.verbose)
+    {
+      int i;
+      const char *s;
+
+      for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
+        {
+          log_info ("p15: PrKDF %04hX: id=", app->app_local->odf.private_keys);
+          for (i=0; i < prkdf->objidlen; i++)
+            log_printf ("%02X", prkdf->objid[i]);
+          log_printf (" path=");
+          for (i=0; i < prkdf->pathlen; i++)
+            log_printf ("%s%04hX", i?"/":"",prkdf->path[i]);
+          if (prkdf->have_off)
+            log_printf ("[%lu/%lu]", prkdf->off, prkdf->len);
+          if (prkdf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < prkdf->authidlen; i++)
+                log_printf ("%02X", prkdf->authid[i]);
+            }
+          if (prkdf->key_reference_valid)
+            log_printf (" keyref=0x%02lX", prkdf->key_reference);
+          log_info ("p15:             usage=");
+          s = "";
+          if (prkdf->usageflags.encrypt) log_printf ("%sencrypt", s), s = ",";
+          if (prkdf->usageflags.decrypt) log_printf ("%sdecrypt", s), s = ",";
+          if (prkdf->usageflags.sign   ) log_printf ("%ssign", s), s = ",";
+          if (prkdf->usageflags.sign_recover)
+            log_printf ("%ssign_recover", s), s = ",";
+          if (prkdf->usageflags.wrap   ) log_printf ("%swrap", s), s = ",";
+          if (prkdf->usageflags.unwrap ) log_printf ("%sunwrap", s), s = ",";
+          if (prkdf->usageflags.verify ) log_printf ("%sverify", s), s = ",";
+          if (prkdf->usageflags.verify_recover)
+            log_printf ("%sverify_recover", s), s = ",";
+          if (prkdf->usageflags.derive ) log_printf ("%sderive", s), s = ",";
+          if (prkdf->usageflags.non_repudiation)
+            log_printf ("%snon_repudiation", s), s = ",";
+          if (prkdf->extusage.valid)
+            log_info ("p15:             extusage=%s%s%s%s%s",
+                      prkdf->extusage.sign? "sign":"",
+                      (prkdf->extusage.sign
+                       && prkdf->extusage.encr)?",":"",
+                      prkdf->extusage.encr? "encr":"",
+                      ((prkdf->extusage.sign || prkdf->extusage.encr)
+                       && prkdf->extusage.auth)?",":"",
+                      prkdf->extusage.auth? "auth":"");
+
+          log_printf ("\n");
+        }
+    }
 
   return err;
 }
@@ -3419,18 +3536,23 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
           char usage[5];
           size_t usagelen = 0;
 
-          if (prkdf->usageflags.sign
-              || prkdf->usageflags.sign_recover
-              || prkdf->usageflags.non_repudiation)
+          if ((prkdf->usageflags.sign
+               || prkdf->usageflags.sign_recover
+               || prkdf->usageflags.non_repudiation)
+              && (!prkdf->extusage.valid
+                  || prkdf->extusage.sign))
             usage[usagelen++] = 's';
-          if (prkdf->usageflags.sign
-              || prkdf->usageflags.sign_recover)
+          if ((prkdf->usageflags.sign
+               || prkdf->usageflags.sign_recover)
+              && (!prkdf->extusage.valid || prkdf->extusage.sign))
             usage[usagelen++] = 'c';
-          if (prkdf->usageflags.decrypt
-              || prkdf->usageflags.unwrap)
+          if ((prkdf->usageflags.decrypt
+               || prkdf->usageflags.unwrap)
+              && (!prkdf->extusage.valid || prkdf->extusage.encr))
             usage[usagelen++] = 'e';
-          if (prkdf->usageflags.sign
-              || prkdf->usageflags.sign_recover)
+          if ((prkdf->usageflags.sign
+               || prkdf->usageflags.sign_recover)
+              && (!prkdf->extusage.valid || prkdf->extusage.auth))
             usage[usagelen++] = 'a';
 
           log_assert (strlen (prkdf->keygrip) == 40);
@@ -3476,9 +3598,10 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 }
 
 
-/* Read a certifciate using the information in CDF and return the
-   certificate in a newly llocated buffer R_CERT and its length
-   R_CERTLEN. */
+/* Read a certificate using the information in CDF and return the
+ * certificate in a newly malloced buffer R_CERT and its length
+ * R_CERTLEN.  Also parses the certificate.  R_CERT and R_CERTLEN may
+ * be NULL to do just the caching.  */
 static gpg_error_t
 readcert_by_cdf (app_t app, cdf_object_t cdf,
                  unsigned char **r_cert, size_t *r_certlen)
@@ -3492,17 +3615,32 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
   int rootca;
   int i;
 
-  *r_cert = NULL;
-  *r_certlen = 0;
+  if (r_cert)
+    *r_cert = NULL;
+  if (r_certlen)
+    *r_certlen = 0;
 
   /* First check whether it has been cached. */
-  if (cdf->image)
+  if (cdf->cert)
     {
-      *r_cert = xtrymalloc (cdf->imagelen);
+      const unsigned char *image;
+      size_t imagelen;
+
+      if (!r_cert || !r_certlen)
+        return 0; /* Caller does not actually want the result. */
+
+      image = ksba_cert_get_image (cdf->cert, &imagelen);
+      if (!image)
+        {
+          log_error ("p15: ksba_cert_get_image failed: %s\n",
+                     gpg_strerror (err));
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+      *r_cert = xtrymalloc (imagelen);
       if (!*r_cert)
         return gpg_error_from_syserror ();
-      memcpy (*r_cert, cdf->image, cdf->imagelen);
-      *r_certlen = cdf->imagelen;
+      memcpy (*r_cert, image, imagelen);
+      *r_certlen = imagelen;
       return 0;
     }
 
@@ -3547,7 +3685,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       goto leave;
     }
   totobjlen = objlen + hdrlen;
-  assert (totobjlen <= buflen);
+  log_assert (totobjlen <= buflen);
 
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
@@ -3578,21 +3716,38 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
           goto leave;
         }
       totobjlen = objlen + hdrlen;
-      assert (save_p + totobjlen <= buffer + buflen);
+      log_assert (save_p + totobjlen <= buffer + buflen);
       memmove (buffer, save_p, totobjlen);
     }
 
-  *r_cert = buffer;
-  buffer = NULL;
-  *r_certlen = totobjlen;
 
-  /* Try to cache it. */
-  if (!cdf->image && (cdf->image = xtrymalloc (*r_certlen)))
+  /* Try to parse and cache the certificate. */
+  err = ksba_cert_new (&cdf->cert);
+  if (!err)
     {
-      memcpy (cdf->image, *r_cert, *r_certlen);
-      cdf->imagelen = *r_certlen;
-    }
+      err = ksba_cert_init_from_mem (cdf->cert, buffer, totobjlen);
+      if (!err) /* Call us to use the just cached cert object.  */
+        err = readcert_by_cdf (app, cdf, r_cert, r_certlen);
+      if (err)
+        {
+          ksba_cert_release (cdf->cert);
+          cdf->cert = NULL;
+        }
 
+    }
+  if (err)
+    {
+      log_error ("p15: caching certificate failed: %s\n",
+                 gpg_strerror (err));
+      /* We return the certificate anyway so that the caller has a
+       * chance to get an even unsupported or broken certificate.  */
+      if (r_cert && r_certlen)
+        {
+          *r_cert = buffer;
+          buffer = NULL;
+          *r_certlen = totobjlen;
+        }
+    }
 
  leave:
   xfree (buffer);

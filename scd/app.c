@@ -1035,7 +1035,8 @@ select_additional_application (ctrl_t ctrl, const char *name)
       if (!err)
         {
           ctrl->current_apptype = req_apptype;
-          log_debug ("current_apptype is set to %s\n", name);
+          if (DBG_APP)
+            log_debug ("current_apptype is set to %s\n", name);
         }
     }
   else
@@ -2230,7 +2231,8 @@ scd_update_reader_status_file (void)
 
           if (status == 0)
             {
-              log_debug ("Removal of a card: %d\n", card->slot);
+              if (DBG_APP)
+                log_debug ("Removal of a card: %d\n", card->slot);
               pincache_put (NULL, card->slot, NULL, NULL, NULL, 0);
               apdu_close_reader (card->slot);
               deallocate_card (card);
