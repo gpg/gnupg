@@ -768,8 +768,8 @@ cdf_object_from_certid (app_t app, const char *certid, cdf_object_t *r_cdf)
 
   err = cdf_object_from_objid (app, objidlen, objid, &cdf);
   xfree (objid);
-  if (!cdf)
-    return gpg_error (GPG_ERR_NOT_FOUND);
+  if (err)
+    return err;
   *r_cdf = cdf;
   return 0;
 }

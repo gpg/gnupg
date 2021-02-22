@@ -620,61 +620,55 @@ do_readkey (card_t card, ctrl_t ctrl, const char *line,
                     opt_info? APP_READKEY_FLAG_INFO : 0,
                     opt_nokey? NULL : pk_p, pklen_p);
   if (!rc)
-    /* Okay, got that key.  */
-    return 0;
-
-  if (gpg_err_code (rc) == GPG_ERR_UNSUPPORTED_OPERATION
-      || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+    ; /* Got the key.  */
+  else if (gpg_err_code (rc) == GPG_ERR_UNSUPPORTED_OPERATION
+           || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
+      /* Fall back to certificate reading.  */
       unsigned char *cert = NULL;
       size_t ncert;
 
-      /* Fall back to certificate reading.  */
       rc = app_readcert (card, ctrl, line, &cert, &ncert);
       if (rc)
+        log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
+      else
         {
-          log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
-          return rc;
-        }
-
-      rc = app_help_pubkey_from_cert (cert, ncert, pk_p, pklen_p);
-      xfree (cert);
-      if (rc)
-        {
-          log_error ("failed to parse the certificate: %s\n",
-                     gpg_strerror (rc));
-          return rc;
-        }
-
-      if (opt_info)
-        {
-          char keygripstr[KEYGRIP_LEN*2+1];
-          char *algostr;
-
-          rc = app_help_get_keygrip_string_pk (*pk_p, *pklen_p,
-                                               keygripstr, NULL, NULL,
-                                               &algostr);
+          rc = app_help_pubkey_from_cert (cert, ncert, pk_p, pklen_p);
+          xfree (cert);
           if (rc)
-            {
-              log_error ("app_help_get_keygrip_string failed: %s\n",
-                         gpg_strerror (rc));
-              return rc;
-            }
-
-          /* FIXME: Using LINE is not correct because it might be an
-           * OID and has not been canonicalized (i.e. uppercased).  */
-          send_status_info (ctrl, "KEYPAIRINFO",
-                            keygripstr, strlen (keygripstr),
-                            line, strlen (line),
-                            "-", (size_t)1,
-                            "-", (size_t)1,
-                            algostr, strlen (algostr),
-                            NULL, (size_t)0);
-          xfree (algostr);
+            log_error ("failed to parse the certificate: %s\n",
+                       gpg_strerror (rc));
         }
     }
   else
     log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
+
+  if (!rc && opt_info)
+    {
+      char keygripstr[KEYGRIP_LEN*2+1];
+      char *algostr;
+
+      rc = app_help_get_keygrip_string_pk (*pk_p, *pklen_p,
+                                           keygripstr, NULL, NULL,
+                                           &algostr);
+      if (rc)
+        {
+          log_error ("app_help_get_keygrip_string failed: %s\n",
+                     gpg_strerror (rc));
+          return rc;
+        }
+
+      /* FIXME: Using LINE is not correct because it might be an
+       * OID and has not been canonicalized (i.e. uppercased).  */
+      send_status_info (ctrl, "KEYPAIRINFO",
+                        keygripstr, strlen (keygripstr),
+                        line, strlen (line),
+                        "-", (size_t)1,
+                        "-", (size_t)1,
+                        algostr, strlen (algostr),
+                        NULL, (size_t)0);
+      xfree (algostr);
+    }
 
   return rc;
 }
