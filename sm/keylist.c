@@ -159,6 +159,7 @@ static struct
   { "2.5.29.35", "authorityKeyIdentifier", OID_FLAG_SKIP},
   { "2.5.29.36", "policyConstraints" },
   { "2.5.29.37", "extKeyUsage", OID_FLAG_SKIP},
+  { "2.5.29.37.0", "anyExtendedKeyUsage", OID_FLAG_KP},
   { "2.5.29.46", "freshestCRL" },
   { "2.5.29.54", "inhibitAnyPolicy" },
 
@@ -191,11 +192,22 @@ static struct
   { "1.3.6.1.4.1.41482.3.9", "yubikey-formfactor", OID_FLAG_HEX },
 
   /* Microsoft extensions.  */
-  { "1.3.6.1.4.1.311.10.3.3", "serverGatedCrypto.ms", OID_FLAG_KP },
-  { "1.3.6.1.4.1.311.20.2.2", "microsoft-smartcard-logon" },
+  { "1.3.6.1.4.1.311.3.10.3.12","ms-old-documentSigning", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.10.3.3", "ms-serverGatedCrypto", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.10.3.11","ms-keyRecovery", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.10.3.12","ms-documentSigning", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.10.3.4", "ms-encryptedFileSystem", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.10.3.4.1","ms-efsRecovery", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.20.2.1", "ms-enrollmentAgent", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.20.2.2", "ms-smartcardLogon", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.21.5",   "ms-caExchange", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.21.6",   "ms-keyRecovery", OID_FLAG_KP },
+  { "1.3.6.1.4.1.311.21.19",  "ms-dsEmailReplication", OID_FLAG_KP },
 
-  /* Oterh vendor extensions.  */
+  /* Other vendor extensions.  */
   { "1.3.6.1.4.1.30205.13.1.1", "trusted-disk", OID_FLAG_KP },
+  { "1.2.840.113583.1.1.5",     "pdfAuthenticDocumentsTrust", OID_FLAG_KP },
+  { "1.3.6.1.4.1.6449.1.3.5.2", "comodoCertifiedDeliveryService", OID_FLAG_KP },
 
   { NULL }
 };
