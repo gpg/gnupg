@@ -60,6 +60,7 @@ map_sw (int sw)
     case SW_ACK_TIMEOUT:    ec = GPG_ERR_TIMEOUT; break;
     case SW_SM_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_CC_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
+    case SW_FILE_STRUCT:    ec = GPG_ERR_CARD; break;
     case SW_CHV_WRONG:      ec = GPG_ERR_BAD_PIN; break;
     case SW_CHV_BLOCKED:    ec = GPG_ERR_PIN_BLOCKED; break;
     case SW_USE_CONDITIONS: ec = GPG_ERR_USE_CONDITIONS; break;

@@ -523,7 +523,7 @@ do_deinit (app_t app)
 /* Do a select and a read for the file with EFID.  EFID_DESC is a
    desctription of the EF to be used with error messages.  On success
    BUFFER and BUFLEN contain the entire content of the EF.  The caller
-   must free BUFFER only on success. */
+   must free BUFFER only on success.  If EFID is 0 no seelct is done. */
 static gpg_error_t
 select_and_read_binary (app_t app, unsigned short efid, const char *efid_desc,
                         unsigned char **buffer, size_t *buflen)
@@ -531,12 +531,15 @@ select_and_read_binary (app_t app, unsigned short efid, const char *efid_desc,
   gpg_error_t err;
   int sw;
 
-  err = select_ef_by_path (app, &efid, 1);
-  if (err)
+  if (efid)
     {
-      log_error ("p15: error selecting %s (0x%04X): %s\n",
-                 efid_desc, efid, gpg_strerror (err));
-      return err;
+      err = select_ef_by_path (app, &efid, 1);
+      if (err)
+        {
+          log_error ("p15: error selecting %s (0x%04X): %s\n",
+                     efid_desc, efid, gpg_strerror (err));
+          return err;
+        }
     }
 
   err = iso7816_read_binary_ext (app_get_slot (app),
@@ -555,10 +558,13 @@ select_and_read_binary (app_t app, unsigned short efid, const char *efid_desc,
 static gpg_error_t
 select_and_read_record (app_t app, unsigned short efid, int recno,
                         const char *efid_desc,
-                        unsigned char **buffer, size_t *buflen)
+                        unsigned char **buffer, size_t *buflen, int *r_sw)
 {
   gpg_error_t err;
   int sw;
+
+  if (r_sw)
+    *r_sw = 0x9000;
 
   if (efid)
     {
@@ -567,6 +573,8 @@ select_and_read_record (app_t app, unsigned short efid, int recno,
         {
           log_error ("p15: error selecting %s (0x%04X): %s\n",
                      efid_desc, efid, gpg_strerror (err));
+          if (r_sw)
+            *r_sw = sw;
           return err;
         }
     }
@@ -575,9 +583,15 @@ select_and_read_record (app_t app, unsigned short efid, int recno,
                                  recno, 1, 0, buffer, buflen, &sw);
   if (err)
     {
-      if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+          ;
+      else if (err && sw == SW_FILE_STRUCT)
+        ;
+      else
         log_error ("p15: error reading %s (0x%04X) record %d: %s (sw=%04X)\n",
                    efid_desc, efid, recno, gpg_strerror (err), sw);
+      if (r_sw)
+        *r_sw = sw;
       return err;
     }
   /* On CardOS with a Linear TLV file structure the records starts
@@ -604,6 +618,11 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
   if (!pathlen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  /* log_debug ("%s: path=", __func__); */
+  /* for (j=0; j < pathlen; j++) */
+  /*   log_printf ("%s%04hX", j? "/":"", path[j]); */
+  /* log_printf ("%s\n",app->app_local->direct_path_selection?" (direct)":"");*/
+
   if (app->app_local->direct_path_selection)
     {
       if (pathlen && *path == 0x3f00 )
@@ -612,7 +631,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
             err = iso7816_select_mf (app_get_slot (app));
           else
             err = iso7816_select_path (app_get_slot (app), path+1, pathlen-1,
-                                       app->app_local->home_df);
+                                       0);
         }
       else
         err = iso7816_select_path (app_get_slot (app), path, pathlen,
@@ -643,7 +662,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
   return 0;
 
  err_print_path:
-  if (pathlen && *path == 0x3f00 )
+  if (pathlen && *path != 0x3f00 )
     log_printf ("3F00/");
   else
     log_printf ("%04hX/", app->app_local->home_df);
@@ -950,18 +969,30 @@ read_ef_odf (app_t app, unsigned short odf_fid)
  * the entire data.  */
 static gpg_error_t
 read_first_record (app_t app, unsigned short fid, const char *fid_desc,
-                   unsigned char **r_buffer, size_t *r_buflen)
+                   unsigned char **r_buffer, size_t *r_buflen,
+                   int *r_use_read_record)
 {
   gpg_error_t err;
+  int sw;
 
   *r_buffer = NULL;
   *r_buflen = 0;
+  *r_use_read_record = 0;
 
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No such file. */
 
   if (IS_CARDOS_5 (app))
-    err = select_and_read_record (app, fid, 1, fid_desc, r_buffer, r_buflen);
+    {
+      *r_use_read_record = 1;
+      err = select_and_read_record (app, fid, 1, fid_desc,
+                                    r_buffer, r_buflen, &sw);
+      if (err && sw == SW_FILE_STRUCT)
+        {
+          *r_use_read_record = 0;
+          err = select_and_read_binary (app, 0, fid_desc, r_buffer, r_buflen);
+        }
+    }
   else
     err = select_and_read_binary (app, fid, fid_desc, r_buffer, r_buflen);
 
@@ -1372,8 +1403,9 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
   size_t authidlen = 0;
   unsigned char *objid = NULL;
   size_t objidlen = 0;
+  int record_mode;
 
-  err = read_first_record (app, fid, "PrKDF", &buffer, &buflen);
+  err = read_first_record (app, fid, "PrKDF", &buffer, &buflen, &record_mode);
   if (err)
     return err;
 
@@ -1616,11 +1648,11 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       /* If the card uses a record oriented file structure, read the
        * next record.  Otherwise we keep on parsing the current buffer.  */
       recno++;
-      if (IS_CARDOS_5 (app))
+      if (record_mode)
         {
           xfree (buffer); buffer = NULL;
           err = select_and_read_record (app, 0, recno, "PrKDF",
-                                        &buffer, &buflen);
+                                        &buffer, &buflen, NULL);
           if (err) {
             if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
               err = 0;
@@ -1660,8 +1692,9 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
   size_t authidlen = 0;
   unsigned char *objid = NULL;
   size_t objidlen = 0;
+  int record_mode;
 
-  err = read_first_record (app, fid, "PuKDF", &buffer, &buflen);
+  err = read_first_record (app, fid, "PuKDF", &buffer, &buflen, &record_mode);
   if (err)
     return err;
 
@@ -1940,11 +1973,11 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
       /* If the card uses a record oriented file structure, read the
        * next record.  Otherwise we keep on parsing the current buffer.  */
       recno++;
-      if (IS_CARDOS_5 (app))
+      if (record_mode)
         {
           xfree (buffer); buffer = NULL;
           err = select_and_read_record (app, 0, recno, "PuKDF",
-                                        &buffer, &buflen);
+                                        &buffer, &buflen, NULL);
           if (err) {
             if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
               err = 0;
@@ -1972,7 +2005,7 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
    caller is then responsible of releasing this list.  On error a
    error code is returned and RESULT won't get changed.  */
 static gpg_error_t
-read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
+read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
 {
   gpg_error_t err;
   unsigned char *buffer;
@@ -1983,8 +2016,9 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
   cdf_object_t cdflist = NULL;
   int i;
   int recno = 1;
+  int record_mode;
 
-  err = read_first_record (app, fid, "CDF", &buffer, &buflen);
+  err = read_first_record (app, fid, "CDF", &buffer, &buflen, &record_mode);
   if (err)
     return err;
 
@@ -2175,7 +2209,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
 
       if (opt.verbose)
         {
-          log_info ("p15: CDF %04hX: id=", fid);
+          log_info ("p15: CDF(%c) %04hX: id=", cdftype, fid);
           for (i=0; i < cdf->objidlen; i++)
             log_printf ("%02X", cdf->objid[i]);
           log_printf (" path=");
@@ -2202,11 +2236,11 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       /* If the card uses a record oriented file structure, read the
        * next record.  Otherwise we keep on parsing the current buffer.  */
       recno++;
-      if (IS_CARDOS_5 (app))
+      if (record_mode)
         {
           xfree (buffer); buffer = NULL;
           err = select_and_read_record (app, 0, recno, "CDF",
-                                        &buffer, &buflen);
+                                        &buffer, &buflen, NULL);
           if (err) {
             if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
               err = 0;
@@ -2276,8 +2310,9 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
   aodf_object_t aodflist = NULL;
   int i;
   int recno = 1;
+  int record_mode;
 
-  err = read_first_record (app, fid, "AODF", &buffer, &buflen);
+  err = read_first_record (app, fid, "AODF", &buffer, &buflen, &record_mode);
   if (err)
     return err;
 
@@ -2823,11 +2858,11 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       /* If the card uses a record oriented file structure, read the
        * next record.  Otherwise we keep on parsing the current buffer.  */
       recno++;
-      if (IS_CARDOS_5 (app))
+      if (record_mode)
         {
           xfree (buffer); buffer = NULL;
           err = select_and_read_record (app, 0, recno, "AODF",
-                                        &buffer, &buflen);
+                                        &buffer, &buflen, NULL);
           if (err) {
             if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
               err = 0;
@@ -3153,13 +3188,13 @@ read_p15_info (app_t app)
   assert (!app->app_local->certificate_info);
   assert (!app->app_local->trusted_certificate_info);
   assert (!app->app_local->useful_certificate_info);
-  err = read_ef_cdf (app, app->app_local->odf.certificates,
+  err = read_ef_cdf (app, app->app_local->odf.certificates, 'c',
                      &app->app_local->certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
-    err = read_ef_cdf (app, app->app_local->odf.trusted_certificates,
+    err = read_ef_cdf (app, app->app_local->odf.trusted_certificates, 't',
                        &app->app_local->trusted_certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
-    err = read_ef_cdf (app, app->app_local->odf.useful_certificates,
+    err = read_ef_cdf (app, app->app_local->odf.useful_certificates, 'u',
                        &app->app_local->useful_certificate_info);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     err = 0;

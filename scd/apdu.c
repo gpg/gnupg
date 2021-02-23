@@ -544,6 +544,7 @@ apdu_strerror (int rc)
     case SW_WRONG_LENGTH   : return "wrong length";
     case SW_SM_NOT_SUP     : return "secure messaging not supported";
     case SW_CC_NOT_SUP     : return "command chaining not supported";
+    case SW_FILE_STRUCT    : return "command can't be used for file structure.";
     case SW_CHV_WRONG      : return "CHV wrong";
     case SW_CHV_BLOCKED    : return "CHV blocked";
     case SW_REF_DATA_INV   : return "referenced data invalidated";
