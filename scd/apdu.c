@@ -522,10 +522,14 @@ apdu_strerror (int rc)
     case SW_EOF_REACHED    : return "eof reached";
     case SW_EEPROM_FAILURE : return "eeprom failure";
     case SW_WRONG_LENGTH   : return "wrong length";
+    case SW_SM_NOT_SUP     : return "secure messaging not supported";
+    case SW_CC_NOT_SUP     : return "command chaining not supported";
+    case SW_FILE_STRUCT    : return "command can't be used for file structure.";
     case SW_CHV_WRONG      : return "CHV wrong";
     case SW_CHV_BLOCKED    : return "CHV blocked";
     case SW_REF_DATA_INV   : return "referenced data invalidated";
     case SW_USE_CONDITIONS : return "use conditions not satisfied";
+    case SW_NO_CURRENT_EF  : return "no current EF selected";
     case SW_BAD_PARAMETER  : return "bad parameter";
     case SW_NOT_SUPPORTED  : return "not supported";
     case SW_FILE_NOT_FOUND : return "file not found";

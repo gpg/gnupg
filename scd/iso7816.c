@@ -69,9 +69,11 @@ map_sw (int sw)
     case SW_WRONG_LENGTH:   ec = GPG_ERR_INV_VALUE; break;
     case SW_SM_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_CC_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
+    case SW_FILE_STRUCT:    ec = GPG_ERR_CARD; break;
     case SW_CHV_WRONG:      ec = GPG_ERR_BAD_PIN; break;
     case SW_CHV_BLOCKED:    ec = GPG_ERR_PIN_BLOCKED; break;
     case SW_USE_CONDITIONS: ec = GPG_ERR_USE_CONDITIONS; break;
+    case SW_NO_CURRENT_EF:  ec = GPG_ERR_ENOENT; break;
     case SW_NOT_SUPPORTED:  ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_BAD_PARAMETER:  ec = GPG_ERR_INV_VALUE; break;
     case SW_FILE_NOT_FOUND: ec = GPG_ERR_ENOENT; break;
