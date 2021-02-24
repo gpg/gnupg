@@ -564,7 +564,8 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       goto leave;
     }
   audit_log (ctrl->audit, AUDIT_ENCRYPTION_DONE);
-  log_info ("encrypted data created\n");
+  if (!opt.quiet)
+    log_info ("encrypted data created\n");
 
  leave:
   ksba_cms_release (cms);

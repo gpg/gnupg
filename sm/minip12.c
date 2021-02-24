@@ -176,6 +176,16 @@ struct tag_info
 };
 
 
+static int opt_verbose;
+
+
+void
+p12_set_verbosity (int verbose)
+{
+  opt_verbose = verbose;
+}
+
+
 /* Parse the buffer at the address BUFFER which is of SIZE and return
    the tag and the length part from the TLV triplet.  Update BUFFER
    and SIZE on success.  Checks that the encoded length does not
@@ -869,8 +879,9 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   else
     goto bailout;
 
-  log_info ("%lu bytes of %s encrypted text\n",ti.length,
-            is_pbes2?"AES128":is_3des?"3DES":"RC2");
+  if (opt_verbose)
+    log_info ("%lu bytes of %s encrypted text\n",ti.length,
+              is_pbes2?"AES128":is_3des?"3DES":"RC2");
 
   plain = gcry_malloc_secure (ti.length);
   if (!plain)
@@ -967,7 +978,8 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
         {
           int len;
 
-          log_info ("processing simple keyBag\n");
+          if (opt_verbose)
+            log_info ("processing simple keyBag\n");
 
           /* Fixme: This code is duplicated from parse_bag_data.  */
           if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
@@ -1050,7 +1062,8 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
         }
       else
         {
-          log_info ("processing certBag\n");
+          if (opt_verbose)
+            log_info ("processing certBag\n");
           if (parse_tag (&p, &n, &ti))
             goto bailout;
           if (ti.class || ti.tag != TAG_SEQUENCE)
