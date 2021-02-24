@@ -186,6 +186,14 @@ struct cdf_object_s
   size_t objidlen;
   unsigned char *objid;
 
+  /* Length and allocated buffer with the authId of this object or
+     NULL if no authID is known. */
+  size_t authidlen;
+  unsigned char *authid;
+
+  /* NULL or the malloced label of this object.  */
+  char *label;
+
   /* To avoid reading and parsing a certificate more than once, we
    * cache the ksba object.  */
   ksba_cert_t cert;
@@ -262,6 +270,9 @@ struct prkdf_object_s
   size_t authidlen;
   unsigned char *authid;
 
+  /* NULL or the malloced label of this object.  */
+  char *label;
+
   /* The keyReference and a flag telling whether it is valid. */
   unsigned long key_reference;
 
@@ -299,6 +310,9 @@ struct aodf_object_s
      NULL if no authID is known. */
   size_t authidlen;
   unsigned char *authid;
+
+  /* NULL or the malloced label of this object.  */
+  char *label;
 
   /* The file ID of this AODF.  */
   unsigned short fid;
@@ -446,6 +460,8 @@ release_cdflist (cdf_object_t a)
       cdf_object_t tmp = a->next;
       ksba_free (a->cert);
       xfree (a->objid);
+      xfree (a->authid);
+      xfree (a->label);
       xfree (a);
       a = tmp;
     }
@@ -462,6 +478,7 @@ release_prkdflist (prkdf_object_t a)
       xfree (a->serial_number);
       xfree (a->objid);
       xfree (a->authid);
+      xfree (a->label);
       xfree (a);
       a = tmp;
     }
@@ -481,6 +498,7 @@ release_aodf_object (aodf_object_t a)
     {
       xfree (a->objid);
       xfree (a->authid);
+      xfree (a->label);
       xfree (a->path);
       xfree (a);
     }
@@ -1073,11 +1091,12 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
 
 /* Parse the commonObjectAttributes and store a malloced authid at
  * (r_authid,r_authidlen).  (NULL,0) is stored on error or if no
- * authid is found.
+ * authid is found.  IF R_LABEL is not NULL the label is stored there
+ * as a malloed string.
  *
  * Example data:
  *  2 30   17:   SEQUENCE { -- commonObjectAttributes
- *  4 0C    8:     UTF8String 'SK.CH.DS'
+ *  4 0C    8:     UTF8String 'SK.CH.DS'    -- label
  * 14 03    2:     BIT STRING 6 unused bits
  *           :       '01'B (bit 0)
  * 18 04    1:     OCTET STRING --authid
@@ -1086,7 +1105,8 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
  */
 static gpg_error_t
 parse_common_obj_attr (unsigned char const **buffer, size_t *size,
-                       unsigned char **r_authid, size_t *r_authidlen)
+                       unsigned char **r_authid, size_t *r_authidlen,
+                       char **r_label)
 {
   gpg_error_t err;
   int where;
@@ -1097,6 +1117,8 @@ parse_common_obj_attr (unsigned char const **buffer, size_t *size,
 
   *r_authid = NULL;
   *r_authidlen = 0;
+  if (r_label)
+    *r_label = NULL;
 
   where = __LINE__;
   err = parse_ber_header (buffer, size, &class, &tag, &constructed,
@@ -1124,7 +1146,19 @@ parse_common_obj_attr (unsigned char const **buffer, size_t *size,
 
   if (tag == TAG_UTF8_STRING)
     {
-      ppp += objlen; /* Skip the Label. */
+      if (r_label)
+        {
+          *r_label = xtrymalloc (objlen + 1);
+          if (!*r_label)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (*r_label, ppp, objlen);
+          (*r_label)[objlen] = 0;
+        }
+
+      ppp += objlen;
       nnn -= objlen;
 
       where = __LINE__;
@@ -1166,6 +1200,12 @@ parse_common_obj_attr (unsigned char const **buffer, size_t *size,
   else if (err)
     log_error ("p15: error parsing commonObjectAttributes at %d: %s\n",
                where, gpg_strerror (err));
+
+  if (err && r_label)
+    {
+      xfree (*r_label);
+      *r_label = NULL;
+    }
 
   return err;
 }
@@ -1338,55 +1378,67 @@ parse_common_key_attr (unsigned char const **buffer, size_t *size,
 }
 
 
-/* Read and  parse the Private Key Directory Files. */
-/*
-  6034 (privatekeys)
-
-30 33 30 11 0C 08 53 4B 2E  43 48 2E 44 53 03 02   030...SK.CH.DS..
-06 80 04 01 07 30 0C 04 01  01 03 03 06 00 40 02   .....0........@.
-02 00 50 A1 10 30 0E 30 08  04 06 3F 00 40 16 00   ..P..0.0...?.@..
-50 02 02 04 00 30 33 30 11  0C 08 53 4B 2E 43 48   P....030...SK.CH
-2E 4B 45 03 02 06 80 04 01  0A 30 0C 04 01 0C 03   .KE.......0.....
-03 06 44 00 02 02 00 52 A1  10 30 0E 30 08 04 06   ..D....R..0.0...
-3F 00 40 16 00 52 02 02 04  00 30 34 30 12 0C 09   ?.@..R....040...
-53 4B 2E 43 48 2E 41 55 54  03 02 06 80 04 01 0A   SK.CH.AUT.......
-30 0C 04 01 0D 03 03 06 20  00 02 02 00 51 A1 10   0....... ....Q..
-30 0E 30 08 04 06 3F 00 40  16 00 51 02 02 04 00   0.0...?.@..Q....
-30 37 30 15 0C 0C 53 4B 2E  43 48 2E 44 53 2D 53   070...SK.CH.DS-S
-50 58 03 02 06 80 04 01 0A  30 0C 04 01 02 03 03   PX.......0......
-06 20 00 02 02 00 53 A1 10  30 0E 30 08 04 06 3F   . ....S..0.0...?
-00 40 16 00 53 02 02 04 00  00 00 00 00 00 00 00   .@..S...........
-00 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00   ................
-00 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00   ................
-
-   0 30   51: SEQUENCE {
-   2 30   17:   SEQUENCE { -- commonObjectAttributes
-   4 0C    8:     UTF8String 'SK.CH.DS'
-  14 03    2:     BIT STRING 6 unused bits
-            :       '01'B (bit 0)
-  18 04    1:     OCTET STRING --authid
-            :       07
-            :     }
-  21 30   12:   SEQUENCE { -- commonKeyAttributes
-  23 04    1:     OCTET STRING
-            :       01
-  26 03    3:     BIT STRING 6 unused bits
-            :       '1000000000'B (bit 9)
-  31 02    2:     INTEGER 80  -- keyReference (optional)
-            :     }
-  35 A1   16:   [1] {  -- keyAttributes
-  37 30   14:     SEQUENCE { -- privateRSAKeyAttributes
-  39 30    8:       SEQUENCE { -- objectValue
-  41 04    6:         OCTET STRING --path
-            :           3F 00 40 16 00 50
-            :         }
-  49 02    2:       INTEGER 1024 -- modulus
-            :       }
-            :     }
-            :   }
-
-
-*/
+/* Read and  parse the Private Key Directory Files.
+ *
+ * Sample object:
+ *
+ *  SEQUENCE {
+ *    SEQUENCE { -- commonObjectAttributes
+ *      UTF8String 'SK.CH.DS'
+ *      BIT STRING 6 unused bits
+ *        '01'B (bit 0)
+ *      OCTET STRING --authid
+ *        07
+ *      }
+ *    SEQUENCE { -- commonKeyAttributes
+ *      OCTET STRING
+ *        01
+ *      BIT STRING 6 unused bits
+ *        '1000000000'B (bit 9)
+ *      INTEGER 80  -- keyReference (optional)
+ *      }
+ *    [1] {  -- keyAttributes
+ *      SEQUENCE { -- privateRSAKeyAttributes
+ *        SEQUENCE { -- objectValue
+ *          OCTET STRING --path
+ *            3F 00 40 16 00 50
+ *          }
+ *        INTEGER 1024 -- modulus
+ *        }
+ *      }
+ *    }
+ *
+ * Sample for EC objects
+ *    [1] {  -- keyAttributes
+ *      [0] { --privateECKeyAttributes
+ *        SEQUENCE { -- objectValue
+ *          UTF8String '840b8a098d582647778e25a8465c5601'
+ *          BIT STRING 6 unused bits
+ *            '11'B
+ *          OCTET STRING 01
+ *          }
+ *        SEQUENCE { -- keyInfo
+ *          OCTET STRING 69AE183E6D5BF45B98872C569506326C76AF460F
+ *          BIT STRING 4 unused bits
+ *            '0100'B (bit 2)
+ *          BIT STRING 3 unused bits
+ *            '11101'B
+ *          INTEGER 3
+ *          }
+ *        [0] {
+ *          SEQUENCE {}
+ *          }
+ *        [1] {
+ *          SEQUENCE {
+ *            SEQUENCE {
+ *              OCTET STRING 50 72 4B 03
+ *              }
+ *            INTEGER 33
+ *            }
+ *          }
+ *      }
+ *    }
+ */
 static gpg_error_t
 read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 {
@@ -1403,6 +1455,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
   size_t authidlen = 0;
   unsigned char *objid = NULL;
   size_t objidlen = 0;
+  char *label = NULL;
   int record_mode;
 
   err = read_first_record (app, fid, "PrKDF", &buffer, &buflen, &record_mode);
@@ -1470,7 +1523,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
       xfree (authid);
-      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen);
+      xfree (label);
+      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen, &label);
       if (err)
         goto parse_error;
 
@@ -1576,6 +1630,11 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           prkdf->authid = authid;
           authid = NULL;
         }
+      if (label)
+        {
+          prkdf->label = label;
+          label = NULL;
+        }
 
       prkdf->pathlen = objlen/2;
       for (i=0; i < prkdf->pathlen; i++, pp += 2, nn -= 2)
@@ -1640,6 +1699,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
         {
           xfree (prkdf->objid);
           xfree (prkdf->authid);
+          xfree (prkdf->label);
           xfree (prkdf);
         }
       err = 0;
@@ -1665,6 +1725,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 
  leave:
   xfree (authid);
+  xfree (label);
   xfree (objid);
   xfree (buffer);
   if (err)
@@ -1692,6 +1753,7 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
   size_t authidlen = 0;
   unsigned char *objid = NULL;
   size_t objidlen = 0;
+  char *label = NULL;
   int record_mode;
 
   err = read_first_record (app, fid, "PuKDF", &buffer, &buflen, &record_mode);
@@ -1760,7 +1822,8 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
       xfree (authid);
-      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen);
+      xfree (label);
+      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen, &label);
       if (err)
         goto parse_error;
 
@@ -1867,6 +1930,11 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
           pukdf->authid = authid;
           authid = NULL;
         }
+      if (label)
+        {
+          pukdf->label = label;
+          label = NULL;
+        }
 
       pukdf->pathlen = objlen/2;
       for (i=0; i < pukdf->pathlen; i++, pp += 2, nn -= 2)
@@ -1921,7 +1989,9 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
           log_info ("p15: PuKDF %04hX: id=", fid);
           for (i=0; i < pukdf->objidlen; i++)
             log_printf ("%02X", pukdf->objid[i]);
-          log_printf (" path=");
+          if (pukdf->label)
+            log_printf (" (%s)", pukdf->label);
+          log_info ("p15:             path=");
           for (i=0; i < pukdf->pathlen; i++)
             log_printf ("%s%04hX", i?"/":"",pukdf->path[i]);
           if (pukdf->have_off)
@@ -1965,6 +2035,7 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
         {
           xfree (pukdf->objid);
           xfree (pukdf->authid);
+          xfree (pukdf->label);
           xfree (pukdf);
         }
       err = 0;
@@ -1990,6 +2061,7 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
 
  leave:
   xfree (authid);
+  xfree (label);
   xfree (objid);
   xfree (buffer);
   if (err)
@@ -2016,6 +2088,9 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
   cdf_object_t cdflist = NULL;
   int i;
   int recno = 1;
+  unsigned char *authid = NULL;
+  size_t authidlen = 0;
+  char *label = NULL;
   int record_mode;
 
   err = read_first_record (app, fid, "CDF", &buffer, &buflen, &record_mode);
@@ -2054,16 +2129,13 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
       p += objlen;
       n -= objlen;
 
-      /* Skip the commonObjectAttributes.  */
+      /* Parse the commonObjectAttributes.  */
       where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || tag != TAG_SEQUENCE))
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      xfree (authid);
+      xfree (label);
+      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen, &label);
       if (err)
         goto parse_error;
-      pp += objlen;
-      nn -= objlen;
 
       /* Parse the commonCertificateAttributes.  */
       where = __LINE__;
@@ -2154,6 +2226,18 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
           err = gpg_error_from_syserror ();
           goto leave;
         }
+      if (authid)
+        {
+          cdf->authidlen = authidlen;
+          cdf->authid = authid;
+          authid = NULL;
+        }
+      if (label)
+        {
+          cdf->label = label;
+          label = NULL;
+        }
+
       cdf->objidlen = objidlen;
       cdf->objid = xtrymalloc (objidlen);
       if (!cdf->objid)
@@ -2209,14 +2293,22 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
 
       if (opt.verbose)
         {
-          log_info ("p15: CDF(%c) %04hX: id=", cdftype, fid);
+          log_info ("p15: CDF-%c %04hX: id=", cdftype, fid);
           for (i=0; i < cdf->objidlen; i++)
             log_printf ("%02X", cdf->objid[i]);
-          log_printf (" path=");
+          if (cdf->label)
+            log_printf (" (%s)", cdf->label);
+          log_info ("p15:             path=");
           for (i=0; i < cdf->pathlen; i++)
             log_printf ("%s%04hX", i?"/":"", cdf->path[i]);
           if (cdf->have_off)
             log_printf ("[%lu/%lu]", cdf->off, cdf->len);
+          if (cdf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < cdf->authidlen; i++)
+                log_printf ("%02X", cdf->authid[i]);
+            }
           log_printf ("\n");
         }
 
@@ -2233,6 +2325,8 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
       err = 0;
 
     next_record:
+      xfree (authid);
+      xfree (label);
       /* If the card uses a record oriented file structure, read the
        * next record.  Otherwise we keep on parsing the current buffer.  */
       recno++;
@@ -2252,6 +2346,8 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
     } /* End loop over all records. */
 
  leave:
+  xfree (authid);
+  xfree (label);
   xfree (buffer);
   if (err)
     release_cdflist (cdflist);
@@ -2379,7 +2475,8 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
 
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
-      err = parse_common_obj_attr (&pp, &nn, &aodf->authid, &aodf->authidlen);
+      err = parse_common_obj_attr (&pp, &nn, &aodf->authid, &aodf->authidlen,
+                                   &aodf->label);
       if (err)
         goto parse_error;
 
@@ -2401,7 +2498,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
         /* Get the Id. */
         where = __LINE__;
         err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
+                                &ndef, &objlen, &hdrlen);
         if (!err && (objlen > nnn
                      || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
           err = gpg_error (GPG_ERR_INV_OBJ);
@@ -2767,17 +2864,12 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
         err = 0;
       if (opt.verbose)
         {
-          log_info ("p15: AODF %04hX: id=", fid);
+          log_info ("p15: AODF %04hX:  id=", fid);
           for (i=0; i < aodf->objidlen; i++)
             log_printf ("%02X", aodf->objid[i]);
-          if (aodf->authid)
-            {
-              log_printf (" authid=");
-              for (i=0; i < aodf->authidlen; i++)
-                log_printf ("%02X", aodf->authid[i]);
-            }
-          if (aodf->pin_reference_valid)
-            log_printf (" pinref=0x%02lX", aodf->pin_reference);
+          if (aodf->label)
+            log_printf (" (%s)", aodf->label);
+          log_info ("p15:            ");
           if (aodf->pathlen)
             {
               log_printf (" path=");
@@ -2786,6 +2878,14 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
               if (aodf->have_off)
                 log_printf ("[%lu/%lu]", aodf->off, aodf->len);
             }
+          if (aodf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < aodf->authidlen; i++)
+                log_printf ("%02X", aodf->authid[i]);
+            }
+          if (aodf->pin_reference_valid)
+            log_printf (" pinref=0x%02lX", aodf->pin_reference);
           log_printf (" min=%lu", aodf->min_length);
           log_printf (" stored=%lu", aodf->stored_length);
           if (aodf->max_length_valid)
@@ -2793,7 +2893,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
           if (aodf->pad_char_valid)
             log_printf (" pad=0x%02x", aodf->pad_char);
 
-          log_info ("p15:            flags=");
+          log_info ("p15:             flags=");
           s = "";
           if (aodf->pinflags.case_sensitive)
             log_printf ("%scase_sensitive", s), s = ",";
@@ -3299,7 +3399,9 @@ read_p15_info (app_t app)
           log_info ("p15: PrKDF %04hX: id=", app->app_local->odf.private_keys);
           for (i=0; i < prkdf->objidlen; i++)
             log_printf ("%02X", prkdf->objid[i]);
-          log_printf (" path=");
+          if (prkdf->label)
+            log_printf (" (%s)", prkdf->label);
+          log_info ("p15:             path=");
           for (i=0; i < prkdf->pathlen; i++)
             log_printf ("%s%04hX", i?"/":"",prkdf->path[i]);
           if (prkdf->have_off)
