@@ -253,7 +253,10 @@ network).  Certain other features are disabled in this mode.  The
 effect of @option{--use-tor} cannot be overridden by any other command
 or even by reloading dirmngr.  The use of @option{--no-use-tor}
 disables the use of Tor.  The default is to use Tor if it is available
-on startup or after reloading dirmngr.
+on startup or after reloading dirmngr.  The test on the available of
+Tor is done by trying to connects to a SOCKS proxy at either port 9050
+or 9150); if another type of proxy is listening on one of these ports,
+you should use @option{--no-use-tor}.
 
 @item --standard-resolver
 @opindex standard-resolver
