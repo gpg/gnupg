@@ -46,7 +46,7 @@
 #include "../common/asshelp.h"
 #include "../common/init.h"
 #include "../common/compliance.h"
-
+#include "minip12.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -768,6 +768,10 @@ set_debug (void)
 
   if (opt.debug)
     parse_debug_flag (NULL, &opt.debug, debug_flags);
+
+  /* minip12.c may be used outside of GnuPG, thus we don't have the
+   * opt structure over there.  */
+  p12_set_verbosity (opt.verbose);
 }
 
 
