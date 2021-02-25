@@ -166,6 +166,19 @@ struct keyusage_flags_s
 typedef struct keyusage_flags_s keyusage_flags_t;
 
 
+/* A bit array with for the key access flags from the
+   commonKeyAttributes. */
+struct keyaccess_flags_s
+{
+  unsigned int any:1;    /* Any access flag set.  */
+  unsigned int sensitive:1;
+  unsigned int extractable:1;
+  unsigned int always_sensitive:1;
+  unsigned int never_extractable:1;
+  unsigned int local:1;
+};
+typedef struct keyaccess_flags_s keyaccess_flags_t;
+
 
 /* This is an object to store information about a Certificate
    Directory File (CDF) in a format suitable for further processing by
@@ -232,6 +245,9 @@ struct prkdf_object_s
 
   /* The key's usage flags. */
   keyusage_flags_t usageflags;
+
+  /* The key's access flags. */
+  keyaccess_flags_t accessflags;
 
   /* Extended key usage flags.  Only used if .valid is set.  This
    * information is computed from an associated certificate15.  */
@@ -1089,6 +1105,101 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
 }
 
 
+static void
+dump_keyusage_flags (keyusage_flags_t usageflags)
+{
+  const char *s = "";
+
+  log_info ("p15:             usage=");
+  if (usageflags.encrypt)
+    log_printf ("%sencrypt", s), s = ",";
+  if (usageflags.decrypt)
+    log_printf ("%sdecrypt", s), s = ",";
+  if (usageflags.sign   )
+    log_printf ("%ssign", s), s = ",";
+  if (usageflags.sign_recover)
+    log_printf ("%ssign_recover", s), s = ",";
+  if (usageflags.wrap   )
+    log_printf ("%swrap", s), s = ",";
+  if (usageflags.unwrap )
+    log_printf ("%sunwrap", s), s = ",";
+  if (usageflags.verify )
+    log_printf ("%sverify", s), s = ",";
+  if (usageflags.verify_recover)
+    log_printf ("%sverify_recover", s), s = ",";
+  if (usageflags.derive )
+    log_printf ("%sderive", s), s = ",";
+  if (usageflags.non_repudiation)
+    log_printf ("%snon_repudiation", s), s = ",";
+}
+
+
+static void
+dump_keyaccess_flags (keyaccess_flags_t accessflags)
+{
+  const char *s = "";
+
+  log_info ("p15:             access=");
+  if (accessflags.sensitive)
+    log_printf ("%ssensitive", s), s = ",";
+  if (accessflags.extractable)
+    log_printf ("%sextractable", s), s = ",";
+  if (accessflags.always_sensitive)
+    log_printf ("%salways_sensitive", s), s = ",";
+  if (accessflags.never_extractable)
+    log_printf ("%snever_extractable", s), s = ",";
+  if (accessflags.local)
+    log_printf ("%slocal", s), s = ",";
+}
+
+
+/* Parse the BIT STRING with the keyAccessFlags from the
+   CommonKeyAttributes. */
+static gpg_error_t
+parse_keyaccess_flags (const unsigned char *der, size_t derlen,
+                       keyaccess_flags_t *accessflags)
+{
+  unsigned int bits, mask;
+  int i, unused, full;
+
+  memset (accessflags, 0, sizeof *accessflags);
+  if (!derlen)
+    return gpg_error (GPG_ERR_INV_OBJ);
+
+  unused = *der++; derlen--;
+  if ((!derlen && unused) || unused/8 > derlen)
+    return gpg_error (GPG_ERR_ENCODING_PROBLEM);
+  full = derlen - (unused+7)/8;
+  unused %= 8;
+  mask = 0;
+  for (i=1; unused; i <<= 1, unused--)
+    mask |= i;
+
+  /* First octet */
+  if (derlen)
+    {
+      bits = *der++; derlen--;
+      if (full)
+        full--;
+      else
+        {
+          bits &= ~mask;
+          mask = 0;
+        }
+    }
+  else
+    bits = 0;
+  if ((bits & 0x10)) accessflags->local = 1;
+  if ((bits & 0x08)) accessflags->never_extractable = 1;
+  if ((bits & 0x04)) accessflags->always_sensitive = 1;
+  if ((bits & 0x02)) accessflags->extractable = 1;
+  if ((bits & 0x01)) accessflags->sensitive = 1;
+
+  accessflags->any = 1;
+  return 0;
+}
+
+
 /* Parse the commonObjectAttributes and store a malloced authid at
  * (r_authid,r_authidlen).  (NULL,0) is stored on error or if no
  * authid is found.  IF R_LABEL is not NULL the label is stored there
@@ -1230,6 +1341,7 @@ static gpg_error_t
 parse_common_key_attr (unsigned char const **buffer, size_t *size,
                        unsigned char **r_objid, size_t *r_objidlen,
                        keyusage_flags_t *usageflags,
+                       keyaccess_flags_t *accessflags,
                        unsigned long *r_key_reference,
                        int *r_key_reference_valid)
 {
@@ -1248,6 +1360,7 @@ parse_common_key_attr (unsigned char const **buffer, size_t *size,
   *r_objid = NULL;
   *r_objidlen = 0;
   memset (usageflags, 0, sizeof *usageflags);
+  memset (accessflags, 0, sizeof *accessflags);
   *r_key_reference_valid = 0;
 
   where = __LINE__;
@@ -1320,7 +1433,10 @@ parse_common_key_attr (unsigned char const **buffer, size_t *size,
     }
   if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
     {
-      /* Skip the accessFlags. */
+      /* These are the keyAccessFlags. */
+      err = parse_keyaccess_flags (ppp, objlen, accessflags);
+      if (err)
+        goto leave;
       ppp += objlen;
       nnn -= objlen;
 
@@ -1381,12 +1497,11 @@ parse_common_key_attr (unsigned char const **buffer, size_t *size,
 /* Read and  parse the Private Key Directory Files.
  *
  * Sample object:
- *
  *  SEQUENCE {
  *    SEQUENCE { -- commonObjectAttributes
  *      UTF8String 'SK.CH.DS'
  *      BIT STRING 6 unused bits
- *        '01'B (bit 0)
+ *        '01'B (bit 0) -- flags: non-modifiable,private
  *      OCTET STRING --authid
  *        07
  *      }
@@ -1394,7 +1509,7 @@ parse_common_key_attr (unsigned char const **buffer, size_t *size,
  *      OCTET STRING
  *        01
  *      BIT STRING 6 unused bits
- *        '1000000000'B (bit 9)
+ *        '1000000000'B (bit 9) -- keyusage: non-repudiation
  *      INTEGER 80  -- keyReference (optional)
  *      }
  *    [1] {  -- keyAttributes
@@ -1408,34 +1523,13 @@ parse_common_key_attr (unsigned char const **buffer, size_t *size,
  *      }
  *    }
  *
- * Sample for EC objects
- *    [1] {  -- keyAttributes
- *      [0] { --privateECKeyAttributes
- *        SEQUENCE { -- objectValue
- *          UTF8String '840b8a098d582647778e25a8465c5601'
- *          BIT STRING 6 unused bits
- *            '11'B
- *          OCTET STRING 01
- *          }
- *        SEQUENCE { -- keyInfo
- *          OCTET STRING 69AE183E6D5BF45B98872C569506326C76AF460F
- *          BIT STRING 4 unused bits
- *            '0100'B (bit 2)
- *          BIT STRING 3 unused bits
- *            '11101'B
- *          INTEGER 3
- *          }
- *        [0] {
- *          SEQUENCE {}
- *          }
- *        [1] {
- *          SEQUENCE {
- *            SEQUENCE {
- *              OCTET STRING 50 72 4B 03
- *              }
- *            INTEGER 33
- *            }
- *          }
+ * Sample part for EC objects:
+ *    [1] { -- keyAttributes
+ *      SEQUENCE {
+ *        SEQUENCE {
+ *          OCTET STRING 50 72 4B 03
+ *        }
+ *      INTEGER 33  -- Not in PKCS#15v1.1, need to buy 6718-15?
  *      }
  *    }
  */
@@ -1478,6 +1572,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       prkdf_object_t prkdf = NULL;
       unsigned long ul;
       keyusage_flags_t usageflags;
+      keyaccess_flags_t accessflags;
       unsigned long key_reference = 0;
       int key_reference_valid = 0;
 
@@ -1494,13 +1589,14 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
         {
           switch (tag)
             {
-            case 0: errstr = "EC key objects are not supported"; break;
+            case 0: break; /* PrivateECKeyAttributes  */
             case 1: errstr = "DH key objects are not supported"; break;
             case 2: errstr = "DSA key objects are not supported"; break;
             case 3: errstr = "KEA key objects are not supported"; break;
             default: errstr = "unknown privateKeyObject"; break;
             }
-          goto parse_error;
+          if (errstr)
+            goto parse_error;
         }
       else
         {
@@ -1533,7 +1629,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       xfree (objid);
       err = parse_common_key_attr (&pp, &nn,
                                    &objid, &objidlen,
-                                   &usageflags,
+                                   &usageflags, &accessflags,
                                    &key_reference, &key_reference_valid);
       if (err)
         goto parse_error;
@@ -1641,6 +1737,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
         prkdf->path[i] = ((pp[0] << 8) | pp[1]);
 
       prkdf->usageflags = usageflags;
+      prkdf->accessflags = accessflags;
       prkdf->key_reference = key_reference;
       prkdf->key_reference_valid = key_reference_valid;
 
@@ -1776,9 +1873,9 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
       pukdf_object_t pukdf = NULL;
       unsigned long ul;
       keyusage_flags_t usageflags;
+      keyaccess_flags_t accessflags;
       unsigned long key_reference = 0;
       int key_reference_valid = 0;
-      const char *s;
 
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
@@ -1832,7 +1929,7 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
       xfree (objid);
       err = parse_common_key_attr (&pp, &nn,
                                    &objid, &objidlen,
-                                   &usageflags,
+                                   &usageflags, &accessflags,
                                    &key_reference, &key_reference_valid);
       if (err)
         goto parse_error;
@@ -1941,6 +2038,7 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
         pukdf->path[i] = ((pp[0] << 8) | pp[1]);
 
       pukdf->usageflags = usageflags;
+      pukdf->accessflags = accessflags;
       pukdf->key_reference = key_reference;
       pukdf->key_reference_valid = key_reference_valid;
 
@@ -2004,21 +2102,9 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
             }
           if (pukdf->key_reference_valid)
             log_printf (" keyref=0x%02lX", pukdf->key_reference);
-          log_info ("p15:             usage=");
-          s = "";
-          if (pukdf->usageflags.encrypt) log_printf ("%sencrypt", s), s = ",";
-          if (pukdf->usageflags.decrypt) log_printf ("%sdecrypt", s), s = ",";
-          if (pukdf->usageflags.sign   ) log_printf ("%ssign", s), s = ",";
-          if (pukdf->usageflags.sign_recover)
-            log_printf ("%ssign_recover", s), s = ",";
-          if (pukdf->usageflags.wrap   ) log_printf ("%swrap", s), s = ",";
-          if (pukdf->usageflags.unwrap ) log_printf ("%sunwrap", s), s = ",";
-          if (pukdf->usageflags.verify ) log_printf ("%sverify", s), s = ",";
-          if (pukdf->usageflags.verify_recover)
-            log_printf ("%sverify_recover", s), s = ",";
-          if (pukdf->usageflags.derive ) log_printf ("%sderive", s), s = ",";
-          if (pukdf->usageflags.non_repudiation)
-            log_printf ("%snon_repudiation", s), s = ",";
+          if (pukdf->accessflags.any)
+            dump_keyaccess_flags (pukdf->accessflags);
+          dump_keyusage_flags (pukdf->usageflags);
           log_printf ("\n");
         }
 
@@ -3392,7 +3478,6 @@ read_p15_info (app_t app)
   if (opt.verbose)
     {
       int i;
-      const char *s;
 
       for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
         {
@@ -3414,21 +3499,9 @@ read_p15_info (app_t app)
             }
           if (prkdf->key_reference_valid)
             log_printf (" keyref=0x%02lX", prkdf->key_reference);
-          log_info ("p15:             usage=");
-          s = "";
-          if (prkdf->usageflags.encrypt) log_printf ("%sencrypt", s), s = ",";
-          if (prkdf->usageflags.decrypt) log_printf ("%sdecrypt", s), s = ",";
-          if (prkdf->usageflags.sign   ) log_printf ("%ssign", s), s = ",";
-          if (prkdf->usageflags.sign_recover)
-            log_printf ("%ssign_recover", s), s = ",";
-          if (prkdf->usageflags.wrap   ) log_printf ("%swrap", s), s = ",";
-          if (prkdf->usageflags.unwrap ) log_printf ("%sunwrap", s), s = ",";
-          if (prkdf->usageflags.verify ) log_printf ("%sverify", s), s = ",";
-          if (prkdf->usageflags.verify_recover)
-            log_printf ("%sverify_recover", s), s = ",";
-          if (prkdf->usageflags.derive ) log_printf ("%sderive", s), s = ",";
-          if (prkdf->usageflags.non_repudiation)
-            log_printf ("%snon_repudiation", s), s = ",";
+          if (prkdf->accessflags.any)
+            dump_keyaccess_flags (prkdf->accessflags);
+          dump_keyusage_flags (prkdf->usageflags);
           if (prkdf->extusage.valid)
             log_info ("p15:             extusage=%s%s%s%s%s",
                       prkdf->extusage.sign? "sign":"",
