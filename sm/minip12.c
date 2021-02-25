@@ -1449,8 +1449,9 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   if (ti.class || ti.tag != TAG_OCTET_STRING || !ti.length )
     goto bailout;
 
-  log_info ("%lu bytes of %s encrypted text\n",
-            ti.length, is_pbes2? "AES128":"3DES");
+  if (opt_verbose)
+    log_info ("%lu bytes of %s encrypted text\n",
+              ti.length, is_pbes2? "AES128":"3DES");
 
   plain = gcry_malloc_secure (ti.length);
   if (!plain)

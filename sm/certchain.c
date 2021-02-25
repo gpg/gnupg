@@ -815,7 +815,7 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
   if (opt.verbose)
     log_info (_("number of matching certificates: %d\n"),
               find_up_store_certs_parm.count);
-  if (rc && !opt.quiet)
+  if (rc && opt.verbose)
     log_info (_("dirmngr cache-only key lookup failed: %s\n"),
               gpg_strerror (rc));
   return ((!rc && find_up_store_certs_parm.count)
@@ -958,22 +958,25 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
         ;
       else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
         {
-          log_info ("%sissuer certificate ", find_next?"next ":"");
-          if (keyid)
+          if (!opt.quiet)
             {
-              log_printf ("{");
-              gpgsm_dump_serial (keyid);
-              log_printf ("} ");
+              log_info ("%sissuer certificate ", find_next?"next ":"");
+              if (keyid)
+                {
+                  log_printf ("{");
+                  gpgsm_dump_serial (keyid);
+                  log_printf ("} ");
+                }
+              if (authidno)
+                {
+                  log_printf ("(#");
+                  gpgsm_dump_serial (authidno);
+                  log_printf ("/");
+                  gpgsm_dump_string (s);
+                  log_printf (") ");
+                }
+              log_printf ("not found using authorityKeyIdentifier\n");
             }
-          if (authidno)
-            {
-              log_printf ("(#");
-              gpgsm_dump_serial (authidno);
-              log_printf ("/");
-              gpgsm_dump_string (s);
-              log_printf (") ");
-            }
-          log_printf ("not found using authorityKeyIdentifier\n");
         }
       else if (err)
         log_error ("failed to find authorityKeyIdentifier: err=%d\n", err);
@@ -1803,7 +1806,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
             {
               do_list (0, listmode, listfp, _("issuer certificate not found"));
-              if (!listmode)
+              if (!listmode && !opt.quiet)
                 {
                   log_info ("issuer certificate: #/");
                   gpgsm_dump_string (issuer);
@@ -2232,9 +2235,12 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
         {
           if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
             {
-              log_info ("issuer certificate (#/");
-              gpgsm_dump_string (issuer);
-              log_printf (") not found\n");
+              if (!opt.quiet)
+                {
+                  log_info ("issuer certificate (#/");
+                  gpgsm_dump_string (issuer);
+                  log_printf (") not found\n");
+                }
             }
           else
             log_error ("failed to find issuer's certificate: %s <%s>\n",
