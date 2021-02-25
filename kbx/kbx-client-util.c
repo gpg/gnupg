@@ -375,7 +375,8 @@ kbx_client_data_cmd (kbx_client_data_t kcd, const char *command,
                              status_cb, status_cb_value);
       if (err)
         {
-          if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+          if (gpg_err_code (err) != GPG_ERR_NOT_FOUND
+              && gpg_err_code (err) != GPG_ERR_NOTHING_FOUND)
             log_debug ("%s: finished command with error: %s\n",
                        __func__, gpg_strerror (err));
           /* Fixme: On unexpected errors we need a way to cancel the
@@ -397,7 +398,8 @@ kbx_client_data_cmd (kbx_client_data_t kcd, const char *command,
                              status_cb, status_cb_value);
       if (err)
         {
-          if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+          if (gpg_err_code (err) != GPG_ERR_NOT_FOUND
+              && gpg_err_code (err) != GPG_ERR_NOTHING_FOUND)
             log_debug ("%s: finished command with error: %s\n",
                        __func__, gpg_strerror (err));
           xfree (get_membuf (&mb, &len));

@@ -720,7 +720,7 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
       if (err)
         {
           if (gpg_err_code (err) != GPG_ERR_NO_PUBKEY)
-            tty_fprintf (fp, "      error ......: %s\n", gpg_strerror (err));
+            tty_fprintf (fp, "      used for ...: [%s]\n", gpg_strerror (err));
           goto leave;
         }
       for (kb = keyblock; kb; kb = kb->next)
