@@ -433,8 +433,9 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
         chain_id = chain_id_buffer;
         ksba_cert_release (next);
       }
-    else if (rc == -1)  /* We have reached the root certificate. */
+    else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
       {
+        /* We have reached the root certificate. */
         chain_id = fpr;
         is_root = 1;
       }
@@ -1587,7 +1588,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
       lastcert = cert;
       cert = NULL;
     }
-  if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1 )
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     rc = 0;
   if (rc)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));

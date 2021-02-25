@@ -551,7 +551,7 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
           int fd = of (*files);
           rc = import_one (ctrl, &stats, fd);
           close (fd);
-          if (rc == -1)
+          if (rc == -1/*legacy*/ || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
             rc = 0;
         }
     }

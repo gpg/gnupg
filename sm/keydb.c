@@ -941,9 +941,10 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
   rc = lock_all (hd);
   if (rc)
     return rc;
-  rc = -1;
+  rc = gpg_error (GPG_ERR_EOF);
 
-  while (rc == -1 && hd->current >= 0 && hd->current < hd->used)
+  while (gpg_err_code (rc) == GPG_ERR_EOF
+         && hd->current >= 0 && hd->current < hd->used)
     {
       switch (hd->active[hd->current].type)
         {
@@ -954,9 +955,11 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
           rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc,
                               KEYBOX_BLOBTYPE_X509,
                               NULL, &skipped);
+          if (rc == -1) /* Map legacy code.  */
+            rc = gpg_error (GPG_ERR_EOF);
           break;
         }
-      if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+      if (gpg_err_code (rc) == GPG_ERR_EOF)
         { /* EOF -> switch to next resource */
           hd->current++;
         }
@@ -964,6 +967,10 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
         hd->found = hd->current;
     }
 
+  /* The NOTHING_FOUND error is triggered by a NEXT command.  */
+  if (gpg_err_code (rc) == GPG_ERR_EOF
+      || gpg_err_code (rc) == GPG_ERR_NOTHING_FOUND)
+    rc = gpg_error (GPG_ERR_NOT_FOUND);
   return rc;
 }
 
@@ -1102,7 +1109,7 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
     return rc;
 
   rc = keydb_search_fpr (ctrl, kh, fpr);
-  if (rc != -1)
+  if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     {
       keydb_release (kh);
       if (!rc)
@@ -1194,9 +1201,7 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
   err = keydb_search_fpr (ctrl, kh, fpr);
   if (err)
     {
-      if (err == -1)
-        err = gpg_error (GPG_ERR_NOT_FOUND);
-      else
+      if (gpg_err_code (err) != gpg_error (GPG_ERR_NOT_FOUND))
         log_error (_("problem re-searching certificate: %s\n"),
                    gpg_strerror (err));
       keydb_release (kh);
@@ -1313,7 +1318,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
             }
         }
     }
-  if (rc && rc != -1)
+  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("%s failed: %s\n", __func__, gpg_strerror (rc));
 
  leave:

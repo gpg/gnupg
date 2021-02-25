@@ -298,7 +298,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
       ksba_cert_release (cert);
       cert = NULL;
     }
-  if (rc && rc != -1)
+  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
   else if (b64writer)
     {
@@ -392,7 +392,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
             }
           err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
         }
-      else if (err == -1 || gpg_err_code (err) == GPG_ERR_EOF)
+      else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
         err = 0;
       if (err)
         {

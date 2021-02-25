@@ -293,7 +293,7 @@ add_certificate_list (ctrl_t ctrl, ksba_cms_t cms, ksba_cert_t cert)
     }
   ksba_cert_release (cert);
 
-  return rc == -1? 0: rc;
+  return gpg_err_code (rc) == GPG_ERR_NOT_FOUND? 0 : rc;
 
  ksba_failure:
   ksba_cert_release (cert);
