@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-02-18 16:12+0100\n"
+"PO-Revision-Date: 2021-02-26 14:44+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -140,6 +140,34 @@ msgstr "Falsche PIN!"
 msgid "Bad Passphrase"
 msgstr "Falsche Passphrase!"
 
+msgid "Note: Request from the web browser."
+msgstr "Hinweis: Anfrage vom Webbrowser."
+
+msgid "Note: Request from a remote site."
+msgstr "Hinweis: Anfrage von einem anderen Rechner."
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "Fehler beim Holen der Karten-Seriennummer: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
+
+#, c-format
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"Bitte geben Sie die Passphrase ein, um das importierte Objekt im %s System "
+"zu schützen."
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+"Dieser (Unter-)Schlüssel ist nicht mit einer Passphrase geschützt.\n"
+"Bitte geben Sie eine neue Passphrase für den Export an."
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "SSH Schlüssel von mehr als %d Bits werden nicht unterstützt\n"
@@ -179,9 +207,6 @@ msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr ""
 "Bitte geben Sie die Passphrase für den SSH-Schlüssel%%0A  %F%%0A  "
 "(%c)%%0Aein."
-
-msgid "Please re-enter this passphrase"
-msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
 
 #, c-format
 msgid ""
@@ -1340,10 +1365,6 @@ msgstr "nicht zwingend"
 
 msgid "forced"
 msgstr "zwingend"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "Fehler beim Holen der Karten-Seriennummer: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fehler: Nur reines ASCII ist derzeit erlaubt.\n"
