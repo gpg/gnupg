@@ -1,6 +1,7 @@
 # List of files with translatable strings
 
 agent/call-pinentry.c
+agent/command.c
 agent/command-ssh.c
 agent/divert-scd.c
 agent/genkey.c
