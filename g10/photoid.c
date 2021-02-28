@@ -287,7 +287,11 @@ get_default_photo_command(void)
   else if (!path_access ("display",X_OK))
     return "display -title 'KeyID 0x%k' %i";
   else if (getuid () && !path_access ("xdg-open", X_OK))
-    return "xdg-open %i";
+    {
+      /* xdg-open spawns the actual program and exits so we need to
+       * keep the temp file */
+      return "xdg-open %I";
+    }
   else
     return "/bin/true";
 #endif
