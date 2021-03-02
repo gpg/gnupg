@@ -261,6 +261,26 @@ _keybox_close_file (KEYBOX_HANDLE hd)
 }
 
 
+/* Close all the files associated with the resource identified by TOKEN.  */
+void
+keybox_close_all_files (void *token)
+{
+  KB_NAME resource = token;
+  KEYBOX_HANDLE roverhd;
+  int idx;
+
+  if (!resource)
+    return;
+
+  for (idx=0; idx < resource->handle_table_size; idx++)
+    if ((roverhd = resource->handle_table[idx]) && roverhd->fp)
+      {
+        es_fclose (roverhd->fp);
+        roverhd->fp = NULL;
+      }
+}
+
+
 /*
  * Lock the keybox at handle HD, or unlock if YES is false.
  * Lock the keybox at handle HD, or unlock if YES is false.  TIMEOUT

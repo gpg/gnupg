@@ -375,6 +375,23 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
 }
 
 
+/* This is a helper requyired under Windows to close all files so that
+ * a rename will work.  */
+void
+keydb_close_all_files (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  int i;
+
+  log_assert (used_resources <= MAX_KEYDB_RESOURCES);
+  for (i=0; i < used_resources; i++)
+    if (all_resources[i].type == KEYDB_RESOURCE_TYPE_KEYBOX)
+      keybox_close_all_files (all_resources[i].token);
+#endif
+}
+
+
+
 KEYDB_HANDLE
 keydb_new (void)
 {
@@ -1080,6 +1097,7 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
      records.  */
   keydb_set_ephemeral (kh, 1);
 
+  keydb_close_all_files ();
   rc = lock_all (kh);
   if (rc)
     return rc;
@@ -1165,6 +1183,7 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
   if (ephemeral)
     keydb_set_ephemeral (kh, 1);
 
+  keydb_close_all_files ();
   err = keydb_lock (kh);
   if (err)
     {
@@ -1263,6 +1282,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
         }
     }
 
+  keydb_close_all_files ();
   err = keydb_lock (hd);
   if (err)
     {
@@ -1295,7 +1315,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
         }
     }
   if (rc && rc != -1)
-    log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
+    log_error ("%s failed: %s\n", __func__, gpg_strerror (rc));
 
  leave:
   xfree (desc);

@@ -814,6 +814,10 @@ keybox_search_reset (KEYBOX_HANDLE hd)
 
   if (hd->fp)
     {
+#if HAVE_W32_SYSTEM
+      es_fclose (hd->fp);
+      hd->fp = NULL;
+#else
       if (es_fseeko (hd->fp, 0, SEEK_SET))
         {
           /* Ooops.  Seek did not work.  Close so that the search will
@@ -821,6 +825,7 @@ keybox_search_reset (KEYBOX_HANDLE hd)
           es_fclose (hd->fp);
           hd->fp = NULL;
         }
+#endif
     }
   hd->error = 0;
   hd->eof = 0;

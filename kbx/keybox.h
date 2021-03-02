@@ -70,6 +70,8 @@ int keybox_is_writable (void *token);
 
 KEYBOX_HANDLE keybox_new_openpgp (void *token, int secret);
 KEYBOX_HANDLE keybox_new_x509 (void *token, int secret);
+void keybox_close_all_files (void *token);
+
 void keybox_release (KEYBOX_HANDLE hd);
 void keybox_push_found_state (KEYBOX_HANDLE hd);
 void keybox_pop_found_state (KEYBOX_HANDLE hd);

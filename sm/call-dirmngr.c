@@ -505,6 +505,8 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
   struct inq_certificate_parm_s parm;
   struct isvalid_status_parm_s stparm;
 
+  keydb_close_all_files ();
+
   rc = start_dirmngr (ctrl);
   if (rc)
     return rc;
@@ -775,6 +777,8 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, const char *uri,
   if ((names && uri) || (!names && !uri))
     return gpg_error (GPG_ERR_INV_ARG);
 
+  keydb_close_all_files ();
+
   /* The lookup function can be invoked from the callback of a lookup
      function, for example to walk the chain.  */
   if (!dirmngr_ctx_locked)
@@ -1042,6 +1046,8 @@ gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
   char *line, *p;
   size_t len;
   struct run_command_parm_s parm;
+
+  keydb_close_all_files ();
 
   rc = start_dirmngr (ctrl);
   if (rc)
