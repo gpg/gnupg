@@ -109,8 +109,6 @@ gpg_error_t keybox_update_keyblock (KEYBOX_HANDLE hd,
 #ifdef KEYBOX_WITH_X509
 int keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
                         unsigned char *sha1_digest);
-int keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
-                        unsigned char *sha1_digest);
 #endif /*KEYBOX_WITH_X509*/
 int keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value);
 

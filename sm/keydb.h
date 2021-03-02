@@ -47,7 +47,6 @@ void keydb_push_found_state (KEYDB_HANDLE hd);
 void keydb_pop_found_state (KEYDB_HANDLE hd);
 int keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert);
 int keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
-int keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
 
 int keydb_delete (KEYDB_HANDLE hd, int unlock);
 

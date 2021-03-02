@@ -483,17 +483,6 @@ keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
   return rc;
 }
 
-int
-keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
-                    unsigned char *sha1_digest)
-{
-  (void)hd;
-  (void)cert;
-  (void)sha1_digest;
-  return -1;
-}
-
-
 #endif /*KEYBOX_WITH_X509*/
 
 /* Note: We assume that the keybox has been locked before the current

@@ -778,44 +778,6 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 }
 
 
-
-/* Update the current keyblock with KB.  */
-int
-keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
-{
-  int rc = 0;
-  unsigned char digest[20];
-
-  if (!hd)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  if ( hd->found < 0 || hd->found >= hd->used)
-    return -1; /* nothing found */
-
-  if (opt.dry_run)
-    return 0;
-
-  rc = lock_all (hd);
-  if (rc)
-    return rc;
-
-  gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL); /* kludge*/
-
-  switch (hd->active[hd->found].type)
-    {
-    case KEYDB_RESOURCE_TYPE_NONE:
-      rc = gpg_error (GPG_ERR_GENERAL); /* oops */
-      break;
-    case KEYDB_RESOURCE_TYPE_KEYBOX:
-      rc = keybox_update_cert (hd->active[hd->found].u.kr, cert, digest);
-      break;
-    }
-
-  unlock_all (hd);
-  return rc;
-}
-
-
 /*
  * The current keyblock or cert will be deleted.
  */
