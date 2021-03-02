@@ -1012,6 +1012,14 @@ dotlock_destroy (dotlock_t h)
 }
 
 
+/* Return true if H has been taken.  */
+int
+dotlock_is_locked (dotlock_t h)
+{
+  return h && !!h->locked;
+}
+
+
 
 #ifdef HAVE_POSIX_SYSTEM
 /* Unix specific code of make_dotlock.  Returns 0 on success and -1 on
@@ -1250,11 +1258,14 @@ dotlock_take (dotlock_t h, long timeout)
   int ret;
 
   if ( h->disable )
-    return 0; /* Locks are completely disabled.  Return success. */
+    {
+      h->locked = 1;
+      return 0; /* Locks are completely disabled.  Return success. */
+    }
 
   if ( h->locked )
     {
-      my_debug_1 ("Oops, '%s' is already locked\n", h->lockname);
+      /* my_debug_1 ("'%s' is already locked (%s)\n", h->lockname); */
       return 0;
     }
 
@@ -1346,11 +1357,14 @@ dotlock_release (dotlock_t h)
     return 0;
 
   if ( h->disable )
-    return 0;
+    {
+      h->locked = 0;
+      return 0;
+    }
 
   if ( !h->locked )
     {
-      my_debug_1 ("Oops, '%s' is not locked\n", h->lockname);
+      /* my_debug_1 ("Oops, '%s' is not locked (%s)\n", h->lockname); */
       return 0;
     }
 

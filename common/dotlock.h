@@ -102,6 +102,7 @@ dotlock_t dotlock_create (const char *file_to_lock, unsigned int flags);
 void dotlock_set_fd (dotlock_t h, int fd);
 int  dotlock_get_fd (dotlock_t h);
 void dotlock_destroy (dotlock_t h);
+int dotlock_is_locked (dotlock_t h);
 int dotlock_take (dotlock_t h, long timeout);
 int dotlock_release (dotlock_t h);
 void dotlock_remove_lockfiles (void);
