@@ -58,7 +58,6 @@ static int any_registered;
 
 
 struct keydb_handle {
-  int locked;
   int found;
   int saved_found;
   int current;
@@ -147,7 +146,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
     }
   *last_slash_in_filename = save_slash;
 
-  /* To avoid races with other instances of gpg trying to create or
+  /* To avoid races with other instances of gpg/gpgsm trying to create or
      update the keybox (it is removed during an update for a short
      time), we do the next stuff in a locked state. */
   lockhd = dotlock_create (filename, 0);
@@ -175,7 +174,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
     }
 
   /* Now the real test while we are locked. */
-  if (!access(filename, F_OK))
+  if (!gnupg_access(filename, F_OK))
     {
       rc = 0;  /* Okay, we may access the file now.  */
       goto leave;
@@ -522,22 +521,22 @@ keydb_set_ephemeral (KEYDB_HANDLE hd, int yes)
 }
 
 
+
 /* If the keyring has not yet been locked, lock it now.  This
-   operation is required before any update operation; it is optional
-   for an insert operation.  The lock is released with
-   keydb_released. */
+   operation is required before any update operation; On Windows it is
+   always required to disallow other processes to open the file which
+   in turn would inhibit our copy+update+rename method.  The lock is
+   released with keydb_released. */
 gpg_error_t
 keydb_lock (KEYDB_HANDLE hd)
 {
   if (!hd)
     return gpg_error (GPG_ERR_INV_HANDLE);
-  if (hd->locked)
-    return 0; /* Already locked. */
   return lock_all (hd);
 }
 
 
-
+/* Same as keydb_lock but no check for an invalid HD.  */
 static int
 lock_all (KEYDB_HANDLE hd)
 {
@@ -577,8 +576,6 @@ lock_all (KEYDB_HANDLE hd)
               }
           }
       }
-    else
-      hd->locked = 1;
 
     /* make_dotlock () does not yet guarantee that errno is set, thus
        we can't rely on the error reason and will simply use
@@ -586,13 +583,11 @@ lock_all (KEYDB_HANDLE hd)
     return rc? gpg_error (GPG_ERR_EACCES) : 0;
 }
 
+
 static void
 unlock_all (KEYDB_HANDLE hd)
 {
   int i;
-
-  if (!hd->locked)
-    return;
 
   for (i=hd->used-1; i >= 0; i--)
     {
@@ -606,7 +601,6 @@ unlock_all (KEYDB_HANDLE hd)
           break;
         }
     }
-  hd->locked = 0;
 }
 
 
@@ -736,7 +730,7 @@ keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
   if ( hd->found < 0 || hd->found >= hd->used)
     return gpg_error (GPG_ERR_NOTHING_FOUND);
 
-  if (!hd->locked)
+  if (!dotlock_is_locked (hd->active[hd->found].lockhandle))
     return gpg_error (GPG_ERR_NOT_LOCKED);
 
   switch (hd->active[hd->found].type)
@@ -775,7 +769,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
   else
     return gpg_error (GPG_ERR_GENERAL);
 
-  if (!hd->locked)
+  if (!dotlock_is_locked (hd->active[idx].lockhandle))
     return gpg_error (GPG_ERR_NOT_LOCKED);
 
   gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL); /* kludge*/
@@ -812,7 +806,7 @@ keydb_delete (KEYDB_HANDLE hd, int unlock)
   if( opt.dry_run )
     return 0;
 
-  if (!hd->locked)
+  if (!dotlock_is_locked (hd->active[hd->found].lockhandle))
     return gpg_error (GPG_ERR_NOT_LOCKED);
 
   switch (hd->active[hd->found].type)
@@ -944,7 +938,7 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
       return gpg_error (GPG_ERR_NOT_FOUND);
     }
 
-  rc = keydb_lock (hd);
+  rc = lock_all (hd);
   if (rc)
     return rc;
   rc = -1;
@@ -1189,7 +1183,7 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
     keydb_set_ephemeral (kh, 1);
 
   keydb_close_all_files ();
-  err = keydb_lock (kh);
+  err = lock_all (kh);
   if (err)
     {
       log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
@@ -1288,7 +1282,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
     }
 
   keydb_close_all_files ();
-  err = keydb_lock (hd);
+  err = lock_all (hd);
   if (err)
     {
       log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
