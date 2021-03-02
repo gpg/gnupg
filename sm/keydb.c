@@ -931,7 +931,7 @@ int
 keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
               KEYDB_SEARCH_DESC *desc, size_t ndesc)
 {
-  int rc = -1;
+  int rc;
   unsigned long skipped;
 
   if (!hd)
@@ -943,6 +943,11 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
                                gpg_error (GPG_ERR_KEYRING_OPEN));
       return gpg_error (GPG_ERR_NOT_FOUND);
     }
+
+  rc = keydb_lock (hd);
+  if (rc)
+    return rc;
+  rc = -1;
 
   while (rc == -1 && hd->current >= 0 && hd->current < hd->used)
     {
