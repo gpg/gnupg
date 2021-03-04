@@ -42,6 +42,7 @@
 #include <gcrypt.h>
 #include "util.h"
 #include "i18n.h"
+#include "w32help.h"
 
 /* This object is used to register memory cleanup functions.
    Technically they are not needed but they can avoid frequent
@@ -78,6 +79,11 @@ sleep_on_exit (void)
   Sleep (400);
 }
 #endif /*HAVE_W32CE_SYSTEM*/
+
+#if HAVE_W32_SYSTEM
+static void prepare_w32_commandline (int *argcp, char ***argvp);
+#endif /*HAVE_W32_SYSTEM*/
+
 
 
 static void
@@ -190,13 +196,10 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
   gpgrt_init ();
   gpgrt_set_alloc_func (gcry_realloc);
 
+#ifdef HAVE_W32CE_SYSTEM
   /* Special hack for Windows CE: We extract some options from arg
      to setup the standard handles.  */
-#ifdef HAVE_W32CE_SYSTEM
   parse_std_file_handles (argcp, argvp);
-#else
-  (void)argcp;
-  (void)argvp;
 #endif
 
   /* Access the standard estreams as early as possible.  If we don't
@@ -217,6 +220,16 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
 
   /* Logging shall use the standard socket directory as fallback.  */
   log_set_socket_dir_cb (gnupg_socketdir);
+
+#if HAVE_W32_SYSTEM
+  /* For Standard Windows we use our own parser for the command line
+   * so that we can return an array of utf-8 encoded strings.  */
+  prepare_w32_commandline (argcp, argvp);
+#else
+  (void)argcp;
+  (void)argvp;
+#endif
+
 }
 
 
@@ -290,3 +303,60 @@ parse_std_file_handles (int *argcp, char ***argvp)
 
 }
 #endif /*HAVE_W32CE_SYSTEM*/
+
+
+/* For Windows we need to parse the command line so that we can
+ * provide an UTF-8 encoded argv.  If there is any Unicode character
+ * we return a new array but if there is no Unicode character we do
+ * nothing.  */
+#ifdef HAVE_W32_SYSTEM
+static void
+prepare_w32_commandline (int *r_argc, char ***r_argv)
+{
+  const wchar_t *wcmdline, *ws;
+  char *cmdline;
+  int argc;
+  char **argv;
+  const char *s;
+  int globing;
+
+  s = gpgrt_strusage (95);
+  globing = (s && *s == '1');
+
+  wcmdline = GetCommandLineW ();
+  if (!wcmdline)
+    {
+      log_error ("GetCommandLineW failed\n");
+      return;  /* Ooops.  */
+    }
+
+  if (!globing)
+    {
+      /* If globbing is not enabled we use our own parser only if
+       * there are any non-ASCII characters.  */
+      for (ws=wcmdline; *ws; ws++)
+        if (!iswascii (*ws))
+          break;
+      if (!*ws)
+        return;  /* No Unicode - return directly.  */
+    }
+
+  cmdline = wchar_to_utf8 (wcmdline);
+  if (!cmdline)
+    {
+      log_error ("parsing command line failed: %s\n", strerror (errno));
+      return;  /* Ooops.  */
+    }
+  gpgrt_annotate_leaked_object (cmdline);
+
+  argv = w32_parse_commandline (cmdline, globing, &argc);
+  if (!argv)
+    {
+      log_error ("parsing command line failed: %s\n", "internal error");
+      return;  /* Ooops.  */
+    }
+  gpgrt_annotate_leaked_object (argv);
+  *r_argv = argv;
+  *r_argc = argc;
+}
+#endif /*HAVE_W32_SYSTEM*/
