@@ -318,7 +318,7 @@ prepare_w32_commandline (int *r_argc, char ***r_argv)
   int argc;
   char **argv;
   const char *s;
-  int globing;
+  int i, globing, itemsalloced;
 
   s = gpgrt_strusage (95);
   globing = (s && *s == '1');
@@ -349,13 +349,18 @@ prepare_w32_commandline (int *r_argc, char ***r_argv)
     }
   gpgrt_annotate_leaked_object (cmdline);
 
-  argv = w32_parse_commandline (cmdline, globing, &argc);
+  argv = w32_parse_commandline (cmdline, globing, &argc, &itemsalloced);
   if (!argv)
     {
       log_error ("parsing command line failed: %s\n", "internal error");
       return;  /* Ooops.  */
     }
   gpgrt_annotate_leaked_object (argv);
+  if (itemsalloced)
+    {
+      for (i=0; i < argc; i++)
+        gpgrt_annotate_leaked_object (argv[i]);
+    }
   *r_argv = argv;
   *r_argc = argc;
 }
