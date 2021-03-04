@@ -102,7 +102,7 @@ common_sources = \
 
 
 if HAVE_W32_SYSTEM
-common_sources += w32-reg.c w32-misc.c
+common_sources += w32-reg.c w32-cmdline.c
 endif
 
 # To make the code easier to read we have split home some code into
@@ -222,7 +222,7 @@ t_name_value_LDADD = $(t_common_ldadd)
 t_ccparray_LDADD = $(t_common_ldadd)
 t_recsel_LDADD = $(t_common_ldadd)
 
-t_w32_cmdline_SOURCES = t-w32-cmdline.c w32-misc.c $(t_extra_src)
+t_w32_cmdline_SOURCES = t-w32-cmdline.c w32-cmdline.c $(t_extra_src)
 t_w32_cmdline_LDADD = $(t_common_ldadd)
 
 # System specific test

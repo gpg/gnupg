@@ -1,4 +1,4 @@
-/* w32-misc.c - Helper functions needed in Windows
+/* w32-cmdline.c - Command line helper functions needed in Windows
  * Copyright (C) 2021 g10 Code GmbH
  *
  * This file is part of GnuPG.
