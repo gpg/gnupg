@@ -75,10 +75,6 @@
 #define MY_O_BINARY  0
 #endif
 
-#ifdef __MINGW32__
-int _dowildcard = -1;
-#endif
-
 enum cmd_and_opt_values
   {
     aNull = 0,
@@ -1134,6 +1130,10 @@ my_strusage( int level )
                               check_compress_algo);
 	p = zips;
 	break;
+
+      case 95:
+        p = "1"; /* <-- Enable globbing under Windows (see init.c) */
+        break;
 
       default:	p = NULL;
     }
