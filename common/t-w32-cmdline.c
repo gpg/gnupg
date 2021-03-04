@@ -59,8 +59,18 @@ test_all (void)
     { "a\\\\\\b d\"e f\"g h", 3, { "a\\\\\\b", "de fg", "h" }},
     { "a\\\\\\\"b c d",       3, { "a\\\"b",   "c",     "d" }},
     { "a\\\\\\\\\"b c\" d e", 3, { "a\\\\b c", "d",     "e" }},
+    /* Examples from "Parsing C Command-Line Arguments" dated 11/09/2020.
+     * https://docs.microsoft.com/en-us/cpp/c-language/\
+     * parsing-c-command-line-arguments?view=msvc-160
+     */
+    { "\"a b c\" d e",          3, { "a b c",    "d",     "e" }},
+    { "\"ab\\\"c\" \"\\\\\" d", 3, { "ab\"c",    "\\",    "d" }},
+    { "a\\\\\\b d\"e f\"g h",   3, { "a\\\\\\b", "de fg", "h" }},
+    { "a\\\\\\\"b c d",         3, { "a\\\"b",   "c",     "d" }},
+    { "a\\\\\\\\\"b c\" d e",   3, { "a\\\\b c", "d",     "e" }},
+    { "a\"b\"\" c d",           1, { "ab\" c d"               }},
     /* Some arbitrary tests created using mingw.
-     * But I am nire sure whether their parser is fully correct.
+     * But I am not sure whether their parser is fully correct.
      */
     { "e:a  a b\"c\" ",       3, { "e:a", "a", "bc" }},
     /* { "e:a  a b\"c\"\" d\"\"e \" ", */

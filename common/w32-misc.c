@@ -46,7 +46,7 @@ count_backslashes (const char *s)
 
 
 static void
-strip_one_arg (char *string)
+strip_one_arg (char *string, int endquote)
 {
   char *s, *d;
   unsigned int n, i;
@@ -61,6 +61,12 @@ strip_one_arg (char *string)
               *d++ = '\\';
             if ((n&1)) /* Odd number of backslashes.  */
               *d++ = '"';  /* Print the quote.  */
+          }
+        else if (!s[n] && endquote)
+          {
+            for (i=0; i < n/2; i++)
+              *d++ = '\\';
+            s--;
           }
         else /* Print all backslashes.  */
           {
@@ -94,10 +100,21 @@ parse_cmdstring (char *string, char **argv)
         {
           if (*p == '\\' && p[1] == '"')
             p++;
+          else if (*p == '\\' && p[1] == '\\')
+            p++;
           else if (*p == '"')
             {
-              if (argv && (p[1] == ' ' || p[1] == '\t' || !p[1]))
-                *p = 0;
+              if (p[1] == ' ' || p[1] == '\t' || !p[1])
+                {
+                  if (argv)
+                    {
+                      *p = 0;
+                      strip_one_arg (p0, 1);
+                      argv[argc] = p0;
+                    }
+                  argc++;
+                  p0 = NULL;
+                }
               inquote = 0;
             }
         }
@@ -126,7 +143,7 @@ parse_cmdstring (char *string, char **argv)
               if (argv)
                 {
                   *p = 0;
-                  strip_one_arg (p0);
+                  strip_one_arg (p0, inquote);
                   argv[argc] = p0;
                 }
               argc++;
@@ -144,7 +161,7 @@ parse_cmdstring (char *string, char **argv)
       if (argv)
         {
           *p = 0;
-          strip_one_arg (p0);
+          strip_one_arg (p0, inquote);
           argv[argc] = p0;
         }
       argc++;
