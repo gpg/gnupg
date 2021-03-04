@@ -319,6 +319,8 @@ char *xasprintf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 /* This is now an alias to estream_asprintf.  */
 char *xtryasprintf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 
+void *xtryreallocarray (void *a, size_t oldnmemb, size_t nmemb, size_t size);
+
 /* Replacement for gcry_cipher_algo_name.  */
 const char *gnupg_cipher_algo_name (int algo);
 

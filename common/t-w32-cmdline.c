@@ -33,8 +33,13 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef HAVE_W32_SYSTEM
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#endif
 
 #include "t-support.h"
+#include "utf8conv.h"
 #include "w32help.h"
 
 #define PGM "t-w32-cmdline"
@@ -51,6 +56,7 @@ test_all (void)
     const char *cmdline;
     int argc;        /* Expected number of args.  */
     char *argv[10];  /* Expected results.  */
+    int use_glob;
   } tests[] = {
     /* Examples from "Parsing C++ Command-Line Arguments" dated 11/18/2006.
      * https://docs.microsoft.com/en-us/previous-versions/17w5ykft(v=vs.85)
@@ -81,10 +87,19 @@ test_all (void)
     /*   4, { "e:a", "a", "bc\"", "de f\"gh " }},*/
 
     { "\"foo bar\"", 1 , { "foo bar" }},
+
+#ifndef HAVE_W32_SYSTEM
+    /* We actually don't use this code on Unix but we provide a way to
+     * test some of the blobing code. */
+    { "foo",  1, { "foo"                 }, 1 },
+    { "foo*", 2, { "[* follows]", "foo*" }, 1 },
+    { "foo?", 2, { "[? follows]", "foo?" }, 1 },
+    { "? \"*\" *", 5, { "[? follows]", "?", "*", "[* follows]", "*" }, 1 },
+#endif /*!HAVE_W32_SYSTEM*/
     { "", 1 , { "" }}
   };
   int tidx;
-  int i, any, argc;
+  int i, any, itemsalloced, argc;
   char *cmdline;
   char **argv;
 
@@ -95,7 +110,8 @@ test_all (void)
         putchar ('\n');
       if (verbose)
         printf ("test %d: line    ->%s<-\n", tidx, cmdline);
-      argv = w32_parse_commandline (cmdline, 0, &argc);
+      argv = w32_parse_commandline (cmdline, tests[tidx].use_glob,
+                                    &argc, &itemsalloced);
       if (!argv)
         {
           fail (tidx);
@@ -129,7 +145,14 @@ test_all (void)
                    tidx, verbose? "":" (use --verbose)");
           errcount++;
         }
+
+      if (itemsalloced)
+        {
+          for (i=0; i < argc; i++)
+            xfree (argv[i]);
+        }
       xfree (argv);
+      xfree (cmdline);
     }
 }
 
@@ -154,7 +177,7 @@ main (int argc, char **argv)
         }
       else if (!strcmp (*argv, "--help"))
         {
-          fputs ("usage: " PGM " [FILE]\n"
+          fputs ("usage: " PGM " [test args]\n"
                  "Options:\n"
                  "  --verbose         Print timings etc.\n"
                  "  --debug           Flyswatter\n"
@@ -181,11 +204,47 @@ main (int argc, char **argv)
 
   if (argc)
     {
-      fprintf (stderr, PGM ": no arguments allowed\n");
-      exit (1);
-    }
+#ifdef HAVE_W32_SYSTEM
+      const wchar_t *wcmdline;
+      char *cmdline;
+      int i, myargc;
+      char **myargv;
 
-  test_all ();
+      wcmdline = GetCommandLineW ();
+      if (!wcmdline)
+        {
+          fprintf (stderr, PGM ": GetCommandLine failed\n");
+          exit (1);
+        }
+
+      cmdline = wchar_to_utf8 (wcmdline);
+      if (!cmdline)
+        {
+          fprintf (stderr, PGM ": wchar_to_utf8 failed\n");
+          exit (1);
+        }
+
+      printf ("cmdline ->%s<\n", cmdline);
+      myargv = w32_parse_commandline (cmdline, 1, &myargc, NULL);
+      if (!myargv)
+        {
+          fprintf (stderr, PGM ": w32_parse_commandline failed\n");
+          exit (1);
+        }
+
+      for (i=0; i < myargc; i++)
+        printf ("argv[%d] ->%s<-\n", i, myargv[i]);
+      fflush (stdout);
+
+      xfree (myargv);
+      xfree (cmdline);
+#else
+      fprintf (stderr, PGM ": manual test mode not available on Unix\n");
+      errcount++;
+#endif
+    }
+  else
+    test_all ();
 
   return !!errcount;
 }
