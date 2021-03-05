@@ -241,6 +241,7 @@ w32_write_console (const char *string)
     log_fatal ("WriteConsole failed: %lu != %lu\n",
                (unsigned long)n, (unsigned long)nwritten);
   last_prompt_len += n;
+  xfree (wstring);
 }
 #endif /*HAVE_W32_SYSTEM*/
 
