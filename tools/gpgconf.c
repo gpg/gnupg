@@ -945,7 +945,11 @@ main (int argc, char **argv)
 #ifdef HAVE_W32_SYSTEM
       {
         get_outfp (&outfp);
-        es_fprintf (outfp, "Console: CP%u\n", GetConsoleOutputCP ());
+        if (GetConsoleCP () != GetConsoleOutputCP ())
+          es_fprintf (outfp, "Console: CP%u/CP%u\n",
+                      GetConsoleCP (), GetConsoleOutputCP ());
+        else
+          es_fprintf (outfp, "Console: CP%u\n", GetConsoleCP ());
         es_fprintf (outfp, "ANSI: CP%u\n", GetACP ());
         es_fprintf (outfp, "OEM: CP%u\n", GetOEMCP ());
       }
