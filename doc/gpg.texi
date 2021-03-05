@@ -1532,13 +1532,14 @@ not used).
 
 @item --display-charset @var{name}
 @opindex display-charset
-Set the name of the native character set. This is used to convert
-some informational strings like user IDs to the proper UTF-8 encoding.
+Set the name of the native character set. This is used to convert some
+informational strings like user IDs to the proper UTF-8 encoding.
 Note that this has nothing to do with the character set of data to be
-encrypted or signed; GnuPG does not recode user-supplied data. If
-this option is not used, the default character set is determined from
-the current locale. A verbosity level of 3 shows the chosen set.
-Valid values for @var{name} are:
+encrypted or signed; GnuPG does not recode user-supplied data. If this
+option is not used, the default character set is determined from the
+current locale. A verbosity level of 3 shows the chosen set.  This
+option should not be used on Windows.  Valid values for @var{name}
+are:
 
 @table @asis
 
@@ -1574,6 +1575,12 @@ encoded in the character set as specified by
 @option{--display-charset}. These options affect all following
 arguments. Both options may be used multiple times.
 This option should not be used in an option file.
+
+This option has no effect on Windows.  There the internal used UTF-8
+encoding is translated for console input and output.  The command line
+arguments are expected as Unicode and translated to UTF-8.  Thus when
+calling this program from another, make sure to use the Unicode
+version of CreateProcess.
 
 @anchor{gpg-option --options}
 @item --options @var{file}

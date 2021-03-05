@@ -202,6 +202,17 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
   parse_std_file_handles (argcp, argvp);
 #endif
 
+#ifdef HAVE_W32_SYSTEM
+  /* We want gettext to always output UTF-8 and we put the console in
+   * utf-8 mode.  */
+  gettext_use_utf8 (1);
+  if (!SetConsoleCP (CP_UTF8) || !SetConsoleOutputCP (CP_UTF8))
+    {
+      log_info ("SetConsoleCP failed: %s\n", w32_strerror (-1));
+      log_info ("Warning: Garbled console data possible\n");
+    }
+#endif
+
   /* Access the standard estreams as early as possible.  If we don't
      do this the original stdio streams may have been closed when
      _es_get_std_stream is first use and in turn it would connect to

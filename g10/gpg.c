@@ -970,7 +970,13 @@ static struct debug_flags_s debug_flags [] =
 
 int g10_errors_seen = 0;
 
-static int utf8_strings = 0;
+static int utf8_strings =
+#ifdef HAVE_W32_SYSTEM
+  1
+#else
+  0
+#endif
+  ;
 static int maybe_setuid = 1;
 
 static char *build_list( const char *text, char letter,
@@ -3308,7 +3314,11 @@ main (int argc, char **argv)
 	    opt.verify_options&=~VERIFY_SHOW_NOTATIONS;
 	    break;
 	  case oUtf8Strings: utf8_strings = 1; break;
-	  case oNoUtf8Strings: utf8_strings = 0; break;
+	  case oNoUtf8Strings:
+#ifdef HAVE_W32_SYSTEM
+            utf8_strings = 0;
+#endif
+            break;
 	  case oDisableCipherAlgo:
             {
               int algo = string_to_cipher_algo (pargs.r.ret_str);
