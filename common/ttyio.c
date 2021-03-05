@@ -221,6 +221,30 @@ tty_no_terminal(int onoff)
   return old;
 }
 
+
+#ifdef HAVE_W32_SYSTEM
+/* Write the UTF-8 encoded STRING to the console.  */
+static void
+w32_write_console (const char *string)
+{
+  wchar_t *wstring;
+  DWORD n, nwritten;
+
+  wstring = utf8_to_wchar (string);
+  if (!wstring)
+    log_fatal ("w32_write_console failed: %s", strerror (errno));
+  n = wcslen (wstring);
+
+  if (!WriteConsoleW (con.out, wstring, n, &nwritten, NULL))
+    log_fatal ("WriteConsole failed: %s", w32_strerror (-1));
+  if (n != nwritten)
+    log_fatal ("WriteConsole failed: %lu != %lu\n",
+               (unsigned long)n, (unsigned long)nwritten);
+  last_prompt_len += n;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
 void
 tty_printf (const char *fmt, ... )
 {
@@ -237,18 +261,11 @@ tty_printf (const char *fmt, ... )
 #ifdef HAVE_W32_SYSTEM
   {
     char *buf = NULL;
-    int n;
-    DWORD nwritten;
 
-    n = vasprintf(&buf, fmt, arg_ptr);
+    vasprintf(&buf, fmt, arg_ptr);
     if (!buf)
       log_bug ("vasprintf() failed\n");
-
-    if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
-      log_fatal ("WriteConsole failed: rc=%d", (int)GetLastError());
-    if (n != nwritten)
-      log_fatal ("WriteConsole failed: %d != %d\n", n, (int)nwritten);
-    last_prompt_len += n;
+    w32_write_console (buf);
     xfree (buf);
   }
 #else /* Unix */
@@ -285,18 +302,11 @@ tty_fprintf (estream_t fp, const char *fmt, ... )
 #ifdef HAVE_W32_SYSTEM
   {
     char *buf = NULL;
-    int n;
-    DWORD nwritten;
 
-    n = vasprintf (&buf, fmt, arg_ptr);
+    vasprintf (&buf, fmt, arg_ptr);
     if (!buf)
       log_bug ("vasprintf() failed\n");
-
-    if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
-      log_fatal ("WriteConsole failed: rc=%d", (int)GetLastError());
-    if (n != nwritten)
-      log_fatal ("WriteConsole failed: %d != %d\n", n, (int)nwritten);
-    last_prompt_len += n;
+    w32_write_console (buf);
     xfree (buf);
   }
 #else /* Unix */
@@ -410,7 +420,12 @@ do_get (const char *prompt, int hidden)
   int  n;  /* Allocated size of BUF.  */
   int  i;  /* Number of bytes in BUF. */
   int  c;
+#ifdef HAVE_W32_SYSTEM
+  char *utf8buf;
+  int errcount = 0;
+#else
   byte cbuf[1];
+#endif
 
   if (batchmode)
     {
@@ -436,31 +451,58 @@ do_get (const char *prompt, int hidden)
   if (hidden)
     SetConsoleMode(con.in, HID_INPMODE );
 
+  utf8buf = NULL;
   for (;;)
     {
       DWORD nread;
+      wchar_t wbuf[2];
+      const unsigned char *s;
 
-      if (!ReadConsoleA( con.in, cbuf, 1, &nread, NULL))
-        log_fatal ("ReadConsole failed: rc=%d", (int)GetLastError ());
+      if (!ReadConsoleW (con.in, wbuf, 1, &nread, NULL))
+        log_fatal ("ReadConsole failed: %s", w32_strerror (-1));
       if (!nread)
         continue;
-      if (*cbuf == '\n')
-        break;
 
+      wbuf[1] = 0;
+      xfree (utf8buf);
+      utf8buf = wchar_to_utf8 (wbuf);
+      if (!utf8buf)
+        {
+          log_info ("wchar_to_utf8 failed: %s\n", strerror (errno));
+          if (++errcount > 10)
+            log_fatal (_("too many errors; giving up\n"));
+          continue;
+        }
+      if (*utf8buf == '\n')
+        {
+          if (utf8buf[1])
+            {
+              log_info ("ReadConsole returned more than requested"
+                        " (0x0a,0x%02x)\n", utf8buf[1]);
+              if (++errcount > 10)
+                log_fatal (_("too many errors; giving up\n"));
+            }
+          break;
+        }
       if (!hidden)
         last_prompt_len++;
-      c = *cbuf;
-      if (c == '\t')
-        c = ' ';
-      else if ( (c >= 0 && c <= 0x1f) || c == 0x7f)
-        continue;
-      if (!(i < n-1))
+
+      for (s=utf8buf; *s; s++)
         {
-          n += 50;
-          buf = xrealloc (buf, n);
+          c = *s;
+          if (c == '\t')
+            c = ' ';  /* Map tab to a space.  */
+          else if ((c >= 0 && c <= 0x1f) || c == 0x7f)
+            continue; /* Remove control characters.  */
+          if (!(i < n-1))
+            {
+              n += 50;
+              buf = xrealloc (buf, n);
+            }
+          buf[i++] = c;
         }
-      buf[i++] = c;
     }
+  xfree (utf8buf);
 
   if (hidden)
     SetConsoleMode(con.in, DEF_INPMODE );
