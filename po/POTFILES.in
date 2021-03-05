@@ -24,6 +24,7 @@ common/audit.c
 common/helpfile.c
 common/gettime.c
 common/ksba-io-support.c
+common/ttyio.c
 
 common/argparse.c
 common/logging.c
