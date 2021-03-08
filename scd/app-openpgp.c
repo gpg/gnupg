@@ -5537,6 +5537,8 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
       if (app->app_local->keyattr[1].ecc.flags & ECC_FLAG_DJB_TWEAK)
         prefix = 0x40;
+      else if (*outdatalen == 56) /* It's X448 with no prefix.  */
+        ;
       else if ((*outdatalen % 2) == 0) /* No 0x04 -> x-coordinate only */
         prefix = 0x41;
 
