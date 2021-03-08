@@ -63,6 +63,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * The symcryptrun tool, a wrapper for the now obsolete external
     Chiasmus tool, has been removed.
 
+  * Full Unicode support for the command line.  [#4398]
+
   Changes also found in 2.2.27:
 
   * gpg: Fix regression in 2.2.24 for gnupg_remove function under
@@ -74,9 +76,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * Build Windows installer without timestamps.  Note that the
     Authenticode signatures still carry a timestamp.
-
-  Release-info: https://dev.gnupg.org/T5234
-  See-also: gnupg-announce/2021q1/000452.html
 
   Changes also found in 2.2.26:
 
@@ -105,9 +104,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * Fix the iconv fallback handling to UTF-8.  [#5038]
 
-  Release-info: https://dev.gnupg.org/T5153
-  See-also: gnupg-announce/2020q4/000451.html
-
   Changes also found in 2.2.25:
 
   * scd: Fix regression in 2.2.24 requiring gpg --card-status before
@@ -115,9 +111,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * gpgsm: Using Libksba 1.5.0 signatures with a rarely used
     combination of attributes can now be verified.  [#5146]
-
-  Release-info: https://dev.gnupg.org/T5140
-  See-also: gnupg-announce/2020q4/000450.html
 
   Changes also found in 2.2.24:
 
@@ -164,9 +157,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * w32: Install gpg-check-pattern and example profiles.  Install
     Windows subsystem variant of gpgconf (gpgconf-w32).
 
-  Release-info: https://dev.gnupg.org/T5052
-  See-also: gnupg-announce/2020q4/000449.html
-
   Changes also found in 2.2.23:
 
   * gpg: Fix a possible segv in the key cleaning code.
@@ -175,9 +165,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * scdaemon: Fix a PIN verify failure on certain OpenPGP card
     implementations.  Regression in 2.2.22.  [#5039]
-
-  Release-info: https://dev.gnupg.org/T5045
-  See-also: gnupg-announce/2020q3/000448.html
 
   Changes also found in 2.2.22:
 
@@ -224,9 +211,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * Build the Windows installer with the new Ntbtls 0.2.0 so that TLS
     connections succeed for servers demanding GCM.
 
-  Release-info: https://dev.gnupg.org/T5030
-  See-also: gnupg-announce/2020q3/000447.html
-
   Changes also found in 2.2.21:
 
   * gpg: Add option --no-include-key-block. [#4856]
@@ -265,9 +249,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * Support a command history file in gpg-card and gpg-connect-agent.
 
-  Release-info: https://dev.gnupg.org/T4897
-  See-also: gnupg-announce/2020q3/000446.html
-
   Changes also found in 2.2.20:
 
   * In constrast to 2.2 no explicit protection against overflow of the
@@ -299,9 +280,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * Avoid build problems with LTO or gcc-10. [#4831]
 
-  Release-info: https://dev.gnupg.org/T4860
-  See-also: gnupg-announce/2020q1/000444.html
-
   Changes also found in 2.2.19:
 
   * gpg: Only in 2.2.19; not requird in master: Fix double free when
@@ -312,9 +290,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * gpgsm: Add special case for certain expired intermediate
     certificates.  [#4696]
-
-  Release-info: https://dev.gnupg.org/T4768
-  See-also: gnupg-announce/2019q4/000443.html
 
   Changes also found in 2.2.18:
 
@@ -382,9 +357,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * wkd: gpg-wks-client --install-key now installs the required policy
     file.
 
-  Release-info: https://dev.gnupg.org/T4684
-  See-also: gnupg-announce/2019q4/000442.html
-
   Changes also found in 2.2.17:
 
   * gpg: Ignore all key-signatures received from keyservers.  This
@@ -416,9 +388,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * dirmngr: Fix TLS bug during redirection of HKP requests.  [#4566]
 
   * gpgconf: Fix a race condition when killing components.  [#4577]
-
-  Release-info: https://dev.gnupg.org/T4606
-  See-also: gnupg-announce/2019q3/000439.html
 
   Changes also found in 2.2.16:
 
@@ -480,9 +449,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * The installer for Windows now comes with signed binaries.
 
-  Release-info: https://dev.gnupg.org/T4509
-  See-also: gnupg-announce/2019q2/000438.html
-
   Changes also found in 2.2.15:
 
   * sm: Fix --logger-fd and --status-fd on Windows for non-standard
@@ -498,9 +464,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * wkd: New commands --print-wkd-hash and --print-wkd-url for
     gpg-wks-client.
-
-  Release-info: https://dev.gnupg.org/T4434
-  See-also: gnupg-announce/2019q1/000436.html
 
   Changes also found in 2.2.14:
 
@@ -534,9 +497,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * gpgtar: Make option -C work for archive creation.
 
-  Release-info: https://dev.gnupg.org/T4412
-  See-also: gnupg-announce/2019q1/000435.html
-
   Changes also found in 2.2.13:
 
   * gpg: Implement key lookup via keygrip (using the & prefix).
@@ -558,9 +518,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * wks: Do no use compression for the the encrypted challenge and
     response.
-
-  Release-info: https://dev.gnupg.org/T4290
-  See-also: gnupg-announce/2019q1/000434.html
 
   Changes also found in 2.2.12:
 
@@ -594,9 +551,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
     memory.  [#3967]
 
   * New simplified Chinese translation (zh_CN).
-
-  Release-info: https://dev.gnupg.org/T4289
-  See-also: gnupg-announce/2018q4/000433.html
 
   Changes also found in 2.2.11:
 
@@ -638,9 +592,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * Fix some minor memory leaks and bugs.
 
-  Release-info: https://dev.gnupg.org/T4233
-  See-also: gnupg-announce/2018q4/000432.html
-
   Changes also found in 2.2.10:
 
   * gpg: Refresh expired keys originating from the WKD.  [#2917]
@@ -654,9 +605,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * agent: Speed up starting during on-demand launching.  [#3490]
 
   * dirmngr: Validate SRV records in WKD queries.
-
-  Release-info: https://dev.gnupg.org/T4112
-  See-also: gnupg-announce/2018q3/000428.html
 
   Changes also found in 2.2.9:
 
@@ -695,9 +643,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * gpg: New "usage" property for the drop-subkey filters.  [#4019]
 
-  Release-info: https://dev.gnupg.org/T4036
-  See-also: gnupg-announce/2018q3/000427.html
-
   Changes also found in 2.2.8:
 
   * gpg: Decryption of messages not using the MDC mode will now lead
@@ -725,8 +670,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * agent: Add DBUS_SESSION_BUS_ADDRESS and a few other envvars to the
     list of startup environment variables.  [#3947]
-
-  See-also: gnupg-announce/2018q2/000425.html
 
   Changes also found in 2.2.7:
 
@@ -762,8 +705,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * agent,dirmngr: New sub-command "getenv" for "getinfo" to ease
     debugging.
-
-  See-also: gnupg-announce/2018q2/000424.html
 
   Changes also found in 2.2.6:
 
@@ -810,8 +751,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * Allow the use of UNC directory names as homedir.  [#3818]
 
-  See-also: gnupg-announce/2018q2/000421.html
-
   Changes also found in 2.2.5:
 
   * gpg: Allow the use of the "cv25519" and "ed25519" short names in
@@ -855,8 +794,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
     with statically linked versions of the core GnuPG libraries.  Also
     use --enable-wks-tools by default by Speedo builds for Unix.
 
-  See-also: gnupg-announce/2018q1/000420.html
-
   Changes also found in 2.2.4:
 
   * gpg: Change default preferences to prefer SHA512.
@@ -886,8 +823,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * New configure option --enable-run-gnupg-user-socket to first try a
     socket directory which is not removed by systemd at session end.
 
-  See-also: gnupg-announce/2017q4/000419.html
-
   Changes also found in 2.2.3:
 
   * gpgsm: Fix initial keybox creation on Windows. [#3507]
@@ -904,8 +839,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * agent: Improve robustness of the shutdown pending
     state. [Git#7ffedfab89]
-
-  See-also: gnupg-announce/2017q4/000417.html
 
   Changes also found in 2.2.2:
 
@@ -948,8 +881,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * Add configure option --enable-werror.  [#2423]
 
-  See-also: gnupg-announce/2017q4/000416.html
-
   Changes also found in 2.2.1:
 
   * gpg: Fix formatting of the user id in batch mode key generation
@@ -970,38 +901,40 @@ Noteworthy changes in version 2.3.0 (unreleased)
     certificates are configured.  If build with GNUTLS, this was
     already the case.
 
-  Release-info: https://dev.gnupg.org/T4702
-  See-also: gnupg-announce/2017q3/000415.html
+  Release-info: https://dev.gnupg.org/T5343
+  See-also: gnupg-announce/2020q1/000xxx.html
 
-  Release dates of 2.2.x versions:
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Version 2.2.1  (2017-09-19)
-  Version 2.2.2  (2017-11-07)
-  Version 2.2.3  (2017-11-20)
-  Version 2.2.4  (2017-12-20)
-  Version 2.2.5  (2018-02-22)
-  Version 2.2.6  (2018-04-09)
-  Version 2.2.7  (2018-05-02)
-  Version 2.2.8  (2018-06-08)
-  Version 2.2.9  (2018-07-12)
-  Version 2.2.10 (2018-08-30)
-  Version 2.2.11 (2018-11-06)
-  Version 2.2.12 (2018-12-14)
-  Version 2.2.13 (2019-02-12)
-  Version 2.2.14 (2019-03-19)
-  Version 2.2.15 (2019-03-26)
-  Version 2.2.16 (2019-05-28)
-  Version 2.2.17 (2019-07-09)
-  Version 2.2.18 (2019-11-25)
-  Version 2.2.19 (2019-12-07)
-  Version 2.2.20 (2020-03-20)
-  Version 2.2.21 (2020-07-09)
-  Version 2.2.22 (2020-08-27)
-  Version 2.2.23 (2020-09-03)
-  Version 2.2.24 (2020-11-17)
-  Version 2.2.25 (2020-11-23)
-  Version 2.2.26 (2020-12-21)
-  Version 2.2.27 (2021-01-11)
+
+Release dates of 2.2 versions
+-----------------------------
+
+Version 2.2.27 (2021-01-11) https://dev.gnupg.org/T5234
+Version 2.2.26 (2020-12-21) https://dev.gnupg.org/T5153
+Version 2.2.25 (2020-11-23) https://dev.gnupg.org/T5140
+Version 2.2.24 (2020-11-17) https://dev.gnupg.org/T5052
+Version 2.2.23 (2020-09-03) https://dev.gnupg.org/T5045
+Version 2.2.22 (2020-08-27) https://dev.gnupg.org/T5030
+Version 2.2.21 (2020-07-09) https://dev.gnupg.org/T4897
+Version 2.2.20 (2020-03-20) https://dev.gnupg.org/T4860
+Version 2.2.19 (2019-12-07) https://dev.gnupg.org/T4768
+Version 2.2.18 (2019-11-25) https://dev.gnupg.org/T4684
+Version 2.2.17 (2019-07-09) https://dev.gnupg.org/T4606
+Version 2.2.16 (2019-05-28) https://dev.gnupg.org/T4509
+Version 2.2.15 (2019-03-26) https://dev.gnupg.org/T4434
+Version 2.2.14 (2019-03-19) https://dev.gnupg.org/T4412
+Version 2.2.13 (2019-02-12) https://dev.gnupg.org/T4290
+Version 2.2.12 (2018-12-14) https://dev.gnupg.org/T4289
+Version 2.2.11 (2018-11-06) https://dev.gnupg.org/T4233
+Version 2.2.10 (2018-08-30) https://dev.gnupg.org/T4112
+Version 2.2.9  (2018-07-12) https://dev.gnupg.org/T4036
+Version 2.2.8  (2018-06-08)
+Version 2.2.7  (2018-05-02)
+Version 2.2.6  (2018-04-09)
+Version 2.2.5  (2018-02-22)
+Version 2.2.4  (2017-12-20)
+Version 2.2.3  (2017-11-20)
+Version 2.2.2  (2017-11-07)
+Version 2.2.1  (2017-09-19)
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
