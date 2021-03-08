@@ -142,28 +142,36 @@ w32_system(const char *command)
   else
     {
       char *string;
+      wchar_t *wstring;
       PROCESS_INFORMATION pi;
-      STARTUPINFO si;
+      STARTUPINFOW si;
 
       /* We must use a copy of the command as CreateProcess modifies
        * this argument. */
       string = xstrdup (command);
+      wstring = utf8_to_wchar (string);
+      xfree (string);
+      if (!wstring)
+        return -1;
 
       memset (&pi, 0, sizeof(pi));
       memset (&si, 0, sizeof(si));
       si.cb = sizeof (si);
 
-      if (!CreateProcess (NULL, string, NULL, NULL, FALSE,
-                          DETACHED_PROCESS,
-                          NULL, NULL, &si, &pi))
-        return -1;
+      if (!CreateProcessW (NULL, wstring, NULL, NULL, FALSE,
+                           DETACHED_PROCESS,
+                           NULL, NULL, &si, &pi))
+        {
+          xfree (wstring);
+          return -1;
+        }
 
       /* Wait for the child to exit */
       WaitForSingleObject (pi.hProcess, INFINITE);
 
       CloseHandle (pi.hProcess);
       CloseHandle (pi.hThread);
-      xfree (string);
+      xfree (wstring);
     }
 
   return 0;

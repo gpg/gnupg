@@ -414,9 +414,11 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       0,         /* Returns pid.  */
       0          /* Returns tid.  */
     };
-  STARTUPINFO si;
+  STARTUPINFOW si;
   int cr_flags;
   char *cmdline;
+  wchar_t *wcmdline = NULL;
+  wchar_t *wpgmname = NULL;
   HANDLE inpipe[2]  = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
   HANDLE outpipe[2] = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
   HANDLE errpipe[2] = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
@@ -426,7 +428,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   HANDLE nullhd[3] = {INVALID_HANDLE_VALUE,
                       INVALID_HANDLE_VALUE,
                       INVALID_HANDLE_VALUE};
-  int i;
+  int i, rc;
   es_syshd_t syshd;
   gpg_err_source_t errsource = default_errsource;
   int nonblock = !!(flags & GNUPG_SPAWN_NONBLOCK);
@@ -564,20 +566,34 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
               | ((flags & GNUPG_SPAWN_DETACHED)? DETACHED_PROCESS : 0)
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_SUSPENDED);
-/*   log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline); */
-  if (!CreateProcess (pgmname,       /* Program to start.  */
-                      cmdline,       /* Command line arguments.  */
-                      &sec_attr,     /* Process security attributes.  */
-                      &sec_attr,     /* Thread security attributes.  */
-                      TRUE,          /* Inherit handles.  */
-                      cr_flags,      /* Creation flags.  */
-                      NULL,          /* Environment.  */
-                      NULL,          /* Use current drive/directory.  */
-                      &si,           /* Startup information. */
-                      &pi            /* Returns process information.  */
-                      ))
+  /*   log_debug ("CreateProcess, path='%s' cmdline='%s'\n", */
+  /*              pgmname, cmdline); */
+  /* Take care: CreateProcessW may modify wpgmname */
+  if (!(wpgmname = utf8_to_wchar (pgmname)))
+    rc = 0;
+  else if (!(wcmdline = utf8_to_wchar (cmdline)))
+    rc = 0;
+  else
+    rc = CreateProcessW (wpgmname,      /* Program to start.  */
+                         wcmdline,      /* Command line arguments.  */
+                         &sec_attr,     /* Process security attributes.  */
+                         &sec_attr,     /* Thread security attributes.  */
+                         TRUE,          /* Inherit handles.  */
+                         cr_flags,      /* Creation flags.  */
+                         NULL,          /* Environment.  */
+                         NULL,          /* Use current drive/directory.  */
+                         &si,           /* Startup information. */
+                         &pi            /* Returns process information.  */
+                         );
+  if (!rc)
     {
-      log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
+      if (!wpgmname || !wcmdline)
+        log_error ("CreateProcess failed (utf8_to_wchar): %s\n",
+                   strerror (errno));
+      else
+        log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
+      xfree (wpgmname);
+      xfree (wcmdline);
       xfree (cmdline);
       if (infp)
         es_fclose (infp);
@@ -599,6 +615,8 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
         CloseHandle (errpipe[1]);
       return gpg_err_make (errsource, GPG_ERR_GENERAL);
     }
+  xfree (wpgmname);
+  xfree (wcmdline);
   xfree (cmdline);
   cmdline = NULL;
 
@@ -660,9 +678,11 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   gpg_error_t err;
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
-  STARTUPINFO si;
+  STARTUPINFOW si;
   char *cmdline;
-  int i;
+  wchar_t *wcmdline = NULL;
+  wchar_t *wpgmname = NULL;
+  int i, rc;
   HANDLE stdhd[3];
 
   /* Setup return values.  */
@@ -690,25 +710,38 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   si.hStdError  = errfd == -1? stdhd[2] : (void*)_get_osfhandle (errfd);
 
 /*   log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline); */
-  if (!CreateProcess (pgmname,       /* Program to start.  */
-                      cmdline,       /* Command line arguments.  */
-                      &sec_attr,     /* Process security attributes.  */
-                      &sec_attr,     /* Thread security attributes.  */
-                      TRUE,          /* Inherit handles.  */
-                      (CREATE_DEFAULT_ERROR_MODE
-                       | GetPriorityClass (GetCurrentProcess ())
-                       | CREATE_SUSPENDED | DETACHED_PROCESS),
-                      NULL,          /* Environment.  */
-                      NULL,          /* Use current drive/directory.  */
-                      &si,           /* Startup information. */
-                      &pi            /* Returns process information.  */
-                      ))
+  /* Take care: CreateProcessW may modify wpgmname */
+  if (!(wpgmname = utf8_to_wchar (pgmname)))
+    rc = 0;
+  else if (!(wcmdline = utf8_to_wchar (cmdline)))
+    rc = 0;
+  else
+    rc = CreateProcessW (wpgmname,      /* Program to start.  */
+                         wcmdline,      /* Command line arguments.  */
+                         &sec_attr,     /* Process security attributes.  */
+                         &sec_attr,     /* Thread security attributes.  */
+                         TRUE,          /* Inherit handles.  */
+                         (CREATE_DEFAULT_ERROR_MODE
+                          | GetPriorityClass (GetCurrentProcess ())
+                          | CREATE_SUSPENDED | DETACHED_PROCESS),
+                         NULL,          /* Environment.  */
+                         NULL,          /* Use current drive/directory.  */
+                         &si,           /* Startup information. */
+                         &pi            /* Returns process information.  */
+                         );
+  if (!rc)
     {
-      log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
+      if (!wpgmname || !wcmdline)
+        log_error ("CreateProcess failed (utf8_to_wchar): %s\n",
+                   strerror (errno));
+      else
+        log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
       err = my_error (GPG_ERR_GENERAL);
     }
   else
     err = 0;
+  xfree (wpgmname);
+  xfree (wcmdline);
   xfree (cmdline);
   for (i=0; i < 3; i++)
     if (stdhd[i] != INVALID_HANDLE_VALUE)
@@ -852,11 +885,14 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
       0,         /* Returns pid.  */
       0          /* Returns tid.  */
     };
-  STARTUPINFO si;
+  STARTUPINFOW si;
   int cr_flags;
   char *cmdline;
-  gpg_err_code_t ec;
+  wchar_t *wcmdline = NULL;
+  wchar_t *wpgmname = NULL;
   BOOL in_job = FALSE;
+  gpg_err_code_t ec;
+  int rc;
 
   /* We don't use ENVP.  */
   (void)envp;
@@ -928,24 +964,39 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
         }
     }
 
-/*   log_debug ("CreateProcess(detached), path='%s' cmdline='%s'\n", */
-/*              pgmname, cmdline); */
-  if (!CreateProcess (pgmname,       /* Program to start.  */
-                      cmdline,       /* Command line arguments.  */
-                      &sec_attr,     /* Process security attributes.  */
-                      &sec_attr,     /* Thread security attributes.  */
-                      FALSE,         /* Inherit handles.  */
-                      cr_flags,      /* Creation flags.  */
-                      NULL,          /* Environment.  */
-                      NULL,          /* Use current drive/directory.  */
-                      &si,           /* Startup information. */
-                      &pi            /* Returns process information.  */
-                      ))
+  /*   log_debug ("CreateProcess(detached), path='%s' cmdline='%s'\n", */
+  /*              pgmname, cmdline); */
+  /* Take care: CreateProcessW may modify wpgmname */
+  if (!(wpgmname = utf8_to_wchar (pgmname)))
+    rc = 0;
+  else if (!(wcmdline = utf8_to_wchar (cmdline)))
+    rc = 0;
+  else
+    rc = CreateProcessW (wpgmname,      /* Program to start.  */
+                         wcmdline,      /* Command line arguments.  */
+                         &sec_attr,     /* Process security attributes.  */
+                         &sec_attr,     /* Thread security attributes.  */
+                         FALSE,         /* Inherit handles.  */
+                         cr_flags,      /* Creation flags.  */
+                         NULL,          /* Environment.  */
+                         NULL,          /* Use current drive/directory.  */
+                         &si,           /* Startup information. */
+                         &pi            /* Returns process information.  */
+                         );
+  if (!rc)
     {
-      log_error ("CreateProcess(detached) failed: %s\n", w32_strerror (-1));
+      if (!wpgmname || !wcmdline)
+        log_error ("CreateProcess failed (utf8_to_wchar): %s\n",
+                   strerror (errno));
+      else
+        log_error ("CreateProcess(detached) failed: %s\n", w32_strerror (-1));
+      xfree (wpgmname);
+      xfree (wcmdline);
       xfree (cmdline);
       return my_error (GPG_ERR_GENERAL);
     }
+  xfree (wpgmname);
+  xfree (wcmdline);
   xfree (cmdline);
   cmdline = NULL;
 
