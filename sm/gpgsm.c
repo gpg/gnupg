@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 /*#include <mcheck.h>*/
+#include <npth.h>
 
 #define INCLUDED_BY_MAIN_MODULE 1
 
@@ -566,6 +567,10 @@ our_md_test_algo (int algo)
       return 1;
     }
 }
+
+
+/* nPth wrapper function definitions. */
+ASSUAN_SYSTEM_NPTH_IMPL;
 
 
 static char *
@@ -1624,17 +1629,21 @@ main ( int argc, char **argv)
                   gpgrt_strusage(11), gpgrt_strusage(13), gpgrt_strusage(14) );
       es_fprintf (es_stderr, "%s\n", gpgrt_strusage(15) );
     }
-#  ifdef IS_DEVELOPMENT_VERSION
+#ifdef IS_DEVELOPMENT_VERSION
   if (!opt.batch)
     {
       log_info ("NOTE: THIS IS A DEVELOPMENT VERSION!\n");
       log_info ("It is only intended for test purposes and should NOT be\n");
       log_info ("used in a production environment or with production keys!\n");
     }
-#  endif
+#endif
 
   if (may_coredump && !opt.quiet)
     log_info (_("WARNING: program may create a core file!\n"));
+
+  npth_init ();
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
+  gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
 /*   if (opt.qualsig_approval && !opt.quiet) */
 /*     log_info (_("This software has officially been approved to " */
