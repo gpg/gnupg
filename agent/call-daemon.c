@@ -97,11 +97,7 @@ static npth_mutex_t start_daemon_lock;
 struct wait_child_thread_parm_s
 {
   enum daemon_type type;
-#ifdef HAVE_W32_SYSTEM
-  HANDLE pid;
-#else
   pid_t pid;
-#endif
 };
 
 
@@ -112,10 +108,8 @@ wait_child_thread (void *arg)
   int err;
   struct wait_child_thread_parm_s *parm = arg;
   enum daemon_type type = parm->type;
-#ifdef HAVE_W32_SYSTEM
-  HANDLE pid = parm->pid;
-#else
   pid_t pid =  parm->pid;
+#ifndef HAVE_W32_SYSTEM
   int wstatus;
 #endif
   const char *name = gnupg_module_name (daemon_modules[type]);
@@ -126,6 +120,7 @@ wait_child_thread (void *arg)
 
 #ifdef HAVE_W32_SYSTEM
   npth_unprotect ();
+  /* Note that although we use a pid_t here, it is actually a HANDLE.  */
   WaitForSingleObject ((HANDLE)pid, INFINITE);
   npth_protect ();
   log_info ("daemon %s finished\n", name);
