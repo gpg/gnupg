@@ -1596,8 +1596,9 @@ AC_SUBST(W32SOCKLIBS)
 _save_libs="$LIBS"
 _save_cflags="$CFLAGS"
 LIBS=""
-AC_SEARCH_LIBS([TSS_Create], [tss ibmtss],have_libtss=yes,)
-if test "$have_libtss" = yes; then
+AC_SEARCH_LIBS([TSS_Create], [tss ibmtss],have_libtss=IBM,
+    AC_SEARCH_LIBS([Esys_Initialize], [tss2-esys],have_libtss=Intel))
+if test "$have_libtss" = IBM; then
     LIBTSS_CFLAGS="-DTPM_POSIX"
     CFLAGS="$CFLAGS ${LIBTSS_CFLAGS}"
     AC_CHECK_HEADER([tss2/tss.h],[AC_DEFINE(TSS_INCLUDE,tss2, [tss2 include location])], [
@@ -1607,18 +1608,34 @@ if test "$have_libtss" = yes; then
 	])
     ])
     LIBTSS_LIBS=$LIBS
-    AC_DEFINE(HAVE_LIBTSS, 1, [Defined if we have TPM2 support library])
     AC_SUBST(TSS_INCLUDE)
+elif test "$have_libtss" = Intel; then
+    ##
+    # Intel TSS has an API issue: Esys_TR_GetTpmHandle wasn't introduced
+    # until version 2.4.0.
+    #
+    # Note: the missing API is fairly serious and is also easily backportable
+    # so keep the check below as is intead of going by library version number.
+    ##
+    AC_CHECK_LIB(tss2-esys, Esys_TR_GetTpmHandle, [], [
+	AC_MSG_WARN([Need Esys_TR_GetTpmHandle API (usually requires Intel TSS 2.4.0 or later, disabling TPM support)])
+	have_libtss=no
+    ])
+    LIBTSS_LIBS="$LIBS -ltss2-mu -ltss2-rc -ltss2-tctildr"
+    AC_DEFINE(HAVE_INTEL_TSS, 1, [Defined if we have the Intel TSS])
+fi
+LIBS="$_save_libs"
+CFLAGS="$_save_cflags"
+if test "$have_libtss" != no; then
+    AC_DEFINE(HAVE_LIBTSS, 1, [Defined if we have TPM2 support library])
     # look for a TPM emulator for testing
     AC_PATH_PROG(TPMSERVER, tpm_server,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
     AC_PATH_PROG(SWTPM, swtpm,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
     AC_PATH_PROG(SWTPM_IOCTL, swtpm_ioctl,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
 fi
-LIBS="$_save_libs"
-CFLAGS="$_save_cflags"
 AC_SUBST(LIBTSS_LIBS)
 AC_SUBST(LIBTSS_CFLAGS)
-AM_CONDITIONAL(HAVE_LIBTSS, test "$have_libtss" = yes)
+AM_CONDITIONAL(HAVE_LIBTSS, test "$have_libtss" != no)
 AM_CONDITIONAL(TEST_LIBTSS, test -n "$TPMSERVER" -o -n "$SWTPM")
 AC_SUBST(HAVE_LIBTSS)
 

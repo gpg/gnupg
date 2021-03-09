@@ -22,7 +22,11 @@
 #define _GNUPG_TPM2_H
 
 #include "../common/util.h"
+#ifdef HAVE_INTEL_TSS
+#include "intel-tss.h"
+#else
 #include "ibm-tss.h"
+#endif
 
 int tpm2_start (TSS_CONTEXT **tssc);
 void tpm2_end (TSS_CONTEXT *tssc);

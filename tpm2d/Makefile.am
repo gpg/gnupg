@@ -30,7 +30,7 @@ tpm2daemon_SOURCES = \
         command.c \
         tpm2daemon.c \
         tpm2.c tpm2.h \
-        tpm2daemon.h ibm-tss.h
+        tpm2daemon.h ibm-tss.h intel-tss.h
 
 tpm2daemon_LDADD = $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
