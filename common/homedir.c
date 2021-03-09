@@ -1153,6 +1153,13 @@ gnupg_module_name (int which)
       X(libexecdir, "scd", "scdaemon");
 #endif
 
+    case GNUPG_MODULE_NAME_TPM2DAEMON:
+#ifdef GNUPG_DEFAULT_TPM2DAEMON
+      return GNUPG_DEFAULT_TPM2DAEMON;
+#else
+      X(libexecdir, "tpm2d", TPM2DAEMON_NAME);
+#endif
+
     case GNUPG_MODULE_NAME_DIRMNGR:
 #ifdef GNUPG_DEFAULT_DIRMNGR
       return GNUPG_DEFAULT_DIRMNGR;

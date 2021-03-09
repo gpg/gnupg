@@ -293,6 +293,7 @@ char *_gnupg_socketdir_internal (int skip_checks, unsigned *r_info);
 #define GNUPG_MODULE_NAME_DIRMNGR_LDAP  11
 #define GNUPG_MODULE_NAME_GPGV          12
 #define GNUPG_MODULE_NAME_KEYBOXD       13
+#define GNUPG_MODULE_NAME_TPM2DAEMON    14
 const char *gnupg_module_name (int which);
 void gnupg_module_name_flush_some (void);
 void gnupg_set_builddir (const char *newdir);

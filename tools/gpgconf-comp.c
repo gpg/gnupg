@@ -92,9 +92,9 @@ gc_error (int status, int errnum, const char *fmt, ...)
 /* Forward declaration.  */
 static void gpg_agent_runtime_change (int killflag);
 static void scdaemon_runtime_change (int killflag);
+static void tpm2daemon_runtime_change (int killflag);
 static void dirmngr_runtime_change (int killflag);
 static void keyboxd_runtime_change (int killflag);
-
 
 
 
@@ -378,6 +378,21 @@ static known_option_t known_options_scdaemon[] =
    { NULL }
  };
 
+/* The known options of the GC_COMPONENT_TPM2DAEMON component.  */
+static known_option_t known_options_tpm2daemon[] =
+  {
+   { "verbose", GC_OPT_FLAG_LIST|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
+   { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
+   { "no-greeting", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
+   { "debug-level", GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED},
+   { "log-file",    GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
+     GC_ARG_TYPE_FILENAME },
+   { "deny-admin",  GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
+   { "parent",  GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },
+
+   { NULL }
+ };
+
 
 /* The known options of the GC_COMPONENT_GPG component.  */
 static known_option_t known_options_gpg[] =
@@ -627,6 +642,10 @@ static struct
      GNUPG_MODULE_NAME_SCDAEMON, SCDAEMON_NAME ".conf",
      known_options_scdaemon, scdaemon_runtime_change},
 
+   { TPM2DAEMON_NAME, TPM2DAEMON_DISP_NAME, "gnupg", N_("TPM"),
+     GNUPG_MODULE_NAME_TPM2DAEMON, TPM2DAEMON_NAME ".conf",
+     known_options_tpm2daemon, tpm2daemon_runtime_change},
+
    { DIRMNGR_NAME, DIRMNGR_DISP_NAME, "gnupg",   N_("Network"),
      GNUPG_MODULE_NAME_DIRMNGR, DIRMNGR_NAME ".conf",
      known_options_dirmngr, dirmngr_runtime_change },
@@ -739,6 +758,47 @@ scdaemon_runtime_change (int killflag)
   argv[i++] = "GETINFO scd_running";
   argv[i++] = "/if ${! $?}";
   argv[i++] = "scd killscd";
+  argv[i++] = "/end";
+  argv[i++] = NULL;
+
+  if (!err)
+    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+  if (!err)
+    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+  if (err)
+    gc_error (0, 0, "error running '%s %s': %s",
+              pgmname, argv[4], gpg_strerror (err));
+  gnupg_release_process (pid);
+}
+
+
+static void
+tpm2daemon_runtime_change (int killflag)
+{
+  gpg_error_t err = 0;
+  const char *pgmname;
+  const char *argv[9];
+  pid_t pid = (pid_t)(-1);
+  int i = 0;
+
+  (void)killflag;  /* For scdaemon kill and reload are synonyms.  */
+
+  /* We use "GETINFO app_running" to see whether the agent is already
+     running and kill it only in this case.  This avoids an explicit
+     starting of the agent in case it is not yet running.  There is
+     obviously a race condition but that should not harm too much.  */
+
+  pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
+  if (!gnupg_default_homedir_p ())
+    {
+      argv[i++] = "--homedir";
+      argv[i++] = gnupg_homedir ();
+    }
+  argv[i++] = "-s";
+  argv[i++] = "--no-autostart";
+  argv[i++] = "GETINFO tpm2d_running";
+  argv[i++] = "/if ${! $?}";
+  argv[i++] = "scd killtpm2cd";
   argv[i++] = "/end";
   argv[i++] = NULL;
 

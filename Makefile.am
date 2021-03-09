@@ -106,10 +106,15 @@ tests =
 else
 tests = tests
 endif
+if HAVE_LIBTSS
+tpm2d = tpm2d
+else
+tpm2d =
+endif
 
 SUBDIRS = m4 common regexp kbx \
           ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
-          tools po ${doc} ${tests}
+          tools po ${doc} ${tests} ${tpm2d}
 
 dist_doc_DATA = README
 

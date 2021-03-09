@@ -101,6 +101,7 @@ have_gnutls=no
 have_sqlite=no
 have_npth=no
 have_libusb=no
+have_libtss=no
 have_system_resolver=no
 gnupg_have_ldap="n/a"
 
@@ -182,6 +183,15 @@ AC_SUBST(GNUPG_SCDAEMON_PGM)
 AM_CONDITIONAL(GNUPG_SCDAEMON_PGM, test -n "$GNUPG_SCDAEMON_PGM")
 show_gnupg_scdaemon_pgm="(default)"
 test -n "$GNUPG_SCDAEMON_PGM" && show_gnupg_scdaemon_pgm="$GNUPG_SCDAEMON_PGM"
+
+
+AC_ARG_WITH(tpm2daemon-pgm,
+    [  --with-tpm2daemon-pgm=PATH  Use PATH as the default for the tpm2daemon)],
+          GNUPG_TPM2DAEMON_PGM="$withval", GNUPG_TPM2DAEMON_PGM="" )
+AC_SUBST(GNUPG_TPM2DAEMON_PGM)
+AM_CONDITIONAL(GNUPG_TPM2DAEMON_PGM, test -n "$GNUPG_TPM2DAEMON_PGM")
+show_gnupg_tpm2daemon_pgm="(default)"
+test -n "$GNUPG_TPM2DAEMON_PGM" && show_gnupg_tpm2daemon_pgm="$GNUPG_TPM2DAEMON_PGM"
 
 
 AC_ARG_WITH(dirmngr-pgm,
@@ -1581,6 +1591,33 @@ AC_SUBST(NETLIBS)
 AC_SUBST(W32SOCKLIBS)
 
 #
+# TPM libtss library .. don't compile TPM support if we don't have it
+#
+_save_libs="$LIBS"
+_save_cflags="$CFLAGS"
+LIBS=""
+AC_SEARCH_LIBS([TSS_Create], [tss ibmtss],have_libtss=yes,)
+if test "$have_libtss" = yes; then
+    LIBTSS_CFLAGS="-DTPM_POSIX"
+    CFLAGS="$CFLAGS ${LIBTSS_CFLAGS}"
+    AC_CHECK_HEADER([tss2/tss.h],[AC_DEFINE(TSS_INCLUDE,tss2, [tss2 include location])], [
+	AC_CHECK_HEADER([ibmtss/tss.h],[AC_DEFINE(TSS_INCLUDE,ibmtss, [ibmtss include location])], [
+            AC_MSG_WARN([No TSS2 include directory found, disabling TPM support])
+	    have_libtss=no
+	])
+    ])
+    LIBTSS_LIBS=$LIBS
+    AC_DEFINE(HAVE_LIBTSS, 1, [Defined if we have TPM2 support library])
+    AC_SUBST(TSS_INCLUDE)
+fi
+LIBS="$_save_libs"
+CFLAGS="$_save_cflags"
+AC_SUBST(LIBTSS_LIBS)
+AC_SUBST(LIBTSS_CFLAGS)
+AM_CONDITIONAL(HAVE_LIBTSS, test "$have_libtss" = yes)
+AC_SUBST(HAVE_LIBTSS)
+
+#
 # Setup gcc specific options
 #
 USE_C99_CFLAGS=
@@ -1845,6 +1882,10 @@ AC_DEFINE_UNQUOTED(GPG_AGENT_NAME, "gpg-agent", [The name of the agent])
 AC_DEFINE_UNQUOTED(GPG_AGENT_DISP_NAME, "GPG Agent",
                                         [The displayed name of gpg-agent])
 
+AC_DEFINE_UNQUOTED(TPM2DAEMON_NAME, "tpm2daemon", [The name of the TPM2 daemon])
+AC_DEFINE_UNQUOTED(TPM2DAEMON_DISP_NAME, "TPM2 Daemon",
+                                       [The displayed name of TPM2 daemon])
+
 AC_DEFINE_UNQUOTED(SCDAEMON_NAME, "scdaemon", [The name of the scdaemon])
 AC_DEFINE_UNQUOTED(SCDAEMON_DISP_NAME, "SCDaemon",
                                        [The displayed name of scdaemon])
@@ -1880,6 +1921,8 @@ AC_DEFINE_UNQUOTED(SCDAEMON_SOCK_NAME, "S.scdaemon",
                    [The name of the SCdaemon socket])
 AC_DEFINE_UNQUOTED(KEYBOXD_SOCK_NAME, "S.keyboxd",
                    [The name of the keyboxd socket])
+AC_DEFINE_UNQUOTED(TPM2DAEMON_SOCK_NAME, "S.tpm2daemon",
+                   [The name of the TPM2 daemon socket])
 AC_DEFINE_UNQUOTED(DIRMNGR_SOCK_NAME, "S.dirmngr",
                    [The name of the dirmngr socket])
 AC_DEFINE_UNQUOTED(DIRMNGR_DEFAULT_KEYSERVER,
@@ -2040,6 +2083,7 @@ g10/Makefile
 sm/Makefile
 agent/Makefile
 scd/Makefile
+tpm2d/Makefile
 g13/Makefile
 dirmngr/Makefile
 tools/Makefile
@@ -2086,6 +2130,7 @@ echo "
         Default pinentry:  $show_gnupg_pinentry_pgm
         Default scdaemon:  $show_gnupg_scdaemon_pgm
         Default keyboxd:   $show_gnupg_keyboxd_pgm
+        Default tpm2daemon: $show_gnupg_tpm2daemon_pgm
         Default dirmngr:   $show_gnupg_dirmngr_pgm
 
         Dirmngr auto start:  $dirmngr_auto_start
@@ -2094,6 +2139,7 @@ echo "
         TLS support:         $use_tls_library
         TOFU support:        $use_tofu
         Tor support:         $show_tor_support
+        TPM support:         $have_libtss
 "
 if test "x${gpg_config_script_warn}" != x; then
 cat <<G10EOF

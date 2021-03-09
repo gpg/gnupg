@@ -67,6 +67,9 @@ typedef enum
     /* The Smardcard Daemon.  */
     GC_COMPONENT_SCDAEMON,
 
+    /* The TPM2 Daemon.  */
+    GC_COMPONENT_TPM2DAEMON,
+
     /* The LDAP Directory Manager for CRLs.  */
     GC_COMPONENT_DIRMNGR,
 
