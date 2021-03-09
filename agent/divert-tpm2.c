@@ -18,6 +18,8 @@ divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
                     const unsigned char *shadow_info, unsigned char **r_sig,
                     size_t *r_siglen)
 {
+  (void)desc_text;
+  (void)algo;
   return agent_tpm2d_pksign(ctrl, digest, digestlen,
 			    shadow_info, r_sig, r_siglen);
 }

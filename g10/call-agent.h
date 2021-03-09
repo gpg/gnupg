@@ -126,6 +126,9 @@ gpg_error_t agent_scd_getattr_one (const char *name, char **r_value);
 /* Update INFO with the attribute NAME. */
 int agent_scd_getattr (const char *name, struct agent_card_info_s *info);
 
+/* send the KEYTOTPM command */
+int agent_keytotpm (ctrl_t ctrl, const char *hexgrip);
+
 /* Send the KEYTOCARD command. */
 int agent_keytocard (const char *hexgrip, int keyno, int force,
                      const char *serialno, const char *timestamp);
