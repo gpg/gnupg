@@ -1609,12 +1609,17 @@ if test "$have_libtss" = yes; then
     LIBTSS_LIBS=$LIBS
     AC_DEFINE(HAVE_LIBTSS, 1, [Defined if we have TPM2 support library])
     AC_SUBST(TSS_INCLUDE)
+    # look for a TPM emulator for testing
+    AC_PATH_PROG(TPMSERVER, tpm_server,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
+    AC_PATH_PROG(SWTPM, swtpm,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
+    AC_PATH_PROG(SWTPM_IOCTL, swtpm_ioctl,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
 fi
 LIBS="$_save_libs"
 CFLAGS="$_save_cflags"
 AC_SUBST(LIBTSS_LIBS)
 AC_SUBST(LIBTSS_CFLAGS)
 AM_CONDITIONAL(HAVE_LIBTSS, test "$have_libtss" = yes)
+AM_CONDITIONAL(TEST_LIBTSS, test -n "$TPMSERVER" -o -n "$SWTPM")
 AC_SUBST(HAVE_LIBTSS)
 
 #
@@ -2091,6 +2096,7 @@ doc/Makefile
 tests/Makefile
 tests/gpgscm/Makefile
 tests/openpgp/Makefile
+tests/tpm2dtests/Makefile
 tests/migrations/Makefile
 tests/gpgsm/Makefile
 tests/gpgme/Makefile
@@ -2141,6 +2147,13 @@ echo "
         Tor support:         $show_tor_support
         TPM support:         $have_libtss
 "
+if test "$have_libtss" != no -a -z "$TPMSERVER" -a -z "$SWTPM"; then
+cat <<G10EOF
+        Warning: TPM support is compiled in but no software TPM
+                 for testing was discovered. TPM tests are disabled
+
+G10EOF
+fi
 if test "x${gpg_config_script_warn}" != x; then
 cat <<G10EOF
         Warning: Mismatches between the target platform and the

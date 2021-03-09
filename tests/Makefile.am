@@ -18,7 +18,13 @@
 
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = gpgscm openpgp migrations gpgsm gpgme pkits .
+if TEST_LIBTSS
+tpm2dtests = tpm2dtests
+else
+tpm2dtests =
+endif
+
+SUBDIRS = gpgscm openpgp migrations gpgsm gpgme pkits $(tpm2dtests) .
 
 GPGSM = ../sm/gpgsm
 
