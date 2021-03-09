@@ -38,6 +38,12 @@ endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 
+if HAVE_LIBTSS
+tpm2_sources =  divert-tpm2.c call-tpm2d.c
+else
+tpm2_sources =
+endif
+
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
 	command.c command-ssh.c \
@@ -55,6 +61,7 @@ gpg_agent_SOURCES = \
 	cvt-openpgp.c cvt-openpgp.h \
 	call-scd.c \
 	call-daemon.c \
+	$(tpm2_sources) \
 	learncard.c
 
 common_libs = $(libcommon)

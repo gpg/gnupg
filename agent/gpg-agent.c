@@ -102,6 +102,7 @@ enum cmd_and_opt_values
   oLCmessages,
   oXauthority,
   oScdaemonProgram,
+  oTpm2daemonProgram,
   oDefCacheTTL,
   oDefCacheTTLSSH,
   oMaxCacheTTL,
@@ -199,6 +200,8 @@ static gpgrt_opt_t opts[] = {
                 /* */             N_("do not use the SCdaemon") ),
   ARGPARSE_s_s (oScdaemonProgram, "scdaemon-program",
                 /* */             N_("|PGM|use PGM as the SCdaemon program") ),
+  ARGPARSE_s_s (oTpm2daemonProgram, "tpm2daemon-program",
+		/* */             N_("|PGM|use PGM as the tpm2daemon program") ),
   ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
 
   ARGPARSE_s_s (oExtraSocket, "extra-socket",
@@ -905,7 +908,14 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.pinentry_invisible_char = xtrystrdup (pargs->r.ret_str); break;
       break;
     case oPinentryTimeout: opt.pinentry_timeout = pargs->r.ret_ulong; break;
-    case oScdaemonProgram: opt.daemon_program[DAEMON_SCD] = pargs->r.ret_str; break;
+
+    case oTpm2daemonProgram:
+      opt.daemon_program[DAEMON_TPM2D] = pargs->r.ret_str;
+      break;
+
+    case oScdaemonProgram:
+      opt.daemon_program[DAEMON_SCD] = pargs->r.ret_str;
+      break;
     case oDisableScdaemon: opt.disable_daemon[DAEMON_SCD] = 1; break;
     case oDisableCheckOwnSocket: disable_check_own_socket = 1; break;
 

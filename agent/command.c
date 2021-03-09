@@ -1314,6 +1314,11 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
           if (err)
             goto leave;
         }
+      else if (strcmp (shadow_info_type, "tpm2-v1") == 0)
+        {
+          serialno = xstrdup("TPM-Protected");
+          idstr = NULL;
+        }
       else
         {
           log_error ("unrecognised shadow key type %s\n", shadow_info_type);

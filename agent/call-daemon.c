@@ -45,7 +45,8 @@
  * same order as given by the daemon_type enum.  */
 static const int daemon_modules[DAEMON_MAX_TYPE] =
   {
-   GNUPG_MODULE_NAME_SCDAEMON
+    GNUPG_MODULE_NAME_SCDAEMON,
+    GNUPG_MODULE_NAME_TPM2DAEMON
   };
 
 /* Definition of module local data of the CTRL structure.  */

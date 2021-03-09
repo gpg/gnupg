@@ -1679,40 +1679,45 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
   return 0;
 }
 
+
 gpg_error_t
-agent_get_shadow_info(const unsigned char *shadowkey,
-                      unsigned char const **shadow_info)
+agent_get_shadow_info (const unsigned char *shadowkey,
+                       unsigned char const **shadow_info)
 {
-  return agent_get_shadow_info_type(shadowkey, shadow_info, NULL);
+  return agent_get_shadow_info_type (shadowkey, shadow_info, NULL);
 }
 
+
 int
-agent_is_tpm2_key(gcry_sexp_t s_skey)
+agent_is_tpm2_key (gcry_sexp_t s_skey)
 {
   unsigned char *buf;
   unsigned char *type;
   size_t len;
   gpg_error_t err;
 
-  err = make_canon_sexp(s_skey, &buf, &len);
+  err = make_canon_sexp (s_skey, &buf, &len);
   if (err)
     return 0;
 
-  err = agent_get_shadow_info_type(buf, NULL, &type);
+  err = agent_get_shadow_info_type (buf, NULL, &type);
   if (err)
     return 0;
+  xfree (buf);
 
-  err = strcmp(type, "tpm2-v1") == 0;
-  xfree(type);
+  err = strcmp (type, "tpm2-v1") == 0;
+  xfree (type);
   return err;
 }
 
+
 gpg_error_t
-agent_get_shadow_type(const unsigned char *shadowkey,
-                      unsigned char **shadow_type)
+agent_get_shadow_type (const unsigned char *shadowkey,
+                       unsigned char **shadow_type)
 {
-  return agent_get_shadow_info_type(shadowkey, NULL, shadow_type);
+  return agent_get_shadow_info_type (shadowkey, NULL, shadow_type);
 }
+
 
 /* Parse the canonical encoded SHADOW_INFO S-expression.  On success
    the hex encoded serial number is returned as a malloced strings at

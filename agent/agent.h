@@ -59,6 +59,7 @@
 enum daemon_type
   {
    DAEMON_SCD,
+   DAEMON_TPM2D,
    DAEMON_MAX_TYPE
   };
 
@@ -459,6 +460,7 @@ gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
 int agent_pk_get_algo (gcry_sexp_t s_key);
+int agent_is_tpm2_key(gcry_sexp_t s_key);
 int agent_key_available (const unsigned char *grip);
 gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
                                       int *r_keytype,
@@ -577,6 +579,52 @@ gpg_error_t agent_marktrusted (ctrl_t ctrl, const char *name,
                                const char *fpr, int flag);
 void agent_reload_trustlist (void);
 
+/*-- divert-tpm2.c --*/
+#ifdef HAVE_LIBTSS
+int divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
+                        const unsigned char *digest, size_t digestlen, int algo,
+                        const unsigned char *shadow_info, unsigned char **r_sig,
+                        size_t *r_siglen);
+int divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+                           const unsigned char *cipher,
+                           const unsigned char *shadow_info,
+                           char **r_buf, size_t *r_len, int *r_padding);
+int divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
+                          gcry_sexp_t s_skey);
+#else /*!HAVE_LIBTSS*/
+static inline int
+divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
+                    const unsigned char *digest,
+                    size_t digestlen, int algo,
+                    const unsigned char *shadow_info,
+                    unsigned char **r_sig,
+                    size_t *r_siglen)
+{
+  (void)ctrl; (void)desc_text; (void)digest; (void)digestlen;
+  (void)algo; (void)shadow_info; (void)r_sig; (void)r_siglen;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+}
+static inline int
+divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+                       const unsigned char *cipher,
+                       const unsigned char *shadow_info,
+                       char **r_buf, size_t *r_len,
+                       int *r_padding)
+{
+  (void)ctrl; (void)desc_text; (void)cipher; (void)shadow_info;
+  (void)r_buf; (void)r_len; (void)r_padding;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+}
+static inline int
+divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
+                      gcry_sexp_t s_skey)
+{
+  (void)ctrl; (void)grip; (void)s_key;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+}
+#endif /*!HAVE_LIBTSS*/
+
+
 
 /*-- divert-scd.c --*/
 int divert_pksign (ctrl_t ctrl, const char *desc_text,
@@ -605,6 +653,16 @@ int agent_daemon_check_running (enum daemon_type type);
 void agent_daemon_check_aliveness (void);
 void agent_reset_daemon (ctrl_t ctrl);
 void agent_kill_daemon (enum daemon_type type);
+
+/*-- call-tpm2d.c --*/
+int agent_tpm2d_writekey (ctrl_t ctrl, unsigned char **shadow_info,
+			  gcry_sexp_t s_skey);
+int agent_tpm2d_pksign (ctrl_t ctrl, const unsigned char *digest,
+			size_t digestlen, const unsigned char *shadow_info,
+			unsigned char **r_sig, size_t *r_siglen);
+int agent_tpm2d_pkdecrypt (ctrl_t ctrl, const unsigned char *cipher,
+			   size_t cipherlen, const unsigned char *shadow_info,
+			   char **r_buf, size_t *r_len);
 
 /*-- call-scd.c --*/
 int agent_card_learn (ctrl_t ctrl,
