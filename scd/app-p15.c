@@ -3533,7 +3533,7 @@ read_p15_info (app_t app)
               prkdf->gpgusage.any = 1;
               app->app_local->any_gpgusage = 1;
             }
-          else if (strcmp (!p, oid_kp_gpgUsageEncr))
+          else if (!strcmp (p, oid_kp_gpgUsageEncr))
             {
               prkdf->gpgusage.encr = 1;
               prkdf->gpgusage.any = 1;
