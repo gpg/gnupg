@@ -1562,6 +1562,11 @@ Status codes are:
   1.3.6.1.4.1.11591.2.4.1.4          gpgSubCertID attribute
   1.3.6.1.4.1.11591.2.5          LDAP URL extensions
   1.3.6.1.4.1.11591.2.5.1          gpgNtds=1 (auth. with current AD user)
+  1.3.6.1.4.1.11591.2.6          GnuPG extended key usage
+  1.3.6.1.4.1.11591.2.6.1          use for certification key
+  1.3.6.1.4.1.11591.2.6.2          use for signing key
+  1.3.6.1.4.1.11591.2.6.3          use for encryption key
+  1.3.6.1.4.1.11591.2.6.4          use for authentication key
   1.3.6.1.4.1.11591.2.12242973   invalid encoded OID
 #+end_example
 

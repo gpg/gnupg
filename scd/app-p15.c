@@ -61,6 +61,10 @@ static const char oid_kp_ms_smartcardLogon[] = "1.3.6.1.4.1.311.20.2.2";
 
 static const char oid_kp_anyExtendedKeyUsage[] = "2.5.29.37.0";
 
+static const char oid_kp_gpgUsageCert[] = "1.3.6.1.4.1.11591.2.6.1";
+static const char oid_kp_gpgUsageSign[] = "1.3.6.1.4.1.11591.2.6.2";
+static const char oid_kp_gpgUsageEncr[] = "1.3.6.1.4.1.11591.2.6.3";
+static const char oid_kp_gpgUsageAuth[] = "1.3.6.1.4.1.11591.2.6.4";
 
 /* Types of cards we know and which needs special treatment. */
 typedef enum
@@ -180,6 +184,18 @@ struct keyaccess_flags_s
 typedef struct keyaccess_flags_s keyaccess_flags_t;
 
 
+/* A bit array with for the gpg usage flags.  */
+struct gpgusage_flags_s
+{
+  unsigned int any:1;    /* Any of the next flags are set.  */
+  unsigned int cert:1;   /* 1.3.6.1.4.1.11591.2.6.1 */
+  unsigned int sign:1;   /* 1.3.6.1.4.1.11591.2.6.2 */
+  unsigned int encr:1;   /* 1.3.6.1.4.1.11591.2.6.3 */
+  unsigned int auth:1;   /* 1.3.6.1.4.1.11591.2.6.4 */
+};
+typedef struct gpgusage_flags_s gpgusage_flags_t;
+
+
 /* This is an object to store information about a Certificate
    Directory File (CDF) in a format suitable for further processing by
    us. To keep memory management, simple we use a linked list of
@@ -257,6 +273,11 @@ struct prkdf_object_s
     unsigned int encr:1;
     unsigned int auth:1;
   } extusage;
+
+  /* OpenPGP key features for this key.  This is taken from special
+   * extended key usage flags different from those tracked in EXTUSAGE
+   * above.  There is also no valid flag as in EXTUSAGE.  */
+  gpgusage_flags_t gpgusage;
 
   /* The keygrip of the key.  This is used as a cache.  */
   char keygrip[2*KEYGRIP_LEN+1];
@@ -399,6 +420,9 @@ struct app_local_s
 
   /* Flag indicating whether we may use direct path selection. */
   int direct_path_selection;
+
+  /* Flag indicating whether the card has any key with a gpgusage set.  */
+  int any_gpgusage;
 
   /* Structure with the EFIDs of the objects described in the ODF
      file. */
@@ -1153,6 +1177,23 @@ dump_keyaccess_flags (keyaccess_flags_t accessflags)
 }
 
 
+static void
+dump_gpgusage_flags (gpgusage_flags_t gpgusage)
+{
+  const char *s = "";
+
+  log_info ("p15:             gpgusage=");
+  if (gpgusage.cert)
+    log_printf ("%scert", s), s = ",";
+  if (gpgusage.sign)
+    log_printf ("%ssign", s), s = ",";
+  if (gpgusage.encr)
+    log_printf ("%sencr", s), s = ",";
+  if (gpgusage.auth)
+    log_printf ("%sauth", s), s = ",";
+}
+
+
 /* Parse the BIT STRING with the keyAccessFlags from the
    CommonKeyAttributes. */
 static gpg_error_t
@@ -1877,6 +1918,7 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
       unsigned long key_reference = 0;
       int key_reference_valid = 0;
 
+      where = __LINE__;
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
       if (err)
@@ -3421,11 +3463,13 @@ read_p15_info (app_t app)
    * certificate; if we want to change this strategy we should walk
    * over the certificates and then find the corresponsing private key
    * objects.  */
+  app->app_local->any_gpgusage = 0;
   for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
     {
       cdf_object_t cdf;
       char *extusage;
       char *p, *pend;
+      int seen;
 
       if (opt.debug)
         log_printhex (prkdf->objid, prkdf->objidlen, "p15: prkdf id=");
@@ -3448,6 +3492,7 @@ read_p15_info (app_t app)
           if ( *pend == 'C' ) /* Look only at critical usages.  */
             {
               prkdf->extusage.valid = 1;
+              seen = 1;
               if (!strcmp (p, oid_kp_codeSigning)
                   || !strcmp (p, oid_kp_timeStamping)
                   || !strcmp (p, oid_kp_ocspSigning)
@@ -3466,8 +3511,42 @@ read_p15_info (app_t app)
                   prkdf->extusage.encr = 1;
                   prkdf->extusage.auth = 1;
                 }
+              else
+                seen = 0;
+            }
+          else
+            seen = 0;
+
+          /* Now check the gpg Usage.  Here we don't care about
+           * critical or non-critical here. */
+          if (seen)
+            ; /* No more need to look for other caps.  */
+          else if (!strcmp (p, oid_kp_gpgUsageCert))
+            {
+              prkdf->gpgusage.cert = 1;
+              prkdf->gpgusage.any = 1;
+              app->app_local->any_gpgusage = 1;
+            }
+          else if (!strcmp (p, oid_kp_gpgUsageSign))
+            {
+              prkdf->gpgusage.sign = 1;
+              prkdf->gpgusage.any = 1;
+              app->app_local->any_gpgusage = 1;
+            }
+          else if (strcmp (!p, oid_kp_gpgUsageEncr))
+            {
+              prkdf->gpgusage.encr = 1;
+              prkdf->gpgusage.any = 1;
+              app->app_local->any_gpgusage = 1;
+            }
+          else if (!strcmp (p, oid_kp_gpgUsageAuth))
+            {
+              prkdf->gpgusage.auth = 1;
+              prkdf->gpgusage.any = 1;
+              app->app_local->any_gpgusage = 1;
             }
 
+          /* Skip to next item.  */
           if ((p = strchr (pend, '\n')))
             p++;
         }
@@ -3511,6 +3590,8 @@ read_p15_info (app_t app)
                       ((prkdf->extusage.sign || prkdf->extusage.encr)
                        && prkdf->extusage.auth)?",":"",
                       prkdf->extusage.auth? "auth":"");
+          if (prkdf->gpgusage.any)
+            dump_gpgusage_flags (prkdf->gpgusage);
 
           log_printf ("\n");
         }
@@ -3842,8 +3923,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       image = ksba_cert_get_image (cdf->cert, &imagelen);
       if (!image)
         {
-          log_error ("p15: ksba_cert_get_image failed: %s\n",
-                     gpg_strerror (err));
+          log_error ("p15: ksba_cert_get_image failed\n");
           return gpg_error (GPG_ERR_INTERNAL);
         }
       *r_cert = xtrymalloc (imagelen);
@@ -4004,7 +4084,11 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       char *buf;
 
       /* We return the ID of the first private key capable of the
-       * requested action.  Note that we do not yet return
+       * requested action.  IF any gpgusage flag has been set for the
+       * card we use the key only if both the P15 usage and the
+       * gpgusage are set.  This allows allows to single out the keys
+       * dedicated to OpenPGP.  */
+      /* FIXME: This changed: Note that we do not yet return
        * non_repudiation keys for $SIGNKEYID because our D-Trust
        * testcard uses rsaPSS, which is not supported by gpgsm and not
        * covered by the VS-NfD approval.  */
@@ -4012,13 +4096,16 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
            prkdf = prkdf->next)
         {
           if (name[1] == 'A' && (prkdf->usageflags.sign
-                                 || prkdf->usageflags.sign_recover))
+                                 || prkdf->usageflags.sign_recover)
+              && (!app->app_local->any_gpgusage || prkdf->gpgusage.auth))
             break;
           else if (name[1] == 'E' && (prkdf->usageflags.decrypt
-                                      || prkdf->usageflags.unwrap))
+                                      || prkdf->usageflags.unwrap)
+                   && (!app->app_local->any_gpgusage || prkdf->gpgusage.encr))
             break;
           else if (name[1] == 'S' && (prkdf->usageflags.sign
-                                      || prkdf->usageflags.sign_recover))
+                                      || prkdf->usageflags.sign_recover)
+                   && (!app->app_local->any_gpgusage || prkdf->gpgusage.sign))
             break;
         }
       if (prkdf)
