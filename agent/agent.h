@@ -619,7 +619,7 @@ static inline int
 divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
                       gcry_sexp_t s_skey)
 {
-  (void)ctrl; (void)grip; (void)s_key;
+  (void)ctrl; (void)grip; (void)s_skey;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 #endif /*!HAVE_LIBTSS*/
