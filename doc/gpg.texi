@@ -1101,7 +1101,7 @@ For possible values of trust, @pxref{trust-values}.
 @item --sign-key @var{name}
 @opindex sign-key
 Signs a public key with your secret key. This is a shortcut version of
-the subcommand "sign" from @option{--edit}.
+the subcommand "sign" from @option{--edit-key}.
 
 @item --lsign-key @var{name}
 @opindex lsign-key
@@ -1175,7 +1175,7 @@ all affected self-signatures is set one second ahead.
 @opindex passwd
 Change the passphrase of the secret key belonging to the certificate
 specified as @var{user-id}.  This is a shortcut for the sub-command
-@code{passwd} of the edit key menu.  When using together with the
+@code{passwd} of the @option{--edit-key} menu.  When using together with the
 option @option{--dry-run} this will not actually change the passphrase
 but check that the current passphrase is correct.
 
@@ -3601,7 +3601,7 @@ read/write only. Use this option only if you really know what you are doing.
 @opindex default-preference-list
 Set the list of default preferences to @var{string}. This preference
 list is used for new keys and becomes the default for "setpref" in the
-edit menu.
+@option{--edit-key} menu.
 
 @item --default-keyserver-url @var{name}
 @opindex default-keyserver-url

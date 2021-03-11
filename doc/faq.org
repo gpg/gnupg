@@ -506,7 +506,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    1. Change to this directory.
 
    1. Run the command
-      : gpg --homedir . --edit foo
+      : gpg --homedir . --edit-key foo
 
      and use the sub-command =passwd= to remove the passphrase from the
      subkeys. You may also want to remove all unused subkeys.
@@ -876,7 +876,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     in your options file.
 
     : $ gpg --s2k-cipher-algo cast5 --s2k-digest-algo sha1 --s2k-mode 3 \
-    :       --simple-sk-checksum --edit KeyID
+    :       --simple-sk-checksum --edit-key KeyID
 
     Turn off some features. Set the list of preferred ciphers, hashes,
     and compression algorithms to things that PGP can handle. (Yes, I
@@ -890,7 +890,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     : > updpref
 
     Finally we must decrypt and re-encrypt the key, making sure that we
-    encrypt with a cipher that PGP likes. We set this up in the --edit
+    encrypt with a cipher that PGP likes. We set this up in the --edit-key
     line above, so now we just need to change the passphrase to make it
     take effect. You can use the same passphrase if you like, or take
     this opportunity to actually change it.
