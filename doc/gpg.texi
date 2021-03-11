@@ -1123,7 +1123,9 @@ If a name is prefixed with a '=' a case sensitive exact match is done.
 
 The command @option{--quick-lsign-key} marks the signatures as
 non-exportable.  If such a non-exportable signature already exists the
-@option{--quick-sign-key} turns it into a exportable signature.
+@option{--quick-sign-key} turns it into a exportable signature.  If
+you need to update an existing signature, for example to add or change
+notation data, you need to use the option @option{--force-sign-key}.
 
 This command uses reasonable defaults and thus does not provide the
 full flexibility of the "sign" subcommand from @option{--edit-key}.
@@ -1221,8 +1223,8 @@ encountered, you can explicitly stop parsing by using the special option
 @node GPG Configuration Options
 @subsection How to change the configuration
 
-These options are used to change the configuration and are usually found
-in the option file.
+These options are used to change the configuration and most of them
+are usually found in the option file.
 
 @table @gnupgtabopt
 
@@ -1251,6 +1253,7 @@ one from the secret keyring or the one set with @option{--default-key}.
 @item --no-default-recipient
 @opindex no-default-recipient
 Reset @option{--default-recipient} and @option{--default-recipient-self}.
+Should not be used in an option file.
 
 @item -v, --verbose
 @opindex verbose
@@ -1259,11 +1262,11 @@ twice, the input data is listed in detail.
 
 @item --no-verbose
 @opindex no-verbose
-Reset verbose level to 0.
+Reset verbose level to 0.  Should not be used in an option file.
 
 @item -q, --quiet
 @opindex quiet
-Try to be as quiet as possible.
+Try to be as quiet as possible.  Should not be used in an option file.
 
 @item --batch
 @itemx --no-batch
@@ -1275,11 +1278,11 @@ filename given on the command line, gpg might still need to read from
 STDIN (in particular if gpg figures that the input is a
 detached signature and no data file has been specified).  Thus if you
 do not want to feed data via STDIN, you should connect STDIN to
-g@file{/dev/null}.
+@file{/dev/null}.
 
 It is highly recommended to use this option along with the options
 @option{--status-fd} and @option{--with-colons} for any unattended use of
-@command{gpg}.
+@command{gpg}.  Should not be used in an option file.
 
 @item --no-tty
 @opindex no-tty
@@ -1289,11 +1292,11 @@ warnings to the TTY even if @option{--batch} is used.
 
 @item --yes
 @opindex yes
-Assume "yes" on most questions.
+Assume "yes" on most questions.  Should not be used in an option file.
 
 @item --no
 @opindex no
-Assume "no" on most questions.
+Assume "no" on most questions.  Should not be used in an option file.
 
 
 @item --list-options @var{parameters}
@@ -1571,6 +1574,7 @@ default (@option{--no-utf8-strings}) is to assume that arguments are
 encoded in the character set as specified by
 @option{--display-charset}. These options affect all following
 arguments. Both options may be used multiple times.
+This option should not be used in an option file.
 
 This option has no effect on Windows.  There the internal used UTF-8
 encoding is translated for console input and output.  The command line
@@ -3562,6 +3566,13 @@ call future default, which is @code{"ed25519/cert,sign+cv25519/encr"}.
 You need to consult the source code to learn the details.  Note that
 the advanced key generation commands can always be used to specify a
 key algorithm directly.
+
+@item --force-sign-key
+@opindex force-sign-key
+This option modifies the behaviour of the commands
+@option{--quick-sign-key}, @option{--quick-lsign-key}, and the "sign"
+sub-commands of @option{--edit-key} by forcing the creation of a key
+signature, even if one already exists.
 
 @item --allow-secret-key-import
 @opindex allow-secret-key-import

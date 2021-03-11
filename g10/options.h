@@ -252,6 +252,8 @@ struct
      * another card.  */
     unsigned int use_only_openpgp_card:1;
     unsigned int full_timestrings:1;
+    /* Force signing keys even if a key signature already exists.  */
+    unsigned int force_sign_key:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

@@ -435,6 +435,7 @@ enum cmd_and_opt_values
     oIncludeKeyBlock,
     oNoIncludeKeyBlock,
     oChUid,
+    oForceSignKey,
 
     oNoop
   };
@@ -886,7 +887,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oPassphraseFile,  "passphrase-file", "@"),
   ARGPARSE_s_i (oPassphraseRepeat,"passphrase-repeat", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
-
+  ARGPARSE_s_n (oForceSignKey,    "force-sign-key", "@"),
 
   ARGPARSE_header (NULL, N_("Other options")),
 
@@ -2778,6 +2779,9 @@ main (int argc, char **argv)
 
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
+
+          case oForceSignKey: opt.flags.force_sign_key = 1; break;
+
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case oPrimaryKeyring:
 	    sl = append_to_strlist (&nrings, pargs.r.ret_str);
