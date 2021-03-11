@@ -3641,20 +3641,23 @@ app_select_piv (app_t app)
     }
 
   s = find_tlv (apt, aptlen, 0x4F, &n);
-  if (!s || n != 6 || memcmp (s, piv_aid+5, 4))
+  /* Some cards (new Yubikey) return only the PIX, while others
+   * (old Yubikey, PivApplet) return the RID+PIX. */
+  if (!s || !((n == 6 && !memcmp (s, piv_aid+5, 4))
+              || (n == 11 && !memcmp (s, piv_aid, 9))))
     {
       /* The PIX does not match.  */
       log_error ("piv: missing or invalid DO 0x4F in APT\n");
       err = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
-  if (s[4] != 1 || s[5] != 0)
+  if (s[n-2] != 1 || s[n-1] != 0)
     {
       log_error ("piv: unknown PIV version %u.%u\n", s[4], s[5]);
       err = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
-  app->appversion = ((s[4] << 8) | s[5]);
+  app->appversion = ((s[n-2] << 8) | s[n-1]);
 
   s = find_tlv (apt, aptlen, 0x79, &n);
   if (!s || n < 7)
@@ -3664,7 +3667,9 @@ app_select_piv (app_t app)
       goto leave;
     }
   s = find_tlv (s, n, 0x4F, &n);
-  if (!s || n != 5 || memcmp (s, piv_aid, 5))
+  /* Some cards may also return the full AID instead of just
+   * the 5-byte RID here. */
+  if (!s || !(n == 5 || n == 11) || memcmp (s, piv_aid, 5))
     {
       /* The RID does not match.  */
       log_error ("piv: missing or invalid DO 0x79.4F in APT\n");

@@ -3,6 +3,7 @@
 #+TEXT: Some notes on GnuPG internals
 #+STARTUP: showall
 #+OPTIONS: ^:{}
+# Note: This might be a copy; the original lives in gnupg/doc/HACKING.
 
 * How to contribute
 
