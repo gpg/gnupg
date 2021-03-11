@@ -119,7 +119,8 @@ Note that such a comment will be removed if the git commit option
 
   - That's it.  From now on you only need to add a "Signed-off-by:"
     line with your name and mail address to the commit message.  It is
-    recommended to send the patches using a PGP/MIME signed mail.
+    recommended to send the patches using a PGP/MIME signed mail.  See
+    below on how to send patches.
 
 ** Coding standards
 
@@ -231,6 +232,44 @@ Note that such a comment will be removed if the git commit option
   - Signed-off-by :: Name or mail address of the developer.
   - Backported-from-master :: Value is the commit id of the original patch.
   - Ported-from-stable :: Value is the commit id of the original patch.
+
+** Sending patches
+Submitting patches, and subsequent discussions around them,
+happens via the gnupg-devel@gnupg.org public mailing list.
+
+Send your patches to that list, preferably PGP/MIME signed.  Make sure
+to include a mention of 'gnupg' (or gpgme, libassuan, etc) in the
+subject line; the list is used for several different projects.
+
+In general you should send patches only for the master branch; we may
+later decide to backport to another branch.  Please ask first before
+sending pacthes for another branch.
+
+If you're working from the Git repo, here's a suggested workflow:
+
+  - Configure git send-email defaults:
+
+    : git config format.subjectPrefix 'PATCH gnupg'
+    : git config sendemail.to gnupg-devel@gnupg.org
+
+    (For other sub-projects adjust accordingly)
+
+  - hack hack hack
+
+  - Commit your changes; group changes into easily-reviewable commit
+    units, feel free to submit several patches at once.
+
+    e.g. if you want to submit a single patch on top of master, do:
+    : git send-email --annotate -1
+
+    e.g. if you have two commits on top of master, do:
+    : git send-email --annotate --cover-letter -2
+
+   (that prompts you for a summary mail to precede your actual patch
+    mails)
+
+  - use Git's --dry-run option to test your setup
+
 
 * Windows
 ** How to build an installer for Windows
