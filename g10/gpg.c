@@ -430,6 +430,7 @@ enum cmd_and_opt_values
     oUseOnlyOpenPGPCard,
     oIncludeKeyBlock,
     oNoIncludeKeyBlock,
+    oForceSignKey,
 
     oNoop
   };
@@ -838,6 +839,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oWeakDigest, "weak-digest","@"),
   ARGPARSE_s_n (oUnwrap, "unwrap", "@"),
   ARGPARSE_s_n (oOnlySignTextIDs, "only-sign-text-ids", "@"),
+  ARGPARSE_s_n (oForceSignKey,    "force-sign-key", "@"),
 
   /* Aliases.  I constantly mistype these, and assume other people do
      as well. */
@@ -2674,6 +2676,9 @@ main (int argc, char **argv)
 
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
+
+          case oForceSignKey: opt.flags.force_sign_key = 1; break;
+
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case oPrimaryKeyring:
 	    sl = append_to_strlist (&nrings, pargs.r.ret_str);

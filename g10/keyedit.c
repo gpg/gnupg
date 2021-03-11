@@ -751,10 +751,11 @@ sign_uids (ctrl_t ctrl, estream_t fp,
                                 _("\"%s\" was already signed by key %s\n"),
 				user, keystr_from_pk (pk));
 
-		  if (opt.expert && !quick
-		      && cpr_get_answer_is_yes ("sign_uid.dupe_okay",
-						_("Do you want to sign it "
-						  "again anyway? (y/N) ")))
+		  if (opt.flags.force_sign_key
+                      || (opt.expert && !quick
+                          && cpr_get_answer_is_yes ("sign_uid.dupe_okay",
+                                                    _("Do you want to sign it "
+                                                      "again anyway? (y/N) "))))
 		    {
 		      /* Don't delete the old sig here since this is
 		         an --expert thing. */
