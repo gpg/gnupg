@@ -180,7 +180,7 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
             }
           else if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
             {
-              const void *p;
+              const char *p;
               int is_sos = 0;
 
               if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_USER2))
@@ -194,6 +194,21 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
                 pp[i] = NULL;
               if (is_sos)
                 {
+                  if (*p)
+                    {
+                      nbits = ((nbits + 7) / 8) * 8;
+
+                      if (nbits >= 8 && !(*p & 0x80))
+                        if (--nbits >= 7 && !(*p & 0x40))
+                          if (--nbits >= 6 && !(*p & 0x20))
+                            if (--nbits >= 5 && !(*p & 0x10))
+                              if (--nbits >= 4 && !(*p & 0x08))
+                                if (--nbits >= 3 && !(*p & 0x04))
+                                  if (--nbits >= 2 && !(*p & 0x02))
+                                    if (--nbits >= 1 && !(*p & 0x01))
+                                      --nbits;
+                    }
+
                   pp[i][0] = (nbits >> 8);
                   pp[i][1] = nbits;
                 }
