@@ -717,6 +717,21 @@ count_bits (const unsigned char *a, size_t len)
   return n;
 }
 
+static unsigned int
+count_sos_bits (const unsigned char *a, size_t len)
+{
+  unsigned int n = len * 8;
+  int i;
+
+  if (*a == 0)
+    return n;
+
+  for (i=7; i && !(*a & (1<<i)); i--)
+    n--;
+
+  return n;
+}
+
 /* GnuPG makes special use of the login-data DO, this function parses
    the login data to store the flags for later use.  It may be called
    at any time and should be called after changing the login-data DO.
@@ -890,12 +905,18 @@ store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
 
   for (i = 0; i < argc; i++)
     {
-      if (algo == PUBKEY_ALGO_RSA || i == 1)
+      if (algo == PUBKEY_ALGO_RSA)
         {
           nbits = count_bits (m[i], mlen[i]);
           *p++ = nbits >> 8;
           *p++ = nbits;
         }
+      else if (i == 1)
+	{
+          nbits = count_sos_bits (m[i], mlen[i]);
+          *p++ = nbits >> 8;
+          *p++ = nbits;
+	}
       memcpy (p, m[i], mlen[i]);
       p += mlen[i];
     }
