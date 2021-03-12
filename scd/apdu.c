@@ -732,7 +732,8 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
      mode.  */
   if ( (*status & (APDU_CARD_PRESENT|APDU_CARD_ACTIVE))
        == (APDU_CARD_PRESENT|APDU_CARD_ACTIVE)
-       && !(reader_table[slot].pcsc.current_state & PCSC_STATE_INUSE) )
+       && (opt.pcsc_shared
+           || !(reader_table[slot].pcsc.current_state & PCSC_STATE_INUSE)))
     *status |= APDU_CARD_USABLE;
 #else
   /* Some winscard drivers may set EXCLUSIVE and INUSE at the same
@@ -856,7 +857,7 @@ connect_pcsc_card (int slot)
 
   err = pcsc_connect (pcsc.context,
                       reader_table[slot].rdrname,
-                      PCSC_SHARE_EXCLUSIVE,
+                      opt.pcsc_shared? PCSC_SHARE_SHARED:PCSC_SHARE_EXCLUSIVE,
                       PCSC_PROTOCOL_T0|PCSC_PROTOCOL_T1,
                       &reader_table[slot].pcsc.card,
                       &reader_table[slot].pcsc.protocol);

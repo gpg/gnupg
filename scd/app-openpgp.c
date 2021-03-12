@@ -2483,10 +2483,15 @@ chvno_to_keyref (int chvno)
 static void
 cache_pin (app_t app, ctrl_t ctrl, int chvno, const char *pin)
 {
-  const char *keyref = chvno_to_keyref (chvno);
+  const char *keyref;
 
+  if (opt.pcsc_shared)
+    return;
+
+  keyref = chvno_to_keyref (chvno);
   if (!keyref)
     return;
+
   switch (APP_CARD(app)->cardtype)
     {
     case CARDTYPE_YUBIKEY: break;
@@ -2707,7 +2712,7 @@ verify_chv2 (app_t app, ctrl_t ctrl,
         return rc;
       app->did_chv2 = 1;
 
-      if (!app->did_chv1 && !app->force_chv1 && pinvalue)
+      if (!app->did_chv1 && !app->force_chv1 && pinvalue && !opt.pcsc_shared)
         {
           /* For convenience we verify CHV1 here too.  We do this only if
              the card is not configured to require a verification before

@@ -62,6 +62,7 @@ struct
   int enable_pinpad_varlen;  /* Use variable length input for pinpad. */
   int allow_admin;     /* Allow the use of admin commands for certain
                           cards. */
+  int pcsc_shared;     /* Use shared PC/SC access.  */
   strlist_t disabled_applications;  /* Card applications we do not
                                        want to use. */
   unsigned long card_timeout; /* Disconnect after N seconds of inactivity.  */

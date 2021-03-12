@@ -94,6 +94,7 @@ enum cmd_and_opt_values
   oCardTimeout,
   octapiDriver,
   opcscDriver,
+  opcscShared,
   oDisableCCID,
   oDisableOpenSC,
   oDisablePinpad,
@@ -150,6 +151,7 @@ static gpgrt_opt_t opts[] = {
                 N_("|NAME|use NAME as ct-API driver")),
   ARGPARSE_s_s (opcscDriver, "pcsc-driver",
                 N_("|NAME|use NAME as PC/SC driver")),
+  ARGPARSE_s_n (opcscShared, "pcsc-shared", "@"),
   ARGPARSE_s_n (oDisableCCID, "disable-ccid",
 #ifdef HAVE_LIBUSB
                                     N_("do not use the internal CCID driver")
@@ -602,6 +604,7 @@ main (int argc, char **argv )
         case oReaderPort: opt.reader_port = pargs.r.ret_str; break;
         case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
         case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
+        case opcscShared: opt.pcsc_shared = 1; break;
         case oDisableCCID: opt.disable_ccid = 1; break;
         case oDisableOpenSC: break;
 

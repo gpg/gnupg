@@ -226,6 +226,12 @@ Append all logging output to @var{file}.  This is very helpful in
 seeing what the agent actually does.  Use @file{socket://} to log to
 socket.
 
+@item --pcsc-shared
+@opindex pcsc-shared
+Use shared mode to access the card via PC/SC.  This is a somewhat
+dangerous option because Scdaemon assumes exclusivbe access to teh
+card and for example caches certain information from the card.  Use
+this option only if you know what you are doing.
 
 @item --pcsc-driver @var{library}
 @opindex pcsc-driver

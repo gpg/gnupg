@@ -1681,6 +1681,9 @@ cache_pin (app_t app, ctrl_t ctrl, int pinno,
 {
   char pinref[20];
 
+  if (opt.pcsc_shared)
+    return;
+
   if (pinno < 0)
     return;
   switch (app->card->cardtype)
