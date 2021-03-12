@@ -1002,6 +1002,26 @@ signing.
   select 2 to restore as encryption key.  You will first be asked to enter
   the passphrase of the backup key and then for the Admin PIN of the card.
 
+  @item keytotpm
+  @opindex keyedit:keytotpm
+  Transfer the selected secret subkey (or the primary key if no subkey
+  has been selected) to TPM form.  The secret key in the keyring will
+  be replaced by the TPM representation of that key, which can only be
+  read by the particular TPM that created it (so the keyfile now
+  becomes locked to the laptop containing the TPM).  Only certain key
+  types may be transferred to the TPM (all TPM 2.0 systems are
+  mandated to have the rsa2048 and nistp256 algorithms but newer TPMs
+  may have more). Note that the key itself is not transferred into the
+  TPM, merely encrypted by the TPM in-place, so if the keyfile is
+  deleted, the key will be lost.  Once transferred to TPM
+  representation, the key file can never be converted back to non-TPM
+  form and the key will die when the TPM does, so you should first
+  have a backup on secure offline storage of the actual secret key
+  file before conversion.  It is essential to use the physical system
+  TPM that you have rw permission on the TPM resource manager device
+  (/dev/tpmrm0).  Usually this means you must be a member of the tss
+  group.
+
   @item delkey
   @opindex keyedit:delkey
   Remove a subkey (secondary key). Note that it is not possible to retract
