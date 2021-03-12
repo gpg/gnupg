@@ -2397,7 +2397,7 @@ verify_chv2 (app_t app,
         return rc;
       app->did_chv2 = 1;
 
-      if (!app->did_chv1 && !app->force_chv1 && pinvalue)
+      if (!app->did_chv1 && !app->force_chv1 && pinvalue && !opt.pcsc_shared)
         {
           /* For convenience we verify CHV1 here too.  We do this only if
              the card is not configured to require a verification before
