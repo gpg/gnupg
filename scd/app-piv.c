@@ -3646,8 +3646,8 @@ app_select_piv (app_t app)
   s = find_tlv (apt, aptlen, 0x4F, &n);
   /* Some cards (new Yubikey) return only the PIX, while others
    * (old Yubikey, PivApplet) return the RID+PIX. */
-  if (!s || !((n == 6 && !memcmp (s, piv_aid+5, 4))
-              || (n == 11 && !memcmp (s, piv_aid, 9))))
+  if (!s || ((n != 6 || memcmp (s, piv_aid+5, 4))
+              && (n != 11 || memcmp (s, piv_aid, 9))))
     {
       /* The PIX does not match.  */
       log_error ("piv: missing or invalid DO 0x4F in APT\n");
