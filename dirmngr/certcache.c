@@ -572,11 +572,11 @@ load_certs_from_w32_store (const char *storename)
         }
 
       pCertOpenSystemStore = (CERTOPENSYSTEMSTORE)
-        GetProcAddress (hCrypt32, "CertOpenSystemStoreA");
+        (void*)GetProcAddress (hCrypt32, "CertOpenSystemStoreA");
       pCertEnumCertificatesInStore = (CERTENUMCERTIFICATESINSTORE)
-        GetProcAddress (hCrypt32, "CertEnumCertificatesInStore");
+        (void*)GetProcAddress (hCrypt32, "CertEnumCertificatesInStore");
       pCertCloseStore = (CERTCLOSESTORE)
-        GetProcAddress (hCrypt32, "CertCloseStore");
+        (void*)GetProcAddress (hCrypt32, "CertCloseStore");
       if (   !pCertOpenSystemStore
           || !pCertEnumCertificatesInStore
           || !pCertCloseStore)
