@@ -61,7 +61,7 @@ xcheck: tpm_server_found
 tpm_server_found:
 	@if [ -z "$(TPMSERVER)" -a -z "$(SWTPM)" -a -z "$(FORCE)" ]; then echo "ERROR: No Software TPM has been found, cannot run TPM tests.  Set FORCE=1 to force using the physical TPM"; exit 1; fi
 
-EXTRA_DIST = defs.scm shell.scm all-tests.scm
+EXTRA_DIST = defs.scm shell.scm all-tests.scm start_sw_tpm.sh
 
 CLEANFILES = gpg.conf gpg-agent.conf S.gpg-agent \
 	     pubring.gpg pubring.gpg~ pubring.kbx pubring.kbx~ \
