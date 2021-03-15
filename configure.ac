@@ -1638,6 +1638,7 @@ if test "$build_tpm2d" = "yes"; then
     AC_PATH_PROG(TPMSERVER, tpm_server,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
     AC_PATH_PROG(SWTPM, swtpm,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
     AC_PATH_PROG(SWTPM_IOCTL, swtpm_ioctl,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
+    AC_PATH_PROG(TSSSTARTUP, tssstartup,,/bin:/usr/bin:/usr/lib/ibmtss:/usr/libexec/ibmtss)
   fi
 fi
 if test "$have_libtss" = no; then
@@ -1646,7 +1647,7 @@ fi
 AC_SUBST(LIBTSS_LIBS)
 AC_SUBST(LIBTSS_CFLAGS)
 AM_CONDITIONAL(HAVE_LIBTSS, test "$have_libtss" != no)
-AM_CONDITIONAL(TEST_LIBTSS, test -n "$TPMSERVER" -o -n "$SWTPM")
+AM_CONDITIONAL(TEST_LIBTSS, test -n "$TPMSERVER" || test -n "$SWTPM" && test -n "$TSSSTARTUP")
 AC_SUBST(HAVE_LIBTSS)
 
 #
