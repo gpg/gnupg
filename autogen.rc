@@ -20,6 +20,7 @@ case "$myhost" in
       --with-zlib=@SYSROOT@
       --with-regex=@SYSROOT@
       --disable-g13
+      --disable-tpm2d
       "
     ;;
 

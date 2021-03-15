@@ -106,7 +106,7 @@ tests =
 else
 tests = tests
 endif
-if HAVE_LIBTSS
+if BUILD_TPM2D
 tpm2d = tpm2d
 else
 tpm2d =
