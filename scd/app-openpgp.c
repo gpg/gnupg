@@ -253,7 +253,8 @@ struct app_local_s {
       } rsa;
       struct {
         const char *curve;
-        int flags;
+        int algo;
+        unsigned int flags;
       } ecc;
     };
    } keyattr[3];
@@ -1043,9 +1044,7 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
     {
       snprintf (buffer, sizeof buffer, "%d %d %s",
                 keyno+1,
-                keyno==1? PUBKEY_ALGO_ECDH :
-                (app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)?
-                PUBKEY_ALGO_EDDSA : PUBKEY_ALGO_ECDSA,
+                app->app_local->keyattr[keyno].ecc.algo,
                 app->app_local->keyattr[keyno].ecc.curve);
     }
   else
@@ -1761,18 +1760,11 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
       send_key_data (ctrl, "curve", oidbuf, oid_len);
     }
 
+  algo = app->app_local->keyattr[keyno].ecc.algo;
   if (keyno == 1)
     {
       if (ctrl)
         send_key_data (ctrl, "kdf/kek", ecdh_params (curve), (size_t)4);
-      algo = PUBKEY_ALGO_ECDH;
-    }
-  else
-    {
-      if ((app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
-        algo = PUBKEY_ALGO_EDDSA;
-      else
-        algo = PUBKEY_ALGO_ECDSA;
     }
 
   if (ctrl)
@@ -4464,6 +4456,8 @@ ecc_writekey (app_t app, ctrl_t ctrl,
      curve = "secp256k1" */
   /* (private-key(ecc(curve%s)(flags eddsa)(q%m)(d%m))(created-at%d)):
       curve = "Ed25519" */
+  /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
+      curve = "Ed448" */
   last_depth1 = depth;
   while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
          && depth && depth >= last_depth1)
@@ -4596,6 +4590,8 @@ ecc_writekey (app_t app, ctrl_t ctrl,
     algo = PUBKEY_ALGO_EDDSA;
   else if (keyno == 1)
     algo = PUBKEY_ALGO_ECDH;
+  else if (!strcmp (curve, "Ed448"))
+    algo = PUBKEY_ALGO_EDDSA;
   else
     algo = PUBKEY_ALGO_ECDSA;
 
@@ -5980,6 +5976,7 @@ parse_algorithm_attribute (app_t app, int keyno)
     {
       int oidlen = buflen - 1;
 
+      app->app_local->keyattr[keyno].ecc.algo = *buffer;
       app->app_local->keyattr[keyno].ecc.flags = 0;
 
       if (buffer[buflen-1] == 0x00 || buffer[buflen-1] == 0xff)
@@ -5997,7 +5994,9 @@ parse_algorithm_attribute (app_t app, int keyno)
         {
           app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
           app->app_local->keyattr[keyno].ecc.curve = curve;
-          if (*buffer == PUBKEY_ALGO_EDDSA
+          if ((*buffer == PUBKEY_ALGO_EDDSA
+               && !strcmp (app->app_local->keyattr[keyno].ecc.curve,
+                           "Ed25519"))
               || (*buffer == PUBKEY_ALGO_ECDH
                   && !strcmp (app->app_local->keyattr[keyno].ecc.curve,
                               "Curve25519")))
