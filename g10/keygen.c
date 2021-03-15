@@ -5568,9 +5568,10 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
           keyid_from_pk (pk, pk->main_keyid);
           register_trusted_keyid (pk->main_keyid);
 
-	  update_ownertrust (ctrl, pk,
-                             ((get_ownertrust (ctrl, pk) & ~TRUST_MASK)
-                              | TRUST_ULTIMATE ));
+          if (!opt.flags.no_auto_trust_new_key)
+            update_ownertrust (ctrl, pk,
+                               ((get_ownertrust (ctrl, pk) & ~TRUST_MASK)
+                                | TRUST_ULTIMATE ));
 
           gen_standard_revoke (ctrl, pk, cache_nonce);
 

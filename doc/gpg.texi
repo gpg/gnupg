@@ -3587,6 +3587,12 @@ You need to consult the source code to learn the details.  Note that
 the advanced key generation commands can always be used to specify a
 key algorithm directly.
 
+@item --no-auto-trust-new-key
+@opindex no-auto-trust-new-key
+When creating a new key the ownertrust of the new key is set to
+ultimate.  This option disables this and the user needs to manually
+assign an ownertrust value.
+
 @item --force-sign-key
 @opindex force-sign-key
 This option modifies the behaviour of the commands

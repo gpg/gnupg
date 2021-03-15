@@ -14,6 +14,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * The gpg-wks-client tool is now installed under bin; a wrapper for
     its old location at libexec is also installed.
 
+  * tpm2d: New daemon to physically bind keys to the local machine.
+
   * gpg: Switch to ed25519/cv25519 as default public key algorithms.
 
   * gpg: Verification results now depend on the --sender option and
@@ -32,6 +34,10 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * gpg: Allow use of group names in key listings.  [e825aea2ba]
 
   * gpg: New option --full-timestrings to print date and time.
+
+  * gpg: New option --force-sign-key.  [#4584]
+
+  * gpg: New option --no-auto-trust-new-key.
 
   * gpg: The legacy key discovery method PKA is no longer supported.
     The command --print-pka-records and the PKA related import and
@@ -57,6 +63,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * scd: Support multiple application on certain smartcard.
 
   * scd: New option --application-priority.
+
+  * scd: New option --pcsc-shared; see man page for important notes.
 
   * dirmngr: Support a gpgNtds parameter in LDAP keyserver URLs.
 

@@ -158,7 +158,7 @@ typedef gpg_error_t (*ssh_signature_encoder_t) (ssh_key_type_spec_t *spec,
                                                 estream_t signature_blob,
 						gcry_sexp_t sig);
 
-/* Type, which is used for boundling all the algorithm specific
+/* Type, which is used for bundling all the algorithm specific
    information together in a single object.  */
 struct ssh_key_type_spec
 {

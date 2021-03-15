@@ -285,6 +285,7 @@ enum cmd_and_opt_values
     oAlwaysTrust,
     oTrustModel,
     oForceOwnertrust,
+    oNoAutoTrustNewKey,
     oSetFilename,
     oForYourEyesOnly,
     oNoForYourEyesOnly,
@@ -692,6 +693,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oAutoCheckTrustDB, "auto-check-trustdb", "@"),
   ARGPARSE_s_n (oNoAutoCheckTrustDB, "no-auto-check-trustdb", "@"),
   ARGPARSE_s_s (oForceOwnertrust, "force-ownertrust", "@"),
+  ARGPARSE_s_n (oNoAutoTrustNewKey, "no-auto-trust-new-key", "@"),
 #endif
 
 
@@ -2968,6 +2970,8 @@ main (int argc, char **argv)
 		opt.force_ownertrust=0;
 	      }
 	    break;
+
+          case oNoAutoTrustNewKey: opt.flags.no_auto_trust_new_key = 1; break;
 
           case oCompliance:
 	    {

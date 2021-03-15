@@ -254,6 +254,8 @@ struct
     unsigned int full_timestrings:1;
     /* Force signing keys even if a key signature already exists.  */
     unsigned int force_sign_key:1;
+    /* On key generation do not set the ownertrust.  */
+    unsigned int no_auto_trust_new_key:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local
