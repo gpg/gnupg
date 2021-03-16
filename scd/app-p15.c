@@ -3885,6 +3885,10 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   if (!err)
     err = send_keypairinfo (app, ctrl, app->app_local->private_key_info);
 
+  if (!err)
+    err = do_getattr (app, ctrl, "CHV-STATUS");
+
+
   return err;
 }
 
@@ -4068,6 +4072,27 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+/* Sort helper for an array of authentication objects.  */
+static int
+compare_aodf_objid (const void *arg_a, const void *arg_b)
+{
+  const aodf_object_t a = *(const aodf_object_t *)arg_a;
+  const aodf_object_t b = *(const aodf_object_t *)arg_b;
+  int rc;
+
+  rc = memcmp (a->objid, b->objid,
+               a->objidlen < b->objidlen? a->objidlen : b->objidlen);
+  if (!rc)
+    {
+      if (a->objidlen < b->objidlen)
+        rc = -1;
+      else if (a->objidlen > b->objidlen)
+        rc = 1;
+    }
+  return rc;
+}
+
+
 
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
@@ -4194,6 +4219,46 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                                    app->app_local->manufacturer_id);
       else
         return 0;
+    }
+  else if (!strcmp (name, "CHV-STATUS"))
+    {
+      aodf_object_t aodf;
+      aodf_object_t aodfarray[16];
+      int naodf = 0;
+      membuf_t mb;
+      char *p;
+      int i;
+
+      /* Put the AODFs into an array for easier sorting.  Note that we
+       * handle onl the first 16 encountrer which should be more than
+       * enough.  */
+      for (aodf = app->app_local->auth_object_info;
+           aodf && naodf < DIM(aodfarray); aodf = aodf->next)
+        if (aodf->objidlen && aodf->pin_reference_valid)
+          aodfarray[naodf++] = aodf;
+      qsort (aodfarray, naodf, sizeof *aodfarray, compare_aodf_objid);
+
+      init_membuf (&mb, 256);
+      for (i = 0; i < naodf; i++)
+        {
+          /* int j; */
+          /* log_debug ("p15: AODF[%d] pinref=%lu id=", */
+          /*            i, aodfarray[i]->pin_reference); */
+          /* for (j=0; j < aodfarray[i]->objidlen; j++) */
+          /*   log_printf ("%02X", aodfarray[i]->objid[j]); */
+
+          put_membuf_printf
+            (&mb, "%s%d", i? " ":"",
+             iso7816_verify_status (app_get_slot (app),
+                                    aodfarray[i]->pin_reference));
+        }
+      put_membuf( &mb, "", 1);
+      p = get_membuf (&mb, NULL);
+      if (!p)
+        return gpg_error_from_syserror ();
+      err = send_status_direct (ctrl, "CHV-STATUS", p);
+      xfree (p);
+      return err;
     }
   return gpg_error (GPG_ERR_INV_NAME);
 }
@@ -4463,7 +4528,7 @@ make_pin_prompt (app_t app, int remaining, const char *firstline,
 
 
 /* Given the private key object PRKDF and its authentication object
- * AODF ask for the PIN and verify that PIN.  IF AODF is NULL, no
+ * AODF ask for the PIN and verify that PIN.  If AODF is NULL, no
  * authentication is done.  */
 static gpg_error_t
 verify_pin (app_t app,
@@ -4985,7 +5050,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     return err;
   if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap))
     {
-      log_error ("p15: key %s may not be used for decruption\n", keyidstr);
+      log_error ("p15: key %s may not be used for decryption\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
@@ -5078,6 +5143,49 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
                           indata, indatalen,
                           le_value, padind,
                           outdata, outdatalen);
+  return err;
+}
+
+
+/* Perform a simple verify operation for the PIN specified by
+ * KEYIDSTR.  Note that we require a key reference which is then used
+ * to select the authentication object.  Return GPG_ERR_NO_PIN if a
+ * PIN is not required for using the private key KEYIDSTR.  */
+static gpg_error_t
+do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg)
+{
+  gpg_error_t err;
+  prkdf_object_t prkdf;    /* The private key object. */
+  aodf_object_t aodf;      /* The associated authentication object. */
+
+  (void)ctrl;
+
+  if (!keyidstr || !*keyidstr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
+  if (err)
+    return err;
+
+  /* Find the authentication object to this private key object. */
+  if (!prkdf->authid)
+    {
+      log_error ("p15: no authentication object defined for %s\n", keyidstr);
+      return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+    }
+  for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+    if (aodf->objidlen == prkdf->authidlen
+        && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
+      break;
+  if (!aodf) /* None found.  */
+    return gpg_error (GPG_ERR_NO_PIN);
+
+  err = prepare_verify_pin (app, keyidstr, prkdf, aodf);
+  if (!err)
+    err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
+
   return err;
 }
 
@@ -5404,7 +5512,7 @@ app_select_p15 (app_t app)
       app->fnc.auth = do_auth;
       app->fnc.decipher = do_decipher;
       app->fnc.change_pin = NULL;
-      app->fnc.check_pin = NULL;
+      app->fnc.check_pin = do_check_pin;
       app->fnc.with_keygrip = do_with_keygrip;
 
     leave:

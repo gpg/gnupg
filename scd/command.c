@@ -2458,15 +2458,17 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
 
 
 /* Send a ready formatted status line via assuan.  */
-void
+gpg_error_t
 send_status_direct (ctrl_t ctrl, const char *keyword, const char *args)
 {
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
 
   if (strchr (args, '\n'))
-    log_error ("error: LF detected in status line - not sending\n");
-  else
-    assuan_write_status (ctx, keyword, args);
+    {
+      log_error ("error: LF detected in status line - not sending\n");
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
+  return assuan_write_status (ctx, keyword, args);
 }
 
 
