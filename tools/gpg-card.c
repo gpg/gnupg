@@ -830,6 +830,35 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
 }
 
 
+static void
+list_retry_counter (card_info_t info, estream_t fp)
+{
+  const char *s;
+  int i;
+
+  tty_fprintf (fp, "PIN retry counter :");
+  for (i=0; i < DIM (info->chvinfo); i++)
+    {
+      if (info->chvinfo[i] >= 0)
+        tty_fprintf (fp, " %d", info->chvinfo[i]);
+      else
+        {
+          switch (info->chvinfo[i])
+            {
+            case -1: s = "[error]"; break;
+            case -2: s = "-"; break;  /* No such PIN or info not available. */
+            case -3: s = "[blocked]"; break;
+            case -4: s = "[nullpin]"; break;
+            case -5: s = "[verified]"; break;
+            default: s = "[?]"; break;
+            }
+          tty_fprintf (fp, " %s", s);
+        }
+    }
+  tty_fprintf (fp, "\n");
+}
+
+
 /* List OpenPGP card specific data.  */
 static void
 list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
@@ -883,8 +912,7 @@ list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
                info->chv1_cached? _("not forced"): _("forced"));
   tty_fprintf (fp, "Max. PIN lengths .: %d %d %d\n",
                info->chvmaxlen[0], info->chvmaxlen[1], info->chvmaxlen[2]);
-  tty_fprintf (fp, "PIN retry counter : %d %d %d\n",
-               info->chvinfo[0], info->chvinfo[1], info->chvinfo[2]);
+  list_retry_counter (info, fp);
   tty_fprintf (fp, "Signature counter : %lu\n", info->sig_counter);
   tty_fprintf (fp, "Capabilities .....:");
   if (info->extcap.ki)
@@ -927,8 +955,6 @@ list_piv (card_info_t info, estream_t fp, int no_key_lookup)
     { "Key management ...:", "PIV.9D" },
     { NULL, NULL }
   };
-  const char *s;
-  int i;
 
   if (info->chvusage[0] || info->chvusage[1])
     {
@@ -952,28 +978,9 @@ list_piv (card_info_t info, estream_t fp, int no_key_lookup)
       tty_fprintf (fp, "\n");
     }
 
-  tty_fprintf (fp, "PIN retry counter :");
-  for (i=0; i < DIM (info->chvinfo); i++)
-    {
-      if (info->chvinfo[i] > 0)
-        tty_fprintf (fp, " %d", info->chvinfo[i]);
-      else
-        {
-          switch (info->chvinfo[i])
-            {
-            case -1: s = "[error]"; break;
-            case -2: s = "-"; break;  /* No such PIN or info not available. */
-            case -3: s = "[blocked]"; break;
-            case -5: s = "[verified]"; break;
-            default: s = "[?]"; break;
-            }
-          tty_fprintf (fp, " %s", s);
-        }
-    }
-  tty_fprintf (fp, "\n");
+  list_retry_counter (info, fp);
   list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
 }
-
 
 
 /* List Netkey card specific data.  */
@@ -983,29 +990,8 @@ list_nks (card_info_t info, estream_t fp, int no_key_lookup)
   static struct keyinfolabel_s keyinfolabels[] = {
     { NULL, NULL }
   };
-  const char *s;
-  int i;
 
-  tty_fprintf (fp, "PIN retry counter :");
-  for (i=0; i < DIM (info->chvinfo); i++)
-    {
-      if (info->chvinfo[i] >= 0)
-        tty_fprintf (fp, " %d", info->chvinfo[i]);
-      else
-        {
-          switch (info->chvinfo[i])
-            {
-            case -1: s = "[error]"; break;
-            case -2: s = "-"; break;  /* No such PIN or info not available. */
-            case -3: s = "[blocked]"; break;
-            case -4: s = "[nullpin]"; break;
-            case -5: s = "[verified]"; break;
-            default: s = "[?]"; break;
-            }
-          tty_fprintf (fp, " %s", s);
-        }
-    }
-  tty_fprintf (fp, "\n");
+  list_retry_counter (info, fp);
   list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
 }
 
@@ -1017,14 +1003,8 @@ list_p15 (card_info_t info, estream_t fp, int no_key_lookup)
   static struct keyinfolabel_s keyinfolabels[] = {
     { NULL, NULL }
   };
-  int i;
 
-  tty_fprintf (fp, "PIN retry counter :");
-  for (i=0; i < DIM (info->chvinfo); i++)
-    {
-      tty_fprintf (fp, " %d", info->chvinfo[i]);
-    }
-  tty_fprintf (fp, "\n");
+  list_retry_counter (info, fp);
   list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
 }
 
@@ -1347,7 +1327,7 @@ cmd_list (card_info_t info, char *argstr)
 static gpg_error_t
 cmd_verify (card_info_t info, char *argstr)
 {
-  gpg_error_t err;
+  gpg_error_t err, err2;
   const char *pinref;
 
   if (!info)
@@ -1366,7 +1346,10 @@ cmd_verify (card_info_t info, char *argstr)
   if (err)
     log_error ("verify failed: %s <%s>\n",
                gpg_strerror (err), gpg_strsource (err));
-  return err;
+  /* In any case update the CHV status, so that the next "list" shows
+   * the correct retry counter values.  */
+  err2 = scd_getattr ("CHV-STATUS", info);
+  return err ? err : err2;
 }
 
 
