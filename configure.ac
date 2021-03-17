@@ -1594,14 +1594,30 @@ AC_SUBST(W32SOCKLIBS)
 #
 # TPM libtss library .. don't compile TPM support if we don't have it
 #
+AC_ARG_WITH([tss],
+            [AS_HELP_STRING([--with-tss=TSS],
+                            [use the specified TPM Software Stack (ibm, intel, or autodetect)])],
+            [with_tss=$withval],
+            [with_tss=autodetect])
 LIBTSS_LIBS=
 LIBTSS_CFLAGS=
 if test "$build_tpm2d" = "yes"; then
   _save_libs="$LIBS"
   _save_cflags="$CFLAGS"
   LIBS=""
-  AC_SEARCH_LIBS([TSS_Create], [tss ibmtss],have_libtss=IBM,
-    AC_SEARCH_LIBS([Esys_Initialize], [tss2-esys],have_libtss=Intel))
+  if test "$with_tss" = autodetect; then
+    AC_SEARCH_LIBS([TSS_Create],[tss ibmtss],have_libtss=IBM,
+                   AC_SEARCH_LIBS([Esys_Initialize],[tss2-esys],have_libtss=Intel,have_libtss=no))
+  elif test "$with_tss" = ibm; then
+    AC_SEARCH_LIBS([TSS_Create],[tss ibmtss],have_libtss=IBM,
+                   [AC_MSG_ERROR([IBM TPM Software Stack requested but not found])])
+  elif test "$with_tss" = intel; then
+    AC_SEARCH_LIBS([Esys_Initialize],[tss2-esys],have_libtss=Intel,
+                   [AC_MSG_ERROR([Intel TPM Software Stack requested but not found])])
+  else
+    AC_MSG_ERROR([Invalid TPM Software Stack requested: $with_tss])
+  fi
+
   if test "$have_libtss" = IBM; then
     LIBTSS_CFLAGS="-DTPM_POSIX"
     CFLAGS="$CFLAGS ${LIBTSS_CFLAGS}"
