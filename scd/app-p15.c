@@ -1244,7 +1244,7 @@ parse_keyaccess_flags (const unsigned char *der, size_t derlen,
 /* Parse the commonObjectAttributes and store a malloced authid at
  * (r_authid,r_authidlen).  (NULL,0) is stored on error or if no
  * authid is found.  IF R_LABEL is not NULL the label is stored there
- * as a malloed string.
+ * as a malloced string (spaces are replaced by underscores).
  *
  * Example data:
  *  2 30   17:   SEQUENCE { -- commonObjectAttributes
@@ -1266,6 +1266,7 @@ parse_common_obj_attr (unsigned char const **buffer, size_t *size,
   size_t objlen, hdrlen, nnn;
   const unsigned char *ppp;
   int ignore_eof = 0;
+  char *p;
 
   *r_authid = NULL;
   *r_authidlen = 0;
@@ -1285,8 +1286,7 @@ parse_common_obj_attr (unsigned char const **buffer, size_t *size,
   *buffer += objlen;
   *size   -= objlen;
 
-  /* Search the optional AuthId.  We need to skip the optional Label
-     (UTF8STRING) and the optional CommonObjectFlags (BITSTRING). */
+  /* Search the optional AuthId.  */
   ignore_eof = 1;
   where = __LINE__;
   err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
@@ -1308,6 +1308,11 @@ parse_common_obj_attr (unsigned char const **buffer, size_t *size,
             }
           memcpy (*r_label, ppp, objlen);
           (*r_label)[objlen] = 0;
+          /* We don't want spaces in the labels due to the properties
+           * of CHV-LABEL.  */
+          for (p = *r_label; *p; p++)
+            if (ascii_isspace (*p))
+              *p = '_';
         }
 
       ppp += objlen;
@@ -2938,7 +2943,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             }
 
           aodf->pathlen = objlen/2;
-          aodf->path = xtrymalloc (aodf->pathlen);
+          aodf->path = xtrycalloc (aodf->pathlen, sizeof *aodf->path);
           if (!aodf->path)
             goto no_core;
           for (i=0; i < aodf->pathlen; i++, ppp += 2, nnn -= 2)
@@ -3049,18 +3054,20 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             log_printf ("%sexchange_ref_data", s), s = ",";
           {
             char numbuf[50];
+            const char *s2;
+
             switch (aodf->pintype)
               {
-              case PIN_TYPE_BCD: s = "bcd"; break;
-              case PIN_TYPE_ASCII_NUMERIC: s = "ascii-numeric"; break;
-              case PIN_TYPE_UTF8: s = "utf8"; break;
-              case PIN_TYPE_HALF_NIBBLE_BCD: s = "half-nibble-bcd"; break;
-              case PIN_TYPE_ISO9564_1: s = "iso9564-1"; break;
+              case PIN_TYPE_BCD: s2 = "bcd"; break;
+              case PIN_TYPE_ASCII_NUMERIC: s2 = "ascii-numeric"; break;
+              case PIN_TYPE_UTF8: s2 = "utf8"; break;
+              case PIN_TYPE_HALF_NIBBLE_BCD: s2 = "half-nibble-bcd"; break;
+              case PIN_TYPE_ISO9564_1: s2 = "iso9564-1"; break;
               default:
                 sprintf (numbuf, "%lu", (unsigned long)aodf->pintype);
-                s = numbuf;
+                s2 = numbuf;
               }
-            log_printf (" type=%s", s);
+            log_printf ("%stype=%s", s, s2); s = ",";
           }
           log_printf ("\n");
         }
@@ -3887,6 +3894,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   if (!err)
     err = do_getattr (app, ctrl, "CHV-STATUS");
+  if (!err)
+    err = do_getattr (app, ctrl, "CHV-LABEL");
 
 
   return err;
@@ -4220,8 +4229,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       else
         return 0;
     }
-  else if (!strcmp (name, "CHV-STATUS"))
+  else if (!strcmp (name, "CHV-STATUS") || !strcmp (name, "CHV-LABEL"))
     {
+      int is_label = (name[4] == 'L');
       aodf_object_t aodf;
       aodf_object_t aodfarray[16];
       int naodf = 0;
@@ -4246,17 +4256,24 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           /*            i, aodfarray[i]->pin_reference); */
           /* for (j=0; j < aodfarray[i]->objidlen; j++) */
           /*   log_printf ("%02X", aodfarray[i]->objid[j]); */
-
-          put_membuf_printf
-            (&mb, "%s%d", i? " ":"",
-             iso7816_verify_status (app_get_slot (app),
-                                    aodfarray[i]->pin_reference));
+          /* Note that there is no need to percent escape the label
+           * because all white space have been replaced by '_'.  */
+          if (is_label)
+            put_membuf_printf (&mb, "%s%s", i? " ":"",
+                               (aodfarray[i]->label
+                                && *aodfarray[i]->label)?
+                               aodfarray[i]->label:"X");
+          else
+            put_membuf_printf
+              (&mb, "%s%d", i? " ":"",
+               iso7816_verify_status (app_get_slot (app),
+                                      aodfarray[i]->pin_reference));
         }
       put_membuf( &mb, "", 1);
       p = get_membuf (&mb, NULL);
       if (!p)
         return gpg_error_from_syserror ();
-      err = send_status_direct (ctrl, "CHV-STATUS", p);
+      err = send_status_direct (ctrl, is_label? "CHV-LABEL":"CHV-STATUS", p);
       xfree (p);
       return err;
     }
@@ -4578,6 +4595,12 @@ verify_pin (app_t app,
           || app->app_local->card_product == CARD_PRODUCT_DTRUST))
     label = _("||Please enter the PIN for the key to create "
               "qualified signatures.");
+
+  else if (aodf->pinflags.so_pin)
+    label = _("|A|Please enter the Admin PIN");
+  else if (aodf->pinflags.unblocking_pin)
+    label = _("|P|Please enter the PIN Unblocking Code (PUK) "
+              "for the standard keys.");
   else
     label = _("||Please enter the PIN for the standard keys.");
 
