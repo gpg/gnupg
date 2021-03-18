@@ -1196,7 +1196,8 @@ agent_public_key_from_file (ctrl_t ctrl,
   const char *uri, *comment;
   size_t uri_length, comment_length;
   int uri_intlen, comment_intlen;
-  char *format, *p;
+  membuf_t format_mb;
+  char *format;
   void *args[2+7+2+2+1]; /* Size is 2 + max. # of elements + 2 for uri + 2
                             for comment + end-of-list.  */
   int argidx;
@@ -1238,15 +1239,41 @@ agent_public_key_from_file (ctrl_t ctrl,
   s_skey = NULL;
 
 
-  /* FIXME: The following thing is pretty ugly code; we should
-     investigate how to make it cleaner.  Probably code to handle
-     canonical S-expressions in a memory buffer is better suited for
-     such a task.  After all that is what we do in protect.c.  Need
-     to find common patterns and write a straightformward API to use
-     them.  */
   log_assert (sizeof (size_t) <= sizeof (void*));
 
-  format = xtrymalloc (15+4+7*npkey+10+15+1+1);
+  init_membuf (&format_mb, 256);
+  argidx = 0;
+  put_membuf_printf (&format_mb, "(public-key(%s%%S%%S", algoname);
+  args[argidx++] = &curve;
+  args[argidx++] = &flags;
+  for (idx=0, s=elems; idx < npkey; idx++)
+    {
+      put_membuf_printf (&format_mb, "(%c %%m)", *s++);
+      log_assert (argidx < DIM (args));
+      args[argidx++] = &array[idx];
+    }
+  put_membuf_str (&format_mb, ")");
+  if (uri)
+    {
+      put_membuf_str (&format_mb, "(uri %b)");
+      log_assert (argidx+1 < DIM (args));
+      uri_intlen = (int)uri_length;
+      args[argidx++] = (void *)&uri_intlen;
+      args[argidx++] = (void *)&uri;
+    }
+  if (comment)
+    {
+      put_membuf_str (&format_mb, "(comment %b)");
+      log_assert (argidx+1 < DIM (args));
+      comment_intlen = (int)comment_length;
+      args[argidx++] = (void *)&comment_intlen;
+      args[argidx++] = (void *)&comment;
+    }
+  put_membuf (&format_mb, ")", 2);
+  log_assert (argidx < DIM (args));
+  args[argidx] = NULL;
+
+  format = get_membuf (&format_mb, NULL);
   if (!format)
     {
       err = gpg_error_from_syserror ();
@@ -1258,41 +1285,6 @@ agent_public_key_from_file (ctrl_t ctrl,
       gcry_sexp_release (comment_sexp);
       return err;
     }
-
-  argidx = 0;
-  p = stpcpy (stpcpy (format, "(public-key("), algoname);
-  p = stpcpy (p, "%S%S");       /* curve name and flags.  */
-  args[argidx++] = &curve;
-  args[argidx++] = &flags;
-  for (idx=0, s=elems; idx < npkey; idx++)
-    {
-      *p++ = '(';
-      *p++ = *s++;
-      p = stpcpy (p, " %m)");
-      log_assert (argidx < DIM (args));
-      args[argidx++] = &array[idx];
-    }
-  *p++ = ')';
-  if (uri)
-    {
-      p = stpcpy (p, "(uri %b)");
-      log_assert (argidx+1 < DIM (args));
-      uri_intlen = (int)uri_length;
-      args[argidx++] = (void *)&uri_intlen;
-      args[argidx++] = (void *)&uri;
-    }
-  if (comment)
-    {
-      p = stpcpy (p, "(comment %b)");
-      log_assert (argidx+1 < DIM (args));
-      comment_intlen = (int)comment_length;
-      args[argidx++] = (void *)&comment_intlen;
-      args[argidx++] = (void*)&comment;
-    }
-  *p++ = ')';
-  *p = 0;
-  log_assert (argidx < DIM (args));
-  args[argidx] = NULL;
 
   err = gcry_sexp_build_array (&list, NULL, format, args);
   xfree (format);
@@ -1307,7 +1299,6 @@ agent_public_key_from_file (ctrl_t ctrl,
     *result = list;
   return err;
 }
-
 
 
 /* Check whether the secret key identified by GRIP is available.
