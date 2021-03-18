@@ -4438,7 +4438,7 @@ prepare_verify_pin (app_t app, const char *keyref,
         log_error ("p15: error selecting D-TRUST's AID for key %s: %s\n",
                    keyref, gpg_strerror (err));
     }
-  else
+  else if (prkdf)
     {
       /* Standard case: Select the key file.  Note that this may
        * change the security environment thus we need to do it before
@@ -4447,6 +4447,11 @@ prepare_verify_pin (app_t app, const char *keyref,
       if (err)
         log_error ("p15: error selecting file for key %s: %s\n",
                    keyref, gpg_strerror (err));
+    }
+  else
+    {
+      log_info ("p15: skipping EF selection for auth object '%s'\n", keyref);
+      err = 0;
     }
 
   return err;
@@ -4489,8 +4494,8 @@ get_dispserialno (app_t app, prkdf_object_t prkdf)
 }
 
 
-/* Return an allocated string to be used as prompt.  Returns NULL on
- * malloc error.  */
+/* Return an allocated string to be used as prompt.  PRKDF may be
+ * NULL.  Returns NULL on malloc error.  */
 static char *
 make_pin_prompt (app_t app, int remaining, const char *firstline,
                  prkdf_object_t prkdf)
@@ -4508,7 +4513,7 @@ make_pin_prompt (app_t app, int remaining, const char *firstline,
                            "%s"),
                          "\x1e",
                          serial,
-                         prkdf->common_name? prkdf->common_name: "",
+                         prkdf && prkdf->common_name? prkdf->common_name: "",
                          "");
   xfree (serial);
   if (!result)
@@ -4580,22 +4585,23 @@ verify_pin (app_t app,
           if (remaining >= 0)
             log_info ("p15: PIN has %d attempts left\n", remaining);
           /* On error or if less than 3 better ask. */
-          prkdf->pin_verified = 0;
+          if (prkdf)
+            prkdf->pin_verified = 0;
         }
     }
   else
     remaining = -1;  /* Unknown.  */
 
   /* Check whether we already verified it.  */
-  if (prkdf->pin_verified)
+  if (prkdf && prkdf->pin_verified)
     return 0;  /* Already done.  */
 
-  if (prkdf->usageflags.non_repudiation
+  if (prkdf
+      && prkdf->usageflags.non_repudiation
       && (app->app_local->card_type == CARD_TYPE_BELPIC
           || app->app_local->card_product == CARD_PRODUCT_DTRUST))
     label = _("||Please enter the PIN for the key to create "
               "qualified signatures.");
-
   else if (aodf->pinflags.so_pin)
     label = _("|A|Please enter the Admin PIN");
   else if (aodf->pinflags.unblocking_pin)
@@ -4751,7 +4757,8 @@ verify_pin (app_t app,
     }
   if (opt.verbose)
     log_info ("p15: PIN verification succeeded\n");
-  prkdf->pin_verified = 1;
+  if (prkdf)
+    prkdf->pin_verified = 1;
 
   return 0;
 }
@@ -5189,21 +5196,35 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
-  if (err)
+  if (err
+      && gpg_err_code (err) != GPG_ERR_INV_ID
+      && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
     return err;
 
-  /* Find the authentication object to this private key object. */
-  if (!prkdf->authid)
+  if (err) /* Not found or invalid - assume it is the label.  */
     {
-      log_error ("p15: no authentication object defined for %s\n", keyidstr);
-      return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+      prkdf = NULL;
+      for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+        if (aodf->label && !ascii_strcasecmp (aodf->label, keyidstr))
+          break;
+      if (!aodf)
+        return err;  /* Re-use the original error code.  */
     }
-  for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
-    if (aodf->objidlen == prkdf->authidlen
-        && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
-      break;
-  if (!aodf) /* None found.  */
-    return gpg_error (GPG_ERR_NO_PIN);
+  else /* Find the authentication object to this private key object. */
+    {
+      if (!prkdf->authid)
+        {
+          log_error ("p15: no authentication object defined for %s\n",
+                     keyidstr);
+          return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+        }
+      for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+        if (aodf->objidlen == prkdf->authidlen
+            && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
+          break;
+      if (!aodf) /* None found.  */
+        return gpg_error (GPG_ERR_NO_PIN);
+    }
 
   err = prepare_verify_pin (app, keyidstr, prkdf, aodf);
   if (!err)

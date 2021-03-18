@@ -1590,7 +1590,11 @@ static const char hlp_checkpin[] =
   "   For a definitive list, see the implementation in app-nks.c.\n"
   "   Note that we call a PW2.* PIN a \"PUK\" despite that since TCOS\n"
   "   3.0 they are technically alternative PINs used to mutally\n"
-  "   unblock each other.";
+  "   unblock each other.\n"
+  "\n"
+  "For PKCS#15:\n"
+  "\n"
+  "   The key's ID string or the PIN's label may be used.";
 static gpg_error_t
 cmd_checkpin (assuan_context_t ctx, char *line)
 {
