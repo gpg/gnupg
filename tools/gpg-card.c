@@ -836,8 +836,10 @@ list_retry_counter (card_info_t info, estream_t fp)
   const char *s;
   int i;
 
+  if (info->chvlabels)
+    tty_fprintf (fp, "PIN labels .......: %s\n", info->chvlabels);
   tty_fprintf (fp, "PIN retry counter :");
-  for (i=0; i < DIM (info->chvinfo); i++)
+  for (i=0; i < DIM (info->chvinfo) && i < info->nchvinfo; i++)
     {
       if (info->chvinfo[i] >= 0)
         tty_fprintf (fp, " %d", info->chvinfo[i]);

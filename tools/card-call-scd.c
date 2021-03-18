@@ -161,6 +161,7 @@ release_card_info (card_info_t info)
       info->kinfo = kinfo;
     }
   info->chvusage[0] = info->chvusage[1] = 0;
+  xfree (info->chvlabels); info->chvlabels = NULL;
   for (i=0; i < DIM(info->supported_keyalgo); i++)
     {
       free_strlist (info->supported_keyalgo[i]);
@@ -909,6 +910,11 @@ learn_status_cb (void *opaque, const char *line)
           parm->chvusage[0] = byte1;
           parm->chvusage[1] = byte2;
         }
+      else if (!memcmp (keyword, "CHV-LABEL", keywordlen))
+        {
+          xfree (parm->chvlabels);
+          parm->chvlabels = xstrdup (line);
+        }
       break;
 
     case 10:
@@ -948,6 +954,7 @@ learn_status_cb (void *opaque, const char *line)
                   while (spacep (p))
                     p++;
                 }
+              parm->nchvmaxlen = 3;
               for (i=0; *p && i < 3; i++)
                 {
                   parm->chvinfo[i] = atoi (p);
@@ -956,6 +963,7 @@ learn_status_cb (void *opaque, const char *line)
                   while (spacep (p))
                     p++;
                 }
+              parm->nchvinfo = 3;
             }
           else
             {
@@ -967,6 +975,7 @@ learn_status_cb (void *opaque, const char *line)
                   while (spacep (p))
                     p++;
                 }
+              parm->nchvinfo = i;
             }
 
           xfree (buf);

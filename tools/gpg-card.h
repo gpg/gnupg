@@ -172,8 +172,11 @@ struct card_info_s
                         required for each signing.  Note that the
                         gpg-agent might cache it anyway. */
   int is_v2;         /* True if this is a v2 openpgp card.  */
+  byte nchvmaxlen;   /* Number of valid items in CHVMAXLEN.  */
   int chvmaxlen[4];  /* Maximum allowed length of a CHV. */
+  byte nchvinfo;     /* Number of valid items in CHVINFO.  */
   int chvinfo[4];    /* Allowed retries for the CHV; 0 = blocked. */
+  char *chvlabels;   /* Malloced String with CHV labels.  */
   unsigned char chvusage[2]; /* Data object 5F2F */
   struct {
     unsigned int ki:1;     /* Key import available.  */
