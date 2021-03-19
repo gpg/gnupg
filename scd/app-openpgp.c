@@ -2245,39 +2245,73 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
 
 /* Read the standard certificate of an OpenPGP v2 card.  It is
    returned in a freshly allocated buffer with that address stored at
-   CERT and the length of the certificate stored at CERTLEN.  CERTID
-   needs to be set to "OPENPGP.3".  */
+   CERT and the length of the certificate stored at CERTLEN.  */
 static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **cert, size_t *certlen)
 {
   gpg_error_t err;
-  unsigned char *buffer;
-  size_t buflen;
-  void *relptr;
+  int occurrence = 0;
 
   *cert = NULL;
   *certlen = 0;
-  if (strcmp (certid, "OPENPGP.3"))
+  if (!ascii_strcasecmp (certid, "OPENPGP.3"))
+    ;
+  else if (!ascii_strcasecmp (certid, "OPENPGP.2"))
+    occurrence = 1;
+  else if (!ascii_strcasecmp (certid, "OPENPGP.1"))
+    occurrence = 2;
+  else
     return gpg_error (GPG_ERR_INV_ID);
+  if (!app->app_local->extcap.is_v3 && occurrence)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
   if (!app->app_local->extcap.is_v2)
     return gpg_error (GPG_ERR_NOT_FOUND);
 
-  relptr = get_one_do (app, 0x7F21, &buffer, &buflen, NULL);
-  if (!relptr)
-    return gpg_error (GPG_ERR_NOT_FOUND);
+  if (occurrence)
+    {
+      int exmode;
 
-  if (!buflen)
-    err = gpg_error (GPG_ERR_NOT_FOUND);
-  else if (!(*cert = xtrymalloc (buflen)))
-    err = gpg_error_from_syserror ();
+      err = iso7816_select_data (app_get_slot (app), occurrence, 0x7F21);
+      if (!err)
+        {
+          if (app->app_local->cardcap.ext_lc_le)
+            exmode = app->app_local->extcap.max_certlen;
+          else
+            exmode = 0;
+
+          err = iso7816_get_data (app_get_slot (app), exmode, 0x7F21,
+                                  cert, certlen);
+          /* We reset the curDO even for an error.  */
+          iso7816_select_data (app_get_slot (app), 0, 0x7F21);
+        }
+
+      if (err)
+        err = gpg_error (GPG_ERR_NOT_FOUND);
+    }
   else
     {
-      memcpy (*cert, buffer, buflen);
-      *certlen = buflen;
-      err  = 0;
+      unsigned char *buffer;
+      size_t buflen;
+      void *relptr;
+
+      relptr = get_one_do (app, 0x7F21, &buffer, &buflen, NULL);
+      if (!relptr)
+        return gpg_error (GPG_ERR_NOT_FOUND);
+
+      if (!buflen)
+        err = gpg_error (GPG_ERR_NOT_FOUND);
+      else if (!(*cert = xtrymalloc (buflen)))
+        err = gpg_error_from_syserror ();
+      else
+        {
+          memcpy (*cert, buffer, buflen);
+          *certlen = buflen;
+          err = 0;
+        }
+      xfree (relptr);
     }
-  xfree (relptr);
+
   return err;
 }
 
@@ -2909,6 +2943,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     int need_chv;
     int special;
     unsigned int need_v2:1;
+    unsigned int need_v3:1;
   } table[] = {
     { "DISP-NAME",    0x005B, 0,      3 },
     { "LOGIN-DATA",   0x005E, 0,      3, 2 },
@@ -2923,6 +2958,8 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     { "PRIVATE-DO-2", 0x0102, 0,      3 },
     { "PRIVATE-DO-3", 0x0103, 0,      2 },
     { "PRIVATE-DO-4", 0x0104, 0,      3 },
+    { "CERT-1",       0x7F21, 0,      3,11, 1, 1 },
+    { "CERT-2",       0x7F21, 0,      3,12, 1, 1 },
     { "CERT-3",       0x7F21, 0,      3, 0, 1 },
     { "SM-KEY-ENC",   0x00D1, 0,      3, 0, 1 },
     { "SM-KEY-MAC",   0x00D2, 0,      3, 0, 1 },
@@ -2941,7 +2978,9 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
   if (!table[idx].name)
     return gpg_error (GPG_ERR_INV_NAME);
   if (table[idx].need_v2 && !app->app_local->extcap.is_v2)
-    return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Not yet supported.  */
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+  if (table[idx].need_v3 && !app->app_local->extcap.is_v3)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (table[idx].special == 5 && app->app_local->extcap.has_button == 0)
     return gpg_error (GPG_ERR_INV_OBJ);
@@ -3066,8 +3105,23 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
       flush_cache_item (app, 0x00F9);
     }
 
-  rc = iso7816_put_data (app_get_slot (app),
-                         exmode, table[idx].tag, value, valuelen);
+
+  if (table[idx].special == 11 || table[idx].special == 12) /* CERT-1 or -2 */
+    {
+      rc = iso7816_select_data (app_get_slot (app),
+                                table[idx].special == 11? 2 : 1,
+                                table[idx].tag);
+      if (!rc)
+        {
+          rc = iso7816_put_data (app_get_slot (app),
+                                 exmode, table[idx].tag, value, valuelen);
+          /* We better reset the curDO.  */
+          iso7816_select_data (app_get_slot (app), 0, table[idx].tag);
+        }
+    }
+  else  /* Standard.  */
+    rc = iso7816_put_data (app_get_slot (app),
+                           exmode, table[idx].tag, value, valuelen);
   if (rc)
     log_error ("failed to set '%s': %s\n", table[idx].name, gpg_strerror (rc));
 
@@ -3103,15 +3157,25 @@ do_writecert (app_t app, ctrl_t ctrl,
               void *pincb_arg,
               const unsigned char *certdata, size_t certdatalen)
 {
-  if (strcmp (certidstr, "OPENPGP.3"))
+  const char *name;
+  if (!ascii_strcasecmp (certidstr, "OPENPGP.3"))
+    name = "CERT-3";
+  else if (!ascii_strcasecmp (certidstr, "OPENPGP.2"))
+    name = "CERT-2";
+  else if (!ascii_strcasecmp (certidstr, "OPENPGP.1"))
+    name = "CERT-1";
+  else
     return gpg_error (GPG_ERR_INV_ID);
+
   if (!certdata || !certdatalen)
     return gpg_error (GPG_ERR_INV_ARG);
   if (!app->app_local->extcap.is_v2)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
+  /* do_setattr checks that CERT-2 and CERT-1 requires a v3 card.  */
+
   if (certdatalen > app->app_local->extcap.max_certlen)
     return gpg_error (GPG_ERR_TOO_LARGE);
-  return do_setattr (app, ctrl, "CERT-3", pincb, pincb_arg,
+  return do_setattr (app, ctrl, name, pincb, pincb_arg,
                      certdata, certdatalen);
 }
 

@@ -98,6 +98,7 @@ gpg_error_t iso7816_reset_retry_counter (int slot, int chvno,
 gpg_error_t iso7816_reset_retry_counter_with_rc (int slot, int chvno,
                                                  const char *data,
                                                  size_t datalen);
+gpg_error_t iso7816_select_data (int slot, int occurrence, int tag);
 gpg_error_t iso7816_get_data (int slot, int extended_mode, int tag,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_get_data_odd (int slot, int extended_mode, unsigned int tag,

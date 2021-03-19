@@ -32,6 +32,7 @@
 
 
 #define CMD_SELECT_FILE 0xA4
+#define CMD_SELECT_DATA 0xA5
 #define CMD_VERIFY                ISO7816_VERIFY
 #define CMD_CHANGE_REFERENCE_DATA ISO7816_CHANGE_REFERENCE_DATA
 #define CMD_RESET_RETRY_COUNTER   ISO7816_RESET_RETRY_COUNTER
@@ -469,6 +470,44 @@ iso7816_reset_retry_counter (int slot, int chvno,
   return map_sw (sw);
 }
 
+
+/* Perform a SELECT DATA command to OCCURANCE of TAG.  */
+gpg_error_t
+iso7816_select_data (int slot, int occurrence, int tag)
+{
+  int sw;
+  int datalen;
+  unsigned char data[7];
+
+  data[0] = 0x60;
+  data[2] = 0x5c;
+  if (tag <= 0xff)
+    {
+      data[3] = 1;
+      data[4] = tag;
+      datalen = 5;
+    }
+  else if (tag <= 0xffff)
+    {
+      data[3] = 2;
+      data[4] = (tag >> 8);
+      data[5] = tag;
+      datalen = 6;
+    }
+  else
+    {
+      data[3] = 3;
+      data[4] = (tag >> 16);
+      data[5] = (tag >> 8);
+      data[6] = tag;
+      datalen = 7;
+    }
+  data[1] = datalen - 2;
+
+  sw = apdu_send_le (slot, 0, 0x00, CMD_SELECT_DATA,
+                     occurrence, 0x04, datalen, data, 0, NULL, NULL);
+  return map_sw (sw);
+}
 
 
 /* Perform a GET DATA command requesting TAG and storing the result in
