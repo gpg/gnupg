@@ -218,6 +218,11 @@ struct app_local_s {
     unsigned int def_chv2:1;  /* Use 123456 for CHV2.  */
   } flags;
 
+  /* Flags used to override certain behavior.  */
+  struct
+  {
+    unsigned int cache_6e:1;
+  } override;
 
   /* Keep track on whether we cache a certain PIN so that we get it
    * from the cache only if we know we cached it.  This inhibits the
@@ -404,6 +409,9 @@ get_cached_data (app_t app, int tag,
 
   *result = NULL;
   *resultlen = 0;
+
+  if (tag == 0x6E && app->app_local->override.cache_6e)
+    get_immediate = 0;
 
   if (!get_immediate)
     {
@@ -6138,6 +6146,9 @@ app_select_openpgp (app_t app)
           goto leave;
         }
 
+      /* We want to temporary cache the DO 6E.  */
+      app->app_local->override.cache_6e = 1;
+
       app->app_local->manufacturer = manufacturer;
 
       if (app->appversion >= 0x0200)
@@ -6216,8 +6227,10 @@ app_select_openpgp (app_t app)
       /* Check optional DO of "General Feature Management" for button.  */
       relptr = get_one_do (app, 0x7f74, &buffer, &buflen, NULL);
       if (relptr)
-        /* It must be: 03 81 01 20 */
-        app->app_local->extcap.has_button = 1;
+        {
+          /* It must be: 03 81 01 20 */
+          app->app_local->extcap.has_button = 1;
+        }
 
       parse_login_data (app);
 
@@ -6230,6 +6243,9 @@ app_select_openpgp (app_t app)
 
       if (opt.verbose > 1)
         dump_all_do (slot);
+
+      app->app_local->override.cache_6e = 0;
+      flush_cache_item (app, 0x6E);
 
       app->fnc.deinit = do_deinit;
       app->fnc.prep_reselect = do_prep_reselect;
