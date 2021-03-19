@@ -80,7 +80,7 @@ static struct {
                                  status bytes. */
   unsigned int try_extlen:2;           /* Large object; try to use an extended
                                  length APDU when !=0.  The size is
-                                 determined by extcap.max_certlen_3
+                                 determined by extcap.max_certlen
                                  when == 1, and by extcap.max_special_do
                                  when == 2.  */
   char *desc;
@@ -185,7 +185,7 @@ struct app_local_s {
   struct
   {
     unsigned int is_v2:1;              /* Compatible to v2 or later.        */
-    unsigned int extcap_v3:1;          /* Extcap is in v3 format.           */
+    unsigned int is_v3:1;              /* Comatible to v3 or later.         */
     unsigned int has_button:1;         /* Has confirmation button or not.   */
 
     unsigned int sm_supported:1;       /* Secure Messaging is supported.    */
@@ -200,7 +200,7 @@ struct app_local_s {
     unsigned int sm_algo:2;            /* Symmetric crypto algo for SM.     */
     unsigned int pin_blk2:1;           /* PIN block 2 format supported.     */
     unsigned int mse:1;                /* MSE command supported.            */
-    unsigned int max_certlen_3:16;
+    unsigned int max_certlen:16;       /* Maximum size of DO 7F21.          */
     unsigned int max_get_challenge:16; /* Maximum size for get_challenge.   */
     unsigned int max_special_do:16;    /* Maximum size for special DOs.     */
   } extcap;
@@ -380,8 +380,8 @@ get_cached_data (app_t app, int tag,
   if (try_extlen && app->app_local->cardcap.ext_lc_le)
     {
       if (try_extlen == 1)
-        exmode = app->app_local->extcap.max_certlen_3;
-      else if (try_extlen == 2 && app->app_local->extcap.extcap_v3)
+        exmode = app->app_local->extcap.max_certlen;
+      else if (try_extlen == 2 && app->app_local->extcap.is_v3)
         exmode = app->app_local->extcap.max_special_do;
       else
         exmode = 0;
@@ -1063,6 +1063,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     {
       char tmp[110];
 
+      /* Noet that with v3 cards mcl3 is used for all certificates.  */
       snprintf (tmp, sizeof tmp,
                 "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d "
                 "sm=%d si=%u dec=%d bt=%d kdf=%d",
@@ -1070,7 +1071,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                 app->app_local->extcap.key_import,
                 app->app_local->extcap.change_force_chv,
                 app->app_local->extcap.private_dos,
-                app->app_local->extcap.max_certlen_3,
+                app->app_local->extcap.max_certlen,
                 app->app_local->extcap.algo_attr_change,
                 (app->app_local->extcap.sm_supported
                  ? (app->app_local->extcap.sm_algo == 0? CIPHER_ALGO_3DES :
@@ -2769,7 +2770,7 @@ do_writecert (app_t app, ctrl_t ctrl,
     return gpg_error (GPG_ERR_INV_ARG);
   if (!app->app_local->extcap.is_v2)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
-  if (certdatalen > app->app_local->extcap.max_certlen_3)
+  if (certdatalen > app->app_local->extcap.max_certlen)
     return gpg_error (GPG_ERR_TOO_LARGE);
   return do_setattr (app, ctrl, "CERT-3", pincb, pincb_arg,
                      certdata, certdatalen);
@@ -5307,7 +5308,7 @@ static void
 show_caps (struct app_local_s *s)
 {
   log_info ("Version-2+ .....: %s\n", s->extcap.is_v2? "yes":"no");
-  log_info ("Extcap-v3 ......: %s\n", s->extcap.extcap_v3? "yes":"no");
+  log_info ("Version-3+ .....: %s\n", s->extcap.is_v3? "yes":"no");
   log_info ("Button .........: %s\n", s->extcap.has_button? "yes":"no");
 
   log_info ("SM-Support .....: %s", s->extcap.sm_supported? "yes":"no");
@@ -5323,8 +5324,8 @@ show_caps (struct app_local_s *s)
   log_info ("Algo-Attr-Change: %s\n", s->extcap.algo_attr_change? "yes":"no");
   log_info ("Symmetric Crypto: %s\n", s->extcap.has_decrypt? "yes":"no");
   log_info ("KDF-Support ....: %s\n", s->extcap.kdf_do? "yes":"no");
-  log_info ("Max-Cert3-Len ..: %u\n", s->extcap.max_certlen_3);
-  if (s->extcap.extcap_v3)
+  log_info ("Max-Cert-Len ...: %u\n", s->extcap.max_certlen);
+  if (s->extcap.is_v3)
     {
       log_info ("PIN-Block-2 ....: %s\n", s->extcap.pin_blk2? "yes":"no");
       log_info ("MSE-Support ....: %s\n", s->extcap.mse? "yes":"no");
@@ -5649,7 +5650,7 @@ app_select_openpgp (app_t app)
         app->app_local->extcap.is_v2 = 1;
 
       if (app->appversion >= 0x0300)
-        app->app_local->extcap.extcap_v3 = 1;
+        app->app_local->extcap.is_v3 = 1;
 
       /* Read the historical bytes.  */
       relptr = get_one_do (app, 0x5f52, &buffer, &buflen, NULL);
@@ -5702,10 +5703,10 @@ app_select_openpgp (app_t app)
           app->app_local->extcap.sm_algo = buffer[1];
           app->app_local->extcap.max_get_challenge
                                                = (buffer[2] << 8 | buffer[3]);
-          app->app_local->extcap.max_certlen_3 = (buffer[4] << 8 | buffer[5]);
+          app->app_local->extcap.max_certlen = (buffer[4] << 8 | buffer[5]);
 
           /* Interpretation is different between v2 and v3, unfortunately.  */
-          if (app->app_local->extcap.extcap_v3)
+          if (app->app_local->extcap.is_v3)
             {
               app->app_local->extcap.max_special_do
                 = (buffer[6] << 8 | buffer[7]);
