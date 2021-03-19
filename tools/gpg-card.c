@@ -1970,13 +1970,20 @@ cmd_writecert (card_info_t info, char *argstr)
 
   if (info->apptype == APP_TYPE_OPENPGP)
     {
-      if (ascii_strcasecmp (certref, "OPENPGP.3") && strcmp (certref, "3"))
+      if (!ascii_strcasecmp (certref, "OPENPGP.3") || !strcmp (certref, "3"))
+        certref_buffer = xstrdup ("OPENPGP.3");
+      else if (!ascii_strcasecmp (certref, "OPENPGP.2")||!strcmp (certref,"2"))
+        certref_buffer = xstrdup ("OPENPGP.2");
+      else if (!ascii_strcasecmp (certref, "OPENPGP.1")||!strcmp (certref,"1"))
+        certref_buffer = xstrdup ("OPENPGP.1");
+      else
         {
           err = gpg_error (GPG_ERR_INV_ID);
-          log_error ("Error: CERTREF must be \"3\" or \"OPENPGP.3\"\n");
+          log_error ("Error: CERTREF must be OPENPGP.N or just N"
+                     " with N being 1..3\"");
           goto leave;
         }
-      certref = certref_buffer = xstrdup ("OPENPGP.3");
+      certref = certref_buffer;
     }
   else /* Upcase the certref; prepend cardtype if needed.  */
     {
@@ -2108,13 +2115,20 @@ cmd_readcert (card_info_t info, char *argstr)
 
   if (info->apptype == APP_TYPE_OPENPGP)
     {
-      if (ascii_strcasecmp (certref, "OPENPGP.3") && strcmp (certref, "3"))
+      if (!ascii_strcasecmp (certref, "OPENPGP.3") || !strcmp (certref, "3"))
+        certref_buffer = xstrdup ("OPENPGP.3");
+      else if (!ascii_strcasecmp (certref, "OPENPGP.2")||!strcmp (certref,"2"))
+        certref_buffer = xstrdup ("OPENPGP.2");
+      else if (!ascii_strcasecmp (certref, "OPENPGP.1")||!strcmp (certref,"1"))
+        certref_buffer = xstrdup ("OPENPGP.1");
+      else
         {
           err = gpg_error (GPG_ERR_INV_ID);
-          log_error ("Error: CERTREF must be \"3\" or \"OPENPGP.3\"\n");
+          log_error ("Error: CERTREF must be OPENPGP.N or just N"
+                     " with N being 1..3\"");
           goto leave;
         }
-      certref = certref_buffer = xstrdup ("OPENPGP.3");
+      certref = certref_buffer;
     }
 
   if (*argstr == '>')  /* Write it to a file */
