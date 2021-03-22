@@ -86,7 +86,6 @@ enum cmd_and_opt_values
     oLogFile,
     oServer,
     oDaemon,
-    oBatch,
     oFakedSystemTime,
     oListenBacklog,
     oDisableCheckOwnSocket,
@@ -99,26 +98,28 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
 
-  ARGPARSE_group (301, N_("@Options:\n ")),
+  ARGPARSE_header (NULL, N_("Options used for startup")),
 
   ARGPARSE_s_n (oDaemon,  "daemon", N_("run in daemon mode (background)")),
   ARGPARSE_s_n (oServer,  "server", N_("run in server mode (foreground)")),
-  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
-  ARGPARSE_s_n (oQuiet,	  "quiet",     N_("be somewhat more quiet")),
+  ARGPARSE_s_n (oNoDetach,  "no-detach", N_("do not detach from the console")),
+  ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
 
+  ARGPARSE_header ("Monitor", N_("Options controlling the diagnostic output")),
+
+  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n (oQuiet,	  "quiet",     N_("be somewhat more quiet")),
   ARGPARSE_s_s (oDebug,	    "debug",      "@"),
   ARGPARSE_s_n (oDebugAll,  "debug-all",  "@"),
   ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
+  ARGPARSE_s_s (oLogFile,   "log-file",  N_("use a log file for the server")),
+
+  ARGPARSE_header ("Configuration",
+                   N_("Options controlling the configuration")),
 
   ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
-  ARGPARSE_s_n (oNoDetach,  "no-detach", N_("do not detach from the console")),
-  ARGPARSE_s_s (oLogFile,   "log-file",  N_("use a log file for the server")),
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
-
-  ARGPARSE_s_n (oBatch,      "batch",        "@"),
-  ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
-
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
 
   ARGPARSE_end () /* End of list */
@@ -563,7 +564,6 @@ main (int argc, char **argv )
         {
         case aGPGConfList: gpgconf_list = 1; break;
         case aGPGConfTest: gpgconf_list = 2; break;
-        case oBatch: opt.batch=1; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
         case oNoGreeting: /* Dummy option.  */ break;
         case oNoVerbose: opt.verbose = 0; break;

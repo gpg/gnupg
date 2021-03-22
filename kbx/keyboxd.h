@@ -40,8 +40,6 @@ struct
   int verbose;         /* Verbosity level */
   int quiet;           /* Be as quiet as possible */
   int dry_run;         /* Don't change any persistent data */
-  int batch;           /* Batch mode */
-
   /* True if we are running detached from the tty. */
   int running_detached;
 
