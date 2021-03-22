@@ -419,9 +419,12 @@ static known_option_t known_options_gpg[] =
    { "completes-needed",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "marginals-needed",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
+   { "use-keyboxd",          GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
+
    /* The next is a pseudo option which we read via --gpgconf-list */
    { "default_pubkey_algo",
      (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE },
+
 
    { NULL }
  };
@@ -452,6 +455,8 @@ static known_option_t known_options_gpgsm[] =
    { "auto-issuer-key-retrieve",       GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "cipher-algo",                    GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "disable-trusted-cert-crl-check", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
+
+   { "use-keyboxd",                    GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
    /* Pseudo option follows.  */
    { "default_pubkey_algo",
