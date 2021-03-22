@@ -2267,20 +2267,25 @@ export_one_ssh_key (estream_t fp, PKT_public_key *pk)
   if (err)
     goto leave;
 
-  err = b64enc_start_es (&b64_state, fp, "");
-  if (err)
-    goto leave;
-
   blob = get_membuf (&mb, &bloblen);
   if (blob)
     {
+      struct b64state b64_state;
+
       es_fprintf (fp, "%s ", identifier);
+      err = b64enc_start_es (&b64_state, fp, "");
+      if (err)
+        {
+          xfree (blob);
+          goto leave;
+        }
+
       err = b64enc_write (&b64_state, blob, bloblen);
+      b64enc_finish (&b64_state);
+
       es_fprintf (fp, " openpgp:0x%08lX\n", (ulong)keyid_from_pk (pk, NULL));
       xfree (blob);
     }
-
-  b64enc_finish (&b64_state);
 
  leave:
   xfree (get_membuf (&mb, NULL));
