@@ -2195,7 +2195,6 @@ export_one_ssh_key (estream_t fp, PKT_public_key *pk)
   gpg_error_t err;
   const char *identifier = NULL;
   membuf_t mb;
-  struct b64state b64_state;
   void *blob;
   size_t bloblen;
 
@@ -2245,13 +2244,18 @@ export_one_ssh_key (estream_t fp, PKT_public_key *pk)
       break;
 
     case PUBKEY_ALGO_EDDSA:
-      if (!openpgp_oid_is_ed25519 (pk->pkey[0]))
-        err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
-      else
+      if (openpgp_oid_is_ed25519 (pk->pkey[0]))
         {
           identifier = "ssh-ed25519";
           err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL);
         }
+      else if (openpgp_oid_is_ed448 (pk->pkey[0]))
+        {
+          identifier = "ssh-ed448";
+          err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL);
+        }
+      else
+        err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
       break;
 
     case PUBKEY_ALGO_ELGAMAL_E:

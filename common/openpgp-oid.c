@@ -83,6 +83,10 @@ static const char oid_cv25519[] =
  */
 static const char oid_cv448[] = { 0x03, 0x2b, 0x65, 0x6f };
 
+/* The OID for Ed448 in OpenPGP format. */
+static const char oid_ed448[] = { 0x03, 0x2b, 0x65, 0x71 };
+
+
 /* A table to store keyalgo strings like "rsa2048 or "ed25519" so that
  * we do not need to allocate them.  This is currently a simple array
  * but may eventually be changed to a fast data structure.  Noet that
@@ -346,6 +350,15 @@ openpgp_oidbuf_is_cv25519 (const void *buf, size_t len)
 }
 
 
+/* Return true if (BUF,LEN) represents the OID for Ed448.  */
+static int
+openpgp_oidbuf_is_ed448 (const void *buf, size_t len)
+{
+  return (buf && len == DIM (oid_ed448)
+          && !memcmp (buf, oid_ed448, DIM (oid_ed448)));
+}
+
+
 /* Return true if (BUF,LEN) represents the OID for X448.  */
 static int
 openpgp_oidbuf_is_cv448 (const void *buf, size_t len)
@@ -367,6 +380,21 @@ openpgp_oid_is_cv25519 (gcry_mpi_t a)
 
   buf = gcry_mpi_get_opaque (a, &nbits);
   return openpgp_oidbuf_is_cv25519 (buf, (nbits+7)/8);
+}
+
+
+/* Return true if the MPI A represents the OID for Ed448.  */
+int
+openpgp_oid_is_ed448 (gcry_mpi_t a)
+{
+  const unsigned char *buf;
+  unsigned int nbits;
+
+  if (!a || !gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    return 0;
+
+  buf = gcry_mpi_get_opaque (a, &nbits);
+  return openpgp_oidbuf_is_ed448 (buf, (nbits+7)/8);
 }
 
 

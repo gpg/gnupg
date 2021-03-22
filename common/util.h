@@ -245,6 +245,7 @@ int openpgp_oid_is_ed25519 (gcry_mpi_t a);
 int openpgp_oidbuf_is_cv25519 (const void *buf, size_t len);
 int openpgp_oid_is_cv25519 (gcry_mpi_t a);
 int openpgp_oid_is_cv448 (gcry_mpi_t a);
+int openpgp_oid_is_ed448 (gcry_mpi_t a);
 const char *openpgp_curve_to_oid (const char *name,
                                   unsigned int *r_nbits, int *r_algo);
 const char *openpgp_oid_to_curve (const char *oid, int canon);
