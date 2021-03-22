@@ -686,7 +686,7 @@ used for no expiration date.
 If this command is used with @option{--batch},
 @option{--pinentry-mode} has been set to @code{loopback}, and one of
 the passphrase options (@option{--passphrase},
-@option{--passphrase-fd}, or @option{passphrase-file}) is used, the
+@option{--passphrase-fd}, or @option{--passphrase-file}) is used, the
 supplied passphrase is used for the new key and the agent does not ask
 for it.  To create a key without any protection @code{--passphrase ''}
 may be used.
