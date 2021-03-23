@@ -421,12 +421,17 @@ static known_option_t known_options_gpg[] =
 
    { "use-keyboxd",          GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
-   /* The next is a pseudo option which we read via --gpgconf-list */
-   { "default_pubkey_algo",
-     (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE },
+   /* The next is a pseudo option which we read via --gpgconf-list.
+    * The meta information is taken from the table below.  */
+   { "default_pubkey_algo",  GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
 
    { NULL }
+ };
+static const char *known_pseudo_options_gpg[] =
+  {/*                     v-- ARGPARSE_TYPE_STRING */
+   "default_pubkey_algo:0:2:@:",
+   NULL
  };
 
 
@@ -458,11 +463,15 @@ static known_option_t known_options_gpgsm[] =
 
    { "use-keyboxd",                    GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
-   /* Pseudo option follows.  */
-   { "default_pubkey_algo",
-       (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE },
+   /* Pseudo option follows.  See also table below. */
+   { "default_pubkey_algo",            GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
    { NULL }
+ };
+static const char *known_pseudo_options_gpgsm[] =
+  {/*                     v-- ARGPARSE_TYPE_STRING */
+   "default_pubkey_algo:0:2:@:",
+   NULL
  };
 
 
@@ -604,6 +613,9 @@ static struct
   /* The static table of known options for this component.  */
   known_option_t *known_options;
 
+  /* The static table of known pseudo options for this component or NULL.  */
+  const char **known_pseudo_options;
+
   /* The runtime change callback.  If KILLFLAG is true the component
      is killed and not just reloaded.  */
   void (*runtime_change) (int killflag);
@@ -629,31 +641,31 @@ static struct
 
    { GPG_NAME,  GPG_DISP_NAME,     "gnupg",  N_("OpenPGP"),
      GNUPG_MODULE_NAME_GPG, GPG_NAME ".conf",
-     known_options_gpg },
+     known_options_gpg, known_pseudo_options_gpg },
 
    { GPGSM_NAME, GPGSM_DISP_NAME,  "gnupg",  N_("S/MIME"),
      GNUPG_MODULE_NAME_GPGSM, GPGSM_NAME ".conf",
-     known_options_gpgsm },
+     known_options_gpgsm, known_pseudo_options_gpgsm },
 
    { KEYBOXD_NAME, KEYBOXD_DISP_NAME, "gnupg", N_("Public Keys"),
      GNUPG_MODULE_NAME_KEYBOXD, KEYBOXD_NAME ".conf",
-     known_options_keyboxd, keyboxd_runtime_change },
+     known_options_keyboxd, NULL, keyboxd_runtime_change },
 
    { GPG_AGENT_NAME, GPG_AGENT_DISP_NAME, "gnupg", N_("Private Keys"),
      GNUPG_MODULE_NAME_AGENT, GPG_AGENT_NAME ".conf",
-     known_options_gpg_agent, gpg_agent_runtime_change },
+     known_options_gpg_agent, NULL, gpg_agent_runtime_change },
 
    { SCDAEMON_NAME, SCDAEMON_DISP_NAME, "gnupg", N_("Smartcards"),
      GNUPG_MODULE_NAME_SCDAEMON, SCDAEMON_NAME ".conf",
-     known_options_scdaemon, scdaemon_runtime_change},
+     known_options_scdaemon, NULL, scdaemon_runtime_change},
 
    { TPM2DAEMON_NAME, TPM2DAEMON_DISP_NAME, "gnupg", N_("TPM"),
      GNUPG_MODULE_NAME_TPM2DAEMON, TPM2DAEMON_NAME ".conf",
-     known_options_tpm2daemon, tpm2daemon_runtime_change},
+     known_options_tpm2daemon, NULL, tpm2daemon_runtime_change},
 
    { DIRMNGR_NAME, DIRMNGR_DISP_NAME, "gnupg",   N_("Network"),
      GNUPG_MODULE_NAME_DIRMNGR, DIRMNGR_NAME ".conf",
-     known_options_dirmngr, dirmngr_runtime_change },
+     known_options_dirmngr, NULL, dirmngr_runtime_change },
 
    { "pinentry", "Pinentry", "gnupg", N_("Passphrase Entry"),
      GNUPG_MODULE_NAME_PINENTRY, NULL,
@@ -1612,7 +1624,49 @@ find_option (gc_component_id_t component, const char *name)
 }
 
 
+
 
+struct read_line_wrapper_parm_s
+{
+  const char *pgmname;
+  estream_t fp;
+  char *line;
+  size_t line_len;
+  const char **extra_lines;
+  int extra_lines_idx;
+  char *extra_line_buffer;
+};
+
+
+/* Helper for retrieve_options_from_program.  */
+static ssize_t
+read_line_wrapper (struct read_line_wrapper_parm_s *parm)
+{
+  ssize_t length;
+  const char *extra_line;
+
+  if (parm->fp)
+    {
+      length = es_read_line (parm->fp, &parm->line, &parm->line_len, NULL);
+      if (length > 0)
+        return length;
+      if (length < 0 || es_ferror (parm->fp))
+        gc_error (1, errno, "error reading from %s", parm->pgmname);
+      if (es_fclose (parm->fp))
+        gc_error (1, errno, "error closing %s", parm->pgmname);
+      /* EOF seen.  */
+      parm->fp = NULL;
+    }
+  /* Return the made up lines.  */
+  if (!parm->extra_lines
+      || !(extra_line = parm->extra_lines[parm->extra_lines_idx]))
+    return -1;  /* This is really the EOF.  */
+  parm->extra_lines_idx++;
+  xfree (parm->extra_line_buffer);
+  parm->extra_line_buffer = xstrdup (extra_line);
+  return strlen (parm->extra_line_buffer);
+}
+
 /* Retrieve the options for the component COMPONENT.  With
  * ONLY_INSTALLED set components which are not installed are silently
  * ignored. */
@@ -1628,7 +1682,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   known_option_t *known_option;
   gc_option_t *option;
   char *line = NULL;
-  size_t line_len = 0;
+  size_t line_len;
   ssize_t length;
   const char *config_name;
   gpgrt_argparse_t pargs;
@@ -1641,6 +1695,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   size_t opt_info_used = 0;           /* Its current length.         */
   size_t opt_info_size = 0;           /* Its allocated length.       */
   int i;
+  struct read_line_wrapper_parm_s read_line_parm;
+  int pseudo_count;
 
   pgmname = (gc_component[component].module_name
              ? gnupg_module_name (gc_component[component].module_name)
@@ -1663,13 +1719,32 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
                 pgmname, gpg_strerror (err));
     }
 
-  while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
+  read_line_parm.pgmname = pgmname;
+  read_line_parm.fp = outfp;
+  read_line_parm.line = line;
+  read_line_parm.line_len = line_len = 0;
+  read_line_parm.extra_line_buffer = NULL;
+  read_line_parm.extra_lines = gc_component[component].known_pseudo_options;
+  read_line_parm.extra_lines_idx = 0;
+  pseudo_count = 0;
+  while ((length = read_line_wrapper (&read_line_parm)) > 0)
     {
       const char *fields[4];
       const char *optname, *optdesc;
       unsigned int optflags;
       int short_opt;
       gc_arg_type_t arg_type;
+      int pseudo = 0;
+
+
+      if (read_line_parm.extra_line_buffer)
+        {
+          line = read_line_parm.extra_line_buffer;
+          pseudo = 1;
+          pseudo_count++;
+        }
+      else
+        line = read_line_parm.line;
 
       /* Strip newline and carriage return, if present.  */
       while (length > 0
@@ -1685,13 +1760,12 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
 
       optname = fields[0];
       short_opt = atoi (fields[1]);
-      if (short_opt < 1)
+      if (short_opt < 1 && !pseudo)
         {
           gc_error (0,0, "WARNING: bad short option in option table of '%s'\n",
                     pgmname);
           continue;
         }
-
 
       optflags = strtoul (fields[2], NULL, 10);
       if ((optflags & ARGPARSE_OPT_HEADER))
@@ -1724,7 +1798,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
                                     sizeof *opt_info);
         }
        /* The +1 here accounts for the two items we are going to add to
-       * the global string table.  */
+        * the global string table.  */
       if (string_array_used + 1 >= string_array_size)
         {
           string_array_size += 256;
@@ -1745,11 +1819,14 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
        * known_option_s for this because that one does not carry
        * header lines and it might also be problematic to use such
        * static tables for caching options and default values.  */
-      opt_table[opt_table_used].long_opt = optname;
-      opt_table[opt_table_used].short_opt = short_opt;
-      opt_table[opt_table_used].description = optdesc;
-      opt_table[opt_table_used].flags = optflags;
-      opt_table_used++;
+      if (!pseudo)
+        {
+          opt_table[opt_table_used].long_opt = optname;
+          opt_table[opt_table_used].short_opt = short_opt;
+          opt_table[opt_table_used].description = optdesc;
+          opt_table[opt_table_used].flags = optflags;
+          opt_table_used++;
+        }
 
       /* Note that as per argparser specs the opt_table uses "@" to
        * specifify an empty description.  In the DESC script of
@@ -1770,6 +1847,9 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
         default:                   arg_type = GC_ARG_TYPE_NONE;   break;
         }
       opt_info[opt_info_used].arg_type = arg_type;
+      if (pseudo) /* Pseudo options are always no_change.  */
+        opt_info[opt_info_used].no_change = 1;
+
 
       if ((optflags & ARGPARSE_OPT_HEADER))
         opt_info[opt_info_used].is_header = 1;
@@ -1792,11 +1872,11 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
         }
       opt_info_used++;
     }
-  if (length < 0 || es_ferror (outfp))
-    gc_error (1, errno, "error reading from %s", pgmname);
-  if (es_fclose (outfp))
-    gc_error (1, errno, "error closing %s", pgmname);
-  log_assert (opt_table_used == opt_info_used);
+  xfree (read_line_parm.extra_line_buffer);
+  line = read_line_parm.line;
+  line_len = read_line_parm.line_len;
+  log_assert (opt_table_used + pseudo_count == opt_info_used);
+
 
   err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
   if (err)
