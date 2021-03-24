@@ -201,7 +201,6 @@ get_it (ctrl_t ctrl,
   char *desc;
   char *keygrip;
   byte fp[MAX_FINGERPRINT_LEN];
-  size_t fpn;
 
   if (DBG_CLOCK)
     log_clock ("decryption start");
@@ -245,10 +244,7 @@ get_it (ctrl_t ctrl,
     goto leave;
 
   if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
-    {
-      fingerprint_from_pk (sk, fp, &fpn);
-      log_assert (fpn == 20);
-    }
+    fingerprint_from_pk (sk, fp, NULL);
 
   /* Decrypt. */
   desc = gpg_format_keydesc (ctrl, sk, FORMAT_KEYDESC_NORMAL, 1);

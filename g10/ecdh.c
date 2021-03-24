@@ -129,6 +129,13 @@ extract_secret_x (byte **r_secret_x,
 }
 
 
+/* Build KDF parameters */
+/* RFC 6637 defines the KDF parameters and its encoding in Section
+   8. EC DH Algorighm (ECDH).  Since it was written for v4 key, it
+   said "20 octets representing a recipient encryption subkey or a
+   master key fingerprint".  For v5 key, it is considered "adequate"
+   (in terms of NIST SP 800 56A, see 5.8.2 FixedInfo) to use the first
+   20 octets of its 32 octets fingerprint.  */
 static gpg_error_t
 build_kdf_params (unsigned char kdf_params[256], size_t *r_size,
                   gcry_mpi_t *pkey, const byte pk_fp[MAX_FINGERPRINT_LEN])
@@ -150,7 +157,7 @@ build_kdf_params (unsigned char kdf_params[256], size_t *r_size,
   err = (err ? err : gpg_mpi_write_nohdr (obuf, pkey[2]));
   /* fixed-length field 4 */
   iobuf_write (obuf, "Anonymous Sender    ", 20);
-  /* fixed-length field 5, recipient fp */
+  /* fixed-length field 5, recipient fp (or first 20 octets of fp) */
   iobuf_write (obuf, pk_fp, 20);
 
   if (!err)

@@ -419,7 +419,6 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
     {
       gcry_mpi_t public, result;
       byte fp[MAX_FINGERPRINT_LEN];
-      size_t fpn;
       byte *shared;
       size_t nshared;
 
@@ -436,9 +435,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
         }
 
       result = NULL;
-      fingerprint_from_pk (pk, fp, &fpn);
-      if (fpn != 20)
-        rc = gpg_error (GPG_ERR_INV_LENGTH);
+      fingerprint_from_pk (pk, fp, NULL);
 
       if (!rc)
         {
