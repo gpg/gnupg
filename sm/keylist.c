@@ -181,6 +181,10 @@ static struct
   { "1.3.6.1.4.1.11591.2.1.1", "pkaAddress" },
   { "1.3.6.1.4.1.11591.2.2.1", "standaloneCertificate" },
   { "1.3.6.1.4.1.11591.2.2.2", "wellKnownPrivateKey" },
+  { "1.3.6.1.4.1.11591.2.6.1", "gpgUsageCert", OID_FLAG_KP },
+  { "1.3.6.1.4.1.11591.2.6.2", "gpgUsageSign", OID_FLAG_KP },
+  { "1.3.6.1.4.1.11591.2.6.3", "gpgUsageEncr", OID_FLAG_KP },
+  { "1.3.6.1.4.1.11591.2.6.4", "gpgUsageAuth", OID_FLAG_KP },
 
   /* Extensions used by the Bundesnetzagentur.  */
   { "1.3.6.1.4.1.8301.3.5", "validityModel" },
