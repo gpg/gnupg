@@ -3906,7 +3906,8 @@ main (int argc, char **argv)
       log_error(_("invalid min-cert-level; must be 1, 2, or 3\n"));
     switch( opt.s2k_mode ) {
       case 0:
-	log_info(_("Note: simple S2K mode (0) is strongly discouraged\n"));
+        if (!opt.quiet)
+          log_info(_("Note: simple S2K mode (0) is strongly discouraged\n"));
 	break;
       case 1: case 3: break;
       default:
