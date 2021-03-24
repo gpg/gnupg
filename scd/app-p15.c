@@ -4118,10 +4118,10 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       char *buf;
 
       /* We return the ID of the first private key capable of the
-       * requested action.  IF any gpgusage flag has been set for the
-       * card we use the key only if both the P15 usage and the
-       * gpgusage are set.  This allows allows to single out the keys
-       * dedicated to OpenPGP.  */
+       * requested action.  If any gpgusage flag has been set for the
+       * card we consult the gpgusage flags and not the regualr usage
+       * flags.
+       */
       /* FIXME: This changed: Note that we do not yet return
        * non_repudiation keys for $SIGNKEYID because our D-Trust
        * testcard uses rsaPSS, which is not supported by gpgsm and not
@@ -4129,18 +4129,23 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       for (prkdf = app->app_local->private_key_info; prkdf;
            prkdf = prkdf->next)
         {
-          if (name[1] == 'A' && (prkdf->usageflags.sign
-                                 || prkdf->usageflags.sign_recover)
-              && (!app->app_local->any_gpgusage || prkdf->gpgusage.auth))
-            break;
-          else if (name[1] == 'E' && (prkdf->usageflags.decrypt
-                                      || prkdf->usageflags.unwrap)
-                   && (!app->app_local->any_gpgusage || prkdf->gpgusage.encr))
-            break;
-          else if (name[1] == 'S' && (prkdf->usageflags.sign
-                                      || prkdf->usageflags.sign_recover)
-                   && (!app->app_local->any_gpgusage || prkdf->gpgusage.sign))
-            break;
+          if (app->app_local->any_gpgusage)
+            {
+              if ((name[1] == 'A' && prkdf->gpgusage.auth)
+                  || (name[1] == 'E' && prkdf->gpgusage.encr)
+                  || (name[1] == 'S' && prkdf->gpgusage.sign))
+                break;
+            }
+          else
+            {
+              if ((name[1] == 'A' && (prkdf->usageflags.sign
+                                      || prkdf->usageflags.sign_recover))
+                  || (name[1] == 'E' && (prkdf->usageflags.decrypt
+                                         || prkdf->usageflags.unwrap))
+                  || (name[1] == 'S' && (prkdf->usageflags.sign
+                                         || prkdf->usageflags.sign_recover)))
+                break;
+            }
         }
       if (prkdf)
         {
