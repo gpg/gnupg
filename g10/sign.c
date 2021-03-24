@@ -1394,6 +1394,7 @@ clearsign_file (ctrl_t ctrl,
   SK_LIST sk_list = NULL;
   SK_LIST sk_rover = NULL;
   u32 duration = 0;
+  pt_extra_hash_data_t extrahash = NULL;
 
   pfx = new_progress_context ();
   afx = new_armor_context ();
@@ -1502,9 +1503,23 @@ clearsign_file (ctrl_t ctrl,
   afx->what = 2;
   push_armor_filter (afx, out);
 
+  /* Prepare EXTRAHASH, so that it can be used for v5 signature.  */
+  extrahash = xtrymalloc (sizeof extrahash);
+  if (!extrahash)
+    {
+      rc = gpg_error_from_syserror ();
+      goto leave;
+    }
+  else
+    {
+      extrahash->mode = 't';
+      extrahash->timestamp = 0;
+      extrahash->namelen = 0;
+    }
+
   /* Write the signatures.  */
-  rc = write_signature_packets (ctrl, sk_list, out, textmd, NULL, 0x01, 0,
-                                duration, 'C', NULL);
+  rc = write_signature_packets (ctrl, sk_list, out, textmd, extrahash,
+                                0x01, 0, duration, 'C', NULL);
   if (rc)
     goto leave;
 
@@ -1518,6 +1533,7 @@ clearsign_file (ctrl_t ctrl,
   release_sk_list (sk_list);
   release_progress_context (pfx);
   release_armor_context (afx);
+  xfree (extrahash);
   return rc;
 }
 
