@@ -1600,14 +1600,19 @@ cmd_login (card_info_t info, char *argstr)
   gpg_error_t err;
   char *data;
   size_t datalen;
+  int use_default_pin;
 
   if (!info)
     return print_help
-      ("LOGIN [--clear] [< FILE]\n\n"
+      ("LOGIN [--clear|--use-default-pin] [< FILE]\n\n"
        "Set the login data object.  If FILE is given the data is\n"
        "is read from that file.  This allows for binary data.\n"
-       "The option --clear deletes the login data.",
+       "The option --clear deletes the login data.  --use-default-pin\n"
+       "tells the card to always use the default PIN (\"123456\").",
        APP_TYPE_OPENPGP, 0);
+
+  use_default_pin = has_leading_option (argstr, "--use-default-pin");
+  argstr = skip_options (argstr);
 
   if (!strcmp (argstr, "--clear"))
     {
@@ -1627,12 +1632,22 @@ cmd_login (card_info_t info, char *argstr)
       data = tty_get (_("Login data (account name): "));
       trim_spaces (data);
       tty_kill_prompt ();
-      if (!*data || *data == CONTROL_D)
+      if ((!*data && !use_default_pin) || *data == CONTROL_D)
         {
           err = gpg_error (GPG_ERR_CANCELED);
           goto leave;
         }
       datalen = strlen (data);
+    }
+
+  if (use_default_pin)
+    {
+      char *tmpdata = xmalloc (datalen + 5);
+      memcpy (tmpdata, data, datalen);
+      memcpy (tmpdata+datalen, "\n\x14" "F=3", 5);
+      xfree (data);
+      data = tmpdata;
+      datalen += 5;
     }
 
   err = scd_setattr ("LOGIN-DATA", data, datalen);
