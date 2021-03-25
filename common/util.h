@@ -207,6 +207,10 @@ gpg_error_t get_ecc_q_from_canon_sexp (const unsigned char *keydata,
                                        size_t keydatalen,
                                        unsigned char const **r_q,
                                        size_t *r_qlen);
+gpg_error_t uncompress_ecc_q_in_canon_sexp (const unsigned char *keydata,
+                                            size_t keydatalen,
+                                            unsigned char **r_newkeydata,
+                                            size_t *r_newkeydatalen);
 
 int get_pk_algo_from_key (gcry_sexp_t key);
 int get_pk_algo_from_canon_sexp (const unsigned char *keydata,

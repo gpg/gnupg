@@ -690,6 +690,300 @@ get_ecc_q_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
 }
 
 
+/* Return an uncompressed point (X,Y) in P at R_BUF as a malloced
+ * buffer with its byte length stored at R_BUFLEN.  May not be used
+ * for sensitive data. */
+static gpg_error_t
+ec2os (gcry_mpi_t x, gcry_mpi_t y, gcry_mpi_t p,
+       unsigned char **r_buf, unsigned int *r_buflen)
+{
+  gpg_error_t err;
+  int pbytes = (mpi_get_nbits (p)+7)/8;
+  size_t n;
+  unsigned char *buf, *ptr;
+
+  *r_buf = NULL;
+  *r_buflen = 0;
+
+  buf = xtrymalloc (1 + 2*pbytes);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  *buf = 04; /* Uncompressed point.  */
+  ptr = buf+1;
+  err = gcry_mpi_print (GCRYMPI_FMT_USG, ptr, pbytes, &n, x);
+  if (err)
+    {
+      xfree (buf);
+      return err;
+    }
+  if (n < pbytes)
+    {
+      memmove (ptr+(pbytes-n), ptr, n);
+      memset (ptr, 0, (pbytes-n));
+    }
+  ptr += pbytes;
+  err = gcry_mpi_print (GCRYMPI_FMT_USG, ptr, pbytes, &n, y);
+  if (err)
+    {
+      xfree (buf);
+      return err;
+    }
+  if (n < pbytes)
+    {
+      memmove (ptr+(pbytes-n), ptr, n);
+      memset (ptr, 0, (pbytes-n));
+    }
+
+  *r_buf = buf;
+  *r_buflen = 1 + 2*pbytes;
+  return 0;
+}
+
+
+/* Convert the ECC parameter Q in the canonical s-expression
+ * (KEYDATA,KEYDATALEN) to uncompressed form.  On success and if a
+ * conversion was done, the new canonical encoded s-expression is
+ * returned at (R_NEWKEYDAT,R_NEWKEYDATALEN); if a conversion was not
+ * required (NULL,0) is stored there.  On error an error code is
+ * returned.  The function may take any kind of key but will only do
+ * the conversion for ECC curves where compression is supported.  */
+gpg_error_t
+uncompress_ecc_q_in_canon_sexp (const unsigned char *keydata,
+                                size_t keydatalen,
+                                unsigned char **r_newkeydata,
+                                size_t *r_newkeydatalen)
+{
+  gpg_error_t err;
+  const unsigned char *buf, *tok;
+  size_t buflen, toklen, n;
+  int depth, last_depth1, last_depth2;
+  const unsigned char *q_ptr;     /* Points to the value of "q".      */
+  size_t q_ptrlen;                /* Remaining length in KEYDATA.     */
+  size_t q_toklen;                /* Q's length including prefix.     */
+  const unsigned char *curve_ptr; /* Points to the value of "curve".  */
+  size_t curve_ptrlen;            /* Remaining length in KEYDATA.     */
+  gcry_mpi_t x, y;                /* Point Q            */
+  gcry_mpi_t p, a, b;             /* Curve parameters.  */
+  gcry_mpi_t x3, t, p1_4;         /* Helper             */
+  int y_bit;
+  unsigned char *qvalue;          /* Q in uncompressed form.  */
+  unsigned int   qvaluelen;
+  unsigned char *dst;             /* Helper */
+  char lenstr[35];                /* Helper for a length prefix.  */
+
+  *r_newkeydata = NULL;
+  *r_newkeydatalen = 0;
+
+  buf = keydata;
+  buflen = keydatalen;
+  depth = 0;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (!tok)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+  else if (toklen == 10 || !memcmp ("public-key", tok, toklen))
+    ;
+  else if (toklen == 11 || !memcmp ("private-key", tok, toklen))
+    ;
+  else if (toklen == 20 || !memcmp ("shadowed-private-key", tok, toklen))
+    ;
+  else
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+
+  if (tok && toklen == 3 && !memcmp ("ecc", tok, toklen))
+    ;
+  else if (tok && toklen == 5 && !memcmp ("ecdsa", tok, toklen))
+    ;
+  else
+    return 0; /* Other algo - no need for conversion.  */
+
+  last_depth1 = depth;
+  q_ptr = curve_ptr = NULL;
+  q_ptrlen = 0; /*(silence cc warning)*/
+  while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+         && depth && depth >= last_depth1)
+    {
+      if (tok)
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+        return err;
+      if (tok && toklen == 1 && *tok == 'q' && !q_ptr)
+        {
+          q_ptr = buf;
+          q_ptrlen = buflen;
+        }
+      else if (tok && toklen == 5 && !memcmp (tok, "curve", 5) && !curve_ptr)
+        {
+          curve_ptr = buf;
+          curve_ptrlen = buflen;
+        }
+
+      if (q_ptr && curve_ptr)
+        break;  /* We got all what we need.  */
+
+      /* Skip to the end of the list. */
+      last_depth2 = depth;
+      while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+             && depth && depth >= last_depth2)
+        ;
+      if (err)
+        return err;
+    }
+  if (err)
+    return err;
+
+  if (!q_ptr)
+    return 0;  /* No Q - nothing to do.  */
+
+  /* Get Q's value and check whether uncompressing is at all required.  */
+  buf = q_ptr;
+  buflen = q_ptrlen;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (toklen < 2 || !(*tok == 0x02 || *tok == 0x03))
+    return 0;  /* Invalid length or not compressed.  */
+  q_toklen = buf - q_ptr;  /* We want the length with the prefix.  */
+
+  /* Put the x-coordinate of q into X and remember the y bit */
+  y_bit = (*tok == 0x03);
+  err = gcry_mpi_scan (&x, GCRYMPI_FMT_USG, tok+1, toklen-1, NULL);
+  if (err)
+    return err;
+
+  /* For uncompressing we need to know the curve.  */
+  if (!curve_ptr)
+    {
+      gcry_mpi_release (x);
+      return gpg_error (GPG_ERR_INV_CURVE);
+    }
+  buf = curve_ptr;
+  buflen = curve_ptrlen;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    {
+      gcry_mpi_release (x);
+      return err;
+    }
+
+  {
+    char name[50];
+    gcry_sexp_t curveparam;
+
+    if (toklen + 1 > sizeof name)
+      {
+        gcry_mpi_release (x);
+        return gpg_error (GPG_ERR_TOO_LARGE);
+      }
+    mem2str (name, tok, toklen+1);
+    curveparam = gcry_pk_get_param (GCRY_PK_ECC, name);
+    if (!curveparam)
+      {
+        gcry_mpi_release (x);
+        return gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      }
+
+    err = gcry_sexp_extract_param (curveparam, NULL, "pab", &p, &a, &b, NULL);
+    gcry_sexp_release (curveparam);
+    if (err)
+      {
+        gcry_mpi_release (x);
+        return gpg_error (GPG_ERR_INTERNAL);
+      }
+  }
+
+  if (!mpi_test_bit (p, 1))
+    {
+      /* No support for point compression for this curve.  */
+      gcry_mpi_release (x);
+      gcry_mpi_release (p);
+      gcry_mpi_release (a);
+      gcry_mpi_release (b);
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+
+  /*
+   * Recover Y.  The Weierstrass curve: y^2 = x^3 + a*x + b
+   */
+
+  x3 = mpi_new (0);
+  t = mpi_new (0);
+  p1_4 = mpi_new (0);
+  y = mpi_new (0);
+
+  /* Compute right hand side.  */
+  mpi_powm (x3, x, GCRYMPI_CONST_THREE, p);
+  mpi_mul (t, a, x);
+  mpi_mod (t, t, p);
+  mpi_add (t, t, b);
+  mpi_mod (t, t, p);
+  mpi_add (t, t, x3);
+  mpi_mod (t, t, p);
+
+  /*
+   * When p mod 4 = 3, modular square root of A can be computed by
+   * A^((p+1)/4) mod p
+   */
+
+  /* Compute (p+1)/4 into p1_4 */
+  mpi_rshift (p1_4, p, 2);
+  mpi_add_ui (p1_4, p1_4, 1);
+
+  mpi_powm (y, t, p1_4, p);
+
+  if (y_bit != mpi_test_bit (y, 0))
+    mpi_sub (y, p, y);
+
+  gcry_mpi_release (p1_4);
+  gcry_mpi_release (t);
+  gcry_mpi_release (x3);
+  gcry_mpi_release (a);
+  gcry_mpi_release (b);
+
+  err = ec2os (x, y, p, &qvalue, &qvaluelen);
+  gcry_mpi_release (x);
+  gcry_mpi_release (y);
+  gcry_mpi_release (p);
+  if (err)
+    return err;
+
+  snprintf (lenstr, sizeof lenstr, "%u:", (unsigned int)qvaluelen);
+  /* Note that for simplicity we do not subtract the old length of Q
+   * for the new buffer.  */
+  *r_newkeydata = xtrymalloc (qvaluelen + strlen(lenstr) + qvaluelen);
+  if (!*r_newkeydata)
+    return gpg_error_from_syserror ();
+  dst = *r_newkeydata;
+
+  n = q_ptr - keydata;
+  memcpy (dst, keydata, n);         /* Copy first part of original data.  */
+  dst += n;
+
+  n = strlen (lenstr);
+  memcpy (dst, lenstr, n);          /* Copy new prefix of Q's value.  */
+  dst += n;
+
+  memcpy (dst, qvalue, qvaluelen);  /* Copy new value of Q.    */
+  dst += qvaluelen;
+
+  log_assert (q_toklen < q_ptrlen);
+  n = q_ptrlen - q_toklen;
+  memcpy (dst, q_ptr + q_toklen, n);/* Copy rest of original data.  */
+  dst += n;
+
+  *r_newkeydatalen = dst - *r_newkeydata;
+
+  xfree (qvalue);
+
+  return 0;
+}
+
+
 /* Return the algo of a public KEY of SEXP. */
 int
 get_pk_algo_from_key (gcry_sexp_t key)
