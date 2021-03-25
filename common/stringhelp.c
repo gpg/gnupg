@@ -160,30 +160,32 @@ ascii_memistr ( const void *buffer, size_t buflen, const char *sub )
   return NULL;
 }
 
+
 /* This function is similar to strncpy().  However it won't copy more
-   than N - 1 characters and makes sure that a '\0' is appended. With
-   N given as 0, nothing will happen.  With DEST given as NULL, memory
-   will be allocated using xmalloc (i.e. if it runs out of core
-   the function terminates).  Returns DES or a pointer to the
-   allocated memory.
+ * than N - 1 characters and makes sure that a '\0' is appended. With
+ * N given as 0, nothing will happen.  With DEST given as NULL, memory
+ * will be allocated using xmalloc (i.e. if it runs out of core the
+ * function terminates).  Returns DEST or a pointer to the allocated
+ * memory.
  */
 char *
-mem2str( char *dest , const void *src , size_t n )
+mem2str (char *dest, const void *src, size_t n)
 {
-    char *d;
-    const char *s;
+  char *d;
+  const char *s;
 
-    if( n ) {
-	if( !dest )
-	    dest = xmalloc( n ) ;
-	d = dest;
-	s = src ;
-	for(n--; n && *s; n-- )
-	    *d++ = *s++;
-	*d = '\0' ;
+  if (n)
+    {
+      if (!dest)
+        dest = xmalloc (n);
+      d = dest;
+      s = src ;
+      for (n--; n && *s; n--)
+        *d++ = *s++;
+      *d = '\0' ;
     }
 
-    return dest ;
+  return dest;
 }
 
 
