@@ -38,7 +38,7 @@
       (for-each
        (lambda (t)
 	 (log (pad t 25) (tool t)))
-       '(gpgconf gpg gpg-agent scdaemon gpgsm dirmngr gpg-connect-agent
+       '(gpgconf gpg gpg-agent scdaemon gpgsm keyboxd dirmngr gpg-connect-agent
 		 gpg-preset-passphrase gpgtar pinentry)))
 
 (setenv "GNUPGHOME" (getcwd) #t)

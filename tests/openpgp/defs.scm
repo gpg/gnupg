@@ -192,7 +192,7 @@
 
 (define (tool which)
   (case which
-    ((gpg gpg-agent scdaemon gpgsm dirmngr)
+    ((gpg gpg-agent scdaemon gpgsm keyboxd dirmngr)
      (:gc:c:pgmname (assoc (symbol->string which) gpg-components)))
     (else
      (tool-hardcoded which))))
