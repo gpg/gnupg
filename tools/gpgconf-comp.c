@@ -1307,7 +1307,7 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
   gpg_error_t err;
   unsigned int result;
   const char *pgmname;
-  const char *argv[5];
+  const char *argv[6];
   int i;
   pid_t pid;
   int exitcode;
@@ -1338,7 +1338,8 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
     argv[i++] = "--version";
   else
     argv[i++] = "--gpgconf-test";
-  argv[i++] = NULL;
+  argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   result = 0;
   errlines = NULL;
