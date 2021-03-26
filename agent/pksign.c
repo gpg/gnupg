@@ -554,6 +554,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                                      "(data (flags raw) (value %b))",
                                      (int)datalen, data);
             }
+          else if (algo == GCRY_PK_DSA || algo == GCRY_PK_ECC)
+            err = do_encode_dsa (data, datalen, algo, sexp_key, &s_hash);
           else if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
             err = do_encode_raw_pkcs1 (data, datalen,
                                        gcry_pk_get_nbits (sexp_key), &s_hash);
@@ -569,6 +571,12 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         {
           log_error (_("checking created signature failed: %s\n"),
                      gpg_strerror (err));
+          if (DBG_CRYPTO)
+            {
+              gcry_log_debugsxp ("verify s_hsh", s_hash);
+              gcry_log_debugsxp ("verify s_sig", s_sig);
+              gcry_log_debugsxp ("verify s_key", sexp_key);
+            }
           gcry_sexp_release (s_sig);
           s_sig = NULL;
         }
