@@ -230,6 +230,7 @@ static npth_mutex_t reader_table_lock;
 #define PCSC_E_READER_UNAVAILABLE      0x80100017
 #define PCSC_E_NO_SERVICE              0x8010001D
 #define PCSC_E_SERVICE_STOPPED         0x8010001E
+#define PCSC_E_NO_READERS_AVAILABLE    0x8010002E
 #define PCSC_W_RESET_CARD              0x80100068
 #define PCSC_W_REMOVED_CARD            0x80100069
 
@@ -646,6 +647,7 @@ pcsc_error_to_sw (long ec)
     case PCSC_E_NO_SERVICE:
     case PCSC_E_SERVICE_STOPPED:
     case PCSC_E_UNKNOWN_READER:      rc = SW_HOST_NO_READER; break;
+    case PCSC_E_NO_READERS_AVAILABLE:rc = SW_HOST_NO_READER; break;
     case PCSC_E_SHARING_VIOLATION:   rc = SW_HOST_LOCKING_FAILED; break;
     case PCSC_E_NO_SMARTCARD:        rc = SW_HOST_NO_CARD; break;
     case PCSC_W_REMOVED_CARD:        rc = SW_HOST_NO_CARD; break;
@@ -2034,7 +2036,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
           xfree (p);
           close_pcsc_reader (0);
           npth_mutex_unlock (&reader_table_lock);
-          return gpg_error (GPG_ERR_NO_SERVICE);
+          return iso7816_map_sw (pcsc_error_to_sw (r));
         }
 
       dl->table = p;
