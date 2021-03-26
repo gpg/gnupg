@@ -1,7 +1,7 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
  * Copyright (C) 2004, 2007-2011 Free Software Foundation, Inc.
  * Copyright (C) 2016 Werner Koch
- * Copyright (C) 2020 g10 Code GmbH
+ * Copyright (C) 2020, 2021 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -17,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with GnuPG; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #if HAVE_CONFIG_H
@@ -726,6 +727,7 @@ gpg_agent_runtime_change (int killflag)
   const char *argv[5];
   pid_t pid = (pid_t)(-1);
   int i = 0;
+  int cmdidx;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   if (!gnupg_default_homedir_p ())
@@ -734,8 +736,10 @@ gpg_agent_runtime_change (int killflag)
       argv[i++] = gnupg_homedir ();
     }
   argv[i++] = "--no-autostart";
+  cmdidx = i;
   argv[i++] = killflag? "KILLAGENT" : "RELOADAGENT";
-  argv[i++] = NULL;
+  argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   if (!err)
     err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
@@ -743,7 +747,7 @@ gpg_agent_runtime_change (int killflag)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
-              pgmname, argv[1], gpg_strerror (err));
+              pgmname, argv[cmdidx], gpg_strerror (err));
   gnupg_release_process (pid);
 }
 
@@ -756,6 +760,7 @@ scdaemon_runtime_change (int killflag)
   const char *argv[9];
   pid_t pid = (pid_t)(-1);
   int i = 0;
+  int cmdidx;
 
   (void)killflag;  /* For scdaemon kill and reload are synonyms.  */
 
@@ -774,9 +779,11 @@ scdaemon_runtime_change (int killflag)
   argv[i++] = "--no-autostart";
   argv[i++] = "GETINFO scd_running";
   argv[i++] = "/if ${! $?}";
+  cmdidx = i;
   argv[i++] = "scd killscd";
   argv[i++] = "/end";
-  argv[i++] = NULL;
+  argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   if (!err)
     err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
@@ -784,7 +791,7 @@ scdaemon_runtime_change (int killflag)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
-              pgmname, argv[4], gpg_strerror (err));
+              pgmname, argv[cmdidx], gpg_strerror (err));
   gnupg_release_process (pid);
 }
 
@@ -797,6 +804,7 @@ tpm2daemon_runtime_change (int killflag)
   const char *argv[9];
   pid_t pid = (pid_t)(-1);
   int i = 0;
+  int cmdidx;
 
   (void)killflag;  /* For scdaemon kill and reload are synonyms.  */
 
@@ -815,9 +823,11 @@ tpm2daemon_runtime_change (int killflag)
   argv[i++] = "--no-autostart";
   argv[i++] = "GETINFO tpm2d_running";
   argv[i++] = "/if ${! $?}";
+  cmdidx = i;
   argv[i++] = "scd killtpm2cd";
   argv[i++] = "/end";
-  argv[i++] = NULL;
+  argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   if (!err)
     err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
@@ -825,7 +835,7 @@ tpm2daemon_runtime_change (int killflag)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
-              pgmname, argv[4], gpg_strerror (err));
+              pgmname, argv[cmdidx], gpg_strerror (err));
   gnupg_release_process (pid);
 }
 
@@ -837,19 +847,21 @@ dirmngr_runtime_change (int killflag)
   const char *pgmname;
   const char *argv[6];
   pid_t pid = (pid_t)(-1);
+  int i = 0;
+  int cmdidx;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[0] = "--no-autostart";
-  argv[1] = "--dirmngr";
-  argv[2] = killflag? "KILLDIRMNGR" : "RELOADDIRMNGR";
-  if (gnupg_default_homedir_p ())
-    argv[3] = NULL;
-  else
+  argv[i++] = "--no-autostart";
+  argv[i++] = "--dirmngr";
+  cmdidx = i;
+  argv[i++] = killflag? "KILLDIRMNGR" : "RELOADDIRMNGR";
+  if (!gnupg_default_homedir_p ())
     {
-      argv[3] = "--homedir";
-      argv[4] = gnupg_homedir ();
-      argv[5] = NULL;
+      argv[i++] = "--homedir";
+      argv[i++] = gnupg_homedir ();
     }
+  argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   if (!err)
     err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
@@ -857,7 +869,7 @@ dirmngr_runtime_change (int killflag)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
-              pgmname, argv[2], gpg_strerror (err));
+              pgmname, argv[cmdidx], gpg_strerror (err));
   gnupg_release_process (pid);
 }
 
@@ -869,19 +881,21 @@ keyboxd_runtime_change (int killflag)
   const char *pgmname;
   const char *argv[6];
   pid_t pid = (pid_t)(-1);
+  int i = 0;
+  int cmdidx;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[0] = "--no-autostart";
-  argv[1] = "--keyboxd";
-  argv[2] = killflag? "KILLKEYBOXD" : "RELOADKEYBOXD";
-  if (gnupg_default_homedir_p ())
-    argv[3] = NULL;
-  else
+  argv[i++] = "--no-autostart";
+  argv[i++] = "--keyboxd";
+  cmdidx = i;
+  argv[i++] = killflag? "KILLKEYBOXD" : "RELOADKEYBOXD";
+  if (!gnupg_default_homedir_p ())
     {
-      argv[3] = "--homedir";
-      argv[4] = gnupg_homedir ();
-      argv[5] = NULL;
+      argv[i++] = "--homedir";
+      argv[i++] = gnupg_homedir ();
     }
+  argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   if (!err)
     err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
@@ -889,7 +903,7 @@ keyboxd_runtime_change (int killflag)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
-              pgmname, argv[2], gpg_strerror (err));
+              pgmname, argv[cmdidx], gpg_strerror (err));
   gnupg_release_process (pid);
 }
 
@@ -900,7 +914,7 @@ gc_component_launch (int component)
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[5];
+  const char *argv[6];
   int i;
   pid_t pid;
 
@@ -945,6 +959,7 @@ gc_component_launch (int component)
     argv[i++] = "--keyboxd";
   argv[i++] = "NOP";
   argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
