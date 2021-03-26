@@ -1260,7 +1260,7 @@ gc_component_launch (int component)
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[5];
+  const char *argv[6];
   int i;
   pid_t pid;
 
@@ -1300,6 +1300,7 @@ gc_component_launch (int component)
     argv[i++] = "--dirmngr";
   argv[i++] = "NOP";
   argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
