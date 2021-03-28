@@ -1406,6 +1406,9 @@ gc_component_reload (int component)
 static const char *
 my_dgettext (const char *domain, const char *msgid)
 {
+  if (!msgid || !*msgid)
+    return msgid;  /* Shortcut form "" which has the PO files meta data.  */
+
 #ifdef USE_SIMPLE_GETTEXT
   if (domain)
     {
