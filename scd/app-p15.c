@@ -4891,32 +4891,20 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
-  static unsigned char sha256_prefix[19] = /* OID: 2.16.840.1.101.3.4.2.1 */
-    { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48,
-      0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20 };
-  static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
-    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
-      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
-  static unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
-    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
-      0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
-
   gpg_error_t err;
-  unsigned char data[32+19]; /* Must be large enough for a SHA-256 digest
-                              * + the largest OID prefix above and also
-                              * fit the 36 bytes of md5sha1.  */
   prkdf_object_t prkdf;    /* The private key object. */
   aodf_object_t aodf;      /* The associated authentication object. */
-  int no_data_padding = 0; /* True if the card want the data without padding.*/
   int mse_done = 0;        /* Set to true if the MSE has been done. */
-  unsigned int hashlen;    /* Length of the hash.  */
-  unsigned int datalen;    /* Length of the data to sign (prefix+hash).  */
-  const unsigned char *dataptr;
+  unsigned int digestlen;  /* Length of the hash.  */
   int exmode, le_value;
+  unsigned char oidbuf[64];
+  size_t oidbuflen;
+  size_t n;
+  unsigned char *indata_buffer = NULL; /* Malloced helper.  */
 
   (void)ctrl;
 
-  if (!keyidstr || !*keyidstr)
+  if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
@@ -4958,20 +4946,19 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       return err;
     }
 
+
+  digestlen = gcry_md_get_algo_dlen (hashalgo);
+
   /* We handle ECC separately from RSA so that we do not need to touch
    * working code.  In particular we prepare the input data before the
    * verify and a possible MSE.  */
   if (prkdf->is_ecc)
     {
-      unsigned int digestlen;
-      unsigned char oidbuf[64];
-      size_t oidbuflen;
-
-      digestlen = gcry_md_get_algo_dlen (hashalgo);
       if (digestlen != 32 && digestlen != 48 && digestlen != 64)
         {
           log_error ("p15: ECC signing not possible: dlen=%u\n", digestlen);
-          return gpg_error (GPG_ERR_DIGEST_ALGO);
+          err = gpg_error (GPG_ERR_DIGEST_ALGO);
+          goto leave;
         }
 
       if (indatalen == digestlen)
@@ -4983,15 +4970,17 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           err = gcry_md_get_asnoid (hashalgo, &oidbuf, &oidbuflen);
           if (err)
             {
-              log_debug ("p15: no OID for hash algo %d\n", hashalgo);
-              return gpg_error (GPG_ERR_INTERNAL);
+              log_error ("p15: no OID for hash algo %d\n", hashalgo);
+              err = gpg_error (GPG_ERR_INTERNAL);
+              goto leave;
             }
           if (indatalen != oidbuflen + digestlen
               || memcmp (indata, oidbuf, oidbuflen))
             {
               log_error ("p15: input data too long for ECC: len=%zu\n",
                          indatalen);
-              return gpg_error (GPG_ERR_INV_VALUE);
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              goto leave;
             }
           indata = (const char*)indata + oidbuflen;
           indatalen -= oidbuflen;
@@ -5000,15 +4989,105 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         {
           log_error ("p15: input data too short for ECC: len=%zu\n",
                      indatalen);
-          return gpg_error (GPG_ERR_INV_VALUE);
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          goto leave;
         }
     }
-  else /* Check for RSA.  FIXME: We should rework the RSA part.  */
+  else /* Prepare RSA input.  */
     {
-      if (indatalen != 20 && indatalen != 16
-          && indatalen != 35 && indatalen != 36
-          && indatalen != (32+19))
-        return gpg_error (GPG_ERR_INV_VALUE);
+      unsigned int framelen;
+      unsigned char *frame;
+      int i;
+
+      framelen = (prkdf->keynbits+7) / 8;
+      if (!framelen)
+        {
+          log_error ("p15: key length unknown"
+                     " - can't prepare PKCS#v1.5 frame\n");
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          goto leave;
+        }
+
+      oidbuflen = sizeof oidbuf;
+      if (!hashalgo)
+        {
+          /* We assume that indata already has the required
+           * digestinfo; thus merely prepend the padding below.  */
+        }
+      else if ((err = gcry_md_get_asnoid (hashalgo, &oidbuf, &oidbuflen)))
+        {
+          log_debug ("p15: no OID for hash algo %d\n", hashalgo);
+          goto leave;
+        }
+      else
+        {
+          if (indatalen == digestlen)
+            {
+              /* Plain hash in INDATA; prepend the digestinfo.  */
+              indata_buffer = xtrymalloc (oidbuflen + indatalen);
+              if (!indata_buffer)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              memcpy (indata_buffer, oidbuf, oidbuflen);
+              memcpy (indata_buffer+oidbuflen, indata, indatalen);
+              indata = indata_buffer;
+              indatalen = oidbuflen + indatalen;
+            }
+          else if (indatalen == oidbuflen + digestlen
+                   && !memcmp (indata, oidbuf, oidbuflen))
+            ; /* We already got the correct prefix.  */
+          else
+            {
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              log_error ("p15: bad input for signing with RSA and hash %d\n",
+                         hashalgo);
+              goto leave;
+            }
+        }
+      /* Now prepend the pkcs#v1.5 padding.  We require at least 8
+       * byte of padding and 3 extra bytes for the prefix and the
+       * delimiting nul.  */
+      if (!indatalen || indatalen + 8 + 4 > framelen)
+        {
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          log_error ("p15: input does not fit into a %u bit PKCS#v1.5 frame\n",
+                     8*framelen);
+          goto leave;
+        }
+      frame = xtrymalloc (framelen);
+      if (!frame)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      if (app->app_local->card_type == CARD_TYPE_BELPIC)
+        {
+          /* This card wants only the plain hash w/o any prefix.  */
+          /* FIXME: We may want to remove this code because it is unlikely
+           * that such cards are still in use.  */
+          memcpy (frame, indata, indatalen);
+          framelen = indatalen;
+        }
+      else
+        {
+          n = 0;
+          frame[n++] = 0;
+          frame[n++] = 1; /* Block type. */
+          i = framelen - indatalen - 3 ;
+          memset (frame+n, 0xff, i);
+          n += i;
+          frame[n++] = 0; /* Delimiter.  */
+          memcpy (frame+n, indata, indatalen);
+          n += indatalen;
+          log_assert (n == framelen);
+        }
+      /* And now put it into the indata_buffer.  */
+      xfree (indata_buffer);
+      indata_buffer = frame;
+      indata = indata_buffer;
+      indatalen = framelen;
     }
 
   /* Prepare PIN verification.  This is split so that we can do
@@ -5022,7 +5101,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
      card requires a verify immediately before the DSO we set the
      MSE before we do the verification.  Other cards might also allow
      this but I don't want to break anything, thus we do it only
-     for the BELPIC card here. */
+     for the BELPIC card here.
+     FIXME: see comment above about these cards.   */
   if (app->app_local->card_type == CARD_TYPE_BELPIC)
     {
       unsigned char mse[5];
@@ -5039,7 +5119,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       err = iso7816_manage_security_env (app_get_slot (app),
                                          0x41, 0xB6,
                                          mse, sizeof mse);
-      no_data_padding = 1;
       mse_done = 1;
     }
   if (err)
@@ -5053,76 +5132,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
   if (err)
     return err;
-
-  /* Prepare the input data from INDATA. */
-  if (prkdf->is_ecc)
-    {
-      /* Already checked.  */
-      datalen = indatalen;
-    }
-  else if (indatalen == 36)
-    {
-      /* No ASN.1 container used. */
-      if (hashalgo != MD_USER_TLS_MD5SHA1)
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data, indata, indatalen);
-      datalen = hashlen = 36;
-    }
-  else if (indatalen == 35)
-    {
-      /* Alright, the caller was so kind to send us an already
-         prepared DER object.  Check that it is what we want and that
-         it matches the hash algorithm. */
-      if (hashalgo == GCRY_MD_SHA1 && !memcmp (indata, sha1_prefix, 15))
-        ;
-      else if (hashalgo == GCRY_MD_RMD160
-               && !memcmp (indata, rmd160_prefix, 15))
-        ;
-      else
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data, indata, indatalen);
-      datalen = 35;
-      hashlen = 20;
-    }
-  else if (indatalen == 32 + 19)
-    {
-      /* Seems to be a prepared SHA256 DER object.  */
-      if (hashalgo == GCRY_MD_SHA256 && !memcmp (indata, sha256_prefix, 19))
-        ;
-      else
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data, indata, indatalen);
-      datalen = 51;
-      hashlen = 32;
-    }
-  else
-    {
-      /* Need to prepend the prefix. */
-      if (hashalgo == GCRY_MD_SHA256)
-        {
-          memcpy (data, sha256_prefix, 19);
-          memcpy (data+19, indata, indatalen);
-          datalen = 51;
-          hashlen = 32;
-        }
-      else if (hashalgo == GCRY_MD_SHA1)
-        {
-          memcpy (data, sha1_prefix, 15);
-          memcpy (data+15, indata, indatalen);
-          datalen = 35;
-          hashlen = 20;
-        }
-      else if (hashalgo == GCRY_MD_RMD160)
-        {
-          memcpy (data, rmd160_prefix, 15);
-          memcpy (data+15, indata, indatalen);
-          datalen = 35;
-          hashlen = 20;
-        }
-      else
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-    }
-
 
   /* Manage security environment needs to be tweaked for certain cards. */
   if (mse_done)
@@ -5157,21 +5166,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       return err;
     }
 
-  if (prkdf->is_ecc)
-    {
-      dataptr = indata;
-      datalen = indatalen;
-    }
-  else
-    {
-      dataptr = data;
-      if (no_data_padding)
-        {
-          dataptr += datalen - hashlen;
-          datalen = hashlen;
-        }
-    }
-
   if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits > 2048)
     {
       exmode = 1;
@@ -5184,9 +5178,11 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
 
   err = iso7816_compute_ds (app_get_slot (app),
-                            exmode, dataptr, datalen,
+                            exmode, indata, indatalen,
                             le_value, outdata, outdatalen);
 
+ leave:
+  xfree (indata_buffer);
   return err;
 }
 
