@@ -101,8 +101,12 @@ extract_secret_x (byte **r_secret_x,
      41 || X
 
      Since it may come with the prefix, the size of point is larger
-     than or equals to the size of an integer X.  */
+     than or equals to the size of an integer X.  We also better check
+     that the provided shared point is not larger than the size needed
+     to represent the point.  */
   if (point_nbytes < secret_x_size)
+    return gpg_error (GPG_ERR_BAD_DATA);
+  if (point_nbytes < nshared)
     return gpg_error (GPG_ERR_BAD_DATA);
 
   /* Extract x component of the shared point: this is the actual
@@ -113,13 +117,18 @@ extract_secret_x (byte **r_secret_x,
 
   memcpy (secret_x, shared, nshared);
 
-  /* Remove the prefix.  */
-  if ((point_nbytes & 1))
-    memmove (secret_x, secret_x+1, secret_x_size);
+  /* Wrangle the provided point unless only the x-component w/o any
+   * prefix was provided.  */
+  if (nshared != secret_x_size)
+    {
+      /* Remove the prefix.  */
+      if ((point_nbytes & 1))
+        memmove (secret_x, secret_x+1, secret_x_size);
 
-  /* Clear the rest of data.  */
-  if (point_nbytes - secret_x_size)
-    memset (secret_x+secret_x_size, 0, point_nbytes-secret_x_size);
+      /* Clear the rest of data.  */
+      if (point_nbytes - secret_x_size)
+        memset (secret_x+secret_x_size, 0, point_nbytes-secret_x_size);
+    }
 
   if (DBG_CRYPTO)
     log_printhex (secret_x, secret_x_size, "ECDH shared secret X is:");
