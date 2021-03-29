@@ -2608,19 +2608,29 @@ ssh_handler_request_identities (ctrl_t ctrl,
             continue;
 
           err = ssh_send_key_public (key_blobs, key_public, cardsn);
-          if (err && opt.verbose)
-            gcry_log_debugsxp ("pubkey", key_public);
           gcry_sexp_release (key_public);
           key_public = NULL;
           xfree (cardsn);
           if (err)
             {
-              xfree (serialno);
-              free_strlist (card_list);
-              goto out;
+              if (opt.verbose)
+                gcry_log_debugsxp ("pubkey", key_public);
+              if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
+                  || gpg_err_code (err) == GPG_ERR_INV_CURVE)
+                {
+                  /* For example a Brainpool curve or a curve we don't
+                   * support at all but a smartcard lists that curve.
+                   * We ignore them.  */
+                }
+              else
+                {
+                  xfree (serialno);
+                  free_strlist (card_list);
+                  goto out;
+                }
             }
-
-          key_counter++;
+          else
+            key_counter++;
         }
 
       xfree (serialno);
