@@ -76,6 +76,7 @@ app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip,
   err = gcry_sexp_sscan (&s_pkey, NULL, pk, pklen);
   if (err)
     return err; /* Can't parse that S-expression. */
+
   if (!gcry_pk_get_keygrip (s_pkey, array))
     {
       gcry_sexp_release (s_pkey);
@@ -143,11 +144,13 @@ app_help_pubkey_from_cert (const void *cert, size_t certlen,
 {
   gpg_error_t err;
   ksba_cert_t kc;
-  unsigned char *pk;
-  size_t pklen;
+  unsigned char *pk, *fixed_pk;
+  size_t pklen, fixed_pklen;
 
   *r_pk = NULL;
   *r_pklen = 0;
+
+  pk = NULL; /*(avoid cc warning)*/
 
   err = ksba_cert_new (&kc);
   if (err)
@@ -164,6 +167,16 @@ app_help_pubkey_from_cert (const void *cert, size_t certlen,
       goto leave;
     }
   pklen = gcry_sexp_canon_len (pk, 0, NULL, &err);
+
+  err = uncompress_ecc_q_in_canon_sexp (pk, pklen, &fixed_pk, &fixed_pklen);
+  if (err)
+    goto leave;
+  if (fixed_pk)
+    {
+      ksba_free (pk); pk = NULL;
+      pk = fixed_pk;
+      pklen = fixed_pklen;
+    }
 
  leave:
   if (!err)

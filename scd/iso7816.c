@@ -758,6 +758,53 @@ iso7816_decipher (int slot, int extended_mode,
 }
 
 
+/* Perform the security operation COMPUTE SHARED SECRET.  On success 0
+   is returned and the shared secret is available in a newly allocated
+   buffer stored at RESULT with its length stored at RESULTLEN.  For
+   LE see do_generate_keypair. */
+gpg_error_t
+iso7816_pso_csv (int slot, int extended_mode,
+                 const unsigned char *data, size_t datalen, int le,
+                 unsigned char **result, size_t *resultlen)
+{
+  int sw;
+  unsigned char *buf;
+
+  if (!data || !datalen || !result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  if (!extended_mode)
+    le = 256;  /* Ignore provided Le and use what apdu_send uses. */
+  else if (le >= 0 && le < 256)
+    le = 256;
+
+  /* Data needds to be TLV format. */
+  buf = xtrymalloc (datalen + 2);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  buf[0] = 0x9c;
+  buf[1] = datalen;
+  memcpy (buf+2, data, datalen);
+  sw = apdu_send_le (slot, extended_mode,
+                     0x00, CMD_PSO, 0x80, 0xa6,
+                     datalen+2, (const char *)buf, le,
+                     result, resultlen);
+  xfree (buf);
+  if (sw != SW_SUCCESS)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+      return map_sw (sw);
+    }
+
+  return 0;
+}
+
+
 /* For LE see do_generate_keypair.  */
 gpg_error_t
 iso7816_internal_authenticate (int slot, int extended_mode,
