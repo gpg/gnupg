@@ -458,7 +458,7 @@ static const char hlp_learn[] =
   "to the keypair info, information about all certificates stored on the\n"
   "card is also returned:\n"
   "\n"
-  "  S CERTINFO <certtype> <hexstring_with_id>\n"
+  "  S CERTINFO <certtype> <keyref> [<label>]\n"
   "\n"
   "Where CERTTYPE is a number indicating the type of certificate:\n"
   "   0   := Unknown\n"

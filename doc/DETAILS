@@ -1208,6 +1208,23 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     info available.  The format is the usual ISO string or a number
     with the seconds since Epoch.  <algostr> is the algorithm or curve
     this key uses (e.g. "rsa2048") or a "-" if not known.
+
+*** CERTINFO <certtype> <certref> [<label>]
+
+    This status is mettited for X.509 certifcates.
+    CERTTYPE is a number indicating the type of the certificate:
+     0   := Unknown
+     100 := Regular X.509 cert
+     101 := Trusted X.509 cert
+     102 := Useful X.509 cert
+     110 := Root CA cert in a special format (e.g. DINSIG)
+     111 := Root CA cert as standard X509 cert
+
+    CERTREF identifies the certificate uniquely on the card and may be
+    used to match it with a key's KEYREF.  LABEL is an optional human
+    readable decription of the certificate; it won't have any space in
+    it and is percent encoded.
+
 *** MANUFACTURER <n> [<string>]
 
     This status returns the Manufactorer ID as the unsigned number N.
@@ -1229,12 +1246,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     OPENPGP.129) and <string> is the algoritm or curve name, which
     is available for the key.
 
-*** KEY-TIME <keyref> <timestamp>
-    This is a response from scdaemon on GETATTR KEY-TIME.  A keyref of
-    1 gives the timestamp for the standard OpenPGP signing key, 2 for
-    the encryption key, and 3 for an authentication key.  Note that a
-    KEYPAIRINFO status lines carries the same information and should
-    be preferred.
+*** KEY-TIME <n> <timestamp>
+    This is a response from scdaemon on GETATTR KEY-TIME.  A keyref N
+    of 1 gives the timestamp for the standard OpenPGP signing key, 2
+    for the encryption key, and 3 for an authentication key.  Note
+    that a KEYPAIRINFO status lines carries the same information and
+    should be preferred.
+
+*** KEY-LABEL <keyref> <label>
+    This returns the human readbable label for the keys given by
+    KEYREF.  LABEL won't have any space in it and is percent encoded.
+    This info shall only be used for dispaly purposes.
 
 * Format of the --attribute-fd output
 

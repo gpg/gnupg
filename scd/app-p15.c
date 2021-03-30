@@ -3709,6 +3709,8 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
   for (; certinfo; certinfo = certinfo->next)
     {
       char *buf, *p;
+      const char *label;
+      char *labelbuf;
 
       buf = xtrymalloc (9 + certinfo->objidlen*2 + 1);
       if (!buf)
@@ -3723,9 +3725,18 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
       p = stpcpy (p, ".");
       bin2hex (certinfo->objid, certinfo->objidlen, p);
 
+      label = (certinfo->label && *certinfo->label)? certinfo->label : "-";
+      labelbuf = percent_data_escape (0, NULL, label, strlen (label));
+      if (!labelbuf)
+        {
+          xfree (buf);
+          return gpg_error_from_syserror ();
+        }
+
       send_status_info (ctrl, "CERTINFO",
                         certtype, strlen (certtype),
                         buf, strlen (buf),
+                        labelbuf, strlen (labelbuf),
                         NULL, (size_t)0);
       xfree (buf);
     }
@@ -4414,6 +4425,37 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       xfree (p);
       return err;
     }
+  else if (!strcmp (name, "KEY-LABEL"))
+    {
+      /* Send KEY-LABEL lines for all private key objects.  */
+      const char *label;
+      char *idbuf, *labelbuf;
+
+      for (prkdf = app->app_local->private_key_info; prkdf;
+           prkdf = prkdf->next)
+        {
+          idbuf = keyref_from_prkdf (app, prkdf);
+          if (!idbuf)
+            return gpg_error_from_syserror ();
+
+          label = (prkdf->label && *prkdf->label)? prkdf->label : "-";
+          labelbuf = percent_data_escape (0, NULL, label, strlen (label));
+          if (!labelbuf)
+            {
+              xfree (idbuf);
+              return gpg_error_from_syserror ();
+            }
+
+          send_status_info (ctrl, name,
+                            idbuf, strlen (idbuf),
+                            labelbuf, strlen(labelbuf),
+                            NULL, 0);
+          xfree (idbuf);
+          xfree (labelbuf);
+        }
+      return 0;
+    }
+
   return gpg_error (GPG_ERR_INV_NAME);
 }
 
