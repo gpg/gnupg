@@ -157,6 +157,7 @@ release_card_info (card_info_t info)
   while (info->kinfo)
     {
       key_info_t kinfo = info->kinfo->next;
+      xfree (kinfo->label);
       xfree (info->kinfo);
       info->kinfo = kinfo;
     }
@@ -915,6 +916,36 @@ learn_status_cb (void *opaque, const char *line)
           xfree (parm->chvlabels);
           parm->chvlabels = xstrdup (line);
         }
+      else if (!memcmp (keyword, "KEY-LABEL", keywordlen))
+        {
+          /* The format of such a line is:
+           *   KEY-LABEL <keyref> [label|"-"]           */
+          const char *fields[2];
+          int nfields;
+          char *label;
+
+          line_buffer = pline = xstrdup (line);
+
+          if ((nfields = split_fields (line_buffer, fields, DIM (fields))) < 2)
+            goto leave;  /* not enough args - ignore.  */
+
+          keyref = fields[0];
+          /* We don't remove the percent escaping because that is only
+           * used in case of strange characters in the label; we
+           * should not print them.  Note that this info is only for
+           * human consumption, anyway.  */
+          label = xtrystrdup (fields[1]);
+          if (!label)
+            goto leave; /* We ignore malloc failures here.  */
+
+          /* Check whether we already have an item for the keyref.  */
+          kinfo = find_kinfo (parm, keyref);
+          if (!kinfo)  /* New entry.  */
+            kinfo = create_kinfo (parm, keyref);
+
+          xfree (kinfo->label);
+          kinfo->label = label;
+        }
       break;
 
     case 10:
@@ -1150,6 +1181,10 @@ scd_learn (card_info_t info)
           || gpg_err_code (err) == GPG_ERR_UNSUPPORTED_OPERATION)
         err = 0; /* Not implemented or GETATTR not supported.  */
       err = scd_getattr ("$DISPSERIALNO", info);
+      if (gpg_err_code (err) == GPG_ERR_INV_NAME
+          || gpg_err_code (err) == GPG_ERR_UNSUPPORTED_OPERATION)
+        err = 0; /* Not implemented or GETATTR not supported.  */
+      err = scd_getattr ("KEY-LABEL", info);
       if (gpg_err_code (err) == GPG_ERR_INV_NAME
           || gpg_err_code (err) == GPG_ERR_UNSUPPORTED_OPERATION)
         err = 0; /* Not implemented or GETATTR not supported.  */

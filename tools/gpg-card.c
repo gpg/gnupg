@@ -373,6 +373,14 @@ main (int argc, char **argv)
 }
 
 
+/* Return S or the string "[none]" if S is NULL.  */
+static GPGRT_INLINE const char *
+nullnone (const char *s)
+{
+  return s? s: "[none]";
+}
+
+
 /* Read data from file FNAME up to MAX_GET_DATA_FROM_FILE characters.
  * On error return an error code and stores NULL at R_BUFFER; on
  * success returns 0 and stores the number of bytes read at R_BUFLEN
@@ -668,7 +676,10 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
         {
           tty_fprintf (fp, "[none]\n");
           tty_fprintf (fp, "      keyref .....: %s\n", kinfo->keyref);
-          tty_fprintf (fp, "      algorithm ..: %s\n", kinfo->keyalgo);
+          if (kinfo->label)
+            tty_fprintf (fp, "      label ......: %s\n", kinfo->label);
+          tty_fprintf (fp, "      algorithm ..: %s\n",
+                       nullnone (kinfo->keyalgo));
           goto leave;
         }
 
@@ -690,10 +701,13 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
         }
       tty_fprintf (fp, "\n");
 
+      if (kinfo->label)
+        tty_fprintf (fp, "      label ......: %s\n", kinfo->label);
+
       if (!(err = scd_readkey (kinfo->keyref, &s_pkey)))
         {
           char *tmp = pubkey_algo_string (s_pkey, NULL);
-          tty_fprintf (fp, "      algorithm ..: %s\n", tmp);
+          tty_fprintf (fp, "      algorithm ..: %s\n", nullnone (tmp));
           xfree (tmp);
           gcry_sexp_release (s_pkey);
           s_pkey = NULL;
@@ -701,7 +715,8 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
       else
         {
           maybe_set_card_removed (info, err);
-          tty_fprintf (fp, "      algorithm ..: %s\n", kinfo->keyalgo);
+          tty_fprintf (fp, "      algorithm ..: %s\n",
+                       nullnone (kinfo->keyalgo));
         }
 
       if (kinfo->fprlen && kinfo->created)
@@ -785,7 +800,8 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
       if (label_keyref)
         tty_fprintf (fp, "      keyref .....: %s\n", label_keyref);
       if (kinfo)
-        tty_fprintf (fp, "      algorithm ..: %s\n", kinfo->keyalgo);
+        tty_fprintf (fp, "      algorithm ..: %s\n",
+                     nullnone (kinfo->keyalgo));
     }
 
  leave:
@@ -1039,14 +1055,12 @@ list_card (card_info_t info, int no_key_lookup)
 {
   estream_t fp = opt.interactive? NULL : es_stdout;
 
-  tty_fprintf (fp, "Reader ...........: %s\n",
-               info->reader? info->reader : "[none]");
+  tty_fprintf (fp, "Reader ...........: %s\n", nullnone (info->reader));
   if (info->cardtype)
     tty_fprintf (fp, "Card type ........: %s\n", info->cardtype);
   if (info->cardversion)
     print_a_version (fp, "Card firmware ....:", info->cardversion);
-  tty_fprintf (fp, "Serial number ....: %s\n",
-               info->serialno? info->serialno : "[none]");
+  tty_fprintf (fp, "Serial number ....: %s\n", nullnone (info->serialno));
   tty_fprintf (fp, "Application type .: %s%s%s%s\n",
                app_type_string (info->apptype),
                info->apptype == APP_TYPE_UNKNOWN && info->apptypestr? "(":"",

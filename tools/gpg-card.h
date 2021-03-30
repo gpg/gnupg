@@ -125,6 +125,9 @@ struct key_info_s
   const char *keyalgo;
   enum gcry_pk_algos keyalgo_id;
 
+  /* An optional malloced label for the key.  */
+  char *label;
+
   /* The three next items are mostly useful for OpenPGP cards.  */
   unsigned char fprlen;  /* Use length of the next item.  */
   unsigned char fpr[32]; /* The binary fingerprint of length FPRLEN.  */
