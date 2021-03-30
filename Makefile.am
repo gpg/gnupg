@@ -32,6 +32,7 @@ RELEASE_ARCHIVE_SUFFIX  = gnupg/v2.3
 
 # Autoconf flags.
 ACLOCAL_AMFLAGS = -I m4
+AM_DISTCHECK_DVI_TARGET = pdf
 AM_DISTCHECK_CONFIGURE_FLAGS = --enable-gnupg-builddir-envvar \
   --enable-all-tests --enable-g13 \
   --enable-gpgtar --enable-wks-tools --disable-ntbtls

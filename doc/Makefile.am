@@ -45,9 +45,8 @@ helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
 profiles =
 
 EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem \
-	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png \
+	     gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png \
 	     gnupg-module-overview.png gnupg-module-overview.pdf \
-	     gnupg-module-overview.eps gnupg-card-architecture.eps \
              gnupg-card-architecture.png gnupg-card-architecture.pdf \
              FAQ gnupg7.texi mkdefsinc.c defsincdate \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
@@ -55,7 +54,6 @@ EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem \
              trust-values.texi
 
 BUILT_SOURCES = gnupg-module-overview.png gnupg-module-overview.pdf \
-                gnupg-module-overview.eps gnupg-card-architecture.eps \
                 gnupg-card-architecture.png gnupg-card-architecture.pdf \
                 defsincdate defs.inc
 
@@ -78,10 +76,6 @@ gnupg_TEXINFOS = \
 	howtos.texi howto-create-a-server-cert.texi
 
 gnupg.texi : defs.inc
-
-# We need EPS files for "make distcheck" but we do not want to distribute
-# them due to their size.  Let's build them as needed.
-gnupg.dvi : gnupg-module-overview.eps gnupg-card-architecture.eps
 
 
 DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
