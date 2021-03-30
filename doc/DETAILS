@@ -1229,6 +1229,13 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     OPENPGP.129) and <string> is the algoritm or curve name, which
     is available for the key.
 
+*** KEY-TIME <keyref> <timestamp>
+    This is a response from scdaemon on GETATTR KEY-TIME.  A keyref of
+    1 gives the timestamp for the standard OpenPGP signing key, 2 for
+    the encryption key, and 3 for an authentication key.  Note that a
+    KEYPAIRINFO status lines carries the same information and should
+    be preferred.
+
 * Format of the --attribute-fd output
 
   When --attribute-fd is set, during key listings (--list-keys,

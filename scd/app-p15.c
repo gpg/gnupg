@@ -288,6 +288,9 @@ struct prkdf_object_s
   /* The keygrip of the key.  This is used as a cache.  */
   char keygrip[2*KEYGRIP_LEN+1];
 
+  /* A malloced algorithm string or NULL if not known.  */
+  char *keyalgostr;
+
   /* The Gcrypt algo identifier for the key.  It is valid if the
    * keygrip is also valid.  See also is_ecc above.  */
   int keyalgo;
@@ -295,6 +298,9 @@ struct prkdf_object_s
   /* The length of the key in bits (e.g. for RSA the length of the
    * modulus).  It is valid if the keygrip is also valid.  */
   unsigned int keynbits;
+
+  /* The creation time of the key or 0 if not known.  */
+  u32 keytime;
 
   /* Malloced CN from the Subject-DN of the corresponding certificate
    * or NULL if not known.  */
@@ -539,6 +545,7 @@ release_prkdflist (prkdf_object_t a)
   while (a)
     {
       prkdf_object_t tmp = a->next;
+      xfree (a->keyalgostr);
       xfree (a->common_name);
       xfree (a->serial_number);
       xfree (a->objid);
@@ -3840,6 +3847,19 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
         }
     }
 
+  if (!err && !prkdf->keytime)
+    {
+      ksba_isotime_t isot;
+      time_t t;
+
+      ksba_cert_get_validity (cert, 0, isot);
+      t = isotime2epoch (isot);
+      prkdf->keytime = (t == (time_t)(-1))? 0 : (u32)t;
+    }
+
+  if (!err && !prkdf->keyalgostr)
+    prkdf->keyalgostr = pubkey_algo_string (s_pkey, NULL);
+
   ksba_cert_release (cert);
   if (err)
     goto leave;
@@ -3917,6 +3937,8 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
       else
         {
           char usage[5];
+          char keytime[20];
+          const char *algostr;
           size_t usagelen = 0;
 
           if (prkdf->gpgusage.any)
@@ -3953,10 +3975,20 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
             }
 
           log_assert (strlen (prkdf->keygrip) == 40);
+          if (prkdf->keytime)
+            snprintf (keytime, sizeof keytime, "%lu",
+                      (unsigned long)prkdf->keytime);
+          else
+            strcpy (keytime, "-");
+
+          algostr = prkdf->keyalgostr;
+
           send_status_info (ctrl, "KEYPAIRINFO",
                             prkdf->keygrip, 2*KEYGRIP_LEN,
                             buf, strlen (buf),
                             usage, usagelen,
+                            keytime, strlen (keytime),
+                            algostr, strlen (algostr?algostr:""),
                             NULL, (size_t)0);
         }
       xfree (buf);
