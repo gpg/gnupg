@@ -257,7 +257,8 @@ struct prkdf_object_s
   unsigned int have_off:1;
 
   /* Flag indicating that the corresponding PIN has already been
-   * verified. */
+   * verified.  Note that for cards which are able to return the
+   * verification stus, this flag is not used.  */
   unsigned int pin_verified:1;
 
   /* PKCS#15 info whether this is an EC key.  Default is RSA.  Note
@@ -4709,6 +4710,7 @@ verify_pin (app_t app,
   const char *s;
   int remaining;
   int pin_reference;
+  int verified = 0;
   int i;
 
   if (!aodf)
@@ -4720,24 +4722,28 @@ verify_pin (app_t app,
     {
       /* We know that this card supports a verify status check.  Note
        * that in contrast to PIV cards ISO7816_VERIFY_NOT_NEEDED is
-       * not supported.  */
+       * not supported.  Noet that we don't use the pin_verified cache
+       * status because that is not as reliable than to ask the card
+       * about its state.  */
+      if (prkdf)  /* Clear the cache which we don't use.  */
+        prkdf->pin_verified = 0;
+
       remaining = iso7816_verify_status (app_get_slot (app), pin_reference);
-      if (remaining < 0)
-        remaining = -1; /* We don't care about the concrete error.  */
-      if (remaining < 3)
+      if (remaining == ISO7816_VERIFY_NOT_NEEDED)
         {
-          if (remaining >= 0)
-            log_info ("p15: PIN has %d attempts left\n", remaining);
-          /* On error or if less than 3 better ask. */
-          if (prkdf)
-            prkdf->pin_verified = 0;
+          verified = 1;
+          remaining = -1;
         }
+      else if (remaining < 0)
+        remaining = -1; /* We don't care about the concrete error.  */
+      else if (remaining < 3)
+        log_info ("p15: PIN has %d attempts left\n", remaining);
     }
   else
     remaining = -1;  /* Unknown.  */
 
   /* Check whether we already verified it.  */
-  if (prkdf && prkdf->pin_verified)
+  if (prkdf && (prkdf->pin_verified || verified))
     return 0;  /* Already done.  */
 
   if (prkdf
