@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #include "scdaemon.h"
@@ -1388,7 +1387,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
         }
       else
         {
-          assert (strlen (gripstr) == 40);
+          log_assert (strlen (gripstr) == 40);
           send_status_info (ctrl, "KEYPAIRINFO",
                             gripstr, 40,
                             buf, strlen (buf),
@@ -1484,7 +1483,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       goto leave;
     }
   totobjlen = objlen + hdrlen;
-  assert (totobjlen <= buflen);
+  log_assert (totobjlen <= buflen);
 
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
@@ -1515,7 +1514,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
           goto leave;
         }
       totobjlen = objlen + hdrlen;
-      assert (save_p + totobjlen <= buffer + buflen);
+      log_assert (save_p + totobjlen <= buffer + buflen);
       memmove (buffer, save_p, totobjlen);
     }
 

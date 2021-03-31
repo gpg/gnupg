@@ -78,7 +78,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -3189,7 +3188,7 @@ ccid_transceive (ccid_driver_t handle,
 
           apdu = apdu_buf;
           apdulen = apdu_buflen;
-          assert (apdulen);
+          log_assert (apdulen);
 
           /* Construct an I-Block. */
           tpdu = msg + hdrlen;

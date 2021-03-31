@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <signal.h>
 #ifdef USE_NPTH
 # include <unistd.h>
@@ -849,7 +848,7 @@ connect_pcsc_card (int slot)
 {
   long err;
 
-  assert (slot >= 0 && slot < MAX_READER);
+  log_assert (slot >= 0 && slot < MAX_READER);
 
   if (reader_table[slot].pcsc.card)
     return SW_HOST_ALREADY_CONNECTED;
@@ -906,7 +905,7 @@ disconnect_pcsc_card (int slot)
 {
   long err;
 
-  assert (slot >= 0 && slot < MAX_READER);
+  log_assert (slot >= 0 && slot < MAX_READER);
 
   if (!reader_table[slot].pcsc.card)
     return 0;
@@ -1478,7 +1477,7 @@ reset_ccid_reader (int slot)
   if (err)
     return err;
   /* If the reset was successful, update the ATR. */
-  assert (sizeof slotp->atr >= sizeof atr);
+  log_assert (sizeof slotp->atr >= sizeof atr);
   slotp->atrlen = atrlen;
   memcpy (slotp->atr, atr, atrlen);
   dump_reader_status (slot);
@@ -2918,7 +2917,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
           if (use_chaining && lc > 255)
             {
               apdu[apdulen] |= 0x10;
-              assert (use_chaining < 256);
+              log_assert (use_chaining < 256);
               lc_chunk = use_chaining;
               lc -= use_chaining;
             }
@@ -2948,7 +2947,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
 
     exact_length_hack:
       /* As a safeguard don't pass any garbage to the driver.  */
-      assert (apdulen <= apdu_buffer_size);
+      log_assert (apdulen <= apdu_buffer_size);
       memset (apdu+apdulen, 0, apdu_buffer_size - apdulen);
       resultlen = result_buffer_size;
       rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
@@ -3024,7 +3023,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
               xfree (result_buffer);
               return SW_HOST_OUT_OF_CORE;
             }
-          assert (resultlen < bufsize);
+          log_assert (resultlen < bufsize);
           memcpy (p, result, resultlen);
           p += resultlen;
         }
@@ -3044,7 +3043,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
           apdu[apdulen++] = 0;
           apdu[apdulen++] = 0;
           apdu[apdulen++] = len;
-          assert (apdulen <= apdu_buffer_size);
+          log_assert (apdulen <= apdu_buffer_size);
           memset (apdu+apdulen, 0, apdu_buffer_size - apdulen);
           resultlen = result_buffer_size;
           rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
@@ -3304,7 +3303,7 @@ apdu_send_direct (int slot, size_t extended_length,
               xfree (result_buffer);
               return SW_HOST_OUT_OF_CORE;
             }
-          assert (resultlen < bufsize);
+          log_assert (resultlen < bufsize);
           memcpy (p, result, resultlen);
           p += resultlen;
         }

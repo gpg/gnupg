@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #include "scdaemon.h"
@@ -3426,9 +3425,9 @@ read_p15_info (app_t app)
     return err;
 
   /* Read certificate information. */
-  assert (!app->app_local->certificate_info);
-  assert (!app->app_local->trusted_certificate_info);
-  assert (!app->app_local->useful_certificate_info);
+  log_assert (!app->app_local->certificate_info);
+  log_assert (!app->app_local->trusted_certificate_info);
+  log_assert (!app->app_local->useful_certificate_info);
   err = read_ef_cdf (app, app->app_local->odf.certificates, 'c',
                      &app->app_local->certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -3443,7 +3442,7 @@ read_p15_info (app_t app)
     return err;
 
   /* Read information about public keys. */
-  assert (!app->app_local->public_key_info);
+  log_assert (!app->app_local->public_key_info);
   err = read_ef_pukdf (app, app->app_local->odf.public_keys,
                        &app->app_local->public_key_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -3455,7 +3454,7 @@ read_p15_info (app_t app)
     return err;
 
   /* Read information about private keys. */
-  assert (!app->app_local->private_key_info);
+  log_assert (!app->app_local->private_key_info);
   err = read_ef_prkdf (app, app->app_local->odf.private_keys,
                        &app->app_local->private_key_info);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -3464,7 +3463,7 @@ read_p15_info (app_t app)
     return err;
 
   /* Read information about authentication objects. */
-  assert (!app->app_local->auth_object_info);
+  log_assert (!app->app_local->auth_object_info);
   err = read_ef_aodf (app, app->app_local->odf.auth_objects,
                       &app->app_local->auth_object_info);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)

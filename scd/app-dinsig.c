@@ -74,7 +74,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #include "scdaemon.h"
@@ -229,7 +228,7 @@ do_readcert (app_t app, const char *certid,
   else
     return gpg_error (GPG_ERR_INV_OBJ);
   totobjlen = objlen + hdrlen;
-  assert (totobjlen <= buflen);
+  log_assert (totobjlen <= buflen);
 
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
@@ -260,7 +259,7 @@ do_readcert (app_t app, const char *certid,
       if ( !(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && constructed) )
         return gpg_error (GPG_ERR_INV_OBJ);
       totobjlen = objlen + hdrlen;
-      assert (save_p + totobjlen <= buffer + buflen);
+      log_assert (save_p + totobjlen <= buffer + buflen);
       memmove (buffer, save_p, totobjlen);
     }
 
