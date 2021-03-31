@@ -20,7 +20,7 @@
 
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.61])
-min_automake_version="1.14"
+min_automake_version="1.16.3"
 
 # To build a release you need to create a tag with the version number
 # (git tag -s gnupg-2.n.m) and run "./autogen.sh --force".  Please
