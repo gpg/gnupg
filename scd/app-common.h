@@ -136,6 +136,7 @@ struct app_ctx_s {
   unsigned int force_chv1:1;   /* True if the card does not cache CHV1. */
   unsigned int did_chv2:1;
   unsigned int did_chv3:1;
+  unsigned int need_reset:1;   /* Do't allow any functions but deinit.  */
   struct app_local_s *app_local;  /* Local to the application. */
   struct {
     void (*deinit) (app_t app);

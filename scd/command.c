@@ -420,7 +420,7 @@ cmd_switchapp (assuan_context_t ctx, char *line)
 
 
 static const char hlp_learn[] =
-  "LEARN [--force] [--keypairinfo] [--multi]\n"
+  "LEARN [--force] [--keypairinfo] [--reread] [--multi]\n"
   "\n"
   "Learn all useful information of the currently inserted card.  When\n"
   "used without the force options, the command might do an INQUIRE\n"
@@ -433,7 +433,8 @@ static const char hlp_learn[] =
   "error message.\n"
   "\n"
   "With the option --keypairinfo only KEYPAIRINFO status lines are\n"
-  "returned.\n"
+  "returned.  With the option --reread information from the card are\n"
+  "read again without the need for a reset (sone some cards).\n"
   "\n"
   "The response of this command is a list of status lines formatted as\n"
   "this:\n"
@@ -498,6 +499,8 @@ cmd_learn (assuan_context_t ctx, char *line)
   int rc = 0;
   int only_keypairinfo = has_option (line, "--keypairinfo");
   int opt_multi = has_option (line, "--multi");
+  int opt_reread = has_option (line, "--reread");
+  unsigned int flags;
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -559,11 +562,16 @@ cmd_learn (assuan_context_t ctx, char *line)
 
   /* Let the application print out its collection of useful status
      information. */
+  flags = 0;
+  if (only_keypairinfo)
+    flags |= APP_LEARN_FLAG_KEYPAIRINFO;
+  if (opt_multi)
+    flags |= APP_LEARN_FLAG_MULTI;
+  if (opt_reread)
+    flags |= APP_LEARN_FLAG_REREAD;
+
   if (!rc)
-    rc = app_write_learn_status
-      (ctrl->card_ctx, ctrl,
-       ( (only_keypairinfo? APP_LEARN_FLAG_KEYPAIRINFO : 0)
-         | (opt_multi? APP_LEARN_FLAG_MULTI : 0)) );
+    rc = app_write_learn_status (ctrl->card_ctx, ctrl, flags);
 
   return rc;
 }

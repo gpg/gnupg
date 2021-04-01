@@ -1407,14 +1407,20 @@ run_reselect (ctrl_t ctrl, card_t c, app_t a, app_t a_prev)
    * required to always work. */
   if (a_prev && a_prev->fnc.prep_reselect)
     {
-      err = a_prev->fnc.prep_reselect (a_prev, ctrl);
+      if (a_prev->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = a_prev->fnc.prep_reselect (a_prev, ctrl);
       if (err)
         log_error ("slot %d, app %s: preparing re-select from %s failed: %s\n",
                    c->slot, xstrapptype (a),
                    xstrapptype (a_prev), gpg_strerror (err));
     }
 
-  err = a->fnc.reselect (a, ctrl);
+  if (a->need_reset)
+    err = gpg_error (GPG_ERR_CARD_RESET);
+  else
+    err = a->fnc.reselect (a, ctrl);
   if (err)
     {
       log_error ("slot %d, app %s: error re-selecting: %s\n",
@@ -1491,6 +1497,7 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
            * the corresponding app.  */
           for (app = card->app; app; app_prev = app, app = app->next)
             if (app->fnc.with_keygrip
+                && !app->need_reset
                 && !app->fnc.with_keygrip (app, ctrl,
                                            KEYGRIP_ACTION_LOOKUP, keyref, 0))
               break;
@@ -1542,6 +1549,8 @@ static gpg_error_t
 write_learn_status_core (card_t card, app_t app, ctrl_t ctrl,
                          unsigned int flags)
 {
+  gpg_error_t err;
+
   /* We do not send CARD and APPTYPE if only keypairinfo is requested.  */
   if (!(flags & APP_LEARN_FLAG_KEYPAIRINFO))
     {
@@ -1555,7 +1564,15 @@ write_learn_status_core (card_t card, app_t app, ctrl_t ctrl,
         send_status_printf (ctrl, "APPVERSION", "%X", app->appversion);
     }
 
-  return app->fnc.learn_status (app, ctrl, flags);
+  if (app->need_reset)
+    err = gpg_error (GPG_ERR_CARD_RESET);
+  else
+    {
+      err = app->fnc.learn_status (app, ctrl, flags);
+      if (err && (flags & APP_LEARN_FLAG_REREAD))
+        app->need_reset = 1;
+    }
+  return err;
 }
 
 
@@ -1666,7 +1683,10 @@ app_readcert (card_t card, ctrl_t ctrl, const char *certid,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling readcert(%s)\n",
                    card->slot, xstrapptype (card->app), certid);
-      err = card->app->fnc.readcert (card->app, certid, cert, certlen);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.readcert (card->app, certid, cert, certlen);
     }
 
   unlock_card (card);
@@ -1708,7 +1728,10 @@ app_readkey (card_t card, ctrl_t ctrl, const char *keyid, unsigned int flags,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling readkey(%s)\n",
                    card->slot, xstrapptype (card->app), keyid);
-      err = card->app->fnc.readkey (card->app, ctrl, keyid, flags, pk, pklen);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.readkey (card->app, ctrl, keyid, flags, pk, pklen);
     }
 
   unlock_card (card);
@@ -1758,7 +1781,10 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
       if (DBG_APP)
         log_debug ("slot %d app %s: calling getattr(%s)\n",
                    card->slot, xstrapptype (card->app), name);
-      err = card->app->fnc.getattr (card->app, ctrl, name);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.getattr (card->app, ctrl, name);
     }
 
   unlock_card (card);
@@ -1790,8 +1816,11 @@ app_setattr (card_t card, ctrl_t ctrl, const char *name,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling setattr(%s)\n",
                    card->slot, xstrapptype (card->app), name);
-      err = card->app->fnc.setattr (card->app, ctrl, name, pincb, pincb_arg,
-                                    value, valuelen);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.setattr (card->app, ctrl, name, pincb, pincb_arg,
+                                      value, valuelen);
     }
 
   unlock_card (card);
@@ -1826,10 +1855,13 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling sign(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.sign (card->app, ctrl, keyidstr, hashalgo,
-                                 pincb, pincb_arg,
-                                 indata, indatalen,
-                                 outdata, outdatalen);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.sign (card->app, ctrl, keyidstr, hashalgo,
+                                   pincb, pincb_arg,
+                                   indata, indatalen,
+                                   outdata, outdatalen);
     }
 
   unlock_card (card);
@@ -1867,10 +1899,13 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling auth(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.auth (card->app, ctrl, keyidstr,
-                                 pincb, pincb_arg,
-                                 indata, indatalen,
-                                 outdata, outdatalen);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.auth (card->app, ctrl, keyidstr,
+                                   pincb, pincb_arg,
+                                   indata, indatalen,
+                                   outdata, outdatalen);
     }
 
   unlock_card (card);
@@ -1910,11 +1945,14 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling decipher(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.decipher (card->app, ctrl, keyidstr,
-                                     pincb, pincb_arg,
-                                     indata, indatalen,
-                                     outdata, outdatalen,
-                                     r_info);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.decipher (card->app, ctrl, keyidstr,
+                                       pincb, pincb_arg,
+                                       indata, indatalen,
+                                       outdata, outdatalen,
+                                       r_info);
     }
 
   unlock_card (card);
@@ -1949,8 +1987,11 @@ app_writecert (card_t card, ctrl_t ctrl,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling writecert(%s)\n",
                    card->slot, xstrapptype (card->app), certidstr);
-      err = card->app->fnc.writecert (card->app, ctrl, certidstr,
-                                      pincb, pincb_arg, data, datalen);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.writecert (card->app, ctrl, certidstr,
+                                        pincb, pincb_arg, data, datalen);
     }
 
   unlock_card (card);
@@ -1985,8 +2026,11 @@ app_writekey (card_t card, ctrl_t ctrl,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling writekey(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.writekey (card->app, ctrl, keyidstr, flags,
-                                     pincb, pincb_arg, keydata, keydatalen);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.writekey (card->app, ctrl, keyidstr, flags,
+                                       pincb, pincb_arg, keydata, keydatalen);
     }
 
   unlock_card (card);
@@ -2020,8 +2064,11 @@ app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling genkey(%s)\n",
                    card->slot, xstrapptype (card->app), keynostr);
-      err = card->app->fnc.genkey (card->app, ctrl, keynostr, keytype, flags,
-                                   createtime, pincb, pincb_arg);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.genkey (card->app, ctrl, keynostr, keytype, flags,
+                                     createtime, pincb, pincb_arg);
     }
 
   unlock_card (card);
@@ -2080,8 +2127,11 @@ app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling change_pin(%s)\n",
                    card->slot, xstrapptype (card->app), chvnostr);
-      err = card->app->fnc.change_pin (card->app, ctrl,
-                                       chvnostr, flags, pincb, pincb_arg);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.change_pin (card->app, ctrl,
+                                         chvnostr, flags, pincb, pincb_arg);
     }
 
   unlock_card (card);
@@ -2116,8 +2166,11 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
       if (DBG_APP)
         log_debug ("slot %d app %s: calling check_pin(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
-      err = card->app->fnc.check_pin (card->app, ctrl, keyidstr,
-                                      pincb, pincb_arg);
+      if (card->app->need_reset)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+      else
+        err = card->app->fnc.check_pin (card->app, ctrl, keyidstr,
+                                        pincb, pincb_arg);
     }
 
   unlock_card (card);
@@ -2331,7 +2384,7 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
       put_membuf_str (&mb, serial);
       for (a = card->app; a; a = a->next)
         {
-          if (!a->fnc.with_keygrip)
+          if (!a->fnc.with_keygrip || a->need_reset)
             continue;
           any = 1;
           put_membuf (&mb, " ", 1);
@@ -2517,7 +2570,7 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
       a_prev = NULL;
       for (a = c->app; a; a = a->next)
         {
-          if (!a->fnc.with_keygrip)
+          if (!a->fnc.with_keygrip || a->need_reset)
             continue;
 
           /* Note that we need to do a re-select even for the current
