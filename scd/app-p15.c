@@ -589,22 +589,46 @@ release_aodflist (aodf_object_t a)
 }
 
 
+static void
+release_lists (app_t app)
+{
+  release_cdflist (app->app_local->certificate_info);
+  app->app_local->certificate_info = NULL;
+  release_cdflist (app->app_local->trusted_certificate_info);
+  app->app_local->trusted_certificate_info = NULL;
+  release_cdflist (app->app_local->useful_certificate_info);
+  app->app_local->useful_certificate_info = NULL;
+  release_pukdflist (app->app_local->public_key_info);
+  app->app_local->public_key_info = NULL;
+  release_prkdflist (app->app_local->private_key_info);
+  app->app_local->private_key_info = NULL;
+  release_aodflist (app->app_local->auth_object_info);
+  app->app_local->auth_object_info = NULL;
+}
+
+
+static void
+release_tokeninfo (app_t app)
+{
+  xfree (app->app_local->manufacturer_id);
+  app->app_local->manufacturer_id = NULL;
+  xfree (app->app_local->token_label);
+  app->app_local->token_label = NULL;
+  xfree (app->app_local->tokenflags);
+  app->app_local->tokenflags = NULL;
+  xfree (app->app_local->serialno);
+  app->app_local->serialno = NULL;
+}
+
+
 /* Release all local resources.  */
 static void
 do_deinit (app_t app)
 {
   if (app && app->app_local)
     {
-      release_cdflist (app->app_local->certificate_info);
-      release_cdflist (app->app_local->trusted_certificate_info);
-      release_cdflist (app->app_local->useful_certificate_info);
-      release_pukdflist (app->app_local->public_key_info);
-      release_prkdflist (app->app_local->private_key_info);
-      release_aodflist (app->app_local->auth_object_info);
-      xfree (app->app_local->manufacturer_id);
-      xfree (app->app_local->token_label);
-      xfree (app->app_local->tokenflags);
-      xfree (app->app_local->serialno);
+      release_lists (app);
+      release_tokeninfo (app);
       xfree (app->app_local);
       app->app_local = NULL;
     }
@@ -938,6 +962,17 @@ read_ef_odf (app_t app, unsigned short odf_fid)
   unsigned short value;
   size_t offset;
   unsigned short home_df = 0;
+
+
+  app->app_local->odf.private_keys = 0;
+  app->app_local->odf.public_keys = 0;
+  app->app_local->odf.trusted_public_keys = 0;
+  app->app_local->odf.secret_keys = 0;
+  app->app_local->odf.certificates = 0;
+  app->app_local->odf.trusted_certificates = 0;
+  app->app_local->odf.useful_certificates = 0;
+  app->app_local->odf.data_objects = 0;
+  app->app_local->odf.auth_objects = 0;
 
   err = select_and_read_binary (app, odf_fid, "ODF",
                                 &buffer, &buflen);
@@ -3270,8 +3305,7 @@ read_ef_tokeninfo (app_t app)
   int class, tag, constructed, ndef;
   unsigned long ul;
 
-  xfree (app->app_local->manufacturer_id);
-  app->app_local->manufacturer_id = NULL;
+  release_tokeninfo (app);
   app->app_local->card_product = CARD_PRODUCT_UNKNOWN;
 
   err = select_and_read_binary (app, 0x5032, "TokenInfo", &buffer, &buflen);
@@ -3401,21 +3435,23 @@ read_p15_info (app_t app)
   prkdf_object_t prkdf;
   unsigned int flag;
 
-  if (!read_ef_tokeninfo (app))
+  err = read_ef_tokeninfo (app);
+  if (err)
+    return err;
+  /* If we don't have a serial number yet but the TokenInfo provides
+   * one, use that. */
+  if (!APP_CARD(app)->serialno && app->app_local->serialno)
     {
-      /* If we don't have a serial number yet but the TokenInfo provides
-         one, use that. */
-      if (!APP_CARD(app)->serialno && app->app_local->serialno)
-        {
-          APP_CARD(app)->serialno = app->app_local->serialno;
-          APP_CARD(app)->serialnolen = app->app_local->serialnolen;
-          app->app_local->serialno = NULL;
-          app->app_local->serialnolen = 0;
-          err = app_munge_serialno (APP_CARD(app));
-          if (err)
-            return err;
-        }
+      APP_CARD(app)->serialno = app->app_local->serialno;
+      APP_CARD(app)->serialnolen = app->app_local->serialnolen;
+      app->app_local->serialno = NULL;
+      app->app_local->serialnolen = 0;
+      err = app_munge_serialno (APP_CARD(app));
+      if (err)
+        return err;
     }
+
+  release_lists (app);
 
   /* Read the ODF so that we know the location of all directory
      files. */
@@ -4009,11 +4045,20 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
 
 
 
-/* This is the handler for the LEARN command.  */
+/* This is the handler for the LEARN command.  Note that if
+ * APP_LEARN_FLAG_REREAD is set and this function returns an error,
+ * the caller must deinitialize this application.  */
 static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
+
+  if (flags & APP_LEARN_FLAG_REREAD)
+    {
+      err = read_p15_info (app);
+      if (err)
+        return err;
+    }
 
   if ((flags & APP_LEARN_FLAG_KEYPAIRINFO))
     err = 0;
