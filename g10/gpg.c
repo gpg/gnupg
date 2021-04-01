@@ -1906,6 +1906,11 @@ gpgconf_list (const char *configfile)
      the top of keygen.c  */
   es_printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
              get_default_pubkey_algo ());
+  /* This info only mode tells whether the we are running in de-vs
+   * compliance mode.  This does not test all parameters but the basic
+   * conditions like a proper RNG and Libgcrypt.  */
+  es_printf ("compliance_de_vs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
+             gnupg_rng_is_compliant (CO_DE_VS));
 
   xfree (configfile_esc);
 }
