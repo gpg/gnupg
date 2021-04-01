@@ -40,6 +40,36 @@
 static int initialized;
 static int module;
 
+
+/* Return the address of a compliance cache variable for COMPLIANCE.
+ * If no such variable exists NULL is returned.  FOR_RNG returns the
+ * cache variable for the RNG compliance check. */
+static int *
+get_compliance_cache (enum gnupg_compliance_mode compliance, int for_rng)
+{
+  static int r_gnupg   = -1, s_gnupg   = -1;
+  static int r_rfc4880 = -1, s_rfc4880 = -1;
+  static int r_rfc2440 = -1, s_rfc2440 = -1;
+  static int r_pgp7    = -1, s_pgp7    = -1;
+  static int r_pgp8    = -1, s_pgp8    = -1;
+  static int r_de_vs   = -1, s_de_vs   = -1;
+
+  int *ptr = NULL;
+
+  switch (compliance)
+    {
+    case CO_GNUPG:   ptr = for_rng? &r_gnupg   : &s_gnupg  ; break;
+    case CO_RFC4880: ptr = for_rng? &r_rfc4880 : &s_rfc4880; break;
+    case CO_RFC2440: ptr = for_rng? &r_rfc2440 : &s_rfc2440; break;
+    case CO_PGP7:    ptr = for_rng? &r_pgp7    : &s_pgp7   ; break;
+    case CO_PGP8:    ptr = for_rng? &r_pgp8    : &s_pgp8   ; break;
+    case CO_DE_VS:   ptr = for_rng? &r_de_vs   : &s_de_vs  ; break;
+    }
+
+  return ptr;
+}
+
+
 /* Initializes the module.  Must be called with the current
  * GNUPG_MODULE_NAME.  Checks a few invariants, and tunes the policies
  * for the given module.  */
@@ -490,19 +520,22 @@ gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 int
 gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
 {
-  static int result = -1;
+  int *result;
+  int res;
 
-  if (result != -1)
-    ; /* Use cached result.  */
+  result = get_compliance_cache (compliance, 1);
+
+  if (result && *result != -1)
+    res = *result; /* Use cached result.  */
   else if (compliance == CO_DE_VS)
     {
       /* We also check whether the library is at all compliant.  */
-      result = gnupg_gcrypt_is_compliant (compliance);
+      res = gnupg_gcrypt_is_compliant (compliance);
 
       /* In DE_VS mode under Windows we also require that the JENT RNG
        * is active.  Check it here. */
 #ifdef HAVE_W32_SYSTEM
-      if (result == 1)
+      if (res == 1)
         {
           char *buf;
           const char *fields[5];
@@ -519,9 +552,12 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
 #endif /*HAVE_W32_SYSTEM*/
     }
   else
-    result = 1;
+    res = 1;
 
-  return result;
+  if (result)
+    *result = res;
+
+  return res;
 }
 
 
@@ -530,10 +566,13 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
 int
 gnupg_gcrypt_is_compliant (enum gnupg_compliance_mode compliance)
 {
-  static int result = -1;
+  int *result;
+  int res;
 
-  if (result != -1)
-    ; /* Use cached result.  */
+  result = get_compliance_cache (compliance, 0);
+
+  if (result && *result != -1)
+    res = *result; /* Use cached result.  */
   else if (compliance == CO_DE_VS)
     {
       int is19orlater = !!gcry_check_version ("1.9.0");
@@ -542,7 +581,7 @@ gnupg_gcrypt_is_compliant (enum gnupg_compliance_mode compliance)
        * less than 1.9.0.  Version 1.9.0 requires a re-evaluation and
        * can thus not be used for de-vs.  */
       if (gcry_check_version ("1.8.1") && !is19orlater)
-        result = 1;  /* Compliant version of Libgcrypt.  */
+        res = 1;  /* Compliant version of Libgcrypt.  */
       else if (is19orlater)
         {
           /* Libgcrypt might be nice enough to tell us whether it is
@@ -554,18 +593,21 @@ gnupg_gcrypt_is_compliant (enum gnupg_compliance_mode compliance)
           if (buf
               && split_fields_colon (buf, fields, DIM (fields)) >= 2
               && strstr (fields[1], "de-vs"))
-            result = 1;  /* Compliant.  */
+            res = 1;  /* Compliant.  */
           else
-            result = 0;  /* Non-compliant.  */
+            res = 0;  /* Non-compliant.  */
           gcry_free (buf);
         }
       else
-        result = 0;  /* Non-compliant version of Libgcrypt.  */
+        res = 0;  /* Non-compliant version of Libgcrypt.  */
     }
   else
-    result = 1;
+    res = 1;
 
-  return result;
+  if (result)
+    *result = res;
+
+  return res;
 }
 
 
