@@ -157,7 +157,7 @@ release_card_info (card_info_t info)
   while (info->kinfo)
     {
       key_info_t kinfo = info->kinfo->next;
-      xfree (kinfo->label);
+      xfree (info->kinfo->label);
       xfree (info->kinfo);
       info->kinfo = kinfo;
     }
@@ -1151,7 +1151,7 @@ learn_status_cb (void *opaque, const char *line)
 /* Call the scdaemon to learn about a smartcard.  This fills INFO
  * with data from the card. */
 gpg_error_t
-scd_learn (card_info_t info)
+scd_learn (card_info_t info, int reread)
 {
   gpg_error_t err;
   struct default_inq_parm_s parm;
@@ -1168,7 +1168,9 @@ scd_learn (card_info_t info)
     return err;
 
   parm.ctx = agent_ctx;
-  err = assuan_transact (agent_ctx, "SCD LEARN --force",
+  err = assuan_transact (agent_ctx,
+                         reread? "SCD LEARN --force --reread"
+                         /*  */: "SCD LEARN --force",
                          dummy_data_cb, NULL, default_inq_cb, &parm,
                          learn_status_cb, info);
   /* Also try to get some other key attributes.  */

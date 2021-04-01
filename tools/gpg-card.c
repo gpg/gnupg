@@ -1129,7 +1129,7 @@ static gpg_error_t
 cmd_list (card_info_t info, char *argstr)
 {
   gpg_error_t err;
-  int opt_cards, opt_apps, opt_info, opt_no_key_lookup;
+  int opt_cards, opt_apps, opt_info, opt_reread, opt_no_key_lookup;
   strlist_t cards = NULL;
   strlist_t sl;
   estream_t fp = opt.interactive? NULL : es_stdout;
@@ -1140,7 +1140,8 @@ cmd_list (card_info_t info, char *argstr)
 
   if (!info)
     return print_help
-      ("LIST [--cards] [--apps] [--info] [--no-key-lookup] [N] [APP]\n\n"
+      ("LIST [--cards] [--apps] [--info] [--reread]"
+       " [--no-key-lookup] [N] [APP]\n\n"
        "Show the content of the current card.\n"
        "With N given select and list the N-th card;\n"
        "with APP also given select that application.\n"
@@ -1149,12 +1150,14 @@ cmd_list (card_info_t info, char *argstr)
        "  --cards   lists available cards\n"
        "  --apps    lists additional card applications\n"
        "  --info    selects a card and prints its s/n\n"
+       "  --reread  read infos from PCKS#15 cards again\n"
        "  --no-key-lookup does not list matching OpenPGP or X.509 keys\n"
        , 0);
 
   opt_cards = has_leading_option (argstr, "--cards");
   opt_apps = has_leading_option (argstr, "--apps");
   opt_info = has_leading_option (argstr, "--info");
+  opt_reread = has_leading_option (argstr, "--reread");
   opt_no_key_lookup = has_leading_option (argstr, "--no-key-lookup");
   argstr = skip_options (argstr);
 
@@ -1284,7 +1287,7 @@ cmd_list (card_info_t info, char *argstr)
         }
 
       if (need_learn)
-        err = scd_learn (info);
+        err = scd_learn (info, opt_reread);
       else
         err = 0;
 
@@ -2669,7 +2672,7 @@ cmd_generate (card_info_t info, char *argstr)
 
   if (!err)
     {
-      err = scd_learn (info);
+      err = scd_learn (info, 0);
       if (err)
         log_error ("Error re-reading card: %s\n", gpg_strerror (err));
     }
@@ -3026,7 +3029,7 @@ cmd_factoryreset (card_info_t info)
    * specific resset command.
    */
 
-  err = scd_learn (info);
+  err = scd_learn (info, 0);
   if (gpg_err_code (err) == GPG_ERR_OBJ_TERM_STATE
       && gpg_err_source (err) == GPG_ERR_SOURCE_SCD)
     termstate = 1;
@@ -3482,7 +3485,7 @@ cmd_yubikey (card_info_t info, char *argstr)
   /* Note that we always do a learn to get a chance to the card back
    * into a usable state.  */
   err = yubikey_commands (info, fp, nwords, words);
-  err2 = scd_learn (info);
+  err2 = scd_learn (info, 0);
   if (err2)
     log_error ("Error re-reading card: %s\n", gpg_strerror (err));
 
@@ -3718,7 +3721,7 @@ dispatch_command (card_info_t info, const char *orig_command)
              || cmd == cmdINVCMD)
            && !info->initialized)
     {
-      err = scd_learn (info);
+      err = scd_learn (info, 0);
       if (err)
         {
           err = fixup_scd_errors (err);

@@ -227,7 +227,7 @@ gpg_error_t scd_apdu (const char *hexapdu, const char *options,
 gpg_error_t scd_switchcard (const char *serialno);
 gpg_error_t scd_switchapp (const char *appname);
 
-gpg_error_t scd_learn (card_info_t info);
+gpg_error_t scd_learn (card_info_t info, int reread);
 gpg_error_t scd_getattr (const char *name, struct card_info_s *info);
 gpg_error_t scd_setattr (const char *name,
                          const unsigned char *value, size_t valuelen);
