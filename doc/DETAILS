@@ -1073,6 +1073,24 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     should not contain spaces.  The error code is a either a string
     commencing with a letter or such a string prefixed with a
     numerical error code and an underscore; e.g.: "151011327_EOF".
+
+    Some of the error locations are:
+
+    - decryption.early_plaintext :: The OpenPGP message contains more
+         than one plaintext.
+    - genkey :: Problem generating a key.  The error code further
+                describes the problem.
+    - get_passphrase :: Problem getting the passphrase from the
+                        gpg-agent.
+    - keyedit.passwd :: Changing the password failed.
+    - nomdc_with_legacy_cipher :: The message was not MDC protected.
+         Use the command line to lern about a workaround.
+    - random-compliance :: The random number generator or the used
+         version of Libgcrypt do not fulfill the requirements of the
+         current compliance setting.  The error code is often
+         GPG_ERR_FORBIDDEN.
+    - set_expire :: Changing the expiration time failed.
+
 *** WARNING <location> <error code> [<text>]
     This is a generic warning status message, it might be followed by
     error location specific data. <location> and <error code> may not
