@@ -1910,7 +1910,7 @@ gpgconf_list (const char *configfile)
    * compliance mode.  This does not test all parameters but the basic
    * conditions like a proper RNG and Libgcrypt.  */
   es_printf ("compliance_de_vs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
-             gnupg_rng_is_compliant (CO_DE_VS));
+             opt.compliance==CO_DE_VS && gnupg_rng_is_compliant (CO_DE_VS));
 
   xfree (configfile_esc);
 }
