@@ -140,6 +140,31 @@ msgstr "nesprávne MPI"
 msgid "Bad Passphrase"
 msgstr "nesprávne heslo"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "chyba pri vytváraní hesla: %s\n"
+
+#, fuzzy
+msgid "Please re-enter this passphrase"
+msgstr "zmeniť heslo"
+
+#, fuzzy, c-format
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "Prosím, vložte heslo; toto je tajná veta \n"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ochranný algoritmus %d%s nie je podporováný\n"
@@ -177,10 +202,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Prosím, vložte heslo; toto je tajná veta \n"
-
-#, fuzzy
-msgid "Please re-enter this passphrase"
-msgstr "zmeniť heslo"
 
 #, fuzzy, c-format
 msgid ""
@@ -348,6 +369,9 @@ msgid "do not use the SCdaemon"
 msgstr "aktualizovať databázu dôvery"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
+
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr ""
 
 #, fuzzy
@@ -1128,6 +1152,22 @@ msgstr "neznáme"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "neplatný znak vo formáte radix64 %02x bol preskočený\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "kódovanie do ASCII formátu zlyhalo: %s\n"
@@ -1301,6 +1341,10 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "%s ešte nepracuje s %s\n"
 
 #, fuzzy, c-format
+msgid "error from TPM: %s\n"
+msgstr "chyba pri čítaní `%s': %s\n"
+
+#, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "problém s agentom: agent vracia 0x%lx\n"
 
@@ -1383,10 +1427,6 @@ msgstr "nespracované"
 
 msgid "forced"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "chyba pri vytváraní hesla: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
@@ -3550,6 +3590,9 @@ msgid "add a key to a smartcard"
 msgstr ""
 
 msgid "move a key to a smartcard"
+msgstr ""
+
+msgid "convert a key to TPM form using the local TPM"
 msgstr ""
 
 msgid "move a backup key to a smartcard"
@@ -6726,6 +6769,16 @@ msgstr ""
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+#, fuzzy
+msgid "|A|Please enter the Admin PIN"
+msgstr "zmeniť heslo"
+
+#, fuzzy
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "Prosím výberte dôvod na revokáciu:\n"
+
 #, fuzzy
 msgid "||Please enter the PIN for the standard keys."
 msgstr "zmeniť heslo"
@@ -6753,10 +6806,6 @@ msgstr "zmeniť heslo"
 
 #, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "Prosím výberte dôvod na revokáciu:\n"
-
-#, fuzzy
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Prosím výberte dôvod na revokáciu:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
@@ -6829,12 +6878,6 @@ msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] ""
 msgstr[1] ""
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-#, fuzzy
-msgid "|A|Please enter the Admin PIN"
-msgstr "zmeniť heslo"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -9150,6 +9193,9 @@ msgstr ""
 msgid "Smartcards"
 msgstr ""
 
+msgid "TPM"
+msgstr ""
+
 #, fuzzy
 #| msgid "network error"
 msgid "Network"
@@ -9486,10 +9532,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
-
-#, fuzzy
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "chyba pri čítaní `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

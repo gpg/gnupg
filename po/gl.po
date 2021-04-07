@@ -138,6 +138,31 @@ msgstr "MPI erróneo"
 msgid "Bad Passphrase"
 msgstr "contrasinal erróneo"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "erro ao crea-lo contrasinal: %s\n"
+
+#, fuzzy
+msgid "Please re-enter this passphrase"
+msgstr "cambia-lo contrasinal"
+
+#, fuzzy, c-format
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "o algoritmo de protección %d%s non está soportado\n"
@@ -175,10 +200,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
-
-#, fuzzy
-msgid "Please re-enter this passphrase"
-msgstr "cambia-lo contrasinal"
 
 #, fuzzy, c-format
 msgid ""
@@ -348,6 +369,9 @@ msgid "do not use the SCdaemon"
 msgstr "actualiza-la base de datos de confianza"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
+
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr ""
 
 #, fuzzy
@@ -1132,6 +1156,22 @@ msgstr "descoñecido"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "carácter radix64 non válido %02x omitido\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "non se puido poñe-la armadura: %s\n"
@@ -1305,6 +1345,10 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "¡%s aínda non traballa con %s!\n"
 
 #, fuzzy, c-format
+msgid "error from TPM: %s\n"
+msgstr "erro lendo `%s': %s\n"
+
+#, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "problema co axente: o axente voltou coa resposta 0x%lx\n"
 
@@ -1385,10 +1429,6 @@ msgstr "non procesado"
 
 msgid "forced"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "erro ao crea-lo contrasinal: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
@@ -3540,6 +3580,9 @@ msgid "add a key to a smartcard"
 msgstr ""
 
 msgid "move a key to a smartcard"
+msgstr ""
+
+msgid "convert a key to TPM form using the local TPM"
 msgstr ""
 
 msgid "move a backup key to a smartcard"
@@ -6739,6 +6782,16 @@ msgstr ""
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+#, fuzzy
+msgid "|A|Please enter the Admin PIN"
+msgstr "cambia-lo contrasinal"
+
+#, fuzzy
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "Por favor, escolla o motivo da revocación:\n"
+
 #, fuzzy
 msgid "||Please enter the PIN for the standard keys."
 msgstr "cambia-lo contrasinal"
@@ -6766,10 +6819,6 @@ msgstr "cambia-lo contrasinal"
 
 #, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "Por favor, escolla o motivo da revocación:\n"
-
-#, fuzzy
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Por favor, escolla o motivo da revocación:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
@@ -6842,12 +6891,6 @@ msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] ""
 msgstr[1] ""
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-#, fuzzy
-msgid "|A|Please enter the Admin PIN"
-msgstr "cambia-lo contrasinal"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -9171,6 +9214,9 @@ msgstr ""
 msgid "Smartcards"
 msgstr ""
 
+msgid "TPM"
+msgstr ""
+
 #, fuzzy
 #| msgid "network error"
 msgid "Network"
@@ -9507,10 +9553,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "erro escribindo no chaveiro `%s': %s\n"
-
-#, fuzzy
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "erro lendo `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

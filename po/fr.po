@@ -151,6 +151,35 @@ msgstr "Mauvais code personnel"
 msgid "Bad Passphrase"
 msgstr "Mauvaise phrase secrète"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "erreur de lecture du numéro de série de la carte : %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "Veuillez répéter cette phrase secrète"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"Veuillez entrer la phrase secrète pour protéger l'objet importé dans le "
+"système GnuPG."
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "les clefs SSH plus grandes que %d bits ne sont pas prises en charge\n"
@@ -189,9 +218,6 @@ msgstr "Refuser"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Veuillez entrer la phrase secrète pour la clef SSH%%0A  %F%%0A  (%c)"
-
-msgid "Please re-enter this passphrase"
-msgstr "Veuillez répéter cette phrase secrète"
 
 #, c-format
 msgid ""
@@ -364,6 +390,11 @@ msgid "do not use the SCdaemon"
 msgstr "ne pas utiliser le SCdaemon"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PROG|utiliser PROG comme SCdaemon"
+
+#, fuzzy
+#| msgid "|PGM|use PGM as the SCdaemon program"
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr "|PROG|utiliser PROG comme SCdaemon"
 
 #, fuzzy
@@ -1141,6 +1172,22 @@ msgid "invalid radix64 character %02x skipped\n"
 msgstr "caractère %02x incorrect en radix64, ignoré\n"
 
 #, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
+#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "conversion de « %s » vers « %s » non disponible\n"
 
@@ -1313,6 +1360,11 @@ msgstr "Entrez la phrase secrète : "
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s ne fonctionne pas encore avec %s\n"
 
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error from TPM: %s\n"
+msgstr "erreur de lecture de %s : %s\n"
+
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "problème avec l'agent : %s\n"
@@ -1397,10 +1449,6 @@ msgstr "non forcé"
 
 msgid "forced"
 msgstr "forcé"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "erreur de lecture du numéro de série de la carte : %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Erreur : seul l'ASCII standard est permis pour l'instant.\n"
@@ -3554,6 +3602,9 @@ msgstr "ajouter une clef à une carte à puce"
 
 msgid "move a key to a smartcard"
 msgstr "déplacer une clef vers une carte à puce"
+
+msgid "convert a key to TPM form using the local TPM"
+msgstr ""
 
 msgid "move a backup key to a smartcard"
 msgstr "déplacer une clef de sauvegarde vers une carte à puce"
@@ -6835,6 +6886,16 @@ msgstr ""
 "||Veuillez entrer le code personnel pour permettre à la clef de créer des "
 "signatures qualifiées."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|Veuillez entrer le code personnel d'administration"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr ""
+"|P|Veuillez entrer le code de déblocage personnel (CDP) pour les clefs "
+"standards."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||Veuillez entrer le code personnel pour les clefs standards."
 
@@ -6862,11 +6923,6 @@ msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr ""
 "|NP|Veuillez entrer un nouveau code de déblocage personnel (CDP) pour les "
 "clefs standards."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr ""
-"|P|Veuillez entrer le code de déblocage personnel (CDP) pour les clefs "
-"standards."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
@@ -6954,11 +7010,6 @@ msgstr[0] ""
 msgstr[1] ""
 "il reste %d tentatives de code personnel d'administration\n"
 "avant que la carte ne soit irrémédiablement bloquée\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|Veuillez entrer le code personnel d'administration"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -9324,6 +9375,9 @@ msgstr ""
 msgid "Smartcards"
 msgstr "Démon de carte à puce"
 
+msgid "TPM"
+msgstr ""
+
 #, fuzzy
 #| msgid "network error"
 msgid "Network"
@@ -9728,9 +9782,6 @@ msgstr ""
 
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "erreur d'écriture sur %s : %s\n"
-
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "erreur de lecture de %s : %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "erreur de fermeture de %s : %s\n"

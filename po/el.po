@@ -140,6 +140,31 @@ msgstr "κακό MPI"
 msgid "Bad Passphrase"
 msgstr "κακή φράση κλειδί"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy
+msgid "Please re-enter this passphrase"
+msgstr "αλλαγή της φράσης κλειδί"
+
+#, fuzzy, c-format
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
@@ -177,10 +202,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
-
-#, fuzzy
-msgid "Please re-enter this passphrase"
-msgstr "αλλαγή της φράσης κλειδί"
 
 #, fuzzy, c-format
 msgid ""
@@ -348,6 +369,9 @@ msgid "do not use the SCdaemon"
 msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
+
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr ""
 
 #, fuzzy
@@ -1126,6 +1150,22 @@ msgstr "άγνωστο"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "μη έγκυρος radix64 χαρακτήρας %02x παράβλεψη\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "θωράκιση απέτυχε: %s\n"
@@ -1299,6 +1339,10 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "το %s ακόμα δε λειτουργεί μαζί με το %s\n"
 
 #, fuzzy, c-format
+msgid "error from TPM: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "πρόβλημα με τον agent: agent επιστρέφει 0x%lx\n"
 
@@ -1379,10 +1423,6 @@ msgstr "μη επεξεργασμένο"
 
 msgid "forced"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
@@ -3549,6 +3589,9 @@ msgid "add a key to a smartcard"
 msgstr ""
 
 msgid "move a key to a smartcard"
+msgstr ""
+
+msgid "convert a key to TPM form using the local TPM"
 msgstr ""
 
 msgid "move a backup key to a smartcard"
@@ -6756,6 +6799,16 @@ msgstr ""
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+#, fuzzy
+msgid "|A|Please enter the Admin PIN"
+msgstr "αλλαγή της φράσης κλειδί"
+
+#, fuzzy
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "Παρακαλώ επιλέξτε την αιτία για την ανάκληση:\n"
+
 #, fuzzy
 msgid "||Please enter the PIN for the standard keys."
 msgstr "αλλαγή της φράσης κλειδί"
@@ -6783,10 +6836,6 @@ msgstr "αλλαγή της φράσης κλειδί"
 
 #, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "Παρακαλώ επιλέξτε την αιτία για την ανάκληση:\n"
-
-#, fuzzy
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Παρακαλώ επιλέξτε την αιτία για την ανάκληση:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
@@ -6859,12 +6908,6 @@ msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] ""
 msgstr[1] ""
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-#, fuzzy
-msgid "|A|Please enter the Admin PIN"
-msgstr "αλλαγή της φράσης κλειδί"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -9177,6 +9220,9 @@ msgstr ""
 msgid "Smartcards"
 msgstr ""
 
+msgid "TPM"
+msgstr ""
+
 #, fuzzy
 #| msgid "network error"
 msgid "Network"
@@ -9511,10 +9557,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
-
-#, fuzzy
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

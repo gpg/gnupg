@@ -172,6 +172,34 @@ msgstr "Felaktig PIN-kod"
 msgid "Bad Passphrase"
 msgstr "Felaktig lösenfras"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "fel när serienumret hämtades från kortet: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "Ange denna lösenfras igen"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"Ange lösenfrasen för att skydda det importerade objektet inom GnuPG-systemet."
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 # Skyddssammandraget låter underligt
 # Kontrollsumma?
 #, c-format
@@ -212,9 +240,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Ange lösenfrasen för ssh-nyckeln%0A  %c"
-
-msgid "Please re-enter this passphrase"
-msgstr "Ange denna lösenfras igen"
 
 #, fuzzy, c-format
 msgid ""
@@ -403,6 +428,11 @@ msgid "do not use the SCdaemon"
 msgstr "använd inte SCdaemon"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PRG|använd PRG som SCdaemon-programmet"
+
+#, fuzzy
+#| msgid "|PGM|use PGM as the SCdaemon program"
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr "|PRG|använd PRG som SCdaemon-programmet"
 
 #, fuzzy
@@ -1215,6 +1245,22 @@ msgstr "[ingen]"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "ogiltigt radix64-tecken %02x hoppades över\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "conversion from `%s' to `%s' not available\n"
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1400,6 +1446,11 @@ msgstr "Ange lösenfrasen\n"
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s fungerar ännu inte med  %s\n"
 
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error from TPM: %s\n"
+msgstr "fel vid läsning från %s: %s\n"
+
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "problem med agenten: %s\n"
@@ -1483,10 +1534,6 @@ msgstr "inte tvingad"
 
 msgid "forced"
 msgstr "tvingad"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "fel när serienumret hämtades från kortet: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fel: Endast ren ASCII tillåts för närvarande.\n"
@@ -3717,6 +3764,9 @@ msgstr "lägg till en nyckel till ett smartkort"
 
 msgid "move a key to a smartcard"
 msgstr "flytta en nyckel till ett smartkort"
+
+msgid "convert a key to TPM form using the local TPM"
+msgstr ""
 
 msgid "move a backup key to a smartcard"
 msgstr "flytta en nyckelkopia till ett smartkort"
@@ -7029,6 +7079,14 @@ msgstr "svaret innehåller inte publikt nyckeldata\n"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||Ange PIN-koden för nyckeln att skapa kvalificerade signaturer med."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|Ange administratörens PIN-kod"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|P|Ange upplåsningskoden (PUK-kod) för standardnycklarna."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||Ange PIN-koden för standardnycklarna."
 
@@ -7054,9 +7112,6 @@ msgstr "|N|Ange en ny PIN-kod för standardnycklarna."
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|Ange en ny upplåsningskod (PUK-kod) för standardnycklarna."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|P|Ange upplåsningskoden (PUK-kod) för standardnycklarna."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
@@ -7139,11 +7194,6 @@ msgstr[0] ""
 "%d försök för Admin PIN-koden återstår innan kortet låses permanent\n"
 msgstr[1] ""
 "%d försök för Admin PIN-koden återstår innan kortet låses permanent\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|Ange administratörens PIN-kod"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -9677,6 +9727,9 @@ msgstr ""
 msgid "Smartcards"
 msgstr ""
 
+msgid "TPM"
+msgstr ""
+
 msgid "Network"
 msgstr ""
 
@@ -10105,9 +10158,6 @@ msgstr ""
 
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "fel vid skrivning till %s: %s\n"
-
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "fel vid läsning från %s: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "fel vid stängning av %s: %s\n"

@@ -138,6 +138,35 @@ msgstr "PIN hatalı"
 msgid "Bad Passphrase"
 msgstr "Anahtar Parolası hatalı"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "kartın seri numarası alınırken hata: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "Lütfen bu anahtar parolasını tekrar girin"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"Lütfen GnuPG sistemine ithal edilen nesneyi koruyacak anahtar parolasını "
+"giriniz."
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "%d bitlikten daha büyük SSH anahtarları desteklenmiyor\n"
@@ -176,9 +205,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Lütfen SSH anahtarı %0A  %c için anahtar parolasını giriniz"
-
-msgid "Please re-enter this passphrase"
-msgstr "Lütfen bu anahtar parolasını tekrar girin"
 
 #, fuzzy, c-format
 msgid ""
@@ -368,6 +394,11 @@ msgid "do not use the SCdaemon"
 msgstr "Akıllı kart süreci kullanılmaz"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "[UYG|Akıllı kart uygulaması olarak UYG kullanılır"
+
+#, fuzzy
+#| msgid "|PGM|use PGM as the SCdaemon program"
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr "[UYG|Akıllı kart uygulaması olarak UYG kullanılır"
 
 #, fuzzy
@@ -1181,6 +1212,22 @@ msgstr "[yok]"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "geçersiz radix64 karakteri %02x atlandı\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "conversion from `%s' to `%s' not available\n"
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1361,6 +1408,11 @@ msgstr "Anahtar parolasını giriniz\n"
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s, %s ile henüz çalışmıyor\n"
 
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error from TPM: %s\n"
+msgstr "%s okunurken hata: %s\n"
+
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "aracı ile sorun var: %s\n"
@@ -1444,10 +1496,6 @@ msgstr "zorlanmadı"
 
 msgid "forced"
 msgstr "zorlandı"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "kartın seri numarası alınırken hata: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Hata: Şimdilik sadece US-ASCII mümkün.\n"
@@ -3637,6 +3685,9 @@ msgstr "bir akıllı karta bir anahtar ekler"
 
 msgid "move a key to a smartcard"
 msgstr "bir akıllı karttan bir anahtarı taşır"
+
+msgid "convert a key to TPM form using the local TPM"
+msgstr ""
 
 msgid "move a backup key to a smartcard"
 msgstr "bir akıllı karttan bir yedekleme anahtarını taşır"
@@ -6923,6 +6974,16 @@ msgstr "yanıt genel anahtar verisi içermiyor\n"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+#, fuzzy
+msgid "|A|Please enter the Admin PIN"
+msgstr "||Lütfen PIN'i giriniz"
+
+#, fuzzy
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "||Lütfen kart için Sıfırlama Kodunu giriniz"
+
 #, fuzzy
 msgid "||Please enter the PIN for the standard keys."
 msgstr "|A|Lütfen Yönetici PIN'ini okuyucu tuştakımından giriniz"
@@ -6950,10 +7011,6 @@ msgstr "||Lütfen PIN'inizi okuyucunun tuştakımından giriniz"
 
 #, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "||Lütfen kart için Sıfırlama Kodunu giriniz"
-
-#, fuzzy
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "||Lütfen kart için Sıfırlama Kodunu giriniz"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
@@ -7032,12 +7089,6 @@ msgstr[0] ""
 "kart kalıcı olarak kilitlenmeden önce %d Yönetici PIN kalmasına çalışılıyor\n"
 msgstr[1] ""
 "kart kalıcı olarak kilitlenmeden önce %d Yönetici PIN kalmasına çalışılıyor\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-#, fuzzy
-msgid "|A|Please enter the Admin PIN"
-msgstr "||Lütfen PIN'i giriniz"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -9560,6 +9611,9 @@ msgstr ""
 msgid "Smartcards"
 msgstr ""
 
+msgid "TPM"
+msgstr ""
+
 msgid "Network"
 msgstr ""
 
@@ -9985,9 +10039,6 @@ msgstr ""
 
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "%s yazılırken hata: %s\n"
-
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "%s okunurken hata: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "%s kapanırken hata: %s\n"

@@ -149,6 +149,33 @@ msgstr "不良的個人識別碼 (PIN)"
 msgid "Bad Passphrase"
 msgstr "不良的密語"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "取得此卡片序號時出錯: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "請再次輸入密語"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "請輸入密語以保護匯入至 GnuPG 系統內的物件."
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "未支援大於 %d 位元的 ssh 金鑰\n"
@@ -186,9 +213,6 @@ msgstr "拒絕"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "請輸入此 ssh 金鑰的密語 %%0A  %F%%0A  (%c)"
-
-msgid "Please re-enter this passphrase"
-msgstr "請再次輸入密語"
 
 #, c-format
 msgid ""
@@ -348,6 +372,11 @@ msgid "do not use the SCdaemon"
 msgstr "不要使用 SCdaemon"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PGM|使用 PGM 做為 SCdaemon 程式"
+
+#, fuzzy
+#| msgid "|PGM|use PGM as the SCdaemon program"
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr "|PGM|使用 PGM 做為 SCdaemon 程式"
 
 #, fuzzy
@@ -1099,6 +1128,22 @@ msgid "invalid radix64 character %02x skipped\n"
 msgstr "已跳過無效的 radix64 字符 %02x\n"
 
 #, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
+#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "沒有從 '%s' 到 '%s' 之間的轉換可用\n"
 
@@ -1265,6 +1310,11 @@ msgstr "請輸入密語: "
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s 還沒辦法跟 %s 一起運作\n"
 
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error from TPM: %s\n"
+msgstr "讀取 %s 時出錯: %s\n"
+
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "代理程式的問題: %s\n"
@@ -1348,10 +1398,6 @@ msgstr "不強迫使用"
 
 msgid "forced"
 msgstr "強迫使用"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "取得此卡片序號時出錯: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "錯誤: 目前祇允許使用單純的 ASCII 字符.\n"
@@ -3432,6 +3478,9 @@ msgstr "將金鑰加到智慧卡"
 
 msgid "move a key to a smartcard"
 msgstr "將金鑰移動到智慧卡"
+
+msgid "convert a key to TPM form using the local TPM"
+msgstr ""
 
 msgid "move a backup key to a smartcard"
 msgstr "將備份金鑰移動到智慧卡"
@@ -6518,6 +6567,14 @@ msgstr "回應中未包含公鑰資料\n"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||請輸入金鑰的個人識別碼 (PIN) 以建立完善的簽章."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|請輸入管理者 PIN"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|P|請輸入標準金鑰的 PIN 重設碼 (PUK)."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||請輸入標準金鑰的個人識別碼 (PIN)."
 
@@ -6543,9 +6600,6 @@ msgstr "|N|請輸入標準金鑰將採用的新個人識別碼 (PIN)."
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|請輸入標準金鑰將採用的 PIN 重設碼 (PUK)."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|P|請輸入標準金鑰的 PIN 重設碼 (PUK)."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|請輸入金鑰的新個人識別碼 (PIN) 以建立完善的簽章."
@@ -6618,11 +6672,6 @@ msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
 msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] "%d 管理者個人識別碼 (PIN) 試圖在卡片永久鎖定前遺留下來\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|請輸入管理者 PIN"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -8863,6 +8912,9 @@ msgstr ""
 msgid "Smartcards"
 msgstr "智慧卡服務"
 
+msgid "TPM"
+msgstr ""
+
 msgid "Network"
 msgstr ""
 
@@ -9256,9 +9308,6 @@ msgstr ""
 
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "寫入 %s 時出錯: %s\n"
-
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "讀取 %s 時出錯: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "關閉 %s 時出錯: %s\n"

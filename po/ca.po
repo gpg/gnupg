@@ -159,6 +159,31 @@ msgstr "l'MPI és erroni"
 msgid "Bad Passphrase"
 msgstr "la contrasenya és errònia"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
+
+#, fuzzy
+msgid "Please re-enter this passphrase"
+msgstr "canvia la contrasenya"
+
+#, fuzzy, c-format
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "Introduïu la contrasenya; aquesta ha de ser una frase secreta \n"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "l'algoritme de protecció %d%s no està suportat\n"
@@ -198,10 +223,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Introduïu la contrasenya; aquesta ha de ser una frase secreta \n"
-
-#, fuzzy
-msgid "Please re-enter this passphrase"
-msgstr "canvia la contrasenya"
 
 #, fuzzy, c-format
 msgid ""
@@ -371,6 +392,9 @@ msgid "do not use the SCdaemon"
 msgstr "actualitza la base de dades de confiança"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
+
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr ""
 
 #, fuzzy
@@ -1184,6 +1208,22 @@ msgstr "[no establert]"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "el caràcter radix64 %02x invàlid s'ha omés\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "no s'ha pogut crear l'armadura: %s\n"
@@ -1360,6 +1400,10 @@ msgid "%s is not compliant with %s mode\n"
 msgstr "%s encara no funciona amb %s\n"
 
 #, fuzzy, c-format
+msgid "error from TPM: %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
+
+#, fuzzy, c-format
 msgid "problem with the agent: %s\n"
 msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
 
@@ -1446,10 +1490,6 @@ msgstr "no forçat"
 
 msgid "forced"
 msgstr "forçat"
-
-#, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "error en la creació de la contrasenya: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
@@ -3641,6 +3681,9 @@ msgid "add a key to a smartcard"
 msgstr ""
 
 msgid "move a key to a smartcard"
+msgstr ""
+
+msgid "convert a key to TPM form using the local TPM"
 msgstr ""
 
 msgid "move a backup key to a smartcard"
@@ -6887,6 +6930,16 @@ msgstr ""
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+#, fuzzy
+msgid "|A|Please enter the Admin PIN"
+msgstr "canvia la contrasenya"
+
+#, fuzzy
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "Seleccioneu la raó de la revocació:\n"
+
 #, fuzzy
 msgid "||Please enter the PIN for the standard keys."
 msgstr "canvia la contrasenya"
@@ -6914,10 +6967,6 @@ msgstr "canvia la contrasenya"
 
 #, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "Seleccioneu la raó de la revocació:\n"
-
-#, fuzzy
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Seleccioneu la raó de la revocació:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
@@ -6990,12 +7039,6 @@ msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] ""
 msgstr[1] ""
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-#, fuzzy
-msgid "|A|Please enter the Admin PIN"
-msgstr "canvia la contrasenya"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -9351,6 +9394,9 @@ msgstr ""
 msgid "Smartcards"
 msgstr ""
 
+msgid "TPM"
+msgstr ""
+
 #, fuzzy
 #| msgid "network error"
 msgid "Network"
@@ -9684,10 +9730,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
-
-#, fuzzy
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "error en la lectura de «%s»: %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

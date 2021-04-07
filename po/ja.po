@@ -137,6 +137,35 @@ msgstr "不正なPINです"
 msgid "Bad Passphrase"
 msgstr "パスフレーズが不正です"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "カード・シリアル番号の取得エラー: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "このパスフレーズをもう一度入力してください"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"GnuPGシステムにインポートされたオブジェクトを保護するためにパスフレーズを入力"
+"してください"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ssh鍵で%dビットより大きいものはサポートされません\n"
@@ -174,9 +203,6 @@ msgstr "拒否する"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "以下のssh鍵に対するパスフレーズを入力してください:%%0A  %F%%0A  (%c)"
-
-msgid "Please re-enter this passphrase"
-msgstr "このパスフレーズをもう一度入力してください"
 
 #, c-format
 msgid ""
@@ -333,6 +359,11 @@ msgid "do not use the SCdaemon"
 msgstr "SCdaemonを使わない"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PGM|PGMをSCdaemonプログラムとして使う"
+
+#, fuzzy
+#| msgid "|PGM|use PGM as the SCdaemon program"
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr "|PGM|PGMをSCdaemonプログラムとして使う"
 
 msgid "|NAME|accept some commands via NAME"
@@ -1072,6 +1103,22 @@ msgid "invalid radix64 character %02x skipped\n"
 msgstr "無効な64進文字%02Xをスキップしました\n"
 
 #, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
+#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "'%s'から'%s'への変換は利用できません\n"
 
@@ -1235,6 +1282,11 @@ msgstr "パスフレーズを入力: "
 msgid "%s is not compliant with %s mode\n"
 msgstr "%sは%sモードに準拠しません\n"
 
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error from TPM: %s\n"
+msgstr "'%s'の読み込みエラー: %s\n"
+
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "エージェントに問題: %s\n"
@@ -1311,10 +1363,6 @@ msgstr "強制なし"
 
 msgid "forced"
 msgstr "強制"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "カード・シリアル番号の取得エラー: %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "エラー： 普通のASCIIだけが今、許可されています。\n"
@@ -3292,6 +3340,9 @@ msgstr "スマートカードへ鍵の追加"
 
 msgid "move a key to a smartcard"
 msgstr "鍵をスマートカードへ移動"
+
+msgid "convert a key to TPM form using the local TPM"
+msgstr ""
 
 msgid "move a backup key to a smartcard"
 msgstr "バックアップ鍵をスマートカードへ移動"
@@ -6254,6 +6305,14 @@ msgstr "応答に公開鍵データが含まれていません\n"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||新しいPINを認定署名を生成する鍵のために入力してください。"
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|管理者PINを入力してください"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|P|標準の鍵のPIN Unblocking Code (PUK)を入力してください。"
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||PINを標準の鍵のために入力してください。"
 
@@ -6277,9 +6336,6 @@ msgstr "|N|新しいPINを標準の鍵のために入力してください。"
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|標準の鍵の新しいPIN Unblocking Code (PUK)を入力してください。"
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|P|標準の鍵のPIN Unblocking Code (PUK)を入力してください。"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|新しいPINを認定署名を生成する鍵のために入力してください。"
@@ -6353,11 +6409,6 @@ msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
 msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] "カードの永久ロック前に%d回の管理者PINの試行が残っています\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|管理者PINを入力してください"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -8596,6 +8647,9 @@ msgstr "プライベート鍵"
 msgid "Smartcards"
 msgstr "スマートカード"
 
+msgid "TPM"
+msgstr ""
+
 msgid "Network"
 msgstr "ネットワーク"
 
@@ -8958,9 +9012,6 @@ msgstr "コマンド履歴を管理する"
 
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "'%s'の書き込みエラー: %s\n"
-
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "'%s'の読み込みエラー: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "'%s'でクローズのエラー: %s\n"

@@ -134,6 +134,33 @@ msgstr "错误的 PIN"
 msgid "Bad Passphrase"
 msgstr "错误的密码"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "获取卡的序列号时出现错误： %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "请重新输入此密码"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "请输入密码以在 GnuPG 系统内部保护已导入的对象。"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "长度超过 %d 位的 ssh 密钥不被支持\n"
@@ -169,9 +196,6 @@ msgstr "拒绝"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "请输入 ssh 密钥 %%0A  %F%%0A  (%c)  的密码"
-
-msgid "Please re-enter this passphrase"
-msgstr "请重新输入此密码"
 
 #, c-format
 msgid ""
@@ -325,6 +349,11 @@ msgid "do not use the SCdaemon"
 msgstr "不使用 SCdaemon"
 
 msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PGM|使用 PGM 作为 SCdaemon 程序"
+
+#, fuzzy
+#| msgid "|PGM|use PGM as the SCdaemon program"
+msgid "|PGM|use PGM as the tpm2daemon program"
 msgstr "|PGM|使用 PGM 作为 SCdaemon 程序"
 
 msgid "|NAME|accept some commands via NAME"
@@ -1059,6 +1088,22 @@ msgid "invalid radix64 character %02x skipped\n"
 msgstr "无效的 radix64 字符 %02x 已被跳过\n"
 
 #, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
+#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "不能从 ‘%s’ 转换到 ‘%s’\n"
 
@@ -1220,6 +1265,11 @@ msgstr "输入密码： "
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s 与 %s 模式不兼容\n"
 
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error from TPM: %s\n"
+msgstr "读取 %s 时出现错误：%s\n"
+
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "代理人程序出现问题：%s\n"
@@ -1296,10 +1346,6 @@ msgstr "非强制"
 
 msgid "forced"
 msgstr "强制"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "获取卡的序列号时出现错误： %s\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "错误：目前只允许使用纯 ASCII 字符。\n"
@@ -3261,6 +3307,9 @@ msgstr "增加一个密钥到智能卡"
 
 msgid "move a key to a smartcard"
 msgstr "移动一个密钥到智能卡"
+
+msgid "convert a key to TPM form using the local TPM"
+msgstr ""
 
 msgid "move a backup key to a smartcard"
 msgstr "移动一个备份密钥到智能卡上"
@@ -6190,6 +6239,14 @@ msgstr "响应不包含公钥数据\n"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||请为这个密钥输入 PIN 以创建合格的签名。"
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|请输入管理员 PIN"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|NP|请输入标准密钥的 PIN 解锁码（PUK）。"
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||请输入标准密钥的 PIN。"
 
@@ -6213,9 +6270,6 @@ msgstr "|N|请为标准密钥输入一个新的 PIN。"
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|请为标准密钥输入一个新的 PIN 解锁码（PUK）。"
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|NP|请输入标准密钥的 PIN 解锁码（PUK）。"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|请为这个密钥输入一个新的 PIN 以创建合格的签名。"
@@ -6285,11 +6339,6 @@ msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
 msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] "在卡片被永久锁定之前剩余 %d 次管理员 PIN 尝试\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|请输入管理员 PIN"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
@@ -8515,6 +8564,9 @@ msgstr "私钥"
 msgid "Smartcards"
 msgstr "智能卡"
 
+msgid "TPM"
+msgstr ""
+
 msgid "Network"
 msgstr "网络"
 
@@ -8871,9 +8923,6 @@ msgstr "管理命令历史记录"
 
 #~ msgid "error writing to %s: %s\n"
 #~ msgstr "写入 %s 时出现错误：%s\n"
-
-#~ msgid "error reading from %s: %s\n"
-#~ msgstr "读取 %s 时出现错误：%s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "关闭 %s 时出现错误：%s\n"
