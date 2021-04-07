@@ -970,7 +970,10 @@ merge_lists (const unsigned char *protectedkey,
   /* Copy the cleartext.  */
   s = cleartext;
   if (*s != '(' && s[1] != '(')
-    return gpg_error (GPG_ERR_BUG);  /*we already checked this */
+    {
+      xfree (newlist);
+      return gpg_error (GPG_ERR_BUG);  /*we already checked this */
+    }
   s += 2;
   startpos = s;
   while ( *s == '(' )
