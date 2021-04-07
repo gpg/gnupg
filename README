@@ -25,12 +25,6 @@
   can be freely used, modified and distributed under the terms of the
   GNU General Public License.
 
-  Note that the 2.0 series of GnuPG will reach end-of-life on
-  2017-12-31.  It is not possible to install a 2.2.x version along
-  with any 2.0.x version.  However, it is possible to install GnuPG
-  1.4 along with any 2.x version.
-
-
 * BUILD INSTRUCTIONS
 
   GnuPG 2.3 depends on the following GnuPG related packages:
@@ -126,9 +120,9 @@
   the file system, it is sometimes not possible to use the GnuPG home
   directory (i.e. ~/.gnupg) as the location for the sockets.  To solve
   this problem GnuPG prefers the use of a per-user directory below the
-  the /run (or /var/run) hierarchy for the the sockets.  It is thus
+  the /run (or /var/run) hierarchy for the sockets.  It is thus
   suggested to create per-user directories on system or session
-  startup.  For example the following snippet can be used in
+  startup.  For example, the following snippet can be used in
   /etc/rc.local to create these directories:
 
       [ ! -d /run/user ] && mkdir /run/user
@@ -155,7 +149,7 @@
   is at [[https://gnupg.org/documentation/manuals/gnupg-devel/]] .
 
 
-* Unsing the legacy version GnuPG 1.4
+* Using the legacy version GnuPG 1.4
 
   The 1.4 version of GnuPG is only intended to allow decryption of old
   data material using legacy keys which are not anymore supported by

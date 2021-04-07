@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.3.0 (unreleased)
+Noteworthy changes in version 2.3.0 (2021-04-07)
 ------------------------------------------------
 
   * A new experimental key database daemon is provided.  To enable it
@@ -43,6 +43,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
     The command --print-pka-records and the PKA related import and
     export options have been removed.
 
+  * gpg: Support export of Ed448 Secure Shell keys.
+
   * gpgsm: Add basic ECC support.
 
   * gpgsm: Support creation of EdDSA certificates.  [#4888]
@@ -58,7 +60,9 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * scd: Support PIV cards.
 
-  * scd: Support the Telesec Signature Card v2.0
+  * scd: Support for Rohde&Schwarz Cybersecurity cards.
+
+  * scd: Support Telesec Signature Cards v2.0
 
   * scd: Support multiple application on certain smartcard.
 
@@ -910,7 +914,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
     already the case.
 
   Release-info: https://dev.gnupg.org/T5343
-  See-also: gnupg-announce/2020q1/000xxx.html
+  See-also: gnupg-announce/2021q2/000458.html
 
 
 Release dates of 2.2 versions
