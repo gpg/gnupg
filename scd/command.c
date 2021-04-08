@@ -471,11 +471,11 @@ static const char hlp_learn[] =
   "\n"
   "For certain cards, more information will be returned:\n"
   "\n"
-  "  S KEY-FPR <no> <hexstring>\n"
+  "  S KEY-FPR <keyref> <hexstring>\n"
   "\n"
-  "For OpenPGP cards this returns the stored fingerprints of the\n"
+  "For some cards this returns the stored fingerprints of the\n"
   "keys. This can be used check whether a key is available on the\n"
-  "card.  NO may be 1, 2 or 3.\n"
+  "card.  KEYREF may be 1, 2 or 3 for OpenPGP or a standard keyref.\n"
   "\n"
   "  S CA-FPR <no> <hexstring>\n"
   "\n"
@@ -616,19 +616,19 @@ cmd_readcert (assuan_context_t ctx, char *line)
 
 static gpg_error_t
 do_readkey (card_t card, ctrl_t ctrl, const char *line,
-            int opt_info, int opt_nokey,
-            unsigned char **pk_p, size_t *pklen_p)
+            int opt_info, unsigned char **pk_p, size_t *pklen_p)
 {
   int rc;
+  int direct_readkey = 0;
 
   /* If the application supports the READKEY function we use that.
      Otherwise we use the old way by extracting it from the
      certificate.  */
   rc = app_readkey (card, ctrl, line,
                     opt_info? APP_READKEY_FLAG_INFO : 0,
-                    opt_nokey? NULL : pk_p, pklen_p);
+                    pk_p, pklen_p);
   if (!rc)
-    ; /* Got the key.  */
+    direct_readkey = 1; /* Got the key.  */
   else if (gpg_err_code (rc) == GPG_ERR_UNSUPPORTED_OPERATION
            || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
@@ -651,7 +651,7 @@ do_readkey (card_t card, ctrl_t ctrl, const char *line,
   else
     log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
 
-  if (!rc && opt_info)
+  if (!rc && opt_info && !direct_readkey)
     {
       char keygripstr[KEYGRIP_LEN*2+1];
       char *algostr;
@@ -730,7 +730,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
       if (direct)
         card_ref (card);
 
-      rc = do_readkey (card, ctrl, line, opt_info, opt_nokey, &pk, &pklen);
+      rc = do_readkey (card, ctrl, line, opt_info, &pk, &pklen);
 
       if (direct)
         card_unref (card);

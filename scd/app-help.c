@@ -58,7 +58,8 @@ app_help_count_bits (const unsigned char *a, size_t len)
  * there.  The caller needs to call gcry_sexp_release on that.  If
  * R_ALGO is not NULL the public key algorithm id of Libgcrypt is
  * stored there.  If R_ALGOSTR is not NULL and the function succeeds a
- * newly allocated algo string (e.g. "rsa2048") is stored there. */
+ * newly allocated algo string (e.g. "rsa2048") is stored there.
+ * HEXKEYGRIP may be NULL if the caller is not interested in it.  */
 gpg_error_t
 app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip,
                                 gcry_sexp_t *r_pkey, int *r_algo,
@@ -77,7 +78,7 @@ app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip,
   if (err)
     return err; /* Can't parse that S-expression. */
 
-  if (!gcry_pk_get_keygrip (s_pkey, array))
+  if (hexkeygrip && !gcry_pk_get_keygrip (s_pkey, array))
     {
       gcry_sexp_release (s_pkey);
       return gpg_error (GPG_ERR_GENERAL); /* Failed to calculate the keygrip.*/
@@ -102,7 +103,8 @@ app_help_get_keygrip_string_pk (const void *pk, size_t pklen, char *hexkeygrip,
   else
     gcry_sexp_release (s_pkey);
 
-  bin2hex (array, KEYGRIP_LEN, hexkeygrip);
+  if (hexkeygrip)
+    bin2hex (array, KEYGRIP_LEN, hexkeygrip);
 
   return 0;
 }
