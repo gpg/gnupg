@@ -3292,12 +3292,13 @@ parse_key_parameter_part (ctrl_t ctrl,
   int ecdh_or_ecdsa = 0;
   unsigned int size;
   int keyuse;
-  int keyversion = 4;
+  int keyversion = 0;           /* Not specified.  */
   int i;
   const char *s;
   int from_card = 0;
   char *keygrip = NULL;
   u32 keytime = 0;
+  int is_448 = 0;
 
   if (!string || !*string)
     return 0; /* Success.  */
@@ -3339,6 +3340,8 @@ parse_key_parameter_part (ctrl_t ctrl,
           algo = PUBKEY_ALGO_ECDH; /* Default ECC algorithm.  */
           ecdh_or_ecdsa = 1;       /* We may need to switch the algo.  */
         }
+      if (curve && (!strcmp (curve, "X448") || !strcmp (curve, "Ed448")))
+        is_448 = 1;
     }
   else
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -3494,11 +3497,17 @@ parse_key_parameter_part (ctrl_t ctrl,
               if (!strcmp (algostr, "ed25519"))
                 algo = PUBKEY_ALGO_EDDSA;
               else if (!strcmp (algostr, "ed448"))
-                algo = PUBKEY_ALGO_EDDSA;
+                {
+                  algo = PUBKEY_ALGO_EDDSA;
+                  is_448 = 1;
+                }
               else if (!strcmp (algostr, "cv25519"))
                 algo = PUBKEY_ALGO_ECDH;
               else if (!strcmp (algostr, "cv448"))
-                algo = PUBKEY_ALGO_ECDH;
+                {
+                  algo = PUBKEY_ALGO_ECDH;
+                  is_448 = 1;
+                }
               else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
                 algo = PUBKEY_ALGO_ECDH;
               else
@@ -3574,6 +3583,17 @@ parse_key_parameter_part (ctrl_t ctrl,
       xfree (keygrip);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
+
+  /* Ed448 and X448 must only be used as v5 keys.  */
+  if (is_448)
+    {
+      if (keyversion == 4)
+        log_info (_("WARNING: v4 is specified, but overridden by v5.\n"));
+
+      keyversion = 5;
+    }
+  else if (keyversion == 0)
+    keyversion = 4;
 
   /* Return values.  */
   if (r_algo)
