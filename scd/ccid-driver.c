@@ -1304,10 +1304,20 @@ ccid_vendor_specific_setup (ccid_driver_t handle)
 {
   if (handle->id_vendor == VENDOR_SCM && handle->id_product == SCM_SPR532)
     {
+      libusb_clear_halt (handle->idev, handle->ep_intr);
+    }
+  return 0;
+}
+
+
+static int
+ccid_vendor_specific_pinpad_setup (ccid_driver_t handle)
+{
+  if (handle->id_vendor == VENDOR_SCM && handle->id_product == SCM_SPR532)
+    {
       DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
       send_escape_cmd (handle, (const unsigned char*)"\x80\x02\x00", 3,
                        NULL, 0, NULL);
-      libusb_clear_halt (handle->idev, handle->ep_intr);
     }
   return 0;
 }
@@ -3582,6 +3592,8 @@ ccid_transceive_secure (ccid_driver_t handle,
 
   if (pininfo->fixedlen < 0 || pininfo->fixedlen >= 16)
     return CCID_DRIVER_ERR_NOT_SUPPORTED;
+
+  ccid_vendor_specific_pinpad_setup (handle);
 
   msg = send_buffer;
   msg[0] = cherry_mode? 0x89 : PC_to_RDR_Secure;
