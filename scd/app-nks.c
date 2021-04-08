@@ -440,8 +440,9 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
       }
 
   err = pubkey_from_pk_file (app, pkfid, cfid, &pk, &pklen);
-  err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL,
-                                        &algo, &algostr);
+  if (!err)
+    err = app_help_get_keygrip_string_pk (pk, pklen, r_gripstr, NULL,
+                                          &algo, &algostr);
   xfree (pk);
 
   if (!err)
@@ -794,14 +795,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 }
 
 
-
-static void
-do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
-                      int nks_app_id)
+const char *
+get_nks_tag (app_t app, int nks_app_id)
 {
-  gpg_error_t err;
-  char ct_buf[100], id_buf[100];
-  int i;
   const char *tag;
 
   if (nks_app_id == NKS_APP_ESIGN)
@@ -814,6 +810,18 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
     tag = "DF01";
   else
     tag = "NKS3";
+
+  return tag;
+}
+
+static void
+do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
+                      int nks_app_id)
+{
+  gpg_error_t err;
+  char ct_buf[100], id_buf[100];
+  int i;
+  const char *tag = get_nks_tag (app, nks_app_id);
 
   /* Output information about all useful objects in the NKS application. */
   for (i=0; filelist[i].fid; i++)
@@ -867,6 +875,8 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
                 usagebuf[usageidx++] = 'a';
               if (filelist[i].isencrkey)
                 usagebuf[usageidx++] = 'e';
+              if (!usageidx)
+                usagebuf[usageidx++] = '-';
               usagebuf[usageidx] = 0;
               send_status_info (ctrl, "KEYPAIRINFO",
                                 gripstr, 40,
@@ -1198,9 +1208,13 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
             unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
-  unsigned char *buffer[2];
-  size_t buflen[2];
-  unsigned short path[1] = { 0x4500 };
+  unsigned char *dummy_pk = NULL;
+  size_t  dummy_pklen = 0;
+
+  if (!pk)
+    pk = &dummy_pk;
+  if (!pklen)
+    pklen = &dummy_pklen;
 
   (void)ctrl;
 
@@ -1209,7 +1223,53 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
 
   /* We use a generic name to retrieve PK.AUT.IFD-SPK.  */
   if (!strcmp (keyid, "$IFDAUTHKEY") && app->appversion >= 3)
-    ;
+    {
+      unsigned short path[1] = { 0x4500 };
+      unsigned char *buffer[2];
+      size_t buflen[2];
+
+      /* Access the KEYD file which is always in the master directory.  */
+      err = iso7816_select_path (app_get_slot (app), path, DIM (path), 0);
+      if (err)
+        goto leave;
+      /* Due to the above select we need to re-select our application.  */
+      app->app_local->need_app_select = 1;
+      /* Get the two records.  */
+      err = iso7816_read_record (app_get_slot (app), 5, 1, 0,
+                                 &buffer[0], &buflen[0]);
+      if (err)
+        goto leave;
+      if (all_zero_p (buffer[0], buflen[0]))
+        {
+          xfree (buffer[0]);
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      err = iso7816_read_record (app_get_slot (app), 6, 1, 0,
+                                 &buffer[1], &buflen[1]);
+      if (err)
+        {
+          xfree (buffer[0]);
+          goto leave;
+        }
+
+      if ((flags & APP_READKEY_FLAG_INFO))
+        {
+          /* FIXME */
+        }
+
+      if (pk && pklen && pk != &dummy_pk)
+        {
+          *pk = make_canon_sexp_from_rsa_pk (buffer[0], buflen[0],
+                                             buffer[1], buflen[1],
+                                             pklen);
+          if (!*pk)
+            err = gpg_error_from_syserror ();
+        }
+
+      xfree (buffer[0]);
+      xfree (buffer[1]);
+    }
   else if (strlen (keyid) == 40)
     {
       char keygripstr[2*KEYGRIP_LEN+1];
@@ -1217,10 +1277,42 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
 
       err = iterate_over_filelist (app, keyid, 0, keygripstr, &i);
       if (err)
-        return err;
+        goto leave;
 
-      return pubkey_from_pk_file (app, filelist[i].fid, filelist[i].iskeypair,
-                                  pk, pklen);
+      err = pubkey_from_pk_file (app, filelist[i].fid, filelist[i].iskeypair,
+                                 pk, pklen);
+      if (!err && (flags & APP_READKEY_FLAG_INFO))
+        {
+          char *algostr;
+          char usagebuf[5];
+          int usageidx = 0;
+          char id_buf[100];
+
+          if (app_help_get_keygrip_string_pk (*pk, *pklen, NULL, NULL, NULL,
+                                              &algostr))
+            algostr = NULL;  /* Ooops.  */
+
+          snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X",
+                    get_nks_tag (app, filelist[i].nks_app_id),
+                    filelist[i].fid);
+          if (filelist[i].issignkey)
+            usagebuf[usageidx++] = 's';
+          if (filelist[i].isauthkey)
+            usagebuf[usageidx++] = 'a';
+          if (filelist[i].isencrkey)
+            usagebuf[usageidx++] = 'e';
+          if (!usageidx)
+            usagebuf[usageidx++] = '-';
+          usagebuf[usageidx] = 0;
+          send_status_info (ctrl, "KEYPAIRINFO",
+                            keygripstr, strlen (keygripstr),
+                            id_buf, strlen (id_buf),
+                            usagebuf, strlen (usagebuf),
+                            "-", (size_t)1,
+                            algostr, strlen (algostr?algostr:""),
+                            NULL, (size_t)0);
+          xfree (algostr);
+        }
     }
   else if (!strncmp (keyid, "NKS-IDLM.", 9))
     {
@@ -1228,46 +1320,19 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
       if (!hexdigitp (keyid) || !hexdigitp (keyid+1)
           || !hexdigitp (keyid+2) || !hexdigitp (keyid+3)
           || keyid[4])
-        return gpg_error (GPG_ERR_INV_ID);
+        {
+          err = gpg_error (GPG_ERR_INV_ID);
+          goto leave;
+        }
 
-      return pubkey_from_pk_file (app, xtoi_4 (keyid), -1, pk, pklen);
+      err = pubkey_from_pk_file (app, xtoi_4 (keyid), -1, pk, pklen);
+      /* FIXME: Implement KEYPAIRINFO.  */
     }
   else /* Return the error code expected by cmd_readkey.  */
-    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+    err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
-  /* Access the KEYD file which is always in the master directory.  */
-  err = iso7816_select_path (app_get_slot (app), path, DIM (path), 0);
-  if (err)
-    return err;
-  /* Due to the above select we need to re-select our application.  */
-  app->app_local->need_app_select = 1;
-  /* Get the two records.  */
-  err = iso7816_read_record (app->slot, 5, 1, 0, &buffer[0], &buflen[0]);
-  if (err)
-    return err;
-  if (all_zero_p (buffer[0], buflen[0]))
-    {
-      xfree (buffer[0]);
-      return gpg_error (GPG_ERR_NOT_FOUND);
-    }
-  err = iso7816_read_record (app->slot, 6, 1, 0, &buffer[1], &buflen[1]);
-  if (err)
-    {
-      xfree (buffer[0]);
-      return err;
-    }
-
-  if (pk && pklen)
-    {
-      *pk = make_canon_sexp_from_rsa_pk (buffer[0], buflen[0],
-                                         buffer[1], buflen[1],
-                                         pklen);
-      if (!*pk)
-        err = gpg_error_from_syserror ();
-    }
-
-  xfree (buffer[0]);
-  xfree (buffer[1]);
+ leave:
+  xfree (dummy_pk);
   return err;
 }
 
