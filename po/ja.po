@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.27\n"
+"Project-Id-Version: gnupg 2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-01-12 13:50+0900\n"
+"PO-Revision-Date: 2021-04-08 10:15+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -138,10 +138,10 @@ msgid "Bad Passphrase"
 msgstr "パスフレーズが不正です"
 
 msgid "Note: Request from the web browser."
-msgstr ""
+msgstr "注意: ウェブブラウザからのリクエストです。"
 
 msgid "Note: Request from a remote site."
-msgstr ""
+msgstr "注意: リモートサイトからのリクエストです。"
 
 #, c-format
 msgid "error getting serial number of card: %s\n"
@@ -150,21 +150,20 @@ msgstr "カード・シリアル番号の取得エラー: %s\n"
 msgid "Please re-enter this passphrase"
 msgstr "このパスフレーズをもう一度入力してください"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Please enter the passphrase to protect the imported object within the "
-#| "GnuPG system."
+#, c-format
 msgid ""
 "Please enter the passphrase to protect the imported object within the %s "
 "system."
 msgstr ""
-"GnuPGシステムにインポートされたオブジェクトを保護するためにパスフレーズを入力"
-"してください"
+"%sシステムにインポートされたオブジェクトを保護するためにパスフレーズを入力し"
+"てください"
 
 msgid ""
 "This key (or subkey) is not protected with a passphrase.  Please enter a new "
 "passphrase to export it."
 msgstr ""
+"この鍵(もしくは副鍵)はパスフレーズで保護されていません。エクスポートするため"
+"に新しいパスフレーズを入力してください。"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -361,10 +360,8 @@ msgstr "SCdaemonを使わない"
 msgid "|PGM|use PGM as the SCdaemon program"
 msgstr "|PGM|PGMをSCdaemonプログラムとして使う"
 
-#, fuzzy
-#| msgid "|PGM|use PGM as the SCdaemon program"
 msgid "|PGM|use PGM as the tpm2daemon program"
-msgstr "|PGM|PGMをSCdaemonプログラムとして使う"
+msgstr "|PGM|PGMをtpm2daemonプログラムとして使う"
 
 msgid "|NAME|accept some commands via NAME"
 msgstr "|NAME|NAMEからのコマンドを受け付ける"
@@ -1104,19 +1101,19 @@ msgstr "無効な64進文字%02Xをスキップしました\n"
 
 #, c-format
 msgid "Sorry, we are in batchmode - can't get input\n"
-msgstr ""
+msgstr "すみません、バッチモードです - 入力を受けられません\n"
 
 #, c-format
 msgid "Sorry, no terminal at all requested - can't get input\n"
-msgstr ""
+msgstr "すみません、端末なしが要求されています - 入力を受けられません\n"
 
 #, c-format
 msgid "too many errors; giving up\n"
-msgstr ""
+msgstr "エラーが多すぎます; あきらめます\n"
 
 #, c-format
 msgid "Control-D detected\n"
-msgstr ""
+msgstr "Control-D が検出されました\n"
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1282,10 +1279,9 @@ msgstr "パスフレーズを入力: "
 msgid "%s is not compliant with %s mode\n"
 msgstr "%sは%sモードに準拠しません\n"
 
-#, fuzzy, c-format
-#| msgid "error reading from %s: %s\n"
+#, c-format
 msgid "error from TPM: %s\n"
-msgstr "'%s'の読み込みエラー: %s\n"
+msgstr "TPMからのエラー: %s\n"
 
 #, c-format
 msgid "problem with the agent: %s\n"
@@ -3342,7 +3338,7 @@ msgid "move a key to a smartcard"
 msgstr "鍵をスマートカードへ移動"
 
 msgid "convert a key to TPM form using the local TPM"
-msgstr ""
+msgstr "TPM形式にローカルなTPMを使って鍵を変換する"
 
 msgid "move a backup key to a smartcard"
 msgstr "バックアップ鍵をスマートカードへ移動"
@@ -8648,7 +8644,7 @@ msgid "Smartcards"
 msgstr "スマートカード"
 
 msgid "TPM"
-msgstr ""
+msgstr "TPM"
 
 msgid "Network"
 msgstr "ネットワーク"
