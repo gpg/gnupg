@@ -722,8 +722,13 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
     {
       int status = -1;
 
+      /* Skip invalid PID.  */
       if (pids[i] == (pid_t)(-1))
-        return my_error (GPG_ERR_INV_VALUE);
+        {
+          r_exitcodes[i] = -1;
+          left -= 1;
+          continue;
+        }
 
       /* See if there was a previously stored result for this pid.  */
       if (get_result (pids[i], &status))
