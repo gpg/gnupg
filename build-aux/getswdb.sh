@@ -175,9 +175,9 @@ fi
 # to help detect rollback attacks.
 #
 if [ $skip_selfcheck = no ]; then
-  gnupg_ver=$(awk '$1=="gnupg22_ver" {print $2;exit}' swdb.lst)
+  gnupg_ver=$(awk '$1=="gnupg24_ver" {print $2;exit}' swdb.lst)
   if [ -z "$gnupg_ver" ]; then
-      echo "GnuPG 2.2 version missing in swdb.lst!" >&2
+      echo "GnuPG 2.4 version info missing in swdb.lst!" >&2
       exit 1
   fi
   gnupg_ver_num=$(echo "$gnupg_ver" | cvtver)

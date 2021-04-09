@@ -51,7 +51,7 @@ m4_esyscmd([echo ]mym4_version[>VERSION])
 AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 
 # When changing the SWDB tag please also adjust the hard coded tags in
-# build-aux/speedo.mk and Makefile.am
+# build-aux/speedo.mk, build-aux/getswdb.sh, and Makefile.am
 AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
 
 NEED_GPGRT_VERSION=1.41
