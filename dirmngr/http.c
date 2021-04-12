@@ -3681,7 +3681,6 @@ http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
       if (!newurl)
         {
           err = gpg_error_from_syserror ();
-          http_release_parsed_uri (locuri);
           return err;
         }
     }
@@ -3700,7 +3699,6 @@ http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
       if (!newurl)
         {
           err = gpg_error_from_syserror ();
-          http_release_parsed_uri (locuri);
           return err;
         }
     }

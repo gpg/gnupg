@@ -450,7 +450,7 @@ check_signature (ctrl_t ctrl,
 {
   gpg_error_t err;
   int algo, cert_idx;
-  gcry_sexp_t s_hash;
+  gcry_sexp_t s_hash = NULL;
   ksba_cert_t cert;
   const char *s;
 
