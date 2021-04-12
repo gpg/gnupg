@@ -690,6 +690,7 @@ do_nvc_parse (nvc_t *result, int *errlinep, estream_t stream,
       if (raw_value)
 	{
 	  err = _nvc_add (*result, name, NULL, raw_value, 1);
+          name = NULL;
 	  if (err)
 	    goto leave;
 	}
