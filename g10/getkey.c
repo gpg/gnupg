@@ -3857,66 +3857,75 @@ lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
 }
 
 
+/* If a default key has been specified, return that key.  If a card
+ * based key is also available as indicated by FPR_CARD not being
+ * NULL, return that key if suitable.  */
 gpg_error_t
 get_seckey_default_or_card (ctrl_t ctrl, PKT_public_key *pk,
                             const byte *fpr_card, size_t fpr_len)
 {
   gpg_error_t err;
   strlist_t namelist = NULL;
+  const char *def_secret_key;
 
-  const char *def_secret_key = parse_def_secret_key (ctrl);
+  def_secret_key = parse_def_secret_key (ctrl);
 
   if (def_secret_key)
     add_to_strlist (&namelist, def_secret_key);
   else if (fpr_card)
     {
-      int rc = get_pubkey_byfprint (ctrl, pk, NULL, fpr_card, fpr_len);
+      err = get_pubkey_byfprint (ctrl, pk, NULL, fpr_card, fpr_len);
 
       /* The key on card can be not suitable for requested usage.  */
-      if (rc == GPG_ERR_UNUSABLE_PUBKEY)
+      if (gpg_err_code (err) == GPG_ERR_UNUSABLE_PUBKEY)
         fpr_card = NULL;        /* Fallthrough as no card.  */
       else
-        return rc;
+        return err;  /* Success or other error.  */
     }
 
-  if (!fpr_card
-      || (def_secret_key && def_secret_key[strlen (def_secret_key)-1] == '!'))
-    err = key_byname (ctrl, NULL, namelist, pk, 1, 0, NULL, NULL);
+  if (!fpr_card || (def_secret_key && *def_secret_key
+                    && def_secret_key[strlen (def_secret_key)-1] == '!'))
+    {
+      err = key_byname (ctrl, NULL, namelist, pk, 1, 0, NULL, NULL);
+    }
   else
     { /* Default key is specified and card key is also available.  */
       kbnode_t k, keyblock = NULL;
 
       err = key_byname (ctrl, NULL, namelist, pk, 1, 0, &keyblock, NULL);
-      if (!err)
-        for (k = keyblock; k; k = k->next)
-          {
-            PKT_public_key *pk_candidate;
-            char fpr[MAX_FINGERPRINT_LEN];
+      if (err)
+        goto leave;
+      for (k = keyblock; k; k = k->next)
+        {
+          PKT_public_key *pk_candidate;
+          char fpr[MAX_FINGERPRINT_LEN];
 
-            if (k->pkt->pkttype != PKT_PUBLIC_KEY
-                &&k->pkt->pkttype != PKT_PUBLIC_SUBKEY)
-              continue;
+          if (k->pkt->pkttype != PKT_PUBLIC_KEY
+              &&k->pkt->pkttype != PKT_PUBLIC_SUBKEY)
+            continue;
 
-            pk_candidate = k->pkt->pkt.public_key;
-            if (!pk_candidate->flags.valid)
-              continue;
-            if (!((pk_candidate->pubkey_usage & USAGE_MASK) & pk->req_usage))
-              continue;
-            fingerprint_from_pk (pk_candidate, fpr, NULL);
-            if (!memcmp (fpr_card, fpr, fpr_len))
-              {
-                release_public_key_parts (pk);
-                copy_public_key (pk, pk_candidate);
-                break;
-              }
-          }
+          pk_candidate = k->pkt->pkt.public_key;
+          if (!pk_candidate->flags.valid)
+            continue;
+          if (!((pk_candidate->pubkey_usage & USAGE_MASK) & pk->req_usage))
+            continue;
+          fingerprint_from_pk (pk_candidate, fpr, NULL);
+          if (!memcmp (fpr_card, fpr, fpr_len))
+            {
+              release_public_key_parts (pk);
+              copy_public_key (pk, pk_candidate);
+              break;
+            }
+        }
       release_kbnode (keyblock);
     }
 
+ leave:
   free_strlist (namelist);
-
   return err;
 }
+
+
 
 /*********************************************
  ***********  User ID printing helpers *******

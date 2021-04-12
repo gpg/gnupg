@@ -997,7 +997,7 @@ write_signature_packets (ctrl_t ctrl,
 
 
 /*
- * Sign the files whose names are in FILENAME usingall secret keys
+ * Sign the files whose names are in FILENAME using all secret keys
  * which can be taken from LOCUSR, if this is NULL, use the default
  * secret key.
  * If DETACHED has the value true, make a detached signature.
