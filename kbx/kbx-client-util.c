@@ -176,7 +176,8 @@ datastream_thread (void *arg)
   int rc;
   unsigned char lenbuf[4];
   size_t nread, datalen;
-  char *data, *tmpdata;
+  char *data = NULL;
+  char *tmpdata;
 
   /* log_debug ("%s: started\n", __func__); */
   while (kcd->fp)

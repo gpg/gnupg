@@ -844,7 +844,6 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
     {
       log_error (_("can't allocate control structure: %s\n"),
                  gpg_strerror (gpg_error_from_syserror ()));
-      xfree (ctrl);
       return;
     }
   ctrl->server_local->client_pid = ASSUAN_INVALID_PID;
