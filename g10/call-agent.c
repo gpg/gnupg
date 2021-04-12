@@ -1709,6 +1709,7 @@ card_keyinfo_cb (void *opaque, const char *line)
   struct card_keyinfo_parm_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
+  keypair_info_t keyinfo = NULL;
 
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
@@ -1719,7 +1720,6 @@ card_keyinfo_cb (void *opaque, const char *line)
     {
       const char *s;
       int n;
-      keypair_info_t keyinfo;
       keypair_info_t *l_p = &parm->list;
 
       while ((*l_p))
@@ -1727,23 +1727,13 @@ card_keyinfo_cb (void *opaque, const char *line)
 
       keyinfo = xtrycalloc (1, sizeof *keyinfo);
       if (!keyinfo)
-        {
-        alloc_error:
-          if (!parm->error)
-            parm->error = gpg_error_from_syserror ();
-          return 0;
-        }
+        goto alloc_error;
 
       for (n=0,s=line; hexdigitp (s); s++, n++)
         ;
 
       if (n != 40)
-        {
-        parm_error:
-          if (!parm->error)
-            parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
-          return 0;
-        }
+        goto parm_error;
 
       memcpy (keyinfo->keygrip, line, 40);
       keyinfo->keygrip[40] = 0;
@@ -1797,6 +1787,18 @@ card_keyinfo_cb (void *opaque, const char *line)
     }
 
   return err;
+
+ alloc_error:
+  xfree (keyinfo);
+  if (!parm->error)
+    parm->error = gpg_error_from_syserror ();
+  return 0;
+
+ parm_error:
+  xfree (keyinfo);
+  if (!parm->error)
+    parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+  return 0;
 }
 
 

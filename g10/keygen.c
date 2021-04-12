@@ -6140,12 +6140,20 @@ gen_card_key (int keyno, int algo, int is_primary, kbnode_t pub_root,
      the self-signatures. */
   err = agent_readkey (NULL, 1, keyid, &public);
   if (err)
-    return err;
+    {
+      xfree (pkt);
+      xfree (pk);
+      return err;
+    }
   err = gcry_sexp_sscan (&s_key, NULL, public,
                          gcry_sexp_canon_len (public, 0, NULL, NULL));
   xfree (public);
   if (err)
-    return err;
+    {
+      xfree (pkt);
+      xfree (pk);
+      return err;
+    }
 
   if (algo == PUBKEY_ALGO_RSA)
     err = key_from_sexp (pk->pkey, s_key, "public-key", "ne");
