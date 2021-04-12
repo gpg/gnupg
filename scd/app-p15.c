@@ -887,6 +887,34 @@ cdf_object_from_objid (app_t app, size_t objidlen, const unsigned char *objid,
 }
 
 
+/* Find a certificate object by its label and store a pointer to it at
+ * R_CDF. */
+static gpg_error_t
+cdf_object_from_label (app_t app, const char *label, cdf_object_t *r_cdf)
+{
+  cdf_object_t cdf;
+
+  if (!label)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  for (cdf = app->app_local->certificate_info; cdf; cdf = cdf->next)
+    if (cdf->label && !strcmp (cdf->label, label))
+      break;
+  if (!cdf)
+    for (cdf = app->app_local->trusted_certificate_info; cdf; cdf = cdf->next)
+      if (cdf->label && !strcmp (cdf->label, label))
+        break;
+  if (!cdf)
+    for (cdf = app->app_local->useful_certificate_info; cdf; cdf = cdf->next)
+      if (cdf->label && !strcmp (cdf->label, label))
+        break;
+  if (!cdf)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+  *r_cdf = cdf;
+  return 0;
+}
+
+
 /* Find a certificate object by the certificate ID CERTID and store a
  * pointer to it at R_CDF. */
 static gpg_error_t
@@ -896,12 +924,24 @@ cdf_object_from_certid (app_t app, const char *certid, cdf_object_t *r_cdf)
   size_t objidlen;
   unsigned char *objid;
   cdf_object_t cdf;
+  prkdf_object_t prkdf;
 
   err = parse_certid (app, certid, &objid, &objidlen);
   if (err)
     return err;
 
   err = cdf_object_from_objid (app, objidlen, objid, &cdf);
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+    {
+      /* Try again by finding the certid in the prkdf and matching by
+       * label.  */
+      for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
+        if (prkdf->objidlen == objidlen
+            && !memcmp (prkdf->objid, objid, objidlen))
+          break;
+      if (prkdf)
+        err = cdf_object_from_label (app, prkdf->label, &cdf);
+    }
   xfree (objid);
   if (err)
     return err;
@@ -3518,17 +3558,19 @@ read_p15_info (app_t app)
       char *extusage;
       char *p, *pend;
       int seen;
+      gpg_error_t errx;
 
       if (opt.debug)
         log_printhex (prkdf->objid, prkdf->objidlen, "p15: prkdf id=");
-      if (cdf_object_from_objid (app, prkdf->objidlen, prkdf->objid, &cdf))
+      if (cdf_object_from_objid (app, prkdf->objidlen, prkdf->objid, &cdf)
+          && cdf_object_from_label (app, prkdf->label, &cdf))
         continue; /* No matching certificate.  */
       if (!cdf->cert)  /* Read and parse the certificate.  */
         readcert_by_cdf (app, cdf, NULL, NULL);
       if (!cdf->cert)
         continue; /* Unsupported or broken certificate.  */
 
-      if (ksba_cert_get_ext_key_usages (cdf->cert, &extusage))
+      if ((errx=ksba_cert_get_ext_key_usages (cdf->cert, &extusage)))
         continue; /* No extended key usage attribute.  */
 
       if (opt.debug)
@@ -3801,33 +3843,22 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
   xfree (prkdf->serial_number);
   prkdf->serial_number = NULL;
 
-  /* FIXME: We should check whether a public key directory file and a
-     matching public key for PRKDF is available.  This should make
-     extraction of the key much easier.  My current test card doesn't
-     have one, so we can only use the fallback solution by looking for
-     a matching certificate and extract the key from there. */
+  /* We could have also checked whether a public key directory file
+   * and a matching public key for PRKDF is available.  This would
+   * make extraction of the key faster.  However, this way we don't
+   * have a way to look at extended key attributes to check gpgusage.
+   * FIXME: Add public key lookup if no certificate was found. */
 
-  /* Look for a matching certificate. A certificate matches if the Id
-     matches the one of the private key info. */
-  for (cdf = app->app_local->certificate_info; cdf; cdf = cdf->next)
-    if (cdf->objidlen == prkdf->objidlen
-        && !memcmp (cdf->objid, prkdf->objid, prkdf->objidlen))
-      break;
-  if (!cdf)
-    for (cdf = app->app_local->trusted_certificate_info; cdf; cdf = cdf->next)
-      if (cdf->objidlen == prkdf->objidlen
-          && !memcmp (cdf->objid, prkdf->objid, prkdf->objidlen))
-        break;
-  if (!cdf)
-    for (cdf = app->app_local->useful_certificate_info; cdf; cdf = cdf->next)
-      if (cdf->objidlen == prkdf->objidlen
-          && !memcmp (cdf->objid, prkdf->objid, prkdf->objidlen))
-        break;
-  if (!cdf)
-    {
-      err = gpg_error (GPG_ERR_NOT_FOUND);
-      goto leave;
-    }
+  /* Look for a matching certificate. A certificate matches if the id
+   * matches the one of the private key info.  If none was found we
+   * also try to match on the label.  */
+  err = cdf_object_from_objid (app, prkdf->objidlen, prkdf->objid, &cdf);
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+    err = cdf_object_from_label (app, prkdf->label, &cdf);
+  if (!err && !cdf)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  if (err)
+    goto leave;
 
   err = readcert_by_cdf (app, cdf, &der, &derlen);
   if (err)
