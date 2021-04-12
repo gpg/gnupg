@@ -620,6 +620,7 @@ write_part (FILE *fpin, unsigned long pktlen,
             }
         }
 
+      xfree (blob);
       goto ready;
     }
 
