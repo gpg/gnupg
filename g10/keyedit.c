@@ -3419,7 +3419,7 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	      tty_printf ("MDC");
 	      any = 1;
 	    }
-	  if (!uid->flags.aead)
+	  if (uid->flags.aead)
 	    {
 	      if (any)
 		tty_printf (", ");
