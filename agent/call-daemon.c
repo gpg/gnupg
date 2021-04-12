@@ -512,6 +512,8 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
           log_error ("error spawning wait_child_thread: %s\n", strerror (err));
         npth_attr_destroy (&tattr);
       }
+    else
+      xfree (wctp);
   }
 
  leave:

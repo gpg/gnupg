@@ -1660,13 +1660,6 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
-  if (shadow_type) {
-    char *buf = xtrymalloc(n+1);
-    memcpy(buf, s, n);
-    buf[n] = '\0';
-    *shadow_type = buf;
-  }
-
   if (smatch (&s, n, "t1-v1") || smatch(&s, n, "tpm2-v1"))
     {
       if (*s != '(')
@@ -1676,6 +1669,17 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
     }
   else
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+
+  if (shadow_type)
+    {
+      char *buf = xtrymalloc(n+1);
+      if (!buf)
+        return gpg_error_from_syserror ();
+      memcpy (buf, s, n);
+      buf[n] = '\0';
+      *shadow_type = buf;
+    }
+
   return 0;
 }
 
@@ -1701,9 +1705,9 @@ agent_is_tpm2_key (gcry_sexp_t s_skey)
     return 0;
 
   err = agent_get_shadow_info_type (buf, NULL, &type);
+  xfree (buf);
   if (err)
     return 0;
-  xfree (buf);
 
   err = strcmp (type, "tpm2-v1") == 0;
   xfree (type);

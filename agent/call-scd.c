@@ -487,7 +487,7 @@ agent_card_pksign (ctrl_t ctrl,
   /* FIXME: In the mdalgo case (INDATA,INDATALEN) might be long and
    * thus we can't convey it on a single Assuan line.  */
   if (!mdalgo)
-    gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   if (indatalen*2 + 50 > DIM(line))
     return unlock_scd (ctrl, gpg_error (GPG_ERR_GENERAL));
@@ -921,6 +921,7 @@ card_keyinfo_cb (void *opaque, const char *line)
   struct card_keyinfo_parm_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
+  struct card_key_info_s *keyinfo = NULL;
 
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
@@ -931,7 +932,6 @@ card_keyinfo_cb (void *opaque, const char *line)
     {
       const char *s;
       int n;
-      struct card_key_info_s *keyinfo;
       struct card_key_info_s **l_p = &parm->list;
 
       while ((*l_p))
@@ -939,23 +939,13 @@ card_keyinfo_cb (void *opaque, const char *line)
 
       keyinfo = xtrycalloc (1, sizeof *keyinfo);
       if (!keyinfo)
-        {
-        alloc_error:
-          if (!parm->error)
-            parm->error = gpg_error_from_syserror ();
-          return 0;
-        }
+        goto alloc_error;
 
       for (n=0,s=line; hexdigitp (s); s++, n++)
         ;
 
       if (n != 40)
-        {
-        parm_error:
-          if (!parm->error)
-            parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
-          return 0;
-        }
+        goto parm_error;
 
       memcpy (keyinfo->keygrip, line, 40);
       keyinfo->keygrip[40] = 0;
@@ -1011,6 +1001,18 @@ card_keyinfo_cb (void *opaque, const char *line)
     err = handle_pincache_put (line);
 
   return err;
+
+ alloc_error:
+  xfree (keyinfo);
+  if (!parm->error)
+    parm->error = gpg_error_from_syserror ();
+  return 0;
+
+ parm_error:
+  xfree (keyinfo);
+  if (!parm->error)
+    parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+  return 0;
 }
 
 
