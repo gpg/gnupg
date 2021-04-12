@@ -1148,7 +1148,10 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
           dfparm.mode = mode;
           dfparm.blklen = gcry_cipher_get_algo_blklen (algo);
           if (dfparm.blklen > sizeof (dfparm.helpblock))
-            return gpg_error (GPG_ERR_BUG);
+            {
+              rc = gpg_error (GPG_ERR_BUG);
+              goto leave;
+            }
 
           rc = ksba_cms_get_content_enc_iv (cms,
                                             dfparm.iv,
