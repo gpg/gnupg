@@ -2175,7 +2175,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   unsigned char oidbuf[64];
   size_t oidbuflen;
   unsigned char *outdata = NULL;
-  size_t outdatalen;
+  size_t outdatalen = 0;
   const unsigned char *s;
   size_t n;
   int keyref, mechanism;
@@ -2357,7 +2357,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   /* Now verify the Application PIN.  */
   err = verify_chv (app, ctrl, 0x80, force_verify, pincb, pincb_arg);
   if (err)
-    return err;
+    goto leave;
 
   /* Build the Dynamic Authentication Template.  */
   err = concat_tlv_list (0, &apdudata, &apdudatalen,
@@ -2403,7 +2403,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
             goto bad_der;
           log_assert (n >= (rval-s)+rlen);
           sval = find_tlv (rval+rlen, n-((rval-s)+rlen), 0x02, &slen);
-          if (!rval)
+          if (!sval)
             goto bad_der;
           rlenx = slenx = 0;
           if (rlen > slen)

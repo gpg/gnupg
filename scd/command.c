@@ -1438,7 +1438,10 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
   line = skip_options (line);
   if (!*line)
-    return set_error (GPG_ERR_ASS_PARAMETER, "no key number given");
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER, "no key number given");
+      goto leave;
+    }
   keyref = line;
   while (*line && !spacep (line))
     line++;
@@ -1448,7 +1451,10 @@ cmd_genkey (assuan_context_t ctx, char *line)
     goto leave;
 
   if (!ctrl->card_ctx)
-    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+    {
+      err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+      goto leave;
+    }
 
   keyref = keyref_buffer = xtrystrdup (keyref);
   if (!keyref)
