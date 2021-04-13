@@ -94,6 +94,7 @@ gpg_protect_tool_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \
 
 gpg_preset_passphrase_SOURCES = \
 	preset-passphrase.c
+gpg_preset_passphrase_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
 gpg_preset_passphrase_LDADD = \
@@ -121,3 +122,4 @@ t_common_ldadd = $(common_libs)  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 
 t_protect_SOURCES = t-protect.c protect.c
 t_protect_LDADD = $(t_common_ldadd)
+t_protect_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
