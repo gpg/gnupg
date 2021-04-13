@@ -3851,6 +3851,7 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
                         labelbuf, strlen (labelbuf),
                         NULL, (size_t)0);
       xfree (buf);
+      xfree (labelbuf);
     }
   return 0;
 }
@@ -5461,7 +5462,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   if (err)
     {
       log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
-      return err;
+      goto leave;
     }
 
   /* Now that we have all the information available run the actual PIN
@@ -5500,7 +5501,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   if (err)
     {
       log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
-      return err;
+      goto leave;
     }
 
   if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits > 2048)

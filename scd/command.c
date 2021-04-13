@@ -1113,7 +1113,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-  char *keyno;
+  char *save_line;
   int force;
   const char *s;
   time_t timestamp;
@@ -1134,26 +1134,35 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
   line = skip_options (line);
   if (!*line)
-    return set_error (GPG_ERR_ASS_PARAMETER, "no key number given");
-  keyno = line;
+    {
+      rc = set_error (GPG_ERR_ASS_PARAMETER, "no key number given");
+      goto leave;
+    }
+  save_line = line;
   while (*line && !spacep (line))
     line++;
   *line = 0;
 
   if ((rc = open_card (ctrl)))
-    return rc;
+    goto leave;
 
   if (!ctrl->app_ctx)
-    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+    {
+      rc = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+      goto leave;
+    }
 
-  keyno = xtrystrdup (keyno);
-  if (!keyno)
-    return out_of_core ();
-  rc = app_genkey (ctrl->app_ctx, ctrl, keyno, NULL,
-                   force? APP_GENKEY_FLAG_FORCE : 0,
-                   timestamp, pin_cb, ctx);
-  xfree (keyno);
+  {
+    char *tmp = xtrystrdup (save_line);
+    if (!tmp)
+      return gpg_error_from_syserror ();
+    rc = app_genkey (ctrl->app_ctx, ctrl, tmp, NULL,
+                     force? APP_GENKEY_FLAG_FORCE : 0,
+                     timestamp, pin_cb, ctx);
+    xfree (tmp);
+  }
 
+ leave:
   return rc;
 }
 
