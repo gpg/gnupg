@@ -1785,6 +1785,7 @@ cmd_salut (card_info_t info, const char *argstr)
         {
           tty_printf (_("Error: invalid response.\n"));
           xfree (data);
+          data = NULL;
           goto again;
         }
     }
