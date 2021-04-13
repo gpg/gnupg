@@ -243,6 +243,9 @@ struct
     unsigned int use_only_openpgp_card:1;
     /* Force signing keys even if a key signature already exists.  */
     unsigned int force_sign_key:1;
+    /* The next flag is set internally iff IMPORT_SELF_SIGS_ONLY has
+     * been set by the user and is not the default value.  */
+    unsigned int expl_import_self_sigs_only:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

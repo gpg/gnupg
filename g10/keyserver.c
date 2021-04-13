@@ -1763,9 +1763,12 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
   if (opt.verbose && source)
     log_info ("data source: %s\n", source);
 
+
+
   if (!err)
     {
       struct ks_retrieval_screener_arg_s screenerarg;
+      unsigned int options;
 
       /* FIXME: Check whether this comment should be moved to dirmngr.
 
@@ -1779,12 +1782,18 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
          never accept or send them but we better protect against rogue
          keyservers. */
 
+      /* For LDAP servers we reset IMPORT_SELF_SIGS_ONLY unless it has
+       * been set explicitly.  */
+      options = (opt.keyserver_options.import_options | IMPORT_NO_SECKEY);
+      if (source && (!strncmp (source, "ldap:", 5)
+                     || !strncmp (source, "ldaps:", 6))
+          && !opt.flags.expl_import_self_sigs_only)
+        options &= ~IMPORT_SELF_SIGS_ONLY;
+
       screenerarg.desc = desc;
       screenerarg.ndesc = *r_ndesc_used;
       import_keys_es_stream (ctrl, datastream, stats_handle,
-                             r_fpr, r_fprlen,
-                             (opt.keyserver_options.import_options
-                              | IMPORT_NO_SECKEY),
+                             r_fpr, r_fprlen, options,
                              keyserver_retrieval_screener, &screenerarg,
                              only_fprs? KEYORG_KS : 0,
                              source);

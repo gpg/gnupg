@@ -966,7 +966,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
   {
     /* The ordering is significant.  Specifically, "pgpcertid" needs
        to be the second item in the list, since everything after it
-       may be discarded we aren't in verbose mode. */
+       may be discarded if we aren't in verbose mode. */
     char *attrs[] =
       {
 	"dummy",
@@ -1016,6 +1016,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       /* The set of entries that we've seen.  */
       strlist_t seen = NULL;
       LDAPMessage *each;
+      int anykey = 0;
 
       for (npth_unprotect (),
              each = ldap_first_entry (ldap_conn, message),
@@ -1068,6 +1069,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 		      es_fprintf (fp, "\nKEY 0x%s END\n", certid[0]);
 
 		      ldap_value_free (vals);
+                      anykey = 1;
 		    }
 		}
 	    }
@@ -1079,6 +1081,10 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 
       if (! fp)
 	err = gpg_error (GPG_ERR_NO_DATA);
+
+      if (!err && anykey)
+        err = dirmngr_status_printf (ctrl, "SOURCE", "%s://%s",
+                                     uri->scheme, uri->host? uri->host:"");
     }
   }
 
