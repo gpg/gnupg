@@ -249,7 +249,13 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
 
   se = xtrymalloc (sizeof *se + strlen (expr));
   if (!se)
-    return my_error_from_syserror ();
+    {
+      gpg_error_t err = my_error_from_syserror ();
+
+      recsel_release (se_head);
+      xfree (expr_buffer);
+      return err;
+    }
   strcpy (se->name, expr);
   se->next = NULL;
   se->not = 0;
