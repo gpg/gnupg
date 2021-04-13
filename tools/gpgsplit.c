@@ -582,7 +582,10 @@ write_part (FILE *fpin, unsigned long pktlen,
         {
           c = getc (fpin);
           if (c == EOF)
-            goto read_error;
+            {
+              xfree (blob);
+              goto read_error;
+            }
           blob[i] = c;
         }
       len = public_key_length (blob, pktlen);
@@ -594,18 +597,27 @@ write_part (FILE *fpin, unsigned long pktlen,
       if ( (hdr[0] & 0x40) )
         {
           if (write_new_header (fpout, pkttype, len))
-            goto write_error;
+            {
+              xfree (blob);
+              goto write_error;
+            }
         }
       else
         {
           if (write_old_header (fpout, pkttype, len))
-            goto write_error;
+            {
+              xfree (blob);
+              goto write_error;
+            }
         }
 
       for (i=0; i < len; i++)
         {
           if ( putc (blob[i], fpout) == EOF )
-            goto write_error;
+            {
+              xfree (blob);
+              goto write_error;
+            }
         }
 
       goto ready;
