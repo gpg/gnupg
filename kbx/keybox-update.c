@@ -294,7 +294,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         {
           es_fclose (fp);
           es_fclose (newfp);
-          return rc;
+          goto leave;
         }
     }
 
@@ -306,7 +306,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         {
           es_fclose (fp);
           es_fclose (newfp);
-          return rc;
+          goto leave;
         }
     }
 
