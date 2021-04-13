@@ -1985,6 +1985,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
       err = ccid_dev_scan (&dl->idx_max, &dl->table);
       if (err)
         {
+          xfree (dl);
           npth_mutex_unlock (&reader_table_lock);
           return err;
         }
@@ -2009,6 +2010,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
       if (!pcsc.context)
         if (pcsc_init () < 0)
           {
+            xfree (dl);
             npth_mutex_unlock (&reader_table_lock);
             return gpg_error (GPG_ERR_NO_SERVICE);
           }
@@ -2023,6 +2025,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
 
               log_error ("error allocating memory for reader list\n");
               close_pcsc_reader (0);
+              xfree (dl);
               npth_mutex_unlock (&reader_table_lock);
               return err;
             }
@@ -2034,6 +2037,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
                      pcsc_error_string (r), r);
           xfree (p);
           close_pcsc_reader (0);
+          xfree (dl);
           npth_mutex_unlock (&reader_table_lock);
           return iso7816_map_sw (pcsc_error_to_sw (r));
         }

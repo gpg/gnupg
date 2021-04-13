@@ -372,7 +372,7 @@ pubkey_from_pk_file (app_t app, int pkfid, int cfid,
 
           newlen = 1 + buflen[i] - offset[i];
           newbuf = xtrymalloc (newlen);
-          if (!newlen)
+          if (!newbuf)
             {
               err = gpg_error_from_syserror ();
               xfree (buffer[0]);
