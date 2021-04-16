@@ -205,4 +205,26 @@ compress_algo_t;
 #define OPENPGP_MAX_NENC   2  /* Maximum number of encryption parameters. */
 
 
+/*-- openpgp-fpr.c --*/
+gpg_error_t compute_openpgp_fpr (int keyversion, int pgpalgo,
+                                 unsigned long timestamp,
+                                 gcry_buffer_t *iov, int iovcnt,
+                                 unsigned char *result,
+                                 unsigned int *r_resultlen);
+gpg_error_t compute_openpgp_fpr_rsa (int keyversion,
+                                     unsigned long timestamp,
+                                     const unsigned char *m, unsigned int mlen,
+                                     const unsigned char *e, unsigned int elen,
+                                     unsigned char *result,
+                                     unsigned int *r_resultlen);
+gpg_error_t compute_openpgp_fpr_ecc (int keyversion,
+                                     unsigned long timestamp,
+                                     const char *curvename, int for_encryption,
+                                     const unsigned char *q, unsigned int qlen,
+                                     const unsigned char *kdf,
+                                     unsigned int kdflen,
+                                     unsigned char *result,
+                                     unsigned int *r_resultlen);
+
+
 #endif /*GNUPG_COMMON_OPENPGPDEFS_H*/
