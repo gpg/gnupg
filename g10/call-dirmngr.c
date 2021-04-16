@@ -38,6 +38,7 @@
 #include "../common/asshelp.h"
 #include "../common/keyserver.h"
 #include "../common/status.h"
+#include "keyserver-internal.h"
 #include "call-dirmngr.h"
 
 
@@ -669,7 +670,9 @@ ks_get_data_cb (void *opaque, const void *data, size_t datalen)
    don't need to escape the patterns before sending them to the
    server.
 
-   If QUICK is set the dirmngr is advised to use a shorter timeout.
+   Bit values for FLAGS are:
+   - KEYSERVER_IMPORT_FLAG_QUICK :: dirmngr shall use a shorter timeout.
+   - KEYSERVER_IMPORT_FLAG_LDAP  :: dirmngr shall only use LDAP or NTDS.
 
    If R_SOURCE is not NULL the source of the data is stored as a
    malloced string there.  If a source is not known NULL is stored.
@@ -681,7 +684,8 @@ ks_get_data_cb (void *opaque, const void *data, size_t datalen)
    are able to ask for (1000-10-1)/(2+8+1) = 90 keys at once.  */
 gpg_error_t
 gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern,
-                    keyserver_spec_t override_keyserver, int quick,
+                    keyserver_spec_t override_keyserver,
+                    unsigned int flags,
                     estream_t *r_fp, char **r_source)
 {
   gpg_error_t err;
@@ -727,7 +731,12 @@ gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern,
 
   /* Lump all patterns into one string.  */
   init_membuf (&mb, 1024);
-  put_membuf_str (&mb, quick? "KS_GET --quick --" : "KS_GET --");
+  put_membuf_str (&mb, "KS_GET");
+  if ((flags & KEYSERVER_IMPORT_FLAG_QUICK))
+    put_membuf_str (&mb, " --quick");
+  if ((flags & KEYSERVER_IMPORT_FLAG_LDAP))
+    put_membuf_str (&mb, " --ldap");
+  put_membuf_str (&mb, " --");
   for (idx=0; pattern[idx]; idx++)
     {
       put_membuf (&mb, " ", 1); /* Append Delimiter.  */

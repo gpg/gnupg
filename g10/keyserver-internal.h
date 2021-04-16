@@ -25,6 +25,10 @@
 #include "../common/iobuf.h"
 #include "../common/types.h"
 
+/* Flags for the keyserver import functions.  */
+#define KEYSERVER_IMPORT_FLAG_QUICK 1
+#define KEYSERVER_IMPORT_FLAG_LDAP  2
+
 int parse_keyserver_options(char *options);
 void free_keyserver_spec(struct keyserver_spec *keyserver);
 struct keyserver_spec *keyserver_match(struct keyserver_spec *spec);
@@ -35,9 +39,11 @@ int keyserver_any_configured (ctrl_t ctrl);
 int keyserver_export (ctrl_t ctrl, strlist_t users);
 int keyserver_import (ctrl_t ctrl, strlist_t users);
 int keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
-                             struct keyserver_spec *keyserver, int quick);
+                             struct keyserver_spec *keyserver,
+                             unsigned int flags);
 int keyserver_import_keyid (ctrl_t ctrl, u32 *keyid,
-                            struct keyserver_spec *keyserver, int quick);
+                            struct keyserver_spec *keyserver,
+                            unsigned int flags);
 gpg_error_t keyserver_refresh (ctrl_t ctrl, strlist_t users);
 gpg_error_t keyserver_search (ctrl_t ctrl, strlist_t tokens);
 int keyserver_fetch (ctrl_t ctrl, strlist_t urilist, int origin);
@@ -45,7 +51,8 @@ int keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
                            unsigned char **fpr,size_t *fpr_len);
 gpg_error_t keyserver_import_pka (ctrl_t ctrl, const char *name,
                                   unsigned char **fpr,size_t *fpr_len);
-gpg_error_t keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
+gpg_error_t keyserver_import_wkd (ctrl_t ctrl, const char *name,
+                                  unsigned int flags,
                                   unsigned char **fpr, size_t *fpr_len);
 int keyserver_import_ntds (ctrl_t ctrl, const char *name,
                            unsigned char **fpr,size_t *fpr_len);

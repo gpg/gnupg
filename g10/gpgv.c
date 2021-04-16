@@ -420,23 +420,23 @@ keyserver_any_configured (ctrl_t ctrl)
 }
 
 int
-keyserver_import_keyid (u32 *keyid, void *dummy, int quick)
+keyserver_import_keyid (u32 *keyid, void *dummy, unsigned int flags)
 {
   (void)keyid;
   (void)dummy;
-  (void)quick;
+  (void)flags;
   return -1;
 }
 
 int
 keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
-			 struct keyserver_spec *keyserver, int quick)
+			 struct keyserver_spec *keyserver, unsigned int flags)
 {
   (void)ctrl;
   (void)fprint;
   (void)fprint_len;
   (void)keyserver;
-  (void)quick;
+  (void)flags;
   return -1;
 }
 
@@ -456,12 +456,12 @@ keyserver_import_pka (const char *name,unsigned char *fpr)
 }
 
 gpg_error_t
-keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
+keyserver_import_wkd (ctrl_t ctrl, const char *name, unsigned int flags,
                       unsigned char **fpr, size_t *fpr_len)
 {
   (void)ctrl;
   (void)name;
-  (void)quick;
+  (void)flags;
   (void)fpr;
   (void)fpr_len;
   return GPG_ERR_BUG;

@@ -108,7 +108,7 @@ static struct parse_options keyserver_opts[]=
 static gpg_error_t keyserver_get (ctrl_t ctrl,
                                   KEYDB_SEARCH_DESC *desc, int ndesc,
                                   struct keyserver_spec *override_keyserver,
-                                  int quick,
+                                  unsigned int flags,
                                   unsigned char **r_fpr, size_t *r_fprlen);
 static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs);
 
@@ -1176,7 +1176,8 @@ keyserver_import_ntds (ctrl_t ctrl, const char *mbox,
 
 int
 keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
-			 struct keyserver_spec *keyserver, int quick)
+			 struct keyserver_spec *keyserver,
+                         unsigned int flags)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1193,12 +1194,13 @@ keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
 
   /* TODO: Warn here if the fingerprint we got doesn't match the one
      we asked for? */
-  return keyserver_get (ctrl, &desc, 1, keyserver, quick, NULL, NULL);
+  return keyserver_get (ctrl, &desc, 1, keyserver, flags, NULL, NULL);
 }
 
 int
 keyserver_import_keyid (ctrl_t ctrl,
-                        u32 *keyid,struct keyserver_spec *keyserver, int quick)
+                        u32 *keyid,struct keyserver_spec *keyserver,
+                        unsigned int flags)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1208,7 +1210,7 @@ keyserver_import_keyid (ctrl_t ctrl,
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_get (ctrl, &desc, 1, keyserver, quick, NULL, NULL);
+  return keyserver_get (ctrl, &desc, 1, keyserver, flags, NULL, NULL);
 }
 
 
@@ -1599,7 +1601,7 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
                      int *r_ndesc_used,
                      import_stats_t stats_handle,
                      struct keyserver_spec *override_keyserver,
-                     int quick,
+                     unsigned int flags,
                      unsigned char **r_fpr, size_t *r_fprlen)
 
 {
@@ -1628,7 +1630,7 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
      single request will be rejected only later by gpg_dirmngr_ks_get
      but we are sure that R_NDESC_USED has been updated.  This avoids
      a possible indefinite loop.  */
-  linelen = 17; /* "KS_GET --quick --" */
+  linelen = 24; /* "KS_GET --quick --ldap --" */
   for (npat=npat_fpr=0, idx=0; idx < ndesc; idx++)
     {
       int quiet = 0;
@@ -1755,7 +1757,7 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 
   only_fprs = (npat && npat == npat_fpr);
 
-  err = gpg_dirmngr_ks_get (ctrl, pattern, override_keyserver, quick,
+  err = gpg_dirmngr_ks_get (ctrl, pattern, override_keyserver, flags,
                             &datastream, &source);
   for (idx=0; idx < npat; idx++)
     xfree (pattern[idx]);
@@ -1809,11 +1811,12 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
    (DESC,NDESC).  Allowed search modes are keyid, fingerprint, and
    exact searches.  OVERRIDE_KEYSERVER gives an optional override
    keyserver. If (R_FPR,R_FPRLEN) are not NULL, they may return the
-   fingerprint of a single imported key.  If QUICK is set, dirmngr is
-   advised to use a shorter timeout. */
+   fingerprint of a single imported key.  If the FLAG bit
+   KEYSERVER_IMPORT_FLAG_QUICK is set, dirmngr is advised to use a
+   shorter timeout. */
 static gpg_error_t
 keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
-               struct keyserver_spec *override_keyserver, int quick,
+               struct keyserver_spec *override_keyserver, unsigned int flags,
                unsigned char **r_fpr, size_t *r_fprlen)
 {
   gpg_error_t err;
@@ -1826,7 +1829,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
   for (;;)
     {
       err = keyserver_get_chunk (ctrl, desc, ndesc, &ndesc_used, stats_handle,
-                                 override_keyserver, quick, r_fpr, r_fprlen);
+                                 override_keyserver, flags, r_fpr, r_fprlen);
       if (!err)
         any_good = 1;
       if (err || ndesc_used >= ndesc)
@@ -2087,7 +2090,7 @@ keyserver_import_pka (ctrl_t ctrl, const char *name,
 
 /* Import a key using the Web Key Directory protocol.  */
 gpg_error_t
-keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
+keyserver_import_wkd (ctrl_t ctrl, const char *name, unsigned int flags,
                       unsigned char **fpr, size_t *fpr_len)
 {
   gpg_error_t err;
@@ -2106,7 +2109,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
       return err;
     }
 
-  err = gpg_dirmngr_wkd_get (ctrl, mbox, quick, &key, &url);
+  err = gpg_dirmngr_wkd_get (ctrl, mbox, flags, &key, &url);
   if (err)
     ;
   else if (key)
