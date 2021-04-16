@@ -42,6 +42,7 @@
 #include "../common/i18n.h"
 #include "../common/tlv.h"
 #include "../common/host2net.h"
+#include "../common/openpgpdefs.h"
 #include "apdu.h" /* fixme: we should move the card detection to a
                      separate file */
 
@@ -254,6 +255,7 @@ struct prkdf_object_s
   unsigned int keygrip_valid:1;
   unsigned int key_reference_valid:1;
   unsigned int have_off:1;
+  unsigned int have_keytime:1;
 
   /* Flag indicating that the corresponding PIN has already been
    * verified.  Note that for cards which are able to return the
@@ -309,6 +311,10 @@ struct prkdf_object_s
   /* Malloced SerialNumber from the Subject-DN of the corresponding
    * certificate or NULL if not known.  */
   char *serial_number;
+
+  /* KDF/KEK parameter for OpenPGP's ECDH.  First byte is zero if not
+   * availabale. .*/
+  unsigned char ecdh_kdf[4];
 
   /* Length and allocated buffer with the Id of this object. */
   size_t objidlen;
@@ -633,7 +639,6 @@ do_deinit (app_t app)
       app->app_local = NULL;
     }
 }
-
 
 
 /* Do a select and a read for the file with EFID.  EFID_DESC is a
@@ -3557,8 +3562,7 @@ read_p15_info (app_t app)
       cdf_object_t cdf;
       char *extusage;
       char *p, *pend;
-      int seen;
-      gpg_error_t errx;
+      int seen, i;
 
       if (opt.debug)
         log_printhex (prkdf->objid, prkdf->objidlen, "p15: prkdf id=");
@@ -3570,7 +3574,38 @@ read_p15_info (app_t app)
       if (!cdf->cert)
         continue; /* Unsupported or broken certificate.  */
 
-      if ((errx=ksba_cert_get_ext_key_usages (cdf->cert, &extusage)))
+      if (prkdf->is_ecc)
+        {
+          const char *oid;
+          const unsigned char *der;
+          size_t off, derlen, objlen, hdrlen;
+          int class, tag, constructed, ndef;
+
+          for (i=0; !(err = ksba_cert_get_extension
+                      (cdf->cert, i, &oid, NULL, &off, &derlen)); i++)
+            if (!strcmp (oid, "1.3.6.1.4.1.11591.2.2.10") )
+              break;
+          if (!err && (der = ksba_cert_get_image (cdf->cert, NULL)))
+            {
+              der += off;
+              err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                                      &ndef, &objlen, &hdrlen);
+              if (!err && (objlen > derlen || tag != TAG_OCTET_STRING || ndef))
+                err = gpg_error (GPG_ERR_INV_OBJ);
+              if (!err)
+                {
+                  derlen = objlen;
+                  if (opt.debug)
+                    log_printhex (der, derlen, "p15: OpenPGP KDF parms:");
+                  /* Store them if they match the known OpenPGP format. */
+                  if (derlen == 4 && der[0] == 3 && der[1]  == 1)
+                    memcpy (prkdf->ecdh_kdf, der, 4);
+                }
+            }
+          err = 0;
+        }
+
+      if (ksba_cert_get_ext_key_usages (cdf->cert, &extusage))
         continue; /* No extended key usage attribute.  */
 
       if (opt.debug)
@@ -3933,6 +3968,7 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
       ksba_cert_get_validity (cert, 0, isot);
       t = isotime2epoch (isot);
       prkdf->keytime = (t == (time_t)(-1))? 0 : (u32)t;
+      prkdf->have_keytime = 1;
     }
 
   if (!err && !prkdf->keyalgostr)
@@ -4053,7 +4089,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
             }
 
           log_assert (strlen (prkdf->keygrip) == 40);
-          if (prkdf->keytime)
+          if (prkdf->keytime && prkdf->have_keytime)
             snprintf (keytime, sizeof keytime, "%lu",
                       (unsigned long)prkdf->keytime);
           else
@@ -4320,6 +4356,98 @@ compare_aodf_objid (const void *arg_a, const void *arg_b)
 }
 
 
+static void
+send_key_fpr_line (ctrl_t ctrl, int number, const unsigned char *fpr)
+{
+  char buf[41];
+  char numbuf[25];
+
+  bin2hex (fpr, 20, buf);
+  if (number == -1)
+    *numbuf = 0; /* Don't print the key number */
+  else
+    snprintf (numbuf, sizeof numbuf, "%d", number);
+  send_status_info (ctrl, "KEY-FPR",
+                    numbuf, (size_t)strlen(numbuf),
+                    buf, (size_t)strlen (buf),
+                    NULL, 0);
+}
+
+
+/* If possible Emit a FPR-KEY status line for the private key object
+ * PRKDF using NUMBER as index.  */
+static void
+send_key_fpr (app_t app, ctrl_t ctrl, prkdf_object_t prkdf, int number)
+{
+  gpg_error_t err;
+  cdf_object_t cdf;
+  unsigned char *pk, *fixed_pk;
+  size_t pklen, fixed_pklen;
+  const unsigned char *m, *e, *q;
+  size_t mlen, elen, qlen;
+  unsigned char fpr20[20];
+
+  if (cdf_object_from_objid (app, prkdf->objidlen, prkdf->objid, &cdf)
+      && cdf_object_from_label (app, prkdf->label, &cdf))
+    return;
+  if (!cdf->cert)
+    readcert_by_cdf (app, cdf, NULL, NULL);
+  if (!cdf->cert)
+    return;
+  if (!prkdf->have_keytime)
+    return;
+  pk = ksba_cert_get_public_key (cdf->cert);
+  if (!pk)
+    return;
+  pklen = gcry_sexp_canon_len (pk, 0, NULL, &err);
+
+  if (uncompress_ecc_q_in_canon_sexp (pk, pklen, &fixed_pk, &fixed_pklen))
+    {
+      xfree (pk);
+      return;
+    }
+  if (fixed_pk)
+    {
+      xfree (pk); pk = NULL;
+      pk = fixed_pk;
+      pklen = fixed_pklen;
+    }
+
+  switch (prkdf->keyalgo)
+    {
+    case GCRY_PK_RSA:
+      if (!get_rsa_pk_from_canon_sexp (pk, pklen,
+                                       &m, &mlen, &e, &elen)
+          && !compute_openpgp_fpr_rsa (4,
+                                       prkdf->keytime,
+                                       m, mlen, e, elen,
+                                       fpr20, NULL))
+        send_key_fpr_line (ctrl, number, fpr20);
+      break;
+
+    case GCRY_PK_ECC:
+    case GCRY_PK_ECDSA:
+    case GCRY_PK_ECDH:
+    case GCRY_PK_EDDSA:
+      /* Note that NUMBER 2 indicates the encryption key.  */
+      if (!get_ecc_q_from_canon_sexp (pk, pklen, &q, &qlen)
+          && !compute_openpgp_fpr_ecc (4,
+                                       prkdf->keytime,
+                                       prkdf->keyalgostr,
+                                       number == 2,
+                                       q, qlen,
+                                       prkdf->ecdh_kdf, 4,
+                                       fpr20, NULL))
+        send_key_fpr_line (ctrl, number, fpr20);
+      break;
+
+    default: /* No Fingerprint for an unknown algo.  */
+      break;
+
+    }
+  xfree (pk);
+}
+
 
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
@@ -4528,6 +4656,43 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           xfree (idbuf);
           xfree (labelbuf);
         }
+      return 0;
+    }
+  else if (!strcmp (name, "KEY-FPR"))
+    {
+      /* Send KEY-FPR for the two openpgp keys. */
+      for (prkdf = app->app_local->private_key_info; prkdf;
+           prkdf = prkdf->next)
+        {
+          if (app->app_local->any_gpgusage)
+            {
+              if (prkdf->gpgusage.sign)
+                break;
+            }
+          else
+            {
+              if (prkdf->usageflags.sign || prkdf->usageflags.sign_recover)
+                break;
+            }
+        }
+      if (prkdf)
+        send_key_fpr (app, ctrl, prkdf, 1);
+      for (prkdf = app->app_local->private_key_info; prkdf;
+           prkdf = prkdf->next)
+        {
+          if (app->app_local->any_gpgusage)
+            {
+              if (prkdf->gpgusage.encr)
+                break;
+            }
+          else
+            {
+              if (prkdf->usageflags.decrypt || prkdf->usageflags.unwrap)
+                break;
+            }
+        }
+      if (prkdf)
+        send_key_fpr (app, ctrl, prkdf, 2);
       return 0;
     }
 
