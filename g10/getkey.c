@@ -3875,6 +3875,24 @@ get_seckey_default_or_card (ctrl_t ctrl, PKT_public_key *pk,
   else if (fpr_card)
     {
       err = get_pubkey_byfprint (ctrl, pk, NULL, fpr_card, fpr_len);
+      if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
+        {
+          if (opt.debug)
+            log_debug ("using LDAP to find public key for current card\n");
+          err = keyserver_import_fprint (ctrl, fpr_card, fpr_len,
+                                         opt.keyserver,
+                                         KEYSERVER_IMPORT_FLAG_LDAP);
+          if (!err)
+            err = get_pubkey_byfprint (ctrl, pk, NULL, fpr_card, fpr_len);
+          else if (gpg_err_code (err) == GPG_ERR_NO_DATA
+                   || gpg_err_code (err) == GPG_ERR_NO_KEYSERVER)
+            {
+              /* Dirmngr returns NO DATA is the selected keyserver
+               * does not have the requested key.  It returns NO
+               * KEYSERVER if no LDAP keyservers are configured.  */
+              err = gpg_error (GPG_ERR_NO_PUBKEY);
+            }
+        }
 
       /* The key on card can be not suitable for requested usage.  */
       if (gpg_err_code (err) == GPG_ERR_UNUSABLE_PUBKEY)

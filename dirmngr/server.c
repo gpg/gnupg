@@ -2403,11 +2403,12 @@ cmd_ks_search (assuan_context_t ctx, char *line)
 
 
 static const char hlp_ks_get[] =
-  "KS_GET {<pattern>}\n"
+  "KS_GET [--quick] [--ldap] {<pattern>}\n"
   "\n"
   "Get the keys matching PATTERN from the configured OpenPGP keyservers\n"
   "(see command KEYSERVER).  Each pattern should be a keyid, a fingerprint,\n"
-  "or an exact name indicated by the '=' prefix.";
+  "or an exact name indicated by the '=' prefix.  Option --quick uses a\n"
+  "shorter timeout; --ldap will use only ldap servers";
 static gpg_error_t
 cmd_ks_get (assuan_context_t ctx, char *line)
 {
@@ -2416,9 +2417,11 @@ cmd_ks_get (assuan_context_t ctx, char *line)
   strlist_t list, sl;
   char *p;
   estream_t outfp;
+  int ldap_only;
 
   if (has_option (line, "--quick"))
     ctrl->timeout = opt.connect_quick_timeout;
+  ldap_only = has_option (line, "--ldap");
   line = skip_options (line);
 
   /* Break the line into a strlist.  Each pattern is by
@@ -2460,7 +2463,8 @@ cmd_ks_get (assuan_context_t ctx, char *line)
       ctrl->server_local->inhibit_data_logging = 1;
       ctrl->server_local->inhibit_data_logging_now = 0;
       ctrl->server_local->inhibit_data_logging_count = 0;
-      err = ks_action_get (ctrl, ctrl->server_local->keyservers, list, outfp);
+      err = ks_action_get (ctrl, ctrl->server_local->keyservers,
+                           list, ldap_only, outfp);
       es_fclose (outfp);
       ctrl->server_local->inhibit_data_logging = 0;
     }
