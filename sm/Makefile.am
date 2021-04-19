@@ -79,7 +79,7 @@ module_maint_tests = t-minip12
 
 t_common_src =
 t_common_ldadd = $(libcommon) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) \
-                 $(GPG_ERROR_LIBS) $(LIBINTL)
+                 $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
 
 t_minip12_CFLAGS = -DWITHOUT_NPTH=1 \

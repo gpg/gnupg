@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #ifdef HAVE_LIBREADLINE
 # define GNUPG_LIBREADLINE_H_INCLUDED
 # include <readline/readline.h>
