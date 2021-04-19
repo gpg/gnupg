@@ -272,7 +272,7 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
 	     *.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
 	     pubring.gpg pubring.gpg~ pubring.kbx pubring.kbx~ \
-	     secring.gpg pubring.pkr secring.skr \
+	     common.conf secring.gpg pubring.pkr secring.skr \
 	     gnupg-test.stop random_seed gpg-agent.log tofu.db \
 	     passphrases sshcontrol S.gpg-agent.ssh report.xml
 

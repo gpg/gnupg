@@ -420,12 +420,11 @@ static known_option_t known_options_gpg[] =
    { "completes-needed",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "marginals-needed",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
-   { "use-keyboxd",          GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
-
    /* The next items are pseudo options which we read via --gpgconf-list.
     * The meta information is taken from the table below.  */
    { "default_pubkey_algo",  GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "compliance_de_vs",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
+   { "use_keyboxd",          GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
    { NULL }
  };
@@ -436,6 +435,11 @@ static const char *known_pseudo_options_gpg[] =
     * result is valid for all components.
     *                  v-- ARGPARSE_TYPE_INT */
    "compliance_de_vs:0:1:@:",
+   /* True is use_keyboxd is enabled.  That option can be set in
+    * common.conf but is not direcly supported by gpgconf.  Thus we
+    * only allow to read it out.
+    *                  v-- ARGPARSE_TYPE_INT */
+   "use_keyboxd:0:1:@:",
    NULL
  };
 
@@ -465,8 +469,6 @@ static known_option_t known_options_gpgsm[] =
    { "auto-issuer-key-retrieve",       GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "cipher-algo",                    GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "disable-trusted-cert-crl-check", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
-
-   { "use-keyboxd",                    GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
    /* Pseudo option follows.  See also table below. */
    { "default_pubkey_algo",            GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },

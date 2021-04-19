@@ -2476,7 +2476,8 @@ opposite meaning. The options are:
   signatures.  Defaults to yes.
 
   @item bulk-import
-  When used with --use-keyboxd do the import within a single
+  When used the keyboxd (option "use-keyboxd" in @file{common.conf})
+  do the import within a single
   transaction.  This is an experimental feature.
 
   @item import-minimal
@@ -3752,6 +3753,12 @@ current home directory (@pxref{option --homedir}).
   may not be entered and the option may not be abbreviated.  This default
   name may be changed on the command line (@pxref{gpg-option --options}).
   You should backup this file.
+
+  @item common.conf
+  @efindex common.conf
+  This is an optional configuration file read by @command{@gpgname} on
+  startup.  It may contain options pertaining to all components of
+  GnuPG.  Its current main use is for the "use-keyboxd" option.
 
 @end table
 

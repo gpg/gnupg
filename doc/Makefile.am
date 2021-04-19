@@ -24,6 +24,7 @@ include $(top_srcdir)/am/cmacros.am
 examples = examples/README examples/scd-event examples/trustlist.txt	\
 	   examples/VS-NfD.prf examples/Automatic.prf                   \
            examples/debug.prf  examples/qualified.txt                   \
+	   examples/common.conf                                         \
 	   examples/systemd-user/README 				\
 	   examples/systemd-user/dirmngr.service 			\
 	   examples/systemd-user/dirmngr.socket				\

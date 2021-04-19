@@ -26,6 +26,7 @@ common/helpfile.c
 common/gettime.c
 common/ksba-io-support.c
 common/ttyio.c
+common/comopt.c
 
 common/utf8conv.c
 common/dotlock.c

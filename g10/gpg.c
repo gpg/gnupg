@@ -66,6 +66,7 @@
 #include "../common/mbox-util.h"
 #include "../common/shareddefs.h"
 #include "../common/compliance.h"
+#include "../common/comopt.h"
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
@@ -1961,6 +1962,8 @@ gpgconf_list (void)
   es_printf ("compliance_de_vs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
              0 /*gnupg_rng_is_compliant (CO_DE_VS)*/);
 
+  es_printf ("use_keyboxd:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, opt.use_keyboxd);
+
 }
 
 
@@ -3712,6 +3715,34 @@ main (int argc, char **argv)
         write_status_failure ("option-parser", gpg_error(GPG_ERR_GENERAL));
         g10_exit(2);
       }
+
+    /* Process common component options.  */
+    if (parse_comopt (GNUPG_MODULE_NAME_GPG, debug_argparser))
+      {
+        write_status_failure ("option-parser", gpg_error(GPG_ERR_GENERAL));
+        g10_exit(2);
+      }
+
+    if (!logfile)
+      {
+        logfile = comopt.logfile;
+        comopt.logfile = NULL;
+      }
+
+    if (opt.use_keyboxd)
+      log_info ("Note: Please move option \"%s\" to \"common.conf\"\n",
+                "use-keyboxd");
+    opt.use_keyboxd = comopt.use_keyboxd;  /* Override.  */
+
+    if (opt.keyboxd_program)
+      log_info ("Note: Please move option \"%s\" to \"common.conf\"\n",
+                "keyboxd-program");
+    if (!opt.keyboxd_program && comopt.keyboxd_program)
+      {
+        opt.keyboxd_program = comopt.keyboxd_program;
+        comopt.keyboxd_program = NULL;
+      }
+
 
     /* The command --gpgconf-list is pretty simple and may be called
        directly after the option parsing. */

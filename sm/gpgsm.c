@@ -1,7 +1,7 @@
 /* gpgsm.c - GnuPG for S/MIME
  * Copyright (C) 2001-2020 Free Software Foundation, Inc.
  * Copyright (C) 2001-2019 Werner Koch
- * Copyright (C) 2015-2020 g10 Code GmbH
+ * Copyright (C) 2015-2021 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -47,6 +47,7 @@
 #include "../common/asshelp.h"
 #include "../common/init.h"
 #include "../common/compliance.h"
+#include "../common/comopt.h"
 #include "minip12.h"
 
 #ifndef O_BINARY
@@ -1005,6 +1006,7 @@ main ( int argc, char **argv)
   estream_t htmlauditfp = NULL;
   struct assuan_malloc_hooks malloc_hooks;
   int pwfd = -1;
+  int no_logfile = 0;
 
   static const char *homedirvalue;
   static const char *changeuser;
@@ -1354,7 +1356,7 @@ main ( int argc, char **argv)
           break;
 
         case oLogFile: logfile = pargs.r.ret_str; break;
-        case oNoLogFile: logfile = NULL; break;
+        case oNoLogFile: logfile = NULL; no_logfile = 1; break;
 
         case oAuditLog: auditlog = pargs.r.ret_str; break;
         case oHtmlAuditLog: htmlauditlog = pargs.r.ret_str; break;
@@ -1611,6 +1613,34 @@ main ( int argc, char **argv)
       gpgsm_status_with_error (&ctrl, STATUS_FAILURE,
                                "option-parser", gpg_error (GPG_ERR_GENERAL));
       gpgsm_exit(2);
+    }
+
+  /* Process common component options.  */
+  if (parse_comopt (GNUPG_MODULE_NAME_GPGSM, debug_argparser))
+    {
+      gpgsm_status_with_error (&ctrl, STATUS_FAILURE,
+                               "option-parser", gpg_error (GPG_ERR_GENERAL));
+      gpgsm_exit(2);
+    }
+
+  if (!logfile && !no_logfile)
+    {
+      logfile = comopt.logfile;
+      comopt.logfile = NULL;
+    }
+
+  if (opt.use_keyboxd)
+    log_info ("Note: Please move option \"%s\" to \"common.conf\"\n",
+              "use-keyboxd");
+  opt.use_keyboxd = comopt.use_keyboxd;  /* Override.  */
+
+  if (opt.keyboxd_program)
+    log_info ("Note: Please move option \"%s\" to \"common.conf\"\n",
+              "keyboxd-program");
+  if (!opt.keyboxd_program && comopt.keyboxd_program)
+    {
+      opt.keyboxd_program = comopt.keyboxd_program;
+      comopt.keyboxd_program = NULL;
     }
 
   if (pwfd != -1)	/* Read the passphrase now.  */

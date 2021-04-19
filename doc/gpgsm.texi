@@ -853,6 +853,11 @@ may not be entered and the option may not be abbreviated.  This default
 name may be changed on the command line (@pxref{gpgsm-option --options}).
 You should backup this file.
 
+@item common.conf
+@efindex common.conf
+This is an optional configuration file read by @command{gpgsm} on
+startup.  It may contain options pertaining to all components of
+GnuPG.  Its current main use is for the "use-keyboxd" option.
 
 @item policies.txt
 @efindex policies.txt

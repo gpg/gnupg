@@ -335,6 +335,11 @@
   (if (flag "--use-keyring" *args*)
       (create-file "pubring.gpg"))
 
+  (create-file "common.conf"
+	       (if (flag "--use-keyboxd" *args*)
+		   "use-keyboxd" "#use-keyboxd")
+	       )
+
   (create-file "gpg.conf"
                ;;"log-file socket:///tmp/S.wklog"
                ;;"verbose"
@@ -352,8 +357,6 @@
 	       (string-append "agent-program "
 			      (tool 'gpg-agent)
 			      "|--debug-quick-random\n")
-	       (if (flag "--use-keyboxd" *args*)
-		   "use-keyboxd" "#use-keyboxd")
 	       )
   (create-file "keyboxd.conf"
                ;;"log-file socket:///tmp/S.wklog"
