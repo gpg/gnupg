@@ -244,7 +244,7 @@ password used in the above example is "abc").
 
 Now run
 
-: ldapadd -v -x -H ldapi:/// -D 'cn=admin,dc=gnupg,dc=com' \
+: ldapadd -v -x -H ldapi:/// -D 'cn=admin,dc=example,dc=com' \
 :    -W -f ./newuser.ldif
 
 On the password prompt enter the admin's password (not the one of the
