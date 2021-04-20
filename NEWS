@@ -1,9 +1,34 @@
-Noteworthy changes in version 2.3.1 (unreleased)
+Noteworthy changes in version 2.3.1 (2021-04-20)
 ------------------------------------------------
 
+  * The new configuration file common.conf is now used to enable the
+    use of the key database daemon with "use-keyboxd".  Using this
+    option in gpg.conf and gpgsm.conf is supported for a transitional
+    period.  See doc/example/common.conf for more.
+
+  * gpg: Force version 5 key creation for ed448 and cv448 algorithms.
+
+  * gpg: By default do not use the self-sigs-only option when
+    importing from an LDAP keyserver.  [#5387]
+
+  * gpg: Lookup a missing public key of the active card via LDAP.
+    [d7e707170f]
+
+  * gpgsm: New command --show-certs.  [51419d6341]
+
+  * scd: Fix CCID driver for SCM SPR332/SPR532.  [#5297]
+
+  * scd: Further improvements for PKCS#15 cards.
+
+  * Fix build problems on Fedora.  [#5389]
+
+  * Fix build problems on macOS.  [#5400]
+
+  * New configure option --with-tss to allow the selection of the TSS
+    library.  [93c88d0af3]
 
   Release-info: https://dev.gnupg.org/T5386
-  See-also: gnupg-announce/2021q2/000xxx.html
+  See-also: gnupg-announce/2021q2/000459.html
 
 
 Noteworthy changes in version 2.3.0 (2021-04-07)
