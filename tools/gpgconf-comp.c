@@ -948,7 +948,10 @@ gc_component_launch (int component)
                  gc_component[component].name);
       if (!opt.quiet)
         log_info (_("Note: Use the command \"%s%s\" to get details.\n"),
-                  gc_component[component].name, " --gpgconf-test");
+                  gc_component[component].program
+                  ? gc_component[component].program
+                  : gc_component[component].name,
+                  " --gpgconf-test");
       gpgconf_failure (0);
     }
 
