@@ -4730,6 +4730,10 @@ msgstr ""
 "taloprettelsesprogram en bedre mulighed for at opnå nok entropi.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Nøgleoprettelse mislykkedes: %s\n"
 

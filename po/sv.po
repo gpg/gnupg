@@ -4809,6 +4809,10 @@ msgstr ""
 "en större chans att samla ihop en tillräcklig mängd slumpmässig data.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Nyckelgenereringen misslyckades: %s\n"
 

@@ -4651,6 +4651,10 @@ msgstr ""
 "numere aleatoare o şansă mai bună de a aduna destulă entropie.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Generarea cheii a eşuat: %s\n"
 

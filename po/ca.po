@@ -4727,6 +4727,10 @@ msgstr ""
 "d'aconseguir prou entropia.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "La generació de claus ha fallat: %s\n"
 

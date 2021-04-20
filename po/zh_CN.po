@@ -4240,6 +4240,10 @@ msgstr ""
 "发生器有更好的机会获得足够的熵。\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "密钥生成失败：%s\n"
 

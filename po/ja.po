@@ -4277,6 +4277,10 @@ msgstr ""
 "成器に十分なエントロピーを供給する機会を与えることができます。\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "鍵の生成に失敗しました: %s\n"
 

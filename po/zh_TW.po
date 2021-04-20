@@ -4457,6 +4457,10 @@ msgstr ""
 "這會讓隨機數字產生器有更多的機會獲得夠多的亂數.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "產生金鑰失敗: %s\n"
 

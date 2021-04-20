@@ -4382,6 +4382,10 @@ msgstr ""
 "numeri casuali migliori possibilità di raccogliere abbastanza entropia.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Generazione della chiave fallita: %s\n"
 

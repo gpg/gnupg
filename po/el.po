@@ -4623,6 +4623,10 @@ msgstr ""
 "στη γεννήτρια τυχαίων αριθμών μια ευκαιρία να μαζέψει αρκετή εντροπία.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
 

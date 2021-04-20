@@ -4618,6 +4618,10 @@ msgstr ""
 "nombres aléatoires une meilleure chance d'obtenir suffisamment d'entropie.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Échec de génération de la clef : %s\n"
 

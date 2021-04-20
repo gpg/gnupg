@@ -4425,6 +4425,10 @@ msgstr ""
 "tallgeneratoren bedre muligheter til å samle inn vilkårlighetsdata.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Nøkkelgenerering mislyktes: %s\n"
 

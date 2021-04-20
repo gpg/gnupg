@@ -4443,6 +4443,10 @@ msgstr ""
 "entropie.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Vytvoření klíče se nepodařilo: %s\n"
 

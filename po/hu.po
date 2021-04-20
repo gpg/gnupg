@@ -4584,6 +4584,10 @@ msgstr ""
 "generátort, hogy entrópiát tudjon gyűjteni.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Kulcsgenerálás sikertelen: %s\n"
 

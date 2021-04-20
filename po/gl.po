@@ -4619,6 +4619,10 @@ msgstr ""
 "números aleatorios unha opoertunidade de acumular entropía de abondo.\n"
 
 #, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr ""
+
+#, c-format
 msgid "Key generation failed: %s\n"
 msgstr "A xeración da chave fallou: %s\n"
 
