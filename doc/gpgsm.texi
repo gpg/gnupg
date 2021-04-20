@@ -221,6 +221,17 @@ List certificates matching @var{pattern} using an external server.
 This utilizes the @code{dirmngr} service.  It uses a format useful
 mainly for debugging.
 
+@item --show-certs [@var{files}]
+@opindex show-certs
+This command takes certificate files as input and prints information
+about them in the same format as @option{--dump-cert} does.  Each file
+may either contain a single binary certificate or several PEM encoded
+certificates.  If no files are given, the input is taken from stdin.
+
+Please note that the listing format may be changed in future releases
+and that the option @option{--with-colons} has currently no effect.
+
+
 @item --keydb-clear-some-cert-flags
 @opindex keydb-clear-some-cert-flags
 This is a debugging aid to reset certain flags in the key database

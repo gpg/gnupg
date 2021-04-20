@@ -389,6 +389,8 @@ int gpgsm_find_cert (ctrl_t ctrl, const char *name, ksba_sexp_t keyid,
 /*-- keylist.c --*/
 gpg_error_t gpgsm_list_keys (ctrl_t ctrl, strlist_t names,
                              estream_t fp, unsigned int mode);
+gpg_error_t gpgsm_show_certs (ctrl_t ctrl, int nfiles, char **files,
+                              estream_t fp);
 
 /*-- import.c --*/
 int gpgsm_import (ctrl_t ctrl, int in_fd, int reimport_mode);

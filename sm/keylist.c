@@ -1710,3 +1710,98 @@ gpgsm_list_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
     err = list_external_keys (ctrl, names, fp, (mode&256));
   return err;
 }
+
+
+
+static gpg_error_t
+do_show_certs (ctrl_t ctrl, const char *fname, estream_t outfp)
+{
+  gpg_error_t err;
+  gnupg_ksba_io_t b64reader = NULL;
+  ksba_reader_t reader;
+  ksba_cert_t cert = NULL;
+  estream_t fp;
+  int any = 0;
+
+  if (!fname || (fname[0] == '-' && !fname[1]))
+    {
+      fp = es_stdin;
+      fname = "[stdin]";
+    }
+  else
+    {
+      fp = es_fopen (fname, "rb");
+      if (!fp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
+          return err;
+        }
+    }
+
+  err = gnupg_ksba_create_reader
+    (&b64reader, ((ctrl->is_pem? GNUPG_KSBA_IO_PEM : 0)
+                  | (ctrl->is_base64? GNUPG_KSBA_IO_BASE64 : 0)
+                  | (ctrl->autodetect_encoding? GNUPG_KSBA_IO_AUTODETECT : 0)
+                  | GNUPG_KSBA_IO_MULTIPEM),
+     fp, &reader);
+  if (err)
+    {
+      log_error ("can't create reader: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* We need to loop here to handle multiple PEM objects per file. */
+  do
+    {
+      ksba_cert_release (cert); cert = NULL;
+
+      err = ksba_cert_new (&cert);
+      if (err)
+        goto leave;
+
+      err = ksba_cert_read_der (cert, reader);
+      if (err)
+        goto leave;
+
+      es_fprintf (outfp, "File ........: %s\n", fname);
+      list_cert_raw (ctrl, NULL, cert, outfp, 0, 0);
+      es_putc ('\n', outfp);
+      any = 1;
+
+      ksba_reader_clear (reader, NULL, NULL);
+    }
+  while (!gnupg_ksba_reader_eof_seen (b64reader));
+
+ leave:
+  if (any && gpg_err_code (err) == GPG_ERR_EOF)
+    err = 0;
+  ksba_cert_release (cert);
+  gnupg_ksba_destroy_reader (b64reader);
+  if (fp != es_stdin)
+    es_fclose (fp);
+  return err;
+}
+
+
+/* Show a raw dump of the certificates found in the files given in
+ * the arrag FILES.  Write output to FP.  */
+gpg_error_t
+gpgsm_show_certs (ctrl_t ctrl, int nfiles, char **files, estream_t fp)
+{
+  gpg_error_t saveerr = 0;
+  gpg_error_t err;
+
+  if (!nfiles)
+    saveerr = do_show_certs (ctrl, NULL, fp);
+  else
+    {
+      for (; nfiles; nfiles--, files++)
+        {
+          err = do_show_certs (ctrl, *files, fp);
+          if (err && !saveerr)
+            saveerr = err;
+        }
+    }
+  return saveerr;
+}

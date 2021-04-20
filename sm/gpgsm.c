@@ -96,6 +96,7 @@ enum cmd_and_opt_values {
   aDumpChain,
   aDumpSecretKeys,
   aDumpExternalKeys,
+  aShowCerts,
   aKeydbClearSomeCertFlags,
   aFingerprint,
 
@@ -252,6 +253,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
 
+  ARGPARSE_c (aShowCerts, "show-certs", "@"),
   ARGPARSE_c (aDumpKeys, "dump-cert", "@"),
   ARGPARSE_c (aDumpKeys, "dump-keys", "@"),
   ARGPARSE_c (aDumpChain, "dump-chain", "@"),
@@ -1212,6 +1214,7 @@ main ( int argc, char **argv)
         case aExportSecretKeyP12:
         case aExportSecretKeyP8:
         case aExportSecretKeyRaw:
+        case aShowCerts:
         case aDumpKeys:
         case aDumpChain:
         case aDumpExternalKeys:
@@ -2121,6 +2124,15 @@ main ( int argc, char **argv)
       }
       break;
 
+    case aShowCerts:
+      {
+        estream_t fp;
+
+        fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
+        gpgsm_show_certs (&ctrl, argc, argv, fp);
+        es_fclose (fp);
+      }
+      break;
 
     case aKeygen: /* Generate a key; well kind of. */
       {
