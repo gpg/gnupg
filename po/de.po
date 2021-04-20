@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-02-26 14:44+0100\n"
+"PO-Revision-Date: 2021-04-20 12:24+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -374,10 +374,8 @@ msgstr "Den SCdaemon-basierten Kartenzugriff nicht nutzen"
 msgid "|PGM|use PGM as the SCdaemon program"
 msgstr "|PGM|Benutze PGM als SCdaemon"
 
-#, fuzzy
-#| msgid "|PGM|use PGM as the SCdaemon program"
 msgid "|PGM|use PGM as the tpm2daemon program"
-msgstr "|PGM|Benutze PGM als SCdaemon"
+msgstr "|PGM|Benutze PGM als tpm2daemon"
 
 msgid "|NAME|accept some commands via NAME"
 msgstr "|NAME|Einige Kommandos über NAME annehmen"
@@ -1129,19 +1127,19 @@ msgstr "Ungültiges Basis-64 Zeichen %02X wurde übersprungen\n"
 
 #, c-format
 msgid "Sorry, we are in batchmode - can't get input\n"
-msgstr ""
+msgstr "Leider sind wir im \"--batch\" Modus - Engabe nicht möglich\n"
 
 #, c-format
 msgid "Sorry, no terminal at all requested - can't get input\n"
-msgstr ""
+msgstr "Leider ist kein Terminal vorhanden - Eingabe nicht möglich\n"
 
 #, c-format
 msgid "too many errors; giving up\n"
-msgstr ""
+msgstr "Zu viele Fehler; Verarbeitung wird abbgebrochen\n"
 
 #, c-format
 msgid "Control-D detected\n"
-msgstr ""
+msgstr "Control-D Zeichen erkannt\n"
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1310,10 +1308,9 @@ msgstr "Geben Sie die Passphrase ein: "
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s is nicht konform mit dem %s Modus\n"
 
-#, fuzzy, c-format
-#| msgid "error reading from %s: %s\n"
+#, c-format
 msgid "error from TPM: %s\n"
-msgstr "Fehler beim Lesen von %s: %s\n"
+msgstr "Fehler vom TPM: %s\n"
 
 #, c-format
 msgid "problem with the agent: %s\n"
@@ -3455,7 +3452,7 @@ msgid "move a key to a smartcard"
 msgstr "einen Schlüssel auf die Smartcard schieben"
 
 msgid "convert a key to TPM form using the local TPM"
-msgstr ""
+msgstr "Konvertiere einen Schlüssel in das TPM Format für den lokalen TPM"
 
 msgid "move a backup key to a smartcard"
 msgstr "eine Sicherungskopie des Schlüssels auf die Smartcard schieben"
@@ -4419,6 +4416,10 @@ msgstr ""
 "Wir müssen eine ganze Menge Zufallswerte erzeugen.  Sie können dies\n"
 "unterstützen, indem Sie z.B. in einem anderen Fenster/Konsole irgendetwas\n"
 "tippen, die Maus verwenden oder irgendwelche anderen Programme benutzen.\n"
+
+#, c-format
+msgid "WARNING: v4 is specified, but overridden by v5.\n"
+msgstr "WARNUNG: Der angefragte v4 Schlüssel wurde durch einen v5 Schlüssel ersetzt\n"
 
 #, c-format
 msgid "Key generation failed: %s\n"
@@ -9027,7 +9028,7 @@ msgid "Smartcards"
 msgstr "Smartcard"
 
 msgid "TPM"
-msgstr ""
+msgstr "TPM"
 
 msgid "Network"
 msgstr "Netz"
