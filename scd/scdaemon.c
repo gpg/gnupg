@@ -54,6 +54,7 @@
 #include "../common/gc-opt-flags.h"
 #include "../common/asshelp.h"
 #include "../common/exechelp.h"
+#include "../common/comopt.h"
 #include "../common/init.h"
 
 #ifndef ENAMETOOLONG
@@ -652,6 +653,17 @@ main (int argc, char **argv )
 
   if (log_get_errorcount(0))
     exit(2);
+
+  /* Process common component options.  */
+  if (parse_comopt (GNUPG_MODULE_NAME_SCDAEMON, debug_argparser))
+    exit(2);
+
+  if (!logfile)
+    {
+      logfile = comopt.logfile;
+      comopt.logfile = NULL;
+    }
+
   if (nogreeting )
     greeting = 0;
 

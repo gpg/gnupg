@@ -58,6 +58,7 @@
 #include "../common/init.h"
 #include "../common/gc-opt-flags.h"
 #include "../common/exechelp.h"
+#include "../common/comopt.h"
 #include "frontend.h"
 
 
@@ -610,6 +611,14 @@ main (int argc, char **argv )
   if (log_get_errorcount(0))
     exit (2);
 
+    /* Get a default log file from common.conf.  */
+  if (!logfile && !parse_comopt (GNUPG_MODULE_NAME_KEYBOXD, debug_argparser))
+    {
+      logfile = comopt.logfile;
+      comopt.logfile = NULL;
+    }
+
+
   finalize_rereadable_options ();
 
   /* Print a warning if an argument looks like an option.  */
@@ -988,9 +997,10 @@ reread_configuration (void)
   gpgrt_argparse_t pargs;
   char *twopart;
   int dummy;
+  int logfile_seen = 0;
 
   if (!config_filename)
-    return; /* No config file. */
+    goto finish; /* No config file. */
 
   twopart = strconcat ("keyboxd" EXTSEP_S "conf" PATHSEP_S,
                        config_filename, NULL);
@@ -1015,12 +1025,29 @@ reread_configuration (void)
       else if (pargs.r_opt < -1)
         pargs.err = ARGPARSE_PRINT_WARNING;
       else /* Try to parse this option - ignore unchangeable ones. */
-        parse_rereadable_options (&pargs, 1);
+        {
+          if (pargs.r_opt == oLogFile)
+            logfile_seen = 1;
+          parse_rereadable_options (&pargs, 1);
+        }
     }
   gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
   xfree (twopart);
   finalize_rereadable_options ();
   set_debug ();
+
+ finish:
+  /* Get a default log file from common.conf.  */
+  if (!logfile_seen && !parse_comopt (GNUPG_MODULE_NAME_KEYBOXD, !!opt.debug))
+    {
+      if (!current_logfile || !comopt.logfile
+          || strcmp (current_logfile, comopt.logfile))
+        {
+          log_set_file (comopt.logfile);
+          xfree (current_logfile);
+          current_logfile = comopt.logfile? xtrystrdup (comopt.logfile) : NULL;
+        }
+    }
 }
 
 
