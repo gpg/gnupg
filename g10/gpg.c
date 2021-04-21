@@ -3723,12 +3723,6 @@ main (int argc, char **argv)
         g10_exit(2);
       }
 
-    if (!logfile)
-      {
-        logfile = comopt.logfile;
-        comopt.logfile = NULL;
-      }
-
     if (opt.use_keyboxd)
       log_info ("Note: Please move option \"%s\" to \"common.conf\"\n",
                 "use-keyboxd");

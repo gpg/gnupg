@@ -1008,7 +1008,6 @@ main ( int argc, char **argv)
   estream_t htmlauditfp = NULL;
   struct assuan_malloc_hooks malloc_hooks;
   int pwfd = -1;
-  int no_logfile = 0;
 
   static const char *homedirvalue;
   static const char *changeuser;
@@ -1359,7 +1358,7 @@ main ( int argc, char **argv)
           break;
 
         case oLogFile: logfile = pargs.r.ret_str; break;
-        case oNoLogFile: logfile = NULL; no_logfile = 1; break;
+        case oNoLogFile: logfile = NULL; break;
 
         case oAuditLog: auditlog = pargs.r.ret_str; break;
         case oHtmlAuditLog: htmlauditlog = pargs.r.ret_str; break;
@@ -1624,12 +1623,6 @@ main ( int argc, char **argv)
       gpgsm_status_with_error (&ctrl, STATUS_FAILURE,
                                "option-parser", gpg_error (GPG_ERR_GENERAL));
       gpgsm_exit(2);
-    }
-
-  if (!logfile && !no_logfile)
-    {
-      logfile = comopt.logfile;
-      comopt.logfile = NULL;
     }
 
   if (opt.use_keyboxd)
