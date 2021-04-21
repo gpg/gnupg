@@ -47,9 +47,8 @@ convention.  Example (here indented with two spaces):
      (#D2760001240102000005000011730000# OPENPGP.1)
     )))
 
-GnuPG 2.2 is able to read and update keys using the new format, but
-will not create new files using the new format.  Furthermore, it only
-makes use of the value stored under the name 'Key:'.
+GnuPG 2.2 is also able to read and write keys using the new format
+However, it only makes use of the value stored under the name 'Key:'.
 
 Keys in the extended format can be recognized by looking at the first
 byte of the file.  If it starts with a '(' it is a naked S-expression,
