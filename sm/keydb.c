@@ -1617,7 +1617,8 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
           break;
 
         case KEYDB_SEARCH_MODE_MAIL:
-          snprintf (line, sizeof line, "SEARCH --x509 <%s", desc[0].u.name);
+          snprintf (line, sizeof line, "SEARCH --x509 <%s",
+                    desc[0].u.name + (desc[0].u.name[0] == '<'));
           break;
 
         case KEYDB_SEARCH_MODE_MAILSUB:

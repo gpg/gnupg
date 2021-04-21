@@ -336,7 +336,7 @@ cmd_search (assuan_context_t ctx, char *line)
     }
   else
     {
-      err = classify_user_id (line, &ctrl->server_local->search_desc, 0);
+      err = classify_user_id (line, &ctrl->server_local->search_desc, 1);
       if (err)
         goto leave;
     }

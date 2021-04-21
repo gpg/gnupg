@@ -839,6 +839,8 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
   unsigned int descidx;
   const char *extra = NULL;
   unsigned char kidbuf[8];
+  const char *s;
+  size_t n;
 
 
   descidx = ctx->descidx;
@@ -916,7 +918,20 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                " WHERE p.ubid = u.ubid AND u.addrspec = ?1",
                                extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
-        err = run_sql_bind_text (ctx->select_stmt, 1, desc[descidx].u.name);
+        {
+          s = desc[descidx].u.name;
+          if (s && *s == '<' && s[1])
+            { /* It is common that the indicator for exact addrspec
+               * search has not been removed.  We do this here.  */
+              s++;
+              n = strlen (s);
+              if (n > 1 && s[n-1] == '>')
+                n--;
+            }
+          else
+            n = s? strlen (s):0;
+          err = run_sql_bind_ntext (ctx->select_stmt, 1, s, n);
+        }
       break;
 
     case KEYDB_SEARCH_MODE_MAILSUB:
