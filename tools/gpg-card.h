@@ -240,7 +240,8 @@ gpg_error_t scd_serialno (char **r_serialno, const char *demand);
 
 gpg_error_t scd_readcert (const char *certidstr,
                           void **r_buf, size_t *r_buflen);
-gpg_error_t scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result);
+gpg_error_t scd_readkey (const char *keyrefstr, int create_shadow,
+                         gcry_sexp_t *r_result);
 gpg_error_t scd_cardlist (strlist_t *result);
 gpg_error_t scd_applist (strlist_t *result, int all);
 gpg_error_t scd_change_pin (const char *pinref, int reset_mode, int nullpin);

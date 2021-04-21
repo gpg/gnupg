@@ -1,5 +1,5 @@
 /* gpg-card.c - An interactive tool to work with cards.
- * Copyright (C) 2019, 2020 g10 Code GmbH
+ * Copyright (C) 2019, 2020, 2021 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -657,7 +657,8 @@ mem_is_zero (const char *mem, unsigned int memlen)
  * reference if no info is available; it may be NULL.  */
 static void
 list_one_kinfo (card_info_t info, key_info_t kinfo,
-                const char *label_keyref, estream_t fp, int no_key_lookup)
+                const char *label_keyref, estream_t fp, int no_key_lookup,
+                int create_shadow)
 {
   gpg_error_t err;
   key_info_t firstkinfo = info->kinfo;
@@ -705,7 +706,7 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
       if (kinfo->label)
         tty_fprintf (fp, "      label ......: %s\n", kinfo->label);
 
-      if (!(err = scd_readkey (kinfo->keyref, &s_pkey)))
+      if (!(err = scd_readkey (kinfo->keyref, create_shadow, &s_pkey)))
         {
           char *tmp = pubkey_algo_string (s_pkey, NULL);
           tty_fprintf (fp, "      algorithm ..: %s\n", nullnone (tmp));
@@ -813,7 +814,7 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
 /* List all keyinfo in INFO using the list of LABELS.  */
 static void
 list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
-                int no_key_lookup)
+                int no_key_lookup, int create_shadow)
 {
   key_info_t kinfo;
   int idx, i, j;
@@ -829,7 +830,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
           tty_fprintf (fp, "%s", labels[idx].label);
           kinfo = find_kinfo (info, labels[idx].keyref);
           list_one_kinfo (info, kinfo, labels[idx].keyref,
-                          fp, no_key_lookup);
+                          fp, no_key_lookup, create_shadow);
           if (kinfo)
             kinfo->xflag = 1;
         }
@@ -842,7 +843,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
       for (i=4+strlen (kinfo->keyref), j=0; i < 18; i++, j=1)
         tty_fprintf (fp, j? ".":" ");
       tty_fprintf (fp, ":");
-      list_one_kinfo (info, kinfo, NULL, fp, no_key_lookup);
+      list_one_kinfo (info, kinfo, NULL, fp, no_key_lookup, create_shadow);
     }
 }
 
@@ -880,7 +881,8 @@ list_retry_counter (card_info_t info, estream_t fp)
 
 /* List OpenPGP card specific data.  */
 static void
-list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
+list_openpgp (card_info_t info, estream_t fp,
+              int no_key_lookup, int create_shadow)
 {
   static struct keyinfolabel_s keyinfolabels[] = {
     { "Signature key ....:", "OPENPGP.1" },
@@ -958,14 +960,14 @@ list_openpgp (card_info_t info, estream_t fp, int no_key_lookup)
                    info->uif[2] ? (info->uif[0]==2? "permanent": "on") : "off");
     }
 
-  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
+  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup, create_shadow);
 
 }
 
 
 /* List PIV card specific data.  */
 static void
-list_piv (card_info_t info, estream_t fp, int no_key_lookup)
+list_piv (card_info_t info, estream_t fp, int no_key_lookup, int create_shadow)
 {
   static struct keyinfolabel_s keyinfolabels[] = {
     { "PIV authentication:", "PIV.9A" },
@@ -998,33 +1000,33 @@ list_piv (card_info_t info, estream_t fp, int no_key_lookup)
     }
 
   list_retry_counter (info, fp);
-  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
+  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup, create_shadow);
 }
 
 
 /* List Netkey card specific data.  */
 static void
-list_nks (card_info_t info, estream_t fp, int no_key_lookup)
+list_nks (card_info_t info, estream_t fp, int no_key_lookup, int create_shadow)
 {
   static struct keyinfolabel_s keyinfolabels[] = {
     { NULL, NULL }
   };
 
   list_retry_counter (info, fp);
-  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
+  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup, create_shadow);
 }
 
 
 /* List PKCS#15 card specific data.  */
 static void
-list_p15 (card_info_t info, estream_t fp, int no_key_lookup)
+list_p15 (card_info_t info, estream_t fp, int no_key_lookup, int create_shadow)
 {
   static struct keyinfolabel_s keyinfolabels[] = {
     { NULL, NULL }
   };
 
   list_retry_counter (info, fp);
-  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup);
+  list_all_kinfo (info, keyinfolabels, fp, no_key_lookup, create_shadow);
 }
 
 
@@ -1052,7 +1054,7 @@ print_a_version (estream_t fp, const char *prefix, unsigned int value)
  * NO_KEY_LOOKUP the sometimes expensive listing of all matching
  * OpenPGP and X.509 keys is not done */
 static void
-list_card (card_info_t info, int no_key_lookup)
+list_card (card_info_t info, int no_key_lookup, int create_shadow)
 {
   estream_t fp = opt.interactive? NULL : es_stdout;
 
@@ -1084,10 +1086,18 @@ list_card (card_info_t info, int no_key_lookup)
 
   switch (info->apptype)
     {
-    case APP_TYPE_OPENPGP: list_openpgp (info, fp, no_key_lookup); break;
-    case APP_TYPE_PIV:     list_piv (info, fp, no_key_lookup); break;
-    case APP_TYPE_NKS:     list_nks (info, fp, no_key_lookup); break;
-    case APP_TYPE_P15:     list_p15 (info, fp, no_key_lookup); break;
+    case APP_TYPE_OPENPGP:
+      list_openpgp (info, fp, no_key_lookup, create_shadow);
+      break;
+    case APP_TYPE_PIV:
+      list_piv (info, fp, no_key_lookup, create_shadow);
+      break;
+    case APP_TYPE_NKS:
+      list_nks (info, fp, no_key_lookup, create_shadow);
+      break;
+    case APP_TYPE_P15:
+      list_p15 (info, fp, no_key_lookup, create_shadow);
+      break;
     default: break;
     }
 }
@@ -1131,6 +1141,7 @@ cmd_list (card_info_t info, char *argstr)
 {
   gpg_error_t err;
   int opt_cards, opt_apps, opt_info, opt_reread, opt_no_key_lookup;
+  int opt_shadow;
   strlist_t cards = NULL;
   strlist_t sl;
   estream_t fp = opt.interactive? NULL : es_stdout;
@@ -1141,26 +1152,31 @@ cmd_list (card_info_t info, char *argstr)
 
   if (!info)
     return print_help
-      ("LIST [--cards] [--apps] [--info] [--reread]"
+      ("LIST [--cards] [--apps] [--info] [--reread] [--shadow]"
        " [--no-key-lookup] [N] [APP]\n\n"
        "Show the content of the current card.\n"
        "With N given select and list the N-th card;\n"
        "with APP also given select that application.\n"
        "To select an APP on the current card use '-' for N.\n"
        "The S/N of the card may be used instead of N.\n"
-       "  --cards   lists available cards\n"
-       "  --apps    lists additional card applications\n"
-       "  --info    selects a card and prints its s/n\n"
+       "  --cards   list available cards\n"
+       "  --apps    list additional card applications\n"
+       "  --info    select a card and prints its s/n\n"
        "  --reread  read infos from PCKS#15 cards again\n"
-       "  --no-key-lookup does not list matching OpenPGP or X.509 keys\n"
+       "  --shadow  create shadow keys for all card keys\n"
+       "  --no-key-lookup do not list matching OpenPGP or X.509 keys\n"
        , 0);
 
   opt_cards = has_leading_option (argstr, "--cards");
   opt_apps = has_leading_option (argstr, "--apps");
   opt_info = has_leading_option (argstr, "--info");
   opt_reread = has_leading_option (argstr, "--reread");
+  opt_shadow = has_leading_option (argstr, "--shadow");
   opt_no_key_lookup = has_leading_option (argstr, "--no-key-lookup");
   argstr = skip_options (argstr);
+
+  if (opt_shadow)
+    opt_no_key_lookup = 1;
 
   if (opt.no_key_lookup)
     opt_no_key_lookup = 1;
@@ -1332,7 +1348,7 @@ cmd_list (card_info_t info, char *argstr)
               goto leave;
             }
 
-          list_card (info, opt_no_key_lookup);
+          list_card (info, opt_no_key_lookup, opt_shadow);
         }
     }
 

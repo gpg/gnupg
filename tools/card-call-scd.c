@@ -1511,9 +1511,10 @@ scd_readcert (const char *certidstr, void **r_buf, size_t *r_buflen)
 
 
 /* Send a READKEY command to the SCdaemon.  On success a new
- * s-expression is stored at R_RESULT.  */
+ * s-expression is stored at R_RESULT.  If CREATE_SHADOW is set stub
+ * keys will be created if they do not exist. */
 gpg_error_t
-scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result)
+scd_readkey (const char *keyrefstr, int create_shadow, gcry_sexp_t *r_result)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
@@ -1527,7 +1528,10 @@ scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result)
     return err;
 
   init_membuf (&data, 1024);
-  snprintf (line, DIM(line), "SCD READKEY %s", keyrefstr);
+  if (create_shadow)
+    snprintf (line, DIM(line), "READKEY --card -- %s", keyrefstr);
+  else
+    snprintf (line, DIM(line), "SCD READKEY %s", keyrefstr);
   err = assuan_transact (agent_ctx, line,
                          put_membuf_cb, &data,
                          NULL, NULL,
