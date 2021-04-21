@@ -710,7 +710,7 @@ gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern,
 
   /* If we have an override keyserver we first indicate that the next
      user of the context needs to again setup the global keyservers and
-     them we send the override keyserver.  */
+     then we send the override keyserver.  */
   if (override_keyserver)
     {
       clear_context_flags (ctrl, ctx);

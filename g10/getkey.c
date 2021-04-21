@@ -1020,10 +1020,12 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
   int rc;
   strlist_t namelist = NULL;
   struct akl *akl;
-  int is_mbox;
+  int is_mbox, is_fpr;
+  KEYDB_SEARCH_DESC fprbuf;
   int nodefault = 0;
   int anylocalfirst = 0;
   int mechanism_type = AKL_NODEFAULT;
+  size_t fprbuf_fprlen = 0;
 
   /* If RETCTX is not NULL, then RET_KDBHD must be NULL.  */
   log_assert (retctx == NULL || ret_kdbhd == NULL);
@@ -1043,6 +1045,30 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
        * specification for a local search and the other methods
        * extract the mail address anyway.  */
       is_mbox = 1;
+    }
+
+  /* If we are called due to --locate-external-key Check whether NAME
+   * is a fingerprint and then try to lookup that key by configured
+   * method which support lookup by fingerprint.  FPRBUF carries the
+   * parsed fingerpint iff IS_FPR is true.  */
+  is_fpr = 0;
+  if (!is_mbox && mode == GET_PUBKEY_NO_LOCAL)
+    {
+      if (!classify_user_id (name, &fprbuf, 1)
+          && (fprbuf.mode == KEYDB_SEARCH_MODE_FPR16
+              || fprbuf.mode == KEYDB_SEARCH_MODE_FPR20
+              || fprbuf.mode == KEYDB_SEARCH_MODE_FPR))
+        {
+          /* Note: We should get rid of the FPR16 because we don't
+           * support v3 keys anymore.  However, in 2.3 the fingerprint
+           * code has already been reworked and thus it is
+           * questionable whether we should really tackle this here.  */
+          if (fprbuf.mode == KEYDB_SEARCH_MODE_FPR16)
+            fprbuf_fprlen = 16;
+          else
+            fprbuf_fprlen = 20;
+          is_fpr = 1;
+        }
     }
 
   /* The auto-key-locate feature works as follows: there are a number
@@ -1122,7 +1148,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
      retrieval has been enabled, we try to import the key. */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && mode != GET_PUBKEY_NO_AKL
-      && is_mbox)
+      && (is_mbox || is_fpr))
     {
       /* NAME wasn't present in the local keyring (or we didn't try
        * the local keyring).  Since the auto key locate feature is
@@ -1148,6 +1174,8 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	    case AKL_LOCAL:
               if (mode == GET_PUBKEY_NO_LOCAL)
                 {
+                  /* Note that we get here in is_fpr more, so there is
+                   * no extra check for it required.  */
                   mechanism_string = "";
                   rc = GPG_ERR_NO_PUBKEY;
                 }
@@ -1168,44 +1196,88 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	      break;
 
 	    case AKL_CERT:
-	      mechanism_string = "DNS CERT";
-	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_cert (ctrl, name, 0, &fpr, &fpr_len);
-	      glo_ctrl.in_auto_key_retrieve--;
-	      break;
+              if (is_fpr)
+                {
+                  mechanism_string = "";
+                  rc = GPG_ERR_NO_PUBKEY;
+                }
+              else
+                {
+                  mechanism_string = "DNS CERT";
+                  glo_ctrl.in_auto_key_retrieve++;
+                  rc = keyserver_import_cert (ctrl, name, 0, &fpr, &fpr_len);
+                  glo_ctrl.in_auto_key_retrieve--;
+                }
+              break;
 
 	    case AKL_PKA:
-	      mechanism_string = "PKA";
-	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_pka (ctrl, name, &fpr, &fpr_len);
-	      glo_ctrl.in_auto_key_retrieve--;
-	      break;
+              if (is_fpr)
+                {
+                  mechanism_string = "";
+                  rc = GPG_ERR_NO_PUBKEY;
+                }
+              else
+                {
+                  mechanism_string = "PKA";
+                  glo_ctrl.in_auto_key_retrieve++;
+                  rc = keyserver_import_pka (ctrl, name, &fpr, &fpr_len);
+                  glo_ctrl.in_auto_key_retrieve--;
+                }
+              break;
 
 	    case AKL_DANE:
-	      mechanism_string = "DANE";
-	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_cert (ctrl, name, 1, &fpr, &fpr_len);
-	      glo_ctrl.in_auto_key_retrieve--;
+              if (is_fpr)
+                {
+                  mechanism_string = "";
+                  rc = GPG_ERR_NO_PUBKEY;
+                }
+              else
+                {
+                  mechanism_string = "DANE";
+                  glo_ctrl.in_auto_key_retrieve++;
+                  rc = keyserver_import_cert (ctrl, name, 1, &fpr, &fpr_len);
+                  glo_ctrl.in_auto_key_retrieve--;
+                }
 	      break;
 
 	    case AKL_WKD:
-	      mechanism_string = "WKD";
-	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_wkd (ctrl, name, 0, &fpr, &fpr_len);
-	      glo_ctrl.in_auto_key_retrieve--;
+              if (is_fpr)
+                {
+                  mechanism_string = "";
+                  rc = GPG_ERR_NO_PUBKEY;
+                }
+              else
+                {
+                  mechanism_string = "WKD";
+                  glo_ctrl.in_auto_key_retrieve++;
+                  rc = keyserver_import_wkd (ctrl, name, 0, &fpr, &fpr_len);
+                  glo_ctrl.in_auto_key_retrieve--;
+                }
 	      break;
 
 	    case AKL_LDAP:
-	      mechanism_string = "LDAP";
-	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_ldap (ctrl, name, &fpr, &fpr_len);
-	      glo_ctrl.in_auto_key_retrieve--;
-	      break;
+              if (is_fpr)
+                {
+                  mechanism_string = "";
+                  rc = GPG_ERR_NO_PUBKEY;
+                }
+              else
+                {
+                  mechanism_string = "LDAP";
+                  glo_ctrl.in_auto_key_retrieve++;
+                  rc = keyserver_import_ldap (ctrl, name, &fpr, &fpr_len);
+                  glo_ctrl.in_auto_key_retrieve--;
+                }
+              break;
 
 	    case AKL_NTDS:
 	      mechanism_string = "NTDS";
 	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_ntds (ctrl, name, &fpr, &fpr_len);
+              if (is_fpr)
+                rc = keyserver_import_fprint_ntds (ctrl,
+                                                   fprbuf.u.fpr, fprbuf_fprlen);
+              else
+                rc = keyserver_import_ntds (ctrl, name, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
@@ -1218,8 +1290,25 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 		{
 		  mechanism_string = "keyserver";
 		  glo_ctrl.in_auto_key_retrieve++;
-		  rc = keyserver_import_name (ctrl, name, &fpr, &fpr_len,
-                                              opt.keyserver);
+                  if (is_fpr)
+                    {
+                      rc = keyserver_import_fprint (ctrl,
+                                                    fprbuf.u.fpr, fprbuf_fprlen,
+                                                    opt.keyserver,
+                                                    KEYSERVER_IMPORT_FLAG_LDAP);
+                      /* Map error codes because Dirmngr returns NO
+                       * DATA if the keyserver does not have the
+                       * requested key.  It returns NO KEYSERVER if no
+                       * LDAP keyservers are configured.  */
+                      if (gpg_err_code (rc) == GPG_ERR_NO_DATA
+                          || gpg_err_code (rc) == GPG_ERR_NO_KEYSERVER)
+                        rc = gpg_error (GPG_ERR_NO_PUBKEY);
+                    }
+                  else
+                    {
+                      rc = keyserver_import_name (ctrl, name, &fpr, &fpr_len,
+                                                  opt.keyserver);
+                    }
 		  glo_ctrl.in_auto_key_retrieve--;
 		}
 	      else
@@ -1236,8 +1325,21 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 		mechanism_string = akl->spec->uri;
 		keyserver = keyserver_match (akl->spec);
 		glo_ctrl.in_auto_key_retrieve++;
-		rc = keyserver_import_name (ctrl,
-                                            name, &fpr, &fpr_len, keyserver);
+                if (is_fpr)
+                  {
+                    rc = keyserver_import_fprint (ctrl,
+                                                  fprbuf.u.fpr, fprbuf_fprlen,
+                                                  opt.keyserver,
+                                                  KEYSERVER_IMPORT_FLAG_LDAP);
+                    if (gpg_err_code (rc) == GPG_ERR_NO_DATA
+                        || gpg_err_code (rc) == GPG_ERR_NO_KEYSERVER)
+                      rc = gpg_error (GPG_ERR_NO_PUBKEY);
+                  }
+                else
+                  {
+                    rc = keyserver_import_name (ctrl, name,
+                                                &fpr, &fpr_len, keyserver);
+                  }
 		glo_ctrl.in_auto_key_retrieve--;
 	      }
 	      break;
@@ -1250,21 +1352,27 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	   * requirement as the URL might point to a key put in by an
 	   * attacker.  By forcing the use of the fingerprint, we
 	   * won't use the attacker's key here. */
-	  if (!rc && fpr)
+	  if (!rc && (fpr || is_fpr))
 	    {
 	      char fpr_string[MAX_FINGERPRINT_LEN * 2 + 1];
 
-	      log_assert (fpr_len <= MAX_FINGERPRINT_LEN);
-
-	      free_strlist (namelist);
-	      namelist = NULL;
-
-	      bin2hex (fpr, fpr_len, fpr_string);
+              if (is_fpr)
+                {
+                  log_assert (fprbuf_fprlen <= MAX_FINGERPRINT_LEN);
+                  bin2hex (fprbuf.u.fpr, fprbuf_fprlen, fpr_string);
+                }
+              else
+                {
+                  log_assert (fpr_len <= MAX_FINGERPRINT_LEN);
+                  bin2hex (fpr, fpr_len, fpr_string);
+                }
 
 	      if (opt.verbose)
 		log_info ("auto-key-locate found fingerprint %s\n",
 			  fpr_string);
 
+	      free_strlist (namelist);
+	      namelist = NULL;
 	      add_to_strlist (&namelist, fpr_string);
 	    }
 	  else if (!rc && !fpr && !did_akl_local)

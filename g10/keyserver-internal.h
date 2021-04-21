@@ -41,6 +41,8 @@ int keyserver_import (ctrl_t ctrl, strlist_t users);
 int keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
                              struct keyserver_spec *keyserver,
                              unsigned int flags);
+int keyserver_import_fprint_ntds (ctrl_t ctrl,
+                                  const byte *fprint, size_t fprint_len);
 int keyserver_import_keyid (ctrl_t ctrl, u32 *keyid,
                             struct keyserver_spec *keyserver,
                             unsigned int flags);

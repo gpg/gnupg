@@ -1175,27 +1175,37 @@ keyserver_import_ntds (ctrl_t ctrl, const char *mbox,
 
 
 int
-keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
+keyserver_import_fprint (ctrl_t ctrl, const byte *fprint, size_t fprint_len,
 			 struct keyserver_spec *keyserver,
                          unsigned int flags)
 {
   KEYDB_SEARCH_DESC desc;
 
-  memset(&desc,0,sizeof(desc));
+  memset (&desc, 0, sizeof(desc));
 
   if(fprint_len==16)
     desc.mode=KEYDB_SEARCH_MODE_FPR16;
   else if(fprint_len==20)
     desc.mode=KEYDB_SEARCH_MODE_FPR20;
   else
-    return -1;
+    return gpg_error (GPG_ERR_INV_ARG);
 
-  memcpy(desc.u.fpr,fprint,fprint_len);
+  memcpy (desc.u.fpr, fprint, fprint_len);
 
-  /* TODO: Warn here if the fingerprint we got doesn't match the one
-     we asked for? */
   return keyserver_get (ctrl, &desc, 1, keyserver, flags, NULL, NULL);
 }
+
+
+int
+keyserver_import_fprint_ntds (ctrl_t ctrl,
+                              const byte *fprint, size_t fprint_len)
+{
+  struct keyserver_spec keyserver = { NULL, "ldap:///" };
+
+  return keyserver_import_fprint (ctrl, fprint, fprint_len,
+                                  &keyserver, KEYSERVER_IMPORT_FLAG_LDAP);
+}
+
 
 int
 keyserver_import_keyid (ctrl_t ctrl,
