@@ -444,6 +444,16 @@ keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
 }
 
 int
+keyserver_import_fprint_ntds (ctrl_t ctrl,
+                              const byte *fprint, size_t fprint_len)
+{
+  (void)ctrl;
+  (void)fprint;
+  (void)fprint_len;
+  return -1;
+}
+
+int
 keyserver_import_cert (const char *name)
 {
   (void)name;
