@@ -1030,9 +1030,13 @@ cmd_readkey (assuan_context_t ctx, char *line)
           goto leave;
         }
 
-      rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0);
-      if (rc)
-        goto leave;
+      if (agent_key_available (grip))
+        {
+          /* (Shadow)-key is not available in our key storage.  */
+          rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0);
+          if (rc)
+            goto leave;
+        }
 
       rc = assuan_send_data (ctx, pkbuf, pkbuflen);
     }
