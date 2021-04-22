@@ -338,6 +338,7 @@
   (create-file "common.conf"
 	       (if (flag "--use-keyboxd" *args*)
 		   "use-keyboxd" "#use-keyboxd")
+	       (string-append "keyboxd-program " (tool 'keyboxd))
 	       )
 
   (create-file "gpg.conf"
