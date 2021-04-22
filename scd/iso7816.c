@@ -769,6 +769,7 @@ iso7816_pso_csv (int slot, int extended_mode,
 {
   int sw;
   unsigned char *buf;
+  unsigned int nbuf;
 
   if (!data || !datalen || !result || !resultlen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -780,16 +781,29 @@ iso7816_pso_csv (int slot, int extended_mode,
   else if (le >= 0 && le < 256)
     le = 256;
 
-  /* Data needds to be TLV format. */
-  buf = xtrymalloc (datalen + 2);
+  /* Data needs to be in BER-TLV format. */
+  buf = xtrymalloc (datalen + 4);
   if (!buf)
     return gpg_error_from_syserror ();
-  buf[0] = 0x9c;
-  buf[1] = datalen;
-  memcpy (buf+2, data, datalen);
+  nbuf = 0;
+  buf[nbuf++] = 0x9c;
+  if (datalen < 128)
+    buf[nbuf++] = datalen;
+  else if (datalen < 256)
+    {
+      buf[nbuf++] = 0x81;
+      buf[nbuf++] = datalen;
+    }
+  else
+    {
+      buf[nbuf++] = 0x82;
+      buf[nbuf++] = datalen << 8;
+      buf[nbuf++] = datalen;
+    }
+  memcpy (buf+nbuf, data, datalen);
   sw = apdu_send_le (slot, extended_mode,
                      0x00, CMD_PSO, 0x80, 0xa6,
-                     datalen+2, (const char *)buf, le,
+                     datalen+nbuf, (const char *)buf, le,
                      result, resultlen);
   xfree (buf);
   if (sw != SW_SUCCESS)
