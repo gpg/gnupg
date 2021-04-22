@@ -2715,12 +2715,12 @@ do_start_connection_thread (ctrl_t ctrl)
 {
   active_connections++;
   agent_init_default_ctrl (ctrl);
-  if (opt.verbose && !DBG_IPC)
+  if (opt.verbose > 1 && !DBG_IPC)
     log_info (_("handler 0x%lx for fd %d started\n"),
               (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler (ctrl, GNUPG_INVALID_FD, ctrl->thread_startup.fd);
-  if (opt.verbose && !DBG_IPC)
+  if (opt.verbose > 1 && !DBG_IPC)
     log_info (_("handler 0x%lx for fd %d terminated\n"),
               (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
