@@ -93,7 +93,9 @@ gc_error (int status, int errnum, const char *fmt, ...)
 /* Forward declaration.  */
 static void gpg_agent_runtime_change (int killflag);
 static void scdaemon_runtime_change (int killflag);
+#ifdef BUILD_WITH_TPM2D
 static void tpm2daemon_runtime_change (int killflag);
+#endif
 static void dirmngr_runtime_change (int killflag);
 static void keyboxd_runtime_change (int killflag);
 
@@ -379,6 +381,7 @@ static known_option_t known_options_scdaemon[] =
    { NULL }
  };
 
+#ifdef BUILD_WITH_TPM2D
 /* The known options of the GC_COMPONENT_TPM2DAEMON component.  */
 static known_option_t known_options_tpm2daemon[] =
   {
@@ -393,6 +396,7 @@ static known_option_t known_options_tpm2daemon[] =
 
    { NULL }
  };
+#endif
 
 
 /* The known options of the GC_COMPONENT_GPG component.  */
@@ -666,9 +670,11 @@ static struct
      GNUPG_MODULE_NAME_SCDAEMON, SCDAEMON_NAME ".conf",
      known_options_scdaemon, NULL, scdaemon_runtime_change},
 
+#ifdef BUILD_WITH_TPM2D
    { TPM2DAEMON_NAME, TPM2DAEMON_DISP_NAME, "gnupg", N_("TPM"),
      GNUPG_MODULE_NAME_TPM2DAEMON, TPM2DAEMON_NAME ".conf",
      known_options_tpm2daemon, NULL, tpm2daemon_runtime_change},
+#endif
 
    { DIRMNGR_NAME, DIRMNGR_DISP_NAME, "gnupg",   N_("Network"),
      GNUPG_MODULE_NAME_DIRMNGR, DIRMNGR_NAME ".conf",
@@ -802,6 +808,7 @@ scdaemon_runtime_change (int killflag)
 }
 
 
+#ifdef BUILD_WITH_TPM2D
 static void
 tpm2daemon_runtime_change (int killflag)
 {
@@ -844,6 +851,7 @@ tpm2daemon_runtime_change (int killflag)
               pgmname, argv[cmdidx], gpg_strerror (err));
   gnupg_release_process (pid);
 }
+#endif
 
 
 static void
