@@ -48,7 +48,6 @@
 
 /*-- trust.c --*/
 int cache_disabled_value (ctrl_t ctrl, PKT_public_key *pk);
-void register_trusted_keyid (u32 *keyid);
 void register_trusted_key (const char *string);
 
 const char *trust_value_to_string (unsigned int value);
@@ -75,7 +74,6 @@ const char *get_validity_string (ctrl_t ctrl,
 
 
 /*-- trustdb.c --*/
-void tdb_register_trusted_keyid (u32 *keyid);
 void tdb_register_trusted_key (const char *string);
 /* Returns whether KID is on the list of ultimately trusted keys.  */
 int tdb_keyid_is_utk (u32 *kid);

@@ -50,17 +50,6 @@ cache_disabled_value (ctrl_t ctrl, PKT_public_key *pk)
 
 
 void
-register_trusted_keyid (u32 *keyid)
-{
-#ifdef NO_TRUST_MODELS
-  (void)keyid;
-#else
-  tdb_register_trusted_keyid (keyid);
-#endif
-}
-
-
-void
 register_trusted_key (const char *string)
 {
 #ifdef NO_TRUST_MODELS

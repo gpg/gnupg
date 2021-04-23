@@ -232,7 +232,7 @@ release_key_array ( struct key_array *keys )
  * before initializing the validation module.
  * FIXME: Should be replaced by a function to add those keys to the trustdb.
  */
-void
+static void
 tdb_register_trusted_keyid (u32 *keyid)
 {
   struct key_item *k;
@@ -257,21 +257,21 @@ tdb_register_trusted_key (const char *string)
     {
       if (desc.mode == KEYDB_SEARCH_MODE_LONG_KID)
         {
-          register_trusted_keyid (desc.u.kid);
+          tdb_register_trusted_keyid (desc.u.kid);
           return;
         }
       if (desc.mode == KEYDB_SEARCH_MODE_FPR && desc.fprlen == 20)
         {
           kid[0] = buf32_to_u32 (desc.u.fpr+12);
           kid[1] = buf32_to_u32 (desc.u.fpr+16);
-          register_trusted_keyid (kid);
+          tdb_register_trusted_keyid (kid);
           return;
         }
       if (desc.mode == KEYDB_SEARCH_MODE_FPR && desc.fprlen == 32)
         {
           kid[0] = buf32_to_u32 (desc.u.fpr);
           kid[1] = buf32_to_u32 (desc.u.fpr+4);
-          register_trusted_keyid (kid);
+          tdb_register_trusted_keyid (kid);
           return;
         }
     }

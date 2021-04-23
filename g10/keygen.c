@@ -5576,6 +5576,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
         {
           int no_enc_rsa;
           PKT_public_key *pk;
+          char hexfpr[2*MAX_FINGERPRINT_LEN + 1];
 
           no_enc_rsa = ((get_parameter_algo (ctrl, para, pKEYTYPE, NULL)
                          == PUBKEY_ALGO_RSA)
@@ -5585,8 +5586,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
           pk = find_kbnode (pub_root, PKT_PUBLIC_KEY)->pkt->pkt.public_key;
 
-          keyid_from_pk (pk, pk->main_keyid);
-          register_trusted_keyid (pk->main_keyid);
+          hexfingerprint (pk, hexfpr, sizeof hexfpr);
+          register_trusted_key (hexfpr);
 
           if (!opt.flags.no_auto_trust_new_key)
             update_ownertrust (ctrl, pk,
