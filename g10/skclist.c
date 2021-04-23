@@ -31,6 +31,7 @@
 #include "keydb.h"
 #include "../common/util.h"
 #include "../common/i18n.h"
+#include "keyserver-internal.h"
 #include "call-agent.h"
 
 
@@ -326,11 +327,14 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 {
   gpg_error_t err = 0;
   const char *name;
+  int cardkey;    /* We got an encryption fingerprint from the card */
+                  /* in c->info.fpr2.                               */
   kbnode_t keyblock;
   struct
   {
     int eof;
     int state;
+    int cardkey_done;
     strlist_t sl;
     strlist_t card_list;
     char *serialno;
@@ -389,6 +393,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
               char *serialno;
 
               name = NULL;
+              cardkey = 0;
               keyblock = NULL;
               switch (c->state)
                 {
@@ -444,6 +449,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                               bin2hex (c->info.fpr2, sizeof c->info.fpr2,
                                        c->fpr2 + 2);
                               name = c->fpr2;
+                              cardkey = 1;
                             }
                         }
                       else if (gpg_err_code (err) == GPG_ERR_INV_NAME)
@@ -551,6 +557,39 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                      it.  */
                   release_kbnode (c->keyblock);
                   c->keyblock = NULL;
+                  /* If this was a card key we might not yet have the
+                   * public key for it.  Thus check whether the card
+                   * can return the fingerprint of the encryption key
+                   * and we can then find the public key via LDAP.  */
+                  if (cardkey && !c->cardkey_done
+                      && gpg_err_code (err) == GPG_ERR_NO_SECKEY)
+                    {
+                      /* Note that this code does not handle the case
+                       * for two readers having both openpgp
+                       * encryption keys.  Only one will be tried.  */
+                      c->cardkey_done = 1;
+                      if (opt.debug)
+                        log_debug ("using LDAP to find public key"
+                                   " for current card\n");
+                      if (!keyserver_import_fprint
+                          (ctrl, c->info.fpr2, sizeof c->info.fpr2,
+                           opt.keyserver, KEYSERVER_IMPORT_FLAG_LDAP))
+                        {
+                          char fpr_string[MAX_FINGERPRINT_LEN * 2 + 1];
+
+                          bin2hex (c->info.fpr2, sizeof c->info.fpr2,
+                                   fpr_string);
+                          err = getkey_byname (ctrl, NULL, NULL, fpr_string, 1,
+                                               &c->keyblock);
+                          if (err)
+                            {
+                              release_kbnode (c->keyblock);
+                              c->keyblock = NULL;
+                            }
+                          else
+                            c->node = c->keyblock;
+                        }
+                    }
                 }
               else
                 c->node = c->keyblock;

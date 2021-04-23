@@ -978,8 +978,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_readkey[] =
-  "READKEY <hexstring_with_keygrip>\n"
-  "        --card <keyid>\n"
+  "READKEY [--no-data] <hexstring_with_keygrip>\n"
+  "                    --card <keyid>\n"
   "\n"
   "Return the public key for the given keygrip or keyid.\n"
   "With --card, private key file with card information will be created.";
@@ -992,18 +992,20 @@ cmd_readkey (assuan_context_t ctx, char *line)
   gcry_sexp_t s_pkey = NULL;
   unsigned char *pkbuf = NULL;
   char *serialno = NULL;
+  char *keyidbuf = NULL;
   size_t pkbuflen;
-  const char *opt_card;
+  int opt_card, opt_no_data;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  opt_card = has_option_name (line, "--card");
+  opt_no_data = has_option (line, "--no-data");
+  opt_card = has_option (line, "--card");
   line = skip_options (line);
 
   if (opt_card)
     {
-      const char *keyid = opt_card;
+      const char *keyid = line;
 
       rc = agent_card_getattr (ctrl, "SERIALNO", &serialno);
       if (rc)
@@ -1012,6 +1014,11 @@ cmd_readkey (assuan_context_t ctx, char *line)
                      gpg_strerror (rc));
           goto leave;
         }
+
+      /* Hack to create the shadow key for the OpenPGP standard keys.  */
+      if ((!strcmp (keyid, "$SIGNKEYID") || !strcmp (keyid, "$ENCRKEYID"))
+          && !agent_card_getattr (ctrl, keyid, &keyidbuf))
+        keyid = keyidbuf;
 
       rc = agent_card_readkey (ctrl, keyid, &pkbuf);
       if (rc)
@@ -1038,7 +1045,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
             goto leave;
         }
 
-      rc = assuan_send_data (ctx, pkbuf, pkbuflen);
+      rc = opt_no_data? 0 : assuan_send_data (ctx, pkbuf, pkbuflen);
     }
   else
     {
@@ -1058,12 +1065,13 @@ cmd_readkey (assuan_context_t ctx, char *line)
             {
               pkbuflen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON,
                                            pkbuf, pkbuflen);
-              rc = assuan_send_data (ctx, pkbuf, pkbuflen);
+              rc = opt_no_data? 0 : assuan_send_data (ctx, pkbuf, pkbuflen);
             }
         }
     }
 
  leave:
+  xfree (keyidbuf);
   xfree (serialno);
   xfree (pkbuf);
   gcry_sexp_release (s_pkey);

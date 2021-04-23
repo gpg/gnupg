@@ -1097,6 +1097,16 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
   parm.ctx = agent_ctx;
   rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb, &parm,
                         learn_status_cb, info);
+  if (!rc && !strcmp (name, "KEY-FPR"))
+    {
+      /* Let the agent create the shadow keys if not yet done.  */
+      if (info->fpr1valid)
+        assuan_transact (agent_ctx, "READKEY --card --no-data -- $SIGNKEYID",
+                         NULL, NULL, NULL, NULL, NULL, NULL);
+      if (info->fpr2valid)
+        assuan_transact (agent_ctx, "READKEY --card --no-data -- $ENCRKEYID",
+                         NULL, NULL, NULL, NULL, NULL, NULL);
+    }
 
   return rc;
 }
