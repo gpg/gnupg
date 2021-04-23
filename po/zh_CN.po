@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.2.27\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-02-23 01:08+0800\n"
+"PO-Revision-Date: 2021-04-21 17:55+0800\n"
 "Last-Translator: bobwxc <bobwxc@yeah.net>\n"
 "Language-Team: None\n"
 "Language: zh_CN\n"
@@ -135,10 +135,10 @@ msgid "Bad Passphrase"
 msgstr "错误的密码"
 
 msgid "Note: Request from the web browser."
-msgstr ""
+msgstr "注意：来自网络浏览器的请求。"
 
 msgid "Note: Request from a remote site."
-msgstr ""
+msgstr "注意：来自远程站点的请求。"
 
 #, c-format
 msgid "error getting serial number of card: %s\n"
@@ -147,19 +147,16 @@ msgstr "获取卡的序列号时出现错误： %s\n"
 msgid "Please re-enter this passphrase"
 msgstr "请重新输入此密码"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Please enter the passphrase to protect the imported object within the "
-#| "GnuPG system."
+#, c-format
 msgid ""
 "Please enter the passphrase to protect the imported object within the %s "
 "system."
-msgstr "请输入密码以在 GnuPG 系统内部保护已导入的对象。"
+msgstr "请输入密码以在 %s 系统内部保护已导入的对象。"
 
 msgid ""
 "This key (or subkey) is not protected with a passphrase.  Please enter a new "
 "passphrase to export it."
-msgstr ""
+msgstr "此密钥（或子密钥）未受密码保护。请输入新的密码以将其导出。"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -351,10 +348,8 @@ msgstr "不使用 SCdaemon"
 msgid "|PGM|use PGM as the SCdaemon program"
 msgstr "|PGM|使用 PGM 作为 SCdaemon 程序"
 
-#, fuzzy
-#| msgid "|PGM|use PGM as the SCdaemon program"
 msgid "|PGM|use PGM as the tpm2daemon program"
-msgstr "|PGM|使用 PGM 作为 SCdaemon 程序"
+msgstr "|PGM|使用 PGM 作为 tpm2daemon 程序"
 
 msgid "|NAME|accept some commands via NAME"
 msgstr "|NAME|通过 NAME 接收一些命令"
@@ -1089,19 +1084,19 @@ msgstr "无效的 radix64 字符 %02x 已被跳过\n"
 
 #, c-format
 msgid "Sorry, we are in batchmode - can't get input\n"
-msgstr ""
+msgstr "抱歉，现为批处理模式——无法获取输入\n"
 
 #, c-format
 msgid "Sorry, no terminal at all requested - can't get input\n"
-msgstr ""
+msgstr "抱歉，要求了无终端模式——无法获取输入\n"
 
 #, c-format
 msgid "too many errors; giving up\n"
-msgstr ""
+msgstr "错误过多；放弃\n"
 
 #, c-format
 msgid "Control-D detected\n"
-msgstr ""
+msgstr "检测到 Control-D\n"
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1265,10 +1260,9 @@ msgstr "输入密码： "
 msgid "%s is not compliant with %s mode\n"
 msgstr "%s 与 %s 模式不兼容\n"
 
-#, fuzzy, c-format
-#| msgid "error reading from %s: %s\n"
+#, c-format
 msgid "error from TPM: %s\n"
-msgstr "读取 %s 时出现错误：%s\n"
+msgstr "来自 TPM 的错误：%s\n"
 
 #, c-format
 msgid "problem with the agent: %s\n"
@@ -3309,7 +3303,7 @@ msgid "move a key to a smartcard"
 msgstr "移动一个密钥到智能卡"
 
 msgid "convert a key to TPM form using the local TPM"
-msgstr ""
+msgstr "使用本地 TPM 将密钥转换为 TPM 形式"
 
 msgid "move a backup key to a smartcard"
 msgstr "移动一个备份密钥到智能卡上"
@@ -4241,7 +4235,7 @@ msgstr ""
 
 #, c-format
 msgid "WARNING: v4 is specified, but overridden by v5.\n"
-msgstr ""
+msgstr "警告：已指定 v4，但被 v5 覆盖。\n"
 
 #, c-format
 msgid "Key generation failed: %s\n"
@@ -8569,7 +8563,7 @@ msgid "Smartcards"
 msgstr "智能卡"
 
 msgid "TPM"
-msgstr ""
+msgstr "TPM"
 
 msgid "Network"
 msgstr "网络"
