@@ -3980,9 +3980,14 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
       rc = assuan_get_peercred (ctx, &client_creds);
       if (rc)
         {
-
+          /* Note that on Windows we don't get the peer credentials
+           * and thus we silence the error.  */
           if (listen_fd == GNUPG_INVALID_FD && fd == GNUPG_INVALID_FD)
             ;
+#ifdef HAVE_W32_SYSTEM
+          else if (gpg_err_code (rc) == GPG_ERR_ASS_GENERAL)
+            ;
+#endif
           else
             log_info ("Assuan get_peercred failed: %s\n", gpg_strerror (rc));
           pid = assuan_get_pid (ctx);
