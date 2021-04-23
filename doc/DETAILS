@@ -1229,7 +1229,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
 *** CERTINFO <certtype> <certref> [<label>]
 
-    This status is mettited for X.509 certifcates.
+    This status is emitted for X.509 certifcates.
     CERTTYPE is a number indicating the type of the certificate:
      0   := Unknown
      100 := Regular X.509 cert
