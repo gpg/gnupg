@@ -4895,11 +4895,19 @@ static char *
 get_dispserialno (app_t app, prkdf_object_t prkdf)
 {
   char *serial;
+  size_t n;
 
   /* We prefer the SerialNumber RDN from the Subject-DN but we don't
    * use it if it features a percent sign (special character in pin
    * prompts) or has any control character.  */
-  if (prkdf && prkdf->serial_number && *prkdf->serial_number
+  if (app->app_local->card_product == CARD_PRODUCT_RSCS)
+    {
+      /* We use only the rigght 8 hex digits.  */
+      serial = app_get_serialno (app);
+      if (serial && (n=strlen (serial)) > 8)
+        memmove (serial, serial + n - 8, 9);
+    }
+  else if (prkdf && prkdf->serial_number && *prkdf->serial_number
       && !strchr (prkdf->serial_number, '%')
       && !any_control_or_space (prkdf->serial_number))
     {
