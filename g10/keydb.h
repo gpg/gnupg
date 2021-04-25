@@ -322,6 +322,10 @@ gpg_error_t get_pubkey_for_sig (ctrl_t ctrl,
 /* Return the public key with the key id KEYID and store it at PK.  */
 int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 
+/* Same as get_pubkey but with auto LDAP fetch.  */
+gpg_error_t get_pubkey_with_ldap_fallback (ctrl_t ctrl,
+                                           PKT_public_key *pk, u32 * keyid);
+
 /* Similar to get_pubkey, but it does not take PK->REQ_USAGE into
    account nor does it merge in the self-signed data.  This function
    also only considers primary keys.  */

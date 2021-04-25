@@ -558,6 +558,42 @@ leave:
 }
 
 
+/* Same as get_pubkey but if the key was not found the function tries
+ * to import it from LDAP.  FIXME: We should not need this but swicth
+ * to a fingerprint lookup.  */
+gpg_error_t
+get_pubkey_with_ldap_fallback (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid)
+{
+  gpg_error_t err;
+
+  err = get_pubkey (ctrl, pk, keyid);
+  if (!err)
+    return 0;
+
+  if (gpg_err_code (err) != GPG_ERR_NO_PUBKEY)
+    return err;
+
+  /* Note that this code does not handle the case for two readers
+   * having both openpgp encryption keys.  Only one will be tried.  */
+  if (opt.debug)
+    log_debug ("using LDAP to find a public key\n");
+  err = keyserver_import_keyid (ctrl, keyid,
+                                opt.keyserver, KEYSERVER_IMPORT_FLAG_LDAP);
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA
+      || gpg_err_code (err) == GPG_ERR_NO_KEYSERVER)
+    {
+      /* Dirmngr returns NO DATA is the selected keyserver
+       * does not have the requested key.  It returns NO
+       * KEYSERVER if no LDAP keyservers are configured.  */
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+    }
+  if (err)
+    return err;
+
+  return get_pubkey (ctrl, pk, keyid);
+}
+
+
 /* Similar to get_pubkey, but it does not take PK->REQ_USAGE into
  * account nor does it merge in the self-signed data.  This function
  * also only considers primary keys.  It is intended to be used as a
