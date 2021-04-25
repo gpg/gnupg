@@ -340,7 +340,7 @@ verify_own_keys (ctrl_t ctrl)
           PKT_public_key pk;
 
           memset (&pk, 0, sizeof pk);
-          rc = get_pubkey (ctrl, &pk, k->kid);
+          rc = get_pubkey_with_ldap_fallback (ctrl, &pk, k->kid);
           if (rc)
 	    log_info(_("key %s: no public key for trusted key - skipped\n"),
 		     keystr(k->kid));

@@ -1702,13 +1702,13 @@ claim" signatures are always accepted.
 
 @item --trusted-key @var{long key ID or fingerprint}
 @opindex trusted-key
-Assume that the specified key (which must be given
-as a full 8 byte key ID, a 20 byte, or 32 byte fingerprint)
-is as trustworthy as one of
-your own secret keys. This option is useful if you
-don't want to keep your secret keys (or one of them)
+Assume that the specified key (which should be given as fingerprint)
+is as trustworthy as one of your own secret keys. This option is
+useful if you don't want to keep your secret keys (or one of them)
 online but still want to be able to check the validity of a given
-recipient's or signator's key.
+recipient's or signator's key.  If the given key is not locally
+available but an LDAP keyserver is configured the missing key is
+imported from that server.
 
 @item --trust-model @{pgp|classic|tofu|tofu+pgp|direct|always|auto@}
 @opindex trust-model
