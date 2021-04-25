@@ -1248,7 +1248,9 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     This status returns the Manufactorer ID as the unsigned number N.
     For OpenPGP this is well defined; for other cards this is 0.  The
     name of the manufacturer is also given as <string>; spaces are not
-    escaped.  For PKCS#15 cards <string> is TokenInfo.manufactorerID.
+    escaped.  For PKCS#15 cards <string> is TokenInfo.manufactorerID;
+    a string in brackets describing GnuPG's own card product name may
+    be appended to <string>.
 
 *** KEY-STATUS <keyref> <status>
     This is the response from scdaemon on GETATTR KEY-STATUS for

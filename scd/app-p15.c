@@ -3703,7 +3703,7 @@ read_p15_info (app_t app)
     }
   if (!app->app_local->card_product
       && app->app_local->token_label
-      && !strcmp (app->app_local->token_label, "D-TRUST Card V3")
+      && !strncmp (app->app_local->token_label, "D-TRUST Card V3", 15)
       && app->app_local->card_type == CARD_TYPE_CARDOS_50)
     {
       app->app_local->card_product = CARD_PRODUCT_DTRUST;
@@ -4546,6 +4546,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
         }
       else
         {
+          char *sn;
+
           /* We use the first private key object which has a serial
            * number set.  If none was found, we parse the first
            * object and see whether this has then a serial number.  */
@@ -4560,11 +4562,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
               if (!prkdf->serial_number)
                 prkdf = NULL;
             }
-          if (prkdf)
+          sn = get_dispserialno (app, prkdf);
+          /* Unless there is a bogus S/N in the cert, or the product
+           * has a different strategy for the display-s/n, we should
+           * have a suitable one from the cert now.  */
+          if (sn)
             {
-              char *sn = get_dispserialno (app, prkdf);
-              /* Unless there is a bogus S/N in the cert we should
-               * have a suitable one from the cert here now.  */
               err = send_status_printf (ctrl, name, "%s", sn);
               xfree (sn);
               return err;
@@ -4574,7 +4577,13 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   else if (!strcmp (name, "MANUFACTURER"))
     {
-      if (app->app_local->manufacturer_id)
+      if (app->app_local->manufacturer_id
+          && (app->app_local->card_product
+              || strchr (app->app_local->manufacturer_id, '[')))
+        return send_status_printf (ctrl, "MANUFACTURER", "0 %s [%s]",
+                              app->app_local->manufacturer_id,
+                              cardproduct2str (app->app_local->card_product));
+      else if (app->app_local->manufacturer_id)
         return send_status_printf (ctrl, "MANUFACTURER", "0 %s",
                                    app->app_local->manufacturer_id);
       else
@@ -4902,7 +4911,7 @@ get_dispserialno (app_t app, prkdf_object_t prkdf)
    * prompts) or has any control character.  */
   if (app->app_local->card_product == CARD_PRODUCT_RSCS)
     {
-      /* We use only the rigght 8 hex digits.  */
+      /* We use only the right 8 hex digits.  */
       serial = app_get_serialno (app);
       if (serial && (n=strlen (serial)) > 8)
         memmove (serial, serial + n - 8, 9);
