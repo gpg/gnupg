@@ -56,8 +56,8 @@ gpg_error_t keyserver_import_wkd (ctrl_t ctrl, const char *name,
                                   unsigned char **fpr, size_t *fpr_len);
 int keyserver_import_ntds (ctrl_t ctrl, const char *name,
                            unsigned char **fpr,size_t *fpr_len);
-int keyserver_import_name (ctrl_t ctrl,
-                           const char *name,unsigned char **fpr,size_t *fpr_len,
+int keyserver_import_mbox (ctrl_t ctrl, const char *mbox,
+                           unsigned char **fpr,size_t *fpr_len,
                            struct keyserver_spec *keyserver);
 int keyserver_import_ldap (ctrl_t ctrl, const char *name,
                            unsigned char **fpr,size_t *fpr_len);

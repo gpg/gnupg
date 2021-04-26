@@ -1122,18 +1122,16 @@ keyserver_any_configured (ctrl_t ctrl)
 }
 
 
-/* Import all keys that exactly match NAME */
+/* Import all keys that exactly match MBOX */
 int
-keyserver_import_name (ctrl_t ctrl, const char *name,
+keyserver_import_mbox (ctrl_t ctrl, const char *mbox,
                        unsigned char **fpr, size_t *fprlen,
                        struct keyserver_spec *keyserver)
 {
-  KEYDB_SEARCH_DESC desc;
+  KEYDB_SEARCH_DESC desc = { 0 };
 
-  memset (&desc, 0, sizeof desc);
-
-  desc.mode = KEYDB_SEARCH_MODE_EXACT;
-  desc.u.name = name;
+  desc.mode = KEYDB_SEARCH_MODE_MAIL;
+  desc.u.name = mbox;
 
   return keyserver_get (ctrl, &desc, 1, keyserver, 0, fpr, fprlen);
 }
