@@ -1342,7 +1342,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                     }
                   else
                     {
-                      rc = keyserver_import_name (ctrl, name, &fpr, &fpr_len,
+                      rc = keyserver_import_mbox (ctrl, name, &fpr, &fpr_len,
                                                   opt.keyserver);
                     }
 		  glo_ctrl.in_auto_key_retrieve--;
@@ -1373,7 +1373,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                   }
                 else
                   {
-                    rc = keyserver_import_name (ctrl, name,
+                    rc = keyserver_import_mbox (ctrl, name,
                                                 &fpr, &fpr_len, keyserver);
                   }
 		glo_ctrl.in_auto_key_retrieve--;

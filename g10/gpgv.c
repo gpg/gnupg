@@ -478,7 +478,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, unsigned int flags,
 }
 
 int
-keyserver_import_name (const char *name,struct keyserver_spec *spec)
+keyserver_import_mbox (const char *name,struct keyserver_spec *spec)
 {
   (void)name;
   (void)spec;
