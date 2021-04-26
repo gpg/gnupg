@@ -225,12 +225,14 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {NULL,0,NULL,NULL}
     };
   int rc;
-  int saved_self_sigs_only;
+  int saved_self_sigs_only, saved_import_clean;
 
-  /* We need to set a flag indicating wether the user has set
-   * IMPORT_SELF_SIGS_ONLY or it came from the default.  */
+  /* We need to set flags indicating wether the user has set certain
+   * options or if they came from the default.  */
   saved_self_sigs_only = (*options & IMPORT_SELF_SIGS_ONLY);
   saved_self_sigs_only &= ~IMPORT_SELF_SIGS_ONLY;
+  saved_import_clean   = (*options & IMPORT_CLEAN);
+  saved_import_clean   &= ~IMPORT_CLEAN;
 
   rc = parse_options (str, options, import_opts, noisy);
 
@@ -238,6 +240,12 @@ parse_import_options(char *str,unsigned int *options,int noisy)
     opt.flags.expl_import_self_sigs_only = 1;
   else
     *options |= saved_self_sigs_only;
+
+  if (rc && (*options & IMPORT_CLEAN))
+    opt.flags.expl_import_clean = 1;
+  else
+    *options |= saved_import_clean;
+
 
   if (rc && (*options & IMPORT_RESTORE))
     {

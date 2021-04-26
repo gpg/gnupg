@@ -259,6 +259,9 @@ struct
     /* The next flag is set internally iff IMPORT_SELF_SIGS_ONLY has
      * been set by the user and is not the default value.  */
     unsigned int expl_import_self_sigs_only:1;
+    /* The next flag is set internally iff IMPORT_CLEAN has
+     * been set by the user and is not the default value.  */
+    unsigned int expl_import_clean:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local
