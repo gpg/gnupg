@@ -202,7 +202,7 @@ release:
 
 sign-release:
 	 +(set -e; \
-	  cd dist; \
+	  test $$(pwd | sed 's,.*/,,') = dist || cd dist; \
 	  x=$$(grep '^RELEASE_ARCHIVE=' $$HOME/.gnupg-autogen.rc|cut -d= -f2);\
           if [ -z "$$x" ]; then \
              echo "error: RELEASE_ARCHIVE missing in ~/.gnupg-autogen.rc">&2; \
