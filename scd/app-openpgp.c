@@ -3454,7 +3454,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
 
       rc = pin2hash_if_kdf (app, 0, resetcode, &result1, &resultlen1);
       if (!rc)
-        rc = pin2hash_if_kdf (app, 0, pinvalue, &result2, &resultlen2);
+        rc = pin2hash_if_kdf (app, 1, pinvalue, &result2, &resultlen2);
       if (!rc)
         {
           bufferlen = resultlen1 + resultlen2;
