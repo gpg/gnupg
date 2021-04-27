@@ -2924,7 +2924,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           if (!rc)
             {
               strcpy (buffer+pinlen0, pinvalue);
-              rc = pin2hash_if_kdf (app, 0, buffer+pinlen0, &pinlen);
+              rc = pin2hash_if_kdf (app, 1, buffer+pinlen0, &pinlen);
             }
           if (!rc)
             rc = iso7816_reset_retry_counter_with_rc (app->slot, 0x81,
