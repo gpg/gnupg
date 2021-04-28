@@ -625,6 +625,7 @@ pcsc_error_string (long err)
     case 0x001c: s = "card unsupported"; break;
     case 0x001d: s = "no service"; break;
     case 0x001e: s = "service stopped"; break;
+    case 0x002e: s = "no readers available"; break;
     default:     s = "unknown PC/SC error code"; break;
     }
   return s;
@@ -827,12 +828,16 @@ control_pcsc (int slot, pcsc_dword_t ioctl_code,
 static int
 close_pcsc_reader (int slot)
 {
+  /*log_debug ("%s: count=%d (ctx=%x)\n", __func__, pcsc.count, pcsc.context);*/
   (void)slot;
-  if (--pcsc.count == 0 && npth_mutex_trylock (&reader_table_lock) == 0)
+  if (!pcsc.count || !--pcsc.count)
     {
       int i;
 
-      pcsc_release_context (pcsc.context);
+      /*log_debug ("%s: releasing context\n", __func__);*/
+      npth_mutex_lock (&reader_table_lock);
+      if (pcsc.context)
+        pcsc_release_context (pcsc.context);
       pcsc.context = 0;
       for (i = 0; i < MAX_READER; i++)
         pcsc.rdrname[i] = NULL;
@@ -2008,12 +2013,15 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
       char *p = NULL;
 
       if (!pcsc.context)
-        if (pcsc_init () < 0)
-          {
-            xfree (dl);
-            npth_mutex_unlock (&reader_table_lock);
-            return gpg_error (GPG_ERR_NO_SERVICE);
-          }
+        {
+          /* log_debug ("%s: No context - calling init\n", __func__); */
+          if (pcsc_init () < 0)
+            {
+              xfree (dl);
+              npth_mutex_unlock (&reader_table_lock);
+              return gpg_error (GPG_ERR_NO_SERVICE);
+            }
+        }
 
       r = pcsc_list_readers (pcsc.context, NULL, NULL, &nreader);
       if (!r)
@@ -2024,9 +2032,9 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
               err = gpg_error_from_syserror ();
 
               log_error ("error allocating memory for reader list\n");
+              npth_mutex_unlock (&reader_table_lock);
               close_pcsc_reader (0);
               xfree (dl);
-              npth_mutex_unlock (&reader_table_lock);
               return err;
             }
           r = pcsc_list_readers (pcsc.context, NULL, p, &nreader);
@@ -2036,9 +2044,9 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
           log_error ("pcsc_list_readers failed: %s (0x%lx)\n",
                      pcsc_error_string (r), r);
           xfree (p);
+          npth_mutex_unlock (&reader_table_lock);
           close_pcsc_reader (0);
           xfree (dl);
-          npth_mutex_unlock (&reader_table_lock);
           return iso7816_map_sw (pcsc_error_to_sw (r));
         }
 
@@ -2074,7 +2082,11 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
               break;
             }
         }
+
+      pcsc.count++;
     }
+
+  npth_mutex_unlock (&reader_table_lock);
 
   *l_p = dl;
   return 0;
@@ -2092,20 +2104,10 @@ apdu_dev_list_finish (struct dev_list *dl)
   else
 #endif
     { /* PC/SC readers.  */
-      int i;
-
       xfree (dl->table);
-      for (i = 0; i < MAX_READER; i++)
-        pcsc.rdrname[i] = NULL;
-
-      if (pcsc.count == 0)
-        {
-          pcsc_release_context (pcsc.context);
-          pcsc.context = 0;
-        }
+      close_pcsc_reader (0);
     }
   xfree (dl);
-  npth_mutex_unlock (&reader_table_lock);
 }
 
 

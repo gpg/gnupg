@@ -1231,7 +1231,7 @@ scd_kick_the_loop (void)
 #else
   int ret = kill (main_thread_pid, SIGCONT);
   if (ret < 0)
-    log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
+    log_error ("sending signal for scd_kick_the_loop failed: %s\n",
                gpg_strerror (gpg_error_from_syserror ()));
 #endif
 }
@@ -1287,6 +1287,8 @@ handle_connections (int listen_fd)
 
     events[0] = the_event = INVALID_HANDLE_VALUE;
     events[1] = INVALID_HANDLE_VALUE;
+    /* Create event for manual reset, initially non-signaled.  Make it
+     * waitable and inheritable.  */
     h = CreateEvent (&sa, TRUE, FALSE, NULL);
     if (!h)
       log_error ("can't create scd event: %s\n", w32_strerror (-1) );
