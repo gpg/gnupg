@@ -522,7 +522,7 @@ cardproduct2str (card_product_t cardproduct)
   switch (cardproduct)
     {
     case CARD_PRODUCT_UNKNOWN: return "";
-    case CARD_PRODUCT_RSCS:    return "RSCS";
+    case CARD_PRODUCT_RSCS:    return "R&S";
     case CARD_PRODUCT_DTRUST:  return "D-Trust";
     }
   return "";
