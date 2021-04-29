@@ -28,6 +28,10 @@
                                __FILE__,__LINE__, (a));          \
                      exit (1);                                   \
                    } while(0)
+#define fail2(a,e) do { fprintf (stderr, "%s:%d: test %d failed: %s\n", \
+                        __FILE__,__LINE__, (a), gpg_strerror ((e)));    \
+                     exit (1);                                          \
+                   } while(0)
 
 
 static void
@@ -178,7 +182,6 @@ test_make_canon_sexp_from_rsa_pk (void)
 }
 
 
-
 /* Communiacation object for tcmp.  */
 struct tcmp_parm_s {
   int curve_seen;
@@ -279,6 +282,204 @@ test_cmp_canon_sexp (void)
 }
 
 
+static void
+test_ecc_uncompress (void)
+{
+  struct {
+    const char *a;  /* Uncompressed.  */
+    const char *b;  /* Compressed.    */
+  }
+  tests[] = {
+  {
+    "(public-key"
+    " (ecc"
+    " (curve brainpoolP256r1)"
+    " (q #042ECD8679930BE2DB4AD42B8600BA3F80"
+    /*   */"2D4D539BFF2F69B83EC9B7BBAA7F3406"
+    /*   */"436DD11A1756AFE56CD93408410FCDA9"
+    /*   */"BA95024EB613BD481A14FCFEC27A448A#)))",
+    /* The same in compressed form.  */
+    "(public-key"
+    " (ecc"
+    " (curve brainpoolP256r1)"
+    " (q #022ECD8679930BE2DB4AD42B8600BA3F80"
+    /*   */"2D4D539BFF2F69B83EC9B7BBAA7F3406#)))"
+  },
+  {
+    "(public-key"
+    " (ecc"
+    " (curve brainpoolP256r1)"
+    " (q #045B784CA008EE64AB3D85017EE0D2BE87"
+    /*   */"558762C7300E0C8E06B1F9AF7C031458"
+    /*   */"9EBBA41915313417BA54218EB0569C59"
+    /*   */"0B156C76DBCAB6E84575E6EF68CE7B87#)))",
+    /* The same in compressed form.  */
+    "(public-key"
+    " (ecc"
+    " (curve brainpoolP256r1)"
+    " (q #035B784CA008EE64AB3D85017EE0D2BE87"
+    /*   */"558762C7300E0C8E06B1F9AF7C031458#)))"
+  },
+  { /* A key which does not require a conversion.  */
+    "(public-key"
+    " (ecdsa"
+    " (p #00FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF#)"
+    " (curve \"NIST P-256\")"
+    " (b #5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B#)"
+    " (g #046B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C2964FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5#)"
+    " (n #00FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551#)"
+    " (h #000000000000000000000000000000000000000000000000000000000000000001#)"
+    " (q #04C8A4CEC2E9A9BC8E173531A67B0840DF345C32E261ADD780E6D83D56EFADFD5DE872F8B854819B59543CE0B7F822330464FBC4E6324DADDCD9D059554F63B344#)))"
+  },
+  {  /* Nothing to do for an RSA private key.  */
+    "(private-key"
+    " (rsa"
+    "  (n #00B6B509596A9ECABC939212F891E656A626BA07DA8521A9CAD4C08E640C04052FBB87F424EF1A0275A48A9299AC9DB69ABE3D0124E6C756B1F7DFB9B842D6251AEA6EE85390495CADA73D671537FCE5850A932F32BAB60AB1AC1F852C1F83C625E7A7D70CDA9EF16D5C8E47739D77DF59261ABE8454807FF441E143FBD37F8545#)"
+    "  (e #010001#)"
+    "  (d #077AD3DE284245F4806A1B82B79E616FBDE821C82D691A65665E57B5FAD3F34E67F401E7BD2E28699E89D9C496CF821945AE83AC7A1231176A196BA6027E77D85789055D50404A7A2A95B1512F91F190BBAEF730ED550D227D512F89C0CDB31AC06FA9A19503DDF6B66D0B42B9691BFD6140EC1720FFC48AE00C34796DC899E5#)"
+    "  (p #00D586C78E5F1B4BF2E7CD7A04CA091911706F19788B93E44EE20AAF462E8363E98A72253ED845CCBF2481BB351E8557C85BCFFF0DABDBFF8E26A79A0938096F27#)"
+    "  (q #00DB0CDF60F26F2A296C88D6BF9F8E5BE45C0DDD713C96CC73EBCB48B061740943F21D2A93D6E42A7211E7F02A95DCED6C390A67AD21ECF739AE8A0CA46FF2EBB3#)"
+    "  (u #33149195F16912DB20A48D020DBC3B9E3881B39D722BF79378F6340F43148A6E9FC5F53E2853B7387BA4443BA53A52FCA8173DE6E85B42F9783D4A7817D0680B#)))"
+  },
+  { /* Nothing to do dor a DSA key.  */
+    " (public-key"
+    " (dsa"
+    "  (p #0084E4C626E16005770BD9509ABF7354492E85B8C0060EFAAAEC617F725B592FAA59DF5460575F41022776A9718CE62EDD542AB73C7720869EBDBC834D174ADCD7136827DF51E2613545A25CA573BC502A61B809000B6E35F5EB7FD6F18C35678C23EA1C3638FB9CFDBA2800EE1B62F41A4479DE824F2834666FBF8DC5B53C2617#)"
+    "  (q #00B0E6F710051002A9F425D98A677B18E0E5B038AB#)"
+    "  (g #44370CEE0FE8609994183DBFEBA7EEA97D466838BCF65EFF506E35616DA93FA4E572A2F08886B74977BC00CA8CD3DBEA7AEB7DB8CBB180E6975E0D2CA76E023E6DE9F8CCD8826EBA2F72B8516532F6001DEFFAE76AA5E59E0FA33DBA3999B4E92D1703098CDEDCC416CF008801964084CDE1980132B2B78CB4CE9C15A559528B#)"
+    "  (y #3D5DD14AFA2BF24A791E285B90232213D0E3BA74AB1109E768AED19639A322F84BB7D959E2BA92EF73DE4C7F381AA9F4053CFA3CD4527EF9043E304E5B95ED0A3A5A9D590AA641C13DB2B6E32B9B964A6A2C730DD3EA7C8E13F7A140AFF1A91CE375E9B9B960384779DC4EA180FA1F827C52288F366C0770A220F50D6D8FD6F6#)))"
+  },
+  { /* Nothing to do for an ECDSA key w/o curvename.  */
+    "(public-key"
+    " (ecdsa(flags param)"
+    " (p #00FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF#)"
+    " (a #00FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFC#)"
+    " (b #5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B#)"
+    " (g #046B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C2964FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5#)"
+    " (n #00FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551#)"
+    " (h #000000000000000000000000000000000000000000000000000000000000000001#)"
+    " (q #04C8A4CEC2E9A9BC8E173531A67B0840DF345C32E261ADD780E6D83D56EFADFD5DE872F8B854819B59543CE0B7F822330464FBC4E6324DADDCD9D059554F63B344#)))"
+  },
+  { /* Nothing to do for Ed25519 key.  */
+    "(public-key"
+    " (ecc"
+    " (curve Ed25519)"
+    " (q #04"
+    "     1CC662926E7EFF4982B7FB8B928E61CD74CCDD85277CC57196C3AD20B611085F"
+    "     47BD24842905C049257673B3F5249524E0A41FAA17B25B818D0F97E625F1A1D0#)"
+    "     ))"
+  },
+  { /* Nothing to do for Ed25519 with EdDSA key.  */
+    "(public-key"
+    " (ecc"
+    " (curve Ed25519)(flags eddsa)"
+    " (q #773E72848C1FD5F9652B29E2E7AF79571A04990E96F2016BF4E0EC1890C2B7DB#)"
+    " ))"
+  },
+  { /* Nothing to do for Ed25519 with EdDSA key with prefix.  */
+    "(public-key"
+    " (ecc"
+    " (curve Ed25519)(flags eddsa)"
+    " (q #40"
+    "     773E72848C1FD5F9652B29E2E7AF79571A04990E96F2016BF4E0EC1890C2B7DB#)"
+    " ))"
+  },
+  { /* Nothing to do for Ed25519 with EdDSA key with uncompress prefix.  */
+    "(public-key"
+    " (ecc"
+    " (curve Ed25519)(flags eddsa)"
+    " (q #04"
+    "     629ad237d1ed04dcd4abe1711dd699a1cf51b1584c4de7a4ef8b8a640180b26f"
+    "     5bb7c29018ece0f46b01f2960e99041a5779afe7e2292b65f9d51f8c84723e77#)"
+    " ))"
+  },
+  { /* Noting to do for a Cv25519 tweaked key.  */
+    "(public-key"
+    " (ecc"
+    " (curve Curve25519)(flags djb-tweak)"
+    " (q #40"
+    "     918C1733127F6BF2646FAE3D081A18AE77111C903B906310B077505EFFF12740#)"
+    " ))"
+  },
+  { /* Nothing to do for a shadowed key.  */
+    "(shadowed-private-key"
+    " (rsa"
+    " (n #00B493C79928398DA9D99AC0E949FE6EB62F683CB974FFFBFBC01066F5C9A89B"
+    "     D3DC48EAD7C65F36EA943C2B2C865C26C4884FF9EDFDA8C99C855B737D77EEF6"
+    "     B85DBC0CCEC0E900C1F89A6893A2A93E8B31028469B6927CEB2F08687E547C68"
+    "     6B0A2F7E50A194FF7AB7637E03DE0912EF7F6E5F1EC37625BD1620CCC2E7A564"
+    "     31E168CDAFBD1D9E61AE47A69A6FA03EF22F844528A710B2392F262B95A3078C"
+    "     F321DC8325F92A5691EF69F34FD0DE0B22C79D29DC87723FCADE463829E8E5F7"
+    "     D196D73D6C9C180F6A6A0DDBF7B9D8F7FA293C36163B12199EF6A1A95CAE4051"
+    "     E3069C522CC6C4A7110F663A5DAD20F66C13A1674D050088208FAE4F33B3AB51"
+    "     03#)"
+    " (e #00010001#)"
+    " (shadowed t1-v1"
+    " (#D2760001240102000005000123350000# OPENPGP.1)"
+    ")))"
+  },
+  {
+    NULL
+  }};
+  gpg_error_t err;
+  int idx;
+  gcry_sexp_t sexp;
+  unsigned char *abuf, *bbuf, *rbuf;
+  size_t abuflen, bbuflen, rbuflen;
+
+
+  for (idx=0; tests[idx].a; idx++)
+    {
+      err = gcry_sexp_new (&sexp, tests[idx].a, 0, 1);
+      if (err)
+        fail2 (idx,err);
+      err = make_canon_sexp (sexp, &abuf, &abuflen);
+      if (err)
+        fail2 (idx,err);
+      gcry_sexp_release (sexp);
+
+      if (tests[idx].b)
+        {
+          err = gcry_sexp_new (&sexp, tests[idx].b, 0, 1);
+          if (err)
+            fail2 (idx,err);
+          err = make_canon_sexp (sexp, &bbuf, &bbuflen);
+          if (err)
+            fail2 (idx,err);
+          gcry_sexp_release (sexp);
+        }
+      else
+        bbuf = NULL;
+
+      err = uncompress_ecc_q_in_canon_sexp (abuf, abuflen, &rbuf, &rbuflen);
+      if (err)
+        fail2 (idx,err);
+      if (rbuf)
+        fail (idx);  /* Converted without a need.  */
+
+      if (bbuf)
+        {
+          err = uncompress_ecc_q_in_canon_sexp (bbuf, bbuflen, &rbuf, &rbuflen);
+          if (err)
+            fail2 (idx,err);
+          if (!rbuf)
+            fail (idx);  /* Not converted despite a need for it. */
+
+          /* log_printcanon ("  orig:", abuf, abuflen); */
+          /* log_printcanon ("  comp:", bbuf, bbuflen); */
+          /* log_printcanon ("uncomp:", rbuf, rbuflen); */
+
+          if (rbuflen != abuflen || memcmp (rbuf, abuf, abuflen))
+            fail (idx);
+        }
+
+      xfree (abuf);
+      xfree (bbuf);
+      xfree (rbuf);
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -288,6 +489,7 @@ main (int argc, char **argv)
   test_hash_algo_from_sigval ();
   test_make_canon_sexp_from_rsa_pk ();
   test_cmp_canon_sexp ();
+  test_ecc_uncompress ();
 
   return 0;
 }
