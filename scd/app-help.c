@@ -122,6 +122,60 @@ app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip,
 }
 
 
+/* Get the public key from the binary encoded (CERT,CERTLEN).  */
+gpg_error_t
+app_help_pubkey_from_cert (const void *cert, size_t certlen,
+                           unsigned char **r_pk, size_t *r_pklen)
+{
+  gpg_error_t err;
+  ksba_cert_t kc;
+  unsigned char *pk, *fixed_pk;
+  size_t pklen, fixed_pklen;
+
+  *r_pk = NULL;
+  *r_pklen = 0;
+
+  pk = NULL; /*(avoid cc warning)*/
+
+  err = ksba_cert_new (&kc);
+  if (err)
+    return err;
+
+  err = ksba_cert_init_from_mem (kc, cert, certlen);
+  if (err)
+    goto leave;
+
+  pk = ksba_cert_get_public_key (kc);
+  if (!pk)
+    {
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+  pklen = gcry_sexp_canon_len (pk, 0, NULL, &err);
+
+  err = uncompress_ecc_q_in_canon_sexp (pk, pklen, &fixed_pk, &fixed_pklen);
+  if (err)
+    goto leave;
+  if (fixed_pk)
+    {
+      ksba_free (pk); pk = NULL;
+      pk = fixed_pk;
+      pklen = fixed_pklen;
+    }
+
+ leave:
+  if (!err)
+    {
+      *r_pk = pk;
+      *r_pklen = pklen;
+    }
+  else
+    ksba_free (pk);
+  ksba_cert_release (kc);
+  return err;
+}
+
+
 /* Given the SLOT and the File ID FID, return the length of the
    certificate contained in that file. Returns 0 if the file does not
    exists or does not contain a certificate.  If R_CERTOFF is not
