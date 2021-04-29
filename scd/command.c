@@ -1846,6 +1846,34 @@ scd_command_handler (ctrl_t ctrl, int fd)
 }
 
 
+
+/* Send a keyinfo string.  If DATA is true the string is emitted as a
+ * data line, else as a status line.  */
+void
+send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
+              const char *serialno, const char *idstr)
+{
+  char *string;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+  string = xtryasprintf ("%s T %s %s%s", keygrip_str,
+                         serialno? serialno : "-",
+                         idstr? idstr : "-",
+                         data? "\n" : "");
+
+  if (!string)
+    return;
+
+  if (!data)
+    assuan_write_status (ctx, "KEYINFO", string);
+  else
+    assuan_send_data (ctx, string, strlen (string));
+
+  xfree (string);
+  return;
+}
+
+
 /* Send a line with status information via assuan and escape all given
    buffers. The variable elements are pairs of (char *, size_t),
    terminated with a (NULL, 0). */
