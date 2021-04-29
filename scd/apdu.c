@@ -302,6 +302,7 @@ long (* DLSTDCALL pcsc_establish_context) (pcsc_dword_t scope,
                                            const void *reserved2,
                                            HANDLE *r_context);
 long (* DLSTDCALL pcsc_release_context) (HANDLE context);
+long (* DLSTDCALL pcsc_cancel) (HANDLE context);
 long (* DLSTDCALL pcsc_list_readers) (HANDLE context,
                                       const char *groups,
                                       char *readers, pcsc_dword_t*readerslen);
@@ -873,6 +874,15 @@ connect_pcsc_card (int slot)
       if (err != PCSC_E_NO_SMARTCARD)
         log_error ("pcsc_connect failed: %s (0x%lx)\n",
                    pcsc_error_string (err), err);
+      if (err == PCSC_W_REMOVED_CARD && pcsc_cancel)
+        {
+          long err2;
+          if ((err2=pcsc_cancel (pcsc.context)))
+            log_error ("pcsc_cancel failed: %s (0x%lx)\n",
+                       pcsc_error_string (err2), err2);
+          else if (opt.verbose)
+            log_error ("pcsc_cancel succeeded\n");
+        }
     }
   else
     {
@@ -1136,6 +1146,7 @@ pcsc_init (void)
 
       pcsc_establish_context = dlsym (handle, "SCardEstablishContext");
       pcsc_release_context   = dlsym (handle, "SCardReleaseContext");
+      pcsc_cancel            = dlsym (handle, "SCardCancel");
       pcsc_list_readers      = dlsym (handle, "SCardListReaders");
 #if defined(_WIN32) || defined(__CYGWIN__)
       if (!pcsc_list_readers)
