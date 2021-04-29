@@ -1,6 +1,6 @@
 /* app-p15.c - The pkcs#15 card application.
  *	Copyright (C) 2005 Free Software Foundation, Inc.
- *	Copyright (C) 2020 g10 Code GmbH
+ *	Copyright (C) 2020, 2021 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #include "scdaemon.h"
@@ -42,8 +41,30 @@
 #include "iso7816.h"
 #include "../common/i18n.h"
 #include "../common/tlv.h"
+#include "../common/host2net.h"
+#include "../common/openpgpdefs.h"
 #include "apdu.h" /* fixme: we should move the card detection to a
                      separate file */
+
+
+static const char oid_kp_codeSigning[]    = "1.3.6.1.5.5.7.3.3";
+static const char oid_kp_timeStamping[]   = "1.3.6.1.5.5.7.3.8";
+static const char oid_kp_ocspSigning[]    = "1.3.6.1.5.5.7.3.9";
+static const char oid_kp_ms_documentSigning[] = "1.3.6.1.4.1.311.10.3.12";
+static const char oid_kp_ms_old_documentSigning[] = "1.3.6.1.4.1.311.3.10.3.12";
+
+static const char oid_kp_emailProtection[]= "1.3.6.1.5.5.7.3.4";
+
+static const char oid_kp_serverAuth[]     = "1.3.6.1.5.5.7.3.1";
+static const char oid_kp_clientAuth[]     = "1.3.6.1.5.5.7.3.2";
+static const char oid_kp_ms_smartcardLogon[] = "1.3.6.1.4.1.311.20.2.2";
+
+static const char oid_kp_anyExtendedKeyUsage[] = "2.5.29.37.0";
+
+static const char oid_kp_gpgUsageCert[] = "1.3.6.1.4.1.11591.2.6.1";
+static const char oid_kp_gpgUsageSign[] = "1.3.6.1.4.1.11591.2.6.2";
+static const char oid_kp_gpgUsageEncr[] = "1.3.6.1.4.1.11591.2.6.3";
+static const char oid_kp_gpgUsageAuth[] = "1.3.6.1.4.1.11591.2.6.4";
 
 /* Types of cards we know and which needs special treatment. */
 typedef enum
@@ -52,6 +73,7 @@ typedef enum
     CARD_TYPE_TCOS,
     CARD_TYPE_MICARDO,
     CARD_TYPE_CARDOS_50,
+    CARD_TYPE_CARDOS_53,
     CARD_TYPE_BELPIC   /* Belgian eID card specs. */
   }
 card_type_t;
@@ -62,6 +84,7 @@ card_type_t;
 typedef enum
   {
     CARD_PRODUCT_UNKNOWN,
+    CARD_PRODUCT_RSCS,     /* Rohde&Schwarz Cybersecurity       */
     CARD_PRODUCT_DTRUST    /* D-Trust GmbH (bundesdruckerei.de) */
   }
 card_product_t;
@@ -95,10 +118,19 @@ static struct
     CARD_TYPE_MICARDO }, /* EstEID (Estonian Big Brother card) */
   { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x01\x14"),
     CARD_TYPE_CARDOS_50 }, /* CardOS 5.0 */
+  { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x03\x16"),
+    CARD_TYPE_CARDOS_53 }, /* CardOS 5.3 */
   { 0 }
 };
 #undef X
 
+
+/* Macro to test for CardOS 5.0 and 5.3.  */
+#define IS_CARDOS_5(a) ((a)->app_local->card_type == CARD_TYPE_CARDOS_50 \
+                        || (a)->app_local->card_type == CARD_TYPE_CARDOS_53)
+
+/* The default PKCS-15 home DF */
+#define DEFAULT_HOME_DF 0x5015
 
 /* The AID of PKCS15. */
 static char const pkcs15_aid[] = { 0xA0, 0, 0, 0, 0x63,
@@ -139,6 +171,31 @@ struct keyusage_flags_s
 typedef struct keyusage_flags_s keyusage_flags_t;
 
 
+/* A bit array with for the key access flags from the
+   commonKeyAttributes. */
+struct keyaccess_flags_s
+{
+  unsigned int any:1;    /* Any access flag set.  */
+  unsigned int sensitive:1;
+  unsigned int extractable:1;
+  unsigned int always_sensitive:1;
+  unsigned int never_extractable:1;
+  unsigned int local:1;
+};
+typedef struct keyaccess_flags_s keyaccess_flags_t;
+
+
+/* A bit array with for the gpg usage flags.  */
+struct gpgusage_flags_s
+{
+  unsigned int any:1;    /* Any of the next flags are set.  */
+  unsigned int cert:1;   /* 1.3.6.1.4.1.11591.2.6.1 */
+  unsigned int sign:1;   /* 1.3.6.1.4.1.11591.2.6.2 */
+  unsigned int encr:1;   /* 1.3.6.1.4.1.11591.2.6.3 */
+  unsigned int auth:1;   /* 1.3.6.1.4.1.11591.2.6.4 */
+};
+typedef struct gpgusage_flags_s gpgusage_flags_t;
+
 
 /* This is an object to store information about a Certificate
    Directory File (CDF) in a format suitable for further processing by
@@ -159,10 +216,17 @@ struct cdf_object_s
   size_t objidlen;
   unsigned char *objid;
 
-  /* To avoid reading a certificate more than once, we cache it in an
-     allocated memory IMAGE of IMAGELEN. */
-  size_t imagelen;
-  unsigned char *image;
+  /* Length and allocated buffer with the authId of this object or
+     NULL if no authID is known. */
+  size_t authidlen;
+  unsigned char *authid;
+
+  /* NULL or the malloced label of this object.  */
+  char *label;
+
+  /* To avoid reading and parsing a certificate more than once, we
+   * cache the ksba object.  */
+  ksba_cert_t cert;
 
   /* The offset and length of the object.  They are only valid if
      HAVE_OFF is true and set to 0 if HAVE_OFF is false. */
@@ -191,24 +255,54 @@ struct prkdf_object_s
   unsigned int keygrip_valid:1;
   unsigned int key_reference_valid:1;
   unsigned int have_off:1;
+  unsigned int have_keytime:1;
 
   /* Flag indicating that the corresponding PIN has already been
-   * verified. */
+   * verified.  Note that for cards which are able to return the
+   * verification stus, this flag is not used.  */
   unsigned int pin_verified:1;
+
+  /* PKCS#15 info whether this is an EC key.  Default is RSA.  Note
+   * that there is also a KEYALGO field which is derived from the
+   * publick key via Libgcrypt.  */
+  unsigned int is_ecc:1;
 
   /* The key's usage flags. */
   keyusage_flags_t usageflags;
 
+  /* The key's access flags. */
+  keyaccess_flags_t accessflags;
+
+  /* Extended key usage flags.  Only used if .valid is set.  This
+   * information is computed from an associated certificate15.  */
+  struct {
+    unsigned int valid:1;
+    unsigned int sign:1;
+    unsigned int encr:1;
+    unsigned int auth:1;
+  } extusage;
+
+  /* OpenPGP key features for this key.  This is taken from special
+   * extended key usage flags different from those tracked in EXTUSAGE
+   * above.  There is also no valid flag as in EXTUSAGE.  */
+  gpgusage_flags_t gpgusage;
+
   /* The keygrip of the key.  This is used as a cache.  */
   char keygrip[2*KEYGRIP_LEN+1];
 
+  /* A malloced algorithm string or NULL if not known.  */
+  char *keyalgostr;
+
   /* The Gcrypt algo identifier for the key.  It is valid if the
-   * keygrip is also valid.  */
+   * keygrip is also valid.  See also is_ecc above.  */
   int keyalgo;
 
   /* The length of the key in bits (e.g. for RSA the length of the
    * modulus).  It is valid if the keygrip is also valid.  */
   unsigned int keynbits;
+
+  /* The creation time of the key or 0 if not known.  */
+  u32 keytime;
 
   /* Malloced CN from the Subject-DN of the corresponding certificate
    * or NULL if not known.  */
@@ -218,6 +312,10 @@ struct prkdf_object_s
    * certificate or NULL if not known.  */
   char *serial_number;
 
+  /* KDF/KEK parameter for OpenPGP's ECDH.  First byte is zero if not
+   * availabale. .*/
+  unsigned char ecdh_kdf[4];
+
   /* Length and allocated buffer with the Id of this object. */
   size_t objidlen;
   unsigned char *objid;
@@ -226,6 +324,9 @@ struct prkdf_object_s
      NULL if no authID is known. */
   size_t authidlen;
   unsigned char *authid;
+
+  /* NULL or the malloced label of this object.  */
+  char *label;
 
   /* The keyReference and a flag telling whether it is valid. */
   unsigned long key_reference;
@@ -240,6 +341,7 @@ struct prkdf_object_s
   unsigned short path[1];
 };
 typedef struct prkdf_object_s *prkdf_object_t;
+typedef struct prkdf_object_s *pukdf_object_t;
 
 
 /* This is an object to store information about a Authentication
@@ -263,6 +365,9 @@ struct aodf_object_s
      NULL if no authID is known. */
   size_t authidlen;
   unsigned char *authid;
+
+  /* NULL or the malloced label of this object.  */
+  char *label;
 
   /* The file ID of this AODF.  */
   unsigned short fid;
@@ -334,6 +439,9 @@ struct app_local_s
   /* Flag indicating whether we may use direct path selection. */
   int direct_path_selection;
 
+  /* Flag indicating whether the card has any key with a gpgusage set.  */
+  int any_gpgusage;
+
   /* Structure with the EFIDs of the objects described in the ODF
      file. */
   struct
@@ -353,8 +461,15 @@ struct app_local_s
   unsigned char *serialno;
   size_t serialnolen;
 
-  /* The manufacturerID from the TokenInfo EF.  Malloced. */
+  /* The manufacturerID from the TokenInfo EF.  Malloced or NULL. */
   char *manufacturer_id;
+
+  /* The label from the TokenInfo EF.  Malloced or NULL.  */
+  char *token_label;
+
+  /* The tokenflags from the TokenInfo EF.  Malloced or NULL.  */
+  unsigned char *tokenflags;
+  unsigned int tokenflagslen;
 
   /* Information on all certificates. */
   cdf_object_t certificate_info;
@@ -363,8 +478,11 @@ struct app_local_s
   /* Information on all useful certificates. */
   cdf_object_t useful_certificate_info;
 
+  /* Information on all public keys. */
+  prkdf_object_t public_key_info;
+
   /* Information on all private keys. */
-  prkdf_object_t private_key_info;
+  pukdf_object_t private_key_info;
 
   /* Information on all authentication objects. */
   aodf_object_t auth_object_info;
@@ -373,6 +491,8 @@ struct app_local_s
 
 
 /*** Local prototypes.  ***/
+static gpg_error_t select_ef_by_path (app_t app, const unsigned short *path,
+                                      size_t pathlen);
 static gpg_error_t keygrip_from_prkdf (app_t app, prkdf_object_t prkdf);
 static gpg_error_t readcert_by_cdf (app_t app, cdf_object_t cdf,
                                     unsigned char **r_cert, size_t *r_certlen);
@@ -380,6 +500,33 @@ static char *get_dispserialno (app_t app, prkdf_object_t prkdf);
 static gpg_error_t do_getattr (app_t app, ctrl_t ctrl, const char *name);
 
 
+
+static const char *
+cardtype2str (card_type_t cardtype)
+{
+  switch (cardtype)
+    {
+    case CARD_TYPE_UNKNOWN:   return "";
+    case CARD_TYPE_TCOS:      return "TCOS";
+    case CARD_TYPE_MICARDO:   return "Micardo";
+    case CARD_TYPE_CARDOS_50: return "CardOS 5.0";
+    case CARD_TYPE_CARDOS_53: return "CardOS 5.3";
+    case CARD_TYPE_BELPIC:    return "Belgian eID";
+    }
+  return "";
+}
+
+static const char *
+cardproduct2str (card_product_t cardproduct)
+{
+  switch (cardproduct)
+    {
+    case CARD_PRODUCT_UNKNOWN: return "";
+    case CARD_PRODUCT_RSCS:    return "R&S";
+    case CARD_PRODUCT_DTRUST:  return "D-Trust";
+    }
+  return "";
+}
 
 /* Release the CDF object A  */
 static void
@@ -388,8 +535,10 @@ release_cdflist (cdf_object_t a)
   while (a)
     {
       cdf_object_t tmp = a->next;
-      xfree (a->image);
+      ksba_free (a->cert);
       xfree (a->objid);
+      xfree (a->authid);
+      xfree (a->label);
       xfree (a);
       a = tmp;
     }
@@ -402,13 +551,21 @@ release_prkdflist (prkdf_object_t a)
   while (a)
     {
       prkdf_object_t tmp = a->next;
+      xfree (a->keyalgostr);
       xfree (a->common_name);
       xfree (a->serial_number);
       xfree (a->objid);
       xfree (a->authid);
+      xfree (a->label);
       xfree (a);
       a = tmp;
     }
+}
+
+static void
+release_pukdflist (pukdf_object_t a)
+{
+  release_prkdflist (a);
 }
 
 /* Release just one aodf object. */
@@ -419,6 +576,7 @@ release_aodf_object (aodf_object_t a)
     {
       xfree (a->objid);
       xfree (a->authid);
+      xfree (a->label);
       xfree (a->path);
       xfree (a);
     }
@@ -437,50 +595,135 @@ release_aodflist (aodf_object_t a)
 }
 
 
+static void
+release_lists (app_t app)
+{
+  release_cdflist (app->app_local->certificate_info);
+  app->app_local->certificate_info = NULL;
+  release_cdflist (app->app_local->trusted_certificate_info);
+  app->app_local->trusted_certificate_info = NULL;
+  release_cdflist (app->app_local->useful_certificate_info);
+  app->app_local->useful_certificate_info = NULL;
+  release_pukdflist (app->app_local->public_key_info);
+  app->app_local->public_key_info = NULL;
+  release_prkdflist (app->app_local->private_key_info);
+  app->app_local->private_key_info = NULL;
+  release_aodflist (app->app_local->auth_object_info);
+  app->app_local->auth_object_info = NULL;
+}
+
+
+static void
+release_tokeninfo (app_t app)
+{
+  xfree (app->app_local->manufacturer_id);
+  app->app_local->manufacturer_id = NULL;
+  xfree (app->app_local->token_label);
+  app->app_local->token_label = NULL;
+  xfree (app->app_local->tokenflags);
+  app->app_local->tokenflags = NULL;
+  xfree (app->app_local->serialno);
+  app->app_local->serialno = NULL;
+}
+
+
 /* Release all local resources.  */
 static void
 do_deinit (app_t app)
 {
   if (app && app->app_local)
     {
-      release_cdflist (app->app_local->certificate_info);
-      release_cdflist (app->app_local->trusted_certificate_info);
-      release_cdflist (app->app_local->useful_certificate_info);
-      release_prkdflist (app->app_local->private_key_info);
-      release_aodflist (app->app_local->auth_object_info);
-      xfree (app->app_local->manufacturer_id);
-      xfree (app->app_local->serialno);
+      release_lists (app);
+      release_tokeninfo (app);
       xfree (app->app_local);
       app->app_local = NULL;
     }
 }
 
 
-
 /* Do a select and a read for the file with EFID.  EFID_DESC is a
    desctription of the EF to be used with error messages.  On success
    BUFFER and BUFLEN contain the entire content of the EF.  The caller
-   must free BUFFER only on success. */
+   must free BUFFER only on success.  If EFID is 0 no seelct is done. */
 static gpg_error_t
-select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
+select_and_read_binary (app_t app, unsigned short efid, const char *efid_desc,
                         unsigned char **buffer, size_t *buflen)
 {
   gpg_error_t err;
+  int sw;
 
-  err = iso7816_select_file (slot, efid, 0);
+  if (efid)
+    {
+      err = select_ef_by_path (app, &efid, 1);
+      if (err)
+        {
+          log_error ("p15: error selecting %s (0x%04X): %s\n",
+                     efid_desc, efid, gpg_strerror (err));
+          return err;
+        }
+    }
+
+  err = iso7816_read_binary_ext (app_get_slot (app),
+                                 0, 0, 0, buffer, buflen, &sw);
+  if (err)
+    log_error ("p15: error reading %s (0x%04X): %s (sw=%04X)\n",
+               efid_desc, efid, gpg_strerror (err), sw);
+  return err;
+}
+
+
+/* If EFID is not 0 do a select and then read the record RECNO.
+ * EFID_DESC is a description of the EF to be used with error
+ * messages.  On success BUFFER and BUFLEN contain the entire content
+ * of the EF.  The caller must free BUFFER only on success. */
+static gpg_error_t
+select_and_read_record (app_t app, unsigned short efid, int recno,
+                        const char *efid_desc,
+                        unsigned char **buffer, size_t *buflen, int *r_sw)
+{
+  gpg_error_t err;
+  int sw;
+
+  if (r_sw)
+    *r_sw = 0x9000;
+
+  if (efid)
+    {
+      err = select_ef_by_path (app, &efid, 1);
+      if (err)
+        {
+          log_error ("p15: error selecting %s (0x%04X): %s\n",
+                     efid_desc, efid, gpg_strerror (err));
+          if (r_sw)
+            *r_sw = sw;
+          return err;
+        }
+    }
+
+  err = iso7816_read_record_ext (app_get_slot (app),
+                                 recno, 1, 0, buffer, buflen, &sw);
   if (err)
     {
-      log_error ("p15: error selecting %s (0x%04X): %s\n",
-                 efid_desc, efid, gpg_strerror (err));
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+          ;
+      else if (err && sw == SW_FILE_STRUCT)
+        ;
+      else
+        log_error ("p15: error reading %s (0x%04X) record %d: %s (sw=%04X)\n",
+                   efid_desc, efid, recno, gpg_strerror (err), sw);
+      if (r_sw)
+        *r_sw = sw;
       return err;
     }
-  err = iso7816_read_binary (slot, 0, 0, buffer, buflen);
-  if (err)
+  /* On CardOS with a Linear TLV file structure the records starts
+   * with some tag (often the record number) followed by the length
+   * byte for this record.  Detect and remove this prefix.  */
+  if (*buflen > 2 && (*buffer)[0] != 0x30 && (*buffer)[1] == *buflen - 2)
     {
-      log_error ("p15: error reading %s (0x%04X): %s\n",
-                 efid_desc, efid, gpg_strerror (err));
-      return err;
+      memmove (*buffer, *buffer + 2, *buflen - 2);
+      *buflen = *buflen - 2;
     }
+
   return 0;
 }
 
@@ -496,42 +739,60 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
   if (!pathlen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (pathlen && *path != 0x3f00 )
-    log_error ("p15: warning: relative path selection not yet implemented\n");
+  /* log_debug ("%s: path=", __func__); */
+  /* for (j=0; j < pathlen; j++) */
+  /*   log_printf ("%s%04hX", j? "/":"", path[j]); */
+  /* log_printf ("%s\n",app->app_local->direct_path_selection?" (direct)":"");*/
 
   if (app->app_local->direct_path_selection)
     {
-      err = iso7816_select_path (app->slot, path+1, pathlen-1, 0);
+      if (pathlen && *path == 0x3f00 )
+        {
+          if (pathlen == 1)
+            err = iso7816_select_mf (app_get_slot (app));
+          else
+            err = iso7816_select_path (app_get_slot (app), path+1, pathlen-1,
+                                       0);
+        }
+      else
+        err = iso7816_select_path (app_get_slot (app), path, pathlen,
+                                   app->app_local->home_df);
       if (err)
         {
           log_error ("p15: error selecting path ");
-          for (j=0; j < pathlen; j++)
-            log_printf ("%04hX", path[j]);
-          log_printf (": %s\n", gpg_strerror (err));
-          return err;
+          goto err_print_path;
         }
     }
   else
     {
-      /* FIXME: Need code to remember the last PATH so that we can decide
-         what select commands to send in case the path does not start off
-         with 3F00.  We might also want to use direct path selection if
-         supported by the card. */
+      if (pathlen && *path != 0x3f00 )
+        log_error ("p15: warning: relative path select not yet implemented\n");
+
+      /* FIXME: Use home_df.  */
       for (i=0; i < pathlen; i++)
         {
-          err = iso7816_select_file (app->slot, path[i], !(i+1 == pathlen));
+          err = iso7816_select_file (app_get_slot (app),
+                                     path[i], !(i+1 == pathlen));
           if (err)
             {
               log_error ("p15: error selecting part %d from path ", i);
-              for (j=0; j < pathlen; j++)
-                log_printf ("%04hX", path[j]);
-              log_printf (": %s\n", gpg_strerror (err));
-              return err;
+              goto err_print_path;
             }
         }
     }
   return 0;
+
+ err_print_path:
+  if (pathlen && *path != 0x3f00 )
+    log_printf ("3F00/");
+  else
+    log_printf ("%04hX/", app->app_local->home_df);
+  for (j=0; j < pathlen; j++)
+    log_printf ("%s%04hX", j? "/":"", path[j]);
+  log_printf (": %s\n", gpg_strerror (err));
+  return err;
 }
+
 
 /* Parse a cert Id string (or a key Id string) and return the binary
    object Id string in a newly allocated buffer stored at R_OBJID and
@@ -569,7 +830,7 @@ parse_certid (app_t app, const char *certid,
     }
   else /* This is a usual keyref.  */
     {
-      if (app->app_local->home_df)
+      if (app->app_local->home_df != DEFAULT_HOME_DF)
         snprintf (tmpbuf, sizeof tmpbuf, "P15-%04X.",
                   (unsigned int)(app->app_local->home_df & 0xffff));
       else
@@ -605,19 +866,13 @@ parse_certid (app_t app, const char *certid,
 }
 
 
-/* Find a certificate object by the certificate ID CERTID and store a
-   pointer to it at R_CDF. */
+/* Find a certificate object by its object ID and store a pointer to
+ * it at R_CDF. */
 static gpg_error_t
-cdf_object_from_certid (app_t app, const char *certid, cdf_object_t *r_cdf)
+cdf_object_from_objid (app_t app, size_t objidlen, const unsigned char *objid,
+                       cdf_object_t *r_cdf)
 {
-  gpg_error_t err;
-  size_t objidlen;
-  unsigned char *objid;
   cdf_object_t cdf;
-
-  err = parse_certid (app, certid, &objid, &objidlen);
-  if (err)
-    return err;
 
   for (cdf = app->app_local->certificate_info; cdf; cdf = cdf->next)
     if (cdf->objidlen == objidlen && !memcmp (cdf->objid, objid, objidlen))
@@ -630,9 +885,71 @@ cdf_object_from_certid (app_t app, const char *certid, cdf_object_t *r_cdf)
     for (cdf = app->app_local->useful_certificate_info; cdf; cdf = cdf->next)
       if (cdf->objidlen == objidlen && !memcmp (cdf->objid, objid, objidlen))
         break;
-  xfree (objid);
   if (!cdf)
     return gpg_error (GPG_ERR_NOT_FOUND);
+  *r_cdf = cdf;
+  return 0;
+}
+
+
+/* Find a certificate object by its label and store a pointer to it at
+ * R_CDF. */
+static gpg_error_t
+cdf_object_from_label (app_t app, const char *label, cdf_object_t *r_cdf)
+{
+  cdf_object_t cdf;
+
+  if (!label)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  for (cdf = app->app_local->certificate_info; cdf; cdf = cdf->next)
+    if (cdf->label && !strcmp (cdf->label, label))
+      break;
+  if (!cdf)
+    for (cdf = app->app_local->trusted_certificate_info; cdf; cdf = cdf->next)
+      if (cdf->label && !strcmp (cdf->label, label))
+        break;
+  if (!cdf)
+    for (cdf = app->app_local->useful_certificate_info; cdf; cdf = cdf->next)
+      if (cdf->label && !strcmp (cdf->label, label))
+        break;
+  if (!cdf)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+  *r_cdf = cdf;
+  return 0;
+}
+
+
+/* Find a certificate object by the certificate ID CERTID and store a
+ * pointer to it at R_CDF. */
+static gpg_error_t
+cdf_object_from_certid (app_t app, const char *certid, cdf_object_t *r_cdf)
+{
+  gpg_error_t err;
+  size_t objidlen;
+  unsigned char *objid;
+  cdf_object_t cdf;
+  prkdf_object_t prkdf;
+
+  err = parse_certid (app, certid, &objid, &objidlen);
+  if (err)
+    return err;
+
+  err = cdf_object_from_objid (app, objidlen, objid, &cdf);
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+    {
+      /* Try again by finding the certid in the prkdf and matching by
+       * label.  */
+      for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
+        if (prkdf->objidlen == objidlen
+            && !memcmp (prkdf->objid, objid, objidlen))
+          break;
+      if (prkdf)
+        err = cdf_object_from_label (app, prkdf->label, &cdf);
+    }
+  xfree (objid);
+  if (err)
+    return err;
   *r_cdf = cdf;
   return 0;
 }
@@ -691,7 +1008,19 @@ read_ef_odf (app_t app, unsigned short odf_fid)
   size_t offset;
   unsigned short home_df = 0;
 
-  err = select_and_read_binary (app->slot, odf_fid, "ODF", &buffer, &buflen);
+
+  app->app_local->odf.private_keys = 0;
+  app->app_local->odf.public_keys = 0;
+  app->app_local->odf.trusted_public_keys = 0;
+  app->app_local->odf.secret_keys = 0;
+  app->app_local->odf.certificates = 0;
+  app->app_local->odf.trusted_certificates = 0;
+  app->app_local->odf.useful_certificates = 0;
+  app->app_local->odf.data_objects = 0;
+  app->app_local->odf.auth_objects = 0;
+
+  err = select_and_read_binary (app, odf_fid, "ODF",
+                                &buffer, &buflen);
   if (err)
     return err;
 
@@ -717,6 +1046,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
                 && !memcmp (p+1, "\x0a\x30\x08\x04\x06\x3F\x00", 7)
                 && (!home_df || home_df == ((p[8]<<8)|p[9])) )
         {
+          /* FIXME: Is this hack still required?  */
           /* If we do not know the home DF, we take it from the first
            * ODF object.  Here are sample values:
            * a0 0a 30 08 0406 3f00 5015 4401
@@ -807,6 +1137,47 @@ read_ef_odf (app_t app, unsigned short odf_fid)
 }
 
 
+/* Helper for the read_ef_foo functions to read the first record or
+ * the entire data.  */
+static gpg_error_t
+read_first_record (app_t app, unsigned short fid, const char *fid_desc,
+                   unsigned char **r_buffer, size_t *r_buflen,
+                   int *r_use_read_record)
+{
+  gpg_error_t err;
+  int sw;
+
+  *r_buffer = NULL;
+  *r_buflen = 0;
+  *r_use_read_record = 0;
+
+  if (!fid)
+    return gpg_error (GPG_ERR_NO_DATA); /* No such file. */
+
+  if (IS_CARDOS_5 (app))
+    {
+      *r_use_read_record = 1;
+      err = select_and_read_record (app, fid, 1, fid_desc,
+                                    r_buffer, r_buflen, &sw);
+      if (err && sw == SW_FILE_STRUCT)
+        {
+          *r_use_read_record = 0;
+          err = select_and_read_binary (app, 0, fid_desc, r_buffer, r_buflen);
+        }
+    }
+  else
+    err = select_and_read_binary (app, fid, fid_desc, r_buffer, r_buflen);
+
+  /* We get a not_found state in read_record mode if the select
+   * succeeded but reading the record failed.  Map that to no_data
+   * which is what the caller of the read_ef_foo functions expect.  */
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+    err = gpg_error (GPG_ERR_NO_DATA);
+
+  return err;
+}
+
+
 /* Parse the BIT STRING with the keyUsageFlags from the
    CommonKeyAttributes. */
 static gpg_error_t
@@ -871,82 +1242,488 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
   return 0;
 }
 
-/* Read and  parse the Private Key Directory Files. */
-/*
-  6034 (privatekeys)
 
-30 33 30 11 0C 08 53 4B 2E  43 48 2E 44 53 03 02   030...SK.CH.DS..
-06 80 04 01 07 30 0C 04 01  01 03 03 06 00 40 02   .....0........@.
-02 00 50 A1 10 30 0E 30 08  04 06 3F 00 40 16 00   ..P..0.0...?.@..
-50 02 02 04 00 30 33 30 11  0C 08 53 4B 2E 43 48   P....030...SK.CH
-2E 4B 45 03 02 06 80 04 01  0A 30 0C 04 01 0C 03   .KE.......0.....
-03 06 44 00 02 02 00 52 A1  10 30 0E 30 08 04 06   ..D....R..0.0...
-3F 00 40 16 00 52 02 02 04  00 30 34 30 12 0C 09   ?.@..R....040...
-53 4B 2E 43 48 2E 41 55 54  03 02 06 80 04 01 0A   SK.CH.AUT.......
-30 0C 04 01 0D 03 03 06 20  00 02 02 00 51 A1 10   0....... ....Q..
-30 0E 30 08 04 06 3F 00 40  16 00 51 02 02 04 00   0.0...?.@..Q....
-30 37 30 15 0C 0C 53 4B 2E  43 48 2E 44 53 2D 53   070...SK.CH.DS-S
-50 58 03 02 06 80 04 01 0A  30 0C 04 01 02 03 03   PX.......0......
-06 20 00 02 02 00 53 A1 10  30 0E 30 08 04 06 3F   . ....S..0.0...?
-00 40 16 00 53 02 02 04 00  00 00 00 00 00 00 00   .@..S...........
-00 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00   ................
-00 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00   ................
+static void
+dump_keyusage_flags (keyusage_flags_t usageflags)
+{
+  const char *s = "";
 
-   0 30   51: SEQUENCE {
-   2 30   17:   SEQUENCE { -- commonObjectAttributes
-   4 0C    8:     UTF8String 'SK.CH.DS'
-  14 03    2:     BIT STRING 6 unused bits
-            :       '01'B (bit 0)
-  18 04    1:     OCTET STRING --authid
-            :       07
-            :     }
-  21 30   12:   SEQUENCE { -- commonKeyAttributes
-  23 04    1:     OCTET STRING
-            :       01
-  26 03    3:     BIT STRING 6 unused bits
-            :       '1000000000'B (bit 9)
-  31 02    2:     INTEGER 80  -- keyReference (optional)
-            :     }
-  35 A1   16:   [1] {  -- keyAttributes
-  37 30   14:     SEQUENCE { -- privateRSAKeyAttributes
-  39 30    8:       SEQUENCE { -- objectValue
-  41 04    6:         OCTET STRING --path
-            :           3F 00 40 16 00 50
-            :         }
-  49 02    2:       INTEGER 1024 -- modulus
-            :       }
-            :     }
-            :   }
+  log_info ("p15:             usage=");
+  if (usageflags.encrypt)
+    log_printf ("%sencrypt", s), s = ",";
+  if (usageflags.decrypt)
+    log_printf ("%sdecrypt", s), s = ",";
+  if (usageflags.sign   )
+    log_printf ("%ssign", s), s = ",";
+  if (usageflags.sign_recover)
+    log_printf ("%ssign_recover", s), s = ",";
+  if (usageflags.wrap   )
+    log_printf ("%swrap", s), s = ",";
+  if (usageflags.unwrap )
+    log_printf ("%sunwrap", s), s = ",";
+  if (usageflags.verify )
+    log_printf ("%sverify", s), s = ",";
+  if (usageflags.verify_recover)
+    log_printf ("%sverify_recover", s), s = ",";
+  if (usageflags.derive )
+    log_printf ("%sderive", s), s = ",";
+  if (usageflags.non_repudiation)
+    log_printf ("%snon_repudiation", s), s = ",";
+}
 
 
-*/
+static void
+dump_keyaccess_flags (keyaccess_flags_t accessflags)
+{
+  const char *s = "";
+
+  log_info ("p15:             access=");
+  if (accessflags.sensitive)
+    log_printf ("%ssensitive", s), s = ",";
+  if (accessflags.extractable)
+    log_printf ("%sextractable", s), s = ",";
+  if (accessflags.always_sensitive)
+    log_printf ("%salways_sensitive", s), s = ",";
+  if (accessflags.never_extractable)
+    log_printf ("%snever_extractable", s), s = ",";
+  if (accessflags.local)
+    log_printf ("%slocal", s), s = ",";
+}
+
+
+static void
+dump_gpgusage_flags (gpgusage_flags_t gpgusage)
+{
+  const char *s = "";
+
+  log_info ("p15:             gpgusage=");
+  if (gpgusage.cert)
+    log_printf ("%scert", s), s = ",";
+  if (gpgusage.sign)
+    log_printf ("%ssign", s), s = ",";
+  if (gpgusage.encr)
+    log_printf ("%sencr", s), s = ",";
+  if (gpgusage.auth)
+    log_printf ("%sauth", s), s = ",";
+}
+
+
+/* Parse the BIT STRING with the keyAccessFlags from the
+   CommonKeyAttributes. */
+static gpg_error_t
+parse_keyaccess_flags (const unsigned char *der, size_t derlen,
+                       keyaccess_flags_t *accessflags)
+{
+  unsigned int bits, mask;
+  int i, unused, full;
+
+  memset (accessflags, 0, sizeof *accessflags);
+  if (!derlen)
+    return gpg_error (GPG_ERR_INV_OBJ);
+
+  unused = *der++; derlen--;
+  if ((!derlen && unused) || unused/8 > derlen)
+    return gpg_error (GPG_ERR_ENCODING_PROBLEM);
+  full = derlen - (unused+7)/8;
+  unused %= 8;
+  mask = 0;
+  for (i=1; unused; i <<= 1, unused--)
+    mask |= i;
+
+  /* First octet */
+  if (derlen)
+    {
+      bits = *der++; derlen--;
+      if (full)
+        full--;
+      else
+        {
+          bits &= ~mask;
+          mask = 0;
+        }
+    }
+  else
+    bits = 0;
+  if ((bits & 0x10)) accessflags->local = 1;
+  if ((bits & 0x08)) accessflags->never_extractable = 1;
+  if ((bits & 0x04)) accessflags->always_sensitive = 1;
+  if ((bits & 0x02)) accessflags->extractable = 1;
+  if ((bits & 0x01)) accessflags->sensitive = 1;
+
+  accessflags->any = 1;
+  return 0;
+}
+
+
+/* Parse the commonObjectAttributes and store a malloced authid at
+ * (r_authid,r_authidlen).  (NULL,0) is stored on error or if no
+ * authid is found.  IF R_LABEL is not NULL the label is stored there
+ * as a malloced string (spaces are replaced by underscores).
+ *
+ * Example data:
+ *  2 30   17:   SEQUENCE { -- commonObjectAttributes
+ *  4 0C    8:     UTF8String 'SK.CH.DS'    -- label
+ * 14 03    2:     BIT STRING 6 unused bits
+ *           :       '01'B (bit 0)
+ * 18 04    1:     OCTET STRING --authid
+ *           :       07
+ *           :     }
+ */
+static gpg_error_t
+parse_common_obj_attr (unsigned char const **buffer, size_t *size,
+                       unsigned char **r_authid, size_t *r_authidlen,
+                       char **r_label)
+{
+  gpg_error_t err;
+  int where;
+  int class, tag, constructed, ndef;
+  size_t objlen, hdrlen, nnn;
+  const unsigned char *ppp;
+  int ignore_eof = 0;
+  char *p;
+
+  *r_authid = NULL;
+  *r_authidlen = 0;
+  if (r_label)
+    *r_label = NULL;
+
+  where = __LINE__;
+  err = parse_ber_header (buffer, size, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > *size || tag != TAG_SEQUENCE))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  ppp = *buffer;
+  nnn = objlen;
+  *buffer += objlen;
+  *size   -= objlen;
+
+  /* Search the optional AuthId.  */
+  ignore_eof = 1;
+  where = __LINE__;
+  err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  if (tag == TAG_UTF8_STRING)
+    {
+      if (r_label)
+        {
+          *r_label = xtrymalloc (objlen + 1);
+          if (!*r_label)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (*r_label, ppp, objlen);
+          (*r_label)[objlen] = 0;
+          /* We don't want spaces in the labels due to the properties
+           * of CHV-LABEL.  */
+          for (p = *r_label; *p; p++)
+            if (ascii_isspace (*p))
+              *p = '_';
+        }
+
+      ppp += objlen;
+      nnn -= objlen;
+
+      where = __LINE__;
+      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (tag == TAG_BIT_STRING)
+    {
+      ppp += objlen; /* Skip the CommonObjectFlags.  */
+      nnn -= objlen;
+
+      where = __LINE__;
+      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (tag == TAG_OCTET_STRING && objlen)
+    {
+      *r_authid = xtrymalloc (objlen);
+      if (!*r_authid)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      memcpy (*r_authid, ppp, objlen);
+      *r_authidlen = objlen;
+    }
+
+ leave:
+  if (ignore_eof && gpg_err_code (err) == GPG_ERR_EOF)
+    err = 0;
+  else if (err)
+    log_error ("p15: error parsing commonObjectAttributes at %d: %s\n",
+               where, gpg_strerror (err));
+
+  if (err && r_label)
+    {
+      xfree (*r_label);
+      *r_label = NULL;
+    }
+
+  return err;
+}
+
+
+/* Parse the commonKeyAttributes.  On success store the objid at
+ * (R_OBJID/R_OBJIDLEN), sets the key usage flags at USAGEFLAGS and
+ * the optiona key refrence at R_KEY_REFERENCE.  The latter is only
+ * valid if true is also stored at R_KEY_REFERENCE_VALID.
+ *
+ * Example data:
+ *
+ * 21 30   12:   SEQUENCE { -- commonKeyAttributes
+ * 23 04    1:     OCTET STRING
+ *           :       01
+ * 26 03    3:     BIT STRING 6 unused bits
+ *           :       '1000000000'B (bit 9)
+ * 31 02    2:     INTEGER 80  -- keyReference (optional)
+ *           :     }
+ */
+static gpg_error_t
+parse_common_key_attr (unsigned char const **buffer, size_t *size,
+                       unsigned char **r_objid, size_t *r_objidlen,
+                       keyusage_flags_t *usageflags,
+                       keyaccess_flags_t *accessflags,
+                       unsigned long *r_key_reference,
+                       int *r_key_reference_valid)
+{
+  gpg_error_t err;
+  int where;
+  int class, tag, constructed, ndef;
+  size_t objlen, hdrlen, nnn;
+  const unsigned char *ppp;
+  int ignore_eof = 0;
+  unsigned long ul;
+  const unsigned char *objid = NULL;
+  size_t objidlen;
+  unsigned long key_reference = 0;
+  int key_reference_valid = 0;
+
+  *r_objid = NULL;
+  *r_objidlen = 0;
+  memset (usageflags, 0, sizeof *usageflags);
+  memset (accessflags, 0, sizeof *accessflags);
+  *r_key_reference_valid = 0;
+
+  where = __LINE__;
+  err = parse_ber_header (buffer, size, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > *size || tag != TAG_SEQUENCE))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  ppp = *buffer;
+  nnn = objlen;
+  *buffer += objlen;
+  *size   -= objlen;
+
+  /* Get the Id. */
+  where = __LINE__;
+  err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > nnn
+               || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  objid = ppp;
+  objidlen = objlen;
+  ppp += objlen;
+  nnn -= objlen;
+
+  /* Get the KeyUsageFlags. */
+  where = __LINE__;
+  err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > nnn
+               || class != CLASS_UNIVERSAL || tag != TAG_BIT_STRING))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  err = parse_keyusage_flags (ppp, objlen, usageflags);
+  if (err)
+    goto leave;
+  ppp += objlen;
+  nnn -= objlen;
+
+  ignore_eof = 1; /* Remaining items are optional.  */
+
+  /* Find the keyReference */
+  where = __LINE__;
+  err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && objlen > nnn)
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+
+  if (class == CLASS_UNIVERSAL && tag == TAG_BOOLEAN)
+    {
+      /* Skip the native element. */
+      ppp += objlen;
+      nnn -= objlen;
+
+      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && objlen > nnn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
+    {
+      /* These are the keyAccessFlags. */
+      err = parse_keyaccess_flags (ppp, objlen, accessflags);
+      if (err)
+        goto leave;
+      ppp += objlen;
+      nnn -= objlen;
+
+      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && objlen > nnn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto leave;
+    }
+  if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER)
+    {
+      /* This is the keyReference.  */
+      for (ul=0; objlen; objlen--)
+        {
+          ul <<= 8;
+          ul |= (*ppp++) & 0xff;
+          nnn--;
+        }
+      key_reference = ul;
+      key_reference_valid = 1;
+    }
+
+ leave:
+  if (ignore_eof && gpg_err_code (err) == GPG_ERR_EOF)
+    err = 0;
+
+  if (!err)
+    {
+      if (!objid || !objidlen)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      else
+        {
+          *r_objid = xtrymalloc (objidlen);
+          if (!*r_objid)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              memcpy (*r_objid, objid, objidlen);
+              *r_objidlen = objidlen;
+            }
+        }
+    }
+  if (!err && key_reference_valid)
+    {
+      *r_key_reference = key_reference;
+      *r_key_reference_valid = 1;
+    }
+
+  if (err)
+    log_error ("p15: error parsing commonKeyAttributes at %d: %s\n",
+               where, gpg_strerror (err));
+  return err;
+
+}
+
+
+/* Read and  parse the Private Key Directory Files.
+ *
+ * Sample object:
+ *  SEQUENCE {
+ *    SEQUENCE { -- commonObjectAttributes
+ *      UTF8String 'SK.CH.DS'
+ *      BIT STRING 6 unused bits
+ *        '01'B (bit 0) -- flags: non-modifiable,private
+ *      OCTET STRING --authid
+ *        07
+ *      }
+ *    SEQUENCE { -- commonKeyAttributes
+ *      OCTET STRING
+ *        01
+ *      BIT STRING 6 unused bits
+ *        '1000000000'B (bit 9) -- keyusage: non-repudiation
+ *      INTEGER 80  -- keyReference (optional)
+ *      }
+ *    [1] {  -- keyAttributes
+ *      SEQUENCE { -- privateRSAKeyAttributes
+ *        SEQUENCE { -- objectValue
+ *          OCTET STRING --path
+ *            3F 00 40 16 00 50
+ *          }
+ *        INTEGER 1024 -- modulus
+ *        }
+ *      }
+ *    }
+ *
+ * Sample part for EC objects:
+ *    [1] {  -- keyAttributes
+ *      [1] { -- privateECkeyAttributes
+ *        SEQUENCE { -- objectValue
+ *          SEQUENCE { --path
+ *            OCTET STRING 50 72 4B 03
+ *          }
+ *        INTEGER 33  -- Not in PKCS#15v1.1, need to buy 7816-15?
+ *        }
+ *      }
+ */
 static gpg_error_t
 read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 {
   gpg_error_t err;
-  unsigned char *buffer = NULL;
+  unsigned char *buffer;
   size_t buflen;
   const unsigned char *p;
   size_t n, objlen, hdrlen;
   int class, tag, constructed, ndef;
   prkdf_object_t prkdflist = NULL;
   int i;
+  int recno = 1;
+  unsigned char *authid = NULL;
+  size_t authidlen = 0;
+  unsigned char *objid = NULL;
+  size_t objidlen = 0;
+  char *label = NULL;
+  int record_mode;
 
-  if (!fid)
-    return gpg_error (GPG_ERR_NO_DATA); /* No private keys. */
-
-  err = select_and_read_binary (app->slot, fid, "PrKDF", &buffer, &buflen);
+  err = read_first_record (app, fid, "PrKDF", &buffer, &buflen, &record_mode);
   if (err)
     return err;
 
   p = buffer;
   n = buflen;
 
-  /* FIXME: This shares a LOT of code with read_ef_cdf! */
-
   /* Loop over the records.  We stop as soon as we detect a new record
      starting with 0x00 or 0xff as these values are commonly used to
-     pad data blocks and are no valid ASN.1 encoding. */
+     pad data blocks and are no valid ASN.1 encoding.  Note the
+     special handling for record mode at the end of the loop. */
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -955,25 +1732,47 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       const char *errstr = NULL;
       prkdf_object_t prkdf = NULL;
       unsigned long ul;
-      const unsigned char *objid;
-      size_t objidlen;
-      const unsigned char *authid = NULL;
-      size_t authidlen = 0;
       keyusage_flags_t usageflags;
+      keyaccess_flags_t accessflags;
       unsigned long key_reference = 0;
       int key_reference_valid = 0;
-      const char *s;
+      int is_ecc = 0;
 
+      where = __LINE__;
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > n || tag != TAG_SEQUENCE))
+      if (err)
+        ;
+      else if (objlen > n)
         err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* PrivateRSAKeyAttributes  */
+      else if (class == CLASS_CONTEXT)
+        {
+          switch (tag)
+            {
+            case 0: is_ecc = 1; break; /* PrivateECKeyAttributes  */
+            case 1: errstr = "DH key objects are not supported"; break;
+            case 2: errstr = "DSA key objects are not supported"; break;
+            case 3: errstr = "KEA key objects are not supported"; break;
+            default: errstr = "unknown privateKeyObject"; break;
+            }
+          if (errstr)
+            goto parse_error;
+        }
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_OBJ);
+          goto parse_error;
+        }
+
       if (err)
         {
           log_error ("p15: error parsing PrKDF record: %s\n",
                      gpg_strerror (err));
           goto leave;
         }
+
       pp = p;
       nn = objlen;
       p += objlen;
@@ -981,173 +1780,24 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || tag != TAG_SEQUENCE))
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      xfree (authid);
+      xfree (label);
+      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen, &label);
       if (err)
         goto parse_error;
-      {
-        const unsigned char *ppp = pp;
-        size_t nnn = objlen;
-
-        pp += objlen;
-        nn -= objlen;
-
-        /* Search the optional AuthId.  We need to skip the optional
-           Label (UTF8STRING) and the optional CommonObjectFlags
-           (BITSTRING). */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                &ndef, &objlen, &hdrlen);
-        if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (gpg_err_code (err) == GPG_ERR_EOF)
-          goto no_authid;
-        if (err)
-          goto parse_error;
-        if (tag == TAG_UTF8_STRING)
-          {
-            ppp += objlen; /* Skip the Label. */
-            nnn -= objlen;
-
-            where = __LINE__;
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto no_authid;
-            if (err)
-              goto parse_error;
-          }
-        if (tag == TAG_BIT_STRING)
-          {
-            ppp += objlen; /* Skip the CommonObjectFlags.  */
-            nnn -= objlen;
-
-            where = __LINE__;
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto no_authid;
-            if (err)
-              goto parse_error;
-          }
-        if (tag == TAG_OCTET_STRING && objlen)
-          {
-            authid = ppp;
-            authidlen = objlen;
-          }
-      no_authid:
-        ;
-      }
 
       /* Parse the commonKeyAttributes.  */
       where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || tag != TAG_SEQUENCE))
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      xfree (objid);
+      err = parse_common_key_attr (&pp, &nn,
+                                   &objid, &objidlen,
+                                   &usageflags, &accessflags,
+                                   &key_reference, &key_reference_valid);
       if (err)
         goto parse_error;
-      {
-        const unsigned char *ppp = pp;
-        size_t nnn = objlen;
+      log_assert (objid);
 
-        pp += objlen;
-        nn -= objlen;
-
-        /* Get the Id. */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-        if (!err && (objlen > nnn
-                     || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (err)
-          goto parse_error;
-        objid = ppp;
-        objidlen = objlen;
-        ppp += objlen;
-        nnn -= objlen;
-
-        /* Get the KeyUsageFlags. */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-        if (!err && (objlen > nnn
-                     || class != CLASS_UNIVERSAL || tag != TAG_BIT_STRING))
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (err)
-          goto parse_error;
-        err = parse_keyusage_flags (ppp, objlen, &usageflags);
-        if (err)
-          goto parse_error;
-        ppp += objlen;
-        nnn -= objlen;
-
-        /* Find the keyReference */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-        if (gpg_err_code (err) == GPG_ERR_EOF)
-          goto leave_cki;
-        if (!err && objlen > nnn)
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (err)
-          goto parse_error;
-        if (class == CLASS_UNIVERSAL && tag == TAG_BOOLEAN)
-          {
-            /* Skip the native element. */
-            ppp += objlen;
-            nnn -= objlen;
-
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto leave_cki;
-            if (!err && objlen > nnn)
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (err)
-              goto parse_error;
-          }
-        if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
-          {
-            /* Skip the accessFlags. */
-            ppp += objlen;
-            nnn -= objlen;
-
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto leave_cki;
-            if (!err && objlen > nnn)
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (err)
-              goto parse_error;
-          }
-        if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER)
-          {
-            /* Yep, this is the keyReference.  */
-            for (ul=0; objlen; objlen--)
-              {
-                ul <<= 8;
-                ul |= (*ppp++) & 0xff;
-                nnn--;
-            }
-            key_reference = ul;
-            key_reference_valid = 1;
-          }
-
-      leave_cki:
-        ;
-      }
-
-
-      /* Skip subClassAttributes.  */
+      /* Skip commonPrivateKeyAttributes.  */
       where = __LINE__;
       err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
@@ -1174,29 +1824,16 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       where = __LINE__;
       err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && objlen > nn)
+      if (err)
+        ;
+      else if (!err && objlen > nn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* A typeAttribute always starts with a sequence.  */
+      else
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
         goto parse_error;
-      if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
-        ; /* RSA */
-      else if (class == CLASS_CONTEXT)
-        {
-          switch (tag)
-            {
-            case 0: errstr = "EC key objects are not supported"; break;
-            case 1: errstr = "DH key objects are not supported"; break;
-            case 2: errstr = "DSA key objects are not supported"; break;
-            case 3: errstr = "KEA key objects are not supported"; break;
-            default: errstr = "unknown privateKeyObject"; break;
-            }
-          goto parse_error;
-        }
-      else
-        {
-          err = gpg_error (GPG_ERR_INV_OBJ);
-          goto parse_error;
-        }
 
       nn = objlen;
 
@@ -1232,6 +1869,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           errstr = "invalid path reference";
           goto parse_error;
         }
+
       /* Create a new PrKDF list item. */
       prkdf = xtrycalloc (1, (sizeof *prkdf
                               - sizeof(unsigned short)
@@ -1241,27 +1879,21 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           err = gpg_error_from_syserror ();
           goto leave;
         }
+      prkdf->is_ecc = is_ecc;
+
       prkdf->objidlen = objidlen;
-      prkdf->objid = xtrymalloc (objidlen);
-      if (!prkdf->objid)
-        {
-          err = gpg_error_from_syserror ();
-          xfree (prkdf);
-          goto leave;
-        }
-      memcpy (prkdf->objid, objid, objidlen);
+      prkdf->objid = objid;
+      objid = NULL;
       if (authid)
         {
           prkdf->authidlen = authidlen;
-          prkdf->authid = xtrymalloc (authidlen);
-          if (!prkdf->authid)
-            {
-              err = gpg_error_from_syserror ();
-              xfree (prkdf->objid);
-              xfree (prkdf);
-              goto leave;
-            }
-          memcpy (prkdf->authid, authid, authidlen);
+          prkdf->authid = authid;
+          authid = NULL;
+        }
+      if (label)
+        {
+          prkdf->label = label;
+          label = NULL;
         }
 
       prkdf->pathlen = objlen/2;
@@ -1269,6 +1901,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
         prkdf->path[i] = ((pp[0] << 8) | pp[1]);
 
       prkdf->usageflags = usageflags;
+      prkdf->accessflags = accessflags;
       prkdf->key_reference = key_reference;
       prkdf->key_reference_valid = key_reference_valid;
 
@@ -1311,62 +1944,50 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           prkdf->len = ul;
         }
 
-
-      if (opt.verbose)
-        {
-          log_info ("p15: PrKDF %04hX: id=", fid);
-          for (i=0; i < prkdf->objidlen; i++)
-            log_printf ("%02X", prkdf->objid[i]);
-          log_printf (" path=");
-          for (i=0; i < prkdf->pathlen; i++)
-            log_printf ("%s%04hX", i?"/":"",prkdf->path[i]);
-          if (prkdf->have_off)
-            log_printf ("[%lu/%lu]", prkdf->off, prkdf->len);
-          if (prkdf->authid)
-            {
-              log_printf (" authid=");
-              for (i=0; i < prkdf->authidlen; i++)
-                log_printf ("%02X", prkdf->authid[i]);
-            }
-          if (prkdf->key_reference_valid)
-            log_printf (" keyref=0x%02lX", prkdf->key_reference);
-          log_info ("p15:             usage=");
-          s = "";
-          if (prkdf->usageflags.encrypt) log_printf ("%sencrypt", s), s = ",";
-          if (prkdf->usageflags.decrypt) log_printf ("%sdecrypt", s), s = ",";
-          if (prkdf->usageflags.sign   ) log_printf ("%ssign", s), s = ",";
-          if (prkdf->usageflags.sign_recover)
-            log_printf ("%ssign_recover", s), s = ",";
-          if (prkdf->usageflags.wrap   ) log_printf ("%swrap", s), s = ",";
-          if (prkdf->usageflags.unwrap ) log_printf ("%sunwrap", s), s = ",";
-          if (prkdf->usageflags.verify ) log_printf ("%sverify", s), s = ",";
-          if (prkdf->usageflags.verify_recover)
-            log_printf ("%sverify_recover", s), s = ",";
-          if (prkdf->usageflags.derive ) log_printf ("%sderive", s), s = ",";
-          if (prkdf->usageflags.non_repudiation)
-            log_printf ("%snon_repudiation", s), s = ",";
-          log_printf ("\n");
-        }
+      /* The info is printed later in read_p15_info because we also
+       * want to look at the certificates.  */
 
       /* Put it into the list. */
       prkdf->next = prkdflist;
       prkdflist = prkdf;
       prkdf = NULL;
-      continue; /* Ready. */
+      goto next_record; /* Ready with this record. */
 
     parse_error:
-      log_error ("p15: error parsing PrKDF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing PrKDF record at %d: %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       if (prkdf)
         {
           xfree (prkdf->objid);
           xfree (prkdf->authid);
+          xfree (prkdf->label);
           xfree (prkdf);
         }
       err = 0;
+
+    next_record:
+      /* If the card uses a record oriented file structure, read the
+       * next record.  Otherwise we keep on parsing the current buffer.  */
+      recno++;
+      if (record_mode)
+        {
+          xfree (buffer); buffer = NULL;
+          err = select_and_read_record (app, 0, recno, "PrKDF",
+                                        &buffer, &buflen, NULL);
+          if (err) {
+            if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+              err = 0;
+            goto leave;
+          }
+          p = buffer;
+          n = buflen;
+        }
     } /* End looping over all records. */
 
  leave:
+  xfree (authid);
+  xfree (label);
+  xfree (objid);
   xfree (buffer);
   if (err)
     release_prkdflist (prkdflist);
@@ -1376,26 +1997,354 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
 }
 
 
+/* Read and parse the Public Keys Directory File. */
+static gpg_error_t
+read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
+{
+  gpg_error_t err;
+  unsigned char *buffer;
+  size_t buflen;
+  const unsigned char *p;
+  size_t n, objlen, hdrlen;
+  int class, tag, constructed, ndef;
+  pukdf_object_t pukdflist = NULL;
+  int i;
+  int recno = 1;
+  unsigned char *authid = NULL;
+  size_t authidlen = 0;
+  unsigned char *objid = NULL;
+  size_t objidlen = 0;
+  char *label = NULL;
+  int record_mode;
+
+  err = read_first_record (app, fid, "PuKDF", &buffer, &buflen, &record_mode);
+  if (err)
+    return err;
+
+  p = buffer;
+  n = buflen;
+
+  /* Loop over the records.  We stop as soon as we detect a new record
+   * starting with 0x00 or 0xff as these values are commonly used to
+   * pad data blocks and are no valid ASN.1 encoding.  Note the
+   * special handling for record mode at the end of the loop. */
+  while (n && *p && *p != 0xff)
+    {
+      const unsigned char *pp;
+      size_t nn;
+      int where;
+      const char *errstr = NULL;
+      pukdf_object_t pukdf = NULL;
+      unsigned long ul;
+      keyusage_flags_t usageflags;
+      keyaccess_flags_t accessflags;
+      unsigned long key_reference = 0;
+      int key_reference_valid = 0;
+
+      where = __LINE__;
+      err = parse_ber_header (&p, &n, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (err)
+        ;
+      else if (objlen > n)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* PublicRSAKeyAttributes  */
+      else if (class == CLASS_CONTEXT)
+        {
+          switch (tag)
+            {
+            case 0: break; /* EC key object */
+            case 1: errstr = "DH key objects are not supported"; break;
+            case 2: errstr = "DSA key objects are not supported"; break;
+            case 3: errstr = "KEA key objects are not supported"; break;
+            default: errstr = "unknown publicKeyObject"; break;
+            }
+          if (errstr)
+            goto parse_error;
+        }
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_OBJ);
+          goto parse_error;
+        }
+
+      if (err)
+        {
+          log_error ("p15: error parsing PuKDF record: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+
+      pp = p;
+      nn = objlen;
+      p += objlen;
+      n -= objlen;
+
+      /* Parse the commonObjectAttributes.  */
+      where = __LINE__;
+      xfree (authid);
+      xfree (label);
+      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen, &label);
+      if (err)
+        goto parse_error;
+
+      /* Parse the commonKeyAttributes.  */
+      where = __LINE__;
+      xfree (objid);
+      err = parse_common_key_attr (&pp, &nn,
+                                   &objid, &objidlen,
+                                   &usageflags, &accessflags,
+                                   &key_reference, &key_reference_valid);
+      if (err)
+        goto parse_error;
+      log_assert (objid);
+
+      /* Parse the subClassAttributes.  */
+      where = __LINE__;
+      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && objlen > nn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto parse_error;
+      if (class == CLASS_CONTEXT && tag == 0)
+        {
+          /* Skip this CommonPublicKeyAttribute.  */
+          pp += objlen;
+          nn -= objlen;
+
+          where = __LINE__;
+          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                  &ndef, &objlen, &hdrlen);
+        }
+      /* We expect a typeAttribute.  */
+      if (!err && (objlen > nn || class != CLASS_CONTEXT || tag != 1))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto parse_error;  /* No typeAttribute.  */
+      nn = objlen;
+
+      where = __LINE__;
+      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (err)
+        ;
+      else if (!err && objlen > nn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* A typeAttribute always starts with a sequence.  */
+      else
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto parse_error;
+
+      nn = objlen;
+
+      /* Check that the reference is a Path object.  */
+      where = __LINE__;
+      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && objlen > nn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto parse_error;
+      if (class != CLASS_UNIVERSAL || tag != TAG_SEQUENCE)
+        {
+          errstr = "unsupported reference type";
+          goto parse_error;
+        }
+      nn = objlen;
+
+      /* Parse the Path object. */
+      where = __LINE__;
+      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                              &ndef, &objlen, &hdrlen);
+      if (!err && objlen > nn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      if (err)
+        goto parse_error;
+
+      /* Make sure that the next element is a non zero path and of
+         even length (FID are two bytes each). */
+      if (class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING
+          ||  !objlen || (objlen & 1) )
+        {
+          errstr = "invalid path reference";
+          goto parse_error;
+        }
+
+      /* Create a new PuKDF list item. */
+      pukdf = xtrycalloc (1, (sizeof *pukdf
+                              - sizeof(unsigned short)
+                              + objlen/2 * sizeof(unsigned short)));
+      if (!pukdf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      pukdf->objidlen = objidlen;
+      pukdf->objid = objid;
+      objid = NULL;
+      if (authid)
+        {
+          pukdf->authidlen = authidlen;
+          pukdf->authid = authid;
+          authid = NULL;
+        }
+      if (label)
+        {
+          pukdf->label = label;
+          label = NULL;
+        }
+
+      pukdf->pathlen = objlen/2;
+      for (i=0; i < pukdf->pathlen; i++, pp += 2, nn -= 2)
+        pukdf->path[i] = ((pp[0] << 8) | pp[1]);
+
+      pukdf->usageflags = usageflags;
+      pukdf->accessflags = accessflags;
+      pukdf->key_reference = key_reference;
+      pukdf->key_reference_valid = key_reference_valid;
+
+      if (nn)
+        {
+          /* An index and length follows. */
+          pukdf->have_off = 1;
+          where = __LINE__;
+          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                  &ndef, &objlen, &hdrlen);
+          if (!err && (objlen > nn
+                       || class != CLASS_UNIVERSAL || tag != TAG_INTEGER))
+            err = gpg_error (GPG_ERR_INV_OBJ);
+          if (err)
+            goto parse_error;
+
+          for (ul=0; objlen; objlen--)
+            {
+              ul <<= 8;
+              ul |= (*pp++) & 0xff;
+              nn--;
+            }
+          pukdf->off = ul;
+
+          where = __LINE__;
+          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                  &ndef, &objlen, &hdrlen);
+          if (!err && (objlen > nn
+                       || class != CLASS_CONTEXT || tag != 0))
+            err = gpg_error (GPG_ERR_INV_OBJ);
+          if (err)
+            goto parse_error;
+
+          for (ul=0; objlen; objlen--)
+            {
+              ul <<= 8;
+              ul |= (*pp++) & 0xff;
+              nn--;
+            }
+          pukdf->len = ul;
+        }
+
+
+      if (opt.verbose)
+        {
+          log_info ("p15: PuKDF %04hX: id=", fid);
+          for (i=0; i < pukdf->objidlen; i++)
+            log_printf ("%02X", pukdf->objid[i]);
+          if (pukdf->label)
+            log_printf (" (%s)", pukdf->label);
+          log_info ("p15:             path=");
+          for (i=0; i < pukdf->pathlen; i++)
+            log_printf ("%s%04hX", i?"/":"",pukdf->path[i]);
+          if (pukdf->have_off)
+            log_printf ("[%lu/%lu]", pukdf->off, pukdf->len);
+          if (pukdf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < pukdf->authidlen; i++)
+                log_printf ("%02X", pukdf->authid[i]);
+            }
+          if (pukdf->key_reference_valid)
+            log_printf (" keyref=0x%02lX", pukdf->key_reference);
+          if (pukdf->accessflags.any)
+            dump_keyaccess_flags (pukdf->accessflags);
+          dump_keyusage_flags (pukdf->usageflags);
+          log_printf ("\n");
+        }
+
+      /* Put it into the list. */
+      pukdf->next = pukdflist;
+      pukdflist = pukdf;
+      pukdf = NULL;
+      goto next_record; /* Ready with this record. */
+
+    parse_error:
+      log_error ("p15: error parsing PuKDF record at %d: %s - skipped\n",
+                 where, errstr? errstr : gpg_strerror (err));
+      if (pukdf)
+        {
+          xfree (pukdf->objid);
+          xfree (pukdf->authid);
+          xfree (pukdf->label);
+          xfree (pukdf);
+        }
+      err = 0;
+
+    next_record:
+      /* If the card uses a record oriented file structure, read the
+       * next record.  Otherwise we keep on parsing the current buffer.  */
+      recno++;
+      if (record_mode)
+        {
+          xfree (buffer); buffer = NULL;
+          err = select_and_read_record (app, 0, recno, "PuKDF",
+                                        &buffer, &buflen, NULL);
+          if (err) {
+            if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+              err = 0;
+            goto leave;
+          }
+          p = buffer;
+          n = buflen;
+        }
+    } /* End looping over all records. */
+
+ leave:
+  xfree (authid);
+  xfree (label);
+  xfree (objid);
+  xfree (buffer);
+  if (err)
+    release_pukdflist (pukdflist);
+  else
+    *result = pukdflist;
+  return err;
+}
+
+
 /* Read and parse the Certificate Directory Files identified by FID.
    On success a newlist of CDF object gets stored at RESULT and the
    caller is then responsible of releasing this list.  On error a
    error code is returned and RESULT won't get changed.  */
 static gpg_error_t
-read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
+read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
 {
   gpg_error_t err;
-  unsigned char *buffer = NULL;
+  unsigned char *buffer;
   size_t buflen;
   const unsigned char *p;
   size_t n, objlen, hdrlen;
   int class, tag, constructed, ndef;
   cdf_object_t cdflist = NULL;
   int i;
+  int recno = 1;
+  unsigned char *authid = NULL;
+  size_t authidlen = 0;
+  char *label = NULL;
+  int record_mode;
 
-  if (!fid)
-    return gpg_error (GPG_ERR_NO_DATA); /* No certificates. */
-
-  err = select_and_read_binary (app->slot, fid, "CDF", &buffer, &buflen);
+  err = read_first_record (app, fid, "CDF", &buffer, &buflen, &record_mode);
   if (err)
     return err;
 
@@ -1404,7 +2353,8 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
 
   /* Loop over the records.  We stop as soon as we detect a new record
      starting with 0x00 or 0xff as these values are commonly used to
-     pad data blocks and are no valid ASN.1 encoding. */
+     pad data blocks and are no valid ASN.1 encoding.  Note the
+     special handling for record mode at the end of the loop. */
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -1430,16 +2380,13 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       p += objlen;
       n -= objlen;
 
-      /* Skip the commonObjectAttributes.  */
+      /* Parse the commonObjectAttributes.  */
       where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || tag != TAG_SEQUENCE))
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      xfree (authid);
+      xfree (label);
+      err = parse_common_obj_attr (&pp, &nn, &authid, &authidlen, &label);
       if (err)
         goto parse_error;
-      pp += objlen;
-      nn -= objlen;
 
       /* Parse the commonCertificateAttributes.  */
       where = __LINE__;
@@ -1530,6 +2477,18 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
           err = gpg_error_from_syserror ();
           goto leave;
         }
+      if (authid)
+        {
+          cdf->authidlen = authidlen;
+          cdf->authid = authid;
+          authid = NULL;
+        }
+      if (label)
+        {
+          cdf->label = label;
+          label = NULL;
+        }
+
       cdf->objidlen = objidlen;
       cdf->objid = xtrymalloc (objidlen);
       if (!cdf->objid)
@@ -1585,14 +2544,22 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
 
       if (opt.verbose)
         {
-          log_info ("p15: CDF %04hX: id=", fid);
+          log_info ("p15: CDF-%c %04hX: id=", cdftype, fid);
           for (i=0; i < cdf->objidlen; i++)
             log_printf ("%02X", cdf->objid[i]);
-          log_printf (" path=");
+          if (cdf->label)
+            log_printf (" (%s)", cdf->label);
+          log_info ("p15:             path=");
           for (i=0; i < cdf->pathlen; i++)
             log_printf ("%s%04hX", i?"/":"", cdf->path[i]);
           if (cdf->have_off)
             log_printf ("[%lu/%lu]", cdf->off, cdf->len);
+          if (cdf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < cdf->authidlen; i++)
+                log_printf ("%02X", cdf->authid[i]);
+            }
           log_printf ("\n");
         }
 
@@ -1600,16 +2567,38 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       cdf->next = cdflist;
       cdflist = cdf;
       cdf = NULL;
-      continue; /* Ready. */
+      goto next_record; /* Ready with this record. */
 
     parse_error:
-      log_error ("p15: error parsing CDF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing CDF record at %d: %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       xfree (cdf);
       err = 0;
-    } /* End looping over all records. */
+
+    next_record:
+      xfree (authid);
+      xfree (label);
+      /* If the card uses a record oriented file structure, read the
+       * next record.  Otherwise we keep on parsing the current buffer.  */
+      recno++;
+      if (record_mode)
+        {
+          xfree (buffer); buffer = NULL;
+          err = select_and_read_record (app, 0, recno, "CDF",
+                                        &buffer, &buflen, NULL);
+          if (err) {
+            if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+              err = 0;
+            goto leave;
+          }
+          p = buffer;
+          n = buflen;
+        }
+    } /* End loop over all records. */
 
  leave:
+  xfree (authid);
+  xfree (label);
   xfree (buffer);
   if (err)
     release_cdflist (cdflist);
@@ -1660,29 +2649,27 @@ static gpg_error_t
 read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
 {
   gpg_error_t err;
-  unsigned char *buffer = NULL;
+  unsigned char *buffer;
   size_t buflen;
   const unsigned char *p;
   size_t n, objlen, hdrlen;
   int class, tag, constructed, ndef;
   aodf_object_t aodflist = NULL;
   int i;
+  int recno = 1;
+  int record_mode;
 
-  if (!fid)
-    return gpg_error (GPG_ERR_NO_DATA); /* No authentication objects. */
-
-  err = select_and_read_binary (app->slot, fid, "AODF", &buffer, &buflen);
+  err = read_first_record (app, fid, "AODF", &buffer, &buflen, &record_mode);
   if (err)
     return err;
 
   p = buffer;
   n = buflen;
 
-  /* FIXME: This shares a LOT of code with read_ef_prkdf! */
-
   /* Loop over the records.  We stop as soon as we detect a new record
      starting with 0x00 or 0xff as these values are commonly used to
-     pad data blocks and are no valid ASN.1 encoding. */
+     pad data blocks and are no valid ASN.1 encoding.  Note the
+     special handling for record mode at the end of the loop.  */
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -1693,10 +2680,33 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       unsigned long ul;
       const char *s;
 
+      where = __LINE__;
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > n || tag != TAG_SEQUENCE))
+      if (err)
+        ;
+      else if (objlen > n)
         err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* PinAttributes */
+      else if (class == CLASS_CONTEXT)
+        {
+          switch (tag)
+            {
+            case 0: errstr = "biometric auth types are not supported"; break;
+            case 1: errstr = "authKey auth types are not supported"; break;
+            case 2: errstr = "external auth type are not supported"; break;
+            default: errstr = "unknown privateKeyObject"; break;
+            }
+          goto parse_error;
+        }
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_OBJ);
+          goto parse_error;
+        }
+
+
       if (err)
         {
           log_error ("p15: error parsing AODF record: %s\n",
@@ -1716,72 +2726,10 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
 
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || tag != TAG_SEQUENCE))
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      err = parse_common_obj_attr (&pp, &nn, &aodf->authid, &aodf->authidlen,
+                                   &aodf->label);
       if (err)
         goto parse_error;
-      {
-        const unsigned char *ppp = pp;
-        size_t nnn = objlen;
-
-        pp += objlen;
-        nn -= objlen;
-
-        /* Search the optional AuthId.  We need to skip the optional
-           Label (UTF8STRING) and the optional CommonObjectFlags
-           (BITSTRING). */
-        where = __LINE__;
-        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                &ndef, &objlen, &hdrlen);
-        if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-          err = gpg_error (GPG_ERR_INV_OBJ);
-        if (gpg_err_code (err) == GPG_ERR_EOF)
-          goto no_authid;
-        if (err)
-          goto parse_error;
-        if (tag == TAG_UTF8_STRING)
-          {
-            ppp += objlen; /* Skip the Label. */
-            nnn -= objlen;
-
-            where = __LINE__;
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto no_authid;
-            if (err)
-              goto parse_error;
-          }
-        if (tag == TAG_BIT_STRING)
-          {
-            ppp += objlen; /* Skip the CommonObjectFlags.  */
-            nnn -= objlen;
-
-            where = __LINE__;
-            err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                    &ndef, &objlen, &hdrlen);
-            if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-              err = gpg_error (GPG_ERR_INV_OBJ);
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              goto no_authid;
-            if (err)
-              goto parse_error;
-          }
-        if (tag == TAG_OCTET_STRING && objlen)
-          {
-            aodf->authidlen = objlen;
-            aodf->authid = xtrymalloc (objlen);
-            if (!aodf->authid)
-              goto no_core;
-            memcpy (aodf->authid, ppp, objlen);
-          }
-      no_authid:
-        ;
-      }
 
       /* Parse the CommonAuthenticationObjectAttributes.  */
       where = __LINE__;
@@ -1801,7 +2749,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
         /* Get the Id. */
         where = __LINE__;
         err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
+                                &ndef, &objlen, &hdrlen);
         if (!err && (objlen > nnn
                      || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
           err = gpg_error (GPG_ERR_INV_OBJ);
@@ -1828,28 +2776,16 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       where = __LINE__;
       err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && objlen > nn)
+      if (err)
+        ;
+      else if (!err && objlen > nn)
+        err = gpg_error (GPG_ERR_INV_OBJ);
+      else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
+        ; /* A typeAttribute always starts with a sequence */
+      else
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
         goto parse_error;
-      if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
-        ; /* PinAttributes */
-      else if (class == CLASS_CONTEXT)
-        {
-          switch (tag)
-            {
-            case 0: errstr = "biometric auth types are not supported"; break;
-            case 1: errstr = "authKey auth types are not supported"; break;
-            case 2: errstr = "external auth type are not supported"; break;
-            default: errstr = "unknown privateKeyObject"; break;
-            }
-          goto parse_error;
-        }
-      else
-        {
-          err = gpg_error (GPG_ERR_INV_OBJ);
-          goto parse_error;
-        }
 
       nn = objlen;
 
@@ -2125,7 +3061,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             }
 
           aodf->pathlen = objlen/2;
-          aodf->path = xtrymalloc (aodf->pathlen);
+          aodf->path = xtrycalloc (aodf->pathlen, sizeof *aodf->path);
           if (!aodf->path)
             goto no_core;
           for (i=0; i < aodf->pathlen; i++, ppp += 2, nnn -= 2)
@@ -2171,23 +3107,20 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             }
         }
 
-      /* Igonore further objects which might be there due to future
+      /* Ignore further objects which might be there due to future
          extensions of pkcs#15. */
 
     ready:
+      if (gpg_err_code (err) == GPG_ERR_EOF)
+        err = 0;
       if (opt.verbose)
         {
-          log_info ("p15: AODF %04hX: id=", fid);
+          log_info ("p15: AODF %04hX:  id=", fid);
           for (i=0; i < aodf->objidlen; i++)
             log_printf ("%02X", aodf->objid[i]);
-          if (aodf->authid)
-            {
-              log_printf (" authid=");
-              for (i=0; i < aodf->authidlen; i++)
-                log_printf ("%02X", aodf->authid[i]);
-            }
-          if (aodf->pin_reference_valid)
-            log_printf (" pinref=0x%02lX", aodf->pin_reference);
+          if (aodf->label)
+            log_printf (" (%s)", aodf->label);
+          log_info ("p15:            ");
           if (aodf->pathlen)
             {
               log_printf (" path=");
@@ -2196,6 +3129,14 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
               if (aodf->have_off)
                 log_printf ("[%lu/%lu]", aodf->off, aodf->len);
             }
+          if (aodf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < aodf->authidlen; i++)
+                log_printf ("%02X", aodf->authid[i]);
+            }
+          if (aodf->pin_reference_valid)
+            log_printf (" pinref=0x%02lX", aodf->pin_reference);
           log_printf (" min=%lu", aodf->min_length);
           log_printf (" stored=%lu", aodf->stored_length);
           if (aodf->max_length_valid)
@@ -2203,7 +3144,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
           if (aodf->pad_char_valid)
             log_printf (" pad=0x%02x", aodf->pad_char);
 
-          log_info ("p15:            flags=");
+          log_info ("p15:             flags=");
           s = "";
           if (aodf->pinflags.case_sensitive)
             log_printf ("%scase_sensitive", s), s = ",";
@@ -2231,18 +3172,20 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             log_printf ("%sexchange_ref_data", s), s = ",";
           {
             char numbuf[50];
+            const char *s2;
+
             switch (aodf->pintype)
               {
-              case PIN_TYPE_BCD: s = "bcd"; break;
-              case PIN_TYPE_ASCII_NUMERIC: s = "ascii-numeric"; break;
-              case PIN_TYPE_UTF8: s = "utf8"; break;
-              case PIN_TYPE_HALF_NIBBLE_BCD: s = "half-nibble-bcd"; break;
-              case PIN_TYPE_ISO9564_1: s = "iso9564-1"; break;
+              case PIN_TYPE_BCD: s2 = "bcd"; break;
+              case PIN_TYPE_ASCII_NUMERIC: s2 = "ascii-numeric"; break;
+              case PIN_TYPE_UTF8: s2 = "utf8"; break;
+              case PIN_TYPE_HALF_NIBBLE_BCD: s2 = "half-nibble-bcd"; break;
+              case PIN_TYPE_ISO9564_1: s2 = "iso9564-1"; break;
               default:
                 sprintf (numbuf, "%lu", (unsigned long)aodf->pintype);
-                s = numbuf;
+                s2 = numbuf;
               }
-            log_printf (" type=%s", s);
+            log_printf ("%stype=%s", s, s2); s = ",";
           }
           log_printf ("\n");
         }
@@ -2251,7 +3194,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       aodf->next = aodflist;
       aodflist = aodf;
       aodf = NULL;
-      continue; /* Ready. */
+      goto next_record; /* Ready with this record. */
 
     no_core:
       err = gpg_error_from_syserror ();
@@ -2259,10 +3202,28 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       goto leave;
 
     parse_error:
-      log_error ("p15: error parsing AODF record (%d): %s - skipped\n",
+      log_error ("p15: error parsing AODF record at %d: %s - skipped\n",
                  where, errstr? errstr : gpg_strerror (err));
       err = 0;
       release_aodf_object (aodf);
+
+    next_record:
+      /* If the card uses a record oriented file structure, read the
+       * next record.  Otherwise we keep on parsing the current buffer.  */
+      recno++;
+      if (record_mode)
+        {
+          xfree (buffer); buffer = NULL;
+          err = select_and_read_record (app, 0, recno, "AODF",
+                                        &buffer, &buflen, NULL);
+          if (err) {
+            if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+              err = 0;
+            goto leave;
+          }
+          p = buffer;
+          n = buflen;
+        }
     } /* End looping over all records. */
 
  leave:
@@ -2335,53 +3296,48 @@ print_tokeninfo_tokenflags (const unsigned char *der, size_t derlen)
 
 
 /* Read and parse the EF(TokenInfo).
-
-TokenInfo ::= SEQUENCE {
-    version		INTEGER {v1(0)} (v1,...),
-    serialNumber	OCTET STRING,
-    manufacturerID 	Label OPTIONAL,
-    label 		[0] Label OPTIONAL,
-    tokenflags 		TokenFlags,
-    seInfo 		SEQUENCE OF SecurityEnvironmentInfo OPTIONAL,
-    recordInfo 		[1] RecordInfo OPTIONAL,
-    supportedAlgorithms	[2] SEQUENCE OF AlgorithmInfo OPTIONAL,
-    ...,
-    issuerId		[3] Label OPTIONAL,
-    holderId		[4] Label OPTIONAL,
-    lastUpdate		[5] LastUpdate OPTIONAL,
-    preferredLanguage	PrintableString OPTIONAL -- In accordance with
-    -- IETF RFC 1766
-} (CONSTRAINED BY { -- Each AlgorithmInfo.reference value must be unique --})
-
-TokenFlags ::= BIT STRING {
-    readOnly		(0),
-    loginRequired 	(1),
-    prnGeneration 	(2),
-    eidCompliant  	(3)
-}
-
-
- 5032:
-
-30 31 02 01 00 04 04 05 45  36 9F 0C 0C 44 2D 54   01......E6...D-T
-72 75 73 74 20 47 6D 62 48  80 14 4F 66 66 69 63   rust GmbH..Offic
-65 20 69 64 65 6E 74 69 74  79 20 63 61 72 64 03   e identity card.
-02 00 40 20 63 61 72 64 03  02 00 40 00 00 00 00   ..@ card...@....
-00 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00   ................
-
-   0   49: SEQUENCE {
-   2    1:   INTEGER 0
-   5    4:   OCTET STRING 05 45 36 9F
-  11   12:   UTF8String 'D-Trust GmbH'
-  25   20:   [0] 'Office identity card'
-  47    2:   BIT STRING
-         :     '00000010'B (bit 1)
-         :     Error: Spurious zero bits in bitstring.
-         :   }
-
-
-
-
+ *
+ * TokenInfo ::= SEQUENCE {
+ *     version		INTEGER {v1(0)} (v1,...),
+ *     serialNumber	OCTET STRING,
+ *     manufacturerID 	Label OPTIONAL,
+ *     label 		[0] Label OPTIONAL,
+ *     tokenflags 		TokenFlags,
+ *     seInfo 		SEQUENCE OF SecurityEnvironmentInfo OPTIONAL,
+ *     recordInfo 		[1] RecordInfo OPTIONAL,
+ *     supportedAlgorithms	[2] SEQUENCE OF AlgorithmInfo OPTIONAL,
+ *     ...,
+ *     issuerId		[3] Label OPTIONAL,
+ *     holderId		[4] Label OPTIONAL,
+ *     lastUpdate		[5] LastUpdate OPTIONAL,
+ *     preferredLanguage	PrintableString OPTIONAL -- In accordance with
+ *     -- IETF RFC 1766
+ * } (CONSTRAINED BY { -- Each AlgorithmInfo.reference value must be unique --})
+ *
+ * TokenFlags ::= BIT STRING {
+ *     readOnly		(0),
+ *     loginRequired 	(1),
+ *     prnGeneration 	(2),
+ *     eidCompliant  	(3)
+ * }
+ *
+ *
+ * Sample EF 5032:
+ * 30 31 02 01 00 04 04 05 45  36 9F 0C 0C 44 2D 54   01......E6...D-T
+ * 72 75 73 74 20 47 6D 62 48  80 14 4F 66 66 69 63   rust GmbH..Offic
+ * 65 20 69 64 65 6E 74 69 74  79 20 63 61 72 64 03   e identity card.
+ * 02 00 40 20 63 61 72 64 03  02 00 40 00 00 00 00   ..@ card...@....
+ * 00 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00   ................
+ *
+ *    0   49: SEQUENCE {
+ *    2    1:   INTEGER 0
+ *    5    4:   OCTET STRING 05 45 36 9F
+ *   11   12:   UTF8String 'D-Trust GmbH'
+ *   25   20:   [0] 'Office identity card'
+ *   47    2:   BIT STRING
+ *          :     '00000010'B (bit 1)
+ *          :     Error: Spurious zero bits in bitstring.
+ *          :   }
  */
 static gpg_error_t
 read_ef_tokeninfo (app_t app)
@@ -2394,12 +3350,10 @@ read_ef_tokeninfo (app_t app)
   int class, tag, constructed, ndef;
   unsigned long ul;
 
-  xfree (app->app_local->manufacturer_id);
-  app->app_local->manufacturer_id = NULL;
+  release_tokeninfo (app);
   app->app_local->card_product = CARD_PRODUCT_UNKNOWN;
 
-  err = select_and_read_binary (app->slot, 0x5032, "TokenInfo",
-                                &buffer, &buflen);
+  err = select_and_read_binary (app, 0x5032, "TokenInfo", &buffer, &buflen);
   if (err)
     return err;
 
@@ -2439,8 +3393,6 @@ read_ef_tokeninfo (app_t app)
       goto leave;
     }
 
-  if (opt.verbose)
-    log_info ("p15: TokenInfo:\n");
   /* serialNumber.  */
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
@@ -2458,12 +3410,6 @@ read_ef_tokeninfo (app_t app)
     }
   memcpy (app->app_local->serialno, p, objlen);
   app->app_local->serialnolen = objlen;
-  if (opt.verbose)
-    {
-      /* (We use a separate log_info to avoid the "DBG:" prefix.)  */
-      log_info ("p15:  serialNumber .: ");
-      log_printhex (p, objlen, "");
-    }
   p += objlen;
   n -= objlen;
 
@@ -2476,8 +3422,6 @@ read_ef_tokeninfo (app_t app)
     goto leave;
   if (class == CLASS_UNIVERSAL && tag == TAG_UTF8_STRING)
     {
-      if (opt.verbose)
-        log_info ("p15:  manufacturerID: %.*s\n", (int)objlen, p);
       app->app_local->manufacturer_id = percent_data_escape (0, NULL,
                                                              p, objlen);
       p += objlen;
@@ -2492,11 +3436,7 @@ read_ef_tokeninfo (app_t app)
     }
   if (class == CLASS_CONTEXT && tag == 0)
     {
-      if (opt.verbose)
-        log_info ("p15:  label ........: %.*s\n", (int)objlen, p);
-      if (objlen > 15 && !memcmp (p, "D-TRUST Card V3", 15)
-          && app->app_local->card_type == CARD_TYPE_CARDOS_50)
-        app->app_local->card_product = CARD_PRODUCT_DTRUST;
+      app->app_local->token_label = percent_data_escape (0, NULL, p, objlen);
 
       p += objlen;
       n -= objlen;
@@ -2511,15 +3451,18 @@ read_ef_tokeninfo (app_t app)
   /* The next is the mandatory tokenflags object.  */
   if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
     {
-      if (opt.verbose)
+      app->app_local->tokenflagslen = objlen;
+      app->app_local->tokenflags = xtrymalloc (objlen);
+      if (!app->app_local->tokenflags)
         {
-          log_info ("p15:  tokenflags ...:");
-          print_tokeninfo_tokenflags (p, objlen);
-          log_printf ("\n");
+          err = gpg_error_from_syserror ();
+          goto leave;
         }
+      memcpy (app->app_local->tokenflags, p, objlen);
       p += objlen;
       n -= objlen;
     }
+
 
  leave:
   xfree (buffer);
@@ -2534,22 +3477,26 @@ static gpg_error_t
 read_p15_info (app_t app)
 {
   gpg_error_t err;
+  prkdf_object_t prkdf;
+  unsigned int flag;
 
-  if (!read_ef_tokeninfo (app))
+  err = read_ef_tokeninfo (app);
+  if (err)
+    return err;
+  /* If we don't have a serial number yet but the TokenInfo provides
+   * one, use that. */
+  if (!APP_CARD(app)->serialno && app->app_local->serialno)
     {
-      /* If we don't have a serial number yet but the TokenInfo provides
-         one, use that. */
-      if (!app->serialno && app->app_local->serialno)
-        {
-          app->serialno = app->app_local->serialno;
-          app->serialnolen = app->app_local->serialnolen;
-          app->app_local->serialno = NULL;
-          app->app_local->serialnolen = 0;
-          err = app_munge_serialno (app);
-          if (err)
-            return err;
-        }
+      APP_CARD(app)->serialno = app->app_local->serialno;
+      APP_CARD(app)->serialnolen = app->app_local->serialnolen;
+      app->app_local->serialno = NULL;
+      app->app_local->serialnolen = 0;
+      err = app_munge_serialno (APP_CARD(app));
+      if (err)
+        return err;
     }
+
+  release_lists (app);
 
   /* Read the ODF so that we know the location of all directory
      files. */
@@ -2559,24 +3506,36 @@ read_p15_info (app_t app)
     return err;
 
   /* Read certificate information. */
-  assert (!app->app_local->certificate_info);
-  assert (!app->app_local->trusted_certificate_info);
-  assert (!app->app_local->useful_certificate_info);
-  err = read_ef_cdf (app, app->app_local->odf.certificates,
+  log_assert (!app->app_local->certificate_info);
+  log_assert (!app->app_local->trusted_certificate_info);
+  log_assert (!app->app_local->useful_certificate_info);
+  err = read_ef_cdf (app, app->app_local->odf.certificates, 'c',
                      &app->app_local->certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
-    err = read_ef_cdf (app, app->app_local->odf.trusted_certificates,
+    err = read_ef_cdf (app, app->app_local->odf.trusted_certificates, 't',
                        &app->app_local->trusted_certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
-    err = read_ef_cdf (app, app->app_local->odf.useful_certificates,
+    err = read_ef_cdf (app, app->app_local->odf.useful_certificates, 'u',
                        &app->app_local->useful_certificate_info);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     err = 0;
   if (err)
     return err;
 
+  /* Read information about public keys. */
+  log_assert (!app->app_local->public_key_info);
+  err = read_ef_pukdf (app, app->app_local->odf.public_keys,
+                       &app->app_local->public_key_info);
+  if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
+    err = read_ef_pukdf (app, app->app_local->odf.trusted_public_keys,
+                         &app->app_local->public_key_info);
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+    err = 0;
+  if (err)
+    return err;
+
   /* Read information about private keys. */
-  assert (!app->app_local->private_key_info);
+  log_assert (!app->app_local->private_key_info);
   err = read_ef_prkdf (app, app->app_local->odf.private_keys,
                        &app->app_local->private_key_info);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -2585,12 +3544,268 @@ read_p15_info (app_t app)
     return err;
 
   /* Read information about authentication objects. */
-  assert (!app->app_local->auth_object_info);
+  log_assert (!app->app_local->auth_object_info);
   err = read_ef_aodf (app, app->app_local->odf.auth_objects,
                       &app->app_local->auth_object_info);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     err = 0;
 
+
+  /* See whether we can extend the private key information using
+   * information from certificates.  We use only the first matching
+   * certificate; if we want to change this strategy we should walk
+   * over the certificates and then find the corresponsing private key
+   * objects.  */
+  app->app_local->any_gpgusage = 0;
+  for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
+    {
+      cdf_object_t cdf;
+      char *extusage;
+      char *p, *pend;
+      int seen, i;
+
+      if (opt.debug)
+        log_printhex (prkdf->objid, prkdf->objidlen, "p15: prkdf id=");
+      if (cdf_object_from_objid (app, prkdf->objidlen, prkdf->objid, &cdf)
+          && cdf_object_from_label (app, prkdf->label, &cdf))
+        continue; /* No matching certificate.  */
+      if (!cdf->cert)  /* Read and parse the certificate.  */
+        readcert_by_cdf (app, cdf, NULL, NULL);
+      if (!cdf->cert)
+        continue; /* Unsupported or broken certificate.  */
+
+      if (prkdf->is_ecc)
+        {
+          const char *oid;
+          const unsigned char *der;
+          size_t off, derlen, objlen, hdrlen;
+          int class, tag, constructed, ndef;
+
+          for (i=0; !(err = ksba_cert_get_extension
+                      (cdf->cert, i, &oid, NULL, &off, &derlen)); i++)
+            if (!strcmp (oid, "1.3.6.1.4.1.11591.2.2.10") )
+              break;
+          if (!err && (der = ksba_cert_get_image (cdf->cert, NULL)))
+            {
+              der += off;
+              err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                                      &ndef, &objlen, &hdrlen);
+              if (!err && (objlen > derlen || tag != TAG_OCTET_STRING || ndef))
+                err = gpg_error (GPG_ERR_INV_OBJ);
+              if (!err)
+                {
+                  derlen = objlen;
+                  if (opt.debug)
+                    log_printhex (der, derlen, "p15: OpenPGP KDF parms:");
+                  /* Store them if they match the known OpenPGP format. */
+                  if (derlen == 4 && der[0] == 3 && der[1]  == 1)
+                    memcpy (prkdf->ecdh_kdf, der, 4);
+                }
+            }
+          err = 0;
+        }
+
+      if (ksba_cert_get_ext_key_usages (cdf->cert, &extusage))
+        continue; /* No extended key usage attribute.  */
+
+      if (opt.debug)
+        log_debug ("p15: ExtKeyUsages: %s\n", extusage);
+      p = extusage;
+      while (p && (pend=strchr (p, ':')))
+        {
+          *pend++ = 0;
+          if ( *pend == 'C' ) /* Look only at critical usages.  */
+            {
+              prkdf->extusage.valid = 1;
+              seen = 1;
+              if (!strcmp (p, oid_kp_codeSigning)
+                  || !strcmp (p, oid_kp_timeStamping)
+                  || !strcmp (p, oid_kp_ocspSigning)
+                  || !strcmp (p, oid_kp_ms_documentSigning)
+                  || !strcmp (p, oid_kp_ms_old_documentSigning))
+                prkdf->extusage.sign = 1;
+              else if (!strcmp (p, oid_kp_emailProtection))
+                prkdf->extusage.encr = 1;
+              else if (!strcmp (p, oid_kp_serverAuth)
+                       || !strcmp (p, oid_kp_clientAuth)
+                       || !strcmp (p, oid_kp_ms_smartcardLogon))
+                prkdf->extusage.auth = 1;
+              else if (!strcmp (p, oid_kp_anyExtendedKeyUsage))
+                {
+                  prkdf->extusage.sign = 1;
+                  prkdf->extusage.encr = 1;
+                  prkdf->extusage.auth = 1;
+                }
+              else
+                seen = 0;
+            }
+          else
+            seen = 0;
+
+          /* Now check the gpg Usage.  Here we don't care about
+           * critical or non-critical here. */
+          if (seen)
+            ; /* No more need to look for other caps.  */
+          else if (!strcmp (p, oid_kp_gpgUsageCert))
+            {
+              prkdf->gpgusage.cert = 1;
+              prkdf->gpgusage.any = 1;
+              app->app_local->any_gpgusage = 1;
+            }
+          else if (!strcmp (p, oid_kp_gpgUsageSign))
+            {
+              prkdf->gpgusage.sign = 1;
+              prkdf->gpgusage.any = 1;
+              app->app_local->any_gpgusage = 1;
+            }
+          else if (!strcmp (p, oid_kp_gpgUsageEncr))
+            {
+              prkdf->gpgusage.encr = 1;
+              prkdf->gpgusage.any = 1;
+              app->app_local->any_gpgusage = 1;
+            }
+          else if (!strcmp (p, oid_kp_gpgUsageAuth))
+            {
+              prkdf->gpgusage.auth = 1;
+              prkdf->gpgusage.any = 1;
+              app->app_local->any_gpgusage = 1;
+            }
+
+          /* Skip to next item.  */
+          if ((p = strchr (pend, '\n')))
+            p++;
+        }
+      xfree (extusage);
+    }
+
+  /* See whether we can figure out something about the card.  */
+  if (!app->app_local->card_product
+      && app->app_local->manufacturer_id
+      && !strcmp (app->app_local->manufacturer_id, "www.atos.net/cardos")
+      && IS_CARDOS_5 (app))
+    {
+      /* This is a modern CARDOS card. */
+      flag = 0;
+      for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
+        {
+          if (prkdf->label && !strcmp (prkdf->label, "IdentityKey")
+              && prkdf->key_reference_valid && prkdf->key_reference == 1
+              && !prkdf->authid)
+            flag |= 1;
+          else if (prkdf->label && !strcmp (prkdf->label, "TransportKey")
+                   && prkdf->key_reference_valid && prkdf->key_reference==2
+                   && prkdf->authid)
+            flag |= 2;
+        }
+      if (flag == 3)
+        app->app_local->card_product = CARD_PRODUCT_RSCS;
+
+    }
+  if (!app->app_local->card_product
+      && app->app_local->token_label
+      && !strncmp (app->app_local->token_label, "D-TRUST Card V3", 15)
+      && app->app_local->card_type == CARD_TYPE_CARDOS_50)
+    {
+      app->app_local->card_product = CARD_PRODUCT_DTRUST;
+    }
+
+
+  /* Now print the info about the PrKDF.  */
+  if (opt.verbose)
+    {
+      int i;
+      unsigned char *atr;
+      size_t atrlen;
+      const char *cardstr;
+
+      for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
+        {
+          log_info ("p15: PrKDF %04hX: id=", app->app_local->odf.private_keys);
+          for (i=0; i < prkdf->objidlen; i++)
+            log_printf ("%02X", prkdf->objid[i]);
+          if (prkdf->label)
+            log_printf (" (%s)", prkdf->label);
+          log_info ("p15:             path=");
+          for (i=0; i < prkdf->pathlen; i++)
+            log_printf ("%s%04hX", i?"/":"",prkdf->path[i]);
+          if (prkdf->have_off)
+            log_printf ("[%lu/%lu]", prkdf->off, prkdf->len);
+          if (prkdf->authid)
+            {
+              log_printf (" authid=");
+              for (i=0; i < prkdf->authidlen; i++)
+                log_printf ("%02X", prkdf->authid[i]);
+            }
+          if (prkdf->key_reference_valid)
+            log_printf (" keyref=0x%02lX", prkdf->key_reference);
+          log_printf (" type=%s", prkdf->is_ecc? "ecc":"rsa");
+          if (prkdf->accessflags.any)
+            dump_keyaccess_flags (prkdf->accessflags);
+          dump_keyusage_flags (prkdf->usageflags);
+          if (prkdf->extusage.valid)
+            log_info ("p15:             extusage=%s%s%s%s%s",
+                      prkdf->extusage.sign? "sign":"",
+                      (prkdf->extusage.sign
+                       && prkdf->extusage.encr)?",":"",
+                      prkdf->extusage.encr? "encr":"",
+                      ((prkdf->extusage.sign || prkdf->extusage.encr)
+                       && prkdf->extusage.auth)?",":"",
+                      prkdf->extusage.auth? "auth":"");
+          if (prkdf->gpgusage.any)
+            dump_gpgusage_flags (prkdf->gpgusage);
+
+          log_printf ("\n");
+        }
+
+      log_info ("p15: TokenInfo:\n");
+      if (app->app_local->serialno)
+        {
+          log_info ("p15:  serialNumber .: ");
+          log_printhex (app->app_local->serialno, app->app_local->serialnolen,
+                        "");
+        }
+      else if (APP_CARD(app)->serialno)
+        {
+          log_info ("p15:  serialNumber .: ");
+          log_printhex (APP_CARD(app)->serialno, APP_CARD(app)->serialnolen,
+                        "");
+        }
+
+      if (app->app_local->manufacturer_id)
+        log_info ("p15:  manufacturerID: %s\n",
+                  app->app_local->manufacturer_id);
+      if (app->app_local->card_product)
+        {
+          cardstr = cardproduct2str (app->app_local->card_product);
+          log_info ("p15:  product ......: %d%s%s%s\n",
+                    app->app_local->card_product,
+                    *cardstr? " (":"", cardstr, *cardstr? ")":"");
+        }
+      if (app->app_local->token_label)
+        log_info ("p15:  label ........: %s\n", app->app_local->token_label);
+      if (app->app_local->tokenflags)
+        {
+          log_info ("p15:  tokenflags ...:");
+          print_tokeninfo_tokenflags (app->app_local->tokenflags,
+                                      app->app_local->tokenflagslen);
+          log_printf ("\n");
+        }
+
+      log_info ("p15:  atr ..........: ");
+      atr = apdu_get_atr (app_get_slot (app), &atrlen);
+      if (!atr)
+        log_printf ("[error]\n");
+      else
+        {
+          log_printhex (atr, atrlen, "");
+          xfree (atr);
+        }
+
+      cardstr = cardtype2str (app->app_local->card_type);
+      log_info ("p15:  cardtype .....: %d%s%s%s\n",
+                app->app_local->card_type,
+                *cardstr? " (":"", cardstr, *cardstr? ")":"");
+    }
 
   return err;
 }
@@ -2606,12 +3821,14 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
   for (; certinfo; certinfo = certinfo->next)
     {
       char *buf, *p;
+      const char *label;
+      char *labelbuf;
 
       buf = xtrymalloc (9 + certinfo->objidlen*2 + 1);
       if (!buf)
         return gpg_error_from_syserror ();
       p = stpcpy (buf, "P15");
-      if (app->app_local->home_df)
+      if (app->app_local->home_df != DEFAULT_HOME_DF)
         {
           snprintf (p, 6, "-%04X",
                     (unsigned int)(app->app_local->home_df & 0xffff));
@@ -2620,9 +3837,18 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
       p = stpcpy (p, ".");
       bin2hex (certinfo->objid, certinfo->objidlen, p);
 
+      label = (certinfo->label && *certinfo->label)? certinfo->label : "-";
+      labelbuf = percent_data_escape (0, NULL, label, strlen (label));
+      if (!labelbuf)
+        {
+          xfree (buf);
+          return gpg_error_from_syserror ();
+        }
+
       send_status_info (ctrl, "CERTINFO",
                         certtype, strlen (certtype),
                         buf, strlen (buf),
+                        labelbuf, strlen (labelbuf),
                         NULL, (size_t)0);
       xfree (buf);
     }
@@ -2652,33 +3878,22 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
   xfree (prkdf->serial_number);
   prkdf->serial_number = NULL;
 
-  /* FIXME: We should check whether a public key directory file and a
-     matching public key for PRKDF is available.  This should make
-     extraction of the key much easier.  My current test card doesn't
-     have one, so we can only use the fallback solution by looking for
-     a matching certificate and extract the key from there. */
+  /* We could have also checked whether a public key directory file
+   * and a matching public key for PRKDF is available.  This would
+   * make extraction of the key faster.  However, this way we don't
+   * have a way to look at extended key attributes to check gpgusage.
+   * FIXME: Add public key lookup if no certificate was found. */
 
-  /* Look for a matching certificate. A certificate matches if the Id
-     matches the one of the private key info. */
-  for (cdf = app->app_local->certificate_info; cdf; cdf = cdf->next)
-    if (cdf->objidlen == prkdf->objidlen
-        && !memcmp (cdf->objid, prkdf->objid, prkdf->objidlen))
-      break;
-  if (!cdf)
-    for (cdf = app->app_local->trusted_certificate_info; cdf; cdf = cdf->next)
-      if (cdf->objidlen == prkdf->objidlen
-          && !memcmp (cdf->objid, prkdf->objid, prkdf->objidlen))
-        break;
-  if (!cdf)
-    for (cdf = app->app_local->useful_certificate_info; cdf; cdf = cdf->next)
-      if (cdf->objidlen == prkdf->objidlen
-          && !memcmp (cdf->objid, prkdf->objid, prkdf->objidlen))
-        break;
-  if (!cdf)
-    {
-      err = gpg_error (GPG_ERR_NOT_FOUND);
-      goto leave;
-    }
+  /* Look for a matching certificate. A certificate matches if the id
+   * matches the one of the private key info.  If none was found we
+   * also try to match on the label.  */
+  err = cdf_object_from_objid (app, prkdf->objidlen, prkdf->objid, &cdf);
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+    err = cdf_object_from_label (app, prkdf->label, &cdf);
+  if (!err && !cdf)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  if (err)
+    goto leave;
 
   err = readcert_by_cdf (app, cdf, &der, &derlen);
   if (err)
@@ -2690,12 +3905,14 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
   xfree (der);
   if (!err)
     err = app_help_get_keygrip_string (cert, prkdf->keygrip, &s_pkey, NULL);
-  if (!err)
+  if (!err && !prkdf->gpgusage.any)
     {
       /* Try to get the CN and the SerialNumber from the certificate;
        * we use a very simple approach here which should work in many
        * cases.  Eventually we should add a rfc-2253 parser into
        * libksba to make it easier to parse such a string.
+       * We don't do this if this is marked as gpg key and thus
+       * has only a dummy certificate.
        *
        * First example string:
        *   "CN=Otto Schily,O=Miniluv,C=DE"
@@ -2743,6 +3960,20 @@ keygrip_from_prkdf (app_t app, prkdf_object_t prkdf)
         }
     }
 
+  if (!err && !prkdf->keytime)
+    {
+      ksba_isotime_t isot;
+      time_t t;
+
+      ksba_cert_get_validity (cert, 0, isot);
+      t = isotime2epoch (isot);
+      prkdf->keytime = (t == (time_t)(-1))? 0 : (u32)t;
+      prkdf->have_keytime = 1;
+    }
+
+  if (!err && !prkdf->keyalgostr)
+    prkdf->keyalgostr = pubkey_algo_string (s_pkey, NULL);
+
   ksba_cert_release (cert);
   if (err)
     goto leave;
@@ -2780,7 +4011,7 @@ keyref_from_prkdf (app_t app, prkdf_object_t prkdf)
   if (!buf)
     return NULL;
   p = stpcpy (buf, "P15");
-  if (app->app_local->home_df)
+  if (app->app_local->home_df != DEFAULT_HOME_DF)
     {
       snprintf (p, 6, "-%04X",
                 (unsigned int)(app->app_local->home_df & 0xffff));
@@ -2820,27 +4051,58 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
       else
         {
           char usage[5];
+          char keytime[20];
+          const char *algostr;
           size_t usagelen = 0;
 
-          if (prkdf->usageflags.sign
-              || prkdf->usageflags.sign_recover
-              || prkdf->usageflags.non_repudiation)
-            usage[usagelen++] = 's';
-          if (prkdf->usageflags.sign
-              || prkdf->usageflags.sign_recover)
-            usage[usagelen++] = 'c';
-          if (prkdf->usageflags.decrypt
-              || prkdf->usageflags.unwrap)
-            usage[usagelen++] = 'e';
-          if (prkdf->usageflags.sign
-              || prkdf->usageflags.sign_recover)
-            usage[usagelen++] = 'a';
+          if (prkdf->gpgusage.any)
+            {
+              if (prkdf->gpgusage.sign)
+                usage[usagelen++] = 's';
+              if (prkdf->gpgusage.cert)
+                usage[usagelen++] = 'c';
+              if (prkdf->gpgusage.encr)
+                usage[usagelen++] = 'e';
+              if (prkdf->gpgusage.auth)
+                usage[usagelen++] = 'a';
+            }
+          else
+            {
+              if ((prkdf->usageflags.sign
+                   || prkdf->usageflags.sign_recover
+                   || prkdf->usageflags.non_repudiation)
+                  && (!prkdf->extusage.valid
+                      || prkdf->extusage.sign))
+                usage[usagelen++] = 's';
+              if ((prkdf->usageflags.sign
+                   || prkdf->usageflags.sign_recover)
+                  && (!prkdf->extusage.valid || prkdf->extusage.sign))
+                usage[usagelen++] = 'c';
+              if ((prkdf->usageflags.decrypt
+                   || prkdf->usageflags.unwrap)
+                  && (!prkdf->extusage.valid || prkdf->extusage.encr))
+                usage[usagelen++] = 'e';
+              if ((prkdf->usageflags.sign
+                   || prkdf->usageflags.sign_recover)
+                  && (!prkdf->extusage.valid || prkdf->extusage.auth))
+                usage[usagelen++] = 'a';
+            }
 
           log_assert (strlen (prkdf->keygrip) == 40);
+          if (prkdf->keytime && prkdf->have_keytime)
+            snprintf (keytime, sizeof keytime, "%lu",
+                      (unsigned long)prkdf->keytime);
+          else
+            strcpy (keytime, "-");
+
+          algostr = prkdf->keyalgostr;
+
           send_status_info (ctrl, "KEYPAIRINFO",
                             prkdf->keygrip, 2*KEYGRIP_LEN,
                             buf, strlen (buf),
                             usage, usagelen,
+                            keytime, strlen (keytime),
+                            algostr, strlen (algostr?algostr:""),
                             NULL, (size_t)0);
         }
       xfree (buf);
@@ -2850,13 +4112,22 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
 
 
 
-/* This is the handler for the LEARN command.  */
+/* This is the handler for the LEARN command.  Note that if
+ * APP_LEARN_FLAG_REREAD is set and this function returns an error,
+ * the caller must deinitialize this application.  */
 static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
 
-  if ((flags & 1))
+  if (flags & APP_LEARN_FLAG_REREAD)
+    {
+      err = read_p15_info (app);
+      if (err)
+        return err;
+    }
+
+  if ((flags & APP_LEARN_FLAG_KEYPAIRINFO))
     err = 0;
   else
     {
@@ -2875,13 +4146,20 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   if (!err)
     err = send_keypairinfo (app, ctrl, app->app_local->private_key_info);
 
+  if (!err)
+    err = do_getattr (app, ctrl, "CHV-STATUS");
+  if (!err)
+    err = do_getattr (app, ctrl, "CHV-LABEL");
+
+
   return err;
 }
 
 
-/* Read a certifciate using the information in CDF and return the
-   certificate in a newly llocated buffer R_CERT and its length
-   R_CERTLEN. */
+/* Read a certificate using the information in CDF and return the
+ * certificate in a newly malloced buffer R_CERT and its length
+ * R_CERTLEN.  Also parses the certificate.  R_CERT and R_CERTLEN may
+ * be NULL to do just the caching.  */
 static gpg_error_t
 readcert_by_cdf (app_t app, cdf_object_t cdf,
                  unsigned char **r_cert, size_t *r_certlen)
@@ -2895,17 +4173,31 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
   int rootca;
   int i;
 
-  *r_cert = NULL;
-  *r_certlen = 0;
+  if (r_cert)
+    *r_cert = NULL;
+  if (r_certlen)
+    *r_certlen = 0;
 
   /* First check whether it has been cached. */
-  if (cdf->image)
+  if (cdf->cert)
     {
-      *r_cert = xtrymalloc (cdf->imagelen);
+      const unsigned char *image;
+      size_t imagelen;
+
+      if (!r_cert || !r_certlen)
+        return 0; /* Caller does not actually want the result. */
+
+      image = ksba_cert_get_image (cdf->cert, &imagelen);
+      if (!image)
+        {
+          log_error ("p15: ksba_cert_get_image failed\n");
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+      *r_cert = xtrymalloc (imagelen);
       if (!*r_cert)
         return gpg_error_from_syserror ();
-      memcpy (*r_cert, cdf->image, cdf->imagelen);
-      *r_certlen = cdf->imagelen;
+      memcpy (*r_cert, image, imagelen);
+      *r_certlen = imagelen;
       return 0;
     }
 
@@ -2950,7 +4242,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       goto leave;
     }
   totobjlen = objlen + hdrlen;
-  assert (totobjlen <= buflen);
+  log_assert (totobjlen <= buflen);
 
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
@@ -2981,21 +4273,38 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
           goto leave;
         }
       totobjlen = objlen + hdrlen;
-      assert (save_p + totobjlen <= buffer + buflen);
+      log_assert (save_p + totobjlen <= buffer + buflen);
       memmove (buffer, save_p, totobjlen);
     }
 
-  *r_cert = buffer;
-  buffer = NULL;
-  *r_certlen = totobjlen;
 
-  /* Try to cache it. */
-  if (!cdf->image && (cdf->image = xtrymalloc (*r_certlen)))
+  /* Try to parse and cache the certificate. */
+  err = ksba_cert_new (&cdf->cert);
+  if (!err)
     {
-      memcpy (cdf->image, *r_cert, *r_certlen);
-      cdf->imagelen = *r_certlen;
-    }
+      err = ksba_cert_init_from_mem (cdf->cert, buffer, totobjlen);
+      if (!err) /* Call us to use the just cached cert object.  */
+        err = readcert_by_cdf (app, cdf, r_cert, r_certlen);
+      if (err)
+        {
+          ksba_cert_release (cdf->cert);
+          cdf->cert = NULL;
+        }
 
+    }
+  if (err)
+    {
+      log_error ("p15: caching certificate failed: %s\n",
+                 gpg_strerror (err));
+      /* We return the certificate anyway so that the caller has a
+       * chance to get an even unsupported or broken certificate.  */
+      if (r_cert && r_certlen)
+        {
+          *r_cert = buffer;
+          buffer = NULL;
+          *r_certlen = totobjlen;
+        }
+    }
 
  leave:
   xfree (buffer);
@@ -3026,6 +4335,119 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+/* Sort helper for an array of authentication objects.  */
+static int
+compare_aodf_objid (const void *arg_a, const void *arg_b)
+{
+  const aodf_object_t a = *(const aodf_object_t *)arg_a;
+  const aodf_object_t b = *(const aodf_object_t *)arg_b;
+  int rc;
+
+  rc = memcmp (a->objid, b->objid,
+               a->objidlen < b->objidlen? a->objidlen : b->objidlen);
+  if (!rc)
+    {
+      if (a->objidlen < b->objidlen)
+        rc = -1;
+      else if (a->objidlen > b->objidlen)
+        rc = 1;
+    }
+  return rc;
+}
+
+
+static void
+send_key_fpr_line (ctrl_t ctrl, int number, const unsigned char *fpr)
+{
+  char buf[41];
+  char numbuf[25];
+
+  bin2hex (fpr, 20, buf);
+  if (number == -1)
+    *numbuf = 0; /* Don't print the key number */
+  else
+    snprintf (numbuf, sizeof numbuf, "%d", number);
+  send_status_info (ctrl, "KEY-FPR",
+                    numbuf, (size_t)strlen(numbuf),
+                    buf, (size_t)strlen (buf),
+                    NULL, 0);
+}
+
+
+/* If possible Emit a FPR-KEY status line for the private key object
+ * PRKDF using NUMBER as index.  */
+static void
+send_key_fpr (app_t app, ctrl_t ctrl, prkdf_object_t prkdf, int number)
+{
+  gpg_error_t err;
+  cdf_object_t cdf;
+  unsigned char *pk, *fixed_pk;
+  size_t pklen, fixed_pklen;
+  const unsigned char *m, *e, *q;
+  size_t mlen, elen, qlen;
+  unsigned char fpr20[20];
+
+  if (cdf_object_from_objid (app, prkdf->objidlen, prkdf->objid, &cdf)
+      && cdf_object_from_label (app, prkdf->label, &cdf))
+    return;
+  if (!cdf->cert)
+    readcert_by_cdf (app, cdf, NULL, NULL);
+  if (!cdf->cert)
+    return;
+  if (!prkdf->have_keytime)
+    return;
+  pk = ksba_cert_get_public_key (cdf->cert);
+  if (!pk)
+    return;
+  pklen = gcry_sexp_canon_len (pk, 0, NULL, &err);
+
+  if (uncompress_ecc_q_in_canon_sexp (pk, pklen, &fixed_pk, &fixed_pklen))
+    {
+      xfree (pk);
+      return;
+    }
+  if (fixed_pk)
+    {
+      xfree (pk); pk = NULL;
+      pk = fixed_pk;
+      pklen = fixed_pklen;
+    }
+
+  switch (prkdf->keyalgo)
+    {
+    case GCRY_PK_RSA:
+      if (!get_rsa_pk_from_canon_sexp (pk, pklen,
+                                       &m, &mlen, &e, &elen)
+          && !compute_openpgp_fpr_rsa (4,
+                                       prkdf->keytime,
+                                       m, mlen, e, elen,
+                                       fpr20, NULL))
+        send_key_fpr_line (ctrl, number, fpr20);
+      break;
+
+    case GCRY_PK_ECC:
+    case GCRY_PK_ECDSA:
+    case GCRY_PK_ECDH:
+    case GCRY_PK_EDDSA:
+      /* Note that NUMBER 2 indicates the encryption key.  */
+      if (!get_ecc_q_from_canon_sexp (pk, pklen, &q, &qlen)
+          && !compute_openpgp_fpr_ecc (4,
+                                       prkdf->keytime,
+                                       prkdf->keyalgostr,
+                                       number == 2,
+                                       q, qlen,
+                                       prkdf->ecdh_kdf, 4,
+                                       fpr20, NULL))
+        send_key_fpr_line (ctrl, number, fpr20);
+      break;
+
+    default: /* No Fingerprint for an unknown algo.  */
+      break;
+
+    }
+  xfree (pk);
+}
+
 
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
@@ -3042,22 +4464,34 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       char *buf;
 
       /* We return the ID of the first private key capable of the
-       * requested action.  Note that we do not yet return
+       * requested action.  If any gpgusage flag has been set for the
+       * card we consult the gpgusage flags and not the regualr usage
+       * flags.
+       */
+      /* FIXME: This changed: Note that we do not yet return
        * non_repudiation keys for $SIGNKEYID because our D-Trust
        * testcard uses rsaPSS, which is not supported by gpgsm and not
        * covered by the VS-NfD approval.  */
       for (prkdf = app->app_local->private_key_info; prkdf;
            prkdf = prkdf->next)
         {
-          if (name[1] == 'A' && (prkdf->usageflags.sign
-                                 || prkdf->usageflags.sign_recover))
-            break;
-          else if (name[1] == 'E' && (prkdf->usageflags.decrypt
-                                      || prkdf->usageflags.unwrap))
-            break;
-          else if (name[1] == 'S' && (prkdf->usageflags.sign
+          if (app->app_local->any_gpgusage)
+            {
+              if ((name[1] == 'A' && prkdf->gpgusage.auth)
+                  || (name[1] == 'E' && prkdf->gpgusage.encr)
+                  || (name[1] == 'S' && prkdf->gpgusage.sign))
+                break;
+            }
+          else
+            {
+              if ((name[1] == 'A' && (prkdf->usageflags.sign
                                       || prkdf->usageflags.sign_recover))
-            break;
+                  || (name[1] == 'E' && (prkdf->usageflags.decrypt
+                                         || prkdf->usageflags.unwrap))
+                  || (name[1] == 'S' && (prkdf->usageflags.sign
+                                         || prkdf->usageflags.sign_recover)))
+                break;
+            }
         }
       if (prkdf)
         {
@@ -3085,7 +4519,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
           err = select_ef_by_path (app, path, DIM(path) );
           if (!err)
-            err = iso7816_read_binary (app->slot, 0, 0, &buffer, &buflen);
+            err = iso7816_read_binary (app_get_slot (app), 0, 0,
+                                       &buffer, &buflen);
           if (err)
             {
               log_error ("p15: error accessing EF(ID): %s\n",
@@ -3111,6 +4546,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
         }
       else
         {
+          char *sn;
+
           /* We use the first private key object which has a serial
            * number set.  If none was found, we parse the first
            * object and see whether this has then a serial number.  */
@@ -3125,11 +4562,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
               if (!prkdf->serial_number)
                 prkdf = NULL;
             }
-          if (prkdf)
+          sn = get_dispserialno (app, prkdf);
+          /* Unless there is a bogus S/N in the cert, or the product
+           * has a different strategy for the display-s/n, we should
+           * have a suitable one from the cert now.  */
+          if (sn)
             {
-              char *sn = get_dispserialno (app, prkdf);
-              /* Unless there is a bogus S/N in the cert we should
-               * have a suitable one from the cert here now.  */
               err = send_status_printf (ctrl, name, "%s", sn);
               xfree (sn);
               return err;
@@ -3139,12 +4577,134 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   else if (!strcmp (name, "MANUFACTURER"))
     {
-      if (app->app_local->manufacturer_id)
+      if (app->app_local->manufacturer_id
+          && (app->app_local->card_product
+              || strchr (app->app_local->manufacturer_id, '[')))
+        return send_status_printf (ctrl, "MANUFACTURER", "0 %s [%s]",
+                              app->app_local->manufacturer_id,
+                              cardproduct2str (app->app_local->card_product));
+      else if (app->app_local->manufacturer_id)
         return send_status_printf (ctrl, "MANUFACTURER", "0 %s",
                                    app->app_local->manufacturer_id);
       else
         return 0;
     }
+  else if (!strcmp (name, "CHV-STATUS") || !strcmp (name, "CHV-LABEL"))
+    {
+      int is_label = (name[4] == 'L');
+      aodf_object_t aodf;
+      aodf_object_t aodfarray[16];
+      int naodf = 0;
+      membuf_t mb;
+      char *p;
+      int i;
+
+      /* Put the AODFs into an array for easier sorting.  Note that we
+       * handle onl the first 16 encountrer which should be more than
+       * enough.  */
+      for (aodf = app->app_local->auth_object_info;
+           aodf && naodf < DIM(aodfarray); aodf = aodf->next)
+        if (aodf->objidlen && aodf->pin_reference_valid)
+          aodfarray[naodf++] = aodf;
+      qsort (aodfarray, naodf, sizeof *aodfarray, compare_aodf_objid);
+
+      init_membuf (&mb, 256);
+      for (i = 0; i < naodf; i++)
+        {
+          /* int j; */
+          /* log_debug ("p15: AODF[%d] pinref=%lu id=", */
+          /*            i, aodfarray[i]->pin_reference); */
+          /* for (j=0; j < aodfarray[i]->objidlen; j++) */
+          /*   log_printf ("%02X", aodfarray[i]->objid[j]); */
+          /* Note that there is no need to percent escape the label
+           * because all white space have been replaced by '_'.  */
+          if (is_label)
+            put_membuf_printf (&mb, "%s%s", i? " ":"",
+                               (aodfarray[i]->label
+                                && *aodfarray[i]->label)?
+                               aodfarray[i]->label:"X");
+          else
+            put_membuf_printf
+              (&mb, "%s%d", i? " ":"",
+               iso7816_verify_status (app_get_slot (app),
+                                      aodfarray[i]->pin_reference));
+        }
+      put_membuf( &mb, "", 1);
+      p = get_membuf (&mb, NULL);
+      if (!p)
+        return gpg_error_from_syserror ();
+      err = send_status_direct (ctrl, is_label? "CHV-LABEL":"CHV-STATUS", p);
+      xfree (p);
+      return err;
+    }
+  else if (!strcmp (name, "KEY-LABEL"))
+    {
+      /* Send KEY-LABEL lines for all private key objects.  */
+      const char *label;
+      char *idbuf, *labelbuf;
+
+      for (prkdf = app->app_local->private_key_info; prkdf;
+           prkdf = prkdf->next)
+        {
+          idbuf = keyref_from_prkdf (app, prkdf);
+          if (!idbuf)
+            return gpg_error_from_syserror ();
+
+          label = (prkdf->label && *prkdf->label)? prkdf->label : "-";
+          labelbuf = percent_data_escape (0, NULL, label, strlen (label));
+          if (!labelbuf)
+            {
+              xfree (idbuf);
+              return gpg_error_from_syserror ();
+            }
+
+          send_status_info (ctrl, name,
+                            idbuf, strlen (idbuf),
+                            labelbuf, strlen(labelbuf),
+                            NULL, 0);
+          xfree (idbuf);
+          xfree (labelbuf);
+        }
+      return 0;
+    }
+  else if (!strcmp (name, "KEY-FPR"))
+    {
+      /* Send KEY-FPR for the two openpgp keys. */
+      for (prkdf = app->app_local->private_key_info; prkdf;
+           prkdf = prkdf->next)
+        {
+          if (app->app_local->any_gpgusage)
+            {
+              if (prkdf->gpgusage.sign)
+                break;
+            }
+          else
+            {
+              if (prkdf->usageflags.sign || prkdf->usageflags.sign_recover)
+                break;
+            }
+        }
+      if (prkdf)
+        send_key_fpr (app, ctrl, prkdf, 1);
+      for (prkdf = app->app_local->private_key_info; prkdf;
+           prkdf = prkdf->next)
+        {
+          if (app->app_local->any_gpgusage)
+            {
+              if (prkdf->gpgusage.encr)
+                break;
+            }
+          else
+            {
+              if (prkdf->usageflags.decrypt || prkdf->usageflags.unwrap)
+                break;
+            }
+        }
+      if (prkdf)
+        send_key_fpr (app, ctrl, prkdf, 2);
+      return 0;
+    }
+
   return gpg_error (GPG_ERR_INV_NAME);
 }
 
@@ -3165,7 +4725,7 @@ micardo_mse (app_t app, unsigned short fid)
   unsigned char msebuf[10];
 
   /* Read the KeyD file containing extra information on keys. */
-  err = iso7816_select_file (app->slot, 0x0013, 0);
+  err = iso7816_select_file (app_get_slot (app), 0x0013, 0);
   if (err)
     {
       log_error ("p15: error reading EF_keyD: %s\n", gpg_strerror (err));
@@ -3179,7 +4739,8 @@ micardo_mse (app_t app, unsigned short fid)
       size_t n, nn;
       const unsigned char *p, *pp;
 
-      err = iso7816_read_record (app->slot, recno, 1, 0, &buffer, &buflen);
+      err = iso7816_read_record (app_get_slot (app), recno, 1, 0,
+                                 &buffer, &buflen);
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
         break; /* ready */
       if (err)
@@ -3222,7 +4783,8 @@ micardo_mse (app_t app, unsigned short fid)
   /* Restore the security environment to SE_NUM if needed */
   if (se_num)
     {
-      err = iso7816_manage_security_env (app->slot, 0xf3, se_num, NULL, 0);
+      err = iso7816_manage_security_env (app_get_slot (app),
+                                         0xf3, se_num, NULL, 0);
       if (err)
         {
           log_error ("p15: restoring SE to %d failed: %s\n",
@@ -3237,7 +4799,7 @@ micardo_mse (app_t app, unsigned short fid)
   msebuf[2] = 0x80;
   msebuf[3] = (refdata >> 8);
   msebuf[4] = refdata;
-  err = iso7816_manage_security_env (app->slot, 0x41, 0xb6, msebuf, 5);
+  err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xb6, msebuf, 5);
   if (err)
     {
       log_error ("p15: setting SE to reference file %04hX failed: %s\n",
@@ -3251,7 +4813,7 @@ micardo_mse (app_t app, unsigned short fid)
 
 /* Prepare the verification of the PIN for the key PRKDF by checking
  * the AODF and selecting the key file.  KEYREF is used for error
- * messages.  */
+ * messages.  AODF may be NULL if no verification needs to be done. */
 static gpg_error_t
 prepare_verify_pin (app_t app, const char *keyref,
                     prkdf_object_t prkdf, aodf_object_t aodf)
@@ -3259,29 +4821,32 @@ prepare_verify_pin (app_t app, const char *keyref,
   gpg_error_t err;
   int i;
 
-  if (opt.verbose)
+  if (aodf)
     {
-      log_info ("p15: using AODF %04hX id=", aodf->fid);
-      for (i=0; i < aodf->objidlen; i++)
-        log_printf ("%02X", aodf->objid[i]);
-      log_printf ("\n");
-    }
+      if (opt.verbose)
+        {
+          log_info ("p15: using AODF %04hX id=", aodf->fid);
+          for (i=0; i < aodf->objidlen; i++)
+            log_printf ("%02X", aodf->objid[i]);
+          log_printf ("\n");
+        }
 
-  if (aodf->authid && opt.verbose)
-    log_info ("p15: PIN is controlled by another authentication token\n");
+      if (aodf->authid && opt.verbose)
+        log_info ("p15: PIN is controlled by another authentication token\n");
 
-  if (aodf->pinflags.integrity_protected
-      || aodf->pinflags.confidentiality_protected)
-    {
-      log_error ("p15: "
-                 "PIN verification requires unsupported protection method\n");
-      return gpg_error (GPG_ERR_BAD_PIN_METHOD);
-    }
-  if (!aodf->stored_length && aodf->pinflags.needs_padding)
-    {
-      log_error ("p15: "
-                 "PIN verification requires padding but no length known\n");
-      return gpg_error (GPG_ERR_INV_CARD);
+      if (aodf->pinflags.integrity_protected
+          || aodf->pinflags.confidentiality_protected)
+        {
+          log_error ("p15: PIN verification requires"
+                     " unsupported protection method\n");
+          return gpg_error (GPG_ERR_BAD_PIN_METHOD);
+        }
+      if (!aodf->stored_length && aodf->pinflags.needs_padding)
+        {
+          log_error ("p15: PIN verification requires"
+                     " padding but no length known\n");
+          return gpg_error (GPG_ERR_INV_CARD);
+        }
     }
 
 
@@ -3301,7 +4866,7 @@ prepare_verify_pin (app_t app, const char *keyref,
         log_error ("p15: error selecting D-TRUST's AID for key %s: %s\n",
                    keyref, gpg_strerror (err));
     }
-  else
+  else if (prkdf)
     {
       /* Standard case: Select the key file.  Note that this may
        * change the security environment thus we need to do it before
@@ -3310,6 +4875,11 @@ prepare_verify_pin (app_t app, const char *keyref,
       if (err)
         log_error ("p15: error selecting file for key %s: %s\n",
                    keyref, gpg_strerror (err));
+    }
+  else
+    {
+      log_info ("p15: skipping EF selection for auth object '%s'\n", keyref);
+      err = 0;
     }
 
   return err;
@@ -3334,11 +4904,19 @@ static char *
 get_dispserialno (app_t app, prkdf_object_t prkdf)
 {
   char *serial;
+  size_t n;
 
   /* We prefer the SerialNumber RDN from the Subject-DN but we don't
    * use it if it features a percent sign (special character in pin
    * prompts) or has any control character.  */
-  if (prkdf && prkdf->serial_number && *prkdf->serial_number
+  if (app->app_local->card_product == CARD_PRODUCT_RSCS)
+    {
+      /* We use only the right 8 hex digits.  */
+      serial = app_get_serialno (app);
+      if (serial && (n=strlen (serial)) > 8)
+        memmove (serial, serial + n - 8, 9);
+    }
+  else if (prkdf && prkdf->serial_number && *prkdf->serial_number
       && !strchr (prkdf->serial_number, '%')
       && !any_control_or_space (prkdf->serial_number))
     {
@@ -3352,15 +4930,23 @@ get_dispserialno (app_t app, prkdf_object_t prkdf)
 }
 
 
-/* Return an allocated string to be used as prompt.  Returns NULL on
- * malloc error.  */
+/* Return an allocated string to be used as prompt.  PRKDF may be
+ * NULL.  Returns NULL on malloc error.  */
 static char *
 make_pin_prompt (app_t app, int remaining, const char *firstline,
                  prkdf_object_t prkdf)
 {
   char *serial, *tmpbuf, *result;
+  const char *holder;
 
   serial = get_dispserialno (app, prkdf);
+
+  if (prkdf && prkdf->common_name)
+    holder = prkdf->common_name;
+  else if (app->app_local->token_label)
+    holder = app->app_local->token_label;
+  else
+    holder = "";
 
   /* TRANSLATORS: Put a \x1f right before a colon.  This can be
    * used by pinentry to nicely align the names and values.  Keep
@@ -3371,7 +4957,7 @@ make_pin_prompt (app_t app, int remaining, const char *firstline,
                            "%s"),
                          "\x1e",
                          serial,
-                         prkdf->common_name? prkdf->common_name: "",
+                         holder,
                          "");
   xfree (serial);
   if (!result)
@@ -3408,7 +4994,8 @@ make_pin_prompt (app_t app, int remaining, const char *firstline,
 
 
 /* Given the private key object PRKDF and its authentication object
- * AODF ask for the PIN and verify that PIN.  */
+ * AODF ask for the PIN and verify that PIN.  If AODF is NULL, no
+ * authentication is done.  */
 static gpg_error_t
 verify_pin (app_t app,
             gpg_error_t (*pincb)(void*, const char *, char **), void *pincb_arg,
@@ -3422,6 +5009,7 @@ verify_pin (app_t app,
   const char *s;
   int remaining;
   int pin_reference;
+  int verified = 0;
   int i;
 
   if (!aodf)
@@ -3429,34 +5017,45 @@ verify_pin (app_t app,
 
   pin_reference = aodf->pin_reference_valid? aodf->pin_reference : 0;
 
-  if (app->app_local->card_type == CARD_TYPE_CARDOS_50)
+  if (IS_CARDOS_5 (app))
     {
       /* We know that this card supports a verify status check.  Note
        * that in contrast to PIV cards ISO7816_VERIFY_NOT_NEEDED is
-       * not supported.  */
+       * not supported.  Noet that we don't use the pin_verified cache
+       * status because that is not as reliable than to ask the card
+       * about its state.  */
+      if (prkdf)  /* Clear the cache which we don't use.  */
+        prkdf->pin_verified = 0;
+
       remaining = iso7816_verify_status (app_get_slot (app), pin_reference);
-      if (remaining < 0)
-        remaining = -1; /* We don't care about the concrete error.  */
-      if (remaining < 3)
+      if (remaining == ISO7816_VERIFY_NOT_NEEDED)
         {
-          if (remaining >= 0)
-            log_info ("p15: PIN has %d attempts left\n", remaining);
-          /* On error or if less than 3 better ask. */
-          prkdf->pin_verified = 0;
+          verified = 1;
+          remaining = -1;
         }
+      else if (remaining < 0)
+        remaining = -1; /* We don't care about the concrete error.  */
+      else if (remaining < 3)
+        log_info ("p15: PIN has %d attempts left\n", remaining);
     }
   else
     remaining = -1;  /* Unknown.  */
 
   /* Check whether we already verified it.  */
-  if (prkdf->pin_verified)
+  if (prkdf && (prkdf->pin_verified || verified))
     return 0;  /* Already done.  */
 
-  if (prkdf->usageflags.non_repudiation
+  if (prkdf
+      && prkdf->usageflags.non_repudiation
       && (app->app_local->card_type == CARD_TYPE_BELPIC
           || app->app_local->card_product == CARD_PRODUCT_DTRUST))
     label = _("||Please enter the PIN for the key to create "
               "qualified signatures.");
+  else if (aodf->pinflags.so_pin)
+    label = _("|A|Please enter the Admin PIN");
+  else if (aodf->pinflags.unblocking_pin)
+    label = _("|P|Please enter the PIN Unblocking Code (PUK) "
+              "for the standard keys.");
   else
     label = _("||Please enter the PIN for the standard keys.");
 
@@ -3607,7 +5206,8 @@ verify_pin (app_t app,
     }
   if (opt.verbose)
     log_info ("p15: PIN verification succeeded\n");
-  prkdf->pin_verified = 1;
+  if (prkdf)
+    prkdf->pin_verified = 1;
 
   return 0;
 }
@@ -3628,43 +5228,31 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
-  static unsigned char sha256_prefix[19] = /* OID: 2.16.840.1.101.3.4.2.1 */
-    { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48,
-      0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20 };
-  static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
-    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
-      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
-  static unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
-    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
-      0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
-
   gpg_error_t err;
-  unsigned char data[32+19]; /* Must be large enough for a SHA-256 digest
-                              * + the largest OID prefix above and also
-                              * fit the 36 bytes of md5sha1.  */
   prkdf_object_t prkdf;    /* The private key object. */
   aodf_object_t aodf;      /* The associated authentication object. */
-  int no_data_padding = 0; /* True if the card want the data without padding.*/
   int mse_done = 0;        /* Set to true if the MSE has been done. */
-  unsigned int hashlen;    /* Length of the hash.  */
-  unsigned int datalen;    /* Length of the data to sign (prefix+hash).  */
-  unsigned char *dataptr;
+  unsigned int digestlen;  /* Length of the hash.  */
   int exmode, le_value;
+  unsigned char oidbuf[64];
+  size_t oidbuflen;
+  size_t n;
+  unsigned char *indata_buffer = NULL; /* Malloced helper.  */
 
   (void)ctrl;
 
-  if (!keyidstr || !*keyidstr)
-    return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen != 20 && indatalen != 16
-      && indatalen != 35 && indatalen != 36
-      && indatalen != (32+19))
+  if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
   if (err)
     return err;
-  if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover
-        ||prkdf->usageflags.non_repudiation))
+  if (!(prkdf->usageflags.sign
+        || prkdf->usageflags.sign_recover
+        || prkdf->usageflags.non_repudiation
+        || prkdf->gpgusage.cert
+        || prkdf->gpgusage.sign
+        || prkdf->gpgusage.auth ))
     {
       log_error ("p15: key %s may not be used for signing\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
@@ -3684,10 +5272,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
       break;
   if (!aodf)
-    {
-      log_error ("p15: authentication object for %s missing\n", keyidstr);
-      return gpg_error (GPG_ERR_INV_CARD);
-    }
+    log_info ("p15: no authentication for %s needed\n", keyidstr);
 
   /* We need some more info about the key - get the keygrip to
    * populate these fields.  */
@@ -3696,6 +5281,150 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     {
       log_error ("p15: keygrip_from_prkdf failed: %s\n", gpg_strerror (err));
       return err;
+    }
+
+
+  digestlen = gcry_md_get_algo_dlen (hashalgo);
+
+  /* We handle ECC separately from RSA so that we do not need to touch
+   * working code.  In particular we prepare the input data before the
+   * verify and a possible MSE.  */
+  if (prkdf->is_ecc)
+    {
+      if (digestlen != 32 && digestlen != 48 && digestlen != 64)
+        {
+          log_error ("p15: ECC signing not possible: dlen=%u\n", digestlen);
+          err = gpg_error (GPG_ERR_DIGEST_ALGO);
+          goto leave;
+        }
+
+      if (indatalen == digestlen)
+        ; /* Already prepared.  */
+      else if (indatalen > digestlen)
+        {
+          /* Assume a PKCS#1 prefix and remove it.  */
+          oidbuflen = sizeof oidbuf;
+          err = gcry_md_get_asnoid (hashalgo, &oidbuf, &oidbuflen);
+          if (err)
+            {
+              log_error ("p15: no OID for hash algo %d\n", hashalgo);
+              err = gpg_error (GPG_ERR_INTERNAL);
+              goto leave;
+            }
+          if (indatalen != oidbuflen + digestlen
+              || memcmp (indata, oidbuf, oidbuflen))
+            {
+              log_error ("p15: input data too long for ECC: len=%zu\n",
+                         indatalen);
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              goto leave;
+            }
+          indata = (const char*)indata + oidbuflen;
+          indatalen -= oidbuflen;
+        }
+      else
+        {
+          log_error ("p15: input data too short for ECC: len=%zu\n",
+                     indatalen);
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          goto leave;
+        }
+    }
+  else /* Prepare RSA input.  */
+    {
+      unsigned int framelen;
+      unsigned char *frame;
+      int i;
+
+      framelen = (prkdf->keynbits+7) / 8;
+      if (!framelen)
+        {
+          log_error ("p15: key length unknown"
+                     " - can't prepare PKCS#v1.5 frame\n");
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          goto leave;
+        }
+
+      oidbuflen = sizeof oidbuf;
+      if (!hashalgo)
+        {
+          /* We assume that indata already has the required
+           * digestinfo; thus merely prepend the padding below.  */
+        }
+      else if ((err = gcry_md_get_asnoid (hashalgo, &oidbuf, &oidbuflen)))
+        {
+          log_debug ("p15: no OID for hash algo %d\n", hashalgo);
+          goto leave;
+        }
+      else
+        {
+          if (indatalen == digestlen)
+            {
+              /* Plain hash in INDATA; prepend the digestinfo.  */
+              indata_buffer = xtrymalloc (oidbuflen + indatalen);
+              if (!indata_buffer)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              memcpy (indata_buffer, oidbuf, oidbuflen);
+              memcpy (indata_buffer+oidbuflen, indata, indatalen);
+              indata = indata_buffer;
+              indatalen = oidbuflen + indatalen;
+            }
+          else if (indatalen == oidbuflen + digestlen
+                   && !memcmp (indata, oidbuf, oidbuflen))
+            ; /* We already got the correct prefix.  */
+          else
+            {
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              log_error ("p15: bad input for signing with RSA and hash %d\n",
+                         hashalgo);
+              goto leave;
+            }
+        }
+      /* Now prepend the pkcs#v1.5 padding.  We require at least 8
+       * byte of padding and 3 extra bytes for the prefix and the
+       * delimiting nul.  */
+      if (!indatalen || indatalen + 8 + 4 > framelen)
+        {
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          log_error ("p15: input does not fit into a %u bit PKCS#v1.5 frame\n",
+                     8*framelen);
+          goto leave;
+        }
+      frame = xtrymalloc (framelen);
+      if (!frame)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      if (app->app_local->card_type == CARD_TYPE_BELPIC)
+        {
+          /* This card wants only the plain hash w/o any prefix.  */
+          /* FIXME: We may want to remove this code because it is unlikely
+           * that such cards are still in use.  */
+          memcpy (frame, indata, indatalen);
+          framelen = indatalen;
+        }
+      else
+        {
+          n = 0;
+          frame[n++] = 0;
+          frame[n++] = 1; /* Block type. */
+          i = framelen - indatalen - 3 ;
+          memset (frame+n, 0xff, i);
+          n += i;
+          frame[n++] = 0; /* Delimiter.  */
+          memcpy (frame+n, indata, indatalen);
+          n += indatalen;
+          log_assert (n == framelen);
+        }
+      /* And now put it into the indata_buffer.  */
+      xfree (indata_buffer);
+      indata_buffer = frame;
+      indata = indata_buffer;
+      indatalen = framelen;
     }
 
   /* Prepare PIN verification.  This is split so that we can do
@@ -3709,7 +5438,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
      card requires a verify immediately before the DSO we set the
      MSE before we do the verification.  Other cards might also allow
      this but I don't want to break anything, thus we do it only
-     for the BELPIC card here. */
+     for the BELPIC card here.
+     FIXME: see comment above about these cards.   */
   if (app->app_local->card_type == CARD_TYPE_BELPIC)
     {
       unsigned char mse[5];
@@ -3723,10 +5453,9 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       mse[3] = 0x84; /* Private key reference tag. */
       mse[4] = prkdf->key_reference_valid? prkdf->key_reference : 0x82;
 
-      err = iso7816_manage_security_env (app->slot,
+      err = iso7816_manage_security_env (app_get_slot (app),
                                          0x41, 0xB6,
                                          mse, sizeof mse);
-      no_data_padding = 1;
       mse_done = 1;
     }
   if (err)
@@ -3740,72 +5469,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
   if (err)
     return err;
-
-
-  /* Prepare the DER object from INDATA. */
-  if (indatalen == 36)
-    {
-      /* No ASN.1 container used. */
-      if (hashalgo != MD_USER_TLS_MD5SHA1)
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data, indata, indatalen);
-      datalen = hashlen = 36;
-    }
-  else if (indatalen == 35)
-    {
-      /* Alright, the caller was so kind to send us an already
-         prepared DER object.  Check that it is what we want and that
-         it matches the hash algorithm. */
-      if (hashalgo == GCRY_MD_SHA1 && !memcmp (indata, sha1_prefix, 15))
-        ;
-      else if (hashalgo == GCRY_MD_RMD160
-               && !memcmp (indata, rmd160_prefix, 15))
-        ;
-      else
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data, indata, indatalen);
-      datalen = 35;
-      hashlen = 20;
-    }
-  else if (indatalen == 32 + 19)
-    {
-      /* Seems to be a prepared SHA256 DER object.  */
-      if (hashalgo == GCRY_MD_SHA256 && !memcmp (indata, sha256_prefix, 19))
-        ;
-      else
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data, indata, indatalen);
-      datalen = 51;
-      hashlen = 32;
-    }
-  else
-    {
-      /* Need to prepend the prefix. */
-      if (hashalgo == GCRY_MD_SHA256)
-        {
-          memcpy (data, sha256_prefix, 19);
-          memcpy (data+19, indata, indatalen);
-          datalen = 51;
-          hashlen = 32;
-        }
-      else if (hashalgo == GCRY_MD_SHA1)
-        {
-          memcpy (data, sha1_prefix, 15);
-          memcpy (data+15, indata, indatalen);
-          datalen = 35;
-          hashlen = 20;
-        }
-      else if (hashalgo == GCRY_MD_RMD160)
-        {
-          memcpy (data, rmd160_prefix, 15);
-          memcpy (data+15, indata, indatalen);
-          datalen = 35;
-          hashlen = 20;
-        }
-      else
-        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-    }
-
 
   /* Manage security environment needs to be tweaked for certain cards. */
   if (mse_done)
@@ -3830,7 +5493,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       mse[1] = 1;
       mse[2] = prkdf->key_reference;
 
-      err = iso7816_manage_security_env (app->slot,
+      err = iso7816_manage_security_env (app_get_slot (app),
                                          0x41, 0xB6,
                                          mse, sizeof mse);
     }
@@ -3838,13 +5501,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     {
       log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
       return err;
-    }
-
-  dataptr = data;
-  if (no_data_padding)
-    {
-      dataptr += datalen - hashlen;
-      datalen = hashlen;
     }
 
   if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits > 2048)
@@ -3859,9 +5515,11 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
 
   err = iso7816_compute_ds (app_get_slot (app),
-                            exmode, dataptr, datalen,
+                            exmode, indata, indatalen,
                             le_value, outdata, outdatalen);
 
+ leave:
+  xfree (indata_buffer);
   return err;
 }
 
@@ -3889,7 +5547,7 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
   if (err)
     return err;
-  if (!prkdf->usageflags.sign)
+  if (!(prkdf->usageflags.sign || prkdf->gpgusage.auth))
     {
       log_error ("p15: key %s may not be used for authentication\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
@@ -3929,9 +5587,11 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
   if (err)
     return err;
-  if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap))
+  if (!(prkdf->usageflags.decrypt
+        || prkdf->usageflags.unwrap
+        || prkdf->gpgusage.encr     ))
     {
-      log_error ("p15: key %s may not be used for decruption\n", keyidstr);
+      log_error ("p15: key %s may not be used for decryption\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
@@ -3948,10 +5608,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
         && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
       break;
   if (!aodf)
-    {
-      log_error ("p15: authentication object for %s missing\n", keyidstr);
-      return gpg_error (GPG_ERR_INV_CARD);
-    }
+    log_info ("p15: no authentication for %s needed\n", keyidstr);
 
   /* We need some more info about the key - get the keygrip to
    * populate these fields.  */
@@ -3968,6 +5625,18 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
   if (err)
     return err;
+
+  if (prkdf->is_ecc && IS_CARDOS_5(app))
+    {
+
+      err = iso7816_manage_security_env (app_get_slot (app), 0xF3, 0x01,
+                                         NULL, 0);
+      if (err)
+        {
+          log_error ("p15: MSE failed: %s\n", gpg_strerror (err));
+          return err;
+        }
+    }
 
 
   /* The next is guess work for CardOS.  */
@@ -3990,19 +5659,31 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     }
   else if (prkdf->key_reference_valid)
     {
-      unsigned char mse[6];
+      unsigned char mse[9];
+      int i;
 
       /* Note: This works with CardOS but the D-Trust card has the
        * problem that the next created signature would be broken.  */
 
-      mse[0] = 0x80; /* Algorithm reference.  */
-      mse[1] = 1;
-      mse[2] = 0x0a; /* RSA, no padding.  */
-      mse[3] = 0x84;
-      mse[4] = 1;
-      mse[5] = prkdf->key_reference;
+      i = 0;
+      if (!prkdf->is_ecc)
+        {
+          mse[i++] = 0x80; /* Algorithm reference.  */
+          mse[i++] = 1;
+          mse[i++] = 0x0a; /* RSA, no padding.  */
+        }
+      mse[i++] = 0x84; /* Key reference.  */
+      mse[i++] = 1;
+      mse[i++] = prkdf->key_reference;
+      if (prkdf->is_ecc && IS_CARDOS_5(app))
+        {
+          mse[i++] = 0x95; /* ???.  */
+          mse[i++] = 1;
+          mse[i++] = 0x40;
+        }
+      log_assert (i <= DIM(mse));
       err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB8,
-                                         mse, sizeof mse);
+                                         mse, i);
     }
   /* Check for MSE error.  */
   if (err)
@@ -4022,10 +5703,192 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
     padind = 0x81;
 
-  err = iso7816_decipher (app_get_slot (app), exmode,
-                          indata, indatalen,
-                          le_value, padind,
-                          outdata, outdatalen);
+  if (prkdf->is_ecc && IS_CARDOS_5(app))
+    {
+      if ((indatalen & 1) && *(const char *)indata == 0x04)
+        {
+          /* Strip indicator byte.  */
+          indatalen--;
+          indata = (const char *)indata + 1;
+        }
+      err = iso7816_pso_csv (app_get_slot (app), exmode,
+                             indata, indatalen,
+                             le_value,
+                             outdata, outdatalen);
+    }
+  else
+    {
+      err = iso7816_decipher (app_get_slot (app), exmode,
+                              indata, indatalen,
+                              le_value, padind,
+                              outdata, outdatalen);
+    }
+
+  return err;
+}
+
+
+/* Perform a simple verify operation for the PIN specified by
+ * KEYIDSTR.  Note that we require a key reference which is then used
+ * to select the authentication object.  Return GPG_ERR_NO_PIN if a
+ * PIN is not required for using the private key KEYIDSTR.  */
+static gpg_error_t
+do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg)
+{
+  gpg_error_t err;
+  prkdf_object_t prkdf;    /* The private key object. */
+  aodf_object_t aodf;      /* The associated authentication object. */
+
+  (void)ctrl;
+
+  if (!keyidstr || !*keyidstr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
+  if (err
+      && gpg_err_code (err) != GPG_ERR_INV_ID
+      && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+    return err;
+
+  if (err) /* Not found or invalid - assume it is the label.  */
+    {
+      prkdf = NULL;
+      for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+        if (aodf->label && !ascii_strcasecmp (aodf->label, keyidstr))
+          break;
+      if (!aodf)
+        return err;  /* Re-use the original error code.  */
+    }
+  else /* Find the authentication object to this private key object. */
+    {
+      if (!prkdf->authid)
+        {
+          log_error ("p15: no authentication object defined for %s\n",
+                     keyidstr);
+          return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+        }
+      for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+        if (aodf->objidlen == prkdf->authidlen
+            && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
+          break;
+      if (!aodf) /* None found.  */
+        return gpg_error (GPG_ERR_NO_PIN);
+    }
+
+  err = prepare_verify_pin (app, keyidstr, prkdf, aodf);
+  if (!err)
+    err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
+
+  return err;
+}
+
+
+/* Process the various keygrip based info requests.  */
+static gpg_error_t
+do_with_keygrip (app_t app, ctrl_t ctrl, int action,
+                 const char *want_keygripstr, int capability)
+{
+  gpg_error_t err;
+  char *serialno = NULL;
+  int as_data = 0;
+  prkdf_object_t prkdf;
+
+  /* First a quick check for valid parameters.  */
+  switch (action)
+    {
+    case KEYGRIP_ACTION_LOOKUP:
+      if (!want_keygripstr)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      break;
+    case KEYGRIP_ACTION_SEND_DATA:
+      as_data = 1;
+      break;
+    case KEYGRIP_ACTION_WRITE_STATUS:
+      break;
+    default:
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  /* Allocate the s/n string if needed.  */
+  if (action != KEYGRIP_ACTION_LOOKUP)
+    {
+      serialno = app_get_serialno (app);
+      if (!serialno)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  for (prkdf = app->app_local->private_key_info;
+       prkdf; prkdf = prkdf->next)
+    {
+      if (keygrip_from_prkdf (app, prkdf))
+        continue;
+
+      if (action == KEYGRIP_ACTION_LOOKUP)
+        {
+          if (!strcmp (prkdf->keygrip, want_keygripstr))
+            {
+              err = 0; /* Found */
+              goto leave;
+            }
+        }
+      else if (!want_keygripstr || !strcmp (prkdf->keygrip, want_keygripstr))
+        {
+          char *keyref;
+
+          if (capability == GCRY_PK_USAGE_SIGN)
+            {
+              if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover
+                    || prkdf->usageflags.non_repudiation))
+                continue;
+            }
+          else if (capability == GCRY_PK_USAGE_ENCR)
+            {
+              if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap))
+                continue;
+            }
+          else if (capability == GCRY_PK_USAGE_AUTH)
+            {
+              if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover))
+                continue;
+            }
+
+          keyref = keyref_from_prkdf (app, prkdf);
+          if (!keyref)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+
+          send_keyinfo (ctrl, as_data, prkdf->keygrip, serialno, keyref);
+          xfree (keyref);
+          if (want_keygripstr)
+            {
+              err = 0; /* Found */
+              goto leave;
+            }
+        }
+    }
+
+  /* Return an error so that the dispatcher keeps on looping over the
+   * other applications.  For clarity we use a different error code
+   * when listing all keys.  Note that in lookup mode WANT_KEYGRIPSTR
+   * is not NULL.  */
+  if (!want_keygripstr)
+    err = gpg_error (GPG_ERR_TRUE);
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+
+ leave:
+  xfree (serialno);
   return err;
 }
 
@@ -4086,14 +5949,17 @@ read_home_df (int slot, int *r_belpic)
 gpg_error_t
 app_select_p15 (app_t app)
 {
-  int slot = app->slot;
+  int slot = app_get_slot (app);
   int rc;
   unsigned short def_home_df = 0;
   card_type_t card_type = CARD_TYPE_UNKNOWN;
   int direct = 0;
   int is_belpic = 0;
+  unsigned char *fci = NULL;
+  size_t fcilen;
 
-  rc = iso7816_select_application (slot, pkcs15_aid, sizeof pkcs15_aid, 0);
+  rc = iso7816_select_application_ext (slot, pkcs15_aid, sizeof pkcs15_aid, 1,
+                                       &fci, &fcilen);
   if (rc)
     { /* Not found: Try to locate it from 2F00.  We use direct path
          selection here because it seems that the Belgian eID card
@@ -4118,7 +5984,7 @@ app_select_p15 (app_t app)
     }
   if (rc)
     { /* Still not found:  Try the default DF. */
-      def_home_df = 0x5015;
+      def_home_df = DEFAULT_HOME_DF;
       rc = iso7816_select_file (slot, def_home_df, 1);
     }
   if (!rc)
@@ -4136,7 +6002,7 @@ app_select_p15 (app_t app)
           size_t atrlen;
           int i;
 
-          atr = apdu_get_atr (app->slot, &atrlen);
+          atr = apdu_get_atr (app_get_slot (app), &atrlen);
           if (!atr)
             rc = gpg_error (GPG_ERR_INV_CARD);
           else
@@ -4163,11 +6029,18 @@ app_select_p15 (app_t app)
           goto leave;
         }
 
-      /* Set the home DF.  Note that we currently can't do that if the
-         selection via application ID worked.  This will store 0 there
-         instead.  FIXME: We either need to figure the home_df via the
-         DIR file or using the return values from the select file
-         APDU. */
+      /* Set the home DF from the FCI returned by the select.  */
+      if (!def_home_df && fci)
+        {
+          const unsigned char *s;
+          size_t n;
+
+          s = find_tlv (fci, fcilen, 0x83, &n);
+          if (s && n == 2)
+            def_home_df = buf16_to_ushort (s);
+          else
+            log_error ("p15: select(AID) did not return the DF\n");
+        }
       app->app_local->home_df = def_home_df;
 
       /* Store the card type.  FIXME: We might want to put this into
@@ -4177,6 +6050,16 @@ app_select_p15 (app_t app)
       app->app_local->card_product = CARD_PRODUCT_UNKNOWN;
 
       /* Store whether we may and should use direct path selection. */
+      switch (card_type)
+        {
+        case CARD_TYPE_CARDOS_50:
+        case CARD_TYPE_CARDOS_53:
+          direct = 1;
+          break;
+        default:
+          /* Use whatever has been determined above.  */
+          break;
+        }
       app->app_local->direct_path_selection = direct;
 
       /* Read basic information and thus check whether this is a real
@@ -4189,8 +6072,9 @@ app_select_p15 (app_t app)
          prototype card right here because we need to access to
          EF(TokenInfo).  We mark such a serial number by the using a
          prefix of FF0100. */
-      if (app->serialnolen == 12
-          && !memcmp (app->serialno, "\xD2\x76\0\0\0\0\0\0\0\0\0\0", 12))
+      if (APP_CARD(app)->serialnolen == 12
+          && !memcmp (APP_CARD(app)->serialno,
+                      "\xD2\x76\0\0\0\0\0\0\0\0\0\0", 12))
         {
           /* This is a German card with a silly serial number.  Try to get
              the serial number from the EF(TokenInfo). . */
@@ -4198,20 +6082,22 @@ app_select_p15 (app_t app)
 
           /* FIXME: actually get it from EF(TokenInfo). */
 
-          p = xtrymalloc (3 + app->serialnolen);
+          p = xtrymalloc (3 + APP_CARD(app)->serialnolen);
           if (!p)
             rc = gpg_error (gpg_err_code_from_errno (errno));
           else
             {
               memcpy (p, "\xff\x01", 3);
-              memcpy (p+3, app->serialno, app->serialnolen);
-              app->serialnolen += 3;
-              xfree (app->serialno);
-              app->serialno = p;
+              memcpy (p+3, APP_CARD(app)->serialno, APP_CARD(app)->serialnolen);
+              APP_CARD(app)->serialnolen += 3;
+              xfree (APP_CARD(app)->serialno);
+              APP_CARD(app)->serialno = p;
             }
         }
 
       app->fnc.deinit = do_deinit;
+      app->fnc.prep_reselect = NULL;
+      app->fnc.reselect = NULL;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
       app->fnc.getattr = do_getattr;
@@ -4221,12 +6107,14 @@ app_select_p15 (app_t app)
       app->fnc.auth = do_auth;
       app->fnc.decipher = do_decipher;
       app->fnc.change_pin = NULL;
-      app->fnc.check_pin = NULL;
+      app->fnc.check_pin = do_check_pin;
+      app->fnc.with_keygrip = do_with_keygrip;
 
     leave:
       if (rc)
         do_deinit (app);
    }
 
+  xfree (fci);
   return rc;
 }
