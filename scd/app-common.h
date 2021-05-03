@@ -208,7 +208,7 @@ unsigned int app_help_count_bits (const unsigned char *a, size_t len);
 gpg_error_t app_help_get_keygrip_string_pk (const void *pk, size_t pklen,
                                             char *hexkeygrip,
                                             gcry_sexp_t *r_pkey,
-                                            int *r_algo);
+                                            int *r_algo, char **r_algostr);
 gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip,
                                          gcry_sexp_t *r_pkey, int *r_algo);
 gpg_error_t app_help_pubkey_from_cert (const void *cert, size_t certlen,
