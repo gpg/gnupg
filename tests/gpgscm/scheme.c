@@ -172,6 +172,7 @@ type_to_string (enum scheme_types typ)
      case T_FRAME: return "frame";
      }
      assert (! "not reached");
+     return "?";
 }
 
 /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
