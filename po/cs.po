@@ -6299,6 +6299,14 @@ msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 "||Prosím, zadejte PIN klíče určeného na tvorbu kvalifikovaných podpisů."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|Prosím, zadejte PIN správce"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|P|Prosím, zadejte kód pro odblokování (PUK) standardních klíčů."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||Prosím, zadejte PIN pro standardní klíče."
 
@@ -6325,9 +6333,6 @@ msgstr "|N|Prosím, zadejte nový PIN pro standardní klíče."
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|Prosím, zadejte nový kód pro odblokování (PUK) standardních klíčů."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|P|Prosím, zadejte kód pro odblokování (PUK) standardních klíčů."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
@@ -6424,11 +6429,6 @@ msgstr[1] ""
 "Do trvalého uzamčení karty zůstávají %d pokusy na zadání PINu správce\n"
 msgstr[2] ""
 "Do trvalého uzamčení karty zůstává %d pokusů na zadání PINu správce\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|Prosím, zadejte PIN správce"
 
 #, c-format
 msgid "access to admin commands is not configured\n"

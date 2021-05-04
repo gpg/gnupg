@@ -6292,6 +6292,14 @@ msgstr "Осталось попыток: %d"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||Введите PIN ключа для создания квалифицированных подписей."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|Введите административный PIN"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|P|Введите код разблокировки PIN (PUK) для стандартных ключей."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "|A|Введите PIN для стандартных ключей."
 
@@ -6316,9 +6324,6 @@ msgstr "|A|Введите новый PIN для стандартных ключ�
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|Введите новый код разблокировки PIN (PUK) для стандартных ключей."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|P|Введите код разблокировки PIN (PUK) для стандартных ключей."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|Введите новый PIN ключа для создания квалифицированных подписей."
@@ -6415,11 +6420,6 @@ msgstr[1] ""
 "остались %d попытки ввода административного PIN перед блокировкой карты\n"
 msgstr[2] ""
 "осталось %d попыток ввода административного PIN перед блокировкой карты\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|Введите административный PIN"
 
 #, c-format
 msgid "access to admin commands is not configured\n"

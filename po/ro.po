@@ -6588,6 +6588,16 @@ msgstr ""
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+#, fuzzy
+msgid "|A|Please enter the Admin PIN"
+msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
+
+#, fuzzy
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
+
 #, fuzzy
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
@@ -6614,10 +6624,6 @@ msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
-
-#, fuzzy
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
@@ -6710,12 +6716,6 @@ msgstr[0] ""
 "%d încercări PIN Admin rămase înainte de a încuia cardul permanent\n"
 msgstr[1] ""
 "%d încercări PIN Admin rămase înainte de a încuia cardul permanent\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-#, fuzzy
-msgid "|A|Please enter the Admin PIN"
-msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, c-format
 msgid "access to admin commands is not configured\n"

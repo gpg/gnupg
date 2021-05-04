@@ -6076,6 +6076,14 @@ msgstr "残された試行回数: %d"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||新しいPINを認定署名を生成する鍵のために入力してください。"
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|管理者PINを入力してください"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|P|標準の鍵のPIN Unblocking Code (PUK)を入力してください。"
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||PINを標準の鍵のために入力してください。"
 
@@ -6100,9 +6108,6 @@ msgstr "|N|新しいPINを標準の鍵のために入力してください。"
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|標準の鍵の新しいPIN Unblocking Code (PUK)を入力してください。"
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|P|標準の鍵のPIN Unblocking Code (PUK)を入力してください。"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|新しいPINを認定署名を生成する鍵のために入力してください。"
@@ -6192,11 +6197,6 @@ msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
 msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] "カードの永久ロック前に%d回の管理者PINの試行が残っています\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|管理者PINを入力してください"
 
 #, c-format
 msgid "access to admin commands is not configured\n"

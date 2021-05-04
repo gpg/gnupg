@@ -6385,6 +6385,15 @@ msgstr ""
 "||Bitte geben Sie die PIN für den Schlüssel zur Erstellung qualifizierter "
 "Signaturen ein."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|Bitte die Admin-PIN eingeben."
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr ""
+"|P|Bitte geben Sie den PIN Entsperrcode (PUK) für den Standard-Schlüssel ein."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||Bitte die PIN für den Standard-Schlüssel eingeben."
 
@@ -6411,10 +6420,6 @@ msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr ""
 "|NP|Bitte geben Sie einen neuen PIN Entsperrcode (PUK) für den Standard-"
 "Schlüssel ein."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr ""
-"|P|Bitte geben Sie den PIN Entsperrcode (PUK) für den Standard-Schlüssel ein."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
@@ -6509,11 +6514,6 @@ msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] "Noch %d Admin-PIN-Versuch, bis die Karte dauerhaft gesperrt ist\n"
 msgstr[1] "Noch %d Admin-PIN-Versuche, bis die Karte dauerhaft gesperrt ist\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|Bitte die Admin-PIN eingeben."
 
 #, c-format
 msgid "access to admin commands is not configured\n"

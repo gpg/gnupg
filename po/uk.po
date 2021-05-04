@@ -6387,6 +6387,16 @@ msgstr ""
 "||Будь ласка, вкажіть пінкод для ключа, призначеного для створення якісних "
 "підписів."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|Вкажіть адміністративний пінкод"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr ""
+"|P|Будь ласка, вкажіть код розблокування пінкоду (PUK) для стандартних "
+"ключів."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||Вкажіть пінкод для стандартних ключів."
 
@@ -6417,11 +6427,6 @@ msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr ""
 "|NP|Будь ласка, вкажіть новий код розблокування пінкоду (PUK) для "
 "стандартних ключів."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr ""
-"|P|Будь ласка, вкажіть код розблокування пінкоду (PUK) для стандартних "
-"ключів."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
@@ -6523,11 +6528,6 @@ msgstr[1] ""
 msgstr[2] ""
 "залишилося %d спроб визначення адміністративного пінкоду перед тим, як "
 "картку буде остаточно заблоковано\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|Вкажіть адміністративний пінкод"
 
 #, c-format
 msgid "access to admin commands is not configured\n"

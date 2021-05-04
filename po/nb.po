@@ -6239,6 +6239,14 @@ msgstr "Gjenstående forsøk: %d"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||Skriv inn PIN for å la nøkkelen lage kvalifiserte signaturer."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|Skriv inn admin-PIN"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|P|Skriv inn PIN-opplåsingskode (PUK) for standardnøkler."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||Skriv inn PIN-kode for standardnøkler."
 
@@ -6263,9 +6271,6 @@ msgstr "|N|Skriv inn ny PIN-kode for standardnøkler."
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|Skriv inn ny PIN-opplåsingskode (PUK) for standardnøkler."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|P|Skriv inn PIN-opplåsingskode (PUK) for standardnøkler."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|Skriv inn ny PIN for å la nøkkelen lage kvalifiserte signaturer."
@@ -6355,11 +6360,6 @@ msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] "%d Admin-PIN-forsøk gjenstår før kortet blir låst permanent\n"
 msgstr[1] "%d Admin-PIN-forsøk gjenstår før kortet blir låst permanent\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|Skriv inn admin-PIN"
 
 #, c-format
 msgid "access to admin commands is not configured\n"

@@ -6294,6 +6294,15 @@ msgstr "Intentos disponibles: %d"
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||Introduzca un PIN para la clave que crea firmas cualificadas."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|Por favor introduzca PIN de Administrador"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr ""
+"|P|Por favor introduzca PIN Unblocking Code (PUK) para claves estándar."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||Por favor, introduzca PIN para claves estándar."
 
@@ -6318,10 +6327,6 @@ msgstr "|N|Por favor introduzca un nuevo PIN para las claves estándar."
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|Introduzca nuevo PIN Unblocking Code (PUK) para claves estándar."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr ""
-"|P|Por favor introduzca PIN Unblocking Code (PUK) para claves estándar."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|Entre un nuevo PIN para la clave que crea firmas cualificadas."
@@ -6416,11 +6421,6 @@ msgstr[0] ""
 msgstr[1] ""
 "%d intentos quedan para PIN de administrador antes de "
 "bloquearpermanentemente la clave\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|Por favor introduzca PIN de Administrador"
 
 #, c-format
 msgid "access to admin commands is not configured\n"

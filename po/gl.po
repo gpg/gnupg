@@ -6540,6 +6540,16 @@ msgstr ""
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+#, fuzzy
+msgid "|A|Please enter the Admin PIN"
+msgstr "cambia-lo contrasinal"
+
+#, fuzzy
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "Por favor, escolla o motivo da revocación:\n"
+
 #, fuzzy
 msgid "||Please enter the PIN for the standard keys."
 msgstr "cambia-lo contrasinal"
@@ -6566,10 +6576,6 @@ msgstr "cambia-lo contrasinal"
 
 #, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "Por favor, escolla o motivo da revocación:\n"
-
-#, fuzzy
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Por favor, escolla o motivo da revocación:\n"
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
@@ -6659,12 +6665,6 @@ msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] ""
 msgstr[1] ""
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-#, fuzzy
-msgid "|A|Please enter the Admin PIN"
-msgstr "cambia-lo contrasinal"
 
 #, c-format
 msgid "access to admin commands is not configured\n"

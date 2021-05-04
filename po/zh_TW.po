@@ -6255,6 +6255,14 @@ msgstr ""
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||請輸入金鑰的個人識別碼 (PIN) 以建立完善的簽章."
 
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %0A (single percent) for a linefeed.
+msgid "|A|Please enter the Admin PIN"
+msgstr "|A|請輸入管理者 PIN"
+
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "|P|請輸入標準金鑰的 PIN 重設碼 (PUK)."
+
 msgid "||Please enter the PIN for the standard keys."
 msgstr "||請輸入標準金鑰的個人識別碼 (PIN)."
 
@@ -6279,9 +6287,6 @@ msgstr "|N|請輸入標準金鑰將採用的新個人識別碼 (PIN)."
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|NP|請輸入標準金鑰將採用的 PIN 重設碼 (PUK)."
-
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|P|請輸入標準金鑰的 PIN 重設碼 (PUK)."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr "|N|請輸入金鑰的新個人識別碼 (PIN) 以建立完善的簽章."
@@ -6371,11 +6376,6 @@ msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
 msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] "%d 管理者個人識別碼 (PIN) 試圖在卡片永久鎖定前遺留下來\n"
-
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %0A (single percent) for a linefeed.
-msgid "|A|Please enter the Admin PIN"
-msgstr "|A|請輸入管理者 PIN"
 
 #, c-format
 msgid "access to admin commands is not configured\n"
