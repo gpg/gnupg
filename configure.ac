@@ -1643,6 +1643,9 @@ if test "$GCC" = yes; then
 
     else
         mycflags="$mycflags -Wall"
+        if test x"$_gcc_silent_wno" = xyes ; then
+          mycflags="$mycflags -Wno-format-zero-length"
+        fi
     fi
 
     if test x"$_gcc_silent_wno" = xyes ; then
