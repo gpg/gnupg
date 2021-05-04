@@ -229,6 +229,7 @@ static npth_mutex_t reader_table_lock;
 #define PCSC_E_NOT_TRANSACTED          0x80100016
 #define PCSC_E_READER_UNAVAILABLE      0x80100017
 #define PCSC_E_NO_SERVICE              0x8010001D
+#define PCSC_E_NO_READERS_AVAILABLE    0x8010002E
 #define PCSC_E_SERVICE_STOPPED         0x8010001E
 #define PCSC_W_RESET_CARD              0x80100068
 #define PCSC_W_REMOVED_CARD            0x80100069
@@ -604,6 +605,7 @@ pcsc_error_string (long err)
     case 0x001c: s = "card unsupported"; break;
     case 0x001d: s = "no service"; break;
     case 0x001e: s = "service stopped"; break;
+    case 0x002e: s = "no readers available"; break;
     default:     s = "unknown PC/SC error code"; break;
     }
   return s;
