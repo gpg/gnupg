@@ -264,20 +264,10 @@ get_it (ctrl_t ctrl,
 
   if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
-      gcry_mpi_t shared_mpi;
       gcry_mpi_t decoded;
 
-      /* At the beginning the frame are the bytes of shared point MPI.  */
-      err = gcry_mpi_scan (&shared_mpi, GCRYMPI_FMT_USG, frame, nframe, NULL);
-      if (err)
-        {
-          err = gpg_error (GPG_ERR_WRONG_SECKEY);
-          goto leave;
-        }
-
       err = pk_ecdh_decrypt (&decoded, fp, enc->data[1]/*encr data as an MPI*/,
-                             shared_mpi, sk->pkey);
-      mpi_release (shared_mpi);
+                             frame, nframe, sk->pkey);
       if(err)
         goto leave;
 

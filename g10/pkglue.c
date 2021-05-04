@@ -47,6 +47,28 @@ get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
 }
 
 
+static byte *
+get_data_from_sexp (gcry_sexp_t sexp, const char *item, size_t *r_size)
+{
+  gcry_sexp_t list;
+  size_t valuelen;
+  const char *value;
+  byte *v;
+
+  if (DBG_CRYPTO)
+    log_printsexp ("get_data_from_sexp:", sexp);
+
+  list = gcry_sexp_find_token (sexp, item, 0);
+  log_assert (list);
+  value = gcry_sexp_nth_data (list, 1, &valuelen);
+  log_assert (value);
+  v = xtrymalloc (valuelen);
+  memcpy (v, value, valuelen);
+  gcry_sexp_release (list);
+  *r_size = valuelen;
+  return v;
+}
+
 
 /****************
  * Emulate our old PK interface here - sometime in the future we might
@@ -309,12 +331,19 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
     ;
   else if (algo == PUBKEY_ALGO_ECDH)
     {
-      gcry_mpi_t shared, public, result;
+      gcry_mpi_t public, result;
       byte fp[MAX_FINGERPRINT_LEN];
       size_t fpn;
+      byte *shared;
+      size_t nshared;
 
       /* Get the shared point and the ephemeral public key.  */
-      shared = get_mpi_from_sexp (s_ciph, "s", GCRYMPI_FMT_USG);
+      shared = get_data_from_sexp (s_ciph, "s", &nshared);
+      if (!shared)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
       public = get_mpi_from_sexp (s_ciph, "e", GCRYMPI_FMT_USG);
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
@@ -330,9 +359,10 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       if (fpn != 20)
         rc = gpg_error (GPG_ERR_INV_LENGTH);
       else
-        rc = pk_ecdh_encrypt_with_shared_point (1 /*=encrypton*/, shared,
+        rc = pk_ecdh_encrypt_with_shared_point (1 /*=encrypton*/,
+                                                shared, nshared,
                                                 fp, data, pkey, &result);
-      gcry_mpi_release (shared);
+      xfree (shared);
       if (!rc)
         {
           resarr[0] = public;
@@ -352,6 +382,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
         resarr[1] = get_mpi_from_sexp (s_ciph, "b", GCRYMPI_FMT_USG);
     }
 
+ leave:
   gcry_sexp_release (s_ciph);
   return rc;
 }
