@@ -2142,6 +2142,11 @@ apdu_open_reader (struct dev_list *dl)
       if (readerno < 0 || readerno >= dl->idx_max)
         return -1;
 
+      /* If already opened HANDLE, return -1.  */
+      for (slot = 0; slot < MAX_READER; slot++)
+        if (reader_table[slot].used)
+          return -1;
+
       dl->idx = readerno;
       dl->portstr = NULL;
     }
