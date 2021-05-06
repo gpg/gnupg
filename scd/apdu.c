@@ -2239,7 +2239,8 @@ apdu_open_reader (struct dev_list *dl)
                 log_debug ("apdu_open_reader: new device=%s\n", rdrname);
 
               /* When reader string is specified, check if it is the one.  */
-              if (readerno < 0 && strcmp (rdrname, dl->portstr) != 0)
+              if (readerno < 0
+                  && strncmp (rdrname, dl->portstr, strlen (dl->portstr)) != 0)
                 continue;
 
               slot = open_pcsc_reader (rdrname);
