@@ -328,10 +328,10 @@ long (* DLSTDCALL pcsc_status) (HANDLE card,
                                 pcsc_dword_t *r_state,
                                 pcsc_dword_t *r_protocol,
                                 unsigned char *atr, pcsc_dword_t *atrlen);
-long (* DLSTDCALL pcsc_begin_transaction) (long card);
+long (* DLSTDCALL pcsc_begin_transaction) (HANDLE card);
 long (* DLSTDCALL pcsc_end_transaction) (HANDLE card,
                                          pcsc_dword_t disposition);
-long (* DLSTDCALL pcsc_transmit) (long card,
+long (* DLSTDCALL pcsc_transmit) (HANDLE card,
                                   const pcsc_io_request_t send_pci,
                                   const unsigned char *send_buffer,
                                   pcsc_dword_t send_len,
