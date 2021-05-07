@@ -1237,11 +1237,12 @@ open_pcsc_reader (const char *rdrname)
   if (slot == -1)
     return -1;
 
+  pcsc.count++;
   reader_table[slot].rdrname = xtrystrdup (rdrname);
   if (!reader_table[slot].rdrname)
     {
       log_error ("error allocating memory for reader name\n");
-      close_pcsc_reader (0);
+      close_pcsc_reader (slot);
       reader_table[slot].used = 0;
       unlock_slot (slot);
       return -1;
@@ -1258,7 +1259,6 @@ open_pcsc_reader (const char *rdrname)
   reader_table[slot].send_apdu_reader = pcsc_send_apdu;
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
 
-  pcsc.count++;
   dump_reader_status (slot);
   unlock_slot (slot);
   return slot;
