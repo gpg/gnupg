@@ -836,13 +836,11 @@ close_pcsc_reader (int slot)
       int i;
 
       /*log_debug ("%s: releasing context\n", __func__);*/
-      npth_mutex_lock (&reader_table_lock);
       if (pcsc.context)
         pcsc_release_context (pcsc.context);
       pcsc.context = 0;
       for (i = 0; i < MAX_READER; i++)
         pcsc.rdrname[i] = NULL;
-      npth_mutex_unlock (&reader_table_lock);
     }
   return 0;
 }
@@ -2338,15 +2336,21 @@ apdu_close_reader (int slot)
     }
   if (reader_table[slot].close_reader)
     {
+      npth_mutex_lock (&reader_table_lock);
       sw = reader_table[slot].close_reader (slot);
+      xfree (reader_table[slot].rdrname);
+      reader_table[slot].rdrname = NULL;
       reader_table[slot].used = 0;
+      npth_mutex_unlock (&reader_table_lock);
       if (DBG_READER)
         log_debug ("leave: apdu_close_reader => 0x%x (close_reader)\n", sw);
       return sw;
     }
+  npth_mutex_lock (&reader_table_lock);
   xfree (reader_table[slot].rdrname);
   reader_table[slot].rdrname = NULL;
   reader_table[slot].used = 0;
+  npth_mutex_unlock (&reader_table_lock);
   if (DBG_READER)
     log_debug ("leave: apdu_close_reader => SW_HOST_NOT_SUPPORTED\n");
   return SW_HOST_NOT_SUPPORTED;
