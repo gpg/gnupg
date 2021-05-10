@@ -842,14 +842,7 @@ close_pcsc_reader (int slot)
   (void)slot;
   log_assert (pcsc.count > 0);
   if (!--pcsc.count)
-    {
-      int i;
-
-      /*log_debug ("%s: releasing context\n", __func__);*/
-      release_pcsc_context ();
-      for (i = 0; i < MAX_READER; i++)
-        pcsc.rdrname[i] = NULL;
-    }
+    release_pcsc_context ();
   return 0;
 }
 
@@ -2123,8 +2116,15 @@ apdu_dev_list_finish (struct dev_list *dl)
   else
 #endif
     { /* PC/SC readers.  */
+      int i;
+
       xfree (dl->table);
-      close_pcsc_reader (0);
+      for (i = 0; i < MAX_READER; i++)
+        pcsc.rdrname[i] = NULL;
+
+      log_assert (pcsc.count > 0);
+      if (--pcsc.count == 0)
+        release_pcsc_context ();
     }
   xfree (dl);
 }
