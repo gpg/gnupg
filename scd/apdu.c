@@ -826,19 +826,27 @@ control_pcsc (int slot, pcsc_dword_t ioctl_code,
 }
 
 
+static void
+release_pcsc_context (void)
+{
+  /*log_debug ("%s: releasing context\n", __func__);*/
+  log_assert (pcsc.context != 0);
+  pcsc_release_context (pcsc.context);
+  pcsc.context = 0;
+}
+
 static int
 close_pcsc_reader (int slot)
 {
   /*log_debug ("%s: count=%d (ctx=%x)\n", __func__, pcsc.count, pcsc.context);*/
   (void)slot;
-  if (!pcsc.count || !--pcsc.count)
+  log_assert (pcsc.count > 0);
+  if (!--pcsc.count)
     {
       int i;
 
       /*log_debug ("%s: releasing context\n", __func__);*/
-      if (pcsc.context)
-        pcsc_release_context (pcsc.context);
-      pcsc.context = 0;
+      release_pcsc_context ();
       for (i = 0; i < MAX_READER; i++)
         pcsc.rdrname[i] = NULL;
     }
@@ -2041,8 +2049,9 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
               err = gpg_error_from_syserror ();
 
               log_error ("error allocating memory for reader list\n");
+              if (pcsc.count == 0)
+                release_pcsc_context ();
               npth_mutex_unlock (&reader_table_lock);
-              close_pcsc_reader (0);
               xfree (dl);
               return err;
             }
@@ -2053,8 +2062,9 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
           log_error ("pcsc_list_readers failed: %s (0x%lx)\n",
                      pcsc_error_string (r), r);
           xfree (p);
+          if (pcsc.count == 0)
+            release_pcsc_context ();
           npth_mutex_unlock (&reader_table_lock);
-          close_pcsc_reader (0);
           xfree (dl);
           return iso7816_map_sw (pcsc_error_to_sw (r));
         }
