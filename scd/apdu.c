@@ -1992,8 +1992,6 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
   dl->idx = 0;
   dl->idx_max = 0;
 
-  npth_mutex_lock (&reader_table_lock);
-
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
     {
@@ -2001,7 +1999,6 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
       if (err)
         {
           xfree (dl);
-          npth_mutex_unlock (&reader_table_lock);
           return err;
         }
 
@@ -2011,7 +2008,6 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
             log_debug ("leave: apdu_open_reader => slot=-1 (no ccid)\n");
 
           xfree (dl);
-          npth_mutex_unlock (&reader_table_lock);
           return gpg_error (GPG_ERR_ENODEV);
         }
     }
@@ -2028,7 +2024,6 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
           if (pcsc_init () < 0)
             {
               xfree (dl);
-              npth_mutex_unlock (&reader_table_lock);
               return gpg_error (GPG_ERR_NO_SERVICE);
             }
         }
@@ -2044,7 +2039,6 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
               log_error ("error allocating memory for reader list\n");
               if (pcsc.count == 0)
                 release_pcsc_context ();
-              npth_mutex_unlock (&reader_table_lock);
               xfree (dl);
               return err;
             }
@@ -2057,7 +2051,6 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
           xfree (p);
           if (pcsc.count == 0)
             release_pcsc_context ();
-          npth_mutex_unlock (&reader_table_lock);
           xfree (dl);
           return iso7816_map_sw (pcsc_error_to_sw (r));
         }
@@ -2094,11 +2087,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
               break;
             }
         }
-
-      pcsc.count++;
     }
-
-  npth_mutex_unlock (&reader_table_lock);
 
   *l_p = dl;
   return 0;
@@ -2123,7 +2112,7 @@ apdu_dev_list_finish (struct dev_list *dl)
         pcsc.rdrname[i] = NULL;
 
       log_assert (pcsc.count > 0);
-      if (--pcsc.count == 0)
+      if (pcsc.count == 0)
         release_pcsc_context ();
     }
   xfree (dl);
@@ -2150,10 +2139,15 @@ apdu_open_reader (struct dev_list *dl)
       if (readerno < 0 || readerno >= dl->idx_max)
         return -1;
 
+      npth_mutex_lock (&reader_table_lock);
       /* If already opened HANDLE, return -1.  */
       for (slot = 0; slot < MAX_READER; slot++)
         if (reader_table[slot].used)
-          return -1;
+          {
+            npth_mutex_unlock (&reader_table_lock);
+            return -1;
+          }
+      npth_mutex_unlock (&reader_table_lock);
 
       dl->idx = readerno;
       dl->portstr = NULL;
@@ -2174,6 +2168,7 @@ apdu_open_reader (struct dev_list *dl)
           return slot;
         }
 
+      npth_mutex_lock (&reader_table_lock);
       while (dl->idx < dl->idx_max)
         {
           unsigned int bai = ccid_get_BAI (dl->idx, dl->table);
@@ -2197,7 +2192,10 @@ apdu_open_reader (struct dev_list *dl)
 
               dl->idx++;
               if (slot >= 0)
-                return slot;
+                {
+                  npth_mutex_unlock (&reader_table_lock);
+                  return slot;
+                }
               else
                 {
                   /* Skip this reader.  */
@@ -2213,6 +2211,7 @@ apdu_open_reader (struct dev_list *dl)
           else
             dl->idx++;
         }
+      npth_mutex_unlock (&reader_table_lock);
 
       /* Not found.  */
       slot = -1;
@@ -2228,6 +2227,7 @@ apdu_open_reader (struct dev_list *dl)
           return slot;
         }
 
+      npth_mutex_lock (&reader_table_lock);
       while (dl->idx < dl->idx_max)
         {
           const char *rdrname = pcsc.rdrname[dl->idx];
@@ -2255,7 +2255,10 @@ apdu_open_reader (struct dev_list *dl)
 
               dl->idx++;
               if (slot >= 0)
-                return slot;
+                {
+                  npth_mutex_unlock (&reader_table_lock);
+                  return slot;
+                }
               else
                 {
                   /* Skip this reader.  */
@@ -2267,6 +2270,7 @@ apdu_open_reader (struct dev_list *dl)
             dl->idx++;
         }
 
+      npth_mutex_unlock (&reader_table_lock);
       /* Not found.  */
       slot = -1;
     }
