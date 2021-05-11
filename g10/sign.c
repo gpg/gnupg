@@ -1504,7 +1504,7 @@ clearsign_file (ctrl_t ctrl,
   push_armor_filter (afx, out);
 
   /* Prepare EXTRAHASH, so that it can be used for v5 signature.  */
-  extrahash = xtrymalloc (sizeof extrahash);
+  extrahash = xtrymalloc (sizeof *extrahash);
   if (!extrahash)
     {
       rc = gpg_error_from_syserror ();
