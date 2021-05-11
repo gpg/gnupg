@@ -1164,7 +1164,6 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                 {
                   mechanism_string = "";
                   rc = GPG_ERR_NO_PUBKEY;
-                  break;
                 }
               else
                 {
@@ -1180,7 +1179,6 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                 {
                   mechanism_string = "";
                   rc = GPG_ERR_NO_PUBKEY;
-                  break;
                 }
               else
                 {

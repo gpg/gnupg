@@ -2518,7 +2518,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           xfree (cardsn);
           if (err)
             {
-              if (err && opt.verbose)
+              if (opt.verbose)
                 gcry_log_debugsxp ("pubkey", key_public);
               if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
                   || gpg_err_code (err) == GPG_ERR_INV_CURVE)

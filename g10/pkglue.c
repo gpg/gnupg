@@ -424,6 +424,11 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
 
       /* Get the shared point and the ephemeral public key.  */
       shared = get_data_from_sexp (s_ciph, "s", &nshared);
+      if (!shared)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
       rc = sexp_extract_param_sos (s_ciph, "e", &public);
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
@@ -464,6 +469,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
         resarr[1] = get_mpi_from_sexp (s_ciph, "b", GCRYMPI_FMT_USG);
     }
 
+ leave:
   gcry_sexp_release (s_ciph);
   return rc;
 }

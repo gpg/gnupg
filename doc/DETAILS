@@ -1666,6 +1666,7 @@ Description of some debug flags:
   - RFC-3447 :: PKCS  #1: RSA Cryptography Specifications Version 2.1
   - RFC-4880 :: OpenPGP
   - RFC-5280 :: X.509 PKI Certificate and CRL Profile
+  - RFC-5652 :: CMS (STD0070)
   - RFC-6818 :: Updates to the X.509 PKI Certificate and CRL Profile
   - RFC-8398 :: Internationalized Email Addresses in X.509 Certificates.
   - RFC-8399 :: Internationalization Updates to RFC 5280
