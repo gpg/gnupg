@@ -869,7 +869,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       memset (opt.disable_daemon, 0, sizeof opt.disable_daemon);
       disable_check_own_socket = 0;
       /* Note: When changing the next line, change also gpgconf_list.  */
-      opt.ssh_fingerprint_digest = GCRY_MD_MD5;
+      opt.ssh_fingerprint_digest = GCRY_MD_SHA256;
       opt.s2k_count = 0;
       set_s2k_calibration_time (0);  /* Set to default.  */
       return 1;
@@ -1436,7 +1436,7 @@ main (int argc, char **argv)
       es_printf ("max-passphrase-days:%lu:%d:\n",
                  GC_OPT_FLAG_DEFAULT, MAX_PASSPHRASE_DAYS);
       es_printf ("ssh-fingerprint-digest:%lu:\"%s:\n",
-                 GC_OPT_FLAG_DEFAULT, "md5");
+                 GC_OPT_FLAG_DEFAULT, "sha256");
 
       agent_exit (0);
     }
