@@ -2018,12 +2018,14 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
       pcsc_dword_t nreader;
       char *p = NULL;
 
+      npth_mutex_lock (&reader_table_lock);
       if (!pcsc.context)
         {
           /* log_debug ("%s: No context - calling init\n", __func__); */
           if (pcsc_init () < 0)
             {
               xfree (dl);
+              npth_mutex_unlock (&reader_table_lock);
               return gpg_error (GPG_ERR_NO_SERVICE);
             }
         }
@@ -2040,6 +2042,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
               if (pcsc.count == 0)
                 release_pcsc_context ();
               xfree (dl);
+              npth_mutex_unlock (&reader_table_lock);
               return err;
             }
           r = pcsc_list_readers (pcsc.context, NULL, p, &nreader);
@@ -2052,8 +2055,11 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
           if (pcsc.count == 0)
             release_pcsc_context ();
           xfree (dl);
+          npth_mutex_unlock (&reader_table_lock);
           return iso7816_map_sw (pcsc_error_to_sw (r));
         }
+
+      npth_mutex_unlock (&reader_table_lock);
 
       dl->table = p;
       dl->idx_max = 0;
