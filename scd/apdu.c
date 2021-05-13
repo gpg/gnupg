@@ -1082,28 +1082,38 @@ pcsc_vendor_specific_init (int slot)
 }
 
 
-#define STATUS_CHANGE_TIMEOUT 2500
+#define STATUS_CHANGE_TIMEOUT 7500
 
 static void *
 pcsc_thread (void *arg)
 {
   long err;
   struct pcsc_readerstate_s rdrstates[MAX_READER];
+  HANDLE context;
 
   (void)arg;
+  err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL,
+                                &context);
+  if (err)
+    {
+      log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      return NULL;
+    }
 
   npth_mutex_lock (&reader_table_lock);
   while (pcsc.count)
     {
       int i, j = 0;
+      int any_change = 0;
 
-      pcsc.count++;
-      memset (rdrstates, 0, sizeof *rdrstates);
+      memset (rdrstates, 0, sizeof (struct pcsc_readerstate_s) * MAX_READER);
 
       for (i = 0; i < MAX_READER; i++)
         if (reader_table[i].used)
           {
             rdrstates[j].reader = reader_table[i].rdrname;
+            rdrstates[j].user_data = (void *)(uintptr_t)i;
             rdrstates[j].current_state = reader_table[i].pcsc.current_state;
             j++;
           }
@@ -1112,17 +1122,48 @@ pcsc_thread (void *arg)
 #ifdef USE_NPTH
       npth_unprotect ();
 #endif
-      err = pcsc_get_status_change (pcsc.context, STATUS_CHANGE_TIMEOUT,
+      err = pcsc_get_status_change (context, STATUS_CHANGE_TIMEOUT,
                                     rdrstates, j);
 #ifdef USE_NPTH
       npth_protect ();
 #endif
 
       npth_mutex_lock (&reader_table_lock);
+      if (err)
+        {
+          if (err != PCSC_E_TIMEOUT)
+            log_error ("pcsc_get_status_change failed: %s (0x%lx)\n",
+                       pcsc_error_string (err), err);
+          continue;
+        }
 
-      log_assert (pcsc.count > 0);
-      if (!--pcsc.count)
-        release_pcsc_context ();
+      for (j--; j >= 0; j--)
+        {
+          if ((rdrstates[j].event_state & PCSC_STATE_CHANGED))
+            {
+              int slot = (int)(uintptr_t)rdrstates[j].user_data;
+              reader_table[slot].pcsc.current_state =
+                (rdrstates[j].event_state & ~PCSC_STATE_CHANGED);
+              any_change = 1;
+            }
+
+          if (DBG_READER)
+            log_debug
+              ("pcsc_get_status_change: %s%s%s%s%s%s%s%s%s%s\n",
+               (rdrstates[j].event_state & PCSC_STATE_IGNORE)? " ignore":"",
+               (rdrstates[j].event_state & PCSC_STATE_CHANGED)? " changed":"",
+               (rdrstates[j].event_state & PCSC_STATE_UNKNOWN)? " unknown":"",
+               (rdrstates[j].event_state & PCSC_STATE_UNAVAILABLE)?" unavail":"",
+               (rdrstates[j].event_state & PCSC_STATE_EMPTY)? " empty":"",
+               (rdrstates[j].event_state & PCSC_STATE_PRESENT)? " present":"",
+               (rdrstates[j].event_state & PCSC_STATE_ATRMATCH)? " atr":"",
+               (rdrstates[j].event_state & PCSC_STATE_EXCLUSIVE)? " excl":"",
+               (rdrstates[j].event_state & PCSC_STATE_INUSE)? " inuse":"",
+               (rdrstates[j].event_state & PCSC_STATE_MUTE)? " mute":"" );
+        }
+
+      if (any_change)
+        scd_kick_the_loop ();
     }
 
   npth_mutex_unlock (&reader_table_lock);
@@ -1288,6 +1329,7 @@ open_pcsc_reader (const char *rdrname)
   reader_table[slot].get_status_reader = pcsc_get_status;
   reader_table[slot].send_apdu_reader = pcsc_send_apdu;
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
+  reader_table[slot].require_get_status = 0;
 
   dump_reader_status (slot);
   unlock_slot (slot);
