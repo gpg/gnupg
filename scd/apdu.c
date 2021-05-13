@@ -1124,6 +1124,55 @@ pcsc_vendor_specific_init (int slot)
   return 0;
 }
 
+
+#define STATUS_CHANGE_TIMEOUT 2500
+
+static void *
+pcsc_thread (void *arg)
+{
+  long err;
+  struct pcsc_readerstate_s rdrstates[MAX_READER];
+
+  (void)arg;
+
+  npth_mutex_lock (&reader_table_lock);
+  while (pcsc.count)
+    {
+      int i, j = 0;
+
+      pcsc.count++;
+      memset (rdrstates, 0, sizeof *rdrstates);
+
+      for (i = 0; i < MAX_READER; i++)
+        if (reader_table[i].used)
+          {
+            rdrstates[j].reader = reader_table[i].rdrname;
+            rdrstates[j].current_state = reader_table[i].pcsc.current_state;
+            j++;
+          }
+      npth_mutex_unlock (&reader_table_lock);
+
+#ifdef USE_NPTH
+      npth_unprotect ();
+#endif
+      err = pcsc_get_status_change (pcsc.context, STATUS_CHANGE_TIMEOUT,
+                                    rdrstates, j);
+#ifdef USE_NPTH
+      npth_protect ();
+#endif
+
+      npth_mutex_lock (&reader_table_lock);
+
+      log_assert (pcsc.count > 0);
+      if (!--pcsc.count)
+        release_pcsc_context ();
+    }
+
+  npth_mutex_unlock (&reader_table_lock);
+  return NULL;
+}
+
+
 static int
 pcsc_init (void)
 {
@@ -1222,6 +1271,29 @@ pcsc_init (void)
       log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
       return -1;
+    }
+  else
+    {
+      npth_t thread;
+      npth_attr_t tattr;
+      int err_npth;
+
+      err_npth = npth_attr_init (&tattr);
+      if (err_npth)
+        {
+          log_error ("npth_attr_init failed: %s\n", strerror (err_npth));
+          return -1;
+        }
+
+      npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
+      err_npth = npth_create (&thread, &tattr, pcsc_thread, NULL);
+      if (err_npth)
+        {
+          log_error ("npth_create failed: %s\n", strerror (err_npth));
+          return -1;
+        }
+
+      npth_attr_destroy (&tattr);
     }
 
   return 0;
