@@ -689,69 +689,25 @@ static int
 pcsc_get_status (int slot, unsigned int *status, int on_wire)
 {
   long err;
-  struct pcsc_readerstate_s rdrstates[1];
+  pcsc_dword_t card_state, card_protocol;
 
   (void)on_wire;
-  memset (rdrstates, 0, sizeof *rdrstates);
-  rdrstates[0].reader = reader_table[slot].rdrname;
-  rdrstates[0].current_state = reader_table[slot].pcsc.current_state;
-  err = pcsc_get_status_change (pcsc.context, 0, rdrstates, 1);
-  if (err == PCSC_E_TIMEOUT)
-    err = 0; /* Timeout is no error here.  */
+  err = pcsc_status (reader_table[slot].pcsc.card, NULL, NULL,
+                     &card_state, &card_protocol, NULL, NULL);
   if (err)
     {
-      log_error ("pcsc_get_status_change failed: %s (0x%lx)\n",
+      log_error ("pcsc_status failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
       return pcsc_error_to_sw (err);
     }
 
-  if ((rdrstates[0].event_state & PCSC_STATE_CHANGED))
-    reader_table[slot].pcsc.current_state =
-      (rdrstates[0].event_state & ~PCSC_STATE_CHANGED);
-
-  if (DBG_READER)
-    log_debug
-      ("pcsc_get_status_change: %s%s%s%s%s%s%s%s%s%s\n",
-       (rdrstates[0].event_state & PCSC_STATE_IGNORE)? " ignore":"",
-       (rdrstates[0].event_state & PCSC_STATE_CHANGED)? " changed":"",
-       (rdrstates[0].event_state & PCSC_STATE_UNKNOWN)? " unknown":"",
-       (rdrstates[0].event_state & PCSC_STATE_UNAVAILABLE)?" unavail":"",
-       (rdrstates[0].event_state & PCSC_STATE_EMPTY)? " empty":"",
-       (rdrstates[0].event_state & PCSC_STATE_PRESENT)? " present":"",
-       (rdrstates[0].event_state & PCSC_STATE_ATRMATCH)? " atr":"",
-       (rdrstates[0].event_state & PCSC_STATE_EXCLUSIVE)? " excl":"",
-       (rdrstates[0].event_state & PCSC_STATE_INUSE)? " inuse":"",
-       (rdrstates[0].event_state & PCSC_STATE_MUTE)? " mute":"" );
-
   *status = 0;
-  if ( (reader_table[slot].pcsc.current_state & PCSC_STATE_PRESENT) )
-    {
-      *status |= APDU_CARD_PRESENT;
-      if ( !(reader_table[slot].pcsc.current_state & PCSC_STATE_MUTE) )
-        *status |= APDU_CARD_ACTIVE;
-    }
-#ifndef HAVE_W32_SYSTEM
-  /* We indicate a useful card if it is not in use by another
-     application.  This is because we only use exclusive access
-     mode.  */
-  if ( (*status & (APDU_CARD_PRESENT|APDU_CARD_ACTIVE))
-       == (APDU_CARD_PRESENT|APDU_CARD_ACTIVE)
-       && (opt.pcsc_shared
-           || !(reader_table[slot].pcsc.current_state & PCSC_STATE_INUSE)))
-    *status |= APDU_CARD_USABLE;
-#else
-  /* Some winscard drivers may set EXCLUSIVE and INUSE at the same
-     time when we are the only user (SCM SCR335) under Windows.  */
-  if ((*status & (APDU_CARD_PRESENT|APDU_CARD_ACTIVE))
-      == (APDU_CARD_PRESENT|APDU_CARD_ACTIVE))
-    *status |= APDU_CARD_USABLE;
-#endif
+  if ((card_state & PCSC_PRESENT))
+    *status |= APDU_CARD_PRESENT;
+  if (card_state & PCSC_POWERED)
+    *status |= (APDU_CARD_ACTIVE | APDU_CARD_USABLE);
 
-  if (!on_wire && (rdrstates[0].event_state & PCSC_STATE_CHANGED))
-    /* Event like sleep/resume occurs, which requires RESET.  */
-    return SW_HOST_NO_READER;
-  else
-    return 0;
+  return 0;
 }
 
 
