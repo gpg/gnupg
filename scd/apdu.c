@@ -649,6 +649,7 @@ pcsc_error_to_sw (long ec)
     case PCSC_E_SERVICE_STOPPED:
     case PCSC_E_UNKNOWN_READER:      rc = SW_HOST_NO_READER; break;
     case PCSC_E_NO_READERS_AVAILABLE:rc = SW_HOST_NO_READER; break;
+    case PCSC_E_READER_UNAVAILABLE:  rc = SW_HOST_NO_READER; break;
     case PCSC_E_SHARING_VIOLATION:   rc = SW_HOST_LOCKING_FAILED; break;
     case PCSC_E_NO_SMARTCARD:        rc = SW_HOST_NO_CARD; break;
     case PCSC_W_REMOVED_CARD:        rc = SW_HOST_NO_CARD; break;
