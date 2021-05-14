@@ -85,6 +85,7 @@ typedef unsigned long pcsc_dword_t;
 /* PC/SC context to access readers.  Shared among all readers.  */
 static struct pcsc_global_data {
   HANDLE context;
+  npth_t thread;
   int count;
   const char *rdrname[MAX_READER];
 } pcsc;
@@ -786,10 +787,19 @@ control_pcsc (int slot, pcsc_dword_t ioctl_code,
 static void
 release_pcsc_context (void)
 {
+  int err;
+
   /*log_debug ("%s: releasing context\n", __func__);*/
   log_assert (pcsc.context != 0);
   pcsc_release_context (pcsc.context);
   pcsc.context = 0;
+
+  npth_mutex_unlock (&reader_table_lock);
+  err = npth_join (pcsc.thread, NULL);
+  if (err)
+    log_error ("release_pcsc_context: error joining thread: %s\n", strerror (err));
+  pcsc.thread = 0;
+  npth_mutex_lock (&reader_table_lock);
 }
 
 static int
@@ -1273,7 +1283,6 @@ pcsc_init (void)
     }
   else
     {
-      npth_t thread;
       npth_attr_t tattr;
       int err_npth;
 
@@ -1284,8 +1293,8 @@ pcsc_init (void)
           return -1;
         }
 
-      npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
-      err_npth = npth_create (&thread, &tattr, pcsc_thread, NULL);
+      npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
+      err_npth = npth_create (&pcsc.thread, &tattr, pcsc_thread, NULL);
       if (err_npth)
         {
           log_error ("npth_create failed: %s\n", strerror (err_npth));
