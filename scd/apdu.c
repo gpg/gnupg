@@ -1102,7 +1102,7 @@ pcsc_thread (void *arg)
     }
 
   npth_mutex_lock (&reader_table_lock);
-  while (pcsc.count)
+  while (pcsc.context)
     {
       int i, j = 0;
       int any_change = 0;
