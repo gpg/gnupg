@@ -1170,3 +1170,19 @@ hash_algo_to_string (int algo)
       return hashnames[i].name;
   return "?";
 }
+
+
+/* Map cipher modes to a string.  */
+const char *
+cipher_mode_to_string (int mode)
+{
+  switch (mode)
+    {
+    case GCRY_CIPHER_MODE_CFB: return "CFB";
+    case GCRY_CIPHER_MODE_CBC: return "CBC";
+    case GCRY_CIPHER_MODE_GCM: return "GCM";
+    case GCRY_CIPHER_MODE_OCB: return "OCB";
+    case 14:                   return "EAX";  /* Only in gcrypt 1.9 */
+    default: return "[?]";
+    }
+}

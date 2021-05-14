@@ -216,6 +216,7 @@ int get_pk_algo_from_canon_sexp (const unsigned char *keydata,
 char *pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid);
 const char *pubkey_algo_to_string (int algo);
 const char *hash_algo_to_string (int algo);
+const char *cipher_mode_to_string (int mode);
 
 /*-- convert.c --*/
 int hex2bin (const char *string, void *buffer, size_t length);
