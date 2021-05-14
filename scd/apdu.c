@@ -1166,6 +1166,7 @@ pcsc_thread (void *arg)
         scd_kick_the_loop ();
     }
 
+  pcsc_release_context (context);
   npth_mutex_unlock (&reader_table_lock);
   return NULL;
 }
