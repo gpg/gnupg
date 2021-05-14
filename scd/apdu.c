@@ -2111,9 +2111,10 @@ apdu_dev_list_finish (struct dev_list *dl)
       for (i = 0; i < MAX_READER; i++)
         pcsc.rdrname[i] = NULL;
 
-      log_assert (pcsc.count > 0);
+      npth_mutex_lock (&reader_table_lock);
       if (pcsc.count == 0)
         release_pcsc_context ();
+      npth_mutex_unlock (&reader_table_lock);
     }
   xfree (dl);
 }
