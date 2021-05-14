@@ -699,6 +699,8 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
     {
       log_error ("pcsc_status failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
+      if (err == PCSC_E_INVALID_VALUE)
+        err = PCSC_E_NO_SMARTCARD;
       return pcsc_error_to_sw (err);
     }
 
