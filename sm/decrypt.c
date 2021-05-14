@@ -1,7 +1,7 @@
 /* decrypt.c - Decrypt a message
  * Copyright (C) 2001, 2003, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2001-2019 Werner Koch
- * Copyright (C) 2015-2020 g10 Code GmbH
+ * Copyright (C) 2015-2021 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -51,6 +51,7 @@ struct decrypt_filter_parm_s
   char helpblock[16];  /* needed because there is no block buffering in
                           libgcrypt (yet) */
   int  helpblocklen;
+  int is_de_vs;        /* Helper to track CO_DE_VS state.  */
 };
 
 
@@ -400,6 +401,348 @@ ecdh_decrypt (unsigned char *secret, size_t secretlen,
 }
 
 
+/* Helper for pwri_decrypt to parse the derive info.
+ * Example data for (DER,DERLEN):
+ * SEQUENCE {
+ *   OCTET STRING
+ *     60 76 4B E9 5E DF 3C F8 B2 F9 B6 C2 7D 5A FB 90
+ *     23 B6 47 DF
+ *   INTEGER 10000
+ *   SEQUENCE {
+ *     OBJECT IDENTIFIER
+ *       hmacWithSHA512 (1 2 840 113549 2 11)
+ *     NULL
+ *     }
+ *   }
+ */
+static gpg_error_t
+pwri_parse_pbkdf2 (const unsigned char *der, size_t derlen,
+                   unsigned char const **r_salt, unsigned int *r_saltlen,
+                   unsigned long *r_iterations,
+                   enum gcry_md_algos *r_digest)
+{
+  gpg_error_t err;
+  size_t objlen, hdrlen;
+  int class, tag, constructed, ndef;
+  char *oidstr;
+
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_SEQUENCE
+               || !constructed || ndef))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    return err;
+  derlen = objlen;
+
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_OCTET_STRING
+               || constructed || ndef))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    return err;
+  *r_salt = der;
+  *r_saltlen = objlen;
+  der += objlen;
+  derlen -= objlen;
+
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_INTEGER
+               || constructed || ndef))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    return err;
+  *r_iterations = 0;
+  for (; objlen; objlen--)
+    {
+      *r_iterations <<= 8;
+      *r_iterations |= (*der++) & 0xff;
+      derlen--;
+    }
+
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_SEQUENCE
+               || !constructed || ndef))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    return err;
+  derlen = objlen;
+
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_OBJECT_ID
+               || constructed || ndef))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    return err;
+
+  oidstr = ksba_oid_to_str (der, objlen);
+  if (!oidstr)
+    return gpg_error_from_syserror ();
+  *r_digest = gcry_md_map_name (oidstr);
+  if (*r_digest)
+    ;
+  else if (!strcmp (oidstr, "1.2.840.113549.2.7"))
+    *r_digest = GCRY_MD_SHA1;
+  else if (!strcmp (oidstr, "1.2.840.113549.2.8"))
+    *r_digest = GCRY_MD_SHA224;
+  else if (!strcmp (oidstr, "1.2.840.113549.2.9"))
+    *r_digest = GCRY_MD_SHA256;
+  else if (!strcmp (oidstr, "1.2.840.113549.2.10"))
+    *r_digest = GCRY_MD_SHA384;
+  else if (!strcmp (oidstr, "1.2.840.113549.2.11"))
+    *r_digest = GCRY_MD_SHA512;
+  else
+    err = gpg_error (GPG_ERR_DIGEST_ALGO);
+  ksba_free (oidstr);
+
+  return err;
+}
+
+
+/* Password based decryption.
+ * ENC_VAL has the form:
+ *  (enc-val
+ *    (pwri
+ *      (derive-algo <oid>) --| both are optional
+ *      (derive-parm <der>) --|
+ *      (encr-algo <oid>)
+ *      (encr-parm <iv>)
+ *      (encr-key <key>)))  -- this is the encrypted session key
+ *
+ */
+static gpg_error_t
+pwri_decrypt (gcry_sexp_t enc_val,
+              unsigned char **r_result, unsigned int *r_resultlen,
+              struct decrypt_filter_parm_s *parm)
+{
+  gpg_error_t err;
+  gcry_buffer_t ioarray[5] = { {0} };
+  char *derive_algo_str = NULL;
+  char *encr_algo_str = NULL;
+  const unsigned char *dparm;  /* Alias for ioarray[1].  */
+  unsigned int dparmlen;
+  const unsigned char *eparm;  /* Alias for ioarray[3].  */
+  unsigned int eparmlen;
+  const unsigned char *ekey;   /* Alias for ioarray[4].  */
+  unsigned int ekeylen;
+  unsigned char kek[32];
+  unsigned int keklen;
+  enum gcry_cipher_algos encr_algo;
+  enum gcry_cipher_modes encr_mode;
+  gcry_cipher_hd_t encr_hd = NULL;
+  unsigned char *result = NULL;
+  unsigned int resultlen;
+  unsigned int blklen;
+  const unsigned char *salt;   /* Points int dparm. */
+  unsigned int saltlen;
+  unsigned long iterations;
+  enum gcry_md_algos digest_algo;
+
+
+  *r_resultlen = 0;
+  *r_result = NULL;
+
+  err = gcry_sexp_extract_param (enc_val, "enc-val!pwri",
+                                 "&'derive-algo'?'derive-parm'?"
+                                 "'encr-algo''encr-parm''encr-key'",
+                                 ioarray+0, ioarray+1,
+                                 ioarray+2, ioarray+3, ioarray+4, NULL);
+  if (err)
+    {
+      /* If this is not pwri element, it is likly a kekri element
+       * which we do not yet support.  Change the error back to the
+       * original as returned by ksba_cms_get_issuer.  */
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        err = gpg_error (GPG_ERR_UNSUPPORTED_CMS_OBJ);
+      else
+        log_error ("extracting PWRI parameter failed: %s\n",
+                   gpg_strerror (err));
+      goto leave;
+    }
+
+  if (ioarray[0].data)
+    {
+      derive_algo_str = string_from_gcry_buffer (ioarray+0);
+      if (!derive_algo_str)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+  dparm    = ioarray[1].data;
+  dparmlen = ioarray[1].len;
+  encr_algo_str = string_from_gcry_buffer (ioarray+2);
+  if (!encr_algo_str)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  eparm    = ioarray[3].data;
+  eparmlen = ioarray[3].len;
+  ekey     = ioarray[4].data;
+  ekeylen  = ioarray[4].len;
+
+  /* Check parameters.  */
+  if (DBG_CRYPTO)
+    {
+      if (derive_algo_str)
+        {
+          log_debug ("derive algo: %s\n", derive_algo_str);
+          log_printhex (dparm, dparmlen, "derive parm:");
+        }
+      log_debug ("encr algo .: %s\n", encr_algo_str);
+      log_printhex (eparm, eparmlen, "encr parm .:");
+      log_printhex (ekey, ekeylen,   "encr key  .:");
+    }
+
+  if (!derive_algo_str)
+    {
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      log_info ("PWRI with no key derivation detected\n");
+      goto leave;
+    }
+  if (strcmp (derive_algo_str, "1.2.840.113549.1.5.12"))
+    {
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      log_info ("PWRI does not use PBKDF2 (but %s)\n", derive_algo_str);
+      goto leave;
+    }
+
+  digest_algo = 0;  /*(silence cc warning)*/
+  err = pwri_parse_pbkdf2 (dparm, dparmlen,
+                           &salt, &saltlen, &iterations, &digest_algo);
+  if (err)
+    {
+      log_error ("parsing PWRI parameter failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  parm->is_de_vs = (parm->is_de_vs
+                    && gnupg_digest_is_compliant (CO_DE_VS, digest_algo));
+
+
+  encr_algo = gcry_cipher_map_name (encr_algo_str);
+  encr_mode = gcry_cipher_mode_from_oid (encr_algo_str);
+  if (!encr_algo || !encr_mode)
+    {
+      log_error ("PWRI uses unknown algorithm %s\n", encr_algo_str);
+      err = gpg_error (GPG_ERR_CIPHER_ALGO);
+      goto leave;
+    }
+
+  parm->is_de_vs =
+    (parm->is_de_vs
+     && gnupg_cipher_is_compliant (CO_DE_VS, encr_algo, encr_mode));
+
+  keklen = gcry_cipher_get_algo_keylen (encr_algo);
+  blklen = gcry_cipher_get_algo_blklen (encr_algo);
+  if (!keklen || keklen > sizeof kek || blklen != 16 )
+    {
+      log_error ("PWRI algorithm %s cannot be used\n", encr_algo_str);
+      err = gpg_error (GPG_ERR_INV_KEYLEN);
+      goto leave;
+    }
+  if ((ekeylen % blklen) || (ekeylen / blklen < 2))
+    {
+      /* Note that we need at least two full blocks.  */
+      log_error ("PWRI uses a wrong length of encrypted key\n");
+      err = gpg_error (GPG_ERR_INV_KEYLEN);
+      goto leave;
+    }
+
+  err = gcry_kdf_derive ("abc", 3,
+                         GCRY_KDF_PBKDF2, digest_algo,
+                         salt, saltlen, iterations,
+                         keklen, kek);
+  if (err)
+    {
+      log_error ("deriving key from passphrase failed: %s\n",
+                 gpg_strerror (err));
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    log_printhex (kek, keklen, "KEK .......:");
+
+  /* Unwrap the key.  */
+  resultlen = ekeylen;
+  result = xtrymalloc_secure (resultlen);
+  if (!result)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_cipher_open (&encr_hd, encr_algo, encr_mode, 0);
+  if (err)
+    {
+      log_error ("PWRI failed to open cipher: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gcry_cipher_setkey (encr_hd, kek, keklen);
+  wipememory (kek, sizeof kek);
+  if (!err)
+    err = gcry_cipher_setiv (encr_hd, ekey + ekeylen - 2 * blklen, blklen);
+  if (!err)
+    err = gcry_cipher_decrypt (encr_hd, result + ekeylen - blklen, blklen,
+                               ekey + ekeylen - blklen, blklen);
+  if (!err)
+    err = gcry_cipher_setiv (encr_hd, result + ekeylen - blklen, blklen);
+  if (!err)
+    err = gcry_cipher_decrypt (encr_hd, result, ekeylen - blklen,
+                               ekey, ekeylen - blklen);
+  /* (We assume that that eparm is the octet string with the IV)  */
+  if (!err)
+    err = gcry_cipher_setiv (encr_hd, eparm, eparmlen);
+  if (!err)
+    err = gcry_cipher_decrypt (encr_hd, result, resultlen, NULL, 0);
+
+  if (err)
+    {
+      log_error ("KEK decryption failed for PWRI: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    log_printhex (result, resultlen, "Frame .....:");
+
+  if (result[0] < 8                /* At least 64 bits */
+      || (result[0] % 8)           /* Multiple of 64 bits */
+      || result[0] > resultlen - 4 /* Not more than the size of the input */
+      || ( (result[1] ^ result[4]) /* Matching check bytes.  */
+           & (result[2] ^ result[5])
+           & (result[3] ^ result[6]) ) != 0xff)
+    {
+      err = gpg_error (GPG_ERR_BAD_PASSPHRASE);
+      goto leave;
+    }
+
+  *r_resultlen = result[0];
+  *r_result = memmove (result, result + 4, result[0]);
+  result = NULL;
+
+ leave:
+  if (result)
+    {
+      wipememory (result, resultlen);
+      xfree (result);
+    }
+  gcry_cipher_close (encr_hd);
+  xfree (derive_algo_str);
+  xfree (encr_algo_str);
+  xfree (ioarray[0].data);
+  xfree (ioarray[1].data);
+  xfree (ioarray[2].data);
+  xfree (ioarray[3].data);
+  xfree (ioarray[4].data);
+  return err;
+}
+
 
 /* Decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
@@ -411,23 +754,47 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
 {
   char *seskey = NULL;
   size_t n, seskeylen;
+  int pwri = !hexkeygrip && !pk_algo;
   int rc;
 
   if (DBG_CRYPTO)
     log_printcanon ("decrypting:", enc_val, 0);
-  rc = gpgsm_agent_pkdecrypt (ctrl, hexkeygrip, desc, enc_val,
-                              &seskey, &seskeylen);
-  if (rc)
+
+  if (!pwri)
     {
-      log_error ("error decrypting session key: %s\n", gpg_strerror (rc));
-      goto leave;
+      rc = gpgsm_agent_pkdecrypt (ctrl, hexkeygrip, desc, enc_val,
+                                  &seskey, &seskeylen);
+      if (rc)
+        {
+          log_error ("error decrypting session key: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+
+      if (DBG_CRYPTO)
+        log_printhex (seskey, seskeylen, "DEK frame:");
     }
 
-  if (DBG_CRYPTO)
-    log_printhex (seskey, seskeylen, "DEK frame:");
-
   n=0;
-  if (pk_algo == GCRY_PK_ECC)
+  if (pwri) /* Password based encryption.  */
+    {
+      gcry_sexp_t s_enc_val;
+      unsigned char *decrypted;
+      unsigned int decryptedlen;
+
+      rc = gcry_sexp_sscan (&s_enc_val, NULL, enc_val,
+                            gcry_sexp_canon_len (enc_val, 0, NULL, NULL));
+      if (rc)
+        goto leave;
+
+      rc = pwri_decrypt (s_enc_val, &decrypted, &decryptedlen, parm);
+      gcry_sexp_release (s_enc_val);
+      if (rc)
+        goto leave;
+      xfree (seskey);
+      seskey = decrypted;
+      seskeylen = decryptedlen;
+    }
+  else if (pk_algo == GCRY_PK_ECC)
     {
       gcry_sexp_t s_enc_val;
       unsigned char *decrypted;
@@ -488,7 +855,10 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
     }
 
   if (DBG_CRYPTO)
-    log_printhex (seskey+n, seskeylen-n, "CEK .....:");
+    {
+      log_printhex (seskey+n, seskeylen-n, "CEK .......:");
+      log_printhex (parm->iv, parm->ivlen, "IV ........:");
+    }
 
   if (opt.verbose)
     log_info (_("%s.%s encrypted data\n"),
@@ -515,7 +885,12 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
       goto leave;
     }
 
-  gcry_cipher_setiv (parm->hd, parm->iv, parm->ivlen);
+  rc = gcry_cipher_setiv (parm->hd, parm->iv, parm->ivlen);
+  if (rc)
+    {
+      log_error("IV setup failed: %s\n", gpg_strerror(rc) );
+      goto leave;
+    }
 
  leave:
   xfree (seskey);
@@ -704,7 +1079,6 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
           int algo, mode;
           const char *algoid;
           int any_key = 0;
-          int is_de_vs;	/* Computed compliance with CO_DE_VS.  */
 
           audit_log (ctrl->audit, AUDIT_GOT_DATA);
 
@@ -748,7 +1122,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
             }
 
           /* For CMS, CO_DE_VS demands CBC mode.  */
-          is_de_vs = gnupg_cipher_is_compliant (CO_DE_VS, algo, mode);
+          dfparm.is_de_vs = gnupg_cipher_is_compliant (CO_DE_VS, algo, mode);
 
           audit_log_i (ctrl->audit, AUDIT_DATA_CIPHER_ALGO, algo);
           dfparm.algo = algo;
@@ -781,6 +1155,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
               ksba_cert_t cert = NULL;
               unsigned int nbits;
               int pk_algo = 0;
+              int maybe_pwri = 0;
 
               *kidbuf = 0;
 
@@ -788,9 +1163,15 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
               if (tmp_rc == -1 && recp)
                 break; /* no more recipients */
               audit_log_i (ctrl->audit, AUDIT_NEW_RECP, recp);
-              if (tmp_rc)
-                log_error ("recp %d - error getting info: %s\n",
-                           recp, gpg_strerror (tmp_rc));
+              if (gpg_err_code (tmp_rc) == GPG_ERR_UNSUPPORTED_CMS_OBJ)
+                {
+                  maybe_pwri = 1;
+                }
+              else if (tmp_rc)
+                {
+                  log_error ("recp %d - error getting info: %s\n",
+                             recp, gpg_strerror (tmp_rc));
+                }
               else
                 {
                   if (opt.verbose)
@@ -885,29 +1266,37 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                     }
 
                   /* Check that all certs are compliant with CO_DE_VS.  */
-                  is_de_vs = (is_de_vs
-                              && gnupg_pk_is_compliant (CO_DE_VS, pk_algo, 0,
-                                                        NULL, nbits, NULL));
+                  dfparm.is_de_vs =
+                    (dfparm.is_de_vs
+                     && gnupg_pk_is_compliant (CO_DE_VS, pk_algo, 0,
+                                               NULL, nbits, NULL));
 
                 oops:
                   if (rc)
                     {
                       /* We cannot check compliance of certs that we
                        * don't have.  */
-                      is_de_vs = 0;
+                      dfparm.is_de_vs = 0;
                     }
                   xfree (issuer);
                   xfree (serial);
                   ksba_cert_release (cert);
                 }
 
-              if (!hexkeygrip || !pk_algo)
+              if ((!hexkeygrip || !pk_algo) && !maybe_pwri)
                 ;
               else if (!(enc_val = ksba_cms_get_enc_val (cms, recp)))
-                log_error ("recp %d - error getting encrypted session key\n",
-                           recp);
+                {
+                  log_error ("recp %d - error getting encrypted session key\n",
+                             recp);
+                  if (maybe_pwri)
+                    log_info ("(possibly unsupported KEK info)\n");
+                }
               else
                 {
+                  if (maybe_pwri && opt.verbose)
+                    log_info ("recp %d - KEKRI or PWRI\n", recp);
+
                   rc = prepare_decryption (ctrl, hexkeygrip, pk_algo, nbits,
                                            desc, enc_val, &dfparm);
                   xfree (enc_val);
@@ -925,7 +1314,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                                               decrypt_filter,
                                               &dfparm);
 
-                      if (is_de_vs && gnupg_gcrypt_is_compliant (CO_DE_VS))
+                      if (dfparm.is_de_vs
+                          && gnupg_gcrypt_is_compliant (CO_DE_VS))
                         gpgsm_status (ctrl, STATUS_DECRYPTION_COMPLIANCE_MODE,
                                       gnupg_status_compliance_flag (CO_DE_VS));
 
