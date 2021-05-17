@@ -187,7 +187,7 @@ pwri_parse_pbkdf2 (const unsigned char *der, size_t derlen,
  *
  */
 static gpg_error_t
-pwri_decrypt (gcry_sexp_t enc_val,
+pwri_decrypt (ctrl_t ctrl, gcry_sexp_t enc_val,
               unsigned char **r_result, unsigned int *r_resultlen,
               struct decrypt_filter_parm_s *parm)
 {
@@ -213,6 +213,7 @@ pwri_decrypt (gcry_sexp_t enc_val,
   unsigned int saltlen;
   unsigned long iterations;
   enum gcry_md_algos digest_algo;
+  char *passphrase = NULL;
 
 
   *r_resultlen = 0;
@@ -326,10 +327,23 @@ pwri_decrypt (gcry_sexp_t enc_val,
       goto leave;
     }
 
-  err = gcry_kdf_derive ("abc", 3,
+  err = gpgsm_agent_ask_passphrase
+    (ctrl,
+     i18n_utf8 (N_("Please enter the passphrase for decryption.")),
+     0, &passphrase);
+  if (err)
+    goto leave;
+
+  err = gcry_kdf_derive (passphrase, strlen (passphrase),
                          GCRY_KDF_PBKDF2, digest_algo,
                          salt, saltlen, iterations,
                          keklen, kek);
+  if (passphrase)
+    {
+      wipememory (passphrase, strlen (passphrase));
+      xfree (passphrase);
+      passphrase = NULL;
+    }
   if (err)
     {
       log_error ("deriving key from passphrase failed: %s\n",
@@ -404,6 +418,11 @@ pwri_decrypt (gcry_sexp_t enc_val,
       wipememory (result, resultlen);
       xfree (result);
     }
+  if (passphrase)
+    {
+      wipememory (passphrase, strlen (passphrase));
+      xfree (passphrase);
+    }
   gcry_cipher_close (encr_hd);
   xfree (derive_algo_str);
   xfree (encr_algo_str);
@@ -454,7 +473,7 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
       if (rc)
         goto leave;
 
-      rc = pwri_decrypt (s_enc_val, &decrypted, &decryptedlen, parm);
+      rc = pwri_decrypt (ctrl, s_enc_val, &decrypted, &decryptedlen, parm);
       gcry_sexp_release (s_enc_val);
       if (rc)
         goto leave;

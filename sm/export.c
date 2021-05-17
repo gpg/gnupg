@@ -707,8 +707,8 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     {
       err = gpgsm_agent_ask_passphrase
         (ctrl,
-         i18n_utf8 ("Please enter the passphrase to protect the "
-                    "new PKCS#12 object."),
+         i18n_utf8 (N_("Please enter the passphrase to protect the "
+                       "new PKCS#12 object.")),
          1, &passphrase);
       if (err)
         goto leave;
