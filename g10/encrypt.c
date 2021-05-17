@@ -572,7 +572,7 @@ setup_symkey (STRING2KEY **symkey_s2k, DEK **symkey_dek)
   (*symkey_s2k)->hash_algo = s2kdigest;
 
   *symkey_dek = passphrase_to_dek (defcipher,
-                                   *symkey_s2k, 1, 0, NULL, &canceled);
+                                   *symkey_s2k, 1, 0, NULL, 0, &canceled);
   if (!*symkey_dek || !(*symkey_dek)->keylen)
     {
       xfree(*symkey_dek);

@@ -1605,7 +1605,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
   s2k->hash_algo = S2K_DIGEST_ALGO;
 
   algo = default_cipher_algo ();
-  cfx.dek = passphrase_to_dek (algo, s2k, 1, 1, NULL, &canceled);
+  cfx.dek = passphrase_to_dek (algo, s2k, 1, 1, NULL, 0, &canceled);
 
   if (!cfx.dek || !cfx.dek->keylen)
     {

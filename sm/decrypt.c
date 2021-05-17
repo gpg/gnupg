@@ -657,7 +657,7 @@ pwri_decrypt (ctrl_t ctrl, gcry_sexp_t enc_val,
 
   err = gpgsm_agent_ask_passphrase
     (ctrl,
-     i18n_utf8 (N_("Please enter the password for decryption.")),
+     i18n_utf8 (N_("Please enter the passphrase for decryption.")),
      0, &passphrase);
   if (err)
     goto leave;
