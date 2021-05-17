@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-12-21 15:31+0100\n"
+"PO-Revision-Date: 2021-05-17 19:33+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -48,14 +48,14 @@ msgstr "Im Passwordmanager _speichern"
 
 msgid "Do you really want to make your passphrase visible on the screen?"
 msgstr ""
-"Möchten Sie die eingegebene Passphrase wirklich auf dem Bildschirm sichtbar "
+"Möchten Sie das eingegebene Passwort wirklich auf dem Bildschirm sichtbar "
 "machen?"
 
 msgid "|pinentry-tt|Make passphrase visible"
-msgstr "Die Passphrase sichtbar machen"
+msgstr "Das Passwort sichtbar machen"
 
 msgid "|pinentry-tt|Hide passphrase"
-msgstr "Passphrase unsichtbar machen"
+msgstr "Das Passwort unsichtbar machen"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -70,7 +70,7 @@ msgstr "Qualität:"
 #. will be used.
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
-"Die Qualität der Passphrase, die Sie oben eingegeben haben.\n"
+"Die Qualität des Passwortes, welches Sie oben eingegeben haben.\n"
 "Bitte fragen sie Ihren Systembeauftragten nach den\n"
 "Kriterien für die Messung der Qualität."
 
@@ -85,14 +85,14 @@ msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
 msgstr ""
-"Bitte geben Sie Ihre Passphrase ein, so daß der geheime Schlüssel benutzt "
+"Bitte geben Sie Ihr Passwort ein, so daß der geheime Schlüssel benutzt "
 "werden kann."
 
 msgid "PIN:"
 msgstr "PIN:"
 
 msgid "Passphrase:"
-msgstr "Passphrase:"
+msgstr "Passwort:"
 
 msgid "does not match - try again"
 msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
@@ -115,7 +115,7 @@ msgid "PIN too long"
 msgstr "Die PIN ist zu lang"
 
 msgid "Passphrase too long"
-msgstr "Das Mantra (Passphrase) ist zu lang!"
+msgstr "Das Passwort ist zu lang!"
 
 msgid "Invalid characters in PIN"
 msgstr "Ungültige Zeichen in der PIN!"
@@ -127,7 +127,7 @@ msgid "Bad PIN"
 msgstr "Falsche PIN!"
 
 msgid "Bad Passphrase"
-msgstr "Falsche Passphrase!"
+msgstr "Falsches Passwort!"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -178,18 +178,17 @@ msgstr "Verweigern"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr ""
-"Bitte geben Sie die Passphrase für den SSH-Schlüssel%%0A  %F%%0A  "
-"(%c)%%0Aein."
+"Bitte geben Sie das Passwort für den SSH-Schlüssel%%0A  %F%%0A  (%c)%%0Aein."
 
 msgid "Please re-enter this passphrase"
-msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
+msgstr "Bitte geben Sie das Passwort noch einmal ein:"
 
 #, c-format
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen\n"
+"Bitte geben Sie ein Passwort ein, um den empfangenen geheimen\n"
 "Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu "
 "schützen."
 
@@ -253,7 +252,7 @@ msgid "error writing to temporary file: %s\n"
 msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"
 
 msgid "Enter new passphrase"
-msgstr "Neue Passphrase eingeben"
+msgstr "Neues Passwort eingeben"
 
 msgid "Take this one anyway"
 msgstr "Diese trotzdem benutzen"
@@ -262,17 +261,16 @@ msgstr "Diese trotzdem benutzen"
 msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr ""
-"Sie haben keine Passphrase eingegeben!%0AEine leere Passphrase ist nicht "
-"erlaubt."
+"Sie haben kein Passwort eingegeben!%0AEine leeres Passwort ist nicht erlaubt."
 
 #, c-format
 msgid ""
 "You have not entered a passphrase - this is in general a bad idea!%0APlease "
 "confirm that you do not want to have any protection on your key."
 msgstr ""
-"Sie möchten keine Passphrase - Dies ist *nicht* zu empfehlen!%0ABitte\n"
-"bestätigen Sie, daß sie auf jeden Schutz Ihres privaten Schlüssels\n"
-"verzichten."
+"Sie möchten kein Passwort - Dies ist nicht unbedingt zu empfehlen!%0A\n"
+"Bitte bestätigen Sie, daß sie auf den lokalen Schutz Ihres privaten\n"
+"Schlüssels verzichten."
 
 msgid "Yes, protection is not needed"
 msgstr "Ja, ein Schutz ist nicht notwendig"
@@ -280,35 +278,35 @@ msgstr "Ja, ein Schutz ist nicht notwendig"
 #, c-format
 msgid "A passphrase should be at least %u character long."
 msgid_plural "A passphrase should be at least %u characters long."
-msgstr[0] "Eine Passphrase sollte mindestens %u Zeichen lang sein."
-msgstr[1] "Eine Passphrase sollte mindestens %u Zeichen lang sein."
+msgstr[0] "Ein Passwort sollte mindestens %u Zeichen lang sein."
+msgstr[1] "Ein Passwort sollte mindestens %u Zeichen lang sein."
 
 #, c-format
 msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
 msgid_plural ""
 "A passphrase should contain at least %u digits or%%0Aspecial characters."
 msgstr[0] ""
-"Eine Passphrase sollte mindestens %u Sonderzeichen oder%%0Aeine Ziffer "
+"Ein Passwort sollte mindestens %u Sonderzeichen oder%%0Aeine Ziffer "
 "enthalten."
 msgstr[1] ""
-"Eine Passphrase sollte mindestens %u Sonderzeichen oder%%0AZiffern enthalten."
+"Ein Passwort sollte mindestens %u Sonderzeichen oder%%0AZiffern enthalten."
 
 #, c-format
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
-"Eine Passphrase sollte kein bekanntes Wort sein oder%%0Anach bekannten "
-"Regeln aufgebaut sein."
+"Ein Passwort sollte kein bekanntes Wort sein oder%%0Anach bekannten Regeln "
+"aufgebaut sein."
 
 msgid "Warning: You have entered an insecure passphrase."
 msgstr ""
-"WARNUNG:  Sie haben eine offensichtlich unsichere%0APassphrase eingegeben."
+"WARNUNG:  Sie haben ein offensichtlich unsicheres%0APasswort eingegeben."
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
-msgstr "Bitte geben Sie die Passphrase ein,%0Aum Ihren Schlüssel zu schützen."
+msgstr "Bitte geben Sie das Passwort ein,%0Aum Ihren Schlüssel zu schützen."
 
 msgid "Please enter the new passphrase"
-msgstr "Bitte geben Sie die Passphrase ein:"
+msgstr "Bitte geben Sie das Passwort ein:"
 
 msgid ""
 "@Options:\n"
@@ -378,13 +376,13 @@ msgid "disallow clients to mark keys as \"trusted\""
 msgstr "Verbiete Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
 
 msgid "allow presetting passphrase"
-msgstr "Erlaube ein \"preset\" von Passphrases"
+msgstr "Erlaube ein \"preset\" der Passwörter"
 
 msgid "disallow caller to override the pinentry"
 msgstr "Aufrufer darf das Pinentry nicht ersetzen"
 
 msgid "allow passphrase to be prompted through Emacs"
-msgstr "Erlaube die Eingabe einer Passphrase über Emacs"
+msgstr "Erlaube die Eingabe eines Passwortes über Emacs"
 
 msgid "enable ssh support"
 msgstr "SSH Unterstützung einschalten"
@@ -513,7 +511,7 @@ msgid ""
 "Password cache maintenance\n"
 msgstr ""
 "Syntax: gpg-preset-passphrase [Optionen] KEYGRIP\n"
-"Kennwortpuffer-Pflege\n"
+"Pflege des Passwortpuffers\n"
 
 msgid ""
 "@Commands:\n"
@@ -542,24 +540,24 @@ msgstr ""
 "Werkzeug zum Bearbeiten von geheimen Schlüsseln\n"
 
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
-msgstr "Bitte geben Sie die Passphrase zum Entsperren des PKCS#12 Objekts ein."
+msgstr "Bitte geben Sie das Passwort zum Entsperren des PKCS#12 Objekts ein."
 
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
 msgstr ""
-"Bitte geben Sie die Passphrase zum Schützen des neuen PKCS#12 Objekts ein."
+"Bitte geben Sie das Passwort zum Schützen des neuen PKCS#12 Objekts ein."
 
 msgid ""
 "Please enter the passphrase to protect the imported object within the GnuPG "
 "system."
 msgstr ""
-"Bitte geben Sie die Passphrase ein, um das importierte Objekt im GnuPG "
-"System zu schützen."
+"Bitte geben Sie das Passwort ein, um das importierte Objekt im GnuPG System "
+"zu schützen."
 
 msgid ""
 "Please enter the passphrase or the PIN\n"
 "needed to complete this operation."
 msgstr ""
-"Die Eingabe der Passphrase bzw. der PIN\n"
+"Die Eingabe des Passwortes bzw. der PIN\n"
 "wird benötigt, um diese Aktion auszuführen."
 
 #, c-format
@@ -568,7 +566,7 @@ msgstr "Vom Benutzer abgebrochen\n"
 
 #, c-format
 msgid "error while asking for the passphrase: %s\n"
-msgstr "Fehler bei der Abfrage der Passphrase: %s\n"
+msgstr "Fehler bei der Abfrage des Passwortes: %s\n"
 
 #, c-format
 msgid "error opening '%s': %s\n"
@@ -656,7 +654,7 @@ msgstr "Falsch"
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
-"Hinweis: Diese Passphrase wurde noch nie geändert/%0ABitte ändern Sie sie "
+"Hinweis: Dieses Passwort wurde noch nie geändert/%0ABitte ändern Sie sie "
 "jetzt."
 
 #, c-format
@@ -664,11 +662,11 @@ msgid ""
 "This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change "
 "it now."
 msgstr ""
-"Diese Passphrase wurde seit dem %.4s-%.2s-%.2s nicht%%0A\n"
+"Dieses Passwort wurde seit dem %.4s-%.2s-%.2s nicht%%0A\n"
 "mehr geändert.  Bitte ändern Sie sie jetzt."
 
 msgid "Change passphrase"
-msgstr "Die Passphrase ändern"
+msgstr "Das Passwort ändern"
 
 msgid "I'll change it later"
 msgstr "Ich werde sie später ändern"
@@ -1257,7 +1255,7 @@ msgid "failed to proxy %s inquiry to client\n"
 msgstr "Die %s \"inquiry\" konnte nicht an den Client weitergeleitet werden\n"
 
 msgid "Enter passphrase: "
-msgstr "Geben Sie die Passphrase ein: "
+msgstr "Geben Sie das Passwort ein: "
 
 #, c-format
 msgid "error getting version from '%s': %s\n"
@@ -1713,7 +1711,7 @@ msgstr ""
 
 #, c-format
 msgid "error creating passphrase: %s\n"
-msgstr "Fehler beim Erzeugen der Passphrase: %s\n"
+msgstr "Fehler beim Erzeugen des Passwortes: %s\n"
 
 #, c-format
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
@@ -2029,7 +2027,7 @@ msgid "sign or edit a key"
 msgstr "Signieren oder bearbeiten eines Schlüssels"
 
 msgid "change a passphrase"
-msgstr "Die Passphrase ändern"
+msgstr "Das Passwort ändern"
 
 msgid "export keys"
 msgstr "Schlüssel exportieren"
@@ -3319,12 +3317,12 @@ msgstr "Beglaubigung fehlgeschlagen: %s\n"
 
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
-"Der Schlüssel enthält nur \"stub\"- oder \"on-card\"-Schlüsselelemente- "
-"keine Passphrase ist zu ändern.\n"
+"Der Schlüssel enthält nur \"stub\"- oder \"on-card\"-Schlüsselelemente- kein "
+"Passwort ist zu ändern.\n"
 
 #, c-format
 msgid "key %s: error changing passphrase: %s\n"
-msgstr "Schlüssel %s: Fehler beim Ändern der Passphrase: %s\n"
+msgstr "Schlüssel %s: Fehler beim Ändern des Passwortes: %s\n"
 
 msgid "save and quit"
 msgstr "speichern und Menü verlassen"
@@ -3413,7 +3411,7 @@ msgid "set a notation for the selected user IDs"
 msgstr "Eine Notation für die ausgewählten User-IDs setzen"
 
 msgid "change the passphrase"
-msgstr "Die Passphrase ändern"
+msgstr "Das Passwort ändern"
 
 msgid "change the ownertrust"
 msgstr "Den \"Ownertrust\" ändern"
@@ -4605,7 +4603,7 @@ msgstr "%s verschlüsselter Sitzungsschlüssel\n"
 
 #, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
-msgstr "Passphrase wurde mit unbekanntem Hashverfahren %d erstellt\n"
+msgstr "Das Passwort wurde mit unbekanntem Hashverfahren %d erstellt\n"
 
 #, c-format
 msgid "public key is %s\n"
@@ -4639,11 +4637,11 @@ msgstr "WARNUNG: Mehr als ein Klartext erkannt\n"
 
 #, c-format
 msgid "encrypted with %lu passphrases\n"
-msgstr "Verschlüsselt mit %lu Passphrases\n"
+msgstr "Verschlüsselt mit %lu Passwörtern\n"
 
 #, c-format
 msgid "encrypted with 1 passphrase\n"
-msgstr "Verschlüsselt mit einer Passphrase\n"
+msgstr "Verschlüsselt mit einem Passwort\n"
 
 #, c-format
 msgid "assuming %s encrypted data\n"
@@ -4967,8 +4965,11 @@ msgstr "Im Unterpaket des Typs %d ist das \"critical bit\" gesetzt\n"
 msgid "problem with the agent: %s\n"
 msgstr "Problem mit dem Agenten: %s\n"
 
+msgid "Please enter the passphrase for decryption."
+msgstr "Bitte geben Sie zur Entschlüsselung das Passwort ein"
+
 msgid "Enter passphrase\n"
-msgstr "Geben Sie die Passphrase ein\n"
+msgstr "Geben Sie das Passwort ein\n"
 
 #, c-format
 msgid "cancelled by user\n"
@@ -4980,23 +4981,20 @@ msgstr " (Hauptschlüssel-ID %s)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr ""
-"Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
-"entsperren:"
+"Sie benötigen ein Passwort, um den geheimen OpenPGP Schlüssel zu entsperren:"
 
 msgid "Please enter the passphrase to import the OpenPGP secret key:"
 msgstr ""
-"Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
-"importieren:"
+"Sie benötigen ein Passwort, um den geheimen OpenPGP Schlüssel zu importieren:"
 
 msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
 msgstr ""
-"Sie benötigen eine Passphrase, um den geheimen OpenPGP Unterschlüssel zu "
+"Sie benötigen ein Passwort, um den geheimen OpenPGP Unterschlüssel zu "
 "exportieren:"
 
 msgid "Please enter the passphrase to export the OpenPGP secret key:"
 msgstr ""
-"Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
-"exportieren:"
+"Sie benötigen ein Passwort, um den geheimen OpenPGP Schlüssel zu exportieren:"
 
 msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
 msgstr ""
@@ -6947,7 +6945,7 @@ msgid ""
 "S/N %s, ID 0x%08lX,\n"
 "created %s, expires %s.\n"
 msgstr ""
-"Bitte geben Sie die Passphrase an, um den geheimen Schlüssel des X.509 "
+"Bitte geben Sie das Passwort an, um den geheimen Schlüssel des X.509 "
 "Zertifikats:\n"
 "\"%s\"\n"
 "S/N %s, ID 0x%08lX,\n"
@@ -7067,7 +7065,7 @@ msgid ""
 "you just created once more.\n"
 msgstr ""
 "Um die Zertifikatsanforderung fertigzustellen, geben Sie nun bitte\n"
-"noch einmal die Passphrase des soeben erzeugten Schlüssels ein.\n"
+"noch einmal das Passwort des soeben erzeugten Schlüssels ein.\n"
 
 #, c-format
 msgid "   (%d) Existing key\n"
@@ -7156,12 +7154,22 @@ msgid "resource problem: out of core\n"
 msgstr "Resourcenproblem: Nicht genügend Hauptspeicher\n"
 
 #, c-format
+msgid "%s.%s encrypted data\n"
+msgstr "%s.%s verschlüsselte Daten\n"
+
+#, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(Dies ist der RC-2 Algorithmus)\n"
 
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(dies ist wahrscheinlich keine verschlüsselte Nachricht)\n"
+
+# Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
+# [kw]
+#, c-format
+msgid "encrypted to %s key %s\n"
+msgstr "verschlüsselt an %s Schlüssel, ID %s\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"
@@ -8789,25 +8797,25 @@ msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr "|N|setze die maximale Lebenszeit von SSH Schlüsseln auf N Sekunden"
 
 msgid "Options enforcing a passphrase policy"
-msgstr "Optionen für eine Passphrase-Policy"
+msgstr "Optionen für Passwort Regeln"
 
 msgid "do not allow bypassing the passphrase policy"
-msgstr "Einhaltung der Passphrase-Policy erzwingen"
+msgstr "Einhaltung der Passwort Regeln erzwingen"
 
 msgid "|N|set minimal required length for new passphrases to N"
-msgstr "|N|setze die kleinste erlaubte Länge von Passphrasen auf N"
+msgstr "|N|setze die kleinste erlaubte Länge von Passwörtern auf N"
 
 msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr "|N|Verlange mindestens N Nicht-Buchstaben für eine neue Passphrase"
+msgstr "|N|Verlange mindestens N Nicht-Buchstaben für ein neues Passwort"
 
 msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr "|DATEI|Prüfe neue Passphrases gegen die Regelen in DATEI"
+msgstr "|DATEI|Prüfe neue Passwörter gegen die Regeln in DATEI"
 
 msgid "|N|expire the passphrase after N days"
-msgstr "|N|Lasse die Passphrase nach N Tagen verfallen"
+msgstr "|N|Lasse das Passwort nach N Tagen verfallen"
 
 msgid "do not allow the reuse of old passphrases"
-msgstr "Verbiete die Wiedernutzung alter Passphrases."
+msgstr "Verbiete die Wiedernutzung alter Passwörter."
 
 msgid "|N|set the Pinentry timeout to N seconds"
 msgstr "|N|Setze die Pinentry Zeitüberschreitung auf N Sekunden"
@@ -8845,7 +8853,7 @@ msgid "disable all access to the dirmngr"
 msgstr "Jeglichen Zugriff auf den Dirmngr verhindern"
 
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NAME|Benutze die Kodierung NAME für PKCS#12 Passphrasen"
+msgstr "|NAME|Benutze die Kodierung NAME für PKCS#12 Passwörter"
 
 msgid "do not check CRLs for root certificates"
 msgstr "CRL bei Wurzelzertifikaten nicht überprüfen"
@@ -8890,7 +8898,7 @@ msgid "Network"
 msgstr "Netz"
 
 msgid "Passphrase Entry"
-msgstr "Passphrase Eingabe"
+msgstr "Passwort Eingabe"
 
 msgid "Component not suitable for launching"
 msgstr "Komponente unterstützt kein direktes starten"
@@ -8993,7 +9001,7 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
-"Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+"Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
 
 #~ msgid "Note: old default options file '%s' ignored\n"
 #~ msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
@@ -9431,7 +9439,7 @@ msgstr ""
 #~ "%u-bit %s key, ID %s,\n"
 #~ "created %s%s.\n"
 #~ msgstr ""
-#~ "Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
+#~ "Sie benötigen ein Passwort, um den geheimen OpenPGP Schlüssel zu "
 #~ "entsperren.\n"
 #~ "Benutzer: \"%.*s\"\n"
 #~ "%u-bit %s Schlüssel, ID %s, erzeugt %s%s\n"
