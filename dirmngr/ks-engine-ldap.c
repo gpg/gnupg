@@ -379,7 +379,8 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
       else
         p = freeme;
       if ((serverinfo & SERVERINFO_SCHEMAV2))
-        f = xasprintf ("(gpgMailbox=%s)", p);
+        f = xasprintf ("(&(gpgMailbox=%s)(!(|(pgpRevoked=1)(pgpDisabled=1))))",
+                       p);
       else if (!only_exact)
         f = xasprintf ("(pgpUserID=*<%s>*)", p);
       break;
