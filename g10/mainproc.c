@@ -420,7 +420,8 @@ proc_symkey_enc (CTX c, PACKET *pkt)
         }
       else
         {
-          c->dek = passphrase_to_dek (algo, &enc->s2k, 0, 0, NULL, NULL);
+          c->dek = passphrase_to_dek (algo, &enc->s2k, 0, 0, NULL,
+                                      GETPASSWORD_FLAG_SYMDECRYPT, NULL);
           if (c->dek)
             {
               c->dek->symmetric = 1;
@@ -709,7 +710,8 @@ proc_encrypted (CTX c, PACKET *pkt)
               log_info (_("assuming %s encrypted data\n"), "IDEA");
             }
 
-          c->dek = passphrase_to_dek (algo, s2k, 0, 0, NULL, &canceled);
+          c->dek = passphrase_to_dek (algo, s2k, 0, 0, NULL,
+                                      GETPASSWORD_FLAG_SYMDECRYPT, &canceled);
           if (c->dek)
             c->dek->algo_info_printed = 1;
           else if (canceled)

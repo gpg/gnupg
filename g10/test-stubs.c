@@ -341,13 +341,14 @@ check_secret_key (PKT_public_key *pk, int n)
  */
 DEK *
 passphrase_to_dek (int cipher_algo, STRING2KEY *s2k, int create, int nocache,
-                   const char *tmp, int *canceled)
+                   const char *tmp, unsigned int flags, int *canceled)
 {
   (void)cipher_algo;
   (void)s2k;
   (void)create;
   (void)nocache;
   (void)tmp;
+  (void)flags;
 
   if (canceled)
     *canceled = 0;
