@@ -4578,8 +4578,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   else if (!strcmp (name, "MANUFACTURER"))
     {
       if (app->app_local->manufacturer_id
-          && (app->app_local->card_product
-              || strchr (app->app_local->manufacturer_id, '[')))
+          && !strchr (app->app_local->manufacturer_id, '[')
+          && app->app_local->card_product)
         return send_status_printf (ctrl, "MANUFACTURER", "0 %s [%s]",
                               app->app_local->manufacturer_id,
                               cardproduct2str (app->app_local->card_product));
