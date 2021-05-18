@@ -4925,6 +4925,11 @@ msgstr "podpacket typu %d má nastavený kritický bit\n"
 msgid "problem with the agent: %s\n"
 msgstr "problém s agentem: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Prosím, zadejte nové heslo"
+
 msgid "Enter passphrase\n"
 msgstr "Vložit heslo\n"
 
@@ -7057,6 +7062,11 @@ msgstr "Hotovo. Nyní byste měli tuto žádost poslat svojí CA.\n"
 msgid "resource problem: out of core\n"
 msgstr "problém se zdroji: nedostatek paměti\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s zašifrovaná data\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(toto je algoritmus RC2)\n"
@@ -7064,6 +7074,13 @@ msgstr "(toto je algoritmus RC2)\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(toto nevypadá jako zašifrovaná zpráva)\n"
+
+# Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
+# [kw]
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "zašifrováno %s klíčem, ID %s\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"

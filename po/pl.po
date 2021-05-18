@@ -4932,6 +4932,11 @@ msgstr "podpakiet typu %d ma ustawiony krytyczny bit\n"
 msgid "problem with the agent: %s\n"
 msgstr "problem z agentem: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Proszę wprowadzić nowe hasło"
+
 msgid "Enter passphrase\n"
 msgstr "Hasło\n"
 
@@ -7085,6 +7090,11 @@ msgstr ""
 msgid "resource problem: out of core\n"
 msgstr "problem z zasobami: brak pamięci\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "dane zaszyfrowano za pomocą %s\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(to jest algorytm RC2)\n"
@@ -7092,6 +7102,11 @@ msgstr "(to jest algorytm RC2)\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(to nie wygląda na zaszyfrowaną wiadomość)\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "zaszyfrowano kluczem %s o identyfikatorze %s\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"

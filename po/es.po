@@ -4921,6 +4921,11 @@ msgstr "el subpaquete de tipo %d tiene el bit crítico activado\n"
 msgid "problem with the agent: %s\n"
 msgstr "problema con el agente: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Por favor escriba la nueva frase contraseña"
+
 msgid "Enter passphrase\n"
 msgstr "Introduzca frase contraseña\n"
 
@@ -7045,6 +7050,11 @@ msgstr "Acabado. Debería mandar esta petición a su CA.\n"
 msgid "resource problem: out of core\n"
 msgstr "problema de recursos: memoria desbordada\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "datos cifrados %s\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(el algoritmo RC2)\n"
@@ -7052,6 +7062,11 @@ msgstr "(el algoritmo RC2)\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(no parece un mensaje cifrado)\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "cifrado con clave %s, ID %s\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"

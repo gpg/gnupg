@@ -4751,6 +4751,11 @@ msgstr "%d 类型的子包设定了紧急位\n"
 msgid "problem with the agent: %s\n"
 msgstr "代理人程序出现问题：%s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "请输入新的密码"
+
 msgid "Enter passphrase\n"
 msgstr "请输入密码\n"
 
@@ -6748,6 +6753,11 @@ msgstr "就绪。您现在应该将此请求发送给您的 CA。\n"
 msgid "resource problem: out of core\n"
 msgstr "资源问题：内存不足\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s 加密过的数据\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "（此为 RC2 算法）\n"
@@ -6755,6 +6765,11 @@ msgstr "（此为 RC2 算法）\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "（这看起来不像是一条被加密的消息）\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "由 %s 密钥加密、密钥号为 %s\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"

@@ -5244,6 +5244,11 @@ msgstr "underpakke af typen %d har kritiske bitsæt\n"
 msgid "problem with the agent: %s\n"
 msgstr "problem med agenten: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Indtast venligst den nye adgangsfrase"
+
 msgid "Enter passphrase\n"
 msgstr "Indtast adgangsfrase\n"
 
@@ -7440,6 +7445,11 @@ msgstr "Klar. Du skal nu sende denne forespørgsel til din CA.\n"
 msgid "resource problem: out of core\n"
 msgstr "ressourceproblem: ikke nok kerne\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s krypterede data\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(dette er RC2-algoritmen)\n"
@@ -7447,6 +7457,11 @@ msgstr "(dette er RC2-algoritmen)\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(dette ser ikke ud til at være en krypteret besked)\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "krypteret med %s nøgle, id %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"

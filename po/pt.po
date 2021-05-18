@@ -5149,6 +5149,10 @@ msgstr "subpacote do tipo %d tem bit crítico ligado\n"
 msgid "problem with the agent: %s\n"
 msgstr "problema com o agente: o agente returnou 0x%lx\n"
 
+#, fuzzy
+msgid "Please enter the passphrase for decryption."
+msgstr "muda a frase secreta"
+
 msgid "Enter passphrase\n"
 msgstr "Insira a frase secreta\n"
 
@@ -7269,6 +7273,11 @@ msgstr ""
 msgid "resource problem: out of core\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "dados cifrados com %s\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr ""
@@ -7276,6 +7285,10 @@ msgstr ""
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "encrypted to %s key %s\n"
+msgstr "cifrado com chave %s, ID %08lX\n"
 
 #, fuzzy, c-format
 msgid "certificate '%s' not found: %s\n"

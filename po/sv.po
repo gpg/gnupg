@@ -5331,6 +5331,11 @@ msgstr "underpaket av typen %d har den bit satt som markerar den som kritisk\n"
 msgid "problem with the agent: %s\n"
 msgstr "problem med agenten: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Ange den nya lösenfrasen"
+
 msgid "Enter passphrase\n"
 msgstr "Ange lösenfrasen\n"
 
@@ -7575,6 +7580,11 @@ msgstr ""
 msgid "resource problem: out of core\n"
 msgstr "resursproblem: slut på minne\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s-krypterad data\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(det här är RC2-algoritmen)\n"
@@ -7582,6 +7592,11 @@ msgstr "(det här är RC2-algoritmen)\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(det här verkar inte vara ett krypterat meddelande)\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "krypterad med %s-nyckel, id %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"

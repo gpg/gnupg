@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.2.23\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-10-10 19:54+0200\n"
+"PO-Revision-Date: 2021-05-19 00:03+0200\n"
 "Last-Translator: Denis <student@alice.it>\n"
 "Language-Team: \n"
 "Language: it_IT\n"
@@ -4932,6 +4932,11 @@ msgstr "il sottopacchetto di tipo %d ha un bit critico impostato\n"
 msgid "problem with the agent: %s\n"
 msgstr "problema con l'agente: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Inserisci la nuova passphrase"
+
 msgid "Enter passphrase\n"
 msgstr "Inserisci la passphrase\n"
 
@@ -7083,12 +7088,22 @@ msgid "resource problem: out of core\n"
 msgstr "problema delle risorse: fuori dal nucleo\n"
 
 #, c-format
+msgid "%s.%s encrypted data\n"
+msgstr "dati cifrati con %s.%s\n"
+
+#, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(questo è l'algoritmo RC2)\n"
 
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(questo non sembra essere un messaggio crittografato)\n"
+
+#, c-format
+msgid "encrypted to %s key %s\n"
+msgstr ""
+"crittografata con chiave %s, ID %s\n"
+"\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"

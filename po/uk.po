@@ -4981,6 +4981,11 @@ msgstr "підпакет типу %d містить критичний набі�
 msgid "problem with the agent: %s\n"
 msgstr "проблема з агентом: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Вкажіть новий пароль"
+
 msgid "Enter passphrase\n"
 msgstr "Вкажіть пароль\n"
 
@@ -7160,6 +7165,11 @@ msgstr ""
 msgid "resource problem: out of core\n"
 msgstr "проблема з ресурсами: вихід за межі пам’яті\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "Дані, зашифровані за алгоритмом %s\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(це алгоритм RC2)\n"
@@ -7167,6 +7177,11 @@ msgstr "(це алгоритм RC2)\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(здається, це не зашифроване повідомлення)\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "зашифровано ключем %s, ідентифікатор %s\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"

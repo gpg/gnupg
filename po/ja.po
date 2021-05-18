@@ -4795,6 +4795,11 @@ msgstr "型%dの下位パケットにクリティカル・ビットを発見\n"
 msgid "problem with the agent: %s\n"
 msgstr "エージェントに問題: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "新しいパスフレーズを入力してください"
+
 msgid "Enter passphrase\n"
 msgstr "パスフレーズを入力\n"
 
@@ -6821,6 +6826,11 @@ msgstr "準備ができました。今、この要求をあなたのCAに送る�
 msgid "resource problem: out of core\n"
 msgstr "リソースの問題: メモリがありません\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s暗号化済みデータ\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(RC2アルゴリズムです)\n"
@@ -6828,6 +6838,11 @@ msgstr "(RC2アルゴリズムです)\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(暗号化されたメッセージではないようです)\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "%s鍵, ID %sで暗号化されました\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"

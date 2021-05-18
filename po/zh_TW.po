@@ -4924,6 +4924,11 @@ msgstr "%d 類別的子封包設定了關鍵位元\n"
 msgid "problem with the agent: %s\n"
 msgstr "代理程式的問題: %s\n"
 
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "請輸入新的密語"
+
 msgid "Enter passphrase\n"
 msgstr "請輸入密語\n"
 
@@ -6994,6 +6999,11 @@ msgstr "準備好了.  你現在就該把此請求送到你的 CA.\n"
 msgid "resource problem: out of core\n"
 msgstr "資源問題: 超出核心\n"
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s 已加密的資料\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(這是 RC2 演算法)\n"
@@ -7001,6 +7011,11 @@ msgstr "(這是 RC2 演算法)\n"
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(這看起來不像是個加密過的訊息)\n"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %s key, ID %s\n"
+msgid "encrypted to %s key %s\n"
+msgstr "已用 %s 金鑰, ID %s 所加密\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"

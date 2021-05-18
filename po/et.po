@@ -5131,6 +5131,10 @@ msgstr "alampaketil tüübiga %d on kriitiline bitt seatud\n"
 msgid "problem with the agent: %s\n"
 msgstr "probleem agendiga: agent tagastas 0x%lx\n"
 
+#, fuzzy
+msgid "Please enter the passphrase for decryption."
+msgstr "muuda parooli"
+
 msgid "Enter passphrase\n"
 msgstr "Sisestage parool\n"
 
@@ -7249,6 +7253,11 @@ msgstr ""
 msgid "resource problem: out of core\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s krüpteeritud andmed\n"
+
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr ""
@@ -7256,6 +7265,10 @@ msgstr ""
 #, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "encrypted to %s key %s\n"
+msgstr "krüpteeritud %s võtmega, ID %08lX\n"
 
 #, fuzzy, c-format
 msgid "certificate '%s' not found: %s\n"
