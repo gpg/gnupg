@@ -295,6 +295,16 @@ epoch2ldaptime (time_t stamp)
     return xstrdup ("INVALID TIME");
 }
 #endif
+
+
+static void
+my_ldap_value_free (char **vals)
+{
+  if (vals)
+    ldap_value_free (vals);
+}
+
+
 
 /* Print a help output for the schemata supported by this module. */
 gpg_error_t
@@ -695,26 +705,26 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 		    {
 		      vals = ldap_get_values (ldap_conn, si_res,
 					      "pgpBaseKeySpaceDN");
-		      if (vals)
+		      if (vals && vals[0])
 			{
 			  basedn = xtrystrdup (vals[0]);
-			  ldap_value_free (vals);
 			}
+                      my_ldap_value_free (vals);
 
 		      vals = ldap_get_values (ldap_conn, si_res,
 					      "pgpSoftware");
-		      if (vals)
+		      if (vals && vals[0])
 			{
                           if (opt.debug)
                             log_debug ("Server: \t%s\n", vals[0]);
                           if (!ascii_strcasecmp (vals[0], "GnuPG"))
                             is_gnupg = 1;
-			  ldap_value_free (vals);
 			}
+                      my_ldap_value_free (vals);
 
 		      vals = ldap_get_values (ldap_conn, si_res,
 					      "pgpVersion");
-		      if (vals)
+		      if (vals && vals[0])
 			{
                           if (opt.debug)
                             log_debug ("Version:\t%s\n", vals[0]);
@@ -730,8 +740,8 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
                                   && !ascii_strcasecmp (fields[1], "ntds"))
                                 *r_serverinfo |= SERVERINFO_NTDS;
                             }
-			  ldap_value_free (vals);
 			}
+                      my_ldap_value_free (vals);
 		    }
 
 		  /* From man ldap_search_s: "res parameter of
@@ -764,22 +774,22 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
                * in the future. */
 
 	      vals = ldap_get_values (ldap_conn, si_res, "baseKeySpaceDN");
-	      if (vals)
+	      if (vals && vals[0])
 		{
 		  basedn = xtrystrdup (vals[0]);
-		  ldap_value_free (vals);
 		}
+              my_ldap_value_free (vals);
 
 	      vals = ldap_get_values (ldap_conn, si_res, "software");
-	      if (vals)
+	      if (vals && vals[0])
 		{
                   if (opt.debug)
                     log_debug ("ks-ldap: PGP Server: \t%s\n", vals[0]);
-		  ldap_value_free (vals);
 		}
+              my_ldap_value_free (vals);
 
 	      vals = ldap_get_values (ldap_conn, si_res, "version");
-	      if (vals)
+	      if (vals && vals[0])
 		{
                   if (opt.debug)
                     log_debug ("ks-ldap: PGP Server Version:\t%s\n", vals[0]);
@@ -793,8 +803,8 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 		  if (atoi (vals[0]) > 1)
                     *r_serverinfo |= SERVERINFO_PGPKEYV2;
 
-		  ldap_value_free (vals);
 		}
+              my_ldap_value_free (vals);
 	    }
 
 	  ldap_msgfree (si_res);
@@ -848,10 +858,17 @@ extract_keys (estream_t output,
   char **vals;
 
   es_fprintf (output, "INFO %s BEGIN\n", certid);
-  es_fprintf (output, "pub:%s:", certid);
 
   /* Note: ldap_get_values returns a NULL terminated array of
      strings.  */
+
+  vals = ldap_get_values (ldap_conn, message, "gpgfingerprint");
+  if (vals && vals[0] && vals[0][0])
+    es_fprintf (output, "pub:%s:", vals[0]);
+  else
+    es_fprintf (output, "pub:%s:", certid);
+  my_ldap_value_free (vals);
+
   vals = ldap_get_values (ldap_conn, message, "pgpkeytype");
   if (vals && vals[0])
     {
@@ -859,8 +876,8 @@ extract_keys (estream_t output,
 	es_fprintf  (output, "1");
       else if (strcmp (vals[0],"DSS/DH") == 0)
 	es_fprintf (output, "17");
-      ldap_value_free (vals);
     }
+  my_ldap_value_free (vals);
 
   es_fprintf (output, ":");
 
@@ -870,8 +887,8 @@ extract_keys (estream_t output,
       int v = atoi (vals[0]);
       if (v > 0)
 	es_fprintf (output, "%d", v);
-      ldap_value_free (vals);
     }
+  my_ldap_value_free (vals);
 
   es_fprintf (output, ":");
 
@@ -880,8 +897,8 @@ extract_keys (estream_t output,
     {
       if (strlen (vals[0]) == 15)
 	es_fprintf (output, "%u", (unsigned int) ldap2epochtime (vals[0]));
-      ldap_value_free (vals);
     }
+  my_ldap_value_free (vals);
 
   es_fprintf (output, ":");
 
@@ -890,8 +907,8 @@ extract_keys (estream_t output,
     {
       if (strlen (vals[0]) == 15)
 	es_fprintf (output, "%u", (unsigned int) ldap2epochtime (vals[0]));
-      ldap_value_free (vals);
     }
+  my_ldap_value_free (vals);
 
   es_fprintf (output, ":");
 
@@ -900,8 +917,8 @@ extract_keys (estream_t output,
     {
       if (atoi (vals[0]) == 1)
 	es_fprintf (output, "r");
-      ldap_value_free (vals);
     }
+  my_ldap_value_free (vals);
 
   es_fprintf (output, "\n");
 
@@ -911,8 +928,8 @@ extract_keys (estream_t output,
       int i;
       for (i = 0; vals[i]; i++)
 	es_fprintf (output, "uid:%s\n", vals[i]);
-      ldap_value_free (vals);
     }
+  my_ldap_value_free (vals);
 
   es_fprintf (output, "INFO %s END\n", certid);
 }
@@ -971,6 +988,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 	"dummy",
 	"pgpcertid", "pgpuserid", "pgpkeyid", "pgprevoked", "pgpdisabled",
 	"pgpkeycreatetime", "modifytimestamp", "pgpkeysize", "pgpkeytype",
+        "gpgfingerprint",
 	NULL
       };
     /* 1 if we want just attribute types; 0 if we want both attribute
@@ -1073,7 +1091,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 		}
 	    }
 
-	  ldap_value_free (certid);
+          my_ldap_value_free (certid);
 	}
 
       free_strlist (seen);
@@ -1178,7 +1196,8 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
       {
 	"pgpcertid", "pgpuserid", "pgprevoked", "pgpdisabled",
 	"pgpkeycreatetime", "pgpkeyexpiretime", "modifytimestamp",
-	"pgpkeysize", "pgpkeytype", NULL
+	"pgpkeysize", "pgpkeytype", "gpgfingerprint",
+        NULL
       };
 
     if (opt.debug)
@@ -1218,6 +1237,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 	    add_to_strlist (&dupelist, certid[0]);
 	    count++;
 	  }
+        my_ldap_value_free (certid);
       }
 
     if (ldap_err == LDAP_SIZELIMIT_EXCEEDED)
@@ -1247,18 +1267,26 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 	    LDAPMessage *uids;
 
 	    certid = ldap_get_values (ldap_conn, each, "pgpcertid");
-	    if (! certid || ! certid[0])
-	      continue;
+	    if (!certid || !certid[0])
+              {
+                my_ldap_value_free (certid);
+                continue;
+              }
 
 	    /* Have we seen this certid before? */
 	    if (! strlist_find (dupelist, certid[0]))
 	      {
 		add_to_strlist (&dupelist, certid[0]);
 
-		es_fprintf (fp, "pub:%s:",certid[0]);
+                vals = ldap_get_values (ldap_conn, each, "gpgfingerprint");
+                if (vals && vals[0] && vals[0][0])
+                  es_fprintf (fp, "pub:%s:", vals[0]);
+                else
+                  es_fprintf (fp, "pub:%s:", certid[0]);
+                my_ldap_value_free (vals);
 
 		vals = ldap_get_values (ldap_conn, each, "pgpkeytype");
-		if (vals)
+		if (vals && vals[0])
 		  {
 		    /* The LDAP server doesn't exactly handle this
 		       well. */
@@ -1266,60 +1294,60 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 		      es_fputs ("1", fp);
 		    else if (strcasecmp (vals[0], "DSS/DH") == 0)
 		      es_fputs ("17", fp);
-		    ldap_value_free (vals);
 		  }
+		my_ldap_value_free (vals);
 
 		es_fputc (':', fp);
 
 		vals = ldap_get_values (ldap_conn, each, "pgpkeysize");
-		if (vals)
+		if (vals && vals[0])
 		  {
 		    /* Not sure why, but some keys are listed with a
 		       key size of 0.  Treat that like an unknown. */
 		    if (atoi (vals[0]) > 0)
 		      es_fprintf (fp, "%d", atoi (vals[0]));
-		    ldap_value_free (vals);
 		  }
+                my_ldap_value_free (vals);
 
 		es_fputc (':', fp);
 
 		/* YYYYMMDDHHmmssZ */
 
 		vals = ldap_get_values (ldap_conn, each, "pgpkeycreatetime");
-		if(vals && strlen (vals[0]) == 15)
+		if(vals && vals[0] && strlen (vals[0]) == 15)
 		  {
 		    es_fprintf (fp, "%u",
 				(unsigned int) ldap2epochtime(vals[0]));
-		    ldap_value_free (vals);
 		  }
+                my_ldap_value_free (vals);
 
 		es_fputc (':', fp);
 
 		vals = ldap_get_values (ldap_conn, each, "pgpkeyexpiretime");
-		if (vals && strlen (vals[0]) == 15)
+		if (vals && vals[0] && strlen (vals[0]) == 15)
 		  {
 		    es_fprintf (fp, "%u",
 				(unsigned int) ldap2epochtime (vals[0]));
-		    ldap_value_free (vals);
 		  }
+                my_ldap_value_free (vals);
 
 		es_fputc (':', fp);
 
 		vals = ldap_get_values (ldap_conn, each, "pgprevoked");
-		if (vals)
+		if (vals && vals[0])
 		  {
 		    if (atoi (vals[0]) == 1)
 		      es_fprintf (fp, "r");
-		    ldap_value_free (vals);
 		  }
+                my_ldap_value_free (vals);
 
 		vals = ldap_get_values (ldap_conn, each, "pgpdisabled");
-		if (vals)
+		if (vals && vals[0])
 		  {
 		    if (atoi (vals[0]) ==1)
 		      es_fprintf (fp, "d");
-		    ldap_value_free (vals);
 		  }
+                my_ldap_value_free (vals);
 
 #if 0
 		/* This is not yet specified in the keyserver
@@ -1327,12 +1355,12 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 		es_fputc (':', fp);
 
 		vals = ldap_get_values (ldap_conn, each, "modifytimestamp");
-		if(vals && strlen (vals[0]) == 15)
+		if(vals && vals[0] strlen (vals[0]) == 15)
 		  {
 		    es_fprintf (fp, "%u",
 				(unsigned int) ldap2epochtime (vals[0]));
-		    ldap_value_free (vals);
 		  }
+                my_ldap_value_free (vals);
 #endif
 
 		es_fprintf (fp, "\n");
@@ -1343,10 +1371,13 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 		     uids = ldap_next_entry (ldap_conn, uids))
 		  {
 		    vals = ldap_get_values (ldap_conn, uids, "pgpcertid");
-		    if (! vals)
-		      continue;
+                    if (!vals || !vals[0])
+                      {
+                        my_ldap_value_free (vals);
+                        continue;
+                      }
 
-		    if (strcasecmp (certid[0], vals[0]) == 0)
+		    if (!ascii_strcasecmp (certid[0], vals[0]))
 		      {
 			char **uidvals;
 
@@ -1356,12 +1387,14 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 						   uids, "pgpuserid");
 			if (uidvals)
 			  {
-			    /* Need to escape any colons */
-			    char *quoted = percent_escape (uidvals[0], NULL);
-			    es_fputs (quoted, fp);
+			    /* Need to percent escape any colons */
+                            char *quoted = try_percent_escape (uidvals[0],
+                                                               NULL);
+                            if (quoted)
+                              es_fputs (quoted, fp);
 			    xfree (quoted);
-			    ldap_value_free (uidvals);
 			  }
+                        my_ldap_value_free (uidvals);
 
 			es_fprintf (fp, "\n");
 		      }
@@ -1370,7 +1403,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 		  }
 	      }
 
-	      ldap_value_free (certid);
+            my_ldap_value_free (certid);
 	  }
       }
 
@@ -1384,8 +1417,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
  out:
   if (err)
     {
-      if (fp)
-	es_fclose (fp);
+      es_fclose (fp);
     }
   else
     {
