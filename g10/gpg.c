@@ -2314,6 +2314,8 @@ gpg_deinit_default_ctrl (ctrl_t ctrl)
 
   keydb_release (ctrl->cached_getkey_kdb);
   gpg_keyboxd_deinit_session_data (ctrl);
+  xfree (ctrl->secret_keygrips);
+  ctrl->secret_keygrips = NULL;
 }
 
 

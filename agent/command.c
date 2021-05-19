@@ -1,7 +1,7 @@
 /* command.c - gpg-agent command handler
  * Copyright (C) 2001-2011 Free Software Foundation, Inc.
  * Copyright (C) 2001-2013 Werner Koch
- * Copyright (C) 2015 g10 Code GmbH.
+ * Copyright (C) 2015-2021 g10 Code GmbH.
  *
  * This file is part of GnuPG.
  *
@@ -442,6 +442,34 @@ leave_cmd (assuan_context_t ctx, gpg_error_t err)
 }
 
 
+/* Take the keyinfo for cards from our local cache.  Actually this
+ * cache could be a global one but then we would need to employ
+ * reference counting.  */
+struct card_key_info_s *
+get_keyinfo_on_cards (ctrl_t ctrl)
+{
+  struct card_key_info_s *keyinfo_on_cards;
+
+  if (ctrl->server_local->last_card_keyinfo.ki
+      && ctrl->server_local->last_card_keyinfo.eventno == eventcounter.card
+      && (ctrl->server_local->last_card_keyinfo.maybe_key_change
+          == eventcounter.maybe_key_change))
+    {
+      keyinfo_on_cards = ctrl->server_local->last_card_keyinfo.ki;
+    }
+  else if (!agent_card_keyinfo (ctrl, NULL, 0, &keyinfo_on_cards))
+    {
+      agent_card_free_keyinfo (ctrl->server_local->last_card_keyinfo.ki);
+      ctrl->server_local->last_card_keyinfo.ki = keyinfo_on_cards;
+      ctrl->server_local->last_card_keyinfo.eventno = eventcounter.card;
+      ctrl->server_local->last_card_keyinfo.maybe_key_change
+        = eventcounter.maybe_key_change;
+    }
+
+  return keyinfo_on_cards;
+}
+
+
 
 static const char hlp_geteventcounter[] =
   "GETEVENTCOUNTER\n"
@@ -602,34 +630,132 @@ cmd_marktrusted (assuan_context_t ctx, char *line)
 
 static const char hlp_havekey[] =
   "HAVEKEY <hexstrings_with_keygrips>\n"
+  "HAVEKEY --list[=<limit>]\n"
   "\n"
   "Return success if at least one of the secret keys with the given\n"
-  "keygrips is available.";
+  "keygrips is available.  With --list return all availabale keygrips\n"
+  "as binary data; with <limit> bail out at this number of keygrips";
 static gpg_error_t
 cmd_havekey (assuan_context_t ctx, char *line)
 {
+  ctrl_t ctrl;
   gpg_error_t err;
-  unsigned char buf[20];
+  unsigned char grip[20];
+  char *p;
+  int list_mode;  /* Less than 0 for no limit.  */
+  int counter;
+  char *dirname;
+  gnupg_dir_t dir;
+  gnupg_dirent_t dir_entry;
+  char hexgrip[41];
+  struct card_key_info_s *keyinfo_on_cards, *l;
 
-  do
+  if (has_option_name (line, "--list"))
     {
-      err = parse_keygrip (ctx, line, buf);
-      if (err)
-        return err;
-
-      if (!agent_key_available (buf))
-        return 0; /* Found.  */
-
-      while (*line && *line != ' ' && *line != '\t')
-        line++;
-      while (*line == ' ' || *line == '\t')
-        line++;
+      if ((p = option_value (line, "--list")))
+	list_mode = atoi (p);
+      else
+	list_mode = -1;
     }
-  while (*line);
+  else
+    list_mode = 0;
 
-  /* No leave_cmd() here because errors are expected and would clutter
-     the log.  */
-  return gpg_error (GPG_ERR_NO_SECKEY);
+
+  if (!list_mode)
+    {
+      do
+        {
+          err = parse_keygrip (ctx, line, grip);
+          if (err)
+            return err;
+
+          if (!agent_key_available (grip))
+            return 0; /* Found.  */
+
+          while (*line && *line != ' ' && *line != '\t')
+            line++;
+          while (*line == ' ' || *line == '\t')
+            line++;
+        }
+      while (*line);
+
+      /* No leave_cmd() here because errors are expected and would clutter
+       * the log.  */
+      return gpg_error (GPG_ERR_NO_SECKEY);
+    }
+
+  /* List mode.  */
+  dir = NULL;
+  dirname = NULL;
+  ctrl = assuan_get_pointer (ctx);
+
+  if (ctrl->restricted)
+    {
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      goto leave;
+    }
+
+  dirname = make_filename_try (gnupg_homedir (),
+                               GNUPG_PRIVATE_KEYS_DIR, NULL);
+  if (!dirname)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  dir = gnupg_opendir (dirname);
+  if (!dir)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  counter = 0;
+  while ((dir_entry = gnupg_readdir (dir)))
+    {
+      if (strlen (dir_entry->d_name) != 44
+          || strcmp (dir_entry->d_name + 40, ".key"))
+        continue;
+      strncpy (hexgrip, dir_entry->d_name, 40);
+      hexgrip[40] = 0;
+
+      if ( hex2bin (hexgrip, grip, 20) < 0 )
+        continue; /* Bad hex string.  */
+
+      if (list_mode > 0 && ++counter > list_mode)
+        {
+          err = gpg_error (GPG_ERR_TRUNCATED);
+          goto leave;
+        }
+
+      err = assuan_send_data (ctx, grip, 20);
+      if (err)
+        goto leave;
+    }
+
+  /* And now the keys from the current cards.  If they already got a
+   * stub, they are listed twice but we don't care.  */
+  keyinfo_on_cards = get_keyinfo_on_cards (ctrl);
+  for (l = keyinfo_on_cards; l; l = l->next)
+    {
+      if ( hex2bin (l->keygrip, grip, 20) < 0 )
+        continue; /* Bad hex string.  */
+
+      if (list_mode > 0 && ++counter > list_mode)
+        {
+          err = gpg_error (GPG_ERR_TRUNCATED);
+          goto leave;
+        }
+
+      err = assuan_send_data (ctx, grip, 20);
+      if (err)
+        goto leave;
+    }
+  err = 0;
+
+ leave:
+  gnupg_closedir (dir);
+  xfree (dirname);
+  return leave_cmd (ctx, err);
 }
 
 
@@ -1423,24 +1549,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   if (opt_with_ssh || list_mode == 2)
     cf = ssh_open_control_file ();
 
-  /* Take the keyinfo for cards from our local cache.  Actually this
-   * cache could be a global one but then we would need to employ
-   * reference counting. */
-  if (ctrl->server_local->last_card_keyinfo.ki
-      && ctrl->server_local->last_card_keyinfo.eventno == eventcounter.card
-      && (ctrl->server_local->last_card_keyinfo.maybe_key_change
-          == eventcounter.maybe_key_change))
-    {
-      keyinfo_on_cards = ctrl->server_local->last_card_keyinfo.ki;
-    }
-  else if (!agent_card_keyinfo (ctrl, NULL, 0, &keyinfo_on_cards))
-    {
-      agent_card_free_keyinfo (ctrl->server_local->last_card_keyinfo.ki);
-      ctrl->server_local->last_card_keyinfo.ki = keyinfo_on_cards;
-      ctrl->server_local->last_card_keyinfo.eventno = eventcounter.card;
-      ctrl->server_local->last_card_keyinfo.maybe_key_change
-        = eventcounter.maybe_key_change;
-    }
+  keyinfo_on_cards = get_keyinfo_on_cards (ctrl);
 
   if (list_mode == 2)
     {

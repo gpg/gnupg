@@ -553,7 +553,7 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
 	}
 
       if (secret || mark_secret)
-        any_secret = !agent_probe_any_secret_key (NULL, keyblock);
+        any_secret = !agent_probe_any_secret_key (ctrl, keyblock);
       else
         any_secret = 0;
 
@@ -645,7 +645,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
       if (secret)
         any_secret = 1;
       else if (mark_secret)
-        any_secret = !agent_probe_any_secret_key (NULL, keyblock);
+        any_secret = !agent_probe_any_secret_key (ctrl, keyblock);
       else
         any_secret = 0;
 

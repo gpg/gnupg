@@ -110,6 +110,14 @@ struct server_control_s
 
   /* This is used to cache a key data base handle.  */
   KEYDB_HANDLE cached_getkey_kdb;
+
+  /* Cached results from HAVEKEY --list.  They are used if the pointer
+   * is not NULL.  The length gives the length in bytes and is a
+   * multiple of 20.  If the no_more flag is set the list shall not
+   * anymore be refreshed even if it has been freed and NULLed. */
+  unsigned char *secret_keygrips;
+  size_t secret_keygrips_len;
+  int no_more_secret_keygrips;
 };
 
 
