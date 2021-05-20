@@ -2208,7 +2208,11 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
 
   p = build_rel_path (hd->uri);
   if (!p)
-    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+    {
+      xfree (authstr);
+      xfree (proxy_authstr);
+      return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+    }
 
   if (http_proxy && *http_proxy)
     {

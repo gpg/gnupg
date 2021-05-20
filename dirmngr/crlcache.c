@@ -1725,7 +1725,8 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
         {
           log_error ("hash algo mismatch: %d announced but %d used\n",
                      algo, hashalgo);
-          return gpg_error (GPG_ERR_INV_CRL);
+          err = gpg_error (GPG_ERR_INV_CRL);
+          goto leave;
         }
       /* Add some restrictions; see ../sm/certcheck.c for details.  */
       switch (algo)
@@ -1741,14 +1742,16 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
         default:
           log_error ("PSS hash algorithm '%s' rejected\n",
                      gcry_md_algo_name (algo));
-          return gpg_error (GPG_ERR_DIGEST_ALGO);
+          err = gpg_error (GPG_ERR_DIGEST_ALGO);
+          goto leave;
         }
 
       if (gcry_md_get_algo_dlen (algo) != saltlen)
         {
           log_error ("PSS hash algorithm '%s' rejected due to salt length %u\n",
                      gcry_md_algo_name (algo), saltlen);
-          return gpg_error (GPG_ERR_DIGEST_ALGO);
+          err = gpg_error (GPG_ERR_DIGEST_ALGO);
+          goto leave;
         }
     }
 

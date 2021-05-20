@@ -563,8 +563,10 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
       use_ldaps = server->use_ldaps;
     }
   else /* Use a default server. */
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-
+    {
+      xfree (proxy);
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
 
   if (!base)
     base = "";
