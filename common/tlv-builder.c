@@ -350,6 +350,7 @@ get_tlv_length (int class, int tag, int constructed, size_t length)
 
   (void)constructed;  /* Not used, but passed for uniformity of such calls.  */
 
+  /* coverity[identical_branches] */
   if (tag < 0x1f)
     {
       buflen++;

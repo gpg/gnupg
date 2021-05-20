@@ -363,7 +363,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   if (!pi2)
     {
       err = gpg_error_from_syserror ();
-      xfree (pi2);
+      xfree (pi);
       return err;
     }
   pi->max_length = MAX_PASSPHRASE_LEN + 1;
@@ -465,7 +465,10 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce, time_t timestamp,
                                         "protect your new key"),
                                      &passphrase_buffer);
       if (rc)
-        return rc;
+        {
+          gcry_sexp_release (s_keyparam);
+          return rc;
+        }
       passphrase = passphrase_buffer;
     }
 

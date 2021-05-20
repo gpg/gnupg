@@ -319,6 +319,7 @@ read_key (const char *fname)
   if (buflen >= 4 && !memcmp (buf, "Key:", 4))
     {
       log_error ("Extended key format is not supported by this tool\n");
+      xfree (buf);
       return NULL;
     }
   key = make_canonical (fname, buf, buflen);
@@ -793,7 +794,10 @@ agent_askpin (ctrl_t ctrl,
   passphrase = get_passphrase (0);
   size = strlen (passphrase);
   if (size >= pininfo->max_length)
-    return gpg_error (GPG_ERR_TOO_LARGE);
+    {
+      xfree (passphrase);
+      return gpg_error (GPG_ERR_TOO_LARGE);
+    }
 
   memcpy (&pininfo->pin, passphrase, size);
   xfree (passphrase);

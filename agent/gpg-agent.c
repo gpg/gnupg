@@ -3218,7 +3218,10 @@ check_own_socket (void)
 
   err = npth_attr_init (&tattr);
   if (err)
-    return;
+    {
+      xfree (sockname);
+      return;
+    }
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
   err = npth_create (&thread, &tattr, check_own_socket_thread, sockname);
   if (err)

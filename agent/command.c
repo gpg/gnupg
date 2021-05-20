@@ -1144,10 +1144,11 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
   /* First inquire the parameters */
   rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", MAXLEN_KEYPARAM);
-  if (!rc)
-    rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
   if (rc)
-    return rc;
+    goto leave;
+  rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
+  if (rc)
+    goto leave;
 
   init_membuf (&outbuf, 512);
 
