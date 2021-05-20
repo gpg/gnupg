@@ -792,6 +792,8 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   ksba_name_t name, name2;
   unsigned int reason;
   const unsigned char *cert_der = NULL;
+  char *algostr;
+  int algoid;
 
   (void)have_secret;
 
@@ -845,6 +847,47 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   es_fprintf (fp, "      md5_fpr: %s\n", dn?dn:"error");
   xfree (dn);
 
+  algoid = 0;
+  algostr = gpgsm_pubkey_algo_string (cert, &algoid);
+
+  /* For RSA we support printing an OpenPGP v4 fingerprint under the
+   * assumption that the not-before date would be used as the OpenPGP
+   * key creation date.  */
+  if (algoid == GCRY_PK_RSA)
+    {
+      ksba_sexp_t pk;
+      size_t pklen;
+      const unsigned char *m, *e;
+      size_t mlen, elen;
+      unsigned char fpr20[20];
+      time_t tmpt;
+      unsigned long keytime;
+
+      pk = ksba_cert_get_public_key (cert);
+      if (pk)
+        {
+          ksba_cert_get_validity (cert, 0, t);
+          tmpt = isotime2epoch (t);
+          keytime = (tmpt == (time_t)(-1))? 0 : (u32)tmpt;
+
+          pklen = gcry_sexp_canon_len (pk, 0, NULL, NULL);
+          if (!pklen)
+            log_error ("libksba did not return a proper S-Exp\n");
+          else if (!get_rsa_pk_from_canon_sexp (pk, pklen,
+                                                &m, &mlen, &e, &elen)
+                   && !compute_openpgp_fpr_rsa (4,
+                                                keytime,
+                                                m, mlen, e, elen,
+                                                fpr20, NULL))
+            {
+              char *fpr = bin2hex (fpr20, 20, NULL);
+              es_fprintf (fp, "      pgp_fpr: %s\n", fpr);
+              xfree (fpr);
+            }
+          ksba_free (pk);
+        }
+    }
+
   dn = gpgsm_get_certid (cert);
   es_fprintf (fp, "       certid: %s\n", dn?dn:"error");
   xfree (dn);
@@ -866,13 +909,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   s = get_oid_desc (oid, 0, NULL);
   es_fprintf (fp, "     hashAlgo: %s%s%s%s\n", oid, s?" (":"",s?s:"",s?")":"");
 
-  {
-    char *algostr;
-
-    algostr = gpgsm_pubkey_algo_string (cert, NULL);
-    es_fprintf (fp, "      keyType: %s\n", algostr? algostr : "[error]");
-    xfree (algostr);
-  }
+  es_fprintf (fp, "      keyType: %s\n", algostr? algostr : "[error]");
 
   /* subjectKeyIdentifier */
   es_fputs ("    subjKeyId: ", fp);
@@ -1154,6 +1191,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
         es_fprintf (fp, "  [stored as ephemeral]\n");
     }
 
+  xfree (algostr);
 }
 
 
