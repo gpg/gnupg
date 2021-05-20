@@ -1687,6 +1687,8 @@ ask_about_binding (ctrl_t ctrl,
          GPGSQL_ARG_END);
       if (rc)
         {
+          sqlite3_free (sqerr);
+          sqerr = NULL;
           rc = gpg_error (GPG_ERR_GENERAL);
           break;
         }
@@ -1972,6 +1974,7 @@ ask_about_binding (ctrl_t ctrl,
       else if (!response[0])
         /* Default to unknown.  Don't save it.  */
         {
+          xfree (response);
           tty_printf (_("Defaulting to unknown.\n"));
           *policy = TOFU_POLICY_UNKNOWN;
           break;
@@ -1983,6 +1986,7 @@ ask_about_binding (ctrl_t ctrl,
           if (choice)
             {
               int c = ((size_t) choice - (size_t) choices) / 2;
+              xfree (response);
 
               switch (c)
                 {

@@ -527,7 +527,11 @@ do_get_from_fd ( const char *keyword, int hidden, int getbool )
   write_status (STATUS_GOT_IT);
 
   if (getbool)	 /* Fixme: is this correct??? */
-    return (string[0] == 'Y' || string[0] == 'y') ? "" : NULL;
+    {
+      char *rv = (string[0] == 'Y' || string[0] == 'y') ? "" : NULL;
+      xfree (string);
+      return rv;
+    }
 
   return string;
 }

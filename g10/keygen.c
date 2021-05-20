@@ -237,12 +237,13 @@ print_status_key_not_created (const char *handle)
 static gpg_error_t
 write_uid (kbnode_t root, const char *s)
 {
-  PACKET *pkt = xmalloc_clear (sizeof *pkt);
+  PACKET *pkt = NULL;
   size_t n = strlen (s);
 
   if (n > MAX_UID_PACKET_LENGTH - 10)
     return gpg_error (GPG_ERR_INV_USER_ID);
 
+  pkt = xmalloc_clear (sizeof *pkt);
   pkt->pkttype = PKT_USER_ID;
   pkt->pkt.user_id = xmalloc_clear (sizeof *pkt->pkt.user_id + n);
   pkt->pkt.user_id->len = n;
@@ -2860,7 +2861,10 @@ ask_expire_interval(int object,const char *def_expire)
 	    xfree(prompt);
 
 	    if(*answer=='\0')
-	      answer=xstrdup(def_expire);
+              {
+                xfree (answer);
+	        answer = xstrdup (def_expire);
+              }
 	  }
 	cpr_kill_prompt();
 	trim_spaces(answer);
@@ -5238,12 +5242,15 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
   epoch2isotime (timestamp, (time_t)sk->timestamp);
   err = hexkeygrip_from_pk (sk, &hexgrip);
   if (err)
-    return err;
+    goto leave;
 
   memset(&info, 0, sizeof (info));
   rc = agent_scd_getattr ("SERIALNO", &info);
   if (rc)
-    return (gpg_error_t)rc;
+    {
+      err = (gpg_error_t)rc;
+      goto leave;
+    }
 
   rc = agent_keytocard (hexgrip, 2, 1, info.serialno, timestamp);
   xfree (info.serialno);

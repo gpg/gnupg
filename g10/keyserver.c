@@ -284,7 +284,7 @@ parse_keyserver_uri (const char *string,int require_scheme)
   if(*idx=='\0' || *idx=='[')
     {
       if(require_scheme)
-	return NULL;
+	goto fail;
 
       /* Assume HKP if there is no scheme */
       assume_hkp=1;

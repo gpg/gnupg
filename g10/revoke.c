@@ -435,6 +435,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 	iobuf_close(out);
     release_revocation_reason_info( reason );
     release_armor_context (afx);
+    keydb_release (kdbhd);
     return rc;
 }
 
@@ -804,7 +805,10 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 	    trim_spaces( answer );
 	    cpr_kill_prompt();
 	    if( *answer == 'q' || *answer == 'Q')
-	      return NULL; /* cancel */
+              {
+                xfree (answer);
+                return NULL; /* cancel */
+              }
 	    if( hint && !*answer )
 		n = hint;
 	    else if(!digitp( answer ) )

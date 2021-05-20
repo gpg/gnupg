@@ -5306,8 +5306,11 @@ menu_set_keyserver_url (ctrl_t ctrl, const char *url, kbnode_t pub_keyblock)
 	}
     }
 
-  if (ascii_strcasecmp (answer, "none") == 0)
-    uri = NULL;
+  if (!ascii_strcasecmp (answer, "none"))
+    {
+      xfree (answer);
+      uri = NULL;
+    }
   else
     {
       struct keyserver_spec *keyserver = NULL;
@@ -5379,12 +5382,14 @@ menu_set_keyserver_url (ctrl_t ctrl, const char *url, kbnode_t pub_keyblock)
                            uri
                            ? _("Are you sure you want to replace it? (y/N) ")
                            : _("Are you sure you want to delete it? (y/N) ")))
+	                xfree (user);
 			continue;
 		    }
 		  else if (uri == NULL)
 		    {
 		      /* There is no current keyserver URL, so there
 		         is no point in trying to un-set it. */
+	              xfree (user);
 		      continue;
 		    }
 
@@ -5397,6 +5402,7 @@ menu_set_keyserver_url (ctrl_t ctrl, const char *url, kbnode_t pub_keyblock)
 		      log_error ("update_keysig_packet failed: %s\n",
 				 gpg_strerror (rc));
 		      xfree (uri);
+	              xfree (user);
 		      return 0;
 		    }
 		  /* replace the packet */

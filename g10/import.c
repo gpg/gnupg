@@ -4524,7 +4524,10 @@ append_new_uid (unsigned int options,
           err = insert_key_origin_uid (n->pkt->pkt.user_id,
                                        curtime, origin, url);
           if (err)
-            return err;
+            {
+              release_kbnode (n);
+              return err;
+            }
         }
 
       if (n_where)

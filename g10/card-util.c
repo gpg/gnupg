@@ -140,7 +140,10 @@ change_pin (int unblock_v2, int allow_admin)
 	answer = cpr_get("cardutil.change_pin.menu",_("Your selection? "));
 	cpr_kill_prompt();
 	if (strlen (answer) != 1)
-	  continue;
+          {
+            xfree (answer);
+            continue;
+          }
 
 	if (*answer == '1')
 	  {
@@ -185,8 +188,10 @@ change_pin (int unblock_v2, int allow_admin)
 	  }
 	else if (*answer == 'q' || *answer == 'Q')
 	  {
+            xfree (answer);
 	    break;
 	  }
+        xfree (answer);
       }
 
   agent_release_card_info (&info);
@@ -1450,7 +1455,10 @@ ask_card_keyattr (int keyno, const struct key_attr *current)
       algo = *answer? atoi (answer) : 0;
 
       if (!*answer || algo == 1 || algo == 2)
-        break;
+        {
+          xfree (answer);
+          break;
+        }
       else
         tty_printf (_("Invalid selection.\n"));
     }

@@ -1601,6 +1601,7 @@ check_permissions (const char *path, int item)
   if (gnupg_stat (dir,&dirbuf) || !S_ISDIR (dirbuf.st_mode))
     {
       /* Weird error */
+      xfree(dir);
       ret=1;
       goto end;
     }

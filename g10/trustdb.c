@@ -1430,6 +1430,7 @@ ask_ownertrust (ctrl_t ctrl, u32 *kid, int minimum)
     {
       log_error (_("public key %s not found: %s\n"),
                  keystr(kid), gpg_strerror (rc) );
+      free_public_key (pk);
       return TRUST_UNKNOWN;
     }
 
