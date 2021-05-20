@@ -381,7 +381,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   if (!pi2)
     {
       err = gpg_error_from_syserror ();
-      xfree (pi2);
+      xfree (pi);
       return err;
     }
   pi->max_length = MAX_PASSPHRASE_LEN + 1;

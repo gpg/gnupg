@@ -203,6 +203,7 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, unsigned char **encval)
   rc = encode_session_key (dek, &s_data);
   if (rc)
     {
+      gcry_sexp_release (s_pkey);
       log_error ("encode_session_key failed: %s\n", gpg_strerror (rc));
       return rc;
     }

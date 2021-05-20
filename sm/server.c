@@ -724,8 +724,13 @@ cmd_export (assuan_context_t ctx, char *line)
 
   if (opt_secret)
     {
-      if (!list || !*list->d)
+      if (!list)
         return set_error (GPG_ERR_NO_DATA, "No key given");
+      if (!*list->d)
+        {
+          free_strlist (list);
+          return set_error (GPG_ERR_NO_DATA, "No key given");
+        }
       if (list->next)
         return set_error (GPG_ERR_TOO_MANY, "Only one key allowed");
   }
@@ -948,17 +953,27 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
       int outfd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
 
       if ( outfd == -1 )
-        return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+        {
+          free_strlist (list);
+          return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+        }
       fp = es_fdopen_nc (outfd, "w");
       if (!fp)
-        return set_error (gpg_err_code_from_syserror (), "es_fdopen() failed");
+        {
+          free_strlist (list);
+          return set_error (gpg_err_code_from_syserror (),
+                            "es_fdopen() failed");
+        }
     }
   else
     {
       fp = es_fopencookie (ctx, "w", data_line_cookie_functions);
       if (!fp)
-        return set_error (GPG_ERR_ASS_GENERAL,
-                          "error setting up a data stream");
+        {
+          free_strlist (list);
+          return set_error (GPG_ERR_ASS_GENERAL,
+                            "error setting up a data stream");
+        }
     }
 
   ctrl->with_colons = 1;

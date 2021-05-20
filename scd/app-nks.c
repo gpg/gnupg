@@ -206,7 +206,7 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
 
           newlen = 1 + buflen[i] - offset[i];
           newbuf = xtrymalloc (newlen);
-          if (!newlen)
+          if (!newbuf)
             {
               xfree (buffer[0]);
               xfree (buffer[1]);

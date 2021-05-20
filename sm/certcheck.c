@@ -293,7 +293,6 @@ extract_pss_params (gcry_sexp_t s_sig, int *r_algo, unsigned int *r_saltlen)
   if (*r_saltlen < 20)
     {
       log_error ("length of PSS salt too short\n");
-      gcry_sexp_release (s_sig);
       return gpg_error (GPG_ERR_DIGEST_ALGO);
     }
   if (!*r_algo)
