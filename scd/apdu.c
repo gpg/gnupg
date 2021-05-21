@@ -2251,6 +2251,8 @@ apdu_close_reader (int slot)
   if (reader_table[slot].close_reader)
     {
       sw = reader_table[slot].close_reader (slot);
+      xfree (reader_table[slot].rdrname);
+      reader_table[slot].rdrname = NULL;
       reader_table[slot].used = 0;
       if (DBG_READER)
         log_debug ("leave: apdu_close_reader => 0x%x (close_reader)\n", sw);
