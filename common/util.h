@@ -263,7 +263,6 @@ const char *get_keyalgo_string (enum gcry_pk_algos algo,
 
 /*-- homedir.c --*/
 const char *standard_homedir (void);
-const char *default_homedir (void);
 void gnupg_set_homedir (const char *newdir);
 void gnupg_maybe_make_homedir (const char *fname, int quiet);
 const char *gnupg_homedir (void);

@@ -479,7 +479,7 @@ how_to_fix_the_trustdb ()
     name = "trustdb.gpg";
 
   log_info (_("You may try to re-create the trustdb using the commands:\n"));
-  log_info ("  cd %s\n", default_homedir ());
+  log_info ("  cd %s\n", gnupg_homedir ());
   log_info ("  %s --export-ownertrust > otrust.tmp\n", GPG_NAME);
 #ifdef HAVE_W32_SYSTEM
   log_info ("  del %s\n", name);

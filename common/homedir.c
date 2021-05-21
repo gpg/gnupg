@@ -233,7 +233,7 @@ copy_dir_with_fixup (const char *newdir)
 /* Get the standard home directory.  In general this function should
    not be used as it does not consider a registry value (under W32) or
    the GNUPGHOME environment variable.  It is better to use
-   default_homedir(). */
+   gnupg_homedir(). */
 const char *
 standard_homedir (void)
 {
@@ -248,6 +248,7 @@ standard_homedir (void)
       if (w32_portable_app)
         {
           dir = xstrconcat (rdir, DIRSEP_S "home", NULL);
+          gpgrt_annotate_leaked_object (dir);
         }
       else
         {
@@ -259,6 +260,7 @@ standard_homedir (void)
             {
               dir = xstrconcat (path, "\\gnupg", NULL);
               xfree (path);
+              gpgrt_annotate_leaked_object (dir);
 
               /* Try to create the directory if it does not yet exists.  */
               if (gnupg_access (dir, F_OK))
@@ -276,7 +278,7 @@ standard_homedir (void)
 
 /* Set up the default home directory.  The usual --homedir option
    should be parsed later. */
-const char *
+static const char *
 default_homedir (void)
 {
   const char *dir;
@@ -336,7 +338,18 @@ default_homedir (void)
 
       p = copy_dir_with_fixup (dir);
       if (p)
-        dir = p;
+        {
+          /* A new buffer has been allocated with proper semantics.
+           * Assign this to DIR.  If DIR is passed again to
+           * copy_dir_with_fixup there will be no need for a fix up
+           * and the function returns NULL.  Thus we leak only once.
+           * Setting the homedir is usually a one-off task but might
+           * be called a second time.  We also ignore such extra leaks
+           * because we don't know who still references the former
+           * string.  */
+          gpgrt_annotate_leaked_object (p);
+          dir = p;
+        }
 
       if (!is_gnupg_default_homedir (dir))
         non_default_homedir = 1;
@@ -458,6 +471,7 @@ w32_commondir (void)
            * version.  Use the installation directory instead.  */
           dir = xstrdup (rdir);
         }
+      gpgrt_annotate_leaked_object (dir);
     }
 
   return dir;
@@ -487,6 +501,10 @@ gnupg_set_homedir (const char *newdir)
   xfree (the_gnupg_homedir);
   the_gnupg_homedir = make_absfilename (newdir, NULL);;
   xfree (tmp);
+  /* Fixme: Should we use
+   *   gpgrt_annotate_leaked_object(the_gnupg_homedir)
+   * despite that we may free and allocate a new one in some
+   * cases?  */
 }
 
 
@@ -561,6 +579,7 @@ gnupg_daemon_rootdir (void)
         name = xstrdup ("/"); /* Error - use the curret top dir instead.  */
       else
         name = xstrdup (path);
+      gpgrt_annotate_leaked_object (name);
     }
 
   return name;
@@ -789,6 +808,7 @@ gnupg_socketdir (void)
     {
       unsigned int dummy;
       name = _gnupg_socketdir_internal (0, &dummy);
+      gpgrt_annotate_leaked_object (name);
     }
 
   return name;
@@ -811,6 +831,7 @@ gnupg_sysconfdir (void)
       s2 = DIRSEP_S "etc" DIRSEP_S "gnupg";
       name = xmalloc (strlen (s1) + strlen (s2) + 1);
       strcpy (stpcpy (name, s1), s2);
+      gpgrt_annotate_leaked_object (name);
     }
   return name;
 #else /*!HAVE_W32_SYSTEM*/
@@ -837,7 +858,10 @@ gnupg_bindir (void)
       static char *name;
 
       if (!name)
-        name = xstrconcat (rdir, DIRSEP_S "bin", NULL);
+        {
+          name = xstrconcat (rdir, DIRSEP_S "bin", NULL);
+          gpgrt_annotate_leaked_object (name);
+        }
       return name;
     }
   else
@@ -867,7 +891,10 @@ gnupg_libdir (void)
   static char *name;
 
   if (!name)
-    name = xstrconcat (w32_rootdir (), DIRSEP_S "lib" DIRSEP_S "gnupg", NULL);
+    {
+      name = xstrconcat (w32_rootdir (), DIRSEP_S "lib" DIRSEP_S "gnupg", NULL);
+      gpgrt_annotate_leaked_object (name);
+    }
   return name;
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_LIBDIR;
@@ -881,7 +908,11 @@ gnupg_datadir (void)
   static char *name;
 
   if (!name)
-    name = xstrconcat (w32_rootdir (), DIRSEP_S "share" DIRSEP_S "gnupg", NULL);
+    {
+      name = xstrconcat (w32_rootdir (), DIRSEP_S "share" DIRSEP_S "gnupg",
+                         NULL);
+      gpgrt_annotate_leaked_object (name);
+    }
   return name;
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_DATADIR;
@@ -896,8 +927,11 @@ gnupg_localedir (void)
   static char *name;
 
   if (!name)
-    name = xstrconcat (w32_rootdir (), DIRSEP_S "share" DIRSEP_S "locale",
-                       NULL);
+    {
+      name = xstrconcat (w32_rootdir (), DIRSEP_S "share" DIRSEP_S "locale",
+                         NULL);
+      gpgrt_annotate_leaked_object (name);
+    }
   return name;
 #else /*!HAVE_W32_SYSTEM*/
   return LOCALEDIR;
@@ -925,6 +959,7 @@ gnupg_cachedir (void)
                             DIRSEP_S, "var",
                             DIRSEP_S, "cache",
                             DIRSEP_S, "gnupg", NULL);
+          gpgrt_annotate_leaked_object (dir);
         }
       else
         {
@@ -957,6 +992,7 @@ gnupg_cachedir (void)
 
               dir = tmp;
               xfree (path);
+              gpgrt_annotate_leaked_object (dir);
             }
           else
             {
@@ -983,7 +1019,10 @@ gpg_agent_socket_name (void)
   static char *name;
 
   if (!name)
-    name = make_filename (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
+    {
+      name = make_filename (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
+      gpgrt_annotate_leaked_object (name);
+    }
   return name;
 }
 
@@ -994,7 +1033,10 @@ dirmngr_socket_name (void)
   static char *name;
 
   if (!name)
-    name = make_filename (gnupg_socketdir (), DIRMNGR_SOCK_NAME, NULL);
+    {
+      name = make_filename (gnupg_socketdir (), DIRMNGR_SOCK_NAME, NULL);
+      gpgrt_annotate_leaked_object (name);
+    }
   return name;
 }
 
@@ -1006,7 +1048,10 @@ keyboxd_socket_name (void)
   static char *name;
 
   if (!name)
-    name = make_filename (gnupg_socketdir (), KEYBOXD_SOCK_NAME, NULL);
+    {
+      name = make_filename (gnupg_socketdir (), KEYBOXD_SOCK_NAME, NULL);
+      gpgrt_annotate_leaked_object (name);
+    }
   return name;
 }
 
@@ -1067,6 +1112,8 @@ get_default_pinentry_name (int reset)
           else
             xfree (name2);
         }
+      if (name)
+        gpgrt_annotate_leaked_object (name);
     }
 
   return name;
@@ -1122,11 +1169,13 @@ gnupg_module_name (int which)
 
 #define X(a,b,c) do {                                                   \
     static char *name;                                                  \
-    if (!name)                                                          \
+    if (!name) {                                                        \
       name = gnupg_build_directory                                      \
         ? xstrconcat (gnupg_build_directory,                            \
                       DIRSEP_S b DIRSEP_S c EXEEXT_S, NULL)             \
         : xstrconcat (gnupg_ ## a (), DIRSEP_S c EXEEXT_S, NULL);       \
+      gpgrt_annotate_leaked_object (name);                              \
+    }                                                                   \
     return name;                                                        \
   } while (0)
 
