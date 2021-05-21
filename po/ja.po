@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.27\n"
+"Project-Id-Version: gnupg 2.2.28\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-01-12 13:50+0900\n"
+"PO-Revision-Date: 2021-05-21 10:14+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -4795,10 +4795,8 @@ msgstr "型%dの下位パケットにクリティカル・ビットを発見\n"
 msgid "problem with the agent: %s\n"
 msgstr "エージェントに問題: %s\n"
 
-#, fuzzy
-#| msgid "Please enter the new passphrase"
 msgid "Please enter the passphrase for decryption."
-msgstr "新しいパスフレーズを入力してください"
+msgstr "復号のためにパスフレーズを入力してください。"
 
 msgid "Enter passphrase\n"
 msgstr "パスフレーズを入力\n"
@@ -6826,10 +6824,9 @@ msgstr "準備ができました。今、この要求をあなたのCAに送る�
 msgid "resource problem: out of core\n"
 msgstr "リソースの問題: メモリがありません\n"
 
-#, fuzzy, c-format
-#| msgid "%s encrypted data\n"
+#, c-format
 msgid "%s.%s encrypted data\n"
-msgstr "%s暗号化済みデータ\n"
+msgstr "%s.%s 暗号化済みデータ\n"
 
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
@@ -6839,10 +6836,9 @@ msgstr "(RC2アルゴリズムです)\n"
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(暗号化されたメッセージではないようです)\n"
 
-#, fuzzy, c-format
-#| msgid "encrypted with %s key, ID %s\n"
+#, c-format
 msgid "encrypted to %s key %s\n"
-msgstr "%s鍵, ID %sで暗号化されました\n"
+msgstr "%s の鍵 %s へ暗号化されたものです\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"
