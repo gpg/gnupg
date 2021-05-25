@@ -2113,7 +2113,7 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   else
 #endif
     {
-      err = http_parse_uri (&item->parsed_uri, uri, 1);
+      err = http_parse_uri (&item->parsed_uri, uri, HTTP_PARSE_NO_SCHEME_CHECK);
     }
 
   if (err)

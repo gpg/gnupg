@@ -1,8 +1,8 @@
 /* http.c  -  HTTP protocol handler
- * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
+ * Copyright (C) 1999, 2001-2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
- * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2015-2019 g10 Code GmbH
+ * Copyright (C) 1999, 2001-2004, 2006, 2009, 2010, 2011, 2014 Werner Koch
+ * Copyright (C) 2015-2017, 2021 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -1293,15 +1293,14 @@ parse_uri (parsed_uri_t *ret_uri, const char *uri,
 /*
  * Parse an URI and put the result into the newly allocated RET_URI.
  * On success the caller must use http_release_parsed_uri() to
- * releases the resources.  If NO_SCHEME_CHECK is set, the function
- * tries to parse the URL in the same way it would do for an HTTP
- * style URI; this can for example be used for hkps or ldap schemes.
- */
+ * releases the resources.  If the HTTP_PARSE_NO_SCHEME_CHECK flag is
+ * set, the function tries to parse the URL in the same way it would
+ * do for an HTTP style URI.   */
 gpg_error_t
 http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
-                int no_scheme_check)
+                unsigned int flags)
 {
-  return parse_uri (ret_uri, uri, no_scheme_check, 0);
+  return parse_uri (ret_uri, uri, !!(flags & HTTP_PARSE_NO_SCHEME_CHECK), 0);
 }
 
 
@@ -1352,8 +1351,9 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
   uri->off_host = 0;
   uri->off_path = 0;
 
-  /* A quick validity check. */
-  if (strspn (p, VALID_URI_CHARS) != n)
+  /* A quick validity check unless we have the opaque scheme. */
+  if (strspn (p, VALID_URI_CHARS) != n
+      && strncmp (p, "opaque:", 7))
     return GPG_ERR_BAD_URI;	/* Invalid characters found. */
 
   if (!only_local_part)
@@ -1382,6 +1382,12 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
           uri->port = 443;
           uri->is_http = 1;
           uri->use_tls = 1;
+        }
+      else if (!strcmp (uri->scheme, "opaque"))
+        {
+          uri->opaque = 1;
+          uri->path = p2;
+          return 0;
         }
       else if (!no_scheme_check)
 	return GPG_ERR_INV_URI; /* Not an http style scheme.  */
@@ -3544,6 +3550,15 @@ uri_query_lookup (parsed_uri_t uri, const char *key)
 
   return NULL;
 }
+
+const char *
+uri_query_value (parsed_uri_t url, const char *key)
+{
+  struct uri_tuple_s *t;
+  t = uri_query_lookup (url, key);
+  return t? t->value : NULL;
+}
+
 
 
 /* Return true if both URI point to the same host for the purpose of

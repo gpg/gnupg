@@ -81,7 +81,7 @@ ks_action_help (ctrl_t ctrl, const char *url)
       else
 #endif
 	{
-	  err = http_parse_uri (&parsed_uri, url, 1);
+	  err = http_parse_uri (&parsed_uri, url, HTTP_PARSE_NO_SCHEME_CHECK);
 	}
 
       if (err)
@@ -313,7 +313,7 @@ ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
   if (!url)
     return gpg_error (GPG_ERR_INV_URI);
 
-  err = http_parse_uri (&parsed_uri, url, 1);
+  err = http_parse_uri (&parsed_uri, url, HTTP_PARSE_NO_SCHEME_CHECK);
   if (err)
     return err;
 
