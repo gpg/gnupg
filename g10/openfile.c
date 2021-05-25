@@ -64,7 +64,7 @@ overwrite_filep( const char *fname )
   if ( iobuf_is_pipe_filename (fname) )
     return 1; /* Writing to stdout is always okay.  */
 
-  if ( access( fname, F_OK ) )
+  if ( gnupg_access( fname, F_OK ) )
     return 1; /* Does not exist.  */
 
   if ( !compare_filenames (fname, NAME_OF_DEV_NULL) )

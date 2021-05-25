@@ -265,7 +265,7 @@ compute_openpgp_fpr_ecc (int keyversion, unsigned long timestamp,
     {
       if (!kdf || !kdflen || !kdf[0])
         {
-          /* No KDF givem - use the default.  */
+          /* No KDF given - use the default.  */
           kdflen = 4;
           kdf = default_ecdh_params (curvebits);
         }
