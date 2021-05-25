@@ -322,7 +322,7 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
     "\n"
     "The ldaps:// and ldapi:// schemes are also supported.  If ldaps is used\n"
     "then the server's certificate will be checked.  If it is not valid, any\n"
-    "operation will be aborted.\n"
+    "operation will be aborted.  Note that ldaps means LDAP with STARTTLS\n"
     "\n"
     "Supported methods: search, get, put\n";
   gpg_error_t err;

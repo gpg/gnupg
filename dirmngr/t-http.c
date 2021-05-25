@@ -381,7 +381,7 @@ main (int argc, char **argv)
   (void)no_crl;
 #endif /*HTTP_USE_GNUTLS*/
 
-  rc = http_parse_uri (&uri, *argv, 1);
+  rc = http_parse_uri (&uri, *argv, HTTP_PARSE_NO_SCHEME_CHECK);
   if (rc)
     {
       log_error ("'%s': %s\n", *argv, gpg_strerror (rc));

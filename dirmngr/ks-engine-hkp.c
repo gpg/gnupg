@@ -726,7 +726,8 @@ mark_host_dead (const char *name)
   parsed_uri_t parsed_uri = NULL;
   int done = 0;
 
-  if (name && *name && !http_parse_uri (&parsed_uri, name, 1))
+  if (name && *name
+      && !http_parse_uri (&parsed_uri, name, HTTP_PARSE_NO_SCHEME_CHECK))
     {
       if (parsed_uri->v6lit)
         {

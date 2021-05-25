@@ -70,6 +70,7 @@ struct parsed_uri_s
 typedef struct parsed_uri_s *parsed_uri_t;
 
 struct uri_tuple_s *uri_query_lookup (parsed_uri_t uri, const char *key);
+const char *uri_query_value (parsed_uri_t url, const char *key);
 
 typedef enum
   {
@@ -150,8 +151,9 @@ void http_session_set_log_cb (http_session_t sess,
 void http_session_set_timeout (http_session_t sess, unsigned int timeout);
 
 
+#define HTTP_PARSE_NO_SCHEME_CHECK 1
 gpg_error_t http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
-                            int no_scheme_check);
+                            unsigned int flags);
 
 void http_release_parsed_uri (parsed_uri_t uri);
 
