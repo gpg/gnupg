@@ -183,36 +183,16 @@ void
 free_keyserver_spec(struct keyserver_spec *keyserver)
 {
   xfree(keyserver->uri);
-  xfree(keyserver->scheme);
-  xfree(keyserver->auth);
-  xfree(keyserver->host);
-  xfree(keyserver->port);
-  xfree(keyserver->path);
-  xfree(keyserver->opaque);
-  free_strlist(keyserver->options);
   xfree(keyserver);
 }
 
 /* Return 0 for match */
 static int
-cmp_keyserver_spec(struct keyserver_spec *one,struct keyserver_spec *two)
+cmp_keyserver_spec(struct keyserver_spec *one, struct keyserver_spec *two)
 {
-  if(ascii_strcasecmp(one->scheme,two->scheme)==0)
-    {
-      if(one->host && two->host && ascii_strcasecmp(one->host,two->host)==0)
-	{
-	  if((one->port && two->port
-	      && ascii_strcasecmp(one->port,two->port)==0)
-	     || (!one->port && !two->port))
-	    return 0;
-	}
-      else if(one->opaque && two->opaque
-	      && ascii_strcasecmp(one->opaque,two->opaque)==0)
-	return 0;
-    }
-
-  return 1;
+  return !!ascii_strcasecmp(one->uri, two->uri);
 }
+
 
 /* Try and match one of our keyservers.  If we can, return that.  If
    we can't, return our input. */
@@ -228,40 +208,24 @@ keyserver_match(struct keyserver_spec *spec)
   return spec;
 }
 
-/* TODO: once we cut over to an all-curl world, we don't need this
-   parser any longer so it can be removed, or at least moved to
-   keyserver/ksutil.c for limited use in gpgkeys_ldap or the like. */
 
+/* Create a new keyserver object from STRING.  Unless REQUIRE_SCHEME
+ * is set a missing scheme is replaced by "hkp://".  The data structure
+ * could be much easier but in the past we parsed the URI here for the
+ * old 2.0 keyserver helpers - which is not anymore needed.  */
 keyserver_spec_t
-parse_keyserver_uri (const char *string,int require_scheme)
+parse_keyserver_uri (const char *string, int require_scheme)
 {
-  int assume_hkp=0;
   struct keyserver_spec *keyserver;
   const char *idx;
   int count;
-  char *uri, *duped_uri, *options;
 
   log_assert (string);
 
-  keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
-
-  duped_uri = uri = xstrdup (string);
-
-  options=strchr(uri,' ');
-  if(options)
-    {
-      char *tok;
-
-      *options='\0';
-      options++;
-
-      while((tok=optsep(&options)))
-	warn_kshelper_option (tok, 0);
-    }
+  keyserver = xcalloc (1, sizeof *keyserver);
 
   /* Get the scheme */
-
-  for(idx=uri,count=0;*idx && *idx!=':';idx++)
+  for(idx=string, count=0; *idx && *idx!=':';idx++)
     {
       count++;
 
@@ -287,161 +251,20 @@ parse_keyserver_uri (const char *string,int require_scheme)
 	goto fail;
 
       /* Assume HKP if there is no scheme */
-      assume_hkp=1;
-      keyserver->scheme=xstrdup("hkp");
-
-      keyserver->uri=xmalloc(strlen(keyserver->scheme)+3+strlen(uri)+1);
-      strcpy(keyserver->uri,keyserver->scheme);
-      strcat(keyserver->uri,"://");
-      strcat(keyserver->uri,uri);
+      keyserver->uri = xstrconcat ("hkp://", string, NULL);
     }
   else
     {
-      int i;
-
-      keyserver->uri=xstrdup(uri);
-
-      keyserver->scheme=xmalloc(count+1);
-
-      /* Force to lowercase */
-      for(i=0;i<count;i++)
-	keyserver->scheme[i]=ascii_tolower(uri[i]);
-
-      keyserver->scheme[i]='\0';
-
-      /* Skip past the scheme and colon */
-      uri+=count+1;
+      keyserver->uri = xstrdup (string);
     }
 
-  if(ascii_strcasecmp(keyserver->scheme,"x-broken-hkp")==0)
-    {
-      log_info ("keyserver option '%s' is obsolete\n",
-                "x-broken-hkp");
-    }
-  else if(ascii_strcasecmp(keyserver->scheme,"x-hkp")==0)
-    {
-      /* Canonicalize this to "hkp" so it works with both the internal
-	 and external keyserver interface. */
-      xfree(keyserver->scheme);
-      keyserver->scheme=xstrdup("hkp");
-    }
-
-  if (uri[0]=='/' && uri[1]=='/' && uri[2] == '/')
-    {
-      /* Three slashes means network path with a default host name.
-         This is a hack because it does not crok all possible
-         combinations.  We should better replace all code by the parser
-         from http.c.  */
-      keyserver->path = xstrdup (uri+2);
-    }
-  else if(assume_hkp || (uri[0]=='/' && uri[1]=='/'))
-    {
-      /* Two slashes means network path. */
-
-      /* Skip over the "//", if any */
-      if(!assume_hkp)
-	uri+=2;
-
-      /* Do we have userinfo auth data present? */
-      for(idx=uri,count=0;*idx && *idx!='@' && *idx!='/';idx++)
-	count++;
-
-      /* We found a @ before the slash, so that means everything
-	 before the @ is auth data. */
-      if(*idx=='@')
-	{
-	  if(count==0)
-	    goto fail;
-
-	  keyserver->auth=xmalloc(count+1);
-	  strncpy(keyserver->auth,uri,count);
-	  keyserver->auth[count]='\0';
-	  uri+=count+1;
-	}
-
-      /* Is it an RFC-2732 ipv6 [literal address] ? */
-      if(*uri=='[')
-	{
-	  for(idx=uri+1,count=1;*idx
-		&& ((isascii (*idx) && isxdigit(*idx))
-                    || *idx==':' || *idx=='.');idx++)
-	    count++;
-
-	  /* Is the ipv6 literal address terminated? */
-	  if(*idx==']')
-	    count++;
-	  else
-	    goto fail;
-	}
-      else
-	for(idx=uri,count=0;*idx && *idx!=':' && *idx!='/';idx++)
-	  count++;
-
-      if(count==0)
-	goto fail;
-
-      keyserver->host=xmalloc(count+1);
-      strncpy(keyserver->host,uri,count);
-      keyserver->host[count]='\0';
-
-      /* Skip past the host */
-      uri+=count;
-
-      if(*uri==':')
-	{
-	  /* It would seem to be reasonable to limit the range of the
-	     ports to values between 1-65535, but RFC 1738 and 1808
-	     imply there is no limit.  Of course, the real world has
-	     limits. */
-
-	  for(idx=uri+1,count=0;*idx && *idx!='/';idx++)
-	    {
-	      count++;
-
-	      /* Ports are digits only */
-	      if(!digitp(idx))
-		goto fail;
-	    }
-
-	  keyserver->port=xmalloc(count+1);
-	  strncpy(keyserver->port,uri+1,count);
-	  keyserver->port[count]='\0';
-
-	  /* Skip past the colon and port number */
-	  uri+=1+count;
-	}
-
-      /* Everything else is the path */
-      if(*uri)
-	keyserver->path=xstrdup(uri);
-      else
-	keyserver->path=xstrdup("/");
-
-      if(keyserver->path[1])
-	keyserver->flags.direct_uri=1;
-    }
-  else if(uri[0]!='/')
-    {
-      /* No slash means opaque.  Just record the opaque blob and get
-	 out. */
-      keyserver->opaque=xstrdup(uri);
-    }
-  else
-    {
-      /* One slash means absolute path.  We don't need to support that
-	 yet. */
-      goto fail;
-    }
-
-  xfree (duped_uri);
   return keyserver;
 
  fail:
   free_keyserver_spec(keyserver);
-
-  xfree (duped_uri);
   return NULL;
 }
+
 
 struct keyserver_spec *
 parse_preferred_keyserver(PKT_signature *sig)
@@ -1204,7 +1027,7 @@ keyserver_import_keyid (ctrl_t ctrl,
 /* code mostly stolen from do_export_stream */
 static int
 keyidlist (ctrl_t ctrl, strlist_t users, KEYDB_SEARCH_DESC **klist,
-           int *count, int fakev3)
+           int *count)
 {
   int rc = 0;
   int num = 100;
@@ -1269,28 +1092,6 @@ keyidlist (ctrl_t ctrl, strlist_t users, KEYDB_SEARCH_DESC **klist,
 
       if((node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
 	{
-	  /* This is to work around a bug in some keyservers (pksd and
-             OKS) that calculate v4 RSA keyids as if they were v3 RSA.
-             The answer is to refresh both the correct v4 keyid
-             (e.g. 99242560) and the fake v3 keyid (e.g. 68FDDBC7).
-             This only happens for key refresh using the HKP scheme
-             and if the refresh-add-fake-v3-keyids keyserver option is
-             set. */
-	  if(fakev3 && is_RSA(node->pkt->pkt.public_key->pubkey_algo) &&
-	     node->pkt->pkt.public_key->version>=4)
-	    {
-	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      v3_keyid (node->pkt->pkt.public_key->pkey[0],
-                        (*klist)[*count].u.kid);
-	      (*count)++;
-
-	      if(*count==num)
-		{
-		  num+=100;
-		  *klist=xrealloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
-		}
-	    }
-
 	  /* v4 keys get full fingerprints.  v3 keys get long keyids.
              This is because it's easy to calculate any sort of keyid
              from a v4 fingerprint, but not a v3 fingerprint. */
@@ -1382,7 +1183,6 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 {
   gpg_error_t err;
   int count, numdesc;
-  int fakev3 = 0;
   KEYDB_SEARCH_DESC *desc;
   unsigned int options=opt.keyserver_options.import_options;
 
@@ -1396,19 +1196,8 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
      the end here. */
   opt.keyserver_options.import_options|=IMPORT_FAST;
 
-  /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
-     scheme, then enable fake v3 keyid generation.  Note that this
-     works only with a keyserver configured. gpg.conf
-     (i.e. opt.keyserver); however that method of configuring a
-     keyserver is deprecated and in any case it is questionable
-     whether we should keep on supporting these ancient and broken
-     keyservers.  */
-  if((opt.keyserver_options.options&KEYSERVER_ADD_FAKE_V3) && opt.keyserver
-     && (ascii_strcasecmp(opt.keyserver->scheme,"hkp")==0 ||
-	 ascii_strcasecmp(opt.keyserver->scheme,"mailto")==0))
-    fakev3=1;
 
-  err = keyidlist (ctrl, users, &desc, &numdesc, fakev3);
+  err = keyidlist (ctrl, users, &desc, &numdesc);
   if (err)
     return err;
 
@@ -1495,16 +1284,6 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
   if (!tokens)
     return 0;  /* Return success if no patterns are given.  */
 
-  /* Write global options */
-
-  /* for(temp=opt.keyserver_options.other;temp;temp=temp->next) */
-  /*   es_fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
-
-  /* Write per-keyserver options */
-
-  /* for(temp=keyserver->options;temp;temp=temp->next) */
-  /*   es_fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
-
   {
     membuf_t mb;
     strlist_t item;
@@ -1524,8 +1303,6 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
         goto leave;
       }
   }
-  /* FIXME: Enable the next line */
-  /* log_info (_("searching for \"%s\" from %s\n"), searchstr, keyserver->uri); */
 
   parm.ctrl = ctrl;
   if (searchstr)
@@ -1546,31 +1323,6 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
     err = gpg_error (GPG_ERR_NOT_FOUND);
   else if (err)
     log_error ("error searching keyserver: %s\n", gpg_strerror (err));
-
-  /* switch(ret) */
-  /*   { */
-  /*   case KEYSERVER_SCHEME_NOT_FOUND: */
-  /*     log_error(_("no handler for keyserver scheme '%s'\n"), */
-  /*   	    opt.keyserver->scheme); */
-  /*     break; */
-
-  /*   case KEYSERVER_NOT_SUPPORTED: */
-  /*     log_error(_("action '%s' not supported with keyserver " */
-  /*   	      "scheme '%s'\n"), "search", opt.keyserver->scheme); */
-  /*     break; */
-
-  /*   case KEYSERVER_TIMEOUT: */
-  /*     log_error(_("keyserver timed out\n")); */
-  /*     break; */
-
-  /*   case KEYSERVER_INTERNAL_ERROR: */
-  /*   default: */
-  /*     log_error(_("keyserver internal error\n")); */
-  /*     break; */
-  /*   } */
-
-  /* return gpg_error (GPG_ERR_KEYSERVER); */
-
 
  leave:
   xfree (parm.desc);
@@ -1726,13 +1478,8 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 
       if (!quiet && override_keyserver)
         {
-          if (override_keyserver->host)
-            log_info (_("requesting key %s from %s server %s\n"),
-                      keystr_from_desc (&desc[idx]),
-                      override_keyserver->scheme, override_keyserver->host);
-          else
-            log_info (_("requesting key %s from %s\n"),
-                      keystr_from_desc (&desc[idx]), override_keyserver->uri);
+          log_info (_("requesting key %s from %s\n"),
+                    keystr_from_desc (&desc[idx]), override_keyserver->uri);
         }
     }
 

@@ -59,7 +59,6 @@ common_sources = \
 	shareddefs.h \
 	openpgpdefs.h \
 	gc-opt-flags.h \
-	keyserver.h \
 	sexp-parse.h \
 	tlv.c tlv.h tlv-builder.c \
 	init.c init.h \
