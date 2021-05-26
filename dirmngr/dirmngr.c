@@ -125,6 +125,7 @@ enum cmd_and_opt_values {
   oHTTPProxy,
   oLDAPProxy,
   oOnlyLDAPProxy,
+  oLDAPServer,
   oLDAPFile,
   oLDAPTimeout,
   oLDAPAddServers,
@@ -260,6 +261,8 @@ static gpgrt_opt_t opts[] = {
                 N_("|HOST|use HOST for LDAP queries")),
   ARGPARSE_s_n (oOnlyLDAPProxy, "only-ldap-proxy",
                 N_("do not use fallback hosts with --ldap-proxy")),
+  ARGPARSE_s_s (oLDAPServer, "ldapserver",
+                N_("|SPEC|use this keyserver to lookup keys")),
   ARGPARSE_s_s (oLDAPFile, "ldapserverlist-file",
                 N_("|FILE|read LDAP server list from FILE")),
   ARGPARSE_s_n (oLDAPAddServers, "add-servers",
@@ -378,6 +381,11 @@ static int network_activity_seen;
 /* A list of filenames registered with --hkp-cacert.  */
 static strlist_t hkp_cacert_filenames;
 
+/* A flag used to clear the list of ldapservers iff --ldapserver is
+ * given on the command line or one of the conf files. In this case we
+ * want to clear all old specifications through the legacy
+ * dirmngr_ldapservers.conf. */
+static int ldapserver_list_needs_reset;
 
 /* The timer tick used for housekeeping stuff.  The second constant is used when a shutdown is pending.  */
 #define TIMERTICK_INTERVAL           (60)
@@ -671,6 +679,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       set_dns_timeout (0);
       opt.connect_timeout = 0;
       opt.connect_quick_timeout = 0;
+      ldapserver_list_needs_reset = 1;
       return 1;
     }
 
@@ -758,6 +767,30 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
 
     case oStandardResolver: enable_standard_resolver (1); break;
     case oRecursiveResolver: enable_recursive_resolver (1); break;
+
+    case oLDAPServer:
+      {
+        ldap_server_t server;
+        char *p;
+
+        p = pargs->r.ret_str;
+        if (!strncmp (p, "ldap:", 5) && !(p[5] == '/' && p[6] == '/'))
+          p += 5;
+
+        server = ldapserver_parse_one (p, NULL, 0);
+        if (server)
+          {
+            if (ldapserver_list_needs_reset)
+              {
+                ldapserver_list_needs_reset = 0;
+                ldapserver_list_free (opt.ldapservers);
+                opt.ldapservers = NULL;
+              }
+            server->next = opt.ldapservers;
+            opt.ldapservers = server;
+          }
+      }
+      break;
 
     case oKeyServer:
       if (*pargs->r.ret_str)
@@ -1133,9 +1166,11 @@ main (int argc, char **argv)
   if (cmd != aGPGConfTest && cmd != aGPGConfList && cmd != aGPGConfVersions)
     set_tor_mode ();
 
-  /* Get LDAP server list from file. */
+  /* Get LDAP server list from file unless --ldapserver has been used.  */
 #if USE_LDAP
-  if (!ldapfile)
+  if (opt.ldapservers)
+    ;
+  else if (!ldapfile)
     {
       ldapfile = make_filename (gnupg_homedir (),
                                 "dirmngr_ldapservers.conf",
