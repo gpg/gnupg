@@ -560,7 +560,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
           goto leave;
         }
       base = server->base;
-      use_ldaps = server->use_ldaps;
+      use_ldaps = server->ldap_over_tls;
     }
   else /* Use a default server. */
     {

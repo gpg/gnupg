@@ -67,6 +67,8 @@ ks_action_help (ctrl_t ctrl, const char *url)
 {
   gpg_error_t err;
   parsed_uri_t parsed_uri;  /* The broken down URI.  */
+  char *tmpstr;
+  const char *s;
 
   if (!url || !*url)
     {
@@ -76,7 +78,34 @@ ks_action_help (ctrl_t ctrl, const char *url)
   else
     {
 #if USE_LDAP
-      if (ldap_uri_p (url))
+      if (!strncmp (url, "ldap:", 5) && !(url[5] == '/' && url[6] == '/'))
+        {
+          /* Special ldap scheme given.  This differs from a valid
+           * ldap scheme in that no double slash follows.  Use
+           * http_parse_uri to put it as opaque value into parsed_uri.  */
+          tmpstr = strconcat ("opaque:", url+5, NULL);
+          if (!tmpstr)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              err = http_parse_uri (&parsed_uri, tmpstr, 0);
+              xfree (tmpstr);
+            }
+        }
+      else if ((s=strchr (url, ':')) && !(s[1] == '/' && s[2] == '/'))
+        {
+          /* No scheme given.  Use http_parse_uri to put the string as
+           * opaque value into parsed_uri.  */
+          tmpstr = strconcat ("opaque:", url, NULL);
+          if (!tmpstr)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              err = http_parse_uri (&parsed_uri, tmpstr, 0);
+              xfree (tmpstr);
+            }
+        }
+      else if (ldap_uri_p (url))
 	err = ldap_parse_uri (&parsed_uri, url);
       else
 #endif
@@ -164,9 +193,10 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
       int is_ldap = 0;
       unsigned int http_status = 0;
 #if USE_LDAP
-      is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
-		 || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
-		 || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+      is_ldap = (!strcmp (uri->parsed_uri->scheme, "ldap")
+		 || !strcmp (uri->parsed_uri->scheme, "ldaps")
+		 || !strcmp (uri->parsed_uri->scheme, "ldapi")
+                 || uri->parsed_uri->opaque);
 #endif
       if (is_http || is_ldap)
         {
@@ -242,9 +272,10 @@ ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
         is_hkp_s = is_http_s = 0;
 
 #if USE_LDAP
-      is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
-		 || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
-		 || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+      is_ldap = (!strcmp (uri->parsed_uri->scheme, "ldap")
+		 || !strcmp (uri->parsed_uri->scheme, "ldaps")
+		 || !strcmp (uri->parsed_uri->scheme, "ldapi")
+                 || uri->parsed_uri->opaque);
 #endif
 
       if (is_hkp_s || is_http_s || is_ldap)
@@ -382,9 +413,10 @@ ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
       int is_ldap = 0;
 
 #if USE_LDAP
-      is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
-		|| strcmp (uri->parsed_uri->scheme, "ldaps") == 0
-		|| strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+      is_ldap = (!strcmp (uri->parsed_uri->scheme, "ldap")
+                 || !strcmp (uri->parsed_uri->scheme, "ldaps")
+                 || !strcmp (uri->parsed_uri->scheme, "ldapi")
+                 || uri->parsed_uri->opaque);
 #endif
 
       if (is_http || is_ldap)

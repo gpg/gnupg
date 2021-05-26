@@ -50,7 +50,9 @@ struct ldap_server_s
   char *user;
   char *pass;
   char *base;
-  unsigned int use_ldaps:1;
+  unsigned int starttls:1;       /* Use STARTTLS.  */
+  unsigned int ldap_over_tls:1;  /* Use LDAP over an TLS tunnel */
+  unsigned int ntds:1;           /* Use Active Directory authentication.  */
 };
 typedef struct ldap_server_s *ldap_server_t;
 
