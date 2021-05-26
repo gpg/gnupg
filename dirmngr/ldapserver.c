@@ -55,6 +55,15 @@ ldapserver_list_free (ldap_server_t servers)
    3. field: Username
    4. field: Password
    5. field: Base DN
+   6. field: Flags
+
+   Flags are:
+
+     starttls  := Use STARTTLS with a default port of 389
+     ldaptls   := Tunnel LDAP trough a TLS tunnel with default port 636
+     plain     := Switch to plain unsecured LDAP.
+     (The last of these 3 flags is the effective one)
+     ntds      := Use Active Directory authentication
 
    FILENAME and LINENO are used for diagnostic purposes only.
 */
@@ -69,7 +78,13 @@ ldapserver_parse_one (char *line,
   int fail = 0;
 
   /* Parse the colon separated fields.  */
-  server = xcalloc (1, sizeof *server);
+  server = xtrycalloc (1, sizeof *server);
+  if (!server)
+    {
+      fail = 1;
+      goto leave;
+    }
+
   for (fieldno = 1, p = line; p; p = endp, fieldno++ )
     {
       endp = strchr (p, ':');
@@ -79,14 +94,9 @@ ldapserver_parse_one (char *line,
       switch (fieldno)
 	{
 	case 1:
-	  if (*p)
-	    server->host = xstrdup (p);
-	  else
-	    {
-	      log_error (_("%s:%u: no hostname given\n"),
-			 filename, lineno);
-	      fail = 1;
-	    }
+          server->host = xtrystrdup (p);
+          if (!server->host)
+            fail = 1;
 	  break;
 
 	case 2:
@@ -95,25 +105,90 @@ ldapserver_parse_one (char *line,
 	  break;
 
 	case 3:
-	  if (*p)
-	    server->user = xstrdup (p);
+          server->user = xtrystrdup (p);
+          if (!server->user)
+            fail = 1;
 	  break;
 
 	case 4:
 	  if (*p && !server->user)
 	    {
-	      log_error (_("%s:%u: password given without user\n"),
-			 filename, lineno);
+              if (filename)
+                log_error (_("%s:%u: password given without user\n"),
+                           filename, lineno);
+              else
+                log_error ("ldap: password given without user ('%s')\n", line);
 	      fail = 1;
 	    }
 	  else if (*p)
-	    server->pass = xstrdup (p);
+            {
+              server->pass = xtrystrdup (p);
+              if (!server->pass)
+                fail = 1;
+            }
 	  break;
 
 	case 5:
 	  if (*p)
-	    server->base = xstrdup (p);
+            {
+              server->base = xtrystrdup (p);
+              if (!server->base)
+                fail = 1;;
+            }
 	  break;
+
+        case 6:
+          {
+            char **flags = NULL;
+            int i;
+            const char *s;
+
+            flags = strtokenize (p, ",");
+            if (!flags)
+              {
+                log_error ("strtokenize failed: %s\n",
+                           gpg_strerror (gpg_error_from_syserror ()));
+                fail = 1;
+                break;
+              }
+
+            for (i=0; (s = flags[i]); i++)
+              {
+                if (!*s)
+                  ;
+                else if (!ascii_strcasecmp (s, "starttls"))
+                  {
+                    server->starttls = 1;
+                    server->ldap_over_tls = 0;
+                  }
+                else if (!ascii_strcasecmp (s, "ldaptls"))
+                  {
+                    server->starttls = 0;
+                    server->ldap_over_tls = 1;
+                  }
+                else if (!ascii_strcasecmp (s, "plain"))
+                  {
+                    server->starttls = 0;
+                    server->ldap_over_tls = 0;
+                  }
+                else if (!ascii_strcasecmp (s, "ntds"))
+                  {
+                    server->ntds = 1;
+                  }
+                else
+                  {
+                    if (filename)
+                      log_info (_("%s:%u: ignoring unknown flag '%s'\n"),
+                                filename, lineno, s);
+                    else
+                      log_info ("ldap: unknown flag '%s' ignored in (%s)\n",
+                                s, line);
+                  }
+              }
+
+            xfree (flags);
+          }
+          break;
 
 	default:
 	  /* (We silently ignore extra fields.) */
@@ -121,9 +196,13 @@ ldapserver_parse_one (char *line,
 	}
     }
 
+ leave:
   if (fail)
     {
-      log_info (_("%s:%u: skipping this line\n"), filename, lineno);
+      if (filename)
+        log_info (_("%s:%u: skipping this line\n"), filename, lineno);
+      else
+        log_info ("ldap: error in server spec ('%s')\n", line);
       ldapserver_list_free (server);
       server = NULL;
     }

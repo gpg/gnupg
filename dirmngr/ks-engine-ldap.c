@@ -50,6 +50,7 @@
 #include "../common/mbox-util.h"
 #include "ks-engine.h"
 #include "ldap-parse-uri.h"
+#include "ldapserver.h"
 
 
 /* Flags with infos from the connected server.  */
@@ -312,11 +313,11 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
 {
   const char data[] =
     "Handler for LDAP URLs:\n"
-    "  ldap://host:port/[BASEDN]???[bindname=BINDNAME,password=PASSWORD]\n"
+    "  ldap://HOST:PORT/[BASEDN]???[bindname=BINDNAME,password=PASSWORD]\n"
     "\n"
     "Note: basedn, bindname and password need to be percent escaped. In\n"
     "particular, spaces need to be replaced with %20 and commas with %2c.\n"
-    "bindname will typically be of the form:\n"
+    "Thus bindname will typically be of the form:\n"
     "\n"
     "  uid=user%2cou=PGP%20Users%2cdc=EXAMPLE%2cdc=ORG\n"
     "\n"
@@ -324,14 +325,22 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
     "then the server's certificate will be checked.  If it is not valid, any\n"
     "operation will be aborted.  Note that ldaps means LDAP with STARTTLS\n"
     "\n"
+    "As an alternative to an URL a string in this form may be used:\n"
+    "\n"
+    "  HOST:PORT:BINDNAME:PASSWORD:BASEDN:FLAGS:\n"
+    "\n"
+    "The use of the percent sign or a colon in one of the string values is\n"
+    "currently not supported.\n"
+    "\n"
     "Supported methods: search, get, put\n";
   gpg_error_t err;
 
   if(!uri)
     err = ks_print_help (ctrl, "  ldap");
-  else if (strcmp (uri->scheme, "ldap") == 0
-      || strcmp (uri->scheme, "ldaps") == 0
-      || strcmp (uri->scheme, "ldapi") == 0)
+  else if (!strcmp (uri->scheme, "ldap")
+           || !strcmp (uri->scheme, "ldaps")
+           || !strcmp (uri->scheme, "ldapi")
+           || uri->opaque)
     err = ks_print_help (ctrl, data);
   else
     err = 0;
@@ -493,96 +502,164 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
    If no LDAP error occurred, you still need to check that *basednp is
    valid.  If it is NULL, then the server does not appear to be an
    OpenPGP Keyserver.  */
-static int
+static gpg_error_t
 my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
-                 char **basednp, unsigned int *r_serverinfo)
+                 char **r_basedn, char **r_host, int *r_use_tls,
+                 unsigned int *r_serverinfo)
 {
-  int err = 0;
+  gpg_error_t err = 0;
+  int lerr;
+  ldap_server_t server = NULL;
   LDAP *ldap_conn = NULL;
-  char *user = uri->auth;
-  struct uri_tuple_s *password_param;
-  char *password;
   char *basedn = NULL;
+  char *host = NULL;   /* Host to use.  */
+  int port;            /* Port to use.  */
+  int use_tls;         /* 1 = starttls, 2 = ldap-over-tls  */
+  int use_ntds;        /* Use Active Directory authentication.  */
+  const char *bindname;
+  const char *password;
+  const char *basedn_arg;
+  char *tmpstr;
 
+  if (r_basedn)
+    *r_basedn = NULL;
+  if (r_host)
+    *r_host = NULL;
+  if (r_use_tls)
+    *r_use_tls = 0;
   *r_serverinfo = 0;
 
-  password_param = uri_query_lookup (uri, "password");
-  password = password_param ? password_param->value : NULL;
+  if (uri->opaque)
+    {
+      server = ldapserver_parse_one (uri->path, NULL, 0);
+      if (!server)
+        return gpg_error (GPG_ERR_LDAP_OTHER);
+      host = server->host;
+      port = server->port;
+      bindname = server->user;
+      password = bindname? server->pass : NULL;
+      basedn_arg = server->base;
+      use_tls = server->starttls? 1 : server->ldap_over_tls? 2 : 0;
+      use_ntds = server->ntds;
+    }
+  else
+    {
+      struct uri_tuple_s *password_param;
+
+      password_param = uri_query_lookup (uri, "password");
+      password = password_param ? password_param->value : NULL;
+
+      host = uri->host;
+      port = uri->port;
+      bindname = uri->auth;
+      password = bindname? uri_query_value (uri, "password") : NULL;
+      basedn_arg = uri->path;
+      use_tls = uri->use_tls ? 1 : 0;
+      use_ntds = uri->ad_current;
+    }
+
+  if (!port)
+    port = use_tls == 2? 636 : 389;
+
+
+  if (host)
+    {
+      host = xtrystrdup (host);
+      if (!host)
+        {
+          err = gpg_error_from_syserror ();
+          goto out;
+        }
+    }
 
   if (opt.debug)
-    log_debug ("my_ldap_connect(%s:%d/%s????%s%s%s%s%s%s)\n",
-               uri->host, uri->port,
-               uri->path ? uri->path : "",
-               uri->auth ? "bindname=" : "",
-               uri->auth ? uri->auth : "",
-               uri->auth && password ? "," : "",
-               password ? "password=" : "",
-               password ? ">not shown<": "",
-               uri->ad_current? " auth=>current_user<":"");
+    log_debug ("my_ldap_connect(%s:%d/%s????%s%s%s%s%s)\n",
+               host, port,
+               basedn_arg ? basedn_arg : "",
+               bindname ? "bindname=" : "",
+               bindname ? bindname : "",
+               password ? "," : "",
+               password ? "password=>not_shown<" : "",
+               use_ntds ? " auth=>current_user<":"");
+
 
   /* If the uri specifies a secure connection and we don't support
      TLS, then fail; don't silently revert to an insecure
      connection.  */
-  if (uri->use_tls)
+  if (use_tls)
     {
 #ifndef HAVE_LDAP_START_TLS_S
-      log_error ("Can't use LDAP to connect to the server: no TLS support.");
+      log_error ("ldap: can't connect to the server: no TLS support.");
       err = GPG_ERR_LDAP_NOT_SUPPORTED;
       goto out;
 #endif
     }
 
-  ldap_conn = ldap_init (uri->host, uri->port);
+
+#ifdef HAVE_W32_SYSTEM
+  npth_unprotect ();
+  ldap_conn = ldap_sslinit (host, port, (use_tls == 2));
+  npth_protect ();
   if (!ldap_conn)
     {
-      err = gpg_err_code_from_syserror ();
-      log_error ("error initializing LDAP for (%s://%s:%d)\n",
-                 uri->scheme, uri->host, uri->port);
+      lerr = LdapGetLastError ();
+      err = ldap_err_to_gpg_err (lerr);
+      log_error ("error initializing LDAP '%s:%d': %s\n",
+                 host, port, ldap_err2string (lerr));
       goto out;
     }
+#else /* Unix */
+  tmpstr = xtryasprintf ("%s://%s:%d",
+                         use_tls == 2? "ldaps" : "ldap",
+                         host, port);
+  if (!tmpstr)
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
+  npth_unprotect ();
+  lerr = ldap_initialize (&ldap_conn, tmpstr);
+  npth_protect ();
+  if (lerr || !ldap_conn)
+    {
+      err = ldap_err_to_gpg_err (lerr);
+      log_error ("error initializing LDAP '%s': %s\n",
+                 tmpstr, ldap_err2string (lerr));
+      xfree (tmpstr);
+      goto out;
+    }
+  xfree (tmpstr);
+#endif /* Unix */
 
 #ifdef HAVE_LDAP_SET_OPTION
   {
     int ver = LDAP_VERSION3;
 
-    err = ldap_set_option (ldap_conn, LDAP_OPT_PROTOCOL_VERSION, &ver);
-    if (err != LDAP_SUCCESS)
+    lerr = ldap_set_option (ldap_conn, LDAP_OPT_PROTOCOL_VERSION, &ver);
+    if (lerr != LDAP_SUCCESS)
       {
 	log_error ("ks-ldap: unable to go to LDAP 3: %s\n",
-		   ldap_err2string (err));
+		   ldap_err2string (lerr));
+	err = ldap_err_to_gpg_err (lerr);
 	goto out;
       }
   }
 #endif
 
-  /* XXX: It would be nice to have an option to provide the server's
-     certificate.  */
-#if 0
-#if defined(LDAP_OPT_X_TLS_CACERTFILE) && defined(HAVE_LDAP_SET_OPTION)
-  err = ldap_set_option (NULL, LDAP_OPT_X_TLS_CACERTFILE, ca_cert_file);
-  if (err)
-    {
-      log_error ("unable to set ca-cert-file to '%s': %s\n",
-		 ca_cert_file, ldap_err2string (err));
-      goto out;
-    }
-#endif /* LDAP_OPT_X_TLS_CACERTFILE && HAVE_LDAP_SET_OPTION */
-#endif
 
 #ifdef HAVE_LDAP_START_TLS_S
-  if (uri->use_tls)
+  if (use_tls == 1)
     {
-      /* XXX: We need an option to determine whether to abort if the
-	 certificate is bad or not.  Right now we conservatively
-	 default to checking the certificate and aborting.  */
 #ifndef HAVE_W32_SYSTEM
       int check_cert = LDAP_OPT_X_TLS_HARD; /* LDAP_OPT_X_TLS_NEVER */
 
-      err = ldap_set_option (ldap_conn,
-			     LDAP_OPT_X_TLS_REQUIRE_CERT, &check_cert);
-      if (err)
+      lerr = ldap_set_option (ldap_conn,
+                              LDAP_OPT_X_TLS_REQUIRE_CERT, &check_cert);
+      if (lerr)
 	{
-	  log_error ("error setting TLS option on LDAP connection\n");
+	  log_error ("ldap: error setting an TLS option: %s\n",
+                     ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
 	  goto out;
 	}
 #else
@@ -594,7 +671,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 #endif
 
       npth_unprotect ();
-      err = ldap_start_tls_s (ldap_conn,
+      lerr = ldap_start_tls_s (ldap_conn,
 #ifdef HAVE_W32_SYSTEM
 			      /* ServerReturnValue, result */
 			      NULL, NULL,
@@ -602,26 +679,29 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 			      /* ServerControls, ClientControls */
 			      NULL, NULL);
       npth_protect ();
-      if (err)
+      if (lerr)
 	{
-	  log_error ("error connecting to LDAP server with TLS\n");
+	  log_error ("ldap: error switching to STARTTLS mode: %s\n",
+                     ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
 	  goto out;
 	}
     }
 #endif
 
-  if (uri->ad_current)
+  if (use_ntds)
     {
       if (opt.debug)
-        log_debug ("LDAP bind to current user via AD\n");
+        log_debug ("ldap: binding to current user via AD\n");
 #ifdef HAVE_W32_SYSTEM
       npth_unprotect ();
-      err = ldap_bind_s (ldap_conn, NULL, NULL, LDAP_AUTH_NEGOTIATE);
+      lerr = ldap_bind_s (ldap_conn, NULL, NULL, LDAP_AUTH_NEGOTIATE);
       npth_protect ();
-      if (err != LDAP_SUCCESS)
+      if (lerr != LDAP_SUCCESS)
 	{
 	  log_error ("error binding to LDAP via AD: %s\n",
-                     ldap_err2string (err));
+                     ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
 	  goto out;
 	}
 #else
@@ -629,18 +709,19 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       goto out;
 #endif
     }
-  else if (uri->auth)
+  else if (bindname)
     {
       if (opt.debug)
-        log_debug ("LDAP bind to %s, password %s\n",
-                   user, password ? ">not shown<" : ">none<");
+        log_debug ("LDAP bind to '%s', password '%s'\n",
+                   bindname, password ? ">not_shown<" : ">none<");
 
       npth_unprotect ();
-      err = ldap_simple_bind_s (ldap_conn, user, password);
+      lerr = ldap_simple_bind_s (ldap_conn, bindname, password);
       npth_protect ();
-      if (err != LDAP_SUCCESS)
+      if (lerr != LDAP_SUCCESS)
 	{
-	  log_error ("error binding to LDAP: %s\n", ldap_err2string (err));
+	  log_error ("error binding to LDAP: %s\n", ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
 	  goto out;
 	}
     }
@@ -649,13 +730,16 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       /* By default we don't bind as there is usually no need to.  */
     }
 
-  if (uri->path && *uri->path)
+  if (basedn_arg && *basedn_arg)
     {
-      /* User specified base DN.  */
-      basedn = xstrdup (uri->path);
-
-      /* If the user specifies a base DN, then we know the server is a
+      /* User specified base DN.  In this case we know the server is a
        * real LDAP server.  */
+      basedn = xtrystrdup (basedn_arg);
+      if (!basedn)
+        {
+          err = gpg_error_from_syserror ();
+          goto out;
+        }
       *r_serverinfo |= SERVERINFO_REALLDAP;
     }
   else
@@ -664,11 +748,11 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       char *attr[] = { "namingContexts", NULL };
 
       npth_unprotect ();
-      err = ldap_search_s (ldap_conn, "", LDAP_SCOPE_BASE,
+      lerr = ldap_search_s (ldap_conn, "", LDAP_SCOPE_BASE,
 			   "(objectClass=*)", attr, 0, &res);
       npth_protect ();
 
-      if (err == LDAP_SUCCESS)
+      if (lerr == LDAP_SUCCESS)
 	{
 	  char **context;
 
@@ -687,7 +771,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 
               *r_serverinfo |= SERVERINFO_REALLDAP;
 
-	      for (i = 0; context[i] && ! basedn; i++)
+	      for (i = 0; context[i] && !basedn; i++)
 		{
 		  char **vals;
 		  LDAPMessage *si_res;
@@ -697,13 +781,13 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
                     char *object = xasprintf ("cn=pgpServerInfo,%s",
                                               context[i]);
                     npth_unprotect ();
-                    err = ldap_search_s (ldap_conn, object, LDAP_SCOPE_BASE,
+                    lerr = ldap_search_s (ldap_conn, object, LDAP_SCOPE_BASE,
                                          "(objectClass=*)", attr2, 0, &si_res);
                     npth_protect ();
                     xfree (object);
                   }
 
-		  if (err == LDAP_SUCCESS)
+		  if (lerr == LDAP_SUCCESS)
 		    {
 		      vals = ldap_get_values (ldap_conn, si_res,
 					      "pgpBaseKeySpaceDN");
@@ -756,7 +840,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 	      ldap_value_free (context);
 	    }
 	}
-      else
+      else /* ldap_search failed.  */
 	{
 	  /* We don't have an answer yet, which means the server might
 	     be a PGP.com keyserver. */
@@ -766,10 +850,10 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 	  char *attr2[] = { "pgpBaseKeySpaceDN", "version", "software", NULL };
 
           npth_unprotect ();
-	  err = ldap_search_s (ldap_conn, "cn=pgpServerInfo", LDAP_SCOPE_BASE,
+	  lerr = ldap_search_s (ldap_conn, "cn=pgpServerInfo", LDAP_SCOPE_BASE,
 			       "(objectClass=*)", attr2, 0, &si_res);
           npth_protect ();
-	  if (err == LDAP_SUCCESS)
+	  if (lerr == LDAP_SUCCESS)
 	    {
 	      /* For the PGP LDAP keyserver, this is always
 	       * "OU=ACTIVE,O=PGP KEYSPACE,C=US", but it might not be
@@ -829,23 +913,27 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
                  (*r_serverinfo & SERVERINFO_PGPKEYV2)? "pgpKeyV2":"pgpKey");
     }
 
-  if (err)
-    xfree (basedn);
-  else
-    {
-      if (basednp)
-	*basednp = basedn;
-      else
-	xfree (basedn);
-    }
+  ldapserver_list_free (server);
 
   if (err)
     {
+      xfree (basedn);
       if (ldap_conn)
 	ldap_unbind (ldap_conn);
     }
   else
-    *ldap_connp = ldap_conn;
+    {
+      if (r_basedn)
+	*r_basedn = basedn;
+      else
+	xfree (basedn);
+      if (r_host)
+        *r_host = host;
+      else
+        xfree (host);
+
+      *ldap_connp = ldap_conn;
+    }
 
   return err;
 }
@@ -946,6 +1034,8 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
   gpg_error_t err = 0;
   int ldap_err;
   unsigned int serverinfo;
+  char *host = NULL;
+  int use_tls;
   char *filter = NULL;
   LDAP *ldap_conn = NULL;
   char *basedn = NULL;
@@ -962,12 +1052,11 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
     }
 
   /* Make sure we are talking to an OpenPGP LDAP server.  */
-  ldap_err = my_ldap_connect (uri, &ldap_conn, &basedn, &serverinfo);
-  if (ldap_err || !basedn)
+  err = my_ldap_connect (uri, &ldap_conn,
+                         &basedn, &host, &use_tls, &serverinfo);
+  if (err || !basedn)
     {
-      if (ldap_err)
-	err = ldap_err_to_gpg_err (ldap_err);
-      else
+      if (!err)
 	err = gpg_error (GPG_ERR_GENERAL);
       goto out;
     }
@@ -1103,7 +1192,8 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 
       if (!err && anykey)
         err = dirmngr_status_printf (ctrl, "SOURCE", "%s://%s",
-                                     uri->scheme, uri->host? uri->host:"");
+                                     use_tls? "ldaps" : "ldap",
+                                     host? host:"");
     }
   }
 
@@ -1125,6 +1215,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
     }
 
   xfree (basedn);
+  xfree (host);
 
   if (ldap_conn)
     ldap_unbind (ldap_conn);
@@ -1159,12 +1250,10 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
     }
 
   /* Make sure we are talking to an OpenPGP LDAP server.  */
-  ldap_err = my_ldap_connect (uri, &ldap_conn, &basedn, &serverinfo);
-  if (ldap_err || !basedn)
+  err = my_ldap_connect (uri, &ldap_conn, &basedn, NULL, NULL, &serverinfo);
+  if (err || !basedn)
     {
-      if (ldap_err)
-	err = ldap_err_to_gpg_err (ldap_err);
-      else
+      if (!err)
 	err = GPG_ERR_GENERAL;
       goto out;
     }
@@ -2052,12 +2141,10 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 
-  ldap_err = my_ldap_connect (uri, &ldap_conn, &basedn, &serverinfo);
-  if (ldap_err || !basedn)
+  err = my_ldap_connect (uri, &ldap_conn, &basedn, NULL, NULL, &serverinfo);
+  if (err || !basedn)
     {
-      if (ldap_err)
-	err = ldap_err_to_gpg_err (ldap_err);
-      else
+      if (!err)
 	err = GPG_ERR_GENERAL;
       goto out;
     }

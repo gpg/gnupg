@@ -1143,7 +1143,8 @@ static const char hlp_ldapserver[] =
   "LDAPSERVER <data>\n"
   "\n"
   "Add a new LDAP server to the list of configured LDAP servers.\n"
-  "DATA is in the same format as expected in the configure file.";
+  "DATA is in the same format as expected in the configure file.\n"
+  "An optional prefix \"ldap:\" is allowed.";
 static gpg_error_t
 cmd_ldapserver (assuan_context_t ctx, char *line)
 {
@@ -1157,7 +1158,11 @@ cmd_ldapserver (assuan_context_t ctx, char *line)
   if (*line == '\0')
     return leave_cmd (ctx, PARM_ERROR (_("ldapserver missing")));
 
-  server = ldapserver_parse_one (line, "", 0);
+  /* Skip an "ldap:" prefix unless it is a valid ldap url.  */
+  if (!strncmp (line, "ldap:", 5) && !(line[5] == '/' && line[6] == '/'))
+    line += 5;
+
+  server = ldapserver_parse_one (line, NULL, 0);
   if (! server)
     return leave_cmd (ctx, gpg_error (GPG_ERR_INV_ARG));
 
@@ -2065,6 +2070,7 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
 {
   gpg_error_t err;
   uri_item_t item;
+  const char *s;
 
   *r_item = NULL;
 
@@ -2108,8 +2114,43 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   strcpy (item->uri, uri);
 
 #if USE_LDAP
-  if (ldap_uri_p (item->uri))
-    err = ldap_parse_uri (&item->parsed_uri, uri);
+  if (!strncmp (uri, "ldap:", 5) && !(uri[5] == '/' && uri[6] == '/'))
+    {
+      char  *tmpstr;
+      /* Special ldap scheme given.  This differs from a valid ldap
+       * scheme in that no double slash follows..  Use http_parse_uri
+       * to put it as opaque value into parsed_uri.  */
+      tmpstr = strconcat ("opaque:", uri+5, NULL);
+      if (!tmpstr)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          log_debug ("tmpstr='%s'\n", tmpstr);
+          err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
+          xfree (tmpstr);
+        }
+    }
+  else if ((s=strchr (uri, ':')) && !(s[1] == '/' && s[2] == '/'))
+    {
+      char  *tmpstr;
+      /* No valid scheme given.  Use http_parse_uri to put the string
+       * as opaque value into parsed_uri.  */
+      tmpstr = strconcat ("opaque:", uri, NULL);
+      if (!tmpstr)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          log_debug ("tmpstr2='%s'\n", tmpstr);
+          err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
+          xfree (tmpstr);
+        }
+    }
+  else if (ldap_uri_p (uri))
+    {
+      /* Fixme: We should get rid of that parser and repalce it with
+       * our generic (http) URI parser.  */
+      err = ldap_parse_uri (&item->parsed_uri, uri);
+    }
   else
 #endif
     {
