@@ -198,7 +198,7 @@ warn_version_mismatch (ctrl_t ctrl, assuan_context_t ctx,
 static void
 prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
 {
-  struct keyserver_spec *server;
+  strlist_t server;
 
   if (!err)
     err = warn_version_mismatch (ctrl, ctx, DIRMNGR_NAME, 0);
@@ -219,12 +219,13 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
   while (server)
     {
       char line[ASSUAN_LINELENGTH];
-      char *user = server->user ? server->user : "";
-      char *pass = server->pass ? server->pass : "";
-      char *base = server->base ? server->base : "";
 
-      snprintf (line, DIM (line), "LDAPSERVER %s:%i:%s:%s:%s",
-		server->host, server->port, user, pass, base);
+      /* If the host is "ldap" we prefix the entire line with "ldap:"
+       * to avoid an ambiguity on the server due to the introduction
+       * of this optional prefix.  */
+      snprintf (line, DIM (line), "LDAPSERVER %s%s",
+                !strncmp (server->d, "ldap:", 5)? "ldap:":"",
+                server->d);
 
       assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       /* The code below is not required because we don't return an error.  */

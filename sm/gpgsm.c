@@ -796,99 +796,6 @@ parse_validation_model (const char *model)
 }
 
 
-/* Release the list of SERVERS.  As usual it is okay to call this
-   function with SERVERS passed as NULL.  */
-void
-keyserver_list_free (struct keyserver_spec *servers)
-{
-  while (servers)
-    {
-      struct keyserver_spec *tmp = servers->next;
-      xfree (servers->host);
-      xfree (servers->user);
-      if (servers->pass)
-        memset (servers->pass, 0, strlen (servers->pass));
-      xfree (servers->pass);
-      xfree (servers->base);
-      xfree (servers);
-      servers = tmp;
-    }
-}
-
-/* See also dirmngr ldapserver_parse_one().  */
-struct keyserver_spec *
-parse_keyserver_line (char *line,
-		      const char *filename, unsigned int lineno)
-{
-  char *p;
-  char *endp;
-  struct keyserver_spec *server;
-  int fieldno;
-  int fail = 0;
-
-  /* Parse the colon separated fields.  */
-  server = xcalloc (1, sizeof *server);
-  for (fieldno = 1, p = line; p; p = endp, fieldno++ )
-    {
-      endp = strchr (p, ':');
-      if (endp)
-	*endp++ = '\0';
-      trim_spaces (p);
-      switch (fieldno)
-	{
-	case 1:
-	  if (*p)
-	    server->host = xstrdup (p);
-	  else
-	    {
-	      log_error (_("%s:%u: no hostname given\n"),
-			 filename, lineno);
-	      fail = 1;
-	    }
-	  break;
-
-	case 2:
-	  if (*p)
-	    server->port = atoi (p);
-	  break;
-
-	case 3:
-	  if (*p)
-	    server->user = xstrdup (p);
-	  break;
-
-	case 4:
-	  if (*p && !server->user)
-	    {
-	      log_error (_("%s:%u: password given without user\n"),
-			 filename, lineno);
-	      fail = 1;
-	    }
-	  else if (*p)
-	    server->pass = xstrdup (p);
-	  break;
-
-	case 5:
-	  if (*p)
-	    server->base = xstrdup (p);
-	  break;
-
-	default:
-	  /* (We silently ignore extra fields.) */
-	  break;
-	}
-    }
-
-  if (fail)
-    {
-      log_info (_("%s:%u: skipping this line\n"), filename, lineno);
-      keyserver_list_free (server);
-      server = NULL;
-    }
-
-  return server;
-}
-
 
 int
 main ( int argc, char **argv)
@@ -1446,21 +1353,7 @@ main ( int argc, char **argv)
         case oValidationModel: parse_validation_model (pargs.r.ret_str); break;
 
 	case oKeyServer:
-	  {
-	    struct keyserver_spec *keyserver;
-	    keyserver = parse_keyserver_line (pargs.r.ret_str,
-					      configname, pargs.lineno);
-	    if (! keyserver)
-	      log_error (_("could not parse keyserver\n"));
-	    else
-	      {
-		/* FIXME: Keep last next pointer.  */
-		struct keyserver_spec **next_p = &opt.keyserver;
-		while (*next_p)
-		  next_p = &(*next_p)->next;
-		*next_p = keyserver;
-	      }
-	  }
+          append_to_strlist (&opt.keyserver, pargs.r.ret_str);
 	  break;
 
         case oIgnoreCertExtension:
@@ -2142,7 +2035,7 @@ main ( int argc, char **argv)
     }
 
   /* cleanup */
-  keyserver_list_free (opt.keyserver);
+  free_strlist (opt.keyserver);
   opt.keyserver = NULL;
   gpgsm_release_certlist (recplist);
   gpgsm_release_certlist (signerlist);

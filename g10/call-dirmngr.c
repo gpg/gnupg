@@ -36,7 +36,6 @@
 #include "options.h"
 #include "../common/i18n.h"
 #include "../common/asshelp.h"
-#include "../common/keyserver.h"
 #include "../common/status.h"
 #include "keyserver-internal.h"
 #include "call-dirmngr.h"

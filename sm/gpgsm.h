@@ -39,17 +39,6 @@
 
 #define MAX_DIGEST_LEN 64
 
-struct keyserver_spec
-{
-  struct keyserver_spec *next;
-
-  char *host;
-  int port;
-  char *user;
-  char *pass;
-  char *base;
-};
-
 
 /* A large struct named "opt" to keep global flags. */
 EXTERN_UNLESS_MAIN_MODULE
@@ -141,7 +130,7 @@ struct
                                the integrity of the software at
                                runtime. */
 
-  struct keyserver_spec *keyserver;
+  strlist_t keyserver;
 
   /* A list of certificate extension OIDs which are ignored so that
      one can claim that a critical extension has been handled.  One

@@ -31,9 +31,14 @@
 #include "../common/compliance.h"
 
 
-/* Declaration of a keyserver spec type.  The definition is found in
-   ../common/keyserver.h.  */
-struct keyserver_spec;
+/* Object to hold information pertaining to a keyserver; it also
+   allows building a list of keyservers.  For historic reasons this is
+   not a strlist_t.  */
+struct keyserver_spec
+{
+  struct keyserver_spec *next;
+  char *uri;
+};
 typedef struct keyserver_spec *keyserver_spec_t;
 
 
