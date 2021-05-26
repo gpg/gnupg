@@ -1140,11 +1140,13 @@ task_check_wkd_support (ctrl_t ctrl, const char *domain)
 
 
 static const char hlp_ldapserver[] =
-  "LDAPSERVER <data>\n"
+  "LDAPSERVER [--clear] <data>\n"
   "\n"
   "Add a new LDAP server to the list of configured LDAP servers.\n"
   "DATA is in the same format as expected in the configure file.\n"
-  "An optional prefix \"ldap:\" is allowed.";
+  "An optional prefix \"ldap:\" is allowed.  With no args all\n"
+  "configured ldapservers are listed.  Option --clear removes all\n"
+  "servers configured in this session.";
 static gpg_error_t
 cmd_ldapserver (assuan_context_t ctx, char *line)
 {
@@ -1152,11 +1154,57 @@ cmd_ldapserver (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   ldap_server_t server;
   ldap_server_t *last_next_p;
+  int clear_flag;
 
+  clear_flag = has_option (line, "--clear");
+  line = skip_options (line);
   while (spacep (line))
     line++;
-  if (*line == '\0')
-    return leave_cmd (ctx, PARM_ERROR (_("ldapserver missing")));
+
+  if (clear_flag)
+    {
+#if USE_LDAP
+      ldapserver_list_free (ctrl->server_local->ldapservers);
+#endif /*USE_LDAP*/
+      ctrl->server_local->ldapservers = NULL;
+    }
+
+  if (!*line && clear_flag)
+    return leave_cmd (ctx, 0);
+
+  if (!*line)
+    {
+      /* List all ldapservers.  */
+      struct ldapserver_iter ldapserver_iter;
+      char *tmpstr;
+      char portstr[20];
+
+      for (ldapserver_iter_begin (&ldapserver_iter, ctrl);
+           !ldapserver_iter_end_p (&ldapserver_iter);
+           ldapserver_iter_next (&ldapserver_iter))
+        {
+          server = ldapserver_iter.server;
+          if (server->port)
+            snprintf (portstr, sizeof portstr, "%d", server->port);
+          else
+            *portstr = 0;
+
+          tmpstr = xtryasprintf ("ldap:%s:%s:%s:%s:%s:%s%s:",
+                                 server->host? server->host : "",
+                                 portstr,
+                                 server->user? server->user : "",
+                                 server->pass? "[not_shown]": "",
+                                 server->base? server->base : "",
+                                 server->starttls ? "starttls" :
+                                 server->ldap_over_tls ? "ldaptls" : "none",
+                                 server->ntds ? ",ntds" : "");
+          if (!tmpstr)
+            return leave_cmd (ctx, gpg_error_from_syserror ());
+          dirmngr_status (ctrl, "LDAPSERVER", tmpstr, NULL);
+          xfree (tmpstr);
+        }
+      return leave_cmd (ctx, 0);
+    }
 
   /* Skip an "ldap:" prefix unless it is a valid ldap url.  */
   if (!strncmp (line, "ldap:", 5) && !(line[5] == '/' && line[6] == '/'))

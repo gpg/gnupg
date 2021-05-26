@@ -14,7 +14,7 @@
 @manpage dirmngr.8
 @ifset manverb
 .B dirmngr
-\- CRL and OCSP daemon
+\- GnuPG's network access daemon
 @end ifset
 
 @mansect synopsis
@@ -424,13 +424,13 @@ configured LDAP server if the connection using the "proxy" failed.
 
 @item --ldapserverlist-file @var{file}
 @opindex ldapserverlist-file
-Read the list of LDAP servers to consult for CRLs and certificates from
+Read the list of LDAP servers to consult for CRLs and X.509 certificates from
 file instead of the default per-user ldap server list file. The default
 value for @var{file} is @file{dirmngr_ldapservers.conf}.
 
 This server list file contains one LDAP server per line in the format
 
-@sc{hostname:port:username:password:base_dn}
+@sc{hostname:port:username:password:base_dn:flags}
 
 Lines starting with a  @samp{#} are comments.
 
@@ -440,7 +440,39 @@ encoded as Latin-1.  There is no other solution here than to put such a
 password in the binary encoding into the file (i.e. non-ascii characters
 won't show up readable).@footnote{The @command{gpgconf} tool might be
 helpful for frontends as it enables editing this configuration file using
-percent-escaped strings.}
+percent-escaped strings.}jj
+
+
+@item --ldapserver @var{spec}
+@opindex ldapserver
+This is an alternative way to specify LDAP servers for CRL and X.509
+certificate retrieval.  If this option is used the servers configured
+in @file{dirmngr_ldapservers.conf} (or the file given by
+@option{--ldapserverlist-file}) are cleared.  Reloading dirmngr will
+consider these again will in no case use those from
+@file{dirmngr_ldapservers.conf} again.  The @var{spec} is either a
+proper LDAP URL or a colon delimited list of the form
+
+@sc{hostname:port:username:password:base_dn:flags:}
+
+with an optional prefix of @code{ldap:} (but without the two slashes
+which would turn this into a proper LDAP URL).  @sc{flags} is a list
+of one or more comma delimited keywords:
+@table @code
+@item plain
+The default: Do not use a TLS secured connection at all; the default
+port is 389.
+@item starttls
+Use STARTTLS to secure the connection; the default port is 389.
+@item ldaptls
+Tunnel LDAP through a TLS connection; the default port is 636.
+@item ntds
+On Windows authenticate the LDAP connection using the Active Directory
+with the current user.
+@end table
+
+Note that in an URL style specification the scheme @code{ldaps://}
+refers to STARTTLS and _not_ to LDAP-over-TLS.
 
 
 @item --ldaptimeout @var{secs}

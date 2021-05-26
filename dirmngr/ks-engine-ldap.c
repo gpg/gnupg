@@ -519,7 +519,9 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   const char *bindname;
   const char *password;
   const char *basedn_arg;
+#ifndef HAVE_W32_SYSTEM
   char *tmpstr;
+#endif
 
   if (r_basedn)
     *r_basedn = NULL;
