@@ -440,7 +440,7 @@ encoded as Latin-1.  There is no other solution here than to put such a
 password in the binary encoding into the file (i.e. non-ascii characters
 won't show up readable).@footnote{The @command{gpgconf} tool might be
 helpful for frontends as it enables editing this configuration file using
-percent-escaped strings.}jj
+percent-escaped strings.}
 
 
 @item --ldapserver @var{spec}
@@ -448,10 +448,12 @@ percent-escaped strings.}jj
 This is an alternative way to specify LDAP servers for CRL and X.509
 certificate retrieval.  If this option is used the servers configured
 in @file{dirmngr_ldapservers.conf} (or the file given by
-@option{--ldapserverlist-file}) are cleared.  Reloading dirmngr will
-consider these again will in no case use those from
-@file{dirmngr_ldapservers.conf} again.  The @var{spec} is either a
-proper LDAP URL or a colon delimited list of the form
+@option{--ldapserverlist-file}) are cleared.  Note that
+@file{dirmngr_ldapservers.conf} is not read again by a reload
+signal. However, @option{--ldapserver} options are read again.
+
+@var{spec} is either a proper LDAP URL or a colon delimited list of
+the form
 
 @sc{hostname:port:username:password:base_dn:flags:}
 

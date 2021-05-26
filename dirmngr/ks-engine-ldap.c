@@ -313,7 +313,7 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
 {
   const char data[] =
     "Handler for LDAP URLs:\n"
-    "  ldap://HOST:PORT/[BASEDN]???[bindname=BINDNAME,password=PASSWORD]\n"
+    "  ldap://HOST:PORT/[BASEDN]????[bindname=BINDNAME,password=PASSWORD]\n"
     "\n"
     "Note: basedn, bindname and password need to be percent escaped. In\n"
     "particular, spaces need to be replaced with %20 and commas with %2c.\n"
@@ -646,6 +646,20 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 	goto out;
       }
   }
+  if (opt.ldaptimeout)
+    {
+      int ver = opt.ldaptimeout;
+
+      lerr = ldap_set_option (ldap_conn, LDAP_OPT_TIMELIMIT, &ver);
+      if (lerr != LDAP_SUCCESS)
+        {
+          log_error ("ks-ldap: unable to set LDAP timelimit to %us: %s\n",
+                     opt.ldaptimeout, ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
+          goto out;
+        }
+
+    }
 #endif
 
 

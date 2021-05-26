@@ -645,6 +645,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       set_dns_timeout (0);
       opt.connect_timeout = 0;
       opt.connect_quick_timeout = 0;
+      opt.ldaptimeout = DEFAULT_LDAP_TIMEOUT;
       ldapserver_list_needs_reset = 1;
       return 1;
     }
@@ -777,6 +778,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oConnectQuickTimeout:
       opt.connect_quick_timeout = pargs->r.ret_ulong * 1000;
+      break;
+
+    case oLDAPTimeout:
+      opt.ldaptimeout = pargs->r.ret_int;
       break;
 
     default:
@@ -1035,9 +1040,6 @@ main (int argc, char **argv)
 #        endif /*USE_LDAP*/
           break;
 	case oLDAPAddServers: opt.add_new_ldapservers = 1; break;
-	case oLDAPTimeout:
-	  opt.ldaptimeout = pargs.r.ret_int;
-	  break;
 
         case oFakedSystemTime:
           gnupg_set_time ((time_t)pargs.r.ret_ulong, 0);
