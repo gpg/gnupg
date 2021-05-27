@@ -4955,6 +4955,14 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                   strcpy (r->u.value, curve);
                   r->next = para;
                   para = r;
+                  if (!strcmp (curve, "Ed448"))
+                    {
+                      r = xmalloc_clear (sizeof *r + 20);
+                      r->key = pVERSION;
+                      snprintf (r->u.value, 20, "%d", 5);
+                      r->next = para;
+                      para = r;
+                    }
                 }
               else
                 {
@@ -4999,7 +5007,14 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                       if (!strcmp (curve, "Ed25519"))
                         curve = "Curve25519";
                       else
-                        curve = "X448";
+                        {
+                          curve = "X448";
+                          r = xmalloc_clear (sizeof *r + 20);
+                          r->key = pSUBVERSION;
+                          snprintf (r->u.value, 20, "%d", 5);
+                          r->next = para;
+                          para = r;
+                        }
                     }
                   r = xmalloc_clear (sizeof *r + strlen (curve));
                   r->key = pSUBKEYCURVE;
@@ -5022,6 +5037,14 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                   strcpy (r->u.value, curve);
                   r->next = para;
                   para = r;
+                  if (!strcmp (curve, "Ed448"))
+                    {
+                      r = xmalloc_clear (sizeof *r + 20);
+                      r->key = pVERSION;
+                      snprintf (r->u.value, 20, "%d", 5);
+                      r->next = para;
+                      para = r;
+                    }
                 }
 
               r = xmalloc_clear( sizeof *r + 20 );
