@@ -410,6 +410,62 @@ Finally run
 : ldapadd -x -H ldapi:/// -D 'cn=admin,dc=example,dc=com' -W -f adduser.ldif
 
 
+** Setup TLS certificates
+
+Create a file =tlscerts.ldif=:
+#+begin_example
+dn: cn=config
+changetype: modify
+replace: olcTLSCACertificateFile
+olcTLSCACertificateFile: /etc/ssl/certs/Example.com-Root-CA.pem
+-
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/ssl/mycerts/ldap.example.com.pem
+-
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/ssl/private/ldap.example.com.key
+#+end_example
+Make sure that the user under which slapd is running has access to all
+these files.  The key file should only be readable by that user or
+group.  Then run
+
+: ldapmodify -v  -H ldapi:// -Y EXTERNAL -f tlscerts.ldif
+
+In case you run into a the error message “Other (e.g., implementation
+specific) error (80)” check the file permissions, restart slapd so
+that it takes up a group modification you did, check that the order of
+the item is exactly as given above.
+
+For a quick test whether this works use this command:
+
+: LDAPTLS_CACERT=/etc/ssl/certs/Example.com-Root-CA.pem \
+:   ldapwhoami -v -H ldap://ldap.example.com -ZZ -x
+(-ZZ enforces the use of STARTTLS)
+
+# Note: To enable the legacy ldap-over-tls put "ldaps:///" into the
+# list of URLs give to the slapd option -h.  For example:
+#
+#  slapd -h "ldap:/// ldaps:/// ldapi:///" ...
+#
+# To test this use
+#
+#   LDAPTLS_CACERT=/etc/ssl/certs/Example.com-Root-CA.pem \
+#      ldapwhoami -v -H ldaps://ldap.example.com -x
+#
+
+If you use a custom Root-CA certificate you need to copy it to all
+clients as well.  On a Debian system you would do this:
+
+: cp Example.com-Root-CA.pem \
+:   /usr/local/share/ca-certificates/Example.com-Root-CA.crt
+: update-ca-certificates
+
+Note that Debian expects the suffix ".crt" even though the certificate
+needs to be in PEM format.  To check whether the certificate is usable
+and you have installed GnuPG 2.3 you may use
+
+: gpgsm --show-certs /etc/ssl/certsca-certificates.crt | less
+
 ** Change RootDN Password:
 
 Create temporary file named =passwd.ldif=:
