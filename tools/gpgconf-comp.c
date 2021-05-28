@@ -1231,20 +1231,21 @@ dirmngr_runtime_change (int killflag)
   const char *pgmname;
   const char *argv[6];
   pid_t pid = (pid_t)(-1);
-  char *abs_homedir = NULL;
+  int i = 0;
+  int cmdidx;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[0] = "--no-autostart";
-  argv[1] = "--dirmngr";
-  argv[2] = killflag? "KILLDIRMNGR" : "RELOADDIRMNGR";
-  if (gnupg_default_homedir_p ())
-    argv[3] = NULL;
-  else
+  if (!gnupg_default_homedir_p ())
     {
-      argv[3] = "--homedir";
-      argv[4] = gnupg_homedir ();
-      argv[5] = NULL;
+      argv[i++] = "--homedir";
+      argv[i++] = gnupg_homedir ();
     }
+  argv[i++] = "--no-autostart";
+  argv[i++] = "--dirmngr";
+  cmdidx = i;
+  argv[i++] = killflag? "KILLDIRMNGR" : "RELOADDIRMNGR";
+  argv[i] = NULL;
+  log_assert (i < DIM(argv));
 
   if (!err)
     err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
@@ -1252,9 +1253,8 @@ dirmngr_runtime_change (int killflag)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
-              pgmname, argv[2], gpg_strerror (err));
+              pgmname, argv[cmdidx], gpg_strerror (err));
   gnupg_release_process (pid);
-  xfree (abs_homedir);
 }
 
 
