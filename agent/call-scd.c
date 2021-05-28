@@ -546,7 +546,7 @@ padding_info_cb (void *opaque, const char *line)
       *r_padding = atoi (s);
     }
   else if ((s=has_leading_keyword (line, "PINCACHE_PUT")))
-    err = handle_pincache_put (line);
+    err = handle_pincache_put (s);
 
   return err;
 }
