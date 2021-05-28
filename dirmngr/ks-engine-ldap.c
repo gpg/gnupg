@@ -574,15 +574,14 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
         }
     }
 
-  if (opt.debug)
-    log_debug ("my_ldap_connect(%s:%d/%s????%s%s%s%s%s)\n",
-               host, port,
-               basedn_arg ? basedn_arg : "",
-               bindname ? "bindname=" : "",
-               bindname ? bindname : "",
-               password ? "," : "",
-               password ? "password=>not_shown<" : "",
-               use_ntds ? " auth=>current_user<":"");
+  if (opt.verbose)
+    log_info ("ldap connect to '%s:%d:%s:%s:%s:%s%s'\n",
+              host, port,
+              basedn_arg ? basedn_arg : "",
+              bindname ? bindname : "",
+              password ? "*****" : "",
+              use_tls == 1? "starttls" : use_tls == 2? "ldaptls" : "plain",
+              use_ntds ? ",ntds":"");
 
 
   /* If the uri specifies a secure connection and we don't support
@@ -599,6 +598,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 
 
 #ifdef HAVE_W32_SYSTEM
+  /* Note that host==NULL uses the default domain controller.  */
   npth_unprotect ();
   ldap_conn = ldap_sslinit (host, port, (use_tls == 2));
   npth_protect ();
@@ -622,7 +622,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   npth_unprotect ();
   lerr = ldap_initialize (&ldap_conn, tmpstr);
   npth_protect ();
-  if (lerr || !ldap_conn)
+  if (lerr != LDAP_SUCCESS || !ldap_conn)
     {
       err = ldap_err_to_gpg_err (lerr);
       log_error ("error initializing LDAP '%s': %s\n",
@@ -658,7 +658,8 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
           err = ldap_err_to_gpg_err (lerr);
           goto out;
         }
-
+      if (opt.verbose)
+        log_info ("ldap timeout set to %us\n", opt.ldaptimeout);
     }
 #endif
 
@@ -707,8 +708,6 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 
   if (use_ntds)
     {
-      if (opt.debug)
-        log_debug ("ldap: binding to current user via AD\n");
 #ifdef HAVE_W32_SYSTEM
       npth_unprotect ();
       lerr = ldap_bind_s (ldap_conn, NULL, NULL, LDAP_AUTH_NEGOTIATE);
@@ -721,16 +720,13 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 	  goto out;
 	}
 #else
+      log_error ("ldap: no Active Directory support but 'ntds' requested\n");
       err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       goto out;
 #endif
     }
   else if (bindname)
     {
-      if (opt.debug)
-        log_debug ("LDAP bind to '%s', password '%s'\n",
-                   bindname, password ? ">not_shown<" : ">none<");
-
       npth_unprotect ();
       lerr = ldap_simple_bind_s (ldap_conn, bindname, password);
       npth_protect ();

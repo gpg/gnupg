@@ -1193,7 +1193,7 @@ cmd_ldapserver (assuan_context_t ctx, char *line)
                                  server->host? server->host : "",
                                  portstr,
                                  server->user? server->user : "",
-                                 server->pass? "[not_shown]": "",
+                                 server->pass? "*****": "",
                                  server->base? server->base : "",
                                  server->starttls ? "starttls" :
                                  server->ldap_over_tls ? "ldaptls" : "none",
@@ -2119,6 +2119,7 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   gpg_error_t err;
   uri_item_t item;
   const char *s;
+  char *tmpstr = NULL;
 
   *r_item = NULL;
 
@@ -2164,7 +2165,6 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
 #if USE_LDAP
   if (!strncmp (uri, "ldap:", 5) && !(uri[5] == '/' && uri[6] == '/'))
     {
-      char  *tmpstr;
       /* Special ldap scheme given.  This differs from a valid ldap
        * scheme in that no double slash follows..  Use http_parse_uri
        * to put it as opaque value into parsed_uri.  */
@@ -2172,39 +2172,55 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
       if (!tmpstr)
         err = gpg_error_from_syserror ();
       else
-        {
-          log_debug ("tmpstr='%s'\n", tmpstr);
-          err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
-          xfree (tmpstr);
-        }
+        err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
     }
   else if ((s=strchr (uri, ':')) && !(s[1] == '/' && s[2] == '/'))
     {
-      char  *tmpstr;
       /* No valid scheme given.  Use http_parse_uri to put the string
        * as opaque value into parsed_uri.  */
       tmpstr = strconcat ("opaque:", uri, NULL);
       if (!tmpstr)
         err = gpg_error_from_syserror ();
       else
-        {
-          log_debug ("tmpstr2='%s'\n", tmpstr);
-          err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
-          xfree (tmpstr);
-        }
+        err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
     }
   else if (ldap_uri_p (uri))
     {
+      int fixup = 0;
       /* Fixme: We should get rid of that parser and repalce it with
        * our generic (http) URI parser.  */
+
+      /* If no port has been specified and the scheme ist ldaps we use
+       * our idea of the default port because the standard LDAP URL
+       * parser would use 636 here.  This is because we redefined
+       * ldaps to mean starttls.  */
+#ifdef HAVE_W32_SYSTEM
+      if (!strcmp (uri, "ldap:///"))
+          fixup = 1;
+      else
+#endif
+        if (!http_parse_uri (&item->parsed_uri,uri,HTTP_PARSE_NO_SCHEME_CHECK))
+        {
+          if (!item->parsed_uri->port
+              && !strcmp (item->parsed_uri->scheme, "ldaps"))
+            fixup = 2;
+          http_release_parsed_uri (item->parsed_uri);
+          item->parsed_uri = NULL;
+        }
+
       err = ldap_parse_uri (&item->parsed_uri, uri);
+      if (!err && fixup == 1)
+        item->parsed_uri->ad_current = 1;
+      else if (!err && fixup == 2)
+        item->parsed_uri->port = 389;
     }
   else
-#endif
+#endif /* USE_LDAP */
     {
       err = http_parse_uri (&item->parsed_uri, uri, HTTP_PARSE_NO_SCHEME_CHECK);
     }
 
+  xfree (tmpstr);
   if (err)
     xfree (item);
   else
