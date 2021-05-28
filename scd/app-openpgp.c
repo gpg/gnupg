@@ -4577,12 +4577,11 @@ ecc_writekey (app_t app, ctrl_t ctrl,
         {
           const unsigned char **buf2;
           size_t *buf2len;
-          int native = flag_djb_tweak;
 
           switch (*tok)
             {
             case 'q': buf2 = &ecc_q; buf2len = &ecc_q_len; break;
-            case 'd': buf2 = &ecc_d; buf2len = &ecc_d_len; native = 0; break;
+            case 'd': buf2 = &ecc_d; buf2len = &ecc_d_len; break;
             default: buf2 = NULL;  buf2len = NULL; break;
             }
           if (buf2 && *buf2)
@@ -4594,11 +4593,6 @@ ecc_writekey (app_t app, ctrl_t ctrl,
             goto leave;
           if (tok && buf2)
             {
-              if (!native)
-                /* Strip off leading zero bytes and save. */
-                for (;toklen && !*tok; toklen--, tok++)
-                  ;
-
               *buf2 = tok;
               *buf2len = toklen;
             }
@@ -4658,11 +4652,9 @@ ecc_writekey (app_t app, ctrl_t ctrl,
       err = gpg_error (GPG_ERR_INV_VALUE);
       goto leave;
     }
-  if (flag_djb_tweak && keyno != 1)
-    algo = PUBKEY_ALGO_EDDSA;
-  else if (keyno == 1)
+  if (keyno == 1)
     algo = PUBKEY_ALGO_ECDH;
-  else if (!strcmp (curve, "Ed448"))
+  else if (!strcmp (curve, "Ed25519") || !strcmp (curve, "Ed448"))
     algo = PUBKEY_ALGO_EDDSA;
   else
     algo = PUBKEY_ALGO_ECDSA;
