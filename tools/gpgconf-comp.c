@@ -865,15 +865,15 @@ dirmngr_runtime_change (int killflag)
   int cmdidx;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[i++] = "--no-autostart";
-  argv[i++] = "--dirmngr";
-  cmdidx = i;
-  argv[i++] = killflag? "KILLDIRMNGR" : "RELOADDIRMNGR";
   if (!gnupg_default_homedir_p ())
     {
       argv[i++] = "--homedir";
       argv[i++] = gnupg_homedir ();
     }
+  argv[i++] = "--no-autostart";
+  argv[i++] = "--dirmngr";
+  cmdidx = i;
+  argv[i++] = killflag? "KILLDIRMNGR" : "RELOADDIRMNGR";
   argv[i] = NULL;
   log_assert (i < DIM(argv));
 
