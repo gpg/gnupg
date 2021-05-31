@@ -2144,9 +2144,9 @@ doc/Makefile
 tests/Makefile
 tests/gpgscm/Makefile
 tests/openpgp/Makefile
-tests/tpm2dtests/Makefile
+tests/cms/Makefile
 tests/migrations/Makefile
-tests/gpgsm/Makefile
+tests/tpm2dtests/Makefile
 tests/gpgme/Makefile
 tests/pkits/Makefile
 g10/gpg.w32-manifest

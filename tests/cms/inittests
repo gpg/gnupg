@@ -28,10 +28,10 @@ msg msg.sig msg.unsig
 
 
 [ -z "$srcdir" ] && srcdir=.
-[ -z "$GPGSM" ] && GPGSM=../sm/gpgsm
+[ -z "$GPGSM" ] && GPGSM=../../sm/gpgsm
 
 if [ -d $srcdir/samplekeys ] \
-   && grep TESTS_ENVIRONMENT Makefile >/dev/null 2>&1; then
+   && grep OLD_TESTS_ENVIRONMENT Makefile >/dev/null 2>&1; then
  :
 else
    # During make distclean the Makefile has already been removed,

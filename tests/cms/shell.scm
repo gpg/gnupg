@@ -17,12 +17,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (in-srcdir "tests" "gpgsm" "gpgsm-defs.scm"))
+(load (in-srcdir "tests" "cms" "gpgsm-defs.scm"))
+(setup-gpgsm-environment)
 
-(define tarball (flag "--create-tarball" *args*))
-(unless (and tarball (not (null? tarball)))
-	(error "Usage: setup.scm --create-tarball <file> ..."))
+;; This is not a test, but can be used to inspect the test
+;; environment.  Simply execute
+;;
+;;   make -Ctests/gpgsm check XTESTS=shell.scm
+;;
+;; to run it.
 
-(setenv "GNUPGHOME" (getcwd) #t)
-(create-gpgsmhome)
-(call-check `(,(tool 'gpgtar) --create --output ,(car tarball) "."))
+(interactive-shell)

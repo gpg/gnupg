@@ -34,8 +34,8 @@
 		  (load-tests-with-log "g13")
 		  (load-tests-with-log "agent")
 		  (load-tests-with-log "tests" "openpgp")
+		  (load-tests-with-log "tests" "cms")
 		  (load-tests-with-log "tests" "migrations")
-		  (load-tests-with-log "tests" "gpgsm")
 		  (load-tests-with-log "tests" "gpgme"))))
   (run-tests (if prefix
 		 (filter

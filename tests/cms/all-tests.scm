@@ -30,14 +30,14 @@
    (make-environment-cache
     (test::scm
      #f
-     (path-join "tests" "gpgsm" "setup.scm")
-     (in-srcdir "tests" "gpgsm" "setup.scm")
+     (path-join "tests" "cms" "setup.scm")
+     (in-srcdir "tests" "cms" "setup.scm")
      "--" "tests" "gpg")))
 
  (map (lambda (name)
 	(test::scm setup
-		   (path-join "tests" "gpgsm" name)
-		   (in-srcdir "tests" "gpgsm" name)))
-      (parse-makefile-expand (in-srcdir "tests" "gpgsm" "Makefile.am")
+		   (path-join "tests" "cms" name)
+		   (in-srcdir "tests" "cms" name)))
+      (parse-makefile-expand (in-srcdir "tests" "cms" "Makefile.am")
 			     (lambda (filename port key) (parse-makefile port key))
 			     "XTESTS")))

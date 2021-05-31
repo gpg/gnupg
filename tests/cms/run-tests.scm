@@ -1,5 +1,5 @@
-#!/usr/bin/env gpgscm
-
+;; Test-suite runner.
+;;
 ;; Copyright (C) 2016 g10 Code GmbH
 ;;
 ;; This file is part of GnuPG.
@@ -17,14 +17,23 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (in-srcdir "tests" "gpgsm" "gpgsm-defs.scm"))
-(setup-gpgsm-environment)
+(if (string=? "" (getenv "abs_top_srcdir"))
+    (begin
+      (echo "Environment variable 'abs_top_srcdir' not set.  Please point it to"
+	    "tests/cms.")
+      (exit 2)))
 
-(for-each-p
- "Checking decryption of supplied files."
- (lambda (name)
-   (tr:do
-    (tr:open (in-srcdir "tests" "gpgsm" (string-append name ".cms.asc")))
-    (tr:gpgsm "" '(--decrypt))
-    (tr:assert-identity name)))
- plain-files)
+(define tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
+
+(define setup
+  (make-environment-cache (test::scm
+			   #f
+			   (path-join "tests" "cms" "setup.scm")
+			   (in-srcdir "tests" "cms" "setup.scm"))))
+
+(run-tests (if (null? tests)
+	       (load-tests "tests" "cms")
+	       (map (lambda (name)
+		      (test::scm setup
+				 (path-join "tests" "cms" name)
+				 (in-srcdir "tests" "cms" name))) tests)))

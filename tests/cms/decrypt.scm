@@ -17,14 +17,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (in-srcdir "tests" "gpgsm" "gpgsm-defs.scm"))
+(load (in-srcdir "tests" "cms" "gpgsm-defs.scm"))
 (setup-gpgsm-environment)
 
-;; This is not a test, but can be used to inspect the test
-;; environment.  Simply execute
-;;
-;;   make -Ctests/gpgsm check XTESTS=shell.scm
-;;
-;; to run it.
-
-(interactive-shell)
+(for-each-p
+ "Checking decryption of supplied files."
+ (lambda (name)
+   (tr:do
+    (tr:open (in-srcdir "tests" "cms" (string-append name ".cms.asc")))
+    (tr:gpgsm "" '(--decrypt))
+    (tr:assert-identity name)))
+ plain-files)

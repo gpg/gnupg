@@ -1,5 +1,5 @@
-;; Test-suite runner.
-;;
+#!/usr/bin/env gpgscm
+
 ;; Copyright (C) 2016 g10 Code GmbH
 ;;
 ;; This file is part of GnuPG.
@@ -17,23 +17,12 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(if (string=? "" (getenv "abs_top_srcdir"))
-    (begin
-      (echo "Environment variable 'abs_top_srcdir' not set.  Please point it to"
-	    "tests/gpgsm.")
-      (exit 2)))
+(load (in-srcdir "tests" "cms" "gpgsm-defs.scm"))
 
-(define tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
+(define tarball (flag "--create-tarball" *args*))
+(unless (and tarball (not (null? tarball)))
+	(error "Usage: setup.scm --create-tarball <file> ..."))
 
-(define setup
-  (make-environment-cache (test::scm
-			   #f
-			   (path-join "tests" "gpgsm" "setup.scm")
-			   (in-srcdir "tests" "gpgsm" "setup.scm"))))
-
-(run-tests (if (null? tests)
-	       (load-tests "tests" "gpgsm")
-	       (map (lambda (name)
-		      (test::scm setup
-				 (path-join "tests" "gpgsm" name)
-				 (in-srcdir "tests" "gpgsm" name))) tests)))
+(setenv "GNUPGHOME" (getcwd) #t)
+(create-gpgsmhome)
+(call-check `(,(tool 'gpgtar) --create --output ,(car tarball) "."))

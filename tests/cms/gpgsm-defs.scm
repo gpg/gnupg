@@ -78,13 +78,14 @@
   (log "Storing private keys")
   (for-each
    (lambda (name)
-     (file-copy (in-srcdir "tests" "gpgsm" name)
+     (file-copy (in-srcdir "tests" "cms" name)
 		(path-join "private-keys-v1.d"
 			   (string-append name ".key"))))
    '("32100C27173EF6E9C4E9A25D3D69F86D37A4F939"))
 
   (log "Importing public demo and test keys")
-  (call-check `(,@gpgsm --import ,(in-srcdir "tests" "gpgsm" "cert_g10code_test1.der")))
+  (call-check `(,@gpgsm --import ,(in-srcdir "tests" "cms"
+                                             "cert_g10code_test1.der")))
 
   (create-sample-files)
   (stop-agent))

@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (in-srcdir "tests" "gpgsm" "gpgsm-defs.scm"))
+(load (in-srcdir "tests" "cms" "gpgsm-defs.scm"))
 (setup-gpgsm-environment)
 
 (define certs-for-import
@@ -47,7 +47,7 @@
  "Checking certificate import."
  (lambda (test)
    (assert (not (sm-have-public-key? (:cert test))))
-   (call-check `(,@gpgsm --import ,(in-srcdir "tests" "gpgsm" (:name test))))
+   (call-check `(,@gpgsm --import ,(in-srcdir "tests" "cms" (:name test))))
    (assert (sm-have-public-key? (:cert test))))
  (lambda (test) (:name test))
  certs-for-import)
