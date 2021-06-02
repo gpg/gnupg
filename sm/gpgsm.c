@@ -1825,16 +1825,22 @@ main ( int argc, char **argv)
     case aDecrypt:
       {
         estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
+        gpg_error_t err;
 
         set_binary (stdin);
         if (!argc)
-          gpgsm_decrypt (&ctrl, 0, fp); /* from stdin */
+          err = gpgsm_decrypt (&ctrl, 0, fp); /* from stdin */
         else if (argc == 1)
-          gpgsm_decrypt (&ctrl, open_read (*argv), fp); /* from file */
+          err = gpgsm_decrypt (&ctrl, open_read (*argv), fp); /* from file */
         else
           wrong_args ("--decrypt [filename]");
 
-        es_fclose (fp);
+#if GPGRT_VERSION_NUMBER >= 0x012700  /* 1.39 */
+        if (err)
+          gpgrt_fcancel (fp);
+        else
+#endif
+          es_fclose (fp);
       }
       break;
 

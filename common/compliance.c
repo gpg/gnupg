@@ -418,7 +418,8 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
                       || mode == GCRY_CIPHER_MODE_CFB);
 	    case GNUPG_MODULE_NAME_GPGSM:
 	      return (mode == GCRY_CIPHER_MODE_NONE
-                      || mode == GCRY_CIPHER_MODE_CBC);
+                      || mode == GCRY_CIPHER_MODE_CBC
+                      || (mode == GCRY_CIPHER_MODE_GCM && !producer));
 	    }
 	  log_assert (!"reached");
 

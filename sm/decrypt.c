@@ -38,6 +38,15 @@
 #include "../common/compliance.h"
 #include "../common/tlv.h"
 
+/* We can provide an enum value which is only availabale with KSBA
+ * 1.6.0 so that we can compile even against older versions.  Some
+ * calls will of course return an error in this case.  This value is
+ * currently not used because the cipher mode is sufficient here.  */
+/* #if KSBA_VERSION_NUMBER < 0x010600  /\* 1.6.0 *\/ */
+/* # define KSBA_CT_AUTHENVELOPED_DATA 10 */
+/* #endif */
+
+
 struct decrypt_filter_parm_s
 {
   int algo;
@@ -555,6 +564,14 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
       goto leave;
     }
 
+  if (parm->mode == GCRY_CIPHER_MODE_GCM)
+    {
+      /* GCM mode really sucks in CMS.  We need to know the AAD before
+       * we start decrypting but CMS puts the AAD after the content.
+       * Thus temporary files are required.  Let's hope that no real
+       * messages with actual AAD are ever used.  OCB Rules! */
+    }
+
  leave:
   xfree (seskey);
   return rc;
@@ -647,6 +664,36 @@ decrypt_filter (void *arg,
           *outlen = inlen - blklen;
           parm->any_data = 1;
         }
+    }
+  else
+    *outlen = 0;
+  return 0;
+}
+
+
+/* This is the GCM version of decrypt_filter.  */
+static gpg_error_t
+decrypt_gcm_filter (void *arg,
+                    const void *inbuf, size_t inlen, size_t *inused,
+                    void *outbuf, size_t maxoutlen, size_t *outlen)
+{
+  struct decrypt_filter_parm_s *parm = arg;
+
+  if (!inlen)
+    return gpg_error (GPG_ERR_BUG);
+
+  if (maxoutlen < parm->blklen)
+    return gpg_error (GPG_ERR_BUG);
+
+  if (inlen > maxoutlen)
+    inlen = maxoutlen;
+
+  *inused = inlen;
+  if (inlen)
+    {
+      gcry_cipher_decrypt (parm->hd, outbuf, inlen, inbuf, inlen);
+      *outlen = inlen;
+      parm->any_data = 1;
     }
   else
     *outlen = 0;
@@ -972,9 +1019,11 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   else
                     { /* setup the bulk decrypter */
                       any_key = 1;
-                      ksba_writer_set_filter (writer,
-                                              decrypt_filter,
-                                              &dfparm);
+                      ksba_writer_set_filter
+                        (writer,
+                         dfparm.mode == GCRY_CIPHER_MODE_GCM?
+                         decrypt_gcm_filter : decrypt_filter,
+                         &dfparm);
 
                       if (dfparm.is_de_vs
                           && gnupg_gcrypt_is_compliant (CO_DE_VS))
@@ -1028,7 +1077,11 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
       else if (stopreason == KSBA_SR_END_DATA)
         {
           ksba_writer_set_filter (writer, NULL, NULL);
-          if (dfparm.any_data)
+          if (dfparm.mode == GCRY_CIPHER_MODE_GCM)
+            {
+              /* Nothing yet to do.  We wait for the ready event.  */
+            }
+          else if (dfparm.any_data )
             { /* write the last block with padding removed */
               int i, npadding = dfparm.lastblock[dfparm.blklen-1];
               if (!npadding || npadding > dfparm.blklen)
@@ -1054,7 +1107,28 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                 }
             }
         }
+      else if (stopreason == KSBA_SR_READY)
+        {
+          if (dfparm.mode == GCRY_CIPHER_MODE_GCM)
+            {
+              char *authtag;
+              size_t authtaglen;
 
+              rc = ksba_cms_get_message_digest (cms, 0, &authtag, &authtaglen);
+              if (rc)
+                {
+                  log_error ("error getting authtag: %s\n", gpg_strerror (rc));
+                  goto leave;
+                }
+              if (DBG_CRYPTO)
+                log_printhex (authtag, authtaglen, "Authtag ...:");
+              rc = gcry_cipher_checktag (dfparm.hd, authtag, authtaglen);
+              xfree (authtag);
+              if (rc)
+                log_error ("data is not authentic: %s\n", gpg_strerror (rc));
+              goto leave;
+            }
+        }
     }
   while (stopreason != KSBA_SR_READY);
 
