@@ -1665,6 +1665,8 @@ Description of some debug flags:
 ** List of useful RFCs
   - RFC-3447 :: PKCS  #1: RSA Cryptography Specifications Version 2.1
   - RFC-4880 :: OpenPGP
+  - RFC-5083 :: CMS - Authenticated-Enveloped-Data
+  - RFC-5084 :: CMS - AES-GCM
   - RFC-5280 :: X.509 PKI Certificate and CRL Profile
   - RFC-5652 :: CMS (STD0070)
   - RFC-6818 :: Updates to the X.509 PKI Certificate and CRL Profile

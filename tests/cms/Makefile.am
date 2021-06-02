@@ -86,6 +86,10 @@ EXTRA_DIST = $(XTESTS) $(KEYS) $(CERTS) $(TEST_FILES) \
              samplekeys/cert_g10code_pete1.pem \
              samplekeys/cert_g10code_test1.pem \
              samplekeys/cert_g10code_theo1.pem \
+             samplemsgs/README \
+             samplemsgs/pwri-sample.cbc.p7m \
+             samplemsgs/pwri-sample.cbc-2.p7m \
+             samplemsgs/pwri-sample.gcm.p7m \
 	     text-1.txt text-2.txt text-3.txt \
 	     text-1.osig.pem text-1.dsig.pem text-1.osig-bad.pem \
 	     text-2.osig.pem text-2.osig-bad.pem \

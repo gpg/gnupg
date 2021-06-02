@@ -1,0 +1,6 @@
+Sample messages for CMS symmetric encryption.
+Password is "abc".
+
+pwri-sample.cbc.p7m      - Using CBC Mode
+pwri-sample.cbc-2.p7m    - Using CBC with a different iteration count
+pwri-sample.gcm.p7m      - Using GCM (from a broken implementation)
