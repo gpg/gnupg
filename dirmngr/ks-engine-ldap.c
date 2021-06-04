@@ -546,11 +546,6 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
     }
   else
     {
-      struct uri_tuple_s *password_param;
-
-      password_param = uri_query_lookup (uri, "password");
-      password = password_param ? password_param->value : NULL;
-
       host = uri->host;
       port = uri->port;
       bindname = uri->auth;
