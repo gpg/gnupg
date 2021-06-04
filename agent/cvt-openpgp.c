@@ -946,6 +946,8 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
       if (!is_protected)
         {
           err = try_do_unprotect_cb (pi);
+          if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
+            err = gpg_error (GPG_ERR_BAD_SECKEY);
         }
       else if (cache_nonce)
         {
