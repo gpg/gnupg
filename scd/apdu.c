@@ -2129,32 +2129,42 @@ apdu_open_reader (struct dev_list *dl)
   if (!dl->table)
     return -1;
 
+#ifdef HAVE_LIBUSB
   /* See whether we want to use the reader ID string or a reader
      number. A readerno of -1 indicates that the reader ID string is
      to be used. */
-  if (dl->portstr && strchr (dl->portstr, ':'))
-    readerno = -1; /* We want to use the readerid.  */
-  else if (dl->portstr)
+  if (dl->portstr)
     {
-      readerno = atoi (dl->portstr);
-      if (readerno < 0 || readerno >= dl->idx_max)
-        return -1;
-
-      npth_mutex_lock (&reader_table_lock);
-      /* If already opened HANDLE, return -1.  */
-      for (slot = 0; slot < MAX_READER; slot++)
-        if (reader_table[slot].used)
-          {
-            npth_mutex_unlock (&reader_table_lock);
+      if (!opt.disable_ccid || strchr (dl->portstr, ':'))
+        readerno = -1; /* We want to use the readerid.  */
+      else
+        {
+          readerno = atoi (dl->portstr);
+          if (readerno < 0 || readerno >= dl->idx_max)
             return -1;
-          }
-      npth_mutex_unlock (&reader_table_lock);
 
-      dl->idx = readerno;
-      dl->portstr = NULL;
+          npth_mutex_lock (&reader_table_lock);
+          /* If already opened HANDLE, return -1.  */
+          for (slot = 0; slot < MAX_READER; slot++)
+            if (reader_table[slot].used)
+              {
+                npth_mutex_unlock (&reader_table_lock);
+                return -1;
+              }
+          npth_mutex_unlock (&reader_table_lock);
+
+          dl->idx = readerno;
+          dl->portstr = NULL;
+        }
     }
   else
     readerno = 0;  /* Default. */
+#else
+  if (dl->portstr)
+    readerno = -1; /* We want to use the readerid.  */
+  else
+    readerno = 0;  /* Default. */
+#endif
 
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
