@@ -1043,6 +1043,22 @@ msgstr "descoñecido"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "carácter radix64 non válido %02x omitido\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy
 msgid "argument not expected"
 msgstr "gravando a chave secreta en `%s'\n"
@@ -4781,10 +4797,6 @@ msgid "key not found on keyserver\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "solicitando a chave %08lX de %s\n"
-
-#, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "solicitando a chave %08lX de %s\n"
 
@@ -7483,22 +7495,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
 
 #, fuzzy, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "(Non se deu unha descrición)\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr " o = omitir esta chave\n"
-
-#, fuzzy, c-format
-msgid "could not parse keyserver\n"
-msgstr "non se puido analisa-lo URI do servidor de chaves\n"
-
-#, fuzzy, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "escribindo a `%s'\n"
 
@@ -8442,145 +8438,6 @@ msgstr ""
 msgid "signal %d received - no action defined\n"
 msgstr ""
 
-msgid "return all values in a record oriented format"
-msgstr ""
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|set terminal charset to NAME"
-msgid "|NAME|connect to host NAME"
-msgstr "|NAME|axusta-lo xogo de caracteres do terminal a NOME"
-
-msgid "|N|connect to port N"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|use NAME as default recipient"
-msgid "|NAME|use user NAME for authentication"
-msgstr "|NOME|empregar NOME como valor por defecto do destinatario"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr ""
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr ""
-
-msgid "|STRING|query DN STRING"
-msgstr ""
-
-msgid "|STRING|use STRING as filter expression"
-msgstr ""
-
-msgid "|STRING|return the attribute STRING"
-msgstr ""
-
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "invalid import options\n"
-msgid "invalid port number %d\n"
-msgstr "opcións de importación non válidas\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "erro escribindo no chaveiro `%s': %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "attribute '%s' not found\n"
-msgstr "non se atopou a chave `%s': %s\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "processing url '%s'\n"
-msgstr "lendo de `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "          w/o user IDs: %lu\n"
-msgid "          user '%s'\n"
-msgstr "   sin IDs de usuario: %lu\n"
-
-#, fuzzy, c-format
-msgid "          pass '%s'\n"
-msgstr "               alias \""
-
-#, fuzzy, c-format
-msgid "          host '%s'\n"
-msgstr "               alias \""
-
-#, fuzzy, c-format
-#| msgid "          not imported: %lu\n"
-msgid "          port %d\n"
-msgstr "       non importadas: %lu\n"
-
-#, fuzzy, c-format
-msgid "            DN '%s'\n"
-msgstr "               alias \""
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "          attr '%s'\n"
-msgstr "               alias \""
-
-#, fuzzy, c-format
-msgid "no host name in '%s'\n"
-msgstr "(Non se deu unha descrición)\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: using insecure memory!\n"
-msgid "WARNING: using first attribute only\n"
-msgstr "AVISO: ¡úsase memoria insegura!\n"
-
-#, fuzzy, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "non se puido poñe-la armadura: %s\n"
-
-#, fuzzy, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "non se puido poñe-la armadura: %s\n"
-
-#, fuzzy, c-format
-#| msgid "dearmoring failed: %s\n"
-msgid "searching '%s' failed: %s\n"
-msgstr "non se puido quita-la armadura: %s\n"
-
-#, fuzzy, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "\"%s\" non é un ficheiro JPEG\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "erro lendo `%s': %s\n"
@@ -8638,13 +8495,29 @@ msgstr "buscando \"%s\" no servidor HKP %s\n"
 msgid "malloc failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
+#, fuzzy, c-format
+msgid "'%s' is not an LDAP URL\n"
+msgstr "\"%s\" non é un ficheiro JPEG\n"
+
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr " o = omitir esta chave\n"
 
 #, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
@@ -8792,9 +8665,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "fallou a sinatura: %s\n"
-
-msgid "ldapserver missing"
-msgstr ""
 
 msgid "serialno missing in cert ID"
 msgstr ""
@@ -9197,6 +9067,99 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "solicitando a chave %08lX de %s\n"
+
+#, fuzzy
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "(Non se deu unha descrición)\n"
+
+#, fuzzy
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "non se puido analisa-lo URI do servidor de chaves\n"
+
+#, fuzzy
+#~| msgid "|NAME|set terminal charset to NAME"
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|NAME|axusta-lo xogo de caracteres do terminal a NOME"
+
+#, fuzzy
+#~| msgid "|NAME|use NAME as default recipient"
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|NOME|empregar NOME como valor por defecto do destinatario"
+
+#, fuzzy
+#~| msgid "Usage: gpg [options] [files] (-h for help)"
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Uso: gpg [opcións] [ficheiros] (-h para ve-la axuda)"
+
+#, fuzzy
+#~| msgid "invalid import options\n"
+#~ msgid "invalid port number %d\n"
+#~ msgstr "opcións de importación non válidas\n"
+
+#, fuzzy
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "erro escribindo no chaveiro `%s': %s\n"
+
+#, fuzzy
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "non se atopou a chave `%s': %s\n"
+
+#, fuzzy
+#~| msgid "reading from `%s'\n"
+#~ msgid "processing url '%s'\n"
+#~ msgstr "lendo de `%s'\n"
+
+#, fuzzy
+#~| msgid "          w/o user IDs: %lu\n"
+#~ msgid "          user '%s'\n"
+#~ msgstr "   sin IDs de usuario: %lu\n"
+
+#, fuzzy
+#~ msgid "          pass '%s'\n"
+#~ msgstr "               alias \""
+
+#, fuzzy
+#~ msgid "          host '%s'\n"
+#~ msgstr "               alias \""
+
+#, fuzzy
+#~| msgid "          not imported: %lu\n"
+#~ msgid "          port %d\n"
+#~ msgstr "       non importadas: %lu\n"
+
+#, fuzzy
+#~ msgid "            DN '%s'\n"
+#~ msgstr "               alias \""
+
+#, fuzzy
+#~ msgid "          attr '%s'\n"
+#~ msgstr "               alias \""
+
+#, fuzzy
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "(Non se deu unha descrición)\n"
+
+#, fuzzy
+#~| msgid "WARNING: using insecure memory!\n"
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "AVISO: ¡úsase memoria insegura!\n"
+
+#, fuzzy
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "non se puido poñe-la armadura: %s\n"
+
+#, fuzzy
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "non se puido poñe-la armadura: %s\n"
+
+#, fuzzy
+#~| msgid "dearmoring failed: %s\n"
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "non se puido quita-la armadura: %s\n"
 
 #, fuzzy
 #~| msgid "NOTE: old default options file `%s' ignored\n"

@@ -1038,6 +1038,22 @@ msgstr "άγνωστο"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "μη έγκυρος radix64 χαρακτήρας %02x παράβλεψη\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy
 msgid "argument not expected"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
@@ -4785,10 +4801,6 @@ msgid "key not found on keyserver\n"
 msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
 
 #, fuzzy, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "αίτηση κλειδιού %08lX από το %s\n"
-
-#, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "αίτηση κλειδιού %08lX από το %s\n"
 
@@ -7491,22 +7503,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
 
 #, fuzzy, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "(Δεν δώθηκε περιγραφή)\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr " s = παράλειψη αυτού του κλειδιού\n"
-
-#, fuzzy, c-format
-msgid "could not parse keyserver\n"
-msgstr "αδυναμία επεξεργασίας του URI του διακομιση κλειδιών\n"
-
-#, fuzzy, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "εγγραφή στο  `%s'\n"
 
@@ -8448,145 +8444,6 @@ msgstr ""
 msgid "signal %d received - no action defined\n"
 msgstr ""
 
-msgid "return all values in a record oriented format"
-msgstr ""
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|set terminal charset to NAME"
-msgid "|NAME|connect to host NAME"
-msgstr "|ΟΝΟΜΑ|καθορισμός του σετ χαρακτήρων τερματικού σε ΟΝΟΜΑ"
-
-msgid "|N|connect to port N"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|use NAME as default recipient"
-msgid "|NAME|use user NAME for authentication"
-msgstr "|ΟΝΟΜΑ|χρήση του ΟΝΟΜΑτος ως προκαθορισμένου παραλήπτη"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr ""
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr ""
-
-msgid "|STRING|query DN STRING"
-msgstr ""
-
-msgid "|STRING|use STRING as filter expression"
-msgstr ""
-
-msgid "|STRING|return the attribute STRING"
-msgstr ""
-
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "invalid import options\n"
-msgid "invalid port number %d\n"
-msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "attribute '%s' not found\n"
-msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "processing url '%s'\n"
-msgstr "ανάγνωση από `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "          w/o user IDs: %lu\n"
-msgid "          user '%s'\n"
-msgstr "          χωρίς user ID: %lu\n"
-
-#, fuzzy, c-format
-msgid "          pass '%s'\n"
-msgstr "                γνωστό σαν \""
-
-#, fuzzy, c-format
-msgid "          host '%s'\n"
-msgstr "                γνωστό σαν \""
-
-#, fuzzy, c-format
-#| msgid "          not imported: %lu\n"
-msgid "          port %d\n"
-msgstr "          μη  εισαχθέντα: %lu\n"
-
-#, fuzzy, c-format
-msgid "            DN '%s'\n"
-msgstr "                γνωστό σαν \""
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "          attr '%s'\n"
-msgstr "                γνωστό σαν \""
-
-#, fuzzy, c-format
-msgid "no host name in '%s'\n"
-msgstr "(Δεν δώθηκε περιγραφή)\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: using insecure memory!\n"
-msgid "WARNING: using first attribute only\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: χρήση μη ασφαλούς μνήμης!\n"
-
-#, fuzzy, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "θωράκιση απέτυχε: %s\n"
-
-#, fuzzy, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "θωράκιση απέτυχε: %s\n"
-
-#, fuzzy, c-format
-#| msgid "dearmoring failed: %s\n"
-msgid "searching '%s' failed: %s\n"
-msgstr "αποθωράκιση απέτυχε: %s\n"
-
-#, fuzzy, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "\"%s\" δεν είναι JPEG αρχείο\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
@@ -8644,13 +8501,29 @@ msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s
 msgid "malloc failed: %s\n"
 msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
 
+#, fuzzy, c-format
+msgid "'%s' is not an LDAP URL\n"
+msgstr "\"%s\" δεν είναι JPEG αρχείο\n"
+
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr " s = παράλειψη αυτού του κλειδιού\n"
 
 #, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
@@ -8798,9 +8671,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "η υπογραφή απέτυχε: %s\n"
-
-msgid "ldapserver missing"
-msgstr ""
 
 msgid "serialno missing in cert ID"
 msgstr ""
@@ -9202,6 +9072,99 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "αίτηση κλειδιού %08lX από το %s\n"
+
+#, fuzzy
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "(Δεν δώθηκε περιγραφή)\n"
+
+#, fuzzy
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "αδυναμία επεξεργασίας του URI του διακομιση κλειδιών\n"
+
+#, fuzzy
+#~| msgid "|NAME|set terminal charset to NAME"
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|ΟΝΟΜΑ|καθορισμός του σετ χαρακτήρων τερματικού σε ΟΝΟΜΑ"
+
+#, fuzzy
+#~| msgid "|NAME|use NAME as default recipient"
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|ΟΝΟΜΑ|χρήση του ΟΝΟΜΑτος ως προκαθορισμένου παραλήπτη"
+
+#, fuzzy
+#~| msgid "Usage: gpg [options] [files] (-h for help)"
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
+
+#, fuzzy
+#~| msgid "invalid import options\n"
+#~ msgid "invalid port number %d\n"
+#~ msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, fuzzy
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
+
+#, fuzzy
+#~| msgid "reading from `%s'\n"
+#~ msgid "processing url '%s'\n"
+#~ msgstr "ανάγνωση από `%s'\n"
+
+#, fuzzy
+#~| msgid "          w/o user IDs: %lu\n"
+#~ msgid "          user '%s'\n"
+#~ msgstr "          χωρίς user ID: %lu\n"
+
+#, fuzzy
+#~ msgid "          pass '%s'\n"
+#~ msgstr "                γνωστό σαν \""
+
+#, fuzzy
+#~ msgid "          host '%s'\n"
+#~ msgstr "                γνωστό σαν \""
+
+#, fuzzy
+#~| msgid "          not imported: %lu\n"
+#~ msgid "          port %d\n"
+#~ msgstr "          μη  εισαχθέντα: %lu\n"
+
+#, fuzzy
+#~ msgid "            DN '%s'\n"
+#~ msgstr "                γνωστό σαν \""
+
+#, fuzzy
+#~ msgid "          attr '%s'\n"
+#~ msgstr "                γνωστό σαν \""
+
+#, fuzzy
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "(Δεν δώθηκε περιγραφή)\n"
+
+#, fuzzy
+#~| msgid "WARNING: using insecure memory!\n"
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: χρήση μη ασφαλούς μνήμης!\n"
+
+#, fuzzy
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy
+#~| msgid "dearmoring failed: %s\n"
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "αποθωράκιση απέτυχε: %s\n"
 
 #, fuzzy
 #~| msgid "NOTE: old default options file `%s' ignored\n"

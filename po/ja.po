@@ -987,6 +987,22 @@ msgstr "[未設定]"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "無効な64進文字%02Xをスキップしました\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 msgid "argument not expected"
 msgstr "引数は期待されていません"
 
@@ -4412,10 +4428,6 @@ msgid "key not found on keyserver\n"
 msgstr "鍵が鍵サーバに見つかりません\n"
 
 #, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "鍵%sを%sからサーバ%sに要求\n"
-
-#, c-format
 msgid "requesting key %s from %s\n"
 msgstr "鍵%sを%sに要求\n"
 
@@ -6969,22 +6981,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "不明の検証モデル '%s'\n"
 
 #, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "%s:%u: ホスト名が指定されていません\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr "%s:%u: ユーザなしに与えられたパスワード\n"
-
-#, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr "%s:%u: この行はスキップ\n"
-
-#, c-format
-msgid "could not parse keyserver\n"
-msgstr "鍵サーバのURLを解析不能\n"
-
-#, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "共通証明書のインポート・エラー: %s\n"
 
@@ -7908,136 +7904,6 @@ msgstr "SIGINTを受け取り - すぐにシャットダウン\n"
 msgid "signal %d received - no action defined\n"
 msgstr "シグナル%dを受け取り - アクションは定義されない\n"
 
-msgid "return all values in a record oriented format"
-msgstr "レコード形式ですべての値を返す"
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr "|NAME|host部分を無視してNAMEをとおして接続する"
-
-msgid "|NAME|connect to host NAME"
-msgstr "|NAME|ホストNAMEに接続する"
-
-msgid "|N|connect to port N"
-msgstr "|N|ポートNに接続します"
-
-msgid "|NAME|use user NAME for authentication"
-msgstr "|NAME|ユーザNAMEを認証に使う"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr "|PASS|パスワードPASSを認証に使う"
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr "パスワードを$DIRMNGR_LDAP_PASSから取ってくる"
-
-msgid "|STRING|query DN STRING"
-msgstr "|STRING|DN STRINGをクエリする"
-
-msgid "|STRING|use STRING as filter expression"
-msgstr "|STRING|STRINGをフィルタ式に使う"
-
-msgid "|STRING|return the attribute STRING"
-msgstr "|STRING|STRINGの属性を返す"
-
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "使い方: dirmngr_ldap [オプション] [URL] (ヘルプは -h)\n"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-"形式: dirmngr_ldap [オプション] [URL]\n"
-"Dirmngrの内部LDAPヘルパー\n"
-"インタフェースとオプションは事前の通知なく変更されることがあります\n"
-
-#, c-format
-msgid "invalid port number %d\n"
-msgstr "無効なポート番号 %d\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr "属性'%s'のスキャン結果\n"
-
-#, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "stdoutへの書き込みエラー: %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr "          利用可能な属性'%s'\n"
-
-#, c-format
-msgid "attribute '%s' not found\n"
-msgstr "属性'%s'が見つかりません\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr "属性'%s'が見つかりました\n"
-
-#, c-format
-msgid "processing url '%s'\n"
-msgstr "url'%s'を処理\n"
-
-#, c-format
-msgid "          user '%s'\n"
-msgstr "        ユーザ '%s'\n"
-
-#, c-format
-msgid "          pass '%s'\n"
-msgstr "                パスワード '%s'\n"
-
-#, c-format
-msgid "          host '%s'\n"
-msgstr "        ホスト '%s'\n"
-
-#, c-format
-msgid "          port %d\n"
-msgstr "        ポート %d\n"
-
-#, c-format
-msgid "            DN '%s'\n"
-msgstr "                DN '%s'\n"
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr "        フィルタ '%s'\n"
-
-#, c-format
-msgid "          attr '%s'\n"
-msgstr "         属性 '%s'\n"
-
-#, c-format
-msgid "no host name in '%s'\n"
-msgstr "'%s'にホスト名がありません\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr "クエリ '%s' に属性が指定されていません\n"
-
-#, c-format
-msgid "WARNING: using first attribute only\n"
-msgstr "*警告*: 最初の属性だけを使っています\n"
-
-#, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "'%s:%d'のLDAP初期化に失敗: %s\n"
-
-#, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "'%s:%d'のバインドに失敗: %s\n"
-
-#, c-format
-msgid "searching '%s' failed: %s\n"
-msgstr "'%s'の探索に失敗しました: %s\n"
-
-#, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "'%s'は、LDAP URLではありません\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr "'%s' は無効なLDAP URLです\n"
-
 #, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "'%s'へアクセスのエラー: httpステイタス %u\n"
@@ -8095,12 +7961,28 @@ msgid "malloc failed: %s\n"
 msgstr "mallocが失敗しました: %s\n"
 
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
-msgstr "start_cert_fetch: 無効なパターン '%s'\n"
+msgid "'%s' is not an LDAP URL\n"
+msgstr "'%s'は、LDAP URLではありません\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr "'%s' は無効なLDAP URLです\n"
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr "ldap_search がサーバのサイズ限界を越えました\n"
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr "%s:%u: ユーザなしに与えられたパスワード\n"
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr "%s:%u: この行はスキップ\n"
 
 #, c-format
 msgid "invalid canonical S-expression found\n"
@@ -8244,9 +8126,6 @@ msgstr "OSCPレスポンダは古すぎるステイタスを返しました\n"
 #, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "assuan_inquire(%s)が失敗しました: %s\n"
-
-msgid "ldapserver missing"
-msgstr "ldapserverがありません"
 
 msgid "serialno missing in cert ID"
 msgstr "serialnoがcert IDにありません"
@@ -8627,6 +8506,123 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "鍵%sを%sからサーバ%sに要求\n"
+
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "%s:%u: ホスト名が指定されていません\n"
+
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "鍵サーバのURLを解析不能\n"
+
+#~ msgid "return all values in a record oriented format"
+#~ msgstr "レコード形式ですべての値を返す"
+
+#~ msgid "|NAME|ignore host part and connect through NAME"
+#~ msgstr "|NAME|host部分を無視してNAMEをとおして接続する"
+
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|NAME|ホストNAMEに接続する"
+
+#~ msgid "|N|connect to port N"
+#~ msgstr "|N|ポートNに接続します"
+
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|NAME|ユーザNAMEを認証に使う"
+
+#~ msgid "|PASS|use password PASS for authentication"
+#~ msgstr "|PASS|パスワードPASSを認証に使う"
+
+#~ msgid "take password from $DIRMNGR_LDAP_PASS"
+#~ msgstr "パスワードを$DIRMNGR_LDAP_PASSから取ってくる"
+
+#~ msgid "|STRING|query DN STRING"
+#~ msgstr "|STRING|DN STRINGをクエリする"
+
+#~ msgid "|STRING|use STRING as filter expression"
+#~ msgstr "|STRING|STRINGをフィルタ式に使う"
+
+#~ msgid "|STRING|return the attribute STRING"
+#~ msgstr "|STRING|STRINGの属性を返す"
+
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "使い方: dirmngr_ldap [オプション] [URL] (ヘルプは -h)\n"
+
+#~ msgid ""
+#~ "Syntax: dirmngr_ldap [options] [URL]\n"
+#~ "Internal LDAP helper for Dirmngr\n"
+#~ "Interface and options may change without notice\n"
+#~ msgstr ""
+#~ "形式: dirmngr_ldap [オプション] [URL]\n"
+#~ "Dirmngrの内部LDAPヘルパー\n"
+#~ "インタフェースとオプションは事前の通知なく変更されることがあります\n"
+
+#~ msgid "invalid port number %d\n"
+#~ msgstr "無効なポート番号 %d\n"
+
+#~ msgid "scanning result for attribute '%s'\n"
+#~ msgstr "属性'%s'のスキャン結果\n"
+
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "stdoutへの書き込みエラー: %s\n"
+
+#~ msgid "          available attribute '%s'\n"
+#~ msgstr "          利用可能な属性'%s'\n"
+
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "属性'%s'が見つかりません\n"
+
+#~ msgid "found attribute '%s'\n"
+#~ msgstr "属性'%s'が見つかりました\n"
+
+#~ msgid "processing url '%s'\n"
+#~ msgstr "url'%s'を処理\n"
+
+#~ msgid "          user '%s'\n"
+#~ msgstr "        ユーザ '%s'\n"
+
+#~ msgid "          pass '%s'\n"
+#~ msgstr "                パスワード '%s'\n"
+
+#~ msgid "          host '%s'\n"
+#~ msgstr "        ホスト '%s'\n"
+
+#~ msgid "          port %d\n"
+#~ msgstr "        ポート %d\n"
+
+#~ msgid "            DN '%s'\n"
+#~ msgstr "                DN '%s'\n"
+
+#~ msgid "        filter '%s'\n"
+#~ msgstr "        フィルタ '%s'\n"
+
+#~ msgid "          attr '%s'\n"
+#~ msgstr "         属性 '%s'\n"
+
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "'%s'にホスト名がありません\n"
+
+#~ msgid "no attribute given for query '%s'\n"
+#~ msgstr "クエリ '%s' に属性が指定されていません\n"
+
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "*警告*: 最初の属性だけを使っています\n"
+
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "'%s:%d'のLDAP初期化に失敗: %s\n"
+
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "'%s:%d'のバインドに失敗: %s\n"
+
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "'%s'の探索に失敗しました: %s\n"
+
+#~ msgid "start_cert_fetch: invalid pattern '%s'\n"
+#~ msgstr "start_cert_fetch: 無効なパターン '%s'\n"
+
+#~ msgid "ldapserver missing"
+#~ msgstr "ldapserverがありません"
 
 #~ msgid "Note: old default options file '%s' ignored\n"
 #~ msgstr ""

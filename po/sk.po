@@ -1040,6 +1040,22 @@ msgstr "neznáme"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "neplatný znak vo formáte radix64 %02x bol preskočený\n"
 
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr ""
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr ""
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr ""
+
 #, fuzzy
 msgid "argument not expected"
 msgstr "zapisujem tajný kľúč do `%s'\n"
@@ -4765,10 +4781,6 @@ msgid "key not found on keyserver\n"
 msgstr "kľúč `%s' nebol nájdený: %s\n"
 
 #, fuzzy, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "požadujem kľúč %08lX z %s\n"
-
-#, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "požadujem kľúč %08lX z %s\n"
 
@@ -7468,22 +7480,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "neznámy implicitný adresát `%s'\n"
 
 #, fuzzy, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "(Žiadny popis)\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr " s = preskočiť tento kľúč\n"
-
-#, fuzzy, c-format
-msgid "could not parse keyserver\n"
-msgstr "nemožno použiť URI servera kľúčov - chyba analýzy URI\n"
-
-#, fuzzy, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "zapisujem do '%s'\n"
 
@@ -8422,145 +8418,6 @@ msgstr ""
 msgid "signal %d received - no action defined\n"
 msgstr ""
 
-msgid "return all values in a record oriented format"
-msgstr ""
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|set terminal charset to NAME"
-msgid "|NAME|connect to host NAME"
-msgstr "|MENO|nastav znakovú sadu terminálu na MENO"
-
-msgid "|N|connect to port N"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|use NAME as default recipient"
-msgid "|NAME|use user NAME for authentication"
-msgstr "|MENO|použiť MENO ako implicitného adresáta"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr ""
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr ""
-
-msgid "|STRING|query DN STRING"
-msgstr ""
-
-msgid "|STRING|use STRING as filter expression"
-msgstr ""
-
-msgid "|STRING|return the attribute STRING"
-msgstr ""
-
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Použitie: gpg [možnosti] [súbory] (-h pre pomoc)"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "invalid import options\n"
-msgid "invalid port number %d\n"
-msgstr "neplatný parameter pre import\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "attribute '%s' not found\n"
-msgstr "kľúč `%s' nebol nájdený: %s\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "processing url '%s'\n"
-msgstr "čítam z `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "          w/o user IDs: %lu\n"
-msgid "          user '%s'\n"
-msgstr "        bez identifikátorov: %lu\n"
-
-#, fuzzy, c-format
-msgid "          pass '%s'\n"
-msgstr "                alias \""
-
-#, fuzzy, c-format
-msgid "          host '%s'\n"
-msgstr "                alias \""
-
-#, fuzzy, c-format
-#| msgid "          not imported: %lu\n"
-msgid "          port %d\n"
-msgstr "           neimportované: %lu\n"
-
-#, fuzzy, c-format
-msgid "            DN '%s'\n"
-msgstr "                alias \""
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "          attr '%s'\n"
-msgstr "                alias \""
-
-#, fuzzy, c-format
-msgid "no host name in '%s'\n"
-msgstr "(Žiadny popis)\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: using insecure memory!\n"
-msgid "WARNING: using first attribute only\n"
-msgstr "VAROVANIE: Používaná pamäť nie je bezpečná!\n"
-
-#, fuzzy, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "kódovanie do ASCII formátu zlyhalo: %s\n"
-
-#, fuzzy, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "kódovanie do ASCII formátu zlyhalo: %s\n"
-
-#, fuzzy, c-format
-#| msgid "dearmoring failed: %s\n"
-msgid "searching '%s' failed: %s\n"
-msgstr "dekódovanie z ASCII formátu zlyhalo: %s\n"
-
-#, fuzzy, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "\"%s\" nie je súbor JPEG\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "chyba pri čítaní `%s': %s\n"
@@ -8618,13 +8475,29 @@ msgstr "vyhľadávam \"%s\" na HKP serveri %s\n"
 msgid "malloc failed: %s\n"
 msgstr "zmazanie bloku kľúča sa nepodarilo:  %s\n"
 
+#, fuzzy, c-format
+msgid "'%s' is not an LDAP URL\n"
+msgstr "\"%s\" nie je súbor JPEG\n"
+
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr " s = preskočiť tento kľúč\n"
 
 #, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
@@ -8772,9 +8645,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "podpisovanie zlyhalo: %s\n"
-
-msgid "ldapserver missing"
-msgstr ""
 
 msgid "serialno missing in cert ID"
 msgstr ""
@@ -9176,6 +9046,99 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "požadujem kľúč %08lX z %s\n"
+
+#, fuzzy
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "(Žiadny popis)\n"
+
+#, fuzzy
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "nemožno použiť URI servera kľúčov - chyba analýzy URI\n"
+
+#, fuzzy
+#~| msgid "|NAME|set terminal charset to NAME"
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|MENO|nastav znakovú sadu terminálu na MENO"
+
+#, fuzzy
+#~| msgid "|NAME|use NAME as default recipient"
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|MENO|použiť MENO ako implicitného adresáta"
+
+#, fuzzy
+#~| msgid "Usage: gpg [options] [files] (-h for help)"
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Použitie: gpg [možnosti] [súbory] (-h pre pomoc)"
+
+#, fuzzy
+#~| msgid "invalid import options\n"
+#~ msgid "invalid port number %d\n"
+#~ msgstr "neplatný parameter pre import\n"
+
+#, fuzzy
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
+
+#, fuzzy
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "kľúč `%s' nebol nájdený: %s\n"
+
+#, fuzzy
+#~| msgid "reading from `%s'\n"
+#~ msgid "processing url '%s'\n"
+#~ msgstr "čítam z `%s'\n"
+
+#, fuzzy
+#~| msgid "          w/o user IDs: %lu\n"
+#~ msgid "          user '%s'\n"
+#~ msgstr "        bez identifikátorov: %lu\n"
+
+#, fuzzy
+#~ msgid "          pass '%s'\n"
+#~ msgstr "                alias \""
+
+#, fuzzy
+#~ msgid "          host '%s'\n"
+#~ msgstr "                alias \""
+
+#, fuzzy
+#~| msgid "          not imported: %lu\n"
+#~ msgid "          port %d\n"
+#~ msgstr "           neimportované: %lu\n"
+
+#, fuzzy
+#~ msgid "            DN '%s'\n"
+#~ msgstr "                alias \""
+
+#, fuzzy
+#~ msgid "          attr '%s'\n"
+#~ msgstr "                alias \""
+
+#, fuzzy
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "(Žiadny popis)\n"
+
+#, fuzzy
+#~| msgid "WARNING: using insecure memory!\n"
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "VAROVANIE: Používaná pamäť nie je bezpečná!\n"
+
+#, fuzzy
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "kódovanie do ASCII formátu zlyhalo: %s\n"
+
+#, fuzzy
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "kódovanie do ASCII formátu zlyhalo: %s\n"
+
+#, fuzzy
+#~| msgid "dearmoring failed: %s\n"
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "dekódovanie z ASCII formátu zlyhalo: %s\n"
 
 #, fuzzy
 #~| msgid "NOTE: old default options file `%s' ignored\n"
