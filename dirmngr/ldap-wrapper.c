@@ -552,7 +552,7 @@ ldap_reaper_launch_thread (void)
 #ifdef HAVE_W32_SYSTEM
   /* Static init does not yet work in W32 nPth.  */
   if (npth_cond_init (&reaper_run_cond, NULL))
-    log_fatal ("%s: failed to init condition variabale: %s\n",
+    log_fatal ("%s: failed to init condition variable: %s\n",
                __func__, gpg_strerror (gpg_error_from_syserror ()));
 #endif
 
@@ -860,9 +860,9 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
   err = gnupg_spawn_process (pgmname, arg_list,
                              NULL, NULL, GNUPG_SPAWN_NONBLOCK,
                              NULL, &outfp, &errfp, &pid);
-  xfree (arg_list);
   if (err)
     {
+  xfree (arg_list);
       xfree (ctx);
       log_error ("error running '%s': %s\n", pgmname, gpg_strerror (err));
       return err;
@@ -881,6 +881,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
     err = ksba_reader_set_cb (*reader, reader_callback, ctx);
   if (err)
     {
+      xfree (arg_list);
       log_error (_("error initializing reader object: %s\n"),
                  gpg_strerror (err));
       destroy_wrapper (ctx);
@@ -902,8 +903,15 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
   unlock_reaper_list ();
 
   if (DBG_EXTPROG)
-    log_debug ("ldap wrapper %d started (%p, %s)\n",
-               (int)ctx->pid, ctx->reader, pgmname);
+    {
+      log_debug ("ldap wrapper %d started (%p, %s)",
+                 (int)ctx->pid, ctx->reader, pgmname);
+      for (i=0; arg_list[i]; i++)
+        log_printf (" [%s]", arg_list[i]);
+      log_printf ("\n");
+    }
+  xfree (arg_list);
+
 
   /* Need to wait for the first byte so we are able to detect an empty
      output and not let the consumer see an EOF without further error

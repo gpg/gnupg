@@ -240,7 +240,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
       else
         {
 #       if USE_LDAP
-          err = url_fetch_ldap (ctrl, url, NULL, 0, reader);
+          err = url_fetch_ldap (ctrl, url, reader);
 #       else /*!USE_LDAP*/
           err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 #       endif /*!USE_LDAP*/
@@ -513,7 +513,7 @@ fetch_cert_by_url (ctrl_t ctrl, const char *url,
   else /* Assume LDAP.  */
     {
 #if USE_LDAP
-      err = url_fetch_ldap (ctrl, url, NULL, 0, &reader);
+      err = url_fetch_ldap (ctrl, url, &reader);
 #else
       (void)ctrl;
       (void)url;

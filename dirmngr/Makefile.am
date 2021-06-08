@@ -83,6 +83,7 @@ endif
 if USE_LDAP
 dirmngr_SOURCES += ldapserver.h ldapserver.c ldap.c w32-ldap-help.h \
                    ldap-wrapper.h ldap-parse-uri.c ldap-parse-uri.h \
+                   ldap-misc.c ldap-misc.h \
                    ks-engine-ldap.c $(ldap_url) $(extraldap_src)
 ldaplibs = $(LDAPLIBS)
 else
@@ -111,7 +112,7 @@ endif
 dirmngr_LDFLAGS = $(extra_bin_ldflags)
 
 if USE_LDAPWRAPPER
-dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url)
+dirmngr_ldap_SOURCES = dirmngr_ldap.c ldap-misc.c ldap-misc.h $(ldap_url)
 dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) \
@@ -138,7 +139,7 @@ t_common_ldadd = $(libcommon) $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
 module_tests = t-http-basic
 
 if USE_LDAP
-module_tests += t-ldap-parse-uri
+module_tests += t-ldap-parse-uri t-ldap-misc
 endif
 
 # Test which need a network connections are only used in maintainer mode.
@@ -174,15 +175,22 @@ t_http_basic_CFLAGS  = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 t_http_basic_LDADD   = $(t_common_ldadd) \
 	         $(NTBTLS_LIBS) $(KSBA_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
 
-
 t_ldap_parse_uri_SOURCES = \
 	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
-        http.c http-common.c dns-stuff.c \
+        http.c http-common.c dns-stuff.c ldap-misc.c \
         $(ldap_url) $(t_common_src)
 t_ldap_parse_uri_CFLAGS = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 			  $(LIBGCRYPT_CFLAGS) \
                           $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd) $(DNSLIBS)
+
+t_ldap_misc_SOURCES = t-ldap-misc.c ldap-misc.c ldap-misc.h $(ldap_url)
+t_ldap_misc_CFLAGS = -DWITHOUT_NPTH=1 $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
+t_ldap_misc_LDFLAGS =
+t_ldap_misc_LDADD = $(libcommon) \
+		     $(GPG_ERROR_LIBS) $(LIBGCRYPT_LIBS) $(LDAPLIBS) \
+		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
+
 
 t_dns_stuff_CFLAGS = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 		     $(LIBGCRYPT_CFLAGS) \

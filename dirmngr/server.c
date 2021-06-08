@@ -1672,7 +1672,8 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
           if (!err && single)
             goto ready;
 
-          if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+          if (gpg_err_code (err) == GPG_ERR_NO_DATA
+              || gpg_err_code (err) == GPG_ERR_NOT_FOUND)
             {
               err = 0;
               if (cache_only)
