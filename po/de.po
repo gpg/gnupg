@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-05-17 19:33+0200\n"
+"PO-Revision-Date: 2021-06-08 11:05+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1013,6 +1013,22 @@ msgstr "[keine]"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges Basis-64 Zeichen %02X wurde übersprungen\n"
+
+#, c-format
+msgid "Sorry, we are in batchmode - can't get input\n"
+msgstr "Sorry, --batch wurde angegeben - Lesen von der Eingabe ist nicht möglich\n"
+
+#, c-format
+msgid "Sorry, no terminal at all requested - can't get input\n"
+msgstr "Sorry, --no-tty wurde angegeben - Lesen von der Eingabe ist nicht möglich\n"
+
+#, c-format
+msgid "too many errors; giving up\n"
+msgstr "Zu viele Fehler; hat keinen Zweck mehr\n"
+
+#, c-format
+msgid "Control-D detected\n"
+msgstr "Control-D (Strg-D) erkannt\n"
 
 msgid "argument not expected"
 msgstr "Argument nicht erwartet"
@@ -4566,10 +4582,6 @@ msgid "key not found on keyserver\n"
 msgstr "Schlüssel wurde auf dem Schlüsselserver nicht gefunden\n"
 
 #, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "fordere Schlüssel %s von %s-Server %s an\n"
-
-#, c-format
 msgid "requesting key %s from %s\n"
 msgstr "fordere Schlüssel %s von %s an\n"
 
@@ -7299,22 +7311,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "Unbekanntes Gültigkeitsmodell '%s'\n"
 
 #, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "%s:%u: Kein Server-Name angegeben\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr "%s:%u: Passwort ohne Benutzer\n"
-
-#, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr "%s:%u: Zeile wird übersprungen\n"
-
-#, c-format
-msgid "could not parse keyserver\n"
-msgstr "Schlüsselserver-URL konnte nicht analysiert werden\n"
-
-#, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "Importiere allgemeine Zertifikate: %s\n"
 
@@ -8278,136 +8274,6 @@ msgstr "SIGINT empfangen - wird sofort heruntergefahren\n"
 msgid "signal %d received - no action defined\n"
 msgstr "Signal %d empfangen - keine Aktion definiert\n"
 
-msgid "return all values in a record oriented format"
-msgstr "Alle Werte in einem Record Format zurückgeben"
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr "|NAME|Host Teil ignorieren und über NAME verbinden"
-
-msgid "|NAME|connect to host NAME"
-msgstr "|NAME|Verbinde mit dem Host NAME"
-
-msgid "|N|connect to port N"
-msgstr "|N|Verbinde mit dem Port N"
-
-msgid "|NAME|use user NAME for authentication"
-msgstr "|NAME|Benutze NAME zur Authentifizierung"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr "Benutze Passwort PASS zur Authentifizierung"
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr "Nimm das Passwort von $DIRMNGR_LDAP_PASS"
-
-msgid "|STRING|query DN STRING"
-msgstr "|STRING|Frage den DN STRING ab"
-
-msgid "|STRING|use STRING as filter expression"
-msgstr "|STRING|Benutze STRING als Filterausdruck"
-
-msgid "|STRING|return the attribute STRING"
-msgstr "|STRING|Gib das Attribut STRING zurück"
-
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Gebrauch: dirmngr_ldap [Optionen] [URL] (-h für Hilfe)\n"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-"Gebrauch: dirmngr_ldap [Optionen] [URL] (-h für Hilfe)\n"
-"Internes LDAP-Hilfsprogramm für Dirmngr.\n"
-"Interface und Optionen können sich mit jedem Release ändern.\n"
-
-#, c-format
-msgid "invalid port number %d\n"
-msgstr "Ungültige Portnummer %d\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr "Absuchen des Ergebnisses nach Attribut `%s'\n"
-
-#, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "Fehler beim Schreiben auf Standardausgabe: %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr "        verfügbare Attribute `%s'\n"
-
-#, c-format
-msgid "attribute '%s' not found\n"
-msgstr "Attribut `%s' nicht gefunden\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr "Attribut `%s' gefunden\n"
-
-#, c-format
-msgid "processing url '%s'\n"
-msgstr "Verarbeiten der URL `%s'\n"
-
-#, c-format
-msgid "          user '%s'\n"
-msgstr "           Benutzer `%s'\n"
-
-#, c-format
-msgid "          pass '%s'\n"
-msgstr "           Passwort `%s'\n"
-
-#, c-format
-msgid "          host '%s'\n"
-msgstr "               Host `%s'\n"
-
-#, c-format
-msgid "          port %d\n"
-msgstr "               Port %d\n"
-
-#, c-format
-msgid "            DN '%s'\n"
-msgstr "                 DN `%s'\n"
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr "             Filter `%s'\n"
-
-#, c-format
-msgid "          attr '%s'\n"
-msgstr "           Attribut `%s'\n"
-
-#, c-format
-msgid "no host name in '%s'\n"
-msgstr "Kein Hostname in `%s'\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr "Kein Attribut für Abfrage `%s' angegeben\n"
-
-#, c-format
-msgid "WARNING: using first attribute only\n"
-msgstr "WARNUNG: Es wird nur das erste Attribut benutzt\n"
-
-#, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "LDAP Initialisierung von `%s:%d' fehlgeschlagen: %s\n"
-
-#, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "Anbindung an `%s:%d' fehlgeschlagen: %s\n"
-
-#, c-format
-msgid "searching '%s' failed: %s\n"
-msgstr "Suche mit `%s' fehlgeschlagen: %s\n"
-
-#, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "`%s' ist kein LDAP URL\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr "`%s' ist ein ungültiger LDAP URL\n"
-
 #, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "Fehler beim Zugreifen auf `%s': HTTP Status %u\n"
@@ -8465,12 +8331,28 @@ msgid "malloc failed: %s\n"
 msgstr "malloc() fehlgeschlagen: %s\n"
 
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
-msgstr "start_cert_fetch: Ungültiges Muster `%s'\n"
+msgid "'%s' is not an LDAP URL\n"
+msgstr "`%s' ist kein LDAP URL\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr "`%s' ist ein ungültiger LDAP URL\n"
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr "ldap_search erreichte die Größengrenze des Servers\n"
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr "%s:%u: Passwort ohne Benutzer\n"
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr "%s:%u: Unbekanntes Flag '%s' wird ignoriert\n"
+
+#, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr "%s:%u: Zeile wird übersprungen\n"
 
 #, c-format
 msgid "invalid canonical S-expression found\n"
@@ -8615,9 +8497,6 @@ msgstr "OCSP Responder gab einen zu alten Status zurück\n"
 #, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "assuan_inquire(%s) fehlgeschlagen: %s\n"
-
-msgid "ldapserver missing"
-msgstr "LDAP Server fehlt"
 
 msgid "serialno missing in cert ID"
 msgstr "Seriennummer fehlt in der Cert-ID"
@@ -9002,6 +8881,123 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
+
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "fordere Schlüssel %s von %s-Server %s an\n"
+
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "%s:%u: Kein Server-Name angegeben\n"
+
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "Schlüsselserver-URL konnte nicht analysiert werden\n"
+
+#~ msgid "return all values in a record oriented format"
+#~ msgstr "Alle Werte in einem Record Format zurückgeben"
+
+#~ msgid "|NAME|ignore host part and connect through NAME"
+#~ msgstr "|NAME|Host Teil ignorieren und über NAME verbinden"
+
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|NAME|Verbinde mit dem Host NAME"
+
+#~ msgid "|N|connect to port N"
+#~ msgstr "|N|Verbinde mit dem Port N"
+
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|NAME|Benutze NAME zur Authentifizierung"
+
+#~ msgid "|PASS|use password PASS for authentication"
+#~ msgstr "Benutze Passwort PASS zur Authentifizierung"
+
+#~ msgid "take password from $DIRMNGR_LDAP_PASS"
+#~ msgstr "Nimm das Passwort von $DIRMNGR_LDAP_PASS"
+
+#~ msgid "|STRING|query DN STRING"
+#~ msgstr "|STRING|Frage den DN STRING ab"
+
+#~ msgid "|STRING|use STRING as filter expression"
+#~ msgstr "|STRING|Benutze STRING als Filterausdruck"
+
+#~ msgid "|STRING|return the attribute STRING"
+#~ msgstr "|STRING|Gib das Attribut STRING zurück"
+
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Gebrauch: dirmngr_ldap [Optionen] [URL] (-h für Hilfe)\n"
+
+#~ msgid ""
+#~ "Syntax: dirmngr_ldap [options] [URL]\n"
+#~ "Internal LDAP helper for Dirmngr\n"
+#~ "Interface and options may change without notice\n"
+#~ msgstr ""
+#~ "Gebrauch: dirmngr_ldap [Optionen] [URL] (-h für Hilfe)\n"
+#~ "Internes LDAP-Hilfsprogramm für Dirmngr.\n"
+#~ "Interface und Optionen können sich mit jedem Release ändern.\n"
+
+#~ msgid "invalid port number %d\n"
+#~ msgstr "Ungültige Portnummer %d\n"
+
+#~ msgid "scanning result for attribute '%s'\n"
+#~ msgstr "Absuchen des Ergebnisses nach Attribut `%s'\n"
+
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "Fehler beim Schreiben auf Standardausgabe: %s\n"
+
+#~ msgid "          available attribute '%s'\n"
+#~ msgstr "        verfügbare Attribute `%s'\n"
+
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "Attribut `%s' nicht gefunden\n"
+
+#~ msgid "found attribute '%s'\n"
+#~ msgstr "Attribut `%s' gefunden\n"
+
+#~ msgid "processing url '%s'\n"
+#~ msgstr "Verarbeiten der URL `%s'\n"
+
+#~ msgid "          user '%s'\n"
+#~ msgstr "           Benutzer `%s'\n"
+
+#~ msgid "          pass '%s'\n"
+#~ msgstr "           Passwort `%s'\n"
+
+#~ msgid "          host '%s'\n"
+#~ msgstr "               Host `%s'\n"
+
+#~ msgid "          port %d\n"
+#~ msgstr "               Port %d\n"
+
+#~ msgid "            DN '%s'\n"
+#~ msgstr "                 DN `%s'\n"
+
+#~ msgid "        filter '%s'\n"
+#~ msgstr "             Filter `%s'\n"
+
+#~ msgid "          attr '%s'\n"
+#~ msgstr "           Attribut `%s'\n"
+
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "Kein Hostname in `%s'\n"
+
+#~ msgid "no attribute given for query '%s'\n"
+#~ msgstr "Kein Attribut für Abfrage `%s' angegeben\n"
+
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "WARNUNG: Es wird nur das erste Attribut benutzt\n"
+
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "LDAP Initialisierung von `%s:%d' fehlgeschlagen: %s\n"
+
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "Anbindung an `%s:%d' fehlgeschlagen: %s\n"
+
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "Suche mit `%s' fehlgeschlagen: %s\n"
+
+#~ msgid "start_cert_fetch: invalid pattern '%s'\n"
+#~ msgstr "start_cert_fetch: Ungültiges Muster `%s'\n"
+
+#~ msgid "ldapserver missing"
+#~ msgstr "LDAP Server fehlt"
 
 #~ msgid "Note: old default options file '%s' ignored\n"
 #~ msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
