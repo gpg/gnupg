@@ -31,6 +31,12 @@
 #ifndef DIRMNGR_T_SUPPORT_H
 #define DIRMNGR_T_SUPPORT_H 1
 
+#ifndef DIM
+# define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
+# define DIMof(type,member)   DIM(((type *)0)->member)
+#endif
+
+
 /* Macros to print the result of a test.  */
 #define pass()  do { ; } while(0)
 #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\

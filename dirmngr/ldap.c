@@ -1,12 +1,12 @@
 /* ldap.c - LDAP access
  * Copyright (C) 2002 Klarälvdalens Datakonsult AB
- * Copyright (C) 2003, 2004, 2005, 2007, 2008, 2010 g10 Code GmbH
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008, 2010, 2021 g10 Code GmbH
  *
- * This file is part of DirMngr.
+ * This file is part of GnuPG.
  *
- * DirMngr is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * DirMngr is distributed in the hope that it will be useful,
@@ -15,8 +15,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -36,6 +36,7 @@
 #include "ldapserver.h"
 #include "misc.h"
 #include "ldap-wrapper.h"
+#include "ldap-url.h"
 #include "../common/host2net.h"
 
 
@@ -116,14 +117,15 @@ static gpg_error_t
 run_ldap_wrapper (ctrl_t ctrl,
                   int ignore_timeout,
                   int multi_mode,
+                  int tls_mode,
+                  int ntds,
                   const char *proxy,
                   const char *host, int port,
                   const char *user, const char *pass,
-                  const char *dn, const char *filter, const char *attr,
-                  const char *url,
+                  const char *base, const char *filter, const char *attr,
                   ksba_reader_t *reader)
 {
-  const char *argv[40];
+  const char *argv[50];
   int argc;
   char portbuf[30], timeoutbuf[30];
 
@@ -131,7 +133,7 @@ run_ldap_wrapper (ctrl_t ctrl,
   *reader = NULL;
 
   argc = 0;
-  if (pass)  /* Note, that the password must be the first item.  */
+  if (pass && *pass)  /* Note, that the password must be the first item.  */
     {
       argv[argc++] = "--pass";
       argv[argc++] = pass;
@@ -145,9 +147,18 @@ run_ldap_wrapper (ctrl_t ctrl,
   argv[argc++] = "--log-with-pid";
   if (multi_mode)
     argv[argc++] = "--multi";
+
+  if (tls_mode == 1)
+    argv[argc++] = "--starttls";
+  else if (tls_mode)
+    argv[argc++] = "--ldaptls";
+
+  if (ntds)
+    argv[argc++] = "--ntds";
+
   if (opt.ldaptimeout)
     {
-      sprintf (timeoutbuf, "%u", opt.ldaptimeout);
+      snprintf (timeoutbuf, sizeof timeoutbuf, "%u", opt.ldaptimeout);
       argv[argc++] = "--timeout";
       argv[argc++] = timeoutbuf;
       if (ignore_timeout)
@@ -158,7 +169,7 @@ run_ldap_wrapper (ctrl_t ctrl,
       argv[argc++] = "--proxy";
       argv[argc++] = proxy;
     }
-  if (host)
+  if (host && *host)
     {
       argv[argc++] = "--host";
       argv[argc++] = host;
@@ -169,27 +180,24 @@ run_ldap_wrapper (ctrl_t ctrl,
       argv[argc++] = "--port";
       argv[argc++] = portbuf;
     }
-  if (user)
+  if (user && *user)
     {
       argv[argc++] = "--user";
       argv[argc++] = user;
     }
-  if (dn)
+  if (base && *base)
     {
-      argv[argc++] = "--dn";
-      argv[argc++] = dn;
-    }
-  if (filter)
-    {
-      argv[argc++] = "--filter";
-      argv[argc++] = filter;
+      argv[argc++] = "--base";
+      argv[argc++] = base;
     }
   if (attr)
     {
       argv[argc++] = "--attr";
       argv[argc++] = attr;
     }
-  argv[argc++] = url? url : "ldap://";
+
+  if (filter)
+    argv[argc++] = filter;
   argv[argc] = NULL;
 
   return ldap_wrapper (ctrl, reader, argv);
@@ -202,19 +210,48 @@ run_ldap_wrapper (ctrl_t ctrl,
    reader is returned.  If HOST or PORT are not 0, they are used to
    override the values from the URL. */
 gpg_error_t
-url_fetch_ldap (ctrl_t ctrl, const char *url, const char *host, int port,
-                ksba_reader_t *reader)
+url_fetch_ldap (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
 {
   gpg_error_t err;
+  LDAPURLDesc *ludp = NULL;
+  int tls_mode;
+
+  if (!ldap_is_ldap_url (url))
+    {
+      log_error (_("'%s' is not an LDAP URL\n"), url);
+      return gpg_error (GPG_ERR_INV_URI);
+    }
+
+  if (ldap_url_parse (url, &ludp))
+    {
+      log_error (_("'%s' is an invalid LDAP URL\n"), url);
+      return gpg_error (GPG_ERR_INV_URI);
+    }
+
+  if (ludp->lud_filter && ludp->lud_filter[0] != '(')
+    {
+      log_error (_("'%s' is an invalid LDAP URL\n"), url);
+      err = gpg_error (GPG_ERR_BAD_URI);
+      goto leave;
+    }
+
+  if (ludp->lud_scheme && !strcmp (ludp->lud_scheme, "ldaps"))
+    tls_mode = 2; /* LDAP-over-TLS here becuase we get it from certs. */
+  else
+    tls_mode = 0;
 
   err = run_ldap_wrapper (ctrl,
                           1, /* Ignore explicit timeout because CRLs
                                 might be very large. */
-                          0,
+                          0, /* No Multi-mode.  */
+                          tls_mode,
+                          0, /* No AD authentication.  */
                           opt.ldap_proxy,
-                          host, port,
-                          NULL, NULL,
-                          NULL, NULL, NULL, url,
+                          ludp->lud_host, ludp->lud_port,
+                          NULL, NULL,  /* user, password */
+                          ludp->lud_dn,    /* Base DN */
+                          ludp->lud_filter,
+                          ludp->lud_attrs? ludp->lud_attrs[0] : NULL,
                           reader);
 
   /* FIXME: This option might be used for DoS attacks.  Because it
@@ -223,17 +260,8 @@ url_fetch_ldap (ctrl_t ctrl, const char *url, const char *host, int port,
      turn. */
   if (!err && opt.add_new_ldapservers && !opt.ldap_proxy)
     {
-      if (host)
-        add_server_to_servers (host, port);
-      else if (url)
-        {
-          char *tmp = host_and_port_from_url (url, &port);
-          if (tmp)
-            {
-              add_server_to_servers (tmp, port);
-              xfree (tmp);
-            }
-        }
+      if (ludp->lud_host)
+        add_server_to_servers (ludp->lud_host, ludp->lud_port);
     }
 
   /* If the lookup failed and we are not only using the proxy, we try
@@ -252,19 +280,32 @@ url_fetch_ldap (ctrl_t ctrl, const char *url, const char *host, int port,
         {
 	  ldap_server_t server = iter.server;
 
+          if (server->starttls)
+            tls_mode = 1;
+          else if (server->ldap_over_tls)
+            tls_mode = 2;
+          else
+            tls_mode = 0;
+
           err = run_ldap_wrapper (ctrl,
                                   0,
-                                  0,
+                                  0, /* No Multi-mode */
+                                  tls_mode,
+                                  server->ntds,
                                   NULL,
                                   server->host, server->port,
-                                  NULL, NULL,
-                                  NULL, NULL, NULL, url,
+                                  server->user, server->pass,
+                                  server->base,
+                                  ludp->lud_filter,
+                                  ludp->lud_attrs? ludp->lud_attrs[0] : NULL,
                                   reader);
           if (!err)
             break;
         }
     }
 
+ leave:
+  ldap_free_urldesc (ludp);
   return err;
 }
 
@@ -281,20 +322,32 @@ attr_fetch_ldap (ctrl_t ctrl,
 
   *reader = NULL;
 
-  /* FIXME; we might want to look at the Base SN to try matching
+  /* FIXME; we might want to look at the Base DN to try matching
      servers first. */
   for (ldapserver_iter_begin (&iter, ctrl); ! ldapserver_iter_end_p (&iter);
        ldapserver_iter_next (&iter))
     {
       ldap_server_t server = iter.server;
+      int tls_mode;
+
+      if (server->starttls)
+        tls_mode = 1;
+      else if (server->ldap_over_tls)
+        tls_mode = 2;
+      else
+        tls_mode = 0;
 
       err = run_ldap_wrapper (ctrl,
                               0,
                               0,
+                              tls_mode,
+                              server->ntds,
                               opt.ldap_proxy,
                               server->host, server->port,
                               server->user, server->pass,
-                              dn, "objectClass=*", attr, NULL,
+                              dn,
+                              "(objectClass=*)",
+                              attr,
                               reader);
       if (!err)
         break; /* Probably found a result. Ready. */
@@ -302,46 +355,144 @@ attr_fetch_ldap (ctrl_t ctrl,
   return err;
 }
 
+
 
-/* Parse PATTERN and return a new strlist to be used for the actual
-   LDAP query.  Bit 0 of the flags field is set if that pattern is
-   actually a base specification.  Caller must release the returned
-   strlist.  NULL is returned on error.
-
- * Possible patterns:
- *
- *   KeyID
- *   Fingerprint
- *   OpenPGP userid
- * x Email address  Indicated by a left angle bracket.
- *   Exact word match in user id or subj. name
- * x Subj. DN  indicated bu a leading slash
- *   Issuer DN
- *   Serial number + subj. DN
- * x Substring match indicated by a leading '*; is also the default.
- */
-
-strlist_t
-parse_one_pattern (const char *pattern)
+/* Return true if VALUE needs escaping.  */
+static int
+rfc2254_need_escape (const char *value)
 {
-  strlist_t result = NULL;
-  char *p;
+  /* NUL needs to be escaped as well but we can represent that in
+   * VALUE, so no need for it.  */
+  return !!strpbrk (value, "*()\\");
+}
+
+/* Escape VALUE using RFC-2254 rules.  Returns NULL on error. */
+static char *
+rfc2254_escape (const char *value)
+{
+  const char *s;
+  char *buffer, *p;
+  size_t length = 0;
+
+  for (s=value; *s; s++)
+    switch (*s)
+      {
+      case '*':
+      case '(':
+      case ')':
+      case '\\': length += 3; break;
+      default:   length++; break;
+      }
+
+  buffer = xtrymalloc (length+1);
+  if (!buffer)
+    return NULL;
+  p = buffer;
+  for (s=value; *s; s++)
+    switch (*s)
+      {
+      case '*':  p = stpcpy (p, "\\2a"); break;
+      case '(':  p = stpcpy (p, "\\28"); break;
+      case ')':  p = stpcpy (p, "\\29"); break;
+      case '\\': p = stpcpy (p, "\\5c"); break;
+      default:   *p++ = *s; break;
+      }
+  *p = 0;
+  return buffer;
+}
+
+
+/* Return true if VALUE needs escaping.  */
+static int
+extfilt_need_escape (const char *value)
+{
+  /* NUL needs to be escaped as well but we can represent that in
+   * VALUE, so no need for it.  */
+  return !!strchr (value, '&');
+}
+
+/* Escape VALUE using our extended filter rules from dirmngr_ldap.c.
+ * Returns NULL on error. */
+static char *
+extfilt_escape (const char *value)
+{
+  const char *s;
+  char *buffer, *p;
+  size_t length = 0;
+
+  for (s=value; *s; s++)
+    {
+      length++;
+      if (*s == '&')
+        length++;
+    }
+
+  buffer = xtrymalloc (length+1);
+  if (!buffer)
+    return NULL;
+  p = buffer;
+  for (s=value; *s; s++)
+    {
+      *p++ = *s;
+      if (*s == '&')
+        *p++ = '&';
+    }
+  *p = 0;
+  return buffer;
+}
+
+
+/* Parse PATTERN and return a new filter expression for an LDAP query.
+ * The extended filter syntax as known by dirmngr_ldap.c is used.
+ * Caller must release the returned value.  R_RESULT is set to NULL on
+ * error.
+ *
+ * Supported patterns:
+ *
+ *  | Ok  | gpg style user id type                               |
+ *  |-----+------------------------------------------------------|
+ *  | no  | KeyID                                                |
+ *  | no  | Fingerprint                                          |
+ *  | no  | OpenPGP userid                                       |
+ *  | yes | Email address  Indicated by a left angle bracket.    |
+ *  | no  | Exact word match in user id or subj. name            |
+ *  | yes | Subj. DN  indicated by a leading slash               |
+ *  | no  | Issuer DN                                            |
+ *  | no  | Serial number + subj. DN                             |
+ *  | yes | Substring match indicated by a leading '*; (default) |
+ */
+static gpg_error_t
+make_one_filter (const char *pattern, char **r_result)
+{
+  gpg_error_t err = 0;
+  char *pattern_buffer = NULL;
+  char *result = NULL;
+  size_t n;
+
+  *r_result = NULL;
 
   switch (*pattern)
     {
     case '<':			/* Email. */
       {
         pattern++;
-	result = xmalloc (sizeof *result + 5 + strlen (pattern));
-        result->next = NULL;
-        result->flags = 0;
-	p = stpcpy (stpcpy (result->d, "mail="), pattern);
-	if (p[-1] == '>')
-	  *--p = 0;
-        if (!*result->d) /* Error. */
+        if (rfc2254_need_escape (pattern)
+            && !(pattern = pattern_buffer = rfc2254_escape (pattern)))
           {
-            xfree (result);
-            result = NULL;
+            err = gpg_error_from_syserror ();
+            goto leave;
+          }
+        result = strconcat ("(mail=", pattern, ")", NULL);
+        if (!result)
+          {
+            err = gpg_error_from_syserror ();
+            goto leave;
+          }
+        n = strlen (result);
+        if (result[n-2] == '>') /* Strip trailing '>' */
+          {
+            result[n-2] = ')';
+            result[n-1] = 0;
           }
 	break;
       }
@@ -349,123 +500,84 @@ parse_one_pattern (const char *pattern)
       pattern++;
       if (*pattern)
         {
-          result = xmalloc (sizeof *result + strlen (pattern));
-          result->next = NULL;
-          result->flags = 1; /* Base spec. */
-          strcpy (result->d, pattern);
+          /* We need just the BaseDN.  This assumes that the Subject
+           * is correcly stored in the DT.  This is however not always
+           * the case and the actual DN is different ffrom the
+           * subject.  In this case we won't find anything.  */
+          if (extfilt_need_escape (pattern)
+              && !(pattern = pattern_buffer = extfilt_escape (pattern)))
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          result = strconcat ("^", pattern, "&base&", NULL);
+          if (!result)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
         }
       break;
-    case '#':			/* Issuer DN. */
+    case '#':			/* Issuer DN - Not yet working. */
       pattern++;
       if (*pattern == '/')  /* Just issuer DN. */
         {
           pattern++;
+          if (extfilt_need_escape (pattern)
+              && !(pattern = pattern_buffer = extfilt_escape (pattern)))
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          result = strconcat ("^", pattern, "&base&", NULL);
+          if (!result)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
 	}
       else  /* Serial number + issuer DN */
 	{
+
         }
       break;
     case '*':
       pattern++;
       /* fall through */
     default:			/* Take as substring match. */
-      {
-	const char format[] = "(|(sn=*%s*)(|(cn=*%s*)(mail=*%s*)))";
-
-        if (*pattern)
-          {
-            result = xmalloc (sizeof *result
-                              + strlen (format) + 3 * strlen (pattern));
-            result->next = NULL;
-            result->flags = 0;
-            sprintf (result->d, format, pattern, pattern, pattern);
-          }
-      }
+      if (*pattern)
+        {
+          if (rfc2254_need_escape (pattern)
+              && !(pattern = pattern_buffer = rfc2254_escape (pattern)))
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          result = strconcat ("(|(sn=*", pattern,
+                              "*)(|(cn=*", pattern,
+                              "*)(mail=*", pattern,
+                              "*)))", NULL);
+          if (!result)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+        }
       break;
     }
 
-  return result;
-}
+  if (!result)
+    err = gpg_error (GPG_ERR_INV_USER_ID);
 
-/* Take the string STRING and escape it according to the URL rules.
-   Return a newly allocated string. */
-static char *
-escape4url (const char *string)
-{
-  const char *s;
-  char *buf, *p;
-  size_t n;
-
-  if (!string)
-    string = "";
-
-  for (s=string,n=0; *s; s++)
-    if (strchr (UNENCODED_URL_CHARS, *s))
-      n++;
-    else
-      n += 3;
-
-  buf = malloc (n+1);
-  if (!buf)
-    return NULL;
-
-  for (s=string,p=buf; *s; s++)
-    if (strchr (UNENCODED_URL_CHARS, *s))
-      *p++ = *s;
-    else
-      {
-        sprintf (p, "%%%02X", *(const unsigned char *)s);
-        p += 3;
-      }
-  *p = 0;
-
-  return buf;
-}
-
-
-
-/* Create a LDAP URL from DN and FILTER and return it in URL.  We don't
-   need the host and port because this will be specified using the
-   override options. */
-static gpg_error_t
-make_url (char **url, const char *dn, const char *filter)
-{
-  gpg_error_t err;
-  char *u_dn, *u_filter;
-  char const attrs[] = (USERCERTIFICATE ","
-                        /* In 2005 wk mentioned in the changelog that
-                         * work on the userSMIMECertificate has
-                         * started but it seems that no further
-                         * progress was made or the whole thing was
-                         * simply forgotten.  */
-                        /* USERSMIMECERTIFICATE "," */
-                        CACERTIFICATE ","
-                        X509CACERT );
-
-  *url = NULL;
-
-  u_dn = escape4url (dn);
-  if (!u_dn)
-      return gpg_error_from_errno (errno);
-
-  u_filter = escape4url (filter);
-  if (!u_filter)
-    {
-      err = gpg_error_from_errno (errno);
-      xfree (u_dn);
-      return err;
-    }
-
-  *url = strconcat ("ldap:///", u_dn, "?", attrs, "?sub?", u_filter, NULL);
-  if (!*url)
-    err = gpg_error_from_syserror ();
+ leave:
+  xfree (pattern_buffer);
+  if (err)
+    xfree (result);
   else
-    err = 0;
-
-  xfree (u_dn);
-  xfree (u_filter);
+    *r_result = result;
   return err;
 }
+
 
 
 /* Prepare an LDAP query to return the cACertificate attribute for DN.
@@ -483,7 +595,7 @@ start_cacert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
   if (!*r_context)
     return gpg_error_from_errno (errno);
 
-  /* FIXME; we might want to look at the Base SN to try matching
+  /* FIXME; we might want to look at the Base DN to try matching
      servers first. */
   err = gpg_error (GPG_ERR_CONFIGURATION);
 
@@ -495,10 +607,12 @@ start_cacert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
       err = run_ldap_wrapper (ctrl,
                               0,
                               1,  /* --multi (record format) */
+                              0, /* No TLS */
+                              0, /* No AD authentication.  */
                               opt.ldap_proxy,
                               server->host, server->port,
                               server->user, server->pass,
-                              dn, "objectClass=*", "cACertificate", NULL,
+                              dn, "objectClass=*", "cACertificate",
                               &(*r_context)->reader);
       if (!err)
         break; /* Probably found a result. */
@@ -526,12 +640,12 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
   int port;
   char *user = NULL;
   char *pass = NULL;
-  const char *base;
+  char *base = NULL;
   char *argv[50];
   int argc = 0;
   int argc_malloced = 0;
   char portbuf[30], timeoutbuf[30];
-  int use_ldaps = 0;
+  int starttls, ldaptls, ntds;
 
   *r_context = NULL;
 
@@ -559,19 +673,24 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      base = server->base;
-      use_ldaps = server->ldap_over_tls;
+      if (server->base && !(base = xtrystrdup (server->base)))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      starttls = server->starttls;
+      ldaptls  =  server->ldap_over_tls;
+      ntds     = server->ntds;
     }
   else /* Use a default server. */
     {
-      xfree (proxy);
-      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      goto leave;
     }
 
-  if (!base)
-    base = "";
 
-  if (pass) /* Note: Must be the first item. */
+  if (pass && *pass) /* Note: Must be the first item. */
     {
       argv[argc++] = "--pass";
       argv[argc++] = pass;
@@ -584,20 +703,27 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
 
   argv[argc++] = "--log-with-pid";
   argv[argc++] = "--multi";
+
+  if (starttls)
+    argv[argc++] = "--starttls";
+  else if (ldaptls)
+    argv[argc++] = "--ldaptls";
+
+  if (ntds)
+    argv[argc++] = "--ntds";
+
   if (opt.ldaptimeout)
     {
       snprintf (timeoutbuf, sizeof timeoutbuf, "%u", opt.ldaptimeout);
       argv[argc++] = "--timeout";
       argv[argc++] = timeoutbuf;
     }
-  if (opt.ldap_proxy)
+  if (proxy && *proxy)
     {
       argv[argc++] = "--proxy";
       argv[argc++] = proxy;
     }
-  if (use_ldaps)
-    argv[argc++] = "--tls";
-  if (host)
+  if (host && *host)
     {
       argv[argc++] = "--host";
       argv[argc++] = host;
@@ -608,56 +734,49 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
       argv[argc++] = "--port";
       argv[argc++] = portbuf;
     }
-  if (user)
+  if (user && *user)
     {
       argv[argc++] = "--user";
       argv[argc++] = user;
     }
+  if (base && *base)
+    {
+      argv[argc++] = "--base";
+      argv[argc++] = base;
+    }
+
 
   /* All entries in argv from this index on are malloc'ed.  */
   argc_malloced = argc;
 
   for (; patterns; patterns = patterns->next)
     {
-      strlist_t sl;
-      char *url;
-
       if (argc >= DIM (argv) - 1)
         {
           /* Too many patterns.  It does not make sense to allow an
              arbitrary number of patters because the length of the
              command line is limited anyway.  */
-          /* fixme: cleanup. */
-          return gpg_error (GPG_ERR_RESOURCE_LIMIT);
-        }
-      sl = parse_one_pattern (patterns->d);
-      if (!sl)
-        {
-          log_error (_("start_cert_fetch: invalid pattern '%s'\n"),
-                     patterns->d);
-          err = gpg_error (GPG_ERR_INV_USER_ID);
+          err = gpg_error (GPG_ERR_RESOURCE_LIMIT);
           goto leave;
         }
-      if ((sl->flags & 1))
-        err = make_url (&url, sl->d, "objectClass=*");
-      else
-        err = make_url (&url, base, sl->d);
-      free_strlist (sl);
-      if (err)
-        goto leave;
-      argv[argc++] = url;
+      if (*patterns->d)
+        {
+          err = make_one_filter (patterns->d, &argv[argc]);
+          if (err)
+            goto leave;
+          argc++;
+        }
     }
   argv[argc] = NULL;
 
   *r_context = xtrycalloc (1, sizeof **r_context);
   if (!*r_context)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_error_from_syserror ();
       goto leave;
     }
 
   err = ldap_wrapper (ctrl, &(*r_context)->reader, (const char**)argv);
-
   if (err)
     {
       xfree (*r_context);
@@ -669,6 +788,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
     xfree (argv[argc_malloced]);
   xfree (proxy);
   xfree (host);
+  xfree (base);
   xfree (user);
   xfree (pass);
   return err;

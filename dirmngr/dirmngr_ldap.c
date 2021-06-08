@@ -1,5 +1,5 @@
 /* dirmngr-ldap.c  -  The LDAP helper for dirmngr.
- * Copyright (C) 2004 g10 Code GmbH
+ * Copyright (C) 2004, 2021 g10 Code GmbH
  * Copyright (C) 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -52,10 +52,10 @@
 #include "../common/stringhelp.h"
 #include "../common/mischelp.h"
 #include "../common/strlist.h"
-
-#include "../common/i18n.h"
 #include "../common/util.h"
 #include "../common/init.h"
+#include "ldap-misc.h"
+
 
 /* There is no need for the npth_unprotect and leave functions here;
  * thus we redefine them to nops.  We keep them in the code just for
@@ -87,11 +87,11 @@ enum
     oUser,
     oPass,
     oEnvPass,
-    oDN,
-    oFilter,
+    oBase,
     oAttr,
-    oTls,
-
+    oStartTLS,
+    oLdapTLS,
+    oNtds,
     oOnlySearchTimeout,
     oLogWithPID
   };
@@ -99,40 +99,41 @@ enum
 
 /* The list of options as used by the argparse.c code.  */
 static gpgrt_opt_t opts[] = {
-  { oVerbose,  "verbose",   0, N_("verbose") },
-  { oQuiet,    "quiet",     0, N_("be somewhat more quiet") },
-  { oTimeout,  "timeout",   1, N_("|N|set LDAP timeout to N seconds")},
-  { oMulti,    "multi",     0, N_("return all values in"
-                                  " a record oriented format")},
+  { oVerbose,  "verbose",   0, "verbose" },
+  { oQuiet,    "quiet",     0, "be somewhat more quiet" },
+  { oTimeout,  "timeout",   1, "|N|set LDAP timeout to N seconds"},
+  { oMulti,    "multi",     0, "return all values in"
+                               " a record oriented format"},
   { oProxy,    "proxy",     2,
-    N_("|NAME|ignore host part and connect through NAME")},
-  { oTls,      "tls",       0, N_("force a TLS connection")},
-  { oHost,     "host",      2, N_("|NAME|connect to host NAME")},
-  { oPort,     "port",      1, N_("|N|connect to port N")},
-  { oUser,     "user",      2, N_("|NAME|use user NAME for authentication")},
-  { oPass,     "pass",      2, N_("|PASS|use password PASS"
-                                  " for authentication")},
-  { oEnvPass,  "env-pass",  0, N_("take password from $DIRMNGR_LDAP_PASS")},
-  { oDN,       "dn",        2, N_("|STRING|query DN STRING")},
-  { oFilter,   "filter",    2, N_("|STRING|use STRING as filter expression")},
-  { oAttr,     "attr",      2, N_("|STRING|return the attribute STRING")},
+                "|NAME|ignore host part and connect through NAME"},
+  { oStartTLS, "starttls",  0, "use STARTLS for the conenction"},
+  { oLdapTLS,  "ldaptls",   0, "use a TLS for the connection"},
+  { oNtds,     "ntds",      0, "authenticate using AD"},
+  { oHost,     "host",      2, "|NAME|connect to host NAME"},
+  { oPort,     "port",      1, "|N|connect to port N"},
+  { oUser,     "user",      2, "|NAME|use NAME for authentication"},
+  { oPass,     "pass",      2, "|PASS|use password PASS"
+                               " for authentication"},
+  { oEnvPass,  "env-pass",  0, "take password from $DIRMNGR_LDAP_PASS"},
+  { oBase,     "base",      2, "|DN|Start query at DN"},
+  { oAttr,     "attr",      2, "|STRING|return the attribute STRING"},
   { oOnlySearchTimeout, "only-search-timeout", 0, "@"},
   { oLogWithPID,"log-with-pid", 0, "@"},
   ARGPARSE_end ()
 };
 
 
-/* A structure with module options.  This is not a static variable
-   because if we are not build as a standalone binary, each thread
-   using this module needs to handle its own values.  */
-struct my_opt_s
+/* A structure with module options.  */
+static struct
 {
   int quiet;
   int verbose;
   my_ldap_timeval_t timeout;/* Timeout for the LDAP search functions.  */
   unsigned int alarm_timeout; /* And for the alarm based timeout.  */
   int multi;
-  int force_tls;
+  int starttls;
+  int ldaptls;
+  int ntds;
 
   estream_t outstream;    /* Send output to this stream.  */
 
@@ -142,19 +143,18 @@ struct my_opt_s
   char *user;  /* Authentication user.  */
   char *pass;  /* Authentication password.  */
   char *host;  /* Override host.  */
-  int port;    /* Override port.  */
-  char *dn;    /* Override DN.  */
-  char *filter;/* Override filter.  */
+  int  port;   /* Override port.  */
+  char *base;  /* Override DN.  */
   char *attr;  /* Override attribute.  */
-};
-typedef struct my_opt_s *my_opt_t;
+} opt;
 
 
 /* Prototypes.  */
 #ifndef HAVE_W32_SYSTEM
 static void catch_alarm (int dummy);
 #endif
-static int process_url (my_opt_t myopt, const char *url);
+static gpg_error_t connect_ldap (LDAP **r_ld);
+static gpg_error_t process_filter (LDAP *ld, const char *string);
 
 
 
@@ -172,14 +172,14 @@ my_strusage (int level)
     case 13: p = VERSION; break;
     case 14: p = GNUPG_DEF_COPYRIGHT_LINE; break;
     case 17: p = PRINTABLE_OS_NAME; break;
-    case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
+    case 19: p = "Please report bugs to <@EMAIL@>.\n"; break;
     case 49: p = PACKAGE_BUGREPORT; break;
     case 1:
     case 40: p =
-               _("Usage: dirmngr_ldap [options] [URL] (-h for help)\n");
+               "Usage: dirmngr_ldap [options] filters (-h for help)\n";
       break;
     case 41: p =
-          _("Syntax: dirmngr_ldap [options] [URL]\n"
+           ("Syntax: dirmngr_ldap [options] filters\n"
             "Internal LDAP helper for Dirmngr\n"
             "Interface and options may change without notice\n");
       break;
@@ -197,29 +197,23 @@ main (int argc, char **argv)
   int any_err = 0;
   char *p;
   int only_search_timeout = 0;
-  struct my_opt_s my_opt_buffer;
-  my_opt_t myopt = &my_opt_buffer;
   char *malloced_buffer1 = NULL;
-
-  memset (&my_opt_buffer, 0, sizeof my_opt_buffer);
+  LDAP *ld;
 
   early_system_init ();
 
   gpgrt_set_strusage (my_strusage);
   log_set_prefix ("dirmngr_ldap", GPGRT_LOG_WITH_PREFIX);
 
-  /* Setup I18N and common subsystems. */
-  i18n_init();
-
   init_common_subsystems (&argc, &argv);
 
   es_set_binary (es_stdout);
-  myopt->outstream = es_stdout;
+  opt.outstream = es_stdout;
 
   /* LDAP defaults */
-  myopt->timeout.tv_sec = DEFAULT_LDAP_TIMEOUT;
-  myopt->timeout.tv_usec = 0;
-  myopt->alarm_timeout = 0;
+  opt.timeout.tv_sec = DEFAULT_LDAP_TIMEOUT;
+  opt.timeout.tv_usec = 0;
+  opt.alarm_timeout = 0;
 
   /* Parse the command line.  */
   pargs.argc = &argc;
@@ -229,27 +223,28 @@ main (int argc, char **argv)
     {
       switch (pargs.r_opt)
         {
-        case oVerbose: myopt->verbose++; break;
-        case oQuiet: myopt->quiet++; break;
+        case oVerbose: opt.verbose++; break;
+        case oQuiet: opt.quiet++; break;
 	case oTimeout:
-	  myopt->timeout.tv_sec = pargs.r.ret_int;
-	  myopt->timeout.tv_usec = 0;
-          myopt->alarm_timeout = pargs.r.ret_int;
+	  opt.timeout.tv_sec = pargs.r.ret_int;
+	  opt.timeout.tv_usec = 0;
+          opt.alarm_timeout = pargs.r.ret_int;
 	  break;
         case oOnlySearchTimeout: only_search_timeout = 1; break;
-        case oMulti: myopt->multi = 1; break;
-        case oUser: myopt->user = pargs.r.ret_str; break;
-        case oPass: myopt->pass = pargs.r.ret_str; break;
+        case oStartTLS: opt.starttls = 1; opt.ldaptls = 0; break;
+        case oLdapTLS:  opt.starttls = 0; opt.ldaptls = 1; break;
+        case oNtds:     opt.ntds = 1; break;
+        case oMulti: opt.multi = 1; break;
+        case oUser: opt.user = pargs.r.ret_str; break;
+        case oPass: opt.pass = pargs.r.ret_str; break;
         case oEnvPass:
-          myopt->pass = getenv ("DIRMNGR_LDAP_PASS");
+          opt.pass = getenv ("DIRMNGR_LDAP_PASS");
           break;
-        case oProxy: myopt->proxy = pargs.r.ret_str; break;
-        case oTls:  myopt->force_tls = 1; break;
-        case oHost: myopt->host = pargs.r.ret_str; break;
-        case oPort: myopt->port = pargs.r.ret_int; break;
-        case oDN:   myopt->dn = pargs.r.ret_str; break;
-        case oFilter: myopt->filter = pargs.r.ret_str; break;
-        case oAttr: myopt->attr = pargs.r.ret_str; break;
+        case oProxy: opt.proxy = pargs.r.ret_str; break;
+        case oHost: opt.host = pargs.r.ret_str; break;
+        case oPort: opt.port = pargs.r.ret_int; break;
+        case oBase: opt.base = pargs.r.ret_str; break;
+        case oAttr: opt.attr = pargs.r.ret_str; break;
         case oLogWithPID:
           {
             unsigned int oldflags;
@@ -266,36 +261,45 @@ main (int argc, char **argv)
   gpgrt_argparse (NULL, &pargs, NULL);
 
   if (only_search_timeout)
-    myopt->alarm_timeout = 0;
+    opt.alarm_timeout = 0;
 
-  if (myopt->proxy)
+  if (opt.proxy)
     {
-      malloced_buffer1 = xtrystrdup (myopt->proxy);
+      malloced_buffer1 = xtrystrdup (opt.proxy);
       if (!malloced_buffer1)
         {
           log_error ("error copying string: %s\n", strerror (errno));
           return 1;
         }
-      myopt->host = malloced_buffer1;
-      p = strchr (myopt->host, ':');
+      opt.host = malloced_buffer1;
+      p = strchr (opt.host, ':');
       if (p)
         {
           *p++ = 0;
-          myopt->port = atoi (p);
+          opt.port = atoi (p);
         }
-      if (!myopt->port)
-        myopt->port = 389;  /* make sure ports gets overridden.  */
+      if (!opt.port)
+        opt.port = 389;  /* make sure ports gets overridden.  */
     }
 
-  if (myopt->port < 0 || myopt->port > 65535)
-    log_error (_("invalid port number %d\n"), myopt->port);
+  if (opt.port < 0 || opt.port > 65535)
+    log_error ("invalid port number %d\n", opt.port);
+
+  if (!opt.port)
+    opt.port = opt.ldaptls? 636 : 389;
+
+#ifndef HAVE_W32_SYSTEM
+  if (!opt.host)
+    opt.host = "localhost";
+#endif
+
 
   if (log_get_errorcount (0))
     exit (2);
   if (argc < 1)
     gpgrt_usage (1);
 
-  if (myopt->alarm_timeout)
+  if (opt.alarm_timeout)
     {
 #ifndef HAVE_W32_SYSTEM
 # if defined(HAVE_SIGACTION) && defined(HAVE_STRUCT_SIGACTION)
@@ -312,9 +316,15 @@ main (int argc, char **argv)
 #endif
     }
 
-  for (; argc; argc--, argv++)
-    if (process_url (myopt, *argv))
-      any_err = 1;
+  if (connect_ldap (&ld))
+    any_err = 1;
+  else
+    {
+      for (; argc; argc--, argv++)
+        if (process_filter (ld, *argv))
+          any_err = 1;
+      ldap_unbind (ld);
+    }
 
   xfree (malloced_buffer1);
   return any_err;
@@ -345,16 +355,16 @@ alarm_thread (void *arg)
 
 
 static void
-set_timeout (my_opt_t myopt)
+set_timeout (void)
 {
-  if (myopt->alarm_timeout)
+  if (opt.alarm_timeout)
     {
 #ifdef HAVE_W32_SYSTEM
       static HANDLE timer;
       LARGE_INTEGER due_time;
 
       /* A negative value is a relative time.  */
-      due_time.QuadPart = (unsigned long long)-10000000 * myopt->alarm_timeout;
+      due_time.QuadPart = (unsigned long long)-10000000 * opt.alarm_timeout;
 
       if (!timer)
         {
@@ -376,15 +386,192 @@ set_timeout (my_opt_t myopt)
       else /* Retrigger the timer.  */
         SetWaitableTimer (timer, &due_time, 0, NULL, NULL, 0);
 #else
-      alarm (myopt->alarm_timeout);
+      alarm (opt.alarm_timeout);
 #endif
     }
 }
 
 
+
+/* Connect to the ldap server.  On success the connection handle is
+ * stored at R_LD. */
+static gpg_error_t
+connect_ldap (LDAP **r_ld)
+{
+  gpg_error_t err = 0;
+  int lerr;
+  LDAP *ld = NULL;
+#ifndef HAVE_W32_SYSTEM
+  char *tmpstr;
+#endif
+
+  *r_ld = NULL;
+
+  if (opt.starttls || opt.ldaptls)
+    {
+#ifndef HAVE_LDAP_START_TLS_S
+      log_error ("ldap: can't connect to the server: no TLS support.");
+      err = GPG_ERR_LDAP_NOT_SUPPORTED;
+      goto leave;
+#endif
+    }
+
+
+  set_timeout ();
+#ifdef HAVE_W32_SYSTEM
+  npth_unprotect ();
+  ld = ldap_sslinit (opt.host, opt.port, opt.ldaptls);
+  npth_protect ();
+  if (!ld)
+    {
+      lerr = LdapGetLastError ();
+      err = ldap_err_to_gpg_err (lerr);
+      log_error ("error initializing LDAP '%s:%d': %s\n",
+                 opt.host, opt.port, ldap_err2string (lerr));
+      goto leave;
+    }
+#else /* Unix */
+  tmpstr = xtryasprintf ("%s://%s:%d",
+                         opt.ldaptls? "ldaps" : "ldap",
+                         opt.host, opt.port);
+  if (!tmpstr)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  npth_unprotect ();
+  lerr = ldap_initialize (&ld, tmpstr);
+  npth_protect ();
+  if (lerr || !ld)
+    {
+      err = ldap_err_to_gpg_err (lerr);
+      log_error ("error initializing LDAP '%s': %s\n",
+                 tmpstr, ldap_err2string (lerr));
+      xfree (tmpstr);
+      goto leave;
+    }
+  xfree (tmpstr);
+#endif /* Unix */
+
+  if (opt.verbose)
+    log_info ("LDAP connected to '%s:%d'%s\n",
+              opt.host, opt.port,
+              opt.starttls? " using STARTTLS" :
+              opt.ldaptls?  " using LDAP-over-TLS" : "");
+
+
+#ifdef HAVE_LDAP_SET_OPTION
+  {
+    int ver = LDAP_VERSION3;
+
+    lerr = ldap_set_option (ld, LDAP_OPT_PROTOCOL_VERSION, &ver);
+    if (lerr != LDAP_SUCCESS)
+      {
+	log_error ("unable to go to LDAP 3: %s\n", ldap_err2string (lerr));
+	err = ldap_err_to_gpg_err (lerr);
+	goto leave;
+      }
+  }
+#endif
+
+
+#ifdef HAVE_LDAP_START_TLS_S
+  if (opt.starttls)
+    {
+#ifndef HAVE_W32_SYSTEM
+      int check_cert = LDAP_OPT_X_TLS_HARD; /* LDAP_OPT_X_TLS_NEVER */
+
+      lerr = ldap_set_option (ld, LDAP_OPT_X_TLS_REQUIRE_CERT, &check_cert);
+      if (lerr)
+	{
+	  log_error ("ldap: error setting an TLS option: %s\n",
+                     ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
+	  goto leave;
+	}
+#else
+      /* On Windows, the certificates are checked by default.  If the
+	 option to disable checking mentioned above is ever
+	 implemented, the way to do that on Windows is to install a
+	 callback routine using ldap_set_option (..,
+	 LDAP_OPT_SERVER_CERTIFICATE, ..); */
+#endif
+
+      npth_unprotect ();
+      lerr = ldap_start_tls_s (ld,
+#ifdef HAVE_W32_SYSTEM
+			      /* ServerReturnValue, result */
+			      NULL, NULL,
+#endif
+			      /* ServerControls, ClientControls */
+			      NULL, NULL);
+      npth_protect ();
+      if (lerr)
+	{
+	  log_error ("ldap: error switching to STARTTLS mode: %s\n",
+                     ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
+	  goto leave;
+	}
+    }
+#endif
+
+  if (opt.ntds)
+    {
+      if (opt.verbose)
+        log_info ("binding to current user via AD\n");
+#ifdef HAVE_W32_SYSTEM
+      npth_unprotect ();
+      lerr = ldap_bind_s (ld, NULL, NULL, LDAP_AUTH_NEGOTIATE);
+      npth_protect ();
+      if (lerr != LDAP_SUCCESS)
+	{
+	  log_error ("error binding to LDAP via AD: %s\n",
+                     ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
+	  goto leave;
+	}
+#else /* Unix */
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+#endif /* Unix */
+    }
+  else if (opt.user)
+    {
+      if (opt.verbose)
+        log_info ("LDAP bind to '%s', password '%s'\n",
+                   opt.user, opt.pass ? ">not_shown<" : ">none<");
+
+      npth_unprotect ();
+      lerr = ldap_simple_bind_s (ld, opt.user, opt.pass);
+      npth_protect ();
+      if (lerr != LDAP_SUCCESS)
+	{
+	  log_error ("error binding to LDAP: %s\n", ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
+	  goto leave;
+	}
+    }
+  else
+    {
+      /* By default we don't bind as there is usually no need to.  */
+    }
+
+ leave:
+  if (err)
+    {
+      if (ld)
+        ldap_unbind (ld);
+    }
+  else
+    *r_ld = ld;
+  return err;
+}
+
+
 /* Helper for fetch_ldap().  */
 static int
-print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
+print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 {
   LDAPMessage *item;
   int any = 0;
@@ -396,15 +583,15 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
       BerElement *berctx;
       char *attr;
 
-      if (myopt->verbose > 1)
-        log_info (_("scanning result for attribute '%s'\n"),
+      if (opt.verbose > 1)
+        log_info ("scanning result for attribute '%s'\n",
                   want_attr? want_attr : "[all]");
 
-      if (myopt->multi)
+      if (opt.multi)
         { /*  Write item marker. */
-          if (es_fwrite ("I\0\0\0\0", 5, 1, myopt->outstream) != 1)
+          if (es_fwrite ("I\0\0\0\0", 5, 1, opt.outstream) != 1)
             {
-              log_error (_("error writing to stdout: %s\n"),
+              log_error ("error writing to stdout: %s\n",
                          strerror (errno));
               return -1;
             }
@@ -420,10 +607,10 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
           struct berval **values;
           int idx;
 
-          if (myopt->verbose > 1)
-            log_info (_("          available attribute '%s'\n"), attr);
+          if (opt.verbose > 1)
+            log_info ("          available attribute '%s'\n", attr);
 
-          set_timeout (myopt);
+          set_timeout ();
 
           /* I case we want only one attribute we do a case
              insensitive compare without the optional extension
@@ -458,23 +645,23 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
 
           if (!values)
             {
-              if (myopt->verbose)
-                log_info (_("attribute '%s' not found\n"), attr);
+              if (opt.verbose)
+                log_info ("attribute '%s' not found\n", attr);
               ldap_memfree (attr);
               continue;
             }
 
-          if (myopt->verbose)
+          if (opt.verbose)
             {
-              log_info (_("found attribute '%s'\n"), attr);
-              if (myopt->verbose > 1)
+              log_info ("found attribute '%s'\n", attr);
+              if (opt.verbose > 1)
                 for (idx=0; values[idx]; idx++)
                   log_info ("         length[%d]=%d\n",
                             idx, (int)values[0]->bv_len);
 
             }
 
-          if (myopt->multi)
+          if (opt.multi)
             { /*  Write attribute marker. */
               unsigned char tmp[5];
               size_t n = strlen (attr);
@@ -484,10 +671,10 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
               tmp[2] = (n >> 16);
               tmp[3] = (n >> 8);
               tmp[4] = (n);
-              if (es_fwrite (tmp, 5, 1, myopt->outstream) != 1
-                  || es_fwrite (attr, n, 1, myopt->outstream) != 1)
+              if (es_fwrite (tmp, 5, 1, opt.outstream) != 1
+                  || es_fwrite (attr, n, 1, opt.outstream) != 1)
                 {
-                  log_error (_("error writing to stdout: %s\n"),
+                  log_error ("error writing to stdout: %s\n",
                              strerror (errno));
                   ldap_value_free_len (values);
                   ldap_memfree (attr);
@@ -498,7 +685,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
 
           for (idx=0; values[idx]; idx++)
             {
-              if (myopt->multi)
+              if (opt.multi)
                 { /* Write value marker.  */
                   unsigned char tmp[5];
                   size_t n = values[0]->bv_len;
@@ -509,9 +696,9 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                   tmp[3] = (n >> 8);
                   tmp[4] = (n);
 
-                  if (es_fwrite (tmp, 5, 1, myopt->outstream) != 1)
+                  if (es_fwrite (tmp, 5, 1, opt.outstream) != 1)
                     {
-                      log_error (_("error writing to stdout: %s\n"),
+                      log_error ("error writing to stdout: %s\n",
                                  strerror (errno));
                       ldap_value_free_len (values);
                       ldap_memfree (attr);
@@ -521,9 +708,9 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                 }
 
 	      if (es_fwrite (values[0]->bv_val, values[0]->bv_len,
-                             1, myopt->outstream) != 1)
+                             1, opt.outstream) != 1)
                 {
-                  log_error (_("error writing to stdout: %s\n"),
+                  log_error ("error writing to stdout: %s\n",
                              strerror (errno));
                   ldap_value_free_len (values);
                   ldap_memfree (attr);
@@ -532,18 +719,18 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                 }
 
               any = 1;
-              if (!myopt->multi)
+              if (!opt.multi)
                 break; /* Print only the first value.  */
             }
           ldap_value_free_len (values);
           ldap_memfree (attr);
-          if (want_attr || !myopt->multi)
+          if (want_attr || !opt.multi)
             break; /* We only want to return the first attribute.  */
         }
       ber_free (berctx, 0);
     }
 
-  if (myopt->verbose > 1 && any)
+  if (opt.verbose > 1 && any)
     log_info ("result has been printed\n");
 
   return any?0:-1;
@@ -551,183 +738,51 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
 
 
 
-/* Helper for the URL based LDAP query. */
+/* Fetch data from the server at LD using FILTER.  */
 static int
-fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
+fetch_ldap (LDAP *ld, const char *base, int scope, const char *filter)
 {
-  LDAP *ld;
+  gpg_error_t err;
+  int lerr;
   LDAPMessage *msg;
-  int rc = 0;
-  char *host, *dn, *filter, *attrs[2], *attr;
-  int port;
-  int ret;
-  int usetls;
+  char *attrs[2];
 
-  host     = myopt->host?   myopt->host   : ludp->lud_host;
-  port     = myopt->port?   myopt->port   : ludp->lud_port;
-  dn       = myopt->dn?     myopt->dn     : ludp->lud_dn;
-  filter   = myopt->filter? myopt->filter : ludp->lud_filter;
-  attrs[0] = myopt->attr?   myopt->attr   : ludp->lud_attrs? ludp->lud_attrs[0]:NULL;
-  attrs[1] = NULL;
-  attr = attrs[0];
+  if (filter && !*filter)
+    filter = NULL;
 
-  if (!port && myopt->force_tls)
-    port = 636;
-  else if (!port)
-    port = (ludp->lud_scheme && !strcmp (ludp->lud_scheme, "ldaps"))? 636:389;
-
-  if (myopt->verbose)
+  if (opt.verbose)
     {
-      log_info (_("processing url '%s'\n"), url);
-      if (myopt->force_tls)
-        log_info ("forcing tls\n");
-      else
-        log_info ("not forcing tls\n");
-
-      if (myopt->user)
-        log_info (_("          user '%s'\n"), myopt->user);
-      if (myopt->pass)
-        log_info (_("          pass '%s'\n"), *myopt->pass?"*****":"");
-      if (host)
-        log_info (_("          host '%s'\n"), host);
-      log_info (_("          port %d\n"), port);
-      if (dn)
-        log_info (_("            DN '%s'\n"), dn);
+      log_info ("fetching using");
+      if (base)
+        log_printf (" base '%s'", base);
       if (filter)
-        log_info (_("        filter '%s'\n"), filter);
-      if (myopt->multi && !myopt->attr && ludp->lud_attrs)
-        {
-          int i;
-          for (i=0; ludp->lud_attrs[i]; i++)
-            log_info (_("          attr '%s'\n"), ludp->lud_attrs[i]);
-        }
-      else if (attr)
-        log_info (_("          attr '%s'\n"), attr);
+        log_printf (" filter '%s'", filter);
+      log_printf ("\n");
     }
 
+  attrs[0] = opt.attr;
+  attrs[1] = NULL;
 
-  if (!host || !*host)
-    {
-      log_error (_("no host name in '%s'\n"), url);
-      return -1;
-    }
-  if (!myopt->multi && !attr)
-    {
-      log_error (_("no attribute given for query '%s'\n"), url);
-      return -1;
-    }
-
-  if (!myopt->multi && !myopt->attr
-      && ludp->lud_attrs && ludp->lud_attrs[0] && ludp->lud_attrs[1])
-    log_info (_("WARNING: using first attribute only\n"));
-
-  set_timeout (myopt);
-
-  usetls = (myopt->force_tls
-            || (ludp->lud_scheme && !strcmp (ludp->lud_scheme, "ldaps")));
-#if HAVE_W32_SYSTEM
-  if (1)
-    {
-      npth_unprotect ();
-      ld = ldap_sslinit (host, port, usetls);
-      npth_protect ();
-      if (!ld)
-        {
-          ret = LdapGetLastError ();
-          log_error (_("LDAP init to '%s:%d' failed: %s\n"),
-                     host, port, ldap_err2string (ret));
-          return -1;
-        }
-    }
-#else /*!W32*/
-  if (usetls)
-    {
-      char *uri;
-
-      uri = xtryasprintf ("ldaps://%s:%d", host, port);
-      if (!uri)
-        {
-          log_error (_("error allocating memory: %s\n"),
-                     gpg_strerror (gpg_error_from_syserror ()));
-          return -1;
-        }
-      npth_unprotect ();
-      ret = ldap_initialize (&ld, uri);
-      npth_protect ();
-      if (ret)
-        {
-          log_error (_("LDAP init to '%s' failed: %s\n"),
-                     uri, ldap_err2string (ret));
-          xfree (uri);
-          return -1;
-        }
-      else if (myopt->verbose)
-        log_info (_("LDAP init to '%s' done\n"), uri);
-      xfree (uri);
-    }
-  else
-    {
-      /* Keep the old way so to avoid regressions.  Eventually we
-       * should really consider the supplied scheme and use only
-       * ldap_initialize.  */
-      npth_unprotect ();
-      ld = ldap_init (host, port);
-      npth_protect ();
-      if (!ld)
-        {
-          log_error (_("LDAP init to '%s:%d' failed: %s\n"),
-                     host, port, strerror (errno));
-          return -1;
-        }
-    }
-#endif /*!W32*/
-
+  set_timeout ();
   npth_unprotect ();
-  /* Fixme:  Can we use MYOPT->user or is it shared with other theeads?.  */
-  ret = ldap_simple_bind_s (ld, myopt->user, myopt->pass);
+  lerr = ldap_search_st (ld, base, scope, filter,
+                         attrs,
+                         0,
+                         &opt.timeout, &msg);
   npth_protect ();
-#ifdef LDAP_VERSION3
-  if (ret == LDAP_PROTOCOL_ERROR)
+  if (lerr == LDAP_SIZELIMIT_EXCEEDED && opt.multi)
     {
-      /* Protocol error could mean that the server only supports v3. */
-      int version = LDAP_VERSION3;
-      if (myopt->verbose)
-        log_info ("protocol error; retrying bind with v3 protocol\n");
-      npth_unprotect ();
-      ldap_set_option (ld, LDAP_OPT_PROTOCOL_VERSION, &version);
-      ret = ldap_simple_bind_s (ld, myopt->user, myopt->pass);
-      npth_protect ();
-    }
-#endif
-  if (ret)
-    {
-      log_error (_("binding to '%s:%d' failed: %s\n"),
-                 host, port, ldap_err2string (ret));
-      ldap_unbind (ld);
-      return -1;
-    }
-
-  set_timeout (myopt);
-  npth_unprotect ();
-  rc = ldap_search_st (ld, dn, ludp->lud_scope, filter,
-                       myopt->multi && !myopt->attr && ludp->lud_attrs?
-                       ludp->lud_attrs:attrs,
-                       0,
-                       &myopt->timeout, &msg);
-  npth_protect ();
-  if (rc == LDAP_SIZELIMIT_EXCEEDED && myopt->multi)
-    {
-      if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, myopt->outstream) != 1)
+      if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, opt.outstream) != 1)
         {
-          log_error (_("error writing to stdout: %s\n"), strerror (errno));
+          log_error ("error writing to stdout: %s\n", strerror (errno));
           return -1;
         }
     }
-  else if (rc)
+  else if (lerr)
     {
-      log_error (_("searching '%s' failed: %s\n"),
-                 url, ldap_err2string (rc));
-      if (rc != LDAP_NO_SUCH_OBJECT)
+      log_error ("searching '%s' failed: %s\n",
+                 filter, ldap_err2string (lerr));
+      if (lerr != LDAP_NO_SUCH_OBJECT)
         {
           /* FIXME: Need deinit (ld)?  */
           /* Hmmm: Do we need to released MSG in case of an error? */
@@ -735,39 +790,43 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
         }
     }
 
-  rc = print_ldap_entries (myopt, ld, msg, myopt->multi? NULL:attr);
+  err = print_ldap_entries (ld, msg, opt.multi? NULL:opt.attr);
 
   ldap_msgfree (msg);
-  ldap_unbind (ld);
-  return rc;
+  return err;
 }
 
 
 
 
-/* Main processing.  Take the URL and run the LDAP query. The result
-   is printed to stdout, errors are logged to the log stream. */
-static int
-process_url (my_opt_t myopt, const char *url)
+/* Main processing.  Take the filter and run the LDAP query. The
+ * result is printed to stdout, errors are logged to the log stream.
+ * To allow searching with a different base it is possible to extend
+ * the filer.  For example:
+ *
+ *   ^CN=foo, OU=My Users&(objectClasses=*)
+ *
+ * Uses "CN=foo, OU=My Users" as base DN and "(objectClasses=*)" as
+ * filter.  If the base prefix includes an ampersand, it needs to be
+ * doubled.  The usual escaping rules for DNs (for the base) and
+ * filters apply.  If no scope is given (see ldap_parse_extfilter for
+ * the syntax) subtree scope is used.
+ */
+static gpg_error_t
+process_filter (LDAP *ld, const char *string)
 {
-  int rc;
-  LDAPURLDesc *ludp = NULL;
+  gpg_error_t err;
+  char *base, *filter;
+  int scope = -1;
 
+  err = ldap_parse_extfilter (string, 0, &base, &scope, &filter);
+  if (!err)
+    err = fetch_ldap (ld,
+                      base? base : opt.base,
+                      scope == -1? LDAP_SCOPE_SUBTREE : scope,
+                      filter);
 
-  if (!ldap_is_ldap_url (url))
-    {
-      log_error (_("'%s' is not an LDAP URL\n"), url);
-      return -1;
-    }
-
-  if (ldap_url_parse (url, &ludp))
-    {
-      log_error (_("'%s' is an invalid LDAP URL\n"), url);
-      return -1;
-    }
-
-  rc = fetch_ldap (myopt, url, ludp);
-
-  ldap_free_urldesc (ludp);
-  return rc;
+  xfree (base);
+  xfree (filter);
+  return err;
 }

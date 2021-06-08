@@ -62,8 +62,7 @@ void crl_close_reader (ksba_reader_t reader);
 
 /*-- ldap.c --*/
 gpg_error_t url_fetch_ldap (ctrl_t ctrl,
-                            const char *url, const char *host, int port,
-                            ksba_reader_t *reader);
+                            const char *url, ksba_reader_t *reader);
 gpg_error_t attr_fetch_ldap (ctrl_t ctrl,
                              const char *dn, const char *attr,
                              ksba_reader_t *reader);
