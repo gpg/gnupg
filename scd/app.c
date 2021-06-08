@@ -532,17 +532,18 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                   formfactor = (s0 && n == 1)? *s0 : 0;
 
                   s0 = find_tlv (buf+1, buflen-1, 0x02, &n);  /* Serial */
-                  if (s0 && n >= 4)
+                  if (s0 && n <= 4)
                     {
-                      card->serialno = xtrymalloc (3 + 1 + n);
+                      card->serialno = xtrymalloc (3 + 1 + 4);
                       if (card->serialno)
                         {
-                          card->serialnolen = 3 + 1 + n;
+                          card->serialnolen = 3 + 1 + 4;
                           card->serialno[0] = 0xff;
                           card->serialno[1] = 0x02;
                           card->serialno[2] = 0x0;
                           card->serialno[3] = formfactor;
-                          memcpy (card->serialno + 4, s0, n);
+                          memset (card->serialno + 4, 0, 4 - n);
+                          memcpy (card->serialno + 4 + 4 - n, s0, n);
                           err = app_munge_serialno (card);
                         }
                     }
