@@ -532,13 +532,14 @@ do_unprotect (const char *passphrase,
       const unsigned char *p;
       unsigned char *data;
       u16 csum_pgp7 = 0;
+      gcry_mpi_t skey_encrypted = skey[npkey];
 
-      if (!gcry_mpi_get_flag (skey[npkey], GCRYMPI_FLAG_USER1))
+      if (!gcry_mpi_get_flag (skey_encrypted, GCRYMPI_FLAG_USER1))
         {
           gcry_cipher_close (cipher_hd);
           return gpg_error (GPG_ERR_BAD_SECKEY);
         }
-      p = gcry_mpi_get_opaque (skey[npkey], &ndatabits);
+      p = gcry_mpi_get_opaque (skey_encrypted, &ndatabits);
       ndata = (ndatabits+7)/8;
 
       if (ndata > 1)
@@ -600,33 +601,48 @@ do_unprotect (const char *passphrase,
          because the length may have an arbitrary value.  */
       if (desired_csum == actual_csum)
         {
-          for (i=npkey; i < nskey; i++ )
+          for (i = npkey; i < nskey; i++)
             {
               if (scan_pgp_format (&tmpmpi, pubkey_algo, p, ndata, &nbytes))
-                {
-                  /* Checksum was okay, but not correctly decrypted.  */
-                  desired_csum = 0;
-                  actual_csum = 1;   /* Mark checksum bad.  */
-                  break;
-                }
-              gcry_mpi_release (skey[i]);
+                break;
               skey[i] = tmpmpi;
               ndata -= nbytes;
               p += nbytes;
             }
-          skey[i] = NULL;
-          skeylen = i;
-          log_assert (skeylen <= skeysize);
 
-          /* Note: at this point NDATA should be 2 for a simple
-             checksum or 20 for the sha1 digest.  */
+          if (i == nskey)
+            {
+              skey[nskey] = NULL;
+              skeylen = nskey;
+              gcry_mpi_release (skey_encrypted);
+
+              log_assert (skeylen <= skeysize);
+              /* Note: at this point NDATA should be 2 for a simple
+                 checksum or 20 for the sha1 digest.  */
+            }
+          else
+            {
+              /* Checksum was okay, but not correctly decrypted.  */
+              desired_csum = 0;
+              actual_csum = 1;   /* Mark checksum bad.  */
+
+              /* Recover encrypted SKEY.  */
+              for (--i; i >= npkey; i--)
+                {
+                  gcry_mpi_release (skey[i]);
+                  skey[i] = NULL;
+                }
+              skey[npkey] = skey_encrypted;
+            }
         }
       xfree(data);
     }
   else /* Packet version <= 3.  */
     {
       unsigned char *buffer;
+      gcry_mpi_t skey_tmpmpi[10];
 
+      log_assert (nskey - npkey <= 10);
       for (i = npkey; i < nskey; i++)
         {
           const unsigned char *p;
@@ -663,14 +679,26 @@ do_unprotect (const char *passphrase,
           err = scan_pgp_format (&tmpmpi, pubkey_algo, buffer, ndata, &nbytes);
           xfree (buffer);
           if (err)
+            break;
+          skey_tmpmpi[i - npkey] = tmpmpi;
+        }
+
+      if (i == nskey)
+        {
+          for (i = npkey; i < nskey; i++)
             {
-              /* Checksum was okay, but not correctly decrypted.  */
-              desired_csum = 0;
-              actual_csum = 1;   /* Mark checksum bad.  */
-              break;
+              gcry_mpi_release (skey[i]);
+              skey[i] = skey_tmpmpi[i - npkey];
             }
-          gcry_mpi_release (skey[i]);
-          skey[i] = tmpmpi;
+        }
+      else
+        {
+          /* Checksum was okay, but not correctly decrypted.  */
+          desired_csum = 0;
+          actual_csum = 1;   /* Mark checksum bad.  */
+
+          for (--i; i >= npkey; i--)
+            gcry_mpi_release (skey_tmpmpi[i - npkey]);
         }
     }
   gcry_cipher_close (cipher_hd);
