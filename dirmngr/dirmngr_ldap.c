@@ -297,8 +297,6 @@ main (int argc, char **argv)
 
   if (log_get_errorcount (0))
     exit (2);
-  if (argc < 1)
-    usage (1);
 
   if (opt.alarm_timeout)
     {
@@ -321,9 +319,17 @@ main (int argc, char **argv)
     any_err = 1;
   else
     {
-      for (; argc; argc--, argv++)
-        if (process_filter (ld, *argv))
-          any_err = 1;
+      if (!argc)
+        {
+          if (process_filter (ld, "(objectClass=*)"))
+            any_err = 1;
+        }
+      else
+        {
+          for (; argc; argc--, argv++)
+            if (process_filter (ld, *argv))
+              any_err = 1;
+        }
       ldap_unbind (ld);
     }
 
