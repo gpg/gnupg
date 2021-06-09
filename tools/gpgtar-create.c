@@ -148,7 +148,7 @@ fillup_entry_w32 (tar_header_t hdr)
 
   /* Only set the size for a regular file.  */
   if (hdr->typeflag == TF_REGULAR)
-    hdr->size = (fad.nFileSizeHigh * (unsigned long long)(MAXDWORD+1)
+    hdr->size = (fad.nFileSizeHigh * ((unsigned long long)MAXDWORD+1)
                  + fad.nFileSizeLow);
 
   hdr->mtime = (((unsigned long long)fad.ftLastWriteTime.dwHighDateTime << 32)
