@@ -337,8 +337,10 @@ static ARGPARSE_OPTS opts[] = {
   /*                  N_("use the default key as default recipient")), */
   /*   ARGPARSE_s_n (oNoDefRecipient, "no-default-recipient", "@"), */
 
-  ARGPARSE_s_s (oKeyServer, "keyserver",
+  ARGPARSE_s_s (oKeyServer, "ldapserver",
                 N_("|SPEC|use this keyserver to lookup keys")),
+  ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
+
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
 
   ARGPARSE_s_s (oDebug, "debug", "@"),
