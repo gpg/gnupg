@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.2.28\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-05-21 10:14+0900\n"
+"PO-Revision-Date: 2021-06-09 09:28+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -818,7 +818,7 @@ msgstr ""
 
 #, c-format
 msgid "unknown debug flag '%s' ignored\n"
-msgstr "未知のdebugフラグ'%s'は無視されました\n"
+msgstr "不明のdebugフラグ'%s'は無視されました\n"
 
 #, c-format
 msgid "waiting for the %s to come up ... (%ds)\n"
@@ -989,19 +989,19 @@ msgstr "無効な64進文字%02Xをスキップしました\n"
 
 #, c-format
 msgid "Sorry, we are in batchmode - can't get input\n"
-msgstr ""
+msgstr "すみません、バッチモードです - 入力を得られません\n"
 
 #, c-format
 msgid "Sorry, no terminal at all requested - can't get input\n"
-msgstr ""
+msgstr "すみません、端末なしが要求されています - 入力を得られません\n"
 
 #, c-format
 msgid "too many errors; giving up\n"
-msgstr ""
+msgstr "エラーが多すぎます。あきらめます\n"
 
 #, c-format
 msgid "Control-D detected\n"
-msgstr ""
+msgstr "コントロールD が検出されました\n"
 
 msgid "argument not expected"
 msgstr "引数は期待されていません"
@@ -7978,7 +7978,7 @@ msgstr "%s:%u: ユーザなしに与えられたパスワード\n"
 
 #, c-format
 msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr ""
+msgstr "%s:%u: 不明なフラグ '%s' を無視します\n"
 
 #, c-format
 msgid "%s:%u: skipping this line\n"
