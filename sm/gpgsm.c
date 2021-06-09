@@ -348,8 +348,9 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oKeyring, "keyring",
                 N_("|FILE|add keyring to the list of keyrings")),
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
-  ARGPARSE_s_s (oKeyServer, "keyserver",
+  ARGPARSE_s_s (oKeyServer, "ldapserver",
                 N_("|SPEC|use this keyserver to lookup keys")),
+  ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
   ARGPARSE_s_n (oUseKeyboxd,    "use-keyboxd", "@"),
 
 

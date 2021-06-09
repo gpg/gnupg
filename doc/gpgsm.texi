@@ -358,35 +358,16 @@ Outputs additional information while running.
 You can increase the verbosity by giving several
 verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
-
-@item --keyserver @var{string}
+@item --ldapserver @var{string}
+@itemx --keyserver @var{string}
+@opindex ldapserver
 @opindex keyserver
-Add an LDAP server to use for certificate and CRL lookup.  This option
-can be given multiple times to configure more than one LDAP server.
-Note that the @command{dirmngr} can in addition be configured with a
-default list of LDAP servers to be used after those configured with
-this option.  The syntax of @var{string} is:
-
-@sc{hostname:port:username:password:base_dn:flags}
-
-The only defined flag is @code{ldaps} to specify that a TLS
-connections shall be used.  Flags are comma delimited; unknown flags
-are ignored.
-
-Note that all parts of that string are expected to be UTF-8 encoded.
-This may lead to problems if the @sc{password} has originally been
-encoded as Latin-1; in such a case better configure such an LDAP server
-using the global configuration of @command{dirmngr}.
-
-Here is an example which uses the default port, no username, no
-password, and requests a TLS connection:
-
-@c man:.RS
-@example
---keyserver ldap.pca.dfn.de::::o=DFN-Verein,c=DE:ldaps
-@end example
-@c man:.RE
-
+Add an LDAP server to use for X.509 certificate and CRL lookup.  This
+option can be given multiple times to configure more than one LDAP
+server.  Note that in general @command{dirmngr} should be configured
+with the list of LDAP servers; if this option is also configured here,
+it is used in addition to those configured in dirmngr.  For the syntax
+see the description of dirmngr's ldapserver option.
 
 @item --policy-file @var{filename}
 @opindex policy-file
