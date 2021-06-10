@@ -299,17 +299,18 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                   formfactor = (s0 && n == 1)? *s0 : 0;
 
                   s0 = find_tlv (buf+1, buflen-1, 0x02, &n);  /* Serial */
-                  if (s0 && n >= 4)
+                  if (s0 && n <= 4)
                     {
-                      app->serialno = xtrymalloc (3 + 1 + n);
+                      app->serialno = xtrymalloc (3 + 1 + 4);
                       if (app->serialno)
                         {
-                          app->serialnolen = 3 + 1 + n;
+                          app->serialnolen = 3 + 1 + 4;
                           app->serialno[0] = 0xff;
                           app->serialno[1] = 0x02;
                           app->serialno[2] = 0x0;
                           app->serialno[3] = formfactor;
-                          memcpy (app->serialno + 4, s0, n);
+                          memset (app->serialno + 4, 0, 4 - n);
+                          memcpy (app->serialno + 4 + 4 - n, s0, n);
                           err = app_munge_serialno (app);
                         }
                     }
