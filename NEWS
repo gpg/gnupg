@@ -1,5 +1,116 @@
-Noteworthy changes in version 2.2.28 (unreleased)
+Noteworthy changes in version 2.2.28 (2021-06-10)
 -------------------------------------------------
+
+  * gpg: Auto import keys specified with --trusted-keys.
+    [e7251be84c79]
+
+  * gpg: Allow decryption w/o public key but with correct card
+    inserted.  [e53f6037283e]
+
+  * gpg: Allow fingerprint based lookup with --locate-external-key.
+    [2af217ecd7e4]
+
+  * gpg: Lookup a missing public key of the current card via LDAP.
+    [b59af0e2a05a]
+
+  * gpg: New option --force-sign-key.  [#4584]
+
+  * gpg: Use a more descriptive password prompt for symmetric
+    decryption.  [03f83bcda5d1]
+
+  * gpg: Do not use the self-sigs-only option for LDAP keyserver
+    imports.  [#5387]
+
+  * gpg: Keep temp files when opening images via xdg-open.
+    [0441ed6e1c]
+
+  * gpg: Fix mailbox based search via AKL keyserver method.
+    [22fe23f46d31]
+
+  * gpg: Fix sending an OpenPGP key with umlaut to an LDAP keyserver.
+    [7bf8530e75d0]
+
+  * gpg: Allow ECDH with a smartcard returning only the x-coordinate.
+    [b203325ce1]
+
+  * gpgsm: New option --ldapserver as an alias for --keyserver.  Note
+    that confuring servers in gpgsm and gpg is deprecated; please use
+    the dirmngr configuration options.
+
+  * gpgsm: Support AES-GCM decryption.  [b722fd755c77]
+
+  * gpgsm: Support decryption of password protected files.
+    [6f31acac767f]
+
+  * gpgsm: Lock keyboxes also during a search to fix lockups on
+    Windows.  [#4505]
+
+  * agent: Skip unknown unknown ssh curves seen on
+    cards. [bbf4bd3bfcb5]
+
+  * scdaemon: New option --pcsc-shared.  [5eec40f3d827]
+
+  * scdaemon: Backport PKCS#15 card support from GnuPG 2.3
+    [7637d39fe20e]
+
+  * scdaemon: Fix CCID driver for SCM SPR332/SPR532.  [#5297]
+
+  * scdaemon: Fix possible PC/SC removed card problem.  [9d83bfb63968]
+
+  * scdaemon: Fix unblock PIN by a Reset Code with KDF.  [#5413]
+
+  * scdaemon: Support compressed points.  [96577e2e46e4]
+
+  * scdaemon: Prettify S/N for Yubikeys and fix reading for early
+    Yubikey 5 tokens.  [f8588369bcb0,#5442]
+
+  * dirmngr: New option --ldapserver to avoid the need for the
+    separate dirmngr_ldapservers.conf file.
+
+  * dirmngr: The dirmngr_ldap wrapper has been rewritten to properly
+    support ldap-over-tls and starttls for X.509 certificates and
+    CRLs.  [39815c023f03]
+
+  * dirmngr: OpenPGP LDAP keyservers may now also be configured using
+    the same syntax as used for X.509 and CRL LDAP servers.  This
+    avoids the former cumbersome quoting rules and adds a flexible set
+    of flags to control the connection.  [2b4cddf9086f]
+
+  * dirmngr: The "ldaps" scheme of an OpenPGP keyserver URL is now
+    interpreted as ldap-with-starttls on port 389.  To use the
+    non-standardized ldap-over-tls the new LDAP configuration method
+    of the new attribute "gpgNtds" needs to be used.  [55f46b33df08]
+
+  * dirmngr: Return the fingerprint as search result also for LDAP
+    OpenPGP keyservers.  This requires the modernized LDAP schema.
+    [#5441]
+
+  * dirmngr: An OpenPGP LDAP search by a mailbox now ignores revoked
+    keys.  [b6f8cd7eef4b]
+
+  * gpgconf: Make runtime changes with non-default homedir work.
+    [c8f0b02936c7]
+
+  * gpgconf: Do not translate an empty string to the PO file's meta
+    data.  [#5363]
+
+  * gpgconf: Fix argv overflow if --homedir is used.  [#5366]
+
+  * gpgconf: Return a new pseudo option "compliance_de_vs".
+    [9feffc03f364]
+
+  * gpgtar: Fix file size computation under Windows.  [198b240b1955]
+
+  * Full Unicode support for the Windows command line.  [#4398]
+
+  * Fix problem with Windows Job objects and auto start of our
+    daemons.  [#4333]
+
+  * i18n: In German always use "Passwort" instead of "Passphrase" in
+    prompts.
+
+  Release-info: https://dev.gnupg.org/T5482
+  See-also: gnupg-announce/2021q2/000460.html
 
 
 Noteworthy changes in version 2.2.27 (2021-01-11)
