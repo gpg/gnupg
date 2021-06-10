@@ -1016,11 +1016,13 @@ msgstr "Ungültiges Basis-64 Zeichen %02X wurde übersprungen\n"
 
 #, c-format
 msgid "Sorry, we are in batchmode - can't get input\n"
-msgstr "Sorry, --batch wurde angegeben - Lesen von der Eingabe ist nicht möglich\n"
+msgstr ""
+"Sorry, --batch wurde angegeben - Lesen von der Eingabe ist nicht möglich\n"
 
 #, c-format
 msgid "Sorry, no terminal at all requested - can't get input\n"
-msgstr "Sorry, --no-tty wurde angegeben - Lesen von der Eingabe ist nicht möglich\n"
+msgstr ""
+"Sorry, --no-tty wurde angegeben - Lesen von der Eingabe ist nicht möglich\n"
 
 #, c-format
 msgid "too many errors; giving up\n"
