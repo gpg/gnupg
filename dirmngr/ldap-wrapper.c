@@ -72,10 +72,6 @@
 #define pth_close(fd) close(fd)
 #endif
 
-#ifndef USE_LDAPWRAPPER
-# error This module is not expected to be build.
-#endif
-
 /* In case sysconf does not return a value we need to have a limit. */
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX

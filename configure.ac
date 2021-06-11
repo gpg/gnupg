@@ -677,7 +677,6 @@ have_w32_system=no
 have_w32ce_system=no
 have_android_system=no
 use_simple_gettext=no
-use_ldapwrapper=yes
 mmap_needed=yes
 require_pipe_to_unblock_pselect=yes
 case "${host}" in
@@ -1219,16 +1218,7 @@ fi
 AM_CONDITIONAL(USE_LDAP, [test "$gnupg_have_ldap" = yes])
 if test "$gnupg_have_ldap" = yes ; then
   AC_DEFINE(USE_LDAP,1,[Defined if LDAP is support])
-else
- use_ldapwrapper=no
 fi
-
-if test "$use_ldapwrapper" = yes; then
-   AC_DEFINE(USE_LDAPWRAPPER,1, [Build dirmngr with LDAP wrapper process])
-fi
-AM_CONDITIONAL(USE_LDAPWRAPPER, test "$use_ldapwrapper" = yes)
-
-
 
 
 #
