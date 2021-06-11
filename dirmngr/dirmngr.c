@@ -736,6 +736,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oRecursiveResolver: enable_recursive_resolver (1); break;
 
     case oLDAPServer:
+#if USE_LDAP
       {
         ldap_server_t server;
         char *p;
@@ -757,6 +758,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
             opt.ldapservers = server;
           }
       }
+#endif
       break;
 
     case oKeyServer:
