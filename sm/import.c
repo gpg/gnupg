@@ -459,7 +459,8 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
       err = keydb_get_cert (kh, &cert);
       if (err)
         {
-          log_error ("keydb_get_cert() failed: %s\n", gpg_strerror (err));
+          log_error ("keydb_get_cert failed in %s: %s <%s>\n",
+                     __func__, gpg_strerror (err), gpg_strsource (err));
           print_import_problem (ctrl, NULL, 1);
           stats->not_imported++;
           continue;

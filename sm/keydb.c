@@ -72,6 +72,11 @@ struct keydb_local_s
     char *buf;
     size_t len;
   } search_result;
+  /* The "stack" used by keydb_push_found_state.  */
+  struct {
+    char *buf;
+    size_t len;
+  } saved_search_result;
 
   /* This flag set while an operation is running on this context.  */
   unsigned int is_active : 1;
@@ -855,7 +860,7 @@ unlock_all (KEYDB_HANDLE hd)
 
 
 
-/* Push the last found state if any.  */
+/* Push the last found state if any.   Only one state is saved.  */
 void
 keydb_push_found_state (KEYDB_HANDLE hd)
 {
@@ -863,25 +868,33 @@ keydb_push_found_state (KEYDB_HANDLE hd)
     return;
 
   if (hd->use_keyboxd)
-    return; /* FIXME: Do we need this? */
-
-  if (hd->found < 0 || hd->found >= hd->used)
     {
-      hd->saved_found = -1;
-      return;
+      xfree (hd->kbl->saved_search_result.buf);
+      hd->kbl->saved_search_result.buf = hd->kbl->search_result.buf;
+      hd->kbl->saved_search_result.len = hd->kbl->search_result.len;
+      hd->kbl->search_result.buf = NULL;
+      hd->kbl->search_result.len = 0;
+    }
+  else
+    {
+      if (hd->found < 0 || hd->found >= hd->used)
+        hd->saved_found = -1;
+      else
+        {
+          switch (hd->active[hd->found].type)
+            {
+            case KEYDB_RESOURCE_TYPE_NONE:
+              break;
+            case KEYDB_RESOURCE_TYPE_KEYBOX:
+              keybox_push_found_state (hd->active[hd->found].u.kr);
+              break;
+            }
+
+          hd->saved_found = hd->found;
+          hd->found = -1;
+        }
     }
 
-  switch (hd->active[hd->found].type)
-    {
-    case KEYDB_RESOURCE_TYPE_NONE:
-      break;
-    case KEYDB_RESOURCE_TYPE_KEYBOX:
-      keybox_push_found_state (hd->active[hd->found].u.kr);
-      break;
-    }
-
-  hd->saved_found = hd->found;
-  hd->found = -1;
   if (DBG_CLOCK)
     log_clock ("%s: done (hd=%p)\n", __func__, hd);
 }
@@ -895,21 +908,32 @@ keydb_pop_found_state (KEYDB_HANDLE hd)
     return;
 
   if (hd->use_keyboxd)
-    return; /* FIXME: Do we need this? */
-
-  hd->found = hd->saved_found;
-  hd->saved_found = -1;
-  if (hd->found < 0 || hd->found >= hd->used)
-    return;
-
-  switch (hd->active[hd->found].type)
     {
-    case KEYDB_RESOURCE_TYPE_NONE:
-      break;
-    case KEYDB_RESOURCE_TYPE_KEYBOX:
-      keybox_pop_found_state (hd->active[hd->found].u.kr);
-      break;
+      xfree (hd->kbl->search_result.buf);
+      hd->kbl->search_result.buf = hd->kbl->saved_search_result.buf;
+      hd->kbl->search_result.len = hd->kbl->saved_search_result.len;
+      hd->kbl->saved_search_result.buf = NULL;
+      hd->kbl->saved_search_result.len = 0;
     }
+  else
+    {
+      hd->found = hd->saved_found;
+      hd->saved_found = -1;
+      if (hd->found < 0 || hd->found >= hd->used)
+        ;
+      else
+        {
+          switch (hd->active[hd->found].type)
+            {
+            case KEYDB_RESOURCE_TYPE_NONE:
+              break;
+            case KEYDB_RESOURCE_TYPE_KEYBOX:
+              keybox_pop_found_state (hd->active[hd->found].u.kr);
+              break;
+            }
+        }
+    }
+
   if (DBG_CLOCK)
     log_clock ("%s: done (hd=%p)\n", __func__, hd);
 }
@@ -955,9 +979,6 @@ keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
           ksba_cert_release (cert);
           goto leave;
         }
-      xfree (hd->kbl->search_result.buf);
-      hd->kbl->search_result.buf = NULL;
-      hd->kbl->search_result.len = 0;
       *r_cert = cert;
       goto leave;
     }

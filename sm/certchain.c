@@ -459,7 +459,8 @@ find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
       rc = keydb_get_cert (kh, &cert);
       if (rc)
         {
-          log_error ("keydb_get_cert() failed: rc=%d\n", rc);
+          log_error ("keydb_get_cert failed in %s: %s <%s>\n",
+                     __func__, gpg_strerror (rc), gpg_strsource (rc));
           rc = gpg_error (GPG_ERR_NOT_FOUND);
           goto leave;
         }
@@ -1084,8 +1085,8 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
   err = keydb_get_cert (kh, r_next);
   if (err)
     {
-      log_error ("keydb_get_cert() failed: %s <%s>\n",
-                 gpg_strerror (err), gpg_strsource (err));
+      log_error ("keydb_get_cert failed in %s: %s <%s>\n",
+                 __func__, gpg_strerror (err), gpg_strsource (err));
       err = gpg_error (GPG_ERR_GENERAL);
     }
 
@@ -1824,7 +1825,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       rc = keydb_get_cert (kh, &issuer_cert);
       if (rc)
         {
-          log_error ("keydb_get_cert() failed: rc=%d\n", rc);
+          log_error ("keydb_get_cert failed in %s: %s <%s>\n",
+                     __func__, gpg_strerror (rc), gpg_strsource (rc));
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
@@ -2253,7 +2255,8 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
       rc = keydb_get_cert (kh, &issuer_cert);
       if (rc)
         {
-          log_error ("keydb_get_cert() failed: rc=%d\n", rc);
+          log_error ("keydb_get_cert failed in %s: %s <%s>\n",
+                     __func__, gpg_strerror (rc), gpg_strsource (rc));
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
