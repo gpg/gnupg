@@ -3477,7 +3477,9 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     }
   else if (set_resetcode)
     {
-      if (strlen (pinvalue) < 8)
+      size_t bufferlen = strlen (pinvalue);
+
+      if (bufferlen != 0 && bufferlen < 8)
         {
           log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
           rc = gpg_error (GPG_ERR_BAD_PIN);
@@ -3485,7 +3487,6 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       else
         {
           char *buffer = NULL;
-          size_t bufferlen;
 
           rc = pin2hash_if_kdf (app, 0, pinvalue, &buffer, &bufferlen);
           if (!rc)
