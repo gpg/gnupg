@@ -177,7 +177,7 @@ my_strusage( int level )
     case 41:
       p = ("Syntax: gpg-card"
            " [options] [command [args] {-- command [args]}]\n\n"
-           "Tool to manage cards and tokens.  With a command an interactive\n"
+           "Tool to manage cards and tokens.  Without a command an interactive\n"
            "mode is used.  Use command \"help\" to list all commands.");
       break;
 
