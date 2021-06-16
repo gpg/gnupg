@@ -2614,19 +2614,16 @@ apdu_get_atr (int slot, size_t *atrlen)
 {
   unsigned char *buf;
 
-  if (DBG_READER)
-    log_debug ("enter: apdu_get_atr: slot=%d\n", slot);
-
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     {
       if (DBG_READER)
-        log_debug ("leave: apdu_get_atr => NULL (bad slot)\n");
+        log_debug ("apdu_get_atr => NULL (bad slot)\n");
       return NULL;
     }
   if (!reader_table[slot].atrlen)
     {
       if (DBG_READER)
-        log_debug ("leave: apdu_get_atr => NULL (no ATR)\n");
+        log_debug ("apdu_get_atr => NULL (no ATR)\n");
       return NULL;
     }
 
@@ -2634,13 +2631,11 @@ apdu_get_atr (int slot, size_t *atrlen)
   if (!buf)
     {
       if (DBG_READER)
-        log_debug ("leave: apdu_get_atr => NULL (out of core)\n");
+        log_debug ("apdu_get_atr => NULL (out of core)\n");
       return NULL;
     }
   memcpy (buf, reader_table[slot].atr, reader_table[slot].atrlen);
   *atrlen = reader_table[slot].atrlen;
-  if (DBG_READER)
-    log_debug ("leave: apdu_get_atr => atrlen=%zu\n", *atrlen);
   return buf;
 }
 

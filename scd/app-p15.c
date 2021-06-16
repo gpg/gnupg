@@ -3791,8 +3791,8 @@ read_p15_info (app_t app)
           log_printf ("\n");
         }
 
-      log_info ("p15:  atr ..........: ");
       atr = apdu_get_atr (app_get_slot (app), &atrlen);
+      log_info ("p15:  atr ..........: ");
       if (!atr)
         log_printf ("[error]\n");
       else
@@ -6040,7 +6040,11 @@ app_select_p15 (app_t app)
           if (s && n == 2)
             def_home_df = buf16_to_ushort (s);
           else
-            log_error ("p15: select(AID) did not return the DF\n");
+            {
+              if (fcilen)
+                log_printhex (fci, fcilen, "fci:");
+              log_error ("p15: select(AID) did not return the DF\n");
+            }
         }
       app->app_local->home_df = def_home_df;
 
