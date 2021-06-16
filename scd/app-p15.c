@@ -3906,8 +3906,8 @@ read_p15_info (app_t app)
           log_printf ("\n");
         }
 
-      log_info ("p15:  atr ..........: ");
       atr = apdu_get_atr (app_get_slot (app), &atrlen);
+      log_info ("p15:  atr ..........: ");
       if (!atr)
         log_printf ("[error]\n");
       else

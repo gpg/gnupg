@@ -906,7 +906,7 @@ iso7816_read_binary_ext (int slot, int extended_mode,
       if (r_sw)
         *r_sw = sw;
 
-      if (*result && sw == SW_BAD_P0_P1)
+      if (*result && (sw == SW_BAD_P0_P1 || sw == SW_INCORRECT_P0_P1))
         {
           /* Bad Parameter means that the offset is outside of the
              EF. When reading all data we take this as an indication
