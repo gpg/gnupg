@@ -1861,10 +1861,12 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       if (err)
         goto parse_error;
 
-      /* Make sure that the next element is a non zero path and of
-         even length (FID are two bytes each). */
+      /* Make sure that the next element has a path of even length
+       * (FIDs are two bytes each).  We should check that the path
+       * length is non-zero but some cards return a zero length path
+       * nevertheless (e.g. A.E.T. Europe Java applets). */
       if (class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING
-          ||  !objlen || (objlen & 1) )
+          || (objlen & 1) )
         {
           errstr = "invalid path reference";
           goto parse_error;
@@ -2165,10 +2167,10 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
       if (err)
         goto parse_error;
 
-      /* Make sure that the next element is a non zero path and of
-         even length (FID are two bytes each). */
+      /* Make sure that the next element has a path of even length
+       * (FIDs are two bytes each).  */
       if (class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING
-          ||  !objlen || (objlen & 1) )
+          ||  (objlen & 1) )
         {
           errstr = "invalid path reference";
           goto parse_error;
@@ -2460,10 +2462,10 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
       if (err)
         goto parse_error;
 
-      /* Make sure that the next element is a non zero path and of
-         even length (FID are two bytes each). */
+      /* Make sure that the next element has a path of even length
+       * (FIDs are two bytes each).  */
       if (class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING
-          ||  !objlen || (objlen & 1) )
+          || (objlen & 1) )
         {
           errstr = "invalid path reference";
           goto parse_error;
@@ -2698,6 +2700,8 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             case 2: errstr = "external auth type are not supported"; break;
             default: errstr = "unknown privateKeyObject"; break;
             }
+          p += objlen;
+          n -= objlen;
           goto parse_error;
         }
       else
@@ -3051,10 +3055,10 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
           if (err)
             goto parse_error;
 
-          /* Make sure that the next element is a non zero FID and of
-             even length (FID are two bytes each). */
+          /* Make sure that the next element has a path of even length
+           * (FIDs are two bytes each).  */
           if (class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING
-              ||  !objlen || (objlen & 1) )
+              || (objlen & 1) )
             {
               errstr = "invalid path reference";
               goto parse_error;
