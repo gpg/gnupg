@@ -7,9 +7,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.2.27\n"
+"Project-Id-Version: GNU gnupg 2.2.28\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-06-10 20:09+0900\n"
+"PO-Revision-Date: 2021-06-17 11:52+0900\n"
 "Last-Translator: bobwxc <bobwxc@yeah.net>\n"
 "Language-Team: None\n"
 "Language: zh_CN\n"
@@ -348,10 +348,10 @@ msgid "do not use the PIN cache when signing"
 msgstr "在签名时不使用 PIN 缓存"
 
 msgid "disallow the use of an external password cache"
-msgstr "禁止使用一个外部的密码缓存"
+msgstr "禁止使用外部的密码缓存"
 
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "禁止客户端将一个密钥标记为“信任”"
+msgstr "禁止客户端将密钥标记为“信任”"
 
 msgid "allow presetting passphrase"
 msgstr "允许预设置的密码"
@@ -415,7 +415,7 @@ msgstr "套接字名称‘%s’太长\n"
 
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
-msgstr "一个 gpg-agent 实例正在运行 - 不启动新的实例\n"
+msgstr "有一个 gpg-agent 实例正在运行 - 无须启动新的实例\n"
 
 #, c-format
 msgid "error getting nonce for the socket\n"
@@ -632,7 +632,7 @@ msgid "Change passphrase"
 msgstr "更改密码"
 
 msgid "I'll change it later"
-msgstr "我想稍后修改"
+msgstr "稍后修改"
 
 #, c-format
 msgid ""
@@ -673,15 +673,15 @@ msgstr "私钥部分不可用\n"
 
 #, c-format
 msgid "public key algorithm %d (%s) is not supported\n"
-msgstr "公钥算法 %d (%s) 不被支持\n"
+msgstr "不支持的公钥算法: %d (%s)\n"
 
 #, c-format
 msgid "protection algorithm %d (%s) is not supported\n"
-msgstr "保护算法 %d (%s) 不被支持\n"
+msgstr "不支持的保护算法: %d (%s)\n"
 
 #, c-format
 msgid "protection hash algorithm %d (%s) is not supported\n"
-msgstr "保护散列算法 %d (%s) 不被支持\n"
+msgstr "不支持的保护散列算法: %d (%s)\n"
 
 #, c-format
 msgid "error creating a pipe: %s\n"
@@ -978,19 +978,19 @@ msgstr "无效的 radix64 字符 %02x 已被跳过\n"
 
 #, c-format
 msgid "Sorry, we are in batchmode - can't get input\n"
-msgstr ""
+msgstr "抱歉，正处于批处理模式——无法获取输入\n"
 
 #, c-format
 msgid "Sorry, no terminal at all requested - can't get input\n"
-msgstr ""
+msgstr "抱歉，要求了无终端模式——无法获取输入\n"
 
 #, c-format
 msgid "too many errors; giving up\n"
-msgstr ""
+msgstr "错误过多；放弃\n"
 
 #, c-format
 msgid "Control-D detected\n"
-msgstr ""
+msgstr "检测到 Control-D\n"
 
 msgid "argument not expected"
 msgstr "未预期的参数"
@@ -1551,7 +1551,7 @@ msgid "change a CA fingerprint"
 msgstr "更改一个 CA 指纹"
 
 msgid "toggle the signature force PIN flag"
-msgstr "开关签名的强制 PIN 设置"
+msgstr "切换签名强制使用 PIN 标志"
 
 msgid "generate new keys"
 msgstr "生成新的密钥"
@@ -1969,7 +1969,7 @@ msgid "export keys"
 msgstr "导出密钥"
 
 msgid "export keys to a keyserver"
-msgstr "把密钥导出到一个公钥服务器上"
+msgstr "将密钥导出到一个公钥服务器上"
 
 msgid "import keys from a keyserver"
 msgstr "从公钥服务器上导入密钥"
@@ -4763,10 +4763,8 @@ msgstr "%d 类型的子包设定了紧急位\n"
 msgid "problem with the agent: %s\n"
 msgstr "代理人程序出现问题：%s\n"
 
-#, fuzzy
-#| msgid "Please enter the new passphrase"
 msgid "Please enter the passphrase for decryption."
-msgstr "请输入新的密码"
+msgstr "请输入密码进行解密。"
 
 msgid "Enter passphrase\n"
 msgstr "请输入密码\n"
@@ -4824,7 +4822,7 @@ msgstr ""
 "您的密钥也会变得非常大！请把图片控制到接近理想尺寸 240x288。\n"
 
 msgid "Enter JPEG filename for photo ID: "
-msgstr "输入要当作相片标识的 JPEG 文件名： "
+msgstr "输入要当作照片标识的 JPEG 文件名： "
 
 #, c-format
 msgid "unable to open JPEG file '%s': %s\n"
@@ -5609,7 +5607,7 @@ msgstr "更新 TOFU 数据库时出现错误：%s\n"
 #, c-format
 msgid ""
 "This is the first time the email address \"%s\" is being used with key %s."
-msgstr "这是电子邮件地址 “%s” 第一次被用于密钥 %s。"
+msgstr "此电子邮件地址 “%s” 是第一次被用于密钥 %s。"
 
 #, c-format
 msgid "The email address \"%s\" is associated with %d key!"
@@ -6765,10 +6763,9 @@ msgstr "就绪。您现在应该将此请求发送给您的 CA。\n"
 msgid "resource problem: out of core\n"
 msgstr "资源问题：内存不足\n"
 
-#, fuzzy, c-format
-#| msgid "%s encrypted data\n"
+#, c-format
 msgid "%s.%s encrypted data\n"
-msgstr "%s 加密过的数据\n"
+msgstr "%s.%s 加密过的数据\n"
 
 #, c-format
 msgid "(this is the RC2 algorithm)\n"
@@ -6778,10 +6775,9 @@ msgstr "（此为 RC2 算法）\n"
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "（这看起来不像是一条被加密的消息）\n"
 
-#, fuzzy, c-format
-#| msgid "encrypted with %s key, ID %s\n"
+#, c-format
 msgid "encrypted to %s key %s\n"
-msgstr "由 %s 密钥加密、密钥号为 %s\n"
+msgstr "由 %s 密钥 %s 加密\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"
@@ -7701,7 +7697,7 @@ msgid "allow online software version check"
 msgstr "允许在线软件版本检查"
 
 msgid "inhibit the use of HTTP"
-msgstr "抑制 HTTP 的使用"
+msgstr "禁止使用 HTTP 协议"
 
 msgid "inhibit the use of LDAP"
 msgstr "抑制 LDAP 的使用"
@@ -7904,7 +7900,7 @@ msgstr "%s:%u: 给定密码但未给定用户\n"
 
 #, c-format
 msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr ""
+msgstr "%s:%u：忽略未知的标志 ‘%s’\n"
 
 #, c-format
 msgid "%s:%u: skipping this line\n"
@@ -8566,10 +8562,6 @@ msgstr ""
 
 #~ msgid "encryption modus"
 #~ msgstr "加密模式"
-
-#, fuzzy
-#~ msgid "tool class (confucius)"
-#~ msgstr "工具类（confucius）"
 
 #~ msgid "program filename"
 #~ msgstr "程序文件名"
