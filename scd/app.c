@@ -2258,7 +2258,11 @@ scd_update_reader_status_file (void)
       card_next = card->next;
 
       if (card->reset_requested)
-        status = 0;
+        {
+          /* Here is the post-processing of RESET request.  */
+          status = 0;
+          card->reset_requested = 0;
+        }
       else
         {
           sw = apdu_get_status (card->slot, 0, &status);
