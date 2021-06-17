@@ -294,7 +294,7 @@ msgid "Warning: You have entered an insecure passphrase."
 msgstr "警告：您输入了一个不安全的密码。"
 
 msgid "Take this one anyway"
-msgstr "无论如何使用这个"
+msgstr "无论如何都使用这个"
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -388,10 +388,10 @@ msgid "do not use the PIN cache when signing"
 msgstr "在签名时不使用 PIN 缓存"
 
 msgid "disallow the use of an external password cache"
-msgstr "禁止使用一个外部的密码缓存"
+msgstr "禁止使用外部的密码缓存"
 
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "禁止客户端将一个密钥标记为“信任”"
+msgstr "禁止客户端将密钥标记为“信任”"
 
 msgid "allow presetting passphrase"
 msgstr "允许预设置的密码"
@@ -482,7 +482,7 @@ msgstr "套接字名称‘%s’太长\n"
 
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
-msgstr "一个 gpg-agent 实例正在运行 - 不启动新的实例\n"
+msgstr "有一个 gpg-agent 实例正在运行 - 无须启动新的实例\n"
 
 #, c-format
 msgid "error getting nonce for the socket\n"
@@ -706,7 +706,7 @@ msgid "Change passphrase"
 msgstr "更改密码"
 
 msgid "I'll change it later"
-msgstr "我想稍后修改"
+msgstr "稍后修改"
 
 #, c-format
 msgid ""
@@ -747,15 +747,15 @@ msgstr "私钥部分不可用\n"
 
 #, c-format
 msgid "public key algorithm %d (%s) is not supported\n"
-msgstr "公钥算法 %d (%s) 不被支持\n"
+msgstr "不支持的公钥算法: %d (%s)\n"
 
 #, c-format
 msgid "protection algorithm %d (%s) is not supported\n"
-msgstr "保护算法 %d (%s) 不被支持\n"
+msgstr "不支持的保护算法: %d (%s)\n"
 
 #, c-format
 msgid "protection hash algorithm %d (%s) is not supported\n"
-msgstr "保护散列算法 %d (%s) 不被支持\n"
+msgstr "不支持的保护散列算法: %d (%s)\n"
 
 #, c-format
 msgid "error creating a pipe: %s\n"
@@ -1084,7 +1084,7 @@ msgstr "无效的 radix64 字符 %02x 已被跳过\n"
 
 #, c-format
 msgid "Sorry, we are in batchmode - can't get input\n"
-msgstr "抱歉，现为批处理模式——无法获取输入\n"
+msgstr "抱歉，正处于批处理模式——无法获取输入\n"
 
 #, c-format
 msgid "Sorry, no terminal at all requested - can't get input\n"
@@ -1574,7 +1574,7 @@ msgid "change a CA fingerprint"
 msgstr "更改一个 CA 指纹"
 
 msgid "toggle the signature force PIN flag"
-msgstr "开关签名的强制 PIN 设置"
+msgstr "切换签名强制使用 PIN 标志"
 
 msgid "generate new keys"
 msgstr "生成新的密钥"
@@ -1959,7 +1959,7 @@ msgid "export keys"
 msgstr "导出密钥"
 
 msgid "export keys to a keyserver"
-msgstr "把密钥导出到一个公钥服务器上"
+msgstr "将密钥导出到一个公钥服务器上"
 
 msgid "import keys from a keyserver"
 msgstr "从公钥服务器上导入密钥"
@@ -2037,7 +2037,7 @@ msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|通过邮件地址定位密钥时使用机制 MECHANISMS"
 
 msgid "import missing key from a signature"
-msgstr "从签名导入缺少的密钥"
+msgstr "从签名中导入缺少的密钥"
 
 msgid "include the public key in signatures"
 msgstr "在签名中包含公钥"
@@ -4494,7 +4494,7 @@ msgstr "%s.%s 已加密的会话密钥\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d.%s\n"
-msgstr "以下列未知算法加密 %d.%s\n"
+msgstr "未知的算法加密 %d.%s\n"
 
 #, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
@@ -4891,7 +4891,7 @@ msgstr ""
 "您的密钥也会变得非常大！请把图片控制到接近理想尺寸 240x288。\n"
 
 msgid "Enter JPEG filename for photo ID: "
-msgstr "输入要当作相片标识的 JPEG 文件名： "
+msgstr "输入要当作照片标识的 JPEG 文件名： "
 
 #, c-format
 msgid "unable to open JPEG file '%s': %s\n"
@@ -5723,7 +5723,7 @@ msgstr "更新 TOFU 数据库时出现错误：%s\n"
 #, c-format
 msgid ""
 "This is the first time the email address \"%s\" is being used with key %s."
-msgstr "这是电子邮件地址 “%s” 第一次被用于密钥 %s。"
+msgstr "此电子邮件地址 “%s” 是第一次被用于密钥 %s。"
 
 #, c-format
 msgid "The email address \"%s\" is associated with %d key!"
@@ -7901,7 +7901,7 @@ msgid "Configuration for HTTP servers"
 msgstr "对 HTTP 服务器的配置"
 
 msgid "inhibit the use of HTTP"
-msgstr "抑制 HTTP 的使用"
+msgstr "禁止使用 HTTP 协议"
 
 msgid "ignore HTTP CRL distribution points"
 msgstr "忽略 HTTP CRL 分发点"
@@ -7916,7 +7916,7 @@ msgid "Configuration of LDAP servers to use"
 msgstr "对要使用的 LDAP 服务器的配置"
 
 msgid "inhibit the use of LDAP"
-msgstr "抑制 LDAP 的使用"
+msgstr "禁止 LDAP 的使用"
 
 msgid "ignore LDAP CRL distribution points"
 msgstr "忽略 LDAP CRL 分发点"
