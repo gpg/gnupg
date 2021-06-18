@@ -74,6 +74,7 @@ typedef enum
     CARD_TYPE_MICARDO,
     CARD_TYPE_CARDOS_50,
     CARD_TYPE_CARDOS_53,
+    CARD_TYPE_AET,     /* A.E.T. Europe JCOP card.  */
     CARD_TYPE_BELPIC   /* Belgian eID card specs. */
   }
 card_type_t;
@@ -120,6 +121,9 @@ static struct
     CARD_TYPE_CARDOS_50 }, /* CardOS 5.0 */
   { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x03\x16"),
     CARD_TYPE_CARDOS_53 }, /* CardOS 5.3 */
+  { 24, X("\x3b\xfe\x18\x00\x00\x80\x31\xfe\x45\x53\x43\x45"
+          "\x36\x30\x2d\x43\x44\x30\x38\x31\x2d\x6e\x46\xa9"),
+    CARD_TYPE_AET },
   { 0 }
 };
 #undef X
@@ -436,11 +440,14 @@ struct app_local_s
   /* The vendor's product.  */
   card_product_t card_product;
 
+  /* Flag indicating that extedned_mode is not supported.  */
+  unsigned int no_extended_mode : 1;
+
   /* Flag indicating whether we may use direct path selection. */
-  int direct_path_selection;
+  unsigned int direct_path_selection : 1;
 
   /* Flag indicating whether the card has any key with a gpgusage set.  */
-  int any_gpgusage;
+  unsigned int any_gpgusage : 1;
 
   /* Structure with the EFIDs of the objects described in the ODF
      file. */
@@ -512,6 +519,7 @@ cardtype2str (card_type_t cardtype)
     case CARD_TYPE_CARDOS_50: return "CardOS 5.0";
     case CARD_TYPE_CARDOS_53: return "CardOS 5.3";
     case CARD_TYPE_BELPIC:    return "Belgian eID";
+    case CARD_TYPE_AET:       return "AET";
     }
   return "";
 }
@@ -761,6 +769,27 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
         {
           log_error ("p15: error selecting path ");
           goto err_print_path;
+        }
+    }
+  else if (pathlen > 1 && path[0] == 0x3fff)
+    {
+      err = iso7816_select_file (app_get_slot (app), 0x3f00, 0);
+      if (err)
+        {
+          log_error ("p15: error selecting part %d from path ", 0);
+          goto err_print_path;
+        }
+      path++;
+      pathlen--;
+      for (i=0; i < pathlen; i++)
+        {
+          err = iso7816_select_file (app_get_slot (app),
+                                     path[i], (i+1 == pathlen)? 2 : 1);
+          if (err)
+            {
+              log_error ("p15: error selecting part %d from path ", i);
+              goto err_print_path;
+            }
         }
     }
   else
@@ -4213,8 +4242,12 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
   if (err)
     goto leave;
 
-  err = iso7816_read_binary_ext (app_get_slot (app), 1, cdf->off, cdf->len,
-                                 &buffer, &buflen, NULL);
+  if (app->app_local->no_extended_mode)
+    err = iso7816_read_binary_ext (app_get_slot (app), 0, cdf->off, 0,
+                                   &buffer, &buflen, NULL);
+  else
+    err = iso7816_read_binary_ext (app_get_slot (app), 1, cdf->off, cdf->len,
+                                   &buffer, &buflen, NULL);
   if (!err && (!buflen || *buffer == 0xff))
     err = gpg_error (GPG_ERR_NOT_FOUND);
   if (err)
@@ -6047,7 +6080,8 @@ app_select_p15 (app_t app)
             {
               if (fcilen)
                 log_printhex (fci, fcilen, "fci:");
-              log_error ("p15: select(AID) did not return the DF\n");
+              log_info ("p15: select did not return the DF - using default\n");
+              def_home_df = DEFAULT_HOME_DF;
             }
         }
       app->app_local->home_df = def_home_df;
@@ -6064,6 +6098,9 @@ app_select_p15 (app_t app)
         case CARD_TYPE_CARDOS_50:
         case CARD_TYPE_CARDOS_53:
           direct = 1;
+          break;
+        case CARD_TYPE_AET:
+          app->app_local->no_extended_mode = 1;
           break;
         default:
           /* Use whatever has been determined above.  */
