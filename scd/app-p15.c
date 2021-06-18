@@ -5145,12 +5145,20 @@ verify_pin (app_t app,
   switch (aodf->pintype)
     {
     case PIN_TYPE_BCD:
-    case PIN_TYPE_ASCII_NUMERIC:
       for (s=pinvalue; digitp (s); s++)
         ;
       if (*s)
         {
           errstr = "Non-numeric digits found in PIN";
+          err = gpg_error (GPG_ERR_BAD_PIN);
+        }
+      break;
+    case PIN_TYPE_ASCII_NUMERIC:
+      for (s=pinvalue; *s && !(*s & 0x80); s++)
+        ;
+      if (*s)
+        {
+          errstr = "Non-ascii characters found in PIN";
           err = gpg_error (GPG_ERR_BAD_PIN);
         }
       break;
