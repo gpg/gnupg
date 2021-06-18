@@ -326,7 +326,7 @@ struct prkdf_object_s
   char *serial_number;
 
   /* KDF/KEK parameter for OpenPGP's ECDH.  First byte is zero if not
-   * availabale. .*/
+   * available.  */
   unsigned char ecdh_kdf[4];
 
   /* Length and allocated buffer with the Id of this object. */
@@ -4515,7 +4515,7 @@ send_key_fpr_line (ctrl_t ctrl, int number, const unsigned char *fpr)
 }
 
 
-/* If possible Emit a FPR-KEY status line for the private key object
+/* If possible emit a FPR-KEY status line for the private key object
  * PRKDF using NUMBER as index.  */
 static void
 send_key_fpr (app_t app, ctrl_t ctrl, prkdf_object_t prkdf, int number)
@@ -5302,12 +5302,20 @@ verify_pin (app_t app,
   switch (aodf->pintype)
     {
     case PIN_TYPE_BCD:
-    case PIN_TYPE_ASCII_NUMERIC:
       for (s=pinvalue; digitp (s); s++)
         ;
       if (*s)
         {
           errstr = "Non-numeric digits found in PIN";
+          err = gpg_error (GPG_ERR_BAD_PIN);
+        }
+      break;
+    case PIN_TYPE_ASCII_NUMERIC:
+      for (s=pinvalue; *s && !(*s & 0x80); s++)
+        ;
+      if (*s)
+        {
+          errstr = "Non-ascii characters found in PIN";
           err = gpg_error (GPG_ERR_BAD_PIN);
         }
       break;
