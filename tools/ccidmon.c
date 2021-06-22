@@ -1,5 +1,7 @@
 /* ccidmon.c - CCID monitor for use with the Linux usbmon facility.
- *	Copyright (C) 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2009, 2016, 2019 Werner Koch
+ * Copyright (C) 2021 g10 Code GmbH
+ * Copyright (C) 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -15,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 
@@ -188,6 +191,85 @@ print_pr_data (const unsigned char *data, size_t datalen, size_t off)
 
 
 static void
+print_as_ascii (const unsigned char *buf, unsigned int buflen,unsigned int fill)
+{
+  unsigned int n;
+
+  if (!buflen)
+    return;
+  if (buflen > 16)
+    buflen = 16;
+
+  for (n = buflen; n < fill; n++)
+    fputs ("   ", stdout);
+  fputs ("  |", stdout);
+  for (n = 0; n < buflen; n++, buf++)
+    if (*buf >= 32 && *buf < 127 && *buf != '|')
+      putchar (*buf);
+    else
+      putchar ('.');
+  putchar ('|');
+}
+
+
+static void
+print_t1_block (const unsigned char *msg, size_t msglen)
+{
+  unsigned int count, len;
+  unsigned char buf[16];
+
+  if (msglen < 4)
+    {
+      printf ("  T=1 ..: invalid block\n");
+      return;
+    }
+  printf ("  T=1 ..: NAD=%02x", msg[0]);
+  if (!(msg[1] & 0x80))
+    {
+      printf (" I-block seq=%d%s\n",
+              !!(msg[1] & 0x40), (msg[1] & 0x20)? " chaining":"");
+      len = msg[2];
+      msg += 3;
+      msglen -= 3;
+
+      printf ("  APDU .:");
+      count = 0;
+      while (msglen > 1 && len)
+        {
+          if (count == 16)
+            {
+              print_as_ascii (buf, count, count);
+              printf ("\n         ");
+              count = 0;
+            }
+          buf[count] = msg[0];
+          printf (" %02X", msg[0]);
+          msg++;
+          msglen--;
+          len--;
+          count++;
+        }
+      print_as_ascii (buf, count, 16);
+      putchar ('\n');
+    }
+  else if (!(msg[1] & 0x40))
+    printf (" R-block seq=%d%s\n",
+            !!(msg[1] & 0x10),
+            (msg[1] & 0x0f) == 0 ? "":
+            (msg[1] & 0x0f) == 1 ? "EDC error":
+            (msg[1] & 0x0f) == 2 ? "other error": "?");
+  else
+    printf (" S-block %s %s\n",
+            (msg[1] & 0x1f) == 0 ? "resync":
+            (msg[1] & 0x1f) == 1 ? "info_field_size":
+            (msg[1] & 0x1f) == 2 ? "abort":
+            (msg[1] & 0x1f) == 2 ? "BWT_extension":
+            (msg[1] & 0x1f) == 2 ? "VPP_error": "?",
+            (msg[1] & 0x20)? "response":"request");
+}
+
+
+static void
 print_p2r_header (const char *name, const unsigned char *msg, size_t msglen)
 {
   printf ("%s:\n", name);
@@ -246,6 +328,11 @@ print_p2r_xfrblock (const unsigned char *msg, size_t msglen)
           val == 3? " (continues+continued)":
           val == 16? " (DataBlock-expected)":"");
   print_pr_data (msg, msglen, 10);
+  if (msglen < 10)
+    return;
+  msg += 10;
+  msglen -= 10;
+  print_t1_block (msg, msglen);
 }
 
 
@@ -454,6 +541,11 @@ print_r2p_datablock (const unsigned char *msg, size_t msglen)
             msg[9] == 3? " (continues+continued)":
             msg[9] == 16? " (XferBlock-expected)":"");
   print_pr_data (msg, msglen, 10);
+  if (msglen < 10)
+    return;
+  msg += 10;
+  msglen -= 10;
+  print_t1_block (msg, msglen);
 }
 
 
