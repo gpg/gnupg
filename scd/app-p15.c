@@ -156,6 +156,14 @@ typedef enum
     PIN_TYPE_ISO9564_1 = 4
   } pin_type_t;
 
+/* The AuthenticationTypes as defined in pkcs#15 v1.1 (6.8.1) */
+typedef enum
+  {
+    AUTH_TYPE_PIN = -1,
+    AUTH_TYPE_BIOMETRIC = 0,
+    AUTH_TYPE_AUTHKEY = 1,
+    AUTH_TYPE_EXTERNAL = 2,
+  } auth_type_t;
 
 /* A bit array with for the key usage flags from the
    commonKeyAttributes. */
@@ -376,6 +384,11 @@ struct aodf_object_s
   /* The file ID of this AODF.  */
   unsigned short fid;
 
+  /* The type of this authentication object.  */
+  auth_type_t auth_type;
+
+  /* Info used for AUTH_TYPE_PIN: */
+
   /* The PIN Flags. */
   struct
   {
@@ -423,6 +436,9 @@ struct aodf_object_s
      may be NULL.  Malloced.*/
   size_t pathlen;
   unsigned short *path;
+
+  /* Info used for AUTH_TYPE_AUTHKEY: */
+
 };
 typedef struct aodf_object_s *aodf_object_t;
 
@@ -2640,37 +2656,46 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
 
 
 /*
-SEQUENCE {
-  SEQUENCE { -- CommonObjectAttributes
-    UTF8String 'specific PIN for DS'
-    BIT STRING 0 unused bits
-      '00000011'B
-    }
-  SEQUENCE { -- CommonAuthenticationObjectAttributes
-    OCTET STRING
-      07    -- iD
-    }
-
-  [1] { -- typeAttributes
-    SEQUENCE { -- PinAttributes
-      BIT STRING 0 unused bits
-        '0000100000110010'B  -- local,initialized,needs-padding
-                             -- exchangeRefData
-      ENUMERATED 1           -- ascii-numeric
-      INTEGER 6              -- minLength
-      INTEGER 6              -- storedLength
-      INTEGER 8              -- maxLength
-      [0]
-        02                   -- pinReference
-      GeneralizedTime 19/04/2002 12:12 GMT  -- lastPinChange
-      SEQUENCE {
-        OCTET STRING
-          3F 00 40 16        -- path to DF of PIN
-        }
-      }
-    }
-  }
-
+ * SEQUENCE {
+ *   SEQUENCE { -- CommonObjectAttributes
+ *     UTF8String 'specific PIN for DS'
+ *     BIT STRING 0 unused bits
+ *       '00000011'B
+ *     }
+ *   SEQUENCE { -- CommonAuthenticationObjectAttributes
+ *     OCTET STRING
+ *       07    -- iD
+ *     }
+ *
+ *   [1] { -- typeAttributes
+ *     SEQUENCE { -- PinAttributes
+ *       BIT STRING 0 unused bits
+ *         '0000100000110010'B  -- local,initialized,needs-padding
+ *                              -- exchangeRefData
+ *       ENUMERATED 1           -- ascii-numeric
+ *       INTEGER 6              -- minLength
+ *       INTEGER 6              -- storedLength
+ *       INTEGER 8              -- maxLength
+ *       [0]
+ *         02                   -- pinReference
+ *       GeneralizedTime 19/04/2002 12:12 GMT  -- lastPinChange
+ *       SEQUENCE {
+ *         OCTET STRING
+ *           3F 00 40 16        -- path to DF of PIN
+ *         }
+ *       }
+ *     }
+ *   }
+ *
+ * Or for an authKey:
+ *
+ *   [1] { -- typeAttributes
+ *     SEQUENCE { -- AuthKeyAttributes
+ *       BOOLEAN TRUE    -- derivedKey
+ *       OCTET STRING 02 -- authKeyId
+ *       }
+ *     }
+ *   }
 */
 /* Read and parse an Authentication Object Directory File identified
    by FID.  On success a newlist of AODF objects gets stored at RESULT
@@ -2707,6 +2732,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       size_t nn;
       int where;
       const char *errstr = NULL;
+      auth_type_t auth_type;
       aodf_object_t aodf = NULL;
       unsigned long ul;
       const char *s;
@@ -2719,13 +2745,14 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       else if (objlen > n)
         err = gpg_error (GPG_ERR_INV_OBJ);
       else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
-        ; /* PinAttributes */
+        auth_type = AUTH_TYPE_PIN;    /* PinAttributes */
+      else if (class == CLASS_CONTEXT && tag == 1 )
+        auth_type = AUTH_TYPE_AUTHKEY; /* AuthKeyAttributes */
       else if (class == CLASS_CONTEXT)
         {
           switch (tag)
             {
             case 0: errstr = "biometric auth types are not supported"; break;
-            case 1: errstr = "authKey auth types are not supported"; break;
             case 2: errstr = "external auth type are not supported"; break;
             default: errstr = "unknown privateKeyObject"; break;
             }
@@ -2738,7 +2765,6 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
           err = gpg_error (GPG_ERR_INV_OBJ);
           goto parse_error;
         }
-
 
       if (err)
         {
@@ -2756,6 +2782,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       if (!aodf)
         goto no_core;
       aodf->fid = fid;
+      aodf->auth_type = auth_type;
 
       /* Parse the commonObjectAttributes.  */
       where = __LINE__;
@@ -2814,7 +2841,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       else if (!err && objlen > nn)
         err = gpg_error (GPG_ERR_INV_OBJ);
       else if (class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE)
-        ; /* A typeAttribute always starts with a sequence */
+        ; /* Okay */
       else
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
@@ -2822,322 +2849,329 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
 
       nn = objlen;
 
-      /* PinFlags */
-      where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn || !objlen
-                   || class != CLASS_UNIVERSAL || tag != TAG_BIT_STRING))
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (err)
-        goto parse_error;
-
-      {
-        unsigned int bits, mask;
-        int unused, full;
-
-        unused = *pp++; nn--; objlen--;
-        if ((!objlen && unused) || unused/8 > objlen)
-          {
-            err = gpg_error (GPG_ERR_ENCODING_PROBLEM);
+      if (auth_type == AUTH_TYPE_PIN)
+        {
+          /* PinFlags */
+          where = __LINE__;
+          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                  &ndef, &objlen, &hdrlen);
+          if (!err && (objlen > nn || !objlen
+                       || class != CLASS_UNIVERSAL || tag != TAG_BIT_STRING))
+            err = gpg_error (GPG_ERR_INV_OBJ);
+          if (err)
             goto parse_error;
-          }
-        full = objlen - (unused+7)/8;
-        unused %= 8;
-        mask = 0;
-        for (i=1; unused; i <<= 1, unused--)
-          mask |= i;
 
-        /* The first octet */
-        bits = 0;
-        if (objlen)
           {
-            bits = *pp++; nn--; objlen--;
-            if (full)
-              full--;
-            else
+            unsigned int bits, mask;
+            int unused, full;
+
+            unused = *pp++; nn--; objlen--;
+            if ((!objlen && unused) || unused/8 > objlen)
               {
-                bits &= ~mask;
-                mask = 0;
+                err = gpg_error (GPG_ERR_ENCODING_PROBLEM);
+                goto parse_error;
               }
-          }
-        if ((bits & 0x80)) /* ASN.1 bit 0. */
-          aodf->pinflags.case_sensitive = 1;
-        if ((bits & 0x40)) /* ASN.1 bit 1. */
-          aodf->pinflags.local = 1;
-        if ((bits & 0x20))
-          aodf->pinflags.change_disabled = 1;
-        if ((bits & 0x10))
-          aodf->pinflags.unblock_disabled = 1;
-        if ((bits & 0x08))
-          aodf->pinflags.initialized = 1;
-        if ((bits & 0x04))
-          aodf->pinflags.needs_padding = 1;
-        if ((bits & 0x02))
-          aodf->pinflags.unblocking_pin = 1;
-        if ((bits & 0x01))
-          aodf->pinflags.so_pin = 1;
-        /* The second octet. */
-        bits = 0;
-        if (objlen)
-          {
-            bits = *pp++; nn--; objlen--;
-            if (full)
-              full--;
-            else
+            full = objlen - (unused+7)/8;
+            unused %= 8;
+            mask = 0;
+            for (i=1; unused; i <<= 1, unused--)
+              mask |= i;
+
+            /* The first octet */
+            bits = 0;
+            if (objlen)
               {
-                bits &= ~mask;
+                bits = *pp++; nn--; objlen--;
+                if (full)
+                  full--;
+                else
+                  {
+                    bits &= ~mask;
+                    mask = 0;
+                  }
               }
+            if ((bits & 0x80)) /* ASN.1 bit 0. */
+              aodf->pinflags.case_sensitive = 1;
+            if ((bits & 0x40)) /* ASN.1 bit 1. */
+              aodf->pinflags.local = 1;
+            if ((bits & 0x20))
+              aodf->pinflags.change_disabled = 1;
+            if ((bits & 0x10))
+              aodf->pinflags.unblock_disabled = 1;
+            if ((bits & 0x08))
+              aodf->pinflags.initialized = 1;
+            if ((bits & 0x04))
+              aodf->pinflags.needs_padding = 1;
+            if ((bits & 0x02))
+              aodf->pinflags.unblocking_pin = 1;
+            if ((bits & 0x01))
+              aodf->pinflags.so_pin = 1;
+            /* The second octet. */
+            bits = 0;
+            if (objlen)
+              {
+                bits = *pp++; nn--; objlen--;
+                if (full)
+                  full--;
+                else
+                  {
+                    bits &= ~mask;
+                  }
+              }
+            if ((bits & 0x80))
+              aodf->pinflags.disable_allowed = 1;
+            if ((bits & 0x40))
+              aodf->pinflags.integrity_protected = 1;
+            if ((bits & 0x20))
+              aodf->pinflags.confidentiality_protected = 1;
+            if ((bits & 0x10))
+              aodf->pinflags.exchange_ref_data = 1;
+            /* Skip remaining bits. */
+            pp += objlen;
+            nn -= objlen;
           }
-        if ((bits & 0x80))
-          aodf->pinflags.disable_allowed = 1;
-        if ((bits & 0x40))
-          aodf->pinflags.integrity_protected = 1;
-        if ((bits & 0x20))
-          aodf->pinflags.confidentiality_protected = 1;
-        if ((bits & 0x10))
-          aodf->pinflags.exchange_ref_data = 1;
-        /* Skip remaining bits. */
-        pp += objlen;
-        nn -= objlen;
-      }
 
+          /* PinType */
+          where = __LINE__;
+          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                  &ndef, &objlen, &hdrlen);
+          if (!err && (objlen > nn
+                       || class != CLASS_UNIVERSAL || tag != TAG_ENUMERATED))
+            err = gpg_error (GPG_ERR_INV_OBJ);
+          if (!err && objlen > sizeof (ul))
+            err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
+          if (err)
+            goto parse_error;
 
-      /* PinType */
-      where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn
-                   || class != CLASS_UNIVERSAL || tag != TAG_ENUMERATED))
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (!err && objlen > sizeof (ul))
-        err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
-      if (err)
-        goto parse_error;
-
-      for (ul=0; objlen; objlen--)
-        {
-          ul <<= 8;
-          ul |= (*pp++) & 0xff;
-          nn--;
-        }
-      aodf->pintype = ul;
-
-
-      /* minLength */
-      where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn
-                   || class != CLASS_UNIVERSAL || tag != TAG_INTEGER))
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (!err && objlen > sizeof (ul))
-        err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
-      if (err)
-        goto parse_error;
-      for (ul=0; objlen; objlen--)
-        {
-          ul <<= 8;
-          ul |= (*pp++) & 0xff;
-          nn--;
-        }
-      aodf->min_length = ul;
-
-
-      /* storedLength */
-      where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nn
-                   || class != CLASS_UNIVERSAL || tag != TAG_INTEGER))
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (!err && objlen > sizeof (ul))
-        err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
-      if (err)
-        goto parse_error;
-      for (ul=0; objlen; objlen--)
-        {
-          ul <<= 8;
-          ul |= (*pp++) & 0xff;
-          nn--;
-        }
-      aodf->stored_length = ul;
-
-      /* optional maxLength */
-      where = __LINE__;
-      err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                              &ndef, &objlen, &hdrlen);
-      if (gpg_err_code (err) == GPG_ERR_EOF)
-        goto ready;
-      if (!err && objlen > nn)
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (err)
-        goto parse_error;
-      if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER)
-        {
-          if (objlen > sizeof (ul))
-            {
-              err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
-              goto parse_error;
-            }
           for (ul=0; objlen; objlen--)
             {
               ul <<= 8;
               ul |= (*pp++) & 0xff;
               nn--;
             }
-          aodf->max_length = ul;
-          aodf->max_length_valid = 1;
+          aodf->pintype = ul;
 
+          /* minLength */
           where = __LINE__;
           err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                                   &ndef, &objlen, &hdrlen);
-          if (gpg_err_code (err) == GPG_ERR_EOF)
-            goto ready;
-          if (!err && objlen > nn)
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (err)
-            goto parse_error;
-        }
-
-      /* Optional pinReference. */
-      if (class == CLASS_CONTEXT && tag == 0)
-        {
-          if (objlen > sizeof (ul))
-            {
-              err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
-              goto parse_error;
-            }
-          for (ul=0; objlen; objlen--)
-            {
-              ul <<= 8;
-              ul |= (*pp++) & 0xff;
-              nn--;
-            }
-          aodf->pin_reference = ul;
-          aodf->pin_reference_valid = 1;
-
-          where = __LINE__;
-          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                                  &ndef, &objlen, &hdrlen);
-          if (gpg_err_code (err) == GPG_ERR_EOF)
-            goto ready;
-          if (!err && objlen > nn)
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (err)
-            goto parse_error;
-        }
-
-      /* Optional padChar. */
-      if (class == CLASS_UNIVERSAL && tag == TAG_OCTET_STRING)
-        {
-          if (objlen != 1)
-            {
-              errstr = "padChar is not of size(1)";
-              goto parse_error;
-            }
-          aodf->pad_char = *pp++; nn--;
-          aodf->pad_char_valid = 1;
-
-          where = __LINE__;
-          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                                  &ndef, &objlen, &hdrlen);
-          if (gpg_err_code (err) == GPG_ERR_EOF)
-            goto ready;
-          if (!err && objlen > nn)
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (err)
-            goto parse_error;
-        }
-
-      /* Skip optional lastPinChange. */
-      if (class == CLASS_UNIVERSAL && tag == TAG_GENERALIZED_TIME)
-        {
-          pp += objlen;
-          nn -= objlen;
-
-          where = __LINE__;
-          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-                                  &ndef, &objlen, &hdrlen);
-          if (gpg_err_code (err) == GPG_ERR_EOF)
-            goto ready;
-          if (!err && objlen > nn)
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (err)
-            goto parse_error;
-        }
-
-      /* Optional Path object.  */
-      if (class == CLASS_UNIVERSAL || tag == TAG_SEQUENCE)
-        {
-          const unsigned char *ppp = pp;
-          size_t nnn = objlen;
-
-          pp += objlen;
-          nn -= objlen;
-
-          where = __LINE__;
-          err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                  &ndef, &objlen, &hdrlen);
-          if (!err && objlen > nnn)
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (err)
-            goto parse_error;
-
-          /* Make sure that the next element has a path of even length
-           * (FIDs are two bytes each).  */
-          if (class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING
-              || (objlen & 1) )
-            {
-              errstr = "invalid path reference";
-              goto parse_error;
-            }
-
-          aodf->pathlen = objlen/2;
-          aodf->path = xtrycalloc (aodf->pathlen, sizeof *aodf->path);
-          if (!aodf->path)
-            goto no_core;
-          for (i=0; i < aodf->pathlen; i++, ppp += 2, nnn -= 2)
-            aodf->path[i] = ((ppp[0] << 8) | ppp[1]);
-
-          if (nnn)
-            {
-              /* An index and length follows. */
-              aodf->have_off = 1;
-              where = __LINE__;
-              err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-                                      &ndef, &objlen, &hdrlen);
-              if (!err && (objlen > nnn
+          if (!err && (objlen > nn
                        || class != CLASS_UNIVERSAL || tag != TAG_INTEGER))
-                err = gpg_error (GPG_ERR_INV_OBJ);
-              if (err)
-                goto parse_error;
+            err = gpg_error (GPG_ERR_INV_OBJ);
+          if (!err && objlen > sizeof (ul))
+            err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
+          if (err)
+            goto parse_error;
+          for (ul=0; objlen; objlen--)
+            {
+              ul <<= 8;
+              ul |= (*pp++) & 0xff;
+              nn--;
+            }
+          aodf->min_length = ul;
 
+          /* storedLength */
+          where = __LINE__;
+          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                  &ndef, &objlen, &hdrlen);
+          if (!err && (objlen > nn
+                       || class != CLASS_UNIVERSAL || tag != TAG_INTEGER))
+            err = gpg_error (GPG_ERR_INV_OBJ);
+          if (!err && objlen > sizeof (ul))
+            err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
+          if (err)
+            goto parse_error;
+          for (ul=0; objlen; objlen--)
+            {
+              ul <<= 8;
+              ul |= (*pp++) & 0xff;
+              nn--;
+            }
+          aodf->stored_length = ul;
+
+          /* optional maxLength */
+          where = __LINE__;
+          err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                  &ndef, &objlen, &hdrlen);
+          if (gpg_err_code (err) == GPG_ERR_EOF)
+            goto ready;
+          if (!err && objlen > nn)
+            err = gpg_error (GPG_ERR_INV_OBJ);
+          if (err)
+            goto parse_error;
+          if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER)
+            {
+              if (objlen > sizeof (ul))
+                {
+                  err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
+                  goto parse_error;
+                }
               for (ul=0; objlen; objlen--)
                 {
                   ul <<= 8;
-                  ul |= (*ppp++) & 0xff;
-                  nnn--;
+                  ul |= (*pp++) & 0xff;
+                  nn--;
                 }
-              aodf->off = ul;
+              aodf->max_length = ul;
+              aodf->max_length_valid = 1;
+
+              where = __LINE__;
+              err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                      &ndef, &objlen, &hdrlen);
+              if (gpg_err_code (err) == GPG_ERR_EOF)
+                goto ready;
+              if (!err && objlen > nn)
+                err = gpg_error (GPG_ERR_INV_OBJ);
+              if (err)
+                goto parse_error;
+            }
+
+          /* Optional pinReference. */
+          if (class == CLASS_CONTEXT && tag == 0)
+            {
+              if (objlen > sizeof (ul))
+                {
+                  err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
+                  goto parse_error;
+                }
+              for (ul=0; objlen; objlen--)
+                {
+                  ul <<= 8;
+                  ul |= (*pp++) & 0xff;
+                  nn--;
+                }
+              aodf->pin_reference = ul;
+              aodf->pin_reference_valid = 1;
+
+              where = __LINE__;
+              err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                      &ndef, &objlen, &hdrlen);
+              if (gpg_err_code (err) == GPG_ERR_EOF)
+                goto ready;
+              if (!err && objlen > nn)
+                err = gpg_error (GPG_ERR_INV_OBJ);
+              if (err)
+                goto parse_error;
+            }
+
+          /* Optional padChar. */
+          if (class == CLASS_UNIVERSAL && tag == TAG_OCTET_STRING)
+            {
+              if (objlen != 1)
+                {
+                  errstr = "padChar is not of size(1)";
+                  goto parse_error;
+                }
+              aodf->pad_char = *pp++; nn--;
+              aodf->pad_char_valid = 1;
+
+              where = __LINE__;
+              err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                      &ndef, &objlen, &hdrlen);
+              if (gpg_err_code (err) == GPG_ERR_EOF)
+                goto ready;
+              if (!err && objlen > nn)
+                err = gpg_error (GPG_ERR_INV_OBJ);
+              if (err)
+                goto parse_error;
+            }
+
+          /* Skip optional lastPinChange. */
+          if (class == CLASS_UNIVERSAL && tag == TAG_GENERALIZED_TIME)
+            {
+              pp += objlen;
+              nn -= objlen;
+
+              where = __LINE__;
+              err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
+                                      &ndef, &objlen, &hdrlen);
+              if (gpg_err_code (err) == GPG_ERR_EOF)
+                goto ready;
+              if (!err && objlen > nn)
+                err = gpg_error (GPG_ERR_INV_OBJ);
+              if (err)
+                goto parse_error;
+            }
+
+          /* Optional Path object.  */
+          if (class == CLASS_UNIVERSAL || tag == TAG_SEQUENCE)
+            {
+              const unsigned char *ppp = pp;
+              size_t nnn = objlen;
+
+              pp += objlen;
+              nn -= objlen;
 
               where = __LINE__;
               err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
                                       &ndef, &objlen, &hdrlen);
-              if (!err && (objlen > nnn
-                           || class != CLASS_CONTEXT || tag != 0))
+              if (!err && objlen > nnn)
                 err = gpg_error (GPG_ERR_INV_OBJ);
               if (err)
                 goto parse_error;
 
-              for (ul=0; objlen; objlen--)
+              /* Make sure that the next element has a path of even
+               * length (FIDs are two bytes each).  */
+              if (class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING
+                  || (objlen & 1) )
                 {
-                  ul <<= 8;
-                  ul |= (*ppp++) & 0xff;
-                  nnn--;
+                  errstr = "invalid path reference";
+                  goto parse_error;
                 }
-              aodf->len = ul;
+
+              aodf->pathlen = objlen/2;
+              aodf->path = xtrycalloc (aodf->pathlen, sizeof *aodf->path);
+              if (!aodf->path)
+                goto no_core;
+              for (i=0; i < aodf->pathlen; i++, ppp += 2, nnn -= 2)
+                aodf->path[i] = ((ppp[0] << 8) | ppp[1]);
+
+              if (nnn)
+                {
+                  /* An index and length follows. */
+                  aodf->have_off = 1;
+                  where = __LINE__;
+                  err = parse_ber_header (&ppp, &nnn, &class, &tag,
+                                          &constructed,
+                                          &ndef, &objlen, &hdrlen);
+                  if (!err && (objlen > nnn
+                               || class != CLASS_UNIVERSAL
+                               || tag != TAG_INTEGER))
+                    err = gpg_error (GPG_ERR_INV_OBJ);
+                  if (err)
+                    goto parse_error;
+
+                  for (ul=0; objlen; objlen--)
+                    {
+                      ul <<= 8;
+                      ul |= (*ppp++) & 0xff;
+                      nnn--;
+                    }
+                  aodf->off = ul;
+
+                  where = __LINE__;
+                  err = parse_ber_header (&ppp, &nnn, &class, &tag,
+                                          &constructed,
+                                          &ndef, &objlen, &hdrlen);
+                  if (!err && (objlen > nnn
+                               || class != CLASS_CONTEXT || tag != 0))
+                    err = gpg_error (GPG_ERR_INV_OBJ);
+                  if (err)
+                    goto parse_error;
+
+                  for (ul=0; objlen; objlen--)
+                    {
+                      ul <<= 8;
+                      ul |= (*ppp++) & 0xff;
+                      nnn--;
+                    }
+                  aodf->len = ul;
+                }
             }
+        }
+      else if (auth_type == AUTH_TYPE_AUTHKEY)
+        {
+
         }
 
       /* Ignore further objects which might be there due to future
@@ -3154,6 +3188,9 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
           if (aodf->label)
             log_printf (" (%s)", aodf->label);
           log_info ("p15:            ");
+          log_printf (" %s",
+                      aodf->auth_type == AUTH_TYPE_PIN? "pin" :
+                      aodf->auth_type == AUTH_TYPE_AUTHKEY? "authkey" : "?");
           if (aodf->pathlen)
             {
               log_printf (" path=");
@@ -3168,58 +3205,64 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
               for (i=0; i < aodf->authidlen; i++)
                 log_printf ("%02X", aodf->authid[i]);
             }
-          if (aodf->pin_reference_valid)
-            log_printf (" pinref=0x%02lX", aodf->pin_reference);
-          log_printf (" min=%lu", aodf->min_length);
-          log_printf (" stored=%lu", aodf->stored_length);
-          if (aodf->max_length_valid)
-            log_printf (" max=%lu", aodf->max_length);
-          if (aodf->pad_char_valid)
-            log_printf (" pad=0x%02x", aodf->pad_char);
+          if (aodf->auth_type == AUTH_TYPE_PIN)
+            {
+              if (aodf->pin_reference_valid)
+                log_printf (" pinref=0x%02lX", aodf->pin_reference);
+              log_printf (" min=%lu", aodf->min_length);
+              log_printf (" stored=%lu", aodf->stored_length);
+              if (aodf->max_length_valid)
+                log_printf (" max=%lu", aodf->max_length);
+              if (aodf->pad_char_valid)
+                log_printf (" pad=0x%02x", aodf->pad_char);
 
-          log_info ("p15:             flags=");
-          s = "";
-          if (aodf->pinflags.case_sensitive)
-            log_printf ("%scase_sensitive", s), s = ",";
-          if (aodf->pinflags.local)
-            log_printf ("%slocal", s), s = ",";
-          if (aodf->pinflags.change_disabled)
-            log_printf ("%schange_disabled", s), s = ",";
-          if (aodf->pinflags.unblock_disabled)
-            log_printf ("%sunblock_disabled", s), s = ",";
-          if (aodf->pinflags.initialized)
-            log_printf ("%sinitialized", s), s = ",";
-          if (aodf->pinflags.needs_padding)
-            log_printf ("%sneeds_padding", s), s = ",";
-          if (aodf->pinflags.unblocking_pin)
-            log_printf ("%sunblocking_pin", s), s = ",";
-          if (aodf->pinflags.so_pin)
-            log_printf ("%sso_pin", s), s = ",";
-          if (aodf->pinflags.disable_allowed)
-            log_printf ("%sdisable_allowed", s), s = ",";
-          if (aodf->pinflags.integrity_protected)
-            log_printf ("%sintegrity_protected", s), s = ",";
-          if (aodf->pinflags.confidentiality_protected)
-            log_printf ("%sconfidentiality_protected", s), s = ",";
-          if (aodf->pinflags.exchange_ref_data)
-            log_printf ("%sexchange_ref_data", s), s = ",";
-          {
-            char numbuf[50];
-            const char *s2;
-
-            switch (aodf->pintype)
+              log_info ("p15:             flags=");
+              s = "";
+              if (aodf->pinflags.case_sensitive)
+                log_printf ("%scase_sensitive", s), s = ",";
+              if (aodf->pinflags.local)
+                log_printf ("%slocal", s), s = ",";
+              if (aodf->pinflags.change_disabled)
+                log_printf ("%schange_disabled", s), s = ",";
+              if (aodf->pinflags.unblock_disabled)
+                log_printf ("%sunblock_disabled", s), s = ",";
+              if (aodf->pinflags.initialized)
+                log_printf ("%sinitialized", s), s = ",";
+              if (aodf->pinflags.needs_padding)
+                log_printf ("%sneeds_padding", s), s = ",";
+              if (aodf->pinflags.unblocking_pin)
+                log_printf ("%sunblocking_pin", s), s = ",";
+              if (aodf->pinflags.so_pin)
+                log_printf ("%sso_pin", s), s = ",";
+              if (aodf->pinflags.disable_allowed)
+                log_printf ("%sdisable_allowed", s), s = ",";
+              if (aodf->pinflags.integrity_protected)
+                log_printf ("%sintegrity_protected", s), s = ",";
+              if (aodf->pinflags.confidentiality_protected)
+                log_printf ("%sconfidentiality_protected", s), s = ",";
+              if (aodf->pinflags.exchange_ref_data)
+                log_printf ("%sexchange_ref_data", s), s = ",";
               {
-              case PIN_TYPE_BCD: s2 = "bcd"; break;
-              case PIN_TYPE_ASCII_NUMERIC: s2 = "ascii-numeric"; break;
-              case PIN_TYPE_UTF8: s2 = "utf8"; break;
-              case PIN_TYPE_HALF_NIBBLE_BCD: s2 = "half-nibble-bcd"; break;
-              case PIN_TYPE_ISO9564_1: s2 = "iso9564-1"; break;
-              default:
-                sprintf (numbuf, "%lu", (unsigned long)aodf->pintype);
-                s2 = numbuf;
+                char numbuf[50];
+                const char *s2;
+
+                switch (aodf->pintype)
+                  {
+                  case PIN_TYPE_BCD: s2 = "bcd"; break;
+                  case PIN_TYPE_ASCII_NUMERIC: s2 = "ascii-numeric"; break;
+                  case PIN_TYPE_UTF8: s2 = "utf8"; break;
+                  case PIN_TYPE_HALF_NIBBLE_BCD: s2 = "half-nibble-bcd"; break;
+                  case PIN_TYPE_ISO9564_1: s2 = "iso9564-1"; break;
+                  default:
+                    sprintf (numbuf, "%lu", (unsigned long)aodf->pintype);
+                    s2 = numbuf;
+                  }
+                log_printf ("%stype=%s", s, s2); s = ",";
               }
-            log_printf ("%stype=%s", s, s2); s = ",";
-          }
+            }
+          else if (aodf->auth_type == AUTH_TYPE_AUTHKEY)
+            {
+            }
           log_printf ("\n");
         }
 
