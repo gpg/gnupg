@@ -461,17 +461,33 @@ test_ecc_uncompress (void)
       if (bbuf)
         {
           err = uncompress_ecc_q_in_canon_sexp (bbuf, bbuflen, &rbuf, &rbuflen);
-          if (err)
-            fail2 (idx,err);
-          if (!rbuf)
-            fail (idx);  /* Not converted despite a need for it. */
+          if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE)
+            {
+              static int shown;
+              fprintf (stderr, "%s:%d: test %d failed: %s - ignored\n",
+                       __FILE__,__LINE__, idx, gpg_strerror (err));
+              if (!shown)
+                {
+                  shown = 1;
+                  fprintf (stderr, "This is likely due to a patched"
+                           " version of Libgcrypt with removed support"
+                           " for Brainpool curves\n");
+                }
+            }
+          else
+            {
+              if (err)
+                fail2 (idx,err);
+              if (!rbuf)
+                fail (idx);  /* Not converted despite a need for it. */
 
-          /* log_printcanon ("  orig:", abuf, abuflen); */
-          /* log_printcanon ("  comp:", bbuf, bbuflen); */
-          /* log_printcanon ("uncomp:", rbuf, rbuflen); */
+              /* log_printcanon ("  orig:", abuf, abuflen); */
+              /* log_printcanon ("  comp:", bbuf, bbuflen); */
+              /* log_printcanon ("uncomp:", rbuf, rbuflen); */
 
-          if (rbuflen != abuflen || memcmp (rbuf, abuf, abuflen))
-            fail (idx);
+              if (rbuflen != abuflen || memcmp (rbuf, abuf, abuflen))
+                fail (idx);
+            }
         }
 
       xfree (abuf);
