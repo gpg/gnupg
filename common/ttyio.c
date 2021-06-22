@@ -236,10 +236,24 @@ w32_write_console (const char *string)
   n = wcslen (wstring);
 
   if (!WriteConsoleW (con.out, wstring, n, &nwritten, NULL))
-    log_fatal ("WriteConsole failed: %s", w32_strerror (-1));
-  if (n != nwritten)
-    log_fatal ("WriteConsole failed: %lu != %lu\n",
-               (unsigned long)n, (unsigned long)nwritten);
+    {
+      static int shown;
+      if (!shown)
+        {
+          shown = 1;
+          log_info ("WriteConsole failed: %s", w32_strerror (-1));
+          log_info ("Please configure a suitable font for the console\n");
+        }
+      n = strlen (string);
+      if (!WriteConsoleA (con.out, string, n , &nwritten, NULL))
+        log_fatal ("WriteConsole fallback failed: %s", w32_strerror (-1));
+    }
+  else
+    {
+      if (n != nwritten)
+        log_fatal ("WriteConsole failed: %lu != %lu\n",
+                   (unsigned long)n, (unsigned long)nwritten);
+    }
   last_prompt_len += n;
   xfree (wstring);
 }
