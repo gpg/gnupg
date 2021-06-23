@@ -1590,6 +1590,11 @@ intr_cb (struct libusb_transfer *transfer)
     }
   else if (transfer->status == LIBUSB_TRANSFER_CANCELLED)
     handle->powered_off = 1;
+  else if (transfer->status == LIBUSB_TRANSFER_OVERFLOW)
+    {
+      /* Something goes wrong.  Ignore.  */
+      DEBUGOUT ("CCID: interrupt transfer overflow\n");
+    }
   else
     {
     device_removed:
