@@ -1610,8 +1610,8 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
                             unsigned char const **shadow_info,
                             unsigned char **shadow_type)
 {
-  const unsigned char *s;
-  size_t n;
+  const unsigned char *s, *saved_s;
+  size_t n, saved_n;
   int depth = 0;
 
   s = shadowkey;
@@ -1660,6 +1660,8 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
+  saved_s = s;
+  saved_n = n;
   if (smatch (&s, n, "t1-v1") || smatch(&s, n, "tpm2-v1"))
     {
       if (*s != '(')
@@ -1669,6 +1671,8 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
     }
   else
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+  s = saved_s;
+  n = saved_n;
 
   if (shadow_type)
     {
