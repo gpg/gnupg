@@ -213,7 +213,7 @@ print_as_ascii (const unsigned char *buf, unsigned int buflen,unsigned int fill)
 
 
 static void
-print_t1_block (const unsigned char *msg, size_t msglen)
+print_t1_block (const unsigned char *msg, size_t msglen, int to_rdr)
 {
   unsigned int count, len;
   unsigned char buf[16];
@@ -232,7 +232,7 @@ print_t1_block (const unsigned char *msg, size_t msglen)
       msg += 3;
       msglen -= 3;
 
-      printf ("  APDU .:");
+      printf ("  APDU-%c:", to_rdr? 's':'r');
       count = 0;
       while (msglen > 1 && len)
         {
@@ -332,7 +332,7 @@ print_p2r_xfrblock (const unsigned char *msg, size_t msglen)
     return;
   msg += 10;
   msglen -= 10;
-  print_t1_block (msg, msglen);
+  print_t1_block (msg, msglen, 1);
 }
 
 
@@ -545,7 +545,7 @@ print_r2p_datablock (const unsigned char *msg, size_t msglen)
     return;
   msg += 10;
   msglen -= 10;
-  print_t1_block (msg, msglen);
+  print_t1_block (msg, msglen, 0);
 }
 
 
