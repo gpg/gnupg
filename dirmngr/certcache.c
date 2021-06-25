@@ -724,11 +724,12 @@ cert_cache_init (strlist_t hkp_cacerts)
   /* Put the special pool certificate into our store.  This is
    * currently only used with ntbtls.  For GnuTLS http_session_new
    * unfortunately loads that certificate directly from the file.  */
-  fname = make_filename_try (gnupg_datadir (),
-                             "sks-keyservers.netCA.pem", NULL);
-  if (fname)
-    load_certs_from_file (fname, CERTTRUST_CLASS_HKPSPOOL, 1);
-  xfree (fname);
+  /* Disabled for 2.3.2 because the service had to be shutdown.  */
+  /* fname = make_filename_try (gnupg_datadir (), */
+  /*                            "sks-keyservers.netCA.pem", NULL); */
+  /* if (fname) */
+  /*   load_certs_from_file (fname, CERTTRUST_CLASS_HKPSPOOL, 1); */
+  /* xfree (fname); */
 
   for (sl = hkp_cacerts; sl; sl = sl->next)
     load_certs_from_file (sl->d, CERTTRUST_CLASS_HKP, 0);

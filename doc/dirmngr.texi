@@ -321,9 +321,8 @@ provided.  These are the same as the @option{--keyserver-options} of
 @command{gpg}, but apply only to this particular keyserver.
 
 Most keyservers synchronize with each other, so there is generally no
-need to send keys to more than one server. The keyserver
-@code{hkp://keys.gnupg.net} uses round robin DNS to give a different
-keyserver each time you use it.
+need to send keys to more than one server. Somes keyservers use round
+robin DNS to give a different keyserver each time you use it.
 
 If exactly two keyservers are configured and only one is a Tor hidden
 service (.onion), Dirmngr selects the keyserver to use depending on
@@ -331,7 +330,7 @@ whether Tor is locally running or not.  The check for a running Tor is
 done for each new connection.
 
 If no keyserver is explicitly configured, dirmngr will use the
-built-in default of @code{hkps://hkps.pool.sks-keyservers.net}.
+built-in default of @code{https://keyserver.ubuntu.com}.
 
 Windows users with a keyserver running on their Active Directory
 may use the short form @code{ldap:///} for @var{name} to access this directory.
@@ -596,10 +595,8 @@ the file is in PEM format a suffix of @code{.pem} is expected for
 @var{file}.  This option may be given multiple times to add more
 root certificates.  Tilde expansion is supported.
 
-If no @code{hkp-cacert} directive is present, dirmngr will make a
-reasonable choice: if the keyserver in question is the special pool
-@code{hkps.pool.sks-keyservers.net}, it will use the bundled root
-certificate for that pool.  Otherwise, it will use the system CAs.
+If no @code{hkp-cacert} directive is present, dirmngr will use the
+system CAs.
 
 @end table
 

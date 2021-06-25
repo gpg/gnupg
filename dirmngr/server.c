@@ -2138,22 +2138,22 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
    */
   if (!strcmp (uri, "hkps://keys.gnupg.net")
       || !strcmp (uri, "keys.gnupg.net"))
-    uri = "hkps://hkps.pool.sks-keyservers.net";
+    uri = "hkps://keyserver.ubuntu.com";
   else if (!strcmp (uri, "https://keys.gnupg.net"))
-    uri = "https://hkps.pool.sks-keyservers.net";
+    uri = "hkps://keyserver.ubuntu.com";
   else if (!strcmp (uri, "hkp://keys.gnupg.net"))
-    uri = "hkp://hkps.pool.sks-keyservers.net";
+    uri = "hkp://pgp.surf.nl";
   else if (!strcmp (uri, "http://keys.gnupg.net"))
-    uri = "http://hkps.pool.sks-keyservers.net";
+    uri = "hkp://pgp.surf.nl:80";
   else if (!strcmp (uri, "hkps://http-keys.gnupg.net")
            || !strcmp (uri, "http-keys.gnupg.net"))
-    uri = "hkps://ha.pool.sks-keyservers.net";
+    uri = "hkps://keyserver.ubuntu.com";
   else if (!strcmp (uri, "https://http-keys.gnupg.net"))
-    uri = "https://ha.pool.sks-keyservers.net";
+    uri = "hkps://keyserver.ubuntu.com";
   else if (!strcmp (uri, "hkp://http-keys.gnupg.net"))
-    uri = "hkp://ha.pool.sks-keyservers.net";
+    uri = "hkp://pgp.surf.nl";
   else if (!strcmp (uri, "http://http-keys.gnupg.net"))
-    uri = "http://ha.pool.sks-keyservers.net";
+    uri = "hkp://pgp.surf.nl:80";
 
   item = xtrymalloc (sizeof *item + strlen (uri));
   if (!item)

@@ -57,7 +57,7 @@ Directory.
 
 @mansect description
 The @command{gpg-wks-client} is used to send requests to a Web Key
-Service provider.  This is usuallay done to upload a key into a Web
+Service provider.  This is usually done to upload a key into a Web
 Key Directory.
 
 With the @option{--supported} command the caller can test whether a

@@ -761,35 +761,38 @@ http_session_new (http_session_t *r_session,
         goto leave;
       }
 
-    is_hkps_pool = (intended_hostname
-                    && !ascii_strcasecmp (intended_hostname,
-                                          get_default_keyserver (1)));
+    /* Disabled for 2.3.2 to due problems with the standard hkps pool.  */
+    /* is_hkps_pool = (intended_hostname */
+    /*                 && !ascii_strcasecmp (intended_hostname, */
+    /*                                       get_default_keyserver (1))); */
+    is_hkps_pool = 0;
 
     /* If we are looking for the hkps pool from sks-keyservers.net,
      * then forcefully use its dedicated certificate authority.  */
-    if (is_hkps_pool)
-      {
-        char *pemname = make_filename_try (gnupg_datadir (),
-                                           "sks-keyservers.netCA.pem", NULL);
-        if (!pemname)
-          {
-            err = gpg_error_from_syserror ();
-            log_error ("setting CA from file '%s' failed: %s\n",
-                       pemname, gpg_strerror (err));
-          }
-        else
-          {
-            rc = gnutls_certificate_set_x509_trust_file
-              (sess->certcred, pemname, GNUTLS_X509_FMT_PEM);
-            if (rc < 0)
-              log_info ("setting CA from file '%s' failed: %s\n",
-                        pemname, gnutls_strerror (rc));
-            xfree (pemname);
-          }
-
-        if (is_hkps_pool)
-          add_system_cas = 0;
-      }
+    /* Disabled for 2.3.2 because the service had to be shutdown.  */
+    /* if (is_hkps_pool) */
+    /*   { */
+    /*     char *pemname = make_filename_try (gnupg_datadir (), */
+    /*                                        "sks-keyservers.netCA.pem", NULL); */
+    /*     if (!pemname) */
+    /*       { */
+    /*         err = gpg_error_from_syserror (); */
+    /*         log_error ("setting CA from file '%s' failed: %s\n", */
+    /*                    pemname, gpg_strerror (err)); */
+    /*       } */
+    /*     else */
+    /*       { */
+    /*         rc = gnutls_certificate_set_x509_trust_file */
+    /*           (sess->certcred, pemname, GNUTLS_X509_FMT_PEM); */
+    /*         if (rc < 0) */
+    /*           log_info ("setting CA from file '%s' failed: %s\n", */
+    /*                     pemname, gnutls_strerror (rc)); */
+    /*         xfree (pemname); */
+    /*       } */
+    /*         */
+    /*     if (is_hkps_pool) */
+    /*       add_system_cas = 0; */
+    /*   } */
 
     /* Add configured certificates to the session.  */
     if ((flags & HTTP_FLAG_TRUST_DEF) && !is_hkps_pool)

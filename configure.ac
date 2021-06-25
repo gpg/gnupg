@@ -1977,7 +1977,7 @@ AC_DEFINE_UNQUOTED(TPM2DAEMON_SOCK_NAME, "S.tpm2daemon",
 AC_DEFINE_UNQUOTED(DIRMNGR_SOCK_NAME, "S.dirmngr",
                    [The name of the dirmngr socket])
 AC_DEFINE_UNQUOTED(DIRMNGR_DEFAULT_KEYSERVER,
-                   "hkps://hkps.pool.sks-keyservers.net",
+                   "hkps://keyserver.ubuntu.com",
       [The default keyserver for dirmngr to use, if none is explicitly given])
 
 AC_DEFINE_UNQUOTED(GPGEXT_GPG, "gpg", [The standard binary file suffix])
