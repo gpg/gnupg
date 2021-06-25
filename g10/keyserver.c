@@ -1667,6 +1667,8 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist, int origin)
   strlist_t sl;
   estream_t datastream;
   unsigned int save_options = opt.keyserver_options.import_options;
+  int any_success = 0;
+  gpg_error_t firsterr = 0;
 
   /* Switch on fast-import, since fetch can handle more than one
      import and we don't want each set to rebuild the trustdb.
@@ -1690,12 +1692,24 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist, int origin)
 
           import_print_stats (stats_handle);
           import_release_stats_handle (stats_handle);
+          any_success = 1;
         }
       else
-        log_info (_("WARNING: unable to fetch URI %s: %s\n"),
-                  sl->d, gpg_strerror (err));
+        {
+          log_info (_("WARNING: unable to fetch URI %s: %s\n"),
+                    sl->d, gpg_strerror (err));
+          if (!firsterr)
+            firsterr = err;
+        }
       es_fclose (datastream);
     }
+
+  if (!urilist)
+    err = gpg_error (GPG_ERR_NO_NAME);
+  else if (any_success)
+    err = 0;
+  else
+    err = firsterr;
 
   opt.keyserver_options.import_options = save_options;
 
@@ -1704,7 +1718,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist, int origin)
   if (!(opt.keyserver_options.import_options&IMPORT_FAST))
     check_or_update_trustdb (ctrl);
 
-  return 0;
+  return err;
 }
 
 

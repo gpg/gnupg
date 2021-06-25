@@ -4699,12 +4699,14 @@ main (int argc, char **argv)
 	for( ; argc; argc--, argv++ )
 	    append_to_strlist2( &sl, *argv, utf8_strings );
 	rc = keyserver_fetch (ctrl, sl, opt.key_origin);
+	free_strlist (sl);
 	if(rc)
           {
             write_status_failure ("fetch-keys", rc);
             log_error ("key fetch failed: %s\n",gpg_strerror (rc));
+            if (gpg_err_code (rc) == GPG_ERR_NO_DATA)
+              g10_exit (1); /* In this case return 1 and not 2.  */
           }
-	free_strlist(sl);
 	break;
 
       case aExportSecret:
