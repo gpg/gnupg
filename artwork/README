@@ -2,9 +2,9 @@ These is a collection of graphics used in connection with GnuPG.  It
 is not part of GnuPG proper.     [wk 2004-09-11]
 
 
-gnupg-logo-new.svg  Is the new logo from the logo context.
-                    We actually use the upper right one; the
-                    other elements may still be useful.
+gnupg-logo-new.svg  Is the new logo from the logo context designed by
+                    Thomas Wittek.  We actually use the upper right
+                    one; the other elements may still be useful.
 
 gnupg-logo.svg      This is the cropped off version of the above logo.
 
@@ -18,7 +18,10 @@ gnupg-favicon-2.ico  (round)
 The above GnuPG logos are Copyright (c) 2006 g10 Code GmbH, and are
 released under the terms of the GNU General Public License, version 3
 or any later version, or, at your option, of the Creative Commons
-Attribution-ShareAlike 4.0 International License.
+Attribution-ShareAlike 4.0 International License.  If you wish to
+allow the use of your version of this logo only under the terms of one
+of these licenses, indicate your decision by deleting the respective
+note.
 
 We would appreciate that you make a logo image a link to
 https://gnupg.org/ if you use it on a web page.
