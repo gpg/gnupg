@@ -1,5 +1,30 @@
-Noteworthy changes in version 2.2.29 (unreleased)
+Noteworthy changes in version 2.2.29 (2021-07-04)
 -------------------------------------------------
+
+  * Fix regression in 2.2.28 for Yubikey NEO.  [#5487]
+
+  * Change the default keyserver to keyserver.ubuntu.com.  This is a
+    temporary change due to the shutdown of the SKS keyserver pools.
+    [47c4e3e00a]
+
+  * gpg: Let --fetch-key return an exit code on failure.  [#5376]
+
+  * dirmngr: Fix regression in KS_GET for mail address pattern.
+    [#5497]
+
+  * Add fallback in case the Windows console can't cope with Unicode.
+    [#5491]
+
+  * Improve initialization of SPR532 in the CCID driver and make the
+    driver more robust.  [#5297,b90c55fa66db]
+
+  * Make test suite work in presence of a broken Libgcrypt
+    installation.  [#5502]
+
+  * Make configure option --disable-ldap work again.
+
+  Release-info: https://dev.gnupg.org/T5498
+  See-also: gnupg-announce/2021q3/000461.html
 
 
 Noteworthy changes in version 2.2.28 (2021-06-10)
@@ -38,8 +63,8 @@ Noteworthy changes in version 2.2.28 (2021-06-10)
     [b203325ce1]
 
   * gpgsm: New option --ldapserver as an alias for --keyserver.  Note
-    that confuring servers in gpgsm and gpg is deprecated; please use
-    the dirmngr configuration options.
+    that configuring servers in gpgsm and gpg is deprecated; please
+    use the dirmngr configuration options.
 
   * gpgsm: Support AES-GCM decryption.  [b722fd755c77]
 
