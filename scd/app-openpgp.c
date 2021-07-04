@@ -276,8 +276,10 @@ get_manufacturer (unsigned int no)
     case 0x0007: return "OpenKMS";
     case 0x0008: return "LogoEmail";
     case 0x0009: return "Fidesmo";
-    case 0x000A: return "Dangerous Things";
+    case 0x000A: return "VivoKey";
     case 0x000B: return "Feitian Technologies";
+    case 0x000D: return "Dangerous Things";
+    case 0x000E: return "Excelsecu";
 
     case 0x002A: return "Magrathea";
     case 0x0042: return "GnuPG e.V.";
@@ -285,6 +287,7 @@ get_manufacturer (unsigned int no)
     case 0x1337: return "Warsaw Hackerspace";
     case 0x2342: return "warpzone"; /* hackerspace Muenster.  */
     case 0x4354: return "Confidential Technologies";   /* cotech.de */
+    case 0x5343: return "SSE Carte à puce";
     case 0x5443: return "TIF-IT e.V.";
     case 0x63AF: return "Trustica";
     case 0xBA53: return "c-base e.V.";
