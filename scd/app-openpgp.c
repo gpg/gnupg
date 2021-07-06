@@ -6134,6 +6134,18 @@ do_reselect (app_t app, ctrl_t ctrl)
 }
 
 
+/* Check if AID is the correct one.  */
+static gpg_error_t
+do_check_aid (app_t app, ctrl_t ctrl, const unsigned char *aid, size_t aidlen)
+{
+  if (aidlen >= sizeof openpgp_aid
+      && memcmp (aid, openpgp_aid, sizeof openpgp_aid) == 0)
+    return 0;
+
+  return gpg_error (GPG_ERR_WRONG_CARD);
+}
+
+
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
 gpg_error_t
@@ -6322,6 +6334,7 @@ app_select_openpgp (app_t app)
       app->fnc.change_pin = do_change_pin;
       app->fnc.check_pin = do_check_pin;
       app->fnc.with_keygrip = do_with_keygrip;
+      app->fnc.check_aid = do_check_aid;
    }
 
 leave:

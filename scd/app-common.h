@@ -194,6 +194,8 @@ struct app_ctx_s {
                       void *pincb_arg);
     gpg_error_t (*with_keygrip) (app_t app, ctrl_t ctrl, int action,
                                  const char *keygrip_str, int capability);
+    gpg_error_t (*check_aid) (app_t app, ctrl_t ctrl,
+                              const unsigned char *aid, size_t aidlen);
   } fnc;
 };
 

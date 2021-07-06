@@ -1435,6 +1435,46 @@ run_reselect (ctrl_t ctrl, card_t c, app_t a, app_t a_prev)
 }
 
 
+/*
+ * Check external interference before each use of the application on
+ * card.  Returns -1 when detecting some external interference.
+ * Returns 0 if not.
+ *
+ * Note: This kind of detection can't be perfect.  At most, it may be
+ * possibly useful kludge, in some limited situations.
+ */
+static int
+check_external_interference (app_t app, ctrl_t ctrl)
+{
+  /*
+   * Only when a user is using Yubikey with pcsc-shared configuration,
+   * we need this detection.  Otherwise, the card/token is under full
+   * control of scdaemon, there's no problem at all.
+   */
+  if (!opt.pcsc_shared || app->card->cardtype != CARDTYPE_YUBIKEY)
+    return 0;
+
+  if (app->fnc.check_aid)
+    {
+      unsigned char *aid;
+      size_t aidlen;
+      gpg_error_t err;
+      int slot = app_get_slot (app);
+
+      err = iso7816_get_data (slot, 0, 0x004F, &aid, &aidlen);
+      if (err)
+        return -1;
+
+      err = app->fnc.check_aid (app, ctrl, aid, aidlen);
+      xfree (aid);
+      if (err)
+        return -1;
+    }
+
+  return 0;
+}
+
+
 /* Check that the card has been initialized and whether we need to
  * switch to another application on the same card.  Switching means
  * that the new active app will be moved to the head of the list at
@@ -1490,7 +1530,8 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
             if (app->apptype == apptype)
               break;
           if (!app_prev && ctrl->current_apptype == card->app->apptype)
-            return 0;  /* Already the first app - no need to switch.  */
+            if (check_external_interference (app, ctrl) == 0)
+              return 0;  /* Already the first app - no need to switch.  */
         }
       else if (strlen (keyref) == 40)
         {
@@ -1503,7 +1544,8 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
                                            KEYGRIP_ACTION_LOOKUP, keyref, 0))
               break;
           if (!app_prev && ctrl->current_apptype == card->app->apptype)
-            return 0;   /* Already the first app - no need to switch.  */
+            if (check_external_interference (app, ctrl) == 0)
+              return 0;   /* Already the first app - no need to switch.  */
         }
     }
 

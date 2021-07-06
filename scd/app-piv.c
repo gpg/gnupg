@@ -3609,6 +3609,18 @@ do_reselect (app_t app, ctrl_t ctrl)
 }
 
 
+/* Check if AID is the correct one.  */
+static gpg_error_t
+do_check_aid (app_t app, ctrl_t ctrl, const unsigned char *aid, size_t aidlen)
+{
+  if (aidlen >= sizeof piv_aid
+      && memcmp (aid, piv_aid, sizeof piv_aid) == 0)
+    return 0;
+
+  return gpg_error (GPG_ERR_WRONG_CARD);
+}
+
+
 /* Select the PIV application on the card in SLOT.  This function must
  * be used before any other PIV application functions. */
 gpg_error_t
@@ -3713,6 +3725,7 @@ app_select_piv (app_t app)
   app->fnc.change_pin = do_change_chv;
   app->fnc.check_pin = do_check_chv;
   app->fnc.with_keygrip = do_with_keygrip;
+  app->fnc.check_aid = do_check_aid;
 
 
 leave:
