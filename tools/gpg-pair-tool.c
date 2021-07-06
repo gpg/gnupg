@@ -35,7 +35,7 @@
  *       |<--------------------|
  *       |                     |
  *
- * The initiator creates a keypar (PKi,SKi) and sends this COMMIT
+ * The initiator creates a keypair (PKi,SKi) and sends this COMMIT
  * message to the responder:
  *
  *   7 byte Magic, value: "GPG-pa1"
@@ -76,7 +76,7 @@
  *  - SYMx-key using the label "GPG-pa1-SYMx-key"
  *
  * For details on the KDF see the implementation of the function kdf.
- * The master secret is stored securily in the local state.  The
+ * The master secret is stored securely in the local state.  The
  * DHPART2 message is then created and send to the Responder:
  *
  *   7 byte Magic, value: "GPG-pa1"
@@ -106,8 +106,8 @@
  *  32 byte MAC(HMACr-key, Hash(DHPART2) || CONFIRM[0..15] || SYMx-key)
  *
  * The Initiator receives this CONFIRM message, gets the master shared
- * secrey from its local state and derives the keys.  It checks the
- * the MAC in the received CONFIRM message and ask the user to enter
+ * secret from its local state and derives the keys.  It checks the
+ * MAC in the received CONFIRM message and ask the user to enter
  * the SAS as displayed by the responder.  Iff the SAS matches the
  * master key is flagged as confirmed and the Initiator may now use a
  * derived key to send encrypted data to the Responder.
@@ -438,7 +438,7 @@ main (int argc, char **argv)
         log_error ("invalid formatted SAS\n");
     }
 
-  /* Stop if any error, inclduing ARGPARSE_PRINT_WARNING, occurred.  */
+  /* Stop if any error, including ARGPARSE_PRINT_WARNING, occurred.  */
   if (log_get_errorcount (0))
     exit (2);
 
@@ -767,7 +767,7 @@ write_state (nvc_t state, int create_flag)
 
 /* Read the state into a newly allocated state object and store that
  * at R_STATE. If no state is available GPG_ERR_NOT_FOUND is returned
- * and as with all errors NULL is tored at R_STATE.  SESSIONID is an
+ * and as with all errors NULL is stored at R_STATE.  SESSIONID is an
  * input with the 8 session id.  */
 static gpg_error_t
 read_state (nvc_t *r_state)
@@ -1822,7 +1822,7 @@ expect_state (int msgtype, const char *statestr, const char *expected)
   return 0;
 }
 
-/* Respond to a pairing intiation.  This is used by the peer and later
+/* Respond to a pairing initiation.  This is used by the peer and later
  * by the original responder.  Depending on the state the output needs
  * to be conveyed to the peer.  */
 static gpg_error_t
