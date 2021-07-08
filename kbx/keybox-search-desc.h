@@ -83,6 +83,7 @@ struct keydb_search_desc
     unsigned char grip[KEYGRIP_LEN];
     unsigned char ubid[UBID_LEN];
   } u;
+  byte name_used;/* The union uses NAME.  */
   byte snhex;   /* SN above is a hexstring and not binary.  */
   byte fprlen;  /* Only used with KEYDB_SEARCH_MODE_FPR.  */
   int exact;    /* Use exactly this key ('!' suffix in gpg).  */

@@ -46,6 +46,13 @@
                         /**/: gpg_error (e))
 
 
+/* Helper to provide packing memory for search descriptions.  */
+struct search_backing_store_s
+{
+  unsigned char *sn;
+  char *name;
+};
+
 
 /* Control structure per connection. */
 struct server_local_s
@@ -84,10 +91,13 @@ struct server_local_s
    * cmd_search.  If more than one pattern is required, cmd_search
    * also allocates and sets multi_search_desc and
    * multi_search_desc_len.  If a search description has ever been
-   * allocated the allocated size is stored at
-   * multi_search_desc_size.  */
+   * allocated the allocated size is stored at multi_search_desc_size.
+   * multi_search_store is allocated at the same size as
+   * multi_search_desc and used to provde backing store for the SN and
+   * NAME elements of KEYBOX_SEARCH_DESC.  */
   KEYBOX_SEARCH_DESC search_desc;
   KEYBOX_SEARCH_DESC *multi_search_desc;
+  struct search_backing_store_s *multi_search_store;
   unsigned int multi_search_desc_size;
   unsigned int multi_search_desc_len;
 
@@ -345,6 +355,9 @@ cmd_search (assuan_context_t ctx, char *line)
     {
       /* More pattern are expected - store the current one and return
        * success.  */
+      KEYBOX_SEARCH_DESC *desc;
+      struct search_backing_store_s *store;
+
       if (!ctrl->server_local->multi_search_desc_size)
         {
           n = 10;
@@ -355,13 +368,21 @@ cmd_search (assuan_context_t ctx, char *line)
               err = gpg_error_from_syserror ();
               goto leave;
             }
+          ctrl->server_local->multi_search_store
+            = xtrycalloc (n, sizeof *ctrl->server_local->multi_search_store);
+          if (!ctrl->server_local->multi_search_store)
+            {
+              err = gpg_error_from_syserror ();
+              xfree (ctrl->server_local->multi_search_desc);
+              ctrl->server_local->multi_search_desc = NULL;
+              goto leave;
+            }
           ctrl->server_local->multi_search_desc_size = n;
         }
 
       if (ctrl->server_local->multi_search_desc_len
           == ctrl->server_local->multi_search_desc_size)
         {
-          KEYBOX_SEARCH_DESC *desc;
           n = ctrl->server_local->multi_search_desc_size + 10;
           desc = xtrycalloc (n, sizeof *desc);
           if (!desc)
@@ -369,20 +390,62 @@ cmd_search (assuan_context_t ctx, char *line)
               err = gpg_error_from_syserror ();
               goto leave;
             }
+          store = xtrycalloc (n, sizeof *store);
+          if (!desc)
+            {
+              err = gpg_error_from_syserror ();
+              xfree (desc);
+              goto leave;
+            }
           for (k=0; k < ctrl->server_local->multi_search_desc_size; k++)
-            desc[k] = ctrl->server_local->multi_search_desc[k];
+            {
+              desc[k] = ctrl->server_local->multi_search_desc[k];
+              store[k] = ctrl->server_local->multi_search_store[k];
+            }
           xfree (ctrl->server_local->multi_search_desc);
+          xfree (ctrl->server_local->multi_search_store);
           ctrl->server_local->multi_search_desc = desc;
+          ctrl->server_local->multi_search_store = store;
           ctrl->server_local->multi_search_desc_size = n;
         }
-      /* Actually store.  */
-      ctrl->server_local->multi_search_desc
-        [ctrl->server_local->multi_search_desc_len++]
-        = ctrl->server_local->search_desc;
+      /* Actually store. We need to fix up the const pointers by
+       * copies from our backing store.  */
+      desc = &(ctrl->server_local->multi_search_desc
+               [ctrl->server_local->multi_search_desc_len]);
+      store = &(ctrl->server_local->multi_search_store
+                [ctrl->server_local->multi_search_desc_len]);
+      *desc = ctrl->server_local->search_desc;
+      if (ctrl->server_local->search_desc.sn)
+        {
+          xfree (store->sn);
+          store->sn = xtrymalloc (ctrl->server_local->search_desc.snlen);
+          if (!store->sn)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (store->sn, ctrl->server_local->search_desc.sn,
+                  ctrl->server_local->search_desc.snlen);
+          desc->sn = store->sn;
+        }
+      if (ctrl->server_local->search_desc.name_used)
+        {
+          xfree (store->name);
+          store->name = xtrystrdup (ctrl->server_local->search_desc.u.name);
+          if (!store->name)
+            {
+              err = gpg_error_from_syserror ();
+              xfree (store->sn);
+              store->sn = NULL;
+              goto leave;
+            }
+          desc->u.name = store->name;
+        }
+      ctrl->server_local->multi_search_desc_len++;
 
       if (opt_more)
         {
-          /* We need to be called aagain with more pattern.  */
+          /* We need to be called again with more pattern.  */
           ctrl->server_local->search_expecting_more = 1;
           goto leave;
         }
@@ -456,7 +519,7 @@ cmd_next (assuan_context_t ctx, char *line)
     ;
   else if (ctrl->server_local->multi_search_desc_len)
     {
-      /* The next condition should never be tru but we better handle
+      /* The next condition should never be true but we better handle
        * the first/next transition anyway.  */
       if (ctrl->server_local->multi_search_desc[0].mode
           == KEYDB_SEARCH_MODE_FIRST)
@@ -993,6 +1056,17 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
         }
 
       xfree (ctrl->server_local->multi_search_desc);
+      if (ctrl->server_local->multi_search_store)
+        {
+          size_t nn;
+
+          for (nn=0; nn < ctrl->server_local->multi_search_desc_size; nn++)
+            {
+              xfree (ctrl->server_local->multi_search_store[nn].sn);
+              xfree (ctrl->server_local->multi_search_store[nn].name);
+            }
+          xfree (ctrl->server_local->multi_search_store);
+        }
       xfree (ctrl->server_local);
       ctrl->server_local = NULL;
     }

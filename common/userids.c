@@ -115,6 +115,7 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
       mode = KEYDB_SEARCH_MODE_MAILEND;
       s++;
       desc->u.name = s;
+      desc->name_used = 1;
       break;
 
     case '<': /* An email address.  */
@@ -126,24 +127,28 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
       if (!openpgp_hack)
         s++;
       desc->u.name = s;
+      desc->name_used = 1;
       break;
 
     case '@':  /* Part of an email address.  */
       mode = KEYDB_SEARCH_MODE_MAILSUB;
       s++;
       desc->u.name = s;
+      desc->name_used = 1;
       break;
 
     case '=':  /* Exact compare.  */
       mode = KEYDB_SEARCH_MODE_EXACT;
       s++;
       desc->u.name = s;
+      desc->name_used = 1;
       break;
 
     case '*':  /* Case insensitive substring search.  */
       mode = KEYDB_SEARCH_MODE_SUBSTR;
       s++;
       desc->u.name = s;
+      desc->name_used = 1;
       break;
 
     case '+':  /* Compare individual words.  Note that this has not
@@ -151,6 +156,7 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
       mode = KEYDB_SEARCH_MODE_WORDS;
       s++;
       desc->u.name = s;
+      desc->name_used = 1;
       break;
 
     case '/': /* Subject's DN.  */
@@ -161,6 +167,7 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
           goto out;
         }
       desc->u.name = s;
+      desc->name_used = 1;
       mode = KEYDB_SEARCH_MODE_SUBJECT;
       break;
 
@@ -178,6 +185,7 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                 goto out;
               }
             desc->u.name = s;
+            desc->name_used = 1;
             mode = KEYDB_SEARCH_MODE_ISSUER;
           }
         else
@@ -205,6 +213,7 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                     goto out;
                   }
                 desc->u.name = s;
+                desc->name_used = 1;
                 mode = KEYDB_SEARCH_MODE_ISSUER_SN;
               }
           }
@@ -472,6 +481,7 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
           if (!mode) /* Default to substring search.  */
             {
               desc->u.name = s;
+              desc->name_used = 1;
               mode = KEYDB_SEARCH_MODE_SUBSTR;
             }
         }
