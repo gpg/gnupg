@@ -3613,6 +3613,9 @@ do_reselect (app_t app, ctrl_t ctrl)
 static gpg_error_t
 do_check_aid (app_t app, ctrl_t ctrl, const unsigned char *aid, size_t aidlen)
 {
+  (void)app;
+  (void)ctrl;
+
   if (aidlen >= sizeof piv_aid
       && memcmp (aid, piv_aid, sizeof piv_aid) == 0)
     return 0;
