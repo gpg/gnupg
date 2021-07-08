@@ -188,6 +188,73 @@ kbxd_commit (void)
 
 
 
+static void
+dump_search_desc (struct keydb_search_desc *desc)
+{
+  switch (desc->mode)
+    {
+    case KEYDB_SEARCH_MODE_EXACT:
+      log_printf ("EXACT: '%s'\n", desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_SUBSTR:
+      log_printf ("SUBSTR: '%s'\n", desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_MAIL:
+      log_printf ("MAIL: '%s'\n", desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_MAILSUB:
+      log_printf ("MAILSUB: '%s'\n", desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_MAILEND:
+      log_printf ("MAILEND: '%s'\n", desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_WORDS:
+      log_printf ("WORDS: '%s'\n", desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_SHORT_KID:
+      log_printf ("SHORT_KID: 0x%08lX\n", (ulong)desc->u.kid[1]);
+      break;
+    case KEYDB_SEARCH_MODE_LONG_KID:
+      log_printf ("LONG_KID: 0x%08lX%08lX\n",
+                  (ulong)desc->u.kid[0], (ulong)desc->u.kid[1]);
+      break;
+    case KEYDB_SEARCH_MODE_FPR:
+      log_printf ("FPR%02d: ", desc->fprlen);
+      log_printhex (desc->u.fpr, desc->fprlen, "");
+      break;
+    case KEYDB_SEARCH_MODE_ISSUER:
+      log_printf ("ISSUER: '%s'\n", desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_ISSUER_SN:
+      log_printf ("ISSUER_SN: '#%.*s/%s'\n",
+                  (int)desc->snlen, desc->sn, desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_SN:
+      log_printf ("SN: '%.*s'\n", (int)desc->snlen, desc->sn);
+      break;
+    case KEYDB_SEARCH_MODE_SUBJECT:
+      log_printf ("SUBJECT: '%s'\n", desc->u.name);
+      break;
+    case KEYDB_SEARCH_MODE_KEYGRIP:
+      log_printf ("KEYGRIP: ");
+      log_printhex (desc[0].u.grip, KEYGRIP_LEN, "");
+      break;
+    case KEYDB_SEARCH_MODE_UBID:
+      log_printf ("UBID: ");
+      log_printhex (desc[0].u.ubid, UBID_LEN, "");
+      break;
+    case KEYDB_SEARCH_MODE_FIRST:
+      log_printf ("FIRST\n");
+      break;
+    case KEYDB_SEARCH_MODE_NEXT:
+      log_printf ("NEXT\n");
+      break;
+    default:
+      log_printf ("Bad search mode (%d)\n", desc->mode);
+    }
+}
+
+
 /* Search for the keys described by (DESC,NDESC) and return them to
  * the caller.  If RESET is set, the search state is first reset.
  * Only a reset guarantees that changed search description in DESC are
@@ -208,9 +275,8 @@ kbxd_search (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, unsigned int ndesc,
       log_debug ("%s: %u search descriptions:\n", __func__, ndesc);
       for (i = 0; i < ndesc; i ++)
         {
-          /* char *t = keydb_search_desc_dump (&desc[i]); */
-          /* log_debug ("%s   %d: %s\n", __func__, i, t); */
-          /* xfree (t); */
+          log_debug ("%s   %d: ", __func__, i);
+          dump_search_desc (&desc[i]);
         }
     }
 
