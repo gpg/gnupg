@@ -96,6 +96,7 @@ enum cmd_and_opt_values
   oPinentryTouchFile,
   oPinentryInvisibleChar,
   oPinentryTimeout,
+  oPinentryFormattedPassphrase,
   oDisplay,
   oTTYname,
   oTTYtype,
@@ -284,6 +285,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oPinentryInvisibleChar, "pinentry-invisible-char", "@"),
   ARGPARSE_s_u (oPinentryTimeout, "pinentry-timeout",
                 N_("|N|set the Pinentry timeout to N seconds")),
+  ARGPARSE_s_u (oPinentryFormattedPassphrase, "pinentry-formatted-passphrase",
+                "@"),
   ARGPARSE_s_n (oAllowEmacsPinentry,  "allow-emacs-pinentry",
                 N_("allow passphrase to be prompted through Emacs")),
 
@@ -849,6 +852,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       xfree (opt.pinentry_invisible_char);
       opt.pinentry_invisible_char = NULL;
       opt.pinentry_timeout = 0;
+      opt.pinentry_formatted_passphrase = 0;
       memset (opt.daemon_program, 0, sizeof opt.daemon_program);
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
       opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL_SSH;
@@ -909,6 +913,9 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.pinentry_invisible_char = xtrystrdup (pargs->r.ret_str); break;
       break;
     case oPinentryTimeout: opt.pinentry_timeout = pargs->r.ret_ulong; break;
+    case oPinentryFormattedPassphrase:
+      opt.pinentry_formatted_passphrase = pargs->r.ret_ulong;
+      break;
 
     case oTpm2daemonProgram:
       opt.daemon_program[DAEMON_TPM2D] = pargs->r.ret_str;

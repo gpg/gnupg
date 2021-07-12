@@ -983,6 +983,67 @@ setup_genpin (ctrl_t ctrl)
 }
 
 
+/* Helper to setup pinentry for formatted passphrase. */
+static gpg_error_t
+setup_formatted_passphrase (ctrl_t ctrl)
+{
+  static const struct { const char *key, *help_id, *value; } tbl[] = {
+    /* TRANSLATORS: This is the text of an option (usually represented
+       by a checkbox) as used in pinentry.  */
+    { "label", "pinentry.formatted_passphrase.label",
+      N_("Format the passphrase") },
+    /* TRANSLATORS: This is the tooltip shown by pinentry when
+        hovering over the option for formatted passphrase.
+        The length is limited to about 900 characters.  */
+    { "tt",    "pinentry.formatted_passphrase.tooltip",
+      N_("Enable this option to make the passphrase easier readable by "
+         "grouping its characters.") },
+    /* TRANSLATORS: This is a text shown by pinentry if the option
+        for formatted passphrase is enabled.  The length is
+        limited to about 900 characters.  */
+    { "hint",  "pinentry.formatted_passphrase.hint",
+      N_("Note: The blanks are not part of the passphrase.") },
+    { NULL, NULL }
+  };
+
+  gpg_error_t rc;
+  char line[ASSUAN_LINELENGTH];
+  int idx;
+  char *tmpstr;
+  const char *s;
+
+  (void)ctrl;
+
+  if (opt.pinentry_formatted_passphrase)
+    {
+      snprintf (line, DIM(line), "OPTION formatted-passphrase=%d",
+                opt.pinentry_formatted_passphrase);
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
+                            NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+        return rc;
+
+      for (idx=0; tbl[idx].key; idx++)
+        {
+          tmpstr = gnupg_get_help_string (tbl[idx].help_id, 0);
+          if (tmpstr)
+            s = tmpstr;
+          else
+            s = L_(tbl[idx].value);
+          snprintf (line, DIM(line), "OPTION formatted-passphrase-%s=%s",
+                    tbl[idx].key, s);
+          xfree (tmpstr);
+          rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
+                                NULL);
+          if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+            return rc;
+        }
+    }
+
+  return 0;
+}
+
+
 /* Helper for agent_askpin and agent_get_passphrase.  */
 static gpg_error_t
 setup_qualitybar (ctrl_t ctrl)
@@ -1555,6 +1616,10 @@ agent_get_passphrase (ctrl_t ctrl,
       if (rc)
         return unlock_pinentry (ctrl, rc);
     }
+
+  rc = setup_formatted_passphrase (ctrl);
+  if (rc)
+    return unlock_pinentry (ctrl, rc);
 
   if (!pininfo)
     {
