@@ -70,7 +70,7 @@ msgstr "Vorschlag"
 #. will be used.  The strcmp thingy is there to detect a
 #. non-translated string.
 msgid "pinentry.genpin.tooltip"
-msgstr "Einen Vorschlag für eine gute Passpharse erzeugen."
+msgstr "Einen Vorschlag für eine gute Passphrase erzeugen."
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
