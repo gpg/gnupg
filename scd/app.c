@@ -39,9 +39,40 @@ static gpg_error_t
 send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl);
 static gpg_error_t run_reselect (ctrl_t ctrl, card_t c, app_t a, app_t a_prev);
 
-/* Lock to protect the list of cards and its associated
- * applications.  */
-static npth_mutex_t card_list_lock;
+/*
+ * Multiple readers, single writer (MRSW) lock.
+ */
+struct mrsw_lock
+{
+  npth_mutex_t lock;
+  npth_cond_t cond;
+  int num_readers_active;
+  int num_writers_waiting;
+  int writer_active;
+};
+
+#define CARD_LIST_LOCK_WAIT     0
+#define CARD_LIST_LOCK_UPDATE   1
+
+/* MRSW lock to protect the list of cards.
+ *
+ * This structure is used for serializing access to the list of cards
+ * (by CARD_TOP).  While allowing multiple accesses by different
+ * connections as "r" access (for a CARD in the list), "w" access to
+ * update the list is only possible with a single thread.
+ *
+ * Each use of a CARD (in the list) does "r" access.
+ *
+ * For "w" access, the app_wait function, which waits on any change of
+ * the list, it uses CARD_LIST_LOCK_WAIT.  For other cases of "w"
+ * access (opening new card or removal of card), CARD_LIST_LOCK_UPDATE
+ * is used.
+ *
+ * Note that for serializing access to each CARD (and its associated
+ * applications) itself, it is done separately by another mutex with
+ * lock_card/unlock_card.
+ */
+static struct mrsw_lock card_list_lock;
 
 /* Notification to threads which keep watching the status change.  */
 static npth_cond_t notify_cond;
@@ -293,6 +324,56 @@ unlock_card (card_t card)
 }
 
 
+static void
+lock_r_card_list (void)
+{
+  npth_mutex_lock (&card_list_lock.lock);
+  while (card_list_lock.num_writers_waiting
+         || card_list_lock.writer_active)
+    npth_cond_wait (&card_list_lock.cond, &card_list_lock.lock);
+  card_list_lock.num_readers_active++;
+  npth_mutex_unlock (&card_list_lock.lock);
+}
+
+static void
+unlock_r_card_list (void)
+{
+  npth_mutex_lock (&card_list_lock.lock);
+  if (--card_list_lock.num_readers_active == 0)
+    npth_cond_broadcast (&card_list_lock.cond);
+  npth_mutex_unlock (&card_list_lock.lock);
+}
+
+
+static void
+lock_w_card_list (int for_update)
+{
+  npth_mutex_lock (&card_list_lock.lock);
+  card_list_lock.num_writers_waiting++;
+  while (card_list_lock.num_readers_active
+         || card_list_lock.writer_active)
+    npth_cond_wait (&card_list_lock.cond, &card_list_lock.lock);
+  card_list_lock.num_writers_waiting--;
+  if (for_update)
+    {
+      card_list_lock.writer_active++;
+      npth_mutex_unlock (&card_list_lock.lock);
+    }
+}
+
+static void
+unlock_w_card_list (int for_update)
+{
+  if (for_update)
+    {
+      npth_mutex_lock (&card_list_lock.lock);
+      card_list_lock.writer_active--;
+    }
+  npth_cond_broadcast (&card_list_lock.cond);
+  npth_mutex_unlock (&card_list_lock.lock);
+}
+
+
 /* This function may be called to print information pertaining to the
  * current state of this module to the log. */
 void
@@ -301,7 +382,7 @@ app_dump_state (void)
   card_t c;
   app_t a;
 
-  npth_mutex_lock (&card_list_lock);
+  lock_r_card_list ();
   for (c = card_top; c; c = c->next)
     {
       log_info ("app_dump_state: card=%p slot=%d type=%s refcount=%u\n",
@@ -311,7 +392,7 @@ app_dump_state (void)
         log_info ("app_dump_state:   app=%p type='%s'\n",
                   a, strapptype (a->apptype));
     }
-  npth_mutex_unlock (&card_list_lock);
+  unlock_r_card_list ();
 }
 
 
@@ -324,7 +405,7 @@ app_send_devinfo (ctrl_t ctrl)
 
   send_status_direct (ctrl, "DEVINFO_START", "");
 
-  npth_mutex_lock (&card_list_lock);
+  lock_r_card_list ();
   no_device = (card_top == NULL);
   for (c = card_top; c; c = c->next)
     {
@@ -339,7 +420,7 @@ app_send_devinfo (ctrl_t ctrl)
       for (a = c->app; a; a = a->next)
         send_status_direct (ctrl, card_info, strapptype (a->apptype));
     }
-  npth_mutex_unlock (&card_list_lock);
+  unlock_r_card_list ();
 
   send_status_direct (ctrl, "DEVINFO_END", "");
 
@@ -708,7 +789,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
 
   *r_card = NULL;
 
-  npth_mutex_lock (&card_list_lock);
+  lock_w_card_list (CARD_LIST_LOCK_UPDATE);
 
   if (scan || !card_top)
     {
@@ -719,7 +800,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
       err = apdu_dev_list_start (opt.reader_port, &l);
       if (err)
         {
-          npth_mutex_unlock (&card_list_lock);
+          unlock_w_card_list (CARD_LIST_LOCK_UPDATE);
           return err;
         }
 
@@ -807,7 +888,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
   else
     err = gpg_error (GPG_ERR_ENODEV);
 
-  npth_mutex_unlock (&card_list_lock);
+  unlock_w_card_list (CARD_LIST_LOCK_UPDATE);
 
   return err;
 }
@@ -823,7 +904,7 @@ app_switch_current_card (ctrl_t ctrl,
   gpg_error_t err;
   card_t card, cardtmp;
 
-  npth_mutex_lock (&card_list_lock);
+  lock_r_card_list ();
 
   if (!ctrl->card_ctx)
     {
@@ -858,7 +939,7 @@ app_switch_current_card (ctrl_t ctrl,
   err = send_serialno_and_app_status (ctrl->card_ctx, 0, ctrl);
 
  leave:
-  npth_mutex_unlock (&card_list_lock);
+  unlock_r_card_list ();
   return err;
 }
 
@@ -2290,7 +2371,7 @@ scd_update_reader_status_file (void)
   int periodical_check_needed = 0;
   int reported = 0;
 
-  npth_mutex_lock (&card_list_lock);
+  lock_w_card_list (CARD_LIST_LOCK_UPDATE);
   for (card = card_top; card; card = card_next)
     {
       int sw;
@@ -2356,7 +2437,7 @@ scd_update_reader_status_file (void)
   if (reported)
     npth_cond_broadcast (&notify_cond);
 
-  npth_mutex_unlock (&card_list_lock);
+  unlock_w_card_list (CARD_LIST_LOCK_UPDATE);
 
   return periodical_check_needed;
 }
@@ -2370,10 +2451,22 @@ initialize_module_command (void)
 {
   gpg_error_t err;
 
-  if (npth_mutex_init (&card_list_lock, NULL))
+  card_list_lock.num_readers_active = 0;
+  card_list_lock.num_writers_waiting = 0;
+  card_list_lock.writer_active = 0;
+
+  if (npth_mutex_init (&card_list_lock.lock, NULL))
     {
       err = gpg_error_from_syserror ();
       log_error ("app: error initializing mutex: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  err = npth_cond_init (&card_list_lock.cond, NULL);
+  if (err)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("npth_cond_init failed: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -2472,7 +2565,7 @@ send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
   card_t *cardlist = NULL;
   int n, ncardlist;
 
-  npth_mutex_lock (&card_list_lock);
+  lock_r_card_list ();
   for (n=0, c = card_top; c; c = c->next)
     n++;
   if (!n)
@@ -2502,7 +2595,7 @@ send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
   err = 0;
 
  leave:
-  npth_mutex_unlock (&card_list_lock);
+  unlock_r_card_list ();
   xfree (cardlist);
   return err;
 }
@@ -2604,7 +2697,7 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
   card_t c;
   app_t a, a_prev;
 
-  npth_mutex_lock (&card_list_lock);
+  lock_r_card_list ();
 
   for (c = card_top; c; c = c->next)
     {
@@ -2661,14 +2754,14 @@ app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
       unlock_card (c);
       locked = 0;
     }
-  npth_mutex_unlock (&card_list_lock);
+  unlock_r_card_list ();
   return c;
 }
 
 void
 app_wait (void)
 {
-  npth_mutex_lock (&card_list_lock);
-  npth_cond_wait (&notify_cond, &card_list_lock);
-  npth_mutex_unlock (&card_list_lock);
+  lock_w_card_list (CARD_LIST_LOCK_WAIT);
+  npth_cond_wait (&notify_cond, &card_list_lock.lock);
+  unlock_w_card_list (CARD_LIST_LOCK_WAIT);
 }
