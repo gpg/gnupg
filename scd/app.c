@@ -503,18 +503,16 @@ check_application_conflict (card_t card, const char *name,
 
 
 gpg_error_t
-card_reset (card_t card, ctrl_t ctrl)
+card_reset (card_t card)
 {
   gpg_error_t err = 0;
   int sw;
 
-  lock_card (card, ctrl);
   sw = apdu_reset (card->slot);
   if (sw)
     err = gpg_error (GPG_ERR_CARD_RESET);
 
   card->reset_requested = 1;
-  unlock_card (card);
   scd_kick_the_loop ();
   gnupg_sleep (1);
 
@@ -862,7 +860,6 @@ select_application (ctrl_t ctrl, const char *name,
 
       if (!err)
         {
-          /* Note: We do not use card_ref as we are already locked.  */
           card->ref_count++;
           ctrl->card_ctx = card;
           if (card_prev)
@@ -895,7 +892,8 @@ app_switch_current_card (ctrl_t ctrl,
 
   lock_r_card_list ();
 
-  if (!ctrl->card_ctx)
+  cardtmp = ctrl->card_ctx;
+  if (!cardtmp)
     {
       err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
       goto leave;
@@ -915,10 +913,10 @@ app_switch_current_card (ctrl_t ctrl,
           goto leave;
         }
 
-      /* Note: We do not use card_ref here because we only swap the
-       * context of the current session and there is no chance of a
-       * context switch.  This also works if the card stays the same. */
-      cardtmp = ctrl->card_ctx;
+      /* Note: We do not lock CARD and CARDTMP here because we only
+       * swap the context of the current session and there is no
+       * chance of a context switch.  This also works if the card
+       * stays the same.  */
       ctrl->card_ctx = card;
       card->ref_count++;
       card_unref_locked (cardtmp);
@@ -1077,11 +1075,10 @@ select_all_additional_applications_internal (ctrl_t ctrl, card_t card)
  * active application.  On error no new application is allocated.
  * Selecting an already selected application has no effect. */
 gpg_error_t
-select_additional_application (ctrl_t ctrl, const char *name)
+select_additional_application (card_t card, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err = 0;
   apptype_t req_apptype;
-  card_t card;
 
   if (!name)
     req_apptype = 0;
@@ -1091,14 +1088,6 @@ select_additional_application (ctrl_t ctrl, const char *name)
       if (!req_apptype)
         return gpg_error (GPG_ERR_NOT_FOUND);
     }
-
-  card = ctrl->card_ctx;
-  if (!card)
-    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if (req_apptype)
     {
@@ -1115,7 +1104,6 @@ select_additional_application (ctrl_t ctrl, const char *name)
       err = select_all_additional_applications_internal (ctrl, card);
     }
 
-  unlock_card (card);
   return err;
 }
 
@@ -1183,35 +1171,104 @@ deallocate_card (card_t card)
 }
 
 
-/* Increment the reference counter of CARD.  Returns CARD.  */
-card_t
-card_ref (card_t card)
+static card_t
+do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
+                 int capability)
 {
-  lock_card (card, NULL);
-  ++card->ref_count;
-  unlock_card (card);
-  return card;
+  int locked = 0;
+  card_t c;
+  app_t a, a_prev;
+
+  for (c = card_top; c; c = c->next)
+    {
+      if (lock_card (c, ctrl))
+        {
+          c = NULL;
+          goto leave_the_loop;
+        }
+      locked = 1;
+      a_prev = NULL;
+      for (a = c->app; a; a = a->next)
+        {
+          if (!a->fnc.with_keygrip || a->need_reset)
+            continue;
+
+          /* Note that we need to do a re-select even for the current
+           * app because the last selected application (e.g. after
+           * init) might be a different one and we do not run
+           * maybe_switch_app here.  Of course we we do this only iff
+           * we have an additional app. */
+          if (c->app->next)
+            {
+              if (run_reselect (ctrl, c, a, a_prev))
+                continue;
+            }
+          a_prev = a;
+
+          if (DBG_APP)
+            log_debug ("slot %d, app %s: calling with_keygrip(%s)\n",
+                       c->slot, xstrapptype (a),
+                       action == KEYGRIP_ACTION_SEND_DATA? "send_data":
+                       action == KEYGRIP_ACTION_WRITE_STATUS? "status":
+                       action == KEYGRIP_ACTION_LOOKUP? "lookup":"?");
+          if (!a->fnc.with_keygrip (a, ctrl, action, keygrip_str, capability))
+            goto leave_the_loop; /* ACTION_LOOKUP succeeded.  */
+        }
+
+      /* Select the first app again.  */
+      if (c->app->next)
+        run_reselect (ctrl, c, c->app, a_prev);
+
+      unlock_card (c);
+      locked = 0;
+    }
+
+ leave_the_loop:
+  /* Force switching of the app if the selected one is not the current
+   * one.  Changing the current apptype is sufficient to do this.  */
+  if (c && c->app && c->app->apptype != a->apptype)
+    ctrl->current_apptype = a->apptype;
+
+  if (locked && c)
+    {
+      unlock_card (c);
+      locked = 0;
+    }
+  return c;
 }
 
 
-/* Decrement the reference counter for CARD.  Note that we are using
- * reference counting to track the users of the card's application and
- * are deferring the actual deallocation to allow for a later reuse by
- * a new connection.  Using NULL for CARD is a no-op. */
-void
-card_unref (card_t card)
+/* Locking access to the card-list and CARD, returns CARD.  */
+card_t
+card_get (ctrl_t ctrl, const char *keygrip)
 {
-  if (!card)
-    return;
+  card_t card;
 
+  lock_r_card_list ();
+  if (keygrip)
+    card = do_with_keygrip (ctrl, KEYGRIP_ACTION_LOOKUP, keygrip, 0);
+  else
+    card = ctrl->card_ctx;
+  if (!card)
+    {
+      unlock_r_card_list ();
+      return NULL;
+    }
+
+  lock_card (card, NULL);
+  return card;
+}
+
+/* Release the lock of CARD and the card-list.  */
+void
+card_put (card_t card)
+{
   /* We don't deallocate CARD here.  Instead, we keep it.  This is
      useful so that a card does not get reset even if only one session
      is using the card - this way the PIN cache and other cached data
      are preserved.  */
-
-  lock_card (card, NULL);
-  card_unref_locked (card);
   unlock_card (card);
+  unlock_r_card_list ();
 }
 
 
@@ -1698,13 +1755,6 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
   app_t app, last_app;
   int any_reselect = 0;
 
-  if (!card)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
-
   /* Always make sure that the current app for this connection has
    * been selected and is at the top of the list.  */
   if ((err = maybe_switch_app (ctrl, card, NULL)))
@@ -1766,7 +1816,6 @@ app_write_learn_status (card_t card, ctrl_t ctrl, unsigned int flags)
         }
     }
 
-  unlock_card (card);
   return err;
 }
 
@@ -1780,12 +1829,6 @@ app_readcert (card_t card, ctrl_t ctrl, const char *certid,
               unsigned char **cert, size_t *certlen)
 {
   gpg_error_t err;
-
-  if (!card)
-    return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, certid)))
     ;
@@ -1802,7 +1845,6 @@ app_readcert (card_t card, ctrl_t ctrl, const char *certid,
         err = card->app->fnc.readcert (card->app, certid, cert, certlen);
     }
 
-  unlock_card (card);
   return err;
 }
 
@@ -1826,11 +1868,8 @@ app_readkey (card_t card, ctrl_t ctrl, const char *keyid, unsigned int flags,
   if (pklen)
     *pklen = 0;
 
-  if (!card || !keyid)
+  if (!keyid)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, keyid)))
     ;
@@ -1847,7 +1886,6 @@ app_readkey (card_t card, ctrl_t ctrl, const char *keyid, unsigned int flags,
         err = card->app->fnc.readkey (card->app, ctrl, keyid, flags, pk, pklen);
     }
 
-  unlock_card (card);
   return err;
 }
 
@@ -1858,11 +1896,8 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
 
-  if (!card || !name || !*name)
+  if (!name || !*name)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
@@ -1900,7 +1935,6 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
         err = card->app->fnc.getattr (card->app, ctrl, name);
     }
 
-  unlock_card (card);
   return err;
 }
 
@@ -1914,11 +1948,8 @@ app_setattr (card_t card, ctrl_t ctrl, const char *name,
 {
   gpg_error_t err;
 
-  if (!card || !name || !*name || !value)
+  if (!name || !*name || !value)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
@@ -1936,7 +1967,6 @@ app_setattr (card_t card, ctrl_t ctrl, const char *name,
                                       value, valuelen);
     }
 
-  unlock_card (card);
   return err;
 }
 
@@ -1953,11 +1983,8 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 {
   gpg_error_t err;
 
-  if (!card || !indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))
     ;
@@ -1977,7 +2004,6 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
                                    outdata, outdatalen);
     }
 
-  unlock_card (card);
   if (opt.verbose)
     log_info ("operation sign result: %s\n", gpg_strerror (err));
   return err;
@@ -1997,11 +2023,8 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
 {
   gpg_error_t err;
 
-  if (!card || !indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))
     ;
@@ -2021,7 +2044,6 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
                                    outdata, outdatalen);
     }
 
-  unlock_card (card);
   if (opt.verbose)
     log_info ("operation auth result: %s\n", gpg_strerror (err));
   return err;
@@ -2043,11 +2065,8 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
 
   *r_info = 0;
 
-  if (!card || !indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))
     ;
@@ -2068,7 +2087,6 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
                                        r_info);
     }
 
-  unlock_card (card);
   if (opt.verbose)
     log_info ("operation decipher result: %s\n", gpg_strerror (err));
   return err;
@@ -2085,11 +2103,8 @@ app_writecert (card_t card, ctrl_t ctrl,
 {
   gpg_error_t err;
 
-  if (!card || !certidstr || !*certidstr || !pincb)
+  if (!certidstr || !*certidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, certidstr)))
     ;
@@ -2107,7 +2122,6 @@ app_writecert (card_t card, ctrl_t ctrl,
                                         pincb, pincb_arg, data, datalen);
     }
 
-  unlock_card (card);
   if (opt.verbose)
     log_info ("operation writecert result: %s\n", gpg_strerror (err));
   return err;
@@ -2124,11 +2138,8 @@ app_writekey (card_t card, ctrl_t ctrl,
 {
   gpg_error_t err;
 
-  if (!card || !keyidstr || !*keyidstr || !pincb)
+  if (!keyidstr || !*keyidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))
     ;
@@ -2146,7 +2157,6 @@ app_writekey (card_t card, ctrl_t ctrl,
                                        pincb, pincb_arg, keydata, keydatalen);
     }
 
-  unlock_card (card);
   if (opt.verbose)
     log_info ("operation writekey result: %s\n", gpg_strerror (err));
   return err;
@@ -2162,11 +2172,8 @@ app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
 {
   gpg_error_t err;
 
-  if (!card || !keynostr || !*keynostr || !pincb)
+  if (!keynostr || !*keynostr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, keynostr)))
     ;
@@ -2184,7 +2191,6 @@ app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
                                      createtime, pincb, pincb_arg);
     }
 
-  unlock_card (card);
   if (opt.verbose)
     log_info ("operation genkey result: %s\n", gpg_strerror (err));
   return err;
@@ -2200,18 +2206,15 @@ app_get_challenge (card_t card, ctrl_t ctrl,
 {
   gpg_error_t err;
 
-  if (!card || !nbytes || !buffer)
+  (void)ctrl;
+  if (!nbytes || !buffer)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if (!card->ref_count)
     err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   else
     err = iso7816_get_challenge (card->slot, nbytes, buffer);
 
-  unlock_card (card);
   return err;
 }
 
@@ -2225,11 +2228,8 @@ app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
 {
   gpg_error_t err;
 
-  if (!card || !chvnostr || !*chvnostr || !pincb)
+  if (!chvnostr || !*chvnostr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
@@ -2247,7 +2247,6 @@ app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
                                          chvnostr, flags, pincb, pincb_arg);
     }
 
-  unlock_card (card);
   if (opt.verbose)
     log_info ("operation change_pin result: %s\n", gpg_strerror (err));
   return err;
@@ -2264,11 +2263,8 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
 {
   gpg_error_t err;
 
-  if (!card || !keyidstr || !*keyidstr || !pincb)
+  if (!keyidstr || !*keyidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
 
   if ((err = maybe_switch_app (ctrl, card, NULL)))
     ;
@@ -2286,7 +2282,6 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
                                         pincb, pincb_arg);
     }
 
-  unlock_card (card);
   if (opt.verbose)
     log_info ("operation check_pin result: %s\n", gpg_strerror (err));
   return err;
@@ -2616,12 +2611,6 @@ app_switch_active_app (card_t card, ctrl_t ctrl, const char *appname)
   gpg_error_t err;
   apptype_t apptype;
 
-  if (!card)
-    return gpg_error (GPG_ERR_INV_VALUE);
-  err = lock_card (card, ctrl);
-  if (err)
-    return err;
-
   /* Note that in case the additional applications have not yet been
    * added to the card context (which is commonly done by means of
    * "SERIALNO --all", we do that here.  */
@@ -2648,7 +2637,6 @@ app_switch_active_app (card_t card, ctrl_t ctrl, const char *appname)
   err = send_serialno_and_app_status (card, 1, ctrl);
 
  leave:
-  unlock_card (card);
   return err;
 }
 
@@ -2682,69 +2670,12 @@ card_t
 app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
                      int capability)
 {
-  int locked = 0;
-  card_t c;
-  app_t a, a_prev;
+  card_t card;
 
   lock_r_card_list ();
-
-  for (c = card_top; c; c = c->next)
-    {
-      if (lock_card (c, ctrl))
-        {
-          c = NULL;
-          goto leave_the_loop;
-        }
-      locked = 1;
-      a_prev = NULL;
-      for (a = c->app; a; a = a->next)
-        {
-          if (!a->fnc.with_keygrip || a->need_reset)
-            continue;
-
-          /* Note that we need to do a re-select even for the current
-           * app because the last selected application (e.g. after
-           * init) might be a different one and we do not run
-           * maybe_switch_app here.  Of course we we do this only iff
-           * we have an additional app. */
-          if (c->app->next)
-            {
-              if (run_reselect (ctrl, c, a, a_prev))
-                continue;
-            }
-          a_prev = a;
-
-          if (DBG_APP)
-            log_debug ("slot %d, app %s: calling with_keygrip(%s)\n",
-                       c->slot, xstrapptype (a),
-                       action == KEYGRIP_ACTION_SEND_DATA? "send_data":
-                       action == KEYGRIP_ACTION_WRITE_STATUS? "status":
-                       action == KEYGRIP_ACTION_LOOKUP? "lookup":"?");
-          if (!a->fnc.with_keygrip (a, ctrl, action, keygrip_str, capability))
-            goto leave_the_loop; /* ACTION_LOOKUP succeeded.  */
-        }
-
-      /* Select the first app again.  */
-      if (c->app->next)
-        run_reselect (ctrl, c, c->app, a_prev);
-
-      unlock_card (c);
-      locked = 0;
-    }
-
- leave_the_loop:
-  /* Force switching of the app if the selected one is not the current
-   * one.  Changing the current apptype is sufficient to do this.  */
-  if (c && c->app && c->app->apptype != a->apptype)
-    ctrl->current_apptype = a->apptype;
-
-  if (locked && c)
-    {
-      unlock_card (c);
-      locked = 0;
-    }
+  card = do_with_keygrip (ctrl, action, keygrip_str, capability);
   unlock_r_card_list ();
-  return c;
+  return card;
 }
 
 void

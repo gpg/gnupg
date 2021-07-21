@@ -255,11 +255,12 @@ void application_notify_card_reset (int slot);
 gpg_error_t check_application_conflict (card_t card, const char *name,
                                         const unsigned char *serialno_bin,
                                         size_t serialno_bin_len);
-gpg_error_t card_reset (card_t card, ctrl_t ctrl);
+gpg_error_t card_reset (card_t card);
 gpg_error_t select_application (ctrl_t ctrl, const char *name,
                                 int scan, const unsigned char *serialno_bin,
                                 size_t serialno_bin_len);
-gpg_error_t select_additional_application (ctrl_t ctrl, const char *name);
+gpg_error_t select_additional_application (card_t card,
+                                           ctrl_t ctrl, const char *name);
 
 gpg_error_t app_switch_current_card (ctrl_t ctrl,
                                      const unsigned char *serialno,
@@ -269,8 +270,8 @@ gpg_error_t app_switch_active_app (card_t card, ctrl_t ctrl,
 
 char *get_supported_applications (void);
 
-card_t card_ref (card_t card);
-void   card_unref (card_t card);
+card_t card_get (ctrl_t ctrl, const char *keygrip);
+void card_put (card_t card);
 void   card_unref_locked (card_t card);
 
 gpg_error_t app_munge_serialno (card_t card);
