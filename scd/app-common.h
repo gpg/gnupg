@@ -255,8 +255,8 @@ void application_notify_card_reset (int slot);
 gpg_error_t check_application_conflict (card_t card, const char *name,
                                         const unsigned char *serialno_bin,
                                         size_t serialno_bin_len);
-gpg_error_t card_reset (card_t card, ctrl_t ctrl, int send_reset);
-gpg_error_t select_application (ctrl_t ctrl, const char *name, card_t *r_app,
+gpg_error_t card_reset (card_t card, ctrl_t ctrl);
+gpg_error_t select_application (ctrl_t ctrl, const char *name,
                                 int scan, const unsigned char *serialno_bin,
                                 size_t serialno_bin_len);
 gpg_error_t select_additional_application (ctrl_t ctrl, const char *name);

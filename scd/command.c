@@ -157,7 +157,16 @@ do_reset (ctrl_t ctrl, int send_reset, int keep_lock)
   card_t card = ctrl->card_ctx;
 
   if (card)
-    card_reset (card, ctrl, IS_LOCKED (ctrl)? 0: send_reset);
+    {
+      if (!IS_LOCKED (ctrl) && send_reset)
+        card_reset (card, ctrl);
+      else
+        {
+          ctrl->card_ctx = NULL;
+          ctrl->current_apptype = APPTYPE_NONE;
+          card_unref (card);
+        }
+    }
 
   /* If we hold a lock, unlock now. */
   if (!keep_lock && locked_session && ctrl->server_local == locked_session)
@@ -223,7 +232,7 @@ open_card (ctrl_t ctrl)
   if (ctrl->card_ctx)
     return 0;
 
-  return select_application (ctrl, NULL, &ctrl->card_ctx, 0, NULL, 0);
+  return select_application (ctrl, NULL, 0, NULL, 0);
 }
 
 /* Explicitly open a card for a specific use of APPTYPE or SERIALNO.
@@ -262,7 +271,7 @@ open_card_with_request (ctrl_t ctrl,
   ctrl->current_apptype = APPTYPE_NONE;
   card_unref (card);
 
-  err = select_application (ctrl, apptypestr, &ctrl->card_ctx, 1,
+  err = select_application (ctrl, apptypestr, 1,
                             serialno_bin, serialno_bin_len);
   if (!err && opt_all)
     err = select_additional_application (ctrl, NULL);

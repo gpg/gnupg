@@ -503,31 +503,20 @@ check_application_conflict (card_t card, const char *name,
 
 
 gpg_error_t
-card_reset (card_t card, ctrl_t ctrl, int send_reset)
+card_reset (card_t card, ctrl_t ctrl)
 {
   gpg_error_t err = 0;
+  int sw;
 
-  if (send_reset)
-    {
-      int sw;
+  lock_card (card, ctrl);
+  sw = apdu_reset (card->slot);
+  if (sw)
+    err = gpg_error (GPG_ERR_CARD_RESET);
 
-      lock_card (card, ctrl);
-      sw = apdu_reset (card->slot);
-      if (sw)
-        err = gpg_error (GPG_ERR_CARD_RESET);
-
-      card->reset_requested = 1;
-      unlock_card (card);
-
-      scd_kick_the_loop ();
-      gnupg_sleep (1);
-    }
-  else
-    {
-      ctrl->card_ctx = NULL;
-      ctrl->current_apptype = APPTYPE_NONE;
-      card_unref (card);
-    }
+  card->reset_requested = 1;
+  unlock_card (card);
+  scd_kick_the_loop ();
+  gnupg_sleep (1);
 
   return err;
 }
@@ -780,16 +769,16 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
  * NAME and return its card context.  Returns an error code and stores
  * NULL at R_CARD if no application was found or no card is present.  */
 gpg_error_t
-select_application (ctrl_t ctrl, const char *name, card_t *r_card,
+select_application (ctrl_t ctrl, const char *name,
                     int scan, const unsigned char *serialno_bin,
                     size_t serialno_bin_len)
 {
   gpg_error_t err = 0;
   card_t card, card_prev = NULL;
 
-  *r_card = NULL;
-
   lock_w_card_list (CARD_LIST_LOCK_UPDATE);
+
+  ctrl->card_ctx = NULL;
 
   if (scan || !card_top)
     {
@@ -875,7 +864,7 @@ select_application (ctrl_t ctrl, const char *name, card_t *r_card,
         {
           /* Note: We do not use card_ref as we are already locked.  */
           card->ref_count++;
-          *r_card = card;
+          ctrl->card_ctx = card;
           if (card_prev)
             {
               card_prev->next = card->next;
