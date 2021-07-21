@@ -553,6 +553,7 @@ start_pinentry (ctrl_t ctrl)
                      "passphrase visible on the screen?") },
       { "tt-visi",N_("|pinentry-tt|Make passphrase visible") },
       { "tt-hide",N_("|pinentry-tt|Hide passphrase") },
+      { "capshint", N_("Caps Lock is on") },
       { NULL, NULL}
     };
     char *optstr;
