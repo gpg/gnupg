@@ -1614,7 +1614,7 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
   app_t app_prev = NULL;
   apptype_t apptype;
 
-  if (!card->ref_count || !card->app)
+  if (!card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!ctrl->current_apptype)
     {
