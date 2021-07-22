@@ -2204,18 +2204,11 @@ gpg_error_t
 app_get_challenge (card_t card, ctrl_t ctrl,
                    size_t nbytes, unsigned char *buffer)
 {
-  gpg_error_t err;
-
   (void)ctrl;
   if (!nbytes || !buffer)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (!card->ref_count)
-    err = gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  else
-    err = iso7816_get_challenge (card->slot, nbytes, buffer);
-
-  return err;
+  return iso7816_get_challenge (card->slot, nbytes, buffer);
 }
 
 

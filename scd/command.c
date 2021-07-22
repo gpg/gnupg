@@ -2851,8 +2851,16 @@ popup_prompt (void *opaque, int on)
 }
 
 
-/* Helper to send the clients a status change notification.  Note that
- * this function assumes that APP is already locked.  */
+/*
+ * Helper to send the clients a status change notification.
+ *
+ * When it's removal of card, this function also clean up all
+ * references by ctrl->card_ctx of all sessions.
+ *
+ * Note that this function assumes that all accesses to cards and
+ * applications are locked.  By the mrsw-lock, it is guaranteed that
+ * no card/app is accessed, when this function is called..
+ */
 void
 send_client_notifications (card_t card, int removal)
 {
