@@ -39,6 +39,7 @@
 #include <assuan.h>
 #include "../common/sysutils.h"
 #include "../common/i18n.h"
+#include "../common/zb32.h"
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX
@@ -52,6 +53,11 @@
    requests after some time.  1 minute seem to be a reasonable
    time. */
 #define LOCK_TIMEOUT  (1*60)
+
+/* Define the maximum tries to generate a pin for the GENPIN inquire */
+#define MAX_GENPIN_TRIES 10
+/* Define the number of characters to use for a generated pin */
+#define DEFAULT_GENPIN_BYTES (128 / 8)
 
 /* The assuan context of the current pinentry. */
 static assuan_context_t entry_ctx;
@@ -818,14 +824,41 @@ estimate_passphrase_quality (const char *pw)
 }
 
 
-/* Handle the QUALITY inquiry. */
+/* Generate a random passphrase in zBase32 encoding (RFC-6189) to be
+ * used by pinetry to suggest a passphrase.  */
+static char *
+generate_pin (void)
+{
+  size_t nbytes = opt.min_passphrase_len;
+  void *rand;
+  char *generated;
+
+  if (nbytes < 8)
+    {
+      nbytes = DEFAULT_GENPIN_BYTES;
+    }
+
+  rand = gcry_random_bytes_secure (nbytes, GCRY_STRONG_RANDOM);
+  if (!rand)
+    {
+      log_error ("failed to generate random pin\n");
+      return NULL;
+    }
+
+  generated = zb32_encode (rand, nbytes * 8);
+  gcry_free (rand);
+  return generated;
+}
+
+
+/* Handle inquiries. */
 static gpg_error_t
-inq_quality (void *opaque, const char *line)
+inq_cb (void *opaque, const char *line)
 {
   assuan_context_t ctx = opaque;
   const char *s;
   char *pin;
-  int rc;
+  gpg_error_t err;
   int percent;
   char numbuf[20];
 
@@ -833,24 +866,147 @@ inq_quality (void *opaque, const char *line)
     {
       pin = unescape_passphrase_string (s);
       if (!pin)
-        rc = gpg_error_from_syserror ();
+        err = gpg_error_from_syserror ();
       else
         {
           percent = estimate_passphrase_quality (pin);
           if (check_passphrase_constraints (NULL, pin, 0, NULL))
             percent = -percent;
           snprintf (numbuf, sizeof numbuf, "%d", percent);
-          rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+          err = assuan_send_data (ctx, numbuf, strlen (numbuf));
           xfree (pin);
         }
+    }
+  else if ((s = has_leading_keyword (line, "CHECKPIN")))
+    {
+      char *errtext = NULL;
+      size_t errtextlen;
+
+      if (!opt.enforce_passphrase_constraints)
+        {
+          log_error ("unexpected inquiry 'CHECKPIN' without enforced "
+                     "passphrase constraints\n");
+          err = gpg_error (GPG_ERR_ASS_UNEXPECTED_CMD);
+          goto leave;
+        }
+
+      pin = unescape_passphrase_string (s);
+      if (!pin)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          if (check_passphrase_constraints (NULL, pin, 0, &errtext))
+            {
+              if (errtext)
+                {
+                  /* Unescape the percent-escaped errtext because
+                     assuan_send_data escapes it again. */
+                  errtextlen = percent_unescape_inplace (errtext, 0);
+                  err = assuan_send_data (ctx, errtext, errtextlen);
+                }
+              else
+                {
+                  log_error ("passphrase check failed without error text\n");
+                  err = gpg_error (GPG_ERR_GENERAL);
+                }
+            }
+          else
+            {
+              err = assuan_send_data (ctx, NULL, 0);
+            }
+          xfree (errtext);
+          xfree (pin);
+        }
+    }
+  else if ((s = has_leading_keyword (line, "GENPIN")))
+    {
+      int tries;
+
+      for (tries = 0; tries < MAX_GENPIN_TRIES; tries ++)
+        {
+          pin = generate_pin ();
+          if (!pin)
+            {
+              log_error ("failed to generate a passphrase\n");
+              err = gpg_error (GPG_ERR_GENERAL);
+              goto leave;
+            }
+          if (!check_passphrase_constraints (NULL, pin, 0, NULL))
+            {
+              assuan_begin_confidential (ctx);
+              err = assuan_send_data (ctx, pin, strlen (pin));
+              assuan_end_confidential (ctx);
+              xfree (pin);
+              goto leave;
+            }
+          xfree (pin);
+        }
+      log_error ("failed to generate a passphrase after %i tries\n",
+                 MAX_GENPIN_TRIES);
+      err = gpg_error (GPG_ERR_GENERAL);
     }
   else
     {
       log_error ("unsupported inquiry '%s' from pinentry\n", line);
-      rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
+      err = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
-  return rc;
+ leave:
+  return err;
+}
+
+
+/* Helper to setup pinentry for genpin action. */
+static gpg_error_t
+setup_genpin (ctrl_t ctrl)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  char *tmpstr, *tmpstr2;
+  const char *tooltip;
+
+  (void)ctrl;
+
+  /* TRANSLATORS: This string is displayed by Pinentry as the label
+     for generating a passphrase.  */
+  tmpstr = try_percent_escape (L_("Suggest"), "\t\r\n\f\v");
+  snprintf (line, DIM(line), "SETGENPIN %s", tmpstr? tmpstr:"");
+  xfree (tmpstr);
+  err = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (gpg_err_code (err) == 103 /*(Old assuan error code)*/
+      || gpg_err_code (err) == GPG_ERR_ASS_UNKNOWN_CMD)
+    ; /* Ignore Unknown Command from old Pinentry versions.  */
+  else if (err)
+    return err;
+
+  tmpstr2 = gnupg_get_help_string ("pinentry.genpin.tooltip", 0);
+  if (tmpstr2)
+    tooltip = tmpstr2;
+  else
+    {
+      /* TRANSLATORS: This string is a tooltip, shown by pinentry when
+         hovering over the generate button.  Please use an appropriate
+         string to describe what this is about.  The length of the
+         tooltip is limited to about 900 characters.  If you do not
+         translate this entry, a default English text (see source)
+         will be used.  The strcmp thingy is there to detect a
+         non-translated string.  */
+      tooltip = L_("pinentry.genpin.tooltip");
+      if (!strcmp ("pinentry.genpin.tooltip", tooltip))
+        tooltip = "Suggest a random passphrase.";
+    }
+  tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
+  xfree (tmpstr2);
+  snprintf (line, DIM(line), "SETGENPIN_TT %s", tmpstr? tmpstr:"");
+  xfree (tmpstr);
+  err = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (gpg_err_code (err) == 103 /*(Old assuan error code)*/
+          || gpg_err_code (err) == GPG_ERR_ASS_UNKNOWN_CMD)
+    ; /* Ignore Unknown Command from old pinentry versions.  */
+  else if (err)
+    return err;
+
+  return 0;
 }
 
 
@@ -893,6 +1049,65 @@ setup_formatted_passphrase (ctrl_t ctrl)
           snprintf (line, DIM(line), "OPTION formatted-passphrase-%s=%s",
                     tbl[idx].key, s);
           xfree (tmpstr);
+          rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
+                                NULL);
+          if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+            return rc;
+        }
+    }
+
+  return 0;
+}
+
+
+/* Helper to setup pinentry for enforced passphrase constraints. */
+static gpg_error_t
+setup_enforced_constraints (ctrl_t ctrl)
+{
+  static const struct { const char *key, *help_id, *value; } tbl[] = {
+    { "hint-short", "pinentry.constraints.hint.short", NULL },
+    { "hint-long",  "pinentry.constraints.hint.long", NULL },
+    /* TRANSLATORS: This is a text shown by pinentry as title of a dialog
+       telling the user that the entered new passphrase does not satisfy
+       the passphrase constraints.  Please keep it short. */
+    { "error-title", NULL, N_("Passphrase Not Allowed") },
+    { NULL, NULL }
+  };
+
+  gpg_error_t rc;
+  char line[ASSUAN_LINELENGTH];
+  int idx;
+  char *tmpstr;
+  const char *s;
+  char *escapedstr;
+
+  (void)ctrl;
+
+  if (opt.enforce_passphrase_constraints)
+    {
+      snprintf (line, DIM(line), "OPTION constraints-enforce");
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
+                            NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+        return rc;
+
+      for (idx=0; tbl[idx].key; idx++)
+        {
+          tmpstr = gnupg_get_help_string (tbl[idx].help_id, 0);
+          if (tmpstr)
+            s = tmpstr;
+          else if (tbl[idx].value)
+            s = L_(tbl[idx].value);
+          else
+            {
+              log_error ("no help string found for %s\n", tbl[idx].help_id);
+              continue;
+            }
+          escapedstr = try_percent_escape (s, "\t\r\n\f\v");
+          xfree (tmpstr);
+          snprintf (line, DIM(line), "OPTION constraints-%s=%s",
+                    tbl[idx].key, escapedstr);
+          xfree (escapedstr);
           rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
                                 NULL);
           if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
@@ -1016,7 +1231,7 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
 
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, parm,
-                        inq_quality, entry_ctx,
+                        inq_cb, entry_ctx,
                         pinentry_status_cb, &parm->status);
   assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
   /* Most pinentries out in the wild return the old Assuan error code
@@ -1415,6 +1630,12 @@ agent_get_passphrase (ctrl_t ctrl,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
+
+      (void)setup_genpin (ctrl);
+
+      rc = setup_enforced_constraints (ctrl);
+      if (rc)
+        return unlock_pinentry (ctrl, rc);
     }
   pininfo->repeat_okay = 0;
   pininfo->status = 0;
