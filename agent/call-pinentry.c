@@ -891,6 +891,47 @@ inq_cb (void *opaque, const char *line)
           xfree (pin);
         }
     }
+  else if ((s = has_leading_keyword (line, "CHECKPIN")))
+    {
+      char *errtext = NULL;
+      size_t errtextlen;
+
+      if (!opt.enforce_passphrase_constraints)
+        {
+          log_error ("unexpected inquiry 'CHECKPIN' without enforced "
+                     "passphrase constraints\n");
+          err = gpg_error (GPG_ERR_ASS_UNEXPECTED_CMD);
+          goto leave;
+        }
+
+      pin = unescape_passphrase_string (s);
+      if (!pin)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          if (check_passphrase_constraints (NULL, pin, 0, &errtext))
+            {
+              if (errtext)
+                {
+                  /* Unescape the percent-escaped errtext because
+                     assuan_send_data escapes it again. */
+                  errtextlen = percent_unescape_inplace (errtext, 0);
+                  err = assuan_send_data (ctx, errtext, errtextlen);
+                }
+              else
+                {
+                  log_error ("passphrase check failed without error text\n");
+                  err = gpg_error (GPG_ERR_GENERAL);
+                }
+            }
+          else
+            {
+              err = assuan_send_data (ctx, NULL, 0);
+            }
+          xfree (errtext);
+          xfree (pin);
+        }
+    }
   else if ((s = has_leading_keyword (line, "GENPIN")))
     {
       int tries;
@@ -1033,6 +1074,65 @@ setup_formatted_passphrase (ctrl_t ctrl)
           snprintf (line, DIM(line), "OPTION formatted-passphrase-%s=%s",
                     tbl[idx].key, s);
           xfree (tmpstr);
+          rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
+                                NULL);
+          if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+            return rc;
+        }
+    }
+
+  return 0;
+}
+
+
+/* Helper to setup pinentry for enforced passphrase constraints. */
+static gpg_error_t
+setup_enforced_constraints (ctrl_t ctrl)
+{
+  static const struct { const char *key, *help_id, *value; } tbl[] = {
+    { "hint-short", "pinentry.constraints.hint.short", NULL },
+    { "hint-long",  "pinentry.constraints.hint.long", NULL },
+    /* TRANSLATORS: This is a text shown by pinentry as title of a dialog
+       telling the user that the entered new passphrase does not satisfy
+       the passphrase constraints.  Please keep it short. */
+    { "error-title", NULL, N_("Passphrase Not Allowed") },
+    { NULL, NULL }
+  };
+
+  gpg_error_t rc;
+  char line[ASSUAN_LINELENGTH];
+  int idx;
+  char *tmpstr;
+  const char *s;
+  char *escapedstr;
+
+  (void)ctrl;
+
+  if (opt.enforce_passphrase_constraints)
+    {
+      snprintf (line, DIM(line), "OPTION constraints-enforce");
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
+                            NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+        return rc;
+
+      for (idx=0; tbl[idx].key; idx++)
+        {
+          tmpstr = gnupg_get_help_string (tbl[idx].help_id, 0);
+          if (tmpstr)
+            s = tmpstr;
+          else if (tbl[idx].value)
+            s = L_(tbl[idx].value);
+          else
+            {
+              log_error ("no help string found for %s\n", tbl[idx].help_id);
+              continue;
+            }
+          escapedstr = try_percent_escape (s, "\t\r\n\f\v");
+          xfree (tmpstr);
+          snprintf (line, DIM(line), "OPTION constraints-%s=%s",
+                    tbl[idx].key, escapedstr);
+          xfree (escapedstr);
           rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
                                 NULL);
           if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
@@ -1650,6 +1750,10 @@ agent_get_passphrase (ctrl_t ctrl,
         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
 
       (void)setup_genpin (ctrl);
+
+      rc = setup_enforced_constraints (ctrl);
+      if (rc)
+        return unlock_pinentry (ctrl, rc);
     }
   pininfo->repeat_okay = 0;
   pininfo->status = 0;
