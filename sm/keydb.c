@@ -273,7 +273,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
     }
 
   /* Now the real test while we are locked. */
-  if (!access(filename, F_OK))
+  if (!gnupg_access(filename, F_OK))
     {
       rc = 0;  /* Okay, we may access the file now.  */
       goto leave;
