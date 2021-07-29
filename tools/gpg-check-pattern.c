@@ -1,4 +1,5 @@
 /* gpg-check-pattern.c - A tool to check passphrases against pattern.
+ * Copyright (C) 2021 g10 Code GmbH
  * Copyright (C) 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -26,7 +27,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
 #endif
@@ -50,11 +50,7 @@
 enum cmd_and_opt_values
 { aNull = 0,
   oVerbose	  = 'v',
-  oArmor          = 'a',
-  oPassphrase     = 'P',
 
-  oProtect        = 'p',
-  oUnprotect      = 'u',
   oNull           = '0',
 
   oNoVerbose = 500,
@@ -101,6 +97,10 @@ struct pattern_s
 {
   int type;
   unsigned int lineno;     /* Line number of the pattern file.  */
+  unsigned int newblock;   /* First pattern in a new block.     */
+  unsigned int icase:1;    /* Case insensitive match.  */
+  unsigned int accept:1;   /* In accept mode. */
+  unsigned int reverse:1;  /* Reverse the outcome of a regexp match.  */
   union {
     struct {
       const char *string;  /* Pointer to the actual string (nul termnated).  */
@@ -201,7 +201,7 @@ main (int argc, char **argv )
     usage (1);
 
   /* We read the entire pattern file into our memory and parse it
-     using a separate function.  This allows us to eventual do the
+     using a separate function.  This allows us to eventually do the
      reading while running setuid so that the pattern file can be
      hidden from regular users.  I am not sure whether this makes
      sense, but lets be prepared for it.  */
@@ -220,7 +220,7 @@ main (int argc, char **argv )
 #endif
   process (stdin, patternarray);
 
-  return log_get_errorcount(0)? 1 : 0;
+  return 4; /*NOTREACHED*/
 }
 
 
@@ -311,6 +311,7 @@ get_regerror (int errcode, regex_t *compiled)
   return buffer;
 }
 
+
 /* Parse the pattern given in the memory aread DATA/DATALEN and return
    a new pattern array.  The end of the array is indicated by a NULL
    entry.  On error an error message is printed and the function
@@ -325,6 +326,9 @@ parse_pattern_file (char *data, size_t datalen)
   pattern_t *array;
   size_t arraysize, arrayidx;
   unsigned int lineno = 0;
+  unsigned int icase_mode = 1;
+  unsigned int accept_mode = 0;
+  unsigned int newblock = 1;  /* The first implict block.  */
 
   /* Estimate the number of entries by counting the non-comment lines.  */
   arraysize = 0;
@@ -350,7 +354,7 @@ parse_pattern_file (char *data, size_t datalen)
         }
       else
         p2 = p + datalen;
-      assert (!*p2);
+      log_assert (!*p2);
       p2--;
       while (isascii (*p) && isspace (*p))
         p++;
@@ -360,23 +364,57 @@ parse_pattern_file (char *data, size_t datalen)
         *p2-- = 0;
       if (!*p)
         continue;
-      assert (arrayidx < arraysize);
+      if (!strcmp (p, "[case]"))
+        {
+          icase_mode = 0;
+          continue;
+        }
+      if (!strcmp (p, "[icase]"))
+        {
+          icase_mode = 1;
+          continue;
+        }
+      if (!strcmp (p, "[accept]"))
+        {
+          accept_mode = 1;
+          newblock = 1;
+          continue;
+        }
+      if (!strcmp (p, "[reject]"))
+        {
+          accept_mode = 0;
+          newblock = 1;
+          continue;
+        }
+
+      log_assert (arrayidx < arraysize);
       array[arrayidx].lineno = lineno;
-      if (*p == '/')
+      array[arrayidx].icase = icase_mode;
+      array[arrayidx].accept = accept_mode;
+      array[arrayidx].reverse = 0;
+      array[arrayidx].newblock = newblock;
+      newblock = 0;
+
+      if (*p == '/' || (*p == '!' && p[1] == '/'))
         {
           int rerr;
+          int reverse;
 
+          reverse = (*p == '!');
           p++;
+          if (reverse)
+            p++;
           array[arrayidx].type = PAT_REGEX;
           if (*p && p[strlen(p)-1] == '/')
             p[strlen(p)-1] = 0;  /* Remove optional delimiter.  */
           array[arrayidx].u.r.regex = xcalloc (1, sizeof (regex_t));
+          array[arrayidx].reverse = reverse;
           rerr = regcomp (array[arrayidx].u.r.regex, p,
-                          REG_ICASE|REG_EXTENDED);
+                          (array[arrayidx].icase? REG_ICASE:0)|REG_EXTENDED);
           if (rerr)
             {
               char *rerrbuf = get_regerror (rerr, array[arrayidx].u.r.regex);
-              log_error ("invalid r.e. at line %u: %s\n", lineno, rerrbuf);
+              log_error ("invalid regexp at line %u: %s\n", lineno, rerrbuf);
               xfree (rerrbuf);
               if (!opt.checkonly)
                 exit (1);
@@ -384,25 +422,44 @@ parse_pattern_file (char *data, size_t datalen)
         }
       else
         {
+          if (*p == '[')
+            {
+              static int shown;
+
+              if (!shown)
+                {
+                  log_info ("future warning: do no start a string with '['"
+                            " but use a regexp (line %u)\n", lineno);
+                  shown = 1;
+                }
+            }
           array[arrayidx].type = PAT_STRING;
           array[arrayidx].u.s.string = p;
           array[arrayidx].u.s.length = strlen (p);
         }
+
       arrayidx++;
     }
-  assert (arrayidx < arraysize);
+  log_assert (arrayidx < arraysize);
   array[arrayidx].type = PAT_NULL;
+
+  if (lineno && newblock)
+    log_info ("warning: pattern list ends with a singleton"
+              " accept or reject tag\n");
 
   return array;
 }
 
 
-/* Check whether string macthes any of the pattern in PATARRAY and
+/* Check whether string matches any of the pattern in PATARRAY and
    returns the matching pattern item or NULL.  */
 static pattern_t *
 match_p (const char *string, pattern_t *patarray)
 {
   pattern_t *pat;
+  int match;
+  int accept_match;  /* Tracks matchinf state in an accept block.  */
+  int accept_skip;   /* Skip remaining patterns in an accept block.  */
 
   if (!*string)
     {
@@ -411,30 +468,84 @@ match_p (const char *string, pattern_t *patarray)
       return NULL;
     }
 
+  accept_match = 0;
+  accept_skip = 0;
   for (pat = patarray; pat->type != PAT_NULL; pat++)
     {
+      match = 0;
+      if (pat->newblock)
+        accept_match = accept_skip = 0;
+
       if (pat->type == PAT_STRING)
         {
-          if (!strcasecmp (pat->u.s.string, string))
-            return pat;
+          if (pat->icase)
+            {
+              if (!strcasecmp (pat->u.s.string, string))
+                match = 1;
+            }
+          else
+            {
+              if (!strcmp (pat->u.s.string, string))
+                match = 1;
+            }
         }
       else if (pat->type == PAT_REGEX)
         {
           int rerr;
 
           rerr = regexec (pat->u.r.regex, string, 0, NULL, 0);
+          if (pat->reverse)
+            {
+              if (!rerr)
+                rerr = REG_NOMATCH;
+              else if (rerr == REG_NOMATCH)
+                rerr = 0;
+            }
+
           if (!rerr)
-            return pat;
+            match = 1;
           else if (rerr != REG_NOMATCH)
             {
               char *rerrbuf = get_regerror (rerr, pat->u.r.regex);
-              log_error ("matching r.e. failed: %s\n", rerrbuf);
+              log_error ("matching regexp failed: %s\n", rerrbuf);
               xfree (rerrbuf);
-              return pat;  /* Better indicate a match on error.  */
+              if (pat->accept)
+                match = 0;  /* Better indicate no match on error.  */
+              else
+                match = 1;  /* Better indicate a match on error.  */
             }
         }
       else
         BUG ();
+
+      if (pat->accept)
+        {
+          /* Accept mode: all patterns in the accept block must match.
+           * Thus we need to check whether the next pattern has a
+           * transition and act only then. */
+          if (match && !accept_skip)
+            accept_match = 1;
+          else
+            {
+              accept_match = 0;
+              accept_skip = 1;
+            }
+
+          if (pat[1].type == PAT_NULL || pat[1].newblock)
+            {
+              /* Transition detected.  Note that this also handles the
+               * end of pattern loop case.  */
+              if (accept_match)
+                return pat;
+              /* The next is not really but we do it for clarity.  */
+              accept_match = accept_skip = 0;
+            }
+        }
+      else  /* Reject mode: Return true on the first match.  */
+        {
+          if (match)
+            return pat;
+        }
     }
   return NULL;
 }
@@ -450,6 +561,7 @@ process (FILE *fp, pattern_t *patarray)
   int c;
   unsigned long lineno = 0;
   pattern_t *pat;
+  int last_is_accept;
 
   idx = 0;
   c = 0;
@@ -469,17 +581,28 @@ process (FILE *fp, pattern_t *patarray)
           pat = match_p (buffer, patarray);
           if (pat)
             {
+              /* Note that the accept mode works correctly only with
+               * one input line.  */
               if (opt.verbose)
-                log_error ("input line %lu matches pattern at line %u"
-                           " - rejected\n",
-                           lineno, pat->lineno);
-              exit (1);
+                log_info ("input line %lu matches pattern at line %u"
+                          " - %s\n",
+                          lineno, pat->lineno,
+                          pat->accept? "accepted":"rejected");
             }
           idx = 0;
+          wipememory (buffer, sizeof buffer);
+          if (pat)
+            {
+              if (pat->accept)
+                exit (0);
+              else
+                exit (1);
+            }
         }
       else
         idx++;
     }
+  wipememory (buffer, sizeof buffer);
   if (c != EOF)
     {
       log_error ("input line %lu too long - rejected\n", lineno+1);
@@ -491,6 +614,20 @@ process (FILE *fp, pattern_t *patarray)
                  lineno+1, strerror (errno));
       exit (1);
     }
+
+  /* Check last pattern to see whether we are in accept mode.  */
+  last_is_accept = 0;
+  for (pat = patarray; pat->type != PAT_NULL; pat++)
+    last_is_accept = pat->accept;
+
   if (opt.verbose)
-    log_info ("no input line matches the pattern - accepted\n");
+    log_info ("no input line matches the pattern - %s\n",
+              last_is_accept? "rejected":"accepted");
+
+  if (log_get_errorcount(0))
+    exit (2);  /* Ooops - reject.  */
+  else if (last_is_accept)
+    exit (1);  /* Reject */
+  else
+    exit (0);  /* Accept */
 }

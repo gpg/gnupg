@@ -20,6 +20,7 @@ GnuPG comes with a couple of smaller tools:
 * dirmngr-client::        How to use the Dirmngr client tool.
 * gpgparsemail::          Parse a mail message into an annotated format
 * gpgtar::                Encrypt or sign files into an archive.
+* gpg-check-pattern::     Check a passphrase on stdin against the patternfile.
 @end menu
 
 @c
@@ -1992,5 +1993,97 @@ gpgtar --list-archive test1
 @ifset isman
 @command{gpg}(1),
 @command{tar}(1),
+@end ifset
+@include see-also-note.texi
+
+@c
+@c  GPG-CHECK-PATTERN
+@c
+@manpage gpg-check-pattern.1
+@node gpg-check-pattern
+@section Check a passphrase on stdin against the patternfile
+@ifset manverb
+.B gpg-check-pattern
+\- Check a passphrase on stdin against the patternfile
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B gpg\-check\-pattern
+.RI [ options ]
+.I patternfile
+@end ifset
+
+@mansect description
+@command{gpg-check-pattern} checks a passphrase given on stdin against
+a specified pattern file.
+
+The pattern file is line based with comment lines beginning on the
+@emph{first} position with a @code{#}.  Empty lines and lines with
+only white spaces are ignored.  The actual pattern lines may either be
+verbatim string pattern and match as they are (trailing spaces are
+ignored) or extended regular expressions indicated by a @code{/} or
+@code{!/} in the first column and terminated by another @code{/} or
+end of line.  If a regular expression starts with @code{!/} the match
+result is reversed. By default all comparisons are case insensitive.
+
+Tag lines may be used to further control the operation of this tool.
+The currently defined tags are:
+
+@table @code
+@item [icase]
+Switch to case insensitive comparison for all further patterns.  This
+is the default.
+
+@item [case]
+Switch to case sensitive comparison for all further patterns.
+
+@item [reject]
+Switch to reject mode.  This is the default mode.
+
+@item [accept]
+Switch to accept mode.
+@end table
+
+In the future more tags may be introduced and thus it is advisable not to
+start a plain pattern string with an open bracket.  The tags must be
+given verbatim on the line with no spaces to the left or any non white
+space characters to the right.
+
+In reject mode the program exits on the first match with an exit code
+of 1 (failure).  If at the end of the pattern list the reject mode is
+still active the program exits with code 0 (success).
+
+In accept mode blocks of patterns are used.  A block starts at the
+next pattern after an "accept" tag and ends with the last pattern
+before the next "accept" or "reject" tag or at the end of the pattern
+list.  If all patterns in a block match the program exits with an exit
+code of 0 (success).  If any pattern in a block do not match the next
+pattern block is evaluated.  If at the end of the pattern list the
+accept mode is still active the program exits with code 1 (failure).
+
+
+@mansect options
+@noindent
+
+@table @gnupgtabopt
+
+@item --verbose
+@opindex verbose
+Enable extra informational output.
+
+@item --check
+@opindex check
+Run only a syntax check on the patternfile.
+
+@item --null
+@opindex null
+Input is expected to be null delimited.
+
+@end table
+
+@mansect see also
+@ifset isman
+@command{gpg-agent}(1),
 @end ifset
 @include see-also-note.texi
