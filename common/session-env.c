@@ -71,6 +71,11 @@ static struct
   { "XMODIFIERS" },              /* Used by Xlib to select X input
                                       modules (eg "@im=SCIM").  */
   { "WAYLAND_DISPLAY" },         /* For the Wayland display engine.  */
+  { "XDG_SESSION_TYPE" },        /* Used by Qt and other non-GTK toolkits
+                                    to check for x11 or wayland.  */
+  { "QT_QPA_PLATFORM" },         /* Used by Qt to explicitly request
+                                    x11 or wayland; in particular, needed
+                                    to make Qt use Wayland on Gnome.  */
   { "GTK_IM_MODULE" },           /* Used by gtk to select gtk input
                                     modules (eg "scim-bridge").  */
   { "DBUS_SESSION_BUS_ADDRESS" },/* Used by GNOME3 to talk to gcr over
