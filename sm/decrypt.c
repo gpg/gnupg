@@ -428,7 +428,7 @@ static gpg_error_t
 pwri_parse_pbkdf2 (const unsigned char *der, size_t derlen,
                    unsigned char const **r_salt, unsigned int *r_saltlen,
                    unsigned long *r_iterations,
-                   enum gcry_md_algos *r_digest)
+                   int *r_digest)
 {
   gpg_error_t err;
   size_t objlen, hdrlen;
@@ -540,7 +540,7 @@ pwri_decrypt (ctrl_t ctrl, gcry_sexp_t enc_val,
   unsigned int ekeylen;
   unsigned char kek[32];
   unsigned int keklen;
-  enum gcry_cipher_algos encr_algo;
+  int encr_algo;
   enum gcry_cipher_modes encr_mode;
   gcry_cipher_hd_t encr_hd = NULL;
   unsigned char *result = NULL;
@@ -549,7 +549,7 @@ pwri_decrypt (ctrl_t ctrl, gcry_sexp_t enc_val,
   const unsigned char *salt;   /* Points int dparm. */
   unsigned int saltlen;
   unsigned long iterations;
-  enum gcry_md_algos digest_algo;
+  int digest_algo;
   char *passphrase = NULL;
 
 
