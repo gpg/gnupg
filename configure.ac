@@ -1358,7 +1358,7 @@ fi
 AC_MSG_NOTICE([checking for header files])
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS([string.h unistd.h langinfo.h termio.h locale.h getopt.h \
+AC_CHECK_HEADERS([unistd.h langinfo.h termio.h locale.h \
                   pwd.h inttypes.h signal.h sys/select.h     \
                   stdint.h signal.h termios.h \
                   ucred.h sys/ucred.h sys/sysmacros.h sys/mkdev.h])
