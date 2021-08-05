@@ -1357,12 +1357,11 @@ fi
 #
 AC_MSG_NOTICE([checking for header files])
 AC_HEADER_STDC
+AC_HEADER_TIME
 AC_CHECK_HEADERS([string.h unistd.h langinfo.h termio.h locale.h getopt.h \
                   pwd.h inttypes.h signal.h sys/select.h     \
                   stdint.h signal.h termios.h \
                   ucred.h sys/ucred.h sys/sysmacros.h sys/mkdev.h])
-
-AC_HEADER_TIME
 
 
 #
@@ -1403,7 +1402,6 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
 AC_CHECK_SIZEOF(size_t)
-AC_HEADER_TIME
 AC_CHECK_SIZEOF(time_t,,[[
 #include <stdio.h>
 #if TIME_WITH_SYS_TIME
