@@ -275,7 +275,6 @@ const char *gnupg_libexecdir (void);
 const char *gnupg_libdir (void);
 const char *gnupg_datadir (void);
 const char *gnupg_localedir (void);
-const char *gnupg_cachedir (void);
 const char *gpg_agent_socket_name (void);
 const char *dirmngr_socket_name (void);
 const char *keyboxd_socket_name (void);

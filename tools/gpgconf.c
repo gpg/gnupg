@@ -925,7 +925,7 @@ main (int argc, char **argv)
           log_info ("ignoring request to remove non /run/user socket dir\n");
         else if (opt.dry_run)
           ;
-        else if (rmdir (socketdir))
+        else if (gnupg_rmdir (socketdir))
           {
             /* If the director is not empty we first try to delete
              * socket files.  */
@@ -952,7 +952,7 @@ main (int argc, char **argv)
                       gnupg_remove (p);
                     xfree (p);
                   }
-                if (rmdir (socketdir))
+                if (gnupg_rmdir (socketdir))
                   gc_error (1, 0, "error removing '%s': %s",
                             socketdir, gpg_strerror (err));
               }

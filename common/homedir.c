@@ -1,6 +1,7 @@
 /* homedir.c - Setup the home directory.
  * Copyright (C) 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2013, 2016 Werner Koch
+ * Copyright (C) 2021 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -26,6 +27,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
  */
 
 #include <config.h>
@@ -74,15 +76,15 @@ static byte non_default_homedir;
 
 #ifdef HAVE_W32_SYSTEM
 /* A flag used to indicate that a control file for gpgconf has been
-   detected.  Under Windows the presence of this file indicates a
-   portable installations and triggers several changes:
-
-   - The GNUGHOME directory is fixed relative to installation
-     directory.  All other means to set the home directory are ignore.
-
-   - All registry variables will be ignored.
-
-   This flag is not used on Unix systems.
+ * detected.  Under Windows the presence of this file indicates a
+ * portable installations and triggers several changes:
+ *
+ * - The GNUGHOME directory is fixed relative to installation
+ *   directory.  All other means to set the home directory are ignored.
+ *
+ * - All registry variables will be ignored.
+ *
+ * This flag is not used on Unix systems.
  */
 static byte w32_portable_app;
 #endif /*HAVE_W32_SYSTEM*/
@@ -166,7 +168,7 @@ is_gnupg_default_homedir (const char *dir)
 {
   int result;
   char *a = make_absfilename (dir, NULL);
-  char *b = make_absfilename (GNUPG_DEFAULT_HOMEDIR, NULL);
+  char *b = make_absfilename (standard_homedir (), NULL);
   result = !compare_filenames (a, b);
   xfree (b);
   xfree (a);
@@ -609,8 +611,117 @@ gnupg_daemon_rootdir (void)
 char *
 _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
 {
-#if defined(HAVE_W32_SYSTEM) || !defined(HAVE_STAT)
+#if defined(HAVE_W32_SYSTEM)
+  char *name;
 
+  (void)skip_checks;
+
+  *r_info = 0;
+
+  /* First make sure that non_default_homedir and w32_portable_app can
+   * be set.  */
+  gnupg_homedir ();
+
+  if (w32_portable_app)
+    {
+      name = xstrconcat (w32_rootdir (), DIRSEP_S, "gnupg", NULL);
+    }
+  else
+    {
+      char *path;
+
+      path = w32_shgetfolderpath (NULL,
+                                  CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE,
+                                  NULL, 0);
+      if (path)
+        {
+          name = xstrconcat (path, "\\gnupg", NULL);
+          xfree (path);
+          if (gnupg_access (name, F_OK))
+            w32_try_mkdir (name);
+        }
+      else
+        {
+          name = xstrdup (gnupg_homedir ());
+        }
+    }
+
+  /* If a non default homedir is used, we check whether an
+   * corresponding sub directory below the socket dir is available
+   * and use that.  We hash the non default homedir to keep the new
+   * subdir short enough.  */
+  if (non_default_homedir)
+    {
+      char sha1buf[20];
+      struct stat sb;
+      char *suffix;
+      char *p;
+
+      *r_info |= 32; /* Testing subdir.  */
+
+      /* Canonicalize the name to avoid problems with mixed case
+       * names.  Note that we use only 10 bytes of the hash because on
+       * Windows the account name is also part of the name.  */
+      suffix = ascii_strlwr (xstrdup (gnupg_homedir ()));
+      for (p=suffix; *p; p++)
+        if ( *p == '\\')
+          *p = '/';
+      gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, suffix, strlen (suffix));
+      xfree (suffix);
+      suffix = zb32_encode (sha1buf, 8*10);
+      if (!suffix)
+        {
+          *r_info |= 1; /* Out of core etc. */
+          goto leave_w32;
+        }
+      p = xstrconcat (name, "\\d.", suffix, NULL);
+      xfree (suffix);
+      xfree (name);
+      name = p;
+
+      /* Stat that directory and check constraints.
+       * The command
+       *    gpgconf --remove-socketdir
+       * can be used to remove that directory.  */
+      if (gnupg_stat (name, &sb))
+        {
+          if (errno != ENOENT)
+            *r_info |= 1; /* stat failed. */
+          else if (!skip_checks)
+            {
+              /* Try to create the directory and check again.  */
+              if (gnupg_mkdir (name, "-rwx"))
+                *r_info |= 16; /* mkdir failed.  */
+              else if (gnupg_stat (name, &sb))
+                {
+                  if (errno != ENOENT)
+                    *r_info |= 1; /* stat failed. */
+                  else
+                    *r_info |= 64; /* Subdir does not exist.  */
+                }
+              else
+                goto leave_w32; /* Success!  */
+            }
+          else
+            *r_info |= 64; /* Subdir does not exist.  */
+          if (!skip_checks)
+            {
+              xfree (name);
+              name = NULL;
+              goto leave_w32;
+            }
+        }
+    }
+
+ leave_w32:
+  /* If nothing works - fall back to the homedir.  */
+  if (!name)
+    {
+      *r_info |= 128; /* Fallback.  */
+      name = xstrdup (gnupg_homedir ());
+    }
+
+#elif !defined(HAVE_STAT)
   char *name;
 
   (void)skip_checks;
@@ -935,79 +1046,6 @@ gnupg_localedir (void)
   return name;
 #else /*!HAVE_W32_SYSTEM*/
   return LOCALEDIR;
-#endif /*!HAVE_W32_SYSTEM*/
-}
-
-
-/* Return the name of the cache directory.  The name is allocated in a
-   static area on the first use.  Windows only: If the directory does
-   not exist it is created.  */
-const char *
-gnupg_cachedir (void)
-{
-#ifdef HAVE_W32_SYSTEM
-  static const char *dir;
-
-  if (!dir)
-    {
-      const char *rdir;
-
-      rdir = w32_rootdir ();
-      if (w32_portable_app)
-        {
-          dir = xstrconcat (rdir,
-                            DIRSEP_S, "var",
-                            DIRSEP_S, "cache",
-                            DIRSEP_S, "gnupg", NULL);
-          gpgrt_annotate_leaked_object (dir);
-        }
-      else
-        {
-          char *path;
-          const char *s1[] = { "GNU", "cache", "gnupg", NULL };
-          int s1_len;
-          const char **comp;
-
-          s1_len = 0;
-          for (comp = s1; *comp; comp++)
-            s1_len += 1 + strlen (*comp);
-
-          path = w32_shgetfolderpath (NULL,
-                                      CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE,
-                                      NULL, 0);
-          if (path)
-            {
-              char *tmp = xmalloc (strlen (path) + s1_len + 1);
-              char *p;
-
-              p = stpcpy (tmp, path);
-              for (comp = s1; *comp; comp++)
-                {
-                  p = stpcpy (p, "\\");
-                  p = stpcpy (p, *comp);
-
-                  if (gnupg_access (tmp, F_OK))
-                    w32_try_mkdir (tmp);
-                }
-
-              dir = tmp;
-              xfree (path);
-              gpgrt_annotate_leaked_object (dir);
-            }
-          else
-            {
-              dir = "c:\\temp\\cache\\gnupg";
-#ifdef HAVE_W32CE_SYSTEM
-              dir += 2;
-              w32_try_mkdir ("\\temp\\cache");
-              w32_try_mkdir ("\\temp\\cache\\gnupg");
-#endif
-            }
-        }
-    }
-  return dir;
-#else /*!HAVE_W32_SYSTEM*/
-  return GNUPG_LOCALSTATEDIR "/cache/" PACKAGE_NAME;
 #endif /*!HAVE_W32_SYSTEM*/
 }
 

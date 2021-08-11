@@ -1004,6 +1004,33 @@ gnupg_chdir (const char *name)
 }
 
 
+/* A wrapper around rmdir.  NAME is expected to be utf8 encoded.  */
+int
+gnupg_rmdir (const char *name)
+{
+#ifdef HAVE_W32_SYSTEM
+  int rc;
+  wchar_t *wfname;
+
+  wfname = utf8_to_wchar (name);
+  if (!wfname)
+    rc = 0;
+  else
+    {
+      rc = RemoveDirectoryW (wfname);
+      if (!rc)
+        gnupg_w32_set_errno (-1);
+      xfree (wfname);
+    }
+  if (!rc)
+    return -1;
+  return 0;
+#else
+  return rmdir (name);
+#endif
+}
+
+
 /* A wrapper around chmod which takes a string for the mode argument.
    This makes it easier to handle the mode argument which is not
    defined on all systems.  The format of the modestring is the same
