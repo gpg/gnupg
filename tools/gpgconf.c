@@ -299,11 +299,45 @@ list_dirs (estream_t fp, char **names)
                                   "HomeDir");
   if (tmp)
     {
-      es_fflush (fp);
-      log_info ("Warning: homedir taken from registry key (%s %s)\n",
-                GNUPG_REGISTRY_DIR, "HomeDir");
+      int hkcu = 0;
+      int hklm = 0;
+
       xfree (tmp);
+      if ((tmp = read_w32_registry_string ("HKEY_CURRENT_USER",
+                                           GNUPG_REGISTRY_DIR,
+                                           "HomeDir")))
+        {
+          xfree (tmp);
+          hkcu = 1;
+        }
+      if ((tmp = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
+                                           GNUPG_REGISTRY_DIR,
+                                           "HomeDir")))
+        {
+          xfree (tmp);
+          hklm = 1;
+        }
+
+      es_fflush (fp);
+      log_info ("Warning: homedir taken from registry key (%s:%s) in%s%s\n",
+                GNUPG_REGISTRY_DIR, "HomeDir",
+                hkcu?" HKCU":"",
+                hklm?" HKLM":"");
+
+
+
     }
+  else if ((tmp = read_w32_registry_string (NULL,
+                                            GNUPG_REGISTRY_DIR,
+                                            NULL)))
+    {
+      xfree (tmp);
+      es_fflush (fp);
+      log_info ("Warning: registry key (%s) without value in HKCU or HKLM\n",
+                GNUPG_REGISTRY_DIR);
+    }
+
+
 #endif /*HAVE_W32_SYSTEM*/
 }
 
