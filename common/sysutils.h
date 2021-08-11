@@ -83,6 +83,7 @@ gpg_error_t gnupg_rename_file (const char *oldname, const char *newname,
                                int *block_signals);
 int gnupg_mkdir (const char *name, const char *modestr);
 int gnupg_chdir (const char *name);
+int gnupg_rmdir (const char *name);
 int gnupg_chmod (const char *name, const char *modestr);
 char *gnupg_mkdtemp (char *template);
 int  gnupg_setenv (const char *name, const char *value, int overwrite);
