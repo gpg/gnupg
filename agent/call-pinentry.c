@@ -1029,16 +1029,6 @@ static gpg_error_t
 setup_formatted_passphrase (ctrl_t ctrl)
 {
   static const struct { const char *key, *help_id, *value; } tbl[] = {
-    /* TRANSLATORS: This is the text of an option (usually represented
-       by a checkbox) as used in pinentry.  */
-    { "label", "pinentry.formatted_passphrase.label",
-      N_("Format the passphrase") },
-    /* TRANSLATORS: This is the tooltip shown by pinentry when
-        hovering over the option for formatted passphrase.
-        The length is limited to about 900 characters.  */
-    { "tt",    "pinentry.formatted_passphrase.tooltip",
-      N_("Enable this option to make the passphrase easier readable by "
-         "grouping its characters.") },
     /* TRANSLATORS: This is a text shown by pinentry if the option
         for formatted passphrase is enabled.  The length is
         limited to about 900 characters.  */
@@ -1057,8 +1047,7 @@ setup_formatted_passphrase (ctrl_t ctrl)
 
   if (opt.pinentry_formatted_passphrase)
     {
-      snprintf (line, DIM(line), "OPTION formatted-passphrase=%d",
-                opt.pinentry_formatted_passphrase);
+      snprintf (line, DIM(line), "OPTION formatted-passphrase");
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
                             NULL);
       if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)

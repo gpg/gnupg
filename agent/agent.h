@@ -108,13 +108,8 @@ struct
      upon this timeout value.  */
   unsigned long pinentry_timeout;
 
-  /* Mode for the formatted passphrase option to use by pinentry.
-     Possible values are:
-       0 - Option is not shown (and off).
-       1 - Option is shown, off by default, and user can change it.
-       2 - Option is shown, on, and user cannot change it.
-       3 - Option is shown, on by default, and user can change it.  */
-  unsigned int pinentry_formatted_passphrase;
+  /* If set, then passphrase formatting is enabled in pinentry.  */
+  int pinentry_formatted_passphrase;
 
   /* The default and maximum TTL of cache entries. */
   unsigned long def_cache_ttl;     /* Default. */

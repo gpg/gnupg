@@ -285,7 +285,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oPinentryInvisibleChar, "pinentry-invisible-char", "@"),
   ARGPARSE_s_u (oPinentryTimeout, "pinentry-timeout",
                 N_("|N|set the Pinentry timeout to N seconds")),
-  ARGPARSE_s_u (oPinentryFormattedPassphrase, "pinentry-formatted-passphrase",
+  ARGPARSE_s_n (oPinentryFormattedPassphrase, "pinentry-formatted-passphrase",
                 "@"),
   ARGPARSE_s_n (oAllowEmacsPinentry,  "allow-emacs-pinentry",
                 N_("allow passphrase to be prompted through Emacs")),
@@ -914,7 +914,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       break;
     case oPinentryTimeout: opt.pinentry_timeout = pargs->r.ret_ulong; break;
     case oPinentryFormattedPassphrase:
-      opt.pinentry_formatted_passphrase = pargs->r.ret_ulong;
+      opt.pinentry_formatted_passphrase = 1;
       break;
 
     case oTpm2daemonProgram:

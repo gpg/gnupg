@@ -465,25 +465,10 @@ user input.  The default value of 0 does not ask the pinentry to
 timeout, however a Pinentry may use its own default timeout value in
 this case.  A Pinentry may or may not honor this request.
 
-@item --pinentry-formatted-passphrase @var{n}
+@item --pinentry-formatted-passphrase
 @opindex pinentry-formatted-passphrase
-This option asks the Pinentry to use the mode @var{n} for passphrase
-formatting when asking the user for a new passphrase.
-Possible values are:
-@table @code
-@item 0
-Passphrase formatting is disabled.  The option to change it is not shown,
-so that the user cannot turn it on.  This is the default.
-@item 1
-Passphrase formatting is disabled.  The option to change it is shown, so
-that the user can turn it on.
-@item 2
-Passphrase formatting is enabled. The option to change it is shown, but
-disabled, so that the user cannot turn it off.
-@item 3
-Passphrase formatting is enabled.  The option to change it is shown, so
-that the user can turn it off.
-@end table
+This option asks the Pinentry to enable passphrase formatting when asking the
+user for a new passphrase and masking of the passphrase is turned off.
 
 If passphrase formatting is enabled, then all non-breaking space characters
 are stripped from the entered passphrase.  Passphrase formatting is mostly
