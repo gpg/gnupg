@@ -99,6 +99,9 @@ struct
      upon this timeout value.  */
   unsigned long pinentry_timeout;
 
+  /* If set, then passphrase formatting is enabled in pinentry.  */
+  int pinentry_formatted_passphrase;
+
   /* The default and maximum TTL of cache entries. */
   unsigned long def_cache_ttl;     /* Default. */
   unsigned long def_cache_ttl_ssh; /* for SSH. */

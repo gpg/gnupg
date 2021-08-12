@@ -484,6 +484,15 @@ user input.  The default value of 0 does not ask the pinentry to
 timeout, however a Pinentry may use its own default timeout value in
 this case.  A Pinentry may or may not honor this request.
 
+@item --pinentry-formatted-passphrase
+@opindex pinentry-formatted-passphrase
+This option asks the Pinentry to enable passphrase formatting when asking the
+user for a new passphrase and masking of the passphrase is turned off.
+
+If passphrase formatting is enabled, then all non-breaking space characters
+are stripped from the entered passphrase.  Passphrase formatting is mostly
+useful in combination with passphrases generated with the GENPIN command.
+
 @item --pinentry-program @var{filename}
 @opindex pinentry-program
 Use program @var{filename} as the PIN entry.  The default is
