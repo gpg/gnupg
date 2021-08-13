@@ -114,6 +114,7 @@ enum cmd_and_opt_values
   oMinPassphraseLen,
   oMinPassphraseNonalpha,
   oCheckPassphrasePattern,
+  oCheckSymPassphrasePattern,
   oMaxPassphraseDays,
   oEnablePassphraseHistory,
   oDisableExtendedKeyFormat,
@@ -232,6 +233,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_u (oMinPassphraseLen,        "min-passphrase-len", "@"),
   ARGPARSE_s_u (oMinPassphraseNonalpha,   "min-passphrase-nonalpha", "@"),
   ARGPARSE_s_s (oCheckPassphrasePattern,  "check-passphrase-pattern", "@"),
+  ARGPARSE_s_s (oCheckSymPassphrasePattern,  "check-sym-passphrase-pattern",
+                "@"),
   ARGPARSE_s_u (oMaxPassphraseDays,       "max-passphrase-days", "@"),
   ARGPARSE_s_n (oEnablePassphraseHistory, "enable-passphrase-history", "@"),
 
@@ -842,6 +845,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.min_passphrase_len = MIN_PASSPHRASE_LEN;
       opt.min_passphrase_nonalpha = MIN_PASSPHRASE_NONALPHA;
       opt.check_passphrase_pattern = NULL;
+      opt.check_sym_passphrase_pattern = NULL;
       opt.max_passphrase_days = MAX_PASSPHRASE_DAYS;
       opt.enable_passphrase_history = 0;
       opt.enable_extended_key_format = 1;
@@ -914,6 +918,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       break;
     case oCheckPassphrasePattern:
       opt.check_passphrase_pattern = pargs->r.ret_str;
+      break;
+    case oCheckSymPassphrasePattern:
+      opt.check_sym_passphrase_pattern = pargs->r.ret_str;
       break;
     case oMaxPassphraseDays:
       opt.max_passphrase_days = pargs->r.ret_ulong;
@@ -1421,6 +1428,8 @@ main (int argc, char **argv )
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
               MIN_PASSPHRASE_NONALPHA);
       es_printf ("check-passphrase-pattern:%lu:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
+      es_printf ("check-sym-passphrase-pattern:%lu:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
       es_printf ("max-passphrase-days:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,

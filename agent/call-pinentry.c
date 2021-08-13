@@ -92,6 +92,7 @@ struct entry_parm_s
   size_t size;
   unsigned char *buffer;
   int status;
+  unsigned int constraints_flags;
 };
 
 
@@ -852,13 +853,20 @@ generate_pin (void)
 
 
 /* Handle inquiries. */
+struct inq_cb_parm_s
+{
+  assuan_context_t ctx;
+  unsigned int flags;  /* CHECK_CONSTRAINTS_... */
+};
+
+
 static gpg_error_t
 inq_cb (void *opaque, const char *line)
 {
-  assuan_context_t ctx = opaque;
+  struct inq_cb_parm_s *parm = opaque;
+  gpg_error_t err;
   const char *s;
   char *pin;
-  gpg_error_t err;
   int percent;
   char numbuf[20];
 
@@ -870,10 +878,10 @@ inq_cb (void *opaque, const char *line)
       else
         {
           percent = estimate_passphrase_quality (pin);
-          if (check_passphrase_constraints (NULL, pin, 0, NULL))
+          if (check_passphrase_constraints (NULL, pin, parm->flags, NULL))
             percent = -percent;
           snprintf (numbuf, sizeof numbuf, "%d", percent);
-          err = assuan_send_data (ctx, numbuf, strlen (numbuf));
+          err = assuan_send_data (parm->ctx, numbuf, strlen (numbuf));
           xfree (pin);
         }
     }
@@ -895,14 +903,14 @@ inq_cb (void *opaque, const char *line)
         err = gpg_error_from_syserror ();
       else
         {
-          if (check_passphrase_constraints (NULL, pin, 0, &errtext))
+          if (check_passphrase_constraints (NULL, pin, parm->flags, &errtext))
             {
               if (errtext)
                 {
                   /* Unescape the percent-escaped errtext because
                      assuan_send_data escapes it again. */
                   errtextlen = percent_unescape_inplace (errtext, 0);
-                  err = assuan_send_data (ctx, errtext, errtextlen);
+                  err = assuan_send_data (parm->ctx, errtext, errtextlen);
                 }
               else
                 {
@@ -912,7 +920,7 @@ inq_cb (void *opaque, const char *line)
             }
           else
             {
-              err = assuan_send_data (ctx, NULL, 0);
+              err = assuan_send_data (parm->ctx, NULL, 0);
             }
           xfree (errtext);
           xfree (pin);
@@ -931,11 +939,11 @@ inq_cb (void *opaque, const char *line)
               err = gpg_error (GPG_ERR_GENERAL);
               goto leave;
             }
-          if (!check_passphrase_constraints (NULL, pin, 0, NULL))
+          if (!check_passphrase_constraints (NULL, pin, parm->flags, NULL))
             {
-              assuan_begin_confidential (ctx);
-              err = assuan_send_data (ctx, pin, strlen (pin));
-              assuan_end_confidential (ctx);
+              assuan_begin_confidential (parm->ctx);
+              err = assuan_send_data (parm->ctx, pin, strlen (pin));
+              assuan_end_confidential (parm->ctx);
               xfree (pin);
               goto leave;
             }
@@ -1226,12 +1234,16 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
 {
   gpg_error_t rc;
   int saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
+  struct inq_cb_parm_s inq_cb_parm;
 
   (void)ctrl;
 
+  inq_cb_parm.ctx = entry_ctx;
+  inq_cb_parm.flags = parm->constraints_flags;
+
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, parm,
-                        inq_cb, entry_ctx,
+                        inq_cb, &inq_cb_parm,
                         pinentry_status_cb, &parm->status);
   assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
   /* Most pinentries out in the wild return the old Assuan error code
@@ -1384,6 +1396,7 @@ agent_askpin (ctrl_t ctrl,
       parm.size = pininfo->max_length;
       *pininfo->pin = 0; /* Reset the PIN. */
       parm.buffer = (unsigned char*)pininfo->pin;
+      parm.constraints_flags = pininfo->constraints_flags;
 
       if (errtext)
         {

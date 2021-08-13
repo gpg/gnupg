@@ -117,8 +117,11 @@ struct
   /* The minimum number of non-alpha characters in a passphrase.  */
   unsigned int min_passphrase_nonalpha;
 
-  /* File name with a patternfile or NULL if not enabled.  */
+  /* File name with a patternfile or NULL if not enabled.  If the
+   * second one is set, it is used for symmetric only encryption
+   * instead of the former. */
   const char *check_passphrase_pattern;
+  const char *check_sym_passphrase_pattern;
 
   /* If not 0 the user is asked to change his passphrase after these
      number of days.  */
@@ -287,6 +290,7 @@ struct pin_entry_info_s
   int min_digits; /* min. number of digits required or 0 for freeform entry */
   int max_digits; /* max. number of allowed digits allowed*/
   int max_tries;  /* max. number of allowed tries.  */
+  unsigned int constraints_flags;  /* CHECK_CONSTRAINTS_... */
   int failed_tries; /* Number of tries so far failed.  */
   int with_qualitybar; /* Set if the quality bar should be displayed.  */
   int with_repeat;  /* Request repetition of the passphrase.  */
@@ -493,7 +497,11 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                      membuf_t *outbuf, int *r_padding);
 
 /*-- genkey.c --*/
-int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int no_empty,
+#define CHECK_CONSTRAINTS_NOT_EMPTY  1
+#define CHECK_CONSTRAINTS_NEW_SYMKEY 2
+
+int check_passphrase_constraints (ctrl_t ctrl, const char *pw,
+                                  unsigned int flags,
 				  char **failed_constraint);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
                                       char **r_passphrase);

@@ -90,9 +90,11 @@ nonalpha_count (const char *s)
 
 
 /* Check PW against a list of pattern.  Return 0 if PW does not match
-   these pattern.  */
+   these pattern.  If CHECK_CONSTRAINTS_NEW_SYMKEY is set in flags and
+   --check-sym-passphrase-pattern has been configured, use the pattern
+   file from that option.  */
 static int
-check_passphrase_pattern (ctrl_t ctrl, const char *pw)
+do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
 {
   gpg_error_t err = 0;
   const char *pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CHECK_PATTERN);
@@ -100,8 +102,16 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
   const char *argv[10];
   pid_t pid;
   int result, i;
+  const char *pattern;
 
   (void)ctrl;
+
+  pattern = opt.check_passphrase_pattern;
+  if ((flags & CHECK_CONSTRAINTS_NEW_SYMKEY)
+      && opt.check_sym_passphrase_pattern)
+    pattern = opt.check_sym_passphrase_pattern;
+  if (!pattern)
+    return 1; /* Oops - Assume password should not be used  */
 
   infp = gnupg_tmpfile ();
   if (!infp)
@@ -125,7 +135,7 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
   i = 0;
   argv[i++] = "--null";
   argv[i++] = "--",
-  argv[i++] = opt.check_passphrase_pattern,
+  argv[i++] = pattern,
   argv[i] = NULL;
   assert (i < sizeof argv);
 
@@ -174,12 +184,17 @@ take_this_one_anyway (ctrl_t ctrl, const char *desc)
 
 
 /* Check whether the passphrase PW is suitable. Returns 0 if the
-   passphrase is suitable and true if it is not and the user should be
-   asked to provide a different one.  If FAILED_CONSTRAINT is set, a
-   message describing the problem is returned in
-   *FAILED_CONSTRAINT.  */
+ * passphrase is suitable and true if it is not and the user should be
+ * asked to provide a different one.  If FAILED_CONSTRAINT is set, a
+ * message describing the problem is returned at FAILED_CONSTRAINT.
+ * The FLAGS are:
+ *   CHECK_CONSTRAINTS_NOT_EMPTY
+ *       Do not allow an empty passphrase
+ *   CHECK_CONSTRAINTS_NEW_SYMKEY
+ *       Hint that the passphrase is used for a new symmetric key.
+ */
 int
-check_passphrase_constraints (ctrl_t ctrl, const char *pw, int no_empty,
+check_passphrase_constraints (ctrl_t ctrl, const char *pw, unsigned int flags,
 			      char **failed_constraint)
 {
   gpg_error_t err = 0;
@@ -188,6 +203,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int no_empty,
   char *msg1 = NULL;
   char *msg2 = NULL;
   char *msg3 = NULL;
+  int no_empty = !!(flags & CHECK_CONSTRAINTS_NOT_EMPTY);
 
   if (ctrl && ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
     return 0;
@@ -265,8 +281,9 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int no_empty,
      and pattern.  The actual test is done by an external program.
      The warning message is generic to give the user no hint on how to
      circumvent this list.  */
-  if (*pw && opt.check_passphrase_pattern &&
-      check_passphrase_pattern (ctrl, pw))
+  if (*pw
+      && (opt.check_passphrase_pattern || opt.check_sym_passphrase_pattern)
+      && do_check_passphrase_pattern (ctrl, pw, flags))
     {
       if (!failed_constraint)
         {

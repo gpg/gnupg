@@ -1605,6 +1605,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
       pi->max_tries = 3;
       pi->with_qualitybar = opt_qualbar;
       pi->with_repeat = opt_repeat;
+      pi->constraints_flags = (CHECK_CONSTRAINTS_NOT_EMPTY
+                               | CHECK_CONSTRAINTS_NEW_SYMKEY);
       pi2->max_length = MAX_PASSPHRASE_LEN + 1;
       pi2->max_tries = 3;
       pi2->check_cb = reenter_passphrase_cmp_cb;
@@ -1625,7 +1627,9 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
           xfree (entry_errtext);
           entry_errtext = NULL;
           /* We don't allow an empty passpharse in this mode.  */
-          if (check_passphrase_constraints (ctrl, pi->pin, 1, &entry_errtext))
+          if (check_passphrase_constraints (ctrl, pi->pin,
+                                            pi->constraints_flags,
+                                            &entry_errtext))
             {
               pi->failed_tries = 0;
               pi2->failed_tries = 0;
@@ -1686,7 +1690,10 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
           int i;
 
           if (opt_check
-	      && check_passphrase_constraints (ctrl, response,0,&entry_errtext))
+	      && check_passphrase_constraints
+              (ctrl, response,
+               (opt_newsymkey? CHECK_CONSTRAINTS_NEW_SYMKEY:0),
+               &entry_errtext))
             {
               goto next_try;
             }
