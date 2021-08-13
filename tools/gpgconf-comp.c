@@ -351,6 +351,8 @@ static known_option_t known_options_gpg_agent[] =
    { "min-passphrase-nonalpha", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT },
    { "check-passphrase-pattern", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT,
      /**/                        GC_ARG_TYPE_FILENAME },
+   { "check-sym-passphrase-pattern", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT,
+     /**/                        GC_ARG_TYPE_FILENAME },
    { "max-passphrase-days", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT },
    { "enable-passphrase-history", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT },
    { "pinentry-timeout", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },

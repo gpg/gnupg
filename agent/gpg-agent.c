@@ -113,6 +113,7 @@ enum cmd_and_opt_values
   oMinPassphraseLen,
   oMinPassphraseNonalpha,
   oCheckPassphrasePattern,
+  oCheckSymPassphrasePattern,
   oMaxPassphraseDays,
   oEnablePassphraseHistory,
   oDisableExtendedKeyFormat,
@@ -265,6 +266,8 @@ static gpgrt_opt_t opts[] = {
                    " characters for a new passphrase")),
   ARGPARSE_s_s (oCheckPassphrasePattern,  "check-passphrase-pattern",
                 N_("|FILE|check new passphrases against pattern in FILE")),
+  ARGPARSE_s_s (oCheckSymPassphrasePattern,  "check-sym-passphrase-pattern",
+                "@"),
   ARGPARSE_s_u (oMaxPassphraseDays,       "max-passphrase-days",
                 N_("|N|expire the passphrase after N days")),
   ARGPARSE_s_n (oEnablePassphraseHistory, "enable-passphrase-history",
@@ -862,6 +865,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.min_passphrase_len = MIN_PASSPHRASE_LEN;
       opt.min_passphrase_nonalpha = MIN_PASSPHRASE_NONALPHA;
       opt.check_passphrase_pattern = NULL;
+      opt.check_sym_passphrase_pattern = NULL;
       opt.max_passphrase_days = MAX_PASSPHRASE_DAYS;
       opt.enable_passphrase_history = 0;
       opt.enable_extended_key_format = 1;
@@ -941,6 +945,9 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       break;
     case oCheckPassphrasePattern:
       opt.check_passphrase_pattern = pargs->r.ret_str;
+      break;
+    case oCheckSymPassphrasePattern:
+      opt.check_sym_passphrase_pattern = pargs->r.ret_str;
       break;
     case oMaxPassphraseDays:
       opt.max_passphrase_days = pargs->r.ret_ulong;
@@ -1439,6 +1446,8 @@ main (int argc, char **argv)
       es_printf ("min-passphrase-nonalpha:%lu:%d:\n",
                  GC_OPT_FLAG_DEFAULT, MIN_PASSPHRASE_NONALPHA);
       es_printf ("check-passphrase-pattern:%lu:\n",
+                 GC_OPT_FLAG_DEFAULT);
+      es_printf ("check-sym-passphrase-pattern:%lu:\n",
                  GC_OPT_FLAG_DEFAULT);
       es_printf ("max-passphrase-days:%lu:%d:\n",
                  GC_OPT_FLAG_DEFAULT, MAX_PASSPHRASE_DAYS);

@@ -205,14 +205,14 @@ if used in an options file.
 
 
 @item -v
-@item --verbose
+@itemx --verbose
 @opindex verbose
 Outputs additional information while running.
 You can increase the verbosity by giving several
 verbose commands to @command{gpg-agent}, such as @samp{-vv}.
 
 @item -q
-@item --quiet
+@itemx --quiet
 @opindex quiet
 Try to be as quiet as possible.
 
@@ -429,11 +429,15 @@ of digits or special characters a warning will be displayed.  Defaults
 to 1.
 
 @item --check-passphrase-pattern @var{file}
+@itemx --check-sym-passphrase-pattern @var{file}
 @opindex check-passphrase-pattern
+@opindex check-sym-passphrase-pattern
 Check the passphrase against the pattern given in @var{file}.  When
 entering a new passphrase matching one of these pattern a warning will
-be displayed. @var{file} should be an absolute filename.  The default is
-not to use any pattern file.
+be displayed. @var{file} should be an absolute filename.  The default
+is not to use any pattern file.  The second version of this option is
+only used when creating a new symmetric key to allow the use of
+different patterns for such passphrases.
 
 Security note: It is known that checking a passphrase against a list of
 pattern or even against a complete dictionary is not very effective to
