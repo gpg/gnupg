@@ -212,8 +212,15 @@ atfork_core (ctrl_t ctrl, int debug_mode)
       /* For all new envvars (!ASSNAME) and the two medium old ones
        * which do have an assuan name but are conveyed using
        * environment variables, update the environment of the forked
-       * process.  */
+       * process.  We also pass DISPLAY despite that --display is also
+       * used when exec-ing the pinentry.  The reason is that for
+       * example the qt5ct tool does not have any arguments and thus
+       * relies on the DISPLAY envvar.  The use case here is a global
+       * envvar like "QT_QPA_PLATFORMTHEME=qt5ct" which for example is
+       * useful when using the Qt pinentry under GNOME or XFCE.
+       */
       if (!assname
+          || (!opt.keep_display && !strcmp (name, "DISPLAY"))
           || !strcmp (name, "XAUTHORITY")
           || !strcmp (name, "PINENTRY_USER_DATA"))
         {
