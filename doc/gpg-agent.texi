@@ -434,10 +434,12 @@ to 1.
 @opindex check-sym-passphrase-pattern
 Check the passphrase against the pattern given in @var{file}.  When
 entering a new passphrase matching one of these pattern a warning will
-be displayed. @var{file} should be an absolute filename.  The default
-is not to use any pattern file.  The second version of this option is
-only used when creating a new symmetric key to allow the use of
-different patterns for such passphrases.
+be displayed.  If @var{file} does not contain any slashes and does not
+start with "~/" it is searched in the system configuration directory
+(@file{@value{SYSCONFDIR}}).  The default is not to use any
+pattern file.  The second version of this option is only used when
+creating a new symmetric key to allow the use of different patterns
+for such passphrases.
 
 Security note: It is known that checking a passphrase against a list of
 pattern or even against a complete dictionary is not very effective to
