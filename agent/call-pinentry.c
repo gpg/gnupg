@@ -55,8 +55,12 @@
 
 /* Define the maximum tries to generate a pin for the GENPIN inquire */
 #define MAX_GENPIN_TRIES 10
-/* Define the number of characters to use for a generated pin */
-#define DEFAULT_GENPIN_BYTES (128 / 8)
+/* Define the number of bits to use for a generated pin.  The
+ * passphrase will be rendered as zbase32 which results for 150 bits
+ * in a string of 30 characters.  That fits nicely into the 5
+ * character blocking which pinentry can do.  128 bits would actually
+ * be sufficient but can't be formatted nicely. */
+#define DEFAULT_GENPIN_BITS 150
 
 /* The assuan context of the current pinentry. */
 static assuan_context_t entry_ctx;
@@ -832,18 +836,19 @@ estimate_passphrase_quality (const char *pw)
 
 
 /* Generate a random passphrase in zBase32 encoding (RFC-6189) to be
- * used by pinetry to suggest a passphrase.  */
+ * used by Pinentry to suggest a passphrase.  */
 static char *
 generate_pin (void)
 {
-  size_t nbytes = opt.min_passphrase_len;
+  unsigned int nbits = opt.min_passphrase_len * 8;
+  size_t nbytes;
   void *rand;
   char *generated;
 
-  if (nbytes < 8)
-    {
-      nbytes = DEFAULT_GENPIN_BYTES;
-    }
+  if (nbits < 128)
+    nbits = DEFAULT_GENPIN_BITS;
+
+  nbytes = (nbits + 7) / 8;
 
   rand = gcry_random_bytes_secure (nbytes, GCRY_STRONG_RANDOM);
   if (!rand)
@@ -852,7 +857,7 @@ generate_pin (void)
       return NULL;
     }
 
-  generated = zb32_encode (rand, nbytes * 8);
+  generated = zb32_encode (rand, nbits);
   gcry_free (rand);
   return generated;
 }
