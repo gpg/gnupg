@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #ifndef HAVE_W32_SYSTEM
@@ -200,7 +199,7 @@ unlock_pinentry (ctrl_t ctrl, gpg_error_t rc)
 
 
 /* Helper for at_fork_cb which can also be called by the parent to
- * show shich envvars will be set.  */
+ * show which envvars will be set.  */
 static void
 atfork_core (ctrl_t ctrl, int debug_mode)
 {
@@ -435,7 +434,7 @@ start_pinentry (ctrl_t ctrl)
     log_debug ("connection to PIN entry established\n");
 
   if (opt.debug_pinentry)
-    atfork_core (ctrl, 1);
+    atfork_core (ctrl, 1); /* Just show the envvars set after the fork.  */
 
   value = session_env_getenv (ctrl->session_env, "PINENTRY_USER_DATA");
   if (value != NULL)
@@ -948,9 +947,11 @@ inq_cb (void *opaque, const char *line)
             }
           if (!check_passphrase_constraints (NULL, pin, parm->flags, NULL))
             {
+              int wasconf = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
               assuan_begin_confidential (parm->ctx);
               err = assuan_send_data (parm->ctx, pin, strlen (pin));
-              assuan_end_confidential (parm->ctx);
+              if (!wasconf)
+                assuan_end_confidential (parm->ctx);
               xfree (pin);
               goto leave;
             }
@@ -1043,6 +1044,7 @@ setup_formatted_passphrase (ctrl_t ctrl)
   int idx;
   char *tmpstr;
   const char *s;
+  char *escapedstr;
 
   (void)ctrl;
 
@@ -1061,11 +1063,18 @@ setup_formatted_passphrase (ctrl_t ctrl)
             s = tmpstr;
           else
             s = L_(tbl[idx].value);
-          snprintf (line, DIM(line), "OPTION formatted-passphrase-%s=%s",
-                    tbl[idx].key, s);
+          escapedstr = try_percent_escape (s, "\t\r\n\f\v");
           xfree (tmpstr);
-          rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
-                                NULL);
+          if (escapedstr && *escapedstr)
+            {
+              snprintf (line, DIM(line), "OPTION formatted-passphrase-%s=%s",
+                        tbl[idx].key, escapedstr);
+              rc = assuan_transact (entry_ctx, line,
+                                    NULL, NULL, NULL, NULL, NULL, NULL);
+            }
+          else
+            rc = 0;
+          xfree (escapedstr);
           if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
             return rc;
         }
@@ -1120,11 +1129,16 @@ setup_enforced_constraints (ctrl_t ctrl)
             }
           escapedstr = try_percent_escape (s, "\t\r\n\f\v");
           xfree (tmpstr);
-          snprintf (line, DIM(line), "OPTION constraints-%s=%s",
-                    tbl[idx].key, escapedstr);
+          if (escapedstr && *escapedstr)
+            {
+              snprintf (line, DIM(line), "OPTION constraints-%s=%s",
+                        tbl[idx].key, escapedstr);
+              rc = assuan_transact (entry_ctx, line,
+                                    NULL, NULL, NULL, NULL, NULL, NULL);
+            }
+          else
+            rc = 0;  /* Ignore an empty string (would give an IPC error).  */
           xfree (escapedstr);
-          rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL,
-                                NULL);
           if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
             return rc;
         }
@@ -1240,7 +1254,7 @@ static gpg_error_t
 do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
 {
   gpg_error_t rc;
-  int saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
+  int wasconf;
   struct inq_cb_parm_s inq_cb_parm;
 
   (void)ctrl;
@@ -1248,11 +1262,14 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
   inq_cb_parm.ctx = entry_ctx;
   inq_cb_parm.flags = parm->constraints_flags;
 
+  wasconf = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, parm,
                         inq_cb, &inq_cb_parm,
                         pinentry_status_cb, &parm->status);
-  assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
+  if (!wasconf)
+    assuan_end_confidential (entry_ctx);
+
   /* Most pinentries out in the wild return the old Assuan error code
      for canceled which gets translated to an assuan Cancel error and
      not to the code for a user cancel.  Fix this here. */
