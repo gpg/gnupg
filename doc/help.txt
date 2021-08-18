@@ -32,7 +32,7 @@
 # territory (.e.g. "de_DE"), LL denotes just the locale name
 # (e.g. "de").  The first matching item is returned.  To put a dot or
 # a hash mark at the beginning of a help text line, it needs to be
-# prefixed with ". ".  A single dot may be used to terminated ahelp
+# prefixed with ". ".  A single dot may be used to terminated a help
 # entry.
 
 .#pinentry.qualitybar.tooltip
@@ -49,6 +49,32 @@ This bar indicates the quality of the passphrase entered above.
 As long as the bar is shown in red, GnuPG considers the passphrase too
 weak to accept.  Please ask your administrator for details about the
 configured passphrase constraints.
+.
+
+
+.#pinentry.constraints.hint.short
+# [remove the hash mark from the key to enable this hint]
+# This entry is used by some pinentries to display a hint about
+# enabled passphrase constraints.  These constraints are configurable
+# and the admin may give a hint about them by using this help entry.
+Please use letters and digits.
+.
+
+
+.#pinentry.constraints.hint.long
+# [remove the hash mark from the key to enable this hint]
+# This entry is used by some pinentries to show a tooltip with more
+# information about the configured passphrase constraints.
+Please use letters and digits.
+Extra constraints are enforced, for example
+the use of common car number plates.
+.
+
+
+.#pinentry.formatted_passphrase.hint",
+# [remove the hash mark from the key to enable this hint]
+# If this entry is not set a standard text is shown
+Note: The blanks are not part of the passphrase.
 .
 
 
