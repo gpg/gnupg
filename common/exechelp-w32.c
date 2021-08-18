@@ -955,14 +955,14 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
       else if ((info.BasicLimitInformation.LimitFlags &
                 JOB_OBJECT_LIMIT_BREAKAWAY_OK))
         {
-          log_debug ("Using CREATE_BREAKAWAY_FROM_JOB flag\n");
+          log_info ("Using CREATE_BREAKAWAY_FROM_JOB flag\n");
           cr_flags |= CREATE_BREAKAWAY_FROM_JOB;
         }
       else if ((info.BasicLimitInformation.LimitFlags &
                 JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK))
         {
           /* The child process should automatically detach from the job. */
-          log_debug ("Not using CREATE_BREAKAWAY_FROM_JOB flag; "
+          log_info ("Not using CREATE_BREAKAWAY_FROM_JOB flag; "
                      "JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK is set\n");
         }
       else
@@ -970,7 +970,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
           /* It seems that the child process must remain in the job.
            * This is not necessarily an error, although it can cause premature
            * termination of the child process when the job is closed. */
-          log_debug ("Not using CREATE_BREAKAWAY_FROM_JOB flag\n");
+          log_info ("Not using CREATE_BREAKAWAY_FROM_JOB flag\n");
         }
     }
 
