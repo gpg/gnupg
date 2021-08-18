@@ -1494,6 +1494,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   char *entry_errtext = NULL;
   struct pin_entry_info_s *pi = NULL;
   struct pin_entry_info_s *pi2 = NULL;
+  int is_generated;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -1626,10 +1627,13 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
             goto leave;
           xfree (entry_errtext);
           entry_errtext = NULL;
+          is_generated = !!(pi->status & PINENTRY_STATUS_PASSWORD_GENERATED);
+
           /* We don't allow an empty passpharse in this mode.  */
-          if (check_passphrase_constraints (ctrl, pi->pin,
-                                            pi->constraints_flags,
-                                            &entry_errtext))
+          if (!is_generated
+              && check_passphrase_constraints (ctrl, pi->pin,
+                                               pi->constraints_flags,
+                                               &entry_errtext))
             {
               pi->failed_tries = 0;
               pi2->failed_tries = 0;
@@ -1685,11 +1689,14 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
                                  opt_qualbar, cacheid, CACHE_MODE_USER, NULL);
       xfree (entry_errtext);
       entry_errtext = NULL;
+      is_generated = !!(pi->status & PINENTRY_STATUS_PASSWORD_GENERATED);
+
       if (!rc)
         {
           int i;
 
           if (opt_check
+              && !is_generated
 	      && check_passphrase_constraints
               (ctrl, response,
                (opt_newsymkey? CHECK_CONSTRAINTS_NEW_SYMKEY:0),

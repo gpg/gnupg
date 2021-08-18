@@ -281,7 +281,8 @@ enum
   {
     PINENTRY_STATUS_CLOSE_BUTTON = 1 << 0,
     PINENTRY_STATUS_PIN_REPEATED = 1 << 8,
-    PINENTRY_STATUS_PASSWORD_FROM_CACHE = 1 << 9
+    PINENTRY_STATUS_PASSWORD_FROM_CACHE = 1 << 9,
+    PINENTRY_STATUS_PASSWORD_GENERATED = 1 << 10
   };
 
 /* Information pertaining to pinentry requests.  */
