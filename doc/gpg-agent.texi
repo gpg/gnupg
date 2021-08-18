@@ -476,7 +476,11 @@ user for a new passphrase and masking of the passphrase is turned off.
 
 If passphrase formatting is enabled, then all non-breaking space characters
 are stripped from the entered passphrase.  Passphrase formatting is mostly
-useful in combination with passphrases generated with the GENPIN command.
+useful in combination with passphrases generated with the GENPIN
+feature of some Pinentries.  Note that such a generated
+passphrase, if not modified by the user, skips all passphrase
+constraints checking because such constraints would actually weaken
+the generated passphrase.
 
 @item --pinentry-program @var{filename}
 @opindex pinentry-program

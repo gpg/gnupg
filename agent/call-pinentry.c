@@ -53,8 +53,6 @@
    time. */
 #define LOCK_TIMEOUT  (1*60)
 
-/* Define the maximum tries to generate a pin for the GENPIN inquire */
-#define MAX_GENPIN_TRIES 10
 /* Define the number of bits to use for a generated pin.  The
  * passphrase will be rendered as zbase32 which results for 150 bits
  * in a string of 30 characters.  That fits nicely into the 5
@@ -882,7 +880,30 @@ struct inq_cb_parm_s
 {
   assuan_context_t ctx;
   unsigned int flags;  /* CHECK_CONSTRAINTS_... */
+  int genpinhash_valid;
+  char genpinhash[32]; /* Hash of the last generated pin.  */
 };
+
+
+/* Return true if PIN is indentical to the last generated pin.  */
+static int
+is_generated_pin (struct inq_cb_parm_s *parm, const char *pin)
+{
+  char hashbuf[32];
+
+  if (!parm->genpinhash_valid)
+    return 0;
+  if (!*pin)
+    return 0;
+  /* Note that we compare the hash so that we do not need to save the
+   * generated PIN longer than needed. */
+  gcry_md_hash_buffer (GCRY_MD_SHA256, hashbuf, pin, strlen (pin));
+
+  if (!memcmp (hashbuf, parm->genpinhash, 32))
+    return 1; /* yes, it is the same.  */
+
+  return 0;
+}
 
 
 static gpg_error_t
@@ -929,7 +950,8 @@ inq_cb (void *opaque, const char *line)
         err = gpg_error_from_syserror ();
       else
         {
-          if (check_passphrase_constraints (NULL, pin, parm->flags, &errtext))
+          if (!is_generated_pin (parm, pin)
+              && check_passphrase_constraints (NULL, pin,parm->flags, &errtext))
             {
               if (errtext)
                 {
@@ -954,32 +976,24 @@ inq_cb (void *opaque, const char *line)
     }
   else if ((s = has_leading_keyword (line, "GENPIN")))
     {
-      int tries;
+      int wasconf;
 
-      for (tries = 0; tries < MAX_GENPIN_TRIES; tries ++)
+      parm->genpinhash_valid = 0;
+      pin = generate_pin ();
+      if (!pin)
         {
-          pin = generate_pin ();
-          if (!pin)
-            {
-              log_error ("failed to generate a passphrase\n");
-              err = gpg_error (GPG_ERR_GENERAL);
-              goto leave;
-            }
-          if (!check_passphrase_constraints (NULL, pin, parm->flags, NULL))
-            {
-              int wasconf = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
-              assuan_begin_confidential (parm->ctx);
-              err = assuan_send_data (parm->ctx, pin, strlen (pin));
-              if (!wasconf)
-                assuan_end_confidential (parm->ctx);
-              xfree (pin);
-              goto leave;
-            }
-          xfree (pin);
+          log_error ("failed to generate a passphrase\n");
+          err = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
         }
-      log_error ("failed to generate a passphrase after %i tries\n",
-                 MAX_GENPIN_TRIES);
-      err = gpg_error (GPG_ERR_GENERAL);
+      wasconf = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
+      assuan_begin_confidential (parm->ctx);
+      err = assuan_send_data (parm->ctx, pin, strlen (pin));
+      if (!wasconf)
+        assuan_end_confidential (parm->ctx);
+      gcry_md_hash_buffer (GCRY_MD_SHA256, parm->genpinhash, pin, strlen (pin));
+      parm->genpinhash_valid = 1;
+      xfree (pin);
     }
   else
     {
@@ -1376,6 +1390,7 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
 
   inq_cb_parm.ctx = entry_ctx;
   inq_cb_parm.flags = parm->constraints_flags;
+  inq_cb_parm.genpinhash_valid = 0;
 
   wasconf = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
   assuan_begin_confidential (entry_ctx);
@@ -1384,6 +1399,11 @@ do_getpin (ctrl_t ctrl, struct entry_parm_s *parm)
                         pinentry_status_cb, &parm->status);
   if (!wasconf)
     assuan_end_confidential (entry_ctx);
+
+  if (!rc && parm->buffer && is_generated_pin (&inq_cb_parm, parm->buffer))
+    parm->status |= PINENTRY_STATUS_PASSWORD_GENERATED;
+  else
+    parm->status &= ~PINENTRY_STATUS_PASSWORD_GENERATED;
 
   /* Most pinentries out in the wild return the old Assuan error code
      for canceled which gets translated to an assuan Cancel error and
@@ -1417,6 +1437,7 @@ agent_askpin (ctrl_t ctrl,
   struct entry_parm_s parm;
   const char *errtext = NULL;
   int is_pin = 0;
+  int is_generated;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -1562,13 +1583,15 @@ agent_askpin (ctrl_t ctrl,
 
       rc = do_getpin (ctrl, &parm);
       pininfo->status = parm.status;
+      is_generated = !!(parm.status & PINENTRY_STATUS_PASSWORD_GENERATED);
+
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
         errtext = is_pin? L_("PIN too long")
                         : L_("Passphrase too long");
       else if (rc)
         return unlock_pinentry (ctrl, rc);
 
-      if (!errtext && pininfo->min_digits)
+      if (!errtext && pininfo->min_digits && !is_generated)
         {
           /* do some basic checks on the entered PIN. */
           if (!all_digitsp (pininfo->pin))
@@ -1580,7 +1603,7 @@ agent_askpin (ctrl_t ctrl,
             errtext = L_("PIN too short");
         }
 
-      if (!errtext && pininfo->check_cb)
+      if (!errtext && pininfo->check_cb && !is_generated)
         {
           /* More checks by utilizing the optional callback. */
           pininfo->cb_errtext = NULL;
@@ -1639,6 +1662,7 @@ agent_get_passphrase (ctrl_t ctrl,
 {
   int rc;
   int is_pin;
+  int is_generated;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
 
@@ -1793,6 +1817,7 @@ agent_get_passphrase (ctrl_t ctrl,
   for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
     {
       memset (&parm, 0, sizeof parm);
+      parm.constraints_flags = pininfo->constraints_flags;
       parm.size = pininfo->max_length;
       parm.buffer = (unsigned char*)pininfo->pin;
       *pininfo->pin = 0; /* Reset the PIN. */
@@ -1822,13 +1847,15 @@ agent_get_passphrase (ctrl_t ctrl,
 
       rc = do_getpin (ctrl, &parm);
       pininfo->status = parm.status;
+      is_generated = !!(parm.status & PINENTRY_STATUS_PASSWORD_GENERATED);
+
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
         errtext = is_pin? L_("PIN too long")
                         : L_("Passphrase too long");
       else if (rc)
         return unlock_pinentry (ctrl, rc);
 
-      if (!errtext && pininfo->min_digits)
+      if (!errtext && pininfo->min_digits && !is_generated)
         {
           /* do some basic checks on the entered PIN. */
           if (!all_digitsp (pininfo->pin))
@@ -1840,7 +1867,7 @@ agent_get_passphrase (ctrl_t ctrl,
             errtext = L_("PIN too short");
         }
 
-      if (!errtext && pininfo->check_cb)
+      if (!errtext && pininfo->check_cb && !is_generated)
         {
           /* More checks by utilizing the optional callback. */
           pininfo->cb_errtext = NULL;
