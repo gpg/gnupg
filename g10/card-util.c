@@ -764,7 +764,8 @@ static int
 change_name (void)
 {
   char *surname = NULL, *givenname = NULL;
-  char *isoname, *p;
+  char *isoname = NULL;
+  char *p;
   int rc;
 
   surname = get_one_name ("keygen.smartcard.surname",
@@ -775,7 +776,8 @@ change_name (void)
     {
       xfree (surname);
       xfree (givenname);
-      return -1; /*canceled*/
+      rc = gpg_error (GPG_ERR_CANCELED);
+      goto leave;
     }
 
   isoname = xmalloc ( strlen (surname) + 2 + strlen (givenname) + 1);
@@ -791,14 +793,17 @@ change_name (void)
       tty_printf (_("Error: Combined name too long "
                     "(limit is %d characters).\n"), 39);
       xfree (isoname);
-      return -1;
+      rc = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
     }
 
   rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname));
   if (rc)
     log_error ("error setting Name: %s\n", gpg_strerror (rc));
 
+ leave:
   xfree (isoname);
+  write_sc_op_status (rc);
   return rc;
 }
 
