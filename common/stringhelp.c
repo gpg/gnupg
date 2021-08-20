@@ -2,7 +2,7 @@
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
  *               2008, 2009, 2010  Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2015  g10 Code GmbH
+ * Copyright (C) 2015, 2021  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -29,6 +29,7 @@
  * You should have received a copies of the GNU General Public License
  * and the GNU Lesser General Public License along with this program;
  * if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
  */
 
 #include <config.h>
@@ -48,7 +49,6 @@
 # endif
 # include <windows.h>
 #endif
-#include <assert.h>
 #include <limits.h>
 
 #include "util.h"
@@ -214,7 +214,7 @@ trim_spaces( char *str )
 }
 
 
-/* Same as trim_spaces but only condider, space, tab, cr and lf as space.  */
+/* Same as trim_spaces but only consider, space, tab, cr and lf as space.  */
 char *
 ascii_trim_spaces (char *str)
 {
@@ -1291,8 +1291,8 @@ strsplit (char *string, char delim, char replacement, int *count)
  * Returns: A malloced and NULL delimited array with the tokens.  On
  *          memory error NULL is returned and ERRNO is set.
  */
-char **
-strtokenize (const char *string, const char *delim)
+static char **
+do_strtokenize (const char *string, const char *delim, int trim)
 {
   const char *s;
   size_t fields;
@@ -1331,22 +1331,49 @@ strtokenize (const char *string, const char *delim)
   for (n = 0, p = buffer; (pend = strpbrk (p, delim)); p = pend + 1)
     {
       *pend = 0;
-      while (spacep (p))
-        p++;
-      for (px = pend - 1; px >= p && spacep (px); px--)
-        *px = 0;
+      if (trim)
+        {
+          while (spacep (p))
+            p++;
+          for (px = pend - 1; px >= p && spacep (px); px--)
+            *px = 0;
+        }
       result[n++] = p;
     }
-  while (spacep (p))
-    p++;
-  for (px = p + strlen (p) - 1; px >= p && spacep (px); px--)
-    *px = 0;
+  if (trim)
+    {
+      while (spacep (p))
+        p++;
+      for (px = p + strlen (p) - 1; px >= p && spacep (px); px--)
+        *px = 0;
+    }
   result[n++] = p;
   result[n] = NULL;
 
-  assert ((char*)(result + n + 1) == buffer);
+  log_assert ((char*)(result + n + 1) == buffer);
 
   return result;
+}
+
+/* Tokenize STRING using the set of delimiters in DELIM.  Leading
+ * spaces and tabs are removed from all tokens.  The caller must xfree
+ * the result.
+ *
+ * Returns: A malloced and NULL delimited array with the tokens.  On
+ *          memory error NULL is returned and ERRNO is set.
+ */
+char **
+strtokenize (const char *string, const char *delim)
+{
+  return do_strtokenize (string, delim, 1);
+}
+
+/* Same as strtokenize but does not trim leading and trailing spaces
+ * from the fields.  */
+char **
+strtokenize_nt (const char *string, const char *delim)
+{
+  return do_strtokenize (string, delim, 0);
 }
 
 

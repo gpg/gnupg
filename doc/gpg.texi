@@ -3944,6 +3944,9 @@ are:
   @var{VALUE} spans to the end of the expression.
   @item -c
   The string match in this part is done case-sensitive.
+  @item -t
+  Leading and trailing spaces are not removed from @var{VALUE}.
+  The optional single space after @var{op} is here required.
 @end table
 
 The filter options concatenate several specifications for a filter of

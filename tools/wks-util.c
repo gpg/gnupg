@@ -348,7 +348,7 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
       /* log_debug ("line '%s'\n", line); */
 
       xfree (fields);
-      fields = strtokenize (line, ":");
+      fields = strtokenize_nt (line, ":");
       if (!fields)
         {
           err = gpg_error_from_syserror ();
@@ -467,7 +467,7 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
     es_fputs ("Content-Type: application/pgp-keys\n"
               "\n", newkey);
 
-  filterexp = es_bsprintf ("keep-uid=uid= %s", uid);
+  filterexp = es_bsprintf ("keep-uid=-t uid= %s", uid);
   if (!filterexp)
     {
       err = gpg_error_from_syserror ();

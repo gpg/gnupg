@@ -172,6 +172,8 @@ find_next_lc (char *string)
  *
  *   --  VALUE spans to the end of the expression.
  *   -c  The string match in this part is done case-sensitive.
+ *   -t  Do not trim leading and trailing spaces from VALUE.
+ *       Note that a space after <op> is here required.
  *
  * For example four calls to recsel_parse_expr() with these values for
  * EXPR
@@ -203,6 +205,7 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
   char *s0, *s;
   int toend = 0;
   int xcase = 0;
+  int notrim = 0;
   int disjun = 0;
   char *next_lc = NULL;
 
@@ -232,6 +235,7 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
         {
         case '-': toend = 1; break;
         case 'c': xcase = 1; break;
+        case 't': notrim = 1; break;
         default:
           log_error ("invalid flag '-%c' in expression\n", *expr);
           recsel_release (se_head);
@@ -391,8 +395,11 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
       return my_error (GPG_ERR_INV_OP);
     }
 
-  while (*s == ' ' || *s == '\t')
+  if (*s == ' ' || *s == '\t')
     s++;
+  if (!notrim)
+    while (*s == ' ' || *s == '\t')
+      s++;
 
   if (se->op == SELECT_NONEMPTY || se->op == SELECT_ISTRUE)
     {
@@ -425,7 +432,8 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
       return my_error (GPG_ERR_NO_NAME);
     }
 
-  trim_spaces (se->name + (s - expr));
+  if (!notrim)
+    trim_spaces (se->name + (s - expr));
   se->value = se->name + (s - expr);
   if (!se->value[0] && !(se->op == SELECT_NONEMPTY || se->op == SELECT_ISTRUE))
     {
