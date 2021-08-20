@@ -98,19 +98,28 @@ wks_write_status (int no, const char *format, ...)
 
 
 /* Append UID to LIST and return the new item.  On success LIST is
- * updated.  On error ERRNO is set and NULL returned. */
+ * updated.  C-style escaping is removed from UID.  On error ERRNO is
+ * set and NULL returned. */
 static uidinfo_list_t
 append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
 {
   uidinfo_list_t r, sl;
+  char *plainuid;
 
-  sl = xtrymalloc (sizeof *sl + strlen (uid));
-  if (!sl)
+  plainuid = decode_c_string (uid);
+  if (!plainuid)
     return NULL;
 
-  strcpy (sl->uid, uid);
+  sl = xtrymalloc (sizeof *sl + strlen (plainuid));
+  if (!sl)
+    {
+      xfree (plainuid);
+      return NULL;
+    }
+
+  strcpy (sl->uid, plainuid);
   sl->created = created;
-  sl->mbox = mailbox_from_userid (uid);
+  sl->mbox = mailbox_from_userid (plainuid);
   sl->next = NULL;
   if (!*list)
     *list = sl;
@@ -120,6 +129,8 @@ append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
         ;
       r->next = sl;
     }
+
+  xfree (plainuid);
   return sl;
 }
 
@@ -395,7 +406,6 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
         }
       else if (!strcmp (fields[0], "uid") && nfields > 9)
         {
-          /* Fixme: Unescape fields[9] */
           if (!append_to_uidinfo_list (&mboxes, fields[9],
                                        parse_timestamp (fields[5], NULL)))
             {
