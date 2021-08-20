@@ -2087,6 +2087,13 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
               break;
             }
         }
+
+      /*
+       * Increment PCSC.COUNT artificially, so that PCSC.CONTEXT can
+       * be kept (not released) until apdu_dev_list_finish will be
+       * called.
+       */
+      pcsc.count++;
     }
 
   *l_p = dl;
@@ -2112,7 +2119,7 @@ apdu_dev_list_finish (struct dev_list *dl)
         pcsc.rdrname[i] = NULL;
 
       npth_mutex_lock (&reader_table_lock);
-      if (pcsc.count == 0)
+      if (--pcsc.count == 0)
         release_pcsc_context ();
       npth_mutex_unlock (&reader_table_lock);
     }
