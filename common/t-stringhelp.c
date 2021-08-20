@@ -1,6 +1,6 @@
 /* t-stringhelp.c - Regression tests for stringhelp.c
  * Copyright (C) 2007 Free Software Foundation, Inc.
- *               2015  g10 Code GmbH
+ *               2015, 2021  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -27,6 +27,7 @@
  * You should have received a copies of the GNU General Public License
  * and the GNU Lesser General Public License along with this program;
  * if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
  */
 
 #include <config.h>
@@ -34,7 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #ifdef HAVE_PWD_H
 # include <pwd.h>
 #endif
@@ -687,6 +687,144 @@ test_strtokenize (void)
 
 
 static void
+test_strtokenize_nt (void)
+{
+  struct {
+    const char *s;
+    const char *delim;
+    const char *fields_expected[10];
+  } tv[] = {
+    {
+      "", ":",
+      { "", NULL }
+    },
+    {
+      "a", ":",
+      { "a", NULL }
+    },
+    {
+      ":", ":",
+      { "", "", NULL }
+    },
+    {
+      "::", ":",
+      { "", "", "", NULL }
+    },
+    {
+      "a:b:c", ":",
+      { "a", "b", "c", NULL }
+    },
+    {
+      "a:b:", ":",
+      { "a", "b", "", NULL }
+    },
+    {
+      "a:b", ":",
+      { "a", "b", NULL }
+    },
+    {
+      "aa:b:cd", ":",
+      { "aa", "b", "cd", NULL }
+    },
+    {
+      "aa::b:cd", ":",
+      { "aa", "", "b", "cd", NULL }
+    },
+    {
+      "::b:cd", ":",
+      { "", "", "b", "cd", NULL }
+    },
+    {
+      "aa:   : b:cd ", ":",
+      { "aa", "   ", " b", "cd ", NULL }
+    },
+    {
+      "  aa:   : b:  cd ", ":",
+      { "  aa", "   ", " b", "  cd ", NULL }
+    },
+    {
+      "  ", ":",
+      { "  ", NULL }
+    },
+    {
+      "  :", ":",
+      { "  ", "", NULL }
+    },
+    {
+      "  : ", ":",
+      { "  ", " ", NULL }
+    },
+    {
+      ": ", ":",
+      { "", " ", NULL }
+    },
+    {
+      ": x ", ":",
+      { "", " x ", NULL }
+    },
+    {
+      "a:bc:cde:fghi:jklmn::foo:", ":",
+      { "a", "bc", "cde", "fghi", "jklmn", "", "foo", "", NULL }
+    },
+    {
+      ",a,bc,,def,", ",",
+      { "", "a", "bc", "", "def", "", NULL }
+    },
+    {
+      " a ", " ",
+      { "", "a", "", NULL }
+    },
+    {
+      " ", " ",
+      { "", "", NULL }
+    },
+    {
+      "", " ",
+      { "", NULL }
+    }
+  };
+
+  int tidx;
+
+  for (tidx = 0; tidx < DIM(tv); tidx++)
+    {
+      char **fields;
+      int field_count;
+      int field_count_expected;
+      int i;
+
+      for (field_count_expected = 0;
+           tv[tidx].fields_expected[field_count_expected];
+           field_count_expected ++)
+        ;
+
+      fields = strtokenize_nt (tv[tidx].s, tv[tidx].delim);
+      if (!fields)
+        fail (tidx * 1000);
+      else
+        {
+          for (field_count = 0; fields[field_count]; field_count++)
+            ;
+          if (field_count != field_count_expected)
+            fail (tidx * 1000);
+          else
+            {
+              for (i = 0; i < field_count_expected; i++)
+                if (strcmp (tv[tidx].fields_expected[i], fields[i]))
+                  {
+                    printf ("For field %d, expected '%s', but got '%s'\n",
+                            i, tv[tidx].fields_expected[i], fields[i]);
+                    fail (tidx * 1000 + i + 1);
+                  }
+            }
+          }
+
+      xfree (fields);
+    }
+}
+
+
+static void
 test_split_fields (void)
 {
   struct {
@@ -724,7 +862,7 @@ test_split_fields (void)
   for (tidx = 0; tidx < DIM(tv); tidx++)
     {
       nfields = tv[tidx].nfields;
-      assert (nfields <= DIM (fields));
+      log_assert (nfields <= DIM (fields));
 
       /* Count the fields.  */
       for (field_count_expected = 0;
@@ -799,7 +937,7 @@ test_split_fields_colon (void)
   for (tidx = 0; tidx < DIM(tv); tidx++)
     {
       nfields = tv[tidx].nfields;
-      assert (nfields <= DIM (fields));
+      log_assert (nfields <= DIM (fields));
 
       /* Count the fields.  */
       for (field_count_expected = 0;
@@ -1070,6 +1208,7 @@ main (int argc, char **argv)
   test_make_absfilename_try ();
   test_strsplit ();
   test_strtokenize ();
+  test_strtokenize_nt ();
   test_split_fields ();
   test_split_fields_colon ();
   test_compare_version_strings ();

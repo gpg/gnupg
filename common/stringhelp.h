@@ -148,6 +148,9 @@ char **strsplit (char *string, char delim, char replacement, int *count);
 
 /* Tokenize STRING using the set of delimiters in DELIM.  */
 char **strtokenize (const char *string, const char *delim);
+/* Tokenize STRING using the set of delimiters in DELIM but do not
+ * trim the tokens.  */
+char **strtokenize_nt (const char *string, const char *delim);
 
 /* Split STRING into space delimited fields and store them in the
  * provided ARRAY.  */
