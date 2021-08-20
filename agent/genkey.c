@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "agent.h"
 #include "../common/i18n.h"
@@ -103,6 +104,7 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
   pid_t pid;
   int result, i;
   const char *pattern;
+  char *patternfname;
 
   (void)ctrl;
 
@@ -113,11 +115,34 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
   if (!pattern)
     return 1; /* Oops - Assume password should not be used  */
 
+  if (strchr (pattern, '/') || strchr (pattern, '\\')
+      || (*pattern == '~' && pattern[1] == '/'))
+    patternfname = make_absfilename_try (pattern, NULL);
+  else
+    patternfname = make_filename_try (gnupg_sysconfdir (), pattern, NULL);
+  if (!patternfname)
+    {
+      log_error ("error making filename from '%s': %s\n",
+                 pattern, gpg_strerror (gpg_error_from_syserror ()));
+      return 1; /* Do not pass the check.  */
+    }
+
+  /* Make debugging a broken config easier by printing a useful error
+   * message.  */
+  if (gnupg_access (patternfname, F_OK))
+    {
+      log_error ("error accessing '%s': %s\n",
+                 patternfname, gpg_strerror (gpg_error_from_syserror ()));
+      xfree (patternfname);
+      return 1; /* Do not pass the check.  */
+    }
+
   infp = gnupg_tmpfile ();
   if (!infp)
     {
       err = gpg_error_from_syserror ();
       log_error (_("error creating temporary file: %s\n"), gpg_strerror (err));
+      xfree (patternfname);
       return 1; /* Error - assume password should not be used.  */
     }
 
@@ -127,6 +152,7 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
       log_error (_("error writing to temporary file: %s\n"),
                  gpg_strerror (err));
       fclose (infp);
+      xfree (patternfname);
       return 1; /* Error - assume password should not be used.  */
     }
   fseek (infp, 0, SEEK_SET);
@@ -135,7 +161,7 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
   i = 0;
   argv[i++] = "--null";
   argv[i++] = "--",
-  argv[i++] = pattern,
+  argv[i++] = patternfname,
   argv[i] = NULL;
   assert (i < sizeof argv);
 
@@ -154,6 +180,8 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
     putc ('\xff', infp);
   fflush (infp);
   fclose (infp);
+
+  xfree (patternfname);
   return result;
 }
 
