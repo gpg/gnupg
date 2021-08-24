@@ -589,8 +589,8 @@ proc_encrypted (CTX c, PACKET *pkt)
           struct pubkey_enc_list *list;
 
           for (list = c->pkenc_list; list; list = list->next)
-            if (list->result && list->result != -1)
-              {
+            if (list->result)
+              { /* Key was not tried or it caused an error.  */
                 char buf[20];
                 snprintf (buf, sizeof buf, "%08lX%08lX",
                           (ulong)list->keyid[0], (ulong)list->keyid[1]);
