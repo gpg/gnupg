@@ -58,6 +58,9 @@ msgstr "|pinentry-tt|使密码可见"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|隐藏密码"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -72,6 +75,17 @@ msgstr "建议"
 #. non-translated string.
 msgid "pinentry.genpin.tooltip"
 msgstr "pinentry.genpin.tooltip"
+
+msgid "Note: The blanks are not part of the passphrase."
+msgstr ""
+
+#. TRANSLATORS: This is a text shown by pinentry as title of a dialog
+#. telling the user that the entered new passphrase does not satisfy
+#. the passphrase constraints.  Please keep it short.
+#, fuzzy
+#| msgid "Passphrase too long"
+msgid "Passphrase Not Allowed"
+msgstr "密码太长"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -4457,10 +4471,6 @@ msgid "key not found on keyserver\n"
 msgstr "在公钥服务器上找不到密钥\n"
 
 #, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "正在请求密钥 %s 从 %s 服务器 %s\n"
-
-#, c-format
 msgid "requesting key %s from %s\n"
 msgstr "正在请求密钥 %s 从 %s\n"
 
@@ -4834,6 +4844,11 @@ msgstr "未知的紧急签名注记： "
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "%d 类型的子包设定了紧急位\n"
+
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "请输入新的密码"
 
 msgid "Enter passphrase\n"
 msgstr "请输入密码\n"
@@ -7071,26 +7086,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "未知的验证模型‘%s’\n"
 
 #, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "%s:%u: 未指定主机名\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr "%s:%u: 给定密码但未给定用户\n"
-
-#, c-format
-msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr "%s:%u：忽略未知的标志 ‘%s’\n"
-
-#, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr "%s:%u: 正在跳过此行\n"
-
-#, c-format
-msgid "could not parse keyserver\n"
-msgstr "无法解析公钥服务器\n"
-
-#, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "正在导入通用证书‘%s’\n"
 
@@ -8036,147 +8031,6 @@ msgstr "收到 SIGINT 信号 - 立即关闭\n"
 msgid "signal %d received - no action defined\n"
 msgstr "收到 %d 信号 - 未定义要进行的操作\n"
 
-msgid "return all values in a record oriented format"
-msgstr "以记录导向的格式返回所有值"
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr "|NAME|忽略主机部分并通过 NAME 进行连接"
-
-msgid "force a TLS connection"
-msgstr "强制 TLS 连接"
-
-msgid "|NAME|connect to host NAME"
-msgstr "|NAME|连接到以 NAME 命名的主机"
-
-msgid "|N|connect to port N"
-msgstr "|N|连接到端口 N"
-
-msgid "|NAME|use user NAME for authentication"
-msgstr "|NAME|使用用户名称 NAME 进行身份验证"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr "|PASS|使用密码 PASS 进行身份验证"
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr "从 $DIRMNGR_LDAP_PASS 取得密码"
-
-msgid "|STRING|query DN STRING"
-msgstr "|STRING|查询 DN STRING"
-
-msgid "|STRING|use STRING as filter expression"
-msgstr "|STRING|使用 STRING 作为过滤器扩展"
-
-msgid "|STRING|return the attribute STRING"
-msgstr "|STRING|返回属性 STRING"
-
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "用法： dirmngr_ldap [选项] [URL链接] （-h 获取帮助）\n"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-"语法：dirmngr_ldap [选项] [URL链接]\n"
-"Dirmngr 的内部 LDAP 助手\n"
-"接口和选项可能在没有通知的情况下改变\n"
-
-#, c-format
-msgid "invalid port number %d\n"
-msgstr "无效的端口号 %d\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr "为属性‘%s’搜索结果\n"
-
-#, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "写入到标准输出（stdout）时出现错误：%s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr "          可用属性‘%s’\n"
-
-#, c-format
-msgid "attribute '%s' not found\n"
-msgstr "属性‘%s’未找到\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr "找到属性‘%s’\n"
-
-#, c-format
-msgid "processing url '%s'\n"
-msgstr "正在处理 URL ‘%s’\n"
-
-#, c-format
-msgid "          user '%s'\n"
-msgstr "          用户‘%s’\n"
-
-#, c-format
-msgid "          pass '%s'\n"
-msgstr "          密码‘%s’\n"
-
-#, c-format
-msgid "          host '%s'\n"
-msgstr "          主机‘%s’\n"
-
-#, c-format
-msgid "          port %d\n"
-msgstr "          端口 %d\n"
-
-#, c-format
-msgid "            DN '%s'\n"
-msgstr "            DN ‘%s’\n"
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr "        过滤器 ‘%s’\n"
-
-#, c-format
-msgid "          attr '%s'\n"
-msgstr "          属性 ‘%s’\n"
-
-#, c-format
-msgid "no host name in '%s'\n"
-msgstr "‘%s’中没有主机名\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr "未指定查询‘%s’的属性\n"
-
-#, c-format
-msgid "WARNING: using first attribute only\n"
-msgstr "警告：仅使用第一个属性\n"
-
-#, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "LDAP 初始化至 ‘%s:%d’ 时失败：%s\n"
-
-#, c-format
-msgid "LDAP init to '%s' failed: %s\n"
-msgstr "LDAP 初始化至 ‘%s’ 失败：%s\n"
-
-#, c-format
-msgid "LDAP init to '%s' done\n"
-msgstr "LDAP 初始化至 ‘%s’ 完成\n"
-
-#, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "绑定至‘%s:%d’时失败：%s\n"
-
-#, c-format
-msgid "searching '%s' failed: %s\n"
-msgstr "搜索‘%s’时失败：%s\n"
-
-#, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "‘%s’不是一个 LDAP URL\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr "‘%s’是一个无效的 LDAP URL\n"
-
 #, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "访问‘%s’时出现错误：http 状态码 %u\n"
@@ -8234,12 +8088,28 @@ msgid "malloc failed: %s\n"
 msgstr "malloc 方法失败：%s\n"
 
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
-msgstr "start_cert_fetch：无效的模式‘%s’\n"
+msgid "'%s' is not an LDAP URL\n"
+msgstr "‘%s’不是一个 LDAP URL\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr "‘%s’是一个无效的 LDAP URL\n"
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr "ldap_search 方法触及服务器的大小限制\n"
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr "%s:%u: 给定密码但未给定用户\n"
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr "%s:%u：忽略未知的标志 ‘%s’\n"
+
+#, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr "%s:%u: 正在跳过此行\n"
 
 #, c-format
 msgid "invalid canonical S-expression found\n"
@@ -8383,9 +8253,6 @@ msgstr "OCSP 返回了一个太以前的状态\n"
 #, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "assuan_inquire(%s) 方法失败：%s\n"
-
-msgid "ldapserver missing"
-msgstr "ldapserver 缺失"
 
 msgid "serialno missing in cert ID"
 msgstr "证书 ID 中的序列号缺失"
@@ -8732,6 +8599,132 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "正在请求密钥 %s 从 %s 服务器 %s\n"
+
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "%s:%u: 未指定主机名\n"
+
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "无法解析公钥服务器\n"
+
+#~ msgid "return all values in a record oriented format"
+#~ msgstr "以记录导向的格式返回所有值"
+
+#~ msgid "|NAME|ignore host part and connect through NAME"
+#~ msgstr "|NAME|忽略主机部分并通过 NAME 进行连接"
+
+#~ msgid "force a TLS connection"
+#~ msgstr "强制 TLS 连接"
+
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|NAME|连接到以 NAME 命名的主机"
+
+#~ msgid "|N|connect to port N"
+#~ msgstr "|N|连接到端口 N"
+
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|NAME|使用用户名称 NAME 进行身份验证"
+
+#~ msgid "|PASS|use password PASS for authentication"
+#~ msgstr "|PASS|使用密码 PASS 进行身份验证"
+
+#~ msgid "take password from $DIRMNGR_LDAP_PASS"
+#~ msgstr "从 $DIRMNGR_LDAP_PASS 取得密码"
+
+#~ msgid "|STRING|query DN STRING"
+#~ msgstr "|STRING|查询 DN STRING"
+
+#~ msgid "|STRING|use STRING as filter expression"
+#~ msgstr "|STRING|使用 STRING 作为过滤器扩展"
+
+#~ msgid "|STRING|return the attribute STRING"
+#~ msgstr "|STRING|返回属性 STRING"
+
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "用法： dirmngr_ldap [选项] [URL链接] （-h 获取帮助）\n"
+
+#~ msgid ""
+#~ "Syntax: dirmngr_ldap [options] [URL]\n"
+#~ "Internal LDAP helper for Dirmngr\n"
+#~ "Interface and options may change without notice\n"
+#~ msgstr ""
+#~ "语法：dirmngr_ldap [选项] [URL链接]\n"
+#~ "Dirmngr 的内部 LDAP 助手\n"
+#~ "接口和选项可能在没有通知的情况下改变\n"
+
+#~ msgid "invalid port number %d\n"
+#~ msgstr "无效的端口号 %d\n"
+
+#~ msgid "scanning result for attribute '%s'\n"
+#~ msgstr "为属性‘%s’搜索结果\n"
+
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "写入到标准输出（stdout）时出现错误：%s\n"
+
+#~ msgid "          available attribute '%s'\n"
+#~ msgstr "          可用属性‘%s’\n"
+
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "属性‘%s’未找到\n"
+
+#~ msgid "found attribute '%s'\n"
+#~ msgstr "找到属性‘%s’\n"
+
+#~ msgid "processing url '%s'\n"
+#~ msgstr "正在处理 URL ‘%s’\n"
+
+#~ msgid "          user '%s'\n"
+#~ msgstr "          用户‘%s’\n"
+
+#~ msgid "          pass '%s'\n"
+#~ msgstr "          密码‘%s’\n"
+
+#~ msgid "          host '%s'\n"
+#~ msgstr "          主机‘%s’\n"
+
+#~ msgid "          port %d\n"
+#~ msgstr "          端口 %d\n"
+
+#~ msgid "            DN '%s'\n"
+#~ msgstr "            DN ‘%s’\n"
+
+#~ msgid "        filter '%s'\n"
+#~ msgstr "        过滤器 ‘%s’\n"
+
+#~ msgid "          attr '%s'\n"
+#~ msgstr "          属性 ‘%s’\n"
+
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "‘%s’中没有主机名\n"
+
+#~ msgid "no attribute given for query '%s'\n"
+#~ msgstr "未指定查询‘%s’的属性\n"
+
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "警告：仅使用第一个属性\n"
+
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "LDAP 初始化至 ‘%s:%d’ 时失败：%s\n"
+
+#~ msgid "LDAP init to '%s' failed: %s\n"
+#~ msgstr "LDAP 初始化至 ‘%s’ 失败：%s\n"
+
+#~ msgid "LDAP init to '%s' done\n"
+#~ msgstr "LDAP 初始化至 ‘%s’ 完成\n"
+
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "绑定至‘%s:%d’时失败：%s\n"
+
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "搜索‘%s’时失败：%s\n"
+
+#~ msgid "start_cert_fetch: invalid pattern '%s'\n"
+#~ msgstr "start_cert_fetch：无效的模式‘%s’\n"
+
+#~ msgid "ldapserver missing"
+#~ msgstr "ldapserver 缺失"
 
 #~ msgid "detected card with S/N: %s\n"
 #~ msgstr "检测到的卡 S/N 码为: %s\n"

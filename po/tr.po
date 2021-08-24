@@ -58,6 +58,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "Yeni anahtar parolasını giriniz"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -72,6 +75,17 @@ msgstr ""
 #. non-translated string.
 msgid "pinentry.genpin.tooltip"
 msgstr ""
+
+msgid "Note: The blanks are not part of the passphrase."
+msgstr ""
+
+#. TRANSLATORS: This is a text shown by pinentry as title of a dialog
+#. telling the user that the entered new passphrase does not satisfy
+#. the passphrase constraints.  Please keep it short.
+#, fuzzy
+#| msgid "Passphrase too long"
+msgid "Passphrase Not Allowed"
+msgstr "Anahtar Parolası çok uzun"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -4995,10 +5009,6 @@ msgid "key not found on keyserver\n"
 msgstr "anahtar, anahtar sunucusunda yok\n"
 
 #, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "%1$s anahtarı %3$s sunucusunun %2$s adresinden isteniyor\n"
-
-#, c-format
 msgid "requesting key %s from %s\n"
 msgstr "%s anahtarı %s adresinden isteniyor\n"
 
@@ -5399,6 +5409,11 @@ msgstr "Kritik imza simgelemi: "
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "%d tipi alt paket kritik bit kümesine sahip\n"
+
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Lütfen yeni anahtar parolasını girin"
 
 msgid "Enter passphrase\n"
 msgstr "Anahtar parolasını giriniz\n"
@@ -7895,26 +7910,6 @@ msgstr "BİLGİ:`%s'e şifrelenemez: %s\n"
 msgid "unknown validation model '%s'\n"
 msgstr "`%s' geçerlilik modeli bilinmiyor\n"
 
-#, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "%s:%u: konak adı belirtilmemiş\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr "%s:%u: kullanıcısız parola verilmiş\n"
-
-#, c-format
-msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr "%s:%u: bu satır atlanıyor\n"
-
-#, c-format
-msgid "could not parse keyserver\n"
-msgstr "anahtar sunucusu çözümlenemedi\n"
-
 #, fuzzy, c-format
 #| msgid "importing common certificates `%s'\n"
 msgid "importing common certificates '%s'\n"
@@ -9001,168 +8996,6 @@ msgstr ""
 msgid "signal %d received - no action defined\n"
 msgstr ""
 
-msgid "return all values in a record oriented format"
-msgstr ""
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr ""
-
-msgid "force a TLS connection"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|connect to Assuan socket NAME"
-msgid "|NAME|connect to host NAME"
-msgstr "|İSİM|Assuan soketi İSİMe bağlanır"
-
-#, fuzzy
-#| msgid "|N|connect to reader at port N"
-msgid "|N|connect to port N"
-msgstr "|N|N. porttaki okuyucuya bağlanır"
-
-msgid "|NAME|use user NAME for authentication"
-msgstr ""
-
-msgid "|PASS|use password PASS for authentication"
-msgstr ""
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr ""
-
-msgid "|STRING|query DN STRING"
-msgstr ""
-
-msgid "|STRING|use STRING as filter expression"
-msgstr ""
-
-msgid "|STRING|return the attribute STRING"
-msgstr ""
-
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Kullanımı: gpg [seçenekler] [dosyalar] (yardım için -h)"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "invalid import options\n"
-msgid "invalid port number %d\n"
-msgstr "içselleştirme seçenekleri geçersiz\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
-msgid "error writing to stdout: %s\n"
-msgstr "%s yazılırken hata: %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "certificate `%s' not found: %s\n"
-msgid "attribute '%s' not found\n"
-msgstr "sertifika \"%s\" yok: %s\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "processing url '%s'\n"
-msgstr "`%s'den okunuyor\n"
-
-#, fuzzy, c-format
-#| msgid "          w/o user IDs: %lu\n"
-msgid "          user '%s'\n"
-msgstr "         kullanıcı kimliksiz: %lu\n"
-
-#, fuzzy, c-format
-#| msgid "                aka \"%s\""
-msgid "          pass '%s'\n"
-msgstr "                nam-ı diğer \"%s\""
-
-#, fuzzy, c-format
-#| msgid "          w/o user IDs: %lu\n"
-msgid "          host '%s'\n"
-msgstr "         kullanıcı kimliksiz: %lu\n"
-
-#, fuzzy, c-format
-#| msgid "          not imported: %lu\n"
-msgid "          port %d\n"
-msgstr "             alınamadı: %lu\n"
-
-#, fuzzy, c-format
-#| msgid "                aka \"%s\""
-msgid "            DN '%s'\n"
-msgstr "                nam-ı diğer \"%s\""
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "                aka \"%s\""
-msgid "          attr '%s'\n"
-msgstr "                nam-ı diğer \"%s\""
-
-#, fuzzy, c-format
-#| msgid "%s:%u: no hostname given\n"
-msgid "no host name in '%s'\n"
-msgstr "%s:%u: konak adı belirtilmemiş\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: Using untrusted key!\n"
-msgid "WARNING: using first attribute only\n"
-msgstr "UYARI: Güven derecesiz anahtar kullanılıyor!\n"
-
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
-
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
-msgid "LDAP init to '%s' failed: %s\n"
-msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
-
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
-msgid "LDAP init to '%s' done\n"
-msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
-
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
-
-#, fuzzy, c-format
-#| msgid "dearmoring failed: %s\n"
-msgid "searching '%s' failed: %s\n"
-msgstr "zırhın kaldırılması başarısız: %s\n"
-
-#, fuzzy, c-format
-#| msgid "`%s' is not a JPEG file\n"
-msgid "'%s' is not an LDAP URL\n"
-msgstr "'%s' bir JPEG dosyası değil\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "error running `%s': exit status %d\n"
 msgid "error accessing '%s': http status %u\n"
@@ -9227,13 +9060,30 @@ msgstr "anahtar %1$s, %3$s sunucusunun %2$s adresine gönderiliyor\n"
 msgid "malloc failed: %s\n"
 msgstr "select başarısız: %s\n"
 
+#, fuzzy, c-format
+#| msgid "`%s' is not a JPEG file\n"
+msgid "'%s' is not an LDAP URL\n"
+msgstr "'%s' bir JPEG dosyası değil\n"
+
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr "%s:%u: kullanıcısız parola verilmiş\n"
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr "%s:%u: bu satır atlanıyor\n"
 
 #, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
@@ -9402,9 +9252,6 @@ msgstr ""
 #| msgid "sending line failed: %s\n"
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "satır göndirimi başarısız: %s\n"
-
-msgid "ldapserver missing"
-msgstr ""
 
 msgid "serialno missing in cert ID"
 msgstr ""
@@ -9819,6 +9666,115 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "%1$s anahtarı %3$s sunucusunun %2$s adresinden isteniyor\n"
+
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "%s:%u: konak adı belirtilmemiş\n"
+
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "anahtar sunucusu çözümlenemedi\n"
+
+#, fuzzy
+#~| msgid "|NAME|connect to Assuan socket NAME"
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|İSİM|Assuan soketi İSİMe bağlanır"
+
+#, fuzzy
+#~| msgid "|N|connect to reader at port N"
+#~ msgid "|N|connect to port N"
+#~ msgstr "|N|N. porttaki okuyucuya bağlanır"
+
+#, fuzzy
+#~| msgid "Usage: gpg [options] [files] (-h for help)"
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Kullanımı: gpg [seçenekler] [dosyalar] (yardım için -h)"
+
+#, fuzzy
+#~| msgid "invalid import options\n"
+#~ msgid "invalid port number %d\n"
+#~ msgstr "içselleştirme seçenekleri geçersiz\n"
+
+#, fuzzy
+#~| msgid "error writing to %s: %s\n"
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "%s yazılırken hata: %s\n"
+
+#, fuzzy
+#~| msgid "certificate `%s' not found: %s\n"
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "sertifika \"%s\" yok: %s\n"
+
+#, fuzzy
+#~| msgid "reading from `%s'\n"
+#~ msgid "processing url '%s'\n"
+#~ msgstr "`%s'den okunuyor\n"
+
+#, fuzzy
+#~| msgid "          w/o user IDs: %lu\n"
+#~ msgid "          user '%s'\n"
+#~ msgstr "         kullanıcı kimliksiz: %lu\n"
+
+#, fuzzy
+#~| msgid "                aka \"%s\""
+#~ msgid "          pass '%s'\n"
+#~ msgstr "                nam-ı diğer \"%s\""
+
+#, fuzzy
+#~| msgid "          w/o user IDs: %lu\n"
+#~ msgid "          host '%s'\n"
+#~ msgstr "         kullanıcı kimliksiz: %lu\n"
+
+#, fuzzy
+#~| msgid "          not imported: %lu\n"
+#~ msgid "          port %d\n"
+#~ msgstr "             alınamadı: %lu\n"
+
+#, fuzzy
+#~| msgid "                aka \"%s\""
+#~ msgid "            DN '%s'\n"
+#~ msgstr "                nam-ı diğer \"%s\""
+
+#, fuzzy
+#~| msgid "                aka \"%s\""
+#~ msgid "          attr '%s'\n"
+#~ msgstr "                nam-ı diğer \"%s\""
+
+#, fuzzy
+#~| msgid "%s:%u: no hostname given\n"
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "%s:%u: konak adı belirtilmemiş\n"
+
+#, fuzzy
+#~| msgid "WARNING: Using untrusted key!\n"
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "UYARI: Güven derecesiz anahtar kullanılıyor!\n"
+
+#, fuzzy
+#~| msgid "renaming `%s' to `%s' failed: %s\n"
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+#, fuzzy
+#~| msgid "renaming `%s' to `%s' failed: %s\n"
+#~ msgid "LDAP init to '%s' failed: %s\n"
+#~ msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+#, fuzzy
+#~| msgid "renaming `%s' to `%s' failed: %s\n"
+#~ msgid "LDAP init to '%s' done\n"
+#~ msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+#, fuzzy
+#~| msgid "renaming `%s' to `%s' failed: %s\n"
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+#, fuzzy
+#~| msgid "dearmoring failed: %s\n"
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "zırhın kaldırılması başarısız: %s\n"
 
 #, fuzzy
 #~| msgid "change a passphrase"

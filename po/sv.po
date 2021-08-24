@@ -80,6 +80,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "Ange ny lösenfras"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -101,6 +104,17 @@ msgstr ""
 "En stark lösenfras bygger man genom att blanda versaler, gemener, siffror\n"
 "och specialtecken. Fråga din administratör om mer exakt information hur\n"
 "man anger säkra lösenfraser."
+
+msgid "Note: The blanks are not part of the passphrase."
+msgstr ""
+
+#. TRANSLATORS: This is a text shown by pinentry as title of a dialog
+#. telling the user that the entered new passphrase does not satisfy
+#. the passphrase constraints.  Please keep it short.
+#, fuzzy
+#| msgid "Passphrase too long"
+msgid "Passphrase Not Allowed"
+msgstr "Lösenfrasen är för lång"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -5058,10 +5072,6 @@ msgid "key not found on keyserver\n"
 msgstr "nyckeln hittades inte på nyckelservern\n"
 
 #, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "begär nyckeln %s från %s-servern %s\n"
-
-#, c-format
 msgid "requesting key %s from %s\n"
 msgstr "begär nyckeln %s från %s\n"
 
@@ -5470,6 +5480,11 @@ msgstr "Kritisk signaturnotation: "
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "underpaket av typen %d har den bit satt som markerar den som kritisk\n"
+
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Ange den nya lösenfrasen"
 
 msgid "Enter passphrase\n"
 msgstr "Ange lösenfrasen\n"
@@ -8002,26 +8017,6 @@ msgstr "OBSERVERA: kommer inte att kunna kryptera till \"%s\": %s\n"
 msgid "unknown validation model '%s'\n"
 msgstr "okänd valideringsmodell \"%s\"\n"
 
-#, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "%s:%u: inget värdnamn angivet\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr "%s:%u: lösenord angivet utan användare\n"
-
-#, c-format
-msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr "%s:%u: hoppar över denna rad\n"
-
-#, c-format
-msgid "could not parse keyserver\n"
-msgstr "kunde inte tolka nyckelserver\n"
-
 #, fuzzy, c-format
 #| msgid "importing common certificates `%s'\n"
 msgid "importing common certificates '%s'\n"
@@ -9114,170 +9109,6 @@ msgstr ""
 msgid "signal %d received - no action defined\n"
 msgstr ""
 
-msgid "return all values in a record oriented format"
-msgstr ""
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr ""
-
-msgid "force a TLS connection"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|connect to Assuan socket NAME"
-msgid "|NAME|connect to host NAME"
-msgstr "|NAMN|anslut till Assuan-uttaget NAMN"
-
-#, fuzzy
-#| msgid "|N|connect to reader at port N"
-msgid "|N|connect to port N"
-msgstr "|N|anslut till läsare på port N"
-
-#, fuzzy
-#| msgid "|NAME|use NAME as default recipient"
-msgid "|NAME|use user NAME for authentication"
-msgstr "|NAMN|använd NAMN som standardmottagare"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr ""
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr ""
-
-msgid "|STRING|query DN STRING"
-msgstr ""
-
-msgid "|STRING|use STRING as filter expression"
-msgstr ""
-
-msgid "|STRING|return the attribute STRING"
-msgstr ""
-
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Användning: gpg [flaggor] [filer] (-h för hjälp)"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "invalid import options\n"
-msgid "invalid port number %d\n"
-msgstr "ogiltiga importflaggor\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
-msgid "error writing to stdout: %s\n"
-msgstr "fel vid skrivning till %s: %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "certificate `%s' not found: %s\n"
-msgid "attribute '%s' not found\n"
-msgstr "certifikatet \"%s\" hittades inte: %s\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "processing url '%s'\n"
-msgstr "läser från \"%s\"\n"
-
-#, fuzzy, c-format
-#| msgid "          w/o user IDs: %lu\n"
-msgid "          user '%s'\n"
-msgstr "       utan användaridentiteter: %lu\n"
-
-#, fuzzy, c-format
-#| msgid "                aka \"%s\""
-msgid "          pass '%s'\n"
-msgstr "      även känd som \"%s\""
-
-#, fuzzy, c-format
-#| msgid "          w/o user IDs: %lu\n"
-msgid "          host '%s'\n"
-msgstr "       utan användaridentiteter: %lu\n"
-
-#, fuzzy, c-format
-#| msgid "          not imported: %lu\n"
-msgid "          port %d\n"
-msgstr "               inte importerade: %lu\n"
-
-#, fuzzy, c-format
-#| msgid "                aka \"%s\""
-msgid "            DN '%s'\n"
-msgstr "      även känd som \"%s\""
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "                aka \"%s\""
-msgid "          attr '%s'\n"
-msgstr "      även känd som \"%s\""
-
-#, fuzzy, c-format
-#| msgid "%s:%u: no hostname given\n"
-msgid "no host name in '%s'\n"
-msgstr "%s:%u: inget värdnamn angivet\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: Using untrusted key!\n"
-msgid "WARNING: using first attribute only\n"
-msgstr "VARNING: Använder en nyckel som inte är betrodd!\n"
-
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
-
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
-msgid "LDAP init to '%s' failed: %s\n"
-msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
-
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
-msgid "LDAP init to '%s' done\n"
-msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
-
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
-
-#, fuzzy, c-format
-#| msgid "dearmoring failed: %s\n"
-msgid "searching '%s' failed: %s\n"
-msgstr "misslyckades med att ta bort ASCII-skalet: %s\n"
-
-#, fuzzy, c-format
-#| msgid "`%s' is not a JPEG file\n"
-msgid "'%s' is not an LDAP URL\n"
-msgstr "\"%s\" är inte en JPEG-fil\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "error running `%s': exit status %d\n"
 msgid "error accessing '%s': http status %u\n"
@@ -9342,13 +9173,30 @@ msgstr "skickar nyckeln %s till %s-servern %s\n"
 msgid "malloc failed: %s\n"
 msgstr "val misslyckades: %s\n"
 
+#, fuzzy, c-format
+#| msgid "`%s' is not a JPEG file\n"
+msgid "'%s' is not an LDAP URL\n"
+msgstr "\"%s\" är inte en JPEG-fil\n"
+
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr "%s:%u: lösenord angivet utan användare\n"
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr "%s:%u: hoppar över denna rad\n"
 
 #, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
@@ -9517,9 +9365,6 @@ msgstr ""
 #| msgid "sending line failed: %s\n"
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "sändande rad misslyckades: %s\n"
-
-msgid "ldapserver missing"
-msgstr ""
 
 msgid "serialno missing in cert ID"
 msgstr ""
@@ -9937,6 +9782,120 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "begär nyckeln %s från %s-servern %s\n"
+
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "%s:%u: inget värdnamn angivet\n"
+
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "kunde inte tolka nyckelserver\n"
+
+#, fuzzy
+#~| msgid "|NAME|connect to Assuan socket NAME"
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|NAMN|anslut till Assuan-uttaget NAMN"
+
+#, fuzzy
+#~| msgid "|N|connect to reader at port N"
+#~ msgid "|N|connect to port N"
+#~ msgstr "|N|anslut till läsare på port N"
+
+#, fuzzy
+#~| msgid "|NAME|use NAME as default recipient"
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|NAMN|använd NAMN som standardmottagare"
+
+#, fuzzy
+#~| msgid "Usage: gpg [options] [files] (-h for help)"
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Användning: gpg [flaggor] [filer] (-h för hjälp)"
+
+#, fuzzy
+#~| msgid "invalid import options\n"
+#~ msgid "invalid port number %d\n"
+#~ msgstr "ogiltiga importflaggor\n"
+
+#, fuzzy
+#~| msgid "error writing to %s: %s\n"
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "fel vid skrivning till %s: %s\n"
+
+#, fuzzy
+#~| msgid "certificate `%s' not found: %s\n"
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "certifikatet \"%s\" hittades inte: %s\n"
+
+#, fuzzy
+#~| msgid "reading from `%s'\n"
+#~ msgid "processing url '%s'\n"
+#~ msgstr "läser från \"%s\"\n"
+
+#, fuzzy
+#~| msgid "          w/o user IDs: %lu\n"
+#~ msgid "          user '%s'\n"
+#~ msgstr "       utan användaridentiteter: %lu\n"
+
+#, fuzzy
+#~| msgid "                aka \"%s\""
+#~ msgid "          pass '%s'\n"
+#~ msgstr "      även känd som \"%s\""
+
+#, fuzzy
+#~| msgid "          w/o user IDs: %lu\n"
+#~ msgid "          host '%s'\n"
+#~ msgstr "       utan användaridentiteter: %lu\n"
+
+#, fuzzy
+#~| msgid "          not imported: %lu\n"
+#~ msgid "          port %d\n"
+#~ msgstr "               inte importerade: %lu\n"
+
+#, fuzzy
+#~| msgid "                aka \"%s\""
+#~ msgid "            DN '%s'\n"
+#~ msgstr "      även känd som \"%s\""
+
+#, fuzzy
+#~| msgid "                aka \"%s\""
+#~ msgid "          attr '%s'\n"
+#~ msgstr "      även känd som \"%s\""
+
+#, fuzzy
+#~| msgid "%s:%u: no hostname given\n"
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "%s:%u: inget värdnamn angivet\n"
+
+#, fuzzy
+#~| msgid "WARNING: Using untrusted key!\n"
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "VARNING: Använder en nyckel som inte är betrodd!\n"
+
+#, fuzzy
+#~| msgid "renaming `%s' to `%s' failed: %s\n"
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
+
+#, fuzzy
+#~| msgid "renaming `%s' to `%s' failed: %s\n"
+#~ msgid "LDAP init to '%s' failed: %s\n"
+#~ msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
+
+#, fuzzy
+#~| msgid "renaming `%s' to `%s' failed: %s\n"
+#~ msgid "LDAP init to '%s' done\n"
+#~ msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
+
+#, fuzzy
+#~| msgid "renaming `%s' to `%s' failed: %s\n"
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
+
+#, fuzzy
+#~| msgid "dearmoring failed: %s\n"
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "misslyckades med att ta bort ASCII-skalet: %s\n"
 
 #, fuzzy
 #~| msgid "change a passphrase"

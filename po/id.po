@@ -59,6 +59,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "passphrase tidak valid"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -73,6 +76,16 @@ msgstr ""
 #. non-translated string.
 msgid "pinentry.genpin.tooltip"
 msgstr ""
+
+msgid "Note: The blanks are not part of the passphrase."
+msgstr ""
+
+#. TRANSLATORS: This is a text shown by pinentry as title of a dialog
+#. telling the user that the entered new passphrase does not satisfy
+#. the passphrase constraints.  Please keep it short.
+#, fuzzy
+msgid "Passphrase Not Allowed"
+msgstr "passphrase terlalu panjang\n"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -4839,10 +4852,6 @@ msgid "key not found on keyserver\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
 #, fuzzy, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "meminta kunci %08lX dari %s\n"
-
-#, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "meminta kunci %08lX dari %s\n"
 
@@ -5232,6 +5241,10 @@ msgstr "Notasi signature kritis: "
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpaket tipe %d memiliki bit kritis terset\n"
+
+#, fuzzy
+msgid "Please enter the passphrase for decryption."
+msgstr "ubah passphrase"
 
 msgid "Enter passphrase\n"
 msgstr "Masukkan passphrase\n"
@@ -7634,26 +7647,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
 
 #, fuzzy, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "(Tidak diberikan deskripsi)\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr ""
-
-#, c-format
-msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr " s = lewati kunci ini\n"
-
-#, fuzzy, c-format
-msgid "could not parse keyserver\n"
-msgstr "tidak dapat memparsing URI keyserver\n"
-
-#, fuzzy, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "menulis ke `%s'\n"
 
@@ -8618,156 +8611,6 @@ msgstr ""
 msgid "signal %d received - no action defined\n"
 msgstr ""
 
-msgid "return all values in a record oriented format"
-msgstr ""
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr ""
-
-msgid "force a TLS connection"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|set terminal charset to NAME"
-msgid "|NAME|connect to host NAME"
-msgstr "|NAMA|set charset terminal ke NAMA"
-
-msgid "|N|connect to port N"
-msgstr ""
-
-#, fuzzy
-#| msgid "|NAME|use NAME as default recipient"
-msgid "|NAME|use user NAME for authentication"
-msgstr "|NAMA|gunakan NAMA sebagai penerima baku"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr ""
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr ""
-
-msgid "|STRING|query DN STRING"
-msgstr ""
-
-msgid "|STRING|use STRING as filter expression"
-msgstr ""
-
-msgid "|STRING|return the attribute STRING"
-msgstr ""
-
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "invalid import options\n"
-msgid "invalid port number %d\n"
-msgstr "opsi impor tidak valid\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "attribute '%s' not found\n"
-msgstr "kunci '%s' tidak ditemukan: %s\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "processing url '%s'\n"
-msgstr "Membaca dari `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "          w/o user IDs: %lu\n"
-msgid "          user '%s'\n"
-msgstr "         tanpa ID user: %lu\n"
-
-#, fuzzy, c-format
-msgid "          pass '%s'\n"
-msgstr "              alias \""
-
-#, fuzzy, c-format
-msgid "          host '%s'\n"
-msgstr "              alias \""
-
-#, fuzzy, c-format
-#| msgid "          not imported: %lu\n"
-msgid "          port %d\n"
-msgstr "            tidak diimpor: %lu\n"
-
-#, fuzzy, c-format
-msgid "            DN '%s'\n"
-msgstr "              alias \""
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "          attr '%s'\n"
-msgstr "              alias \""
-
-#, fuzzy, c-format
-msgid "no host name in '%s'\n"
-msgstr "(Tidak diberikan deskripsi)\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: using insecure memory!\n"
-msgid "WARNING: using first attribute only\n"
-msgstr "Peringatan: menggunakan memori yang tidak aman!\n"
-
-#, fuzzy, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "gagal enarmoring: %s\n"
-
-#, fuzzy, c-format
-msgid "LDAP init to '%s' failed: %s\n"
-msgstr "gagal enarmoring: %s\n"
-
-#, fuzzy, c-format
-msgid "LDAP init to '%s' done\n"
-msgstr "gagal enarmoring: %s\n"
-
-#, fuzzy, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "gagal enarmoring: %s\n"
-
-#, fuzzy, c-format
-#| msgid "dearmoring failed: %s\n"
-msgid "searching '%s' failed: %s\n"
-msgstr "gagal dearmoring: %s\n"
-
-#, fuzzy, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "\"%s\" bukan sebuah file JPEG\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "kesalahan membaca `%s': %s\n"
@@ -8825,13 +8668,29 @@ msgstr "mencari \"%s\" dari server HKP %s\n"
 msgid "malloc failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
+#, fuzzy, c-format
+msgid "'%s' is not an LDAP URL\n"
+msgstr "\"%s\" bukan sebuah file JPEG\n"
+
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr " s = lewati kunci ini\n"
 
 #, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
@@ -8979,9 +8838,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "gagal menandai: %s\n"
-
-msgid "ldapserver missing"
-msgstr ""
 
 msgid "serialno missing in cert ID"
 msgstr ""
@@ -9348,6 +9204,107 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "meminta kunci %08lX dari %s\n"
+
+#, fuzzy
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "(Tidak diberikan deskripsi)\n"
+
+#, fuzzy
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "tidak dapat memparsing URI keyserver\n"
+
+#, fuzzy
+#~| msgid "|NAME|set terminal charset to NAME"
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|NAMA|set charset terminal ke NAMA"
+
+#, fuzzy
+#~| msgid "|NAME|use NAME as default recipient"
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|NAMA|gunakan NAMA sebagai penerima baku"
+
+#, fuzzy
+#~| msgid "Usage: gpg [options] [files] (-h for help)"
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
+
+#, fuzzy
+#~| msgid "invalid import options\n"
+#~ msgid "invalid port number %d\n"
+#~ msgstr "opsi impor tidak valid\n"
+
+#, fuzzy
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "kesalahan menulis keyring `%s': %s\n"
+
+#, fuzzy
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "kunci '%s' tidak ditemukan: %s\n"
+
+#, fuzzy
+#~| msgid "reading from `%s'\n"
+#~ msgid "processing url '%s'\n"
+#~ msgstr "Membaca dari `%s'\n"
+
+#, fuzzy
+#~| msgid "          w/o user IDs: %lu\n"
+#~ msgid "          user '%s'\n"
+#~ msgstr "         tanpa ID user: %lu\n"
+
+#, fuzzy
+#~ msgid "          pass '%s'\n"
+#~ msgstr "              alias \""
+
+#, fuzzy
+#~ msgid "          host '%s'\n"
+#~ msgstr "              alias \""
+
+#, fuzzy
+#~| msgid "          not imported: %lu\n"
+#~ msgid "          port %d\n"
+#~ msgstr "            tidak diimpor: %lu\n"
+
+#, fuzzy
+#~ msgid "            DN '%s'\n"
+#~ msgstr "              alias \""
+
+#, fuzzy
+#~ msgid "          attr '%s'\n"
+#~ msgstr "              alias \""
+
+#, fuzzy
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "(Tidak diberikan deskripsi)\n"
+
+#, fuzzy
+#~| msgid "WARNING: using insecure memory!\n"
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "Peringatan: menggunakan memori yang tidak aman!\n"
+
+#, fuzzy
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "gagal enarmoring: %s\n"
+
+#, fuzzy
+#~ msgid "LDAP init to '%s' failed: %s\n"
+#~ msgstr "gagal enarmoring: %s\n"
+
+#, fuzzy
+#~ msgid "LDAP init to '%s' done\n"
+#~ msgstr "gagal enarmoring: %s\n"
+
+#, fuzzy
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "gagal enarmoring: %s\n"
+
+#, fuzzy
+#~| msgid "dearmoring failed: %s\n"
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "gagal dearmoring: %s\n"
 
 #, fuzzy
 #~ msgid "Suggest a random passphrase."

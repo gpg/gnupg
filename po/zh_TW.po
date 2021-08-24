@@ -67,6 +67,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "請輸入新密語"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -85,6 +88,17 @@ msgid "pinentry.genpin.tooltip"
 msgstr ""
 "上列輸入文字的優劣程度.\n"
 "關於此規範的細節, 請洽你的系統管理者."
+
+msgid "Note: The blanks are not part of the passphrase."
+msgstr ""
+
+#. TRANSLATORS: This is a text shown by pinentry as title of a dialog
+#. telling the user that the entered new passphrase does not satisfy
+#. the passphrase constraints.  Please keep it short.
+#, fuzzy
+#| msgid "Passphrase too long"
+msgid "Passphrase Not Allowed"
+msgstr "密語太長"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -4688,10 +4702,6 @@ msgid "key not found on keyserver\n"
 msgstr "在金鑰伺服器上找不到金鑰\n"
 
 #, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "正在請求金鑰 %s 自 %s 伺服器 %s\n"
-
-#, c-format
 msgid "requesting key %s from %s\n"
 msgstr "正在請求金鑰 %s 自 %s\n"
 
@@ -5074,6 +5084,11 @@ msgstr "關鍵簽章註記: "
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "%d 類別的子封包設定了關鍵位元\n"
+
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "請輸入新的密語"
 
 msgid "Enter passphrase\n"
 msgstr "請輸入密語\n"
@@ -7413,26 +7428,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "未知的驗證模型 '%s'\n"
 
 #, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "%s:%u: 沒有給定主機名稱\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr "%s:%u: 給定的密碼沒有使用者\n"
-
-#, c-format
-msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr "%s:%u: 正在跳過這一列\n"
-
-#, c-format
-msgid "could not parse keyserver\n"
-msgstr "無法剖析金鑰伺服器\n"
-
-#, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "正在匯入通用憑證 '%s'\n"
 
@@ -8375,149 +8370,6 @@ msgstr "收到 SIGINT - 立即關閉\n"
 msgid "signal %d received - no action defined\n"
 msgstr "收到訊號 %d - 無定義行動\n"
 
-msgid "return all values in a record oriented format"
-msgstr "以記錄導向格式傳回所有數值"
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr "|名稱|忽略主機的部份並改以指定名稱連線"
-
-msgid "force a TLS connection"
-msgstr ""
-
-msgid "|NAME|connect to host NAME"
-msgstr "|名稱|連線至位於指定名稱的主機"
-
-msgid "|N|connect to port N"
-msgstr "|N|連線至 N 連接埠"
-
-msgid "|NAME|use user NAME for authentication"
-msgstr "|名字|使用指定名字做為認證用的使用者名稱"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr "|密碼|使用指定密碼作為認證"
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr "從 $DIRMNGR_LDAP_PASS 取得密碼使用"
-
-msgid "|STRING|query DN STRING"
-msgstr "|字串|以只指定字串查詢 DN"
-
-msgid "|STRING|use STRING as filter expression"
-msgstr "|字串|以指定字串作為過濾器表示式"
-
-msgid "|STRING|return the attribute STRING"
-msgstr "|字串|以指定字串傳回屬性"
-
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "用法: dirmngr_ldap [選項] [網址] (或用 -h 求助)\n"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-"語法: dirmngr_ldap [選項] [網址]\n"
-"Dirmngr 的內部 LDAP 協助程式\n"
-"介面及選項均可能未經通知即變更\n"
-
-#, c-format
-msgid "invalid port number %d\n"
-msgstr "無效的連接埠號碼 %d\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr "正在掃描屬性 '%s' 之結果\n"
-
-#, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "寫入標準輸出時出錯: %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr "          可用屬性 '%s'\n"
-
-#, c-format
-msgid "attribute '%s' not found\n"
-msgstr "找不到屬性 '%s'\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr "找到屬性 '%s'\n"
-
-#, c-format
-msgid "processing url '%s'\n"
-msgstr "正在處理網址 '%s'\n"
-
-#, c-format
-msgid "          user '%s'\n"
-msgstr "          使用者 '%s'\n"
-
-#, c-format
-msgid "          pass '%s'\n"
-msgstr "          密碼 '%s'\n"
-
-#, c-format
-msgid "          host '%s'\n"
-msgstr "          主機 '%s'\n"
-
-#, c-format
-msgid "          port %d\n"
-msgstr "          連接埠 %d\n"
-
-#, c-format
-msgid "            DN '%s'\n"
-msgstr "            域名 '%s'\n"
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr "        過濾器 '%s'\n"
-
-#, c-format
-msgid "          attr '%s'\n"
-msgstr "          屬性 '%s'\n"
-
-#, c-format
-msgid "no host name in '%s'\n"
-msgstr "'%s' 中沒有主機名稱\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr "查詢 '%s' 無給定屬性\n"
-
-#, c-format
-msgid "WARNING: using first attribute only\n"
-msgstr "警告: 僅使用第一個屬性\n"
-
-#, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "LDAP 初始至 '%s:%d' 失敗: %s\n"
-
-#, fuzzy, c-format
-#| msgid "LDAP init to '%s:%d' failed: %s\n"
-msgid "LDAP init to '%s' failed: %s\n"
-msgstr "LDAP 初始至 '%s:%d' 失敗: %s\n"
-
-#, fuzzy, c-format
-#| msgid "LDAP init to '%s:%d' failed: %s\n"
-msgid "LDAP init to '%s' done\n"
-msgstr "LDAP 初始至 '%s:%d' 失敗: %s\n"
-
-#, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "綁定至 '%s:%d' 時失敗: %s\n"
-
-#, c-format
-msgid "searching '%s' failed: %s\n"
-msgstr "搜尋 '%s' 時失敗: %s\n"
-
-#, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "'%s' 不是一個 LDAP 位址\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr "'%s' 是無效的 LDAP 網址\n"
-
 #, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "存取 '%s' 時出錯: http 狀態 %u\n"
@@ -8576,12 +8428,28 @@ msgid "malloc failed: %s\n"
 msgstr "動態記憶體配置失敗: %s\n"
 
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
-msgstr "start_cert_fetch: 無效的模式 '%s'\n"
+msgid "'%s' is not an LDAP URL\n"
+msgstr "'%s' 不是一個 LDAP 位址\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr "'%s' 是無效的 LDAP 網址\n"
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr "ldap_search 達到伺服器的尺寸限制\n"
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr "%s:%u: 給定的密碼沒有使用者\n"
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr "%s:%u: 正在跳過這一列\n"
 
 #, c-format
 msgid "invalid canonical S-expression found\n"
@@ -8726,9 +8594,6 @@ msgstr "OCSP 回應程式傳回老舊的狀態\n"
 #, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "assuan_inquire(%s) 失敗: %s\n"
-
-msgid "ldapserver missing"
-msgstr "遺失 ldapserver"
 
 msgid "serialno missing in cert ID"
 msgstr "憑證 ID 中遺失 serialno"
@@ -9106,6 +8971,133 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "正在請求金鑰 %s 自 %s 伺服器 %s\n"
+
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "%s:%u: 沒有給定主機名稱\n"
+
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "無法剖析金鑰伺服器\n"
+
+#~ msgid "return all values in a record oriented format"
+#~ msgstr "以記錄導向格式傳回所有數值"
+
+#~ msgid "|NAME|ignore host part and connect through NAME"
+#~ msgstr "|名稱|忽略主機的部份並改以指定名稱連線"
+
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|名稱|連線至位於指定名稱的主機"
+
+#~ msgid "|N|connect to port N"
+#~ msgstr "|N|連線至 N 連接埠"
+
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|名字|使用指定名字做為認證用的使用者名稱"
+
+#~ msgid "|PASS|use password PASS for authentication"
+#~ msgstr "|密碼|使用指定密碼作為認證"
+
+#~ msgid "take password from $DIRMNGR_LDAP_PASS"
+#~ msgstr "從 $DIRMNGR_LDAP_PASS 取得密碼使用"
+
+#~ msgid "|STRING|query DN STRING"
+#~ msgstr "|字串|以只指定字串查詢 DN"
+
+#~ msgid "|STRING|use STRING as filter expression"
+#~ msgstr "|字串|以指定字串作為過濾器表示式"
+
+#~ msgid "|STRING|return the attribute STRING"
+#~ msgstr "|字串|以指定字串傳回屬性"
+
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "用法: dirmngr_ldap [選項] [網址] (或用 -h 求助)\n"
+
+#~ msgid ""
+#~ "Syntax: dirmngr_ldap [options] [URL]\n"
+#~ "Internal LDAP helper for Dirmngr\n"
+#~ "Interface and options may change without notice\n"
+#~ msgstr ""
+#~ "語法: dirmngr_ldap [選項] [網址]\n"
+#~ "Dirmngr 的內部 LDAP 協助程式\n"
+#~ "介面及選項均可能未經通知即變更\n"
+
+#~ msgid "invalid port number %d\n"
+#~ msgstr "無效的連接埠號碼 %d\n"
+
+#~ msgid "scanning result for attribute '%s'\n"
+#~ msgstr "正在掃描屬性 '%s' 之結果\n"
+
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "寫入標準輸出時出錯: %s\n"
+
+#~ msgid "          available attribute '%s'\n"
+#~ msgstr "          可用屬性 '%s'\n"
+
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "找不到屬性 '%s'\n"
+
+#~ msgid "found attribute '%s'\n"
+#~ msgstr "找到屬性 '%s'\n"
+
+#~ msgid "processing url '%s'\n"
+#~ msgstr "正在處理網址 '%s'\n"
+
+#~ msgid "          user '%s'\n"
+#~ msgstr "          使用者 '%s'\n"
+
+#~ msgid "          pass '%s'\n"
+#~ msgstr "          密碼 '%s'\n"
+
+#~ msgid "          host '%s'\n"
+#~ msgstr "          主機 '%s'\n"
+
+#~ msgid "          port %d\n"
+#~ msgstr "          連接埠 %d\n"
+
+#~ msgid "            DN '%s'\n"
+#~ msgstr "            域名 '%s'\n"
+
+#~ msgid "        filter '%s'\n"
+#~ msgstr "        過濾器 '%s'\n"
+
+#~ msgid "          attr '%s'\n"
+#~ msgstr "          屬性 '%s'\n"
+
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "'%s' 中沒有主機名稱\n"
+
+#~ msgid "no attribute given for query '%s'\n"
+#~ msgstr "查詢 '%s' 無給定屬性\n"
+
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "警告: 僅使用第一個屬性\n"
+
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "LDAP 初始至 '%s:%d' 失敗: %s\n"
+
+#, fuzzy
+#~| msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgid "LDAP init to '%s' failed: %s\n"
+#~ msgstr "LDAP 初始至 '%s:%d' 失敗: %s\n"
+
+#, fuzzy
+#~| msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgid "LDAP init to '%s' done\n"
+#~ msgstr "LDAP 初始至 '%s:%d' 失敗: %s\n"
+
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "綁定至 '%s:%d' 時失敗: %s\n"
+
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "搜尋 '%s' 時失敗: %s\n"
+
+#~ msgid "start_cert_fetch: invalid pattern '%s'\n"
+#~ msgstr "start_cert_fetch: 無效的模式 '%s'\n"
+
+#~ msgid "ldapserver missing"
+#~ msgstr "遺失 ldapserver"
 
 #, fuzzy
 #~| msgid "change a passphrase"

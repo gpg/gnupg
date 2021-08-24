@@ -58,6 +58,9 @@ msgstr "|pinentry-tt|Показывать фразу-пароль"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|Скрывать фразу-пароль"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -76,6 +79,17 @@ msgid "pinentry.genpin.tooltip"
 msgstr ""
 "Стойкость введенного выше текста. Проконсультируйтесь у администратора о "
 "критериях оценки стойкости."
+
+msgid "Note: The blanks are not part of the passphrase."
+msgstr ""
+
+#. TRANSLATORS: This is a text shown by pinentry as title of a dialog
+#. telling the user that the entered new passphrase does not satisfy
+#. the passphrase constraints.  Please keep it short.
+#, fuzzy
+#| msgid "Passphrase too long"
+msgid "Passphrase Not Allowed"
+msgstr "Слишком длинная фраза-пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -4680,10 +4694,6 @@ msgid "key not found on keyserver\n"
 msgstr "ключ не найден на сервере ключей\n"
 
 #, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "запрашиваю ключ %s с сервера %s %s\n"
-
-#, c-format
 msgid "requesting key %s from %s\n"
 msgstr "получение ключа %s с %s\n"
 
@@ -5068,6 +5078,11 @@ msgstr "Неизвестное критическое замечание к по
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "в подпакете типа %d установлен критический бит\n"
+
+#, fuzzy
+#| msgid "Please enter the new passphrase"
+msgid "Please enter the passphrase for decryption."
+msgstr "Введите новую фразу-пароль"
 
 msgid "Enter passphrase\n"
 msgstr "Введите фразу-пароль\n"
@@ -7475,26 +7490,6 @@ msgid "unknown validation model '%s'\n"
 msgstr "неизвестная схема проверки '%s'\n"
 
 #, c-format
-msgid "%s:%u: no hostname given\n"
-msgstr "%s:%u: не задано имя хоста\n"
-
-#, c-format
-msgid "%s:%u: password given without user\n"
-msgstr "%s:%u: задан пароль, но не задан пользователь\n"
-
-#, c-format
-msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "%s:%u: skipping this line\n"
-msgstr "%s:%u: пропускаю эту строку\n"
-
-#, c-format
-msgid "could not parse keyserver\n"
-msgstr "не удалось определить сервер ключей\n"
-
-#, c-format
 msgid "importing common certificates '%s'\n"
 msgstr "импорт общих сертификатов '%s'\n"
 
@@ -8485,149 +8480,6 @@ msgstr "получен SIGINT - немедленное завершение ра
 msgid "signal %d received - no action defined\n"
 msgstr "получен сигнал %d - действие не определено\n"
 
-msgid "return all values in a record oriented format"
-msgstr "возвращать все значения в формате, ориентированном на записи"
-
-msgid "|NAME|ignore host part and connect through NAME"
-msgstr "|NAME|игнорировать хост и подключаться через NAME"
-
-msgid "force a TLS connection"
-msgstr ""
-
-msgid "|NAME|connect to host NAME"
-msgstr "|NAME|подключиться к хосту NAME"
-
-msgid "|N|connect to port N"
-msgstr "|N|подключиться к порту N"
-
-msgid "|NAME|use user NAME for authentication"
-msgstr "|NAME|использовать имя пользователя NAME для удостоверения личности"
-
-msgid "|PASS|use password PASS for authentication"
-msgstr "|PASS|использовать для удостоверения личности пароль PASS"
-
-msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr "взять пароль из $DIRMNGR_LDAP_PASS"
-
-msgid "|STRING|query DN STRING"
-msgstr "|STRING|искать строку DN STRING"
-
-msgid "|STRING|use STRING as filter expression"
-msgstr "|STRING|использовать строку STRING как выражение для фильтра"
-
-msgid "|STRING|return the attribute STRING"
-msgstr "|STRING|вернуть атрибут STRING"
-
-msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Вызов: dirmngr_ldap [параметры] [URL] (-h - подсказка)\n"
-
-msgid ""
-"Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr\n"
-"Interface and options may change without notice\n"
-msgstr ""
-"Синтаксис: dirmngr_ldap [параметры] [URL]\n"
-"Внутренний помощник LDAP для Dirmngr\n"
-"Протокол и параметры могут изменяться без предупреждения\n"
-
-#, c-format
-msgid "invalid port number %d\n"
-msgstr "недопустимый номер порта %d\n"
-
-#, c-format
-msgid "scanning result for attribute '%s'\n"
-msgstr "поиск атрибута '%s' в результатах\n"
-
-#, c-format
-msgid "error writing to stdout: %s\n"
-msgstr "ошибка записи в stdout: %s\n"
-
-#, c-format
-msgid "          available attribute '%s'\n"
-msgstr "           доступный атрибут '%s'\n"
-
-#, c-format
-msgid "attribute '%s' not found\n"
-msgstr "атрибут '%s' не найден\n"
-
-#, c-format
-msgid "found attribute '%s'\n"
-msgstr "найден атрибут '%s'\n"
-
-#, c-format
-msgid "processing url '%s'\n"
-msgstr "обработка URL '%s'\n"
-
-#, c-format
-msgid "          user '%s'\n"
-msgstr " пользователь '%s'\n"
-
-#, c-format
-msgid "          pass '%s'\n"
-msgstr "       проход '%s'\n"
-
-#, c-format
-msgid "          host '%s'\n"
-msgstr "         хост '%s'\n"
-
-#, c-format
-msgid "          port %d\n"
-msgstr "         порт %d\n"
-
-#, c-format
-msgid "            DN '%s'\n"
-msgstr "           DN '%s'\n"
-
-#, c-format
-msgid "        filter '%s'\n"
-msgstr "       фильтр '%s'\n"
-
-#, c-format
-msgid "          attr '%s'\n"
-msgstr "      атрибут '%s'\n"
-
-#, c-format
-msgid "no host name in '%s'\n"
-msgstr "в '%s' нет имени хоста\n"
-
-#, c-format
-msgid "no attribute given for query '%s'\n"
-msgstr "для запроса '%s' не задано атрибута\n"
-
-#, c-format
-msgid "WARNING: using first attribute only\n"
-msgstr "Внимание: Используется только первый атрибут\n"
-
-#, c-format
-msgid "LDAP init to '%s:%d' failed: %s\n"
-msgstr "сбой при инициализации LDAP в '%s:%d': %s\n"
-
-#, fuzzy, c-format
-#| msgid "LDAP init to '%s:%d' failed: %s\n"
-msgid "LDAP init to '%s' failed: %s\n"
-msgstr "сбой при инициализации LDAP в '%s:%d': %s\n"
-
-#, fuzzy, c-format
-#| msgid "LDAP init to '%s:%d' failed: %s\n"
-msgid "LDAP init to '%s' done\n"
-msgstr "сбой при инициализации LDAP в '%s:%d': %s\n"
-
-#, c-format
-msgid "binding to '%s:%d' failed: %s\n"
-msgstr "сбой при привязке к '%s:%d': %s\n"
-
-#, c-format
-msgid "searching '%s' failed: %s\n"
-msgstr "ошибка поиска '%s': %s\n"
-
-#, c-format
-msgid "'%s' is not an LDAP URL\n"
-msgstr "'%s' - не URL LDAP\n"
-
-#, c-format
-msgid "'%s' is an invalid LDAP URL\n"
-msgstr "'%s' - недопустимый URL LDAP\n"
-
 #, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "ошибка чтения '%s': статус HTTP %u\n"
@@ -8685,12 +8537,28 @@ msgid "malloc failed: %s\n"
 msgstr "сбой malloc: %s\n"
 
 #, c-format
-msgid "start_cert_fetch: invalid pattern '%s'\n"
-msgstr "start_cert_fetch: недопустимый шаблон '%s'\n"
+msgid "'%s' is not an LDAP URL\n"
+msgstr "'%s' - не URL LDAP\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr "'%s' - недопустимый URL LDAP\n"
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr "ldap_search достиг предела сервера по размеру\n"
+
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr "%s:%u: задан пароль, но не задан пользователь\n"
+
+#, c-format
+msgid "%s:%u: ignoring unknown flag '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr "%s:%u: пропускаю эту строку\n"
 
 #, c-format
 msgid "invalid canonical S-expression found\n"
@@ -8834,9 +8702,6 @@ msgstr "ответчик OCSP возвратил слишком старый с�
 #, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "сбой assuan_inquire(%s): %s\n"
-
-msgid "ldapserver missing"
-msgstr "нет сервера LDAP"
 
 msgid "serialno missing in cert ID"
 msgstr "в идентификаторе сертификата нет серийного номера"
@@ -9199,6 +9064,133 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "requesting key %s from %s server %s\n"
+#~ msgstr "запрашиваю ключ %s с сервера %s %s\n"
+
+#~ msgid "%s:%u: no hostname given\n"
+#~ msgstr "%s:%u: не задано имя хоста\n"
+
+#~ msgid "could not parse keyserver\n"
+#~ msgstr "не удалось определить сервер ключей\n"
+
+#~ msgid "return all values in a record oriented format"
+#~ msgstr "возвращать все значения в формате, ориентированном на записи"
+
+#~ msgid "|NAME|ignore host part and connect through NAME"
+#~ msgstr "|NAME|игнорировать хост и подключаться через NAME"
+
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|NAME|подключиться к хосту NAME"
+
+#~ msgid "|N|connect to port N"
+#~ msgstr "|N|подключиться к порту N"
+
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|NAME|использовать имя пользователя NAME для удостоверения личности"
+
+#~ msgid "|PASS|use password PASS for authentication"
+#~ msgstr "|PASS|использовать для удостоверения личности пароль PASS"
+
+#~ msgid "take password from $DIRMNGR_LDAP_PASS"
+#~ msgstr "взять пароль из $DIRMNGR_LDAP_PASS"
+
+#~ msgid "|STRING|query DN STRING"
+#~ msgstr "|STRING|искать строку DN STRING"
+
+#~ msgid "|STRING|use STRING as filter expression"
+#~ msgstr "|STRING|использовать строку STRING как выражение для фильтра"
+
+#~ msgid "|STRING|return the attribute STRING"
+#~ msgstr "|STRING|вернуть атрибут STRING"
+
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Вызов: dirmngr_ldap [параметры] [URL] (-h - подсказка)\n"
+
+#~ msgid ""
+#~ "Syntax: dirmngr_ldap [options] [URL]\n"
+#~ "Internal LDAP helper for Dirmngr\n"
+#~ "Interface and options may change without notice\n"
+#~ msgstr ""
+#~ "Синтаксис: dirmngr_ldap [параметры] [URL]\n"
+#~ "Внутренний помощник LDAP для Dirmngr\n"
+#~ "Протокол и параметры могут изменяться без предупреждения\n"
+
+#~ msgid "invalid port number %d\n"
+#~ msgstr "недопустимый номер порта %d\n"
+
+#~ msgid "scanning result for attribute '%s'\n"
+#~ msgstr "поиск атрибута '%s' в результатах\n"
+
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "ошибка записи в stdout: %s\n"
+
+#~ msgid "          available attribute '%s'\n"
+#~ msgstr "           доступный атрибут '%s'\n"
+
+#~ msgid "attribute '%s' not found\n"
+#~ msgstr "атрибут '%s' не найден\n"
+
+#~ msgid "found attribute '%s'\n"
+#~ msgstr "найден атрибут '%s'\n"
+
+#~ msgid "processing url '%s'\n"
+#~ msgstr "обработка URL '%s'\n"
+
+#~ msgid "          user '%s'\n"
+#~ msgstr " пользователь '%s'\n"
+
+#~ msgid "          pass '%s'\n"
+#~ msgstr "       проход '%s'\n"
+
+#~ msgid "          host '%s'\n"
+#~ msgstr "         хост '%s'\n"
+
+#~ msgid "          port %d\n"
+#~ msgstr "         порт %d\n"
+
+#~ msgid "            DN '%s'\n"
+#~ msgstr "           DN '%s'\n"
+
+#~ msgid "        filter '%s'\n"
+#~ msgstr "       фильтр '%s'\n"
+
+#~ msgid "          attr '%s'\n"
+#~ msgstr "      атрибут '%s'\n"
+
+#~ msgid "no host name in '%s'\n"
+#~ msgstr "в '%s' нет имени хоста\n"
+
+#~ msgid "no attribute given for query '%s'\n"
+#~ msgstr "для запроса '%s' не задано атрибута\n"
+
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "Внимание: Используется только первый атрибут\n"
+
+#~ msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgstr "сбой при инициализации LDAP в '%s:%d': %s\n"
+
+#, fuzzy
+#~| msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgid "LDAP init to '%s' failed: %s\n"
+#~ msgstr "сбой при инициализации LDAP в '%s:%d': %s\n"
+
+#, fuzzy
+#~| msgid "LDAP init to '%s:%d' failed: %s\n"
+#~ msgid "LDAP init to '%s' done\n"
+#~ msgstr "сбой при инициализации LDAP в '%s:%d': %s\n"
+
+#~ msgid "binding to '%s:%d' failed: %s\n"
+#~ msgstr "сбой при привязке к '%s:%d': %s\n"
+
+#~ msgid "searching '%s' failed: %s\n"
+#~ msgstr "ошибка поиска '%s': %s\n"
+
+#~ msgid "start_cert_fetch: invalid pattern '%s'\n"
+#~ msgstr "start_cert_fetch: недопустимый шаблон '%s'\n"
+
+#~ msgid "ldapserver missing"
+#~ msgstr "нет сервера LDAP"
 
 #, fuzzy
 #~| msgid "change a passphrase"
