@@ -1,8 +1,27 @@
-Noteworthy changes in version 2.2.30 (unreleased)
+Noteworthy changes in version 2.2.30 (2021-08-26)
 -------------------------------------------------
 
+  * gpg: Extended gpg-check-pattern to support accept rules,
+    conjunctions, and case-sensitive matching.  [5ca15e58b2]
+
+  * agent: New option --pinentry-formatted-passphrase.  [#5553]
+
+  * agent: New option --check-sym-passphrase-pattern.  [#5517]
+
+  * agent: Use the sysconfdir for the pattern files.  [5ed8e598fa]
+
+  * agent: Add "checkpin" inquiry for use by pinentry.  [#5532]
+
+  * wkd: Fix client issue with leading or trailing spaces in
+    user-ids.  [576e429d41]
+
+  * Pass XDG_SESSION_TYPE and QT_QPA_PLATFORM envvars to Pinentry.
+    [#3659]
+
+  * Under Windows use LOCAL_APPDATA for the socket directory.  [#5537]
 
   Release-info: https://dev.gnupg.org/T5519
+  See-also: gnupg-announce/2021q3/000462.html
 
 
 Noteworthy changes in version 2.2.29 (2021-07-04)
