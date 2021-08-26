@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-06-08 11:05+0200\n"
+"PO-Revision-Date: 2021-08-26 18:07+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -56,6 +56,30 @@ msgstr "Das Passwort sichtbar machen"
 
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "Das Passwort unsichtbar machen"
+
+#. TRANSLATORS: This string is displayed by Pinentry as the label
+#. for generating a passphrase.
+msgid "Suggest"
+msgstr "Vorschlag"
+
+#. TRANSLATORS: This string is a tooltip, shown by pinentry when
+#. hovering over the generate button.  Please use an appropriate
+#. string to describe what this is about.  The length of the
+#. tooltip is limited to about 900 characters.  If you do not
+#. translate this entry, a default English text (see source)
+#. will be used.  The strcmp thingy is there to detect a
+#. non-translated string.
+msgid "pinentry.genpin.tooltip"
+msgstr "Einen Vorschlag für ein gutes Passwort erzeugen."
+
+msgid "Note: The blanks are not part of the passphrase."
+msgstr "(Leerzeichen sind nicht Bestandteil des Passwortes)"
+
+#. TRANSLATORS: This is a text shown by pinentry as title of a dialog
+#. telling the user that the entered new passphrase does not satisfy
+#. the passphrase constraints.  Please keep it short.
+msgid "Passphrase Not Allowed"
+msgstr "Das Passwort ist nicht erlaubt"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
