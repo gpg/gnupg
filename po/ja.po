@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.28\n"
+"Project-Id-Version: gnupg 2.2.30\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-06-09 09:28+0900\n"
+"PO-Revision-Date: 2021-08-27 08:56+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -60,7 +60,7 @@ msgstr "|pinentry-tt|パスフレーズを隠す"
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
-msgstr ""
+msgstr "提示"
 
 #. TRANSLATORS: This string is a tooltip, shown by pinentry when
 #. hovering over the generate button.  Please use an appropriate
@@ -69,21 +69,17 @@ msgstr ""
 #. translate this entry, a default English text (see source)
 #. will be used.  The strcmp thingy is there to detect a
 #. non-translated string.
-#, fuzzy
-#| msgid "pinentry.qualitybar.tooltip"
 msgid "pinentry.genpin.tooltip"
-msgstr "pinentry.qualitybar.tooltip"
+msgstr "パスフレーズを生成して提示"
 
 msgid "Note: The blanks are not part of the passphrase."
-msgstr ""
+msgstr "注意: ブランクはパスフレーズの一部ではありません。"
 
 #. TRANSLATORS: This is a text shown by pinentry as title of a dialog
 #. telling the user that the entered new passphrase does not satisfy
 #. the passphrase constraints.  Please keep it short.
-#, fuzzy
-#| msgid "Passphrase too long"
 msgid "Passphrase Not Allowed"
-msgstr "パスフレーズが長すぎます"
+msgstr "パスフレーズが認められません"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -97,7 +93,7 @@ msgstr "品質:"
 #. translate this entry, a default english text (see source)
 #. will be used.
 msgid "pinentry.qualitybar.tooltip"
-msgstr "pinentry.qualitybar.tooltip"
+msgstr "パスフレーズの品質"
 
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
