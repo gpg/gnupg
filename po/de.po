@@ -9162,11 +9162,6 @@ msgstr ""
 #~ msgid "Sex ((M)ale, (F)emale or space): "
 #~ msgstr "Geschlecht: (Männlich (M), Weiblich (F) oder Leerzeichen): "
 
-#, fuzzy
-#~| msgid "error writing public keyring '%s': %s\n"
-#~ msgid "error setting policy for key %s, user id \"%s\": %s"
-#~ msgstr "Fehler beim Schreiben des öff. Schlüsselbundes `%s': %s\n"
-
 #~ msgid "only SHA-1 is supported for OCSP responses\n"
 #~ msgstr "Lediglich SHA-1 wird bei OCSP Antworten unterstützt\n"
 
@@ -9184,11 +9179,6 @@ msgstr ""
 #~| msgid "error writing key: %s\n"
 #~ msgid "resetting keydb: %s\n"
 #~ msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
-
-#, fuzzy
-#~| msgid "error setting TOFU binding's trust level to %s\n"
-#~ msgid "error setting TOFU binding's policy to %s\n"
-#~ msgstr "Fehler beim Setzen der TOFU Binding Vertrauensstufe auf %s\n"
 
 #, fuzzy
 #~| msgid ""

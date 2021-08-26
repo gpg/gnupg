@@ -77,6 +77,31 @@ msgid "|pinentry-tt|Hide passphrase"
 msgstr "la contrasenya és invàlida"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
+#. for generating a passphrase.
+msgid "Suggest"
+msgstr ""
+
+#. TRANSLATORS: This string is a tooltip, shown by pinentry when
+#. hovering over the generate button.  Please use an appropriate
+#. string to describe what this is about.  The length of the
+#. tooltip is limited to about 900 characters.  If you do not
+#. translate this entry, a default English text (see source)
+#. will be used.  The strcmp thingy is there to detect a
+#. non-translated string.
+msgid "pinentry.genpin.tooltip"
+msgstr ""
+
+msgid "Note: The blanks are not part of the passphrase."
+msgstr ""
+
+#. TRANSLATORS: This is a text shown by pinentry as title of a dialog
+#. telling the user that the entered new passphrase does not satisfy
+#. the passphrase constraints.  Please keep it short.
+#, fuzzy
+msgid "Passphrase Not Allowed"
+msgstr "la contrasenya és massa llarga\n"
+
+#. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
 msgid "Quality:"
 msgstr ""
