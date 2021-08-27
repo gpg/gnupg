@@ -111,7 +111,10 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
         }
       mb->buf = p;
     }
-  memcpy (mb->buf + mb->len, buf, len);
+  if (buf)
+    memcpy (mb->buf + mb->len, buf, len);
+  else
+    memset (mb->buf + mb->len, 0, len);
   mb->len += len;
 }
 
