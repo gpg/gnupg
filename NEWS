@@ -27,7 +27,7 @@ Noteworthy changes in version 2.2.30 (2021-08-26)
   * Under Windows use LOCAL_APPDATA for the socket directory.  [#5537]
 
   Release-info: https://dev.gnupg.org/T5519
-  See-also: gnupg-announce/2021q3/000462.html
+  See-also: gnupg-announce/2021q3/000463.html
 
 
 Noteworthy changes in version 2.2.29 (2021-07-04)
