@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #endif
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "util.h"
 #include "cipher.h"
 #include "i18n.h"

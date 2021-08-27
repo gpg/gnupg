@@ -25,6 +25,7 @@
 #ifdef HAVE_SYS_SHM_H
 #include <sys/shm.h>
 #endif
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "util.h"
 #include "ttyio.h"
 #include "i18n.h"
