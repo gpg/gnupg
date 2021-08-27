@@ -563,7 +563,7 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral,
   put32 ( a, 0 ); /* blob length, needs fixup */
   put8 ( a, blobtype);
   put8 ( a, want_fpr32? 2:1 );  /* blob type version */
-  put16 ( a, as_ephemeral? 6:4 ); /* blob flags */
+  put16 ( a, as_ephemeral? 2:0 ); /* blob flags */
 
   put32 ( a, 0 ); /* offset to the raw data, needs fixup */
   put32 ( a, 0 ); /* length of the raw data, needs fixup */
@@ -726,7 +726,7 @@ create_blob_finish (KEYBOXBLOB blob)
   }
 
   /* Compute and store the SHA-1 checksum. */
-  gcry_md_hash_buffer (GCRY_MD_SHA1, p + n - 20, p, n - 40);
+  gcry_md_hash_buffer (GCRY_MD_SHA1, p + n - 20, p, n - 20);
 
   pp = xtrymalloc (n);
   if ( !pp )
