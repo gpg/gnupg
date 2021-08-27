@@ -2391,7 +2391,7 @@ receiving side can check for transmission errors or tampering at the
 end of each chunk and does not need to delay this until all data has
 been received.  The used chunk size is 2^@var{n} byte.  The lowest
 allowed value for @var{n} is 6 (64 byte) and the largest is the
-default of 27 which creates chunks not larger than 128 MiB.
+default of 22 which creates chunks not larger than 4 MiB.
 
 @item --input-size-hint @var{n}
 @opindex input-size-hint

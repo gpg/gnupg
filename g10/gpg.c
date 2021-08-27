@@ -3974,15 +3974,15 @@ main (int argc, char **argv)
     /* Check chunk size.  Please fix also the man page if you change
      * the default.  The limits are given by the specs.  */
     if (!opt.chunk_size)
-      opt.chunk_size = 27; /* Default to the suggested max of 128 MiB.  */
+      opt.chunk_size = 22; /* Default to the suggested max of 4 MiB.  */
     else if (opt.chunk_size < 6)
       {
         opt.chunk_size = 6;
         log_info (_("chunk size invalid - using %d\n"), opt.chunk_size);
       }
-    else if (opt.chunk_size > (allow_large_chunks? 62 : 27))
+    else if (opt.chunk_size > (allow_large_chunks? 62 : 22))
       {
-        opt.chunk_size = (allow_large_chunks? 62 : 27);
+        opt.chunk_size = (allow_large_chunks? 62 : 22);
         log_info (_("chunk size invalid - using %d\n"), opt.chunk_size);
       }
 
