@@ -99,7 +99,12 @@ got_fatal_signal( int sig )
     s = log_get_name(); if( s ) write(2, s, strlen(s) );
     write(2, ": ", 2 );
 
-#if HAVE_DECL_SYS_SIGLIST && defined(NSIG)
+#if HAVE_SIGDESCR_NP
+    s = sigdescr_np (sig);
+    if (!s)
+      s = "?";
+    write (2, s, strlen (s));
+#elif HAVE_DECL_SYS_SIGLIST && defined(NSIG)
     s = (sig >= 0 && sig < NSIG) ? sys_siglist[sig] : "?";
     write (2, s, strlen(s) );
 #else
