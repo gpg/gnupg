@@ -70,7 +70,7 @@ struct iobuf_struct {
 };
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
-#if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
+#if !defined (INCLUDED_BY_MAIN_MODULE)
 #define EXTERN_UNLESS_MAIN_MODULE extern
 #else
 #define EXTERN_UNLESS_MAIN_MODULE 
