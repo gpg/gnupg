@@ -1,7 +1,7 @@
 # README.ldap                                             -*- org -*-
 #+TITLE: How to use LDAP with GnuPG
 #+AUTHOR:    GnuPG.com
-#+DATE:      2020-12-23
+#+DATE:      2021-05-28
 #
 # The following comment lines are for use by Org-mode.
 #+EXPORT_FILE_NAME: gnupg-and-ldap
