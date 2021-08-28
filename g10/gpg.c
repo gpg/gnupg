@@ -2765,7 +2765,7 @@ main (int argc, char **argv)
             break;
 
 	  case oSecretKeyring:
-            /* Ignore this old option.  */
+	    obsolete_option (configname, pargs.lineno, "secret-keyring");
             break;
 
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
