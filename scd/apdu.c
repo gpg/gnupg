@@ -90,7 +90,7 @@ typedef unsigned long pcsc_dword_t;
 
 /* PC/SC context to access readers.  Shared among all readers.  */
 static struct pcsc {
-  int count;
+  int count;     /* Reference count - valid if .context != -1 */
   long context;
 } pcsc;
 
@@ -814,11 +814,17 @@ static int
 close_pcsc_reader (int slot)
 {
   (void)slot;
-  log_assert (pcsc.count > 0);
-  if (--pcsc.count == 0)
+
+  /* Note that we might be called via apdu_close_reader and we can't
+   * guarantee that we have not yet been called.  */
+  if (pcsc.context != -1)
     {
-      pcsc_release_context (pcsc.context);
-      pcsc.context = -1;
+      log_assert (pcsc.count > 0);
+      if (--pcsc.count == 0)
+        {
+          pcsc_release_context (pcsc.context);
+          pcsc.context = -1;
+        }
     }
   return 0;
 }
@@ -1199,7 +1205,7 @@ open_pcsc_reader (const char *portstr)
   char *p;
   size_t n;
 
-  if (pcsc.context < 0)
+  if (pcsc.context == -1)
     if (pcsc_init () < 0)
       return -1;
 
