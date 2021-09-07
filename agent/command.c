@@ -1955,7 +1955,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
                                  opt_qualbar, cacheid, CACHE_MODE_USER, NULL);
       xfree (entry_errtext);
       entry_errtext = NULL;
-      is_generated = !!(pi->status & PINENTRY_STATUS_PASSWORD_GENERATED);
+      is_generated = 0;
 
       if (!rc)
         {
