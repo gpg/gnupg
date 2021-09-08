@@ -60,6 +60,7 @@
 #include "../common/exechelp.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */
 #include "../common/host2net.h"
+#include "../common/membuf.h"
 
 #include "iso7816.h"
 #include "apdu.h"
@@ -92,6 +93,7 @@ typedef unsigned long pcsc_dword_t;
 static struct pcsc {
   int count;     /* Reference count - valid if .context != -1 */
   long context;
+  char *reader_list; /* List of detected readers.  */
 } pcsc;
 
 /* A structure to collect information pertaining to one reader
@@ -1204,6 +1206,10 @@ open_pcsc_reader (const char *portstr)
   pcsc_dword_t nreader;
   char *p;
   size_t n;
+  membuf_t reader_mb;
+
+  xfree (pcsc.reader_list);
+  pcsc.reader_list = NULL;
 
   if (pcsc.context == -1)
     if (pcsc_init () < 0)
@@ -1211,6 +1217,7 @@ open_pcsc_reader (const char *portstr)
 
   if (DBG_READER)
     log_debug ("open_pcsc_reader(portstr=%s)\n", portstr);
+
 
   slot = new_reader_slot ();
   if (slot == -1)
@@ -1243,6 +1250,8 @@ open_pcsc_reader (const char *portstr)
       goto leave;
     }
 
+  init_membuf (&reader_mb, 256);
+
   p = list;
   while (nreader > 0)
     {
@@ -1260,11 +1269,17 @@ open_pcsc_reader (const char *portstr)
          }
 
       log_info ("detected reader '%s'\n", p);
+      put_membuf_str (&reader_mb, p);
+      put_membuf (&reader_mb, "\n", 1);
       if (!rdrname && portstr && !strncmp (p, portstr, strlen (portstr)))
         rdrname = p;
       nreader -= n + 1;
       p += n + 1;
     }
+  put_membuf (&reader_mb, "", 1);
+  pcsc.reader_list = get_membuf (&reader_mb, NULL);
+  if (!pcsc.reader_list)
+    log_error ("error allocating memory for reader list\n");
 
   if (!rdrname)
     rdrname = list;
@@ -3353,6 +3368,35 @@ apdu_get_reader_name (int slot)
   return reader_table[slot].rdrname;
 }
 
+
+/* Return the list of currently known readers.  Caller must free the
+ * returned value.  Might return NULL. */
+char *
+apdu_get_reader_list (void)
+{
+  membuf_t mb;
+  char *ccidlist = NULL;
+
+  init_membuf (&mb, 256);
+#ifdef HAVE_LIBUSB
+  ccidlist = ccid_get_reader_list ();
+#endif
+
+  if (ccidlist && *ccidlist)
+    put_membuf_str (&mb, ccidlist);
+  if (pcsc.reader_list && *pcsc.reader_list)
+    {
+      if (ccidlist && *ccidlist)
+        put_membuf (&mb, "\n", 1);
+      put_membuf_str (&mb, pcsc.reader_list);
+    }
+  xfree (ccidlist);
+  put_membuf (&mb, "", 1);
+
+  return get_membuf (&mb, NULL);
+}
+
+
 gpg_error_t
 apdu_init (void)
 {
@@ -3362,6 +3406,7 @@ apdu_init (void)
 
   pcsc.count = 0;
   pcsc.context = -1;
+  pcsc.reader_list = NULL;
 
   if (npth_mutex_init (&reader_table_lock, NULL))
     goto leave;

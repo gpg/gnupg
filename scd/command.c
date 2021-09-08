@@ -36,9 +36,6 @@
 #include "iso7816.h"
 #include "apdu.h" /* Required for apdu_*_reader (). */
 #include "atr.h"
-#ifdef HAVE_LIBUSB
-#include "ccid-driver.h"
-#endif
 #include "../common/asshelp.h"
 #include "../common/server-help.h"
 
@@ -1401,6 +1398,45 @@ cmd_unlock (assuan_context_t ctx, char *line)
 }
 
 
+/* Ease reading of Assuan data ;ines by sending a physical line after
+ * each LF.  */
+static gpg_error_t
+pretty_assuan_send_data (assuan_context_t ctx,
+                         const void *buffer_arg, size_t size)
+{
+  const char *buffer = buffer_arg;
+  const char *p;
+  size_t n, nbytes;
+  gpg_error_t err;
+
+  nbytes = size;
+  do
+    {
+      p = memchr (buffer, '\n', nbytes);
+      n = p ? (p - buffer) + 1 : nbytes;
+      err = assuan_send_data (ctx, buffer, n);
+      if (err)
+        {
+          /* We also set ERRNO in case this function is used by a
+           * custom estream I/O handler.  */
+          gpg_err_set_errno (EIO);
+          goto leave;
+        }
+      buffer += n;
+      nbytes -= n;
+      if (nbytes && (err=assuan_send_data (ctx, NULL, 0))) /* Flush line. */
+        {
+          gpg_err_set_errno (EIO);
+          goto leave;
+        }
+    }
+  while (nbytes);
+
+ leave:
+  return err;
+}
+
+
 static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
@@ -1418,8 +1454,7 @@ static const char hlp_getinfo[] =
   "                  'u'  Usable card present.\n"
   "                  'r'  Card removed.  A reset is necessary.\n"
   "                These flags are exclusive.\n"
-  "  reader_list - Return a list of detected card readers.  Does\n"
-  "                currently only work with the internal CCID driver.\n"
+  "  reader_list - Return a list of detected card readers.\n"
   "  deny_admin  - Returns OK if admin commands are not allowed or\n"
   "                GPG_ERR_GENERAL if admin commands are allowed.\n"
   "  app_list    - Return a list of supported applications.  One\n"
@@ -1474,14 +1509,9 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "reader_list"))
     {
-#ifdef HAVE_LIBUSB
-      char *s = ccid_get_reader_list ();
-#else
-      char *s = NULL;
-#endif
-
+      char *s = apdu_get_reader_list ();
       if (s)
-        rc = assuan_send_data (ctx, s, strlen (s));
+        rc = pretty_assuan_send_data (ctx, s, strlen (s));
       else
         rc = gpg_error (GPG_ERR_NO_DATA);
       xfree (s);
