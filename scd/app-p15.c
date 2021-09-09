@@ -325,7 +325,7 @@ struct prkdf_object_s
   char *serial_number;
 
   /* KDF/KEK parameter for OpenPGP's ECDH.  First byte is zero if not
-   * availabale. .*/
+   * available. .*/
   unsigned char ecdh_kdf[4];
 
   /* Length and allocated buffer with the Id of this object. */
@@ -4455,7 +4455,7 @@ send_key_fpr_line (ctrl_t ctrl, int number, const unsigned char *fpr)
 }
 
 
-/* If possible Emit a FPR-KEY status line for the private key object
+/* If possible emit a FPR-KEY status line for the private key object
  * PRKDF using NUMBER as index.  */
 static void
 send_key_fpr (app_t app, ctrl_t ctrl, prkdf_object_t prkdf, int number)

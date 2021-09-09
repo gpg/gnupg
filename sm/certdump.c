@@ -385,7 +385,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
     const char *oid;
   } label_map[] = {
     /* Warning: When adding new labels, make sure that the buffer
-       below we be allocated large enough. */
+       array->key will be allocated large enough. */
     {"EMail",        "1.2.840.113549.1.9.1" },
     {"T",            "2.5.4.12" },
     {"GN",           "2.5.4.42" },
@@ -397,6 +397,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
     {"PostalCode",   "2.5.4.17" },
     {"Pseudo",       "2.5.4.65" },
     {"SerialNumber", "2.5.4.5" },
+    {"Callsign",     "1.3.6.1.4.1.12348.1.1"},
     {NULL, NULL}
   };
   const unsigned char *s, *s1;

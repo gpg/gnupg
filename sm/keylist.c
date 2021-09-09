@@ -213,6 +213,13 @@ static struct
   { "1.2.840.113583.1.1.5",     "pdfAuthenticDocumentsTrust", OID_FLAG_KP },
   { "1.3.6.1.4.1.6449.1.3.5.2", "comodoCertifiedDeliveryService", OID_FLAG_KP },
 
+  /* ARRL */
+  { "1.3.6.1.4.1.12348.1.1",    "lotw-callsign" },
+  { "1.3.6.1.4.1.12348.1.2",    "lotw-qso-first-date" },
+  { "1.3.6.1.4.1.12348.1.3",    "lotw-qso-end-date" },
+  { "1.3.6.1.4.1.12348.1.4",    "lotw-dxcc-entity" },
+  /* { "1.3.6.1.4.1.12348.1.5",    "lotw-fixme" }, */
+
   { NULL }
 };
 
