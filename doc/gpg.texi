@@ -444,7 +444,7 @@ request a confirmation.
 
 @item --export
 @opindex export
-Either export all keys from all keyrings (default keyrings and those
+Either export all keys from all keyrings (default keyring and those
 registered via option @option{--keyring}), or if at least one name is given,
 those of the given name. The exported keys are written to STDOUT or to the
 file given with option @option{--output}.  Use together with
@@ -1075,12 +1075,12 @@ signing.
 
   @item save
   @opindex keyedit:save
-  Save all changes to the keyrings and quit.
+  Save all changes to the keyring and quit.
 
   @item quit
   @opindex keyedit:quit
   Quit the program without updating the
-  keyrings.
+  keyring.
 @end table
 
 @c man:.RS
@@ -1497,7 +1497,7 @@ photo viewers use the @code{PATH} environment variable.
 Add @var{file} to the current list of keyrings. If @var{file} begins
 with a tilde and a slash, these are replaced by the $HOME directory. If
 the filename does not contain a slash, it is assumed to be in the GnuPG
-home directory ("~/.gnupg" if @option{--homedir} or $GNUPGHOME is not
+home directory ("~/.gnupg" unless @option{--homedir} or $GNUPGHOME is
 used).
 
 Note that this adds a keyring to the current list. If the intent is to
@@ -1507,17 +1507,18 @@ use the specified keyring alone, use @option{--keyring} along with
 If the option @option{--no-keyring} has been used no keyrings will
 be used at all.
 
+@item --primary-keyring @var{file}
+@opindex primary-keyring
+This is a varian of @option{--keyring} and designates @var{file} as
+the primary public keyring. This means that newly imported keys (via
+@option{--import} or keyserver @option{--recv-from}) will go to this
+keyring.
+
 
 @item --secret-keyring @var{file}
 @opindex secret-keyring
 This is an obsolete option and ignored.  All secret keys are stored in
 the @file{private-keys-v1.d} directory below the GnuPG home directory.
-
-@item --primary-keyring @var{file}
-@opindex primary-keyring
-Designate @var{file} as the primary public keyring. This means that
-newly imported keys (via @option{--import} or keyserver
-@option{--recv-from}) will go to this keyring.
 
 @item --trustdb-name @var{file}
 @opindex trustdb-name
@@ -3362,11 +3363,10 @@ invalid.  This options allows to override this restriction.
 
 @item --no-default-keyring
 @opindex no-default-keyring
-Do not add the default keyrings to the list of keyrings. Note that
-GnuPG will not operate without any keyrings, so if you use this option
-and do not provide alternate keyrings via @option{--keyring} or
-@option{--secret-keyring}, then GnuPG will still use the default public or
-secret keyrings.
+Do not add the default keyring to the list of keyrings. Note that
+GnuPG needs for almost all operations a keyring. Thus if you use this
+option and do not provide alternate keyrings via @option{--keyring},
+then GnuPG will still use the default keyring.
 
 @item --no-keyring
 @opindex no-keyring
