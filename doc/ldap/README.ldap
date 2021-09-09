@@ -1,7 +1,7 @@
 # README.ldap                                             -*- org -*-
 #+TITLE: How to use LDAP with GnuPG
 #+AUTHOR:    GnuPG.com
-#+DATE:      2021-05-28
+#+DATE:      2021-09-01
 #
 # The following comment lines are for use by Org-mode.
 #+EXPORT_FILE_NAME: gnupg-and-ldap
@@ -522,17 +522,17 @@ Controller and open a shell (Command Prompt).  Copy the above
 mentioned ldif files to your working directory and run the following
 command:
 
-: ldifde -i -v -f gnupg-ldap-ad-schema.ldif
-:   -c "DC=EXAMPLEDC" "DC=example,DC=org"
+: ldifde -i -f gnupg-ldap-ad-schema.ldif
+:   -c "DC=EXAMPLEDC" "#configurationNamingContext"
 
-This is one line and the last string (="DC=example,DC=org"=) needs to
-be replaced with your actual domain.  If the command succeeds you have
-extended the schema to store OpenPGP keys at a well known location.
-The next step is to provide information and space in the tree.  This
-is done similar to the above, namely:
+Note that this is a single line (for an LDS installation you need to
+add more options like =-s localhost=).  If the command succeeds the
+schema has been extended to store OpenPGP keys at a well known
+location.  The next step is to provide information and space in the
+tree.  This is done similar to the above, namely:
 
 : ldifde -i -v -f gnupg-ldap-ad-init.ldif
-:   -c "DC=EXAMPLEDC" "DC=example,DC=org"
+:   -c "DC=EXAMPLEDC" "#defaultNamingContext"
 
 You may now check your work with ADSI (enter "adsiedit").  Compare
 with this [[https://gnupg.org/blog/img/ad-with-gnupg-schema.png][screenshot]] and notice the two marked entries.
@@ -559,7 +559,7 @@ that these permissions apply to /This object and all descendant
 objects/.
 
 In case you want to access the keys also from non-Windows boxes, it is
-probably best to created a dedicated guest user for read access.
+probably best to create a dedicated guest user for read access.
 
 ** Using GnuPG with AD
 
@@ -570,12 +570,17 @@ need to put
 
 into =dirmngr.conf= and Windows takes care of authentication.  Note
 that we use 3 slashes and not ldaps because AD takes care of
-protecting the traffic.
+protecting the traffic.  If you use an LDS configure this
 
-GnuPG can be advised to consult the local AD similar to a Web Key
-Directory.  For this put
+: keyserver ldap://mykeyserver.example.org/????gpgNtds=1
+
+this will use the LDS at the given server (add a port if required) and
+uses the AD for authentication.
+
+GnuPG can also be advised to consult this configured AD or LDS similar
+to a Web Key Directory (WKD).  For this put
 
 : auto-key-locate local,ntds,wkd
 
-into =gpg.conf= so that a missing key is first looked up in the AD
-before a WKD query is done.
+into =gpg.conf= so that a missing key is first looked up in the AD or
+LDS before a WKD query is done.

@@ -1,7 +1,7 @@
 # gnupg-ldap-ad-init.ldif                                 -*- conf -*-
 #
 # Entries connecting the schema specified in gnupg-ldap-ad-schema.ldif.
-# Revision: 2020-12-16
+# Revision: 2021-09-01 v1
 
 dn: cn=GnuPG Keys,DC=EXAMPLEDC
 changetype: add

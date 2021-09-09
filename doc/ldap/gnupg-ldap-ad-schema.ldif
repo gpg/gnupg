@@ -3,14 +3,14 @@
 # Schema for an OpenPGP LDAP keyserver.  This is a slighly enhanced
 # version of the original LDAP schema used for PGP keyservers as
 # installed at quite some sites.
-# Revision: 2020-12-15
+# Revision: 2021-09-01  v1
 
 # Some notes:
 # - Backup your AD! It is not possible to revert changes of the schema.
 # - Try it first on a test system.
 # - To import the new attributes and classes use:
 #      ldifde -i -v -f gnupg-ldap-ad-schema.ldif
-#             -c "DC=EXAMPLEDC" "DC=example,DC=org"
+#             -c "DC=EXAMPLEDC" "#configurationNamingContext"
 #   (the above command is given as one line)
 # - The schema does not get its own distingished name as done with OpenLDAP.
 # - The first GUID we use is f406e7a5-a5ea-411e-9ddd-2e4e66899800
@@ -28,8 +28,8 @@
 
 # The base DN for the PGP key space by querying the
 #  pgpBaseKeySpaceDN attribute (This is normally
-#  'ou=PGP Keys,dc=example,dc=com').
-dn: CN=pgpBaseKeySpaceDN,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+#  'ou=GnuPG Keys,dc=example,dc=com').
+dn: CN=pgpBaseKeySpaceDN,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.8
@@ -41,7 +41,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYAA==
 
 # See gnupg-ldap-init.ldif for a description of this attribute
-dn: CN=pgpSoftware,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpSoftware,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.9
@@ -53,7 +53,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYAQ==
 
 # See gnupg-ldap-init.ldif for a description of this attribute
-dn: CN=pgpVersion,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpVersion,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.10
@@ -67,7 +67,7 @@ schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYAg==
 
 # The attribute holding the OpenPGP keyblock.
 # The legacy PGP LDAP server used pgpKeyV2 instead.
-dn: CN=pgpKey,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpKey,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.11
@@ -79,7 +79,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYAw==
 
 # The long key-ID
-dn: CN=pgpCertID,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpCertID,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.12
@@ -91,7 +91,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYBA==
 
 # A flag to temporary disable a keyblock
-dn: CN=pgpDisabled,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpDisabled,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.13
@@ -104,7 +104,7 @@ schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYBQ==
 
 # The short key id.  This is actually not required and should thus not
 # be used by client software.
-dn: CN=pgpKeyID,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpKeyID,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.14
@@ -116,7 +116,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYBg==
 
 # The algorithm of the key.  Used to be "RSA" or "DSS/DH".
-dn: CN=pgpKeyType,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpKeyType,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.15
@@ -133,7 +133,7 @@ schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYBw==
 #     mail:    (pgpUserID=*<%s>*)
 #     mailsub: (pgpUserID=*<*%s*>*)
 #     mailend: (pgpUserID=*<*%s>*)
-dn: CN=pgpUserID,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpUserID,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.16
@@ -146,7 +146,7 @@ schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYCA==
 
 # The creation time of the primary key.
 # Stored in ISO format: "20201231 120000"
-dn: CN=pgpKeyCreateTime,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpKeyCreateTime,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.17
@@ -158,7 +158,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYCQ==
 
 # SignerIDs are not used
-dn: CN=pgpSignerID,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpSignerID,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.18
@@ -170,7 +170,7 @@ isSingleValued: FALSE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYCg==
 
 # A value of 1 indicates that the keyblock has been revoked
-dn: CN=pgpRevoked,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpRevoked,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.19
@@ -182,7 +182,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYCw==
 
 # The Subkey key ids (16 hex digits)
-dn: CN=pgpSubKeyID,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpSubKeyID,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.20
@@ -194,7 +194,7 @@ isSingleValued: FALSE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYDA==
 
 # A hint on the keysize.
-dn: CN=pgpKeySize,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpKeySize,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.21
@@ -207,7 +207,7 @@ schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYDQ==
 
 # Expiration time of the primary key.
 # Stored in ISO format: "20201231 120000"
-dn: CN=pgpKeyExpireTime,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpKeyExpireTime,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.3401.8.2.22
@@ -219,7 +219,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYDg==
 
 # The hex encoded fingerprint of the primary key.
-dn: CN=gpgFingerprint,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=gpgFingerprint,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.11591.2.4.1.1
@@ -231,7 +231,7 @@ isSingleValued: TRUE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYDw==
 
 # A list of hex encoded fingerprints of the subkeys.
-dn: CN=gpgSubFingerprint,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=gpgSubFingerprint,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.11591.2.4.1.2
@@ -243,7 +243,7 @@ isSingleValued: FALSE
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYEA==
 
 # A list of utf8 encoded addr-spec used instead of mail/rfc822Mailbox
-dn: CN=gpgMailbox,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=gpgMailbox,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: attributeSchema
 attributeID: 1.3.6.1.4.1.11591.2.4.1.3
@@ -282,7 +282,7 @@ schemaUpdateNow: 1
 # Used by regular LDAP servers to indicate pgp support.
 # (structural class)
 #
-dn: CN=pgpServerInfo,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpServerInfo,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: classSchema
 governsID: 1.3.6.1.4.1.3401.8.2.23
@@ -295,13 +295,14 @@ mustContain: pgpBaseKeySpaceDN
 mayContain: pgpSoftware
 mayContain: pgpVersion
 systemPossSuperiors: domainDNS
+systemPossSuperiors: container
 schemaIDGUID:: 9AbnpaXqQR6d3S5OZomYIA==
 
 # The original PGP key object extended with a few extra attributes.
 # All new software should set them but this is not enforced for
 # backward compatibility of client software.
 # (structural class, writable)
-dn: CN=pgpKeyInfo,CN=Schema,CN=Configuration,DC=EXAMPLEDC
+dn: CN=pgpKeyInfo,CN=Schema,DC=EXAMPLEDC
 changetype: ntdsSchemaAdd
 objectClass: classSchema
 governsID: 1.3.6.1.4.1.3401.8.2.24
