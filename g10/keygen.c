@@ -4003,6 +4003,8 @@ parse_revocation_key (const char *fname,
   if (i != 20 && i != 32)
     goto fail;
 
+  revkey.fprlen = i;
+
   /* skip to the tag */
   while(*pn && *pn!='s' && *pn!='S')
     pn++;
