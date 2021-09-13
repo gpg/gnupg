@@ -903,9 +903,13 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   BOOL in_job = FALSE;
   gpg_err_code_t ec;
   int rc;
+  int jobdebug;
 
   /* We don't use ENVP.  */
   (void)envp;
+
+  cmdline = getenv ("GNUPG_EXEC_DEBUG_FLAGS");
+  jobdebug = (cmdline && (atoi (cmdline) & 1));
 
   if ((ec = gnupg_access (pgmname, X_OK)))
     return gpg_err_make (default_errsource, ec);
@@ -955,23 +959,31 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
       else if ((info.BasicLimitInformation.LimitFlags &
                 JOB_OBJECT_LIMIT_BREAKAWAY_OK))
         {
-          log_info ("Using CREATE_BREAKAWAY_FROM_JOB flag\n");
+          if (jobdebug)
+            log_debug ("Using CREATE_BREAKAWAY_FROM_JOB flag\n");
           cr_flags |= CREATE_BREAKAWAY_FROM_JOB;
         }
       else if ((info.BasicLimitInformation.LimitFlags &
                 JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK))
         {
           /* The child process should automatically detach from the job. */
-          log_info ("Not using CREATE_BREAKAWAY_FROM_JOB flag; "
-                     "JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK is set\n");
+          if (jobdebug)
+            log_debug ("Not using CREATE_BREAKAWAY_FROM_JOB flag; "
+                       "JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK is set\n");
         }
       else
         {
           /* It seems that the child process must remain in the job.
            * This is not necessarily an error, although it can cause premature
            * termination of the child process when the job is closed. */
-          log_info ("Not using CREATE_BREAKAWAY_FROM_JOB flag\n");
+          if (jobdebug)
+            log_debug ("Not using CREATE_BREAKAWAY_FROM_JOB flag\n");
         }
+    }
+  else
+    {
+      if (jobdebug)
+        log_debug ("Process is not in a Job\n");
     }
 
   /*   log_debug ("CreateProcess(detached), path='%s' cmdline='%s'\n", */
