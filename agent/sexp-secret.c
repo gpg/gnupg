@@ -29,7 +29,7 @@ gpg_error_t
 fixup_when_ecc_private_key (unsigned char *buf, size_t *buflen_p)
 {
   const unsigned char *s;
-  char curve_name[256];
+  char curve_name[256] = { 0, };
   size_t n;
   size_t buflen = *buflen_p;
 
