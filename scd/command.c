@@ -806,6 +806,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
       if (!pkadv)
         {
           rc = gpg_error_from_syserror ();
+          gcry_sexp_release (s_key);
           goto leave;
         }
       log_assert (pkadvlen);
