@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <signal.h>
 #ifdef USE_NPTH
 # include <unistd.h>
@@ -91,7 +90,7 @@ typedef unsigned long pcsc_dword_t;
 
 /* PC/SC context to access readers.  Shared among all readers.  */
 static struct pcsc {
-  int count;     /* Reference count - valid if .context != -1 */
+  unsigned int context_valid:1;
   long context;
   char *reader_list; /* List of detected readers.  */
 } pcsc;
@@ -817,16 +816,10 @@ close_pcsc_reader (int slot)
 {
   (void)slot;
 
-  /* Note that we might be called via apdu_close_reader and we can't
-   * guarantee that we have not yet been called.  */
-  if (pcsc.context != -1)
+  if (pcsc.context_valid)
     {
-      log_assert (pcsc.count > 0);
-      if (--pcsc.count == 0)
-        {
-          pcsc_release_context (pcsc.context);
-          pcsc.context = -1;
-        }
+      pcsc_release_context (pcsc.context);
+      pcsc.context_valid = 0;
     }
   return 0;
 }
@@ -838,7 +831,7 @@ connect_pcsc_card (int slot)
 {
   long err;
 
-  assert (slot >= 0 && slot < MAX_READER);
+  log_assert (slot >= 0 && slot < MAX_READER);
 
   if (reader_table[slot].pcsc.card)
     return SW_HOST_ALREADY_CONNECTED;
@@ -905,7 +898,7 @@ disconnect_pcsc_card (int slot)
 {
   long err;
 
-  assert (slot >= 0 && slot < MAX_READER);
+  log_assert (slot >= 0 && slot < MAX_READER);
 
   if (!reader_table[slot].pcsc.card)
     return 0;
@@ -1182,6 +1175,7 @@ pcsc_init (void)
       pcsc_api_loaded = 1;
     }
 
+  pcsc.context_valid = 0;
   err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL, &pcsc.context);
   if (err)
     {
@@ -1189,7 +1183,7 @@ pcsc_init (void)
                  pcsc_error_string (err), err);
       return -1;
     }
-  pcsc.count++;
+  pcsc.context_valid = 1;
 
   return 0;
 }
@@ -1211,7 +1205,7 @@ open_pcsc_reader (const char *portstr)
   xfree (pcsc.reader_list);
   pcsc.reader_list = NULL;
 
-  if (pcsc.context == -1)
+  if (!pcsc.context_valid)
     if (pcsc_init () < 0)
       return -1;
 
@@ -1553,7 +1547,7 @@ reset_ccid_reader (int slot)
   if (err)
     return err;
   /* If the reset was successful, update the ATR. */
-  assert (sizeof slotp->atr >= sizeof atr);
+  log_assert (sizeof slotp->atr >= sizeof atr);
   slotp->atrlen = atrlen;
   memcpy (slotp->atr, atr, atrlen);
   dump_reader_status (slot);
@@ -2875,7 +2869,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
           if (use_chaining && lc > 255)
             {
               apdu[apdulen] |= 0x10;
-              assert (use_chaining < 256);
+              log_assert (use_chaining < 256);
               lc_chunk = use_chaining;
               lc -= use_chaining;
             }
@@ -2905,7 +2899,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
 
     exact_length_hack:
       /* As a safeguard don't pass any garbage to the driver.  */
-      assert (apdulen <= apdu_buffer_size);
+      log_assert (apdulen <= apdu_buffer_size);
       memset (apdu+apdulen, 0, apdu_buffer_size - apdulen);
       resultlen = result_buffer_size;
       rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
@@ -2976,7 +2970,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
               xfree (result_buffer);
               return SW_HOST_OUT_OF_CORE;
             }
-          assert (resultlen < bufsize);
+          log_assert (resultlen < bufsize);
           memcpy (p, result, resultlen);
           p += resultlen;
         }
@@ -2996,7 +2990,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
           apdu[apdulen++] = 0;
           apdu[apdulen++] = 0;
           apdu[apdulen++] = len;
-          assert (apdulen <= apdu_buffer_size);
+          log_assert (apdulen <= apdu_buffer_size);
           memset (apdu+apdulen, 0, apdu_buffer_size - apdulen);
           resultlen = result_buffer_size;
           rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
@@ -3246,7 +3240,7 @@ apdu_send_direct (int slot, size_t extended_length,
               xfree (result_buffer);
               return SW_HOST_OUT_OF_CORE;
             }
-          assert (resultlen < bufsize);
+          log_assert (resultlen < bufsize);
           memcpy (p, result, resultlen);
           p += resultlen;
         }
@@ -3404,8 +3398,8 @@ apdu_init (void)
   gpg_error_t err;
   int i;
 
-  pcsc.count = 0;
   pcsc.context = -1;
+  pcsc.context_valid = 0;
   pcsc.reader_list = NULL;
 
   if (npth_mutex_init (&reader_table_lock, NULL))
