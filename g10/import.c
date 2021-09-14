@@ -2566,7 +2566,6 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
               gcry_sexp_release (curve);
               err = gcry_sexp_build (&curve, NULL, "(curve %s)",
                                      curvename?curvename:curvestr);
-              xfree (curvestr);
               if (!err)
                 {
                   j = 0;
@@ -2583,7 +2582,24 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
                   else
                     put_membuf_str (&mbuf, " _ %m");
                   format_args[j++] = pk->pkey + i;
+
+                  /* Simple hack to print a warning for an invalid key
+                   * in case of cv25519.  We have only opaque MPIs here. */
+                  if (pk->pubkey_algo == PUBKEY_ALGO_ECDH
+                      && !strcmp (curvestr, "1.3.6.1.4.1.3029.1.5.1")
+                      && gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
+                    {
+                      const unsigned char *pp;
+                      unsigned int nn;
+
+                      pp = gcry_mpi_get_opaque (pk->pkey[i], &nn);
+                      nn = (nn+7)/8;
+                      if (pp && nn && (pp[nn-1] & 7))
+                        log_info ("warning: lower 3 bits of the secret key"
+                                  " are not cleared\n");
+                    }
                 }
+              xfree (curvestr);
             }
         }
       else
