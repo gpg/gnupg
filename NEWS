@@ -1,7 +1,14 @@
-Noteworthy changes in version 2.2.31 (unreleased)
+Noteworthy changes in version 2.2.31 (2021-09-15)
 -------------------------------------------------
 
+  * agent: Fix a regression in GET_PASSPHRASE.  [#5577]
+
+  * scd: Fix an assertion failure in close_pcsc_reader.  [67e1834ad4]
+
+  * scd: Add support for PC/SC in "GETINFO reader_list".
+
   Release-info: https://dev.gnupg.org/T5571
+  See-also: gnupg-announce/2021q3/000464.html
 
 
 Noteworthy changes in version 2.2.30 (2021-08-26)
