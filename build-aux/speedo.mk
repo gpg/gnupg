@@ -89,6 +89,7 @@ SPEEDO_MK := $(realpath $(lastword $(MAKEFILE_LIST)))
 .PHONY : help native native-gui w32-installer w32-source w32-wixlib
 .PHONY :      git-native git-native-gui git-w32-installer git-w32-source
 .PHONY :      this-native this-native-gui this-w32-installer this-w32-source
+.PHONY :      appimage git-appimage this-appimage
 
 help:
 	@echo 'usage: make -f speedo.mk TARGET'
@@ -96,6 +97,7 @@ help:
 	@echo '  help               This help'
 	@echo '  native             Native build of the GnuPG core'
 	@echo '  native-gui         Ditto but with pinentry and GPA'
+	@echo '  appimage           Build an AppImage of GnuPG'
 	@echo '  w32-installer      Build a Windows installer'
 	@echo '  w32-source         Pack a source archive'
 	@echo '  w32-release        Build a Windows release'
@@ -153,6 +155,15 @@ git-native-gui: check-tools
 this-native-gui: check-tools
 	$(SPEEDOMAKE) TARGETOS=native WHAT=this    WITH_GUI=1 all
 
+appimage: check-tools
+	$(SPEEDOMAKE) TARGETOS=appimage WHAT=release WITH_GUI=0 all
+
+git-appimage: check-tools
+	$(SPEEDOMAKE) TARGETOS=appimage WHAT=git     WITH_GUI=0 all
+
+this-appimage: check-tools
+	$(SPEEDOMAKE) TARGETOS=appimage WHAT=this    WITH_GUI=0 all
+
 w32-installer: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=0 installer
 
@@ -201,7 +212,7 @@ w32-release-offline: check-tools
 #          to "this" from the unpacked sources.
 WHAT=git
 
-# Set target to "native" or "w32"
+# Set target to "native" or "w32" or "appimage"
 TARGETOS=
 
 # Set to 1 to build the GUI tools
@@ -323,9 +334,11 @@ speedo_spkgs += \
 endif
 endif
 
+ifneq ($(TARGETOS),appimage)
 ifeq ($(STATIC),0)
 speedo_spkgs += \
 	gpgme
+endif
 endif
 
 ifeq ($(TARGETOS),w32)
@@ -342,6 +355,10 @@ speedo_spkgs += pinentry
 ifeq ($(WITH_GUI),1)
 speedo_spkgs += gpa gpgex
 endif
+
+else ifeq ($(TARGETOS),appimage)
+
+speedo_spkgs += pinentry
 
 else
 
@@ -611,6 +628,8 @@ speedo_pkg_ntbtls_configure = --disable-shared
 ifeq ($(TARGETOS),w32)
 speedo_pkg_gnupg_configure = \
         --disable-g13 --enable-ntbtls
+else ifeq ($(TARGETOS),appimage)
+speedo_pkg_gnupg_configure = --disable-g13 --enable-wks-tools --disable-doc
 else
 speedo_pkg_gnupg_configure = --disable-g13 --enable-wks-tools
 endif
@@ -642,13 +661,22 @@ endif
 
 
 ifeq ($(TARGETOS),w32)
-speedo_pkg_pinentry_configure = --disable-pinentry-gtk2
+speedo_pkg_pinentry_configure = \
+	--disable-pinentry-gtk2 \
+	--disable-pinentry-qt5 \
+	--disable-pinentry-qt
+else ifeq ($(TARGETOS),appimage)
+speedo_pkg_pinentry_configure = \
+	--disable-pinentry-gtk2 \
+	--enable-pinentry-qt5 \
+	--enable-pinentry-qt
 else
-speedo_pkg_pinentry_configure = --enable-pinentry-gtk2
+speedo_pkg_pinentry_configure = \
+	--enable-pinentry-gtk2 \
+	--disable-pinentry-qt5 \
+	--disable-pinentry-qt
 endif
 speedo_pkg_pinentry_configure += \
-        --disable-pinentry-qt5   \
-        --disable-pinentry-qt    \
 	--disable-pinentry-fltk  \
 	--disable-pinentry-tty   \
 	CPPFLAGS=-I$(idir)/include   \
@@ -920,7 +948,7 @@ define SETVARS
         pkgmkargs_uninst="$(call GETVAR,speedo_pkg_$(1)_make_args_uninst)"; \
         export PKG_CONFIG="/usr/bin/pkg-config";                        \
         export PKG_CONFIG_PATH="$(idir)/lib/pkgconfig";                 \
-        [ "$(TARGETOS)" != native ] && export PKG_CONFIG_LIBDIR="";     \
+        [ "$(TARGETOS)" = w32 ] && export PKG_CONFIG_LIBDIR="";         \
         export SYSROOT="$(idir)";                                       \
         export PATH="$(idir)/bin:$${PATH}";                             \
         export LD_LIBRARY_PATH="$(idir)/lib:$${LD_LIBRARY_PATH}"
@@ -956,7 +984,7 @@ define SETVARS_W64
         pkgmkargs_uninst="$(call GETVAR,speedo_pkg_$(1)_make_args_uninst)"; \
         export PKG_CONFIG="/usr/bin/pkg-config";                        \
         export PKG_CONFIG_PATH="$(idir6)/lib/pkgconfig";                \
-        [ "$(TARGETOS)" != native ] && export PKG_CONFIG_LIBDIR="";     \
+        [ "$(TARGETOS)" = w32 ] && export PKG_CONFIG_LIBDIR="";         \
         export SYSROOT="$(idir6)";                                      \
         export PATH="$(idir6)/bin:$${PATH}";                            \
         export LD_LIBRARY_PATH="$(idir6)/lib:$${LD_LIBRARY_PATH}"
