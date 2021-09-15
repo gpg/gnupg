@@ -1,0 +1,104 @@
+From c68d80e23a860a06e7b22b6c0d72aed5d049faef Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ingo=20Kl=C3=B6cker?= <dev@ingo-kloecker.de>
+Date: Tue, 14 Sep 2021 18:12:44 +0200
+Subject: [PATCH] qt: Support building with Qt 5.9
+
+* qt/pinlineedit.cpp (class PinLineEdit::Private): Add field q.
+(PinLineEdit::Private::Private): New.
+(PinLineEdit::Private::copyToClipboard): Remove obsolete parameter.
+Use new field q instead.
+(PinLineEdit::Private::selectionEnd): New.
+(PinLineEdit::PinLineEdit): Pass this to Private.
+(PinLineEdit::setFormattedPassphrase): Use new selectionEnd.
+(PinLineEdit::copy): Call copyToClipboard without parameter.
+--
+
+QLineEdit::selectionEnd() exists since Qt 5.10. Provide an alternative
+implementation for Qt 5.9 and earlier. This makes it possible to build
+pinentry-qt on CentOS 7 which is used for building an AppImage.
+
+GnuPG-bug-id: 5592
+---
+ qt/pinlineedit.cpp | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/qt/pinlineedit.cpp b/qt/pinlineedit.cpp
+index 54367ae..49751c6 100644
+--- a/qt/pinlineedit.cpp
++++ b/qt/pinlineedit.cpp
+@@ -42,7 +42,13 @@ struct Selection
+ 
+ class PinLineEdit::Private
+ {
++    PinLineEdit *const q;
++
+ public:
++    Private(PinLineEdit *q)
++        : q{q}
++    {}
++
+     QString formatted(QString text) const
+     {
+         const int dashCount = text.size() / FormattedPassphraseGroupSize;
+@@ -83,13 +89,13 @@ public:
+         };
+     }
+ 
+-    void copyToClipboard(const PinLineEdit *edit)
++    void copyToClipboard()
+     {
+-        if (edit->echoMode() != QLineEdit::Normal) {
++        if (q->echoMode() != QLineEdit::Normal) {
+             return;
+         }
+ 
+-        QString text = edit->selectedText();
++        QString text = q->selectedText();
+         if (mFormattedPassphrase) {
+             text.remove(FormattedPassphraseSeparator);
+         }
+@@ -98,13 +104,22 @@ public:
+         }
+     }
+ 
++    int selectionEnd()
++    {
++#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
++        return q->selectionEnd();
++#else
++        return q->selectionStart() + q->selectedText().size();
++#endif
++    }
++
+ public:
+     bool mFormattedPassphrase = false;
+ };
+ 
+ PinLineEdit::PinLineEdit(QWidget *parent)
+     : QLineEdit(parent)
+-    , d{new Private}
++    , d{new Private{this}}
+ {
+     connect(this, SIGNAL(textEdited(QString)),
+             this, SLOT(textEdited()));
+@@ -118,7 +133,7 @@ void PinLineEdit::setFormattedPassphrase(bool on)
+         return;
+     }
+     d->mFormattedPassphrase = on;
+-    Selection selection{selectionStart(), selectionEnd()};
++    Selection selection{selectionStart(), d->selectionEnd()};
+     if (d->mFormattedPassphrase) {
+         setText(d->formatted(text()));
+         selection = d->formattedSelection(selection);
+@@ -133,7 +148,7 @@ void PinLineEdit::setFormattedPassphrase(bool on)
+ 
+ void PinLineEdit::copy() const
+ {
+-    d->copyToClipboard(this);
++    d->copyToClipboard();
+ }
+ 
+ void PinLineEdit::cut()
+-- 
+2.33.0
+

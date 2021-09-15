@@ -52,6 +52,10 @@ RUN yum -y install \
         sqlite-devel \
         wget
 
+# Install patch; this is needed for a temporary HACK
+RUN yum -y install \
+        patch
+
 COPY build-appimage.sh /
 
 RUN chmod +x build-appimage.sh

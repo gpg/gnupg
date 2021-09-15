@@ -22,6 +22,9 @@
 
 set -e
 
+# Needed for below HACK
+sourcedir=$(cd $(dirname $0)/..; pwd)
+
 tag_or_branch=gnupg-2.2.30
 buildroot=$(mktemp -d --tmpdir gnupg-appimage.XXXXXXXXXX)
 echo Using ${buildroot}
@@ -36,6 +39,14 @@ cd gnupg
 # download swdb.lst outside of the container because gpgv in Centos 7 is too old
 # to verify the signature
 build-aux/getswdb.sh
+
+# HACK copy appimage.desktop to make it available in the Docker container
+mkdir -p ${buildroot}/gnupg/appimage
+cp ${sourcedir}/appimage/appimage.desktop ${buildroot}/gnupg/appimage
+# HACK replace with speedo.mk that supports appimage
+cp ${sourcedir}/build-aux/speedo.mk ${buildroot}/gnupg/build-aux
+# HACK copy patch to make it available in the Docker container
+cp ${sourcedir}/appimage/0001-qt-Support-building-with-Qt-5.9.patch ${buildroot}/gnupg
 
 cd ${buildroot}
 mkdir -p build

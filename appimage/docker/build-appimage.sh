@@ -27,6 +27,13 @@ mkdir -p /build/AppDir
 cd /src
 source /opt/rh/devtoolset-7/enable
 
+# HACK disable "exit on error" for first make run because the released pinentry
+# doesn't build with Qt 5.9 on CentOS 7
+set +e
+make -f build-aux/speedo.mk INSTALL_PREFIX=/build/AppDir/usr CUSTOM_SWDB=1 appimage
+set -e
+# HACK patch pinentry and run make a second time
+(cd PLAY/src/pinentry; patch -p1 <../../../0001-qt-Support-building-with-Qt-5.9.patch)
 make -f build-aux/speedo.mk INSTALL_PREFIX=/build/AppDir/usr CUSTOM_SWDB=1 appimage
 
 mkdir -p /build/download
