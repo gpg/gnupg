@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=gpg
+Type=Application
+Terminal=true
+NoDisplay=true
+Exec=gpg
+Icon=gpg
+Categories=Security;System;
+X-AppImage-Integrate=false
