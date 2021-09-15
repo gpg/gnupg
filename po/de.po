@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-08-26 18:07+0200\n"
+"PO-Revision-Date: 2021-09-15 16:04+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -310,20 +310,18 @@ msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
 msgid_plural ""
 "A passphrase should contain at least %u digits or%%0Aspecial characters."
 msgstr[0] ""
-"Ein Passwort sollte mindestens %u Sonderzeichen oder%%0Aeine Ziffer "
-"enthalten."
+"Ein Passwort sollte mindestens %u Sonderzeichen oder eine Ziffer enthalten."
 msgstr[1] ""
-"Ein Passwort sollte mindestens %u Sonderzeichen oder%%0AZiffern enthalten."
+"Ein Passwort sollte mindestens %u Sonderzeichen oder Ziffern enthalten."
 
 #, c-format
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
-"Ein Passwort sollte kein bekanntes Wort sein oder%%0Anach bekannten Regeln "
+"Ein Passwort sollte kein bekanntes Wort sein oder nach bekannten Regeln "
 "aufgebaut sein."
 
 msgid "Warning: You have entered an insecure passphrase."
-msgstr ""
-"WARNUNG:  Sie haben ein offensichtlich unsicheres%0APasswort eingegeben."
+msgstr "WARNUNG: Sie haben ein offensichtlich unsicheres Passwort eingegeben."
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -678,7 +676,7 @@ msgstr "Falsch"
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
-"Hinweis: Dieses Passwort wurde noch nie geändert/%0ABitte ändern Sie sie "
+"Hinweis: Dieses Passwort wurde noch nie geändert.%0ABitte ändern Sie es "
 "jetzt."
 
 #, c-format
