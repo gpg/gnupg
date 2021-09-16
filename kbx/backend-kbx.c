@@ -247,7 +247,7 @@ be_kbx_search (ctrl_t ctrl, backend_handle_t backend_hd, db_request_t request,
   gpg_error_t err;
   db_request_part_t part;
   size_t descindex;
-  unsigned long skipped_long_blobs;
+  unsigned long skipped_long_blobs = 0;
 
   log_assert (backend_hd && backend_hd->db_type == DB_TYPE_KBX);
   log_assert (request);
@@ -302,7 +302,7 @@ be_kbx_seek (ctrl_t ctrl, backend_handle_t backend_hd,
   gpg_error_t err;
   db_request_part_t part;
   size_t descindex;
-  unsigned long skipped_long_blobs;
+  unsigned long skipped_long_blobs = 0;
   KEYDB_SEARCH_DESC desc;
 
   (void)ctrl;
