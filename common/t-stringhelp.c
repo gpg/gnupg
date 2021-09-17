@@ -44,6 +44,7 @@
 #include <assert.h>
 
 #include "t-support.h"
+#include "sysutils.h"
 #include "stringhelp.h"
 
 
@@ -1195,6 +1196,103 @@ test_compare_version_strings (void)
 }
 
 
+static void
+test_substitute_envvars (void)
+{
+  struct {
+    const char *name;
+    const char *value;
+  } envvars[] = {
+    { "HOME", "/home/joe" },
+    { "AVAR",  "avar" },
+    { "AVAR1", "avarx" },
+    { "AVAR2", "avarxy" },
+    { "AVAR3", "avarxyz" },
+    { "AVAR0", "ava" },
+    { "MY_VAR", "my_vars_value" },
+    { "STRANGE{X}VAR", "strange{x}vars-value" },
+    { "ZERO",  "" }
+  };
+  struct {
+    const char *string;
+    const char *result;
+  } tests[] = {
+    { "foo bar",
+      "foo bar"
+    },
+    { "foo $HOME",
+      "foo /home/joe"
+    },
+    { "foo $HOME ",
+      "foo /home/joe "
+    },
+    { "foo $HOME$$",
+      "foo /home/joe$"
+    },
+    { "foo ${HOME}/.ssh",
+      "foo /home/joe/.ssh"
+    },
+    { "foo $HOME/.ssh",
+      "foo /home/joe/.ssh"
+    },
+    { "foo $HOME_/.ssh",
+      "foo /.ssh"
+    },
+    { "foo $HOME/.ssh/$MY_VAR:1",
+      "foo /home/joe/.ssh/my_vars_value:1"
+    },
+    { "foo $HOME${MY_VAR}:1",
+      "foo /home/joemy_vars_value:1"
+    },
+    { "${STRANGE{X}VAR}-bla",
+      "strange{x}vars-value-bla"
+    },
+    { "${STRANGE{X}{VAR}-bla", /* missing "}" */
+      "${STRANGE{X}{VAR}-bla"
+    },
+    { "zero->$ZERO<-",
+      "zero-><-"
+    },
+    { "->$AVAR.$AVAR1.$AVAR2.$AVAR3.$AVAR0<-",
+      "->avar.avarx.avarxy.avarxyz.ava<-"
+    },
+    { "",
+      ""
+    }
+  };
+  int idx;
+  char *res;
+
+  for (idx=0; idx < DIM(envvars); idx++)
+    if (gnupg_setenv (envvars[idx].name, envvars[idx].value, 1))
+      {
+        fprintf (stderr,"error setting envvar '%s' to '%s': %s\n",
+                 envvars[idx].name, envvars[idx].value,
+                 strerror (errno));
+        exit (2);
+      }
+
+  for (idx=0; idx < DIM(tests); idx++)
+    {
+      res = substitute_envvars (tests[idx].string);
+      if (!res)
+        {
+          fprintf (stderr,"error substituting '%s' (test %d): %s\n",
+                   tests[idx].string, idx, strerror (errno));
+          exit (2);
+        }
+      if (strcmp (res, tests[idx].result))
+        {
+          fprintf (stderr, "substituted '%s'\n", tests[idx].string);
+          fprintf (stderr, "     wanted '%s'\n", tests[idx].result);
+          fprintf (stderr, "        got '%s'\n", res);
+          fail (idx);
+        }
+      xfree (res);
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -1214,6 +1312,7 @@ main (int argc, char **argv)
   test_split_fields_colon ();
   test_compare_version_strings ();
   test_format_text ();
+  test_substitute_envvars ();
 
   xfree (home_buffer);
   return !!errcount;

@@ -1688,3 +1688,107 @@ format_text (const char *text_in, int target_cols, int max_cols)
 
   return text;
 }
+
+
+/* Substitute environment variables in STRING and return a new string.
+ * On error the function returns NULL.  */
+char *
+substitute_envvars (const char *string)
+{
+  char *line, *p, *pend;
+  const char *value;
+  size_t valuelen, n;
+  char *result = NULL;
+
+  result = line = xtrystrdup (string);
+  if (!result)
+    return NULL; /* Ooops */
+
+  while (*line)
+    {
+      p = strchr (line, '$');
+      if (!p)
+        goto leave; /* No or no more variables.  */
+
+      if (p[1] == '$') /* Escaped dollar sign. */
+        {
+          memmove (p, p+1, strlen (p+1)+1);
+          line = p + 1;
+          continue;
+        }
+
+      if (p[1] == '{')
+        {
+          int count = 0;
+
+          for (pend=p+2; *pend; pend++)
+            {
+              if (*pend == '{')
+                count++;
+              else if (*pend == '}')
+                {
+                  if (--count < 0)
+                    break;
+                }
+            }
+          if (!*pend)
+            goto leave; /* Unclosed - don't substitute.  */
+        }
+      else
+        {
+          for (pend = p+1; *pend && (alnump (pend) || *pend == '_'); pend++)
+            ;
+        }
+
+      if (p[1] == '{' && *pend == '}')
+        {
+          int save = *pend;
+          *pend = 0;
+          value = getenv (p+2);
+          *pend++ = save;
+        }
+      else
+        {
+          int save = *pend;
+          *pend = 0;
+          value = getenv (p+1);
+          *pend = save;
+        }
+
+      if (!value)
+        value = "";
+      valuelen = strlen (value);
+      if (valuelen <= pend - p)
+        {
+          memcpy (p, value, valuelen);
+          p += valuelen;
+          n = pend - p;
+          if (n)
+            memmove (p, p+n, strlen (p+n)+1);
+          line = p;
+        }
+      else
+        {
+          char *src = result;
+          char *dst;
+
+          dst = xtrymalloc (strlen (src) + valuelen + 1);
+          if (!dst)
+            {
+              xfree (result);
+              return NULL;
+            }
+          n = p - src;
+          memcpy (dst, src, n);
+          memcpy (dst + n, value, valuelen);
+          n += valuelen;
+          strcpy (dst + n, pend);
+          line = dst + n;
+          xfree (result);
+          result = dst;
+        }
+    }
+
+ leave:
+  return result;
+}
