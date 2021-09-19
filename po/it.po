@@ -3772,7 +3772,7 @@ msgstr "AVVISO: la sottochiave di crittografia scade a breve.\n"
 
 #, c-format
 msgid "You may want to change its expiration date too.\n"
-msgstr "Si consiglia di modificare la data di scadenza troppo.\n"
+msgstr "Si consiglia di modificare anche la sua data di scadenza.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
