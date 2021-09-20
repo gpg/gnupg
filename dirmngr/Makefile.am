@@ -163,7 +163,7 @@ t_ldap_parse_uri_SOURCES = \
         $(ldap_url) $(t_common_src)
 t_ldap_parse_uri_CFLAGS = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 			  $(LIBGCRYPT_CFLAGS) \
-                          $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
+                          $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(KSBA_CFLAGS)
 t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd) $(DNSLIBS)
 
 t_ldap_misc_SOURCES = t-ldap-misc.c ldap-misc.c ldap-misc.h $(ldap_url)
