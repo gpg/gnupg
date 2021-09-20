@@ -50,9 +50,9 @@ common_sources = \
 libkeybox_a_SOURCES = $(common_sources)
 libkeybox509_a_SOURCES = $(common_sources)
 
-libkeybox_a_CFLAGS = $(AM_CFLAGS)
-libkeybox509_a_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1
-
+libkeybox_a_CFLAGS    = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
+libkeybox509_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) \
+                          -DKEYBOX_WITH_X509=1
 
 # We need W32SOCKLIBS because the init subsystem code in libcommon
 # requires it - although we don't actually need it.  It is easier

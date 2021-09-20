@@ -155,7 +155,7 @@ gpgtar_SOURCES = \
 	gpgtar-create.c \
 	gpgtar-extract.c \
 	gpgtar-list.c
-gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS)
+gpgtar_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 gpgtar_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
                $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS) \
 	       $(gpgtar_robjs)
@@ -170,7 +170,7 @@ gpg_wks_server_SOURCES = \
 	mime-maker.c  mime-maker.h  \
 	send-mail.c   send-mail.h
 
-gpg_wks_server_CFLAGS = $(GPG_ERROR_CFLAGS) $(INCICONV)
+gpg_wks_server_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_server_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		       $(LIBINTL) $(LIBICONV)
 
@@ -185,7 +185,8 @@ gpg_wks_client_SOURCES = \
 	send-mail.c   send-mail.h   \
 	call-dirmngr.c call-dirmngr.h
 
-gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
+gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+			$(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_client_LDADD = $(libcommon) \
 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		       $(LIBINTL) $(LIBICONV) $(NETLIBS) \
