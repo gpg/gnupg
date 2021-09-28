@@ -578,6 +578,8 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral,
       if (want_fpr32)
         {
           put_membuf (a, blob->keys[i].fpr, blob->keys[i].fprlen);
+          if (blob->keys[i].fprlen < 32)
+            put_membuf (a, NULL, 32 - blob->keys[i].fprlen);
           blob->keys[i].off_kid_addr = a->len;
           if (blob->keys[i].fprlen == 32)
             put16 ( a, (blob->keys[i].flags | 0x80));
