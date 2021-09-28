@@ -472,6 +472,7 @@ free_packet (PACKET *pkt, parse_packet_ctx_t parsectx)
       break;
     case PKT_ENCRYPTED:
     case PKT_ENCRYPTED_MDC:
+    case PKT_ENCRYPTED_AEAD:
       free_encrypted (pkt->pkt.encrypted);
       break;
     case PKT_PLAINTEXT:
