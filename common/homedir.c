@@ -444,12 +444,14 @@ w32_rootdir (void)
  * root directory.  There is no solid standard on Unix to locate the
  * binary used to create the process, thus we support this currently
  * only on Linux where we can look this info up using the proc file
- * system.  */
+ * system.  If WANT_SYSCONFDIR is true the optional sysconfdir entry
+ * is returned.  */
 static const char *
-unix_rootdir (void)
+unix_rootdir (int want_sysconfdir)
 {
   static int checked;
-  static char *dir;
+  static char *dir;   /* for the rootdir  */
+  static char *sdir;  /* for the sysconfdir */
 
   if (!checked)
     {
@@ -463,6 +465,8 @@ unix_rootdir (void)
       ssize_t length;
       estream_t fp;
       char *rootdir;
+      char *sysconfdir;
+      const char *name;
 
       for (;;)
         {
@@ -544,6 +548,7 @@ unix_rootdir (void)
       line = NULL;
       linelen = 0;
       rootdir = NULL;
+      sysconfdir = NULL;
       while ((length = es_read_line (fp, &line, &linelen, NULL)) > 0)
         {
           /* Strip NL and CR, if present.  */
@@ -552,22 +557,47 @@ unix_rootdir (void)
             line[--length] = 0;
           trim_spaces (line);
           if (!strncmp (line, "rootdir=", 8))
-            p = line + 8;
+            {
+              name = "rootdir";
+              p = line + 8;
+            }
           else if (!strncmp (line, "rootdir =", 9))  /* (What a kludge) */
-            p = line + 9;
+            {
+              name = "rootdir";
+              p = line + 9;
+            }
+          else if (!strncmp (line, "sysconfdir=", 11))
+            {
+              name = "sysconfdir";
+              p = line + 11;
+            }
+          else if (!strncmp (line, "sysconfdir =", 12))  /* (What a kludge) */
+            {
+              name = "sysconfdir";
+              p = line + 12;
+            }
           else
             continue;
           trim_spaces (p);
-          rootdir = substitute_envvars (p);
-          if (!rootdir)
+          p = substitute_envvars (p);
+          if (!p)
             {
               err = gpg_error_from_syserror ();
-              log_info ("error getting rootdir from gpgconf.ctl: %s\n",
-                        gpg_strerror (err));
+              log_info ("error getting %s from gpgconf.ctl: %s\n",
+                        name, gpg_strerror (err));
             }
-          break;
+          else if (!strcmp (name, "sysconfdir"))
+            {
+              xfree (sysconfdir);
+              sysconfdir = p;
+            }
+          else
+            {
+              xfree (rootdir);
+              rootdir = p;
+            }
         }
-      if (length < 0 || es_ferror (fp))
+      if (es_ferror (fp))
         {
           err = gpg_error_from_syserror ();
           log_info ("error reading '%s': %s\n", buffer, gpg_strerror (err));
@@ -585,6 +615,15 @@ unix_rootdir (void)
         {
           log_info ("invalid rootdir '%s' specified in gpgconf.ctl\n", rootdir);
           xfree (rootdir);
+          xfree (sysconfdir);
+          dir = NULL;
+        }
+      else if (sysconfdir && (!*sysconfdir || *sysconfdir != '/'))
+        {
+          log_info ("invalid sysconfdir '%s' specified in gpgconf.ctl\n",
+                    sysconfdir);
+          xfree (rootdir);
+          xfree (sysconfdir);
           dir = NULL;
         }
       else
@@ -594,11 +633,19 @@ unix_rootdir (void)
           dir = rootdir;
           gpgrt_annotate_leaked_object (dir);
           /* log_info ("want rootdir '%s'\n", dir); */
+          if (sysconfdir)
+            {
+              while (*sysconfdir && sysconfdir[strlen (sysconfdir)-1] == '/')
+                sysconfdir[strlen (sysconfdir)-1] = 0;
+              sdir = sysconfdir;
+              gpgrt_annotate_leaked_object (sdir);
+              /* log_info ("want sysconfdir '%s'\n", sdir); */
+            }
         }
       checked = 1;
     }
 
-  return dir;
+  return want_sysconfdir? sdir : dir;
 }
 #endif /* Unix */
 
@@ -1100,7 +1147,11 @@ gnupg_sysconfdir (void)
     }
   return name;
 #else /*!HAVE_W32_SYSTEM*/
-  return GNUPG_SYSCONFDIR;
+  const char *dir = unix_rootdir (1);
+  if (dir)
+    return dir;
+  else
+    return GNUPG_SYSCONFDIR;
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
@@ -1122,7 +1173,7 @@ gnupg_bindir (void)
   else
     return rdir;
 #else /*!HAVE_W32_SYSTEM*/
-  rdir = unix_rootdir ();
+  rdir = unix_rootdir (0);
   if (rdir)
     {
       if (!name)
@@ -1149,7 +1200,7 @@ gnupg_libexecdir (void)
   static char *name;
   const char *rdir;
 
-  rdir = unix_rootdir ();
+  rdir = unix_rootdir (0);
   if (rdir)
     {
       if (!name)
@@ -1176,7 +1227,7 @@ gnupg_libdir (void)
 #else /*!HAVE_W32_SYSTEM*/
   const char *rdir;
 
-  rdir = unix_rootdir ();
+  rdir = unix_rootdir (0);
   if (rdir)
     {
       if (!name)
@@ -1203,7 +1254,7 @@ gnupg_datadir (void)
 #else /*!HAVE_W32_SYSTEM*/
   const char *rdir;
 
-  rdir = unix_rootdir ();
+  rdir = unix_rootdir (0);
   if (rdir)
     {
       if (!name)
@@ -1232,7 +1283,7 @@ gnupg_localedir (void)
 #else /*!HAVE_W32_SYSTEM*/
   const char *rdir;
 
-  rdir = unix_rootdir ();
+  rdir = unix_rootdir (0);
   if (rdir)
     {
       if (!name)
