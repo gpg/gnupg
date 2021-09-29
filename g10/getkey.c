@@ -3359,9 +3359,10 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
 
       while ((p = enum_sig_subpkt (sig, 1, SIGSUBPKT_SIGNATURE,
                                    &n, &seq, NULL)))
-	if (n > 3
-	    && ((p[0] == 3 && p[2] == 0x19) || (p[0] == 4 && p[1] == 0x19)))
-	  {
+        if (n > 3
+            && ((p[0] == 3 && p[2] == 0x19) || (p[0] == 4 && p[1] == 0x19)
+                || (p[0] == 5 && p[1] == 0x19)))
+          {
 	    PKT_signature *tempsig = buf_to_sig (p, n);
 	    if (tempsig)
 	      {
@@ -3384,9 +3385,10 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
        * is located on the selfsig for convenience, not security. */
       while ((p = enum_sig_subpkt (sig, 0, SIGSUBPKT_SIGNATURE,
 				   &n, &seq, NULL)))
-	if (n > 3
-	    && ((p[0] == 3 && p[2] == 0x19) || (p[0] == 4 && p[1] == 0x19)))
-	  {
+        if (n > 3
+            && ((p[0] == 3 && p[2] == 0x19) || (p[0] == 4 && p[1] == 0x19)
+                 || (p[0] == 5 && p[1] == 0x19)))
+          {
 	    PKT_signature *tempsig = buf_to_sig (p, n);
 	    if (tempsig)
 	      {
