@@ -5879,7 +5879,12 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
       else if (algo == PUBKEY_ALGO_ECDSA
                || algo == PUBKEY_ALGO_EDDSA
                || algo == PUBKEY_ALGO_ECDH)
-        curve = ask_curve (&algo, NULL, NULL);
+        {
+          curve = ask_curve (&algo, NULL, NULL);
+
+          if (curve && (!strcmp (curve, "X448") || !strcmp (curve, "Ed448")))
+            keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
+        }
       else
         nbits = ask_keysize (algo, 0);
 
