@@ -37,6 +37,7 @@ TESTS_ENVIRONMENT = LC_ALL=C \
 	TPMSERVER="$(TPMSERVER)" \
 	SWTPM="$(SWTPM)" \
 	SWTPM_IOCTL="$(SWTPM_IOCTL)" \
+        GNUPG_BUILD_ROOT="$(abs_top_builddir)/tests" \
 	GPGSCM_PATH="$(abs_top_srcdir)/tests/gpgscm"
 
 XTESTS = \
