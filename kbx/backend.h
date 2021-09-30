@@ -21,12 +21,7 @@
 #define KBX_BACKEND_H
 
 #include <ksba.h>
-#include "keybox-search-desc.h"
-
-/* Forward declaration of the keybox handle type.  */
-struct keybox_handle;
-typedef struct keybox_handle *KEYBOX_HANDLE;
-
+#include "keybox.h"
 
 /* The types of the backends.  */
 enum database_types
