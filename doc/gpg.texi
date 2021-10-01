@@ -3787,6 +3787,12 @@ Operation is further controlled by a few environment variables:
   loaded the Registry is tried and as last resort the native Windows
   locale system is used.
 
+  @item GNUPG_BUILD_ROOT
+  @efindex GNUPG_BUILD_ROOT
+  This variable is only used by the regression test suite as a helper
+  under operating systems without proper support to figure out the
+  name of a process' text file.
+
 @end table
 
 When calling the gpg-agent component @command{@gpgname} sends a set of

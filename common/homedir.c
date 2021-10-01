@@ -59,12 +59,19 @@
 #include <sys/stat.h> /* for stat() */
 #endif
 
-
-
 #include "util.h"
 #include "sysutils.h"
 #include "i18n.h"
 #include "zb32.h"
+
+/* The name of the symbolic link to the file from which the process
+ * text was read.  */
+#if __linux__
+# define MYPROC_SELF_EXE "/proc/self/exe"
+#else /* Assume *BSD*/
+# define MYPROC_SELF_EXE "/proc/curproc/file"
+#endif
+
 
 /* The GnuPG homedir.  This is only accessed by the functions
  * gnupg_homedir and gnupg_set_homedir.  Malloced.  */
@@ -443,9 +450,9 @@ w32_rootdir (void)
  * This file is parsed for keywords describing the actually to be used
  * root directory.  There is no solid standard on Unix to locate the
  * binary used to create the process, thus we support this currently
- * only on Linux where we can look this info up using the proc file
- * system.  If WANT_SYSCONFDIR is true the optional sysconfdir entry
- * is returned.  */
+ * only on Linux and BSD where we can look this info up using the proc
+ * file system.  If WANT_SYSCONFDIR is true the optional sysconfdir
+ * entry is returned.  */
 static const char *
 unix_rootdir (int want_sysconfdir)
 {
@@ -471,13 +478,21 @@ unix_rootdir (int want_sysconfdir)
       for (;;)
         {
           buffer = xmalloc (bufsize+1);
-          nread = readlink ("/proc/self/exe", buffer, bufsize);
+          nread = readlink (MYPROC_SELF_EXE, buffer, bufsize);
           if (nread < 0)
             {
               err = gpg_error_from_syserror ();
-              log_info ("error reading symlink '/proc/self/exe': %s\n",
-                         gpg_strerror (err));
+              log_info ("error reading symlink '%s': %s\n",
+                        MYPROC_SELF_EXE, gpg_strerror (err));
               buffer[0] = 0;
+              if ((name = getenv ("GNUPG_BUILD_ROOT")) && *name == '/')
+                {
+                  /* Try a fallback for systems w/o a supported /proc
+                   * file system.  */
+                  xfree  (buffer);
+                  buffer = xstrconcat (name, "/bin/gpgconf", NULL);
+                  log_info ("trying fallback '%s'\n", buffer);
+                }
               break;
             }
           else if (nread < bufsize)
@@ -488,8 +503,8 @@ unix_rootdir (int want_sysconfdir)
           else if (bufsize >= 4095)
             {
               buffer[0] = 0;
-              log_info ("error reading symlink '/proc/self/exe': %s\n",
-                        "value too large");
+              log_info ("error reading symlink '%s': %s\n",
+                        MYPROC_SELF_EXE, "value too large");
               break;
             }
           xfree (buffer);
