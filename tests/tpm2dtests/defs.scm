@@ -61,26 +61,22 @@
 (assert (equal? (percent-encode "foob%61r") "foob%2561r"))
 
 (define tools
-  '((gpgv "GPGV" "g10/gpgv")
-    (gpg-connect-agent "GPG_CONNECT_AGENT" "tools/gpg-connect-agent")
-    (gpgconf "GPGCONF" "tools/gpgconf")
+  '((gpgv "GPGV" "bin/gpgv")
+    (gpg-connect-agent "GPG_CONNECT_AGENT" "bin/gpg-connect-agent")
+    (gpgconf "GPGCONF" "bin/gpgconf")
     (gpg-preset-passphrase "GPG_PRESET_PASSPHRASE"
-			   "agent/gpg-preset-passphrase")
-    (gpgtar "GPGTAR" "tools/gpgtar")
-    (gpg-zip "GPGZIP" "tools/gpg-zip")
-    (pinentry "PINENTRY" "tests/openpgp/fake-pinentry")
-    (tpm2daemon "TPM2DAEMON" "tpm2d/tpm2daemon")))
+			   "libexec/gpg-preset-passphrase")
+    (gpgtar "GPGTAR" "bin/gpgtar")
+    (tpm2daemon "TPM2DAEMON" "libexec/tpm2daemon")
+    (pinentry "PINENTRY" "openpgp/fake-pinentry")))
 
-(define bin-prefix (getenv "BIN_PREFIX"))
-(define installed? (not (string=? "" bin-prefix)))
 (define with-valgrind? (not (string=? (getenv "with_valgrind") "")))
 
 (define (tool-hardcoded which)
   (let ((t (assoc which tools)))
     (getenv' (cadr t)
-	     (qualify (if installed?
-			  (string-append bin-prefix "/" (basename (caddr t)))
-			  (string-append (getenv "objdir") "/" (caddr t)))))))
+	     (qualify (string-append (getenv "GNUPG_BUILD_ROOT")
+                                     "/" (caddr t))))))
 
 ;; You can splice VALGRIND into your argument vector to run programs
 ;; under valgrind.  For example, to run valgrind on gpg, you may want
@@ -92,15 +88,10 @@
   '("/usr/bin/valgrind" -q --leak-check=no --track-origins=yes
                         --error-exitcode=154 --exit-on-first-error=yes))
 
-(unless installed?
-	(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t))
-
 (define (gpg-conf . args)
   (gpg-conf' "" args))
 (define (gpg-conf' input args)
   (let ((s (call-popen `(,(tool-hardcoded 'gpgconf)
-			 ,@(if installed? '()
-			       (list '--build-prefix (getenv "objdir")))
 			 ,@args) input)))
     (map (lambda (line) (map percent-decode (string-split line #\:)))
 	 (string-split-newlines s))))

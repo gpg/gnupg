@@ -94,14 +94,14 @@ data files.
 **** GPGSCM_PATH
 Used to locate the Scheme library as well as code used by the test
 suite.
-**** BIN_PREFIX
-The test suite does not hardcode any paths to tools.  If set it is
-used to locate the tools to test, otherwise the test suite assumes to
-be run from the build directory.
-**** GPG_PRESET_PASSPHRASE
-This tool is not installed by 'make install', hence we need to
-explicitly override its position.  In fact, the location of any tool
-used by the test suite can be overridden this way.  See defs.scm.
+**** GNUPG_BUILD_ROOT
+To locate the actual binaries under test the test suite requires that
+those binaries and associate files are installed to a test location.
+This envvar gives the root directory of the install tree.  See
+tests/gpgconf.ctl for the way we tell the GnuPG components this
+location.  Note that we can't use that envvar directlyr because this
+would allow user scripts and other software to accidently mess up the
+used components.
 **** argv[0]
 run-tests.scm depends on being able to re-exec gpgscm.  It uses
 argv[0] for that.  Therefore you must use an absolute path to invoke

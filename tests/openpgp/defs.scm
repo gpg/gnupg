@@ -111,26 +111,27 @@
 (assert (equal? (percent-encode "%61") "%2561"))
 (assert (equal? (percent-encode "foob%61r") "foob%2561r"))
 
+;; Note that the entry for pinentry relies on the fact that
+;; GNUPG_BUILD_ROOT has the bin,libexec,share directories (where we
+;; have installed versions of the tools under test) as well as the
+;; openpgp directory.  The second element in each list is an envvar which
+;; can be used to specifiy a different tool than the installed one.
 (define tools
-  '((gpgv "GPGV" "g10/gpgv")
-    (gpg-connect-agent "GPG_CONNECT_AGENT" "tools/gpg-connect-agent")
-    (gpgconf "GPGCONF" "tools/gpgconf")
+  '((gpgv "GPGV" "bin/gpgv")
+    (gpg-connect-agent "GPG_CONNECT_AGENT" "bin/gpg-connect-agent")
+    (gpgconf "GPGCONF" "bin/gpgconf")
     (gpg-preset-passphrase "GPG_PRESET_PASSPHRASE"
-			   "agent/gpg-preset-passphrase")
-    (gpgtar "GPGTAR" "tools/gpgtar")
-    (gpg-zip "GPGZIP" "tools/gpg-zip")
-    (pinentry "PINENTRY" "tests/openpgp/fake-pinentry")))
-
-(define bin-prefix (getenv "BIN_PREFIX"))
-(define installed? (not (string=? "" bin-prefix)))
-(define with-valgrind? (not (string=? (getenv "with_valgrind") "")))
+			   "libexec/gpg-preset-passphrase")
+    (gpgtar "GPGTAR" "bin/gpgtar")
+    (pinentry "PINENTRY" "openpgp/fake-pinentry")))
 
 (define (tool-hardcoded which)
   (let ((t (assoc which tools)))
     (getenv' (cadr t)
-	     (qualify (if installed?
-			  (string-append bin-prefix "/" (basename (caddr t)))
-			  (string-append (getenv "objdir") "/" (caddr t)))))))
+	     (qualify (string-append (getenv "GNUPG_BUILD_ROOT")
+                                     "/" (caddr t))))))
+
+(define with-valgrind? (not (string=? (getenv "with_valgrind") "")))
 
 ;; You can splice VALGRIND into your argument vector to run programs
 ;; under valgrind.  For example, to run valgrind on gpg, you may want
@@ -142,15 +143,10 @@
   '("/usr/bin/valgrind" -q --leak-check=no --track-origins=yes
                         --error-exitcode=154 --exit-on-first-error=yes))
 
-(unless installed?
-	(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t))
-
 (define (gpg-conf . args)
   (gpg-conf' "" args))
 (define (gpg-conf' input args)
   (let ((s (call-popen `(,(tool-hardcoded 'gpgconf)
-			 ,@(if installed? '()
-			       (list '--build-prefix (getenv "objdir")))
 			 ,@args) input)))
     (map (lambda (line) (map percent-decode (string-split line #\:)))
 	 (string-split-newlines s))))
