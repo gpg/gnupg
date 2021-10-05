@@ -1726,9 +1726,9 @@ cmd_lock (assuan_context_t ctx, char *line)
   if (rc && has_option (line, "--wait"))
     {
       rc = 0;
-      npth_sleep (1); /* Better implement an event mechanism. However,
-                         for card operations this should be
-                         sufficient. */
+      gnupg_sleep (1); /* Better implement an event mechanism. However,
+                          for card operations this should be
+                          sufficient. */
       /* Send a progress so that we can detect a connection loss.  */
       rc = send_status_printf (ctrl, "PROGRESS", "scd_locked . 0 0");
       if (!rc)

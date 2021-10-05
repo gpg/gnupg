@@ -721,7 +721,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
             {
               /* We need to give the other thread a chance to actually put
                  it into the cache. */
-              npth_sleep (1);
+              gnupg_sleep (1);
               goto retry;
             }
           /* Timeout - better call pinentry now the plain way. */

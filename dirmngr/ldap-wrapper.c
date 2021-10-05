@@ -329,7 +329,7 @@ ldap_reaper_thread (void *dummy)
                            " - waiting 1s\n", gpg_strerror (err));
                 /* Note: Here we unlock and continue! */
                 unlock_reaper_list ();
-                npth_sleep (1);
+                gnupg_sleep (1);
                 continue;
             }
             fparraysize = count;
@@ -393,7 +393,7 @@ ldap_reaper_thread (void *dummy)
           xfree (fparray);
           fparray = NULL;
           fparraysize = 0;
-          npth_sleep (1);
+          gnupg_sleep (1);
           continue;
 	}
 
@@ -582,7 +582,7 @@ ldap_wrapper_wait_connections ()
   }
   unlock_reaper_list ();
   while (reaper_list)
-    npth_usleep (200);
+    gnupg_usleep (200);
 }
 
 

@@ -1375,7 +1375,7 @@ handle_connections (int listen_fd)
         {
           log_error (_("npth_pselect failed: %s - waiting 1s\n"),
                      strerror (saved_errno));
-          npth_sleep (1);
+          gnupg_sleep (1);
           continue;
         }
 

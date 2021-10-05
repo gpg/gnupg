@@ -73,7 +73,7 @@ register_file_reader (ksba_reader_t reader, struct reader_cb_context_s *cb_ctx)
             return;
           }
       log_info (_("reader to file mapping table full - waiting\n"));
-      npth_sleep (2);
+      gnupg_sleep (2);
     }
 }
 
