@@ -96,6 +96,27 @@ hash_passphrase (const char *passphrase, int hashalgo,
 
 
 
+/*
+ * Determine if we can use clock_gettime with CLOCK_THREAD_CPUTIME_ID,
+ * at compile time.
+ */
+#if defined (CLOCK_THREAD_CPUTIME_ID)
+# if _POSIX_THREAD_CPUTIME > 0
+# define USE_CLOCK_GETTIME 1
+# elif _POSIX_THREAD_CPUTIME == 0
+/*
+ * In this case, we should check sysconf with _POSIX_THREAD_CPUTIME at
+ * run time.  As heuristics, for system with newer GNU C library, we
+ * can assume it is available.
+ */
+#  if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 17
+#  define USE_CLOCK_GETTIME 1
+#  endif
+# endif
+#else
+#undef USE_CLOCK_GETTIME
+#endif
+
 /* Get the process time and store it in DATA.  */
 static void
 calibrate_get_time (struct calibrate_time_s *data)
@@ -110,7 +131,7 @@ calibrate_get_time (struct calibrate_time_s *data)
                    &data->creation_time, &data->exit_time,
                    &data->kernel_time, &data->user_time);
 # endif
-#elif defined (CLOCK_THREAD_CPUTIME_ID)
+#elif defined (USE_CLOCK_GETTIME)
   struct timespec tmp;
 
   clock_gettime (CLOCK_THREAD_CPUTIME_ID, &tmp);
