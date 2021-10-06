@@ -1449,6 +1449,7 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
   gpg_error_t err;
   int seq;
   ksba_cert_t cert = NULL;
+  ksba_cert_t first;         /* The first certificate found.  */
   cert_fetch_context_t context = NULL;
   ksba_sexp_t subj;
 
@@ -1486,24 +1487,46 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
     }
 
   /* Now check whether the certificate is cached.  */
+  first = NULL;
+  subj = NULL;
   for (seq=0; (cert = get_cert_bysubject (subject_dn, seq)); seq++)
     {
-      if (!keyid)
-        break; /* No keyid requested, so return the first one found. */
-      if (!ksba_cert_get_subj_key_id (cert, NULL, &subj)
-          && !cmp_simple_canon_sexp (keyid, subj))
+      if (!keyid
+          || (!ksba_cert_get_subj_key_id (cert, NULL, &subj)
+              && !cmp_simple_canon_sexp (keyid, subj)))
         {
           xfree (subj);
+          subj = NULL;
           if (DBG_LOOKUP)
             log_debug ("%s: certificate found in the cache"
-                       " via subject DN\n", __func__);
-          break; /* Found matching cert. */
+                       " %sby subject DN\n", __func__, !keyid?"only ":"");
+
+          /* If this a trusted cert - then prefer it.  */
+          if (!is_trusted_cert (cert, (CERTTRUST_CLASS_SYSTEM
+                                       | CERTTRUST_CLASS_CONFIG)))
+            {
+              ksba_cert_release (first);
+              first = cert;
+              cert = NULL;
+              /* We stop at the first trusted certificate and ignore
+               * any yet found non-trusted certificates.   */
+              break;
+            }
+          else if (!first)
+            {
+              /* Not trusted.  Save only the first one but continue
+               * the loop in case there is also a trusted one.  */
+              ksba_cert_release (first);
+              first = cert;
+              cert = NULL;
+            }
         }
       xfree (subj);
+      subj = NULL;
       ksba_cert_release (cert);
     }
-  if (cert)
-    return cert; /* Done.  */
+  if (first)
+    return first; /* Return the first found certificate.  */
 
   /* If we do not have a subject DN but have a keyid, try to locate it
    * by keyid.  */
