@@ -87,7 +87,7 @@ i18n_init (void)
 #else
 # ifdef ENABLE_NLS
   setlocale (LC_ALL, "" );
-  bindtextdomain (PACKAGE_GT, LOCALEDIR);
+  bindtextdomain (PACKAGE_GT, gnupg_localedir ());
   textdomain (PACKAGE_GT);
 # endif
 #endif
@@ -199,10 +199,10 @@ i18n_localegettext (const char *lc_messages, const char *string)
   if (!setlocale (LC_MESSAGES, lc_messages))
     goto leave;
 
-  bindtextdomain (PACKAGE_GT, LOCALEDIR);
+  bindtextdomain (PACKAGE_GT, gnupg_localedir ());
   result = gettext (string);
   setlocale (LC_MESSAGES, saved);
-  bindtextdomain (PACKAGE_GT, LOCALEDIR);
+  bindtextdomain (PACKAGE_GT, gnupg_localedir ());
 
   /* Cache the result.  */
   if (!mh)

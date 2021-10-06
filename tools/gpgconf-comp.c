@@ -1442,7 +1442,7 @@ my_dgettext (const char *domain, const char *msgid)
           switched_codeset = 1;
           bind_textdomain_codeset (PACKAGE_GT, "utf-8");
 
-          bindtextdomain (DIRMNGR_NAME, LOCALEDIR);
+          bindtextdomain (DIRMNGR_NAME, gnupg_localedir ());
           bind_textdomain_codeset (DIRMNGR_NAME, "utf-8");
 
         }
