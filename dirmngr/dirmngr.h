@@ -75,6 +75,7 @@ typedef struct fingerprint_list_s *fingerprint_list_t;
 struct fingerprint_list_s
 {
   fingerprint_list_t next;
+  char binlen;  /* If this is not 0 hexfpr actually carries a binary fpr.  */
   char hexfpr[20+20+1];
 };
 
@@ -119,6 +120,10 @@ struct
   int ignore_ldap_dp;     /* Ignore LDAP CRL distribution points.  */
   int ignore_ocsp_service_url; /* Ignore OCSP service URLs as given in
                                   the certificate.  */
+
+  /* A list of fingerprints of certififcates we should completely
+   * ignore.  These are all stored in binary format.  */
+  fingerprint_list_t ignored_certs;
 
   /* A list of certificate extension OIDs which are ignored so that
      one can claim that a critical extension has been handled.  One

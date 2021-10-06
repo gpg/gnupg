@@ -142,6 +142,7 @@ enum cmd_and_opt_values {
   oSocketName,
   oLDAPWrapperProgram,
   oHTTPWrapperProgram,
+  oIgnoreCert,
   oIgnoreCertExtension,
   oUseTor,
   oNoUseTor,
@@ -257,6 +258,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHTTPWrapperProgram, "http-wrapper-program", "@"),
   ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
+  ARGPARSE_s_s (oIgnoreCert,"ignore-cert", "@"),
   ARGPARSE_s_n (oStandardResolver, "standard-resolver", "@"),
   ARGPARSE_s_n (oRecursiveResolver, "recursive-resolver", "@"),
   ARGPARSE_s_i (oResolverTimeout, "resolver-timeout", "@"),
@@ -385,7 +387,9 @@ static void cleanup (void);
 #if USE_LDAP
 static ldap_server_t parse_ldapserver_file (const char* filename, int ienoent);
 #endif /*USE_LDAP*/
-static fingerprint_list_t parse_ocsp_signer (const char *string);
+static fingerprint_list_t parse_fingerprint_item (const char *string,
+                                                  const  char *optionname,
+                                                  int want_binary);
 static void netactivity_action (void);
 static void handle_connections (assuan_fd_t listen_fd);
 static void gpgconf_versions (void);
@@ -633,6 +637,12 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
           xfree (opt.ocsp_signer);
           opt.ocsp_signer = tmp;
         }
+      while (opt.ignored_certs)
+        {
+          fingerprint_list_t tmp = opt.ignored_certs->next;
+          xfree (opt.ignored_certs);
+          opt.ignored_certs = tmp;
+        }
       FREE_STRLIST (opt.ignored_cert_extensions);
       http_register_tls_ca (NULL);
       FREE_STRLIST (hkp_cacert_filenames);
@@ -698,7 +708,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oAllowVersionCheck: opt.allow_version_check = 1; break;
     case oOCSPResponder: opt.ocsp_responder = pargs->r.ret_str; break;
     case oOCSPSigner:
-      opt.ocsp_signer = parse_ocsp_signer (pargs->r.ret_str);
+      opt.ocsp_signer = parse_fingerprint_item (pargs->r.ret_str,
+                                                "--ocsp-signer", 0);
       break;
     case oOCSPMaxClockSkew: opt.ocsp_max_clock_skew = pargs->r.ret_int; break;
     case oOCSPMaxPeriod: opt.ocsp_max_period = pargs->r.ret_int; break;
@@ -717,6 +728,24 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
         http_register_tls_ca (tmpname);
         add_to_strlist (&hkp_cacert_filenames, pargs->r.ret_str);
         xfree (tmpname);
+      }
+      break;
+
+    case oIgnoreCert:
+      {
+        fingerprint_list_t item, r;
+        item = parse_fingerprint_item (pargs->r.ret_str, "--ignore-cert", 20);
+        if (item)
+          {  /* Append  */
+            if (!opt.ignored_certs)
+              opt.ignored_certs = item;
+            else
+              {
+                for (r = opt.ignored_certs; r->next; r = r->next)
+                  ;
+                r->next = item;
+              }
+          }
       }
       break;
 
@@ -1711,8 +1740,13 @@ parse_ldapserver_file (const char* filename, int ignore_enoent)
 }
 #endif /*USE_LDAP*/
 
+
+/* Parse a fingerprint entry as used by --ocsc-signer.  OPTIONNAME as
+ * a description on the options used.  WANT_BINARY requests to store a
+ * binary fingerprint.  Returns NULL on error and logs that error. */
 static fingerprint_list_t
-parse_ocsp_signer (const char *string)
+parse_fingerprint_item (const char *string,
+                        const char *optionname, int want_binary)
 {
   gpg_error_t err;
   char *fname;
@@ -1737,9 +1771,14 @@ parse_ocsp_signer (const char *string)
       if (j != 40 || !(spacep (string+i) || !string[i]))
         {
           log_error (_("%s:%u: invalid fingerprint detected\n"),
-                     "--ocsp-signer", 0);
+                     optionname, 0);
           xfree (item);
           return NULL;
+        }
+      if (want_binary)
+        {
+          item->binlen = 20;
+          hex2bin (item->hexfpr, item->hexfpr, 20);
         }
       return item;
     }
@@ -1823,6 +1862,12 @@ parse_ocsp_signer (const char *string)
           log_error (_("%s:%u: invalid fingerprint detected\n"), fname, lnr);
           errflag = 1;
         }
+      else if (want_binary)
+        {
+          item->binlen = 20;
+          hex2bin (item->hexfpr, item->hexfpr, 20);
+        }
+
       i++;
       while (spacep (p+i))
         i++;

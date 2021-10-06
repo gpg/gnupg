@@ -262,13 +262,14 @@ clean_cache_slot (cert_item_t ci)
  * fingerprint of the certificate will be stored there.  FPR_BUFFER
  * needs to point to a buffer of at least 20 bytes.  The fingerprint
  * will be stored on success or when the function returns
- * GPG_ERR_DUP_VALUE.  */
+ * GPG_ERR_DUP_VALUE or GPG_ERR_NOT_ENABLED.  */
 static gpg_error_t
 put_cert (ksba_cert_t cert, int permanent, unsigned int trustclass,
           void *fpr_buffer)
 {
   unsigned char help_fpr_buffer[20], *fpr;
   cert_item_t ci;
+  fingerprint_list_t ignored;
 
   fpr = fpr_buffer? fpr_buffer : &help_fpr_buffer;
 
@@ -317,6 +318,14 @@ put_cert (ksba_cert_t cert, int permanent, unsigned int trustclass,
     }
 
   cert_compute_fpr (cert, fpr);
+  /* Compare against the list of to be ignored certificates.  */
+  for (ignored = opt.ignored_certs; ignored; ignored = ignored->next)
+    if (ignored->binlen == 20 && !memcmp (fpr, ignored->hexfpr, 20))
+      {
+        /* We are configured not to use this certificate.  */
+        return gpg_error (GPG_ERR_NOT_ENABLED);
+      }
+
   for (ci=cert_cache[*fpr]; ci; ci = ci->next)
     if (ci->cert && !memcmp (ci->fpr, fpr, 20))
       return gpg_error (GPG_ERR_DUP_VALUE);
@@ -440,6 +449,8 @@ load_certs_from_dir (const char *dirname, unsigned int trustclass)
               cert_log_subject (_("  subject ="), cert);
             }
         }
+      else if (gpg_err_code (err) == GPG_ERR_NOT_ENABLED)
+        log_info ("certificate '%s' skipped due to configuration\n", fname);
       else
         log_error (_("error loading certificate '%s': %s\n"),
                      fname, gpg_strerror (err));
@@ -510,6 +521,8 @@ load_certs_from_file (const char *fname, unsigned int trustclasses,
       err = put_cert (cert, 1, trustclasses, NULL);
       if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
         log_info (_("certificate '%s' already cached\n"), fname);
+      else if (gpg_err_code (err) == GPG_ERR_NOT_ENABLED)
+        log_info ("certificate '%s' skipped due to configuration\n", fname);
       else if (err)
         log_error (_("error loading certificate '%s': %s\n"),
                    fname, gpg_strerror (err));
@@ -625,6 +638,9 @@ load_certs_from_w32_store (const char *storename)
               if (DBG_X509)
                 log_debug (_("certificate '%s' already cached\n"), storename);
             }
+          else if (gpg_err_code (err) == GPG_ERR_NOT_ENABLED)
+            log_info ("certificate '%s' skipped due to configuration\n",
+                      storename);
           else if (err)
             log_error (_("error loading certificate '%s': %s\n"),
                        storename, gpg_strerror (err));
@@ -852,6 +868,8 @@ cache_cert (ksba_cert_t cert)
     log_info (_("certificate already cached\n"));
   else if (!err)
     log_info (_("certificate cached\n"));
+  else if (gpg_err_code (err) == GPG_ERR_NOT_ENABLED)
+    log_info ("certificate skipped due to configuration\n");
   else
     log_error (_("error caching certificate: %s\n"), gpg_strerror (err));
   return err;
@@ -872,7 +890,10 @@ cache_cert_silent (ksba_cert_t cert, void *fpr_buffer)
   release_cache_lock ();
   if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
     err = 0;
-  if (err)
+
+  if (gpg_err_code (err) == GPG_ERR_NOT_ENABLED)
+    log_info ("certificate skipped due to configuration\n");
+  else if (err)
     log_error (_("error caching certificate: %s\n"), gpg_strerror (err));
   return err;
 }
