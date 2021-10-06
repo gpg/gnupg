@@ -1,7 +1,14 @@
-Noteworthy changes in version 2.2.32 (unreleased)
+Noteworthy changes in version 2.2.32 (2021-10-06)
 -------------------------------------------------
 
+  * dirmngr: Fix Let's Encrypt certificate chain validation.  [T5639]
+
+  * dirmngr: New option --ignore-cert.  [323a20399d]
+
+  * gpg: Fix --list-packets for AEAD packets with unknown key.  [T5584]
+
   Release-info: https://dev.gnupg.org/T5601
+  See-also: gnupg-announce/2021q4/000465.html
 
 
 Noteworthy changes in version 2.2.31 (2021-09-15)
