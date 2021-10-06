@@ -588,6 +588,25 @@ won't be rejected due to an unknown critical extension.  Use this
 option with care because extensions are usually flagged as critical
 for a reason.
 
+@item --ignore-cert @var{fpr}|@var{file}
+@opindex ignore-cert
+Entirely ignore certificates with the fingerprint @var{fpr}.  As an
+alternative to the fingerprint a filename can be given in which case
+all certificates described in that file are ignored.  Any argument
+which contains a slash, dot or tilde is considered a filename.  Usual
+filename expansion takes place: A tilde at the start followed by a
+slash is replaced by the content of @env{HOME}, no slash at start
+describes a relative filename which will be searched at the home
+directory.  To make sure that the @var{file} is searched in the home
+directory, either prepend the name with "./" or use a name which
+contains a dot.  The format of such a file is a list of SHA-1
+fingerprint, one per line with optional colons between the bytes.
+Empty lines and lines prefixed with a hash mark are ignored.
+
+This option is useful as a quick workaround to exclude certain
+certificates from the system store.
+
+
 @item --hkp-cacert @var{file}
 Use the root certificates in @var{file} for verification of the TLS
 certificates used with @code{hkps} (keyserver access over TLS).  If

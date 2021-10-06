@@ -43,7 +43,8 @@
    LENGTH bytes.  The function checks that the STRING will convert
    exactly to LENGTH bytes. The string is delimited by either end of
    string or a white space character.  The function returns -1 on
-   error or the length of the parsed string.  */
+   error or the length of the parsed string.  In-place conversion is
+   allowed but the Source string might be garbled on error.  */
 int
 hex2bin (const char *string, void *buffer, size_t length)
 {
