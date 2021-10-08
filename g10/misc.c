@@ -1846,7 +1846,7 @@ mpi_print (estream_t fp, gcry_mpi_t a, int mode)
       unsigned int nbits;
       unsigned char *p = gcry_mpi_get_opaque (a, &nbits);
       if (!p)
-        n += es_fprintf (fp, "[invalid opaque value]");
+        n += es_fprintf (fp, "[NONE]");
       else
         {
           if (!es_write_hexstring (fp, p, (nbits + 7)/8, 0, &nwritten))

@@ -229,7 +229,10 @@ sos_read (iobuf_t inp, unsigned int *ret_nread, int secure)
     }
 
   nbytes = (nbits + 7) / 8;
-  buf = secure ? gcry_xmalloc_secure (nbytes) : gcry_xmalloc (nbytes);
+  if (nbytes)
+    buf = secure ? gcry_xmalloc_secure (nbytes) : gcry_xmalloc (nbytes);
+  else
+    buf = NULL;
   p = buf;
   for (i = 0; i < nbytes; i++)
     {
