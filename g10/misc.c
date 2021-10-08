@@ -1805,11 +1805,13 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
         rc = gpg_error_from_syserror ();
       else
         {
-          gcry_mpi_t pubkey = openpgp_ecc_parse_pubkey (algo, curve, key[1]);
+	  const char *curve_name = openpgp_oid_to_curve (curve, 1);
+          gcry_mpi_t pubkey = openpgp_ecc_parse_pubkey (algo,
+							curve_name, key[1]);
 
           rc = gcry_sexp_build (&sexp, NULL,
                                 "(public-key(ecc(curve%s)(q%m)))",
-                                curve, key[1]);
+                                curve_name, key[1]);
           xfree (curve);
           gcry_mpi_release (pubkey);
         }

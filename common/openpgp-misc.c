@@ -8,15 +8,11 @@
 #include "openpgpdefs.h"
 
 gcry_mpi_t
-openpgp_ecc_parse_pubkey (pubkey_algo_t pkalgo, const char *curve_oid,
+openpgp_ecc_parse_pubkey (pubkey_algo_t pkalgo, const char *curve,
 			  gcry_mpi_t pubkey)
 {
   unsigned int nbits = 0;
   unsigned char *buf = NULL;
-  const char *curve = openpgp_oid_to_curve (curve_oid, 1);
-
-  if (curve == NULL)
-    curve = curve_oid;
 
   if ((pkalgo == PUBKEY_ALGO_EDDSA && !strcmp (curve, "Ed448"))
       || (pkalgo == PUBKEY_ALGO_ECDH && !strcmp (curve, "X448")))
@@ -35,15 +31,11 @@ openpgp_ecc_parse_pubkey (pubkey_algo_t pkalgo, const char *curve_oid,
 
 
 gcry_mpi_t
-openpgp_ecc_parse_seckey (pubkey_algo_t pkalgo, const char *curve_oid,
+openpgp_ecc_parse_seckey (pubkey_algo_t pkalgo, const char *curve,
 			  gcry_mpi_t seckey)
 {
   unsigned int nbits = 0;
   unsigned char *buf = NULL;
-  const char *curve = openpgp_oid_to_curve (curve_oid, 1);
-
-  if (curve == NULL)
-    curve = curve_oid;
 
   if ((pkalgo == PUBKEY_ALGO_EDDSA && !strcmp (curve, "Ed448"))
       || (pkalgo == PUBKEY_ALGO_ECDH && !strcmp (curve, "X448")))

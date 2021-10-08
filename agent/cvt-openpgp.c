@@ -85,15 +85,30 @@ get_keygrip (int pubkey_algo, const char *curve, gcry_mpi_t *pkey,
       else
         {
           const char *format;
+          gcry_mpi_t pubkey = NULL;
+          pubkey_algo_t pkalgo = 0; /* Specify NONE */
 
           if (!strcmp (curve, "Ed25519"))
             format = "(public-key(ecc(curve %s)(flags eddsa)(q%m)))";
           else if (!strcmp (curve, "Curve25519"))
             format = "(public-key(ecc(curve %s)(flags djb-tweak)(q%m)))";
           else
-            format = "(public-key(ecc(curve %s)(q%m)))";
+	    {
+              if (!strcmp (curve, "Ed448"))
+                pkalgo = PUBKEY_ALGO_EDDSA;
+              else if (!strcmp (curve, "X448"))
+                pkalgo = PUBKEY_ALGO_ECDH;
+	      format = "(public-key(ecc(curve %s)(q%m)))";
+	    }
 
-          err = gcry_sexp_build (&s_pkey, NULL, format, curve, pkey[0]);
+          if (pkalgo)
+            {
+              pubkey = openpgp_ecc_parse_pubkey (pkalgo, curve, pkey[0]);
+              err = gcry_sexp_build (&s_pkey, NULL, format, curve, pubkey);
+              gcry_mpi_release (pubkey);
+            }
+          else
+	    err = gcry_sexp_build (&s_pkey, NULL, format, curve, pkey[0]);
         }
       break;
 
