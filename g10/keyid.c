@@ -1068,6 +1068,9 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
           err = gpg_error_from_syserror ();
         else
           {
+            gcry_mpi_t pubkey = openpgp_ecc_parse_pubkey (pk->pubkey_algo,
+                                                          curve, pk->pkey[1]);
+
             err = gcry_sexp_build (&s_pkey, NULL,
                                    pk->pubkey_algo == PUBKEY_ALGO_EDDSA?
                                    "(public-key(ecc(curve%s)(flags eddsa)(q%m)))":
@@ -1075,8 +1078,9 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
                                     && openpgp_oid_is_cv25519 (pk->pkey[0]))?
                                    "(public-key(ecc(curve%s)(flags djb-tweak)(q%m)))":
                                    "(public-key(ecc(curve%s)(q%m)))",
-                                   curve, pk->pkey[1]);
+                                   curve, pubkey);
             xfree (curve);
+            gcry_mpi_release (pubkey);
           }
       }
       break;

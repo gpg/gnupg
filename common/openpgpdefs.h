@@ -239,5 +239,10 @@ pubkey_algo_t map_gcry_pk_to_openpgp (enum gcry_pk_algos algo);
 enum gcry_pk_algos map_openpgp_pk_to_gcry (pubkey_algo_t algo);
 
 
+/*-- openpgp-misc.c --*/
+gcry_mpi_t openpgp_ecc_parse_pubkey (pubkey_algo_t pkalgo, const char *curve,
+                                     gcry_mpi_t pubkey);
+gcry_mpi_t openpgp_ecc_parse_seckey (pubkey_algo_t pkalgo, const char *curve_oid,
+                                     gcry_mpi_t seckey);
 
 #endif /*GNUPG_COMMON_OPENPGPDEFS_H*/

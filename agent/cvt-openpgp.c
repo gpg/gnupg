@@ -27,7 +27,7 @@
 #include "../common/i18n.h"
 #include "cvt-openpgp.h"
 #include "../common/host2net.h"
-
+#include "../common/openpgpdefs.h"
 
 /* Helper to pass data via the callback to do_unprotect. */
 struct try_do_unprotect_arg_s
@@ -153,6 +153,9 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
       else
         {
           const char *format;
+          gcry_mpi_t pubkey = NULL;
+          gcry_mpi_t seckey = NULL;
+          pubkey_algo_t pkalgo = 0; /* Specify NONE */
 
           if (!strcmp (curve, "Ed25519"))
             /* Do not store the OID as name but the real name and the
@@ -161,9 +164,24 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
           else if (!strcmp (curve, "Curve25519"))
             format = "(private-key(ecc(curve %s)(flags djb-tweak)(q%m)(d%m)))";
           else
-            format = "(private-key(ecc(curve %s)(q%m)(d%m)))";
+            {
+              if (!strcmp (curve, "Ed448"))
+                pkalgo = PUBKEY_ALGO_EDDSA;
+              else if (!strcmp (curve, "X448"))
+                pkalgo = PUBKEY_ALGO_ECDH;
+              format = "(private-key(ecc(curve %s)(q%m)(d%m)))";
+            }
 
-          err = gcry_sexp_build (&s_skey, NULL, format, curve, skey[0], skey[1]);
+          if (pkalgo)
+            {
+              pubkey = openpgp_ecc_parse_pubkey (pkalgo, curve, skey[0]);
+              seckey = openpgp_ecc_parse_seckey (pkalgo, curve, skey[1]);
+              err = gcry_sexp_build (&s_skey, NULL, format, curve, pubkey, seckey);
+              gcry_mpi_release (pubkey);
+              gcry_mpi_release (seckey);
+            }
+          else
+            err = gcry_sexp_build (&s_skey, NULL, format, curve, skey[0], skey[1]);
         }
       break;
 

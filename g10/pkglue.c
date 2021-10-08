@@ -121,6 +121,26 @@ get_data_from_sexp (gcry_sexp_t sexp, const char *item, size_t *r_size)
 }
 
 
+static void
+openpgp_ecc_parse_signature (pubkey_algo_t pkalgo, gcry_mpi_t sig_data,
+                             gcry_mpi_t *r, gcry_mpi_t *s)
+{
+  unsigned int nbits = 0;
+  unsigned char *buf;
+
+  if (pkalgo != PUBKEY_ALGO_EDDSA)
+    return;
+
+  buf = gcry_mpi_get_opaque (sig_data, &nbits);
+  if ((nbits+7)/8 != (8 /*prefix*/ + 448 + 8 /*r*/ + 448 + 8 /*s*/)/8)
+    return;
+
+  /* Ed448 signature with the prefix.  */
+  *r = gcry_mpi_set_opaque_copy (NULL, buf+1, 8 + 448);
+  *s = gcry_mpi_set_opaque_copy (NULL, buf+1+57, 8 + 448);
+}
+
+
 /****************
  * Emulate our old PK interface here - sometime in the future we might
  * change the internal design to directly fit to libgcrypt.
@@ -171,14 +191,17 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
       else
         {
           const char *fmt;
+          gcry_mpi_t pubkey;
 
+          pubkey = openpgp_ecc_parse_pubkey (pkalgo, curve, pkey[1]);
           if (openpgp_oid_is_ed25519 (pkey[0]))
             fmt = "(public-key(ecc(curve %s)(flags eddsa)(q%m)))";
           else
             fmt = "(public-key(ecc(curve %s)(q%m)))";
 
-          rc = gcry_sexp_build (&s_pkey, NULL, fmt, curve, pkey[1]);
+          rc = gcry_sexp_build (&s_pkey, NULL, fmt, curve, pubkey);
           xfree (curve);
+          gcry_mpi_release (pubkey);
         }
     }
   else
@@ -298,6 +321,9 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
                 }
             }
         }
+      else if (!gcry_mpi_cmp_ui (s, 0))
+        /* When data[1] == MPI(0), parse the signature into R and S parts.  */
+        openpgp_ecc_parse_signature (pkalgo, r, &r, &s);
       else
         rc = 0;
 
@@ -388,14 +414,17 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
           else
             {
               int with_djb_tweak_flag = openpgp_oid_is_cv25519 (pkey[0]);
+              gcry_mpi_t pubkey;
 
+              pubkey = openpgp_ecc_parse_pubkey (algo, curve, pkey[1]);
               /* Now use the ephemeral secret to compute the shared point.  */
               rc = gcry_sexp_build (&s_pkey, NULL,
                                     with_djb_tweak_flag ?
-                                    "(public-key(ecdh(curve%s)(flags djb-tweak)(q%m)))"
-                                    : "(public-key(ecdh(curve%s)(q%m)))",
-                                    curve, pkey[1]);
+                                    "(public-key(ecc(curve%s)(flags djb-tweak)(q%m)))"
+                                    : "(public-key(ecc(curve%s)(q%m)))",
+                                    curve, pubkey);
               xfree (curve);
+              gcry_mpi_release (pubkey);
               /* Put K into a simplified S-expression.  */
               if (!rc)
                 rc = gcry_sexp_build (&s_data, NULL, "%m", k);
@@ -508,10 +537,17 @@ pk_check_secret_key (pubkey_algo_t pkalgo, gcry_mpi_t *skey)
         rc = gpg_error_from_syserror ();
       else
         {
+          gcry_mpi_t pubkey;
+          gcry_mpi_t seckey;
+
+          pubkey = openpgp_ecc_parse_pubkey (pkalgo, curve, skey[1]);
+          seckey = openpgp_ecc_parse_seckey (pkalgo, curve, skey[2]);
           rc = gcry_sexp_build (&s_skey, NULL,
                                 "(private-key(ecc(curve%s)(q%m)(d%m)))",
-                                curve, skey[1], skey[2]);
+                                curve, pubkey, seckey);
           xfree (curve);
+          gcry_mpi_release (pubkey);
+          gcry_mpi_release (seckey);
         }
     }
   else if (pkalgo == PUBKEY_ALGO_EDDSA)
@@ -522,14 +558,20 @@ pk_check_secret_key (pubkey_algo_t pkalgo, gcry_mpi_t *skey)
       else
         {
           const char *fmt;
+          gcry_mpi_t pubkey;
+          gcry_mpi_t seckey;
 
+          pubkey = openpgp_ecc_parse_pubkey (pkalgo, curve, skey[1]);
+          seckey = openpgp_ecc_parse_seckey (pkalgo, curve, skey[2]);
           if (openpgp_oid_is_ed25519 (skey[0]))
             fmt = "(private-key(ecc(curve %s)(flags eddsa)(q%m)(d%m)))";
           else
             fmt = "(private-key(ecc(curve %s)(q%m)(d%m)))";
 
-          rc = gcry_sexp_build (&s_skey, NULL, fmt, curve, skey[1], skey[2]);
+          rc = gcry_sexp_build (&s_skey, NULL, fmt, curve, pubkey, seckey);
           xfree (curve);
+          gcry_mpi_release (pubkey);
+          gcry_mpi_release (seckey);
         }
     }
   else
