@@ -225,7 +225,8 @@ sign-release:
 		  $${release_w32_name}.tar.xz.sig \
 		  $${release_w32_name}.exe.sig    \
 		  $${release_w32_name}.exe.swdb" ;\
-	  files3="$${release_w32_name}.wixlib"; \
+	  files3="$${release_w32_name}.wixlib \
+	          $${release_w32_name}.wixlib.sig"; \
 	  $(MAKE) -f $(RELEASE_NAME)/build-aux/speedo.mk w32-sign-installer ;\
 	  echo "/* Signing the source tarball ..." ;\
 	  gpg -sbu $$mysignkey $(RELEASE_NAME).tar.bz2 ;\
@@ -233,6 +234,8 @@ sign-release:
 	  gpg -sbu $$mysignkey $${release_w32_name}.tar.xz ;\
 	  echo "/* Signing the W32 installer ..." ;\
 	  gpg -sbu $$mysignkey $${release_w32_name}.exe ;\
+	  echo "/* Signing the Wixlib ..." ;\
+	  gpg -sbu $$mysignkey $${release_w32_name}.wixlib ;\
 	  cat $(RELEASE_NAME).swdb >swdb.snippet;\
 	  echo '#+macro: gnupg22_branch  STABLE-BRANCH-2-2' >>swdb.snippet;\
 	  cat  $${release_w32_name}.exe.swdb >>swdb.snippet;\
@@ -241,7 +244,8 @@ sign-release:
           cat "../$(RELEASE_NAME).buildlog" swdb.snippet \
                | gzip >$(RELEASE_NAME).buildlog ;\
           echo "Release created - copying it to the archive ..." ;\
-	  scp -p $${files1} $${files2} $${files3} $$myarchive/ || true;\
+	  scp -p $${files1} $${files2} $${files3} $$myarchive/ \
+	    || echo "/* Error copying files to the archive - ignored */" ;\
 	  echo '/*' ;\
 	  echo ' * All done; for checksums see dist/swdb.snippet' ;\
 	  echo ' */' ;\
