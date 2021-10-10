@@ -981,7 +981,6 @@ if test x"$use_tofu" = xyes ; then
     AC_SUBST([SQLITE3_LIBS])
   else
     use_tofu=no
-    build_keyboxd=no
     tmp=$(echo "$SQLITE3_PKG_ERRORS" | tr '\n' '\v' | sed 's/\v/\n*** /g')
     AC_MSG_WARN([[
 ***
@@ -990,6 +989,10 @@ if test x"$use_tofu" = xyes ; then
 *** $tmp]])
   fi
 fi
+if test "$have_sqlite" != "yes"; then
+    build_keyboxd=no
+fi
+
 
 AM_CONDITIONAL(SQLITE3, test "$have_sqlite" = "yes")
 
