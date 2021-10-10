@@ -244,6 +244,8 @@ sign-release:
 	  gpg -sbu $$mysignkey $${release_w32_name}.tar.xz ;\
 	  echo "/* Signing the W32 installer ..." ;\
 	  gpg -sbu $$mysignkey $${release_w32_name}.exe ;\
+	  echo "/* Signing the Wixlib ..." ;\
+	  gpg -sbu $$mysignkey $${wixlibfile} ;\
 	  cat $(RELEASE_NAME).swdb >swdb.snippet;\
 	  echo '#+macro: gnupg24_branch  STABLE-BRANCH-2-4' >>swdb.snippet;\
 	  cat  $${release_w32_name}.exe.swdb >>swdb.snippet;\
@@ -255,7 +257,7 @@ sign-release:
 	  scp -p $${files1} $${files2} $$myarchive/ \
 	    || echo "/* Error copying files to the archive - ignored */" ;\
 	  if [ -e $${wixlibfile} ]; then\
-	    scp -p $${wixlibfile} $$myarchive/ \
+	    scp -p $${wixlibfile} $${wixlibfile}.sig $$myarchive/ \
 	      || echo "/* Error copying wixlib to the archive - ignored. */" ;\
           fi ;\
 	  echo '/*' ;\
