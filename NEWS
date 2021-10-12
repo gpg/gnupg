@@ -1,8 +1,36 @@
-Noteworthy changes in version 2.3.3 (unreleased)
+Noteworthy changes in version 2.3.3 (2021-10-12)
 ------------------------------------------------
 
+  * agent: Fix segv in GET_PASSPHRASE (regression).  [#5577]
+
+  * dirmngr: Fix Let's Encrypt certificate chain validation.  [#5639]
+
+  * gpg: Change default and maximum AEAD chunk size to 4 MiB.
+    [ad3dabc9fb]
+
+  * gpg: Print a warning when importing a bad cv25519 secret key.
+    [#5464]
+
+  * gpg: Fix --list-packets for undecryptable AEAD packets.  [#5584]
+
+  * gpg: Verify backsigs for v5 keys correctly.  [#5628]
+
+  * keyboxd: Fix checksum computation for no UBID entry on disk.
+    [#5573]
+
+  * keyboxd: Fix "invalid object" error with cv448 keys.  [#5609]
+
+  * dirmngr: New option --ignore-cert.  [4b3e9a44b5]
+
+  * agent: Fix calibrate_get_time use of clock_gettime.  [#5623]
+
+  * Silence process spawning diagnostics on Windows. [f2b01025c3]
+
+  * Support a gpgconf.ctl file under Unix and use this for the
+    regression tests.  [#5999]
 
   Release-info: https://dev.gnupg.org/T5565
+  See-also: gnupg-announce/2021q4/000466.html
 
 
 Noteworthy changes in version 2.3.2 (2021-08-24)
