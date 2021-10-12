@@ -1,5 +1,5 @@
 # inst.nsi - Installer for GnuPG on Windows.      -*- coding: latin-1; -*-
-# Copyright (C) 2005, 2014 g10 Code GmbH
+# Copyright (C) 2005, 2014, 2019-2021 g10 Code GmbH
 #               2017 Intevation GmbH
 #
 # This file is part of GnuPG.
@@ -43,7 +43,7 @@
 !define PRETTY_PACKAGE "GNU Privacy Guard"
 !define PRETTY_PACKAGE_SHORT "GnuPG"
 !define COMPANY "The GnuPG Project"
-!define COPYRIGHT "Copyright (C) 2017 The GnuPG Project"
+!define COPYRIGHT "Copyright (C) 2021 g10 Code GmbH"
 !define DESCRIPTION "GnuPG: The GNU Privacy Guard for Windows"
 
 !define INSTALL_DIR "GnuPG"
@@ -600,6 +600,7 @@ Section "-gnupginst"
   ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
     nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "dirmngr"'
     nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "gpg-agent"'
+    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "keyboxd"'
 
   no_gpgconf:
 
@@ -654,6 +655,14 @@ Section "GnuPG" SEC_gnupg
   ifErrors 0 +3
       File /oname=scdaemon.exe.tmp "libexec/scdaemon.exe"
       Rename /REBOOTOK scdaemon.exe.tmp scdaemon.exe
+
+  ClearErrors
+  SetOverwrite try
+  File "libexec/keyboxd.exe"
+  SetOverwrite lastused
+  ifErrors 0 +3
+      File /oname=keyboxd.exe.tmp "libexec/keyboxd.exe"
+      Rename /REBOOTOK keyboxd.exe.tmp keyboxd.exe
 
   SetOutPath "$INSTDIR\share\gnupg"
   File "share/gnupg/distsigkey.gpg"
@@ -1059,6 +1068,7 @@ Section "-un.gnupglast"
   ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
     nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "gpg-agent"'
     nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "dirmngr"'
+    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "keyboxd"'
   no_gpgconf:
 SectionEnd
 
@@ -1316,6 +1326,7 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpgsm.exe"
   Delete "$INSTDIR\bin\gpg-agent.exe"
   Delete "$INSTDIR\bin\scdaemon.exe"
+  Delete "$INSTDIR\bin\keyboxd.exe"
   Delete "$INSTDIR\bin\dirmngr.exe"
   Delete "$INSTDIR\bin\gpgconf.exe"
   Delete "$INSTDIR\bin\gpg-connect-agent.exe"

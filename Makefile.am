@@ -243,7 +243,7 @@ release:
 	 echo "/* Build finished at $$(date -uIseconds) */" ;\
 	 echo "/*" ;\
 	 echo " * Please run the final step interactively:" ;\
-	 echo " *   make sign-release" ;\
+	 echo " *   make sign-release $${WITH_MSI:+WITH_MSI=1}" ;\
 	 echo " */" ;\
 	) 2>&1 | tee "$(RELEASE_NAME).buildlog"
 
@@ -280,8 +280,10 @@ sign-release:
 	  gpg -sbu $$mysignkey $${release_w32_name}.tar.xz ;\
 	  echo "/* Signing the W32 installer ..." ;\
 	  gpg -sbu $$mysignkey $${release_w32_name}.exe ;\
-	  echo "/* Signing the Wixlib ..." ;\
-	  gpg -sbu $$mysignkey $${wixlibfile} ;\
+          if [ -e $${wixlibfile} ]; then \
+	      echo "/* Signing the Wixlib ..." ;\
+	      gpg -sbu $$mysignkey $${wixlibfile} ;\
+	  fi; \
 	  cat $(RELEASE_NAME).swdb >swdb.snippet;\
 	  echo '#+macro: gnupg24_branch  STABLE-BRANCH-2-4' >>swdb.snippet;\
 	  cat  $${release_w32_name}.exe.swdb >>swdb.snippet;\

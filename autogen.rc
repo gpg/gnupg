@@ -18,7 +18,6 @@ case "$myhost" in
   w32)
     configure_opts="
       --with-zlib=@SYSROOT@
-      --with-regex=@SYSROOT@
       --disable-g13
       --disable-tpm2d
       "
