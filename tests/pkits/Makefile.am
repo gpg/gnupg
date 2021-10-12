@@ -21,7 +21,7 @@
 GPGSM = ../../sm/gpgsm
 
 TESTS_ENVIRONMENT = GNUPGHOME=`/bin/pwd` GPG_AGENT_INFO= LC_ALL=C \
-                    GNUPG_BUILD_ROOT="$(abs_top_builddir)/tests" \
+                    GNUPG_BUILD_ROOT="$(abs_top_builddir)" \
                     GPGSM=$(GPGSM) silent=yes
 
 

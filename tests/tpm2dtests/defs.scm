@@ -61,14 +61,14 @@
 (assert (equal? (percent-encode "foob%61r") "foob%2561r"))
 
 (define tools
-  '((gpgv "GPGV" "bin/gpgv")
-    (gpg-connect-agent "GPG_CONNECT_AGENT" "bin/gpg-connect-agent")
-    (gpgconf "GPGCONF" "bin/gpgconf")
+  '((gpgv "GPGV" "g10/gpgv")
+    (gpg-connect-agent "GPG_CONNECT_AGENT" "tools/gpg-connect-agent")
+    (gpgconf "GPGCONF" "tools/gpgconf")
     (gpg-preset-passphrase "GPG_PRESET_PASSPHRASE"
-			   "libexec/gpg-preset-passphrase")
-    (gpgtar "GPGTAR" "bin/gpgtar")
-    (tpm2daemon "TPM2DAEMON" "libexec/tpm2daemon")
-    (pinentry "PINENTRY" "openpgp/fake-pinentry")))
+			   "agent/gpg-preset-passphrase")
+    (gpgtar "GPGTAR" "tools/gpgtar")
+    (tpm2daemon "TPM2DAEMON" "tpm2d/tpm2daemon")
+    (pinentry "PINENTRY" "tests/openpgp/fake-pinentry")))
 
 (define with-valgrind? (not (string=? (getenv "with_valgrind") "")))
 

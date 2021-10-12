@@ -120,6 +120,42 @@ SUBDIRS = m4 common regexp kbx \
 dist_doc_DATA = README
 
 
+# Create test directory etc/gnupg so that we have an
+# empty sysconfdir and bin where we put out gpgconf.ctl.
+# we also put symlinks to the actual binaries there.
+# Unfortunately there is no all-hook, but symlinks have the
+# nice property that they can be created even for not yet
+# created files.
+all-local:
+	@-$(MKDIR_P) bin etc/gnupg libexec
+	@cat $(srcdir)/tests/gpgconf.ctl.in > bin/gpgconf.ctl
+	(set -e; cd bin; \
+	 for i in gpg gpgv; \
+	     do ln -sf ../g10/$$i .; done; \
+	 for i in gpgsm; \
+	     do ln -sf ../sm/$$i .; done; \
+	 for i in gpg-agent; \
+	     do ln -sf ../agent/$$i .; done; \
+	 for i in dirmngr; \
+	     do ln -sf ../dirmngr/$$i .; done; \
+	 for i in gpgconf gpg-connect-agent gpgtar gpg-card; \
+	     do ln -sf ../tools/$$i .; done; \
+	 cd ../libexec ; \
+	 for i in keyboxd; \
+	     do ln -sf ../kbx/$$i .; done; \
+	 for i in scdaemon; \
+	     do ln -sf ../scd/$$i .; done; \
+	 for i in gpg-preset-passphrase; \
+	     do ln -sf ../agent/$$i .; done; \
+	 echo "created links to binaries" )
+
+
+# Clean up our test directories but take care that this is never
+# called from / or /usr/local
+distclean-local:
+	@if pwd | grep gnupg 2>/dev/null; then rm -rf etc bin libexec; fi
+
+
 dist-hook: gen-ChangeLog
 
 distcheck-hook:

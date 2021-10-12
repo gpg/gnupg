@@ -112,18 +112,17 @@
 (assert (equal? (percent-encode "foob%61r") "foob%2561r"))
 
 ;; Note that the entry for pinentry relies on the fact that
-;; GNUPG_BUILD_ROOT has the bin,libexec,share directories (where we
-;; have installed versions of the tools under test) as well as the
-;; openpgp directory.  The second element in each list is an envvar which
-;; can be used to specifiy a different tool than the installed one.
+;; GNUPG_BUILD_ROOT is the top of the build root.  The second element
+;; in each list is an envvar which can be used to specifiy a different
+;; tool than the installed one.
 (define tools
-  '((gpgv "GPGV" "bin/gpgv")
-    (gpg-connect-agent "GPG_CONNECT_AGENT" "bin/gpg-connect-agent")
-    (gpgconf "GPGCONF" "bin/gpgconf")
+  '((gpgv "GPGV" "g10/gpgv")
+    (gpg-connect-agent "GPG_CONNECT_AGENT" "tools/gpg-connect-agent")
+    (gpgconf "GPGCONF" "tools/gpgconf")
     (gpg-preset-passphrase "GPG_PRESET_PASSPHRASE"
-			   "libexec/gpg-preset-passphrase")
-    (gpgtar "GPGTAR" "bin/gpgtar")
-    (pinentry "PINENTRY" "openpgp/fake-pinentry")))
+			   "agent/gpg-preset-passphrase")
+    (gpgtar "GPGTAR" "tools/gpgtar")
+    (pinentry "PINENTRY" "tests/openpgp/fake-pinentry")))
 
 (define (tool-hardcoded which)
   (let ((t (assoc which tools)))

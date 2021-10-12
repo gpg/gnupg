@@ -44,31 +44,3 @@ noinst_PROGRAMS = asschk
 endif
 
 asschk_SOURCES = asschk.c
-
-TESTINST_DIRS = bin sbin libexec share etc
-
-clean-local: clean-local-testinst
-
-# We do a cd ../tests here so that we make sure tha the bin dir etc
-# are under our tests dir.  This is failsafe thingy in case this
-# Makefile rule is accidently run /.
-clean-local-testinst:
-	-(cd ../tests && rm -rf $(TESTINST_DIRS))
-
-# Before we can run any tests we need to make sure that we have a
-# proper test installation with this dir (tests) as root dir.  It is
-# too hard to track the built files here thus we do the install step
-# always.
-check-recursive: bin/gpgconf.ctl
-
-bin/gpgconf.ctl: FORCE
-	@echo '==== Installing into a test root ======'
-	@-mkdir bin 2>/dev/null
-	@cat $(srcdir)/gpgconf.ctl.in > bin/gpgconf.ctl.tmp
-	cd .. && \
-          $(MAKE) $(AM_MAKEFLAGS) install prefix=$(abs_top_builddir)/tests
-	@mv bin/gpgconf.ctl.tmp bin/gpgconf.ctl
-	@echo '==== Finished installing into a test root ======'
-
-
-.PHONY: FORCE clean-local-testinst
