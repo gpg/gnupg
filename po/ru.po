@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-05-20 08:13+0200\n"
+"PO-Revision-Date: 2021-10-12 08:13+0200\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -63,7 +63,7 @@ msgstr "|pinentry-tt|Скрывать фразу-пароль"
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
-msgstr ""
+msgstr "Предложить"
 
 #. TRANSLATORS: This string is a tooltip, shown by pinentry when
 #. hovering over the generate button.  Please use an appropriate
@@ -72,23 +72,19 @@ msgstr ""
 #. translate this entry, a default English text (see source)
 #. will be used.  The strcmp thingy is there to detect a
 #. non-translated string.
-#, fuzzy
-#| msgid "pinentry.qualitybar.tooltip"
 msgid "pinentry.genpin.tooltip"
 msgstr ""
-"Стойкость введенного выше текста. Проконсультируйтесь у администратора о "
-"критериях оценки стойкости."
+"Предложить случайную фразу-пароль."
 
 msgid "Note: The blanks are not part of the passphrase."
-msgstr ""
+msgstr "Замечание: Пробелы частью фразы-пароля не являются."
 
 #. TRANSLATORS: This is a text shown by pinentry as title of a dialog
 #. telling the user that the entered new passphrase does not satisfy
 #. the passphrase constraints.  Please keep it short.
-#, fuzzy
 #| msgid "Passphrase too long"
 msgid "Passphrase Not Allowed"
-msgstr "Слишком длинная фраза-пароль"
+msgstr "Недопустимая фраза-пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -1028,19 +1024,19 @@ msgstr "недопустимый символ radix64 %02x пропущен\n"
 
 #, c-format
 msgid "Sorry, we are in batchmode - can't get input\n"
-msgstr ""
+msgstr "Работа в пакетном режиме - ввод не принимается\n"
 
 #, c-format
 msgid "Sorry, no terminal at all requested - can't get input\n"
-msgstr ""
+msgstr "Терминал не задан - ввод не принимается\n"
 
 #, c-format
 msgid "too many errors; giving up\n"
-msgstr ""
+msgstr "слишком много ошибок; завершение\n"
 
 #, c-format
 msgid "Control-D detected\n"
-msgstr ""
+msgstr "Обнаружен символ Control-D\n"
 
 msgid "argument not expected"
 msgstr "неожиданный параметр"
@@ -8266,7 +8262,7 @@ msgstr "%s:%u: задан пароль, но не задан пользоват�
 
 #, c-format
 msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr ""
+msgstr "%s:%u: неизвестный флаг '%s' игнорируется\n"
 
 #, c-format
 msgid "%s:%u: skipping this line\n"
