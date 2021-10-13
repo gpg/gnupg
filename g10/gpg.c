@@ -357,6 +357,7 @@ enum cmd_and_opt_values
     oShowSessionKey,
     oOverrideSessionKey,
     oOverrideSessionKeyFD,
+    oOverrideComplianceCheck,
     oNoRandomSeedFile,
     oAutoKeyRetrieve,
     oNoAutoKeyRetrieve,
@@ -840,7 +841,6 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oOverrideSessionKey, "override-session-key", "@"),
   ARGPARSE_s_i (oOverrideSessionKeyFD, "override-session-key-fd", "@"),
 
-
   ARGPARSE_header ("Security", N_("Options controlling the security")),
 
   ARGPARSE_s_i (oS2KMode, "s2k-mode", "@"),
@@ -871,6 +871,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oAEADAlgo,   "aead-algo", "@"),
   ARGPARSE_s_s (oDigestAlgo, "digest-algo", "@"),
   ARGPARSE_s_s (oCertDigestAlgo, "cert-digest-algo", "@"),
+  ARGPARSE_s_n (oOverrideComplianceCheck, "override-compliance-check", "@"),
 
 
   ARGPARSE_header (NULL, N_("Options for unattended use")),
@@ -3660,6 +3661,10 @@ main (int argc, char **argv)
             opt.flags.allow_old_cipher_algos = 1;
             break;
 
+          case oOverrideComplianceCheck:
+            opt.flags.override_compliance_check = 1;
+            break;
+
           case oFakedSystemTime:
             {
               size_t len = strlen (pargs.r.ret_str);
@@ -3867,6 +3872,15 @@ main (int argc, char **argv)
 		 "--require-secmem");
         write_status_failure ("option-checking", gpg_error(GPG_ERR_GENERAL));
 	g10_exit(2);
+      }
+
+    /* We allow overriding the compliance check only in non-batch mode
+     * so that the user has a chance to see the message.  */
+    if (opt.flags.override_compliance_check && opt.batch)
+      {
+        opt.flags.override_compliance_check = 0;
+        log_info ("Note: '%s' ignored due to batch mode\n",
+                  "--override-compliance-check");
       }
 
     set_debug (debug_level);

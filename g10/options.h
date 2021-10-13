@@ -245,6 +245,7 @@ struct
     unsigned int allow_old_cipher_algos:1;
     unsigned int allow_weak_digest_algos:1;
     unsigned int allow_weak_key_signatures:1;
+    unsigned int override_compliance_check:1;
     unsigned int large_rsa:1;
     unsigned int disable_signer_uid:1;
     unsigned int include_key_block:1;

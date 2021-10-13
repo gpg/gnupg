@@ -3471,6 +3471,15 @@ To avoid a minor risk of collision attacks on third-party key
 signatures made using SHA-1, those key signatures are considered
 invalid.  This options allows to override this restriction.
 
+@item --override-compliance-check
+@opindex --override-compliance-check
+The signature verification only allows the use of keys suitable in the
+current compliance mode.  If the compliance mode has been forced by a
+global option, there might be no way to check certain signature.  This
+option allows to override this and prints an extra warning in such a
+case.  This option is ignored in --batch mode so that no accidental
+unattended verification may happen.
+
 @item --no-default-keyring
 @opindex no-default-keyring
 Do not add the default keyring to the list of keyrings. Note that
