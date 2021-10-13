@@ -64,6 +64,35 @@ sig_check_dump_stats (void)
 }
 
 
+static gpg_error_t
+check_key_verify_compliance (PKT_public_key *pk)
+{
+  gpg_error_t err = 0;
+
+  if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
+                            pk->pubkey_algo, 0, pk->pkey,
+                            nbits_from_pk (pk),
+                            NULL))
+    {
+      /* Compliance failure.  */
+      log_info (_("key %s may not be used for signing in %s mode\n"),
+                 keystr_from_pk (pk),
+                 gnupg_compliance_option_string (opt.compliance));
+      if (opt.flags.override_compliance_check)
+        log_info (_("continuing verification anyway due to option %s\n"),
+                  "--override-compliance-failure");
+      else
+        {
+          log_inc_errorcount (); /* We used log info above.  */
+          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+        }
+    }
+
+  return err;
+}
+
+
+
 /* Check a signature.  This is shorthand for check_signature2 with
    the unnamed arguments passed as NULL.  */
 int
@@ -163,17 +192,8 @@ check_signature2 (ctrl_t ctrl,
     }
   else if (get_pubkey_for_sig (ctrl, pk, sig, forced_pk))
     rc = gpg_error (GPG_ERR_NO_PUBKEY);
-  else if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
-                                 pk->pubkey_algo, 0, pk->pkey,
-                                 nbits_from_pk (pk),
-                                 NULL))
-    {
-      /* Compliance failure.  */
-      log_error (_("key %s may not be used for signing in %s mode\n"),
-                 keystr_from_pk (pk),
-                 gnupg_compliance_option_string (opt.compliance));
-      rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
-    }
+  else if ((rc = check_key_verify_compliance (pk)))
+    ;/* Compliance failure.  */
   else if (!pk->flags.valid)
     {
       /* You cannot have a good sig from an invalid key.  */
