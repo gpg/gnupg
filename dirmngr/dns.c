@@ -5659,7 +5659,12 @@ skip:
 			memset(resconf->search, '\0', sizeof resconf->search);
 
 			for (i = 1, j = 0; i < wc && j < lengthof(resconf->search); i++, j++)
-				dns_d_anchor(resconf->search[j], sizeof resconf->search[j], words[i], strlen(words[i]));
+				if (words[i][0] == '.') {
+					/* Ignore invalid search spec.  */
+					j--;
+				} else {
+					dns_d_anchor(resconf->search[j], sizeof resconf->search[j], words[i], strlen(words[i]));
+				}
 
 			break;
 		case DNS_RESCONF_LOOKUP:
