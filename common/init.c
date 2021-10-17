@@ -208,8 +208,14 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
   gettext_use_utf8 (1);
   if (!SetConsoleCP (CP_UTF8) || !SetConsoleOutputCP (CP_UTF8))
     {
-      log_info ("SetConsoleCP failed: %s\n", w32_strerror (-1));
-      log_info ("Warning: Garbled console data possible\n");
+      /* Don't show the error if the program does not have a console.
+       * This is for example the case for daemons.  */
+      in rc = GetLastError ();
+      if (rc != ERROR_INVALID_HANDLE)
+        {
+          log_info ("SetConsoleCP failed: %s\n", w32_strerror (rc));
+          log_info ("Warning: Garbled console data possible\n");
+        }
     }
 #endif
 
