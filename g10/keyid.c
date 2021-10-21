@@ -1068,8 +1068,8 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
           err = gpg_error_from_syserror ();
         else
           {
-            gcry_mpi_t pubkey = openpgp_ecc_parse_pubkey (pk->pubkey_algo,
-                                                          curve, pk->pkey[1]);
+            gcry_mpi_t pubkey = openpgp_ecc_parse_key (pk->pubkey_algo,
+                                                       curve, pk->pkey[1]);
 
             err = gcry_sexp_build (&s_pkey, NULL,
                                    pk->pubkey_algo == PUBKEY_ALGO_EDDSA?

@@ -1806,8 +1806,7 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
       else
         {
 	  const char *curve_name = openpgp_oid_to_curve (curve, 1);
-          gcry_mpi_t pubkey = openpgp_ecc_parse_pubkey (algo,
-							curve_name, key[1]);
+          gcry_mpi_t pubkey = openpgp_ecc_parse_key (algo, curve_name, key[1]);
 
           rc = gcry_sexp_build (&sexp, NULL,
                                 "(public-key(ecc(curve%s)(q%m)))",

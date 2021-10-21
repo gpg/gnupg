@@ -103,7 +103,7 @@ get_keygrip (int pubkey_algo, const char *curve, gcry_mpi_t *pkey,
 
           if (pkalgo)
             {
-              pubkey = openpgp_ecc_parse_pubkey (pkalgo, curve, pkey[0]);
+              pubkey = openpgp_ecc_parse_key (pkalgo, curve, pkey[0]);
               err = gcry_sexp_build (&s_pkey, NULL, format, curve, pubkey);
               gcry_mpi_release (pubkey);
             }
@@ -189,8 +189,8 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
 
           if (pkalgo)
             {
-              pubkey = openpgp_ecc_parse_pubkey (pkalgo, curve, skey[0]);
-              seckey = openpgp_ecc_parse_seckey (pkalgo, curve, skey[1]);
+              pubkey = openpgp_ecc_parse_key (pkalgo, curve, skey[0]);
+              seckey = openpgp_ecc_parse_key (pkalgo, curve, skey[1]);
               err = gcry_sexp_build (&s_skey, NULL, format, curve, pubkey, seckey);
               gcry_mpi_release (pubkey);
               gcry_mpi_release (seckey);
