@@ -463,6 +463,13 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       rc = sexp_extract_param_sos (s_ciph, "e", &public);
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
+      if (openpgp_oid_is_cv448 (pkey[0]))
+        {
+          rc = openpgp_fixup_pubkey_448 (algo, &public);
+          if (rc)
+            goto leave;
+        }
+
       if (DBG_CRYPTO)
         {
           log_debug ("ECDH ephemeral key:");
