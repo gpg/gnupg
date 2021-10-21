@@ -441,7 +441,7 @@ sos_sig_448 (gcry_mpi_t r, gcry_mpi_t s)
   memcpy (p+1, p_r, 57);
   memcpy (p+1+57, p_s, 57);
 
-  a = gcry_mpi_set_opaque (NULL, p, 0);
+  a = gcry_mpi_set_opaque (NULL, p, 7+57*2*8);
   gcry_mpi_set_flag (a, GCRYMPI_FLAG_USER2);
   return a;
 }

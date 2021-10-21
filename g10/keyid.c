@@ -1063,11 +1063,12 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_ECDH:
       {
-        char *curve = openpgp_oid_to_str (pk->pkey[0]);
-        if (!curve)
+        char *curve_oid = openpgp_oid_to_str (pk->pkey[0]);
+        if (!curve_oid)
           err = gpg_error_from_syserror ();
         else
           {
+            const char *curve = openpgp_oid_to_curve (curve_oid, 1);
             gcry_mpi_t pubkey = openpgp_ecc_parse_key (pk->pubkey_algo,
                                                        curve, pk->pkey[1]);
 
@@ -1078,8 +1079,8 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
                                     && openpgp_oid_is_cv25519 (pk->pkey[0]))?
                                    "(public-key(ecc(curve%s)(flags djb-tweak)(q%m)))":
                                    "(public-key(ecc(curve%s)(q%m)))",
-                                   curve, pubkey);
-            xfree (curve);
+                                   curve_oid, pubkey);
+            xfree (curve_oid);
             gcry_mpi_release (pubkey);
           }
       }
