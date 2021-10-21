@@ -1284,6 +1284,47 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
 
 
 static gpg_error_t
+sos_fixup_pubkey_448 (int algo, gcry_mpi_t *p_pubkey)
+{
+  gcry_mpi_t pubkey_mpi;
+  gcry_mpi_t a;
+  unsigned char *p;
+  const unsigned char *p_key;
+  unsigned int nbits;
+  unsigned int len;
+
+  pubkey_mpi = *p_pubkey;
+  *p_pubkey = NULL;
+  p_key = gcry_mpi_get_opaque (pubkey_mpi, &nbits);
+  len = (nbits+7)/8;
+  if ((algo == PUBKEY_ALGO_ECDH && len != 56)
+      || (algo == PUBKEY_ALGO_EDDSA && len != 57)
+      || (algo != PUBKEY_ALGO_ECDH && algo != PUBKEY_ALGO_EDDSA))
+    {
+      gcry_mpi_release (pubkey_mpi);
+      return gpg_error (GPG_ERR_BAD_PUBKEY);
+    }
+
+  p = xtrymalloc (1 + len);
+  if (!p)
+    {
+      gcry_mpi_release (pubkey_mpi);
+      return gpg_error_from_syserror ();
+    }
+
+  p[0] = 0x40;
+  memcpy (p+1, p_key, len);
+
+  a = gcry_mpi_set_opaque (NULL, p, 0);
+  gcry_mpi_set_flag (a, GCRYMPI_FLAG_USER2);
+  *p_pubkey = a;
+  gcry_mpi_release (pubkey_mpi);
+
+  return 0;
+}
+
+
+static gpg_error_t
 ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
 {
   gpg_error_t err;
@@ -1334,6 +1375,14 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
   err = sexp_extract_param_sos (list, "q", &array[1]);
   if (err)
     goto leave;
+
+  if (openpgp_oid_is_ed448 (array[0])
+      || openpgp_oid_is_cv448 (array[0]))
+    {
+      err = sos_fixup_pubkey_448 (algo, &array[1]);
+      if (err)
+        goto leave;
+    }
 
   gcry_sexp_release (list);
 
