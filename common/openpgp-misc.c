@@ -87,7 +87,7 @@ openpgp_fixup_pubkey_448 (int algo, gcry_mpi_t *p_pubkey)
   p[0] = 0x40;
   memcpy (p+1, p_key, len);
 
-  a = gcry_mpi_set_opaque (NULL, p, 0);
+  a = gcry_mpi_set_opaque (NULL, p, len*8+7);
   gcry_mpi_set_flag (a, GCRYMPI_FLAG_USER2);
   *p_pubkey = a;
   gcry_mpi_release (pubkey_mpi);
