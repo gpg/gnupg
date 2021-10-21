@@ -404,6 +404,49 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig,
 }
 
 
+/* Return SOS for MPI zero representation.  */
+static gcry_mpi_t
+sos_zero (void)
+{
+  gcry_mpi_t a;
+
+  a = gcry_mpi_set_opaque (NULL, NULL, 0);
+  gcry_mpi_set_flag (a, GCRYMPI_FLAG_USER2);
+  return a;
+}
+
+
+/* Return SOS for Ed448 signature.  */
+static gcry_mpi_t
+sos_sig_448 (gcry_mpi_t r, gcry_mpi_t s)
+{
+  gcry_mpi_t a;
+  unsigned char *p;
+  const unsigned char *p_r, *p_s;
+  unsigned int nbits;
+
+  p_r = gcry_mpi_get_opaque (r, &nbits);
+  if ((nbits+7)/8 != 57)
+    return NULL;
+
+  p_s = gcry_mpi_get_opaque (s, &nbits);
+  if ((nbits+7)/8 != 57)
+    return NULL;
+
+  p = xtrymalloc (1 + 57 + 57);
+  if (!p)
+    return NULL;
+
+  p[0] = 0x40;
+  memcpy (p+1, p_r, 57);
+  memcpy (p+1+57, p_s, 57);
+
+  a = gcry_mpi_set_opaque (NULL, p, 0);
+  gcry_mpi_set_flag (a, GCRYMPI_FLAG_USER2);
+  return a;
+}
+
+
 /* Perform the sign operation.  If CACHE_NONCE is given the agent is
  * advised to use that cached passphrase for the key.  SIGNHINTS has
  * hints so that we can do some additional checks. */
@@ -509,9 +552,33 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
       else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
                || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
         {
-          err = sexp_extract_param_sos (s_sigval, "r", &sig->data[0]);
+          gcry_mpi_t sig_r = NULL;
+          gcry_mpi_t sig_s = NULL;
+
+          err = sexp_extract_param_sos (s_sigval, "r", &sig_r);
           if (!err)
-            err = sexp_extract_param_sos (s_sigval, "s", &sig->data[1]);
+            err = sexp_extract_param_sos (s_sigval, "s", &sig_s);
+
+          if (!err)
+            {
+              int is_ed448 = openpgp_oid_is_ed448 (pksk->pkey[0]);
+
+              if (is_ed448)
+                {
+                  sig->data[0] = sos_sig_448 (sig_r, sig_s);
+                  if (!sig->data[0])
+                    err = gpg_error_from_syserror ();
+                  else
+                    sig->data[1] = sos_zero ();
+                  mpi_release (sig_r);
+                  mpi_release (sig_s);
+                }
+              else
+                {
+                  sig->data[0] = sig_r;
+                  sig->data[1] = sig_s;
+                }
+            }
         }
       else
         {
