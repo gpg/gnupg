@@ -452,8 +452,12 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
             write_status_text (STATUS_NOTATION_FLAGS,
                                nd->flags.critical && nd->flags.human? "1 1" :
                                nd->flags.critical? "1 0" : "0 1");
-	  write_status_buffer (STATUS_NOTATION_DATA,
-			       nd->value, strlen (nd->value), 50);
+          if (!nd->flags.human && nd->bdat && nd->blen)
+            write_status_buffer (STATUS_NOTATION_DATA,
+                                 nd->bdat, nd->blen, 250);
+          else
+            write_status_buffer (STATUS_NOTATION_DATA,
+                                 nd->value, strlen (nd->value), 50);
 	}
     }
 
