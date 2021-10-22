@@ -1188,6 +1188,71 @@ pcsc_init (void)
   return 0;
 }
 
+
+/* Select a reader from list of readers available.  */
+static const char *
+select_a_reader (const char *list, unsigned int len)
+{
+  const char *black_list_to_skip[] = {
+    /* We do left match by strncmp(3).  */
+    "Windows Hello"
+  };
+  const char *white_list_to_prefer[] = {
+    /* We do substring match by strstr(3).  */
+    "SPRx32", "cyberJack", "Gnuk", "Trustica"
+  };
+  const char *p = list;
+  const char *candidate = NULL;
+  unsigned int n;
+
+  /*
+   * (1) If one in the white list is found in LIST, that one is
+   *     selected.
+   * (2) Otherwise, if one not in the black list is found in LIST,
+   *     that is a candidate.
+   * (3) Select the first candidate, or in case of no candidate,
+   *     return the first entry even if it's in the black list.
+   */
+  while (len)
+    {
+      int i;
+      int is_bad;
+
+      if (!*p)
+        break;
+
+      for (n=0; n < len; n++)
+        if (!p[n])
+          break;
+
+      /* Something wrong in the LIST.  */
+      if (n >= len)
+        break;
+
+      for (i = 0; i < DIM (white_list_to_prefer); i++)
+        if (strstr (p, white_list_to_prefer[i]))
+          return p;
+
+      is_bad = 0;
+      for (i = 0; i < DIM (black_list_to_skip); i++)
+        if (!strncmp (p, black_list_to_skip[i],
+                      strlen (black_list_to_skip[i])))
+          is_bad = 1;
+
+      if (!is_bad && !candidate)
+        candidate = p;
+
+      len -= n + 1;
+      p += n + 1;
+    }
+
+  if (candidate)
+    return candidate;
+
+  return list;
+}
+
+
 /* Open the PC/SC reader.  If PORTSTR is NULL we default to a suitable
    port.  Returns -1 on error or a slot number for the reader.  */
 static int
@@ -1196,9 +1261,9 @@ open_pcsc_reader (const char *portstr)
   long err;
   int slot;
   char *list = NULL;
-  char *rdrname = NULL;
+  const char *rdrname = NULL;
   pcsc_dword_t nreader;
-  char *p;
+  const char *p;
   size_t n;
   membuf_t reader_mb;
 
@@ -1259,7 +1324,13 @@ open_pcsc_reader (const char *portstr)
       if (n >= nreader)
          {
            log_error ("invalid response from pcsc_list_readers\n");
-           break;
+           xfree (get_membuf (&reader_mb, NULL));
+           close_pcsc_reader (slot);
+           reader_table[slot].used = 0;
+           unlock_slot (slot);
+           xfree (list);
+           slot = -1;
+           goto leave;
          }
 
       log_info ("detected reader '%s'\n", p);
@@ -1276,7 +1347,7 @@ open_pcsc_reader (const char *portstr)
     log_error ("error allocating memory for reader list\n");
 
   if (!rdrname)
-    rdrname = list;
+    rdrname = select_a_reader (list, nreader);
 
   reader_table[slot].rdrname = xtrystrdup (rdrname);
   if (!reader_table[slot].rdrname)
@@ -1286,6 +1357,7 @@ open_pcsc_reader (const char *portstr)
       reader_table[slot].used = 0;
       unlock_slot (slot);
       slot = -1;
+      xfree (list);
       goto leave;
     }
   xfree (list);
