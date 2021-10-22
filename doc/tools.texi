@@ -692,6 +692,10 @@ all options (and the groups they belong to) in the component
 the field @var{name} in the output of the @code{--list-components}
 command.
 
+Take care if system-wide options are used: gpgconf may not be able to
+properly show the options and the listed options may have no actual
+effect in case the system-wide options enforced their own settings.
+
 There is one line for each option and each group.  First come all
 options that are not in any group.  Then comes a line describing a
 group.  Then come all options that belong into each group.  Then comes

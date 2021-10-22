@@ -2634,6 +2634,51 @@ copy_file (const char *src_name, const char *dst_name)
 #endif /* HAVE_W32_SYSTEM */
 
 
+/* Test whether the config filename stored at FNAMEP is in the global
+ * config directory.  In this case change the filename to use the
+ * standard filename of the homedir.  This shall be used before
+ * writing a config file to cope wit the case of a missing user config
+ * file name but an existsing global config file - this would
+ * otherwise lead to an attempt to write to the global file (which
+ * will be silently rejected due to insufficient permissions) and not
+ * the creation of a new user config file.  */
+static void
+munge_config_filename (char **fnamep)
+{
+  char *fname = *fnamep;
+  char *p1;
+  int c, rc;
+
+  p1 = strrchr (fname, '/');
+#ifdef HAVE_W32_SYSTEM
+  {
+    char *p2 = strchr (fname, '\\');
+    if (!p1 && p2)
+      p1 = p2;
+    else if (p2 && p2 > p1)
+      p1 = p2;
+  }
+#endif
+  if (!p1 || !*p1)
+    return;  /* No directory part - strange but no need for acting.  */
+  c = *p1;
+  *p1 = 0;
+  rc = compare_filenames (fname, gnupg_sysconfdir ());
+  *p1 = c;
+  if (!rc && p1[1]) /* Sysconfdir - use homedir instead.  */
+    {
+      char *newfname = xstrconcat (gnupg_homedir (), p1, NULL);
+#ifdef HAVE_W32_SYSTEM
+      for (p1=newfname; *p1; p1++)
+        if (*p1 == '/')
+          *p1 = '\\';
+#endif
+      xfree (fname);
+      *fnamep = newfname;
+    }
+}
+
+
 /* Create and verify the new configuration file for the specified
  * backend and component.  Returns 0 on success and -1 on error.  This
  * function may store pointers to malloced strings in SRC_FILENAMEP,
@@ -2995,6 +3040,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 
   /* FIXME.  Throughout the function, do better error reporting.  */
   dest_filename = xstrdup (get_config_filename (component, backend));
+  munge_config_filename (&dest_filename);
   src_filename = xasprintf ("%s.%s.%i.new",
                             dest_filename, GPGCONF_NAME, (int)getpid ());
   orig_filename = xasprintf ("%s.%s.%i.bak",
