@@ -2493,6 +2493,9 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
   main_pk = NULL;
   while ((node = walk_kbnode (sec_keyblock, &ctx, 0)))
     {
+      gcry_mpi_t ecc_pubkey = NULL;
+      gcry_mpi_t ecc_seckey = NULL;
+
       if (node->pkt->pkttype != PKT_SECRET_KEY
           && node->pkt->pkttype != PKT_SECRET_SUBKEY)
         continue;
@@ -2571,7 +2574,9 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
                   j = 0;
                   /* Append the public key element Q.  */
                   put_membuf_str (&mbuf, " _ %m");
-                  format_args[j++] = pk->pkey + 1;
+                  ecc_pubkey = openpgp_ecc_parse_key (pk->pubkey_algo,
+                                                      curvename, pk->pkey[1]);
+                  format_args[j++] = &ecc_pubkey;
 
                   /* Append the secret key element D.  For ECDH we
                      skip PKEY[2] because this holds the KEK which is
@@ -2581,7 +2586,9 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
                     put_membuf_str (&mbuf, " e %m");
                   else
                     put_membuf_str (&mbuf, " _ %m");
-                  format_args[j++] = pk->pkey + i;
+                  ecc_seckey = openpgp_ecc_parse_key (pk->pubkey_algo,
+                                                      curvename, pk->pkey[i]);
+                  format_args[j++] = &ecc_seckey;
 
                   /* Simple hack to print a warning for an invalid key
                    * in case of cv25519.  We have only opaque MPIs here. */
@@ -2630,6 +2637,8 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
             err = gcry_sexp_build_array (&skey, NULL, format, format_args);
           xfree (format);
         }
+      gcry_mpi_release (ecc_pubkey);
+      gcry_mpi_release (ecc_seckey);
       if (err)
         {
           log_error ("error building skey array: %s\n", gpg_strerror (err));
