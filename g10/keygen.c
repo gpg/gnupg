@@ -1338,7 +1338,7 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
   if (openpgp_oid_is_ed448 (array[0])
       || openpgp_oid_is_cv448 (array[0]))
     {
-      err = openpgp_fixup_pubkey_448 (algo, &array[1]);
+      err = openpgp_fixup_key_448 (algo, &array[1]);
       if (err)
         goto leave;
     }

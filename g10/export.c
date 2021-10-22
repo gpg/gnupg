@@ -532,7 +532,8 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, kbnode_t node)
 /* Return an error if the key represented by the S-expression S_KEY
  * and the OpenPGP key represented by PK do not use the same curve. */
 static gpg_error_t
-match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk)
+match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk,
+                     int *r_is_448)
 {
   gcry_sexp_t curve = NULL;
   gcry_sexp_t flags = NULL;
@@ -543,6 +544,8 @@ match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk)
   gpg_error_t err;
   int is_eddsa = 0;
   int idx = 0;
+
+  *r_is_448 = 0;
 
   if (!(pk->pubkey_algo==PUBKEY_ALGO_ECDH
         || pk->pubkey_algo==PUBKEY_ALGO_ECDSA
@@ -563,7 +566,12 @@ match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk)
       return gpg_error (GPG_ERR_UNKNOWN_CURVE);
     }
   if (!strcmp (curve_str, "Ed448"))
-    is_eddsa = 1;
+    {
+      is_eddsa = 1;
+      *r_is_448 = 1;
+    }
+  if (!strcmp (curve_str, "X448"))
+    *r_is_448 = 1;
   oidstr = openpgp_curve_to_oid (curve_str, NULL, NULL);
   if (!oidstr)
     {
@@ -637,6 +645,7 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
   struct seckey_info *ski;
   int idx, sec_start;
   gcry_mpi_t pub_params[10] = { NULL };
+  int is_448;
 
   /* we look for a private-key, then the first element in it tells us
      the type */
@@ -744,11 +753,15 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
       break;
 
     case GCRY_PK_ECC:
-      err = match_curve_skey_pk (key, pk);
+      err = match_curve_skey_pk (key, pk, is_448);
       if (err)
         goto leave;
       else
         err = sexp_extract_param_sos (key, "q", &pub_params[0]);
+
+      if (!err && is_448)
+        err = openpgp_fixup_key_448 (pk->pubkey_algo, &pub_params[0]);
+
       if (!err && (gcry_mpi_cmp(pk->pkey[1], pub_params[0])))
         err = gpg_error (GPG_ERR_BAD_PUBKEY);
 
@@ -760,6 +773,9 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
           gcry_mpi_release (pk->pkey[sec_start]);
           pk->pkey[sec_start] = NULL;
           err = sexp_extract_param_sos (key, "d", &pk->pkey[sec_start]);
+          if (!err && is_448)
+            err = openpgp_fixup_key_448 (pk->pubkey_algo,
+                                         &pk->pkey[sec_start]);
         }
 
       if (!err)

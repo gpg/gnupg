@@ -465,7 +465,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       s_ciph = NULL;
       if (openpgp_oid_is_cv448 (pkey[0]))
         {
-          rc = openpgp_fixup_pubkey_448 (algo, &public);
+          rc = openpgp_fixup_key_448 (algo, &public);
           if (rc)
             goto leave;
         }
