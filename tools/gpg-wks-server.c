@@ -1442,7 +1442,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
     }
 
   /* Make sure it is world readable.  */
-  if (gnupg_chmod (fnewname, "-rwxr--r--"))
+  if (gnupg_chmod (fnewname, "-rw-r--r--"))
     log_error ("can't set permissions of '%s': %s\n",
                fnewname, gpg_strerror (gpg_err_code_from_syserror()));
 
