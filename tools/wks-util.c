@@ -855,13 +855,13 @@ wks_compute_hu_fname (char **r_fname, const char *addrspec)
   fname = make_filename_try (opt.directory, domain, NULL);
   if (fname && gnupg_stat (fname, &sb)
       && gpg_err_code_from_syserror () == GPG_ERR_ENOENT)
-    if (!gnupg_mkdir (fname, "-rwxr--r--") && opt.verbose)
+    if (!gnupg_mkdir (fname, "-rwxr-xr-x") && opt.verbose)
       log_info ("directory '%s' created\n", fname);
   xfree (fname);
   fname = make_filename_try (opt.directory, domain, "hu", NULL);
   if (fname && gnupg_stat (fname, &sb)
       && gpg_err_code_from_syserror () == GPG_ERR_ENOENT)
-    if (!gnupg_mkdir (fname, "-rwxr--r--") && opt.verbose)
+    if (!gnupg_mkdir (fname, "-rwxr-xr-x") && opt.verbose)
       log_info ("directory '%s' created\n", fname);
   xfree (fname);
 
