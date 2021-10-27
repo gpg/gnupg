@@ -498,6 +498,10 @@ do_unprotect (const char *passphrase,
               actual_csum += (nbits >> 8);
               actual_csum += (nbits & 0xff);
               actual_csum += checksum (buffer, nbytes);
+
+	      tmpmpi = skey[i];
+              skey[i] = openpgp_ecc_parse_key (pubkey_algo, curve, tmpmpi);
+              gcry_mpi_release (tmpmpi);
             }
           else
             {
@@ -638,7 +642,8 @@ do_unprotect (const char *passphrase,
             {
               if (scan_pgp_format (&tmpmpi, pubkey_algo, p, ndata, &nbytes))
                 break;
-              skey[i] = tmpmpi;
+              skey[i] = openpgp_ecc_parse_key (pubkey_algo, curve, tmpmpi);
+              gcry_mpi_release (tmpmpi);
               ndata -= nbytes;
               p += nbytes;
             }

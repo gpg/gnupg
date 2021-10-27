@@ -753,7 +753,7 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
       break;
 
     case GCRY_PK_ECC:
-      err = match_curve_skey_pk (key, pk, is_448);
+      err = match_curve_skey_pk (key, pk, &is_448);
       if (err)
         goto leave;
       else
