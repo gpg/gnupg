@@ -70,6 +70,8 @@
 # define MYPROC_SELF_EXE "/proc/self/exe"
 #elif defined(__NetBSD__)
 # define MYPROC_SELF_EXE "/proc/curproc/exe"
+#elif defined(__illumos__) || defined(__sun)
+# define MYPROC_SELF_EXE "/proc/self/path/a.out"
 #else /* Assume other BSDs */
 # define MYPROC_SELF_EXE "/proc/curproc/file"
 #endif

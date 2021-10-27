@@ -210,7 +210,7 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
     {
       /* Don't show the error if the program does not have a console.
        * This is for example the case for daemons.  */
-      in rc = GetLastError ();
+      int rc = GetLastError ();
       if (rc != ERROR_INVALID_HANDLE)
         {
           log_info ("SetConsoleCP failed: %s\n", w32_strerror (rc));
