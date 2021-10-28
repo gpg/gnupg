@@ -1477,6 +1477,27 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   if (err)
     return err;
 
+  if (curve)
+    {
+      const char *curvename;
+      int pubkey_algo;
+
+      curvename = gcry_sexp_nth_string (curve, 1);
+
+      if (curvename && !strcmp (curvename, "Ed448"))
+        pubkey_algo = PUBKEY_ALGO_EDDSA;
+      else if (curvename && !strcmp (curvename, "X448"))
+        pubkey_algo = PUBKEY_ALGO_ECDH;
+      else
+        pubkey_algo = 0;
+
+      if (pubkey_algo)
+        {
+          err = openpgp_fixup_key_448 (pubkey_algo, &array[0]);
+          err = openpgp_fixup_key_448 (pubkey_algo, &array[1]);
+        }
+    }
+
   gcry_create_nonce (protect_iv, sizeof protect_iv);
   gcry_create_nonce (salt, sizeof salt);
   /* We need to use the encoded S2k count.  It is not possible to
