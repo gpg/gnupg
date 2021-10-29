@@ -840,9 +840,10 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   if (!list)
     goto bad_seckey;
   value = gcry_sexp_nth_data (list, 1, &valuelen);
-  if (!value || valuelen != 1 || !(value[0] == '3' || value[0] == '4'))
+  if (!value || valuelen != 1
+      || !(value[0] == '3' || value[0] == '4' || value[0] == '5'))
     goto bad_seckey;
-  is_v4 = (value[0] == '4');
+  is_v4 = (value[0] == '4') || (value[0] == '5');
 
   gcry_sexp_release (list);
   list = gcry_sexp_find_token (top_list, "protection", 0);
