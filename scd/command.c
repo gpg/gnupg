@@ -2279,7 +2279,7 @@ cmd_devinfo (assuan_context_t ctx, char *line)
     }
 
   /* Firstly, send information of available devices.  */
-  err = app_send_devinfo (ctrl);
+  err = app_send_devinfo (ctrl, 0);
 
   /* If not watching, that's all.  */
   if (!watch)
@@ -2311,16 +2311,10 @@ cmd_devinfo (assuan_context_t ctx, char *line)
     }
 
   /* Then, keep watching the status change.  */
-  while (!err)
-    {
-      app_wait ();
-
-      /* Send information of available devices.  */
-      err = app_send_devinfo (ctrl);
-    }
+  err = app_send_devinfo (ctrl, 1);
 
   ctrl->server_local->watching_status = 0;
-  return 0;
+  return err;
 }
 
 /* Return true if the command CMD implements the option OPT.  */
