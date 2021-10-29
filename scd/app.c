@@ -860,11 +860,7 @@ select_application (ctrl_t ctrl, const char *name,
 
       /* If new device(s), kick the scdaemon loop.  */
       if (new_card)
-        {
-          scd_kick_the_loop ();
-          /* Also notify watching by DEVINFO */
-          card_list_signal ();
-        }
+        scd_kick_the_loop ();
     }
 
   for (card = card_top; card; card = card->next)
