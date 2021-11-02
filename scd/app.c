@@ -424,16 +424,12 @@ app_send_devinfo (ctrl_t ctrl, int keep_looping)
   app_t a;
   int no_device;
 
+  card_list_w_lock ();
   while (1)
     {
-      card_list_w_lock ();
-
       no_device = (card_top == NULL);
       if (no_device && keep_looping < 0)
-        {
-          card_list_w_unlock ();
-          break;
-        }
+        break;
 
       send_status_direct (ctrl, "DEVINFO_START", "");
       for (c = card_top; c; c = c->next)
@@ -452,13 +448,11 @@ app_send_devinfo (ctrl_t ctrl, int keep_looping)
       send_status_direct (ctrl, "DEVINFO_END", "");
 
       if (no_device && !keep_looping)
-        {
-          card_list_w_unlock ();
-          break;
-        }
+        break;
+
       card_list_wait ();
-      card_list_w_unlock ();
     }
+  card_list_w_unlock ();
 
   return no_device ? gpg_error (GPG_ERR_NOT_FOUND): 0;
 }
