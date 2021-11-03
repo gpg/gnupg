@@ -417,6 +417,7 @@ static known_option_t known_options_gpg[] =
    { "debug-level",          GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED },
    { "log-file",             GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      GC_ARG_TYPE_FILENAME },
+   { "keyserver",            GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "auto-key-locate",      GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "auto-key-import",      GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "auto-key-retrieve",    GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
