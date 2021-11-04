@@ -71,6 +71,7 @@ enum cmd_and_opt_values
     aApplyProfile,
     aReload,
     aShowVersions,
+    aShowConfigs,
     aShowCodepages
   };
 
@@ -103,6 +104,7 @@ static gpgrt_opt_t opts[] =
     { aCreateSocketDir, "create-socketdir", 256, "@"},
     { aRemoveSocketDir, "remove-socketdir", 256, "@"},
     ARGPARSE_c (aShowVersions, "show-versions", "@"),
+    ARGPARSE_c (aShowConfigs,  "show-configs", "@"),
     ARGPARSE_c (aShowCodepages, "show-codepages", "@"),
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
@@ -126,11 +128,17 @@ static gpgrt_opt_t opts[] =
   };
 
 
+
+#define CUTLINE_FMT \
+  "--8<---------------cut here---------------%s------------->8---\n"
+
+
 /* The stream to output the status information.  Status Output is disabled if
  * this is NULL.  */
 static estream_t statusfp;
 
 static void show_versions (estream_t fp);
+static void show_configs (estream_t fp);
 
 
 
@@ -645,6 +653,7 @@ main (int argc, char **argv)
         case aCreateSocketDir:
         case aRemoveSocketDir:
         case aShowVersions:
+        case aShowConfigs:
         case aShowCodepages:
 	  cmd = pargs.r_opt;
 	  break;
@@ -975,6 +984,13 @@ main (int argc, char **argv)
       }
       break;
 
+    case aShowConfigs:
+      {
+        get_outfp (&outfp);
+        show_configs (outfp);
+      }
+      break;
+
     case aShowCodepages:
 #ifdef HAVE_W32_SYSTEM
       {
@@ -1047,16 +1063,17 @@ get_revision_from_blurb (const char *blurb, int *r_len)
 
 
 static void
-show_version_gnupg (estream_t fp)
+show_version_gnupg (estream_t fp, const char *prefix)
 {
-  es_fprintf (fp, "* GnuPG %s (%s)\n%s\n",
-              gpgrt_strusage (13), BUILD_REVISION, gpgrt_strusage (17));
+  es_fprintf (fp, "%s%sGnuPG %s (%s)\n%s%s\n", prefix, *prefix?"":"* ",
+              gpgrt_strusage (13), BUILD_REVISION, prefix, gpgrt_strusage (17));
 #ifdef HAVE_W32_SYSTEM
   {
     OSVERSIONINFO osvi = { sizeof (osvi) };
 
     GetVersionEx (&osvi);
-    es_fprintf (fp, "Windows %lu.%lu build %lu%s%s%s\n",
+    es_fprintf (fp, "%sWindows %lu.%lu build %lu%s%s%s\n",
+                prefix,
                 (unsigned long)osvi.dwMajorVersion,
                 (unsigned long)osvi.dwMinorVersion,
                 (unsigned long)osvi.dwBuildNumber,
@@ -1161,11 +1178,144 @@ show_versions_via_dirmngr (estream_t fp)
 static void
 show_versions (estream_t fp)
 {
-  show_version_gnupg (fp);
+  show_version_gnupg (fp, "");
   es_fputc ('\n', fp);
   show_version_libgcrypt (fp);
   es_fputc ('\n', fp);
   show_version_gpgrt (fp);
   es_fputc ('\n', fp);
   show_versions_via_dirmngr (fp);
+}
+
+
+
+/* Copy data from file SRC to DST.  Returns 0 on success or an error
+ * code on failure.  */
+static gpg_error_t
+my_copy_file (estream_t src, estream_t dst)
+{
+#define BUF_LEN 4096
+  char buffer[BUF_LEN];
+  int len;
+  int written;
+
+  do
+    {
+      len = gpgrt_fread (buffer, 1, BUF_LEN, src);
+      if (!len)
+	break;
+      written = gpgrt_fwrite (buffer, 1, len, dst);
+      if (written != len)
+	break;
+    }
+  while (!gpgrt_feof (src) && !gpgrt_ferror (src) && !gpgrt_ferror (dst));
+
+  if (gpgrt_ferror (src) || gpgrt_ferror (dst) || !gpgrt_feof (src))
+    return gpg_error_from_syserror ();
+
+  if (gpgrt_fflush (dst))
+    return gpg_error_from_syserror ();
+
+  return 0;
+}
+
+
+/* Helper for show_configs  */
+static void
+show_configs_one_file (const char *fname, int global, estream_t outfp)
+{
+  gpg_error_t err;
+  estream_t fp;
+
+  fp = es_fopen (fname, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      es_fprintf (outfp, "###\n### %s config \"%s\": %s\n###\n",
+                  global? "global":"local", fname,
+                  (gpg_err_code (err) == GPG_ERR_ENOENT)?
+                  "not installed" : gpg_strerror (err));
+    }
+  else
+    {
+      es_fprintf (outfp, "###\n### %s config \"%s\"\n###\n",
+                  global? "global":"local", fname);
+      es_fprintf (outfp, CUTLINE_FMT, "start");
+      err = my_copy_file (fp, outfp);
+      if (err)
+        log_error ("error copying file \"%s\": %s\n",
+                   fname, gpg_strerror (err));
+      es_fprintf (outfp, CUTLINE_FMT, "end--");
+      es_fclose (fp);
+    }
+}
+
+
+/* Show all config files.  */
+static void
+show_configs (estream_t outfp)
+{
+  static const char *names[] = { "common.conf", "gpg-agent.conf",
+                                 "scdaemon.conf", "dirmngr.conf",
+                                 "gpg.conf", "gpgsm.conf" };
+  gpg_error_t err;
+  int idx;
+  char *fname;
+  gnupg_dir_t dir;
+  gnupg_dirent_t dir_entry;
+  size_t n;
+  int any;
+
+  es_fprintf (outfp, "### Dump of all standard config files\n");
+  show_version_gnupg (outfp, "### ");
+  es_fprintf (outfp, "### Libgcrypt %s\n", gcry_check_version (NULL));
+  es_fprintf (outfp, "### GpgRT %s\n", gpg_error_check_version (NULL));
+  es_fprintf (outfp, "###\n\n");
+
+  for (idx = 0; idx < DIM (names); idx++)
+    {
+      fname = make_filename (gnupg_sysconfdir (), names[idx], NULL);
+      show_configs_one_file (fname, 1, outfp);
+      xfree (fname);
+      fname = make_filename (gnupg_homedir (), names[idx], NULL);
+      show_configs_one_file (fname, 0, outfp);
+      xfree (fname);
+      es_fprintf (outfp, "\n");
+    }
+
+  /* Check for uncommon files in the home directory.  */
+  dir = gnupg_opendir (gnupg_homedir ());
+  if (!dir)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading directory \"%s\": %s\n",
+                 gnupg_homedir (), gpg_strerror (err));
+      return;
+    }
+
+  any = 0;
+  while ((dir_entry = gnupg_readdir (dir)))
+    {
+      for (idx = 0; idx < DIM (names); idx++)
+        {
+          n = strlen (names[idx]);
+          if (!ascii_strncasecmp (dir_entry->d_name, names[idx], n)
+              && dir_entry->d_name[n] == '-'
+              && ascii_strncasecmp (dir_entry->d_name, "gpg.conf-1", 10))
+            {
+              if (!any)
+                {
+                  any = 1;
+                  es_fprintf (outfp,
+                              "###\n"
+                              "### Warning: suspicious files in \"%s\":\n",
+                              gnupg_homedir ());
+                }
+              es_fprintf (outfp, "### %s\n", dir_entry->d_name);
+            }
+        }
+    }
+  if (any)
+    es_fprintf (outfp, "###\n");
+  gnupg_closedir (dir);
 }
