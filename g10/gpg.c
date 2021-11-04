@@ -5417,7 +5417,7 @@ print_hex (gcry_md_hd_t md, int algo, const char *fname)
 	{
 	  if(count+2>79)
 	    {
-	      es_printf ("\n%*s",indent," ");
+	      es_printf ("\n%*s",indent,indent?" ":"");
 	      count = indent;
 	    }
 	  else
@@ -5432,7 +5432,7 @@ print_hex (gcry_md_hd_t md, int algo, const char *fname)
 	    {
 	      if(count+4>79)
 		{
-		  es_printf ("\n%*s",indent," ");
+		  es_printf ("\n%*s",indent,indent?" ":"");
 		  count=indent;
 		}
 	      else
@@ -5446,9 +5446,9 @@ print_hex (gcry_md_hd_t md, int algo, const char *fname)
 	{
 	  if(!(i%4))
 	    {
-	      if (count+8>79)
+	      if (count+8>=79)
 		{
-		  es_printf ("\n%*s",indent," ");
+		  es_printf ("\n%*s",indent, indent?" ":"");
 		  count=indent;
 		}
 	      else
