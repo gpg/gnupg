@@ -414,7 +414,7 @@ force the use of the default responder.
 If the environment variable @env{http_proxy} has been set, use its
 value to access HTTP servers.
 
-@item --http-proxy @var{host}[:@var{port}]
+@item --http-proxy [http://]@var{host}[:@var{port}]
 @opindex http-proxy
 @efindex http_proxy
 Use @var{host} and @var{port} to access HTTP servers.  The use of this
