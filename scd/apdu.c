@@ -1199,7 +1199,7 @@ select_a_reader (const char *list, unsigned int len)
   };
   const char *white_list_to_prefer[] = {
     /* We do substring match by strstr(3).  */
-    "SPRx32", "cyberJack", "Gnuk", "Trustica"
+    "SPRx32"
   };
   const char *p = list;
   const char *candidate = NULL;
