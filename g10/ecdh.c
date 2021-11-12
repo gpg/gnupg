@@ -52,14 +52,11 @@ static const struct
 gcry_mpi_t
 pk_ecdh_default_params (unsigned int qbits)
 {
-  byte *kek_params;
+  byte kek_params[4] = {
+    3, /* Number of bytes to follow. */
+    1  /* Version for KDF+AESWRAP.   */
+  };
   int i;
-
-  kek_params = xtrymalloc (4);
-  if (!kek_params)
-    return NULL;
-  kek_params[0] = 3; /* Number of bytes to follow. */
-  kek_params[1] = 1; /* Version for KDF+AESWRAP.   */
 
   /* Search for matching KEK parameter.  Defaults to the strongest
      possible choices.  Performance is not an issue here, only
@@ -78,7 +75,7 @@ pk_ecdh_default_params (unsigned int qbits)
   if (DBG_CRYPTO)
     log_printhex (kek_params, sizeof(kek_params), "ECDH KEK params are");
 
-  return gcry_mpi_set_opaque (NULL, kek_params, 4 * 8);
+  return gcry_mpi_set_opaque_copy (NULL, kek_params, 4 * 8);
 }
 
 
