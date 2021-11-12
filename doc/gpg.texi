@@ -1827,7 +1827,9 @@ list.  The default is "local,wkd".
   @item ntds
   Locate the key using the Active Directory (Windows only).  This
   method also allows to search by fingerprint using the command
-  @option{--locate-external-key}.
+  @option{--locate-external-key}.  Note that this mechanism is
+  actually a shortcut for the mechanism @samp{keyserver} but using
+  "ldap:///" as the keyserver.
 
   @item keyserver
   Locate a key using a keyserver.  This method also allows to search
