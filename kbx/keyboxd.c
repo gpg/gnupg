@@ -84,6 +84,7 @@ enum cmd_and_opt_values
     oNoOptions,
     oHomedir,
     oNoDetach,
+    oStealSocket,
     oLogFile,
     oServer,
     oDaemon,
@@ -104,6 +105,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDaemon,  "daemon", N_("run in daemon mode (background)")),
   ARGPARSE_s_n (oServer,  "server", N_("run in server mode (foreground)")),
   ARGPARSE_s_n (oNoDetach,  "no-detach", N_("do not detach from the console")),
+  ARGPARSE_s_n (oStealSocket, "steal-socket", "@"),
   ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
 
@@ -170,6 +172,9 @@ static int startup_signal_mask_valid;
 
 /* Flag to indicate that a shutdown was requested.  */
 static int shutdown_pending;
+
+/* Flag indicating to start the daemon even if one already runs.  */
+static int steal_socket;
 
 /* Counter for the currently running own socket checks.  */
 static int check_own_socket_running;
@@ -571,6 +576,7 @@ main (int argc, char **argv )
         case oNoOptions: break; /* no-options */
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oNoDetach: nodetach = 1; break;
+        case oStealSocket: steal_socket = 1; break;
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oServer: pipe_server = 1; break;
         case oDaemon: is_daemon = 1; break;
@@ -1147,14 +1153,20 @@ create_server_socket (char *name, int cygwin, assuan_sock_nonce_t *nonce)
       /* Check whether a keyboxd is already running.  */
       if (!check_for_running_kbxd (1))
         {
-          log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX);
-          log_set_file (NULL);
-          log_error (_("a keyboxd is already running - "
-                       "not starting a new one\n"));
-          *name = 0; /* Inhibit removal of the socket by cleanup(). */
-          assuan_sock_close (fd);
-          xfree (unaddr);
-          kbxd_exit (2);
+          if (steal_socket)
+            log_info (N_("trying to steal socket from running %s\n"),
+                      "keyboxd");
+          else
+            {
+              log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX);
+              log_set_file (NULL);
+              log_error (_("a keyboxd is already running - "
+                           "not starting a new one\n"));
+              *name = 0; /* Inhibit removal of the socket by cleanup(). */
+              assuan_sock_close (fd);
+              xfree (unaddr);
+              kbxd_exit (2);
+            }
         }
       gnupg_remove (unaddr->sun_path);
       rc = assuan_sock_bind (fd, addr, len);
