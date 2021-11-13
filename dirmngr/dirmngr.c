@@ -139,6 +139,7 @@ enum cmd_and_opt_values {
   oForce,
   oAllowOCSP,
   oAllowVersionCheck,
+  oStealSocket,
   oSocketName,
   oLDAPWrapperProgram,
   oHTTPWrapperProgram,
@@ -188,6 +189,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oDebugLevel, "debug-level",
                 N_("|LEVEL|set the debugging level to LEVEL")),
   ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
+  ARGPARSE_s_n (oStealSocket, "steal-socket", "@"),
   ARGPARSE_s_s (oLogFile,  "log-file",
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_n (oBatch,    "batch",       N_("run without asking a user")),
@@ -328,6 +330,10 @@ static volatile int shutdown_pending;
 
 /* Flags to indicate that we shall not watch our own socket. */
 static int disable_check_own_socket;
+
+/* Flag indicating to start the daemon even if one already runs.  */
+static int steal_socket;
+
 
 /* Flag to control the Tor mode.  */
 static enum
@@ -1062,6 +1068,7 @@ main (int argc, char **argv)
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir: /* Ignore this option here. */; break;
         case oNoDetach: nodetach = 1; break;
+        case oStealSocket: steal_socket = 1; break;
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;
@@ -1323,7 +1330,11 @@ main (int argc, char **argv)
 #endif
               ))
 	{
-          /* Fixme: We should test whether a dirmngr is already running. */
+          /* Fixme: We should actually test whether a dirmngr is
+           * already running.  For now the steal option is a dummy. */
+          /* if (steal_socket) */
+          /*   log_info (N_("trying to steal socket from running %s\n"), */
+          /*             "dirmngr"); */
 	  gnupg_remove (redir_socket_name? redir_socket_name : socket_name);
 	  rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
 	}

@@ -119,6 +119,7 @@ enum cmd_and_opt_values
   oEnablePassphraseHistory,
   oDisableExtendedKeyFormat,
   oEnableExtendedKeyFormat,
+  oStealSocket,
   oUseStandardSocket,
   oNoUseStandardSocket,
   oExtraSocket,
@@ -173,6 +174,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,	  "quiet",     N_("be somewhat more quiet")),
   ARGPARSE_s_n (oSh,	  "sh",        N_("sh-style command output")),
   ARGPARSE_s_n (oCsh,	  "csh",       N_("csh-style command output")),
+  ARGPARSE_s_n (oStealSocket, "steal-socket", "@"),
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
 
   ARGPARSE_s_s (oDebug,	     "debug",       "@"),
@@ -361,6 +363,9 @@ static int disable_check_own_socket;
 
 /* Flag indicating that we are in supervised mode.  */
 static int is_supervised;
+
+/* Flag indicating to start the daemon even if one already runs.  */
+static int steal_socket;
 
 /* Flag to inhibit socket removal in cleanup.  */
 static int inhibit_socket_removal;
@@ -1211,6 +1216,7 @@ main (int argc, char **argv )
         case oSh: csh_style = 0; break;
         case oServer: pipe_server = 1; break;
         case oDaemon: is_daemon = 1; break;
+        case oStealSocket: steal_socket = 1; break;
         case oSupervised: is_supervised = 1; break;
 
         case oDisplay: default_display = xstrdup (pargs.r.ret_str); break;
@@ -2226,14 +2232,20 @@ create_server_socket (char *name, int primary, int cygwin,
          server is not yet operational; this would lead to a hang.  */
       if (primary && !check_for_running_agent (1))
         {
-          log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX);
-          log_set_file (NULL);
-          log_error (_("a gpg-agent is already running - "
-                       "not starting a new one\n"));
-          *name = 0; /* Inhibit removal of the socket by cleanup(). */
-          assuan_sock_close (fd);
-          xfree (unaddr);
-          agent_exit (2);
+          if (steal_socket)
+            log_info (N_("trying to steal socket from running %s\n"),
+                      "gpg-agent");
+          else
+            {
+              log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX);
+              log_set_file (NULL);
+              log_error (_("a gpg-agent is already running - "
+                           "not starting a new one\n"));
+              *name = 0; /* Inhibit removal of the socket by cleanup(). */
+              assuan_sock_close (fd);
+              xfree (unaddr);
+              agent_exit (2);
+            }
         }
       gnupg_remove (unaddr->sun_path);
       rc = assuan_sock_bind (fd, addr, len);
