@@ -121,7 +121,7 @@ const char *get_ownertrust_string (ctrl_t ctrl,
                                    PKT_public_key *pk, int no_create);
 
 void tdb_update_ownertrust (ctrl_t ctrl, PKT_public_key *pk,
-                            unsigned int new_trust);
+                            unsigned int new_trust, int as_trusted_key);
 int tdb_clear_ownertrusts (ctrl_t ctrl, PKT_public_key *pk);
 
 /*-- tdbdump.c --*/

@@ -109,7 +109,9 @@ export_ownertrust (ctrl_t ctrl)
     {
       if (rec.rectype == RECTYPE_TRUST)
         {
-          if (!rec.r.trust.ownertrust)
+          /* Skip records with no ownertrust set or those with trust
+           * set via --trusted-key.  */
+          if (!rec.r.trust.ownertrust || (rec.r.trust.flags & 1))
             continue;
           p = rec.r.trust.fingerprint;
           for (i=0; i < 20; i++, p++ )
@@ -202,6 +204,7 @@ import_ownertrust (ctrl_t ctrl, const char *fname )
                       log_info("setting ownertrust to %u\n", otrust );
                   }
                 rec.r.trust.ownertrust = otrust;
+                rec.r.trust.flags &= ~(rec.r.trust.flags & 1);
                 write_record (ctrl, &rec);
                 any = 1;
               }

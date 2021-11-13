@@ -79,6 +79,7 @@ struct trust_record {
         byte depth;
         ulong validlist;
 	byte min_ownertrust;
+        byte flags;
       } trust;
       struct {
         byte namehash[20];

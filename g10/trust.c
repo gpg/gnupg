@@ -278,7 +278,7 @@ update_ownertrust (ctrl_t ctrl, PKT_public_key *pk, unsigned int new_trust)
   (void)pk;
   (void)new_trust;
 #else
-  tdb_update_ownertrust (ctrl, pk, new_trust);
+  tdb_update_ownertrust (ctrl, pk, new_trust, 0);
 #endif
 }
 

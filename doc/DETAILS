@@ -1304,7 +1304,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
    - 1 u8 :: =ownertrust=.
    - 1 u8 :: =depth=.
    - 1 u8 :: =min_ownertrust=.
-   - 1 byte :: Not used.
+   - 1 byte :: =flags=.
    - 1 u32 :: =validlist=.
    - 10 byte :: Not used.
 
