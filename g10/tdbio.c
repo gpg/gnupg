@@ -1486,16 +1486,19 @@ tdbio_dump_record (TRUSTREC *rec, estream_t fp)
       es_fprintf (fp, "trust ");
       for (i=0; i < 20; i++)
         es_fprintf (fp, "%02X", rec->r.trust.fingerprint[i]);
-      es_fprintf (fp, ", ot=%d, d=%d, vl=%lu\n", rec->r.trust.ownertrust,
-                  rec->r.trust.depth, rec->r.trust.validlist);
+      es_fprintf (fp, ", ot=%d, d=%d, vl=%lu, mo=%d, f=%02x\n",
+                  rec->r.trust.ownertrust,
+                  rec->r.trust.depth, rec->r.trust.validlist,
+                  rec->r.trust.min_ownertrust, rec->r.trust.flags);
       break;
 
     case RECTYPE_VALID:
       es_fprintf (fp, "valid ");
       for (i=0; i < 20; i++)
         es_fprintf(fp, "%02X", rec->r.valid.namehash[i]);
-      es_fprintf (fp, ", v=%d, next=%lu\n", rec->r.valid.validity,
-                  rec->r.valid.next);
+      es_fprintf (fp, ", v=%d, next=%lu, f=%d, m=%d\n",
+                  rec->r.valid.validity, rec->r.valid.next,
+                  rec->r.valid.full_count, rec->r.valid.marginal_count);
       break;
 
     default:
@@ -1631,7 +1634,7 @@ tdbio_read_record (ulong recnum, TRUSTREC *rec, int expected)
       rec->r.trust.ownertrust = *p++;
       rec->r.trust.depth = *p++;
       rec->r.trust.min_ownertrust = *p++;
-      p++;
+      rec->r.trust.flags = *p++;
       rec->r.trust.validlist = buf32_to_ulong(p);
       break;
 
@@ -1726,7 +1729,7 @@ tdbio_write_record (ctrl_t ctrl, TRUSTREC *rec)
       *p++ = rec->r.trust.ownertrust;
       *p++ = rec->r.trust.depth;
       *p++ = rec->r.trust.min_ownertrust;
-      p++;
+      *p++ = rec->r.trust.flags;
       ulongtobuf( p, rec->r.trust.validlist); p += 4;
       break;
 
