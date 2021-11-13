@@ -297,6 +297,15 @@ Pinentry.  As of now it is only useful when used along with
 Don't detach the process from the console.  This is mainly useful for
 debugging.
 
+@item --steal-socket
+@opindex steal-socket
+In @option{--daemon} mode, gpg-agent detects an already running
+gpg-agent and does not allow to start a new instance. This option can
+be used to override this check: the new gpg-agent process will try to
+take over the communication sockets from the already running process
+and start anyway.  This option should in general not be used.
+
+
 @item -s
 @itemx --sh
 @itemx -c
