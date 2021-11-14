@@ -1321,6 +1321,16 @@ main (int argc, char **argv)
 	}
     }
 
+  /* Print a warning if an argument looks like an option.  */
+  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
+    {
+      int i;
+
+      for (i=0; i < argc; i++)
+        if (argv[i][0] == '-' && argv[i][1] == '-')
+          log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
+    }
+
   gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (!last_configname)
@@ -1343,16 +1353,6 @@ main (int argc, char **argv)
     {
       logfile = comopt.logfile;
       comopt.logfile = NULL;
-    }
-
-  /* Print a warning if an argument looks like an option.  */
-  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
-    {
-      int i;
-
-      for (i=0; i < argc; i++)
-        if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
     }
 
 #ifdef ENABLE_NLS
