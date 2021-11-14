@@ -1293,7 +1293,18 @@ main (int argc, char **argv )
           break;
 	}
     }
-  gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+
+  /* Print a warning if an argument looks like an option.  */
+  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
+    {
+      int i;
+
+      for (i=0; i < argc; i++)
+        if (argv[i][0] == '-' && argv[i][1] == '-')
+          log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
+    }
+
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (!last_configname)
     config_filename = make_filename (gnupg_homedir (),
@@ -1310,15 +1321,6 @@ main (int argc, char **argv )
 
   finalize_rereadable_options ();
 
-  /* Print a warning if an argument looks like an option.  */
-  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
-    {
-      int i;
-
-      for (i=0; i < argc; i++)
-        if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
-    }
 
 #ifdef ENABLE_NLS
   /* gpg-agent usually does not output any messages because it runs in
