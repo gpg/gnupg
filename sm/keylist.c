@@ -1363,6 +1363,7 @@ list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
                  estream_t fp, int with_validation)
 {
   ksba_cert_t next = NULL;
+  int depth = 0;
 
   if (raw_mode)
     list_cert_raw (ctrl, hd, cert, fp, 0, with_validation);
@@ -1371,8 +1372,13 @@ list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
   ksba_cert_ref (cert);
   while (!gpgsm_walk_cert_chain (ctrl, cert, &next))
     {
-      ksba_cert_release (cert);
       es_fputs ("Certified by\n", fp);
+      if (++depth > 50)
+        {
+          es_fputs (_("certificate chain too long\n"), fp);
+          break;
+        }
+      ksba_cert_release (cert);
       if (raw_mode)
         list_cert_raw (ctrl, hd, next, fp, 0, with_validation);
       else
