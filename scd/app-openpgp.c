@@ -5418,6 +5418,14 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
           exmode = 1;    /* Use extended length.  */
           le_value = app->app_local->keyattr[2].rsa.n_bits / 8;
         }
+      else if (indatalen > 255)
+        {
+          if (!app->app_local->cardcap.ext_lc_le)
+            return gpg_error (GPG_ERR_TOO_LARGE);
+
+          exmode = 1;
+          le_value = 0;
+        }
       else
         {
           exmode = 0;
