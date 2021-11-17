@@ -1252,6 +1252,95 @@ show_configs_one_file (const char *fname, int global, estream_t outfp,
 }
 
 
+#ifdef HAVE_W32_SYSTEM
+/* Print registry entries relevant to the GnuPG system and related
+ * software.  */
+static void
+show_other_registry_entries (estream_t outfp)
+{
+  static struct {
+    int group;
+    const char *name;
+  } names[] =
+  {
+    { 1, "HKLM\\Software\\Gpg4win:Install Directory" },
+    { 1, "HKLM\\Software\\Gpg4win:Desktop-Version" },
+    { 1, "HKLM\\Software\\Gpg4win:VS-Desktop-Version" },
+    { 2, "Software\\Microsoft\\Office\\Outlook\\Addins\\GNU.GpgOL"
+      ":LoadBehavior" },
+    { 2, "HKCU\\Software\\Microsoft\\Office\\16.0\\Outlook\\Options\\Mail:"
+      "ReadAsPlain" },
+    { 2, "HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\Outlook\\"
+      "Options\\Mail:ReadAsPlain" },
+    { 3, "logFile" },
+    { 3, "enableDebug" },
+    { 3, "searchSmimeServers" },
+    { 3, "smimeInsecureReplyAllowed" },
+    { 3, "enableSmime" },
+    { 3, "preferSmime" },
+    { 3, "encryptDefault" },
+    { 3, "signDefault" },
+    { 3, "inlinePGP" },
+    { 3, "replyCrypt" },
+    { 3, "autoresolve" },
+    { 3, "autoretrieve" },
+    { 3, "automation" },
+    { 3, "autosecure" },
+    { 3, "autotrust" },
+    { 3, "autoencryptUntrusted" },
+    { 3, "autoimport" },
+    { 3, "splitBCCMails" },
+    { 3, "combinedOpsEnabled" },
+    { 3, "encryptSubject" },
+    { 0, NULL }
+  };
+  int idx;
+  int group = 0;
+  char *namebuf = NULL;
+  const char *name;
+
+  for (idx=0; (name = names[idx].name); idx++)
+    {
+      char *value;
+
+      if (names[idx].group == 3)
+        {
+          xfree (namebuf);
+          namebuf = xstrconcat ("\\Software\\GNU\\GpgOL", ":",
+                                names[idx].name, NULL);
+          name = namebuf;
+        }
+
+      value = read_w32_reg_string (name);
+      if (!value)
+        continue;
+
+      if (names[idx].group != group)
+        {
+          group = names[idx].group;
+          es_fprintf (outfp, "###\n### %s related:\n",
+                      group == 1 ? "GnuPG Desktop" :
+                      group == 2 ? "Outlook" :
+                      group == 3 ? "\\Software\\GNU\\GpgOL"
+                      : "System" );
+        }
+
+      if (group == 3)
+        es_fprintf (outfp, "### %s=%s\n", names[idx].name, value);
+      else
+        es_fprintf (outfp, "### %s\n###   ->%s<-\n", name, value);
+
+      /* FIXME: We may want to add an indiction whethe found via HKLM
+       * or HKCU.  */
+
+      xfree (value);
+    }
+
+  es_fprintf (outfp, "###\n");
+  xfree (namebuf);
+}
+#endif /*HAVE_W32_SYSTEM*/
+
 /* Show all config files.  */
 static void
 show_configs (estream_t outfp)
@@ -1267,6 +1356,8 @@ show_configs (estream_t outfp)
   size_t n;
   int any;
   strlist_t list = NULL;
+  strlist_t sl;
+  const char *s;
 
   es_fprintf (outfp, "### Dump of all standard config files\n");
   show_version_gnupg (outfp, "### ");
@@ -1288,9 +1379,6 @@ show_configs (estream_t outfp)
   /* Print the encountered registry values and envvars.  */
   if (list)
     {
-      strlist_t sl;
-      const char *s;
-
       any = 0;
       for (sl = list; sl; sl = sl->next)
         if (!(sl->flags & 1))
@@ -1309,8 +1397,13 @@ show_configs (estream_t outfp)
           }
       if (any)
         es_fprintf (outfp, "###\n");
+    }
+
 #ifdef HAVE_W32_SYSTEM
-      any = 0;
+  es_fprintf (outfp, "###\n### Registry entries:\n");
+  any = 0;
+  if (list)
+    {
       for (sl = list; sl; sl = sl->next)
         if ((sl->flags & 1))
           {
@@ -1319,9 +1412,7 @@ show_configs (estream_t outfp)
             if (!any)
               {
                 any = 1;
-                es_fprintf (outfp,
-                            "###\n"
-                            "### List of encountered registry entries:\n");
+                es_fprintf (outfp, "###\n### Encountered in config files:\n");
               }
             if ((p = read_w32_reg_string (sl->d)))
               es_fprintf (outfp, "### %s ->%s<-\n", sl->d, p);
@@ -1329,12 +1420,13 @@ show_configs (estream_t outfp)
               es_fprintf (outfp, "### %s [not set]\n", sl->d);
             xfree (p);
           }
-      if (any)
-        es_fprintf (outfp, "###\n");
-#endif
-      free_strlist (list);
     }
+  if (!any)
+    es_fprintf (outfp, "###\n");
+  show_other_registry_entries (outfp);
+#endif /*HAVE_W32_SYSTEM*/
 
+  free_strlist (list);
 
   /* Check for uncommon files in the home directory.  */
   dir = gnupg_opendir (gnupg_homedir ());
