@@ -1150,27 +1150,67 @@ show_versions (estream_t fp)
 
 
 /* Copy data from file SRC to DST.  Returns 0 on success or an error
- * code on failure.  */
+ * code on failure.  If LISTP is not NULL, that strlist is updated
+ * with the variabale or registry key names detected.  Flag bit 0
+ * indicates a registry entry.  */
 static gpg_error_t
-my_copy_file (estream_t src, estream_t dst)
+my_copy_file (estream_t src, estream_t dst, strlist_t *listp)
 {
-#define BUF_LEN 4096
-  char buffer[BUF_LEN];
-  int len;
+  gpg_error_t err;
+  char *line = NULL;
+  size_t line_len = 0;
+  ssize_t length;
   int written;
 
-  do
+  while ((length = es_read_line (src, &line, &line_len, NULL)) > 0)
     {
-      len = gpgrt_fread (buffer, 1, BUF_LEN, src);
-      if (!len)
-	break;
-      written = gpgrt_fwrite (buffer, 1, len, dst);
-      if (written != len)
-	break;
-    }
-  while (!gpgrt_feof (src) && !gpgrt_ferror (src) && !gpgrt_ferror (dst));
+      /* Strip newline and carriage return, if present.  */
+      written = gpgrt_fwrite (line, 1, length, dst);
+      if (written != length)
+	return gpg_error_from_syserror ();
+      trim_spaces (line);
+      if (*line == '[' && listp)
+        {
+          char **tokens;
+          char *p;
 
-  if (gpgrt_ferror (src) || gpgrt_ferror (dst) || !gpgrt_feof (src))
+          for (p=line+1; *p; p++)
+            if (*p != ' ' && *p != '\t')
+              break;
+          if (*p && p[strlen (p)-1] == ']')
+            p[strlen (p)-1] = 0;
+          tokens = strtokenize (p, " \t");
+          if (!tokens)
+            {
+              err = gpg_error_from_syserror ();
+              log_error ("strtokenize failed: %s\n", gpg_strerror (err));
+              return err;
+            }
+
+          /* Check whether we have a getreg or getenv statement and
+           * store the third token to later retrieval.  */
+          if (tokens[0]  && tokens[1] && tokens[2]
+              && (!strcmp (tokens[0], "getreg")
+                  || !strcmp (tokens[0], "getenv")))
+            {
+              int isreg = (tokens[0][3] == 'r');
+              strlist_t sl = *listp;
+
+              for (sl = *listp; sl; sl = sl->next)
+                if (!strcmp (sl->d, tokens[2]) && (sl->flags & 1) == isreg)
+                  break;
+              if (!sl) /* Not yet in the respective list.  */
+                {
+                  sl = add_to_strlist (listp, tokens[2]);
+                  if (isreg)
+                    sl->flags = 1;
+                }
+            }
+
+          xfree (tokens);
+        }
+    }
+  if (length < 0 || es_ferror (src))
     return gpg_error_from_syserror ();
 
   if (gpgrt_fflush (dst))
@@ -1182,7 +1222,8 @@ my_copy_file (estream_t src, estream_t dst)
 
 /* Helper for show_configs  */
 static void
-show_configs_one_file (const char *fname, int global, estream_t outfp)
+show_configs_one_file (const char *fname, int global, estream_t outfp,
+                       strlist_t *listp)
 {
   gpg_error_t err;
   estream_t fp;
@@ -1201,7 +1242,7 @@ show_configs_one_file (const char *fname, int global, estream_t outfp)
       es_fprintf (outfp, "###\n### %s config \"%s\"\n###\n",
                   global? "global":"local", fname);
       es_fprintf (outfp, CUTLINE_FMT, "start");
-      err = my_copy_file (fp, outfp);
+      err = my_copy_file (fp, outfp, listp);
       if (err)
         log_error ("error copying file \"%s\": %s\n",
                    fname, gpg_strerror (err));
@@ -1225,6 +1266,7 @@ show_configs (estream_t outfp)
   gnupg_dirent_t dir_entry;
   size_t n;
   int any;
+  strlist_t list = NULL;
 
   es_fprintf (outfp, "### Dump of all standard config files\n");
   show_version_gnupg (outfp, "### ");
@@ -1235,13 +1277,64 @@ show_configs (estream_t outfp)
   for (idx = 0; idx < DIM (names); idx++)
     {
       fname = make_filename (gnupg_sysconfdir (), names[idx], NULL);
-      show_configs_one_file (fname, 1, outfp);
+      show_configs_one_file (fname, 1, outfp, &list);
       xfree (fname);
       fname = make_filename (gnupg_homedir (), names[idx], NULL);
-      show_configs_one_file (fname, 0, outfp);
+      show_configs_one_file (fname, 0, outfp, &list);
       xfree (fname);
       es_fprintf (outfp, "\n");
     }
+
+  /* Print the encountered registry values and envvars.  */
+  if (list)
+    {
+      strlist_t sl;
+      const char *s;
+
+      any = 0;
+      for (sl = list; sl; sl = sl->next)
+        if (!(sl->flags & 1))
+          {
+            if (!any)
+              {
+                any = 1;
+                es_fprintf (outfp,
+                            "###\n"
+                            "### List of encountered environment variables:\n");
+              }
+            if ((s = getenv (sl->d)))
+              es_fprintf (outfp, "### %-12s ->%s<-\n", sl->d, s);
+            else
+              es_fprintf (outfp, "### %-12s [not set]\n", sl->d);
+          }
+      if (any)
+        es_fprintf (outfp, "###\n");
+#ifdef HAVE_W32_SYSTEM
+      any = 0;
+      for (sl = list; sl; sl = sl->next)
+        if ((sl->flags & 1))
+          {
+            char *p;
+
+            if (!any)
+              {
+                any = 1;
+                es_fprintf (outfp,
+                            "###\n"
+                            "### List of encountered registry entries:\n");
+              }
+            if ((p = read_w32_reg_string (sl->d)))
+              es_fprintf (outfp, "### %s ->%s<-\n", sl->d, p);
+            else
+              es_fprintf (outfp, "### %s [not set]\n", sl->d);
+            xfree (p);
+          }
+      if (any)
+        es_fprintf (outfp, "###\n");
+#endif
+      free_strlist (list);
+    }
+
 
   /* Check for uncommon files in the home directory.  */
   dir = gnupg_opendir (gnupg_homedir ());
