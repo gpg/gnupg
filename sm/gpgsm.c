@@ -156,6 +156,7 @@ enum cmd_and_opt_values {
   oDisablePolicyChecks,
   oEnablePolicyChecks,
   oAutoIssuerKeyRetrieve,
+  oMinRSALength,
 
   oWithFingerprint,
   oWithMD5Fingerprint,
@@ -404,6 +405,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oDisablePubkeyAlgo,  "disable-pubkey-algo", "@"),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
   ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
+
+  ARGPARSE_p_u (oMinRSALength, "min-rsa-length", "@"),
+
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
@@ -1381,6 +1385,8 @@ main ( int argc, char **argv)
           }
           break;
 
+        case oMinRSALength: opt.min_rsa_length = pargs.r.ret_ulong; break;
+
         default:
           if (configname)
             pargs.err = ARGPARSE_PRINT_WARNING;
@@ -1477,6 +1483,7 @@ main ( int argc, char **argv)
   gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
 
   set_debug ();
+  gnupg_set_compliance_extra_info (opt.min_rsa_length);
 
   /* Although we always use gpgsm_exit, we better install a regualr
      exit handler so that at least the secure memory gets wiped

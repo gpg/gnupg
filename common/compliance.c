@@ -40,6 +40,10 @@
 static int initialized;
 static int module;
 
+/* This value is used by DSA and RSA checks in addition to the hard
+ * coded length checks.  It allows to increase the required key length
+ * using a confue file.  */
+static unsigned int min_compliant_rsa_length;
 
 /* Return the address of a compliance cache variable for COMPLIANCE.
  * If no such variable exists NULL is returned.  FOR_RNG returns the
@@ -178,9 +182,10 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
           break;
 
         case is_rsa:
-          result = (keylength == 2048
-                    || keylength == 3072
-                    || keylength == 4096);
+          result = ((keylength == 2048
+                     || keylength == 3072
+                     || keylength == 4096)
+                    && keylength >= min_compliant_rsa_length);
           /* Although rsaPSS was not part of the original evaluation
            * we got word that we can claim compliance.  */
           (void)algo_flags;
@@ -192,7 +197,8 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 	      size_t P = gcry_mpi_get_nbits (key[0]);
 	      size_t Q = gcry_mpi_get_nbits (key[1]);
 	      result = (Q == 256
-			&& (P == 2048 || P == 3072));
+			&& (P == 2048 || P == 3072)
+                        && P >= min_compliant_rsa_length);
 	    }
 	  break;
 
@@ -258,9 +264,10 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
               break;
 	    case PK_USE_ENCRYPTION:
 	    case PK_USE_SIGNING:
-	      result = (keylength == 2048
-                        || keylength == 3072
-                        || keylength == 4096);
+	      result = ((keylength == 2048
+                         || keylength == 3072
+                         || keylength == 4096)
+                        && keylength >= min_compliant_rsa_length);
               break;
 	    default:
 	      log_assert (!"reached");
@@ -275,7 +282,9 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 	    {
 	      size_t P = gcry_mpi_get_nbits (key[0]);
 	      size_t Q = gcry_mpi_get_nbits (key[1]);
-	      result = (Q == 256 && (P == 2048 || P == 3072));
+	      result = (Q == 256
+                        && (P == 2048 || P == 3072)
+                        && keylength >= min_compliant_rsa_length);
             }
           break;
 
@@ -682,4 +691,12 @@ gnupg_compliance_option_string (enum gnupg_compliance_mode compliance)
     }
 
   log_assert (!"invalid compliance mode");
+}
+
+
+/* Set additional infos for example taken from config files at startup.  */
+void
+gnupg_set_compliance_extra_info (unsigned int min_rsa)
+{
+  min_compliant_rsa_length = min_rsa;
 }

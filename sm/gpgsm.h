@@ -130,6 +130,8 @@ struct
                                the integrity of the software at
                                runtime. */
 
+  unsigned int min_rsa_length;   /* Used for compliance checks.  */
+
   strlist_t keyserver;
 
   /* A list of certificate extension OIDs which are ignored so that
