@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-09-15 16:04+0200\n"
+"PO-Revision-Date: 2021-11-18 16:50+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -386,10 +386,10 @@ msgid "ignore requests to change the X display"
 msgstr "Ignoriere Anfragen, das X-Display zu wechseln"
 
 msgid "|N|expire cached PINs after N seconds"
-msgstr "|N|Lasse PINs im Cache nach N Sekunden verfallen"
+msgstr "|N|Lösche unbenutzte Passwörter nach N Sekunden aus dem Cache"
 
 msgid "do not use the PIN cache when signing"
-msgstr "Benutze PINs im Cache nicht beim Signieren"
+msgstr "Benutze den Passwort Cache nicht beim Signieren"
 
 msgid "disallow the use of an external password cache"
 msgstr "Verbiete die Verwendung eines externen Passwordmanagers"
@@ -456,6 +456,10 @@ msgstr "Socket kann nicht erzeugt werden: %s\n"
 #, c-format
 msgid "socket name '%s' is too long\n"
 msgstr "Der Name des Sockets `%s' ist zu lang\n"
+
+#, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr "Versuche den Socket des laufenden %s zu übernehmen\n"
 
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -5578,13 +5582,17 @@ msgstr ""
 "%s-Schlüssel %s benötigt einen mindestens %zu Bit langen Hash (Hash ist %s)\n"
 
 #, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Nachricht\n"
-
-#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr ""
 "Schlüssel \"%s\" darf zum Signieren im %s Modus nicht verwendet werden.\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr "Die Prüfung wird aufgrund der Option %s weiter durchgeführt\n"
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Nachricht\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8691,13 +8699,13 @@ msgid "Options controlling the security"
 msgstr "Optionen zur Einstellung der Sicherheit"
 
 msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|lasse SSH Schlüssel im Cache nach N Sekunden verfallen"
+msgstr "|N|Lösche unbenutzte SSH Passwörter nach N Sekunden aus dem Cache"
 
 msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr "|N|setze die maximale Lebensdauer von PINs im Cache auf N Sekunden"
+msgstr "|N|Lösche Passwörter nach N Sekunden aus dem Cache"
 
 msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr "|N|setze die maximale Lebenszeit von SSH Schlüsseln auf N Sekunden"
+msgstr "|N|Lösche SSH Passwörter nach N Sekunden aus dem Cache"
 
 msgid "Options enforcing a passphrase policy"
 msgstr "Optionen für Passwort Regeln"
