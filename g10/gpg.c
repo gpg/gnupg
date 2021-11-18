@@ -248,6 +248,7 @@ enum cmd_and_opt_values
     oPGP7,
     oPGP8,
     oDE_VS,
+    oMinRSALength,
     oRFC2440Text,
     oNoRFC2440Text,
     oCipherAlgo,
@@ -629,6 +630,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oPGP7, "pgp7", "@"),
   ARGPARSE_s_n (oPGP8, "pgp8", "@"),
   ARGPARSE_s_s (oDefaultNewKeyAlgo, "default-new-key-algo", "@"),
+  ARGPARSE_p_u (oMinRSALength, "min-rsa-length", "@"),
 #ifndef NO_TRUST_MODELS
   ARGPARSE_s_n (oAlwaysTrust, "always-trust", "@"),
 #endif
@@ -3009,6 +3011,8 @@ main (int argc, char **argv)
             set_compliance_option (pargs.r_opt);
             break;
 
+	  case oMinRSALength: opt.min_rsa_length = pargs.r.ret_ulong; break;
+
           case oRFC2440Text: opt.rfc2440_text=1; break;
           case oNoRFC2440Text: opt.rfc2440_text=0; break;
 
@@ -3884,6 +3888,7 @@ main (int argc, char **argv)
       }
 
     set_debug (debug_level);
+    gnupg_set_compliance_extra_info (opt.min_rsa_length);
     if (DBG_CLOCK)
       log_clock ("start");
 

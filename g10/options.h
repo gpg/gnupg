@@ -224,6 +224,7 @@ struct
   unsigned int screen_lines;
   byte *show_subpackets;
   int rfc2440_text;
+  unsigned int min_rsa_length;   /* Used for compliance checks.  */
 
   /* If true, let write failures on the status-fd exit the process. */
   int exit_on_status_write_error;

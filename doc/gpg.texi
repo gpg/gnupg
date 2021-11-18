@@ -2948,7 +2948,13 @@ SHA224, SHA384, and SHA512 digests.
 @opindex compliance
 This option can be used instead of one of the options above.  Valid
 values for @var{string} are the above option names (without the double
-dash) and possibly others as shown when using "help" for @var{value}.
+dash) and possibly others as shown when using "help" for @var{string}.
+
+@item --min-rsa-length @var{n}
+@opindex min-rsa-length
+This option adjusts the compliance mode "de-vs" for stricter key size
+requirements.  For example, a value of 3000 turns rsa2048 and dsa2048
+keys into non-VS-NfD compliant keys.
 
 @end table
 

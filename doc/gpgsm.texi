@@ -690,6 +690,16 @@ such broken signatures.  If @command{gpgsm} prints an error like
 ``digest algo 8 has not been enabled'' you may want to try this option,
 with @samp{SHA256} for @var{name}.
 
+@item --compliance @var{string}
+@opindex compliance
+Set the compliance mode.  Valid values are shown when using "help" for
+@var{string}.
+
+@item --min-rsa-length @var{n}
+@opindex min-rsa-length
+This option adjusts the compliance mode "de-vs" for stricter key size
+requirements.  For example, a value of 3000 turns rsa2048 and dsa2048
+keys into non-VS-NfD compliant keys.
 
 @item --faked-system-time @var{epoch}
 @opindex faked-system-time
