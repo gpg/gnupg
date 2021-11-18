@@ -44,25 +44,28 @@
 static void
 test_read_registry (void)
 {
-  char *string;
+  char *string1, *string2;
 
-#ifdef HAVE_W32CE_SYSTEM
-  string = read_w32_registry_string ("HKEY_CLASSES_ROOT",
-                                     "BOOTSTRAP\\CLSID", NULL);
-  if (!string)
-    fail (0);
-  fprintf (stderr, "Bootstrap clsid: %s\n", string);
-  xfree (string);
-#endif
-
-  string = read_w32_registry_string
+  string1 = read_w32_registry_string
     ("HKEY_CURRENT_USER",
      "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings",
      "User Agent");
-  if (!string)
+  if (!string1)
     fail (0);
-  fprintf (stderr, "User agent: %s\n", string);
-  xfree (string);
+  fprintf (stderr, "User agent: %s\n", string1);
+
+  string2 = read_w32_reg_string
+    ("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion"
+     "\\Internet Settings:User Agent");
+  if (!string2)
+    fail (1);
+  fprintf (stderr, "User agent: %s\n", string2);
+  if (strcmp (string1, string2))
+    fail (2);
+
+
+  xfree (string1);
+  xfree (string2);
 }
 
 
@@ -71,10 +74,14 @@ test_read_registry (void)
 int
 main (int argc, char **argv)
 {
-  (void)argc;
-  (void)argv;
-
-  test_read_registry ();
+  if (argc > 1)
+    {
+      char *string = read_w32_reg_string (argv[1]);
+      printf ("%s -> %s\n", argv[1], string? string : "(null)");
+      xfree (string);
+    }
+  else
+    test_read_registry ();
 
   return 0;
 }
