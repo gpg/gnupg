@@ -329,9 +329,9 @@ list_dirs (estream_t fp, char **names, int special)
       es_fflush (fp);
       if (special)
         es_fprintf (fp, "\n"
-                    "### Note: homedir taken from registry key %s\\%s:%s\n"
+                    "### Note: homedir taken from registry key %s%s\\%s:%s\n"
                     "\n",
-                    hkcu?" HKCU":"", hklm?" HKLM":"",
+                    hkcu?"HKCU":"", hklm?"HKLM":"",
                     GNUPG_REGISTRY_DIR, "HomeDir");
       else
         log_info ("Warning: homedir taken from registry key (%s:%s) in%s%s\n",
@@ -347,7 +347,7 @@ list_dirs (estream_t fp, char **names, int special)
       es_fflush (fp);
       if (special)
         es_fprintf (fp, "\n"
-                    "### Note: registry %s:%s without value in HKCU or HKLM\n"
+                    "### Note: registry %s without value in HKCU or HKLM\n"
                     "\n", GNUPG_REGISTRY_DIR);
       else
         log_info ("Warning: registry key (%s) without value in HKCU or HKLM\n",
