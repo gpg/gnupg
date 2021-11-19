@@ -242,7 +242,7 @@ gpgconf_write_status (int no, const char *format, ...)
 
 
 static void
-list_dirs (estream_t fp, char **names)
+list_dirs (estream_t fp, char **names, int special)
 {
   static struct {
     const char *name;
@@ -320,13 +320,17 @@ list_dirs (estream_t fp, char **names)
         }
 
       es_fflush (fp);
-      log_info ("Warning: homedir taken from registry key (%s:%s) in%s%s\n",
-                GNUPG_REGISTRY_DIR, "HomeDir",
-                hkcu?" HKCU":"",
-                hklm?" HKLM":"");
-
-
-
+      if (special)
+        es_fprintf (fp, "\n"
+                    "### Note: homedir taken from registry key %s%s\\%s:%s\n"
+                    "\n",
+                    hkcu?" HKCU":"", hklm?" HKLM":"",
+                    GNUPG_REGISTRY_DIR, "HomeDir");
+      else
+        log_info ("Warning: homedir taken from registry key (%s:%s) in%s%s\n",
+                  GNUPG_REGISTRY_DIR, "HomeDir",
+                  hkcu?" HKCU":"",
+                  hklm?" HKLM":"");
     }
   else if ((tmp = read_w32_registry_string (NULL,
                                             GNUPG_REGISTRY_DIR,
@@ -334,12 +338,18 @@ list_dirs (estream_t fp, char **names)
     {
       xfree (tmp);
       es_fflush (fp);
-      log_info ("Warning: registry key (%s) without value in HKCU or HKLM\n",
-                GNUPG_REGISTRY_DIR);
+      if (special)
+        es_fprintf (fp, "\n"
+                    "### Note: registry key %s without value in HKCU or HKLM\n"
+                    "\n", GNUPG_REGISTRY_DIR);
+      else
+        log_info ("Warning: registry key (%s) without value in HKCU or HKLM\n",
+                  GNUPG_REGISTRY_DIR);
     }
 
-
-#endif /*HAVE_W32_SYSTEM*/
+#else /*!HAVE_W32_SYSTEM*/
+  (void)special;
+#endif /*!HAVE_W32_SYSTEM*/
 }
 
 
@@ -766,7 +776,7 @@ main (int argc, char **argv)
                     names[0] = NULL;
                   names[1] = NULL;
                   get_outfp (&outfp);
-                  list_dirs (outfp, names);
+                  list_dirs (outfp, names, 0);
                 }
               if (err)
                 gpgconf_failure (0);
@@ -843,7 +853,7 @@ main (int argc, char **argv)
     case aListDirs:
       /* Show the system configuration directories for gpgconf.  */
       get_outfp (&outfp);
-      list_dirs (outfp, argc? argv : NULL);
+      list_dirs (outfp, argc? argv : NULL, 0);
       break;
 
     case aQuerySWDB:
@@ -1266,6 +1276,7 @@ show_other_registry_entries (estream_t outfp)
     { 1, "HKLM\\Software\\Gpg4win:Install Directory" },
     { 1, "HKLM\\Software\\Gpg4win:Desktop-Version" },
     { 1, "HKLM\\Software\\Gpg4win:VS-Desktop-Version" },
+    { 1, "\\" GNUPG_REGISTRY_DIR ":HomeDir" },
     { 2, "Software\\Microsoft\\Office\\Outlook\\Addins\\GNU.GpgOL"
       ":LoadBehavior" },
     { 2, "HKCU\\Software\\Microsoft\\Office\\16.0\\Outlook\\Options\\Mail:"
@@ -1364,6 +1375,9 @@ show_configs (estream_t outfp)
   es_fprintf (outfp, "### Libgcrypt %s\n", gcry_check_version (NULL));
   es_fprintf (outfp, "### GpgRT %s\n", gpg_error_check_version (NULL));
   es_fprintf (outfp, "###\n\n");
+
+  list_dirs (outfp, NULL, 1);
+  es_fprintf (outfp, "\n");
 
   for (idx = 0; idx < DIM (names); idx++)
     {
