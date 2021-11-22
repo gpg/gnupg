@@ -3515,6 +3515,12 @@ This option modifies the behaviour of the commands
 sub-commands of @option{--edit-key} by forcing the creation of a key
 signature, even if one already exists.
 
+@item --forbid-gen-key
+@opindex forbid-gen-key
+This option is intended for use in the global config file to disallow
+the use of generate key commands.  Those commands will then fail with
+the error code for Not Enabled.
+
 @item --allow-secret-key-import
 @opindex allow-secret-key-import
 This is an obsolete option and is not used anywhere.

@@ -429,6 +429,7 @@ enum cmd_and_opt_values
     oIncludeKeyBlock,
     oNoIncludeKeyBlock,
     oForceSignKey,
+    oForbidGenKey,
 
     oNoop
   };
@@ -880,6 +881,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oAllowWeakDigestAlgos, "allow-weak-digest-algos", "@"),
 
   ARGPARSE_s_s (oDefaultNewKeyAlgo, "default-new-key-algo", "@"),
+  ARGPARSE_s_n (oForbidGenKey,  "forbid-gen-key", "@"),
 
   /* These two are aliases to help users of the PGP command line
      product use gpg with minimal pain.  Many commands are common
@@ -982,6 +984,12 @@ static int utf8_strings =
 #endif
   ;
 static int maybe_setuid = 1;
+
+/* Collection of options used only in this module.  */
+static struct {
+  unsigned int forbid_gen_key;
+} mopt;
+
 
 static char *build_list( const char *text, char letter,
 			 const char *(*mapf)(int), int (*chkf)(int) );
@@ -2220,8 +2228,13 @@ set_compliance_option (enum cmd_and_opt_values option)
 }
 
 
-
-
+static void
+gen_key_forbidden (void)
+{
+  write_status_failure ("gen-key", gpg_error (GPG_ERR_NOT_ENABLED));
+  log_error (_("This command is not allowed while in %s mode.\n"),
+             "forbid-gen-key");
+}
 
 
 /* This function called to initialized a new control object.  It is
@@ -3587,6 +3600,10 @@ main (int argc, char **argv)
             opt.flags.use_only_openpgp_card = 1;
             break;
 
+          case oForbidGenKey:
+            mopt.forbid_gen_key = 1;
+            break;
+
 	  case oNoop: break;
 
 	  default:
@@ -4509,18 +4526,25 @@ main (int argc, char **argv)
                     }
                 }
             }
-          quick_generate_keypair (ctrl, username, x_algo, x_usage, x_expire);
+          if (mopt.forbid_gen_key)
+            gen_key_forbidden ();
+          else
+            quick_generate_keypair (ctrl, username, x_algo, x_usage, x_expire);
           xfree (username);
         }
         break;
 
       case aKeygen: /* generate a key */
-	if( opt.batch ) {
+        if (mopt.forbid_gen_key)
+          gen_key_forbidden ();
+	else if( opt.batch )
+          {
 	    if( argc > 1 )
 		wrong_args("--generate-key [parameterfile]");
 	    generate_keypair (ctrl, 0, argc? *argv : NULL, NULL, 0);
-	}
-	else {
+          }
+	else
+          {
             if (opt.command_fd != -1 && argc)
               {
                 if( argc > 1 )
@@ -4533,11 +4557,13 @@ main (int argc, char **argv)
               wrong_args ("--generate-key");
             else
               generate_keypair (ctrl, 0, NULL, NULL, 0);
-	}
+          }
 	break;
 
       case aFullKeygen: /* Generate a key with all options. */
-	if (opt.batch)
+        if (mopt.forbid_gen_key)
+          gen_key_forbidden ();
+	else if (opt.batch)
           {
 	    if (argc > 1)
               wrong_args ("--full-generate-key [parameterfile]");
@@ -4585,7 +4611,10 @@ main (int argc, char **argv)
                    }
                 }
             }
-          keyedit_quick_addkey (ctrl, x_fpr, x_algo, x_usage, x_expire);
+          if (mopt.forbid_gen_key)
+            gen_key_forbidden ();
+          else
+            keyedit_quick_addkey (ctrl, x_fpr, x_algo, x_usage, x_expire);
         }
 	break;
 
