@@ -444,6 +444,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "ソケット名'%s'は長すぎます\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agentは既に実行されています - 新しいものをスタートさせません\n"
 
@@ -2243,6 +2247,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(選択肢の一覧には\"help\"を使ってください)\n"
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "%sモードでこのコマンドは禁止です。\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "注意: 普通%sは使いません!\n"
 
@@ -3398,10 +3406,6 @@ msgstr "ヒント: まず署名するユーザIDを選択します\n"
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "不明の署名タイプ'%s'\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "%sモードでこのコマンドは禁止です。\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "ユーザIDを少なくともひとつ選択してください。\n"
@@ -5369,12 +5373,16 @@ msgstr ""
 "%s鍵%sは%zuビットあるいはより大きいハッシュを必要とします(今のハッシュは%s)\n"
 
 #, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "*警告*: 署名のダイジェストが、メッセージと衝突します\n"
-
-#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "鍵%sを署名のために%sモードで使うことはできません\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "*警告*: 署名のダイジェストが、メッセージと衝突します\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

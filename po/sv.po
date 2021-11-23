@@ -537,6 +537,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "namnet på uttaget \"%s\" är för långt\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "en gpg-agent är redan igång - startar inte en till\n"
 
@@ -2555,6 +2559,10 @@ msgstr "okänd flagga \"%s\"\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
+#, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
 msgid "Note: %s is not for normal use!\n"
@@ -3816,10 +3824,6 @@ msgstr "Tips: Välj de användaridentiteter som du vill signera\n"
 #| msgid "Unknown signature type `%s'\n"
 msgid "Unknown signature type '%s'\n"
 msgstr "Okänd signaturtyp \"%s\"\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Du måste välja åtminstone en användaridentitet.\n"
@@ -5959,14 +5963,18 @@ msgstr "%s-nyckeln använder en osäker hash (%u bitar)\n"
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "DSA-nyckeln %s kräver en hash med %u bitar eller större\n"
 
-#, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "VARNING: konflikt mellan signatursammandrag i meddelandet\n"
-
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "du kan inte använda %s när du är i %s-läget\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "VARNING: konflikt mellan signatursammandrag i meddelandet\n"
 
 # Vad betyder det?
 #, c-format

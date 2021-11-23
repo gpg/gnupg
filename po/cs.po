@@ -482,6 +482,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "název socketu „%s“ je příliš dlouhý\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent již běží – nový nebude spuštěn\n"
 
@@ -2317,6 +2321,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(možnosti lze vypsat příkazem „help“)\n"
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Tento příkaz není v režimu %s dovolen.\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Poznámka: %s není pro normální použití!\n"
 
@@ -3499,10 +3507,6 @@ msgstr "Nápověda: Vyberte id uživatele k podepsání\n"
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "Neznámý typ podpisu „%s“\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Tento příkaz není v režimu %s dovolen.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Musíte vybrat alespoň jeden id uživatele.\n"
@@ -5510,12 +5514,16 @@ msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "%s klíč %s vyžaduje hash o délce %zu nebo více bitů (hash je %s)\n"
 
 #, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "VAROVÁNÍ: konflikt hashe podpisu ve zprávě\n"
-
-#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "klíč %s se nesmí používat v režimu %s\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "VAROVÁNÍ: konflikt hashe podpisu ve zprávě\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

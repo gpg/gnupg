@@ -469,6 +469,10 @@ msgstr "%s nem hozható létre: %s\n"
 msgid "socket name '%s' is too long\n"
 msgstr ""
 
+#, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "GPG ügynök nem elérhető ebben a munkafolyamatban.\n"
@@ -2417,6 +2421,10 @@ msgstr "Ismeretlen alapértelmezett címzett: \"%s\"\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
+#, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Ez a parancs %s módban nem engedélyezett.\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
 msgid "Note: %s is not for normal use!\n"
@@ -3650,10 +3658,6 @@ msgstr "Javaslat: Válassza ki az aláírni kívánt felhasználóazonosítókat
 #, fuzzy, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "ismeretlen aláírásosztály"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Ez a parancs %s módban nem engedélyezett.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Legalább egy felhasználóazonosítót ki kell választania!\n"
@@ -5736,14 +5740,18 @@ msgstr ""
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
-#, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "FIGYELEM: Aláíráskivonat-konfliktus az üzenetben.\n"
-
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "Lehet, hogy nem használhatja %s-t %s módban!\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "FIGYELEM: Aláíráskivonat-konfliktus az üzenetben.\n"
 
 #, fuzzy, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

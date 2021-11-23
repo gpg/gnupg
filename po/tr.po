@@ -499,6 +499,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "soketin ismi `%s' çok uzun\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "çalışan bir gpg-agent zaten var - bir yenisi başlatılmayacak\n"
 
@@ -2485,6 +2489,10 @@ msgstr "`%s' seçeneği bilinmiyor\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
+#, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "%s kipindeyken bu komut kullanılamaz.\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
 msgid "Note: %s is not for normal use!\n"
@@ -3742,10 +3750,6 @@ msgstr "İpucu: İmzalamak için bir kullanıcı kimliği seçiniz\n"
 #| msgid "Unknown signature type `%s'\n"
 msgid "Unknown signature type '%s'\n"
 msgstr "imza türü `%s' bilinmiyor\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "%s kipindeyken bu komut kullanılamaz.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "En az bir kullanıcı kimliği seçmelisiniz.\n"
@@ -5889,14 +5893,18 @@ msgstr "%s anahtarı, güvensiz bir çittirim (%u bitlik) kullanıyor\n"
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "DSA anahtarı %s, %u bitlik veya daha geniş bir çittirim gerektiriyor\n"
 
-#, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "UYARI: iletideki imza özeti çelişkili\n"
-
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "UYARI: iletideki imza özeti çelişkili\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

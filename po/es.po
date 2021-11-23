@@ -475,6 +475,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "el nombre de socket '%s' es demasiado largo\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "ya hay un agente gpg ejecutándose - no se inicia otro\n"
 
@@ -2320,6 +2324,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(usa \"ayuda\" para listar las opciones)\n"
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Esta orden no se permite en modo %s.\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "NOTA: ¡%s no es para uso normal!\n"
 
@@ -3499,10 +3507,6 @@ msgstr "Sugerencia: seleccione los identificadores de usuario que firmar\n"
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "Clase de firma desconocida '%s'\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Esta orden no se permite en modo %s.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Debe seleccionar por lo menos un identificador de usuario.\n"
@@ -5523,12 +5527,16 @@ msgstr ""
 "%s)\n"
 
 #, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "AVISO: conflicto con el resumen de la firma del mensaje\n"
-
-#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "no puede usar la clave %s para firmar en modo %s\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "AVISO: conflicto con el resumen de la firma del mensaje\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

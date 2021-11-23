@@ -486,6 +486,10 @@ msgstr "ei voida luoda kohdetta %s: %s\n"
 msgid "socket name '%s' is too long\n"
 msgstr ""
 
+#, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent ei ole käytettävissä tässä istunnossa\n"
@@ -2434,6 +2438,10 @@ msgstr "tuntematon oletusvastaanottaja \"%s\"\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
+#, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Tätä komentoa ei sallita %s-tilassa.\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
 msgid "Note: %s is not for normal use!\n"
@@ -3672,10 +3680,6 @@ msgstr "Vihje: Valitse allekirjoitettavat käyttäjätunnukset\n"
 #, fuzzy, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "tuntematon allekirjoitusluokka"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Tätä komentoa ei sallita %s-tilassa.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Sinun täytyy valita ainakin yksi käyttäjätunnus.\n"
@@ -5770,14 +5774,18 @@ msgstr ""
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
-#, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "VAROITUS: allekirjoitustiiviste ei täsmää viestin kanssa\n"
-
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "VAROITUS: allekirjoitustiiviste ei täsmää viestin kanssa\n"
 
 #, fuzzy, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

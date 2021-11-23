@@ -2319,6 +2319,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" um mögliche Werte anzuzeigen)\n"
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Dieser Befehl ist im %s-Modus nicht erlaubt.\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Hinweis: %s ist nicht für den üblichen Gebrauch gedacht!\n"
 
@@ -3524,10 +3528,6 @@ msgstr "Tip: Wählen Sie die User-IDs, die beglaubigt werden sollen\n"
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "Unbekannter Signaturtyp `%s'\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Dieser Befehl ist im %s-Modus nicht erlaubt.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Zumindestens eine User-ID muß ausgewählt werden.\n"
