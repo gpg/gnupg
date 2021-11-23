@@ -391,7 +391,7 @@ cmd_search (assuan_context_t ctx, char *line)
               goto leave;
             }
           store = xtrycalloc (n, sizeof *store);
-          if (!desc)
+          if (!store)
             {
               err = gpg_error_from_syserror ();
               xfree (desc);
