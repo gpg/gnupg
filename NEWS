@@ -1,7 +1,51 @@
-Noteworthy changes in version 2.2.33 (unreleased)
+Noteworthy changes in version 2.2.33 (2021-11-23)
 -------------------------------------------------
 
+  * gpg: New option --min-rsa-length.  [rG6ee01c1d26]
+
+  * gpg: New option --forbid-gen-key.  [rG985fb25c46]
+
+  * gpg: New option --override-compliance-check.  [T5655]
+
+  * gpgconf: New command --show-configs.  [rG8fe3f57643]
+
+  * agent,dirmngr: New option --steal-socket.  [rG6507c6ab10]
+
+  * scd: Improve the selection of the default PC/SC reader.  [T5644]
+
+  * gpg: Fix printing of binary notations.  [T5667]
+
+  * gpg: Remove stale ultimately trusted keys from the trustdb.  [T5685]
+
+  * gpgsm: Detect circular chains in --list-chain.  [rGc9343bec83]
+
+  * gpgconf: Create the local option file even if the global file
+    exists.  [T5650]
+
+  * dirmngr: Make reading resolv.conf more robust.  [T5657]
+
+  * gpg-wks-server: Fix created file permissions.  [rGf54feb4470]
+
+  * scd: Support longer data for ssh-agent authentication with openpgp
+    cards.  [T5682]
+
+  * Support gpgconf.ctl for NetBSD and Solaris.  [T5656,T5671]
+
+  * Silence "Garbled console data" warning under Windows in most
+    cases.
+
+  * Silence warning about the rootdir under Unices w/o a mounted /proc
+    file system.
+
+  * Fix possible build problems about missing include files.  [T5592]
+
+  * i18n: Replace the term "PIN-Cache" by "Passswort-Cache" in the
+    German translation. [rgf453d52e53]
+
+  * i18n: Update the Russian translation.
+
   Release-info: https://dev.gnupg.org/T5641
+  See-also: gnupg-announce/2021q4/000467.html
 
 
 Noteworthy changes in version 2.2.32 (2021-10-06)
