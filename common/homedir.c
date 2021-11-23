@@ -636,6 +636,8 @@ unix_rootdir (int want_sysconfdir)
           es_fclose (fp);
           xfree (buffer);
           xfree (line);
+          xfree (rootdir);
+          xfree (sysconfdir);
           checked = 1;
           return NULL;
         }
