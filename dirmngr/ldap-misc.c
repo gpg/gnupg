@@ -298,13 +298,15 @@ ldap_parse_extfilter (const char *string, int silent,
     {
       if (!silent)
         log_info ("LDAP filter does not start with a left parentheses\n");
-      return gpg_error (GPG_ERR_SYNTAX);
+      err = gpg_error (GPG_ERR_SYNTAX);
+      goto leave;
     }
   if (string[strlen(string)-1] != ')')
     {
       if (!silent)
         log_info ("LDAP filter does not end with a right parentheses\n");
-      return gpg_error (GPG_ERR_SYNTAX);
+      err = gpg_error (GPG_ERR_SYNTAX);
+      goto leave;
     }
 
   filter = xtrystrdup (string);
