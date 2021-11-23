@@ -231,10 +231,14 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, unsigned int flags,
 }
 
 int
-keyserver_import_mbox (const char *name,struct keyserver_spec *spec)
+keyserver_import_mbox (ctrl_t ctrl, const char *mbox, unsigned char **fpr,
+                       size_t *fprlen, struct keyserver_spec *keyserver)
 {
-  (void)name;
-  (void)spec;
+  (void)ctrl;
+  (void)mbox;
+  (void)fpr;
+  (void)fprlen;
+  (void)keyserver;
   return -1;
 }
 
