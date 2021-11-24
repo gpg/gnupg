@@ -357,11 +357,12 @@ keyid_copy (u32 *dest, const u32 *src)
 char *
 format_keyid (u32 *keyid, int format, char *buffer, int len)
 {
-  char tmp[KEYID_STR_SIZE];
   if (! buffer)
     {
-      buffer = tmp;
-      len = sizeof (tmp);
+      len = KEYID_STR_SIZE;
+      buffer = xtrymalloc (len);
+      if (!buffer)
+        return NULL;
     }
 
   if (format == KF_DEFAULT)
@@ -396,8 +397,6 @@ format_keyid (u32 *keyid, int format, char *buffer, int len)
       BUG();
     }
 
-  if (buffer == tmp)
-    return xstrdup (buffer);
   return buffer;
 }
 
