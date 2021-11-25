@@ -240,8 +240,8 @@ enum gcry_pk_algos map_openpgp_pk_to_gcry (pubkey_algo_t algo);
 
 
 /*-- openpgp-misc.c --*/
-gcry_mpi_t openpgp_ecc_parse_key (pubkey_algo_t pkalgo, const char *curve,
-                                  gcry_mpi_t key);
-gpg_error_t openpgp_fixup_key_448 (int algo, gcry_mpi_t *p_pubkey);
+gcry_mpi_t openpgp_to_libgcrypt (pubkey_algo_t pkalgo, const char *curve,
+                                 gcry_mpi_t key);
+gpg_error_t openpgp_from_libgcrypt (int algo, gcry_mpi_t *p_pubkey);
 
 #endif /*GNUPG_COMMON_OPENPGPDEFS_H*/

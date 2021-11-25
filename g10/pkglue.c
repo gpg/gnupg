@@ -194,7 +194,7 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
           gcry_mpi_t pubkey;
 	  const char *curve_name = openpgp_oid_to_curve (curve, 1);
 
-          pubkey = openpgp_ecc_parse_key (pkalgo, curve_name, pkey[1]);
+          pubkey = openpgp_to_libgcrypt (pkalgo, curve_name, pkey[1]);
           if (openpgp_oid_is_ed25519 (pkey[0]))
             fmt = "(public-key(ecc(curve %s)(flags eddsa)(q%m)))";
           else
@@ -418,7 +418,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
               gcry_mpi_t pubkey;
 	      const char *curve_name = openpgp_oid_to_curve (curve, 1);
 
-              pubkey = openpgp_ecc_parse_key (algo, curve_name, pkey[1]);
+              pubkey = openpgp_to_libgcrypt (algo, curve_name, pkey[1]);
               /* Now use the ephemeral secret to compute the shared point.  */
               rc = gcry_sexp_build (&s_pkey, NULL,
                                     with_djb_tweak_flag ?
@@ -465,7 +465,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       s_ciph = NULL;
       if (openpgp_oid_is_cv448 (pkey[0]))
         {
-          rc = openpgp_fixup_key_448 (algo, &public);
+          rc = openpgp_from_libgcrypt (algo, &public);
           if (rc)
             goto leave;
         }
@@ -550,8 +550,8 @@ pk_check_secret_key (pubkey_algo_t pkalgo, gcry_mpi_t *skey)
           gcry_mpi_t seckey;
 	  const char *curve_name = openpgp_oid_to_curve (curve, 1);
 
-          pubkey = openpgp_ecc_parse_key (pkalgo, curve_name, skey[1]);
-          seckey = openpgp_ecc_parse_key (pkalgo, curve_name, skey[2]);
+          pubkey = openpgp_to_libgcrypt (pkalgo, curve_name, skey[1]);
+          seckey = openpgp_to_libgcrypt (pkalgo, curve_name, skey[2]);
           rc = gcry_sexp_build (&s_skey, NULL,
                                 "(private-key(ecc(curve%s)(q%m)(d%m)))",
                                 curve_name, pubkey, seckey);
@@ -572,8 +572,8 @@ pk_check_secret_key (pubkey_algo_t pkalgo, gcry_mpi_t *skey)
           gcry_mpi_t seckey;
 	  const char *curve_name = openpgp_oid_to_curve (curve, 1);
 
-          pubkey = openpgp_ecc_parse_key (pkalgo, curve_name, skey[1]);
-          seckey = openpgp_ecc_parse_key (pkalgo, curve_name, skey[2]);
+          pubkey = openpgp_to_libgcrypt (pkalgo, curve_name, skey[1]);
+          seckey = openpgp_to_libgcrypt (pkalgo, curve_name, skey[2]);
           if (openpgp_oid_is_ed25519 (skey[0]))
             fmt = "(private-key(ecc(curve %s)(flags eddsa)(q%m)(d%m)))";
           else

@@ -103,7 +103,7 @@ get_keygrip (int pubkey_algo, const char *curve, gcry_mpi_t *pkey,
 
           if (pkalgo)
             {
-              pubkey = openpgp_ecc_parse_key (pkalgo, curve, pkey[0]);
+              pubkey = openpgp_to_libgcrypt (pkalgo, curve, pkey[0]);
               err = gcry_sexp_build (&s_pkey, NULL, format, curve, pubkey);
               gcry_mpi_release (pubkey);
             }
@@ -189,8 +189,8 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
 
           if (pkalgo)
             {
-              pubkey = openpgp_ecc_parse_key (pkalgo, curve, skey[0]);
-              seckey = openpgp_ecc_parse_key (pkalgo, curve, skey[1]);
+              pubkey = openpgp_to_libgcrypt (pkalgo, curve, skey[0]);
+              seckey = openpgp_to_libgcrypt (pkalgo, curve, skey[1]);
               err = gcry_sexp_build (&s_skey, NULL, format, curve, pubkey, seckey);
               gcry_mpi_release (pubkey);
               gcry_mpi_release (seckey);
@@ -500,7 +500,7 @@ do_unprotect (const char *passphrase,
               actual_csum += checksum (buffer, nbytes);
 
 	      tmpmpi = skey[i];
-              skey[i] = openpgp_ecc_parse_key (pubkey_algo, curve, tmpmpi);
+              skey[i] = openpgp_to_libgcrypt (pubkey_algo, curve, tmpmpi);
               gcry_mpi_release (tmpmpi);
             }
           else
@@ -642,7 +642,7 @@ do_unprotect (const char *passphrase,
             {
               if (scan_pgp_format (&tmpmpi, pubkey_algo, p, ndata, &nbytes))
                 break;
-              skey[i] = openpgp_ecc_parse_key (pubkey_algo, curve, tmpmpi);
+              skey[i] = openpgp_to_libgcrypt (pubkey_algo, curve, tmpmpi);
               gcry_mpi_release (tmpmpi);
               ndata -= nbytes;
               p += nbytes;
@@ -1494,8 +1494,8 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
 
       if (pubkey_algo)
         {
-          err = openpgp_fixup_key_448 (pubkey_algo, &array[0]);
-          err = openpgp_fixup_key_448 (pubkey_algo, &array[1]);
+          err = openpgp_from_libgcrypt (pubkey_algo, &array[0]);
+          err = openpgp_from_libgcrypt (pubkey_algo, &array[1]);
         }
     }
 

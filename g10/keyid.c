@@ -1069,8 +1069,8 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
         else
           {
             const char *curve = openpgp_oid_to_curve (curve_oid, 1);
-            gcry_mpi_t pubkey = openpgp_ecc_parse_key (pk->pubkey_algo,
-                                                       curve, pk->pkey[1]);
+            gcry_mpi_t pubkey = openpgp_to_libgcrypt (pk->pubkey_algo,
+                                                      curve, pk->pkey[1]);
 
             err = gcry_sexp_build (&s_pkey, NULL,
                                    pk->pubkey_algo == PUBKEY_ALGO_EDDSA?

@@ -2573,8 +2573,8 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
                   j = 0;
                   /* Append the public key element Q.  */
                   put_membuf_str (&mbuf, " _ %m");
-                  ecc_pubkey = openpgp_ecc_parse_key (pk->pubkey_algo,
-                                                      curvename, pk->pkey[1]);
+                  ecc_pubkey = openpgp_to_libgcrypt (pk->pubkey_algo,
+                                                     curvename, pk->pkey[1]);
                   format_args[j++] = &ecc_pubkey;
 
                   /* Append the secret key element D.  For ECDH we

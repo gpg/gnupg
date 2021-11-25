@@ -24,12 +24,13 @@
 #include "openpgpdefs.h"
 
 /*
- * Parse the key (pubkey or seckey), and return real version of the
- * key; That is, for Ed448/X448, return key with prefix removed.
+ * Convert from OpenPGP-format with possible prefix, return
+ * libgcrypt-format of the key; That is, for Ed448/X448, return key
+ * with prefix removed, if any.
  */
 gcry_mpi_t
-openpgp_ecc_parse_key (pubkey_algo_t pkalgo, const char *curve,
-                       gcry_mpi_t key)
+openpgp_to_libgcrypt (pubkey_algo_t pkalgo, const char *curve,
+                      gcry_mpi_t key)
 {
   unsigned int nbits = 0;
   unsigned char *buf = NULL;
@@ -53,10 +54,11 @@ openpgp_ecc_parse_key (pubkey_algo_t pkalgo, const char *curve,
 
 
 /*
- * Fix up public/sec key for OpenPGP adding the prefix.
+ * Convert from libgcrypt-format with no-prefix, return OpenPGP-format
+ * of the key; That is, for Ed448/X448, return key with prefix added.
  */
 gpg_error_t
-openpgp_fixup_key_448 (int algo, gcry_mpi_t *r_key)
+openpgp_from_libgcrypt (int algo, gcry_mpi_t *r_key)
 {
   gcry_mpi_t key_mpi;
   gcry_mpi_t a;

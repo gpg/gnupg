@@ -760,7 +760,7 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
         err = sexp_extract_param_sos (key, "q", &pub_params[0]);
 
       if (!err && is_448)
-        err = openpgp_fixup_key_448 (pk->pubkey_algo, &pub_params[0]);
+        err = openpgp_from_libgcrypt (pk->pubkey_algo, &pub_params[0]);
 
       if (!err && (gcry_mpi_cmp(pk->pkey[1], pub_params[0])))
         err = gpg_error (GPG_ERR_BAD_PUBKEY);
@@ -774,8 +774,8 @@ cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
           pk->pkey[sec_start] = NULL;
           err = sexp_extract_param_sos (key, "d", &pk->pkey[sec_start]);
           if (!err && is_448)
-            err = openpgp_fixup_key_448 (pk->pubkey_algo,
-                                         &pk->pkey[sec_start]);
+            err = openpgp_from_libgcrypt (pk->pubkey_algo,
+                                          &pk->pkey[sec_start]);
         }
 
       if (!err)
