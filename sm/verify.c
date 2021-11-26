@@ -428,7 +428,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       rc = keydb_search_issuer_sn (ctrl, kh, issuer, serial);
       if (rc)
         {
-          if (rc == -1)
+          if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
             {
               log_error ("certificate not found\n");
               rc = gpg_error (GPG_ERR_NO_PUBKEY);
