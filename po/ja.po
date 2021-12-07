@@ -9,7 +9,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.30\n"
+"Project-Id-Version: gnupg 2.2.33\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2021-08-27 08:56+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
@@ -445,7 +445,7 @@ msgstr "ソケット名'%s'は長すぎます\n"
 
 #, c-format
 msgid "trying to steal socket from running %s\n"
-msgstr ""
+msgstr "動作している %s からソケットを奪い取ります\n"
 
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -5378,7 +5378,7 @@ msgstr "鍵%sを署名のために%sモードで使うことはできません\n
 
 #, c-format
 msgid "continuing verification anyway due to option %s\n"
-msgstr ""
+msgstr "オプション %s のため検証を続けます\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
