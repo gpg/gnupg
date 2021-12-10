@@ -26,6 +26,8 @@
 gcry_mpi_t get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt);
 gpg_error_t sexp_extract_param_sos (gcry_sexp_t sexp, const char *param,
                                     gcry_mpi_t *r_sos);
+gpg_error_t sexp_extract_param_sos_nlz (gcry_sexp_t sexp, const char *param,
+                                        gcry_mpi_t *r_sos);
 
 int pk_verify (pubkey_algo_t algo, gcry_mpi_t hash, gcry_mpi_t *data,
                gcry_mpi_t *pkey);

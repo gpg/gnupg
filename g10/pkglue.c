@@ -47,8 +47,20 @@ get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
 }
 
 
+/*
+ * SOS (Simply, Octet String) is an attempt to handle opaque octet
+ * string in OpenPGP, where well-formed MPI cannot represent octet
+ * string with leading zero octets.
+ *
+ * To retain maximum compatibility to existing MPI handling, SOS
+ * has same structure, but allows leading zero octets.  When there
+ * is no leading zero octets, SOS representation is as same as MPI one.
+ * With leading zero octets, NBITS is 8*(length of octets), regardless
+ * of leading zero bits.
+ */
 /* Extract SOS representation from SEXP for PARAM, return the result
-   in R_SOS.  */
+ * in R_SOS.  It is represented by opaque MPI with GCRYMPI_FLAG_USER2
+ * flag.  */
 gpg_error_t
 sexp_extract_param_sos (gcry_sexp_t sexp, const char *param, gcry_mpi_t *r_sos)
 {
@@ -82,6 +94,71 @@ sexp_extract_param_sos (gcry_sexp_t sexp, const char *param, gcry_mpi_t *r_sos)
                           --nbits;
 
           sos = gcry_mpi_set_opaque (NULL, p0, nbits);
+          if (sos)
+            {
+              gcry_mpi_set_flag (sos, GCRYMPI_FLAG_USER2);
+              *r_sos = sos;
+              err = 0;
+            }
+          else
+            err = gpg_error_from_syserror ();
+        }
+      gcry_sexp_release (l2);
+    }
+
+  return err;
+}
+
+
+/* "No leading zero octets" (nlz) version of the function above.
+ *
+ * This routine is used for backward compatibility to existing
+ * implementation with the weird handling of little endian integer
+ * representation with leading zero octets.  For the sake of
+ * "well-fomed" MPI, which is designed for big endian integer, leading
+ * zero octets are removed when output, and they are recovered at
+ * input.
+ *
+ * Extract SOS representation from SEXP for PARAM, removing leading
+ * zeros, return the result in R_SOS.  */
+gpg_error_t
+sexp_extract_param_sos_nlz (gcry_sexp_t sexp, const char *param,
+                            gcry_mpi_t *r_sos)
+{
+  gpg_error_t err;
+  gcry_sexp_t l2 = gcry_sexp_find_token (sexp, param, 0);
+
+  *r_sos = NULL;
+  if (!l2)
+    err = gpg_error (GPG_ERR_NO_OBJ);
+  else
+    {
+      size_t buflen;
+      const void *p0 = gcry_sexp_nth_data (l2, 1, &buflen);
+
+      if (!p0)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          gcry_mpi_t sos;
+          unsigned int nbits = buflen*8;
+          const unsigned char *p = p0;
+
+          /* Strip leading zero bits.  */
+          for (; nbits >= 8 && !*p; p++, nbits -= 8)
+            ;
+
+          if (nbits >= 8 && !(*p & 0x80))
+            if (--nbits >= 7 && !(*p & 0x40))
+              if (--nbits >= 6 && !(*p & 0x20))
+                if (--nbits >= 5 && !(*p & 0x10))
+                  if (--nbits >= 4 && !(*p & 0x08))
+                    if (--nbits >= 3 && !(*p & 0x04))
+                      if (--nbits >= 2 && !(*p & 0x02))
+                        if (--nbits >= 1 && !(*p & 0x01))
+                          --nbits;
+
+          sos = gcry_mpi_set_opaque_copy (NULL, p, nbits);
           if (sos)
             {
               gcry_mpi_set_flag (sos, GCRYMPI_FLAG_USER2);
