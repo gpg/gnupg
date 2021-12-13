@@ -54,17 +54,17 @@ get_root_key(const char *root)
 
   if (!root)
     root_key = HKEY_CURRENT_USER;
-  else if (!strcmp( root, "HKEY_CLASSES_ROOT" ) )
+  else if (!strcmp (root, "HKEY_CLASSES_ROOT") || !strcmp (root, "HKCR"))
     root_key = HKEY_CLASSES_ROOT;
-  else if (!strcmp( root, "HKEY_CURRENT_USER" ) )
+  else if (!strcmp (root, "HKEY_CURRENT_USER") || !strcmp (root, "HKCU"))
     root_key = HKEY_CURRENT_USER;
-  else if (!strcmp( root, "HKEY_LOCAL_MACHINE" ) )
+  else if (!strcmp (root, "HKEY_LOCAL_MACHINE") || !strcmp (root, "HKLM"))
     root_key = HKEY_LOCAL_MACHINE;
-  else if (!strcmp( root, "HKEY_USERS" ) )
+  else if (!strcmp (root, "HKEY_USERS") || !strcmp (root, "HKU"))
     root_key = HKEY_USERS;
-  else if (!strcmp( root, "HKEY_PERFORMANCE_DATA" ) )
+  else if (!strcmp (root, "HKEY_PERFORMANCE_DATA"))
     root_key = HKEY_PERFORMANCE_DATA;
-  else if (!strcmp( root, "HKEY_CURRENT_CONFIG" ) )
+  else if (!strcmp (root, "HKEY_CURRENT_CONFIG") || !strcmp (root, "HKCC"))
     root_key = HKEY_CURRENT_CONFIG;
   else
     return NULL;
