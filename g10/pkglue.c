@@ -252,12 +252,13 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
     {
       gcry_mpi_t r = data[0];
       gcry_mpi_t s = data[1];
+      unsigned int nbits;
+      const unsigned char *p;
 
       if (openpgp_oid_is_ed25519 (pkey[0]))
         {
           size_t rlen, slen, n;  /* (bytes) */
           char buf[64];
-          unsigned int nbits;
           unsigned int neededfixedlen = 256 / 8;
 
           log_assert (neededfixedlen <= sizeof buf);
@@ -292,8 +293,6 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
               else if (rlen < neededfixedlen
                        && gcry_mpi_get_flag (r, GCRYMPI_FLAG_OPAQUE))
                 {
-                  const unsigned char *p;
-
                   p = gcry_mpi_get_opaque (r, &nbits);
                   n = (nbits+7)/8;
                   memcpy (buf + (neededfixedlen - n), p, n);
@@ -312,8 +311,6 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
               else if (slen < neededfixedlen
                        && gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE))
                 {
-                  const unsigned char *p;
-
                   p = gcry_mpi_get_opaque (s, &nbits);
                   n = (nbits+7)/8;
                   memcpy (buf + (neededfixedlen - n), p, n);
@@ -322,8 +319,15 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
                 }
             }
         }
-      else if (!gcry_mpi_cmp_ui (s, 0))
-        /* When data[1] == MPI(0), parse the signature into R and S parts.  */
+      /*
+       * When data[1] is NULL or [0], parse the signature into R and S
+       * parts.
+       */
+      else if (!s
+               || (gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE)
+                   && ((p = gcry_mpi_get_opaque (s, &nbits)) == NULL
+                       || nbits == 0
+                       || ((nbits+7)/8 == 1 && p[0] == 0))))
         openpgp_ecc_parse_signature (pkalgo, r, &r, &s);
       else
         rc = 0;

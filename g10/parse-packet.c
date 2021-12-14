@@ -2378,6 +2378,9 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	  if (!sig->data[i])
 	    rc = GPG_ERR_INV_PACKET;
+          if (!pktlen && sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
+            /* Allow the R part only.  */
+            break;
 	}
     }
 
