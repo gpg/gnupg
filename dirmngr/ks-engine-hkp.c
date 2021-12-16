@@ -1533,7 +1533,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
     xfree (request);
     request = strconcat (hostport,
-                         "/pks/lookup?op=index&options=mr&search=",
+                         "/pks/lookup?op=index&options=mr&fingerprint=on&search=",
                          searchkey,
                          NULL);
     xfree (searchkey);
