@@ -346,12 +346,12 @@ char * ldap_charray2str( char **a, const char *sep )
 	p = s;
 	for ( v = a; *v != NULL; v++ ) {
 		if ( v != a ) {
-			strncpy( p, sep, slen );
+			memcpy( p, sep, slen );
 			p += slen;
 		}
 
 		len = strlen( *v );
-		strncpy( p, *v, len );
+		memcpy( p, *v, len );
 		p += len;
 	}
 
