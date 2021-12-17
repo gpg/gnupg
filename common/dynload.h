@@ -34,7 +34,9 @@
 #ifndef __MINGW32__
 # include <dlfcn.h>
 #else
-# include <windows.h>
+# include <errhandlingapi.h>
+# include <handleapi.h>
+# include <libloaderapi.h>
 # include "utf8conv.h"
 # include "mischelp.h"
 # define RTLD_LAZY 0

@@ -65,6 +65,8 @@
 #include "sysutils.h"
 #include "exechelp.h"
 
+#include <windows.h>
+
 /* Define to 1 do enable debugging.  */
 #define DEBUG_W32_SPAWN 0
 

@@ -45,6 +45,10 @@
 #include "../../common/exechelp.h"
 #include "../../common/sysutils.h"
 
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
+
 #include "private.h"
 #include "ffi.h"
 #include "ffi-private.h"

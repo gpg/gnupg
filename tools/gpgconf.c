@@ -35,6 +35,9 @@
 #include "../common/status.h"
 #include "../common/exechelp.h"
 
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
 
 /* Constants to identify the commands and options. */
 enum cmd_and_opt_values

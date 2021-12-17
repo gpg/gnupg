@@ -42,6 +42,10 @@
 #include "i18n.h"
 #include "gettime.h"
 
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
+
 #ifdef HAVE_UNSIGNED_TIME_T
 # define IS_INVALID_TIME_T(a) ((a) == (time_t)(-1))
 #else

@@ -806,6 +806,7 @@ if test "$have_w32_system" = yes; then
    if test "$have_w32ce_system" = yes; then
       AC_DEFINE(HAVE_W32CE_SYSTEM,1,[Defined if we run on WindowsCE])
    fi
+   AC_CHECK_HEADERS([winsock2.h])
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
 AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
@@ -1385,7 +1386,6 @@ AC_CHECK_DECLS([sys_siglist],[],[],[#include <signal.h>
 ])
 
 
-gl_HEADER_SYS_SOCKET
 gl_TYPE_SOCKLEN_T
 
 AC_SEARCH_LIBS([inet_addr], [nsl])

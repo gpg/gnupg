@@ -55,6 +55,10 @@
 #include "stringhelp.h"
 #include "utf8conv.h"
 
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
+
 #ifndef MB_LEN_MAX
 #define MB_LEN_MAX 16
 #endif
