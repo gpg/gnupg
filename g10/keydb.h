@@ -316,6 +316,7 @@ void emit_status_need_passphrase (ctrl_t ctrl, u32 *keyid,
 #define FORMAT_KEYDESC_IMPORT  1
 #define FORMAT_KEYDESC_EXPORT  2
 #define FORMAT_KEYDESC_DELKEY  3
+#define FORMAT_KEYDESC_KEYGRIP 4
 char *gpg_format_keydesc (ctrl_t ctrl,
                           PKT_public_key *pk, int mode, int escaped);
 

@@ -459,12 +459,23 @@ gpg_format_keydesc (ctrl_t ctrl, PKT_public_key *pk, int mode, int escaped)
   const char *trailer = "";
   int is_subkey;
 
-  is_subkey = (pk->main_keyid[0] && pk->main_keyid[1]
-               && pk->keyid[0] != pk->main_keyid[0]
-               && pk->keyid[1] != pk->main_keyid[1]);
-  algo_name = openpgp_pk_algo_name (pk->pubkey_algo);
-  timestr = strtimestamp (pk->timestamp);
-  uid = get_user_id (ctrl, is_subkey? pk->main_keyid:pk->keyid, &uidlen, NULL);
+  if (mode == FORMAT_KEYDESC_KEYGRIP)
+    {
+      is_subkey = 0;
+      algo_name = NULL;
+      timestr = NULL;
+      uid = NULL;
+    }
+  else
+    {
+      is_subkey = (pk->main_keyid[0] && pk->main_keyid[1]
+                   && pk->keyid[0] != pk->main_keyid[0]
+                   && pk->keyid[1] != pk->main_keyid[1]);
+      algo_name = openpgp_pk_algo_name (pk->pubkey_algo);
+      timestr = strtimestamp (pk->timestamp);
+      uid = get_user_id (ctrl, is_subkey? pk->main_keyid:pk->keyid,
+                         &uidlen, NULL);
+    }
 
   orig_codeset = i18n_switchto_utf8 ();
 
@@ -500,20 +511,30 @@ gpg_format_keydesc (ctrl_t ctrl, PKT_public_key *pk, int mode, int escaped)
                    " OpenPGP secret key:");
       trailer = "?";
       break;
+    case FORMAT_KEYDESC_KEYGRIP:
+      prompt = _("Please enter the passphrase to export the"
+                 " secret key with keygrip:");
+      break;
     default:
       prompt = "?";
       break;
     }
 
-  desc = xtryasprintf (_("%s\n"
-                         "\"%.*s\"\n"
-                         "%u-bit %s key, ID %s,\n"
-                         "created %s%s.\n%s"),
-                       prompt,
-                       (int)uidlen, uid,
-                       nbits_from_pk (pk), algo_name,
-                       keystr (pk->keyid), timestr,
-                       maink?maink:"", trailer);
+  if (mode == FORMAT_KEYDESC_KEYGRIP)
+    desc = xtryasprintf ("%s\n\n"
+                         "   %s\n",
+                         prompt,
+                         "<keygrip>");
+  else
+    desc = xtryasprintf (_("%s\n"
+                           "\"%.*s\"\n"
+                           "%u-bit %s key, ID %s,\n"
+                           "created %s%s.\n%s"),
+                         prompt,
+                         (int)uidlen, uid,
+                         nbits_from_pk (pk), algo_name,
+                         keystr (pk->keyid), timestr,
+                         maink?maink:"", trailer);
   xfree (maink);
   xfree (uid);
 
