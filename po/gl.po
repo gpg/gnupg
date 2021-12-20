@@ -530,6 +530,10 @@ msgstr "non foi posible crear %s: %s\n"
 msgid "socket name '%s' is too long\n"
 msgstr "Revocación de certificado válida"
 
+#, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent non está dispoñible nesta sesión\n"
@@ -2436,6 +2440,10 @@ msgstr "destinatario por defecto `%s' descoñecido\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
+#, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Non se admite este comando no modo %s.\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
 msgid "Note: %s is not for normal use!\n"
@@ -3715,10 +3723,6 @@ msgstr "Pista: seleccione os IDs de usuario que desexa asinar\n"
 #, fuzzy, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "clase de sinatura descoñecida"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Non se admite este comando no modo %s.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Debe seleccionar alomenos un ID de usuario.\n"
@@ -5312,6 +5316,10 @@ msgstr "¿Seguro de que quere borra-las chaves seleccionadas? "
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "¿Seguro de que quere borra-las chaves seleccionadas? "
 
+#, fuzzy
+msgid "Please enter the passphrase to export the secret key with keygrip:"
+msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
+
 #, fuzzy, c-format
 msgid ""
 "%s\n"
@@ -5889,14 +5897,18 @@ msgstr ""
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
-#, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "AVISO: conflicto de resumo de sinatura na mensaxe\n"
-
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "non se pode empregar %s no modo %s\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "AVISO: conflicto de resumo de sinatura na mensaxe\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

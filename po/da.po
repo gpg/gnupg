@@ -591,6 +591,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "sokkelnavnet »%s« er for langt\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "en gpg-agent kører allerede - starter ikke en ny\n"
 
@@ -2551,6 +2555,10 @@ msgstr "ukendt tilvalg »%s«\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
+#, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Denne kommando er ikke tilladt i tilstanden %s.\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
 msgid "Note: %s is not for normal use!\n"
@@ -3833,10 +3841,6 @@ msgstr "Fif: Vælg bruger-id'erne at underskrive\n"
 #| msgid "Unknown signature type `%s'\n"
 msgid "Unknown signature type '%s'\n"
 msgstr "Ukendt underskrifttype »%s«\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Denne kommando er ikke tilladt i tilstanden %s.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Du skal vælge mindst en bruger-id.\n"
@@ -5440,6 +5444,11 @@ msgstr "Vil du virkelig slette de valgte nøgler? (j/N) "
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "Vil du virkelig slette de valgte nøgler? (j/N) "
 
+#, fuzzy
+#| msgid "Please enter the passphrase to protect the new PKCS#12 object."
+msgid "Please enter the passphrase to export the secret key with keygrip:"
+msgstr "Indtast venligst adgangsfrasen for at beskytte det nye PKCS#12-objekt."
+
 #, fuzzy, c-format
 #| msgid "%u-bit %s key, ID %s, created %s"
 msgid ""
@@ -6027,14 +6036,18 @@ msgstr "%s-nøglen bruger en usikker (%u bit) hash\n"
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "DSA-nøgle %s kræver en %u bit eller større hash\n"
 
-#, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "ADVARSEL: konflikt for underskriftssammendrag i besked\n"
-
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "du kan ikke bruge %s i tilstanden %s\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "ADVARSEL: konflikt for underskriftssammendrag i besked\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

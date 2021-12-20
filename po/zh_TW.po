@@ -531,6 +531,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "socket 名稱 '%s' 太長\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "已經有一份 gpg-agent 在執行了 - 不會再啟動一份新的\n"
 
@@ -2378,6 +2382,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "在 %s 模式中不允許使用這個指令.\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "請注意: 一般情況下不採用 %s!\n"
 
@@ -3597,10 +3605,6 @@ msgstr "提示: 選擇使用者 ID 來加以簽署\n"
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "未知的簽章種類 '%s'\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "在 %s 模式中不允許使用這個指令.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "你至少得選擇一個使用者 ID.\n"
@@ -5119,6 +5123,11 @@ msgstr "你是否真的想要永久刪除 OpenPGP 私鑰子鑰:"
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "你是否真的想要永久刪除 OpenPGP 私鑰:"
 
+#, fuzzy
+#| msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgid "Please enter the passphrase to export the secret key with keygrip:"
+msgstr "請輸入密語來匯出 OpenPGP 私鑰:"
+
 #, c-format
 msgid ""
 "%s\n"
@@ -5698,14 +5707,18 @@ msgstr "%s 金鑰 %s 使用不安全 (%zu 位元) 的雜湊\n"
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "%s 金鑰 %s 需要 %zu 位元以上的雜湊 (雜湊為 %s)\n"
 
-#, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "警告: 簽章摘要與訊息不一致\n"
-
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "你不能夠將 %s 用於 %s 模式中\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "警告: 簽章摘要與訊息不一致\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

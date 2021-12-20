@@ -506,6 +506,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "il nome socket '%s' è troppo lungo\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "un gpg-agent è già in esecuzione - non iniziare uno nuovo\n"
 
@@ -2316,6 +2320,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(utilizzare \"help\" per elencare le scelte)\n"
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Questo comando non è permesso in modalità %s.\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Nota: %s non è per uso normale!\n"
 
@@ -3539,10 +3547,6 @@ msgstr "Suggerimento: seleziona gli user ID da firmare\n"
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "Tipo di firma sconosciuto '%s'\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Questo comando non è permesso in modalità %s.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Devi selezionare almeno un user ID.\n"
@@ -5058,6 +5062,11 @@ msgstr ""
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "Si desidera eliminare definitivamente la chiave segreta OpenPGP:"
 
+#, fuzzy
+#| msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgid "Please enter the passphrase to export the secret key with keygrip:"
+msgstr "Immettere la passphrase per esportare la chiave segreta OpenPGP:"
+
 #, c-format
 msgid ""
 "%s\n"
@@ -5643,12 +5652,16 @@ msgstr ""
 "La chiave %s %s richiede un bit %zu o un hash superiore (l'hash è %s)\n"
 
 #, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "ATTENZIONE: conflitto del digest delle firme nel messaggio\n"
-
-#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "impossibile utilizzare la chiave %s per l'accesso in modalità %s\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "ATTENZIONE: conflitto del digest delle firme nel messaggio\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

@@ -495,6 +495,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "套接字名称‘%s’太长\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "有一个 gpg-agent 实例正在运行 - 无须启动新的实例\n"
 
@@ -2245,6 +2249,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "（使用“help”来列出选择）\n"
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "不允许在 %s 模式中使用此命令。\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "注意：%s 不适用于一般使用！\n"
 
@@ -3416,10 +3424,6 @@ msgstr "提示：选择用户标识以签名\n"
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "未知的签名类型‘%s’\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "不允许在 %s 模式中使用此命令。\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "您必须选择至少一个用户标识。\n"
@@ -4879,6 +4883,11 @@ msgstr "您真的想要永久删除此 OpenPGP 私密子密钥吗："
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "您真的想要永久删除此 OpenPGP 私密密钥吗："
 
+#, fuzzy
+#| msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgid "Please enter the passphrase to export the secret key with keygrip:"
+msgstr "请输入密码以导出 OpenPGP 私钥："
+
 #, c-format
 msgid ""
 "%s\n"
@@ -5424,12 +5433,16 @@ msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "%s 密钥 %s 要求一个 %zu 位或更长的散列（散列是 %s）\n"
 
 #, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "警告：签名散列值与报文不一致\n"
-
-#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "密钥 %s 在 %s 模式中不适用于签名\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "警告：签名散列值与报文不一致\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"

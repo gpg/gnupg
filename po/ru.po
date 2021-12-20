@@ -527,6 +527,10 @@ msgid "socket name '%s' is too long\n"
 msgstr "слишком длинное имя сокета '%s'\n"
 
 #, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr ""
+
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "агент gpg уже запущен - еще один, новый, запущен не будет\n"
 
@@ -2346,6 +2350,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" выведет список вариантов)\n"
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Данная команда в режиме %s недопустима.\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Замечание: %s не предназначен для нормального применения!\n"
 
@@ -3574,10 +3582,6 @@ msgstr ""
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "Неизвестный тип подписи '%s'\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Данная команда в режиме %s недопустима.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Вы должны выбрать хотя бы один идентификатор пользователя.\n"
@@ -5113,6 +5117,11 @@ msgstr "Вы действительно хотите навсегда удали
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "Вы действительно хотите навсегда удалить секретный ключ OpenPGP:"
 
+#, fuzzy
+#| msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgid "Please enter the passphrase to export the secret key with keygrip:"
+msgstr "Введите фразу-пароль для экспорта секретного ключа OpenPGP:"
+
 #, c-format
 msgid ""
 "%s\n"
@@ -5680,12 +5689,16 @@ msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "Ключ %s %s требует %zu-битного или более длинного хеша (хеш %s)\n"
 
 #, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "Внимание: конфликт хешей подписей в сообщении\n"
-
-#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "ключ %s нельзя использовать для подписи в режиме %s\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr ""
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "Внимание: конфликт хешей подписей в сообщении\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
