@@ -60,5 +60,6 @@ void put_membuf_printf (membuf_t *mb, const char *format,
 void *get_membuf (membuf_t *mb, size_t *len);
 void *get_membuf_shrink (membuf_t *mb, size_t *len);
 const void *peek_membuf (membuf_t *mb, size_t *len);
+void set_membuf_err (membuf_t *mb, gpg_error_t err);
 
 #endif /*GNUPG_COMMON_MEMBUF_H*/

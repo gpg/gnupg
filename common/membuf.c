@@ -231,3 +231,15 @@ peek_membuf (membuf_t *mb, size_t *len)
     *len = mb->len;
   return p;
 }
+
+/* To assist using membuf with function returning an error, this
+ * function sets the membuf into the error state.  */
+void
+set_membuf_err (membuf_t *mb, gpg_error_t err)
+{
+  if (!mb->out_of_core)
+    {
+      int myerr = gpg_err_code_to_errno (gpg_err_code (err));
+      mb->out_of_core = myerr? myerr : EINVAL;
+    }
+}
