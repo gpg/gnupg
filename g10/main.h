@@ -443,6 +443,7 @@ gpg_error_t write_keyblock_to_output (kbnode_t keyblock,
                                       int with_armor, unsigned int options);
 
 gpg_error_t export_ssh_key (ctrl_t ctrl, const char *userid);
+gpg_error_t export_secret_ssh_key (ctrl_t ctrl, const char *userid);
 
 /*-- dearmor.c --*/
 int dearmor_file( const char *fname );

@@ -1872,6 +1872,49 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 }
 
 
+/* For secret key export we need to setup a decryption context.
+ * Returns 0 and the context at r_cipherhd.  */
+static gpg_error_t
+get_keywrap_key (ctrl_t ctrl, gcry_cipher_hd_t *r_cipherhd)
+{
+#ifdef ENABLE_SELINUX_HACKS
+  (void)ctrl;
+  *r_cipherhd = NULL;
+  log_error (_("exporting secret keys not allowed\n"));
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+#else
+  gpg_error_t err;
+  void *kek = NULL;
+  size_t keklen;
+  gcry_cipher_hd_t cipherhd;
+
+  *r_cipherhd = NULL;
+
+  err = agent_keywrap_key (ctrl, 1, &kek, &keklen);
+  if (err)
+    {
+      log_error ("error getting the KEK: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (!err)
+    err = gcry_cipher_setkey (cipherhd, kek, keklen);
+  if (err)
+    log_error ("error setting up an encryption context: %s\n",
+               gpg_strerror (err));
+
+  if (!err)
+    *r_cipherhd = cipherhd;
+  else
+    gcry_cipher_close (cipherhd);
+  xfree (kek);
+  return err;
+#endif
+}
+
+
 /* Export the keys identified by the list of strings in USERS to the
    stream OUT.  If SECRET is false public keys will be exported.  With
    secret true secret keys will be exported; in this case 1 means the
@@ -1945,42 +1988,9 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
          this we need an extra flag to enable this feature.  */
     }
 
-#ifdef ENABLE_SELINUX_HACKS
-  if (secret)
-    {
-      log_error (_("exporting secret keys not allowed\n"));
-      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-      goto leave;
-    }
-#endif
-
   /* For secret key export we need to setup a decryption context.  */
-  if (secret)
-    {
-      void *kek = NULL;
-      size_t keklen;
-
-      err = agent_keywrap_key (ctrl, 1, &kek, &keklen);
-      if (err)
-        {
-          log_error ("error getting the KEK: %s\n", gpg_strerror (err));
-          goto leave;
-        }
-
-      /* Prepare a cipher context.  */
-      err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
-                              GCRY_CIPHER_MODE_AESWRAP, 0);
-      if (!err)
-        err = gcry_cipher_setkey (cipherhd, kek, keklen);
-      if (err)
-        {
-          log_error ("error setting up an encryption context: %s\n",
-                     gpg_strerror (err));
-          goto leave;
-        }
-      xfree (kek);
-      kek = NULL;
-    }
+  if (secret && (err = get_keywrap_key (ctrl, &cipherhd)))
+    goto leave;
 
   for (;;)
     {
@@ -2121,6 +2131,87 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 }
 
 
+
+/* Write the uint32 VALUE to MB in networ byte order.  */
+static void
+mb_write_uint32 (membuf_t *mb, u32 value)
+{
+  unsigned char buffer[4];
+
+  ulongtobuf (buffer, (ulong)value);
+  put_membuf (mb, buffer, 4);
+}
+
+/* Write the byte C to MB.  */
+static void
+mb_write_uint8 (membuf_t *mb, int c)
+{
+  unsigned char buf[1];
+
+  buf[0] = c;
+  put_membuf (mb, buf, 1);
+}
+
+
+/* Simple wrapper around put_membuf.  */
+static void
+mb_write_data (membuf_t *mb, const void *data, size_t datalen)
+{
+  put_membuf (mb, data, datalen);
+}
+
+/* Write STRING with terminating Nul to MB.  */
+static void
+mb_write_cstring (membuf_t *mb, const char *string)
+{
+  put_membuf (mb, string, strlen (string)+1);
+}
+
+/* Write an SSH style string to MB.  */
+static void
+mb_write_string (membuf_t *mb, const void *string, size_t n)
+{
+  mb_write_uint32 (mb, (u32)n);
+  mb_write_data (mb, string, n);
+}
+
+/* Write an MPI as SSH style string to MB   */
+static void
+mb_write_mpi (membuf_t *mb, gcry_mpi_t mpi, int strip_prefix)
+{
+  unsigned int nbits;
+  const unsigned char *p;
+  size_t n;
+
+  if (gcry_mpi_get_flag (mpi, GCRYMPI_FLAG_OPAQUE))
+    {
+      p = gcry_mpi_get_opaque (mpi, &nbits);
+      n = (nbits + 7) / 8;
+
+      if (strip_prefix && n > 1 && p[0] == 0x40)
+        {
+          /* We need to strip our 0x40 prefix.  */
+          p++;
+          n--;
+        }
+      mb_write_string (mb, p, n);
+    }
+  else
+    {
+      gpg_error_t err;
+      unsigned char *buf;
+
+      err = gcry_mpi_aprint (GCRYMPI_FMT_SSH, &buf, &n, mpi);
+      if (err)
+        set_membuf_err (mb, err);
+      else
+        {
+          mb_write_data (mb, buf, n);
+          gcry_free (buf);
+        }
+    }
+}
+
 
 
 static gpg_error_t
@@ -2139,6 +2230,7 @@ key_to_sshblob (membuf_t *mb, const char *identifier, ...)
   put_membuf (mb, identifier, buflen);
   if (buflen > 11 && !memcmp (identifier, "ecdsa-sha2-", 11))
     {
+      /* Store the name of the curve taken from the identifier.  */
       ulongtobuf (nbuf, (ulong)(buflen - 11));
       put_membuf (mb, nbuf, 4);
       put_membuf (mb, identifier+11, buflen - 11);
@@ -2500,5 +2592,312 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
   if (fp != es_stdout)
     es_fclose (fp);
   release_kbnode (keyblock);
+  return err;
+}
+
+
+/* Simplified version of receive_seckey_from_agent used to get the raw
+ * key.  */
+gpg_error_t
+receive_raw_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
+                               const char *hexgrip, gcry_sexp_t *r_key)
+{
+  gpg_error_t err = 0;
+  unsigned char *wrappedkey = NULL;
+  size_t wrappedkeylen;
+  unsigned char *key = NULL;
+  size_t keylen, realkeylen;
+  gcry_sexp_t s_skey = NULL;
+
+  *r_key = NULL;
+  if (opt.verbose)
+    log_info ("key %s: asking agent for the secret parts\n", hexgrip);
+
+  {
+    char * prompt = gpg_format_keydesc (ctrl, NULL, FORMAT_KEYDESC_KEYGRIP, 1);
+    err = agent_export_key (ctrl, hexgrip, prompt, 0, NULL,
+                            &wrappedkey, &wrappedkeylen,
+                            NULL, NULL, 0);
+    xfree (prompt);
+  }
+  if (err)
+    goto leave;
+
+  if (wrappedkeylen < 24)
+    {
+      err = gpg_error (GPG_ERR_INV_LENGTH);
+      goto leave;
+    }
+  keylen = wrappedkeylen - 8;
+  key = xtrymalloc_secure (keylen);
+  if (!key)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gcry_cipher_decrypt (cipherhd, key, keylen, wrappedkey, wrappedkeylen);
+  if (err)
+    goto leave;
+  realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
+  if (!realkeylen)
+    goto leave; /* Invalid csexp.  */
+
+  err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
+  if (!err)
+    {
+      gcry_log_debugsxp ("skey", s_skey);
+      *r_key = s_skey;
+      s_skey = NULL;
+    }
+
+ leave:
+  gcry_sexp_release (s_skey);
+  xfree (key);
+  xfree (wrappedkey);
+  if (err)
+    {
+      log_error ("key %s: error receiving key from agent:"
+                 " %s%s\n", hexgrip, gpg_strerror (err),
+                 "");
+    }
+  return err;
+}
+
+
+/* Export the key identified by USERID in the SSH secret key format.
+ * The USERID must be given in keygrip format (prefixed with a '&')
+ * and thus no OpenPGP key is required.  The exported key is not
+ * protected.  */
+gpg_error_t
+export_secret_ssh_key (ctrl_t ctrl, const char *userid)
+{
+  gpg_error_t err;
+  KEYDB_SEARCH_DESC desc;
+  estream_t fp = NULL;
+  const char *fname = "-";
+  gcry_cipher_hd_t cipherhd = NULL;
+  char hexgrip[KEYGRIP_LEN * 2 + 1];
+  gcry_sexp_t skey = NULL;
+  gcry_sexp_t skeyalgo = NULL;
+  const char *identifier = NULL;
+  membuf_t mb;
+  membuf_t mb2;
+  void *blob = NULL;
+  size_t bloblen;
+  const char *s;
+  size_t n;
+  char *p;
+  int pkalgo;
+  int i;
+  gcry_mpi_t keyparam[10] = { NULL };
+  struct b64state b64_state;
+
+  init_membuf_secure (&mb, 1024);
+  init_membuf_secure (&mb2, 1024);
+
+  /* Check that a keygrip has been given.  */
+  err = classify_user_id (userid, &desc, 1);
+  if (err || desc.mode != KEYDB_SEARCH_MODE_KEYGRIP )
+    {
+      log_error (_("key \"%s\" not found: %s\n"), userid,
+                 err? gpg_strerror (err) : "Not a Keygrip" );
+      return err;
+    }
+
+  bin2hex (desc.u.grip, KEYGRIP_LEN, hexgrip);
+
+  if ((err = get_keywrap_key (ctrl, &cipherhd)))
+    goto leave;
+
+  err = receive_raw_seckey_from_agent (ctrl, cipherhd, hexgrip, &skey);
+  if (err)
+    goto leave;
+
+  /* Get the type of the key expression.  */
+  s = gcry_sexp_nth_data (skey, 0, &n);
+  if (!s || !(n == 11 && !memcmp (s, "private-key", 11)))
+    {
+      log_info ("Note: only on-disk secret keys may be exported\n");
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+      goto leave;
+    }
+
+  mb_write_cstring (&mb, "openssh-key-v1"); /* Auth_Magic. */
+  mb_write_string (&mb, "none", 4); /* ciphername */
+  mb_write_string (&mb, "none", 4); /* kdfname  */
+  mb_write_uint32 (&mb, 0);         /* kdfoptions  */
+  mb_write_uint32 (&mb, 1);         /* number of keys  */
+
+  pkalgo = get_pk_algo_from_key (skey);
+  switch (pkalgo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_S:
+      identifier = "ssh-rsa";
+      err = gcry_sexp_extract_param (skey, NULL, "nedpq",
+                                     &keyparam[0],
+                                     &keyparam[1],
+                                     &keyparam[2],
+                                     &keyparam[3],
+                                     &keyparam[4],
+                                     NULL);
+      if (err)
+        goto leave;
+      mb_write_string (&mb2, identifier, strlen (identifier));
+      mb_write_mpi (&mb2, keyparam[1], 0);  /* e (right, e is first here) */
+      mb_write_mpi (&mb2, keyparam[0], 0);  /* n */
+      /* Append public to the output block as an SSH string.  */
+      p = get_membuf (&mb2, &n);
+      if (!p)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      mb_write_string (&mb, p, n);
+      xfree (p);
+      init_membuf_secure (&mb2, 1024);
+      mb_write_string (&mb2, identifier, strlen (identifier));
+      {
+        char checkbytes[4];
+        gcry_create_nonce (checkbytes, sizeof checkbytes);
+        mb_write_data (&mb2, checkbytes, sizeof checkbytes);
+        mb_write_data (&mb2, checkbytes, sizeof checkbytes);
+      }
+      mb_write_mpi (&mb2, keyparam[0], 0);  /* n */
+      mb_write_mpi (&mb2, keyparam[1], 0);  /* e */
+      /*FIXME: Fixup u,p,q to match the OpenSSH format.  */
+      mb_write_mpi (&mb2, keyparam[2], 0);  /* d */
+      mb_write_mpi (&mb2, keyparam[1], 0);  /* iqmp1 */
+      mb_write_mpi (&mb2, keyparam[3], 0);  /* p */
+      mb_write_mpi (&mb2, keyparam[4], 0);  /* q */
+      /* Fixme: take the comment from skey.  */
+      mb_write_string (&mb2, "<comment>", 9);
+      /* Pad to a blocksize of 8 (for cipher "none").  */
+      i = 0;
+      while (peek_membuf (&mb2, &n) && (n % 8))
+        mb_write_uint8 (&mb2, ++i);
+      /* Append encrypted block to the output as an SSH string.  */
+      p = get_membuf (&mb2, &n);
+      if (!p)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      mb_write_string (&mb, p, n);
+      xfree (p);
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      break;
+
+    /* case PUBKEY_ALGO_ECDSA: */
+    /*   { */
+    /*     char *curveoid; */
+    /*     const char *curve; */
+
+    /*     curveoid = openpgp_oid_to_str (pk->pkey[0]); */
+    /*     if (!curveoid) */
+    /*       err = gpg_error_from_syserror (); */
+    /*     else if (!(curve = openpgp_oid_to_curve (curveoid, 0))) */
+    /*       err = gpg_error (GPG_ERR_UNKNOWN_CURVE); */
+    /*     else */
+    /*       { */
+    /*         if (!strcmp (curve, "nistp256")) */
+    /*           identifier = "ecdsa-sha2-nistp256"; */
+    /*         else if (!strcmp (curve, "nistp384")) */
+    /*           identifier = "ecdsa-sha2-nistp384"; */
+    /*         else if (!strcmp (curve, "nistp521")) */
+    /*           identifier = "ecdsa-sha2-nistp521"; */
+
+    /*         if (!identifier) */
+    /*           err = gpg_error (GPG_ERR_UNKNOWN_CURVE); */
+    /*         else */
+    /*           err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL); */
+    /*       } */
+    /*     xfree (curveoid); */
+    /*   } */
+    /*   break; */
+
+    /* case PUBKEY_ALGO_EDDSA: */
+    /*   if (openpgp_oid_is_ed25519 (pk->pkey[0])) */
+    /*     { */
+    /*       identifier = "ssh-ed25519"; */
+    /*       err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL); */
+    /*     } */
+    /*   else if (openpgp_oid_is_ed448 (pk->pkey[0])) */
+    /*     { */
+    /*       identifier = "ssh-ed448"; */
+    /*       err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL); */
+    /*     } */
+    /*   else */
+    /*     err = gpg_error (GPG_ERR_UNKNOWN_CURVE); */
+    /*   break; */
+
+    case PUBKEY_ALGO_DSA:
+      log_info ("Note: export of ssh-dsa keys is not supported\n");
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL_E:
+    case PUBKEY_ALGO_ELGAMAL:
+      err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+      break;
+
+    default:
+      err = GPG_ERR_PUBKEY_ALGO;
+      break;
+    }
+
+  if (err)
+    goto leave;
+
+  blob = get_membuf (&mb, &bloblen);
+  if (!blob)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (opt.outfile && *opt.outfile && strcmp (opt.outfile, "-"))
+    fp = es_fopen ((fname = opt.outfile), "w");
+  else
+    fp = es_stdout;
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  err = b64enc_start_es (&b64_state, fp, "OPENSSH PRIVATE_KEY");
+  if (err)
+    goto leave;
+  err = b64enc_write (&b64_state, blob, bloblen);
+  b64enc_finish (&b64_state);
+  if (err)
+    goto leave;
+
+  if (es_ferror (fp))
+    err = gpg_error_from_syserror ();
+  else
+    {
+      if (fp != es_stdout && es_fclose (fp))
+        err = gpg_error_from_syserror ();
+      fp = NULL;
+    }
+
+  log_info ("Beware: the private key is not protected;"
+            " use \"ssh-keygen -p\" to protect it\n");
+  if (err)
+    log_error (_("error writing '%s': %s\n"), fname, gpg_strerror (err));
+
+
+ leave:
+  xfree (blob);
+  gcry_sexp_release (skey);
+  gcry_sexp_release (skeyalgo);
+  gcry_cipher_close (cipherhd);
+  xfree (get_membuf (&mb2, NULL));
+  xfree (get_membuf (&mb, NULL));
+  if (fp != es_stdout)
+    es_fclose (fp);
   return err;
 }

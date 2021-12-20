@@ -158,6 +158,7 @@ enum cmd_and_opt_values
     aExportSecret,
     aExportSecretSub,
     aExportSshKey,
+    aExportSecretSshKey,
     aCheckKeys,
     aGenRevoke,
     aDesigRevoke,
@@ -527,6 +528,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aExportSecret, "export-secret-keys" , "@" ),
   ARGPARSE_c (aExportSecretSub, "export-secret-subkeys" , "@" ),
   ARGPARSE_c (aExportSshKey, "export-ssh-key", "@" ),
+  ARGPARSE_c (aExportSecretSshKey, "export-secret-ssh-key", "@" ),
   ARGPARSE_c (aImport, "import", N_("import/merge keys")),
   ARGPARSE_c (aFastImport, "fast-import", "@"),
 #ifdef ENABLE_CARD_SUPPORT
@@ -2676,6 +2678,7 @@ main (int argc, char **argv)
 	  case aExportSecret:
 	  case aExportSecretSub:
 	  case aExportSshKey:
+	  case aExportSecretSshKey:
 	  case aSym:
 	  case aClearsign:
 	  case aGenRevoke:
@@ -4886,6 +4889,17 @@ main (int argc, char **argv)
         if (argc != 1)
           wrong_args ("--export-ssh-key <user-id>");
         rc = export_ssh_key (ctrl, argv[0]);
+        if (rc)
+          {
+            write_status_failure ("export-ssh-key", rc);
+            log_error (_("export as ssh key failed: %s\n"), gpg_strerror (rc));
+          }
+	break;
+
+      case aExportSecretSshKey:
+        if (argc != 1)
+          wrong_args ("--export-secret-ssh-key <user-id>");
+        rc = export_secret_ssh_key (ctrl, argv[0]);
         if (rc)
           {
             write_status_failure ("export-ssh-key", rc);
