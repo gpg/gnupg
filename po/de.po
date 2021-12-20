@@ -5103,7 +5103,8 @@ msgstr ""
 "entfernen? (j/N) "
 
 msgid "Please enter the passphrase to export the secret key with keygrip:"
-msgstr "Sie benötigen ein Passwort zum Export des geheimen Schlüssels mit Keygrip:"
+msgstr ""
+"Sie benötigen ein Passwort zum Export des geheimen Schlüssels mit Keygrip:"
 
 #, c-format
 msgid ""
