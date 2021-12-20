@@ -1280,10 +1280,10 @@ send_congratulation_message (const char *mbox, const char *keyfile)
               "\n"
               "Best regards\n"
               "\n"
-              "  Gnu Key Publisher\n\n\n"
+              "  GnuPG Key Publisher\n\n\n"
               "-- \n"
-              "The GnuPG Project welcomes donations: %s\n",
-              mbox, "https://gnupg.org/donate");
+              "For information on GnuPG see: %s\n",
+              mbox, "https://gnupg.org");
 
   es_rewind (body);
   err = encrypt_stream (&bodyenc, body, keyfile);
