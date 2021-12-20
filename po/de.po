@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-08-24 14:48+0200\n"
+"PO-Revision-Date: 2021-12-20 20:52+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -515,6 +515,10 @@ msgstr "Socket kann nicht erzeugt werden: %s\n"
 #, c-format
 msgid "socket name '%s' is too long\n"
 msgstr "Der Name des Sockets `%s' ist zu lang\n"
+
+#, c-format
+msgid "trying to steal socket from running %s\n"
+msgstr "Versuche den Socket des laufenden %s zu übernehmen\n"
 
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -2337,6 +2341,10 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" um mögliche Werte anzuzeigen)\n"
 
 #, c-format
+msgid "This command is not allowed while in %s mode.\n"
+msgstr "Dieser Befehl ist im %s-Modus nicht erlaubt.\n"
+
+#, c-format
 msgid "Note: %s is not for normal use!\n"
 msgstr "Hinweis: %s ist nicht für den üblichen Gebrauch gedacht!\n"
 
@@ -3568,10 +3576,6 @@ msgstr "Tip: Wählen Sie die User-IDs, die beglaubigt werden sollen\n"
 #, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "Unbekannter Signaturtyp `%s'\n"
-
-#, c-format
-msgid "This command is not allowed while in %s mode.\n"
-msgstr "Dieser Befehl ist im %s-Modus nicht erlaubt.\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Zumindestens eine User-ID muß ausgewählt werden.\n"
@@ -5098,6 +5102,9 @@ msgstr ""
 "Möchten Sie den ausgewählten geheimen OpenPGP Schlüssel wirklich dauerhaft "
 "entfernen? (j/N) "
 
+msgid "Please enter the passphrase to export the secret key with keygrip:"
+msgstr "Sie benötigen ein Passwort zum Export des geheimen Schlüssels mit Keygrip:"
+
 #, c-format
 msgid ""
 "%s\n"
@@ -5689,13 +5696,17 @@ msgstr ""
 "%s-Schlüssel %s benötigt einen mindestens %zu Bit langen Hash (Hash ist %s)\n"
 
 #, c-format
-msgid "WARNING: signature digest conflict in message\n"
-msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Botschaft\n"
-
-#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr ""
 "Schlüssel \"%s\" darf zum Signieren im %s Modus nicht verwendet werden.\n"
+
+#, c-format
+msgid "continuing verification anyway due to option %s\n"
+msgstr "Die Prüfung wird aufgrund der Option %s weiter durchgeführt\n"
+
+#, c-format
+msgid "WARNING: signature digest conflict in message\n"
+msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Botschaft\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
