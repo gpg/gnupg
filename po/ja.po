@@ -9,7 +9,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.3.0\n"
+"Project-Id-Version: gnupg 2.3.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2021-04-08 10:15+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
@@ -58,7 +58,7 @@ msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|パスフレーズを隠す"
 
 msgid "Caps Lock is on"
-msgstr ""
+msgstr "キャプスロックがオンです"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
@@ -75,16 +75,17 @@ msgstr "提示する"
 msgid "pinentry.genpin.tooltip"
 msgstr "ランダムなパスフレーズを提示する"
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
-msgstr ""
+msgstr "注意: ブランクはパスフレーズの一部とはなりません。"
 
 #. TRANSLATORS: This is a text shown by pinentry as title of a dialog
 #. telling the user that the entered new passphrase does not satisfy
 #. the passphrase constraints.  Please keep it short.
-#, fuzzy
-#| msgid "Passphrase too long"
 msgid "Passphrase Not Allowed"
-msgstr "パスフレーズが長すぎます"
+msgstr "パスフレーズが認められません"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -507,7 +508,7 @@ msgstr "ソケット名'%s'は長すぎます\n"
 
 #, c-format
 msgid "trying to steal socket from running %s\n"
-msgstr ""
+msgstr "稼働中の %s からソケットを奪おうとします\n"
 
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -4296,7 +4297,7 @@ msgstr ""
 
 #, c-format
 msgid "WARNING: v4 is specified, but overridden by v5.\n"
-msgstr ""
+msgstr "警告: v4 が指定されましたが v5 で上書きされます。\n"
 
 #, c-format
 msgid "Key generation failed: %s\n"
@@ -4897,10 +4898,8 @@ msgstr "不明なクリティカルな署名注釈: "
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "型%dの下位パケットにクリティカル・ビットを発見\n"
 
-#, fuzzy
-#| msgid "Please enter the new passphrase"
 msgid "Please enter the passphrase for decryption."
-msgstr "新しいパスフレーズを入力してください"
+msgstr "復号のためのパスフレーズを入力してください。"
 
 msgid "Enter passphrase\n"
 msgstr "パスフレーズを入力\n"
@@ -4932,10 +4931,8 @@ msgstr "選択したOpenPGP副鍵を本当に永久に削除しますか? (y/N) 
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "選択したOpenPGP秘密鍵を本当に永久に削除しますか? (y/N) "
 
-#, fuzzy
-#| msgid "Please enter the passphrase to export the OpenPGP secret key:"
 msgid "Please enter the passphrase to export the secret key with keygrip:"
-msgstr "OpenPGPの秘密鍵をエクスポートするためにパスフレーズを入力してください:"
+msgstr "keygripで秘密鍵をエクスポートするためにパスフレーズを入力してください:"
 
 #, c-format
 msgid ""
@@ -5497,7 +5494,7 @@ msgstr "鍵%sを署名のために%sモードで使うことはできません\n
 
 #, c-format
 msgid "continuing verification anyway due to option %s\n"
-msgstr ""
+msgstr "オプション %sのため、検証を続けます\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
