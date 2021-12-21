@@ -1065,10 +1065,10 @@ static gpg_error_t
 setup_formatted_passphrase (ctrl_t ctrl)
 {
   static const struct { const char *key, *help_id, *value; } tbl[] = {
-    /* TRANSLATORS: This is a text shown by pinentry if the option
-        for formatted passphrase is enabled.  The length is
-        limited to about 900 characters.  */
     { "hint",  "pinentry.formatted_passphrase.hint",
+      /* TRANSLATORS: This is a text shown by pinentry if the option
+         for formatted passphrase is enabled.  The length is
+         limited to about 900 characters.  */
       N_("Note: The blanks are not part of the passphrase.") },
     { NULL, NULL }
   };
