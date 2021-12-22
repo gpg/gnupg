@@ -319,15 +319,11 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
                 }
             }
         }
-      /*
-       * When data[1] is NULL or [0], parse the signature into R and S
-       * parts.
-       */
-      else if (!s
-               || (gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE)
-                   && ((p = gcry_mpi_get_opaque (s, &nbits)) == NULL
-                       || nbits == 0
-                       || ((nbits+7)/8 == 1 && p[0] == 0))))
+      else if (gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE)
+	       && ((p = gcry_mpi_get_opaque (s, &nbits)) == NULL
+		   || nbits == 0
+		   || ((nbits+7)/8 == 1 && p[0] == 0)))
+	/* When data[1] is MPI(0), parse the signature into R and S parts. */
         openpgp_ecc_parse_signature (pkalgo, r, &r, &s);
       else
         rc = 0;

@@ -188,6 +188,22 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
 }
 
 
+/* Return an object for SOS which represents MPI(0). */
+static gcry_mpi_t
+sos_zero (void)
+{
+  /*
+   * We don't do gcry_mpi_set_opaque (NULL, NULL, 0), becase it may
+   * cause undefined behavior.  We use a kind of cork stopper to avoid
+   * undefined behavior.
+   */
+  byte *buf = gcry_xcalloc (1, 1);
+  gcry_mpi_t a = gcry_mpi_set_opaque (NULL, buf, 1);
+  gcry_mpi_set_flag (a, GCRYMPI_FLAG_USER2);
+  return a;
+}
+
+
 /* Read an external representation of an SOS and return the opaque MPI
    with GCRYMPI_FLAG_USER2.  The external format is a 16-bit unsigned
    value stored in network byte order giving information for the
@@ -222,7 +238,12 @@ sos_read (iobuf_t inp, unsigned int *ret_nread, int secure)
     goto leave;
   ++nread;
   nbits |= c;
-  if (nbits > MAX_EXTERN_MPI_BITS)
+  if (nbits == 0)
+    {
+      *ret_nread = nread;
+      return sos_zero ();
+    }
+  else if (nbits > MAX_EXTERN_MPI_BITS)
     {
       log_error ("mpi too large (%u bits)\n", nbits);
       goto leave;
@@ -231,8 +252,6 @@ sos_read (iobuf_t inp, unsigned int *ret_nread, int secure)
   nbytes = (nbits + 7) / 8;
   if (nbytes)
     buf = secure ? gcry_xmalloc_secure (nbytes) : gcry_xmalloc (nbytes);
-  else
-    buf = NULL;
   p = buf;
   for (i = 0; i < nbytes; i++)
     {
@@ -2378,9 +2397,12 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	  if (!sig->data[i])
 	    rc = GPG_ERR_INV_PACKET;
-          if (!pktlen && sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
-            /* Allow the R part only.  */
-            break;
+          if (i == 0 && !pktlen && sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
+	    {
+	      /* Accept the case: R part only, missing S.  */
+	      sig->data[1] = sos_zero ();
+	      break;
+	    }
 	}
     }
 
