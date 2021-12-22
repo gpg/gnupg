@@ -56,7 +56,7 @@
 #include <ws2tcpip.h>
 typedef SOCKET socket_fd_t;
 #define STDCALL __stdcall
-#ifdef TIME_WITH_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>		/* gettimeofday(2) */
 #endif
 #else

@@ -329,18 +329,12 @@ fi
 #
 AC_DEFUN([GNUPG_TIME_T_UNSIGNED],
   [ AC_CACHE_CHECK(whether time_t is unsigned, gnupg_cv_time_t_unsigned,
-     [AC_REQUIRE([AC_HEADER_TIME])dnl
-      AC_COMPILE_IFELSE([AC_LANG_BOOL_COMPILE_TRY(
+     [AC_COMPILE_IFELSE([AC_LANG_BOOL_COMPILE_TRY(
        [AC_INCLUDES_DEFAULT([])
-#if TIME_WITH_SYS_TIME
+#if HAVE_SYS_TIME_H
 # include <sys/time.h>
-# include <time.h>
 #else
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
+# include <time.h>
 #endif
 ],
        [((time_t)-1) < 0])],

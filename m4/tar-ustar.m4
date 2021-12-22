@@ -10,7 +10,7 @@ dnl the same distribution terms as the rest of that program.
 AC_DEFUN([GNUPG_CHECK_USTAR],
 [
   AC_ARG_WITH(tar,
-     AC_HELP_STRING([--with-tar=PATH],[look for a tar program in PATH]),
+     AS_HELP_STRING([--with-tar=PATH],[look for a tar program in PATH]),
      [_do_tar=$withval])
 
   if test x$_do_tar != xno ; then

@@ -19,8 +19,8 @@
 # along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ([2.61])
-min_automake_version="1.14"
+AC_PREREQ([2.69])
+min_automake_version="1.16.3"
 
 # To build a release you need to create a tag with the version number
 # (git tag -s gnupg-2.n.m) and run "./autogen.sh --force".  Please
@@ -83,7 +83,7 @@ VERSION=$PACKAGE_VERSION
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_SRCDIR([sm/gpgsm.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([serial-tests dist-bzip2 no-dist-gzip])
 AC_CANONICAL_HOST
 AB_INIT
@@ -1321,13 +1321,11 @@ fi
 # Checks for header files.
 #
 AC_MSG_NOTICE([checking for header files])
-AC_HEADER_STDC
-AC_CHECK_HEADERS([string.h unistd.h langinfo.h termio.h locale.h getopt.h \
-                  pty.h utmp.h pwd.h inttypes.h signal.h sys/select.h     \
-                  stdint.h signal.h util.h libutil.h termios.h \
+AC_CHECK_HEADERS([unistd.h langinfo.h termio.h locale.h \
+                  pwd.h inttypes.h signal.h sys/select.h sys/time.h \
+                  stdint.h signal.h termios.h \
                   ucred.h sys/ucred.h sys/sysmacros.h sys/mkdev.h])
 
-AC_HEADER_TIME
 
 
 #
@@ -1375,15 +1373,10 @@ AC_CHECK_SIZEOF(unsigned long long)
 AC_HEADER_TIME
 AC_CHECK_SIZEOF(time_t,,[[
 #include <stdio.h>
-#if TIME_WITH_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
-# include <time.h>
 #else
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
+# include <time.h>
 #endif
 ]])
 GNUPG_TIME_T_UNSIGNED
