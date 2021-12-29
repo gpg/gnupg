@@ -678,6 +678,12 @@ main (int argc, char **argv)
 
   fname = argc ? *argv : NULL;
 
+  /* Set the configuraton directories for use by gpgrt_argparser.  We
+   * don't have a configuration file for this program but we have code
+   * which reads the component's config files.  */
+  gnupg_set_confdir (GNUPG_CONFDIR_SYS, gnupg_sysconfdir ());
+  gnupg_set_confdir (GNUPG_CONFDIR_USER, gnupg_homedir ());
+
   switch (cmd)
     {
     case aListComponents:
