@@ -186,7 +186,7 @@ extract (estream_t stream, const char *dirname, tarinfo_t info,
       || !strncmp (hdr->name, "../", 3)
       || (n >= 3 && !strcmp (hdr->name+n-3, "/.." )))
     {
-      log_error ("filename '%s' as suspicious parts - not extracting\n",
+      log_error ("filename '%s' has suspicious parts - not extracting\n",
                  hdr->name);
       return gpg_error (GPG_ERR_INV_NAME);
     }
