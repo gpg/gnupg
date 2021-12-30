@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-12-20 20:52+0100\n"
+"PO-Revision-Date: 2021-12-29 16:20+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -349,7 +349,7 @@ msgid "run in server mode (foreground)"
 msgstr "Im Server Modus ausführen"
 
 msgid "run in supervised mode"
-msgstr "Im \"Supervised\" Modus ausführen"
+msgstr "Im Supervised Modus ausführen"
 
 msgid "do not detach from the console"
 msgstr "Im Vordergrund laufen lassen"
@@ -412,13 +412,13 @@ msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|Lasse PINs im Cache nach N Sekunden verfallen"
 
 msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|lasse SSH Schlüssel im Cache nach N Sekunden verfallen"
+msgstr "|N|Lasse SSH Schlüssel im Cache nach N Sekunden verfallen"
 
 msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr "|N|setze die maximale Lebensdauer von PINs im Cache auf N Sekunden"
+msgstr "|N|Setze die maximale Lebensdauer von PINs im Cache auf N Sekunden"
 
 msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr "|N|setze die maximale Lebenszeit von SSH Schlüsseln auf N Sekunden"
+msgstr "|N|Setze die maximale Lebenszeit von SSH Schlüsseln auf N Sekunden"
 
 msgid "do not use the PIN cache when signing"
 msgstr "Benutze PINs im Cache nicht beim Signieren"
@@ -439,7 +439,7 @@ msgid "do not allow bypassing the passphrase policy"
 msgstr "Einhaltung der Passwort Regeln erzwingen"
 
 msgid "|N|set minimal required length for new passphrases to N"
-msgstr "|N|setze die kleinste erlaubte Länge von Passwörtern auf N"
+msgstr "|N|Setze die kleinste erlaubte Länge von Passwörtern auf N"
 
 msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr "|N|Verlange mindestens N Nicht-Buchstaben für ein neues Passwort"
