@@ -1316,6 +1316,10 @@ list_one_option (gc_component_id_t component,
   unsigned long flags;
   const char *desc_domain = gc_component[component].desc_domain;
 
+  /* Don't show options with the ignore attribute.  */
+  if (option->attr_ignore && !option->attr_force)
+    return;
+
   if (option->desc)
     {
       desc = my_dgettext (desc_domain, option->desc);
@@ -1352,6 +1356,7 @@ list_one_option (gc_component_id_t component,
   if (option->def_in_desc) flags |= GC_OPT_FLAG_DEF_DESC;
   if (option->no_arg_desc) flags |= GC_OPT_FLAG_NO_ARG_DESC;
   if (option->no_change)   flags |= GC_OPT_FLAG_NO_CHANGE;
+  if (option->attr_force)  flags |= GC_OPT_FLAG_NO_CHANGE;
   es_fprintf (out, ":%lu", flags);
   if (opt.verbose)
     {
@@ -1835,11 +1840,6 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
     {
       char *opt_value;
 
-      if (pargs.r_type & ARGPARSE_OPT_IGNORE)
-        {
-          /* log_debug ("ignored\n"); */
-          continue;
-        }
       if (pargs.r_opt == ARGPARSE_CONFFILE)
         {
           /* log_debug ("current conffile='%s'\n", */
@@ -1861,8 +1861,18 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
       if (!option)
         continue;  /* We don't want to handle this option.  */
 
-      option->attr_ignore = !!(pargs.r_type & ARGPARSE_ATTR_IGNORE);
-      option->attr_force  = !!(pargs.r_type & ARGPARSE_ATTR_FORCE);
+      /* Set the force and ignore attributes.  The idea is that there
+       * is no way to clear them again, thus we set them when first
+       * encountered.  */
+      if ((pargs.r_type & ARGPARSE_ATTR_FORCE))
+        option->attr_force  = 1;
+      if ((pargs.r_type & ARGPARSE_ATTR_IGNORE))
+        option->attr_ignore = 1;
+
+      /* If an option has been ignored, there is no need to return
+       * that option with gpgconf --list-options.  */
+      if (option->attr_ignore)
+        continue;
 
       switch ((pargs.r_type & ARGPARSE_TYPE_MASK))
         {
