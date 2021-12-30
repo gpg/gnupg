@@ -592,7 +592,7 @@ static struct
    * header lines and such.  This is suitable to be passed to
    * gpgrt_argparser.  Will be filled in by
    * retrieve_options_from_program. */
-  gpgrt_opt_t *opt_table;
+  gnupg_opt_t *opt_table;
 
   /* The full table including data from OPT_TABLE.  The end of the
    * table is marked by NULL entry for NAME.  Will be filled in by
@@ -1538,7 +1538,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   gnupg_argparse_t pargs;
   int dummy_argc;
   char *twopartconfig_name = NULL;
-  gpgrt_opt_t *opt_table = NULL;      /* A malloced option table.    */
+  gnupg_opt_t *opt_table = NULL;      /* A malloced option table.    */
   size_t opt_table_used = 0;          /* Its current length.         */
   size_t opt_table_size = 0;          /* Its allocated length.       */
   gc_option_t *opt_info = NULL;       /* A malloced options table.  */

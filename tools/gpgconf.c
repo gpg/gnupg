@@ -1042,7 +1042,7 @@ static void
 show_version_gnupg (estream_t fp, const char *prefix)
 {
   es_fprintf (fp, "%s%sGnuPG %s (%s)\n%s%s\n", prefix, *prefix?"":"* ",
-              strusage (13), BUILD_REVISION, prefix, gpgrt_strusage (17));
+              strusage (13), BUILD_REVISION, prefix, strusage (17));
 #ifdef HAVE_W32_SYSTEM
   {
     OSVERSIONINFO osvi = { sizeof (osvi) };

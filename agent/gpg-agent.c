@@ -1320,7 +1320,7 @@ main (int argc, char **argv )
           log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
     }
 
-  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
+  gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
   if (!last_configname)
     config_filename = make_filename (gnupg_homedir (),
