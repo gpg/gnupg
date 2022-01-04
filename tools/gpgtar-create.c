@@ -1,4 +1,6 @@
 /* gpgtar-create.c - Create a TAR archive
+ * Copyright (C) 2016-2017, 2019-2022 g10 Code GmbH
+ * Copyright (C) 2010, 2012, 2013 Werner Koch
  * Copyright (C) 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -39,11 +41,17 @@
 #include "../common/exectool.h"
 #include "../common/sysutils.h"
 #include "../common/ccparray.h"
+#include "../common/membuf.h"
 #include "gpgtar.h"
 
 #ifndef HAVE_LSTAT
 #define lstat(a,b) gnupg_stat ((a), (b))
 #endif
+
+
+/* Count the number of written headers.  Extended headers are not
+ * counted. */
+static unsigned long global_header_count;
 
 
 /* Object to control the file scanning.  */
@@ -488,7 +496,7 @@ store_xoctal (char *buffer, size_t length, unsigned long long value)
   size_t n;
   unsigned long long v;
 
-  assert (length > 1);
+  log_assert (length > 1);
 
   v = value;
   n = length;
@@ -593,16 +601,75 @@ store_gname (char *buffer, size_t length, unsigned long gid)
 }
 
 
+static void
+compute_checksum (void *record)
+{
+  struct ustar_raw_header *raw = record;
+  unsigned long chksum = 0;
+  unsigned char *p;
+  size_t n;
+
+  memset (raw->checksum, ' ', sizeof raw->checksum);
+  p = record;
+  for (n=0; n < RECORDSIZE; n++)
+    chksum += *p++;
+  store_xoctal (raw->checksum, sizeof raw->checksum - 1, chksum);
+  raw->checksum[7] = ' ';
+}
+
+
+
+/* Read a symlink without truncating it.  Caller must release the
+ * returned buffer.  Returns NULL on error.  */
+#ifndef HAVE_W32_SYSTEM
+static char *
+myreadlink (const char *name)
+{
+  char *buffer;
+  size_t size;
+  int nread;
+
+  for (size = 1024; size <= 65536; size *= 2)
+    {
+      buffer = xtrymalloc (size);
+      if (!buffer)
+        return NULL;
+
+      nread = readlink (name, buffer, size - 1);
+      if (nread < 0)
+        {
+          xfree (buffer);
+          return NULL;
+        }
+      if (nread < size - 1)
+        {
+          buffer[nread] = 0;
+          return buffer;  /* Got it. */
+        }
+
+      xfree (buffer);
+    }
+  gpg_err_set_errno (ERANGE);
+  return NULL;
+}
+#endif /*Unix*/
+
+
+
+/* Build a header.  If the filename or the link name ist too long
+ * allocate an exthdr and use a replacement file name in RECORD.
+ * Caller should always release R_EXTHDR; this function initializes it
+ * to point to NULL.  */
 static gpg_error_t
-build_header (void *record, tar_header_t hdr)
+build_header (void *record, tar_header_t hdr, strlist_t *r_exthdr)
 {
   gpg_error_t err;
   struct ustar_raw_header *raw = record;
   size_t namelen, n;
-  unsigned long chksum;
-  unsigned char *p;
+  strlist_t sl;
 
   memset (record, 0, RECORDSIZE);
+  *r_exthdr = NULL;
 
   /* Store name and prefix.  */
   namelen = strlen (hdr->name);
@@ -623,10 +690,23 @@ build_header (void *record, tar_header_t hdr)
         }
       else
         {
-          err = gpg_error (GPG_ERR_TOO_LARGE);
-          log_error ("error storing file '%s': %s\n",
-                     hdr->name, gpg_strerror (err));
-          return err;
+          /* Too long - prepare extended header.  */
+          sl = add_to_strlist_try (r_exthdr, hdr->name);
+          if (!sl)
+            {
+              err = gpg_error_from_syserror ();
+              log_error ("error storing file '%s': %s\n",
+                         hdr->name, gpg_strerror (err));
+              return err;
+            }
+          sl->flags = 1;  /* Mark as path */
+          /* The name we use is not POSIX compliant but because we
+           * expect that (for security issues) a tarball will anyway
+           * be extracted to a unique new directory, a simple counter
+           * will do.  To ease testing we also put in the PID.  The
+           * count is bumped after the header has been written.  */
+          snprintf (raw->name, sizeof raw->name-1, "_@paxheader.%u.%lu",
+                    (unsigned int)getpid(), global_header_count + 1);
         }
     }
 
@@ -659,6 +739,7 @@ build_header (void *record, tar_header_t hdr)
   if (hdr->typeflag == TF_SYMLINK)
     {
       int nread;
+      char *p;
 
       nread = readlink (hdr->name, raw->linkname, sizeof raw->linkname -1);
       if (nread < 0)
@@ -669,19 +750,130 @@ build_header (void *record, tar_header_t hdr)
           return err;
         }
       raw->linkname[nread] = 0;
-    }
-#endif /*HAVE_W32_SYSTEM*/
+      if (nread == sizeof raw->linkname -1)
+        {
+          /* Truncated - read again and store as extended header.  */
+          p = myreadlink (hdr->name);
+          if (!p)
+            {
+              err = gpg_error_from_syserror ();
+              log_error ("error reading symlink '%s': %s\n",
+                         hdr->name, gpg_strerror (err));
+              return err;
+            }
 
-  /* Compute the checksum.  */
-  memset (raw->checksum, ' ', sizeof raw->checksum);
-  chksum = 0;
-  p = record;
-  for (n=0; n < RECORDSIZE; n++)
-    chksum += *p++;
-  store_xoctal (raw->checksum, sizeof raw->checksum - 1, chksum);
-  raw->checksum[7] = ' ';
+          sl = add_to_strlist_try (r_exthdr, p);
+          xfree (p);
+          if (!sl)
+            {
+              err = gpg_error_from_syserror ();
+              log_error ("error storing syslink '%s': %s\n",
+                         hdr->name, gpg_strerror (err));
+              return err;
+            }
+          sl->flags = 2;  /* Mark as linkname */
+        }
+    }
+#endif /*!HAVE_W32_SYSTEM*/
+
+  compute_checksum (record);
 
   return 0;
+}
+
+
+/* Add an extended header record (NAME,VALUE) to the buffer MB.  */
+static void
+add_extended_header_record (membuf_t *mb, const char *name, const char *value)
+{
+  size_t n, n0, n1;
+  char numbuf[35];
+  size_t valuelen;
+
+  /* To avoid looping in most cases, we guess the initial value.  */
+  valuelen = strlen (value);
+  n1 = valuelen > 95? 3 : 2;
+  do
+    {
+      n0 = n1;
+      /*       (3 for the space before name, the '=', and the LF.)  */
+      n = n0 + strlen (name) + valuelen + 3;
+      snprintf (numbuf, sizeof numbuf, "%zu", n);
+      n1 = strlen (numbuf);
+    }
+  while (n0 != n1);
+  put_membuf_str (mb, numbuf);
+  put_membuf (mb, " ", 1);
+  put_membuf_str (mb, name);
+  put_membuf (mb, "=", 1);
+  put_membuf (mb, value, valuelen);
+  put_membuf (mb, "\n", 1);
+}
+
+
+
+/* Write the extended header specified by EXTHDR to STREAM.   */
+static gpg_error_t
+write_extended_header (estream_t stream, const void *record, strlist_t exthdr)
+{
+  gpg_error_t err = 0;
+  struct ustar_raw_header raw;
+  strlist_t sl;
+  membuf_t mb;
+  char *buffer, *p;
+  size_t buflen;
+
+  init_membuf (&mb, 2*RECORDSIZE);
+
+  for (sl=exthdr; sl; sl = sl->next)
+    {
+      if (sl->flags == 1)
+        add_extended_header_record (&mb, "path", sl->d);
+      else if (sl->flags == 2)
+        add_extended_header_record (&mb, "linkpath", sl->d);
+    }
+
+  buffer = get_membuf (&mb, &buflen);
+  if (!buffer)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error building extended header: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* We copy the header from the standard header record, so that an
+   * extracted extended header (using a non-pax aware software) is
+   * written with the same properties as the original file.  The real
+   * entry will overwrite it anyway.  Of course we adjust the size and
+   * the type.  */
+  memcpy (&raw, record, RECORDSIZE);
+  store_xoctal (raw.size,  sizeof raw.size,  buflen);
+  raw.typeflag[0] = 'x'; /* Mark as extended header.  */
+  compute_checksum (&raw);
+
+  err = write_record (stream, &raw);
+  if (err)
+    goto leave;
+
+  for (p = buffer; buflen >= RECORDSIZE; p += RECORDSIZE, buflen -= RECORDSIZE)
+    {
+      err = write_record (stream, p);
+      if (err)
+        goto leave;
+    }
+  if (buflen)
+    {
+      /* Reuse RAW for builidng the last record.  */
+      memcpy (&raw, p, buflen);
+      memset ((char*)&raw+buflen, 0, RECORDSIZE - buflen);
+      err = write_record (stream, &raw);
+      if (err)
+        goto leave;
+    }
+
+ leave:
+  xfree (buffer);
+  return err;
 }
 
 
@@ -692,9 +884,10 @@ write_file (estream_t stream, tar_header_t hdr)
   char record[RECORDSIZE];
   estream_t infp;
   size_t nread, nbytes;
+  strlist_t exthdr = NULL;
   int any;
 
-  err = build_header (record, hdr);
+  err = build_header (record, hdr, &exthdr);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_NOT_SUPPORTED)
@@ -719,9 +912,12 @@ write_file (estream_t stream, tar_header_t hdr)
   else
     infp = NULL;
 
+  if (exthdr && (err = write_extended_header (stream, record, exthdr)))
+    goto leave;
   err = write_record (stream, record);
   if (err)
     goto leave;
+  global_header_count++;
 
   if (hdr->typeflag == TF_REGULAR)
     {
@@ -741,6 +937,8 @@ write_file (estream_t stream, tar_header_t hdr)
                          any? " (file shrunk?)":"");
               goto leave;
             }
+          else if (nbytes < RECORDSIZE)
+            memset (record + nbytes, 0, RECORDSIZE - nbytes);
           any = 1;
           err = write_record (stream, record);
           if (err)
@@ -757,6 +955,7 @@ write_file (estream_t stream, tar_header_t hdr)
   else if ((err = es_fclose (infp)))
     log_error ("error closing file '%s': %s\n", hdr->name, gpg_strerror (err));
 
+  free_strlist (exthdr);
   return err;
 }
 
