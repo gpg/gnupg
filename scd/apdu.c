@@ -2248,7 +2248,7 @@ apdu_open_reader (struct dev_list *dl)
       npth_mutex_lock (&reader_table_lock);
       while (dl->idx < dl->idx_max)
         {
-          const char *rdrname = pcsc.rdrname[dl->idx];
+          const char *rdrname = pcsc.rdrname[dl->idx++];
 
           if (DBG_READER)
             log_debug ("apdu_open_reader: %s\n", rdrname);
@@ -2270,8 +2270,6 @@ apdu_open_reader (struct dev_list *dl)
                 continue;
 
               slot = open_pcsc_reader (rdrname);
-
-              dl->idx++;
               if (slot >= 0)
                 {
                   npth_mutex_unlock (&reader_table_lock);
@@ -2284,8 +2282,6 @@ apdu_open_reader (struct dev_list *dl)
                   continue;
                 }
             }
-          else
-            dl->idx++;
         }
 
       npth_mutex_unlock (&reader_table_lock);
