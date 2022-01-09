@@ -95,6 +95,8 @@ typedef enum
     TF_DIRECTORY,
     TF_FIFO,
     TF_RESERVED,
+    TF_GEXTHDR,    /* Global extended header.  */
+    TF_EXTHDR,     /* Extended header.  */
     TF_UNKNOWN,    /* Needs to be treated as regular file.  */
     TF_NOTSUP      /* Not supported (used with --create).  */
   } typeflag_t;
@@ -140,8 +142,9 @@ gpg_error_t gpgtar_extract (const char *filename, int decrypt);
 /*-- gpgtar-list.c --*/
 gpg_error_t gpgtar_list (const char *filename, int decrypt);
 gpg_error_t gpgtar_read_header (estream_t stream, tarinfo_t info,
-                                tar_header_t *r_header);
-void gpgtar_print_header (tar_header_t header, estream_t out);
+                                tar_header_t *r_header, strlist_t *r_extheader);
+void gpgtar_print_header (tar_header_t header, strlist_t extheader,
+                          estream_t out);
 
 
 #endif /*GPGTAR_H*/

@@ -1,4 +1,6 @@
 /* gpgtar-extract.c - Extract from a TAR archive
+ * Copyright (C) 2016-2017, 2019-2022 g10 Code GmbH
+ * Copyright (C) 2010, 2012, 2013 Werner Koch
  * Copyright (C) 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -15,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -33,26 +36,66 @@
 #include "../common/ccparray.h"
 #include "gpgtar.h"
 
+static gpg_error_t
+check_suspicious_name (const char *name)
+{
+  size_t n;
+
+  n = strlen (name);
+#ifdef HAVE_DOSISH_SYSTEM
+  if (strchr (name, '\\'))
+    {
+      log_error ("filename '%s' contains a backslash - "
+                 "can't extract on this system\n", name);
+      return gpg_error (GPG_ERR_INV_NAME);
+    }
+#endif /*HAVE_DOSISH_SYSTEM*/
+
+  if (!n
+      || strstr (name, "//")
+      || strstr (name, "/../")
+      || !strncmp (name, "../", 3)
+      || (n >= 3 && !strcmp (name+n-3, "/.." )))
+    {
+      log_error ("filename '%s' has suspicious parts - not extracting\n",
+                 name);
+      return gpg_error (GPG_ERR_INV_NAME);
+    }
+
+  return 0;
+}
+
 
 static gpg_error_t
 extract_regular (estream_t stream, const char *dirname,
-                 tarinfo_t info, tar_header_t hdr)
+                 tarinfo_t info, tar_header_t hdr, strlist_t exthdr)
 {
   gpg_error_t err;
   char record[RECORDSIZE];
   size_t n, nbytes, nwritten;
-  char *fname;
+  char *fname_buffer = NULL;
+  const char *fname;
   estream_t outfp = NULL;
+  strlist_t sl;
 
-  fname = strconcat (dirname, "/", hdr->name, NULL);
-  if (!fname)
+  fname = hdr->name;
+  for (sl = exthdr; sl; sl = sl->next)
+    if (sl->flags == 1)
+      fname = sl->d;
+
+  err = check_suspicious_name (fname);
+  if (err)
+    goto leave;
+
+  fname_buffer = strconcat (dirname, "/", fname, NULL);
+  if (!fname_buffer)
     {
       err = gpg_error_from_syserror ();
       log_error ("error creating filename: %s\n", gpg_strerror (err));
       goto leave;
     }
-  else
-    err = 0;
+  fname = fname_buffer;
+
 
   if (opt.dry_run)
     outfp = es_fopenmem (0, "wb");
@@ -97,29 +140,36 @@ extract_regular (estream_t stream, const char *dirname,
         log_error ("error removing incomplete file '%s': %s\n",
                    fname, gpg_strerror (gpg_error_from_syserror ()));
     }
-  xfree (fname);
+  xfree (fname_buffer);
   return err;
 }
 
 
 static gpg_error_t
-extract_directory (const char *dirname, tar_header_t hdr)
+extract_directory (const char *dirname, tar_header_t hdr, strlist_t exthdr)
 {
   gpg_error_t err;
-  char *fname;
-  size_t prefixlen;
+  const char *name;
+  char *fname = NULL;
+  strlist_t sl;
 
-  prefixlen = strlen (dirname) + 1;
-  fname = strconcat (dirname, "/", hdr->name, NULL);
+  name = hdr->name;
+  for (sl = exthdr; sl; sl = sl->next)
+    if (sl->flags == 1)
+      name = sl->d;
+
+  err = check_suspicious_name (name);
+  if (err)
+    goto leave;
+
+  fname = strconcat (dirname, "/", name, NULL);
   if (!fname)
     {
       err = gpg_error_from_syserror ();
       log_error ("error creating filename: %s\n", gpg_strerror (err));
       goto leave;
     }
-  else
-    err = 0;
-
+  /* Remove a possible trailing slash.  */
   if (fname[strlen (fname)-1] == '/')
     fname[strlen (fname)-1] = 0;
 
@@ -136,8 +186,13 @@ extract_directory (const char *dirname, tar_header_t hdr)
         {
           /* Try to create the directory with parents but keep the
              original error code in case of a failure.  */
-          char *p;
           int rc = 0;
+          char *p;
+          size_t prefixlen;
+
+          /* (PREFIXLEN is the length of the new directory we use to
+           *  extract the tarball.)  */
+          prefixlen = strlen (dirname) + 1;
 
           for (p = fname+prefixlen; (p = strchr (p, '/')); p++)
             {
@@ -165,36 +220,15 @@ extract_directory (const char *dirname, tar_header_t hdr)
 
 static gpg_error_t
 extract (estream_t stream, const char *dirname, tarinfo_t info,
-         tar_header_t hdr)
+         tar_header_t hdr, strlist_t exthdr)
 {
   gpg_error_t err;
   size_t n;
 
-  n = strlen (hdr->name);
-#ifdef HAVE_DOSISH_SYSTEM
-  if (strchr (hdr->name, '\\'))
-    {
-      log_error ("filename '%s' contains a backslash - "
-                 "can't extract on this system\n", hdr->name);
-      return gpg_error (GPG_ERR_INV_NAME);
-    }
-#endif /*HAVE_DOSISH_SYSTEM*/
-
-  if (!n
-      || strstr (hdr->name, "//")
-      || strstr (hdr->name, "/../")
-      || !strncmp (hdr->name, "../", 3)
-      || (n >= 3 && !strcmp (hdr->name+n-3, "/.." )))
-    {
-      log_error ("filename '%s' has suspicious parts - not extracting\n",
-                 hdr->name);
-      return gpg_error (GPG_ERR_INV_NAME);
-    }
-
   if (hdr->typeflag == TF_REGULAR || hdr->typeflag == TF_UNKNOWN)
-    err = extract_regular (stream, dirname, info, hdr);
+    err = extract_regular (stream, dirname, info, hdr, exthdr);
   else if (hdr->typeflag == TF_DIRECTORY)
-    err = extract_directory (dirname, hdr);
+    err = extract_directory (dirname, hdr, exthdr);
   else
     {
       char record[RECORDSIZE];
@@ -286,6 +320,7 @@ gpgtar_extract (const char *filename, int decrypt)
   estream_t stream;
   estream_t cipher_stream = NULL;
   tar_header_t header = NULL;
+  strlist_t extheader = NULL;
   const char *dirprefix = NULL;
   char *dirname = NULL;
   struct tarinfo_s tarinfo_buffer;
@@ -388,19 +423,22 @@ gpgtar_extract (const char *filename, int decrypt)
 
   for (;;)
     {
-      err = gpgtar_read_header (stream, tarinfo, &header);
+      err = gpgtar_read_header (stream, tarinfo, &header, &extheader);
       if (err || header == NULL)
         goto leave;
 
-      err = extract (stream, dirname, tarinfo, header);
+      err = extract (stream, dirname, tarinfo, header, extheader);
       if (err)
         goto leave;
+      free_strlist (extheader);
+      extheader = NULL;
       xfree (header);
       header = NULL;
     }
 
 
  leave:
+  free_strlist (extheader);
   xfree (header);
   xfree (dirname);
   if (stream != es_stdin)

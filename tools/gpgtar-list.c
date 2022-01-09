@@ -1,4 +1,6 @@
 /* gpgtar-list.c - List a TAR archive
+ * Copyright (C) 2016-2017, 2019-2022 g10 Code GmbH
+ * Copyright (C) 2010, 2012, 2013 Werner Koch
  * Copyright (C) 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -15,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -22,7 +25,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "../common/i18n.h"
 #include "gpgtar.h"
@@ -160,11 +162,15 @@ parse_header (const void *record, const char *filename, tarinfo_t info)
     case '5': header->typeflag = TF_DIRECTORY; break;
     case '6': header->typeflag = TF_FIFO; break;
     case '7': header->typeflag = TF_RESERVED; break;
+    case 'g': header->typeflag = TF_GEXTHDR; break;
+    case 'x': header->typeflag = TF_EXTHDR; break;
     default:  header->typeflag = TF_UNKNOWN; break;
     }
 
   /* Compute the number of data records following this header.  */
-  if (header->typeflag == TF_REGULAR || header->typeflag == TF_UNKNOWN)
+  if (header->typeflag == TF_REGULAR
+      || header->typeflag == TF_EXTHDR
+      || header->typeflag == TF_UNKNOWN)
     header->nrecords = (header->size + RECORDSIZE-1)/RECORDSIZE;
   else
     header->nrecords = 0;
@@ -181,18 +187,93 @@ parse_header (const void *record, const char *filename, tarinfo_t info)
   return header;
 }
 
+/* Parse the extended header.  This funcion may modify BUFFER.  */
+static gpg_error_t
+parse_extended_header (const char *fname,
+                       char *buffer, size_t buflen, strlist_t *r_exthdr)
+{
+  unsigned int reclen;
+  unsigned char *p, *record;
+  strlist_t sl;
+
+  while (buflen)
+    {
+      record = buffer; /* Remember begin of record.  */
+      reclen = 0;
+      for (p = buffer; buflen && digitp (p); buflen--, p++)
+        {
+          reclen *= 10;
+          reclen += (*p - '0');
+        }
+      if (!buflen || *p != ' ')
+        {
+          log_error ("%s: malformed record length in extended header\n", fname);
+          return gpg_error (GPG_ERR_INV_RECORD);
+        }
+      p++;  /* Skip space.  */
+      buflen--;
+      if (buflen + (p-record) < reclen)
+        {
+          log_error ("%s: extended header record larger"
+                     " than total extended header data\n", fname);
+          return gpg_error (GPG_ERR_INV_RECORD);
+        }
+      if (reclen < (p-record)+2 || record[reclen-1] != '\n')
+        {
+          log_error ("%s: malformed extended header record\n", fname);
+          return gpg_error (GPG_ERR_INV_RECORD);
+        }
+      record[reclen-1] = 0; /* For convenience change LF to a Nul. */
+      reclen -= (p-record);
+      /* P points to the begin of the keyword and RECLEN is the
+       * remaining length of the record excluding the LF.  */
+      if (memchr (p, 0, reclen-1)
+          && (!strncmp (p, "path=", 5) || !strncmp (p, "linkpath=", 9)))
+        {
+          log_error ("%s: extended header record has an embedded nul"
+                     " - ignoring\n", fname);
+        }
+      else if (!strncmp (p, "path=", 5))
+        {
+          sl = add_to_strlist_try (r_exthdr, p+5);
+          if (!sl)
+            return gpg_error_from_syserror ();
+          sl->flags = 1;  /* Mark as path */
+        }
+      else if (!strncmp (p, "linkpath=", 9))
+        {
+          sl = add_to_strlist_try (r_exthdr, p+9);
+          if (!sl)
+            return gpg_error_from_syserror ();
+          sl->flags = 2;  /* Mark as linkpath */
+        }
+
+      buffer = p + reclen;
+      buflen -= reclen;
+    }
+
+  return 0;
+}
 
 
 /* Read the next block, assuming it is a tar header.  Returns a header
-   object on success in R_HEADER, or an error.  If the stream is
-   consumed, R_HEADER is set to NULL.  In case of an error an error
-   message has been printed.  */
+ * object on success in R_HEADER, or an error.  If the stream is
+ * consumed (i.e. end-of-archive), R_HEADER is set to NULL.  In case
+ * of an error an error message is printed.  If the header is an
+ * extended header, a string list is allocated and stored at
+ * R_EXTHEADER; the caller should provide a pointer to NULL.  Such an
+ * extended header is fully processed here and the returned R_HEADER
+ * has then the next regular header.  */
 static gpg_error_t
-read_header (estream_t stream, tarinfo_t info, tar_header_t *r_header)
+read_header (estream_t stream, tarinfo_t info,
+             tar_header_t *r_header, strlist_t *r_extheader)
 {
   gpg_error_t err;
   char record[RECORDSIZE];
   int i;
+  tar_header_t hdr;
+  char *buffer;
+  size_t buflen, nrec;
 
   err = read_record (stream, record);
   if (err)
@@ -224,7 +305,67 @@ read_header (estream_t stream, tarinfo_t info, tar_header_t *r_header)
     }
 
   *r_header = parse_header (record, es_fname_get (stream), info);
-  return *r_header ? 0 : gpg_error_from_syserror ();
+  if (!*r_header)
+    return gpg_error_from_syserror ();
+  hdr = *r_header;
+
+  if (hdr->typeflag != TF_EXTHDR || !r_extheader)
+    return 0;
+
+  /* Read the extended header.  */
+  if (!hdr->nrecords)
+    {
+      /* More than 64k for an extedned header is surely too large.  */
+      log_info ("%s: warning: empty extended header\n",
+                 es_fname_get (stream));
+      return 0;
+    }
+  if (hdr->nrecords > 65536 / RECORDSIZE)
+    {
+      /* More than 64k for an extedned header is surely too large.  */
+      log_error ("%s: extended header too large - skipping\n",
+                 es_fname_get (stream));
+      return 0;
+    }
+
+  buffer = xtrymalloc (hdr->nrecords * RECORDSIZE);
+  if (!buffer)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("%s: error allocating space for extended header: %s\n",
+                 es_fname_get (stream), gpg_strerror (err));
+      return err;
+    }
+  buflen = 0;
+
+  for (nrec=0; nrec < hdr->nrecords;)
+    {
+      err = read_record (stream, buffer + buflen);
+      if (err)
+        {
+          xfree (buffer);
+          return err;
+        }
+      info->nblocks++;
+      nrec++;
+      if (nrec < hdr->nrecords || (hdr->size && !(hdr->size % RECORDSIZE)))
+        buflen += RECORDSIZE;
+      else
+        buflen += (hdr->size % RECORDSIZE);
+    }
+
+  err = parse_extended_header (es_fname_get (stream),
+                               buffer, buflen, r_extheader);
+  if (err)
+    {
+      free_strlist (*r_extheader);
+      *r_extheader = NULL;
+    }
+
+  xfree (buffer);
+  /* Now tha the extedned header has been read, we read the next
+   * header without allowing an extended header.  */
+  return read_header (stream, info, r_header, NULL);
 }
 
 
@@ -249,11 +390,13 @@ skip_data (estream_t stream, tarinfo_t info, tar_header_t header)
 
 
 static void
-print_header (tar_header_t header, estream_t out)
+print_header (tar_header_t header, strlist_t extheader, estream_t out)
 {
   unsigned long mask;
   char modestr[10+1];
   int i;
+  strlist_t sl;
+  const char *name, *linkname;
 
   *modestr = '?';
   switch (header->typeflag)
@@ -266,6 +409,8 @@ print_header (tar_header_t header, estream_t out)
     case TF_DIRECTORY:*modestr = 'd'; break;
     case TF_FIFO:     *modestr = 'f'; break;
     case TF_RESERVED: *modestr = '='; break;
+    case TF_EXTHDR:   break;
+    case TF_GEXTHDR:  break;
     case TF_UNKNOWN:  break;
     case TF_NOTSUP:   break;
     }
@@ -279,9 +424,25 @@ print_header (tar_header_t header, estream_t out)
     modestr[9] = modestr[9] == 'x'? 't':'T';
   modestr[10] = 0;
 
-  es_fprintf (out, "%s %lu %lu/%lu %12llu %s %s\n",
+  /* FIXME: We do not parse the linkname unless its part of an
+   * extended header.  */
+  name = header->name;
+  linkname = header->typeflag == TF_SYMLINK? "?" : NULL;
+
+  for (sl = extheader; sl; sl = sl->next)
+    {
+      if (sl->flags == 1)
+        name = sl->d;
+      else if (sl->flags == 2)
+        linkname = sl->d;
+    }
+
+  es_fprintf (out, "%s %lu %lu/%lu %12llu %s %s%s%s\n",
               modestr, header->nlink, header->uid, header->gid, header->size,
-              isotimestamp (header->mtime), header->name);
+              isotimestamp (header->mtime),
+              name,
+              linkname? " -> " : "",
+              linkname? linkname : "");
 }
 
 
@@ -295,6 +456,7 @@ gpgtar_list (const char *filename, int decrypt)
   estream_t stream;
   estream_t cipher_stream = NULL;
   tar_header_t header = NULL;
+  strlist_t extheader = NULL;
   struct tarinfo_s tarinfo_buffer;
   tarinfo_t tarinfo = &tarinfo_buffer;
 
@@ -360,20 +522,23 @@ gpgtar_list (const char *filename, int decrypt)
 
   for (;;)
     {
-      err = read_header (stream, tarinfo, &header);
+      err = read_header (stream, tarinfo, &header, &extheader);
       if (err || header == NULL)
         goto leave;
 
-      print_header (header, es_stdout);
+      print_header (header, extheader, es_stdout);
 
       if (skip_data (stream, tarinfo, header))
         goto leave;
+      free_strlist (extheader);
+      extheader = NULL;
       xfree (header);
       header = NULL;
     }
 
 
  leave:
+  free_strlist (extheader);
   xfree (header);
   if (stream != es_stdin)
     es_fclose (stream);
@@ -383,14 +548,15 @@ gpgtar_list (const char *filename, int decrypt)
 }
 
 gpg_error_t
-gpgtar_read_header (estream_t stream, tarinfo_t info, tar_header_t *r_header)
+gpgtar_read_header (estream_t stream, tarinfo_t info,
+                    tar_header_t *r_header, strlist_t *r_extheader)
 {
-  return read_header (stream, info, r_header);
+  return read_header (stream, info, r_header, r_extheader);
 }
 
 void
-gpgtar_print_header (tar_header_t header, estream_t out)
+gpgtar_print_header (tar_header_t header, strlist_t extheader, estream_t out)
 {
   if (header && out)
-    print_header (header, out);
+    print_header (header, extheader, out);
 }

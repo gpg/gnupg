@@ -17,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -293,8 +294,10 @@ add_entry (const char *dname, const char *entryname, scanctrl_t scanctrl)
     xfree (hdr);
   else
     {
+      /* FIXME: We don't have the extended info yet available so we
+       * can't print them.  */
       if (opt.verbose)
-        gpgtar_print_header (hdr, log_get_stream ());
+        gpgtar_print_header (hdr, NULL, log_get_stream ());
       *scanctrl->flist_tail = hdr;
       scanctrl->flist_tail = &hdr->next;
     }
@@ -771,7 +774,7 @@ build_header (void *record, tar_header_t hdr, strlist_t *r_exthdr)
                          hdr->name, gpg_strerror (err));
               return err;
             }
-          sl->flags = 2;  /* Mark as linkname */
+          sl->flags = 2;  /* Mark as linkpath */
         }
     }
 #endif /*!HAVE_W32_SYSTEM*/
