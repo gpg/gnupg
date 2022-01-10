@@ -2142,18 +2142,18 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   else if (!strcmp (uri, "https://keys.gnupg.net"))
     uri = "hkps://keyserver.ubuntu.com";
   else if (!strcmp (uri, "hkp://keys.gnupg.net"))
-    uri = "hkp://pgp.surf.nl";
+    uri = "hkp://keyserver.ubuntu.com";
   else if (!strcmp (uri, "http://keys.gnupg.net"))
-    uri = "hkp://pgp.surf.nl:80";
+    uri = "hkp://keyserver.ubuntu.com:80";
   else if (!strcmp (uri, "hkps://http-keys.gnupg.net")
            || !strcmp (uri, "http-keys.gnupg.net"))
     uri = "hkps://keyserver.ubuntu.com";
   else if (!strcmp (uri, "https://http-keys.gnupg.net"))
     uri = "hkps://keyserver.ubuntu.com";
   else if (!strcmp (uri, "hkp://http-keys.gnupg.net"))
-    uri = "hkp://pgp.surf.nl";
+    uri = "hkp://keyserver.ubuntu.com";
   else if (!strcmp (uri, "http://http-keys.gnupg.net"))
-    uri = "hkp://pgp.surf.nl:80";
+    uri = "hkp://keyserver.ubuntu.com:80";
 
   item = xtrymalloc (sizeof *item + strlen (uri));
   if (!item)
