@@ -5976,7 +5976,11 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   xfree (cache_nonce);
   xfree (passwd_nonce);
   if (err)
-    log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
+    {
+      log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
+      write_status_error (cardkey? "card_key_generate":"key_generate", err);
+      print_status_key_not_created ( NULL );
+    }
   return err;
 }
 
