@@ -134,6 +134,15 @@ Please consult your security expert first.
 .
 
 
+
+.gpg.keygen.keygrip
+Enter the keygrip of the key to add.
+
+The keygrip is a string of 40 hex digits that identifies a key.  It
+must belong to a secret key or a secret subkey stored in your keyring.
+.
+
+
 .gpg.keygen.flags
 Toggle the capabilities of the key.
 
