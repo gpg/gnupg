@@ -168,6 +168,15 @@ key, and in parentheses the usage of the key (cert, sign, auth, encr).
 If known the standard usage for a key is marked with an asterisk.
 .
 
+
+.gpg.keygen.keygrip
+Enter the keygrip of the key to add.
+
+The keygrip is a string of 40 hex digits that identifies a key.  It
+must belong to a secret key or a secret subkey stored in your keyring.
+.
+
+
 .gpg.keygen.flags
 Toggle the capabilities of the key.
 

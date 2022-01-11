@@ -2252,8 +2252,8 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           for (;;)
             {
               xfree (answer);
-              answer = tty_get (_("Enter the keygrip: "));
-              tty_kill_prompt ();
+              answer = cpr_get ("keygen.keygrip", _("Enter the keygrip: "));
+              cpr_kill_prompt ();
               trim_spaces (answer);
               if (!*answer)
                 {
