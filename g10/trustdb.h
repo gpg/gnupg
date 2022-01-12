@@ -80,6 +80,7 @@ int tdb_keyid_is_utk (u32 *kid);
 /* Return the list of ultimately trusted keys.  The caller must not
  * modify this list nor must it free the list.  */
 struct key_item *tdb_utks (void);
+void tdb_update_utk (u32 *kid, int add);
 void check_trustdb (ctrl_t ctrl);
 void update_trustdb (ctrl_t ctrl);
 int setup_trustdb( int level, const char *dbname );

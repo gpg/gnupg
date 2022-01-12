@@ -5617,8 +5617,6 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
           pk = find_kbnode (pub_root, PKT_PUBLIC_KEY)->pkt->pkt.public_key;
 
-          update_ownertrust (ctrl, pk, TRUST_ULTIMATE);
-
           if (!opt.flags.no_auto_trust_new_key)
             update_ownertrust (ctrl, pk,
                                ((get_ownertrust (ctrl, pk) & ~TRUST_MASK)

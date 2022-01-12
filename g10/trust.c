@@ -267,7 +267,11 @@ update_ownertrust (ctrl_t ctrl, PKT_public_key *pk, unsigned int new_trust)
   (void)pk;
   (void)new_trust;
 #else
+  u32 keyid[2];
+
   tdb_update_ownertrust (ctrl, pk, new_trust, 0);
+  keyid_from_pk (pk, keyid);
+  tdb_update_utk (keyid, (new_trust & TRUST_ULTIMATE));
 #endif
 }
 

@@ -308,6 +308,49 @@ add_utk (u32 *kid)
 }
 
 
+/* Add/remove KID to/from the list of ultimately trusted keys.  */
+void
+tdb_update_utk (u32 *kid, int add)
+{
+  struct key_item *k, *k_prev;
+
+  k_prev = NULL;
+  for (k = utk_list; k; k = k->next)
+    if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
+      break;
+    else
+      k_prev = k;
+
+  if (add)
+    {
+      if (!k)
+        {
+          k = new_key_item ();
+          k->kid[0] = kid[0];
+          k->kid[1] = kid[1];
+          k->ownertrust = TRUST_ULTIMATE;
+          k->next = utk_list;
+          utk_list = k;
+          if ( opt.verbose > 1 )
+            log_info(_("key %s: accepted as trusted key\n"), keystr(kid));
+        }
+    }
+  else
+    {
+      if (k)
+        {
+          if (k_prev)
+            k_prev->next = k->next;
+          else
+            utk_list = NULL;
+
+          xfree (k->trust_regexp);
+          xfree (k);
+        }
+    }
+}
+
+
 /****************
  * Verify that all our secret keys are usable and put them into the utk_list.
  */
