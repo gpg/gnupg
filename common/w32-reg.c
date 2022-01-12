@@ -160,8 +160,18 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
     }
 
   nbytes = 1;
-  if (RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes ) )
-    goto leave;
+  if (RegQueryValueEx (key_handle, name, 0, NULL, NULL, &nbytes))
+    {
+      if (root)
+        goto leave;
+      /* Try to fallback to HKLM also for a missing value.  */
+      RegCloseKey (key_handle);
+      if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle))
+        return NULL; /* Nope.  */
+      if (RegQueryValueEx (key_handle, name, 0, NULL, NULL, &nbytes))
+        goto leave;
+    }
+
   result = xtrymalloc ((n1=nbytes+1));
   if (!result)
     goto leave;
