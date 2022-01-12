@@ -300,6 +300,7 @@ Update all configuration files with values taken from the global
 configuration file (usually @file{/etc/gnupg/gpgconf.conf}).
 
 @item --list-dirs [@var{names}]
+@itemx -L
 Lists the directories used by @command{gpgconf}.  One directory is
 listed per line, and each line consists of a colon-separated list where
 the first field names the directory type (for example @code{sysconfdir})
@@ -333,8 +334,8 @@ force an update of that file this command can be used:
        gpg-connect-agent --dirmngr 'loadswdb --force' /bye
 @end example
 
-
 @item --reload [@var{component}]
+@itemx -R
 @opindex reload
 Reload all or the given component. This is basically the same as
 sending a SIGHUP to the component.  Components which don't support
@@ -351,6 +352,7 @@ may use this command to ensure that they are started.  Using "all" for
 @var{component} launches all components which are daemons.
 
 @item --kill [@var{component}]
+@itemx -K
 @opindex kill
 Kill the given component that runs as a daemon, including
 @command{gpg-agent}, @command{dirmngr}, and @command{scdaemon}.  A

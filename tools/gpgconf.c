@@ -46,6 +46,10 @@ enum cmd_and_opt_values
     oRuntime    = 'r',
     oComponent  = 'c',
     oNull       = '0',
+    aListDirs   = 'L',
+    aKill       = 'K',
+    aReload     = 'R',
+
     oNoVerbose	= 500,
     oHomedir,
     oBuilddir,
@@ -61,15 +65,12 @@ enum cmd_and_opt_values
     aListConfig,
     aCheckConfig,
     aQuerySWDB,
-    aListDirs,
     aLaunch,
-    aKill,
     aCreateSocketDir,
     aRemoveSocketDir,
     aApplyProfile,
-    aReload,
-    aShowConfigs,
-    aShowVersions
+    aShowVersions,
+    aShowConfigs
   };
 
 
