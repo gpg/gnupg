@@ -141,14 +141,17 @@ agent_tpm2d_writekey (ctrl_t ctrl, unsigned char **shadow_info,
 static gpg_error_t
 pin_cb (ctrl_t ctrl, const char *prompt, char **passphrase)
 {
-  *passphrase = agent_get_cache (ctrl, ctrl->keygrip, CACHE_MODE_USER);
+  char hexgrip[2*KEYGRIP_LEN + 1];
+
+  bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
+  *passphrase = agent_get_cache (ctrl, hexgrip, CACHE_MODE_USER);
   if (*passphrase)
     return 0;
   return agent_get_passphrase(ctrl, passphrase,
 			      _("Please enter your passphrase, so that the "
 				"secret key can be unlocked for this session"),
 			      prompt, NULL, 0,
-			      ctrl->keygrip, CACHE_MODE_USER, NULL);
+			      hexgrip, CACHE_MODE_USER, NULL);
 }
 
 int
@@ -160,6 +163,7 @@ agent_tpm2d_pksign (ctrl_t ctrl, const unsigned char *digest,
   char line[ASSUAN_LINELENGTH];
   membuf_t data;
   struct inq_parm_s inqparm;
+  char hexgrip[2*KEYGRIP_LEN + 1];
 
   rc = start_tpm2d (ctrl);
   if (rc)
@@ -183,7 +187,10 @@ agent_tpm2d_pksign (ctrl_t ctrl, const unsigned char *digest,
 			inq_extra, &inqparm,
 			NULL, NULL);
   if (!rc)
-    agent_put_cache (ctrl, ctrl->keygrip, CACHE_MODE_USER, inqparm.pin, 0);
+    {
+      bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
+      agent_put_cache (ctrl, hexgrip, CACHE_MODE_USER, inqparm.pin, 0);
+    }
 
   xfree (inqparm.pin);
 
@@ -208,6 +215,7 @@ agent_tpm2d_pkdecrypt (ctrl_t ctrl, const unsigned char *cipher,
   char line[ASSUAN_LINELENGTH];
   membuf_t data;
   struct inq_parm_s inqparm;
+  char hexgrip[2*KEYGRIP_LEN + 1];
 
   rc = start_tpm2d (ctrl);
   if (rc)
@@ -231,7 +239,10 @@ agent_tpm2d_pkdecrypt (ctrl_t ctrl, const unsigned char *cipher,
 			inq_extra, &inqparm,
 			NULL, NULL);
   if (!rc)
-    agent_put_cache (ctrl, ctrl->keygrip, CACHE_MODE_USER, inqparm.pin, 0);
+    {
+      bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
+      agent_put_cache (ctrl, hexgrip, CACHE_MODE_USER, inqparm.pin, 0);
+    }
 
   xfree (inqparm.pin);
 
