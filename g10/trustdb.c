@@ -192,7 +192,7 @@ release_key_array ( struct key_array *keys )
  * before initializing the validation module.
  * FIXME: Should be replaced by a function to add those keys to the trustdb.
  */
-void
+static void
 tdb_register_trusted_keyid (u32 *keyid)
 {
   struct key_item *k;
@@ -217,7 +217,7 @@ tdb_register_trusted_key (const char *string)
     {
       if (desc.mode == KEYDB_SEARCH_MODE_LONG_KID)
         {
-          register_trusted_keyid (desc.u.kid);
+          tdb_register_trusted_keyid (desc.u.kid);
           return;
         }
       if (desc.mode == KEYDB_SEARCH_MODE_FPR
@@ -225,7 +225,7 @@ tdb_register_trusted_key (const char *string)
         {
           kid[0] = buf32_to_u32 (desc.u.fpr+12);
           kid[1] = buf32_to_u32 (desc.u.fpr+16);
-          register_trusted_keyid (kid);
+          tdb_register_trusted_keyid (kid);
           return;
         }
     }
@@ -254,6 +254,49 @@ add_utk (u32 *kid)
   if( opt.verbose > 1 )
     log_info(_("key %s: accepted as trusted key\n"), keystr(kid));
   return 1;
+}
+
+
+/* Add/remove KID to/from the list of ultimately trusted keys.  */
+void
+tdb_update_utk (u32 *kid, int add)
+{
+  struct key_item *k, *k_prev;
+
+  k_prev = NULL;
+  for (k = utk_list; k; k = k->next)
+    if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
+      break;
+    else
+      k_prev = k;
+
+  if (add)
+    {
+      if (!k)
+        {
+          k = new_key_item ();
+          k->kid[0] = kid[0];
+          k->kid[1] = kid[1];
+          k->ownertrust = TRUST_ULTIMATE;
+          k->next = utk_list;
+          utk_list = k;
+          if ( opt.verbose > 1 )
+            log_info(_("key %s: accepted as trusted key\n"), keystr(kid));
+        }
+    }
+  else
+    {
+      if (k)
+        {
+          if (k_prev)
+            k_prev->next = k->next;
+          else
+            utk_list = NULL;
+
+          xfree (k->trust_regexp);
+          xfree (k);
+        }
+    }
 }
 
 

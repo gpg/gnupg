@@ -5196,9 +5196,6 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
           pk = find_kbnode (pub_root, PKT_PUBLIC_KEY)->pkt->pkt.public_key;
 
-          keyid_from_pk (pk, pk->main_keyid);
-          register_trusted_keyid (pk->main_keyid);
-
 	  update_ownertrust (ctrl, pk,
                              ((get_ownertrust (ctrl, pk) & ~TRUST_MASK)
                               | TRUST_ULTIMATE ));
