@@ -160,13 +160,6 @@ msgid "Note: Request from a remote site."
 msgstr "Hinweis: Anfrage von einem anderen Rechner."
 
 #, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "Fehler beim Holen der Karten-Seriennummer: %s\n"
-
-msgid "Please re-enter this passphrase"
-msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
-
-#, c-format
 msgid ""
 "Please enter the passphrase to protect the imported object within the %s "
 "system."
