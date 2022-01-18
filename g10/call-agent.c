@@ -539,6 +539,13 @@ learn_status_cb (void *opaque, const char *line)
       xfree (parm->apptype);
       parm->apptype = unescape_status_string (line);
     }
+  else if (keywordlen == 10 && !memcmp (keyword, "APPVERSION", keywordlen))
+    {
+      unsigned int val = 0;
+
+      sscanf (line, "%x", &val);
+      parm->appversion = val;
+    }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
     {
       xfree (parm->disp_name);

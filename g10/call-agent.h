@@ -32,6 +32,7 @@ struct agent_card_info_s
   int error;         /* private. */
   char *reader;      /* Reader information.  */
   char *apptype;     /* Malloced application type string.  */
+  unsigned int appversion; /* Version of the application.  */
   unsigned int manufacturer_id;
   char *manufacturer_name; /* malloced.  */
   char *serialno;    /* malloced hex string. */

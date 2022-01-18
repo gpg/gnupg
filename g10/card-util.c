@@ -348,6 +348,26 @@ fpr_is_ff (const char *fpr, unsigned int fprlen)
 }
 
 
+static void
+print_a_version (estream_t fp, const char *prefix, unsigned int value)
+{
+  unsigned int a, b, c, d;
+  a = ((value >> 24) & 0xff);
+  b = ((value >> 16) & 0xff);
+  c = ((value >>  8) & 0xff);
+  d = ((value      ) & 0xff);
+
+  if (a)
+    tty_fprintf (fp, "%s %u.%u.%u.%u\n", prefix, a, b, c, d);
+  else if (b)
+    tty_fprintf (fp, "%s %u.%u.%u\n", prefix, b, c, d);
+  else if (c)
+    tty_fprintf (fp, "%s %u.%u\n", prefix, c, d);
+  else
+    tty_fprintf (fp, "%s %u\n", prefix, d);
+}
+
+
 /* Print all available information about the current card. */
 static void
 current_card_status (ctrl_t ctrl, estream_t fp,
@@ -448,7 +468,12 @@ current_card_status (ctrl_t ctrl, estream_t fp,
 
   if (opt.with_colons)
     {
-      es_fprintf (fp, "version:%.4s:\n", info.serialno+12);
+      if (info.appversion)
+        es_fprintf (fp, "version:%02u%02u:\n",
+                    (info.appversion >> 8) & 0xff,
+                    info.appversion & 0xff);
+      else
+        es_fprintf (fp, "version:%.4s:\n", info.serialno+12);
       uval = xtoi_2(info.serialno+16)*256 + xtoi_2 (info.serialno+18);
       pesc = (info.manufacturer_name
               ? percent_escape (info.manufacturer_name, NULL) : NULL);
@@ -548,7 +573,10 @@ current_card_status (ctrl_t ctrl, estream_t fp,
     }
   else
     {
-      tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
+      if (info.appversion)
+        print_a_version (fp, "Version ..........:", info.appversion);
+      else
+        tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
                    info.serialno[12] == '0'?"":info.serialno+12,
                    info.serialno[13],
                    info.serialno[14] == '0'?"":info.serialno+14,
