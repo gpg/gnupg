@@ -199,7 +199,7 @@ The suggested default is usually a good choice.
 
 If you want to use a large key size, for example 4096 bit, please
 think again whether it really makes sense for you.  You may want
-to view the web page http://www.xkcd.com/538/ .
+to view the web page https://www.xkcd.com/538/ .
 .
 
 .gpg.keygen.size.huge.okay
@@ -214,7 +214,7 @@ Answer "yes" or "no".
 
 .gpg.keygen.valid
 Enter the required value as shown in the prompt.
-It is possible to enter a ISO date (YYYY-MM-DD) but you won't
+It is possible to enter an ISO date (YYYY-MM-DD) but you won't
 get a good error response - instead the system tries to interpret
 the given value as an interval.
 .
