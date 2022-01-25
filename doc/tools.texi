@@ -317,6 +317,8 @@ shall go into the respective configuration file.
 @item --apply-defaults
 Update all configuration files with values taken from the global
 configuration file (usually @file{/etc/gnupg/gpgconf.conf}).
+Note: This is a legacy mechanism.  Please use global configuration
+files instead.
 
 @item --list-dirs [@var{names}]
 @itemx -L
@@ -977,8 +979,12 @@ effect.
 @node Listing global options
 @subsection Listing global options
 
-Sometimes it is useful for applications to look at the global options
-file @file{gpgconf.conf}.
+Some legacy applications look at the global configuration file for the
+gpgconf tool itself; this is the file @file{gpgconf.conf}.  Modern
+applications should not use it but use per component global
+configuration files which are more flexible than the
+@file{gpgconf.conf}.  Using both files is not suggested.
+
 The colon separated listing format is record oriented and uses the first
 field to identify the record type:
 
@@ -1119,8 +1125,10 @@ More fields may be added in future to the output.
 @item /etc/gnupg/gpgconf.conf
 @cindex gpgconf.conf
   If this file exists, it is processed as a global configuration file.
-  A commented example can be found in the @file{examples} directory of
-  the distribution.
+  This is a legacy mechanism which should not be used tigether with
+  the modern global per component configuration files.  A commented
+  example can be found in the @file{examples} directory of the
+  distribution.
 
 @item @var{GNUPGHOME}/swdb.lst
 @cindex swdb.lst
@@ -1159,6 +1167,9 @@ More fields may be added in future to the output.
 @end ifset
 
 @mansect description
+This is a legacy script.  Modern application should use the per
+component global configuration files under @file{/etc/gnupg/}.
+
 This script is a wrapper around @command{gpgconf} to run it with the
 command @code{--apply-defaults} for all real users with an existing
 GnuPG home directory.  Admins might want to use this script to update he
