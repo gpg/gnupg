@@ -237,13 +237,6 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oConnectQuickTimeout, "connect-quick-timeout", "@"),
 
 
-  ARGPARSE_header ("Keyserver", N_("Configuration for Keyservers")),
-
-  ARGPARSE_s_s (oKeyServer, "keyserver",
-                N_("|URL|use keyserver at URL")),
-  ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
-                N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
-
   ARGPARSE_header ("HTTP", N_("Configuration for HTTP servers")),
 
   ARGPARSE_s_n (oDisableHTTP, "disable-http", N_("inhibit the use of HTTP")),
@@ -255,8 +248,14 @@ static gpgrt_opt_t opts[] = {
                 N_("use system's HTTP proxy setting")),
   ARGPARSE_s_s (oLDAPWrapperProgram, "ldap-wrapper-program", "@"),
 
+  ARGPARSE_header ("Keyserver", N_("Configuration for OpenPGP servers")),
 
-  ARGPARSE_header ("LDAP", N_("Configuration of LDAP servers to use")),
+  ARGPARSE_s_s (oKeyServer, "keyserver",
+                N_("|URL|use keyserver at URL")),
+  ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
+                N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
+
+  ARGPARSE_header ("LDAP", N_("Configuration for X.509 servers")),
 
   ARGPARSE_s_n (oDisableLDAP, "disable-ldap", N_("inhibit the use of LDAP")),
   ARGPARSE_s_n (oIgnoreLDAPDP,"ignore-ldap-dp",
