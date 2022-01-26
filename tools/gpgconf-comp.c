@@ -2071,6 +2071,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
           /*            pargs.r_type? pargs.r.ret_str: "[cmdline]"); */
           continue;
         }
+      if ((pargs.r_type & ARGPARSE_OPT_IGNORE))
+        continue;
 
       /* We only have the short option.  Search in the option table
        * for the long option name.  */
@@ -2111,7 +2113,10 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
           opt_value = xasprintf ("%lu", pargs.r.ret_ulong);
           break;
         case ARGPARSE_TYPE_STRING:
-          opt_value = xasprintf ("\"%s", gc_percent_escape (pargs.r.ret_str));
+          if (!pargs.r.ret_str)
+            opt_value = xstrdup ("\"(none)"); /* We should not see this.  */
+          else
+            opt_value = xasprintf ("\"%s", gc_percent_escape (pargs.r.ret_str));
           break;
         default: /* ARGPARSE_TYPE_NONE or any unknown type.  */
           opt_value = xstrdup ("1");  /* Make sure we have some value.  */
