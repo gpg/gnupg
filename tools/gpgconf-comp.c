@@ -278,6 +278,10 @@ static const struct
    several times.  A comma separated list of arguments is used as the
    argument value.  */
 #define GC_OPT_FLAG_LIST	(1UL << 2)
+/* The RUNTIME flag for an option indicates that the option can be
+   changed at runtime.  */
+#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
+
 
 
 /* A human-readable description for each flag.  */
@@ -326,7 +330,8 @@ static known_option_t known_options_gpg_agent[] =
   {
    { "verbose", GC_OPT_FLAG_LIST|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "quiet", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
-   { "disable-scdaemon", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
+   { "disable-scdaemon", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
+                         GC_LEVEL_ADVANCED },
    { "enable-ssh-support", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "ssh-fingerprint-digest", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT },
    { "enable-putty-support", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
@@ -352,6 +357,8 @@ static known_option_t known_options_gpg_agent[] =
    { "min-passphrase-nonalpha", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT },
    { "check-passphrase-pattern", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT,
      /**/                        GC_ARG_TYPE_FILENAME },
+   { "check-sym-passphrase-pattern", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT,
+     /**/                        GC_ARG_TYPE_FILENAME },
    { "max-passphrase-days", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT },
    { "enable-passphrase-history", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT },
    { "pinentry-timeout", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },
@@ -366,8 +373,6 @@ static known_option_t known_options_scdaemon[] =
    { "verbose", GC_OPT_FLAG_LIST|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "no-greeting", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
-   { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
-   GC_ARG_TYPE_FILENAME },
    { "reader-port",  GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "ctapi-driver", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },
    { "pcsc-driver",  GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },
@@ -431,8 +436,6 @@ static known_option_t known_options_gpgsm[] =
    { "no-greeting",       GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "default-key",       GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "encrypt-to",        GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
-   { "options",           GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
-                          GC_ARG_TYPE_FILENAME },
    { "disable-dirmngr",   GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
    { "p12-charset",       GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "keyserver",         GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
@@ -451,8 +454,6 @@ static known_option_t known_options_gpgsm[] =
    { "cipher-algo",                    GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "disable-trusted-cert-crl-check", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
 
-   { "default_pubkey_algo",
-       (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE },
    /* Pseudo option follows.  See also table below. */
    { "default_pubkey_algo",            GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
@@ -471,8 +472,6 @@ static known_option_t known_options_dirmngr[] =
    { "verbose",           GC_OPT_FLAG_LIST, GC_LEVEL_BASIC },
    { "quiet",             GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "no-greeting",       GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
-   { "options",           GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
-                          GC_ARG_TYPE_FILENAME },
    { "resolver-timeout",  GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "nameserver",        GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "debug-level",       GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED },
@@ -1504,7 +1503,7 @@ is_known_option (gc_component_id_t component, const char *name)
         if (!strcmp (option->name, name))
           break;
     }
-  return option;
+  return (option && option->name)? option : NULL;
 }
 
 
