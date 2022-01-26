@@ -1,7 +1,7 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
  * Copyright (C) 2004, 2007-2011 Free Software Foundation, Inc.
  * Copyright (C) 2016 Werner Koch
- * Copyright (C) 2020, 2021 g10 Code GmbH
+ * Copyright (C) 2020-2022 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -28,7 +28,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <assert.h>
 #include <errno.h>
 #include <time.h>
 #include <stdarg.h>
@@ -396,14 +395,13 @@ static known_option_t known_options_gpg[] =
    { "encrypt-to",           GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "group",                GC_OPT_FLAG_LIST, GC_LEVEL_ADVANCED,
      GC_ARG_TYPE_ALIAS_LIST},
-   { "options",              GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
-     GC_ARG_TYPE_FILENAME },
    { "compliance",           GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
    { "default-new-key-algo", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "trust-model",          GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "debug-level",          GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED },
    { "log-file",             GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      GC_ARG_TYPE_FILENAME },
+   { "keyserver",            GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "auto-key-locate",      GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "auto-key-retrieve",    GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
    { "no-auto-key-retrieve", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
@@ -412,11 +410,16 @@ static known_option_t known_options_gpg[] =
    { "completes-needed",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "marginals-needed",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
-   /* The next is a pseudo option which we read via --gpgconf-list */
-   { "default_pubkey_algo",
-     (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE },
+   /* The next is a pseudo option which we read via --gpgconf-list.
+    * The meta information is taken from the table below.  */
+   { "default_pubkey_algo",  GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
    { NULL }
+ };
+static const char *known_pseudo_options_gpg[] =
+  {/*                     v-- ARGPARSE_TYPE_STRING */
+   "default_pubkey_algo:0:2:@:",
+   NULL
  };
 
 
@@ -448,11 +451,17 @@ static known_option_t known_options_gpgsm[] =
    { "cipher-algo",                    GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
    { "disable-trusted-cert-crl-check", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
 
-   /* Pseudo option follows.  */
    { "default_pubkey_algo",
        (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE },
+   /* Pseudo option follows.  See also table below. */
+   { "default_pubkey_algo",            GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
    { NULL }
+ };
+static const char *known_pseudo_options_gpgsm[] =
+  {/*                     v-- ARGPARSE_TYPE_STRING */
+   "default_pubkey_algo:0:2:@:",
+   NULL
  };
 
 
@@ -516,7 +525,7 @@ struct gc_option_s
   unsigned int opt_arg:1;      /* The option's argument is optional.    */
   unsigned int runtime:1;      /* The option is runtime changeable.  */
 
-  unsigned int active:1;       /* Has been announced in gpgconf-list.  */
+  unsigned int gpgconf_list:1; /* Has been announced in gpgconf-list.  */
 
   unsigned int has_default:1;  /* The option has a default value.  */
   unsigned int def_in_desc:1;  /* The default is in the descrition.  */
@@ -584,6 +593,9 @@ static struct
   /* The static table of known options for this component.  */
   known_option_t *known_options;
 
+  /* The static table of known pseudo options for this component or NULL.  */
+  const char **known_pseudo_options;
+
   /* The runtime change callback.  If KILLFLAG is true the component
      is killed and not just reloaded.  */
   void (*runtime_change) (int killflag);
@@ -605,23 +617,23 @@ static struct
 
    { GPG_NAME,  GPG_DISP_NAME,     "gnupg",  N_("OpenPGP"),
      GNUPG_MODULE_NAME_GPG, GPG_NAME ".conf",
-     known_options_gpg },
+     known_options_gpg, known_pseudo_options_gpg },
 
    { GPGSM_NAME, GPGSM_DISP_NAME,  "gnupg",  N_("S/MIME"),
      GNUPG_MODULE_NAME_GPGSM, GPGSM_NAME ".conf",
-     known_options_gpgsm },
+     known_options_gpgsm, known_pseudo_options_gpgsm },
 
    { GPG_AGENT_NAME, GPG_AGENT_DISP_NAME, "gnupg", N_("Private Keys"),
      GNUPG_MODULE_NAME_AGENT, GPG_AGENT_NAME ".conf",
-     known_options_gpg_agent, gpg_agent_runtime_change },
+     known_options_gpg_agent, NULL, gpg_agent_runtime_change },
 
    { SCDAEMON_NAME, SCDAEMON_DISP_NAME, "gnupg", N_("Smartcards"),
      GNUPG_MODULE_NAME_SCDAEMON, SCDAEMON_NAME ".conf",
-     known_options_scdaemon, scdaemon_runtime_change},
+     known_options_scdaemon, NULL, scdaemon_runtime_change},
 
    { DIRMNGR_NAME, DIRMNGR_DISP_NAME, "gnupg",   N_("Network"),
      GNUPG_MODULE_NAME_DIRMNGR, DIRMNGR_NAME ".conf",
-     known_options_dirmngr, dirmngr_runtime_change },
+     known_options_dirmngr, NULL, dirmngr_runtime_change },
 
    { "pinentry", "Pinentry", "gnupg", N_("Passphrase Entry"),
      GNUPG_MODULE_NAME_PINENTRY, NULL,
@@ -1441,7 +1453,7 @@ gc_component_list_options (int component, estream_t out)
     {
       /* Do not output unknown or internal options.  */
       if (!option->is_header
-	  && (!option->active || option->level == GC_LEVEL_INTERNAL))
+	  && option->level == GC_LEVEL_INTERNAL)
 	  continue;
 
       if (option->is_header)
@@ -1517,6 +1529,47 @@ find_option (gc_component_id_t component, const char *name)
 
 
 
+struct read_line_wrapper_parm_s
+{
+  const char *pgmname;
+  estream_t fp;
+  char *line;
+  size_t line_len;
+  const char **extra_lines;
+  int extra_lines_idx;
+  char *extra_line_buffer;
+};
+
+
+/* Helper for retrieve_options_from_program.  */
+static ssize_t
+read_line_wrapper (struct read_line_wrapper_parm_s *parm)
+{
+  ssize_t length;
+  const char *extra_line;
+
+  if (parm->fp)
+    {
+      length = es_read_line (parm->fp, &parm->line, &parm->line_len, NULL);
+      if (length > 0)
+        return length;
+      if (length < 0 || es_ferror (parm->fp))
+        gc_error (1, errno, "error reading from %s", parm->pgmname);
+      if (es_fclose (parm->fp))
+        gc_error (1, errno, "error closing %s", parm->pgmname);
+      /* EOF seen.  */
+      parm->fp = NULL;
+    }
+  /* Return the made up lines.  */
+  if (!parm->extra_lines
+      || !(extra_line = parm->extra_lines[parm->extra_lines_idx]))
+    return -1;  /* This is really the EOF.  */
+  parm->extra_lines_idx++;
+  xfree (parm->extra_line_buffer);
+  parm->extra_line_buffer = xstrdup (extra_line);
+  return strlen (parm->extra_line_buffer);
+}
+
 /* Retrieve the options for the component COMPONENT.  With
  * ONLY_INSTALLED set components which are not installed are silently
  * ignored. */
@@ -1532,7 +1585,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   known_option_t *known_option;
   gc_option_t *option;
   char *line = NULL;
-  size_t line_len = 0;
+  size_t line_len;
   ssize_t length;
   const char *config_name;
   gnupg_argparse_t pargs;
@@ -1545,6 +1598,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   size_t opt_info_used = 0;           /* Its current length.         */
   size_t opt_info_size = 0;           /* Its allocated length.       */
   int i;
+  struct read_line_wrapper_parm_s read_line_parm;
+  int pseudo_count;
 
   pgmname = (gc_component[component].module_name
              ? gnupg_module_name (gc_component[component].module_name)
@@ -1567,13 +1622,31 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
                 pgmname, gpg_strerror (err));
     }
 
-  while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
+  read_line_parm.pgmname = pgmname;
+  read_line_parm.fp = outfp;
+  read_line_parm.line = line;
+  read_line_parm.line_len = line_len = 0;
+  read_line_parm.extra_line_buffer = NULL;
+  read_line_parm.extra_lines = gc_component[component].known_pseudo_options;
+  read_line_parm.extra_lines_idx = 0;
+  pseudo_count = 0;
+  while ((length = read_line_wrapper (&read_line_parm)) > 0)
     {
       char *fields[4];
       char *optname, *optdesc;
       unsigned int optflags;
       int short_opt;
       gc_arg_type_t arg_type;
+      int pseudo = 0;
+
+      if (read_line_parm.extra_line_buffer)
+        {
+          line = read_line_parm.extra_line_buffer;
+          pseudo = 1;
+          pseudo_count++;
+        }
+      else
+        line = read_line_parm.line;
 
       /* Strip newline and carriage return, if present.  */
       while (length > 0
@@ -1589,13 +1662,12 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
 
       optname = fields[0];
       short_opt = atoi (fields[1]);
-      if (short_opt < 1)
+      if (short_opt < 1 && !pseudo)
         {
           gc_error (0,0, "WARNING: bad short option in option table of '%s'\n",
                     pgmname);
           continue;
         }
-
 
       optflags = strtoul (fields[2], NULL, 10);
       if ((optflags & ARGPARSE_OPT_HEADER))
@@ -1628,7 +1700,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
                                     sizeof *opt_info);
         }
        /* The +1 here accounts for the two items we are going to add to
-       * the global string table.  */
+        * the global string table.  */
       if (string_array_used + 1 >= string_array_size)
         {
           string_array_size += 256;
@@ -1649,11 +1721,14 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
        * known_option_s for this because that one does not carry
        * header lines and it might also be problematic to use such
        * static tables for caching options and default values.  */
-      opt_table[opt_table_used].long_opt = optname;
-      opt_table[opt_table_used].short_opt = short_opt;
-      opt_table[opt_table_used].description = optdesc;
-      opt_table[opt_table_used].flags = optflags;
-      opt_table_used++;
+      if (!pseudo)
+        {
+          opt_table[opt_table_used].long_opt = optname;
+          opt_table[opt_table_used].short_opt = short_opt;
+          opt_table[opt_table_used].description = optdesc;
+          opt_table[opt_table_used].flags = optflags;
+          opt_table_used++;
+        }
 
       /* Note that as per argparser specs the opt_table uses "@" to
        * specifify an empty description.  In the DESC script of
@@ -1674,6 +1749,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
         default:                   arg_type = GC_ARG_TYPE_NONE;   break;
         }
       opt_info[opt_info_used].arg_type = arg_type;
+      if (pseudo) /* Pseudo options are always no_change.  */
+        opt_info[opt_info_used].no_change = 1;
 
       if ((optflags & ARGPARSE_OPT_HEADER))
         opt_info[opt_info_used].is_header = 1;
@@ -1696,11 +1773,10 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
         }
       opt_info_used++;
     }
-  if (length < 0 || es_ferror (outfp))
-    gc_error (1, errno, "error reading from %s", pgmname);
-  if (es_fclose (outfp))
-    gc_error (1, errno, "error closing %s", pgmname);
-  log_assert (opt_table_used == opt_info_used);
+  xfree (read_line_parm.extra_line_buffer);
+  line = read_line_parm.line;
+  line_len = read_line_parm.line_len;
+  log_assert (opt_table_used + pseudo_count == opt_info_used);
 
   err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
   if (err)
@@ -1782,18 +1858,20 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
       option = find_option (component, line);
       if (option)
 	{
-	  if (option->active)
+	  if (option->gpgconf_list)
 	    gc_error (1, errno,
                       "option %s returned twice from \"%s --gpgconf-list\"",
 		      line, pgmname);
-	  option->active = 1;
+	  option->gpgconf_list = 1;
 
-          /* Runtime is duplicated - see above.  */
-          option->runtime     = !!(flags & GC_OPT_FLAG_RUNTIME);
-          option->has_default = !!(flags & GC_OPT_FLAG_DEFAULT);
-          option->def_in_desc = !!(flags & GC_OPT_FLAG_DEF_DESC);
-          option->no_arg_desc = !!(flags & GC_OPT_FLAG_NO_ARG_DESC);
-          option->no_change   = !!(flags & GC_OPT_FLAG_NO_CHANGE);
+          if ((flags & GC_OPT_FLAG_DEFAULT))
+            option->has_default = 1;
+          if ((flags & GC_OPT_FLAG_DEF_DESC))
+            option->def_in_desc = 1;
+          if ((flags & GC_OPT_FLAG_NO_ARG_DESC))
+            option->no_arg_desc = 1;
+          if ((flags & GC_OPT_FLAG_NO_CHANGE))
+            option->no_change = 1;
 
 	  if (default_value && *default_value)
 	    option->default_value = xstrdup (default_value);
@@ -1846,6 +1924,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
           /*            pargs.r_type? pargs.r.ret_str: "[cmdline]"); */
           continue;
         }
+      if ((pargs.r_type & ARGPARSE_OPT_IGNORE))
+        continue;
 
       /* We only have the short option.  Search in the option table
        * for the long option name.  */
@@ -1886,7 +1966,10 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
           opt_value = xasprintf ("%lu", pargs.r.ret_ulong);
           break;
         case ARGPARSE_TYPE_STRING:
-          opt_value = xasprintf ("\"%s", gc_percent_escape (pargs.r.ret_str));
+          if (!pargs.r.ret_str)
+            opt_value = xstrdup ("\"(none)"); /* We should not see this.  */
+          else
+            opt_value = xasprintf ("\"%s", gc_percent_escape (pargs.r.ret_str));
           break;
         default: /* ARGPARSE_TYPE_NONE or any unknown type.  */
           opt_value = xstrdup ("1");  /* Make sure we have some value.  */
@@ -1955,9 +2038,7 @@ option_check_validity (gc_component_id_t component,
 {
   char *arg;
 
-  if (!option->active)
-    gc_error (1, 0, "option %s not supported by component %s",
-              option->name, gc_component[component].name);
+  (void)component;
 
   if (option->new_flags || option->new_value)
     gc_error (1, 0, "option %s already changed", option->name);
@@ -2329,7 +2410,7 @@ change_options_program (gc_component_id_t component,
 	      else if (gc_arg_type[option->arg_type].fallback
 		       == GC_ARG_TYPE_NONE)
 		{
-		  assert (*arg == '1');
+		  log_assert (*arg == '1');
 		  gpgrt_fprintf (src_file, "%s\n", option->name);
 		  if (gpgrt_ferror (src_file))
 		    goto change_one_err;
@@ -2379,7 +2460,7 @@ change_options_program (gc_component_id_t component,
 		  arg = end;
 		}
 
-	      assert (arg == NULL || *arg == '\0' || *arg == ',');
+	      log_assert (arg == NULL || *arg == '\0' || *arg == ',');
 	      if (arg && *arg == ',')
 		arg++;
 	    }
@@ -2479,7 +2560,7 @@ change_one_value (gc_component_id_t component,
 
           /* We convert the number to a list of 1's for convenient
              list handling.  */
-          assert (new_value_nr > 0);
+          log_assert (new_value_nr > 0);
           option->new_value = xmalloc ((2 * (new_value_nr - 1) + 1) + 1);
           str = option->new_value;
           *(str++) = '1';

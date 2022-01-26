@@ -1912,31 +1912,8 @@ gpgconf_list (const char *configfile)
 {
   char *configfile_esc = percent_escape (configfile, NULL);
 
-  es_printf ("%s-%s.conf:%lu:\"%s\n",
-             GPGCONF_NAME, GPG_NAME,
-             GC_OPT_FLAG_DEFAULT,
-             configfile_esc ? configfile_esc : "/dev/null");
-  es_printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("quiet:%lu:\n",   GC_OPT_FLAG_NONE);
-  es_printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("default-key:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("try-secret-key:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("auto-key-import:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("include-key-block:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("auto-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
-  es_printf ("group:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("compliance:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT, "gnupg");
-  es_printf ("default-new-key-algo:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("trust-model:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("max-cert-depth:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("completes-needed:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("marginals-needed:%lu:\n", GC_OPT_FLAG_NONE);
 
   /* The next one is an info only item and should match the macros at
      the top of keygen.c  */
