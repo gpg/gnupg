@@ -1413,6 +1413,7 @@ show_configs (estream_t outfp)
   strlist_t list = NULL;
   strlist_t sl;
   const char *s;
+  int got_gpgconfconf = 0;
 
   es_fprintf (outfp, "### Dump of all standard config files\n");
   show_version_gnupg (outfp, "### ");
@@ -1422,6 +1423,15 @@ show_configs (estream_t outfp)
 
   list_dirs (outfp, NULL, 1);
   es_fprintf (outfp, "\n");
+
+  fname = make_filename (gnupg_sysconfdir (), "gpgconf.conf", NULL);
+  if (!gnupg_access (fname, F_OK))
+    {
+      got_gpgconfconf = 1;
+      show_configs_one_file (fname, 1, outfp, &list);
+      es_fprintf (outfp, "\n");
+    }
+  xfree (fname);
 
   for (idx = 0; idx < DIM (names); idx++)
     {
@@ -1486,6 +1496,17 @@ show_configs (estream_t outfp)
 
   free_strlist (list);
 
+  any = 0;
+
+  /* Additional warning.  */
+  if (got_gpgconfconf)
+    {
+      es_fprintf (outfp,
+                  "###\n"
+                  "### Warning: legacy config file \"gpgconf.conf\" found\n");
+      any = 1;
+    }
+
   /* Check for uncommon files in the home directory.  */
   dir = gnupg_opendir (gnupg_homedir ());
   if (!dir)
@@ -1496,7 +1517,6 @@ show_configs (estream_t outfp)
       return;
     }
 
-  any = 0;
   while ((dir_entry = gnupg_readdir (dir)))
     {
       for (idx = 0; idx < DIM (names); idx++)
