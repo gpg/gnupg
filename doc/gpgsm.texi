@@ -347,16 +347,14 @@ Outputs additional information while running.
 You can increase the verbosity by giving several
 verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
-@item --ldapserver @var{string}
-@itemx --keyserver @var{string}
-@opindex ldapserver
+@item --keyserver @var{string}
 @opindex keyserver
-Add an LDAP server to use for X.509 certificate and CRL lookup.  This
-option can be given multiple times to configure more than one LDAP
-server.  Note that in general @command{dirmngr} should be configured
-with the list of LDAP servers; if this option is also configured here,
-it is used in addition to those configured in dirmngr.  For the syntax
-see the description of dirmngr's ldapserver option.
+This is a deprecated option.  It was used to add an LDAP server to use
+for X.509 certificate and CRL lookup.  The alias @option{--ldapserver}
+existed from version 2.2.28 to 2.2.33 but is now entirely ignored.
+
+LDAP servers must be given in the configuration for @command{dirmngr}.
+
 
 @item --policy-file @var{filename}
 @opindex policy-file
