@@ -461,7 +461,7 @@ static known_option_t known_options_gpgsm[] =
    { "encrypt-to",        GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "disable-dirmngr",   GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
    { "p12-charset",       GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED },
-   { "ldapserver",        GC_OPT_FLAG_LIST, GC_LEVEL_INVISIBLE,
+   { "keyserver",         GC_OPT_FLAG_LIST, GC_LEVEL_INVISIBLE,
                           GC_ARG_TYPE_LDAP_SERVER },
    { "compliance",        GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
    { "debug-level",       GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED },
