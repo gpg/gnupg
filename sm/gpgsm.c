@@ -193,6 +193,7 @@ enum cmd_and_opt_values {
   oSkipVerify,
   oValidationModel,
   oKeyServer,
+  oKeyServer_deprecated,
   oEncryptTo,
   oNoEncryptTo,
   oLoggerFD,
@@ -349,7 +350,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oKeyring, "keyring",
                 N_("|FILE|add keyring to the list of keyrings")),
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
-  ARGPARSE_s_s (oKeyServer, "ldapserver", "@"),
+  ARGPARSE_s_s (oKeyServer_deprecated, "ldapserver", "@"),
   ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
   ARGPARSE_s_n (oUseKeyboxd,    "use-keyboxd", "@"),
 
@@ -1417,6 +1418,10 @@ main ( int argc, char **argv)
 	case oKeyServer:
           append_to_strlist (&opt.keyserver, pargs.r.ret_str);
 	  break;
+
+        case oKeyServer_deprecated:
+          obsolete_option (configname, pargs.lineno, "ldapserver");
+          break;
 
         case oIgnoreCertExtension:
           add_to_strlist (&opt.ignored_cert_extensions, pargs.r.ret_str);
