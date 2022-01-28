@@ -381,9 +381,9 @@ is_armor_tag(const char *line)
 }
 
 /****************
- * Check whether this is a armor line.
- * returns: -1 if it is not a armor header or the index number of the
- * armor header.
+ * Check whether this is a armor line.  Returns: -1 if it is not a
+ * armor header, 42 if it is a generic header, or the index number of
+ * the armor header.
  */
 static int
 is_armor_header( byte *line, unsigned len )
@@ -430,8 +430,12 @@ is_armor_header( byte *line, unsigned len )
 	if( !strcmp(s, p) )
 	    break;
     *save_p = save_c;
-    if( !s )
+    if (!s)
+      {
+        if (!strncmp (p, "BEGIN ", 6))
+          return 42;
 	return -1; /* unknown armor line */
+      }
 
     if( opt.verbose > 1 )
 	log_info(_("armor: %s\n"), head_strings[i]);
@@ -470,6 +474,8 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
     */
 
     p = strchr( line, ':');
+    if (!p && afx->dearmor_state)
+      return 0; /* Special treatment in --dearmor mode.  */
     if( !p || (RFC2440 && p[1]!=' ')
 	|| (!RFC2440 && p[1]!=' ' && p[1]!='\n' && p[1]!='\r'))
       {
@@ -489,7 +495,9 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 	log_printf ("\n");
     }
 
-    if( afx->in_cleartext )
+    if (afx->dearmor_mode)
+      ;
+    else if (afx->in_cleartext)
       {
 	if( (hashes=parse_hash_header( line )) )
 	  afx->hashes |= hashes;
@@ -559,17 +567,25 @@ check_input( armor_filter_context_t *afx, IOBUF a )
     /* find the armor header */
     while(len) {
 	i = is_armor_header( line, len );
-	if( i >= 0 && !(afx->only_keyblocks && i != 1 && i != 5 && i != 6 )) {
+        if ( i == 42 ) {
+            if (afx->dearmor_mode) {
+                afx->dearmor_state = 1;
+                break;
+            }
+        }
+        else if (i >= 0
+                 && !(afx->only_keyblocks && i != 1 && i != 5 && i != 6 )) {
 	    hdr_line = i;
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX ) {
-		if( afx->in_cleartext ) {
+	        if( afx->in_cleartext ) {
 		    log_error(_("nested clear text signatures\n"));
 		    rc = gpg_error (GPG_ERR_INV_ARMOR);
-		}
+                }
 		afx->in_cleartext = 1;
 	    }
 	    break;
 	}
+
 	/* read the next line (skip all truncated lines) */
 	do {
 	    maxlen = MAX_LINELEN;
@@ -692,6 +708,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 		/* Five dashes in a row mean it's probably armor
 		   header. */
 		int type = is_armor_header( p, n );
+                if (type == 42)
+                  type = -1;  /* Only OpenPGP armors are expected.  */
 		if( afx->not_dash_escaped && type != BEGIN_SIGNATURE )
 		  ; /* this is okay */
 		else
@@ -998,6 +1016,11 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    checkcrc++;
 	    break;
 	}
+        else if (afx->dearmor_state && c == '-'
+                 && afx->buffer_pos + 8 < afx->buffer_len
+                 && !strncmp (afx->buffer, "-----END ", 8)) {
+            break; /* End in --dearmor mode.  */
+        }
 	else {
 	    log_error(_("invalid radix64 character %02X skipped\n"), c);
 	    continue;

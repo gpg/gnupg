@@ -630,6 +630,7 @@ with ant release.
 @opindex dearmor
 Pack or unpack an arbitrary input into/from an OpenPGP ASCII armor.
 This is a GnuPG extension to OpenPGP and in general not very useful.
+The @option{--dearmor} command can also be used to dearmor PEM armors.
 
 @item --unwrap
 @opindex unwrap

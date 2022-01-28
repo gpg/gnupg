@@ -45,6 +45,7 @@ dearmor_file( const char *fname )
     int c;
 
     afx = new_armor_context ();
+    afx->dearmor_mode = 1;
 
     /* prepare iobufs */
     inp = iobuf_open(fname);

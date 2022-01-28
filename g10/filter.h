@@ -35,6 +35,7 @@ typedef struct {
     /* these fields may be initialized */
     int what;		    /* what kind of armor headers to write */
     int only_keyblocks;     /* skip all headers but ".... key block" */
+    int dearmor_mode;       /* dearmor all kind of stuff.  */
     const char *hdrlines;   /* write these headerlines */
 
     /* these fields must be initialized to zero */
@@ -49,6 +50,7 @@ typedef struct {
     int faked;		    /* we are faking a literal data packet */
     int truncated;	    /* number of truncated lines */
     int qp_detected;
+    int dearmor_state;      /* helper for dearmor_mode.  */
     byte eol[3];            /* The end of line characters as a
 			       zero-terminated string.  Defaults
 			       (eol[0]=='\0') to whatever the local
