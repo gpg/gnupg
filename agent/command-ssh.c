@@ -623,7 +623,7 @@ stream_read_string (estream_t stream, unsigned int secure,
         }
 
       /* Read data.  */
-      err = stream_read_data (stream, buffer, length);
+      err = length? stream_read_data (stream, buffer, length) : 0;
       if (err)
         goto out;
 
@@ -633,7 +633,7 @@ stream_read_string (estream_t stream, unsigned int secure,
     }
   else  /* Dummy read requested.  */
     {
-      err = stream_read_skip (stream, length);
+      err = length? stream_read_skip (stream, length) : 0;
       if (err)
         goto out;
     }
@@ -1735,6 +1735,11 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
   estream_t format = NULL;
   char *algo_name = NULL;
 
+  /* We can't encode an empty string in an S-expression, thus to keep
+   * the code simple we use "(none)" instead.  */
+  if (!comment || !*comment)
+    comment = "(none)";
+
   if ((key_spec.flags & SPEC_FLAG_IS_EdDSA))
     {
       /* It is much easier and more readable to use a separate code
@@ -1754,7 +1759,7 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
                                "(comment%s))",
                                curve_name,
                                mpis[0], mpis[1],
-                               comment? comment:"");
+                               comment);
       else
         err = gcry_sexp_build (&sexp_new, NULL,
                                "(public-key(ecc(curve %s)"
@@ -1762,7 +1767,8 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
                                "(comment%s))",
                                curve_name,
                                mpis[0],
-                               comment? comment:"");
+                               comment);
+
     }
   else
     {
