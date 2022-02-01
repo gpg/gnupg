@@ -28,11 +28,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <unistd.h>
 #ifdef HAVE_W32_SYSTEM
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 #else /*!HAVE_W32_SYSTEM*/
-# include <unistd.h>
 # include <pwd.h>
 # include <grp.h>
 #endif /*!HAVE_W32_SYSTEM*/

@@ -224,6 +224,7 @@ void dirmngr_deinit_default_ctrl (ctrl_t ctrl);
 void dirmngr_sighup_action (void);
 const char* dirmngr_get_current_socket_name (void);
 int dirmngr_use_tor (void);
+int dirmngr_never_use_tor_p (void);
 
 /*-- Various housekeeping functions.  --*/
 void ks_hkp_housekeeping (time_t curtime);

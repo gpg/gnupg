@@ -621,6 +621,15 @@ dirmngr_use_tor (void)
 }
 
 
+/* This is somewhat similar to dirmngr_use_tor but avoids a trial
+ * connect and may thus be faster for this special case.  */
+int
+dirmngr_never_use_tor_p (void)
+{
+  return tor_mode == TOR_MODE_NEVER;
+}
+
+
 static void
 wrong_args (const char *text)
 {
