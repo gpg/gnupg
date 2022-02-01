@@ -2276,7 +2276,7 @@ ensure_keyserver (ctrl_t ctrl)
     {
       /* If there is just one onion and one plain keyserver given, we take
          only one depending on whether Tor is running or not.  */
-      if (is_tor_running (ctrl))
+      if (!dirmngr_never_use_tor_p () && is_tor_running (ctrl))
         {
           ctrl->server_local->keyservers = onion_items;
           onion_items = NULL;
@@ -2287,7 +2287,7 @@ ensure_keyserver (ctrl_t ctrl)
           plain_items = NULL;
         }
     }
-  else if (!is_tor_running (ctrl))
+  else if (dirmngr_never_use_tor_p () || !is_tor_running (ctrl))
     {
       /* Tor is not running.  It does not make sense to add Onion
          addresses.  */
