@@ -779,12 +779,6 @@ set_debug (void)
   if (opt.debug)
     parse_debug_flag (NULL, &opt.debug, debug_flags);
 
-  /* Make sure that we are --verbose in debug mode.  */
-  if (opt.debug && !opt.verbose)
-    opt.verbose = 1;
-  if (opt.debug && opt.quiet)
-    opt.quiet = 0;
-
   /* minip12.c may be used outside of GnuPG, thus we don't have the
    * opt structure over there.  */
   p12_set_verbosity (opt.verbose);
