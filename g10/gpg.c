@@ -1368,6 +1368,12 @@ set_debug (const char *level)
   if (opt.debug)
     parse_debug_flag (NULL, &opt.debug, debug_flags);
 
+  /* Make sure that we are --verbose in debug mode.  */
+  if (opt.debug && !opt.verbose)
+    opt.verbose = 1;
+  if (opt.debug && opt.quiet)
+    opt.quiet = 0;
+
   if (opt_set_iobuf_size || opt_set_iobuf_size_used)
     log_debug ("iobuf buffer size is %uk\n",
                iobuf_set_buffer_size (opt_set_iobuf_size));
