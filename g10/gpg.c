@@ -1315,6 +1315,12 @@ set_debug (const char *level)
 
   if (opt.debug)
     parse_debug_flag (NULL, &opt.debug, debug_flags);
+
+  /* Make sure that we are --verbose in debug mode.  */
+  if (opt.debug && !opt.verbose)
+    opt.verbose = 1;
+  if (opt.debug && opt.quiet)
+    opt.quiet = 0;
 }
 
 
