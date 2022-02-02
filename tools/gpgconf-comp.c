@@ -418,12 +418,17 @@ static known_option_t known_options_gpg[] =
    /* The next is a pseudo option which we read via --gpgconf-list.
     * The meta information is taken from the table below.  */
    { "default_pubkey_algo",  GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
+   { "compliance_de_vs",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
 
    { NULL }
  };
 static const char *known_pseudo_options_gpg[] =
   {/*                     v-- ARGPARSE_TYPE_STRING */
    "default_pubkey_algo:0:2:@:",
+   /* A basic compliance check for gpg.  We use gpg here but the
+    * result is valid for all components.
+    *                  v-- ARGPARSE_TYPE_INT */
+   "compliance_de_vs:0:1:@:",
    NULL
  };
 
