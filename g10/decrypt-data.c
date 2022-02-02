@@ -662,7 +662,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
   /* Decrypt the buffer.  This first requires a loop to handle the
    * case when a chunk ends within the buffer.  */
   if (DBG_FILTER)
-    log_debug ("decrypt: chunklen=%ju total=%ju size=%zu len=%zu%s\n",
+    log_debug ("decrypt: chunklen=%"PRIu64" total=%"PRIu64" size=%zu len=%zu%s\n",
                dfx->chunklen, dfx->total, size, len,
                dfx->eof_seen? " eof":"");
 
@@ -699,7 +699,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       len -= n;
 
       if (DBG_FILTER)
-        log_debug ("ndecrypted: %zu (nchunk=%ju) bytes left: %zu at off=%zu\n",
+        log_debug ("ndecrypted: %zu (nchunk=%"PRIu64") bytes left: %zu at off=%zu\n",
                    totallen, dfx->chunklen, len, off);
 
       /* Check the tag.  */
@@ -781,7 +781,8 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       dfx->chunklen += len;
       dfx->total += len;
       if (DBG_FILTER)
-        log_debug ("ndecrypted: %zu (nchunk=%ju)\n", totallen, dfx->chunklen);
+        log_debug ("ndecrypted: %zu (nchunk=%"PRIu64")\n",
+                   totallen, dfx->chunklen);
     }
 
   if (dfx->eof_seen)
