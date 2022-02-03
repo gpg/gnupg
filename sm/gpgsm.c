@@ -203,6 +203,7 @@ enum cmd_and_opt_values {
   oNoRandomSeedFile,
   oNoCommonCertsImport,
   oIgnoreCertExtension,
+  oIgnoreCertWithOID,
   oAuthenticode,
   oAttribute,
   oChUid,
@@ -302,6 +303,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oCompliance, "compliance",   "@"),
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
+  ARGPARSE_s_s (oIgnoreCertWithOID, "ignore-cert-with-oid", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
@@ -1425,6 +1427,10 @@ main ( int argc, char **argv)
 
         case oIgnoreCertExtension:
           add_to_strlist (&opt.ignored_cert_extensions, pargs.r.ret_str);
+          break;
+
+        case oIgnoreCertWithOID:
+          add_to_strlist (&opt.ignore_cert_with_oid, pargs.r.ret_str);
           break;
 
         case oAuthenticode: opt.authenticode = 1; break;
