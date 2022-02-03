@@ -989,6 +989,8 @@ learn_cb (void *opaque, const void *buffer, size_t length)
   char *buf;
   ksba_cert_t cert;
   int rc;
+  char *string, *p, *pend;
+  strlist_t sl;
 
   if (parm->error)
     return 0;
@@ -1025,6 +1027,35 @@ learn_cb (void *opaque, const void *buffer, size_t length)
       return 0;
     }
 
+  /* Ignore certificates matching certain extended usage flags.  */
+  rc = ksba_cert_get_ext_key_usages (cert, &string);
+  if (!rc)
+    {
+      p = string;
+      while (p && (pend=strchr (p, ':')))
+        {
+          *pend++ = 0;
+          for (sl=opt.ignore_cert_with_oid;
+               sl && strcmp (sl->d, p); sl = sl->next)
+            ;
+          if (sl)
+            {
+              if (opt.verbose)
+                log_info ("certificate ignored due to OID %s\n", sl->d);
+              goto leave;
+            }
+          p = pend;
+          if ((p = strchr (p, '\n')))
+            p++;
+        }
+    }
+  else if (gpg_err_code (rc) != GPG_ERR_NO_DATA)
+    log_error (_("error getting key usage information: %s\n"),
+               gpg_strerror (rc));
+  xfree (string);
+  string = NULL;
+
+
   /* We do not store a certifciate with missing issuers as ephemeral
      because we can assume that the --learn-card command has been used
      on purpose.  */
@@ -1045,6 +1076,9 @@ learn_cb (void *opaque, const void *buffer, size_t length)
         }
     }
 
+ leave:
+  xfree (string);
+  string = NULL;
   ksba_cert_release (cert);
   init_membuf (parm->data, 4096);
   return 0;

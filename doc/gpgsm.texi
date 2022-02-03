@@ -676,6 +676,16 @@ This option adjusts the compliance mode "de-vs" for stricter key size
 requirements.  For example, a value of 3000 turns rsa2048 and dsa2048
 keys into non-VS-NfD compliant keys.
 
+@item --ignore-cert-with-oid @var{oid}
+@opindex ignore-cert-with-oid
+Add @var{oid} to the list of OIDs to be checked while reading
+certificates from smartcards. The @var{oid} is expected to be in
+dotted decimal form, like @code{2.5.29.3}.  This option may be used
+more than once.  As of now certificates with an extended key usage
+matching one of those OIDs are ignored during a @option{--learn-card}
+operation and not imported.  This option can help to keep the local
+key database clear of unneeded certificates stored on smartcards.
+
 @item --faked-system-time @var{epoch}
 @opindex faked-system-time
 This option is only useful for testing; it sets the system time back or

@@ -139,6 +139,10 @@ struct
      OID per string.  */
   strlist_t ignored_cert_extensions;
 
+  /* A list of OIDs which will be used to ignore certificates with
+   * sunch an OID during --learn-card.  */
+  strlist_t ignore_cert_with_oid;
+
   enum gnupg_compliance_mode compliance;
 } opt;
 
