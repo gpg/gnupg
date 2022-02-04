@@ -1,5 +1,5 @@
 # npth.m4 - autoconf macro to detect NPTH.
-# Copyright (C) 2002, 2003, 2004, 2011 g10 Code GmbH
+# Copyright (C) 2002, 2003, 2004, 2011, 2018 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -9,18 +9,35 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+# Last-changed: 2020-11-17
+
 AC_DEFUN([_AM_PATH_NPTH_CONFIG],
 [ AC_ARG_WITH(npth-prefix,
-            AC_HELP_STRING([--with-npth-prefix=PFX],
+            AS_HELP_STRING([--with-npth-prefix=PFX],
                            [prefix where NPTH is installed (optional)]),
      npth_config_prefix="$withval", npth_config_prefix="")
   if test "x$npth_config_prefix" != x ; then
       NPTH_CONFIG="$npth_config_prefix/bin/npth-config"
   fi
-  AC_PATH_PROG(NPTH_CONFIG, npth-config, no)
+
+  use_gpgrt_config=""
+  if test x"$NPTH_CONFIG" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+    if $GPGRT_CONFIG npth --exists; then
+      NPTH_CONFIG="$GPGRT_CONFIG npth"
+      AC_MSG_NOTICE([Use gpgrt-config as npth-config])
+      use_gpgrt_config=yes
+    fi
+  fi
+  if test -z "$use_gpgrt_config"; then
+    AC_PATH_PROG(NPTH_CONFIG, npth-config, no)
+  fi
 
   if test "$NPTH_CONFIG" != "no" ; then
-    npth_version=`$NPTH_CONFIG --version`
+    if test -z "$use_gpgrt_config"; then
+      npth_version=`$NPTH_CONFIG --version`
+    else
+      npth_version=`$NPTH_CONFIG --modversion`
+    fi
   fi
   npth_version_major=`echo $npth_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
@@ -70,31 +87,39 @@ AC_DEFUN([AM_PATH_NPTH],
     AC_MSG_RESULT(no)
   fi
   if test $ok = yes; then
-     # If we have a recent NPTH, we should also check that the
-     # API is compatible.
-     if test "$req_npth_api" -gt 0 ; then
+    # If we have a recent NPTH, we should also check that the
+    # API is compatible.
+    if test "$req_npth_api" -gt 0 ; then
+      if test -z "$use_gpgrt_config"; then
         tmp=`$NPTH_CONFIG --api-version 2>/dev/null || echo 0`
-        if test "$tmp" -gt 0 ; then
-           AC_MSG_CHECKING([NPTH API version])
-           if test "$req_npth_api" -eq "$tmp" ; then
-             AC_MSG_RESULT([okay])
-           else
-             ok=no
-             AC_MSG_RESULT([does not match. want=$req_npth_api got=$tmp])
-           fi
+      else
+        tmp=`$NPTH_CONFIG --variable=api_version 2>/dev/null || echo 0`
+      fi
+      if test "$tmp" -gt 0 ; then
+        AC_MSG_CHECKING([NPTH API version])
+        if test "$req_npth_api" -eq "$tmp" ; then
+          AC_MSG_RESULT([okay])
+        else
+          ok=no
+          AC_MSG_RESULT([does not match. want=$req_npth_api got=$tmp])
         fi
-     fi
+      fi
+    fi
   fi
   if test $ok = yes; then
     NPTH_CFLAGS=`$NPTH_CONFIG --cflags`
     NPTH_LIBS=`$NPTH_CONFIG --libs`
     ifelse([$2], , :, [$2])
-    npth_config_host=`$NPTH_CONFIG --host 2>/dev/null || echo none`
+    if test -z "$use_gpgrt_config"; then
+      npth_config_host=`$NPTH_CONFIG --host 2>/dev/null || echo none`
+    else
+      npth_config_host=`$NPTH_CONFIG --variable=host 2>/dev/null || echo none`
+    fi
     if test x"$npth_config_host" != xnone ; then
       if test x"$npth_config_host" != x"$host" ; then
         AC_MSG_WARN([[
 ***
-*** The config script $NPTH_CONFIG was
+*** The config script "$NPTH_CONFIG" was
 *** built for $npth_config_host and thus may not match the
 *** used host $host.
 *** You may want to use the configure option --with-npth-prefix

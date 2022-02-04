@@ -8,45 +8,59 @@ dnl
 dnl This file is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+dnl
+dnl Last-changed: 2020-11-18
 
 
 dnl AM_PATH_NTBTLS([MINIMUM-VERSION,
 dnl                   [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl
 dnl Test for NTBTLS and define NTBTLS_CFLAGS and NTBTLS_LIBS.
-dnl MINIMUM-VERSION is a string with the version number optionalliy prefixed
+dnl MINIMUN-VERSION is a string with the version number optionalliy prefixed
 dnl with the API version to also check the API compatibility. Example:
-dnl a MINIMUM-VERSION of 1:1.2.5 won't pass the test unless the installed
-dnl version of ntbtls is at least 1.2.5 *and* the API number is 1.  Using
-dnl this feature prevents building against newer versions of ntbtls
+dnl a MINIMUN-VERSION of 1:1.2.5 won't pass the test unless the installed
+dnl version of libgcrypt is at least 1.2.5 *and* the API number is 1.  Using
+dnl this features allows to prevent build against newer versions of libgcrypt
 dnl with a changed API.
 dnl
 AC_DEFUN([AM_PATH_NTBTLS],
 [ AC_REQUIRE([AC_CANONICAL_HOST])
   AC_ARG_WITH(ntbtls-prefix,
-            AC_HELP_STRING([--with-ntbtls-prefix=PFX],
+            AS_HELP_STRING([--with-ntbtls-prefix=PFX],
                            [prefix where NTBTLS is installed (optional)]),
      ntbtls_config_prefix="$withval", ntbtls_config_prefix="")
   if test x"${NTBTLS_CONFIG}" = x ; then
      if test x"${ntbtls_config_prefix}" != x ; then
         NTBTLS_CONFIG="${ntbtls_config_prefix}/bin/ntbtls-config"
-     else
-       case "${SYSROOT}" in
-         /*)
-           if test -x "${SYSROOT}/bin/ntbtls-config" ; then
-             NTBTLS_CONFIG="${SYSROOT}/bin/ntbtls-config"
-           fi
-           ;;
-         '')
-           ;;
-          *)
-           AC_MSG_WARN([Ignoring \$SYSROOT as it is not an absolute path.])
-           ;;
-       esac
      fi
   fi
 
-  AC_PATH_PROG(NTBTLS_CONFIG, ntbtls-config, no)
+  use_gpgrt_config=""
+  if test x"${NTBTLS_CONFIG}" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+    if $GPGRT_CONFIG ntbtls --exists; then
+      NTBTLS_CONFIG="$GPGRT_CONFIG ntbtls"
+      AC_MSG_NOTICE([Use gpgrt-config as ntbtls-config])
+      use_gpgrt_config=yes
+    fi
+  fi
+  if test -z "$use_gpgrt_config"; then
+    if test x"${NTBTLS_CONFIG}" = x ; then
+      case "${SYSROOT}" in
+        /*)
+          if test -x "${SYSROOT}/bin/ntbtls-config" ; then
+            NTBTLS_CONFIG="${SYSROOT}/bin/ntbtls-config"
+          fi
+          ;;
+        '')
+          ;;
+         *)
+          AC_MSG_WARN([Ignoring \$SYSROOT as it is not an absolute path.])
+          ;;
+      esac
+    fi
+    AC_PATH_PROG(NTBTLS_CONFIG, ntbtls-config, no)
+  fi
+
   tmp=ifelse([$1], ,1:1.0.0,$1)
   if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
      req_ntbtls_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
@@ -65,7 +79,11 @@ AC_DEFUN([AM_PATH_NTBTLS],
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
     req_micro=`echo $min_ntbtls_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
-    ntbtls_config_version=`$NTBTLS_CONFIG --version`
+    if test -z "$use_gpgrt_config"; then
+      ntbtls_config_version=`$NTBTLS_CONFIG --version`
+    else
+      ntbtls_config_version=`$NTBTLS_CONFIG --modversion`
+    fi
     major=`echo $ntbtls_config_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
     minor=`echo $ntbtls_config_version | \
@@ -97,7 +115,11 @@ AC_DEFUN([AM_PATH_NTBTLS],
      # If we have a recent ntbtls, we should also check that the
      # API is compatible
      if test "$req_ntbtls_api" -gt 0 ; then
-        tmp=`$NTBTLS_CONFIG --api-version 2>/dev/null || echo 0`
+        if test -z "$use_gpgrt_config"; then
+          tmp=`$NTBTLS_CONFIG --api-version 2>/dev/null || echo 0`
+        else
+          tmp=`$NTBTLS_CONFIG --variable=api_version 2>/dev/null || echo 0`
+	fi
         if test "$tmp" -gt 0 ; then
            AC_MSG_CHECKING([NTBTLS API version])
            if test "$req_ntbtls_api" -eq "$tmp" ; then
@@ -113,12 +135,16 @@ AC_DEFUN([AM_PATH_NTBTLS],
     NTBTLS_CFLAGS=`$NTBTLS_CONFIG --cflags`
     NTBTLS_LIBS=`$NTBTLS_CONFIG --libs`
     ifelse([$2], , :, [$2])
-    ntbtls_config_host=`$NTBTLS_CONFIG --host 2>/dev/null || echo none`
+    if test -z "$use_gpgrt_config"; then
+      ntbtls_config_host=`$NTBTLS_CONFIG --host 2>/dev/null || echo none`
+    else
+      ntbtls_config_host=`$NTBTLS_CONFIG --variable=host 2>/dev/null || echo none`
+    fi
     if test x"$ntbtls_config_host" != xnone ; then
       if test x"$ntbtls_config_host" != x"$host" ; then
   AC_MSG_WARN([[
 ***
-*** The config script $NTBTLS_CONFIG was
+*** The config script "$NTBTLS_CONFIG" was
 *** built for $ntbtls_config_host and thus may not match the
 *** used host $host.
 *** You may want to use the configure option --with-ntbtls-prefix
