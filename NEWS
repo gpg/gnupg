@@ -1,7 +1,50 @@
-Noteworthy changes in version 2.2.34 (unreleased)
+Noteworthy changes in version 2.2.34 (2022-02-07)
 -------------------------------------------------
 
+  * gpgconf: Backport the improved option reading and writing code
+    from 2.3.  [rG7a3a1ef370,T4788]
+
+  * gpgconf: Do not list ignored options and mark forced options as
+    read-only.  [T5732]
+
+  * gpgconf: Correctly show registry entries with --show-configs.
+    [T5724]
+
+  * gpgconf: Add command aliases -L, -K, and -R.  [rGf16c535eee]
+
+  * gpgconf: Tweak the use of the ldapserver option.  [T5801]
+
+  * gpgconf: Make "--launch gpg-agent" work again.  [rG5a7ed6dd8f]
+
+  * gpg: Accept Ed25519 private keys in modernized encoding.  [T5120]
+
+  * gpg: Fix adding the list of ultimate trusted keys.  [T5742]
+
+  * gpgsm: New option --ignore-cert-with-oid.  [rGbcf446b70c]
+
+  * dirmngr: Avoid initial delay on the first keyserver access in
+    presence of --no-use-tor.  [rGdde88897e2]
+
+  * scdaemon: Also prefer Yubikeys if no reader port is given.
+    [rG38c666ec3f]
+
+  * agent: Make missing strings translatable and update German and
+    Japanese translations.  [T4777]
+
+  * ssh: Fix adding an ed25519 key with a zero length comment.  [T5794]
+
+  * gpgtar: Create and handle extended headers to support long file
+    names.  [T5754]
+
+  * Fix the creation of socket directories under Windows for non-ascii
+    account names.  [rG7d1215cb9c]
+
+  * Improve the registry HKCU->HKLM fallback.  [rG96db487a4d]
+
+  * Prettify the --help output of most commands.
+
   Release-info: https://dev.gnupg.org/T5703
+  See-also: gnupg-announce/2022q1/000470.html
 
 
 Noteworthy changes in version 2.2.33 (2021-11-23)
