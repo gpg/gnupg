@@ -619,6 +619,10 @@ static struct
 
 } gc_component[GC_COMPONENT_NR] =
   {
+   /* Note: The order of the items must match the order given in the
+    * gc_component_id_t enumeration.  The order is often used by
+    * frontends to display the backend options thus do not change the
+    * order without considering the user experience.  */
    { NULL },   /* DUMMY for GC_COMPONENT_ANY */
 
    { GPG_NAME,  GPG_DISP_NAME,     "gnupg",  N_("OpenPGP"),

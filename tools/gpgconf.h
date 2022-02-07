@@ -55,14 +55,14 @@ typedef enum
     /* The classic GPG for OpenPGP.  */
     GC_COMPONENT_GPG,
 
+    /* GPG for S/MIME.  */
+    GC_COMPONENT_GPGSM,
+
     /* The GPG Agent.  */
     GC_COMPONENT_GPG_AGENT,
 
     /* The Smardcard Daemon.  */
     GC_COMPONENT_SCDAEMON,
-
-    /* GPG for S/MIME.  */
-    GC_COMPONENT_GPGSM,
 
     /* The LDAP Directory Manager for CRLs.  */
     GC_COMPONENT_DIRMNGR,
