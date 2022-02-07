@@ -1381,6 +1381,15 @@ show_configs (estream_t outfp)
   show_version_gnupg (outfp, "### ");
   es_fprintf (outfp, "### Libgcrypt %s\n", gcry_check_version (NULL));
   es_fprintf (outfp, "### GpgRT %s\n", gpg_error_check_version (NULL));
+#ifdef HAVE_W32_SYSTEM
+  es_fprintf (outfp, "### Codepages:");
+  if (GetConsoleCP () != GetConsoleOutputCP ())
+    es_fprintf (outfp, " %u/%u", GetConsoleCP (), GetConsoleOutputCP ());
+  else
+    es_fprintf (outfp, " %u", GetConsoleCP ());
+  es_fprintf (outfp, " %u", GetACP ());
+  es_fprintf (outfp, " %u\n", GetOEMCP ());
+#endif
   es_fprintf (outfp, "###\n\n");
 
   list_dirs (outfp, NULL, 1);
