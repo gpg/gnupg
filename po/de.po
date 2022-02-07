@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-11-18 16:50+0100\n"
+"PO-Revision-Date: 2022-02-07 10:19+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -160,6 +160,13 @@ msgid "Note: Request from a remote site."
 msgstr "Hinweis: Anfrage von einem anderen Rechner."
 
 #, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "Fehler beim Holen der Karten-Seriennummer: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "Bitte geben Sie das Passwort noch einmal ein:"
+
+#, c-format
 msgid ""
 "Please enter the passphrase to protect the imported object within the %s "
 "system."
@@ -185,10 +192,6 @@ msgstr "'%s' kann nicht erzeugt werden: %s\n"
 #, c-format
 msgid "can't open '%s': %s\n"
 msgstr "'%s' kann nicht geöffnet werden: %s\n"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "Fehler beim Holen der Karten-Seriennummer: %s\n"
 
 #, c-format
 msgid "detected card with S/N: %s\n"
@@ -224,9 +227,6 @@ msgstr "Verweigern"
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr ""
 "Bitte geben Sie das Passwort für den SSH-Schlüssel%%0A  %F%%0A  (%c)%%0Aein."
-
-msgid "Please re-enter this passphrase"
-msgstr "Bitte geben Sie das Passwort noch einmal ein:"
 
 #, c-format
 msgid ""
@@ -351,12 +351,8 @@ msgstr "Bitte geben Sie das Passwort ein,%0Aum Ihren Schlüssel zu schützen."
 msgid "Please enter the new passphrase"
 msgstr "Bitte geben Sie das Passwort ein:"
 
-msgid ""
-"@Options:\n"
-" "
-msgstr ""
-"@Optionen:\n"
-" "
+msgid "Options used for startup"
+msgstr "Optionen zum Start des Programms"
 
 msgid "run in daemon mode (background)"
 msgstr "Im Daemon Modus ausführen"
@@ -367,11 +363,8 @@ msgstr "Im Server Modus ausführen"
 msgid "run in supervised mode"
 msgstr "Im \"Supervised\" Modus ausführen"
 
-msgid "verbose"
-msgstr "Detaillierte Informationen"
-
-msgid "be somewhat more quiet"
-msgstr "Reduzierte Informationen"
+msgid "do not detach from the console"
+msgstr "Im Vordergrund laufen lassen"
 
 msgid "sh-style command output"
 msgstr "Ausgabe für /bin/sh"
@@ -382,20 +375,26 @@ msgstr "Ausgabe für /bin/csh"
 msgid "|FILE|read options from FILE"
 msgstr "|DATEI|Konfigurationsoptionen aus DATEI lesen"
 
-msgid "do not detach from the console"
-msgstr "Im Vordergrund laufen lassen"
+msgid "Options controlling the diagnostic output"
+msgstr "Optionen zur Einstellung der Diagnoseausgaben"
 
-msgid "use a log file for the server"
-msgstr "Logausgaben in eine Datei umlenken"
+msgid "verbose"
+msgstr "Detaillierte Informationen"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
-msgstr "|PGM|Benutze PGM as PIN-Entry"
+msgid "be somewhat more quiet"
+msgstr "Reduzierte Informationen"
 
-msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "|PGM|Benutze PGM als SCdaemon"
+msgid "|FILE|write server mode logs to FILE"
+msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
+
+msgid "Options controlling the configuration"
+msgstr "Optionen zur Einstellung der Konfiguration"
 
 msgid "do not use the SCdaemon"
 msgstr "Den SCdaemon-basierten Kartenzugriff nicht nutzen"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PGM|Benutze PGM als SCdaemon"
 
 msgid "|NAME|accept some commands via NAME"
 msgstr "|NAME|Einige Kommandos über NAME annehmen"
@@ -406,8 +405,29 @@ msgstr "Ignoriere Anfragen, das TTY zu wechseln"
 msgid "ignore requests to change the X display"
 msgstr "Ignoriere Anfragen, das X-Display zu wechseln"
 
+msgid "enable ssh support"
+msgstr "SSH Unterstützung einschalten"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr "Verwende ALGO für SSH Fingerabdrücke"
+
+msgid "enable putty support"
+msgstr "PuTTY Unterstützung einschalten"
+
+msgid "Options controlling the security"
+msgstr "Optionen zur Einstellung der Sicherheit"
+
 msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|Lösche unbenutzte Passwörter nach N Sekunden aus dem Cache"
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr "|N|Lösche unbenutzte SSH Passwörter nach N Sekunden aus dem Cache"
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr "|N|Lösche Passwörter nach N Sekunden aus dem Cache"
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
+msgstr "|N|Lösche SSH Passwörter nach N Sekunden aus dem Cache"
 
 msgid "do not use the PIN cache when signing"
 msgstr "Benutze den Passwort Cache nicht beim Signieren"
@@ -421,20 +441,47 @@ msgstr "Verbiete Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
 msgid "allow presetting passphrase"
 msgstr "Erlaube ein \"preset\" der Passwörter"
 
+msgid "Options enforcing a passphrase policy"
+msgstr "Optionen für Passwort Regeln"
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr "Einhaltung der Passwort Regeln erzwingen"
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr "|N|setze die kleinste erlaubte Länge von Passwörtern auf N"
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr "|N|Verlange mindestens N Nicht-Buchstaben für ein neues Passwort"
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr "|DATEI|Prüfe neue Passwörter gegen die Regeln in DATEI"
+
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|Lasse das Passwort nach N Tagen verfallen"
+
+msgid "do not allow the reuse of old passphrases"
+msgstr "Verbiete die Wiedernutzung alter Passwörter."
+
+msgid "Options controlling the PIN-Entry"
+msgstr "Optionen für das Pinentry"
+
+msgid "never use the PIN-entry"
+msgstr "Niemals das Pinentry benutzen"
+
 msgid "disallow caller to override the pinentry"
 msgstr "Aufrufer darf das Pinentry nicht ersetzen"
 
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr "Tastatur und Maus \"grabben\""
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr "|PGM|Benutze PGM as PIN-Entry"
+
+msgid "|N|set the Pinentry timeout to N seconds"
+msgstr "|N|Setze die Pinentry Zeitüberschreitung auf N Sekunden"
+
 msgid "allow passphrase to be prompted through Emacs"
 msgstr "Erlaube die Eingabe eines Passwortes über Emacs"
-
-msgid "enable ssh support"
-msgstr "SSH Unterstützung einschalten"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr "Verwende ALGO für SSH Fingerabdrücke"
-
-msgid "enable putty support"
-msgstr "PuTTY Unterstützung einschalten"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -549,6 +596,13 @@ msgstr "%s %s angehalten\n"
 #, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "Der gpg-agent läuft nicht für diese Session\n"
+
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@Optionen:\n"
+" "
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr "Aufruf: gpg-preset-passphrase [Optionen] KEYGRIP (-h für Hilfe)\n"
@@ -2133,23 +2187,17 @@ msgstr "Im Server Modus ausführen"
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr "|WERT|Setze die TOFU-Politik für einen Schlüssel"
 
-msgid "create ascii armored output"
-msgstr "Ausgabe mit ASCII-Hülle versehen"
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NAME|NAME als voreingestellten Schlüssel benutzen"
 
-msgid "|USER-ID|encrypt for USER-ID"
-msgstr "|USER-ID|Verschlüsseln für USER-ID"
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|NAME|Auch an NAME verschlüsseln"
 
-msgid "|USER-ID|use USER-ID to sign or decrypt"
-msgstr "|USER-ID|Mit USER-ID signieren bzw. entschlüsseln"
+msgid "|SPEC|set up email aliases"
+msgstr "|SPEC|Email Alias festlegen"
 
-msgid "|N|set compress level to N (0 disables)"
-msgstr "|N|Kompressionsstufe auf N setzen (0=keine)"
-
-msgid "use canonical text mode"
-msgstr "Textmodus benutzen"
-
-msgid "|FILE|write output to FILE"
-msgstr "|DATEI|Ausgabe auf DATEI schreiben"
+msgid "use strict OpenPGP behavior"
+msgstr "OpenPGP-Verhalten strikt beachten"
 
 msgid "do not make any changes"
 msgstr "Keine wirklichen Änderungen durchführen"
@@ -2157,8 +2205,52 @@ msgstr "Keine wirklichen Änderungen durchführen"
 msgid "prompt before overwriting"
 msgstr "vor Überschreiben nachfragen"
 
-msgid "use strict OpenPGP behavior"
-msgstr "OpenPGP-Verhalten strikt beachten"
+msgid "Options controlling the input"
+msgstr "Optionen für die Eingabe"
+
+msgid "Options controlling the output"
+msgstr "Optionen für die Ausgabe"
+
+msgid "create ascii armored output"
+msgstr "Ausgabe mit ASCII-Hülle versehen"
+
+msgid "|FILE|write output to FILE"
+msgstr "|DATEI|Ausgabe auf DATEI schreiben"
+
+msgid "use canonical text mode"
+msgstr "Textmodus benutzen"
+
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|Kompressionsstufe auf N setzen (0=keine)"
+
+msgid "Options controlling key import and export"
+msgstr "Optionen für den Schlüsselimport und -export"
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr ""
+"|MECHANISMEN|Benutze MECHANISMEN um Schlüssel über die Mailadresse "
+"aufzufinden."
+
+msgid "disable all access to the dirmngr"
+msgstr "Jeglichen Zugriff auf den Dirmngr verhindern"
+
+msgid "Options controlling key listings"
+msgstr "Optionen für das Auflisten der Schlüssel"
+
+msgid "Options to specify keys"
+msgstr "Optionen zur Auswahl der Schlüssel"
+
+msgid "|USER-ID|encrypt for USER-ID"
+msgstr "|USER-ID|Verschlüsseln für USER-ID"
+
+msgid "|USER-ID|use USER-ID to sign or decrypt"
+msgstr "|USER-ID|Mit USER-ID signieren bzw. entschlüsseln"
+
+msgid "Options for unattended use"
+msgstr "Optionen für die Verwendung in Scripts"
+
+msgid "Other options"
+msgstr "Weitere Optionen"
 
 msgid ""
 "@\n"
@@ -6727,11 +6819,11 @@ msgstr "|N|Schalte die Karte nach N Sekunden Inaktivität ab"
 msgid "do not use a reader's pinpad"
 msgstr "Die Tastatur des Kartenlesers nicht benutzen"
 
-msgid "deny the use of admin card commands"
-msgstr "Verweigere die Benutzung von \"Admin\"-Befehlen"
-
 msgid "use variable length input for pinpad"
 msgstr "Variable Längeneingabe für die Kartenlesertastatur benutzen"
+
+msgid "deny the use of admin card commands"
+msgstr "Verweigere die Benutzung von \"Admin\"-Befehlen"
 
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
 msgstr "Gebrauch: @SCDAEMON@ [Optionen] (-h für Hilfe)"
@@ -6756,6 +6848,10 @@ msgstr "Handhabungsroutine für fd %d gestartet\n"
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "Handhabungsroutine für den fd %d beendet\n"
+
+#, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "Fehler beim Holen der Schlüsselbenutzungsinformationen: %s\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7023,10 +7119,6 @@ msgstr ""
 "Schlüsselverwendungszweck nicht vorhanden - für alle Zwecke akzeptiert\n"
 
 #, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "Fehler beim Holen der Schlüsselbenutzungsinformationen: %s\n"
-
-#, c-format
 msgid "certificate should not have been used for certification\n"
 msgstr "Das Zertifikat hätte nicht zum Zertifizieren benutzt werden sollen\n"
 
@@ -7281,8 +7373,14 @@ msgstr "Das Kommando an den Dirmngr durchreichen"
 msgid "invoke gpg-protect-tool"
 msgstr "Rufe das gpg-protect-tool auf"
 
-msgid "create base-64 encoded output"
-msgstr "Ausgabe im Basis-64 Format erzeugen"
+msgid "don't use the terminal at all"
+msgstr "das Terminal gar nicht benutzen"
+
+msgid "|N|number of certificates to include"
+msgstr "|N|Sende N Zertifikate mit"
+
+msgid "|FILE|take policy information from FILE"
+msgstr "|DATEI|Richtlinieninformationen DATEI entnehmen"
 
 msgid "assume input is in PEM format"
 msgstr "Eingabedaten sind im PEM Format"
@@ -7293,32 +7391,38 @@ msgstr "Eingabedaten sind im Basis-64 Format"
 msgid "assume input is in binary format"
 msgstr "Eingabedaten sind im Binärformat"
 
-msgid "never consult a CRL"
-msgstr "Niemals eine CRL konsultieren"
+msgid "create base-64 encoded output"
+msgstr "Ausgabe im Basis-64 Format erzeugen"
 
-msgid "check validity using OCSP"
-msgstr "Die Gültigkeit mittels OCSP prüfen"
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|USER-ID|USER-ID als voreingestellten Schlüssel benutzen"
 
-msgid "|N|number of certificates to include"
-msgstr "|N|Sende N Zertifikate mit"
-
-msgid "|FILE|take policy information from FILE"
-msgstr "|DATEI|Richtlinieninformationen DATEI entnehmen"
-
-msgid "do not check certificate policies"
-msgstr "Zertifikatsrichtlinien nicht überprüfen"
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "|DATEI|DATEI als öffentlichen Schlüsselbund mitbenutzen"
 
 msgid "fetch missing issuer certificates"
 msgstr "Fehlende Zertifikate automatisch holen"
 
-msgid "don't use the terminal at all"
-msgstr "das Terminal gar nicht benutzen"
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|NAME|Benutze die Kodierung NAME für PKCS#12 Passwörter"
 
-msgid "|FILE|write a server mode log to FILE"
-msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
+msgid "never consult a CRL"
+msgstr "Niemals eine CRL konsultieren"
 
-msgid "|FILE|write an audit log to FILE"
-msgstr "|DATEI|Schreibe ein Audit-Log auf DATEI"
+msgid "do not check CRLs for root certificates"
+msgstr "CRL bei Wurzelzertifikaten nicht überprüfen"
+
+msgid "check validity using OCSP"
+msgstr "Die Gültigkeit mittels OCSP prüfen"
+
+msgid "do not check certificate policies"
+msgstr "Zertifikatsrichtlinien nicht überprüfen"
+
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NAME|Verschlüsselungsverfahren NAME benutzen"
+
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|NAME|Hashverfahren NAME benutzen"
 
 msgid "batch mode: never ask"
 msgstr "Stapelmodus: Keine Abfragen"
@@ -7329,20 +7433,8 @@ msgstr "\"Ja\" als Standardantwort annehmen"
 msgid "assume no on most questions"
 msgstr "\"Nein\" als Standardantwort annehmen"
 
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr "|DATEI|DATEI als öffentlichen Schlüsselbund mitbenutzen"
-
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|USER-ID|USER-ID als voreingestellten Schlüssel benutzen"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|Schlüssel bei diesem Server nachschlagen"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|Verschlüsselungsverfahren NAME benutzen"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAME|Hashverfahren NAME benutzen"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|DATEI|Schreibe ein Audit-Log auf DATEI"
 
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "Aufruf: @GPGSM@ [Optionen] [Dateien] (-h für Hilfe)"
@@ -8179,44 +8271,59 @@ msgstr "Den Dirmngr herunterfahren"
 msgid "flush the cache"
 msgstr "Den Zwischenspeicher löschen"
 
-msgid "|FILE|write server mode logs to FILE"
-msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
-
-msgid "run without asking a user"
-msgstr "Ausführung ohne Benutzernachfrage"
-
-msgid "force loading of outdated CRLs"
-msgstr "Laden von abgelaufenen CRLs erzwingen"
-
-msgid "allow sending OCSP requests"
-msgstr "OCSP Anfragen erlauben"
-
 msgid "allow online software version check"
 msgstr "Online Softwareversionstest erlauben"
+
+msgid "|N|do not return more than N items in one query"
+msgstr "|N|Nicht mehr als N Angaben in einer Anfrage zurückgeben"
+
+msgid "Network related options"
+msgstr "Netzwerkbezogene Optionen"
+
+msgid "route all network traffic via Tor"
+msgstr "Netzzugriff nur über Tor"
+
+msgid "Configuration for Keyservers"
+msgstr "Konfiguration der Schlüsselserver"
+
+msgid "|URL|use keyserver at URL"
+msgstr "Benutze Schlüsselserver unter der URL"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|DATEI|Benutze die CA Zertifikate in DATEI für HKP über TLS"
+
+msgid "Configuration for HTTP servers"
+msgstr "Konfiguration für HTTP Server"
 
 msgid "inhibit the use of HTTP"
 msgstr "Sperre die Benutzung von HTTP"
 
-msgid "inhibit the use of LDAP"
-msgstr "Sperre die Benutzung von LDAP"
-
 msgid "ignore HTTP CRL distribution points"
 msgstr "Übergehe HTTP CRL Distribution Points"
 
-msgid "ignore LDAP CRL distribution points"
-msgstr "Übergehe LDAP CRL Distribution Points"
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr "Übergehe im Zertifikat enthaltene OCSP Service URLs"
-
 msgid "|URL|redirect all HTTP requests to URL"
 msgstr "|URL|Leite alle HTTP Anfragen über URL"
+
+msgid "use system's HTTP proxy setting"
+msgstr "Benutze die HTTP Proxy Einstellung des Systems"
+
+msgid "Configuration of LDAP servers to use"
+msgstr "Konfiguration der zu nutzenden LDAP-Server"
+
+msgid "inhibit the use of LDAP"
+msgstr "Sperre die Benutzung von LDAP"
+
+msgid "ignore LDAP CRL distribution points"
+msgstr "Übergehe LDAP CRL Distribution Points"
 
 msgid "|HOST|use HOST for LDAP queries"
 msgstr "|HOST|Benutze HOST für LDAP Anfragen"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "Keine Benutzung der Rückgriffshosts mit --ldap-proxy"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|Schlüssel bei diesem Server nachschlagen"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|DATEI|Lese die LDAP Serverliste aus DATEI"
@@ -8227,20 +8334,23 @@ msgstr "Füge neue Server aus den CRL Distribution Points der Serverliste hinzu"
 msgid "|N|set LDAP timeout to N seconds"
 msgstr "|N|Setze die LDAP Zeitüberschreitung auf N Sekunden"
 
+msgid "Configuration for OCSP"
+msgstr "Konfiguration zu OCSP"
+
+msgid "allow sending OCSP requests"
+msgstr "OCSP Anfragen erlauben"
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr "Übergehe im Zertifikat enthaltene OCSP Service URLs"
+
 msgid "|URL|use OCSP responder at URL"
 msgstr "|URL|Benutze den OCSP Responder mit dieser URL"
 
 msgid "|FPR|OCSP response signed by FPR"
 msgstr "|FPR|OCSP Antwort ist durch FPR signiert"
 
-msgid "|N|do not return more than N items in one query"
-msgstr "|N|Nicht mehr als N Angaben in einer Anfrage zurückgeben"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|DATEI|Benutze die CA Zertifikate in DATEI für HKP über TLS"
-
-msgid "route all network traffic via Tor"
-msgstr "Netzzugriff nur über Tor"
+msgid "force loading of outdated CRLs"
+msgstr "Laden von abgelaufenen CRLs erzwingen"
 
 msgid ""
 "@\n"
@@ -8707,124 +8817,17 @@ msgstr "Senden der Zeile schlug fehl: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "Fehler beim Senden der Standardoptionen: %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr "Optionen zur Einstellung der Diagnoseausgaben"
-
-msgid "Options controlling the configuration"
-msgstr "Optionen zur Einstellung der Konfiguration"
-
-msgid "Options useful for debugging"
-msgstr "Nützliche Optionen zur Fehlersuche"
-
-msgid "Options controlling the security"
-msgstr "Optionen zur Einstellung der Sicherheit"
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|Lösche unbenutzte SSH Passwörter nach N Sekunden aus dem Cache"
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr "|N|Lösche Passwörter nach N Sekunden aus dem Cache"
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr "|N|Lösche SSH Passwörter nach N Sekunden aus dem Cache"
-
-msgid "Options enforcing a passphrase policy"
-msgstr "Optionen für Passwort Regeln"
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr "Einhaltung der Passwort Regeln erzwingen"
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr "|N|setze die kleinste erlaubte Länge von Passwörtern auf N"
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr "|N|Verlange mindestens N Nicht-Buchstaben für ein neues Passwort"
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr "|DATEI|Prüfe neue Passwörter gegen die Regeln in DATEI"
-
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|Lasse das Passwort nach N Tagen verfallen"
-
-msgid "do not allow the reuse of old passphrases"
-msgstr "Verbiete die Wiedernutzung alter Passwörter."
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr "|N|Setze die Pinentry Zeitüberschreitung auf N Sekunden"
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|NAME als voreingestellten Schlüssel benutzen"
-
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NAME|Auch an NAME verschlüsseln"
-
-msgid "|SPEC|set up email aliases"
-msgstr "|SPEC|Email Alias festlegen"
-
-msgid "Configuration for Keyservers"
-msgstr "Konfiguration der Schlüsselserver"
-
-msgid "|URL|use keyserver at URL"
-msgstr "Benutze Schlüsselserver unter der URL"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr "Erlaube PKA Zugriffe (DNS Anfragen)"
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr ""
-"|MECHANISMEN|Benutze MECHANISMEN um Schlüssel über die Mailadresse "
-"aufzufinden."
-
-msgid "import missing key from a signature"
-msgstr "Schlüssel aus der Signatur importieren"
-
-msgid "include the public key in signatures"
-msgstr "Schlüssel mit in die Signatur packen"
-
-msgid "disable all access to the dirmngr"
-msgstr "Jeglichen Zugriff auf den Dirmngr verhindern"
-
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NAME|Benutze die Kodierung NAME für PKCS#12 Passwörter"
-
-msgid "do not check CRLs for root certificates"
-msgstr "CRL bei Wurzelzertifikaten nicht überprüfen"
-
-msgid "Options controlling the format of the output"
-msgstr "Optionen zum Einstellen der Ausgabeformate"
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr "Optionen zur Einstellung der Interaktivität und Geltendmachung"
-
-msgid "Options controlling the use of Tor"
-msgstr "Optionen zur Benutzung von Tor"
-
-msgid "Configuration for HTTP servers"
-msgstr "Konfiguration für HTTP Server"
-
-msgid "use system's HTTP proxy setting"
-msgstr "Benutze die HTTP Proxy Einstellung des Systems"
-
-msgid "Configuration of LDAP servers to use"
-msgstr "Konfiguration der zu nutzenden LDAP-Server"
-
-msgid "LDAP server list"
-msgstr "Liste der LDAP Server"
-
-msgid "Configuration for OCSP"
-msgstr "Konfiguration zu OCSP"
-
 msgid "OpenPGP"
 msgstr "OpenPGP"
+
+msgid "S/MIME"
+msgstr "S/MIME"
 
 msgid "Private Keys"
 msgstr "Geheime Schlüssel"
 
 msgid "Smartcards"
 msgstr "Smartcard"
-
-msgid "S/MIME"
-msgstr "S/MIME"
 
 msgid "Network"
 msgstr "Netz"
@@ -8934,6 +8937,33 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
+
+#~ msgid "use a log file for the server"
+#~ msgstr "Logausgaben in eine Datei umlenken"
+
+#~ msgid "|FILE|write a server mode log to FILE"
+#~ msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
+
+#~ msgid "run without asking a user"
+#~ msgstr "Ausführung ohne Benutzernachfrage"
+
+#~ msgid "allow PKA lookups (DNS requests)"
+#~ msgstr "Erlaube PKA Zugriffe (DNS Anfragen)"
+
+#~ msgid "import missing key from a signature"
+#~ msgstr "Schlüssel aus der Signatur importieren"
+
+#~ msgid "include the public key in signatures"
+#~ msgstr "Schlüssel mit in die Signatur packen"
+
+#~ msgid "Options controlling the format of the output"
+#~ msgstr "Optionen zum Einstellen der Ausgabeformate"
+
+#~ msgid "Options controlling the use of Tor"
+#~ msgstr "Optionen zur Benutzung von Tor"
+
+#~ msgid "LDAP server list"
+#~ msgstr "Liste der LDAP Server"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "fordere Schlüssel %s von %s-Server %s an\n"
@@ -9289,9 +9319,6 @@ msgstr ""
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
-
-#~ msgid "do not grab keyboard and mouse"
-#~ msgstr "Tastatur und Maus nicht \"grabben\""
 
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Fehler: URL ist zu lang (Grenze beträgt %d Zeichen).\n"
