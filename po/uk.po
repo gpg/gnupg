@@ -156,6 +156,34 @@ msgstr "Помилковий пінкод"
 msgid "Bad Passphrase"
 msgstr "Помилковий пароль"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "помилка під час спроби отримання серійного номера картки: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "Будь ласка, повторіть введення пароля"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"Будь ласка, введіть пароль для захисту імпортованого об’єкта у системі GnuPG."
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr ""
@@ -168,10 +196,6 @@ msgstr "не вдалося створити «%s»: %s\n"
 #, c-format
 msgid "can't open '%s': %s\n"
 msgstr "не вдалося відкрити «%s»: %s\n"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "помилка під час спроби отримання серійного номера картки: %s\n"
 
 #, c-format
 msgid "detected card with S/N: %s\n"
@@ -206,9 +230,6 @@ msgstr "Заборонити"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Будь ласка, вкажіть пароль до ключа ssh%%0A  %F%%0A  (%c)"
-
-msgid "Please re-enter this passphrase"
-msgstr "Будь ласка, повторіть введення пароля"
 
 #, c-format
 msgid ""
@@ -330,12 +351,10 @@ msgstr "Вкажіть пароль до%0Aз метою захисту вашо
 msgid "Please enter the new passphrase"
 msgstr "Вкажіть новий пароль"
 
-msgid ""
-"@Options:\n"
-" "
-msgstr ""
-"@Параметри:\n"
-" "
+#, fuzzy
+#| msgid "Options useful for debugging"
+msgid "Options used for startup"
+msgstr "Параметри діагностики"
 
 msgid "run in daemon mode (background)"
 msgstr "запустити у режимі фонової служби (фоновий)"
@@ -346,11 +365,8 @@ msgstr "запустити у режимі сервера (основному)"
 msgid "run in supervised mode"
 msgstr "запустити у режимі із наглядом"
 
-msgid "verbose"
-msgstr "докладний режим"
-
-msgid "be somewhat more quiet"
-msgstr "дещо зменшити кількість повідомлень"
+msgid "do not detach from the console"
+msgstr "не від’єднувати від консолі"
 
 msgid "sh-style command output"
 msgstr "виведення команд у форматі sh"
@@ -361,20 +377,26 @@ msgstr "виведення команд у форматі csh"
 msgid "|FILE|read options from FILE"
 msgstr "|FILE|прочитати параметри з вказаного файла"
 
-msgid "do not detach from the console"
-msgstr "не від’єднувати від консолі"
+msgid "Options controlling the diagnostic output"
+msgstr "Параметри керування діагностичним виводом"
 
-msgid "use a log file for the server"
-msgstr "використовувати файл журналу для сервера"
+msgid "verbose"
+msgstr "докладний режим"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
-msgstr "|PGM|використовувати вказану програму пінзаписів"
+msgid "be somewhat more quiet"
+msgstr "дещо зменшити кількість повідомлень"
 
-msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "|PGM|використовувати вказану програму SCdaemon"
+msgid "|FILE|write server mode logs to FILE"
+msgstr "|FILE|записувати журнал режиму сервера до файла"
+
+msgid "Options controlling the configuration"
+msgstr "Параметри керування налаштуваннями"
 
 msgid "do not use the SCdaemon"
 msgstr "не використовувати SCdaemon"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PGM|використовувати вказану програму SCdaemon"
 
 msgid "|NAME|accept some commands via NAME"
 msgstr "|NAME|приймати певні команди через NAME"
@@ -385,8 +407,29 @@ msgstr "ігнорувати запити щодо зміни TTY"
 msgid "ignore requests to change the X display"
 msgstr "ігнорувати запити щодо зміни графічного дисплея"
 
+msgid "enable ssh support"
+msgstr "увімкнути підтримку ssh"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr "|АЛГО|використати алгоритм АЛГО для показу відбитків ssh"
+
+msgid "enable putty support"
+msgstr "увімкнути підтримку putty"
+
+msgid "Options controlling the security"
+msgstr "Параметри керування захистом"
+
 msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|вважати кешовані пінкоди за вказану кількість секунд"
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr "|N|завершувати строк дії ключів SSH за N секунд"
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr "|N|встановити максимальний строк дії кешу пінкодів у секундах"
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
+msgstr "|N|встановити максимальний строк дії ключа SSH у секундах"
 
 msgid "do not use the PIN cache when signing"
 msgstr "не використовувати кеш пін-кодів для підписування"
@@ -400,20 +443,51 @@ msgstr "заборонити клієнтам позначати ключі як
 msgid "allow presetting passphrase"
 msgstr "дозволити попереднє встановлення пароля"
 
+msgid "Options enforcing a passphrase policy"
+msgstr "Параметри примусового використання правил паролів"
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr "не дозволяти обхід правил паролів"
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr "|N|встановити вказану мінімальну довжину нових паролів"
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr "|N|вимагати у нових паролях не менше вказаної кількості нелітер"
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr "|FILE|перевіряти нові паролі за зразком з вказаного файла"
+
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|завершувати строк дії паролів за вказану кількість днів"
+
+msgid "do not allow the reuse of old passphrases"
+msgstr "не дозволяти повторне використання старих паролів"
+
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the PIN-Entry"
+msgstr "Параметри керування захистом"
+
+msgid "never use the PIN-entry"
+msgstr ""
+
 msgid "disallow caller to override the pinentry"
 msgstr "заборонити функції виклику перевизначати pinentry"
 
+#, fuzzy
+#| msgid "do not grab keyboard and mouse"
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr "не захоплювати керування клавіатурою і мишею"
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr "|PGM|використовувати вказану програму пінзаписів"
+
+msgid "|N|set the Pinentry timeout to N seconds"
+msgstr "|N|встановити вказаний час очікування Pinentry у секундах"
+
 msgid "allow passphrase to be prompted through Emacs"
 msgstr "дозволити запит пароля з Emacs"
-
-msgid "enable ssh support"
-msgstr "увімкнути підтримку ssh"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr "|АЛГО|використати алгоритм АЛГО для показу відбитків ssh"
-
-msgid "enable putty support"
-msgstr "увімкнути підтримку putty"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -528,6 +602,13 @@ msgstr "%s %s зупинено\n"
 #, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "у цьому сеансі не запущено gpg-agent\n"
+
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@Параметри:\n"
+" "
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr ""
@@ -2110,8 +2191,67 @@ msgstr "запустити у режимі сервера"
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr "|VALUE|встановити вказане правило TOFU для ключа"
 
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NAME|використовувати вказаний типовий закритий ключ"
+
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|NAME|шифрувати також до вказаного ідентифікатора користувача"
+
+msgid "|SPEC|set up email aliases"
+msgstr "|SPEC|встановити замінники адреси електронної пошти"
+
+msgid "use strict OpenPGP behavior"
+msgstr "строго використовувати стандарт OpenPGP"
+
+msgid "do not make any changes"
+msgstr "не вносити змін"
+
+msgid "prompt before overwriting"
+msgstr "запитувати перед перезаписом"
+
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the input"
+msgstr "Параметри керування захистом"
+
+#, fuzzy
+#| msgid "Options controlling the diagnostic output"
+msgid "Options controlling the output"
+msgstr "Параметри керування діагностичним виводом"
+
 msgid "create ascii armored output"
 msgstr "створити дані у форматі ASCII"
+
+msgid "|FILE|write output to FILE"
+msgstr "|FILE|записати дані до вказаного файла"
+
+msgid "use canonical text mode"
+msgstr "використовувати канонічний текстовий режим"
+
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|встановити рівень стиснення (0 — вимкнути)"
+
+#, fuzzy
+#| msgid "Options controlling the interactivity and enforcement"
+msgid "Options controlling key import and export"
+msgstr "Параметри керування інтерактивністю та примусом"
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr ""
+"|MECHANISMS|використовувати вказаний механізм для пошуку ключів за адресою"
+
+msgid "disable all access to the dirmngr"
+msgstr "заборонити доступ до dirmngr"
+
+#, fuzzy
+#| msgid "Options controlling the configuration"
+msgid "Options controlling key listings"
+msgstr "Параметри керування налаштуваннями"
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "показати список закритих ключів"
 
 msgid "|USER-ID|encrypt for USER-ID"
 msgstr "|USER-ID|зашифрувати для вказаного ідентифікатора"
@@ -2121,23 +2261,11 @@ msgstr ""
 "|USER-ID|використовувати для створення підписів або розшифрування вказаний "
 "ідентифікатор"
 
-msgid "|N|set compress level to N (0 disables)"
-msgstr "|N|встановити рівень стиснення (0 — вимкнути)"
+msgid "Options for unattended use"
+msgstr ""
 
-msgid "use canonical text mode"
-msgstr "використовувати канонічний текстовий режим"
-
-msgid "|FILE|write output to FILE"
-msgstr "|FILE|записати дані до вказаного файла"
-
-msgid "do not make any changes"
-msgstr "не вносити змін"
-
-msgid "prompt before overwriting"
-msgstr "запитувати перед перезаписом"
-
-msgid "use strict OpenPGP behavior"
-msgstr "строго використовувати стандарт OpenPGP"
+msgid "Other options"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -6733,11 +6861,11 @@ msgstr "|N|від’єднати бездіяльну вказану кільк�
 msgid "do not use a reader's pinpad"
 msgstr "не використовувати додаткову клавіатуру зчитувача"
 
-msgid "deny the use of admin card commands"
-msgstr "заборонити використання команд з адміністрування картки"
-
 msgid "use variable length input for pinpad"
 msgstr "використовувати змінну довжину вхідних даних для зчитувача"
+
+msgid "deny the use of admin card commands"
+msgstr "заборонити використання команд з адміністрування картки"
 
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
 msgstr "Використання: @SCDAEMON@ [параметри] (-h — довідка)"
@@ -6762,6 +6890,10 @@ msgstr "запущено запуск обробки для дескриптор
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "роботу обробника для дескриптора %d перервано\n"
+
+#, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "помилка під час спроби отримання даних щодо використання ключа: %s\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7015,10 +7147,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "не вказано використання ключа — припускаємо всі можливі використання\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "помилка під час спроби отримання даних щодо використання ключа: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7278,8 +7406,14 @@ msgstr "передати команду dirmngr"
 msgid "invoke gpg-protect-tool"
 msgstr "виклик gpg-protect-tool"
 
-msgid "create base-64 encoded output"
-msgstr "створити дані, закодовані у BASE64"
+msgid "don't use the terminal at all"
+msgstr "взагалі не використовувати термінал"
+
+msgid "|N|number of certificates to include"
+msgstr "кількість сертифікатів, які слід включити"
+
+msgid "|FILE|take policy information from FILE"
+msgstr "|FILE|взяти дані щодо правил з вказаного файла"
 
 msgid "assume input is in PEM format"
 msgstr "вважати вхідні дані даними у форматі PEM"
@@ -7290,32 +7424,41 @@ msgstr "вважати вхідні дані даними у форматі BASE
 msgid "assume input is in binary format"
 msgstr "вважати вхідні дані даними у двійковому форматі"
 
-msgid "never consult a CRL"
-msgstr "не використовувати САС"
+msgid "create base-64 encoded output"
+msgstr "створити дані, закодовані у BASE64"
 
-msgid "check validity using OCSP"
-msgstr "перевіряти чинність за допомогою OCSP"
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr ""
+"|USER-ID|використовувати ідентифікатор користувача як типовий закритий ключ"
 
-msgid "|N|number of certificates to include"
-msgstr "кількість сертифікатів, які слід включити"
-
-msgid "|FILE|take policy information from FILE"
-msgstr "|FILE|взяти дані щодо правил з вказаного файла"
-
-msgid "do not check certificate policies"
-msgstr "не перевіряти правила сертифікатів"
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "|FILE|додати сховище ключів до списку сховищ ключів"
 
 msgid "fetch missing issuer certificates"
 msgstr "Надіслати запит щодо незнайдених сертифікатів видавця"
 
-msgid "don't use the terminal at all"
-msgstr "взагалі не використовувати термінал"
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "використовувати вказане кодування для паролів PKCS#12"
 
-msgid "|FILE|write a server mode log to FILE"
-msgstr "|FILE|записувати журнал режиму сервера до файла"
+msgid "never consult a CRL"
+msgstr "не використовувати САС"
 
-msgid "|FILE|write an audit log to FILE"
-msgstr "|FILE|записувати журнал перевірки до файла"
+msgid "do not check CRLs for root certificates"
+msgstr "не шукати у списках відкликаних сертифікатів кореневі сертифікати"
+
+msgid "check validity using OCSP"
+msgstr "перевіряти чинність за допомогою OCSP"
+
+msgid "do not check certificate policies"
+msgstr "не перевіряти правила сертифікатів"
+
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NAME|використовувати вказаний алгоритм шифрування"
+
+msgid "|NAME|use message digest algorithm NAME"
+msgstr ""
+"|NAME|використовувати вказаний алгоритм обчислення контрольної суми "
+"повідомлення"
 
 msgid "batch mode: never ask"
 msgstr "пакетний режим: нічого не запитувати"
@@ -7326,23 +7469,8 @@ msgstr "вважати відповіддю на більшість питань
 msgid "assume no on most questions"
 msgstr "вважати відповіддю на більшість питань «ні»"
 
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr "|FILE|додати сховище ключів до списку сховищ ключів"
-
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr ""
-"|USER-ID|використовувати ідентифікатор користувача як типовий закритий ключ"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "використовувати цей сервер ключів для пошуку"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|використовувати вказаний алгоритм шифрування"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr ""
-"|NAME|використовувати вказаний алгоритм обчислення контрольної суми "
-"повідомлення"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|FILE|записувати журнал перевірки до файла"
 
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "Використання: @GPGSM@ [параметри] [файли] (-h — довідка)"
@@ -8159,44 +8287,59 @@ msgstr "завершити роботу dirmngr"
 msgid "flush the cache"
 msgstr "спорожнити кеш"
 
-msgid "|FILE|write server mode logs to FILE"
-msgstr "|FILE|записувати журнал режиму сервера до файла"
-
-msgid "run without asking a user"
-msgstr "запустити без запиту до користувача"
-
-msgid "force loading of outdated CRLs"
-msgstr "примусове завантаження застарілих САС"
-
-msgid "allow sending OCSP requests"
-msgstr "дозволити надсилання запитів OCSP"
-
 msgid "allow online software version check"
 msgstr "дозволити інтерактивну перевірку версії програмного забезпечення"
+
+msgid "|N|do not return more than N items in one query"
+msgstr "|N|повертати не більше за вказану кількість записів на запит"
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr "маршрутизувати увесь обмін даними з мережею через Tor"
+
+msgid "Configuration for Keyservers"
+msgstr "Налаштування для серверів ключів"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|використовувати сервер ключів за адресою"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|FILE|використовувати сертифікати CA з файла для HKP крізь TLS"
+
+msgid "Configuration for HTTP servers"
+msgstr "Налаштування для серверів HTTP"
 
 msgid "inhibit the use of HTTP"
 msgstr "заборонити використання HTTP"
 
-msgid "inhibit the use of LDAP"
-msgstr "заборонити використання LDAP"
-
 msgid "ignore HTTP CRL distribution points"
 msgstr "ігнорувати точки поширення САС протоколу HTTP"
 
-msgid "ignore LDAP CRL distribution points"
-msgstr "ігнорувати точки поширення САС протоколу LDAP"
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr "ігнорувати адреси служб OCSP з сертифікатами"
-
 msgid "|URL|redirect all HTTP requests to URL"
 msgstr "|URL|переспрямувати всі запити HTTP на вказану адресу"
+
+msgid "use system's HTTP proxy setting"
+msgstr "використовувати загальносистемний проксі-сервер HTTP"
+
+msgid "Configuration of LDAP servers to use"
+msgstr "Налаштування використання серверів LDAP"
+
+msgid "inhibit the use of LDAP"
+msgstr "заборонити використання LDAP"
+
+msgid "ignore LDAP CRL distribution points"
+msgstr "ігнорувати точки поширення САС протоколу LDAP"
 
 msgid "|HOST|use HOST for LDAP queries"
 msgstr "|HOST|використовувати вказаний вузол для запитів LDAP"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "не використовувати резервні вузли з --ldap-proxy"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "використовувати цей сервер ключів для пошуку"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FILE|прочитати список серверів LDAP з вказаного файла"
@@ -8207,20 +8350,23 @@ msgstr "додати виявлені у точках поширення CRL н�
 msgid "|N|set LDAP timeout to N seconds"
 msgstr "|N|встановити вказаний час очікування даних від LDAP"
 
+msgid "Configuration for OCSP"
+msgstr "Налаштування OCSP"
+
+msgid "allow sending OCSP requests"
+msgstr "дозволити надсилання запитів OCSP"
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr "ігнорувати адреси служб OCSP з сертифікатами"
+
 msgid "|URL|use OCSP responder at URL"
 msgstr "|URL|використовувати відповідач OCSP за вказаною адресою"
 
 msgid "|FPR|OCSP response signed by FPR"
 msgstr "|FPR|відповідь OCSP підписано FPR"
 
-msgid "|N|do not return more than N items in one query"
-msgstr "|N|повертати не більше за вказану кількість записів на запит"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|FILE|використовувати сертифікати CA з файла для HKP крізь TLS"
-
-msgid "route all network traffic via Tor"
-msgstr "маршрутизувати увесь обмін даними з мережею через Tor"
+msgid "force loading of outdated CRLs"
+msgstr "примусове завантаження застарілих САС"
 
 msgid ""
 "@\n"
@@ -8686,127 +8832,17 @@ msgstr "помилка надсилання рядка: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "помилка під час спроби надсилання стандартних параметрів: %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr "Параметри керування діагностичним виводом"
-
-msgid "Options controlling the configuration"
-msgstr "Параметри керування налаштуваннями"
-
-msgid "Options useful for debugging"
-msgstr "Параметри діагностики"
-
-msgid "Options controlling the security"
-msgstr "Параметри керування захистом"
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|завершувати строк дії ключів SSH за N секунд"
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr "|N|встановити максимальний строк дії кешу пінкодів у секундах"
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr "|N|встановити максимальний строк дії ключа SSH у секундах"
-
-msgid "Options enforcing a passphrase policy"
-msgstr "Параметри примусового використання правил паролів"
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr "не дозволяти обхід правил паролів"
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr "|N|встановити вказану мінімальну довжину нових паролів"
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr "|N|вимагати у нових паролях не менше вказаної кількості нелітер"
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr "|FILE|перевіряти нові паролі за зразком з вказаного файла"
-
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|завершувати строк дії паролів за вказану кількість днів"
-
-msgid "do not allow the reuse of old passphrases"
-msgstr "не дозволяти повторне використання старих паролів"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr "|N|встановити вказаний час очікування Pinentry у секундах"
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|використовувати вказаний типовий закритий ключ"
-
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NAME|шифрувати також до вказаного ідентифікатора користувача"
-
-msgid "|SPEC|set up email aliases"
-msgstr "|SPEC|встановити замінники адреси електронної пошти"
-
-msgid "Configuration for Keyservers"
-msgstr "Налаштування для серверів ключів"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|використовувати сервер ключів за адресою"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr "дозволити пошук PKA (запити до DNS)"
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr ""
-"|MECHANISMS|використовувати вказаний механізм для пошуку ключів за адресою"
-
-#, fuzzy
-#| msgid "import keys from a keyserver"
-msgid "import missing key from a signature"
-msgstr "імпортувати ключі з сервера ключів"
-
-#, fuzzy
-#| msgid "list and check key signatures"
-msgid "include the public key in signatures"
-msgstr "показати список і перевірити підписи ключів"
-
-msgid "disable all access to the dirmngr"
-msgstr "заборонити доступ до dirmngr"
-
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "використовувати вказане кодування для паролів PKCS#12"
-
-msgid "do not check CRLs for root certificates"
-msgstr "не шукати у списках відкликаних сертифікатів кореневі сертифікати"
-
-msgid "Options controlling the format of the output"
-msgstr "Параметри керування форматом виведення"
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr "Параметри керування інтерактивністю та примусом"
-
-msgid "Options controlling the use of Tor"
-msgstr "Параметри керування використанням Tor"
-
-msgid "Configuration for HTTP servers"
-msgstr "Налаштування для серверів HTTP"
-
-msgid "use system's HTTP proxy setting"
-msgstr "використовувати загальносистемний проксі-сервер HTTP"
-
-msgid "Configuration of LDAP servers to use"
-msgstr "Налаштування використання серверів LDAP"
-
-msgid "LDAP server list"
-msgstr "список серверів LDAP"
-
-msgid "Configuration for OCSP"
-msgstr "Налаштування OCSP"
-
 msgid "OpenPGP"
 msgstr "OpenPGP"
+
+msgid "S/MIME"
+msgstr "S/MIME"
 
 msgid "Private Keys"
 msgstr "Закриті ключі"
 
 msgid "Smartcards"
 msgstr "Картки пам’яті"
-
-msgid "S/MIME"
-msgstr "S/MIME"
 
 msgid "Network"
 msgstr "Мережа"
@@ -8919,6 +8955,37 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "use a log file for the server"
+#~ msgstr "використовувати файл журналу для сервера"
+
+#~ msgid "|FILE|write a server mode log to FILE"
+#~ msgstr "|FILE|записувати журнал режиму сервера до файла"
+
+#~ msgid "run without asking a user"
+#~ msgstr "запустити без запиту до користувача"
+
+#~ msgid "allow PKA lookups (DNS requests)"
+#~ msgstr "дозволити пошук PKA (запити до DNS)"
+
+#, fuzzy
+#~| msgid "import keys from a keyserver"
+#~ msgid "import missing key from a signature"
+#~ msgstr "імпортувати ключі з сервера ключів"
+
+#, fuzzy
+#~| msgid "list and check key signatures"
+#~ msgid "include the public key in signatures"
+#~ msgstr "показати список і перевірити підписи ключів"
+
+#~ msgid "Options controlling the format of the output"
+#~ msgstr "Параметри керування форматом виведення"
+
+#~ msgid "Options controlling the use of Tor"
+#~ msgstr "Параметри керування використанням Tor"
+
+#~ msgid "LDAP server list"
+#~ msgstr "список серверів LDAP"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "надсилаємо запит щодо ключа %s до %s сервера %s\n"
@@ -9261,9 +9328,6 @@ msgstr ""
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "помилка listen(): %s\n"
-
-#~ msgid "do not grab keyboard and mouse"
-#~ msgstr "не захоплювати керування клавіатурою і мишею"
 
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Помилка: адреса є занадто довгою (максимум — %d символів).\n"

@@ -154,6 +154,31 @@ msgstr "nesprávne MPI"
 msgid "Bad Passphrase"
 msgstr "nesprávne heslo"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "chyba pri vytváraní hesla: %s\n"
+
+#, fuzzy
+msgid "Please re-enter this passphrase"
+msgstr "zmeniť heslo"
+
+#, fuzzy, c-format
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "Prosím, vložte heslo; toto je tajná veta \n"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ochranný algoritmus %d%s nie je podporováný\n"
@@ -167,10 +192,6 @@ msgstr "nemôžem vytvoriť `%s': %s\n"
 #| msgid "can't open `%s': %s\n"
 msgid "can't open '%s': %s\n"
 msgstr "nemôžem otvoriť `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "chyba pri vytváraní hesla: %s\n"
 
 #, c-format
 msgid "detected card with S/N: %s\n"
@@ -203,10 +224,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Prosím, vložte heslo; toto je tajná veta \n"
-
-#, fuzzy
-msgid "Please re-enter this passphrase"
-msgstr "zmeniť heslo"
 
 #, fuzzy, c-format
 msgid ""
@@ -330,14 +347,8 @@ msgstr ""
 msgid "Please enter the new passphrase"
 msgstr "zmeniť heslo"
 
-#, fuzzy
-msgid ""
-"@Options:\n"
-" "
+msgid "Options used for startup"
 msgstr ""
-"@\n"
-"Možnosti:\n"
-" "
 
 msgid "run in daemon mode (background)"
 msgstr ""
@@ -350,11 +361,8 @@ msgstr ""
 msgid "run in supervised mode"
 msgstr "Kľúč je nahradený"
 
-msgid "verbose"
-msgstr "s dodatočnými informáciami"
-
-msgid "be somewhat more quiet"
-msgstr "byť o trochu tichší"
+msgid "do not detach from the console"
+msgstr ""
 
 msgid "sh-style command output"
 msgstr ""
@@ -366,22 +374,27 @@ msgstr ""
 msgid "|FILE|read options from FILE"
 msgstr "|SÚBOR|nahrať rozširujúci modul SÚBOR"
 
-msgid "do not detach from the console"
+msgid "Options controlling the diagnostic output"
 msgstr ""
 
-#, fuzzy
-msgid "use a log file for the server"
-msgstr "vyhľadať kľúče na serveri kľúčov"
+msgid "verbose"
+msgstr "s dodatočnými informáciami"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
+msgid "be somewhat more quiet"
+msgstr "byť o trochu tichší"
+
+msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-msgid "|PGM|use PGM as the SCdaemon program"
+msgid "Options controlling the configuration"
 msgstr ""
 
 #, fuzzy
 msgid "do not use the SCdaemon"
 msgstr "aktualizovať databázu dôvery"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
 
 #, fuzzy
 #| msgid "|NAME|set terminal charset to NAME"
@@ -394,7 +407,32 @@ msgstr ""
 msgid "ignore requests to change the X display"
 msgstr ""
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "nepodporované"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "nepodporované"
+
+msgid "Options controlling the security"
+msgstr ""
+
 msgid "|N|expire cached PINs after N seconds"
+msgstr ""
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr ""
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr ""
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
 msgid "do not use the PIN cache when signing"
@@ -411,24 +449,51 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "chyba pri vytváraní hesla: %s\n"
 
+msgid "Options enforcing a passphrase policy"
+msgstr ""
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr ""
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr ""
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr ""
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr ""
+
+#, fuzzy
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|použiť mód hesla N"
+
+#, fuzzy
+msgid "do not allow the reuse of old passphrases"
+msgstr "chyba pri vytváraní hesla: %s\n"
+
+msgid "Options controlling the PIN-Entry"
+msgstr ""
+
+#, fuzzy
+#| msgid "use the gpg-agent"
+msgid "never use the PIN-entry"
+msgstr "použite gpg-agenta"
+
 msgid "disallow caller to override the pinentry"
+msgstr ""
+
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr ""
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr ""
+
+msgid "|N|set the Pinentry timeout to N seconds"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
 msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable ssh support"
-msgstr "nepodporované"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable putty support"
-msgstr "nepodporované"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -546,6 +611,15 @@ msgstr "%s: preskočené: %s\n"
 #, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent nie je v tomto sedení dostupný\n"
+
+#, fuzzy
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@\n"
+"Možnosti:\n"
+" "
 
 #, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
@@ -2209,8 +2283,63 @@ msgstr ""
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
+msgid "|NAME|use NAME as default secret key"
+msgstr "|MENO|použi MENO ako implicitný tajný kľúč"
+
+#, fuzzy
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|MENO|šifrovať pre MENO"
+
+msgid "|SPEC|set up email aliases"
+msgstr ""
+
+msgid "use strict OpenPGP behavior"
+msgstr ""
+
+msgid "do not make any changes"
+msgstr "nevykonať žiadne zmeny"
+
+msgid "prompt before overwriting"
+msgstr "vyžiadať potvrdenie pred prepísaním"
+
+msgid "Options controlling the input"
+msgstr ""
+
+msgid "Options controlling the output"
+msgstr ""
+
 msgid "create ascii armored output"
 msgstr "vytvor výstup zakódovaný pomocou ASCII"
+
+#, fuzzy
+msgid "|FILE|write output to FILE"
+msgstr "|SÚBOR|nahrať rozširujúci modul SÚBOR"
+
+msgid "use canonical text mode"
+msgstr "použiť kánonický textový mód"
+
+#, fuzzy
+msgid "|N|set compress level to N (0 disables)"
+msgstr ""
+"|N|nastaviť úroveň komprimácie N (0 - žiadna\n"
+" komprimácia)"
+
+msgid "Options controlling key import and export"
+msgstr ""
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr ""
+
+msgid "disable all access to the dirmngr"
+msgstr ""
+
+msgid "Options controlling key listings"
+msgstr ""
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "vypísať zoznam tajných kľúčov"
 
 #, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
@@ -2222,26 +2351,10 @@ msgstr ""
 "použiť toto id užívateľa na podpísanie\n"
 " alebo dešifrovanie"
 
-#, fuzzy
-msgid "|N|set compress level to N (0 disables)"
+msgid "Options for unattended use"
 msgstr ""
-"|N|nastaviť úroveň komprimácie N (0 - žiadna\n"
-" komprimácia)"
 
-msgid "use canonical text mode"
-msgstr "použiť kánonický textový mód"
-
-#, fuzzy
-msgid "|FILE|write output to FILE"
-msgstr "|SÚBOR|nahrať rozširujúci modul SÚBOR"
-
-msgid "do not make any changes"
-msgstr "nevykonať žiadne zmeny"
-
-msgid "prompt before overwriting"
-msgstr "vyžiadať potvrdenie pred prepísaním"
-
-msgid "use strict OpenPGP behavior"
+msgid "Other options"
 msgstr ""
 
 msgid ""
@@ -6860,12 +6973,12 @@ msgstr ""
 msgid "do not use a reader's pinpad"
 msgstr ""
 
+msgid "use variable length input for pinpad"
+msgstr ""
+
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "konfliktné príkazy\n"
-
-msgid "use variable length input for pinpad"
-msgstr ""
 
 #, fuzzy
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
@@ -6887,6 +7000,10 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "chyba pri zápise do súboru tajných kľúčov `%s': %s\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7147,10 +7264,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "chyba pri zápise do súboru tajných kľúčov `%s': %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7417,9 +7530,14 @@ msgstr ""
 msgid "invoke gpg-protect-tool"
 msgstr ""
 
-#, fuzzy
-msgid "create base-64 encoded output"
-msgstr "vytvor výstup zakódovaný pomocou ASCII"
+msgid "don't use the terminal at all"
+msgstr "vôbec nepoužívať terminál"
+
+msgid "|N|number of certificates to include"
+msgstr ""
+
+msgid "|FILE|take policy information from FILE"
+msgstr ""
 
 msgid "assume input is in PEM format"
 msgstr ""
@@ -7430,33 +7548,44 @@ msgstr ""
 msgid "assume input is in binary format"
 msgstr ""
 
+#, fuzzy
+msgid "create base-64 encoded output"
+msgstr "vytvor výstup zakódovaný pomocou ASCII"
+
+#, fuzzy
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|MENO|použi MENO ako implicitný tajný kľúč"
+
+#, fuzzy
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr ""
+"pridať tento súbor kľúčov do zoznamu\n"
+" používaných súborov kľúčov"
+
+msgid "fetch missing issuer certificates"
+msgstr ""
+
+#, fuzzy
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|ALG|použiť šifrovací algoritmus ALG pre heslá"
+
 msgid "never consult a CRL"
+msgstr ""
+
+msgid "do not check CRLs for root certificates"
 msgstr ""
 
 msgid "check validity using OCSP"
 msgstr ""
 
-msgid "|N|number of certificates to include"
-msgstr ""
-
-msgid "|FILE|take policy information from FILE"
-msgstr ""
-
 msgid "do not check certificate policies"
 msgstr ""
 
-msgid "fetch missing issuer certificates"
-msgstr ""
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|ALG|použiť šifrovací algoritmus ALG"
 
-msgid "don't use the terminal at all"
-msgstr "vôbec nepoužívať terminál"
-
-msgid "|FILE|write a server mode log to FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|FILE|write an audit log to FILE"
-msgstr "|SÚBOR|nahrať rozširujúci modul SÚBOR"
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|ALG|použiť hashovací algoritmus ALG"
 
 msgid "batch mode: never ask"
 msgstr "dávkový režim: nikdy sa na nič nepýtať"
@@ -7468,26 +7597,8 @@ msgid "assume no on most questions"
 msgstr "automaticky odpovedať NIE na väčšinu otázok"
 
 #, fuzzy
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr ""
-"pridať tento súbor kľúčov do zoznamu\n"
-" používaných súborov kľúčov"
-
-#, fuzzy
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|MENO|použi MENO ako implicitný tajný kľúč"
-
-#, fuzzy
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr ""
-"|POČÍTAČ|použi tento server kľúčov na vyhľadávanie\n"
-" kľúčov"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|ALG|použiť šifrovací algoritmus ALG"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|ALG|použiť hashovací algoritmus ALG"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|SÚBOR|nahrať rozširujúci modul SÚBOR"
 
 #, fuzzy
 #| msgid "Usage: gpg [options] [files] (-h for help)"
@@ -8298,38 +8409,50 @@ msgstr ""
 msgid "flush the cache"
 msgstr ""
 
-msgid "|FILE|write server mode logs to FILE"
+msgid "allow online software version check"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr ""
+
+msgid "Configuration for Keyservers"
 msgstr ""
 
 #, fuzzy
-msgid "run without asking a user"
-msgstr "Ukončiť bez uloženia? "
+msgid "|URL|use keyserver at URL"
+msgstr "nemožno použiť URI servera kľúčov - chyba analýzy URI\n"
 
-msgid "force loading of outdated CRLs"
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "allow sending OCSP requests"
-msgstr ""
-
-msgid "allow online software version check"
+msgid "Configuration for HTTP servers"
 msgstr ""
 
 msgid "inhibit the use of HTTP"
 msgstr ""
 
-msgid "inhibit the use of LDAP"
-msgstr ""
-
 msgid "ignore HTTP CRL distribution points"
 msgstr ""
 
-msgid "ignore LDAP CRL distribution points"
-msgstr ""
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr ""
-
 msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "use system's HTTP proxy setting"
+msgstr ""
+
+msgid "Configuration of LDAP servers to use"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
 msgstr ""
 
 msgid "|HOST|use HOST for LDAP queries"
@@ -8337,6 +8460,12 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr ""
+"|POČÍTAČ|použi tento server kľúčov na vyhľadávanie\n"
+" kľúčov"
 
 #, fuzzy
 msgid "|FILE|read LDAP server list from FILE"
@@ -8348,6 +8477,15 @@ msgstr ""
 msgid "|N|set LDAP timeout to N seconds"
 msgstr ""
 
+msgid "Configuration for OCSP"
+msgstr ""
+
+msgid "allow sending OCSP requests"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
 #, fuzzy
 msgid "|URL|use OCSP responder at URL"
 msgstr "nemožno použiť URI servera kľúčov - chyba analýzy URI\n"
@@ -8355,13 +8493,7 @@ msgstr "nemožno použiť URI servera kľúčov - chyba analýzy URI\n"
 msgid "|FPR|OCSP response signed by FPR"
 msgstr ""
 
-msgid "|N|do not return more than N items in one query"
-msgstr ""
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
-msgid "route all network traffic via Tor"
+msgid "force loading of outdated CRLs"
 msgstr ""
 
 #, fuzzy
@@ -8837,129 +8969,16 @@ msgstr "podpisovanie zlyhalo: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "chyba pri posielaní na `%s': %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr ""
-
-msgid "Options controlling the configuration"
-msgstr ""
-
-msgid "Options useful for debugging"
-msgstr ""
-
-msgid "Options controlling the security"
-msgstr ""
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr ""
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr ""
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr ""
-
-msgid "Options enforcing a passphrase policy"
-msgstr ""
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr ""
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr ""
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr ""
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|použiť mód hesla N"
-
-#, fuzzy
-msgid "do not allow the reuse of old passphrases"
-msgstr "chyba pri vytváraní hesla: %s\n"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr ""
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|MENO|použi MENO ako implicitný tajný kľúč"
-
-#, fuzzy
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|MENO|šifrovať pre MENO"
-
-msgid "|SPEC|set up email aliases"
-msgstr ""
-
-msgid "Configuration for Keyservers"
-msgstr ""
-
-#, fuzzy
-msgid "|URL|use keyserver at URL"
-msgstr "nemožno použiť URI servera kľúčov - chyba analýzy URI\n"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr ""
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr ""
-
-#, fuzzy
-#| msgid "import keys from a keyserver"
-msgid "import missing key from a signature"
-msgstr "importovať kľúče zo servera kľúčov"
-
-#, fuzzy
-msgid "include the public key in signatures"
-msgstr "skontrolovať podpisy kľúčov"
-
-msgid "disable all access to the dirmngr"
-msgstr ""
-
-#, fuzzy
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|ALG|použiť šifrovací algoritmus ALG pre heslá"
-
-msgid "do not check CRLs for root certificates"
-msgstr ""
-
-msgid "Options controlling the format of the output"
-msgstr ""
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr ""
-
-msgid "Options controlling the use of Tor"
-msgstr ""
-
-msgid "Configuration for HTTP servers"
-msgstr ""
-
-msgid "use system's HTTP proxy setting"
-msgstr ""
-
-msgid "Configuration of LDAP servers to use"
-msgstr ""
-
-msgid "LDAP server list"
-msgstr ""
-
-msgid "Configuration for OCSP"
-msgstr ""
-
 msgid "OpenPGP"
+msgstr ""
+
+msgid "S/MIME"
 msgstr ""
 
 msgid "Private Keys"
 msgstr ""
 
 msgid "Smartcards"
-msgstr ""
-
-msgid "S/MIME"
 msgstr ""
 
 #, fuzzy
@@ -9079,6 +9098,23 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "use a log file for the server"
+#~ msgstr "vyhľadať kľúče na serveri kľúčov"
+
+#, fuzzy
+#~ msgid "run without asking a user"
+#~ msgstr "Ukončiť bez uloženia? "
+
+#, fuzzy
+#~| msgid "import keys from a keyserver"
+#~ msgid "import missing key from a signature"
+#~ msgstr "importovať kľúče zo servera kľúčov"
+
+#, fuzzy
+#~ msgid "include the public key in signatures"
+#~ msgstr "skontrolovať podpisy kľúčov"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"
@@ -10959,9 +10995,6 @@ msgstr ""
 
 #~ msgid "never use a MDC for encryption"
 #~ msgstr "na šifrovanie nikdy nepoužiť MDC"
-
-#~ msgid "use the gpg-agent"
-#~ msgstr "použite gpg-agenta"
 
 #~ msgid "|[file]|write status info to file"
 #~ msgstr "|[súbor]|zapíš informáciu o stave do súboru"

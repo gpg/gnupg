@@ -183,6 +183,35 @@ msgstr "Špatný PIN"
 msgid "Bad Passphrase"
 msgstr "Špatné heslo"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "chyba při získání sériového čísla karty: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "Prosím, vložte toto heslo znovu"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"Prosím, zadejte heslo, abyste ochránili importovaný objekt uvnitř systému "
+"GnuPG."
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "SSH klíče delší než %d bitů nejsou podporovány\n"
@@ -194,10 +223,6 @@ msgstr "nelze vytvořit „%s“: %s\n"
 #, c-format
 msgid "can't open '%s': %s\n"
 msgstr "nelze otevřít „%s“: %s\n"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "chyba při získání sériového čísla karty: %s\n"
 
 #, c-format
 msgid "detected card with S/N: %s\n"
@@ -232,9 +257,6 @@ msgstr "Zakázat"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Prosím, vložte heslo pro SSH klíč%%0A  %F%%0A  (%c)"
-
-msgid "Please re-enter this passphrase"
-msgstr "Prosím, vložte toto heslo znovu"
 
 #, c-format
 msgid ""
@@ -354,12 +376,10 @@ msgstr "Pro ochranu svého nového klíče,%0Aprosím, zadejte heslo"
 msgid "Please enter the new passphrase"
 msgstr "Prosím, zadejte nové heslo"
 
-msgid ""
-"@Options:\n"
-" "
-msgstr ""
-"@Volby:\n"
-" "
+#, fuzzy
+#| msgid "Options useful for debugging"
+msgid "Options used for startup"
+msgstr "Volby užitečné při ladění"
 
 msgid "run in daemon mode (background)"
 msgstr "poběží v režimu démona (na pozadí)"
@@ -370,11 +390,8 @@ msgstr "poběží v režimu serveru (na popředí)"
 msgid "run in supervised mode"
 msgstr "poběží v režimu dohledu"
 
-msgid "verbose"
-msgstr "upovídaný režim"
-
-msgid "be somewhat more quiet"
-msgstr "být o trochu víc tichý"
+msgid "do not detach from the console"
+msgstr "neodpojovat se od konzole"
 
 msgid "sh-style command output"
 msgstr "vypisovat příkazy ve stylu sh"
@@ -385,20 +402,26 @@ msgstr "vypisovat příkazy ve stylu csh"
 msgid "|FILE|read options from FILE"
 msgstr "|SOUBOR|načíst volby ze SOUBORU"
 
-msgid "do not detach from the console"
-msgstr "neodpojovat se od konzole"
+msgid "Options controlling the diagnostic output"
+msgstr "Volby ovlivňující diagnostický výstup"
 
-msgid "use a log file for the server"
-msgstr "použít pro server soubor s protokolem"
+msgid "verbose"
+msgstr "upovídaný režim"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
-msgstr "|PROGRAM|použít PROGRAM jako PIN-Entry program"
+msgid "be somewhat more quiet"
+msgstr "být o trochu víc tichý"
 
-msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "|PROGRAM|použít PROGRAM jako SCdaemon program"
+msgid "|FILE|write server mode logs to FILE"
+msgstr "|SOUBOR|protokol z režimu serveru se zapíše do SOUBORU"
+
+msgid "Options controlling the configuration"
+msgstr "Volby ovlivňující nastavení"
 
 msgid "do not use the SCdaemon"
 msgstr "nepoužívat SCdémona"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PROGRAM|použít PROGRAM jako SCdaemon program"
 
 msgid "|NAME|accept some commands via NAME"
 msgstr "|NÁZEV|přijímat některé příkazy přes NÁZEV"
@@ -409,8 +432,29 @@ msgstr "ignorovat požadavky na změnu TTY"
 msgid "ignore requests to change the X display"
 msgstr "ignorovat požadavky na změnu X displeje"
 
+msgid "enable ssh support"
+msgstr "zapnout podporu pro OpenSSH"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr "|ALGORITMUS|ukazovat otisky SSH pomocí ALGORITMU"
+
+msgid "enable putty support"
+msgstr "zapnout podporu pro PuTTY"
+
+msgid "Options controlling the security"
+msgstr "Volby ovlivňující bezpečnost"
+
 msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|zahodit zapamatované PINy po N sekundách"
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr "|N|zahazovat klíče SSH po N sekundách"
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr "|N|nastavit maximální životnost dočasné paměti pro PINy na N sekund"
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
+msgstr "|N| nastavit maximální životnost klíčů SSH na N sekund"
 
 msgid "do not use the PIN cache when signing"
 msgstr "nepoužívat paměť PINů na podepisování"
@@ -424,20 +468,51 @@ msgstr "nedovolit klientům označovat klíče za „důvěryhodné“"
 msgid "allow presetting passphrase"
 msgstr "umožnit přednastavení hesla"
 
+msgid "Options enforcing a passphrase policy"
+msgstr "Volby vynucující politiku hesel"
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr "nedovolit obejití politiky hesel"
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr "|N|nastavit minimální vyžadovanou délku nových hesel na N"
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr "|N|vyžaduje alespoň N nepísmenných znaků v novém hesle"
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr "|SOUBOR|prověřovat nová hesla proti vzorům v SOUBORU"
+
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|omezit platnost hesla na N dnů"
+
+msgid "do not allow the reuse of old passphrases"
+msgstr "nedovolit opakovat stará hesla"
+
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the PIN-Entry"
+msgstr "Volby ovlivňující bezpečnost"
+
+msgid "never use the PIN-entry"
+msgstr ""
+
 msgid "disallow caller to override the pinentry"
 msgstr "znemožnit volajícímu přebít pinentry"
 
+#, fuzzy
+#| msgid "do not grab keyboard and mouse"
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr "neuzurpovat si klávesnici a myš"
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr "|PROGRAM|použít PROGRAM jako PIN-Entry program"
+
+msgid "|N|set the Pinentry timeout to N seconds"
+msgstr "|N|nastavit časový limit pro Pinentry na N sekund"
+
 msgid "allow passphrase to be prompted through Emacs"
 msgstr "umožnit zadání hesla skrze Emacs"
-
-msgid "enable ssh support"
-msgstr "zapnout podporu pro OpenSSH"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr "|ALGORITMUS|ukazovat otisky SSH pomocí ALGORITMU"
-
-msgid "enable putty support"
-msgstr "zapnout podporu pro PuTTY"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -552,6 +627,13 @@ msgstr "%s %s pozastaveno\n"
 #, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "v této relaci neběží žádný gpg-agent\n"
+
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@Volby:\n"
+" "
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr "Použití: gpg-preset-passphrase [volby] KEYGRIP (-h pro nápovědu)\n"
@@ -2109,23 +2191,17 @@ msgstr "pracovat v režimu serveru"
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr "|HODNOTA|nastavit TOFU politiku klíči"
 
-msgid "create ascii armored output"
-msgstr "vytvořit výstup zapsaný v ASCII"
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NÁZEV|použít NÁZEV jako implicitní tajný klíč"
 
-msgid "|USER-ID|encrypt for USER-ID"
-msgstr "|ID_UŽIVATELE|šifrovat pro ID_UŽIVATELE"
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|JMÉNO|šifrovat rovněž pro uživatele s ID JMÉNO"
 
-msgid "|USER-ID|use USER-ID to sign or decrypt"
-msgstr "|ID_UŽIVATELE|použít toto ID_UŽIVATELE pro podepsání nebo dešifrování"
+msgid "|SPEC|set up email aliases"
+msgstr "|SPEC|nastavit e-mailový alias"
 
-msgid "|N|set compress level to N (0 disables)"
-msgstr "|N|nastavit úroveň komprese na N (0 – žádná)"
-
-msgid "use canonical text mode"
-msgstr "použít kanonický textový režim"
-
-msgid "|FILE|write output to FILE"
-msgstr "|SOUBOR|zapsat výstup do SOUBORU"
+msgid "use strict OpenPGP behavior"
+msgstr "použít chování striktně podle OpenPGP"
 
 msgid "do not make any changes"
 msgstr "neprovádět žádné změny"
@@ -2133,8 +2209,60 @@ msgstr "neprovádět žádné změny"
 msgid "prompt before overwriting"
 msgstr "vyžádat potvrzení před přepsáním"
 
-msgid "use strict OpenPGP behavior"
-msgstr "použít chování striktně podle OpenPGP"
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the input"
+msgstr "Volby ovlivňující bezpečnost"
+
+#, fuzzy
+#| msgid "Options controlling the diagnostic output"
+msgid "Options controlling the output"
+msgstr "Volby ovlivňující diagnostický výstup"
+
+msgid "create ascii armored output"
+msgstr "vytvořit výstup zapsaný v ASCII"
+
+msgid "|FILE|write output to FILE"
+msgstr "|SOUBOR|zapsat výstup do SOUBORU"
+
+msgid "use canonical text mode"
+msgstr "použít kanonický textový režim"
+
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|nastavit úroveň komprese na N (0 – žádná)"
+
+#, fuzzy
+#| msgid "Options controlling the interactivity and enforcement"
+msgid "Options controlling key import and export"
+msgstr "Volby ovlivňující interaktivitu a vymáhání"
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr "|METODA|používat METODU pro dohledávání klíčů podle e-mailové adresy"
+
+msgid "disable all access to the dirmngr"
+msgstr "zakázat veškerý přístup k dirmngr"
+
+#, fuzzy
+#| msgid "Options controlling the configuration"
+msgid "Options controlling key listings"
+msgstr "Volby ovlivňující nastavení"
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "vypsat seznam tajných klíčů"
+
+msgid "|USER-ID|encrypt for USER-ID"
+msgstr "|ID_UŽIVATELE|šifrovat pro ID_UŽIVATELE"
+
+msgid "|USER-ID|use USER-ID to sign or decrypt"
+msgstr "|ID_UŽIVATELE|použít toto ID_UŽIVATELE pro podepsání nebo dešifrování"
+
+msgid "Options for unattended use"
+msgstr ""
+
+msgid "Other options"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -6633,11 +6761,11 @@ msgstr "|N|odpojovat se od karty po N sekundách nečinnosti"
 msgid "do not use a reader's pinpad"
 msgstr "nepoužívat klávesnici čtečky"
 
-msgid "deny the use of admin card commands"
-msgstr "zakázat používání správcovských příkazů karty"
-
 msgid "use variable length input for pinpad"
 msgstr "používat vstup o proměnné délce na klávesnici čtečky"
+
+msgid "deny the use of admin card commands"
+msgstr "zakázat používání správcovských příkazů karty"
 
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
 msgstr "Použití: @SCDAEMON@ [volby] (-h pro nápovědu)"
@@ -6661,6 +6789,10 @@ msgstr "obsluha pro deskriptor %d spuštěna\n"
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "obsluha pro deskriptor %d ukončena\n"
+
+#, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "chyba při zjišťování informací o použití klíče: %s\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -6918,10 +7050,6 @@ msgid "no key usage specified - assuming all usages\n"
 msgstr "žádné použití klíče není určeno – předpokládají se všechna použití\n"
 
 #, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "chyba při zjišťování informací o použití klíče: %s\n"
-
-#, c-format
 msgid "certificate should not have been used for certification\n"
 msgstr "certifikát neměl být použit pro certifikování\n"
 
@@ -7177,8 +7305,14 @@ msgstr "předat příkaz do dirmngr"
 msgid "invoke gpg-protect-tool"
 msgstr "vyvolat gpg-protect-tool"
 
-msgid "create base-64 encoded output"
-msgstr "vytvářet výstup zakódovaný pomocí Base-64"
+msgid "don't use the terminal at all"
+msgstr "vůbec nepoužívat terminál"
+
+msgid "|N|number of certificates to include"
+msgstr "|N|počet certifikátů, které zahrnout"
+
+msgid "|FILE|take policy information from FILE"
+msgstr "|SOUBOR|vzít politiky ze SOUBORU"
 
 msgid "assume input is in PEM format"
 msgstr "předpokládat vstup ve formátu PEM"
@@ -7189,32 +7323,38 @@ msgstr "předpokládat vstup ve formátu Base-64"
 msgid "assume input is in binary format"
 msgstr "předpokládat vstup v binárním formátu"
 
-msgid "never consult a CRL"
-msgstr "nikdy nenahlížet do CRL"
+msgid "create base-64 encoded output"
+msgstr "vytvářet výstup zakódovaný pomocí Base-64"
 
-msgid "check validity using OCSP"
-msgstr "kontrolovat platnost pomocí OCSP"
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|ID_UŽIVATELE|použít ID_UŽIVATELE jako implicitní tajný klíč"
 
-msgid "|N|number of certificates to include"
-msgstr "|N|počet certifikátů, které zahrnout"
-
-msgid "|FILE|take policy information from FILE"
-msgstr "|SOUBOR|vzít politiky ze SOUBORU"
-
-msgid "do not check certificate policies"
-msgstr "nekontrolovat politiky certifikátu"
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "|SOUBOR|přidat klíčenku na seznam klíčenek"
 
 msgid "fetch missing issuer certificates"
 msgstr "stahovat chybějící certifikáty vydavatelů"
 
-msgid "don't use the terminal at all"
-msgstr "vůbec nepoužívat terminál"
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|NÁZEV|používat kódování NÁZEV pro PKCS#12 hesla"
 
-msgid "|FILE|write a server mode log to FILE"
-msgstr "|SOUBOR|zapisovat protokol režimu server do SOUBORU"
+msgid "never consult a CRL"
+msgstr "nikdy nenahlížet do CRL"
 
-msgid "|FILE|write an audit log to FILE"
-msgstr "|SOUBOR|zapisovat auditní protokol do SOUBORU"
+msgid "do not check CRLs for root certificates"
+msgstr "neprověřovat kořenové certifikáty proti CRL"
+
+msgid "check validity using OCSP"
+msgstr "kontrolovat platnost pomocí OCSP"
+
+msgid "do not check certificate policies"
+msgstr "nekontrolovat politiky certifikátu"
+
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NÁZEV|použít šifrovací algoritmus NÁZEV"
+
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|NÁZEV|použít hashovací algoritmus NÁZEV"
 
 msgid "batch mode: never ask"
 msgstr "dávkový režim: nikdy se neptat"
@@ -7225,20 +7365,8 @@ msgstr "předpokládat ano na většinu otázek"
 msgid "assume no on most questions"
 msgstr "předpokládat ne na většinu otázek"
 
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr "|SOUBOR|přidat klíčenku na seznam klíčenek"
-
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|ID_UŽIVATELE|použít ID_UŽIVATELE jako implicitní tajný klíč"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|použít tento server pro dohledávání klíčů"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NÁZEV|použít šifrovací algoritmus NÁZEV"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NÁZEV|použít hashovací algoritmus NÁZEV"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|SOUBOR|zapisovat auditní protokol do SOUBORU"
 
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "Použití: @GPGSM@ [možnosti] [soubory] (-h pro pomoc)"
@@ -8055,44 +8183,59 @@ msgstr "vypne dirmngr"
 msgid "flush the cache"
 msgstr "vyprázdní keš"
 
-msgid "|FILE|write server mode logs to FILE"
-msgstr "|SOUBOR|protokol z režimu serveru se zapíše do SOUBORU"
-
-msgid "run without asking a user"
-msgstr "běží bez dotazování se uživatele"
-
-msgid "force loading of outdated CRLs"
-msgstr "vynutí zavedení zastaralých CRL"
-
-msgid "allow sending OCSP requests"
-msgstr "povolí odesílání OCSP dotazů"
-
 msgid "allow online software version check"
 msgstr "povolí kontrolu verze softwaru po síti"
+
+msgid "|N|do not return more than N items in one query"
+msgstr "|N|nevrací více jak N položek na jeden dotaz"
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr "směrovat veškerý síťový provoz skrz Tor"
+
+msgid "Configuration for Keyservers"
+msgstr "Nastavení serverů klíčů"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|používat server klíčů na URL"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
+
+msgid "Configuration for HTTP servers"
+msgstr "Nastavení HTTP serverů"
 
 msgid "inhibit the use of HTTP"
 msgstr "zakáže použití HTTP"
 
-msgid "inhibit the use of LDAP"
-msgstr "zakáže použití LDAP"
-
 msgid "ignore HTTP CRL distribution points"
 msgstr "ignoruje HTTP distribuční místa CRL "
 
-msgid "ignore LDAP CRL distribution points"
-msgstr "ignoruje LDAP distribuční místa CRL"
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr "ignoruje URL služby OCSP uvedené v certifikátu"
-
 msgid "|URL|redirect all HTTP requests to URL"
 msgstr "|URL|všechny HTTP požadavky přesměruje na URL"
+
+msgid "use system's HTTP proxy setting"
+msgstr "používat systémové nastavení HTTP proxy"
+
+msgid "Configuration of LDAP servers to use"
+msgstr "Nastavení používaných LDAP serverů"
+
+msgid "inhibit the use of LDAP"
+msgstr "zakáže použití LDAP"
+
+msgid "ignore LDAP CRL distribution points"
+msgstr "ignoruje LDAP distribuční místa CRL"
 
 msgid "|HOST|use HOST for LDAP queries"
 msgstr "|STROJ|pro LDAP dotazy použije STROJ"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "nepoužije náhradní stroje s --ldap-proxy"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|použít tento server pro dohledávání klíčů"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|SOUBOR|načte seznam LDAP serverů ze SOUBORU"
@@ -8103,20 +8246,23 @@ msgstr "na seznam serverů přidá nové servery nalezené v místech distribuc
 msgid "|N|set LDAP timeout to N seconds"
 msgstr "|N|nastaví časový limit pro LDAP na N sekund"
 
+msgid "Configuration for OCSP"
+msgstr "Nastavení OCSP"
+
+msgid "allow sending OCSP requests"
+msgstr "povolí odesílání OCSP dotazů"
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr "ignoruje URL služby OCSP uvedené v certifikátu"
+
 msgid "|URL|use OCSP responder at URL"
 msgstr "|URL|použije OCSP odpovídače na URL"
 
 msgid "|FPR|OCSP response signed by FPR"
 msgstr "|OTISK|OCSP odpovědi podepsané podle OTISKU"
 
-msgid "|N|do not return more than N items in one query"
-msgstr "|N|nevrací více jak N položek na jeden dotaz"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
-
-msgid "route all network traffic via Tor"
-msgstr "směrovat veškerý síťový provoz skrz Tor"
+msgid "force loading of outdated CRLs"
+msgstr "vynutí zavedení zastaralých CRL"
 
 msgid ""
 "@\n"
@@ -8578,122 +8724,17 @@ msgstr "odesílání řádku selhalo: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "chyba při odesílání standardního parametru: %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr "Volby ovlivňující diagnostický výstup"
-
-msgid "Options controlling the configuration"
-msgstr "Volby ovlivňující nastavení"
-
-msgid "Options useful for debugging"
-msgstr "Volby užitečné při ladění"
-
-msgid "Options controlling the security"
-msgstr "Volby ovlivňující bezpečnost"
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|zahazovat klíče SSH po N sekundách"
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr "|N|nastavit maximální životnost dočasné paměti pro PINy na N sekund"
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr "|N| nastavit maximální životnost klíčů SSH na N sekund"
-
-msgid "Options enforcing a passphrase policy"
-msgstr "Volby vynucující politiku hesel"
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr "nedovolit obejití politiky hesel"
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr "|N|nastavit minimální vyžadovanou délku nových hesel na N"
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr "|N|vyžaduje alespoň N nepísmenných znaků v novém hesle"
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr "|SOUBOR|prověřovat nová hesla proti vzorům v SOUBORU"
-
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|omezit platnost hesla na N dnů"
-
-msgid "do not allow the reuse of old passphrases"
-msgstr "nedovolit opakovat stará hesla"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr "|N|nastavit časový limit pro Pinentry na N sekund"
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NÁZEV|použít NÁZEV jako implicitní tajný klíč"
-
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|JMÉNO|šifrovat rovněž pro uživatele s ID JMÉNO"
-
-msgid "|SPEC|set up email aliases"
-msgstr "|SPEC|nastavit e-mailový alias"
-
-msgid "Configuration for Keyservers"
-msgstr "Nastavení serverů klíčů"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|používat server klíčů na URL"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr "povolit dohledávání PKA (dotazy na DNS)"
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr "|METODA|používat METODU pro dohledávání klíčů podle e-mailové adresy"
-
-msgid "import missing key from a signature"
-msgstr "importovat chybějící klíč z podpisu"
-
-msgid "include the public key in signatures"
-msgstr "zahrnovat veřejný klíč do podpisů"
-
-msgid "disable all access to the dirmngr"
-msgstr "zakázat veškerý přístup k dirmngr"
-
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NÁZEV|používat kódování NÁZEV pro PKCS#12 hesla"
-
-msgid "do not check CRLs for root certificates"
-msgstr "neprověřovat kořenové certifikáty proti CRL"
-
-msgid "Options controlling the format of the output"
-msgstr "Volby ovlivňující podobu výstupu"
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr "Volby ovlivňující interaktivitu a vymáhání"
-
-msgid "Options controlling the use of Tor"
-msgstr "Volby ovlivňující použití Toru"
-
-msgid "Configuration for HTTP servers"
-msgstr "Nastavení HTTP serverů"
-
-msgid "use system's HTTP proxy setting"
-msgstr "používat systémové nastavení HTTP proxy"
-
-msgid "Configuration of LDAP servers to use"
-msgstr "Nastavení používaných LDAP serverů"
-
-msgid "LDAP server list"
-msgstr "Seznam LDAP serverů"
-
-msgid "Configuration for OCSP"
-msgstr "Nastavení OCSP"
-
 msgid "OpenPGP"
 msgstr "OpenPGP"
+
+msgid "S/MIME"
+msgstr "S/MIME"
 
 msgid "Private Keys"
 msgstr "Soukromé klíče"
 
 msgid "Smartcards"
 msgstr "Čipové karty"
-
-msgid "S/MIME"
-msgstr "S/MIME"
 
 msgid "Network"
 msgstr "Síť"
@@ -8804,6 +8845,33 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "use a log file for the server"
+#~ msgstr "použít pro server soubor s protokolem"
+
+#~ msgid "|FILE|write a server mode log to FILE"
+#~ msgstr "|SOUBOR|zapisovat protokol režimu server do SOUBORU"
+
+#~ msgid "run without asking a user"
+#~ msgstr "běží bez dotazování se uživatele"
+
+#~ msgid "allow PKA lookups (DNS requests)"
+#~ msgstr "povolit dohledávání PKA (dotazy na DNS)"
+
+#~ msgid "import missing key from a signature"
+#~ msgstr "importovat chybějící klíč z podpisu"
+
+#~ msgid "include the public key in signatures"
+#~ msgstr "zahrnovat veřejný klíč do podpisů"
+
+#~ msgid "Options controlling the format of the output"
+#~ msgstr "Volby ovlivňující podobu výstupu"
+
+#~ msgid "Options controlling the use of Tor"
+#~ msgstr "Volby ovlivňující použití Toru"
+
+#~ msgid "LDAP server list"
+#~ msgstr "Seznam LDAP serverů"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "požaduji klíč %s z %s serveru %s\n"
@@ -9133,9 +9201,6 @@ msgstr ""
 
 #~ msgid "shadowing the key failed: %s\n"
 #~ msgstr "výroba stínového klíče se nezdařila: %s\n"
-
-#~ msgid "do not grab keyboard and mouse"
-#~ msgstr "neuzurpovat si klávesnici a myš"
 
 #~ msgid "communication problem with gpg-agent\n"
 #~ msgstr "problémy v komunikaci s gpg-agentem\n"

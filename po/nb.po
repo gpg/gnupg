@@ -159,6 +159,34 @@ msgstr "Ugyldig PIN"
 msgid "Bad Passphrase"
 msgstr "Ugyldig passordfrase"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "feil under henting av kort-serienummer: %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "Skriv inn denne passordfrasen på nytt"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"Skriv inn passordfrase for å låse nytt importert objekt i GnuPG-systemet."
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ssh-nøkler som er lenger enn %d bit støttes ikke\n"
@@ -170,10 +198,6 @@ msgstr "klarte ikke å lage «%s»: %s\n"
 #, c-format
 msgid "can't open '%s': %s\n"
 msgstr "klarte ikke å åpne «%s»: %s\n"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "feil under henting av kort-serienummer: %s\n"
 
 #, c-format
 msgid "detected card with S/N: %s\n"
@@ -208,9 +232,6 @@ msgstr "Avvis"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Skriv inn passordfrase for ssh-nøkkel%%0A  %F%%0A  (%c)"
-
-msgid "Please re-enter this passphrase"
-msgstr "Skriv inn denne passordfrasen på nytt"
 
 #, c-format
 msgid ""
@@ -329,12 +350,10 @@ msgstr "Skriv inn passordfrase for å%0Abeskytte ny nøkkel"
 msgid "Please enter the new passphrase"
 msgstr "Skriv inn ny passordfrase"
 
-msgid ""
-"@Options:\n"
-" "
-msgstr ""
-"@Valg:\n"
-" "
+#, fuzzy
+#| msgid "Options useful for debugging"
+msgid "Options used for startup"
+msgstr "Nyttige feilsøkingsvalg"
 
 msgid "run in daemon mode (background)"
 msgstr "kjør som bakgrunnsprosess («daemon»)"
@@ -345,11 +364,8 @@ msgstr "kjør i tjenermodus (forgrunn)"
 msgid "run in supervised mode"
 msgstr "kjør i «supervised» modus"
 
-msgid "verbose"
-msgstr "detaljert utskrift"
-
-msgid "be somewhat more quiet"
-msgstr "være noenlunde stille"
+msgid "do not detach from the console"
+msgstr "ikke løsne fra konsoll"
 
 msgid "sh-style command output"
 msgstr "sh-utdata for kommandoer"
@@ -360,20 +376,26 @@ msgstr "csh-utdata for kommandoer"
 msgid "|FILE|read options from FILE"
 msgstr "|FIL|les valg fra valgt FIL"
 
-msgid "do not detach from the console"
-msgstr "ikke løsne fra konsoll"
+msgid "Options controlling the diagnostic output"
+msgstr "Styring av diagnostikk-utdata"
 
-msgid "use a log file for the server"
-msgstr "bruk loggfil for tjeneren"
+msgid "verbose"
+msgstr "detaljert utskrift"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
-msgstr "|PGM|bruk PGM til inntasting av PIN-koder"
+msgid "be somewhat more quiet"
+msgstr "være noenlunde stille"
 
-msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "|PGM|bruk PGN som SCdaemon-program"
+msgid "|FILE|write server mode logs to FILE"
+msgstr "|FIL|skriv tjenermodus-logger til valgt FIL"
+
+msgid "Options controlling the configuration"
+msgstr "Oppsettsvalg"
 
 msgid "do not use the SCdaemon"
 msgstr "ikke bruk SCdaemon"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PGM|bruk PGN som SCdaemon-program"
 
 msgid "|NAME|accept some commands via NAME"
 msgstr "|NAME|godta enkelte kommandoer via «NAME»"
@@ -384,8 +406,30 @@ msgstr "ignorer forespørsler om å bytte TTY"
 msgid "ignore requests to change the X display"
 msgstr "ignorer forespørsler om å bytte X-skjerm"
 
+msgid "enable ssh support"
+msgstr "slå på ssh-støtte"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr "|ALGO|bruk valgt ALGOritme til å vise ssh-fingeravtrykk"
+
+msgid "enable putty support"
+msgstr "slå på støtte for putty"
+
+msgid "Options controlling the security"
+msgstr "Sikkerhetsvalg"
+
 msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|fjern hurtiglagrede PIN-koder etter N sekunder"
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr "|N|SSH-nøkler utgår etter N antall sekunder"
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr ""
+"|N|endre maksimal livstid for PIN-koder i hurtiglager til N antall sekunder"
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
+msgstr "|N|endre maksimal livstid for SSH-nøkler til N antall sekunder"
 
 msgid "do not use the PIN cache when signing"
 msgstr "ikke bruk PIN-hurtiglager under signering"
@@ -399,20 +443,51 @@ msgstr "ikke la klienter tillitsmarkere nøkler"
 msgid "allow presetting passphrase"
 msgstr "tillat valg av passordfrase på forhånd"
 
+msgid "Options enforcing a passphrase policy"
+msgstr "Valg som håndhever passordfrase-regler"
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr "ikke tillat avvik fra passordregler"
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr "|N|endre minimal passordfrase-lengde til N"
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr "|N|krev at passordfraser inneholder minst N antall spesialtegn og tall"
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr "|FIL|kontroller nye passordfraser mot mønster i valgt FIL"
+
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|regn passord som ugyldig etter N antall dager"
+
+msgid "do not allow the reuse of old passphrases"
+msgstr "ikke tillat gjenbruk av gamle passordfraser"
+
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the PIN-Entry"
+msgstr "Sikkerhetsvalg"
+
+msgid "never use the PIN-entry"
+msgstr ""
+
 msgid "disallow caller to override the pinentry"
 msgstr "ikke la kaller overstyre PIN-inntasting"
 
+#, fuzzy
+#| msgid "do not grab keyboard and mouse"
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr "ikke bruk tastatur og mus"
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr "|PGM|bruk PGM til inntasting av PIN-koder"
+
+msgid "|N|set the Pinentry timeout to N seconds"
+msgstr "|N|endre tidsavbrudd for PIN-inntasting til N antall sekunder"
+
 msgid "allow passphrase to be prompted through Emacs"
 msgstr "la brukeren skrive inn passordfrase via Emacs"
-
-msgid "enable ssh support"
-msgstr "slå på ssh-støtte"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr "|ALGO|bruk valgt ALGOritme til å vise ssh-fingeravtrykk"
-
-msgid "enable putty support"
-msgstr "slå på støtte for putty"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -525,6 +600,13 @@ msgstr "%s %s stoppet\n"
 #, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "ingen gpg-agent kjører i gjeldende økt\n"
+
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@Valg:\n"
+" "
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr "Bruk: gpg-preset-passphrase [valg] NØKKELGREP («-h» for hjelp)\n"
@@ -2100,23 +2182,17 @@ msgstr "kjør i tjenermodus"
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr "|VERDI|endre TOFU-regler for nøkkel"
 
-msgid "create ascii armored output"
-msgstr "lag ASCII-beskyttet utdata"
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NAVN|bruk valgt NAVN som forvalgt hemmelig nøkkel"
 
-msgid "|USER-ID|encrypt for USER-ID"
-msgstr "|BRUKER-ID|krypter for valgt BRUKER-ID"
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|NAVN|krypter også til valgt bruker-id-NAVN"
 
-msgid "|USER-ID|use USER-ID to sign or decrypt"
-msgstr "|BRUKER-ID|bruk valgt BRUKER-ID til å signere eller dekryptere"
+msgid "|SPEC|set up email aliases"
+msgstr "|SPES|sett opp e-post-alias"
 
-msgid "|N|set compress level to N (0 disables)"
-msgstr "|N|endre komprimeringsnivå til N (0 for å slå av)"
-
-msgid "use canonical text mode"
-msgstr "bruk kanonisk tekstmodus"
-
-msgid "|FILE|write output to FILE"
-msgstr "|FILE|skriv utdata til valgt FIL"
+msgid "use strict OpenPGP behavior"
+msgstr "bruk streng OpenPGP-oppførsel"
 
 msgid "do not make any changes"
 msgstr "ikke utfør valgte endringer"
@@ -2124,8 +2200,60 @@ msgstr "ikke utfør valgte endringer"
 msgid "prompt before overwriting"
 msgstr "spør før overskriving"
 
-msgid "use strict OpenPGP behavior"
-msgstr "bruk streng OpenPGP-oppførsel"
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the input"
+msgstr "Sikkerhetsvalg"
+
+#, fuzzy
+#| msgid "Options controlling the diagnostic output"
+msgid "Options controlling the output"
+msgstr "Styring av diagnostikk-utdata"
+
+msgid "create ascii armored output"
+msgstr "lag ASCII-beskyttet utdata"
+
+msgid "|FILE|write output to FILE"
+msgstr "|FILE|skriv utdata til valgt FIL"
+
+msgid "use canonical text mode"
+msgstr "bruk kanonisk tekstmodus"
+
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|endre komprimeringsnivå til N (0 for å slå av)"
+
+#, fuzzy
+#| msgid "Options controlling the interactivity and enforcement"
+msgid "Options controlling key import and export"
+msgstr "Valg som styrer grensesnitt og håndheving av regler"
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr "|MEKANISMER|bruk valgte MEKANISME til å finne nøkler med e-postadresse"
+
+msgid "disable all access to the dirmngr"
+msgstr "slå av all tilgang til dirmngr"
+
+#, fuzzy
+#| msgid "Options controlling the configuration"
+msgid "Options controlling key listings"
+msgstr "Oppsettsvalg"
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "vis hemmelige nøkler"
+
+msgid "|USER-ID|encrypt for USER-ID"
+msgstr "|BRUKER-ID|krypter for valgt BRUKER-ID"
+
+msgid "|USER-ID|use USER-ID to sign or decrypt"
+msgstr "|BRUKER-ID|bruk valgt BRUKER-ID til å signere eller dekryptere"
+
+msgid "Options for unattended use"
+msgstr ""
+
+msgid "Other options"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -6563,11 +6691,11 @@ msgstr "|N|koble fra kort etter N antall sekunder uten aktivitet"
 msgid "do not use a reader's pinpad"
 msgstr "ikke bruk kodetastatur"
 
-msgid "deny the use of admin card commands"
-msgstr "avvis bruk av admin-kortkommandoer"
-
 msgid "use variable length input for pinpad"
 msgstr "bruk inndata av vairabel lengde for kodetastatur"
+
+msgid "deny the use of admin card commands"
+msgstr "avvis bruk av admin-kortkommandoer"
 
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
 msgstr "Bruk: @SCDAEMON@ [valg] (-h for hjelp)"
@@ -6590,6 +6718,10 @@ msgstr "startet håndteringsprogram for fd %d\n"
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "avsluttet håndteringsprogram for fd %d\n"
+
+#, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "feil under henting av informasjon om nøkkelbruk: %s\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -6842,10 +6974,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "ingen bruksområder for nøkler valgt. Antar alle bruksområder\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "feil under henting av informasjon om nøkkelbruk: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7102,8 +7230,14 @@ msgstr "send en kommando til dirmngr"
 msgid "invoke gpg-protect-tool"
 msgstr "kall gpg-protect-tool"
 
-msgid "create base-64 encoded output"
-msgstr "lag base64-kodet utdata"
+msgid "don't use the terminal at all"
+msgstr "ikke bruk terminal i det hele tatt"
+
+msgid "|N|number of certificates to include"
+msgstr "|N|antall sertifikater som skal være med"
+
+msgid "|FILE|take policy information from FILE"
+msgstr "|FIL|hent regler fra valgt FIL"
 
 msgid "assume input is in PEM format"
 msgstr "forvent inndata i «PEM»-format"
@@ -7114,32 +7248,38 @@ msgstr "forvent inndata i «base-64»-format"
 msgid "assume input is in binary format"
 msgstr "forvent inndata i binærformat"
 
-msgid "never consult a CRL"
-msgstr "aldri spør CRL"
+msgid "create base-64 encoded output"
+msgstr "lag base64-kodet utdata"
 
-msgid "check validity using OCSP"
-msgstr "kontroller gyldighet med OCSP"
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|BRUKER-ID|bruk valgt BRUKER-ID som forvalgt hemmelig nøkkel"
 
-msgid "|N|number of certificates to include"
-msgstr "|N|antall sertifikater som skal være med"
-
-msgid "|FILE|take policy information from FILE"
-msgstr "|FIL|hent regler fra valgt FIL"
-
-msgid "do not check certificate policies"
-msgstr "ikke kontroller sertifikatregler"
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "|FIL|legg til nøkkelknippe i liste over nøkkelknipper"
 
 msgid "fetch missing issuer certificates"
 msgstr "hent manglende utstedersertifikat"
 
-msgid "don't use the terminal at all"
-msgstr "ikke bruk terminal i det hele tatt"
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|NAVN|bruk valgt kodeNAVN til PKCS#12-passordfraser"
 
-msgid "|FILE|write a server mode log to FILE"
-msgstr "|FIL|lagre en tjenermodus-logg i valgt FIL"
+msgid "never consult a CRL"
+msgstr "aldri spør CRL"
 
-msgid "|FILE|write an audit log to FILE"
-msgstr "|FIL|lagre en revisjonslogg i valgt FIL"
+msgid "do not check CRLs for root certificates"
+msgstr "ikke se etter rotsertifikater i CRL"
+
+msgid "check validity using OCSP"
+msgstr "kontroller gyldighet med OCSP"
+
+msgid "do not check certificate policies"
+msgstr "ikke kontroller sertifikatregler"
+
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NAVN|bruk valgt krypteringsalgoritme-NAVN"
+
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|NAVN|bruk valgt summeringsalgoritme-NAVN for melding"
 
 msgid "batch mode: never ask"
 msgstr "buntmodus: aldri spør"
@@ -7150,20 +7290,8 @@ msgstr "svar automatisk ja på de fleste spørsmål"
 msgid "assume no on most questions"
 msgstr "svar automatisk nei på de fleste spørsmål"
 
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr "|FIL|legg til nøkkelknippe i liste over nøkkelknipper"
-
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|BRUKER-ID|bruk valgt BRUKER-ID som forvalgt hemmelig nøkkel"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|bruk valgt nøkkeltjener til å slå opp nøkler"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAVN|bruk valgt krypteringsalgoritme-NAVN"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAVN|bruk valgt summeringsalgoritme-NAVN for melding"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|FIL|lagre en revisjonslogg i valgt FIL"
 
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "Bruk: @GPGSM@ [valg] [filer] (-h for hjelp)"
@@ -7966,44 +8094,59 @@ msgstr "slå av dirmngr"
 msgid "flush the cache"
 msgstr "tøm hurtiglager"
 
-msgid "|FILE|write server mode logs to FILE"
-msgstr "|FIL|skriv tjenermodus-logger til valgt FIL"
-
-msgid "run without asking a user"
-msgstr "kjør uten å spørre bruker"
-
-msgid "force loading of outdated CRLs"
-msgstr "tving innlasting av utdatert CRL"
-
-msgid "allow sending OCSP requests"
-msgstr "tillat sending av OCSP-forespørsler"
-
 msgid "allow online software version check"
 msgstr "tillat kontroll av programvare-versjon over nett"
+
+msgid "|N|do not return more than N items in one query"
+msgstr "|N|ikke vis flere enn N antall elementer per spørring"
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr "kjør all nettverkstrafikk gjennom Tor"
+
+msgid "Configuration for Keyservers"
+msgstr "Oppsett for nøkkeltjenere"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|ADR|bruk nøkkeltjener på valgt nettADResse"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|FIL|bruk CA-sertifikater i valgt FIL til HKP via TLS"
+
+msgid "Configuration for HTTP servers"
+msgstr "Oppsett for HTTP-tjenere"
 
 msgid "inhibit the use of HTTP"
 msgstr "hindre bruk av HTTP"
 
-msgid "inhibit the use of LDAP"
-msgstr "hindre bruk av LDAP"
-
 msgid "ignore HTTP CRL distribution points"
 msgstr "ignorer HTTP CRL-distribusjonspunkter"
 
-msgid "ignore LDAP CRL distribution points"
-msgstr "ignorer LDAP CRL-distribusjonspunkter"
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr "ignorer OSCP-tjenesteadresser som følger sertifikater"
-
 msgid "|URL|redirect all HTTP requests to URL"
 msgstr "|ADR|videresend alle HTTP-forespørsler til valgt nettADResse"
+
+msgid "use system's HTTP proxy setting"
+msgstr "bruk systemets innstilling for HTTP-mellomtjener"
+
+msgid "Configuration of LDAP servers to use"
+msgstr "Oppsett for bruk av LDAP-tjenere"
+
+msgid "inhibit the use of LDAP"
+msgstr "hindre bruk av LDAP"
+
+msgid "ignore LDAP CRL distribution points"
+msgstr "ignorer LDAP CRL-distribusjonspunkter"
 
 msgid "|HOST|use HOST for LDAP queries"
 msgstr "|VERT|bruk valgt VERT til LDAP-oppslag"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "ikke bruk tilbakefallsverter ved bruk av valget «--ldap-proxy»"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|bruk valgt nøkkeltjener til å slå opp nøkler"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FIL|les LDAP-tjenerliste fra valgt FIL"
@@ -8015,20 +8158,23 @@ msgstr ""
 msgid "|N|set LDAP timeout to N seconds"
 msgstr "|N|endre LDAP-tidsavbrudd til N antall sekunder"
 
+msgid "Configuration for OCSP"
+msgstr "Oppsett for OCSP"
+
+msgid "allow sending OCSP requests"
+msgstr "tillat sending av OCSP-forespørsler"
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr "ignorer OSCP-tjenesteadresser som følger sertifikater"
+
 msgid "|URL|use OCSP responder at URL"
 msgstr "|ADR|bruk OCSP-svartjeneste ved valgt nettADResse"
 
 msgid "|FPR|OCSP response signed by FPR"
 msgstr "|FPR|OCSP-svartjeneste signert av FPR"
 
-msgid "|N|do not return more than N items in one query"
-msgstr "|N|ikke vis flere enn N antall elementer per spørring"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|FIL|bruk CA-sertifikater i valgt FIL til HKP via TLS"
-
-msgid "route all network traffic via Tor"
-msgstr "kjør all nettverkstrafikk gjennom Tor"
+msgid "force loading of outdated CRLs"
+msgstr "tving innlasting av utdatert CRL"
 
 msgid ""
 "@\n"
@@ -8489,127 +8635,17 @@ msgstr "sending av linje mislyktes: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "feil under sending av standardvalg: %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr "Styring av diagnostikk-utdata"
-
-msgid "Options controlling the configuration"
-msgstr "Oppsettsvalg"
-
-msgid "Options useful for debugging"
-msgstr "Nyttige feilsøkingsvalg"
-
-msgid "Options controlling the security"
-msgstr "Sikkerhetsvalg"
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|SSH-nøkler utgår etter N antall sekunder"
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr ""
-"|N|endre maksimal livstid for PIN-koder i hurtiglager til N antall sekunder"
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr "|N|endre maksimal livstid for SSH-nøkler til N antall sekunder"
-
-msgid "Options enforcing a passphrase policy"
-msgstr "Valg som håndhever passordfrase-regler"
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr "ikke tillat avvik fra passordregler"
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr "|N|endre minimal passordfrase-lengde til N"
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr "|N|krev at passordfraser inneholder minst N antall spesialtegn og tall"
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr "|FIL|kontroller nye passordfraser mot mønster i valgt FIL"
-
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|regn passord som ugyldig etter N antall dager"
-
-msgid "do not allow the reuse of old passphrases"
-msgstr "ikke tillat gjenbruk av gamle passordfraser"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr "|N|endre tidsavbrudd for PIN-inntasting til N antall sekunder"
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NAVN|bruk valgt NAVN som forvalgt hemmelig nøkkel"
-
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NAVN|krypter også til valgt bruker-id-NAVN"
-
-msgid "|SPEC|set up email aliases"
-msgstr "|SPES|sett opp e-post-alias"
-
-msgid "Configuration for Keyservers"
-msgstr "Oppsett for nøkkeltjenere"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|ADR|bruk nøkkeltjener på valgt nettADResse"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr "tillat PKA-oppslag (DNS-forespørsler)"
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr "|MEKANISMER|bruk valgte MEKANISME til å finne nøkler med e-postadresse"
-
-#, fuzzy
-#| msgid "import keys from a keyserver"
-msgid "import missing key from a signature"
-msgstr "importer nøkler fra nøkkeltjener"
-
-#, fuzzy
-#| msgid "list and check key signatures"
-msgid "include the public key in signatures"
-msgstr "vis og kontroller nøkkelsignaturer"
-
-msgid "disable all access to the dirmngr"
-msgstr "slå av all tilgang til dirmngr"
-
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NAVN|bruk valgt kodeNAVN til PKCS#12-passordfraser"
-
-msgid "do not check CRLs for root certificates"
-msgstr "ikke se etter rotsertifikater i CRL"
-
-msgid "Options controlling the format of the output"
-msgstr "Valg som styrer utdata-format"
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr "Valg som styrer grensesnitt og håndheving av regler"
-
-msgid "Options controlling the use of Tor"
-msgstr "Valg som styrer bruk av Tor"
-
-msgid "Configuration for HTTP servers"
-msgstr "Oppsett for HTTP-tjenere"
-
-msgid "use system's HTTP proxy setting"
-msgstr "bruk systemets innstilling for HTTP-mellomtjener"
-
-msgid "Configuration of LDAP servers to use"
-msgstr "Oppsett for bruk av LDAP-tjenere"
-
-msgid "LDAP server list"
-msgstr "LDAP-tjenerliste"
-
-msgid "Configuration for OCSP"
-msgstr "Oppsett for OCSP"
-
 msgid "OpenPGP"
 msgstr "OpenPGP"
+
+msgid "S/MIME"
+msgstr "S/MIME"
 
 msgid "Private Keys"
 msgstr "Privatnøkler"
 
 msgid "Smartcards"
 msgstr "Smartkort"
-
-msgid "S/MIME"
-msgstr "S/MIME"
 
 msgid "Network"
 msgstr "Nettverk"
@@ -8721,6 +8757,37 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "use a log file for the server"
+#~ msgstr "bruk loggfil for tjeneren"
+
+#~ msgid "|FILE|write a server mode log to FILE"
+#~ msgstr "|FIL|lagre en tjenermodus-logg i valgt FIL"
+
+#~ msgid "run without asking a user"
+#~ msgstr "kjør uten å spørre bruker"
+
+#~ msgid "allow PKA lookups (DNS requests)"
+#~ msgstr "tillat PKA-oppslag (DNS-forespørsler)"
+
+#, fuzzy
+#~| msgid "import keys from a keyserver"
+#~ msgid "import missing key from a signature"
+#~ msgstr "importer nøkler fra nøkkeltjener"
+
+#, fuzzy
+#~| msgid "list and check key signatures"
+#~ msgid "include the public key in signatures"
+#~ msgstr "vis og kontroller nøkkelsignaturer"
+
+#~ msgid "Options controlling the format of the output"
+#~ msgstr "Valg som styrer utdata-format"
+
+#~ msgid "Options controlling the use of Tor"
+#~ msgstr "Valg som styrer bruk av Tor"
+
+#~ msgid "LDAP server list"
+#~ msgstr "LDAP-tjenerliste"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "ber om nøkkelen %s fra %s tjener %s\n"
@@ -9053,9 +9120,6 @@ msgstr ""
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "listen() mislyktes: %s\n"
-
-#~ msgid "do not grab keyboard and mouse"
-#~ msgstr "ikke bruk tastatur og mus"
 
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Feil: Adressen er for lang (grensa er %d tegn).\n"

@@ -158,6 +158,32 @@ msgstr "MPI incorect"
 msgid "Bad Passphrase"
 msgstr "frază-parolă incorectă"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "eroare la obţinerea numărului serial: %s\n"
+
+#, fuzzy
+msgid "Please re-enter this passphrase"
+msgstr "schimbă fraza-parolă"
+
+#, fuzzy, c-format
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr ""
+"Vă rugăm introduceţi fraza-parolă; aceasta este o propoziţie secretă \n"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "algoritm rezumat %d nu este suportat\n"
@@ -171,10 +197,6 @@ msgstr "nu pot crea `%s': %s\n"
 #| msgid "can't open `%s': %s\n"
 msgid "can't open '%s': %s\n"
 msgstr "nu pot deschide `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "eroare la obţinerea numărului serial: %s\n"
 
 #, c-format
 msgid "detected card with S/N: %s\n"
@@ -208,10 +230,6 @@ msgstr ""
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr ""
 "Vă rugăm introduceţi fraza-parolă; aceasta este o propoziţie secretă \n"
-
-#, fuzzy
-msgid "Please re-enter this passphrase"
-msgstr "schimbă fraza-parolă"
 
 #, fuzzy, c-format
 msgid ""
@@ -342,14 +360,8 @@ msgstr ""
 msgid "Please enter the new passphrase"
 msgstr "schimbă fraza-parolă"
 
-#, fuzzy
-msgid ""
-"@Options:\n"
-" "
+msgid "Options used for startup"
 msgstr ""
-"@\n"
-"Opţiuni:\n"
-" "
 
 msgid "run in daemon mode (background)"
 msgstr ""
@@ -362,11 +374,8 @@ msgstr ""
 msgid "run in supervised mode"
 msgstr "Cheia este înlocuită"
 
-msgid "verbose"
-msgstr "locvace"
-
-msgid "be somewhat more quiet"
-msgstr "fii oarecum mai tăcut"
+msgid "do not detach from the console"
+msgstr ""
 
 msgid "sh-style command output"
 msgstr ""
@@ -378,22 +387,27 @@ msgstr ""
 msgid "|FILE|read options from FILE"
 msgstr "|FIŞIER|încarcă modulul extensie FIŞIER"
 
-msgid "do not detach from the console"
+msgid "Options controlling the diagnostic output"
 msgstr ""
 
-#, fuzzy
-msgid "use a log file for the server"
-msgstr "caută pentru chei pe un server de chei"
+msgid "verbose"
+msgstr "locvace"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
+msgid "be somewhat more quiet"
+msgstr "fii oarecum mai tăcut"
+
+msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-msgid "|PGM|use PGM as the SCdaemon program"
+msgid "Options controlling the configuration"
 msgstr ""
 
 #, fuzzy
 msgid "do not use the SCdaemon"
 msgstr "actualizează baza de date de încredere"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
 
 #, fuzzy
 #| msgid "|NAME|set terminal charset to NAME"
@@ -406,7 +420,32 @@ msgstr ""
 msgid "ignore requests to change the X display"
 msgstr ""
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "nu este suportat(ă)"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "nu este suportat(ă)"
+
+msgid "Options controlling the security"
+msgstr ""
+
 msgid "|N|expire cached PINs after N seconds"
+msgstr ""
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr ""
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr ""
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
 msgid "do not use the PIN cache when signing"
@@ -423,24 +462,51 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "eroare la crearea frazei-parolă: %s\n"
 
+msgid "Options enforcing a passphrase policy"
+msgstr ""
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr ""
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr ""
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr ""
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr ""
+
+#, fuzzy
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|foloseşte modul frază-parolă N"
+
+#, fuzzy
+msgid "do not allow the reuse of old passphrases"
+msgstr "eroare la crearea frazei-parolă: %s\n"
+
+msgid "Options controlling the PIN-Entry"
+msgstr ""
+
+#, fuzzy
+#| msgid "use the gpg-agent"
+msgid "never use the PIN-entry"
+msgstr "foloseşte gpg-agent"
+
 msgid "disallow caller to override the pinentry"
+msgstr ""
+
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr ""
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr ""
+
+msgid "|N|set the Pinentry timeout to N seconds"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
 msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable ssh support"
-msgstr "nu este suportat(ă)"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable putty support"
-msgstr "nu este suportat(ă)"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -557,6 +623,15 @@ msgstr "%s: sărită: %s\n"
 #, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent nu este disponibil în această sesiune\n"
+
+#, fuzzy
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@\n"
+"Opţiuni:\n"
+" "
 
 #, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
@@ -2224,8 +2299,61 @@ msgstr ""
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NUME|foloseşte NUME ca cheie secretă implicită"
+
+#, fuzzy
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|NUME|cifrare pentru NUME"
+
+msgid "|SPEC|set up email aliases"
+msgstr ""
+
+msgid "use strict OpenPGP behavior"
+msgstr "foloseşte comportament strict OpenPGP"
+
+msgid "do not make any changes"
+msgstr "nu face nici o schimbare"
+
+msgid "prompt before overwriting"
+msgstr "întreabă înainte de a suprascrie"
+
+msgid "Options controlling the input"
+msgstr ""
+
+msgid "Options controlling the output"
+msgstr ""
+
 msgid "create ascii armored output"
 msgstr "crează ieşire în armură ascii"
+
+#, fuzzy
+msgid "|FILE|write output to FILE"
+msgstr "|FIŞIER|încarcă modulul extensie FIŞIER"
+
+msgid "use canonical text mode"
+msgstr "foloseşte modul text canonic"
+
+#, fuzzy
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|setează nivel de compresie N (0 deactivează)"
+
+msgid "Options controlling key import and export"
+msgstr ""
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr ""
+
+msgid "disable all access to the dirmngr"
+msgstr ""
+
+msgid "Options controlling key listings"
+msgstr ""
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "enumeră chei secrete"
 
 #, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
@@ -2235,25 +2363,11 @@ msgstr "|NUME|cifrare pentru NUME"
 msgid "|USER-ID|use USER-ID to sign or decrypt"
 msgstr "foloseşte acest id-utilizator pentru a semna sau decripta"
 
-#, fuzzy
-msgid "|N|set compress level to N (0 disables)"
-msgstr "|N|setează nivel de compresie N (0 deactivează)"
+msgid "Options for unattended use"
+msgstr ""
 
-msgid "use canonical text mode"
-msgstr "foloseşte modul text canonic"
-
-#, fuzzy
-msgid "|FILE|write output to FILE"
-msgstr "|FIŞIER|încarcă modulul extensie FIŞIER"
-
-msgid "do not make any changes"
-msgstr "nu face nici o schimbare"
-
-msgid "prompt before overwriting"
-msgstr "întreabă înainte de a suprascrie"
-
-msgid "use strict OpenPGP behavior"
-msgstr "foloseşte comportament strict OpenPGP"
+msgid "Other options"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -6926,12 +7040,12 @@ msgstr ""
 msgid "do not use a reader's pinpad"
 msgstr ""
 
+msgid "use variable length input for pinpad"
+msgstr ""
+
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "arată comenzi administrare"
-
-msgid "use variable length input for pinpad"
-msgstr ""
 
 #, fuzzy
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
@@ -6953,6 +7067,10 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7214,10 +7332,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7487,9 +7601,14 @@ msgstr ""
 msgid "invoke gpg-protect-tool"
 msgstr ""
 
-#, fuzzy
-msgid "create base-64 encoded output"
-msgstr "crează ieşire în armură ascii"
+msgid "don't use the terminal at all"
+msgstr "nu folosi deloc terminalul"
+
+msgid "|N|number of certificates to include"
+msgstr ""
+
+msgid "|FILE|take policy information from FILE"
+msgstr ""
 
 msgid "assume input is in PEM format"
 msgstr ""
@@ -7500,33 +7619,42 @@ msgstr ""
 msgid "assume input is in binary format"
 msgstr ""
 
+#, fuzzy
+msgid "create base-64 encoded output"
+msgstr "crează ieşire în armură ascii"
+
+#, fuzzy
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|NUME|foloseşte NUME ca cheie secretă implicită"
+
+#, fuzzy
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "adaugă acest inel de chei la lista inelelor de chei"
+
+msgid "fetch missing issuer certificates"
+msgstr ""
+
+#, fuzzy
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|NUME|foloseşte algoritm cifrare NUME pentru fraza-parolă"
+
 msgid "never consult a CRL"
+msgstr ""
+
+msgid "do not check CRLs for root certificates"
 msgstr ""
 
 msgid "check validity using OCSP"
 msgstr ""
 
-msgid "|N|number of certificates to include"
-msgstr ""
-
-msgid "|FILE|take policy information from FILE"
-msgstr ""
-
 msgid "do not check certificate policies"
 msgstr ""
 
-msgid "fetch missing issuer certificates"
-msgstr ""
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NUME|foloseşte algoritm cifrare NUME"
 
-msgid "don't use the terminal at all"
-msgstr "nu folosi deloc terminalul"
-
-msgid "|FILE|write a server mode log to FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|FILE|write an audit log to FILE"
-msgstr "|FIŞIER|încarcă modulul extensie FIŞIER"
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|NUME|foloseşte algoritm rezumat mesaj NUME"
 
 msgid "batch mode: never ask"
 msgstr "modul batch: nu întreba niciodată"
@@ -7538,22 +7666,8 @@ msgid "assume no on most questions"
 msgstr "presupune nu la cele mai multe întrebări"
 
 #, fuzzy
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr "adaugă acest inel de chei la lista inelelor de chei"
-
-#, fuzzy
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|NUME|foloseşte NUME ca cheie secretă implicită"
-
-#, fuzzy
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|HOST|foloseşte acest server de chei pentru a căuta chei"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NUME|foloseşte algoritm cifrare NUME"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NUME|foloseşte algoritm rezumat mesaj NUME"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|FIŞIER|încarcă modulul extensie FIŞIER"
 
 #, fuzzy
 #| msgid "Usage: gpg [options] [files] (-h for help)"
@@ -8373,39 +8487,51 @@ msgstr ""
 msgid "flush the cache"
 msgstr ""
 
-msgid "|FILE|write server mode logs to FILE"
-msgstr ""
-
-#, fuzzy
-#| msgid "Quit without saving? (y/N) "
-msgid "run without asking a user"
-msgstr "Terminaţi fără a salva?  (d/N) "
-
-msgid "force loading of outdated CRLs"
-msgstr ""
-
-msgid "allow sending OCSP requests"
-msgstr ""
-
 msgid "allow online software version check"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr ""
+
+msgid "Configuration for Keyservers"
+msgstr ""
+
+#
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "nu am putut interpreta URL-ul serverului de chei\n"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "Configuration for HTTP servers"
 msgstr ""
 
 msgid "inhibit the use of HTTP"
 msgstr ""
 
-msgid "inhibit the use of LDAP"
-msgstr ""
-
 msgid "ignore HTTP CRL distribution points"
 msgstr ""
 
-msgid "ignore LDAP CRL distribution points"
-msgstr ""
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr ""
-
 msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "use system's HTTP proxy setting"
+msgstr ""
+
+msgid "Configuration of LDAP servers to use"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
 msgstr ""
 
 msgid "|HOST|use HOST for LDAP queries"
@@ -8413,6 +8539,10 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|HOST|foloseşte acest server de chei pentru a căuta chei"
 
 #, fuzzy
 msgid "|FILE|read LDAP server list from FILE"
@@ -8424,6 +8554,15 @@ msgstr ""
 msgid "|N|set LDAP timeout to N seconds"
 msgstr ""
 
+msgid "Configuration for OCSP"
+msgstr ""
+
+msgid "allow sending OCSP requests"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
 #
 #, fuzzy
 msgid "|URL|use OCSP responder at URL"
@@ -8432,13 +8571,7 @@ msgstr "nu am putut interpreta URL-ul serverului de chei\n"
 msgid "|FPR|OCSP response signed by FPR"
 msgstr ""
 
-msgid "|N|do not return more than N items in one query"
-msgstr ""
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
-msgid "route all network traffic via Tor"
+msgid "force loading of outdated CRLs"
 msgstr ""
 
 #, fuzzy
@@ -8923,131 +9056,16 @@ msgstr "semnarea a eşuat: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr ""
-
-msgid "Options controlling the configuration"
-msgstr ""
-
-msgid "Options useful for debugging"
-msgstr ""
-
-msgid "Options controlling the security"
-msgstr ""
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr ""
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr ""
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr ""
-
-msgid "Options enforcing a passphrase policy"
-msgstr ""
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr ""
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr ""
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr ""
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|foloseşte modul frază-parolă N"
-
-#, fuzzy
-msgid "do not allow the reuse of old passphrases"
-msgstr "eroare la crearea frazei-parolă: %s\n"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr ""
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NUME|foloseşte NUME ca cheie secretă implicită"
-
-#, fuzzy
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NUME|cifrare pentru NUME"
-
-msgid "|SPEC|set up email aliases"
-msgstr ""
-
-msgid "Configuration for Keyservers"
-msgstr ""
-
-#
-#, fuzzy
-msgid "|URL|use keyserver at URL"
-msgstr "nu am putut interpreta URL-ul serverului de chei\n"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr ""
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr ""
-
-#, fuzzy
-#| msgid "import keys from a keyserver"
-msgid "import missing key from a signature"
-msgstr "importă chei de la un server de chei"
-
-#, fuzzy
-#| msgid "list and check key signatures"
-msgid "include the public key in signatures"
-msgstr "enumeră şi verifică semnăturile cheii"
-
-msgid "disable all access to the dirmngr"
-msgstr ""
-
-#, fuzzy
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NUME|foloseşte algoritm cifrare NUME pentru fraza-parolă"
-
-msgid "do not check CRLs for root certificates"
-msgstr ""
-
-msgid "Options controlling the format of the output"
-msgstr ""
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr ""
-
-msgid "Options controlling the use of Tor"
-msgstr ""
-
-msgid "Configuration for HTTP servers"
-msgstr ""
-
-msgid "use system's HTTP proxy setting"
-msgstr ""
-
-msgid "Configuration of LDAP servers to use"
-msgstr ""
-
-msgid "LDAP server list"
-msgstr ""
-
-msgid "Configuration for OCSP"
-msgstr ""
-
 msgid "OpenPGP"
+msgstr ""
+
+msgid "S/MIME"
 msgstr ""
 
 msgid "Private Keys"
 msgstr ""
 
 msgid "Smartcards"
-msgstr ""
-
-msgid "S/MIME"
 msgstr ""
 
 #, fuzzy
@@ -9168,6 +9186,25 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "use a log file for the server"
+#~ msgstr "caută pentru chei pe un server de chei"
+
+#, fuzzy
+#~| msgid "Quit without saving? (y/N) "
+#~ msgid "run without asking a user"
+#~ msgstr "Terminaţi fără a salva?  (d/N) "
+
+#, fuzzy
+#~| msgid "import keys from a keyserver"
+#~ msgid "import missing key from a signature"
+#~ msgstr "importă chei de la un server de chei"
+
+#, fuzzy
+#~| msgid "list and check key signatures"
+#~ msgid "include the public key in signatures"
+#~ msgstr "enumeră şi verifică semnăturile cheii"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "cer cheia %s de la serverul %s %s\n"
@@ -10780,9 +10817,6 @@ msgstr ""
 
 #~ msgid "never use a MDC for encryption"
 #~ msgstr "nu folosi niciodată un MDC pentru cifrare"
-
-#~ msgid "use the gpg-agent"
-#~ msgstr "foloseşte gpg-agent"
 
 #~ msgid "|[file]|write status info to file"
 #~ msgstr "|[fişier]|scrie informaţii de stare în fişier"

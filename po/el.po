@@ -154,6 +154,31 @@ msgstr "κακό MPI"
 msgid "Bad Passphrase"
 msgstr "κακή φράση κλειδί"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy
+msgid "Please re-enter this passphrase"
+msgstr "αλλαγή της φράσης κλειδί"
+
+#, fuzzy, c-format
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
@@ -167,10 +192,6 @@ msgstr "αδυναμία δημιουργίας του `%s': %s\n"
 #| msgid "can't open `%s': %s\n"
 msgid "can't open '%s': %s\n"
 msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 #, c-format
 msgid "detected card with S/N: %s\n"
@@ -203,10 +224,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
-
-#, fuzzy
-msgid "Please re-enter this passphrase"
-msgstr "αλλαγή της φράσης κλειδί"
 
 #, fuzzy, c-format
 msgid ""
@@ -330,14 +347,8 @@ msgstr ""
 msgid "Please enter the new passphrase"
 msgstr "αλλαγή της φράσης κλειδί"
 
-#, fuzzy
-msgid ""
-"@Options:\n"
-" "
+msgid "Options used for startup"
 msgstr ""
-"@\n"
-"Επιλογές:\n"
-" "
 
 msgid "run in daemon mode (background)"
 msgstr ""
@@ -350,11 +361,8 @@ msgstr ""
 msgid "run in supervised mode"
 msgstr "Το κλειδί έχει παρακαμθεί"
 
-msgid "verbose"
-msgstr "αναλυτικά"
-
-msgid "be somewhat more quiet"
-msgstr "ήσυχη έξοδος"
+msgid "do not detach from the console"
+msgstr ""
 
 msgid "sh-style command output"
 msgstr ""
@@ -366,22 +374,27 @@ msgstr ""
 msgid "|FILE|read options from FILE"
 msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
 
-msgid "do not detach from the console"
+msgid "Options controlling the diagnostic output"
 msgstr ""
 
-#, fuzzy
-msgid "use a log file for the server"
-msgstr "αναζήτηση κλειδιών σε ένα διακομιστή κλειδιών"
+msgid "verbose"
+msgstr "αναλυτικά"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
+msgid "be somewhat more quiet"
+msgstr "ήσυχη έξοδος"
+
+msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-msgid "|PGM|use PGM as the SCdaemon program"
+msgid "Options controlling the configuration"
 msgstr ""
 
 #, fuzzy
 msgid "do not use the SCdaemon"
 msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr ""
 
 #, fuzzy
 #| msgid "|NAME|set terminal charset to NAME"
@@ -394,7 +407,32 @@ msgstr ""
 msgid "ignore requests to change the X display"
 msgstr ""
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "δεν υποστηρίζεται"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "δεν υποστηρίζεται"
+
+msgid "Options controlling the security"
+msgstr ""
+
 msgid "|N|expire cached PINs after N seconds"
+msgstr ""
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr ""
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr ""
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
 msgid "do not use the PIN cache when signing"
@@ -411,24 +449,51 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
+msgid "Options enforcing a passphrase policy"
+msgstr ""
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr ""
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr ""
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr ""
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr ""
+
+#, fuzzy
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|χρήση της κατάστασης φράσης κλειδί N"
+
+#, fuzzy
+msgid "do not allow the reuse of old passphrases"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+msgid "Options controlling the PIN-Entry"
+msgstr ""
+
+#, fuzzy
+#| msgid "use the gpg-agent"
+msgid "never use the PIN-entry"
+msgstr "χρήση του gpg-agent"
+
 msgid "disallow caller to override the pinentry"
+msgstr ""
+
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr ""
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr ""
+
+msgid "|N|set the Pinentry timeout to N seconds"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
 msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable ssh support"
-msgstr "δεν υποστηρίζεται"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr ""
-
-#, fuzzy
-#| msgid "not supported"
-msgid "enable putty support"
-msgstr "δεν υποστηρίζεται"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -544,6 +609,15 @@ msgstr "%s: παραλείφθηκε: %s\n"
 #, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
+
+#, fuzzy
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@\n"
+"Επιλογές:\n"
+" "
 
 #, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
@@ -2212,8 +2286,61 @@ msgstr ""
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
+msgid "|NAME|use NAME as default secret key"
+msgstr "|ΟΝΟΜΑ|χρήση ΟΝΟΜΑτος σαν προκαθορισμένο μυστικό κλειδί"
+
+#, fuzzy
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|ΟΝΟΜΑ|κρυπτογράφηση για ΟΝΟΜΑ"
+
+msgid "|SPEC|set up email aliases"
+msgstr ""
+
+msgid "use strict OpenPGP behavior"
+msgstr ""
+
+msgid "do not make any changes"
+msgstr "να μη γίνει καμμία αλλαγή"
+
+msgid "prompt before overwriting"
+msgstr "ερώτηση πριν την επικάλυψη"
+
+msgid "Options controlling the input"
+msgstr ""
+
+msgid "Options controlling the output"
+msgstr ""
+
 msgid "create ascii armored output"
 msgstr "δημιουργία ascii θωρακισμένης εξόδου"
+
+#, fuzzy
+msgid "|FILE|write output to FILE"
+msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
+
+msgid "use canonical text mode"
+msgstr "χρήση κανονικής κατάστασης κειμένου"
+
+#, fuzzy
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|καθορισμός επιπέδου συμπίεσης N (0 απενεργοποιεί)"
+
+msgid "Options controlling key import and export"
+msgstr ""
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr ""
+
+msgid "disable all access to the dirmngr"
+msgstr ""
+
+msgid "Options controlling key listings"
+msgstr ""
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "απεικόνιση της λίστας μυστικών κλειδιών"
 
 #, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
@@ -2223,24 +2350,10 @@ msgstr "|ΟΝΟΜΑ|κρυπτογράφηση για ΟΝΟΜΑ"
 msgid "|USER-ID|use USER-ID to sign or decrypt"
 msgstr "χρήση αυτής της ταυτότητας (user id) για υπογραφή ή αποκρυπτογράφηση"
 
-#, fuzzy
-msgid "|N|set compress level to N (0 disables)"
-msgstr "|N|καθορισμός επιπέδου συμπίεσης N (0 απενεργοποιεί)"
+msgid "Options for unattended use"
+msgstr ""
 
-msgid "use canonical text mode"
-msgstr "χρήση κανονικής κατάστασης κειμένου"
-
-#, fuzzy
-msgid "|FILE|write output to FILE"
-msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
-
-msgid "do not make any changes"
-msgstr "να μη γίνει καμμία αλλαγή"
-
-msgid "prompt before overwriting"
-msgstr "ερώτηση πριν την επικάλυψη"
-
-msgid "use strict OpenPGP behavior"
+msgid "Other options"
 msgstr ""
 
 msgid ""
@@ -6888,12 +7001,12 @@ msgstr ""
 msgid "do not use a reader's pinpad"
 msgstr ""
 
+msgid "use variable length input for pinpad"
+msgstr ""
+
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "συγκρουόμενες εντολές\n"
-
-msgid "use variable length input for pinpad"
-msgstr ""
 
 #, fuzzy
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
@@ -6915,6 +7028,10 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7176,10 +7293,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7444,9 +7557,14 @@ msgstr ""
 msgid "invoke gpg-protect-tool"
 msgstr ""
 
-#, fuzzy
-msgid "create base-64 encoded output"
-msgstr "δημιουργία ascii θωρακισμένης εξόδου"
+msgid "don't use the terminal at all"
+msgstr "μη χρήση τερματικού"
+
+msgid "|N|number of certificates to include"
+msgstr ""
+
+msgid "|FILE|take policy information from FILE"
+msgstr ""
 
 msgid "assume input is in PEM format"
 msgstr ""
@@ -7457,33 +7575,42 @@ msgstr ""
 msgid "assume input is in binary format"
 msgstr ""
 
+#, fuzzy
+msgid "create base-64 encoded output"
+msgstr "δημιουργία ascii θωρακισμένης εξόδου"
+
+#, fuzzy
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|ΟΝΟΜΑ|χρήση ΟΝΟΜΑτος σαν προκαθορισμένο μυστικό κλειδί"
+
+#, fuzzy
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "προσθήκη αυτού του κλειδιού στη λίστα των κλειδοθηκών"
+
+msgid "fetch missing issuer certificates"
+msgstr ""
+
+#, fuzzy
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου κρυπτογράφησης ΟΝΟΜΑ για φράσεις κλειδιά"
+
 msgid "never consult a CRL"
+msgstr ""
+
+msgid "do not check CRLs for root certificates"
 msgstr ""
 
 msgid "check validity using OCSP"
 msgstr ""
 
-msgid "|N|number of certificates to include"
-msgstr ""
-
-msgid "|FILE|take policy information from FILE"
-msgstr ""
-
 msgid "do not check certificate policies"
 msgstr ""
 
-msgid "fetch missing issuer certificates"
-msgstr ""
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου κρυπτογράφησης ΟΝΟΜΑ"
 
-msgid "don't use the terminal at all"
-msgstr "μη χρήση τερματικού"
-
-msgid "|FILE|write a server mode log to FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|FILE|write an audit log to FILE"
-msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου περίληψης μηνύματος ΟΝΟΜΑ "
 
 msgid "batch mode: never ask"
 msgstr "κατάσταση batch: να μη γίνονται ερωτήσεις"
@@ -7495,22 +7622,8 @@ msgid "assume no on most questions"
 msgstr "απάντηση όχι στις περισσότερες ερωτήσεις"
 
 #, fuzzy
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr "προσθήκη αυτού του κλειδιού στη λίστα των κλειδοθηκών"
-
-#, fuzzy
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|ΟΝΟΜΑ|χρήση ΟΝΟΜΑτος σαν προκαθορισμένο μυστικό κλειδί"
-
-#, fuzzy
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|ΔΙΑΚΟΜΙΣΤΗΣ|χρήση αυτού του διακομιστή κλειδιών για αναζήτηση"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου κρυπτογράφησης ΟΝΟΜΑ"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου περίληψης μηνύματος ΟΝΟΜΑ "
+msgid "|FILE|write an audit log to FILE"
+msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
 
 #, fuzzy
 #| msgid "Usage: gpg [options] [files] (-h for help)"
@@ -8325,38 +8438,50 @@ msgstr ""
 msgid "flush the cache"
 msgstr ""
 
-msgid "|FILE|write server mode logs to FILE"
+msgid "allow online software version check"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr ""
+
+msgid "Configuration for Keyservers"
 msgstr ""
 
 #, fuzzy
-msgid "run without asking a user"
-msgstr "Τερματισμός χωρίς αποθήκευση; "
+msgid "|URL|use keyserver at URL"
+msgstr "αδυναμία επεξεργασίας του URI του διακομιση κλειδιών\n"
 
-msgid "force loading of outdated CRLs"
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "allow sending OCSP requests"
-msgstr ""
-
-msgid "allow online software version check"
+msgid "Configuration for HTTP servers"
 msgstr ""
 
 msgid "inhibit the use of HTTP"
 msgstr ""
 
-msgid "inhibit the use of LDAP"
-msgstr ""
-
 msgid "ignore HTTP CRL distribution points"
 msgstr ""
 
-msgid "ignore LDAP CRL distribution points"
-msgstr ""
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr ""
-
 msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "use system's HTTP proxy setting"
+msgstr ""
+
+msgid "Configuration of LDAP servers to use"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
 msgstr ""
 
 msgid "|HOST|use HOST for LDAP queries"
@@ -8364,6 +8489,10 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|ΔΙΑΚΟΜΙΣΤΗΣ|χρήση αυτού του διακομιστή κλειδιών για αναζήτηση"
 
 #, fuzzy
 msgid "|FILE|read LDAP server list from FILE"
@@ -8375,6 +8504,15 @@ msgstr ""
 msgid "|N|set LDAP timeout to N seconds"
 msgstr ""
 
+msgid "Configuration for OCSP"
+msgstr ""
+
+msgid "allow sending OCSP requests"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
 #, fuzzy
 msgid "|URL|use OCSP responder at URL"
 msgstr "αδυναμία επεξεργασίας του URI του διακομιση κλειδιών\n"
@@ -8382,13 +8520,7 @@ msgstr "αδυναμία επεξεργασίας του URI του διακομ
 msgid "|FPR|OCSP response signed by FPR"
 msgstr ""
 
-msgid "|N|do not return more than N items in one query"
-msgstr ""
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
-msgid "route all network traffic via Tor"
+msgid "force loading of outdated CRLs"
 msgstr ""
 
 #, fuzzy
@@ -8863,129 +8995,16 @@ msgstr "η υπογραφή απέτυχε: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr ""
-
-msgid "Options controlling the configuration"
-msgstr ""
-
-msgid "Options useful for debugging"
-msgstr ""
-
-msgid "Options controlling the security"
-msgstr ""
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr ""
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr ""
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr ""
-
-msgid "Options enforcing a passphrase policy"
-msgstr ""
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr ""
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr ""
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr ""
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr ""
-
-#, fuzzy
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|χρήση της κατάστασης φράσης κλειδί N"
-
-#, fuzzy
-msgid "do not allow the reuse of old passphrases"
-msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr ""
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|ΟΝΟΜΑ|χρήση ΟΝΟΜΑτος σαν προκαθορισμένο μυστικό κλειδί"
-
-#, fuzzy
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|ΟΝΟΜΑ|κρυπτογράφηση για ΟΝΟΜΑ"
-
-msgid "|SPEC|set up email aliases"
-msgstr ""
-
-msgid "Configuration for Keyservers"
-msgstr ""
-
-#, fuzzy
-msgid "|URL|use keyserver at URL"
-msgstr "αδυναμία επεξεργασίας του URI του διακομιση κλειδιών\n"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr ""
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr ""
-
-#, fuzzy
-#| msgid "import keys from a keyserver"
-msgid "import missing key from a signature"
-msgstr "εισαγωγή κλειδιών από ένα διακομιστή κλειδιών"
-
-#, fuzzy
-msgid "include the public key in signatures"
-msgstr "έλεγχος υπογραφής κλειδιού"
-
-msgid "disable all access to the dirmngr"
-msgstr ""
-
-#, fuzzy
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου κρυπτογράφησης ΟΝΟΜΑ για φράσεις κλειδιά"
-
-msgid "do not check CRLs for root certificates"
-msgstr ""
-
-msgid "Options controlling the format of the output"
-msgstr ""
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr ""
-
-msgid "Options controlling the use of Tor"
-msgstr ""
-
-msgid "Configuration for HTTP servers"
-msgstr ""
-
-msgid "use system's HTTP proxy setting"
-msgstr ""
-
-msgid "Configuration of LDAP servers to use"
-msgstr ""
-
-msgid "LDAP server list"
-msgstr ""
-
-msgid "Configuration for OCSP"
-msgstr ""
-
 msgid "OpenPGP"
+msgstr ""
+
+msgid "S/MIME"
 msgstr ""
 
 msgid "Private Keys"
 msgstr ""
 
 msgid "Smartcards"
-msgstr ""
-
-msgid "S/MIME"
 msgstr ""
 
 #, fuzzy
@@ -9105,6 +9124,23 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "use a log file for the server"
+#~ msgstr "αναζήτηση κλειδιών σε ένα διακομιστή κλειδιών"
+
+#, fuzzy
+#~ msgid "run without asking a user"
+#~ msgstr "Τερματισμός χωρίς αποθήκευση; "
+
+#, fuzzy
+#~| msgid "import keys from a keyserver"
+#~ msgid "import missing key from a signature"
+#~ msgstr "εισαγωγή κλειδιών από ένα διακομιστή κλειδιών"
+
+#, fuzzy
+#~ msgid "include the public key in signatures"
+#~ msgstr "έλεγχος υπογραφής κλειδιού"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"
@@ -11000,9 +11036,6 @@ msgstr ""
 
 #~ msgid "never use a MDC for encryption"
 #~ msgstr "ποτέ χρήση MDC για κρυπτογράφηση"
-
-#~ msgid "use the gpg-agent"
-#~ msgstr "χρήση του gpg-agent"
 
 #~ msgid "|[file]|write status info to file"
 #~ msgstr "|[αρχείο]|εγγραφή των πληροφοριών κατάστασης στο αρχείο"

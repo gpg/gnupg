@@ -151,6 +151,33 @@ msgstr "错误的 PIN"
 msgid "Bad Passphrase"
 msgstr "错误的密码"
 
+msgid "Note: Request from the web browser."
+msgstr ""
+
+msgid "Note: Request from a remote site."
+msgstr ""
+
+#, c-format
+msgid "error getting serial number of card: %s\n"
+msgstr "获取卡的序列号时出现错误： %s\n"
+
+msgid "Please re-enter this passphrase"
+msgstr "请重新输入此密码"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Please enter the passphrase to protect the imported object within the "
+#| "GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the %s "
+"system."
+msgstr "请输入密码以在 GnuPG 系统内部保护已导入的对象。"
+
+msgid ""
+"This key (or subkey) is not protected with a passphrase.  Please enter a new "
+"passphrase to export it."
+msgstr ""
+
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "长度超过 %d 位的 ssh 密钥不被支持\n"
@@ -162,10 +189,6 @@ msgstr "无法创建 ‘%s’： %s\n"
 #, c-format
 msgid "can't open '%s': %s\n"
 msgstr "无法打开 ‘%s’： %s\n"
-
-#, c-format
-msgid "error getting serial number of card: %s\n"
-msgstr "获取卡的序列号时出现错误： %s\n"
 
 #, c-format
 msgid "detected card with S/N: %s\n"
@@ -198,9 +221,6 @@ msgstr "拒绝"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "请输入 ssh 密钥 %%0A  %F%%0A  (%c)  的密码"
-
-msgid "Please re-enter this passphrase"
-msgstr "请重新输入此密码"
 
 #, c-format
 msgid ""
@@ -314,12 +334,10 @@ msgstr "请输入密码以%0A保护您的新密钥"
 msgid "Please enter the new passphrase"
 msgstr "请输入新的密码"
 
-msgid ""
-"@Options:\n"
-" "
-msgstr ""
-"@选项:\n"
-" "
+#, fuzzy
+#| msgid "Options useful for debugging"
+msgid "Options used for startup"
+msgstr "对调试有用的选项"
 
 msgid "run in daemon mode (background)"
 msgstr "以守护进程模式运行 （后台）"
@@ -330,11 +348,8 @@ msgstr "以服务进程模式运行 （前台）"
 msgid "run in supervised mode"
 msgstr "以管理进程模式运行"
 
-msgid "verbose"
-msgstr "详细模式"
-
-msgid "be somewhat more quiet"
-msgstr "尽量减少提示信息"
+msgid "do not detach from the console"
+msgstr "请勿离开控制台"
 
 msgid "sh-style command output"
 msgstr "sh 风格的命令行输出"
@@ -345,20 +360,26 @@ msgstr "csh 风格的命令行输出"
 msgid "|FILE|read options from FILE"
 msgstr "|FILE|从 FILE 中读取选项"
 
-msgid "do not detach from the console"
-msgstr "请勿离开控制台"
+msgid "Options controlling the diagnostic output"
+msgstr "控制诊断输出的选项"
 
-msgid "use a log file for the server"
-msgstr "为服务器使用日志文件"
+msgid "verbose"
+msgstr "详细模式"
 
-msgid "|PGM|use PGM as the PIN-Entry program"
-msgstr "|PGM|使用 PGM 作为 PIN-Entry 程序"
+msgid "be somewhat more quiet"
+msgstr "尽量减少提示信息"
 
-msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "|PGM|使用 PGM 作为 SCdaemon 程序"
+msgid "|FILE|write server mode logs to FILE"
+msgstr "|FILE|将服务器模式的日志写入到 FILE"
+
+msgid "Options controlling the configuration"
+msgstr "控制配置的选项"
 
 msgid "do not use the SCdaemon"
 msgstr "不使用 SCdaemon"
+
+msgid "|PGM|use PGM as the SCdaemon program"
+msgstr "|PGM|使用 PGM 作为 SCdaemon 程序"
 
 msgid "|NAME|accept some commands via NAME"
 msgstr "|NAME|通过 NAME 接收一些命令"
@@ -369,8 +390,29 @@ msgstr "忽略改变 TTY 的请求"
 msgid "ignore requests to change the X display"
 msgstr "忽略改变 X display 的请求"
 
+msgid "enable ssh support"
+msgstr "启用 ssh 支持"
+
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr "|ALGO|使用 ALGO 显示 ssh 指纹"
+
+msgid "enable putty support"
+msgstr "启用 putty 支持"
+
+msgid "Options controlling the security"
+msgstr "控制安全的选项"
+
 msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|使被缓存的 PIN 在 N 秒后过期"
+
+msgid "|N|expire SSH keys after N seconds"
+msgstr "|N|在 N 秒后使 SSH 密钥过期"
+
+msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgstr "|N|设置 PIN 缓存的生命周期为 N 秒"
+
+msgid "|N|set maximum SSH key lifetime to N seconds"
+msgstr "|N|设置 SSH 缓存的生命周期为 N 秒"
 
 msgid "do not use the PIN cache when signing"
 msgstr "在签名时不使用 PIN 缓存"
@@ -384,20 +426,49 @@ msgstr "禁止客户端将密钥标记为“信任”"
 msgid "allow presetting passphrase"
 msgstr "允许预设置的密码"
 
+msgid "Options enforcing a passphrase policy"
+msgstr "选项强制要求一个密码策略"
+
+msgid "do not allow bypassing the passphrase policy"
+msgstr "不允许绕过密码的策略"
+
+msgid "|N|set minimal required length for new passphrases to N"
+msgstr "|N|设置要求新密码的最短长度为 N"
+
+msgid "|N|require at least N non-alpha characters for a new passphrase"
+msgstr "|N|要求新密码至少有 N 个非字母字符"
+
+msgid "|FILE|check new passphrases against pattern in FILE"
+msgstr "|FILE|按 FILE 中的样式检查新密码"
+
+msgid "|N|expire the passphrase after N days"
+msgstr "|N|在 N 天后使密码过期"
+
+msgid "do not allow the reuse of old passphrases"
+msgstr "不允许再次使用旧的密码"
+
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the PIN-Entry"
+msgstr "控制安全的选项"
+
+msgid "never use the PIN-entry"
+msgstr ""
+
 msgid "disallow caller to override the pinentry"
 msgstr "禁止调用者覆盖 pinentry"
 
+msgid "let PIN-Entry grab keyboard and mouse"
+msgstr ""
+
+msgid "|PGM|use PGM as the PIN-Entry program"
+msgstr "|PGM|使用 PGM 作为 PIN-Entry 程序"
+
+msgid "|N|set the Pinentry timeout to N seconds"
+msgstr "|N|设置 Pinentry 的超时时间为 N 秒"
+
 msgid "allow passphrase to be prompted through Emacs"
 msgstr "运行密码通过 Emacs 回显"
-
-msgid "enable ssh support"
-msgstr "启用 ssh 支持"
-
-msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr "|ALGO|使用 ALGO 显示 ssh 指纹"
-
-msgid "enable putty support"
-msgstr "启用 putty 支持"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -512,6 +583,13 @@ msgstr "%s %s 已停止\n"
 #, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "此会话中没有 gpg-agent 实例运行\n"
+
+msgid ""
+"@Options:\n"
+" "
+msgstr ""
+"@选项:\n"
+" "
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr "用法： gpg-preset-passphrase [选项] KEYGRIP (-h 获取帮助)\n"
@@ -2036,23 +2114,17 @@ msgstr "以服务器模式运行"
 msgid "|VALUE|set the TOFU policy for a key"
 msgstr "|VALUE|设置一个密钥的 TOFU 政策"
 
-msgid "create ascii armored output"
-msgstr "创建 ASCII 字符封装的输出"
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NAME|使用 NAME 作为默认的私钥"
 
-msgid "|USER-ID|encrypt for USER-ID"
-msgstr "|USER-ID|为 USER-ID 加密"
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|NAME|同时给以 NAME 为名称的用户标识加密"
 
-msgid "|USER-ID|use USER-ID to sign or decrypt"
-msgstr "|USER-ID|使用 USER-ID 来签名或者解密"
+msgid "|SPEC|set up email aliases"
+msgstr "|SPEC|设置电子邮件别名"
 
-msgid "|N|set compress level to N (0 disables)"
-msgstr "|N|设置压缩等级为 N （0 为禁用）"
-
-msgid "use canonical text mode"
-msgstr "使用规范的文本模式"
-
-msgid "|FILE|write output to FILE"
-msgstr "|FILE|写输出到 FILE"
+msgid "use strict OpenPGP behavior"
+msgstr "使用严格的 OpenPGP 行为"
 
 msgid "do not make any changes"
 msgstr "不做任何更改"
@@ -2060,8 +2132,60 @@ msgstr "不做任何更改"
 msgid "prompt before overwriting"
 msgstr "覆盖前提示"
 
-msgid "use strict OpenPGP behavior"
-msgstr "使用严格的 OpenPGP 行为"
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the input"
+msgstr "控制安全的选项"
+
+#, fuzzy
+#| msgid "Options controlling the diagnostic output"
+msgid "Options controlling the output"
+msgstr "控制诊断输出的选项"
+
+msgid "create ascii armored output"
+msgstr "创建 ASCII 字符封装的输出"
+
+msgid "|FILE|write output to FILE"
+msgstr "|FILE|写输出到 FILE"
+
+msgid "use canonical text mode"
+msgstr "使用规范的文本模式"
+
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|设置压缩等级为 N （0 为禁用）"
+
+#, fuzzy
+#| msgid "Options controlling the interactivity and enforcement"
+msgid "Options controlling key import and export"
+msgstr "控制交互性和执行的选项"
+
+msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
+msgstr "|MECHANISMS|通过邮件地址定位密钥时使用机制 MECHANISMS"
+
+msgid "disable all access to the dirmngr"
+msgstr "禁用对 dirmngr 的所有访问"
+
+#, fuzzy
+#| msgid "Options controlling the configuration"
+msgid "Options controlling key listings"
+msgstr "控制配置的选项"
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "Options to specify keys"
+msgstr "列出私钥"
+
+msgid "|USER-ID|encrypt for USER-ID"
+msgstr "|USER-ID|为 USER-ID 加密"
+
+msgid "|USER-ID|use USER-ID to sign or decrypt"
+msgstr "|USER-ID|使用 USER-ID 来签名或者解密"
+
+msgid "Options for unattended use"
+msgstr ""
+
+msgid "Other options"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -6330,11 +6454,11 @@ msgstr "|N|在 N 秒的不活跃之后断开卡片的连接"
 msgid "do not use a reader's pinpad"
 msgstr "不使用读卡器的小键盘"
 
-msgid "deny the use of admin card commands"
-msgstr "拒绝使用卡片的管理员命令"
-
 msgid "use variable length input for pinpad"
 msgstr "使用小键盘的变长输入"
+
+msgid "deny the use of admin card commands"
+msgstr "拒绝使用卡片的管理员命令"
 
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
 msgstr "用法：@SCDAEMON@ [选项] (-h 获取帮助)"
@@ -6357,6 +6481,10 @@ msgstr "fd %d 的句柄已启动\n"
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "fd %d 的句柄已关闭\n"
+
+#, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "获取密钥用途信息时出现错误：%s\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -6609,10 +6737,6 @@ msgid "no key usage specified - assuming all usages\n"
 msgstr "没有指定密钥用途 - 假设为所有用途\n"
 
 #, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "获取密钥用途信息时出现错误：%s\n"
-
-#, c-format
 msgid "certificate should not have been used for certification\n"
 msgstr "证书本不应被用于认证\n"
 
@@ -6860,8 +6984,14 @@ msgstr "传递一条命令给 dirmngr"
 msgid "invoke gpg-protect-tool"
 msgstr "调用 gpg-protect-tool"
 
-msgid "create base-64 encoded output"
-msgstr "创建 base-64 编码的输出"
+msgid "don't use the terminal at all"
+msgstr "始终不使用终端"
+
+msgid "|N|number of certificates to include"
+msgstr "|N|要包含的证书数目"
+
+msgid "|FILE|take policy information from FILE"
+msgstr "|FILE|从 FILE 处获取策略信息"
 
 msgid "assume input is in PEM format"
 msgstr "假定输入的是 PEM 格式"
@@ -6872,32 +7002,38 @@ msgstr "假定输入的是 base-64 格式"
 msgid "assume input is in binary format"
 msgstr "假定输入的是二进制格式"
 
-msgid "never consult a CRL"
-msgstr "从不查询 CRL"
+msgid "create base-64 encoded output"
+msgstr "创建 base-64 编码的输出"
 
-msgid "check validity using OCSP"
-msgstr "使用 OCSP 检查有效性"
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|USER-ID|使用 USER-ID 作为默认的私钥"
 
-msgid "|N|number of certificates to include"
-msgstr "|N|要包含的证书数目"
-
-msgid "|FILE|take policy information from FILE"
-msgstr "|FILE|从 FILE 处获取策略信息"
-
-msgid "do not check certificate policies"
-msgstr "不检查证书策略"
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "|FILE|添加钥匙环到钥匙环列表"
 
 msgid "fetch missing issuer certificates"
 msgstr "获取缺失的签发者证书"
 
-msgid "don't use the terminal at all"
-msgstr "始终不使用终端"
+msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
+msgstr "|NAME|对 PKCS#12 密码使用名为 NAME 的编码"
 
-msgid "|FILE|write a server mode log to FILE"
-msgstr "|FILE|将服务器模式的日志写入到 FILE"
+msgid "never consult a CRL"
+msgstr "从不查询 CRL"
 
-msgid "|FILE|write an audit log to FILE"
-msgstr "|FILE|将审计日志写入 FILE"
+msgid "do not check CRLs for root certificates"
+msgstr "不对根证书检查 CRLs"
+
+msgid "check validity using OCSP"
+msgstr "使用 OCSP 检查有效性"
+
+msgid "do not check certificate policies"
+msgstr "不检查证书策略"
+
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NAME|使用名称为 NAME 的密文算法"
+
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|NAME|使用以 NAME 命名的信息摘要算法"
 
 msgid "batch mode: never ask"
 msgstr "批处理模式：永不询问"
@@ -6908,20 +7044,8 @@ msgstr "在多数问题上假定回答为是"
 msgid "assume no on most questions"
 msgstr "在多数问题上假定回答为否"
 
-msgid "|FILE|add keyring to the list of keyrings"
-msgstr "|FILE|添加钥匙环到钥匙环列表"
-
-msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|USER-ID|使用 USER-ID 作为默认的私钥"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|使用此公钥服务器来查找密钥"
-
-msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|使用名称为 NAME 的密文算法"
-
-msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAME|使用以 NAME 命名的信息摘要算法"
+msgid "|FILE|write an audit log to FILE"
+msgstr "|FILE|将审计日志写入 FILE"
 
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "用法：@GPGSM@ [选项] [文件] (-h 获取帮助)"
@@ -7717,44 +7841,59 @@ msgstr "关闭 dirmngr"
 msgid "flush the cache"
 msgstr "刷新缓存"
 
-msgid "|FILE|write server mode logs to FILE"
-msgstr "|FILE|将服务器模式的日志写入到 FILE"
-
-msgid "run without asking a user"
-msgstr "在不询问用户的情况下运行"
-
-msgid "force loading of outdated CRLs"
-msgstr "强制载入过期的 CRLs"
-
-msgid "allow sending OCSP requests"
-msgstr "允许发送 OCSP 请求"
-
 msgid "allow online software version check"
 msgstr "允许在线软件版本检查"
+
+msgid "|N|do not return more than N items in one query"
+msgstr "|N|在一次查询中最多返回 N 个项目"
+
+msgid "Network related options"
+msgstr ""
+
+msgid "route all network traffic via Tor"
+msgstr "通过 Tor 转发所有网络流量"
+
+msgid "Configuration for Keyservers"
+msgstr "公钥服务器的配置"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|使用 URL 处的密钥服务器"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|FILE|为承载 HKP 的 TLS 使用 FILE 中的 CA 证书"
+
+msgid "Configuration for HTTP servers"
+msgstr "对 HTTP 服务器的配置"
 
 msgid "inhibit the use of HTTP"
 msgstr "禁止使用 HTTP 协议"
 
-msgid "inhibit the use of LDAP"
-msgstr "抑制 LDAP 的使用"
-
 msgid "ignore HTTP CRL distribution points"
 msgstr "忽略 HTTP CRL 分发点"
 
-msgid "ignore LDAP CRL distribution points"
-msgstr "忽略 LDAP CRL 分发点"
-
-msgid "ignore certificate contained OCSP service URLs"
-msgstr "忽略证书包含的 OCSP 服务 URLs"
-
 msgid "|URL|redirect all HTTP requests to URL"
 msgstr "|URL|重定向 HTTP 请求到 URL"
+
+msgid "use system's HTTP proxy setting"
+msgstr "使用系统的 HTTP 代理设置"
+
+msgid "Configuration of LDAP servers to use"
+msgstr "对要使用的 LDAP 服务器的配置"
+
+msgid "inhibit the use of LDAP"
+msgstr "抑制 LDAP 的使用"
+
+msgid "ignore LDAP CRL distribution points"
+msgstr "忽略 LDAP CRL 分发点"
 
 msgid "|HOST|use HOST for LDAP queries"
 msgstr "|HOST|使用 HOST 进行 LDAP 查询"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "使用 --ldap-proxy 选项以不使用回退主机"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|使用此公钥服务器来查找密钥"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FILE|从 FILE 中读取 LDAP 服务器列表"
@@ -7765,20 +7904,23 @@ msgstr "添加从 CRL 分发点发现的新服务器到服务器列表"
 msgid "|N|set LDAP timeout to N seconds"
 msgstr "|N|设置 LDAP 超时时间为 N 秒"
 
+msgid "Configuration for OCSP"
+msgstr "对于 OCSP 的配置"
+
+msgid "allow sending OCSP requests"
+msgstr "允许发送 OCSP 请求"
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr "忽略证书包含的 OCSP 服务 URLs"
+
 msgid "|URL|use OCSP responder at URL"
 msgstr "|URL|使用 URL 处的 OCSP 响应者"
 
 msgid "|FPR|OCSP response signed by FPR"
 msgstr "|FPR|OCSP 响应由 FPR 签名"
 
-msgid "|N|do not return more than N items in one query"
-msgstr "|N|在一次查询中最多返回 N 个项目"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|FILE|为承载 HKP 的 TLS 使用 FILE 中的 CA 证书"
-
-msgid "route all network traffic via Tor"
-msgstr "通过 Tor 转发所有网络流量"
+msgid "force loading of outdated CRLs"
+msgstr "强制载入过期的 CRLs"
 
 msgid ""
 "@\n"
@@ -8238,122 +8380,17 @@ msgstr "发送行失败：%s\n"
 msgid "error sending standard options: %s\n"
 msgstr "发送标准选项时出现错误：%s\n"
 
-msgid "Options controlling the diagnostic output"
-msgstr "控制诊断输出的选项"
-
-msgid "Options controlling the configuration"
-msgstr "控制配置的选项"
-
-msgid "Options useful for debugging"
-msgstr "对调试有用的选项"
-
-msgid "Options controlling the security"
-msgstr "控制安全的选项"
-
-msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|在 N 秒后使 SSH 密钥过期"
-
-msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr "|N|设置 PIN 缓存的生命周期为 N 秒"
-
-msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr "|N|设置 SSH 缓存的生命周期为 N 秒"
-
-msgid "Options enforcing a passphrase policy"
-msgstr "选项强制要求一个密码策略"
-
-msgid "do not allow bypassing the passphrase policy"
-msgstr "不允许绕过密码的策略"
-
-msgid "|N|set minimal required length for new passphrases to N"
-msgstr "|N|设置要求新密码的最短长度为 N"
-
-msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr "|N|要求新密码至少有 N 个非字母字符"
-
-msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr "|FILE|按 FILE 中的样式检查新密码"
-
-msgid "|N|expire the passphrase after N days"
-msgstr "|N|在 N 天后使密码过期"
-
-msgid "do not allow the reuse of old passphrases"
-msgstr "不允许再次使用旧的密码"
-
-msgid "|N|set the Pinentry timeout to N seconds"
-msgstr "|N|设置 Pinentry 的超时时间为 N 秒"
-
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|使用 NAME 作为默认的私钥"
-
-msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NAME|同时给以 NAME 为名称的用户标识加密"
-
-msgid "|SPEC|set up email aliases"
-msgstr "|SPEC|设置电子邮件别名"
-
-msgid "Configuration for Keyservers"
-msgstr "公钥服务器的配置"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|使用 URL 处的密钥服务器"
-
-msgid "allow PKA lookups (DNS requests)"
-msgstr "允许 PKA 查询（DNS 请求）"
-
-msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr "|MECHANISMS|通过邮件地址定位密钥时使用机制 MECHANISMS"
-
-msgid "import missing key from a signature"
-msgstr "从签名导入缺少的密钥"
-
-msgid "include the public key in signatures"
-msgstr "在签名中包含公钥"
-
-msgid "disable all access to the dirmngr"
-msgstr "禁用对 dirmngr 的所有访问"
-
-msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NAME|对 PKCS#12 密码使用名为 NAME 的编码"
-
-msgid "do not check CRLs for root certificates"
-msgstr "不对根证书检查 CRLs"
-
-msgid "Options controlling the format of the output"
-msgstr "控制输出格式的选项"
-
-msgid "Options controlling the interactivity and enforcement"
-msgstr "控制交互性和执行的选项"
-
-msgid "Options controlling the use of Tor"
-msgstr "控制使用 Tor 的选项"
-
-msgid "Configuration for HTTP servers"
-msgstr "对 HTTP 服务器的配置"
-
-msgid "use system's HTTP proxy setting"
-msgstr "使用系统的 HTTP 代理设置"
-
-msgid "Configuration of LDAP servers to use"
-msgstr "对要使用的 LDAP 服务器的配置"
-
-msgid "LDAP server list"
-msgstr "LDAP 服务器列表"
-
-msgid "Configuration for OCSP"
-msgstr "对于 OCSP 的配置"
-
 msgid "OpenPGP"
 msgstr "OpenPGP"
+
+msgid "S/MIME"
+msgstr "S/MIME"
 
 msgid "Private Keys"
 msgstr "私钥"
 
 msgid "Smartcards"
 msgstr "智能卡"
-
-msgid "S/MIME"
-msgstr "S/MIME"
 
 msgid "Network"
 msgstr "网络"
@@ -8463,6 +8500,33 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#~ msgid "use a log file for the server"
+#~ msgstr "为服务器使用日志文件"
+
+#~ msgid "|FILE|write a server mode log to FILE"
+#~ msgstr "|FILE|将服务器模式的日志写入到 FILE"
+
+#~ msgid "run without asking a user"
+#~ msgstr "在不询问用户的情况下运行"
+
+#~ msgid "allow PKA lookups (DNS requests)"
+#~ msgstr "允许 PKA 查询（DNS 请求）"
+
+#~ msgid "import missing key from a signature"
+#~ msgstr "从签名导入缺少的密钥"
+
+#~ msgid "include the public key in signatures"
+#~ msgstr "在签名中包含公钥"
+
+#~ msgid "Options controlling the format of the output"
+#~ msgstr "控制输出格式的选项"
+
+#~ msgid "Options controlling the use of Tor"
+#~ msgstr "控制使用 Tor 的选项"
+
+#~ msgid "LDAP server list"
+#~ msgstr "LDAP 服务器列表"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "正在请求密钥 %s 从 %s 服务器 %s\n"
