@@ -112,25 +112,6 @@ static const char *w32_rootdir (void);
 #endif
 
 
-
-#ifdef HAVE_W32_SYSTEM
-static void
-w32_try_mkdir (const char *dir)
-{
-#ifdef HAVE_W32CE_SYSTEM
-  wchar_t *wdir = utf8_to_wchar (dir);
-  if (wdir)
-    {
-      CreateDirectory (wdir, NULL);
-      xfree (wdir);
-    }
-#else
-  CreateDirectory (dir, NULL);
-#endif
-}
-#endif
-
-
 /* This is a helper function to load and call a Windows function from
  * either of one DLLs.  On success an UTF-8 file name is returned.
  * ERRNO is _not_ set on error.  */
@@ -275,7 +256,7 @@ standard_homedir (void)
 
               /* Try to create the directory if it does not yet exists.  */
               if (gnupg_access (dir, F_OK))
-                w32_try_mkdir (dir);
+                gnupg_mkdir (dir, "-rwx");
             }
           else
             dir = GNUPG_DEFAULT_HOMEDIR;
@@ -860,7 +841,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
           name = xstrconcat (path, "\\gnupg", NULL);
           xfree (path);
           if (gnupg_access (name, F_OK))
-            w32_try_mkdir (name);
+            gnupg_mkdir (name, "-rwx");
         }
       else
         {
