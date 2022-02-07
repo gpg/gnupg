@@ -29,4 +29,4 @@ built on @BUILD_HOSTNAME@ at @BUILD_TIMESTAMP@\0"
 #define W32INFO_PRODUCTVERSION "@VERSION@\0"
 
 #define W32INFO_LEGALCOPYRIGHT "Copyright \xa9 \
-2021 g10 Code GmbH\0"
+2022 g10 Code GmbH\0"
