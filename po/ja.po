@@ -151,10 +151,10 @@ msgid "Bad Passphrase"
 msgstr "パスフレーズが不正です"
 
 msgid "Note: Request from the web browser."
-msgstr ""
+msgstr "注意: ウェブ・ブラウザからのリクエストです。"
 
 msgid "Note: Request from a remote site."
-msgstr ""
+msgstr "注意: リモート・サイトからのリクエストです。"
 
 #, c-format
 msgid "error getting serial number of card: %s\n"
@@ -163,21 +163,20 @@ msgstr "カード・シリアル番号の取得エラー: %s\n"
 msgid "Please re-enter this passphrase"
 msgstr "このパスフレーズをもう一度入力してください"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Please enter the passphrase to protect the imported object within the "
-#| "GnuPG system."
+#, c-format
 msgid ""
 "Please enter the passphrase to protect the imported object within the %s "
 "system."
 msgstr ""
-"GnuPGシステムにインポートされたオブジェクトを保護するためにパスフレーズを入力"
+"%s システムにインポートされたオブジェクトを保護するためにパスフレーズを入力"
 "してください"
 
 msgid ""
 "This key (or subkey) is not protected with a passphrase.  Please enter a new "
 "passphrase to export it."
 msgstr ""
+"この鍵(または副鍵)はパスフレーズで保護されてません。エクスポートするために"
+"新しいパスフレーズを入力してください。"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -340,10 +339,8 @@ msgstr "新しい鍵を保護するために、%0Aパスフレーズを入力し
 msgid "Please enter the new passphrase"
 msgstr "新しいパスフレーズを入力してください"
 
-#, fuzzy
-#| msgid "Options useful for debugging"
 msgid "Options used for startup"
-msgstr "デバッグのために有用なオプション"
+msgstr "起動のために使われるオプション"
 
 msgid "run in daemon mode (background)"
 msgstr "デーモン・モードで実行 (バックグラウンド)"
@@ -454,21 +451,17 @@ msgstr "|N|N日後にパスフレーズを期限切れとする"
 msgid "do not allow the reuse of old passphrases"
 msgstr "古いパスフレーズを再使用することを認めない"
 
-#, fuzzy
-#| msgid "Options controlling the security"
 msgid "Options controlling the PIN-Entry"
-msgstr "セキュリティを制御するオプション"
+msgstr "PIN-Entryを制御するオプション"
 
 msgid "never use the PIN-entry"
-msgstr ""
+msgstr "PIN-entry を決して使わない"
 
 msgid "disallow caller to override the pinentry"
 msgstr "pinentryより優先してパスフレーズ入力を認めない"
 
-#, fuzzy
-#| msgid "do not grab keyboard and mouse"
 msgid "let PIN-Entry grab keyboard and mouse"
-msgstr "キーボードとマウスを占有しない"
+msgstr "PIN-Entryにキーボードとマウスを占有させる"
 
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|PGM|PGMをPIN入力プログラムとして使う"
@@ -2151,15 +2144,11 @@ msgstr "無変更"
 msgid "prompt before overwriting"
 msgstr "上書き前に確認"
 
-#, fuzzy
-#| msgid "Options controlling the security"
 msgid "Options controlling the input"
-msgstr "セキュリティを制御するオプション"
+msgstr "入力を制御するオプション"
 
-#, fuzzy
-#| msgid "Options controlling the diagnostic output"
 msgid "Options controlling the output"
-msgstr "診断出力を制御するオプション"
+msgstr "出力を制御するオプション"
 
 msgid "create ascii armored output"
 msgstr "ASCII形式の外装を作成"
@@ -2173,10 +2162,8 @@ msgstr "正準テキスト・モードを使用"
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|圧縮レベルをNに設定 (0は非圧縮)"
 
-#, fuzzy
-#| msgid "Options controlling the interactivity and enforcement"
 msgid "Options controlling key import and export"
-msgstr "インタラクティビティと強制を制御するオプション"
+msgstr "鍵のインポートとエクスポートを制御するオプション"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|メールアドレスによって鍵を特定する際、MECHANISMSを使用する"
@@ -2184,15 +2171,11 @@ msgstr "|MECHANISMS|メールアドレスによって鍵を特定する際、MEC
 msgid "disable all access to the dirmngr"
 msgstr "dirmngrへのすべてのアクセスを無効とする"
 
-#, fuzzy
-#| msgid "Options controlling the configuration"
 msgid "Options controlling key listings"
-msgstr "コンフィグレーションを制御するオプション"
+msgstr "鍵のリスティングを制御するオプション"
 
-#, fuzzy
-#| msgid "list secret keys"
 msgid "Options to specify keys"
-msgstr "秘密鍵の一覧"
+msgstr "鍵を指定するオプション"
 
 msgid "|USER-ID|encrypt for USER-ID"
 msgstr "|USER-ID|USER-ID用に暗号化"
@@ -2201,10 +2184,10 @@ msgid "|USER-ID|use USER-ID to sign or decrypt"
 msgstr "|USER-ID|署名や復号にこのUSER-IDを使用"
 
 msgid "Options for unattended use"
-msgstr ""
+msgstr "無人(unattended)使用のためのオプション"
 
 msgid "Other options"
-msgstr ""
+msgstr "そのほかのオプション"
 
 msgid ""
 "@\n"
@@ -7927,7 +7910,7 @@ msgid "|N|do not return more than N items in one query"
 msgstr "|N|一つのクエリでNを越えるのアイテムを返さない"
 
 msgid "Network related options"
-msgstr ""
+msgstr "ネットワーク関連オプション"
 
 msgid "route all network traffic via Tor"
 msgstr "ネットワーク・トラフィックをすべてTor経由にする"
