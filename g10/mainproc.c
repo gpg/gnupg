@@ -88,6 +88,7 @@ struct mainproc_context
   ulong symkeys;    /* Number of symmetrically encrypted session keys.  */
   struct pubkey_enc_list *pkenc_list; /* List of encryption packets. */
   int seen_pkt_encrypted_aead; /* PKT_ENCRYPTED_AEAD packet seen. */
+  int seen_pkt_encrypted_mdc;  /* PKT_ENCRYPTED_MDC packet seen. */
   struct {
     unsigned int sig_seen:1;      /* Set to true if a signature packet
                                      has been seen. */
@@ -140,6 +141,7 @@ release_list( CTX c )
   c->any.uncompress_failed = 0;
   c->last_was_session_key = 0;
   c->seen_pkt_encrypted_aead = 0;
+  c->seen_pkt_encrypted_mdc = 0;
   xfree (c->dek);
   c->dek = NULL;
 }
@@ -547,6 +549,8 @@ proc_encrypted (CTX c, PACKET *pkt)
 
   if (pkt->pkttype == PKT_ENCRYPTED_AEAD)
     c->seen_pkt_encrypted_aead = 1;
+  if (pkt->pkttype == PKT_ENCRYPTED_MDC)
+    c->seen_pkt_encrypted_mdc = 1;
 
   if (early_plaintext)
     {
@@ -823,13 +827,15 @@ proc_encrypted (CTX c, PACKET *pkt)
 
 
 static int
-have_seen_pkt_encrypted_aead( CTX c )
+have_seen_pkt_encrypted_aead_or_mdc( CTX c )
 {
   CTX cc;
 
   for (cc = c; cc; cc = cc->anchor)
     {
       if (cc->seen_pkt_encrypted_aead)
+	return 1;
+      if (cc->seen_pkt_encrypted_mdc)
 	return 1;
     }
 
@@ -914,7 +920,7 @@ proc_plaintext( CTX c, PACKET *pkt )
         }
     }
 
-  if (!any && !opt.skip_verify && !have_seen_pkt_encrypted_aead(c))
+  if (!any && !opt.skip_verify && !have_seen_pkt_encrypted_aead_or_mdc(c))
     {
       /* This is for the old GPG LITERAL+SIG case.  It's not legal
          according to 2440, so hopefully it won't come up that often.
