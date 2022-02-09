@@ -329,7 +329,6 @@ typedef struct known_option_s known_option_t;
 static known_option_t known_options_gpg_agent[] =
   {
    { "verbose", GC_OPT_FLAG_LIST|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
-   { "quiet", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "disable-scdaemon", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
                          GC_LEVEL_ADVANCED },
    { "enable-ssh-support", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
@@ -371,7 +370,6 @@ static known_option_t known_options_gpg_agent[] =
 static known_option_t known_options_scdaemon[] =
   {
    { "verbose", GC_OPT_FLAG_LIST|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
-   { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "no-greeting", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "reader-port",  GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "ctapi-driver", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },
@@ -380,7 +378,6 @@ static known_option_t known_options_scdaemon[] =
    { "disable-pinpad", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "enable-pinpad-varlen", GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
    { "card-timeout",         GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC },
-   { "application-priority", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED },
    { "debug-level", GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED},
    { "log-file",    GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      GC_ARG_TYPE_FILENAME },
@@ -394,7 +391,6 @@ static known_option_t known_options_scdaemon[] =
 static known_option_t known_options_gpg[] =
   {
    { "verbose",              GC_OPT_FLAG_LIST, GC_LEVEL_BASIC },
-   { "quiet",                GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "no-greeting",          GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "default-key",          GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "encrypt-to",           GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
@@ -437,7 +433,6 @@ static const char *known_pseudo_options_gpg[] =
 static known_option_t known_options_gpgsm[] =
  {
    { "verbose",           GC_OPT_FLAG_LIST, GC_LEVEL_BASIC },
-   { "quiet",             GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "no-greeting",       GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "default-key",       GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "encrypt-to",        GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
@@ -475,7 +470,6 @@ static const char *known_pseudo_options_gpgsm[] =
 static known_option_t known_options_dirmngr[] =
  {
    { "verbose",           GC_OPT_FLAG_LIST, GC_LEVEL_BASIC },
-   { "quiet",             GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "no-greeting",       GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "resolver-timeout",  GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "nameserver",        GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
@@ -483,7 +477,6 @@ static known_option_t known_options_dirmngr[] =
    { "log-file",          GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
                           GC_ARG_TYPE_FILENAME },
    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
-   { "batch",             GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "force",             GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "use-tor",           GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
    { "keyserver",         GC_OPT_FLAG_NONE, GC_LEVEL_BASIC },
