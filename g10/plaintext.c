@@ -584,11 +584,16 @@ do_hash (gcry_md_hd_t md, gcry_md_hd_t md2, IOBUF fp, int textmode)
     }
   else
     {
-      while ((c = iobuf_get (fp)) != -1)
+      byte *buffer = xmalloc (32768);
+      int ret;
+
+      while ((ret = iobuf_read (fp, buffer, 32768)) != -1)
 	{
 	  if (md)
-	    gcry_md_putc (md, c);
+	    gcry_md_write (md, buffer, ret);
 	}
+
+      xfree (buffer);
     }
 }
 
