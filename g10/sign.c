@@ -1328,7 +1328,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
                   iobuf_push_filter (inp, text_filter, &tfx);
                 }
               iobuf_push_filter (inp, md_filter, &mfx);
-              while (iobuf_get (inp) != -1)
+              while (iobuf_read (inp, NULL, 1<<30) != -1)
                 ;
               iobuf_close (inp);
               inp = NULL;
@@ -1339,7 +1339,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
       else
         {
           /* Read, so that the filter can calculate the digest. */
-          while (iobuf_get(inp) != -1)
+          while (iobuf_read (inp, NULL, 1<<30) != -1)
             ;
 	}
     }
