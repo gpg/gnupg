@@ -266,10 +266,29 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
     log_debug ("flushing %zu bytes (cur buflen=%zu)\n", size, cfx->buflen);
   do
     {
+      const unsigned fast_threshold = 512;
+      const byte *src_buf = NULL;
+      int enc_now = 0;
+
       if (cfx->buflen + size < cfx->bufsize)
         n = size;
       else
         n = cfx->bufsize - cfx->buflen;
+
+      if (cfx->buflen % fast_threshold != 0)
+	{
+	  /* Attempt to align cfx->buflen to fast threshold size first. */
+	  size_t nalign = fast_threshold - (cfx->buflen % fast_threshold);
+	  if (nalign < n)
+	    {
+	      n = nalign;
+	    }
+	}
+      else if (cfx->buflen == 0 && n >= fast_threshold)
+	{
+	  /* Handle large input buffers as multiple of cipher blocksize. */
+	  n = (n / 16) * 16;
+	}
 
       if (cfx->chunklen + cfx->buflen + n >= cfx->chunksize)
         {
@@ -283,16 +302,42 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
           n = n1;
         }
 
-      memcpy (cfx->buffer + cfx->buflen, buf, n);
-      cfx->buflen += n;
-      buf  += n;
-      size -= n;
+      if (!finalize && cfx->buflen % 16 == 0 && cfx->buflen > 0
+	  && size >= fast_threshold)
+	{
+	  /* If cfx->buffer is aligned and remaining input buffer length
+	   * is long, encrypt cfx->buffer inplace now to allow fast path
+	   * handling on next loop iteration. */
+	  src_buf = cfx->buffer;
+	  enc_now = 1;
+	  n = 0;
+	}
+      else if (cfx->buflen == 0 && n >= fast_threshold)
+	{
+	  /* Fast path for large input buffer. This avoids memcpy and
+	   * instead encrypts directly from input to cfx->buffer. */
+	  log_assert (n % 16 == 0 || finalize);
+	  src_buf = buf;
+	  cfx->buflen = n;
+	  buf += n;
+	  size -= n;
+	  enc_now = 1;
+	}
+      else if (n > 0)
+	{
+	  memcpy (cfx->buffer + cfx->buflen, buf, n);
+	  src_buf = cfx->buffer;
+	  cfx->buflen += n;
+	  buf  += n;
+	  size -= n;
+	}
 
-      if (cfx->buflen == cfx->bufsize || finalize)
+      if (cfx->buflen == cfx->bufsize || enc_now || finalize)
         {
           if (DBG_FILTER)
-            log_debug ("encrypting: size=%zu buflen=%zu %s n=%zu\n",
-                       size, cfx->buflen, finalize?"(finalize)":"", n);
+            log_debug ("encrypting: size=%zu buflen=%zu %s%s n=%zu\n",
+                       size, cfx->buflen, finalize?"(finalize)":"",
+		       enc_now?"(now)":"", n);
 
           if (!cfx->chunklen)
             {
@@ -308,9 +353,9 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
           if (DBG_FILTER)
             {
               if (finalize)
-                log_printhex (cfx->buffer, cfx->buflen, "plain(1):");
+                log_printhex (src_buf, cfx->buflen, "plain(1):");
               else if (cfx->buflen > 32)
-                log_printhex (cfx->buffer + cfx->buflen - 32, 32,
+                log_printhex (src_buf + cfx->buflen - 32, 32,
                               "plain(last32):");
             }
 
@@ -318,8 +363,8 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
            * be called after gcry_cipher_final and before
            * gcry_cipher_gettag - at least with libgcrypt 1.8 and OCB
            * mode.  */
-          err = gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer, cfx->buflen,
-                                     NULL, 0);
+	  err = gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer,
+				     cfx->buflen, src_buf, cfx->buflen);
           if (err)
             goto leave;
           if (finalize && DBG_FILTER)
