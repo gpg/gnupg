@@ -2052,8 +2052,13 @@ underflow_target (iobuf_t a, int clear_pending_eof, size_t target)
 static int
 filter_flush (iobuf_t a)
 {
+  int external_used = 0;
+  byte *src_buf;
+  size_t src_len;
   size_t len;
   int rc;
+
+  a->e_d.used = 0;
 
   if (a->use == IOBUF_OUTPUT_TEMP)
     {				/* increase the temp buffer */
@@ -2071,9 +2076,31 @@ filter_flush (iobuf_t a)
     log_bug ("flush on non-output iobuf\n");
   else if (!a->filter)
     log_bug ("filter_flush: no filter\n");
-  len = a->d.len;
-  rc = a->filter (a->filter_ov, IOBUFCTRL_FLUSH, a->chain, a->d.buf, &len);
-  if (!rc && len != a->d.len)
+
+  if (a->d.len == 0 && a->e_d.buf && a->e_d.len > 0)
+    {
+      src_buf = a->e_d.buf;
+      src_len = a->e_d.len;
+      external_used = 1;
+    }
+  else
+    {
+      src_buf = a->d.buf;
+      src_len = a->d.len;
+      external_used = 0;
+    }
+
+  if (src_len == 0)
+    {
+      if (DBG_IOBUF)
+	log_debug ("filter_flush, nothing to flush%s\n",
+		   external_used ? " (external buffer)" : "");
+      return 0;
+    }
+
+  len = src_len;
+  rc = a->filter (a->filter_ov, IOBUFCTRL_FLUSH, a->chain, src_buf, &len);
+  if (!rc && len != src_len)
     {
       log_info ("filter_flush did not write all!\n");
       rc = GPG_ERR_INTERNAL;
@@ -2081,6 +2108,8 @@ filter_flush (iobuf_t a)
   else if (rc)
     a->error = rc;
   a->d.len = 0;
+  if (external_used)
+    a->e_d.used = len;
 
   return rc;
 }
@@ -2303,11 +2332,37 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
       return -1;
     }
 
+  a->e_d.buf = NULL;
+  a->e_d.len = 0;
+
+  /* Hint for how full to fill iobuf internal drain buffer. */
+  a->e_d.preferred = (buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE);
+
   do
     {
-      if (buflen && a->d.len < a->d.size)
+      if (a->d.len == 0 && buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE)
 	{
-	  unsigned size = a->d.size - a->d.len;
+	  /* Setup external drain buffer for faster moving of data
+	    * (avoid memcpy). */
+	  a->e_d.buf = (byte *)buf;
+	  a->e_d.len = buflen / IOBUF_ZEROCOPY_THRESHOLD_SIZE
+			* IOBUF_ZEROCOPY_THRESHOLD_SIZE;
+	  if (a->e_d.len == 0)
+	    a->e_d.buf = NULL;
+	  if (a->e_d.buf && DBG_IOBUF)
+	    log_debug ("iobuf-%d.%d: writing from external buffer, %lu bytes\n",
+			a->no, a->subno, (ulong)a->e_d.len);
+	}
+
+      if (a->e_d.buf == NULL && buflen && a->d.len < a->d.size)
+	{
+	  unsigned size;
+
+	  if (a->e_d.preferred && a->d.len < IOBUF_ZEROCOPY_THRESHOLD_SIZE)
+	    size = IOBUF_ZEROCOPY_THRESHOLD_SIZE - a->d.len;
+	  else
+	    size = a->d.size - a->d.len;
+
 	  if (size > buflen)
 	    size = buflen;
 	  memcpy (a->d.buf + a->d.len, buf, size);
@@ -2315,12 +2370,26 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
 	  buf += size;
 	  a->d.len += size;
 	}
+
       if (buflen)
 	{
 	  rc = filter_flush (a);
           if (rc)
-	    return rc;
+	    {
+	      a->e_d.buf = NULL;
+	      a->e_d.len = 0;
+	      return rc;
+	    }
 	}
+
+      if (a->e_d.buf && a->e_d.used > 0)
+	{
+	  buf += a->e_d.used;
+	  buflen -= a->e_d.used;
+	}
+
+      a->e_d.buf = NULL;
+      a->e_d.len = 0;
     }
   while (buflen);
   return 0;
