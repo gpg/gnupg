@@ -66,6 +66,10 @@
    the number of filters in a chain.  */
 #define MAX_NESTING_FILTER 64
 
+/* The threshold for switching to use external buffers directly
+   instead of the internal buffers. */
+#define IOBUF_ZEROCOPY_THRESHOLD_SIZE 1024
+
 /*-- End configurable part.  --*/
 
 /* The size of the iobuffers.  This can be changed using the
@@ -1196,6 +1200,10 @@ iobuf_alloc (int use, size_t bufsize)
   a->use = use;
   a->d.buf = xmalloc (bufsize);
   a->d.size = bufsize;
+  a->e_d.buf = NULL;
+  a->e_d.len = 0;
+  a->e_d.used = 0;
+  a->e_d.preferred = 0;
   a->no = ++number;
   a->subno = 0;
   a->real_fname = NULL;
@@ -1861,12 +1869,15 @@ underflow_target (iobuf_t a, int clear_pending_eof, size_t target)
 
   assert (a->use == IOBUF_INPUT);
 
+  a->e_d.used = 0;
+
   /* If there is still some buffered data, then move it to the start
      of the buffer and try to fill the end of the buffer.  (This is
      useful if we are called from iobuf_peek().)  */
   assert (a->d.start <= a->d.len);
   a->d.len -= a->d.start;
-  memmove (a->d.buf, &a->d.buf[a->d.start], a->d.len);
+  if (a->d.len)
+    memmove (a->d.buf, &a->d.buf[a->d.start], a->d.len);
   a->d.start = 0;
 
   if (a->d.len < target && a->filter_eof)
@@ -1917,23 +1928,57 @@ underflow_target (iobuf_t a, int clear_pending_eof, size_t target)
     {
       /* Be careful to account for any buffered data.  */
       len = a->d.size - a->d.len;
-      if (DBG_IOBUF)
-	log_debug ("iobuf-%d.%d: underflow: A->FILTER (%lu bytes)\n",
-		   a->no, a->subno, (ulong) len);
+
+      if (a->e_d.preferred && a->d.len < IOBUF_ZEROCOPY_THRESHOLD_SIZE
+	  && (IOBUF_ZEROCOPY_THRESHOLD_SIZE - a->d.len) < len)
+	{
+	  if (DBG_IOBUF)
+	    log_debug ("iobuf-%d.%d: limit buffering as external drain is "
+			"preferred\n",  a->no, a->subno);
+	  len = IOBUF_ZEROCOPY_THRESHOLD_SIZE - a->d.len;
+	}
+
       if (len == 0)
 	/* There is no space for more data.  Don't bother calling
 	   A->FILTER.  */
 	rc = 0;
       else
-	rc = a->filter (a->filter_ov, IOBUFCTRL_UNDERFLOW, a->chain,
-			&a->d.buf[a->d.len], &len);
+      {
+	/* If no buffered data and drain buffer has been setup, and drain
+	 * buffer is largish, read data directly to drain buffer. */
+	if (a->d.len == 0
+	    && a->e_d.buf
+	    && a->e_d.len >= IOBUF_ZEROCOPY_THRESHOLD_SIZE)
+	  {
+	    len = a->e_d.len;
+
+	    if (DBG_IOBUF)
+	      log_debug ("iobuf-%d.%d: underflow: A->FILTER (%lu bytes, to external drain)\n",
+			 a->no, a->subno, (ulong)len);
+
+	    rc = a->filter (a->filter_ov, IOBUFCTRL_UNDERFLOW, a->chain,
+			    a->e_d.buf, &len);
+	    a->e_d.used = len;
+	    len = 0;
+	  }
+	else
+	  {
+	    if (DBG_IOBUF)
+	      log_debug ("iobuf-%d.%d: underflow: A->FILTER (%lu bytes)\n",
+			 a->no, a->subno, (ulong)len);
+
+	    rc = a->filter (a->filter_ov, IOBUFCTRL_UNDERFLOW, a->chain,
+			    &a->d.buf[a->d.len], &len);
+	  }
+      }
       a->d.len += len;
 
       if (DBG_IOBUF)
-	log_debug ("iobuf-%d.%d: A->FILTER() returned rc=%d (%s), read %lu bytes\n",
+	log_debug ("iobuf-%d.%d: A->FILTER() returned rc=%d (%s), read %lu bytes%s\n",
 		   a->no, a->subno,
 		   rc, rc == 0 ? "ok" : rc == -1 ? "EOF" : gpg_strerror (rc),
-		   (ulong) len);
+		   (ulong)(a->e_d.used ? a->e_d.used : len),
+		   a->e_d.used ? " (to external buffer)" : "");
 /*  	    if( a->no == 1 ) */
 /*                   log_hexdump ("     data:", a->d.buf, len); */
 
@@ -1954,7 +1999,8 @@ underflow_target (iobuf_t a, int clear_pending_eof, size_t target)
 	  a->filter = NULL;
 	  a->filter_eof = 1;
 
-	  if (clear_pending_eof && a->d.len == 0 && a->chain)
+	  if (clear_pending_eof && a->d.len == 0 && a->e_d.used == 0
+	      && a->chain)
 	    /* We don't need to keep this filter around at all:
 
 	         - we got an EOF
@@ -1976,7 +2022,7 @@ underflow_target (iobuf_t a, int clear_pending_eof, size_t target)
 
 	      return -1;
 	    }
-	  else if (a->d.len == 0)
+	  else if (a->d.len == 0 && a->e_d.used == 0)
 	    /* We can't unlink this filter (it is the only one in the
 	       pipeline), but we can immediately return EOF.  */
 	    return -1;
@@ -1986,13 +2032,15 @@ underflow_target (iobuf_t a, int clear_pending_eof, size_t target)
 	{
 	  a->error = rc;
 
-	  if (a->d.len == 0)
+	  if (a->d.len == 0 && a->e_d.used == 0)
 	    /* There is no buffered data.  Immediately return EOF.  */
 	    return -1;
 	}
     }
 
   assert (a->d.start <= a->d.len);
+  if (a->e_d.used > 0)
+    return 0;
   if (a->d.start < a->d.len)
     return a->d.buf[a->d.start++];
 
@@ -2104,6 +2152,12 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
       return n;
     }
 
+  a->e_d.buf = NULL;
+  a->e_d.len = 0;
+
+  /* Hint for how full to fill iobuf internal drain buffer. */
+  a->e_d.preferred = (buf && buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE);
+
   n = 0;
   do
     {
@@ -2125,16 +2179,46 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 	   underflow to read more data into the filter's internal
 	   buffer.  */
 	{
+	  if (buf && n < buflen)
+	    {
+	      /* Setup external drain buffer for faster moving of data
+	       * (avoid memcpy). */
+	      a->e_d.buf = buf;
+	      a->e_d.len = (buflen - n) / IOBUF_ZEROCOPY_THRESHOLD_SIZE
+			    * IOBUF_ZEROCOPY_THRESHOLD_SIZE;
+	      if (a->e_d.len == 0)
+		a->e_d.buf = NULL;
+	      if (a->e_d.buf && DBG_IOBUF)
+		log_debug ("iobuf-%d.%d: reading to external buffer, %lu bytes\n",
+			   a->no, a->subno, (ulong)a->e_d.len);
+	    }
+
 	  if ((c = underflow (a, 1)) == -1)
 	    /* EOF.  If we managed to read something, don't return EOF
 	       now.  */
 	    {
+	      a->e_d.buf = NULL;
+	      a->e_d.len = 0;
 	      a->nbytes += n;
 	      return n ? n : -1 /*EOF*/;
 	    }
-	  if (buf)
-	    *buf++ = c;
-	  n++;
+
+	  if (a->e_d.buf && a->e_d.used > 0)
+	    {
+	      /* Drain buffer was used, 'c' only contains return code
+	       * 0 or -1. */
+	      n += a->e_d.used;
+	      buf += a->e_d.used;
+	    }
+	  else
+	    {
+	      if (buf)
+		*buf++ = c;
+	      n++;
+	    }
+
+	  a->e_d.buf = NULL;
+	  a->e_d.len = 0;
 	}
     }
   while (n < buflen);

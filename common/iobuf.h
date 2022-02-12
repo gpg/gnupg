@@ -202,6 +202,26 @@ struct iobuf_struct
     byte *buf;
   } d;
 
+  /* A external drain buffer for reading/writting data skipping internal
+     draint buffer D.BUF.  This allows zerocopy operation reducing
+     processing overhead across filter stack.
+
+     Used when by iobuf_read/iobuf_write when internal buffer has been
+     depleted and remaining external buffer length is large enough.
+   */
+  struct
+  {
+    /* The external buffer provided by iobuf_read/iobuf_write caller. */
+    byte *buf;
+    /* The number of bytes in the external buffer. */
+    size_t len;
+    /* The number of bytes that were consumed from the external buffer. */
+    size_t used;
+    /* Gives hint for processing that the external buffer is preferred and
+       that internal buffer should be consumed early. */
+    int preferred;
+  } e_d;
+
   /* When FILTER is called to read some data, it may read some data
      and then return EOF.  We can't return the EOF immediately.
      Instead, we note that we observed the EOF and when the buffer is
