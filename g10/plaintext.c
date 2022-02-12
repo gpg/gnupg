@@ -291,10 +291,11 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	}
       else  /* Binary mode.  */
 	{
-	  byte *buffer = xmalloc (32768);
+	  size_t temp_size = iobuf_set_buffer_size(0) * 1024;
+	  byte *buffer = xmalloc (temp_size);
 	  while (pt->len)
 	    {
-	      int len = pt->len > 32768 ? 32768 : pt->len;
+	      int len = pt->len > temp_size ? temp_size : pt->len;
 	      len = iobuf_read (pt->buf, buffer, len);
 	      if (len == -1)
 		{
@@ -366,10 +367,11 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	}
       else
 	{			/* binary mode */
+	  size_t temp_size = iobuf_set_buffer_size(0) * 1024;
 	  byte *buffer;
 	  int eof_seen = 0;
 
-          buffer = xtrymalloc (32768);
+          buffer = xtrymalloc (temp_size);
           if (!buffer)
             {
               err = gpg_error_from_syserror ();
@@ -378,16 +380,16 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 
 	  while (!eof_seen)
 	    {
-	      /* Why do we check for len < 32768:
+	      /* Why do we check for len < temp_size:
 	       * If we won't, we would practically read 2 EOFs but
 	       * the first one has already popped the block_filter
 	       * off and therefore we don't catch the boundary.
 	       * So, always assume EOF if iobuf_read returns less bytes
 	       * then requested */
-	      int len = iobuf_read (pt->buf, buffer, 32768);
+	      int len = iobuf_read (pt->buf, buffer, temp_size);
 	      if (len == -1)
 		break;
-	      if (len < 32768)
+	      if (len < temp_size)
 		eof_seen = 1;
 	      if (mfx->md)
 		gcry_md_write (mfx->md, buffer, len);
@@ -545,10 +547,11 @@ do_hash (gcry_md_hd_t md, gcry_md_hd_t md2, IOBUF fp, int textmode)
     }
   else
     {
-      byte *buffer = xmalloc (32768);
+      size_t temp_size = iobuf_set_buffer_size(0) * 1024;
+      byte *buffer = xmalloc (temp_size);
       int ret;
 
-      while ((ret = iobuf_read (fp, buffer, 32768)) != -1)
+      while ((ret = iobuf_read (fp, buffer, temp_size)) != -1)
 	{
 	  if (md)
 	    gcry_md_write (md, buffer, ret);

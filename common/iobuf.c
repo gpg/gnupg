@@ -2298,9 +2298,7 @@ size_t
 iobuf_copy (iobuf_t dest, iobuf_t source)
 {
   char *temp;
-  /* Use a 32 KB buffer.  */
-  const size_t temp_size = 32 * 1024;
-
+  size_t temp_size;
   size_t nread;
   size_t nwrote = 0;
   size_t max_read = 0;
@@ -2311,6 +2309,9 @@ iobuf_copy (iobuf_t dest, iobuf_t source)
 
   if (iobuf_error (dest))
     return -1;
+
+  /* Use iobuf buffer size for temporary buffer. */
+  temp_size = iobuf_set_buffer_size(0) * 1024;
 
   temp = xmalloc (temp_size);
   while (1)
