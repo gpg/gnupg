@@ -292,7 +292,22 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       else  /* Binary mode.  */
 	{
 	  size_t temp_size = iobuf_set_buffer_size(0) * 1024;
-	  byte *buffer = xmalloc (temp_size);
+	  byte *buffer;
+
+	  if (fp)
+	    {
+	      /* Disable buffering in estream as we are passing large
+	       * buffers to es_fwrite. */
+	      es_setbuf (fp, NULL);
+	    }
+
+	  buffer = xmalloc (temp_size);
+          if (!buffer)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+
 	  while (pt->len)
 	    {
 	      int len = pt->len > temp_size ? temp_size : pt->len;
@@ -370,6 +385,13 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	  size_t temp_size = iobuf_set_buffer_size(0) * 1024;
 	  byte *buffer;
 	  int eof_seen = 0;
+
+	  if (fp)
+	    {
+	      /* Disable buffering in estream as we are passing large
+	       * buffers to es_fwrite. */
+	      es_setbuf (fp, NULL);
+	    }
 
           buffer = xtrymalloc (temp_size);
           if (!buffer)
