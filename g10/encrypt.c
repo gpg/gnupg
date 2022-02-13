@@ -497,15 +497,9 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
     {
       /* User requested not to create a literal packet, so we copy the
          plain data.  */
-    byte copy_buffer[4096];
-    int  bytes_copied;
-    while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-      if ( (rc=iobuf_write(out, copy_buffer, bytes_copied)) ) {
-        log_error ("copying input to output failed: %s\n",
-                   gpg_strerror (rc) );
-        break;
-      }
-    wipememory (copy_buffer, 4096); /* burn buffer */
+      rc = iobuf_copy (out, inp);
+      if (rc)
+        log_error ("copying input to output failed: %s\n", gpg_strerror (rc));
     }
 
   /* Finish the stuff.  */
