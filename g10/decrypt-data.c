@@ -492,6 +492,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
           iobuf_t output = iobuf_esopen (fp, "w", 0);
           armor_filter_context_t *afx = NULL;
 
+	  es_setbuf (fp, NULL);
+
           if (opt.armor)
             {
               afx = new_armor_context ();
