@@ -1310,10 +1310,10 @@ msgid "DNS is not properly configured"
 msgstr "DNSが正しく設定されていません"
 
 msgid "unacceptable HTTP redirect from server"
-msgstr "サーバからの受け容れることのできないHTTPりダイレクト"
+msgstr "サーバからの受け容れることのできないHTTPリダイレクト"
 
 msgid "unacceptable HTTP redirect from server was cleaned up"
-msgstr "サーバからの受け容れることのできないHTTPりダイレクトは一掃しました"
+msgstr "サーバからの受け容れることのできないHTTPリダイレクトは一掃しました"
 
 msgid "server uses an invalid certificate"
 msgstr "サーバは無効な証明書を使っています"
