@@ -330,7 +330,7 @@ msgstr ""
 "WARNUNG:  Sie haben ein offensichtlich unsicheres%0APasswort eingegeben."
 
 msgid "Take this one anyway"
-msgstr "Diese trotzdem benutzen"
+msgstr "Dieses trotzdem benutzen"
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
