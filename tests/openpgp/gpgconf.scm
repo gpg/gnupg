@@ -37,10 +37,9 @@
 		(assert (or (not (opt::value)) (string=? "" (opt::value)))))))
 	(progress ".")))))
  (lambda (name . rest) name)
- (list "keyserver" "verbose" "quiet")
+ (list "keyserver" "verbose")
  (list (gpg-config 'gpg "keyserver")
-       (gpg-config 'gpg "verbose")
-       (gpg-config 'gpg "quiet"))
+       (gpg-config 'gpg "verbose"))
  (list (lambda (i) (if (even? i) "hkp://foo.bar" "hkps://bar.baz"))
        ;; gpgconf: argument for option verbose of type 0 (none) must
        ;; be positive
