@@ -572,7 +572,8 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                 {
                   /* Note the no_dirmngr flag: This avoids checking
                      this certificate over and over again. */
-                  rc = gpgsm_validate_chain (ctrl, rspcert, "", NULL, 0, NULL,
+                  rc = gpgsm_validate_chain (ctrl, rspcert, GNUPG_ISOTIME_NONE,
+                                             NULL, 0, NULL,
                                              VALIDATE_FLAG_NO_DIRMNGR, NULL);
                   if (rc)
                     {

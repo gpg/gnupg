@@ -444,7 +444,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                     }
                 }
               if (!rc)
-                rc = gpgsm_validate_chain (ctrl, cert, "", NULL,
+                rc = gpgsm_validate_chain (ctrl, cert, GNUPG_ISOTIME_NONE, NULL,
                                            0, NULL, 0, NULL);
               if (!rc)
                 {
