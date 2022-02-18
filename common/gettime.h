@@ -38,6 +38,11 @@
    the KSBA type ksba_isotime_t. */
 typedef char gnupg_isotime_t[16];
 
+/* Constant string of 16-byte, which is compatible to the type
+   gnupg_iso_time_t.  */
+#define GNUPG_ISOTIME_NONE \
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
 time_t gnupg_get_time (void);
 struct tm *gnupg_gmtime (const time_t *timep, struct tm *result);
 void   gnupg_get_isotime (gnupg_isotime_t timebuf);

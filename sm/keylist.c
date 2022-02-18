@@ -415,7 +415,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   char *kludge_uid;
 
   if (ctrl->with_validation)
-    valerr = gpgsm_validate_chain (ctrl, cert, "", NULL, 1, NULL, 0, NULL);
+    valerr = gpgsm_validate_chain (ctrl, cert,
+                                   GNUPG_ISOTIME_NONE, NULL, 1, NULL, 0, NULL);
   else
     valerr = 0;
 
@@ -1107,7 +1108,8 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
 
   if (with_validation)
     {
-      err = gpgsm_validate_chain (ctrl, cert, "", NULL, 1, fp, 0, NULL);
+      err = gpgsm_validate_chain (ctrl, cert,
+                                  GNUPG_ISOTIME_NONE, NULL, 1, fp, 0, NULL);
       if (!err)
         es_fprintf (fp, "  [certificate is good]\n");
       else
@@ -1354,7 +1356,8 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
       size_t buflen;
       char buffer[1];
 
-      err = gpgsm_validate_chain (ctrl, cert, "", NULL, 1, fp, 0, NULL);
+      err = gpgsm_validate_chain (ctrl, cert,
+                                  GNUPG_ISOTIME_NONE, NULL, 1, fp, 0, NULL);
       tmperr = ksba_cert_get_user_data (cert, "is_qualified",
                                         &buffer, sizeof (buffer), &buflen);
       if (!tmperr && buflen)

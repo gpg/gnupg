@@ -410,7 +410,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
          check that the signer's certificate is usable and valid.  */
       rc = gpgsm_cert_use_sign_p (cert, 0);
       if (!rc)
-        rc = gpgsm_validate_chain (ctrl, cert, "", NULL, 0, NULL, 0, NULL);
+        rc = gpgsm_validate_chain (ctrl, cert,
+                                   GNUPG_ISOTIME_NONE, NULL, 0, NULL, 0, NULL);
       if (rc)
         {
           char *tmpfpr;
