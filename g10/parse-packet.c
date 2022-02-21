@@ -1241,8 +1241,13 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     goto too_short;
   s2kmode = iobuf_get_noeof (inp);
   pktlen--;
-  hash_algo = iobuf_get_noeof (inp);
-  pktlen--;
+  if (s2kmode <= 3)
+    {
+      hash_algo = iobuf_get_noeof (inp);
+      pktlen--;
+    }
+  else
+    hash_algo = 0;
   switch (s2kmode)
     {
     case 0: /* Simple S2K.  */
@@ -1253,6 +1258,9 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       break;
     case 3: /* Iterated+salted S2K.  */
       minlen = 9;
+      break;
+    case 4: /* Argon2.  */
+      minlen = 19;
       break;
     default:
       log_error ("unknown S2K mode %d\n", s2kmode);
@@ -1275,7 +1283,17 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   k->cipher_algo = cipher_algo;
   k->aead_algo = aead_algo;
   k->s2k.mode = s2kmode;
-  k->s2k.u.s.hash_algo = hash_algo;
+  if (s2kmode == 4)
+    {
+      for (i = 0; i < 16 && pktlen; i++, pktlen--)
+	k->s2k.u.a.salt[i] = iobuf_get_noeof (inp);
+      k->s2k.u.a.t = iobuf_get_noeof (inp);;
+      k->s2k.u.a.m = iobuf_get_noeof (inp);;
+      k->s2k.u.a.p = iobuf_get_noeof (inp);;
+      pktlen -=3;
+    }
+  else
+    k->s2k.u.s.hash_algo = hash_algo;
   if (s2kmode == 1 || s2kmode == 3)
     {
       for (i = 0; i < 8 && pktlen; i++, pktlen--)
@@ -1295,7 +1313,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       /* What we're watching out for here is a session key decryptor
          with no salt.  The RFC says that using salt for this is a
          MUST. */
-      if (s2kmode != 1 && s2kmode != 3)
+      if (s2kmode == 0)
 	log_info (_("WARNING: potentially insecure symmetrically"
 		    " encrypted session key\n"));
     }
@@ -1327,6 +1345,14 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 	    es_fprintf (listfp, ", count %lu (%lu)",
                         S2K_DECODE_COUNT ((ulong) k->s2k.u.s.count),
                         (ulong) k->s2k.u.s.count);
+	  es_fprintf (listfp, "\n");
+	}
+      else if (s2kmode == 4)
+	{
+	  es_fprintf (listfp, "\tsalt ");
+          es_write_hexstring (listfp, k->s2k.u.a.salt, 16, 0, NULL);
+          es_fprintf (listfp, ", t=%02x, m=%02x, p=%02x",
+                      k->s2k.u.a.t, k->s2k.u.a.m, k->s2k.u.a.p);
 	  es_fprintf (listfp, "\n");
 	}
     }
