@@ -558,19 +558,15 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
       if (s2k->mode == 4)
         {
           unsigned long param[4];
-          unsigned char ad[4];
 
-          param[0] = dek->keylen + 1;
+          param[0] = dek->keylen;
           param[1] = s2k->u.a.t;
           param[2] = (1UL << ((s2k->u.a.m & 0x1f) - 10));
           param[3] = s2k->u.a.p;
-          ad[0] = 0xc3;
-          ad[1] = 0x04;
-          ad[2] = dek->algo;
           err = gnupg_kdf_derive (GCRY_KDF_ARGON2, GCRY_KDF_ARGON2ID,
                                   param, 4, pw, strlen (pw),
-                                  s2k->u.a.salt, 16, NULL, 0, ad, 3,
-                                  dek->keylen + 1, dek->key);
+                                  s2k->u.a.salt, 16, NULL, 0, NULL, 0,
+                                  dek->keylen, dek->key);
         }
       else
         err = gcry_kdf_derive (pw, strlen (pw),
