@@ -303,14 +303,14 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
        * Note: This must match the code in encode.c with opt.rfc1991 set */
       memset (&help_s2k, 0, sizeof (help_s2k));
       s2k = &help_s2k;
-      s2k->hash_algo = S2K_DIGEST_ALGO;
+      s2k->u.s.hash_algo = S2K_DIGEST_ALGO;
     }
 
   /* Create a new salt or what else to be filled into the s2k for a
      new key.  */
   if (create && (s2k->mode == 1 || s2k->mode == 3))
     {
-      gcry_randomize (s2k->salt, 8, GCRY_STRONG_RANDOM);
+      gcry_randomize (s2k->u.s.salt, 8, GCRY_STRONG_RANDOM);
       if ( s2k->mode == 3 )
         {
           /* We delay the encoding until it is really needed.  This is
@@ -319,7 +319,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
              option processing in main().  */
           if (!opt.s2k_count)
             opt.s2k_count = encode_s2k_iterations (agent_get_s2k_count ());
-          s2k->count = opt.s2k_count;
+          s2k->u.s.count = opt.s2k_count;
         }
     }
 
@@ -330,7 +330,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
       char buf[50];
 
       snprintf (buf, sizeof buf, "%d %d %d",
-                cipher_algo, s2k->mode, s2k->hash_algo );
+                cipher_algo, s2k->mode, s2k->u.s.hash_algo );
       write_status_text ( STATUS_NEED_PASSPHRASE_SYM, buf );
     }
 
@@ -352,7 +352,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
 	{
 	  memset (s2k_cacheidbuf, 0, sizeof s2k_cacheidbuf);
 	  *s2k_cacheidbuf = 'S';
-	  bin2hex (s2k->salt, 8, s2k_cacheidbuf + 1);
+	  bin2hex (s2k->u.s.salt, 8, s2k_cacheidbuf + 1);
 	  s2k_cacheid = s2k_cacheidbuf;
 	}
 
@@ -397,8 +397,8 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
                              s2k->mode == 3? GCRY_KDF_ITERSALTED_S2K :
                              s2k->mode == 1? GCRY_KDF_SALTED_S2K :
                              /* */           GCRY_KDF_SIMPLE_S2K,
-                             s2k->hash_algo, s2k->salt, 8,
-                             S2K_DECODE_COUNT(s2k->count),
+                             s2k->u.s.hash_algo, s2k->u.s.salt, 8,
+                             S2K_DECODE_COUNT(s2k->u.s.count),
                              dek->keylen, dek->key);
       if (err)
         {

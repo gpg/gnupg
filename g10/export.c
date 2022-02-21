@@ -1175,10 +1175,10 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   ski->sha1chk = 1;
   ski->algo = protect_algo;
   ski->s2k.mode = s2k_mode;
-  ski->s2k.hash_algo = s2k_algo;
-  log_assert (sizeof ski->s2k.salt == sizeof s2k_salt);
-  memcpy (ski->s2k.salt, s2k_salt, sizeof s2k_salt);
-  ski->s2k.count = s2k_count;
+  ski->s2k.u.s.hash_algo = s2k_algo;
+  log_assert (sizeof ski->s2k.u.s.salt == sizeof s2k_salt);
+  memcpy (ski->s2k.u.s.salt, s2k_salt, sizeof s2k_salt);
+  ski->s2k.u.s.count = s2k_count;
   log_assert (ivlen <= sizeof ski->iv);
   memcpy (ski->iv, iv, ivlen);
   ski->ivlen = ivlen;

@@ -569,7 +569,7 @@ setup_symkey (STRING2KEY **symkey_s2k, DEK **symkey_dek)
 
   *symkey_s2k = xmalloc_clear (sizeof **symkey_s2k);
   (*symkey_s2k)->mode = opt.s2k_mode;
-  (*symkey_s2k)->hash_algo = s2kdigest;
+  (*symkey_s2k)->u.s.hash_algo = s2kdigest;
 
   *symkey_dek = passphrase_to_dek (defcipher,
                                    *symkey_s2k, 1, 0, NULL, 0, &canceled);

@@ -1609,7 +1609,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
   /* Prepare key.  */
   s2k = xmalloc_clear (sizeof *s2k);
   s2k->mode = opt.s2k_mode;
-  s2k->hash_algo = S2K_DIGEST_ALGO;
+  s2k->u.s.hash_algo = S2K_DIGEST_ALGO;
 
   algo = default_cipher_algo ();
   cfx.dek = passphrase_to_dek (algo, s2k, 1, 1, NULL, 0, &canceled);

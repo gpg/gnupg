@@ -1275,15 +1275,15 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   k->cipher_algo = cipher_algo;
   k->aead_algo = aead_algo;
   k->s2k.mode = s2kmode;
-  k->s2k.hash_algo = hash_algo;
+  k->s2k.u.s.hash_algo = hash_algo;
   if (s2kmode == 1 || s2kmode == 3)
     {
       for (i = 0; i < 8 && pktlen; i++, pktlen--)
-	k->s2k.salt[i] = iobuf_get_noeof (inp);
+	k->s2k.u.s.salt[i] = iobuf_get_noeof (inp);
     }
   if (s2kmode == 3)
     {
-      k->s2k.count = iobuf_get_noeof (inp);
+      k->s2k.u.s.count = iobuf_get_noeof (inp);
       pktlen--;
     }
   k->seskeylen = seskeylen;
@@ -1322,11 +1322,11 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       if (s2kmode == 1 || s2kmode == 3)
 	{
 	  es_fprintf (listfp, "\tsalt ");
-          es_write_hexstring (listfp, k->s2k.salt, 8, 0, NULL);
+          es_write_hexstring (listfp, k->s2k.u.s.salt, 8, 0, NULL);
 	  if (s2kmode == 3)
 	    es_fprintf (listfp, ", count %lu (%lu)",
-                        S2K_DECODE_COUNT ((ulong) k->s2k.count),
-                        (ulong) k->s2k.count);
+                        S2K_DECODE_COUNT ((ulong) k->s2k.u.s.count),
+                        (ulong) k->s2k.u.s.count);
 	  es_fprintf (listfp, "\n");
 	}
     }
@@ -2676,7 +2676,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       if (ski->algo)
 	{
 	  ski->is_protected = 1;
-	  ski->s2k.count = 0;
+	  ski->s2k.u.s.count = 0;
 	  if (ski->algo == 254 || ski->algo == 255)
 	    {
               if (pktlen < 3)
@@ -2693,7 +2693,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	       * to delete such a key.  */
 	      ski->s2k.mode = iobuf_get_noeof (inp);
 	      pktlen--;
-	      ski->s2k.hash_algo = iobuf_get_noeof (inp);
+	      ski->s2k.u.s.hash_algo = iobuf_get_noeof (inp);
 	      pktlen--;
 	      /* Check for the special GNU extension.  */
 	      if (ski->s2k.mode == 101)
@@ -2725,7 +2725,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		      err = gpg_error (GPG_ERR_INV_PACKET);
 		      goto leave;
                     }
-		  memcpy (ski->s2k.salt, temp, 8);
+		  memcpy (ski->s2k.u.s.salt, temp, 8);
 		}
 
               /* Check the mode.  */
@@ -2766,11 +2766,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		  es_fprintf (listfp, ", algo: %d,%s hash: %d",
                               ski->algo,
                               ski->sha1chk ? " SHA1 protection,"
-                              : " simple checksum,", ski->s2k.hash_algo);
+                              : " simple checksum,", ski->s2k.u.s.hash_algo);
 		  if (ski->s2k.mode == 1 || ski->s2k.mode == 3)
 		    {
 		      es_fprintf (listfp, ", salt: ");
-                      es_write_hexstring (listfp, ski->s2k.salt, 8, 0, NULL);
+                      es_write_hexstring (listfp, ski->s2k.u.s.salt, 8, 0, NULL);
 		    }
 		  es_putc ('\n', listfp);
 		}
@@ -2783,12 +2783,12 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		      err = gpg_error (GPG_ERR_INV_PACKET);
 		      goto leave;
 		    }
-		  ski->s2k.count = iobuf_get_noeof (inp);
+		  ski->s2k.u.s.count = iobuf_get_noeof (inp);
 		  pktlen--;
 		  if (list_mode)
 		    es_fprintf (listfp, "\tprotect count: %lu (%lu)\n",
-                                (ulong)S2K_DECODE_COUNT ((ulong)ski->s2k.count),
-                                (ulong) ski->s2k.count);
+                                (ulong)S2K_DECODE_COUNT ((ulong)ski->s2k.u.s.count),
+                                (ulong) ski->s2k.u.s.count);
 		}
 	      else if (ski->s2k.mode == 1002)
 		{
@@ -2813,10 +2813,10 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                  erroring on it here as otherwise there would be no
                  way to delete such a key.  */
 	      ski->s2k.mode = 0;
-	      ski->s2k.hash_algo = DIGEST_ALGO_MD5;
+	      ski->s2k.u.s.hash_algo = DIGEST_ALGO_MD5;
 	      if (list_mode)
 		es_fprintf (listfp, "\tprotect algo: %d  (hash algo: %d)\n",
-                            ski->algo, ski->s2k.hash_algo);
+                            ski->algo, ski->s2k.u.s.hash_algo);
 	    }
 
 	  /* It is really ugly that we don't know the size

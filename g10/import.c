@@ -2645,7 +2645,7 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
              dummy key.  We can't express that in an S-expression and
              thus we send dummy data for the IV.  */
           snprintf (countbuf, sizeof countbuf, "%lu",
-                    (unsigned long)ski->s2k.count);
+                    (unsigned long)ski->s2k.u.s.count);
           err = gcry_sexp_build
             (&prot, NULL,
              " (protection %s %s %b %d %s %b %s)\n",
@@ -2654,8 +2654,8 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
              ski->ivlen? (int)ski->ivlen:1,
              ski->ivlen? ski->iv: (const unsigned char*)"X",
              ski->s2k.mode,
-             openpgp_md_algo_name (ski->s2k.hash_algo),
-             (int)sizeof (ski->s2k.salt), ski->s2k.salt,
+             openpgp_md_algo_name (ski->s2k.u.s.hash_algo),
+             (int)sizeof (ski->s2k.u.s.salt), ski->s2k.u.s.salt,
              countbuf);
         }
       else

@@ -688,21 +688,21 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
                  in rfc2440 but the same scheme is used for all other
                  algorithm identifiers). */
               iobuf_put (a, 101);
-              iobuf_put (a, ski->s2k.hash_algo);
+              iobuf_put (a, ski->s2k.u.s.hash_algo);
               iobuf_write (a, "GNU", 3 );
               iobuf_put (a, ski->s2k.mode - 1000);
             }
           else
             {
               iobuf_put (a, ski->s2k.mode);
-              iobuf_put (a, ski->s2k.hash_algo);
+              iobuf_put (a, ski->s2k.u.s.hash_algo);
             }
 
           if (ski->s2k.mode == 1 || ski->s2k.mode == 3)
-            iobuf_write (a, ski->s2k.salt, 8);
+            iobuf_write (a, ski->s2k.u.s.salt, 8);
 
           if (ski->s2k.mode == 3)
-            iobuf_put (a, ski->s2k.count);
+            iobuf_put (a, ski->s2k.u.s.count);
 
           /* For our special modes 1001, 1002 we do not need an IV. */
           if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002)
@@ -850,12 +850,12 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
   if (enc->version == 5)
     iobuf_put (a, enc->aead_algo);
   iobuf_put (a, enc->s2k.mode);
-  iobuf_put (a, enc->s2k.hash_algo);
+  iobuf_put (a, enc->s2k.u.s.hash_algo);
   if (enc->s2k.mode == 1 || enc->s2k.mode == 3)
     {
-      iobuf_write (a, enc->s2k.salt, 8);
+      iobuf_write (a, enc->s2k.u.s.salt, 8);
       if (enc->s2k.mode == 3)
-        iobuf_put (a, enc->s2k.count);
+        iobuf_put (a, enc->s2k.u.s.count);
     }
   if (enc->seskeylen)
     iobuf_write (a, enc->seskey, enc->seskeylen);

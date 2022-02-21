@@ -86,14 +86,29 @@ typedef struct {
     byte value;
 } prefitem_t;
 
-/* A string-to-key specifier as defined in RFC 4880, Section 3.7.  */
-typedef struct
-{
-  int  mode;      /* Must be an integer due to the GNU modes 1001 et al.  */
+typedef struct {
   byte hash_algo;
   byte salt[8];
   /* The *coded* (i.e., the serialized version) iteration count.  */
   u32  count;
+} S2K_openpgp;
+
+typedef struct {
+  byte hash_algo;
+  byte t;
+  byte m;
+  byte p;
+  byte salt[16];
+} S2K_argon2;
+
+/* A string-to-key specifier as defined in RFC 4880, Section 3.7.  */
+typedef struct
+{
+  int mode; /* Must be an integer due to the GNU modes 1001 et al.  */
+  union {
+    S2K_openpgp s;
+    S2K_argon2  a;
+  } u;
 } STRING2KEY;
 
 /* A symmetric-key encrypted session key packet as defined in RFC

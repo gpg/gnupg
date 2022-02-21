@@ -388,10 +388,10 @@ proc_symkey_enc (CTX c, PACKET *pkt)
           s = NULL; /* Force a goto leave.  */
         }
 
-      if (openpgp_md_test_algo (enc->s2k.hash_algo))
+      if (openpgp_md_test_algo (enc->s2k.u.s.hash_algo))
         {
           log_error(_("passphrase generated with unknown digest"
-                      " algorithm %d\n"),enc->s2k.hash_algo);
+                      " algorithm %d\n"),enc->s2k.u.s.hash_algo);
           s = NULL;
         }
 
@@ -662,7 +662,7 @@ proc_encrypted (CTX c, PACKET *pkt)
                 {
                   /* If no digest is given we assume SHA-1. */
                   s2kbuf.mode = 0;
-                  s2kbuf.hash_algo = DIGEST_ALGO_SHA1;
+                  s2kbuf.u.s.hash_algo = DIGEST_ALGO_SHA1;
                   s2k = &s2kbuf;
                 }
               log_info (_("assuming %s encrypted data\n"), "IDEA");
