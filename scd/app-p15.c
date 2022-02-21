@@ -5592,7 +5592,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       goto leave;
     }
 
-  if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits > 2048)
+  if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits >= 2048)
     {
       exmode = 1;
       le_value = prkdf->keynbits / 8;
@@ -5783,7 +5783,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   exmode = le_value = 0;
   padind = 0;
-  if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits > 2048)
+  if (prkdf->keyalgo == GCRY_PK_RSA && prkdf->keynbits >= 2048)
     {
       exmode = 1;   /* Extended length w/o a limit.  */
       le_value = prkdf->keynbits / 8;
