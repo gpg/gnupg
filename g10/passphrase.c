@@ -266,6 +266,153 @@ passphrase_clear_cache (const char *cacheid)
     log_error (_("problem with the agent: %s\n"), gpg_strerror (rc));
 }
 
+#define HAVE_PTHREAD 1
+#ifdef HAVE_PTHREAD
+#include <pthread.h>
+
+#define MAX_THREADS 8
+
+struct user_defined_threads_ctx
+{
+  int oldest_thread_idx;
+  int next_thread_idx;
+  int num_threads_running;
+  pthread_attr_t attr;
+  pthread_t thread[MAX_THREADS];
+  struct job_thread_param
+  {
+    gcry_kdf_job_fn_t job;
+    void *priv;
+  } work[MAX_THREADS];
+};
+
+static void *
+job_thread (void *p)
+{
+  struct job_thread_param *param = p;
+  param->job (param->priv);
+  pthread_exit (NULL);
+}
+
+static int
+wait_all_jobs_completion (void *jobs_context)
+{
+  struct user_defined_threads_ctx *ctx = jobs_context;
+  int i, idx;
+  int ret;
+
+  for (i = 0; i < ctx->num_threads_running; i++)
+    {
+      idx = (ctx->oldest_thread_idx + i) % MAX_THREADS;
+      ret = pthread_join (ctx->thread[idx], NULL);
+      if (ret)
+	return -1;
+    }
+
+  /* reset context for next round of parallel work */
+  ctx->num_threads_running = 0;
+  ctx->oldest_thread_idx = -1;
+  ctx->next_thread_idx = 0;
+
+  return 0;
+}
+
+static int
+pthread_jobs_launch_job (void *jobs_context, gcry_kdf_job_fn_t job,
+			 void *job_priv)
+{
+  struct user_defined_threads_ctx *ctx = jobs_context;
+  int ret;
+
+  if (ctx->next_thread_idx == ctx->oldest_thread_idx)
+    {
+      /* thread limit reached, join a thread */
+      ret = pthread_join (ctx->thread[ctx->oldest_thread_idx], NULL);
+      if (ret)
+	return -1;
+      ctx->oldest_thread_idx = (ctx->oldest_thread_idx + 1) % MAX_THREADS;
+      ctx->num_threads_running--;
+    }
+
+  ctx->work[ctx->next_thread_idx].job = job;
+  ctx->work[ctx->next_thread_idx].priv = job_priv;
+  ret = pthread_create (&ctx->thread[ctx->next_thread_idx], &ctx->attr,
+			job_thread, &ctx->work[ctx->next_thread_idx]);
+  if (ret)
+    {
+      /* could not create new thread. */
+      (void)wait_all_jobs_completion (jobs_context);
+      return -1;
+    }
+
+  if (ctx->oldest_thread_idx < 0)
+    ctx->oldest_thread_idx = ctx->next_thread_idx;
+  ctx->next_thread_idx = (ctx->next_thread_idx + 1) % MAX_THREADS;
+  ctx->num_threads_running++;
+  return 0;
+}
+#endif
+
+static gpg_error_t
+gnupg_kdf_derive (int algo, int subalgo,
+                  const unsigned long *param, unsigned int paramlen,
+                  const unsigned char *pass, size_t passlen,
+                  const unsigned char *salt, size_t saltlen,
+                  const unsigned char *key, size_t keylen,
+                  const unsigned char *ad, size_t adlen,
+                  size_t outlen, unsigned char *out)
+{
+  gpg_error_t err;
+  gcry_kdf_hd_t hd;
+
+  err = gcry_kdf_open (&hd, algo, subalgo, param, paramlen,
+                       pass, passlen, salt, saltlen, key, keylen,
+                       ad, adlen);
+  if (err)
+    return err;
+
+  if (HAVE_PTHREAD)
+    {
+      struct user_defined_threads_ctx jobs_context;
+      const gcry_kdf_thread_ops_t ops =
+      {
+        &jobs_context,
+        pthread_jobs_launch_job,
+        wait_all_jobs_completion
+      };
+
+      memset (&jobs_context, 0, sizeof (struct user_defined_threads_ctx));
+      jobs_context.oldest_thread_idx = -1;
+
+      if (pthread_attr_init (&jobs_context.attr))
+	{
+          err = gpg_error_from_syserror ();
+	  gcry_kdf_close (hd);
+	  return err;
+	}
+
+      if (pthread_attr_setdetachstate (&jobs_context.attr,
+                                       PTHREAD_CREATE_JOINABLE))
+	{
+          err = gpg_error_from_syserror ();
+	  pthread_attr_destroy (&jobs_context.attr);
+	  gcry_kdf_close (hd);
+	  return err;
+	}
+
+      err = gcry_kdf_compute (hd, &ops);
+
+      pthread_attr_destroy (&jobs_context. attr);
+    }
+  else
+    err = gcry_kdf_compute (hd, NULL);
+
+  if (!err)
+    err = gcry_kdf_final (hd, outlen, out);
+
+  gcry_kdf_close (hd);
+  return err;
+}
 
 /* Return a new DEK object using the string-to-key specifier S2K.
  * Returns NULL if the user canceled the passphrase entry and if
@@ -286,7 +433,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
   DEK *dek;
   STRING2KEY help_s2k;
   int dummy_canceled;
-  char s2k_cacheidbuf[1+16+1];
+  char s2k_cacheidbuf[1+32+1];
   char *s2k_cacheid = NULL;
 
   if (!canceled)
@@ -308,19 +455,24 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
 
   /* Create a new salt or what else to be filled into the s2k for a
      new key.  */
-  if (create && (s2k->mode == 1 || s2k->mode == 3))
+  if (create)
     {
-      gcry_randomize (s2k->u.s.salt, 8, GCRY_STRONG_RANDOM);
-      if ( s2k->mode == 3 )
+      if (s2k->mode == 1 || s2k->mode == 3)
         {
-          /* We delay the encoding until it is really needed.  This is
-             if we are going to dynamically calibrate it, we need to
-             call out to gpg-agent and that should not be done during
-             option processing in main().  */
-          if (!opt.s2k_count)
-            opt.s2k_count = encode_s2k_iterations (agent_get_s2k_count ());
-          s2k->u.s.count = opt.s2k_count;
+          gcry_randomize (s2k->u.s.salt, 8, GCRY_STRONG_RANDOM);
+          if ( s2k->mode == 3 )
+            {
+              /* We delay the encoding until it is really needed.  This is
+                 if we are going to dynamically calibrate it, we need to
+                 call out to gpg-agent and that should not be done during
+                 option processing in main().  */
+              if (!opt.s2k_count)
+                opt.s2k_count = encode_s2k_iterations (agent_get_s2k_count ());
+              s2k->u.s.count = opt.s2k_count;
+            }
         }
+      else if (s2k->mode == 4)
+        gcry_randomize (s2k->u.a.salt, 16, GCRY_STRONG_RANDOM);
     }
 
   /* If we do not have a passphrase available in NEXT_PW and status
@@ -348,13 +500,23 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
     }
   else
     {
-      if (!nocache && (s2k->mode == 1 || s2k->mode == 3))
-	{
-	  memset (s2k_cacheidbuf, 0, sizeof s2k_cacheidbuf);
-	  *s2k_cacheidbuf = 'S';
-	  bin2hex (s2k->u.s.salt, 8, s2k_cacheidbuf + 1);
-	  s2k_cacheid = s2k_cacheidbuf;
-	}
+      if (!nocache)
+        {
+          if (s2k->mode == 1 || s2k->mode == 3)
+            {
+              memset (s2k_cacheidbuf, 0, sizeof s2k_cacheidbuf);
+              *s2k_cacheidbuf = 'S';
+              bin2hex (s2k->u.s.salt, 8, s2k_cacheidbuf + 1);
+              s2k_cacheid = s2k_cacheidbuf;
+            }
+          else if (s2k->mode == 4)
+            {
+              memset (s2k_cacheidbuf, 0, sizeof s2k_cacheidbuf);
+              *s2k_cacheidbuf = 'S';
+              bin2hex (s2k->u.a.salt, 16, s2k_cacheidbuf + 1);
+              s2k_cacheid = s2k_cacheidbuf;
+            }
+        }
 
       if (opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
         {
@@ -393,13 +555,31 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
       dek->keylen = openpgp_cipher_get_algo_keylen (dek->algo);
       if (!(dek->keylen > 0 && dek->keylen <= DIM(dek->key)))
         BUG ();
-      err = gcry_kdf_derive (pw, strlen (pw),
-                             s2k->mode == 3? GCRY_KDF_ITERSALTED_S2K :
-                             s2k->mode == 1? GCRY_KDF_SALTED_S2K :
-                             /* */           GCRY_KDF_SIMPLE_S2K,
-                             s2k->u.s.hash_algo, s2k->u.s.salt, 8,
-                             S2K_DECODE_COUNT(s2k->u.s.count),
-                             dek->keylen, dek->key);
+      if (s2k->mode == 4)
+        {
+          unsigned long param[4];
+          unsigned char ad[4];
+
+          param[0] = dek->keylen + 1;
+          param[1] = s2k->u.a.t;
+          param[2] = (1UL << ((s2k->u.a.m & 0x1f) - 10));
+          param[3] = s2k->u.a.p;
+          ad[0] = 0xc3;
+          ad[1] = 0x04;
+          ad[2] = dek->algo;
+          err = gnupg_kdf_derive (GCRY_KDF_ARGON2, GCRY_KDF_ARGON2ID,
+                                  param, 4, pw, strlen (pw),
+                                  s2k->u.a.salt, 16, NULL, 0, ad, 3,
+                                  dek->keylen + 1, dek->key);
+        }
+      else
+        err = gcry_kdf_derive (pw, strlen (pw),
+                               s2k->mode == 3? GCRY_KDF_ITERSALTED_S2K :
+                               s2k->mode == 1? GCRY_KDF_SALTED_S2K :
+                               /* */           GCRY_KDF_SIMPLE_S2K,
+                               s2k->u.s.hash_algo, s2k->u.s.salt, 8,
+                               S2K_DECODE_COUNT(s2k->u.s.count),
+                               dek->keylen, dek->key);
       if (err)
         {
           log_error ("gcry_kdf_derive failed: %s", gpg_strerror (err));

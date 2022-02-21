@@ -388,7 +388,7 @@ proc_symkey_enc (CTX c, PACKET *pkt)
           s = NULL; /* Force a goto leave.  */
         }
 
-      if (openpgp_md_test_algo (enc->s2k.u.s.hash_algo))
+      if (enc->s2k.mode != 4 && openpgp_md_test_algo (enc->s2k.u.s.hash_algo))
         {
           log_error(_("passphrase generated with unknown digest"
                       " algorithm %d\n"),enc->s2k.u.s.hash_algo);

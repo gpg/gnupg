@@ -45,7 +45,7 @@ typedef struct
   byte key[32];
 
   /* The cacheid for the S2K. */
-  char s2k_cacheid[1+16+1];
+  char s2k_cacheid[1+32+1];
 } DEK;
 
 

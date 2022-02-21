@@ -1287,10 +1287,12 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       for (i = 0; i < 16 && pktlen; i++, pktlen--)
 	k->s2k.u.a.salt[i] = iobuf_get_noeof (inp);
-      k->s2k.u.a.t = iobuf_get_noeof (inp);;
-      k->s2k.u.a.m = iobuf_get_noeof (inp);;
-      k->s2k.u.a.p = iobuf_get_noeof (inp);;
-      pktlen -=3;
+      k->s2k.u.a.t = iobuf_get_noeof (inp);
+      pktlen--;
+      k->s2k.u.a.p = iobuf_get_noeof (inp);
+      pktlen--;
+      k->s2k.u.a.m = iobuf_get_noeof (inp);
+      pktlen--;
     }
   else
     k->s2k.u.s.hash_algo = hash_algo;

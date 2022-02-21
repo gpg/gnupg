@@ -94,7 +94,6 @@ typedef struct {
 } S2K_openpgp;
 
 typedef struct {
-  byte hash_algo;
   byte t;
   byte m;
   byte p;
