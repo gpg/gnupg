@@ -561,7 +561,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
 
           param[0] = dek->keylen;
           param[1] = s2k->u.a.t;
-          param[2] = (1UL << ((s2k->u.a.m & 0x1f) - 10));
+          param[2] = (1UL << (s2k->u.a.m & 0x1f));
           param[3] = s2k->u.a.p;
           err = gnupg_kdf_derive (GCRY_KDF_ARGON2, GCRY_KDF_ARGON2ID,
                                   param, 4, pw, strlen (pw),
