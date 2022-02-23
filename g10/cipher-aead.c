@@ -362,7 +362,7 @@ do_free (cipher_filter_context_t *cfx, iobuf_t a)
   if (DBG_FILTER)
     log_debug ("do_free: buflen=%zu\n", cfx->buflen);
 
-  if (cfx->chunklen)
+  if (cfx->chunklen || cfx->buflen)
     {
       if (DBG_FILTER)
         log_debug ("encrypting last %zu bytes of the last chunk\n",cfx->buflen);
