@@ -1660,8 +1660,9 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
   {
     PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc );
 
-    enc->version = 4;
+    enc->version = cfx.dek->use_aead ? 5 : 4;
     enc->cipher_algo = cfx.dek->algo;
+    enc->aead_algo = cfx.dek->use_aead;
     enc->s2k = *s2k;
     pkt.pkttype = PKT_SYMKEY_ENC;
     pkt.pkt.symkey_enc = enc;
