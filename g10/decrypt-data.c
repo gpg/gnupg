@@ -78,6 +78,9 @@ struct decode_filter_context_s
   /* The AEAD algo.  */
   byte aead_algo;
 
+  /* The Packet Type.  */
+  byte pkttype;
+
   /* The encoded chunk byte for AEAD.  */
   byte chunkbyte;
 
@@ -161,33 +164,40 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
   if (err)
     return err;
 
-  ad[0] = (0xc0 | PKT_ENCRYPTED_AEAD);
-  ad[1] = 1;
+  ad[0] = (0xc0 | dfx->pkttype);
+  ad[1] = dfx->pkttype == PKT_ENCRYPTED_AEAD? 1 : 2;
   ad[2] = dfx->cipher_algo;
   ad[3] = dfx->aead_algo;
   ad[4] = dfx->chunkbyte;
-  ad[5] = dfx->chunkindex >> 56;
-  ad[6] = dfx->chunkindex >> 48;
-  ad[7] = dfx->chunkindex >> 40;
-  ad[8] = dfx->chunkindex >> 32;
-  ad[9] = dfx->chunkindex >> 24;
-  ad[10]= dfx->chunkindex >> 16;
-  ad[11]= dfx->chunkindex >>  8;
-  ad[12]= dfx->chunkindex;
+  if (dfx->pkttype == PKT_ENCRYPTED_AEAD)
+    {
+      ad[5] = dfx->chunkindex >> 56;
+      ad[6] = dfx->chunkindex >> 48;
+      ad[7] = dfx->chunkindex >> 40;
+      ad[8] = dfx->chunkindex >> 32;
+      ad[9] = dfx->chunkindex >> 24;
+      ad[10]= dfx->chunkindex >> 16;
+      ad[11]= dfx->chunkindex >>  8;
+      ad[12]= dfx->chunkindex;
+      i = 13;
+    }
+  else
+    i = 5;
   if (final)
     {
-      ad[13] = dfx->total >> 56;
-      ad[14] = dfx->total >> 48;
-      ad[15] = dfx->total >> 40;
-      ad[16] = dfx->total >> 32;
-      ad[17] = dfx->total >> 24;
-      ad[18] = dfx->total >> 16;
-      ad[19] = dfx->total >>  8;
-      ad[20] = dfx->total;
+      ad[i++] = dfx->total >> 56;
+      ad[i++] = dfx->total >> 48;
+      ad[i++] = dfx->total >> 40;
+      ad[i++] = dfx->total >> 32;
+      ad[i++] = dfx->total >> 24;
+      ad[i++] = dfx->total >> 16;
+      ad[i++] = dfx->total >>  8;
+      ad[i++] = dfx->total;
     }
+
   if (DBG_CRYPTO)
     log_printhex (ad, final? 21 : 13, "authdata:");
-  return gcry_cipher_authenticate (dfx->cipher_hd, ad, final? 21 : 13);
+  return gcry_cipher_authenticate (dfx->cipher_hd, ad, i);
 }
 
 
@@ -212,6 +222,84 @@ aead_checktag (decode_filter_ctx_t dfx, int final, const void *tagbuf)
   return 0;
 }
 
+
+/* HKDF Extract and expand. */
+static gpg_error_t
+hkdf_derive (const byte *salt, int saltlen, const byte *key, int keylen,
+             const byte *info, int infolen, int outlen, byte *out)
+{
+  int algo = GCRY_MD_SHA256;
+  gcry_md_hd_t hd;
+  unsigned char *t;
+  unsigned char *p;
+  int mdlen;
+  gpg_error_t err = 0;
+  int off = 0;
+  unsigned char n = 0;
+
+  mdlen = gcry_md_get_algo_dlen (algo);
+  if (salt && saltlen != mdlen)
+    return gpg_error (GPG_ERR_INV_LENGTH);
+
+  t = xtrymalloc (mdlen);
+  if (!t)
+    return gpg_error_from_syserror ();
+
+  err = gcry_md_open (&hd, algo, GCRY_MD_FLAG_HMAC);
+  if (err)
+    return err;
+
+  if (salt)
+    {
+      err = gcry_md_setkey (hd, salt, mdlen);
+      if (err)
+        {
+          xfree (t);
+          gcry_md_close (hd);
+          return err;
+        }
+    }
+
+  if (keylen)
+    gcry_md_write (hd, key, keylen);
+
+  p = gcry_md_read (hd, 0);
+  memcpy (t, p, mdlen);
+
+  gcry_md_reset (hd);
+  err = gcry_md_setkey (hd, t, mdlen);
+  if (err)
+    {
+      xfree (t);
+      gcry_md_close (hd);
+      return err;
+    }
+
+  while (1)
+    {
+      n++;
+      gcry_md_write (hd, info, infolen);
+      gcry_md_write (hd, &n, 1);
+      p = gcry_md_read (hd, 0);
+      memcpy (t, p, mdlen);
+      if ((outlen - off) / mdlen)
+        {
+          memcpy (out + off, t, mdlen);
+          off += mdlen;
+        }
+      else
+        {
+          memcpy (out + off, t, (outlen - off));
+          break;
+        }
+      gcry_md_reset (hd);
+      gcry_md_write (hd, t, mdlen);
+    }
+
+  xfree (t);
+  gcry_md_close (hd);
+  return 0;
+}
 
 /****************
  * Decrypt the data, specified by ED with the key DEK.
@@ -295,8 +383,10 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   if ( !blocksize || blocksize > 16 )
     log_fatal ("unsupported blocksize %u\n", blocksize );
 
-  if (ed->aead_algo)
+  if (ed->aead_algo && ed->mdc_method == 0)
     {
+      dfx->pkttype = PKT_ENCRYPTED_AEAD;
+
       if (blocksize != 16)
         {
           rc = gpg_error (GPG_ERR_CIPHER_ALGO);
@@ -374,6 +464,107 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
           goto leave;
         }
 
+    }
+  else if (ed->aead_algo && ed->mdc_method)
+    {  /* SEIPDv2 */
+      unsigned char info[5];
+      int keylen;
+      int outlen;
+      unsigned char *out = NULL;
+
+      dfx->pkttype = PKT_ENCRYPTED_MDC;
+
+      info[0] = (0xc0 | dfx->pkttype);
+      info[1] = 0x02;
+      info[2] = ed->cipher_algo;
+      info[3] = ed->aead_algo;
+      info[4] = ed->chunkbyte;
+
+      if (blocksize != 16)
+        {
+          rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+          goto leave;
+        }
+
+      if (ed->chunkbyte > 16)
+        {
+          log_error ("invalid AEAD chunkbyte %u\n", ed->chunkbyte);
+          rc = gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
+        }
+
+      /* Read the salt. */
+      for (i=0; i < 32 && ed->len; i++, ed->len--)
+        if ((c=iobuf_get (ed->buf)) == -1)
+          break;
+        else
+          temp[i] = c;
+      if (i != 32)
+        {
+          log_error ("Salt in SEIPDv2 packet too short (%d/%u)\n",
+                     i, 32);
+          rc = gpg_error (GPG_ERR_TOO_SHORT);
+          goto leave;
+        }
+
+      keylen = openpgp_cipher_get_algo_keylen (ed->cipher_algo);
+      outlen = startivlen - 8 + keylen;
+      out = xtrymalloc (outlen);
+      if (!out)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      if (DBG_CRYPTO)
+        log_printhex (dek->key, dek->keylen, "the session key:");
+
+      hkdf_derive (temp, 32, dek->key, dek->keylen,
+                   info, sizeof (info), outlen, out);
+
+      dfx->cipher_algo = ed->cipher_algo;
+      dfx->aead_algo = ed->aead_algo;
+      dfx->chunkbyte = ed->chunkbyte;
+      dfx->chunksize = (uint64_t)1 << (dfx->chunkbyte + 6);
+      memcpy (dfx->startiv, out+keylen, startivlen-8);
+      memset (dfx->startiv+startivlen-8, 0, 8);
+
+      if (dek->algo != dfx->cipher_algo)
+        log_info ("Note: different cipher algorithms used (%s/%s)\n",
+                  openpgp_cipher_algo_name (dek->algo),
+                  openpgp_cipher_algo_name (dfx->cipher_algo));
+
+      rc = openpgp_cipher_open (&dfx->cipher_hd,
+                                dfx->cipher_algo,
+                                ciphermode,
+                                GCRY_CIPHER_SECURE);
+      if (rc)
+        {
+          xfree (out);
+          goto leave; /* Should never happen.  */
+        }
+
+      if (DBG_CRYPTO)
+        log_printhex (out, keylen, "thekey:");
+      rc = gcry_cipher_setkey (dfx->cipher_hd, out, keylen);
+      xfree (out);
+      if (gpg_err_code (rc) == GPG_ERR_WEAK_KEY)
+        {
+          log_info (_("WARNING: message was encrypted with"
+                      " a weak key in the symmetric cipher.\n"));
+          rc = 0;
+        }
+      else if (rc)
+        {
+          log_error("key setup failed: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
+
+      if (!ed->buf)
+        {
+          log_error(_("problem handling encrypted packet\n"));
+          goto leave;
+        }
     }
   else /* CFB encryption.  */
     {
@@ -509,7 +700,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   ed->buf = NULL;
   if (dfx->eof_seen > 1 )
     rc = gpg_error (GPG_ERR_INV_PACKET);
-  else if ( ed->mdc_method )
+  else if ( ed->mdc_method && ed->aead_algo == 0 )
     {
       /* We used to let parse-packet.c handle the MDC packet but this
          turned out to be a problem with compressed packets: With old

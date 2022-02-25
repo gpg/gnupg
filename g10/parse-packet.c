@@ -3525,7 +3525,22 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
       version = iobuf_get_noeof (inp);
       if (orig_pktlen)
 	pktlen--;
-      if (version != 1)
+      if (version == 1)
+	ed->mdc_method = DIGEST_ALGO_SHA1;
+      else if (version == 2)
+	{
+	  ed->mdc_method = 0xff; /* SEIPDv2 */
+	  ed->cipher_algo = iobuf_get_noeof (inp);
+	  if (orig_pktlen)
+	    pktlen--;
+	  ed->aead_algo = iobuf_get_noeof (inp);
+	  if (orig_pktlen)
+	    pktlen--;
+	  ed->chunkbyte = iobuf_get_noeof (inp);
+	  if (orig_pktlen)
+	    pktlen--;
+	}
+      else
 	{
 	  log_error ("encrypted_mdc packet with unknown version %d\n",
 		     version);
@@ -3535,7 +3550,6 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
 	  rc = gpg_error (GPG_ERR_INV_PACKET);
 	  goto leave;
 	}
-      ed->mdc_method = DIGEST_ALGO_SHA1;
     }
   else
     ed->mdc_method = 0;
