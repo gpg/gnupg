@@ -2544,7 +2544,7 @@ proc_tree (CTX c, kbnode_t node)
 	    }
           else
             {
-              rc = ask_for_detached_datafile (c->mfx.md, c->mfx.md2,
+              rc = ask_for_detached_datafile (c->mfx.md, NULL,
                                               iobuf_get_real_fname (c->iobuf),
                                               use_textmode);
 	    }
