@@ -406,32 +406,112 @@ validate_responder_cert (ctrl_t ctrl, ksba_cert_t cert,
 }
 
 
-/* Helper for check_signature. */
-static int
+/* Helper for check_signature.  MD is the finalized hash context.  */
+static gpg_error_t
 check_signature_core (ctrl_t ctrl, ksba_cert_t cert, gcry_sexp_t s_sig,
-                      gcry_sexp_t s_hash, fingerprint_list_t signer_fpr_list)
+                      gcry_md_hd_t md, fingerprint_list_t signer_fpr_list)
 {
   gpg_error_t err;
-  ksba_sexp_t pubkey;
   gcry_sexp_t s_pkey = NULL;
+  gcry_sexp_t s_hash = NULL;
+  const char *s;
+  int mdalgo, mdlen;
 
-  pubkey = ksba_cert_get_public_key (cert);
-  if (!pubkey)
-    err = gpg_error (GPG_ERR_INV_OBJ);
-  else
-    err = canon_sexp_to_gcry (pubkey, &s_pkey);
-  xfree (pubkey);
-  if (!err)
-    err = gcry_pk_verify (s_sig, s_hash, s_pkey);
-  if (!err)
-    err = validate_responder_cert (ctrl, cert, signer_fpr_list);
-  if (!err)
+  /* Get the public key as a gcrypt s-expression.  */
+  {
+    ksba_sexp_t pk = ksba_cert_get_public_key (cert);
+    if (!pk)
+      err = gpg_error (GPG_ERR_INV_OBJ);
+    else
+      {
+        err = canon_sexp_to_gcry (pk, &s_pkey);
+        xfree (pk);
+      }
+    if (err)
+      goto leave;
+  }
+
+  mdalgo = gcry_md_get_algo (md);
+  mdlen  = gcry_md_get_algo_dlen (mdalgo);
+
+  if (pk_algo_from_sexp (s_pkey) == GCRY_PK_ECC)
     {
-      gcry_sexp_release (s_pkey);
-      return 0; /* Successfully verified the signature. */
+      unsigned int qbits0, qbits;
+
+      qbits0 = gcry_pk_get_nbits (s_pkey);
+      qbits = qbits0 == 521? 512 : qbits0;
+
+      if ((qbits%8))
+	{
+	  log_error ("ECDSA requires the hash length to be a"
+                     " multiple of 8 bits\n");
+	  err = gpg_error (GPG_ERR_INTERNAL);
+          goto leave;
+	}
+
+      /* Don't allow any Q smaller than 160 bits.  */
+      if (qbits < 160)
+	{
+	  log_error (_("%s key uses an unsafe (%u bit) hash\n"),
+                     "ECDSA", qbits0);
+	  err = gpg_error (GPG_ERR_INTERNAL);
+          goto leave;
+	}
+
+      /* Check if we're too short.  */
+      if (mdlen < qbits/8)
+        {
+	  log_error (_("a %u bit hash is not valid for a %u bit %s key\n"),
+                     (unsigned int)mdlen*8,
+                     qbits0,
+                     "ECDSA");
+          if (mdlen < 20)
+            {
+              err = gpg_error (GPG_ERR_INTERNAL);
+              goto leave;
+            }
+        }
+
+      /* Truncate.  */
+      if (mdlen > qbits/8)
+        mdlen = qbits/8;
+
+      err = gcry_sexp_build (&s_hash, NULL, "(data(flags raw)(value %b))",
+                             (int)mdlen, gcry_md_read (md, mdalgo));
+    }
+  else if (mdalgo && (s = gcry_md_algo_name (mdalgo)) && strlen (s) < 16)
+    {
+      /* Assume RSA */
+      char hashalgostr[16+1];
+      int i;
+
+      for (i=0; s[i]; i++)
+        hashalgostr[i] = ascii_tolower (s[i]);
+      hashalgostr[i] = 0;
+      err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
+                             hashalgostr,
+                             (int)mdlen,
+                             gcry_md_read (md, mdalgo));
+    }
+  else
+    err = gpg_error (GPG_ERR_DIGEST_ALGO);
+  if (err)
+    {
+      log_error (_("creating S-expression failed: %s\n"), gcry_strerror (err));
+      goto leave;
     }
 
-  /* We simply ignore all errors. */
+  gcry_log_debugsxp ("sig ", s_sig);
+  gcry_log_debugsxp ("hash", s_hash);
+
+  err = gcry_pk_verify (s_sig, s_hash, s_pkey);
+  if (err)
+    goto leave;
+
+  err = validate_responder_cert (ctrl, cert, signer_fpr_list);
+
+ leave:
+  gcry_sexp_release (s_hash);
   gcry_sexp_release (s_pkey);
   return err;
 }
@@ -449,35 +529,11 @@ check_signature (ctrl_t ctrl,
                  fingerprint_list_t signer_fpr_list)
 {
   gpg_error_t err;
-  int algo, cert_idx;
-  gcry_sexp_t s_hash = NULL;
+  int cert_idx;
   ksba_cert_t cert;
-  const char *s;
 
   /* Create a suitable S-expression with the hash value of our response. */
   gcry_md_final (md);
-  algo = gcry_md_get_algo (md);
-  s = gcry_md_algo_name (algo);
-  if (algo && s && strlen (s) < 16)
-    {
-      char hashalgostr[16+1];
-      int i;
-
-      for (i=0; s[i]; i++)
-        hashalgostr[i] = ascii_tolower (s[i]);
-      hashalgostr[i] = 0;
-      err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
-                             hashalgostr,
-                             (int)gcry_md_get_algo_dlen (algo),
-                             gcry_md_read (md, algo));
-    }
-  else
-    err = gpg_error (GPG_ERR_DIGEST_ALGO);
-  if (err)
-    {
-      log_error (_("creating S-expression failed: %s\n"), gcry_strerror (err));
-      return err;
-    }
 
   /* Get rid of old OCSP specific certificate references. */
   release_ctrl_ocsp_certs (ctrl);
@@ -492,13 +548,12 @@ check_signature (ctrl_t ctrl,
         cert = get_cert_local (ctrl, signer_fpr_list->hexfpr);
       if (cert)
         {
-          err = check_signature_core (ctrl, cert, s_sig, s_hash,
+          err = check_signature_core (ctrl, cert, s_sig, md,
                                       signer_fpr_list);
           ksba_cert_release (cert);
           cert = NULL;
           if (!err)
             {
-              gcry_sexp_release (s_hash);
               return 0; /* Successfully verified the signature. */
             }
         }
@@ -534,7 +589,6 @@ check_signature (ctrl_t ctrl,
       err = ksba_ocsp_get_responder_id (ocsp, &name, &keyid);
       if (err)
         {
-          gcry_sexp_release (s_hash);
           log_error (_("error getting responder ID: %s\n"),
                      gcry_strerror (err));
           return err;
@@ -556,14 +610,12 @@ check_signature (ctrl_t ctrl,
 
       if (cert)
         {
-          err = check_signature_core (ctrl, cert, s_sig, s_hash,
-                                      signer_fpr_list);
+          err = check_signature_core (ctrl, cert, s_sig, md, signer_fpr_list);
           ksba_cert_release (cert);
           if (!err)
             {
               ksba_free (name);
               ksba_free (keyid);
-              gcry_sexp_release (s_hash);
               return 0; /* Successfully verified the signature. */
             }
           log_error ("responder certificate ");
@@ -581,7 +633,6 @@ check_signature (ctrl_t ctrl,
       ksba_free (keyid);
     }
 
-  gcry_sexp_release (s_hash);
   log_error (_("no suitable certificate found to verify the OCSP response\n"));
   return gpg_error (GPG_ERR_NO_PUBKEY);
 }

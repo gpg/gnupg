@@ -48,6 +48,9 @@
 #define VALIDATE_FLAG_NOCRLCHECK  1024
 
 
+/* Helper to get the public key algo from a public key.  */
+int pk_algo_from_sexp (gcry_sexp_t pkey);
+
 /* Validate the certificate CHAIN up to the trust anchor. Optionally
    return the closest expiration time in R_EXPTIME. */
 gpg_error_t validate_cert_chain (ctrl_t ctrl,

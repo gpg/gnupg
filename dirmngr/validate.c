@@ -858,7 +858,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 /* Return the public key algorithm id from the S-expression PKEY.
    FIXME: libgcrypt should provide such a function.  Note that this
    implementation uses the names as used by libksba.  */
-static int
+int
 pk_algo_from_sexp (gcry_sexp_t pkey)
 {
   gcry_sexp_t l1, l2;
@@ -879,6 +879,8 @@ pk_algo_from_sexp (gcry_sexp_t pkey)
     algo = GCRY_PK_RSA;
   else if (n==3 && !memcmp (name, "dsa", 3))
     algo = GCRY_PK_DSA;
+  else if (n==3 && !memcmp (name, "ecc", 3))
+    algo = GCRY_PK_ECC;
   else if (n==13 && !memcmp (name, "ambiguous-rsa", 13))
     algo = GCRY_PK_RSA;
   else

@@ -1670,6 +1670,8 @@ Description of some debug flags:
   - RFC-5280 :: X.509 PKI Certificate and CRL Profile
   - RFC-5652 :: CMS (STD0070)
   - RFC-6818 :: Updates to the X.509 PKI Certificate and CRL Profile
+  - RFC-6960 :: Online Certificate Status Protocol - OCSP
+  - RFC-8954 :: Online Certificate Status Protocol (OCSP) Nonce Extension
   - RFC-8398 :: Internationalized Email Addresses in X.509 Certificates.
   - RFC-8399 :: Internationalization Updates to RFC 5280
   - RFC-5480 :: ECC Subject Public Key Information
