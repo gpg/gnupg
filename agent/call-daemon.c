@@ -113,7 +113,7 @@ wait_child_thread (void *arg)
 #ifndef HAVE_W32_SYSTEM
   int wstatus;
 #endif
-  const char *name = gnupg_module_name (daemon_modules[type]);
+  const char *name = opt.daemon_program[type];
   struct daemon_global_s *g = &daemon_global[type];
   struct daemon_local_s *sl;
 
@@ -384,6 +384,7 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
 #endif
     }
 
+  /* If the daemon program has not been specified switch to the standard.  */
   if (!opt.daemon_program[type] || !*opt.daemon_program[type])
     opt.daemon_program[type] = gnupg_module_name (daemon_modules[type]);
 
