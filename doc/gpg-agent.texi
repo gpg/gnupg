@@ -792,6 +792,12 @@ CRL checking for the root certificate.
 If validation of a certificate finally issued by a CA with this flag set
 fails, try again using the chain validation model.
 
+@item qual
+The CA is allowed to issue certificates for qualified signatures.
+This flag has an effect only if used in the global list.  This is now
+the preferred way to mark such CA; the old way of having a separate
+file @file{qualified.txt} is still supported.
+
 @end table
 
 

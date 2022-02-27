@@ -44,6 +44,7 @@ struct trustitem_s
     int relax:1;          /* Relax checking of root certificate
                              constraints. */
     int cm:1;             /* Use chain model for validation. */
+    int qual:1;           /* Root CA for qualified signatures.  */
   } flags;
   unsigned char fpr[20];  /* The binary fingerprint. */
 };
@@ -128,7 +129,7 @@ clear_trusttable (void)
 
 
 static gpg_error_t
-read_one_trustfile (const char *fname, int allow_include,
+read_one_trustfile (const char *fname, int systrust,
                     trustitem_t **addr_of_table,
                     size_t *addr_of_tablesize,
                     int *addr_of_tableidx)
@@ -187,7 +188,7 @@ read_one_trustfile (const char *fname, int allow_include,
           gpg_error_t err2;
           gpg_err_code_t ec;
 
-          if (!allow_include)
+          if (systrust)
             {
               log_error (_("statement \"%s\" ignored in '%s', line %d\n"),
                          "include-default", fname, lnr);
@@ -207,7 +208,7 @@ read_one_trustfile (const char *fname, int allow_include,
             }
           else
             {
-              err2 = read_one_trustfile (etcname, 0,
+              err2 = read_one_trustfile (etcname, 1,
                                          &table, &tablesize, &tableidx);
               if (err2)
                 err = err2;
@@ -303,6 +304,8 @@ read_one_trustfile (const char *fname, int allow_include,
             ti->flags.relax = 1;
           else if (n == 2 && !memcmp (p, "cm", 2))
             ti->flags.cm = 1;
+          else if (n == 4 && !memcmp (p, "qual", 4) && systrust)
+            ti->flags.qual = 1;
           else
             log_error ("flag '%.*s' in '%s', line %d ignored\n",
                        n, p, fname, lnr);
@@ -336,7 +339,7 @@ read_trustfiles (void)
   int tableidx;
   size_t tablesize;
   char *fname;
-  int allow_include = 1;
+  int systrust = 0;
   gpg_err_code_t ec;
 
   tablesize = 20;
@@ -364,10 +367,9 @@ read_trustfiles (void)
         }
       xfree (fname);
       fname = make_filename (gnupg_sysconfdir (), "trustlist.txt", NULL);
-      allow_include = 0;
+      systrust = 1;
     }
-  err = read_one_trustfile (fname, allow_include,
-                            &table, &tablesize, &tableidx);
+  err = read_one_trustfile (fname, systrust, &table, &tablesize, &tableidx);
   xfree (fname);
 
   if (err)
@@ -449,17 +451,17 @@ istrusted_internal (ctrl_t ctrl, const char *fpr, int *r_disabled,
                in a locked state.  */
             if (already_locked)
               ;
-            else if (ti->flags.relax)
+            else if (ti->flags.relax || ti->flags.cm || ti->flags.qual)
               {
                 unlock_trusttable ();
                 locked = 0;
-                err = agent_write_status (ctrl, "TRUSTLISTFLAG", "relax", NULL);
-              }
-            else if (ti->flags.cm)
-              {
-                unlock_trusttable ();
-                locked = 0;
-                err = agent_write_status (ctrl, "TRUSTLISTFLAG", "cm", NULL);
+                err = 0;
+                if (ti->flags.relax)
+                  err = agent_write_status (ctrl,"TRUSTLISTFLAG", "relax",NULL);
+                if (!err && ti->flags.cm)
+                  err = agent_write_status (ctrl,"TRUSTLISTFLAG", "cm", NULL);
+                if (!err && ti->flags.qual)
+                  err = agent_write_status (ctrl,"TRUSTLISTFLAG", "qual",NULL);
               }
 
             if (!err)

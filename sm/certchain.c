@@ -1715,8 +1715,12 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
               else
                 {
                   /* Need to consult the list of root certificates for
-                     qualified signatures. */
-                  err = gpgsm_is_in_qualified_list (ctrl, subject_cert, NULL);
+                     qualified signatures.  But first we check the
+                     modern way by looking at the root ca flag.  */
+                  if (rootca_flags->qualified)
+                    err = 0;
+                  else
+                    err = gpgsm_is_in_qualified_list (ctrl, subject_cert, NULL);
                   if (!err)
                     is_qualified = 1;
                   else if ( gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -2113,7 +2117,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
    do_validate_chain.  This function is a wrapper to handle a root
    certificate with the chain_model flag set.  If RETFLAGS is not
    NULL, flags indicating now the verification was done are stored
-   there.  The only defined vits for RETFLAGS are
+   there.  The only defined bits for RETFLAGS are
    VALIDATE_FLAG_CHAIN_MODEL and VALIDATE_FLAG_STEED.
 
    If you are verifying a signature you should set CHECKTIME to the
