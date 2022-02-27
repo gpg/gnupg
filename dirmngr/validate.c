@@ -231,7 +231,8 @@ allowed_ca (ksba_cert_t cert, int *chainlen)
           /* The German SigG Root CA's certificate does not flag
              itself as a CA; thus we relax this requirement if we
              trust a root CA.  I think this is reasonable.  Note, that
-             gpgsm implements a far stricter scheme here. */
+             gpgsm implements a far stricter scheme here but also
+             features a "relax" flag in the trustlist.txt. */
           if (chainlen)
             *chainlen = 3; /* That is what the SigG implements. */
           if (opt.verbose)
@@ -954,7 +955,7 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   int digestlen;
   unsigned char *digest;
   int use_pss = 0;
-  unsigned int saltlen;
+  unsigned int saltlen;  /* (use is controlled by use_pss) */
 
   /* Hash the target certificate using the algorithm from that certificate.  */
   algoid = ksba_cert_get_digest_algo (cert);
@@ -1108,19 +1109,48 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
                              digest,
                              saltlen);
     }
-  else if (pk_algo_from_sexp (s_pkey) == GCRY_PK_DSA)
+  else if (pk_algo_from_sexp (s_pkey) == GCRY_PK_ECC)
     {
-      /* NB.: We support only SHA-1 here because we had problems back
-       * then to get test data for DSA-2.  Meanwhile DSA has been
-       * replaced by ECDSA which we do not yet support.  */
-      if (digestlen != 20)
+      unsigned int qbits0, qbits;
+
+      qbits0 = gcry_pk_get_nbits (s_pkey);
+      qbits = qbits0 == 521? 512 : qbits0;
+
+      if ((qbits%8))
+	{
+	  log_error ("ECDSA requires the hash length to be a"
+                     " multiple of 8 bits\n");
+	  err = gpg_error (GPG_ERR_INTERNAL);
+          goto leave;
+	}
+
+      /* Don't allow any Q smaller than 160 bits.  */
+      if (qbits < 160)
+	{
+	  log_error (_("%s key uses an unsafe (%u bit) hash\n"),
+                     "ECDSA", qbits0);
+	  err = gpg_error (GPG_ERR_INTERNAL);
+          goto leave;
+	}
+
+      /* Check if we're too short.  */
+      if (digestlen < qbits/8)
         {
-          log_error ("DSA requires the use of a 160 bit hash algorithm\n");
-          gcry_md_close (md);
-          gcry_sexp_release (s_sig);
-          gcry_sexp_release (s_pkey);
-          return gpg_error (GPG_ERR_INTERNAL);
+	  log_error (_("a %u bit hash is not valid for a %u bit %s key\n"),
+                     (unsigned int)digestlen*8,
+                     qbits0,
+                     "ECDSA");
+          if (digestlen < 20)
+            {
+              err = gpg_error (GPG_ERR_INTERNAL);
+              goto leave;
+            }
         }
+
+      /* Truncate.  */
+      if (digestlen > qbits/8)
+        digestlen = qbits/8;
+
       err = gcry_sexp_build (&s_hash, NULL, "(data(flags raw)(value %b))",
                              (int)digestlen, digest);
     }
@@ -1134,6 +1164,8 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
     err = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_X509)
     log_debug ("gcry_pk_verify: %s\n", gpg_strerror (err));
+
+ leave:
   gcry_md_close (md);
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);

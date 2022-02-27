@@ -1660,6 +1660,7 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
   size_t n;
   gcry_sexp_t s_sig = NULL, s_hash = NULL, s_pkey = NULL;
   unsigned int saltlen = 0;  /* (used only with use_pss)  */
+  int pkalgo;
 
   /* This also stops debugging on the MD.  */
   gcry_md_final (md);
@@ -1786,6 +1787,53 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
                              (int)gcry_md_get_algo_dlen (algo),
                              gcry_md_read (md, algo),
                              saltlen);
+    }
+  else if ((pkalgo = pk_algo_from_sexp (s_pkey)) == GCRY_PK_ECC)
+    {
+      unsigned int qbits0, qbits;
+
+      qbits0 = gcry_pk_get_nbits (s_pkey);
+      qbits = qbits0 == 521? 512 : qbits0;
+
+      if ((qbits%8))
+	{
+	  log_error ("ECDSA requires the hash length to be a"
+                     " multiple of 8 bits\n");
+	  err = gpg_error (GPG_ERR_INTERNAL);
+          goto leave;
+	}
+
+      /* Don't allow any Q smaller than 160 bits.  */
+      if (qbits < 160)
+	{
+	  log_error (_("%s key uses an unsafe (%u bit) hash\n"),
+                     gcry_pk_algo_name (pkalgo), qbits0);
+	  err = gpg_error (GPG_ERR_INTERNAL);
+          goto leave;
+	}
+
+      /* Check if we're too short.  */
+      n = gcry_md_get_algo_dlen (algo);
+      if (n < qbits/8)
+        {
+	  log_error (_("a %u bit hash is not valid for a %u bit %s key\n"),
+                     (unsigned int)n*8,
+                     qbits0,
+                     gcry_pk_algo_name (pkalgo));
+          if (n < 20)
+            {
+              err = gpg_error (GPG_ERR_INTERNAL);
+              goto leave;
+            }
+        }
+
+      /* Truncate.  */
+      if (n > qbits/8)
+        n = qbits/8;
+
+      err = gcry_sexp_build (&s_hash, NULL, "%b",
+                             (int)n,
+                             gcry_md_read (md, algo));
     }
   else
     {
