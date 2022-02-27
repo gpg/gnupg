@@ -872,6 +872,8 @@ istrusted_status_cb (void *opaque, const char *line)
         flags->relax = 1;
       else if (has_leading_keyword (line, "cm"))
         flags->chain_model = 1;
+      else if (has_leading_keyword (line, "qual"))
+        flags->qualified = 1;
     }
   return 0;
 }

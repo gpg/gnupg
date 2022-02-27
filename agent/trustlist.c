@@ -45,6 +45,7 @@ struct trustitem_s
     int relax:1;          /* Relax checking of root certificate
                              constraints. */
     int cm:1;             /* Use chain model for validation. */
+    int qual:1;           /* Root CA for qualified signatures.  */
   } flags;
   unsigned char fpr[20];  /* The binary fingerprint. */
 };
@@ -322,6 +323,8 @@ read_one_trustfile (const char *fname, int systrust,
             ti->flags.relax = 1;
           else if (n == 2 && !memcmp (p, "cm", 2))
             ti->flags.cm = 1;
+          else if (n == 4 && !memcmp (p, "qual", 4) && systrust)
+            ti->flags.qual = 1;
           else
             log_error ("flag '%.*s' in '%s', line %d ignored\n",
                        n, p, fname, lnr);
@@ -474,17 +477,17 @@ istrusted_internal (ctrl_t ctrl, const char *fpr, int *r_disabled,
                in a locked state.  */
             if (already_locked)
               ;
-            else if (ti->flags.relax)
+            else if (ti->flags.relax || ti->flags.cm || ti->flags.qual)
               {
                 unlock_trusttable ();
                 locked = 0;
-                err = agent_write_status (ctrl, "TRUSTLISTFLAG", "relax", NULL);
-              }
-            else if (ti->flags.cm)
-              {
-                unlock_trusttable ();
-                locked = 0;
-                err = agent_write_status (ctrl, "TRUSTLISTFLAG", "cm", NULL);
+                err = 0;
+                if (ti->flags.relax)
+                  err = agent_write_status (ctrl,"TRUSTLISTFLAG", "relax",NULL);
+                if (!err && ti->flags.cm)
+                  err = agent_write_status (ctrl,"TRUSTLISTFLAG", "cm", NULL);
+                if (!err && ti->flags.qual)
+                  err = agent_write_status (ctrl,"TRUSTLISTFLAG", "qual",NULL);
               }
 
             if (!err)
