@@ -551,14 +551,14 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       /* Is this a self-signed certificate? */
       if (is_root_cert (subject_cert, issuer, subject))
         {
-          /* Yes, this is our trust anchor.  */
-          if (check_cert_sig (subject_cert, subject_cert) )
-            {
-              log_error (_("selfsigned certificate has a BAD signature"));
-              err = gpg_error (depth? GPG_ERR_BAD_CERT_CHAIN
-                                    : GPG_ERR_BAD_CERT);
-              goto leave;
-            }
+          /* There is no need to check the signature of the trust anchor.  */
+          /* if (check_cert_sig (subject_cert, subject_cert) ) */
+          /*   { */
+          /*     log_error (_("selfsigned certificate has a BAD signature")); */
+          /*     err = gpg_error (depth? GPG_ERR_BAD_CERT_CHAIN */
+          /*                           : GPG_ERR_BAD_CERT); */
+          /*     goto leave; */
+          /*   } */
 
           /* Is this certificate allowed to act as a CA.  */
           err = allowed_ca (subject_cert, NULL);
