@@ -739,18 +739,20 @@ do_readkey (card_t card, ctrl_t ctrl, const char *line,
 }
 
 static const char hlp_readkey[] =
-  "READKEY [--advanced] [--info[-only]] <keyid>|<oid>|<keygrip>\n"
+  "READKEY [--format=advanced|ssh] [--info[-only]] <keyid>|<oid>|<keygrip>\n"
   "\n"
   "Return the public key for the given cert or key ID as a standard\n"
-  "S-expression.  With --advanced  the S-expression is returned in\n"
-  "advanced format.  With --info a KEYPAIRINFO status line is also\n"
-  "emitted; with --info-only the regular output is suppressed.";
+  "S-expression.  With --format option, it may be returned in advanced\n"
+  "S-expression format, or SSH format.  With --info a KEYPAIRINFO\n"
+  "status line is also emitted; with --info-only the regular output is\n"
+  "suppressed.";
 static gpg_error_t
 cmd_readkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int rc;
+  gpg_error_t err;
   int advanced = 0;
+  int ssh = 0;
   int opt_info = 0;
   int opt_nokey = 0;
   unsigned char *pk = NULL;
@@ -758,11 +760,15 @@ cmd_readkey (assuan_context_t ctx, char *line)
   card_t card;
   const char *keygrip = NULL;
 
-  if ((rc = open_card (ctrl)))
-    return rc;
+  if ((err = open_card (ctrl)))
+    return err;
 
   if (has_option (line, "--advanced"))
     advanced = 1;
+  if (has_option (line, "--format=advanced"))
+    advanced = 1;
+  if (has_option (line, "--format=ssh"))
+    ssh = 1;
   if (has_option (line, "--info"))
     opt_info = 1;
   if (has_option (line, "--info-only"))
@@ -780,32 +786,66 @@ cmd_readkey (assuan_context_t ctx, char *line)
   card = card_get (ctrl, keygrip);
   if (card)
     {
-      rc = do_readkey (card, ctrl, line, opt_info, &pk, &pklen);
+      err = do_readkey (card, ctrl, line, opt_info, &pk, &pklen);
       card_put (card);
     }
   else
-    rc = gpg_error (GPG_ERR_NO_SECKEY);
+    err = gpg_error (GPG_ERR_NO_SECKEY);
 
-  if (rc)
+  if (err)
     goto leave;
 
   if (opt_nokey)
     ;
+  else if (ssh)
+    {
+      estream_t stream = NULL;
+      gcry_sexp_t s_key;
+      void *buf = NULL;
+      size_t buflen;
+
+      stream = es_fopenmem (0, "r+b");
+      if (!stream)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      err = gcry_sexp_new (&s_key, pk, pklen, 0);
+      if (err)
+        {
+          es_fclose (stream);
+          goto leave;
+        }
+
+      err = ssh_public_key_in_base64 (s_key, stream, "(none)");
+      if (err)
+        {
+          gcry_sexp_release (s_key);
+          es_fclose (stream);
+          goto leave;
+        }
+
+      err = es_fclose_snatch (stream, &buf, &buflen);
+      gcry_sexp_release (s_key);
+      if (!err)
+        err = assuan_send_data (ctx, buf, buflen);
+    }
   else if (advanced)
     {
       gcry_sexp_t s_key;
       unsigned char *pkadv;
       size_t pkadvlen;
 
-      rc = gcry_sexp_new (&s_key, pk, pklen, 0);
-      if (rc)
+      err = gcry_sexp_new (&s_key, pk, pklen, 0);
+      if (err)
         goto leave;
 
       pkadvlen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, NULL, 0);
       pkadv = xtrymalloc (pkadvlen);
       if (!pkadv)
         {
-          rc = gpg_error_from_syserror ();
+          err = gpg_error_from_syserror ();
           gcry_sexp_release (s_key);
           goto leave;
         }
@@ -814,16 +854,16 @@ cmd_readkey (assuan_context_t ctx, char *line)
       gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, pkadv, pkadvlen);
       gcry_sexp_release (s_key);
       /* (One less to adjust for the trailing '\0') */
-      rc = assuan_send_data (ctx, pkadv, pkadvlen-1);
+      err = assuan_send_data (ctx, pkadv, pkadvlen-1);
       xfree (pkadv);
     }
   else
-    rc = assuan_send_data (ctx, pk, pklen);
+    err = assuan_send_data (ctx, pk, pklen);
 
  leave:
   xfree (pk);
   xfree (line);
-  return rc;
+  return err;
 }
 
 

@@ -37,5 +37,7 @@ gpg_error_t ssh_get_fingerprint (gcry_sexp_t key, int algo,
 gpg_error_t ssh_get_fingerprint_string (gcry_sexp_t key, int algo,
 					char **r_fprstr);
 
+gpg_error_t ssh_public_key_in_base64 (gcry_sexp_t key, estream_t stream,
+                                      const char *comment);
 
 #endif /*GNUPG_COMMON_SSH_UTILS_H*/

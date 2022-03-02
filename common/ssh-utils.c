@@ -35,6 +35,7 @@
 
 #include "util.h"
 #include "ssh-utils.h"
+#include "openpgpdefs.h"
 
 
 /* Return true if KEYPARMS holds an EdDSA key.  */
@@ -350,5 +351,294 @@ ssh_get_fingerprint_string (gcry_sexp_t key, int algo, char **r_fprstr)
 
   err = get_fingerprint (key, algo, &string, &dummy, 1);
   *r_fprstr = string;
+  return err;
+}
+
+
+/* Write the uint32 contained in UINT32 to STREAM.  */
+static gpg_error_t
+stream_write_uint32 (estream_t stream, u32 uint32)
+{
+  unsigned char buffer[4];
+  gpg_error_t err;
+  int ret;
+
+  buffer[0] = uint32 >> 24;
+  buffer[1] = uint32 >> 16;
+  buffer[2] = uint32 >>  8;
+  buffer[3] = uint32 >>  0;
+
+  ret = es_write (stream, buffer, sizeof (buffer), NULL);
+  if (ret)
+    err = gpg_error_from_syserror ();
+  else
+    err = 0;
+
+  return err;
+}
+
+/* Write SIZE bytes from BUFFER to STREAM.  */
+static gpg_error_t
+stream_write_data (estream_t stream, const unsigned char *buffer, size_t size)
+{
+  gpg_error_t err;
+  int ret;
+
+  ret = es_write (stream, buffer, size, NULL);
+  if (ret)
+    err = gpg_error_from_syserror ();
+  else
+    err = 0;
+
+  return err;
+}
+
+/* Write a binary string from STRING of size STRING_N to STREAM.  */
+static gpg_error_t
+stream_write_string (estream_t stream,
+                     const unsigned char *string, u32 string_n)
+{
+  gpg_error_t err;
+
+  err = stream_write_uint32 (stream, string_n);
+  if (err)
+    goto out;
+
+  err = stream_write_data (stream, string, string_n);
+
+ out:
+
+  return err;
+}
+
+/* Write a C-string from STRING to STREAM.  */
+static gpg_error_t
+stream_write_cstring (estream_t stream, const char *string)
+{
+  gpg_error_t err;
+
+  err = stream_write_string (stream,
+                             (const unsigned char *) string, strlen (string));
+
+  return err;
+}
+
+/* Write the MPI contained in MPINT to STREAM.  */
+static gpg_error_t
+stream_write_mpi (estream_t stream, gcry_mpi_t mpint)
+{
+  unsigned char *mpi_buffer;
+  size_t mpi_buffer_n;
+  gpg_error_t err;
+
+  mpi_buffer = NULL;
+
+  err = gcry_mpi_aprint (GCRYMPI_FMT_STD, &mpi_buffer, &mpi_buffer_n, mpint);
+  if (err)
+    goto out;
+
+  err = stream_write_string (stream, mpi_buffer, mpi_buffer_n);
+
+ out:
+
+  xfree (mpi_buffer);
+
+  return err;
+}
+
+
+/* Encode a key in SEXP, in SSH format.  */
+static gpg_error_t
+sexp_to_sshblob (gcry_sexp_t sexp, const char *identifier, int is_eddsa_flag,
+                 const char *curve, const char *elems,
+                 void **r_blob, size_t *r_blob_size)
+{
+  gpg_error_t err = 0;
+  gcry_sexp_t value_list = NULL;
+  gcry_sexp_t value_pair = NULL;
+  estream_t stream = NULL;
+  const char *p_elems;
+  const char *data;
+  size_t datalen;
+
+  *r_blob = NULL;
+  *r_blob_size = 0;
+
+  stream = es_fopenmem (0, "r+b");
+  if (!stream)
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
+
+  /* Get key value list.  */
+  value_list = gcry_sexp_cadr (sexp);
+  if (!value_list)
+    {
+      err = gpg_error (GPG_ERR_INV_SEXP);
+      goto out;
+    }
+
+  err = stream_write_cstring (stream, identifier);
+  if (err)
+    goto out;
+
+  if (curve && !is_eddsa_flag)
+    {
+      /* ECDSA requires the curve name.  */
+      err = stream_write_cstring (stream, curve);
+      if (err)
+        goto out;
+    }
+
+  /* Write the parameters.  */
+  for (p_elems = elems; *p_elems; p_elems++)
+    {
+      gcry_sexp_release (value_pair);
+      value_pair = gcry_sexp_find_token (value_list, p_elems, 1);
+      if (!value_pair)
+        {
+          err = gpg_error (GPG_ERR_INV_SEXP);
+          goto out;
+        }
+      if (is_eddsa_flag)
+        {
+          data = gcry_sexp_nth_data (value_pair, 1, &datalen);
+          if (!data)
+            {
+              err = gpg_error (GPG_ERR_INV_SEXP);
+              goto out;
+            }
+          if ((datalen & 1) && *data == 0x40)
+            { /* Remove the prefix 0x40.  */
+              data++;
+              datalen--;
+            }
+          err = stream_write_string (stream, data, datalen);
+          if (err)
+            goto out;
+        }
+      else
+        {
+          gcry_mpi_t mpi;
+
+          /* Note that we need to use STD format; i.e. prepend a 0x00
+             to indicate a positive number if the high bit is set.  */
+          mpi = gcry_sexp_nth_mpi (value_pair, 1, GCRYMPI_FMT_STD);
+          if (!mpi)
+            {
+              err = gpg_error (GPG_ERR_INV_SEXP);
+              goto out;
+            }
+          err = stream_write_mpi (stream, mpi);
+          gcry_mpi_release (mpi);
+          if (err)
+            goto out;
+        }
+    }
+
+  if (es_fclose_snatch (stream, r_blob, r_blob_size))
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
+  stream = NULL;
+
+ out:
+  gcry_sexp_release (value_list);
+  gcry_sexp_release (value_pair);
+  es_fclose (stream);
+
+  return err;
+}
+
+/* For KEY in S-expression, write it in SSH base64 format to STREAM,
+   adding COMMENT.  */
+gpg_error_t
+ssh_public_key_in_base64 (gcry_sexp_t key, estream_t stream,
+                          const char *comment)
+{
+  gpg_error_t err = 0;
+  int algo;
+  int is_eddsa_flag = 0;
+  const char *curve = NULL;
+  const char *pub_elements = NULL;
+  const char *identifier = NULL;
+  void *blob = NULL;
+  size_t bloblen;
+  struct b64state b64_state;
+
+  algo = get_pk_algo_from_key (key);
+  if (algo == 0)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+
+  if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_EDDSA)
+    {
+      curve = gcry_pk_get_curve (key, 0, NULL);
+      if (!curve)
+        return gpg_error (GPG_ERR_INV_CURVE);
+    }
+
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:
+      identifier = "ssh-rsa";
+      pub_elements = "en";
+      break;
+
+    case PUBKEY_ALGO_ECDSA:
+      if (!strcmp (curve, "nistp256"))
+        identifier = "ecdsa-sha2-nistp256";
+      else if (!strcmp (curve, "nistp384"))
+        identifier = "ecdsa-sha2-nistp384";
+      else if (!strcmp (curve, "nistp521"))
+        identifier = "ecdsa-sha2-nistp521";
+      else
+        err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      pub_elements = "q";
+      break;
+
+    case PUBKEY_ALGO_EDDSA:
+      is_eddsa_flag = 1;
+      if (!strcmp (curve, "Ed25519"))
+        identifier = "ssh-ed25519";
+      else if (!strcmp (curve, "Ed448"))
+        identifier = "ssh-ed448";
+      else
+        err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      pub_elements = "q";
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      break;
+    }
+
+  if (err)
+    return err;
+
+  err = sexp_to_sshblob (key, identifier, is_eddsa_flag, curve, pub_elements,
+                         &blob, &bloblen);
+  if (err)
+    return err;
+
+  es_fprintf (stream, "%s ", identifier);
+
+  err = b64enc_start_es (&b64_state, stream, "");
+  if (err)
+    {
+      es_free (blob);
+      return err;
+    }
+
+  err = b64enc_write (&b64_state, blob, bloblen);
+  b64enc_finish (&b64_state);
+  es_free (blob);
+  if (err)
+    return err;
+
+  if (comment)
+    es_fprintf (stream, " %s", comment);
+
   return err;
 }
