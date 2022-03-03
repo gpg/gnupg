@@ -256,7 +256,7 @@ struct app_local_s {
         rsa_key_format_t format;
       } rsa;
       struct {
-        const char *curve;
+        const char *curve;       /* Canonical name defined in openpgp-oid.c */
         int algo;
         unsigned int flags;
       } ecc;
@@ -5156,6 +5156,29 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
 }
 
 
+static const unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
+  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
+    0x02, 0x01, 0x05, 0x00, 0x04, 0x14  };
+static const unsigned char sha1_prefix[15] =   /* (1.3.14.3.2.26) */
+  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
+    0x02, 0x1a, 0x05, 0x00, 0x04, 0x14  };
+static const unsigned char sha224_prefix[19] = /* (2.16.840.1.101.3.4.2.4) */
+  { 0x30, 0x2D, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48,
+    0x01, 0x65, 0x03, 0x04, 0x02, 0x04, 0x05, 0x00, 0x04,
+    0x1C  };
+static const unsigned char sha256_prefix[19] = /* (2.16.840.1.101.3.4.2.1) */
+  { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+    0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
+    0x00, 0x04, 0x20  };
+static const unsigned char sha384_prefix[19] = /* (2.16.840.1.101.3.4.2.2) */
+  { 0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+    0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02, 0x05,
+    0x00, 0x04, 0x30  };
+static const unsigned char sha512_prefix[19] = /* (2.16.840.1.101.3.4.2.3) */
+  { 0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+    0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, 0x05,
+    0x00, 0x04, 0x40  };
+
 /* Compute a digital signature on INDATA which is expected to be the
    raw message digest. For this application the KEYIDSTR consists of
    the serialnumber and the fingerprint delimited by a slash.
@@ -5175,28 +5198,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
-  static unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
-    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
-      0x02, 0x01, 0x05, 0x00, 0x04, 0x14  };
-  static unsigned char sha1_prefix[15] =   /* (1.3.14.3.2.26) */
-    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
-      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14  };
-  static unsigned char sha224_prefix[19] = /* (2.16.840.1.101.3.4.2.4) */
-    { 0x30, 0x2D, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48,
-      0x01, 0x65, 0x03, 0x04, 0x02, 0x04, 0x05, 0x00, 0x04,
-      0x1C  };
-  static unsigned char sha256_prefix[19] = /* (2.16.840.1.101.3.4.2.1) */
-    { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
-      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
-      0x00, 0x04, 0x20  };
-  static unsigned char sha384_prefix[19] = /* (2.16.840.1.101.3.4.2.2) */
-    { 0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
-      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02, 0x05,
-      0x00, 0x04, 0x30  };
-  static unsigned char sha512_prefix[19] = /* (2.16.840.1.101.3.4.2.3) */
-    { 0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
-      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, 0x05,
-      0x00, 0x04, 0x40  };
   int rc;
   unsigned char data[19+64];
   size_t datalen;
@@ -5354,6 +5355,60 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   return rc;
 }
 
+/* Generate data to be signed for PKAUTH with --challenge-response.  */
+static gpg_error_t
+gen_challenge (app_t app, const void **r_data, size_t *r_datalen)
+{
+  void *data;
+  size_t datalen;
+  int header_size;
+  const unsigned char *hash_prefix = NULL;
+
+  if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC)
+    {
+      unsigned int n;
+
+      openpgp_curve_to_oid (app->app_local->keyattr[2].ecc.curve, &n, NULL);
+      /* No hash algo header, and appropriate length of random octets,
+         determined by field size of the curve.  */
+      datalen = (n+7)/8;
+      header_size = 0;
+    }
+  else
+    {
+      /* Hash algo header, and random octets of hash size, the hash
+        algo is determined by size of key.  */
+      if (app->app_local->keyattr[2].rsa.n_bits <= 2048)
+        {
+          datalen = 32;
+          hash_prefix = sha256_prefix;
+        }
+      else if (app->app_local->keyattr[2].rsa.n_bits <= 3072)
+        {
+          datalen = 48;
+          hash_prefix = sha384_prefix;
+        }
+      else
+        {
+          datalen = 64;
+          hash_prefix = sha512_prefix;
+        }
+      header_size = 19;
+    }
+
+  data = xtrymalloc (datalen+header_size);
+  if (!data)
+    return gpg_error_from_syserror ();
+
+  if (hash_prefix)
+    memcpy (data, hash_prefix, header_size);
+
+  gcry_create_nonce ((char *)data+header_size, datalen);
+  *r_data = data;
+  *r_datalen = datalen+header_size;
+  return 0;
+}
+
 /* Compute a digital signature using the INTERNAL AUTHENTICATE command
    on INDATA which is expected to be the raw message digest. For this
    application the KEYIDSTR consists of the serialnumber and the
@@ -5372,9 +5427,24 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
          unsigned char **outdata, size_t *outdatalen )
 {
   int rc;
+  int challenge_generated = 0;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (indatalen == 0)
+    {
+      rc = get_public_key (app, 2);
+      if (rc)
+        return rc;
+
+      rc = gen_challenge (app, &indata, &indatalen);
+      if (rc)
+        return rc;
+      challenge_generated = 1;
+      goto indata_ready;
+    }
+
   if (app->app_local->keyattr[2].key_type == KEY_TYPE_RSA
       && indatalen > 101) /* For a 2048 bit key. */
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -5395,6 +5465,8 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
           indatalen -= 15;
         }
     }
+
+ indata_ready:
 
   /* Check whether an OpenPGP card of any version has been requested. */
   if (!ascii_strcasecmp (keyidstr, "OPENPGP.3"))
@@ -5436,6 +5508,95 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
                                           outdata, outdatalen);
       if (gpg_err_code (rc) == GPG_ERR_TIMEOUT)
         clear_chv_status (app, ctrl, 1);
+
+      /* Verify the result, when CHALLENGE_GENERATED */
+      if (challenge_generated)
+        {
+          gcry_sexp_t s_pkey, s_sig, s_hash;
+          const char *fmt;
+
+          if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC)
+            {
+              if (!strcmp (app->app_local->keyattr[2].ecc.curve, "Ed25519"))
+                fmt = "(data(flags eddsa)(hash-algo sha512)(value %b))";
+              else
+                fmt = "(data(value %b))";
+            }
+          else
+            {
+              void *old_indata = (void *)indata;
+              unsigned char *new_indata;
+              size_t new_indatalen;
+
+              /* For RSA, it's PKCS#1 padding.  */
+              new_indatalen = app->app_local->keyattr[2].rsa.n_bits / 8;
+              new_indata = xtrymalloc (new_indatalen);
+              if (!new_indata)
+                {
+                  rc = gpg_error_from_syserror ();
+                  xfree (old_indata);
+                  return rc;
+                }
+              memset (new_indata, 0xff, new_indatalen);
+              new_indata[0] = 0x00;
+              new_indata[1] = 0x01;
+              new_indata[new_indatalen - indatalen -1] = 0x00;
+              memcpy (new_indata + new_indatalen - indatalen,
+                      indata, indatalen);
+
+              xfree (old_indata);
+              indata = new_indata;
+              indatalen = new_indatalen;
+              fmt = "%b";           /* Old style data format.  */
+            }
+
+          rc = gcry_sexp_build (&s_hash, NULL, fmt, (int)indatalen, indata);
+          if (rc)
+            {
+              xfree ((void *)indata);
+              return rc;
+            }
+
+          if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC)
+            {
+              if (!strcmp (app->app_local->keyattr[2].ecc.curve, "Ed25519")
+                  || !strcmp (app->app_local->keyattr[2].ecc.curve, "Ed448"))
+                fmt = "(sig-val(eddsa(r %b)(s %b)))";
+              else
+                fmt = "(sig-val(ecdsa(r %b)(s %b)))";
+              rc = gcry_sexp_build (&s_sig, NULL, fmt,
+                                    (int)*outdatalen/2, *outdata,
+                                    (int)*outdatalen/2, *outdata+*outdatalen/2);
+            }
+          else
+            {
+              fmt = "(sig-val(rsa(s %b)))";
+              rc = gcry_sexp_build (&s_sig, NULL, fmt,
+                                    (int)*outdatalen, *outdata);
+            }
+          if (rc)
+            {
+              gcry_sexp_release (s_hash);
+              xfree ((void *)indata);
+              return rc;
+            }
+
+          rc = gcry_sexp_new (&s_pkey, app->app_local->pk[2].key,
+                              app->app_local->pk[2].keylen, 0);
+          if (rc)
+            {
+              gcry_sexp_release (s_hash);
+              gcry_sexp_release (s_sig);
+              xfree ((void *)indata);
+              return rc;
+            }
+
+          rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
+          gcry_sexp_release (s_hash);
+          gcry_sexp_release (s_sig);
+          gcry_sexp_release (s_pkey);
+          xfree ((void *)indata);
+        }
     }
   return rc;
 }

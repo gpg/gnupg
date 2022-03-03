@@ -2053,7 +2053,7 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
 {
   gpg_error_t err;
 
-  if (!indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))

@@ -41,6 +41,7 @@
 #endif
 #include "../common/asshelp.h"
 #include "../common/server-help.h"
+#include "../common/ssh-utils.h"
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN.  That
  * length needs to small compared to the maximum Assuan line length.  */
@@ -1074,7 +1075,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
 
 static const char hlp_pkauth[] =
-  "PKAUTH <hexified_id>";
+  "PKAUTH [--challenge-response] <hexified_id>";
 static gpg_error_t
 cmd_pkauth (assuan_context_t ctx, char *line)
 {
@@ -1085,11 +1086,17 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   char *keyidstr;
   card_t card;
   const char *keygrip = NULL;
+  int challenge_response = 0;
 
   if ((rc = open_card (ctrl)))
     return rc;
 
- /* We have to use a copy of the key ID because the function may use
+  if (has_option (line, "--challenge-response"))
+    challenge_response = 1;
+
+  line = skip_options (line);
+
+  /* We have to use a copy of the key ID because the function may use
      the pin_cb which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid */
   keyidstr = xtrystrdup (line);
@@ -1100,6 +1107,13 @@ cmd_pkauth (assuan_context_t ctx, char *line)
      ctrl->card_ctx. */
   if (strlen (keyidstr) == 40)
     keygrip = keyidstr;
+
+  if (challenge_response)
+    {
+      xfree (ctrl->in_data.value);
+      ctrl->in_data.value = NULL;
+      ctrl->in_data.valuelen = 0;
+    }
 
   card = card_get (ctrl, keygrip);
   if (card)
