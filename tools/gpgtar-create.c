@@ -36,7 +36,6 @@
 # include <pwd.h>
 # include <grp.h>
 #endif /*!HAVE_W32_SYSTEM*/
-#include <assert.h>
 
 #include "../common/i18n.h"
 #include "../common/exectool.h"
@@ -114,7 +113,7 @@ fillup_entry_w32 (tar_header_t hdr)
   for (p=hdr->name; *p; p++)
     if (*p == '/')
       *p = '\\';
-  wfname = utf8_to_wchar (hdr->name);
+  wfname = gpgrt_fname_to_wchar (hdr->name);
   for (p=hdr->name; *p; p++)
     if (*p == '\\')
       *p = '/';
@@ -345,7 +344,7 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
     for (p=fname; *p; p++)
       if (*p == '/')
         *p = '\\';
-    wfname = utf8_to_wchar (fname);
+    wfname = gpgrt_fname_to_wchar (fname);
     xfree (fname);
     if (!wfname)
       {
@@ -448,7 +447,7 @@ scan_recursive (const char *dname, scanctrl_t scanctrl)
     }
   scanctrl->nestlevel++;
 
-  assert (scanctrl->flist_tail);
+  log_assert (scanctrl->flist_tail);
   start_tail = scanctrl->flist_tail;
   scan_directory (dname, scanctrl);
   stop_tail = scanctrl->flist_tail;
@@ -903,7 +902,7 @@ write_file (estream_t stream, tar_header_t hdr)
 
   if (hdr->typeflag == TF_REGULAR)
     {
-      infp = es_fopen (hdr->name, "rb");
+      infp = es_fopen (hdr->name, "rb,sysopen");
       if (!infp)
         {
           err = gpg_error_from_syserror ();
@@ -1142,7 +1141,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
       if (!strcmp (opt.outfile, "-"))
         outstream = es_stdout;
       else
-        outstream = es_fopen (opt.outfile, "wb");
+        outstream = es_fopen (opt.outfile, "wb,sysopen");
       if (!outstream)
         {
           err = gpg_error_from_syserror ();

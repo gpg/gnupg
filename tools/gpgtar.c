@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "../common/util.h"
@@ -261,7 +260,7 @@ shell_parse_stringlist (const char *str, strlist_t *r_list)
           break;
 
         case doublequote:
-          assert (s > str || !"cannot be quoted at first char");
+          log_assert (s > str || !"cannot be quoted at first char");
           if (*s == doublequote && *(s - 1) != '\\')
             quoted = unquoted;
           else
@@ -269,7 +268,7 @@ shell_parse_stringlist (const char *str, strlist_t *r_list)
           break;
 
         default:
-          assert (! "reached");
+          log_assert (! "reached");
         }
     }
 
