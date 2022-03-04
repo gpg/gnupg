@@ -199,18 +199,6 @@ fd_cache_strcmp (const char *a, const char *b)
 }
 
 
-#ifdef HAVE_W32_SYSTEM
-static int
-any8bitchar (const char *string)
-{
-  if (string)
-    for ( ; *string; string++)
-      if ((*string & 0x80))
-        return 1;
-  return 0;
-}
-#endif /*HAVE_W32_SYSTEM*/
-
 /*
  * Invalidate (i.e. close) a cached iobuf
  */
@@ -312,11 +300,11 @@ direct_open (const char *fname, const char *mode, int mode700)
       sm = FILE_SHARE_READ;
     }
 
-  /* We use the Unicode version of the function only if needed to
-   * avoid an extra conversion step.  */
-  if (any8bitchar (fname))
+  /* We always use the Unicode version because it supports file names
+   * longer than MAX_PATH.  (requires gpgrt 1.45) */
+  if (1)
     {
-      wchar_t *wfname = utf8_to_wchar (fname);
+      wchar_t *wfname = gpgrt_fname_to_wchar (fname);
       if (wfname)
         {
           hfile = CreateFileW (wfname, da, sm, NULL, cd,
@@ -326,8 +314,6 @@ direct_open (const char *fname, const char *mode, int mode700)
       else
         hfile = INVALID_HANDLE_VALUE;
     }
-  else
-    hfile = CreateFileA (fname, da, sm, NULL, cd, FILE_ATTRIBUTE_NORMAL, NULL);
 
   return hfile;
 
