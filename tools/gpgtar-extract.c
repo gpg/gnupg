@@ -28,7 +28,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include "../common/i18n.h"
 #include "../common/exectool.h"
@@ -98,9 +97,9 @@ extract_regular (estream_t stream, const char *dirname,
 
 
   if (opt.dry_run)
-    outfp = es_fopenmem (0, "wb");
+    outfp = es_fopen ("/dev/null", "wb");
   else
-    outfp = es_fopen (fname, "wb");
+    outfp = es_fopen (fname, "wb,sysopen");
   if (!outfp)
     {
       err = gpg_error_from_syserror ();
@@ -333,7 +332,7 @@ gpgtar_extract (const char *filename, int decrypt)
       if (!strcmp (filename, "-"))
         stream = es_stdin;
       else
-        stream = es_fopen (filename, "rb");
+        stream = es_fopen (filename, "rb,sysopen");
       if (!stream)
         {
           err = gpg_error_from_syserror ();
