@@ -1133,10 +1133,9 @@ cmd_pkauth (assuan_context_t ctx, char *line)
     }
   else
     {
-      rc = assuan_send_data (ctx, outdata, outdatalen);
+      if (!challenge_response)
+        rc = assuan_send_data (ctx, outdata, outdatalen);
       xfree (outdata);
-      if (rc)
-        return rc; /* that is already an assuan error code */
     }
 
   return rc;

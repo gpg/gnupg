@@ -2062,6 +2062,10 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
     err = gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   else
     {
+      if (card->app->apptype != APPTYPE_OPENPGP
+          && (!indata || !indatalen))
+        return gpg_error (GPG_ERR_INV_VALUE);
+
       if (DBG_APP)
         log_debug ("slot %d app %s: calling auth(%s)\n",
                    card->slot, xstrapptype (card->app), keyidstr);
