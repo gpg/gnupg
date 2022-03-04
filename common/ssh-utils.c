@@ -572,7 +572,7 @@ ssh_public_key_in_base64 (gcry_sexp_t key, estream_t stream,
   if (algo == 0)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_EDDSA)
+  if (algo == GCRY_PK_ECC || algo == GCRY_PK_EDDSA)
     {
       curve = gcry_pk_get_curve (key, 0, NULL);
       if (!curve)
@@ -581,12 +581,12 @@ ssh_public_key_in_base64 (gcry_sexp_t key, estream_t stream,
 
   switch (algo)
     {
-    case PUBKEY_ALGO_RSA:
+    case GCRY_PK_RSA:
       identifier = "ssh-rsa";
       pub_elements = "en";
       break;
 
-    case PUBKEY_ALGO_ECDSA:
+    case GCRY_PK_ECC:
       if (!strcmp (curve, "nistp256"))
         identifier = "ecdsa-sha2-nistp256";
       else if (!strcmp (curve, "nistp384"))
@@ -598,7 +598,7 @@ ssh_public_key_in_base64 (gcry_sexp_t key, estream_t stream,
       pub_elements = "q";
       break;
 
-    case PUBKEY_ALGO_EDDSA:
+    case GCRY_PK_EDDSA:
       is_eddsa_flag = 1;
       if (!strcmp (curve, "Ed25519"))
         identifier = "ssh-ed25519";
