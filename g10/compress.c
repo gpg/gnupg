@@ -100,6 +100,9 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
     int zrc;
     unsigned n;
 
+    if (flush == Z_NO_FLUSH && zs->avail_in == 0)
+      return 0;
+
     do {
 	zs->next_out = BYTEF_CAST (zfx->outbuf);
 	zs->avail_out = zfx->outbufsize;

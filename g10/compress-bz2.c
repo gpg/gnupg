@@ -66,6 +66,9 @@ do_compress(compress_filter_context_t *zfx, bz_stream *bzs, int flush, IOBUF a)
   int zrc;
   unsigned n;
 
+  if (flush == BZ_RUN && bzs->avail_in == 0)
+    return 0;
+
   do
     {
       bzs->next_out = zfx->outbuf;

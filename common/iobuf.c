@@ -2090,14 +2090,6 @@ filter_flush (iobuf_t a)
       external_used = 0;
     }
 
-  if (src_len == 0)
-    {
-      if (DBG_IOBUF)
-	log_debug ("filter_flush, nothing to flush%s\n",
-		   external_used ? " (external buffer)" : "");
-      return 0;
-    }
-
   len = src_len;
   rc = a->filter (a->filter_ov, IOBUFCTRL_FLUSH, a->chain, src_buf, &len);
   if (!rc && len != src_len)
