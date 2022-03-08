@@ -30,7 +30,7 @@ AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(SQLITE3_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(SQLITE3_CFLAGS) \
             $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
 needed_libs = ../kbx/libkeybox.a $(libcommon) ../regexp/libregexp.a
@@ -181,7 +181,7 @@ gpgv_SOURCES = gpgv.c           \
 
 LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS)
-gpg_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
+gpg_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(SQLITE3_LIBS) $(LIBREADLINE) \
              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV) $(gpg_robjs) $(extra_sys_libs)
 gpg_LDFLAGS = $(extra_bin_ldflags)
