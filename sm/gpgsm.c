@@ -209,6 +209,7 @@ enum cmd_and_opt_values {
   oChUid,
   oUseKeyboxd,
   oKeyboxdProgram,
+  oRequireCompliance,
   oNoAutostart
  };
 
@@ -301,6 +302,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oPolicyFile, "policy-file",
                 N_("|FILE|take policy information from FILE")),
   ARGPARSE_s_s (oCompliance, "compliance",   "@"),
+  ARGPARSE_p_u (oMinRSALength, "min-rsa-length", "@"),
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
   ARGPARSE_s_s (oIgnoreCertWithOID, "ignore-cert-with-oid", "@"),
@@ -407,7 +409,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oDisablePubkeyAlgo,  "disable-pubkey-algo", "@"),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
   ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
-  ARGPARSE_p_u (oMinRSALength, "min-rsa-length", "@"),
+  ARGPARSE_s_n (oRequireCompliance, "require-compliance", "@"),
 
   ARGPARSE_header (NULL, N_("Options for unattended use")),
 
@@ -440,7 +442,6 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLCmessages, "lc-messages", "@"),
   ARGPARSE_s_s (oXauthority, "xauthority", "@"),
   ARGPARSE_s_s (oChUid, "chuid", "@"),
-
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -1458,6 +1459,8 @@ main ( int argc, char **argv)
           break;
 
         case oMinRSALength: opt.min_rsa_length = pargs.r.ret_ulong; break;
+
+        case oRequireCompliance: opt.require_compliance = 1;  break;
 
         default:
           if (configname)
