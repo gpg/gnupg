@@ -253,6 +253,9 @@ struct
     /* The next flag is set internally iff IMPORT_SELF_SIGS_ONLY has
      * been set by the user and is not the default value.  */
     unsigned int expl_import_self_sigs_only:1;
+    /* Fail if an operation can't be done in the requested compliance
+     * mode.  */
+    unsigned int require_compliance:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

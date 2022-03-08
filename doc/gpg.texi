@@ -2889,6 +2889,17 @@ This option adjusts the compliance mode "de-vs" for stricter key size
 requirements.  For example, a value of 3000 turns rsa2048 and dsa2048
 keys into non-VS-NfD compliant keys.
 
+@item --require-compliance
+@opindex require-compliance
+To check that data has been encrypted according to the rules of the
+current compliance mode, a gpg user needs to evaluate the status
+lines.  This is allows frontends to handle compliance check in a more
+flexible way.  However, for scripted use the required evaluation of
+the status-line requires quite some effort; this option can be used
+instead to make sure that the gpg process exits with a failure if the
+compliance rules are not fulfilled.  Note that this option has
+currently an effect only in "de-vs" mode.
+
 @end table
 
 

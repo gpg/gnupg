@@ -655,6 +655,18 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
                           gnupg_status_compliance_flag (CO_DE_VS),
                           NULL);
 
+  if (opt.flags.require_compliance
+      && opt.compliance == CO_DE_VS
+      && !compliant)
+    {
+      log_error (_("operation forced to fail due to"
+                   " unfulfilled compliance rules\n"));
+      rc = gpg_error (GPG_ERR_FORBIDDEN);
+      g10_errors_seen = 1;
+      goto leave;
+    }
+
+
   cfx.dek->use_mdc = use_mdc (pk_list,cfx.dek->algo);
 
   /* Only do the is-file-already-compressed check if we are using a
