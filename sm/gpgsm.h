@@ -143,7 +143,13 @@ struct
    * sunch an OID during --learn-card.  */
   strlist_t ignore_cert_with_oid;
 
+  /* The current compliance mode.  */
   enum gnupg_compliance_mode compliance;
+
+  /* Fail if an operation can't be done in the requested compliance
+   * mode.  */
+  int require_compliance;
+
 } opt;
 
 /* Debug values and macros.  */
@@ -234,6 +240,8 @@ struct rootca_flags_s
 
 
 /*-- gpgsm.c --*/
+extern int gpgsm_errors_seen;
+
 void gpgsm_exit (int rc);
 void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
 int  gpgsm_parse_validation_model (const char *model);

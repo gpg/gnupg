@@ -1029,7 +1029,13 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                           && gnupg_gcrypt_is_compliant (CO_DE_VS))
                         gpgsm_status (ctrl, STATUS_DECRYPTION_COMPLIANCE_MODE,
                                       gnupg_status_compliance_flag (CO_DE_VS));
-
+                      else if (opt.require_compliance
+                               && opt.compliance == CO_DE_VS)
+                        {
+                          log_error (_("operation forced to fail due to"
+                                       " unfulfilled compliance rules\n"));
+                          gpgsm_errors_seen = 1;
+                        }
                     }
                   audit_log_ok (ctrl->audit, AUDIT_RECP_RESULT, rc);
                 }

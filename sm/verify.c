@@ -516,6 +516,13 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           && gnupg_digest_is_compliant (CO_DE_VS, sigval_hash_algo))
         gpgsm_status (ctrl, STATUS_VERIFICATION_COMPLIANCE_MODE,
                       gnupg_status_compliance_flag (CO_DE_VS));
+      else if (opt.require_compliance
+               && opt.compliance == CO_DE_VS)
+        {
+          log_error (_("operation forced to fail due to"
+                       " unfulfilled compliance rules\n"));
+          gpgsm_errors_seen = 1;
+        }
 
 
       /* Now we can check the signature.  */
