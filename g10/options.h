@@ -269,6 +269,9 @@ struct
     /* The next flag is set internally iff IMPORT_CLEAN has
      * been set by the user and is not the default value.  */
     unsigned int expl_import_clean:1;
+    /* Fail if an operation can't be done in the requested compliance
+     * mode.  */
+    unsigned int require_compliance:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

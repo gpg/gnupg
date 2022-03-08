@@ -442,6 +442,7 @@ enum cmd_and_opt_values
     oChUid,
     oForceSignKey,
     oForbidGenKey,
+    oRequireCompliance,
 
     oNoop
   };
@@ -911,6 +912,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oUseKeyboxd,    "use-keyboxd", "@"),
   ARGPARSE_s_n (oForbidGenKey,  "forbid-gen-key", "@"),
+  ARGPARSE_s_n (oRequireCompliance, "require-compliance", "@"),
   /* Options which can be used in special circumstances. They are not
    * published and we hope they are never required.  */
   ARGPARSE_s_n (oUseOnlyOpenPGPCard, "use-only-openpgp-card", "@"),
@@ -3729,6 +3731,10 @@ main (int argc, char **argv)
 
           case oForbidGenKey:
             mopt.forbid_gen_key = 1;
+            break;
+
+          case oRequireCompliance:
+            opt.flags.require_compliance = 1;
             break;
 
 	  case oNoop: break;
