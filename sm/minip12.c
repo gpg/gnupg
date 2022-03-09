@@ -362,7 +362,7 @@ cram_octet_string (const unsigned char *input, size_t *length,
   if (!output)
     goto bailout;
 
-  for (;;)
+  while (n)
     {
       if (parse_tag (&s, &n, &ti))
         goto bailout;
@@ -924,6 +924,19 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       /* Mozilla exported certs now come with single byte chunks of
          octet strings.  (Mozilla Firefox 1.0.4).  Arghh. */
       where = "cram-rc2or3des-ciphertext";
+      cram_buffer = cram_octet_string ( p, &n, &consumed);
+      if (!cram_buffer)
+        goto bailout;
+      p = p_start = cram_buffer;
+      if (r_consumed)
+        *r_consumed = consumed;
+      r_consumed = NULL; /* Ugly hack to not update that value any further. */
+      ti.length = n;
+    }
+  else if (ti.class == CLASS_CONTEXT && ti.tag == 0 && ti.is_constructed)
+    {
+      where = "octets-rc2or3des-ciphertext";
+      n = ti.length;
       cram_buffer = cram_octet_string ( p, &n, &consumed);
       if (!cram_buffer)
         goto bailout;
