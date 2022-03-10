@@ -343,8 +343,8 @@ cmd_serialno (assuan_context_t ctx, char *line)
       if (*demand != '=')
         return set_error (GPG_ERR_ASS_PARAMETER, "missing value for option");
       line = (char *)++demand;
-      for (; *line && !spacep (line); line++)
-        ;
+      while (*line && !spacep (line))
+        line++;
       if (*line)
         *line++ = 0;
     }
@@ -1229,8 +1229,8 @@ cmd_getattr (assuan_context_t ctx, char *line)
     return rc;
 
   keyword = line;
-  for (; *line && !spacep (line); line++)
-    ;
+  while (*line && !spacep (line))
+    line++;
   if (*line)
     *line++ = 0;
 
