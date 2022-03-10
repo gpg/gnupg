@@ -1620,7 +1620,7 @@ cmd_random (assuan_context_t ctx, char *line)
 
 
 static const char hlp_passwd[] =
-  "PASSWD [--reset] [--nullpin] [--clear] <chvno>\n"
+  "PASSWD [--reset] [--nullpin] [--clear] <chvno> [<keygrip>]\n"
   "\n"
   "Change the PIN or, if --reset is given, reset the retry counter of\n"
   "the card holder verification vector CHVNO.  The option --nullpin is\n"
@@ -1635,6 +1635,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
   char *chvnostr;
   unsigned int flags = 0;
   card_t card;
+  const char *keygrip = NULL;
 
   if (has_option (line, "--reset"))
     flags |= APP_CHANGE_FLAG_RESET;
@@ -1650,7 +1651,11 @@ cmd_passwd (assuan_context_t ctx, char *line)
   chvnostr = line;
   while (*line && !spacep (line))
     line++;
-  *line = 0;
+  if (*line)
+    *line++ = 0;
+
+  if (strlen (line) == 40)
+    keygrip = line;
 
   /* Do not allow other flags aside of --clear. */
   if ((flags & APP_CHANGE_FLAG_CLEAR) && (flags & ~APP_CHANGE_FLAG_CLEAR))
@@ -1660,7 +1665,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  card = card_get (ctrl, NULL);
+  card = card_get (ctrl, keygrip);
   if (!card)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
