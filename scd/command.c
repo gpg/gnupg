@@ -1626,7 +1626,10 @@ static const char hlp_passwd[] =
   "the card holder verification vector CHVNO.  The option --nullpin is\n"
   "used for TCOS cards to set the initial PIN.  The option --clear clears\n"
   "the security status associated with the PIN so that the PIN needs to\n"
-  "be presented again. The format of CHVNO depends on the card application.";
+  "be presented again.  The format of CHVNO depends on the card application.\n"
+  "\n"
+  "The target card is the currently selected smartcard, when KEYPGIP is not\n"
+  "specified.  When it is specified, it accesses directly with the KEYGRIP.";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
