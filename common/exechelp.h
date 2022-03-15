@@ -76,7 +76,9 @@ void gnupg_close_pipe (int fd);
 #define GNUPG_SPAWN_NONBLOCK   16
 #define GNUPG_SPAWN_RUN_ASFW   64
 #define GNUPG_SPAWN_DETACHED  128
-
+#define GNUPG_SPAWN_KEEP_STDIN   256
+#define GNUPG_SPAWN_KEEP_STDOUT  512
+#define GNUPG_SPAWN_KEEP_STDERR 1024
 
 /* Fork and exec the program PGMNAME.
 
@@ -121,6 +123,12 @@ void gnupg_close_pipe (int fd);
           On W32 (but not on W32CE) run AllowSetForegroundWindow for
           the child.  Note that due to unknown problems this actually
           allows SetForegroundWindow for all children of this process.
+
+   GNUPG_SPAWN_KEEP_STDIN
+   GNUPG_SPAWN_KEEP_STDOUT
+   GNUPG_SPAWN_KEEP_STDERR
+          Do not assign /dev/null to a non-required standard file
+          descriptor.
 
  */
 gpg_error_t
