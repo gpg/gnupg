@@ -544,11 +544,14 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     return err;
 
   if (inpipe[0] == INVALID_HANDLE_VALUE)
-    nullhd[0] = w32_open_null (0);
+    nullhd[0] = ((flags & GNUPG_SPAWN_KEEP_STDIN)?
+                 GetStdHandle (STD_INPUT_HANDLE) : w32_open_null (0));
   if (outpipe[1] == INVALID_HANDLE_VALUE)
-    nullhd[1] = w32_open_null (1);
+    nullhd[1] = ((flags & GNUPG_SPAWN_KEEP_STDOUT)?
+                 GetStdHandle (STD_OUTPUT_HANDLE) : w32_open_null (1));
   if (errpipe[1] == INVALID_HANDLE_VALUE)
-    nullhd[2] = w32_open_null (1);
+    nullhd[2] = ((flags & GNUPG_SPAWN_KEEP_STDOUT)?
+                 GetStdHandle (STD_ERROR_HANDLE) : w32_open_null (1));
 
   /* Start the process.  Note that we can't run the PREEXEC function
      because this might change our own environment. */
