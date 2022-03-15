@@ -447,7 +447,7 @@ app_send_devinfo (ctrl_t ctrl, int keep_looping)
         }
       send_status_direct (ctrl, "DEVINFO_END", "");
 
-      if (no_device && !keep_looping)
+      if (keep_looping == 0)
         break;
 
       card_list_wait ();

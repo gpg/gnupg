@@ -2312,7 +2312,7 @@ static const char hlp_devinfo[] =
   "\n"
   "Return information about devices.  If the option --watch is given,\n"
   "it keeps reporting status change until it detects no device is\n"
-  "available."
+  "available.\n"
   "The information is returned as a status line using the format:\n"
   "\n"
   "  DEVICE <card_type> <serialno> <app_type>\n"
