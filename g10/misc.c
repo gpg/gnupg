@@ -608,6 +608,24 @@ openpgp_cipher_algo_name (cipher_algo_t algo)
 }
 
 
+/* Same as openpgp_cipher_algo_name but returns a string in the form
+ * "ALGO.MODE" if AEAD is not 0.  Note that in this version we do not
+ * print "ALGO.CFB" as we do in 2.3 to avoid confusing users.  */
+const char *
+openpgp_cipher_algo_mode_name (cipher_algo_t algo, aead_algo_t aead)
+{
+
+  if (aead == AEAD_ALGO_NONE)
+    return openpgp_cipher_algo_name (algo);
+
+  return map_static_strings ("openpgp_cipher_algo_mode_name", algo, aead,
+                             openpgp_cipher_algo_name (algo),
+                             ".",
+                             openpgp_aead_algo_name (aead),
+                             NULL);
+}
+
+
 /* Return 0 if ALGO is supported.  Return an error if not. */
 gpg_error_t
 openpgp_aead_test_algo (aead_algo_t algo)

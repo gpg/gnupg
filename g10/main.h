@@ -122,6 +122,8 @@ enum gcry_cipher_algos map_cipher_openpgp_to_gcry (cipher_algo_t algo);
 int openpgp_cipher_blocklen (cipher_algo_t algo);
 int openpgp_cipher_test_algo(cipher_algo_t algo);
 const char *openpgp_cipher_algo_name (cipher_algo_t algo);
+const char *openpgp_cipher_algo_mode_name (cipher_algo_t algo,
+                                           aead_algo_t aead);
 
 gpg_error_t openpgp_aead_test_algo (aead_algo_t algo);
 const char *openpgp_aead_algo_name (aead_algo_t algo);
