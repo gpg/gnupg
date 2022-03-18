@@ -43,6 +43,8 @@
 #include <unistd.h>
 #ifdef HAVE_W32_SYSTEM
 # include "windows.h"
+#else
+#include <sys/random.h>
 #endif
 
 #include "dotlock.h"
@@ -233,23 +235,32 @@ static void
 lock_and_unlock (const char *fname)
 {
   dotlock_t h;
+  unsigned long usec;
 
   h = dotlock_create (fname, 0);
   if (!h)
     die ("error creating lock file for '%s': %s", fname, strerror (errno));
   inf ("lock created");
 
-  while (!ctrl_c_pending ())
+  do
     {
+#ifdef HAVE_W32_SYSTEM
+      usec = 10000;
+#else
+      getrandom (&usec, sizeof (usec), 0);
+      usec &= 0xffff;
+      usec |= 0x0f00;
+#endif
       if (dotlock_take (h, -1))
         die ("error taking lock");
       inf ("lock taken");
-      sleep (1);
+      usleep (usec);
       if (dotlock_release (h))
         die ("error releasing lock");
       inf ("lock released");
-      sleep (1);
+      usleep (usec);
     }
+  while (!ctrl_c_pending ());
   dotlock_destroy (h);
   inf ("lock destroyed");
 }
@@ -260,8 +271,14 @@ main (int argc, char **argv)
 {
   const char *fname;
 
+  if (argc > 1 && !strcmp (argv[1], "--one-shot"))
+    {
+      ctrl_c_pending_flag = 1;
+      argc--;
+    }
+
   if (argc > 1)
-    fname = argv[1];
+    fname = argv[argc-1];
   else
     {
 #ifdef HAVE_W32_SYSTEM
