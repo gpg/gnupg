@@ -526,7 +526,7 @@ maybe_deadlock (dotlock_t h)
    has been created on the same node. */
 #ifdef HAVE_POSIX_SYSTEM
 static int
-read_lockfile (dotlock_t h, int *same_node )
+read_lockfile (dotlock_t h, int *same_node, int *r_fd)
 {
   char buffer_space[10+1+70+1]; /* 70 is just an estimated value; node
                                    names are usually shorter. */
@@ -579,7 +579,11 @@ read_lockfile (dotlock_t h, int *same_node )
       nread += res;
     }
   while (res && nread != expected_len);
-  close(fd);
+
+  if (r_fd)
+    *r_fd = fd;
+  else
+    close(fd);
 
   if (nread < 11)
     {
@@ -1027,13 +1031,12 @@ dotlock_take_unix (dotlock_t h, long timeout)
   const char *maybe_dead="";
   int same_node;
   int saveerrno;
+  int fd;
 
  again:
   if (h->use_o_excl)
     {
       /* No hardlink support - use open(O_EXCL).  */
-      int fd;
-
       do
         {
           my_set_errno (0);
@@ -1103,7 +1106,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
     }
 
   /* Check for stale lock files.  */
-  if ( (pid = read_lockfile (h, &same_node)) == -1 )
+  if ( (pid = read_lockfile (h, &same_node, &fd)) == -1 )
     {
       if ( errno != ENOENT )
         {
@@ -1119,18 +1122,30 @@ dotlock_take_unix (dotlock_t h, long timeout)
     {
       my_info_0 ("Oops: lock already held by us\n");
       h->locked = 1;
+
+      close (fd);
       return 0; /* okay */
     }
   else if ( same_node && kill (pid, 0) && errno == ESRCH )
     {
-      /* Note: It is unlikely that we get a race here unless a pid is
-         reused too fast or a new process with the same pid as the one
-         of the stale file tries to lock right at the same time as we.  */
+      struct stat sb;
+
+      /* Check if it's unlocked during examining the lockfile.  */
+      if (fstat (fd, &sb) || sb.st_nlink == 0)
+        {
+          /* It's gone already.  */
+          close (fd);
+          goto again;
+        }
+
+      close (fd);
+
       my_info_1 (_("removing stale lockfile (created by %d)\n"), pid);
       unlink (h->lockname);
       goto again;
     }
 
+  close (fd);
   if (lastpid == -1)
     lastpid = pid;
   ownerchanged = (pid != lastpid);
@@ -1277,7 +1292,7 @@ dotlock_release_unix (dotlock_t h)
   int pid, same_node;
   int saveerrno;
 
-  pid = read_lockfile (h, &same_node);
+  pid = read_lockfile (h, &same_node, NULL);
   if ( pid == -1 )
     {
       saveerrno = errno;
