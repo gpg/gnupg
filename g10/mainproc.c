@@ -762,17 +762,18 @@ proc_encrypted (CTX c, PACKET *pkt)
       xfree (pk);
 
       if (compliant)
-        {
-          write_status_strings (STATUS_DECRYPTION_COMPLIANCE_MODE,
-                                gnupg_status_compliance_flag (CO_DE_VS),
-                                NULL);
-          compliance_de_vs |= 1;
-        }
+        compliance_de_vs |= 1;
     }
 
 
   if (!result)
-    result = decrypt_data (c->ctrl, c, pkt->pkt.encrypted, c->dek );
+    {
+      int compl_error;
+      result = decrypt_data (c->ctrl, c, pkt->pkt.encrypted, c->dek,
+                             &compl_error);
+      if (!result && !compl_error)
+        compliance_de_vs |= 2;
+    }
 
   /* Trigger the deferred error.  */
   if (!result && early_plaintext)
@@ -825,12 +826,12 @@ proc_encrypted (CTX c, PACKET *pkt)
       if (pkt->pkt.encrypted->aead_algo)
         {
           write_status (STATUS_GOODMDC);
-          compliance_de_vs |= 2;
+          compliance_de_vs |= 4;
         }
       else if (pkt->pkt.encrypted->mdc_method && !result)
         {
           write_status (STATUS_GOODMDC);
-          compliance_de_vs |= 2;
+          compliance_de_vs |= 4;
         }
       else
         log_info (_("WARNING: message was not integrity protected\n"));
@@ -862,6 +863,16 @@ proc_encrypted (CTX c, PACKET *pkt)
        * ways to specify the session key (symmmetric and PK). */
     }
 
+
+  /* If we concluded that the decryption was compliant, issue a
+   * compliance status before the thed end of decryption status.  */
+  if (compliance_de_vs == (4|2|1))
+    {
+      write_status_strings (STATUS_DECRYPTION_COMPLIANCE_MODE,
+                            gnupg_status_compliance_flag (CO_DE_VS),
+                            NULL);
+    }
+
   xfree (c->dek);
   c->dek = NULL;
   free_packet (pkt, NULL);
@@ -878,7 +889,7 @@ proc_encrypted (CTX c, PACKET *pkt)
    * de-vs compliance mode by just looking at the exit status.  */
   if (opt.flags.require_compliance
       && opt.compliance == CO_DE_VS
-      && compliance_de_vs != (2|1))
+      && compliance_de_vs != (4|2|1))
     {
       log_error (_("operation forced to fail due to"
                    " unfulfilled compliance rules\n"));

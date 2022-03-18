@@ -906,8 +906,9 @@ gpg_error_t get_override_session_key (DEK *dek, const char *string);
 int handle_compressed (ctrl_t ctrl, void *ctx, PKT_compressed *cd,
 		       int (*callback)(iobuf_t, void *), void *passthru );
 
-/*-- encr-data.c --*/
-int decrypt_data (ctrl_t ctrl, void *ctx, PKT_encrypted *ed, DEK *dek );
+/*-- decrypt-data.c --*/
+int decrypt_data (ctrl_t ctrl, void *ctx, PKT_encrypted *ed, DEK *dek,
+                  int *compliance_error);
 
 /*-- plaintext.c --*/
 gpg_error_t get_output_file (const byte *embedded_name, int embedded_namelen,

@@ -306,12 +306,14 @@ get_override_session_key (DEK *dek, const char *string)
 
 /* Stub: */
 int
-decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
+decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
+              int *compliance_error)
 {
   (void)ctrl;
   (void)procctx;
   (void)ed;
   (void)dek;
+  (void)compliance_error;
   return GPG_ERR_GENERAL;
 }
 
