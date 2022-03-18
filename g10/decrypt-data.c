@@ -214,10 +214,14 @@ aead_checktag (decode_filter_ctx_t dfx, int final, const void *tagbuf)
 
 
 /****************
- * Decrypt the data, specified by ED with the key DEK.
+ * Decrypt the data, specified by ED with the key DEK.  On return
+ * COMPLIANCE_ERROR is set to true iff the decryption can claim that
+ * it was compliant in the current mode; otherwise this flag is set to
+ * false.
  */
 int
-decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
+decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
+              int *compliance_error)
 {
   decode_filter_ctx_t dfx;
   enum gcry_cipher_modes ciphermode;
@@ -227,6 +231,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   byte temp[32];
   unsigned int blocksize;
   unsigned int nprefix;
+
+  *compliance_error = 0;
 
   dfx = xtrycalloc (1, sizeof *dfx);
   if (!dfx)
@@ -261,8 +267,14 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
 		 openpgp_cipher_algo_name (dek->algo),
 		 gnupg_compliance_option_string (opt.compliance));
-      rc = gpg_error (GPG_ERR_CIPHER_ALGO);
-      goto leave;
+      *compliance_error = 1;
+      if (opt.flags.require_compliance)
+        {
+          /* We fail early in this case because it does not make sense
+           * to first decrypt everything.  */
+          rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+          goto leave;
+        }
     }
 
   write_status_printf (STATUS_DECRYPTION_INFO, "%d %d %d",
@@ -424,6 +436,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       if (!ed->buf)
         {
           log_error (_("problem handling encrypted packet\n"));
+          rc = gpg_error (GPG_ERR_INV_PACKET);
           goto leave;
         }
 
