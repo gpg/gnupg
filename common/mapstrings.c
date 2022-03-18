@@ -68,6 +68,18 @@ struct mapping_s
 static struct mapping_s *mappings;
 
 
+/* Similar to above but using two integers and a domain as key.  */
+struct intmapping_s
+{
+  struct intmapping_s *next;
+  int key1;
+  int key2;
+  const char *string;
+  char domain[1];
+};
+static struct intmapping_s *intmappings;
+
+
 /* If STRING has already been mapped, return the mapped string.  If
    not return NULL.  */
 static const char *
@@ -164,4 +176,41 @@ map_static_macro_string (const char *string)
     log_fatal ("map_static_macro_string failed: %s\n", strerror (errno));
 
   return store_mapping (string, p);
+}
+
+
+/* If a list of strings has already been mapped to a the tuple
+ * (DOMAIN,KEY1,KEY2) return that string.  If not, create a mapping
+ * made up of the concatenation of the given strings.  */
+const char *
+map_static_strings (const char *domain, int key1, int key2,
+                    const char *string1, ...)
+{
+  va_list arg_ptr;
+  struct intmapping_s *m;
+
+  if (!string1 || !domain)
+    return "";
+
+  for (m = intmappings; m; m = m->next)
+    if (m->key1 == key1 && m->key2 == key2 && !strcmp (domain, m->domain))
+      return m->string;
+
+  m = xmalloc (sizeof *m + strlen (domain));
+  strcpy (m->domain, domain);
+  m->key1 = key1;
+  m->key2 = key2;
+
+  va_start (arg_ptr, string1);
+  m->string = vstrconcat (string1, arg_ptr);
+  va_end (arg_ptr);
+  if (!m->string)
+    log_fatal ("map_static_strings failed: %s\n", strerror (errno));
+
+  gpgrt_annotate_leaked_object (m->string);
+  gpgrt_annotate_leaked_object (m);
+
+  m->next = intmappings;
+  intmappings = m;
+  return m->string;
 }

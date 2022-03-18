@@ -141,8 +141,11 @@ char *try_percent_escape (const char *str, const char *extra);
    NULL.  Returns a malloced buffer with the new string or NULL on a
    malloc error or if too many arguments are given.  */
 char *strconcat (const char *s1, ...) GPGRT_ATTR_SENTINEL(0);
+/* Same but taking a va_list.  */
+char *vstrconcat (const char *s1, va_list arg_ptr);
 /* Ditto, but die on error.  */
 char *xstrconcat (const char *s1, ...) GPGRT_ATTR_SENTINEL(0);
+
 
 char **strsplit (char *string, char delim, char replacement, int *count);
 
@@ -172,5 +175,7 @@ char *substitute_envvars (const char *string);
 
 /*-- mapstrings.c --*/
 const char *map_static_macro_string (const char *string);
+const char *map_static_strings (const char *domain, int key1, int key2,
+                                const char *string1, ...);
 
 #endif /*GNUPG_COMMON_STRINGHELP_H*/
