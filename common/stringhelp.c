@@ -1169,9 +1169,10 @@ try_percent_escape (const char *str, const char *extra)
 }
 
 
-
-static char *
-do_strconcat (const char *s1, va_list arg_ptr)
+/* Same as strconcat but takes a va_list.  Returns EINVAL if the list
+ * is too long, all other errors are due to an ENOMEM condition.  */
+char *
+vstrconcat (const char *s1, va_list arg_ptr)
 {
   const char *argv[48];
   size_t argc;
@@ -1216,7 +1217,7 @@ strconcat (const char *s1, ...)
   else
     {
       va_start (arg_ptr, s1);
-      result = do_strconcat (s1, arg_ptr);
+      result = vstrconcat (s1, arg_ptr);
       va_end (arg_ptr);
     }
   return result;
@@ -1235,7 +1236,7 @@ xstrconcat (const char *s1, ...)
   else
     {
       va_start (arg_ptr, s1);
-      result = do_strconcat (s1, arg_ptr);
+      result = vstrconcat (s1, arg_ptr);
       va_end (arg_ptr);
     }
   if (!result)

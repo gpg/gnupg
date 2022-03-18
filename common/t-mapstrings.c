@@ -88,6 +88,31 @@ test_map_static_macro_string (void)
 }
 
 
+static void
+test_map_static_strings (void)
+{
+  const char *s, *s1;
+
+  s1 = map_static_strings ("mydomain", 0, 42,
+                           "This", " ", "is", " ", "my"," ","string", NULL);
+  if (strcmp (s1, "This is my string"))
+    fail (1);
+  s = map_static_strings ("mydomain", 0, 42,
+                          "This", " ", "is", " ", "my"," ","string", NULL);
+  if (strcmp (s1, s))
+    fail (2);
+  s = map_static_strings ("mydomain", 0, 42, "foo", NULL);
+  if (strcmp (s1, s))
+    fail (3);
+  s = map_static_strings ("mydomain", 1, 42, "foo 1.42", NULL);
+  if (!strcmp (s1, s))
+    fail (4);
+  s = map_static_strings ("xdomain", 1, 42, "foo 1.42 other domain", NULL);
+  if (!strcmp (s1, s))
+    fail (5);
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -95,6 +120,7 @@ main (int argc, char **argv)
   (void)argv;
 
   test_map_static_macro_string ();
+  test_map_static_strings ();
 
   return 0;
 }
