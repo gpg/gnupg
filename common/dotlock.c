@@ -1118,30 +1118,52 @@ dotlock_take_unix (dotlock_t h, long timeout)
       my_info_0 ("lockfile disappeared\n");
       goto again;
     }
-  else if ( pid == getpid() && same_node )
-    {
-      my_info_0 ("Oops: lock already held by us\n");
-      h->locked = 1;
-
-      close (fd);
-      return 0; /* okay */
-    }
-  else if ( same_node && kill (pid, 0) && errno == ESRCH )
+  else if ( (pid == getpid() && same_node)
+            || (same_node && kill (pid, 0) && errno == ESRCH) )
+    /* Stale lockfile is detected. */
     {
       struct stat sb;
 
       /* Check if it's unlocked during examining the lockfile.  */
       if (fstat (fd, &sb) || sb.st_nlink == 0)
         {
-          /* It's gone already.  */
+          /* It's gone already by another process.  */
           close (fd);
           goto again;
         }
 
-      close (fd);
+      /*
+       * Here, although it's quite _rare_, we have a race condition.
+       *
+       * When multiple processes race on a stale lockfile, detecting
+       * AND removing should be done atomically.  That is, to work
+       * correctly, the file to be removed should be the one which is
+       * examined for detection.
+       *
+       * But, when it's not atomic, consider the case for us where it
+       * takes some time between the detection and the removal of the
+       * lockfile.
+       *
+       * In this situation, it is possible that the file which was
+       * detected as stale is already removed by another process and
+       * then new lockfile is created (by that process or other one).
+       *
+       * And it is newly created valid lockfile which is going to be
+       * removed by us.
+       *
+       * Consider this long comment as it expresses possible (long)
+       * time between fstat above and unlink below; Meanwhile, the
+       * lockfile in question may be removed and there may be new
+       * valid one.
+       *
+       * In short, when you see the message of removing stale lockfile
+       * when there are multiple processes for the work, there is
+       * (very) little possibility something went wrong.
+       */
 
-      my_info_1 (_("removing stale lockfile (created by %d)\n"), pid);
       unlink (h->lockname);
+      my_info_1 (_("removing stale lockfile (created by %d)\n"), pid);
+      close (fd);
       goto again;
     }
 
