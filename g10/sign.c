@@ -1928,6 +1928,15 @@ update_keysig_packet (ctrl_t ctrl,
   /* Create a new signature packet.  */
   sig = copy_signature (NULL, orig_sig);
 
+  /* Don't generate version 3 signature, but newer.  */
+  if (sig->version == 3)
+    {
+      if (pk->version > 3)
+        sig->version = pk->version;
+      else
+        sig->version = 4;
+    }
+
   sig->digest_algo = digest_algo;
 
   /* We need to create a new timestamp so that new sig expiration
