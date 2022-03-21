@@ -2000,6 +2000,31 @@ This option is reserved and shall not be used.  It will eventually be
 used to encrypt or sign using the CMS protocol; but that is not yet
 implemented.
 
+@item --batch
+@opindex batch
+Use batch mode.  Never ask but use the default action.  This option is
+passed directly to @command{gpg}.
+
+@item --yes
+@opindex yes
+Assume "yes" on most questions.  Often used together with
+@option{--batch} to overwrite existing files.  This option is passed
+directly to @command{gpg}.
+
+@item --no
+@opindex no
+Assume "no" on most questions.  This option is passed directly to
+@command{gpg}.
+
+@item --require-compliance
+@opindex require-compliance
+This option is passed directly to @command{gpg}.
+
+@item --status-fd @var{n}
+@opindex status-fd
+Write special status strings to the file descriptor @var{n}.
+See the file DETAILS in the documentation for a listing of them.
+
 
 @item --set-filename @var{file}
 @opindex set-filename

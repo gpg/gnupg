@@ -30,7 +30,8 @@
 #include <unistd.h>
 
 #include "../common/i18n.h"
-#include "../common/exectool.h"
+#include <gpg-error.h>
+#include "../common/exechelp.h"
 #include "../common/sysutils.h"
 #include "../common/ccparray.h"
 #include "gpgtar.h"
@@ -316,18 +317,64 @@ gpg_error_t
 gpgtar_extract (const char *filename, int decrypt)
 {
   gpg_error_t err;
-  estream_t stream;
-  estream_t cipher_stream = NULL;
+  estream_t stream = NULL;
   tar_header_t header = NULL;
   strlist_t extheader = NULL;
   const char *dirprefix = NULL;
   char *dirname = NULL;
   struct tarinfo_s tarinfo_buffer;
   tarinfo_t tarinfo = &tarinfo_buffer;
+  pid_t pid = (pid_t)(-1);
 
   memset (&tarinfo_buffer, 0, sizeof tarinfo_buffer);
 
-  if (filename)
+  if (decrypt)
+    {
+      strlist_t arg;
+      ccparray_t ccp;
+      const char **argv;
+
+      ccparray_init (&ccp, 0);
+      if (opt.batch)
+        ccparray_put (&ccp, "--batch");
+      if (opt.require_compliance)
+        ccparray_put (&ccp, "--require-compliance");
+      if (opt.status_fd != -1)
+        {
+          char tmpbuf[40];
+
+          snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%d", opt.status_fd);
+          ccparray_put (&ccp, tmpbuf);
+        }
+      ccparray_put (&ccp, "--output");
+      ccparray_put (&ccp, "-");
+      ccparray_put (&ccp, "--decrypt");
+      for (arg = opt.gpg_arguments; arg; arg = arg->next)
+        ccparray_put (&ccp, arg->d);
+      if (filename)
+        {
+          ccparray_put (&ccp, "--");
+          ccparray_put (&ccp, filename);
+        }
+
+      ccparray_put (&ccp, NULL);
+      argv = ccparray_get (&ccp, NULL);
+      if (!argv)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      err = gnupg_spawn_process (opt.gpg_program, argv, NULL, NULL,
+                                 ((filename? 0 : GNUPG_SPAWN_KEEP_STDIN)
+                                  | GNUPG_SPAWN_KEEP_STDERR),
+                                 NULL, &stream, NULL, &pid);
+      xfree (argv);
+      if (err)
+        goto leave;
+      es_set_binary (stream);
+    }
+  else if (filename)
     {
       if (!strcmp (filename, "-"))
         stream = es_stdin;
@@ -339,51 +386,15 @@ gpgtar_extract (const char *filename, int decrypt)
           log_error ("error opening '%s': %s\n", filename, gpg_strerror (err));
           return err;
         }
+      if (stream == es_stdin)
+        es_set_binary (es_stdin);
     }
   else
-    stream = es_stdin;
-
-  if (stream == es_stdin)
-    es_set_binary (es_stdin);
-
-  if (decrypt)
     {
-      strlist_t arg;
-      ccparray_t ccp;
-      const char **argv;
-
-      cipher_stream = stream;
-      stream = es_fopenmem (0, "rwb");
-      if (! stream)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      ccparray_init (&ccp, 0);
-
-      ccparray_put (&ccp, "--decrypt");
-      for (arg = opt.gpg_arguments; arg; arg = arg->next)
-        ccparray_put (&ccp, arg->d);
-
-      ccparray_put (&ccp, NULL);
-      argv = ccparray_get (&ccp, NULL);
-      if (!argv)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      err = gnupg_exec_tool_stream (opt.gpg_program, argv,
-                                    cipher_stream, NULL, stream, NULL, NULL);
-      xfree (argv);
-      if (err)
-        goto leave;
-
-      err = es_fseek (stream, 0, SEEK_SET);
-      if (err)
-        goto leave;
+      stream = es_stdin;
+      es_set_binary (es_stdin);
     }
+
 
   if (opt.directory)
     dirname = xtrystrdup (opt.directory);
@@ -435,6 +446,25 @@ gpgtar_extract (const char *filename, int decrypt)
       header = NULL;
     }
 
+  if (pid != (pid_t)(-1))
+    {
+      int exitcode;
+
+      err = es_fclose (stream);
+      stream = NULL;
+      if (err)
+        log_error ("error closing pipe: %s\n", gpg_strerror (err));
+      else
+        {
+          err = gnupg_wait_process (opt.gpg_program, pid, 1, &exitcode);
+          if (err)
+            log_error ("running %s failed (exitcode=%d): %s",
+                       opt.gpg_program, exitcode, gpg_strerror (err));
+          gnupg_release_process (pid);
+          pid = (pid_t)(-1);
+        }
+    }
+
 
  leave:
   free_strlist (extheader);
@@ -442,7 +472,5 @@ gpgtar_extract (const char *filename, int decrypt)
   xfree (dirname);
   if (stream != es_stdin)
     es_fclose (stream);
-  if (stream != cipher_stream)
-    es_fclose (cipher_stream);
   return err;
 }
