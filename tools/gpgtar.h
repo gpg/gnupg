@@ -41,6 +41,11 @@ struct
   int symmetric;
   const char *filename;
   const char *directory;
+  int batch;
+  int answer_yes;
+  int answer_no;
+  int status_fd;
+  int require_compliance;
 } opt;
 
 
