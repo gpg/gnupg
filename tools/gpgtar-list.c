@@ -477,7 +477,7 @@ gpgtar_list (const char *filename, int decrypt)
         ccparray_put (&ccp, "--require-compliance");
       if (opt.status_fd != -1)
         {
-          char tmpbuf[40];
+          static char tmpbuf[40];
 
           snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%d", opt.status_fd);
           ccparray_put (&ccp, tmpbuf);

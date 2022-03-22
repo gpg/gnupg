@@ -325,8 +325,45 @@ gpgtar_extract (const char *filename, int decrypt)
   struct tarinfo_s tarinfo_buffer;
   tarinfo_t tarinfo = &tarinfo_buffer;
   pid_t pid = (pid_t)(-1);
+  char *logfilename = NULL;
+
 
   memset (&tarinfo_buffer, 0, sizeof tarinfo_buffer);
+
+  if (opt.directory)
+    dirname = xtrystrdup (opt.directory);
+  else
+    {
+      if (opt.filename)
+        {
+          dirprefix = strrchr (opt.filename, '/');
+          if (dirprefix)
+            dirprefix++;
+          else
+            dirprefix = opt.filename;
+        }
+      else if (filename)
+        {
+          dirprefix = strrchr (filename, '/');
+          if (dirprefix)
+            dirprefix++;
+          else
+            dirprefix = filename;
+        }
+
+      if (!dirprefix || !*dirprefix)
+        dirprefix = "GPGARCH";
+
+      dirname = create_directory (dirprefix);
+      if (!dirname)
+        {
+          err = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
+        }
+    }
+
+  if (opt.verbose)
+    log_info ("extracting to '%s/'\n", dirname);
 
   if (decrypt)
     {
@@ -341,10 +378,16 @@ gpgtar_extract (const char *filename, int decrypt)
         ccparray_put (&ccp, "--require-compliance");
       if (opt.status_fd != -1)
         {
-          char tmpbuf[40];
+          static char tmpbuf[40];
 
           snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%d", opt.status_fd);
           ccparray_put (&ccp, tmpbuf);
+        }
+      if (opt.with_log)
+        {
+          ccparray_put (&ccp, "--log-file");
+          logfilename = xstrconcat (dirname, ".log", NULL);
+          ccparray_put (&ccp, logfilename);
         }
       ccparray_put (&ccp, "--output");
       ccparray_put (&ccp, "-");
@@ -396,41 +439,6 @@ gpgtar_extract (const char *filename, int decrypt)
     }
 
 
-  if (opt.directory)
-    dirname = xtrystrdup (opt.directory);
-  else
-    {
-      if (opt.filename)
-        {
-          dirprefix = strrchr (opt.filename, '/');
-          if (dirprefix)
-            dirprefix++;
-          else
-            dirprefix = opt.filename;
-        }
-      else if (filename)
-        {
-          dirprefix = strrchr (filename, '/');
-          if (dirprefix)
-            dirprefix++;
-          else
-            dirprefix = filename;
-        }
-
-      if (!dirprefix || !*dirprefix)
-        dirprefix = "GPGARCH";
-
-      dirname = create_directory (dirprefix);
-      if (!dirname)
-        {
-          err = gpg_error (GPG_ERR_GENERAL);
-          goto leave;
-        }
-    }
-
-  if (opt.verbose)
-    log_info ("extracting to '%s/'\n", dirname);
-
   for (;;)
     {
       err = gpgtar_read_header (stream, tarinfo, &header, &extheader);
@@ -470,6 +478,7 @@ gpgtar_extract (const char *filename, int decrypt)
   free_strlist (extheader);
   xfree (header);
   xfree (dirname);
+  xfree (logfilename);
   if (stream != es_stdin)
     es_fclose (stream);
   return err;

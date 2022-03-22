@@ -2025,6 +2025,11 @@ This option is passed directly to @command{gpg}.
 Write special status strings to the file descriptor @var{n}.
 See the file DETAILS in the documentation for a listing of them.
 
+@item --with-log
+@opindex with-log
+When extracting an encrypted tarball also write a log file with the
+gpg output to a file named after the extraction directory with the
+suffix ".log".
 
 @item --set-filename @var{file}
 @opindex set-filename
