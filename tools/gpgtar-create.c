@@ -1170,7 +1170,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
         ccparray_put (&ccp, "--require-compliance");
       if (opt.status_fd != -1)
         {
-          char tmpbuf[40];
+          static char tmpbuf[40];
 
           snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%d", opt.status_fd);
           ccparray_put (&ccp, tmpbuf);

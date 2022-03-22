@@ -81,6 +81,7 @@ enum cmd_and_opt_values
     oAnswerNo,
     oStatusFD,
     oRequireCompliance,
+    oWithLog,
 
     /* Compatibility with gpg-zip.  */
     oGpgArgs,
@@ -123,6 +124,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oAnswerNo, "no", "@"),
   ARGPARSE_s_i (oStatusFD, "status-fd", "@"),
   ARGPARSE_s_n (oRequireCompliance, "require-compliance", "@"),
+  ARGPARSE_s_n (oWithLog, "with-log", "@"),
 
   ARGPARSE_group (302, N_("@\nTar options:\n ")),
 
@@ -389,6 +391,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oAnswerNo: opt.answer_no = 1; break;
         case oStatusFD: opt.status_fd = pargs->r.ret_int; break;
         case oRequireCompliance: opt.require_compliance = 1; break;
+        case oWithLog: opt.with_log = 1; break;
 
         case oGpgArgs:;
           {

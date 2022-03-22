@@ -46,6 +46,7 @@ struct
   int answer_no;
   int status_fd;
   int require_compliance;
+  int with_log;
 } opt;
 
 
