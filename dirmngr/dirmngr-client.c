@@ -459,7 +459,8 @@ data_cb (void *opaque, const void *buffer, size_t length)
    returned in an alloced buffer whose address will be returned in
    RBUF and its length in RBUFLEN.  */
 static gpg_error_t
-read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
+read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen,
+                      int no_errmsg)
 {
   estream_t fp;
   int c;
@@ -602,7 +603,8 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
     }
   else if (state != s_waitend)
     {
-      log_error ("no certificate or invalid encoded\n");
+      if (!no_errmsg)
+        log_error ("no certificate or invalid encoded\n");
       xfree (buf);
       return gpg_error (GPG_ERR_INV_ARMOR);
     }
@@ -625,13 +627,13 @@ read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
   size_t nread, bufsize, buflen;
 
   if (opt.pem)
-    return read_pem_certificate (fname, rbuf, rbuflen);
+    return read_pem_certificate (fname, rbuf, rbuflen, 0);
   else if (fname)
     {
       /* A filename has been given.  Let's just assume it is in PEM
          format and decode it, and fall back to interpreting it as
          binary certificate if that fails.  */
-      err = read_pem_certificate (fname, rbuf, rbuflen);
+      err = read_pem_certificate (fname, rbuf, rbuflen, 1);
       if (! err)
         return 0;
       /* Clear the error count to try as binary certificate.  */
@@ -905,7 +907,7 @@ squid_loop_body (assuan_context_t ctx)
   unsigned char *certbuf;
   size_t certbuflen = 0;
 
-  err = read_pem_certificate (NULL, &certbuf, &certbuflen);
+  err = read_pem_certificate (NULL, &certbuf, &certbuflen, 0);
   if (gpg_err_code (err) == GPG_ERR_EOF)
     return err;
   if (err)
