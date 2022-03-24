@@ -634,6 +634,8 @@ read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
       err = read_pem_certificate (fname, rbuf, rbuflen);
       if (! err)
         return 0;
+      /* Clear the error count to try as binary certificate.  */
+      log_get_errorcount (1);
     }
 
   fp = fname? es_fopen (fname, "rb") : es_stdin;
