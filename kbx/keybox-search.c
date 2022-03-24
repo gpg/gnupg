@@ -304,8 +304,6 @@ blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
   if (pos + (uint64_t)keyinfolen*nkeys > (uint64_t)length)
     return 0; /* out of bounds */
 
-  if (fpr32)
-    fproff = 0; /* keyid are the high-order bits.  */
   for (idx=0; idx < nkeys; idx++)
     {
       off = pos + idx*keyinfolen;
@@ -702,7 +700,7 @@ has_short_kid (KEYBOXBLOB blob, u32 lkid)
   buf[2] = lkid >> 8;
   buf[3] = lkid;
 
-  if (fpr32)
+  if (fpr32 && (get16 (buffer + 20 + 32) & 0x80))
     return blob_cmp_fpr_part (blob, buf, 0, 4);
   else
     return blob_cmp_fpr_part (blob, buf, 16, 4);
@@ -732,7 +730,7 @@ has_long_kid (KEYBOXBLOB blob, u32 mkid, u32 lkid)
   buf[6] = lkid >> 8;
   buf[7] = lkid;
 
-  if (fpr32)
+  if (fpr32 && (get16 (buffer + 20 + 32) & 0x80))
     return blob_cmp_fpr_part (blob, buf, 0, 8);
   else
     return blob_cmp_fpr_part (blob, buf, 12, 8);
