@@ -679,6 +679,8 @@ static struct
    { TPM2DAEMON_NAME, TPM2DAEMON_DISP_NAME, "gnupg", N_("TPM"),
      GNUPG_MODULE_NAME_TPM2DAEMON, TPM2DAEMON_NAME ".conf",
      known_options_tpm2daemon, NULL, tpm2daemon_runtime_change},
+#else
+   { NULL },  /* DUMMY to keep the table in-sync with enums */
 #endif
 
    { DIRMNGR_NAME, DIRMNGR_DISP_NAME, "gnupg",   N_("Network"),
