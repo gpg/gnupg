@@ -461,7 +461,7 @@ gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  cache_mode_t cache_mode,
                                  lookup_ttl_t lookup_ttl,
                                  gcry_sexp_t *result,
-                                 char **r_passphrase);
+                                 char **r_passphrase, time_t *r_timestamp);
 gpg_error_t agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
                                      gcry_sexp_t *result);
 gpg_error_t agent_public_key_from_file (ctrl_t ctrl,

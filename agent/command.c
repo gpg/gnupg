@@ -2204,7 +2204,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
                              opt_verify? NULL : cache_nonce,
                              ctrl->server_local->keydesc,
                              grip, &shadow_info, CACHE_MODE_IGNORE, NULL,
-                             &s_skey, &passphrase);
+                             &s_skey, &passphrase, NULL);
   if (err)
     ;
   else if (shadow_info)
@@ -2812,7 +2812,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   err = agent_key_from_file (ctrl, cache_nonce,
                              ctrl->server_local->keydesc, grip,
                              &shadow_info, CACHE_MODE_IGNORE, NULL, &s_skey,
-                             openpgp ? &passphrase : NULL);
+                             openpgp ? &passphrase : NULL, NULL);
   if (err)
     goto leave;
   if (shadow_info)
@@ -2979,7 +2979,7 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   const char *argv[5];
   int argc;
   unsigned char grip[20];
-  const char *serialno, *timestamp_str, *keyref;
+  const char *serialno, *keyref;
   gcry_sexp_t s_skey = NULL;
   unsigned char *keydata;
   size_t keydatalen;
@@ -3017,21 +3017,9 @@ cmd_keytocard (assuan_context_t ctx, char *line)
 
   keyref = argv[2];
 
-  /* FIXME: Default to the creation time as stored in the private
-   * key.  The parameter is here so that gpg can make sure that the
-   * timestamp as used for key creation (and thus the openPGP
-   * fingerprint) is used.  */
-  timestamp_str = argc > 3? argv[3] : "19700101T000000";
-
-  if ((timestamp = isotime2epoch (timestamp_str)) == (time_t)(-1))
-    {
-      err = gpg_error (GPG_ERR_INV_TIME);
-      goto leave;
-    }
-
   err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
                              &shadow_info, CACHE_MODE_IGNORE, NULL,
-                             &s_skey, NULL);
+                             &s_skey, NULL, &timestamp);
   if (err)
     goto leave;
   if (shadow_info)
@@ -3039,6 +3027,22 @@ cmd_keytocard (assuan_context_t ctx, char *line)
       /* Key is already on a smartcard - we can't extract it. */
       err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       goto leave;
+    }
+
+  if (timestamp == (time_t)(-1))
+    {
+      /* Default to the creation time as stored in the private key.  The
+       * parameter is here so that gpg can make sure that the timestamp as
+       * used for key creation (and thus the openPGP fingerprint) is
+       * used.  */
+
+      const char *timestamp_str= argc > 3? argv[3] : "19700101T000000";
+
+      if ((timestamp = isotime2epoch (timestamp_str)) == (time_t)(-1))
+        {
+          err = gpg_error (GPG_ERR_INV_TIME);
+          goto leave;
+        }
     }
 
   /* Note: We can't use make_canon_sexp because we need to allocate a
@@ -3277,7 +3281,7 @@ cmd_keytotpm (assuan_context_t ctx, char *line)
 
   err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
                              &shadow_info, CACHE_MODE_IGNORE, NULL,
-                             &s_skey, NULL);
+                             &s_skey, NULL, NULL);
   if (err)
     {
       xfree (shadow_info);
