@@ -230,9 +230,25 @@ url_fetch_ldap (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
 
   if (ludp->lud_filter && ludp->lud_filter[0] != '(')
     {
-      log_error (_("'%s' is an invalid LDAP URL\n"), url);
-      err = gpg_error (GPG_ERR_BAD_URI);
-      goto leave;
+      if (!strcmp (ludp->lud_filter, "objectClass=cRLDistributionPoint"))
+        {
+          /* Hack for broken DPs in DGN certs.  */
+          log_info ("fixing broken LDAP URL\n");
+          free (ludp->lud_filter);
+          ludp->lud_filter
+            = strdup ("(objectClass=cRLDistributionPoint)");
+          if (!ludp->lud_filter)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+        }
+      else
+        {
+          log_error (_("'%s' is an invalid LDAP URL\n"), url);
+          err = gpg_error (GPG_ERR_BAD_URI);
+          goto leave;
+        }
     }
 
   if (ludp->lud_scheme && !strcmp (ludp->lud_scheme, "ldaps"))
