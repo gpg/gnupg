@@ -3029,20 +3029,19 @@ cmd_keytocard (assuan_context_t ctx, char *line)
       goto leave;
     }
 
+  /* Default to the creation time as stored in the private key.  The
+   * parameter is here so that gpg can make sure that the timestamp as
+   * used for key creation (and thus the openPGP fingerprint) is
+   * used.  */
+  if (argc > 3)
+    timestamp = isotime2epoch (argv[3]);
+  else if (timestamp == (time_t)(-1))
+    timestamp = isotime2epoch ("19700101T000000");
+
   if (timestamp == (time_t)(-1))
     {
-      /* Default to the creation time as stored in the private key.  The
-       * parameter is here so that gpg can make sure that the timestamp as
-       * used for key creation (and thus the openPGP fingerprint) is
-       * used.  */
-
-      const char *timestamp_str= argc > 3? argv[3] : "19700101T000000";
-
-      if ((timestamp = isotime2epoch (timestamp_str)) == (time_t)(-1))
-        {
-          err = gpg_error (GPG_ERR_INV_TIME);
-          goto leave;
-        }
+      err = gpg_error (GPG_ERR_INV_TIME);
+      goto leave;
     }
 
   /* Note: We can't use make_canon_sexp because we need to allocate a
