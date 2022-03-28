@@ -1012,7 +1012,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
     {
       char *escapedmbox;
 
-      escapedmbox = http_escape_string (mbox, "%;?&=");
+      escapedmbox = http_escape_string (mbox, "%;?&=+#");
       if (escapedmbox)
         {
           uri = strconcat ("https://",
