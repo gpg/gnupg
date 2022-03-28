@@ -3846,12 +3846,7 @@ main (int argc, char **argv)
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
 
-    if (opt.flags.rfc4880bis)
-      {
-        if (opt.verbose)
-          log_info ("Note: RFC4880bis features are enabled.\n");
-      }
-    else
+    if (!opt.flags.rfc4880bis)
       {
         opt.mimemode = 0; /* This will use text mode instead.  */
       }

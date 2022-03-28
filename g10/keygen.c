@@ -409,8 +409,6 @@ keygen_set_std_prefs (const char *string,int personal)
 
             if (opt.flags.rfc4880bis && !openpgp_aead_test_algo (AEAD_ALGO_OCB))
 	      strcat(dummy_string,"A2 ");
-            if (opt.flags.rfc4880bis && !openpgp_aead_test_algo (AEAD_ALGO_EAX))
-	      strcat(dummy_string,"A1 ");
 
             if (personal)
               {
