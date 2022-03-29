@@ -124,7 +124,7 @@
    that the handle shall only be used by one thread at a time.  This
    function creates a unique file temporary file (".#lk*") in the same
    directory as FNAME and returns a handle for further operations.
-   The module keeps track of theses unique files so that they will be
+   The module keeps track of these unique files so that they will be
    unlinked using the atexit handler.  If you don't need the lock file
    anymore, you may also explicitly remove it with a call to:
 
@@ -140,7 +140,7 @@
    you pass (0) instead of (-1) the function does not wait in case the
    file is already locked but returns -1 and sets ERRNO to EACCES.
    Any other positive value for the second parameter is considered a
-   timeout valuie in milliseconds.
+   timeout value in milliseconds.
 
    To release the lock you call:
 
@@ -526,7 +526,7 @@ maybe_deadlock (dotlock_t h)
    has been created on the same node. */
 #ifdef HAVE_POSIX_SYSTEM
 static int
-read_lockfile (dotlock_t h, int *same_node )
+read_lockfile (dotlock_t h, int *same_node, int *r_fd)
 {
   char buffer_space[10+1+70+1]; /* 70 is just an estimated value; node
                                    names are usually shorter. */
@@ -579,7 +579,11 @@ read_lockfile (dotlock_t h, int *same_node )
       nread += res;
     }
   while (res && nread != expected_len);
-  close(fd);
+
+  if (r_fd)
+    *r_fd = fd;
+  else
+    close(fd);
 
   if (nread < 11)
     {
@@ -1035,13 +1039,12 @@ dotlock_take_unix (dotlock_t h, long timeout)
   const char *maybe_dead="";
   int same_node;
   int saveerrno;
+  int fd;
 
  again:
   if (h->use_o_excl)
     {
       /* No hardlink support - use open(O_EXCL).  */
-      int fd;
-
       do
         {
           my_set_errno (0);
@@ -1111,7 +1114,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
     }
 
   /* Check for stale lock files.  */
-  if ( (pid = read_lockfile (h, &same_node)) == -1 )
+  if ( (pid = read_lockfile (h, &same_node, &fd)) == -1 )
     {
       if ( errno != ENOENT )
         {
@@ -1123,22 +1126,56 @@ dotlock_take_unix (dotlock_t h, long timeout)
       my_info_0 ("lockfile disappeared\n");
       goto again;
     }
-  else if ( pid == getpid() && same_node )
+  else if ( (pid == getpid() && same_node)
+            || (same_node && kill (pid, 0) && errno == ESRCH) )
+    /* Stale lockfile is detected. */
     {
-      my_info_0 ("Oops: lock already held by us\n");
-      h->locked = 1;
-      return 0; /* okay */
-    }
-  else if ( same_node && kill (pid, 0) && errno == ESRCH )
-    {
-      /* Note: It is unlikley that we get a race here unless a pid is
-         reused too fast or a new process with the same pid as the one
-         of the stale file tries to lock right at the same time as we.  */
-      my_info_1 (_("removing stale lockfile (created by %d)\n"), pid);
+      struct stat sb;
+
+      /* Check if it's unlocked during examining the lockfile.  */
+      if (fstat (fd, &sb) || sb.st_nlink == 0)
+        {
+          /* It's gone already by another process.  */
+          close (fd);
+          goto again;
+        }
+
+      /*
+       * Here, although it's quite _rare_, we have a race condition.
+       *
+       * When multiple processes race on a stale lockfile, detecting
+       * AND removing should be done atomically.  That is, to work
+       * correctly, the file to be removed should be the one which is
+       * examined for detection.
+       *
+       * But, when it's not atomic, consider the case for us where it
+       * takes some time between the detection and the removal of the
+       * lockfile.
+       *
+       * In this situation, it is possible that the file which was
+       * detected as stale is already removed by another process and
+       * then new lockfile is created (by that process or other one).
+       *
+       * And it is newly created valid lockfile which is going to be
+       * removed by us.
+       *
+       * Consider this long comment as it expresses possible (long)
+       * time between fstat above and unlink below; Meanwhile, the
+       * lockfile in question may be removed and there may be new
+       * valid one.
+       *
+       * In short, when you see the message of removing stale lockfile
+       * when there are multiple processes for the work, there is
+       * (very) little possibility something went wrong.
+       */
+
       unlink (h->lockname);
+      my_info_1 (_("removing stale lockfile (created by %d)\n"), pid);
+      close (fd);
       goto again;
     }
 
+  close (fd);
   if (lastpid == -1)
     lastpid = pid;
   ownerchanged = (pid != lastpid);
@@ -1250,7 +1287,7 @@ dotlock_take_w32 (dotlock_t h, long timeout)
 
 
 /* Take a lock on H.  A value of 0 for TIMEOUT returns immediately if
-   the lock can't be taked, -1 waits forever (hopefully not), other
+   the lock can't be taken, -1 waits forever (hopefully not), other
    values wait for TIMEOUT milliseconds.  Returns: 0 on success  */
 int
 dotlock_take (dotlock_t h, long timeout)
@@ -1288,7 +1325,7 @@ dotlock_release_unix (dotlock_t h)
   int pid, same_node;
   int saveerrno;
 
-  pid = read_lockfile (h, &same_node);
+  pid = read_lockfile (h, &same_node, NULL);
   if ( pid == -1 )
     {
       saveerrno = errno;
