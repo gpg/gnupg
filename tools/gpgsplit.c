@@ -34,9 +34,6 @@
 #ifdef HAVE_ZIP
 # include <zlib.h>
 #endif
-#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
-# include "zlib-riscos.h"
-#endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "../common/util.h"
@@ -548,12 +545,6 @@ write_part (FILE *fpin, unsigned long pktlen,
   unsigned char *p;
   const char *outname = create_filename (pkttype);
 
-#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
-  static int initialized = 0;
-
-  if (!initialized)
-      initialized = riscos_load_module("ZLib", zlib_path, 1);
-#endif
   if (opt_no_split)
     fpout = stdout;
   else

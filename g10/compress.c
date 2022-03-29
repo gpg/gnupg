@@ -32,9 +32,6 @@
 #include <errno.h>
 #ifdef HAVE_ZIP
 # include <zlib.h>
-# if defined(__riscos__) && defined(USE_ZLIBRISCOS)
-#  include "zlib-riscos.h"
-# endif
 #endif
 
 #include "gpg.h"
@@ -62,13 +59,6 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
 {
     int rc;
     int level;
-
-#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
-    static int zlib_initialized = 0;
-
-    if (!zlib_initialized)
-        zlib_initialized = riscos_load_module("ZLib", zlib_path, 1);
-#endif
 
     if( opt.compress_level >= 1 && opt.compress_level <= 9 )
 	level = opt.compress_level;
