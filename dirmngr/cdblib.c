@@ -131,11 +131,7 @@ cdb_init(struct cdb *cdbp, int fd)
   }
   /* memory-map file */
 #ifdef _WIN32
-# ifdef __MINGW32CE__
-  hFile = fd;
-# else
   hFile = (HANDLE) _get_osfhandle(fd);
-# endif
   if (hFile == (HANDLE) -1)
     return -1;
   hMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);

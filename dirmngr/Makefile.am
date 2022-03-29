@@ -74,7 +74,7 @@ dirmngr_SOURCES += dns.c dns.h
 endif
 
 if USE_LDAP
-dirmngr_SOURCES += ldapserver.h ldapserver.c ldap.c w32-ldap-help.h \
+dirmngr_SOURCES += ldapserver.h ldapserver.c ldap.c \
                    ldap-wrapper.h ldap-parse-uri.c ldap-parse-uri.h \
                    ldap-misc.c ldap-misc.h \
                    ks-engine-ldap.c $(ldap_url) ldap-wrapper.c
