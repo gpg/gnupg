@@ -2885,7 +2885,7 @@ connect_with_timeout (assuan_fd_t sock,
        * because the caller is expected to close the socket.  */
       return gpg_err_make (default_errsource, GPG_ERR_ETIMEDOUT);
     }
-  if (!FD_ISSET (sock, &rset) && !FD_ISSET (sock, &wset))
+  if (!FD_ISSET (FD2INT (sock), &rset) && !FD_ISSET (FD2INT (sock), &wset))
     {
       /* select misbehaved.  */
       return gpg_err_make (default_errsource, GPG_ERR_SYSTEM_BUG);
