@@ -77,12 +77,11 @@
 #undef X_OK
 #define X_OK F_OK
 
-/* We assume that a HANDLE can be represented by an int which should
-   be true for all i386 systems (HANDLE is defined as void *) and
-   these are the only systems for which Windows is available.  Further
-   we assume that -1 denotes an invalid handle.  */
+/* We assume that a HANDLE can be represented by an intptr_t which
+   should be true for all systems (HANDLE is defined as void *).
+   Further we assume that -1 denotes an invalid handle.  */
 # define fd_to_handle(a)  ((HANDLE)(a))
-# define handle_to_fd(a)  ((int)(a))
+# define handle_to_fd(a)  ((intptr_t)(a))
 # define pid_to_handle(a) ((HANDLE)(a))
 # define handle_to_pid(a) ((int)(a))
 
@@ -808,7 +807,7 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
       if (pids[i] == (pid_t)(-1))
         return my_error (GPG_ERR_INV_VALUE);
 
-      procs[i] = fd_to_handle (pids[i]);
+      procs[i] = pid_to_handle (pids[i]);
     }
 
   /* FIXME: We should do a pth_waitpid here.  However this has not yet
