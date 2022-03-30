@@ -190,7 +190,7 @@ static gnupg_fd_t create_server_socket (const char *name,
                                         assuan_sock_nonce_t *nonce);
 
 static void *start_connection_thread (void *arg);
-static void handle_connections (int listen_fd);
+static void handle_connections (gnupg_fd_t listen_fd);
 
 /* Pth wrapper function definitions. */
 ASSUAN_SYSTEM_NPTH_IMPL;
@@ -584,7 +584,7 @@ main (int argc, char **argv )
       /* This is the simple pipe based server */
       ctrl_t ctrl;
       npth_attr_t tattr;
-      int fd = -1;
+      gnupg_fd_t fd = GNUPG_INVALID_FD;
 
 #ifndef HAVE_W32_SYSTEM
       {
@@ -618,9 +618,9 @@ main (int argc, char **argv )
       if (multi_server)
         {
           socket_name = create_socket_name (TPM2DAEMON_SOCK_NAME);
-          fd = FD2INT (create_server_socket (socket_name,
-					     &redir_socket_name,
-					     &socket_nonce));
+          fd = create_server_socket (socket_name,
+                                     &redir_socket_name,
+                                     &socket_nonce));
         }
 
       res = npth_attr_init (&tattr);
@@ -654,8 +654,8 @@ main (int argc, char **argv )
       /* We run handle_connection to wait for the shutdown signal and
          to run the ticker stuff.  */
       handle_connections (fd);
-      if (fd != -1)
-        close (fd);
+      if (fd != GNUPG_INVALID_FD)
+        assuan_sock_close (fd);
     }
   else if (!is_daemon)
     {
@@ -664,7 +664,7 @@ main (int argc, char **argv )
     }
   else
     { /* Regular server mode */
-      int fd;
+      gnupg_fd_t fd;
 #ifndef HAVE_W32_SYSTEM
       pid_t pid;
       int i;
@@ -672,8 +672,8 @@ main (int argc, char **argv )
 
       /* Create the socket.  */
       socket_name = create_socket_name (TPM2DAEMON_SOCK_NAME);
-      fd = FD2INT (create_server_socket (socket_name,
-                                         &redir_socket_name, &socket_nonce));
+      fd = create_server_socket (socket_name,
+                                 &redir_socket_name, &socket_nonce));
 
 
       fflush (NULL);
@@ -788,7 +788,7 @@ main (int argc, char **argv )
 
       handle_connections (fd);
 
-      close (fd);
+      assuan_sock_close (fd);
     }
 
   xfree (config_filename);
@@ -1075,7 +1075,7 @@ tpm2d_kick_the_loop (void)
    in which case this code will only do regular timeouts and handle
    signals. */
 static void
-handle_connections (int listen_fd)
+handle_connections (gnupg_fd_t listen_fd)
 {
   npth_attr_t tattr;
   struct sockaddr_un paddr;
@@ -1083,7 +1083,6 @@ handle_connections (int listen_fd)
   fd_set fdset, read_fdset;
   int nfd;
   int ret;
-  int fd;
   struct timespec timeout;
   struct timespec *t;
   int saved_errno;
@@ -1152,10 +1151,10 @@ handle_connections (int listen_fd)
 
   FD_ZERO (&fdset);
   nfd = 0;
-  if (listen_fd != -1)
+  if (listen_fd != GNUPG_INVALID_FD)
     {
-      FD_SET (listen_fd, &fdset);
-      nfd = listen_fd;
+      FD_SET (FD2INT (listen_fd), &fdset);
+      nfd = FD2INT (listen_fd);
     }
 
   for (;;)
@@ -1173,7 +1172,7 @@ handle_connections (int listen_fd)
              file descriptors to wait for, so that the select will be
              used to just wait on a signal or timeout event. */
           FD_ZERO (&fdset);
-          listen_fd = -1;
+          listen_fd = GNUPG_INVALID_FD;
         }
 
       periodical_check = 0;
@@ -1232,13 +1231,16 @@ handle_connections (int listen_fd)
         }
 #endif
 
-      if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
+      if (listen_fd != GNUPG_INVALID_FD
+          && FD_ISSET (FD2INT (listen_fd), &read_fdset))
         {
           ctrl_t ctrl;
+          gnupg_fd_t fd;
 
           plen = sizeof paddr;
-          fd = npth_accept (listen_fd, (struct sockaddr *)&paddr, &plen);
-          if (fd == -1)
+          fd = INT2FD (npth_accept (FD2INT (listen_fd),
+                                    (struct sockaddr *)&paddr, &plen));
+          if (fd == GNUPG_INVALID_FD)
             {
               log_error ("accept failed: %s\n", strerror (errno));
             }
@@ -1246,22 +1248,22 @@ handle_connections (int listen_fd)
             {
               log_error ("error allocating connection control data: %s\n",
                          strerror (errno) );
-              close (fd);
+              assuan_sock_close (fd);
             }
           else
             {
               char threadname[50];
               npth_t thread;
 
-              snprintf (threadname, sizeof threadname, "conn fd=%d", fd);
-              ctrl->thread_startup.fd = INT2FD (fd);
+              snprintf (threadname, sizeof threadname, "conn fd=%d", FD2INT (fd));
+              ctrl->thread_startup.fd = fd;
               ret = npth_create (&thread, &tattr, start_connection_thread, ctrl);
               if (ret)
                 {
                   log_error ("error spawning connection handler: %s\n",
                              strerror (ret));
                   xfree (ctrl);
-                  close (fd);
+                  assuan_sock_close (fd);
                 }
               else
                 npth_setname_np (thread, threadname);
