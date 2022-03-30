@@ -115,6 +115,8 @@ typedef struct
 typedef struct {
   /* We support version 4 (rfc4880) and 5 (rfc4880bis).  */
   byte version;
+  /* If we use hkdf or not.  */
+  byte use_hkdf;
   /* The cipher algorithm used to encrypt the session key.  Note that
    * this may be different from the algorithm that is used to encrypt
    * bulk data.  */
@@ -646,6 +648,9 @@ int list_packets( iobuf_t a );
 
 const byte *issuer_fpr_raw (PKT_signature *sig, size_t *r_len);
 char *issuer_fpr_string (PKT_signature *sig);
+gpg_error_t hkdf_derive (const byte *salt, int saltlen, const byte *key,
+                         int keylen, const byte *info, int infolen,
+                         int outlen, byte *out);
 
 /*-- parse-packet.c --*/
 
@@ -928,7 +933,7 @@ gpg_error_t get_override_session_key (DEK *dek, const char *string);
 int handle_compressed (ctrl_t ctrl, void *ctx, PKT_compressed *cd,
 		       int (*callback)(iobuf_t, void *), void *passthru );
 
-/*-- encr-data.c --*/
+/*-- decrypt-data.c --*/
 int decrypt_data (ctrl_t ctrl, void *ctx, PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/

@@ -630,6 +630,7 @@ openpgp_aead_test_algo (aead_algo_t algo)
 
     case AEAD_ALGO_EAX:
     case AEAD_ALGO_OCB:
+    case AEAD_ALGO_GCM:
       return 0;
     }
 
@@ -648,6 +649,7 @@ openpgp_aead_algo_name (aead_algo_t algo)
     case AEAD_ALGO_NONE:  break;
     case AEAD_ALGO_EAX:   return "EAX";
     case AEAD_ALGO_OCB:   return "OCB";
+    case AEAD_ALGO_GCM:   return "GCM";
     }
 
   return "?";
@@ -672,6 +674,11 @@ openpgp_aead_algo_info (aead_algo_t algo, enum gcry_cipher_modes *r_mode,
     case AEAD_ALGO_EAX:
       *r_mode = MY_GCRY_CIPHER_MODE_EAX;
       *r_noncelen = 16;
+      break;
+
+    case AEAD_ALGO_GCM:
+      *r_mode = GCRY_CIPHER_MODE_GCM;
+      *r_noncelen = 12;
       break;
 
     default:
@@ -1241,6 +1248,8 @@ string_to_aead_algo (const char *string)
     result = 1;
   else if (!ascii_strcasecmp (string, "OCB"))
     result = 2;
+  else if (!ascii_strcasecmp (string, "GCM"))
+    result = 3;
   else if ((string[0]=='A' || string[0]=='a'))
     {
       char *endptr;

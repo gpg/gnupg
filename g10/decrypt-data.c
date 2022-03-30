@@ -141,6 +141,11 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
       i = 7;
       break;
 
+    case AEAD_ALGO_GCM:
+      memcpy (nonce, dfx->startiv, 12);
+      i = 4;
+      break;
+
     case AEAD_ALGO_EAX:
       memcpy (nonce, dfx->startiv, 16);
       i = 8;
@@ -222,84 +227,6 @@ aead_checktag (decode_filter_ctx_t dfx, int final, const void *tagbuf)
   return 0;
 }
 
-
-/* HKDF Extract and expand. */
-static gpg_error_t
-hkdf_derive (const byte *salt, int saltlen, const byte *key, int keylen,
-             const byte *info, int infolen, int outlen, byte *out)
-{
-  int algo = GCRY_MD_SHA256;
-  gcry_md_hd_t hd;
-  unsigned char *t;
-  unsigned char *p;
-  int mdlen;
-  gpg_error_t err = 0;
-  int off = 0;
-  unsigned char n = 0;
-
-  mdlen = gcry_md_get_algo_dlen (algo);
-  if (salt && saltlen != mdlen)
-    return gpg_error (GPG_ERR_INV_LENGTH);
-
-  t = xtrymalloc (mdlen);
-  if (!t)
-    return gpg_error_from_syserror ();
-
-  err = gcry_md_open (&hd, algo, GCRY_MD_FLAG_HMAC);
-  if (err)
-    return err;
-
-  if (salt)
-    {
-      err = gcry_md_setkey (hd, salt, mdlen);
-      if (err)
-        {
-          xfree (t);
-          gcry_md_close (hd);
-          return err;
-        }
-    }
-
-  if (keylen)
-    gcry_md_write (hd, key, keylen);
-
-  p = gcry_md_read (hd, 0);
-  memcpy (t, p, mdlen);
-
-  gcry_md_reset (hd);
-  err = gcry_md_setkey (hd, t, mdlen);
-  if (err)
-    {
-      xfree (t);
-      gcry_md_close (hd);
-      return err;
-    }
-
-  while (1)
-    {
-      n++;
-      gcry_md_write (hd, info, infolen);
-      gcry_md_write (hd, &n, 1);
-      p = gcry_md_read (hd, 0);
-      memcpy (t, p, mdlen);
-      if ((outlen - off) / mdlen)
-        {
-          memcpy (out + off, t, mdlen);
-          off += mdlen;
-        }
-      else
-        {
-          memcpy (out + off, t, (outlen - off));
-          break;
-        }
-      gcry_md_reset (hd);
-      gcry_md_write (hd, t, mdlen);
-    }
-
-  xfree (t);
-  gcry_md_close (hd);
-  return 0;
-}
 
 /****************
  * Decrypt the data, specified by ED with the key DEK.

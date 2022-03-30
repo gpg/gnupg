@@ -1203,6 +1203,8 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   PKT_symkey_enc *k;
   int rc = 0;
   int i, version, s2kmode, cipher_algo, aead_algo, hash_algo, seskeylen, minlen;
+  int v5_cr05_five_field_len = 0;
+  int v5_cr05_s2k_len = 0;
 
   if (pktlen < 4)
     goto too_short;
@@ -1232,8 +1234,22 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   pktlen--;
   if (version == 5)
     {
+      if (cipher_algo > 13)
+	{
+	  v5_cr05_five_field_len = cipher_algo;
+	  cipher_algo = iobuf_get_noeof (inp);
+	  pktlen--;
+	}
+
       aead_algo = iobuf_get_noeof (inp);
       pktlen--;
+      if (v5_cr05_five_field_len)
+	{
+	  if (pktlen < 1)
+	    goto too_short;
+	  v5_cr05_s2k_len = iobuf_get_noeof (inp);
+	  pktlen--;
+	}
     }
   else
     aead_algo = 0;
@@ -1280,6 +1296,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   k = packet->pkt.symkey_enc = xmalloc_clear (sizeof *packet->pkt.symkey_enc
 					      + seskeylen - 1);
   k->version = version;
+  k->use_hkdf = (v5_cr05_five_field_len != 0);
   k->cipher_algo = cipher_algo;
   k->aead_algo = aead_algo;
   k->s2k.mode = s2kmode;

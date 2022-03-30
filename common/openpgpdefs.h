@@ -152,7 +152,8 @@ typedef enum
   {
     AEAD_ALGO_NONE	    =  0,
     AEAD_ALGO_EAX	    =  1,
-    AEAD_ALGO_OCB	    =  2
+    AEAD_ALGO_OCB	    =  2,
+    AEAD_ALGO_GCM	    =  3
   }
 aead_algo_t;
 

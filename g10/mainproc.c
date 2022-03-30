@@ -249,13 +249,108 @@ add_signature (CTX c, PACKET *pkt)
   return 1;
 }
 
+
+/* HKDF Extract and expand. */
+gpg_error_t
+hkdf_derive (const byte *salt, int saltlen, const byte *key, int keylen,
+             const byte *info, int infolen, int outlen, byte *out)
+{
+  int algo = GCRY_MD_SHA256;
+  gcry_md_hd_t hd;
+  unsigned char *t;
+  unsigned char *p;
+  int mdlen;
+  gpg_error_t err = 0;
+  int off = 0;
+  unsigned char n = 0;
+
+  mdlen = gcry_md_get_algo_dlen (algo);
+  if (salt && saltlen != mdlen)
+    return gpg_error (GPG_ERR_INV_LENGTH);
+
+  t = xtrymalloc (mdlen);
+  if (!t)
+    return gpg_error_from_syserror ();
+
+  err = gcry_md_open (&hd, algo, GCRY_MD_FLAG_HMAC);
+  if (err)
+    return err;
+
+  err = gcry_md_setkey (hd, salt, salt? mdlen: 0);
+  if (err)
+    {
+      xfree (t);
+      gcry_md_close (hd);
+      return err;
+    }
+
+  if (keylen)
+    gcry_md_write (hd, key, keylen);
+
+  p = gcry_md_read (hd, 0);
+  memcpy (t, p, mdlen);
+
+  gcry_md_reset (hd);
+  err = gcry_md_setkey (hd, t, mdlen);
+  if (err)
+    {
+      xfree (t);
+      gcry_md_close (hd);
+      return err;
+    }
+
+  while (1)
+    {
+      n++;
+      gcry_md_write (hd, info, infolen);
+      gcry_md_write (hd, &n, 1);
+      p = gcry_md_read (hd, 0);
+      memcpy (t, p, mdlen);
+      if ((outlen - off) / mdlen)
+        {
+          memcpy (out + off, t, mdlen);
+          off += mdlen;
+        }
+      else
+        {
+          memcpy (out + off, t, (outlen - off));
+          break;
+        }
+      gcry_md_reset (hd);
+      gcry_md_write (hd, t, mdlen);
+    }
+
+  xfree (t);
+  gcry_md_close (hd);
+  return 0;
+}
+
+
 static gpg_error_t
-symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
+symkey_decrypt_seskey (DEK *dek, PKT_symkey_enc *enc)
 {
   gpg_error_t err;
   gcry_cipher_hd_t hd;
   unsigned int noncelen, keylen;
   enum gcry_cipher_modes ciphermode;
+
+  if (enc->use_hkdf)
+    {
+      unsigned char info[4];
+
+      keylen = openpgp_cipher_get_algo_keylen (enc->cipher_algo);
+      if (keylen > DIM (dek->key))
+	return gpg_error (GPG_ERR_TOO_LARGE);
+
+      info[0] = 0xc3;
+      info[1] = 0x05;
+      info[2] = enc->cipher_algo;
+      info[3] = enc->aead_algo;
+
+      hkdf_derive (NULL, 0, dek->key, dek->keylen, info, sizeof (info),
+		   keylen, dek->key);
+      dek->keylen = keylen;
+    }
 
   if (dek->use_aead)
     {
@@ -270,12 +365,12 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
     }
 
   /* Check that the session key has a size of 16 to 32 bytes.  */
-  if ((dek->use_aead && (slen < (noncelen + 16 + 16)
-                         || slen > (noncelen + 32 + 16)))
-      || (!dek->use_aead && (slen < 17 || slen > 33)))
+  if ((dek->use_aead && (enc->seskeylen < (noncelen + 16 + 16)
+                         || enc->seskeylen > (noncelen + 32 + 16)))
+      || (!dek->use_aead && (enc->seskeylen < 17 || enc->seskeylen > 33)))
     {
       log_error ( _("weird size for an encrypted session key (%d)\n"),
-		  (int)slen);
+		  (int)enc->seskeylen);
       return gpg_error (GPG_ERR_BAD_KEY);
     }
 
@@ -283,7 +378,7 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
   if (!err)
     err = gcry_cipher_setkey (hd, dek->key, dek->keylen);
   if (!err)
-    err = gcry_cipher_setiv (hd, noncelen? seskey : NULL, noncelen);
+    err = gcry_cipher_setiv (hd, noncelen? enc->seskey : NULL, noncelen);
   if (err)
     goto leave;
 
@@ -299,11 +394,11 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
       if (err)
         goto leave;
       gcry_cipher_final (hd);
-      keylen = slen - noncelen - 16;
-      err = gcry_cipher_decrypt (hd, seskey+noncelen, keylen, NULL, 0);
+      keylen = enc->seskeylen - noncelen - 16;
+      err = gcry_cipher_decrypt (hd, enc->seskey+noncelen, keylen, NULL, 0);
       if (err)
         goto leave;
-      err = gcry_cipher_checktag (hd, seskey+noncelen+keylen, 16);
+      err = gcry_cipher_checktag (hd, enc->seskey+noncelen+keylen, 16);
       if (err)
         goto leave;
       /* Now we replace the dek components with the real session key to
@@ -314,11 +409,11 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
           goto leave;
         }
       dek->keylen = keylen;
-      memcpy (dek->key, seskey + noncelen, dek->keylen);
+      memcpy (dek->key, enc->seskey + noncelen, dek->keylen);
     }
   else
     {
-      gcry_cipher_decrypt (hd, seskey, slen, NULL, 0 );
+      gcry_cipher_decrypt (hd, enc->seskey, enc->seskeylen, NULL, 0 );
       /* Here we can only test whether the algo given in decrypted
        * session key is a valid OpenPGP algo.  With 11 defined
        * symmetric algorithms we will miss 4.3% of wrong passphrases
@@ -328,8 +423,8 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
        * the gnupg < 2.2 bug compatible case which would terminate the
        * process on GPG_ERR_CIPHER_ALGO.  Note that with AEAD (above)
        * we will have a reliable test here.  */
-      if (openpgp_cipher_test_algo (seskey[0])
-          || openpgp_cipher_get_algo_keylen (seskey[0]) != slen - 1)
+      if (openpgp_cipher_test_algo (enc->seskey[0])
+          || openpgp_cipher_get_algo_keylen (enc->seskey[0]) != enc->seskeylen - 1)
         {
           err = gpg_error (GPG_ERR_CHECKSUM);
           goto leave;
@@ -337,15 +432,15 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
 
       /* Now we replace the dek components with the real session key to
        * decrypt the contents of the sequencing packet. */
-      keylen = slen-1;
+      keylen = enc->seskeylen-1;
       if (keylen > DIM(dek->key))
         {
           err = gpg_error (GPG_ERR_TOO_LARGE);
           goto leave;
         }
-      dek->algo = seskey[0];
+      dek->algo = enc->seskey[0];
       dek->keylen = keylen;
-      memcpy (dek->key, seskey + 1, dek->keylen);
+      memcpy (dek->key, enc->seskey + 1, dek->keylen);
     }
 
   /*log_hexdump( "thekey", dek->key, dek->keylen );*/
@@ -426,8 +521,7 @@ proc_symkey_enc (CTX c, PACKET *pkt)
                  come later. */
               if (enc->seskeylen)
                 {
-                  err = symkey_decrypt_seskey (c->dek,
-                                               enc->seskey, enc->seskeylen);
+                  err = symkey_decrypt_seskey (c->dek, enc);
                   if (err)
                     {
                       log_info ("decryption of the symmetrically encrypted"
