@@ -1029,7 +1029,7 @@ start_connection_thread (void *arg)
      handler asked for it.  With the next ticker event and given that
      no other connections are running the shutdown will then
      happen.  */
-  if (tpm2d_command_handler (ctrl, FD2INT (ctrl->thread_startup.fd))
+  if (tpm2d_command_handler (ctrl, ctrl->thread_startup.fd)
       && pipe_server)
     shutdown_pending = 1;
 

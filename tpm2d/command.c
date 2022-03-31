@@ -403,7 +403,7 @@ register_commands (assuan_context_t ctx)
    server, otherwise it is a regular server.  Returns true if there
    are no more active asessions.  */
 int
-tpm2d_command_handler (ctrl_t ctrl, int fd)
+tpm2d_command_handler (ctrl_t ctrl, gnupg_fd_t fd)
 {
   int rc;
   assuan_context_t ctx = NULL;
@@ -417,7 +417,7 @@ tpm2d_command_handler (ctrl_t ctrl, int fd)
       tpm2d_exit (2);
     }
 
-  if (fd == -1)
+  if (fd == GNUPG_INVALID_FD)
     {
       assuan_fd_t filedes[2];
 
@@ -427,7 +427,7 @@ tpm2d_command_handler (ctrl_t ctrl, int fd)
     }
   else
     {
-      rc = assuan_init_socket_server (ctx, INT2FD (fd),
+      rc = assuan_init_socket_server (ctx, fd,
                                       ASSUAN_SOCKET_SERVER_ACCEPTED);
     }
   if (rc)

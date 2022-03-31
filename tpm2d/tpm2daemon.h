@@ -92,7 +92,7 @@ void tpm2d_exit (int rc);
 
 /*-- command.c --*/
 gpg_error_t initialize_module_command (void);
-int  tpm2d_command_handler (ctrl_t, int);
+int  tpm2d_command_handler (ctrl_t, gnupg_fd_t);
 void send_client_notifications (app_t app, int removal);
 void tpm2d_kick_the_loop (void);
 int get_active_connection_count (void);
