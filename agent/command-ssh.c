@@ -3590,7 +3590,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 
 /* Return the peer's pid.  */
 static void
-get_client_info (int fd, struct peer_info_s *out)
+get_client_info (gnupg_fd_t fd, struct peer_info_s *out)
 {
   pid_t client_pid = (pid_t)(-1);
   int client_uid = -1;
@@ -3604,7 +3604,7 @@ get_client_info (int fd, struct peer_info_s *out)
 #endif
     socklen_t cl = sizeof cr;
 
-    if (!getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &cr, &cl))
+    if (!getsockopt (FD2INT (fd), SOL_SOCKET, SO_PEERCRED, &cr, &cl))
       {
 #if defined (HAVE_STRUCT_SOCKPEERCRED_PID) || defined (HAVE_STRUCT_UCRED_PID)
         client_pid = cr.pid;
@@ -3621,13 +3621,13 @@ get_client_info (int fd, struct peer_info_s *out)
   {
     socklen_t len = sizeof (pid_t);
 
-    getsockopt (fd, SOL_LOCAL, LOCAL_PEERPID, &client_pid, &len);
+    getsockopt (FD2INT (fd), SOL_LOCAL, LOCAL_PEERPID, &client_pid, &len);
 #if defined (LOCAL_PEERCRED)
     {
       struct xucred cr;
       len = sizeof (struct xucred);
 
-      if (!getsockopt (fd, SOL_LOCAL, LOCAL_PEERCRED, &cr, &len))
+      if (!getsockopt (FD2INT (fd), SOL_LOCAL, LOCAL_PEERCRED, &cr, &len))
 	client_uid = (int)cr.cr_uid;
     }
 #endif
@@ -3637,7 +3637,7 @@ get_client_info (int fd, struct peer_info_s *out)
     struct unpcbid unp;
     socklen_t unpl = sizeof unp;
 
-    if (getsockopt (fd, 0, LOCAL_PEEREID, &unp, &unpl) != -1)
+    if (getsockopt (FD2INT (fd), 0, LOCAL_PEEREID, &unp, &unpl) != -1)
       {
         client_pid = unp.unp_pid;
         client_uid = (int)unp.unp_euid;
@@ -3647,7 +3647,7 @@ get_client_info (int fd, struct peer_info_s *out)
   {
     ucred_t *ucred = NULL;
 
-    if (getpeerucred (fd, &ucred) != -1)
+    if (getpeerucred (FD2INT (fd), &ucred) != -1)
       {
         client_pid = ucred_getpid (ucred);
 	client_uid = (int)ucred_geteuid (ucred);
@@ -3676,7 +3676,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   if (err)
     goto out;
 
-  get_client_info (FD2INT(sock_client), &peer_info);
+  get_client_info (sock_client, &peer_info);
   ctrl->client_pid = peer_info.pid;
   ctrl->client_uid = peer_info.uid;
 
