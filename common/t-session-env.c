@@ -154,6 +154,7 @@ test_all (void)
 
   listall (se);
 
+#ifndef HAVE_W32_SYSTEM
   /* Retrieve a default one.  */
   s = session_env_getenv_or_default (se, "HOME", NULL);
   if (!s)
@@ -161,14 +162,17 @@ test_all (void)
       fprintf (stderr, "failed to get default of HOME\n");
       exit (1);
     }
+#endif
 
   s = session_env_getenv (se, "HOME");
   if (s)
     fail(0);  /* This is a default value, thus we should not see it.  */
 
+#ifndef HAVE_W32_SYSTEM
   s = session_env_getenv_or_default (se, "HOME", NULL);
   if (!s)
     fail(0);  /* But here we should see it.  */
+#endif
 
   /* Add a few more.  */
   err = session_env_putenv (se, "X1=A value");
