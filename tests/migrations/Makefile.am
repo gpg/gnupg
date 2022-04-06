@@ -53,7 +53,7 @@ check: xcheck
 
 .PHONY: xcheck
 xcheck:
-	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
+	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm$(EXEEXT) \
 	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(TESTS)
 
 EXTRA_DIST = common.scm run-tests.scm setup.scm all-tests.scm \

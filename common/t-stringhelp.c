@@ -89,7 +89,15 @@ mygetcwd (void)
       return buffer;
 #else
       if (getcwd (buffer, size) == buffer)
-        return buffer;
+        {
+#ifdef HAVE_W32_SYSTEM
+          char *p;
+          for (p = buffer; *p; p++)
+            if (*p == '\\')
+              *p = '/';
+#endif
+          return buffer;
+        }
       xfree (buffer);
       if (errno != ERANGE)
         {
