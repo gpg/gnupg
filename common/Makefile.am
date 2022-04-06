@@ -170,11 +170,10 @@ module_tests = t-stringhelp t-timestuff \
 	       t-session-env t-openpgp-oid t-ssh-utils \
 	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist \
 	       t-name-value t-ccparray t-recsel t-w32-cmdline
-if !HAVE_W32CE_SYSTEM
-module_tests += t-exechelp t-exectool
-endif
 if HAVE_W32_SYSTEM
 module_tests += t-w32-reg
+else
+module_tests += t-exechelp t-exectool
 endif
 
 if MAINTAINER_MODE
