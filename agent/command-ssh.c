@@ -3671,6 +3671,10 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   gpg_error_t err;
   int ret;
   struct peer_info_s peer_info;
+  es_syshd_t syshd;
+
+  syshd.type = ES_SYSHD_SOCK;
+  syshd.u.sock = sock_client;
 
   err = agent_copy_startup_env (ctrl);
   if (err)
@@ -3681,7 +3685,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   ctrl->client_uid = peer_info.uid;
 
   /* Create stream from socket.  */
-  stream_sock = es_fdopen (FD2INT(sock_client), "r+");
+  stream_sock = es_sysopen (&syshd, "r+");
   if (!stream_sock)
     {
       err = gpg_error_from_syserror ();
