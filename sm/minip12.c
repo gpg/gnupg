@@ -2226,7 +2226,7 @@ build_rsa_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
  * For details see RFC-5480 and RFC-5915 (ECparameters are not created).
  *
  * KPARMS[0] := Opaque MPI with the curve name as dotted-decimal string.
- * KPARMS[1] := Opaque MPI with the pgublic key (q)
+ * KPARMS[1] := Opaque MPI with the public key (q)
  * KPARMS[2] := Opaque MPI with the private key (d)
  * MODE controls what is being generated:
  *    0 - As described above
