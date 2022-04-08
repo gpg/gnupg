@@ -620,7 +620,7 @@ main (int argc, char **argv )
           socket_name = create_socket_name (TPM2DAEMON_SOCK_NAME);
           fd = create_server_socket (socket_name,
                                      &redir_socket_name,
-                                     &socket_nonce));
+                                     &socket_nonce);
         }
 
       res = npth_attr_init (&tattr);
@@ -673,7 +673,7 @@ main (int argc, char **argv )
       /* Create the socket.  */
       socket_name = create_socket_name (TPM2DAEMON_SOCK_NAME);
       fd = create_server_socket (socket_name,
-                                 &redir_socket_name, &socket_nonce));
+                                 &redir_socket_name, &socket_nonce);
 
 
       fflush (NULL);
