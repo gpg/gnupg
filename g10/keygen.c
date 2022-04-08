@@ -3016,13 +3016,6 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 		    tty_printf(_("The characters '%s' and '%s' may not "
                                  "appear in name\n"), "<", ">");
                   }
-		else if( digitp(aname) )
-		    tty_printf(_("Name may not start with a digit\n"));
-		else if (*aname && strlen (aname) < 5)
-                  {
-		    tty_printf(_("Name must be at least 5 characters long\n"));
-                    /* However, we allow an empty name.  */
-                  }
 		else
 		    break;
 	    }
