@@ -456,7 +456,7 @@ struct app_local_s
   /* The vendor's product.  */
   card_product_t card_product;
 
-  /* Flag indicating that extedned_mode is not supported.  */
+  /* Flag indicating that extended_mode is not supported.  */
   unsigned int no_extended_mode : 1;
 
   /* Flag indicating whether we may use direct path selection. */
@@ -3569,6 +3569,15 @@ read_p15_info (app_t app)
     }
 
   release_lists (app);
+
+  if (IS_CARDOS_5 (app)
+      && app->app_local->manufacturer_id
+      && !ascii_strcasecmp (app->app_local->manufacturer_id, "GeNUA mbH")
+      && !app->app_local->no_extended_mode)
+    {
+      log_info ("p15: disabling extended mode based on TokenInfo\n");
+      app->app_local->no_extended_mode = 1;
+    }
 
   /* Read the ODF so that we know the location of all directory
      files. */
