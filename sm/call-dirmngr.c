@@ -425,6 +425,51 @@ unhexify_fpr (const char *hexstr, unsigned char *fpr)
 }
 
 
+/* This is a helper to print diagnostics from dirmngr indicated by
+ * WARNING or NOTE status lines.  Returns true if the status LINE was
+ * processed.  */
+static int
+warning_and_note_printer (const char *line)
+{
+  const char *s, *s2;
+  const char *warn = NULL;
+  int is_note = 0;
+
+  if ((s = has_leading_keyword (line, "WARNING")))
+    ;
+  else if ((is_note = !!(s = has_leading_keyword (line, "NOTE"))))
+    ;
+  else
+    return 0;  /* Nothing to process.  */
+
+  if ((s2 = has_leading_keyword (s, "no_crl_due_to_tor"))
+      || (s2 = has_leading_keyword (s, "no_ldap_due_to_tor"))
+      || (s2 = has_leading_keyword (s, "no_ocsp_due_to_tor")))
+    warn = _("Tor might be in use - network access is limited");
+  else
+    warn = NULL;
+
+  if (warn)
+    {
+      if (is_note)
+        log_info (_("Note: %s\n"), warn);
+      else
+        log_info (_("WARNING: %s\n"), warn);
+      if (s2)
+        {
+          while (*s2 && !spacep (s2))
+            s2++;
+          while (*s2 && spacep (s2))
+            s2++;
+          if (*s2)
+            gpgsm_print_further_info ("%s", s2);
+        }
+    }
+
+  return 1;  /* Status line processed.  */
+}
+
+
 static gpg_error_t
 isvalid_status_cb (void *opaque, const char *line)
 {
@@ -446,6 +491,10 @@ isvalid_status_cb (void *opaque, const char *line)
       if (!*s || !unhexify_fpr (s, parm->fpr))
         parm->seen++; /* Bump it to indicate an error. */
     }
+  else if (warning_and_note_printer (line))
+    {
+    }
+
   return 0;
 }
 
@@ -722,6 +771,10 @@ lookup_status_cb (void *opaque, const char *line)
           gpgsm_status (parm->ctrl, STATUS_TRUNCATED, line);
         }
     }
+  else if (warning_and_note_printer (line))
+    {
+    }
+
   return 0;
 }
 
@@ -969,6 +1022,10 @@ run_command_status_cb (void *opaque, const char *line)
             return gpg_error (GPG_ERR_ASS_CANCELED);
         }
     }
+  else if (warning_and_note_printer (line))
+    {
+    }
+
   return 0;
 }
 

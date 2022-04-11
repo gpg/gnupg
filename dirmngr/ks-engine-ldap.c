@@ -847,6 +847,20 @@ extract_keys (estream_t output,
   es_fprintf (output, "INFO %s END\n", certid);
 }
 
+
+/* For now we do not support LDAP over Tor.  */
+static gpg_error_t
+no_ldap_due_to_tor (ctrl_t ctrl)
+{
+  gpg_error_t err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+  const char *msg = _("LDAP access not possible due to Tor mode");
+
+  log_error ("%s", msg);
+  dirmngr_status_printf (ctrl, "NOTE", "no_ldap_due_to_tor %u %s", err, msg);
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+}
+
+
 /* Get the key described key the KEYSPEC string from the keyserver
    identified by URI.  On success R_FP has an open stream to read the
    data.  */
@@ -869,9 +883,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 
   if (dirmngr_use_tor ())
     {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("LDAP access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+      return no_ldap_due_to_tor (ctrl);
     }
 
   /* Make sure we are talking to an OpenPGP LDAP server.  */
@@ -1067,9 +1079,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   if (dirmngr_use_tor ())
     {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("LDAP access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+      return no_ldap_due_to_tor (ctrl);
     }
 
   /* Make sure we are talking to an OpenPGP LDAP server.  */
@@ -1959,9 +1969,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 
   if (dirmngr_use_tor ())
     {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("LDAP access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+      return no_ldap_due_to_tor (ctrl);
     }
 
   err = my_ldap_connect (uri, &ldap_conn, &basedn, NULL, NULL, &serverinfo);

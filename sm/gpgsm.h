@@ -489,6 +489,7 @@ int gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
 
 
 /*-- misc.c --*/
+void gpgsm_print_further_info (const char *format, ...) GPGRT_ATTR_PRINTF(1,2);
 void setup_pinentry_env (void);
 gpg_error_t transform_sigval (const unsigned char *sigval, size_t sigvallen,
                               int mdalgo,

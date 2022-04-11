@@ -35,6 +35,27 @@
 #include "../common/sexp-parse.h"
 
 
+/* Print a message
+ *   "(further info: %s)\n
+ * in verbose mode to further explain an error.  That message is
+ * intended to help debug a problem and should not be translated.
+ */
+void
+gpgsm_print_further_info (const char *format, ...)
+{
+  va_list arg_ptr;
+
+  if (!opt.verbose)
+    return;
+
+  log_info (_("(further info: "));
+  va_start (arg_ptr, format);
+  log_logv (GPGRT_LOGLVL_CONT, format, arg_ptr);
+  va_end (arg_ptr);
+  log_printf (")\n");
+}
+
+
 /* Setup the environment so that the pinentry is able to get all
    required information.  This is used prior to an exec of the
    protect-tool. */

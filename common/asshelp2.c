@@ -63,11 +63,15 @@ vprint_assuan_status (assuan_context_t ctx,
                       const char *format, va_list arg_ptr)
 {
   int rc;
+  size_t n;
   char *buf;
 
   rc = gpgrt_vasprintf (&buf, format, arg_ptr);
   if (rc < 0)
     return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+  n = strlen (buf);
+  if (n && buf[n-1] == '\n')
+    buf[n-1] = 0;  /* Strip trailing LF to avoid earning from Assuan  */
   rc = assuan_write_status (ctx, keyword, buf);
   xfree (buf);
   return rc;

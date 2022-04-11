@@ -147,6 +147,19 @@ my_es_read (void *opaque, char *buffer, size_t nbytes, size_t *nread)
 }
 
 
+/* For now we do not support LDAP over Tor.  */
+static gpg_error_t
+no_crl_due_to_tor (ctrl_t ctrl)
+{
+  gpg_error_t err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+  const char *text = _("CRL access not possible due to Tor mode");
+
+  log_error ("%s", text);
+  dirmngr_status_printf (ctrl, "NOTE", "no_crl_due_to_tor %u %s", err, text);
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+}
+
+
 /* Fetch CRL from URL and return the entire CRL using new ksba reader
    object in READER.  Note that this reader object should be closed
    only using ldap_close_reader. */
@@ -233,9 +246,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
         }
       else if (dirmngr_use_tor ())
         {
-          /* For now we do not support LDAP over Tor.  */
-          log_error (_("CRL access not possible due to Tor mode\n"));
-          err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+          err = no_crl_due_to_tor (ctrl);
         }
       else
         {
@@ -259,9 +270,7 @@ crl_fetch_default (ctrl_t ctrl, const char *issuer, ksba_reader_t *reader)
 {
   if (dirmngr_use_tor ())
     {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("CRL access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+      return no_crl_due_to_tor (ctrl);
     }
   if (opt.disable_ldap)
     {
@@ -291,9 +300,7 @@ ca_cert_fetch (ctrl_t ctrl, cert_fetch_context_t *context, const char *dn)
 {
   if (dirmngr_use_tor ())
     {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("CRL access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+      return no_crl_due_to_tor (ctrl);
     }
   if (opt.disable_ldap)
     {
@@ -318,9 +325,7 @@ start_cert_fetch (ctrl_t ctrl, cert_fetch_context_t *context,
 {
   if (dirmngr_use_tor ())
     {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("CRL access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+      return no_crl_due_to_tor (ctrl);
     }
   if (opt.disable_ldap)
     {
