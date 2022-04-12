@@ -3071,7 +3071,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
       return 0;
     }
 
-  if (!uidnode)
+  if (pk->version < 5 && !uidnode)
     {
       if (!for_migration)
         log_error( _("key %s: no user ID\n"), keystr_from_pk (pk));
