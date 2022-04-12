@@ -1095,8 +1095,9 @@ add_control_entry (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       time_t atime = time (NULL);
 
       err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &fpr_md5);
+      /* ignore the errors as MD5 is not available in FIPS mode */
       if (err)
-        goto out;
+        fpr_md5 = NULL;
 
       err = ssh_get_fingerprint_string (key, GCRY_MD_SHA256, &fpr_sha256);
       if (err)
@@ -1113,7 +1114,8 @@ add_control_entry (ctrl_t ctrl, ssh_key_type_spec_t *spec,
                spec->name,
                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
                tp->tm_hour, tp->tm_min, tp->tm_sec,
-               fpr_md5, fpr_sha256, hexgrip, ttl, confirm? " confirm":"");
+               fpr_md5? fpr_md5:"", fpr_sha256, hexgrip, ttl,
+               confirm? " confirm":"");
 
     }
  out:
