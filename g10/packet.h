@@ -264,6 +264,7 @@ typedef struct
   /* First 2 bytes of the digest.  (Serialized.  Note: this is not
      automatically filled in when serializing a signature!)  */
   byte digest_start[2];
+  byte v5_salt[16];
   /* The signature.  (Serialized.)  */
   gcry_mpi_t  data[PUBKEY_MAX_NSIG];
   /* The message digest and its length (in bytes).  Note the maximum

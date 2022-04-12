@@ -2273,6 +2273,22 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   sig->digest_start[1] = iobuf_get_noeof (inp);
   pktlen--;
 
+  if (sig->version == 5)
+    {
+      if (pktlen < 16)
+        goto underflow;
+      if (iobuf_read (inp, sig->v5_salt, 16) != 16)
+        {
+          log_error ("premature eof while reading "
+                     "salt\n");
+          if (list_mode)
+            es_fputs (":signature packet: [premature eof]\n", listfp);
+          rc = -1;
+          goto leave;
+        }
+      pktlen -= 16;
+    }
+
   if (is_v4or5 && sig->pubkey_algo)  /* Extract required information.  */
     {
       const byte *p;
