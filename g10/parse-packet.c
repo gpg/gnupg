@@ -2947,7 +2947,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 
       /* Skip count of secret key material.  */
-      if (is_v5)
+      if (0 && is_v5)
         {
           if (pktlen < 4)
             {
