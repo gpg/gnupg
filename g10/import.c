@@ -1934,7 +1934,7 @@ import_one_real (ctrl_t ctrl,
     }
 
 
-  if (!uidnode)
+  if (pk->version < 5 && !uidnode)
     {
       if (!silent)
         log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
@@ -2021,7 +2021,7 @@ import_one_real (ctrl_t ctrl,
     }
 
   /* Delete invalid parts and bail out if there are no user ids left.  */
-  if (!delete_inv_parts (ctrl, keyblock, keyid, options))
+  if (!delete_inv_parts (ctrl, keyblock, keyid, options) && pk->version < 5)
     {
       if (!silent)
         {
