@@ -122,6 +122,8 @@ typedef enum
     SIGSUBPKT_ATTST_SIGS    = 37, /* Attested Certifications.  */
     SIGSUBPKT_KEY_BLOCK     = 38, /* Entire key used.          */
 
+    SIGSUBPKT_PREF_AEAD2    = 39, /* Preferred AEAD ciphersuites. */
+
     SIGSUBPKT_FLAG_CRITICAL = 128
   }
 sigsubpkttype_t;

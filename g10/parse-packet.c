@@ -1756,6 +1756,16 @@ dump_sig_subpkt (int hashed, int type, int critical,
         }
       break;
 
+    case SIGSUBPKT_PREF_AEAD2:
+      es_fputs ("pref-aead-cipersuites:", listfp);
+      if ((length % 1))
+        p = "[invalid subpacket]";
+      else
+        {
+          for (i = 0; i < length/2; i++)
+            es_fprintf (listfp, " %d:%d", buffer[i*2], buffer[i*2+1]);
+        }
+      break;
 
     default:
       if (type >= 100 && type <= 110)
@@ -1800,6 +1810,7 @@ parse_one_sig_subpkt (const byte * buffer, size_t n, int type)
     case SIGSUBPKT_FEATURES:
     case SIGSUBPKT_REGEXP:
     case SIGSUBPKT_ATTST_SIGS:
+    case SIGSUBPKT_PREF_AEAD2:
       return 0;
     case SIGSUBPKT_SIGNATURE:
     case SIGSUBPKT_EXPORTABLE:
@@ -1905,6 +1916,7 @@ can_handle_critical (const byte * buffer, size_t n, int type)
     case SIGSUBPKT_POLICY:
     case SIGSUBPKT_PREF_KS:
     case SIGSUBPKT_REVOC_REASON: /* At least we know about it.  */
+    case SIGSUBPKT_PREF_AEAD2:
       return 1;
 
     case SIGSUBPKT_KEY_BLOCK:
@@ -2260,7 +2272,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       if (p)
 	sig->timestamp = buf32_to_u32 (p);
       else if (!(sig->pubkey_algo >= 100 && sig->pubkey_algo <= 110)
-	       && opt.verbose && !glo_ctrl.silence_parse_warnings)
+	       && opt.verbose && !glo_ctrl.silence_parse_warnings)//
 	log_info ("signature packet without timestamp\n");
 
       /* Set the key id.  We first try the issuer fingerprint and if
