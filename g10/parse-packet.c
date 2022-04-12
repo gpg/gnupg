@@ -2188,10 +2188,18 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   sig->flags.revocable = 1;
   if (is_v4or5) /* Read subpackets.  */
     {
-      if (pktlen < 2)
-	goto underflow;
-      n = read_16 (inp);
-      pktlen -= 2;  /* Length of hashed data. */
+      if (pktlen < 2 || (sig->version == 5 && pktlen < 4))
+        goto underflow;
+      if (sig->version == 5)
+        {
+          n = read_32 (inp);
+          pktlen -= 4;  /* Length of hashed data. */
+        }
+      else
+        {
+          n = read_16 (inp);
+          pktlen -= 2;  /* Length of hashed data. */
+        }
       if (pktlen < n)
 	goto underflow;
       if (n > 10000)
@@ -2218,10 +2226,18 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	  pktlen -= n;
 	}
-      if (pktlen < 2)
-	goto underflow;
-      n = read_16 (inp);
-      pktlen -= 2;  /* Length of unhashed data.  */
+      if (pktlen < 2 || (sig->version == 5 && pktlen < 4))
+        goto underflow;
+      if (sig->version == 5)
+        {
+          n = read_32 (inp);
+          pktlen -= 4;  /* Length of unhashed data. */
+        }
+      else
+        {
+          n = read_16 (inp);
+          pktlen -= 2;  /* Length of unhashed data.  */
+        }
       if (pktlen < n)
 	goto underflow;
       if (n > 10000)
