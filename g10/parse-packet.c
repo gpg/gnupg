@@ -2311,6 +2311,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
        * it is a v4 signature the fallback to the issuer.  Note that
        * only the issuer packet is also searched in the unhashed area.  */
       p = parse_sig_subpkt (sig, 1, SIGSUBPKT_ISSUER_FPR, &len);
+      if (!p && sig->version == 5)
+        p = parse_sig_subpkt (sig, 0, SIGSUBPKT_ISSUER_FPR, &len);
       if (p && len == 21 && p[0] == 4)
         {
           sig->keyid[0] = buf32_to_u32 (p + 1 + 12);
