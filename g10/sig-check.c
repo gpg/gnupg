@@ -574,10 +574,18 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
       if (sig->hashed)
         {
           n = sig->hashed->len;
+          if (sig->version == 5)
+            {
+              gcry_md_putc (digest, (n >> 24) );
+              gcry_md_putc (digest, (n >> 16) );
+            }
           gcry_md_putc (digest, (n >> 8) );
           gcry_md_putc (digest,  n       );
           gcry_md_write (digest, sig->hashed->data, n);
-          n += 6;
+          if (sig->version == 5)
+            n += 8;
+          else
+            n += 6;
 	}
       else
         {
@@ -1031,6 +1039,9 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
     BUG ();
 
   /* Hash the relevant data.  */
+
+  if (sig->version == 5)
+    gcry_md_write (md, sig->v5_salt, 16);
 
   if (IS_KEY_SIG (sig) || IS_KEY_REV (sig))
     {

@@ -2417,6 +2417,12 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
                   (ulong) sig->keyid[0], (ulong) sig->keyid[1],
                   sig->version, (ulong) sig->timestamp, md5_len, sig->sig_class,
                   sig->digest_algo, sig->digest_start[0], sig->digest_start[1]);
+      if (sig->version == 5)
+	{
+	  es_fprintf (listfp, "\tv5salt ");
+	  es_write_hexstring (listfp, sig->v5_salt, 16, 0, NULL);
+	  es_fputs ("\n", listfp);
+	}
       if (is_v4or5)
 	{
 	  parse_sig_subpkt (sig, 1, SIGSUBPKT_LIST_HASHED, NULL);
