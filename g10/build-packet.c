@@ -1771,16 +1771,24 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 	 prior to the call of this function, because these subpackets
 	 are hashed. */
       nn = sig->hashed? sig->hashed->len : 0;
-      write_16(a, nn);
+      if (sig->version == 5)
+        write_32 (a, nn);
+      else
+        write_16 (a, nn);
       if (nn)
         iobuf_write( a, sig->hashed->data, nn );
       nn = sig->unhashed? sig->unhashed->len : 0;
-      write_16(a, nn);
+      if (sig->version == 5)
+        write_32 (a, nn);
+      else
+        write_16(a, nn);
       if (nn)
         iobuf_write( a, sig->unhashed->data, nn );
     }
   iobuf_put(a, sig->digest_start[0] );
   iobuf_put(a, sig->digest_start[1] );
+  if (sig->version == 5)
+    iobuf_write (a, sig->v5_salt, 16);
   n = pubkey_get_nsig( sig->pubkey_algo );
   if ( !n )
     write_fake_data( a, sig->data[0] );
