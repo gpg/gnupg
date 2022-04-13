@@ -27,12 +27,14 @@
 #include "util.h"
 #include "ssh-utils.h"
 
+#define FLAGS_NOFIPS 1
 
 static struct
 {
   const char *key;
   const char *fpr_md5;
   const char *fpr_sha256;
+  int flags;
 } sample_keys[] = {
   { "(protected-private-key "
     "(rsa "
@@ -106,7 +108,8 @@ static struct
     "(comment sample_dsa_passphrase_is_abc)"
     ")",
     "MD5:2d:b1:70:1a:04:9e:41:a3:ce:27:a5:c7:22:fe:3a:a3",
-    "SHA256:z8+8HEuD/5QpegGS4tSK02dJF+a6o2V67VM2gOPz9oQ"
+    "SHA256:z8+8HEuD/5QpegGS4tSK02dJF+a6o2V67VM2gOPz9oQ",
+    FLAGS_NOFIPS
   },
   { /* OpenSSH 6.7p1 generated key:  */
     "(protected-private-key "
@@ -191,7 +194,8 @@ static struct
     "(comment \"eddsa w/o comment\")"
     ")", /* Passphrase="abc" */
     "MD5:f1:fa:c8:a6:40:bb:b9:a1:65:d7:62:65:ac:26:78:0e",
-    "SHA256:yhwBfYnTOnSXcWf1EOPo+oIIpNJ6w/bG36udZ96MmsQ"
+    "SHA256:yhwBfYnTOnSXcWf1EOPo+oIIpNJ6w/bG36udZ96MmsQ",
+    0 /* The fingerprint works in FIPS mode because ECC algorithm is enabled */
   },
   {
     NULL,
@@ -269,6 +273,11 @@ main (int argc, char **argv)
   gcry_sexp_t key;
   char *string;
   int idx;
+  int in_fips_mode = 0;
+
+  gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
+  if (gcry_fips_mode_active())
+    in_fips_mode = 1;
 
   /* --dump-keys dumps the keys as KEYGRIP.key.IDX.  Useful to compute
        fingerprints to enhance the test vectors.  */
@@ -307,7 +316,7 @@ main (int argc, char **argv)
     {
       key = read_key (argv[1]);
 
-      err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
+      err = ssh_get_fingerprint_string (key, GCRY_MD_SHA256, &string);
       if (err)
         {
           fprintf (stderr, "%s:%d: error getting fingerprint: %s\n",
@@ -317,8 +326,14 @@ main (int argc, char **argv)
       puts (string);
       xfree (string);
 
-      err = ssh_get_fingerprint_string (key, GCRY_MD_SHA256, &string);
-      if (err)
+      err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
+      if (in_fips_mode && !err)
+        {
+          fprintf (stderr, "%s:%d: Getting MD5 fingerprint unexpectedly "
+                   "worked in FIPS mode\n", __FILE__, __LINE__);
+          exit (1);
+        }
+      else if (err)
         {
           fprintf (stderr, "%s:%d: error getting fingerprint: %s\n",
                    __FILE__, __LINE__, gpg_strerror (err));
@@ -343,27 +358,18 @@ main (int argc, char **argv)
               exit (1);
             }
 
-          err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
-          if (err)
-            {
-              fprintf (stderr, "%s:%d: error getting fingerprint for "
-                       "sample key %d: %s\n",
-                       __FILE__, __LINE__, idx, gpg_strerror (err));
-              exit (1);
-            }
-
-          if (strcmp (string, sample_keys[idx].fpr_md5))
-            {
-              fprintf (stderr, "%s:%d: fingerprint mismatch for "
-                       "sample key %d\n",
-                       __FILE__, __LINE__, idx);
-              fprintf (stderr, "want: %s\n got: %s\n",
-                       sample_keys[idx].fpr_md5, string);
-              exit (1);
-            }
-          xfree (string);
-
           err = ssh_get_fingerprint_string (key, GCRY_MD_SHA256, &string);
+          if (in_fips_mode && (sample_keys[idx].flags & FLAGS_NOFIPS))
+            {
+              if (!err)
+                {
+                  fprintf (stderr, "%s:%d: Getting fingerprint of unsupported key "
+                           "%d unexpectedly worked in FIPS mode\n", __FILE__,
+                           __LINE__, idx);
+                  exit (1);
+                }
+              continue;
+            }
           if (err)
             {
               fprintf (stderr, "%s:%d: error getting fingerprint for "
@@ -379,6 +385,36 @@ main (int argc, char **argv)
                        __FILE__, __LINE__, idx);
               fprintf (stderr, "want: %s\n got: %s\n",
                        sample_keys[idx].fpr_sha256, string);
+              exit (1);
+            }
+          xfree (string);
+
+          err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
+          if (in_fips_mode)
+            {
+              if (!err)
+                {
+                  fprintf (stderr, "%s:%d: Getting MD5 fingerprint unexpectedly "
+                           "worked in FIPS mode for key %d\n", __FILE__, __LINE__, idx);
+                  exit (1);
+                }
+              continue;
+            }
+          if (err)
+            {
+              fprintf (stderr, "%s:%d: error getting fingerprint for "
+                       "sample key %d: %s\n",
+                       __FILE__, __LINE__, idx, gpg_strerror (err));
+              exit (1);
+            }
+
+          if (strcmp (string, sample_keys[idx].fpr_md5))
+            {
+              fprintf (stderr, "%s:%d: fingerprint mismatch for "
+                       "sample key %d\n",
+                       __FILE__, __LINE__, idx);
+              fprintf (stderr, "want: %s\n got: %s\n",
+                       sample_keys[idx].fpr_md5, string);
               exit (1);
             }
           xfree (string);
