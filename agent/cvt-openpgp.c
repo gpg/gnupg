@@ -32,7 +32,7 @@
 /* Helper to pass data via the callback to do_unprotect. */
 struct try_do_unprotect_arg_s
 {
-  int  is_v4;
+  int  pkt_version;
   int  is_protected;
   int  pubkey_algo;
   const char *curve;
@@ -737,7 +737,7 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
   struct try_do_unprotect_arg_s *arg = pi->check_cb_arg;
 
   err = do_unprotect (pi->pin,
-                      arg->is_v4? 4:3,
+                      arg->pkt_version,
                       arg->pubkey_algo, arg->is_protected,
                       arg->curve,
                       arg->skey, arg->skeysize,
@@ -772,7 +772,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   size_t valuelen;
   char *string;
   int  idx;
-  int  is_v4, is_protected;
+  int  pkt_version, is_protected;
   int  pubkey_algo;
   int  protect_algo = 0;
   char iv[16];
@@ -802,9 +802,16 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   if (!list)
     goto bad_seckey;
   value = gcry_sexp_nth_data (list, 1, &valuelen);
-  if (!value || valuelen != 1 || !(value[0] == '3' || value[0] == '4'))
+  if (!value || valuelen != 1)
     goto bad_seckey;
-  is_v4 = (value[0] == '4');
+  if (value[0] == '3')
+    pkt_version = 3;
+  else if (value[0] == '4')
+    pkt_version = 4;
+  else if (value[0] == '5')
+    pkt_version = 5;
+  else
+    goto bad_seckey;
 
   gcry_sexp_release (list);
   list = gcry_sexp_find_token (top_list, "protection", 0);
@@ -948,7 +955,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   gcry_sexp_release (top_list); top_list = NULL;
 
 #if 0
-  log_debug ("XXX is_v4=%d\n", is_v4);
+  log_debug ("XXX pkt_version=%d\n", pkt_version);
   log_debug ("XXX pubkey_algo=%d\n", pubkey_algo);
   log_debug ("XXX is_protected=%d\n", is_protected);
   log_debug ("XXX protect_algo=%d\n", protect_algo);
@@ -1002,7 +1009,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
       pi->max_tries = 3;
       pi->check_cb = try_do_unprotect_cb;
       pi->check_cb_arg = &pi_arg;
-      pi_arg.is_v4 = is_v4;
+      pi_arg.pkt_version = pkt_version;
       pi_arg.is_protected = is_protected;
       pi_arg.pubkey_algo = pubkey_algo;
       pi_arg.curve = curve;
