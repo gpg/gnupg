@@ -86,7 +86,8 @@ typedef enum
   {
     CARD_PRODUCT_UNKNOWN,
     CARD_PRODUCT_RSCS,     /* Rohde&Schwarz Cybersecurity       */
-    CARD_PRODUCT_DTRUST    /* D-Trust GmbH (bundesdruckerei.de) */
+    CARD_PRODUCT_DTRUST,   /* D-Trust GmbH (bundesdruckerei.de) */
+    CARD_PRODUCT_GENUA     /* GeNUA mbH                         */
   }
 card_product_t;
 
@@ -548,6 +549,7 @@ cardproduct2str (card_product_t cardproduct)
     case CARD_PRODUCT_UNKNOWN: return "";
     case CARD_PRODUCT_RSCS:    return "R&S";
     case CARD_PRODUCT_DTRUST:  return "D-Trust";
+    case CARD_PRODUCT_GENUA:   return "GeNUA";
     }
   return "";
 }
@@ -3575,7 +3577,10 @@ read_p15_info (app_t app)
       && !ascii_strcasecmp (app->app_local->manufacturer_id, "GeNUA mbH")
       && !app->app_local->no_extended_mode)
     {
-      log_info ("p15: disabling extended mode based on TokenInfo\n");
+      if (!app->app_local->card_product)
+        app->app_local->card_product = CARD_PRODUCT_GENUA;
+      if (opt.verbose)
+        log_info ("p15: disabling extended mode based on TokenInfo\n");
       app->app_local->no_extended_mode = 1;
     }
 
@@ -5023,11 +5028,28 @@ make_pin_prompt (app_t app, int remaining, const char *firstline,
                  prkdf_object_t prkdf)
 {
   char *serial, *tmpbuf, *result;
-  const char *holder;
+  const char *holder = NULL;
 
   serial = get_dispserialno (app, prkdf);
 
-  if (prkdf && prkdf->common_name)
+  if (app->app_local->card_product == CARD_PRODUCT_GENUA)
+    {
+      /* The label of the first non SO-PIN is used for the holder.  */
+      aodf_object_t aodf;
+
+      for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+        if (aodf->auth_type == AUTH_TYPE_PIN
+            && !aodf->pinflags.so_pin
+            && aodf->label)
+          {
+            holder = aodf->label;
+            break;
+          }
+    }
+
+  if (holder)
+    ;
+  else if (prkdf && prkdf->common_name)
     holder = prkdf->common_name;
   else if (app->app_local->token_label)
     holder = app->app_local->token_label;
