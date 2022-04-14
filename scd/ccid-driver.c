@@ -1441,15 +1441,15 @@ ccid_dev_scan (int *idx_max_p, void **t_p)
     {
       for (i = 0; i < idx; i++)
         {
-          free (ccid_dev_table[idx].ifcdesc_extra);
-          ccid_dev_table[idx].n = 0;
-          ccid_dev_table[idx].interface_number = 0;
-          ccid_dev_table[idx].setting_number = 0;
-          ccid_dev_table[idx].ifcdesc_extra = NULL;
-          ccid_dev_table[idx].ifcdesc_extra_len = 0;
-          ccid_dev_table[idx].ep_bulk_out = 0;
-          ccid_dev_table[idx].ep_bulk_in = 0;
-          ccid_dev_table[idx].ep_intr = 0;
+          free (ccid_dev_table[i].ifcdesc_extra);
+          ccid_dev_table[i].n = 0;
+          ccid_dev_table[i].interface_number = 0;
+          ccid_dev_table[i].setting_number = 0;
+          ccid_dev_table[i].ifcdesc_extra = NULL;
+          ccid_dev_table[i].ifcdesc_extra_len = 0;
+          ccid_dev_table[i].ep_bulk_out = 0;
+          ccid_dev_table[i].ep_bulk_in = 0;
+          ccid_dev_table[i].ep_intr = 0;
         }
       libusb_free_device_list (ccid_usb_dev_list, 1);
       ccid_usb_dev_list = NULL;
