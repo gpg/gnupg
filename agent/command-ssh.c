@@ -75,6 +75,8 @@
 /* Options. */
 #define	SSH_OPT_CONSTRAIN_LIFETIME	   1
 #define	SSH_OPT_CONSTRAIN_CONFIRM	   2
+#define	SSH_OPT_CONSTRAIN_MAXSIGN	   3
+#define	SSH_OPT_CONSTRAIN_EXTENSION	 255
 
 /* Response types. */
 #define SSH_RESPONSE_SUCCESS               6
@@ -3165,6 +3167,11 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 	    break;
 	  }
 
+	case SSH_OPT_CONSTRAIN_MAXSIGN:
+	case SSH_OPT_CONSTRAIN_EXTENSION:
+          /* Not yet implemented.  */
+          break;
+
 	default:
 	  /* FIXME: log/bad?  */
 	  break;
@@ -3385,6 +3392,13 @@ ssh_handler_extension (ctrl_t ctrl, estream_t request, estream_t response)
       if (!ret_err)
         ret_err = stream_write_cstring
           (response, session_env_list_stdenvnames (NULL, NULL));
+      goto finalleave;
+    }
+  else if (!strcmp (exttype, "session-bind@openssh.org"))
+    {
+      ret_err = stream_write_byte (response, SSH_RESPONSE_SUCCESS);
+      log_info ("ssh-agent extension '%s' ignored - returning success anyway\n",
+                exttype);
       goto finalleave;
     }
   else
