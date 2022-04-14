@@ -1,6 +1,42 @@
 Noteworthy changes in version 2.2.35 (unreleased)
 -------------------------------------------------
 
+  * gpg,gpgsm: New option --require-compliance.  [17890d4318]
+
+  * gpgtar: New option --with-log.  [rGce69d55f70]
+
+  * gpg: Threefold decryption speedup for large files.
+    [T5820,rG9116fd1e9a]
+
+  * gpgtar: Support file names longer than MAX_PATH.  [rG5492079def]
+
+  * scdaemon: Add support for GeNUA cards.  [rG44ec383cde]
+
+  * gpg: Allow decryption of symmetric encrypted data even for
+    non-compliant cipher.  [rGe081a601f7]
+
+  * gpg: Avoid possible race condition in --edit-card/factory-reset.
+    [T5831]
+
+  * gpgsm: Fix parsing of certain PKCS#12 files.  [T5793]
+
+  * gpgtar: Use a pipe for decryption and thus avoid memory
+    exhaustion.  [rGd431feb307]
+
+  * scdaemon: Use extended mode for pkcs#15 already for rsa2048.
+    [rGa2db490de5]
+
+  * dirmngr: Make WKD lookups work for resolvers not handling SRV
+    records.  [T4729]
+
+  * dirmngr: Escape more characters in WKD requests.  [T5902]
+
+  * gpgconf: Silence warnings from parsing the option files.  [T5874]
+
+  * Improve removing of stale lockfiles under Unix.  [T5884]
+
+  Release-info: https://dev.gnupg.org/T5928
+  See-also: gnupg-announce/2022q2/000xxx.html
 
 
 Noteworthy changes in version 2.2.34 (2022-02-07)
