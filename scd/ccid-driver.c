@@ -111,7 +111,7 @@
 #define CCID_CMD_TIMEOUT (5*1000)
 
 /* Number of supported devices.  See MAX_READER in apdu.c. */
-#define MAX_DEVICE 16
+#define CCID_MAX_DEVICE 16
 
 
 /* Depending on how this source is used we either define our error
@@ -276,7 +276,7 @@ static int debug_level;     /* Flag to control the debug output.
 static int ccid_usb_thread_is_alive;
 
 static libusb_device **ccid_usb_dev_list;
-static struct ccid_dev_table ccid_dev_table[MAX_DEVICE];
+static struct ccid_dev_table ccid_dev_table[CCID_MAX_DEVICE];
 
 
 
@@ -1416,7 +1416,7 @@ ccid_dev_scan (int *idx_max_p, void **t_p)
                 ccid_dev_table[idx].ep_intr = find_endpoint (ifcdesc, 2);
 
                 idx++;
-                if (idx >= MAX_DEVICE)
+                if (idx >= CCID_MAX_DEVICE)
                   {
                     libusb_free_config_descriptor (config);
                     err = 0;
