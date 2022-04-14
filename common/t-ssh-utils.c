@@ -276,7 +276,7 @@ main (int argc, char **argv)
   int in_fips_mode = 0;
 
   gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
-  if (gcry_fips_mode_active())
+  if (gcry_fips_mode_active ())
     in_fips_mode = 1;
 
   /* --dump-keys dumps the keys as KEYGRIP.key.IDX.  Useful to compute
@@ -327,13 +327,17 @@ main (int argc, char **argv)
       xfree (string);
 
       err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
-      if (in_fips_mode && !err)
+      if (in_fips_mode)
         {
-          fprintf (stderr, "%s:%d: Getting MD5 fingerprint unexpectedly "
-                   "worked in FIPS mode\n", __FILE__, __LINE__);
-          exit (1);
+          if (!err)
+            {
+              fprintf (stderr, "%s:%d: Getting MD5 fingerprint unexpectedly "
+                       "worked in FIPS mode\n", __FILE__, __LINE__);
+              exit (1);
+            }
+          continue;
         }
-      else if (err)
+      if (err)
         {
           fprintf (stderr, "%s:%d: error getting fingerprint: %s\n",
                    __FILE__, __LINE__, gpg_strerror (err));
