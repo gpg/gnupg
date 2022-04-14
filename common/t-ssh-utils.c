@@ -335,7 +335,6 @@ main (int argc, char **argv)
                        "worked in FIPS mode\n", __FILE__, __LINE__);
               exit (1);
             }
-          continue;
         }
       if (err)
         {
