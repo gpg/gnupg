@@ -110,6 +110,10 @@
 /* CCID command timeout.  */
 #define CCID_CMD_TIMEOUT (5*1000)
 
+/* Number of supported devices.  See MAX_READER in apdu.c. */
+#define MAX_DEVICE 16
+
+
 /* Depending on how this source is used we either define our error
  * output to go to stderr or to the GnuPG based logging functions.  We
  * use the latter when GNUPG_MAJOR_VERSION is defined.  */
@@ -248,6 +252,20 @@ struct ccid_driver_s
 };
 
 
+/* Object to keep infos about found ccid devices.  */
+struct ccid_dev_table {
+  int n;                        /* Index to ccid_usb_dev_list */
+  int interface_number;
+  int setting_number;
+  unsigned char *ifcdesc_extra;
+  int ep_bulk_out;
+  int ep_bulk_in;
+  int ep_intr;
+  size_t ifcdesc_extra_len;
+};
+
+
+
 static int initialized_usb; /* Tracks whether USB has been initialized. */
 static int debug_level;     /* Flag to control the debug output.
                                0 = No debugging
@@ -256,6 +274,10 @@ static int debug_level;     /* Flag to control the debug output.
                                3 = Level 2 + USB/I/O tracing of SlotStatus.
                               */
 static int ccid_usb_thread_is_alive;
+
+static libusb_device **ccid_usb_dev_list;
+static struct ccid_dev_table ccid_dev_table[MAX_DEVICE];
+
 
 
 static unsigned int compute_edc (const unsigned char *data, size_t datalen,
@@ -1309,22 +1331,6 @@ ccid_vendor_specific_pinpad_setup (ccid_driver_t handle)
   return 0;
 }
 
-
-#define MAX_DEVICE 16 /* See MAX_READER in apdu.c.  */
-
-struct ccid_dev_table {
-  int n;                        /* Index to ccid_usb_dev_list */
-  int interface_number;
-  int setting_number;
-  unsigned char *ifcdesc_extra;
-  int ep_bulk_out;
-  int ep_bulk_in;
-  int ep_intr;
-  size_t ifcdesc_extra_len;
-};
-
-static libusb_device **ccid_usb_dev_list;
-static struct ccid_dev_table ccid_dev_table[MAX_DEVICE];
 
 gpg_error_t
 ccid_dev_scan (int *idx_max_p, void **t_p)
