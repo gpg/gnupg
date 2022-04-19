@@ -342,10 +342,18 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig,
   if (sig->hashed)
     {
       n = sig->hashed->len;
+      if (sig->version == 5)
+        {
+          gcry_md_putc (md, (n >> 24));
+          gcry_md_putc (md, (n >> 16));
+        }
       gcry_md_putc (md, (n >> 8) );
       gcry_md_putc (md,  n       );
       gcry_md_write (md, sig->hashed->data, n );
-      n += 6;
+      if (sig->version == 5)
+        n += 8;
+      else
+        n += 6;
     }
   else
     {
@@ -946,7 +954,10 @@ write_signature_packets (ctrl_t ctrl,
         return gpg_error_from_syserror ();
 
       if (pk->version >= 5)
-        sig->version = 5;  /* Required for v5 keys.  */
+        {
+          sig->version = 5;  /* Required for v5 keys.  */
+          gcry_randomize (sig->v5_salt, 16, GCRY_STRONG_RANDOM);
+        }
       else
         sig->version = 4;  /* Required.  */
 
@@ -1769,6 +1780,7 @@ make_keysig_packet (ctrl_t ctrl,
   gcry_md_hd_t md;
   u32 pk_keyid[2], pksk_keyid[2];
   unsigned int signhints;
+  byte v5_salt[16];
 
   log_assert ((sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
               || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
@@ -1806,6 +1818,12 @@ make_keysig_packet (ctrl_t ctrl,
   if (gcry_md_open (&md, digest_algo, 0))
     BUG ();
 
+  if (sigversion == 5)
+    {
+      gcry_randomize (v5_salt, 16, GCRY_STRONG_RANDOM);
+      gcry_md_write (md, v5_salt, 16);
+    }
+
   /* Hash the public key certificate. */
   hash_public_key (md, pk);
 
@@ -1822,6 +1840,8 @@ make_keysig_packet (ctrl_t ctrl,
   /* Make the signature packet.  */
   sig = xmalloc_clear (sizeof *sig);
   sig->version = sigversion;
+  if (sig->version >= 5)
+    memcpy (sig->v5_salt, v5_salt, 16);
   sig->flags.exportable = 1;
   sig->flags.revocable = 1;
   keyid_from_pk (pksk, sig->keyid);
@@ -1883,6 +1903,7 @@ update_keysig_packet (ctrl_t ctrl,
   gcry_md_hd_t md;
   u32 pk_keyid[2], pksk_keyid[2];
   unsigned int signhints = 0;
+  byte v5_salt[16];
 
   if ((!orig_sig || !pk || !pksk)
       || (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
@@ -1914,6 +1935,12 @@ update_keysig_packet (ctrl_t ctrl,
   if (gcry_md_open (&md, digest_algo, 0))
     BUG ();
 
+  if (orig_sig->version == 5)
+    {
+      gcry_randomize (v5_salt, 16, GCRY_STRONG_RANDOM);
+      gcry_md_write (md, v5_salt, 16);
+    }
+
   /* Hash the public key certificate and the user id. */
   hash_public_key (md, pk);
 
@@ -1924,6 +1951,8 @@ update_keysig_packet (ctrl_t ctrl,
 
   /* Create a new signature packet.  */
   sig = copy_signature (NULL, orig_sig);
+  if (sig->version >= 5)
+    memcpy (sig->v5_salt, v5_salt, 16);
 
   sig->digest_algo = digest_algo;
 
