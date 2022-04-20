@@ -1593,7 +1593,7 @@ msgstr "Das KEYTOCARD Kommando schlug fehl: %s\n"
 #, c-format
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr ""
-"Hinweis: Dieses Kommando zerstörrt alle auf der Karte gespeicherten "
+"Hinweis: Dieses Kommando zerstört alle auf der Karte gespeicherten "
 "Schlüssel!\n"
 
 msgid "Continue? (y/N) "
@@ -1827,6 +1827,10 @@ msgstr ""
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr ""
 "WARNUNG: Schlüssel %s ist zur Verschlüsselung im %s Modus nicht geeignet.\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr "Operation abgebrochen wegen nicht erfüllter Compliance.\n"
 
 #, c-format
 msgid ""
