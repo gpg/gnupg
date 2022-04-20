@@ -620,7 +620,7 @@ main (int argc, char **argv)
   early_system_init ();
   gnupg_reopen_std (GPGCONF_NAME);
   gpgrt_set_strusage (my_strusage);
-  log_set_prefix (GPGCONF_NAME, GPGRT_LOG_WITH_PREFIX);
+  log_set_prefix (GPGCONF_NAME, GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_NO_REGISTRY);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();
@@ -1321,6 +1321,7 @@ show_other_registry_entries (estream_t outfp)
     { 1, "HKLM\\Software\\Gpg4win:Desktop-Version" },
     { 1, "HKLM\\Software\\Gpg4win:VS-Desktop-Version" },
     { 1, "\\" GNUPG_REGISTRY_DIR ":HomeDir" },
+    { 1, "\\" GNUPG_REGISTRY_DIR ":DefaultLogFile" },
     { 2, "Software\\Microsoft\\Office\\Outlook\\Addins\\GNU.GpgOL"
       ":LoadBehavior" },
     { 2, "HKCU\\Software\\Microsoft\\Office\\16.0\\Outlook\\Options\\Mail:"

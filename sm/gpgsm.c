@@ -901,7 +901,7 @@ main ( int argc, char **argv)
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to secmem_init()
      somewhere after the option parsing */
-  log_set_prefix (GPGSM_NAME, GPGRT_LOG_WITH_PREFIX);
+  log_set_prefix (GPGSM_NAME, GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_NO_REGISTRY);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
