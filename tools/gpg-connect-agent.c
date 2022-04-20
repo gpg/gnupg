@@ -1177,7 +1177,7 @@ main (int argc, char **argv)
   early_system_init ();
   gnupg_rl_initialize ();
   set_strusage (my_strusage);
-  log_set_prefix ("gpg-connect-agent", GPGRT_LOG_WITH_PREFIX);
+  log_set_prefix ("gpg-connect-agent", GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_NO_REGISTRY);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();

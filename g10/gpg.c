@@ -2334,7 +2334,7 @@ main (int argc, char **argv)
     gnupg_rl_initialize ();
     set_strusage (my_strusage);
     gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-    log_set_prefix (GPG_NAME, GPGRT_LOG_WITH_PREFIX);
+    log_set_prefix (GPG_NAME, GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_NO_REGISTRY);
 
     /* Make sure that our subsystems are ready.  */
     i18n_init();
