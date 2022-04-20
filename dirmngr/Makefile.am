@@ -86,8 +86,10 @@ endif
 
 dirmngr_LDADD = $(libcommonpth) \
         $(DNSLIBS) $(LIBASSUAN_LIBS) \
-	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) \
-	$(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
+	$(KSBA_LIBS) $(NPTH_LIBS) $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
+        $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) \
+        $(NETLIBS)
+
 if USE_LDAP
 dirmngr_LDADD += $(ldaplibs)
 endif
@@ -113,10 +115,10 @@ t_common_src = t-support.h t-support.c
 if USE_LIBDNS
 t_common_src += dns.c dns.h
 endif
-t_common_ldadd = $(libcommon) $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
-                 $(GPG_ERROR_LIBS) $(NETLIBS) \
-                 $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
-                 $(DNSLIBS) $(LIBINTL) $(LIBICONV)
+t_common_ldadd = $(libcommon) $(LIBASSUAN_LIBS)  \
+                 $(NTBTLS_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+                 $(LIBGNUTLS_LIBS) \
+                 $(NETLIBS) $(DNSLIBS) $(LIBINTL) $(LIBICONV)
 
 module_tests = t-http-basic
 
@@ -155,7 +157,9 @@ t_http_basic_CFLAGS  = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 	         $(LIBGCRYPT_CFLAGS) $(NTBTLS_CFLAGS) $(LIBGNUTLS_CFLAGS) \
                  $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(KSBA_CFLAGS)
 t_http_basic_LDADD   = $(t_common_ldadd) \
-	         $(NTBTLS_LIBS) $(KSBA_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
+                 $(NTBTLS_LIBS) $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
+                 $(GPG_ERROR_LIBS) \
+                 $(LIBGNUTLS_LIBS) $(DNSLIBS)
 
 t_ldap_parse_uri_SOURCES = \
 	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
@@ -164,14 +168,14 @@ t_ldap_parse_uri_SOURCES = \
 t_ldap_parse_uri_CFLAGS = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 			  $(LIBGCRYPT_CFLAGS) \
                           $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(KSBA_CFLAGS)
-t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd) $(DNSLIBS)
+t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd) $(KDBA_LIBS) $(DNSLIBS)
 
 t_ldap_misc_SOURCES = t-ldap-misc.c ldap-misc.c ldap-misc.h $(ldap_url)
 t_ldap_misc_CFLAGS = -DWITHOUT_NPTH=1 $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 t_ldap_misc_LDFLAGS =
-t_ldap_misc_LDADD = $(libcommon) \
-		     $(GPG_ERROR_LIBS) $(LIBGCRYPT_LIBS) $(LDAPLIBS) \
-		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
+t_ldap_misc_LDADD = $(libcommon) $(NTBTLS_LIBS) $(LIBGCRYPT_LIBS) \
+                    $(LDAPLIBS) $(LBER_LIBS) $(LIBINTL) \
+		    $(KSBA_LIBS) $(GPG_ERROR_LIBS) $(LIBICONV) $(NETLIBS)
 
 
 t_dns_stuff_CFLAGS = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
