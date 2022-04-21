@@ -34,6 +34,8 @@
 (define alpha "Alpha <alpha@invalid.example.net>")
 (define bravo "Bravo <bravo@invalid.example.net>")
 (define charlie "Charlie <charlie@invalid.example.net>")
+(define delta "Delta <delta@invalid.example.net>")
+(define deltahash "359DC5EFF98B14A58AAA615C638E8BD0CEDA537B")
 
 (define (key-data key)
   (filter (lambda (x) (or (string=? (car x) "pub")
@@ -86,6 +88,10 @@
 
 (info "Checking that we can revoke a user ID...")
 (call-check `(,@GPG --quick-revoke-uid ,(exact bravo) ,alpha))
+
+(info "Checking that we can revoke a user ID by its hash...")
+(call-check `(,@GPG --quick-add-uid ,(exact bravo) ,delta))
+(call-check `(,@GPG --quick-revoke-uid ,(exact bravo) ,deltahash))
 
 (info "Checking that we get an error revoking a non-existent user ID.")
 (catch '()
