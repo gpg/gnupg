@@ -77,6 +77,9 @@ msgstr ""
 msgid "pinentry.genpin.tooltip"
 msgstr "barra de calidad, entrada de pin"
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1861,6 +1864,10 @@ msgstr ""
 "\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1885,7 +1892,7 @@ msgstr "no se puede usar la opción '%s' en modo %s\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "datos cifrados %s\n"
 
 #, c-format
@@ -4390,12 +4397,6 @@ msgstr "Caracter inválido en el nombre\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr "Los caracteres '%s' y '%s' no pueden aparecer en el nombre\n"
 
-msgid "Name may not start with a digit\n"
-msgstr "El nombre no puede empezar con un número\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "El nombre debe tener al menos 5 caracteres\n"
-
 msgid "Email address: "
 msgstr "Dirección de correo electrónico: "
 
@@ -4735,6 +4736,11 @@ msgstr "tamaño anormal para una clave de sesión cifrada (%d)\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s clave de sesión cifrada\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "datos cifrados %s\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -6911,6 +6917,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "manejador del descriptor %d terminado\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "error obteniendo información sobre uso de la clave: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "el certificado: %s requiere un modelo de validación"
 
@@ -7161,10 +7174,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "no se especifica uso de la clave - asumiendo todos los usos\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "error obteniendo información sobre uso de la clave: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7446,9 +7455,6 @@ msgstr "|USER-ID|usa ID-USUARIO como clave secreta por defecto"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|FILE|añade este anillo a la lista de anillos"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|usa este servidor para buscar claves"
 
 msgid "fetch missing issuer certificates"
 msgstr "recuperar certificados de emisor perdidos"
@@ -8169,6 +8175,11 @@ msgstr "ha fallado crl_cache_insert via emisor: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "la tabla de mapeo lector a archivo está llena - esperando\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to Tor mode\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "el acceso a CRL no es posible a causa del modo Tor\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "el acceso CRL no es posible debido a que %s está desactivado\n"
@@ -8180,10 +8191,6 @@ msgstr "error recuperando '%s': %s\n"
 #, c-format
 msgid "error initializing reader object: %s\n"
 msgstr "error al inicializar objeto lector: %s\n"
-
-#, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "el acceso a CRL no es posible a causa del modo Tor\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8329,15 +8336,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr "enrutar todo el tráfico a través de Tor"
 
-msgid "Configuration for Keyservers"
-msgstr "Configuración para servidores de claves"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|usar servidor de claves en URL"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|FILE|usar los certificados CA en FILE para HKP a través de TLS"
-
 msgid "Configuration for HTTP servers"
 msgstr "Configuración de servidores HTTP"
 
@@ -8353,8 +8351,21 @@ msgstr "|URL|redirigir todos los pedidos HTTP a URL"
 msgid "use system's HTTP proxy setting"
 msgstr "usar configuración del proxy HTTP del sistema"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "Configuración de servidores LDAP que se usará"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "Configuración de servidores HTTP"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|usar servidor de claves en URL"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|FILE|usar los certificados CA en FILE para HKP a través de TLS"
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "Configuración de servidores HTTP"
 
 msgid "inhibit the use of LDAP"
 msgstr "inhibir el uso de LDAP"
@@ -8367,6 +8378,9 @@ msgstr "|HOST|usar HOST para las consultas LDAP"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "no usar hosts de reserva con --ldap-proxy"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|usa este servidor para buscar claves"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FILE|lee lista de servidores LDAP de FILE"
@@ -8589,8 +8603,9 @@ msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 "la respuesta del servidor es demasiado larga; el límite son los %d bytes\n"
 
-#, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+#| msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "las consultas OCSP no son posibles a causa del modo Tor\n"
 
 #, c-format
@@ -8774,10 +8789,6 @@ msgstr "no se chequeará CRL para"
 
 msgid "checking CRL for"
 msgstr "comprobando CRL para"
-
-#, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "el certificado auto-firmado tiene una firma INCORRECTA"
 
 #, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -9081,6 +9092,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "El nombre no puede empezar con un número\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "El nombre debe tener al menos 5 caracteres\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "Configuración para servidores de claves"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "Configuración de servidores LDAP que se usará"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "el certificado auto-firmado tiene una firma INCORRECTA"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "solicitando clave %s de %s servidor %s\n"

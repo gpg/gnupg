@@ -76,6 +76,9 @@ msgstr ""
 msgid "pinentry.genpin.tooltip"
 msgstr ""
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1952,6 +1955,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1976,7 +1983,7 @@ msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s şifreli veri\n"
 
 #, c-format
@@ -4681,12 +4688,6 @@ msgstr "Ad ve soyadınızda geçersiz karakter var\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr ""
 
-msgid "Name may not start with a digit\n"
-msgstr "Ad ve soyadınız bir rakamla başlamamalı\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Ad ve soyadınız en az 5 harfli olmalı\n"
-
 msgid "Email address: "
 msgstr "E-posta adresiniz: "
 
@@ -5046,6 +5047,11 @@ msgstr "bir şifreli oturum anahtarı (%d) için tuhaf uzunluk\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s şifreli oturum anahtarı\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s şifreli veri\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -7286,6 +7292,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "fd %d için eylemci sonlandı\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "anahtar kullanım bilgisi alınırken hata: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "sertifika tarafından istenen geçerlilik modeli: %s"
 
@@ -7539,10 +7552,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "hiç anahtar kullanımı belirtilmemiş - tüm kullanımlar var sayılıyor\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "anahtar kullanım bilgisi alınırken hata: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate should have not been used for certification\n"
@@ -7854,9 +7863,6 @@ msgstr ""
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|DOSYA|anahtar zincirini anahtar zincirleri listesine ekler"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|BELİRTİM|anahtarları aramak için bu anahtar sunucusu kullanılır"
 
 msgid "fetch missing issuer certificates"
 msgstr "kayıp sertifikacı sertifikalarını alır"
@@ -8644,6 +8650,11 @@ msgstr "satır alımı başarısız: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "sertifika \"%s\" yok: %s\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
@@ -8657,11 +8668,6 @@ msgstr "`%s' %s üzerinden alınırken hata: %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: dizin kaydını yazma hatası: %s\n"
-
-#, fuzzy, c-format
-#| msgid "certificate `%s' not found: %s\n"
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "sertifika \"%s\" yok: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
@@ -8834,15 +8840,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr ""
 
-msgid "Configuration for Keyservers"
-msgstr "Anahtar sunucular için yapılandırma"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL| URL'si veriler anahtar sunucusu kullanılır"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
 msgid "Configuration for HTTP servers"
 msgstr "HTTP sunucuları için yapılandırma"
 
@@ -8858,8 +8855,21 @@ msgstr ""
 msgid "use system's HTTP proxy setting"
 msgstr "sistemin HTTP vekil ayarları kullanılır"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "Kullanılacak LDAP sunucularının yapılandırması"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "HTTP sunucuları için yapılandırma"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL| URL'si veriler anahtar sunucusu kullanılır"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "HTTP sunucuları için yapılandırma"
 
 msgid "inhibit the use of LDAP"
 msgstr ""
@@ -8872,6 +8882,9 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|BELİRTİM|anahtarları aramak için bu anahtar sunucusu kullanılır"
 
 #, fuzzy
 #| msgid "|FILE|read options from FILE"
@@ -9127,9 +9140,9 @@ msgstr "%s okunurken hata: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Hata: Özel DO çok uzun (sınır: %d karakter).\n"
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "certificate `%s' not found: %s\n"
-msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "sertifika \"%s\" yok: %s\n"
 
 #, c-format
@@ -9344,11 +9357,6 @@ msgstr ""
 #| msgid "checking the CRL failed: %s"
 msgid "checking CRL for"
 msgstr "CRL sınaması başarısız: %s"
-
-#, fuzzy, c-format
-#| msgid "self-signed certificate has a BAD signature"
-msgid "selfsigned certificate has a BAD signature"
-msgstr "öz-imzalı sertifika KÖTÜ bir imzaya sahip"
 
 #, fuzzy, c-format
 #| msgid "checking for qualified certificate failed: %s\n"
@@ -9679,6 +9687,23 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Ad ve soyadınız bir rakamla başlamamalı\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Ad ve soyadınız en az 5 harfli olmalı\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "Anahtar sunucular için yapılandırma"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "Kullanılacak LDAP sunucularının yapılandırması"
+
+#, fuzzy
+#~| msgid "self-signed certificate has a BAD signature"
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "öz-imzalı sertifika KÖTÜ bir imzaya sahip"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "%1$s anahtarı %3$s sunucusunun %2$s adresinden isteniyor\n"

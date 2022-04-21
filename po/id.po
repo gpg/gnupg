@@ -77,6 +77,9 @@ msgstr ""
 msgid "pinentry.genpin.tooltip"
 msgstr ""
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1878,6 +1881,10 @@ msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
 
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1900,7 +1907,7 @@ msgstr "anda tidak boleh menggunakan %s saat dalam mode %s.\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s data terenkripsi\n"
 
 #, c-format
@@ -4532,12 +4539,6 @@ msgstr "Karakter tidak valid dalam nama\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr ""
 
-msgid "Name may not start with a digit\n"
-msgstr "Nama tidak boleh dimulai dengan digit\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Nama harus berukuran minimum 5 karakter\n"
-
 msgid "Email address: "
 msgstr "Alamat email: "
 
@@ -4889,6 +4890,11 @@ msgstr "ukuran aneh untuk kunci sesi terenkripsi (%d)\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s kunci sesi enkripsi\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s data terenkripsi\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -7036,6 +7042,13 @@ msgstr ""
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr ""
@@ -7295,10 +7308,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7592,10 +7601,6 @@ msgstr "|NAMA|gunakan NAMA sebagai kunci rahasia baku"
 #, fuzzy
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "tambah keyring ini ke daftar keyring"
-
-#, fuzzy
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|HOST|gunakan keyserver ini utk lihat kunci"
 
 msgid "fetch missing issuer certificates"
 msgstr ""
@@ -8297,6 +8302,10 @@ msgstr "gagal menghapus keyblok: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
+#, fuzzy
+msgid "CRL access not possible due to Tor mode"
+msgstr "kunci '%s' tidak ditemukan: %s\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
@@ -8309,10 +8318,6 @@ msgstr "kesalahan penciptaan : `%s': %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: kesalahan menulis dir record: %s\n"
-
-#, fuzzy, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "kunci '%s' tidak ditemukan: %s\n"
 
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8468,16 +8473,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr ""
 
-msgid "Configuration for Keyservers"
-msgstr ""
-
-#, fuzzy
-msgid "|URL|use keyserver at URL"
-msgstr "tidak dapat memparsing URI keyserver\n"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -8493,7 +8488,17 @@ msgstr ""
 msgid "use system's HTTP proxy setting"
 msgstr ""
 
-msgid "Configuration of LDAP servers to use"
+msgid "Configuration for OpenPGP servers"
+msgstr ""
+
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "tidak dapat memparsing URI keyserver\n"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "Configuration for X.509 servers"
 msgstr ""
 
 msgid "inhibit the use of LDAP"
@@ -8507,6 +8512,10 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|HOST|gunakan keyserver ini utk lihat kunci"
 
 #, fuzzy
 msgid "|FILE|read LDAP server list from FILE"
@@ -8730,8 +8739,8 @@ msgstr "kesalahan membaca `%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
 #, c-format
@@ -8919,10 +8928,6 @@ msgstr ""
 #, fuzzy
 msgid "checking CRL for"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
-
-#, fuzzy, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "verifikasi signature"
 
 #, fuzzy, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -9216,6 +9221,16 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Nama tidak boleh dimulai dengan digit\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Nama harus berukuran minimum 5 karakter\n"
+
+#, fuzzy
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "verifikasi signature"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"

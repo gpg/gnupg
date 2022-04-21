@@ -106,6 +106,9 @@ msgstr ""
 "Kvalita textu zde zadaného.\n"
 "Na podrobnosti ohledně kritérií se zeptejte svého správce."
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1852,6 +1855,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "VAROVÁNÍ: klíč %s není vhodný pro šifrování v režimu %s\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1874,7 +1881,7 @@ msgstr "volba „%s“ se nesmí používat v režimu %s\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s zašifrovaná data\n"
 
 #, c-format
@@ -4382,12 +4389,6 @@ msgstr "Neplatný znak ve jméně\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr "Znaky „%s“ a „%s“ se ve jméně nesmí objevit\n"
 
-msgid "Name may not start with a digit\n"
-msgstr "Jméno nemůže začínat číslicí\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Jméno musí být dlouhé alespoň 5 znaků\n"
-
 msgid "Email address: "
 msgstr "E-mailová adresa: "
 
@@ -4733,6 +4734,11 @@ msgstr "podivná velikost šifrovacího klíče pro sezení (%d)\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s zašifrovaný klíč sezení\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s zašifrovaná data\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -6910,6 +6916,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "obsluha pro deskriptor %d ukončena\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "chyba při zjišťování informací o použití klíče: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "certifikátem vyžadovaný ověřovací model: %s"
 
@@ -7163,10 +7176,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "žádné použití klíče není určeno – předpokládají se všechna použití\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "chyba při zjišťování informací o použití klíče: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7450,9 +7459,6 @@ msgstr "|ID_UŽIVATELE|použít ID_UŽIVATELE jako implicitní tajný klíč"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|SOUBOR|přidat klíčenku na seznam klíčenek"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|použít tento server pro dohledávání klíčů"
 
 msgid "fetch missing issuer certificates"
 msgstr "stahovat chybějící certifikáty vydavatelů"
@@ -8173,6 +8179,12 @@ msgid "reader to file mapping table full - waiting\n"
 msgstr "tabulka mapování čtenáře na soubor je plná – čeká se\n"
 
 # Poslední argument je název protokolu
+#, fuzzy
+#| msgid "CRL access not possible due to Tor mode\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "Přístup k CRL není možný kvůli režimu Tor\n"
+
+# Poslední argument je název protokolu
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "Přístup k CRL není možný kvůli vypnutému %s\n"
@@ -8184,11 +8196,6 @@ msgstr "chyba při získávání „%s“: %s\n"
 #, c-format
 msgid "error initializing reader object: %s\n"
 msgstr "chyba při inicializaci čtecího objektu: %s\n"
-
-# Poslední argument je název protokolu
-#, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "Přístup k CRL není možný kvůli režimu Tor\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8332,15 +8339,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr "směrovat veškerý síťový provoz skrz Tor"
 
-msgid "Configuration for Keyservers"
-msgstr "Nastavení serverů klíčů"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|používat server klíčů na URL"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
-
 msgid "Configuration for HTTP servers"
 msgstr "Nastavení HTTP serverů"
 
@@ -8356,8 +8354,21 @@ msgstr "|URL|všechny HTTP požadavky přesměruje na URL"
 msgid "use system's HTTP proxy setting"
 msgstr "používat systémové nastavení HTTP proxy"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "Nastavení používaných LDAP serverů"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "Nastavení HTTP serverů"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|používat server klíčů na URL"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "Nastavení HTTP serverů"
 
 msgid "inhibit the use of LDAP"
 msgstr "zakáže použití LDAP"
@@ -8370,6 +8381,9 @@ msgstr "|STROJ|pro LDAP dotazy použije STROJ"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "nepoužije náhradní stroje s --ldap-proxy"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|použít tento server pro dohledávání klíčů"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|SOUBOR|načte seznam LDAP serverů ze SOUBORU"
@@ -8585,8 +8599,9 @@ msgstr "chyba při čtení z odpovídače: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "odpověď serveru je příliš velká, limit je %d bajtů\n"
 
-#, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+#| msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "OCSP dotaz není možný kvůli režimu Tor\n"
 
 #, c-format
@@ -8769,10 +8784,6 @@ msgstr "nekontroluje se CRL pro"
 
 msgid "checking CRL for"
 msgstr "kontroluje se CRL pro"
-
-#, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "sám sebou podepsaný certifikát má CHYBNÝ podpis"
 
 #, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -9064,6 +9075,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Jméno nemůže začínat číslicí\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Jméno musí být dlouhé alespoň 5 znaků\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "Nastavení serverů klíčů"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "Nastavení používaných LDAP serverů"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "sám sebou podepsaný certifikát má CHYBNÝ podpis"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "požaduji klíč %s z %s serveru %s\n"

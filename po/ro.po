@@ -77,6 +77,9 @@ msgstr ""
 msgid "pinentry.genpin.tooltip"
 msgstr ""
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1901,6 +1904,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1924,7 +1931,7 @@ msgstr "nu puteţi folosi %s câtă vreme în modul %s\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s date cifrate\n"
 
 #, c-format
@@ -4587,12 +4594,6 @@ msgstr "Caracter invalid în nume\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr ""
 
-msgid "Name may not start with a digit\n"
-msgstr "Numele nu poate începe cu o cifră\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Numele trebuie să fie de cel puţin 5 caractere\n"
-
 msgid "Email address: "
 msgstr "Adresă de email: "
 
@@ -4950,6 +4951,11 @@ msgstr "dimensiune ciudată pentru o cheie de sesiune cifrată (%d)\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s cheie de sesiune cifrată\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s date cifrate\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -7150,6 +7156,13 @@ msgstr ""
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr ""
@@ -7410,10 +7423,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7711,10 +7720,6 @@ msgstr "|NUME|foloseşte NUME ca cheie secretă implicită"
 #, fuzzy
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "adaugă acest inel de chei la lista inelelor de chei"
-
-#, fuzzy
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|HOST|foloseşte acest server de chei pentru a căuta chei"
 
 msgid "fetch missing issuer certificates"
 msgstr ""
@@ -8425,6 +8430,10 @@ msgstr "citirea cheii publice a eşuat: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
+#, fuzzy
+msgid "CRL access not possible due to Tor mode"
+msgstr "cheia secretă \"%s\" nu a fost găsită: %s\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
@@ -8437,10 +8446,6 @@ msgstr "eroare la creearea `%s': %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: eroare scriere înregistrare dir: %s\n"
-
-#, fuzzy, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "cheia secretă \"%s\" nu a fost găsită: %s\n"
 
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8597,17 +8602,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr ""
 
-msgid "Configuration for Keyservers"
-msgstr ""
-
-#
-#, fuzzy
-msgid "|URL|use keyserver at URL"
-msgstr "nu am putut interpreta URL-ul serverului de chei\n"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -8623,7 +8617,18 @@ msgstr ""
 msgid "use system's HTTP proxy setting"
 msgstr ""
 
-msgid "Configuration of LDAP servers to use"
+msgid "Configuration for OpenPGP servers"
+msgstr ""
+
+#
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "nu am putut interpreta URL-ul serverului de chei\n"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "Configuration for X.509 servers"
 msgstr ""
 
 msgid "inhibit the use of LDAP"
@@ -8637,6 +8642,10 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|HOST|foloseşte acest server de chei pentru a căuta chei"
 
 #, fuzzy
 msgid "|FILE|read LDAP server list from FILE"
@@ -8869,8 +8878,8 @@ msgstr "eroare la citire `%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Eroare DO personal pre lung (limita este de %d caractere).\n"
 
-#, fuzzy, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode"
 msgstr "cheia secretă \"%s\" nu a fost găsită: %s\n"
 
 #, c-format
@@ -9060,10 +9069,6 @@ msgstr ""
 #, fuzzy
 msgid "checking CRL for"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
-
-#, fuzzy, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "verifică o semnătură"
 
 #, fuzzy, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -9359,6 +9364,16 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Numele nu poate începe cu o cifră\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Numele trebuie să fie de cel puţin 5 caractere\n"
+
+#, fuzzy
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "verifică o semnătură"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "cer cheia %s de la serverul %s %s\n"

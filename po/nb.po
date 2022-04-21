@@ -81,6 +81,9 @@ msgstr ""
 "Kvaliteten på teksten overfor. Spør administrator for mer informasjon om "
 "hvordan kvaliteten vurderes."
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1839,6 +1842,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "ADVARSEL: nøkkel %s egner seg ikke for kryptering i %s-modus\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1861,7 +1868,7 @@ msgstr "du kan ikke bruke valget «%s» i %s-modus\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s krypterte data\n"
 
 #, c-format
@@ -4367,12 +4374,6 @@ msgstr "Ugyldig tegn i navn\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr "Tegnene «%s» og «%s» kan ikke brukes i navn\n"
 
-msgid "Name may not start with a digit\n"
-msgstr "Navn kan ikke begynne med siffer\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Navnet må bestå av minst 5 tegn\n"
-
 msgid "Email address: "
 msgstr "E-postadresse: "
 
@@ -4711,6 +4712,11 @@ msgstr "merkelig størrelse for en kryptert sesjonsnøkkel (%d)\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s kryptert øktnøkkel\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s krypterte data\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -6839,6 +6845,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "avsluttet håndteringsprogram for fd %d\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "feil under henting av informasjon om nøkkelbruk: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "kontrollmodell forespurt av sertifikat: %s"
 
@@ -7089,10 +7102,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "ingen bruksområder for nøkler valgt. Antar alle bruksområder\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "feil under henting av informasjon om nøkkelbruk: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7375,9 +7384,6 @@ msgstr "|BRUKER-ID|bruk valgt BRUKER-ID som forvalgt hemmelig nøkkel"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|FIL|legg til nøkkelknippe i liste over nøkkelknipper"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|bruk valgt nøkkeltjener til å slå opp nøkler"
 
 msgid "fetch missing issuer certificates"
 msgstr "hent manglende utstedersertifikat"
@@ -8084,6 +8090,11 @@ msgstr "crl_cache_insert via utsteder mislyktes: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "tilknytningstabell for overføring fra leser til fil er full. Venter\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to Tor mode\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "Ingen CRL-tilgang i Tor-modus\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "Ingen CRL-tilgang fordi %s er slått av\n"
@@ -8095,10 +8106,6 @@ msgstr "feil under henting av «%s»: %s\n"
 #, c-format
 msgid "error initializing reader object: %s\n"
 msgstr "feil under innlasting av leserobjekt: %s\n"
-
-#, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "Ingen CRL-tilgang i Tor-modus\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8242,15 +8249,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr "kjør all nettverkstrafikk gjennom Tor"
 
-msgid "Configuration for Keyservers"
-msgstr "Oppsett for nøkkeltjenere"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|ADR|bruk nøkkeltjener på valgt nettADResse"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|FIL|bruk CA-sertifikater i valgt FIL til HKP via TLS"
-
 msgid "Configuration for HTTP servers"
 msgstr "Oppsett for HTTP-tjenere"
 
@@ -8266,8 +8264,21 @@ msgstr "|ADR|videresend alle HTTP-forespørsler til valgt nettADResse"
 msgid "use system's HTTP proxy setting"
 msgstr "bruk systemets innstilling for HTTP-mellomtjener"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "Oppsett for bruk av LDAP-tjenere"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "Oppsett for HTTP-tjenere"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|ADR|bruk nøkkeltjener på valgt nettADResse"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|FIL|bruk CA-sertifikater i valgt FIL til HKP via TLS"
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "Oppsett for HTTP-tjenere"
 
 msgid "inhibit the use of LDAP"
 msgstr "hindre bruk av LDAP"
@@ -8280,6 +8291,9 @@ msgstr "|VERT|bruk valgt VERT til LDAP-oppslag"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "ikke bruk tilbakefallsverter ved bruk av valget «--ldap-proxy»"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|bruk valgt nøkkeltjener til å slå opp nøkler"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FIL|les LDAP-tjenerliste fra valgt FIL"
@@ -8496,8 +8510,9 @@ msgstr "feil under lesing fra svartjeneste: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "for store responsdata fra tjener (grense: %d byte)\n"
 
-#, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+#| msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "OCSP-forespørsel ikke mulig i Tor-modus\n"
 
 #, c-format
@@ -8679,10 +8694,6 @@ msgstr "lar være å kontrollere CRL for"
 
 msgid "checking CRL for"
 msgstr "kontrollerer CRL for"
-
-#, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "selvsignert sertifikat har ugyldig signatur"
 
 #, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -8977,6 +8988,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Navn kan ikke begynne med siffer\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Navnet må bestå av minst 5 tegn\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "Oppsett for nøkkeltjenere"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "Oppsett for bruk av LDAP-tjenere"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "selvsignert sertifikat har ugyldig signatur"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "ber om nøkkelen %s fra %s tjener %s\n"

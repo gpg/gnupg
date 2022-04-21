@@ -89,6 +89,9 @@ msgstr ""
 "上列輸入文字的優劣程度.\n"
 "關於此規範的細節, 請洽你的系統管理者."
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1853,6 +1856,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1874,7 +1881,7 @@ msgstr "你不能夠將 %s 用於 %s 模式中\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s 已加密的資料\n"
 
 #, c-format
@@ -4400,12 +4407,6 @@ msgstr "姓名含有無效的字符\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr ""
 
-msgid "Name may not start with a digit\n"
-msgstr "姓名不可以用數字開頭\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "姓名至少要有五個字符長\n"
-
 msgid "Email address: "
 msgstr "電子郵件地址: "
 
@@ -4738,6 +4739,11 @@ msgstr "加密過的階段金鑰 (%d) 尺寸詭異\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s 加密過的階段金鑰\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s 已加密的資料\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -6851,6 +6857,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "用於 fd %d 的經手程式已終止\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "取得金鑰用途資訊時出錯: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "憑證所要求的驗證模型: %s"
 
@@ -7099,10 +7112,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "沒有指定的金鑰用途 - 假設為所有的用途\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "取得金鑰用途資訊時出錯: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7380,9 +7389,6 @@ msgstr "|使用者-ID|使用指定使用者 ID 做為預設私鑰"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|檔案|將此金鑰鑰匙圈加到指定金鑰鑰匙圈清單檔案中"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|使用此金鑰伺服器來查找金鑰"
 
 msgid "fetch missing issuer certificates"
 msgstr "取回遺失的發行者憑證"
@@ -8076,6 +8082,11 @@ msgstr "經由發行者的 crl_cache_insert 失敗: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "讀取程式至檔案映射表已滿 - 正在等待\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to disabled %s\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "不可能存取 CRL 因已停用 %s\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "不可能存取 CRL 因已停用 %s\n"
@@ -8087,11 +8098,6 @@ msgstr "取回 '%s' 時出錯: %s\n"
 #, c-format
 msgid "error initializing reader object: %s\n"
 msgstr "啟始讀取程式物件時出錯: %s\n"
-
-#, fuzzy, c-format
-#| msgid "CRL access not possible due to disabled %s\n"
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "不可能存取 CRL 因已停用 %s\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8235,15 +8241,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr ""
 
-msgid "Configuration for Keyservers"
-msgstr "金鑰伺服器組態"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|使用位於 URL 的金鑰伺服器"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|檔案|在 HKP over TLS 的指定檔案中使用 CA 憑證"
-
 msgid "Configuration for HTTP servers"
 msgstr "HTTP 伺服器組態"
 
@@ -8259,8 +8256,21 @@ msgstr "|網址|重新導向所有對指定網址提出的 HTTP 請求"
 msgid "use system's HTTP proxy setting"
 msgstr "使用系統的 HTTP 代理伺服器設定"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "要用的 LDAP 伺服器組態"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "HTTP 伺服器組態"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|使用位於 URL 的金鑰伺服器"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|檔案|在 HKP over TLS 的指定檔案中使用 CA 憑證"
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "HTTP 伺服器組態"
 
 msgid "inhibit the use of LDAP"
 msgstr "避免使用 LDAP"
@@ -8273,6 +8283,9 @@ msgstr "|主機|指定 LDAP 查詢主機"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "不要將主機備案與 --ldap-proxy 並用"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|使用此金鑰伺服器來查找金鑰"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|檔案|從指定檔案讀取 LDAP 伺服器清單"
@@ -8488,9 +8501,9 @@ msgstr "從回應程式讀取時出錯: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "來自伺服器的回應太大; 上限是 %d 位元組\n"
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "OCSP request not possible due to disabled HTTP\n"
-msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "因為已經停用 HTTP 而不可能有 OCSP 請求\n"
 
 #, c-format
@@ -8672,10 +8685,6 @@ msgstr "不對此檢查 CRL:"
 
 msgid "checking CRL for"
 msgstr "檢查 CRL: "
-
-#, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "自簽憑證有 不良 簽章"
 
 #, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -8984,6 +8993,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "姓名不可以用數字開頭\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "姓名至少要有五個字符長\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "金鑰伺服器組態"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "要用的 LDAP 伺服器組態"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "自簽憑證有 不良 簽章"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "正在請求金鑰 %s 自 %s 伺服器 %s\n"

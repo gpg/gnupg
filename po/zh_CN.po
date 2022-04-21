@@ -76,6 +76,9 @@ msgstr "建议"
 msgid "pinentry.genpin.tooltip"
 msgstr "使用随机生成的密码"
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr "注意：密码不允许含有空格。"
 
@@ -1761,6 +1764,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "警告： 密钥 %s 在 %s 模式下不适用于加密\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1778,8 +1785,9 @@ msgstr "%s/%s.%s 已经加密给：“%s”\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "选项 ‘%s’ 可能不能用于 %s 模式\n"
 
-#, c-format
-msgid "%s.%s encrypted data\n"
+#, fuzzy, c-format
+#| msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s.%s 已加密的数据\n"
 
 #, c-format
@@ -4178,12 +4186,6 @@ msgstr "姓名含有无效的字符\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr "字符‘%s’和‘%s’不能出现在姓名中\n"
 
-msgid "Name may not start with a digit\n"
-msgstr "姓名不可以用数字开头\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "姓名至少要有五个字符长\n"
-
 msgid "Email address: "
 msgstr "电子邮件地址： "
 
@@ -4506,6 +4508,10 @@ msgstr "奇怪的加密会话密钥长度（%d）\n"
 #, c-format
 msgid "%s.%s encrypted session key\n"
 msgstr "%s.%s 已加密的会话密钥\n"
+
+#, c-format
+msgid "%s.%s encrypted data\n"
+msgstr "%s.%s 已加密的数据\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d.%s\n"
@@ -6508,6 +6514,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "fd %d 的句柄已关闭\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "获取密钥用途信息时出现错误：%s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "证书所请求的验证模型：%s"
 
@@ -6756,10 +6769,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "没有指定密钥用途 - 假设为所有用途\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "获取密钥用途信息时出现错误：%s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7035,9 +7044,6 @@ msgstr "|USER-ID|使用 USER-ID 作为默认的私钥"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|FILE|添加钥匙环到钥匙环列表"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|使用此公钥服务器来查找密钥"
 
 msgid "fetch missing issuer certificates"
 msgstr "获取缺失的签发者证书"
@@ -7735,6 +7741,11 @@ msgstr "通过发布者进行 crl_cache_insert 失败：%s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "读取器的文件映射表已满 - 正在等待\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to Tor mode\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "不能在 Tor 模式下访问 CRL  \n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "不能进行 CRL 访问，因为 %s 已禁用\n"
@@ -7746,10 +7757,6 @@ msgstr "拉取‘%s’时出现错误：%s\n"
 #, c-format
 msgid "error initializing reader object: %s\n"
 msgstr "初始化读取对象时出现错误：%s\n"
-
-#, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "不能在 Tor 模式下访问 CRL  \n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -7893,15 +7900,6 @@ msgstr "网络相关选项"
 msgid "route all network traffic via Tor"
 msgstr "通过 Tor 转发所有网络流量"
 
-msgid "Configuration for Keyservers"
-msgstr "公钥服务器的配置"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|使用 URL 处的密钥服务器"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|FILE|为承载 HKP 的 TLS 使用 FILE 中的 CA 证书"
-
 msgid "Configuration for HTTP servers"
 msgstr "对 HTTP 服务器的配置"
 
@@ -7917,8 +7915,21 @@ msgstr "|URL|重定向 HTTP 请求到 URL"
 msgid "use system's HTTP proxy setting"
 msgstr "使用系统的 HTTP 代理设置"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "对要使用的 LDAP 服务器的配置"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "对 HTTP 服务器的配置"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|使用 URL 处的密钥服务器"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|FILE|为承载 HKP 的 TLS 使用 FILE 中的 CA 证书"
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "对 HTTP 服务器的配置"
 
 msgid "inhibit the use of LDAP"
 msgstr "禁止 LDAP 的使用"
@@ -7931,6 +7942,9 @@ msgstr "|HOST|使用 HOST 进行 LDAP 查询"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "使用 --ldap-proxy 选项以不使用回退主机"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|使用此公钥服务器来查找密钥"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FILE|从 FILE 中读取 LDAP 服务器列表"
@@ -8145,8 +8159,9 @@ msgstr "从响应者处读取失败：%s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "服务器的响应太长；限制为 %d 字节\n"
 
-#, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+#| msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "不能在 Tor 模式下进行 OCSP 请求\n"
 
 #, c-format
@@ -8328,10 +8343,6 @@ msgstr "未检查 CRL ，对于"
 
 msgid "checking CRL for"
 msgstr "正在检查 CRL，对于"
-
-#, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "自签名证书具有损坏的签名"
 
 #, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -8609,6 +8620,21 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "姓名不可以用数字开头\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "姓名至少要有五个字符长\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "公钥服务器的配置"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "对要使用的 LDAP 服务器的配置"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "自签名证书具有损坏的签名"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "正在请求密钥 %s 从 %s 服务器 %s\n"

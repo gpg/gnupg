@@ -95,6 +95,9 @@ msgstr ""
 "specialtegn. Spørg din administrator om mere præcis information om\n"
 "hvordan man anvender sikre adgangskoder."
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1980,6 +1983,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "ADVARSEL: »%s« er en forældet indstilling - den har ingen effekt\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -2004,7 +2011,7 @@ msgstr "du kan ikke bruge %s i tilstanden %s\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s krypterede data\n"
 
 #, c-format
@@ -4667,12 +4674,6 @@ msgstr "Ugyldige bogstaver i navn\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr ""
 
-msgid "Name may not start with a digit\n"
-msgstr "Navn må ikke starte med et tal\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Navn skal være mindst 5 bogstaver langt\n"
-
 msgid "Email address: "
 msgstr "E-post-adresse: "
 
@@ -5028,6 +5029,11 @@ msgstr "underlig størrelse for en krypteret sessionsnøgle (%d)\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s krypteret sessionsnøgle\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s krypterede data\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -7259,6 +7265,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "håndtering for fd %d termineret\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "fejl ved indhentelse af nøglebrugsinformation: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "anmodt om valideringsmodel af certifikat: %s"
 
@@ -7514,10 +7527,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "ingen nøglebrug angivet - antager alle mulige brug\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "fejl ved indhentelse af nøglebrugsinformation: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7821,9 +7830,6 @@ msgstr "|USER-ID|brug BRUGER-ID som hemmelig standardnøgle"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|FILE|tilføj nøglering til nøgleringslisten"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|brug denne nøgleserver til at slå nøgler op"
 
 msgid "fetch missing issuer certificates"
 msgstr "hent manglende udstedercertifikater"
@@ -8615,6 +8621,11 @@ msgstr "modtagelse af linje mislykkedes: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "certifikat »%s« blev ikke fundet: %s\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
@@ -8628,11 +8639,6 @@ msgstr "fejl ved indhentelse af »%s« via %s: %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: fejl ved skrivning af mappepost: %s\n"
-
-#, fuzzy, c-format
-#| msgid "certificate `%s' not found: %s\n"
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "certifikat »%s« blev ikke fundet: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
@@ -8804,15 +8810,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr ""
 
-msgid "Configuration for Keyservers"
-msgstr "Konfiguration for nøgleservere"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|brug nøgleserver på adressen"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration for HTTP-servere"
 
@@ -8828,8 +8825,21 @@ msgstr ""
 msgid "use system's HTTP proxy setting"
 msgstr "brug systemets HTTP-proxyopsætning"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "Konfiguraiton af LDAP-servere der skal bruges"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "Konfiguration for HTTP-servere"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|brug nøgleserver på adressen"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "Konfiguration for HTTP-servere"
 
 msgid "inhibit the use of LDAP"
 msgstr ""
@@ -8842,6 +8852,9 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|brug denne nøgleserver til at slå nøgler op"
 
 #, fuzzy
 #| msgid "|FILE|read options from FILE"
@@ -9097,9 +9110,9 @@ msgstr "fejl ved læsning fra %s: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Fejl: Privat DO er for lang (begrænsningen er %d tegn).\n"
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "certificate `%s' not found: %s\n"
-msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "certifikat »%s« blev ikke fundet: %s\n"
 
 #, c-format
@@ -9314,11 +9327,6 @@ msgstr ""
 #| msgid "checking the CRL failed: %s"
 msgid "checking CRL for"
 msgstr "kontrol af CRL'en mislykkedes: %s"
-
-#, fuzzy, c-format
-#| msgid "self-signed certificate has a BAD signature"
-msgid "selfsigned certificate has a BAD signature"
-msgstr "egenunderskrevet certifikat har en UGYLDIG underskrift"
 
 #, fuzzy, c-format
 #| msgid "checking for qualified certificate failed: %s\n"
@@ -9649,6 +9657,23 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Navn må ikke starte med et tal\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Navn skal være mindst 5 bogstaver langt\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "Konfiguration for nøgleservere"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "Konfiguraiton af LDAP-servere der skal bruges"
+
+#, fuzzy
+#~| msgid "self-signed certificate has a BAD signature"
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "egenunderskrevet certifikat har en UGYLDIG underskrift"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "anmoder om nøgle %s fra %s server %s\n"

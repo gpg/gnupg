@@ -77,6 +77,9 @@ msgstr ""
 "Якість введеного вище тексту.\n"
 "Дані щодо критеріїв якості можна отримати у вашого адміністратора."
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1843,6 +1846,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "УВАГА: ключ %s не можна використовувати для шифрування у режимі %s\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1867,7 +1874,7 @@ msgstr "параметр «%s» не можна використовувати �
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "Дані, зашифровані за алгоритмом %s\n"
 
 #, c-format
@@ -4429,12 +4436,6 @@ msgstr "Некоректний символ у імені\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr "Не можна використовувати символи «%s» і «%s» у назві\n"
 
-msgid "Name may not start with a digit\n"
-msgstr "Ім’я не може починатися з цифри\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Ім’я має бути не коротшим за 5 літер\n"
-
 msgid "Email address: "
 msgstr "Адреса ел. пошти: "
 
@@ -4784,6 +4785,11 @@ msgstr "дивний розмір для зашифрованого ключа �
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "зашифрований %s ключ сеансу\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "Дані, зашифровані за алгоритмом %s\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -7011,6 +7017,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "роботу обробника для дескриптора %d перервано\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "помилка під час спроби отримання даних щодо використання ключа: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "модель перевірки, запитана сертифікатом: %s"
 
@@ -7262,10 +7275,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "не вказано використання ключа — припускаємо всі можливі використання\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "помилка під час спроби отримання даних щодо використання ключа: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7552,9 +7561,6 @@ msgstr ""
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|FILE|додати сховище ключів до списку сховищ ключів"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "використовувати цей сервер ключів для пошуку"
 
 msgid "fetch missing issuer certificates"
 msgstr "Надіслати запит щодо незнайдених сертифікатів видавця"
@@ -8275,6 +8281,11 @@ msgstr "помилка crl_cache_insert за видавцем: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "засіб читання до таблиці відповідності файлів переповнено — очікуємо\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to Tor mode\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "Доступ до CRL неможливий через увімкнений режим Tor\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "Доступ до CRL неможливий через вимкнений %s\n"
@@ -8286,10 +8297,6 @@ msgstr "помилка отримання «%s»: %s\n"
 #, c-format
 msgid "error initializing reader object: %s\n"
 msgstr "помилка під час спроби ініціалізації об’єкта читання: %s\n"
-
-#, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "Доступ до CRL неможливий через увімкнений режим Tor\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8435,15 +8442,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr "маршрутизувати увесь обмін даними з мережею через Tor"
 
-msgid "Configuration for Keyservers"
-msgstr "Налаштування для серверів ключів"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|використовувати сервер ключів за адресою"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|FILE|використовувати сертифікати CA з файла для HKP крізь TLS"
-
 msgid "Configuration for HTTP servers"
 msgstr "Налаштування для серверів HTTP"
 
@@ -8459,8 +8457,21 @@ msgstr "|URL|переспрямувати всі запити HTTP на вказ
 msgid "use system's HTTP proxy setting"
 msgstr "використовувати загальносистемний проксі-сервер HTTP"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "Налаштування використання серверів LDAP"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "Налаштування для серверів HTTP"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|використовувати сервер ключів за адресою"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|FILE|використовувати сертифікати CA з файла для HKP крізь TLS"
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "Налаштування для серверів HTTP"
 
 msgid "inhibit the use of LDAP"
 msgstr "заборонити використання LDAP"
@@ -8473,6 +8484,9 @@ msgstr "|HOST|використовувати вказаний вузол для 
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "не використовувати резервні вузли з --ldap-proxy"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "використовувати цей сервер ключів для пошуку"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FILE|прочитати список серверів LDAP з вказаного файла"
@@ -8690,8 +8704,9 @@ msgstr "помилка під час спроби читання даних з �
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "занадто об’ємна відповідь від сервера; верхня межа — %d байтів\n"
 
-#, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+#| msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "запит за допомогою OCSP неможливий через увімкнений режим Tor\n"
 
 #, c-format
@@ -8873,10 +8888,6 @@ msgstr "не перевіряємо CRL щодо"
 
 msgid "checking CRL for"
 msgstr "перевіряємо CRL щодо"
-
-#, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "самопідписаний сертифікат має ПОМИЛКОВИЙ підпис"
 
 #, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -9173,6 +9184,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Ім’я не може починатися з цифри\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Ім’я має бути не коротшим за 5 літер\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "Налаштування для серверів ключів"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "Налаштування використання серверів LDAP"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "самопідписаний сертифікат має ПОМИЛКОВИЙ підпис"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "надсилаємо запит щодо ключа %s до %s сервера %s\n"

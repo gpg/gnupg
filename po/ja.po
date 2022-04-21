@@ -1782,6 +1782,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1800,8 +1804,9 @@ msgstr "%s/%s.%s 暗号化 受信者:\"%s\"\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "オプション'%s'を%sモードで使うことはできません\n"
 
-#, c-format
-msgid "%s.%s encrypted data\n"
+#, fuzzy, c-format
+#| msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s.%s暗号化済みデータ\n"
 
 #, c-format
@@ -4221,12 +4226,6 @@ msgstr "名前に無効な文字があります\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr "キャラクタ'%s'と'%s'は名前に使えません\n"
 
-msgid "Name may not start with a digit\n"
-msgstr "名前を数字で始めてはいけません\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "名前は5文字以上でなければなりません\n"
-
 msgid "Email address: "
 msgstr "電子メール・アドレス: "
 
@@ -4549,6 +4548,10 @@ msgstr "変な長さの暗号化済みセッション鍵 (%d)\n"
 #, c-format
 msgid "%s.%s encrypted session key\n"
 msgstr "%s.%s 暗号化済みセッション鍵\n"
+
+#, c-format
+msgid "%s.%s encrypted data\n"
+msgstr "%s.%s暗号化済みデータ\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d.%s\n"
@@ -6582,6 +6585,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "fd %dのハンドラが終了しました\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "鍵使用情報の取得エラー: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "証明書から以下の検証モデルが要求されました: %s"
 
@@ -6834,10 +6844,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "鍵の使い方が指定されていません - すべての使い道を仮定します\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "鍵使用情報の取得エラー: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7115,9 +7121,6 @@ msgstr "|USER-ID|USER-IDをデフォルトの秘密鍵として使う"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|FILE|鍵リングを鍵リングのリストに追加"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|このキーサーバを鍵の検索に使う"
 
 msgid "fetch missing issuer certificates"
 msgstr "紛失している発行者証明書を取得する"
@@ -7819,6 +7822,11 @@ msgstr "発行者からcrl_cache_insertが失敗しました: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "readerからファイル・マッピングのテーブルがいっぱいです - 待ちます\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to Tor mode\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "CRLアクセスはTorモードのため不可能です\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "CRLアクセスは停止された%sのため不可能です\n"
@@ -7830,10 +7838,6 @@ msgstr "'%s'を取得する際のエラー: %s\n"
 #, c-format
 msgid "error initializing reader object: %s\n"
 msgstr "リーダ・オブジェクトの初期化エラー: %s\n"
-
-#, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "CRLアクセスはTorモードのため不可能です\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -7978,15 +7982,6 @@ msgstr "ネットワーク関連オプション"
 msgid "route all network traffic via Tor"
 msgstr "ネットワーク・トラフィックをすべてTor経由にする"
 
-msgid "Configuration for Keyservers"
-msgstr "キーサーバのコンフィグレーション"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL|鍵サーバとしてURLを使用"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|FILE|FILEにあるCA証明書をTLSでのHKPに使う"
-
 msgid "Configuration for HTTP servers"
 msgstr "HTTPサーバのコンフィグレーション"
 
@@ -8002,8 +7997,21 @@ msgstr "|URL|すべてのHTTPリクエストをURLにリダイレクトする"
 msgid "use system's HTTP proxy setting"
 msgstr "システムのHTTPプロキシ設定を用います"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "使用するLDAPサーバのコンフィグレーション"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "HTTPサーバのコンフィグレーション"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL|鍵サーバとしてURLを使用"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|FILE|FILEにあるCA証明書をTLSでのHKPに使う"
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "HTTPサーバのコンフィグレーション"
 
 msgid "inhibit the use of LDAP"
 msgstr "LDAPの使用を禁止する"
@@ -8016,6 +8024,9 @@ msgstr "|HOST|LDAPの問い合わせにHOSTを使う"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "--ldap-proxy にフォールバック・ホストを使わない"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|このキーサーバを鍵の検索に使う"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FILE|FILEからLDAPサーバリストを読み込みます"
@@ -8230,8 +8241,9 @@ msgstr "応答からの読み込みエラー: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "サーバからの応答がが長すぎます (上限%dバイト)。\n"
 
-#, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+#| msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "TorモードのためOCSPリクエストが不可能です\n"
 
 #, c-format
@@ -8413,10 +8425,6 @@ msgstr "CRL を確認しません"
 
 msgid "checking CRL for"
 msgstr "CRLの検査をしています"
-
-#, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "自己署名証明書に*不正な*署名があります"
 
 #, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -8695,6 +8703,21 @@ msgstr "Yubikey管理コマンド"
 
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "名前を数字で始めてはいけません\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "名前は5文字以上でなければなりません\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "キーサーバのコンフィグレーション"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "使用するLDAPサーバのコンフィグレーション"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "自己署名証明書に*不正な*署名があります"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "鍵%sを%sからサーバ%sに要求\n"

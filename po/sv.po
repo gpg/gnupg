@@ -105,6 +105,9 @@ msgstr ""
 "och specialtecken. Fråga din administratör om mer exakt information hur\n"
 "man anger säkra lösenfraser."
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -2017,6 +2020,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -2041,7 +2048,7 @@ msgstr "du kan inte använda %s när du är i %s-läget\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s-krypterad data\n"
 
 #, c-format
@@ -4745,12 +4752,6 @@ msgstr "Ogiltigt tecken i namnet\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr ""
 
-msgid "Name may not start with a digit\n"
-msgstr "Namnet får inte börja med en siffra\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Namnet måste vara åtminstone 5 tecken långt\n"
-
 msgid "Email address: "
 msgstr "E-postadress: "
 
@@ -5109,6 +5110,11 @@ msgstr "egendomlig storlek på en krypterad sessionsnyckel (%d)\n"
 #| msgid "%s encrypted session key\n"
 msgid "%s.%s encrypted session key\n"
 msgstr "%s krypterad sessionsnyckel\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
+msgstr "%s-krypterad data\n"
 
 #, fuzzy, c-format
 #| msgid "encrypted with unknown algorithm %d\n"
@@ -7391,6 +7397,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "hanterare för fd %d avslutad\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "fel vid hämtning av nyckelanvändningsinformation: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "valideringsmodellen begärd av certifikat: %s"
 
@@ -7644,10 +7657,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "ingen nyckelanvändning angiven - antar alla användningsområden\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "fel vid hämtning av nyckelanvändningsinformation: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate should have not been used for certification\n"
@@ -7960,9 +7969,6 @@ msgstr "|ANVÄNDAR-ID|använd ANVÄNDAR-ID som förvald hemlig nyckel"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|FIL|lägg till nyckelring till listan över nyckelringar"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|använd denna nyckelserver för att slå upp nycklar"
 
 msgid "fetch missing issuer certificates"
 msgstr "hämta saknade utfärdarcertifikat"
@@ -8756,6 +8762,11 @@ msgstr "mottagande rad misslyckades: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "certifikatet \"%s\" hittades inte: %s\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
@@ -8769,11 +8780,6 @@ msgstr "fel vid hämtning av \"%s\" via %s: %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: fel vid läsning av katalogpost: %s\n"
-
-#, fuzzy, c-format
-#| msgid "certificate `%s' not found: %s\n"
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "certifikatet \"%s\" hittades inte: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
@@ -8945,15 +8951,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr ""
 
-msgid "Configuration for Keyservers"
-msgstr "Konfiguration för nyckelservrar"
-
-msgid "|URL|use keyserver at URL"
-msgstr "|URL| använd nyckelservern på URL"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration för HTTP-servrar"
 
@@ -8969,8 +8966,21 @@ msgstr ""
 msgid "use system's HTTP proxy setting"
 msgstr "använd systemets HTTP-proxyinställningar"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "Konfiguration av LDAP-servrar som ska användas"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "Konfiguration för HTTP-servrar"
+
+msgid "|URL|use keyserver at URL"
+msgstr "|URL| använd nyckelservern på URL"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "Konfiguration för HTTP-servrar"
 
 msgid "inhibit the use of LDAP"
 msgstr ""
@@ -8983,6 +8993,9 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|använd denna nyckelserver för att slå upp nycklar"
 
 #, fuzzy
 #| msgid "|FILE|read options from FILE"
@@ -9240,9 +9253,9 @@ msgstr "fel vid läsning från %s: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Fel: Privat DO för långt (gränsen är %d tecken).\n"
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "certificate `%s' not found: %s\n"
-msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "certifikatet \"%s\" hittades inte: %s\n"
 
 #, c-format
@@ -9458,11 +9471,6 @@ msgstr ""
 #| msgid "checking the CRL failed: %s"
 msgid "checking CRL for"
 msgstr "kontroll mot spärrlistan misslyckades: %s"
-
-#, fuzzy, c-format
-#| msgid "self-signed certificate has a BAD signature"
-msgid "selfsigned certificate has a BAD signature"
-msgstr "självsignerat certifikat har en FELAKTIG signatur"
 
 #, fuzzy, c-format
 #| msgid "checking for qualified certificate failed: %s\n"
@@ -9795,6 +9803,23 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Namnet får inte börja med en siffra\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Namnet måste vara åtminstone 5 tecken långt\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "Konfiguration för nyckelservrar"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "Konfiguration av LDAP-servrar som ska användas"
+
+#, fuzzy
+#~| msgid "self-signed certificate has a BAD signature"
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "självsignerat certifikat har en FELAKTIG signatur"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "begär nyckeln %s från %s-servern %s\n"

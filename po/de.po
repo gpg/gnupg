@@ -75,6 +75,9 @@ msgstr "Vorschlag"
 msgid "pinentry.genpin.tooltip"
 msgstr "Einen Vorschlag für ein gutes Passwort erzeugen."
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr "(Leerzeichen sind nicht Bestandteil des Passwortes)"
 
@@ -1854,8 +1857,9 @@ msgstr "%s/%s.%s verschlüsselt für: \"%s\"\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "Die Benutzung der Option \"%s\" ist im %s-Modus nicht erlaubt.\n"
 
-#, c-format
-msgid "%s.%s encrypted data\n"
+#, fuzzy, c-format
+#| msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s.%s verschlüsselte Daten\n"
 
 #, c-format
@@ -4360,12 +4364,6 @@ msgstr "Ungültiges Zeichen im Namen\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr "Die Zeichen '%s' und '%s' dürfen in einem Namen nicht vorkommen\n"
 
-msgid "Name may not start with a digit\n"
-msgstr "Der Name darf nicht mit einer Ziffer beginnen.\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Der Name muß min. 5 Zeichen lang sein.\n"
-
 msgid "Email address: "
 msgstr "Email-Adresse: "
 
@@ -4702,6 +4700,10 @@ msgstr "Seltsame Länge für einen verschlüsselten Sitzungsschlüssel (%d)\n"
 #, c-format
 msgid "%s.%s encrypted session key\n"
 msgstr "%s.%s verschlüsselter Sitzungsschlüssel\n"
+
+#, c-format
+msgid "%s.%s encrypted data\n"
+msgstr "%s.%s verschlüsselte Daten\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d.%s\n"
@@ -6900,6 +6902,13 @@ msgid "handler for fd %d terminated\n"
 msgstr "Handhabungsroutine für den fd %d beendet\n"
 
 #, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "Fehler beim Holen der Schlüsselbenutzungsinformationen: %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
+#, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "Durch Zertifikat angefordertes Gültigkeitsmodell: %s"
 
@@ -7163,10 +7172,6 @@ msgstr ""
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 "Schlüsselverwendungszweck nicht vorhanden - für alle Zwecke akzeptiert\n"
-
-#, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "Fehler beim Holen der Schlüsselbenutzungsinformationen: %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7449,9 +7454,6 @@ msgstr "|USER-ID|USER-ID als voreingestellten Schlüssel benutzen"
 
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "|DATEI|DATEI als öffentlichen Schlüsselbund mitbenutzen"
-
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|Schlüssel bei diesem Server nachschlagen"
 
 msgid "fetch missing issuer certificates"
 msgstr "Fehlende Zertifikate automatisch holen"
@@ -8188,6 +8190,11 @@ msgstr "crl_cache_insert über den Issuer fehlgeschlagen: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "\"reader to file\" Zuordnungstabelle ist voll - warte\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to Tor mode\n"
+msgid "CRL access not possible due to Tor mode"
+msgstr "CRL Zugriff ist im Tor Modus nicht möglich\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "CRL Zugriff nicht möglich da %s abgeschaltet ist\n"
@@ -8199,10 +8206,6 @@ msgstr "Fehler beim Holen von `%s': %s\n"
 #, c-format
 msgid "error initializing reader object: %s\n"
 msgstr "Fehler beim Initialisieren des \"reader\" Objekts: %s\n"
-
-#, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "CRL Zugriff ist im Tor Modus nicht möglich\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8348,15 +8351,6 @@ msgstr "Netzwerkbezogene Optionen"
 msgid "route all network traffic via Tor"
 msgstr "Netzzugriff nur über Tor"
 
-msgid "Configuration for Keyservers"
-msgstr "Konfiguration der Schlüsselserver"
-
-msgid "|URL|use keyserver at URL"
-msgstr "Benutze Schlüsselserver unter der URL"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|DATEI|Benutze die CA Zertifikate in DATEI für HKP über TLS"
-
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration für HTTP Server"
 
@@ -8372,8 +8366,21 @@ msgstr "|URL|Leite alle HTTP Anfragen über URL"
 msgid "use system's HTTP proxy setting"
 msgstr "Benutze die HTTP Proxy Einstellung des Systems"
 
-msgid "Configuration of LDAP servers to use"
-msgstr "Konfiguration der zu nutzenden LDAP-Server"
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for OpenPGP servers"
+msgstr "Konfiguration für HTTP Server"
+
+msgid "|URL|use keyserver at URL"
+msgstr "Benutze Schlüsselserver unter der URL"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|DATEI|Benutze die CA Zertifikate in DATEI für HKP über TLS"
+
+#, fuzzy
+#| msgid "Configuration for HTTP servers"
+msgid "Configuration for X.509 servers"
+msgstr "Konfiguration für HTTP Server"
 
 msgid "inhibit the use of LDAP"
 msgstr "Sperre die Benutzung von LDAP"
@@ -8386,6 +8393,9 @@ msgstr "|HOST|Benutze HOST für LDAP Anfragen"
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr "Keine Benutzung der Rückgriffshosts mit --ldap-proxy"
+
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SPEC|Schlüssel bei diesem Server nachschlagen"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|DATEI|Lese die LDAP Serverliste aus DATEI"
@@ -8603,8 +8613,9 @@ msgstr "Fehler beim Lesen vom Responder: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Antwort vom Server zu lang; die Grenze sind %d Bytes\n"
 
-#, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+#| msgid "OCSP request not possible due to Tor mode\n"
+msgid "OCSP request not possible due to Tor mode"
 msgstr "OCSP Anfrage ist im Tor Modus nicht möglich\n"
 
 #, c-format
@@ -8788,10 +8799,6 @@ msgstr "keine Prüfung der CRL für"
 
 msgid "checking CRL for"
 msgstr "Prüfen der CRL für"
-
-#, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "Das eigenbeglaubigte Zertifikat hat eine FALSCHE Signatur"
 
 #, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -9072,6 +9079,21 @@ msgstr "Verwaltungskommandos für Yubikeys"
 
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Der Name darf nicht mit einer Ziffer beginnen.\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Der Name muß min. 5 Zeichen lang sein.\n"
+
+#~ msgid "Configuration for Keyservers"
+#~ msgstr "Konfiguration der Schlüsselserver"
+
+#~ msgid "Configuration of LDAP servers to use"
+#~ msgstr "Konfiguration der zu nutzenden LDAP-Server"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "Das eigenbeglaubigte Zertifikat hat eine FALSCHE Signatur"
 
 #~ msgid "Options useful for debugging"
 #~ msgstr "Nützliche Optionen zur Fehlersuche"

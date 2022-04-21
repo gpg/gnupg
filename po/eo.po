@@ -75,6 +75,9 @@ msgstr ""
 msgid "pinentry.genpin.tooltip"
 msgstr ""
 
+#. TRANSLATORS: This is a text shown by pinentry if the option
+#. for formatted passphrase is enabled.  The length is
+#. limited to about 900 characters.
 msgid "Note: The blanks are not part of the passphrase."
 msgstr ""
 
@@ -1870,6 +1873,10 @@ msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1890,7 +1897,7 @@ msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
-msgid "%s.%s encrypted data\n"
+msgid "%s encrypted data\n"
 msgstr "%s-ĉifritaj datenoj\n"
 
 #, c-format
@@ -4521,12 +4528,6 @@ msgstr "Nevalida signo en nomo\n"
 msgid "The characters '%s' and '%s' may not appear in name\n"
 msgstr ""
 
-msgid "Name may not start with a digit\n"
-msgstr "Nomo ne povas komenciĝi per cifero\n"
-
-msgid "Name must be at least 5 characters long\n"
-msgstr "Nomo devas havi almenaŭ 5 signojn\n"
-
 msgid "Email address: "
 msgstr "Retadreso: "
 
@@ -4883,6 +4884,11 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "%s.%s encrypted session key\n"
+msgstr "%s-ĉifritaj datenoj\n"
+
+#, fuzzy, c-format
+#| msgid "%s encrypted data\n"
+msgid "%s.%s encrypted data\n"
 msgstr "%s-ĉifritaj datenoj\n"
 
 #, fuzzy, c-format
@@ -7001,6 +7007,13 @@ msgstr ""
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error getting key usage information: %s\n"
+msgstr "eraro dum skribado de sekreta ŝlosilaro '%s': %s\n"
+
+msgid "Tor might be in use - network access is limited"
+msgstr ""
+
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr ""
@@ -7267,10 +7280,6 @@ msgstr ""
 #, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error getting key usage information: %s\n"
-msgstr "eraro dum skribado de sekreta ŝlosilaro '%s': %s\n"
 
 #, c-format
 msgid "certificate should not have been used for certification\n"
@@ -7565,10 +7574,6 @@ msgstr "|NOMO|uzi NOMOn kiel la implicitan sekretan ŝlosilon"
 #, fuzzy
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "aldoni ĉi tiun ŝlosilaron al la listo de ŝlosilaroj"
-
-#, fuzzy
-msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SERVILO|uzi ĉi tiun ŝlosilservilon por serĉi ŝlosilojn"
 
 msgid "fetch missing issuer certificates"
 msgstr ""
@@ -8266,6 +8271,10 @@ msgstr "forviŝo de ŝlosilbloko malsukcesis: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
+#, fuzzy
+msgid "CRL access not possible due to Tor mode"
+msgstr "ŝlosilo '%s' ne trovita: %s\n"
+
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
@@ -8278,10 +8287,6 @@ msgstr "eraro dum kreado de '%s': %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: eraro dum skribo de dosieruja registro: %s\n"
-
-#, fuzzy, c-format
-msgid "CRL access not possible due to Tor mode\n"
-msgstr "ŝlosilo '%s' ne trovita: %s\n"
 
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -8438,16 +8443,6 @@ msgstr ""
 msgid "route all network traffic via Tor"
 msgstr ""
 
-msgid "Configuration for Keyservers"
-msgstr ""
-
-#, fuzzy
-msgid "|URL|use keyserver at URL"
-msgstr "ne povis analizi URI de ŝlosilservilo\n"
-
-msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
-
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -8463,7 +8458,17 @@ msgstr ""
 msgid "use system's HTTP proxy setting"
 msgstr ""
 
-msgid "Configuration of LDAP servers to use"
+msgid "Configuration for OpenPGP servers"
+msgstr ""
+
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "ne povis analizi URI de ŝlosilservilo\n"
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "Configuration for X.509 servers"
 msgstr ""
 
 msgid "inhibit the use of LDAP"
@@ -8477,6 +8482,10 @@ msgstr ""
 
 msgid "do not use fallback hosts with --ldap-proxy"
 msgstr ""
+
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
+msgstr "|SERVILO|uzi ĉi tiun ŝlosilservilon por serĉi ŝlosilojn"
 
 #, fuzzy
 msgid "|FILE|read LDAP server list from FILE"
@@ -8700,8 +8709,8 @@ msgstr "eraro dum legado de '%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "OCSP request not possible due to Tor mode\n"
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode"
 msgstr "ŝlosilo '%s' ne trovita: %s\n"
 
 #, c-format
@@ -8889,10 +8898,6 @@ msgstr ""
 #, fuzzy
 msgid "checking CRL for"
 msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
-
-#, fuzzy, c-format
-msgid "selfsigned certificate has a BAD signature"
-msgstr "kontroli subskribon"
 
 #, fuzzy, c-format
 msgid "checking trustworthiness of root certificate failed: %s\n"
@@ -9186,6 +9191,16 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "Name may not start with a digit\n"
+#~ msgstr "Nomo ne povas komenciĝi per cifero\n"
+
+#~ msgid "Name must be at least 5 characters long\n"
+#~ msgstr "Nomo devas havi almenaŭ 5 signojn\n"
+
+#, fuzzy
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "kontroli subskribon"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"
