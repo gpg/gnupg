@@ -2447,6 +2447,68 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 }
 
 
+/* Helper to find the UID node for namehash.  On success, returns the UID node.
+   Otherwise, return NULL. */
+kbnode_t
+find_userid_by_namehash (kbnode_t keyblock, const char *namehash)
+{
+  byte hash[NAMEHASH_LEN];
+  kbnode_t node = NULL;
+
+  if (!namehash)
+    goto leave;
+
+  if (strlen (namehash) != NAMEHASH_LEN * 2)
+    goto leave;
+
+  if (hex2bin (namehash, hash, NAMEHASH_LEN) < 0)
+    goto leave;
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+	{
+	  namehash_from_uid (node->pkt->pkt.user_id);
+	  if (!memcmp (node->pkt->pkt.user_id->namehash, hash, NAMEHASH_LEN))
+	    break;
+        }
+    }
+
+ leave:
+  return node;
+}
+
+
+/* Helper to find the UID node for uid.  On success, returns the UID node.
+   Otherwise, return NULL. */
+kbnode_t
+find_userid (kbnode_t keyblock, const char *uid)
+{
+  kbnode_t node = NULL;
+  size_t uidlen;
+
+  if (!keyblock || !uid)
+    goto leave;
+
+  /* First try to find UID by namehash. */
+  node = find_userid_by_namehash (keyblock, uid);
+  if (node)
+    goto leave;
+
+  uidlen = strlen (uid);
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID
+          && uidlen == node->pkt->pkt.user_id->len
+          && !memcmp (node->pkt->pkt.user_id->name, uid, uidlen))
+        break;
+    }
+
+ leave:
+  return node;
+}
+
+
 /* Unattended revocation of a keyid.  USERNAME specifies the
    key. UIDTOREV is the user id revoke from the key.  */
 void
@@ -2457,7 +2519,6 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
   kbnode_t keyblock = NULL;
   kbnode_t node;
   int modified = 0;
-  size_t revlen;
   size_t valid_uids;
 
 #ifdef HAVE_W32_SYSTEM
@@ -2470,7 +2531,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
   if (err)
     goto leave;
 
-  /* Too make sure that we do not revoke the last valid UID, we first
+  /* To make sure that we do not revoke the last valid UID, we first
      count how many valid UIDs there are.  */
   valid_uids = 0;
   for (node = keyblock; node; node = node->next)
@@ -2479,40 +2540,35 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
                    && !node->pkt->pkt.user_id->flags.expired);
 
   /* Find the right UID. */
-  revlen = strlen (uidtorev);
-  for (node = keyblock; node; node = node->next)
+  node = find_userid (keyblock, uidtorev);
+  if (node)
     {
-      if (node->pkt->pkttype == PKT_USER_ID
-          && revlen == node->pkt->pkt.user_id->len
-          && !memcmp (node->pkt->pkt.user_id->name, uidtorev, revlen))
+      struct revocation_reason_info *reason;
+
+      /* Make sure that we do not revoke the last valid UID.  */
+      if (valid_uids == 1
+          && ! node->pkt->pkt.user_id->flags.revoked
+          && ! node->pkt->pkt.user_id->flags.expired)
         {
-          struct revocation_reason_info *reason;
-
-          /* Make sure that we do not revoke the last valid UID.  */
-          if (valid_uids == 1
-              && ! node->pkt->pkt.user_id->flags.revoked
-              && ! node->pkt->pkt.user_id->flags.expired)
-            {
-              log_error (_("cannot revoke the last valid user ID.\n"));
-              err = gpg_error (GPG_ERR_INV_USER_ID);
-              goto leave;
-            }
-
-          reason = get_default_uid_revocation_reason ();
-          err = core_revuid (ctrl, keyblock, node, reason, &modified);
-          release_revocation_reason_info (reason);
-          if (err)
-            goto leave;
-          err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
-          if (err)
-            {
-              log_error (_("update failed: %s\n"), gpg_strerror (err));
-              goto leave;
-            }
-
-          revalidation_mark (ctrl);
+          log_error (_("cannot revoke the last valid user ID.\n"));
+          err = gpg_error (GPG_ERR_INV_USER_ID);
           goto leave;
         }
+
+      reason = get_default_uid_revocation_reason ();
+      err = core_revuid (ctrl, keyblock, node, reason, &modified);
+      release_revocation_reason_info (reason);
+      if (err)
+        goto leave;
+      err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+
+      revalidation_mark (ctrl);
+      goto leave;
     }
   err = gpg_error (GPG_ERR_NO_USER_ID);
 
