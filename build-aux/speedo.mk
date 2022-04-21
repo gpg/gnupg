@@ -80,6 +80,14 @@
 # AUTHENTICODE_KEY=/home/foo/.gnupg/my-authenticode-key.p12
 # AUTHENTICODE_CERTS=/home/foo/.gnupg/my-authenticode-certs.pem
 #
+# # If a smartcard is used for the Authenticode signature these
+# # entries are required instead:
+# AUTHENTICODE_KEY=card
+# AUTHENTICODE_CERTS=/home/foo/.gnupg/my_authenticode_cert.pem
+# OSSLSIGNCODE=/usr/bin/osslsigncode
+# OSSLPKCS11ENGINE=/usr/lib/x86_64-linux-gnu/engines-1.1/pkcs11.so
+# SCUTEMODULE=/usr/local/lib/scute.so
+#
 #--8<---------------cut here---------------end--------------->8---
 
 
@@ -247,6 +255,9 @@ $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_SIGNHOST))
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_TOOL))
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_KEY))
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_CERTS))
+$(eval $(call READ_AUTOGEN_template,OSSLSIGNCODE))
+$(eval $(call READ_AUTOGEN_template,OSSLPKCS11ENGINE))
+$(eval $(call READ_AUTOGEN_template,SCUTEMODULE))
 
 # All files given in AUTHENTICODE_FILES are signed before
 # they are put into the installer.
@@ -263,6 +274,7 @@ AUTHENTICODE_FILES= \
                     gpgsm.exe                 \
                     gpgtar.exe                \
                     gpgv.exe                  \
+                    gpg-card.exe              \
                     libassuan-0.dll           \
                     libgcrypt-20.dll          \
                     libgpg-error-0.dll        \
@@ -1435,6 +1447,15 @@ define AUTHENTICODE_sign
         /fd sha256 /du https://gnupg.org a.exe ;\
      scp "$(AUTHENTICODE_SIGNHOST):a.exe" $(2);\
      echo "speedo: signed file is '$(2)'" ;\
+   elif [ "$(AUTHENTICODE_KEY)" = card ]; then \
+     echo "speedo: Signing using a card";\
+     $(OSSLSIGNCODE) sign \
+       -pkcs11engine $(OSSLPKCS11ENGINE) \
+       -pkcs11module $(SCUTEMODULE) \
+       -certs $(AUTHENTICODE_CERTS) \
+       -h sha256 -n GnuPG -i https://gnupg.org \
+       -ts http://rfc3161timestamp.globalsign.com/advanced \
+       -in $(1) -out $(2).tmp ; mv $(2).tmp $(2) ; \
    elif [ -e "$(AUTHENTICODE_KEY)" ]; then \
      echo "speedo: Signing using key $(AUTHENTICODE_KEY)";\
      osslsigncode sign -certs $(AUTHENTICODE_CERTS) \
@@ -1446,6 +1467,14 @@ define AUTHENTICODE_sign
      echo "speedo: WARNING: Binaries are not signed"; \
    fi
 endef
+
+# Help target for testing to sign a file.
+# Usage: make -f speedo.mk test-authenticode-sign TARGETOS=w32 FILE=foo.exe
+test-authenticode-sign:
+	(set -e; \
+	 echo "Test signining of $(FILE)" ; \
+	 $(call AUTHENTICODE_sign,"$(FILE)","$(FILE)");\
+	)
 
 
 # Build the installer from the source tarball.
