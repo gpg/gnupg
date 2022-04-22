@@ -4738,6 +4738,11 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
           exmode = 1;    /* Use extended length.  */
           le_value = app->app_local->keyattr[2].rsa.n_bits / 8;
         }
+      else if (app->app_local->cardcap.cmd_chaining && indatalen > 254)
+        {
+          exmode = -254; /* Command chaining with max. 254 bytes.  */
+          le_value = 0;
+        }
       else if (indatalen > 255)
         {
           if (!app->app_local->cardcap.ext_lc_le)
