@@ -97,7 +97,7 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
 {
   gpg_error_t err = 0;
   const char *pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CHECK_PATTERN);
-  FILE *infp;
+  estream_t stream_to_check_pattern = NULL;
   const char *argv[10];
   pid_t pid;
   int result, i;
@@ -135,27 +135,6 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
       return 1; /* Do not pass the check.  */
     }
 
-  infp = gnupg_tmpfile ();
-  if (!infp)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error creating temporary file: %s\n"), gpg_strerror (err));
-      xfree (patternfname);
-      return 1; /* Error - assume password should not be used.  */
-    }
-
-  if (fwrite (pw, strlen (pw), 1, infp) != 1)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error writing to temporary file: %s\n"),
-                 gpg_strerror (err));
-      fclose (infp);
-      xfree (patternfname);
-      return 1; /* Error - assume password should not be used.  */
-    }
-  fseek (infp, 0, SEEK_SET);
-  clearerr (infp);
-
   i = 0;
   argv[i++] = "--null";
   argv[i++] = "--",
@@ -163,21 +142,27 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
   argv[i] = NULL;
   log_assert (i < sizeof argv);
 
-  if (gnupg_spawn_process_fd (pgmname, argv, fileno (infp), -1, -1, &pid))
+  if (gnupg_spawn_process (pgmname, argv, NULL, NULL, 0,
+                           &stream_to_check_pattern, NULL, NULL, &pid))
     result = 1; /* Execute error - assume password should no be used.  */
-  else if (gnupg_wait_process (pgmname, pid, 1, NULL))
-    result = 1; /* Helper returned an error - probably a match.  */
   else
-    result = 0; /* Success; i.e. no match.  */
-  gnupg_release_process (pid);
-
-  /* Overwrite our temporary file. */
-  fseek (infp, 0, SEEK_SET);
-  clearerr (infp);
-  for (i=((strlen (pw)+99)/100)*100; i > 0; i--)
-    putc ('\xff', infp);
-  fflush (infp);
-  fclose (infp);
+    {
+      es_set_binary (stream_to_check_pattern);
+      if (es_fwrite (pw, strlen (pw), 1, stream_to_check_pattern) != 1)
+        {
+          err = gpg_error_from_syserror ();
+          log_error (_("error writing to pipe: %s\n"), gpg_strerror (err));
+          result = 1; /* Error - assume password should not be used.  */
+        }
+      else
+        es_fflush (stream_to_check_pattern);
+      es_fclose (stream_to_check_pattern);
+      if (gnupg_wait_process (pgmname, pid, 1, NULL))
+        result = 1; /* Helper returned an error - probably a match.  */
+      else
+        result = 0; /* Success; i.e. no match.  */
+      gnupg_release_process (pid);
+    }
 
   xfree (patternfname);
   return result;
