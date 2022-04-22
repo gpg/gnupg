@@ -4270,7 +4270,7 @@ menu_adduid (ctrl_t ctrl, kbnode_t pub_keyblock,
       if (uidstring)
         {
           write_status_error ("adduid", gpg_error (304));
-          log_error ("%s", _("Such a user ID already exists on this key!\n"));
+          log_error ("%s\n", _("Such a user ID already exists on this key!"));
         }
       return 0;
     }
