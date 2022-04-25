@@ -2177,7 +2177,8 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
   a->e_d.len = 0;
 
   /* Hint for how full to fill iobuf internal drain buffer. */
-  a->e_d.preferred = (buf && buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE);
+  a->e_d.preferred = (a->use != IOBUF_INPUT_TEMP)
+    && (buf && buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE);
 
   n = 0;
   do
@@ -2200,7 +2201,7 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 	   underflow to read more data into the filter's internal
 	   buffer.  */
 	{
-	  if (buf && n < buflen)
+	  if (a->use != IOBUF_INPUT_TEMP && buf && n < buflen)
 	    {
 	      /* Setup external drain buffer for faster moving of data
 	       * (avoid memcpy). */
@@ -2328,11 +2329,13 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
   a->e_d.len = 0;
 
   /* Hint for how full to fill iobuf internal drain buffer. */
-  a->e_d.preferred = (buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE);
+  a->e_d.preferred = (a->use != IOBUF_OUTPUT_TEMP)
+    && (buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE);
 
   do
     {
-      if (a->d.len == 0 && buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE)
+      if ((a->use != IOBUF_OUTPUT_TEMP)
+	  && a->d.len == 0 && buflen >= IOBUF_ZEROCOPY_THRESHOLD_SIZE)
 	{
 	  /* Setup external drain buffer for faster moving of data
 	    * (avoid memcpy). */
