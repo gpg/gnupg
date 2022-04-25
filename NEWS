@@ -1,7 +1,21 @@
-Noteworthy changes in version 2.3.6 (unreleased)
+Noteworthy changes in version 2.3.6 (2022-04-25)
 ------------------------------------------------
 
+  * gpg: Fix regression in 2.3.5 importing longer keys.  [T5941]
+
+  * gpg: Emit an ERROR status as hint for a bad passphrase.  [T5943]
+
+  * gpg: Avoid NULL-ptr access due to corrupted packets.  [T5940]
+
+  * gpgsm: Improve the "Certificate not found" error message.  [T5821]
+
+  * agent: Pass pattern directly to gpg-check-pattern.  [rGe529c54fe3]
+
+  * scd: Fix hard-coded constant for RSA authentication key OpenPGP.3.
+    [rG2848fe4c84]
+
   Release-info: https://dev.gnupg.org/T5937
+  See-also: gnupg-announce/2022q2/000473.html
 
 
 Noteworthy changes in version 2.3.5 (2022-04-21)
