@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-04-20 09:24+0200\n"
+"PO-Revision-Date: 2022-04-25 18:05+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -288,10 +288,9 @@ msgstr "PIN wurde nicht richtig wiederholt; noch einmal versuchen"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Bitte geben Sie die PIN%s%s%s ein, um die Karte zu entsperren"
 
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
+#, c-format
 msgid "error writing to pipe: %s\n"
-msgstr "Fehler beim Schreiben von %s: %s\n"
+msgstr "Fehler beim Schreiben auf eine \"Pipe\": %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Neues Passwort eingeben"
