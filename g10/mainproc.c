@@ -448,6 +448,11 @@ proc_symkey_enc (CTX c, PACKET *pkt)
                       if (gpg_err_code (err) != GPG_ERR_BAD_KEY
                           && gpg_err_code (err) != GPG_ERR_CHECKSUM)
                         log_fatal ("process terminated to be bug compatible\n");
+                      else
+                        write_status_text (STATUS_ERROR,
+                                           "symkey_decrypt.maybe_error"
+                                           " 11_BAD_PASSPHRASE");
+
                       if (c->dek->s2k_cacheid[0])
                         {
                           if (opt.debug)
@@ -846,15 +851,22 @@ proc_encrypted (CTX c, PACKET *pkt)
     }
   else
     {
-      if ((gpg_err_code (result) == GPG_ERR_BAD_KEY
-	   || gpg_err_code (result) == GPG_ERR_CHECKSUM
-	   || gpg_err_code (result) == GPG_ERR_CIPHER_ALGO)
-          && *c->dek->s2k_cacheid != '\0')
+      if (gpg_err_code (result) == GPG_ERR_BAD_KEY
+          || gpg_err_code (result) == GPG_ERR_CHECKSUM
+          || gpg_err_code (result) == GPG_ERR_CIPHER_ALGO)
         {
-          if (opt.debug)
-            log_debug ("cleared passphrase cached with ID: %s\n",
-                       c->dek->s2k_cacheid);
-          passphrase_clear_cache (c->dek->s2k_cacheid);
+          if (c->symkeys)
+            write_status_text (STATUS_ERROR,
+                               "symkey_decrypt.maybe_error"
+                               " 11_BAD_PASSPHRASE");
+
+          if (*c->dek->s2k_cacheid != '\0')
+            {
+              if (opt.debug)
+                log_debug ("cleared passphrase cached with ID: %s\n",
+                           c->dek->s2k_cacheid);
+              passphrase_clear_cache (c->dek->s2k_cacheid);
+            }
         }
       glo_ctrl.lasterr = result;
       write_status (STATUS_DECRYPTION_FAILED);
