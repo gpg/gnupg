@@ -278,12 +278,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "erro na criação da frase secreta: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "a escrever para `%s'\n"
+msgid "error writing to pipe: %s\n"
+msgstr "erro na escrita do porta-chaves `%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -346,11 +342,6 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
-
-#, fuzzy
-#| msgid "Key is superseded"
-msgid "run in supervised mode"
-msgstr "A chave foi substituída"
 
 msgid "do not detach from the console"
 msgstr ""
@@ -523,6 +514,10 @@ msgstr "a ler opções de `%s'\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "AVISO: \"%s\" é uma opção depreciada\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "AVISO: \"%s\" é uma opção depreciada\n"
 
 #, fuzzy, c-format
@@ -3988,7 +3983,7 @@ msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr ""
 "Não pode adicionar um identificador fotográfico a uma chave tipo PGP2.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4571,6 +4566,9 @@ msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 "Por favor não coloque o endereço de email no nome verdadeiro ou no "
 "comentário\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5166,10 +5164,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: opção depreciada \"%s\"\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "AVISO: \"%s\" é uma opção depreciada\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7484,6 +7478,10 @@ msgstr "Gerar um certificado de revogação para esta assinatura? (s/N)"
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "erro na criação da frase secreta: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9217,6 +9215,15 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "a escrever para `%s'\n"
+
+#, fuzzy
+#~| msgid "Key is superseded"
+#~ msgid "run in supervised mode"
+#~ msgstr "A chave foi substituída"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "O nome não pode começar com um dígito\n"
 
@@ -9472,10 +9479,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "impossível abrir %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "erro na escrita do porta-chaves `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

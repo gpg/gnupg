@@ -300,12 +300,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "error en la creació de la contrasenya: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "%s: error en escriure el registre de directoris: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -368,11 +364,6 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
-
-#, fuzzy
-#| msgid "Key is superseded"
-msgid "run in supervised mode"
-msgstr "La clau ha estat substituïda"
 
 msgid "do not detach from the console"
 msgstr ""
@@ -550,6 +541,10 @@ msgstr "s'estan llegint opcions de «%s»\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "AVÍS: %s és una opció desaconsellada.\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "AVÍS: %s és una opció desaconsellada.\n"
 
 #, fuzzy, c-format
@@ -4105,7 +4100,7 @@ msgstr "Esteu segur que encara voleu afegir-lo? (s/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "No podeu afegir un photo ID a una clau d'estil PGP2.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 # Aquesta i les següents no haurien de portar (s/N/q) i no (y/N/q)?  ivb
@@ -4697,6 +4692,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "No inclogueu l'adreça ni en el camp *nom* ni en el camp *comentari*\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 # xX? ivb
 # Hmm... sí. jm
@@ -5304,10 +5302,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: l'opció «%s» està desaconsellada.\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "AVÍS: %s és una opció desaconsellada.\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7703,6 +7697,10 @@ msgstr "Voleu crear un certificat de revocació per a aquesta clau? "
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9454,6 +9452,15 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "%s: error en escriure el registre de directoris: %s\n"
+
+#, fuzzy
+#~| msgid "Key is superseded"
+#~ msgid "run in supervised mode"
+#~ msgstr "La clau ha estat substituïda"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "El nom no pot començar amb un dígit\n"
 
@@ -9715,10 +9722,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "no s'ha pogut obrir %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

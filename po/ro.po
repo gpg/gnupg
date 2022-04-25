@@ -288,12 +288,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "eroare la crearea frazei-parolă: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "%s: eroare scriere înregistrare dir: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -356,11 +352,6 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
-
-#, fuzzy
-#| msgid "Key is superseded"
-msgid "run in supervised mode"
-msgstr "Cheia este înlocuită"
 
 msgid "do not detach from the console"
 msgstr ""
@@ -531,6 +522,10 @@ msgstr "citesc opţiuni din `%s'\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
 
 #, fuzzy, c-format
@@ -4034,7 +4029,7 @@ msgstr "Sunteţi încă sigur(ă) că doriţi să o adăugaţi? (d/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Nu puteţi adăuga o poză ID la o cheie stil PGP2.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4623,6 +4618,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Vă rugăm nu puneţi adresa de email în numele real sau comentariu\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5226,10 +5224,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: opţiune învechită \"%s\"\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7607,6 +7601,10 @@ msgstr "Creaţi un certificat de revocare desemnat pentru această cheie? (d/N) 
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "eroare la crearea frazei-parolă: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9365,6 +9363,15 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "%s: eroare scriere înregistrare dir: %s\n"
+
+#, fuzzy
+#~| msgid "Key is superseded"
+#~ msgid "run in supervised mode"
+#~ msgstr "Cheia este înlocuită"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Numele nu poate începe cu o cifră\n"
 
@@ -9640,10 +9647,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "nu pot deschide %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

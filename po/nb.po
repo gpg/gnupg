@@ -283,13 +283,10 @@ msgstr "PIN ble ikke gjentatt korrekt. Prøv igjen"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Skriv inn PIN-kode%s%s%s for å låse opp kort"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "feil under oppretting av midlertidig fil: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "feil under skriving til midlertidig fil: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "feil under skriving til %s: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Skriv inn ny passordfrase"
@@ -351,9 +348,6 @@ msgstr "kjør som bakgrunnsprosess («daemon»)"
 
 msgid "run in server mode (foreground)"
 msgstr "kjør i tjenermodus (forgrunn)"
-
-msgid "run in supervised mode"
-msgstr "kjør i «supervised» modus"
 
 msgid "do not detach from the console"
 msgstr "ikke løsne fra konsoll"
@@ -516,6 +510,10 @@ msgstr "leser valg fra «%s»\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "Merk: «%s» regnes ikke som et valg\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "ADVARSEL: valget «%s» er utgått\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -3828,7 +3826,9 @@ msgstr "Er du sikker på at du vil legge den til? (j/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Du kan ikke knytte foto-ID til PGP2-nøkler.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+#, fuzzy
+#| msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr "Valgt bruker-ID finnes allerede på denne nøkkelen!\n"
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4402,6 +4402,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Ikk bruk e-postadresse som navn eller kommentar\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Valgt bruker-ID finnes allerede på denne nøkkelen!\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4977,10 +4980,6 @@ msgstr "(mer info: "
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: valget «%s» er utgått\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "ADVARSEL: valget «%s» er utgått\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7279,6 +7278,10 @@ msgstr "Vil du lage selvsignert sertifikat? (y/N) "
 msgid "These parameters are used:\n"
 msgstr "Følgende parametre brukes:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "feil under oppretting av midlertidig fil: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "Lager selvsignert sertifikat."
 
@@ -8989,6 +8992,12 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "feil under skriving til midlertidig fil: %s\n"
+
+#~ msgid "run in supervised mode"
+#~ msgstr "kjør i «supervised» modus"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Navn kan ikke begynne med siffer\n"
 
@@ -9331,9 +9340,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "klarte ikke å åpne %s for skriving: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "feil under skriving til %s: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "feil under lukking av %s: %s\n"

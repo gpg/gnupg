@@ -280,12 +280,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "kesalahan penciptaan passphrase: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "menulis ke `%s'\n"
+msgid "error writing to pipe: %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -348,11 +344,6 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
-
-#, fuzzy
-#| msgid "Key is superseded"
-msgid "run in supervised mode"
-msgstr "Kunci dilampaui"
 
 msgid "do not detach from the console"
 msgstr ""
@@ -523,6 +514,10 @@ msgstr "membaca pilihan dari `%s'\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
 
 #, fuzzy, c-format
@@ -3984,7 +3979,7 @@ msgstr "Anda tetap ingin menambahkannya? (y/n) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Anda tidak boleh menambahkan sebuah photo ID ke kunci bergaya PGP2 \n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4567,6 +4562,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Jangan menaruh alamat email ke dalam nama sebenarnya atau komentar\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5160,10 +5158,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: opsi tidak digunakan lagi \"%s\"\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7490,6 +7484,10 @@ msgstr "Buat sertifikat pembatalan untuk kunci ini?"
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "kesalahan penciptaan passphrase: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9222,6 +9220,15 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "menulis ke `%s'\n"
+
+#, fuzzy
+#~| msgid "Key is superseded"
+#~ msgid "run in supervised mode"
+#~ msgstr "Kunci dilampaui"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Nama tidak boleh dimulai dengan digit\n"
 
@@ -9481,10 +9488,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "tidak dapat membuka %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

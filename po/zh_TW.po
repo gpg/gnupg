@@ -286,13 +286,10 @@ msgstr "前後兩次輸入的個人識別碼 (PIN) 不一致; 請再試一次"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "請輸入個人識別碼 (PIN)%s%s%s 以解開卡片"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "建立暫存檔時出錯: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "寫入暫存檔時出錯: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "寫入 %s 時出錯: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "請輸入新密語"
@@ -352,11 +349,6 @@ msgstr "以服務模式執行 (背景)"
 
 msgid "run in server mode (foreground)"
 msgstr "以伺服器模式執行 (前景)"
-
-#, fuzzy
-#| msgid "run in server mode"
-msgid "run in supervised mode"
-msgstr "以伺服器模式執行"
 
 msgid "do not detach from the console"
 msgstr "不要從 console 分離"
@@ -524,6 +516,10 @@ msgstr "從 '%s' 讀取選項中\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "請注意: '%s' 並不當成選項\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "警告: 已不建議使用 \"%s\" 選項\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -3863,7 +3859,9 @@ msgstr "你確定仍然想要增加嗎? (y/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "你不可以把照片 ID 增加到 PGP2 型態的金鑰裡.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+#, fuzzy
+#| msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr "這把金鑰上已經有這樣子的使用者 ID 了!\n"
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4436,6 +4434,9 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "請不要把電子郵件地址放進你的真實姓名或註釋裡\n"
 
+msgid "Such a user ID already exists on this key!\n"
+msgstr "這把金鑰上已經有這樣子的使用者 ID 了!\n"
+
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -5006,10 +5007,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: 不建議使用的選項 \"%s\"\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "警告: 已不建議使用 \"%s\" 選項\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7286,6 +7283,10 @@ msgstr "要建立自簽憑證嗎? (y/N) "
 msgid "These parameters are used:\n"
 msgstr "採用下列這些參數:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "建立暫存檔時出錯: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "現在正在建立自簽憑證.  "
 
@@ -8994,6 +8995,14 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "寫入暫存檔時出錯: %s\n"
+
+#, fuzzy
+#~| msgid "run in server mode"
+#~ msgid "run in supervised mode"
+#~ msgstr "以伺服器模式執行"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "姓名不可以用數字開頭\n"
 
@@ -9338,9 +9347,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "無法開啟 %s 來寫入: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "寫入 %s 時出錯: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "關閉 %s 時出錯: %s\n"

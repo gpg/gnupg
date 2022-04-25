@@ -278,13 +278,10 @@ msgstr "PIN повторен неверно; попробуйте еще раз"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Введите PIN%s%s%s для доступа к карте"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "ошибка создания временного файла: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "ошибка записи во временный файл: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "ошибка записи в %s: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Введите новую фразу-пароль"
@@ -355,9 +352,6 @@ msgstr "запуск в режиме демона (фоновый режим)"
 
 msgid "run in server mode (foreground)"
 msgstr "запуск в режиме сервера (нефоновый режим)"
-
-msgid "run in supervised mode"
-msgstr "запуск в подконтрольном режиме"
 
 msgid "do not detach from the console"
 msgstr "не отсоединяться от консоли"
@@ -520,6 +514,10 @@ msgstr "чтение параметров из '%s'\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "Замечание: '%s' не считается параметром\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "Внимание: параметр \"%s\" не рекомендуется\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -3843,7 +3841,9 @@ msgstr "Вы уверены, что хотите добавить это? (y/N) 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Нельзя добавить фотоидентификатор в ключ типа PGP2.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+#, fuzzy
+#| msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr "Такой идентификатор пользователя на этом ключе уже есть!\n"
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4414,6 +4414,9 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 "Не вставляйте адрес электронной почты в имя пользователя или примечание\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Такой идентификатор пользователя на этом ключе уже есть!\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4999,10 +5002,6 @@ msgstr "(дальнейшие сведения: "
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: параметр \"%s\" не рекомендуется\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "Внимание: параметр \"%s\" не рекомендуется\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7347,6 +7346,10 @@ msgstr "Создать самозаверенный сертификат? (y/N) 
 msgid "These parameters are used:\n"
 msgstr "Используются параметры:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "ошибка создания временного файла: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "Сейчас создается самозаверенный сертификат."
 
@@ -9089,6 +9092,12 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "ошибка записи во временный файл: %s\n"
+
+#~ msgid "run in supervised mode"
+#~ msgstr "запуск в подконтрольном режиме"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Имя не должно начинаться с цифры\n"
 
@@ -9422,9 +9431,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "невозможно открыть %s на запись: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "ошибка записи в %s: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "ошибка закрытия %s: %s\n"

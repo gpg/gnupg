@@ -269,13 +269,10 @@ msgstr "PIN non ripetuto correttamente; Riprova"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Immettere il PIN%s%s%s per sbloccare la scheda"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "errore durante la creazione del file temporaneo: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "errore durante la scrittura nel file temporaneo: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "errore durante la scrittura in %s: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Inserisci la nuova passphrase"
@@ -340,9 +337,6 @@ msgstr "eseguire in modalità daemon (sfondo)"
 
 msgid "run in server mode (foreground)"
 msgstr "eseguire in modalità server (in primo piano)"
-
-msgid "run in supervised mode"
-msgstr "eseguire in modalità supervisionata"
 
 msgid "do not detach from the console"
 msgstr "non scollegarsi dalla console"
@@ -499,6 +493,10 @@ msgstr "opzioni di lettura da '%s'\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "Nota: '%s' non è considerato un'opzione\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "ATTENZIONE: \"%s\" è una opzione deprecata\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -3801,7 +3799,9 @@ msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr ""
 "Non è possibile aggiungere un ID fotografico a una chiave in stile PGP2.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+#, fuzzy
+#| msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr "Tale ID utente esiste già in questa chiave!\n"
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4360,6 +4360,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Per favore non mettere l'indirizzo di email nel nome o nel commento\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Tale ID utente esiste già in questa chiave!\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4940,10 +4943,6 @@ msgstr "(ulteriori informazioni: "
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d \"%s\" è una opzione deprecata\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "ATTENZIONE: \"%s\" è una opzione deprecata\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7284,6 +7283,10 @@ msgstr "Creare un certificato autofirmato? (y/N) "
 msgid "These parameters are used:\n"
 msgstr "Vengono utilizzati i seguenti parametri:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "errore durante la creazione del file temporaneo: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "Creazione di un certificato autofirmato.  "
 
@@ -9008,6 +9011,12 @@ msgstr "Comandi di gestione Yubikey"
 msgid "manage the command history"
 msgstr "gestire la cronologia dei comandi"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "errore durante la scrittura nel file temporaneo: %s\n"
+
+#~ msgid "run in supervised mode"
+#~ msgstr "eseguire in modalità supervisionata"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Il nome non può iniziare con una cifra\n"
 
@@ -9323,9 +9332,6 @@ msgstr "gestire la cronologia dei comandi"
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "impossibile aprire %s per la scrittura: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "errore durante la scrittura in %s: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "errore durante la chiusura di %s: %s\n"

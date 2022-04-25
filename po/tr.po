@@ -281,13 +281,10 @@ msgstr "PIN doğru tekrarlanmadı; tekrar deneyin"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Kartın kilidini açmak için lütfen PIN%s%s%s giriniz"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "geçici dosya oluşturulurken hata: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "geçeci dosyaya yazma hatası: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "%s yazılırken hata: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Yeni anahtar parolasını giriniz"
@@ -374,11 +371,6 @@ msgstr "artalan süreci olarak çalışır"
 
 msgid "run in server mode (foreground)"
 msgstr "sunucu olarak (önalanda) çalışır"
-
-#, fuzzy
-#| msgid "run in server mode"
-msgid "run in supervised mode"
-msgstr "sunucu kipinde çalışır"
 
 msgid "do not detach from the console"
 msgstr "konsoldan kopulmaz"
@@ -560,6 +552,10 @@ msgstr "\"%s\"den seçenekler okunuyor\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "UYARI: %s seçeneği kullanımdan kaldırılmak üzere.\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "UYARI: %s seçeneği kullanımdan kaldırılmak üzere.\n"
 
 #, c-format
@@ -4112,7 +4108,7 @@ msgstr "Onu yine de eklemek istiyor musunuz? (e/H veya y/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "PGP2 tarzı bir anahtara bir foto kimliği ekleyemeyebilirsiniz.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4719,6 +4715,9 @@ msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 "Lütfen E-posta adresinizi Adı ve Soyadı veya Açıklama alanı içine koymayın\n"
 
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
+
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -5324,10 +5323,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: \"%s\" seçeneği kullanımdan kaldırılmak üzere.\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "UYARI: %s seçeneği kullanımdan kaldırılmak üzere.\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7751,6 +7746,10 @@ msgstr ""
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "geçici dosya oluşturulurken hata: %s\n"
+
 #, fuzzy
 #| msgid "self-signed certificate has a BAD signature"
 msgid "Now creating self-signed certificate.  "
@@ -9688,6 +9687,14 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "geçeci dosyaya yazma hatası: %s\n"
+
+#, fuzzy
+#~| msgid "run in server mode"
+#~ msgid "run in supervised mode"
+#~ msgstr "sunucu kipinde çalışır"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Ad ve soyadınız bir rakamla başlamamalı\n"
 
@@ -10034,9 +10041,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "%s yazmak için açılamadı: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "%s yazılırken hata: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "%s kapanırken hata: %s\n"

@@ -305,13 +305,10 @@ msgstr "PIN er ikke korrekt gentaget; prøv igen"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Indtast venligst PIN'en%s%s%s for at låse kortet op"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "fejl ved oprettelse af midlertidig fil: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "fejl ved skrivning til midlertidig fil: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "fejl ved skrivning til »%s«: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Indtast ny adgangsfrase"
@@ -398,11 +395,6 @@ msgstr "kør i dæmontilstand (baggrunden)"
 
 msgid "run in server mode (foreground)"
 msgstr "kør i servertilstand (forgrunden)"
-
-#, fuzzy
-#| msgid "run in server mode"
-msgid "run in supervised mode"
-msgstr "kør i servertilstand"
 
 msgid "do not detach from the console"
 msgstr "frakobl ikke fra konsollen"
@@ -582,6 +574,10 @@ msgstr "læser tilvalg fra »%s«\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "ADVARSEL: »%s« er en forældet indstilling\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "ADVARSEL: »%s« er en forældet indstilling\n"
 
 #, c-format
@@ -4109,7 +4105,9 @@ msgstr "Er du sikker på, at du stadig ønsker at tilføje den? (j/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Du må ikke tilføje et billed-id til en nøgle i PGP2-stil.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+#, fuzzy
+#| msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr "Sådant et bruger-id findes allerede på denne nøgle!\n"
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4703,6 +4701,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Placer ikke e-post-adressen i fødselsnavnet eller kommentaren\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Sådant et bruger-id findes allerede på denne nøgle!\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5306,10 +5307,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: forældet indstilling »%s«\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "ADVARSEL: »%s« er en forældet indstilling\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7720,6 +7717,10 @@ msgstr "Opret et designet tilbagekaldscertifikat for denne nøgle? (j/N) "
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "fejl ved oprettelse af midlertidig fil: %s\n"
+
 #, fuzzy
 #| msgid "self-signed certificate has a BAD signature"
 msgid "Now creating self-signed certificate.  "
@@ -9658,6 +9659,14 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "fejl ved skrivning til midlertidig fil: %s\n"
+
+#, fuzzy
+#~| msgid "run in server mode"
+#~ msgid "run in supervised mode"
+#~ msgstr "kør i servertilstand"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Navn må ikke starte med et tal\n"
 
@@ -10009,9 +10018,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "kunne ikke åbne %s for skrivning: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "fejl ved skrivning til »%s«: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "fejl ved lukning af %s: %s\n"

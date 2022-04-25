@@ -277,12 +277,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "erro ao crea-lo contrasinal: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "escribindo a `%s'\n"
+msgid "error writing to pipe: %s\n"
+msgstr "erro escribindo no chaveiro `%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -346,11 +342,6 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
-
-#, fuzzy
-#| msgid "Key is superseded"
-msgid "run in supervised mode"
-msgstr "A chave é obsoleta"
 
 msgid "do not detach from the console"
 msgstr ""
@@ -523,6 +514,10 @@ msgstr "lendo as opcións de `%s'\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "AVISO: \"%s\" é unha opción a extinguir\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "AVISO: \"%s\" é unha opción a extinguir\n"
 
 #, fuzzy, c-format
@@ -4002,7 +3997,7 @@ msgstr ""
 "Non pode engadir unha identificación fotográfica a unha chave de estilo "
 "PGP2.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4591,6 +4586,9 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 "Por favor, non poña o enderezo de correo no nome real ou no comentario\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5190,10 +5188,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: opción a extinguir \"%s\"\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "AVISO: \"%s\" é unha opción a extinguir\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7538,6 +7532,10 @@ msgstr "¿Crear un certificado de revocación para esta sinatura? "
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "erro ao crea-lo contrasinal: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9276,6 +9274,15 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "escribindo a `%s'\n"
+
+#, fuzzy
+#~| msgid "Key is superseded"
+#~ msgid "run in supervised mode"
+#~ msgstr "A chave é obsoleta"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "O nome non pode comezar cun díxito\n"
 
@@ -9537,10 +9544,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "non se puido abrir %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "erro escribindo no chaveiro `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

@@ -279,12 +279,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "eraro dum kreado de pasfrazo: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "skribas al '%s'\n"
+msgid "error writing to pipe: %s\n"
+msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -347,11 +343,6 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
-
-#, fuzzy
-#| msgid "Key is superseded"
-msgid "run in supervised mode"
-msgstr "Ŝlosilo estas anstataŭigita."
 
 msgid "do not detach from the console"
 msgstr ""
@@ -521,6 +512,10 @@ msgstr "legas opciojn el '%s'\n"
 
 #, fuzzy, c-format
 msgid "Note: '%s' is not considered an option\n"
+msgstr "AVERTO: '%s' estas malplena dosiero\n"
+
+#, fuzzy, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
 #, fuzzy, c-format
@@ -3977,7 +3972,7 @@ msgstr "Ĉu vi estas certa, ke vi ankoraŭ volas aldoni ĝin? (j/n) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Ne eblas aldoni foto-identigilon al PGP2-stila ŝlosilo.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4557,6 +4552,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Bonvolu ne meti la retadreson en la veran nomon aŭ la komenton\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5151,10 +5149,6 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
-msgstr "AVERTO: '%s' estas malplena dosiero\n"
-
-#, fuzzy, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
 #, c-format
@@ -7464,6 +7458,10 @@ msgstr "Ĉu krei revokatestilon por ĉi tiu subskribo? (j/N)"
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9192,6 +9190,15 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "skribas al '%s'\n"
+
+#, fuzzy
+#~| msgid "Key is superseded"
+#~ msgid "run in supervised mode"
+#~ msgstr "Ŝlosilo estas anstataŭigita."
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Nomo ne povas komenciĝi per cifero\n"
 
@@ -9433,10 +9440,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "ne povas malfermi %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

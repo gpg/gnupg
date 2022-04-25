@@ -275,12 +275,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "Hiba a jelszó létrehozásakor: %s.\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "Írok a \"%s\" állományba.\n"
+msgid "error writing to pipe: %s\n"
+msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -343,11 +339,6 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
-
-#, fuzzy
-#| msgid "Key is superseded"
-msgid "run in supervised mode"
-msgstr "A kulcsot lecserélték."
 
 msgid "do not detach from the console"
 msgstr ""
@@ -518,6 +509,10 @@ msgstr "Az opciókat a \"%s\" állományból olvasom.\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "FIGYELEM: \"%s\" elavult opció!\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "FIGYELEM: \"%s\" elavult opció!\n"
 
 #, fuzzy, c-format
@@ -3978,7 +3973,7 @@ msgstr "Továbbra is hozzá akarja adni? (i/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Lehet, hogy nem adhat fotóazonosítót egy PGP2 stílusú kulcshoz!\n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4559,6 +4554,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Kérem, ne rakja az e-mail címet a teljes névbe vagy a megjegyzésbe!\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5157,10 +5155,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: Elavult opció: \"%s\"\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "FIGYELEM: \"%s\" elavult opció!\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7491,6 +7485,10 @@ msgstr "Csináljunk egy visszavonó igazolást ehhez a kulcshoz? "
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9223,6 +9221,15 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "Írok a \"%s\" állományba.\n"
+
+#, fuzzy
+#~| msgid "Key is superseded"
+#~ msgid "run in supervised mode"
+#~ msgstr "A kulcsot lecserélték."
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "A név lehet, hogy nem kezdődhet számmal!\n"
 
@@ -9482,10 +9489,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "Nem tudom megnyitni %s-t: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

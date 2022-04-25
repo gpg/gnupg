@@ -265,13 +265,10 @@ msgstr "PIN 再次输入时与首次输入不符；请重试"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "请输入 PIN%s%s%s 以解锁这张卡"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "创建临时文件时出现错误： %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "写入临时文件时出现错误： %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "写入 %s 时出现错误：%s\n"
 
 msgid "Enter new passphrase"
 msgstr "输入新的密码"
@@ -328,9 +325,6 @@ msgstr "以守护进程模式运行 （后台）"
 
 msgid "run in server mode (foreground)"
 msgstr "以服务进程模式运行 （前台）"
-
-msgid "run in supervised mode"
-msgstr "以管理进程模式运行"
 
 msgid "do not detach from the console"
 msgstr "请勿离开控制台"
@@ -488,6 +482,10 @@ msgstr "从‘%s’读取选项\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "注意：‘%s’不被认为是一个选项\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "警告：“%s” 是一个已被弃用的选项\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -3672,7 +3670,9 @@ msgstr "您确定仍然想要增加吗？(y/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "您不可以把照片标识增加到 PGP2 样式的密钥里。\n"
 
-msgid "Such a user ID already exists on this key!\n"
+#, fuzzy
+#| msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr "这样的用户标识已经存在于这个密钥上了！\n"
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4214,6 +4214,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "请不要把电子邮件地址放进您的真实姓名或注释里\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "这样的用户标识已经存在于这个密钥上了！\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4769,10 +4772,6 @@ msgstr "（更多信息： "
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d：被弃用的选项 “%s”\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "警告：“%s” 是一个已被弃用的选项\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -6942,6 +6941,10 @@ msgstr "创建自签名证书？ (y/N) "
 msgid "These parameters are used:\n"
 msgstr "这些参数被使用：\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "创建临时文件时出现错误： %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "现在正在创建自签名证书。  "
 
@@ -8621,6 +8624,12 @@ msgstr "Yubikey 管理命令"
 msgid "manage the command history"
 msgstr "管理命令历史记录"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "写入临时文件时出现错误： %s\n"
+
+#~ msgid "run in supervised mode"
+#~ msgstr "以管理进程模式运行"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "姓名不可以用数字开头\n"
 
@@ -8947,9 +8956,6 @@ msgstr "管理命令历史记录"
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "不能为写入打开 %s ：%s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "写入 %s 时出现错误：%s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "关闭 %s 时出现错误：%s\n"

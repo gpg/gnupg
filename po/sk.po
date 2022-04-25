@@ -278,12 +278,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "chyba pri vytváraní hesla: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "zapisujem do '%s'\n"
+msgid "error writing to pipe: %s\n"
+msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -346,11 +342,6 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
-
-#, fuzzy
-#| msgid "Key is superseded"
-msgid "run in supervised mode"
-msgstr "Kľúč je nahradený"
 
 msgid "do not detach from the console"
 msgstr ""
@@ -523,6 +514,10 @@ msgstr "čítam možnosti z `%s'\n"
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is a deprecated option\n"
 msgid "Note: '%s' is not considered an option\n"
+msgstr "VAROVÁNÍ: použitie parametra \"%s\" sa neodporúča\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "VAROVÁNÍ: použitie parametra \"%s\" sa neodporúča\n"
 
 #, fuzzy, c-format
@@ -4002,7 +3997,7 @@ msgstr "Ste si istý, že ho chcete stále pridať? (a/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Nemali by ste pridávať fotografické ID k PGP2 kľúču.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4579,6 +4574,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Do poľa meno alebo komentár nepíšte, prosím, e-mailovú adresu.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5178,10 +5176,6 @@ msgstr ""
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: použitie parametra \"%s\" sa neodporúča\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "VAROVÁNÍ: použitie parametra \"%s\" sa neodporúča\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7515,6 +7509,10 @@ msgstr "Vytvoriť pre tento podpis revokačný certifikát? "
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "chyba pri vytváraní hesla: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9255,6 +9253,15 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "zapisujem do '%s'\n"
+
+#, fuzzy
+#~| msgid "Key is superseded"
+#~ msgid "run in supervised mode"
+#~ msgstr "Kľúč je nahradený"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Meno nemôže začínať číslicou\n"
 
@@ -9516,10 +9523,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "nemožno otvoriť %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error closing %s: %s\n"

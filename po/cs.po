@@ -306,13 +306,10 @@ msgstr "PIN nebyl zopakován správně; zkuste to znovu"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Prosím, vložte PIN%s%s%s, abyste odemkli kartu"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "chyba při vytváření dočasného souboru: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "chyba při zápisu do dočasného souboru: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "chyba při zápisu do %s: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Vložte nové heslo"
@@ -377,9 +374,6 @@ msgstr "poběží v režimu démona (na pozadí)"
 
 msgid "run in server mode (foreground)"
 msgstr "poběží v režimu serveru (na popředí)"
-
-msgid "run in supervised mode"
-msgstr "poběží v režimu dohledu"
 
 msgid "do not detach from the console"
 msgstr "neodpojovat se od konzole"
@@ -543,6 +537,10 @@ msgstr "čtou se možnosti z „%s“\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "Poznámka: „%s“ není uvažovaná možnost\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "VAROVÁNÍ: používání parametru „%s“ se nedoporučuje\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -3851,7 +3849,9 @@ msgstr "Jste si jistý, že jej chcete stále přidat? (a/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Neměli by jste přidávat fotografický ID k PGP2 klíči.\n"
 
-msgid "Such a user ID already exists on this key!\n"
+#, fuzzy
+#| msgid "Such a user ID already exists on this key!\n"
+msgid "Such a user ID already exists on this key!"
 msgstr "Takový identifikátor uživatele již u tohoto klíče existuje!\n"
 
 msgid "Delete this good signature? (y/N/q)"
@@ -4417,6 +4417,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Do pole jméno nebo komentář nepište, prosím, e-mailovou adresu.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Takový identifikátor uživatele již u tohoto klíče existuje!\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -5007,10 +5010,6 @@ msgstr "(podrobnosti: "
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: použití parametru „%s“ se nedoporučuje\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "VAROVÁNÍ: používání parametru „%s“ se nedoporučuje\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7353,6 +7352,10 @@ msgstr "Vytvořit sám sebou podepsaný certifikát? (a/N)"
 msgid "These parameters are used:\n"
 msgstr "Budou použity tyto parametry:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "chyba při vytváření dočasného souboru: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "Nyní se vytváří sám sebou podepsaný certifikát. "
 
@@ -9076,6 +9079,12 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "chyba při zápisu do dočasného souboru: %s\n"
+
+#~ msgid "run in supervised mode"
+#~ msgstr "poběží v režimu dohledu"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Jméno nemůže začínat číslicí\n"
 
@@ -9411,9 +9420,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "%s nelze otevřít pro zápis: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "chyba při zápisu do %s: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "chyba při zavírání chyba %s: %s\n"
