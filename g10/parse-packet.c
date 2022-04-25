@@ -2290,8 +2290,10 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
       else
 	{
-	  sig->data[0] =
-	    gcry_mpi_set_opaque (NULL, read_rest (inp, pktlen), pktlen * 8);
+          void *tmpp;
+
+          tmpp = read_rest (inp, pktlen);
+	  sig->data[0] = gcry_mpi_set_opaque (NULL, tmpp, tmpp? pktlen * 8 : 0);
 	  pktlen = 0;
 	}
     }
@@ -2499,8 +2501,10 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   if (!npkey)
     {
       /* Unknown algorithm - put data into an opaque MPI.  */
-      pk->pkey[0] = gcry_mpi_set_opaque (NULL,
-                                         read_rest (inp, pktlen), pktlen * 8);
+      void *tmpp = read_rest (inp, pktlen);
+      /* Current gcry_mpi_cmp does not handle a (NULL,n>0) nicely and
+       * thus we avoid to create such an MPI.  */
+      pk->pkey[0] = gcry_mpi_set_opaque (NULL, tmpp, tmpp? pktlen * 8 : 0);
       pktlen = 0;
       goto leave;
     }
@@ -2764,6 +2768,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
       else if (ski->is_protected)
 	{
+          void *tmpp;
+
 	  if (pktlen < 2) /* At least two bytes for the length.  */
 	    {
               err = gpg_error (GPG_ERR_INV_PACKET);
@@ -2773,9 +2779,10 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	  /* Ugly: The length is encrypted too, so we read all stuff
 	   * up to the end of the packet into the first SKEY
 	   * element.  */
+
+          tmpp = read_rest (inp, pktlen);
 	  pk->pkey[npkey] = gcry_mpi_set_opaque (NULL,
-						 read_rest (inp, pktlen),
-						 pktlen * 8);
+						 tmpp, tmpp? pktlen * 8 : 0);
           /* Mark that MPI as protected - we need this information for
              importing a key.  The OPAQUE flag can't be used because
              we also store public EdDSA values in opaque MPIs.  */
