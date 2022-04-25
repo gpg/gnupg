@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.3.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-04-08 10:15+0900\n"
+"PO-Revision-Date: 2022-04-25 15:44+0200\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -272,13 +272,10 @@ msgstr "PINが正しく繰り返されていません。もう一度"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "カードのロックを解除するためにPIN%s%s%sを入力してください"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "一時ファイルの作成エラー: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "一時ファイルの書き込みエラー: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "'%s'の書き込みエラー: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "新しいパスフレーズを入力してください"
@@ -338,9 +335,6 @@ msgstr "デーモン・モードで実行 (バックグラウンド)"
 
 msgid "run in server mode (foreground)"
 msgstr "サーバ・モードで実行 (フォアグラウンド)"
-
-msgid "run in supervised mode"
-msgstr "スーパーバイズド・モードで実行"
 
 msgid "do not detach from the console"
 msgstr "コンソールからデタッチしない"
@@ -497,6 +491,10 @@ msgstr "'%s' からオプションを読み込みます\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "注意: '%s'はオプションとは考えられません\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "*警告*: \"%s\"は、廃止されたオプションです\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -1804,10 +1802,9 @@ msgstr "%s/%s.%s 暗号化 受信者:\"%s\"\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "オプション'%s'を%sモードで使うことはできません\n"
 
-#, fuzzy, c-format
-#| msgid "%s.%s encrypted data\n"
+#, c-format
 msgid "%s encrypted data\n"
-msgstr "%s.%s暗号化済みデータ\n"
+msgstr "%s暗号化済みデータ\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
@@ -3708,8 +3705,8 @@ msgstr "それでも追加したいですか? (y/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "PGP2形式の鍵にはフォトIDを追加できません。\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "そういったユーザIDはすでにこの鍵に存在しています!\n"
+msgid "Such a user ID already exists on this key!"
+msgstr "そういったユーザIDはすでにこの鍵に存在しています!"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "この正しい署名を削除しますか? (y/N/q)"
@@ -4254,6 +4251,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "電子メールのアドレスを本名やコメントに入れないように\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "そういったユーザIDはすでにこの鍵に存在しています!\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4810,10 +4810,6 @@ msgstr "(より詳細な情報: "
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: 廃止されたオプション\"%s\"\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "*警告*: \"%s\"は、廃止されたオプションです\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7019,6 +7015,10 @@ msgstr "自己署名証明書を作成しますか? (y/N) "
 msgid "These parameters are used:\n"
 msgstr "下記のパラメータが使われます:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "一時ファイルの作成エラー: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "今、自己署名証明書を作成しています。  "
 
@@ -8704,6 +8704,12 @@ msgstr "Yubikey管理コマンド"
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "一時ファイルの書き込みエラー: %s\n"
+
+#~ msgid "run in supervised mode"
+#~ msgstr "スーパーバイズド・モードで実行"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "名前を数字で始めてはいけません\n"
 
@@ -9035,9 +9041,6 @@ msgstr "コマンド履歴を管理する"
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "%sを書き込みでオープンできませんでした: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "'%s'の書き込みエラー: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "'%s'でクローズのエラー: %s\n"
