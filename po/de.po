@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-12-29 16:20+0100\n"
+"PO-Revision-Date: 2022-04-25 15:41+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -278,12 +278,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Bitte geben Sie die PIN%s%s%s ein, um die Karte zu entsperren"
 
 #, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "Fehler beim Schreiben auf eine \"Pipe\": %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Neues Passwort eingeben"
@@ -350,9 +346,6 @@ msgstr "Im Daemon Modus ausführen"
 
 msgid "run in server mode (foreground)"
 msgstr "Im Server Modus ausführen"
-
-msgid "run in supervised mode"
-msgstr "Im Supervised Modus ausführen"
 
 msgid "do not detach from the console"
 msgstr "Im Vordergrund laufen lassen"
@@ -510,6 +503,10 @@ msgstr "Optionen werden aus '%s' gelesen\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "Hinweis: `%s' wird nicht als Option betrachtet\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "WARNUNG: \"%s\" ist eine mißbilligte Option.\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -1857,10 +1854,9 @@ msgstr "%s/%s.%s verschlüsselt für: \"%s\"\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "Die Benutzung der Option \"%s\" ist im %s-Modus nicht erlaubt.\n"
 
-#, fuzzy, c-format
-#| msgid "%s.%s encrypted data\n"
+#, c-format
 msgid "%s encrypted data\n"
-msgstr "%s.%s verschlüsselte Daten\n"
+msgstr "%s verschlüsselte Daten\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
@@ -3832,8 +3828,8 @@ msgstr "Wollen Sie ihn immer noch hinzufügen? (j/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Sie können einem PGP2-artigen Schlüssel keine Foto-ID hinzufügen.\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "Solch eine User-ID ist bereits für den Schlüssel vorhanden!\n"
+msgid "Such a user ID already exists on this key!"
+msgstr "Solch eine User-ID ist bereits für den Schlüssel vorhanden!"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Diese korrekte Beglaubigung entfernen? (j/N/q)"
@@ -4392,6 +4388,9 @@ msgstr ""
 
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Bitte keine Emailadressen als Namen oder Kommentar verwenden\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Solch eine User-ID ist bereits für den Schlüssel vorhanden!\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4972,10 +4971,6 @@ msgstr "(weitere Infos: "
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: mißbilligte Option \"%s\".\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "WARNUNG: \"%s\" ist eine mißbilligte Option.\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -6906,7 +6901,7 @@ msgid "error getting key usage information: %s\n"
 msgstr "Fehler beim Holen der Schlüsselbenutzungsinformationen: %s\n"
 
 msgid "Tor might be in use - network access is limited"
-msgstr ""
+msgstr "Der Tor Dienst ist aktiv - Zugriff zum Netz ist eingeschränkt"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7349,6 +7344,10 @@ msgstr "Ein eigenbeglaubigtes Zertifikat erzeugen? (j/N) "
 
 msgid "These parameters are used:\n"
 msgstr "Verwendete Parameter:\n"
+
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
 
 msgid "Now creating self-signed certificate.  "
 msgstr "Das eigenbeglaubigte Zertifikat wird erzeugt.  "
@@ -8190,10 +8189,8 @@ msgstr "crl_cache_insert über den Issuer fehlgeschlagen: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "\"reader to file\" Zuordnungstabelle ist voll - warte\n"
 
-#, fuzzy
-#| msgid "CRL access not possible due to Tor mode\n"
 msgid "CRL access not possible due to Tor mode"
-msgstr "CRL Zugriff ist im Tor Modus nicht möglich\n"
+msgstr "CRL Zugriff ist im Tor Modus nicht möglich"
 
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
@@ -8366,10 +8363,8 @@ msgstr "|URL|Leite alle HTTP Anfragen über URL"
 msgid "use system's HTTP proxy setting"
 msgstr "Benutze die HTTP Proxy Einstellung des Systems"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for OpenPGP servers"
-msgstr "Konfiguration für HTTP Server"
+msgstr "Konfiguration für OpenPGP Server"
 
 msgid "|URL|use keyserver at URL"
 msgstr "Benutze Schlüsselserver unter der URL"
@@ -8377,10 +8372,8 @@ msgstr "Benutze Schlüsselserver unter der URL"
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|DATEI|Benutze die CA Zertifikate in DATEI für HKP über TLS"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for X.509 servers"
-msgstr "Konfiguration für HTTP Server"
+msgstr "Konfiguration für X.509 Server"
 
 msgid "inhibit the use of LDAP"
 msgstr "Sperre die Benutzung von LDAP"
@@ -8613,10 +8606,8 @@ msgstr "Fehler beim Lesen vom Responder: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Antwort vom Server zu lang; die Grenze sind %d Bytes\n"
 
-#, fuzzy
-#| msgid "OCSP request not possible due to Tor mode\n"
 msgid "OCSP request not possible due to Tor mode"
-msgstr "OCSP Anfrage ist im Tor Modus nicht möglich\n"
+msgstr "OCSP Anfrage ist im Tor Modus nicht möglich"
 
 #, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
@@ -9080,6 +9071,12 @@ msgstr "Verwaltungskommandos für Yubikeys"
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"
+
+#~ msgid "run in supervised mode"
+#~ msgstr "Im Supervised Modus ausführen"
+
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Der Name darf nicht mit einer Ziffer beginnen.\n"
 
@@ -9241,7 +9238,7 @@ msgstr "Verwaltung der Kommandohistorie"
 
 #, fuzzy
 #~ msgid "Suggest a random passphrase."
-#~ msgstr "Das Passwort ändern"
+#~ msgstr "Ein zufälliges Passwort vorschlagen"
 
 #~ msgid "detected card with S/N: %s\n"
 #~ msgstr "Erkannte Karte hat die Seriennummer: %s\n"
@@ -9428,9 +9425,6 @@ msgstr "Verwaltung der Kommandohistorie"
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "%s kann nicht zum Schreiben geöffnet werden: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "Fehler beim Schreiben von %s: %s\n"
 
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "Fehler beim Schließen von %s: %s\n"
