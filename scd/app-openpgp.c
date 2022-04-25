@@ -5445,9 +5445,15 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
       goto indata_ready;
     }
 
-  if (app->app_local->keyattr[2].key_type == KEY_TYPE_RSA
-      && indatalen > 101) /* For a 2048 bit key. */
-    return gpg_error (GPG_ERR_INV_VALUE);
+  if (app->app_local->keyattr[2].key_type == KEY_TYPE_RSA)
+    {
+      int size_40percent = (app->app_local->keyattr[2].rsa.n_bits+7)/8 * 4;
+
+      /* OpenPGP card does PKCS#1 for RSA, data should not be larger
+         than 40% of the modulus length.  */
+      if (indatalen * 10 > size_40percent)
+        return gpg_error (GPG_ERR_INV_VALUE);
+    }
 
   if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC)
     {
