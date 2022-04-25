@@ -288,13 +288,10 @@ msgstr "PIN wurde nicht richtig wiederholt; noch einmal versuchen"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Bitte geben Sie die PIN%s%s%s ein, um die Karte zu entsperren"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "Fehler beim Schreiben von %s: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Neues Passwort eingeben"
@@ -7295,6 +7292,10 @@ msgstr "Ein eigenbeglaubigtes Zertifikat erzeugen? (j/N) "
 msgid "These parameters are used:\n"
 msgstr "Verwendete Parameter:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "Das eigenbeglaubigte Zertifikat wird erzeugt.  "
 
@@ -8942,6 +8943,9 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"
+
 #~ msgid "use a log file for the server"
 #~ msgstr "Logausgaben in eine Datei umlenken"
 
@@ -9139,9 +9143,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "%s kann nicht zum Schreiben geöffnet werden: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "Fehler beim Schreiben von %s: %s\n"
 
 #~ msgid "error reading from %s: %s\n"
 #~ msgstr "Fehler beim Lesen von %s: %s\n"

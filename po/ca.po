@@ -309,12 +309,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "error en la creació de la contrasenya: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "%s: error en escriure el registre de directoris: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -2004,6 +2000,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "AVÍS: %s és una opció desaconsellada.\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid ""
@@ -7625,6 +7625,10 @@ msgstr "Voleu crear un certificat de revocació per a aquesta clau? "
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9295,6 +9299,10 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "%s: error en escriure el registre de directoris: %s\n"
+
+#, fuzzy
 #~ msgid "use a log file for the server"
 #~ msgstr "cerca claus en un servidor de claus"
 
@@ -9452,10 +9460,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "no s'ha pogut obrir %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
 #, fuzzy
 #~ msgid "error reading from %s: %s\n"

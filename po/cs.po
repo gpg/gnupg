@@ -315,13 +315,10 @@ msgstr "PIN nebyl zopakován správně; zkuste to znovu"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Prosím, vložte PIN%s%s%s, abyste odemkli kartu"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "chyba při vytváření dočasného souboru: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "chyba při zápisu do dočasného souboru: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "chyba při zápisu do %s: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Vložte nové heslo"
@@ -1882,6 +1879,10 @@ msgstr ""
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "VAROVÁNÍ: klíč %s není vhodný pro šifrování v režimu %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7220,6 +7221,10 @@ msgstr "Vytvořit sám sebou podepsaný certifikát? (a/N)"
 msgid "These parameters are used:\n"
 msgstr "Budou použity tyto parametry:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "chyba při vytváření dočasného souboru: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "Nyní se vytváří sám sebou podepsaný certifikát. "
 
@@ -8846,6 +8851,9 @@ msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "chyba při zápisu do dočasného souboru: %s\n"
+
 #~ msgid "use a log file for the server"
 #~ msgstr "použít pro server soubor s protokolem"
 
@@ -9042,9 +9050,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "%s nelze otevřít pro zápis: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "chyba při zápisu do %s: %s\n"
 
 #~ msgid "error reading from %s: %s\n"
 #~ msgstr "chyba při čtení z %s': %s\n"

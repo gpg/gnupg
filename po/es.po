@@ -305,13 +305,10 @@ msgstr "PIN repetido incorrectamente; inténtelo de nuevo"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Por favor introduzca el PIN%s%s%s para desbloquear la tarjeta"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "error al crear fichero temporal: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "error escribiendo en el fichero temporal: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "error escribiendo en %s: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Introduzca nueva frase contraseña"
@@ -1894,6 +1891,10 @@ msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr ""
 "ATENCIÓN: la clave %s no es adecuada para la encriptación en modo %s\n"
 "\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7210,6 +7211,10 @@ msgstr "¿Crear un certificado auto-firmado? (s/N)"
 msgid "These parameters are used:\n"
 msgstr "Se usan estos parámetros:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "error al crear fichero temporal: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "Creando ahora certificado auto firmado. "
 
@@ -8855,6 +8860,9 @@ msgstr ""
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "error escribiendo en el fichero temporal: %s\n"
+
 #~ msgid "use a log file for the server"
 #~ msgstr "usar un fichero log para el servidor"
 
@@ -9060,9 +9068,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "no se puede abrir %s para escribir: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "error escribiendo en %s: %s\n"
 
 #~ msgid "error reading from %s: %s\n"
 #~ msgstr "error al leer de %s: %s\n"

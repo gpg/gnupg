@@ -315,13 +315,10 @@ msgstr "PIN er ikke korrekt gentaget; prøv igen"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Indtast venligst PIN'en%s%s%s for at låse kortet op"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "fejl ved oprettelse af midlertidig fil: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "fejl ved skrivning til midlertidig fil: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "fejl ved skrivning til »%s«: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Indtast ny adgangsfrase"
@@ -2022,6 +2019,10 @@ msgstr ""
 #| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "ADVARSEL: »%s« er en forældet indstilling - den har ingen effekt\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7605,6 +7606,10 @@ msgstr "Opret et designet tilbagekaldscertifikat for denne nøgle? (j/N) "
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "fejl ved oprettelse af midlertidig fil: %s\n"
+
 #, fuzzy
 #| msgid "self-signed certificate has a BAD signature"
 msgid "Now creating self-signed certificate.  "
@@ -9449,6 +9454,9 @@ msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "fejl ved skrivning til midlertidig fil: %s\n"
+
 #~ msgid "use a log file for the server"
 #~ msgstr "brug en logfil for serveren"
 
@@ -9640,9 +9648,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "kunne ikke åbne %s for skrivning: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "fejl ved skrivning til »%s«: %s\n"
 
 #~ msgid "error reading from %s: %s\n"
 #~ msgstr "fejl ved læsning fra %s: %s\n"

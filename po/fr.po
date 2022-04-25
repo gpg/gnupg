@@ -303,13 +303,10 @@ msgstr "Les codes personnels ne correspondent pas ; veuillez réessayer"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Veuillez entrer le code personnel%s%s%s pour déverrouiller la carte"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "erreur de création du fichier temporaire : %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "erreur d'écriture du fichier temporaire : %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "erreur d'écriture sur %s : %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Entrez la nouvelle phrase secrète"
@@ -1952,6 +1949,10 @@ msgstr ""
 #| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "Attention : « %s%s » est une option obsolète — non prise en compte\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7522,6 +7523,10 @@ msgstr "Faut-il créer un certificat autosigné ? (o/N) "
 msgid "These parameters are used:\n"
 msgstr "Ces paramètres seront utilisés :\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "erreur de création du fichier temporaire : %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "Création de certificat autosigné. "
 
@@ -9227,6 +9232,9 @@ msgstr ""
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "erreur d'écriture du fichier temporaire : %s\n"
+
 #~ msgid "use a log file for the server"
 #~ msgstr "utiliser un fichier journal pour le serveur"
 
@@ -9431,9 +9439,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "impossible d'ouvrir %s en écriture : %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "erreur d'écriture sur %s : %s\n"
 
 #~ msgid "error reading from %s: %s\n"
 #~ msgstr "erreur de lecture de %s : %s\n"

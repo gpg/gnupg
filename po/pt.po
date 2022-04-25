@@ -287,12 +287,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "erro na criação da frase secreta: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "a escrever para `%s'\n"
+msgid "error writing to pipe: %s\n"
+msgstr "erro na escrita do porta-chaves `%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -1938,6 +1934,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "AVISO: \"%s\" é uma opção depreciada\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid ""
@@ -7411,6 +7411,10 @@ msgstr "Gerar um certificado de revogação para esta assinatura? (s/N)"
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "erro na criação da frase secreta: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9064,6 +9068,10 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "a escrever para `%s'\n"
+
+#, fuzzy
 #~ msgid "use a log file for the server"
 #~ msgstr "procurar chaves num servidor de chaves"
 
@@ -9212,10 +9220,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "impossível abrir %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "erro na escrita do porta-chaves `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error reading from %s: %s\n"

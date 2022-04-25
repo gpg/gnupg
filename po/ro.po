@@ -300,12 +300,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "eroare la crearea frazei-parolă: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "%s: eroare scriere înregistrare dir: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -1960,6 +1956,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7512,6 +7512,10 @@ msgstr "Creaţi un certificat de revocare desemnat pentru această cheie? (d/N) 
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "eroare la crearea frazei-parolă: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9188,6 +9192,10 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "%s: eroare scriere înregistrare dir: %s\n"
+
+#, fuzzy
 #~ msgid "use a log file for the server"
 #~ msgstr "caută pentru chei pe un server de chei"
 
@@ -9350,10 +9358,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "nu pot deschide %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error reading from %s: %s\n"

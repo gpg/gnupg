@@ -295,13 +295,10 @@ msgstr "前後兩次輸入的個人識別碼 (PIN) 不一致; 請再試一次"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "請輸入個人識別碼 (PIN)%s%s%s 以解開卡片"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "建立暫存檔時出錯: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "寫入暫存檔時出錯: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "寫入 %s 時出錯: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "請輸入新密語"
@@ -1889,6 +1886,10 @@ msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好�
 #| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7158,6 +7159,10 @@ msgstr "要建立自簽憑證嗎? (y/N) "
 msgid "These parameters are used:\n"
 msgstr "採用下列這些參數:\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "建立暫存檔時出錯: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "現在正在建立自簽憑證.  "
 
@@ -8769,6 +8774,9 @@ msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "寫入暫存檔時出錯: %s\n"
+
 #~ msgid "use a log file for the server"
 #~ msgstr "為伺服器使用日誌檔"
 
@@ -8972,9 +8980,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "無法開啟 %s 來寫入: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "寫入 %s 時出錯: %s\n"
 
 #~ msgid "error reading from %s: %s\n"
 #~ msgstr "讀取 %s 時出錯: %s\n"

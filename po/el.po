@@ -287,12 +287,8 @@ msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "εγγραφή στο  `%s'\n"
+msgid "error writing to pipe: %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
 #, fuzzy
 msgid "Enter new passphrase"
@@ -1940,6 +1936,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid ""
@@ -7470,6 +7470,10 @@ msgstr "Δημιουργία ενός πιστοποιητικού ανάκλη�
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr ""
 
@@ -9126,6 +9130,10 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "εγγραφή στο  `%s'\n"
+
+#, fuzzy
 #~ msgid "use a log file for the server"
 #~ msgstr "αναζήτηση κλειδιών σε ένα διακομιστή κλειδιών"
 
@@ -9280,10 +9288,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "αδυναμία πρόσβασης του %s: %s\n"
-
-#, fuzzy
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
 #, fuzzy
 #~ msgid "error reading from %s: %s\n"

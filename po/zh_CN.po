@@ -279,13 +279,10 @@ msgstr "PIN 再次输入时与首次输入不符；请重试"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "请输入 PIN%s%s%s 以解锁这张卡"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "创建临时文件时出现错误： %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "写入临时文件时出现错误： %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "写入 %s 时出现错误：%s\n"
 
 msgid "Enter new passphrase"
 msgstr "输入新的密码"
@@ -1815,6 +1812,10 @@ msgstr "警告： 强制对称密文 %s (%d) 与接收者的偏好设置冲突\n
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "警告： 密钥 %s 在 %s 模式下不适用于加密\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -6904,6 +6905,10 @@ msgstr "创建自签名证书？ (y/N) "
 msgid "These parameters are used:\n"
 msgstr "这些参数被使用：\n"
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "创建临时文件时出现错误： %s\n"
+
 msgid "Now creating self-signed certificate.  "
 msgstr "现在正在创建自签名证书。  "
 
@@ -8501,6 +8506,9 @@ msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "写入临时文件时出现错误： %s\n"
+
 #~ msgid "use a log file for the server"
 #~ msgstr "为服务器使用日志文件"
 
@@ -8695,9 +8703,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "不能为写入打开 %s ：%s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "写入 %s 时出现错误：%s\n"
 
 #~ msgid "error reading from %s: %s\n"
 #~ msgstr "读取 %s 时出现错误：%s\n"

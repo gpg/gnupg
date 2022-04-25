@@ -291,13 +291,10 @@ msgstr "PIN doğru tekrarlanmadı; tekrar deneyin"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Kartın kilidini açmak için lütfen PIN%s%s%s giriniz"
 
-#, c-format
-msgid "error creating temporary file: %s\n"
-msgstr "geçici dosya oluşturulurken hata: %s\n"
-
-#, c-format
-msgid "error writing to temporary file: %s\n"
-msgstr "geçeci dosyaya yazma hatası: %s\n"
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to pipe: %s\n"
+msgstr "%s yazılırken hata: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Yeni anahtar parolasını giriniz"
@@ -1999,6 +1996,10 @@ msgstr ""
 #| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7643,6 +7644,10 @@ msgstr ""
 msgid "These parameters are used:\n"
 msgstr ""
 
+#, c-format
+msgid "error creating temporary file: %s\n"
+msgstr "geçici dosya oluşturulurken hata: %s\n"
+
 #, fuzzy
 #| msgid "self-signed certificate has a BAD signature"
 msgid "Now creating self-signed certificate.  "
@@ -9488,6 +9493,9 @@ msgstr ""
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
 
+#~ msgid "error writing to temporary file: %s\n"
+#~ msgstr "geçeci dosyaya yazma hatası: %s\n"
+
 #~ msgid "use a log file for the server"
 #~ msgstr "sunucu için bir günlük dosyası kullanılır"
 
@@ -9679,9 +9687,6 @@ msgstr ""
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "%s yazmak için açılamadı: %s\n"
-
-#~ msgid "error writing to %s: %s\n"
-#~ msgstr "%s yazılırken hata: %s\n"
 
 #~ msgid "error reading from %s: %s\n"
 #~ msgstr "%s okunurken hata: %s\n"
