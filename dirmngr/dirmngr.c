@@ -173,7 +173,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aServer,   "server",  N_("run in server mode (foreground)") ),
   ARGPARSE_c (aDaemon,   "daemon",  N_("run in daemon mode (background)") ),
 #ifndef HAVE_W32_SYSTEM
-  ARGPARSE_c (aSupervised,  "supervised", N_("run in supervised mode")),
+  ARGPARSE_c (aSupervised,  "supervised", "@"),
 #endif
   ARGPARSE_c (aListCRLs, "list-crls", N_("list the contents of the CRL cache")),
   ARGPARSE_c (aLoadCRL,  "load-crl", N_("|FILE|load CRL from FILE into cache")),
@@ -1275,6 +1275,9 @@ main (int argc, char **argv)
 #ifndef HAVE_W32_SYSTEM
   else if (cmd == aSupervised)
     {
+      if (!opt.quiet)
+        log_info(_("WARNING: \"%s\" is a deprecated option\n"), "--supervised");
+
       /* In supervised mode, we expect file descriptor 3 to be an
          already opened, listening socket.
 

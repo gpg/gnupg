@@ -171,9 +171,8 @@ shell, gpg-agent terminates within a few seconds.
 @opindex supervised
 Run in the foreground, sending logs by default to stderr, and
 listening on provided file descriptors, which must already be bound to
-listening sockets.  This command is useful when running under systemd
-or other similar process supervision schemes.  This option is not
-supported on Windows.
+listening sockets.  This option is deprecated and not supported on
+Windows.
 
 In --supervised mode, different file descriptors can be provided for
 use as different socket types (e.g. ssh, extra) as long as they are

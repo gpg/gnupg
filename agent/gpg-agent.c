@@ -167,7 +167,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDaemon,  "daemon", N_("run in daemon mode (background)")),
   ARGPARSE_s_n (oServer,  "server", N_("run in server mode (foreground)")),
 #ifndef HAVE_W32_SYSTEM
-  ARGPARSE_s_n (oSupervised,  "supervised", N_("run in supervised mode")),
+  ARGPARSE_s_n (oSupervised,  "supervised", "@"),
 #endif
   ARGPARSE_s_n (oNoDetach,  "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_n (oSh,	  "sh",        N_("sh-style command output")),
@@ -1377,6 +1377,9 @@ main (int argc, char **argv)
       check_for_running_agent (0);
       agent_exit (0);
     }
+
+  if (is_supervised && !opt.quiet)
+    log_info(_("WARNING: \"%s\" is a deprecated option\n"), "--supervised");
 
   if (is_supervised)
     ;

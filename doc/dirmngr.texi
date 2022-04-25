@@ -90,8 +90,7 @@ general best to use @code{gpgconf --launch dirmngr}.
 @opindex supervised
 Run in the foreground, sending logs to stderr, and listening on file
 descriptor 3, which must already be bound to a listening socket.  This
-is useful when running under systemd or other similar process
-supervision schemes.  This option is not supported on Windows.
+option is deprecated and not supported on Windows.
 
 @item --list-crls
 @opindex list-crls
