@@ -48,7 +48,7 @@
  (define setup-use-keyboxd (setup* "use-keyboxd"))
 
  (define all-tests
-   (parse-makefile-expand "Makefile"
+   (parse-makefile-expand (in-srcdir "tests" "openpgp" "Makefile.am")
 			  (lambda (filename port key) (parse-makefile port key))
 			  "XTESTS"))
 

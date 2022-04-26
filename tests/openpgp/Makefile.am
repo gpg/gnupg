@@ -86,6 +86,7 @@ XTESTS = \
 	trust-pgp-1.scm \
 	trust-pgp-2.scm \
 	trust-pgp-3.scm \
+	trust-pgp-4.scm \
 	gpgtar.scm \
 	use-exact-key.scm \
 	default-key.scm \
@@ -276,8 +277,6 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     common.conf secring.gpg pubring.pkr secring.skr \
 	     gnupg-test.stop random_seed gpg-agent.log tofu.db \
 	     passphrases sshcontrol S.gpg-agent.ssh report.xml
-
-XTESTS += trust-pgp-4.scm
 
 clean-local:
 	-rm -rf private-keys-v1.d openpgp-revocs.d tofu.d gpgtar.d
