@@ -32,11 +32,33 @@
 			   (path-join "tests" "openpgp" "setup.scm")
 			   (in-srcdir "tests" "openpgp" "setup.scm"))))
 
+(define (qualify path variant)
+  (string-append "<" variant ">" path))
+
+(define (setup* variant)
+  (make-environment-cache
+   (test::scm
+    #f
+    (qualify (path-join "tests" "openpgp" "setup.scm") variant)
+    (in-srcdir "tests" "openpgp" "setup.scm")
+    (string-append "--" variant))))
+
+(define setup-use-keyboxd (setup* "use-keyboxd"))
+(define use-keyboxd? (or (string=? "--use-keyboxd" (car *args*))
+                         (string=? "keyboxd" (getenv "GPGSCM_TEST_VARIANT"))))
+
 (define tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
 
 (run-tests (if (null? tests)
 	       (load-tests "tests" "openpgp")
-	       (map (lambda (name)
-		      (test::scm setup
-				 (path-join "tests" "openpgp" name)
-				 (in-srcdir "tests" "openpgp" name))) tests)))
+               (if use-keyboxd?
+	           (map (lambda (name)
+		          (test::scm setup-use-keyboxd
+				     (qualify (path-join "tests" "openpgp" name)
+					      "keyboxd")
+				     (in-srcdir "tests" "openpgp" name)
+                                     "--use-keyboxd")) tests)
+	           (map (lambda (name)
+		          (test::scm setup
+				     (path-join "tests" "openpgp" name)
+				     (in-srcdir "tests" "openpgp" name))) tests))))
