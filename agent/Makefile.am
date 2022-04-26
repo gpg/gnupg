@@ -111,10 +111,12 @@ $(PROGRAMS): $(common_libs) $(commonpth_libs) $(pwquery_libs)
 #
 # Module tests
 #
+module_tests = t-protect
+
 if DISABLE_TESTS
 TESTS =
 else
-TESTS = t-protect
+TESTS = $(module_tests)
 endif
 
 t_common_ldadd = $(common_libs)  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \

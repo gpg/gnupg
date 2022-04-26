@@ -32,4 +32,4 @@
 		      (path-join (getenv "objdir") "agent" name)))
       (parse-makefile-expand (in-srcdir "agent" "Makefile.am")
 			     (lambda (filename port key) (parse-makefile port key))
-			     "TESTS")))
+			     "module_tests")))
