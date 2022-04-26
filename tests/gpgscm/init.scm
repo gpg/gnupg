@@ -654,8 +654,11 @@
 ;; resource management a chance to clean up.
 (define *interpreter-exit* (gensym))
 
+(define *exit-status* 0)
+
 ;; Terminate the process returning STATUS to the parent.
 (define (exit status)
+  (set! *exit-status* status)
   (throw "interpreter exit" *interpreter-exit* status))
 
 ;; A list of functions run at interpreter shutdown.

@@ -288,7 +288,7 @@
 ;; Otherwise this works like mkdtemp.
 (define (mkdtemp-autoremove . components)
   (let ((dir (apply mkdtemp components)))
-    (atexit (lambda () (unlink-recursively dir)))
+    (atexit (lambda () (if (= *exit-status* 0) (unlink-recursively dir))))
     dir))
 
 (define-macro (with-temporary-working-directory . expressions)
