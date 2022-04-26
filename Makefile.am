@@ -210,6 +210,7 @@ TESTS_ENVIRONMENT = \
 	PATH=$(abs_top_builddir)/tests/gpgscm:$(PATH) \
 	abs_top_srcdir=$(abs_top_srcdir) \
 	objdir=$(abs_top_builddir) \
+	GNUPG_BUILD_ROOT="$(abs_top_builddir)" \
 	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
 
 .PHONY: check-all release sign-release
