@@ -1275,6 +1275,8 @@ main (int argc, char **argv)
 #ifndef HAVE_W32_SYSTEM
   else if (cmd == aSupervised)
     {
+      struct stat statbuf;
+
       if (!opt.quiet)
         log_info(_("WARNING: \"%s\" is a deprecated option\n"), "--supervised");
 
@@ -1283,7 +1285,6 @@ main (int argc, char **argv)
 
          We will also not detach from the controlling process or close
          stderr; the supervisor should handle all of that.  */
-      struct stat statbuf;
       if (fstat (3, &statbuf) == -1 && errno == EBADF)
         {
           log_error ("file descriptor 3 must be validin --supervised mode\n");
