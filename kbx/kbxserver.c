@@ -173,6 +173,23 @@ kbxd_writen (estream_t fp, const void *buffer, size_t length)
   return err;
 }
 
+/* This status functions expects a printf style format string.  */
+gpg_error_t
+kbxd_status_printf (ctrl_t ctrl, const char *keyword, const char *format, ...)
+{
+  gpg_error_t err;
+  va_list arg_ptr;
+  assuan_context_t ctx = get_assuan_ctx_from_ctrl (ctrl);
+
+  if (!ctx) /* Oops - no assuan context.  */
+    return gpg_error (GPG_ERR_NOT_PROCESSED);
+
+  va_start (arg_ptr, format);
+  err = vprint_assuan_status (ctx, keyword, format, arg_ptr);
+  va_end (arg_ptr);
+  return err;
+}
+
 
 /* A wrapper around assuan_send_data which makes debugging the output
  * in verbose mode easier.  It also takes CTRL as argument.  */
@@ -975,10 +992,6 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
   ctrl->server_local->next_session = session_list;
   session_list = ctrl->server_local;
 
-
-  /* The next call enable the use of status_printf.  */
-  set_assuan_context_func (get_assuan_ctx_from_ctrl);
-
   for (;;)
     {
       rc = assuan_accept (ctx);
@@ -1029,7 +1042,6 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
 
   assuan_close_output_fd (ctx);
 
-  set_assuan_context_func (NULL);
   ctrl->server_local->assuan_ctx = NULL;
   assuan_release (ctx);
 

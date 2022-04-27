@@ -173,18 +173,18 @@ be_return_pubkey (ctrl_t ctrl, const void *buffer, size_t buflen,
   char hexubid[2*UBID_LEN+1];
 
   bin2hex (ubid, UBID_LEN, hexubid);
-  err = status_printf (ctrl, "PUBKEY_INFO", "%d %s %c%c %d %d",
-                       pubkey_type, hexubid,
-                       is_ephemeral? 'e':'-',
-                       is_revoked?   'r':'-',
-                       uid_no, pk_no);
+  err = kbxd_status_printf (ctrl, "PUBKEY_INFO", "%d %s %c%c %d %d",
+                            pubkey_type, hexubid,
+                            is_ephemeral? 'e':'-',
+                            is_revoked?   'r':'-',
+                            uid_no, pk_no);
   if (err)
     goto leave;
 
   if (ctrl->no_data_return)
     err = 0;
   else
-    err = kbxd_write_data_line(ctrl, buffer, buflen);
+    err = kbxd_write_data_line (ctrl, buffer, buflen);
 
  leave:
   return err;

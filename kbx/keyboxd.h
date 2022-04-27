@@ -171,6 +171,8 @@ void kbxd_sighup_action (void);
 
 
 /*-- kbxserver.c --*/
+gpg_error_t kbxd_status_printf (ctrl_t ctrl, const char *keyword,
+                                const char *format, ...);
 gpg_error_t kbxd_write_data_line (ctrl_t ctrl,
                                   const void *buffer_arg, size_t size);
 void kbxd_start_command_handler (ctrl_t, gnupg_fd_t, unsigned int);
