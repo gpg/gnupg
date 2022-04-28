@@ -188,6 +188,92 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
 }
 
 
+/* Read an external representation (which is possibly an SOS) and
+   return the MPI.  The external format is a 16-bit unsigned value
+   stored in network byte order giving information for the following
+   octets.
+
+   The caller must set *RET_NREAD to the maximum number of bytes to
+   read from the pipeline INP.  This function sets *RET_NREAD to be
+   the number of bytes actually read from the pipeline.
+
+   If SECURE is true, the integer is stored in secure memory
+   (allocated using gcry_xmalloc_secure).  */
+static gcry_mpi_t
+mpi_read_detect_0_removal (iobuf_t inp, unsigned int *ret_nread, int secure,
+                           u16 *r_csum_tweak)
+{
+  int c, c1, c2, i;
+  unsigned int nmax = *ret_nread;
+  unsigned int nbits, nbits1, nbytes;
+  size_t nread = 0;
+  gcry_mpi_t a = NULL;
+  byte *buf = NULL;
+  byte *p;
+
+  if (!nmax)
+    goto overflow;
+
+  if ((c = c1 = iobuf_get (inp)) == -1)
+    goto leave;
+  if (++nread == nmax)
+    goto overflow;
+  nbits = c << 8;
+  if ((c = c2 = iobuf_get (inp)) == -1)
+    goto leave;
+  ++nread;
+  nbits |= c;
+  if (nbits > MAX_EXTERN_MPI_BITS)
+    {
+      log_error ("mpi too large (%u bits)\n", nbits);
+      goto leave;
+    }
+
+  nbytes = (nbits + 7) / 8;
+  buf = secure ? gcry_xmalloc_secure (nbytes + 2) : gcry_xmalloc (nbytes + 2);
+  p = buf;
+  p[0] = c1;
+  p[1] = c2;
+  for (i = 0; i < nbytes; i++)
+    {
+      if (nread == nmax)
+        goto overflow;
+
+      c = iobuf_get (inp);
+      if (c == -1)
+        goto leave;
+
+      p[i + 2] = c;
+
+      nread ++;
+    }
+
+  if (gcry_mpi_scan (&a, GCRYMPI_FMT_PGP, buf, nread, &nread))
+    a = NULL;
+
+  /* Possibly, it has leading zeros.  */
+  nbits1 = gcry_mpi_get_nbits (a);
+  if (nbits > nbits1)
+    {
+      *r_csum_tweak -= (nbits >> 8);
+      *r_csum_tweak -= (nbits & 0xff);
+      *r_csum_tweak += (nbits1 >> 8);
+      *r_csum_tweak += (nbits1 & 0xff);
+    }
+
+  *ret_nread = nread;
+  gcry_free(buf);
+  return a;
+
+ overflow:
+  log_error ("mpi larger than indicated length (%u bits)\n", 8*nmax);
+ leave:
+  *ret_nread = nread;
+  gcry_free(buf);
+  return a;
+}
+
+
 /* Register STRING as a known critical notation name.  */
 void
 register_known_notation (const char *string)
@@ -2724,6 +2810,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
       else
 	{
+          u16 csum_tweak = 0;
+
           /* Not encrypted.  */
 	  for (i = npkey; i < nskey; i++)
 	    {
@@ -2735,7 +2823,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                   goto leave;
                 }
               n = pktlen;
-              pk->pkey[i] = mpi_read (inp, &n, 0);
+              if (algorithm == PUBKEY_ALGO_EDDSA)
+                pk->pkey[i] = mpi_read_detect_0_removal (inp, &n, 0,
+                                                         &csum_tweak);
+              else
+                pk->pkey[i] = mpi_read (inp, &n, 0);
               pktlen -= n;
               if (list_mode)
                 {
@@ -2756,6 +2848,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	      goto leave;
 	    }
 	  ski->csum = read_16 (inp);
+          ski->csum += csum_tweak;
 	  pktlen -= 2;
 	  if (list_mode)
             es_fprintf (listfp, "\tchecksum: %04hx\n", ski->csum);
