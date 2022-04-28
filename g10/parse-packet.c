@@ -188,76 +188,6 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
 }
 
 
-/* Read an external representation of an SOS and return the opaque MPI
-   with GCRYMPI_FLAG_USER2.  The external format is a 16-bit unsigned
-   value stored in network byte order giving information for the
-   following octets.
-
-   The caller must set *RET_NREAD to the maximum number of bytes to
-   read from the pipeline INP.  This function sets *RET_NREAD to be
-   the number of bytes actually read from the pipeline.
-
-   If SECURE is true, the integer is stored in secure memory
-   (allocated using gcry_xmalloc_secure).  */
-static gcry_mpi_t
-sos_read (iobuf_t inp, unsigned int *ret_nread, int secure)
-{
-  int c, c1, c2, i;
-  unsigned int nmax = *ret_nread;
-  unsigned int nbits, nbytes;
-  size_t nread = 0;
-  gcry_mpi_t a = NULL;
-  byte *buf = NULL;
-  byte *p;
-
-  if (!nmax)
-    goto overflow;
-
-  if ((c = c1 = iobuf_get (inp)) == -1)
-    goto leave;
-  if (++nread == nmax)
-    goto overflow;
-  nbits = c << 8;
-  if ((c = c2 = iobuf_get (inp)) == -1)
-    goto leave;
-  ++nread;
-  nbits |= c;
-  if (nbits > MAX_EXTERN_MPI_BITS)
-    {
-      log_error ("mpi too large (%u bits)\n", nbits);
-      goto leave;
-    }
-
-  nbytes = (nbits + 7) / 8;
-  buf = secure ? gcry_xmalloc_secure (nbytes) : gcry_xmalloc (nbytes);
-  p = buf;
-  for (i = 0; i < nbytes; i++)
-    {
-      if (nread == nmax)
-        goto overflow;
-
-      c = iobuf_get (inp);
-      if (c == -1)
-        goto leave;
-
-      p[i] = c;
-      nread ++;
-    }
-
-  a = gcry_mpi_set_opaque (NULL, buf, nbits);
-  gcry_mpi_set_flag (a, GCRYMPI_FLAG_USER2);
-  *ret_nread = nread;
-  return a;
-
- overflow:
-  log_error ("mpi larger than indicated length (%u bits)\n", 8*nmax);
- leave:
-  *ret_nread = nread;
-  gcry_free(buf);
-  return a;
-}
-
-
 /* Register STRING as a known critical notation name.  */
 void
 register_known_notation (const char *string)
@@ -2805,10 +2735,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                   goto leave;
                 }
               n = pktlen;
-              if (algorithm == PUBKEY_ALGO_EDDSA)
-                pk->pkey[i] = sos_read (inp, &n, 0);
-              else
-                pk->pkey[i] = mpi_read (inp, &n, 0);
+              pk->pkey[i] = mpi_read (inp, &n, 0);
               pktlen -= n;
               if (list_mode)
                 {
