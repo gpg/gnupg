@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the GnuPG package.
 # Meng Jie <zuxyhere@eastday.com>, 2004.
 # Chuhao Li <lchopn@gmail.com>, 2018.
-# bobwxc <bobwxc@yeah.net>, 2021.
+# bobwxc <bobwxc@yeah.net>, 2021, 2022.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.2.28\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-06-17 11:52+0900\n"
+"PO-Revision-Date: 2022-04-26 13:27+0800\n"
 "Last-Translator: bobwxc <bobwxc@yeah.net>\n"
 "Language-Team: None\n"
 "Language: zh_CN\n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.4.2\n"
 
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
@@ -61,7 +61,7 @@ msgstr "|pinentry-tt|隐藏密码"
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
-msgstr ""
+msgstr "建议"
 
 #. TRANSLATORS: This string is a tooltip, shown by pinentry when
 #. hovering over the generate button.  Please use an appropriate
@@ -70,21 +70,17 @@ msgstr ""
 #. translate this entry, a default English text (see source)
 #. will be used.  The strcmp thingy is there to detect a
 #. non-translated string.
-#, fuzzy
-#| msgid "pinentry.qualitybar.tooltip"
 msgid "pinentry.genpin.tooltip"
-msgstr "pinentry.qualitybar.tooltip"
+msgstr "使用随机生成的密码"
 
 msgid "Note: The blanks are not part of the passphrase."
-msgstr ""
+msgstr "注意：密码不允许含有空格。"
 
 #. TRANSLATORS: This is a text shown by pinentry as title of a dialog
 #. telling the user that the entered new passphrase does not satisfy
 #. the passphrase constraints.  Please keep it short.
-#, fuzzy
-#| msgid "Passphrase too long"
 msgid "Passphrase Not Allowed"
-msgstr "密码太长"
+msgstr "不允许的密码"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -98,7 +94,9 @@ msgstr "强度："
 #. translate this entry, a default english text (see source)
 #. will be used.
 msgid "pinentry.qualitybar.tooltip"
-msgstr "pinentry.qualitybar.tooltip"
+msgstr ""
+"上方输入的文本的质量。\n"
+"请向管理员咨询详细相关准则。"
 
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
@@ -152,10 +150,10 @@ msgid "Bad Passphrase"
 msgstr "错误的密码"
 
 msgid "Note: Request from the web browser."
-msgstr ""
+msgstr "注意：来自网络浏览器的请求。"
 
 msgid "Note: Request from a remote site."
-msgstr ""
+msgstr "注意：来自远程站点的请求。"
 
 #, c-format
 msgid "error getting serial number of card: %s\n"
@@ -164,19 +162,16 @@ msgstr "获取卡的序列号时出现错误： %s\n"
 msgid "Please re-enter this passphrase"
 msgstr "请重新输入此密码"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Please enter the passphrase to protect the imported object within the "
-#| "GnuPG system."
+#, c-format
 msgid ""
 "Please enter the passphrase to protect the imported object within the %s "
 "system."
-msgstr "请输入密码以在 GnuPG 系统内部保护已导入的对象。"
+msgstr "请输入密码以在 %s 系统内部保护已导入的对象。"
 
 msgid ""
 "This key (or subkey) is not protected with a passphrase.  Please enter a new "
 "passphrase to export it."
-msgstr ""
+msgstr "此密钥（或子密钥）未受密码保护。请输入新的密码以将其导出。"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -279,10 +274,9 @@ msgstr "PIN 再次输入时与首次输入不符；请重试"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "请输入 PIN%s%s%s 以解锁这张卡"
 
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
+#, c-format
 msgid "error writing to pipe: %s\n"
-msgstr "写入 %s 时出现错误：%s\n"
+msgstr "写入管道时出现错误：%s\n"
 
 msgid "Enter new passphrase"
 msgstr "输入新的密码"
@@ -331,10 +325,8 @@ msgstr "请输入密码以%0A保护您的新密钥"
 msgid "Please enter the new passphrase"
 msgstr "请输入新的密码"
 
-#, fuzzy
-#| msgid "Options useful for debugging"
 msgid "Options used for startup"
-msgstr "对调试有用的选项"
+msgstr "启动选项"
 
 msgid "run in daemon mode (background)"
 msgstr "以守护进程模式运行 （后台）"
@@ -444,19 +436,17 @@ msgstr "|N|在 N 天后使密码过期"
 msgid "do not allow the reuse of old passphrases"
 msgstr "不允许再次使用旧的密码"
 
-#, fuzzy
-#| msgid "Options controlling the security"
 msgid "Options controlling the PIN-Entry"
-msgstr "控制安全的选项"
+msgstr "PIN-Entry 控制选项"
 
 msgid "never use the PIN-entry"
-msgstr ""
+msgstr "不使用 PIN-entry"
 
 msgid "disallow caller to override the pinentry"
 msgstr "禁止调用者覆盖 pinentry"
 
 msgid "let PIN-Entry grab keyboard and mouse"
-msgstr ""
+msgstr "允许 PIN-Entry 抓取键盘与鼠标"
 
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|PGM|使用 PGM 作为 PIN-Entry 程序"
@@ -511,7 +501,7 @@ msgstr "套接字名称‘%s’太长\n"
 
 #, c-format
 msgid "trying to steal socket from running %s\n"
-msgstr ""
+msgstr "正尝试从运行的 %s 处夺取套接字\\n\n"
 
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -1815,7 +1805,7 @@ msgstr "警告： 密钥 %s 在 %s 模式下不适用于加密\n"
 
 #, c-format
 msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgstr "未能满足合规规则，操作已强制取消\n"
 
 #, c-format
 msgid ""
@@ -2133,15 +2123,11 @@ msgstr "不做任何更改"
 msgid "prompt before overwriting"
 msgstr "覆盖前提示"
 
-#, fuzzy
-#| msgid "Options controlling the security"
 msgid "Options controlling the input"
-msgstr "控制安全的选项"
+msgstr "输入控制选项"
 
-#, fuzzy
-#| msgid "Options controlling the diagnostic output"
 msgid "Options controlling the output"
-msgstr "控制诊断输出的选项"
+msgstr "输出控制选项"
 
 msgid "create ascii armored output"
 msgstr "创建 ASCII 字符封装的输出"
@@ -2155,10 +2141,8 @@ msgstr "使用规范的文本模式"
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|设置压缩等级为 N （0 为禁用）"
 
-#, fuzzy
-#| msgid "Options controlling the interactivity and enforcement"
 msgid "Options controlling key import and export"
-msgstr "控制交互性和执行的选项"
+msgstr "密钥导入导出控制选项"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|通过邮件地址定位密钥时使用机制 MECHANISMS"
@@ -2166,15 +2150,11 @@ msgstr "|MECHANISMS|通过邮件地址定位密钥时使用机制 MECHANISMS"
 msgid "disable all access to the dirmngr"
 msgstr "禁用对 dirmngr 的所有访问"
 
-#, fuzzy
-#| msgid "Options controlling the configuration"
 msgid "Options controlling key listings"
-msgstr "控制配置的选项"
+msgstr "密钥列出控制选项"
 
-#, fuzzy
-#| msgid "list secret keys"
 msgid "Options to specify keys"
-msgstr "列出私钥"
+msgstr "指定密钥选项"
 
 msgid "|USER-ID|encrypt for USER-ID"
 msgstr "|USER-ID|为 USER-ID 加密"
@@ -2183,10 +2163,10 @@ msgid "|USER-ID|use USER-ID to sign or decrypt"
 msgstr "|USER-ID|使用 USER-ID 来签名或者解密"
 
 msgid "Options for unattended use"
-msgstr ""
+msgstr "无人值守选项"
 
 msgid "Other options"
-msgstr ""
+msgstr "其他选项"
 
 msgid ""
 "@\n"
@@ -5455,7 +5435,7 @@ msgstr "密钥 %s 在 %s 模式中不适用于签名\n"
 
 #, c-format
 msgid "continuing verification anyway due to option %s\n"
-msgstr ""
+msgstr "由于 %s 选项，验证仍在继续中\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7853,7 +7833,7 @@ msgid "|N|do not return more than N items in one query"
 msgstr "|N|在一次查询中最多返回 N 个项目"
 
 msgid "Network related options"
-msgstr ""
+msgstr "网络相关选项"
 
 msgid "route all network traffic via Tor"
 msgstr "通过 Tor 转发所有网络流量"
