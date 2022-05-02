@@ -219,7 +219,7 @@ do_chdir (scheme *sc, pointer args)
   FFI_ARG_OR_RETURN (sc, char *, name, path, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
   if (chdir (name))
-    FFI_RETURN_ERR (sc, errno);
+    FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
   FFI_RETURN (sc);
 }
 
