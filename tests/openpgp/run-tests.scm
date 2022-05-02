@@ -44,7 +44,8 @@
     (string-append "--" variant))))
 
 (define setup-use-keyboxd (setup* "use-keyboxd"))
-(define use-keyboxd? (or (string=? "--use-keyboxd" (car *args*))
+(define use-keyboxd? (or (and (not (null? *args*))
+                              (string=? "--use-keyboxd" (car *args*)))
                          (string=? "keyboxd" (getenv "GPGSCM_TEST_VARIANT"))))
 
 (define tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
