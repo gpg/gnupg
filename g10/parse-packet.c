@@ -252,13 +252,16 @@ mpi_read_detect_0_removal (iobuf_t inp, unsigned int *ret_nread, int secure,
     a = NULL;
 
   /* Possibly, it has leading zeros.  */
-  nbits1 = gcry_mpi_get_nbits (a);
-  if (nbits > nbits1)
+  if (a)
     {
-      *r_csum_tweak -= (nbits >> 8);
-      *r_csum_tweak -= (nbits & 0xff);
-      *r_csum_tweak += (nbits1 >> 8);
-      *r_csum_tweak += (nbits1 & 0xff);
+      nbits1 = gcry_mpi_get_nbits (a);
+      if (nbits > nbits1)
+        {
+          *r_csum_tweak -= (nbits >> 8);
+          *r_csum_tweak -= (nbits & 0xff);
+          *r_csum_tweak += (nbits1 >> 8);
+          *r_csum_tweak += (nbits1 & 0xff);
+        }
     }
 
   *ret_nread = nread;
