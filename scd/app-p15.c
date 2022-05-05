@@ -3574,14 +3574,10 @@ read_p15_info (app_t app)
 
   if (IS_CARDOS_5 (app)
       && app->app_local->manufacturer_id
-      && !ascii_strcasecmp (app->app_local->manufacturer_id, "GeNUA mbH")
-      && !app->app_local->no_extended_mode)
+      && !ascii_strcasecmp (app->app_local->manufacturer_id, "GeNUA mbH"))
     {
       if (!app->app_local->card_product)
         app->app_local->card_product = CARD_PRODUCT_GENUA;
-      if (opt.verbose)
-        log_info ("p15: disabling extended mode based on TokenInfo\n");
-      app->app_local->no_extended_mode = 1;
     }
 
   /* Read the ODF so that we know the location of all directory
@@ -4288,6 +4284,27 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       return 0;
     }
 
+  if (DBG_CARD)
+    {
+      log_info ("p15: Reading CDF: id=");
+      for (i=0; i < cdf->objidlen; i++)
+        log_printf ("%02X", cdf->objid[i]);
+      if (cdf->label)
+        log_printf (" (%s)", cdf->label);
+      log_info ("p15:             path=");
+      for (i=0; i < cdf->pathlen; i++)
+        log_printf ("%s%04hX", i?"/":"", cdf->path[i]);
+      if (cdf->have_off)
+        log_printf ("[%lu/%lu]", cdf->off, cdf->len);
+      if (cdf->authid)
+        {
+          log_printf (" authid=");
+          for (i=0; i < cdf->authidlen; i++)
+            log_printf ("%02X", cdf->authid[i]);
+        }
+      log_printf ("\n");
+    }
+
   /* Read the entire file.  fixme: This could be optimized by first
      reading the header to figure out how long the certificate
      actually is. */
@@ -4295,7 +4312,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
   if (err)
     goto leave;
 
-  if (app->app_local->no_extended_mode)
+  if (app->app_local->no_extended_mode || !cdf->len)
     err = iso7816_read_binary_ext (app_get_slot (app), 0, cdf->off, 0,
                                    &buffer, &buflen, NULL);
   else
