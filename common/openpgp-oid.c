@@ -580,7 +580,7 @@ get_keyalgo_string (enum gcry_pk_algos algo,
       for (i=0; i < keyalgo_strings_used; i++)
         {
           if (keyalgo_strings[i].algo == algo
-              && keyalgo_strings[i].curve
+              && keyalgo_strings[i].curve && curve
               && !strcmp (keyalgo_strings[i].curve, curve))
             return keyalgo_strings[i].name;
         }
@@ -594,7 +594,7 @@ get_keyalgo_string (enum gcry_pk_algos algo,
       else
         name = xasprintf ("E_error");
       nbits = 0;
-      curvebuf = xstrdup (curve);
+      curvebuf = curve? xstrdup (curve) : NULL;
     }
   else
     {
