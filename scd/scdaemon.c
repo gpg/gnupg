@@ -194,6 +194,7 @@ static struct debug_flags_s debug_flags [] =
     { DBG_MEMSTAT_VALUE, "memstat" },
     { DBG_HASHING_VALUE, "hashing" },
     { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_CARD_VALUE   , "card"    },
     { DBG_CARD_IO_VALUE, "cardio"  },
     { DBG_READER_VALUE , "reader"  },
     { DBG_APP_VALUE    , "app"     },
