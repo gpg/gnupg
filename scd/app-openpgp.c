@@ -6226,7 +6226,8 @@ parse_algorithm_attribute (app_t app, int keyno)
       app->app_local->keyattr[keyno].ecc.algo = *buffer;
       app->app_local->keyattr[keyno].ecc.flags = 0;
 
-      if (buffer[buflen-1] == 0x00 || buffer[buflen-1] == 0xff)
+      if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY
+	  || buffer[buflen-1] == 0x00 || buffer[buflen-1] == 0xff)
         { /* Found "pubkey required"-byte for private key template.  */
           oidlen--;
           if (buffer[buflen-1] == 0xff)
