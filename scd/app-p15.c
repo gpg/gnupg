@@ -5008,6 +5008,13 @@ any_control_or_space (const char *string)
       return 1;
   return 0;
 }
+
+static int
+any_control_or_space_mem (const void *buffer, size_t buflen)
+{
+  const unsigned char *s;
+
+  for (s = buffer; buflen; s++, buflen--)
     if (*s <= 0x20 || *s >= 0x7f)
       return 1;
   return 0;
@@ -5020,17 +5027,42 @@ static char *
 get_dispserialno (app_t app, prkdf_object_t prkdf)
 {
   char *serial;
+  const unsigned char *s;
+  int i;
   size_t n;
 
   /* We prefer the SerialNumber RDN from the Subject-DN but we don't
    * use it if it features a percent sign (special character in pin
-   * prompts) or has any control character.  */
+   * prompts) or has any control character.  For some cards we use a
+   * different strategy.  */
   if (app->app_local->card_product == CARD_PRODUCT_RSCS)
     {
       /* We use only the right 8 hex digits.  */
       serial = app_get_serialno (app);
       if (serial && (n=strlen (serial)) > 8)
         memmove (serial, serial + n - 8, 9);
+    }
+  else if (IS_CARDOS_5 (app) && app->app_local->manufacturer_id
+           && !ascii_strcasecmp (app->app_local->manufacturer_id,
+                                 "Technology Nexus")
+           && APP_CARD(app)->serialno && APP_CARD(app)->serialnolen == 4+9
+           && !memcmp (APP_CARD(app)->serialno, "\xff\x00\x00\xff", 4)
+           && !any_control_or_space_mem (APP_CARD(app)->serialno + 4, 9))
+    {
+      /* Sample: ff0000ff354830313232363537 -> "5H01 2265 7" */
+      serial = xtrymalloc (9+2+1);
+      if (serial)
+        {
+          s = APP_CARD(app)->serialno + 4;
+          for (i=0; i < 4; i++)
+            serial[i] = *s++;
+          serial[i++] = ' ';
+          for (; i < 9; i++)
+            serial[i] = *s++;
+          serial[i++] = ' ';
+          serial[i++] = *s;
+          serial[i] = 0;
+        }
     }
   else if (prkdf && prkdf->serial_number && *prkdf->serial_number
       && !strchr (prkdf->serial_number, '%')
@@ -5042,6 +5074,7 @@ get_dispserialno (app_t app, prkdf_object_t prkdf)
     {
       serial = app_get_serialno (app);
     }
+
   return serial;
 }
 
@@ -5154,8 +5187,8 @@ verify_pin (app_t app,
     {
       /* We know that this card supports a verify status check.  Note
        * that in contrast to PIV cards ISO7816_VERIFY_NOT_NEEDED is
-       * not supported.  Noet that we don't use the pin_verified cache
-       * status because that is not as reliable than to ask the card
+       * not supported.  We also don't use the pin_verified cache
+       * status because that is not as reliable as to ask the card
        * about its state.  */
       if (prkdf)  /* Clear the cache which we don't use.  */
         prkdf->pin_verified = 0;
