@@ -5074,15 +5074,15 @@ get_dispserialno (app_t app, prkdf_object_t prkdf)
   else if (IS_CARDOS_5 (app) && app->app_local->manufacturer_id
            && !ascii_strcasecmp (app->app_local->manufacturer_id,
                                  "Technology Nexus")
-           && app->serialno && app->serialnolen == 4+9
-           && !memcmp (app->serialno, "\xff\x00\x00\xff", 4)
-           && !any_control_or_space_mem (app->serialno + 4, 9))
+           && APP_CARD(app)->serialno && APP_CARD(app)->serialnolen == 4+9
+           && !memcmp (APP_CARD(app)->serialno, "\xff\x00\x00\xff", 4)
+           && !any_control_or_space_mem (APP_CARD(app)->serialno + 4, 9))
     {
       /* Sample: ff0000ff354830313232363537 -> "5H01 2265 7" */
       serial = xtrymalloc (9+2+1);
       if (serial)
         {
-          s = app->serialno + 4;
+          s = APP_CARD(app)->serialno + 4;
           for (i=0; i < 4; i++)
             serial[i] = *s++;
           serial[i++] = ' ';
