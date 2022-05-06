@@ -481,7 +481,7 @@ struct app_local_s
     unsigned short auth_objects;
   } odf;
 
-  /* The PKCS#15 serialnumber from EF(TokeiNFo) or NULL.  Malloced. */
+  /* The PKCS#15 serialnumber from EF(TokenInfo) or NULL.  Malloced. */
   unsigned char *serialno;
   size_t serialnolen;
 
@@ -5003,7 +5003,11 @@ any_control_or_space (const char *string)
 {
   const unsigned char *s;
 
-  for (s = string; *string; string++)
+  for (s = string; *s; s++)
+    if (*s <= 0x20 || *s >= 0x7f)
+      return 1;
+  return 0;
+}
     if (*s <= 0x20 || *s >= 0x7f)
       return 1;
   return 0;
