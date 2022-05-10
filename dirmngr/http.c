@@ -64,6 +64,12 @@
 #  include <winsock2.h>
 # endif
 # include <windows.h>
+# ifndef EHOSTUNREACH
+#  define EHOSTUNREACH WSAEHOSTUNREACH
+# endif
+# ifndef EAFNOSUPPORT
+#  define EAFNOSUPPORT WSAEAFNOSUPPORT
+# endif
 #else /*!HAVE_W32_SYSTEM*/
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -440,20 +446,48 @@ static ssize_t
 my_gnutls_read (gnutls_transport_ptr_t ptr, void *buffer, size_t size)
 {
   my_socket_t sock = ptr;
-#if USE_NPTH
+#ifdef HAVE_W32_SYSTEM
+  /* Under Windows we need to use recv for a socket.  */
+  int nread;
+# if USE_NPTH
+  npth_unprotect ();
+# endif
+  nread = recv (FD2INT (sock->fd), buffer, size, 0);
+# if USE_NPTH
+  npth_protect ();
+# endif
+  return nread;
+
+#else  /* !HAVE_W32_SYSTEM */
+# if USE_NPTH
   return npth_read (sock->fd, buffer, size);
-#else
+# else
   return read (sock->fd, buffer, size);
+# endif
 #endif
 }
 static ssize_t
 my_gnutls_write (gnutls_transport_ptr_t ptr, const void *buffer, size_t size)
 {
   my_socket_t sock = ptr;
-#if USE_NPTH
+#ifdef HAVE_W32_SYSTEM
+  int nwritten;
+# if USE_NPTH
+  npth_unprotect ();
+# endif
+  nwritten = send (FD2INT (sock->fd), buffer, size, 0);
+# if USE_NPTH
+  npth_protect ();
+# endif
+  return nwritten;
+
+#else /*!HAVE_W32_SYSTEM*/
+
+# if USE_NPTH
   return npth_write (sock->fd, buffer, size);
-#else
+# else
   return write (sock->fd, buffer, size);
+# endif
 #endif
 }
 #endif /*HTTP_USE_GNUTLS*/
