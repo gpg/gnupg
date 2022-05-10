@@ -26,9 +26,6 @@
  (define (parse filename key)
    (parse-makefile-expand filename expander key))
 
- (define (in-objdir . names)
-   (canonical-path (apply path-join (cons (getenv "objdir") names))))
-
  (define g13-enabled?
    ;; Parse the variable "g13" in the Makefile
    (not (null?

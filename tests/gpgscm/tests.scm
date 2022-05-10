@@ -192,6 +192,9 @@
 (define (in-srcdir . names)
   (canonical-path (apply path-join (cons (getenv "abs_top_srcdir") names))))
 
+(define (in-objdir . names)
+  (canonical-path (apply path-join (cons (getenv "objdir") names))))
+
 ;; Split a list of paths.
 (define (pathsep-split s)
   (string-split s *pathsep*))
