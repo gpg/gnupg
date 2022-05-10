@@ -321,6 +321,7 @@ get_manufacturer (unsigned int no)
     case 0x63AF: return "Trustica";
     case 0xBA53: return "c-base e.V.";
     case 0xBD0E: return "Paranoidlabs";
+    case 0xCA05: return "Atos CardOS";
     case 0xF1D0: return "CanoKeys";
     case 0xF517: return "FSIJ";
     case 0xF5EC: return "F-Secure";
