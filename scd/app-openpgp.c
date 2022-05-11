@@ -252,7 +252,7 @@ static gpg_error_t do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
                             void *pincb_arg,
                             const void *indata, size_t indatalen,
                             unsigned char **outdata, size_t *outdatalen);
-static void parse_algorithm_attribute (app_t app, int keyno);
+static gpg_error_t parse_algorithm_attribute (app_t app, int keyno);
 static gpg_error_t change_keyattr_from_string
                            (app_t app,
                             gpg_error_t (*pincb)(void*, const char *, char **),
@@ -361,7 +361,7 @@ get_cached_data (app_t app, int tag,
               {
                 p = xtrymalloc (c->length);
                 if (!p)
-                  return gpg_error (gpg_err_code_from_errno (errno));
+                  return gpg_error_from_syserror ();
                 memcpy (p, c->data, c->length);
                 *result = p;
               }
@@ -3384,7 +3384,7 @@ change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
   else
     log_info ("key attribute changed (key=%d)\n", keyno+1);
   flush_cache (app);
-  parse_algorithm_attribute (app, keyno);
+  err = parse_algorithm_attribute (app, keyno);
   app->did_chv1 = 0;
   app->did_chv2 = 0;
   app->did_chv3 = 0;
@@ -5191,13 +5191,14 @@ ecc_curve (unsigned char *buf, size_t buflen)
 
 /* Parse and optionally show the algorithm attributes for KEYNO.
    KEYNO must be in the range 0..2.  */
-static void
+static gpg_error_t
 parse_algorithm_attribute (app_t app, int keyno)
 {
   unsigned char *buffer;
   size_t buflen;
   void *relptr;
   const char desc[3][5] = {"sign", "encr", "auth"};
+  gpg_error_t err = 0;
 
   assert (keyno >=0 && keyno <= 2);
 
@@ -5208,13 +5209,13 @@ parse_algorithm_attribute (app_t app, int keyno)
   if (!relptr)
     {
       log_error ("error reading DO 0x%02X\n", 0xc1+keyno);
-      return;
+      return gpg_error (GPG_ERR_CARD);
     }
   if (buflen < 1)
     {
       log_error ("error reading DO 0x%02X\n", 0xc1+keyno);
       xfree (relptr);
-      return;
+      return gpg_error (GPG_ERR_CARD);
     }
 
   if (opt.verbose)
@@ -5262,7 +5263,10 @@ parse_algorithm_attribute (app_t app, int keyno)
       curve = ecc_curve (buffer + 1, oidlen);
 
       if (!curve)
-        log_printhex (buffer+1, buflen-1, "Curve with OID not supported: ");
+        {
+          log_printhex (buffer+1, buflen-1, "Curve with OID not supported: ");
+          err = gpg_error (GPG_ERR_CARD);
+        }
       else
         {
           app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
@@ -5283,6 +5287,7 @@ parse_algorithm_attribute (app_t app, int keyno)
     log_printhex (buffer, buflen, "");
 
   xfree (relptr);
+  return err;
 }
 
 /* Select the OpenPGP application on the card in SLOT.  This function
@@ -5292,15 +5297,15 @@ app_select_openpgp (app_t app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int slot = app->slot;
-  int rc;
+  gpg_error_t err;
   unsigned char *buffer;
   size_t buflen;
   void *relptr;
 
   /* Note that the card can't cope with P2=0xCO, thus we need to pass a
      special flag value. */
-  rc = iso7816_select_application (slot, aid, sizeof aid, 0x0001);
-  if (!rc)
+  err = iso7816_select_application (slot, aid, sizeof aid, 0x0001);
+  if (!err)
     {
       unsigned int manufacturer;
 
@@ -5316,8 +5321,8 @@ app_select_openpgp (app_t app)
          replace a possibly already set one from a EF.GDO with this
          one.  Note, that for current OpenPGP cards, no EF.GDO exists
          and thus it won't matter at all. */
-      rc = iso7816_get_data (slot, 0, 0x004F, &buffer, &buflen);
-      if (rc)
+      err = iso7816_get_data (slot, 0, 0x004F, &buffer, &buflen);
+      if (err)
         goto leave;
       if (opt.verbose)
         {
@@ -5336,7 +5341,7 @@ app_select_openpgp (app_t app)
       app->app_local = xtrycalloc (1, sizeof *app->app_local);
       if (!app->app_local)
         {
-          rc = gpg_error (gpg_err_code_from_errno (errno));
+          err = gpg_error_from_syserror ();
           goto leave;
         }
 
@@ -5367,6 +5372,7 @@ app_select_openpgp (app_t app)
         {
           log_error (_("can't access %s - invalid OpenPGP card?\n"),
                      "CHV Status Bytes");
+          err = gpg_error (GPG_ERR_CARD);
           goto leave;
         }
       app->force_chv1 = (buflen && *buffer == 0);
@@ -5378,6 +5384,7 @@ app_select_openpgp (app_t app)
         {
           log_error (_("can't access %s - invalid OpenPGP card?\n"),
                      "Extended Capability Flags" );
+          err = gpg_error (GPG_ERR_CARD);
           goto leave;
         }
       if (buflen)
@@ -5426,9 +5433,13 @@ app_select_openpgp (app_t app)
       if (opt.verbose)
         show_caps (app->app_local);
 
-      parse_algorithm_attribute (app, 0);
-      parse_algorithm_attribute (app, 1);
-      parse_algorithm_attribute (app, 2);
+      err = parse_algorithm_attribute (app, 0);
+      if (!err)
+        err = parse_algorithm_attribute (app, 1);
+      if (!err)
+        err = parse_algorithm_attribute (app, 2);
+      if (err)
+        goto leave;
 
       if (opt.verbose > 1)
         dump_all_do (slot);
@@ -5450,7 +5461,7 @@ app_select_openpgp (app_t app)
    }
 
 leave:
-  if (rc)
+  if (err)
     do_deinit (app);
-  return rc;
+  return err;
 }
