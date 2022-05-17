@@ -1263,7 +1263,7 @@ open_pcsc_reader (const char *portstr)
   int slot;
   char *list = NULL;
   const char *rdrname = NULL;
-  pcsc_dword_t nreader;
+  pcsc_dword_t nreader = 0;
   const char *p;
   size_t n;
   membuf_t reader_mb;
