@@ -2015,7 +2015,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
 #endif
     { /* PC/SC readers.  */
       long r;
-      pcsc_dword_t nreader;
+      pcsc_dword_t nreader = 0;
       char *p = NULL;
 
       if (!pcsc.context)
