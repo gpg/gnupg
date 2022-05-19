@@ -119,6 +119,13 @@ gpg-agent's ssh-agent implementation.  This is thus the same as
 putting the keygrip into the 'sshcontrol' file.  Only one such item
 should exist.
 
+*** Confirm
+If given and the value is "yes", a user will be asked confirmation by
+a dialog window when the key is about to be used for
+PKSIGN/PKAUTH/PKDECRYPT operation.  If the value is "restricted", it
+is only asked for the access through extra/browser socket.
+
+
 * Private Key Format
 ** Unprotected Private Key Format
 

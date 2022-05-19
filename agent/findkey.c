@@ -1026,6 +1026,45 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
         *r_timestamp = isotime2epoch (created);
     }
 
+  if (!grip && keymeta)
+    {
+      const char *ask_confirmation = nvc_get_string (keymeta, "Confirm:");
+
+      if (ask_confirmation
+          && ((!strcmp (ask_confirmation, "restricted") && ctrl->restricted)
+              || !strcmp (ask_confirmation, "yes")))
+        {
+          char hexgrip[40+4+1];
+          char *prompt;
+          char *comment_buffer = NULL;
+          const char *comment = NULL;
+
+          bin2hex (ctrl->keygrip, 20, hexgrip);
+
+          if ((comment = nvc_get_string (keymeta, "Label:")))
+            {
+              if (strchr (comment, '\n')
+                  && (comment_buffer = linefeed_to_percent0A (comment)))
+                comment = comment_buffer;
+            }
+
+          prompt = xtryasprintf (L_("Requested the use of key%%0A"
+                                    "  %s%%0A"
+                                    "  %s%%0A"
+                                    "Do you want to allow this?"),
+                                 hexgrip, comment? comment:"");
+
+          gcry_free (comment_buffer);
+
+          err = agent_get_confirmation (ctrl, prompt,
+                                        L_("Allow"), L_("Deny"), 0);
+          xfree (prompt);
+
+          if (err)
+            return err;
+        }
+    }
+
   switch (agent_private_key_type (buf))
     {
     case PRIVATE_KEY_CLEAR:
