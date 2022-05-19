@@ -314,7 +314,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   if (!ctrl->have_keygrip)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
-  err = agent_key_from_file (ctrl, cache_nonce, desc_text, ctrl->keygrip,
+  err = agent_key_from_file (ctrl, cache_nonce, desc_text, NULL,
                              &shadow_info, cache_mode, lookup_ttl,
                              &s_skey, NULL, NULL);
   if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)

@@ -68,7 +68,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
       log_printhex (ciphertext, ciphertextlen, "cipher: ");
     }
   err = agent_key_from_file (ctrl, NULL, desc_text,
-                             ctrl->keygrip, &shadow_info,
+                             NULL, &shadow_info,
                              CACHE_MODE_NORMAL, NULL, &s_skey, NULL, NULL);
   if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)
     no_shadow_info = 1;

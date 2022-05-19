@@ -962,7 +962,10 @@ remove_key_file (const unsigned char *grip)
 
 
 /* Return the secret key as an S-Exp in RESULT after locating it using
-   the GRIP.  If the operation shall be diverted to a token, an
+   the GRIP.  Caller should set GRIP=NULL, when a key in a file is
+   intended to be used for cryptographic operation.  In this case,
+   CTRL->keygrip is used to locate the file, and it may ask a user for
+   confirmation.  If the operation shall be diverted to a token, an
    allocated S-expression with the shadow_info part from the file is
    stored at SHADOW_INFO; if not NULL will be stored at SHADOW_INFO.
    CACHE_MODE defines now the cache shall be used.  DESC_TEXT may be
@@ -999,13 +1002,10 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (r_timestamp)
     *r_timestamp = (time_t)(-1);
 
-  err = read_key_file (grip, &s_skey, &keymeta);
-  if (err)
-    {
-      if (gpg_err_code (err) == GPG_ERR_ENOENT)
-        err = gpg_error (GPG_ERR_NO_SECKEY);
-      return err;
-    }
+  if (!grip && !ctrl->have_keygrip)
+    return gpg_error (GPG_ERR_NO_SECKEY);
+
+  err = read_key_file (grip? grip : ctrl->keygrip, &s_skey, &keymeta);
 
   /* For use with the protection functions we also need the key as an
      canonical encoded S-expression in a buffer.  Create this buffer
@@ -1087,14 +1087,15 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
                                           &desc_text_final);
         gcry_free (comment_buffer);
 
-	if (!err)
-	  {
-	    err = unprotect (ctrl, cache_nonce, desc_text_final, &buf, grip,
-                            cache_mode, lookup_ttl, r_passphrase);
-	    if (err)
-	      log_error ("failed to unprotect the secret key: %s\n",
-			 gpg_strerror (err));
-	  }
+        if (!err)
+          {
+            err = unprotect (ctrl, cache_nonce, desc_text_final, &buf,
+                             grip? grip : ctrl->keygrip,
+                             cache_mode, lookup_ttl, r_passphrase);
+            if (err)
+              log_error ("failed to unprotect the secret key: %s\n",
+                         gpg_strerror (err));
+          }
 
 	xfree (desc_text_final);
       }
