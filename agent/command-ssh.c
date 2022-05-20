@@ -2511,7 +2511,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
 {
   u32 key_counter;
   estream_t key_blobs;
-  gcry_sexp_t key_public;
   gpg_error_t err;
   int ret;
   gpg_error_t ret_err;
@@ -2520,7 +2519,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   /* Prepare buffer stream.  */
 
-  key_public = NULL;
   key_counter = 0;
 
   key_blobs = es_fopenmem (0, "r+b");
@@ -2560,13 +2558,12 @@ ssh_handler_request_identities (ctrl_t ctrl,
       for (keyinfo = keyinfo_list; keyinfo; keyinfo = keyinfo->next)
         {
           char *cardsn;
+          gcry_sexp_t key_public = NULL;
 
           if (card_key_available (ctrl, keyinfo, &key_public, &cardsn))
             continue;
 
           err = ssh_send_key_public (key_blobs, key_public, cardsn);
-          gcry_sexp_release (key_public);
-          key_public = NULL;
           xfree (cardsn);
           if (err)
             {
@@ -2582,11 +2579,14 @@ ssh_handler_request_identities (ctrl_t ctrl,
               else
                 {
                   agent_card_free_keyinfo (keyinfo_list);
+                  gcry_sexp_release (key_public);
                   goto out;
                 }
             }
           else
             key_counter++;
+
+          gcry_sexp_release (key_public);
         }
 
       agent_card_free_keyinfo (keyinfo_list);
