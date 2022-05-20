@@ -961,6 +961,112 @@ remove_key_file (const unsigned char *grip)
 }
 
 
+/*
+ * Prompt a user the card insertion, when it's not available yet.
+ */
+static gpg_error_t
+prompt_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
+                 const unsigned char *grip)
+{
+  char *serialno;
+  char *desc;
+  char *want_sn;
+  int len;
+  gpg_error_t err;
+  char hexgrip[41];
+
+  bin2hex (grip, 20, hexgrip);
+
+  if (shadow_info)
+    {
+      err = parse_shadow_info (shadow_info, &want_sn, NULL, NULL);
+      if (err)
+        return err;
+    }
+  else
+    want_sn = NULL;
+
+  len = want_sn? strlen (want_sn) : 0;
+  if (len == 32 && !strncmp (want_sn, "D27600012401", 12))
+    {
+      /* This is an OpenPGP card - reformat  */
+      if (!strncmp (want_sn+16, "0006", 4))
+        {
+          /* This is a Yubikey.  Print the s/n as it would be printed
+           * on Yubikey 5. Example: D2760001240100000006120808620000
+           *                                        mmmm^^^^^^^^      */
+          unsigned long sn;
+
+          sn  = atoi_4 (want_sn+20) * 10000;
+          sn += atoi_4 (want_sn+24);
+          snprintf (want_sn, 32, "%lu %03lu %03lu",
+                    (sn/1000000ul), (sn/1000ul % 1000ul), (sn % 1000ul));
+        }
+      else  /* Default is the Zeitcontrol card print format.  */
+        {
+          memmove (want_sn, want_sn+16, 4);
+          want_sn[4] = ' ';
+          memmove (want_sn+5, want_sn+20, 8);
+          want_sn[13] = 0;
+        }
+    }
+  else if (len == 20 && want_sn[19] == '0')
+    {
+      /* We assume that a 20 byte serial number is a standard one
+       * which has the property to have a zero in the last nibble (Due
+       * to BCD representation).  We don't display this '0' because it
+       * may confuse the user.  */
+      want_sn[19] = 0;
+    }
+
+  for (;;)
+    {
+      /* Scan device(s), and check if key for GRIP is available.  */
+      err = agent_card_serialno (ctrl, &serialno, NULL);
+      if (!err)
+        {
+          struct card_key_info_s *keyinfo;
+
+          xfree (serialno);
+          err = agent_card_keyinfo (ctrl, hexgrip, 0, &keyinfo);
+          if (!err)
+            {
+              /* Key for GRIP found, use it directly.  */
+              agent_card_free_keyinfo (keyinfo);
+              xfree (want_sn);
+              return 0;
+            }
+        }
+
+      if (!want_sn)
+        ; /* No shadow info so we can't ask; ERR is already set.  */
+      else if (asprintf (&desc,
+                    "%s:%%0A%%0A"
+                    "  %s",
+                    L_("Please insert the card with serial number"),
+                    want_sn) < 0)
+        {
+          err = out_of_core ();
+        }
+      else
+        {
+          err = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
+          if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK &&
+              gpg_err_code (err) == GPG_ERR_NO_PIN_ENTRY)
+            err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+
+          xfree (desc);
+        }
+
+      if (err)
+        {
+          xfree (want_sn);
+          return err;
+        }
+    }
+}
+
+
 /* Return the secret key as an S-Exp in RESULT after locating it using
    the GRIP.  Caller should set GRIP=NULL, when a key in a file is
    intended to be used for cryptographic operation.  In this case,
@@ -1143,24 +1249,36 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
       if (shadow_info)
         {
           const unsigned char *s;
+          unsigned char *shadow_type;
           size_t n;
 
-          err = agent_get_shadow_info (buf, &s);
+          err = agent_get_shadow_info_type (buf, &s, &shadow_type);
           if (!err)
             {
               n = gcry_sexp_canon_len (s, 0, NULL,NULL);
               log_assert (n);
               *shadow_info = xtrymalloc (n);
               if (!*shadow_info)
-                err = out_of_core ();
+                {
+                  err = out_of_core ();
+                  goto shadow_error;
+                }
               else
                 {
                   memcpy (*shadow_info, s, n);
-                  err = 0;
+                  /*
+                   * When it's a key on card (not on tpm2), maks sure
+                   * it's available.
+                   */
+                  if (strcmp (shadow_type, "t1-v1") == 0 && !grip)
+                    err = prompt_for_card (ctrl, *shadow_info, ctrl->keygrip);
                 }
             }
-          if (err)
+          else
+          shadow_error:
             log_error ("get_shadow_info failed: %s\n", gpg_strerror (err));
+
+          xfree (shadow_type);
         }
       else
         err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);

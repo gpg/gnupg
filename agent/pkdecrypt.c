@@ -89,11 +89,11 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
         }
 
       if (agent_is_tpm2_key (s_skey))
-	err = divert_tpm2_pkdecrypt (ctrl, desc_text, ciphertext, shadow_info,
+	err = divert_tpm2_pkdecrypt (ctrl, ciphertext, shadow_info,
                                      &buf, &len, r_padding);
       else
-        err = divert_pkdecrypt (ctrl, desc_text, ctrl->keygrip, ciphertext,
-                                shadow_info, &buf, &len, r_padding);
+        err = divert_pkdecrypt (ctrl, ctrl->keygrip, ciphertext,
+                                &buf, &len, r_padding);
       if (err)
         {
           log_error ("smartcard decryption failed: %s\n", gpg_strerror (err));

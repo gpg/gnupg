@@ -32,113 +32,6 @@
 #include "../common/sexp-parse.h"
 
 
-static gpg_error_t
-ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
-              const unsigned char *grip, char **r_kid)
-{
-  char *serialno;
-  char *desc;
-  char *want_sn;
-  int len;
-  gpg_error_t err;
-  char hexgrip[41];
-
-  *r_kid = NULL;
-  bin2hex (grip, 20, hexgrip);
-
-  if (shadow_info)
-    {
-      err = parse_shadow_info (shadow_info, &want_sn, NULL, NULL);
-      if (err)
-        return err;
-    }
-  else
-    want_sn = NULL;
-
-  len = want_sn? strlen (want_sn) : 0;
-  if (len == 32 && !strncmp (want_sn, "D27600012401", 12))
-    {
-      /* This is an OpenPGP card - reformat  */
-      if (!strncmp (want_sn+16, "0006", 4))
-        {
-          /* This is a Yubikey.  Print the s/n as it would be printed
-           * on Yubikey 5. Example: D2760001240100000006120808620000
-           *                                        mmmm^^^^^^^^      */
-          unsigned long sn;
-
-          sn  = atoi_4 (want_sn+20) * 10000;
-          sn += atoi_4 (want_sn+24);
-          snprintf (want_sn, 32, "%lu %03lu %03lu",
-                    (sn/1000000ul), (sn/1000ul % 1000ul), (sn % 1000ul));
-        }
-      else  /* Default is the Zeitcontrol card print format.  */
-        {
-          memmove (want_sn, want_sn+16, 4);
-          want_sn[4] = ' ';
-          memmove (want_sn+5, want_sn+20, 8);
-          want_sn[13] = 0;
-        }
-    }
-  else if (len == 20 && want_sn[19] == '0')
-    {
-      /* We assume that a 20 byte serial number is a standard one
-       * which has the property to have a zero in the last nibble (Due
-       * to BCD representation).  We don't display this '0' because it
-       * may confuse the user.  */
-      want_sn[19] = 0;
-    }
-
-  for (;;)
-    {
-      /* Scan device(s), and check if key for GRIP is available.  */
-      err = agent_card_serialno (ctrl, &serialno, NULL);
-      if (!err)
-        {
-          struct card_key_info_s *keyinfo;
-
-          xfree (serialno);
-          err = agent_card_keyinfo (ctrl, hexgrip, 0, &keyinfo);
-          if (!err)
-            {
-              /* Key for GRIP found, use it directly.  */
-              agent_card_free_keyinfo (keyinfo);
-              xfree (want_sn);
-              if ((*r_kid = xtrystrdup (hexgrip)))
-                return 0;
-              else
-                return gpg_error_from_syserror ();
-            }
-        }
-
-      if (!want_sn)
-        ; /* No shadow info so we can't ask; ERR is already set.  */
-      else if (asprintf (&desc,
-                    "%s:%%0A%%0A"
-                    "  %s",
-                    L_("Please insert the card with serial number"),
-                    want_sn) < 0)
-        {
-          err = out_of_core ();
-        }
-      else
-        {
-          err = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
-          if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK &&
-              gpg_err_code (err) == GPG_ERR_NO_PIN_ENTRY)
-            err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
-
-          xfree (desc);
-        }
-
-      if (err)
-        {
-          xfree (want_sn);
-          return err;
-        }
-    }
-}
-
-
 /* Put the DIGEST into an DER encoded container and return it in R_VAL. */
 static int
 encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
@@ -426,44 +319,37 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
 
 
 /* This function is used when a sign operation has been diverted to a
- * smartcard.  DESC_TEXT is the original text for a prompt has send by
- * gpg to gpg-agent.
+ * smartcard.
  *
  * Note: If SHADOW_INFO is NULL the user can't be asked to insert the
  * card, we simply try to use an inserted card with the given keygrip.
  *
  * FIXME: Explain the other args.  */
 int
-divert_pksign (ctrl_t ctrl, const char *desc_text, const unsigned char *grip,
+divert_pksign (ctrl_t ctrl, const unsigned char *grip,
                const unsigned char *digest, size_t digestlen, int algo,
-               const unsigned char *shadow_info, unsigned char **r_sig,
+               unsigned char **r_sig,
                size_t *r_siglen)
 {
   int rc;
-  char *kid;
+  char hexgrip[41];
   size_t siglen;
   unsigned char *sigval = NULL;
 
-  (void)desc_text;
-
-  rc = ask_for_card (ctrl, shadow_info, grip, &kid);
-  if (rc)
-    return rc;
-  /* Note that the KID may be an keyref or a keygrip.  The signing
-   * functions handle both.  */
+  bin2hex (grip, 20, hexgrip);
 
   if (!algo)
     {
       /* This is the PureEdDSA case.  (DIGEST,DIGESTLEN) this the
        * entire data which will be signed.  */
-      rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, NULL,
+      rc = agent_card_pksign (ctrl, hexgrip, getpin_cb, ctrl, NULL,
                               0, digest, digestlen, &sigval, &siglen);
     }
   else if (algo == MD_USER_TLS_MD5SHA1)
     {
       int save = ctrl->use_auth_call;
       ctrl->use_auth_call = 1;
-      rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, NULL,
+      rc = agent_card_pksign (ctrl, hexgrip, getpin_cb, ctrl, NULL,
                               algo, digest, digestlen, &sigval, &siglen);
       ctrl->use_auth_call = save;
     }
@@ -475,7 +361,7 @@ divert_pksign (ctrl_t ctrl, const char *desc_text, const unsigned char *grip,
       rc = encode_md_for_card (digest, digestlen, algo, &data, &ndata);
       if (!rc)
         {
-          rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, NULL,
+          rc = agent_card_pksign (ctrl, hexgrip, getpin_cb, ctrl, NULL,
                                   algo, data, ndata, &sigval, &siglen);
           xfree (data);
         }
@@ -487,8 +373,6 @@ divert_pksign (ctrl_t ctrl, const char *desc_text, const unsigned char *grip,
       *r_siglen = siglen;
     }
 
-  xfree (kid);
-
   return rc;
 }
 
@@ -498,14 +382,13 @@ divert_pksign (ctrl_t ctrl, const char *desc_text, const unsigned char *grip,
    allocated buffer in R_BUF.  The padding information is stored at
    R_PADDING with -1 for not known.  */
 int
-divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+divert_pkdecrypt (ctrl_t ctrl,
                   const unsigned char *grip,
                   const unsigned char *cipher,
-                  const unsigned char *shadow_info,
                   char **r_buf, size_t *r_len, int *r_padding)
 {
   int rc;
-  char *kid;
+  char hexgrip[41];
   const unsigned char *s;
   size_t n;
   int depth;
@@ -514,7 +397,7 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   char *plaintext;
   size_t plaintextlen;
 
-  (void)desc_text;
+  bin2hex (grip, 20, hexgrip);
 
   *r_padding = -1;
   s = cipher;
@@ -591,11 +474,7 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   ciphertext = s;
   ciphertextlen = n;
 
-  rc = ask_for_card (ctrl, shadow_info, grip, &kid);
-  if (rc)
-    return rc;
-
-  rc = agent_card_pkdecrypt (ctrl, kid, getpin_cb, ctrl, NULL,
+  rc = agent_card_pkdecrypt (ctrl, hexgrip, getpin_cb, ctrl, NULL,
                              ciphertext, ciphertextlen,
                              &plaintext, &plaintextlen, r_padding);
   if (!rc)
@@ -603,7 +482,6 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
       *r_buf = plaintext;
       *r_len = plaintextlen;
     }
-  xfree (kid);
   return rc;
 }
 

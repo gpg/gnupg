@@ -593,11 +593,11 @@ void agent_reload_trustlist (void);
 
 /*-- divert-tpm2.c --*/
 #ifdef HAVE_LIBTSS
-int divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
+int divert_tpm2_pksign (ctrl_t ctrl,
                         const unsigned char *digest, size_t digestlen, int algo,
                         const unsigned char *shadow_info, unsigned char **r_sig,
                         size_t *r_siglen);
-int divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+int divert_tpm2_pkdecrypt (ctrl_t ctrl,
                            const unsigned char *cipher,
                            const unsigned char *shadow_info,
                            char **r_buf, size_t *r_len, int *r_padding);
@@ -605,25 +605,25 @@ int divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
                           gcry_sexp_t s_skey);
 #else /*!HAVE_LIBTSS*/
 static inline int
-divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
+divert_tpm2_pksign (ctrl_t ctrl,
                     const unsigned char *digest,
                     size_t digestlen, int algo,
                     const unsigned char *shadow_info,
                     unsigned char **r_sig,
                     size_t *r_siglen)
 {
-  (void)ctrl; (void)desc_text; (void)digest; (void)digestlen;
+  (void)ctrl; (void)digest; (void)digestlen;
   (void)algo; (void)shadow_info; (void)r_sig; (void)r_siglen;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 static inline int
-divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+divert_tpm2_pkdecrypt (ctrl_t ctrl,
                        const unsigned char *cipher,
                        const unsigned char *shadow_info,
                        char **r_buf, size_t *r_len,
                        int *r_padding)
 {
-  (void)ctrl; (void)desc_text; (void)cipher; (void)shadow_info;
+  (void)ctrl; (void)cipher; (void)shadow_info;
   (void)r_buf; (void)r_len; (void)r_padding;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
@@ -639,15 +639,14 @@ divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
 
 
 /*-- divert-scd.c --*/
-int divert_pksign (ctrl_t ctrl, const char *desc_text,
+int divert_pksign (ctrl_t ctrl,
                    const unsigned char *grip,
                    const unsigned char *digest, size_t digestlen, int algo,
-                   const unsigned char *shadow_info, unsigned char **r_sig,
+                   unsigned char **r_sig,
                    size_t *r_siglen);
-int divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+int divert_pkdecrypt (ctrl_t ctrl,
                       const unsigned char *grip,
                       const unsigned char *cipher,
-                      const unsigned char *shadow_info,
                       char **r_buf, size_t *r_len, int *r_padding);
 int divert_generic_cmd (ctrl_t ctrl,
                         const char *cmdline, void *assuan_context);

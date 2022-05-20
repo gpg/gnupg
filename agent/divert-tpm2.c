@@ -13,12 +13,11 @@
 #include "../common/sexp-parse.h"
 
 int
-divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
+divert_tpm2_pksign (ctrl_t ctrl,
                     const unsigned char *digest, size_t digestlen, int algo,
                     const unsigned char *shadow_info, unsigned char **r_sig,
                     size_t *r_siglen)
 {
-  (void)desc_text;
   (void)algo;
   return agent_tpm2d_pksign(ctrl, digest, digestlen,
 			    shadow_info, r_sig, r_siglen);
@@ -76,7 +75,7 @@ divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
 }
 
 int
-divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+divert_tpm2_pkdecrypt (ctrl_t ctrl,
                        const unsigned char *cipher,
                        const unsigned char *shadow_info,
                        char **r_buf, size_t *r_len, int *r_padding)
@@ -85,8 +84,6 @@ divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   size_t n;
 
   *r_padding = -1;
-
-  (void)desc_text;
 
   s = cipher;
   if (*s != '(')
