@@ -2449,7 +2449,50 @@ card_key_available (ctrl_t ctrl, const struct card_key_info_s *keyinfo,
   return 0;
 }
 
+static gpg_error_t
+ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
+{
+  gpg_error_t err;
+  ssh_control_file_t cf = NULL;
 
+  err = open_control_file (&cf, 0);
+  if (err)
+    return err;
+
+  while (!read_control_file_item (cf))
+    {
+      unsigned char grip[20];
+      gcry_sexp_t key_public = NULL;
+
+      if (!cf->item.valid)
+        continue; /* Should not happen.  */
+      if (cf->item.disabled)
+        continue;
+      log_assert (strlen (cf->item.hexgrip) == 40);
+      hex2bin (cf->item.hexgrip, grip, sizeof (grip));
+
+      err = agent_public_key_from_file (ctrl, grip, &key_public);
+      if (err)
+        {
+          log_error ("%s:%d: key '%s' skipped: %s\n",
+                     cf->fname, cf->lnr, cf->item.hexgrip,
+                     gpg_strerror (err));
+          /* Clear ERR, skiping the key in question.  */
+          err = 0;
+          continue;
+        }
+
+      err = ssh_send_key_public (key_blobs, key_public, NULL);
+      if (err)
+        break;
+
+      gcry_sexp_release (key_public);
+      (*key_counter_p)++;
+    }
+
+  close_control_file (cf);
+  return err;
+}
 
 
 /*
@@ -2471,7 +2514,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
   gcry_sexp_t key_public;
   gpg_error_t err;
   int ret;
-  ssh_control_file_t cf = NULL;
   gpg_error_t ret_err;
 
   (void)request;
@@ -2552,51 +2594,16 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
  scd_out:
   /* Then look at all the registered and non-disabled keys. */
-  err = open_control_file (&cf, 0);
-  if (err)
-    goto out;
-
-  while (!read_control_file_item (cf))
+  err = ssh_send_available_keys (ctrl, key_blobs, &key_counter);
+  if (!err)
     {
-      unsigned char grip[20];
-
-      if (!cf->item.valid)
-        continue; /* Should not happen.  */
-      if (cf->item.disabled)
-        continue;
-      log_assert (strlen (cf->item.hexgrip) == 40);
-      hex2bin (cf->item.hexgrip, grip, sizeof (grip));
-
-      err = agent_public_key_from_file (ctrl, grip, &key_public);
-      if (err)
-        {
-          log_error ("%s:%d: key '%s' skipped: %s\n",
-                     cf->fname, cf->lnr, cf->item.hexgrip,
-                     gpg_strerror (err));
-          continue;
-        }
-
-      err = ssh_send_key_public (key_blobs, key_public, NULL);
-      if (err)
-        goto out;
-      gcry_sexp_release (key_public);
-      key_public = NULL;
-
-      key_counter++;
-    }
-  err = 0;
-
-  ret = es_fseek (key_blobs, 0, SEEK_SET);
-  if (ret)
-    {
-      err = gpg_error_from_syserror ();
-      goto out;
+      ret = es_fseek (key_blobs, 0, SEEK_SET);
+      if (ret)
+        err = gpg_error_from_syserror ();
     }
 
  out:
   /* Send response.  */
-
-  gcry_sexp_release (key_public);
 
   if (!err)
     {
@@ -2614,7 +2621,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
     }
 
   es_fclose (key_blobs);
-  close_control_file (cf);
 
   return ret_err;
 }
