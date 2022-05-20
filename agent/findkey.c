@@ -965,26 +965,30 @@ remove_key_file (const unsigned char *grip)
  * Prompt a user the card insertion, when it's not available yet.
  */
 static gpg_error_t
-prompt_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
-                 const unsigned char *grip)
+prompt_for_card (ctrl_t ctrl, const unsigned char *grip,
+                 nvc_t keymeta, const unsigned char *shadow_info)
 {
   char *serialno;
   char *desc;
-  char *want_sn;
+  char *want_sn = NULL;
   int len;
   gpg_error_t err;
   char hexgrip[41];
+  char *comment_buffer = NULL;
+  const char *comment = NULL;
 
   bin2hex (grip, 20, hexgrip);
 
-  if (shadow_info)
+  if (keymeta && (comment = nvc_get_string (keymeta, "Label:")))
     {
-      err = parse_shadow_info (shadow_info, &want_sn, NULL, NULL);
-      if (err)
-        return err;
+      if (strchr (comment, '\n')
+          && (comment_buffer = linefeed_to_percent0A (comment)))
+        comment = comment_buffer;
     }
-  else
-    want_sn = NULL;
+
+  err = parse_shadow_info (shadow_info, &want_sn, NULL, NULL);
+  if (err)
+    return err;
 
   len = want_sn? strlen (want_sn) : 0;
   if (len == 32 && !strncmp (want_sn, "D27600012401", 12))
@@ -1031,23 +1035,20 @@ prompt_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
           err = agent_card_keyinfo (ctrl, hexgrip, 0, &keyinfo);
           if (!err)
             {
-              /* Key for GRIP found, use it directly.  */
+              /* Key for GRIP found, use it.  */
               agent_card_free_keyinfo (keyinfo);
-              xfree (want_sn);
-              return 0;
+              break;
             }
         }
 
-      if (!want_sn)
-        ; /* No shadow info so we can't ask; ERR is already set.  */
-      else if (asprintf (&desc,
+      /* Card is not available.  Prompt the insertion.  */
+      if (asprintf (&desc,
                     "%s:%%0A%%0A"
+                    "  %s%%0A"
                     "  %s",
                     L_("Please insert the card with serial number"),
-                    want_sn) < 0)
-        {
-          err = out_of_core ();
-        }
+                    want_sn ? want_sn : "", comment) < 0)
+        err = out_of_core ();
       else
         {
           err = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
@@ -1059,11 +1060,12 @@ prompt_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
         }
 
       if (err)
-        {
-          xfree (want_sn);
-          return err;
-        }
+        break;
     }
+
+  xfree (want_sn);
+  gcry_free (comment_buffer);
+  return err;
 }
 
 
@@ -1271,7 +1273,8 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
                    * it's available.
                    */
                   if (strcmp (shadow_type, "t1-v1") == 0 && !grip)
-                    err = prompt_for_card (ctrl, *shadow_info, ctrl->keygrip);
+                    err = prompt_for_card (ctrl, ctrl->keygrip,
+                                           keymeta, *shadow_info);
                 }
             }
           else
