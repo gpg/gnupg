@@ -639,6 +639,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
   unsigned char *cert;
   size_t ncert;
   card_t card;
+  const char *keygrip = NULL;
 
   if ((rc = open_card (ctrl)))
     return rc;
@@ -647,7 +648,10 @@ cmd_readcert (assuan_context_t ctx, char *line)
   if (!line)
     return gpg_error_from_syserror ();
 
-  card = card_get (ctrl, NULL);
+  if (strlen (line) == 40)
+    keygrip = line;
+
+  card = card_get (ctrl, keygrip);
   if (!card)
     {
       xfree (line);
