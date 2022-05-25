@@ -737,7 +737,12 @@ inq_needpin (void *opaque, const char *line)
       rc = parm->getpin_cb (parm->getpin_cb_arg, parm->getpin_cb_desc,
                             line, pin, pinlen);
       if (!rc)
-        rc = assuan_send_data (parm->ctx, pin, pinlen);
+        {
+          assuan_begin_confidential (parm->ctx);
+          rc = assuan_send_data (parm->ctx, pin, pinlen);
+          assuan_end_confidential (parm->ctx);
+        }
+      wipememory (pin, pinlen);
       xfree (pin);
     }
   else if ((s = has_leading_keyword (line, "POPUPPINPADPROMPT")))

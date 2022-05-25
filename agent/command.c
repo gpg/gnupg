@@ -2120,7 +2120,11 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
 
       rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%zu", maxlen);
       if (!rc)
-	rc = assuan_inquire (ctx, "PASSPHRASE", &passphrase, &len, maxlen);
+        {
+          assuan_begin_confidential (ctx);
+          rc = assuan_inquire (ctx, "PASSPHRASE", &passphrase, &len, maxlen);
+          assuan_end_confidential (ctx);
+        }
     }
   else
     rc = set_error (GPG_ERR_NOT_IMPLEMENTED, "passphrase is required");
@@ -2129,7 +2133,10 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
     {
       rc = agent_put_cache (ctrl, grip_clear, CACHE_MODE_ANY, passphrase, ttl);
       if (opt_inquire)
-	xfree (passphrase);
+        {
+	  wipememory (passphrase, len);
+          xfree (passphrase);
+        }
     }
 
 leave:
