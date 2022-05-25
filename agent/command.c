@@ -1694,6 +1694,7 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
           xfree (p);
         }
     }
+  assuan_end_confidential (ctx);
   return rc;
 }
 
