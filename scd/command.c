@@ -978,7 +978,9 @@ pin_cb (void *opaque, const char *info, char **retstr)
 
   /* Fixme: Write an inquire function which returns the result in
      secure memory and check all further handling of the PIN. */
+  assuan_begin_confidential (ctx);
   rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
+  assuan_end_confidential (ctx);
   xfree (command);
   if (rc)
     return rc;
