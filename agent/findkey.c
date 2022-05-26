@@ -1351,14 +1351,14 @@ agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
    at RESULT.  This function extracts the public key from the private
    key database.  On failure an error code is returned and NULL stored
    at RESULT. */
-gpg_error_t
-agent_public_key_from_file (ctrl_t ctrl,
-                            const unsigned char *grip,
-                            gcry_sexp_t *result)
+static gpg_error_t
+public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
+                      gcry_sexp_t *result, int for_ssh)
 {
   gpg_error_t err;
   int i, idx;
   gcry_sexp_t s_skey;
+  nvc_t keymeta = NULL;
   const char *algoname, *elems;
   int npkey;
   gcry_mpi_t array[10];
@@ -1380,9 +1380,31 @@ agent_public_key_from_file (ctrl_t ctrl,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey, NULL);
+  err = read_key_file (grip, &s_skey, for_ssh? &keymeta : NULL);
   if (err)
     return err;
+
+  if (keymeta)
+    {
+      /* Token: <SERIALNO> <IDSTR> */
+      const char *p = nvc_get_string (keymeta, "Token:");
+
+      if (!p)
+        return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+
+      while (*p && !spacep (p))
+        p++;
+
+      if (!*p)
+        return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+
+      p++;
+      if (strcmp (p, "OPENPGP.3"))
+        return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+
+      nvc_release (keymeta);
+      keymeta = NULL;
+    }
 
   for (i=0; i < DIM (array); i++)
     array[i] = NULL;
@@ -1470,6 +1492,22 @@ agent_public_key_from_file (ctrl_t ctrl,
   if (!err)
     *result = list;
   return err;
+}
+
+gpg_error_t
+agent_public_key_from_file (ctrl_t ctrl,
+                            const unsigned char *grip,
+                            gcry_sexp_t *result)
+{
+  return public_key_from_file (ctrl, grip, result, 0);
+}
+
+gpg_error_t
+agent_ssh_key_from_file (ctrl_t ctrl,
+                         const unsigned char *grip,
+                         gcry_sexp_t *result)
+{
+  return public_key_from_file (ctrl, grip, result, 1);
 }
 
 

@@ -468,6 +468,9 @@ gpg_error_t agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
+gpg_error_t agent_ssh_key_from_file (ctrl_t ctrl,
+                                     const unsigned char *grip,
+                                     gcry_sexp_t *result);
 int agent_pk_get_algo (gcry_sexp_t s_key);
 int agent_is_tpm2_key(gcry_sexp_t s_key);
 int agent_key_available (const unsigned char *grip);

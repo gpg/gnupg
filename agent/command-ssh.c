@@ -2449,48 +2449,194 @@ card_key_available (ctrl_t ctrl, const struct card_key_info_s *keyinfo,
   return 0;
 }
 
+static struct card_key_info_s *
+get_ssh_keyinfo_on_cards (ctrl_t ctrl)
+{
+  struct card_key_info_s *keyinfo_on_cards = NULL;
+  gpg_error_t err;
+  char *serialno;
+
+  if (opt.disable_daemon[DAEMON_SCD])
+    return NULL;
+
+  /* Scan for new device(s).  */
+  err = agent_card_serialno (ctrl, &serialno, NULL);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info (_("error getting list of cards: %s\n"),
+                  gpg_strerror (err));
+      return NULL;
+    }
+
+  xfree (serialno);
+
+  err = agent_card_keyinfo (ctrl, NULL, GCRY_PK_USAGE_AUTH, &keyinfo_on_cards);
+  if (err)
+    return NULL;
+
+  return keyinfo_on_cards;
+}
+
 static gpg_error_t
 ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
 {
   gpg_error_t err;
+  char *dirname;
+  gnupg_dir_t dir = NULL;
+  gnupg_dirent_t dir_entry;
+  char hexgrip[41];
   ssh_control_file_t cf = NULL;
+  struct card_key_info_s *keyinfo_on_cards, *l;
+  char *cardsn;
+  gcry_sexp_t key_public = NULL;
 
   err = open_control_file (&cf, 0);
   if (err)
     return err;
 
-  while (!read_control_file_item (cf))
+  /* First, get information keys available on card(s). */
+  keyinfo_on_cards = get_ssh_keyinfo_on_cards (ctrl);
+
+  /* Then, look at all keys with "OPENPGP.3" idstring.  */
+  /* Look at all the registered and non-disabled keys, in sshcontrol.  */
+  dirname = make_filename_try (gnupg_homedir (),
+                               GNUPG_PRIVATE_KEYS_DIR, NULL);
+  if (!dirname)
     {
+      err = gpg_error_from_syserror ();
+      agent_card_free_keyinfo (keyinfo_on_cards);
+      return err;
+    }
+  dir = gnupg_opendir (dirname);
+  if (!dir)
+    {
+      err = gpg_error_from_syserror ();
+      xfree (dirname);
+      agent_card_free_keyinfo (keyinfo_on_cards);
+      return err;
+    }
+  xfree (dirname);
+
+  while ( (dir_entry = gnupg_readdir (dir)) )
+    {
+      struct card_key_info_s *l_prev = NULL;
+      int disabled, is_ssh;
       unsigned char grip[20];
-      gcry_sexp_t key_public = NULL;
 
-      if (!cf->item.valid)
-        continue; /* Should not happen.  */
-      if (cf->item.disabled)
+      cardsn = NULL;
+      if (strlen (dir_entry->d_name) != 44
+          || strcmp (dir_entry->d_name + 40, ".key"))
         continue;
-      log_assert (strlen (cf->item.hexgrip) == 40);
-      hex2bin (cf->item.hexgrip, grip, sizeof (grip));
+      strncpy (hexgrip, dir_entry->d_name, 40);
+      hexgrip[40] = 0;
 
-      err = agent_public_key_from_file (ctrl, grip, &key_public);
+      if ( hex2bin (hexgrip, grip, 20) < 0 )
+        continue; /* Bad hex string.  */
+
+      /* Check if it's a key on card.  */
+      for (l = keyinfo_on_cards; l; l = l->next)
+        if (!memcmp (l->keygrip, hexgrip, 40))
+          break;
+        else
+          l_prev = l;
+
+      /* Check if it's listed in "ssh_control" file.  */
+      disabled = is_ssh = 0;
+      err = search_control_file (cf, hexgrip, &disabled, NULL, NULL);
+      if (!err)
+        {
+          if (!disabled)
+            is_ssh = 1;
+        }
+      else if (gpg_err_code (err) != GPG_ERR_EOF)
+        break;
+
+      if (l)
+        {
+          err = card_key_available (ctrl, l, &key_public, &cardsn);
+          /* Remove the entry from the list of KEYINFO_ON_CARD */
+          if (l_prev)
+            l_prev->next = l->next;
+          else
+            keyinfo_on_cards = l->next;
+          xfree (l->serialno);
+          xfree (l->idstr);
+          xfree (l->usage);
+          xfree (l);
+          l = NULL;
+        }
+      else if (is_ssh)
+        err = agent_public_key_from_file (ctrl, grip, &key_public);
+      else
+        /* Examine the file if it's suitable for SSH.  */
+        err = agent_ssh_key_from_file (ctrl, grip, &key_public);
       if (err)
         {
-          log_error ("%s:%d: key '%s' skipped: %s\n",
-                     cf->fname, cf->lnr, cf->item.hexgrip,
-                     gpg_strerror (err));
           /* Clear ERR, skiping the key in question.  */
           err = 0;
           continue;
         }
 
-      err = ssh_send_key_public (key_blobs, key_public, NULL);
+      err = ssh_send_key_public (key_blobs, key_public, cardsn);
+      xfree (cardsn);
       if (err)
-        break;
+        {
+          if (opt.verbose)
+            gcry_log_debugsxp ("pubkey", key_public);
+          if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
+              || gpg_err_code (err) == GPG_ERR_INV_CURVE)
+            {
+              /* For example a Brainpool curve or a curve we don't
+               * support at all but a smartcard lists that curve.
+               * We ignore them.  */
+            }
+          else
+            {
+              gcry_sexp_release (key_public);
+              break;
+            }
+        }
 
       gcry_sexp_release (key_public);
       (*key_counter_p)++;
     }
 
-  close_control_file (cf);
+  gnupg_closedir (dir);
+  ssh_close_control_file (cf);
+
+  /* Lastly, handle remaining keys which don't have the stub files.  */
+  for (l = keyinfo_on_cards; l; l = l->next)
+     {
+       cardsn = NULL;
+       if (card_key_available (ctrl, l, &key_public, &cardsn))
+         continue;
+
+       err = ssh_send_key_public (key_blobs, key_public, cardsn);
+       xfree (cardsn);
+       if (err)
+         {
+           if (opt.verbose)
+             gcry_log_debugsxp ("pubkey", key_public);
+           if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
+               || gpg_err_code (err) == GPG_ERR_INV_CURVE)
+             {
+               /* For example a Brainpool curve or a curve we don't
+                * support at all but a smartcard lists that curve.
+                * We ignore them.  */
+             }
+           else
+             {
+               gcry_sexp_release (key_public);
+               break;
+             }
+         }
+       else
+         (*key_counter_p)++;
+     }
+
+  agent_card_free_keyinfo (keyinfo_on_cards);
+
   return err;
 }
 
@@ -2528,72 +2674,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
       goto out;
     }
 
-  /* First check whether a key is currently available in the card
-     reader - this should be allowed even without being listed in
-     sshcontrol. */
-
-  if (!opt.disable_daemon[DAEMON_SCD])
-    {
-      char *serialno;
-      struct card_key_info_s *keyinfo_list;
-      struct card_key_info_s *keyinfo;
-
-      /* Scan device(s), and get list of KEYGRIP.  */
-      err = agent_card_serialno (ctrl, &serialno, NULL);
-      if (!err)
-        {
-          xfree (serialno);
-          err = agent_card_keyinfo (ctrl, NULL, GCRY_PK_USAGE_AUTH,
-                                    &keyinfo_list);
-        }
-
-      if (err)
-        {
-          if (opt.verbose)
-            log_info (_("error getting list of cards: %s\n"),
-                      gpg_strerror (err));
-          goto scd_out;
-        }
-
-      for (keyinfo = keyinfo_list; keyinfo; keyinfo = keyinfo->next)
-        {
-          char *cardsn;
-          gcry_sexp_t key_public = NULL;
-
-          if (card_key_available (ctrl, keyinfo, &key_public, &cardsn))
-            continue;
-
-          err = ssh_send_key_public (key_blobs, key_public, cardsn);
-          xfree (cardsn);
-          if (err)
-            {
-              if (opt.verbose)
-                gcry_log_debugsxp ("pubkey", key_public);
-              if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
-                  || gpg_err_code (err) == GPG_ERR_INV_CURVE)
-                {
-                  /* For example a Brainpool curve or a curve we don't
-                   * support at all but a smartcard lists that curve.
-                   * We ignore them.  */
-                }
-              else
-                {
-                  agent_card_free_keyinfo (keyinfo_list);
-                  gcry_sexp_release (key_public);
-                  goto out;
-                }
-            }
-          else
-            key_counter++;
-
-          gcry_sexp_release (key_public);
-        }
-
-      agent_card_free_keyinfo (keyinfo_list);
-    }
-
- scd_out:
-  /* Then look at all the registered and non-disabled keys. */
   err = ssh_send_available_keys (ctrl, key_blobs, &key_counter);
   if (!err)
     {
