@@ -1384,26 +1384,38 @@ public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
   if (err)
     return err;
 
-  if (keymeta)
+  if (for_ssh)
     {
+      /* Use-for-ssh: yes          */
       /* Token: <SERIALNO> <IDSTR> */
-      const char *p = nvc_get_string (keymeta, "Token:");
+      const char *p;
+      int is_ssh = 0;
 
-      if (!p)
+      if (keymeta == NULL)
         return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
 
-      while (*p && !spacep (p))
-        p++;
+      if ((p = nvc_get_string (keymeta, "Use-for-ssh:"))
+          && !strcmp (p, "yes"))
+        is_ssh = 1;
 
-      if (!*p)
-        return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+      if ((p = nvc_get_string (keymeta, "Token:")))
+        {
+          while (*p && !spacep (p))
+            p++;
 
-      p++;
-      if (strcmp (p, "OPENPGP.3"))
-        return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+          if (*p)
+            {
+              p++;
+              if (!strcmp (p, "OPENPGP.3"))
+                is_ssh = 1;
+            }
+        }
 
       nvc_release (keymeta);
       keymeta = NULL;
+
+      if (!is_ssh)
+        return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
   for (i=0; i < DIM (array); i++)
