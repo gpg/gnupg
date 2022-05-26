@@ -140,7 +140,8 @@ gpg_error_t send_status_direct (ctrl_t ctrl,
 gpg_error_t send_status_printf (ctrl_t ctrl, const char *keyword,
                                 const char *format, ...) GPGRT_ATTR_PRINTF(3,4);
 void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
-                   const char *serialno, const char *idstr);
+                   const char *serialno, const char *idstr,
+                   const char *usage);
 
 void pincache_put (ctrl_t ctrl, int slot, const char *appname,
                    const char *pinref, const char *pin, unsigned int pinlen);

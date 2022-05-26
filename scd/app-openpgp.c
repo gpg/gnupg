@@ -2043,6 +2043,21 @@ get_public_key (app_t app, int keyno)
 }
 
 
+static const char *
+get_usage_string (int keyno)
+{
+  const char *usage;
+  switch (keyno)
+    {
+    case 0: usage = "sc"; break;
+    case 1: usage = "e";  break;
+    case 2: usage = "sa"; break;
+    default: usage = "-";  break;
+    }
+  return usage;
+}
+
+
 /* Send the KEYPAIRINFO back. KEY needs to be in the range [1,3].
    This is used by the LEARN command. */
 static gpg_error_t
@@ -2062,13 +2077,7 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
   if (!app->app_local->pk[keyno].key)
     goto leave; /* No such key - ignore. */
 
-  switch (keyno)
-    {
-    case 0: usage = "sc"; break;
-    case 1: usage = "e";  break;
-    case 2: usage = "sa"; break;
-    default: usage = "-";  break;
-    }
+  usage = get_usage_string (keyno);
 
   if (retrieve_fprtime_from_card (app, keyno, &fprtime))
     fprtime = 0;
@@ -5920,12 +5929,13 @@ send_keyinfo_if_available (app_t app, ctrl_t ctrl, char *serial,
                            int data, int i)
 {
   char idbuf[50];
+  const char *usage = get_usage_string (i);
 
   if (app->app_local->pk[i].read_done)
     {
       sprintf (idbuf, "OPENPGP.%d", i+1);
       send_keyinfo (ctrl, data,
-                    app->app_local->pk[i].keygrip_str, serial, idbuf);
+                    app->app_local->pk[i].keygrip_str, serial, idbuf, usage);
     }
 }
 

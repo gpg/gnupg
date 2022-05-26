@@ -2235,7 +2235,7 @@ static const char hlp_keyinfo[] =
   "Unless --data is given, the\n"
   "information is returned as a status line using the format:\n"
   "\n"
-  "  KEYINFO <keygrip> T <serialno> <idstr>\n"
+  "  KEYINFO <keygrip> T <serialno> <idstr> <usage>\n"
   "\n"
   "KEYGRIP is the keygrip.\n"
   "\n"
@@ -2243,8 +2243,12 @@ static const char hlp_keyinfo[] =
   "         smartcard.  If the serial number is not known a single\n"
   "         dash '-' is used instead.\n"
   "\n"
-  "IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it\n"
+  "IDSTR is a string used to distinguish keys on a smartcard.  If it\n"
   "      is not known a dash is used instead.\n"
+  "\n"
+  "USAGE is a string of capabilities of the key, 's' for sign, \n"
+  "'e' for encryption, 'a' for auth, and 'c' for cert.  If it is not\n"
+  "known a dash is used instead.\n"
   "\n"
   "More information may be added in the future.";
 static gpg_error_t
@@ -2290,14 +2294,15 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
  * line.  */
 void
 send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
-              const char *serialno, const char *idstr)
+              const char *serialno, const char *idstr, const char *usage)
 {
   char *string;
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
 
-  string = xtryasprintf ("%s T %s %s%s", keygrip_str,
+  string = xtryasprintf ("%s T %s %s %s%s", keygrip_str,
                          serialno? serialno : "-",
                          idstr? idstr : "-",
+                         usage? usage : "-",
                          data? "\n" : "");
 
   if (!string)

@@ -3529,6 +3529,13 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
         }
       else if (!want_keygripstr || !strcmp (keygripstr, want_keygripstr))
         {
+          const char *usage;
+
+          if (data_objects[i].usage)
+            usage = data_objects[i].usage;
+          else
+            usage = "-";
+
           if (capability == GCRY_PK_USAGE_SIGN)
             {
               if (strcmp (data_objects[i].keyref, "9C"))
@@ -3546,7 +3553,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
             }
 
           snprintf (idbuf, sizeof idbuf, "PIV.%s", data_objects[i].keyref);
-          send_keyinfo (ctrl, data, keygripstr, serialno, idbuf);
+          send_keyinfo (ctrl, data, keygripstr, serialno, idbuf, usage);
           if (want_keygripstr)
             {
               err = 0; /* Found */

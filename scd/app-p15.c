@@ -4110,6 +4110,47 @@ keyref_from_prkdf (app_t app, prkdf_object_t prkdf)
 }
 
 
+static void
+set_usage_string (char usage[5], prkdf_object_t prkdf)
+{
+  size_t usagelen = 0;
+  if (prkdf->gpgusage.any)
+    {
+      if (prkdf->gpgusage.sign)
+        usage[usagelen++] = 's';
+      if (prkdf->gpgusage.cert)
+        usage[usagelen++] = 'c';
+      if (prkdf->gpgusage.encr)
+        usage[usagelen++] = 'e';
+      if (prkdf->gpgusage.auth)
+        usage[usagelen++] = 'a';
+    }
+  else
+    {
+      if ((prkdf->usageflags.sign
+           || prkdf->usageflags.sign_recover
+           || prkdf->usageflags.non_repudiation)
+          && (!prkdf->extusage.valid
+              || prkdf->extusage.sign))
+        usage[usagelen++] = 's';
+      if ((prkdf->usageflags.sign
+           || prkdf->usageflags.sign_recover)
+          && (!prkdf->extusage.valid || prkdf->extusage.sign))
+        usage[usagelen++] = 'c';
+      if ((prkdf->usageflags.decrypt
+           || prkdf->usageflags.unwrap)
+          && (!prkdf->extusage.valid || prkdf->extusage.encr))
+        usage[usagelen++] = 'e';
+      if ((prkdf->usageflags.sign
+           || prkdf->usageflags.sign_recover)
+          && (!prkdf->extusage.valid || prkdf->extusage.auth))
+        usage[usagelen++] = 'a';
+    }
+  if (!usagelen)
+    usage[usagelen++] = '-';
+  usage[usagelen++] = 0;
+}
+
 /* Helper to do_learn_status: Send information about all known
    keypairs back.  FIXME: much code duplication from
    send_certinfo(). */
@@ -4140,40 +4181,6 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
           char usage[5];
           char keytime[20];
           const char *algostr;
-          size_t usagelen = 0;
-
-          if (prkdf->gpgusage.any)
-            {
-              if (prkdf->gpgusage.sign)
-                usage[usagelen++] = 's';
-              if (prkdf->gpgusage.cert)
-                usage[usagelen++] = 'c';
-              if (prkdf->gpgusage.encr)
-                usage[usagelen++] = 'e';
-              if (prkdf->gpgusage.auth)
-                usage[usagelen++] = 'a';
-            }
-          else
-            {
-              if ((prkdf->usageflags.sign
-                   || prkdf->usageflags.sign_recover
-                   || prkdf->usageflags.non_repudiation)
-                  && (!prkdf->extusage.valid
-                      || prkdf->extusage.sign))
-                usage[usagelen++] = 's';
-              if ((prkdf->usageflags.sign
-                   || prkdf->usageflags.sign_recover)
-                  && (!prkdf->extusage.valid || prkdf->extusage.sign))
-                usage[usagelen++] = 'c';
-              if ((prkdf->usageflags.decrypt
-                   || prkdf->usageflags.unwrap)
-                  && (!prkdf->extusage.valid || prkdf->extusage.encr))
-                usage[usagelen++] = 'e';
-              if ((prkdf->usageflags.sign
-                   || prkdf->usageflags.sign_recover)
-                  && (!prkdf->extusage.valid || prkdf->extusage.auth))
-                usage[usagelen++] = 'a';
-            }
 
           log_assert (strlen (prkdf->keygrip) == 40);
           if (prkdf->keytime && prkdf->have_keytime)
@@ -4184,10 +4191,11 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t prkdf)
 
           algostr = prkdf->keyalgostr;
 
+          set_usage_string (usage, prkdf);
           send_status_info (ctrl, "KEYPAIRINFO",
                             prkdf->keygrip, 2*KEYGRIP_LEN,
                             buf, strlen (buf),
-                            usage, usagelen,
+                            usage, strlen (usage),
                             keytime, strlen (keytime),
                             algostr, strlen (algostr?algostr:""),
                             NULL, (size_t)0);
@@ -6017,6 +6025,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
       else if (!want_keygripstr || !strcmp (prkdf->keygrip, want_keygripstr))
         {
           char *keyref;
+          char usage[5];
 
           if (capability == GCRY_PK_USAGE_SIGN)
             {
@@ -6042,7 +6051,8 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
               goto leave;
             }
 
-          send_keyinfo (ctrl, as_data, prkdf->keygrip, serialno, keyref);
+          set_usage_string (usage, prkdf);
+          send_keyinfo (ctrl, as_data, prkdf->keygrip, serialno, keyref, usage);
           xfree (keyref);
           if (want_keygripstr)
             {
