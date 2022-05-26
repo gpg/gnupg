@@ -1903,14 +1903,15 @@ scd_command_handler (ctrl_t ctrl, int fd)
  * data line, else as a status line.  */
 void
 send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
-              const char *serialno, const char *idstr)
+              const char *serialno, const char *idstr, const char *usage)
 {
   char *string;
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
 
-  string = xtryasprintf ("%s T %s %s%s", keygrip_str,
+  string = xtryasprintf ("%s T %s %s %s%s", keygrip_str,
                          serialno? serialno : "-",
                          idstr? idstr : "-",
+                         usage? usage : "-",
                          data? "\n" : "");
 
   if (!string)

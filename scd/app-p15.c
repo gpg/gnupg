@@ -6030,7 +6030,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
               goto leave;
             }
 
-          send_keyinfo (ctrl, as_data, prkdf->keygrip, serialno, keyref);
+          send_keyinfo (ctrl, as_data, prkdf->keygrip, serialno, keyref, NULL);
           xfree (keyref);
           if (want_keygripstr)
             {

@@ -815,6 +815,21 @@ get_nks_tag (app_t app, int nks_app_id)
 }
 
 static void
+set_usage_string (char usagebuf[5], int i)
+{
+  int usageidx = 0;
+  if (filelist[i].issignkey)
+    usagebuf[usageidx++] = 's';
+  if (filelist[i].isauthkey)
+    usagebuf[usageidx++] = 'a';
+  if (filelist[i].isencrkey)
+    usagebuf[usageidx++] = 'e';
+  if (!usageidx)
+    usagebuf[usageidx++] = '-';
+  usagebuf[usageidx] = 0;
+}
+
+static void
 do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
                       int nks_app_id)
 {
@@ -856,7 +871,6 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
         {
           char gripstr[40+1];
           char usagebuf[5];
-          int usageidx = 0;
           char *algostr = NULL;
 
           err = keygripstr_from_pk_file (app, filelist[i].fid,
@@ -869,15 +883,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags,
             {
               snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X",
                         tag, filelist[i].fid);
-              if (filelist[i].issignkey)
-                usagebuf[usageidx++] = 's';
-              if (filelist[i].isauthkey)
-                usagebuf[usageidx++] = 'a';
-              if (filelist[i].isencrkey)
-                usagebuf[usageidx++] = 'e';
-              if (!usageidx)
-                usagebuf[usageidx++] = '-';
-              usagebuf[usageidx] = 0;
+              set_usage_string (usagebuf, i);
               send_status_info (ctrl, "KEYPAIRINFO",
                                 gripstr, 40,
                                 id_buf, strlen (id_buf),
@@ -1285,7 +1291,6 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
         {
           char *algostr;
           char usagebuf[5];
-          int usageidx = 0;
           char id_buf[100];
 
           if (app_help_get_keygrip_string_pk (*pk, *pklen, NULL, NULL, NULL,
@@ -1295,15 +1300,7 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
           snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X",
                     get_nks_tag (app, filelist[i].nks_app_id),
                     filelist[i].fid);
-          if (filelist[i].issignkey)
-            usagebuf[usageidx++] = 's';
-          if (filelist[i].isauthkey)
-            usagebuf[usageidx++] = 'a';
-          if (filelist[i].isencrkey)
-            usagebuf[usageidx++] = 'e';
-          if (!usageidx)
-            usagebuf[usageidx++] = '-';
-          usagebuf[usageidx] = 0;
+          set_usage_string (usagebuf, i);
           send_status_info (ctrl, "KEYPAIRINFO",
                             keygripstr, strlen (keygripstr),
                             id_buf, strlen (id_buf),
@@ -2337,6 +2334,7 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
         {
           char idbuf[20];
           const char *tagstr;
+          char usagebuf[5];
 
           if (app->app_local->active_nks_app == NKS_APP_ESIGN)
             tagstr = "ESIGN";
@@ -2351,7 +2349,8 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
 
           snprintf (idbuf, sizeof idbuf, "NKS-%s.%04X",
                     tagstr, filelist[idx].fid);
-          send_keyinfo (ctrl, data, keygripstr, serialno, idbuf);
+          set_usage_string (usagebuf, idx);
+          send_keyinfo (ctrl, data, keygripstr, serialno, idbuf, usagebuf);
         }
     }
 

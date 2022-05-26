@@ -126,7 +126,8 @@ const char *scd_get_socket_name (void);
 gpg_error_t initialize_module_command (void);
 int  scd_command_handler (ctrl_t, int);
 void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
-                   const char *serialno, const char *idstr);
+                   const char *serialno, const char *idstr,
+                   const char *usage);
 void send_status_info (ctrl_t ctrl, const char *keyword, ...)
      GPGRT_ATTR_SENTINEL(1);
 gpg_error_t send_status_direct (ctrl_t ctrl, const char *keyword,
