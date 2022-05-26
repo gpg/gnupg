@@ -939,6 +939,7 @@ card_keyinfo_cb (void *opaque, const char *line)
       int n;
       struct card_key_info_s **l_p = &parm->list;
 
+      /* It's going to append the information at the end.  */
       while ((*l_p))
         l_p = &(*l_p)->next;
 
@@ -976,7 +977,7 @@ card_keyinfo_cb (void *opaque, const char *line)
         ;
 
       if (!n)
-        goto parm_error;
+        goto skip;
 
       keyinfo->serialno = xtrymalloc (n+1);
       if (!keyinfo->serialno)
@@ -988,18 +989,34 @@ card_keyinfo_cb (void *opaque, const char *line)
       line = s;
 
       if (!*line)
-        goto parm_error;
+        goto skip;
 
       while (spacep (line))
         line++;
 
       if (!*line)
-        goto parm_error;
+        goto skip;
 
-      keyinfo->idstr = xtrystrdup (line);
+      for (s = line; *s && !spacep (s); s++)
+        ;
+
+      keyinfo->idstr = xtrymalloc (s - line + 1);
       if (!keyinfo->idstr)
         goto alloc_error;
+      memcpy (keyinfo->idstr, line, s - line);
+      keyinfo->idstr[s - line] = 0;
 
+      while (spacep (s))
+        s++;
+
+      if (!*s)
+        goto skip;
+
+      keyinfo->usage = xtrystrdup (s);
+      if (!keyinfo->usage)
+        goto alloc_error;
+
+    skip:
       *l_p = keyinfo;
     }
   else if (keywordlen == 12 && !memcmp (keyword, "PINCACHE_PUT", keywordlen))
@@ -1008,6 +1025,8 @@ card_keyinfo_cb (void *opaque, const char *line)
   return err;
 
  alloc_error:
+  xfree (keyinfo->serialno);
+  xfree (keyinfo->idstr);
   xfree (keyinfo);
   if (!parm->error)
     parm->error = gpg_error_from_syserror ();
@@ -1031,6 +1050,7 @@ agent_card_free_keyinfo (struct card_key_info_s *l)
       l_next = l->next;
       xfree (l->serialno);
       xfree (l->idstr);
+      xfree (l->usage);
       xfree (l);
     }
 }

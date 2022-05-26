@@ -392,6 +392,7 @@ struct card_key_info_s
   char keygrip[41];
   char *serialno;
   char *idstr;
+  char *usage;
 };
 
 /*-- gpg-agent.c --*/
