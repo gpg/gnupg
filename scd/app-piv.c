@@ -1516,7 +1516,7 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
                      gpg_strerror (err));
           goto leave;
         }
-      usage = dobj->usage? dobj->usage : "";
+      usage = dobj->usage? dobj->usage : "-";
 
       snprintf (idbuf, sizeof idbuf, "PIV.%s", dobj->keyref);
       send_status_info (ctrl, "KEYPAIRINFO",
