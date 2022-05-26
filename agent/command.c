@@ -445,10 +445,13 @@ leave_cmd (assuan_context_t ctx, gpg_error_t err)
 /* Take the keyinfo for cards from our local cache.  Actually this
  * cache could be a global one but then we would need to employ
  * reference counting.  */
-struct card_key_info_s *
+static struct card_key_info_s *
 get_keyinfo_on_cards (ctrl_t ctrl)
 {
-  struct card_key_info_s *keyinfo_on_cards;
+  struct card_key_info_s *keyinfo_on_cards = NULL;
+
+  if (opt.disable_daemon[DAEMON_SCD])
+    return NULL;
 
   if (ctrl->server_local->last_card_keyinfo.ki
       && ctrl->server_local->last_card_keyinfo.eventno == eventcounter.card
