@@ -976,14 +976,25 @@ prompt_for_card (ctrl_t ctrl, const unsigned char *grip,
   char hexgrip[41];
   char *comment_buffer = NULL;
   const char *comment = NULL;
+  int refuse_prompt = 0;
 
   bin2hex (grip, 20, hexgrip);
 
-  if (keymeta && (comment = nvc_get_string (keymeta, "Label:")))
+  if (keymeta)
     {
-      if (strchr (comment, '\n')
-          && (comment_buffer = linefeed_to_percent0A (comment)))
-        comment = comment_buffer;
+      const char *p;
+
+      if ((p = nvc_get_string (keymeta, "Prompt:")) && !strcmp (p, "no"))
+        refuse_prompt = 1;
+
+      if ((p = nvc_get_string (keymeta, "Label:")))
+        {
+          if (strchr (p, '\n')
+              && (comment_buffer = linefeed_to_percent0A (p)))
+            comment = comment_buffer;
+          else
+            comment = p;
+        }
     }
 
   err = parse_shadow_info (shadow_info, &want_sn, NULL, NULL);
@@ -1042,6 +1053,12 @@ prompt_for_card (ctrl_t ctrl, const unsigned char *grip,
         }
 
       /* Card is not available.  Prompt the insertion.  */
+      if (refuse_prompt)
+        {
+          err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+          break;
+        }
+
       if (asprintf (&desc,
                     "%s:%%0A%%0A"
                     "  %s%%0A"
