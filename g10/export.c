@@ -2066,6 +2066,12 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                              NULL, NULL);
           commit_kbnode (&keyblock);
         }
+      else if (export_keep_uid || export_drop_subkey)
+        {
+          /* Need to merge so that for example the "usage" property
+           * has been setup.  */
+          merge_keys_and_selfsig (ctrl, keyblock);
+        }
 
       if (export_keep_uid)
         {
