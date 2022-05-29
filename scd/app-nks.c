@@ -509,10 +509,14 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
     {
       struct fid_cache_s *ci;
 
-      for (ci = app->app_local->fid_cache; ci; ci = ci->next)
+      /* FIXME: Our cache structure needs to be revised.  It doesn't
+       * take the app_id into account and we don't have a way to
+       * directly access the FID item if there are several of them
+       * with different app_ids.  We disable the cache for now. */
+      for (ci = app->app_local->fid_cache ; ci; ci = ci->next)
         if (ci->fid && ci->got_keygrip && !strcmp (ci->keygripstr, keyref))
           break;
-      if (ci) /* Cached */
+      if (ci && 0 ) /* Cached (disabled) */
         {
           for (idx=0; filelist[idx].fid; idx++)
             if (filelist[idx].fid == ci->fid)
@@ -960,7 +964,7 @@ readcert_from_ef (app_t app, int fid, unsigned char **cert, size_t *certlen)
       return err;
     }
 
-  if (!buflen || *buffer == 0xff)
+  if (!buflen || *buffer == 0xff || all_zero_p (buffer, buflen))
     {
       log_info ("nks: no certificate contained in FID 0x%04X\n", fid);
       err = gpg_error (GPG_ERR_NOT_FOUND);
@@ -1743,28 +1747,32 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   unsigned char data[83];   /* Must be large enough for a SHA-1 digest
                                + the largest OID prefix. */
   size_t datalen;
+  int algo;
+  unsigned int digestlen;   /* Length of the hash.  */
+  unsigned char oidbuf[64];
+  size_t oidbuflen;
 
   (void)ctrl;
 
   switch (indatalen)
     {
-    case 20: // plain SHA-1 or RMD160 digest
-    case 28: // plain SHA-224 digest
-    case 32: // plain SHA-256 digest
-    case 48: // plain SHA-384 digest
-    case 64: // plain SHA-512 digest
-    case 35: // ASN.1 encoded SHA-1 or RMD160 digest
-    case 47: // ASN.1 encoded SHA-224 digest
-    case 51: // ASN.1 encoded SHA-256 digest
-    case 67: // ASN.1 encoded SHA-384 digest
-    case 83: // ASN.1 encoded SHA-512 digest
-        break;
+    case 20: /* plain SHA-1 or RMD160 digest         */
+    case 28: /* plain SHA-224 digest                 */
+    case 32: /* plain SHA-256 digest                 */
+    case 48: /* plain SHA-384 digest                 */
+    case 64: /* plain SHA-512 digest                 */
+    case 35: /* ASN.1 encoded SHA-1 or RMD160 digest */
+    case 47: /* ASN.1 encoded SHA-224 digest         */
+    case 51: /* ASN.1 encoded SHA-256 digest         */
+    case 67: /* ASN.1 encoded SHA-384 digest         */
+    case 83: /* ASN.1 encoded SHA-512 digest         */
+      break;
     default:
-      log_debug ("invalid length of input data: %zu\n", indatalen);
+      log_info ("nks: invalid length of input data: %zu\n", indatalen);
       return gpg_error (GPG_ERR_INV_VALUE);
     }
 
-  err = find_fid_by_keyref (app, keyidstr, &idx, NULL);
+  err = find_fid_by_keyref (app, keyidstr, &idx, &algo);
   if (err)
     return err;
 
@@ -1783,12 +1791,57 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
   kid = filelist[idx].kid;
 
-  /* Prepare the DER object from INDATA.  */
-  if (app->appversion > 2 && (indatalen == 35
-                              || indatalen == 47
-                              || indatalen == 51
-                              || indatalen == 67
-                              || indatalen == 83))
+  digestlen = gcry_md_get_algo_dlen (hashalgo);
+
+  /* Prepare the input object from INDATA.  */
+  if (algo == GCRY_PK_ECC)
+    {
+      if (digestlen != 32 && digestlen != 48 && digestlen != 64)
+        {
+          log_error ("nks: ECC signing not possible: dlen=%u\n", digestlen);
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
+
+      if (indatalen == digestlen)
+        {
+          /* Already prepared.  */
+          datalen = indatalen;
+          log_assert (datalen <= sizeof data);
+          memcpy (data, indata, datalen);
+        }
+      else if (indatalen > digestlen)
+        {
+          /* Assume a PKCS#1 prefix and remove it.  */
+          oidbuflen = sizeof oidbuf;
+          err = gcry_md_get_asnoid (hashalgo, &oidbuf, &oidbuflen);
+          if (err)
+            {
+              log_error ("nks: no OID for hash algo %d\n", hashalgo);
+              return gpg_error (GPG_ERR_INTERNAL);
+            }
+          if (indatalen != oidbuflen + digestlen
+              || memcmp (indata, oidbuf, oidbuflen))
+            {
+              log_error ("nks: input data too long for ECC: len=%zu\n",
+                         indatalen);
+              return gpg_error (GPG_ERR_INV_VALUE);
+            }
+          datalen = indatalen - oidbuflen;
+          log_assert (datalen <= sizeof data);
+          memcpy (data, (const char*)indata + oidbuflen, datalen);
+        }
+      else
+        {
+          log_error ("nks: input data too short for ECC: len=%zu\n",
+                     indatalen);
+          return gpg_error (GPG_ERR_INV_VALUE);
+        }
+    }
+  else if (app->appversion > 2 && (indatalen == 35
+                                   || indatalen == 47
+                                   || indatalen == 51
+                                   || indatalen == 67
+                                   || indatalen == 83))
     {
       /* Verify that the caller has sent a proper ASN.1 encoded hash
          for RMD160 or SHA-{1,224,256,384,512}. */
@@ -1824,7 +1877,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       memcpy (data, indata, indatalen);
       datalen = 35;
     }
-  /* Concatenate prefix and digest.  */
+  /* Concatenate prefix and digest.
+   * Note that the X macro creates an "else if".  Ugly - I know. */
 #define X(algo,prefix,plaindigestlen) \
   if ((hashalgo == (algo)) && (indatalen == (plaindigestlen))) \
     {                                                          \
@@ -1844,7 +1898,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 #undef X
 
   /* Send an MSE for PSO:Computer_Signature.  */
-  if (app->appversion > 2)
+  if (app->appversion > 2 && app->app_local->active_nks_app != NKS_APP_ESIGN)
     {
       unsigned char mse[6];
 
@@ -1858,8 +1912,9 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
                                          mse, sizeof mse);
     }
 
-  /* We use the Global PIN 1 */
-  if (app->appversion == 15)
+  if (app->app_local->active_nks_app == NKS_APP_ESIGN)
+    pwid = 0x81;
+  else if (app->appversion == 15)
     pwid = 0x03;
   else
     pwid = 0x00;
