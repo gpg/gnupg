@@ -5649,14 +5649,11 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
   else if (prkdf->key_reference_valid)
     {
-      unsigned char mse[6];
+      unsigned char mse[3];
 
-      mse[0] = 0x80;
+      mse[0] = 0x84; /* Select asym. key. */
       mse[1] = 1;
-      mse[2] = 0x13; /* pkcs#1.5, sha-256 */
-      mse[3] = 0x84; /* Select asym. key. */
-      mse[4] = 1;
-      mse[5] = prkdf->key_reference;
+      mse[2] = prkdf->key_reference;
 
       err = iso7816_manage_security_env (app_get_slot (app),
                                          0x41, 0xB6,
