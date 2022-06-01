@@ -1,6 +1,6 @@
 /* app-nks.c - The Telesec NKS card application.
  * Copyright (C) 2004, 2007-2009 Free Software Foundation, Inc.
- * Copyright (C) 2004, 2007-2009, 2013-2015, 2020 g10 Code GmbH
+ * Copyright (C) 2004, 2007-2009, 2013-2015, 2020, 2022 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -100,7 +100,8 @@ static char const aid_idlm[] = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x0c, 0x01 };
 
 static struct
 {
-  int nks_app_id;/* One of the NKS_APP_ constants.  */
+  int nks_app_id;/* One of NKS_APP_*.  Keep them sorted so that no
+                  * unnecessary application switching is needed.  */
   int fid;       /* File ID. */
   int nks_ver;   /* 0 for NKS version 2, 3 for version 3, etc.  */
   int certtype;  /* Type of certificate or 0 if it is not a certificate. */
@@ -211,6 +212,8 @@ static gpg_error_t verify_pin (app_t app, int pwid, const char *desc,
                                gpg_error_t (*pincb)(void*, const char *,
                                                     char **),
                                void *pincb_arg);
+static gpg_error_t parse_keyref (app_t app, const char *keyref,
+                                 int want_keypair, int *r_fididx);
 
 
 
@@ -500,7 +503,7 @@ static gpg_error_t
 find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
 {
   gpg_error_t err;
-  int idx, fid, nks_app_id;
+  int idx;
   char keygripstr[2*KEYGRIP_LEN+1];
 
   if (!keyref || !keyref[0])
@@ -581,45 +584,12 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
     }
   else /* This is a usual keyref.  */
     {
-      if (!ascii_strncasecmp (keyref, "NKS-NKS3.", 9))
-        nks_app_id = NKS_APP_NKS;
-      else if (!ascii_strncasecmp (keyref, "NKS-ESIGN.", 10)
-               && app->app_local->qes_app_id == NKS_APP_ESIGN)
-        nks_app_id = NKS_APP_ESIGN;
-      else if (!ascii_strncasecmp (keyref, "NKS-SIGG.", 9)
-               && app->app_local->qes_app_id == NKS_APP_SIGG)
-        nks_app_id = NKS_APP_SIGG;
-      else if (!ascii_strncasecmp (keyref, "NKS-IDLM.", 9))
-        nks_app_id = NKS_APP_IDLM;
-      else if (!ascii_strncasecmp (keyref, "NKS-DF01.", 9))
-        nks_app_id = NKS_APP_NKS;
-      else
-        {
-          err = gpg_error (GPG_ERR_INV_ID);
-          goto leave;
-        }
-      keyref += nks_app_id == NKS_APP_ESIGN? 10 : 9;
-
-      if (!hexdigitp (keyref) || !hexdigitp (keyref+1)
-          || !hexdigitp (keyref+2) || !hexdigitp (keyref+3)
-          || keyref[4])
-        {
-          err = gpg_error (GPG_ERR_INV_ID);
-          goto leave;
-        }
-      fid = xtoi_4 (keyref);
-      for (idx=0; filelist[idx].fid; idx++)
-        if (filelist[idx].iskeypair && filelist[idx].fid == fid
-            && filelist[idx].nks_app_id == nks_app_id)
-          break;
-      if (!filelist[idx].fid)
-        {
-          err = gpg_error (GPG_ERR_NOT_FOUND);
-          goto leave;
-        }
+      err = parse_keyref (app, keyref, 1, &idx);
+      if (err)
+        goto leave;
       *r_idx = idx;
 
-      err = switch_application (app, nks_app_id);
+      err = switch_application (app, filelist[idx].nks_app_id);
       if (err)
         goto leave;
       if (r_algo)
@@ -799,6 +769,51 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 }
 
 
+/* Parse a keyref (NKS_*.*) and return the corresponding EF as an
+ * index into the filetable.  With WANT_KEYPAIR set a keypair EF is
+ * requested; otherwise also cert EFs are returned.  */
+static gpg_error_t
+parse_keyref (app_t app, const char *keyref, int want_keypair, int *r_fididx)
+{
+  int nks_app_id, fid, idx;
+
+  if (!ascii_strncasecmp (keyref, "NKS-NKS3.", 9))
+    nks_app_id = NKS_APP_NKS;
+  else if (!ascii_strncasecmp (keyref, "NKS-ESIGN.", 10)
+           && (!want_keypair || app->app_local->qes_app_id == NKS_APP_ESIGN))
+    nks_app_id = NKS_APP_ESIGN;
+  else if (!ascii_strncasecmp (keyref, "NKS-SIGG.", 9)
+           && (!want_keypair || app->app_local->qes_app_id == NKS_APP_SIGG))
+    nks_app_id = NKS_APP_SIGG;
+  else if (!ascii_strncasecmp (keyref, "NKS-IDLM.", 9))
+    nks_app_id = NKS_APP_IDLM;
+  else if (!ascii_strncasecmp (keyref, "NKS-DF01.", 9))
+    nks_app_id = NKS_APP_NKS;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+
+  keyref += nks_app_id == NKS_APP_ESIGN? 10 : 9;
+
+  if (!hexdigitp (keyref) || !hexdigitp (keyref+1)
+      || !hexdigitp (keyref+2) || !hexdigitp (keyref+3)
+      || keyref[4])
+    return gpg_error (GPG_ERR_INV_ID);
+  fid = xtoi_4 (keyref);
+  for (idx=0; filelist[idx].fid; idx++)
+    if (filelist[idx].fid == fid
+        && filelist[idx].nks_app_id == nks_app_id
+        && ((want_keypair && filelist[idx].iskeypair)
+            || (!want_keypair
+                && (filelist[idx].certtype || filelist[idx].iskeypair > 0))))
+      break;
+  if (!filelist[idx].fid)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  *r_fididx = idx;
+  return 0;
+}
+
+
 const char *
 get_nks_tag (app_t app, int nks_app_id)
 {
@@ -928,9 +943,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 }
 
 
-
 /* Helper to read a certificate from the file FID.  The function
- * assumes that the the application has already been selected.  */
+ * assumes that the application has already been selected.  */
 static gpg_error_t
 readcert_from_ef (app_t app, int fid, unsigned char **cert, size_t *certlen)
 {
@@ -1055,21 +1069,29 @@ iterate_over_filelist (app_t app, const char *want_keygripstr, int capability,
   for (idx++; filelist[idx].fid; idx++)
     {
       if (filelist[idx].nks_ver > app->appversion)
-        continue;
+        continue; /* EF not support by this card version.  */
 
       if (!filelist[idx].iskeypair)
-        continue;
+        continue; /* Skip - We are only interested in keypairs.  */
 
       if (app->app_local->only_idlm)
         {
+          /* IDLM cards have no other applications we want to switch
+           * to.  We skip all EFs which are not known for IDLM.  */
           if (filelist[idx].nks_app_id != NKS_APP_IDLM)
             continue;
         }
       else
         {
+          /* Skip all EFs which are not for NKS or the card's
+           * implementation for a qualified electoric signature (QES)
+           * which is either the old SIGG or the newer ESIGN.  */
           if (filelist[idx].nks_app_id != NKS_APP_NKS
               && filelist[idx].nks_app_id != app->app_local->qes_app_id)
             continue;
+
+          /* Switch if needed.  Note that the filelist should be
+           * sorted to avoid unnecessary switches.  */
           err = switch_application (app, filelist[idx].nks_app_id);
           if (err)
             {
@@ -1078,6 +1100,8 @@ iterate_over_filelist (app_t app, const char *want_keygripstr, int capability,
             }
         }
 
+      /* Get the keygrip from the EF.  Note that this functions
+       * consults the cache to avoid computing the keygrip again.  */
       err = keygripstr_from_pk_file (app, filelist[idx].fid,
                                      filelist[idx].iskeypair, keygripstr,
                                      NULL, NULL);
@@ -1090,6 +1114,7 @@ iterate_over_filelist (app_t app, const char *want_keygripstr, int capability,
 
       if (want_keygripstr)
         {
+          /* If the keygrip matches the requested one we are ready.  */
           if (!strcmp (keygripstr, want_keygripstr))
             {
               /* Found */
@@ -1097,8 +1122,10 @@ iterate_over_filelist (app_t app, const char *want_keygripstr, int capability,
               return 0;
             }
         }
-      else
+      else /* No keygrip requested - list all .  */
         {
+          /* If a capability has been requested return only keys with
+           * that capability.  */
           if (capability == GCRY_PK_USAGE_SIGN)
             {
               if (!filelist[idx].issignkey)
@@ -1115,7 +1142,7 @@ iterate_over_filelist (app_t app, const char *want_keygripstr, int capability,
                 continue;
             }
 
-          /* Found */
+          /* Found.  Return but save the last idenx of the loop.  */
           *idx_p = idx;
           return 0;
         }
@@ -1129,6 +1156,7 @@ iterate_over_filelist (app_t app, const char *want_keygripstr, int capability,
   return err;
 }
 
+
 /* Read the certificate with id CERTID (as returned by learn_status in
    the CERTINFO status lines) and return it in the freshly allocated
    buffer put into CERT and the length of the certificate put into
@@ -1137,69 +1165,46 @@ static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **cert, size_t *certlen)
 {
-  int i, fid;
+  int idx, fid;
   gpg_error_t err;
-  int nks_app_id;
 
   *cert = NULL;
   *certlen = 0;
 
-  /* Handle the case with KEYGRIP.  */
-  if (strlen (certid) == 40)
+  /* Handle the case with KEYGRIP.  We got a keygrip if the string has
+   * a length of 40 and does not start with an N as in NKS-* */
+  if (certid[0] != 'N' && strlen (certid) == 40)
     {
       char keygripstr[2*KEYGRIP_LEN+1];
 
-      i = -1;
-      err = iterate_over_filelist (app, certid, 0, keygripstr, &i);
+      idx = -1;
+      err = iterate_over_filelist (app, certid, 0, keygripstr, &idx);
       if (err)
         return err;
 
-      if (filelist[i].iskeypair > 0)
-        fid = filelist[i].iskeypair;
-      else
-        fid = filelist[i].fid;
-
-      return readcert_from_ef (app, fid, cert, certlen);
+      /* Switching is not required here because iterate_over_filelist
+       * has already done that.  */
     }
+  else /* This is not a keygrip.  */
+    {
+      err = parse_keyref (app, certid, 0, &idx);
+      if (err)
+        return err;
 
-  if (!strncmp (certid, "NKS-NKS3.", 9))
-    nks_app_id = NKS_APP_NKS;
-  else if (!strncmp (certid, "NKS-ESIGN.", 10))
-    nks_app_id = NKS_APP_ESIGN;
-  else if (!strncmp (certid, "NKS-SIGG.", 9))
-    nks_app_id = NKS_APP_SIGG;
-  else if (!strncmp (certid, "NKS-DF01.", 9))
-    nks_app_id = NKS_APP_NKS;
-  else if (!strncmp (certid, "NKS-IDLM.", 9))
-    nks_app_id = NKS_APP_IDLM;
-  else
-    return gpg_error (GPG_ERR_INV_ID);
-  certid += nks_app_id == NKS_APP_ESIGN? 10 : 9;
-
-  err = switch_application (app, nks_app_id);
-  if (err)
-    return err;
-
-  if (!hexdigitp (certid) || !hexdigitp (certid+1)
-      || !hexdigitp (certid+2) || !hexdigitp (certid+3)
-      || certid[4])
-    return gpg_error (GPG_ERR_INV_ID);
-  fid = xtoi_4 (certid);
-  for (i=0; filelist[i].fid; i++)
-    if ((filelist[i].certtype || filelist[i].iskeypair > 0)
-        && filelist[i].nks_app_id == nks_app_id
-        && filelist[i].fid == fid)
-      break;
-  if (!filelist[i].fid)
-    return gpg_error (GPG_ERR_NOT_FOUND);
+      err = switch_application (app, filelist[idx].nks_app_id);
+      if (err)
+        return err;
+    }
 
   /* If the requested objects is a plain public key, redirect it to
      the corresponding certificate.  The whole system is a bit messy
      because we sometime use the key directly or let the caller
      retrieve the key from the certificate.  The rationale for
      that is to support not-yet stored certificates. */
-  if (filelist[i].iskeypair > 0)
-    fid = filelist[i].iskeypair;
+  if (filelist[idx].iskeypair > 0)
+    fid = filelist[idx].iskeypair;
+  else
+    fid = filelist[idx].fid;
 
   return readcert_from_ef (app, fid, cert, certlen);
 }
@@ -1280,7 +1285,7 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
       xfree (buffer[0]);
       xfree (buffer[1]);
     }
-  else if (strlen (keyid) == 40)
+  else if (keyid[0] != 'N' && strlen (keyid) == 40)
     {
       char keygripstr[2*KEYGRIP_LEN+1];
       int i = -1;
@@ -1396,10 +1401,9 @@ do_writecert (app_t app, ctrl_t ctrl,
    * writecert it won't harm to flush the entire cache.  */
   flush_fid_cache (app);
 
-
   /* The certificates we support all require PW1.CH.  Note that we
    * check that the nks_app_id matches which sorts out CERTID values
-   * which are subkecy to a different nks_app_id.  */
+   * which are subkeys to a different nks_app_id.  */
   desc = parse_pwidstr (app, "PW1.CH", 0, &tmp_app_id, &pwid);
   if (!desc || tmp_app_id != nks_app_id)
     return gpg_error (GPG_ERR_INV_ID);
@@ -1407,7 +1411,7 @@ do_writecert (app_t app, ctrl_t ctrl,
   if (err)
     return err;
 
-    /* Select the file and write the certificate.  */
+  /* Select the file and write the certificate.  */
   err = iso7816_select_file (app_get_slot (app), fid, 0);
   if (err)
     {
@@ -2388,22 +2392,11 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
       else
         {
           char idbuf[20];
-          const char *tagstr;
           char usagebuf[5];
 
-          if (app->app_local->active_nks_app == NKS_APP_ESIGN)
-            tagstr = "ESIGN";
-          else if (app->app_local->active_nks_app == NKS_APP_SIGG)
-            tagstr = "SIGG";
-          else if (app->app_local->active_nks_app == NKS_APP_IDLM)
-            tagstr = "IDLM";
-          else if (app->appversion < 3)
-            tagstr = "DF01";
-          else
-            tagstr = "NKS3";
-
           snprintf (idbuf, sizeof idbuf, "NKS-%s.%04X",
-                    tagstr, filelist[idx].fid);
+                    get_nks_tag (app, app->app_local->active_nks_app),
+                    filelist[idx].fid);
           set_usage_string (usagebuf, idx);
           send_keyinfo (ctrl, data, keygripstr, serialno, idbuf, usagebuf);
         }
