@@ -46,21 +46,6 @@ char *read_w32_registry_string (const char *root,
 				const char *dir, const char *name );
 char *read_w32_reg_string (const char *key);
 
-/* Other stuff.  */
-#ifdef HAVE_W32CE_SYSTEM
-/* Setmode is missing in cegcc but available since CE 5.0.  */
-int _setmode (int handle, int mode);
-# define setmode(a,b)   _setmode ((a),(b))
-
-static inline int
-umask (int a)
-{
-  (void)a;
-  return 0;
-}
-
-
-#endif /*HAVE_W32CE_SYSTEM*/
 
 #endif /*HAVE_W32_SYSTEM*/
 #endif /*GNUPG_COMMON_MISCHELP_H*/

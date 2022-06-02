@@ -66,37 +66,19 @@ endif
 
 libexec_PROGRAMS = gpg-check-pattern gpg-pair-tool
 
-if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS = clean-sat make-dns-cert
-endif
 
-if !HAVE_W32CE_SYSTEM
 if BUILD_GPGTAR
   bin_PROGRAMS += gpgtar
 else
   noinst_PROGRAMS += gpgtar
 endif
-endif
 
 common_libs = $(libcommon)
 commonpth_libs = $(libcommonpth)
 
-# Some modules require PTH under W32CE.
-if HAVE_W32CE_SYSTEM
-maybe_commonpth_libs = $(commonpth_libs)
-else
-maybe_commonpth_libs = $(common_libs)
-endif
-
-if HAVE_W32CE_SYSTEM
-pwquery_libs =
-else
 pwquery_libs = ../common/libsimple-pwquery.a
-endif
 
-if HAVE_W32CE_SYSTEM
-opt_libassuan_libs = $(LIBASSUAN_LIBS)
-endif
 
 regexp_libs = ../regexp/libregexp.a
 
@@ -109,7 +91,7 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c
 
 # common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
-gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
+gpgconf_LDADD = $(common_libs) \
                 $(LIBINTL) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
 	        $(LIBICONV) $(W32SOCKLIBS) \
 	        $(gpgconf_rc_objs)

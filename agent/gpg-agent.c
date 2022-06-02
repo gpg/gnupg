@@ -333,17 +333,12 @@ static struct debug_flags_s debug_flags [] =
 
 /* The timer tick used for housekeeping stuff.  Note that on Windows
  * we use a SetWaitableTimer seems to signal earlier than about 2
- * seconds.  Thus we use 4 seconds on all platforms except for
- * Windowsce.  CHECK_OWN_SOCKET_INTERVAL defines how often we check
+ * seconds.  Thus we use 4 seconds on all platforms.
+ * CHECK_OWN_SOCKET_INTERVAL defines how often we check
  * our own socket in standard socket mode.  If that value is 0 we
  * don't check at all.  All values are in seconds. */
-#if defined(HAVE_W32CE_SYSTEM)
-# define TIMERTICK_INTERVAL         (60)
-# define CHECK_OWN_SOCKET_INTERVAL   (0)  /* Never */
-#else
-# define TIMERTICK_INTERVAL          (4)
-# define CHECK_OWN_SOCKET_INTERVAL  (60)
-#endif
+#define TIMERTICK_INTERVAL          (4)
+#define CHECK_OWN_SOCKET_INTERVAL  (60)
 
 
 /* Flag indicating that the ssh-agent subsystem has been enabled.  */
@@ -2105,7 +2100,7 @@ get_agent_active_connection_count (void)
 /* Under W32, this function returns the handle of the scdaemon
    notification event.  Calling it the first time creates that
    event.  */
-#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
+#if defined(HAVE_W32_SYSTEM)
 void *
 get_agent_daemon_notify_event (void)
 {
@@ -2142,7 +2137,7 @@ get_agent_daemon_notify_event (void)
 
   return the_event;
 }
-#endif /*HAVE_W32_SYSTEM && !HAVE_W32CE_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM*/
 
 
 
@@ -2230,8 +2225,8 @@ create_server_socket (char *name, int primary, int cygwin,
   len = SUN_LEN (unaddr);
   rc = assuan_sock_bind (fd, addr, len);
 
-  /* Our error code mapping on W32CE returns EEXIST thus we also test
-     for this. */
+  /* At least our error code mapping on Windows-CE used to return
+   * EEXIST thus we better test for this on Windows . */
   if (rc == -1
       && (errno == EADDRINUSE
 #ifdef HAVE_W32_SYSTEM
@@ -2895,14 +2890,8 @@ handle_connections (gnupg_fd_t listen_fd,
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
 #else
-# ifdef HAVE_W32CE_SYSTEM
-  /* Use a dummy event. */
-  sigs = 0;
-  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
-# else
   events[0] = get_agent_daemon_notify_event ();
   events[1] = INVALID_HANDLE_VALUE;
-# endif
 #endif
 
   if (disable_check_own_socket)

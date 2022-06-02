@@ -48,13 +48,6 @@
 #define MY_O_BINARY  0
 #endif
 
-/* We use ERRNO despite that the cegcc provided open/read/write
-   functions don't set ERRNO - at least show that ERRNO does not make
-   sense.  */
-#ifdef HAVE_W32CE_SYSTEM
-#undef strerror
-#define strerror(a) ("[errno not available]")
-#endif
 
 /*
  * Yes, this is a very simple implementation. We should really
@@ -730,13 +723,6 @@ tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
       int rc;
       mode_t oldmask;
 
-#ifdef HAVE_W32CE_SYSTEM
-      /* We know how the cegcc implementation of access works ;-). */
-      if (GetLastError () == ERROR_FILE_NOT_FOUND)
-        gpg_err_set_errno (ENOENT);
-      else
-        gpg_err_set_errno (EIO);
-#endif /*HAVE_W32CE_SYSTEM*/
       if (errno && errno != ENOENT)
         log_fatal ( _("can't access '%s': %s\n"), fname, strerror (errno));
 
@@ -797,22 +783,6 @@ open_db ()
 
   log_assert( db_fd == -1 );
 
-#ifdef HAVE_W32CE_SYSTEM
-  {
-    DWORD prevrc = 0;
-    wchar_t *wname = utf8_to_wchar (db_name);
-    if (wname)
-      {
-        db_fd = (int)CreateFile (wname, GENERIC_READ|GENERIC_WRITE,
-                                 FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
-                                 OPEN_EXISTING, 0, NULL);
-        xfree (wname);
-      }
-    if (db_fd == -1)
-      log_fatal ("can't open '%s': %d, %d\n", db_name,
-                 (int)prevrc, (int)GetLastError ());
-  }
-#else /*!HAVE_W32CE_SYSTEM*/
   db_fd = gnupg_open (db_name, O_RDWR | MY_O_BINARY, 0);
   if (db_fd == -1 && (errno == EACCES
 #ifdef EROFS
@@ -827,7 +797,7 @@ open_db ()
   }
   if ( db_fd == -1 )
     log_fatal( _("can't open '%s': %s\n"), db_name, strerror(errno) );
-#endif /*!HAVE_W32CE_SYSTEM*/
+
   register_secured_file (db_name);
 
   /* Read the version record. */

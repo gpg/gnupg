@@ -2974,7 +2974,7 @@ key_matches_user_or_group (char *user)
   /* Under Windows we don't support groups. */
   if (group && *group)
     gc_error (0, 0, _("Note that group specifications are ignored\n"));
-#ifndef HAVE_W32CE_SYSTEM
+
   if (*user)
     {
       static char *my_name;
@@ -2994,8 +2994,9 @@ key_matches_user_or_group (char *user)
       if (!strcmp (user, my_name))
         return 1; /* Found.  */
     }
-#endif /*HAVE_W32CE_SYSTEM*/
+
 #else /*!HAVE_W32_SYSTEM*/
+
   /* First check whether the user matches.  */
   if (*user)
     {
@@ -3054,7 +3055,9 @@ key_matches_user_or_group (char *user)
         if (!strcmp (group, my_supgroups[n]))
           return 1; /* Found.  */
     }
+
 #endif /*!HAVE_W32_SYSTEM*/
+
   return 0; /* No match.  */
 }
 

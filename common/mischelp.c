@@ -81,34 +81,12 @@ same_file_p (const char *name1, const char *name2)
       HANDLE file1, file2;
       BY_HANDLE_FILE_INFORMATION info1, info2;
 
-#ifdef HAVE_W32CE_SYSTEM
-      {
-        wchar_t *wname = utf8_to_wchar (name1);
-        if (wname)
-          file1 = CreateFile (wname, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
-        else
-          file1 = INVALID_HANDLE_VALUE;
-        xfree (wname);
-      }
-#else
       file1 = CreateFile (name1, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
-#endif
       if (file1 == INVALID_HANDLE_VALUE)
         yes = 0; /* If we can't open the file, it is not the same.  */
       else
         {
-#ifdef HAVE_W32CE_SYSTEM
-          {
-            wchar_t *wname = utf8_to_wchar (name2);
-            if (wname)
-              file2 = CreateFile (wname, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
-            else
-              file2 = INVALID_HANDLE_VALUE;
-            xfree (wname);
-          }
-#else
           file2 = CreateFile (name2, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
-#endif
           if (file2 == INVALID_HANDLE_VALUE)
             yes = 0; /* If we can't open the file, it is not the same.  */
           else

@@ -134,9 +134,6 @@ close_message_fd (ctrl_t ctrl)
 {
   if (ctrl->server_local->message_fd != -1)
     {
-#ifdef HAVE_W32CE_SYSTEM
-#warning Is this correct for W32/W32CE?
-#endif
       close (ctrl->server_local->message_fd);
       ctrl->server_local->message_fd = -1;
     }
@@ -871,12 +868,6 @@ cmd_message (assuan_context_t ctx, char *line)
   if (rc)
     return rc;
 
-#ifdef HAVE_W32CE_SYSTEM
-  sysfd = _assuan_w32ce_finish_pipe ((int)sysfd, 0);
-  if (sysfd == INVALID_HANDLE_VALUE)
-    return set_error (gpg_err_code_from_syserror (),
-		      "rvid conversion failed");
-#endif
 
   fd = translate_sys2libc_fd (sysfd, 0);
   if (fd == -1)
@@ -1370,13 +1361,9 @@ gpgsm_server (certlist_t default_recplist)
   /* We use a pipe based server so that we can work from scripts.
      assuan_init_pipe_server will automagically detect when we are
      called with a socketpair and ignore FILEDES in this case. */
-#ifdef HAVE_W32CE_SYSTEM
-  #define SERVER_STDIN es_fileno(es_stdin)
-  #define SERVER_STDOUT es_fileno(es_stdout)
-#else
 #define SERVER_STDIN 0
 #define SERVER_STDOUT 1
-#endif
+
   filedes[0] = assuan_fdopen (SERVER_STDIN);
   filedes[1] = assuan_fdopen (SERVER_STDOUT);
   rc = assuan_new (&ctx);

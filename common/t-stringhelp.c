@@ -83,10 +83,6 @@ mygetcwd (void)
   for (;;)
     {
       buffer = xmalloc (size+1);
-#ifdef HAVE_W32CE_SYSTEM
-      strcpy (buffer, "/");  /* Always "/".  */
-      return buffer;
-#else
       if (getcwd (buffer, size) == buffer)
         {
 #ifdef HAVE_W32_SYSTEM
@@ -105,7 +101,6 @@ mygetcwd (void)
           exit (2);
         }
       size *= 2;
-#endif
     }
 }
 

@@ -59,11 +59,6 @@ w32_strerror (int ec)
 
   if (ec == -1)
     ec = (int)GetLastError ();
-#ifdef HAVE_W32CE_SYSTEM
-  /* There is only a wchar_t FormatMessage.  It does not make much
-     sense to play the conversion game; we print only the code.  */
-  snprintf (strerr, sizeof strerr, "ec=%d", (int)GetLastError ());
-#else
   FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, DIM (strerr)-1, NULL);
@@ -73,7 +68,6 @@ w32_strerror (int ec)
     if (n > 2 && strerr[n-2] == '\r' && strerr[n-1] == '\n' )
       strerr[n-2] = 0;
   }
-#endif
   return strerr;
 }
 

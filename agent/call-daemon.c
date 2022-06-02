@@ -469,9 +469,7 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
     xfree (databuf);
   }
 
-  /* Tell the daemon we want him to send us an event signal.  We
-     don't support this for W32CE.  */
-#ifndef HAVE_W32CE_SYSTEM
+  /* Tell the daemon we want him to send us an event signal.  */
   if (opt.sigusr2_enabled)
     {
       char buf[100];
@@ -484,7 +482,6 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
 #endif
       assuan_transact (ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
     }
-#endif /*HAVE_W32CE_SYSTEM*/
 
   g->primary_ctx = ctx;
   g->primary_ctx_reusable = 0;

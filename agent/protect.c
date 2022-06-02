@@ -122,15 +122,9 @@ static void
 calibrate_get_time (struct calibrate_time_s *data)
 {
 #ifdef HAVE_W32_SYSTEM
-# ifdef HAVE_W32CE_SYSTEM
-  GetThreadTimes (GetCurrentThread (),
-                  &data->creation_time, &data->exit_time,
-                  &data->kernel_time, &data->user_time);
-# else
   GetProcessTimes (GetCurrentProcess (),
                    &data->creation_time, &data->exit_time,
                    &data->kernel_time, &data->user_time);
-# endif
 #elif defined (USE_CLOCK_GETTIME)
   struct timespec tmp;
 

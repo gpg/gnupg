@@ -78,13 +78,8 @@ static unsigned int iobuf_buffer_size = DEFAULT_IOBUF_BUFFER_SIZE;
 
 
 #ifdef HAVE_W32_SYSTEM
-# ifdef HAVE_W32CE_SYSTEM
-#  define FD_FOR_STDIN  (es_fileno (es_stdin))
-#  define FD_FOR_STDOUT (es_fileno (es_stdout))
-# else
-#  define FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
-#  define FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
-# endif
+# define FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
+# define FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
 #else /*!HAVE_W32_SYSTEM*/
 # define FD_FOR_STDIN  (0)
 # define FD_FOR_STDOUT (1)
@@ -1287,14 +1282,8 @@ iobuf_cancel (iobuf_t a)
     {
       /* Argg, MSDOS does not allow removing open files.  So
        * we have to do it here */
-#ifdef HAVE_W32CE_SYSTEM
-      wchar_t *wtmp = utf8_to_wchar (remove_name);
-      if (wtmp)
-        DeleteFile (wtmp);
-      xfree (wtmp);
-#else
       remove (remove_name);
-#endif
+
       xfree (remove_name);
     }
 #endif
@@ -2893,12 +2882,7 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 static int
 translate_file_handle (int fd, int for_write)
 {
-#if defined(HAVE_W32CE_SYSTEM)
-  /* This is called only with one of the special filenames.  Under
-     W32CE the FD here is not a file descriptor but a rendezvous id,
-     thus we need to finish the pipe first.  */
-  fd = _assuan_w32ce_finish_pipe (fd, for_write);
-#elif defined(HAVE_W32_SYSTEM)
+#if defined(HAVE_W32_SYSTEM)
   {
     int x;
 

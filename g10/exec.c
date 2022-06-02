@@ -148,9 +148,6 @@ w32_system(const char *command)
 int
 set_exec_path(const char *path)
 {
-#ifdef HAVE_W32CE_SYSTEM
-#warning Change this code to use common/exechelp.c
-#else
   char *p;
 
   p=xmalloc(5+strlen(path)+1);
@@ -168,6 +165,5 @@ set_exec_path(const char *path)
     return GPG_ERR_GENERAL;
   else
     return 0;
-#endif
 }
 #endif /* ! NO_EXEC */

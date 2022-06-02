@@ -1008,10 +1008,7 @@ do_open (char *line)
   if (fd >= 0 && fd < DIM (open_fd_table))
     {
       open_fd_table[fd].inuse = 1;
-#ifdef HAVE_W32CE_SYSTEM
-# warning fixme: implement our pipe emulation.
-#endif
-#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
+#if defined(HAVE_W32_SYSTEM)
       {
         HANDLE prochandle, handle, newhandle;
 
@@ -1041,12 +1038,12 @@ do_open (char *line)
         log_info ("file '%s' opened in \"%s\" mode, fd=%d  (libc=%d)\n",
                    name, mode, (int)open_fd_table[fd].handle, fd);
       set_int_var (varname, (int)open_fd_table[fd].handle);
-#else
+#else /* Unix */
       if (opt.verbose)
         log_info ("file '%s' opened in \"%s\" mode, fd=%d\n",
                    name, mode, fd);
       set_int_var (varname, fd);
-#endif
+#endif /* Unix */
     }
   else
     {
@@ -2023,11 +2020,7 @@ handle_inquire (assuan_context_t ctx, char *line)
     {
       if (d->is_prog)
         {
-#ifdef HAVE_W32CE_SYSTEM
-          fp = NULL;
-#else
           fp = popen (d->file, "r");
-#endif
           if (!fp)
             log_error ("error executing '%s': %s\n",
                        d->file, strerror (errno));
@@ -2064,10 +2057,8 @@ handle_inquire (assuan_context_t ctx, char *line)
     ;
   else if (d->is_prog)
     {
-#ifndef HAVE_W32CE_SYSTEM
       if (pclose (fp))
         cancelled = 1;
-#endif
     }
   else
     fclose (fp);

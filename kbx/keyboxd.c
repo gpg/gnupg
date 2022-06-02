@@ -146,17 +146,12 @@ static struct debug_flags_s debug_flags [] =
 
 /* The timer tick used for housekeeping stuff.  Note that on Windows
  * we use a SetWaitableTimer seems to signal earlier than about 2
- * seconds.  Thus we use 4 seconds on all platforms except for
- * Windowsce.  CHECK_OWN_SOCKET_INTERVAL defines how often we check
+ * seconds.  Thus we use 4 seconds on all platforms.
+ * CHECK_OWN_SOCKET_INTERVAL defines how often we check
  * our own socket in standard socket mode.  If that value is 0 we
  * don't check at all.  All values are in seconds. */
-#if defined(HAVE_W32CE_SYSTEM)
-# define TIMERTICK_INTERVAL         (60)
-# define CHECK_OWN_SOCKET_INTERVAL   (0)  /* Never */
-#else
 # define TIMERTICK_INTERVAL          (4)
 # define CHECK_OWN_SOCKET_INTERVAL  (60)
-#endif
 
 /* The list of open file descriptors at startup.  Note that this list
  * has been allocated using the standard malloc.  */
@@ -1141,8 +1136,6 @@ create_server_socket (char *name, int cygwin, assuan_sock_nonce_t *nonce)
   len = SUN_LEN (unaddr);
   rc = assuan_sock_bind (fd, addr, len);
 
-  /* Our error code mapping on W32CE returns EEXIST thus we also test
-     for this. */
   if (rc == -1
       && (errno == EADDRINUSE
 #ifdef HAVE_W32_SYSTEM
@@ -1502,13 +1495,7 @@ handle_connections (gnupg_fd_t listen_fd)
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
 #else
-# ifdef HAVE_W32CE_SYSTEM
-  /* Use a dummy event. */
-  sigs = 0;
-  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
-# else
   events[0] = INVALID_HANDLE_VALUE;
-# endif
 #endif
 
   if (disable_check_own_socket)

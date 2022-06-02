@@ -138,12 +138,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
       return err;
     }
 
-#ifdef HAVE_W32CE_SYSTEM
-#warning Need to fix this if we want to use g13
-  opt.outfp = NULL;
-#else
   opt.outfp = es_fdopen_nc (output_fd, "wb");
-#endif
   if (!opt.outfp)
     {
       char xname[64];
