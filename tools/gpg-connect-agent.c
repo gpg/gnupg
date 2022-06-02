@@ -1978,6 +1978,7 @@ handle_inquire (assuan_context_t ctx, char *line)
   FILE *fp = NULL;
   char buffer[1024];
   int rc, n;
+  int cancelled = 0;
 
   /* Skip the command and trailing spaces. */
   for (; *line && !spacep (line); line++)
@@ -2059,21 +2060,22 @@ handle_inquire (assuan_context_t ctx, char *line)
         log_error ("error reading from '%s': %s\n", d->file, strerror (errno));
     }
 
-  rc = assuan_send_data (ctx, NULL, 0);
-  if (rc)
-    log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
-
   if (d->is_var)
     ;
   else if (d->is_prog)
     {
 #ifndef HAVE_W32CE_SYSTEM
       if (pclose (fp))
-        log_error ("error running '%s': %s\n", d->file, strerror (errno));
+        cancelled = 1;
 #endif
     }
   else
     fclose (fp);
+
+  rc = assuan_send_data (ctx, NULL, cancelled);
+  if (rc)
+    log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
+
   return 1;
 }
 
