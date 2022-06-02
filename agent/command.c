@@ -1203,7 +1203,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_readkey[] =
-  "READKEY [--no-data] <hexstring_with_keygrip>\n"
+  "READKEY [--no-data] [--format=ssh] <hexstring_with_keygrip>\n"
   "                    --card <keyid>\n"
   "\n"
   "Return the public key for the given keygrip or keyid.\n"
@@ -1216,20 +1216,22 @@ cmd_readkey (assuan_context_t ctx, char *line)
   unsigned char grip[20];
   gcry_sexp_t s_pkey = NULL;
   unsigned char *pkbuf = NULL;
-  char *serialno = NULL;
-  char *keyidbuf = NULL;
   size_t pkbuflen;
-  int opt_card, opt_no_data;
+  int opt_card, opt_no_data, opt_format_ssh;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
   opt_no_data = has_option (line, "--no-data");
   opt_card = has_option (line, "--card");
+  opt_format_ssh = has_option (line, "--format=ssh");
+
   line = skip_options (line);
 
   if (opt_card)
     {
+      char *serialno = NULL;
+      char *keyidbuf = NULL;
       const char *keyid = line;
 
       rc = agent_card_getattr (ctrl, "SERIALNO", &serialno, NULL);
@@ -1270,7 +1272,8 @@ cmd_readkey (assuan_context_t ctx, char *line)
             goto leave;
         }
 
-        rc = opt_no_data? 0 : assuan_send_data (ctx, pkbuf, pkbuflen);
+      xfree (serialno);
+      xfree (keyidbuf);
     }
   else
     {
@@ -1281,23 +1284,47 @@ cmd_readkey (assuan_context_t ctx, char *line)
       rc = agent_public_key_from_file (ctrl, grip, &s_pkey);
       if (!rc)
         {
-          pkbuflen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-          log_assert (pkbuflen);
-          pkbuf = xtrymalloc (pkbuflen);
-          if (!pkbuf)
-            rc = gpg_error_from_syserror ();
+          if (opt_format_ssh)
+            {
+              estream_t stream = NULL;
+
+              stream = es_fopenmem (0, "r+b");
+              if (!stream)
+                {
+                  rc = gpg_error_from_syserror ();
+                  goto leave;
+                }
+
+              rc = ssh_public_key_in_base64 (s_pkey, stream, "(none)");
+              if (rc)
+                {
+                  es_fclose (stream);
+                  goto leave;
+                }
+
+              rc = es_fclose_snatch (stream, (void **)&pkbuf, &pkbuflen);
+              if (rc)
+                goto leave;
+            }
           else
             {
+              pkbuflen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+              log_assert (pkbuflen);
+              pkbuf = xtrymalloc (pkbuflen);
+              if (!pkbuf)
+                {
+                  rc = gpg_error_from_syserror ();
+                  goto leave;
+                }
               pkbuflen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON,
                                            pkbuf, pkbuflen);
-              rc = opt_no_data? 0 : assuan_send_data (ctx, pkbuf, pkbuflen);
             }
         }
     }
 
+  rc = opt_no_data? 0 : assuan_send_data (ctx, pkbuf, pkbuflen);
+
  leave:
-  xfree (keyidbuf);
-  xfree (serialno);
   xfree (pkbuf);
   gcry_sexp_release (s_pkey);
   return leave_cmd (ctx, rc);
