@@ -1451,6 +1451,13 @@ non-control characters.
 Decode data lines.  That is to remove percent escapes but make sure that
 a new line always starts with a D and a space.
 
+@item -u
+@itemx --unbuffered
+@opindex unbuffered
+Set stdin and stdout into unbuffered I/O mode.  This this sometimes
+useful for scripting.
+
+
 @end table
 
 @mansect control commands

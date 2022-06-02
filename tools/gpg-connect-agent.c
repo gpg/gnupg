@@ -58,6 +58,7 @@ enum cmd_and_opt_values
     oExec       = 'E',
     oRun        = 'r',
     oSubst      = 's',
+    oUnBuffered = 'u',
 
     oNoVerbose	= 500,
     oHomedir,
@@ -73,7 +74,6 @@ enum cmd_and_opt_values
     oNoHistory,
     oNoAutostart,
     oChUid,
-    oUnBuffered = 'u',
 
     oNoop
   };
@@ -111,7 +111,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
   ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
   ARGPARSE_s_s (oChUid,          "chuid",           "@"),
-  ARGPARSE_s_n (oUnBuffered,     "unbuffered", N_("Set stdin/out unbuffered")),
+  ARGPARSE_s_n (oUnBuffered,     "unbuffered", N_("set stdin/out unbuffered")),
 
   ARGPARSE_end ()
 };
