@@ -73,6 +73,7 @@ enum cmd_and_opt_values
     oNoHistory,
     oNoAutostart,
     oChUid,
+    oUnBuffered = 'u',
 
     oNoop
   };
@@ -110,6 +111,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
   ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
   ARGPARSE_s_s (oChUid,          "chuid",           "@"),
+  ARGPARSE_s_n (oUnBuffered,     "unbuffered", N_("Set stdin/out unbuffered")),
 
   ARGPARSE_end ()
 };
@@ -137,6 +139,7 @@ struct
   int enable_varsubst;  /* Set if variable substitution is enabled.  */
   int trim_leading_spaces;
   int no_history;
+  int unbuffered; /* Set if unbuffered mode for stdin/out is preferred.  */
 } opt;
 
 
@@ -1242,6 +1245,7 @@ main (int argc, char **argv)
           opt.trim_leading_spaces = 1;
           break;
         case oChUid:     changeuser = pargs.r.ret_str; break;
+        case oUnBuffered: opt.unbuffered = 1; break;
 
         default: pargs.err = 2; break;
 	}
@@ -1402,6 +1406,11 @@ main (int argc, char **argv)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
     }
 
+  if (!script_fp && opt.unbuffered)
+    {
+      gpgrt_setvbuf (gpgrt_stdin, NULL, _IONBF, 0);
+      setvbuf (stdout, NULL, _IONBF, 0);
+    }
 
   for (loopidx=0; loopidx < DIM (loopstack); loopidx++)
     loopstack[loopidx].collecting = 0;
