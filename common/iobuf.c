@@ -1197,14 +1197,7 @@ iobuf_cancel (iobuf_t a)
     {
       /* Argg, MSDOS does not allow removing open files.  So
        * we have to do it here */
-#ifdef HAVE_W32CE_SYSTEM
-      wchar_t *wtmp = utf8_to_wchar (remove_name);
-      if (wtmp)
-        DeleteFile (wtmp);
-      xfree (wtmp);
-#else
-      remove (remove_name);
-#endif
+      gnupg_remove (remove_name);
       xfree (remove_name);
     }
 #endif
