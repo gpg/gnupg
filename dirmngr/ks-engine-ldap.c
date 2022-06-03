@@ -544,8 +544,13 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
     }
   else if (bindname)
     {
+
       npth_unprotect ();
-      lerr = ldap_simple_bind_s (ldap_conn, bindname, password);
+      /* Older Windows header dont have the const for the last two args.
+       * Thus we need to cast to avoid warnings.  */
+      lerr = ldap_simple_bind_s (ldap_conn,
+                                 (char * const)bindname,
+                                 (char * const)password);
       npth_protect ();
       if (lerr != LDAP_SUCCESS)
 	{

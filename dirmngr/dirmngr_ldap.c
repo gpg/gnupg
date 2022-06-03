@@ -747,7 +747,7 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 
 /* Fetch data from the server at LD using FILTER.  */
 static int
-fetch_ldap (LDAP *ld, const char *base, int scope, const char *filter)
+fetch_ldap (LDAP *ld, char *base, int scope, char *filter)
 {
   gpg_error_t err;
   int lerr;
