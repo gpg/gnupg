@@ -1282,7 +1282,7 @@ iobuf_cancel (iobuf_t a)
     {
       /* Argg, MSDOS does not allow removing open files.  So
        * we have to do it here */
-      remove (remove_name);
+      gnupg_remove (remove_name);
 
       xfree (remove_name);
     }
