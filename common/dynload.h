@@ -34,6 +34,9 @@
 #ifndef __MINGW32__
 # include <dlfcn.h>
 #else
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>  /* needs to be included before windows.h */
+# endif
 # include <windows.h>
 # include "utf8conv.h"
 # include "mischelp.h"
