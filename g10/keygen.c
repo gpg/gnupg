@@ -568,7 +568,7 @@ keygen_set_std_prefs (const char *string,int personal)
 		    for (i=0; i<naead; i++)
 		      {
 			opt.personal_aead_prefs[i].type = PREFTYPE_AEAD;
-			opt.personal_aead_prefs[i].value = sym[i];
+			opt.personal_aead_prefs[i].value = aead[i];
 		      }
 
 		    opt.personal_aead_prefs[i].type = PREFTYPE_NONE;
