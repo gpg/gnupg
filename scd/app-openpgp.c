@@ -2266,7 +2266,28 @@ do_readcert (app_t app, const char *certid,
 
   *cert = NULL;
   *certlen = 0;
-  if (!ascii_strcasecmp (certid, "OPENPGP.3"))
+  if (strlen (certid) == 40)
+    {
+      int keyno;
+      const unsigned char *keygrip_str;
+
+      for (keyno = 0; keyno < 3; keyno++)
+        {
+          keygrip_str = app->app_local->pk[keyno].keygrip_str;
+          if (!strncmp (keygrip_str, certid, 40))
+            break;
+        }
+
+      if (keyno == 2)
+        ;
+      else if (keyno == 1)
+        occurrence = 1;
+      else if (keyno == 0)
+        occurrence = 2;
+      else
+        return gpg_error (GPG_ERR_INV_ID);
+    }
+  else if (!ascii_strcasecmp (certid, "OPENPGP.3"))
     ;
   else if (!ascii_strcasecmp (certid, "OPENPGP.2"))
     occurrence = 1;
