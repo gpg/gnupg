@@ -538,13 +538,19 @@ cmd_learn (assuan_context_t ctx, char *line)
   int only_keypairinfo = has_option (line, "--keypairinfo");
   int opt_multi = has_option (line, "--multi");
   int opt_reread = has_option (line, "--reread");
+  int opt_force = has_option (line, "--force");
   unsigned int flags;
   card_t card;
+  const char *keygrip = NULL;
 
   if ((rc = open_card (ctrl)))
     return rc;
 
-  card = card_get (ctrl, NULL);
+  line = skip_options (line);
+  if (strlen (line) == 40)
+    keygrip = line;
+
+  card = card_get (ctrl, keygrip);
   if (!card)
     return gpg_error (GPG_ERR_CARD_NOT_PRESENT);
 
@@ -581,7 +587,7 @@ cmd_learn (assuan_context_t ctx, char *line)
           return out_of_core ();
         }
 
-      if (!has_option (line, "--force"))
+      if (!opt_force)
         {
           char *command;
 
