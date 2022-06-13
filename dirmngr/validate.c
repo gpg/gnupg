@@ -955,7 +955,7 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   int digestlen;
   unsigned char *digest;
   int use_pss = 0;
-  unsigned int saltlen;  /* (use is controlled by use_pss) */
+  unsigned int saltlen = 0;  /* (use is actually controlled by use_pss) */
 
   /* Hash the target certificate using the algorithm from that certificate.  */
   algoid = ksba_cert_get_digest_algo (cert);
