@@ -358,6 +358,15 @@ struct debug_flags_s
 int parse_debug_flag (const char *string, unsigned int *debugvar,
                       const struct debug_flags_s *flags);
 
+struct compatibility_flags_s
+{
+  unsigned int flag;
+  const char *name;
+  const char *desc;
+};
+int parse_compatibility_flags (const char *string, unsigned int *flagvar,
+                               const struct compatibility_flags_s *flags);
+
 
 /*-- Simple replacement functions. */
 

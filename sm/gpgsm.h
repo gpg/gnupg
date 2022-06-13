@@ -150,6 +150,8 @@ struct
    * mode.  */
   int require_compliance;
 
+  /* Compatibility flags (COMPAT_FLAG_xxxx).  */
+  unsigned int compat_flags;
 } opt;
 
 /* Debug values and macros.  */
@@ -168,6 +170,18 @@ struct
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_IPC     (opt.debug & DBG_IPC_VALUE)
+
+
+/* Compatibility flags */
+/* Telesec RSA cards produced for NRW in 2022 came with only the
+ * keyAgreement bit set.  This flag allows there use for encryption
+ * anyway.  Example cert:
+ *    Issuer: /CN=DOI CA 10a/OU=DOI/O=PKI-1-Verwaltung/C=DE
+ * key usage: digitalSignature nonRepudiation keyAgreement
+ *  policies: 1.3.6.1.4.1.7924.1.1:N:
+ */
+#define COMPAT_ALLOW_KA_TO_ENCR   1
+
 
 /* Forward declaration for an object defined in server.c */
 struct server_local_s;

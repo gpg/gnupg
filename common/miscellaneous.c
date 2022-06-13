@@ -760,3 +760,83 @@ parse_debug_flag (const char *string, unsigned int *debugvar,
   *debugvar |= result;
   return 0;
 }
+
+
+
+/* Parse an --comaptibility_flags style argument consisting of comma
+ * separated strings.
+ *
+ * Returns: 0 on success or -1 and ERRNO set on error.  On success the
+ *          supplied variable is updated by the parsed flags.
+ *
+ * If STRING is NULL the enabled flags are printed.
+ */
+int
+parse_compatibility_flags (const char *string, unsigned int *flagvar,
+                           const struct compatibility_flags_s *flags)
+
+{
+  unsigned long result = 0;
+  int i, j;
+
+  if (!string)
+    {
+      if (flagvar)
+        {
+          log_info ("enabled compatibility flags:");
+          for (i=0; flags[i].name; i++)
+            if ((*flagvar & flags[i].flag))
+              log_printf (" %s", flags[i].name);
+          log_printf ("\n");
+        }
+      return 0;
+    }
+
+  while (spacep (string))
+    string++;
+
+  if (!strcmp (string, "?") || !strcmp (string, "help"))
+    {
+      log_info ("available compatibility flags:\n");
+      for (i=0; flags[i].name; i++)
+        log_info (" %s\n", flags[i].name);
+      if (flags[i].flag != 77)
+        exit (0);
+    }
+  else
+    {
+      char **words;
+      words = strtokenize (string, ",");
+      if (!words)
+        return -1;
+      for (i=0; words[i]; i++)
+        {
+          if (*words[i])
+            {
+              for (j=0; flags[j].name; j++)
+                if (!strcmp (words[i], flags[j].name))
+                  {
+                    result |= flags[j].flag;
+                    break;
+                  }
+              if (!flags[j].name)
+                {
+                  if (!strcmp (words[i], "none"))
+                    {
+                      *flagvar = 0;
+                      result = 0;
+                    }
+                  else if (!strcmp (words[i], "all"))
+                    result = ~0;
+                  else
+                    log_info ("unknown compatibility flag '%s' ignored\n",
+                              words[i]);
+                }
+            }
+        }
+      xfree (words);
+    }
+
+  *flagvar |= result;
+  return 0;
+}

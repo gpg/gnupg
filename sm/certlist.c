@@ -52,8 +52,10 @@ cert_usage_p (ksba_cert_t cert, int mode, int silent)
 {
   gpg_error_t err;
   unsigned int use;
+  unsigned int encr_bits, sign_bits;
   char *extkeyusages;
   int have_ocsp_signing = 0;
+
 
   err = ksba_cert_get_ext_key_usages (cert, &extkeyusages);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -158,10 +160,13 @@ cert_usage_p (ksba_cert_t cert, int mode, int silent)
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
-  if ((use & ((mode&1)?
-              (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT):
-              (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION)))
-      )
+  encr_bits = (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT);
+  if ((opt.compat_flags & COMPAT_ALLOW_KA_TO_ENCR))
+    encr_bits |= KSBA_KEYUSAGE_KEY_AGREEMENT;
+
+  sign_bits = (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION);
+
+  if ((use & ((mode&1)? encr_bits : sign_bits)))
     return 0;
 
   if (!silent)
