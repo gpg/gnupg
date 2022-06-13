@@ -210,6 +210,7 @@ enum cmd_and_opt_values {
   oUseKeyboxd,
   oKeyboxdProgram,
   oRequireCompliance,
+  oCompatibilityFlags,
   oNoAutostart
  };
 
@@ -442,6 +443,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLCmessages, "lc-messages", "@"),
   ARGPARSE_s_s (oXauthority, "xauthority", "@"),
   ARGPARSE_s_s (oChUid, "chuid", "@"),
+  ARGPARSE_s_s (oCompatibilityFlags, "compatibility-flags", "@"),
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -475,6 +477,14 @@ static struct debug_flags_s debug_flags [] =
     { DBG_IPC_VALUE    , "ipc"     },
     { DBG_CLOCK_VALUE  , "clock"   },
     { DBG_LOOKUP_VALUE , "lookup"  },
+    { 0, NULL }
+  };
+
+
+/* The list of compatibility flags.  */
+static struct compatibility_flags_s compatibility_flags [] =
+  {
+    { COMPAT_ALLOW_KA_TO_ENCR, "allow-ka-to-encr" },
     { 0, NULL }
   };
 
@@ -1271,6 +1281,15 @@ main ( int argc, char **argv)
         case oDebugIgnoreExpiration: opt.ignore_expiration = 1; break;
         case oDebugForceECDHSHA1KDF: opt.force_ecdh_sha1kdf = 1; break;
 
+        case oCompatibilityFlags:
+          if (parse_compatibility_flags (pargs.r.ret_str, &opt.compat_flags,
+                                         compatibility_flags))
+            {
+              pargs.r_opt = ARGPARSE_INVALID_ARG;
+              pargs.err = ARGPARSE_PRINT_ERROR;
+            }
+          break;
+
         case oStatusFD:
             ctrl.status_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 1);
             break;
@@ -1584,6 +1603,8 @@ main ( int argc, char **argv)
   gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
 
   set_debug ();
+  if (opt.verbose) /* Print the compatibility flags.  */
+    parse_compatibility_flags (NULL, &opt.compat_flags, compatibility_flags);
   gnupg_set_compliance_extra_info (opt.min_rsa_length);
 
   /* Although we always use gpgsm_exit, we better install a regular
