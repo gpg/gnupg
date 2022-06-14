@@ -128,6 +128,24 @@ clear_trusttable (void)
 }
 
 
+/* Return the name of the system trustlist.  Caller must free.  */
+static char *
+make_sys_trustlist_name (void)
+{
+  if (opt.sys_trustlist_name
+      && (strchr (opt.sys_trustlist_name, '/')
+          || strchr (opt.sys_trustlist_name, '\\')
+          || (*opt.sys_trustlist_name == '~'
+              && opt.sys_trustlist_name[1] == '/')))
+    return make_absfilename (opt.sys_trustlist_name, NULL);
+  else
+    return make_filename (gnupg_sysconfdir (),
+                          (opt.sys_trustlist_name ?
+                           opt.sys_trustlist_name : "trustlist.txt"),
+                          NULL);
+}
+
+
 static gpg_error_t
 read_one_trustfile (const char *fname, int systrust,
                     trustitem_t **addr_of_table,
@@ -196,7 +214,7 @@ read_one_trustfile (const char *fname, int systrust,
             }
           /* fixme: Should check for trailing garbage.  */
 
-          etcname = make_filename (gnupg_sysconfdir (), "trustlist.txt", NULL);
+          etcname = make_sys_trustlist_name ();
           if ( !strcmp (etcname, fname) ) /* Same file. */
             log_info (_("statement \"%s\" ignored in '%s', line %d\n"),
                       "include-default", fname, lnr);
@@ -348,17 +366,24 @@ read_trustfiles (void)
     return gpg_error_from_syserror ();
   tableidx = 0;
 
-  fname = make_filename_try (gnupg_homedir (), "trustlist.txt", NULL);
-  if (!fname)
+  if (opt.no_user_trustlist)
+    fname = NULL;
+  else
     {
-      err = gpg_error_from_syserror ();
-      xfree (table);
-      return err;
+      fname = make_filename_try (gnupg_homedir (), "trustlist.txt", NULL);
+      if (!fname)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (table);
+          return err;
+        }
     }
 
-  if ((ec = gnupg_access (fname, F_OK)))
+  if (!fname || (ec = gnupg_access (fname, F_OK)))
     {
-      if ( ec == GPG_ERR_ENOENT )
+      if (!fname)
+        ; /* --no-user-trustlist active.  */
+      else if ( ec == GPG_ERR_ENOENT )
         ; /* Silently ignore a non-existing trustfile.  */
       else
         {
@@ -366,7 +391,7 @@ read_trustfiles (void)
           log_error (_("error opening '%s': %s\n"), fname, gpg_strerror (err));
         }
       xfree (fname);
-      fname = make_filename (gnupg_sysconfdir (), "trustlist.txt", NULL);
+      fname = make_sys_trustlist_name ();
       systrust = 1;
     }
   err = read_one_trustfile (fname, systrust, &table, &tablesize, &tableidx);

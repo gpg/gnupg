@@ -157,6 +157,13 @@ struct
      interactively mark certificate in trustlist.txt as trusted. */
   int allow_mark_trusted;
 
+  /* Only use the system trustlist.  */
+  int no_user_trustlist;
+
+  /* The standard system trustlist is SYSCONFDIR/trustlist.txt.  This
+   * option can be used to change the name.  */
+  const char *sys_trustlist_name;
+
   /* If this global option is true, the Assuan command
      PRESET_PASSPHRASE is allowed.  */
   int allow_preset_passphrase;
