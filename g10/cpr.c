@@ -328,20 +328,15 @@ write_status_text_and_buffer (int no, const char *string,
             }
           first = 0;
         }
-      for (esc=0, s=buffer, n=len; n && !esc; s++, n--)
+      for (esc=0, s=buffer, n=len; n; s++, n--)
         {
           if (*s == '%' || *(const byte*)s <= lower_limit
               || *(const byte*)s == 127 )
             esc = 1;
           if (wrap && ++count > wrap)
-            {
-              dowrap=1;
-              break;
-            }
-        }
-      if (esc)
-        {
-          s--; n++;
+            dowrap=1;
+          if (esc || dowrap)
+            break;
         }
       if (s != buffer)
         es_fwrite (buffer, s-buffer, 1, statusfp);
