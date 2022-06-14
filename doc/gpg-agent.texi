@@ -366,6 +366,21 @@ Do not allow clients to mark keys as trusted, i.e. put them into the
 @file{trustlist.txt} file.  This makes it harder for users to inadvertently
 accept Root-CA keys.
 
+
+@anchor{option --no-user-trustlist}
+@item --no-user-trustlist
+@opindex no-user-trustlist
+Entirely ignore the user trust list and consider only the global
+trustlist (@file{@value{SYSCONFDIR}/trustlist.txt}).  This
+implies the @ref{option --no-allow-mark-trusted}.
+
+@item --sys-trustlist-name @var{file}
+@opindex sys-trustlist-name
+Changes the default name for the global trustlist from "trustlist.txt"
+to @var{file}.  If @var{file} does not contain any slashes and does
+not start with "~/" it is searched in the system configuration
+directory (@file{@value{SYSCONFDIR}}).
+
 @anchor{option --allow-preset-passphrase}
 @item --allow-preset-passphrase
 @opindex allow-preset-passphrase
@@ -794,7 +809,9 @@ that this file can't be changed inadvertently.
 
 As a special feature a line @code{include-default} will include a global
 list of trusted certificates (e.g. @file{@value{SYSCONFDIR}/trustlist.txt}).
-This global list is also used if the local list is not available.
+This global list is also used if the local list is not available;
+the @ref{option --no-user-trustlist} enforces the use of only
+this global list.
 
 It is possible to add further flags after the @code{S} for use by the
 caller:

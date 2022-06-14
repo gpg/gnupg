@@ -128,6 +128,8 @@ enum cmd_and_opt_values
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
   oNoAllowMarkTrusted,
+  oNoUserTrustlist,
+  oSysTrustlistName,
   oAllowPresetPassphrase,
   oAllowLoopbackPinentry,
   oNoAllowLoopbackPinentry,
@@ -249,6 +251,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAllowMarkTrusted, "no-allow-mark-trusted",
                 /* */    N_("disallow clients to mark keys as \"trusted\"")),
   ARGPARSE_s_n (oAllowMarkTrusted,   "allow-mark-trusted", "@"),
+  ARGPARSE_s_n (oNoUserTrustlist,    "no-user-trustlist", "@"),
+  ARGPARSE_s_s (oSysTrustlistName,   "sys-trustlist-name", "@"),
   ARGPARSE_s_n (oAllowPresetPassphrase, "allow-preset-passphrase",
                 /* */                    N_("allow presetting passphrase")),
   ARGPARSE_s_u (oS2KCount, "s2k-count", "@"),
@@ -873,6 +877,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.enable_extended_key_format = 1;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
+      opt.sys_trustlist_name = NULL;
       opt.allow_external_cache = 1;
       opt.allow_loopback_pinentry = 1;
       opt.allow_emacs_pinentry = 0;
@@ -963,6 +968,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oAllowMarkTrusted: opt.allow_mark_trusted = 1; break;
     case oNoAllowMarkTrusted: opt.allow_mark_trusted = 0; break;
+    case oNoUserTrustlist: opt.no_user_trustlist = 1; break;
+    case oSysTrustlistName: opt.sys_trustlist_name = pargs->r.ret_str; break;
 
     case oAllowPresetPassphrase: opt.allow_preset_passphrase = 1; break;
 
@@ -1008,6 +1015,11 @@ finalize_rereadable_options (void)
   /* Hack to allow --grab to override --no-grab.  */
   if ((opt.no_grab & 2))
     opt.no_grab = 0;
+
+  /* With --no-user-trustlist it does not make sense to allow the mark
+   * trusted feature.  */
+  if (opt.no_user_trustlist)
+    opt.allow_mark_trusted = 0;
 }
 
 
