@@ -2582,7 +2582,7 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
       xfree (cardsn);
       if (err)
         {
-          if (opt.verbose)
+          if (opt.debug)
             gcry_log_debugsxp ("pubkey", key_public);
           if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
               || gpg_err_code (err) == GPG_ERR_INV_CURVE)
@@ -2594,12 +2594,13 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
           else
             {
               gcry_sexp_release (key_public);
-              break;
+              break;  /* the readdir loop.  */
             }
         }
+      else /* Success */
+        (*key_counter_p)++;
 
       gcry_sexp_release (key_public);
-      (*key_counter_p)++;
     }
 
   gnupg_closedir (dir);
@@ -2616,7 +2617,7 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
        xfree (cardsn);
        if (err)
          {
-           if (opt.verbose)
+           if (opt.debug)
              gcry_log_debugsxp ("pubkey", key_public);
            if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
                || gpg_err_code (err) == GPG_ERR_INV_CURVE)
@@ -2631,8 +2632,10 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
                break;
              }
          }
-       else
+       else /* Success.  */
          (*key_counter_p)++;
+
+       gcry_sexp_release (key_public);
      }
 
   agent_card_free_keyinfo (keyinfo_on_cards);
