@@ -189,25 +189,22 @@ derive_kek (size_t kek_size,
             const unsigned char *kdf_params, size_t kdf_params_size)
 {
   gpg_error_t err;
-  gcry_md_hd_t h;
+  gcry_kdf_hd_t hd;
+  unsigned long param[1];
 
-  log_assert( gcry_md_get_algo_dlen (kdf_hash_algo) >= 32 );
-
-  err = gcry_md_open (&h, kdf_hash_algo, 0);
-  if (err)
+  param[0] = kek_size;
+  err = gcry_kdf_open (&hd, GCRY_KDF_ONESTEP_KDF, kdf_hash_algo,
+                       param, 1,
+                       secret_x, secret_x_size, NULL, 0, NULL, 0,
+                       kdf_params, kdf_params_size);
+  if (!err)
     {
-      log_error ("gcry_md_open failed for kdf_hash_algo %d: %s",
-                 kdf_hash_algo, gpg_strerror (err));
-      return err;
+      gcry_kdf_compute (hd, NULL);
+      gcry_kdf_final (hd, kek_size, secret_x);
+      gcry_kdf_close (hd);
+      /* Clean the tail before returning.  */
+      memset (secret_x+kek_size, 0, secret_x_size - kek_size);
     }
-  gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
-  gcry_md_write(h, secret_x, secret_x_size);    /* x of the point X */
-  gcry_md_write(h, kdf_params, kdf_params_size);      /* KDF parameters */
-  gcry_md_final (h);
-  memcpy (secret_x, gcry_md_read (h, kdf_hash_algo), kek_size);
-  gcry_md_close (h);
-  /* Clean the tail before returning.  */
-  memset (secret_x+kek_size, 0, secret_x_size - kek_size);
   if (DBG_CRYPTO)
     log_printhex (secret_x, kek_size, "ecdh KEK is:");
   return err;
