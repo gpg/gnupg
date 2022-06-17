@@ -1064,7 +1064,8 @@ prompt_for_card (ctrl_t ctrl, const unsigned char *grip,
                     "  %s%%0A"
                     "  %s",
                     L_("Please insert the card with serial number"),
-                    want_sn ? want_sn : "", comment) < 0)
+                    want_sn ? want_sn : "",
+                    comment? comment:"") < 0)
         err = out_of_core ();
       else
         {
