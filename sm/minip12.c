@@ -1607,8 +1607,8 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx,
 
  bailout:
   gcry_free (plain);
-  log_error ("data error at \"%s\", offset %u\n",
-              where, (unsigned int)((p - buffer) + startoffset));
+  log_error ("data error at \"%s\", offset %zu\n",
+              where, (size_t)((p - p_start) + startoffset));
   if (!err)
     err = gpg_error (GPG_ERR_GENERAL);
 
@@ -1629,6 +1629,7 @@ parse_cert_bag (struct p12_parse_ctx_s *ctx,
   gpg_error_t err = 0;
   struct tag_info ti;
   const unsigned char *p = buffer;
+  const unsigned char *p_start = buffer;
   size_t n = length;
   const char *where;
   size_t consumed = 0; /* Number of bytes consumed from the original buffer. */
@@ -1703,7 +1704,7 @@ parse_cert_bag (struct p12_parse_ctx_s *ctx,
 
  bailout:
   log_error ( "data error at \"%s\", offset %u\n",
-              where, (unsigned int)((p - buffer) + startoffset));
+              where, (unsigned int)((p - p_start) + startoffset));
   err = gpg_error (GPG_ERR_GENERAL);
 
  leave:
@@ -1780,7 +1781,6 @@ parse_bag_data (struct p12_parse_ctx_s *ctx,
   if (ti.class || ti.tag != TAG_OBJECT_ID)
     goto bailout;
 
-  log_printhex (p, ti.length, "oid");
   /* Now divert to the actual parser.  */
   if (ti.length == DIM(oid_pkcs_12_pkcs_8ShroudedKeyBag)
       && !memcmp (p, oid_pkcs_12_pkcs_8ShroudedKeyBag,
@@ -1789,7 +1789,8 @@ parse_bag_data (struct p12_parse_ctx_s *ctx,
       p += DIM(oid_pkcs_12_pkcs_8ShroudedKeyBag);
       n -= DIM(oid_pkcs_12_pkcs_8ShroudedKeyBag);
 
-      if (parse_shrouded_key_bag (ctx, p, n, 0, r_consumed))
+      if (parse_shrouded_key_bag (ctx, p, n,
+                                  startoffset + (p - p_start), r_consumed))
         goto bailout;
     }
   else if ( ti.length == DIM(oid_pkcs_12_CertBag)
@@ -1798,7 +1799,8 @@ parse_bag_data (struct p12_parse_ctx_s *ctx,
       p += DIM(oid_pkcs_12_CertBag);
       n -= DIM(oid_pkcs_12_CertBag);
 
-      if (parse_cert_bag (ctx, p, n, 0, r_consumed))
+      if (parse_cert_bag (ctx, p, n,
+                          startoffset + (p - p_start), r_consumed))
         goto bailout;
     }
   else
@@ -1808,7 +1810,7 @@ parse_bag_data (struct p12_parse_ctx_s *ctx,
 
  bailout:
   log_error ( "data error at \"%s\", offset %u\n",
-              where, (unsigned int)((p - buffer) + startoffset));
+              where, (unsigned int)((p - p_start) + startoffset));
   err = gpg_error (GPG_ERR_GENERAL);
 
  leave:
