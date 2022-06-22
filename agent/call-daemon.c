@@ -414,11 +414,7 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
 
   i=0;
   if (!opt.running_detached)
-    {
-      if (log_get_fd () != -1)
-        no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
-      no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
-    }
+    no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
   no_close_list[i] = ASSUAN_INVALID_FD;
 
   /* Connect to the daemon and perform initial handshaking.  Use

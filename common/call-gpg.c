@@ -106,8 +106,6 @@ start_gpg (ctrl_t ctrl, const char *gpg_program, strlist_t gpg_arguments,
   argv[i++] = NULL;
 
   i = 0;
-  if (log_get_fd () != -1)
-    no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
   no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
   if (input_fd != -1)
     no_close_list[i++] = assuan_fd_from_posix_fd (input_fd);

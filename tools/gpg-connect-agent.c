@@ -1319,8 +1319,7 @@ main (int argc, char **argv)
       assuan_fd_t no_close[3];
 
       no_close[0] = assuan_fd_from_posix_fd (es_fileno (es_stderr));
-      no_close[1] = assuan_fd_from_posix_fd (log_get_fd ());
-      no_close[2] = ASSUAN_INVALID_FD;
+      no_close[1] = ASSUAN_INVALID_FD;
 
       rc = assuan_new (&ctx);
       if (rc)

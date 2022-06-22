@@ -102,11 +102,8 @@ start_syshelp (ctrl_t ctrl, assuan_context_t *r_ctx)
       return err;
     }
 
-  i = 0;
-  if (log_get_fd () != -1)
-    no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
-  no_close_list[i++] = assuan_fd_from_posix_fd (es_fileno (es_stderr));
-  no_close_list[i] = ASSUAN_INVALID_FD;
+  no_close_list[0] = assuan_fd_from_posix_fd (es_fileno (es_stderr));
+  no_close_list[1] = ASSUAN_INVALID_FD;
 
   err = assuan_new (&ctx);
   if (err)
