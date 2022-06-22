@@ -37,6 +37,7 @@
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "../common/session-env.h"
 #include "../common/shareddefs.h"
+#include "../common/name-value.h"
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -471,7 +472,7 @@ gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  gcry_sexp_t *result,
                                  char **r_passphrase, time_t *r_timestamp);
 gpg_error_t agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
-                                     gcry_sexp_t *result);
+                                     gcry_sexp_t *result, nvc_t *r_keymeta);
 gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
@@ -488,6 +489,7 @@ gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
 gpg_error_t agent_delete_key (ctrl_t ctrl, const char *desc_text,
                               const unsigned char *grip,
                               int force, int only_stubs);
+gpg_error_t agent_update_private_key (const unsigned char *grip, nvc_t pk);
 
 /*-- call-pinentry.c --*/
 void initialize_module_call_pinentry (void);

@@ -1200,7 +1200,84 @@ cmd_genkey (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_keyattr[] =
+  "KEYATTR [--delete] <hexstring_with_keygrip> <ATTRNAME> [<VALUE>]\n"
+  "\n"
+  "For the secret key, show the attribute of ATTRNAME.  With VALUE,\n"
+  "put the value to the attribute.  Use --delete option to delete.";
+static gpg_error_t
+cmd_keyattr (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  const char *argv[3];
+  int argc;
+  unsigned char grip[20];
+  int opt_delete;
 
+  if (ctrl->restricted)
+    return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+
+  opt_delete = has_option (line, "--delete");
+
+  line = skip_options (line);
+
+  argc = split_fields (line, argv, DIM (argv));
+  if (argc < 2)
+    {
+      err = gpg_error (GPG_ERR_MISSING_VALUE);
+      goto leave;
+    }
+
+  err = parse_keygrip (ctx, argv[0], grip);
+  if (err)
+    goto leave;
+
+  if (!err)
+    {
+      gcry_sexp_t s_key = NULL;
+      nvc_t keymeta = NULL;
+      const char *p;
+
+      err = agent_raw_key_from_file (ctrl, grip, &s_key, &keymeta);
+      if (keymeta == NULL)      /* Not extended format? */
+        {
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+
+      if (argc == 2)
+        {
+          nve_t e = nvc_lookup (keymeta, argv[1]);
+
+          if (opt_delete)
+            {
+              if (e)
+                nvc_delete (keymeta, e);
+            }
+          else if (e)
+            {
+              p = nve_value (e);
+              if (p)
+                err = assuan_send_data (ctx, p, strlen (p));
+            }
+        }
+      else if (argc == 3)
+        {
+          err = nvc_set (keymeta, argv[1], argv[2]);
+          if (!err)
+            err = nvc_set_private_key (keymeta, s_key);
+          if (!err)
+            err = agent_update_private_key (grip, keymeta);
+        }
+
+      nvc_release (keymeta);
+      gcry_sexp_release (s_key);
+    }
+
+ leave:
+  return leave_cmd (ctx, err);
+}
 
 static const char hlp_readkey[] =
   "READKEY [--no-data] [--format=ssh] <hexstring_with_keygrip>\n"
@@ -1461,7 +1538,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
     {
       gcry_sexp_t key;
 
-      if (!agent_raw_key_from_file (ctrl, grip, &key))
+      if (!agent_raw_key_from_file (ctrl, grip, &key, NULL))
         {
           ssh_get_fingerprint_string (key, with_ssh_fpr, &fpr);
           gcry_sexp_release (key);
@@ -4044,7 +4121,8 @@ register_commands (assuan_context_t ctx)
     { "RELOADAGENT",    cmd_reloadagent,hlp_reloadagent },
     { "GETINFO",        cmd_getinfo,   hlp_getinfo },
     { "KEYTOCARD",      cmd_keytocard, hlp_keytocard },
-    { "KEYTOTPM",	cmd_keytotpm, hlp_keytotpm },
+    { "KEYTOTPM",       cmd_keytotpm, hlp_keytotpm },
+    { "KEYATTR",        cmd_keyattr, hlp_keyattr },
     { NULL }
   };
   int i, rc;

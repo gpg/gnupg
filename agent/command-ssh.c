@@ -2760,7 +2760,7 @@ data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       char *fpr, *prompt;
       char *comment = NULL;
 
-      err = agent_raw_key_from_file (ctrl, ctrl->keygrip, &key);
+      err = agent_raw_key_from_file (ctrl, ctrl->keygrip, &key, NULL);
       if (err)
         goto out;
       err = ssh_get_fingerprint_string (key, opt.ssh_fingerprint_digest, &fpr);

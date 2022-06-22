@@ -33,7 +33,6 @@
 #include "agent.h"
 #include "../common/i18n.h"
 #include "../common/ssh-utils.h"
-#include "../common/name-value.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -338,6 +337,59 @@ agent_write_private_key (const unsigned char *grip,
   return 0;
 }
 
+
+gpg_error_t
+agent_update_private_key (const unsigned char *grip, nvc_t pk)
+{
+  char *fname, *fname0;
+  estream_t fp;
+  char hexgrip[40+8+1];
+  gpg_error_t err;
+
+  bin2hex (grip, 20, hexgrip);
+  strcpy (hexgrip+40, ".key.tmp");
+
+  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
+                         hexgrip, NULL);
+  fname0 = xstrdup (fname);
+  if (!fname0)
+    {
+      err = gpg_error_from_syserror ();
+      xfree (fname);
+      return err;
+    }
+  fname0[strlen (fname)-4] = 0;
+
+  fp = es_fopen (fname, "wbx,mode=-rw");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+
+      log_error ("can't create '%s': %s\n", fname, gpg_strerror (err));
+      xfree (fname);
+      return err;
+    }
+
+  err = nvc_write (pk, fp);
+  if (err)
+    log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
+
+  es_fclose (fp);
+
+#ifdef HAVE_W32_SYSTEM
+  /* No atomic mv on W32 systems.  */
+  gnupg_remove (fname0);
+#endif
+  if (rename (fname, fname0))
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error renaming '%s' to '%s': %s\n"),
+                 fname, fname0, strerror (errno));
+    }
+
+  xfree (fname);
+  return err;
+}
 
 /* Callback function to try the unprotection from the passphrase query
    code. */
@@ -1349,7 +1401,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
    failure an error code is returned and NULL stored at RESULT. */
 gpg_error_t
 agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
-                         gcry_sexp_t *result)
+                         gcry_sexp_t *result, nvc_t *r_keymeta)
 {
   gpg_error_t err;
   gcry_sexp_t s_skey;
@@ -1358,7 +1410,7 @@ agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey, NULL);
+  err = read_key_file (grip, &s_skey, r_keymeta);
   if (!err)
     *result = s_skey;
   return err;
