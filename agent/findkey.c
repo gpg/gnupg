@@ -111,6 +111,8 @@ write_extended_private_key (char *fname, estream_t fp, int update, int newkey,
     goto leave;
 
   err = nvc_write (pk, fp);
+  if (!err)
+    err = es_fflush (fp);
   if (err)
     {
       log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
