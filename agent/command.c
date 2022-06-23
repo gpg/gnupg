@@ -1253,7 +1253,10 @@ cmd_keyattr (assuan_context_t ctx, char *line)
           if (opt_delete)
             {
               if (e)
-                nvc_delete (keymeta, e);
+                {
+                  nvc_delete (keymeta, e);
+                  goto key_attr_write;
+                }
             }
           else if (e)
             {
@@ -1265,6 +1268,7 @@ cmd_keyattr (assuan_context_t ctx, char *line)
       else if (argc == 3)
         {
           err = nvc_set (keymeta, argv[1], argv[2]);
+        key_attr_write:
           if (!err)
             err = nvc_set_private_key (keymeta, s_key);
           if (!err)
