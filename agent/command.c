@@ -1229,6 +1229,14 @@ cmd_keyattr (assuan_context_t ctx, char *line)
       goto leave;
     }
 
+  if (!strcmp (argv[1], "Key:") /* It allows only access to attribute */
+      /* Make sure ATTRNAME ends with colon.  */
+      || argv[1][strlen (argv[1]) - 1] != ':')
+    {
+      err = gpg_error (GPG_ERR_INV_PARAMETER);
+      goto leave;
+    }
+
   err = parse_keygrip (ctx, argv[0], grip);
   if (err)
     goto leave;
