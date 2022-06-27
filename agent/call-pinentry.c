@@ -57,7 +57,9 @@
  * passphrase will be rendered as zbase32 which results for 150 bits
  * in a string of 30 characters.  That fits nicely into the 5
  * character blocking which pinentry can do.  128 bits would actually
- * be sufficient but can't be formatted nicely. */
+ * be sufficient but can't be formatted nicely.  Please do not change
+ * this value because pattern check files may let such passwords
+ * always pass. */
 #define DEFAULT_GENPIN_BITS 150
 
 /* The assuan context of the current pinentry. */
@@ -844,21 +846,20 @@ estimate_passphrase_quality (const char *pw)
 
 
 /* Generate a random passphrase in zBase32 encoding (RFC-6189) to be
- * used by Pinentry to suggest a passphrase.  */
+ * used by Pinentry to suggest a passphrase.  Note that we have the
+ * same algorithm in gpg.c for --gen-random at level 30.  It is
+ * important that we always output exactly 30 characters to match the
+ * special exception we have in the pattern file for symmetric
+ * encryption.  */
 static char *
 generate_pin (void)
 {
-  unsigned int nbits = opt.min_passphrase_len * 8;
-  size_t nbytes;
+  unsigned int nbits = DEFAULT_GENPIN_BITS;
+  size_t nbytes = nbytes = (nbits + 7) / 8;
   void *rand;
   char *generated;
 
-  if (nbits < 128)
-    nbits = DEFAULT_GENPIN_BITS;
-
-  nbytes = (nbits + 7) / 8;
-
-  rand = gcry_random_bytes_secure (nbytes, GCRY_STRONG_RANDOM);
+   rand = gcry_random_bytes_secure (nbytes, GCRY_STRONG_RANDOM);
   if (!rand)
     {
       log_error ("failed to generate random pin\n");

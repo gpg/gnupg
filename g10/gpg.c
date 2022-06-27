@@ -64,6 +64,7 @@
 #include "objcache.h"
 #include "../common/init.h"
 #include "../common/mbox-util.h"
+#include "../common/zb32.h"
 #include "../common/shareddefs.h"
 #include "../common/compliance.h"
 #include "../common/comopt.h"
@@ -5068,8 +5069,29 @@ main (int argc, char **argv)
           if (hexhack)
             level = 1;
 
+          /* Level 30 uses the same algorithm as our magic wand in
+           * pinentry/gpg-agent.  */
+          if (level == 30)
+            {
+              unsigned int nbits = 150;
+              size_t nbytes = (nbits + 7) / 8;
+              void *rand;
+              char *generated;
+
+              rand = gcry_random_bytes_secure (nbytes, GCRY_STRONG_RANDOM);
+              if (!rand)
+                log_fatal ("failed to generate random password\n");
+
+              generated = zb32_encode (rand, nbits);
+              gcry_free (rand);
+              es_fputs (generated, es_stdout);
+              es_putc ('\n', es_stdout);
+              xfree (generated);
+              break;
+            }
+
           if (argc < 1 || argc > 2 || level < 0 || level > 2 || count < 0)
-            wrong_args ("--gen-random 0|1|2 [count]");
+            wrong_args ("--gen-random 0|1|2|16|30 [count]");
 
           while (endless || count)
             {
