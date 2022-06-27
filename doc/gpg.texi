@@ -609,13 +609,14 @@ Print message digest of algorithm @var{algo} for all given files or STDIN.
 With the second form (or a deprecated "*" for @var{algo}) digests for all
 available algorithms are printed.
 
-@item --gen-random @var{0|1|2} @var{count}
+@item --gen-random @var{0|1|2|16|30} @var{count}
 @opindex gen-random
 Emit @var{count} random bytes of the given quality level 0, 1 or 2. If
 @var{count} is not given or zero, an endless sequence of random bytes
 will be emitted.  If used with @option{--armor} the output will be
-base64 encoded.  PLEASE, don't use this command unless you know what
-you are doing; it may remove precious entropy from the system!
+base64 encoded.  The special level 16 uses a quality level of 1 and
+outputs and endless stream of hex-encoded octets.  The special level
+30 outputs random as 30 zBase-32 characters.
 
 @item --gen-prime @var{mode}  @var{bits}
 @opindex gen-prime
