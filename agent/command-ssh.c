@@ -2495,11 +2495,11 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
   if (err)
     return err;
 
-  /* First, get information keys available on card(s). */
+  /* First, get information keys available on cards on-line. */
   keyinfo_on_cards = get_ssh_keyinfo_on_cards (ctrl);
 
-  /* Then, look at all keys with "OPENPGP.3" idstring.  */
   /* Look at all the registered and non-disabled keys, in sshcontrol.  */
+  /* And, look at all keys with "Use-for-ssh:" flag.  */
   dirname = make_filename_try (gnupg_homedir (),
                                GNUPG_PRIVATE_KEYS_DIR, NULL);
   if (!dirname)

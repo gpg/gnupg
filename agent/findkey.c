@@ -1458,8 +1458,7 @@ public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   if (for_ssh)
     {
-      /* Use-for-ssh: yes          */
-      /* Token: <SERIALNO> <IDSTR> */
+      /* Use-for-ssh: yes */
       const char *p;
       int is_ssh = 0;
 
@@ -1469,19 +1468,6 @@ public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
       if ((p = nvc_get_string (keymeta, "Use-for-ssh:"))
           && !strcmp (p, "yes"))
         is_ssh = 1;
-
-      if ((p = nvc_get_string (keymeta, "Token:")))
-        {
-          while (*p && !spacep (p))
-            p++;
-
-          if (*p)
-            {
-              p++;
-              if (!strcmp (p, "OPENPGP.3"))
-                is_ssh = 1;
-            }
-        }
 
       nvc_release (keymeta);
       keymeta = NULL;
