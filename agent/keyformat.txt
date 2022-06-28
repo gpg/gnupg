@@ -125,6 +125,12 @@ a dialog window when the key is about to be used for
 PKSIGN/PKAUTH/PKDECRYPT operation.  If the value is "restricted", it
 is only asked for the access through extra/browser socket.
 
+*** Prompt
+This field is for card key.  If given and the value is "yes"
+(default), a user will be prompted about insertion of the card by a
+dialog window when card is not available.  When the value is "no", a
+card operation is refused with GPG_ERR_UNUSABLE_SECKEY error.
+
 
 * Private Key Format
 ** Unprotected Private Key Format
