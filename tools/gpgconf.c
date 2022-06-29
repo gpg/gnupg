@@ -53,6 +53,8 @@ enum cmd_and_opt_values
     aListDirs   = 'L',
     aKill       = 'K',
     aReload     = 'R',
+    aShowVersions = 'V',
+    aShowConfigs  = 'X',
 
     oNoVerbose	= 500,
     oHomedir,
@@ -74,8 +76,6 @@ enum cmd_and_opt_values
     aCreateSocketDir,
     aRemoveSocketDir,
     aApplyProfile,
-    aShowVersions,
-    aShowConfigs,
     aShowCodepages
   };
 
@@ -107,8 +107,8 @@ static gpgrt_opt_t opts[] =
     { aKill,          "kill", 256,   N_("kill a given component")},
     { aCreateSocketDir, "create-socketdir", 256, "@"},
     { aRemoveSocketDir, "remove-socketdir", 256, "@"},
-    ARGPARSE_c (aShowVersions, "show-versions", "@"),
-    ARGPARSE_c (aShowConfigs,  "show-configs", "@"),
+    ARGPARSE_c (aShowVersions, "show-versions", ""),
+    ARGPARSE_c (aShowConfigs,  "show-configs", ""),
     ARGPARSE_c (aShowCodepages, "show-codepages", "@"),
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
@@ -1079,8 +1079,43 @@ get_revision_from_blurb (const char *blurb, int *r_len)
 static void
 show_version_gnupg (estream_t fp, const char *prefix)
 {
+  char *fname, *p;
+  size_t n;
+  estream_t verfp;
+  char line[100];
+
   es_fprintf (fp, "%s%sGnuPG %s (%s)\n%s%s\n", prefix, *prefix?"":"* ",
               gpgrt_strusage (13), BUILD_REVISION, prefix, gpgrt_strusage (17));
+
+  /* Show the GnuPG VS-Desktop version in --show-configs mode  */
+  if (prefix && *prefix == '#')
+    {
+      fname = make_filename (gnupg_bindir (), NULL);
+      n = strlen (fname);
+      if (n > 10 && (!ascii_strcasecmp (fname + n - 10, "/GnuPG/bin")
+                     || !ascii_strcasecmp (fname + n - 10, "\\GnuPG\\bin")))
+        {
+          /* Append VERSION to the ../../ direcory.  Note that VERSION
+           * is only 7 bytes and thus fits.  */
+          strcpy (fname + n - 9, "VERSION");
+          verfp = es_fopen (fname, "r");
+          if (!verfp)
+            es_fprintf (fp, "%s[VERSION file not found]\n", prefix);
+          else if (!es_fgets (line, sizeof line, verfp))
+            es_fprintf (fp, "%s[VERSION file is empty]\n", prefix);
+          else
+            {
+              trim_spaces (line);
+              for (p=line; *p; p++)
+                if (*p < ' ' || *p > '~' || *p == '[')
+                  *p = '?';
+              es_fprintf (fp, "%s%s\n", prefix, line);
+            }
+          es_fclose (verfp);
+        }
+      xfree (fname);
+    }
+
 #ifdef HAVE_W32_SYSTEM
   {
     OSVERSIONINFO osvi = { sizeof (osvi) };
