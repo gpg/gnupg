@@ -1,5 +1,29 @@
-Noteworthy changes in version 2.2.36 (unreleased)
+Noteworthy changes in version 2.2.36 (2022-07-06)
 -------------------------------------------------
+
+  * g10: Fix possibly garbled status messages in NOTATION_DATA.  This
+    bug could trick GPGME and other parsers to accept faked status
+    lines.  [T6027, CVE-2022-34903]
+
+  * gpg: Handle leading zeroes in Ed25519 private keys and reverse
+    change regarding Ed25519 SOS encoding as introduced with 2.2.34.
+    [T5120]
+
+  * gpg: Allow Unicode file names for iobuf_cancel under Windows.
+
+  * gpgsm: Improve pkcs#12 import.  [T6037,T5793,T4921,T4757]
+
+  * scd,p15: Fix reading certificates w/o length info.
+
+  * scd,p15: Improve the displayed S/N for Technology Nexus cards.
+
+  * scd,openpgp: Add workaround for ECC attribute on Yubikey. [T5963]
+
+  * scd: Fix use of SCardListReaders for PC/SC.  [T5979]
+
+  * gpgconf: New short options -X and -V.
+
+  * Make sure to always set CONFIDENTIAL flag in Assuan.  [T5977]
 
   Release-info: https://dev.gnupg.org/T5949
 
