@@ -111,7 +111,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
   ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
   ARGPARSE_s_s (oChUid,          "chuid",           "@"),
-  ARGPARSE_s_n (oUnBuffered,     "unbuffered", N_("set stdin/out unbuffered")),
+  ARGPARSE_s_n (oUnBuffered,     "unbuffered", "@"),
 
   ARGPARSE_end ()
 };
