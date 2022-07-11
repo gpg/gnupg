@@ -270,9 +270,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "misslyckades med att skapa flöde från uttag: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Mata in kortet med serienummer"
-
 msgid "Admin PIN"
 msgstr "Admin PIN-kod"
 
@@ -844,6 +841,11 @@ msgstr "Korrekt"
 msgid "Wrong"
 msgstr "Fel"
 
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "fel vid läsning av \"%s\": %s\n"
+
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -863,6 +865,13 @@ msgstr "ändra lösenfras"
 
 msgid "I'll change it later"
 msgstr "Jag ändrar den senare"
+
+msgid "Please insert the card with serial number"
+msgstr "Mata in kortet med serienummer"
+
+#, c-format
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
@@ -8452,11 +8461,6 @@ msgstr "misslyckades med att skapa temporärfilen \"%s\": %s\n"
 #| msgid "error closing %s: %s\n"
 msgid "error closing '%s': %s\n"
 msgstr "fel vid stängning av %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "fel vid läsning av \"%s\": %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"

@@ -237,12 +237,6 @@ msgid "failed to create stream from socket: %s\n"
 msgstr "%s: am eşuat să creez hashtable: %s\n"
 
 #, fuzzy
-msgid "Please insert the card with serial number"
-msgstr ""
-"Vă rugăm scoateţi cardul curent şi introducaţi unul cu număr de serie:\n"
-"   %.*s\n"
-
-#, fuzzy
 msgid "Admin PIN"
 msgstr "|A|PIN Admin"
 
@@ -759,6 +753,11 @@ msgstr ""
 msgid "Wrong"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "eroare la citire `%s': %s\n"
+
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -774,6 +773,16 @@ msgid "Change passphrase"
 msgstr "schimbă fraza-parolă"
 
 msgid "I'll change it later"
+msgstr ""
+
+#, fuzzy
+msgid "Please insert the card with serial number"
+msgstr ""
+"Vă rugăm scoateţi cardul curent şi introducaţi unul cu număr de serie:\n"
+"   %.*s\n"
+
+#, c-format
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8142,11 +8151,6 @@ msgstr "nu pot crea directorul `%s': %s\n"
 #, fuzzy, c-format
 msgid "error closing '%s': %s\n"
 msgstr "eroare în `%s': %s\n"
-
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "eroare la citire `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"

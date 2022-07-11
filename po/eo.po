@@ -229,9 +229,6 @@ msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: malsukcesis krei haktabelon: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr ""
-
 #, fuzzy
 msgid "Admin PIN"
 msgstr "Donu la uzantidentigilon: "
@@ -744,6 +741,11 @@ msgstr ""
 msgid "Wrong"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -759,6 +761,13 @@ msgid "Change passphrase"
 msgstr "ŝanĝi la pasfrazon"
 
 msgid "I'll change it later"
+msgstr ""
+
+msgid "Please insert the card with serial number"
+msgstr ""
+
+#, c-format
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
 msgstr ""
 
 #, fuzzy, c-format
@@ -7988,11 +7997,6 @@ msgstr "%s: ne povas krei dosierujon: %s\n"
 
 #, fuzzy, c-format
 msgid "error closing '%s': %s\n"
-msgstr "eraro dum legado de '%s': %s\n"
-
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
 #, fuzzy, c-format

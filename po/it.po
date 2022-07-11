@@ -227,9 +227,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "impossibile creare il flusso dal socket: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Inserire la scheda con il numero di serie"
-
 msgid "Admin PIN"
 msgstr "PIN amministratore"
 
@@ -731,6 +728,10 @@ msgid "Wrong"
 msgstr "Sbagliato"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "errore durante la ridenominazione di '%s' in '%s': %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Nota: questa passphrase non è mai stata modificata.%0ASi prega di cambiarlo "
@@ -749,6 +750,18 @@ msgstr "Modifica passphrase"
 
 msgid "I'll change it later"
 msgstr "Lo cambierò più tardi"
+
+msgid "Please insert the card with serial number"
+msgstr "Inserire la scheda con il numero di serie"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"Un processo ssh ha richiesto l'utilizzo della chiave%%0A  %s%%0A  (%s)%%0ASi "
+"desidera consentire questa operazione?"
 
 #, c-format
 msgid ""
@@ -7819,10 +7832,6 @@ msgstr "impossibile creare il file dir della cache temporanea '%s': %s\n"
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "errore durante la chiusura di '%s': %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "errore durante la ridenominazione di '%s' in '%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

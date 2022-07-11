@@ -236,9 +236,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "сбой создания потока из сокета: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Вставьте карту с серийным номером"
-
 msgid "Admin PIN"
 msgstr "Административный PIN"
 
@@ -748,6 +745,10 @@ msgid "Wrong"
 msgstr "Неверно"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "ошибка переименования '%s' в '%s': %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Замечание: Фразу-пароль никогда не меняли.%0AПожалуйста, смените ее сейчас."
@@ -764,6 +765,18 @@ msgstr "Сменить фразу-пароль"
 
 msgid "I'll change it later"
 msgstr "Сменю позже"
+
+msgid "Please insert the card with serial number"
+msgstr "Вставьте карту с серийным номером"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"Процесс ssh запросил доступ к ключу%%0A  %s%%0A  (%s)%%0AВы хотите это "
+"позволить?"
 
 #, c-format
 msgid ""
@@ -7881,10 +7894,6 @@ msgstr "невозможно создание временного файла '%
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "ошибка закрытия '%s': %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "ошибка переименования '%s' в '%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

@@ -242,9 +242,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "從 socket 建立串流失敗: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "請插入下列序號的卡片:"
-
 msgid "Admin PIN"
 msgstr "管理者個人識別碼 (PIN)"
 
@@ -747,6 +744,10 @@ msgid "Wrong"
 msgstr "錯了"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "把 '%s' 重新命名成 '%s' 時出錯: %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "請注意: 密語從未變更過.%0A請現在就變更."
 
@@ -761,6 +762,17 @@ msgstr "更改密語"
 
 msgid "I'll change it later"
 msgstr "我稍後再變更"
+
+msgid "Please insert the card with serial number"
+msgstr "請插入下列序號的卡片:"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"有某個 ssh 程序提出使用金鑰 %%0A  %s%%0A  (%s)%%0A 之請求, 請問是否允許?"
 
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
@@ -7812,10 +7824,6 @@ msgstr "建立暫存快取目錄檔案 '%s' 失敗: %s\n"
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "關閉 '%s' 時出錯: %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "把 '%s' 重新命名成 '%s' 時出錯: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

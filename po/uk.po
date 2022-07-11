@@ -237,9 +237,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "не вдалося створити потік даних з сокета: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Будь ласка, вставте картку з серійним номером"
-
 msgid "Admin PIN"
 msgstr "Адміністративний пінкод"
 
@@ -748,6 +745,10 @@ msgid "Wrong"
 msgstr "Не підтверджую"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "помилка під час спроби перейменування «%s» на «%s»: %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Зауваження: цей пароль ще не змінювався.%0AБудь ласка, змініть його зараз."
@@ -765,6 +766,18 @@ msgstr "Змінити пароль"
 
 msgid "I'll change it later"
 msgstr "Я зміню його пізніше"
+
+msgid "Please insert the card with serial number"
+msgstr "Будь ласка, вставте картку з серійним номером"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"Процесом ssh надіслано запит щодо використання ключа%%0A  %s%%0A  "
+"(%s)%%0AНадати доступ до цього ключа?"
 
 #, c-format
 msgid ""
@@ -7994,10 +8007,6 @@ msgstr "не вдалося створити тимчасовий файл ка�
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "помилка під час спроби закрити «%s»: %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "помилка під час спроби перейменування «%s» на «%s»: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

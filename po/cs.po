@@ -264,9 +264,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "ze socketu se nepodařilo se vytvořit proud (stream): %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Prosím, vložte kartu se sériovým číslem"
-
 msgid "Admin PIN"
 msgstr "PIN správce"
 
@@ -772,6 +769,10 @@ msgid "Wrong"
 msgstr "Špatně"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "Poznámka: Toto heslo nikdy nebylo změněno.%0AProsím, nyní jej změňte."
 
@@ -786,6 +787,18 @@ msgstr "Změnit heslo"
 
 msgid "I'll change it later"
 msgstr "Změním jej později"
+
+msgid "Please insert the card with serial number"
+msgstr "Prosím, vložte kartu se sériovým číslem"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"Proces SSH si vyžádal použití klíče%%0A  %s%%0A  (%s)%%0APřejete si to "
+"povolit?"
 
 #, c-format
 msgid ""
@@ -7892,10 +7905,6 @@ msgstr "vytvoření dočasného kešového dir souboru „%s“ selhalo: %s\n"
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "chyba při uzavírání „%s“: %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

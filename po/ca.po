@@ -250,9 +250,6 @@ msgstr "Introduïu la contrasenya; aquesta ha de ser una frase secreta \n"
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s: no s'ha pogut crear la taula de dispersió: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr ""
-
 #, fuzzy
 msgid "Admin PIN"
 msgstr "Introduïu el nom d'usuari: "
@@ -775,6 +772,11 @@ msgstr ""
 msgid "Wrong"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
+
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -790,6 +792,13 @@ msgid "Change passphrase"
 msgstr "canvia la contrasenya"
 
 msgid "I'll change it later"
+msgstr ""
+
+msgid "Please insert the card with serial number"
+msgstr ""
+
+#, c-format
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8236,11 +8245,6 @@ msgstr "no es pot crear el directori «%s»: %s\n"
 
 #, fuzzy, c-format
 msgid "error closing '%s': %s\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
 msgstr "error en la lectura de «%s»: %s\n"
 
 # No em passe! ;)  ivb

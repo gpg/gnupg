@@ -261,9 +261,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "kunne ikke oprette strøm fra sokkel: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Indsæt venligst kortet med serielnummeret"
-
 msgid "Admin PIN"
 msgstr "Administrator-PIN"
 
@@ -828,6 +825,11 @@ msgstr "Korrekt"
 msgid "Wrong"
 msgstr "Forkert"
 
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "fejl ved læsning af »%s«: %s\n"
+
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "Bemærk: Denne adgangsfrase er aldrig blevet ændret.%0AÆndr den nu."
@@ -845,6 +847,18 @@ msgstr "Ændr adgangsfrasen"
 
 msgid "I'll change it later"
 msgstr "Jeg ændrer den senere"
+
+msgid "Please insert the card with serial number"
+msgstr "Indsæt venligst kortet med serielnummeret"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"En ssh-proces anmodte om brugen af nøgle%%0A  %s%%0A  (%s)%%0AØnsker du at "
+"tillade dette"
 
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
@@ -8312,11 +8326,6 @@ msgstr "kunne ikke oprette midlertidig fil »%s«: %s\n"
 #| msgid "error closing %s: %s\n"
 msgid "error closing '%s': %s\n"
 msgstr "fejl ved lukning af %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "fejl ved læsning af »%s«: %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"

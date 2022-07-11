@@ -235,9 +235,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "sokette akım oluşturulamadı: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr ""
-
 msgid "Admin PIN"
 msgstr "Yönetici PIN'i"
 
@@ -806,6 +803,11 @@ msgstr "Doğru"
 msgid "Wrong"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "\"%s\" okunurken hata: %s\n"
+
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -824,6 +826,13 @@ msgstr "Anahtar parolasını değiştir"
 
 msgid "I'll change it later"
 msgstr "Sonra değiştireceğim"
+
+msgid "Please insert the card with serial number"
+msgstr ""
+
+#, c-format
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
@@ -8340,11 +8349,6 @@ msgstr "`%s' geçici dosyası oluşturulamıyor: %s\n"
 #| msgid "error closing %s: %s\n"
 msgid "error closing '%s': %s\n"
 msgstr "%s kapanırken hata: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "\"%s\" okunurken hata: %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"

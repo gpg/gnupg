@@ -235,9 +235,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "Das Erzeugen eines Datenstroms aus dem Socket schlug fehl: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Bitte legen Sie die Karte mit der folgenden Seriennummer ein"
-
 msgid "Admin PIN"
 msgstr "Admin-PIN"
 
@@ -744,6 +741,10 @@ msgid "Wrong"
 msgstr "Falsch"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "Fehler beim Umbenennen von `%s` nach `%s': %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Hinweis: Dieses Passwort wurde noch nie geändert/%0ABitte ändern Sie sie "
@@ -762,6 +763,18 @@ msgstr "Das Passwort ändern"
 
 msgid "I'll change it later"
 msgstr "Ich werde sie später ändern"
+
+msgid "Please insert the card with serial number"
+msgstr "Bitte legen Sie die Karte mit der folgenden Seriennummer ein"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"Ein SSH Processs möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  "
+"(%s)%%0AErlauben Sie dies?"
 
 #, c-format
 msgid ""
@@ -7893,10 +7906,6 @@ msgstr ""
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "Fehler beim Schließen von `%s': %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "Fehler beim Umbenennen von `%s` nach `%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

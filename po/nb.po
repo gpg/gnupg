@@ -239,9 +239,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "klarte ikke å lage strøm av sokkel: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Sett inn kort med serienummer"
-
 msgid "Admin PIN"
 msgstr "Admin-PIN"
 
@@ -743,6 +740,10 @@ msgid "Wrong"
 msgstr "Feil"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "klarte ikke å gi «%s» det nye navnet «%s»: %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Merk: denne passordfrasen har aldri blitt endret.%0AEndre den umiddelbart."
@@ -760,6 +761,18 @@ msgstr "Endre passordfrase"
 
 msgid "I'll change it later"
 msgstr "Jeg endrer senere"
+
+msgid "Please insert the card with serial number"
+msgstr "Sett inn kort med serienummer"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"En ssh-prosess ber om tillatelse til å brukt nøkkel%%0A  %s%%0A  (%s)%%0AVil "
+"du tillate dette?"
 
 #, c-format
 msgid ""
@@ -7813,10 +7826,6 @@ msgstr "klarte ikke å lage midlertidig hurtiglagermappe-fil «%s»: %s\n"
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "feil under lukking av «%s»: %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "klarte ikke å gi «%s» det nye navnet «%s»: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

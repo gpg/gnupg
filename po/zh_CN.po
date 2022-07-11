@@ -223,9 +223,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "从以下套接字创建流时失败： %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "请插入具有以下序列号的卡"
-
 msgid "Admin PIN"
 msgstr "管理员 PIN"
 
@@ -712,6 +709,10 @@ msgid "Wrong"
 msgstr "错误"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "将‘%s’重命名为‘%s’时出现错误：%s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "注意：此密码从未被修改过。%0A请立即修改。"
 
@@ -726,6 +727,16 @@ msgstr "更改密码"
 
 msgid "I'll change it later"
 msgstr "稍后修改"
+
+msgid "Please insert the card with serial number"
+msgstr "请插入具有以下序列号的卡"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr "一个 ssh 进程请求使用密钥%%0A  %s%%0A  (%s)%%0A您想要允许这一请求吗？"
 
 #, c-format
 msgid ""
@@ -7472,10 +7483,6 @@ msgstr "创建临时缓存目录文件‘%s’时失败：%s\n"
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "关闭‘%s’时出现错误：%s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "将‘%s’重命名为‘%s’时出现错误：%s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

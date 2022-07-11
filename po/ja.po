@@ -230,9 +230,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "ソケットからストリームを作成するのに失敗しました: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "以下のシリアル番号のカードを挿入してください"
-
 msgid "Admin PIN"
 msgstr "管理者PIN"
 
@@ -726,6 +723,10 @@ msgid "Wrong"
 msgstr "誤り"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "'%s'から'%s'へ名前変更のエラー: %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "注意: パスフレーズは変更されていません。%0A今、変更してください。"
 
@@ -742,6 +743,18 @@ msgstr "パスフレーズを変更する"
 
 msgid "I'll change it later"
 msgstr "後で変更する"
+
+msgid "Please insert the card with serial number"
+msgstr "以下のシリアル番号のカードを挿入してください"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"sshプロセスが以下の鍵の使用を要求しました:%%0A  %s%%0A  (%s)%%0Aこの使用を認"
+"めますか?"
 
 #, c-format
 msgid ""
@@ -7544,10 +7557,6 @@ msgstr "一時キャッシュ・ディレクトリ・ファイル'%s'が作成�
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "'%s'でクローズのエラー: %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "'%s'から'%s'へ名前変更のエラー: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

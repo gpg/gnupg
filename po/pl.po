@@ -232,9 +232,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "nie udało się utworzyć strumienia z gniazda: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Proszę włożyć kartę z numerem seryjnym"
-
 msgid "Admin PIN"
 msgstr "PIN administracyjny"
 
@@ -738,6 +735,10 @@ msgid "Wrong"
 msgstr "Odrzuć"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "błąd zmiany nazwy ,,%s'' na ,,%s'': %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "Uwaga: To hasło nie było nigdy zmieniane.%0AProszę zmienić je teraz."
 
@@ -753,6 +754,17 @@ msgstr "Zmiana hasła"
 
 msgid "I'll change it later"
 msgstr "Zmienię je później"
+
+msgid "Please insert the card with serial number"
+msgstr "Proszę włożyć kartę z numerem seryjnym"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"Proces ssh zarządał użycia klucza%%0a  %s%%0A  (%s)%%0ACzy zezwolić na to?"
 
 #, c-format
 msgid ""
@@ -7921,10 +7933,6 @@ msgstr ""
 #, c-format
 msgid "error closing '%s': %s\n"
 msgstr "błąd zamykania ,,%s'': %s\n"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "błąd zmiany nazwy ,,%s'' na ,,%s'': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"
