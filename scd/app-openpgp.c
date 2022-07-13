@@ -6259,15 +6259,28 @@ parse_algorithm_attribute (app_t app, int keyno)
       app->app_local->keyattr[keyno].ecc.algo = *buffer;
       app->app_local->keyattr[keyno].ecc.flags = 0;
 
-      if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY
-	  || buffer[buflen-1] == 0x00 || buffer[buflen-1] == 0xff)
-        { /* Found "pubkey required"-byte for private key template.  */
-          oidlen--;
-          if (buffer[buflen-1] == 0xff)
-            app->app_local->keyattr[keyno].ecc.flags |= ECC_FLAG_PUBKEY;
+      if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY)
+        {
+          /* Yubikey implementations vary.
+           * Firmware version 5.2 returns "pubkey required"-byte with
+           * 0x00, but after removal and second time insertion, it
+           * returns bogus value there.
+           * Firmware version 5.4 returns none.
+           */
+          curve = ecc_curve (buffer + 1, oidlen);
+          if (!curve)
+            curve = ecc_curve (buffer + 1, oidlen - 1);
         }
-
-      curve = ecc_curve (buffer + 1, oidlen);
+      else
+        {
+          if (buffer[buflen-1] == 0x00 || buffer[buflen-1] == 0xff)
+            { /* Found "pubkey required"-byte for private key template.  */
+              oidlen--;
+              if (buffer[buflen-1] == 0xff)
+                app->app_local->keyattr[keyno].ecc.flags |= ECC_FLAG_PUBKEY;
+            }
+          curve = ecc_curve (buffer + 1, oidlen);
+        }
 
       if (!curve)
         {
