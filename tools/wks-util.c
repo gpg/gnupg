@@ -790,6 +790,12 @@ wks_fname_from_userid (const char *userid, int hash_only,
   domain = strchr (addrspec, '@');
   log_assert (domain);
   domain++;
+  if (strchr (domain, '/') || strchr (domain, '\\'))
+    {
+      log_info ("invalid domain detected ('%s')\n", domain);
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
 
   /* Hash user ID and create filename.  */
   s = strchr (addrspec, '@');
@@ -845,6 +851,11 @@ wks_compute_hu_fname (char **r_fname, const char *addrspec)
   if (!domain || !domain[1] || domain == addrspec)
     return gpg_error (GPG_ERR_INV_ARG);
   domain++;
+  if (strchr (domain, '/') || strchr (domain, '\\'))
+    {
+      log_info ("invalid domain detected ('%s')\n", domain);
+      return gpg_error (GPG_ERR_NOT_FOUND);
+    }
 
   gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, addrspec, domain - addrspec - 1);
   hash = zb32_encode (sha1buf, 8*20);
@@ -893,6 +904,11 @@ ensure_policy_file (const char *addrspec)
   if (!domain || !domain[1] || domain == addrspec)
     return gpg_error (GPG_ERR_INV_ARG);
   domain++;
+  if (strchr (domain, '/') || strchr (domain, '\\'))
+    {
+      log_info ("invalid domain detected ('%s')\n", domain);
+      return gpg_error (GPG_ERR_NOT_FOUND);
+    }
 
   /* Create the filename.  */
   fname = make_filename_try (opt.directory, domain, "policy", NULL);

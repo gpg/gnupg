@@ -1379,6 +1379,15 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   domain = strchr (address, '@');
   log_assert (domain && domain[1]);
   domain++;
+  if (strchr (domain, '/') || strchr (domain, '\\')
+      || strchr (nonce, '/') || strchr (nonce, '\\'))
+    {
+      log_info ("invalid domain or nonce received ('%s', '%s')\n",
+                domain, nonce);
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
+
   fname = make_filename_try (opt.directory, domain, "pending", nonce, NULL);
   if (!fname)
     {
