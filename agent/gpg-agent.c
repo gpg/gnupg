@@ -2767,6 +2767,7 @@ putty_message_thread (void *arg)
 #define AGENT_PIPE_NAME "\\\\.\\pipe\\openssh-ssh-agent"
 /* FIXME: Don't know exact semantics, but copied from Win32-Openssh */
 #define SDDL_STR "D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;0x12019b;;;AU)"
+#define BUFSIZE 5 * 1024
 
 /* The thread handling Win32-OpenSSH requests through NamedPipe.  */
 static void *
@@ -2774,7 +2775,6 @@ win32_openssh_thread (void *arg)
 {
   HANDLE pipe;
   SECURITY_ATTRIBUTES sa;
-  const char *;
 
   (void)arg;
 
@@ -2783,10 +2783,10 @@ win32_openssh_thread (void *arg)
 
   memset(&sa, 0, sizeof (SECURITY_ATTRIBUTES));
   sa.nLength = sizeof (sa);
-  if (!ConvertStringSecurityDescriptorToSecurityDescriptorA (SDDL_STR, SDDL_REVISION_1,
-                                                             &sa.lpSecurityDescriptor, &sa.nLength))
+  if (!ConvertStringSecurityDescriptorToSecurityDescriptorA
+      (SDDL_STR, SDDL_REVISION_1, &sa.lpSecurityDescriptor, &sa.nLength))
     {
-      log_error ("cannot convert sddl: %d\n", GetLastError ());
+      log_error ("cannot convert sddl: %ld\n", GetLastError ());
       return NULL;
     }
 
@@ -2794,12 +2794,12 @@ win32_openssh_thread (void *arg)
 
   while (1)
     {
-      /* The message loop runs as thread independent from our nPth system.
-         This also means that we need to make sure that we switch back to
-         our system before calling any no-windows function.  */
-      npth_unprotect ();
+      ctrl_t ctrl = NULL;
+      estream_t ssh_stream = NULL;
+      es_syshd_t syshd;
 
-      pipe = CreateNamedPipeW (AGENT_PIPE_NAME,
+      npth_unprotect ();
+      pipe = CreateNamedPipeA (AGENT_PIPE_NAME,
                                PIPE_ACCESS_DUPLEX, // | FILE_FLAG_OVERLAPPED
                                PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
                                PIPE_UNLIMITED_INSTANCES,
@@ -2807,25 +2807,58 @@ win32_openssh_thread (void *arg)
 
       if (pipe == INVALID_HANDLE_VALUE)
         {
-          log_error ("cannot create pipe: %d\n", GetLastError());
+	  npth_protect ();
+          log_error ("cannot create pipe: %ld\n", GetLastError());
           break;
         }
 
       if (ConnectNamedPipe (pipe, NULL) != FALSE)
         {
-          CloseHandle (pipe);
           npth_protect ();
+          CloseHandle (pipe);
           log_error ("ConnectNamedPipe returned TRUE unexpectedly\n");
-          return NULL;
+	  break;
         }
 
-      /* FIXME: Here, handle the requests from ssh client */
+      npth_protect ();
+      ctrl = xtrycalloc (1, sizeof *ctrl);
+      if (!ctrl)
+	{
+	  CloseHandle (pipe);
+	  log_error ("error allocating connection control data: %s\n",
+		     strerror (errno));
+	  break;
+	}
 
+      ctrl->session_env = session_env_new ();
+      if (!ctrl->session_env)
+	{
+	  log_error ("error allocating session environment block: %s\n",
+		     strerror (errno));
+	  agent_deinit_default_ctrl (ctrl);
+	  xfree (ctrl);
+	  CloseHandle (pipe);
+	  break;
+	}
+      agent_init_default_ctrl (ctrl);
+
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = pipe;
+      ssh_stream = es_sysopen (&syshd, "r+");
+      if (!ssh_stream)
+	{
+	  agent_deinit_default_ctrl (ctrl);
+	  xfree (ctrl);
+	  CloseHandle (pipe);
+	  break;
+	}
+
+      start_command_handler_ssh_stream (ctrl, ssh_stream);
+
+      agent_deinit_default_ctrl (ctrl);
+      xfree (ctrl);
       CloseHandle (pipe);
     }
-
-  /* Back to nPth.  */
-  npth_protect ();
 
   if (opt.verbose)
     log_info ("Win32-OpenSSH thread stopped\n");

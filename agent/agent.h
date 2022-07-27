@@ -453,6 +453,7 @@ gpg_error_t ssh_search_control_file (ssh_control_file_t cf,
                                      int *r_disabled,
                                      int *r_ttl, int *r_confirm);
 
+void start_command_handler_ssh_stream (ctrl_t ctrl, estream_t stream);
 void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 
 /*-- findkey.c --*/
