@@ -140,6 +140,7 @@ enum cmd_and_opt_values
   oSSHSupport,
   oSSHFingerprintDigest,
   oPuttySupport,
+  oWin32OpenSSHSupport,
   oDisableScdaemon,
   oDisableCheckOwnSocket,
   oS2KCount,
@@ -225,6 +226,13 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oPuttySupport, "enable-putty-support",
 #ifdef HAVE_W32_SYSTEM
                 /* */           N_("enable putty support")
+#else
+                /* */           "@"
+#endif
+                ),
+  ARGPARSE_s_n (oWin32OpenSSHSupport, "enable-win32-openssh-support",
+#ifdef HAVE_W32_SYSTEM
+                /* */           N_("enable Win32-OpenSSH support")
 #else
                 /* */           "@"
 #endif
@@ -357,6 +365,9 @@ static int putty_support;
    value.  Putty currently (0.62) uses 8k, thus 16k should be enough
    for the foreseeable future.  */
 #define PUTTY_IPC_MAXLEN 16384
+
+/* Flag indicating that support for Win32-OpenSSH has been enabled.  */
+static int win32_openssh_support;
 #endif /*HAVE_W32_SYSTEM*/
 
 /* The list of open file descriptors at startup.  Note that this list
@@ -1286,6 +1297,12 @@ main (int argc, char **argv)
         case oPuttySupport:
 #        ifdef HAVE_W32_SYSTEM
           putty_support = 1;
+#        endif
+          break;
+
+        case oWin32OpenSSHSupport:
+#        ifdef HAVE_W32_SYSTEM
+          win32_openssh_support = 1;
 #        endif
           break;
 
@@ -2745,6 +2762,75 @@ putty_message_thread (void *arg)
     log_info ("putty message loop thread stopped\n");
   return NULL;
 }
+
+/* FIXME: it would be good to be specified by an option.  */
+#define AGENT_PIPE_NAME "\\\\.\\pipe\\openssh-ssh-agent"
+/* FIXME: Don't know exact semantics, but copied from Win32-Openssh */
+#define SDDL_STR "D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;0x12019b;;;AU)"
+
+/* The thread handling Win32-OpenSSH requests through NamedPipe.  */
+static void *
+win32_openssh_thread (void *arg)
+{
+  HANDLE pipe;
+  SECURITY_ATTRIBUTES sa;
+  const char *;
+
+  (void)arg;
+
+  if (opt.verbose)
+    log_info ("Win32-OpenSSH thread started\n");
+
+  memset(&sa, 0, sizeof (SECURITY_ATTRIBUTES));
+  sa.nLength = sizeof (sa);
+  if (!ConvertStringSecurityDescriptorToSecurityDescriptorA (SDDL_STR, SDDL_REVISION_1,
+                                                             &sa.lpSecurityDescriptor, &sa.nLength))
+    {
+      log_error ("cannot convert sddl: %d\n", GetLastError ());
+      return NULL;
+    }
+
+  sa.bInheritHandle = FALSE;
+
+  while (1)
+    {
+      /* The message loop runs as thread independent from our nPth system.
+         This also means that we need to make sure that we switch back to
+         our system before calling any no-windows function.  */
+      npth_unprotect ();
+
+      pipe = CreateNamedPipeW (AGENT_PIPE_NAME,
+                               PIPE_ACCESS_DUPLEX, // | FILE_FLAG_OVERLAPPED
+                               PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+                               PIPE_UNLIMITED_INSTANCES,
+                               BUFSIZE, BUFSIZE, 0, &sa);
+
+      if (pipe == INVALID_HANDLE_VALUE)
+        {
+          log_error ("cannot create pipe: %d\n", GetLastError());
+          break;
+        }
+
+      if (ConnectNamedPipe (pipe, NULL) != FALSE)
+        {
+          CloseHandle (pipe);
+          npth_protect ();
+          log_error ("ConnectNamedPipe returned TRUE unexpectedly\n");
+          return NULL;
+        }
+
+      /* FIXME: Here, handle the requests from ssh client */
+
+      CloseHandle (pipe);
+    }
+
+  /* Back to nPth.  */
+  npth_protect ();
+
+  if (opt.verbose)
+    log_info ("Win32-OpenSSH thread stopped\n");
+  return NULL;
+}
 #endif /*HAVE_W32_SYSTEM*/
 
 
@@ -2939,6 +3025,17 @@ handle_connections (gnupg_fd_t listen_fd,
       if (ret)
         {
           log_error ("error spawning putty message loop: %s\n", strerror (ret));
+        }
+    }
+
+  if (win32_openssh_support)
+    {
+      npth_t thread;
+
+      ret = npth_create (&thread, &tattr, win32_openssh_thread, NULL);
+      if (ret)
+        {
+          log_error ("error spawning Win32-OpenSSH loop: %s\n", strerror (ret));
         }
     }
 #endif /*HAVE_W32_SYSTEM*/
