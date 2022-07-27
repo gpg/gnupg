@@ -808,17 +808,65 @@ get_policy_flags (policy_flags_t policy, const char *mbox)
 }
 
 
+/* Create the name for the pending file from NONCE and ADDRSPEC and
+ * store it at R_NAME.  */
+static gpg_error_t
+make_pending_fname (const char *nonce, const char *addrspec, char **r_name)
+{
+  gpg_error_t err = 0;
+  const char *domain;
+  char *addrspechash = NULL;
+  char sha1buf[20];
+
+  *r_name = NULL;
+
+  domain = addrspec? strchr (addrspec, '@') : NULL;
+  if (!domain || !domain[1] || domain == addrspec)
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+  domain++;
+  if (strchr (domain, '/') || strchr (domain, '\\'))
+    {
+      log_info ("invalid domain detected ('%s')\n", domain);
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
+  gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, addrspec, domain - addrspec - 1);
+  addrspechash = zb32_encode (sha1buf, 8*20);
+  if (!addrspechash)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  *r_name = strconcat (nonce, ".", addrspechash, NULL);
+  if (!*r_name)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+ leave:
+  xfree (addrspechash);
+  return err;
+}
+
+
 /* We store the key under the name of the nonce we will then send to
  * the user.  On success the nonce is stored at R_NONCE and the file
- * name at R_FNAME.  */
+ * name at R_FNAME.  ADDRSPEC is used as part of the pending file name
+ * so that the nonce is associated with an address */
 static gpg_error_t
-store_key_as_pending (const char *dir, estream_t key,
+store_key_as_pending (const char *dir, estream_t key, const char *addrspec,
                       char **r_nonce, char **r_fname)
 {
   gpg_error_t err;
   char *dname = NULL;
   char *fname = NULL;
   char *nonce = NULL;
+  char *pendingname = NULL;
   estream_t outfp = NULL;
   char buffer[1024];
   size_t nbytes, nwritten;
@@ -847,7 +895,11 @@ store_key_as_pending (const char *dir, estream_t key,
       goto leave;
     }
 
-  fname = strconcat (dname, "/", nonce, NULL);
+  err = make_pending_fname (nonce, addrspec, &pendingname);
+  if (err)
+    goto leave;
+
+  fname = strconcat (dname, "/", pendingname, NULL);
   if (!fname)
     {
       err = gpg_error_from_syserror ();
@@ -916,6 +968,7 @@ store_key_as_pending (const char *dir, estream_t key,
       xfree (fname);
     }
   xfree (dname);
+  xfree (pendingname);
   return err;
 }
 
@@ -1206,7 +1259,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
 
           xfree (nonce);
           xfree (fname);
-          err = store_key_as_pending (dname, key, &nonce, &fname);
+          err = store_key_as_pending (dname, key, sl->mbox, &nonce, &fname);
           if (err)
             goto leave;
 
@@ -1362,6 +1415,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   char *fnewname = NULL;
   estream_t key = NULL;
   char *hash = NULL;
+  char *pendingname = NULL;
   const char *domain;
   const char *s;
   uidinfo_list_t sl;
@@ -1387,7 +1441,12 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
       goto leave;
     }
 
-  fname = make_filename_try (opt.directory, domain, "pending", nonce, NULL);
+  err = make_pending_fname (nonce, address, &pendingname);
+  if (err)
+    goto leave;
+
+  fname = make_filename_try (opt.directory, domain, "pending", pendingname,
+                             NULL);
   if (!fname)
     {
       err = gpg_error_from_syserror ();
@@ -1499,6 +1558,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   xfree (fnewname);
   xfree (fname);
   xfree (nonce2);
+  xfree (pendingname);
   return err;
 }
 
@@ -1725,7 +1785,8 @@ expire_one_domain (const char *top_dirname, const char *domain)
                      __func__, gpg_strerror (err));
           goto leave;
         }
-      if (strlen (dentry->d_name) != 32)
+      /* The old files are 32 bytes, those created since 2.3.8 are 65 bytes. */
+      if (strlen (dentry->d_name) != 32 && strlen (dentry->d_name) != 65)
         {
           log_info ("garbage file '%s' ignored\n", fname);
           continue;
