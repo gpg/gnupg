@@ -2808,15 +2808,15 @@ win32_openssh_thread (void *arg)
       if (pipe == INVALID_HANDLE_VALUE)
         {
 	  npth_protect ();
-          log_error ("cannot create pipe: %ld\n", GetLastError());
+          log_error ("cannot create pipe: %ld\n", GetLastError ());
           break;
         }
 
-      if (ConnectNamedPipe (pipe, NULL) != FALSE)
+      if (ConnectNamedPipe (pipe, NULL) == 0)
         {
           npth_protect ();
           CloseHandle (pipe);
-          log_error ("ConnectNamedPipe returned TRUE unexpectedly\n");
+          log_error ("Error at ConnectNamedPipe: %ld\n", GetLastError ());
 	  break;
         }
 
@@ -2844,7 +2844,7 @@ win32_openssh_thread (void *arg)
 
       syshd.type = ES_SYSHD_HANDLE;
       syshd.u.handle = pipe;
-      ssh_stream = es_sysopen (&syshd, "r+");
+      ssh_stream = es_sysopen (&syshd, "r+b");
       if (!ssh_stream)
 	{
 	  agent_deinit_default_ctrl (ctrl);
