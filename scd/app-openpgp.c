@@ -309,6 +309,7 @@ get_manufacturer (unsigned int no)
     case 0x000B: return "Feitian Technologies";
     case 0x000D: return "Dangerous Things";
     case 0x000E: return "Excelsecu";
+    case 0x000F: return "Nitrokey 3";
 
     case 0x002A: return "Magrathea";
     case 0x0042: return "GnuPG e.V.";
