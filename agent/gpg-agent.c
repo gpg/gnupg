@@ -2765,8 +2765,6 @@ putty_message_thread (void *arg)
 
 /* FIXME: it would be good to be specified by an option.  */
 #define AGENT_PIPE_NAME "\\\\.\\pipe\\openssh-ssh-agent"
-/* FIXME: Don't know exact semantics, but copied from Win32-Openssh */
-#define SDDL_STR "D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;0x12019b;;;AU)"
 #define BUFSIZE 5 * 1024
 
 /* The thread handling Win32-OpenSSH requests through NamedPipe.  */
@@ -2774,23 +2772,11 @@ static void *
 win32_openssh_thread (void *arg)
 {
   HANDLE pipe;
-  SECURITY_ATTRIBUTES sa;
 
   (void)arg;
 
   if (opt.verbose)
     log_info ("Win32-OpenSSH thread started\n");
-
-  memset(&sa, 0, sizeof (SECURITY_ATTRIBUTES));
-  sa.nLength = sizeof (sa);
-  if (!ConvertStringSecurityDescriptorToSecurityDescriptorA
-      (SDDL_STR, SDDL_REVISION_1, &sa.lpSecurityDescriptor, &sa.nLength))
-    {
-      log_error ("cannot convert sddl: %ld\n", GetLastError ());
-      return NULL;
-    }
-
-  sa.bInheritHandle = FALSE;
 
   while (1)
     {
@@ -2799,11 +2785,11 @@ win32_openssh_thread (void *arg)
       es_syshd_t syshd;
 
       npth_unprotect ();
-      pipe = CreateNamedPipeA (AGENT_PIPE_NAME,
-                               PIPE_ACCESS_DUPLEX, // | FILE_FLAG_OVERLAPPED
-                               PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+      pipe = CreateNamedPipeA (AGENT_PIPE_NAME, PIPE_ACCESS_DUPLEX,
+                               (PIPE_TYPE_BYTE | PIPE_READMODE_BYTE
+                                | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS),
                                PIPE_UNLIMITED_INSTANCES,
-                               BUFSIZE, BUFSIZE, 0, &sa);
+                               BUFSIZE, BUFSIZE, 0, NULL);
 
       if (pipe == INVALID_HANDLE_VALUE)
         {
