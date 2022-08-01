@@ -147,6 +147,8 @@ all-local:
 	     do ln -sf ../scd/$$i .; done; \
 	 for i in gpg-preset-passphrase; \
 	     do ln -sf ../agent/$$i .; done; \
+	 for i in tpm2daemon; \
+             do [ -f ../tpm2d/$$i ] && ln -sf ../tpm2d/$$i .; done; \
 	 echo "created links to binaries" )
 
 

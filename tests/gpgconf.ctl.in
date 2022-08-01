@@ -9,7 +9,7 @@
 # now is "rootdir" which must be followed by one optional space, an
 # equal sign, and the value for the root directory.  Environment
 # variables are substituted in standard shell manner, the final value
-# must start with a slash, trailing slashed are stripped.
+# must start with a slash, trailing slashes are stripped.
 
 sysconfdir = $GNUPG_BUILD_ROOT/etc
 rootdir = $GNUPG_BUILD_ROOT/
