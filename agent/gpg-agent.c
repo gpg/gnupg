@@ -2822,10 +2822,7 @@ win32_openssh_thread (void *arg)
       if (!GetNamedPipeClientProcessId (pipe, &ctrl->client_pid))
         log_info ("failed to get client process id: %ld\n", GetLastError ());
       else
-        {
-          log_info ("PID: %ld\n", ctrl->client_pid);
-          ctrl->client_uid = -1;
-        }
+        ctrl->client_uid = -1;
 #endif
 
       ctrl->session_env = session_env_new ();
