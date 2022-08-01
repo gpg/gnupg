@@ -3785,7 +3785,7 @@ start_command_handler_ssh_stream (ctrl_t ctrl, estream_t stream)
   if (ret)
     {
       log_error ("failed to disable buffering on socket stream: %s\n",
-		 strerror (errno));
+                 strerror (errno));
       goto out;
     }
 
@@ -3793,7 +3793,7 @@ start_command_handler_ssh_stream (ctrl_t ctrl, estream_t stream)
   while ( !ssh_request_process (ctrl, stream) )
     {
       /* Check whether we have reached EOF before trying to read
-	 another request.  */
+         another request.  */
       int c;
 
       c = es_fgetc (stream);
@@ -3830,7 +3830,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   if (!stream_sock)
     {
       log_error (_("failed to create stream from socket: %s\n"),
-		 strerror (errno));
+                 strerror (errno));
       return;
     }
 
