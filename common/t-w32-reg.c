@@ -56,7 +56,7 @@ test_read_registry (void)
 
   string2 = read_w32_reg_string
     ("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion"
-     "\\Internet Settings:User Agent");
+     "\\Internet Settings:User Agent", NULL);
   if (!string2)
     fail (1);
   fprintf (stderr, "User agent: %s\n", string2);
@@ -76,7 +76,7 @@ main (int argc, char **argv)
 {
   if (argc > 1)
     {
-      char *string = read_w32_reg_string (argv[1]);
+      char *string = read_w32_reg_string (argv[1], NULL);
       printf ("%s -> %s\n", argv[1], string? string : "(null)");
       xfree (string);
     }

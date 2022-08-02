@@ -1357,7 +1357,7 @@ show_other_registry_entries (estream_t outfp)
     { 1, "HKLM\\Software\\Gpg4win:VS-Desktop-Version" },
     { 1, "\\" GNUPG_REGISTRY_DIR ":HomeDir" },
     { 1, "\\" GNUPG_REGISTRY_DIR ":DefaultLogFile" },
-    { 2, "Software\\Microsoft\\Office\\Outlook\\Addins\\GNU.GpgOL"
+    { 2, "\\Software\\Microsoft\\Office\\Outlook\\Addins\\GNU.GpgOL"
       ":LoadBehavior" },
     { 2, "HKCU\\Software\\Microsoft\\Office\\16.0\\Outlook\\Options\\Mail:"
       "ReadAsPlain" },
@@ -1389,6 +1389,7 @@ show_other_registry_entries (estream_t outfp)
   int group = 0;
   char *namebuf = NULL;
   const char *name;
+  int from_hklm;
 
   for (idx=0; (name = names[idx].name); idx++)
     {
@@ -1402,7 +1403,7 @@ show_other_registry_entries (estream_t outfp)
           name = namebuf;
         }
 
-      value = read_w32_reg_string (name);
+      value = read_w32_reg_string (name, &from_hklm);
       if (!value)
         continue;
 
@@ -1417,12 +1418,11 @@ show_other_registry_entries (estream_t outfp)
         }
 
       if (group == 3)
-        es_fprintf (outfp, "### %s=%s\n", names[idx].name, value);
+        es_fprintf (outfp, "### %s=%s%s\n", names[idx].name, value,
+                    from_hklm? " [hklm]":"");
       else
-        es_fprintf (outfp, "### %s\n###   ->%s<-\n", name, value);
-
-      /* FIXME: We may want to add an indiction whethe found via HKLM
-       * or HKCU.  */
+        es_fprintf (outfp, "### %s\n###   ->%s<-%s\n", name, value,
+                    from_hklm? " [hklm]":"");
 
       xfree (value);
     }
@@ -1521,14 +1521,16 @@ show_configs (estream_t outfp)
         if ((sl->flags & 1))
           {
             char *p;
+            int from_hklm;
 
             if (!any)
               {
                 any = 1;
                 es_fprintf (outfp, "###\n### Encountered in config files:\n");
               }
-            if ((p = read_w32_reg_string (sl->d)))
-              es_fprintf (outfp, "### %s ->%s<-\n", sl->d, p);
+            if ((p = read_w32_reg_string (sl->d, &from_hklm)))
+              es_fprintf (outfp, "### %s ->%s<-%s\n", sl->d, p,
+                          from_hklm? " [hklm]":"");
             else
               es_fprintf (outfp, "### %s [not set]\n", sl->d);
             xfree (p);
