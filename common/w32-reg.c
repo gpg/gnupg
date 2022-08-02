@@ -229,6 +229,19 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
           xfree (tmp);
         }
     }
+  else if (type == REG_DWORD && nbytes == sizeof (DWORD))
+    {
+      char *tmp;
+      DWORD dummy;
+
+      memcpy (&dummy, result, nbytes);
+      tmp = xtryasprintf ("%u", (unsigned int)dummy);
+      if (tmp)
+        {
+          xfree (result);
+          result = tmp;
+        }
+    }
 
  leave:
   RegCloseKey (key_handle);
@@ -250,14 +263,19 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
  *
  * Note that the first backslash and the first colon act as delimiters.
  *
- * Returns a malloced string or NULL if not found.
+ * Returns a malloced string or NULL if not found.  If R_HKLM_FALLBACK
+ * is not NULL, no class was given, and the result came from HKLM,
+ * true is stored there.
  */
 char *
-read_w32_reg_string (const char *key_arg)
+read_w32_reg_string (const char *key_arg, int *r_hklm_fallback)
 {
   char *key;
   char *p1, *p2;
-  char *result;
+  char *result, *result2;
+
+  if (r_hklm_fallback)
+    *r_hklm_fallback = 0;
 
   if (!key_arg)
     return NULL;
@@ -280,6 +298,15 @@ read_w32_reg_string (const char *key_arg)
     *p2++ = 0;
 
   result = read_w32_registry_string (*key? key : NULL, p1, p2);
+  if (result && !*key && r_hklm_fallback)
+    {
+      /* No key given - see whether the result came from HKCU or HKLM.  */
+      result2 = read_w32_registry_string ("HKCU", p1, p2);
+      if (result2)
+        xfree (result2);
+      else
+        *r_hklm_fallback = 1;
+    }
   xfree (key);
   return result;
 }

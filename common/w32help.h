@@ -44,7 +44,7 @@ char **w32_parse_commandline (char *cmdline, int globing, int *r_argv,
 /*-- w32-reg.c --*/
 char *read_w32_registry_string (const char *root,
 				const char *dir, const char *name );
-char *read_w32_reg_string (const char *key);
+char *read_w32_reg_string (const char *key, int *r_hklm_fallback);
 
 /* Other stuff.  */
 #ifdef HAVE_W32CE_SYSTEM
