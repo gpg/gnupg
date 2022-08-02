@@ -56,6 +56,15 @@ struct kidlist_item
   int reason;
 };
 
+/* An object to build a list of symkey packet info.  */
+struct symlist_item
+{
+  struct symlist_item *next;
+  int cipher_algo;
+  int cfb_mode;
+  int other_error;
+};
+
 
 /*
  * Object to hold the processing context.
@@ -97,6 +106,7 @@ struct mainproc_context
   int trustletter;  /* Temporary usage in list_node. */
   ulong symkeys;    /* Number of symmetrically encrypted session keys.  */
   struct kidlist_item *pkenc_list; /* List of encryption packets. */
+  struct symlist_item *symenc_list; /* List of sym. encryption packets. */
   int seen_pkt_encrypted_aead; /* PKT_ENCRYPTED_AEAD packet seen. */
   int seen_pkt_encrypted_mdc;  /* PKT_ENCRYPTED_MDC packet seen. */
   struct {
@@ -143,6 +153,13 @@ release_list( CTX c )
       c->pkenc_list = tmp;
     }
   c->pkenc_list = NULL;
+  while (c->symenc_list)
+    {
+      struct symlist_item *tmp = c->symenc_list->next;
+      xfree (c->symenc_list);
+      c->symenc_list = tmp;
+    }
+  c->symenc_list = NULL;
   c->list = NULL;
   c->any.data = 0;
   c->any.uncompress_failed = 0;
@@ -471,6 +488,20 @@ proc_symkey_enc (CTX c, PACKET *pkt)
     }
 
  leave:
+  /* Record infos from the packet.  */
+  {
+    struct symlist_item  *symitem;
+    symitem = xcalloc (1, sizeof *symitem);
+    if (enc)
+      {
+        symitem->cipher_algo = enc->cipher_algo;
+        symitem->cfb_mode = !enc->aead_algo;
+      }
+    else
+      symitem->other_error = 1;
+    symitem->next = c->symenc_list;
+    c->symenc_list = symitem;
+  }
   c->symkeys++;
   free_packet (pkt, NULL);
 }
@@ -735,8 +766,6 @@ proc_encrypted (CTX c, PACKET *pkt)
 
   /* Compute compliance with CO_DE_VS.  */
   if (!result && is_status_enabled ()
-      /* Symmetric encryption and asymmetric encryption voids compliance.  */
-      && (c->symkeys != !!c->pkenc_list )
       /* Overriding session key voids compliance.  */
       && !opt.override_session_key
       /* Check symmetric cipher.  */
@@ -745,14 +774,26 @@ proc_encrypted (CTX c, PACKET *pkt)
                                     GCRY_CIPHER_MODE_CFB))
     {
       struct kidlist_item *i;
+      struct symlist_item *si;
       int compliant = 1;
       PKT_public_key *pk = xmalloc (sizeof *pk);
 
       if ( !(c->pkenc_list || c->symkeys) )
         log_debug ("%s: where else did the session key come from?\n", __func__);
 
-      /* Now check that every key used to encrypt the session key is
-       * compliant.  */
+      /* Check that all seen symmetric key packets use compliant
+       * algos.  This is so that no non-compliant encrypted session
+       * key can be sneaked in.  */
+      for (si = c->symenc_list; si && compliant; si = si->next)
+        {
+          if (!si->cfb_mode
+              || !gnupg_cipher_is_compliant (CO_DE_VS, si->cipher_algo,
+                                             GCRY_CIPHER_MODE_CFB))
+            compliant = 0;
+        }
+
+      /* Check that every public key used to encrypt the session key
+       * is compliant.  */
       for (i = c->pkenc_list; i && compliant; i = i->next)
         {
           memset (pk, 0, sizeof *pk);
@@ -877,7 +918,7 @@ proc_encrypted (CTX c, PACKET *pkt)
 
 
   /* If we concluded that the decryption was compliant, issue a
-   * compliance status before the thed end of decryption status.  */
+   * compliance status before the end of the decryption status.  */
   if (compliance_de_vs == (4|2|1))
     {
       write_status_strings (STATUS_DECRYPTION_COMPLIANCE_MODE,
