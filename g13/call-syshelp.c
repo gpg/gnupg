@@ -78,7 +78,6 @@ start_syshelp (ctrl_t ctrl, assuan_context_t *r_ctx)
   gpg_error_t err;
   assuan_context_t ctx;
   assuan_fd_t no_close_list[3];
-  int i;
 
   *r_ctx = NULL;
 
