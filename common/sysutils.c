@@ -779,8 +779,12 @@ gnupg_allow_set_foregound_window (pid_t pid)
               "gnupg_allow_set_foregound_window", (unsigned long)pid);
 #if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
   else if (!AllowSetForegroundWindow ((pid_t)pid == (pid_t)(-1)?ASFW_ANY:pid))
-    log_info ("AllowSetForegroundWindow(%lu) failed: %s\n",
-               (unsigned long)pid, w32_strerror (-1));
+    {
+      char *flags = getenv ("GNUPG_EXEC_DEBUG_FLAGS");
+      if (flags && (atoi (flags) & 2))
+        log_info ("AllowSetForegroundWindow(%lu) failed: %s\n",
+                  (unsigned long)pid, w32_strerror (-1));
+    }
 #endif
 }
 

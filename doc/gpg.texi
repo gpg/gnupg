@@ -3818,6 +3818,12 @@ Operation is further controlled by a few environment variables:
   under operating systems without proper support to figure out the
   name of a process' text file.
 
+  @item GNUPG_EXEC_DEBUG_FLAGS
+  @efindex GNUPG_EXEC_DEBUG_FLAGS
+  This variable allows to enable diagnostics for process management.
+  A numeric decimal value is expected.  Bit 0 enables general
+  diagnostics, bit 1 enables certain warnings on Windows.
+
 @end table
 
 When calling the gpg-agent component @command{@gpgname} sends a set of
