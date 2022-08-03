@@ -519,8 +519,11 @@ check_signature (ctrl_t ctrl,
           /* dump_cert ("from ocsp response", cert); */
           cref = xtrymalloc (sizeof *cref);
           if (!cref)
-            log_error (_("allocating list item failed: %s\n"),
-                       gcry_strerror (err));
+            {
+              err = gpg_error_from_syserror ();
+              log_error (_("allocating list item failed: %s\n"),
+                         gpg_strerror (err));
+            }
           else if (!cache_cert_silent (cert, &cref->fpr))
             {
               cref->next = ctrl->ocsp_certs;
