@@ -1430,7 +1430,77 @@ show_other_registry_entries (estream_t outfp)
   es_fprintf (outfp, "###\n");
   xfree (namebuf);
 }
+
+
+/* Print registry entries take from a configuration file.  */
+static void
+show_registry_entries_from_file (estream_t outfp)
+{
+  gpg_error_t err;
+  char *fname;
+  estream_t fp;
+  char *line = NULL;
+  size_t length_of_line = 0;
+  size_t  maxlen;
+  ssize_t len;
+  char *value = NULL;
+  int from_hklm;
+  int any = 0;
+
+  fname = make_filename (gnupg_datadir (), "gpgconf.rnames", NULL);
+  fp = es_fopen (fname, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      if (gpg_err_code (err) != GPG_ERR_ENOENT)
+        log_error ("error opening '%s': %s\n", fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  maxlen = 2048; /* Set limit.  */
+  while ((len = es_read_line (fp, &line, &length_of_line, &maxlen)) > 0)
+    {
+      if (!maxlen)
+        {
+          err = gpg_error (GPG_ERR_LINE_TOO_LONG);
+          log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+          goto leave;
+        }
+      trim_spaces (line);
+      if (*line == '#')
+        continue;
+
+      xfree (value);
+      value = read_w32_reg_string (line, &from_hklm);
+      if (!value)
+        continue;
+
+      if (!any)
+        {
+          any = 1;
+          es_fprintf (outfp, "### Taken from gpgconf.rnames:\n");
+        }
+
+      es_fprintf (outfp, "### %s\n###   ->%s<-%s\n", line, value,
+                  from_hklm? " [hklm]":"");
+
+    }
+  if (len < 0 || es_ferror (fp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+    }
+
+ leave:
+  if (any)
+    es_fprintf (outfp, "###\n");
+  xfree (value);
+  xfree (line);
+  es_fclose (fp);
+  xfree (fname);
+}
 #endif /*HAVE_W32_SYSTEM*/
+
 
 /* Show all config files.  */
 static void
@@ -1539,6 +1609,7 @@ show_configs (estream_t outfp)
   if (!any)
     es_fprintf (outfp, "###\n");
   show_other_registry_entries (outfp);
+  show_registry_entries_from_file (outfp);
 #endif /*HAVE_W32_SYSTEM*/
 
   free_strlist (list);

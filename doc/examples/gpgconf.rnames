@@ -1,0 +1,12 @@
+# gpgconf-rnames.lst
+# Additional registry settings to be shown by "gpgconf -X".
+#
+# Example: HKCU\Software\GNU\GnuPG:FooBar
+#
+#  HKCU := The class.  Other supported classes are HKLM, HKCR, HKU,
+#          and HKCC.  If no class is given and the string thus starts
+#          with a backslash HKCU with a fallback to HKLM is used.
+#  Software\GNU\GnuPG := The actual key.
+#  FooBar := The name of the item.  if a name is not given the default
+#            value is used.
+#
