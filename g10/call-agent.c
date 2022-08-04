@@ -1114,9 +1114,7 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb, &parm,
                         NULL, NULL);
-  if (rc)
-    return rc;
-
+  status_sc_op_failure (rc);
   return rc;
 }
 
