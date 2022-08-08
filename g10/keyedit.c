@@ -2450,7 +2450,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 /* Helper to find the UID node for namehash.  On success, returns the UID node.
    Otherwise, return NULL. */
 kbnode_t
-find_userid_by_namehash (kbnode_t keyblock, const char *namehash)
+find_userid_by_namehash (kbnode_t keyblock, const char *namehash, int want_valid)
 {
   byte hash[NAMEHASH_LEN];
   kbnode_t node = NULL;
@@ -2466,7 +2466,9 @@ find_userid_by_namehash (kbnode_t keyblock, const char *namehash)
 
   for (node = keyblock; node; node = node->next)
     {
-      if (node->pkt->pkttype == PKT_USER_ID)
+      if (node->pkt->pkttype == PKT_USER_ID
+          && (!want_valid || (!node->pkt->pkt.user_id->flags.revoked
+                              && !node->pkt->pkt.user_id->flags.expired)))
 	{
 	  namehash_from_uid (node->pkt->pkt.user_id);
 	  if (!memcmp (node->pkt->pkt.user_id->namehash, hash, NAMEHASH_LEN))
@@ -2482,7 +2484,7 @@ find_userid_by_namehash (kbnode_t keyblock, const char *namehash)
 /* Helper to find the UID node for uid.  On success, returns the UID node.
    Otherwise, return NULL. */
 kbnode_t
-find_userid (kbnode_t keyblock, const char *uid)
+find_userid (kbnode_t keyblock, const char *uid, int want_valid)
 {
   kbnode_t node = NULL;
   size_t uidlen;
@@ -2491,7 +2493,7 @@ find_userid (kbnode_t keyblock, const char *uid)
     goto leave;
 
   /* First try to find UID by namehash. */
-  node = find_userid_by_namehash (keyblock, uid);
+  node = find_userid_by_namehash (keyblock, uid, want_valid);
   if (node)
     goto leave;
 
@@ -2499,6 +2501,8 @@ find_userid (kbnode_t keyblock, const char *uid)
   for (node = keyblock; node; node = node->next)
     {
       if (node->pkt->pkttype == PKT_USER_ID
+          && (!want_valid || (!node->pkt->pkt.user_id->flags.revoked
+                              && !node->pkt->pkt.user_id->flags.expired))
           && uidlen == node->pkt->pkt.user_id->len
           && !memcmp (node->pkt->pkt.user_id->name, uid, uidlen))
         break;
@@ -2540,7 +2544,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
                    && !node->pkt->pkt.user_id->flags.expired);
 
   /* Find the right UID. */
-  node = find_userid (keyblock, uidtorev);
+  node = find_userid (keyblock, uidtorev, 0);
   if (node)
     {
       struct revocation_reason_info *reason;
@@ -2593,9 +2597,8 @@ keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
   gpg_error_t err;
   KEYDB_HANDLE kdbhd = NULL;
   kbnode_t keyblock = NULL;
+  kbnode_t primarynode;
   kbnode_t node;
-  size_t primaryuidlen;
-  int any;
 
 #ifdef HAVE_W32_SYSTEM
   /* See keyedit_menu for why we need this.  */
@@ -2606,26 +2609,20 @@ keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
   if (err)
     goto leave;
 
-  /* Find and mark the UID - we mark only the first valid one. */
-  primaryuidlen = strlen (primaryuid);
-  any = 0;
-  for (node = keyblock; node; node = node->next)
-    {
-      if (node->pkt->pkttype == PKT_USER_ID
-          && !any
-          && !node->pkt->pkt.user_id->flags.revoked
-          && !node->pkt->pkt.user_id->flags.expired
-          && primaryuidlen == node->pkt->pkt.user_id->len
-          && !memcmp (node->pkt->pkt.user_id->name, primaryuid, primaryuidlen))
-        {
-          node->flag |= NODFLG_SELUID;
-          any = 1;
-        }
-      else
-        node->flag &= ~NODFLG_SELUID;
-    }
+  /* Find the first matching UID that is valid */
+  primarynode = find_userid (keyblock, primaryuid, 1);
 
-  if (!any)
+  /* and mark it. */
+  if (primarynode)
+    for (node = keyblock; node; node = node->next)
+      {
+        if (node == primarynode)
+          node->flag |= NODFLG_SELUID;
+        else
+          node->flag &= ~NODFLG_SELUID;
+      }
+
+  if (!primarynode)
     err = gpg_error (GPG_ERR_NO_USER_ID);
   else if (menu_set_primary_uid (ctrl, keyblock))
     {
