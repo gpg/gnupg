@@ -2607,7 +2607,10 @@ keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
 
   err = quick_find_keyblock (ctrl, username, 1, &kdbhd, &keyblock);
   if (err)
-    goto leave;
+    {
+      write_status_error ("keyedit.primary", err);
+      goto leave;
+    }
 
   /* Find the first matching UID that is valid */
   primarynode = find_userid (keyblock, primaryuid, 1);
@@ -2639,8 +2642,11 @@ keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
     err = gpg_error (GPG_ERR_GENERAL);
 
   if (err)
-    log_error (_("setting the primary user ID failed: %s\n"),
-               gpg_strerror (err));
+    {
+      log_error (_("setting the primary user ID failed: %s\n"),
+                gpg_strerror (err));
+      write_status_error ("keyedit.primary", err);
+    }
 
  leave:
   release_kbnode (keyblock);
