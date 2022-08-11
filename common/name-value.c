@@ -597,6 +597,28 @@ nvc_get_string (nvc_t nvc, const char *name)
 }
 
 
+/* Return true if NAME exists and its value is true; that is either
+ * "yes", "true", or a decimal value unequal to 0.  */
+int
+nvc_get_boolean (nvc_t nvc, const char *name)
+{
+  nve_t item;
+  const char *s;
+
+  if (!nvc)
+    return 0;
+  item = nvc_lookup (nvc, name);
+  if (!item)
+    return 0;
+  s = nve_value (item);
+  if (s && (atoi (s)
+            || !ascii_strcasecmp (s, "yes")
+            || !ascii_strcasecmp (s, "true")))
+    return 1;
+  return 0;
+}
+
+
 
 
 /* Private key handling.  */
