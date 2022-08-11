@@ -1459,16 +1459,12 @@ public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
   if (for_ssh)
     {
       /* Use-for-ssh: yes */
-      const char *p;
       int is_ssh = 0;
 
       if (keymeta == NULL)
         return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
 
-      if ((p = nvc_get_string (keymeta, "Use-for-ssh:"))
-          && !strcmp (p, "yes"))
-        is_ssh = 1;
-
+      is_ssh = nvc_get_boolean (keymeta, "Use-for-ssh:");
       nvc_release (keymeta);
       keymeta = NULL;
 

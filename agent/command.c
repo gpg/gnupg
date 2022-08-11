@@ -636,7 +636,7 @@ static const char hlp_havekey[] =
   "HAVEKEY --list[=<limit>]\n"
   "\n"
   "Return success if at least one of the secret keys with the given\n"
-  "keygrips is available.  With --list return all availabale keygrips\n"
+  "keygrips is available.  With --list return all available keygrips\n"
   "as binary data; with <limit> bail out at this number of keygrips";
 static gpg_error_t
 cmd_havekey (assuan_context_t ctx, char *line)
@@ -1422,15 +1422,18 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyinfo[] =
-  "KEYINFO [--[ssh-]list] [--data] [--ssh-fpr[=algo]] [--with-ssh] <keygrip>\n"
+  "KEYINFO [--[ssh-]list] [--data] [--ssh-fpr[=algo]] [--with-ssh]\n"
+  "        [--need-attr=ATTRNAME] <keygrip>\n"
   "\n"
   "Return information about the key specified by the KEYGRIP.  If the\n"
   "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
   "--list is given the keygrip is ignored and information about all\n"
   "available keys are returned.  If --ssh-list is given information\n"
   "about all keys listed in the sshcontrol are returned.  With --with-ssh\n"
-  "information from sshcontrol is always added to the info. Unless --data\n"
-  "is given, the information is returned as a status line using the format:\n"
+  "information from sshcontrol is always added to the info.  If --need-attr\n"
+  "is used the key is only listed if the value of the given attribute name\n"
+  "(e.g. \"Use-for-ssh\") is true.  Unless --data is given, the information\n"
+  "is returned as a status line using the format:\n"
   "\n"
   "  KEYINFO <keygrip> <type> <serialno> <idstr> <cached> <protection> <fpr>\n"
   "\n"
@@ -1475,7 +1478,8 @@ static const char hlp_keyinfo[] =
 static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
                 int data, int with_ssh_fpr, int in_ssh,
-                int ttl, int disabled, int confirm, int on_card)
+                int ttl, int disabled, int confirm, int on_card,
+                const char *need_attr)
 {
   gpg_error_t err;
   char hexgrip[40+1];
@@ -1502,6 +1506,32 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
       else
         goto leave;
     }
+
+  if (need_attr)
+    {
+      gcry_sexp_t s_key = NULL;
+      nvc_t keymeta = NULL;
+      int istrue;
+
+      if (missing_key)
+        goto leave; /* No attribute available.  */
+
+      err = agent_raw_key_from_file (ctrl, grip, &s_key, &keymeta);
+      if (!keymeta)
+        istrue = 0;
+      else
+        {
+          istrue = nvc_get_boolean (keymeta, need_attr);
+          nvc_release (keymeta);
+        }
+      gcry_sexp_release (s_key);
+      if (!istrue)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+    }
+
 
   /* Reformat the grip so that we use uppercase as good style. */
   bin2hex (grip, 20, hexgrip);
@@ -1642,6 +1672,8 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   struct card_key_info_s *keyinfo_on_cards;
   struct card_key_info_s *l;
   int on_card;
+  char *need_attr = NULL;
+  size_t n;
 
   if (has_option (line, "--ssh-list"))
     list_mode = 2;
@@ -1664,6 +1696,23 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
     opt_ssh_fpr = 0;
 
   opt_with_ssh = has_option (line, "--with-ssh");
+
+  err = get_option_value (line, "--need-attr", &need_attr);
+  if (err)
+    goto leave;
+  if (need_attr && (n=strlen (need_attr)) && need_attr[n-1] != ':')
+    {
+      /* We need to append a colon.  */
+      char *tmp = strconcat (need_attr, ":", NULL);
+      if (!tmp)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      xfree (need_attr);
+      need_attr = tmp;
+    }
+
   line = skip_options (line);
 
   if (opt_with_ssh || list_mode == 2)
@@ -1674,7 +1723,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   if (list_mode == 2)
     {
       if (ctrl->restricted)
-        return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+        {
+          err = leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+          goto leave;;
+        }
 
       if (cf)
         {
@@ -1690,8 +1742,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
                   on_card = 1;
 
               err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, 1,
-                                    ttl, disabled, confirm, on_card);
-              if (err)
+                                    ttl, disabled, confirm, on_card, need_attr);
+              if (need_attr && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+                ;
+              else if (err)
                 goto leave;
             }
         }
@@ -1703,7 +1757,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
       gnupg_dirent_t dir_entry;
 
       if (ctrl->restricted)
-        return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+        {
+          err = leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+          goto leave;
+        }
 
       dirname = make_filename_try (gnupg_homedir (),
                                    GNUPG_PRIVATE_KEYS_DIR, NULL);
@@ -1749,8 +1806,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
               on_card = 1;
 
           err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, is_ssh,
-                                ttl, disabled, confirm, on_card);
-          if (err)
+                                ttl, disabled, confirm, on_card, need_attr);
+          if (need_attr && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+            ;
+          else if (err)
             goto leave;
         }
       err = 0;
@@ -1777,10 +1836,11 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
           on_card = 1;
 
       err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, is_ssh,
-                            ttl, disabled, confirm, on_card);
+                            ttl, disabled, confirm, on_card, need_attr);
     }
 
  leave:
+  xfree (need_attr);
   ssh_close_control_file (cf);
   gnupg_closedir (dir);
   if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
