@@ -487,7 +487,9 @@ keygen_set_std_prefs (const char *string,int personal)
 
 	while((tok=strsep(&prefstring," ,")))
 	  {
-	    if((val=string_to_cipher_algo (tok)))
+            if (!*tok)
+              ;
+	    else if((val=string_to_cipher_algo (tok)))
 	      {
 		if(set_one_pref(val,1,tok,sym,&nsym))
 		  rc=-1;
@@ -507,14 +509,24 @@ keygen_set_std_prefs (const char *string,int personal)
 		if (set_one_pref (val, 4, tok, aead, &naead))
 		  rc = -1;
 	      }
-	    else if (ascii_strcasecmp(tok,"mdc")==0)
+	    else if (!ascii_strcasecmp(tok, "mdc")
+                     || !ascii_strcasecmp(tok, "[mdc]"))
 	      mdc=1;
-	    else if (ascii_strcasecmp(tok,"no-mdc")==0)
+	    else if (!ascii_strcasecmp(tok, "no-mdc")
+                     || !ascii_strcasecmp(tok, "[no-mdc]"))
 	      mdc=0;
-	    else if (ascii_strcasecmp(tok,"ks-modify")==0)
+	    else if (!ascii_strcasecmp(tok, "ks-modify")
+                     || !ascii_strcasecmp(tok, "[ks-modify]"))
 	      modify=1;
-	    else if (ascii_strcasecmp(tok,"no-ks-modify")==0)
+	    else if (!ascii_strcasecmp(tok,"no-ks-modify")
+                     || !ascii_strcasecmp(tok,"[no-ks-modify]"))
 	      modify=0;
+	    else if (!ascii_strcasecmp(tok,"aead")
+                     || !ascii_strcasecmp(tok,"[aead]"))
+              {
+                /* Ignore because this is set from the preferences but
+                 * shown in the in the preferences/features list.  */
+              }
 	    else
 	      {
 		log_info (_("invalid item '%s' in preference string\n"),tok);
