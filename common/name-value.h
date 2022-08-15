@@ -72,6 +72,12 @@ nve_t nve_next (nve_t entry);
 /* Get the next entry with the given name.  */
 nve_t nve_next_value (nve_t entry, const char *name);
 
+/* Return the string for the first entry in NVC with NAME or NULL.  */
+const char *nvc_get_string (nvc_t nvc, const char *name);
+
+/* Return a boolean value for the first entry in NVC with NAME.  */
+int nvc_get_boolean (nvc_t nvc, const char *name);
+
 
 
 /* Adding and modifying values.  */
@@ -85,8 +91,14 @@ gpg_error_t nvc_add (nvc_t pk, const char *name, const char *value);
    first entry is updated.  */
 gpg_error_t nvc_set (nvc_t pk, const char *name, const char *value);
 
+/* Update entry E to VALUE.  */
+gpg_error_t nve_set (nve_t e, const char *value);
+
 /* Delete the given entry from PK.  */
 void nvc_delete (nvc_t pk, nve_t pke);
+
+/* Delete the entries with NAME from PK.  */
+void nvc_delete_named (nvc_t pk, const char *name);
 
 
 

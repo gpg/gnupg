@@ -476,24 +476,33 @@ nvc_set (nvc_t pk, const char *name, const char *value)
 
   e = nvc_lookup (pk, name);
   if (e)
-    {
-      char *v;
-
-      v = xtrystrdup (value);
-      if (v == NULL)
-	return my_error_from_syserror ();
-
-      free_strlist_wipe (e->raw_value);
-      e->raw_value = NULL;
-      if (e->value)
-	wipememory (e->value, strlen (e->value));
-      xfree (e->value);
-      e->value = v;
-
-      return 0;
-    }
+    return nve_set (e, value);
   else
     return nvc_add (pk, name, value);
+}
+
+
+/* Update entry E to VALUE.  */
+gpg_error_t
+nve_set (nve_t e, const char *value)
+{
+  char *v;
+
+  if (!e)
+    return GPG_ERR_INV_ARG;
+
+  v = xtrystrdup (value? value:"");
+  if (!v)
+    return my_error_from_syserror ();
+
+  free_strlist_wipe (e->raw_value);
+  e->raw_value = NULL;
+  if (e->value)
+    wipememory (e->value, strlen (e->value));
+  xfree (e->value);
+  e->value = v;
+
+  return 0;
 }
 
 
@@ -513,6 +522,20 @@ nvc_delete (nvc_t pk, nve_t entry)
 
   nve_release (entry, pk->private_key_mode);
 }
+
+/* Delete the entries with NAME from PK.  */
+void
+nvc_delete_named (nvc_t pk, const char *name)
+{
+  nve_t e;
+
+  if (!valid_name (name))
+    return;
+
+  while ((e = nvc_lookup (pk, name)))
+    nvc_delete (pk, e);
+}
+
 
 
 
@@ -561,6 +584,46 @@ nve_next_value (nve_t entry, const char *name)
     if (entry->name && ascii_strcasecmp (entry->name, name) == 0)
       return entry;
   return NULL;
+}
+
+
+/* Return the string for the first entry in NVC with NAME.  If an
+ * entry with NAME is missing in NVC or its value is the empty string
+ * NULL is returned.  Note that the returned string is a pointer
+ * into NVC.  */
+const char *
+nvc_get_string (nvc_t nvc, const char *name)
+{
+  nve_t item;
+
+  if (!nvc)
+    return NULL;
+  item = nvc_lookup (nvc, name);
+  if (!item)
+    return NULL;
+  return nve_value (item);
+}
+
+
+/* Return true if NAME exists and its value is true; that is either
+ * "yes", "true", or a decimal value unequal to 0.  */
+int
+nvc_get_boolean (nvc_t nvc, const char *name)
+{
+  nve_t item;
+  const char *s;
+
+  if (!nvc)
+    return 0;
+  item = nvc_lookup (nvc, name);
+  if (!item)
+    return 0;
+  s = nve_value (item);
+  if (s && (atoi (s)
+            || !ascii_strcasecmp (s, "yes")
+            || !ascii_strcasecmp (s, "true")))
+    return 1;
+  return 0;
 }
 
 
