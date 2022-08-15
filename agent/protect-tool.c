@@ -810,13 +810,18 @@ agent_askpin (ctrl_t ctrl,
 int
 agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length, int force,
-                         time_t timestamp)
+                         time_t timestamp,
+                         const char *serialno, const char *keyref,
+                         const char *dispserialno)
 {
   char hexgrip[40+4+1];
   char *p;
 
   (void)force;
   (void)timestamp;
+  (void)serialno;
+  (void)keyref;
+  (void)dispserialno;
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");

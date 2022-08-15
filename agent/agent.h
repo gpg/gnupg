@@ -36,6 +36,7 @@
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "../common/session-env.h"
 #include "../common/shareddefs.h"
+#include "../common/name-value.h"
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -429,7 +430,9 @@ gpg_error_t agent_modify_description (const char *in, const char *comment,
                                       const gcry_sexp_t key, char **result);
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force,
-                             time_t timestamp);
+                             time_t timestamp,
+                             const char *serialno, const char *keyref,
+                             const char *dispserialno);
 gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  const char *cache_nonce,
                                  const char *desc_text,
@@ -441,6 +444,8 @@ gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  char **r_passphrase);
 gpg_error_t agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
                                      gcry_sexp_t *result);
+gpg_error_t agent_keymeta_from_file (ctrl_t ctrl, const unsigned char *grip,
+                                     nvc_t *r_keymeta);
 gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
@@ -549,7 +554,8 @@ gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,
                                  unsigned char *key, size_t keylen);
 gpg_error_t agent_write_shadow_key (const unsigned char *grip,
                                     const char *serialno, const char *keyid,
-                                    const unsigned char *pkbuf, int force);
+                                    const unsigned char *pkbuf, int force,
+                                    const char *dispserialno);
 
 
 /*-- trustlist.c --*/

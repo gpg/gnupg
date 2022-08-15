@@ -31,16 +31,51 @@
 #include "../common/i18n.h"
 #include "../common/sexp-parse.h"
 
+/* Replace all linefeeds in STRING by "%0A" and return a new malloced
+ * string.  May return NULL on memory error.  */
+static char *
+linefeed_to_percent0A (const char *string)
+{
+  const char *s;
+  size_t n;
+  char *buf, *p;
 
+  for (n=0, s=string; *s; s++)
+    if (*s == '\n')
+      n += 3;
+    else
+      n++;
+  p = buf = xtrymalloc (n+1);
+  if (!buf)
+    return NULL;
+  for (s=string; *s; s++)
+    if (*s == '\n')
+      {
+        memcpy (p, "%0A", 3);
+        p += 3;
+      }
+    else
+      *p++ = *s;
+  *p = 0;
+  return buf;
+}
+
+
+/* Ask for the card using SHADOW_INFO.  If GRIP is not NULL, the
+ * function also tries to find additional information from the shadow
+ * key file.  */
 static int
-ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
+ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info,
+              const unsigned char *grip, char **r_kid)
 {
   int rc, i;
   char *serialno;
   int no_card = 0;
   char *desc;
   char *want_sn, *want_kid, *want_sn_disp;
+  int got_sn_disp_from_meta = 0;
   int len;
+  char *comment = NULL;
 
   *r_kid = NULL;
 
@@ -53,11 +88,62 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
       rc = gpg_error_from_syserror ();
       xfree (want_sn);
       xfree (want_kid);
+      xfree (comment);
       return rc;
     }
 
+  if (grip)
+    {
+      nvc_t keymeta;
+      const char *s;
+      size_t snlen;
+      nve_t item;
+      char **tokenfields = NULL;
+
+      rc = agent_keymeta_from_file (ctrl, grip, &keymeta);
+      if (!rc)
+        {
+          snlen = strlen (want_sn);
+          s = NULL;
+          for (item = nvc_lookup (keymeta, "Token:");
+               item;
+               item = nve_next_value (item, "Token:"))
+            if ((s = nve_value (item)) && !strncmp (s, want_sn, snlen))
+              break;
+          if (s && (tokenfields = strtokenize (s, " \t\n")))
+            {
+              if (tokenfields[0] && tokenfields[1] && tokenfields[2]
+                  && tokenfields[3] && strlen (tokenfields[3]) > 1)
+                {
+                  xfree (want_sn_disp);
+                  want_sn_disp = percent_plus_unescape (tokenfields[3], 0xff);
+                  if (!want_sn_disp)
+                    {
+                      rc = gpg_error_from_syserror ();
+                      xfree (tokenfields);
+                      nvc_release (keymeta);
+                      xfree (want_sn);
+                      xfree (want_kid);
+                      xfree (comment);
+                      return rc;
+                    }
+                  got_sn_disp_from_meta = 1;
+                }
+
+              xfree (tokenfields);
+            }
+
+          if ((s = nvc_get_string (keymeta, "Label:")))
+            comment = linefeed_to_percent0A (s);
+
+          nvc_release (keymeta);
+        }
+    }
+
   len = strlen (want_sn_disp);
-  if (len == 32 && !strncmp (want_sn_disp, "D27600012401", 12))
+  if (got_sn_disp_from_meta)
+    ; /* We got the the display S/N from the key file.  */
+  else if (len == 32 && !strncmp (want_sn_disp, "D27600012401", 12))
     {
       /* This is an OpenPGP card - reformat  */
       memmove (want_sn_disp, want_sn_disp+16, 4);
@@ -87,6 +173,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
             {
               xfree (want_sn_disp);
               xfree (want_sn);
+              xfree (comment);
               *r_kid = want_kid;
               return 0; /* yes, we have the correct card */
             }
@@ -112,12 +199,13 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
         {
           if (asprintf (&desc,
                     "%s:%%0A%%0A"
+                    "  %s%%0A"
                     "  %s",
                         no_card
                         ? L_("Please insert the card with serial number")
                         : L_("Please remove the current card and "
                              "insert the one with serial number"),
-                        want_sn_disp) < 0)
+                        want_sn_disp, comment? comment:"") < 0)
             {
               rc = out_of_core ();
             }
@@ -136,6 +224,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
           xfree (want_sn_disp);
           xfree (want_sn);
           xfree (want_kid);
+          xfree (comment);
           return rc;
         }
     }
@@ -447,7 +536,7 @@ divert_pksign (ctrl_t ctrl, const char *desc_text,
 
   (void)desc_text;
 
-  rc = ask_for_card (ctrl, shadow_info, &kid);
+  rc = ask_for_card (ctrl, shadow_info, grip, &kid);
   if (rc)
     return rc;
 
@@ -599,7 +688,7 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   ciphertext = s;
   ciphertextlen = n;
 
-  rc = ask_for_card (ctrl, shadow_info, &kid);
+  rc = ask_for_card (ctrl, shadow_info, grip, &kid);
   if (rc)
     return rc;
 

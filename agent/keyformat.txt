@@ -78,7 +78,7 @@ of a continuation line encodes a newline.
 Lines containing only whitespace, and lines starting with whitespace
 followed by '#' are considered to be comments and are ignored.
 
-** Well defined names
+** Well known names
 
 *** Description
 This is a human readable string describing the key.
@@ -107,6 +107,22 @@ in the S-expression of the "Key" item.
 This takes a base64 encoded string wrapped so that this
 key file can be easily edited with a standard editor.  Several of such
 items can be used.
+
+*** Token
+If such an item exists it overrides the info given by the "shadow"
+parameter in the S-expression.  Using this item makes it possible to
+describe a key which is stored on several tokens and also makes it
+easy to update this info using a standard editor.  The syntax is
+similar to the "shadow" parameter:
+
+- Serialnumber of the token.
+- Key reference from the token in full format (e.g. "OpenPGP.2").
+- An optional fixed length of the PIN or "-".
+- The human readable serial number of a card.  This is usually what is
+  printed on the actual card.  This value is taken directly from the
+  card but when asking to insert a card it is useful to have this
+  value available.  GnuPG takes care of creating and possibly updating
+  this entry.  This is percent-plus-escaped.
 
 *** Use-for-ssh
 If given and the value is "yes" or "1" the key is allowed for use by

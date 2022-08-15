@@ -69,7 +69,8 @@ store_key (gcry_sexp_t private, const char *passphrase, int force,
       buf = p;
     }
 
-  rc = agent_write_private_key (grip, buf, len, force, timestamp);
+  rc = agent_write_private_key (grip, buf, len, force, timestamp,
+                                NULL, NULL, NULL);
   xfree (buf);
   return rc;
 }

@@ -55,12 +55,16 @@ struct try_unprotect_arg_s
 /* Note: Ownership of FNAME and FP are moved to this function.  */
 static gpg_error_t
 write_extended_private_key (char *fname, estream_t fp, int update, int newkey,
-                            const void *buf, size_t len, time_t timestamp)
+                            const void *buf, size_t len, time_t timestamp,
+                            const char *serialno, const char *keyref,
+                            const char *dispserialno)
 {
   gpg_error_t err;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
   int remove = 0;
+  char *token0 = NULL;
+  char *token = NULL;
 
   if (update)
     {
@@ -106,6 +110,59 @@ write_extended_private_key (char *fname, estream_t fp, int update, int newkey,
         goto leave;
     }
 
+  /* If requested write a Token line.  */
+  if (serialno && keyref)
+    {
+      nve_t item;
+      const char *s;
+      size_t token0len;
+      char *tmpdistsn = NULL;
+
+      if (dispserialno)
+        {
+          tmpdistsn = percent_plus_escape (dispserialno);
+          if (!tmpdistsn)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+        }
+
+      token0 = strconcat (serialno, " ", keyref, NULL);
+      if (token0)
+        token = strconcat (token0, " - ", tmpdistsn? tmpdistsn:"-", NULL);
+      xfree (tmpdistsn);
+      if (!token0 || !token)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      token0len = strlen (token0);
+      for (item = nvc_lookup (pk, "Token:");
+           item;
+           item = nve_next_value (item, "Token:"))
+        if ((s = nve_value (item)) && !strncmp (s, token0, token0len))
+          break;
+      if (!item)
+        {
+          /* No token or no token with that value exists.  Add a new
+           * one so that keys which have been stored on several cards
+           * are well supported.  */
+          err = nvc_add (pk, "Token:", token);
+          if (err)
+            goto leave;
+        }
+      else
+        {
+          /* Token exists: Update the display s/n.  It may have
+           * changed due to changes in a newer software version.  */
+          err = nve_set (item, token);
+          if (err)
+            goto leave;
+        }
+    }
+
   err = es_fseek (fp, 0, SEEK_SET);
   if (err)
     goto leave;
@@ -145,6 +202,8 @@ write_extended_private_key (char *fname, estream_t fp, int update, int newkey,
   if (remove)
     gnupg_remove (fname);
   xfree (fname);
+  xfree (token);
+  xfree (token0);
   gcry_sexp_release (key);
   nvc_release (pk);
   return err;
@@ -153,11 +212,14 @@ write_extended_private_key (char *fname, estream_t fp, int update, int newkey,
 /* Write an S-expression formatted key to our key storage.  With FORCE
  * passed as true an existing key with the given GRIP will get
  * overwritten.  If TIMESTAMP is not zero and the key does not yet
- * exists it will be recorded as creation date.  */
+ * exists it will be recorded as creation date.  If SERIALNO, KEYREF,
+ * of DISPSERIALNO are not NULL they will be recorded as well.  */
 int
 agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length,
-                         int force, time_t timestamp)
+                         int force, time_t timestamp,
+                         const char *serialno, const char *keyref,
+                         const char *dispserialno)
 {
   char *fname;
   estream_t fp;
@@ -226,19 +288,22 @@ agent_write_private_key (const unsigned char *grip,
         {
           /* Key is already in the extended format.  */
           return write_extended_private_key (fname, fp, 1, 0, buffer, length,
-                                             timestamp);
+                                             timestamp, serialno, keyref,
+                                             dispserialno);
         }
       if (first == '(' && opt.enable_extended_key_format)
         {
           /* Key is in the old format - but we want the extended format.  */
           return write_extended_private_key (fname, fp, 0, 0, buffer, length,
-                                             timestamp);
+                                             timestamp, serialno, keyref,
+                                             dispserialno);
         }
     }
 
   if (opt.enable_extended_key_format)
     return write_extended_private_key (fname, fp, 0, 1, buffer, length,
-                                       timestamp);
+                                       timestamp, serialno, keyref,
+                                       dispserialno);
 
   if (es_fwrite (buffer, length, 1, fp) != 1)
     {
@@ -715,10 +780,12 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
 
 
 /* Read the key identified by GRIP from the private key directory and
-   return it as an gcrypt S-expression object in RESULT.  On failure
-   returns an error code and stores NULL at RESULT. */
+ * return it as an gcrypt S-expression object in RESULT.  If R_KEYMETA
+ * is not NULl and the extended key format is used, the meta data
+ * items are stored there.  However the "Key:" item is removed from
+ * it.  On failure returns an error code and stores NULL at RESULT. */
 static gpg_error_t
-read_key_file (const unsigned char *grip, gcry_sexp_t *result)
+read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
 {
   gpg_error_t err;
   char *fname;
@@ -731,6 +798,8 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   char first;
 
   *result = NULL;
+  if (r_keymeta)
+    *r_keymeta = NULL;
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
@@ -781,12 +850,17 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
       else
         {
           err = nvc_get_private_key (pk, result);
-          nvc_release (pk);
           if (err)
             log_error ("error getting private key from '%s': %s\n",
                        fname, gpg_strerror (err));
+          else
+            nvc_delete_named (pk, "Key:");
         }
 
+      if (!err && r_keymeta)
+        *r_keymeta = pk;
+      else
+        nvc_release (pk);
       xfree (fname);
       return err;
     }
@@ -893,7 +967,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (r_passphrase)
     *r_passphrase = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1223,9 +1297,24 @@ agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (!err)
     *result = s_skey;
+  return err;
+}
+
+
+gpg_error_t
+agent_keymeta_from_file (ctrl_t ctrl, const unsigned char *grip,
+                         nvc_t *r_keymeta)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_skey;
+
+  (void)ctrl;
+
+  err = read_key_file (grip, &s_skey, r_keymeta);
+  gcry_sexp_release (s_skey);
   return err;
 }
 
@@ -1262,7 +1351,7 @@ agent_public_key_from_file (ctrl_t ctrl,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (err)
     return err;
 
@@ -1409,7 +1498,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
   {
     gcry_sexp_t sexp;
 
-    err = read_key_file (grip, &sexp);
+    err = read_key_file (grip, &sexp, NULL);
     if (err)
       {
         if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1493,7 +1582,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   char *default_desc = NULL;
   int key_type;
 
-  err = read_key_file (grip, &s_skey);
+  err = read_key_file (grip, &s_skey, NULL);
   if (gpg_err_code (err) == GPG_ERR_ENOENT)
     err = gpg_error (GPG_ERR_NO_SECKEY);
   if (err)
@@ -1592,16 +1681,26 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
 /* Write an S-expression formatted shadow key to our key storage.
    Shadow key is created by an S-expression public key in PKBUF and
    card's SERIALNO and the IDSTRING.  With FORCE passed as true an
-   existing key with the given GRIP will get overwritten.  */
+   existing key with the given GRIP will get overwritten. If
+   DISPSERIALNO is not NULL the human readable s/n will also be
+   recorded in the key file.  */
 gpg_error_t
 agent_write_shadow_key (const unsigned char *grip,
                         const char *serialno, const char *keyid,
-                        const unsigned char *pkbuf, int force)
+                        const unsigned char *pkbuf, int force,
+                        const char *dispserialno)
 {
   gpg_error_t err;
   unsigned char *shadow_info;
   unsigned char *shdkey;
   size_t len;
+
+  /* Just in case some caller did not parse the stuff correctly, skip
+   * leading spaces.  */
+  while (spacep (serialno))
+    serialno++;
+  while (spacep (keyid))
+    keyid++;
 
   shadow_info = make_shadow_info (serialno, keyid);
   if (!shadow_info)
@@ -1616,7 +1715,8 @@ agent_write_shadow_key (const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, len, force, 0);
+  err = agent_write_private_key (grip, shdkey, len, force, 0,
+                                 serialno, keyid, dispserialno);
   xfree (shdkey);
   if (err)
     log_error ("error writing key: %s\n", gpg_strerror (err));

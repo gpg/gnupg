@@ -2495,8 +2495,13 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 
   if ( agent_key_available (grip) )
     {
+      char *dispserialno;
+
       /* (Shadow)-key is not available in our key storage.  */
-      err = agent_write_shadow_key (grip, serialno, authkeyid, pkbuf, 0);
+      agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno);
+      err = agent_write_shadow_key (grip, serialno, authkeyid, pkbuf, 0,
+                                    dispserialno);
+      xfree (dispserialno);
       if (err)
         {
           xfree (pkbuf);
@@ -3154,7 +3159,8 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
 
   /* Store this key to our key storage.  We do not store a creation
    * timestamp because we simply do not know.  */
-  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0, 0);
+  err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0, 0,
+                                 NULL, NULL, NULL);
   if (err)
     goto out;
 
