@@ -1104,6 +1104,9 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
       if (info->fpr2valid)
         assuan_transact (agent_ctx, "READKEY --card --no-data -- $ENCRKEYID",
                          NULL, NULL, NULL, NULL, NULL, NULL);
+      if (info->fpr3valid)
+        assuan_transact (agent_ctx, "READKEY --card --no-data -- $AUTHKEYID",
+                         NULL, NULL, NULL, NULL, NULL, NULL);
     }
 
   return rc;

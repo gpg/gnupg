@@ -378,6 +378,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
   else
     tty_fprintf (fp, "Application ID ...: %s\n",
                  info.serialno? info.serialno : "[none]");
+
   if (!info.serialno || strncmp (info.serialno, "D27600012401", 12)
       || strlen (info.serialno) != 32 )
     {
@@ -427,6 +428,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       xfree (pk);
       return;
     }
+
  openpgp:
   if (!serialno)
     ;
@@ -440,6 +442,8 @@ current_card_status (ctrl_t ctrl, estream_t fp,
   else
     tty_fprintf (fp, "Application type .: %s\n", "OpenPGP");
 
+  /* Try to update/create the shadow key here for OpenPGP cards. */
+  agent_update_shadow_keys ();
 
   if (opt.with_colons)
     {
@@ -1241,7 +1245,9 @@ get_info_for_key_operation (struct agent_card_info_s *info)
 
   memset (info, 0, sizeof *info);
   rc = agent_scd_getattr ("SERIALNO", info);
-  if (rc || !info->apptype || strcmp (info->apptype, "openpgp"))
+  if (!rc)
+    rc = agent_scd_getattr ("APPTYPE", info);
+  if (rc || !info->apptype || ascii_strcasecmp (info->apptype, "openpgp"))
     {
       log_error (_("key operation not possible: %s\n"),
                  rc ? gpg_strerror (rc) : _("not an OpenPGP card"));
