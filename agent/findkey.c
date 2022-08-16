@@ -49,7 +49,7 @@ struct try_unprotect_arg_s
 };
 
 
-/* Repalce all linefeeds in STRING by "%0A" and return a new malloced
+/* Replace all linefeeds in STRING by "%0A" and return a new malloced
  * string.  May return NULL on memory error.  */
 static char *
 linefeed_to_percent0A (const char *string)

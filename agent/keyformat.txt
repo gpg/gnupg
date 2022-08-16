@@ -29,8 +29,8 @@ convention.  Example (here indented with two spaces):
   Use-for-ssh: yes
   OpenSSH-cert: long base64 encoded string wrapped so that this
     key file can be easily edited with a standard editor.
-  Token: D2760001240102000005000011730000 OPENPGP.1
-  Token: FF020001008A77C1 PIV.9C
+  Token: D2760001240102000005000011730000 OPENPGP.1 -
+  Token: FF020001008A77C1 PIV.9C -
   Key: (shadowed-private-key
     (rsa
     (n #00AA1AD2A55FD8C8FDE9E1941772D9CC903FA43B268CB1B5A1BAFDC900
@@ -48,7 +48,7 @@ convention.  Example (here indented with two spaces):
     )))
 
 GnuPG 2.2 is also able to read and write keys using the new format
-However, it only makes use of the value stored under the name 'Key:'.
+However, it only makes use of some of the values.
 
 Keys in the extended format can be recognized by looking at the first
 byte of the file.  If it starts with a '(' it is a naked S-expression,
@@ -72,8 +72,7 @@ of a continuation line encodes a newline.
 Lines containing only whitespace, and lines starting with whitespace
 followed by '#' are considered to be comments and are ignored.
 
-** Well defined names
-
+** Well known names
 *** Description
 This is a human readable string describing the key.
 
@@ -106,18 +105,29 @@ items can be used.
 If such an item exists it overrides the info given by the "shadow"
 parameter in the S-expression.  Using this item makes it possible to
 describe a key which is stored on several tokens and also makes it
-easy to update this info using a standard editor.  The syntax is the
-same as with the "shadow" parameter:
+easy to update this info using a standard editor.  The syntax is
+similar to the "shadow" parameter:
 
-- Serialnumber of the token
-- Key reference from the token in full format (e.g. "OpenPGP.2")
-- An optional fixed length of the PIN.
+- Serialnumber of the token.
+- Key reference from the token in full format (e.g. "OpenPGP.2").
+- An optional fixed length of the PIN or "-".
+- The human readable serial number of a card.  This is usually what is
+  printed on the actual card.  This value is taken directly from the
+  card but when asking to insert a card it is useful to have this
+  value available.  GnuPG takes care of creating and possibly updating
+  this entry.  This is percent-plus-escaped.
+
 
 *** Use-for-ssh
 If given and the value is "yes" or "1" the key is allowed for use by
 gpg-agent's ssh-agent implementation.  This is thus the same as
 putting the keygrip into the 'sshcontrol' file.  Only one such item
 should exist.
+
+*** Use-for-p11
+If given and the value is "yes" or "1" the key is allowed for use by
+GnuPG's PKCS#11 interface (Scute).  Note that Scute needs to be
+configured to use this optimization.
 
 *** Confirm
 If given and the value is "yes", a user will be asked confirmation by
