@@ -124,6 +124,9 @@ int agent_scd_readcert (const char *certidstr,
 /* Send a READKEY command to the SCdaemon.  */
 gpg_error_t agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result);
 
+/* Update common shadow key stubs.  */
+gpg_error_t agent_update_shadow_keys (void);
+
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
 int agent_scd_change_pin (int chvno, const char *serialno);
 

@@ -1414,6 +1414,29 @@ agent_scd_readkey (const char *keyrefstr, gcry_sexp_t *r_result)
 }
 
 
+/* This can be called for a quick and dirty update/creation of the
+ * shadow key stubs.   */
+gpg_error_t
+agent_update_shadow_keys (void)
+{
+  gpg_error_t err;
+
+  err = start_agent (NULL, 1);
+  if (err)
+    return err;
+
+  assuan_transact (agent_ctx, "READKEY --card --no-data -- $SIGNKEYID",
+                   NULL, NULL, NULL, NULL, NULL, NULL);
+  assuan_transact (agent_ctx, "READKEY --card --no-data -- $ENCRKEYID",
+                   NULL, NULL, NULL, NULL, NULL, NULL);
+  assuan_transact (agent_ctx, "READKEY --card --no-data -- $AUTHKEYID",
+                   NULL, NULL, NULL, NULL, NULL, NULL);
+
+  return err;
+}
+
+
+
 
 struct card_cardlist_parm_s {
   int error;

@@ -1016,8 +1016,9 @@ cmd_readkey (assuan_context_t ctx, char *line)
           goto leave;
         }
 
-      /* Hack to create the shadow key for the OpenPGP standard keys.  */
-      if ((!strcmp (keyid, "$SIGNKEYID") || !strcmp (keyid, "$ENCRKEYID"))
+      /* Hack to create the shadow key for the standard keys.  */
+      if ((!strcmp (keyid, "$SIGNKEYID") || !strcmp (keyid, "$ENCRKEYID")
+           || !strcmp (keyid, "$AUTHKEYID"))
           && !agent_card_getattr (ctrl, keyid, &keyidbuf))
         keyid = keyidbuf;
 

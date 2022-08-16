@@ -420,6 +420,9 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       else
         tty_fprintf (fp, "Application type .: %s\n", name2);
 
+      /* Try to update/create the shadow key here for non-OpenPGP cards. */
+      agent_update_shadow_keys ();
+
       agent_release_card_info (&info);
       xfree (pk);
       return;
