@@ -382,29 +382,29 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       || strlen (info.serialno) != 32 )
     {
       const char *name1, *name2;
-      if (info.apptype && !strcmp (info.apptype, "openpgp"))
+      if (info.apptype && !ascii_strcasecmp (info.apptype, "openpgp"))
         goto openpgp;
-      else if (info.apptype && !strcmp (info.apptype, "NKS"))
+      else if (info.apptype && !ascii_strcasecmp (info.apptype, "NKS"))
         {
           name1 = "netkey";
           name2 = "NetKey";
         }
-      else if (info.apptype && !strcmp (info.apptype, "DINSIG"))
+      else if (info.apptype && !ascii_strcasecmp (info.apptype, "DINSIG"))
         {
           name1 = "dinsig";
           name2 = "DINSIG";
         }
-      else if (info.apptype && !strcmp (info.apptype, "P15"))
+      else if (info.apptype && !ascii_strcasecmp (info.apptype, "P15"))
         {
           name1 = "pkcs15";
           name2 = "PKCS#15";
         }
-      else if (info.apptype && !strcmp (info.apptype, "GELDKARTE"))
+      else if (info.apptype && !ascii_strcasecmp (info.apptype, "GELDKARTE"))
         {
           name1 = "geldkarte";
           name2 = "Geldkarte";
         }
-      else if (info.apptype && !strcmp (info.apptype, "PIV"))
+      else if (info.apptype && !ascii_strcasecmp (info.apptype, "PIV"))
         {
           name1 = "piv";
           name2 = "PIV";
