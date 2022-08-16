@@ -1,6 +1,49 @@
 Noteworthy changes in version 2.2.37 (unreleased)
 -------------------------------------------------
 
+  * gpg: In de-vs mode use SHA-256 instead of SHA-1 as implicit
+    preference.  [T6043]
+
+  * gpg: Actually show symmetric+pubkey encrypted data as de-vs
+    compliant.  Add extra compliance checks for symkey_enc packets.
+    [T6119]
+
+  * gpg: Request keygrip of key to be added via command-fd interface.
+    [T5771]
+
+  * gpg: Look up user ID to revoke by UID hash.  [T5936]
+
+  * gpg: Fix wrong error message for "keytocard".  [T6122]
+
+  * gpg: --card-status shows the application type for non-openpgp
+    cards again.  [rG8e393e2592]
+
+  * agent: New options --no-user-trustlist and --sys-trustlist-name.
+    [T5990]
+
+  * agent: Track and update the Display-S/N of cards so that the
+    "please insert card" prompt may now show more information.  Use
+    "gpg --card-status" to update stored card meta data.  [T6135]
+
+  * scd:openpgp: Fix problem with ECC algorithm attributes on
+    Yubikeys.  [rG225c66f13b87]
+
+  * scd:openpgp: Fix problem with Yubikey 5.4 firmware.  [T6070]
+
+  * dirmngr: Ask keyservers to provide the key fingerprints.  [T5741]
+
+  * ssh: Allow authentication as used by OpenSSH's PQ crypto support.
+    [T5935]
+
+  * wkd: Fix path traversal attack in gpg-wks-server.  Add the mail
+    address to the pending request data.  [rGc1489ca0e1, T6098]
+
+  * gpgconf: Improve registry dumping.  [rG6bc9592318]
+
+  * Silence warnings from AllowSetForegroundWindow.  [rG6583abedf3]
+
+  Release-info: https://dev.gnupg.org/T6105
+
 
 Noteworthy changes in version 2.2.36 (2022-07-06)
 -------------------------------------------------
