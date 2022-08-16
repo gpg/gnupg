@@ -268,7 +268,7 @@ agent_write_private_key (const unsigned char *grip,
   estream_t fp;
 
   fname = fname_from_keygrip (grip);
-  if (fname)
+  if (!fname)
     return gpg_error_from_syserror ();
 
   /* FIXME: Write to a temp file first so that write failures during
