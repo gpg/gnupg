@@ -552,7 +552,8 @@ gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,
                                  const unsigned char *s2ksalt,
                                  unsigned int s2kcount,
                                  unsigned char *key, size_t keylen);
-gpg_error_t agent_write_shadow_key (const unsigned char *grip,
+gpg_error_t agent_write_shadow_key (int maybe_update,
+                                    const unsigned char *grip,
                                     const char *serialno, const char *keyid,
                                     const unsigned char *pkbuf, int force,
                                     const char *dispserialno);

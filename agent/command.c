@@ -995,6 +995,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   char *keyidbuf = NULL;
   size_t pkbuflen;
   int opt_card, opt_no_data;
+  char *dispserialno = NULL;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -1037,18 +1038,23 @@ cmd_readkey (assuan_context_t ctx, char *line)
           goto leave;
         }
 
+      agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno);
       if (agent_key_available (grip))
         {
-          /* (Shadow)-key is not available in our key storage.  */
-          char *dispserialno;
-
-          agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno);
-          rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0,
+          /* Shadow-key is not available in our key storage.  */
+          rc = agent_write_shadow_key (0, grip, serialno, keyid, pkbuf, 0,
                                        dispserialno);
-          xfree (dispserialno);
-          if (rc)
-            goto leave;
         }
+      else
+        {
+          /* Shadow-key is available in our key storage but ne check
+           * whether we need to update it with a new display-s/n or
+           * whatever.  */
+          rc = agent_write_shadow_key (1, grip, serialno, keyid, pkbuf, 0,
+                                       dispserialno);
+        }
+      if (rc)
+        goto leave;
 
       rc = opt_no_data? 0 : assuan_send_data (ctx, pkbuf, pkbuflen);
     }
@@ -1079,6 +1085,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   xfree (keyidbuf);
   xfree (serialno);
   xfree (pkbuf);
+  xfree (dispserialno);
   gcry_sexp_release (s_pkey);
   return leave_cmd (ctx, rc);
 }

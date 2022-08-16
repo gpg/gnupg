@@ -2499,7 +2499,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 
       /* (Shadow)-key is not available in our key storage.  */
       agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno);
-      err = agent_write_shadow_key (grip, serialno, authkeyid, pkbuf, 0,
+      err = agent_write_shadow_key (0, grip, serialno, authkeyid, pkbuf, 0,
                                     dispserialno);
       xfree (dispserialno);
       if (err)

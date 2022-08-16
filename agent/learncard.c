@@ -413,8 +413,8 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
         char *dispserialno;
 
         agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno);
-        rc = agent_write_shadow_key (grip, serialno, item->id, pubkey, force,
-                                     dispserialno);
+        rc = agent_write_shadow_key (0, grip, serialno, item->id, pubkey,
+                                     force, dispserialno);
         xfree (dispserialno);
       }
       xfree (pubkey);
