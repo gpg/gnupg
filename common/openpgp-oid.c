@@ -581,7 +581,6 @@ map_gcry_pk_to_openpgp (enum gcry_pk_algos algo)
     case GCRY_PK_EDDSA:  return PUBKEY_ALGO_EDDSA;
     case GCRY_PK_ECDSA:  return PUBKEY_ALGO_ECDSA;
     case GCRY_PK_ECDH:   return PUBKEY_ALGO_ECDH;
-    case GCRY_PK_ECC:    return PUBKEY_ALGO_ECDSA; /* Most useful mapping.  */
     default: return algo < 110 ? (pubkey_algo_t)algo : 0;
     }
 }
