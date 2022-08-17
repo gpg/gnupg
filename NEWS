@@ -18,6 +18,9 @@ Noteworthy changes in version 2.2.37 (unreleased)
   * gpg: --card-status shows the application type for non-openpgp
     cards again.  [rG8e393e2592]
 
+  * gpg: The options --auto-key-import and --include-key-block are
+    again listed by gpgconf.  [T6138]
+
   * agent: New options --no-user-trustlist and --sys-trustlist-name.
     [T5990]
 
