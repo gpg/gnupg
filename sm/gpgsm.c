@@ -1534,6 +1534,9 @@ main ( int argc, char **argv)
       comopt.keyboxd_program = NULL;
     }
 
+  if (comopt.no_autostart)
+    opt.autostart = 0;
+
   if (pwfd != -1)	/* Read the passphrase now.  */
     read_passphrase_from_fd (pwfd);
 

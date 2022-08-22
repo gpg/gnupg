@@ -1592,6 +1592,9 @@ gnupg_module_name (int which)
     case GNUPG_MODULE_NAME_GPGCONF:
       X(bindir, "tools", "gpgconf");
 
+    case GNUPG_MODULE_NAME_CARD:
+      X(bindir, "tools", "gpg-card");
+
     default:
       BUG ();
     }

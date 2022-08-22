@@ -3784,6 +3784,8 @@ main (int argc, char **argv)
         comopt.keyboxd_program = NULL;
       }
 
+    if (comopt.no_autostart)
+      opt.autostart = 0;
 
     /* The command --gpgconf-list is pretty simple and may be called
        directly after the option parsing. */

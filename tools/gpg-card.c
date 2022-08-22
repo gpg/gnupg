@@ -43,6 +43,7 @@
 #include "../common/server-help.h"
 #include "../common/openpgpdefs.h"
 #include "../common/tlv.h"
+#include "../common/comopt.h"
 
 #include "gpg-card.h"
 
@@ -291,6 +292,17 @@ main (int argc, char **argv)
 
   if (log_get_errorcount (0))
     exit (2);
+
+  /* Process common component options.  */
+  if (parse_comopt (GNUPG_MODULE_NAME_CARD, opt.debug))
+    {
+      gnupg_status_printf (STATUS_FAILURE, "option-parser %u",
+                           gpg_error (GPG_ERR_GENERAL));
+      exit(2);
+    }
+
+  if (comopt.no_autostart)
+     opt.autostart = 0;
 
   /* Set defaults for non given options.  */
   if (!opt.gpg_program)
@@ -3505,7 +3517,7 @@ cmd_yubikey (card_info_t info, char *argstr)
   err = yubikey_commands (info, fp, nwords, words);
   err2 = scd_learn (info, 0);
   if (err2)
-    log_error ("Error re-reading card: %s\n", gpg_strerror (err));
+    log_error ("Error re-reading card: %s\n", gpg_strerror (err2));
 
  leave:
   return err;

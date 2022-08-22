@@ -45,6 +45,7 @@ enum opt_values
     oLogFile = 500,
     oUseKeyboxd,
     oKeyboxdProgram,
+    oNoAutostart,
 
     oNoop
   };
@@ -52,6 +53,7 @@ enum opt_values
 static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLogFile,        "log-file", "@"),
   ARGPARSE_s_n (oUseKeyboxd,     "use-keyboxd", "@"),
+  ARGPARSE_s_n (oNoAutostart,    "no-autostart", "@"),
   ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
 
   ARGPARSE_end ()
@@ -60,7 +62,7 @@ static gpgrt_opt_t opts[] = {
 
 
 /* Parse the common options in the homedir and etc.  This needs to be
- * called after the gpgrt config directories are.  MODULE_ID is one of
+ * called after the gpgrt config directories are set.  MODULE_ID is one of
  * the GNUPG_MODULE_NAME_ constants.  If verbose is true info about
  * the parsing is printed.  Note that this function is not
  * thread-safe. */
@@ -100,6 +102,10 @@ parse_comopt (int module_id, int verbose)
 
         case oUseKeyboxd:
           comopt.use_keyboxd = 1;
+          break;
+
+        case oNoAutostart:
+          comopt.no_autostart = 1;
           break;
 
         case oKeyboxdProgram:

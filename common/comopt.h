@@ -40,6 +40,7 @@ struct
 {
   char *logfile;     /* Socket used by daemons for logging.  */
   int use_keyboxd;   /* Use the keyboxd as storage backend.  */
+  int no_autostart;  /* Do not start gpg-agent.              */
   char *keyboxd_program;  /* Use this as keyboxd program.    */
 } comopt;
 

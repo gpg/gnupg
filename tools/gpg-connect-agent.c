@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <assert.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "../common/i18n.h"
 #include "../common/util.h"
 #include "../common/asshelp.h"
@@ -39,6 +40,7 @@
 #  include "../common/exechelp.h"
 #endif
 #include "../common/init.h"
+#include "../common/comopt.h"
 
 
 #define CONTROL_D ('D' - 'A' + 1)
@@ -1254,6 +1256,13 @@ main (int argc, char **argv)
 
   if (log_get_errorcount (0))
     exit (2);
+
+    /* Process common component options.  */
+  if (parse_comopt (GNUPG_MODULE_NAME_CONNECT_AGENT, opt.verbose > 1))
+    exit(2);
+
+  if (comopt.no_autostart)
+     opt.autostart = 0;
 
   /* --uiserver is a shortcut for a specific raw socket.  This comes
        in particular handy on Windows. */
