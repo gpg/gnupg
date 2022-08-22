@@ -166,6 +166,11 @@
 
 #endif /* This source is not used by scdaemon. */
 
+#undef USE_LIBUSB_DEBUG_CB
+#if LIBUSB_API_VERSION >= 0x01000107
+# define USE_LIBUSB_DEBUG_CB 1
+#endif
+
 
 #ifndef EAGAIN
 #define EAGAIN  EWOULDBLOCK
@@ -1231,6 +1236,23 @@ scan_devices (char **r_rid)
 }
 
 
+#ifdef USE_LIBUSB_DEBUG_CB
+static void
+debug_libusb_cb (libusb_context *ctx, enum libusb_log_level level,
+                 const char *str)
+{
+  int n = str? strlen (str):0;
+
+  (void)ctx;
+
+  /* Strip the LF so that our logging filter does not escape it.  */
+  if (n && str[n-1] == '\n')
+    n--;
+  log_debug ("libusb{%d}: %.*s\n", level, n, str);
+}
+#endif /* USE_LIBUSB_DEBUG_CB */
+
+
 /* Set the level of debugging to LEVEL and return the old level.  -1
    just returns the old level.  A level of 0 disables debugging, 1
    enables debugging, 2 enables additional tracing of the T=1
@@ -1245,6 +1267,16 @@ ccid_set_debug_level (int level)
   int old = debug_level;
   if (level != -1)
     debug_level = level;
+#ifdef USE_LIBUSB_DEBUG_CB
+  if (level > 4)
+    {
+      log_debug ("libusb: Enable logging\n");
+      libusb_set_log_cb (NULL, debug_libusb_cb, LIBUSB_LOG_CB_GLOBAL);
+      libusb_set_option (NULL, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_DEBUG);
+    }
+  else
+    libusb_set_log_cb (NULL, NULL, LIBUSB_LOG_CB_GLOBAL);
+#endif /* USE_LIBUSB_DEBUG_CB */
   return old;
 }
 
@@ -4050,7 +4082,7 @@ main (int argc, char **argv)
 }
 
 /*
- * Local Variables:
+ * Disabled Local Variables:
  *  compile-command: "gcc -DTEST -DGPGRT_ENABLE_ES_MACROS -DHAVE_NPTH -DUSE_NPTH -Wall -I/usr/include/libusb-1.0 -I/usr/local/include -lusb-1.0 -g ccid-driver.c -lnpth -lgpg-error"
  * End:
  */
