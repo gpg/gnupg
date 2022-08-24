@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.37 (unreleased)
+Noteworthy changes in version 2.2.37 (2022-08-24)
 -------------------------------------------------
 
   * gpg: In de-vs mode use SHA-256 instead of SHA-1 as implicit
@@ -20,6 +20,8 @@ Noteworthy changes in version 2.2.37 (unreleased)
 
   * gpg: The options --auto-key-import and --include-key-block are
     again listed by gpgconf.  [T6138]
+
+  * gpgsm: New option --compatibility-flags.  [rG77b6896f7a]
 
   * agent: New options --no-user-trustlist and --sys-trustlist-name.
     [T5990]
