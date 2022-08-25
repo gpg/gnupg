@@ -1325,7 +1325,13 @@ ccid_vendor_specific_setup (ccid_driver_t handle)
 {
   if (handle->id_vendor == VENDOR_SCM && handle->id_product == SCM_SPR532)
     {
+#ifdef USE_NPTH
+      npth_unprotect ();
+#endif
       libusb_clear_halt (handle->idev, handle->ep_intr);
+#ifdef USE_NPTH
+      npth_protect ();
+#endif
     }
   return 0;
 }
@@ -1705,6 +1711,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
           *handle = NULL;
           return err;
         }
+      npth_setname_np (thread, "ccid_usb_thread");
 
       npth_attr_destroy (&tattr);
     }
@@ -1749,9 +1756,15 @@ ccid_open_usb_reader (const char *spec_reader_name,
       goto leave;
     }
 
+#ifdef USE_NPTH
+  npth_unprotect ();
+#endif
   rc = libusb_claim_interface (idev, ifc_no);
   if (rc)
     {
+#ifdef USE_NPTH
+      npth_protect ();
+#endif
       DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
       rc = map_libusb_error (rc);
       goto leave;
@@ -1761,10 +1774,17 @@ ccid_open_usb_reader (const char *spec_reader_name,
   rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
   if (rc)
     {
+#ifdef USE_NPTH
+      npth_protect ();
+#endif
       DEBUGOUT_1 ("usb_set_interface_alt_setting failed: %d\n", rc);
       rc = map_libusb_error (rc);
       goto leave;
     }
+
+#ifdef USE_NPTH
+  npth_protect ();
+#endif
 
   rc = ccid_vendor_specific_init (*handle);
 
