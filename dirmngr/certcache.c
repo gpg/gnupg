@@ -271,6 +271,20 @@ put_cert (ksba_cert_t cert, int permanent, unsigned int trustclass,
   cert_item_t ci;
   fingerprint_list_t ignored;
 
+  if (permanent)
+    {                           /* Do a little validation.  */
+      ksba_isotime_t not_after;
+      ksba_isotime_t current_time;
+
+      if (ksba_cert_get_validity (cert, 1, not_after))
+        return gpg_error (GPG_ERR_BAD_CERT);
+
+      gnupg_get_isotime (current_time);
+
+      if (*not_after && strcmp (current_time, not_after) > 0)
+        return gpg_error (GPG_ERR_CERT_EXPIRED);
+    }
+
   fpr = fpr_buffer? fpr_buffer : &help_fpr_buffer;
 
   /* If we already reached the caching limit, drop a couple of certs
