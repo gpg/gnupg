@@ -284,7 +284,10 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
       char numbuf[25];
       char *hexbuf;
 
-      snprintf (numbuf, sizeof numbuf, "%d:", dek->algo);
+      if (ed->aead_algo)
+        snprintf (numbuf, sizeof numbuf, "%d.%u:", dek->algo, ed->aead_algo);
+      else
+        snprintf (numbuf, sizeof numbuf, "%d:", dek->algo);
       hexbuf = bin2hex (dek->key, dek->keylen, NULL);
       if (!hexbuf)
         {
@@ -486,6 +489,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
     {
       char *filename = NULL;
       estream_t fp;
+
       rc = get_output_file ("", 0, ed->buf, &filename, &fp);
       if (! rc)
         {
@@ -509,8 +513,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
                        filename, gpg_strerror (rc));
 
           iobuf_close (output);
-          if (afx)
-            release_armor_context (afx);
+          release_armor_context (afx);
         }
       xfree (filename);
     }
