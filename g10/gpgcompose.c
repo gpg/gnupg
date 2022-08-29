@@ -2576,7 +2576,7 @@ encrypted (const char *option, int argc, char *argv[], void *cookie)
 
   cfx->datalen = 0;
 
-  filter_push (out, cipher_filter, cfx, PKT_ENCRYPTED, cfx->datalen == 0);
+  filter_push (out, cipher_filter_cfb, cfx, PKT_ENCRYPTED, cfx->datalen == 0);
 
   debug ("Wrote encrypted packet:\n");
 
