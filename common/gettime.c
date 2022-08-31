@@ -676,6 +676,46 @@ isotimestamp (u32 stamp)
 }
 
 
+/* Windows version of strftime returning the string as utf-8.  */
+#ifdef HAVE_W32_SYSTEM
+
+#define strftime(a,b,c,d)  w32_strftime ((a),(b),(c),(d))
+
+static size_t
+w32_strftime (char *s, size_t max, const char *format, const struct tm *tm)
+{
+  wchar_t *wformatbuf = NULL;
+  const wchar_t *wformat = L"%c %Z";
+  wchar_t wbuf[200];
+  size_t n;
+  char *buf;
+
+  if (strcmp (format, "%c %Z"))
+    {
+      log_debug ("  comverted\n");
+      wformatbuf = utf8_to_wchar (format);
+      if (wformatbuf)
+        wformat = wformatbuf;
+    }
+
+  n = wcsftime (wbuf, sizeof wbuf, wformat, tm);
+  xfree (wformatbuf);
+  if (!n)
+    {
+      /* Most likely the buffer is too short - try ISO format instead.  */
+      n = wcsftime (wbuf, sizeof wbuf, L"%Y-%m-%d %H:%M:%S", tm);
+      if (!n)
+        wcscpy (wbuf, L"[????" "-??" "-??]");
+    }
+  buf = wchar_to_utf8 (wbuf);
+  mem2str (s, buf? buf : "[????" "-??" "-??]", max);
+  xfree (buf);
+  return strlen (s) + 1;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+
 /****************
  * Note: this function returns local time
  */
@@ -694,7 +734,6 @@ asctimestamp (u32 stamp)
       strcpy (buffer, "????" "-??" "-??");
       return buffer;
     }
-
   tp = localtime( &atime );
 #ifdef HAVE_STRFTIME
 # if defined(HAVE_NL_LANGINFO)
