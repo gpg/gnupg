@@ -2201,7 +2201,7 @@ iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
 
 /* Copies the data from the input iobuf SOURCE to the output iobuf
    DEST until either an error is encountered or EOF is reached.
-   Returns the number of bytes copies.  */
+   Returns the number of bytes copies or (size_t)(-1) on error.  */
 size_t
 iobuf_copy (iobuf_t dest, iobuf_t source)
 {
@@ -2214,11 +2214,11 @@ iobuf_copy (iobuf_t dest, iobuf_t source)
   size_t max_read = 0;
   int err;
 
-  assert (source->use == IOBUF_INPUT || source->use == IOBUF_INPUT_TEMP);
-  assert (dest->use == IOBUF_OUTPUT || source->use == IOBUF_OUTPUT_TEMP);
+  log_assert (source->use == IOBUF_INPUT || source->use == IOBUF_INPUT_TEMP);
+  log_assert (dest->use == IOBUF_OUTPUT || source->use == IOBUF_OUTPUT_TEMP);
 
   if (iobuf_error (dest))
-    return -1;
+    return (size_t)(-1);
 
   temp = xmalloc (temp_size);
   while (1)

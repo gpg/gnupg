@@ -878,6 +878,8 @@ encrypt_filter (void *opaque, int control,
     {
       if ( !efx->header_okay )
         {
+          efx->header_okay = 1;
+
           efx->cfx.dek = create_dek_with_warnings (0, efx->pk_list);
 
           rc = check_encryption_compliance (efx->cfx.dek, efx->pk_list);
@@ -904,8 +906,6 @@ encrypt_filter (void *opaque, int control,
             }
 
           iobuf_push_filter (a, cipher_filter_cfb, &efx->cfx);
-
-          efx->header_okay = 1;
         }
       rc = iobuf_write (a, buf, size);
 
