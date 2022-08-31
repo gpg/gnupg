@@ -108,6 +108,7 @@ enum cmd_and_opt_values {
   oDebugWait,
   oDebugLevel,
   oGnutlsDebug,
+  oDebugCacheExpiredCerts,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -292,8 +293,9 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_header (NULL, N_("Other options")),
 
   ARGPARSE_s_n (oForce,    "force",    N_("force loading of outdated CRLs")),
-  ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
 
+  ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
+  ARGPARSE_s_n (oDebugCacheExpiredCerts, "debug-cache-expired-certs", "@"),
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -705,6 +707,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.connect_quick_timeout = 0;
       opt.ldaptimeout = DEFAULT_LDAP_TIMEOUT;
       ldapserver_list_needs_reset = 1;
+      opt.debug_cache_expired_certs = 0;
       return 1;
     }
 
@@ -861,6 +864,10 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
 
     case oLDAPTimeout:
       opt.ldaptimeout = pargs->r.ret_int;
+      break;
+
+    case oDebugCacheExpiredCerts:
+      opt.debug_cache_expired_certs = 0;
       break;
 
     default:

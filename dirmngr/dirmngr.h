@@ -129,6 +129,9 @@ struct
      OID per string.  */
   strlist_t ignored_cert_extensions;
 
+  /* Allow expired certificates in the cache.  */
+  int debug_cache_expired_certs;
+
   int allow_ocsp;     /* Allow using OCSP. */
 
   int max_replies;
