@@ -271,8 +271,9 @@ put_cert (ksba_cert_t cert, int permanent, unsigned int trustclass,
   cert_item_t ci;
   fingerprint_list_t ignored;
 
-  if (permanent)
-    {                           /* Do a little validation.  */
+  /* Do not keep expired certificates in the permanent cache.  */
+  if (permanent && !opt.debug_cache_expired_certs)
+    {
       ksba_isotime_t not_after;
       ksba_isotime_t current_time;
 
