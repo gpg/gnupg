@@ -1405,8 +1405,12 @@ compliance_failure(void)
       break;
 
     case CO_DE_VS:
-      ver="DE-VS applications";
-      break;
+      /* For de-vs we do not allow any kind of fallback.  */
+      write_status_failure ("compliance-check", gpg_error (GPG_ERR_FORBIDDEN));
+      log_error (_("operation forced to fail due to"
+                   " unfulfilled compliance rules\n"));
+      g10_errors_seen = 1;
+      return;
     }
 
   log_info(_("this message may not be usable by %s\n"),ver);

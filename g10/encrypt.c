@@ -567,10 +567,8 @@ check_encryption_compliance (DEK *dek, pk_list_t pk_list)
       && opt.compliance == CO_DE_VS
       && !compliant)
     {
-      log_error (_("operation forced to fail due to"
-                   " unfulfilled compliance rules\n"));
+      compliance_failure ();
       err = gpg_error (GPG_ERR_FORBIDDEN);
-      g10_errors_seen = 1;
       goto leave;
     }
 

@@ -944,9 +944,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       && opt.compliance == CO_DE_VS
       && compliance_de_vs != (4|2|1))
     {
-      log_error (_("operation forced to fail due to"
-                   " unfulfilled compliance rules\n"));
-      g10_errors_seen = 1;
+      compliance_failure ();
     }
 }
 
@@ -2625,8 +2623,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       else if (opt.flags.require_compliance
                && opt.compliance == CO_DE_VS)
         {
-          log_error (_("operation forced to fail due to"
-                       " unfulfilled compliance rules\n"));
+          compliance_failure ();
           if (!rc)
             rc = gpg_error (GPG_ERR_FORBIDDEN);
         }
