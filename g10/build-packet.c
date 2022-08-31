@@ -970,6 +970,9 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     if (pt->buf)
       {
         nbytes = iobuf_copy (out, pt->buf);
+        if (nbytes == (size_t)(-1)
+            && (iobuf_error (out) || iobuf_error (pt->buf)))
+            return iobuf_error (out)? iobuf_error (out):iobuf_error (pt->buf);
         if(ctb_new_format_p (ctb) && !pt->len)
           /* Turn off partial body length mode.  */
           iobuf_set_partial_body_length_mode (out, 0);
