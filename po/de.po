@@ -1825,6 +1825,13 @@ msgstr ""
 "entfernen.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren "
+"%s (%d) verletzt die Empfängervoreinstellungen\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "Fehler beim Erzeugen des Passwortes: %s\n"
 
@@ -1856,24 +1863,13 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "Die Benutzung der Hashmethode %s ist im %s Modus nicht erlaubt.\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "Lesen von '%s'\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren "
-"%s (%d) verletzt die Empfängervoreinstellungen\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr ""
 "WARNUNG: Schlüssel %s ist zur Verschlüsselung im %s Modus nicht geeignet.\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr "Operation abgebrochen wegen nicht erfüllter Compliance.\n"
+msgid "reading from '%s'\n"
+msgstr "Lesen von '%s'\n"
 
 #, c-format
 msgid ""
@@ -1882,12 +1878,6 @@ msgid ""
 msgstr ""
 "WARNUNG: Erzwungenes Kompressionsverfahren %s (%d) verletzt die "
 "Empfängervoreinstellungen.\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren %s (%d) "
-"verletzt die Empfängervoreinstellungen\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2230,6 +2220,12 @@ msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 "|MECHANISMEN|Benutze MECHANISMEN um Schlüssel über die Mailadresse "
 "aufzufinden."
+
+msgid "import missing key from a signature"
+msgstr "Schlüssel aus der Signatur importieren"
+
+msgid "include the public key in signatures"
+msgstr "Schlüssel mit in die Signatur packen"
 
 msgid "disable all access to the dirmngr"
 msgstr "Jeglichen Zugriff auf den Dirmngr verhindern"
@@ -5051,6 +5047,10 @@ msgstr "nicht komprimiert"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "unkomprimiert|kein|keine"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr "Operation abgebrochen wegen nicht erfüllter Compliance.\n"
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8942,6 +8942,11 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren %s (%d) "
+#~ "verletzt die Empfängervoreinstellungen\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"
 
@@ -8956,12 +8961,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "Erlaube PKA Zugriffe (DNS Anfragen)"
-
-#~ msgid "import missing key from a signature"
-#~ msgstr "Schlüssel aus der Signatur importieren"
-
-#~ msgid "include the public key in signatures"
-#~ msgstr "Schlüssel mit in die Signatur packen"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Optionen zum Einstellen der Ausgabeformate"
