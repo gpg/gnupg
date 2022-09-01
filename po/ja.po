@@ -5,13 +5,13 @@
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
 # NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
-# 2020, 2021.
+# 2020, 2021, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.3.4\n"
+"Project-Id-Version: gnupg 2.3.8\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-04-25 15:44+0200\n"
+"PO-Revision-Date: 2022-09-01 14:45+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -269,10 +269,9 @@ msgstr "PINが正しく繰り返されていません。もう一度"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "カードのロックを解除するためにPIN%s%s%sを入力してください"
 
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
+#, c-format
 msgid "error writing to pipe: %s\n"
-msgstr "'%s'の書き込みエラー: %s\n"
+msgstr "パイプへの書き込みエラー: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "新しいパスフレーズを入力してください"
@@ -747,14 +746,10 @@ msgstr "後で変更する"
 msgid "Please insert the card with serial number"
 msgstr "以下のシリアル番号のカードを挿入してください"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
-#| "to allow this?"
+#, c-format
 msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
 msgstr ""
-"sshプロセスが以下の鍵の使用を要求しました:%%0A  %s%%0A  (%s)%%0Aこの使用を認"
-"めますか?"
+"以下の鍵の使用を要求しました:%%0A  %s%%0A  (%s)%%0Aこの使用を認めますか?"
 
 #, c-format
 msgid ""
@@ -1794,7 +1789,7 @@ msgstr "*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
 
 #, c-format
 msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgstr "充足できないコンプライアンス・ルールのため、操作は強制的に失敗します\n"
 
 #, c-format
 msgid ""
@@ -6598,7 +6593,7 @@ msgid "error getting key usage information: %s\n"
 msgstr "鍵使用情報の取得エラー: %s\n"
 
 msgid "Tor might be in use - network access is limited"
-msgstr ""
+msgstr "Torが使われているかもしれません - ネットワークアクセスは制限されます"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7831,10 +7826,8 @@ msgstr "発行者からcrl_cache_insertが失敗しました: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "readerからファイル・マッピングのテーブルがいっぱいです - 待ちます\n"
 
-#, fuzzy
-#| msgid "CRL access not possible due to Tor mode\n"
 msgid "CRL access not possible due to Tor mode"
-msgstr "CRLアクセスはTorモードのため不可能です\n"
+msgstr "CRLアクセスはTorモードのため不可能です"
 
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
@@ -8006,10 +7999,8 @@ msgstr "|URL|すべてのHTTPリクエストをURLにリダイレクトする"
 msgid "use system's HTTP proxy setting"
 msgstr "システムのHTTPプロキシ設定を用います"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for OpenPGP servers"
-msgstr "HTTPサーバのコンフィグレーション"
+msgstr "OpenPGPサーバのコンフィグレーション"
 
 msgid "|URL|use keyserver at URL"
 msgstr "|URL|鍵サーバとしてURLを使用"
@@ -8017,10 +8008,8 @@ msgstr "|URL|鍵サーバとしてURLを使用"
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|FILE|FILEにあるCA証明書をTLSでのHKPに使う"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for X.509 servers"
-msgstr "HTTPサーバのコンフィグレーション"
+msgstr "X.509サーバのコンフィグレーション"
 
 msgid "inhibit the use of LDAP"
 msgstr "LDAPの使用を禁止する"
@@ -8250,10 +8239,8 @@ msgstr "応答からの読み込みエラー: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "サーバからの応答がが長すぎます (上限%dバイト)。\n"
 
-#, fuzzy
-#| msgid "OCSP request not possible due to Tor mode\n"
 msgid "OCSP request not possible due to Tor mode"
-msgstr "TorモードのためOCSPリクエストが不可能です\n"
+msgstr "TorモードのためOCSPリクエストが不可能です"
 
 #, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
