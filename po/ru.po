@@ -1799,6 +1799,13 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "сначала удалите его командой \"--delete-secret-keys\".\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"Внимание: принудительное использование симметричного шифра %s (%d)\n"
+"          нарушает предпочтения получателя\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "ошибка при создании фразы-пароля: %s\n"
 
@@ -1827,35 +1834,18 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "хеш-функцию '%s' нельзя использовать в режиме %s\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "чтение из '%s'\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"Внимание: принудительное использование симметричного шифра %s (%d)\n"
-"          нарушает предпочтения получателя\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "Внимание: ключ %s не подходит для шифрования в режиме %s\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "чтение из '%s'\n"
 
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "Внимание: сжатие алгоритмом %s (%d) нарушает предпочтения получателя\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"принудительное использование симметричного шифра %s (%d) нарушает "
-"предпочтения получателя\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2203,6 +2193,12 @@ msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 "|MECHANISMS|использовать механизмы MECHANISMS для поиска ключей по адресу "
 "электронной почты"
+
+msgid "import missing key from a signature"
+msgstr "импортировать недостающий ключ из подписи"
+
+msgid "include the public key in signatures"
+msgstr "вносить открытый ключ в подписи"
 
 msgid "disable all access to the dirmngr"
 msgstr "полностью запретить доступ к dirmngr"
@@ -5012,6 +5008,10 @@ msgstr "Без сжатия"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "без сжатия|без|none"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8846,6 +8846,11 @@ msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "принудительное использование симметричного шифра %s (%d) нарушает "
+#~ "предпочтения получателя\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "ошибка записи во временный файл: %s\n"
 
@@ -8860,12 +8865,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "разрешить поиск по PKA (запросы DNS)"
-
-#~ msgid "import missing key from a signature"
-#~ msgstr "импортировать недостающий ключ из подписи"
-
-#~ msgid "include the public key in signatures"
-#~ msgstr "вносить открытый ключ в подписи"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Параметры, управляющие форматом вывода"

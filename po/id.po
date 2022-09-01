@@ -1891,6 +1891,11 @@ msgstr "terdapat kunci rahasia untuk kunci publik \"%s\"!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "gunakan pilihan \"--delete-secret-key\" untuk menghapusnya.\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
@@ -1924,32 +1929,19 @@ msgstr ""
 "anda tidak boleh menggunakan algoritma digest \"%s\" saat dalam mode %s.\n"
 
 #, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "Membaca dari `%s'\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "memaksa algoritma kompresi %s (%d) melanggar preferensi penerima\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2322,6 +2314,15 @@ msgstr ""
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "impor kunci dari keyserver"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "periksa signature kunci"
 
 msgid "disable all access to the dirmngr"
 msgstr ""
@@ -5230,6 +5231,10 @@ msgstr "Tidak dikompresi"
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "Tidak dikompresi"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -9068,6 +9073,9 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
+
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "menulis ke `%s'\n"
@@ -9079,15 +9087,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "run without asking a user"
 #~ msgstr "Berhenti tanpa menyimpan? "
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "impor kunci dari keyserver"
-
-#, fuzzy
-#~ msgid "include the public key in signatures"
-#~ msgstr "periksa signature kunci"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"

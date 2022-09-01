@@ -1830,6 +1830,13 @@ msgstr ""
 "спершу скористайтеся параметром «--delete-secret-keys» для його вилучення.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"УВАГА: примусове використання симетричного шифру %s (%d) не відповідає "
+"параметрам отримувача\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "помилка під час спроби створення пароля: %s\n"
 
@@ -1860,23 +1867,12 @@ msgstr ""
 "%s\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "читання з «%s»\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"УВАГА: примусове використання симетричного шифру %s (%d) не відповідає "
-"параметрам отримувача\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "УВАГА: ключ %s не можна використовувати для шифрування у режимі %s\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "читання з «%s»\n"
 
 #, c-format
 msgid ""
@@ -1885,12 +1881,6 @@ msgid ""
 msgstr ""
 "УВАГА: примусове використання алгоритму стиснення %s (%d) не відповідає "
 "параметрам отримувача\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"примусове використання симетричного шифру %s (%d) не відповідає параметрам "
-"отримувача\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2240,6 +2230,16 @@ msgstr "Параметри керування інтерактивністю т�
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 "|MECHANISMS|використовувати вказаний механізм для пошуку ключів за адресою"
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "імпортувати ключі з сервера ключів"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "показати список і перевірити підписи ключів"
 
 msgid "disable all access to the dirmngr"
 msgstr "заборонити доступ до dirmngr"
@@ -5089,6 +5089,10 @@ msgstr "Нестиснений"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "uncompressed|немає"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8961,6 +8965,11 @@ msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "примусове використання симетричного шифру %s (%d) не відповідає "
+#~ "параметрам отримувача\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "помилка під час спроби запису до тимчасового файла: %s\n"
 
@@ -8975,16 +8984,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "дозволити пошук PKA (запити до DNS)"
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "імпортувати ключі з сервера ключів"
-
-#, fuzzy
-#~| msgid "list and check key signatures"
-#~ msgid "include the public key in signatures"
-#~ msgstr "показати список і перевірити підписи ключів"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Параметри керування форматом виведення"

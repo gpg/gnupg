@@ -1890,6 +1890,12 @@ msgstr "há uma chave secreta para a chave pública \"%s\"!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "utilize a opção \"--delete-secret-keys\" para a apagar primeiro.\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "erro na criação da frase secreta: %s\n"
@@ -1921,23 +1927,13 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "reading from '%s'\n"
-msgstr "lendo de `%s'\n"
-
-#, fuzzy, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
-
-#, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "AVISO: \"%s\" é uma opção depreciada\n"
 
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
+msgstr "lendo de `%s'\n"
 
 #, fuzzy, c-format
 msgid ""
@@ -1946,11 +1942,6 @@ msgid ""
 msgstr ""
 "ao forçar o algoritmo de compressão %s (%d) viola as preferências do "
 "destinatário\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2319,6 +2310,15 @@ msgstr ""
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importar chaves de um servidor de chaves"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "verificar as assinaturas das chaves"
 
 msgid "disable all access to the dirmngr"
 msgstr ""
@@ -5236,6 +5236,10 @@ msgstr "não processado"
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "não processado"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -9067,6 +9071,11 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "ao forçar a cifra simétrica %s (%d) viola as preferências do "
+#~ "destinatário\n"
+
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "a escrever para `%s'\n"
@@ -9078,15 +9087,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "run without asking a user"
 #~ msgstr "Sair sem gravar? "
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "importar chaves de um servidor de chaves"
-
-#, fuzzy
-#~ msgid "include the public key in signatures"
-#~ msgstr "verificar as assinaturas das chaves"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"

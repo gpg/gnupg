@@ -1910,6 +1910,13 @@ msgstr ""
 "întâi.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"AVERTISMENT: forţând cifrul simetric %s (%d) violaţi preferinţele "
+"destinatarului\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolă: %s\n"
 
@@ -1942,24 +1949,13 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "nu puteţi folosi algorimul de rezumat `%s' câtă vreme în modul %s\n"
 
 #, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "reading from '%s'\n"
-msgstr "citesc din `%s'\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"AVERTISMENT: forţând cifrul simetric %s (%d) violaţi preferinţele "
-"destinatarului\n"
-
-#, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
 
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
+msgstr "citesc din `%s'\n"
 
 #, c-format
 msgid ""
@@ -1968,10 +1964,6 @@ msgid ""
 msgstr ""
 "AVERTISMENT: forţând algoritmul de compresie %s (%d) violaţi preferinţele "
 "destinatarului\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "forţând cifrul simetric %s (%d) violaţi preferinţele destinatarului\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2343,6 +2335,16 @@ msgstr ""
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importă chei de la un server de chei"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "enumeră şi verifică semnăturile cheii"
 
 msgid "disable all access to the dirmngr"
 msgstr ""
@@ -5287,6 +5289,10 @@ msgstr "Necompresat"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "necompresat|niciunul"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -9191,6 +9197,10 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "forţând cifrul simetric %s (%d) violaţi preferinţele destinatarului\n"
+
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "%s: eroare scriere înregistrare dir: %s\n"
@@ -9203,16 +9213,6 @@ msgstr ""
 #~| msgid "Quit without saving? (y/N) "
 #~ msgid "run without asking a user"
 #~ msgstr "Terminaţi fără a salva?  (d/N) "
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "importă chei de la un server de chei"
-
-#, fuzzy
-#~| msgid "list and check key signatures"
-#~ msgid "include the public key in signatures"
-#~ msgstr "enumeră şi verifică semnăturile cheii"
 
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "cer cheia %s de la serverul %s %s\n"

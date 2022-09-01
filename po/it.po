@@ -1817,6 +1817,13 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "usa prima l'opzione \"--delete-secret-keys\" per cancellarla.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"AVVISO: l'imposizione della crittografia simmetrica %s (%d) viola le "
+"preferenze del destinatario\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "errore nella creazione della passhprase: %s\n"
 
@@ -1847,23 +1854,12 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "l'algoritmo digest '%s' non può essere utilizzato in modalità %s\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "lettura da '%s'\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"AVVISO: l'imposizione della crittografia simmetrica %s (%d) viola le "
-"preferenze del destinatario\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "AVVISO: la chiave %s non è adatta per la crittografia in modalità %s\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "lettura da '%s'\n"
 
 #, c-format
 msgid ""
@@ -1872,12 +1868,6 @@ msgid ""
 msgstr ""
 "AVVISO: l'algoritmo di compressione %s (%d) viola le preferenze dei "
 "destinatari\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"forzare il cifrario simmetrico %s (%d) viola le preferenze\n"
-"del destinatario\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2225,6 +2215,12 @@ msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 "|MECHANISMS|utilizzare MECHANISMS per individuare le chiavi in base "
 "all'indirizzo di posta elettronica"
+
+msgid "import missing key from a signature"
+msgstr "importare la chiave mancante da una firma"
+
+msgid "include the public key in signatures"
+msgstr "includere la chiave pubblica nelle firme"
 
 msgid "disable all access to the dirmngr"
 msgstr "disabilitare tutti gli accessi al dirmngr"
@@ -5039,6 +5035,10 @@ msgstr "Non compresso"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "non compresso|nessuno"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8891,6 +8891,11 @@ msgstr ""
 "Sintassi: gpg-check-pattern [opzioni] patternfile\n"
 "Controllare una passphrase data su stdin rispetto al patternfile\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "forzare il cifrario simmetrico %s (%d) viola le preferenze\n"
+#~ "del destinatario\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "errore durante la scrittura nel file temporaneo: %s\n"
 
@@ -8905,12 +8910,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "consentire ricerche PKA (richieste DNS)"
-
-#~ msgid "import missing key from a signature"
-#~ msgstr "importare la chiave mancante da una firma"
-
-#~ msgid "include the public key in signatures"
-#~ msgstr "includere la chiave pubblica nelle firme"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Opzioni che controllano il formato dell'output"

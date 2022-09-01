@@ -1844,6 +1844,11 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "請先以 \"--delete-secret-keys\" 選項來刪除它.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "建立密語時出錯: %s\n"
 
@@ -1873,33 +1878,20 @@ msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "你不該將 '%s' 摘要演算法用於 %s 模式\n"
 
-#, c-format
-msgid "reading from '%s'\n"
-msgstr "正在從 '%s' 讀取\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
-
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "正在從 '%s' 讀取\n"
 
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 壓縮演算法會違反收件者偏好設定\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2249,6 +2241,16 @@ msgstr "控制著互動及強制執行的選項"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|使用 MECHANISMS 機制來從郵件地址找出金鑰"
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "從金鑰伺服器匯入金鑰"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "列出並檢查金鑰簽章"
 
 msgid "disable all access to the dirmngr"
 msgstr "停用所有的 dirmngr 存取"
@@ -5034,6 +5036,10 @@ msgstr "未壓縮"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "uncompressed|none|未壓縮|無"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8774,6 +8780,9 @@ msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "寫入暫存檔時出錯: %s\n"
 
@@ -8788,16 +8797,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "允許 PKA 查找 (DNS 請求)"
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "從金鑰伺服器匯入金鑰"
-
-#, fuzzy
-#~| msgid "list and check key signatures"
-#~ msgid "include the public key in signatures"
-#~ msgstr "列出並檢查金鑰簽章"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "控制著輸出格式的選項"

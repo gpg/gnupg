@@ -1890,6 +1890,13 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr ""
 "χρησιμοποιείστε πρώτα την επιλογή \"--delete-secret-key\" για διαγραφή του.\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"ο εξαναγκασμός συμμετρικού αλγόριθμου %s (%d) παραβιάζει τις\n"
+"επιλογές του παραλήπτη\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
@@ -1922,24 +1929,13 @@ msgstr ""
 "απαγορεύετε η χρήση του αλγόριθμου περίληψης \"%s\" στην κατάσταση %s\n"
 
 #, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "reading from '%s'\n"
-msgstr "ανάγνωση από `%s'\n"
-
-#, fuzzy, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ο εξαναγκασμός συμμετρικού αλγόριθμου %s (%d) παραβιάζει τις\n"
-"επιλογές του παραλήπτη\n"
-
-#, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
 
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
+msgstr "ανάγνωση από `%s'\n"
 
 #, fuzzy, c-format
 msgid ""
@@ -1947,12 +1943,6 @@ msgid ""
 "preferences\n"
 msgstr ""
 "ο εξαναγκασμός χρήσης του αλγορίθμου συμπίεσης %s (%d) παραβιάζει τις\n"
-"επιλογές του παραλήπτη\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ο εξαναγκασμός συμμετρικού αλγόριθμου %s (%d) παραβιάζει τις\n"
 "επιλογές του παραλήπτη\n"
 
 #, c-format
@@ -2330,6 +2320,15 @@ msgstr ""
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "εισαγωγή κλειδιών από ένα διακομιστή κλειδιών"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "έλεγχος υπογραφής κλειδιού"
 
 msgid "disable all access to the dirmngr"
 msgstr ""
@@ -5271,6 +5270,10 @@ msgstr "Ασυμπίεστο"
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "Ασυμπίεστο"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -9129,6 +9132,11 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "ο εξαναγκασμός συμμετρικού αλγόριθμου %s (%d) παραβιάζει τις\n"
+#~ "επιλογές του παραλήπτη\n"
+
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "εγγραφή στο  `%s'\n"
@@ -9140,15 +9148,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "run without asking a user"
 #~ msgstr "Τερματισμός χωρίς αποθήκευση; "
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "εισαγωγή κλειδιών από ένα διακομιστή κλειδιών"
-
-#, fuzzy
-#~ msgid "include the public key in signatures"
-#~ msgstr "έλεγχος υπογραφής κλειδιού"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"

@@ -1839,6 +1839,12 @@ msgstr ""
 "abyste ho smazal(a), použijte nejprve parametr „--delete-secret-key“.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"VAROVÁNÍ: vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "chyba při vytváření hesla: %s\n"
 
@@ -1867,22 +1873,12 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "hashovací algoritmus „%s“ se nesmí používat v režimu %s\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "čte se z „%s“\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"VAROVÁNÍ: vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "VAROVÁNÍ: klíč %s není vhodný pro šifrování v režimu %s\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "čte se z „%s“\n"
 
 #, c-format
 msgid ""
@@ -1891,10 +1887,6 @@ msgid ""
 msgstr ""
 "VAROVÁNÍ: vyžádaný komprimační algoritmus %s (%d) nevyhovuje předvolbám "
 "příjemce\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2239,6 +2231,12 @@ msgstr "Volby ovlivňující interaktivitu a vymáhání"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|METODA|používat METODU pro dohledávání klíčů podle e-mailové adresy"
+
+msgid "import missing key from a signature"
+msgstr "importovat chybějící klíč z podpisu"
+
+msgid "include the public key in signatures"
+msgstr "zahrnovat veřejný klíč do podpisů"
 
 msgid "disable all access to the dirmngr"
 msgstr "zakázat veškerý přístup k dirmngr"
@@ -5035,6 +5033,10 @@ msgstr "Nezkomprimováno"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "nezkomprimováno|nic"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8851,6 +8853,9 @@ msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "chyba při zápisu do dočasného souboru: %s\n"
 
@@ -8865,12 +8870,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "povolit dohledávání PKA (dotazy na DNS)"
-
-#~ msgid "import missing key from a signature"
-#~ msgstr "importovat chybějící klíč z podpisu"
-
-#~ msgid "include the public key in signatures"
-#~ msgstr "zahrnovat veřejný klíč do podpisů"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Volby ovlivňující podobu výstupu"

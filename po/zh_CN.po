@@ -1763,6 +1763,11 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "请先使用“--delete-secret-keys”选项来删除它。\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "警告： 强制对称密文 %s (%d) 与接收者的偏好设置冲突\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "创建密码时出现错误：%s\n"
 
@@ -1791,31 +1796,18 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "摘要算法‘%s’不能在 %s 模式下使用\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "正在从‘%s’读取\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "警告： 强制对称密文 %s (%d) 与接收者的偏好设置冲突\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "警告： 密钥 %s 在 %s 模式下不适用于加密\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr "未能满足合规规则，操作已强制取消\n"
+msgid "reading from '%s'\n"
+msgstr "正在从‘%s’读取\n"
 
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "警告： 强制压缩算法 %s (%d) 与接收者的偏好设置冲突\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "强行对称密文算法 %s (%d) 与接收者的偏好设置冲突\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2146,6 +2138,12 @@ msgstr "密钥导入导出控制选项"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|通过邮件地址定位密钥时使用机制 MECHANISMS"
+
+msgid "import missing key from a signature"
+msgstr "从签名导入缺少的密钥"
+
+msgid "include the public key in signatures"
+msgstr "在签名中包含公钥"
 
 msgid "disable all access to the dirmngr"
 msgstr "禁用对 dirmngr 的所有访问"
@@ -4837,6 +4835,10 @@ msgstr "不压缩"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "未压缩|无"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr "未能满足合规规则，操作已强制取消\n"
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8486,6 +8488,9 @@ msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "强行对称密文算法 %s (%d) 与接收者的偏好设置冲突\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "写入临时文件时出现错误： %s\n"
 
@@ -8500,12 +8505,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "允许 PKA 查询（DNS 请求）"
-
-#~ msgid "import missing key from a signature"
-#~ msgstr "从签名导入缺少的密钥"
-
-#~ msgid "include the public key in signatures"
-#~ msgstr "在签名中包含公钥"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "控制输出格式的选项"

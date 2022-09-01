@@ -1885,6 +1885,12 @@ msgstr "avaliku võtme \"%s\" jaoks on salajane võti!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "selle kustutamiseks kasutage võtit \"--delete-secret-keys\".\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "viga parooli loomisel: %s\n"
@@ -1916,23 +1922,13 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "sõnumilühendi algoritm \"%s\" ei ole moodis %s lubatud\n"
 
 #, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "reading from '%s'\n"
-msgstr "loen failist `%s'\n"
-
-#, fuzzy, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
-
-#, fuzzy, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "HOIATUS: võtit \"%s\" ei soovitata kasutada.\n"
 
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
+msgstr "loen failist `%s'\n"
 
 #, fuzzy, c-format
 msgid ""
@@ -1940,11 +1936,6 @@ msgid ""
 "preferences\n"
 msgstr ""
 "pakkimise algoritmi %s (%d) kasutamine on vastuolus saaja eelistustega\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2321,6 +2312,15 @@ msgstr ""
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "impordi võtmed võtmeserverist"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "kontrolli võtmete allkirju"
 
 msgid "disable all access to the dirmngr"
 msgstr ""
@@ -5216,6 +5216,10 @@ msgstr "Pakkimata"
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "Pakkimata"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -9045,6 +9049,10 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
+
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "kirjutan faili `%s'\n"
@@ -9056,15 +9064,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "run without asking a user"
 #~ msgstr "Väljun salvestamata? "
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "impordi võtmed võtmeserverist"
-
-#, fuzzy
-#~ msgid "include the public key in signatures"
-#~ msgstr "kontrolli võtmete allkirju"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"

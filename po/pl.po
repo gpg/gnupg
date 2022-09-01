@@ -1796,6 +1796,13 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "aby go usunąć należy najpierw użyć opcji \"--delete-secret-key\".\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"OSTRZEŻENIE: wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami "
+"adresata\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "błąd podczas tworzenia hasła: %s\n"
 
@@ -1825,23 +1832,12 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "algorytm skrótu ,,%s'' nie może być używany w trybie %s\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "odczyt z ,,%s''\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"OSTRZEŻENIE: wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami "
-"adresata\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "OSTRZEŻENIE: klucz %s nie nadaje się do szyfrowania w trybie %s\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "odczyt z ,,%s''\n"
 
 #, c-format
 msgid ""
@@ -1850,10 +1846,6 @@ msgid ""
 msgstr ""
 "OSTRZEŻENIE: wymuszone użycie kompresji %s (%d) kłóci się z ustawieniami "
 "adresata\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami adresata\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2198,6 +2190,12 @@ msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 "|MECHANIZMY|wykorzystaj MECHANIZMY do wyszukiwania kluczy na podstawie "
 "adresów e-mail"
+
+msgid "import missing key from a signature"
+msgstr "import brakującego klucza z podpisu"
+
+msgid "include the public key in signatures"
+msgstr "włączanie klucza publicznego do podpisów"
 
 msgid "disable all access to the dirmngr"
 msgstr "zablokuj dostęp do dirmngr"
@@ -5041,6 +5039,10 @@ msgstr "Nieskompresowany"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "nieskompresowany|brak"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8881,6 +8883,9 @@ msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami adresata\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "błąd zapisu do pliku tymczasowego: %s\n"
 
@@ -8895,12 +8900,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "zezwolenie na wyszukiwania PKA (żądania DNS)"
-
-#~ msgid "import missing key from a signature"
-#~ msgstr "import brakującego klucza z podpisu"
-
-#~ msgid "include the public key in signatures"
-#~ msgstr "włączanie klucza publicznego do podpisów"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Opcje sterujące formatem wyjścia"

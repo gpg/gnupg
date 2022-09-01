@@ -1848,6 +1848,13 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "use antes la opción \"--delete-secret-key\" para borrarla.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"AVISO: forzar el cifrado simétrico %s (%d) viola las preferencias\n"
+"del destinatario\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "error al crear frase contraseña: %s\n"
 
@@ -1876,25 +1883,14 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "no puede usar el resumen '%s' en modo %s\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "leyendo desde '%s'\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"AVISO: forzar el cifrado simétrico %s (%d) viola las preferencias\n"
-"del destinatario\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr ""
 "ATENCIÓN: la clave %s no es adecuada para la encriptación en modo %s\n"
 "\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "leyendo desde '%s'\n"
 
 #, c-format
 msgid ""
@@ -1903,12 +1899,6 @@ msgid ""
 msgstr ""
 "AVISO: forzar el algoritmo de compresión %s (%d) va en contra\n"
 "de las preferencias del receptor\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"forzar el cifrado simétrico %s (%d) viola las preferencias\n"
-"del destinatario\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2252,6 +2242,16 @@ msgstr "Opciones que controlan la interactividad y obligación"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|usa MECANISMOS para encontrar claves por emails"
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importa claves desde un servidor de claves"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "lista y comprueba firmas de las claves"
 
 msgid "disable all access to the dirmngr"
 msgstr "prohibir todo acceso al dirmngr"
@@ -5031,6 +5031,10 @@ msgstr "Sin comprimir"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "sin_comprimir|ninguno"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8860,6 +8864,11 @@ msgstr ""
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "forzar el cifrado simétrico %s (%d) viola las preferencias\n"
+#~ "del destinatario\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "error escribiendo en el fichero temporal: %s\n"
 
@@ -8874,16 +8883,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "permitir búsquedas PKA (peticiones DNS)"
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "importa claves desde un servidor de claves"
-
-#, fuzzy
-#~| msgid "list and check key signatures"
-#~ msgid "include the public key in signatures"
-#~ msgstr "lista y comprueba firmas de las claves"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Opciones que controlan el formato de la salida"

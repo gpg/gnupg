@@ -1885,6 +1885,11 @@ msgstr "Van egy titkos kulcs a \"%s\" nyilvános kulcshoz!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "Először azt törölje a \"--delete-secret-keys\" opcióval!\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
@@ -1918,32 +1923,19 @@ msgstr ""
 "Lehet, hogy nem használhatja \"%s\" kivonatoló algoritmust %s módban!\n"
 
 #, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "FIGYELEM: \"%s\" elavult opció!\n"
+
+#, fuzzy, c-format
 #| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "Olvasok a \"%s\" állományból.\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "FIGYELEM: \"%s\" elavult opció!\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "A %s (%d) tömörítés használata sérti a címzett preferenciáit!\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2319,6 +2311,15 @@ msgstr ""
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "kulcsok importálása kulcsszerverről"
+
+#, fuzzy
+msgid "include the public key in signatures"
+msgstr "kulcsaláírások ellenőrzése"
 
 msgid "disable all access to the dirmngr"
 msgstr ""
@@ -5228,6 +5229,10 @@ msgstr "tömörítetlen"
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "tömörítetlen"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -9070,6 +9075,9 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
+
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "Írok a \"%s\" állományba.\n"
@@ -9081,15 +9089,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "run without asking a user"
 #~ msgstr "Kilépjek mentés nélkül? "
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "kulcsok importálása kulcsszerverről"
-
-#, fuzzy
-#~ msgid "include the public key in signatures"
-#~ msgstr "kulcsaláírások ellenőrzése"
 
 #, fuzzy
 #~ msgid "requesting key %s from %s server %s\n"

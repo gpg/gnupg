@@ -2007,6 +2007,13 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "använd flaggan \"--delete-secret-keys\"för att ta bort den först.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"VARNING: tvinga symmetriskt chiffer med %s (%d) strider mot "
+"mottagarinställningarna\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "fel när lösenfras skapades: %s\n"
 
@@ -2040,25 +2047,14 @@ msgstr ""
 "du får inte använda sammandragsalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, fuzzy, c-format
-#| msgid "reading from `%s'\n"
-msgid "reading from '%s'\n"
-msgstr "läser från \"%s\"\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"VARNING: tvinga symmetriskt chiffer med %s (%d) strider mot "
-"mottagarinställningarna\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
 
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
+msgstr "läser från \"%s\"\n"
 
 #, c-format
 msgid ""
@@ -2067,11 +2063,6 @@ msgid ""
 msgstr ""
 "VARNING: tvinga komprimeringsalgoritmen %s (%d) strider mot "
 "mottagarinställningarna\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"tvinga symmetriskt chiffer med %s (%d) strider mot mottagarinställningarna\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2445,6 +2436,16 @@ msgstr "Flaggor som kontrollerar interaktivitet och framtvingande"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MEKANISMER|använd MEKANISMER för att hitta nycklar efter e-postadress"
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importera nycklar från en nyckelserver"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "lista och kontrollera nyckelsignaturer"
 
 msgid "disable all access to the dirmngr"
 msgstr "inaktivera all åtkomst till dirmngr"
@@ -5440,6 +5441,10 @@ msgstr "Okomprimerad"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "okomprimerad|ingen"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -9593,6 +9598,11 @@ msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "tvinga symmetriskt chiffer med %s (%d) strider mot "
+#~ "mottagarinställningarna\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "fel vid skrivning till temporärfil: %s\n"
 
@@ -9609,16 +9619,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "tillåt PKA-uppslag (DNS-förfrågningar)"
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "importera nycklar från en nyckelserver"
-
-#, fuzzy
-#~| msgid "list and check key signatures"
-#~ msgid "include the public key in signatures"
-#~ msgstr "lista och kontrollera nyckelsignaturer"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Flaggor som kontrollerar formatet på utdata"

@@ -1830,6 +1830,13 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "bruk valget «--delete-secret-keys» for å slette den først.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"ADVARSEL: tvungen bruk av symmetrisk krypt.metode %s (%d) bryter med "
+"mottakers oppsett\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "feil under opprettelse av passordfrase: %s\n"
 
@@ -1858,23 +1865,12 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "leser fra «%s»\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ADVARSEL: tvungen bruk av symmetrisk krypt.metode %s (%d) bryter med "
-"mottakers oppsett\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "ADVARSEL: nøkkel %s egner seg ikke for kryptering i %s-modus\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "leser fra «%s»\n"
 
 #, c-format
 msgid ""
@@ -1883,10 +1879,6 @@ msgid ""
 msgstr ""
 "ADVARSEL: tvungen bruk av komprimeringsalgoritme %s (%d) bryter med "
 "mottakers oppsett\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "tvungen bruk av krypt.metode %s (%d) bryter med mottakers oppsett\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2230,6 +2222,16 @@ msgstr "Valg som styrer grensesnitt og håndheving av regler"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MEKANISMER|bruk valgte MEKANISME til å finne nøkler med e-postadresse"
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importer nøkler fra nøkkeltjener"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "vis og kontroller nøkkelsignaturer"
 
 msgid "disable all access to the dirmngr"
 msgstr "slå av all tilgang til dirmngr"
@@ -5006,6 +5008,10 @@ msgstr "Ukomprimert"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "ukomprimert|ingen"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8763,6 +8769,9 @@ msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "tvungen bruk av krypt.metode %s (%d) bryter med mottakers oppsett\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "feil under skriving til midlertidig fil: %s\n"
 
@@ -8777,16 +8786,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "tillat PKA-oppslag (DNS-forespørsler)"
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "importer nøkler fra nøkkeltjener"
-
-#, fuzzy
-#~| msgid "list and check key signatures"
-#~ msgid "include the public key in signatures"
-#~ msgstr "vis og kontroller nøkkelsignaturer"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Valg som styrer utdata-format"

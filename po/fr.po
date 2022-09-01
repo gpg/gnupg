@@ -1905,6 +1905,13 @@ msgstr ""
 "utiliser d'abord l'option « --delete-secret-keys » pour la supprimer.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"Attention : forcer le chiffrement symétrique %s (%d) est en\n"
+"            désaccord avec les préférences du destinataire\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "erreur de création de la phrase secrète : %s\n"
 
@@ -1934,25 +1941,14 @@ msgstr "impossible d'utiliser l'algorithme de chiffrement « %s » en mode %s.
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "impossible d'utiliser l'algorithme de hachage « %s » en mode %s.\n"
 
-#, c-format
-msgid "reading from '%s'\n"
-msgstr "lecture de « %s »\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"Attention : forcer le chiffrement symétrique %s (%d) est en\n"
-"            désaccord avec les préférences du destinataire\n"
-
 #, fuzzy, c-format
 #| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "Attention : « %s%s » est une option obsolète — non prise en compte\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgid "reading from '%s'\n"
+msgstr "lecture de « %s »\n"
 
 #, c-format
 msgid ""
@@ -1961,12 +1957,6 @@ msgid ""
 msgstr ""
 "Attention : forcer l'algorithme de compression %s (%d) est en\n"
 "            désaccord avec les préférences du destinataire\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"forcer le chiffrement symétrique %s (%d) est en désaccord\n"
-"avec les préférences du destinataire\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2330,6 +2320,16 @@ msgstr "Options contrôlant l'interactivité et la mise en application"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MÉCANISMES|utiliser les MÉCANISMES pour localiser les clefs"
+
+#, fuzzy
+#| msgid "import keys from a keyserver"
+msgid "import missing key from a signature"
+msgstr "importer les clefs d'un serveur de clefs"
+
+#, fuzzy
+#| msgid "list and check key signatures"
+msgid "include the public key in signatures"
+msgstr "afficher et vérifier les signatures de clefs"
 
 msgid "disable all access to the dirmngr"
 msgstr "désactiver tous les accès au dirmngr"
@@ -5239,6 +5239,10 @@ msgstr "Non compressé"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "non compressé|non|sans"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -9232,6 +9236,11 @@ msgstr ""
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "forcer le chiffrement symétrique %s (%d) est en désaccord\n"
+#~ "avec les préférences du destinataire\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "erreur d'écriture du fichier temporaire : %s\n"
 
@@ -9246,16 +9255,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "permettre les recherches PKA (requêtes DNS)"
-
-#, fuzzy
-#~| msgid "import keys from a keyserver"
-#~ msgid "import missing key from a signature"
-#~ msgstr "importer les clefs d'un serveur de clefs"
-
-#, fuzzy
-#~| msgid "list and check key signatures"
-#~ msgid "include the public key in signatures"
-#~ msgstr "afficher et vérifier les signatures de clefs"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "Options contrôlant le format de sortie"

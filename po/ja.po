@@ -1779,6 +1779,12 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "まず\"--delete-secret-keys\"オプションでこれを削除してください。\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "パスフレーズの作成エラー: %s\n"
 
@@ -1807,22 +1813,12 @@ msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うことはできません\n"
 
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "'%s'から読み込み\n"
-
-#, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
-
-#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr "*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
 
 #, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr "充足できないコンプライアンス・ルールのため、操作は強制的に失敗します\n"
+msgid "reading from '%s'\n"
+msgstr "'%s'から読み込み\n"
 
 #, c-format
 msgid ""
@@ -1830,10 +1826,6 @@ msgid ""
 "preferences\n"
 msgstr ""
 "*警告*: 圧縮アルゴリズム %s (%d) の強制が、受取人の優先指定をそむきます\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
 #, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
@@ -2167,6 +2159,12 @@ msgstr "鍵のインポートとエクスポートを制御するオプション
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr "|MECHANISMS|メールアドレスによって鍵を特定する際、MECHANISMSを使用する"
+
+msgid "import missing key from a signature"
+msgstr "署名から手元にない鍵をインポートする"
+
+msgid "include the public key in signatures"
+msgstr "署名に公開鍵を含める"
 
 msgid "disable all access to the dirmngr"
 msgstr "dirmngrへのすべてのアクセスを無効とする"
@@ -4884,6 +4882,10 @@ msgstr "無圧縮"
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "無圧縮|なし"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr "充足できないコンプライアンス・ルールのため、操作は強制的に失敗します\n"
 
 #, c-format
 msgid "this message may not be usable by %s\n"
@@ -8567,6 +8569,9 @@ msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
 
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
+
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "一時ファイルの書き込みエラー: %s\n"
 
@@ -8581,12 +8586,6 @@ msgstr ""
 
 #~ msgid "allow PKA lookups (DNS requests)"
 #~ msgstr "PKA検索(DNS要求)を認める"
-
-#~ msgid "import missing key from a signature"
-#~ msgstr "署名から手元にない鍵をインポートする"
-
-#~ msgid "include the public key in signatures"
-#~ msgstr "署名に公開鍵を含める"
 
 #~ msgid "Options controlling the format of the output"
 #~ msgstr "出力フォーマットを制御するオプション"
