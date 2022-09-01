@@ -1,6 +1,15 @@
-Noteworthy changes in version 2.2.38 (unreleased)
+Noteworthy changes in version 2.2.38 (2022-09-01)
 -------------------------------------------------
 
+  * gpg: Make --require-compliance work for sign+encrypt.  [T6174]
+
+  * gpg: Fix an encoding problem under Windows in the printed
+    timezone.  [T5073]
+
+  * gpg: Emit a FAILURE status for --require-compliance errors.
+    [rGe05fb5ca37]
+
+  * dirmngr: Avoid caching expired certificates.  [T6142]
 
   Release-info: https://dev.gnupg.org/T6159
 
