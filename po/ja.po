@@ -5,13 +5,13 @@
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
 # NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
-# 2020, 2021.
+# 2020, 2021, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.33\n"
+"Project-Id-Version: gnupg 2.2.37\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-08-27 08:56+0900\n"
+"PO-Revision-Date: 2022-09-01 14:50+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -281,10 +281,9 @@ msgstr "PINが正しく繰り返されていません。もう一度"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "カードのロックを解除するためにPIN%s%s%sを入力してください"
 
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
+#, c-format
 msgid "error writing to pipe: %s\n"
-msgstr "'%s'の書き込みエラー: %s\n"
+msgstr "パイプへの書き込みエラー: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "新しいパスフレーズを入力してください"
@@ -1823,7 +1822,7 @@ msgstr "*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
 
 #, c-format
 msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgstr "充足できないコンプライアンス・ルールのため、操作は強制的に失敗します\n"
 
 #, c-format
 msgid ""
