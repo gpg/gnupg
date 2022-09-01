@@ -546,21 +546,32 @@ nve_t
 nvc_first (nvc_t pk)
 {
   nve_t entry;
+
+  if (!pk)
+    return NULL;
+
   for (entry = pk->first; entry; entry = entry->next)
     if (entry->name)
       return entry;
+
   return NULL;
 }
 
 
-/* Get the first entry with the given name.  */
+/* Get the first entry with the given name.  Return NULL if it does
+ * not exist.  */
 nve_t
 nvc_lookup (nvc_t pk, const char *name)
 {
   nve_t entry;
+
+  if (!pk)
+    return NULL;
+
   for (entry = pk->first; entry; entry = entry->next)
     if (entry->name && ascii_strcasecmp (entry->name, name) == 0)
       return entry;
+
   return NULL;
 }
 
