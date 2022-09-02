@@ -131,11 +131,11 @@ my_strusage( int level )
     case 1:
     case 40:
       p = ("Usage: gpg-auth"
-           " [options] USERID|FINGERPRINT (-h for help)");
+           " [options] (-h for help)");
       break;
     case 41:
       p = ("Syntax: gpg-auth"
-           " [options] USERID|FINGERPRINT\n\n"
+           " [options] \n\n"
            "Tool to authenticate a user using a smartcard.\n"
            "Use command \"help\" to list all commands.");
       break;
@@ -198,7 +198,7 @@ static gpg_error_t ga_filter_by_authorized_keys (struct ga_key_list **r_key_list
 static void ga_release_auth_keys (struct ga_key_list *key_list);
 static gpg_error_t scd_pkauth (assuan_context_t ctx, const char *keygrip);
 static gpg_error_t authenticate (assuan_context_t ctx, struct ga_key_list *key_list);
-static int getpin (const char *info, char *buf, size_t maxbuf);
+static int getpin (const char *info, char *buf, size_t *r_len);
 
 /* gpg-auth main. */
 int
@@ -233,10 +233,10 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
-  if (argc != 1)
+  if (argc != 0)
     gpgrt_usage (1);            /* Never returns.  */
 
-  err = ga_scd_connect (&scd_ctx, 0);
+  err = ga_scd_connect (&scd_ctx, 1);
 
   if (!err)
     err = ga_scd_get_auth_keys (scd_ctx, &key_list);
@@ -277,7 +277,7 @@ authenticate (assuan_context_t ctx, struct ga_key_list *key_list)
       key_list = key_list->next;
     }
 
-  return 0;
+  return gpg_error (GPG_ERR_NOT_FOUND);
 }
 
 static gpg_error_t
@@ -445,7 +445,7 @@ ga_scd_connect (assuan_context_t *r_scd_ctx, int use_agent)
       if (!err)
 	err = assuan_socket_connect (assuan_ctx, scd_socket_name, 0, 0);
 
-      if (!err)
+      if (!err && DBG_IPC)
 	log_debug ("got scdaemon socket name from gpg-agent, "
                    "connected to socket '%s'", scd_socket_name);
 
@@ -481,7 +481,8 @@ ga_scd_connect (assuan_context_t *r_scd_ctx, int use_agent)
           return err;
 	}
 
-      log_debug ("spawned a new scdaemon (path: '%s')", scd_path);
+      if (DBG_IPC)
+	log_debug ("spawned a new scdaemon (path: '%s')", scd_path);
     }
 
   if (err)
@@ -516,7 +517,7 @@ inq_needpin (void *opaque, const char *line)
       if (!pin)
         return out_of_core ();
 
-      rc = getpin (line, pin, pinlen);
+      rc = getpin (line, pin, &pinlen);
       if (!rc)
         {
           assuan_begin_confidential (ctx);
@@ -654,6 +655,28 @@ scd_keyinfo_list (assuan_context_t ctx, struct ga_key_list **r_key_list)
   return err;
 }
 
+/* A variant of put_membuf_cb, which only put the second field.  */
+static gpg_error_t
+put_second_field_cb (void *opaque, const void *buf, size_t len)
+{
+  char line[ASSUAN_LINELENGTH];
+  membuf_t *data = opaque;
+
+  if (buf && len < ASSUAN_LINELENGTH)
+    {
+      const char *fields[3];
+      size_t field_len;
+
+      memcpy (line, buf, len);
+      if (split_fields (line, fields, DIM (fields)) < 2)
+	return 0;
+
+      field_len = strlen (fields[1]);
+      put_membuf (data, fields[1], field_len);
+    }
+  return 0;
+}
+
 static gpg_error_t
 scd_get_pubkey (assuan_context_t ctx, struct ga_key_list *key)
 {
@@ -666,7 +689,7 @@ scd_get_pubkey (assuan_context_t ctx, struct ga_key_list *key)
   init_membuf (&data, 256);
 
   snprintf (line, DIM(line), "READKEY --format=ssh %s", key->keygrip);
-  err = assuan_transact (ctx, line, put_membuf_cb, &data,
+  err = assuan_transact (ctx, line, put_second_field_cb, &data,
                          NULL, NULL, NULL, NULL);
   databuf = get_membuf (&data, &datalen);
 
@@ -711,7 +734,6 @@ ga_scd_get_auth_keys (assuan_context_t ctx, struct ga_key_list **r_key_list)
 
 struct ssh_key_list {
   struct ssh_key_list *next;
-  size_t pubkey_len;
   char *pubkey; /* Public key in SSH format.   */
 };
 
@@ -785,7 +807,6 @@ ssh_authorized_keys (struct ssh_key_list **r_ssh_key_list)
         }
 
       ssh_key->pubkey = strdup (fields[1]);
-      ssh_key->pubkey_len = strlen (ssh_key->pubkey);
       if (ssh_key_list)
         ssh_key_prev->next = ssh_key;
       else
@@ -848,6 +869,9 @@ ga_filter_by_authorized_keys (struct ga_key_list **r_key_list)
         }
     }
 
+  if (prev && prev->next)
+    prev->next = NULL;
+
   release_ssh_key_list (ssh_key_list);
   *r_key_list = key_list;
   return 0;
@@ -868,7 +892,7 @@ ga_release_auth_keys (struct ga_key_list *key_list)
 }
 
 static int
-getpin (const char *info, char *buf, size_t maxbuf)
+getpin (const char *info, char *buf, size_t *r_len)
 {
   int rc = 0;
   char line[ASSUAN_LINELENGTH];
@@ -878,6 +902,7 @@ getpin (const char *info, char *buf, size_t maxbuf)
 
   fputs ("P 18\n", stdout);
   fputs ("Please input PIN: \n", stdout);
+  fflush (stdout);
 
   fgets (line, ASSUAN_LINELENGTH, stdin);
   if (split_fields (line, fields, DIM (fields)) < DIM (fields))
@@ -894,10 +919,12 @@ getpin (const char *info, char *buf, size_t maxbuf)
       while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r'))
         line[--len] = '\0';
 
-      if (len > maxbuf)
+      len++;			/* Include last '\0' in the data.  */
+      if (len > *r_len)
         rc = GPG_ERR_BUFFER_TOO_SHORT;
       else
-        memcpy (buf, line, len+1);
+        memcpy (buf, line, len);
+      *r_len = len;
     }
 
   return rc;
