@@ -1,5 +1,8 @@
-Noteworthy changes in version 2.2.39 (unreleased)
+Noteworthy changes in version 2.2.39 (2022-09-02)
 -------------------------------------------------
+
+  * agent: Fix regression in 2.2.37 related to non-extended format
+    private keys.  [T6176]
 
   Release-info: https://dev.gnupg.org/T6175
 
