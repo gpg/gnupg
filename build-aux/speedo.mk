@@ -255,9 +255,11 @@ AUTHENTICODE_FILES= \
                     gpg-agent.exe             \
                     gpg-connect-agent.exe     \
                     gpg-preset-passphrase.exe \
+                    gpg-check-pattern.exe     \
                     gpg-wks-client.exe        \
                     gpg.exe                   \
                     gpgconf.exe               \
+                    gpgconf-w32.exe           \
                     gpgme-w32spawn.exe        \
                     gpgsm.exe                 \
                     gpgtar.exe                \
