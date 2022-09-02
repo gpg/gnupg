@@ -59,7 +59,7 @@ endif
 
 bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card gpg-wks-client
 if !HAVE_W32_SYSTEM
-bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit
+bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit gpg-auth
 else
 bin_PROGRAMS += gpgconf-w32
 endif
@@ -188,6 +188,12 @@ gpg_pair_tool_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_pair_tool_LDADD =  $(libcommon) \
 		       $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		       $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
+
+gpg_auth_SOURCES = gpg-auth.c
+gpg_auth_LDADD = $(common_libs) \
+	         $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
+                 $(GPG_ERROR_LIBS) \
+                 $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 # Instead of a symlink we install a simple wrapper script for the new
 # gpg-wks-client location.  We assume bin is a sibling of libexec.
