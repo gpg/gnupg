@@ -187,6 +187,7 @@ struct ga_key_list {
   char keygrip[41];  /* Keygrip to identify a key.  */
   size_t pubkey_len;
   char *pubkey;      /* Public key in SSH format.   */
+  char *comment;
 };
 
 /* Local prototypes.  */
@@ -198,7 +199,7 @@ static gpg_error_t ga_filter_by_authorized_keys (struct ga_key_list **r_key_list
 static void ga_release_auth_keys (struct ga_key_list *key_list);
 static gpg_error_t scd_pkauth (assuan_context_t ctx, const char *keygrip);
 static gpg_error_t authenticate (assuan_context_t ctx, struct ga_key_list *key_list);
-static int getpin (const char *info, char *buf, size_t *r_len);
+static int getpin (assuan_context_t ctx, const char *info, char *buf, size_t *r_len);
 
 /* gpg-auth main. */
 int
@@ -269,6 +270,7 @@ authenticate (assuan_context_t ctx, struct ga_key_list *key_list)
       if (err)
         return err;
 
+      assuan_set_pointer (ctx, key_list->comment);
       err = scd_pkauth (ctx,  key_list->keygrip);
       if (!err)
         /* Success!  */
@@ -517,7 +519,7 @@ inq_needpin (void *opaque, const char *line)
       if (!pin)
         return out_of_core ();
 
-      rc = getpin (line, pin, &pinlen);
+      rc = getpin (ctx, line, pin, &pinlen);
       if (!rc)
         {
           assuan_begin_confidential (ctx);
@@ -735,6 +737,7 @@ ga_scd_get_auth_keys (assuan_context_t ctx, struct ga_key_list **r_key_list)
 struct ssh_key_list {
   struct ssh_key_list *next;
   char *pubkey; /* Public key in SSH format.   */
+  char *comment;
 };
 
 static void
@@ -747,6 +750,7 @@ release_ssh_key_list (struct ssh_key_list *key_list)
       key = key_list;
       key_list = key_list->next;
       xfree (key->pubkey);
+      xfree (key->comment);
       xfree (key);
     }
 }
@@ -793,6 +797,7 @@ ssh_authorized_keys (struct ssh_key_list **r_ssh_key_list)
       while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r'))
 	line[--len] = '\0';
 
+      fields[2] = NULL;
       if (split_fields (line, fields, DIM (fields)) < 2)
         continue; /* Skip empty lines or line with only a field.  */
       if (*fields[0] == '#')
@@ -807,6 +812,7 @@ ssh_authorized_keys (struct ssh_key_list **r_ssh_key_list)
         }
 
       ssh_key->pubkey = strdup (fields[1]);
+      ssh_key->comment = strdup (fields[2]);
       if (ssh_key_list)
         ssh_key_prev->next = ssh_key;
       else
@@ -856,6 +862,8 @@ ga_filter_by_authorized_keys (struct ga_key_list **r_key_list)
             prev->next = cur;
           else
             key_list = cur;
+          cur->comment = skl->comment;
+          skl->comment = NULL;
           prev = cur;
           cur = cur->next;
         }
@@ -892,13 +900,23 @@ ga_release_auth_keys (struct ga_key_list *key_list)
 }
 
 static int
-getpin (const char *info, char *buf, size_t *r_len)
+getpin (assuan_context_t ctx, const char *info, char *buf, size_t *r_len)
 {
   int rc = 0;
   char line[ASSUAN_LINELENGTH];
   const char *fields[2];
+  const char *comment;
 
   (void)info;
+
+  comment = assuan_get_pointer (ctx);
+  if (comment)
+    {
+      int msg_len = 5 + strlen (comment);
+      fprintf (stdout, "i %d\n", msg_len);
+      fprintf (stdout, "KEY: %s\n", comment);
+      fflush (stdout);
+    }
 
   fputs ("P 18\n", stdout);
   fputs ("Please input PIN: \n", stdout);
