@@ -199,7 +199,7 @@ static gpg_error_t ga_filter_by_authorized_keys (struct ga_key_list **r_key_list
 static void ga_release_auth_keys (struct ga_key_list *key_list);
 static gpg_error_t scd_pkauth (assuan_context_t ctx, const char *keygrip);
 static gpg_error_t authenticate (assuan_context_t ctx, struct ga_key_list *key_list);
-static int getpin (assuan_context_t ctx, const char *info, char *buf, size_t *r_len);
+static int getpin (const char *comment, const char *info, char *buf, size_t *r_len);
 
 /* gpg-auth main. */
 int
@@ -508,6 +508,7 @@ inq_needpin (void *opaque, const char *line)
   char *pin;
   size_t pinlen;
   int rc;
+  const char *comment = assuan_get_pointer (ctx);
 
   rc = 0;
 
@@ -519,7 +520,7 @@ inq_needpin (void *opaque, const char *line)
       if (!pin)
         return out_of_core ();
 
-      rc = getpin (ctx, line, pin, &pinlen);
+      rc = getpin (comment, line, pin, &pinlen);
       if (!rc)
         {
           assuan_begin_confidential (ctx);
@@ -531,8 +532,20 @@ inq_needpin (void *opaque, const char *line)
     }
   else if ((s = has_leading_keyword (line, "POPUPPINPADPROMPT")))
     {
-      /* i 18               */;
-      /* Please use PINPAD! */;
+
+      if (comment)
+        {
+          int msg_len = 27 + strlen (comment);
+          fprintf (stdout, "i %d\n", msg_len);
+          fprintf (stdout, "Please use PINPAD for KEY: %s\n", comment);
+          fflush (stdout);
+        }
+      else
+        {
+          fputs ("i 18\n", stdout);
+          fputs ("Please use PINPAD!\n", stdout);
+          fflush (stdout);
+        }
     }
   else if ((s = has_leading_keyword (line, "DISMISSPINPADPROMPT")))
     {
@@ -900,27 +913,27 @@ ga_release_auth_keys (struct ga_key_list *key_list)
 }
 
 static int
-getpin (assuan_context_t ctx, const char *info, char *buf, size_t *r_len)
+getpin (const char *comment, const char *info, char *buf, size_t *r_len)
 {
   int rc = 0;
   char line[ASSUAN_LINELENGTH];
   const char *fields[2];
-  const char *comment;
 
   (void)info;
 
-  comment = assuan_get_pointer (ctx);
   if (comment)
     {
-      int msg_len = 5 + strlen (comment);
-      fprintf (stdout, "i %d\n", msg_len);
-      fprintf (stdout, "KEY: %s\n", comment);
+      int msg_len = 29 + strlen (comment);
+      fprintf (stdout, "P %d\n", msg_len);
+      fprintf (stdout, "Please input PIN for KEY (%s): \n", comment);
       fflush (stdout);
     }
-
-  fputs ("P 18\n", stdout);
-  fputs ("Please input PIN: \n", stdout);
-  fflush (stdout);
+  else
+    {
+      fputs ("P 18\n", stdout);
+      fputs ("Please input PIN: \n", stdout);
+      fflush (stdout);
+    }
 
   fgets (line, ASSUAN_LINELENGTH, stdin);
   if (split_fields (line, fields, DIM (fields)) < DIM (fields))
