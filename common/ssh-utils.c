@@ -587,11 +587,11 @@ ssh_public_key_in_base64 (gcry_sexp_t key, estream_t stream,
       break;
 
     case GCRY_PK_ECC:
-      if (!strcmp (curve, "nistp256"))
+      if (!strcmp (curve, "NIST P-256"))
         identifier = "ecdsa-sha2-nistp256";
-      else if (!strcmp (curve, "nistp384"))
+      else if (!strcmp (curve, "NIST P-384"))
         identifier = "ecdsa-sha2-nistp384";
-      else if (!strcmp (curve, "nistp521"))
+      else if (!strcmp (curve, "NIST P-521"))
         identifier = "ecdsa-sha2-nistp521";
       else
         err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
