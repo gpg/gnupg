@@ -802,6 +802,13 @@ print_capabilities (ctrl_t ctrl, PKT_public_key *pk, KBNODE keyblock)
   if ((use & PUBKEY_USAGE_AUTH))
     es_putc ('a', es_stdout);
 
+  if (use & PUBKEY_USAGE_RENC)
+    es_putc ('r', es_stdout);
+  if ((use & PUBKEY_USAGE_TIME))
+    es_putc ('t', es_stdout);
+  if ((use & PUBKEY_USAGE_GROUP))
+    es_putc ('g', es_stdout);
+
   if ((use & PUBKEY_USAGE_UNKNOWN))
     es_putc ('?', es_stdout);
 

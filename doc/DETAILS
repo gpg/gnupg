@@ -193,6 +193,9 @@ described here.
     - s :: Sign
     - c :: Certify
     - a :: Authentication
+    - r :: Restricted encryption (subkey only use)
+    - t :: Timestamping
+    - g :: Group key
     - ? :: Unknown capability
 
     A key may have any combination of them in any order.  In addition
@@ -1687,6 +1690,20 @@ Description of some debug flags:
     - ELGAMAL :: Build a v3 pubkey packet (with CTB 0x99) and
                  calculate a RMD160 hash value from it. This is used
                  as the fingerprint and the low 64 bits are the keyid.
+
+** gnupg.org notations
+
+  - adsk@gnupg.org :: Additional decryption subkey.  This notation
+                      gives a list of keys an implementation SHOULD
+                      also encrypt to.  The data consists of an array
+                      of eight-octet numbers holding the Key ID of an
+                      encryption subkey.  This notation is only valid
+                      on an encryption subkey (i.e. with first octet
+                      of the key flags 0x04 or 0x08).  Subkeys not on
+                      the same keyblock MUST NOT be considered.  For
+                      interoperability this notation SHOULD NOT be
+                      marked as criticial.  Due to its nature it MUST
+                      NOT be marked as human readable.
 
 ** Simplified revocation certificates
   Revocation certificates consist only of the signature packet;

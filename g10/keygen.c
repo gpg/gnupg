@@ -3929,6 +3929,12 @@ parse_usagestr (const char *usagestr)
         use |= PUBKEY_USAGE_AUTH;
       else if (!ascii_strcasecmp (s, "cert"))
         use |= PUBKEY_USAGE_CERT;
+      else if (!ascii_strcasecmp (s, "renc"))
+        use |= PUBKEY_USAGE_RENC;
+      else if (!ascii_strcasecmp (s, "time"))
+        use |= PUBKEY_USAGE_TIME;
+      else if (!ascii_strcasecmp (s, "group"))
+        use |= PUBKEY_USAGE_GROUP;
       else
         {
           xfree (tokens);
@@ -4499,14 +4505,17 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
 {
   struct para_data_s *r;
 
-  r = xmalloc_clear (sizeof *r + 30);
+  r = xmalloc_clear (sizeof *r + 50);
   r->key = for_subkey? pSUBKEYUSAGE :  pKEYUSAGE;
   if (use)
-    snprintf (r->u.value, 30, "%s%s%s%s",
+    snprintf (r->u.value, 30, "%s%s%s%s%s%s%s",
               (use & PUBKEY_USAGE_ENC)?  "encr " : "",
               (use & PUBKEY_USAGE_SIG)?  "sign " : "",
               (use & PUBKEY_USAGE_AUTH)? "auth " : "",
-              (use & PUBKEY_USAGE_CERT)? "cert " : "");
+              (use & PUBKEY_USAGE_CERT)? "cert " : "",
+              (use & PUBKEY_USAGE_RENC)? "renc " : "",
+              (use & PUBKEY_USAGE_TIME)? "time " : "",
+              (use & PUBKEY_USAGE_GROUP)?"group ": "");
   else
     strcpy (r->u.value, for_subkey ? "encr" : "sign");
   r->next = para;
