@@ -1517,6 +1517,17 @@ main (int argc, char **argv)
       agent_deinit_default_ctrl (ctrl);
       xfree (ctrl);
     }
+  else if (is_supervised && comopt.no_autostart)
+    {
+      /* If we are running on a server and the user has set
+       * no-autostart for gpg or gpgsm.  gpg-agent would anyway be
+       * started by the supervisor which has the bad effect that it
+       * will steal the socket from a remote server.  Note that
+       * systemd has no knowledge about the lock files we take during
+       * the start operation.  */
+      log_info ("%s %s not starting in supervised mode due to no-autostart.\n",
+                gpgrt_strusage(11), gpgrt_strusage(13) );
+    }
   else if (is_supervised)
     {
 #ifndef HAVE_W32_SYSTEM
