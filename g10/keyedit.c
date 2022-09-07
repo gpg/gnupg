@@ -3464,6 +3464,12 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	    es_putc ('c', fp);
 	  if ((pk->pubkey_usage & PUBKEY_USAGE_AUTH))
 	    es_putc ('a', fp);
+	  if ((pk->pubkey_usage & PUBKEY_USAGE_RENC))
+	    es_putc ('r', fp);
+	  if ((pk->pubkey_usage & PUBKEY_USAGE_TIME))
+	    es_putc ('t', fp);
+	  if ((pk->pubkey_usage & PUBKEY_USAGE_GROUP))
+	    es_putc ('g', fp);
 	  es_putc ('\n', fp);
 
 	  print_fingerprint (ctrl, fp, pk, 0);

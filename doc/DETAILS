@@ -192,6 +192,9 @@ described here.
     - s :: Sign
     - c :: Certify
     - a :: Authentication
+    - r :: Restricted encryption (subkey only use)
+    - t :: Timestamping
+    - g :: Group key
     - ? :: Unknown capability
 
     A key may have any combination of them in any order.  In addition
@@ -1592,6 +1595,8 @@ Description of some debug flags:
     - ELGAMAL :: Build a v3 pubkey packet (with CTB 0x99) and
                  calculate a RMD160 hash value from it. This is used
                  as the fingerprint and the low 64 bits are the keyid.
+
+** gnupg.org notations
 
 ** Simplified revocation certificates
   Revocation certificates consist only of the signature packet;

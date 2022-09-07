@@ -2531,11 +2531,29 @@ parse_key_usage (PKT_signature * sig)
 	  flags &= ~0x20;
 	}
 
+      if ((flags & 0x80))
+	{
+	  key_usage |= PUBKEY_USAGE_GROUP;
+	  flags &= ~0x80;
+	}
+
       if (flags)
 	key_usage |= PUBKEY_USAGE_UNKNOWN;
 
+      n--;
+      p++;
+      if (n)
+        {
+          flags = *p;
+          if ((flags & 0x04))
+            key_usage |= PUBKEY_USAGE_RENC;
+          if ((flags & 0x08))
+            key_usage |= PUBKEY_USAGE_TIME;
+        }
+
       if (!key_usage)
 	key_usage |= PUBKEY_USAGE_NONE;
+
     }
   else if (p) /* Key flags of length zero.  */
     key_usage |= PUBKEY_USAGE_NONE;

@@ -56,6 +56,9 @@
       | GCRY_PK_USAGE_AUTH | GCRY_PK_USAGE_UNKN) >= 256
 # error Please choose another value for PUBKEY_USAGE_NONE
 #endif
+#define PUBKEY_USAGE_GROUP   512                 /* Group flag.  */
+#define PUBKEY_USAGE_RENC    1024                /* Restricted encryption.  */
+#define PUBKEY_USAGE_TIME    2048                /* Timestamp use.  */
 
 /* Helper macros.  */
 #define is_RSA(a)     ((a)==PUBKEY_ALGO_RSA || (a)==PUBKEY_ALGO_RSA_E \

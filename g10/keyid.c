@@ -712,6 +712,13 @@ usagestr_from_pk (PKT_public_key *pk, int fill)
   if ( (use & PUBKEY_USAGE_AUTH) )
     buffer[i++] = 'A';
 
+  if ( (use & PUBKEY_USAGE_RENC) )
+    buffer[i++] = 'R';
+  if ( (use & PUBKEY_USAGE_TIME) )
+    buffer[i++] = 'T';
+  if ( (use & PUBKEY_USAGE_GROUP) )
+    buffer[i++] = 'G';
+
   while (fill && i < 4)
     buffer[i++] = ' ';
 
