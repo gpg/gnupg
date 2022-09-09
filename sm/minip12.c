@@ -1946,7 +1946,10 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
           where = "bag.encryptedData";
           consumed = 0;
           if (parse_bag_encrypted_data (&ctx, p, n, (p - p_start), &consumed))
-            goto bailout;
+            {
+              *r_badpass = ctx.badpass;
+              goto bailout;
+            }
           if (lenndef)
             len += consumed;
         }
