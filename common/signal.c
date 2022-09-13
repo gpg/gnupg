@@ -239,13 +239,13 @@ do_block (int block)
 
 
 void
-gnupg_block_all_signals ()
+gnupg_block_all_signals (void)
 {
   do_block(1);
 }
 
 void
-gnupg_unblock_all_signals ()
+gnupg_unblock_all_signals (void)
 {
   do_block(0);
 }

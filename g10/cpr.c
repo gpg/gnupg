@@ -128,7 +128,7 @@ set_status_fd (int fd)
 
 
 int
-is_status_enabled ()
+is_status_enabled (void)
 {
   return !!statusfp;
 }
@@ -532,7 +532,7 @@ do_get_from_fd ( const char *keyword, int hidden, int getbool )
 
 
 int
-cpr_enabled()
+cpr_enabled(void)
 {
     if( opt.command_fd != -1 )
 	return 1;

@@ -415,7 +415,7 @@ put_record_into_cache (ulong recno, const char *data)
 
 /* Return true if the cache is dirty.  */
 int
-tdbio_is_dirty()
+tdbio_is_dirty (void)
 {
   return cache_is_dirty;
 }
@@ -425,7 +425,7 @@ tdbio_is_dirty()
  * Flush the cache.  This cannot be used while in a transaction.
  */
 int
-tdbio_sync()
+tdbio_sync (void)
 {
     CACHE_CTRL r;
     int did_lock = 0;
@@ -765,7 +765,7 @@ tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
  * Return the full name of the trustdb.
  */
 const char *
-tdbio_get_dbname ()
+tdbio_get_dbname (void)
 {
   return db_name;
 }
@@ -777,7 +777,7 @@ tdbio_get_dbname ()
  * the trustdb handle (DB_FD) is guaranteed to be open.
  */
 static void
-open_db ()
+open_db (void)
 {
   TRUSTREC rec;
 
@@ -859,7 +859,7 @@ create_hashtable (ctrl_t ctrl, TRUSTREC *vr, int type)
  * Return: 1 for yes, 0 for no.
  */
 int
-tdbio_db_matches_options()
+tdbio_db_matches_options (void)
 {
   static int yes_no = -1;
 
@@ -916,7 +916,7 @@ tdbio_read_model (void)
  * problem the process is terminated.
  */
 ulong
-tdbio_read_nextcheck ()
+tdbio_read_nextcheck (void)
 {
   TRUSTREC vr;
   int rc;

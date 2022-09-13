@@ -49,7 +49,7 @@ static char *last_pw = NULL;
 
 
 int
-have_static_passphrase()
+have_static_passphrase (void)
 {
   return (!!fd_passwd
           && (opt.batch || opt.pinentry_mode == PINENTRY_MODE_LOOPBACK));
@@ -89,7 +89,7 @@ set_next_passphrase( const char *s )
  * the caller must free the result.  May return NULL:
  */
 char *
-get_last_passphrase()
+get_last_passphrase (void)
 {
   char *p = last_pw;
   last_pw = NULL;

@@ -64,7 +64,7 @@ static enum { NORMAL = 0, FROZEN, FUTURE, PAST } timemode;
 /* Wrapper for the time(3).  We use this here so we can fake the time
    for tests */
 time_t
-gnupg_get_time ()
+gnupg_get_time (void)
 {
   time_t current = time (NULL);
   if (current == (time_t)(-1))

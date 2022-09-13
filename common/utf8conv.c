@@ -299,7 +299,7 @@ set_native_charset (const char *newset)
 }
 
 const char *
-get_native_charset ()
+get_native_charset (void)
 {
   return active_charset_name;
 }

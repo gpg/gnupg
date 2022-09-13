@@ -544,7 +544,7 @@ setup_trustdb( int level, const char *dbname )
 }
 
 void
-how_to_fix_the_trustdb ()
+how_to_fix_the_trustdb (void)
 {
   const char *name = trustdb_args.dbname;
 

@@ -998,7 +998,7 @@ scd_deinit_default_ctrl (ctrl_t ctrl)
 /* Return the name of the socket to be used to connect to this
    process.  If no socket is available, return NULL. */
 const char *
-scd_get_socket_name ()
+scd_get_socket_name (void)
 {
   if (socket_name && *socket_name)
     return socket_name;

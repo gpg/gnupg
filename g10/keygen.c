@@ -2922,7 +2922,7 @@ ask_expire_interval(int object,const char *def_expire)
 }
 
 u32
-ask_expiredate()
+ask_expiredate (void)
 {
     u32 x = ask_expire_interval(0,NULL);
     return x? make_timestamp() + x : 0;

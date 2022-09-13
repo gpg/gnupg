@@ -260,7 +260,7 @@ user_id_not_found_utf8 (void)
    cache_public_key and get_pubkey).  Note: there is currently no way
    to re-enable this cache.  */
 void
-getkey_disable_caches ()
+getkey_disable_caches (void)
 {
 #if MAX_PK_CACHE_ENTRIES
   {
