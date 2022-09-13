@@ -59,12 +59,15 @@ endif
 
 bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card gpg-wks-client
 if !HAVE_W32_SYSTEM
-bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit gpg-auth
+bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit
 else
 bin_PROGRAMS += gpgconf-w32
 endif
 
 libexec_PROGRAMS = gpg-check-pattern gpg-pair-tool
+if !HAVE_W32_SYSTEM
+libexec_PROGRAMS += gpg-auth
+endif
 
 noinst_PROGRAMS = clean-sat make-dns-cert
 

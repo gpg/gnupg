@@ -46,6 +46,7 @@ struct
   int with_colons;
   const char *agent_program;
   int autostart;
+  int use_scd_directly;
 
   /* Options passed to the gpg-agent: */
   char *lc_ctype;
@@ -80,7 +81,7 @@ enum opt_values
     oLCctype,
     oLCmessages,
 
-    oChUid,
+    oUseSCDDirectly,
 
     oDummy
   };
@@ -99,6 +100,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oLCctype,    "lc-ctype",   "@"),
   ARGPARSE_s_s (oLCmessages, "lc-messages","@"),
+  ARGPARSE_s_n (oUseSCDDirectly, "use-scdaemon-directly", "@"),
 
   ARGPARSE_end ()
 };
@@ -175,6 +177,8 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
         case oLCctype:     opt.lc_ctype = pargs->r.ret_str; break;
         case oLCmessages:  opt.lc_messages = pargs->r.ret_str; break;
 
+	case oUseSCDDirectly: opt.use_scd_directly = 1; break;
+
         default: pargs->err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
@@ -195,7 +199,8 @@ static gpg_error_t scd_passwd_reset (assuan_context_t ctx, const char *keygrip);
 static gpg_error_t ga_scd_connect (assuan_context_t *r_scd_ctx, int use_agent);
 static gpg_error_t ga_scd_get_auth_keys (assuan_context_t ctx,
                                          struct ga_key_list **r_key_list);
-static gpg_error_t ga_filter_by_authorized_keys (struct ga_key_list **r_key_list);
+static gpg_error_t ga_filter_by_authorized_keys (const char *user,
+                                                 struct ga_key_list **r_key_list);
 static void ga_release_auth_keys (struct ga_key_list *key_list);
 static gpg_error_t scd_pkauth (assuan_context_t ctx, const char *keygrip);
 static gpg_error_t authenticate (assuan_context_t ctx, struct ga_key_list *key_list);
@@ -209,6 +214,7 @@ main (int argc, char **argv)
   gpgrt_argparse_t pargs;
   assuan_context_t scd_ctx = NULL;
   struct ga_key_list *key_list = NULL;
+  const char *user;
 
   gnupg_reopen_std ("gpg-auth");
   gpgrt_set_strusage (my_strusage);
@@ -237,13 +243,22 @@ main (int argc, char **argv)
   if (argc != 0)
     gpgrt_usage (1);            /* Never returns.  */
 
-  err = ga_scd_connect (&scd_ctx, 1);
+  if (opt.use_scd_directly)
+    {
+      user = getenv ("PAM_USER");
+      if (user == NULL)
+        exit (2);
+    }
+  else
+    user = NULL;
+
+  err = ga_scd_connect (&scd_ctx, opt.use_scd_directly);
 
   if (!err)
     err = ga_scd_get_auth_keys (scd_ctx, &key_list);
 
   if (!err)
-    err = ga_filter_by_authorized_keys (&key_list);
+    err = ga_filter_by_authorized_keys (user, &key_list);
 
   if (!err)
     err = authenticate (scd_ctx, key_list);
@@ -418,7 +433,7 @@ scd_passwd_reset (assuan_context_t ctx, const char *keygrip)
 /* Connect to scdaemon by pipe or socket.  Execute initial "SEREIALNO"
    command to enable all connected token under scdaemon control.  */
 static gpg_error_t
-ga_scd_connect (assuan_context_t *r_scd_ctx, int use_agent)
+ga_scd_connect (assuan_context_t *r_scd_ctx, int use_scd_directly)
 {
   assuan_context_t assuan_ctx;
   gpg_error_t err;
@@ -427,7 +442,7 @@ ga_scd_connect (assuan_context_t *r_scd_ctx, int use_agent)
   if (err)
     return err;
 
-  if (use_agent)
+  if (!use_scd_directly)
     /* Use scdaemon under gpg-agent.  */
     {
       char *scd_socket_name = NULL;
@@ -479,7 +494,7 @@ ga_scd_connect (assuan_context_t *r_scd_ctx, int use_agent)
                                  NULL, NULL, 0);
       if (err)
 	{
-	  log_error ("could not spawn scdaemon: %s", gpg_strerror (err));
+	  log_error ("could not spawn scdaemon: %s\n", gpg_strerror (err));
           return err;
 	}
 
@@ -769,7 +784,7 @@ release_ssh_key_list (struct ssh_key_list *key_list)
 }
 
 static gpg_error_t
-ssh_authorized_keys (struct ssh_key_list **r_ssh_key_list)
+ssh_authorized_keys (const char *user, struct ssh_key_list **r_ssh_key_list)
 {
   gpg_error_t err = 0;
   char *fname = NULL;
@@ -783,7 +798,16 @@ ssh_authorized_keys (struct ssh_key_list **r_ssh_key_list)
   struct ssh_key_list *ssh_key_prev = NULL;
   struct ssh_key_list *ssh_key = NULL;
 
-  fname = make_absfilename_try ("~", ".ssh", "authorized_keys", NULL);
+  if (user)
+    {
+      char tilde_user[256];
+
+      snprintf (tilde_user, sizeof tilde_user, "~%s", user);
+      fname = make_absfilename_try (tilde_user, ".ssh", "authorized_keys", NULL);
+    }
+  else
+    fname = make_absfilename_try ("~", ".ssh", "authorized_keys", NULL);
+
   if (fname == NULL)
     return gpg_error (GPG_ERR_INV_NAME);
 
@@ -843,7 +867,7 @@ ssh_authorized_keys (struct ssh_key_list **r_ssh_key_list)
 }
 
 static gpg_error_t
-ga_filter_by_authorized_keys (struct ga_key_list **r_key_list)
+ga_filter_by_authorized_keys (const char *user, struct ga_key_list **r_key_list)
 {
   gpg_error_t err;
   struct ga_key_list *cur = *r_key_list;
@@ -851,7 +875,7 @@ ga_filter_by_authorized_keys (struct ga_key_list **r_key_list)
   struct ga_key_list *prev = NULL;
   struct ssh_key_list *ssh_key_list = NULL;
 
-  err = ssh_authorized_keys (&ssh_key_list);
+  err = ssh_authorized_keys (user, &ssh_key_list);
   if (err)
     return err;
 
