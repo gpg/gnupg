@@ -33,6 +33,7 @@ AM_CFLAGS =
 # pwd which handles symlinks differently.
 OLD_TESTS_ENVIRONMENT = GNUPGHOME=`/bin/pwd` GPG_AGENT_INFO= LC_ALL=C \
                         GNUPG_BUILD_ROOT="$(abs_top_builddir)" \
+			GNUPG_IN_TEST_SUITE=fact \
 	                GPGSM="$(GPGSM)" "$(srcdir)/runtest"
 
 TESTS_ENVIRONMENT = LC_ALL=C \
@@ -41,6 +42,7 @@ TESTS_ENVIRONMENT = LC_ALL=C \
 	abs_top_srcdir="$(abs_top_srcdir)" \
 	objdir="$(abs_top_builddir)" \
         GNUPG_BUILD_ROOT="$(abs_top_builddir)" \
+	GNUPG_IN_TEST_SUITE=fact \
 	GPGSCM_PATH="$(abs_top_srcdir)/tests/gpgscm"
 
 XTESTS = \

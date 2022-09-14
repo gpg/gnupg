@@ -39,6 +39,7 @@ TESTS_ENVIRONMENT = LC_ALL=C \
 	abs_top_srcdir="$(abs_top_srcdir)" \
 	objdir="$(abs_top_builddir)" \
         GNUPG_BUILD_ROOT="$(abs_top_builddir)" \
+	GNUPG_IN_TEST_SUITE=fact \
 	GPGSCM_PATH="$(abs_top_srcdir)/tests/gpgscm"
 
 XTESTS = \

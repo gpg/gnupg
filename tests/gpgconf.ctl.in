@@ -11,5 +11,8 @@
 # variables are substituted in standard shell manner, the final value
 # must start with a slash, trailing slashes are stripped.
 
+# This file is only considered if the given envvar evaluates to true.
+.enable = $GNUPG_IN_TEST_SUITE
+
 sysconfdir = $GNUPG_BUILD_ROOT/etc
 rootdir = $GNUPG_BUILD_ROOT/

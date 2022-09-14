@@ -473,6 +473,7 @@ unix_rootdir (int want_sysconfdir)
       char *rootdir;
       char *sysconfdir;
       const char *name;
+      int ignoreall = 0;
 
       for (;;)
         {
@@ -590,6 +591,16 @@ unix_rootdir (int want_sysconfdir)
               name = "sysconfdir";
               p = line + 12;
             }
+          else if (!strncmp (line, ".enable=", 8))
+            {
+              name = ".enable";
+              p = line + 8;
+            }
+          else if (!strncmp (line, ".enable =", 9))
+            {
+              name = ".enable";
+              p = line + 9;
+            }
           else
             continue;
           trim_spaces (p);
@@ -599,6 +610,17 @@ unix_rootdir (int want_sysconfdir)
               err = gpg_error_from_syserror ();
               log_info ("error getting %s from gpgconf.ctl: %s\n",
                         name, gpg_strerror (err));
+            }
+          else if (!strcmp (name, ".enable"))
+            {
+              if (atoi (p)
+                  || !ascii_strcasecmp (p, "yes")
+                  || !ascii_strcasecmp (p, "true")
+                  || !ascii_strcasecmp (p, "fact"))
+                ;  /* Yes, this file shall be used.    */
+              else
+                ignoreall = 1; /* No, this file shall be ignored.  */
+              xfree (p);
             }
           else if (!strcmp (name, "sysconfdir"))
             {
@@ -627,7 +649,13 @@ unix_rootdir (int want_sysconfdir)
       xfree (buffer);
       xfree (line);
 
-      if (!rootdir || !*rootdir || *rootdir != '/')
+      if (ignoreall)
+        {
+          xfree (rootdir);
+          xfree (sysconfdir);
+          sdir = dir = NULL;
+        }
+      else if (!rootdir || !*rootdir || *rootdir != '/')
         {
           log_info ("invalid rootdir '%s' specified in gpgconf.ctl\n", rootdir);
           xfree (rootdir);
