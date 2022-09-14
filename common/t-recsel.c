@@ -23,7 +23,6 @@
 #include <string.h>
 
 #include "util.h"
-#include "init.h"
 #include "recsel.h"
 
 #define PGM  "t-recsel"
@@ -390,7 +389,6 @@ main (int argc, char **argv)
   int last_argc = -1;
 
   log_set_prefix (PGM, GPGRT_LOG_WITH_PREFIX);
-  init_common_subsystems (&argc, &argv);
 
   if (argc)
     { argc--; argv++; }
