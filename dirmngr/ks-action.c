@@ -67,8 +67,6 @@ ks_action_help (ctrl_t ctrl, const char *url)
 {
   gpg_error_t err;
   parsed_uri_t parsed_uri;  /* The broken down URI.  */
-  char *tmpstr;
-  const char *s;
 
   if (!url || !*url)
     {

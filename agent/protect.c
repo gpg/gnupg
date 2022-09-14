@@ -1632,6 +1632,7 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
   size_t n, saved_n;
   int depth = 0;
 
+  (void)depth;
   s = shadowkey;
   if (*s != '(')
     return gpg_error (GPG_ERR_INV_SEXP);

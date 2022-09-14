@@ -950,7 +950,8 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   int algo;
   ksba_sexp_t p;
   size_t n;
-  gcry_sexp_t s_sig, s_hash, s_pkey;
+  gcry_sexp_t s_sig, s_pkey;
+  gcry_sexp_t s_hash = NULL;
   const char *algo_name; /* hash algorithm name converted to lower case. */
   int digestlen;
   unsigned char *digest;

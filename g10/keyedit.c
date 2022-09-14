@@ -4069,6 +4069,7 @@ show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock, int print_sec)
     }
 
   /* The user IDs. */
+  (void)i; /* Counting User IDs */
   for (i = 0, node = keyblock; node; node = node->next)
     {
       if (node->pkt->pkttype == PKT_USER_ID)
@@ -4768,6 +4769,7 @@ menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
   kbnode_t node;
   u32 keyid[2];
 
+  (void)signumber;
   if (unattended)
     {
       only_mainkey = (unattended == 1);

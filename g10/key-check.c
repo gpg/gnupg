@@ -261,6 +261,7 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
   int modified = 0;
   PKT_signature *sig;
 
+  (void)missing_selfsig;
   log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
   pk = kb->pkt->pkt.public_key;
 

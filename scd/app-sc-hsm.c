@@ -666,6 +666,7 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
       {
         /* Yep, this is the keyReference.
            Note: UL is currently not used. */
+        (void)ul;
         for (ul=0; objlen; objlen--)
           {
             ul <<= 8;

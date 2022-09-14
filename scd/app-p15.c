@@ -708,7 +708,7 @@ select_and_read_record (app_t app, unsigned short efid, int recno,
                         unsigned char **buffer, size_t *buflen, int *r_sw)
 {
   gpg_error_t err;
-  int sw;
+  int sw = 0;
 
   if (r_sw)
     *r_sw = 0x9000;

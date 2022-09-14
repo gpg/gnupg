@@ -366,8 +366,8 @@ gpg_error_t
 fetch_next_ksba_cert (cert_fetch_context_t context, ksba_cert_t *r_cert)
 {
   gpg_error_t err;
-  unsigned char *value;
-  size_t valuelen;
+  unsigned char *value = NULL;
+  size_t valuelen = 0;
   ksba_cert_t cert;
 
   *r_cert = NULL;
