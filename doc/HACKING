@@ -311,30 +311,6 @@ If you're working from the Git repo, here's a suggested workflow:
 
   See the manual for some hints.
 
-* Standards
-** RFCs
-
-1423  Privacy Enhancement for Internet Electronic Mail:
-      Part III: Algorithms, Modes, and Identifiers.
-
-1489  Registration of a Cyrillic Character Set.
-
-1750  Randomness Recommendations for Security.
-
-1991  PGP Message Exchange Formats (obsolete)
-
-2144  The CAST-128 Encryption Algorithm.
-
-2279  UTF-8, a transformation format of ISO 10646.
-
-2440  OpenPGP (obsolete).
-
-3156  MIME Security with Pretty Good Privacy (PGP).
-
-4880  Current OpenPGP specification.
-
-6337  Elliptic Curve Cryptography (ECC) in OpenPGP
-
 * Various information
 
 ** Directory Layout
