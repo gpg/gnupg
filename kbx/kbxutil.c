@@ -30,12 +30,11 @@
 #include <limits.h>
 #include <assert.h>
 
-#include <gpg-error.h>
+#include "keybox-defs.h"
 #include "../common/logging.h"
 #include "../common/stringhelp.h"
 #include "../common/utf8conv.h"
 #include "../common/i18n.h"
-#include "keybox-defs.h"
 #include "../common/init.h"
 #include <gcrypt.h>
 

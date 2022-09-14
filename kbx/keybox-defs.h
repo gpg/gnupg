@@ -20,12 +20,8 @@
 #ifndef KEYBOX_DEFS_H
 #define KEYBOX_DEFS_H 1
 
-#ifdef GPG_ERR_SOURCE_DEFAULT
-# if GPG_ERR_SOURCE_DEFAULT != GPG_ERR_SOURCE_KEYBOX
-#  error GPG_ERR_SOURCE_DEFAULT already defined
-# endif
-#else
-# define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_KEYBOX
+#ifndef GPG_ERR_SOURCE_DEFAULT
+#define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_KEYBOX
 #endif
 #include <gpg-error.h>
 #define map_assuan_err(a) \
