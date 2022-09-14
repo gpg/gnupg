@@ -2127,6 +2127,9 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   gpg_error_t err;
   uri_item_t item;
   char *tmpstr = NULL;
+#if USE_LDAP
+  const char *s;
+#endif
 
   *r_item = NULL;
 
