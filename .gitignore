@@ -13,6 +13,7 @@ doc/stamp-vti
 doc/version.texi
 po/gnupg2.pot
 po/POTFILES
+po/*.gmo
 stamp-h1
 Makefile
 .deps/
