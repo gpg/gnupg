@@ -44,6 +44,7 @@ if test x$_ldap_with != xno ; then
 #include <winsock2.h>
 #include <winldap.h>
 #else
+#define LDAP_DEPRECATED 1
 #include <ldap.h>
 #endif
 ]],[[ldap_open("foobar",1234);]])],
@@ -53,6 +54,7 @@ if test x$_ldap_with != xno ; then
     if test $gnupg_cv_func_ldap_init = no; then
       AC_MSG_CHECKING([whether I can make LDAP be sane with lber.h])
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <lber.h>
+#define LDAP_DEPRECATED 1
 #include <ldap.h>]],[[ldap_open("foobar",1234);]])],
          [gnupg_cv_func_ldaplber_init=yes],[gnupg_cv_func_ldaplber_init=no])
       AC_MSG_RESULT([$gnupg_cv_func_ldaplber_init])
