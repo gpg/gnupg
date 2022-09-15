@@ -10,7 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2021-03-31
+# Last-changed: 2022-02-15
 
 
 dnl AM_PATH_GPG_ERROR([MINIMUM-VERSION,
@@ -139,6 +139,7 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
     fi
   elif test "$GPG_ERROR_CONFIG" != "no"; then
     gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+    unset GPGRT_CONFIG
   fi
   if test "$GPG_ERROR_CONFIG" != "no"; then
     req_major=`echo $min_gpg_error_version | \
