@@ -2611,21 +2611,21 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
   ksba_name_t distpoint = NULL;
   ksba_name_t issuername = NULL;
   char *distpoint_uri = NULL;
-  char *issuername_uri = NULL;
   int any_dist_point = 0;
   int seq;
+  gpg_error_t last_err = 0;
 
   /* Loop over all distribution points, get the CRLs and put them into
      the cache. */
   if (opt.verbose)
     log_info ("checking distribution points\n");
   seq = 0;
-  while ( !(err = ksba_cert_get_crl_dist_point (cert, seq++,
+  while (xfree (distpoint), xfree (issuername),
+         !(err = ksba_cert_get_crl_dist_point (cert, seq++,
                                                 &distpoint,
                                                 &issuername, NULL )))
     {
       int name_seq;
-      gpg_error_t last_err = 0;
 
       if (!distpoint && !issuername)
         {
@@ -2636,13 +2636,11 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
                     suitable CRL. */
         }
 
-      xfree (issuername_uri); issuername_uri = NULL;
-
       /* Get the URIs.  We do this in a loop to iterate over all names
          in the crlDP. */
       for (name_seq=0; ksba_name_enum (distpoint, name_seq); name_seq++)
         {
-          xfree (distpoint_uri); distpoint_uri = NULL;
+          xfree (distpoint_uri);
           distpoint_uri = ksba_name_get_uri (distpoint, name_seq);
           if (!distpoint_uri)
             continue;
@@ -2666,6 +2664,7 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
 
           if (opt.verbose)
             log_info ("fetching CRL from '%s'\n", distpoint_uri);
+          crl_close_reader (reader);
           err = crl_fetch (ctrl, distpoint_uri, &reader);
           if (err)
             {
@@ -2685,37 +2684,22 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
               last_err = err;
               continue; /* with the next name. */
             }
-          last_err = 0;
-          break; /* Ready. */
+          goto leave; /* Ready - we got the CRL. */
         }
-      if (last_err)
-        {
-          err = last_err;
-          goto leave;
-        }
-
-      ksba_name_release (distpoint); distpoint = NULL;
-
-      /* We don't do anything with issuername_uri yet but we keep the
-         code for documentation. */
-      issuername_uri =  ksba_name_get_uri (issuername, 0);
-      ksba_name_release (issuername); issuername = NULL;
-
-      /* Close the reader.  */
-      crl_close_reader (reader);
-      reader = NULL;
     }
   if (gpg_err_code (err) == GPG_ERR_EOF)
     err = 0;
+  if (!err && last_err)
+    {
+      err = last_err;
+      goto leave;
+    }
 
   /* If we did not found any distpoint, try something reasonable. */
   if (!any_dist_point )
     {
       if (opt.verbose)
         log_info ("no distribution point - trying issuer name\n");
-
-      crl_close_reader (reader);
-      reader = NULL;
 
       issuer = ksba_cert_get_issuer (cert, 0);
       if (!issuer)
@@ -2727,6 +2711,7 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
 
       if (opt.verbose)
         log_info ("fetching CRL from default location\n");
+      crl_close_reader (reader);
       err = crl_fetch_default (ctrl, issuer, &reader);
       if (err)
           {
@@ -2749,7 +2734,6 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
  leave:
   crl_close_reader (reader);
   xfree (distpoint_uri);
-  xfree (issuername_uri);
   ksba_name_release (distpoint);
   ksba_name_release (issuername);
   ksba_free (issuer);
