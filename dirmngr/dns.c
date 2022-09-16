@@ -130,7 +130,7 @@ typedef int socket_fd_t;
 
 #if __GNUC__
 #define DNS_NOTUSED __attribute__((unused))
-#define DNS_NORETURN __attribute__((noreturn))
+#define DNS_NORETURN __attribute__((__noreturn__))
 #else
 #define DNS_NOTUSED
 #define DNS_NORETURN
