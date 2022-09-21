@@ -291,8 +291,8 @@ main (int argc, char **argv)
   maybe_setuid = 0;
 
   /*
-     Now we are now working under our real uid
-  */
+   *  Now we are working under our real uid
+   */
 
   /* Setup malloc hooks. */
   {

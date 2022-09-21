@@ -294,6 +294,8 @@ main (int argc, char **argv)
     exit (2);
 
   /* Process common component options.  */
+  gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
+  gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
   if (parse_comopt (GNUPG_MODULE_NAME_CARD, opt.debug))
     {
       gnupg_status_printf (STATUS_FAILURE, "option-parser %u",

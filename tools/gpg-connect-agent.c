@@ -1257,7 +1257,10 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
-    /* Process common component options.  */
+  /* Process common component options.  Note that we set the config
+   * dir only here so that --homedir will have an effect.  */
+  gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
+  gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
   if (parse_comopt (GNUPG_MODULE_NAME_CONNECT_AGENT, opt.verbose > 1))
     exit(2);
 
