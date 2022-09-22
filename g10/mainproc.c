@@ -753,15 +753,15 @@ proc_encrypted (CTX c, PACKET *pkt)
             compliant = 0;
         }
 
-      /* Check that every public key used to encrypt the session key
+      /* Check that every known public key used to encrypt the session key
        * is compliant.  */
       for (i = c->pkenc_list; i && compliant; i = i->next)
         {
           memset (pk, 0, sizeof *pk);
           pk->pubkey_algo = i->pubkey_algo;
-          if (get_pubkey (c->ctrl, pk, i->keyid) != 0
-              || ! gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0,
-                                          pk->pkey, nbits_from_pk (pk), NULL))
+          if (!get_pubkey (c->ctrl, pk, i->keyid)
+              && !gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0,
+                                         pk->pkey, nbits_from_pk (pk), NULL))
             compliant = 0;
           release_public_key_parts (pk);
         }
