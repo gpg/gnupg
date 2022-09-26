@@ -223,13 +223,19 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
       break;
 
     case KEYDB_SEARCH_MODE_MAILSUB:
-      if (! only_exact)
+      if ((serverinfo & SERVERINFO_SCHEMAV2))
+	f = xasprintf("(&(gpgMailbox=*%s*)(!(|(pgpRevoked=1)(pgpDisabled=1))))",
+                      (freeme = ldap_escape_filter (desc.u.name)));
+      else if (!only_exact)
 	f = xasprintf ("(pgpUserID=*<*%s*>*)",
 		       (freeme = ldap_escape_filter (desc.u.name)));
       break;
 
     case KEYDB_SEARCH_MODE_MAILEND:
-      if (! only_exact)
+      if ((serverinfo & SERVERINFO_SCHEMAV2))
+	f = xasprintf("(&(gpgMailbox=*%s)(!(|(pgpRevoked=1)(pgpDisabled=1))))",
+                      (freeme = ldap_escape_filter (desc.u.name)));
+      else if (!only_exact)
 	f = xasprintf ("(pgpUserID=*<*%s>*)",
 		       (freeme = ldap_escape_filter (desc.u.name)));
       break;
