@@ -92,6 +92,7 @@ enum
     oStartTLS,
     oLdapTLS,
     oNtds,
+    oARecOnly,
 
     oOnlySearchTimeout,
     oLogWithPID
@@ -110,6 +111,7 @@ static ARGPARSE_OPTS opts[] = {
   { oStartTLS, "starttls",  0, "use STARTLS for the conenction"},
   { oLdapTLS,  "ldaptls",   0, "use a TLS for the connection"},
   { oNtds,     "ntds",      0, "authenticate using AD"},
+  { oARecOnly, "areconly",  0, "do only an A record lookup"},
   { oHost,     "host",      2, "|NAME|connect to host NAME"},
   { oPort,     "port",      1, "|N|connect to port N"},
   { oUser,     "user",      2, "|NAME|use NAME for authentication"},
@@ -135,6 +137,7 @@ static struct
   int starttls;
   int ldaptls;
   int ntds;
+  int areconly;
 
   estream_t outstream;    /* Send output to this stream.  */
 
@@ -235,6 +238,7 @@ main (int argc, char **argv)
         case oStartTLS: opt.starttls = 1; opt.ldaptls = 0; break;
         case oLdapTLS:  opt.starttls = 0; opt.ldaptls = 1; break;
         case oNtds:     opt.ntds = 1; break;
+        case oARecOnly: opt.areconly = 1; break;
         case oMulti: opt.multi = 1; break;
         case oUser: opt.user = pargs.r.ret_str; break;
         case oPass: opt.pass = pargs.r.ret_str; break;
@@ -436,6 +440,17 @@ connect_ldap (LDAP **r_ld)
       log_error ("error initializing LDAP '%s:%d': %s\n",
                  opt.host, opt.port, ldap_err2string (lerr));
       goto leave;
+    }
+  if (opt.areconly)
+    {
+      lerr = ldap_set_option (ld, LDAP_OPT_AREC_EXCLUSIVE, LDAP_OPT_ON);
+      if (lerr != LDAP_SUCCESS)
+        {
+          log_error ("ldap: unable to set AREC_EXLUSIVE: %s\n",
+                     ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
+          goto leave;
+        }
     }
 #else /* Unix */
   tmpstr = xtryasprintf ("%s://%s:%d",

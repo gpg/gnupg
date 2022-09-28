@@ -485,6 +485,9 @@ Tunnel LDAP through a TLS connection; the default port is 636.
 @item ntds
 On Windows authenticate the LDAP connection using the Active Directory
 with the current user.
+@item areconly
+On Windows use only the A or AAAA record when resolving the LDAP
+server name.
 @end table
 
 Note that in an URL style specification the scheme @code{ldaps://}

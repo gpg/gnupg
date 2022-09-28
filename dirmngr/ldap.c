@@ -119,13 +119,14 @@ run_ldap_wrapper (ctrl_t ctrl,
                   int multi_mode,
                   int tls_mode,
                   int ntds,
+                  int areconly,
                   const char *proxy,
                   const char *host, int port,
                   const char *user, const char *pass,
                   const char *base, const char *filter, const char *attr,
                   ksba_reader_t *reader)
 {
-  const char *argv[50];
+  const char *argv[51];
   int argc;
   char portbuf[30], timeoutbuf[30];
 
@@ -155,6 +156,9 @@ run_ldap_wrapper (ctrl_t ctrl,
 
   if (ntds)
     argv[argc++] = "--ntds";
+
+  if (areconly)
+    argv[argc++] = "--areconly";
 
   if (opt.ldaptimeout)
     {
@@ -246,6 +250,7 @@ url_fetch_ldap (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
                           0, /* No Multi-mode.  */
                           tls_mode,
                           0, /* No AD authentication.  */
+                          0, /* No areconly.  */
                           opt.ldap_proxy,
                           ludp->lud_host, ludp->lud_port,
                           NULL, NULL,  /* user, password */
@@ -292,6 +297,7 @@ url_fetch_ldap (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
                                   0, /* No Multi-mode */
                                   tls_mode,
                                   server->ntds,
+                                  server->areconly,
                                   NULL,
                                   server->host, server->port,
                                   server->user, server->pass,
@@ -342,6 +348,7 @@ attr_fetch_ldap (ctrl_t ctrl,
                               0,
                               tls_mode,
                               server->ntds,
+                              server->areconly,
                               opt.ldap_proxy,
                               server->host, server->port,
                               server->user, server->pass,
@@ -609,6 +616,7 @@ start_cacert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
                               1,  /* --multi (record format) */
                               0, /* No TLS */
                               0, /* No AD authentication.  */
+                              server->areconly,
                               opt.ldap_proxy,
                               server->host, server->port,
                               server->user, server->pass,

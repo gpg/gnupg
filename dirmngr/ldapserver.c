@@ -64,6 +64,7 @@ ldapserver_list_free (ldap_server_t servers)
      plain     := Switch to plain unsecured LDAP.
      (The last of these 3 flags is the effective one)
      ntds      := Use Active Directory authentication
+     areconly  := Use option LDAP_OPT_AREC_EXCLUSIVE
 
    FILENAME and LINENO are used for diagnostic purposes only.
 */
@@ -174,6 +175,10 @@ ldapserver_parse_one (char *line,
                 else if (!ascii_strcasecmp (s, "ntds"))
                   {
                     server->ntds = 1;
+                  }
+                else if (!ascii_strcasecmp (s, "areconly"))
+                  {
+                    server->areconly = 1;
                   }
                 else
                   {

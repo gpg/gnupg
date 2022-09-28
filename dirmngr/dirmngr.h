@@ -54,6 +54,7 @@ struct ldap_server_s
   unsigned int starttls:1;       /* Use STARTTLS.  */
   unsigned int ldap_over_tls:1;  /* Use LDAP over an TLS tunnel */
   unsigned int ntds:1;           /* Use Active Directory authentication.  */
+  unsigned int areconly:1;       /* Set LDAP_OPT_AREC_EXCLUSIVE.  */
 };
 typedef struct ldap_server_s *ldap_server_t;
 
