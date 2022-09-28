@@ -43,7 +43,7 @@
 
 /* Flags with infos from the connected server.  */
 #define SERVERINFO_REALLDAP 1 /* This is not the PGP keyserver.      */
-#define SERVERINFO_PGPKEYV2 2 /* Needs "pgpeyV2" instead of "pgpKey" */
+#define SERVERINFO_PGPKEYV2 2 /* Needs "pgpKeyV2" instead of "pgpKey"*/
 #define SERVERINFO_SCHEMAV2 4 /* Version 2 of the Schema.            */
 #define SERVERINFO_NTDS     8 /* Server is an Active Directory.      */
 
