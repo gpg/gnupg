@@ -426,7 +426,7 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
       char buf[11];
       if (opt.verbose)
         log_info (_("Note: signature key %s expired %s\n"),
-                  keystr_from_pk(pk), asctimestamp( pk->expiredate ) );
+                  keystr_from_pk(pk), isotimestamp( pk->expiredate ) );
       snprintf (buf, sizeof buf, "%lu",(ulong)pk->expiredate);
       write_status_text (STATUS_KEYEXPIRED, buf);
       if (r_expired)

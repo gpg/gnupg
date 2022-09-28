@@ -1993,10 +1993,13 @@ enum_sig_subpkt (PKT_signature *sig, int want_hashed, sigsubpkttype_t reqtype,
   return NULL;	/* End of packets; not found.  */
 
  too_short:
-  if (opt.verbose && !glo_ctrl.silence_parse_warnings)
-    log_printhex (pktbuf->data, pktbuf->len > 16? 16 : pktbuf->len,
-                  "buffer shorter than subpacket (%zu/%d/%zu); dump:",
-                  pktbuf->len, buflen, n);
+  if (opt.debug && !glo_ctrl.silence_parse_warnings)
+    {
+      es_fflush (es_stdout);
+      log_printhex (pktbuf->data, pktbuf->len > 16? 16 : pktbuf->len,
+                    "buffer shorter than subpacket (%zu/%d/%zu); dump:",
+                    pktbuf->len, buflen, n);
+    }
 
   if (start)
     *start = -1;
@@ -2215,8 +2218,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       if (p)
 	sig->timestamp = buf32_to_u32 (p);
       else if (!(sig->pubkey_algo >= 100 && sig->pubkey_algo <= 110)
-	       && opt.verbose && !glo_ctrl.silence_parse_warnings)
-	log_info ("signature packet without timestamp\n");
+	       && opt.verbose > 1 && !glo_ctrl.silence_parse_warnings)
+        log_info ("signature packet without timestamp\n");
 
       /* Set the key id.  We first try the issuer fingerprint and if
        * it is a v4 signature the fallback to the issuer.  Note that
@@ -2238,7 +2241,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	  sig->keyid[1] = buf32_to_u32 (p + 4);
 	}
       else if (!(sig->pubkey_algo >= 100 && sig->pubkey_algo <= 110)
-	       && opt.verbose && !glo_ctrl.silence_parse_warnings)
+	       && opt.verbose > 1 && !glo_ctrl.silence_parse_warnings)
 	log_info ("signature packet without keyid\n");
 
       p = parse_sig_subpkt (sig, 1, SIGSUBPKT_SIG_EXPIRE, NULL);
