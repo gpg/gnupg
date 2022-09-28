@@ -288,6 +288,7 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
 }
 
 
+/* Returns 1 if R_BASEDDN is substituted, 0 if not.  */
 static int
 interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
                      unsigned int *r_serverinfo, char **r_basedn)
@@ -296,7 +297,6 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
   char **vals;
   LDAPMessage *si_res;
   int is_gnupg = 0;
-  int result = 0;
   char *basedn = NULL;
   char *attr2[] = { "pgpBaseKeySpaceDN", "pgpVersion", "pgpSoftware", NULL };
   char *object = xasprintf ("cn=pgpServerInfo,%s", basedn_search);
@@ -311,9 +311,7 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
     {
       vals = ldap_get_values (ldap_conn, si_res, "pgpBaseKeySpaceDN");
       if (vals && vals[0])
-        {
-          basedn = xtrystrdup (vals[0]);
-        }
+        basedn = xtrystrdup (vals[0]);
       my_ldap_value_free (vals);
 
       vals = ldap_get_values (ldap_conn, si_res, "pgpSoftware");
@@ -351,9 +349,19 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
      freed with ldap_msgfree() regardless of return
      value of these functions.  */
   ldap_msgfree (si_res);
-  if (r_basedn)
-    *r_basedn = basedn;
-  return result;
+  if (r_basedn && basedn)
+    {
+      if (*r_basedn)
+        xfree (*r_basedn);
+      *r_basedn = basedn;
+      return 1;
+    }
+  else
+    {
+      if (basedn)
+        xfree (basedn);
+      return 0;
+    }
 }
 
 /* Connect to an LDAP server and interrogate it.
@@ -653,6 +661,17 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
           goto out;
         }
       *r_serverinfo |= SERVERINFO_REALLDAP;
+
+      /* First try with provided basedn, else retry up one level.
+       * Retry assumes that provided entry is for keyspace,
+       * matching old behavior */
+      if (!interrogate_ldap_dn (ldap_conn, basedn, r_serverinfo, &basedn))
+        {
+          const char *basedn_parent = strchr (basedn, ',');
+          if (basedn_parent)
+            interrogate_ldap_dn (ldap_conn, basedn_parent + 1, r_serverinfo,
+                                 &basedn);
+        }
     }
   else
     { /* Look for namingContexts.  */
