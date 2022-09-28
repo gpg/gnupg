@@ -69,18 +69,17 @@ ldapserver_list_free (ldap_server_t servers)
  * FILENAME and LINENO are used for diagnostic purposes only.
  */
 ldap_server_t
-ldapserver_parse_one (char *line,
+ldapserver_parse_one (const char *line,
 		      const char *filename, unsigned int lineno)
 {
   char *p;
-  char *endp;
   const char *s;
   ldap_server_t server;
   int fieldno;
   int fail = 0;
   int i;
+  char **fields = NULL;
 
-  /* Parse the colon separated fields.  */
   server = xtrycalloc (1, sizeof *server);
   if (!server)
     {
@@ -88,32 +87,35 @@ ldapserver_parse_one (char *line,
       goto leave;
     }
 
-  for (fieldno = 1, p = line; p; p = endp, fieldno++ )
+  fields = strtokenize (line, ":");
+  if (!fields)
     {
-      endp = strchr (p, ':');
-      if (endp)
-	*endp++ = '\0';
-      trim_spaces (p);
+      fail = 1;
+      goto leave;
+    }
+
+  for (fieldno=0; (p = fields[fieldno]); fieldno++)
+    {
       switch (fieldno)
 	{
-	case 1:
+	case 0:
           server->host = xtrystrdup (p);
           if (!server->host)
             fail = 1;
 	  break;
 
-	case 2:
+	case 1:
 	  if (*p)
 	    server->port = atoi (p);
 	  break;
 
-	case 3:
+	case 2:
           server->user = xtrystrdup (p);
           if (!server->user)
             fail = 1;
 	  break;
 
-	case 4:
+	case 3:
 	  if (*p && !server->user)
 	    {
               if (filename)
@@ -131,7 +133,7 @@ ldapserver_parse_one (char *line,
             }
 	  break;
 
-	case 5:
+	case 4:
 	  if (*p)
             {
               server->base = xtrystrdup (p);
@@ -140,7 +142,7 @@ ldapserver_parse_one (char *line,
             }
 	  break;
 
-        case 6:
+        case 5:
           {
             char **flags = NULL;
 
@@ -211,6 +213,7 @@ ldapserver_parse_one (char *line,
       ldapserver_list_free (server);
       server = NULL;
     }
+  xfree (fields);
 
   return server;
 }

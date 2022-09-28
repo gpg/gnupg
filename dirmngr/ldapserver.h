@@ -26,7 +26,7 @@
 void ldapserver_list_free (ldap_server_t servers);
 
 
-ldap_server_t ldapserver_parse_one (char *line,
+ldap_server_t ldapserver_parse_one (const char *line,
 				    const char *filename, unsigned int lineno);
 
 
