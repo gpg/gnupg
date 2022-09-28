@@ -405,6 +405,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   int port;            /* Port to use.  */
   int use_tls;         /* 1 = starttls, 2 = ldap-over-tls  */
   int use_ntds;        /* Use Active Directory authentication.  */
+  int use_areconly;    /* Lookup only via A record (Windows).  */
   const char *bindname;
   const char *password;
   const char *basedn_arg;
@@ -432,6 +433,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       basedn_arg = server->base;
       use_tls = server->starttls? 1 : server->ldap_over_tls? 2 : 0;
       use_ntds = server->ntds;
+      use_areconly = server->areconly;
     }
   else
     {
@@ -442,6 +444,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       basedn_arg = uri->path;
       use_tls = uri->use_tls ? 1 : 0;
       use_ntds = uri->ad_current;
+      use_areconly = 0;
     }
 
   if (!port)
@@ -459,13 +462,14 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
     }
 
   if (opt.verbose)
-    log_info ("ldap connect to '%s:%d:%s:%s:%s:%s%s'\n",
+    log_info ("ldap connect to '%s:%d:%s:%s:%s:%s%s%s'\n",
               host, port,
               basedn_arg ? basedn_arg : "",
               bindname ? bindname : "",
               password ? "*****" : "",
               use_tls == 1? "starttls" : use_tls == 2? "ldaptls" : "plain",
-              use_ntds ? ",ntds":"");
+              use_ntds ? ",ntds":"",
+              use_areconly? ",areconly":"");
 
 
   /* If the uri specifies a secure connection and we don't support
@@ -494,6 +498,18 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
                  host, port, ldap_err2string (lerr));
       goto out;
     }
+  if (use_areconly)
+    {
+      lerr = ldap_set_option (ldap_conn, LDAP_OPT_AREC_EXCLUSIVE, LDAP_OPT_ON);
+      if (lerr != LDAP_SUCCESS)
+        {
+          log_error ("ks-ldap: unable to set LDAP_OPT_AREC_EXLUSIVE: %s\n",
+                     ldap_err2string (lerr));
+          err = ldap_err_to_gpg_err (lerr);
+          goto out;
+        }
+    }
+
 #else /* Unix */
   tmpstr = xtryasprintf ("%s://%s:%d",
                          use_tls == 2? "ldaps" : "ldap",
