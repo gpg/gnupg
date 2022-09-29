@@ -571,7 +571,7 @@ ldap_reaper_launch_thread (void)
 /* Wait until all ldap wrappers have terminated.  We assume that the
    kill has already been sent to all of them.  */
 void
-ldap_wrapper_wait_connections ()
+ldap_wrapper_wait_connections (void)
 {
   lock_reaper_list ();
   {
