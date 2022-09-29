@@ -294,10 +294,9 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
 }
 
 
-/* Returns 1 if R_BASEDDN is substituted, 0 if not.  */
-static int
+static char *
 interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
-                     unsigned int *r_serverinfo, char **r_basedn)
+                     unsigned int *r_serverinfo)
 {
   int lerr;
   char **vals;
@@ -355,19 +354,7 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
      freed with ldap_msgfree() regardless of return
      value of these functions.  */
   ldap_msgfree (si_res);
-  if (r_basedn && basedn)
-    {
-      if (*r_basedn)
-        xfree (*r_basedn);
-      *r_basedn = basedn;
-      return 1;
-    }
-  else
-    {
-      if (basedn)
-        xfree (basedn);
-      return 0;
-    }
+  return basedn;
 }
 
 
@@ -667,23 +654,20 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
     {
       /* User specified base DN.  In this case we know the server is a
        * real LDAP server.  */
-      basedn = xtrystrdup (basedn_arg);
-      if (!basedn)
-        {
-          err = gpg_error_from_syserror ();
-          goto out;
-        }
+      const char *user_basedn = basedn_arg;
+
       *r_serverinfo |= SERVERINFO_REALLDAP;
 
       /* First try with provided basedn, else retry up one level.
        * Retry assumes that provided entry is for keyspace,
        * matching old behavior */
-      if (!interrogate_ldap_dn (ldap_conn, basedn, r_serverinfo, &basedn))
+      basedn = interrogate_ldap_dn (ldap_conn, user_basedn, r_serverinfo);
+      if (!basedn)
         {
-          const char *basedn_parent = strchr (basedn, ',');
+          const char *basedn_parent = strchr (user_basedn, ',');
           if (basedn_parent)
-            interrogate_ldap_dn (ldap_conn, basedn_parent + 1, r_serverinfo,
-                                 &basedn);
+            basedn = interrogate_ldap_dn (ldap_conn, basedn_parent + 1,
+                                          r_serverinfo);
         }
     }
   else
@@ -714,8 +698,8 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
               *r_serverinfo |= SERVERINFO_REALLDAP;
 
 	      for (i = 0; context[i] && !basedn; i++)
-                interrogate_ldap_dn (ldap_conn, context[i], r_serverinfo,
-                                     &basedn);
+                basedn = interrogate_ldap_dn (ldap_conn, context[i],
+                                              r_serverinfo);
 
 	      ldap_value_free (context);
 	    }
