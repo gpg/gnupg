@@ -298,7 +298,10 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
   int is_gnupg = 0;
   char *basedn = NULL;
   char *attr2[] = { "pgpBaseKeySpaceDN", "pgpVersion", "pgpSoftware", NULL };
-  char *object = xasprintf ("cn=pgpServerInfo,%s", basedn_search);
+  char *object;
+
+
+  object = xasprintf ("cn=pgpServerInfo,%s", basedn_search);
 
   npth_unprotect ();
   lerr = ldap_search_s (ldap_conn, object, LDAP_SCOPE_BASE,
@@ -350,42 +353,25 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
   ldap_msgfree (si_res);
   return basedn;
 }
+
+
 
 /* Connect to an LDAP server and interrogate it.
-
-     - uri describes the server to connect to and various options
-       including whether to use TLS and the username and password (see
-       ldap_parse_uri for a description of the various fields).
-
-   This function returns:
-
-     - The ldap connection handle in *LDAP_CONNP.
-
-     - The base DN for the PGP key space by querying the
-       pgpBaseKeySpaceDN attribute (This is normally
-       'ou=PGP Keys,dc=EXAMPLE,dc=ORG').
-
-     - The attribute to lookup to find the pgp key.  This is either
-       'pgpKey' or 'pgpKeyV2'.
-
-     - Whether this is a real ldap server.  (It's unclear what this
-       exactly means.)
-
-   The values are returned in the passed variables.  If you pass NULL,
-   then the value won't be returned.  It is the caller's
-   responsibility to release *LDAP_CONNP with ldap_unbind and xfree
-   *BASEDNP.
-
-   If this function successfully interrogated the server, it returns
-   0.  If there was an LDAP error, it returns the LDAP error code.  If
-   an error occurred, *basednp, etc., are undefined (and don't need to
-   be freed.)
-
-   R_SERVERINFO receives information about the server.
-
-   If no LDAP error occurred, you still need to check that *basednp is
-   valid.  If it is NULL, then the server does not appear to be an
-   OpenPGP Keyserver.  */
+ *
+ * URI describes the server to connect to and various options
+ * including whether to use TLS and the username and password (see
+ * ldap_parse_uri for a description of the various fields).
+ *
+ * Returns: The ldap connection handle in *LDAP_CONNP, R_BASEDN is set
+ * to the base DN for the PGP key space, several flags will be stored
+ * at SERVERINFO, If you pass NULL, then the value won't be returned.
+ * It is the caller's responsibility to release *LDAP_CONNP with
+ * ldap_unbind and to xfree *BASEDNP.  On error these variables are
+ * cleared.
+ *
+ * Note: On success, you still need to check that *BASEDNP is valid.
+ * If it is NULL, then the server does not appear to be an OpenPGP
+ * keyserver.  */
 static gpg_error_t
 my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
                  char **r_basedn, char **r_host, int *r_use_tls,
@@ -444,7 +430,6 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 
   if (!port)
     port = use_tls == 2? 636 : 389;
-
 
   if (host)
     {
@@ -652,7 +637,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       if (!basedn)
         {
           const char *basedn_parent = strchr (user_basedn, ',');
-          if (basedn_parent)
+          if (basedn_parent && *basedn_parent)
             basedn = interrogate_ldap_dn (ldap_conn, basedn_parent + 1,
                                           r_serverinfo);
         }
