@@ -535,8 +535,13 @@ check_encryption_compliance (DEK *dek, pk_list_t pk_list)
       goto leave;
     }
 
-  compliant = gnupg_cipher_is_compliant (CO_DE_VS, dek->algo,
-                                         GCRY_CIPHER_MODE_CFB);
+  /* From here on we only test for CO_DE_VS - if we ever want to
+   * return other compliance mode values we need to change this to
+   * loop over all those values.  */
+  compliant = gnupg_gcrypt_is_compliant (CO_DE_VS);
+
+  if (!gnupg_cipher_is_compliant (CO_DE_VS, dek->algo, GCRY_CIPHER_MODE_CFB))
+    compliant = 0;
 
   for (pkr = pk_list; pkr; pkr = pkr->next)
     {
