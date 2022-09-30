@@ -397,6 +397,7 @@ ks_status_cb (void *opaque, const char *line)
   const char *s, *s2;
   const char *warn = NULL;
   int is_note = 0;
+  char *p;
 
   if ((s = has_leading_keyword (line, parm->keyword? parm->keyword : "SOURCE")))
     {
@@ -406,6 +407,30 @@ ks_status_cb (void *opaque, const char *line)
           parm->source = xtrystrdup (s);
           if (!parm->source)
             err = gpg_error_from_syserror ();
+          else
+            {
+              p = strchr (parm->source, ':');
+              if (p && p[1] == '/' && p[2] == '/')
+                {
+                  /* This is a real URL like "ldap://foo:389/bla,bla"
+                   * Strip off the local part.  */
+                  if ((p = strchr (p+3, '/')))
+                    *p = 0;
+                }
+              else
+                {
+                  /* This is an LDAP config entry like
+                   * "foo:389:user:pass:base:flags"
+                   * we strip off everything beyound the port.  */
+                  if ((p = strchr (p+1, ':')))
+                    {
+                      if (p[-1] == ':')
+                        p[-1] = 0;  /* No port given.  */
+                      else
+                        *p = 0;
+                    }
+                }
+            }
         }
     }
   else if ((s = has_leading_keyword (line, "WARNING"))
