@@ -49,7 +49,7 @@
 # include "ldap-wrapper.h"
 #endif
 #include "ks-action.h"
-#include "ks-engine.h"  /* (ks_hkp_print_hosttable) */
+#include "ks-engine.h"
 #if USE_LDAP
 # include "ldap-parse-uri.h"
 #endif
@@ -2518,12 +2518,13 @@ cmd_ks_search (assuan_context_t ctx, char *line)
 
 
 static const char hlp_ks_get[] =
-  "KS_GET [--quick] [--ldap] {<pattern>}\n"
+  "KS_GET [--quick] [--ldap] [--first|--next] {<pattern>}\n"
   "\n"
   "Get the keys matching PATTERN from the configured OpenPGP keyservers\n"
   "(see command KEYSERVER).  Each pattern should be a keyid, a fingerprint,\n"
   "or an exact name indicated by the '=' prefix.  Option --quick uses a\n"
-  "shorter timeout; --ldap will use only ldap servers";
+  "shorter timeout; --ldap will use only ldap servers.  With --first only\n"
+  "the first item is returned; --next is used to return the next item";
 static gpg_error_t
 cmd_ks_get (assuan_context_t ctx, char *line)
 {
@@ -2532,11 +2533,16 @@ cmd_ks_get (assuan_context_t ctx, char *line)
   strlist_t list, sl;
   char *p;
   estream_t outfp;
-  int ldap_only;
+  unsigned int flags = 0;
 
   if (has_option (line, "--quick"))
     ctrl->timeout = opt.connect_quick_timeout;
-  ldap_only = has_option (line, "--ldap");
+  if (has_option (line, "--ldap"))
+    flags |= KS_GET_FLAG_ONLY_LDAP;
+  if (has_option (line, "--first"))
+    flags |= KS_GET_FLAG_FIRST;
+  if (has_option (line, "--next"))
+    flags |= KS_GET_FLAG_NEXT;
   line = skip_options (line);
 
   /* Break the line into a strlist.  Each pattern is by
@@ -2565,6 +2571,36 @@ cmd_ks_get (assuan_context_t ctx, char *line)
         }
     }
 
+  if ((flags & KS_GET_FLAG_FIRST) && !(flags & KS_GET_FLAG_ONLY_LDAP))
+    {
+      err = PARM_ERROR ("--first is only supported with --ldap");
+      goto leave;
+    }
+
+  if (list && list->next && (flags & KS_GET_FLAG_FIRST))
+    {
+      /* ks_action_get loops over the pattern and we can't easily keep
+       * this state.  */
+      err = PARM_ERROR ("Only one pattern allowed with --first");
+      goto leave;
+    }
+
+  if ((flags & KS_GET_FLAG_NEXT))
+    {
+      if (list || (flags & ~KS_GET_FLAG_NEXT))
+        {
+          err = PARM_ERROR ("No pattern or other options allowed with --next");
+          goto leave;
+        }
+      /* Add a dummy pattern.  */
+      if (!add_to_strlist_try (&list, ""))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+
   err = ensure_keyserver (ctrl);
   if (err)
     goto leave;
@@ -2579,7 +2615,7 @@ cmd_ks_get (assuan_context_t ctx, char *line)
       ctrl->server_local->inhibit_data_logging_now = 0;
       ctrl->server_local->inhibit_data_logging_count = 0;
       err = ks_action_get (ctrl, ctrl->server_local->keyservers,
-                           list, ldap_only, outfp);
+                           list, flags, outfp);
       es_fclose (outfp);
       ctrl->server_local->inhibit_data_logging = 0;
     }
@@ -3090,6 +3126,8 @@ start_command_handler (assuan_fd_t fd, unsigned int session_id)
                ctrl->refcount);
   else
     {
+      ks_ldap_free_state (ctrl->ks_get_state);
+      ctrl->ks_get_state = NULL;
       release_ctrl_ocsp_certs (ctrl);
       xfree (ctrl->server_local);
       dirmngr_deinit_default_ctrl (ctrl);

@@ -40,7 +40,7 @@
 
 /* Flags with infos from the connected server.  */
 #define SERVERINFO_REALLDAP 1 /* This is not the PGP keyserver.      */
-#define SERVERINFO_PGPKEYV2 2 /* Needs "pgpeyV2" instead of "pgpKey" */
+#define SERVERINFO_PGPKEYV2 2 /* Needs "pgpKeyV2" instead of "pgpKey"*/
 #define SERVERINFO_SCHEMAV2 4 /* Version 2 of the Schema.            */
 #define SERVERINFO_NTDS     8 /* Server is an Active Directory.      */
 
@@ -48,6 +48,17 @@
 #ifndef HAVE_TIMEGM
 time_t timegm(struct tm *tm);
 #endif
+
+
+/* Object to keep state pertaining to this module.  */
+struct ks_engine_ldap_local_s
+{
+  LDAP *ldap_conn;
+  LDAPMessage *message;
+  LDAPMessage *msg_iter;  /* Iterator for message.  */
+  unsigned int serverinfo;
+};
+
 
 
 
@@ -162,6 +173,45 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
     err = 0;
 
   return err;
+}
+
+
+
+/* Create a new empty state object.  Returns NULL on error */
+static struct ks_engine_ldap_local_s *
+ks_ldap_new_state (void)
+{
+  return xtrycalloc (1, sizeof(struct ks_engine_ldap_local_s));
+}
+
+
+/* Clear the state object STATE.  Returns the STATE object.  */
+static struct ks_engine_ldap_local_s *
+ks_ldap_clear_state (struct ks_engine_ldap_local_s *state)
+{
+  if (state->ldap_conn)
+    {
+      ldap_unbind (state->ldap_conn);
+      state->ldap_conn = NULL;
+    }
+  if (state->message)
+    {
+      ldap_msgfree (state->message);
+      state->message = NULL;
+    }
+  state->serverinfo = 0;
+  return state;
+}
+
+
+/* Release a state object.  */
+void
+ks_ldap_free_state (struct ks_engine_ldap_local_s *state)
+{
+  if (!state)
+    return;
+  ks_ldap_clear_state (state);
+  xfree (state);
 }
 
 
@@ -288,6 +338,8 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
 }
 
 
+
+/* Helper for my_ldap_connect.  */
 static char *
 interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
                      unsigned int *r_serverinfo)
@@ -874,12 +926,90 @@ no_ldap_due_to_tor (ctrl_t ctrl)
 }
 
 
+/* Helper for ks_ldap_get.  Returns 0 if a key was fetched and printed
+ * to FP.  The error code GPG_ERR_NO_DATA is returned if no key was
+ * printed.  Note that FP is updated by this function. */
+static gpg_error_t
+return_one_keyblock (LDAP *ldap_conn, LDAPMessage *msg, unsigned int serverinfo,
+                     estream_t *fp, strlist_t *seenp)
+{
+  gpg_error_t err;
+  char **vals;
+  char **certid;
+
+  /* Use the long keyid to remove duplicates.  The LDAP server returns
+   * the same keyid more than once if there are multiple user IDs on
+   * the key.  Note that this does NOT mean that a keyid that exists
+   * multiple times on the keyserver will not be fetched.  It means
+   * that each KEY, no matter how many user IDs share its keyid, will
+   * be fetched only once.  If a keyid that belongs to more than one
+   * key is fetched, the server quite properly responds with all
+   * matching keys. -ds
+   *
+   * Note that in --first/--next mode we don't do any duplicate
+   * detection.
+   */
+
+  certid = ldap_get_values (ldap_conn, msg, "pgpcertid");
+  if (certid && certid[0])
+    {
+      if (!seenp || !strlist_find (*seenp, certid[0]))
+        {
+          /* It's not a duplicate, add it */
+          if (seenp)
+            add_to_strlist (seenp, certid[0]);
+
+          if (!*fp)
+            {
+              *fp = es_fopenmem(0, "rw");
+              if (!*fp)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+            }
+
+          extract_keys (*fp, ldap_conn, certid[0], msg);
+
+          vals = ldap_get_values (ldap_conn, msg,
+                                  (serverinfo & SERVERINFO_PGPKEYV2)?
+                                  "pgpKeyV2" : "pgpKey");
+          if (!vals)
+            {
+              err = ldap_to_gpg_err (ldap_conn);
+              log_error("ks-ldap: unable to retrieve key %s "
+                        "from keyserver\n", certid[0]);
+            }
+          else
+            {
+              /* We should strip the new lines.  */
+              es_fprintf (*fp, "KEY 0x%s BEGIN\n", certid[0]);
+              es_fputs (vals[0], *fp);
+              es_fprintf (*fp, "\nKEY 0x%s END\n", certid[0]);
+
+              ldap_value_free (vals);
+              err = 0;
+            }
+        }
+      else /* Duplicate.  */
+        err = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else
+    err = gpg_error (GPG_ERR_NO_DATA);
+
+ leave:
+  my_ldap_value_free (certid);
+  return err;
+}
+
+
+
 /* Get the key described key the KEYSPEC string from the keyserver
-   identified by URI.  On success R_FP has an open stream to read the
-   data.  */
+ * identified by URI.  On success R_FP has an open stream to read the
+ * data.  KS_GET_FLAGS conveys flags from the client.  */
 gpg_error_t
 ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
-	     estream_t *r_fp)
+	     unsigned int ks_get_flags, estream_t *r_fp)
 {
   gpg_error_t err = 0;
   int ldap_err;
@@ -890,7 +1020,24 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
   LDAP *ldap_conn = NULL;
   char *basedn = NULL;
   estream_t fp = NULL;
+  int count;
   LDAPMessage *message = NULL;
+  LDAPMessage *msg;
+  int anykey = 0;
+  int first_mode = 0;
+  int next_mode = 0;
+  strlist_t seen = NULL; /* The set of entries that we've seen.  */
+  /* The ordering is significant.  Specifically, "pgpcertid" needs to
+   * be the second item in the list, since everything after it may be
+   * discarded if we aren't in verbose mode.  */
+  char *attrs[] =
+    {
+     "dummy", /* (to be be replaced.)  */
+     "pgpcertid", "pgpuserid", "pgpkeyid", "pgprevoked", "pgpdisabled",
+     "pgpkeycreatetime", "modifytimestamp", "pgpkeysize", "pgpkeytype",
+     "gpgfingerprint",
+     NULL
+    };
 
   (void) ctrl;
 
@@ -899,143 +1046,138 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       return no_ldap_due_to_tor (ctrl);
     }
 
-  /* Make sure we are talking to an OpenPGP LDAP server.  */
-  err = my_ldap_connect (uri, &ldap_conn,
-                         &basedn, &host, &use_tls, &serverinfo);
-  if (err || !basedn)
+  /* Make sure we got a state.  */
+  if ((ks_get_flags & KS_GET_FLAG_FIRST))
     {
-      if (!err)
-	err = gpg_error (GPG_ERR_GENERAL);
-      goto out;
+      if (ctrl->ks_get_state)
+        ks_ldap_clear_state (ctrl->ks_get_state);
+      else if (!(ctrl->ks_get_state = ks_ldap_new_state ()))
+        return gpg_error_from_syserror ();
+      first_mode = 1;
     }
 
-  /* Now that we have information about the server we can construct a
-   * query best suited for the capabilities of the server.  */
-  err = keyspec_to_ldap_filter (keyspec, &filter, 1, serverinfo);
-  if (err)
-    goto out;
-
-  if (opt.debug)
-    log_debug ("ks-ldap: using filter: %s\n", filter);
-
-  {
-    /* The ordering is significant.  Specifically, "pgpcertid" needs
-       to be the second item in the list, since everything after it
-       may be discarded if we aren't in verbose mode. */
-    char *attrs[] =
-      {
-	"dummy",
-	"pgpcertid", "pgpuserid", "pgpkeyid", "pgprevoked", "pgpdisabled",
-	"pgpkeycreatetime", "modifytimestamp", "pgpkeysize", "pgpkeytype",
-        "gpgfingerprint",
-	NULL
-      };
-    /* 1 if we want just attribute types; 0 if we want both attribute
-     * types and values.  */
-    int attrsonly = 0;
-    int count;
-
-    /* Replace "dummy".  */
-    attrs[0] = (serverinfo & SERVERINFO_PGPKEYV2)? "pgpKeyV2" : "pgpKey";
-
-    npth_unprotect ();
-    ldap_err = ldap_search_s (ldap_conn, basedn, LDAP_SCOPE_SUBTREE,
-			      filter, attrs, attrsonly, &message);
-    npth_protect ();
-    if (ldap_err)
-      {
-	err = ldap_err_to_gpg_err (ldap_err);
-
-	log_error ("ks-ldap: LDAP search error: %s\n",
-		   ldap_err2string (ldap_err));
-	goto out;
-      }
-
-    count = ldap_count_entries (ldap_conn, message);
-    if (count < 1)
-      {
-	log_info ("ks-ldap: key %s not found on keyserver\n", keyspec);
-
-	if (count == -1)
-	  err = ldap_to_gpg_err (ldap_conn);
-	else
-	  err = gpg_error (GPG_ERR_NO_DATA);
-
-	goto out;
-      }
-
+  if ((ks_get_flags & KS_GET_FLAG_NEXT))
     {
-      /* There may be more than one unique result for a given keyID,
-	 so we should fetch them all (test this by fetching short key
-	 id 0xDEADBEEF). */
+      if (!ctrl->ks_get_state || !ctrl->ks_get_state->ldap_conn
+          || !ctrl->ks_get_state->message)
+        {
+          log_error ("ks_ldap: --next requested but no state\n");
+          return gpg_error (GPG_ERR_INV_STATE);
+        }
+      next_mode = 1;
+    }
 
-      /* The set of entries that we've seen.  */
-      strlist_t seen = NULL;
-      LDAPMessage *each;
-      int anykey = 0;
+  /* Do not keep an old state around if not needed.  */
+  if (!(first_mode || next_mode))
+    {
+      ks_ldap_free_state (ctrl->ks_get_state);
+      ctrl->ks_get_state = NULL;
+    }
+
+
+  if (next_mode)
+    {
+      while (ctrl->ks_get_state->msg_iter)
+        {
+          npth_unprotect ();
+          ctrl->ks_get_state->msg_iter
+            = ldap_next_entry (ctrl->ks_get_state->ldap_conn,
+                               ctrl->ks_get_state->msg_iter);
+          npth_protect ();
+          if (ctrl->ks_get_state->msg_iter)
+            {
+              err = return_one_keyblock (ctrl->ks_get_state->ldap_conn,
+                                         ctrl->ks_get_state->msg_iter,
+                                         ctrl->ks_get_state->serverinfo,
+                                         &fp, NULL);
+              if (!err)
+                break;  /* Found.  */
+              else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+                err = 0;  /* Skip empty/duplicate attributes. */
+              else
+                goto leave;
+            }
+        }
+      if (!ctrl->ks_get_state->msg_iter || !fp)
+        err = gpg_error (GPG_ERR_NO_DATA);
+
+    }
+  else /* Not in --next mode.  */
+    {
+      /* Make sure we are talking to an OpenPGP LDAP server.  */
+      err = my_ldap_connect (uri, &ldap_conn,
+                             &basedn, &host, &use_tls, &serverinfo);
+      if (err || !basedn)
+        {
+          if (!err)
+            err = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
+        }
+
+      /* Now that we have information about the server we can construct a
+       * query best suited for the capabilities of the server.  */
+      err = keyspec_to_ldap_filter (keyspec, &filter, 1, serverinfo);
+      if (err)
+        goto leave;
+
+      if (opt.debug)
+        log_debug ("ks-ldap: using filter: %s\n", filter);
+
+      /* Replace "dummy".  */
+      attrs[0] = (serverinfo & SERVERINFO_PGPKEYV2)? "pgpKeyV2" : "pgpKey";
+
+      npth_unprotect ();
+      ldap_err = ldap_search_s (ldap_conn, basedn, LDAP_SCOPE_SUBTREE,
+                                filter, attrs, 0, &message);
+      npth_protect ();
+      if (ldap_err)
+        {
+          err = ldap_err_to_gpg_err (ldap_err);
+
+          log_error ("ks-ldap: LDAP search error: %s\n",
+		   ldap_err2string (ldap_err));
+          goto leave;
+        }
+
+      count = ldap_count_entries (ldap_conn, message);
+      if (count < 1)
+        {
+          log_info ("ks-ldap: key %s not found on keyserver\n", keyspec);
+
+          if (count == -1)
+            err = ldap_to_gpg_err (ldap_conn);
+          else
+            err = gpg_error (GPG_ERR_NO_DATA);
+
+          goto leave;
+        }
 
       for (npth_unprotect (),
-             each = ldap_first_entry (ldap_conn, message),
+             msg = ldap_first_entry (ldap_conn, message),
              npth_protect ();
-	   each;
+	   msg;
            npth_unprotect (),
-             each = ldap_next_entry (ldap_conn, each),
+             msg = ldap_next_entry (ldap_conn, msg),
              npth_protect ())
 	{
-	  char **vals;
-	  char **certid;
-
-	  /* Use the long keyid to remove duplicates.  The LDAP
-	     server returns the same keyid more than once if there
-	     are multiple user IDs on the key.  Note that this does
-	     NOT mean that a keyid that exists multiple times on the
-	     keyserver will not be fetched.  It means that each KEY,
-	     no matter how many user IDs share its keyid, will be
-	     fetched only once.  If a keyid that belongs to more
-	     than one key is fetched, the server quite properly
-	     responds with all matching keys. -ds */
-
-	  certid = ldap_get_values (ldap_conn, each, "pgpcertid");
-	  if (certid && certid[0])
-	    {
-	      if (! strlist_find (seen, certid[0]))
-		{
-		  /* It's not a duplicate, add it */
-
-		  add_to_strlist (&seen, certid[0]);
-
-		  if (! fp)
-		    fp = es_fopenmem(0, "rw");
-
-		  extract_keys (fp, ldap_conn, certid[0], each);
-
-		  vals = ldap_get_values (ldap_conn, each, attrs[0]);
-		  if (! vals)
-		    {
-		      err = ldap_to_gpg_err (ldap_conn);
-		      log_error("ks-ldap: unable to retrieve key %s "
-				"from keyserver\n", certid[0]);
-		      goto out;
-		    }
-		  else
-		    {
-		      /* We should strip the new lines.  */
-		      es_fprintf (fp, "KEY 0x%s BEGIN\n", certid[0]);
-		      es_fputs (vals[0], fp);
-		      es_fprintf (fp, "\nKEY 0x%s END\n", certid[0]);
-
-		      ldap_value_free (vals);
-                      anykey = 1;
-		    }
-		}
-	    }
-
-          my_ldap_value_free (certid);
+          err = return_one_keyblock (ldap_conn, msg, serverinfo,
+                                     &fp, first_mode? NULL : &seen);
+          if (!err)
+            {
+              anykey = 1;
+              if (first_mode)
+                break;
+            }
+          else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+            err = 0;  /* Skip empty/duplicate attributes. */
+          else
+            goto leave;
 	}
 
-      free_strlist (seen);
+      if (ctrl->ks_get_state) /* Save the iterator.  */
+        ctrl->ks_get_state->msg_iter = msg;
 
-      if (! fp)
+      if (!fp) /* Nothing was found.  */
 	err = gpg_error (GPG_ERR_NO_DATA);
 
       if (!err && anykey)
@@ -1043,9 +1185,27 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
                                      use_tls? "ldaps" : "ldap",
                                      host? host:"");
     }
-  }
 
- out:
+
+ leave:
+  /* Store our state if needed.  */
+  if (!err && (ks_get_flags & KS_GET_FLAG_FIRST))
+    {
+      log_assert (!ctrl->ks_get_state->ldap_conn);
+      ctrl->ks_get_state->ldap_conn = ldap_conn;
+      ldap_conn = NULL;
+      log_assert (!ctrl->ks_get_state->message);
+      ctrl->ks_get_state->message = message;
+      message = NULL;
+      ctrl->ks_get_state->serverinfo = serverinfo;
+    }
+  if ((ks_get_flags & KS_GET_FLAG_NEXT))
+    {
+      /* Keep the state in --next mode even with errors.  */
+      ldap_conn = NULL;
+      message = NULL;
+    }
+
   if (message)
     ldap_msgfree (message);
 
@@ -1062,6 +1222,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       *r_fp = fp;
     }
 
+  free_strlist (seen);
   xfree (basedn);
   xfree (host);
 

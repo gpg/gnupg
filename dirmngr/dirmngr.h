@@ -187,8 +187,10 @@ struct cert_ref_s
 };
 typedef struct cert_ref_s *cert_ref_t;
 
+/* Forward reference; access only via ks-engine-ldap.c.  */
+struct ks_engine_ldap_local_s;
 
-/* Forward references; access only through server.c.  */
+/* Forward reference; access only through server.c.  */
 struct server_local_s;
 
 #if SIZEOF_UNSIGNED_LONG == 8
@@ -205,6 +207,7 @@ struct server_control_s
   int no_server;      /* We are not running under server control. */
   int status_fd;      /* Only for non-server mode. */
   struct server_local_s *server_local;
+  struct ks_engine_ldap_local_s *ks_get_state;
   int force_crl_refresh; /* Always load a fresh CRL. */
 
   int check_revocations_nest_level; /* Internal to check_revovations.  */
