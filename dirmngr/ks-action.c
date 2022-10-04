@@ -241,7 +241,7 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
    keyservers and write the result to the provided output stream.  */
 gpg_error_t
 ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
-	       strlist_t patterns, int ldap_only, estream_t outfp)
+	       strlist_t patterns, unsigned int ks_get_flags, estream_t outfp)
 {
   gpg_error_t err = 0;
   gpg_error_t first_err = 0;
@@ -268,7 +268,7 @@ ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
                        || strcmp (uri->parsed_uri->scheme, "https") == 0);
       int is_ldap = 0;
 
-      if (ldap_only)
+      if ((ks_get_flags & KS_GET_FLAG_ONLY_LDAP))
         is_hkp_s = is_http_s = 0;
 
 #if USE_LDAP
@@ -285,7 +285,8 @@ ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
             {
 #if USE_LDAP
 	      if (is_ldap)
-		err = ks_ldap_get (ctrl, uri->parsed_uri, sl->d, &infp);
+		err = ks_ldap_get (ctrl, uri->parsed_uri, sl->d, ks_get_flags,
+                                   &infp);
 	      else
 #endif
               if (is_hkp_s)

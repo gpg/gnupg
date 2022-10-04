@@ -26,7 +26,8 @@ gpg_error_t ks_action_resolve (ctrl_t ctrl, uri_item_t keyservers);
 gpg_error_t ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
 			      strlist_t patterns, estream_t outfp);
 gpg_error_t ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
-			   strlist_t patterns, int ldap_only, estream_t outfp);
+			   strlist_t patterns, unsigned int ks_get_flags,
+                           estream_t outfp);
 gpg_error_t ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp);
 gpg_error_t ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
 			   void *data, size_t datalen,
