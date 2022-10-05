@@ -2583,6 +2583,17 @@ cmd_ks_get (assuan_context_t ctx, char *line)
       goto leave;
     }
 
+  if (!list && (flags & KS_GET_FLAG_FIRST))
+    {
+      /* Need to add a dummy pattern if no pattern is given.  */
+      if (!add_to_strlist_try (&list, ""))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+
   if ((flags & KS_GET_FLAG_NEXT))
     {
       if (list || (flags & ~KS_GET_FLAG_NEXT))
