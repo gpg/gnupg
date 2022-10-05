@@ -91,7 +91,7 @@ dirmngr_LDADD = $(libcommonpth) \
         $(NETLIBS)
 
 if USE_LDAP
-dirmngr_LDADD += $(ldaplibs)
+dirmngr_LDADD += $(ldaplibs) $(LBER_LIBS)
 endif
 dirmngr_LDFLAGS = $(extra_bin_ldflags)
 

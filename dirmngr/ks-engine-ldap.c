@@ -45,6 +45,10 @@
 #define SERVERINFO_NTDS     8 /* Server is an Active Directory.      */
 
 
+/* The page size requested from the server.  */
+#define PAGE_SIZE  100
+
+
 #ifndef HAVE_TIMEGM
 time_t timegm(struct tm *tm);
 #endif
@@ -57,6 +61,13 @@ struct ks_engine_ldap_local_s
   LDAPMessage *message;
   LDAPMessage *msg_iter;  /* Iterator for message.  */
   unsigned int serverinfo;
+  char *basedn;
+  char *keyspec;
+  char *filter;
+  struct berval *pagecookie;
+  unsigned int pageno;  /* Current page number (starting at 1). */
+  unsigned int total;   /* Total number of attributes read.     */
+  int more_pages;       /* More pages announced by server.      */
 };
 
 
@@ -199,7 +210,21 @@ ks_ldap_clear_state (struct ks_engine_ldap_local_s *state)
       ldap_msgfree (state->message);
       state->message = NULL;
     }
+  if (state->pagecookie)
+    {
+      ber_bvfree (state->pagecookie);
+      state->pagecookie = NULL;
+    }
   state->serverinfo = 0;
+  xfree (state->basedn);
+  state->basedn = NULL;
+  xfree (state->keyspec);
+  state->keyspec = NULL;
+  xfree (state->filter);
+  state->filter = NULL;
+  state->pageno = 0;
+  state->total = 0;
+  state->more_pages = 0;
   return state;
 }
 
@@ -1003,6 +1028,127 @@ return_one_keyblock (LDAP *ldap_conn, LDAPMessage *msg, unsigned int serverinfo,
 }
 
 
+/* Helper for ks_ldap_get.  Note that KEYSPEC is only used for
+ * diagnostics. */
+static gpg_error_t
+search_and_parse (ctrl_t ctrl, const char *keyspec,
+                  LDAP *ldap_conn, char *basedn, char *filter,
+                  char **attrs, LDAPMessage **r_message)
+{
+  gpg_error_t err = 0;
+  int l_err, l_reserr;
+  LDAPControl *srvctrls[2] = { NULL, NULL };
+  int count;
+  unsigned int totalcount = 0;
+  LDAPControl *pagectrl = NULL;
+  LDAPControl **resctrls = NULL;
+
+  /* first/next mode is used to retrieve many entries; thus we should
+   * use paged results.  We assume first/next mode if we have a state.
+   * We make the paged mode non-critical so that we get at least as
+   * many entries the server delivers anyway.  */
+  if (ctrl->ks_get_state)
+    {
+      l_err = ldap_create_page_control (ldap_conn, PAGE_SIZE,
+                                        ctrl->ks_get_state->pagecookie, 0,
+                                        &pagectrl);
+      if (err)
+        {
+          err = ldap_err_to_gpg_err (l_err);
+          log_error ("ks-ldap: create_page_control failed: %s\n",
+                     ldap_err2string (l_err));
+          goto leave;
+        }
+
+      ctrl->ks_get_state->more_pages = 0;
+      srvctrls[0] = pagectrl;
+    }
+
+  npth_unprotect ();
+  l_err = ldap_search_ext_s (ldap_conn, basedn, LDAP_SCOPE_SUBTREE,
+                             filter, attrs, 0,
+                             srvctrls[0]? srvctrls : NULL, NULL, NULL, 0,
+                             r_message);
+  npth_protect ();
+  if (l_err)
+    {
+      err = ldap_err_to_gpg_err (l_err);
+      log_error ("ks-ldap: LDAP search error: %s\n", ldap_err2string (l_err));
+      goto leave;
+    }
+
+  if (ctrl->ks_get_state)
+    {
+      l_err = ldap_parse_result (ldap_conn, *r_message, &l_reserr,
+                                 NULL, NULL, NULL, &resctrls, 0);
+      if (l_err)
+        {
+          err = ldap_err_to_gpg_err (l_err);
+          log_error ("ks-ldap: LDAP parse result error: %s\n",
+                     ldap_err2string (l_err));
+          goto leave;
+        }
+      /* Get the current cookie.  */
+      if (ctrl->ks_get_state->pagecookie)
+        {
+          ber_bvfree (ctrl->ks_get_state->pagecookie);
+          ctrl->ks_get_state->pagecookie = NULL;
+        }
+      l_err = ldap_parse_page_control (ldap_conn, resctrls,
+                                       &totalcount,
+                                       &ctrl->ks_get_state->pagecookie);
+      if (l_err)
+        {
+          err = ldap_err_to_gpg_err (l_err);
+          log_error ("ks-ldap: LDAP parse page control error: %s\n",
+                     ldap_err2string (l_err));
+          goto leave;
+        }
+
+      ctrl->ks_get_state->pageno++;
+
+      /* Decide whether there will be more pages.  */
+      ctrl->ks_get_state->more_pages =
+        (ctrl->ks_get_state->pagecookie
+         && ctrl->ks_get_state->pagecookie->bv_val
+         && *ctrl->ks_get_state->pagecookie->bv_val);
+
+      srvctrls[0] = NULL;
+    }
+
+  count = ldap_count_entries (ldap_conn, *r_message);
+  if (ctrl->ks_get_state)
+    {
+      if (count >= 0)
+        ctrl->ks_get_state->total += count;
+      if (opt.verbose)
+        log_info ("ks-ldap: received result page %u%s (%d/%u/%u)\n",
+                  ctrl->ks_get_state->pageno,
+                  ctrl->ks_get_state->more_pages? "":" (last)",
+                  count, ctrl->ks_get_state->total, totalcount);
+    }
+  if (count < 1)
+    {
+      if (!ctrl->ks_get_state || ctrl->ks_get_state->pageno == 1)
+        log_info ("ks-ldap: key %s not found on keyserver\n", keyspec);
+
+      if (count == -1)
+        err = ldap_to_gpg_err (ldap_conn);
+      else
+        err = gpg_error (GPG_ERR_NO_DATA);
+
+      goto leave;
+    }
+
+
+ leave:
+  if (resctrls)
+    ldap_controls_free (resctrls);
+  if (pagectrl)
+    ldap_control_free (pagectrl);
+  return err;
+}
+
 
 /* Get the key described key the KEYSPEC string from the keyserver
  * identified by URI.  On success R_FP has an open stream to read the
@@ -1012,7 +1158,6 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 	     unsigned int ks_get_flags, estream_t *r_fp)
 {
   gpg_error_t err = 0;
-  int ldap_err;
   unsigned int serverinfo;
   char *host = NULL;
   int use_tls;
@@ -1020,12 +1165,12 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
   LDAP *ldap_conn = NULL;
   char *basedn = NULL;
   estream_t fp = NULL;
-  int count;
   LDAPMessage *message = NULL;
   LDAPMessage *msg;
   int anykey = 0;
   int first_mode = 0;
   int next_mode = 0;
+  int get_first;
   strlist_t seen = NULL; /* The set of entries that we've seen.  */
   /* The ordering is significant.  Specifically, "pgpcertid" needs to
    * be the second item in the list, since everything after it may be
@@ -1077,13 +1222,41 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 
   if (next_mode)
     {
+    next_again:
+      if (!ctrl->ks_get_state->msg_iter && ctrl->ks_get_state->more_pages)
+        {
+          /* Get the next page of results.  */
+          if (ctrl->ks_get_state->message)
+            {
+              ldap_msgfree (ctrl->ks_get_state->message);
+              ctrl->ks_get_state->message = NULL;
+            }
+          attrs[0] = ((ctrl->ks_get_state->serverinfo & SERVERINFO_PGPKEYV2)?
+                      "pgpKeyV2" : "pgpKey");
+          err = search_and_parse (ctrl, ctrl->ks_get_state->keyspec,
+                                  ctrl->ks_get_state->ldap_conn,
+                                  ctrl->ks_get_state->basedn,
+                                  ctrl->ks_get_state->filter,
+                                  attrs,
+                                  &ctrl->ks_get_state->message);
+          if (err)
+            goto leave;
+          ctrl->ks_get_state->msg_iter = ctrl->ks_get_state->message;
+          get_first = 1;
+        }
+      else
+        get_first = 0;
+
       while (ctrl->ks_get_state->msg_iter)
         {
           npth_unprotect ();
           ctrl->ks_get_state->msg_iter
-            = ldap_next_entry (ctrl->ks_get_state->ldap_conn,
-                               ctrl->ks_get_state->msg_iter);
+            = get_first? ldap_first_entry (ctrl->ks_get_state->ldap_conn,
+                                           ctrl->ks_get_state->msg_iter)
+              /*    */ : ldap_next_entry (ctrl->ks_get_state->ldap_conn,
+                                          ctrl->ks_get_state->msg_iter);
           npth_protect ();
+          get_first = 0;
           if (ctrl->ks_get_state->msg_iter)
             {
               err = return_one_keyblock (ctrl->ks_get_state->ldap_conn,
@@ -1093,13 +1266,19 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
               if (!err)
                 break;  /* Found.  */
               else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
-                err = 0;  /* Skip empty/duplicate attributes. */
+                err = 0;  /* Skip empty attributes. */
               else
                 goto leave;
             }
         }
+
       if (!ctrl->ks_get_state->msg_iter || !fp)
-        err = gpg_error (GPG_ERR_NO_DATA);
+        {
+          ctrl->ks_get_state->msg_iter = NULL;
+          if (ctrl->ks_get_state->more_pages)
+            goto next_again;
+          err = gpg_error (GPG_ERR_NO_DATA);
+        }
 
     }
   else /* Not in --next mode.  */
@@ -1116,7 +1295,13 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 
       /* Now that we have information about the server we can construct a
        * query best suited for the capabilities of the server.  */
-      err = keyspec_to_ldap_filter (keyspec, &filter, 1, serverinfo);
+      if (first_mode && !*keyspec)
+        {
+          filter = xtrystrdup("(!(|(pgpRevoked=1)(pgpDisabled=1)))");
+          err = filter? 0 : gpg_error_from_syserror ();
+        }
+      else
+        err = keyspec_to_ldap_filter (keyspec, &filter, 1, serverinfo);
       if (err)
         goto leave;
 
@@ -1126,31 +1311,11 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       /* Replace "dummy".  */
       attrs[0] = (serverinfo & SERVERINFO_PGPKEYV2)? "pgpKeyV2" : "pgpKey";
 
-      npth_unprotect ();
-      ldap_err = ldap_search_s (ldap_conn, basedn, LDAP_SCOPE_SUBTREE,
-                                filter, attrs, 0, &message);
-      npth_protect ();
-      if (ldap_err)
-        {
-          err = ldap_err_to_gpg_err (ldap_err);
+      err = search_and_parse (ctrl, keyspec, ldap_conn, basedn, filter, attrs,
+                              &message);
+      if (err)
+        goto leave;
 
-          log_error ("ks-ldap: LDAP search error: %s\n",
-		   ldap_err2string (ldap_err));
-          goto leave;
-        }
-
-      count = ldap_count_entries (ldap_conn, message);
-      if (count < 1)
-        {
-          log_info ("ks-ldap: key %s not found on keyserver\n", keyspec);
-
-          if (count == -1)
-            err = ldap_to_gpg_err (ldap_conn);
-          else
-            err = gpg_error (GPG_ERR_NO_DATA);
-
-          goto leave;
-        }
 
       for (npth_unprotect (),
              msg = ldap_first_entry (ldap_conn, message),
@@ -1198,6 +1363,11 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       ctrl->ks_get_state->message = message;
       message = NULL;
       ctrl->ks_get_state->serverinfo = serverinfo;
+      ctrl->ks_get_state->basedn = basedn;
+      basedn = NULL;
+      ctrl->ks_get_state->keyspec = keyspec? xtrystrdup (keyspec) : NULL;
+      ctrl->ks_get_state->filter = filter;
+      filter = NULL;
     }
   if ((ks_get_flags & KS_GET_FLAG_NEXT))
     {
@@ -1210,15 +1380,11 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
     ldap_msgfree (message);
 
   if (err)
-    {
-      if (fp)
-	es_fclose (fp);
-    }
+    es_fclose (fp);
   else
     {
       if (fp)
 	es_fseek (fp, 0, SEEK_SET);
-
       *r_fp = fp;
     }
 
