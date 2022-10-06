@@ -119,6 +119,7 @@ append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
 
   strcpy (sl->uid, plainuid);
   sl->created = created;
+  sl->flags = 0;
   sl->mbox = mailbox_from_userid (plainuid, 0);
   sl->next = NULL;
   if (!*list)
@@ -1031,6 +1032,43 @@ install_key_from_spec_file (const char *fname)
 }
 
 
+/* The core of the code to install a key as a file.  */
+gpg_error_t
+wks_install_key_core (estream_t key, const char *addrspec)
+{
+  gpg_error_t err;
+  char *huname = NULL;
+
+  /* Hash user ID and create filename.  */
+  err = wks_compute_hu_fname (&huname, addrspec);
+  if (err)
+    goto leave;
+
+  /* Now that wks_compute_hu_fname has created missing directories we
+   * can create a policy file if it does not exist.  */
+  err = ensure_policy_file (addrspec);
+  if (err)
+    goto leave;
+
+  /* Publish.  */
+  err = write_to_file (key, huname);
+  if (err)
+    {
+      log_error ("copying key to '%s' failed: %s\n", huname,gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Make sure it is world readable.  */
+  if (gnupg_chmod (huname, "-rw-r--r--"))
+    log_error ("can't set permissions of '%s': %s\n",
+               huname, gpg_strerror (gpg_err_code_from_syserror()));
+
+ leave:
+  xfree (huname);
+  return err;
+}
+
+
 /* Install a single key into the WKD by reading FNAME and extracting
  * USERID.  If USERID is NULL FNAME is expected to be a list of fpr
  * mbox lines and for each line the respective key will be
@@ -1046,7 +1084,6 @@ wks_cmd_install_key (const char *fname, const char *userid)
   uidinfo_list_t uidlist = NULL;
   uidinfo_list_t uid, thisuid;
   time_t thistime;
-  char *huname = NULL;
   int any;
 
   if (!userid)
@@ -1137,36 +1174,12 @@ wks_cmd_install_key (const char *fname, const char *userid)
     fp = fp2;
   }
 
-  /* Hash user ID and create filename.  */
-  err = wks_compute_hu_fname (&huname, addrspec);
-  if (err)
-    goto leave;
-
-  /* Now that wks_compute_hu_fname has created missing directories we
-   * can create a policy file if it does not exist.  */
-  err = ensure_policy_file (addrspec);
-  if (err)
-    goto leave;
-
-  /* Publish.  */
-  err = write_to_file (fp, huname);
-  if (err)
-    {
-      log_error ("copying key to '%s' failed: %s\n", huname,gpg_strerror (err));
-      goto leave;
-    }
-
-  /* Make sure it is world readable.  */
-  if (gnupg_chmod (huname, "-rw-r--r--"))
-    log_error ("can't set permissions of '%s': %s\n",
-               huname, gpg_strerror (gpg_err_code_from_syserror()));
-
+  err = wks_install_key_core (fp, addrspec);
   if (!opt.quiet)
     log_info ("key %s published for '%s'\n", fpr, addrspec);
 
 
  leave:
-  xfree (huname);
   free_uidinfo_list (uidlist);
   xfree (fpr);
   xfree (addrspec);

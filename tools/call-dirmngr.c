@@ -1,5 +1,5 @@
 /* call-dirmngr.c - Interact with the Dirmngr.
- * Copyright (C) 2016 g10 Code GmbH
+ * Copyright (C) 2016, 2022 g10 Code GmbH
  * Copyright (C) 2016 Bundesamt für Sicherheit in der Informationstechnik
  *
  * This file is part of GnuPG.
@@ -304,6 +304,74 @@ wkd_get_key (const char *addrspec, estream_t *r_key)
   es_rewind (parm.memfp);
   *r_key = parm.memfp;
   parm.memfp = NULL;
+
+ leave:
+  es_fclose (parm.memfp);
+  xfree (line);
+  assuan_release (ctx);
+  return err;
+}
+
+
+/* Send the KS_GET command to the dirmngr.  The caller provides CB
+ * which is called for each key.  The callback is called wit a stream
+ * conveying a single key and several other informational parameters.
+ * DOMAIN restricts the returned keys to this domain.  */
+gpg_error_t
+wkd_dirmngr_ks_get (const char *domain, gpg_error_t cb (estream_t key))
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct wkd_get_parm_s parm;
+  char *line = NULL;
+  int any = 0;
+
+  memset (&parm, 0, sizeof parm);
+
+  err = connect_dirmngr (&ctx);
+  if (err)
+    return err;
+
+  line = es_bsprintf ("KS_GET --ldap --first %s", domain? domain:"");
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (strlen (line) + 2 >= ASSUAN_LINELENGTH)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
+    }
+
+  parm.memfp = es_fopenmem (0, "rwb");
+  if (!parm.memfp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  for (;;)
+    {
+      err = assuan_transact (ctx, any? "KS_GET --next" : line,
+                             wkd_get_data_cb, &parm,
+                             NULL, NULL, wkd_get_status_cb, &parm);
+      if (err)
+        {
+          if (gpg_err_code (err) == GPG_ERR_NO_DATA
+              && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR)
+            err = any? 0 : gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      any = 1;
+
+      es_rewind (parm.memfp);
+      err = cb (parm.memfp);
+      if (err)
+        break;
+      es_ftruncate (parm.memfp, 0);
+    }
+
 
  leave:
   es_fclose (parm.memfp);
