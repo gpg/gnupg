@@ -1,5 +1,5 @@
 /* gpg-wks-client.c - A client for the Web Key Service protocols.
- * Copyright (C) 2016 Werner Koch
+ * Copyright (C) 2016, 2022 g10 Code GmbH
  * Copyright (C) 2016 Bundesamt für Sicherheit in der Informationstechnik
  *
  * This file is part of GnuPG.
@@ -61,6 +61,7 @@ enum cmd_and_opt_values
     aCreate,
     aReceive,
     aRead,
+    aMirror,
     aInstallKey,
     aRemoveKey,
     aPrintWKDHash,
@@ -71,6 +72,8 @@ enum cmd_and_opt_values
     oFakeSubmissionAddr,
     oStatusFD,
     oWithColons,
+    oBlacklist,
+    oNoAutostart,
 
     oDummy
   };
@@ -90,6 +93,8 @@ static ARGPARSE_OPTS opts[] = {
               ("receive a MIME confirmation request")),
   ARGPARSE_c (aRead,      "read",
               ("receive a plain text confirmation request")),
+  ARGPARSE_c (aMirror, "mirror",
+              "mirror an LDAP directory"),
   ARGPARSE_c (aInstallKey, "install-key",
               "install a key into a directory"),
   ARGPARSE_c (aRemoveKey, "remove-key",
@@ -108,7 +113,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oSend, "send", "send the mail using sendmail"),
   ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
   ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
+  ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
+  ARGPARSE_s_s (oBlacklist, "blacklist", "@"),
   ARGPARSE_s_s (oDirectory, "directory", "@"),
 
   ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
@@ -149,6 +156,7 @@ static gpg_error_t read_confirmation_request (estream_t msg);
 static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp,
                                        unsigned int flags);
+static gpg_error_t command_mirror (const char *domain);
 
 
 
@@ -234,12 +242,19 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oWithColons:
           opt.with_colons = 1;
           break;
+        case oNoAutostart:
+          opt.no_autostart = 1;
+          break;
+        case oBlacklist:
+          opt.blacklist = pargs->r.ret_str;
+          break;
 
 	case aSupported:
 	case aCreate:
 	case aReceive:
 	case aRead:
         case aCheck:
+        case aMirror:
         case aInstallKey:
         case aRemoveKey:
         case aPrintWKDHash:
@@ -303,11 +318,12 @@ main (int argc, char **argv)
     opt.directory = "openpgpkey";
 
   /* Tell call-dirmngr what options we want.  */
-  set_dirmngr_options (opt.verbose, (opt.debug & DBG_IPC_VALUE), 1);
+  set_dirmngr_options (opt.verbose, (opt.debug & DBG_IPC_VALUE),
+                       !opt.no_autostart);
 
 
   /* Check that the top directory exists.  */
-  if (cmd == aInstallKey || cmd == aRemoveKey)
+  if (cmd == aInstallKey || cmd == aRemoveKey || cmd == aMirror)
     {
       struct stat sb;
 
@@ -375,6 +391,15 @@ main (int argc, char **argv)
       if (argc != 1)
         wrong_args ("--check USER-ID");
       err = command_check (argv[0]);
+      break;
+
+    case aMirror:
+      if (!argc)
+        err = command_mirror (NULL);
+      else if (argc == 1)
+        err = command_mirror (*argv);
+      else
+        wrong_args ("--mirror [DOMAIN]");
       break;
 
     case aInstallKey:
@@ -1590,6 +1615,169 @@ command_receive_cb (void *opaque, const char *mediatype,
       log_info ("ignoring unexpected message of type '%s'\n", mediatype);
       err = gpg_error (GPG_ERR_UNEXPECTED_MSG);
     }
+
+  return err;
+}
+
+
+
+/* An object used to communicate with the mirror_one_key callback.  */
+struct
+{
+  const char *domain;
+  int anyerror;
+  unsigned int nkeys;   /* Number of keys processed.  */
+  unsigned int nuids;   /* Number of published user ids.  */
+} mirror_one_key_parm;
+
+
+/* Core of mirror_one_key with the goal of mirroring just one uid.
+ * UIDLIST is used to figure out whether the given MBOX occurs several
+ * times in UIDLIST and then to single out the newwest one.  This is
+ * so that for a key with
+ *    uid: Joe Someone <joe@example.org>
+ *    uid: Joe <joe@example.org>
+ * only the news user id (and thus its self-signature) is used.
+ * UIDLIST is nodified to set all MBOX fields to NULL for a processed
+ * user id.  FPR is the fingerprint of the key.
+ */
+static gpg_error_t
+mirror_one_keys_userid (estream_t key, const char *mbox, uidinfo_list_t uidlist,
+                        const char *fpr)
+{
+  gpg_error_t err;
+  uidinfo_list_t uid, thisuid, firstuid;
+  time_t thistime;
+  estream_t newkey = NULL;
+
+  /* Find the UID we want to use.  */
+  thistime = 0;
+  thisuid = firstuid = NULL;
+  for (uid = uidlist; uid; uid = uid->next)
+    {
+      if ((uid->flags & 1) || !uid->mbox || strcmp (uid->mbox, mbox))
+        continue; /* Already processed or no matching mbox.  */
+      uid->flags |= 1;  /* Set "processed" flag.  */
+      if (!firstuid)
+        firstuid = uid;
+      if (uid->created > thistime)
+        {
+          thistime = uid->created;
+          thisuid = uid;
+        }
+    }
+  if (!thisuid)
+    thisuid = firstuid;  /* This is the case for a missing timestamp.  */
+  if (!thisuid)
+    {
+      log_error ("error finding the user id for %s (%s)\n", fpr, mbox);
+      err = gpg_error (GPG_ERR_NO_USER_ID);
+      goto leave;
+    }
+  /* FIXME: Consult blacklist.  */
+
+
+  /* Only if we have more than one user id we bother to run the
+   * filter.  In this case the result will be put into NEWKEY*/
+  es_rewind (key);
+  if (uidlist->next)
+    {
+      err = wks_filter_uid (&newkey, key, thisuid->uid, 0);
+      if (err)
+        {
+          log_error ("error filtering key %s: %s\n", fpr, gpg_strerror (err));
+          err = gpg_error (GPG_ERR_NO_PUBKEY);
+          goto leave;
+        }
+    }
+
+  err = wks_install_key_core (newkey? newkey : key, mbox);
+  if (!opt.quiet)
+    log_info ("key %s published for '%s'\n", fpr, mbox);
+  mirror_one_key_parm.nuids++;
+  if (!opt.quiet && !(mirror_one_key_parm.nuids % 25))
+    log_info ("%u user ids from %d keys so far\n",
+              mirror_one_key_parm.nuids, mirror_one_key_parm.nkeys);
+
+ leave:
+  es_fclose (newkey);
+  return err;
+}
+
+
+/* The callback used by command_mirror.  It received an estream with
+ * one key and should return success to process the next key.  */
+static gpg_error_t
+mirror_one_key (estream_t key)
+{
+  gpg_error_t err = 0;
+  char *fpr;
+  uidinfo_list_t uidlist = NULL;
+  uidinfo_list_t uid;
+
+  /* List the key to get all user ids.  */
+  err = wks_list_key (key, &fpr, &uidlist);
+  if (err)
+    {
+      log_error ("error parsing a key: %s - skipped\n",
+                 gpg_strerror (err));
+      mirror_one_key_parm.anyerror = 1;
+      err = 0;
+      goto leave;
+    }
+  for (uid = uidlist; uid; uid = uid->next)
+    {
+      if (!uid->mbox || (uid->flags & 1))
+        continue; /* No mail box or already processed.  */
+      err = mirror_one_keys_userid (key, uid->mbox, uidlist, fpr);
+      if (err)
+        {
+          log_error ("error processing key %s: %s - skipped\n",
+                     fpr, gpg_strerror (err));
+          mirror_one_key_parm.anyerror = 1;
+          err = 0;
+          goto leave;
+        }
+    }
+  mirror_one_key_parm.nkeys++;
+
+
+ leave:
+  free_uidinfo_list (uidlist);
+  xfree (fpr);
+  return err;
+}
+
+
+/* Copy the keys from the configured LDAP server into a local WKD.
+ * DOMAIN is a domain name to restrict the copy to only this domain;
+ * if it is NULL all keys are mirrored.  */
+static gpg_error_t
+command_mirror (const char *domain)
+{
+  gpg_error_t err;
+
+  if (domain)
+    {
+      /* Fixme: Do some sanity checks on the domain.  */
+    }
+  mirror_one_key_parm.domain = domain;
+  mirror_one_key_parm.anyerror = 0;
+  mirror_one_key_parm.nkeys = 0;
+  mirror_one_key_parm.nuids = 0;
+
+  err = wkd_dirmngr_ks_get (domain, mirror_one_key);
+  if (!opt.quiet)
+    log_info ("a total of %u user ids from %d keys published\n",
+              mirror_one_key_parm.nuids, mirror_one_key_parm.nkeys);
+  if (err)
+    log_error ("error mirroring LDAP directory: %s <%s>\n",
+               gpg_strerror (err), gpg_strsource (err));
+  else if (mirror_one_key_parm.anyerror)
+    log_info ("warning: errors encountered - not all keys are mirrored\n");
+
+
+
 
   return err;
 }

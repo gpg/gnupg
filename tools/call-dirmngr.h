@@ -28,5 +28,8 @@ gpg_error_t wkd_get_policy_flags (const char *addrspec, estream_t *r_buffer);
 
 gpg_error_t wkd_get_key (const char *addrspec, estream_t *r_key);
 
+gpg_error_t wkd_dirmngr_ks_get (const char *domain,
+                                gpg_error_t cb (estream_t key));
+
 
 #endif /*GNUPG_TOOLS_CALL_DIRMNGR_H*/
