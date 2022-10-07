@@ -142,8 +142,14 @@ static struct debug_flags_s debug_flags [] =
 /* Value of the option --fake-submission-addr.  */
 const char *fake_submission_addr;
 
+/* An array with blacklisted addresses and its length.  Use
+ * is_in_blacklist to check.  */
+static char **blacklist_array;
+static size_t blacklist_array_len;
+
 
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
+static void add_blacklist (const char *fname);
 static gpg_error_t proc_userid_from_stdin (gpg_error_t (*func)(const char *),
                                            const char *text);
 static gpg_error_t command_supported (char *userid);
@@ -246,7 +252,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           opt.no_autostart = 1;
           break;
         case oBlacklist:
-          opt.blacklist = pargs->r.ret_str;
+          add_blacklist (pargs->r.ret_str);
           break;
 
 	case aSupported:
@@ -465,6 +471,153 @@ main (int argc, char **argv)
 }
 
 
+
+/* Read a file FNAME into a buffer and return that malloced buffer.
+ * Caller must free the buffer.  On error NULL is returned, on success
+ * the valid length of the buffer is stored at R_LENGTH.  The returned
+ * buffer is guaranteed to be Nul terminated.  */
+static char *
+read_file (const char *fname, size_t *r_length)
+{
+  estream_t fp;
+  char *buf;
+  size_t buflen;
+
+  if (!strcmp (fname, "-"))
+    {
+      size_t nread, bufsize = 0;
+
+      fp = es_stdin;
+      es_set_binary (fp);
+      buf = NULL;
+      buflen = 0;
+#define NCHUNK 32767
+      do
+        {
+          bufsize += NCHUNK;
+          if (!buf)
+            buf = xmalloc (bufsize+1);
+          else
+            buf = xrealloc (buf, bufsize+1);
+
+          nread = es_fread (buf+buflen, 1, NCHUNK, fp);
+          if (nread < NCHUNK && es_ferror (fp))
+            {
+              log_error ("error reading '[stdin]': %s\n", strerror (errno));
+              xfree (buf);
+              return NULL;
+            }
+          buflen += nread;
+        }
+      while (nread == NCHUNK);
+#undef NCHUNK
+    }
+  else
+    {
+      struct stat st;
+
+      fp = es_fopen (fname, "rb");
+      if (!fp)
+        {
+          log_error ("can't open '%s': %s\n", fname, strerror (errno));
+          return NULL;
+        }
+
+      if (fstat (es_fileno (fp), &st))
+        {
+          log_error ("can't stat '%s': %s\n", fname, strerror (errno));
+          es_fclose (fp);
+          return NULL;
+        }
+
+      buflen = st.st_size;
+      buf = xmalloc (buflen+1);
+      if (es_fread (buf, buflen, 1, fp) != 1)
+        {
+          log_error ("error reading '%s': %s\n", fname, strerror (errno));
+          es_fclose (fp);
+          xfree (buf);
+          return NULL;
+        }
+      es_fclose (fp);
+    }
+  buf[buflen] = 0;
+  if (r_length)
+    *r_length = buflen;
+  return buf;
+}
+
+
+static int
+cmp_blacklist (const void *arg_a, const void *arg_b)
+{
+  const char *a = *(const char **)arg_a;
+  const char *b = *(const char **)arg_b;
+  return strcmp (a, b);
+}
+
+
+/* Add a blacklist to our global table.  This is called during option
+ * parsing and thus any use of log_error will eventually stop further
+ * processing.  */
+static void
+add_blacklist (const char *fname)
+{
+  char *buffer;
+  char *p, *pend;
+  char **array;
+  size_t arraysize, arrayidx;
+
+  buffer = read_file (fname, NULL);
+  if (!buffer)
+    return;
+
+  /* Estimate the number of entries by counting the non-comment lines.  */
+  arraysize = 2; /* For the first and an extra NULL item.  */
+  for (p=buffer; *p; p++)
+    if (*p == '\n' && p[1] && p[1] != '#')
+      arraysize++;
+
+  array = xcalloc (arraysize, sizeof *array);
+  arrayidx = 0;
+
+  /* Loop over all lines.  */
+  for (p = buffer; p && *p; p = pend)
+    {
+      pend = strchr (p, '\n');
+      if (pend)
+        *pend++ = 0;
+      trim_spaces (p);
+      if (!*p || *p == '#' )
+        continue;
+      ascii_strlwr (p);
+      log_assert (arrayidx < arraysize);
+      array[arrayidx] = p;
+      arrayidx++;
+    }
+  log_assert (arrayidx < arraysize);
+
+  qsort (array, arrayidx, sizeof *array, cmp_blacklist);
+
+  blacklist_array = array;
+  blacklist_array_len = arrayidx;
+  gpgrt_annotate_leaked_object (buffer);
+  gpgrt_annotate_leaked_object (blacklist_array);
+}
+
+
+/* Return true if NAME is in a blacklist.  */
+static int
+is_in_blacklist (const char *name)
+{
+  if (!name || !blacklist_array)
+    return 0;
+  return !!bsearch (&name, blacklist_array, blacklist_array_len,
+                    sizeof *blacklist_array, cmp_blacklist);
+}
+
+
+
 /* Read user ids from stdin and call FUNC for each user id.  TEXT is
  * used for error messages.  */
 static gpg_error_t
@@ -1754,6 +1907,8 @@ mirror_one_key (estream_t key)
         continue; /* No mail box or already processed.  */
       if (!domain_matches_mbox (domain, uid->mbox))
         continue; /* We don't want this one.  */
+      if (is_in_blacklist (uid->mbox))
+        continue;
 
       err = mirror_one_keys_userid (key, uid->mbox, uidlist, fpr);
       if (err)

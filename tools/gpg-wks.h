@@ -44,7 +44,6 @@ struct
   const char *directory;
   const char *default_from;
   strlist_t extra_headers;
-  const char *blacklist;
 } opt;
 
 /* Debug values and macros.  */

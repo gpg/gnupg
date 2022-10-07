@@ -53,6 +53,26 @@ Directory.
 .B gpg-wks-client
 .RI [ options ]
 .B \-\-read
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-mirror
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-install-key
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-remove-key
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-print-wkd-hash
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-print-wkd-url
 @end ifset
 
 @mansect description
@@ -100,6 +120,13 @@ are read from stdin; the expected format are lines with the
 fingerprint and the mailbox separated by a space.  The command
 @option{--remove-key} removes a key from that directory, its only
 argument is a user-id.
+
+The command @option{--mirror} is similar to @option{--install-key} but
+takes the keys from the the LDAP server configured for Dirmngr.  If no
+arguments are given all keys and user ids are installed.  If arguments
+are given they are taken as domain names to limit the to be installed
+keys.  The option @option{--blacklist} may be used to further limit
+the to be installed keys.
 
 The command @option{--print-wkd-hash} prints the WKD user-id identifiers
 and the corresponding mailboxes from the user-ids given on the command
@@ -184,8 +211,16 @@ easily get the return code of the process.
 @itemx --directory @var{dir}
 @opindex directory
 Use @var{dir} as top level directory for the commands
-@option{--install-key} and @option{--remove-key}.  The default is
-@file{openpgpkey}.
+@option{--mirror}, @option{--install-key} and @option{--remove-key}.
+The default is @file{openpgpkey}.
+
+
+@item --blacklist @var{file}
+@opindex blacklist
+This option is used to exclude certain mail addresses from a mirror
+operation.  The format of @var{file} is one mail address (just the
+addrspec, e.g. "postel@@isi.edu") per line.  Empty lines and lines
+starting with a '#' are ignored.
 
 @item --verbose
 @opindex verbose
