@@ -216,9 +216,9 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
   ccparray_init (&ccp, 0);
 
   ccparray_put (&ccp, "--no-options");
-  if (!opt.verbose)
+  if (opt.verbose < 2)
     ccparray_put (&ccp, "--quiet");
-  else if (opt.verbose > 1)
+  else
     ccparray_put (&ccp, "--verbose");
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
@@ -313,9 +313,9 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
   ccparray_init (&ccp, 0);
 
   ccparray_put (&ccp, "--no-options");
-  if (!opt.verbose)
+  if (opt.verbose < 2)
     ccparray_put (&ccp, "--quiet");
-  else if (opt.verbose > 1)
+  else
     ccparray_put (&ccp, "--verbose");
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
@@ -489,9 +489,9 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
   ccparray_init (&ccp, 0);
 
   ccparray_put (&ccp, "--no-options");
-  if (!opt.verbose)
+  if (opt.verbose < 2)
     ccparray_put (&ccp, "--quiet");
-  else if (opt.verbose > 1)
+  else
     ccparray_put (&ccp, "--verbose");
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
