@@ -222,6 +222,11 @@ parse_ber_header (unsigned char const **buffer, size_t *size,
       *r_length = len;
     }
 
+  if (*r_length > *r_nhdr && (*r_nhdr + *r_length) < *r_length)
+    {
+      return gpg_err_make (default_errsource, GPG_ERR_EOVERFLOW);
+    }
+
   /* Without this kludge some example certs can't be parsed. */
   if (*r_class == CLASS_UNIVERSAL && !*r_tag)
     *r_length = 0;
