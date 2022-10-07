@@ -544,9 +544,9 @@ add_user_id (const char *fingerprint, const char *uid)
   ccparray_init (&ccp, 0);
 
   ccparray_put (&ccp, "--no-options");
-  if (!opt.verbose)
+  if (opt.verbose < 2)
     ccparray_put (&ccp, "--quiet");
-  else if (opt.verbose > 1)
+  else
     ccparray_put (&ccp, "--verbose");
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--always-trust");
@@ -633,9 +633,9 @@ decrypt_stream (estream_t *r_output, struct decrypt_stream_parm_s *decinfo,
    * tricks.  A regular client will anyway only send a minimal key;
    * that is one w/o key signatures and attribute packets.  */
   ccparray_put (&ccp, "--max-output=0x10000");
-  if (!opt.verbose)
+  if (opt.verbose < 2)
     ccparray_put (&ccp, "--quiet");
-  else if (opt.verbose > 1)
+  else
     ccparray_put (&ccp, "--verbose");
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
@@ -1280,9 +1280,9 @@ encrypt_response (estream_t *r_output, estream_t input, const char *addrspec,
   ccparray_init (&ccp, 0);
 
   ccparray_put (&ccp, "--no-options");
-  if (!opt.verbose)
+  if (opt.verbose < 2)
     ccparray_put (&ccp, "--quiet");
-  else if (opt.verbose > 1)
+  else
     ccparray_put (&ccp, "--verbose");
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
@@ -1703,7 +1703,7 @@ mirror_one_keys_userid (estream_t key, const char *mbox, uidinfo_list_t uidlist,
     }
 
   err = wks_install_key_core (newkey? newkey : key, mbox);
-  if (!opt.quiet)
+  if (opt.verbose)
     log_info ("key %s published for '%s'\n", fpr, mbox);
   mirror_one_key_parm.nuids++;
   if (!opt.quiet && !(mirror_one_key_parm.nuids % 25))
