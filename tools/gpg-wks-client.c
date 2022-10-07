@@ -156,7 +156,7 @@ static gpg_error_t read_confirmation_request (estream_t msg);
 static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp,
                                        unsigned int flags);
-static gpg_error_t command_mirror (const char *domain);
+static gpg_error_t command_mirror (char *domain[]);
 
 
 
@@ -396,10 +396,8 @@ main (int argc, char **argv)
     case aMirror:
       if (!argc)
         err = command_mirror (NULL);
-      else if (argc == 1)
-        err = command_mirror (*argv);
       else
-        wrong_args ("--mirror [DOMAIN]");
+        err = command_mirror (argv);
       break;
 
     case aInstallKey:
@@ -1631,6 +1629,30 @@ struct
 } mirror_one_key_parm;
 
 
+/* Return true if the Given a mail DOMAIN and the full addrspec MBOX
+ * match.  */
+static int
+domain_matches_mbox (const char *domain, const char *mbox)
+{
+  const char *s;
+
+  if (!domain || !mbox)
+    return 0;
+  s = strchr (domain, '@');
+  if (s)
+    domain = s+1;
+  if (!*domain)
+    return 0; /* Not a valid domain.  */
+
+  s = strchr (mbox, '@');
+  if (!s || !s[1])
+    return 0; /* Not a valid mbox.  */
+  mbox = s+1;
+
+  return !ascii_strcasecmp (domain, mbox);
+}
+
+
 /* Core of mirror_one_key with the goal of mirroring just one uid.
  * UIDLIST is used to figure out whether the given MBOX occurs several
  * times in UIDLIST and then to single out the newwest one.  This is
@@ -1714,6 +1736,7 @@ mirror_one_key (estream_t key)
   char *fpr;
   uidinfo_list_t uidlist = NULL;
   uidinfo_list_t uid;
+  const char *domain = mirror_one_key_parm.domain;
 
   /* List the key to get all user ids.  */
   err = wks_list_key (key, &fpr, &uidlist);
@@ -1729,6 +1752,9 @@ mirror_one_key (estream_t key)
     {
       if (!uid->mbox || (uid->flags & 1))
         continue; /* No mail box or already processed.  */
+      if (!domain_matches_mbox (domain, uid->mbox))
+        continue; /* We don't want this one.  */
+
       err = mirror_one_keys_userid (key, uid->mbox, uidlist, fpr);
       if (err)
         {
@@ -1750,23 +1776,45 @@ mirror_one_key (estream_t key)
 
 
 /* Copy the keys from the configured LDAP server into a local WKD.
- * DOMAIN is a domain name to restrict the copy to only this domain;
- * if it is NULL all keys are mirrored.  */
+ * DOMAINLIST is an array of domain names to restrict the copy to only
+ * the given domains; if it is NULL all keys are mirrored.  */
 static gpg_error_t
-command_mirror (const char *domain)
+command_mirror (char *domainlist[])
 {
   gpg_error_t err;
+  const char *domain;
+  char *domainbuf = NULL;
 
-  if (domain)
-    {
-      /* Fixme: Do some sanity checks on the domain.  */
-    }
-  mirror_one_key_parm.domain = domain;
   mirror_one_key_parm.anyerror = 0;
   mirror_one_key_parm.nkeys = 0;
   mirror_one_key_parm.nuids = 0;
 
-  err = wkd_dirmngr_ks_get (domain, mirror_one_key);
+  if (!domainlist)
+    {
+      mirror_one_key_parm.domain = "";
+      err = wkd_dirmngr_ks_get (NULL, mirror_one_key);
+    }
+  else
+    {
+      while ((domain = *domainlist++))
+        {
+          if (*domain != '.' && domain[1] != '@')
+            {
+              /* This does not already specify a mail search by
+               * domain.  Change it.  */
+              xfree (domainbuf);
+              domainbuf = xstrconcat (".@", domain, NULL);
+              domain = domainbuf;
+            }
+          mirror_one_key_parm.domain = domain;
+          if (opt.verbose)
+            log_info ("mirroring keys for domain '%s'\n", domain+2);
+          err = wkd_dirmngr_ks_get (domain, mirror_one_key);
+          if (err)
+            break;
+        }
+    }
+
   if (!opt.quiet)
     log_info ("a total of %u user ids from %d keys published\n",
               mirror_one_key_parm.nuids, mirror_one_key_parm.nkeys);
@@ -1776,8 +1824,6 @@ command_mirror (const char *domain)
   else if (mirror_one_key_parm.anyerror)
     log_info ("warning: errors encountered - not all keys are mirrored\n");
 
-
-
-
+  xfree (domainbuf);
   return err;
 }
