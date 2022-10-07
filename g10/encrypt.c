@@ -829,10 +829,10 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
       gpg_err_set_errno (ENOSYS);
     }
 #else
-  if (filefd == GNUPG_INVALID_FD)
+  if (filefd == -1)
     inp = iobuf_open (filename);
   else
-    inp = iobuf_fdopen_nc (FD2INT(filefd), "rb");
+    inp = iobuf_fdopen_nc (filefd, "rb");
 #endif
   if (inp)
     iobuf_ioctl (inp, IOBUF_IOCTL_NO_CACHE, 1, NULL);
