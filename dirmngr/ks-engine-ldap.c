@@ -288,6 +288,75 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact,
 }
 
 
+static int
+interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
+                     unsigned int *r_serverinfo, char **r_basedn)
+{
+  int lerr;
+  char **vals;
+  LDAPMessage *si_res;
+  int is_gnupg = 0;
+  int result = 0;
+  char *basedn = NULL;
+  char *attr2[] = { "pgpBaseKeySpaceDN", "pgpVersion", "pgpSoftware", NULL };
+  char *object = xasprintf ("cn=pgpServerInfo,%s", basedn_search);
+
+  npth_unprotect ();
+  lerr = ldap_search_s (ldap_conn, object, LDAP_SCOPE_BASE,
+                        "(objectClass=*)", attr2, 0, &si_res);
+  npth_protect ();
+  xfree (object);
+
+  if (lerr == LDAP_SUCCESS)
+    {
+      vals = ldap_get_values (ldap_conn, si_res, "pgpBaseKeySpaceDN");
+      if (vals && vals[0])
+        {
+          basedn = xtrystrdup (vals[0]);
+        }
+      my_ldap_value_free (vals);
+
+      vals = ldap_get_values (ldap_conn, si_res, "pgpSoftware");
+      if (vals && vals[0])
+        {
+          if (opt.debug)
+            log_debug ("Server: \t%s\n", vals[0]);
+          if (!ascii_strcasecmp (vals[0], "GnuPG"))
+            is_gnupg = 1;
+        }
+      my_ldap_value_free (vals);
+
+      vals = ldap_get_values (ldap_conn, si_res, "pgpVersion");
+      if (vals && vals[0])
+        {
+          if (opt.debug)
+            log_debug ("Version:\t%s\n", vals[0]);
+          if (is_gnupg)
+            {
+              char *fields[2];
+              int nfields;
+              nfields = split_fields (vals[0], fields, DIM(fields));
+              if (nfields > 0 && atoi(fields[0]) > 1)
+                *r_serverinfo |= SERVERINFO_SCHEMAV2;
+              if (nfields > 1
+                  && !ascii_strcasecmp (fields[1], "ntds"))
+                *r_serverinfo |= SERVERINFO_NTDS;
+            }
+        }
+      my_ldap_value_free (vals);
+    }
+
+  /* From man ldap_search_s: "res parameter of
+     ldap_search_ext_s() and ldap_search_s() should be
+     freed with ldap_msgfree() regardless of return
+     value of these functions.  */
+  ldap_msgfree (si_res);
+  if (r_basedn)
+    *r_basedn = basedn;
+  return result;
+}
+
+
 
 /* Connect to an LDAP server and interrogate it.
 
@@ -616,76 +685,12 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
                * we found this, we know we're talking to a regular-ish
                * LDAP server and not an LDAP keyserver.  */
 	      int i;
-	      char *attr2[] =
-		{ "pgpBaseKeySpaceDN", "pgpVersion", "pgpSoftware", NULL };
 
               *r_serverinfo |= SERVERINFO_REALLDAP;
 
 	      for (i = 0; context[i] && !basedn; i++)
-		{
-		  char **vals;
-		  LDAPMessage *si_res;
-                  int is_gnupg = 0;
-
-                  {
-                    char *object = xasprintf ("cn=pgpServerInfo,%s",
-                                              context[i]);
-                    npth_unprotect ();
-                    lerr = ldap_search_s (ldap_conn, object, LDAP_SCOPE_BASE,
-                                         "(objectClass=*)", attr2, 0, &si_res);
-                    npth_protect ();
-                    xfree (object);
-                  }
-
-		  if (lerr == LDAP_SUCCESS)
-		    {
-		      vals = ldap_get_values (ldap_conn, si_res,
-					      "pgpBaseKeySpaceDN");
-		      if (vals && vals[0])
-			{
-			  basedn = xtrystrdup (vals[0]);
-			}
-                      my_ldap_value_free (vals);
-
-		      vals = ldap_get_values (ldap_conn, si_res,
-					      "pgpSoftware");
-		      if (vals && vals[0])
-			{
-                          if (opt.debug)
-                            log_debug ("Server: \t%s\n", vals[0]);
-                          if (!ascii_strcasecmp (vals[0], "GnuPG"))
-                            is_gnupg = 1;
-			}
-                      my_ldap_value_free (vals);
-
-		      vals = ldap_get_values (ldap_conn, si_res,
-					      "pgpVersion");
-		      if (vals && vals[0])
-			{
-                          if (opt.debug)
-                            log_debug ("Version:\t%s\n", vals[0]);
-                          if (is_gnupg)
-                            {
-                              char *fields[2];
-                              int nfields;
-                              nfields = split_fields (vals[0],
-                                                      fields, DIM(fields));
-                              if (nfields > 0 && atoi(fields[0]) > 1)
-                                *r_serverinfo |= SERVERINFO_SCHEMAV2;
-                              if (nfields > 1
-                                  && !ascii_strcasecmp (fields[1], "ntds"))
-                                *r_serverinfo |= SERVERINFO_NTDS;
-                            }
-			}
-                      my_ldap_value_free (vals);
-		    }
-
-		  /* From man ldap_search_s: "res parameter of
-		     ldap_search_ext_s() and ldap_search_s() should be
-		     freed with ldap_msgfree() regardless of return
-		     value of these functions.  */
-		  ldap_msgfree (si_res);
-		}
+                interrogate_ldap_dn (ldap_conn, context[i], r_serverinfo,
+                                     &basedn);
 
 	      ldap_value_free (context);
 	    }
