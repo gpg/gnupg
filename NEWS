@@ -1,5 +1,30 @@
-Noteworthy changes in version 2.2.40 (unreleased)
+Noteworthy changes in version 2.2.40 (2022-10-10)
 -------------------------------------------------
+
+  * gpg: Do not consider unknown public keys as non-compliant while
+    decrypting.  [T6205]
+
+  * gpg: Avoid to emit a compliance mode line if Libgcrypt is
+    non-compliant.  [T6221]
+
+  * gpg: In de-vs mode use AES-128 instead of 3-DES as implicit
+    preference.  [T6063]
+
+  * gpgsm: Fix reporting of bad passphrase error during PKCS#11
+    import.  [T5713,T6037]
+
+  * dirmngr: Fix CRL Distribution Point fallback to other schemes.
+    [rG289fbc550d]
+
+  * dirmngr: New LDAP server flag "areconly" (A-record-only).
+    [rG6300035ba1]
+
+  * dirmngr: Fix upload of multiple keys for an LDAP server specified
+    using the colon format.  [rG32ce7ac0c6]
+
+  * dirmngr: Use LDAP schema v2 when a Base DN is specified.  [T6047]
+
+  * wkd: New command --mirror for gpg-wks-client.  [T6224]
 
   Release-info: https://dev.gnupg.org/T6181
 
@@ -33,7 +58,7 @@ Noteworthy changes in version 2.2.37 (2022-08-24)
 -------------------------------------------------
 
   * gpg: In de-vs mode use SHA-256 instead of SHA-1 as implicit
-    preference.  [T6043]
+    preference.  [T6043, T6063]
 
   * gpg: Actually show symmetric+pubkey encrypted data as de-vs
     compliant.  Add extra compliance checks for symkey_enc packets.
