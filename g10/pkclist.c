@@ -1479,8 +1479,16 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
 	     --pgp2 mode is on.  This was a 2440 thing that was
 	     dropped from 4880 but is still relevant to GPG's 1991
 	     support.  All this doesn't mean IDEA is actually
-	     available, of course. */
-          implicit=CIPHER_ALGO_3DES;
+	     available, of course.
+
+             Because "de-vs" compliance will soon not anymore allow
+             3DES it does not make sense to assign 3DES as implicit
+             algorithm.  Instead it is better to use AES-128 as
+             implicit algorithm here.   */
+          if (opt.compliance == CO_DE_VS)
+            implicit = CIPHER_ALGO_AES;
+          else
+            implicit=CIPHER_ALGO_3DES;
 
 	  break;
 
