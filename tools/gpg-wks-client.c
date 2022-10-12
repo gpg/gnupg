@@ -306,6 +306,14 @@ main (int argc, char **argv)
   cmd = parse_arguments (&pargs, opts);
   gpgrt_argparse (NULL, &pargs, NULL);
 
+  /* Check if gpg is build with sendmail support */
+  if (opt.use_sendmail && !NAME_OF_SENDMAIL[0])
+    {
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      log_error ("sending mail is not supported in this build: %s\n",
+                gpg_strerror (err));
+    }
+
   if (log_get_errorcount (0))
     exit (2);
 
