@@ -1479,7 +1479,7 @@ static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
                 int data, int with_ssh_fpr, int in_ssh,
                 int ttl, int disabled, int confirm, int on_card,
-                const char *need_attr)
+                const char *need_attr, int list_mode)
 {
   gpg_error_t err;
   char hexgrip[40+1];
@@ -1507,11 +1507,12 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
         goto leave;
     }
 
-  if (need_attr)
+  if (need_attr || (ctrl->restricted && list_mode))
     {
       gcry_sexp_t s_key = NULL;
       nvc_t keymeta = NULL;
-      int istrue;
+      int istrue, has_rl;
+
 
       if (missing_key)
         goto leave; /* No attribute available.  */
@@ -1521,7 +1522,14 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
         istrue = 0;
       else
         {
-          istrue = nvc_get_boolean (keymeta, need_attr);
+          has_rl = 0;
+          if (ctrl->restricted && list_mode
+              && !(has_rl = nvc_get_boolean (keymeta, "Remote-list:")))
+            istrue = 0;
+          else if (need_attr)
+            istrue = nvc_get_boolean (keymeta, need_attr);
+          else
+            istrue = has_rl;
           nvc_release (keymeta);
         }
       gcry_sexp_release (s_key);
@@ -1531,7 +1539,6 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
           goto leave;
         }
     }
-
 
   /* Reformat the grip so that we use uppercase as good style. */
   bin2hex (grip, 20, hexgrip);
@@ -1722,12 +1729,6 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
 
   if (list_mode == 2)
     {
-      if (ctrl->restricted)
-        {
-          err = leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
-          goto leave;;
-        }
-
       if (cf)
         {
           while (!ssh_read_control_file (cf, hexgrip,
@@ -1742,8 +1743,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
                   on_card = 1;
 
               err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, 1,
-                                    ttl, disabled, confirm, on_card, need_attr);
-              if (need_attr && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+                                    ttl, disabled, confirm, on_card, need_attr,
+                                    list_mode);
+              if ((need_attr || ctrl->restricted)
+                  && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
                 ;
               else if (err)
                 goto leave;
@@ -1755,12 +1758,6 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
     {
       char *dirname;
       gnupg_dirent_t dir_entry;
-
-      if (ctrl->restricted)
-        {
-          err = leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
-          goto leave;
-        }
 
       dirname = make_filename_try (gnupg_homedir (),
                                    GNUPG_PRIVATE_KEYS_DIR, NULL);
@@ -1806,8 +1803,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
               on_card = 1;
 
           err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, is_ssh,
-                                ttl, disabled, confirm, on_card, need_attr);
-          if (need_attr && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+                                ttl, disabled, confirm, on_card, need_attr,
+                                list_mode);
+          if ((need_attr || ctrl->restricted)
+              && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
             ;
           else if (err)
             goto leave;
@@ -1836,7 +1835,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
           on_card = 1;
 
       err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, is_ssh,
-                            ttl, disabled, confirm, on_card, need_attr);
+                            ttl, disabled, confirm, on_card, need_attr, 0);
     }
 
  leave:

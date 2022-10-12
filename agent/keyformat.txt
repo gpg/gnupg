@@ -129,6 +129,12 @@ If given and the value is "yes" or "1" the key is allowed for use by
 GnuPG's PKCS#11 interface (Scute).  Note that Scute needs to be
 configured to use this optimization.
 
+*** Remote-list
+Allow to list the key with the KEYINFO command from a remote machine
+via the extra socket.  A boolean value is expected; the default is
+"no".  Note that KEYINFO will anyway provide information if the
+keygrip is specified.
+
 *** Confirm
 If given and the value is "yes", a user will be asked confirmation by
 a dialog window when the key is about to be used for
