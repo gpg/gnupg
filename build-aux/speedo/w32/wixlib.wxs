@@ -71,7 +71,7 @@ and then manually edited:
         <File Id="fil563D2C0464DCE7ECADE6E15C0FC65822" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-check-pattern.exe"/>
       </Component>
       <Component Id="cmpB87CCF9DDCB6D9B36B92B0F9FA24FDC9" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="9BB809F3-C09B-4A1E-B52D-B68CBE59AE3B">
-        <File Id="fil8A3F9D3F6E36120B183DDF4981D84C1B" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-wks-client.exe"/>
+        <File Id="fil8A3F9D3F6E36120B183DDF4981D84C1B" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg-wks-client.exe"/>
       </Component>
       <Component Id="cmpEC270B071977C15E14328A04D3BBC3E8" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="4BE9D7E7-6054-4D78-9292-4D58DBA81684">
         <File Id="fil822B20E83B1A966BABB0574CE6611B02" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg.exe"/>
