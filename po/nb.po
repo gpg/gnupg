@@ -1800,6 +1800,30 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "bruk valget «--delete-secret-keys» for å slette den først.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"ADVARSEL: tvungen bruk av symmetrisk krypt.metode %s (%d) bryter med "
+"mottakers oppsett\n"
+
+#, fuzzy, c-format
+#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "ADVARSEL: nøkkel %s egner seg ikke for kryptering i %s-modus\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "feil under opprettelse av passordfrase: %s\n"
 
@@ -1820,19 +1844,6 @@ msgstr "«%s» er allerede komprimert\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "ADVARSEL: «%s» er en tom fil\n"
 
-#, fuzzy, c-format
-#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
-
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "du kan ikke bruke algoritme «%s» i %s-modus\n"
@@ -1843,30 +1854,11 @@ msgstr "leser fra «%s»\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ADVARSEL: tvungen bruk av symmetrisk krypt.metode %s (%d) bryter med "
-"mottakers oppsett\n"
-
-#, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "ADVARSEL: nøkkel %s egner seg ikke for kryptering i %s-modus\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "ADVARSEL: tvungen bruk av komprimeringsalgoritme %s (%d) bryter med "
 "mottakers oppsett\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "tvungen bruk av krypt.metode %s (%d) bryter med mottakers oppsett\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -4820,6 +4812,10 @@ msgstr "ADVARSEL: kryptert melding er blitt manipulert.\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "dekryptering mislyktes: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -9000,6 +8996,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "tvungen bruk av krypt.metode %s (%d) bryter med mottakers oppsett\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "feil under skriving til midlertidig fil: %s\n"

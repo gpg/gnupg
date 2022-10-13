@@ -1738,6 +1738,28 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "まず\"--delete-secret-keys\"オプションでこれを削除してください。\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "暗号アルゴリズム'%s'を暗号化に使うことはできません\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr "(オーバーライドするには、オプション\"%s\"を使います)\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "パスフレーズの作成エラー: %s\n"
 
@@ -1758,18 +1780,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "*警告*: '%s'は空のファイルです\n"
 
 #, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "暗号アルゴリズム'%s'を暗号化に使うことはできません\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr "(オーバーライドするには、オプション\"%s\"を使います)\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
-
-#, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うことはできません\n"
 
@@ -1779,28 +1789,10 @@ msgstr "'%s'から読み込み\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
-
-#, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr "充足できないコンプライアンス・ルールのため、操作は強制的に失敗します\n"
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "*警告*: 圧縮アルゴリズム %s (%d) の強制が、受取人の優先指定をそむきます\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
 #, c-format
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
@@ -4645,6 +4637,10 @@ msgstr "*警告*: 暗号化されたメッセージは改竄されています!\
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "復号に失敗しました: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr "充足できないコンプライアンス・ルールのため、操作は強制的に失敗します\n"
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -8699,6 +8695,9 @@ msgstr "Yubikey管理コマンド"
 
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "一時ファイルの書き込みエラー: %s\n"

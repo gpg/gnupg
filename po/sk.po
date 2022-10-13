@@ -1831,6 +1831,27 @@ msgstr "existuje tajný kľúč pre tento verejný kľúč \"%s\"!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "aby ste ho zmazali, použite najprv prepínač \"--delete-secret-key\".\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "nemôžete použiť šifrovací algoritmus \"%s\" v móde %s\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "nemôžete použiť šifrovací algoritmus \"%s\" v móde %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "VAROVÁNÍ: použitie parametra \"%s\" sa neodporúča\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "chyba pri vytváraní hesla: %s\n"
@@ -1855,18 +1876,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "VAROVANIE: súbor `%s' je prázdny\n"
 
 #, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "nemôžete použiť šifrovací algoritmus \"%s\" v móde %s\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "nemôžete použiť šifrovací algoritmus \"%s\" v móde %s\n"
-
-#, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "nemôžete použiť hashovací algoritmus \"%s\" v móde %s\n"
 
@@ -1877,27 +1886,10 @@ msgstr "čítam z `%s'\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "VAROVÁNÍ: použitie parametra \"%s\" sa neodporúča\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "vyžiadaný kompresný algoritmus %s (%d) nevyhovuje predvoľbám príjemcu\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -5001,6 +4993,10 @@ msgstr "VAROVANIE: so zašifrovanou správou bolo manipulované!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "dešifrovanie zlyhalo: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9256,6 +9252,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"

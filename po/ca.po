@@ -1895,6 +1895,28 @@ msgstr "hi ha una clau secreta per a la clau pública «%s»!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "utilitzeu l'opció «--delete-secret-keys» per a eliminar-la primer.\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"forçar el xifrat asimètric %s (%d) viola les preferències del destinatari\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "no podeu usar l'algorisme de xifratge «%s» mentre esteu en mode %s\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "no podeu usar l'algorisme de xifratge «%s» mentre esteu en mode %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "AVÍS: %s és una opció desaconsellada.\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "error en la creació de la contrasenya: %s\n"
@@ -1918,18 +1940,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVÍS: «%s» és un fitxer buit\n"
 
 #, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "no podeu usar l'algorisme de xifratge «%s» mentre esteu en mode %s\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "no podeu usar l'algorisme de xifratge «%s» mentre esteu en mode %s\n"
-
-#, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "no podeu usar l'algorisme de resum %s mentre esteu en mode %s\n"
 
@@ -1940,30 +1950,11 @@ msgstr "s'està llegint des de «%s»\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"forçar el xifrat asimètric %s (%d) viola les preferències del destinatari\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "AVÍS: %s és una opció desaconsellada.\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "forçar l'algoritme de compressió %s (%d) viola les preferències del "
 "destinatari\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"forçar el xifrat asimètric %s (%d) viola les preferències del destinatari\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -5130,6 +5121,10 @@ msgstr "AVÍS: el missatge xifrat ha estat manipulat!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "ha fallat el desxifratge: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9455,6 +9450,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "forçar el xifrat asimètric %s (%d) viola les preferències del "
+#~ "destinatari\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"

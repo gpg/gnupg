@@ -1823,6 +1823,29 @@ msgstr "Van egy titkos kulcs a \"%s\" nyilvános kulcshoz!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "Először azt törölje a \"--delete-secret-keys\" opcióval!\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr ""
+"Lehet, hogy nem használhatja \"%s\" rejtjelező algoritmust %s módban!\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"Lehet, hogy nem használhatja \"%s\" rejtjelező algoritmust %s módban!\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "FIGYELEM: \"%s\" elavult opció!\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
@@ -1847,20 +1870,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "FIGYELEM: A(z) \"%s\" állomány üres.\n"
 
 #, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr ""
-"Lehet, hogy nem használhatja \"%s\" rejtjelező algoritmust %s módban!\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"Lehet, hogy nem használhatja \"%s\" rejtjelező algoritmust %s módban!\n"
-
-#, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr ""
 "Lehet, hogy nem használhatja \"%s\" kivonatoló algoritmust %s módban!\n"
@@ -1872,26 +1881,9 @@ msgstr "Olvasok a \"%s\" állományból.\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "FIGYELEM: \"%s\" elavult opció!\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "A %s (%d) tömörítés használata sérti a címzett preferenciáit!\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -4980,6 +4972,10 @@ msgstr "FIGYELEM: A titkosított üzenetet manipulálták!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "Visszafejtés sikertelen: %s.\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9224,6 +9220,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"

@@ -1828,6 +1828,28 @@ msgstr "há uma chave secreta para a chave pública \"%s\"!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "utilize a opção \"--delete-secret-keys\" para a apagar primeiro.\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "AVISO: \"%s\" é uma opção depreciada\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "erro na criação da frase secreta: %s\n"
@@ -1851,18 +1873,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVISO: `%s' é um ficheiro vazio\n"
 
 #, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
-
-#, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
@@ -1873,30 +1883,11 @@ msgstr "lendo de `%s'\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "AVISO: \"%s\" é uma opção depreciada\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "ao forçar o algoritmo de compressão %s (%d) viola as preferências do "
 "destinatário\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -4990,6 +4981,10 @@ msgstr "CUIDADO: a mensagem cifrada foi manipulada!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "decifragem falhou: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9218,6 +9213,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "ao forçar a cifra simétrica %s (%d) viola as preferências do "
+#~ "destinatário\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"

@@ -1769,6 +1769,31 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "usa prima l'opzione \"--delete-secret-keys\" per cancellarla.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"AVVISO: l'imposizione della crittografia simmetrica %s (%d) viola le "
+"preferenze del destinatario\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr ""
+"l'algoritmo di cifratura '%s' non può essere utilizzato per la crittografia\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr "(utilizzare l'opzione \"%s\" per ignorare)\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"l'algoritmo di crittografia '%s' non può essere utilizzato in modalità %s\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "AVVISO: la chiave %s non è adatta per la crittografia in modalità %s\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "errore nella creazione della passhprase: %s\n"
 
@@ -1790,20 +1815,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVVISO: '%s' è un file vuoto\n"
 
 #, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr ""
-"l'algoritmo di cifratura '%s' non può essere utilizzato per la crittografia\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr "(utilizzare l'opzione \"%s\" per ignorare)\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"l'algoritmo di crittografia '%s' non può essere utilizzato in modalità %s\n"
-
-#, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "l'algoritmo digest '%s' non può essere utilizzato in modalità %s\n"
 
@@ -1813,32 +1824,11 @@ msgstr "lettura da '%s'\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"AVVISO: l'imposizione della crittografia simmetrica %s (%d) viola le "
-"preferenze del destinatario\n"
-
-#, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "AVVISO: la chiave %s non è adatta per la crittografia in modalità %s\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "AVVISO: l'algoritmo di compressione %s (%d) viola le preferenze dei "
 "destinatari\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"forzare il cifrario simmetrico %s (%d) viola le preferenze\n"
-"del destinatario\n"
 
 #, c-format
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
@@ -4781,6 +4771,10 @@ msgstr "ATTENZIONE: il messaggio cifrato è stato manipolato!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "decifratura fallita: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -9019,6 +9013,11 @@ msgstr "Comandi di gestione Yubikey"
 
 msgid "manage the command history"
 msgstr "gestire la cronologia dei comandi"
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "forzare il cifrario simmetrico %s (%d) viola le preferenze\n"
+#~ "del destinatario\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "errore durante la scrittura nel file temporaneo: %s\n"

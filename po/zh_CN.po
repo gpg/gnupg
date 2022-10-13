@@ -1724,6 +1724,27 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "请先使用“--delete-secret-keys”选项来删除它。\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "警告： 强制对称密文 %s (%d) 与接收者的偏好设置冲突\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "密文算法 ‘%s’ 可能不能被用于加密\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr "（使用选项 “%s” 来覆盖）\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "密文算法 ‘%s’ 可能不能被用于 %s 模式\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "警告： 密钥 %s 在 %s 模式下不适用于加密\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "创建密码时出现错误：%s\n"
 
@@ -1744,18 +1765,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "警告：‘%s’是一个空文件\n"
 
 #, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "密文算法 ‘%s’ 可能不能被用于加密\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr "（使用选项 “%s” 来覆盖）\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "密文算法 ‘%s’ 可能不能被用于 %s 模式\n"
-
-#, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "摘要算法‘%s’不能在 %s 模式下使用\n"
 
@@ -1765,26 +1774,9 @@ msgstr "正在从‘%s’读取\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "警告： 强制对称密文 %s (%d) 与接收者的偏好设置冲突\n"
-
-#, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "警告： 密钥 %s 在 %s 模式下不适用于加密\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "警告： 强制压缩算法 %s (%d) 与接收者的偏好设置冲突\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "强行对称密文算法 %s (%d) 与接收者的偏好设置冲突\n"
 
 #, c-format
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
@@ -4611,6 +4603,10 @@ msgstr "警告：加密过的报文已经变造！\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "解密失败：%s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -8630,6 +8626,9 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "强行对称密文算法 %s (%d) 与接收者的偏好设置冲突\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "写入临时文件时出现错误： %s\n"

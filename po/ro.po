@@ -1850,6 +1850,31 @@ msgstr ""
 "întâi.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"AVERTISMENT: forţând cifrul simetric %s (%d) violaţi preferinţele "
+"destinatarului\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolă: %s\n"
 
@@ -1873,20 +1898,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVERTISMENT: `%s' este un fişier gol\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "nu puteţi folosi algorimul de rezumat `%s' câtă vreme în modul %s\n"
@@ -1898,30 +1909,11 @@ msgstr "citesc din `%s'\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"AVERTISMENT: forţând cifrul simetric %s (%d) violaţi preferinţele "
-"destinatarului\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "AVERTISMENT: forţând algoritmul de compresie %s (%d) violaţi preferinţele "
 "destinatarului\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "forţând cifrul simetric %s (%d) violaţi preferinţele destinatarului\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -5048,6 +5040,10 @@ msgstr "AVERTISMENT: mesajul cifrat a fost manipulat!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "decriptarea a eşuat: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9366,6 +9362,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "forţând cifrul simetric %s (%d) violaţi preferinţele destinatarului\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"

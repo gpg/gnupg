@@ -1825,6 +1825,27 @@ msgstr "estas sekreta ŝlosilo por la publika ŝlosilo \"%s\"!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "uzu la opcion \"--delete-secret-key\" por forviŝi ĝin unue.\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "AVERTO: '%s' estas malplena dosiero\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
@@ -1848,18 +1869,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
 #, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
-
-#, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
@@ -1870,26 +1879,9 @@ msgstr "legas el '%s'\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "AVERTO: '%s' estas malplena dosiero\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
@@ -4981,6 +4973,10 @@ msgstr "AVERTO: ĉifrita mesaĝo estis manipulita!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "malĉifrado malsukcesis: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"

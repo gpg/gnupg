@@ -1829,6 +1829,29 @@ msgstr "terdapat kunci rahasia untuk kunci publik \"%s\"!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "gunakan pilihan \"--delete-secret-key\" untuk menghapusnya.\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr ""
+"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
@@ -1853,20 +1876,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "PERINGATAN: `%s' adalah file kosong\n"
 
 #, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr ""
-"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
-
-#, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr ""
 "anda tidak boleh menggunakan algoritma digest \"%s\" saat dalam mode %s.\n"
@@ -1878,26 +1887,9 @@ msgstr "Membaca dari `%s'\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "memaksa algoritma kompresi %s (%d) melanggar preferensi penerima\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -4986,6 +4978,10 @@ msgstr "PERINGATAN: pesan terenkripsi telah dimanipulasi!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "dekripsi gagal: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9223,6 +9219,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"

@@ -1810,6 +1810,30 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "請先以 \"--delete-secret-keys\" 選項來刪除它.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "建立密語時出錯: %s\n"
 
@@ -1831,20 +1855,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "警告: '%s' 是個空檔案\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm '%s' while in %s mode\n"
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "你不該將 '%s' 摘要演算法用於 %s 模式\n"
@@ -1855,27 +1865,9 @@ msgstr "正在從 '%s' 讀取\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 壓縮演算法會違反收件者偏好設定\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -4842,6 +4834,10 @@ msgstr "警告: 加密過的訊息已經被變造了!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "解密失敗: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -9002,6 +8998,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "寫入暫存檔時出錯: %s\n"

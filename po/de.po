@@ -207,7 +207,9 @@ msgstr "Fehler beim Holen der Liste der Karten: %s\n"
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
-msgstr "Ein SSH Prozess möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  (%s)%%0AErlauben Sie dies?"
+msgstr ""
+"Ein SSH Prozess möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  "
+"(%s)%%0AErlauben Sie dies?"
 
 msgid "Allow"
 msgstr "Erlauben"
@@ -225,9 +227,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Bitte geben Sie ein Passwort ein, um den empfangenen geheimen "
-"Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu "
-"schützen."
+"Bitte geben Sie ein Passwort ein, um den empfangenen geheimen Schlüssel"
+"%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu schützen."
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -767,7 +768,9 @@ msgstr "Bitte legen Sie die Karte mit der folgenden Seriennummer ein"
 
 #, c-format
 msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
-msgstr "Ein Prozess möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  (%s)%%0AErlauben Sie dies?"
+msgstr ""
+"Ein Prozess möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  "
+"(%s)%%0AErlauben Sie dies?"
 
 #, c-format
 msgid ""
@@ -1778,6 +1781,33 @@ msgstr ""
 "entfernen.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren "
+"%s (%d) verletzt die Empfängervoreinstellungen\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr ""
+"Das Verschlüsselungsverfahren %s darf nicht zum Verschlüsseln verwendet "
+"werden.\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr "(benutze Option \"%s\" zum hinwegsetzen)\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr ""
+"Das Verschlüsselungsverfahren %s darf im %s Modus nicht verwendet werden.\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr ""
+"WARNUNG: Schlüssel %s ist zur Verschlüsselung im %s Modus nicht geeignet.\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "Fehler beim Erzeugen des Passwortes: %s\n"
 
@@ -1800,21 +1830,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
 
 #, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr ""
-"Das Verschlüsselungsverfahren %s darf nicht zum Verschlüsseln verwendet "
-"werden.\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr "(benutze Option \"%s\" zum hinwegsetzen)\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"Das Verschlüsselungsverfahren %s darf im %s Modus nicht verwendet werden.\n"
-
-#, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "Die Benutzung der Hashmethode %s ist im %s Modus nicht erlaubt.\n"
 
@@ -1824,33 +1839,11 @@ msgstr "Lesen von '%s'\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren "
-"%s (%d) verletzt die Empfängervoreinstellungen\n"
-
-#, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr ""
-"WARNUNG: Schlüssel %s ist zur Verschlüsselung im %s Modus nicht geeignet.\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr "Operation abgebrochen wegen nicht erfüllter Compliance.\n"
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "WARNUNG: Erzwungenes Kompressionsverfahren %s (%d) verletzt die "
 "Empfängervoreinstellungen.\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren %s (%d) "
-"verletzt die Empfängervoreinstellungen\n"
 
 #, c-format
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
@@ -4795,6 +4788,10 @@ msgstr "WARNUNG: Verschlüsselte Botschaft ist manipuliert worden!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "Entschlüsselung fehlgeschlagen: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr "Operation abgebrochen wegen nicht erfüllter Compliance.\n"
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -9072,6 +9069,11 @@ msgstr "Verwaltungskommandos für Yubikeys"
 
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren %s (%d) "
+#~ "verletzt die Empfängervoreinstellungen\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"

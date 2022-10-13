@@ -1823,6 +1823,28 @@ msgstr "avaliku võtme \"%s\" jaoks on salajane võti!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "selle kustutamiseks kasutage võtit \"--delete-secret-keys\".\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "šifri algoritm \"%s\" ei ole moodis %s lubatud\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "šifri algoritm \"%s\" ei ole moodis %s lubatud\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "HOIATUS: võtit \"%s\" ei soovitata kasutada.\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "viga parooli loomisel: %s\n"
@@ -1847,18 +1869,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "HOIATUS: `%s' on tühi fail\n"
 
 #, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "šifri algoritm \"%s\" ei ole moodis %s lubatud\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "šifri algoritm \"%s\" ei ole moodis %s lubatud\n"
-
-#, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "sõnumilühendi algoritm \"%s\" ei ole moodis %s lubatud\n"
 
@@ -1869,29 +1879,10 @@ msgstr "loen failist `%s'\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "HOIATUS: võtit \"%s\" ei soovitata kasutada.\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "pakkimise algoritmi %s (%d) kasutamine on vastuolus saaja eelistustega\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -4968,6 +4959,10 @@ msgstr "HOIATUS: krüpteeritud teadet on muudetud!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "lahtikrüpteerimine ebaõnnestus: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9197,6 +9192,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "sümmetrilise šifri %s (%d) kasutamine on vastuolus saaja eelistustega\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"

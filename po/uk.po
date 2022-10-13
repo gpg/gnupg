@@ -1802,6 +1802,30 @@ msgstr ""
 "спершу скористайтеся параметром «--delete-secret-keys» для його вилучення.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"УВАГА: примусове використання симетричного шифру %s (%d) не відповідає "
+"параметрам отримувача\n"
+
+#, fuzzy, c-format
+#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "алгоритм шифрування «%s» не можна використовувати у режимі %s\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "алгоритм шифрування «%s» не можна використовувати у режимі %s\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "УВАГА: ключ %s не можна використовувати для шифрування у режимі %s\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "помилка під час спроби створення пароля: %s\n"
 
@@ -1822,19 +1846,6 @@ msgstr "«%s» вже стиснено\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "УВАГА: файл «%s» є порожнім\n"
 
-#, fuzzy, c-format
-#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "алгоритм шифрування «%s» не можна використовувати у режимі %s\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "алгоритм шифрування «%s» не можна використовувати у режимі %s\n"
-
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr ""
@@ -1847,32 +1858,11 @@ msgstr "читання з «%s»\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"УВАГА: примусове використання симетричного шифру %s (%d) не відповідає "
-"параметрам отримувача\n"
-
-#, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "УВАГА: ключ %s не можна використовувати для шифрування у режимі %s\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "УВАГА: примусове використання алгоритму стиснення %s (%d) не відповідає "
 "параметрам отримувача\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"примусове використання симетричного шифру %s (%d) не відповідає параметрам "
-"отримувача\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -4895,6 +4885,10 @@ msgstr "УВАГА: зашифроване повідомлення було з�
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "невдала спроба розшифрування: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -9196,6 +9190,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "примусове використання симетричного шифру %s (%d) не відповідає "
+#~ "параметрам отримувача\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "помилка під час спроби запису до тимчасового файла: %s\n"

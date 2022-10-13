@@ -1772,6 +1772,30 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "aby go usunąć należy najpierw użyć opcji \"--delete-secret-key\".\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"OSTRZEŻENIE: wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami "
+"adresata\n"
+
+#, fuzzy, c-format
+#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "OSTRZEŻENIE: klucz %s nie nadaje się do szyfrowania w trybie %s\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "błąd podczas tworzenia hasła: %s\n"
 
@@ -1793,19 +1817,6 @@ msgstr ",,%s'' już jest skompresowany\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "OSTRZEŻENIE: plik ,,%s'' jest pusty\n"
 
-#, fuzzy, c-format
-#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
-
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "algorytm skrótu ,,%s'' nie może być używany w trybie %s\n"
@@ -1816,30 +1827,11 @@ msgstr "odczyt z ,,%s''\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"OSTRZEŻENIE: wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami "
-"adresata\n"
-
-#, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "OSTRZEŻENIE: klucz %s nie nadaje się do szyfrowania w trybie %s\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "OSTRZEŻENIE: wymuszone użycie kompresji %s (%d) kłóci się z ustawieniami "
 "adresata\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami adresata\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -4847,6 +4839,10 @@ msgstr "OSTRZEŻENIE: zaszyfrowana wiadomość była manipulowana!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "błąd odszyfrowywania: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -9115,6 +9111,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami adresata\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "błąd zapisu do pliku tymczasowego: %s\n"

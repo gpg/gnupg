@@ -1965,6 +1965,32 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "använd flaggan \"--delete-secret-keys\"för att ta bort den först.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr ""
+"VARNING: tvinga symmetriskt chiffer med %s (%d) strider mot "
+"mottagarinställningarna\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "fel när lösenfras skapades: %s\n"
 
@@ -1988,20 +2014,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "VARNING: \"%s\" är en tom fil\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr ""
@@ -2014,32 +2026,11 @@ msgstr "läser från \"%s\"\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"VARNING: tvinga symmetriskt chiffer med %s (%d) strider mot "
-"mottagarinställningarna\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "VARNING: tvinga komprimeringsalgoritmen %s (%d) strider mot "
 "mottagarinställningarna\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"tvinga symmetriskt chiffer med %s (%d) strider mot mottagarinställningarna\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -5216,6 +5207,10 @@ msgstr "VARNING: det krypterade meddelandet har ändrats!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "dekrypteringen misslyckades: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9808,6 +9803,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "tvinga symmetriskt chiffer med %s (%d) strider mot "
+#~ "mottagarinställningarna\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "fel vid skrivning till temporärfil: %s\n"

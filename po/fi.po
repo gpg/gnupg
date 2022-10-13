@@ -1842,6 +1842,27 @@ msgstr "julkiselle avaimelle \"%s\" löytyy vastaava salainen avain!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "käytä valitsinta \"--delete-secret-keys\" poistaaksesi se ensin.\n"
 
+#, fuzzy, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "VAROITUS: \"%s\" on paheksuttu valitsin\n"
+
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "virhe luotaessa salasanaa: %s\n"
@@ -1866,18 +1887,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "VAROITUS: \"%s\" on tyhjä tiedosto\n"
 
 #, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
-
-#, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "tiivistealgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
@@ -1888,26 +1897,9 @@ msgstr "luetaan kohteesta \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
-
-#, fuzzy, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "VAROITUS: \"%s\" on paheksuttu valitsin\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr "valittu pakkausalgoritmi %s (%d) ei ole vastaanottajan suosima\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
 
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
@@ -5003,6 +4995,10 @@ msgstr "VAROITUS: salattua viestiä on muokattu!\n"
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "avaus epäonnistui: %s\n"
+
+#, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
@@ -9264,6 +9260,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"

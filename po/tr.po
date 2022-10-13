@@ -230,9 +230,6 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "soketten akım oluşturulamadı: %s\n"
 
-msgid "Please insert the card with serial number"
-msgstr "Lütfen seri numarayı içeren kartı takın"
-
 msgid "Admin PIN"
 msgstr "Yönetici PIN'i"
 
@@ -336,9 +333,6 @@ msgstr "ardalan süreci olarak çalıştır"
 
 msgid "run in server mode (foreground)"
 msgstr "sunucu kipinde (önalanda) çalıştır"
-
-msgid "run in supervised mode"
-msgstr "yönetilen kipte çalıştır"
 
 msgid "do not detach from the console"
 msgstr "konsoldan ayırma"
@@ -495,6 +489,10 @@ msgstr "seçenekler, '%s' ögesinden okunuyor\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "Not: '%s', bir seçenek olarak kabul edilmiyor\n"
+
+#, c-format
+msgid "WARNING: \"%s\" is a deprecated option\n"
+msgstr "UYARI: \"%s\" seçeneği kullanımdan kaldırılmak üzere.\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -729,6 +727,10 @@ msgid "Wrong"
 msgstr "Yanlış"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "'%s > '%s' olarak yeniden adlandırırken hata: %s\n"
+
+#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Not: Bu anahtar parolası hiç değiştirilmedi.%0ALütfen şimdi değiştirin."
@@ -746,6 +748,19 @@ msgstr "Anahtar parolasını değiştir"
 
 msgid "I'll change it later"
 msgstr "Sonra değiştireceğim"
+
+msgid "Please insert the card with serial number"
+msgstr "Lütfen seri numarayı içeren kartı takın"
+
+# Check
+#, fuzzy, c-format
+#| msgid ""
+#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
+#| "to allow this?"
+msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
+msgstr ""
+"Bir ssh işlemi,%%0A  %s%%A  (%s)%%0Aanahtarının kullanımı için istekte "
+"bulundu. Buna izin vermek istiyor musunuz?"
 
 #, c-format
 msgid ""
@@ -1739,6 +1754,27 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "onu önce \"--delete-secret-keys\" ile silmelisiniz.\n"
 
 #, c-format
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "UYARI: Simetrik şifreleme %s (%d), alıcı tercihlerine karşı geliyor\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used for encryption\n"
+msgstr "şifreleme algoritması '%s', şifreleme için kullanılamayabilir\n"
+
+#, c-format
+msgid "(use option \"%s\" to override)\n"
+msgstr "(geçersiz kılmak için \"%s\" seçeneğini kullanın)\n"
+
+#, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "şifreleme algoritması '%s', %s kipinde kullanılamayabilir\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "UYARI: %s anahtarı, %s kipinde şifreleme için uygun değil\n"
+
+#, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "anahtar parolası oluşturulurken hata: %s\n"
 
@@ -1759,18 +1795,6 @@ msgid "WARNING: '%s' is an empty file\n"
 msgstr "UYARI: '%s', boş bir dosya\n"
 
 #, c-format
-msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "şifreleme algoritması '%s', şifreleme için kullanılamayabilir\n"
-
-#, c-format
-msgid "(use option \"%s\" to override)\n"
-msgstr "(geçersiz kılmak için \"%s\" seçeneğini kullanın)\n"
-
-#, c-format
-msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "şifreleme algoritması '%s', %s kipinde kullanılamayabilir\n"
-
-#, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "özet algoritması '%s', %s kipinde kullanılamayabilir\n"
 
@@ -1780,29 +1804,11 @@ msgstr "'%s konumundan okunuyor\n"
 
 #, c-format
 msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "UYARI: Simetrik şifreleme %s (%d), alıcı tercihlerine karşı geliyor\n"
-
-#, c-format
-msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr "UYARI: %s anahtarı, %s kipinde şifreleme için uygun değil\n"
-
-#, c-format
-msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
-"yerine getirilmemiş uyum kurallarından dolayı işlem başarısız olmaya zorlandı\n"
-
-#, c-format
-msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
 msgstr ""
 "UYARI: %s (%d) sıkıştırma algoritmasını zorlamak alıcı tercihlerine karşı "
 "geliyor\n"
-
-#, c-format
-msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "simetrik şifreleme %s (%d) zorlamak alıcı tercihlerine karşı geliyor\n"
 
 #, c-format
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
@@ -4736,6 +4742,12 @@ msgid "decryption failed: %s\n"
 msgstr "şifre çözme başarısız: %s\n"
 
 #, c-format
+msgid "operation forced to fail due to unfulfilled compliance rules\n"
+msgstr ""
+"yerine getirilmemiş uyum kurallarından dolayı işlem başarısız olmaya "
+"zorlandı\n"
+
+#, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "Not: Gönderen \"yalnız-siz-bakın\" ricasında bulundu\n"
 
@@ -4908,10 +4920,6 @@ msgstr "(ek bilgi: "
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: \"%s\" seçeneği kullanımdan kaldırılmak üzere.\n"
-
-#, c-format
-msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "UYARI: \"%s\" seçeneği kullanımdan kaldırılmak üzere.\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
@@ -7720,10 +7728,6 @@ msgid "error closing '%s': %s\n"
 msgstr "'%s' kapatılırken hata: %s\n"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "'%s > '%s' olarak yeniden adlandırırken hata: %s\n"
-
-#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "'%s' sağlaması yapılamıyor: %s\n"
 
@@ -8874,3 +8878,10 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#~ msgid "run in supervised mode"
+#~ msgstr "yönetilen kipte çalıştır"
+
+#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
+#~ msgstr ""
+#~ "simetrik şifreleme %s (%d) zorlamak alıcı tercihlerine karşı geliyor\n"
