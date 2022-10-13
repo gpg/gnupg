@@ -1448,7 +1448,7 @@ define AUTHENTICODE_sign
      scp "$(AUTHENTICODE_SIGNHOST):a.exe" $(2);\
      echo "speedo: signed file is '$(2)'" ;\
    elif [ "$(AUTHENTICODE_KEY)" = card ]; then \
-     echo "speedo: Signing using a card";\
+     echo "speedo: Signing using a card: '$(1)'";\
      $(OSSLSIGNCODE) sign \
        -pkcs11engine $(OSSLPKCS11ENGINE) \
        -pkcs11module $(SCUTEMODULE) \
