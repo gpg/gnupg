@@ -4,7 +4,7 @@
 
           Copyright 1997-2019 Werner Koch
           Copyright 1998-2021 Free Software Foundation, Inc.
-          Copyright 2003-2021 g10 Code GmbH
+          Copyright 2003-2022 g10 Code GmbH
 
 
 * INTRODUCTION
@@ -196,8 +196,8 @@
   Please direct questions about GnuPG to the users mailing list or one
   of the PGP newsgroups; please do not direct questions to one of the
   authors directly as we are busy working on improvements and bug
-  fixes.  The English and German mailing lists are watched by the
-  authors and we try to answer questions when time allows us.
+  fixes.  The mailing lists are watched by the authors and we try to
+  answer questions as time allows us.
 
   Commercial grade support for GnuPG is available; for a listing of
   offers see https://gnupg.org/service.html .  Maintaining and
@@ -205,9 +205,6 @@
   a German company owned and headed by GnuPG's principal author Werner
   Koch, is bearing the majority of these costs.  To keep GnuPG in a
   healthy state, they need your support.
-
-  Please consider to donate at https://gnupg.org/donate/ .
-
 
 # This file is Free Software; as a special exception the authors gives
 # unlimited permission to copy and/or distribute it, with or without
