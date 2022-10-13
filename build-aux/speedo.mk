@@ -489,7 +489,7 @@ gtk__ver = 2.24.17
 gitrep = ${HOME}/s
 
 # The tarball directories
-pkgrep = ftp://ftp.gnupg.org/gcrypt
+pkgrep = https://gnupg.org/ftp/gcrypt
 pkg10rep = ftp://ftp.g10code.com/g10code
 pkg2rep = $(TARBALLS)
 
