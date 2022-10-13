@@ -596,8 +596,8 @@ speedo_pkg_gtk__tar       = $(pkg2rep)/gtk+-$(gtk__ver).tar.xz
 
 speedo_pkg_npth_configure = --enable-static
 
-speedo_pkg_libgpg_error_configure = --enable-static
-speedo_pkg_w64_libgpg_error_configure = --enable-static
+speedo_pkg_libgpg_error_configure = --enable-static --enable-install-gpg-error-config
+speedo_pkg_w64_libgpg_error_configure = --enable-static --enable-install-gpg-error-config
 
 speedo_pkg_libassuan_configure = --enable-static
 speedo_pkg_w64_libassuan_configure = --enable-static
