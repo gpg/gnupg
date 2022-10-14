@@ -140,6 +140,7 @@ enum cmd_and_opt_values
   oSSHSupport,
   oSSHFingerprintDigest,
   oPuttySupport,
+  oWin32OpenSSHSupport,
   oDisableScdaemon,
   oDisableCheckOwnSocket,
   oS2KCount,
@@ -225,6 +226,13 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oPuttySupport, "enable-putty-support",
 #ifdef HAVE_W32_SYSTEM
                 /* */           N_("enable putty support")
+#else
+                /* */           "@"
+#endif
+                ),
+  ARGPARSE_o_s (oWin32OpenSSHSupport, "enable-win32-openssh-support",
+#ifdef HAVE_W32_SYSTEM
+                /* */           N_("enable Win32-OpenSSH support")
 #else
                 /* */           "@"
 #endif
@@ -357,6 +365,10 @@ static int putty_support;
    value.  Putty currently (0.62) uses 8k, thus 16k should be enough
    for the foreseeable future.  */
 #define PUTTY_IPC_MAXLEN 16384
+
+/* Path to the pipe, which handles requests from Win32-OpenSSH.  */
+static const char *win32_openssh_support;
+#define W32_DEFAILT_AGENT_PIPE_NAME "\\\\.\\pipe\\openssh-ssh-agent"
 #endif /*HAVE_W32_SYSTEM*/
 
 /* The list of open file descriptors at startup.  Note that this list
@@ -1286,6 +1298,15 @@ main (int argc, char **argv)
         case oPuttySupport:
 #        ifdef HAVE_W32_SYSTEM
           putty_support = 1;
+#        endif
+          break;
+
+        case oWin32OpenSSHSupport:
+#        ifdef HAVE_W32_SYSTEM
+          if (pargs.r_type)
+            win32_openssh_support = pargs.r.ret_str;
+          else
+            win32_openssh_support = W32_DEFAILT_AGENT_PIPE_NAME;
 #        endif
           break;
 
@@ -2756,6 +2777,99 @@ putty_message_thread (void *arg)
     log_info ("putty message loop thread stopped\n");
   return NULL;
 }
+
+#define BUFSIZE (5 * 1024)
+
+/* The thread handling Win32-OpenSSH requests through NamedPipe.  */
+static void *
+win32_openssh_thread (void *arg)
+{
+  HANDLE pipe;
+
+  (void)arg;
+
+  if (opt.verbose)
+    log_info ("Win32-OpenSSH thread started\n");
+
+  while (1)
+    {
+      ctrl_t ctrl = NULL;
+      estream_t ssh_stream = NULL;
+      es_syshd_t syshd;
+
+      npth_unprotect ();
+      pipe = CreateNamedPipeA (win32_openssh_support, PIPE_ACCESS_DUPLEX,
+                               (PIPE_TYPE_BYTE | PIPE_READMODE_BYTE
+                                | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS),
+                               PIPE_UNLIMITED_INSTANCES,
+                               BUFSIZE, BUFSIZE, 0, NULL);
+
+      if (pipe == INVALID_HANDLE_VALUE)
+        {
+          npth_protect ();
+          log_error ("cannot create pipe: %ld\n", GetLastError ());
+          break;
+        }
+
+      if (ConnectNamedPipe (pipe, NULL) == 0)
+        {
+          npth_protect ();
+          CloseHandle (pipe);
+          log_error ("Error at ConnectNamedPipe: %ld\n", GetLastError ());
+          break;
+        }
+
+      npth_protect ();
+      ctrl = xtrycalloc (1, sizeof *ctrl);
+      if (!ctrl)
+        {
+          CloseHandle (pipe);
+          log_error ("error allocating connection control data: %s\n",
+                     strerror (errno));
+          break;
+        }
+
+#if _WIN32_WINNT >= 0x600
+      if (!GetNamedPipeClientProcessId (pipe, &ctrl->client_pid))
+        log_info ("failed to get client process id: %ld\n", GetLastError ());
+      else
+        ctrl->client_uid = -1;
+#endif
+
+      ctrl->session_env = session_env_new ();
+      if (!ctrl->session_env)
+        {
+          log_error ("error allocating session environment block: %s\n",
+                     strerror (errno));
+          agent_deinit_default_ctrl (ctrl);
+          xfree (ctrl);
+          CloseHandle (pipe);
+          break;
+        }
+      agent_init_default_ctrl (ctrl);
+
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = pipe;
+      ssh_stream = es_sysopen (&syshd, "r+b");
+      if (!ssh_stream)
+        {
+          agent_deinit_default_ctrl (ctrl);
+          xfree (ctrl);
+          CloseHandle (pipe);
+          break;
+        }
+
+      start_command_handler_ssh_stream (ctrl, ssh_stream);
+
+      agent_deinit_default_ctrl (ctrl);
+      xfree (ctrl);
+      CloseHandle (pipe);
+    }
+
+  if (opt.verbose)
+    log_info ("Win32-OpenSSH thread stopped\n");
+  return NULL;
+}
 #endif /*HAVE_W32_SYSTEM*/
 
 
@@ -2948,9 +3062,16 @@ handle_connections (gnupg_fd_t listen_fd,
 
       ret = npth_create (&thread, &tattr, putty_message_thread, NULL);
       if (ret)
-        {
-          log_error ("error spawning putty message loop: %s\n", strerror (ret));
-        }
+        log_error ("error spawning putty message loop: %s\n", strerror (ret));
+    }
+
+  if (win32_openssh_support)
+    {
+      npth_t thread;
+
+      ret = npth_create (&thread, &tattr, win32_openssh_thread, NULL);
+      if (ret)
+        log_error ("error spawning Win32-OpenSSH loop: %s\n", strerror (ret));
     }
 #endif /*HAVE_W32_SYSTEM*/
 

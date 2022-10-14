@@ -3768,22 +3768,58 @@ get_client_info (gnupg_fd_t fd, struct peer_info_s *out)
 }
 
 
+/* Start serving client on STREAM.  */
+void
+start_command_handler_ssh_stream (ctrl_t ctrl, estream_t stream)
+{
+  gpg_error_t err;
+  int ret;
+
+  err = agent_copy_startup_env (ctrl);
+  if (err)
+    goto out;
+
+  /* We have to disable the estream buffering, because the estream
+     core doesn't know about secure memory.  */
+  ret = es_setvbuf (stream, NULL, _IONBF, 0);
+  if (ret)
+    {
+      log_error ("failed to disable buffering on socket stream: %s\n",
+                 strerror (errno));
+      goto out;
+    }
+
+  /* Main processing loop. */
+  while ( !ssh_request_process (ctrl, stream) )
+    {
+      /* Check whether we have reached EOF before trying to read
+         another request.  */
+      int c;
+
+      c = es_fgetc (stream);
+      if (c == EOF)
+        break;
+      es_ungetc (c, stream);
+    }
+
+  /* Reset the daemon in case it has been used. */
+  agent_reset_daemon (ctrl);
+
+ out:
+  es_fclose (stream);
+}
+
+
 /* Start serving client on SOCK_CLIENT.  */
 void
 start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
 {
-  estream_t stream_sock = NULL;
-  gpg_error_t err;
-  int ret;
+  estream_t stream_sock;
   struct peer_info_s peer_info;
   es_syshd_t syshd;
 
   syshd.type = ES_SYSHD_SOCK;
   syshd.u.sock = sock_client;
-
-  err = agent_copy_startup_env (ctrl);
-  if (err)
-    goto out;
 
   get_client_info (sock_client, &peer_info);
   ctrl->client_pid = peer_info.pid;
@@ -3793,42 +3829,12 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   stream_sock = es_sysopen (&syshd, "r+");
   if (!stream_sock)
     {
-      err = gpg_error_from_syserror ();
       log_error (_("failed to create stream from socket: %s\n"),
-		 gpg_strerror (err));
-      goto out;
-    }
-  /* We have to disable the estream buffering, because the estream
-     core doesn't know about secure memory.  */
-  ret = es_setvbuf (stream_sock, NULL, _IONBF, 0);
-  if (ret)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("failed to disable buffering "
-                 "on socket stream: %s\n", gpg_strerror (err));
-      goto out;
+                 strerror (errno));
+      return;
     }
 
-  /* Main processing loop. */
-  while ( !ssh_request_process (ctrl, stream_sock) )
-    {
-      /* Check whether we have reached EOF before trying to read
-	 another request.  */
-      int c;
-
-      c = es_fgetc (stream_sock);
-      if (c == EOF)
-        break;
-      es_ungetc (c, stream_sock);
-    }
-
-  /* Reset the daemon in case it has been used. */
-  agent_reset_daemon (ctrl);
-
-
- out:
-  if (stream_sock)
-    es_fclose (stream_sock);
+  start_command_handler_ssh_stream (ctrl, stream_sock);
 }
 
 

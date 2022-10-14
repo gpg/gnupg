@@ -54,7 +54,7 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 # build-aux/speedo.mk, build-aux/getswdb.sh, and Makefile.am
 AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
 
-NEED_GPGRT_VERSION=1.41
+NEED_GPGRT_VERSION=1.46
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.9.1
