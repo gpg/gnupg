@@ -1237,10 +1237,20 @@ int
 gnupg_stat (const char *name, struct stat *statbuf)
 {
 # ifdef HAVE_W32_SYSTEM
+#  if __MINGW32_MAJOR_VERSION > 3
+    /* mingw.org's MinGW */
+#   define STRUCT_STAT _stat
+#  elif defined(_USE_32BIT_TIME_T)
+    /* MinGW64 for i686 */
+#   define STRUCT_STAT _stat32
+#  else
+    /* MinGW64 for x86_64 */
+#   define STRUCT_STAT _stat64i32
+#  endif
   if (any8bitchar (name))
     {
       wchar_t *wname;
-      struct _stat32 st32;
+      struct STRUCT_STAT st32;
       int ret;
 
       wname = utf8_to_wchar (name);
