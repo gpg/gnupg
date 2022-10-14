@@ -3137,8 +3137,10 @@ start_command_handler (assuan_fd_t fd, unsigned int session_id)
                ctrl->refcount);
   else
     {
+#if USE_LDAP
       ks_ldap_free_state (ctrl->ks_get_state);
       ctrl->ks_get_state = NULL;
+#endif
       release_ctrl_ocsp_certs (ctrl);
       xfree (ctrl->server_local);
       dirmngr_deinit_default_ctrl (ctrl);
