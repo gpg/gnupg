@@ -2564,7 +2564,7 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
     {
       struct stat st;
 
-      if ( !fstat (FD2INT (fp), &st) )
+      if ( !fstat (fp, &st) )
         return st.st_size;
       log_error("fstat() failed: %s\n", strerror(errno) );
     }
