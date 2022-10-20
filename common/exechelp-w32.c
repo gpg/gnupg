@@ -410,7 +410,7 @@ gnupg_close_pipe (int fd)
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     int *except, void (*preexec)(void), unsigned int flags,
+                     int *except, unsigned int flags,
                      estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,
@@ -563,10 +563,6 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   if (errpipe[1] == INVALID_HANDLE_VALUE)
     nullhd[2] = ((flags & GNUPG_SPAWN_KEEP_STDOUT)?
                  GetStdHandle (STD_ERROR_HANDLE) : w32_open_null (1));
-
-  /* Start the process.  Note that we can't run the PREEXEC function
-     because this might change our own environment. */
-  (void)preexec;
 
   memset (&si, 0, sizeof si);
   si.cb = sizeof (si);

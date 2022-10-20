@@ -788,7 +788,6 @@ do_spawn_process (scheme *sc, pointer args)
 
   err = gnupg_spawn_process (argv[0], (const char **) &argv[1],
                              NULL,
-                             NULL,
                              flags,
                              &infp, &outfp, &errfp, &pid);
   xfree (argv);

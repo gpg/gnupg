@@ -1370,7 +1370,7 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
 
   result = 0;
   errlines = NULL;
-  err = gnupg_spawn_process (pgmname, argv, NULL, NULL, 0,
+  err = gnupg_spawn_process (pgmname, argv, NULL, 0,
                              NULL, NULL, &errfp, &pid);
   if (err)
     result |= 1; /* Program could not be run.  */
@@ -1759,7 +1759,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   /* First we need to read the option table from the program.  */
   argv[0] = "--dump-option-table";
   argv[1] = NULL;
-  err = gnupg_spawn_process (pgmname, argv, NULL, NULL, 0,
+  err = gnupg_spawn_process (pgmname, argv, NULL, 0,
                              NULL, &outfp, NULL, &pid);
   if (err)
     {
@@ -1940,7 +1940,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   /* Now read the default options.  */
   argv[0] = "--gpgconf-list";
   argv[1] = NULL;
-  err = gnupg_spawn_process (pgmname, argv, NULL, NULL, 0,
+  err = gnupg_spawn_process (pgmname, argv, NULL, 0,
                              NULL, &outfp, NULL, &pid);
   if (err)
     {

@@ -855,7 +855,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
     }
 
   err = gnupg_spawn_process (pgmname, arg_list,
-                             NULL, NULL, GNUPG_SPAWN_NONBLOCK,
+                             NULL, GNUPG_SPAWN_NONBLOCK,
                              NULL, &outfp, &errfp, &pid);
   if (err)
     {

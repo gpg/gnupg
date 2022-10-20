@@ -412,7 +412,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
     exceptclose[0] = -1;
 
   err = gnupg_spawn_process (pgmname, argv,
-                             exceptclose, NULL, GNUPG_SPAWN_NONBLOCK,
+                             exceptclose, GNUPG_SPAWN_NONBLOCK,
                              input? &infp : NULL,
                              &outfp, &errfp, &pid);
   if (extrapipe[0] != -1)

@@ -133,7 +133,7 @@ void gnupg_close_pipe (int fd);
  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     int *execpt, void (*preexec)(void), unsigned int flags,
+                     int *execpt, unsigned int flags,
                      estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,

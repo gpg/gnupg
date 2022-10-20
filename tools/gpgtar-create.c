@@ -1195,7 +1195,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
           goto leave;
         }
 
-      err = gnupg_spawn_process (opt.gpg_program, argv, NULL, NULL,
+      err = gnupg_spawn_process (opt.gpg_program, argv, NULL,
                                  (GNUPG_SPAWN_KEEP_STDOUT
                                   | GNUPG_SPAWN_KEEP_STDERR),
                                  &outstream, NULL, NULL, &pid);
