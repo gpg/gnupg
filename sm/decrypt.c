@@ -82,6 +82,335 @@ string_from_gcry_buffer (gcry_buffer_t *buffer)
 }
 
 
+/* Helper to construct and hash the
+ *  ECC-CMS-SharedInfo ::= SEQUENCE {
+ *      keyInfo         AlgorithmIdentifier,
+ *      entityUInfo [0] EXPLICIT OCTET STRING OPTIONAL,
+ *      suppPubInfo [2] EXPLICIT OCTET STRING  }
+ * as described in RFC-5753, 7.2.  */
+static gpg_error_t
+hash_ecc_cms_shared_info (gcry_md_hd_t hash_hd, const char *wrap_algo_str,
+                          unsigned int keylen,
+                          const void *ukm, unsigned int ukmlen)
+{
+  gpg_error_t err;
+  void *p;
+  unsigned char *oid;
+  size_t n, oidlen, toidlen, tkeyinfo, tukmlen, tsupppubinfo;
+  unsigned char keylenbuf[6];
+  membuf_t mb = MEMBUF_ZERO;
+
+  err = ksba_oid_from_str (wrap_algo_str, &oid, &oidlen);
+  if (err)
+    return err;
+  toidlen = get_tlv_length (CLASS_UNIVERSAL, TAG_OBJECT_ID, 0, oidlen);
+  tkeyinfo = get_tlv_length (CLASS_UNIVERSAL, TAG_SEQUENCE, 1, toidlen);
+
+  tukmlen = ukm? get_tlv_length (CLASS_CONTEXT, 0, 1, ukmlen) : 0;
+
+  keylen *= 8;
+  keylenbuf[0] = TAG_OCTET_STRING;
+  keylenbuf[1] = 4;
+  keylenbuf[2] = (keylen >> 24);
+  keylenbuf[3] = (keylen >> 16);
+  keylenbuf[4] = (keylen >> 8);
+  keylenbuf[5] = keylen;
+
+  tsupppubinfo = get_tlv_length (CLASS_CONTEXT, 2, 1, sizeof keylenbuf);
+
+  put_tlv_to_membuf (&mb, CLASS_UNIVERSAL, TAG_SEQUENCE, 1,
+                     tkeyinfo + tukmlen + tsupppubinfo);
+  put_tlv_to_membuf (&mb, CLASS_UNIVERSAL, TAG_SEQUENCE, 1,
+                     toidlen);
+  put_tlv_to_membuf (&mb, CLASS_UNIVERSAL, TAG_OBJECT_ID, 0, oidlen);
+  put_membuf (&mb, oid, oidlen);
+  ksba_free (oid);
+
+  if (ukm)
+    {
+      put_tlv_to_membuf (&mb, CLASS_CONTEXT, 0, 1, ukmlen);
+      put_membuf (&mb, ukm, ukmlen);
+    }
+
+  put_tlv_to_membuf (&mb, CLASS_CONTEXT, 2, 1, sizeof keylenbuf);
+  put_membuf (&mb, keylenbuf, sizeof keylenbuf);
+
+  p = get_membuf (&mb, &n);
+  if (!p)
+    return gpg_error_from_syserror ();
+
+  gcry_md_write (hash_hd, p, n);
+  xfree (p);
+  return 0;
+}
+
+
+
+/* Derive a KEK (key wrapping key) using (SECRET,SECRETLEN), an
+ * optional (UKM,ULMLEN), the wrap algorithm WRAP_ALGO_STR in decimal
+ * dotted form, and the hash algorithm HASH_ALGO.  On success a key of
+ * length KEYLEN is stored at KEY.  */
+gpg_error_t
+ecdh_derive_kek (unsigned char *key, unsigned int keylen,
+                 int hash_algo, const char *wrap_algo_str,
+                 const void *secret, unsigned int secretlen,
+                 const void *ukm, unsigned int ukmlen)
+{
+  gpg_error_t err = 0;
+  unsigned int hashlen;
+  gcry_md_hd_t hash_hd;
+  unsigned char counter;
+  unsigned int n, ncopy;
+
+  hashlen = gcry_md_get_algo_dlen (hash_algo);
+  if (!hashlen)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  err = gcry_md_open (&hash_hd, hash_algo, 0);
+  if (err)
+    return err;
+
+  /* According to SEC1 3.6.1 we should check that
+   *   SECRETLEN + UKMLEN + 4 < maxhashlen
+   * However, we have no practical limit on the hash length and thus
+   * there is no point in checking this.  The second check that
+   *   KEYLEN < hashlen*(2^32-1)
+   * is obviously also not needed.
+   */
+  for (n=0, counter=1; n < keylen; counter++)
+    {
+      if (counter > 1)
+        gcry_md_reset (hash_hd);
+      gcry_md_write (hash_hd, secret, secretlen);
+      gcry_md_write (hash_hd, "\x00\x00\x00", 3);  /* MSBs of counter */
+      gcry_md_write (hash_hd, &counter, 1);
+      err = hash_ecc_cms_shared_info (hash_hd, wrap_algo_str, keylen,
+                                      ukm, ukmlen);
+      if (err)
+        break;
+      gcry_md_final (hash_hd);
+      if (n + hashlen > keylen)
+        ncopy = keylen - n;
+      else
+        ncopy = hashlen;
+      memcpy (key+n, gcry_md_read (hash_hd, 0), ncopy);
+      n += ncopy;
+    }
+
+  gcry_md_close (hash_hd);
+  return err;
+}
+
+
+/* This function will modify SECRET.  NBITS is the size of the curve
+ * which which we took from the certificate.  */
+static gpg_error_t
+ecdh_decrypt (unsigned char *secret, size_t secretlen,
+              unsigned int nbits, gcry_sexp_t enc_val,
+              unsigned char **r_result, unsigned int *r_resultlen)
+{
+  gpg_error_t err;
+  gcry_buffer_t ioarray[4] = { {0}, {0}, {0}, {0} };
+  char *encr_algo_str = NULL;
+  char *wrap_algo_str = NULL;
+  int hash_algo, cipher_algo;
+  const unsigned char *ukm;  /* Alias for ioarray[2].  */
+  unsigned int ukmlen;
+  const unsigned char *data;  /* Alias for ioarray[3].  */
+  unsigned int datalen;
+  unsigned int keylen;
+  unsigned char key[32];
+  gcry_cipher_hd_t cipher_hd = NULL;
+  unsigned char *result = NULL;
+  unsigned int resultlen;
+
+  *r_resultlen = 0;
+  *r_result = NULL;
+
+  /* Extract X from SECRET; this is the actual secret.  Unless a
+   * smartcard diretcly returns X, it must be in the format of:
+   *
+   *   04 || X || Y
+   *   40 || X
+   *   41 || X
+   */
+  if (secretlen < 2)
+    return gpg_error (GPG_ERR_BAD_DATA);
+  if (secretlen == (nbits+7)/8)
+    ; /* Matches curve length - this is already the X coordinate.  */
+  else if (*secret == 0x04)
+    {
+      secretlen--;
+      memmove (secret, secret+1, secretlen);
+      if ((secretlen & 1))
+        return gpg_error (GPG_ERR_BAD_DATA);
+      secretlen /= 2;
+    }
+  else if (*secret == 0x40 || *secret == 0x41)
+    {
+      secretlen--;
+      memmove (secret, secret+1, secretlen);
+    }
+  else
+    return gpg_error (GPG_ERR_BAD_DATA);
+  if (!secretlen)
+    return gpg_error (GPG_ERR_BAD_DATA);
+
+  if (DBG_CRYPTO)
+    log_printhex (secret, secretlen, "ECDH X ..:");
+
+  /* We have now the shared secret bytes in (SECRET,SECRETLEN).  Now
+   * we will compute the KEK using a value dervied from the secret
+   * bytes. */
+  err = gcry_sexp_extract_param (enc_val, "enc-val",
+                                 "&'encr-algo''wrap-algo''ukm'?s",
+                                 ioarray+0, ioarray+1,
+                                 ioarray+2, ioarray+3, NULL);
+  if (err)
+    {
+      log_error ("extracting ECDH parameter failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  encr_algo_str = string_from_gcry_buffer (ioarray);
+  if (!encr_algo_str)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  wrap_algo_str = string_from_gcry_buffer (ioarray+1);
+  if (!wrap_algo_str)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  ukm = ioarray[2].data;
+  ukmlen = ioarray[2].len;
+  data = ioarray[3].data;
+  datalen = ioarray[3].len;
+
+  /* Check parameters.  */
+  if (DBG_CRYPTO)
+    {
+      log_debug ("encr_algo: %s\n", encr_algo_str);
+      log_debug ("wrap_algo: %s\n", wrap_algo_str);
+      log_printhex (ukm, ukmlen, "ukm .....:");
+      log_printhex (data, datalen, "data ....:");
+    }
+
+  if (!strcmp (encr_algo_str, "1.3.132.1.11.1"))
+    {
+      /* dhSinglePass-stdDH-sha256kdf-scheme */
+      hash_algo = GCRY_MD_SHA256;
+    }
+  else if (!strcmp (encr_algo_str, "1.3.132.1.11.2"))
+    {
+      /* dhSinglePass-stdDH-sha384kdf-scheme */
+      hash_algo = GCRY_MD_SHA384;
+    }
+  else if (!strcmp (encr_algo_str, "1.3.132.1.11.3"))
+    {
+      /* dhSinglePass-stdDH-sha512kdf-scheme */
+      hash_algo = GCRY_MD_SHA512;
+    }
+  else if (!strcmp (encr_algo_str, "1.3.133.16.840.63.0.2"))
+    {
+      /* dhSinglePass-stdDH-sha1kdf-scheme */
+      hash_algo = GCRY_MD_SHA1;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      goto leave;
+    }
+
+  if (!strcmp (wrap_algo_str, "2.16.840.1.101.3.4.1.5"))
+    {
+      cipher_algo = GCRY_CIPHER_AES128;
+      keylen = 16;
+    }
+  else if (!strcmp (wrap_algo_str, "2.16.840.1.101.3.4.1.25"))
+    {
+      cipher_algo = GCRY_CIPHER_AES192;
+      keylen = 24;
+    }
+  else if (!strcmp (wrap_algo_str, "2.16.840.1.101.3.4.1.45"))
+    {
+      cipher_algo = GCRY_CIPHER_AES256;
+      keylen = 32;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      goto leave;
+    }
+
+  err = ecdh_derive_kek (key, keylen, hash_algo, wrap_algo_str,
+                         secret, secretlen, ukm, ukmlen);
+  if (err)
+    goto leave;
+
+  if (DBG_CRYPTO)
+    log_printhex (key, keylen, "KEK .....:");
+
+  /* Unwrap the key.  */
+  if ((datalen % 8) || datalen < 16)
+    {
+      log_error ("can't use a shared secret of %u bytes for ecdh\n", datalen);
+      err = gpg_error (GPG_ERR_BAD_DATA);
+      goto leave;
+    }
+
+  resultlen = datalen - 8;
+  result = xtrymalloc_secure (resultlen);
+  if (!result)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_cipher_open (&cipher_hd, cipher_algo, GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (err)
+    {
+      log_error ("ecdh failed to initialize AESWRAP: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gcry_cipher_setkey (cipher_hd, key, keylen);
+  wipememory (key, sizeof key);
+  if (err)
+    {
+      log_error ("ecdh failed in gcry_cipher_setkey: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gcry_cipher_decrypt (cipher_hd, result, resultlen, data, datalen);
+  if (err)
+    {
+      log_error ("ecdh failed in gcry_cipher_decrypt: %s\n",gpg_strerror (err));
+      goto leave;
+    }
+
+  *r_resultlen = resultlen;
+  *r_result = result;
+  result = NULL;
+
+ leave:
+  if (result)
+    {
+      wipememory (result, resultlen);
+      xfree (result);
+    }
+  gcry_cipher_close (cipher_hd);
+  xfree (encr_algo_str);
+  xfree (wrap_algo_str);
+  xfree (ioarray[0].data);
+  xfree (ioarray[1].data);
+  xfree (ioarray[2].data);
+  xfree (ioarray[3].data);
+  return err;
+}
+
+
 /* Helper for pwri_decrypt to parse the derive info.
  * Example data for (DER,DERLEN):
  * SEQUENCE {
@@ -447,13 +776,14 @@ pwri_decrypt (ctrl_t ctrl, gcry_sexp_t enc_val,
 /* Decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
 static int
-prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
+prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
+                    int pk_algo, unsigned int nbits, const char *desc,
                     ksba_const_sexp_t enc_val,
                     struct decrypt_filter_parm_s *parm)
 {
   char *seskey = NULL;
   size_t n, seskeylen;
-  int pwri = !hexkeygrip;
+  int pwri = !hexkeygrip && !pk_algo;
   int rc;
 
   if (DBG_CRYPTO)
@@ -468,6 +798,9 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
           log_error ("error decrypting session key: %s\n", gpg_strerror (rc));
           goto leave;
         }
+
+      if (DBG_CRYPTO)
+        log_printhex (seskey, seskeylen, "DEK frame:");
     }
 
   n=0;
@@ -489,6 +822,27 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
       xfree (seskey);
       seskey = decrypted;
       seskeylen = decryptedlen;
+    }
+  else if (pk_algo == GCRY_PK_ECC)
+    {
+      gcry_sexp_t s_enc_val;
+      unsigned char *decrypted;
+      unsigned int decryptedlen;
+
+      rc = gcry_sexp_sscan (&s_enc_val, NULL, enc_val,
+                            gcry_sexp_canon_len (enc_val, 0, NULL, NULL));
+      if (rc)
+        goto leave;
+
+      rc = ecdh_decrypt (seskey, seskeylen, nbits, s_enc_val,
+                         &decrypted, &decryptedlen);
+      gcry_sexp_release (s_enc_val);
+      if (rc)
+        goto leave;
+      xfree (seskey);
+      seskey = decrypted;
+      seskeylen = decryptedlen;
+
     }
   else if (seskeylen == 32 || seskeylen == 24 || seskeylen == 16)
     {
@@ -530,7 +884,10 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
     }
 
   if (DBG_CRYPTO)
-    log_printhex (seskey+n, seskeylen-n, "session key:");
+    {
+      log_printhex (seskey+n, seskeylen-n, "CEK .......:");
+      log_printhex (parm->iv, parm->ivlen, "IV ........:");
+    }
 
   if (opt.verbose)
     log_info (_("%s.%s encrypted data\n"),
@@ -839,7 +1196,10 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
           dfparm.mode = mode;
           dfparm.blklen = gcry_cipher_get_algo_blklen (algo);
           if (dfparm.blklen > sizeof (dfparm.helpblock))
-            return gpg_error (GPG_ERR_BUG);
+            {
+              rc = gpg_error (GPG_ERR_BUG);
+              goto leave;
+            }
 
           rc = ksba_cms_get_content_enc_iv (cms,
                                             dfparm.iv,
@@ -951,6 +1311,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
                   desc = gpgsm_format_keydesc (cert);
+
                   pkfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
                   pkalgostr = gpgsm_pubkey_algo_string (cert, NULL);
                   pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
@@ -1006,7 +1367,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   if (maybe_pwri && opt.verbose)
                     log_info ("recp %d - KEKRI or PWRI\n", recp);
 
-                  rc = prepare_decryption (ctrl, hexkeygrip,
+                  rc = prepare_decryption (ctrl, hexkeygrip, pk_algo, nbits,
                                            desc, enc_val, &dfparm);
                   xfree (enc_val);
                   if (rc)
@@ -1076,7 +1437,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 
           if (!any_key)
             {
-              rc = gpg_error (GPG_ERR_NO_SECKEY);
+              if (!rc)
+                rc = gpg_error (GPG_ERR_NO_SECKEY);
               goto leave;
             }
         }
