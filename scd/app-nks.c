@@ -1898,19 +1898,31 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_INV_VALUE);
 #undef X
 
-  /* Send an MSE for PSO:Computer_Signature.  */
+  /* Send an MSE for PSO:Compute_Signature.  */
   if (app->appversion > 2 && app->app_local->active_nks_app != NKS_APP_ESIGN)
     {
       unsigned char mse[6];
+      unsigned int mselen;
 
-      mse[0] = 0x80; /* Algorithm reference.  */
-      mse[1] = 1;
-      mse[2] = 2;    /* RSA, card does pkcs#1 v1.5 padding, no ASN.1 check.  */
-      mse[3] = 0x84; /* Private key reference.  */
-      mse[4] = 1;
-      mse[5] = kid;
+      if (algo == GCRY_PK_ECC)
+        {
+          mse[0] = 0x84; /* Private key reference.  */
+          mse[1] = 1;
+          mse[2] = kid;
+          mselen = 3;
+        }
+      else /* RSA */
+        {
+          mse[0] = 0x80; /* Algorithm reference.  */
+          mse[1] = 1;
+          mse[2] = 2;    /* Card does pkcs#1 v1.5 padding, no ASN.1 check.  */
+          mse[3] = 0x84; /* Private key reference.  */
+          mse[4] = 1;
+          mse[5] = kid;
+          mselen = 6;
+        }
       err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB6,
-                                         mse, sizeof mse);
+                                         mse, mselen);
     }
 
   if (app->app_local->active_nks_app == NKS_APP_ESIGN)
