@@ -283,6 +283,7 @@ char *gpgsm_get_keygrip_hexstring (ksba_cert_t cert);
 int  gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits);
 int  gpgsm_get_key_algo_info2 (ksba_cert_t cert, unsigned int *nbits,
                                char **r_curve);
+int   gpgsm_is_ecc_key (ksba_cert_t cert);
 char *gpgsm_pubkey_algo_string (ksba_cert_t cert, int *r_algoid);
 char *gpgsm_get_certid (ksba_cert_t cert);
 

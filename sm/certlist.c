@@ -171,7 +171,8 @@ cert_usage_p (ksba_cert_t cert, int mode, int silent)
     }
 
   encr_bits = (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT);
-  if ((opt.compat_flags & COMPAT_ALLOW_KA_TO_ENCR))
+  if ((opt.compat_flags & COMPAT_ALLOW_KA_TO_ENCR)
+      || gpgsm_is_ecc_key (cert))
     encr_bits |= KSBA_KEYUSAGE_KEY_AGREEMENT;
 
   sign_bits = (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION);

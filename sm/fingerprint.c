@@ -307,8 +307,16 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
 }
 
 
-/* This is a wrapper around pubkey_algo_string which takesa KSA
- * certitificate instead of a Gcrypt public key.  Note that this
+/* Return true if CERT is an ECC key.  */
+int
+gpgsm_is_ecc_key (ksba_cert_t cert)
+{
+  return GCRY_PK_ECC == gpgsm_get_key_algo_info2 (cert, NULL, NULL);
+}
+
+
+/* This is a wrapper around pubkey_algo_string which takes a KSBA
+ * certificate instead of a Gcrypt public key.  Note that this
  * function may return NULL on error.  */
 char *
 gpgsm_pubkey_algo_string (ksba_cert_t cert, int *r_algoid)
