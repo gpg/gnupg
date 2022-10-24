@@ -10,7 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2022-02-15
+# Last-changed: 2022-09-21
 
 
 dnl AM_PATH_GPG_ERROR([MINIMUM-VERSION,
@@ -120,6 +120,10 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
         fi
         if test -n "$gpgrt_libdir"; then break; fi
       done
+      if test -z "$libdir_candidates"; then
+        # No valid pkgconfig dir in any of the system directories, fallback
+        gpgrt_libdir=${possible_libdir1}
+      fi
     else
       # When we cannot determine system libdir-format, use this:
       gpgrt_libdir=${possible_libdir1}
