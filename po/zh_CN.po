@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the GnuPG package.
 # Meng Jie <zuxyhere@eastday.com>, 2004.
 # Chuhao Li <lchopn@gmail.com>, 2018.
-# bobwxc <bobwxc@yeah.net>, 2021.
+# bobwxc <bobwxc@yeah.net>, 2021, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.2.27\n"
+"Project-Id-Version: GNU gnupg 2.3.8\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-04-14 13:13+0800\n"
+"PO-Revision-Date: 2022-10-22 19:41+0800\n"
 "Last-Translator: bobwxc <bobwxc@yeah.net>\n"
 "Language-Team: None\n"
 "Language: zh_CN\n"
@@ -262,10 +262,9 @@ msgstr "PIN 再次输入时与首次输入不符；请重试"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "请输入 PIN%s%s%s 以解锁这张卡"
 
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
+#, c-format
 msgid "error writing to pipe: %s\n"
-msgstr "写入 %s 时出现错误：%s\n"
+msgstr "写入管道时出现错误：%s\n"
 
 msgid "Enter new passphrase"
 msgstr "输入新的密码"
@@ -731,12 +730,9 @@ msgstr "稍后修改"
 msgid "Please insert the card with serial number"
 msgstr "请插入具有以下序列号的卡"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
-#| "to allow this?"
+#, c-format
 msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
-msgstr "一个 ssh 进程请求使用密钥%%0A  %s%%0A  (%s)%%0A您想要允许这一请求吗？"
+msgstr "请求使用密钥%%0A  %s%%0A  %s%%0A您想要允许这一请求吗？"
 
 #, c-format
 msgid ""
@@ -1786,10 +1782,9 @@ msgstr "%s/%s.%s 已经加密给：“%s”\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "选项 ‘%s’ 可能不能用于 %s 模式\n"
 
-#, fuzzy, c-format
-#| msgid "%s.%s encrypted data\n"
+#, c-format
 msgid "%s encrypted data\n"
-msgstr "%s.%s 已加密的数据\n"
+msgstr "%s 已加密的数据\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
@@ -3673,10 +3668,8 @@ msgstr "您确定仍然想要增加吗？(y/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "您不可以把照片标识增加到 PGP2 样式的密钥里。\n"
 
-#, fuzzy
-#| msgid "Such a user ID already exists on this key!\n"
 msgid "Such a user ID already exists on this key!"
-msgstr "这样的用户标识已经存在于这个密钥上了！\n"
+msgstr "该用户标识已经存在于这个密钥上了！"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "删除这个完好的签名吗？(y/N/q)"
@@ -4606,7 +4599,7 @@ msgstr "解密失败：%s\n"
 
 #, c-format
 msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgstr "未能满足合规规则，操作已强制取消\n"
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -6524,7 +6517,7 @@ msgid "error getting key usage information: %s\n"
 msgstr "获取密钥用途信息时出现错误：%s\n"
 
 msgid "Tor might be in use - network access is limited"
-msgstr ""
+msgstr "可能正在使用Tor——网络访问受限"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7747,10 +7740,8 @@ msgstr "通过发布者进行 crl_cache_insert 失败：%s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "读取器的文件映射表已满 - 正在等待\n"
 
-#, fuzzy
-#| msgid "CRL access not possible due to Tor mode\n"
 msgid "CRL access not possible due to Tor mode"
-msgstr "不能在 Tor 模式下访问 CRL  \n"
+msgstr "不能在 Tor 模式下访问 CRL"
 
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
@@ -7921,10 +7912,8 @@ msgstr "|URL|重定向 HTTP 请求到 URL"
 msgid "use system's HTTP proxy setting"
 msgstr "使用系统的 HTTP 代理设置"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for OpenPGP servers"
-msgstr "对 HTTP 服务器的配置"
+msgstr "对 OpenPGP 服务器的配置"
 
 msgid "|URL|use keyserver at URL"
 msgstr "|URL|使用 URL 处的密钥服务器"
@@ -7932,10 +7921,8 @@ msgstr "|URL|使用 URL 处的密钥服务器"
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|FILE|为承载 HKP 的 TLS 使用 FILE 中的 CA 证书"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for X.509 servers"
-msgstr "对 HTTP 服务器的配置"
+msgstr "对 X.509 服务器的配置"
 
 msgid "inhibit the use of LDAP"
 msgstr "禁止 LDAP 的使用"
@@ -8165,10 +8152,8 @@ msgstr "从响应者处读取失败：%s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "服务器的响应太长；限制为 %d 字节\n"
 
-#, fuzzy
-#| msgid "OCSP request not possible due to Tor mode\n"
 msgid "OCSP request not possible due to Tor mode"
-msgstr "不能在 Tor 模式下进行 OCSP 请求\n"
+msgstr "不能在 Tor 模式下进行 OCSP 请求"
 
 #, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
