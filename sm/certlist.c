@@ -33,13 +33,23 @@
 #include "keydb.h"
 #include "../common/i18n.h"
 
+/* Mode values for cert_usage_p.
+ * Take care: the values have a  semantic.  */
+#define USE_MODE_SIGN 0
+#define USE_MODE_ENCR 1
+#define USE_MODE_VRFY 2
+#define USE_MODE_DECR 3
+#define USE_MODE_CERT 4
+#define USE_MODE_OCSP 5
 
+/* OIDs we use here.  */
 static const char oid_kp_serverAuth[]     = "1.3.6.1.5.5.7.3.1";
 static const char oid_kp_clientAuth[]     = "1.3.6.1.5.5.7.3.2";
 static const char oid_kp_codeSigning[]    = "1.3.6.1.5.5.7.3.3";
 static const char oid_kp_emailProtection[]= "1.3.6.1.5.5.7.3.4";
 static const char oid_kp_timeStamping[]   = "1.3.6.1.5.5.7.3.8";
 static const char oid_kp_ocspSigning[]    = "1.3.6.1.5.5.7.3.9";
+
 
 /* Return 0 if the cert is usable for encryption.  A MODE of 0 checks
    for signing a MODE of 1 checks for encryption, a MODE of 2 checks
@@ -119,7 +129,7 @@ cert_usage_p (ksba_cert_t cert, int mode, int silent)
       if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         {
           err = 0;
-          if (opt.verbose && mode < 2 && !silent)
+          if (opt.verbose && mode < USE_MODE_VRFY && !silent)
             log_info (_("no key usage specified - assuming all usages\n"));
           use = ~0;
         }
@@ -136,7 +146,7 @@ cert_usage_p (ksba_cert_t cert, int mode, int silent)
       return err;
     }
 
-  if (mode == 4)
+  if (mode == USE_MODE_CERT)
     {
       if ((use & (KSBA_KEYUSAGE_KEY_CERT_SIGN)))
         return 0;
@@ -146,7 +156,7 @@ cert_usage_p (ksba_cert_t cert, int mode, int silent)
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
-  if (mode == 5)
+  if (mode == USE_MODE_OCSP)
     {
       if (use != ~0
           && (have_ocsp_signing
@@ -169,11 +179,13 @@ cert_usage_p (ksba_cert_t cert, int mode, int silent)
     return 0;
 
   if (!silent)
-    log_info
-      (mode==3? _("certificate should not have been used for encryption\n"):
-       mode==2? _("certificate should not have been used for signing\n"):
-       mode==1? _("certificate is not usable for encryption\n"):
-       /**/     _("certificate is not usable for signing\n"));
+    log_info (mode == USE_MODE_DECR?
+              _("certificate should not have been used for encryption\n") :
+              mode == USE_MODE_VRFY?
+              _("certificate should not have been used for signing\n") :
+              mode == USE_MODE_ENCR?
+              _("certificate is not usable for encryption\n") :
+              _("certificate is not usable for signing\n"));
 
   return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
 }
@@ -183,7 +195,7 @@ cert_usage_p (ksba_cert_t cert, int mode, int silent)
 int
 gpgsm_cert_use_sign_p (ksba_cert_t cert, int silent)
 {
-  return cert_usage_p (cert, 0, silent);
+  return cert_usage_p (cert, USE_MODE_SIGN, silent);
 }
 
 
@@ -191,31 +203,31 @@ gpgsm_cert_use_sign_p (ksba_cert_t cert, int silent)
 int
 gpgsm_cert_use_encrypt_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 1, 0);
+  return cert_usage_p (cert, USE_MODE_ENCR, 0);
 }
 
 int
 gpgsm_cert_use_verify_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 2, 0);
+  return cert_usage_p (cert, USE_MODE_VRFY, 0);
 }
 
 int
 gpgsm_cert_use_decrypt_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 3, 0);
+  return cert_usage_p (cert, USE_MODE_DECR, 0);
 }
 
 int
 gpgsm_cert_use_cert_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 4, 0);
+  return cert_usage_p (cert, USE_MODE_CERT, 0);
 }
 
 int
 gpgsm_cert_use_ocsp_p (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 5, 0);
+  return cert_usage_p (cert, USE_MODE_OCSP, 0);
 }
 
 
