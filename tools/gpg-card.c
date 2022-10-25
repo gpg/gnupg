@@ -789,7 +789,10 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
                 }
               else /* Print the primary key as fallback.  */
                 print_shax_fpr (fp, pubkey->fpr, pubkey->fprlen);
-
+            }
+          if (kb->protocol == GNUPG_PROTOCOL_OPENPGP
+              || kb->protocol == GNUPG_PROTOCOL_CMS)
+            {
               /* Find the primary or subkey of that key.  */
               for (; pubkey; pubkey = pubkey->next)
                 if (pubkey->grip_valid
