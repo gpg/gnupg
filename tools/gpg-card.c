@@ -1,5 +1,5 @@
 /* gpg-card.c - An interactive tool to work with cards.
- * Copyright (C) 2019, 2020, 2021 g10 Code GmbH
+ * Copyright (C) 2019--2022 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -39,6 +39,7 @@
 #include "../common/userids.h"
 #include "../common/ccparray.h"
 #include "../common/exectool.h"
+#include "../common/exechelp.h"
 #include "../common/ttyio.h"
 #include "../common/server-help.h"
 #include "../common/openpgpdefs.h"
@@ -3634,6 +3635,60 @@ cmd_apdu (card_info_t info, char *argstr)
 
 
 static gpg_error_t
+cmd_gpg (card_info_t info, char *argstr, int use_gpgsm)
+{
+  gpg_error_t err;
+  char **argarray;
+  ccparray_t ccp;
+  const char **argv = NULL;
+  pid_t pid;
+  int i;
+
+  if (!info)
+    return print_help
+      ("GPG[SM] <commands_and_options>\n"
+       "\n"
+       "Run gpg/gpgsm directly from this shell.\n",
+       0);
+
+  /* Fixme: We need to write and use a version of strtokenize which
+   * takes care of shell-style quoting.  */
+  argarray = strtokenize (argstr, " \t\n\v");
+  if (!argarray)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  ccparray_init (&ccp, 0);
+  for (i=0; argarray[i]; i++)
+    ccparray_put (&ccp, argarray[i]);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gnupg_spawn_process (use_gpgsm? opt.gpgsm_program:opt.gpg_program,
+                             argv, NULL, (GNUPG_SPAWN_KEEP_STDOUT
+                                          |GNUPG_SPAWN_KEEP_STDERR),
+                             NULL, NULL, NULL, &pid);
+  if (!err)
+    {
+      err = gnupg_wait_process (use_gpgsm? opt.gpgsm_program:opt.gpg_program,
+                                pid, 1, NULL);
+      gnupg_release_process (pid);
+    }
+
+
+ leave:
+  xfree (argv);
+  xfree (argarray);
+  return err;
+}
+
+
+static gpg_error_t
 cmd_history (card_info_t info, char *argstr)
 {
   int opt_list, opt_clear;
@@ -3670,7 +3725,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdWRITEKEY,  cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
-    cmdUIF, cmdAUTH, cmdYUBIKEY, cmdAPDU, cmdHISTORY,
+    cmdUIF, cmdAUTH, cmdYUBIKEY, cmdAPDU, cmdGPG, cmdGPGSM, cmdHISTORY,
     cmdINVCMD
   };
 
@@ -3711,6 +3766,8 @@ static struct
   { "writecert", cmdWRITECERT,  N_("store a certificate to a data object")},
   { "writekey",  cmdWRITEKEY,   N_("store a private key to a data object")},
   { "yubikey",   cmdYUBIKEY,    N_("Yubikey management commands")},
+  { "gpg",       cmdGPG,        NULL},
+  { "gpgsm",     cmdGPGSM,      NULL},
   { "apdu",      cmdAPDU,       NULL},
   { "history",   cmdHISTORY,    N_("manage the command history")},
   { NULL, cmdINVCMD, NULL }
@@ -3841,6 +3898,8 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdUIF:          err = cmd_uif (info, argstr); break;
     case cmdYUBIKEY:      err = cmd_yubikey (info, argstr); break;
     case cmdAPDU:         err = cmd_apdu (info, argstr); break;
+    case cmdGPG:          err = cmd_gpg (info, argstr, 0); break;
+    case cmdGPGSM:        err = cmd_gpg (info, argstr, 1); break;
     case cmdHISTORY:      err = 0; break; /* Only used in interactive mode.  */
 
     case cmdINVCMD:
@@ -4098,6 +4157,8 @@ interactive_loop (void)
         case cmdUIF:       err = cmd_uif (info, argstr); break;
         case cmdYUBIKEY:   err = cmd_yubikey (info, argstr); break;
         case cmdAPDU:      err = cmd_apdu (info, argstr); break;
+        case cmdGPG:       err = cmd_gpg (info, argstr, 0); break;
+        case cmdGPGSM:     err = cmd_gpg (info, argstr, 1); break;
         case cmdHISTORY:   err = cmd_history (info, argstr); break;
 
         case cmdINVCMD:
