@@ -1707,37 +1707,49 @@ sanitize_regexp(const char *old)
   return new;
 }
 
+
 /* Used by validate_one_keyblock to confirm a regexp within a trust
-   signature.  Returns 1 for match, and 0 for no match or regex
-   error. */
+ * signature.  Returns 1 for match, and 0 for no match or regex
+ * error. */
 static int
-check_regexp(const char *expr,const char *string)
+check_regexp (const char *expr,const char *string)
 {
   int ret;
   char *regexp;
+  char *stringbuf = NULL;
+  regex_t pat;
 
-  regexp=sanitize_regexp(expr);
+  regexp = sanitize_regexp (expr);
 
-  {
-    regex_t pat;
+  ret = regcomp (&pat, regexp, (REG_ICASE|REG_EXTENDED));
+  if (!ret)
+    {
+      if (*regexp == '<' && !strchr (string, '<')
+          && is_valid_mailbox (string))
+        {
+          /* The R.E. starts with an angle bracket but STRING seems to
+           * be a plain mailbox (e.g. "foo@example.org").  The
+           * commonly used R.E. pattern "<[^>]+[@.]example\.org>$"
+           * won't be able to detect this.  Thus we enclose STRING
+           * into angle brackets for checking.  */
+          stringbuf = xstrconcat ("<", string, ">", NULL);
+          string = stringbuf;
+        }
+      ret = regexec (&pat, string, 0, NULL, 0);
+      regfree (&pat);
+    }
 
-    ret=regcomp(&pat,regexp,REG_ICASE|REG_EXTENDED);
-    if(ret==0)
-      {
-	ret=regexec(&pat,string,0,NULL,0);
-	regfree(&pat);
-      }
-    ret=(ret==0);
-  }
+  ret = !ret;
 
-  if(DBG_TRUST)
-    log_debug("regexp '%s' ('%s') on '%s': %s\n",
-	      regexp,expr,string,ret?"YES":"NO");
+  if (DBG_TRUST)
+    log_debug ("regexp '%s' ('%s') on '%s'%s: %s\n",
+               regexp, expr, string, stringbuf? " (fixed)":"", ret? "YES":"NO");
 
-  xfree(regexp);
-
+  xfree (regexp);
+  xfree (stringbuf);
   return ret;
 }
+
 
 /*
  * Return true if the key is signed by one of the keys in the given
