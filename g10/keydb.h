@@ -552,6 +552,7 @@ gpg_error_t hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip);
 
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );
+kbnode_t new_kbnode2 (kbnode_t list, PACKET *pkt);
 KBNODE clone_kbnode( KBNODE node );
 void release_kbnode( KBNODE n );
 void delete_kbnode( KBNODE node );
