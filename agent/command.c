@@ -1218,6 +1218,12 @@ cmd_keyattr (assuan_context_t ctx, char *line)
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
+  if (!opt.enable_extended_key_format)
+    {
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+    }
+
   opt_delete = has_option (line, "--delete");
 
   line = skip_options (line);
@@ -1248,15 +1254,15 @@ cmd_keyattr (assuan_context_t ctx, char *line)
       const char *p;
 
       err = agent_raw_key_from_file (ctrl, grip, &s_key, &keymeta);
-      if (keymeta == NULL)      /* Not extended format? */
-        {
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
+      if (err)
+        goto leave;
 
       if (argc == 2)
         {
-          nve_t e = nvc_lookup (keymeta, argv[1]);
+          nve_t e = NULL;
+
+          if (keymeta)
+            e = nvc_lookup (keymeta, argv[1]);
 
           if (opt_delete)
             {
@@ -1275,6 +1281,9 @@ cmd_keyattr (assuan_context_t ctx, char *line)
         }
       else if (argc == 3)
         {
+          if (!keymeta)
+            keymeta = nvc_new_private_key ();
+
           err = nvc_set (keymeta, argv[1], argv[2]);
         key_attr_write:
           if (!err)
