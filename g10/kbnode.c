@@ -98,6 +98,19 @@ new_kbnode( PACKET *pkt )
 }
 
 
+/* Same as new_kbnode but insert the new node in front of LIST.  Returns
+ * the new list.  */
+kbnode_t
+new_kbnode2 (kbnode_t list, PACKET *pkt)
+{
+  kbnode_t n;
+
+  n = new_kbnode (pkt);
+  n->next = list;
+  return n;
+}
+
+
 KBNODE
 clone_kbnode( KBNODE node )
 {

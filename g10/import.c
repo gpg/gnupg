@@ -126,7 +126,8 @@ static int import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
 static int chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                           int *non_self);
 static int delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock,
-                             u32 *keyid, unsigned int options);
+                             u32 *keyid, unsigned int options,
+                             kbnode_t *r_otherrevsigs);
 static int any_uid_left (kbnode_t keyblock);
 static void remove_all_non_self_sigs (kbnode_t *keyblock, u32 *keyid);
 static int merge_blocks (ctrl_t ctrl, unsigned int options,
@@ -438,7 +439,7 @@ read_key_from_file_or_buffer (ctrl_t ctrl, const char *fname,
       goto leave;
     }
 
-  if (!delete_inv_parts (ctrl, keyblock, keyid, 0) )
+  if (!delete_inv_parts (ctrl, keyblock, keyid, 0, NULL) )
     {
       err = gpg_error (GPG_ERR_NO_USER_ID);
       goto leave;
@@ -1871,8 +1872,9 @@ update_key_origin (kbnode_t keyblock, u32 curtime, int origin, const char *url)
  * even most error messages are suppressed.  ORIGIN is the origin of
  * the key (0 for unknown) and URL the corresponding URL.  FROM_SK
  * indicates that the key has been made from a secret key.  If R_SAVED
- * is not NULL a boolean will be stored indicating whether the keyblock
- * has valid parts.
+ * is not NULL a boolean will be stored indicating whether the
+ * keyblock has valid parts.  Unless OTHERREVSIGS is NULL it is
+ * updated with encountered new revocation signatures.
  */
 static gpg_error_t
 import_one_real (ctrl_t ctrl,
@@ -1880,7 +1882,8 @@ import_one_real (ctrl_t ctrl,
                  unsigned char **fpr, size_t *fpr_len, unsigned int options,
                  int from_sk, int silent,
                  import_screener_t screener, void *screener_arg,
-                 int origin, const char *url, int *r_valid)
+                 int origin, const char *url, int *r_valid,
+                 kbnode_t *otherrevsigs)
 {
   gpg_error_t err = 0;
   PKT_public_key *pk;
@@ -2021,7 +2024,7 @@ import_one_real (ctrl_t ctrl,
     }
 
   /* Delete invalid parts and bail out if there are no user ids left.  */
-  if (!delete_inv_parts (ctrl, keyblock, keyid, options))
+  if (!delete_inv_parts (ctrl, keyblock, keyid, options, otherrevsigs))
     {
       if (!silent)
         {
@@ -2413,10 +2416,12 @@ import_one (ctrl_t ctrl,
             int origin, const char *url, int *r_valid)
 {
   gpg_error_t err;
+  kbnode_t otherrevsigs = NULL;
+  kbnode_t node;
 
   err = import_one_real (ctrl, keyblock, stats, fpr, fpr_len, options,
                          from_sk, silent, screener, screener_arg,
-                         origin, url, r_valid);
+                         origin, url, r_valid, &otherrevsigs);
   if (gpg_err_code (err) == GPG_ERR_TOO_LARGE
       && gpg_err_source (err) == GPG_ERR_SOURCE_KEYBOX
       && ((options & (IMPORT_SELF_SIGS_ONLY | IMPORT_CLEAN))
@@ -2432,8 +2437,17 @@ import_one (ctrl_t ctrl,
       options |= IMPORT_SELF_SIGS_ONLY | IMPORT_CLEAN;
       err = import_one_real (ctrl, keyblock, stats, fpr, fpr_len, options,
                              from_sk, silent, screener, screener_arg,
-                             origin, url, r_valid);
+                             origin, url, r_valid, &otherrevsigs);
     }
+
+  /* Finally try to import other revocation certificates.  For example
+   * those of a former key appended to the current key.  */
+  if (!err)
+    {
+      for (node = otherrevsigs; node; node = node->next)
+        import_revoke_cert (ctrl, node, options, stats);
+    }
+  release_kbnode (otherrevsigs);
   return err;
 }
 
@@ -3422,9 +3436,8 @@ list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
 }
 
 
-/****************
- * Import a revocation certificate; this is a single signature packet.
- */
+/* Import a revocation certificate; only the first packet in the
+ * NODE-list is considered.  */
 static int
 import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
                     struct import_stats_s *stats)
@@ -3441,9 +3454,11 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
   /* No error output for --show-keys.  */
   silent = (options & (IMPORT_SHOW | IMPORT_DRY_RUN));
 
-  log_assert (!node->next );
   log_assert (node->pkt->pkttype == PKT_SIGNATURE );
   log_assert (IS_KEY_REV (node->pkt->pkt.signature));
+
+  /* FIXME: We can do better here by using the issuer fingerprint if
+   * available.  We should also make use of get_keyblock_byfprint_fast.  */
 
   keyid[0] = node->pkt->pkt.signature->keyid[0];
   keyid[1] = node->pkt->pkt.signature->keyid[1];
@@ -3788,12 +3803,15 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
 /* Delete all parts which are invalid and those signatures whose
  * public key algorithm is not available in this implementation; but
  * consider RSA as valid, because parse/build_packets knows about it.
+ * If R_OTHERREVSIGS is not NULL, it is used to return a list of
+ * revocation certificates which have been deleted from KEYBLOCK but
+ * should be handled later.
  *
  * Returns: True if at least one valid user-id is left over.
  */
 static int
 delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
-                  unsigned int options)
+                  unsigned int options, kbnode_t *r_otherrevsigs)
 {
   kbnode_t node;
   int nvalid=0, uid_seen=0, subkey_seen=0;
@@ -3883,6 +3901,16 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
               if(opt.verbose)
                 log_info( _("key %s: revocation certificate"
                             " at wrong place - skipped\n"),keystr(keyid));
+              if (r_otherrevsigs)
+                {
+                  PACKET *pkt;
+
+                  pkt = xcalloc (1, sizeof *pkt);
+                  pkt->pkttype = PKT_SIGNATURE;
+                  pkt->pkt.signature = copy_signature
+                    (NULL, node->pkt->pkt.signature);
+                  *r_otherrevsigs = new_kbnode2 (*r_otherrevsigs, pkt);
+                }
               delete_kbnode( node );
             }
           else
@@ -3905,6 +3933,16 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 		      delete_kbnode( node );
 		    }
 		}
+              else if (r_otherrevsigs)
+                {
+                  PACKET *pkt;
+
+                  pkt = xcalloc (1, sizeof *pkt);
+                  pkt->pkttype = PKT_SIGNATURE;
+                  pkt->pkt.signature = copy_signature
+                    (NULL, node->pkt->pkt.signature);
+                  *r_otherrevsigs = new_kbnode2 (*r_otherrevsigs, pkt);
+                }
 	    }
 	}
       else if (node->pkt->pkttype == PKT_SIGNATURE
