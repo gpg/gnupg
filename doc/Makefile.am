@@ -206,8 +206,8 @@ online: gnupg.html gnupg.pdf gnupg-module-overview.png \
         if echo "@PACKAGE_VERSION@" | grep -- "-beta" >/dev/null; then \
 	  dashdevel="-devel" ; \
 	else \
-          rsync -v gnupg.pdf $${user}@$${webhost}:webspace/manuals/ ; \
+          rsync -v gnupg.pdf $${user}@$${webhost}:webspace/manuals/gnupg-2.2.pdf ; \
         fi ; \
 	cd gnupg.html ; \
         rsync -vr --exclude='.git' .  \
-	  $${user}@$${webhost}:webspace/manuals/gnupg$${dashdevel}/
+	  $${user}@$${webhost}:webspace/manuals/gnupg-2.2$${dashdevel}/
