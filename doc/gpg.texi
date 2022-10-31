@@ -2760,12 +2760,14 @@ is the default.
 @itemx --no-force-v4-certs
 These options are obsolete and have no effect since GnuPG 2.1.
 
-@item --force-aead
+@item --force-ocb
+@itemx --force-aead
+@opindex force-ocb
 @opindex force-aead
 Force the use of AEAD encryption over MDC encryption.  AEAD is a
 modern and faster way to do authenticated encryption than the old MDC
-method.  See also options @option{--aead-algo} and
-@option{--chunk-size}.
+method.  @option{--force-aead} is an alias and deprecated.  See also
+option @option{--chunk-size}.
 
 @item --force-mdc
 @itemx --disable-mdc
@@ -2803,16 +2805,6 @@ See also the option @option{--auto-key-import}.
 @item --personal-cipher-preferences @var{string}
 @opindex personal-cipher-preferences
 Set the list of personal cipher preferences to @var{string}.  Use
-@command{@gpgname --version} to get a list of available algorithms,
-and use @code{none} to set no preference at all.  This allows the user
-to safely override the algorithm chosen by the recipient key
-preferences, as GPG will only select an algorithm that is usable by
-all recipients.  The most highly ranked cipher in this list is also
-used for the @option{--symmetric} encryption command.
-
-@item --personal-aead-preferences @var{string}
-@opindex personal-aead-preferences
-Set the list of personal AEAD preferences to @var{string}.  Use
 @command{@gpgname --version} to get a list of available algorithms,
 and use @code{none} to set no preference at all.  This allows the user
 to safely override the algorithm chosen by the recipient key
@@ -3232,16 +3224,6 @@ stored with the key. In general, you do not want to use this option as
 it allows you to violate the OpenPGP standard.  The option
 @option{--personal-cipher-preferences} is the safe way to accomplish the
 same thing.
-
-@item --aead-algo @var{name}
-@opindex aead-algo
-Specify that the AEAD algorithm @var{name} is to be used.  This is
-useful for symmetric encryption where no key preference are available
-to select the AEAD algorithm.  Running @command{@gpgname} with option
-@option{--version} shows the available AEAD algorithms.  In general,
-you do not want to use this option as it allows you to violate the
-OpenPGP standard.  The option @option{--personal-aead-preferences} is
-the safe way to accomplish the same thing.
 
 @item --digest-algo @var{name}
 @opindex digest-algo
@@ -3785,6 +3767,13 @@ listings as well as when verifying a signature with a policy URL in
 it. These options are deprecated. Use @option{--list-options
 [no-]show-policy-url} and/or @option{--verify-options
 [no-]show-policy-url} instead.
+
+@item --personal-aead-preferences @var{string}
+@opindex personal-aead-preferences
+This option is deprecated and has no more effect since version 2.3.9.
+
+@item --aead-algo @var{name}
+This option is deprecated and has no more effect since version 2.3.9.
 
 
 @end table

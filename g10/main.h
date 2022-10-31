@@ -41,8 +41,6 @@
 # define DEFAULT_CIPHER_ALGO     CIPHER_ALGO_3DES
 #endif
 
-#define DEFAULT_AEAD_ALGO  AEAD_ALGO_OCB
-
 #define DEFAULT_DIGEST_ALGO     ((GNUPG)? DIGEST_ALGO_SHA256:DIGEST_ALGO_SHA1)
 #define DEFAULT_S2K_DIGEST_ALGO DIGEST_ALGO_SHA1
 #ifdef HAVE_ZIP
@@ -169,7 +167,6 @@ const char *compress_algo_to_string(int algo);
 int string_to_compress_algo(const char *string);
 int check_compress_algo(int algo);
 int default_cipher_algo(void);
-aead_algo_t default_aead_algo(void);
 int default_compress_algo(void);
 void compliance_failure(void);
 
@@ -240,8 +237,6 @@ void display_online_help( const char *keyword );
 
 /*-- encode.c --*/
 gpg_error_t setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
-gpg_error_t encrypt_seskey (DEK *dek, aead_algo_t aead_algo, DEK **r_seskey,
-                            void **r_enckey, size_t *r_enckeylen);
 aead_algo_t use_aead (pk_list_t pk_list, int algo);
 int use_mdc (pk_list_t pk_list,int algo);
 int encrypt_symmetric (const char *filename );

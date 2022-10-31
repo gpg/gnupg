@@ -564,29 +564,6 @@ keygen_set_std_prefs (const char *string,int personal)
 		    opt.personal_cipher_prefs[i].value = 0;
 		  }
 	      }
-	    else if (personal == PREFTYPE_AEAD)
-	      {
-		xfree(opt.personal_aead_prefs);
-
-		if (!naead)
-		  opt.personal_aead_prefs = NULL;
-		else
-		  {
-		    int i;
-
-		    opt.personal_aead_prefs=
-		      xmalloc(sizeof(prefitem_t *)*(naead+1));
-
-		    for (i=0; i<naead; i++)
-		      {
-			opt.personal_aead_prefs[i].type = PREFTYPE_AEAD;
-			opt.personal_aead_prefs[i].value = aead[i];
-		      }
-
-		    opt.personal_aead_prefs[i].type = PREFTYPE_NONE;
-		    opt.personal_aead_prefs[i].value = 0;
-		  }
-	      }
 	    else if(personal==PREFTYPE_HASH)
 	      {
 		xfree(opt.personal_digest_prefs);

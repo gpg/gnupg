@@ -1387,17 +1387,6 @@ default_cipher_algo(void)
 }
 
 
-aead_algo_t
-default_aead_algo(void)
-{
-  if(opt.def_aead_algo)
-    return opt.def_aead_algo;
-  else if(opt.personal_aead_prefs)
-    return opt.personal_aead_prefs[0].value;
-  else
-    return DEFAULT_AEAD_ALGO;
-}
-
 /* There is no default_digest_algo function, but see
    sign.c:hash_for() */
 

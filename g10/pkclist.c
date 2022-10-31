@@ -1603,8 +1603,6 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
       prefs=NULL;
       if(preftype==PREFTYPE_SYM && opt.personal_cipher_prefs)
 	prefs=opt.personal_cipher_prefs;
-      else if(preftype==PREFTYPE_AEAD && opt.personal_aead_prefs)
-	prefs=opt.personal_aead_prefs;
       else if(preftype==PREFTYPE_HASH && opt.personal_digest_prefs)
 	prefs=opt.personal_digest_prefs;
       else if(preftype==PREFTYPE_ZIP && opt.personal_compress_prefs)
@@ -1720,7 +1718,7 @@ select_aead_from_pklist (PK_LIST pk_list)
         return 0;  /* At least one recipient does not support it. */
     }
 
-  return default_aead_algo (); /* Yes, AEAD can be used. */
+  return AEAD_ALGO_OCB; /* Yes, AEAD can be used. */
 }
 
 

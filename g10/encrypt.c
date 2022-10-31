@@ -219,7 +219,7 @@ check_encryption_compliance (DEK *dek, pk_list_t pk_list)
  * stored at R_SESKEY.  If AEAD_ALGO is not 0 the given AEAD algorithm
  * is used for encryption.
  */
-gpg_error_t
+static gpg_error_t
 encrypt_seskey (DEK *dek, aead_algo_t aead_algo,
                 DEK **r_seskey, void **r_enckey, size_t *r_enckeylen)
 {
@@ -344,14 +344,6 @@ use_aead (pk_list_t pk_list, int algo)
 {
   int can_use;
 
-  if (!opt.flags.rfc4880bis)
-    {
-      if (opt.force_aead)
-        log_info ("Warning: Option %s currently requires option '%s'\n",
-                  "--force-aead", "--rfc4880bis");
-      return 0;
-    }
-
   can_use = openpgp_cipher_get_algo_blklen (algo) == 16;
 
   /* With --force-aead we want AEAD.  */
@@ -363,7 +355,7 @@ use_aead (pk_list_t pk_list, int algo)
                     openpgp_cipher_algo_name (algo));
           return 0;
         }
-      return default_aead_algo ();
+      return AEAD_ALGO_OCB;
     }
 
   /* AEAD does only work with 128 bit cipher blocklength.  */
