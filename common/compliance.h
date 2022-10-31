@@ -36,11 +36,13 @@
 
 void gnupg_initialize_compliance (int gnupg_module_name);
 
+
 enum gnupg_compliance_mode
   {
     CO_GNUPG, CO_RFC4880, CO_RFC2440,
     CO_PGP6, CO_PGP7, CO_PGP8, CO_DE_VS
   };
+
 
 enum pk_use_case
   {
@@ -91,7 +93,14 @@ int gnupg_parse_compliance_option (const char *string,
 const char *gnupg_compliance_option_string (enum gnupg_compliance_mode
                                             compliance);
 
-void gnupg_set_compliance_extra_info (unsigned int min_rsa);
+enum gnupg_co_extra_infos
+  {
+   CO_EXTRA_INFO_MIN_RSA,
+   CO_EXTRA_INFO_VSD_ALLOW_OCB
+  };
+
+void gnupg_set_compliance_extra_info (enum gnupg_co_extra_infos what,
+                                      unsigned int value);
 
 
 #endif /*GNUPG_COMMON_COMPLIANCE_H*/

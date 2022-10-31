@@ -1531,7 +1531,7 @@ main ( int argc, char **argv)
   set_debug ();
   if (opt.verbose) /* Print the compatibility flags.  */
     parse_compatibility_flags (NULL, &opt.compat_flags, compatibility_flags);
-  gnupg_set_compliance_extra_info (opt.min_rsa_length);
+  gnupg_set_compliance_extra_info (CO_EXTRA_INFO_MIN_RSA, opt.min_rsa_length);
 
   /* Although we always use gpgsm_exit, we better install a regualr
      exit handler so that at least the secure memory gets wiped

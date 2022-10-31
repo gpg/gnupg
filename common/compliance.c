@@ -45,6 +45,9 @@ static int module;
  * using a confue file.  */
 static unsigned int min_compliant_rsa_length;
 
+/* Temporary hack to allow OCB mode in de-vs mode.  */
+static unsigned int vsd_allow_ocb;
+
 /* Return the address of a compliance cache variable for COMPLIANCE.
  * If no such variable exists NULL is returned.  FOR_RNG returns the
  * cache variable for the RNG compliance check. */
@@ -380,7 +383,8 @@ gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
 	  switch (module)
 	    {
 	    case GNUPG_MODULE_NAME_GPG:
-	      return mode == GCRY_CIPHER_MODE_CFB;
+	      return (mode == GCRY_CIPHER_MODE_CFB
+                      || (vsd_allow_ocb && mode == GCRY_CIPHER_MODE_OCB));
 	    case GNUPG_MODULE_NAME_GPGSM:
 	      return mode == GCRY_CIPHER_MODE_CBC;
 	    }
@@ -424,7 +428,8 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 	    {
 	    case GNUPG_MODULE_NAME_GPG:
 	      return (mode == GCRY_CIPHER_MODE_NONE
-                      || mode == GCRY_CIPHER_MODE_CFB);
+                      || mode == GCRY_CIPHER_MODE_CFB
+                      || (vsd_allow_ocb && mode == GCRY_CIPHER_MODE_OCB));
 	    case GNUPG_MODULE_NAME_GPGSM:
 	      return (mode == GCRY_CIPHER_MODE_NONE
                       || mode == GCRY_CIPHER_MODE_CBC
@@ -441,7 +446,8 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 	case CIPHER_ALGO_TWOFISH:
 	  return (module == GNUPG_MODULE_NAME_GPG
 		  && (mode == GCRY_CIPHER_MODE_NONE
-                      || mode == GCRY_CIPHER_MODE_CFB)
+                      || mode == GCRY_CIPHER_MODE_CFB
+                      || (vsd_allow_ocb && mode == GCRY_CIPHER_MODE_OCB))
 		  && ! producer);
 	default:
 	  return 0;
@@ -696,7 +702,15 @@ gnupg_compliance_option_string (enum gnupg_compliance_mode compliance)
 
 /* Set additional infos for example taken from config files at startup.  */
 void
-gnupg_set_compliance_extra_info (unsigned int min_rsa)
+gnupg_set_compliance_extra_info (enum gnupg_co_extra_infos what,
+                                 unsigned int value)
 {
-  min_compliant_rsa_length = min_rsa;
+  switch (what)
+    {
+    case CO_EXTRA_INFO_MIN_RSA:
+      min_compliant_rsa_length = value;
+      break;
+    case CO_EXTRA_INFO_VSD_ALLOW_OCB:
+      vsd_allow_ocb = value;
+    }
 }
