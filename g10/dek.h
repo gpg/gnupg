@@ -31,7 +31,9 @@ typedef struct
    * verbose mode.  */
   unsigned int algo_info_printed : 1;
 
-  /* AEAD shall be used.  The value is the AEAD algo. */
+  /* AEAD shall be used.  The value is the AEAD algo.  Note that in
+   * practise only AEAD_ALGO_OCB, AEAD_ALGO_EAX is only used for
+   * decryption. */
   int use_aead : 4;
 
   /* MDC shall be used.  */

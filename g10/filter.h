@@ -88,15 +88,52 @@ struct compress_filter_context_s {
 typedef struct compress_filter_context_s compress_filter_context_t;
 
 
-typedef struct {
-    DEK *dek;
-    u32 datalen;
-    gcry_cipher_hd_t cipher_hd;
-    unsigned int wrote_header : 1;
-    unsigned int short_blklen_warn : 1;
-    unsigned long short_blklen_count;
-    gcry_md_hd_t mdc_hash;
-    byte enchash[20];
+typedef struct
+{
+  /* Object with the key and algo */
+  DEK *dek;
+
+  /* Length of the data to encrypt if known - 32 bit because OpenPGP
+   * requires partial encoding for a larger data size.  */
+  u32 datalen;
+
+  /* The current cipher handle.  */
+  gcry_cipher_hd_t cipher_hd;
+
+  /* Various processing flags.  */
+  unsigned int wrote_header : 1;
+  unsigned int short_blklen_warn : 1;
+  unsigned long short_blklen_count;
+
+  /* The encoded chunk byte for AEAD.  */
+  byte chunkbyte;
+
+  /* The decoded CHUNKBYTE.  */
+  uint64_t chunksize;
+
+  /* The chunk index for AEAD.  */
+  uint64_t chunkindex;
+
+  /* The number of bytes in the current chunk.  */
+  uint64_t chunklen;
+
+  /* The total count of encrypted plaintext octets.  Note that we
+   * don't care about encrypting more than 16 Exabyte. */
+  uint64_t total;
+
+  /* The hash context and a buffer used for MDC.  */
+  gcry_md_hd_t mdc_hash;
+  byte enchash[20];
+
+  /* The start IV for AEAD encryption.   */
+  byte startiv[16];
+
+  /* Using a large buffer for encryption makes processing easier and
+   * also makes sure the data is well aligned.  */
+  char *buffer;
+  size_t bufsize;  /* Allocated length.  */
+  size_t buflen;   /* Used length.       */
+
 } cipher_filter_context_t;
 
 
@@ -147,6 +184,8 @@ gpg_error_t push_compress_filter2 (iobuf_t out,compress_filter_context_t *zfx,
 
 /*-- cipher.c --*/
 int cipher_filter_cfb (void *opaque, int control,
+                       iobuf_t chain, byte *buf, size_t *ret_len);
+int cipher_filter_ocb (void *opaque, int control,
                        iobuf_t chain, byte *buf, size_t *ret_len);
 
 /*-- textfilter.c --*/

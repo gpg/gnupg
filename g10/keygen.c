@@ -135,6 +135,8 @@ static int nhash_prefs;
 static byte zip_prefs[MAX_PREFS];
 static int nzip_prefs;
 static int mdc_available,ks_modify;
+static int aead_available;
+
 
 static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                                      const char *algostr, const char *usagestr,
@@ -354,7 +356,11 @@ keygen_set_std_prefs (const char *string,int personal)
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
     int nsym=0, nhash=0, nzip=0, val, rc=0;
     int mdc=1, modify=0; /* mdc defaults on, modify defaults off. */
+    int ocb;
     char dummy_string[20*4+1]; /* Enough for 20 items. */
+
+    /* Use OCB as default in GnuPG and de-vs mode.  */
+    ocb = GNUPG;
 
     if (!string || !ascii_strcasecmp (string, "default"))
       {
@@ -480,14 +486,24 @@ keygen_set_std_prefs (const char *string,int personal)
 		if(set_one_pref(val,3,tok,zip,&nzip))
 		  rc=-1;
 	      }
-	    else if (ascii_strcasecmp(tok,"mdc")==0)
+	    else if (!ascii_strcasecmp(tok, "mdc")
+                     || !ascii_strcasecmp(tok, "[mdc]"))
 	      mdc=1;
-	    else if (ascii_strcasecmp(tok,"no-mdc")==0)
+	    else if (!ascii_strcasecmp(tok, "no-mdc")
+                     || !ascii_strcasecmp(tok, "[no-mdc]"))
 	      mdc=0;
-	    else if (ascii_strcasecmp(tok,"ks-modify")==0)
+	    else if (!ascii_strcasecmp(tok, "ks-modify")
+                     || !ascii_strcasecmp(tok, "[ks-modify]"))
 	      modify=1;
-	    else if (ascii_strcasecmp(tok,"no-ks-modify")==0)
+	    else if (!ascii_strcasecmp(tok,"no-ks-modify")
+                     || !ascii_strcasecmp(tok,"[no-ks-modify]"))
 	      modify=0;
+	    else if (!ascii_strcasecmp(tok,"aead")
+                     || !ascii_strcasecmp(tok,"[aead]"))
+              ocb = 1;
+	    else if (!ascii_strcasecmp(tok,"no-aead")
+                     || !ascii_strcasecmp(tok,"[no-aead]"))
+              ocb = 0;
 	    else
 	      {
 		log_info (_("invalid item '%s' in preference string\n"),tok);
@@ -578,6 +594,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	    memcpy (hash_prefs, hash, (nhash_prefs=nhash));
 	    memcpy (zip_prefs,  zip,  (nzip_prefs=nzip));
 	    mdc_available = mdc;
+            aead_available = ocb;
 	    ks_modify = modify;
 	    prefs_initialized = 1;
 	  }
@@ -585,6 +602,7 @@ keygen_set_std_prefs (const char *string,int personal)
 
     return rc;
 }
+
 
 /* Return a fake user ID containing the preferences.  Caller must
    free. */
@@ -624,6 +642,7 @@ keygen_get_std_prefs(void)
   uid->prefs[j].value=0;
 
   uid->flags.mdc=mdc_available;
+  uid->flags.aead=aead_available;
   uid->flags.ks_modify=ks_modify;
 
   return uid;
@@ -669,6 +688,49 @@ add_feature_mdc (PKT_signature *sig,int enabled)
 
     xfree (buf);
 }
+
+
+static void
+add_feature_aead (PKT_signature *sig, int enabled)
+{
+  const byte *s;
+  size_t n;
+  int i;
+  char *buf;
+
+  s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
+  if (s && n && ((enabled && (s[0] & 0x02)) || (!enabled && !(s[0] & 0x02))))
+    return; /* Already set or cleared */
+
+  if (!s || !n)
+    { /* Create a new one */
+      n = 1;
+      buf = xmalloc_clear (n);
+    }
+  else
+    {
+      buf = xmalloc (n);
+      memcpy (buf, s, n);
+    }
+
+  if (enabled)
+    buf[0] |= 0x02; /* AEAD supported */
+  else
+    buf[0] &= ~0x02;
+
+  /* Are there any bits set? */
+  for (i=0; i < n; i++)
+    if (buf[i])
+      break;
+
+  if (i == n)
+    delete_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES);
+  else
+    build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n);
+
+  xfree (buf);
+}
+
 
 static void
 add_keyserver_modify (PKT_signature *sig,int enabled)
@@ -731,6 +793,14 @@ keygen_upd_std_prefs (PKT_signature *sig, void *opaque)
       delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_SYM);
     }
 
+  if (aead_available) /* The only preference is AEAD_ALGO_OCB. */
+    build_sig_subpkt (sig, SIGSUBPKT_PREF_AEAD, "\x02", 1);
+  else
+    {
+      delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_AEAD);
+      delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_AEAD);
+    }
+
   if (nhash_prefs)
     build_sig_subpkt (sig, SIGSUBPKT_PREF_HASH, hash_prefs, nhash_prefs);
   else
@@ -747,8 +817,9 @@ keygen_upd_std_prefs (PKT_signature *sig, void *opaque)
       delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_COMPR);
     }
 
-  /* Make sure that the MDC feature flag is set if needed.  */
+  /* Make sure that the MDC and AEAD feature flags are set as needed.  */
   add_feature_mdc (sig,mdc_available);
+  add_feature_aead (sig, aead_available);
   add_keyserver_modify (sig,ks_modify);
   keygen_add_keyserver_url(sig,NULL);
 

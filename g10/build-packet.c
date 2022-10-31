@@ -42,6 +42,7 @@ static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
 static int do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed );
+static int do_encrypted_aead (iobuf_t out, int ctb, PKT_encrypted *ed);
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
@@ -106,6 +107,7 @@ build_packet (IOBUF out, PACKET *pkt)
       break;
     case PKT_ENCRYPTED:
     case PKT_ENCRYPTED_MDC:
+    case PKT_ENCRYPTED_AEAD:
       new_ctb = pkt->pkt.encrypted->new_ctb;
       break;
     case PKT_COMPRESSED:
@@ -157,6 +159,9 @@ build_packet (IOBUF out, PACKET *pkt)
       break;
     case PKT_ENCRYPTED_MDC:
       rc = do_encrypted_mdc (out, ctb, pkt->pkt.encrypted);
+      break;
+    case PKT_ENCRYPTED_AEAD:
+      rc = do_encrypted_aead (out, ctb, pkt->pkt.encrypted);
       break;
     case PKT_COMPRESSED:
       rc = do_compressed (out, ctb, pkt->pkt.compressed);
@@ -618,9 +623,7 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
   IOBUF a = iobuf_temp();
 
   log_assert (ctb_pkttype (ctb) == PKT_SYMKEY_ENC);
-
-  /* The only acceptable version.  */
-  log_assert( enc->version == 4 );
+  log_assert (enc->version == 4 || enc->version == 5);
 
   /* RFC 4880, Section 3.7.  */
   switch (enc->s2k.mode)
@@ -635,6 +638,8 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
     }
     iobuf_put( a, enc->version );
     iobuf_put( a, enc->cipher_algo );
+    if (enc->version == 5)
+      iobuf_put (a, enc->aead_algo);
     iobuf_put( a, enc->s2k.mode );
     iobuf_put( a, enc->s2k.hash_algo );
     if( enc->s2k.mode == 1 || enc->s2k.mode == 3 ) {
@@ -818,6 +823,32 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
     /* This is all. The caller has to write the real data */
 
     return rc;
+}
+
+
+/* Serialize the symmetrically AEAD encrypted data packet
+ * (rfc4880bis-03, Section 5.16) described by ED and write it to OUT.
+ *
+ * Note: this only writes only packet's header.  The caller must then
+ * follow up and write the actual encrypted data.  This should be done
+ * by pushing the the cipher_filter_aead.  */
+static int
+do_encrypted_aead (iobuf_t out, int ctb, PKT_encrypted *ed)
+{
+  u32 n;
+
+  log_assert (ctb_pkttype (ctb) == PKT_ENCRYPTED_AEAD);
+
+  n = ed->len ? (ed->len + ed->extralen + 4) : 0;
+  write_header (out, ctb, n );
+  iobuf_writebyte (out, 1); /* Version.  */
+  iobuf_writebyte (out, ed->cipher_algo);
+  iobuf_writebyte (out, ed->aead_algo);
+  iobuf_writebyte (out, ed->chunkbyte);
+
+  /* This is all. The caller has to write the encrypted data */
+
+  return 0;
 }
 
 

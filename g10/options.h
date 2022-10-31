@@ -89,6 +89,7 @@ struct
   int list_packets; /* Option --list-packets active.  */
   int def_cipher_algo;
   int def_digest_algo;
+  int force_ocb;
   int cert_digest_algo;
   int compress_algo;
   int compress_level;

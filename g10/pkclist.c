@@ -1648,36 +1648,37 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
   return result;
 }
 
-/*
- * Select the MDC flag from the pk_list.  We can only use MDC if all
- * recipients support this feature.
- */
-int
-select_mdc_from_pklist (PK_LIST pk_list)
-{
-  PK_LIST pkr;
 
-  if ( !pk_list )
+/* Select the AEAD flag from the pk_list.  We can only use AEAD if all
+ * recipients support this feature.  Returns the AEAD to be used or 0
+ * if AEAD shall not be used.  */
+aead_algo_t
+select_aead_from_pklist (PK_LIST pk_list)
+{
+  pk_list_t pkr;
+  int aead;
+
+  if (!pk_list)
     return 0;
 
   for (pkr = pk_list; pkr; pkr = pkr->next)
     {
-      int mdc;
-
       if (pkr->pk->user_id) /* selected by user ID */
-        mdc = pkr->pk->user_id->flags.mdc;
+        aead = pkr->pk->user_id->flags.aead;
       else
-        mdc = pkr->pk->flags.mdc;
-      if (!mdc)
+        aead = pkr->pk->flags.aead;
+      if (!aead)
         return 0;  /* At least one recipient does not support it. */
     }
-  return 1; /* Can be used. */
+
+  return AEAD_ALGO_OCB; /* Yes, AEAD can be used. */
 }
 
 
-/* Print a warning for all keys in PK_LIST missing the MDC feature. */
+/* Print a warning for all keys in PK_LIST missing the AEAD feature
+ * flag or AEAD algorithms. */
 void
-warn_missing_mdc_from_pklist (PK_LIST pk_list)
+warn_missing_aead_from_pklist (PK_LIST pk_list)
 {
   PK_LIST pkr;
 
@@ -1686,12 +1687,12 @@ warn_missing_mdc_from_pklist (PK_LIST pk_list)
       int mdc;
 
       if (pkr->pk->user_id) /* selected by user ID */
-        mdc = pkr->pk->user_id->flags.mdc;
+        mdc = pkr->pk->user_id->flags.aead;
       else
-        mdc = pkr->pk->flags.mdc;
+        mdc = pkr->pk->flags.aead;
       if (!mdc)
         log_info (_("Note: key %s has no %s feature\n"),
-                  keystr_from_pk (pkr->pk), "MDC");
+                  keystr_from_pk (pkr->pk), "AEAD");
     }
 }
 

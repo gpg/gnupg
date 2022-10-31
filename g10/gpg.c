@@ -299,6 +299,7 @@ enum cmd_and_opt_values
     oShowPhotos,
     oNoShowPhotos,
     oPhotoViewer,
+    oForceOCB,
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
@@ -834,6 +835,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oS2KDigest, "s2k-digest-algo", "@"),
   ARGPARSE_s_s (oS2KCipher, "s2k-cipher-algo", "@"),
   ARGPARSE_s_i (oS2KCount, "s2k-count", "@"),
+  ARGPARSE_s_n (oForceOCB, "force-ocb", "@"),
   ARGPARSE_s_n (oRequireCrossCert, "require-backsigs", "@"),
   ARGPARSE_s_n (oRequireCrossCert, "require-cross-certification", "@"),
   ARGPARSE_s_n (oNoRequireCrossCert, "no-require-backsigs", "@"),
@@ -2980,6 +2982,8 @@ main (int argc, char **argv)
 	    opt.verify_options&=~VERIFY_SHOW_PHOTOS;
 	    break;
 	  case oPhotoViewer: opt.photo_viewer = pargs.r.ret_str; break;
+
+          case oForceOCB: opt.force_ocb = 1; break;
 
           case oDisableSignerUID: opt.flags.disable_signer_uid = 1; break;
           case oIncludeKeyBlock:  opt.flags.include_key_block = 1; break;

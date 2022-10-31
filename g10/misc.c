@@ -687,7 +687,7 @@ openpgp_aead_algo_info (aead_algo_t algo, enum gcry_cipher_modes *r_mode,
       *r_noncelen = 15;
       break;
 
-    case AEAD_ALGO_EAX:
+    case AEAD_ALGO_EAX:  /* Only for decryption of some old data.  */
       *r_mode = MY_GCRY_CIPHER_MODE_EAX;
       *r_noncelen = 16;
       break;

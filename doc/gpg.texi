@@ -2709,6 +2709,14 @@ is the default.
 @itemx --no-force-v4-certs
 These options are obsolete and have no effect since GnuPG 2.1.
 
+@item --force-ocb
+@opindex force-ocb
+Force the use of OCB mode encryption instead of CFB+MDC encryption.
+OCB is a modern and faster way to do authenticated encryption than the
+older CFB+MDC method.  This option is only useful for symmetric-only
+encryption because the mode is automatically selected based on the
+preferences of the recipients's public keys.
+
 @item --force-mdc
 @itemx --disable-mdc
 @opindex force-mdc

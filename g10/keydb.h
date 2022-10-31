@@ -266,8 +266,8 @@ int  algo_available( preftype_t preftype, int algo,
 		     const struct pref_hint *hint );
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype,
 			     int request, const struct pref_hint *hint);
-int  select_mdc_from_pklist (PK_LIST pk_list);
-void warn_missing_mdc_from_pklist (PK_LIST pk_list);
+aead_algo_t select_aead_from_pklist (PK_LIST pk_list);
+void warn_missing_aead_from_pklist (PK_LIST pk_list);
 void warn_missing_aes_from_pklist (PK_LIST pk_list);
 
 /*-- skclist.c --*/
