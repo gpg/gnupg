@@ -308,6 +308,9 @@ struct
   int no_symkey_cache;   /* Disable the cache used for --symmetric.  */
 
   int use_keyboxd;       /* Use the external keyboxd as storage backend.  */
+
+  /* Compatibility flags (COMPAT_FLAG_xxxx).  */
+  unsigned int compat_flags;
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't
@@ -363,8 +366,11 @@ struct {
 EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
+/* Compatibility flags */
+/* #define COMPAT_FOO   1 */
 
-/* Compatibility flags.  */
+
+/* Compliance test macors.  */
 #define GNUPG   (opt.compliance==CO_GNUPG || opt.compliance==CO_DE_VS)
 #define RFC2440 (opt.compliance==CO_RFC2440)
 #define RFC4880 (opt.compliance==CO_RFC4880)

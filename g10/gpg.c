@@ -444,6 +444,7 @@ enum cmd_and_opt_values
     oForceSignKey,
     oForbidGenKey,
     oRequireCompliance,
+    oCompatibilityFlags,
 
     oNoop
   };
@@ -914,6 +915,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oUseKeyboxd,    "use-keyboxd", "@"),
   ARGPARSE_s_n (oForbidGenKey,  "forbid-gen-key", "@"),
   ARGPARSE_s_n (oRequireCompliance, "require-compliance", "@"),
+  ARGPARSE_s_s (oCompatibilityFlags, "compatibility-flags", "@"),
   /* Options which can be used in special circumstances. They are not
    * published and we hope they are never required.  */
   ARGPARSE_s_n (oUseOnlyOpenPGPCard, "use-only-openpgp-card", "@"),
@@ -1005,6 +1007,13 @@ static struct debug_flags_s debug_flags [] =
     { DBG_CLOCK_VALUE  , "clock"   },
     { DBG_LOOKUP_VALUE , "lookup"  },
     { DBG_EXTPROG_VALUE, "extprog" },
+    { 0, NULL }
+  };
+
+
+/* The list of compatibility flags.  */
+static struct compatibility_flags_s compatibility_flags [] =
+  {
     { 0, NULL }
   };
 
@@ -2861,6 +2870,15 @@ main (int argc, char **argv)
             allow_large_chunks = 1;
             break;
 
+          case oCompatibilityFlags:
+            if (parse_compatibility_flags (pargs.r.ret_str, &opt.compat_flags,
+                                           compatibility_flags))
+              {
+                pargs.r_opt = ARGPARSE_INVALID_ARG;
+                pargs.err = ARGPARSE_PRINT_ERROR;
+              }
+            break;
+
 	  case oStatusFD:
             set_status_fd ( translate_sys2libc_fd_int (pargs.r.ret_int, 1) );
             break;
@@ -3920,6 +3938,8 @@ main (int argc, char **argv)
       }
 
     set_debug (debug_level);
+    if (opt.verbose) /* Print the compatibility flags.  */
+      parse_compatibility_flags (NULL, &opt.compat_flags, compatibility_flags);
     gnupg_set_compliance_extra_info (opt.min_rsa_length);
     if (DBG_CLOCK)
       log_clock ("start");
