@@ -245,7 +245,6 @@ enum cmd_and_opt_values
     oGnuPG,
     oRFC2440,
     oRFC4880,
-    oRFC4880bis,
     oOpenPGP,
     oPGP7,
     oPGP8,
@@ -628,7 +627,6 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oGnuPG, "no-pgp8", "@"),
   ARGPARSE_s_n (oRFC2440, "rfc2440", "@"),
   ARGPARSE_s_n (oRFC4880, "rfc4880", "@"),
-  ARGPARSE_s_n (oRFC4880bis, "rfc4880bis", "@"),
   ARGPARSE_s_n (oOpenPGP, "openpgp", N_("use strict OpenPGP behavior")),
   ARGPARSE_s_n (oPGP7, "pgp6", "@"),
   ARGPARSE_s_n (oPGP7, "pgp7", "@"),
@@ -969,6 +967,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoop, "no-allow-multiple-messages", "@"),
   ARGPARSE_s_s (oNoop, "aead-algo", "@"),
   ARGPARSE_s_s (oNoop, "personal-aead-preferences","@"),
+  ARGPARSE_s_n (oNoop, "rfc4880bis", "@"),
 
 
   ARGPARSE_group (302, N_(
@@ -2198,7 +2197,7 @@ static struct gnupg_compliance_option compliance_options[] =
   {
     { "gnupg",      oGnuPG },
     { "openpgp",    oOpenPGP },
-    { "rfc4880bis", oRFC4880bis },
+    { "rfc4880bis", oGnuPG },
     { "rfc4880",    oRFC4880 },
     { "rfc2440",    oRFC2440 },
     { "pgp6",       oPGP7 },
@@ -2214,28 +2213,8 @@ static struct gnupg_compliance_option compliance_options[] =
 static void
 set_compliance_option (enum cmd_and_opt_values option)
 {
-  opt.flags.rfc4880bis = 0;  /* Clear because it is initially set.  */
-
   switch (option)
     {
-    case oRFC4880bis:
-      opt.flags.rfc4880bis = 1;
-      opt.compliance = CO_RFC4880;
-      opt.flags.dsa2 = 1;
-      opt.flags.require_cross_cert = 1;
-      opt.rfc2440_text = 0;
-      opt.allow_non_selfsigned_uid = 1;
-      opt.allow_freeform_uid = 1;
-      opt.escape_from = 1;
-      opt.not_dash_escaped = 0;
-      opt.def_cipher_algo = 0;
-      opt.def_digest_algo = 0;
-      opt.cert_digest_algo = 0;
-      opt.compress_algo = -1;
-      opt.s2k_mode = 3; /* iterated+salted */
-      opt.s2k_digest_algo = DIGEST_ALGO_SHA256;
-      opt.s2k_cipher_algo = CIPHER_ALGO_AES256;
-      break;
     case oOpenPGP:
     case oRFC4880:
       /* This is effectively the same as RFC2440, but with
@@ -2279,7 +2258,6 @@ set_compliance_option (enum cmd_and_opt_values option)
     case oPGP8:  opt.compliance = CO_PGP8;  break;
     case oGnuPG:
       opt.compliance = CO_GNUPG;
-      opt.flags.rfc4880bis = 1;
       break;
 
     case oDE_VS:
@@ -2482,7 +2460,6 @@ main (int argc, char **argv)
     opt.emit_version = 0;
     opt.weak_digests = NULL;
     opt.compliance = CO_GNUPG;
-    opt.flags.rfc4880bis = 1;
 
     /* Check special options given on the command line.  */
     orig_argc = argc;
@@ -3020,7 +2997,6 @@ main (int argc, char **argv)
           case oOpenPGP:
           case oRFC2440:
           case oRFC4880:
-          case oRFC4880bis:
           case oPGP7:
           case oPGP8:
           case oGnuPG:
@@ -3832,11 +3808,6 @@ main (int argc, char **argv)
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
 
-    if (!opt.flags.rfc4880bis)
-      {
-        opt.mimemode = 0; /* This will use text mode instead.  */
-      }
-
     if (eyes_only) {
       if (opt.set_filename)
 	  log_info(_("WARNING: %s overrides %s\n"),
@@ -4062,7 +4033,7 @@ main (int argc, char **argv)
     /* Check our chosen algorithms against the list of legal
        algorithms. */
 
-    if(!GNUPG && !opt.flags.rfc4880bis)
+    if(!GNUPG)
       {
 	const char *badalg=NULL;
 	preftype_t badtype=PREFTYPE_NONE;

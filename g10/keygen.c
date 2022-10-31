@@ -407,7 +407,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	      strcat(dummy_string,"S7 ");
 	    strcat(dummy_string,"S2 "); /* 3DES */
 
-            if (opt.flags.rfc4880bis && !openpgp_aead_test_algo (AEAD_ALGO_OCB))
+            if (!openpgp_aead_test_algo (AEAD_ALGO_OCB))
 	      strcat(dummy_string,"A2 ");
 
             if (personal)
@@ -892,7 +892,7 @@ keygen_upd_std_prefs (PKT_signature *sig, void *opaque)
   /* Make sure that the MDC feature flag is set if needed.  */
   add_feature_mdc (sig,mdc_available);
   add_feature_aead (sig, aead_available);
-  add_feature_v5 (sig, opt.flags.rfc4880bis);
+  add_feature_v5 (sig, 1);
   add_keyserver_modify (sig,ks_modify);
   keygen_add_keyserver_url(sig,NULL);
 
@@ -3387,10 +3387,7 @@ parse_key_parameter_part (ctrl_t ctrl,
                 }
             }
           else if (!ascii_strcasecmp (s, "v5"))
-            {
-              if (opt.flags.rfc4880bis)
-                keyversion = 5;
-            }
+            keyversion = 5;
           else if (!ascii_strcasecmp (s, "v4"))
             keyversion = 4;
           else
@@ -3649,7 +3646,7 @@ parse_key_parameter_part (ctrl_t ctrl,
  *   ecdsa := Use algorithm ECDSA.
  *   eddsa := Use algorithm EdDSA.
  *   ecdh  := Use algorithm ECDH.
- *   v5    := Create version 5 key (requires option --rfc4880bis)
+ *   v5    := Create version 5 key
  *
  * There are several defaults and fallbacks depending on the
  * algorithm.  PART can be used to select which part of STRING is
@@ -4431,9 +4428,9 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 	    }
 	}
 
-        if (!opt.flags.rfc4880bis && (keywords[i].key == pVERSION
-                                      || keywords[i].key == pSUBVERSION))
-          ; /* Ignore version unless --rfc4880bis is active.  */
+        if ((keywords[i].key == pVERSION
+             || keywords[i].key == pSUBVERSION))
+          ; /* Ignore version.  */
         else
           {
             r = xmalloc_clear( sizeof *r + strlen( value ) );
@@ -4528,14 +4525,11 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
       para = r;
     }
 
-  if (opt.flags.rfc4880bis)
-    {
-      r = xmalloc_clear (sizeof *r + 20);
-      r->key = for_subkey? pSUBVERSION : pVERSION;
-      snprintf (r->u.value, 20, "%d", version);
-      r->next = para;
-      para = r;
-    }
+  r = xmalloc_clear (sizeof *r + 20);
+  r->key = for_subkey? pSUBVERSION : pVERSION;
+  snprintf (r->u.value, 20, "%d", version);
+  r->next = para;
+  para = r;
 
   if (keytime)
     {
