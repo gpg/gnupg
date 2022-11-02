@@ -47,6 +47,7 @@ XTESTS = \
 	enarmor.scm \
 	mds.scm \
 	decrypt.scm \
+	decrypt-sym.scm \
 	decrypt-multifile.scm \
 	decrypt-dsa.scm \
 	decrypt-session-key.scm \
@@ -240,6 +241,10 @@ sample_keys = samplekeys/README \
 sample_msgs = samplemsgs/clearsig-1-key-1.asc \
 	      samplemsgs/clearsig-2-keys-1.asc \
 	      samplemsgs/clearsig-2-keys-2.asc \
+	      samplemsgs/enc-sym-cfb-1.asc \
+	      samplemsgs/enc-sym-cfb-1.asc \
+	      samplemsgs/enc-sym-ocb-1.asc \
+	      samplemsgs/enc-sym-ocb-1.asc \
 	      samplemsgs/enc-1-key-1.asc \
 	      samplemsgs/enc-1-key-2.asc \
 	      samplemsgs/enc-2-keys-1.asc \
