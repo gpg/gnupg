@@ -2424,6 +2424,7 @@ card_key_available (ctrl_t ctrl, const struct card_key_info_s *keyinfo,
   if (cardsn)
     {
       char *dispsn;
+      char *p;
 
       /* If the card handler is able to return a short serialnumber,
          use that one, else use the complete serialno. */
@@ -2442,6 +2443,10 @@ card_key_available (ctrl_t ctrl, const struct card_key_info_s *keyinfo,
           gcry_sexp_release (s_pk);
           return err;
         }
+      /* Let's avoid blanks in the comment.  */
+      for (p=*cardsn; *p; p++)
+        if (spacep (p))
+          *p = '_';
     }
 
   xfree (pkbuf);
