@@ -493,6 +493,12 @@
 	(fail "mismatch"))
     (list tmpfiles source #f)))
 
+(define (tr:assert-same reference)
+  (lambda (tmpfiles source)
+    (if (not (string=? (call-with-input-file source read-all) reference))
+	(fail "mismatch"))
+    (list tmpfiles source #f)))
+
 (define (tr:call-with-content function . args)
   (lambda (tmpfiles source)
     (catch (list tmpfiles source *error*)

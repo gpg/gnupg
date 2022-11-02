@@ -218,8 +218,8 @@ There is one source function, tr:open.  To describe a transformation
 using some process, use tr:spawn, tr:gpg, or tr:pipe-do.  There are
 several sinks, although sink is not quite the right term, because the
 data is not consumed, and hence one can use them at any position.  The
-"sinks" are tr:write-to, tr:call-with-content, tr:assert-identity, and
-tr:assert-weak-identity.
+"sinks" are tr:write-to, tr:call-with-content, tr:assert-identity,
+tr:assert-weak-identity, and tr:assert-same.
 
 A somewhat contrived example demonstrating many functions is:
 
