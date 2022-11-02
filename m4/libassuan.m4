@@ -9,7 +9,7 @@ dnl This file is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 dnl SPDX-License-Identifier: FSFULLR
-# Last-changed: 2020-11-17
+# Last-changed: 2022-11-01
 
 dnl
 dnl Common code used for libassuan detection [internal]
@@ -28,7 +28,7 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
   fi
 
   use_gpgrt_config=""
-  if test x"${LIBASSUAN_CONFIG}" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+  if test x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG libassuan --exists; then
       LIBASSUAN_CONFIG="$GPGRT_CONFIG libassuan"
       AC_MSG_NOTICE([Use gpgrt-config as libassuan-config])

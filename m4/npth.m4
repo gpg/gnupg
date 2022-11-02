@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-# Last-changed: 2020-11-17
+# Last-changed: 2022-11-01
 
 AC_DEFUN([_AM_PATH_NPTH_CONFIG],
 [ AC_ARG_WITH(npth-prefix,
@@ -21,7 +21,7 @@ AC_DEFUN([_AM_PATH_NPTH_CONFIG],
   fi
 
   use_gpgrt_config=""
-  if test x"$NPTH_CONFIG" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+  if test x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG npth --exists; then
       NPTH_CONFIG="$GPGRT_CONFIG npth"
       AC_MSG_NOTICE([Use gpgrt-config as npth-config])

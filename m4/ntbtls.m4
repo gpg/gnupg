@@ -9,7 +9,7 @@ dnl This file is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 dnl
-dnl Last-changed: 2020-11-18
+dnl Last-changed: 2022-11-01
 
 
 dnl AM_PATH_NTBTLS([MINIMUM-VERSION,
@@ -36,7 +36,7 @@ AC_DEFUN([AM_PATH_NTBTLS],
   fi
 
   use_gpgrt_config=""
-  if test x"${NTBTLS_CONFIG}" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+  if test x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG ntbtls --exists; then
       NTBTLS_CONFIG="$GPGRT_CONFIG ntbtls"
       AC_MSG_NOTICE([Use gpgrt-config as ntbtls-config])

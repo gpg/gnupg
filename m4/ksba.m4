@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2020-11-18
+# Last-changed: 2022-11-01
 
 dnl AM_PATH_KSBA([MINIMUM-VERSION,
 dnl              [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
@@ -44,7 +44,7 @@ AC_DEFUN([AM_PATH_KSBA],
   fi
 
   use_gpgrt_config=""
-  if test x"$KSBA_CONFIG" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+  if test x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG ksba --exists; then
       KSBA_CONFIG="$GPGRT_CONFIG ksba"
       AC_MSG_NOTICE([Use gpgrt-config as ksba-config])
