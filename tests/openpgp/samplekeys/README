@@ -17,6 +17,7 @@ E657FB607BB4F21C90BB6651BC067AF28BC90111.asc Key with subkeys (no protection)
 pgp-desktop-skr.asc    Secret key with subkeys w/o signatures
 rsa-rsa-sample-1.asc   RSA+RSA sample key (no passphrase)
 ed25519-cv25519-sample-1.asc  Ed25519+CV25519 sample key (no passphrase)
+ed25519-cv25519-sample-2.asc  Ed25519+CV25519 sample key (no passphrase)
 silent-running.asc     Collection of sample secret keys (no passphrases)
 rsa-primary-auth-only.pub.asc  rsa2408 primary only, usage: cert,auth
 rsa-primary-auth-only.sec.asc  Ditto but the secret keyblock.
