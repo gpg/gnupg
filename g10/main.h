@@ -472,6 +472,7 @@ int  cmp_signodes (const void *av, const void *bv);
 void print_fingerprint (ctrl_t ctrl, estream_t fp,
                         PKT_public_key *pk, int mode);
 void print_revokers (estream_t fp, PKT_public_key *pk);
+void show_preferences (PKT_user_id *uid, int indent, int mode, int verbose);
 void show_policy_url(PKT_signature *sig,int indent,int mode);
 void show_keyserver_url(PKT_signature *sig,int indent,int mode);
 void show_notation(PKT_signature *sig,int indent,int mode,int which);
