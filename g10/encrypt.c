@@ -351,7 +351,7 @@ use_aead (pk_list_t pk_list, int algo)
     {
       if (!can_use)
         {
-          log_info ("Warning: request to use AEAD ignored for cipher '%s'\n",
+          log_info ("Warning: request to use OCB ignored for cipher '%s'\n",
                     openpgp_cipher_algo_name (algo));
           return 0;
         }
@@ -470,7 +470,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       if (use_seskey && s2k->mode != 1 && s2k->mode != 3)
         {
           use_seskey = 0;
-          log_info (_("can't use a symmetric ESK packet "
+          log_info (_("can't use a SKESK packet"
                       "due to the S2K mode\n"));
         }
 
