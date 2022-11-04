@@ -209,7 +209,9 @@ priv_keys = privkeys/50B2D4FA4122C212611048BC5FC31BD44393626E.asc \
             privkeys/1E28F20E41B54C2D1234D896096495FF57E08D18.asc \
             privkeys/EB33B687EB8581AB64D04852A54453E85F3DF62D.asc \
 	    privkeys/C6A6390E9388CDBAD71EAEA698233FE5E04F001E.asc \
-	    privkeys/D69102E0F5AC6B6DB8E4D16DA8E18CF46D88CAE3.asc
+	    privkeys/D69102E0F5AC6B6DB8E4D16DA8E18CF46D88CAE3.asc \
+	    privkeys/891067FFFC6D67D37BD4BFC399191C5F3989D1B5.key \
+	    privkeys/F27FC04CB01723A4CB6F5399F7B86CCD82C0169C.key
 
 sample_keys = samplekeys/README \
               samplekeys/ecc-sample-1-pub.asc \
@@ -228,6 +230,7 @@ sample_keys = samplekeys/README \
 	      samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc \
               samplekeys/rsa-rsa-sample-1.asc \
               samplekeys/ed25519-cv25519-sample-1.asc \
+              samplekeys/ed25519-cv25519-sample-2.asc \
 	      samplekeys/silent-running.asc \
 	      samplekeys/ssh-dsa.key \
 	      samplekeys/ssh-ecdsa.key \

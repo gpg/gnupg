@@ -215,6 +215,9 @@
 (define (tr:gpg input args)
   (tr:spawn input `(,@GPG --output **out** ,@args **in**)))
 
+(define (tr:gpgstatus input args)
+  (tr:spawn input `(,@GPG --output dummy --status-file **out** ,@args **in**)))
+
 (define (pipe:gpg args)
   (pipe:spawn `(,@GPG --output - ,@args -)))
 
@@ -410,6 +413,13 @@
      "EB33B687EB8581AB64D04852A54453E85F3DF62D"
      "C6A6390E9388CDBAD71EAEA698233FE5E04F001E"
      "D69102E0F5AC6B6DB8E4D16DA8E18CF46D88CAE3"))
+  (for-each
+   (lambda (name)
+     (file-copy (in-srcdir "tests" "openpgp" "privkeys"
+                           (string-append name ".key"))
+	        (string-append "private-keys-v1.d/" name ".key")))
+   '("891067FFFC6D67D37BD4BFC399191C5F3989D1B5"
+     "F27FC04CB01723A4CB6F5399F7B86CCD82C0169C"))
 
   (log "Importing public demo and test keys")
   (for-each
