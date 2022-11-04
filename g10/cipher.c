@@ -436,9 +436,9 @@ do_ocb_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
           size_t n1 = cfx->chunksize - (cfx->chunklen + cfx->buflen);
           finalize = 1;
           if (DBG_FILTER)
-            log_debug ("chunksize %"PRIu64" reached;"
+            log_debug ("chunksize %zu reached;"
                        " cur buflen=%zu using %zu of %zu\n",
-                       cfx->chunksize, cfx->buflen,
+                       (size_t)cfx->chunksize, cfx->buflen,
                        n1, n);
           n = n1;
         }

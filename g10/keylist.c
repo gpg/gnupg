@@ -287,6 +287,173 @@ print_card_key_info (estream_t fp, kbnode_t keyblock)
 #endif /*ENABLE_CARD_SUPPORT*/
 
 
+/* Print the preferences line.  Allowed values for MODE are:
+ *  -1 - print to the TTY
+ *   0 - print to stdout.
+ *   1 - use log_info
+ */
+void
+show_preferences (PKT_user_id *uid, int indent, int mode, int verbose)
+{
+  estream_t fp = mode < 0? NULL : mode ? log_get_stream () : es_stdout;
+  const prefitem_t fake = { 0, 0 };
+  const prefitem_t *prefs;
+  int i;
+
+  if (!uid)
+    return;
+
+  if (uid->prefs)
+    prefs = uid->prefs;
+  else if (verbose)
+    prefs = &fake;
+  else
+    return;
+
+  if (verbose)
+    {
+      int any, des_seen = 0, sha1_seen = 0, uncomp_seen = 0;
+
+      tty_fprintf (fp, "%*s %s", indent, "", _("Cipher: "));
+      for (i = any = 0; prefs[i].type; i++)
+	{
+	  if (prefs[i].type == PREFTYPE_SYM)
+	    {
+	      if (any)
+		tty_fprintf (fp, ", ");
+	      any = 1;
+	      /* We don't want to display strings for experimental algos */
+	      if (!openpgp_cipher_test_algo (prefs[i].value)
+		  && prefs[i].value < 100)
+		tty_fprintf (fp, "%s", openpgp_cipher_algo_name (prefs[i].value));
+	      else
+		tty_fprintf (fp, "[%d]", prefs[i].value);
+	      if (prefs[i].value == CIPHER_ALGO_3DES)
+		des_seen = 1;
+	    }
+	}
+      if (!des_seen)
+	{
+	  if (any)
+	    tty_fprintf (fp, ", ");
+	  tty_fprintf (fp, "%s", openpgp_cipher_algo_name (CIPHER_ALGO_3DES));
+	}
+      tty_fprintf (fp, "\n%*s %s", indent, "", _("AEAD: "));
+      for (i = any = 0; prefs[i].type; i++)
+	{
+	  if (prefs[i].type == PREFTYPE_AEAD)
+	    {
+	      if (any)
+		tty_fprintf (fp, ", ");
+	      any = 1;
+	      /* We don't want to display strings for experimental algos */
+	      if (!openpgp_aead_test_algo (prefs[i].value)
+		  && prefs[i].value < 100)
+		tty_fprintf (fp, "%s", openpgp_aead_algo_name (prefs[i].value));
+	      else
+		tty_fprintf (fp, "[%d]", prefs[i].value);
+	    }
+	}
+      tty_fprintf (fp, "\n%*s %s", indent, "", _("Digest: "));
+      for (i = any = 0; prefs[i].type; i++)
+	{
+	  if (prefs[i].type == PREFTYPE_HASH)
+	    {
+	      if (any)
+		tty_fprintf (fp, ", ");
+	      any = 1;
+	      /* We don't want to display strings for experimental algos */
+	      if (!gcry_md_test_algo (prefs[i].value) && prefs[i].value < 100)
+		tty_fprintf (fp, "%s", gcry_md_algo_name (prefs[i].value));
+	      else
+		tty_fprintf (fp, "[%d]", prefs[i].value);
+	      if (prefs[i].value == DIGEST_ALGO_SHA1)
+		sha1_seen = 1;
+	    }
+	}
+      if (!sha1_seen)
+	{
+	  if (any)
+	    tty_fprintf (fp, ", ");
+	  tty_fprintf (fp, "%s", gcry_md_algo_name (DIGEST_ALGO_SHA1));
+	}
+      tty_fprintf (fp, "\n%*s %s", indent, "", _("Compression: "));
+      for (i = any = 0; prefs[i].type; i++)
+	{
+	  if (prefs[i].type == PREFTYPE_ZIP)
+	    {
+	      const char *s = compress_algo_to_string (prefs[i].value);
+
+	      if (any)
+		tty_fprintf (fp, ", ");
+	      any = 1;
+	      /* We don't want to display strings for experimental algos */
+	      if (s && prefs[i].value < 100)
+		tty_fprintf (fp, "%s", s);
+	      else
+		tty_fprintf (fp, "[%d]", prefs[i].value);
+	      if (prefs[i].value == COMPRESS_ALGO_NONE)
+		uncomp_seen = 1;
+	    }
+	}
+      if (!uncomp_seen)
+	{
+	  if (any)
+	    tty_fprintf (fp, ", ");
+	  else
+	    {
+	      tty_fprintf (fp, "%s",
+                           compress_algo_to_string (COMPRESS_ALGO_ZIP));
+	      tty_fprintf (fp, ", ");
+	    }
+	  tty_fprintf (fp, "%s", compress_algo_to_string (COMPRESS_ALGO_NONE));
+	}
+      if (uid->flags.mdc || uid->flags.aead || !uid->flags.ks_modify)
+	{
+          tty_fprintf (fp, "\n%*s %s", indent, "", _("Features: "));
+	  any = 0;
+	  if (uid->flags.mdc)
+	    {
+	      tty_fprintf (fp, "MDC");
+	      any = 1;
+	    }
+	  if (uid->flags.aead)
+	    {
+	      if (any)
+		tty_fprintf (fp, ", ");
+	      tty_fprintf (fp, "AEAD");
+	    }
+	  if (!uid->flags.ks_modify)
+	    {
+	      if (any)
+		tty_fprintf (fp, ", ");
+	      tty_fprintf (fp, _("Keyserver no-modify"));
+	    }
+	}
+      tty_fprintf (fp, "\n");
+    }
+  else
+    {
+      tty_fprintf (fp, "%*s", indent, "");
+      for (i = 0; prefs[i].type; i++)
+        {
+          tty_fprintf (fp, " %c%d", prefs[i].type == PREFTYPE_SYM ? 'S' :
+                       prefs[i].type == PREFTYPE_AEAD ? 'A' :
+                       prefs[i].type == PREFTYPE_HASH ? 'H' :
+                       prefs[i].type == PREFTYPE_ZIP ? 'Z' : '?',
+                       prefs[i].value);
+        }
+      if (uid->flags.mdc)
+        tty_fprintf (fp, " [mdc]");
+      if (uid->flags.aead)
+        tty_fprintf (fp, " [aead]");
+      if (!uid->flags.ks_modify)
+        tty_fprintf (fp, " [no-ks-modify]");
+      tty_fprintf (fp, "\n");
+    }
+}
+
+
 /* Flags = 0x01 hashed 0x02 critical.  */
 static void
 status_one_subpacket (sigsubpkttype_t type, size_t len, int flags,
@@ -1056,6 +1223,11 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 
 	  print_utf8_buffer (es_stdout, uid->name, uid->len);
 	  es_putc ('\n', es_stdout);
+
+          if ((opt.list_options & LIST_SHOW_PREF_VERBOSE))
+            show_preferences (uid, indent+2, 0, 1);
+          else if ((opt.list_options & LIST_SHOW_PREF))
+            show_preferences (uid, indent+2, 0, 0);
 
           if (opt.with_wkd_hash)
             {

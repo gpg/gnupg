@@ -3316,146 +3316,12 @@ tty_print_notations (int indent, PKT_signature * sig)
 static void
 show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 {
-  const prefitem_t fake = { 0, 0 };
-  const prefitem_t *prefs;
-  int i;
-
   if (!uid)
-    return;
-
-  if (uid->prefs)
-    prefs = uid->prefs;
-  else if (verbose)
-    prefs = &fake;
-  else
     return;
 
   if (verbose)
     {
-      int any, des_seen = 0, sha1_seen = 0, uncomp_seen = 0;
-
-      tty_printf ("     ");
-      tty_printf (_("Cipher: "));
-      for (i = any = 0; prefs[i].type; i++)
-	{
-	  if (prefs[i].type == PREFTYPE_SYM)
-	    {
-	      if (any)
-		tty_printf (", ");
-	      any = 1;
-	      /* We don't want to display strings for experimental algos */
-	      if (!openpgp_cipher_test_algo (prefs[i].value)
-		  && prefs[i].value < 100)
-		tty_printf ("%s", openpgp_cipher_algo_name (prefs[i].value));
-	      else
-		tty_printf ("[%d]", prefs[i].value);
-	      if (prefs[i].value == CIPHER_ALGO_3DES)
-		des_seen = 1;
-	    }
-	}
-      if (!des_seen)
-	{
-	  if (any)
-	    tty_printf (", ");
-	  tty_printf ("%s", openpgp_cipher_algo_name (CIPHER_ALGO_3DES));
-	}
-      tty_printf ("\n     ");
-      tty_printf (_("AEAD: "));
-      for (i = any = 0; prefs[i].type; i++)
-	{
-	  if (prefs[i].type == PREFTYPE_AEAD)
-	    {
-	      if (any)
-		tty_printf (", ");
-	      any = 1;
-	      /* We don't want to display strings for experimental algos */
-	      if (!openpgp_aead_test_algo (prefs[i].value)
-		  && prefs[i].value < 100)
-		tty_printf ("%s", openpgp_aead_algo_name (prefs[i].value));
-	      else
-		tty_printf ("[%d]", prefs[i].value);
-	    }
-	}
-      tty_printf ("\n     ");
-      tty_printf (_("Digest: "));
-      for (i = any = 0; prefs[i].type; i++)
-	{
-	  if (prefs[i].type == PREFTYPE_HASH)
-	    {
-	      if (any)
-		tty_printf (", ");
-	      any = 1;
-	      /* We don't want to display strings for experimental algos */
-	      if (!gcry_md_test_algo (prefs[i].value) && prefs[i].value < 100)
-		tty_printf ("%s", gcry_md_algo_name (prefs[i].value));
-	      else
-		tty_printf ("[%d]", prefs[i].value);
-	      if (prefs[i].value == DIGEST_ALGO_SHA1)
-		sha1_seen = 1;
-	    }
-	}
-      if (!sha1_seen)
-	{
-	  if (any)
-	    tty_printf (", ");
-	  tty_printf ("%s", gcry_md_algo_name (DIGEST_ALGO_SHA1));
-	}
-      tty_printf ("\n     ");
-      tty_printf (_("Compression: "));
-      for (i = any = 0; prefs[i].type; i++)
-	{
-	  if (prefs[i].type == PREFTYPE_ZIP)
-	    {
-	      const char *s = compress_algo_to_string (prefs[i].value);
-
-	      if (any)
-		tty_printf (", ");
-	      any = 1;
-	      /* We don't want to display strings for experimental algos */
-	      if (s && prefs[i].value < 100)
-		tty_printf ("%s", s);
-	      else
-		tty_printf ("[%d]", prefs[i].value);
-	      if (prefs[i].value == COMPRESS_ALGO_NONE)
-		uncomp_seen = 1;
-	    }
-	}
-      if (!uncomp_seen)
-	{
-	  if (any)
-	    tty_printf (", ");
-	  else
-	    {
-	      tty_printf ("%s", compress_algo_to_string (COMPRESS_ALGO_ZIP));
-	      tty_printf (", ");
-	    }
-	  tty_printf ("%s", compress_algo_to_string (COMPRESS_ALGO_NONE));
-	}
-      if (uid->flags.mdc || uid->flags.aead || !uid->flags.ks_modify)
-	{
-	  tty_printf ("\n     ");
-	  tty_printf (_("Features: "));
-	  any = 0;
-	  if (uid->flags.mdc)
-	    {
-	      tty_printf ("MDC");
-	      any = 1;
-	    }
-	  if (!uid->flags.aead)
-	    {
-	      if (any)
-		tty_printf (", ");
-	      tty_printf ("AEAD");
-	    }
-	  if (!uid->flags.ks_modify)
-	    {
-	      if (any)
-		tty_printf (", ");
-	      tty_printf (_("Keyserver no-modify"));
-	    }
-	}
-      tty_printf ("\n");
-
+      show_preferences (uid, 4, -1, 1);
       if (selfsig)
 	{
 	  const byte *pref_ks;
@@ -3481,22 +3347,7 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
     }
   else
     {
-      tty_printf ("    ");
-      for (i = 0; prefs[i].type; i++)
-	{
-	  tty_printf (" %c%d", prefs[i].type == PREFTYPE_SYM ? 'S' :
-		      prefs[i].type == PREFTYPE_AEAD ? 'A' :
-		      prefs[i].type == PREFTYPE_HASH ? 'H' :
-		      prefs[i].type == PREFTYPE_ZIP ? 'Z' : '?',
-		      prefs[i].value);
-	}
-      if (uid->flags.mdc)
-	tty_printf (" [mdc]");
-      if (uid->flags.aead)
-	tty_printf (" [aead]");
-      if (!uid->flags.ks_modify)
-	tty_printf (" [no-ks-modify]");
-      tty_printf ("\n");
+      show_preferences (uid, 4, -1, 0);
     }
 }
 
