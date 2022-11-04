@@ -1,7 +1,7 @@
 /* keyedit.c - Edit properties of a key
  * Copyright (C) 1998-2010 Free Software Foundation, Inc.
  * Copyright (C) 1998-2017 Werner Koch
- * Copyright (C) 2015, 2016 g10 Code GmbH
+ * Copyright (C) 2015, 2016, 2022 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -78,7 +78,8 @@ static gpg_error_t menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
 static int menu_changeusage (ctrl_t ctrl, kbnode_t keyblock);
 static int menu_backsign (ctrl_t ctrl, kbnode_t pub_keyblock);
 static int menu_set_primary_uid (ctrl_t ctrl, kbnode_t pub_keyblock);
-static int menu_set_preferences (ctrl_t ctrl, kbnode_t pub_keyblock);
+static int menu_set_preferences (ctrl_t ctrl, kbnode_t pub_keyblock,
+                                 int unattended);
 static int menu_set_keyserver_url (ctrl_t ctrl,
                                    const char *url, kbnode_t pub_keyblock);
 static int menu_set_notation (ctrl_t ctrl,
@@ -2111,7 +2112,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                    " for the selected user IDs? (y/N) ")
                  : _("Really update the preferences? (y/N) ")))
 	      {
-		if (menu_set_preferences (ctrl, keyblock))
+		if (menu_set_preferences (ctrl, keyblock, 0))
 		  {
 		    merge_keys_and_selfsig (ctrl, keyblock);
 		    modified = 1;
@@ -2599,6 +2600,45 @@ keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
                gpg_strerror (err));
 
  leave:
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+}
+
+
+/* Unattended updating of the preference tro the standard preferences.
+ * USERNAME specifies the key.  This is basically the same as
+ *      gpg --edit-key <<userif> updpref save
+ */
+void
+keyedit_quick_update_pref (ctrl_t ctrl, const char *username)
+{
+  gpg_error_t err;
+  KEYDB_HANDLE kdbhd = NULL;
+  kbnode_t keyblock = NULL;
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale (ctrl);
+#endif
+
+  err = quick_find_keyblock (ctrl, username, 1, &kdbhd, &keyblock);
+  if (err)
+    goto leave;
+
+  if (menu_set_preferences (ctrl, keyblock, 1))
+    {
+      merge_keys_and_selfsig (ctrl, keyblock);
+      err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+ leave:
+  if (err)
+    write_status_error ("keyedit.updpref", err);
   release_kbnode (keyblock);
   keydb_release (kdbhd);
 }
@@ -5063,10 +5103,11 @@ menu_set_primary_uid (ctrl_t ctrl, kbnode_t pub_keyblock)
 
 
 /*
- * Set preferences to new values for the selected user IDs
+ * Set preferences to new values for the selected user IDs.
+ * --quick-update-pred calls this with UNATTENDED set.
  */
 static int
-menu_set_preferences (ctrl_t ctrl, kbnode_t pub_keyblock)
+menu_set_preferences (ctrl_t ctrl, kbnode_t pub_keyblock, int unattended)
 {
   PKT_public_key *main_pk;
   PKT_user_id *uid;
@@ -5075,9 +5116,10 @@ menu_set_preferences (ctrl_t ctrl, kbnode_t pub_keyblock)
   int selected, select_all;
   int modified = 0;
 
-  no_primary_warning (pub_keyblock);
+  if (!unattended)
+    no_primary_warning (pub_keyblock);
 
-  select_all = !count_selected_uids (pub_keyblock);
+  select_all = unattended? 1 : !count_selected_uids (pub_keyblock);
 
   /* Now we can actually change the self signature(s) */
   main_pk = NULL;

@@ -54,6 +54,7 @@ void keyedit_quick_set_expire (ctrl_t ctrl,
                                char **subkeyfprs);
 void keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
                                 const char *primaryuid);
+void keyedit_quick_update_pref (ctrl_t ctrl, const char *username);
 void show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock, int print_sec);
 int keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
                            int rc, kbnode_t keyblock,

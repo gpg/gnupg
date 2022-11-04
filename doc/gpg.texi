@@ -956,7 +956,8 @@ signing.
   --version} to get a list of available algorithms. Note that while you
   can change the preferences on an attribute user ID (aka "photo ID"),
   GnuPG does not select keys via attribute user IDs so these preferences
-  will not be used by GnuPG.
+  will not be used by GnuPG.  Note that an unattended version of this
+  command is available as @option{--quick-update-pref}.
 
   When setting preferences, you should list the algorithms in the order
   which you'd like to see them used by someone else when encrypting a
@@ -1164,6 +1165,16 @@ user ID which shall be flagged as the primary user ID.  The primary
 user ID flag is removed from all other user ids and the timestamp of
 all affected self-signatures is set one second ahead.
 
+@item --quick-update-pref  @var{user-id}
+@opindex quick-update-pref
+This command updates the preference list of the key to the current
+default value (either built-in or set via
+@option{--default-preference-list}).  This is the unattended version
+of of using "setpref" in the @option{--key-edit} menu without giving a
+list.  Note that you can show the preferences in a key listing by
+using @option{--list-options show-pref} or @option{--list-options
+show-pref-verbose}.  You should also re-distribute updated keys to
+your peers.
 
 @item --change-passphrase @var{user-id}
 @opindex change-passphrase
