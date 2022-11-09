@@ -21,6 +21,5 @@
 #define _EXEC_H_
 
 int set_exec_path(const char *path);
-int w32_system(const char *command);
 
 #endif /* !_EXEC_H_ */
