@@ -650,6 +650,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
     byte *p;
     byte tempbuf[PARTIAL_CHUNK];
     size_t tempbuf_len=0;
+    int this_truncated;
 
     while( !rc && size-len>=(PARTIAL_CHUNK+1)) {
 	/* copy what we have in the line buffer */
@@ -684,7 +685,13 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    continue;
 	}
 	if( !maxlen )
+          {
 	    afx->truncated++;
+            this_truncated = 1;
+          }
+        else
+          this_truncated = 0;
+
 
 	p = afx->buffer;
 	n = afx->buffer_len;
@@ -737,7 +744,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	  }
 
 	/* Now handle the end-of-line canonicalization */
-	if( !afx->not_dash_escaped )
+	if( !afx->not_dash_escaped || this_truncated)
 	  {
 	    int crlf = n > 1 && p[n-2] == '\r' && p[n-1]=='\n';
 
@@ -754,10 +761,17 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	     * or calculate the hash here in this module and somehow find
 	     * a way to send the hash down the processing line (well, a special
 	     * faked packet could do the job).
+             *
+             * To make sure that a truncated line triggers a bad
+             * signature error we replace a removed LF by a FF or
+             * append a FF.  Right, this is a hack but better than a
+             * global variable and way easier than to introduce a new
+             * control packet or insert a line like "[truncated]\n"
+             * into the filter output.
 	     */
 	    if( crlf )
 	      afx->buffer[afx->buffer_len++] = '\r';
-	    afx->buffer[afx->buffer_len++] = '\n';
+	    afx->buffer[afx->buffer_len++] = this_truncated? '\f':'\n';
 	    afx->buffer[afx->buffer_len] = '\0';
 	  }
     }
@@ -1126,11 +1140,11 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    rc = 0;
 		else if( rc == 2 ) {
 		    log_error(_("premature eof (in trailer)\n"));
-		    rc = GPG_ERR_INVALID_ARMOR;
+		    rc = GPG_ERR_INV_ARMOR;
 		}
 		else {
 		    log_error(_("error in trailer line\n"));
-		    rc = GPG_ERR_INVALID_ARMOR;
+		    rc = GPG_ERR_INV_ARMOR;
 		}
 #endif
 	    }
@@ -1278,7 +1292,7 @@ armor_filter( void *opaque, int control,
 
     if( !fp ) {
 	fp = fopen("armor.out", "w");
-	assert(fp);
+	log_assert(fp);
     }
 #endif
 
@@ -1539,6 +1553,11 @@ armor_filter( void *opaque, int control,
 	    afx->no_openpgp_data = 1;
 	    write_status_text( STATUS_NODATA, "1" );
 	}
+        /* Note that in a cleartext signature truncated lines in the
+         * plaintext are detected and propagated to the signature
+         * checking code by inserting a \f into the plaintext.  We do
+         * not use log_info here because some of the truncated lines
+         * are harmless.  */
 	if( afx->truncated )
 	    log_info(_("invalid armor: line longer than %d characters\n"),
 		      MAX_LINELEN );
