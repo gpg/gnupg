@@ -648,7 +648,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   if (!fname)
     return gpg_error_from_syserror ();
 
-  if ((ec = access (fname, W_OK)) && ec != GPG_ERR_ENOENT)
+  if ((ec = gnupg_access (fname, W_OK)) && ec != GPG_ERR_ENOENT)
     {
       xfree (fname);
       return gpg_error (GPG_ERR_EPERM);

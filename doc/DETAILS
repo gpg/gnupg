@@ -1665,12 +1665,12 @@ Description of some debug flags:
 
 
 * Miscellaneous notes
-** List of useful RFCs
-  - RFC-1423 :: PEM, Part III: Algorithms, Modes, and Identifiers.
-  - RFC-1750 :: Randomness Recommendations for Security.
+** List of useful RFCs and I-D.
+  - RFC-1423 :: PEM, Part III: Algorithms, Modes, and Identifiers
+  - RFC-1750 :: Randomness Recommendations for Security
   - RFC-1991 :: PGP Message Exchange Formats (obsolete)
-  - RFC-2144 :: The CAST-128 Encryption Algorithm.
-  - RFC-2279 :: UTF-8, a transformation format of ISO 10646.
+  - RFC-2144 :: The CAST-128 Encryption Algorithm
+  - RFC-2279 :: UTF-8, a transformation format of ISO 10646
   - RFC-2440 :: OpenPGP (obsolete).
   - RFC-3156 :: MIME Security with Pretty Good Privacy (PGP).
   - RFC-3447 :: PKCS  #1: RSA Cryptography Specifications Version 2.1
@@ -1679,18 +1679,23 @@ Description of some debug flags:
   - RFC-5084 :: CMS - AES-GCM
   - RFC-5280 :: X.509 PKI Certificate and CRL Profile
   - RFC-5480 :: ECC Subject Public Key Information
+  - RFC-5639 :: ECC Brainpool Standard Curves
   - RFC-5652 :: CMS (STD0070)
+  - RFC-5753 :: ECC in CMS
+  - RFC-5758 :: CMS - Additional Algorithms for DSA and ECDSA
   - RFC-6818 :: Updates to the X.509 PKI Certificate and CRL Profile
   - RFC-6960 :: Online Certificate Status Protocol - OCSP
   - RFC-8954 :: Online Certificate Status Protocol (OCSP) Nonce Extension
-  - RFC-8398 :: Internationalized Email Addresses in X.509 Certificates.
+  - RFC-8398 :: Internationalized Email Addresses in X.509 Certificates
   - RFC-8399 :: Internationalization Updates to RFC 5280
   - RFC-8813 :: Clarifications for ECC Subject Public Key
-  - RFC-5915 :: Elliptic Curve Private Key Structure
+  - RFC-5915 :: ECC Private Key Structure
   - RFC-5958 :: Asymmetric Key Packages
-  - RFC-6337 :: Elliptic Curve Cryptography (ECC) in OpenPGP
+  - RFC-6337 :: ECC in OpenPGP
   - RFC-7292 :: PKCS #12: Personal Information Exchange Syntax v1.1
   - RFC-8351 :: The PKCS #8 EncryptedPrivateKeyInfo Media Type
+
+  - draft-koch-openpgp-2015-rfc4880bis :: Updates to RFC-4880
 
 ** v3 fingerprints
    For packet version 3 we calculate the keyids this way:
