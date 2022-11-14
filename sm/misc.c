@@ -101,7 +101,7 @@ setup_pinentry_env (void)
    function ignores missing parameters so that it can also be used to
    create an siginfo value as expected by ksba_certreq_set_siginfo.
    To create a siginfo s-expression a public-key s-expression may be
-   used instead of a sig-val.  We only support RSA for now.  */
+   used instead of a sig-val.  */
 gpg_error_t
 transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
                   unsigned char **r_newsigval, size_t *r_newsigvallen)
@@ -111,10 +111,14 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
   size_t buflen, toklen;
   int depth, last_depth1, last_depth2;
   int is_pubkey = 0;
-  const unsigned char *rsa_s = NULL;
-  size_t rsa_s_len = 0;
+  int pkalgo;
+  const unsigned char *rsa_s, *ecc_r, *ecc_s;
+  size_t rsa_s_len, ecc_r_len, ecc_s_len;
   const char *oid;
   gcry_sexp_t sexp;
+
+  rsa_s = ecc_r = ecc_s = NULL;
+  rsa_s_len = ecc_r_len = ecc_s_len = 0;
 
   *r_newsigval = NULL;
   if (r_newsigvallen)
@@ -137,7 +141,15 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
     return err;
   if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
     return err;
-  if (!tok || toklen != 3 || memcmp ("rsa", tok, toklen))
+  if (!tok)
+    return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+  if (toklen == 3 && !memcmp ("rsa", tok, 3))
+    pkalgo = GCRY_PK_RSA;
+  else if (toklen == 3 && !memcmp ("ecc", tok, 3))
+    pkalgo = GCRY_PK_ECC;
+  else if (toklen == 5 && !memcmp ("ecdsa", tok, 5))
+    pkalgo = GCRY_PK_ECC;
+  else
     return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
 
   last_depth1 = depth;
@@ -150,8 +162,8 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
         return err;
       if (tok && toklen == 1)
         {
-          const unsigned char **mpi;
-          size_t *mpi_len;
+          const unsigned char **mpi = NULL;
+          size_t *mpi_len = NULL;
 
           switch (*tok)
             {
@@ -160,6 +172,25 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
             }
           if (mpi && *mpi)
             return gpg_error (GPG_ERR_DUP_VALUE);
+
+          switch (*tok)
+            {
+            case 's':
+              if (pkalgo == GCRY_PK_RSA)
+                {
+                  mpi = &rsa_s;
+                  mpi_len = &rsa_s_len;
+                }
+              else if (pkalgo == GCRY_PK_ECC || pkalgo == GCRY_PK_EDDSA)
+                {
+                  mpi = &ecc_s;
+                  mpi_len = &ecc_s_len;
+                }
+              break;
+
+            case 'r': mpi = &ecc_r; mpi_len = &ecc_r_len; break;
+            default:  mpi = NULL;   mpi_len = NULL; break;
+            }
 
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             return err;
@@ -181,34 +212,62 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
   if (err)
     return err;
 
-  /* Map the hash algorithm to an OID.  */
-  switch (mdalgo)
+  if (0)
+    ; /* Just to align it with the code in 2.3.  */
+  else
     {
-    case GCRY_MD_SHA1:
-      oid = "1.2.840.113549.1.1.5";  /* sha1WithRSAEncryption */
-      break;
+      /* Map the hash algorithm to an OID.  */
+      if (mdalgo < 0 || mdalgo > (1<<15) || pkalgo < 0 || pkalgo > (1<<15))
+        return gpg_error (GPG_ERR_DIGEST_ALGO);
 
-    case GCRY_MD_SHA256:
-      oid = "1.2.840.113549.1.1.11"; /* sha256WithRSAEncryption */
-      break;
+      switch (mdalgo | (pkalgo << 16))
+        {
+        case GCRY_MD_SHA1 | (GCRY_PK_RSA << 16):
+          oid = "1.2.840.113549.1.1.5";  /* sha1WithRSAEncryption */
+          break;
 
-    case GCRY_MD_SHA384:
-      oid = "1.2.840.113549.1.1.12"; /* sha384WithRSAEncryption */
-      break;
+        case GCRY_MD_SHA256 | (GCRY_PK_RSA << 16):
+          oid = "1.2.840.113549.1.1.11"; /* sha256WithRSAEncryption */
+          break;
 
-    case GCRY_MD_SHA512:
-      oid = "1.2.840.113549.1.1.13"; /* sha512WithRSAEncryption */
-      break;
+        case GCRY_MD_SHA384 | (GCRY_PK_RSA << 16):
+          oid = "1.2.840.113549.1.1.12"; /* sha384WithRSAEncryption */
+          break;
 
-    default:
-      return gpg_error (GPG_ERR_DIGEST_ALGO);
+        case GCRY_MD_SHA512 | (GCRY_PK_RSA << 16):
+          oid = "1.2.840.113549.1.1.13"; /* sha512WithRSAEncryption */
+          break;
+
+        case GCRY_MD_SHA224 | (GCRY_PK_ECC << 16):
+          oid = "1.2.840.10045.4.3.1"; /* ecdsa-with-sha224 */
+          break;
+
+        case GCRY_MD_SHA256 | (GCRY_PK_ECC << 16):
+          oid = "1.2.840.10045.4.3.2"; /* ecdsa-with-sha256 */
+          break;
+
+        case GCRY_MD_SHA384 | (GCRY_PK_ECC << 16):
+          oid = "1.2.840.10045.4.3.3"; /* ecdsa-with-sha384 */
+          break;
+
+        case GCRY_MD_SHA512 | (GCRY_PK_ECC << 16):
+          oid = "1.2.840.10045.4.3.4"; /* ecdsa-with-sha512 */
+          break;
+
+        default:
+          return gpg_error (GPG_ERR_DIGEST_ALGO);
+        }
     }
 
-  if (rsa_s && !is_pubkey)
+  if (is_pubkey)
+    err = gcry_sexp_build (&sexp, NULL, "(sig-val(%s))", oid);
+  else if (pkalgo == GCRY_PK_RSA)
     err = gcry_sexp_build (&sexp, NULL, "(sig-val(%s(s%b)))",
                            oid, (int)rsa_s_len, rsa_s);
-  else
-    err = gcry_sexp_build (&sexp, NULL, "(sig-val(%s))", oid);
+  else if (pkalgo == GCRY_PK_ECC || pkalgo == GCRY_PK_EDDSA)
+    err = gcry_sexp_build (&sexp, NULL, "(sig-val(%s(r%b)(s%b)))", oid,
+                           (int)ecc_r_len, ecc_r, (int)ecc_s_len, ecc_s);
+
   if (err)
     return err;
   err = make_canon_sexp (sexp, r_newsigval, r_newsigvallen);
