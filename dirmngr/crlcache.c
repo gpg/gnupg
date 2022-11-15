@@ -1841,9 +1841,10 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
       if (n > qbits/8)
         n = qbits/8;
 
-      err = gcry_sexp_build (&s_hash, NULL, "%b",
+      err = gcry_sexp_build (&s_hash, NULL, "(data(flags raw)(value %b))",
                              (int)n,
                              gcry_md_read (md, algo));
+
     }
   else
     {
@@ -1862,7 +1863,7 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
   /* Pass this on to the signature verification. */
   err = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_X509)
-    log_debug ("gcry_pk_verify: %s\n", gpg_strerror (err));
+    log_debug ("%s: gcry_pk_verify: %s\n", __func__, gpg_strerror (err));
 
  leave:
   xfree (sigval);
