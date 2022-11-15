@@ -1164,7 +1164,7 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   if (!err)
     err = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_X509)
-    log_debug ("gcry_pk_verify: %s\n", gpg_strerror (err));
+    log_debug ("%s: gcry_pk_verify: %s\n", __func__, gpg_strerror (err));
 
  leave:
   gcry_md_close (md);
