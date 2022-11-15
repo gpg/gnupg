@@ -247,7 +247,7 @@ print_key_data (ksba_cert_t cert, estream_t fp)
 }
 
 static void
-print_capabilities (ksba_cert_t cert, estream_t fp)
+print_capabilities (ksba_cert_t cert, int algo, estream_t fp)
 {
   gpg_error_t err;
   unsigned int use;
@@ -299,7 +299,7 @@ print_capabilities (ksba_cert_t cert, estream_t fp)
   /* We need to returned the faked key usage to frontends so that they
    * can select the right key.  Note that we don't do this for the
    * human readable keyUsage.  */
-  if ((opt.compat_flags & COMPAT_ALLOW_KA_TO_ENCR)
+  if ((algo == GCRY_PK_ECC || (opt.compat_flags & COMPAT_ALLOW_KA_TO_ENCR))
       && (use & KSBA_KEYUSAGE_KEY_AGREEMENT))
     is_encr = 1;
 
@@ -539,7 +539,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   /* Field 11, signature class - not used */
   es_putc (':', fp);
   /* Field 12, capabilities: */
-  print_capabilities (cert, fp);
+  print_capabilities (cert, algo, fp);
   es_putc (':', fp);
   /* Field 13, not used: */
   es_putc (':', fp);
