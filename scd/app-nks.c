@@ -450,6 +450,8 @@ keygripstr_from_pk_file (app_t app, int pkfid, int cfid, char *r_gripstr,
 
   if (!err)
     {
+      if (r_algo)
+        *r_algo = algo;
       if (r_algostr)
         {
           *r_algostr = algostr;
