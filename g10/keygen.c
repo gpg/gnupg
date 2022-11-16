@@ -146,6 +146,16 @@ struct common_gen_cb_parm_s
 typedef struct common_gen_cb_parm_s *common_gen_cb_parm_t;
 
 
+/* A communication object to help adding certain notations to a key
+ * binding signature.  */
+struct opaque_data_usage_and_pk
+{
+  unsigned int usage;
+  const char *cpl_notation;
+  PKT_public_key *pk;
+};
+
+
 /* FIXME: These globals vars are ugly.  And using MAX_PREFS even for
  * aeads is useless, given that we don't expects more than a very few
  * algorithms.  */
@@ -177,6 +187,9 @@ static gpg_error_t gen_card_key (int keyno, int algo, int is_primary,
                                  u32 expireval, int *keygen_flags);
 static unsigned int get_keysize_range (int algo,
                                        unsigned int *min, unsigned int *max);
+static void do_add_notation (PKT_signature *sig,
+                             const char *name, const char *value,
+                             int critical);
 
 
 
@@ -338,6 +351,20 @@ keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque)
 {
   keygen_add_key_flags (sig, opaque);
   return keygen_add_key_expire (sig, opaque);
+}
+
+
+/* This is only used to write the key binding signature.  It is not
+ * used for the primary key.  */
+static int
+keygen_add_key_flags_from_oduap (PKT_signature *sig, void *opaque)
+{
+  struct opaque_data_usage_and_pk *oduap = opaque;
+
+  do_add_key_flags (sig, oduap->usage);
+  if (oduap->cpl_notation)
+    do_add_notation (sig, "cpl@gnupg.org", oduap->cpl_notation, 0);
+  return keygen_add_key_expire (sig, oduap->pk);
 }
 
 
@@ -946,6 +973,44 @@ keygen_add_keyserver_url(PKT_signature *sig, void *opaque)
   return 0;
 }
 
+
+/* This function is used to add a notations to a signature.  In
+ * general the caller should have cleared exiting notations before
+ * adding new ones.  For example by calling:
+ *
+ *  delete_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION);
+ *  delete_sig_subpkt(sig->unhashed,SIGSUBPKT_NOTATION);
+ *
+ * Only human readable notaions may be added.  NAME and value are
+ * expected to be UTF-* strings.
+ */
+static void
+do_add_notation (PKT_signature *sig, const char *name, const char *value,
+                 int critical)
+{
+  unsigned char *buf;
+  unsigned int n1,n2;
+
+  n1 = strlen (name);
+  n2 = strlen (value);
+
+  buf = xmalloc (8 + n1 + n2);
+
+  buf[0] = 0x80; /* human readable.  */
+  buf[1] = buf[2] = buf[3] = 0;
+  buf[4] = n1 >> 8;
+  buf[5] = n1;
+  buf[6] = n2 >> 8;
+  buf[7] = n2;
+  memcpy (buf+8, name, n1);
+  memcpy (buf+8+n1, value, n2);
+  build_sig_subpkt (sig,
+                    (SIGSUBPKT_NOTATION|(critical?SIGSUBPKT_FLAG_CRITICAL:0)),
+                    buf, 8+n1+n2 );
+  xfree (buf);
+}
+
+
 int
 keygen_add_notations(PKT_signature *sig,void *opaque)
 {
@@ -994,6 +1059,7 @@ keygen_add_notations(PKT_signature *sig,void *opaque)
 
   return 0;
 }
+
 
 int
 keygen_add_revkey (PKT_signature *sig, void *opaque)
@@ -1228,6 +1294,7 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
   PKT_signature *sig;
   KBNODE node;
   PKT_public_key *pri_pk, *sub_pk;
+  struct opaque_data_usage_and_pk oduap;
 
   if (opt.verbose)
     log_info(_("writing key binding signature\n"));
@@ -1253,10 +1320,21 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
     BUG();
 
   /* Make the signature.  */
-  sub_pk->pubkey_usage = use;
+  oduap.usage = use;
+  if ((use & PUBKEY_USAGE_ENC)
+      && opt.compliance == CO_DE_VS
+      /* The required libgcrypt 1.11 won't yet claim a compliant RNG.  */
+      && gnupg_rng_is_compliant (CO_DE_VS))
+    oduap.cpl_notation = "de-vs";
+  else if ((use & PUBKEY_USAGE_ENC)
+           && sub_pk->pubkey_algo == PUBKEY_ALGO_KYBER)
+    oduap.cpl_notation = "fips203.ipd.2023-08-24";
+  else
+    oduap.cpl_notation = NULL;
+  oduap.pk = sub_pk;
   err = make_keysig_packet (ctrl, &sig, pri_pk, NULL, sub_pk, pri_psk, 0x18,
                             timestamp, 0,
-                            keygen_add_key_flags_and_expire, sub_pk,
+                            keygen_add_key_flags_from_oduap, &oduap,
                             cache_nonce);
   if (err)
     {
