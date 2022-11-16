@@ -54,15 +54,9 @@
 
 /* The time we wait until the agent or the dirmngr are ready for
    operation after we started them before giving up.  */
-#ifdef HAVE_W32CE_SYSTEM
-# define SECS_TO_WAIT_FOR_AGENT 30
-# define SECS_TO_WAIT_FOR_KEYBOXD 30
-# define SECS_TO_WAIT_FOR_DIRMNGR 30
-#else
-# define SECS_TO_WAIT_FOR_AGENT 5
-# define SECS_TO_WAIT_FOR_KEYBOXD 5
-# define SECS_TO_WAIT_FOR_DIRMNGR 5
-#endif
+#define SECS_TO_WAIT_FOR_AGENT 5
+#define SECS_TO_WAIT_FOR_KEYBOXD 5
+#define SECS_TO_WAIT_FOR_DIRMNGR 5
 
 /* A bitfield that specifies the assuan categories to log.  This is
    identical to the default log handler of libassuan.  We need to do

@@ -15,7 +15,6 @@ agent/cvt-openpgp.c
 
 common/exechelp-posix.c
 common/exechelp-w32.c
-common/exechelp-w32ce.c
 common/simple-pwquery.c
 common/sysutils.c
 common/yesno.c

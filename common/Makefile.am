@@ -24,9 +24,7 @@ EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk ChangeLog-2011 \
 	     all-tests.scm
 
 noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a
-if !HAVE_W32CE_SYSTEM
 noinst_LIBRARIES += libsimple-pwquery.a
-endif
 noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
 if DISABLE_TESTS
 TESTS =
@@ -109,11 +107,7 @@ endif
 # To make the code easier to read we have split home some code into
 # separate source files.
 if HAVE_W32_SYSTEM
-if HAVE_W32CE_SYSTEM
-common_sources += exechelp-w32ce.c
-else
 common_sources += exechelp-w32.c
-endif
 else
 common_sources += exechelp-posix.c
 endif
@@ -132,11 +126,9 @@ libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_NPTH=1
 libcommonpth_a_SOURCES = $(common_sources) $(with_npth_sources)
 libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
 
-if !HAVE_W32CE_SYSTEM
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h
 libsimple_pwquery_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
-endif
 
 libgpgrl_a_SOURCES = \
         gpgrlhelp.c

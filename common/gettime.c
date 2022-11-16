@@ -708,11 +708,6 @@ asctimestamp (u32 stamp)
   /* NOTE: gcc -Wformat-noliteral will complain here.  I have found no
      way to suppress this warning.  */
   strftime (buffer, DIM(buffer)-1, fmt, tp);
-# elif defined(HAVE_W32CE_SYSTEM)
-  /* tzset is not available but %Z nevertheless prints a default
-     nonsense timezone ("WILDABBR").  Thus we don't print the time
-     zone at all.  */
-  strftime (buffer, DIM(buffer)-1, "%c", tp);
 # else
 #  if HAVE_W32_SYSTEM
   {

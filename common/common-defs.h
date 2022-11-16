@@ -36,10 +36,6 @@
 #define getenv(a)  (NULL)
 #endif
 
-#ifdef HAVE_W32CE_SYSTEM
-#define getpid() GetCurrentProcessId ()
-#endif
-
 
 /*-- ttyio.c --*/
 void tty_private_set_rl_hooks (void (*init_stream) (FILE *),

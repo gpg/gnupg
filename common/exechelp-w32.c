@@ -31,7 +31,7 @@
 
 #include <config.h>
 
-#if !defined(HAVE_W32_SYSTEM) || defined (HAVE_W32CE_SYSTEM)
+#if !defined(HAVE_W32_SYSTEM)
 #error This code is only used on W32.
 #endif
 

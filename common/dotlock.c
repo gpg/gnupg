@@ -209,8 +209,6 @@
      EXTSEP_S            - Separation string for file name suffixes.
                            Usually not redefined.
 
-     HAVE_W32CE_SYSTEM   - Currently only used by GnuPG.
-
    Note that there is a test program t-dotlock which has compile
    instructions at its end.  At least for SMBFS and CIFS it is
    important that 64 bit versions of stat are used; most programming
@@ -313,9 +311,6 @@
 # include "util.h"
 # include "common-defs.h"
 # include "stringhelp.h"  /* For stpcpy and w32_strerror. */
-#endif
-#ifdef HAVE_W32CE_SYSTEM
-# include "utf8conv.h"  /* WindowsCE requires filename conversion.  */
 #endif
 
 #include "dotlock.h"
