@@ -1,6 +1,32 @@
 Noteworthy changes in version 2.2.41 (unreleased)
 -------------------------------------------------
 
+  * gpg: Support OCB encryption.  [T6263]
+
+  * gpg: Also import stray revocation certificates.  [rGbd825ead36af]
+
+  * gpg: New list-options show-pref and show-pref-verbose.
+    [rGb6ba7054a0]
+
+  * gpg: New command --quick-update-pref.  [rGf16c946be7]
+
+  * gpg: Add a notation to encryption subkeys in de-vs mode.  [T6279]
+
+  * gpg: Fix trusted introducer for mbox only user-ids.  [T6238]
+
+  * gpg: Report an error via status-fd for receiving a key from the
+    agent.  [T5151]
+
+  * gpgsm: Support ECC certificates.  [T6253]
+
+  * gpgsm: Also announce AES256-CBC in signatures.  [rGaa397fdcdb21]
+
+  * scd: Support the Telesec Signature Card v2.0.  [T6252]
+
+  * Fix build regression depending on libgpg-error version.  [T6244]
+
+  Release-info: https://dev.gnupg.org/T6280
+
 
 Noteworthy changes in version 2.2.40 (2022-10-10)
 -------------------------------------------------
