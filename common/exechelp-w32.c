@@ -1094,7 +1094,7 @@ post_syscall (void)
 static gpg_err_code_t
 spawn_detached (gnupg_process_t process,
                 const char *pgmname, char *cmdline,
-                int (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
+                int (*spawn_cb) (void *), void *spawn_cb_arg)
 {
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
@@ -1115,14 +1115,7 @@ spawn_detached (gnupg_process_t process,
     }
 
   if (spawn_cb)
-    {
-      struct spawn_cb_arg arg;
-
-      arg.std_fds[0] = arg.std_fds[1] = arg.std_fds[2] = -1;
-      arg.arg = spawn_cb_arg;
-
-      ask_inherit = (*spawn_cb) (&arg);
-    }
+    ask_inherit = (*spawn_cb) (spawn_cb_arg);
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );
@@ -1201,7 +1194,7 @@ spawn_detached (gnupg_process_t process,
 gpg_err_code_t
 gnupg_process_spawn (const char *pgmname, const char *argv[],
                      unsigned int flags,
-                     int (*spawn_cb) (struct spawn_cb_arg *),
+                     int (*spawn_cb) (void *),
                      void *spawn_cb_arg,
                      gnupg_process_t *r_process)
 {
@@ -1332,14 +1325,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
     }
 
   if (spawn_cb)
-    {
-      struct spawn_cb_arg arg;
-
-      arg.std_fds[0] = arg.std_fds[1] = arg.std_fds[2] = -1;
-      arg.arg = spawn_cb_arg;
-
-      ask_inherit = (*spawn_cb) (&arg);
-    }
+    ask_inherit = (*spawn_cb) (spawn_cb_arg);
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );

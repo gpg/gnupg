@@ -302,35 +302,11 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 
 
 static int
-close_all_except (struct spawn_cb_arg *arg)
+close_all_except (void *arg)
 {
-  int except[32];
-  int i = 0;
-  int fd_in  = arg->std_fds[0];
-  int fd_out = arg->std_fds[1];
-  int fd_err = arg->std_fds[2];
-  int *exceptclose = arg->arg;
+  int *exceptclose = arg;
 
-  if (fd_in >= 0)
-    except[i++] = fd_in;
-  if (fd_out >= 0)
-    except[i++] = fd_out;
-  if (fd_err >= 0)
-    except[i++] = fd_err;
-
-  for (; i < 31; i++)
-    {
-      int fd = *exceptclose++;
-
-      if (fd < 0)
-        break;
-      else
-        except[i] = fd;
-    }
-
-  except[i++] = -1;
-
-  close_all_fds (3, except);
+  close_all_fds (3, exceptclose);
   return 1;
 }
 

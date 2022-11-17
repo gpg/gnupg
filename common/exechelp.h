@@ -210,10 +210,6 @@ gpg_error_t gnupg_spawn_process_detached (const char *pgmname,
 
 /* The opaque type for a subprocess.  */
 typedef struct gnupg_process *gnupg_process_t;
-struct spawn_cb_arg {
-  int std_fds[3];
-  void *arg;
-};
 
 /* Internal flag to ihnerit file descriptor/handle */
 #define GNUPG_PROCESS_INHERIT_FILE        (1 << 0)
@@ -240,7 +236,7 @@ struct spawn_cb_arg {
 /* Spawn PGMNAME.  */
 gpg_err_code_t gnupg_process_spawn (const char *pgmname, const char *argv[],
                                     unsigned int flags,
-                                    int (*spawn_cb) (struct spawn_cb_arg *),
+                                    int (*spawn_cb) (void *),
                                     void *spawn_cb_arg,
                                     gnupg_process_t *r_process);
 

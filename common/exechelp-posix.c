@@ -989,10 +989,12 @@ posix_open_null (int for_write)
 
 static void
 my_exec (const char *pgmname, const char *argv[],
-         int fd_in, int fd_out, int fd_err, int ask_inherit)
+         int fd_in, int fd_out, int fd_err,
+         int (*spawn_cb) (void *), void *spawn_cb_arg)
 {
   int i;
   int fds[3];
+  int ask_inherit = 0;
 
   fds[0] = fd_in;
   fds[1] = fd_out;
@@ -1013,6 +1015,9 @@ my_exec (const char *pgmname, const char *argv[],
         close (fds[i]);
       }
 
+  if (spawn_cb)
+    ask_inherit = (*spawn_cb) (spawn_cb_arg);
+
   /* Close all other files.  */
   if (!ask_inherit)
     close_all_fds (3, NULL);
@@ -1025,7 +1030,7 @@ my_exec (const char *pgmname, const char *argv[],
 static gpg_err_code_t
 spawn_detached (gnupg_process_t process,
                 const char *pgmname, const char *argv[],
-                int (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
+                int (*spawn_cb) (void *), void *spawn_cb_arg)
 {
   gpg_err_code_t ec;
   pid_t pid;
@@ -1061,14 +1066,6 @@ spawn_detached (gnupg_process_t process,
   if (!pid)
     {
       pid_t pid2;
-      struct spawn_cb_arg arg;
-      int ask_inherit = 0;
-
-      arg.std_fds[0] = arg.std_fds[1] = arg.std_fds[2] = -1;
-      arg.arg = spawn_cb_arg;
-
-      if (spawn_cb)
-        ask_inherit = (*spawn_cb) (&arg);
 
       if (setsid() == -1 || chdir ("/"))
         _exit (1);
@@ -1079,7 +1076,7 @@ spawn_detached (gnupg_process_t process,
       if (pid2)
         _exit (0);  /* Let the parent exit immediately. */
 
-      my_exec (pgmname, argv, -1, -1, -1, ask_inherit);
+      my_exec (pgmname, argv, -1, -1, -1, spawn_cb, spawn_cb_arg);
       /*NOTREACHED*/
     }
 
@@ -1107,8 +1104,7 @@ spawn_detached (gnupg_process_t process,
 gpg_err_code_t
 gnupg_process_spawn (const char *pgmname, const char *argv1[],
                      unsigned int flags,
-                     int (*spawn_cb) (struct spawn_cb_arg *),
-                     void *spawn_cb_arg,
+                     int (*spawn_cb) (void *), void *spawn_cb_arg,
                      gnupg_process_t *r_process)
 {
   gpg_err_code_t ec;
@@ -1281,14 +1277,6 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
 
   if (!pid)
     {
-      struct spawn_cb_arg arg;
-      int ask_inherit = 0;
-
-      arg.std_fds[0] = fd_in[0];
-      arg.std_fds[1] = fd_out[1];
-      arg.std_fds[2] = fd_err[1];
-      arg.arg = spawn_cb_arg;
-
       if (fd_in[1] >= 0)
         close (fd_in[1]);
       if (fd_out[0] >= 0)
@@ -1296,11 +1284,9 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
       if (fd_err[0] >= 0)
         close (fd_err[0]);
 
-      if (spawn_cb)
-        ask_inherit = (*spawn_cb) (&arg);
-
       /* Run child. */
-      my_exec (pgmname, argv, fd_in[0], fd_out[1], fd_err[1], ask_inherit);
+      my_exec (pgmname, argv, fd_in[0], fd_out[1], fd_err[1],
+               spawn_cb, spawn_cb_arg);
       /*NOTREACHED*/
     }
 
