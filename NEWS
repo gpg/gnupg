@@ -1,6 +1,21 @@
 Noteworthy changes in version 2.2.41 (unreleased)
 -------------------------------------------------
 
+  * gpg: Also import stray revocation certificates.  [rGbd825ead36af]
+
+  * gpg: Add a notation to encryption subkeys in de-vs mode.  [T6279]
+
+  * gpg: Fix trusted introducer for mbox only user-ids.  [T6238]
+
+  * gpg: Report an error via status-fd for receiving a key from the
+    agent.  [T5151]
+
+  * scd: Support the Telesec Signature Card v2.0.  [T6252]
+
+  * Fix build regression depending on libgpg-error version.  [T6244]
+
+  Release-info: https://dev.gnupg.org/T6280
+
 
 Noteworthy changes in version 2.2.40 (2022-10-10)
 -------------------------------------------------
